@@ -1,7 +1,0 @@
-﻿  main.cpp
-  Generating code
-  76 of 1211 functions ( 6.3%) were compiled, the rest were copied from previous compilation.
-    35 functions were new in current compilation
-    10 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  VulkanTutorial.vcxproj -> D:\Projects\Visual Studio\VulkanTutorial\x64\Release\VulkanTutorial.exe
