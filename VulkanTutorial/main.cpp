@@ -15,6 +15,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#include "Mesh.h"
+
 #include <iostream>
 #include <stdexcept>
 #include <functional>
@@ -53,50 +55,6 @@ struct SwapChainSupportDetails
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
-};
-
-struct Vertex
-{
-	glm::vec3 pos;
-	glm::vec3 color;
-	glm::vec2 texCoord;
-
-	bool operator==(const Vertex& other) const
-	{
-		return pos == other.pos && color == other.color && texCoord == other.texCoord;
-	}
-
-	static VkVertexInputBindingDescription getBindingDescription()
-	{
-		VkVertexInputBindingDescription bindingDescription = {};
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(Vertex);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		return bindingDescription;
-	}
-
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions()
-	{
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
-
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-		attributeDescriptions[2].binding = 0;
-		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-		return attributeDescriptions;
-	};
 };
 
 struct UniformBufferObject
@@ -176,8 +134,9 @@ private:
 	std::vector<VkFence> imagesInFlight;
 	size_t currentFrame = 0;
 
-	std::vector<Vertex> vertices;
-	std::vector<uint32_t> indices;
+	//std::vector<Vertex> vertices;
+	//std::vector<uint32_t> indices;
+	Mesh mesh;
 
 	// Vertex Buffer
 	VkBuffer vertexBuffer;
@@ -1135,6 +1094,9 @@ private:
 
 		std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
 
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+
 		for (const auto& shape : shapes)
 		{
 			for (const auto& index : shape.mesh.indices)
@@ -1165,6 +1127,8 @@ private:
 				indices.push_back(uniqueVertices[vertex]);
 			}
 		}
+
+		mesh.CreateMesh(vertices, indices);
 	}
 
 	void createTextureImageView()
@@ -1381,7 +1345,7 @@ private:
 				pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
 
 			//vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0); // Draw without Index
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0); // Draw with Index
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mesh.GetIndices().size()), 1, 0, 0, 0); // Draw with Index
 
 			vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -1485,7 +1449,7 @@ private:
 
 	void createVertexBuffers()
 	{
-		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+		VkDeviceSize bufferSize = sizeof(mesh.GetVertices()[0]) * mesh.GetVertices().size();
 
 		// Create CPU staging buffer for Vertex data
 		VkBuffer stagingBuffer;
@@ -1497,7 +1461,7 @@ private:
 		// Map vertex data to Staging Buffer
 		void* data;
 		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, vertices.data(), (size_t)bufferSize);
+		memcpy(data, mesh.GetVertices().data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
 		// Create GPU vertex buffer
@@ -1512,7 +1476,7 @@ private:
 
 	void createIndexBuffers()
 	{
-		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+		VkDeviceSize bufferSize = sizeof(mesh.GetIndices()[0]) * mesh.GetIndices().size();
 
 		// Create CPU staging buffer for Indices data
 		VkBuffer stagingBuffer;
@@ -1524,7 +1488,7 @@ private:
 		// Map indices data to Staging Buffer
 		void* data;
 		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, indices.data(), (size_t)bufferSize);
+		memcpy(data, mesh.GetIndices().data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
 		// Create GPU indices buffer
