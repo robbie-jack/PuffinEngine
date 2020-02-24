@@ -57,13 +57,28 @@ public:
 	Mesh();
 	~Mesh();
 
-	void CreateMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indices_);
+	void SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indices_);
+	void Cleanup(VkDevice device);
 
 	inline std::vector<Vertex> GetVertices() { return vertices; };
 	inline std::vector<uint32_t> GetIndices() { return indices; };
+
+	inline VkBuffer& GetVertexBuffer() { return vertexBuffer; };
+	inline VkBuffer& GetIndexBuffer() { return indexBuffer; };
+
+	inline VkDeviceMemory& GetVertexMemory() { return vertexBufferMemory; };
+	inline VkDeviceMemory& GetIndexMemory() { return indexBufferMemory; };
 
 private:
 
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
+
+	// Vertex Buffer
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+
+	// Index Buffer
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
 };

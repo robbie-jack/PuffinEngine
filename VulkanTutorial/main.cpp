@@ -138,13 +138,13 @@ private:
 	//std::vector<uint32_t> indices;
 	Mesh mesh;
 
-	// Vertex Buffer
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
+	//// Vertex Buffer
+	//VkBuffer vertexBuffer;
+	//VkDeviceMemory vertexBufferMemory;
 
-	// Index Buffer
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
+	//// Index Buffer
+	//VkBuffer indexBuffer;
+	//VkDeviceMemory indexBufferMemory;
 
 	// Uniform Buffers for Index/Tex Coord Data
 	std::vector<VkBuffer> uniformBuffers;
@@ -1128,7 +1128,7 @@ private:
 			}
 		}
 
-		mesh.CreateMesh(vertices, indices);
+		mesh.SetupMesh(vertices, indices);
 	}
 
 	void createTextureImageView()
@@ -1335,11 +1335,11 @@ private:
 
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-			VkBuffer vertexBuffers[] = { vertexBuffer };
+			VkBuffer vertexBuffers[] = { mesh.GetVertexBuffer() };
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-			vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffers[i], mesh.GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, 
 				pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
@@ -1466,9 +1466,9 @@ private:
 
 		// Create GPU vertex buffer
 		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mesh.GetVertexBuffer(), mesh.GetVertexMemory());
 
-		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+		copyBuffer(stagingBuffer, mesh.GetVertexBuffer(), bufferSize);
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -1494,9 +1494,9 @@ private:
 		// Create GPU indices buffer
 		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-			indexBuffer, indexBufferMemory);
+			mesh.GetIndexBuffer(), mesh.GetIndexMemory());
 
-		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+		copyBuffer(stagingBuffer, mesh.GetIndexBuffer(), bufferSize);
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -1831,11 +1831,7 @@ private:
 
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-		vkDestroyBuffer(device, indexBuffer, nullptr);
-		vkFreeMemory(device, indexBufferMemory, nullptr);
-
-		vkDestroyBuffer(device, vertexBuffer, nullptr);
-		vkFreeMemory(device, vertexBufferMemory, nullptr);
+		mesh.Cleanup(device);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) 
 		{
