@@ -2,7 +2,9 @@
 
 Mesh::Mesh()
 {
-
+	transform.position = { 0.0f, 0.0f, 0.0f };
+	transform.rotation = { 0.0f, 0.0f, 0.0f };
+	transform.scale = { 1.0f, 1.0f, 1.0f };
 }
 
 Mesh::~Mesh()
@@ -25,4 +27,11 @@ void Mesh::Cleanup(VkDevice device)
 
 	vkDestroyBuffer(device, indexBuffer, nullptr);
 	vkFreeMemory(device, indexBufferMemory, nullptr);
+
+	for (int i = 0; i < uniformBuffers.size(); i++)
+	{
+		vkDestroyBuffer(device, uniformBuffers[i], nullptr);
+		vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
+	}
+	
 }

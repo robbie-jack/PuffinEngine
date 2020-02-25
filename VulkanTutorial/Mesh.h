@@ -8,6 +8,20 @@
 
 #include "Texture.h"
 
+struct Matrices
+{
+	alignas(16) glm::mat4 model;
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+};
+
+struct Transform
+{
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
+};
+
 struct Vertex
 {
 	glm::vec3 pos;
@@ -69,11 +83,21 @@ public:
 
 	inline VkBuffer& GetVertexBuffer() { return vertexBuffer; };
 	inline VkBuffer& GetIndexBuffer() { return indexBuffer; };
-
+	inline VkBuffer& GetUniformBuffer(int i) { return uniformBuffers[i]; };
+	
 	inline VkDeviceMemory& GetVertexMemory() { return vertexBufferMemory; };
 	inline VkDeviceMemory& GetIndexMemory() { return indexBufferMemory; };
-
+	inline VkDeviceMemory& GetUniformBufferMemory(int i) { return uniformBuffersMemory[i]; };
+	
 	inline std::vector<VkDescriptorSet>& GetDescriptorSets() { return descriptorSets; };
+	inline std::vector<VkBuffer>& GetUniformBufferVector() { return uniformBuffers; };
+	inline std::vector<VkDeviceMemory>& GetUniformMemoryVector() { return uniformBuffersMemory; };
+
+	inline Matrices GetMatrices() { return matrices; };
+	inline void SetMatrices(Matrices matrices_) { matrices = matrices_; };
+
+	inline Transform GetTransform() { return transform; };
+	inline void SetTransform(Transform transform_) { transform = transform_; };
 
 private:
 
@@ -90,5 +114,12 @@ private:
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 
+	// Uniform Buffers
+	std::vector<VkBuffer> uniformBuffers;
+	std::vector<VkDeviceMemory> uniformBuffersMemory;
+
 	std::vector<VkDescriptorSet> descriptorSets;
+
+	Matrices matrices;
+	Transform transform;
 };
