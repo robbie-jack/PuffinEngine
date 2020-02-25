@@ -134,17 +134,9 @@ private:
 	std::vector<VkFence> imagesInFlight;
 	size_t currentFrame = 0;
 
-	//std::vector<Vertex> vertices;
-	//std::vector<uint32_t> indices;
-	Mesh mesh;
-
-	//// Vertex Buffer
-	//VkBuffer vertexBuffer;
-	//VkDeviceMemory vertexBufferMemory;
-
-	//// Index Buffer
-	//VkBuffer indexBuffer;
-	//VkDeviceMemory indexBufferMemory;
+	Mesh chalet_mesh;
+	Mesh engineer_mesh;
+	std::vector<Mesh> meshes;
 
 	// Uniform Buffers for Index/Tex Coord Data
 	std::vector<VkBuffer> uniformBuffers;
@@ -236,9 +228,19 @@ private:
 		createTextureImage();
 		createTextureImageView();
 		createTextureSampler();
-		loadModel();
-		createVertexBuffers();
-		createIndexBuffers();
+
+		loadModel(chalet_mesh, MODEL_PATH);
+		createVertexBuffers(chalet_mesh);
+		createIndexBuffers(chalet_mesh);
+
+		meshes.push_back(chalet_mesh);
+
+		loadModel(engineer_mesh, "models/space_engineer.obj");
+		createVertexBuffers(engineer_mesh);
+		createIndexBuffers(engineer_mesh);
+
+		meshes.push_back(engineer_mesh);
+
 		createUniformBuffers();
 		createDescriptorPool();
 		createDescriptorSets();
@@ -1080,14 +1082,14 @@ private:
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
 	}
 
-	void loadModel()
+	void loadModel(Mesh& mesh, std::string model_path)
 	{
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
 		std::string warn, err;
 
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) 
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, model_path.c_str())) 
 		{
 			throw std::runtime_error(warn + err);
 		}
@@ -1335,17 +1337,20 @@ private:
 
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-			VkBuffer vertexBuffers[] = { mesh.GetVertexBuffer() };
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+			for (auto mesh : meshes)
+			{
+				VkBuffer vertexBuffers[] = { mesh.GetVertexBuffer() };
+				VkDeviceSize offsets[] = { 0 };
+				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-			vkCmdBindIndexBuffer(commandBuffers[i], mesh.GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(commandBuffers[i], mesh.GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, 
-				pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
 
-			//vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0); // Draw without Index
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mesh.GetIndices().size()), 1, 0, 0, 0); // Draw with Index
+				//vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0); // Draw without Index
+				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mesh.GetIndices().size()), 1, 0, 0, 0); // Draw with Index
+			}
 
 			vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -1447,7 +1452,7 @@ private:
 		vkBindBufferMemory(device, buffer, bufferMemory, 0);
 	}
 
-	void createVertexBuffers()
+	void createVertexBuffers(Mesh& mesh)
 	{
 		VkDeviceSize bufferSize = sizeof(mesh.GetVertices()[0]) * mesh.GetVertices().size();
 
@@ -1474,7 +1479,7 @@ private:
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
 	}
 
-	void createIndexBuffers()
+	void createIndexBuffers(Mesh& mesh)
 	{
 		VkDeviceSize bufferSize = sizeof(mesh.GetIndices()[0]) * mesh.GetIndices().size();
 
@@ -1831,7 +1836,7 @@ private:
 
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-		mesh.Cleanup(device);
+		chalet_mesh.Cleanup(device);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) 
 		{
