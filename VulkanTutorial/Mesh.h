@@ -6,6 +6,8 @@
 #include <vector>
 #include <array>
 
+#include "Texture.h"
+
 struct Vertex
 {
 	glm::vec3 pos;
@@ -60,6 +62,8 @@ public:
 	void SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indices_);
 	void Cleanup(VkDevice device);
 
+	inline Texture& GetTexture() { return texture; };
+
 	inline std::vector<Vertex> GetVertices() { return vertices; };
 	inline std::vector<uint32_t> GetIndices() { return indices; };
 
@@ -69,7 +73,11 @@ public:
 	inline VkDeviceMemory& GetVertexMemory() { return vertexBufferMemory; };
 	inline VkDeviceMemory& GetIndexMemory() { return indexBufferMemory; };
 
+	inline std::vector<VkDescriptorSet>& GetDescriptorSets() { return descriptorSets; };
+
 private:
+
+	Texture texture;
 
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
@@ -81,4 +89,6 @@ private:
 	// Index Buffer
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
+
+	std::vector<VkDescriptorSet> descriptorSets;
 };

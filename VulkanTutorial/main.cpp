@@ -16,6 +16,7 @@
 #include <tiny_obj_loader.h>
 
 #include "Mesh.h"
+#include "Texture.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -143,12 +144,12 @@ private:
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
 
 	VkDescriptorPool descriptorPool;
-	std::vector<VkDescriptorSet> descriptorSets;
+	//std::vector<VkDescriptorSet> descriptorSets;
 
 	// Texture Image/Sampler
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
-	VkImageView textureImageView;
+	//VkImage textureImage;
+	//VkDeviceMemory textureImageMemory;
+	//VkImageView textureImageView;
 	VkSampler textureSampler;
 
 	VkImage depthImage;
@@ -159,9 +160,6 @@ private:
 
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
-
-	const std::string MODEL_PATH = "models/chalet.obj";
-	const std::string TEXTURE_PATH = "textures/chalet.jpg";
 
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -225,11 +223,16 @@ private:
 		createCommandPool();
 		createDepthResources();
 		createFrameBuffers();
-		createTextureImage();
-		createTextureImageView();
+
+		createTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
+		createTextureImageView(chalet_mesh.GetTexture());
+
+		createTextureImage(engineer_mesh.GetTexture(), "textures/engineer.jpg");
+		createTextureImageView(engineer_mesh.GetTexture());
+
 		createTextureSampler();
 
-		loadModel(chalet_mesh, MODEL_PATH);
+		loadModel(chalet_mesh, "models/chalet.obj");
 		createVertexBuffers(chalet_mesh);
 		createIndexBuffers(chalet_mesh);
 
@@ -243,7 +246,9 @@ private:
 
 		createUniformBuffers();
 		createDescriptorPool();
+
 		createDescriptorSets();
+
 		createCommandBuffers();
 		createSyncObjects();
 	}
@@ -1034,12 +1039,12 @@ private:
 	{
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
-	void createTextureImage()
+	void createTextureImage(Texture& texture, std::string texture_path)
 	{
 		int texWidth, texHeight, texChannels;
 
 		// Load Texure from file
-		stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		stbi_uc* pixels = stbi_load(texture_path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
 		// Get required image size for texture
 		VkDeviceSize imageSize = texWidth * texHeight * 4;
@@ -1068,14 +1073,14 @@ private:
 
 		createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, 
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.GetTextureImage(), texture.GetTextureMemory());
 
-		transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, 
+		transitionImageLayout(texture.GetTextureImage(), VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-
-		transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, 
+		copyBufferToImage(stagingBuffer, texture.GetTextureImage(), static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+		
+		transitionImageLayout(texture.GetTextureImage(), VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
@@ -1133,9 +1138,9 @@ private:
 		mesh.SetupMesh(vertices, indices);
 	}
 
-	void createTextureImageView()
+	void createTextureImageView(Texture& texture)
 	{
-		textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+		texture.GetImageView() = createImageView(texture.GetTextureImage(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	void createTextureSampler()
@@ -1346,7 +1351,7 @@ private:
 				vkCmdBindIndexBuffer(commandBuffers[i], mesh.GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
-					pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+					pipelineLayout, 0, 1, &mesh.GetDescriptorSets()[i], 0, nullptr);
 
 				//vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0); // Draw without Index
 				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mesh.GetIndices().size()), 1, 0, 0, 0); // Draw with Index
@@ -1524,15 +1529,15 @@ private:
 	{
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshes.size());
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+		poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshes.size());
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());;
+		poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * meshes.size());;
 
 		if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 		{
@@ -1542,50 +1547,53 @@ private:
 
 	void createDescriptorSets()
 	{
-		std::vector<VkDescriptorSetLayout> layouts(swapChainImages.size(), descriptorSetLayout);
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
-		allocInfo.pSetLayouts = layouts.data();
-
-		descriptorSets.resize(swapChainImages.size());
-		if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) 
+		for (auto& mesh : meshes)
 		{
-			throw std::runtime_error("failed to allocate descriptor sets!");
-		}
+			std::vector<VkDescriptorSetLayout> layouts(swapChainImages.size(), descriptorSetLayout);
+			VkDescriptorSetAllocateInfo allocInfo = {};
+			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocInfo.descriptorPool = descriptorPool;
+			allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
+			allocInfo.pSetLayouts = layouts.data();
 
-		for (size_t i = 0; i < swapChainImages.size(); i++) 
-		{
-			VkDescriptorBufferInfo bufferInfo = {};
-			bufferInfo.buffer = uniformBuffers[i];
-			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(UniformBufferObject);
+			mesh.GetDescriptorSets().resize(swapChainImages.size());
+			if (vkAllocateDescriptorSets(device, &allocInfo, mesh.GetDescriptorSets().data()) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to allocate descriptor sets!");
+			}
 
-			VkDescriptorImageInfo imageInfo = {};
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = textureImageView;
-			imageInfo.sampler = textureSampler;
+			for (size_t i = 0; i < swapChainImages.size(); i++)
+			{
+				VkDescriptorBufferInfo bufferInfo = {};
+				bufferInfo.buffer = uniformBuffers[i];
+				bufferInfo.offset = 0;
+				bufferInfo.range = sizeof(UniformBufferObject);
 
-			std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+				VkDescriptorImageInfo imageInfo = {};
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = mesh.GetTexture().GetImageView();
+				imageInfo.sampler = textureSampler;
 
-			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = descriptorSets[i];
-			descriptorWrites[0].dstBinding = 0;
-			descriptorWrites[0].dstArrayElement = 0;
-			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrites[0].descriptorCount = 1;
-			descriptorWrites[0].pBufferInfo = &bufferInfo;
+				std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
 
-			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = descriptorSets[i];
-			descriptorWrites[1].dstBinding = 1;
-			descriptorWrites[1].dstArrayElement = 0;
-			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrites[1].descriptorCount = 1;
-			descriptorWrites[1].pImageInfo = &imageInfo;
+				descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[0].dstSet = mesh.GetDescriptorSets()[i];
+				descriptorWrites[0].dstBinding = 0;
+				descriptorWrites[0].dstArrayElement = 0;
+				descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorWrites[0].descriptorCount = 1;
+				descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-			vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+				descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[1].dstSet = mesh.GetDescriptorSets()[i];
+				descriptorWrites[1].dstBinding = 1;
+				descriptorWrites[1].dstArrayElement = 0;
+				descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrites[1].descriptorCount = 1;
+				descriptorWrites[1].pImageInfo = &imageInfo;
+
+				vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			}
 		}
 	}
 
@@ -1829,14 +1837,11 @@ private:
 		cleanupSwapChain();
 
 		vkDestroySampler(device, textureSampler, nullptr);
-		vkDestroyImageView(device, textureImageView, nullptr);
-
-		vkDestroyImage(device, textureImage, nullptr);
-		vkFreeMemory(device, textureImageMemory, nullptr);
 
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
 		chalet_mesh.Cleanup(device);
+		engineer_mesh.Cleanup(device);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) 
 		{

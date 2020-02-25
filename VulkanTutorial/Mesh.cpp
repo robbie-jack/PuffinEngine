@@ -18,6 +18,8 @@ void Mesh::SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indice
 
 void Mesh::Cleanup(VkDevice device)
 {
+	texture.Cleanup(device);
+
 	vkDestroyBuffer(device, vertexBuffer, nullptr);
 	vkFreeMemory(device, vertexBufferMemory, nullptr);
 
