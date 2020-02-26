@@ -218,12 +218,12 @@ private:
 		createDepthResources();
 		createFrameBuffers();
 
-		initCamera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+		initCamera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
 
 		createTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
 		createTextureImageView(chalet_mesh.GetTexture());
 
-		createTextureImage(engineer_mesh.GetTexture(), "textures/engineer.jpg");
+		createTextureImage(engineer_mesh.GetTexture(), "textures/space_engineer.jpg");
 		createTextureImageView(engineer_mesh.GetTexture());
 
 		createTextureSampler();
@@ -1827,8 +1827,8 @@ private:
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-		meshes[0].SetTransform(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, time * 15.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		meshes[1].SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, time * 15.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		meshes[0].SetTransform(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		meshes[1].SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 		for (auto mesh : meshes)
 		{
