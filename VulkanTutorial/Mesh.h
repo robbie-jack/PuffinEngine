@@ -12,7 +12,7 @@
 
 #include "Texture.h"
 
-struct Matrices
+struct MeshMatrices
 {
 	alignas(16) glm::mat4 model;
 	alignas(16) glm::mat4 view;
@@ -99,8 +99,8 @@ public:
 	inline std::vector<VkBuffer>& GetUniformBufferVector() { return uniformBuffers; };
 	inline std::vector<VkDeviceMemory>& GetUniformMemoryVector() { return uniformBuffersMemory; };
 
-	inline Matrices GetMatrices() { return matrices; };
-	inline void SetMatrices(Matrices matrices_) { matrices = matrices_; };
+	inline MeshMatrices GetMatrices() { return matrices; };
+	inline void SetMatrices(MeshMatrices matrices_) { matrices = matrices_; };
 
 	inline Transform GetTransform() { return transform; };
 	inline void SetTransform(Transform transform_) { transform = transform_; };
@@ -132,6 +132,6 @@ private:
 
 	std::vector<VkDescriptorSet> descriptorSets;
 
-	Matrices matrices;
+	MeshMatrices matrices;
 	Transform transform;
 };

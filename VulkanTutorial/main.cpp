@@ -17,6 +17,7 @@
 
 #include "Mesh.h"
 #include "Texture.h"
+#include "Camera.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -135,6 +136,8 @@ private:
 	std::vector<VkFence> imagesInFlight;
 	size_t currentFrame = 0;
 
+	Camera camera;
+
 	Mesh chalet_mesh;
 	Mesh engineer_mesh;
 	std::vector<Mesh> meshes;
@@ -215,6 +218,8 @@ private:
 		createDepthResources();
 		createFrameBuffers();
 
+		initCamera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+
 		createTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
 		createTextureImageView(chalet_mesh.GetTexture());
 
@@ -268,6 +273,15 @@ private:
 		createDescriptorPool();
 		createDescriptorSets();
 		createCommandBuffers();
+	}
+
+	void initCamera(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far)
+	{
+		camera.SetViewEye(eye);
+		camera.SetViewCentre(centre);
+		camera.SetViewUp(up);
+
+		camera.SetPerspective(fov, aspect, near, far);
 	}
 
 	void createInstance()
@@ -1818,13 +1832,15 @@ private:
 
 		for (auto mesh : meshes)
 		{
-			Matrices matrice = {};
+			MeshMatrices matrice = {};
 			
 			mesh.BuildTransform();
 
 			matrice.model = mesh.GetMatrices().model;
-			matrice.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			matrice.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+			matrice.view = camera.GetViewMatrix();
+			matrice.proj = camera.GetPerspectiveMatrix();
+			//matrice.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			//matrice.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 			matrice.proj[1][1] *= -1;
 
 			mesh.SetMatrices(matrice);
