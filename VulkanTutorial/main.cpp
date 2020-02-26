@@ -1813,11 +1813,17 @@ private:
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
+		meshes[0].SetTransform(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, time * 15.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		meshes[1].SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, time * 15.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
 		for (auto mesh : meshes)
 		{
 			Matrices matrice = {};
-			matrice.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			matrice.view = glm::lookAt(glm::vec3(1.5f, 1.5f, 1.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			
+			mesh.BuildTransform();
+
+			matrice.model = mesh.GetMatrices().model;
+			matrice.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 			matrice.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 			matrice.proj[1][1] *= -1;
 

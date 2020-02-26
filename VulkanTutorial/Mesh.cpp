@@ -35,3 +35,17 @@ void Mesh::Cleanup(VkDevice device)
 	}
 	
 }
+
+void Mesh::BuildTransform()
+{
+	// Translation
+	matrices.model = glm::translate(glm::mat4(1.0f), transform.position);
+
+	// Rotation
+	matrices.model = glm::rotate(matrices.model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	matrices.model = glm::rotate(matrices.model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	matrices.model = glm::rotate(matrices.model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	// Scale
+	matrices.model = glm::scale(matrices.model, transform.scale);
+}

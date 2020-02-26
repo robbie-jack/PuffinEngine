@@ -1,7 +1,11 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
 #include <array>
@@ -76,6 +80,8 @@ public:
 	void SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indices_);
 	void Cleanup(VkDevice device);
 
+	void BuildTransform();
+
 	inline Texture& GetTexture() { return texture; };
 
 	inline std::vector<Vertex> GetVertices() { return vertices; };
@@ -98,6 +104,12 @@ public:
 
 	inline Transform GetTransform() { return transform; };
 	inline void SetTransform(Transform transform_) { transform = transform_; };
+	inline void SetTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) 
+	{ 
+		transform.position = position; 
+		transform.rotation = rotation; 
+		transform.scale = scale; 
+	};
 
 private:
 
