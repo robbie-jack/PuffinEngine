@@ -148,6 +148,7 @@ public:
 	void Cleanup(VkDevice device);
 
 	void BuildTransform();
+	void SetColor(glm::vec3 color);
 
 	inline Texture& GetTexture() { return texture; };
 	inline void SetTexture(Texture texture_) { texture = texture_; };

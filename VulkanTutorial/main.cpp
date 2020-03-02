@@ -222,7 +222,7 @@ private:
 		createFrameBuffers();
 
 		// Initliaze Camera
-		initCamera(glm::vec3(0.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+		initCamera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
 
 		// Load Textures / Create Texture Images/Views
 		createTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
@@ -246,6 +246,8 @@ private:
 		cube_mesh.SetupMesh(cube_vertices, cube_indices);
 		light_cube.SetupMesh(cube_vertices, cube_indices);
 
+		cube_mesh.SetColor(glm::vec3(0.6f, 0.4f, 0.08f));
+
 		// Initliase Meshes
 		initMesh(chalet_mesh);
 		initMesh(engineer_mesh);
@@ -253,7 +255,7 @@ private:
 		initMesh(light_cube);
 
 		// Initliase Lights
-		light.InitLight(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f);
+		light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
 		createUniformBuffers();
 		createLightBuffers();

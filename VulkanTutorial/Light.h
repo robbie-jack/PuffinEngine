@@ -15,6 +15,7 @@ struct LightBufferObject
 	alignas(16) glm::vec3 ambientColor;
 	alignas(16) glm::vec3 diffuseColor;
 	alignas(4) float specularStrength;
+	alignas(4) int shininess;
 };
 
 class Light
@@ -24,7 +25,7 @@ public:
 	Light();
 	~Light();
 
-	void InitLight(glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, float specular);
+	void InitLight(glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, float specular = 0.5f, int shininess = 32);
 
 	inline glm::vec3 GetLightPosition() { return lightUniformBuffer.position; };
 	inline void SetLightPosition(glm::vec3 position) { lightUniformBuffer.position = position; };

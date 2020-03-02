@@ -7,6 +7,7 @@ layout(binding = 1) uniform LightBufferObject
 	vec3 ambientColor;
 	vec3 diffuseColor;
 	float specularStrength;
+	int shininess
 } light;
 
 layout(binding = 2) uniform ViewBufferObject
@@ -25,16 +26,17 @@ layout(location = 0) out vec4 outColor;
 
 void main() 
 {
-
-    //float ambientStrength = 0.1;
-	//vec3 ambient = ambientStrength * light.ambientColor;
-
 	vec3 lightDir = normalize(light.position - fragPosition);
+	vec3 viewDir = normalize(camera.viewPos - fragPosition);
+	vec3 reflectDir = reflect(lightDir, fragNormal);
 
 	float diff = max(dot(fragNormal, lightDir), 0.0);
 	vec3 diffuse = diff * light.diffuseColor;
 
-	vec3 result = (light.ambientColor + diffuse) * fragColor.rgb;
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+	vec3 specular = light.specularStrength * spec * light.diffuseColor;
+
+	vec3 result = (light.ambientColor + diffuse + specular) * fragColor.rgb;
 
     outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
 }

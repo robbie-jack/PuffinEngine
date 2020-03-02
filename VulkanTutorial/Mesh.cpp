@@ -49,3 +49,11 @@ void Mesh::BuildTransform()
 	// Scale
 	matrices.model = glm::scale(matrices.model, transform.scale);
 }
+
+void Mesh::SetColor(glm::vec3 color)
+{
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		vertices[i].color = color;
+	}
+}
