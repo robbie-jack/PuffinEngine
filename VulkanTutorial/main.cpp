@@ -222,7 +222,7 @@ private:
 		createFrameBuffers();
 
 		// Initliaze Camera
-		initCamera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+		initCamera(glm::vec3(0.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
 
 		// Load Textures / Create Texture Images/Views
 		createTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
