@@ -15,6 +15,7 @@
 struct MeshMatrices
 {
 	alignas(16) glm::mat4 model;
+	alignas(16) glm::mat4 inv_model;
 	alignas(16) glm::mat4 view;
 	alignas(16) glm::mat4 proj;
 };
@@ -149,6 +150,7 @@ public:
 	void BuildTransform();
 
 	inline Texture& GetTexture() { return texture; };
+	inline void SetTexture(Texture texture_) { texture = texture_; };
 
 	inline std::vector<Vertex> GetVertices() { return vertices; };
 	inline std::vector<uint32_t> GetIndices() { return indices; };

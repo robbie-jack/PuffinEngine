@@ -60,13 +60,6 @@ struct SwapChainSupportDetails
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-//struct UniformBufferObject
-//{
-//	alignas(16) glm::mat4 model;
-//	alignas(16) glm::mat4 view;
-//	alignas(16) glm::mat4 proj;
-//};
-
 namespace std
 {
 	template<> struct hash<Vertex>
@@ -144,7 +137,10 @@ private:
 	Mesh chalet_mesh;
 	Mesh engineer_mesh;
 	Mesh cube_mesh;
+	Mesh light_cube;
 	std::vector<Mesh> meshes;
+
+	Texture cube_texture;
 
 	// Light
 	Light light;
@@ -226,7 +222,7 @@ private:
 		createFrameBuffers();
 
 		// Initliaze Camera
-		initCamera(glm::vec3(0.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+		initCamera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
 
 		// Load Textures / Create Texture Images/Views
 		createTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
@@ -235,8 +231,11 @@ private:
 		createTextureImage(engineer_mesh.GetTexture(), "textures/space_engineer.jpg");
 		createTextureImageView(engineer_mesh.GetTexture());
 
-		createTextureImage(cube_mesh.GetTexture(), "textures/cube.png");
-		createTextureImageView(cube_mesh.GetTexture());
+		createTextureImage(cube_texture, "textures/cube.png");
+		createTextureImageView(cube_texture);
+
+		cube_mesh.SetTexture(cube_texture);
+		light_cube.SetTexture(cube_texture);
 
 		// Create Sampler
 		createTextureSampler();
@@ -245,14 +244,16 @@ private:
 		loadModel(chalet_mesh, "models/chalet.obj");
 		loadModel(engineer_mesh, "models/space_engineer.obj");
 		cube_mesh.SetupMesh(cube_vertices, cube_indices);
+		light_cube.SetupMesh(cube_vertices, cube_indices);
 
 		// Initliase Meshes
 		initMesh(chalet_mesh);
 		initMesh(engineer_mesh);
 		initMesh(cube_mesh);
+		initMesh(light_cube);
 
 		// Initliase Lights
-		light.InitLight(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		light.InitLight(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 		createUniformBuffers();
 		createLightBuffers();
@@ -1898,6 +1899,7 @@ private:
 		meshes[0].SetTransform(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 		meshes[1].SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 		meshes[2].SetTransform(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+		meshes[3].SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
 
 		for (auto mesh : meshes)
 		{
@@ -1906,6 +1908,7 @@ private:
 			mesh.BuildTransform();
 
 			matrice.model = mesh.GetMatrices().model;
+			matrice.inv_model = glm::inverse(matrice.model);
 			matrice.view = camera.GetViewMatrix();
 			matrice.proj = camera.GetPerspectiveMatrix();
 			matrice.proj[1][1] *= -1;

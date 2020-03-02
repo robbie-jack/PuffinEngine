@@ -4,6 +4,7 @@
 layout(binding = 0) uniform UniformBufferObject
 {
 	mat4 model;
+	mat4 inv_model;
 	mat4 view;
 	mat4 proj;
 } ubo;
@@ -34,7 +35,7 @@ void main()
 
 	fragPosition = vec3(ubo.model * vec4(inPosition, 1.0));
 
-	vec3 inverse_normal = vec3(inverse(ubo.model) * vec4(inNormal, 1.0));
+	vec3 inverse_normal = vec3(ubo.inv_model * vec4(inNormal, 1.0));
 
 	vec3 norm = normalize(inverse_normal);
 	vec3 lightDir = normalize(light.position - fragPosition);
