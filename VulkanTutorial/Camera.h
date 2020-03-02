@@ -1,9 +1,13 @@
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <vector>
 
 struct CameraMatrices
 {
@@ -16,6 +20,11 @@ struct View
 	glm::vec3 eye;
 	glm::vec3 centre;
 	glm::vec3 up;
+};
+
+struct ViewBufferObject
+{
+	alignas(16) glm::vec3 viewPos;
 };
 
 class Camera
@@ -37,11 +46,19 @@ public:
 	inline void SetPerspectiveMatrix(glm::mat4 perspective) { matrices.perspective = perspective; };
 	inline void SetViewMatrix(glm::mat4 view) { matrices.view = view; };
 
-	inline void SetViewCentre(glm::vec3 centre_) { view.centre = centre_; UpdateViewMatrix(); };
+	inline void SetViewCentre(glm::vec3 centre_) { view.centre = centre_; viewBufferObject.viewPos = view.centre; UpdateViewMatrix(); };
 	inline void SetViewEye(glm::vec3 eye_) { view.eye = eye_; UpdateViewMatrix(); };
 	inline void SetViewUp(glm::vec3 up_) { view.up = up_; UpdateViewMatrix(); };
 
 	void SetPerspective(float fov_, float aspect_, float zNear_, float zFar_);
+
+	inline ViewBufferObject GetViewBufferObject() { return viewBufferObject; };
+
+	inline VkBuffer& GetViewBuffer(int i) { return viewBufferVector[i]; };
+	inline VkDeviceMemory& GetViewMemory(int i) { return viewMemoryVector[i]; };
+
+	inline std::vector<VkBuffer>& GetViewBufferVector() { return viewBufferVector; };
+	inline std::vector<VkDeviceMemory>& GetViewMemoryVector() { return viewMemoryVector; };
 
 private:
 	float zNear, zFar, fov;
@@ -51,6 +68,10 @@ private:
 
 	CameraMatrices matrices;
 	View view;
+
+	ViewBufferObject viewBufferObject;
+	std::vector<VkBuffer> viewBufferVector;
+	std::vector<VkDeviceMemory> viewMemoryVector;
 
 	void UpdateViewMatrix();
 };

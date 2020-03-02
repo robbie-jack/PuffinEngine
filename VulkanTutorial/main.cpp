@@ -253,10 +253,11 @@ private:
 		initMesh(light_cube);
 
 		// Initliase Lights
-		light.InitLight(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		light.InitLight(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f);
 
 		createUniformBuffers();
 		createLightBuffers();
+		createViewBuffers();
 		createDescriptorPool();
 
 		createDescriptorSets();
@@ -287,6 +288,7 @@ private:
 		createFrameBuffers();
 		createUniformBuffers();
 		createLightBuffers();
+		createViewBuffers();
 		createDescriptorPool();
 		createDescriptorSets();
 		createCommandBuffers();
@@ -715,14 +717,21 @@ private:
 		lightLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		lightLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
+		VkDescriptorSetLayoutBinding viewLayoutBinding = {};
+		viewLayoutBinding.binding = 2;
+		viewLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		viewLayoutBinding.descriptorCount = 1;
+		viewLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		viewLayoutBinding.pImmutableSamplers = nullptr;
+
 		VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-		samplerLayoutBinding.binding = 2;
+		samplerLayoutBinding.binding = 3;
 		samplerLayoutBinding.descriptorCount = 1;
 		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		samplerLayoutBinding.pImmutableSamplers = nullptr;
 		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		std::array<VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBinding, lightLayoutBinding, samplerLayoutBinding };
+		std::array<VkDescriptorSetLayoutBinding, 4> bindings = { uboLayoutBinding, lightLayoutBinding, viewLayoutBinding, samplerLayoutBinding };
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -1588,15 +1597,32 @@ private:
 		}
 	}
 
+	void createViewBuffers()
+	{
+		VkDeviceSize bufferSize = sizeof(ViewBufferObject);
+
+		camera.GetViewBufferVector().resize(swapChainImages.size());
+		camera.GetViewMemoryVector().resize(swapChainImages.size());
+
+		for (int i = 0; i < swapChainImages.size(); i++)
+		{
+			createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+				camera.GetViewBuffer(i), camera.GetViewMemory(i));
+		}
+	}
+
 	void createDescriptorPool()
 	{
-		std::array<VkDescriptorPoolSize, 3> poolSizes = {};
+		std::array<VkDescriptorPoolSize, 4> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshes.size());
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshes.size());
-		poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshes.size());
+		poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshes.size());
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -1639,12 +1665,17 @@ private:
 				lightBufferInfo.offset = 0;
 				lightBufferInfo.range = sizeof(LightBufferObject);
 
+				VkDescriptorBufferInfo viewBufferInfo = {};
+				viewBufferInfo.buffer = camera.GetViewBuffer(i);
+				viewBufferInfo.offset = 0;
+				viewBufferInfo.range = sizeof(ViewBufferObject);
+
 				VkDescriptorImageInfo imageInfo = {};
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				imageInfo.imageView = mesh.GetTexture().GetImageView();
 				imageInfo.sampler = textureSampler;
 
-				std::array<VkWriteDescriptorSet, 3> descriptorWrites = {};
+				std::array<VkWriteDescriptorSet, 4> descriptorWrites = {};
 
 				descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				descriptorWrites[0].dstSet = mesh.GetDescriptorSets()[i];
@@ -1666,9 +1697,17 @@ private:
 				descriptorWrites[2].dstSet = mesh.GetDescriptorSets()[i];
 				descriptorWrites[2].dstBinding = 2;
 				descriptorWrites[2].dstArrayElement = 0;
-				descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				descriptorWrites[2].descriptorCount = 1;
-				descriptorWrites[2].pImageInfo = &imageInfo;
+				descriptorWrites[2].pBufferInfo = &viewBufferInfo;
+
+				descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[3].dstSet = mesh.GetDescriptorSets()[i];
+				descriptorWrites[3].dstBinding = 3;
+				descriptorWrites[3].dstArrayElement = 0;
+				descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrites[3].descriptorCount = 1;
+				descriptorWrites[3].pImageInfo = &imageInfo;
 
 				vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 			}
@@ -1923,6 +1962,10 @@ private:
 			vkMapMemory(device, light.GetLightMemory(currentImage), 0, sizeof(LightBufferObject), 0, &data);
 			memcpy(data, &light.GetLightBufferObject(), sizeof(LightBufferObject));
 			vkUnmapMemory(device, light.GetLightMemory(currentImage));
+
+			vkMapMemory(device, camera.GetViewMemory(currentImage), 0, sizeof(ViewBufferObject), 0, &data);
+			memcpy(data, &camera.GetViewBufferObject(), sizeof(ViewBufferObject));
+			vkUnmapMemory(device, camera.GetViewMemory(currentImage));
 		}
 	}
 

@@ -7,6 +7,8 @@ Camera::Camera()
 	view.centre = glm::vec3(0.0f, 0.0f, 0.0f);
 	view.eye = glm::vec3(0.0f, 0.0f, 0.0f);
 	view.up = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	viewBufferObject.viewPos = view.centre;
 }
 
 Camera::~Camera()
