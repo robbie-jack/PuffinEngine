@@ -712,7 +712,7 @@ private:
 		lightLayoutBinding.binding = 1;
 		lightLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		lightLayoutBinding.descriptorCount = 1;
-		lightLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		lightLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		lightLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 		VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
