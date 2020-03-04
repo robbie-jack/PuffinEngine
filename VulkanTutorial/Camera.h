@@ -34,6 +34,8 @@ public:
 	Camera();
 	~Camera();
 
+	void Init(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far);
+
 	//inline glm::vec3 GetPosition() { return position; };
 	//inline glm::vec3 GetRotation() { return rotation; };
 

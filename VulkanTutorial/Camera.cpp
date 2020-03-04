@@ -16,6 +16,15 @@ Camera::~Camera()
 
 }
 
+void Camera::Init(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far)
+{
+	SetViewEye(eye);
+	SetViewCentre(centre);
+	SetViewUp(up);
+
+	SetPerspective(fov, aspect, near, far);
+}
+
 void Camera::SetPerspective(float fov_, float aspect_, float zNear_, float zFar_)
 {
 	fov = fov_;

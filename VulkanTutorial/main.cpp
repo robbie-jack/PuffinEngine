@@ -204,7 +204,7 @@ private:
 		createFrameBuffers();
 
 		// Initliaze Camera
-		initCamera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+		camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
 
 		// Load Textures / Create Texture Images/Views
 		createTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
@@ -278,14 +278,14 @@ private:
 		createCommandBuffers();
 	}
 
-	void initCamera(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far)
+	/*void initCamera(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far)
 	{
 		camera.SetViewEye(eye);
 		camera.SetViewCentre(centre);
 		camera.SetViewUp(up);
 
 		camera.SetPerspective(fov, aspect, near, far);
-	}
+	}*/
 
 	void createInstance()
 	{
