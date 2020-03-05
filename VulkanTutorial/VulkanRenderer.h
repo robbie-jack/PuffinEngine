@@ -8,10 +8,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
-#include "ModelLoader.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "Camera.h"
@@ -22,6 +18,15 @@
 #include <set>
 #include <array>
 #include <optional>
+#include <fstream>
+
+const std::vector<const char*> validationLayers = {
+	"VK_LAYER_KHRONOS_validation"
+};
+
+const std::vector<const char*> deviceExtensions = {
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
 
 // Structs
 struct QueueFamilyIndices
@@ -55,7 +60,7 @@ public:
 	VulkanRenderer();
 	~VulkanRenderer();
 
-	void run();
+	void Run();
 
 private:
 
@@ -129,7 +134,7 @@ private:
 
 	// Functions
 
-	static std::vector<char> readFile(const std::string& filename)
+	static inline std::vector<char> ReadFile(const std::string& filename)
 	{
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
@@ -151,21 +156,88 @@ private:
 		return buffer;
 	}
 
-	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+	static inline void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+	{
+		auto app = reinterpret_cast<VulkanRenderer*>(glfwGetWindowUserPointer(window));
+		app->framebufferResized = true;
+	}
 
-	void initWindow();
-	void initVulkan();
+	// Initialise Window
+	void InitWindow();
 
-	void createInstance();
-	void createSurface();
-	void voidpickPhysicalDevice();
-	void createLogicalDevice();
-	void createSwapChain();
-	void createImageViews();
-	void createRenderPass();
-	void createDescriptorSetLayout();
-	void createGraphicsPipeline();
-	void createCommandPool();
-	void createDepthResources();
-	void createFrameBuffers();
+	//-------------------------------------------------------------------------------------
+
+	// Initialize Vulkan
+	void InitVulkan();
+	void RecreateSwapChain();
+
+	void CreateInstance();
+	void CreateSurface();
+	void PickPhysicalDevice();
+	void CreateLogicalDevice();
+	void CreateSwapChain();
+	void CreateImageViews();
+	void CreateRenderPass();
+	void CreateDescriptorSetLayout();
+	void CreateGraphicsPipeline();
+	void CreateCommandPool();
+	void CreateDepthResources();
+	void CreateFrameBuffers();
+
+	void CreateTextureImage(Texture& texture, std::string texture_path);
+	void CreateTextureImageView(Texture& texture);
+	void CreateTextureSampler();
+
+	void InitMesh(Mesh& mesh);
+	void CreateVertexBuffers(Mesh& mesh);
+	void CreateIndexBuffers(Mesh& mesh);
+
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+	void CreateUniformBuffers();
+	void CreateLightBuffers();
+	void CreateViewBuffers();
+	void CreateDescriptorPool();
+	void CreateDescriptorSets();
+	void CreateCommandBuffers();
+	void CreateSyncObjects();
+
+	bool CheckValidationLayerSupport();
+	int RateDeviceSuitability(VkPhysicalDevice device);
+	bool IsDeviceSuitable(VkPhysicalDevice device);
+	bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
+	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+
+	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+	VkFormat FindDepthFormat();
+	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
+	VkShaderModule CreateShaderModule(const std::vector<char>& code);
+
+	void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+
+	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+	VkCommandBuffer BeginSingleTimeCommands();
+	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+	//-------------------------------------------------------------------------------------
+
+	void MainLoop();
+	void DrawFrame();
+	void UpdateUniformBuffers(uint32_t currentImage);
+
+	//-------------------------------------------------------------------------------------
+
+	void Cleanup();
+	void CleanupSwapChain();
 };
