@@ -1,5 +1,9 @@
 #pragma once
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -53,6 +57,11 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
+//#define IMGUI_UNLIMITED_FRAME_RATE
+#ifdef _DEBUG
+#define IMGUI_VULKAN_DEBUG_REPORT
+#endif
+
 class VulkanRenderer
 {
 public:
@@ -66,8 +75,11 @@ private:
 
 	// Variables
 	GLFWwindow* window;
+	ImGui_ImplVulkanH_Window* imgui_window;
 	VkSurfaceKHR surface;
 	VkInstance instance;
+
+	int minImageCount;
 
 	// Physical/Logical Device
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -90,6 +102,8 @@ private:
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
+
+	VkPipelineCache pipelineCache;
 
 	// Command Pool/Buffers
 	VkCommandPool commandPool;
@@ -230,9 +244,15 @@ private:
 	VkCommandBuffer BeginSingleTimeCommands();
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
+	void SetupImGui();
+	void SetupImGuiWindow();
+	VkSurfaceFormatKHR SelectSurfaceFormats(const VkFormat* request_formats, int request_formats_count, VkColorSpaceKHR request_color_space);
+	VkPresentModeKHR SelectPresentMode(const VkPresentModeKHR* request_modes, int request_modes_count);
+
 	//-------------------------------------------------------------------------------------
 
 	void MainLoop();
+	void Update();
 	void DrawFrame();
 	void UpdateUniformBuffers(uint32_t currentImage);
 

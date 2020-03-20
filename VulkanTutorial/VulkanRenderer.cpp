@@ -35,6 +35,8 @@ void VulkanRenderer::InitWindow()
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
+
+	imgui_window = new ImGui_ImplVulkanH_Window;
 }
 
 //-------------------------------------------------------------------------------------
@@ -53,6 +55,8 @@ void VulkanRenderer::InitVulkan()
 	CreateCommandPool();
 	CreateDepthResources();
 	CreateFrameBuffers();
+
+	SetupImGui();
 
 	// Initliaze Camera
 	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
@@ -99,6 +103,126 @@ void VulkanRenderer::InitVulkan()
 
 	CreateCommandBuffers();
 	CreateSyncObjects();
+}
+
+void VulkanRenderer::SetupImGui()
+{
+	SetupImGuiWindow();
+
+	// Setup Dear ImGui Context
+	//IMGUI_CHECKVERSION();
+	//ImGui::CreateContext();
+	//ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	//ImGui::StyleColorsDark();
+
+	//ImGui_ImplGlfw_InitForVulkan(window, true);
+
+	//ImGui_ImplVulkan_InitInfo init_info = {};
+	//init_info.Instance = instance;
+	//init_info.PhysicalDevice = physicalDevice;
+	//init_info.Device = device;
+	//init_info.QueueFamily = FindQueueFamilies(physicalDevice).graphicsFamily.value();
+	//init_info.Queue = presentQueue;
+	//init_info.PipelineCache = pipelineCache;
+	//init_info.DescriptorPool = descriptorPool;
+	//init_info.Allocator = nullptr;
+	//init_info.MinImageCount = minImageCount;
+	//init_info.ImageCount = imgui_window->ImageCount;
+	////init_info.CheckVkResultFn = check_vk_result;
+
+	//ImGui_ImplVulkan_Init(&init_info, imgui_window->RenderPass);
+}
+
+void VulkanRenderer::SetupImGuiWindow()
+{
+	imgui_window->Surface = surface;
+
+	VkBool32 res;
+	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, FindQueueFamilies(physicalDevice).graphicsFamily.value(), imgui_window->Surface, &res);
+	if (res != VK_TRUE)
+	{
+		fprintf(stderr, "Error no WSI support on physical device 0\n");
+		exit(-1);
+	}
+
+	// Select Surface Format
+	const VkFormat requestSurfaceImageFormat[] = { VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM };
+	const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+
+	imgui_window->SurfaceFormat = SelectSurfaceFormats(requestSurfaceImageFormat, (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
+
+	// Select Present Mode
+#ifdef IMGUI_UNLIMITED_FRAME_RATE
+	VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR };
+#else
+	VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_FIFO_KHR };
+#endif
+	imgui_window->PresentMode = SelectPresentMode(present_modes, IM_ARRAYSIZE(present_modes));
+
+	IM_ASSERT(swapChainImages.size() >= 2);
+
+}
+
+VkSurfaceFormatKHR VulkanRenderer::SelectSurfaceFormats(const VkFormat* request_formats, int request_formats_count, VkColorSpaceKHR request_color_space)
+{
+	uint32_t format_count;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &format_count, NULL);
+
+	std::vector<VkSurfaceFormatKHR> formats;
+	formats.resize(format_count);
+
+	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &format_count, formats.data());
+
+	if (format_count == 1)
+	{
+		if (formats[0].format == VK_FORMAT_UNDEFINED)
+		{
+			VkSurfaceFormatKHR ret;
+			ret.format = request_formats[0];
+			ret.colorSpace = request_color_space;
+			return ret;
+		}
+		else
+		{
+			return formats[0];
+		}
+	}
+	else
+	{
+		for (int request_i = 0; request_i < request_formats_count; request_i++)
+		{
+			for (uint32_t format_i = 0; format_i < format_count; format_i++)
+			{
+				if (formats[format_i].format == request_formats[request_i] && formats[format_i].colorSpace == request_color_space)
+					return formats[format_i];
+			}
+		}
+
+		return formats[0];
+	}
+}
+
+VkPresentModeKHR VulkanRenderer::SelectPresentMode(const VkPresentModeKHR* request_modes, int request_modes_count)
+{
+	uint32_t mode_count;
+	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &mode_count, NULL);
+
+	std::vector<VkPresentModeKHR> modes;
+	modes.resize(mode_count);
+
+	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &mode_count, modes.data());
+
+	for (int request_i = 0; request_i < request_modes_count; request_i++)
+	{
+		for (uint32_t mode_i = 0; mode_i < mode_count; mode_i++)
+		{
+			if (request_modes[request_i] == modes[mode_i])
+				return request_modes[request_i];
+		}
+	}
+
+	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
 void VulkanRenderer::RecreateSwapChain()
@@ -489,6 +613,7 @@ void VulkanRenderer::CreateSwapChain()
 	VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
 
 	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+	minImageCount = imageCount;
 
 	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
 	{
@@ -1603,10 +1728,16 @@ void VulkanRenderer::MainLoop()
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+		Update();
 		DrawFrame();
 	}
 
 	vkDeviceWaitIdle(device);
+}
+
+void VulkanRenderer::Update()
+{
+
 }
 
 void VulkanRenderer::DrawFrame()
@@ -1752,6 +1883,8 @@ void VulkanRenderer::Cleanup()
 	vkDestroyCommandPool(device, commandPool, nullptr);
 
 	vkDestroyDevice(device, nullptr);
+
+	//ImGui_ImplVulkanH_DestroyWindow(instance, device, imgui_window, void);
 
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
