@@ -7,11 +7,12 @@ Camera::Camera()
 
 	speed = 5.0f;
 
-	view.centre = glm::vec3(0.0f, 0.0f, 0.0f);
+	/*view.centre = glm::vec3(0.0f, 0.0f, 0.0f);
 	view.eye = glm::vec3(0.0f, 0.0f, 0.0f);
-	view.up = glm::vec3(0.0f, 0.0f, 0.0f);
+	view.up = glm::vec3(0.0f, 0.0f, 0.0f);*/
 
-	viewBufferObject.viewPos = view.centre;
+	//viewBufferObject.viewPos = view.eye;
+	viewBufferObject.viewPos = position;
 }
 
 Camera::~Camera()
@@ -19,25 +20,63 @@ Camera::~Camera()
 
 }
 
-void Camera::Init(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far, InputManager* input_manager)
+void Camera::Init(glm::vec3 position, glm::vec3 lookat, glm::vec3 up, float fov, float aspect, float near, float far)
 {
-	SetViewEye(eye);
+	/*SetViewEye(eye);
 	SetViewCentre(centre);
-	SetViewUp(up);
+	SetViewUp(up);*/
+
+	SetPosition(position);
+	SetLookAt(lookat);
+	SetUp(up);
 
 	SetPerspective(fov, aspect, near, far);
-
-	inputManager = input_manager;
-	inputManager->AddAction("CamMoveLeft", GLFW_KEY_A);
 }
 
-void Camera::Update()
+void Camera::Update(InputManager* inputManager, float delta_time)
 {
-	glm::vec3 velocity;
+	glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	if (inputManager->GetAction("CamMoveLeft").state == GLFW_REPEAT)
+	if (inputManager->GetAction("CamMoveLeft").state == GLFW_PRESS)
 	{
-		velocity.x = speed;
+		velocity.x = -speed * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveRight").state == GLFW_PRESS)
+	{
+		velocity.x = speed * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveRight").state == GLFW_RELEASE 
+		&& inputManager->GetAction("CamMoveLeft").state == GLFW_RELEASE)
+	{
+		velocity.x = 0.0f;
+	}
+
+	if (inputManager->GetAction("CamMoveForward").state == GLFW_PRESS)
+	{
+		velocity.z = -speed * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveBackward").state == GLFW_PRESS)
+	{
+		velocity.z = speed * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveForward").state == GLFW_RELEASE
+		&& inputManager->GetAction("CamMoveBackward").state == GLFW_RELEASE)
+	{
+		velocity.z = 0.0f;
+	}
+
+	if (inputManager->GetAction("CamMoveUp").state == GLFW_PRESS)
+	{
+		velocity.y = speed * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveDown").state == GLFW_PRESS)
+	{
+		velocity.y = -speed * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveUp").state == GLFW_RELEASE
+		&& inputManager->GetAction("CamMoveDown").state == GLFW_RELEASE)
+	{
+		velocity.y = 0.0f;
 	}
 
 	position += velocity;
@@ -67,6 +106,5 @@ void Camera::UpdateViewMatrix()
 
 	matrices.view = transM * rotM;*/
 
-	view.centre = position;
-	matrices.view = glm::lookAt(view.eye, view.centre, view.up);
+	matrices.view = glm::lookAt(position, lookat, up);
 }

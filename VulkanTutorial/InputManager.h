@@ -19,7 +19,6 @@ public:
 	InputManager();
 	~InputManager();
 
-	void Init();
 	void UpdateInput(GLFWwindow* window);
 	void AddAction(std::string name, int key);
 	void AddAction(std::string name, std::vector<int> keys);
@@ -27,6 +26,6 @@ public:
 
 private:
 
-	int nextID;
+	int nextID = 1;
 	std::vector<InputAction> actions;
 };

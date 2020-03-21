@@ -2,17 +2,12 @@
 
 InputManager::InputManager()
 {
-	
+	nextID = 1;
 }
 
 InputManager::~InputManager()
 {
 
-}
-
-void InputManager::Init()
-{
-	nextID = 1;
 }
 
 void InputManager::UpdateInput(GLFWwindow* window)

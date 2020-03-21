@@ -189,6 +189,7 @@ private:
 
 	// Initialise Window
 	void InitWindow();
+	void SetupActions();
 
 	//-------------------------------------------------------------------------------------
 
@@ -268,10 +269,10 @@ private:
 	//-------------------------------------------------------------------------------------
 
 	void MainLoop();
-	void Update();
-	void DrawFrame();
-	void DrawUI();
-	void UpdateUniformBuffers(uint32_t currentImage);
+	void Update(float delta_time);
+	void DrawFrame(float delta_time);
+	void DrawUI(float delta_time);
+	void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
 	void UpdateImguiCommandBuffers();
 
 	//-------------------------------------------------------------------------------------

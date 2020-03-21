@@ -35,6 +35,19 @@ void VulkanRenderer::InitWindow()
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
+
+	SetupActions();
+}
+
+void VulkanRenderer::SetupActions()
+{
+	// Camera Actions
+	inputManager.AddAction("CamMoveForward", GLFW_KEY_W);
+	inputManager.AddAction("CamMoveBackward", GLFW_KEY_S);
+	inputManager.AddAction("CamMoveLeft", GLFW_KEY_A);
+	inputManager.AddAction("CamMoveRight", GLFW_KEY_D);
+	inputManager.AddAction("CamMoveUp", GLFW_KEY_E);
+	inputManager.AddAction("CamMoveDown", GLFW_KEY_Q);
 }
 
 //-------------------------------------------------------------------------------------
@@ -54,10 +67,8 @@ void VulkanRenderer::InitVulkan()
 	CreateDepthResources();
 	CreateFrameBuffers();
 
-	inputManager.Init();
-
 	// Initliaze Camera
-	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f, &inputManager);
+	camera.Init(glm::vec3(0.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
 
 	// Load Textures / Create Texture Images/Views
 	CreateTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
@@ -1852,24 +1863,31 @@ void VulkanRenderer::CreateSyncObjects()
 
 void VulkanRenderer::MainLoop()
 {
+	auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
+	auto currentTime = std::chrono::high_resolution_clock::now();
+
 	while (!glfwWindowShouldClose(window))
 	{
+		lastTime = currentTime;
+		currentTime = std::chrono::high_resolution_clock::now();
+		float delta_time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - lastTime).count();
+
 		glfwPollEvents();
-		Update();
-		DrawUI();
-		DrawFrame();
+		Update(delta_time);
+		DrawUI(delta_time);
+		DrawFrame(delta_time);
 	}
 
 	vkDeviceWaitIdle(device);
 }
 
-void VulkanRenderer::Update()
+void VulkanRenderer::Update(float delta_time)
 {
 	inputManager.UpdateInput(window);
-	camera.Update();
+	camera.Update(&inputManager, delta_time);
 }
 
-void VulkanRenderer::DrawFrame()
+void VulkanRenderer::DrawFrame(float delta_time)
 {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -1894,7 +1912,7 @@ void VulkanRenderer::DrawFrame()
 	// Mark the image as now being in use by this frame
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
-	UpdateUniformBuffers(imageIndex);
+	UpdateUniformBuffers(imageIndex, delta_time);
 	UpdateImguiCommandBuffers();
 
 	std::array<VkCommandBuffer, 2> submitCommandBuffers = { commandBuffers[imageIndex], imguiCommandBuffers[imageIndex] };
@@ -1950,16 +1968,31 @@ void VulkanRenderer::DrawFrame()
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanRenderer::DrawUI()
+void VulkanRenderer::DrawUI(float delta_time)
 {
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	ImGui::ShowDemoWindow();
+
+	//ImGui::ShowDemoWindow();
+
+	// Main body of the Demo window starts here.
+	if (!ImGui::Begin("Vulkan Renderer"))
+	{
+		// Early out if the window is collapsed, as an optimization.
+		ImGui::End();
+		return;
+	}
+
+	float fps = 60 / delta_time;
+	ImGui::Text("FPS: %.1f", fps);
+
+	ImGui::End();
+
 	ImGui::Render();
 }
 
-void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage)
+void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_time)
 {
 	static auto startTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 
