@@ -4,6 +4,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 
+#include "InputManager.h"
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -58,9 +60,9 @@ const bool enableValidationLayers = true;
 #endif
 
 //#define IMGUI_UNLIMITED_FRAME_RATE
-#ifdef _DEBUG
-#define IMGUI_VULKAN_DEBUG_REPORT
-#endif
+//#ifdef _DEBUG
+//#define IMGUI_VULKAN_DEBUG_REPORT
+//#endif
 
 class VulkanRenderer
 {
@@ -121,6 +123,9 @@ private:
 	std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
 	size_t currentFrame = 0;
+
+	// Input Manager
+	InputManager inputManager;
 
 	// Camera
 	Camera camera;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "InputManager.h"
+
 #include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
@@ -34,7 +36,8 @@ public:
 	Camera();
 	~Camera();
 
-	void Init(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far);
+	void Init(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far, InputManager* input_manager);
+	void Update();
 
 	//inline glm::vec3 GetPosition() { return position; };
 	//inline glm::vec3 GetRotation() { return rotation; };
@@ -65,8 +68,10 @@ public:
 private:
 	float zNear, zFar, fov;
 
-	//glm::vec3 position;
+	glm::vec3 position;
 	//glm::vec3 rotation;
+
+	float speed;
 
 	CameraMatrices matrices;
 	View view;
@@ -74,6 +79,8 @@ private:
 	ViewBufferObject viewBufferObject;
 	std::vector<VkBuffer> viewBufferVector;
 	std::vector<VkDeviceMemory> viewMemoryVector;
+
+	InputManager* inputManager;
 
 	void UpdateViewMatrix();
 };

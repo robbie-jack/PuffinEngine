@@ -2,8 +2,11 @@
 
 Camera::Camera()
 {
-	//position = glm::vec3(0.0f, 0.0f, 0.0f);
+	position = glm::vec3(0.0f, 0.0f, 0.0f);
 	//rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	speed = 5.0f;
+
 	view.centre = glm::vec3(0.0f, 0.0f, 0.0f);
 	view.eye = glm::vec3(0.0f, 0.0f, 0.0f);
 	view.up = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -16,13 +19,30 @@ Camera::~Camera()
 
 }
 
-void Camera::Init(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far)
+void Camera::Init(glm::vec3 eye, glm::vec3 centre, glm::vec3 up, float fov, float aspect, float near, float far, InputManager* input_manager)
 {
 	SetViewEye(eye);
 	SetViewCentre(centre);
 	SetViewUp(up);
 
 	SetPerspective(fov, aspect, near, far);
+
+	inputManager = input_manager;
+	inputManager->AddAction("CamMoveLeft", GLFW_KEY_A);
+}
+
+void Camera::Update()
+{
+	glm::vec3 velocity;
+
+	if (inputManager->GetAction("CamMoveLeft").state == GLFW_REPEAT)
+	{
+		velocity.x = speed;
+	}
+
+	position += velocity;
+
+	UpdateViewMatrix();
 }
 
 void Camera::SetPerspective(float fov_, float aspect_, float zNear_, float zFar_)
@@ -47,5 +67,6 @@ void Camera::UpdateViewMatrix()
 
 	matrices.view = transM * rotM;*/
 
+	view.centre = position;
 	matrices.view = glm::lookAt(view.eye, view.centre, view.up);
 }

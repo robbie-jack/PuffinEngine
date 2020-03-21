@@ -54,8 +54,10 @@ void VulkanRenderer::InitVulkan()
 	CreateDepthResources();
 	CreateFrameBuffers();
 
+	inputManager.Init();
+
 	// Initliaze Camera
-	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f, &inputManager);
 
 	// Load Textures / Create Texture Images/Views
 	CreateTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
@@ -1863,7 +1865,8 @@ void VulkanRenderer::MainLoop()
 
 void VulkanRenderer::Update()
 {
-
+	inputManager.UpdateInput(window);
+	camera.Update();
 }
 
 void VulkanRenderer::DrawFrame()
