@@ -75,7 +75,6 @@ private:
 
 	// Variables
 	GLFWwindow* window;
-	ImGui_ImplVulkanH_Window* imgui_window;
 	VkSurfaceKHR surface;
 	VkInstance instance;
 
@@ -108,6 +107,13 @@ private:
 	// Command Pool/Buffers
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
+
+	// ImGui Variables
+	VkRenderPass imguiRenderPass;
+	std::vector<VkFramebuffer> imguiFramebuffers;
+	VkCommandPool imguiCommandPool;
+	std::vector<VkCommandBuffer> imguiCommandBuffers;
+	VkDescriptorPool imguiDescriptorPool;
 
 	// Semaphore/Flights for Synchronisation
 	std::vector<VkSemaphore> imageAvailableSemaphores;
@@ -194,9 +200,10 @@ private:
 	void CreateRenderPass();
 	void CreateDescriptorSetLayout();
 	void CreateGraphicsPipeline();
-	void CreateCommandPool();
+	void CreateCommandPool(VkCommandPool& command_pool, VkCommandPoolCreateFlags flags);
 	void CreateDepthResources();
 	void CreateFrameBuffers();
+	void CreateImGuiFramebuffers();
 
 	void CreateTextureImage(Texture& texture, std::string texture_path);
 	void CreateTextureImageView(Texture& texture);
@@ -213,7 +220,9 @@ private:
 	void CreateViewBuffers();
 	void CreateDescriptorPool();
 	void CreateDescriptorSets();
-	void CreateCommandBuffers();
+	void CreateMainCommandBuffers();
+	void CreateImGuiCommandBuffers();
+	void CreateCommandBuffers(VkCommandBuffer* command_buffer, uint32_t command_buffer_count, VkCommandPool &command_pool);
 	void CreateSyncObjects();
 
 	bool CheckValidationLayerSupport();
@@ -246,6 +255,8 @@ private:
 
 	void SetupImGui();
 	void SetupImGuiWindow();
+	void CreateImGuiDescriptorPool();
+	void CreateImGuiRenderPass();
 	VkSurfaceFormatKHR SelectSurfaceFormats(const VkFormat* request_formats, int request_formats_count, VkColorSpaceKHR request_color_space);
 	VkPresentModeKHR SelectPresentMode(const VkPresentModeKHR* request_modes, int request_modes_count);
 
@@ -254,10 +265,13 @@ private:
 	void MainLoop();
 	void Update();
 	void DrawFrame();
+	void DrawUI();
 	void UpdateUniformBuffers(uint32_t currentImage);
+	void UpdateImguiCommandBuffers();
 
 	//-------------------------------------------------------------------------------------
 
 	void Cleanup();
 	void CleanupSwapChain();
+	void CleanupImGui();
 };
