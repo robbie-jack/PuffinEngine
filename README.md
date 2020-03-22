@@ -1,4 +1,4 @@
-# VulkanTutorial
-Vulkan API Tutorial Repository
+# Puffin Enfine
+Puffin Engine built with Vulkan Repository
 
-This is a Vulkan Based 3D renderer which serves as a basis for different features and techniques I want to Implement such as Lighting, Ray Tracing, Procedural Generation, Physics, etc...
+This is a 3D Game Engine built with Vulkan which serves as a foundation for different features and techniques I want to implement such as Lighting, Ray Tracing, Procedural Generation, Physics, etc...
