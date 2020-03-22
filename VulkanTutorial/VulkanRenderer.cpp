@@ -21,8 +21,6 @@ void VulkanRenderer::Init()
 {
 	InitWindow();
 	InitVulkan();
-	//MainLoop();
-	//Cleanup();
 }
 
 //-------------------------------------------------------------------------------------
@@ -1869,26 +1867,6 @@ void VulkanRenderer::CreateSyncObjects()
 }
 
 //-------------------------------------------------------------------------------------
-
-//void VulkanRenderer::MainLoop()
-//{
-//	auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
-//	auto currentTime = std::chrono::high_resolution_clock::now();
-//
-//	while (!glfwWindowShouldClose(window))
-//	{
-//		lastTime = currentTime;
-//		currentTime = std::chrono::high_resolution_clock::now();
-//		std::chrono::duration<float> duration = currentTime - lastTime;
-//		float delta_time = duration.count();
-//
-//		glfwPollEvents();
-//		Update(delta_time);
-//		
-//	}
-//
-//	vkDeviceWaitIdle(device);
-//}
 
 bool VulkanRenderer::Update(float dt)
 {
