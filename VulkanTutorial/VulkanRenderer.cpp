@@ -17,13 +17,15 @@ VulkanRenderer::~VulkanRenderer()
 
 }
 
-void VulkanRenderer::Run()
+void VulkanRenderer::Init()
 {
 	InitWindow();
 	InitVulkan();
-	MainLoop();
-	Cleanup();
+	//MainLoop();
+	//Cleanup();
 }
+
+//-------------------------------------------------------------------------------------
 
 void VulkanRenderer::InitWindow()
 {
@@ -1868,32 +1870,37 @@ void VulkanRenderer::CreateSyncObjects()
 
 //-------------------------------------------------------------------------------------
 
-void VulkanRenderer::MainLoop()
+//void VulkanRenderer::MainLoop()
+//{
+//	auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
+//	auto currentTime = std::chrono::high_resolution_clock::now();
+//
+//	while (!glfwWindowShouldClose(window))
+//	{
+//		lastTime = currentTime;
+//		currentTime = std::chrono::high_resolution_clock::now();
+//		std::chrono::duration<float> duration = currentTime - lastTime;
+//		float delta_time = duration.count();
+//
+//		glfwPollEvents();
+//		Update(delta_time);
+//		
+//	}
+//
+//	vkDeviceWaitIdle(device);
+//}
+
+bool VulkanRenderer::Update(float dt)
 {
-	auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
-	auto currentTime = std::chrono::high_resolution_clock::now();
+	glfwPollEvents();
 
-	while (!glfwWindowShouldClose(window))
-	{
-		lastTime = currentTime;
-		currentTime = std::chrono::high_resolution_clock::now();
-		//float delta_time = std::chrono::duration<float>(currentTime - lastTime).count();
-		std::chrono::duration<float> duration = currentTime - lastTime;
-		float delta_time = duration.count();
-
-		glfwPollEvents();
-		Update(delta_time);
-		DrawUI(delta_time);
-		DrawFrame(delta_time);
-	}
-
-	vkDeviceWaitIdle(device);
-}
-
-void VulkanRenderer::Update(float delta_time)
-{
 	inputManager.UpdateInput(window);
-	camera.Update(&inputManager, delta_time);
+	camera.Update(&inputManager, dt);
+
+	DrawUI(dt);
+	DrawFrame(dt);
+
+	return true;
 }
 
 void VulkanRenderer::DrawFrame(float delta_time)

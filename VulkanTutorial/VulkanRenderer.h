@@ -71,7 +71,9 @@ public:
 	VulkanRenderer();
 	~VulkanRenderer();
 
-	void Run();
+	void Init();
+	bool Update(float dt);
+	void Cleanup();
 
 private:
 
@@ -155,8 +157,8 @@ private:
 	float fps = 60.0f;
 	float fps_timer = 0.0f;
 
-	const int WIDTH = 1280;
-	const int HEIGHT = 720;
+	const int WIDTH = 1920;
+	const int HEIGHT = 1080;
 
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -272,8 +274,8 @@ private:
 
 	//-------------------------------------------------------------------------------------
 
-	void MainLoop();
-	void Update(float delta_time);
+	//void MainLoop();
+	//void Update(float delta_time);
 	void DrawFrame(float delta_time);
 	void DrawUI(float delta_time);
 	void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
@@ -281,7 +283,6 @@ private:
 
 	//-------------------------------------------------------------------------------------
 
-	void Cleanup();
 	void CleanupSwapChain();
 	void CleanupImGui();
 };
