@@ -3,6 +3,10 @@
 InputManager::InputManager()
 {
 	nextID = 1;
+	last_x_pos = 640.0f;
+	last_y_pos = 360.0f;
+	sensitivity = 0.05f;
+	cursor_locked = true;
 }
 
 InputManager::~InputManager()
@@ -12,6 +16,8 @@ InputManager::~InputManager()
 
 void InputManager::UpdateInput(GLFWwindow* window)
 {
+	// Update Actions
+
 	// Loop through current actions and update action states
 	for (int i = 0; i < actions.size(); i++)
 	{
@@ -20,6 +26,25 @@ void InputManager::UpdateInput(GLFWwindow* window)
 			actions[i].state = glfwGetKey(window, actions[i].keys[j]);
 		}
 	}
+
+	// Update Mouse
+	if (GetAction("CursorSwitch").state == GLFW_PRESS)
+	{
+		if (cursor_locked == true)
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+
+		cursor_locked = !cursor_locked;
+	}
+	
+	last_x_pos = x_pos;
+	last_y_pos = y_pos;
+	glfwGetCursorPos(window, &x_pos, &y_pos);
 }
 
 void InputManager::AddAction(std::string name, int key)

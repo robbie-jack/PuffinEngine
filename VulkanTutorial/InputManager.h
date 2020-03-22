@@ -24,7 +24,16 @@ public:
 	void AddAction(std::string name, std::vector<int> keys);
 	InputAction GetAction(std::string name);
 
+	inline float GetMouseXOffset() { return (x_pos - last_x_pos) * sensitivity; };
+	inline float GetMouseYOffset() { return (y_pos - last_y_pos) * sensitivity; };
+	inline float& GetSensitivity() { return sensitivity; };
+	inline bool IsCursorLocked() { return cursor_locked; };
+
 private:
+
+	double x_pos, y_pos, last_x_pos, last_y_pos;
+	bool cursor_locked;
+	float sensitivity;
 
 	int nextID = 1;
 	std::vector<InputAction> actions;

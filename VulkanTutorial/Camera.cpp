@@ -3,15 +3,15 @@
 Camera::Camera()
 {
 	position = glm::vec3(0.0f, 0.0f, 0.0f);
-	//rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+	lookat = glm::vec3(0.0f, 0.0f, 0.0f);
+	direction = glm::vec3(0.0f, 0.0f, 0.0f);
+	up = glm::vec3(0.0f, 0.0f, 0.0f);
+	right = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	speed = 5.0f;
+	yaw = 0.0;
+	pitch = 0.0f;
 
-	/*view.centre = glm::vec3(0.0f, 0.0f, 0.0f);
-	view.eye = glm::vec3(0.0f, 0.0f, 0.0f);
-	view.up = glm::vec3(0.0f, 0.0f, 0.0f);*/
-
-	//viewBufferObject.viewPos = view.eye;
 	viewBufferObject.viewPos = position;
 }
 
@@ -20,66 +20,81 @@ Camera::~Camera()
 
 }
 
-void Camera::Init(glm::vec3 position, glm::vec3 lookat, glm::vec3 up, float fov, float aspect, float near, float far)
+void Camera::Init(glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov, float aspect, float near, float far)
 {
 	/*SetViewEye(eye);
 	SetViewCentre(centre);
 	SetViewUp(up);*/
 
-	SetPosition(position);
-	SetLookAt(lookat);
-	SetUp(up);
+	direction = direction_;
 
+	// Set Position, LookAt and Up Vectors
+	SetPosition(position_);
+	SetLookAt(position + direction);
+	SetUp(up_);
+
+	// Calculate Perspective Projection
 	SetPerspective(fov, aspect, near, far);
+
+	// Calculate Right and Up vectors
+	right = glm::normalize(glm::cross(up, direction));
+	up = glm::cross(direction, right);
+
+	yaw = -90.0f;
 }
 
 void Camera::Update(InputManager* inputManager, float delta_time)
 {
-	glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-
+	// Camera Movement
 	if (inputManager->GetAction("CamMoveLeft").state == GLFW_PRESS)
 	{
-		velocity.x = -speed * delta_time;
+		position += speed * right * delta_time;
 	}
 	else if (inputManager->GetAction("CamMoveRight").state == GLFW_PRESS)
 	{
-		velocity.x = speed * delta_time;
-	}
-	else if (inputManager->GetAction("CamMoveRight").state == GLFW_RELEASE 
-		&& inputManager->GetAction("CamMoveLeft").state == GLFW_RELEASE)
-	{
-		velocity.x = 0.0f;
+		position -= speed * right * delta_time;
 	}
 
 	if (inputManager->GetAction("CamMoveForward").state == GLFW_PRESS)
 	{
-		velocity.z = -speed * delta_time;
+		position += speed * direction * delta_time;
 	}
 	else if (inputManager->GetAction("CamMoveBackward").state == GLFW_PRESS)
 	{
-		velocity.z = speed * delta_time;
-	}
-	else if (inputManager->GetAction("CamMoveForward").state == GLFW_RELEASE
-		&& inputManager->GetAction("CamMoveBackward").state == GLFW_RELEASE)
-	{
-		velocity.z = 0.0f;
+		position -= speed * direction * delta_time;
 	}
 
 	if (inputManager->GetAction("CamMoveUp").state == GLFW_PRESS)
 	{
-		velocity.y = speed * delta_time;
+		position += speed * up * delta_time;
 	}
 	else if (inputManager->GetAction("CamMoveDown").state == GLFW_PRESS)
 	{
-		velocity.y = -speed * delta_time;
-	}
-	else if (inputManager->GetAction("CamMoveUp").state == GLFW_RELEASE
-		&& inputManager->GetAction("CamMoveDown").state == GLFW_RELEASE)
-	{
-		velocity.y = 0.0f;
+		position -= speed * up * delta_time;
 	}
 
-	position += velocity;
+	// Mouse Rotation
+	if (inputManager->IsCursorLocked())
+	{
+		yaw += inputManager->GetMouseXOffset();
+		pitch -= inputManager->GetMouseYOffset();
+
+		if (pitch > 89.0f)
+			pitch = 89.0f;
+
+		if (pitch < -89.0f)
+			pitch = -89.0f;
+
+		// Calculate Direction vector from yaw and pitch of camera
+		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+		direction.y = sin(glm::radians(pitch));
+		direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+		direction = glm::normalize(direction);
+	}
+
+	// Calculate Right, Up and LookAt vectors
+	right = glm::normalize(glm::cross(up, direction));
+	lookat = position + direction;
 
 	UpdateViewMatrix();
 }
@@ -106,5 +121,5 @@ void Camera::UpdateViewMatrix()
 
 	matrices.view = transM * rotM;*/
 
-	matrices.view = glm::lookAt(position, lookat, up);
+	matrices.view = glm::lookAt(position, position + direction, up);
 }

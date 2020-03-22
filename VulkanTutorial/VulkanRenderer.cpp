@@ -36,11 +36,13 @@ void VulkanRenderer::InitWindow()
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 
-	SetupActions();
+	SetupInput();
 }
 
-void VulkanRenderer::SetupActions()
+void VulkanRenderer::SetupInput()
 {
+	// Actions
+
 	// Camera Actions
 	inputManager.AddAction("CamMoveForward", GLFW_KEY_W);
 	inputManager.AddAction("CamMoveBackward", GLFW_KEY_S);
@@ -48,6 +50,11 @@ void VulkanRenderer::SetupActions()
 	inputManager.AddAction("CamMoveRight", GLFW_KEY_D);
 	inputManager.AddAction("CamMoveUp", GLFW_KEY_E);
 	inputManager.AddAction("CamMoveDown", GLFW_KEY_Q);
+	inputManager.AddAction("CursorSwitch", GLFW_KEY_F1);
+
+	// Mouse
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 //-------------------------------------------------------------------------------------
@@ -68,7 +75,7 @@ void VulkanRenderer::InitVulkan()
 	CreateFrameBuffers();
 
 	// Initliaze Camera
-	camera.Init(glm::vec3(0.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
 
 	// Load Textures / Create Texture Images/Views
 	CreateTextureImage(chalet_mesh.GetTexture(), "textures/chalet.jpg");
@@ -1870,7 +1877,9 @@ void VulkanRenderer::MainLoop()
 	{
 		lastTime = currentTime;
 		currentTime = std::chrono::high_resolution_clock::now();
-		float delta_time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - lastTime).count();
+		//float delta_time = std::chrono::duration<float>(currentTime - lastTime).count();
+		std::chrono::duration<float> duration = currentTime - lastTime;
+		float delta_time = duration.count();
 
 		glfwPollEvents();
 		Update(delta_time);
@@ -1984,8 +1993,16 @@ void VulkanRenderer::DrawUI(float delta_time)
 		return;
 	}
 
-	float fps = 60 / delta_time;
+	fps_timer += delta_time;
+
+	if (fps_timer >= 0.25f)
+	{
+		fps = 1 / delta_time;
+		fps_timer = 0.0f;
+	}
+	
 	ImGui::Text("FPS: %.1f", fps);
+	ImGui::SliderFloat("Sensitivity", &inputManager.GetSensitivity(), 0.01f, 0.1f);
 
 	ImGui::End();
 
