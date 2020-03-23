@@ -157,6 +157,8 @@ private:
 	float fps = 60.0f;
 	float fps_timer = 0.0f;
 
+	bool running = true;
+
 	const int WIDTH = 1920;
 	const int HEIGHT = 1080;
 

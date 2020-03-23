@@ -7,6 +7,7 @@ InputManager::InputManager()
 	last_y_pos = 360.0f;
 	sensitivity = 0.05f;
 	cursor_locked = true;
+	firstMouse = true;
 }
 
 InputManager::~InputManager()
@@ -42,9 +43,18 @@ void InputManager::UpdateInput(GLFWwindow* window)
 		cursor_locked = !cursor_locked;
 	}
 	
+	// Update Current and Last Mouse Positions
 	last_x_pos = x_pos;
 	last_y_pos = y_pos;
 	glfwGetCursorPos(window, &x_pos, &y_pos);
+
+	// Prevent Camera Jumping when window first starts
+	if (firstMouse)
+	{
+		last_x_pos = x_pos;
+		last_y_pos = y_pos;
+		firstMouse = false;
+	}
 }
 
 void InputManager::AddAction(std::string name, int key)

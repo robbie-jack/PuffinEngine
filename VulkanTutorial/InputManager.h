@@ -34,6 +34,7 @@ private:
 	double x_pos, y_pos, last_x_pos, last_y_pos;
 	bool cursor_locked;
 	float sensitivity;
+	bool firstMouse;
 
 	int nextID = 1;
 	std::vector<InputAction> actions;

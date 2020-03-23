@@ -21,18 +21,16 @@ void Engine::MainLoop()
 		std::chrono::duration<float> duration = currentTime - lastTime;
 		float delta_time = duration.count();
 
-		running = Update(delta_time);
+		Update(delta_time);
 	}
 }
 
-bool Engine::Update(float dt)
+void Engine::Update(float dt)
 {
 	for (int i = 0; i < systems.size(); i++)
 	{
-		systems[i]->Update(dt);
+		running = systems[i]->Update(dt);
 	}
-
-	return true;
 }
 
 void Engine::AddSystem(System* sys)

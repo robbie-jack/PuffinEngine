@@ -8,7 +8,7 @@ class RenderSystem : public System
 public:
 
 	void Init();
-	void Update(float dt);
+	bool Update(float dt);
 	void SendMessage();
 	~RenderSystem();
 

@@ -8,7 +8,7 @@ class Engine
 {
 public:
 
-	bool Update(float dt);
+	void Update(float dt);
 	void MainLoop();
 	void AddSystem(System *sys);
 

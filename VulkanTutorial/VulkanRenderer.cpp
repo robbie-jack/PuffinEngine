@@ -32,7 +32,7 @@ void VulkanRenderer::InitWindow()
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Puffin Engine", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 
@@ -1878,7 +1878,7 @@ bool VulkanRenderer::Update(float dt)
 	DrawUI(dt);
 	DrawFrame(dt);
 
-	return true;
+	return running;
 }
 
 void VulkanRenderer::DrawFrame(float delta_time)
@@ -1968,16 +1968,30 @@ void VulkanRenderer::DrawUI(float delta_time)
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	//ImGui::ShowDemoWindow();
+	ImGui::SetNextWindowSize(ImVec2(800, 1000), ImGuiCond_FirstUseEver);
 
-	// Main body of the Demo window starts here.
-	if (!ImGui::Begin("Vulkan Renderer"))
+	bool* p_open = NULL;
+
+	// Main body of the window starts here.
+	ImGui::Begin("Puffin Engine", p_open, ImGuiWindowFlags_MenuBar);
+
+	// Menu Bar
+	if (ImGui::BeginMenuBar())
 	{
-		// Early out if the window is collapsed, as an optimization.
-		ImGui::End();
-		return;
+		if (ImGui::BeginMenu("Menu"))
+		{
+			if (ImGui::MenuItem("Quit", "Alt+F4"))
+			{
+				running = false;
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
 	}
 
+	// Display FPS
 	fps_timer += delta_time;
 
 	if (fps_timer >= 0.25f)
