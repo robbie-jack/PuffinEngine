@@ -46,29 +46,29 @@ void Camera::Init(glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, floa
 void Camera::Update(InputManager* inputManager, float delta_time)
 {
 	// Camera Movement
-	if (inputManager->GetAction("CamMoveLeft").state == GLFW_PRESS)
+	if (inputManager->GetAction("CamMoveLeft").state == HELD)
 	{
 		position += speed * right * delta_time;
 	}
-	else if (inputManager->GetAction("CamMoveRight").state == GLFW_PRESS)
+	else if (inputManager->GetAction("CamMoveRight").state == HELD)
 	{
 		position -= speed * right * delta_time;
 	}
 
-	if (inputManager->GetAction("CamMoveForward").state == GLFW_PRESS)
+	if (inputManager->GetAction("CamMoveForward").state == HELD)
 	{
 		position += speed * direction * delta_time;
 	}
-	else if (inputManager->GetAction("CamMoveBackward").state == GLFW_PRESS)
+	else if (inputManager->GetAction("CamMoveBackward").state == HELD)
 	{
 		position -= speed * direction * delta_time;
 	}
 
-	if (inputManager->GetAction("CamMoveUp").state == GLFW_PRESS)
+	if (inputManager->GetAction("CamMoveUp").state == HELD)
 	{
 		position += speed * up * delta_time;
 	}
-	else if (inputManager->GetAction("CamMoveDown").state == GLFW_PRESS)
+	else if (inputManager->GetAction("CamMoveDown").state == HELD)
 	{
 		position -= speed * up * delta_time;
 	}

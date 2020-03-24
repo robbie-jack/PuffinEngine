@@ -5,12 +5,20 @@
 #include <vector>
 #include <string>
 
+enum KeyState
+{
+	PRESSED = 0,
+	HELD = 1,
+	RELEASED = 2,
+	UP = 3
+};
+
 struct InputAction
 {
 	std::string name;
 	int id;
 	std::vector<int> keys;
-	int state;
+	KeyState state;
 };
 
 class InputManager

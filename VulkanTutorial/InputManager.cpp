@@ -24,12 +24,43 @@ void InputManager::UpdateInput(GLFWwindow* window)
 	{
 		for (int j = 0; j < actions[i].keys.size(); j++)
 		{
-			actions[i].state = glfwGetKey(window, actions[i].keys[j]);
+			//actions[i].state = glfwGetKey(window, actions[i].keys[j]);
+			int state = glfwGetKey(window, actions[i].keys[j]);
+
+			if (state == GLFW_PRESS)
+			{
+				if (actions[i].state == UP)
+				{
+					actions[i].state = PRESSED;
+					break;
+				}
+
+				if (actions[i].state == PRESSED)
+				{
+					actions[i].state = HELD;
+					break;
+				}
+			}
+
+			if (state == GLFW_RELEASE)
+			{
+				if (actions[i].state == HELD)
+				{
+					actions[i].state = RELEASED;
+					break;
+				}
+
+				if (actions[i].state == RELEASED)
+				{
+					actions[i].state = UP;
+					break;
+				}
+			}
 		}
 	}
 
 	// Update Mouse
-	if (GetAction("CursorSwitch").state == GLFW_PRESS)
+	if (GetAction("CursorSwitch").state == PRESSED)
 	{
 		if (cursor_locked == true)
 		{
@@ -63,7 +94,7 @@ void InputManager::AddAction(std::string name, int key)
 	new_action.name = name;
 	new_action.id = nextID;
 	new_action.keys.push_back(key);
-	new_action.state = GLFW_RELEASE;
+	new_action.state = UP;
 
 	actions.push_back(new_action);
 
@@ -76,7 +107,7 @@ void InputManager::AddAction(std::string name, std::vector<int> keys)
 	new_action.name = name;
 	new_action.id = nextID;
 	new_action.keys = keys;
-	new_action.state = GLFW_RELEASE;
+	new_action.state = UP;
 
 	actions.push_back(new_action);
 
