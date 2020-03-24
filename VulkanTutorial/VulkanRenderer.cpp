@@ -2024,9 +2024,10 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	{
 		MeshMatrices matrice = {};
 
-		mesh.BuildTransform();
+		//mesh.BuildTransform();
+		matrice.model = BuildMeshTransform(mesh.GetTransform());
 
-		matrice.model = mesh.GetMatrices().model;
+		//matrice.model = mesh.GetMatrices().model;
 		matrice.inv_model = glm::inverse(matrice.model);
 		matrice.view = camera.GetViewMatrix();
 		matrice.proj = camera.GetPerspectiveMatrix();
@@ -2047,6 +2048,38 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 		memcpy(data, &camera.GetViewBufferObject(), sizeof(ViewBufferObject));
 		vkUnmapMemory(device, camera.GetViewMemory(currentImage));
 	}
+}
+
+glm::mat4 VulkanRenderer::BuildMeshTransform(Transform transform)
+{
+	// Set Translation
+	glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), transform.position);
+
+	// Set Rotation
+	model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	// Set Scale
+	model_transform = glm::scale(model_transform, transform.scale);
+
+	return model_transform;
+}
+
+glm::mat4 VulkanRenderer::BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+{
+	// Set Translation
+	glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), position);
+
+	// Set Rotation
+	model_transform = glm::rotate(model_transform, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	model_transform = glm::rotate(model_transform, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	model_transform = glm::rotate(model_transform, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	// Set Scale
+	model_transform = glm::scale(model_transform, scale);
+
+	return model_transform;
 }
 
 void VulkanRenderer::UpdateImguiCommandBuffers()

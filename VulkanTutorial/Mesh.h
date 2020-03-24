@@ -93,6 +93,13 @@ namespace std
 	};
 };
 
+struct MeshData
+{
+	std::vector<Vertex> vertices;
+	std::vector<glm::vec3> normals;
+	std::vector<uint32_t> indices;
+};
+
 const std::vector<Vertex> cube_vertices =
 {
 	// Front
@@ -163,14 +170,13 @@ public:
 	void SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indices_);
 	void Cleanup(VkDevice device);
 
-	void BuildTransform();
 	void SetColor(glm::vec3 color);
 
 	inline Texture& GetTexture() { return texture; };
 	inline void SetTexture(Texture texture_) { texture = texture_; };
 
-	inline std::vector<Vertex> GetVertices() { return vertices; };
-	inline std::vector<uint32_t> GetIndices() { return indices; };
+	inline std::vector<Vertex> GetVertices() { return meshData.vertices; };
+	inline std::vector<uint32_t> GetIndices() { return meshData.indices; };
 
 	inline VkBuffer& GetVertexBuffer() { return vertexBuffer; };
 	inline VkBuffer& GetIndexBuffer() { return indexBuffer; };
@@ -200,9 +206,11 @@ private:
 
 	Texture texture;
 
-	std::vector<Vertex> vertices;
+	/*std::vector<Vertex> vertices;
 	std::vector<glm::vec3> normals;
-	std::vector<uint32_t> indices;
+	std::vector<uint32_t> indices;*/
+
+	MeshData meshData;
 
 	// Vertex Buffer
 	VkBuffer vertexBuffer;

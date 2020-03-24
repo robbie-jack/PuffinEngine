@@ -281,6 +281,8 @@ private:
 	void DrawFrame(float delta_time);
 	void DrawUI(float delta_time);
 	void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
+	glm::mat4 BuildMeshTransform(Transform transform);
+	glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 	void UpdateImguiCommandBuffers();
 
 	//-------------------------------------------------------------------------------------

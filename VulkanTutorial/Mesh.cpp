@@ -14,8 +14,8 @@ Mesh::~Mesh()
 
 void Mesh::SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indices_)
 {
-	vertices = vertices_;
-	indices = indices_;
+	meshData.vertices = vertices_;
+	meshData.indices = indices_;
 }
 
 void Mesh::Cleanup(VkDevice device)
@@ -36,24 +36,10 @@ void Mesh::Cleanup(VkDevice device)
 	
 }
 
-void Mesh::BuildTransform()
-{
-	// Translation
-	matrices.model = glm::translate(glm::mat4(1.0f), transform.position);
-
-	// Rotation
-	matrices.model = glm::rotate(matrices.model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	matrices.model = glm::rotate(matrices.model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	matrices.model = glm::rotate(matrices.model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-	// Scale
-	matrices.model = glm::scale(matrices.model, transform.scale);
-}
-
 void Mesh::SetColor(glm::vec3 color)
 {
-	for (int i = 0; i < vertices.size(); i++)
+	for (int i = 0; i < meshData.vertices.size(); i++)
 	{
-		vertices[i].color = color;
+		meshData.vertices[i].color = color;
 	}
 }
