@@ -74,7 +74,7 @@ public:
 	void Init();
 	bool Update(float dt);
 	void SendMessage();
-	void AddComponent();
+	RenderComponent* AddComponent();
 
 	void InitComponent(int handle, std::string model_path, std::string texture_path);
 	void InitComponentCube(int handle);

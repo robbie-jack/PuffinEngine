@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "VulkanRenderer.h"
+#include "EntitySystem.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -7,11 +8,22 @@
 int main()
 {
 	Engine engine;
-	VulkanRenderer render_system;
+	VulkanRenderer renderSystem;
+	EntitySystem entitySystem;
+
+	std::vector<uint32_t> entityIDs;
 
 	try
 	{
-		engine.AddSystem(&render_system);
+		engine.AddSystem(&renderSystem);
+		engine.AddSystem(&entitySystem);
+
+		for (int i = 0; i < 4; i++)
+		{
+			entityIDs.push_back(entitySystem.CreateEntity());
+			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());
+		}
+
 		engine.MainLoop();
 	}
 	catch (const std::exception & e)

@@ -29,7 +29,10 @@ void Engine::Update(float dt)
 {
 	for (int i = 0; i < systems.size(); i++)
 	{
-		running = systems[i]->Update(dt);
+		if (systems[i]->Update(dt) == false)
+		{
+			running = false;
+		}
 	}
 }
 

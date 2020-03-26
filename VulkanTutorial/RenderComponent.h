@@ -10,6 +10,7 @@ class RenderComponent : public BaseComponent
 {
 public:
 
+	RenderComponent();
 	~RenderComponent();
 
 	inline Texture& GetTexture() { return texture; };

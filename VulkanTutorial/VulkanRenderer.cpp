@@ -31,10 +31,11 @@ void VulkanRenderer::SendMessage()
 
 }
 
-void VulkanRenderer::AddComponent()
+RenderComponent* VulkanRenderer::AddComponent()
 {
 	RenderComponent render_component;
 	render_components.push_back(render_component);
+	return &render_components.back();
 }
 
 void VulkanRenderer::InitComponent(int handle, std::string model_path, std::string texture_path)
@@ -122,10 +123,10 @@ void VulkanRenderer::InitVulkan()
 	// Initliase Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
-	AddComponent();
-	AddComponent();
-	AddComponent();
-	AddComponent();
+	//AddComponent();
+	//AddComponent();
+	//AddComponent();
+	//AddComponent();
 
 	InitComponent(0, "models/chalet.obj", "textures/chalet.jpg");
 	InitComponent(1, "models/space_engineer.obj", "textures/space_engineer.jpg");

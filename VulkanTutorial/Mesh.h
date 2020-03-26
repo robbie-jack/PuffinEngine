@@ -13,8 +13,6 @@
 #include <vector>
 #include <array>
 
-#include "Texture.h"
-
 struct MeshMatrices
 {
 	alignas(16) glm::mat4 model;
@@ -167,31 +165,13 @@ public:
 	~Mesh();
 
 	void SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indices_);
-
 	void SetColor(glm::vec3 color_);
-
-	//inline Texture& GetTexture() { return texture; };
-	//inline void SetTexture(Texture texture_) { texture = texture_; };
 
 	inline std::vector<Vertex> GetVertices() { return meshData.vertices; };
 	inline std::vector<uint32_t> GetIndices() { return meshData.indices; };
 
-	/*inline VkBuffer& GetVertexBuffer() { return vertexBuffer; };
-	inline VkBuffer& GetIndexBuffer() { return indexBuffer; };
-	inline VkBuffer& GetUniformBuffer(int i) { return uniformBuffers[i]; };
-	
-	inline VkDeviceMemory& GetVertexMemory() { return vertexBufferMemory; };
-	inline VkDeviceMemory& GetIndexMemory() { return indexBufferMemory; };
-	inline VkDeviceMemory& GetUniformBufferMemory(int i) { return uniformBuffersMemory[i]; };
-	
-	inline std::vector<VkDescriptorSet>& GetDescriptorSets() { return descriptorSets; };
-	inline std::vector<VkBuffer>& GetUniformBufferVector() { return uniformBuffers; };
-	inline std::vector<VkDeviceMemory>& GetUniformMemoryVector() { return uniformBuffersMemory; };*/
-	
-
 	inline MeshMatrices GetMatrices() { return matrices; };
 	inline void SetMatrices(MeshMatrices matrices_) { matrices = matrices_; };
-
 	
 	inline Transform GetTransform() { return transform; };
 	inline void SetTransform(Transform transform_) { transform = transform_; };
@@ -207,19 +187,4 @@ private:
 	MeshMatrices matrices;
 	Transform transform;
 	MeshData meshData;
-	//Texture texture;
-
-	//// Vertex Buffer
-	//VkBuffer vertexBuffer;
-	//VkDeviceMemory vertexBufferMemory;
-
-	//// Index Buffer
-	//VkBuffer indexBuffer;
-	//VkDeviceMemory indexBufferMemory;
-
-	//// Uniform Buffers
-	//std::vector<VkBuffer> uniformBuffers;
-	//std::vector<VkDeviceMemory> uniformBuffersMemory;
-
-	//std::vector<VkDescriptorSet> descriptorSets;
 };
