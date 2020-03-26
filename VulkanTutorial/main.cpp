@@ -1,6 +1,5 @@
-#include "VulkanRenderer.h"
 #include "Engine.h"
-#include "RenderSystem.h"
+#include "VulkanRenderer.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -8,7 +7,7 @@
 int main()
 {
 	Engine engine;
-	RenderSystem render_system;
+	VulkanRenderer render_system;
 
 	try
 	{

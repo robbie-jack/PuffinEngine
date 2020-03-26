@@ -19,6 +19,9 @@
 #include "Camera.h"
 #include "Light.h"
 
+#include "System.h"
+#include "RenderComponent.h"
+
 #include <functional>
 #include <vector>
 #include <set>
@@ -64,17 +67,21 @@ const bool enableValidationLayers = true;
 //#define IMGUI_VULKAN_DEBUG_REPORT
 //#endif
 
-class VulkanRenderer
+class VulkanRenderer : public System
 {
 public:
 
-	VulkanRenderer();
-	~VulkanRenderer();
-
 	void Init();
 	bool Update(float dt);
-	void Cleanup();
+	void SendMessage();
+	void AddComponent();
 
+	void InitComponent(int handle, std::string model_path, std::string texture_path);
+	void InitComponentCube(int handle);
+
+	~VulkanRenderer();
+
+	void InitTexture(Texture& texture, std::string texture_path);
 private:
 
 	// Variables
@@ -136,8 +143,9 @@ private:
 	Mesh chalet_mesh;
 	Mesh engineer_mesh;
 	Mesh cube_mesh;
-	Mesh light_cube;
-	std::vector<Mesh> meshes;
+	//Mesh light_cube;
+	//std::vector<Mesh> meshes;
+	std::vector<RenderComponent> render_components;
 
 	Texture cube_texture;
 
@@ -197,7 +205,6 @@ private:
 	// Initialise Window
 	void InitWindow();
 	void SetupInput();
-	void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 
 	//-------------------------------------------------------------------------------------
 
@@ -223,12 +230,12 @@ private:
 	void CreateTextureImageView(Texture& texture);
 	void CreateTextureSampler();
 
-	void InitMesh(Mesh& mesh);
-	void CreateVertexBuffers(Mesh& mesh);
-	void CreateIndexBuffers(Mesh& mesh);
+	void CreateVertexBuffers(RenderComponent& render_component);
+	void CreateIndexBuffers(RenderComponent& render_component);
 
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
+	void CreateUniformBuffer(RenderComponent& render_component);
 	void CreateUniformBuffers();
 	void CreateLightBuffers();
 	void CreateViewBuffers();
@@ -287,6 +294,8 @@ private:
 
 	//-------------------------------------------------------------------------------------
 
+	void Cleanup();
 	void CleanupSwapChain();
 	void CleanupImGui();
+	void CleanupRenderComponent(RenderComponent& render_component);
 };

@@ -18,28 +18,10 @@ void Mesh::SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indice
 	meshData.indices = indices_;
 }
 
-void Mesh::Cleanup(VkDevice device)
-{
-	texture.Cleanup(device);
-
-	vkDestroyBuffer(device, vertexBuffer, nullptr);
-	vkFreeMemory(device, vertexBufferMemory, nullptr);
-
-	vkDestroyBuffer(device, indexBuffer, nullptr);
-	vkFreeMemory(device, indexBufferMemory, nullptr);
-
-	for (int i = 0; i < uniformBuffers.size(); i++)
-	{
-		vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-		vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
-	}
-	
-}
-
-void Mesh::SetColor(glm::vec3 color)
+void Mesh::SetColor(glm::vec3 color_)
 {
 	for (int i = 0; i < meshData.vertices.size(); i++)
 	{
-		meshData.vertices[i].color = color;
+		meshData.vertices[i].color = color_;
 	}
 }

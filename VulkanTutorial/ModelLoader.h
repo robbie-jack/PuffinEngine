@@ -50,7 +50,6 @@ void LoadModel(Mesh& mesh, std::string model_path)
 				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
 			};
 
-			//vertex.normal = { 0.0f, 1.0f, 0.0f };
 			vertex.color = { 1.0f, 1.0f, 1.0f };
 
 			if (uniqueVertices.count(vertex) == 0)

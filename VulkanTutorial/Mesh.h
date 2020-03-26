@@ -96,7 +96,6 @@ namespace std
 struct MeshData
 {
 	std::vector<Vertex> vertices;
-	std::vector<glm::vec3> normals;
 	std::vector<uint32_t> indices;
 };
 
@@ -168,17 +167,16 @@ public:
 	~Mesh();
 
 	void SetupMesh(std::vector<Vertex> vertices_, std::vector<uint32_t> indices_);
-	void Cleanup(VkDevice device);
 
-	void SetColor(glm::vec3 color);
+	void SetColor(glm::vec3 color_);
 
-	inline Texture& GetTexture() { return texture; };
-	inline void SetTexture(Texture texture_) { texture = texture_; };
+	//inline Texture& GetTexture() { return texture; };
+	//inline void SetTexture(Texture texture_) { texture = texture_; };
 
 	inline std::vector<Vertex> GetVertices() { return meshData.vertices; };
 	inline std::vector<uint32_t> GetIndices() { return meshData.indices; };
 
-	inline VkBuffer& GetVertexBuffer() { return vertexBuffer; };
+	/*inline VkBuffer& GetVertexBuffer() { return vertexBuffer; };
 	inline VkBuffer& GetIndexBuffer() { return indexBuffer; };
 	inline VkBuffer& GetUniformBuffer(int i) { return uniformBuffers[i]; };
 	
@@ -188,11 +186,13 @@ public:
 	
 	inline std::vector<VkDescriptorSet>& GetDescriptorSets() { return descriptorSets; };
 	inline std::vector<VkBuffer>& GetUniformBufferVector() { return uniformBuffers; };
-	inline std::vector<VkDeviceMemory>& GetUniformMemoryVector() { return uniformBuffersMemory; };
+	inline std::vector<VkDeviceMemory>& GetUniformMemoryVector() { return uniformBuffersMemory; };*/
+	
 
 	inline MeshMatrices GetMatrices() { return matrices; };
 	inline void SetMatrices(MeshMatrices matrices_) { matrices = matrices_; };
 
+	
 	inline Transform GetTransform() { return transform; };
 	inline void SetTransform(Transform transform_) { transform = transform_; };
 	inline void SetTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) 
@@ -204,28 +204,22 @@ public:
 
 private:
 
-	Texture texture;
-
-	/*std::vector<Vertex> vertices;
-	std::vector<glm::vec3> normals;
-	std::vector<uint32_t> indices;*/
-
-	MeshData meshData;
-
-	// Vertex Buffer
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
-
-	// Index Buffer
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
-
-	// Uniform Buffers
-	std::vector<VkBuffer> uniformBuffers;
-	std::vector<VkDeviceMemory> uniformBuffersMemory;
-
-	std::vector<VkDescriptorSet> descriptorSets;
-
 	MeshMatrices matrices;
 	Transform transform;
+	MeshData meshData;
+	//Texture texture;
+
+	//// Vertex Buffer
+	//VkBuffer vertexBuffer;
+	//VkDeviceMemory vertexBufferMemory;
+
+	//// Index Buffer
+	//VkBuffer indexBuffer;
+	//VkDeviceMemory indexBufferMemory;
+
+	//// Uniform Buffers
+	//std::vector<VkBuffer> uniformBuffers;
+	//std::vector<VkDeviceMemory> uniformBuffersMemory;
+
+	//std::vector<VkDescriptorSet> descriptorSets;
 };
