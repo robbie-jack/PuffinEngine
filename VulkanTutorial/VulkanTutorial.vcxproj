@@ -180,6 +180,7 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PhysicsSystem.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="RenderComponent.h" />
     <ClInclude Include="ModelLoader.h" />
     <ClInclude Include="System.h" />

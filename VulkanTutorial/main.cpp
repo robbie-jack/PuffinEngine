@@ -1,6 +1,7 @@
 #include "Engine.h"
-#include "VulkanRenderer.h"
 #include "EntitySystem.h"
+#include "VulkanRenderer.h"
+#include "PhysicsSystem.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -8,15 +9,17 @@
 int main()
 {
 	Engine engine;
-	VulkanRenderer renderSystem;
 	EntitySystem entitySystem;
+	VulkanRenderer renderSystem;
+	PhysicsSystem physicsSystem;
 
 	std::vector<uint32_t> entityIDs;
 
 	try
 	{
-		engine.AddSystem(&renderSystem);
 		engine.AddSystem(&entitySystem);
+		engine.AddSystem(&renderSystem);
+		engine.AddSystem(&physicsSystem);
 
 		for (int i = 0; i < 5; i++)
 		{
