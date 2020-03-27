@@ -11,6 +11,7 @@ void VulkanRenderer::Init()
 {
 	InitWindow();
 	InitVulkan();
+	running = true;
 }
 
 bool VulkanRenderer::Update(float dt)
@@ -48,10 +49,12 @@ void VulkanRenderer::InitComponent(int handle, std::string model_path, std::stri
 	CreateUniformBuffer(render_components[handle]);
 }
 
-void VulkanRenderer::InitComponentCube(int handle)
+void VulkanRenderer::InitComponentCube(int handle, glm::vec3 color)
 {
 	InitTexture(render_components[handle].GetTexture(), "textures/cube.png");
 	render_components[handle].GetMesh().SetupMesh(cube_vertices, cube_indices);
+
+	render_components[handle].GetMesh().SetColor(color);
 
 	CreateVertexBuffers(render_components[handle]);
 	CreateIndexBuffers(render_components[handle]);
@@ -118,20 +121,16 @@ void VulkanRenderer::InitVulkan()
 	CreateTextureSampler();
 
 	// Initliaze Camera
-	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
 	// Initliase Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
-	//AddComponent();
-	//AddComponent();
-	//AddComponent();
-	//AddComponent();
-
 	InitComponent(0, "models/chalet.obj", "textures/chalet.jpg");
 	InitComponent(1, "models/space_engineer.obj", "textures/space_engineer.jpg");
-	InitComponentCube(2); //Initialise Components with default cube mesh
+	InitComponentCube(2, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialise Components with default cube mesh
 	InitComponentCube(3); //Initialise Components with default cube mesh
+	InitComponentCube(4);
 
 	//CreateUniformBuffers();
 	CreateLightBuffers();
@@ -151,23 +150,6 @@ void VulkanRenderer::InitTexture(Texture& texture, std::string texture_path)
 	CreateTextureImage(texture, texture_path);
 	CreateTextureImageView(texture);
 }
-
-//void VulkanRenderer::InitMeshes()
-//{
-//	//Load Models
-//	LoadModel(chalet_mesh, "models/chalet.obj");
-//	LoadModel(engineer_mesh, "models/space_engineer.obj");
-//	cube_mesh.SetupMesh(cube_vertices, cube_indices);
-//	light_cube.SetupMesh(cube_vertices, cube_indices);
-//
-//	cube_mesh.SetColor(glm::vec3(0.6f, 0.4f, 0.08f));
-//
-//	//Initliase Meshes
-//	InitMesh(chalet_mesh);
-//	InitMesh(engineer_mesh);
-//	InitMesh(cube_mesh);
-//	InitMesh(light_cube);
-//}
 
 void VulkanRenderer::SetupImGui()
 {
@@ -2062,6 +2044,7 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	render_components[1].GetMesh().SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	render_components[2].GetMesh().SetTransform(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 	render_components[3].GetMesh().SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
+	render_components[4].GetMesh().SetTransform(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 0.1f, 10.0f));
 
 	for (auto comp : render_components)
 	{

@@ -3,11 +3,12 @@
 void EntitySystem::Init()
 {
 	nextID = 1;
+	running = true;
 }
 
 bool EntitySystem::Update(float dt)
 {
-	return true;
+	return running;
 }
 
 void EntitySystem::SendMessage()

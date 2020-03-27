@@ -11,4 +11,7 @@ public:
 	virtual void SendMessage() = 0;
 
 	virtual ~System() {};
+
+protected:
+	bool running;
 };

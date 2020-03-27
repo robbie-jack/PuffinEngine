@@ -18,7 +18,7 @@ int main()
 		engine.AddSystem(&renderSystem);
 		engine.AddSystem(&entitySystem);
 
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 5; i++)
 		{
 			entityIDs.push_back(entitySystem.CreateEntity());
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());

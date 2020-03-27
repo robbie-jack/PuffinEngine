@@ -89,7 +89,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\bullet3-master\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\bullet3-master\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -125,7 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\bullet3-master\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -149,7 +149,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\bullet3-master\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>

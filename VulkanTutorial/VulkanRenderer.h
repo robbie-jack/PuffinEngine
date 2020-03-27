@@ -77,7 +77,7 @@ public:
 	RenderComponent* AddComponent();
 
 	void InitComponent(int handle, std::string model_path, std::string texture_path);
-	void InitComponentCube(int handle);
+	void InitComponentCube(int handle, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
 
 	~VulkanRenderer();
 
@@ -164,8 +164,6 @@ private:
 
 	float fps = 60.0f;
 	float fps_timer = 0.0f;
-
-	bool running = true;
 
 	const int WIDTH = 1920;
 	const int HEIGHT = 1080;
