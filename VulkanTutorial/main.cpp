@@ -27,6 +27,9 @@ int main()
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());
 		}
 
+		entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
+		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
+
 		engine.MainLoop();
 	}
 	catch (const std::exception & e)

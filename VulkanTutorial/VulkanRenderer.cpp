@@ -442,11 +442,11 @@ void VulkanRenderer::PickPhysicalDevice()
 	VkPhysicalDevice bestDevice = {};
 	int bestRating = 0;
 
-	std::cout << "suitable device:" << std::endl;
-
 	// If there is only one suitable device, don't bother checking it's rating
 	if (suitableDevices.size() > 1)
 	{
+		std::cout << "suitable device:" << std::endl;
+
 		// Iterate through devices which meet requirements
 		for (const auto& device : suitableDevices)
 		{

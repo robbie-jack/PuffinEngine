@@ -2,7 +2,8 @@
 
 enum class ComponentType
 {
-	RENDER
+	RENDER,
+	PHYSICS
 };
 
 class BaseComponent
