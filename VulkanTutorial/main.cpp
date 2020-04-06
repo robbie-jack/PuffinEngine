@@ -29,7 +29,7 @@ int main()
 		}
 
 		entitySystem.GetEntity(2)->AttachComponent(physicsSystem.AddComponent());
-		entitySystem.GetEntity(4)->AttachComponent(physicsSystem.AddComponent());
+		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
 
 		engine.MainLoop();
 	}

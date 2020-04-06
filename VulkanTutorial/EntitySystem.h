@@ -17,6 +17,6 @@ public:
 
 	~EntitySystem();
 private:
-	uint32_t nextID;
+	uint32_t nextID = 1;
 	std::map<uint32_t, Entity> entityMap;
 };

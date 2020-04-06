@@ -17,6 +17,12 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{6687c17d-f24b-4fac-ac07-68cbd6168867}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Entity">
+      <UniqueIdentifier>{79301c97-896d-44c6-9b96-7a4df59104a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{153ef5b7-8d68-42e8-899b-21c25aa59d9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -62,11 +68,17 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="Entity.cpp" />
-    <ClCompile Include="EntitySystem.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="TransformComponent.cpp" />
+    <ClCompile Include="Entity.cpp">
+      <Filter>Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="EntitySystem.cpp">
+      <Filter>Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -104,13 +116,23 @@
     <ClInclude Include="VulkanRenderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="BaseComponent.h" />
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="Entity.h" />
-    <ClInclude Include="EntitySystem.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="System.h" />
-    <ClInclude Include="Transform.h" />
-    <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="Entity.h">
+      <Filter>Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="EntitySystem.h">
+      <Filter>Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
