@@ -1,5 +1,12 @@
 #pragma once
 
+enum class SystemType
+{
+	ENTITY,
+	RENDER,
+	PHYSICS
+};
+
 class System
 {
 public:
@@ -10,8 +17,11 @@ public:
 
 	virtual void SendMessage() = 0;
 
+	inline SystemType GetType() { return type; };
+
 	virtual ~System() {};
 
 protected:
 	bool running;
+	SystemType type;
 };

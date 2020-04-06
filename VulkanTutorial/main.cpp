@@ -2,6 +2,7 @@
 #include "EntitySystem.h"
 #include "VulkanRenderer.h"
 #include "PhysicsSystem.h"
+#include "TransformComponent.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -27,8 +28,8 @@ int main()
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());
 		}
 
-		entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
-		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
+		entitySystem.GetEntity(2)->AttachComponent(physicsSystem.AddComponent());
+		entitySystem.GetEntity(4)->AttachComponent(physicsSystem.AddComponent());
 
 		engine.MainLoop();
 	}

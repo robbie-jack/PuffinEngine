@@ -4,6 +4,7 @@ void EntitySystem::Init()
 {
 	nextID = 1;
 	running = true;
+	type = SystemType::ENTITY;
 }
 
 bool EntitySystem::Update(float dt)

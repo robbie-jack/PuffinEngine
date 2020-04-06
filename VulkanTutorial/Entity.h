@@ -1,7 +1,9 @@
 #pragma once
 
-//#include "System.h"
+#include "BaseComponent.h"
 #include "RenderComponent.h"
+#include "PhysicsComponent.h"
+#include "TransformComponent.h"
 
 #include <vector>
 
@@ -18,11 +20,16 @@ public:
 
 	inline uint32_t GetID() { return entityID; };
 
+	template<typename T>
+	T* GetComponent();
+
+	RenderComponent* GetRenderComponent();
+	PhysicsComponent* GetPhysicsComponent();
+	TransformComponent* GetTransformComponent();
+
 protected:
 	uint32_t entityID;
 
 	// Array of handles to components that are attached to enitity
 	std::vector<BaseComponent*> entityComponents;
-
-	RenderComponent* GetRenderComponent();
 };

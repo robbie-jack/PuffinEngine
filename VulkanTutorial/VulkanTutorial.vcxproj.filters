@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -16,80 +8,65 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{1daddb96-15a9-450c-92b2-fec2b8c71850}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\ImGui">
-      <UniqueIdentifier>{6687c17d-f24b-4fac-ac07-68cbd6168867}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Rendering">
-      <UniqueIdentifier>{c66f81be-ebbd-491f-acd6-81be2e05dd1e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Physics">
-      <UniqueIdentifier>{dc304bc3-0f81-4b1e-a60e-d5d65f8da91d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Physics">
+    <Filter Include="Physics">
       <UniqueIdentifier>{8e281a85-92bb-4efe-9e35-5300f4cebcb5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Rendering">
+    <Filter Include="Rendering">
       <UniqueIdentifier>{ed595348-c44a-4203-af53-8e9f670cf0c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{6687c17d-f24b-4fac-ac07-68cbd6168867}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="imgui.cpp">
-      <Filter>Source Files\ImGui</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="imgui_demo.cpp">
-      <Filter>Source Files\ImGui</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="imgui_draw.cpp">
-      <Filter>Source Files\ImGui</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="imgui_impl_glfw.cpp">
-      <Filter>Source Files\ImGui</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="imgui_impl_vulkan.cpp">
-      <Filter>Source Files\ImGui</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="imgui_widgets.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EntitySystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="PhysicsComponent.cpp">
-      <Filter>Source Files\Physics</Filter>
+      <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="PhysicsSystem.cpp">
-      <Filter>Source Files\Physics</Filter>
+      <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Source Files\Rendering</Filter>
+      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
-      <Filter>Source Files\Rendering</Filter>
+      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files\Rendering</Filter>
+      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="RenderComponent.cpp">
-      <Filter>Source Files\Rendering</Filter>
+      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
-      <Filter>Source Files\Rendering</Filter>
+      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="VulkanRenderer.cpp">
-      <Filter>Source Files\Rendering</Filter>
+      <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EntitySystem.cpp" />
+    <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="TransformComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -100,53 +77,40 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InputManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="System.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Entity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EntitySystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderComponent.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanRenderer.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelLoader.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files\Rendering</Filter>
+    <ClInclude Include="PhysicsComponent.h">
+      <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="PhysicsSystem.h">
-      <Filter>Header Files\Physics</Filter>
+      <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicsComponent.h">
-      <Filter>Header Files\Physics</Filter>
+    <ClInclude Include="Camera.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Light.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderComponent.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponent.h" />
+    <ClInclude Include="Engine.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="EntitySystem.h" />
+    <ClInclude Include="InputManager.h" />
+    <ClInclude Include="System.h" />
+    <ClInclude Include="Transform.h" />
+    <ClInclude Include="TransformComponent.h" />
   </ItemGroup>
 </Project>

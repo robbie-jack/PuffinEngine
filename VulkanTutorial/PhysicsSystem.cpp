@@ -1,4 +1,5 @@
 #include "PhysicsSystem.h"
+#include "Entity.h"
 
 #include <glm/glm.hpp>
 #include <iostream>
@@ -6,8 +7,15 @@
 void PhysicsSystem::Init()
 {
 	running = true;
+	type = SystemType::PHYSICS;
 
 	CreateDynamicsWorld();
+
+	btBoxShape* box = CreateBoxShape(glm::vec3(0.5f, 0.5f, 0.5f));
+	btBoxShape* floor = CreateBoxShape(glm::vec3(5.0f, 0.05f, 5.0f));
+
+	//InitComponent(0, 1.0f, physicsComponents[0].GetEntity()->GetTransformComponent()->GetTransform(), box);
+	//InitComponent(1, 0.0f, physicsComponents[1].GetEntity()->GetTransformComponent()->GetTransform(), floor);
 }
 
 bool PhysicsSystem::Update(float dt)

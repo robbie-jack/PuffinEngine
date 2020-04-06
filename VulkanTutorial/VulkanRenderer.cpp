@@ -12,6 +12,7 @@ void VulkanRenderer::Init()
 	InitWindow();
 	InitVulkan();
 	running = true;
+	type = SystemType::RENDER;
 }
 
 bool VulkanRenderer::Update(float dt)

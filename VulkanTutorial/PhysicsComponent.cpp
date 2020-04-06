@@ -2,7 +2,7 @@
 
 PhysicsComponent::PhysicsComponent()
 {
-
+	type = ComponentType::PHYSICS;
 }
 
 PhysicsComponent::~PhysicsComponent()
