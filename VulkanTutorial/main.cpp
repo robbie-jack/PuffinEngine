@@ -2,7 +2,7 @@
 #include "EntitySystem.h"
 #include "VulkanRenderer.h"
 #include "PhysicsSystem.h"
-#include "TransformComponent.h"
+#include "TransformSystem.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -11,6 +11,7 @@ int main()
 {
 	Engine engine;
 	EntitySystem entitySystem;
+	TransformSystem transformSystem;
 	VulkanRenderer renderSystem;
 	PhysicsSystem physicsSystem;
 
@@ -19,12 +20,14 @@ int main()
 	try
 	{
 		engine.AddSystem(&entitySystem);
+		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&renderSystem);
 		engine.AddSystem(&physicsSystem);
 
 		for (int i = 0; i < 5; i++)
 		{
 			entityIDs.push_back(entitySystem.CreateEntity());
+			entitySystem.GetEntity(entityIDs[i])->AttachComponent(transformSystem.AddComponent());
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());
 		}
 

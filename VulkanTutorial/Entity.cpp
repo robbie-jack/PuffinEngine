@@ -69,6 +69,7 @@ TransformComponent* Entity::GetTransformComponent()
 
 void Entity::AttachComponent(BaseComponent* component)
 {
+	component->SetEntityID(entityID);
 	entityComponents.push_back(component);
 }
 

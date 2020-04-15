@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdint.h"
+
 enum class ComponentType
 {
 	TRANSFORM,
@@ -13,9 +15,10 @@ public:
 	virtual ~BaseComponent() {};
 
 	inline ComponentType GetType() { return type; };
-	inline int GetEntityID() { return entityID; };
+	inline uint32_t GetEntityID() { return entityID; };
+	inline void SetEntityID(uint32_t id) { entityID = id; };
 
 protected:
 	ComponentType type;
-	int entityID;
+	uint32_t entityID;
 };

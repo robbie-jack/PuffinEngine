@@ -23,6 +23,9 @@
     <Filter Include="Components">
       <UniqueIdentifier>{153ef5b7-8d68-42e8-899b-21c25aa59d9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Systems">
+      <UniqueIdentifier>{bcebc206-6027-4080-854d-0ab9754ef911}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -79,6 +82,9 @@
     <ClCompile Include="TransformComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="TransformSystem.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -118,7 +124,6 @@
     </ClInclude>
     <ClInclude Include="Engine.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="System.h" />
     <ClInclude Include="Entity.h">
       <Filter>Entity</Filter>
     </ClInclude>
@@ -133,6 +138,12 @@
     </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="System.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformSystem.h">
+      <Filter>Systems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

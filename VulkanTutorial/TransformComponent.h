@@ -20,6 +20,14 @@ public:
 		transform.scale = scale;
 	};
 
+	inline void SetPosition(glm::vec3 position) { transform.position = position; };
+	inline void SetRotation(glm::vec3 rotation) { transform.rotation = rotation; };
+	inline void SetScale(glm::vec3 scale) { transform.scale = scale; };
+
+	inline glm::vec3 GetPosition() { return transform.position; };
+	inline glm::vec3 GetRotation() { return transform.rotation; };
+	inline glm::vec3 GetScale() { return transform.scale; };
+
 protected:
 
 	Transform transform;
