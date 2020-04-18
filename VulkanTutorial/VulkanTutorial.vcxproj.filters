@@ -26,6 +26,9 @@
     <Filter Include="Systems">
       <UniqueIdentifier>{bcebc206-6027-4080-854d-0ab9754ef911}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\ReactPhysics">
+      <UniqueIdentifier>{fc607478-44e0-492a-ba90-0b083a10b1e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -45,12 +48,6 @@
     </ClCompile>
     <ClCompile Include="imgui_widgets.cpp">
       <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicsComponent.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicsSystem.cpp">
-      <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Rendering</Filter>
@@ -85,6 +82,12 @@
     <ClCompile Include="TransformSystem.cpp">
       <Filter>Systems</Filter>
     </ClCompile>
+    <ClCompile Include="ReactPhysicsSystem.cpp">
+      <Filter>Physics\ReactPhysics</Filter>
+    </ClCompile>
+    <ClCompile Include="ReactPhysicsComponent.cpp">
+      <Filter>Physics\ReactPhysics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -95,12 +98,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PhysicsComponent.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicsSystem.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Rendering</Filter>
     </ClInclude>
@@ -136,14 +133,17 @@
     <ClInclude Include="TransformComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="System.h">
       <Filter>Systems</Filter>
     </ClInclude>
     <ClInclude Include="TransformSystem.h">
       <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="ReactPhysicsSystem.h">
+      <Filter>Physics\ReactPhysics</Filter>
+    </ClInclude>
+    <ClInclude Include="ReactPhysicsComponent.h">
+      <Filter>Physics\ReactPhysics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

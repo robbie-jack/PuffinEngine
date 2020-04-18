@@ -167,19 +167,28 @@ public:
 
 	inline MeshMatrices GetMatrices() { return matrices; };
 	inline void SetMatrices(MeshMatrices matrices_) { matrices = matrices_; };
-	
-	inline Transform GetTransform() { return transform; };
-	inline void SetTransform(Transform transform_) { transform = transform_; };
-	inline void SetTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) 
-	{ 
-		transform.position = position; 
-		transform.rotation = rotation; 
-		transform.scale = scale; 
+
+	inline void SetTransform(glm::vec3 position_, glm::vec3 rotation_, glm::vec3 scale_)
+	{
+		position = position_;
+		rotation = rotation_;
+		scale = scale_;
 	};
+	
+	inline void SetPosition(glm::vec3 position_) { position = position_; };
+	inline void SetRotation(glm::vec3 rotation_) { rotation = rotation_; };
+	inline void SetScale(glm::vec3 scale_) { scale = scale_; };
+
+	inline glm::vec3 GetPosition() { return position; };
+	inline glm::vec3 GetRotation() { return rotation; };
+	inline glm::vec3 GetScale() { return scale; };
 
 private:
 
 	MeshMatrices matrices;
-	Transform transform;
 	MeshData meshData;
+
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
 };

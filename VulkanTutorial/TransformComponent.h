@@ -1,34 +1,33 @@
 #pragma once
 
 #include "BaseComponent.h"
-#include "Transform.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 class TransformComponent : public BaseComponent
 {
 public:
 
-	TransformComponent(Transform transfrom_);
-	TransformComponent(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 scale = glm::vec3(0.0f, 0.0f, 0.0f));
+	TransformComponent(glm::vec3 position_ = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 rotation_ = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 scale_ = glm::vec3(0.0f, 0.0f, 0.0f));
 	virtual ~TransformComponent();
 
-	inline Transform GetTransform() { return transform; };
-	inline void SetTransform(Transform transform_) { transform = transform_; };
-	inline void SetTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+	inline void SetTransform(glm::vec3 position_, glm::vec3 rotation_, glm::vec3 scale_)
 	{
-		transform.position = position;
-		transform.rotation = rotation;
-		transform.scale = scale;
+		position = position_;
+		rotation = rotation_;
+		scale = scale_;
 	};
 
-	inline void SetPosition(glm::vec3 position) { transform.position = position; };
-	inline void SetRotation(glm::vec3 rotation) { transform.rotation = rotation; };
-	inline void SetScale(glm::vec3 scale) { transform.scale = scale; };
+	inline void SetPosition(glm::vec3 position_) { position = position_; };
+	inline void SetRotation(glm::vec3 rotation_) { rotation = rotation_; };
+	inline void SetScale(glm::vec3 scale_) { scale = scale_; };
 
-	inline glm::vec3 GetPosition() { return transform.position; };
-	inline glm::vec3 GetRotation() { return transform.rotation; };
-	inline glm::vec3 GetScale() { return transform.scale; };
+	inline glm::vec3 GetPosition() { return position; };
+	inline glm::vec3 GetRotation() { return rotation; };
+	inline glm::vec3 GetScale() { return scale; };
 
 protected:
 
-	Transform transform;
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
 };

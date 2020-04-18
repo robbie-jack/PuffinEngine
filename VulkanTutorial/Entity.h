@@ -2,7 +2,7 @@
 
 #include "BaseComponent.h"
 #include "RenderComponent.h"
-#include "PhysicsComponent.h"
+#include "ReactPhysicsComponent.h"
 #include "TransformComponent.h"
 
 #include <vector>
@@ -24,7 +24,7 @@ public:
 	T* GetComponent();
 
 	RenderComponent* GetRenderComponent();
-	PhysicsComponent* GetPhysicsComponent();
+	ReactPhysicsComponent* GetPhysicsComponent();
 	TransformComponent* GetTransformComponent();
 
 protected:

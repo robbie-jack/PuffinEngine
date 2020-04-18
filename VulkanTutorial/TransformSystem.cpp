@@ -22,6 +22,17 @@ TransformComponent* TransformSystem::AddComponent()
 	return &transformComponents.back();
 }
 
+TransformComponent* TransformSystem::GetComponent(uint32_t entityID)
+{
+	for (auto comp : transformComponents)
+	{
+		if (comp.GetEntityID() == entityID)
+		{
+			return &comp;
+		}
+	}
+}
+
 TransformSystem::~TransformSystem()
 {
 	transformComponents.clear();

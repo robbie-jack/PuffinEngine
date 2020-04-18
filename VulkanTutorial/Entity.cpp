@@ -35,7 +35,7 @@ RenderComponent* Entity::GetRenderComponent()
 	return nullptr;
 }
 
-PhysicsComponent* Entity::GetPhysicsComponent()
+ReactPhysicsComponent* Entity::GetPhysicsComponent()
 {
 	for (auto comp : entityComponents)
 	{
@@ -43,7 +43,7 @@ PhysicsComponent* Entity::GetPhysicsComponent()
 		if (comp->GetType() == ComponentType::PHYSICS)
 		{
 			// Return type cast component
-			return (PhysicsComponent*)comp;
+			return (ReactPhysicsComponent*)comp;
 		}
 	}
 

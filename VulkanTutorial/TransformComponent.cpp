@@ -1,17 +1,11 @@
 #include "TransformComponent.h"
 
-TransformComponent::TransformComponent(Transform transform_)
+TransformComponent::TransformComponent(glm::vec3 position_, glm::vec3 rotation_, glm::vec3 scale_)
 {
 	type = ComponentType::TRANSFORM;
-	transform = transform_;
-}
-
-TransformComponent::TransformComponent(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
-{
-	type = ComponentType::TRANSFORM;
-	transform.position = position;
-	transform.rotation = rotation;
-	transform.scale = scale;
+	position = position_;
+	rotation = rotation_;
+	scale = scale_;
 }
 
 TransformComponent::~TransformComponent()

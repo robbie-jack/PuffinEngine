@@ -1,8 +1,8 @@
 #include "Engine.h"
 #include "EntitySystem.h"
-#include "VulkanRenderer.h"
-#include "PhysicsSystem.h"
 #include "TransformSystem.h"
+#include "VulkanRenderer.h"
+#include "ReactPhysicsSystem.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -12,8 +12,8 @@ int main()
 	Engine engine;
 	EntitySystem entitySystem;
 	TransformSystem transformSystem;
+	ReactPhysicsSystem physicsSystem;
 	VulkanRenderer renderSystem;
-	PhysicsSystem physicsSystem;
 
 	std::vector<uint32_t> entityIDs;
 
@@ -21,8 +21,8 @@ int main()
 	{
 		engine.AddSystem(&entitySystem);
 		engine.AddSystem(&transformSystem);
-		engine.AddSystem(&renderSystem);
 		engine.AddSystem(&physicsSystem);
+		engine.AddSystem(&renderSystem);
 
 		for (int i = 0; i < 5; i++)
 		{
@@ -30,9 +30,6 @@ int main()
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(transformSystem.AddComponent());
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());
 		}
-
-		entitySystem.GetEntity(2)->AttachComponent(physicsSystem.AddComponent());
-		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
 
 		engine.MainLoop();
 	}

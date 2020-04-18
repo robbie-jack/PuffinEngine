@@ -14,6 +14,7 @@ public:
 	void SendMessage();
 
 	TransformComponent* AddComponent();
+	TransformComponent* GetComponent(uint32_t entityID);
 
 	~TransformSystem();
 
