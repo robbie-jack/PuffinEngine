@@ -13,7 +13,7 @@
 #include <vector>
 #include <array>
 
-#include "Transform.h"
+#include "EntityTransform.h"
 
 struct MeshMatrices
 {
@@ -168,27 +168,28 @@ public:
 	inline MeshMatrices GetMatrices() { return matrices; };
 	inline void SetMatrices(MeshMatrices matrices_) { matrices = matrices_; };
 
+	inline void SetTransform(EntityTransform transform_) { transform = transform_; };
 	inline void SetTransform(glm::vec3 position_, glm::vec3 rotation_, glm::vec3 scale_)
 	{
-		position = position_;
-		rotation = rotation_;
-		scale = scale_;
+		transform.position = position_;
+		transform.rotation = rotation_;
+		transform.scale = scale_;
 	};
-	
-	inline void SetPosition(glm::vec3 position_) { position = position_; };
-	inline void SetRotation(glm::vec3 rotation_) { rotation = rotation_; };
-	inline void SetScale(glm::vec3 scale_) { scale = scale_; };
 
-	inline glm::vec3 GetPosition() { return position; };
-	inline glm::vec3 GetRotation() { return rotation; };
-	inline glm::vec3 GetScale() { return scale; };
+	inline EntityTransform GetTransform() { return transform; };
+	
+	inline void SetPosition(glm::vec3 position_) { transform.position = position_; };
+	inline void SetRotation(glm::vec3 rotation_) { transform.rotation = rotation_; };
+	inline void SetScale(glm::vec3 scale_) { transform.scale = scale_; };
+
+	inline glm::vec3 GetPosition() { return transform.position; };
+	inline glm::vec3 GetRotation() { return transform.rotation; };
+	inline glm::vec3 GetScale() { return transform.scale; };
 
 private:
 
 	MeshMatrices matrices;
 	MeshData meshData;
 
-	glm::vec3 position;
-	glm::vec3 rotation;
-	glm::vec3 scale;
+	EntityTransform transform;
 };

@@ -21,6 +21,7 @@
 
 #include "System.h"
 #include "RenderComponent.h"
+#include "TransformSystem.h"
 
 #include <functional>
 #include <vector>
@@ -78,6 +79,8 @@ public:
 
 	void InitComponent(int handle, std::string model_path, std::string texture_path);
 	void InitComponentCube(int handle, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
+
+	inline std::vector<RenderComponent>* GetComponents() { return &renderComponents; };
 
 	~VulkanRenderer();
 
@@ -145,7 +148,7 @@ private:
 	Mesh cube_mesh;
 	//Mesh light_cube;
 	//std::vector<Mesh> meshes;
-	std::vector<RenderComponent> render_components;
+	std::vector<RenderComponent> renderComponents;
 
 	Texture cube_texture;
 
@@ -287,6 +290,7 @@ private:
 	void DrawUI(float delta_time);
 	void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
 	glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+	glm::mat4 BuildMeshTransform(EntityTransform transform);
 	void UpdateImguiCommandBuffers();
 
 	//-------------------------------------------------------------------------------------

@@ -20,9 +20,11 @@ int main()
 	try
 	{
 		engine.AddSystem(&entitySystem);
-		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&physicsSystem);
+		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&renderSystem);
+
+		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());
 
 		for (int i = 0; i < 5; i++)
 		{
@@ -30,6 +32,8 @@ int main()
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(transformSystem.AddComponent());
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());
 		}
+
+		entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
 
 		engine.MainLoop();
 	}

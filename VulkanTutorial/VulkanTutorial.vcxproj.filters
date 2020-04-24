@@ -145,5 +145,7 @@
     <ClInclude Include="ReactPhysicsComponent.h">
       <Filter>Physics\ReactPhysics</Filter>
     </ClInclude>
+    <ClInclude Include="VectorConversion.h" />
+    <ClInclude Include="EntityTransform.h" />
   </ItemGroup>
 </Project>
