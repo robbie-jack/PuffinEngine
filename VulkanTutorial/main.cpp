@@ -34,6 +34,7 @@ int main()
 		}
 
 		entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
+		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
 
 		engine.MainLoop();
 	}

@@ -3,11 +3,11 @@
 ReactPhysicsComponent::ReactPhysicsComponent()
 {
 	type = ComponentType::PHYSICS;
-	prevTransform = Transform::identity();
+	prevTransform = rp3d::Transform::identity();
 }
 
 ReactPhysicsComponent::~ReactPhysicsComponent()
 {
 	body = NULL;
-	prevTransform = Transform::identity();
+	prevTransform = rp3d::Transform::identity();
 }

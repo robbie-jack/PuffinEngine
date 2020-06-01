@@ -2,9 +2,7 @@
 
 #include "BaseComponent.h"
 
-#include "reactphysics3d.h"
-
-using namespace reactphysics3d;
+#include "reactphysics3d/reactphysics3d.h"
 
 class ReactPhysicsComponent : public BaseComponent
 {

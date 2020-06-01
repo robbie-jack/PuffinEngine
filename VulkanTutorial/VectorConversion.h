@@ -1,6 +1,6 @@
 #pragma once
 
-#include "reactphysics3d.h"
+#include "reactphysics3d/reactphysics3d.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace reactphysics3d;
