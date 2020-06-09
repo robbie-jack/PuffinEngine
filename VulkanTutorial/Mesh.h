@@ -182,9 +182,9 @@ public:
 	inline void SetRotation(glm::vec3 rotation_) { transform.rotation = rotation_; };
 	inline void SetScale(glm::vec3 scale_) { transform.scale = scale_; };
 
-	inline glm::vec3 GetPosition() { return transform.position; };
-	inline glm::vec3 GetRotation() { return transform.rotation; };
-	inline glm::vec3 GetScale() { return transform.scale; };
+	inline Puffin::Vector3 GetPosition() { return transform.position; };
+	inline Puffin::Vector3 GetRotation() { return transform.rotation; };
+	inline Puffin::Vector3 GetScale() { return transform.scale; };
 
 private:
 

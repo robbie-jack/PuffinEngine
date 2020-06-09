@@ -88,6 +88,7 @@
     <ClCompile Include="ReactPhysicsComponent.cpp">
       <Filter>Physics\ReactPhysics</Filter>
     </ClCompile>
+    <ClCompile Include="Vector3.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">

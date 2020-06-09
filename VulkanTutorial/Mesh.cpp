@@ -2,9 +2,9 @@
 
 Mesh::Mesh()
 {
-	transform.position = { 0.0f, 0.0f, 0.0f };
-	transform.rotation = { 0.0f, 0.0f, 0.0f };
-	transform.scale = { 1.0f, 1.0f, 1.0f };
+	transform.position = Puffin::Vector3(0.0f, 0.0f, 0.0f);
+	transform.rotation = Puffin::Vector3(0.0f, 0.0f, 0.0f);
+	transform.scale = Puffin::Vector3(1.0f, 1.0f, 1.0f);
 }
 
 Mesh::~Mesh()

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <glm/gtc/matrix_transform.hpp>
+#include "Vector3.h"
 
 struct EntityTransform
 {
-	glm::vec3 position;
-	glm::vec3 rotation;
-	glm::vec3 scale;
+	Puffin::Vector3 position;
+	Puffin::Vector3 rotation;
+	Puffin::Vector3 scale;
 };

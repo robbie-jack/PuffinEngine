@@ -44,9 +44,9 @@ public:
 	};
 
 	inline EntityTransform GetTransform() { return transform; };
-	inline glm::vec3 GetPosition() { return transform.position; };
-	inline glm::vec3 GetRotation() { return transform.rotation; };
-	inline glm::vec3 GetScale() { return transform.scale; };
+	inline Puffin::Vector3 GetPosition() { return transform.position; };
+	inline Puffin::Vector3 GetRotation() { return transform.rotation; };
+	inline Puffin::Vector3 GetScale() { return transform.scale; };
 
 protected:
 
