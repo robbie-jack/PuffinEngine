@@ -6,10 +6,7 @@ namespace Puffin
 {
 	struct Vector3
 	{
-		// Variables
-		float x;
-		float y;
-		float z;
+		float x, y, z;
 
 		// Constructors
 		Vector3()
@@ -41,7 +38,7 @@ namespace Puffin
 			z = vec.z;
 		}
 
-		Vector3(reactphysics3d::Vector3 vec)
+		Vector3(rp3d::Vector3 vec)
 		{
 			x = vec.x;
 			y = vec.y;

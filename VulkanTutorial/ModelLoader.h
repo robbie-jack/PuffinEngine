@@ -7,7 +7,7 @@
 
 #include "Mesh.h"
 
-void LoadModel(Mesh& mesh, std::string model_path)
+void LoadMesh(Mesh& mesh, std::string model_path)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;

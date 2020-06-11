@@ -43,7 +43,7 @@ RenderComponent* VulkanRenderer::AddComponent()
 void VulkanRenderer::InitComponent(int handle, std::string model_path, std::string texture_path)
 {
 	InitTexture(renderComponents[handle].GetTexture(), texture_path);
-	LoadModel(renderComponents[handle].GetMesh(), model_path);
+	LoadMesh(renderComponents[handle].GetMesh(), model_path);
 
 	CreateVertexBuffers(renderComponents[handle]);
 	CreateIndexBuffers(renderComponents[handle]);
