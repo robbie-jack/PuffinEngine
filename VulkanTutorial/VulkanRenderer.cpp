@@ -2102,7 +2102,7 @@ glm::mat4 VulkanRenderer::BuildMeshTransform(glm::vec3 position, glm::vec3 rotat
 glm::mat4 VulkanRenderer::BuildMeshTransform(EntityTransform transform)
 {
 	// Set Translation
-	glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), transform.position);
+	glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)transform.position);
 
 	// Set Rotation
 	model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -2110,7 +2110,7 @@ glm::mat4 VulkanRenderer::BuildMeshTransform(EntityTransform transform)
 	model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	// Set Scale
-	model_transform = glm::scale(model_transform, transform.scale);
+	model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);
 
 	return model_transform;
 }

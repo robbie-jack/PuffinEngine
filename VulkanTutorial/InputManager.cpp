@@ -1,5 +1,7 @@
 #include "InputManager.h"
 
+using namespace Puffin::Input;
+
 InputManager::InputManager()
 {
 	nextID = 1;

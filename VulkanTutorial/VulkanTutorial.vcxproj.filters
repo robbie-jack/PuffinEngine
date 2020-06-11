@@ -29,6 +29,9 @@
     <Filter Include="Physics\ReactPhysics">
       <UniqueIdentifier>{fc607478-44e0-492a-ba90-0b083a10b1e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Types">
+      <UniqueIdentifier>{19004f93-de56-4500-a8ca-ce00b4f542de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -88,7 +91,9 @@
     <ClCompile Include="ReactPhysicsComponent.cpp">
       <Filter>Physics\ReactPhysics</Filter>
     </ClCompile>
-    <ClCompile Include="Vector3.h" />
+    <ClCompile Include="Vector3.h">
+      <Filter>Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -146,7 +151,11 @@
     <ClInclude Include="ReactPhysicsComponent.h">
       <Filter>Physics\ReactPhysics</Filter>
     </ClInclude>
-    <ClInclude Include="VectorConversion.h" />
-    <ClInclude Include="EntityTransform.h" />
+    <ClInclude Include="EntityTransform.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="VectorConversion.h">
+      <Filter>Types</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+using namespace Puffin::Input;
+
 Camera::Camera()
 {
 	position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -43,7 +45,7 @@ void Camera::Init(glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, floa
 	yaw = -90.0f;
 }
 
-void Camera::Update(InputManager* inputManager, float delta_time)
+void Camera::Update(Puffin::Input::InputManager* inputManager, float delta_time)
 {
 	// Camera Movement
 	if (inputManager->GetAction("CamMoveLeft").state == HELD)

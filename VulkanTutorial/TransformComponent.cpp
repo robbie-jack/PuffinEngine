@@ -1,5 +1,7 @@
 #include "TransformComponent.h"
 
+using namespace Puffin;
+
 TransformComponent::TransformComponent(EntityTransform transform_)
 {
 	type = ComponentType::TRANSFORM;

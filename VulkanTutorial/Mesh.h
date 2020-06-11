@@ -15,6 +15,8 @@
 
 #include "EntityTransform.h"
 
+using namespace Puffin;
+
 struct MeshMatrices
 {
 	alignas(16) glm::mat4 model;

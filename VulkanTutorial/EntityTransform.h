@@ -2,9 +2,12 @@
 
 #include "Vector3.h"
 
-struct EntityTransform
+namespace Puffin
 {
-	Puffin::Vector3 position;
-	Puffin::Vector3 rotation;
-	Puffin::Vector3 scale;
-};
+	struct EntityTransform
+	{
+		Vector3 position;
+		Vector3 rotation;
+		Vector3 scale;
+	};
+}

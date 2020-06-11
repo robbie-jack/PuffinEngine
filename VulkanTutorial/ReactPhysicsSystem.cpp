@@ -10,7 +10,7 @@ void ReactPhysicsSystem::Init()
 	PhysicsWorld::WorldSettings settings;
 	settings.defaultPositionSolverNbIterations = 20;
 	settings.isSleepingEnabled = false;
-	settings.gravity = Vector3(0.0f, -9.8f, 0.0f);
+	settings.gravity = rp3d::Vector3(0.0f, -9.8f, 0.0f);
 
 	// Initialise Physics World
 	physicsWorld = physicsCommon.createPhysicsWorld(settings);

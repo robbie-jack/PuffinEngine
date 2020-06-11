@@ -9,28 +9,31 @@
 
 #include <vector>
 
-class TransformSystem : public System
+namespace Puffin
 {
-public:
-
-	void Init();
-	bool Update(float dt);
-	void SendMessage();
-
-	TransformComponent* AddComponent();
-	TransformComponent* GetComponent(uint32_t entityID);
-
-	inline void SetPhysicsRenderVectors(std::vector<ReactPhysicsComponent>* physicsComponents_, std::vector<RenderComponent>* renderComponents_)
+	class TransformSystem : public System
 	{
-		physicsComponents = physicsComponents_;
-		renderComponents = renderComponents_;
-	}
+	public:
 
-	~TransformSystem();
+		void Init();
+		bool Update(float dt);
+		void SendMessage();
 
-private:
+		TransformComponent* AddComponent();
+		TransformComponent* GetComponent(uint32_t entityID);
 
-	std::vector<TransformComponent> transformComponents;
-	std::vector<ReactPhysicsComponent>* physicsComponents;
-	std::vector<RenderComponent>* renderComponents;
-};
+		inline void SetPhysicsRenderVectors(std::vector<ReactPhysicsComponent>* physicsComponents_, std::vector<RenderComponent>* renderComponents_)
+		{
+			physicsComponents = physicsComponents_;
+			renderComponents = renderComponents_;
+		}
+
+		~TransformSystem();
+
+	private:
+
+		std::vector<TransformComponent> transformComponents;
+		std::vector<ReactPhysicsComponent>* physicsComponents;
+		std::vector<RenderComponent>* renderComponents;
+	};
+}

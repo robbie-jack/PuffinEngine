@@ -37,7 +37,7 @@ public:
 	~Camera();
 
 	void Init(glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov, float aspect, float near, float far);
-	void Update(InputManager* input_manager, float delta_time);
+	void Update(Puffin::Input::InputManager* input_manager, float delta_time);
 
 	inline glm::vec3 GetPosition() { return position; };
 

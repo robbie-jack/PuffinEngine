@@ -34,7 +34,41 @@ namespace Puffin
 			z = val;
 		}
 
+		Vector3(glm::vec3 vec)
+		{
+			x = vec.x;
+			y = vec.y;
+			z = vec.z;
+		}
+
+		Vector3(reactphysics3d::Vector3 vec)
+		{
+			x = vec.x;
+			y = vec.y;
+			z = vec.z;
+		}
+
 		// Operator Overrides
+
+		// Operator Conversion
+		operator glm::vec3() const
+		{
+			glm::vec3 vec;
+			vec.x = x;
+			vec.y = y;
+			vec.z = z;
+			return vec;
+		}
+
+		operator rp3d::Vector3() const
+		{
+			rp3d::Vector3 vec;
+			vec.x = x;
+			vec.y = y;
+			vec.z = z;
+			return vec;
+		}
+
 		// Operator=
 		void operator=(glm::vec3 vec)
 		{
@@ -163,6 +197,8 @@ namespace Puffin
 
 			vector.x / length;
 		}
+
+
 
 	};
 

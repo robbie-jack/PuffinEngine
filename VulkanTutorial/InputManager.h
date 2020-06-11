@@ -5,45 +5,51 @@
 #include <vector>
 #include <string>
 
-enum KeyState
+namespace Puffin
 {
-	PRESSED = 0,
-	HELD = 1,
-	RELEASED = 2,
-	UP = 3
-};
+	namespace Input
+	{
+		enum KeyState
+		{
+			PRESSED = 0,
+			HELD = 1,
+			RELEASED = 2,
+			UP = 3
+		};
 
-struct InputAction
-{
-	std::string name;
-	int id;
-	std::vector<int> keys;
-	KeyState state;
-};
+		struct InputAction
+		{
+			std::string name;
+			int id;
+			std::vector<int> keys;
+			KeyState state;
+		};
 
-class InputManager
-{
-public: 
-	InputManager();
-	~InputManager();
+		class InputManager
+		{
+		public:
+			InputManager();
+			~InputManager();
 
-	void UpdateInput(GLFWwindow* window);
-	void AddAction(std::string name, int key);
-	void AddAction(std::string name, std::vector<int> keys);
-	InputAction GetAction(std::string name);
+			void UpdateInput(GLFWwindow* window);
+			void AddAction(std::string name, int key);
+			void AddAction(std::string name, std::vector<int> keys);
+			InputAction GetAction(std::string name);
 
-	inline float GetMouseXOffset() { return (x_pos - last_x_pos) * sensitivity; };
-	inline float GetMouseYOffset() { return (y_pos - last_y_pos) * sensitivity; };
-	inline float& GetSensitivity() { return sensitivity; };
-	inline bool IsCursorLocked() { return cursor_locked; };
+			inline float GetMouseXOffset() { return (x_pos - last_x_pos) * sensitivity; };
+			inline float GetMouseYOffset() { return (y_pos - last_y_pos) * sensitivity; };
+			inline float& GetSensitivity() { return sensitivity; };
+			inline bool IsCursorLocked() { return cursor_locked; };
 
-private:
+		private:
 
-	double x_pos, y_pos, last_x_pos, last_y_pos;
-	bool cursor_locked;
-	float sensitivity;
-	bool firstMouse;
+			double x_pos, y_pos, last_x_pos, last_y_pos;
+			bool cursor_locked;
+			float sensitivity;
+			bool firstMouse;
 
-	int nextID = 1;
-	std::vector<InputAction> actions;
-};
+			int nextID = 1;
+			std::vector<InputAction> actions;
+		};
+	}
+}
