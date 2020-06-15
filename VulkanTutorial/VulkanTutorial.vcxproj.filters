@@ -32,6 +32,9 @@
     <Filter Include="Types">
       <UniqueIdentifier>{19004f93-de56-4500-a8ca-ce00b4f542de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{f85018ca-a79a-43dc-8574-6a50af0664fa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -93,6 +96,9 @@
     </ClCompile>
     <ClCompile Include="Vector3.h">
       <Filter>Types</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +162,9 @@
     </ClInclude>
     <ClInclude Include="VectorConversion.h">
       <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

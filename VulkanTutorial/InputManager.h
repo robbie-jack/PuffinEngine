@@ -31,6 +31,8 @@ namespace Puffin
 			InputManager();
 			~InputManager();
 
+			void SetupInput();
+
 			void UpdateInput(GLFWwindow* window);
 			void AddAction(std::string name, int key);
 			void AddAction(std::string name, std::vector<int> keys);

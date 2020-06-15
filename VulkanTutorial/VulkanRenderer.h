@@ -4,6 +4,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 
+#include "UserInterface.h"
 #include "InputManager.h"
 
 #define GLFW_INCLUDE_VULKAN
@@ -29,8 +30,6 @@
 #include <array>
 #include <optional>
 #include <fstream>
-
-using namespace Puffin::Input;
 
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -83,6 +82,8 @@ public:
 	void InitComponentCube(int handle, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
 
 	inline std::vector<RenderComponent>* GetComponents() { return &renderComponents; };
+
+	inline GLFWwindow* GetWindow() { return window; };
 
 	~VulkanRenderer();
 
@@ -139,7 +140,8 @@ private:
 	size_t currentFrame = 0;
 
 	// Input Manager
-	InputManager inputManager;
+	Puffin::UserInterface UI;
+	Puffin::Input::InputManager inputManager;
 
 	// Camera
 	Camera camera;
@@ -166,9 +168,6 @@ private:
 	VkImageView depthImageView;
 
 	bool framebufferResized = false;
-
-	float fps = 60.0f;
-	float fps_timer = 0.0f;
 
 	const int WIDTH = 1920;
 	const int HEIGHT = 1080;
@@ -207,7 +206,7 @@ private:
 
 	// Initialise Window
 	void InitWindow();
-	void SetupInput();
+	//void SetupInput();
 
 	//-------------------------------------------------------------------------------------
 
@@ -286,10 +285,7 @@ private:
 
 	//-------------------------------------------------------------------------------------
 
-	//void MainLoop();
-	//void Update(float delta_time);
 	void DrawFrame(float delta_time);
-	void DrawUI(float delta_time);
 	void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
 	glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 	glm::mat4 BuildMeshTransform(EntityTransform transform);

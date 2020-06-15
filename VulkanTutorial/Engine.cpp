@@ -11,6 +11,8 @@ void Engine::MainLoop()
 		systems[i]->Init();
 	}
 
+	//inputManager.SetupInput();
+
 	auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 	auto currentTime = std::chrono::high_resolution_clock::now();
 

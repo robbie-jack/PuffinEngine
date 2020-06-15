@@ -22,7 +22,8 @@ bool VulkanRenderer::Update(float dt)
 	inputManager.UpdateInput(window);
 	camera.Update(&inputManager, dt);
 
-	DrawUI(dt);
+	//DrawUI(dt);
+	running = UI.DrawUI(dt, &inputManager);
 	DrawFrame(dt);
 
 	return running;
@@ -80,26 +81,27 @@ void VulkanRenderer::InitWindow()
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 
-	SetupInput();
-}
-
-void VulkanRenderer::SetupInput()
-{
-	// Actions
-
-	// Camera Actions
-	inputManager.AddAction("CamMoveForward", GLFW_KEY_W);
-	inputManager.AddAction("CamMoveBackward", GLFW_KEY_S);
-	inputManager.AddAction("CamMoveLeft", GLFW_KEY_A);
-	inputManager.AddAction("CamMoveRight", GLFW_KEY_D);
-	inputManager.AddAction("CamMoveUp", GLFW_KEY_E);
-	inputManager.AddAction("CamMoveDown", GLFW_KEY_Q);
-	inputManager.AddAction("CursorSwitch", GLFW_KEY_F1);
-
-	// Mouse
-
+	inputManager.SetupInput();
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
+
+//void VulkanRenderer::SetupInput()
+//{
+//	// Actions
+//
+//	// Camera Actions
+//	inputManager.AddAction("CamMoveForward", GLFW_KEY_W);
+//	inputManager.AddAction("CamMoveBackward", GLFW_KEY_S);
+//	inputManager.AddAction("CamMoveLeft", GLFW_KEY_A);
+//	inputManager.AddAction("CamMoveRight", GLFW_KEY_D);
+//	inputManager.AddAction("CamMoveUp", GLFW_KEY_E);
+//	inputManager.AddAction("CamMoveDown", GLFW_KEY_Q);
+//	inputManager.AddAction("CursorSwitch", GLFW_KEY_F1);
+//
+//	// Mouse
+//
+//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//}
 
 //-------------------------------------------------------------------------------------
 
@@ -1986,52 +1988,6 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	vkQueueWaitIdle(presentQueue);
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-}
-
-void VulkanRenderer::DrawUI(float delta_time)
-{
-	ImGui_ImplVulkan_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
-
-	ImGui::SetNextWindowSize(ImVec2(800, 1000), ImGuiCond_FirstUseEver);
-
-	bool* p_open = NULL;
-
-	// Main body of the window starts here.
-	ImGui::Begin("Puffin Engine", p_open, ImGuiWindowFlags_MenuBar);
-
-	// Menu Bar
-	if (ImGui::BeginMenuBar())
-	{
-		if (ImGui::BeginMenu("Menu"))
-		{
-			if (ImGui::MenuItem("Quit", "Alt+F4"))
-			{
-				running = false;
-			}
-
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndMenuBar();
-	}
-
-	// Display FPS
-	fps_timer += delta_time;
-
-	if (fps_timer >= 0.25f)
-	{
-		fps = 1 / delta_time;
-		fps_timer = 0.0f;
-	}
-	
-	ImGui::Text("FPS: %.1f", fps);
-	ImGui::SliderFloat("Sensitivity", &inputManager.GetSensitivity(), 0.01f, 0.1f);
-
-	ImGui::End();
-
-	ImGui::Render();
 }
 
 void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_time)

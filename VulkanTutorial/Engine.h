@@ -8,11 +8,14 @@ class Engine
 {
 public:
 
-	void Update(float dt);
 	void MainLoop();
 	void AddSystem(System *sys);
 
 private:
+
+	void Update(float dt);
+
 	std::vector<System*> systems;
+
 	bool running;
 };

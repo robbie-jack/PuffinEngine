@@ -1,8 +1,6 @@
 #include "InputManager.h"
 
-using namespace Puffin::Input;
-
-InputManager::InputManager()
+Puffin::Input::InputManager::InputManager()
 {
 	nextID = 1;
 	last_x_pos = 640.0f;
@@ -12,12 +10,26 @@ InputManager::InputManager()
 	firstMouse = true;
 }
 
-InputManager::~InputManager()
+Puffin::Input::InputManager::~InputManager()
 {
 
 }
 
-void InputManager::UpdateInput(GLFWwindow* window)
+void Puffin::Input::InputManager::SetupInput()
+{
+	// Actions
+
+	// Camera Actions
+	AddAction("CamMoveForward", GLFW_KEY_W);
+	AddAction("CamMoveBackward", GLFW_KEY_S);
+	AddAction("CamMoveLeft", GLFW_KEY_A);
+	AddAction("CamMoveRight", GLFW_KEY_D);
+	AddAction("CamMoveUp", GLFW_KEY_E);
+	AddAction("CamMoveDown", GLFW_KEY_Q);
+	AddAction("CursorSwitch", GLFW_KEY_F1);
+}
+
+void Puffin::Input::InputManager::UpdateInput(GLFWwindow* window)
 {
 	// Update Actions
 
@@ -90,7 +102,7 @@ void InputManager::UpdateInput(GLFWwindow* window)
 	}
 }
 
-void InputManager::AddAction(std::string name, int key)
+void Puffin::Input::InputManager::AddAction(std::string name, int key)
 {
 	InputAction new_action;
 	new_action.name = name;
@@ -103,7 +115,7 @@ void InputManager::AddAction(std::string name, int key)
 	nextID++;
 }
 
-void InputManager::AddAction(std::string name, std::vector<int> keys)
+void Puffin::Input::InputManager::AddAction(std::string name, std::vector<int> keys)
 {
 	InputAction new_action;
 	new_action.name = name;
@@ -116,7 +128,7 @@ void InputManager::AddAction(std::string name, std::vector<int> keys)
 	nextID++;
 }
 
-InputAction InputManager::GetAction(std::string name)
+Puffin::Input::InputAction Puffin::Input::InputManager::GetAction(std::string name)
 {
 	for (int i = 0; i < actions.size(); i++)
 	{

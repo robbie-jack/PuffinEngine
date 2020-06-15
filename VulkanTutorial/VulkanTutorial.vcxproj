@@ -190,6 +190,7 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
+    <ClCompile Include="UserInterface.cpp" />
     <ClCompile Include="Vector3.h" />
     <ClCompile Include="VulkanRenderer.cpp" />
   </ItemGroup>
@@ -215,6 +216,7 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="TransformSystem.h" />
+    <ClInclude Include="UserInterface.h" />
     <ClInclude Include="VectorConversion.h" />
     <ClInclude Include="VulkanRenderer.h" />
   </ItemGroup>
