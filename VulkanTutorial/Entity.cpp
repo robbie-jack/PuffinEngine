@@ -18,16 +18,16 @@ T* Entity::GetComponent()
 	}
 }
 
-RenderComponent* Entity::GetRenderComponent()
+Puffin::Rendering::MeshComponent* Entity::GetMeshComponent()
 {
 	// Iterate through entity components
 	for (auto comp : entityComponents)
 	{
 		// If component is of type RENDER
-		if (comp->GetType() == ComponentType::RENDER)
+		if (comp->GetType() == ComponentType::MESH)
 		{
 			// Return type cast component
-			return (RenderComponent*)comp;
+			return (Puffin::Rendering::MeshComponent*)comp;
 		}
 	}
 

@@ -7,6 +7,9 @@
 #include <iostream>
 #include <stdexcept>
 
+using namespace Puffin;
+using namespace Puffin::Rendering;
+
 int main()
 {
 	Engine engine;

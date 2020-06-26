@@ -5,7 +5,7 @@
 enum class ComponentType
 {
 	TRANSFORM,
-	RENDER,
+	MESH,
 	PHYSICS
 };
 

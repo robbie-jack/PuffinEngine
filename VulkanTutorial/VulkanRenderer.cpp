@@ -7,6 +7,8 @@
 #include <iostream>
 #include <chrono>
 
+using namespace Puffin::Rendering;
+
 void VulkanRenderer::Init()
 {
 	InitWindow();
@@ -34,33 +36,33 @@ void VulkanRenderer::SendMessage()
 
 }
 
-RenderComponent* VulkanRenderer::AddComponent()
+MeshComponent* VulkanRenderer::AddComponent()
 {
-	RenderComponent render_component;
-	renderComponents.push_back(render_component);
-	return &renderComponents.back();
+	MeshComponent mesh_component;
+	meshComponents.push_back(mesh_component);
+	return &meshComponents.back();
 }
 
 void VulkanRenderer::InitComponent(int handle, std::string model_path, std::string texture_path)
 {
-	InitTexture(renderComponents[handle].GetTexture(), texture_path);
-	LoadMesh(renderComponents[handle].GetMesh(), model_path);
+	InitTexture(meshComponents[handle].GetTexture(), texture_path);
+	Puffin::IO::LoadMesh(meshComponents[handle].GetMesh(), model_path);
 
-	CreateVertexBuffers(renderComponents[handle]);
-	CreateIndexBuffers(renderComponents[handle]);
-	CreateUniformBuffer(renderComponents[handle]);
+	CreateVertexBuffers(meshComponents[handle]);
+	CreateIndexBuffers(meshComponents[handle]);
+	CreateUniformBuffer(meshComponents[handle]);
 }
 
 void VulkanRenderer::InitComponentCube(int handle, glm::vec3 color)
 {
-	InitTexture(renderComponents[handle].GetTexture(), "textures/cube.png");
-	renderComponents[handle].GetMesh().SetupMesh(cube_vertices, cube_indices);
+	InitTexture(meshComponents[handle].GetTexture(), "textures/cube.png");
+	meshComponents[handle].GetMesh().SetupMesh(cube_vertices, cube_indices);
 
-	renderComponents[handle].GetMesh().SetColor(color);
+	meshComponents[handle].GetMesh().SetColor(color);
 
-	CreateVertexBuffers(renderComponents[handle]);
-	CreateIndexBuffers(renderComponents[handle]);
-	CreateUniformBuffer(renderComponents[handle]);
+	CreateVertexBuffers(meshComponents[handle]);
+	CreateIndexBuffers(meshComponents[handle]);
+	CreateUniformBuffer(meshComponents[handle]);
 }
 
 VulkanRenderer::~VulkanRenderer()
@@ -1354,9 +1356,9 @@ void VulkanRenderer::CreateTextureImageView(Texture& texture)
 	texture.GetImageView() = CreateImageView(texture.GetTextureImage(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-void VulkanRenderer::CreateVertexBuffers(RenderComponent& render_component)
+void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(render_component.GetMesh().GetVertices()[0]) * render_component.GetMesh().GetVertices().size();
+	VkDeviceSize bufferSize = sizeof(mesh_component.GetMesh().GetVertices()[0]) * mesh_component.GetMesh().GetVertices().size();
 
 	// Create CPU staging buffer for Vertex data
 	VkBuffer stagingBuffer;
@@ -1368,22 +1370,22 @@ void VulkanRenderer::CreateVertexBuffers(RenderComponent& render_component)
 	// Map vertex data to Staging Buffer
 	void* data;
 	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, render_component.GetMesh().GetVertices().data(), (size_t)bufferSize);
+	memcpy(data, mesh_component.GetMesh().GetVertices().data(), (size_t)bufferSize);
 	vkUnmapMemory(device, stagingBufferMemory);
 
 	// Create GPU vertex buffer
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, render_component.GetVertexBuffer(), render_component.GetVertexMemory());
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mesh_component.GetVertexBuffer(), mesh_component.GetVertexMemory());
 
-	CopyBuffer(stagingBuffer, render_component.GetVertexBuffer(), bufferSize);
+	CopyBuffer(stagingBuffer, mesh_component.GetVertexBuffer(), bufferSize);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
-void VulkanRenderer::CreateIndexBuffers(RenderComponent& render_component)
+void VulkanRenderer::CreateIndexBuffers(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(render_component.GetMesh().GetIndices()[0]) * render_component.GetMesh().GetIndices().size();
+	VkDeviceSize bufferSize = sizeof(mesh_component.GetMesh().GetIndices()[0]) * mesh_component.GetMesh().GetIndices().size();
 
 	// Create CPU staging buffer for Indices data
 	VkBuffer stagingBuffer;
@@ -1395,15 +1397,15 @@ void VulkanRenderer::CreateIndexBuffers(RenderComponent& render_component)
 	// Map indices data to Staging Buffer
 	void* data;
 	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, render_component.GetMesh().GetIndices().data(), (size_t)bufferSize);
+	memcpy(data, mesh_component.GetMesh().GetIndices().data(), (size_t)bufferSize);
 	vkUnmapMemory(device, stagingBufferMemory);
 
 	// Create GPU indices buffer
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 		VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		render_component.GetIndexBuffer(), render_component.GetIndexMemory());
+		mesh_component.GetIndexBuffer(), mesh_component.GetIndexMemory());
 
-	CopyBuffer(stagingBuffer, render_component.GetIndexBuffer(), bufferSize);
+	CopyBuffer(stagingBuffer, mesh_component.GetIndexBuffer(), bufferSize);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -1603,24 +1605,24 @@ void VulkanRenderer::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
 	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-void VulkanRenderer::CreateUniformBuffer(RenderComponent& render_component)
+void VulkanRenderer::CreateUniformBuffer(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(render_component.GetMesh().GetMatrices());
+	VkDeviceSize bufferSize = sizeof(mesh_component.GetMesh().GetMatrices());
 
-	render_component.GetUniformBufferVector().resize(swapChainImages.size());
-	render_component.GetUniformMemoryVector().resize(swapChainImages.size());
+	mesh_component.GetUniformBufferVector().resize(swapChainImages.size());
+	mesh_component.GetUniformMemoryVector().resize(swapChainImages.size());
 
 	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			render_component.GetUniformBuffer(i), render_component.GetUniformBufferMemory(i));
+			mesh_component.GetUniformBuffer(i), mesh_component.GetUniformBufferMemory(i));
 	}
 }
 
 void VulkanRenderer::CreateUniformBuffers()
 {
-	for (auto& comp : renderComponents)
+	for (auto& comp : meshComponents)
 	{
 		CreateUniformBuffer(comp);
 
@@ -1672,19 +1674,19 @@ void VulkanRenderer::CreateDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 4> poolSizes = {};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * renderComponents.size());
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * renderComponents.size());
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
 	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * renderComponents.size());
+	poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
 	poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * renderComponents.size());
+	poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * renderComponents.size());
+	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 	{
@@ -1724,7 +1726,7 @@ void VulkanRenderer::CreateImGuiDescriptorPool()
 
 void VulkanRenderer::CreateDescriptorSets()
 {
-	for (auto& comp : renderComponents)
+	for (auto& comp : meshComponents)
 	{
 		std::vector<VkDescriptorSetLayout> layouts(swapChainImages.size(), descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo = {};
@@ -1837,7 +1839,7 @@ void VulkanRenderer::CreateMainCommandBuffers()
 
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		for (auto& comp : renderComponents)
+		for (auto& comp : meshComponents)
 		{
 			VkBuffer vertexBuffers[] = { comp.GetVertexBuffer() };
 			VkDeviceSize offsets[] = { 0 };
@@ -1997,19 +1999,19 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	renderComponents[0].GetMesh().SetTransform(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	renderComponents[1].GetMesh().SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	//renderComponents[2].GetMesh().SetTransform(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-	renderComponents[3].GetMesh().SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
-	//renderComponents[4].GetMesh().SetTransform(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 0.1f, 10.0f));
+	meshComponents[0].GetMesh().SetTransform(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	meshComponents[1].GetMesh().SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	//meshComponents[2].GetMesh().SetTransform(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	meshComponents[3].GetMesh().SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
+	//meshComponents[4].GetMesh().SetTransform(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 0.1f, 10.0f));
 
-	/*TransformComponent* transformComponent = transformSystem->GetComponent(renderComponents[2].GetEntityID());
+	/*TransformComponent* transformComponent = transformSystem->GetComponent(meshComponents[2].GetEntityID());
 	glm::vec3 position = transformComponent->GetPosition();
 	glm::vec3 rotation = transformComponent->GetRotation();
 	glm::vec3 scale = glm::vec3(0.5f, 0.5f, 0.5f);
-	renderComponents[2].GetMesh().SetTransform(position, rotation, scale);*/
+	meshComponents[2].GetMesh().SetTransform(position, rotation, scale);*/
 
-	for (auto& comp : renderComponents)
+	for (auto& comp : meshComponents)
 	{
 		MeshMatrices matrice = {};
 
@@ -2123,12 +2125,12 @@ void VulkanRenderer::Cleanup()
 	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
 	// Cleanup Meshes
-	for (auto& comp : renderComponents)
+	for (auto& comp : meshComponents)
 	{
-		CleanupRenderComponent(comp);
+		CleanupMeshComponent(comp);
 	}
 
-	renderComponents.clear();
+	meshComponents.clear();
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -2195,17 +2197,17 @@ void VulkanRenderer::CleanupImGui()
 	vkDestroyDescriptorPool(device, imguiDescriptorPool, nullptr);
 }
 
-void VulkanRenderer::CleanupRenderComponent(RenderComponent& render_component)
+void VulkanRenderer::CleanupMeshComponent(MeshComponent& mesh_component)
 {
-	vkDestroyBuffer(device, render_component.GetVertexBuffer(), nullptr);
-	vkFreeMemory(device, render_component.GetVertexMemory(), nullptr);
+	vkDestroyBuffer(device, mesh_component.GetVertexBuffer(), nullptr);
+	vkFreeMemory(device, mesh_component.GetVertexMemory(), nullptr);
 
-	vkDestroyBuffer(device, render_component.GetIndexBuffer(), nullptr);
-	vkFreeMemory(device, render_component.GetIndexMemory(), nullptr);
+	vkDestroyBuffer(device, mesh_component.GetIndexBuffer(), nullptr);
+	vkFreeMemory(device, mesh_component.GetIndexMemory(), nullptr);
 
-	for (int i = 0; i < render_component.GetUniformBufferVector().size(); i++)
+	for (int i = 0; i < mesh_component.GetUniformBufferVector().size(); i++)
 	{
-		vkDestroyBuffer(device, render_component.GetUniformBuffer(i), nullptr);
-		vkFreeMemory(device, render_component.GetUniformBufferMemory(i), nullptr);
+		vkDestroyBuffer(device, mesh_component.GetUniformBuffer(i), nullptr);
+		vkFreeMemory(device, mesh_component.GetUniformBufferMemory(i), nullptr);
 	}
 }

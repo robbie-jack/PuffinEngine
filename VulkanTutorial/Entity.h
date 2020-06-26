@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseComponent.h"
-#include "RenderComponent.h"
+#include "MeshComponent.h"
 #include "ReactPhysicsComponent.h"
 #include "TransformComponent.h"
 
@@ -23,7 +23,7 @@ public:
 	template<typename T>
 	T* GetComponent();
 
-	RenderComponent* GetRenderComponent();
+	Puffin::Rendering::MeshComponent* GetMeshComponent();
 	ReactPhysicsComponent* GetPhysicsComponent();
 	TransformComponent* GetTransformComponent();
 

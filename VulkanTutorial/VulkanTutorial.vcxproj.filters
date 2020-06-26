@@ -64,9 +64,6 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="RenderComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -100,6 +97,9 @@
     <ClCompile Include="UserInterface.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -120,9 +120,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="ModelLoader.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderComponent.h">
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
@@ -165,6 +162,9 @@
     </ClInclude>
     <ClInclude Include="UserInterface.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
