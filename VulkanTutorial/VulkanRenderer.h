@@ -144,7 +144,7 @@ namespace Puffin
 			size_t currentFrame = 0;
 
 			// Input Manager
-			Puffin::UserInterface UI;
+			Puffin::UI::UserInterface UI;
 			Puffin::Input::InputManager inputManager;
 
 			// Camera

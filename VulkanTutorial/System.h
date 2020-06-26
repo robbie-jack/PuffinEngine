@@ -1,27 +1,30 @@
 #pragma once
 
-enum class SystemType
+namespace Puffin
 {
-	ENTITY,
-	RENDER,
-	PHYSICS
-};
+	enum class SystemType
+	{
+		ENTITY,
+		RENDER,
+		PHYSICS
+	};
 
-class System
-{
-public:
+	class System
+	{
+	public:
 
-	virtual void Init() = 0;
+		virtual void Init() = 0;
 
-	virtual bool Update(float dt) = 0;
+		virtual bool Update(float dt) = 0;
 
-	virtual void SendMessage() = 0;
+		virtual void SendMessage() = 0;
 
-	inline SystemType GetType() { return type; };
+		inline SystemType GetType() { return type; };
 
-	virtual ~System() {};
+		virtual ~System() {};
 
-protected:
-	bool running;
-	SystemType type;
-};
+	protected:
+		bool running;
+		SystemType type;
+	};
+}

@@ -22,7 +22,7 @@ namespace Puffin
 		TransformComponent* AddComponent();
 		TransformComponent* GetComponent(uint32_t entityID);
 
-		inline void SetPhysicsRenderVectors(std::vector<ReactPhysicsComponent>* physicsComponents_, std::vector<Rendering::MeshComponent>* meshComponents_)
+		inline void SetPhysicsRenderVectors(std::vector<Physics::ReactPhysicsComponent>* physicsComponents_, std::vector<Rendering::MeshComponent>* meshComponents_)
 		{
 			physicsComponents = physicsComponents_;
 			meshComponents = meshComponents_;
@@ -33,7 +33,7 @@ namespace Puffin
 	private:
 
 		std::vector<TransformComponent> transformComponents;
-		std::vector<ReactPhysicsComponent>* physicsComponents;
+		std::vector<Physics::ReactPhysicsComponent>* physicsComponents;
 		std::vector<Rendering::MeshComponent>* meshComponents;
 	};
 }

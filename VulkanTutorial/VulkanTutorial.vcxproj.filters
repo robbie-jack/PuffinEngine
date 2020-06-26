@@ -35,6 +35,9 @@
     <Filter Include="UI">
       <UniqueIdentifier>{f85018ca-a79a-43dc-8574-6a50af0664fa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{1a471ca7-c49b-4955-b4a3-87fdc3a6f73f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -71,7 +74,6 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Entity.cpp">
       <Filter>Entity</Filter>
@@ -99,6 +101,9 @@
     </ClCompile>
     <ClCompile Include="MeshComponent.cpp">
       <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -129,7 +134,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="InputManager.h" />
     <ClInclude Include="Entity.h">
       <Filter>Entity</Filter>
     </ClInclude>
@@ -165,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="MeshComponent.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

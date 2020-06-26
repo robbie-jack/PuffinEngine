@@ -4,18 +4,22 @@
 
 #include <vector>
 
-class Engine
+namespace Puffin
 {
-public:
+	class Engine
+	{
+	public:
 
-	void MainLoop();
-	void AddSystem(System *sys);
+		void MainLoop();
+		void AddSystem(System* sys);
 
-private:
+	private:
 
-	void Update(float dt);
+		void Update(float dt);
 
-	std::vector<System*> systems;
+		std::vector<System*> systems;
 
-	bool running;
-};
+		bool running;
+	};
+
+}

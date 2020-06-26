@@ -5,18 +5,21 @@
 
 #include <map>
 
-class EntitySystem : public System
+namespace Puffin
 {
-public:
-	void Init();
-	bool Update(float dt);
-	void SendMessage();
+	class EntitySystem : public System
+	{
+	public:
+		void Init();
+		bool Update(float dt);
+		void SendMessage();
 
-	uint32_t CreateEntity();
-	Entity* GetEntity(uint32_t);
+		uint32_t CreateEntity();
+		Entity* GetEntity(uint32_t);
 
-	~EntitySystem();
-private:
-	uint32_t nextID = 1;
-	std::map<uint32_t, Entity> entityMap;
-};
+		~EntitySystem();
+	private:
+		uint32_t nextID = 1;
+		std::map<uint32_t, Entity> entityMap;
+	};
+}

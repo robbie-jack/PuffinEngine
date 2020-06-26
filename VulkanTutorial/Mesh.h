@@ -15,8 +15,6 @@
 
 #include "EntityTransform.h"
 
-using namespace Puffin;
-
 namespace Puffin
 {
 	namespace Rendering

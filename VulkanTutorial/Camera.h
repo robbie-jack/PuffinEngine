@@ -11,80 +11,86 @@
 
 #include <vector>
 
-struct CameraMatrices
+namespace Puffin
 {
-	glm::mat4 perspective;
-	glm::mat4 view;
-};
+	namespace Rendering
+	{
+		struct CameraMatrices
+		{
+			glm::mat4 perspective;
+			glm::mat4 view;
+		};
 
-//struct View
-//{
-//	glm::vec3 eye;
-//	glm::vec3 centre;
-//	glm::vec3 up;
-//};
+		//struct View
+		//{
+		//	glm::vec3 eye;
+		//	glm::vec3 centre;
+		//	glm::vec3 up;
+		//};
 
-struct ViewBufferObject
-{
-	alignas(16) glm::vec3 viewPos;
-};
+		struct ViewBufferObject
+		{
+			alignas(16) glm::vec3 viewPos;
+		};
 
-class Camera
-{
-public:
+		class Camera
+		{
+		public:
 
-	Camera();
-	~Camera();
+			Camera();
+			~Camera();
 
-	void Init(glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov, float aspect, float near, float far);
-	void Update(Puffin::Input::InputManager* input_manager, float delta_time);
+			void Init(glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov, float aspect, float near, float far);
+			void Update(Puffin::Input::InputManager* input_manager, float delta_time);
 
-	inline glm::vec3 GetPosition() { return position; };
+			inline glm::vec3 GetPosition() { return position; };
 
-	inline void SetPosition(glm::vec3 position_) { position = position_; UpdateViewMatrix(); };
-	inline void SetLookAt(glm::vec3 lookat_) { lookat = lookat_; UpdateViewMatrix(); };
-	inline void SetUp(glm::vec3 up_) { up = up_; UpdateViewMatrix(); };
+			inline void SetPosition(glm::vec3 position_) { position = position_; UpdateViewMatrix(); };
+			inline void SetLookAt(glm::vec3 lookat_) { lookat = lookat_; UpdateViewMatrix(); };
+			inline void SetUp(glm::vec3 up_) { up = up_; UpdateViewMatrix(); };
 
-	inline glm::mat4 GetPerspectiveMatrix() { return matrices.perspective; };
-	inline glm::mat4 GetViewMatrix() { return matrices.view; };
+			inline glm::mat4 GetPerspectiveMatrix() { return matrices.perspective; };
+			inline glm::mat4 GetViewMatrix() { return matrices.view; };
 
-	inline void SetPerspectiveMatrix(glm::mat4 perspective) { matrices.perspective = perspective; };
-	inline void SetViewMatrix(glm::mat4 view) { matrices.view = view; };
+			inline void SetPerspectiveMatrix(glm::mat4 perspective) { matrices.perspective = perspective; };
+			inline void SetViewMatrix(glm::mat4 view) { matrices.view = view; };
 
-	/*inline void SetViewEye(glm::vec3 eye_) { view.eye = eye_; viewBufferObject.viewPos = view.eye;  UpdateViewMatrix(); };
-	inline void SetViewCentre(glm::vec3 centre_) { view.centre = centre_; UpdateViewMatrix(); };
-	inline void SetViewUp(glm::vec3 up_) { view.up = up_; UpdateViewMatrix(); };*/
+			/*inline void SetViewEye(glm::vec3 eye_) { view.eye = eye_; viewBufferObject.viewPos = view.eye;  UpdateViewMatrix(); };
+			inline void SetViewCentre(glm::vec3 centre_) { view.centre = centre_; UpdateViewMatrix(); };
+			inline void SetViewUp(glm::vec3 up_) { view.up = up_; UpdateViewMatrix(); };*/
 
-	void SetPerspective(float fov_, float aspect_, float zNear_, float zFar_);
+			void SetPerspective(float fov_, float aspect_, float zNear_, float zFar_);
 
-	inline ViewBufferObject GetViewBufferObject() { return viewBufferObject; };
+			inline ViewBufferObject GetViewBufferObject() { return viewBufferObject; };
 
-	inline VkBuffer& GetViewBuffer(int i) { return viewBufferVector[i]; };
-	inline VkDeviceMemory& GetViewMemory(int i) { return viewMemoryVector[i]; };
+			inline VkBuffer& GetViewBuffer(int i) { return viewBufferVector[i]; };
+			inline VkDeviceMemory& GetViewMemory(int i) { return viewMemoryVector[i]; };
 
-	inline std::vector<VkBuffer>& GetViewBufferVector() { return viewBufferVector; };
-	inline std::vector<VkDeviceMemory>& GetViewMemoryVector() { return viewMemoryVector; };
+			inline std::vector<VkBuffer>& GetViewBufferVector() { return viewBufferVector; };
+			inline std::vector<VkDeviceMemory>& GetViewMemoryVector() { return viewMemoryVector; };
 
-private:
-	float zNear, zFar, fov;
+		private:
+			float zNear, zFar, fov;
 
-	glm::vec3 position;
-	glm::vec3 lookat;
+			glm::vec3 position;
+			glm::vec3 lookat;
 
-	glm::vec3 direction;
-	glm::vec3 up;
-	glm::vec3 right;
+			glm::vec3 direction;
+			glm::vec3 up;
+			glm::vec3 right;
 
-	float yaw;
-	float pitch;
-	float speed;
+			float yaw;
+			float pitch;
+			float speed;
 
-	CameraMatrices matrices;
-	//View view;
+			CameraMatrices matrices;
+			//View view;
 
-	ViewBufferObject viewBufferObject;
-	std::vector<VkBuffer> viewBufferVector;
-	std::vector<VkDeviceMemory> viewMemoryVector;
+			ViewBufferObject viewBufferObject;
+			std::vector<VkBuffer> viewBufferVector;
+			std::vector<VkDeviceMemory> viewMemoryVector;
 
-	void UpdateViewMatrix();
-};
+			void UpdateViewMatrix();
+		};
+	}
+}

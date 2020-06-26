@@ -7,29 +7,32 @@
 
 #include <vector>
 
-class Entity
+namespace Puffin
 {
-public:
+	class Entity
+	{
+	public:
 
-	Entity(uint32_t id);
+		Entity(uint32_t id);
 
-	void AttachComponent(BaseComponent* component);
+		void AttachComponent(BaseComponent* component);
 
-	template <class T>
-	void DetachComponent();
+		template <class T>
+		void DetachComponent();
 
-	inline uint32_t GetID() { return entityID; };
+		inline uint32_t GetID() { return entityID; };
 
-	template<typename T>
-	T* GetComponent();
+		template<typename T>
+		T* GetComponent();
 
-	Puffin::Rendering::MeshComponent* GetMeshComponent();
-	ReactPhysicsComponent* GetPhysicsComponent();
-	TransformComponent* GetTransformComponent();
+		Rendering::MeshComponent* GetMeshComponent();
+		Physics::ReactPhysicsComponent* GetPhysicsComponent();
+		TransformComponent* GetTransformComponent();
 
-protected:
-	uint32_t entityID;
+	protected:
+		uint32_t entityID;
 
-	// Array of handles to components that are attached to enitity
-	std::vector<BaseComponent*> entityComponents;
-};
+		// Array of handles to components that are attached to enitity
+		std::vector<BaseComponent*> entityComponents;
+	};
+}

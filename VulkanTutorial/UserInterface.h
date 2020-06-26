@@ -8,19 +8,22 @@
 
 namespace Puffin
 {
-	class UserInterface
+	namespace UI
 	{
-	public:
+		class UserInterface
+		{
+		public:
 
-		UserInterface();
-		~UserInterface();
+			UserInterface();
+			~UserInterface();
 
-		bool DrawUI(float dt, Puffin::Input::InputManager* InputManager);
+			bool DrawUI(float dt, Puffin::Input::InputManager* InputManager);
 
-	private:
-		bool running;
+		private:
+			bool running;
 
-		float fps;
-		float fps_timer;
-	};
+			float fps;
+			float fps_timer;
+		};
+	}
 }

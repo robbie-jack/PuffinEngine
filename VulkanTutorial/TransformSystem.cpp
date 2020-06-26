@@ -11,7 +11,7 @@ namespace Puffin
 	{
 		for (int i = 0; i < transformComponents.size(); i++)
 		{
-			ReactPhysicsComponent* physicsComp = nullptr;
+			Physics::ReactPhysicsComponent* physicsComp = nullptr;
 			Rendering::MeshComponent* meshComp = nullptr;
 
 			// Find entities Mesh component

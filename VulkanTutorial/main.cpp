@@ -9,6 +9,7 @@
 
 using namespace Puffin;
 using namespace Puffin::Rendering;
+using namespace Puffin::Physics;
 
 int main()
 {
