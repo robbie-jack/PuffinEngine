@@ -89,6 +89,9 @@ namespace Puffin
 
 			inline GLFWwindow* GetWindow() { return window; };
 
+			inline void SetUI(Puffin::UI::UserInterface* ui) { UI = ui; };
+			inline void SetInputManager(Puffin::Input::InputManager* InputManager) { inputManager = InputManager; };
+
 			~VulkanRenderer();
 
 			void InitTexture(Texture& texture, std::string texture_path);
@@ -144,8 +147,8 @@ namespace Puffin
 			size_t currentFrame = 0;
 
 			// Input Manager
-			Puffin::UI::UserInterface UI;
-			Puffin::Input::InputManager inputManager;
+			Puffin::UI::UserInterface* UI;
+			Puffin::Input::InputManager* inputManager;
 
 			// Camera
 			Camera camera;

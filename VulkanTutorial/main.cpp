@@ -19,6 +19,9 @@ int main()
 	ReactPhysicsSystem physicsSystem;
 	VulkanRenderer renderSystem;
 
+	Puffin::UI::UserInterface UI;
+	Puffin::Input::InputManager inputManager;
+
 	std::vector<uint32_t> entityIDs;
 
 	try
@@ -27,6 +30,9 @@ int main()
 		engine.AddSystem(&physicsSystem);
 		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&renderSystem);
+
+		renderSystem.SetUI(&UI);
+		renderSystem.SetInputManager(&inputManager);
 
 		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());
 

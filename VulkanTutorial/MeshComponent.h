@@ -34,7 +34,7 @@ namespace Puffin
 			inline std::vector<VkBuffer>& GetUniformBufferVector() { return uniformBuffers; };
 			inline std::vector<VkDeviceMemory>& GetUniformMemoryVector() { return uniformBuffersMemory; };
 
-		private:
+		protected:
 			Mesh mesh;
 			Texture texture;
 

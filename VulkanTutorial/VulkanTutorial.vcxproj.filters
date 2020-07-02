@@ -38,6 +38,9 @@
     <Filter Include="Input">
       <UniqueIdentifier>{1a471ca7-c49b-4955-b4a3-87fdc3a6f73f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Procedural">
+      <UniqueIdentifier>{a3625e4d-1aa7-407c-bbf5-b4f0af9081b4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -93,9 +96,6 @@
     <ClCompile Include="ReactPhysicsComponent.cpp">
       <Filter>Physics\ReactPhysics</Filter>
     </ClCompile>
-    <ClCompile Include="Vector3.h">
-      <Filter>Types</Filter>
-    </ClCompile>
     <ClCompile Include="UserInterface.cpp">
       <Filter>UI</Filter>
     </ClCompile>
@@ -104,6 +104,9 @@
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector.h">
+      <Filter>Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +175,9 @@
     </ClInclude>
     <ClInclude Include="InputManager.h">
       <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralMeshGenerator.h">
+      <Filter>Procedural</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

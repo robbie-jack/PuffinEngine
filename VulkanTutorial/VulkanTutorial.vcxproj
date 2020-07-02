@@ -191,7 +191,7 @@
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
     <ClCompile Include="UserInterface.cpp" />
-    <ClCompile Include="Vector3.h" />
+    <ClCompile Include="Vector.h" />
     <ClCompile Include="VulkanRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -208,6 +208,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="ProceduralMeshGenerator.h" />
     <ClInclude Include="ReactPhysicsComponent.h" />
     <ClInclude Include="ReactPhysicsSystem.h" />
     <ClInclude Include="MeshComponent.h" />

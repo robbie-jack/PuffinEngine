@@ -4,6 +4,182 @@
 
 namespace Puffin
 {
+	struct Vector2
+	{
+		float x, y;
+
+		// Constructors
+		Vector2()
+		{
+			x = 0.0f;
+			y = 0.0f;
+		}
+
+		Vector2(float x_, float y_)
+		{
+			x = x_;
+			y = y_;
+		}
+
+		// Fill X/Y/Z Components with Val
+		Vector2(float val)
+		{
+			x = val;
+			y = val;
+		}
+
+		Vector2(glm::vec2 vec)
+		{
+			x = vec.x;
+			y = vec.y;
+		}
+
+		Vector2(rp3d::Vector2 vec)
+		{
+			x = vec.x;
+			y = vec.y;
+		}
+
+		// Operator Overrides
+
+		// Operator Conversion
+		operator glm::vec2() const
+		{
+			glm::vec2 vec;
+			vec.x = x;
+			vec.y = y;
+			return vec;
+		}
+
+		operator rp3d::Vector2() const
+		{
+			rp3d::Vector2 vec;
+			vec.x = x;
+			vec.y = y;
+			return vec;
+		}
+
+		// Operator=
+		void operator=(glm::vec2 vec)
+		{
+			x = vec.x;
+			y = vec.y;
+		}
+
+		void operator=(rp3d::Vector2 vec)
+		{
+			x = vec.x;
+			y = vec.y;
+		}
+
+		// Operator+=
+		void operator+=(glm::vec2 vec)
+		{
+			x += vec.x;
+			y += vec.y;
+		}
+
+		void operator+=(rp3d::Vector2 vec)
+		{
+			x += vec.x;
+			y += vec.y;
+		}
+
+		// Operator-=
+		void operator-=(glm::vec2 vec)
+		{
+			x -= vec.x;
+			y -= vec.y;
+		}
+
+		void operator-=(rp3d::Vector2 vec)
+		{
+			x -= vec.x;
+			y -= vec.y;
+		}
+
+		// Operator+
+		Vector2 operator+(Vector2 vec)
+		{
+			Vector2 vector;
+			vector.x = x + vec.x;
+			vector.y = y + vec.y;
+			return vector;
+		}
+
+		Vector2 operator+ (glm::vec2 vec)
+		{
+			Vector2 vector;
+			vector = x + vec.x;
+			vector = y + vec.y;
+			return vector;
+		}
+
+		Vector2 operator+ (rp3d::Vector2 vec)
+		{
+			Vector2 vector;
+			vector = x + vec.x;
+			vector = y + vec.y;
+			return vector;
+		}
+
+		// Operator-
+		Vector2 operator-(Vector2 vec)
+		{
+			Vector2 vector;
+			vector.x = x - vec.x;
+			vector.y = y - vec.y;
+			return vector;
+		}
+
+		Vector2 operator- (glm::vec2 vec)
+		{
+			Vector2 vector;
+			vector = x - vec.x;
+			vector = y - vec.y;
+			return vector;
+		}
+
+		Vector2 operator- (rp3d::Vector2 vec)
+		{
+			Vector2 vector;
+			vector = x - vec.x;
+			vector = y - vec.y;
+			return vector;
+		}
+
+		// Functions
+		float Dot(Vector2 vec)
+		{
+			return (x * vec.x) + (y * vec.y);
+		}
+
+		/*Vector2 Cross(Vector2 vec)
+		{
+			Vector2 cross;
+			cross.x = y * vec.z - z * vec.y;
+			cross.y = x * vec.z - z * vec.x;
+			cross.z = x * vec.y - y * vec.x;
+			return cross;
+		}*/
+
+		float Length()
+		{
+			return sqrtf(x * x + y * y);
+		}
+
+		Vector2 Normalised()
+		{
+			Vector2 vector;
+			float length = Length();
+
+			vector.x / length;
+			vector.y / length;
+
+			return vector;
+		}
+	};
+
 	struct Vector3
 	{
 		float x, y, z;
@@ -193,6 +369,10 @@ namespace Puffin
 			float length = Length();
 
 			vector.x / length;
+			vector.y / length;
+			vector.z / length;
+
+			return vector;
 		}
 
 
