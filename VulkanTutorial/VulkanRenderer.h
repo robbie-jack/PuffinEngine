@@ -4,7 +4,7 @@
 //#include "examples/imgui_impl_glfw.h"
 //#include "examples/imgui_impl_vulkan.h"
 
-#include "UserInterface.h"
+#include "UIManager.h"
 #include "InputManager.h"
 
 #define GLFW_INCLUDE_VULKAN
@@ -89,7 +89,7 @@ namespace Puffin
 
 			inline GLFWwindow* GetWindow() { return window; };
 
-			inline void SetUI(Puffin::UI::UserInterface* ui) { UI = ui; };
+			inline void SetUI(Puffin::UI::UIManager* ui) { uiManager = ui; };
 			inline void SetInputManager(Puffin::Input::InputManager* InputManager) { inputManager = InputManager; };
 
 			~VulkanRenderer();
@@ -147,7 +147,7 @@ namespace Puffin
 			size_t currentFrame = 0;
 
 			// Input Manager
-			Puffin::UI::UserInterface* UI;
+			Puffin::UI::UIManager* uiManager;
 			Puffin::Input::InputManager* inputManager;
 
 			// Camera

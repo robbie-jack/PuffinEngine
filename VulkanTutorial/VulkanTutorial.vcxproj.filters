@@ -78,9 +78,6 @@
     <ClCompile Include="ReactPhysicsComponent.cpp">
       <Filter>Physics\ReactPhysics</Filter>
     </ClCompile>
-    <ClCompile Include="UserInterface.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="MeshComponent.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -107,6 +104,15 @@
     </ClCompile>
     <ClCompile Include="imgui\imgui_impl_vulkan.cpp">
       <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIWindowMenu.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -167,9 +173,6 @@
     <ClInclude Include="VectorConversion.h">
       <Filter>Types</Filter>
     </ClInclude>
-    <ClInclude Include="UserInterface.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="MeshComponent.h">
       <Filter>Rendering</Filter>
     </ClInclude>
@@ -187,6 +190,15 @@
     </ClInclude>
     <ClInclude Include="imgui\imgui_impl_vulkan.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWindowMenu.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

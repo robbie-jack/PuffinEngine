@@ -5,25 +5,32 @@
 #include "imgui/imgui_impl_vulkan.h"
 
 #include "InputManager.h"
+#include "UIWindow.h"
+
+#include <vector>
+#include <memory>
 
 namespace Puffin
 {
 	namespace UI
 	{
-		class UserInterface
+		class UIManager
 		{
 		public:
 
-			UserInterface();
-			~UserInterface();
+			UIManager();
+			~UIManager();
 
 			bool DrawUI(float dt, Puffin::Input::InputManager* InputManager);
+			void AddWindow(UIWindow* window);
 
 		private:
 			bool running;
 
 			float fps;
 			float fps_timer;
+
+			std::vector<UIWindow*> windows;
 		};
 	}
 }

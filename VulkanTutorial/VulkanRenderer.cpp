@@ -25,7 +25,7 @@ bool VulkanRenderer::Update(float dt)
 	camera.Update(inputManager, dt);
 
 	//DrawUI(dt);
-	running = UI->DrawUI(dt, inputManager);
+	running = uiManager->DrawUI(dt, inputManager);
 	DrawFrame(dt);
 
 	return running;

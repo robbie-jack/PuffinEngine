@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.141.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-docking;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\reactphysics3d-0.8\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.141.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\reactphysics3d-0.8\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -151,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.141.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-docking;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\reactphysics3d-0.8\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.141.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\reactphysics3d-0.8\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -174,6 +174,7 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntitySystem.cpp" />
+    <ClCompile Include="UIWindow.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -190,7 +191,8 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
-    <ClCompile Include="UserInterface.cpp" />
+    <ClCompile Include="UIManager.cpp" />
+    <ClCompile Include="UIWindowMenu.cpp" />
     <ClCompile Include="Vector.h" />
     <ClCompile Include="VulkanRenderer.cpp" />
   </ItemGroup>
@@ -205,6 +207,7 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EntitySystem.h" />
     <ClInclude Include="EntityTransform.h" />
+    <ClInclude Include="UIWindow.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_glfw.h" />
     <ClInclude Include="imgui\imgui_impl_vulkan.h" />
@@ -220,7 +223,8 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="TransformSystem.h" />
-    <ClInclude Include="UserInterface.h" />
+    <ClInclude Include="UIManager.h" />
+    <ClInclude Include="UIWindowMenu.h" />
     <ClInclude Include="VectorConversion.h" />
     <ClInclude Include="VulkanRenderer.h" />
   </ItemGroup>
