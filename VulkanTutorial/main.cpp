@@ -5,6 +5,7 @@
 #include "ReactPhysicsSystem.h"
 
 #include "UIWindowMenu.h"
+#include "UIWindowEntities.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -25,6 +26,7 @@ int main()
 	Puffin::Input::InputManager inputManager;
 
 	Puffin::UI::UIWindowMenu windowMenu;
+	Puffin::UI::UIWindowEntities windowEntities;
 
 	std::vector<uint32_t> entityIDs;
 
@@ -36,6 +38,7 @@ int main()
 		engine.AddSystem(&renderSystem);
 
 		uiManager.AddWindow(&windowMenu);
+		uiManager.AddWindow(&windowEntities);
 
 		renderSystem.SetUI(&uiManager);
 		renderSystem.SetInputManager(&inputManager);
@@ -48,6 +51,8 @@ int main()
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(transformSystem.AddComponent());
 			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());
 		}
+
+		windowEntities.SetEntityIDs(entityIDs);
 
 		entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
 		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());

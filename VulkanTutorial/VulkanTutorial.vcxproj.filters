@@ -114,6 +114,9 @@
     <ClCompile Include="UIWindowMenu.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="UIWindowEntities.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -198,6 +201,9 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="UIWindowMenu.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWindowEntities.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>

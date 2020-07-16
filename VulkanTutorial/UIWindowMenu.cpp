@@ -8,6 +8,8 @@ namespace Puffin
 		{
 			if (show)
 			{
+				ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
+
 				flags = ImGuiWindowFlags_MenuBar;
 
 				if (!Begin("Puffin Engine"))
