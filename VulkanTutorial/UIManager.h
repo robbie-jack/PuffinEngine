@@ -27,10 +27,10 @@ namespace Puffin
 		private:
 			bool running;
 
-			float fps;
-			float fps_timer;
-
 			std::vector<UIWindow*> windows;
+
+			bool ShowMainMenuBar(bool* p_open);
+			void SetStyle();
 		};
 	}
 }

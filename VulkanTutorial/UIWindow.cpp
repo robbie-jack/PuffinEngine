@@ -7,6 +7,7 @@ namespace Puffin
 		UIWindow::UIWindow()
 		{
 			show = true;
+			windowSize = ImVec2(0, 0);
 		}
 
 		UIWindow::~UIWindow()

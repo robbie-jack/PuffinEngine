@@ -8,32 +8,18 @@ namespace Puffin
 		{
 			if (show)
 			{
-				ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
+				/*windowSize.x = 400;
+				windowSize.y = 600;
+				ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+				ImGui::ShowDemoWindow();*/
 
-				flags = ImGuiWindowFlags_MenuBar;
-
-				if (!Begin("Puffin Engine"))
+				//Start Window
+				if (!Begin("Performance"))
 				{
 					End();
 				}
 				else
 				{
-					// Menu Bar
-					if (ImGui::BeginMenuBar())
-					{
-						if (ImGui::BeginMenu("Menu"))
-						{
-							if (ImGui::MenuItem("Quit", "Alt+F4"))
-							{
-								return false;
-							}
-
-							ImGui::EndMenu();
-						}
-
-						ImGui::EndMenuBar();
-					}
-
 					// Display FPS
 					fps_timer += dt;
 

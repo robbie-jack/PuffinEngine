@@ -28,6 +28,7 @@ namespace Puffin
 			bool show;
 
 			ImGuiWindowFlags flags;
+			ImVec2 windowSize;
 		};
 	}
 }

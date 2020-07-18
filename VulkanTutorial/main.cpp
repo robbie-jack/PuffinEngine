@@ -25,7 +25,7 @@ int main()
 	Puffin::UI::UIManager uiManager;
 	Puffin::Input::InputManager inputManager;
 
-	Puffin::UI::UIWindowMenu windowMenu;
+	//Puffin::UI::UIWindowMenu windowMenu;
 	Puffin::UI::UIWindowEntities windowEntities;
 
 	std::vector<uint32_t> entityIDs;
@@ -37,7 +37,7 @@ int main()
 		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&renderSystem);
 
-		uiManager.AddWindow(&windowMenu);
+		//uiManager.AddWindow(&windowMenu);
 		uiManager.AddWindow(&windowEntities);
 
 		renderSystem.SetUI(&uiManager);

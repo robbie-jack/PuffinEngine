@@ -8,7 +8,9 @@ namespace Puffin
 		{
 			if (show)
 			{
-				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_Always);
+				windowSize.x = 400;
+				windowSize.y = 600;
+				ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 
 				if (!Begin("Entities"))
 				{
@@ -16,7 +18,7 @@ namespace Puffin
 				}
 				else
 				{
-					ImGui::ListBoxHeader("Entities");
+					ImGui::ListBoxHeader("", ImVec2(400, 600));
 
 					for (uint32_t entityID : entityIDs)
 					{
