@@ -8,7 +8,7 @@ namespace Puffin
 		transform = transform_;
 	}
 
-	TransformComponent::TransformComponent(glm::vec3 position_, glm::vec3 rotation_, glm::vec3 scale_)
+	TransformComponent::TransformComponent(Vector3 position_, Vector3 rotation_, Vector3 scale_)
 	{
 		type = ComponentType::TRANSFORM;
 		transform.position = position_;

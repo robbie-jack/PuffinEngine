@@ -10,18 +10,18 @@ namespace Puffin
 	public:
 
 		TransformComponent(EntityTransform transform);
-		TransformComponent(glm::vec3 position_ = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 rotation_ = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 scale_ = glm::vec3(1.0f, 1.0f, 1.0f));
+		TransformComponent(Vector3 position_ = Vector3(0.0f, 0.0f, 0.0f), Vector3 rotation_ = Vector3(0.0f, 0.0f, 0.0f), Vector3 scale_ = Vector3(1.0f, 1.0f, 1.0f));
 		virtual ~TransformComponent();
 
 		inline void SetTransform(EntityTransform transform_) { transform = transform_; };
-		inline void SetTransform(glm::vec3 position_, glm::vec3 rotation_, glm::vec3 scale_)
+		inline void SetTransform(Vector3 position_, Vector3 rotation_, Vector3 scale_)
 		{
 			transform.position = position_;
 			transform.rotation = rotation_;
 			transform.scale = scale_;
 		};
 
-		inline void SetPosition(glm::vec3 position_) { transform.position = position_; };
+		inline void SetPosition(Vector3 position_) { transform.position = position_; };
 		inline void SetPosition(float x, float y, float z)
 		{
 			transform.position.x = x;
@@ -29,7 +29,7 @@ namespace Puffin
 			transform.position.z = z;
 		};
 
-		inline void SetRotation(glm::vec3 rotation_) { transform.rotation = rotation_; };
+		inline void SetRotation(Vector3 rotation_) { transform.rotation = rotation_; };
 		inline void SetRotation(float x, float y, float z)
 		{
 			transform.rotation.x = x;
@@ -37,7 +37,7 @@ namespace Puffin
 			transform.rotation.z = z;
 		};
 
-		inline void SetScale(glm::vec3 scale_) { transform.scale = scale_; };
+		inline void SetScale(Vector3 scale_) { transform.scale = scale_; };
 		inline void SetScale(float x, float y, float z)
 		{
 			transform.scale.x = x;

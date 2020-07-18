@@ -11,7 +11,7 @@ namespace Puffin
 			running = true;
 
 			// Define Physics World Settings
-			PhysicsWorld::WorldSettings settings;
+			rp3d::PhysicsWorld::WorldSettings settings;
 			settings.defaultPositionSolverNbIterations = 20;
 			settings.isSleepingEnabled = false;
 			settings.gravity = rp3d::Vector3(0.0f, -9.8f, 0.0f);
@@ -22,7 +22,7 @@ namespace Puffin
 			timeSinceLastUpdate = 0.0f;
 
 			InitComponent(0);
-			InitComponent(1, rp3d::Vector3(0.0f, -5.0f, 0.0f), rp3d::Vector3(0.0f, 0.0f, 0.0f), BodyType::STATIC);
+			InitComponent(1, rp3d::Vector3(0.0f, -5.0f, 0.0f), rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::BodyType::STATIC);
 		}
 
 		bool ReactPhysicsSystem::Update(float dt)
@@ -40,7 +40,7 @@ namespace Puffin
 				timeSinceLastUpdate -= timeStep;
 			}
 
-			decimal factor = timeSinceLastUpdate / timeStep;
+			rp3d::decimal factor = timeSinceLastUpdate / timeStep;
 
 			for (int i = 0; i < physicsComponents.size(); i++)
 			{
@@ -48,7 +48,7 @@ namespace Puffin
 				rp3d::Transform currTransform = physicsComponents[i].GetTransform();
 
 				// Calculate Interpolated Transform between previous and current transforms
-				rp3d::Transform lerpTransform = Transform::interpolateTransforms(physicsComponents[i].GetPrevTransform(), currTransform, factor);
+				rp3d::Transform lerpTransform = rp3d::Transform::interpolateTransforms(physicsComponents[i].GetPrevTransform(), currTransform, factor);
 
 				// Set interpolated transform on component so it can be retrieved by transform system
 				physicsComponents[i].SetLerpTransform(lerpTransform);
@@ -83,7 +83,7 @@ namespace Puffin
 			}
 		}
 
-		void ReactPhysicsSystem::InitComponent(int handle, rp3d::Vector3 position, rp3d::Vector3 rotation, BodyType bodyType)
+		void ReactPhysicsSystem::InitComponent(int handle, rp3d::Vector3 position, rp3d::Vector3 rotation, rp3d::BodyType bodyType)
 		{
 			// Create Quaternion/Transform of new rigid body
 			rp3d::Quaternion initQuaternion = rp3d::Quaternion::fromEulerAngles(rotation);

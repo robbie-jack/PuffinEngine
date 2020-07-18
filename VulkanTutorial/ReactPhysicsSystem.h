@@ -20,7 +20,7 @@ namespace Puffin
 
 			ReactPhysicsComponent* AddComponent();
 			ReactPhysicsComponent* GetComponent(uint32_t entityID);
-			void InitComponent(int handle, rp3d::Vector3 position = rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::Vector3 rotation = rp3d::Vector3(0.0f, 0.0f, 0.0f), BodyType bodyType = BodyType::DYNAMIC);
+			void InitComponent(int handle, rp3d::Vector3 position = rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::Vector3 rotation = rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::BodyType bodyType = rp3d::BodyType::DYNAMIC);
 
 			inline std::vector<ReactPhysicsComponent>* GetComponents() { return &physicsComponents; };
 

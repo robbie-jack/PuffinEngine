@@ -31,7 +31,11 @@ namespace Puffin
 
 			bool* p_open = NULL;
 
-			running = ShowMainMenuBar(p_open);
+			// Show Dockspace with Menu Bar for Editor Windows
+			/*if (!ShowDockspace(p_open))
+			{
+				running = false;
+			}*/
 
 			// Draw UI Windows
 			if (windows.size() > 0)
@@ -50,7 +54,7 @@ namespace Puffin
 			return running;
 		}
 
-		bool UIManager::ShowMainMenuBar(bool* p_open)
+		bool UIManager::ShowDockspace(bool* p_open)
 		{
 			static bool opt_fullscreen_persistant = true;
 			bool opt_fullscreen = opt_fullscreen_persistant;

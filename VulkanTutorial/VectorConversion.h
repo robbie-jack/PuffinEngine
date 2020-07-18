@@ -1,27 +1,27 @@
 #pragma once
 
 #include "reactphysics3d/reactphysics3d.h"
-#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
 
 using namespace reactphysics3d;
 
-static inline glm::vec3 ConvertVectorToGLM(rp3d::Vector3 vector)
-{
-	glm::vec3 glm_vector;
-	glm_vector.x = (float)vector.x;
-	glm_vector.y = (float)vector.y;
-	glm_vector.z = (float)vector.z;
-	return glm_vector;
-}
-
-static inline rp3d::Vector3 ConvertVectorToRP3D(glm::vec3 vector)
-{
-	rp3d::Vector3 rp3d_vector;
-	rp3d_vector.x = (decimal)vector.x;
-	rp3d_vector.y = (decimal)vector.y;
-	rp3d_vector.z = (decimal)vector.z;
-	return rp3d_vector;
-}
+//static inline glm::vec3 ConvertVectorToGLM(rp3d::Vector3 vector)
+//{
+//	glm::vec3 glm_vector;
+//	glm_vector.x = (float)vector.x;
+//	glm_vector.y = (float)vector.y;
+//	glm_vector.z = (float)vector.z;
+//	return glm_vector;
+//}
+//
+//static inline rp3d::Vector3 ConvertVectorToRP3D(glm::vec3 vector)
+//{
+//	rp3d::Vector3 rp3d_vector;
+//	rp3d_vector.x = (decimal)vector.x;
+//	rp3d_vector.y = (decimal)vector.y;
+//	rp3d_vector.z = (decimal)vector.z;
+//	return rp3d_vector;
+//}
 
 static rp3d::Vector3 ConvertToEulerAngles(Quaternion q)
 {

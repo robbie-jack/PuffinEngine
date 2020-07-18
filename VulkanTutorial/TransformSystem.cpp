@@ -39,8 +39,11 @@ namespace Puffin
 			{
 				rp3d::Transform physicsTransform = physicsComp->GetLerpTransform();
 
-				transformComponents[i].SetPosition(ConvertVectorToGLM(physicsTransform.getPosition()));
-				transformComponents[i].SetRotation(ConvertVectorToGLM(ConvertToEulerAngles(physicsTransform.getOrientation())));
+				//transformComponents[i].SetPosition(ConvertVectorToGLM(physicsTransform.getPosition()));
+				//transformComponents[i].SetRotation(ConvertVectorToGLM(ConvertToEulerAngles(physicsTransform.getOrientation())));
+
+				transformComponents[i].SetPosition(physicsTransform.getPosition());
+				transformComponents[i].SetRotation(ConvertToEulerAngles(physicsTransform.getOrientation()));
 			}
 
 			// Update Mesh component transform from entity transform

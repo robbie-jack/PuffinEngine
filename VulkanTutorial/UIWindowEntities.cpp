@@ -11,6 +11,7 @@ namespace Puffin
 				windowSize.x = 400;
 				windowSize.y = 600;
 				ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+				flags = ImGuiWindowFlags_MenuBar;
 
 				if (!Begin("Entities"))
 				{
@@ -18,6 +19,23 @@ namespace Puffin
 				}
 				else
 				{
+					// Main Menu Bar - Temporary until Editor Dockspace is implemented fully
+					if (ImGui::BeginMenuBar())
+					{
+						if (ImGui::BeginMenu("Menu"))
+						{
+							if (ImGui::MenuItem("Quit", "Alt+F4"))
+							{
+								return false;
+							}
+
+							ImGui::EndMenu();
+						}
+
+						ImGui::EndMenuBar();
+					}
+
+					// List All Entities and their ID/Name
 					ImGui::ListBoxHeader("", ImVec2(400, 600));
 
 					for (uint32_t entityID : entityIDs)

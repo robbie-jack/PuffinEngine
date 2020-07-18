@@ -29,7 +29,7 @@ namespace Puffin
 
 			std::vector<UIWindow*> windows;
 
-			bool ShowMainMenuBar(bool* p_open);
+			bool ShowDockspace(bool* p_open);
 			void SetStyle();
 		};
 	}
