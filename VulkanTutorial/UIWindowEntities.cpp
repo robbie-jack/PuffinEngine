@@ -36,7 +36,7 @@ namespace Puffin
 					}
 
 					// List All Entities and their ID/Name
-					ImGui::ListBoxHeader("", ImVec2(400, 600));
+					ImGui::ListBoxHeader("", ImGui::GetWindowSize()); // Make ListBox fill Window
 
 					for (uint32_t entityID : entityIDs)
 					{

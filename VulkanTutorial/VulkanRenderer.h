@@ -176,8 +176,8 @@ namespace Puffin
 
 			bool framebufferResized = false;
 
-			const int WIDTH = 1920;
-			const int HEIGHT = 1080;
+			const int WIDTH = 1280;
+			const int HEIGHT = 720;
 
 			const int MAX_FRAMES_IN_FLIGHT = 2;
 
