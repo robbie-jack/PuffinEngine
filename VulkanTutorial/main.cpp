@@ -4,8 +4,9 @@
 #include "VulkanRenderer.h"
 #include "ReactPhysicsSystem.h"
 
-#include "UIWindowMenu.h"
+//#include "UIWindowMenu.h"
 #include "UIWindowEntities.h"
+#include "UIWindowSceneView.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -27,6 +28,7 @@ int main()
 
 	//Puffin::UI::UIWindowMenu windowMenu;
 	Puffin::UI::UIWindowEntities windowEntities;
+	Puffin::UI::UIWindowSceneView windowSceneView;
 
 	std::vector<uint32_t> entityIDs;
 
@@ -39,6 +41,7 @@ int main()
 
 		//uiManager.AddWindow(&windowMenu);
 		uiManager.AddWindow(&windowEntities);
+		uiManager.AddWindow(&windowSceneView);
 
 		renderSystem.SetUI(&uiManager);
 		renderSystem.SetInputManager(&inputManager);

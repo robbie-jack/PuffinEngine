@@ -194,6 +194,7 @@
     <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="UIWindowEntities.cpp" />
     <ClCompile Include="UIWindowMenu.cpp" />
+    <ClCompile Include="UIWindowSceneView.cpp" />
     <ClCompile Include="Vector.h" />
     <ClCompile Include="VulkanRenderer.cpp" />
   </ItemGroup>
@@ -208,6 +209,7 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EntitySystem.h" />
     <ClInclude Include="EntityTransform.h" />
+    <ClInclude Include="UIWindowSceneView.h" />
     <ClInclude Include="UIWindow.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_glfw.h" />

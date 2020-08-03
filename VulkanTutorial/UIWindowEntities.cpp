@@ -11,7 +11,7 @@ namespace Puffin
 				windowSize.x = 400;
 				windowSize.y = 600;
 				ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-				flags = ImGuiWindowFlags_MenuBar;
+				flags = ImGuiWindowFlags_MenuBar; // MenuBar Flag, remove when Main Menu Bar is removed
 
 				if (!Begin("Entities"))
 				{

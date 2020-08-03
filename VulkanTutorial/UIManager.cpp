@@ -37,6 +37,8 @@ namespace Puffin
 				running = false;
 			}*/
 
+			//ImGui::ShowDemoWindow();
+
 			// Draw UI Windows
 			if (windows.size() > 0)
 			{
