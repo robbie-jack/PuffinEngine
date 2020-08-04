@@ -9,7 +9,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		class UIWindowSceneView : public UIWindow
+		class UIWindowViewport : public UIWindow
 		{
 		public:
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;

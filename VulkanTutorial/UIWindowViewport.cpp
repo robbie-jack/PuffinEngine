@@ -1,11 +1,11 @@
-#include "UIWindowSceneView.h"
+#include "UIWindowViewport.h"
 #include "imgui/imgui_impl_vulkan.h"
 
 namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowSceneView::Draw(float dt, Puffin::Input::InputManager* InputManager)
+		bool UIWindowViewport::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
 			if (show)
 			{
@@ -13,7 +13,7 @@ namespace Puffin
 				windowSize.y = 600;
 				ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 
-				if (!Begin("Scene View"))
+				if (!Begin("Viewport"))
 				{
 					End();
 				}

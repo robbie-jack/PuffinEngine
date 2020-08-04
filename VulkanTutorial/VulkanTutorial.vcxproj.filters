@@ -117,7 +117,7 @@
     <ClCompile Include="UIWindowEntities.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="UIWindowSceneView.cpp">
+    <ClCompile Include="UIWindowViewport.cpp">
       <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -209,7 +209,7 @@
     <ClInclude Include="UIWindowEntities.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIWindowSceneView.h">
+    <ClInclude Include="UIWindowViewport.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>

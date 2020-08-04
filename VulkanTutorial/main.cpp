@@ -6,7 +6,7 @@
 
 //#include "UIWindowMenu.h"
 #include "UIWindowEntities.h"
-#include "UIWindowSceneView.h"
+#include "UIWindowViewport.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -28,7 +28,7 @@ int main()
 
 	//Puffin::UI::UIWindowMenu windowMenu;
 	Puffin::UI::UIWindowEntities windowEntities;
-	Puffin::UI::UIWindowSceneView windowSceneView;
+	Puffin::UI::UIWindowViewport windowSceneView;
 
 	std::vector<uint32_t> entityIDs;
 
