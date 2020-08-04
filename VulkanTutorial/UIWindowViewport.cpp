@@ -9,9 +9,7 @@ namespace Puffin
 		{
 			if (show)
 			{
-				windowSize.x = 400;
-				windowSize.y = 600;
-				ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
 				if (!Begin("Viewport"))
 				{
@@ -19,11 +17,8 @@ namespace Puffin
 				}
 				else
 				{
-					// Test Text
-					ImGui::Text("Test");
-
 					// Display Scene View Texture
-					//ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(textureSampler, sceneTexture.GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), windowSize);
+					ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(textureSampler, sceneTexture.GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), ImGui::GetWindowSize());
 
 					return true;
 				}

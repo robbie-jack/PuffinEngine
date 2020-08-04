@@ -28,7 +28,7 @@ int main()
 
 	//Puffin::UI::UIWindowMenu windowMenu;
 	Puffin::UI::UIWindowEntities windowEntities;
-	Puffin::UI::UIWindowViewport windowSceneView;
+	Puffin::UI::UIWindowViewport windowViewport;
 
 	std::vector<uint32_t> entityIDs;
 
@@ -41,9 +41,10 @@ int main()
 
 		//uiManager.AddWindow(&windowMenu);
 		uiManager.AddWindow(&windowEntities);
-		uiManager.AddWindow(&windowSceneView);
+		uiManager.AddWindow(&windowViewport);
 
 		renderSystem.SetUI(&uiManager);
+		renderSystem.SetUIWindowViewport(&windowViewport);
 		renderSystem.SetInputManager(&inputManager);
 
 		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());

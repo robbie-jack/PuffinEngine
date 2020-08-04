@@ -124,6 +124,10 @@ void VulkanRenderer::InitVulkan()
 
 	// Create Sampler
 	CreateTextureSampler();
+	uiWindowViewport->SetTextureSampler(textureSampler);
+
+	InitTexture(viewportTexture, "textures/texture.jpg");
+	uiWindowViewport->SetSceneTexture(viewportTexture);
 
 	// Initliaze Camera
 	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
