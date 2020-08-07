@@ -15,13 +15,9 @@ namespace Puffin
 
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
-			inline void SetTextureSampler(VkSampler sampler) { textureSampler = sampler; };
 			inline void SetSceneTexture(Puffin::Rendering::Texture texture) { sceneTexture = texture; };
 
 		private:
-
-			// Vulkan Texture Sampler for Rendering Textures
-			VkSampler textureSampler;
 
 			// Texture Containing Rendered Scene
 			Puffin::Rendering::Texture sceneTexture;
