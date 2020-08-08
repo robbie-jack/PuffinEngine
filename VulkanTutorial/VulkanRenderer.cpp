@@ -24,7 +24,6 @@ bool VulkanRenderer::Update(float dt)
 	inputManager->UpdateInput(window);
 	camera.Update(inputManager, dt);
 
-	//DrawUI(dt);
 	running = uiManager->DrawUI(dt, inputManager);
 	DrawFrame(dt);
 
@@ -83,8 +82,7 @@ void VulkanRenderer::InitWindow()
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 
-	inputManager->SetupInput();
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	inputManager->SetupInput(window);
 }
 
 //void VulkanRenderer::SetupInput()

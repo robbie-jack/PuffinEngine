@@ -19,6 +19,11 @@ namespace Puffin
 			return true;
 		}
 
+		void UIWindow::Show()
+		{
+			show = !show;
+		}
+
 		bool UIWindow::Begin(std::string name)
 		{
 			return ImGui::Begin(name.c_str(), &show, flags);

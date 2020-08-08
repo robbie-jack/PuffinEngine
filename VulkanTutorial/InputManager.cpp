@@ -10,7 +10,7 @@ namespace Puffin
 			last_x_pos = 640.0f;
 			last_y_pos = 360.0f;
 			sensitivity = 0.05f;
-			cursor_locked = true;
+			cursor_locked = false;
 			firstMouse = true;
 		}
 
@@ -19,9 +19,9 @@ namespace Puffin
 
 		}
 
-		void Puffin::Input::InputManager::SetupInput()
+		void Puffin::Input::InputManager::SetupInput(GLFWwindow* window)
 		{
-			// Actions
+			// Setup Actions
 
 			// Camera Actions
 			AddAction("CamMoveForward", GLFW_KEY_W);
@@ -31,6 +31,16 @@ namespace Puffin
 			AddAction("CamMoveUp", GLFW_KEY_E);
 			AddAction("CamMoveDown", GLFW_KEY_Q);
 			AddAction("CursorSwitch", GLFW_KEY_F1);
+
+			// Setup Mouse Cursor
+			if (cursor_locked == true)
+			{
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			}
+			else
+			{
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
 		}
 
 		void Puffin::Input::InputManager::UpdateInput(GLFWwindow* window)

@@ -118,6 +118,21 @@ namespace Puffin
 					ImGui::EndMenu();
 				}
 
+				// List all windows
+				if (ImGui::BeginMenu("Windows"))
+				{
+					if (windows.size() > 0)
+					{
+						for (int i = 0; i < windows.size(); i++)
+						{
+							// Show/Unshow window if clicked
+							ImGui::MenuItem(windows[i]->GetName().c_str(), NULL, windows[i]->GetShow());
+						}
+					}
+
+					ImGui::EndMenu();
+				}
+
 				ImGui::EndMenuBar();
 			}
 

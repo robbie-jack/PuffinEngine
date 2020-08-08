@@ -26,7 +26,6 @@ int main()
 	Puffin::UI::UIManager uiManager;
 	Puffin::Input::InputManager inputManager;
 
-	//Puffin::UI::UIWindowMenu windowMenu;
 	Puffin::UI::UIWindowEntities windowEntities;
 	Puffin::UI::UIWindowViewport windowViewport;
 
@@ -39,7 +38,6 @@ int main()
 		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&renderSystem);
 
-		//uiManager.AddWindow(&windowMenu);
 		uiManager.AddWindow(&windowEntities);
 		uiManager.AddWindow(&windowViewport);
 

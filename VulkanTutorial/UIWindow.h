@@ -21,6 +21,8 @@ namespace Puffin
 
 			void Show();
 
+			inline bool* GetShow() { return &show; };
+			inline std::string GetName() { return windowName; };
 			inline void SetTextureSampler(VkSampler sampler) { textureSampler = sampler; };
 
 		protected:
@@ -30,6 +32,9 @@ namespace Puffin
 
 			// Boolean for if window is currently visible
 			bool show;
+
+			// Name of window
+			std::string windowName;
 
 			ImGuiWindowFlags flags;
 

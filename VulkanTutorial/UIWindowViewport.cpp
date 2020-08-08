@@ -11,7 +11,8 @@ namespace Puffin
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				if (!Begin("Viewport"))
+				windowName = "Viewport";
+				if (!Begin(windowName))
 				{
 					End();
 				}
@@ -19,12 +20,10 @@ namespace Puffin
 				{
 					// Display Scene View Texture
 					ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(textureSampler, sceneTexture.GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), ImGui::GetWindowSize());
-
-					return true;
 				}
-
-				return true;
 			}
+
+			return true;
 		}
 	}
 }
