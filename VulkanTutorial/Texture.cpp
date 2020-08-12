@@ -7,7 +7,7 @@ namespace Puffin
 		void Texture::Cleanup(VkDevice device)
 		{
 			vkDestroyImage(device, textureImage, nullptr);
-			vkFreeMemory(device, textureImageMemory, nullptr);
+			//vkFreeMemory(device, textureImageMemory, nullptr);
 			vkDestroyImageView(device, textureImageView, nullptr);
 		}
 	}

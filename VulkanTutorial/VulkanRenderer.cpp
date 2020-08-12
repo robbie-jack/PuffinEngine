@@ -1218,7 +1218,8 @@ void VulkanRenderer::CreateDepthResources()
 
 	// Create Image with VMA
 	CreateImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImage, depthImageAllocation);
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		depthImage, VMA_MEMORY_USAGE_GPU_ONLY,  depthImageAllocation);
 	depthImageView = CreateImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
@@ -1259,7 +1260,7 @@ void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat forma
 	vkBindImageMemory(device, image, imageMemory, 0);
 }
 
-void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation)
+void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaMemoryUsage allocationUsage, VmaAllocation& allocation)
 {
 	VkImageCreateInfo imageInfo = {};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1277,7 +1278,7 @@ void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat forma
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	VmaAllocationCreateInfo allocInfo = {};
-	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+	allocInfo.usage = allocationUsage;
 
 	if (vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr))
 	{
@@ -1371,24 +1372,40 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 
 	// Create Staging Buffer/Memory for image
 	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
+	//VkDeviceMemory stagingBufferMemory;
+	VmaAllocation stagingAllocation;
 
+	// Old Buffer Creation
+	/*CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		stagingBuffer, stagingBufferMemory);*/
+
+	// VMA Buffer Creation
 	CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer, stagingBufferMemory);
+		stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingAllocation);
 
 	// Copy Texture data to staging buffer
-	void* data;
+	/*void* data;
 	vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
 	memcpy(data, pixels, static_cast<size_t>(imageSize));
-	vkUnmapMemory(device, stagingBufferMemory);
+	vkUnmapMemory(device, stagingBufferMemory);*/
+
+	void* data;
+	vmaMapMemory(allocator, stagingAllocation, &data);
+	memcpy(data, pixels, static_cast<size_t>(imageSize));
+	vmaUnmapMemory(allocator, stagingAllocation);
 
 	// Free Loaded texture
 	stbi_image_free(pixels);
 
-	CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+	/*CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.GetTextureImage(), texture.GetTextureMemory());
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.GetTextureImage(), texture.GetTextureMemory());*/
+
+	CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		texture.GetTextureImage(), VMA_MEMORY_USAGE_GPU_ONLY, texture.GetTextureAllocation());
 
 	TransitionImageLayout(texture.GetTextureImage(), VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -1399,7 +1416,8 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
-	vkFreeMemory(device, stagingBufferMemory, nullptr);
+	//vkFreeMemory(device, stagingBufferMemory, nullptr);
+	vmaFreeMemory(allocator, stagingAllocation);
 }
 
 void VulkanRenderer::CreateTextureImageView(Texture& texture)
@@ -1530,10 +1548,29 @@ void VulkanRenderer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, V
 
 	if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
 	{
-		throw std::runtime_error("failed to allocate vertex buffer memory!");
+		throw std::runtime_error("failed to allocate buffer memory!");
 	}
 
 	vkBindBufferMemory(device, buffer, bufferMemory, 0);
+}
+
+void VulkanRenderer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VmaMemoryUsage allocationUsage, VmaAllocation& allocation)
+{
+	// Define Buffer Info and Create Buffer
+	VkBufferCreateInfo bufferInfo = {};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = allocationUsage;
+	allocInfo.requiredFlags = properties;
+
+	if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr))
+	{
+		throw std::runtime_error("failed to allocate buffer memory!");
+	}
 }
 
 void VulkanRenderer::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
