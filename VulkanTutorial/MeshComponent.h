@@ -26,13 +26,13 @@ namespace Puffin
 			inline VkBuffer& GetIndexBuffer() { return indexBuffer; };
 			inline VkBuffer& GetUniformBuffer(int i) { return uniformBuffers[i]; };
 
-			inline VkDeviceMemory& GetVertexMemory() { return vertexBufferMemory; };
-			inline VkDeviceMemory& GetIndexMemory() { return indexBufferMemory; };
-			inline VkDeviceMemory& GetUniformBufferMemory(int i) { return uniformBuffersMemory[i]; };
+			inline VmaAllocation& GetVertexAllocation() { return vertexAllocation; };
+			inline VmaAllocation& GetIndexAllocation() { return indexAllocation; };
+			inline VmaAllocation& GetUniformAllocation(int i) { return uniformAllocations[i]; };
 
 			inline std::vector<VkDescriptorSet>& GetDescriptorSets() { return descriptorSets; };
 			inline std::vector<VkBuffer>& GetUniformBufferVector() { return uniformBuffers; };
-			inline std::vector<VkDeviceMemory>& GetUniformMemoryVector() { return uniformBuffersMemory; };
+			inline std::vector<VmaAllocation>& GetUniformAllocationsVector() { return uniformAllocations; };
 
 		protected:
 			Mesh mesh;
@@ -40,15 +40,15 @@ namespace Puffin
 
 			// Vertex Buffer
 			VkBuffer vertexBuffer;
-			VkDeviceMemory vertexBufferMemory;
+			VmaAllocation vertexAllocation;
 
 			// Index Buffer
 			VkBuffer indexBuffer;
-			VkDeviceMemory indexBufferMemory;
+			VmaAllocation indexAllocation;
 
 			// Uniform Buffers
 			std::vector<VkBuffer> uniformBuffers;
-			std::vector<VkDeviceMemory> uniformBuffersMemory;
+			std::vector<VmaAllocation> uniformAllocations;
 
 			std::vector<VkDescriptorSet> descriptorSets;
 		};

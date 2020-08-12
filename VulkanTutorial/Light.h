@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include "vk_mem_alloc.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -37,17 +38,17 @@ namespace Puffin
 			inline LightBufferObject GetLightBufferObject() { return lightUniformBuffer; };
 
 			inline VkBuffer& GetLightBuffer(int i) { return lightBufferVector[i]; };
-			inline VkDeviceMemory& GetLightMemory(int i) { return lightMemoryVector[i]; };
+			inline VmaAllocation& GetLightAllocation(int i) { return lightAllocationVector[i]; };
 
 			inline std::vector<VkBuffer>& GetLightBufferVector() { return lightBufferVector; };
-			inline std::vector<VkDeviceMemory>& GetLightMemoryVector() { return lightMemoryVector; };
+			inline std::vector<VmaAllocation>& GetLightAllocationVector() { return lightAllocationVector; };
 
 		private:
 
 			LightBufferObject lightUniformBuffer;
 
 			std::vector<VkBuffer> lightBufferVector;
-			std::vector<VkDeviceMemory> lightMemoryVector;
+			std::vector<VmaAllocation> lightAllocationVector;
 		};
 	}
 }

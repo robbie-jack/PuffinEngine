@@ -1210,54 +1210,11 @@ void VulkanRenderer::CreateDepthResources()
 {
 	VkFormat depthFormat = FindDepthFormat();
 
-	// Create Image and Create Memory Object
-	/*CreateImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		depthImage, depthImageMemory);
-	depthImageView = CreateImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);*/
-
 	// Create Image with VMA
 	CreateImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
 		depthImage, VMA_MEMORY_USAGE_GPU_ONLY,  depthImageAllocation);
 	depthImageView = CreateImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-}
-
-void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
-{
-	VkImageCreateInfo imageInfo = {};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.extent.width = width;
-	imageInfo.extent.height = height;
-	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = 1;
-	imageInfo.format = format;
-	imageInfo.tiling = tiling;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageInfo.usage = usage;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create image!");
-	}
-
-	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(device, image, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-	if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to allocate image memory!");
-	}
-
-	vkBindImageMemory(device, image, imageMemory, 0);
 }
 
 void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaMemoryUsage allocationUsage, VmaAllocation& allocation)
@@ -1372,13 +1329,7 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 
 	// Create Staging Buffer/Memory for image
 	VkBuffer stagingBuffer;
-	//VkDeviceMemory stagingBufferMemory;
 	VmaAllocation stagingAllocation;
-
-	// Old Buffer Creation
-	/*CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer, stagingBufferMemory);*/
 
 	// VMA Buffer Creation
 	CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -1386,11 +1337,6 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 		stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingAllocation);
 
 	// Copy Texture data to staging buffer
-	/*void* data;
-	vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
-	memcpy(data, pixels, static_cast<size_t>(imageSize));
-	vkUnmapMemory(device, stagingBufferMemory);*/
-
 	void* data;
 	vmaMapMemory(allocator, stagingAllocation, &data);
 	memcpy(data, pixels, static_cast<size_t>(imageSize));
@@ -1398,10 +1344,6 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 
 	// Free Loaded texture
 	stbi_image_free(pixels);
-
-	/*CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.GetTextureImage(), texture.GetTextureMemory());*/
 
 	CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -1416,7 +1358,6 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
-	//vkFreeMemory(device, stagingBufferMemory, nullptr);
 	vmaFreeMemory(allocator, stagingAllocation);
 }
 
@@ -1431,25 +1372,27 @@ void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
 
 	// Create CPU staging buffer for Vertex data
 	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
+	VmaAllocation stagingAllocation;
+
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer, stagingBufferMemory);
+		stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingAllocation);
 
 	// Map vertex data to Staging Buffer
 	void* data;
-	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	vmaMapMemory(allocator, stagingAllocation, &data);
 	memcpy(data, mesh_component.GetMesh().GetVertices().data(), (size_t)bufferSize);
-	vkUnmapMemory(device, stagingBufferMemory);
+	vmaUnmapMemory(allocator, stagingAllocation);
 
 	// Create GPU vertex buffer
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mesh_component.GetVertexBuffer(), mesh_component.GetVertexMemory());
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mesh_component.GetVertexBuffer(),
+		VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.GetVertexAllocation());
 
 	CopyBuffer(stagingBuffer, mesh_component.GetVertexBuffer(), bufferSize);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
-	vkFreeMemory(device, stagingBufferMemory, nullptr);
+	vmaFreeMemory(allocator, stagingAllocation);
 }
 
 void VulkanRenderer::CreateIndexBuffers(MeshComponent& mesh_component)
@@ -1458,26 +1401,27 @@ void VulkanRenderer::CreateIndexBuffers(MeshComponent& mesh_component)
 
 	// Create CPU staging buffer for Indices data
 	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
+	VmaAllocation stagingAllocation;
+
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer, stagingBufferMemory);
+		stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingAllocation);
 
 	// Map indices data to Staging Buffer
 	void* data;
-	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	vmaMapMemory(allocator, stagingAllocation, &data);
 	memcpy(data, mesh_component.GetMesh().GetIndices().data(), (size_t)bufferSize);
-	vkUnmapMemory(device, stagingBufferMemory);
+	vmaUnmapMemory(allocator, stagingAllocation);
 
 	// Create GPU indices buffer
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 		VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		mesh_component.GetIndexBuffer(), mesh_component.GetIndexMemory());
+		mesh_component.GetIndexBuffer(), VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.GetIndexAllocation());
 
 	CopyBuffer(stagingBuffer, mesh_component.GetIndexBuffer(), bufferSize);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
-	vkFreeMemory(device, stagingBufferMemory, nullptr);
+	vmaFreeMemory(allocator, stagingAllocation);
 }
 
 void VulkanRenderer::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
@@ -1521,37 +1465,6 @@ void VulkanRenderer::CreateTextureSampler()
 	{
 		throw std::runtime_error("failed to create texture sampler!");
 	}
-}
-
-void VulkanRenderer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
-{
-	// Define Buffer Info and Create Buffer
-	VkBufferCreateInfo bufferInfo = {};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = size;
-	bufferInfo.usage = usage;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create vertex buffer!");
-	}
-
-	// Assign Memory for Buffer
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-	if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to allocate buffer memory!");
-	}
-
-	vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
 void VulkanRenderer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VmaMemoryUsage allocationUsage, VmaAllocation& allocation)
@@ -1698,13 +1611,13 @@ void VulkanRenderer::CreateUniformBuffer(MeshComponent& mesh_component)
 	VkDeviceSize bufferSize = sizeof(mesh_component.GetMesh().GetMatrices());
 
 	mesh_component.GetUniformBufferVector().resize(swapChainImages.size());
-	mesh_component.GetUniformMemoryVector().resize(swapChainImages.size());
+	mesh_component.GetUniformAllocationsVector().resize(swapChainImages.size());
 
 	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			mesh_component.GetUniformBuffer(i), mesh_component.GetUniformBufferMemory(i));
+			mesh_component.GetUniformBuffer(i), VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.GetUniformAllocation(i));
 	}
 }
 
@@ -1713,18 +1626,6 @@ void VulkanRenderer::CreateUniformBuffers()
 	for (auto& comp : meshComponents)
 	{
 		CreateUniformBuffer(comp);
-
-		/*VkDeviceSize bufferSize = sizeof(mesh.GetMatrices());
-
-		mesh.GetUniformBufferVector().resize(swapChainImages.size());
-		mesh.GetUniformMemoryVector().resize(swapChainImages.size());
-
-		for (size_t i = 0; i < swapChainImages.size(); i++)
-		{
-			CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				mesh.GetUniformBuffer(i), mesh.GetUniformBufferMemory(i));
-		}*/
 	}
 }
 
@@ -1733,13 +1634,13 @@ void VulkanRenderer::CreateLightBuffers()
 	VkDeviceSize bufferSize = sizeof(light.GetLightBufferVector());
 
 	light.GetLightBufferVector().resize(swapChainImages.size());
-	light.GetLightMemoryVector().resize(swapChainImages.size());
+	light.GetLightAllocationVector().resize(swapChainImages.size());
 
 	for (int i = 0; i < swapChainImages.size(); i++)
 	{
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			light.GetLightBuffer(i), light.GetLightMemory(i));
+			light.GetLightBuffer(i), VMA_MEMORY_USAGE_GPU_ONLY, light.GetLightAllocation(i));
 	}
 }
 
@@ -1748,13 +1649,13 @@ void VulkanRenderer::CreateViewBuffers()
 	VkDeviceSize bufferSize = sizeof(ViewBufferObject);
 
 	camera.GetViewBufferVector().resize(swapChainImages.size());
-	camera.GetViewMemoryVector().resize(swapChainImages.size());
+	camera.GetViewAllocationVector().resize(swapChainImages.size());
 
 	for (int i = 0; i < swapChainImages.size(); i++)
 	{
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			camera.GetViewBuffer(i), camera.GetViewMemory(i));
+			camera.GetViewBuffer(i), VMA_MEMORY_USAGE_GPU_ONLY, camera.GetViewAllocation(i));
 	}
 }
 
@@ -2089,24 +1990,14 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 
 	meshComponents[0].GetMesh().SetTransform(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	meshComponents[1].GetMesh().SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	//meshComponents[2].GetMesh().SetTransform(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 	meshComponents[3].GetMesh().SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
-	//meshComponents[4].GetMesh().SetTransform(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 0.1f, 10.0f));
-
-	/*TransformComponent* transformComponent = transformSystem->GetComponent(meshComponents[2].GetEntityID());
-	glm::vec3 position = transformComponent->GetPosition();
-	glm::vec3 rotation = transformComponent->GetRotation();
-	glm::vec3 scale = glm::vec3(0.5f, 0.5f, 0.5f);
-	meshComponents[2].GetMesh().SetTransform(position, rotation, scale);*/
 
 	for (auto& comp : meshComponents)
 	{
 		MeshMatrices matrice = {};
 
-		//mesh.BuildTransform();
 		matrice.model = BuildMeshTransform(comp.GetMesh().GetTransform());
 
-		//matrice.model = mesh.GetMatrices().model;
 		matrice.inv_model = glm::inverse(matrice.model);
 		matrice.view = camera.GetViewMatrix();
 		matrice.proj = camera.GetPerspectiveMatrix();
@@ -2115,17 +2006,17 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 		comp.GetMesh().SetMatrices(matrice);
 
 		void* data;
-		vkMapMemory(device, comp.GetUniformBufferMemory(currentImage), 0, sizeof(matrice), 0, &data);
+		vmaMapMemory(allocator, comp.GetUniformAllocation(currentImage), &data);
 		memcpy(data, &matrice, sizeof(matrice));
-		vkUnmapMemory(device, comp.GetUniformBufferMemory(currentImage));
+		vmaUnmapMemory(allocator, comp.GetUniformAllocation(currentImage));
 
-		vkMapMemory(device, light.GetLightMemory(currentImage), 0, sizeof(LightBufferObject), 0, &data);
+		vmaMapMemory(allocator, light.GetLightAllocation(currentImage), &data);
 		memcpy(data, &light.GetLightBufferObject(), sizeof(LightBufferObject));
-		vkUnmapMemory(device, light.GetLightMemory(currentImage));
+		vmaUnmapMemory(allocator, light.GetLightAllocation(currentImage));
 
-		vkMapMemory(device, camera.GetViewMemory(currentImage), 0, sizeof(ViewBufferObject), 0, &data);
+		vmaMapMemory(allocator, camera.GetViewAllocation(currentImage), &data);
 		memcpy(data, &camera.GetViewBufferObject(), sizeof(ViewBufferObject));
-		vkUnmapMemory(device, camera.GetViewMemory(currentImage));
+		vmaUnmapMemory(allocator, camera.GetViewAllocation(currentImage));
 	}
 }
 
@@ -2246,11 +2137,7 @@ void VulkanRenderer::CleanupSwapChain()
 {
 	vkDestroyImageView(device, depthImageView, nullptr);
 
-	// Destory Depth Image and Free Memory
-	/*vkDestroyImage(device, depthImage, nullptr);
-	vkFreeMemory(device, depthImageMemory, nullptr);*/
-
-	// Destroy Depth Image and Allocation
+	// Destroy Depth Image and Memory Allocation
 	vmaDestroyImage(allocator, depthImage, depthImageAllocation);
 
 	for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
@@ -2296,14 +2183,14 @@ void VulkanRenderer::CleanupImGui()
 void VulkanRenderer::CleanupMeshComponent(MeshComponent& mesh_component)
 {
 	vkDestroyBuffer(device, mesh_component.GetVertexBuffer(), nullptr);
-	vkFreeMemory(device, mesh_component.GetVertexMemory(), nullptr);
+	vmaFreeMemory(allocator, mesh_component.GetVertexAllocation());
 
 	vkDestroyBuffer(device, mesh_component.GetIndexBuffer(), nullptr);
-	vkFreeMemory(device, mesh_component.GetIndexMemory(), nullptr);
+	vmaFreeMemory(allocator, mesh_component.GetIndexAllocation());
 
 	for (int i = 0; i < mesh_component.GetUniformBufferVector().size(); i++)
 	{
 		vkDestroyBuffer(device, mesh_component.GetUniformBuffer(i), nullptr);
-		vkFreeMemory(device, mesh_component.GetUniformBufferMemory(i), nullptr);
+		vmaFreeMemory(allocator, mesh_component.GetUniformAllocation(i));
 	}
 }

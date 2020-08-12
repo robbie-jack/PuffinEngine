@@ -3,6 +3,7 @@
 #include "InputManager.h"
 
 #include <vulkan/vulkan.h>
+#include "vk_mem_alloc.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -64,10 +65,10 @@ namespace Puffin
 			inline ViewBufferObject GetViewBufferObject() { return viewBufferObject; };
 
 			inline VkBuffer& GetViewBuffer(int i) { return viewBufferVector[i]; };
-			inline VkDeviceMemory& GetViewMemory(int i) { return viewMemoryVector[i]; };
+			inline VmaAllocation& GetViewAllocation(int i) { return viewAllocationVector[i]; };
 
 			inline std::vector<VkBuffer>& GetViewBufferVector() { return viewBufferVector; };
-			inline std::vector<VkDeviceMemory>& GetViewMemoryVector() { return viewMemoryVector; };
+			inline std::vector<VmaAllocation>& GetViewAllocationVector() { return viewAllocationVector; };
 
 		private:
 			float zNear, zFar, fov;
@@ -88,7 +89,7 @@ namespace Puffin
 
 			ViewBufferObject viewBufferObject;
 			std::vector<VkBuffer> viewBufferVector;
-			std::vector<VkDeviceMemory> viewMemoryVector;
+			std::vector<VmaAllocation> viewAllocationVector;
 
 			void UpdateViewMatrix();
 		};
