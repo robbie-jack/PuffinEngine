@@ -4,6 +4,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+
 #include <iostream>
 #include <chrono>
 
@@ -111,6 +114,7 @@ void VulkanRenderer::InitVulkan()
 	CreateSurface();
 	PickPhysicalDevice();
 	CreateLogicalDevice();
+	CreateAllocator(); // Create Memory Allocator
 	CreateSwapChain();
 	CreateImageViews();
 	CreateRenderPass();
@@ -670,6 +674,18 @@ void VulkanRenderer::CreateLogicalDevice()
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 }
 
+void VulkanRenderer::CreateAllocator()
+{
+	// Initiliase Allocator Info
+	VmaAllocatorCreateInfo allocatorInfo = {};
+	allocatorInfo.physicalDevice = physicalDevice;
+	allocatorInfo.device = device;
+	allocatorInfo.instance = instance;
+
+	// Create Allocator
+	vmaCreateAllocator(&allocatorInfo, &allocator);
+}
+
 void VulkanRenderer::CreateSwapChain()
 {
 	SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevice);
@@ -1194,9 +1210,15 @@ void VulkanRenderer::CreateDepthResources()
 {
 	VkFormat depthFormat = FindDepthFormat();
 
-	CreateImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+	// Create Image and Create Memory Object
+	/*CreateImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		depthImage, depthImageMemory);
+	depthImageView = CreateImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);*/
+
+	// Create Image with VMA
+	CreateImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImage, depthImageAllocation);
 	depthImageView = CreateImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
@@ -1235,6 +1257,32 @@ void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat forma
 	}
 
 	vkBindImageMemory(device, image, imageMemory, 0);
+}
+
+void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation)
+{
+	VkImageCreateInfo imageInfo = {};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.extent.width = width;
+	imageInfo.extent.height = height;
+	imageInfo.extent.depth = 1;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.format = format;
+	imageInfo.tiling = tiling;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.usage = usage;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	if (vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr))
+	{
+		throw std::runtime_error("failed to create image!");
+	}
 }
 
 uint32_t VulkanRenderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -2144,6 +2192,9 @@ void VulkanRenderer::Cleanup()
 
 	vkDestroyCommandPool(device, commandPool, nullptr);
 
+	// Destory Memory Allocator
+	vmaDestroyAllocator(allocator);
+
 	vkDestroyDevice(device, nullptr);
 
 	vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -2157,8 +2208,13 @@ void VulkanRenderer::Cleanup()
 void VulkanRenderer::CleanupSwapChain()
 {
 	vkDestroyImageView(device, depthImageView, nullptr);
-	vkDestroyImage(device, depthImage, nullptr);
-	vkFreeMemory(device, depthImageMemory, nullptr);
+
+	// Destory Depth Image and Free Memory
+	/*vkDestroyImage(device, depthImage, nullptr);
+	vkFreeMemory(device, depthImageMemory, nullptr);*/
+
+	// Destroy Depth Image and Allocation
+	vmaDestroyImage(allocator, depthImage, depthImageAllocation);
 
 	for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
 	{

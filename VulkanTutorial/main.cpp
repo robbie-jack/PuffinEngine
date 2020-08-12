@@ -39,7 +39,7 @@ int main()
 		engine.AddSystem(&renderSystem);
 
 		uiManager.AddWindow(&windowEntities);
-		uiManager.AddWindow(&windowViewport);
+		//uiManager.AddWindow(&windowViewport);
 
 		renderSystem.SetUI(&uiManager);
 		renderSystem.SetUIWindowViewport(&windowViewport);

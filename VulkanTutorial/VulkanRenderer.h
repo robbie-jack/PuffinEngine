@@ -16,6 +16,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "vk_mem_alloc.h"
+
 #include "Mesh.h"
 #include "Texture.h"
 #include "Camera.h"
@@ -110,6 +112,9 @@ namespace Puffin
 			VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 			VkDevice device;
 
+			// Memory Allocator
+			VmaAllocator allocator;
+
 			// Queues
 			VkQueue graphicsQueue;
 			VkQueue presentQueue;
@@ -177,7 +182,8 @@ namespace Puffin
 			VkSampler textureSampler;
 
 			VkImage depthImage;
-			VkDeviceMemory depthImageMemory;
+			//VkDeviceMemory depthImageMemory;
+			VmaAllocation depthImageAllocation;
 			VkImageView depthImageView;
 
 			bool framebufferResized = false;
@@ -231,6 +237,7 @@ namespace Puffin
 			void CreateSurface();
 			void PickPhysicalDevice();
 			void CreateLogicalDevice();
+			void CreateAllocator();
 			void CreateSwapChain();
 			void CreateImageViews();
 			void CreateRenderPass();
@@ -278,6 +285,7 @@ namespace Puffin
 			VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
 			void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+			void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation);
 			VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 			uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
