@@ -158,7 +158,9 @@ namespace Puffin
 			Puffin::UI::UIWindowViewport* uiWindowViewport;
 			Puffin::Input::InputManager* inputManager;
 
-			// Texture for Viewport
+			// UI Viewport Rendering Variables
+			VkRenderPass viewportRenderPass;
+			VkFramebuffer viewportFramebuffer;
 			Texture viewportTexture;
 
 			// Camera
@@ -241,6 +243,7 @@ namespace Puffin
 			void CreateSwapChain();
 			void CreateImageViews();
 			void CreateRenderPass();
+			void CreateViewportRenderPass();
 			void CreateDescriptorSetLayout();
 			void CreateGraphicsPipeline();
 			void CreateCommandPool(VkCommandPool& command_pool, VkCommandPoolCreateFlags flags);

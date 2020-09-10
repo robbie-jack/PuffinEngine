@@ -888,6 +888,12 @@ void VulkanRenderer::CreateRenderPass()
 	}
 }
 
+void VulkanRenderer::CreateViewportRenderPass()
+{
+	VkAttachmentDescription colorAttachment = {};
+	colorAttachment.format = 
+}
+
 void VulkanRenderer::CreateImGuiRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
