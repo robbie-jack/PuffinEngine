@@ -146,6 +146,14 @@ namespace Puffin
 			std::vector<VkCommandBuffer> imguiCommandBuffers;
 			VkDescriptorPool imguiDescriptorPool;
 
+			// UI Viewport Rendering Variables
+			VkRenderPass viewportRenderPass;
+			std::vector<VkFramebuffer> viewportFramebuffers;
+			VkCommandPool viewportCommandPool;
+			std::vector<VkCommandBuffer> viewportCommandBuffers;
+			VkDescriptorPool viewportDescriptorPool;
+			Texture viewportTexture;
+
 			// Semaphore/Flights for Synchronisation
 			std::vector<VkSemaphore> imageAvailableSemaphores;
 			std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -157,11 +165,6 @@ namespace Puffin
 			Puffin::UI::UIManager* uiManager;
 			Puffin::UI::UIWindowViewport* uiWindowViewport;
 			Puffin::Input::InputManager* inputManager;
-
-			// UI Viewport Rendering Variables
-			VkRenderPass viewportRenderPass;
-			VkFramebuffer viewportFramebuffer;
-			Texture viewportTexture;
 
 			// Camera
 			Camera camera;
@@ -267,6 +270,7 @@ namespace Puffin
 			void CreateDescriptorPool();
 			void CreateDescriptorSets();
 			void CreateMainCommandBuffers();
+			void CreateViewportCommandBuffers();
 			void CreateImGuiCommandBuffers();
 			void CreateCommandBuffers(VkCommandBuffer* command_buffer, uint32_t command_buffer_count, VkCommandPool& command_pool);
 			void CreateSyncObjects();

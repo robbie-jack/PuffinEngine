@@ -114,8 +114,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\lib-vc2019;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\bullet3-master\bin;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\reactphysics3d-0.7.1\build\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;BulletDynamics_vs2010_x64_debug.lib;BulletCollision_vs2010_x64_debug.lib;LinearMath_vs2010_x64_debug.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\lib-vc2019;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\reactphysics3d-0.8\build\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>

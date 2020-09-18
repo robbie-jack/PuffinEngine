@@ -32,7 +32,7 @@ namespace Puffin
 	protected:
 		uint32_t entityID;
 
-		// Array of handles to components that are attached to enitity
+		// Array of handles to components that are attached to entity
 		std::vector<BaseComponent*> entityComponents;
 	};
 }

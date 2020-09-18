@@ -118,6 +118,7 @@ void VulkanRenderer::InitVulkan()
 	CreateSwapChain();
 	CreateImageViews();
 	CreateRenderPass();
+	CreateViewportRenderPass();
 	CreateDescriptorSetLayout();
 	CreateGraphicsPipeline();
 	CreateCommandPool(commandPool, 0);
@@ -152,6 +153,8 @@ void VulkanRenderer::InitVulkan()
 
 	CreateMainCommandBuffers();
 	CreateSyncObjects();
+
+	CreateViewportCommandBuffers();
 
 	SetupImGui();
 }
@@ -316,6 +319,8 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateDescriptorPool();
 	CreateDescriptorSets();
 	CreateMainCommandBuffers();
+
+	CreateViewportCommandBuffers();
 
 	CreateImGuiRenderPass();
 	CreateImGuiFramebuffers();
@@ -891,7 +896,53 @@ void VulkanRenderer::CreateRenderPass()
 void VulkanRenderer::CreateViewportRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
-	colorAttachment.format = 
+	colorAttachment.format = swapChainImageFormat;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference colorAttachmentRef = {};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+
+	std::array<VkSubpassDependency, 2> dependencies;
+
+	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[0].dstSubpass = 0;
+	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	dependencies[1].srcSubpass = 0;
+	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	renderPassInfo.pDependencies = dependencies.data();
+
+	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &viewportRenderPass) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create viewport render pass!");
+	}
 }
 
 void VulkanRenderer::CreateImGuiRenderPass()
@@ -1855,6 +1906,14 @@ void VulkanRenderer::CreateMainCommandBuffers()
 			throw std::runtime_error("failed to record command buffer!");
 		}
 	}
+}
+
+void VulkanRenderer::CreateViewportCommandBuffers()
+{
+	//Create Viewport Command Pool/Buffers
+	CreateCommandPool(viewportCommandPool, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+	viewportCommandBuffers.resize(swapChainFramebuffers.size());
+	CreateCommandBuffers(viewportCommandBuffers.data(), static_cast<uint32_t>(viewportCommandBuffers.size()), viewportCommandPool);
 }
 
 void VulkanRenderer::CreateImGuiCommandBuffers()
