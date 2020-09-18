@@ -252,6 +252,7 @@ namespace Puffin
 			void CreateCommandPool(VkCommandPool& command_pool, VkCommandPoolCreateFlags flags);
 			void CreateDepthResources();
 			void CreateFrameBuffers();
+			void CreateViewportFrameBuffers();
 			void CreateImGuiFramebuffers();
 
 			void CreateTextureImage(Texture& texture, std::string texture_path);
@@ -303,6 +304,9 @@ namespace Puffin
 			VkCommandBuffer BeginSingleTimeCommands();
 			void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
+			void CreateViewportVariables();
+			void CreateImGuiVariables();
+
 			void SetupImGui();
 			void SetupImGuiWindow();
 			void CreateImGuiDescriptorPool();
@@ -314,9 +318,10 @@ namespace Puffin
 
 			void DrawFrame(float delta_time);
 			void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
+			void UpdateImguiCommandBuffers();
+
 			glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 			glm::mat4 BuildMeshTransform(EntityTransform transform);
-			void UpdateImguiCommandBuffers();
 
 			//-------------------------------------------------------------------------------------
 

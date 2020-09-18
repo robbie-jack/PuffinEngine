@@ -118,7 +118,6 @@ void VulkanRenderer::InitVulkan()
 	CreateSwapChain();
 	CreateImageViews();
 	CreateRenderPass();
-	CreateViewportRenderPass();
 	CreateDescriptorSetLayout();
 	CreateGraphicsPipeline();
 	CreateCommandPool(commandPool, 0);
@@ -154,7 +153,7 @@ void VulkanRenderer::InitVulkan()
 	CreateMainCommandBuffers();
 	CreateSyncObjects();
 
-	CreateViewportCommandBuffers();
+	CreateViewportVariables();
 
 	SetupImGui();
 }
@@ -223,10 +222,7 @@ void VulkanRenderer::SetupImGuiWindow()
 	//imgui_window->PresentMode = SelectPresentMode(present_modes, IM_ARRAYSIZE(present_modes));
 
 	IM_ASSERT(swapChainImages.size() >= 2);
-	CreateImGuiRenderPass();
-	CreateImGuiFramebuffers();
-	CreateImGuiDescriptorPool();
-	CreateImGuiCommandBuffers();
+	CreateImGuiVariables();
 }
 
 VkSurfaceFormatKHR VulkanRenderer::SelectSurfaceFormats(const VkFormat* request_formats, int request_formats_count, VkColorSpaceKHR request_color_space)
@@ -320,8 +316,19 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateDescriptorSets();
 	CreateMainCommandBuffers();
 
-	CreateViewportCommandBuffers();
+	CreateViewportVariables();
+	CreateImGuiVariables();
+}
 
+void VulkanRenderer::CreateViewportVariables()
+{
+	CreateViewportRenderPass();
+	CreateViewportFrameBuffers();
+	CreateViewportCommandBuffers();
+}
+
+void VulkanRenderer::CreateImGuiVariables()
+{
 	CreateImGuiRenderPass();
 	CreateImGuiFramebuffers();
 	CreateImGuiDescriptorPool();
@@ -1339,6 +1346,32 @@ void VulkanRenderer::CreateFrameBuffers()
 		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create framebuffer!");
+		}
+	}
+}
+
+void VulkanRenderer::CreateViewportFrameBuffers()
+{
+	viewportFramebuffers.resize(swapChainImageViews.size());
+	
+	VkImageView attachment[1];
+
+	VkFramebufferCreateInfo framebufferInfo = {};
+	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	framebufferInfo.renderPass = viewportRenderPass;
+	framebufferInfo.attachmentCount = 1;
+	framebufferInfo.pAttachments = attachment;
+	framebufferInfo.width = swapChainExtent.width;
+	framebufferInfo.height = swapChainExtent.height;
+	framebufferInfo.layers = 1;
+
+	for (int i = 0; i < swapChainImageViews.size(); i++)
+	{
+		attachment[0] = swapChainImageViews[i];
+
+		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &viewportFramebuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create viewport framebuffer!");
 		}
 	}
 }
