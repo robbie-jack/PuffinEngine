@@ -32,10 +32,10 @@ namespace Puffin
 			bool* p_open = NULL;
 
 			// Show Dockspace with Menu Bar for Editor Windows
-			if (!ShowDockspace(p_open))
+			/*if (!ShowDockspace(p_open))
 			{
 				running = false;
-			}
+			}*/
 
 			//ImGui::ShowDemoWindow();
 

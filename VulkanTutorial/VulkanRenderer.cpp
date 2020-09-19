@@ -126,6 +126,7 @@ void VulkanRenderer::InitVulkan()
 	CreateCommandPool(commandPool, 0);
 	CreateDepthResources();
 	CreateFrameBuffers();
+	CreateViewportVariables();
 
 	// Create Sampler
 	CreateTextureSampler();
@@ -317,7 +318,15 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateDescriptorSets();
 	CreateMainCommandBuffers();
 
+	CreateViewportVariables();
 	CreateImGuiVariables();
+}
+
+void VulkanRenderer::CreateViewportVariables()
+{
+	CreateViewportImages();
+	CreateViewportImageViews();
+	CreateViewportFramebuffers();
 }
 
 void VulkanRenderer::CreateImGuiVariables()
@@ -832,18 +841,69 @@ VkImageView VulkanRenderer::CreateImageView(VkImage image, VkFormat format, VkIm
 	return imageView;
 }
 
+void VulkanRenderer::CreateViewportImages()
+{
+	viewport.images.resize(swapChainImages.size());
+	viewport.imageAllocations.resize(viewport.images.size());
+
+	for (size_t i = 0; i < viewport.images.size(); i++)
+	{
+		CreateImage(viewport.extent.width, viewport.extent.height,
+			viewport.format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, viewport.images[i], VMA_MEMORY_USAGE_GPU_ONLY, viewport.imageAllocations[i]);
+	}
+}
+
+void VulkanRenderer::CreateViewportImageViews()
+{
+	viewport.imageViews.resize(viewport.images.size());
+
+	for (size_t i = 0; i < viewport.imageViews.size(); i++)
+	{
+		viewport.imageViews[i] = CreateImageView(viewport.images[i], viewport.format, VK_IMAGE_ASPECT_COLOR_BIT);
+	}
+}
+
+void VulkanRenderer::CreateViewportFramebuffers()
+{
+	viewport.framebuffers.resize(viewport.images.size());
+
+	for (size_t i = 0; i < viewport.framebuffers.size(); i++)
+	{
+		std::array<VkImageView, 2> attachments = {
+			viewport.imageViews[i],
+			depthImageView
+		};
+
+		VkFramebufferCreateInfo framebufferInfo = {};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferInfo.pAttachments = attachments.data();
+		framebufferInfo.width = viewport.extent.width;
+		framebufferInfo.height = viewport.extent.height;
+		framebufferInfo.layers = 1;
+
+		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &viewport.framebuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create framebuffer!");
+		}
+	}
+}
+
 void VulkanRenderer::CreateRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
 	colorAttachment.format = swapChainImageFormat;
+	colorAttachment.format = viewport.format;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentReference colorAttachmentRef = {};
 	colorAttachmentRef.attachment = 0;
@@ -1799,6 +1859,7 @@ void VulkanRenderer::CreateDescriptorSets()
 void VulkanRenderer::CreateMainCommandBuffers()
 {
 	commandBuffers.resize(swapChainFramebuffers.size());
+	//commandBuffers.resize(viewport.framebuffers.size());
 
 	CreateCommandBuffers(commandBuffers.data(), (uint32_t)commandBuffers.size(), commandPool);
 
@@ -1818,9 +1879,11 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = renderPass;
 		renderPassInfo.framebuffer = swapChainFramebuffers[i];
+		//renderPassInfo.framebuffer = viewport.framebuffers[i];
 
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = swapChainExtent;
+		//renderPassInfo.renderArea.extent = viewport.extent;
 
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -2101,6 +2164,7 @@ void VulkanRenderer::UpdateImguiCommandBuffers()
 
 void VulkanRenderer::Cleanup()
 {
+	CleanupViewport();
 	CleanupSwapChain();
 	CleanupImGui();
 
@@ -2167,9 +2231,19 @@ void VulkanRenderer::CleanupSwapChain()
 	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 }
 
+void VulkanRenderer::CleanupViewport()
+{
+	for (size_t i = 0; i < viewport.images.size(); i++)
+	{
+		vkDestroyImageView(device, viewport.imageViews[i], nullptr);
+		vmaDestroyImage(allocator, viewport.images[i], viewport.imageAllocations[i]);
+		vkDestroyFramebuffer(device, viewport.framebuffers[i], nullptr);
+	}
+}
+
 void VulkanRenderer::CleanupImGui()
 {
-	for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
+	for (size_t i = 0; i < imguiFramebuffers.size(); i++)
 	{
 		vkDestroyFramebuffer(device, imguiFramebuffers[i], nullptr);
 	}

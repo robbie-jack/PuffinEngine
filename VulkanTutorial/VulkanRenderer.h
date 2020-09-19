@@ -61,6 +61,16 @@ struct SwapChainSupportDetails
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct Viewport
+{
+	VkExtent2D extent = { 1024, 1024 };
+	VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+	std::vector<VkImage> images;
+	std::vector<VmaAllocation> imageAllocations;
+	std::vector<VkImageView> imageViews;
+	std::vector<VkFramebuffer> framebuffers;
+};
+
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
@@ -146,7 +156,8 @@ namespace Puffin
 			std::vector<VkCommandBuffer> imguiCommandBuffers;
 			VkDescriptorPool imguiDescriptorPool;
 
-			// UI Viewport Rendering Variables
+			// Viewport Rendering Variables
+			Viewport viewport;
 			Texture viewportTexture;
 
 			// Semaphore/Flights for Synchronisation
@@ -295,6 +306,12 @@ namespace Puffin
 			VkCommandBuffer BeginSingleTimeCommands();
 			void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
+			// Viewport Setup Functions
+			void CreateViewportVariables();
+			void CreateViewportImages();
+			void CreateViewportImageViews();
+			void CreateViewportFramebuffers();
+
 			// ImGui Functions
 			void SetupImGui();
 			void SetupImGuiWindow();
@@ -321,6 +338,7 @@ namespace Puffin
 
 			void Cleanup();
 			void CleanupSwapChain();
+			void CleanupViewport();
 			void CleanupImGui();
 			void CleanupMeshComponent(MeshComponent& mesh_component);
 		};
