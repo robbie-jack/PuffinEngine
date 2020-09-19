@@ -156,8 +156,6 @@ void VulkanRenderer::InitVulkan()
 	CreateMainCommandBuffers();
 	CreateSyncObjects();
 
-	CreateViewportVariables();
-
 	SetupImGui();
 }
 
@@ -319,16 +317,7 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateDescriptorSets();
 	CreateMainCommandBuffers();
 
-	CreateViewportVariables();
 	CreateImGuiVariables();
-}
-
-void VulkanRenderer::CreateViewportVariables()
-{
-	CreateViewportRenderPass();
-	CreateViewportFrameBuffers();
-	CreateViewportDescriptorPool();
-	CreateViewportCommandBuffers();
 }
 
 void VulkanRenderer::CreateImGuiVariables()
@@ -727,7 +716,7 @@ void VulkanRenderer::CreateSwapChain()
 	createInfo.imageColorSpace = surfaceFormat.colorSpace;
 	createInfo.imageExtent = extent;
 	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 	QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -901,58 +890,6 @@ void VulkanRenderer::CreateRenderPass()
 	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create render pass!");
-	}
-}
-
-void VulkanRenderer::CreateViewportRenderPass()
-{
-	VkAttachmentDescription colorAttachment = {};
-	colorAttachment.format = swapChainImageFormat;
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-	VkAttachmentReference colorAttachmentRef = {};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpass = {};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-
-	std::array<VkSubpassDependency, 2> dependencies;
-
-	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependencies[0].dstSubpass = 0;
-	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-	dependencies[1].srcSubpass = 0;
-	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-
-	VkRenderPassCreateInfo renderPassInfo = {};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
-	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-	renderPassInfo.pDependencies = dependencies.data();
-
-	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &viewportRenderPass) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create viewport render pass!");
 	}
 }
 
@@ -1354,32 +1291,6 @@ void VulkanRenderer::CreateFrameBuffers()
 	}
 }
 
-void VulkanRenderer::CreateViewportFrameBuffers()
-{
-	viewportFramebuffers.resize(swapChainImageViews.size());
-	
-	VkImageView attachment[1];
-
-	VkFramebufferCreateInfo framebufferInfo = {};
-	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	framebufferInfo.renderPass = viewportRenderPass;
-	framebufferInfo.attachmentCount = 1;
-	framebufferInfo.pAttachments = attachment;
-	framebufferInfo.width = swapChainExtent.width;
-	framebufferInfo.height = swapChainExtent.height;
-	framebufferInfo.layers = 1;
-
-	for (int i = 0; i < swapChainImageViews.size(); i++)
-	{
-		attachment[0] = swapChainImageViews[i];
-
-		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &viewportFramebuffers[i]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create viewport framebuffer!");
-		}
-	}
-}
-
 void VulkanRenderer::CreateImGuiFramebuffers()
 {
 	imguiFramebuffers.resize(swapChainImageViews.size());
@@ -1777,27 +1688,6 @@ void VulkanRenderer::CreateDescriptorPool()
 	}
 }
 
-void VulkanRenderer::CreateViewportDescriptorPool()
-{
-	// What does the descriptor count need to be set to? What is the signifigance of 6 and 8?
-	VkDescriptorPoolSize poolSizes[] =
-	{
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 6 },
-		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 8 }
-	};
-
-	VkDescriptorPoolCreateInfo poolInfo = {};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.flags = NULL;
-	poolInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
-	poolInfo.pPoolSizes = poolSizes;
-
-	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &viewportDescriptorPool) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create viewport descriptor pool!");
-	}
-}
-
 void VulkanRenderer::CreateImGuiDescriptorPool()
 {
 	VkDescriptorPoolSize poolSizes[] =
@@ -1966,14 +1856,6 @@ void VulkanRenderer::CreateMainCommandBuffers()
 	}
 }
 
-void VulkanRenderer::CreateViewportCommandBuffers()
-{
-	//Create Viewport Command Pool/Buffers
-	CreateCommandPool(viewportCommandPool, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-	viewportCommandBuffers.resize(swapChainFramebuffers.size());
-	CreateCommandBuffers(viewportCommandBuffers.data(), static_cast<uint32_t>(viewportCommandBuffers.size()), viewportCommandPool);
-}
-
 void VulkanRenderer::CreateImGuiCommandBuffers()
 {
 	// Create Command Pool/Buffers
@@ -2049,7 +1931,6 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 	UpdateUniformBuffers(imageIndex, delta_time);
-	UpdateViewportCommandBuffers();
 	UpdateImguiCommandBuffers();
 
 	std::array<VkCommandBuffer, 2> submitCommandBuffers = { commandBuffers[imageIndex], imguiCommandBuffers[imageIndex] };
@@ -2174,45 +2055,6 @@ glm::mat4 VulkanRenderer::BuildMeshTransform(EntityTransform transform)
 	model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);
 
 	return model_transform;
-}
-
-void VulkanRenderer::UpdateViewportCommandBuffers()
-{
-	// Fill Viewport Command Buffers
-	for (int i = 0; i < viewportCommandBuffers.size(); i++)
-	{
-		VkCommandBufferBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		if (vkBeginCommandBuffer(viewportCommandBuffers[i], &beginInfo) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to begin recording iviewport command buffer!");
-		}
-
-		VkRenderPassBeginInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = viewportRenderPass;
-		renderPassInfo.framebuffer = viewportFramebuffers[i];
-		renderPassInfo.renderArea.extent = swapChainExtent;
-		renderPassInfo.clearValueCount = 1;
-
-		VkClearValue clearValue = {};
-		clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-		renderPassInfo.pClearValues = &clearValue;
-
-		vkCmdBeginRenderPass(viewportCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		// Copy Rendered Frame to Viewport Texture Image
-
-		vkCmdEndRenderPass(viewportCommandBuffers[i]);
-
-		if (vkEndCommandBuffer(viewportCommandBuffers[i]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to record viewport command buffer!");
-		}
-	}
 }
 
 void VulkanRenderer::UpdateImguiCommandBuffers()

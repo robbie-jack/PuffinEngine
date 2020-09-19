@@ -147,11 +147,6 @@ namespace Puffin
 			VkDescriptorPool imguiDescriptorPool;
 
 			// UI Viewport Rendering Variables
-			VkRenderPass viewportRenderPass;
-			std::vector<VkFramebuffer> viewportFramebuffers;
-			VkCommandPool viewportCommandPool;
-			std::vector<VkCommandBuffer> viewportCommandBuffers;
-			VkDescriptorPool viewportDescriptorPool;
 			Texture viewportTexture;
 
 			// Semaphore/Flights for Synchronisation
@@ -300,13 +295,6 @@ namespace Puffin
 			VkCommandBuffer BeginSingleTimeCommands();
 			void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
-			// Viewport Functions
-			void CreateViewportVariables();
-			void CreateViewportRenderPass();
-			void CreateViewportFrameBuffers();
-			void CreateViewportDescriptorPool();
-			void CreateViewportCommandBuffers();
-
 			// ImGui Functions
 			void SetupImGui();
 			void SetupImGuiWindow();
@@ -324,7 +312,6 @@ namespace Puffin
 
 			void DrawFrame(float delta_time);
 			void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
-			void UpdateViewportCommandBuffers();
 			void UpdateImguiCommandBuffers();
 
 			glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
