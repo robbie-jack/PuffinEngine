@@ -246,14 +246,11 @@ namespace Puffin
 			void CreateSwapChain();
 			void CreateImageViews();
 			void CreateRenderPass();
-			void CreateViewportRenderPass();
 			void CreateDescriptorSetLayout();
 			void CreateGraphicsPipeline();
 			void CreateCommandPool(VkCommandPool& command_pool, VkCommandPoolCreateFlags flags);
 			void CreateDepthResources();
 			void CreateFrameBuffers();
-			void CreateViewportFrameBuffers();
-			void CreateImGuiFramebuffers();
 
 			void CreateTextureImage(Texture& texture, std::string texture_path);
 			void CreateTextureImageView(Texture& texture);
@@ -271,8 +268,7 @@ namespace Puffin
 			void CreateDescriptorPool();
 			void CreateDescriptorSets();
 			void CreateMainCommandBuffers();
-			void CreateViewportCommandBuffers();
-			void CreateImGuiCommandBuffers();
+			
 			void CreateCommandBuffers(VkCommandBuffer* command_buffer, uint32_t command_buffer_count, VkCommandPool& command_pool);
 			void CreateSyncObjects();
 
@@ -304,13 +300,23 @@ namespace Puffin
 			VkCommandBuffer BeginSingleTimeCommands();
 			void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
+			// Viewport Functions
 			void CreateViewportVariables();
-			void CreateImGuiVariables();
+			void CreateViewportRenderPass();
+			void CreateViewportFrameBuffers();
+			void CreateViewportDescriptorPool();
+			void CreateViewportCommandBuffers();
 
+			// ImGui Functions
 			void SetupImGui();
 			void SetupImGuiWindow();
-			void CreateImGuiDescriptorPool();
+
+			void CreateImGuiVariables();
 			void CreateImGuiRenderPass();
+			void CreateImGuiFramebuffers();
+			void CreateImGuiDescriptorPool();
+			void CreateImGuiCommandBuffers();
+
 			VkSurfaceFormatKHR SelectSurfaceFormats(const VkFormat* request_formats, int request_formats_count, VkColorSpaceKHR request_color_space);
 			VkPresentModeKHR SelectPresentMode(const VkPresentModeKHR* request_modes, int request_modes_count);
 
@@ -318,6 +324,7 @@ namespace Puffin
 
 			void DrawFrame(float delta_time);
 			void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
+			void UpdateViewportCommandBuffers();
 			void UpdateImguiCommandBuffers();
 
 			glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);

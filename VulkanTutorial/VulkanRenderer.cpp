@@ -30,6 +30,9 @@ bool VulkanRenderer::Update(float dt)
 	running = uiManager->DrawUI(dt, inputManager);
 	DrawFrame(dt);
 
+	// Pass Viewport Texture to Viewport Window
+	uiWindowViewport->SetSceneTexture(viewportTexture);
+
 	return running;
 }
 
@@ -324,6 +327,7 @@ void VulkanRenderer::CreateViewportVariables()
 {
 	CreateViewportRenderPass();
 	CreateViewportFrameBuffers();
+	CreateViewportDescriptorPool();
 	CreateViewportCommandBuffers();
 }
 
@@ -1773,6 +1777,27 @@ void VulkanRenderer::CreateDescriptorPool()
 	}
 }
 
+void VulkanRenderer::CreateViewportDescriptorPool()
+{
+	// What does the descriptor count need to be set to? What is the signifigance of 6 and 8?
+	VkDescriptorPoolSize poolSizes[] =
+	{
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 6 },
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 8 }
+	};
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = NULL;
+	poolInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
+	poolInfo.pPoolSizes = poolSizes;
+
+	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &viewportDescriptorPool) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create viewport descriptor pool!");
+	}
+}
+
 void VulkanRenderer::CreateImGuiDescriptorPool()
 {
 	VkDescriptorPoolSize poolSizes[] =
@@ -2024,6 +2049,7 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 	UpdateUniformBuffers(imageIndex, delta_time);
+	UpdateViewportCommandBuffers();
 	UpdateImguiCommandBuffers();
 
 	std::array<VkCommandBuffer, 2> submitCommandBuffers = { commandBuffers[imageIndex], imguiCommandBuffers[imageIndex] };
@@ -2150,10 +2176,49 @@ glm::mat4 VulkanRenderer::BuildMeshTransform(EntityTransform transform)
 	return model_transform;
 }
 
+void VulkanRenderer::UpdateViewportCommandBuffers()
+{
+	// Fill Viewport Command Buffers
+	for (int i = 0; i < viewportCommandBuffers.size(); i++)
+	{
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		if (vkBeginCommandBuffer(viewportCommandBuffers[i], &beginInfo) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to begin recording iviewport command buffer!");
+		}
+
+		VkRenderPassBeginInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = viewportRenderPass;
+		renderPassInfo.framebuffer = viewportFramebuffers[i];
+		renderPassInfo.renderArea.extent = swapChainExtent;
+		renderPassInfo.clearValueCount = 1;
+
+		VkClearValue clearValue = {};
+		clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+		renderPassInfo.pClearValues = &clearValue;
+
+		vkCmdBeginRenderPass(viewportCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		// Copy Rendered Frame to Viewport Texture Image
+
+		vkCmdEndRenderPass(viewportCommandBuffers[i]);
+
+		if (vkEndCommandBuffer(viewportCommandBuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to record viewport command buffer!");
+		}
+	}
+}
+
 void VulkanRenderer::UpdateImguiCommandBuffers()
 {
-	// Fill Command Buffers with Draw Commands
-	for (int i = 0; i < commandBuffers.size(); i++)
+	// Fill ImGui Command Buffers with Draw Commands
+	for (int i = 0; i < imguiCommandBuffers.size(); i++)
 	{
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
