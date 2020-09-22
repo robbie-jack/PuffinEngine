@@ -183,9 +183,6 @@ namespace Puffin
 			VkSampler textureSampler;
 
 			FrameBufferAttachment depthAttachment;
-			/*VkImage depthImage;
-			VmaAllocation depthImageAllocation;
-			VkImageView depthImageView;*/
 
 			bool framebufferResized = false;
 
