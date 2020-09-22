@@ -135,7 +135,8 @@ void VulkanRenderer::InitVulkan()
 	uiWindowViewport->SetSceneTexture(viewportTexture);
 
 	// Initliaze Camera
-	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, 
+		(float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 
 	// Initliase Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
@@ -309,6 +310,10 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateGraphicsPipeline();
 	CreateDepthResources();
 	CreateFrameBuffers();
+
+	// Recalculate Camera Perspective if window size changed
+	camera.SetPerspective(45.0f, (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+
 	CreateUniformBuffers();
 	CreateLightBuffers();
 	CreateViewBuffers();
