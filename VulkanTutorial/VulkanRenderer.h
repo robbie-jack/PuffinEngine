@@ -61,14 +61,16 @@ struct SwapChainSupportDetails
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-struct Viewport
+struct ViewportRender
 {
 	VkExtent2D extent = { 1024, 1024 };
 	VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+	VkRenderPass renderPass;
 	std::vector<VkImage> images;
 	std::vector<VmaAllocation> imageAllocations;
 	std::vector<VkImageView> imageViews;
 	std::vector<VkFramebuffer> framebuffers;
+	std::vector<VkCommandBuffer> commandbuffers;
 };
 
 #ifdef NDEBUG
@@ -157,7 +159,7 @@ namespace Puffin
 			VkDescriptorPool imguiDescriptorPool;
 
 			// Viewport Rendering Variables
-			Viewport viewport;
+			ViewportRender viewportRender;
 			Texture viewportTexture;
 
 			// Semaphore/Flights for Synchronisation
@@ -308,9 +310,11 @@ namespace Puffin
 
 			// Viewport Setup Functions
 			void CreateViewportVariables();
+			void CreateViewportRenderPass();
 			void CreateViewportImages();
 			void CreateViewportImageViews();
 			void CreateViewportFramebuffers();
+			void CreateViewportCommandBuffers();
 
 			// ImGui Functions
 			void SetupImGui();

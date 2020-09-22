@@ -126,7 +126,6 @@ void VulkanRenderer::InitVulkan()
 	CreateCommandPool(commandPool, 0);
 	CreateDepthResources();
 	CreateFrameBuffers();
-	CreateViewportVariables();
 
 	// Create Sampler
 	CreateTextureSampler();
@@ -157,6 +156,7 @@ void VulkanRenderer::InitVulkan()
 	CreateMainCommandBuffers();
 	CreateSyncObjects();
 
+	CreateViewportVariables();
 	SetupImGui();
 }
 
@@ -326,7 +326,9 @@ void VulkanRenderer::CreateViewportVariables()
 {
 	CreateViewportImages();
 	CreateViewportImageViews();
+	CreateViewportRenderPass();
 	CreateViewportFramebuffers();
+	CreateViewportCommandBuffers();
 }
 
 void VulkanRenderer::CreateImGuiVariables()
@@ -843,35 +845,35 @@ VkImageView VulkanRenderer::CreateImageView(VkImage image, VkFormat format, VkIm
 
 void VulkanRenderer::CreateViewportImages()
 {
-	viewport.images.resize(swapChainImages.size());
-	viewport.imageAllocations.resize(viewport.images.size());
+	viewportRender.images.resize(swapChainImages.size());
+	viewportRender.imageAllocations.resize(viewportRender.images.size());
 
-	for (size_t i = 0; i < viewport.images.size(); i++)
+	for (size_t i = 0; i < viewportRender.images.size(); i++)
 	{
-		CreateImage(viewport.extent.width, viewport.extent.height,
-			viewport.format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, viewport.images[i], VMA_MEMORY_USAGE_GPU_ONLY, viewport.imageAllocations[i]);
+		CreateImage(viewportRender.extent.width, viewportRender.extent.height,
+			viewportRender.format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, viewportRender.images[i], VMA_MEMORY_USAGE_GPU_ONLY, viewportRender.imageAllocations[i]);
 	}
 }
 
 void VulkanRenderer::CreateViewportImageViews()
 {
-	viewport.imageViews.resize(viewport.images.size());
+	viewportRender.imageViews.resize(viewportRender.images.size());
 
-	for (size_t i = 0; i < viewport.imageViews.size(); i++)
+	for (size_t i = 0; i < viewportRender.imageViews.size(); i++)
 	{
-		viewport.imageViews[i] = CreateImageView(viewport.images[i], viewport.format, VK_IMAGE_ASPECT_COLOR_BIT);
+		viewportRender.imageViews[i] = CreateImageView(viewportRender.images[i], viewportRender.format, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 }
 
 void VulkanRenderer::CreateViewportFramebuffers()
 {
-	viewport.framebuffers.resize(viewport.images.size());
+	viewportRender.framebuffers.resize(viewportRender.images.size());
 
-	for (size_t i = 0; i < viewport.framebuffers.size(); i++)
+	for (size_t i = 0; i < viewportRender.framebuffers.size(); i++)
 	{
 		std::array<VkImageView, 2> attachments = {
-			viewport.imageViews[i],
+			viewportRender.imageViews[i],
 			depthImageView
 		};
 
@@ -880,11 +882,11 @@ void VulkanRenderer::CreateViewportFramebuffers()
 		framebufferInfo.renderPass = renderPass;
 		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 		framebufferInfo.pAttachments = attachments.data();
-		framebufferInfo.width = viewport.extent.width;
-		framebufferInfo.height = viewport.extent.height;
+		framebufferInfo.width = viewportRender.extent.width;
+		framebufferInfo.height = viewportRender.extent.height;
 		framebufferInfo.layers = 1;
 
-		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &viewport.framebuffers[i]) != VK_SUCCESS)
+		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &viewportRender.framebuffers[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create framebuffer!");
 		}
@@ -895,15 +897,14 @@ void VulkanRenderer::CreateRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
 	colorAttachment.format = swapChainImageFormat;
-	colorAttachment.format = viewport.format;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentReference colorAttachmentRef = {};
 	colorAttachmentRef.attachment = 0;
@@ -953,6 +954,69 @@ void VulkanRenderer::CreateRenderPass()
 	}
 }
 
+void VulkanRenderer::CreateViewportRenderPass()
+{
+	VkAttachmentDescription colorAttachment = {};
+	colorAttachment.format = swapChainImageFormat;
+	colorAttachment.format = viewportRender.format;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkAttachmentReference colorAttachmentRef = {};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentDescription depthAttachment = {};
+	depthAttachment.format = FindDepthFormat();
+	depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference depthAttachmentRef = {};
+	depthAttachmentRef.attachment = 1;
+	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+	subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+	VkSubpassDependency dependency = {};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	renderPassInfo.pAttachments = attachments.data();
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &dependency;
+
+	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &viewportRender.renderPass) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create render pass!");
+	}
+}
+
 void VulkanRenderer::CreateImGuiRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
@@ -976,7 +1040,7 @@ void VulkanRenderer::CreateImGuiRenderPass()
 
 	VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 0;
+	dependency.dstSubpass = 1;
 	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.srcAccessMask = 0; // or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -1919,6 +1983,66 @@ void VulkanRenderer::CreateMainCommandBuffers()
 	}
 }
 
+void VulkanRenderer::CreateViewportCommandBuffers()
+{
+	viewportRender.commandbuffers.resize(viewportRender.framebuffers.size());
+
+	CreateCommandBuffers(viewportRender.commandbuffers.data(), (uint32_t)viewportRender.commandbuffers.size(), commandPool);
+
+	for (size_t i = 0; i < viewportRender.commandbuffers.size(); i++)
+	{
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = 0; // Optional
+		beginInfo.pInheritanceInfo = nullptr; // Optional
+
+		if (vkBeginCommandBuffer(viewportRender.commandbuffers[i], &beginInfo) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to begin recording command buffer!");
+		}
+
+		VkRenderPassBeginInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = viewportRender.renderPass;
+		renderPassInfo.framebuffer = viewportRender.framebuffers[i];
+
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = viewportRender.extent;
+
+		std::array<VkClearValue, 2> clearValues = {};
+		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+
+		vkCmdBeginRenderPass(viewportRender.commandbuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(viewportRender.commandbuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+		for (auto& comp : meshComponents)
+		{
+			VkBuffer vertexBuffers[] = { comp.GetVertexBuffer() };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(viewportRender.commandbuffers[i], 0, 1, vertexBuffers, offsets);
+
+			vkCmdBindIndexBuffer(viewportRender.commandbuffers[i], comp.GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+			vkCmdBindDescriptorSets(viewportRender.commandbuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
+				pipelineLayout, 0, 1, &comp.GetDescriptorSets()[i], 0, nullptr);
+
+			vkCmdDrawIndexed(viewportRender.commandbuffers[i], static_cast<uint32_t>(comp.GetMesh().GetIndices().size()), 1, 0, 0, 0); // Draw with Index
+		}
+
+		vkCmdEndRenderPass(viewportRender.commandbuffers[i]);
+
+		if (vkEndCommandBuffer(viewportRender.commandbuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to record command buffer!");
+		}
+	}
+}
+
 void VulkanRenderer::CreateImGuiCommandBuffers()
 {
 	// Create Command Pool/Buffers
@@ -1996,7 +2120,8 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	UpdateUniformBuffers(imageIndex, delta_time);
 	UpdateImguiCommandBuffers();
 
-	std::array<VkCommandBuffer, 2> submitCommandBuffers = { commandBuffers[imageIndex], imguiCommandBuffers[imageIndex] };
+	std::array<VkCommandBuffer, 3> submitCommandBuffers = { commandBuffers[imageIndex], 
+		viewportRender.commandbuffers[imageIndex], imguiCommandBuffers[imageIndex] };
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -2233,12 +2358,17 @@ void VulkanRenderer::CleanupSwapChain()
 
 void VulkanRenderer::CleanupViewport()
 {
-	for (size_t i = 0; i < viewport.images.size(); i++)
+	for (size_t i = 0; i < viewportRender.images.size(); i++)
 	{
-		vkDestroyImageView(device, viewport.imageViews[i], nullptr);
-		vmaDestroyImage(allocator, viewport.images[i], viewport.imageAllocations[i]);
-		vkDestroyFramebuffer(device, viewport.framebuffers[i], nullptr);
+		vkDestroyImageView(device, viewportRender.imageViews[i], nullptr);
+		vmaDestroyImage(allocator, viewportRender.images[i], viewportRender.imageAllocations[i]);
+		vkDestroyFramebuffer(device, viewportRender.framebuffers[i], nullptr);
+		vkFreeCommandBuffers(device, commandPool, 
+			static_cast<uint32_t>(viewportRender.commandbuffers.size()), 
+			viewportRender.commandbuffers.data());
 	}
+
+	vkDestroyRenderPass(device, viewportRender.renderPass, nullptr);
 }
 
 void VulkanRenderer::CleanupImGui()
