@@ -26,6 +26,7 @@
 #include "System.h"
 #include "MeshComponent.h"
 #include "TransformSystem.h"
+#include "FrameBufferAttachment.h"
 
 #include <functional>
 #include <vector>
@@ -181,10 +182,10 @@ namespace Puffin
 
 			VkSampler textureSampler;
 
-			VkImage depthImage;
-			//VkDeviceMemory depthImageMemory;
+			FrameBufferAttachment depthAttachment;
+			/*VkImage depthImage;
 			VmaAllocation depthImageAllocation;
-			VkImageView depthImageView;
+			VkImageView depthImageView;*/
 
 			bool framebufferResized = false;
 
@@ -323,6 +324,7 @@ namespace Puffin
 			void CleanupSwapChain();
 			void CleanupImGui();
 			void CleanupMeshComponent(MeshComponent& mesh_component);
+			void CleanupFrameBufferAttachment(FrameBufferAttachment& attachment);
 		};
 	}
 }

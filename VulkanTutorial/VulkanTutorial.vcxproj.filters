@@ -212,5 +212,8 @@
     <ClInclude Include="UIWindowViewport.h">
       <Filter>UI</Filter>
     </ClInclude>
+    <ClInclude Include="FrameBufferAttachment.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

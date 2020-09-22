@@ -1217,8 +1217,8 @@ void VulkanRenderer::CreateDepthResources()
 	// Create Image with VMA
 	CreateImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-		depthImage, VMA_MEMORY_USAGE_GPU_ONLY,  depthImageAllocation);
-	depthImageView = CreateImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+		depthAttachment.image, VMA_MEMORY_USAGE_GPU_ONLY,  depthAttachment.allocation);
+	depthAttachment.imageView = CreateImageView(depthAttachment.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaMemoryUsage allocationUsage, VmaAllocation& allocation)
@@ -1271,7 +1271,7 @@ void VulkanRenderer::CreateFrameBuffers()
 	{
 		std::array<VkImageView, 2> attachments = {
 			swapChainImageViews[i],
-			depthImageView
+			depthAttachment.imageView
 		};
 
 		VkFramebufferCreateInfo framebufferInfo = {};
@@ -2119,6 +2119,10 @@ void VulkanRenderer::Cleanup()
 
 	meshComponents.clear();
 
+	// Cleanup Textures
+	CleanupFrameBufferAttachment(viewportTexture.GetTextureAttachment());
+	CleanupFrameBufferAttachment(cube_texture.GetTextureAttachment());
+
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
@@ -2143,10 +2147,7 @@ void VulkanRenderer::Cleanup()
 
 void VulkanRenderer::CleanupSwapChain()
 {
-	vkDestroyImageView(device, depthImageView, nullptr);
-
-	// Destroy Depth Image and Memory Allocation
-	vmaDestroyImage(allocator, depthImage, depthImageAllocation);
+	CleanupFrameBufferAttachment(depthAttachment);
 
 	for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
 	{
@@ -2201,4 +2202,13 @@ void VulkanRenderer::CleanupMeshComponent(MeshComponent& mesh_component)
 		vkDestroyBuffer(device, mesh_component.GetUniformBuffer(i), nullptr);
 		vmaFreeMemory(allocator, mesh_component.GetUniformAllocation(i));
 	}
+}
+
+void VulkanRenderer::CleanupFrameBufferAttachment(FrameBufferAttachment& attachment)
+{
+	// Destroy Attachment Image View
+	vkDestroyImageView(device, attachment.imageView, nullptr);
+
+	// Destroy Attachment Image and Memory Allocation
+	vmaDestroyImage(allocator, attachment.image, attachment.allocation);
 }

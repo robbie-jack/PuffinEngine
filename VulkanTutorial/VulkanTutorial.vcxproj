@@ -209,6 +209,7 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EntitySystem.h" />
     <ClInclude Include="EntityTransform.h" />
+    <ClInclude Include="FrameBufferAttachment.h" />
     <ClInclude Include="UIWindowViewport.h" />
     <ClInclude Include="UIWindow.h" />
     <ClInclude Include="imgui\imgui.h" />

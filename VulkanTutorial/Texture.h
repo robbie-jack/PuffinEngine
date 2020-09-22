@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
+#include "FrameBufferAttachment.h"
 
 namespace Puffin
 {
@@ -11,16 +12,18 @@ namespace Puffin
 		{
 		public:
 
-			void Cleanup(VkDevice device);
+			//void Cleanup(VkDevice device, VmaAllocator& allocator);
 
-			inline VkImage& GetTextureImage() { return textureImage; };
-			inline VmaAllocation& GetTextureAllocation() { return textureAllocation; };
-			inline VkImageView& GetImageView() { return textureImageView; };
+			inline FrameBufferAttachment& GetTextureAttachment() { return textureAttachment; };
+			inline VkImage& GetTextureImage() { return textureAttachment.image; };
+			inline VmaAllocation& GetTextureAllocation() { return textureAttachment.allocation; };
+			inline VkImageView& GetImageView() { return textureAttachment.imageView; };
 
 		private:
-			VkImage textureImage;
+			FrameBufferAttachment textureAttachment;
+			/*VkImage textureImage;
 			VmaAllocation textureAllocation;
-			VkImageView textureImageView;
+			VkImageView textureImageView;*/
 		};
 	}
 }
