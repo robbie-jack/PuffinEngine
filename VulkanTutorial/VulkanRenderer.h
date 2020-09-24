@@ -140,15 +140,20 @@ namespace Puffin
 			VkCommandPool commandPool;
 			std::vector<VkCommandBuffer> commandBuffers;
 
+			// Offscreen Render Variables
+			Texture offscreenTexture;
+			VkExtent2D offscreenExtent;
+			VkFormat offscreenFormat;
+			std::vector<VkFramebuffer> offscreenFramebuffers;
+			std::vector<FrameBufferAttachment> offscreenAttachments;
+			FrameBufferAttachment offscreenDepthAttachment;
+
 			// ImGui Variables
 			VkRenderPass imguiRenderPass;
 			std::vector<VkFramebuffer> imguiFramebuffers;
 			VkCommandPool imguiCommandPool;
 			std::vector<VkCommandBuffer> imguiCommandBuffers;
 			VkDescriptorPool imguiDescriptorPool;
-
-			// Viewport Rendering Variables
-			Texture viewportTexture;
 
 			// Semaphore/Flights for Synchronisation
 			std::vector<VkSemaphore> imageAvailableSemaphores;
@@ -292,6 +297,12 @@ namespace Puffin
 
 			VkCommandBuffer BeginSingleTimeCommands();
 			void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+			// Offscreen Functions
+			void CreateOffscreenVariables();
+			void CreateOffscreenAttachments();
+			void CreateOffscreenDepthAttachment();
+			void CreateOffscreenFramebuffers();
 
 			// ImGui Functions
 			void SetupImGui();

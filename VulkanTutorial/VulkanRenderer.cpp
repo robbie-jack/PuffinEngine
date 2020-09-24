@@ -31,7 +31,7 @@ bool VulkanRenderer::Update(float dt)
 	DrawFrame(dt);
 
 	// Pass Viewport Texture to Viewport Window
-	uiWindowViewport->SetSceneTexture(viewportTexture);
+	uiWindowViewport->SetSceneTexture(offscreenTexture);
 
 	return running;
 }
@@ -127,12 +127,15 @@ void VulkanRenderer::InitVulkan()
 	CreateDepthResources();
 	CreateFrameBuffers();
 
+	// Create Variables for Offscreen Rendering
+	CreateOffscreenVariables();
+
 	// Create Sampler
 	CreateTextureSampler();
 	uiWindowViewport->SetTextureSampler(textureSampler);
 
-	InitTexture(viewportTexture, "textures/texture.jpg");
-	uiWindowViewport->SetSceneTexture(viewportTexture);
+	InitTexture(offscreenTexture, "textures/texture.jpg");
+	uiWindowViewport->SetSceneTexture(offscreenTexture);
 
 	// Initliaze Camera
 	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, 
@@ -311,6 +314,8 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateDepthResources();
 	CreateFrameBuffers();
 
+	CreateOffscreenVariables();
+
 	// Recalculate Camera Perspective if window size changed
 	camera.SetPerspective(45.0f, (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 
@@ -322,6 +327,19 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateMainCommandBuffers();
 
 	CreateImGuiVariables();
+}
+
+void VulkanRenderer::CreateOffscreenVariables()
+{
+	// Initialise Variables needed for Offscreen Framebuffer/Attachment Creation
+	offscreenExtent.width = 1024;
+	offscreenExtent.height = 1024;
+	offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
+	//offscreenFormat = VK_FORMAT_B8G8R8A8_SRGB;
+
+	CreateOffscreenAttachments();
+	CreateOffscreenDepthAttachment();
+	CreateOffscreenFramebuffers();
 }
 
 void VulkanRenderer::CreateImGuiVariables()
@@ -814,6 +832,21 @@ void VulkanRenderer::CreateImageViews()
 	}
 }
 
+void VulkanRenderer::CreateOffscreenAttachments()
+{
+	offscreenAttachments.resize(swapChainImages.size());
+
+	// Creat Image and Image View to be attached to framebuffer
+	for (size_t i = 0; i < offscreenAttachments.size(); i++)
+	{
+		CreateImage(offscreenExtent.width, offscreenExtent.height,
+			offscreenFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, offscreenAttachments[i].image, VMA_MEMORY_USAGE_GPU_ONLY, offscreenAttachments[i].allocation);
+
+		offscreenAttachments[i].imageView = CreateImageView(offscreenAttachments[i].image, offscreenFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+	}
+}
+
 VkImageView VulkanRenderer::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
 	VkImageViewCreateInfo viewInfo = {};
@@ -1227,6 +1260,17 @@ void VulkanRenderer::CreateDepthResources()
 	depthAttachment.imageView = CreateImageView(depthAttachment.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
+void VulkanRenderer::CreateOffscreenDepthAttachment()
+{
+	VkFormat depthFormat = FindDepthFormat();
+
+	// Create Image with VMA
+	CreateImage(offscreenExtent.width, offscreenExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		offscreenDepthAttachment.image, VMA_MEMORY_USAGE_GPU_ONLY, offscreenDepthAttachment.allocation);
+	offscreenDepthAttachment.imageView = CreateImageView(offscreenDepthAttachment.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+}
+
 void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaMemoryUsage allocationUsage, VmaAllocation& allocation)
 {
 	VkImageCreateInfo imageInfo = {};
@@ -1296,24 +1340,49 @@ void VulkanRenderer::CreateFrameBuffers()
 	}
 }
 
+void VulkanRenderer::CreateOffscreenFramebuffers()
+{
+	offscreenFramebuffers.resize(offscreenAttachments.size());
+
+	for (int i = 0; i < offscreenAttachments.size(); i++)
+	{
+		std::array<VkImageView, 2> attachments = {
+			offscreenAttachments[i].imageView,
+			depthAttachment.imageView
+		};
+
+		VkFramebufferCreateInfo framebufferInfo = {};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = 2;
+		framebufferInfo.pAttachments = attachments.data();
+		framebufferInfo.width = offscreenExtent.width;
+		framebufferInfo.height = offscreenExtent.height;
+		framebufferInfo.layers = 1;
+
+		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &offscreenFramebuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create offscreen framebuffer!");
+		}
+	}
+}
+
 void VulkanRenderer::CreateImGuiFramebuffers()
 {
 	imguiFramebuffers.resize(swapChainImageViews.size());
-	
-	VkImageView attachment[1];
-
-	VkFramebufferCreateInfo framebufferInfo = {};
-	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	framebufferInfo.renderPass = imguiRenderPass;
-	framebufferInfo.attachmentCount = 1;
-	framebufferInfo.pAttachments = attachment;
-	framebufferInfo.width = swapChainExtent.width;
-	framebufferInfo.height = swapChainExtent.height;
-	framebufferInfo.layers = 1;
 
 	for (int i = 0; i < swapChainImageViews.size(); i++)
 	{
-		attachment[0] = swapChainImageViews[i];
+		VkImageView attachment[1] = { swapChainImageViews[i] };
+
+		VkFramebufferCreateInfo framebufferInfo = {};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = imguiRenderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = attachment;
+		framebufferInfo.width = swapChainExtent.width;
+		framebufferInfo.height = swapChainExtent.height;
+		framebufferInfo.layers = 1;
 
 		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &imguiFramebuffers[i]) != VK_SUCCESS)
 		{
@@ -2144,7 +2213,7 @@ void VulkanRenderer::Cleanup()
 	meshComponents.clear();
 
 	// Cleanup Textures
-	CleanupFrameBufferAttachment(viewportTexture.GetTextureAttachment());
+	CleanupFrameBufferAttachment(offscreenTexture.GetTextureAttachment());
 	CleanupFrameBufferAttachment(cube_texture.GetTextureAttachment());
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
