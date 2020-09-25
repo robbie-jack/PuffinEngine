@@ -299,6 +299,7 @@ namespace Puffin
 			void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 			// Offscreen Functions
+			void InitOffscreen();
 			void CreateOffscreenVariables();
 			void CreateOffscreenAttachments();
 			void CreateOffscreenDepthAttachment();

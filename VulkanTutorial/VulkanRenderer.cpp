@@ -120,6 +120,7 @@ void VulkanRenderer::InitVulkan()
 	CreateAllocator(); // Create Memory Allocator
 	CreateSwapChain();
 	CreateImageViews();
+	InitOffscreen();
 	CreateRenderPass();
 	CreateDescriptorSetLayout();
 	CreateGraphicsPipeline();
@@ -309,6 +310,7 @@ void VulkanRenderer::RecreateSwapChain()
 
 	CreateSwapChain();
 	CreateImageViews();
+	InitOffscreen();
 	CreateRenderPass();
 	CreateGraphicsPipeline();
 	CreateDepthResources();
@@ -329,14 +331,17 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateImGuiVariables();
 }
 
-void VulkanRenderer::CreateOffscreenVariables()
+void VulkanRenderer::InitOffscreen()
 {
 	// Initialise Variables needed for Offscreen Framebuffer/Attachment Creation
 	offscreenExtent.width = 1024;
 	offscreenExtent.height = 1024;
 	offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
-	//offscreenFormat = VK_FORMAT_B8G8R8A8_SRGB;
+	//offscreenFormat = swapChainImageFormat;
+}
 
+void VulkanRenderer::CreateOffscreenVariables()
+{
 	CreateOffscreenAttachments();
 	CreateOffscreenDepthAttachment();
 	CreateOffscreenFramebuffers();
@@ -840,7 +845,7 @@ void VulkanRenderer::CreateOffscreenAttachments()
 	for (size_t i = 0; i < offscreenAttachments.size(); i++)
 	{
 		CreateImage(offscreenExtent.width, offscreenExtent.height,
-			offscreenFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			offscreenFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, offscreenAttachments[i].image, VMA_MEMORY_USAGE_GPU_ONLY, offscreenAttachments[i].allocation);
 
 		offscreenAttachments[i].imageView = CreateImageView(offscreenAttachments[i].image, offscreenFormat, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -872,7 +877,8 @@ VkImageView VulkanRenderer::CreateImageView(VkImage image, VkFormat format, VkIm
 void VulkanRenderer::CreateRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
-	colorAttachment.format = swapChainImageFormat;
+	//colorAttachment.format = swapChainImageFormat;
+	colorAttachment.format = offscreenFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -881,6 +887,7 @@ void VulkanRenderer::CreateRenderPass()
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkAttachmentReference colorAttachmentRef = {};
 	colorAttachmentRef.attachment = 0;
@@ -935,11 +942,13 @@ void VulkanRenderer::CreateImGuiRenderPass()
 	VkAttachmentDescription colorAttachment = {};
 	colorAttachment.format = swapChainImageFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	//colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	//colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkAttachmentReference colorAttachmentRef = {};
@@ -953,9 +962,9 @@ void VulkanRenderer::CreateImGuiRenderPass()
 
 	VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 1;
+	dependency.dstSubpass = 0;
 	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.srcAccessMask = 0; // or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+	dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
@@ -1354,7 +1363,7 @@ void VulkanRenderer::CreateOffscreenFramebuffers()
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = renderPass;
-		framebufferInfo.attachmentCount = 2;
+		framebufferInfo.attachmentCount = attachments.size();
 		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = offscreenExtent.width;
 		framebufferInfo.height = offscreenExtent.height;
@@ -1872,8 +1881,8 @@ void VulkanRenderer::CreateDescriptorSets()
 
 void VulkanRenderer::CreateMainCommandBuffers()
 {
-	commandBuffers.resize(swapChainFramebuffers.size());
-	//commandBuffers.resize(viewport.framebuffers.size());
+	//commandBuffers.resize(swapChainFramebuffers.size());
+	commandBuffers.resize(offscreenFramebuffers.size());
 
 	CreateCommandBuffers(commandBuffers.data(), (uint32_t)commandBuffers.size(), commandPool);
 
@@ -1892,12 +1901,12 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = renderPass;
-		renderPassInfo.framebuffer = swapChainFramebuffers[i];
-		//renderPassInfo.framebuffer = viewport.framebuffers[i];
+		//renderPassInfo.framebuffer = swapChainFramebuffers[i];
+		renderPassInfo.framebuffer = offscreenFramebuffers[i];
 
 		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = swapChainExtent;
-		//renderPassInfo.renderArea.extent = viewport.extent;
+		//renderPassInfo.renderArea.extent = swapChainExtent;
+		renderPassInfo.renderArea.extent = offscreenExtent;
 
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -1912,8 +1921,10 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = (float)swapChainExtent.width;
-		viewport.height = (float)swapChainExtent.height;
+		//viewport.width = (float)swapChainExtent.width;
+		//viewport.height = (float)swapChainExtent.height;
+		viewport.width = (float)offscreenExtent.width;
+		viewport.height = (float)offscreenExtent.height;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 
@@ -1922,7 +1933,8 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		// Define Scissor Extent (Pixel Outside Scissor Rectangle will be discarded)
 		VkRect2D scissor = {};
 		scissor.offset = { 0, 0 };
-		scissor.extent = swapChainExtent;
+		//scissor.extent = swapChainExtent;
+		scissor.extent = offscreenExtent;
 
 		vkCmdSetScissor(commandBuffers[i], 0, 1, &scissor);
 
@@ -2048,10 +2060,25 @@ void VulkanRenderer::DrawFrame(float delta_time)
 
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
+	result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
+
+	if (result == VK_ERROR_OUT_OF_HOST_MEMORY)
+	{
+		throw std::runtime_error("VkQueueSubmit: Out of Host Memory");
+	}
+	else if (result == VK_ERROR_OUT_OF_DEVICE_MEMORY)
+	{
+		throw std::runtime_error("VkQueueSubmit: Out of Device Memory");
+	}
+	else if (result == VK_ERROR_DEVICE_LOST)
+	{
+		throw std::runtime_error("VkQueueSubmit: Device Lost");
+	}
+
+	/*if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffers!");
-	}
+	}*/
 
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
