@@ -307,10 +307,10 @@ void VulkanRenderer::RecreateSwapChain()
 	vkDeviceWaitIdle(device);
 
 	CleanupSwapChain();
+	CleanupOffscreen();
 
 	CreateSwapChain();
 	CreateImageViews();
-	InitOffscreen();
 	CreateRenderPass();
 	CreateGraphicsPipeline();
 	CreateDepthResources();
@@ -336,8 +336,9 @@ void VulkanRenderer::InitOffscreen()
 	// Initialise Variables needed for Offscreen Framebuffer/Attachment Creation
 	offscreenExtent.width = 1024;
 	offscreenExtent.height = 1024;
-	offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
-	//offscreenFormat = swapChainImageFormat;
+	//offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
+	//offscreenFormat = VK_FORMAT_R8G8B8A8_UNORM;
+	offscreenFormat = swapChainImageFormat;
 }
 
 void VulkanRenderer::CreateOffscreenVariables()
@@ -697,7 +698,9 @@ void VulkanRenderer::CreateLogicalDevice()
 		createInfo.enabledLayerCount = 0;
 	}
 
-	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
+	VkResult result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
+
+	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create logical device!");
 	}
@@ -841,11 +844,11 @@ void VulkanRenderer::CreateOffscreenAttachments()
 {
 	offscreenAttachments.resize(swapChainImages.size());
 
-	// Creat Image and Image View to be attached to framebuffer
+	// Create Image and Image View to be attached to framebuffer
 	for (size_t i = 0; i < offscreenAttachments.size(); i++)
 	{
 		CreateImage(offscreenExtent.width, offscreenExtent.height,
-			offscreenFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			offscreenFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, offscreenAttachments[i].image, VMA_MEMORY_USAGE_GPU_ONLY, offscreenAttachments[i].allocation);
 
 		offscreenAttachments[i].imageView = CreateImageView(offscreenAttachments[i].image, offscreenFormat, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -885,9 +888,8 @@ void VulkanRenderer::CreateRenderPass()
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkAttachmentReference colorAttachmentRef = {};
 	colorAttachmentRef.attachment = 0;
@@ -921,6 +923,24 @@ void VulkanRenderer::CreateRenderPass()
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+	/*std::array<VkSubpassDependency, 2> dependencies;
+
+	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[0].dstSubpass = 0;
+	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	dependencies[1].srcSubpass = 0;
+	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;*/
+
 	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -930,6 +950,8 @@ void VulkanRenderer::CreateRenderPass()
 	renderPassInfo.pSubpasses = &subpass;
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
+	/*renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	renderPassInfo.pDependencies = dependencies.data();*/
 
 	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 	{
@@ -1363,7 +1385,7 @@ void VulkanRenderer::CreateOffscreenFramebuffers()
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = renderPass;
-		framebufferInfo.attachmentCount = attachments.size();
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = offscreenExtent.width;
 		framebufferInfo.height = offscreenExtent.height;
@@ -1903,7 +1925,6 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		renderPassInfo.renderPass = renderPass;
 		//renderPassInfo.framebuffer = swapChainFramebuffers[i];
 		renderPassInfo.framebuffer = offscreenFramebuffers[i];
-
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		//renderPassInfo.renderArea.extent = swapChainExtent;
 		renderPassInfo.renderArea.extent = offscreenExtent;
@@ -1966,7 +1987,7 @@ void VulkanRenderer::CreateMainCommandBuffers()
 void VulkanRenderer::CreateImGuiCommandBuffers()
 {
 	// Create Command Pool/Buffers
-	CreateCommandPool(imguiCommandPool, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+	CreateCommandPool(imguiCommandPool, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 	imguiCommandBuffers.resize(swapChainFramebuffers.size());
 	CreateCommandBuffers(imguiCommandBuffers.data(), static_cast<uint32_t>(imguiCommandBuffers.size()), imguiCommandPool);
 }
@@ -2038,10 +2059,11 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 	UpdateUniformBuffers(imageIndex, delta_time);
-	UpdateImguiCommandBuffers();
+	UpdateImguiCommandBuffers(imageIndex);
 
-	std::array<VkCommandBuffer, 2> submitCommandBuffers = { commandBuffers[imageIndex], 
-		imguiCommandBuffers[imageIndex] };
+	std::array<VkCommandBuffer, 2> submitCommandBuffers = {  commandBuffers[imageIndex], imguiCommandBuffers[imageIndex] };
+
+	//std::array<VkCommandBuffer, 1> submitCommandBuffers = { imguiCommandBuffers[imageIndex] };
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -2073,6 +2095,11 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	else if (result == VK_ERROR_DEVICE_LOST)
 	{
 		throw std::runtime_error("VkQueueSubmit: Device Lost");
+		
+		// Attempt to recreate logical device when it is lost
+		//vkDestroyDevice(device, nullptr);
+		//CreateLogicalDevice();
+		//RecreateSwapChain();
 	}
 
 	/*if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
@@ -2180,43 +2207,43 @@ glm::mat4 VulkanRenderer::BuildMeshTransform(EntityTransform transform)
 	return model_transform;
 }
 
-void VulkanRenderer::UpdateImguiCommandBuffers()
+void VulkanRenderer::UpdateImguiCommandBuffers(uint32_t currentImage)
 {
+	vkResetCommandBuffer(imguiCommandBuffers[currentImage], 0);
+
 	// Fill ImGui Command Buffers with Draw Commands
-	for (int i = 0; i < imguiCommandBuffers.size(); i++)
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	beginInfo.pInheritanceInfo = nullptr;
+
+	if (vkBeginCommandBuffer(imguiCommandBuffers[currentImage], &beginInfo) != VK_SUCCESS)
 	{
-		VkCommandBufferBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		throw std::runtime_error("failed to begin recording imgui command buffer!");
+	}
 
-		if (vkBeginCommandBuffer(imguiCommandBuffers[i], &beginInfo) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to begin recording imgui command buffer!");
-		}
+	VkRenderPassBeginInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = imguiRenderPass;
+	renderPassInfo.framebuffer = imguiFramebuffers[currentImage];
+	renderPassInfo.renderArea.extent = swapChainExtent;
+	renderPassInfo.clearValueCount = 1;
 
-		VkRenderPassBeginInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = imguiRenderPass;
-		renderPassInfo.framebuffer = imguiFramebuffers[i];
-		renderPassInfo.renderArea.extent = swapChainExtent;
-		renderPassInfo.clearValueCount = 1;
+	VkClearValue clearValue = {};
+	clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-		VkClearValue clearValue = {};
-		clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+	renderPassInfo.pClearValues = &clearValue;
 
-		renderPassInfo.pClearValues = &clearValue;
+	vkCmdBeginRenderPass(imguiCommandBuffers[currentImage], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		vkCmdBeginRenderPass(imguiCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	// Record Imgui Draw Data and draw funtions into command buffer
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), imguiCommandBuffers[currentImage]);
 
-		// Record Imgui Draw Data and draw funtions into command buffer
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), imguiCommandBuffers[i]);
+	vkCmdEndRenderPass(imguiCommandBuffers[currentImage]);
 
-		vkCmdEndRenderPass(imguiCommandBuffers[i]);
-
-		if (vkEndCommandBuffer(imguiCommandBuffers[i]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to record imgui command buffer!");
-		}
+	if (vkEndCommandBuffer(imguiCommandBuffers[currentImage]) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to record imgui command buffer!");
 	}
 }
 
@@ -2225,6 +2252,7 @@ void VulkanRenderer::UpdateImguiCommandBuffers()
 void VulkanRenderer::Cleanup()
 {
 	CleanupSwapChain();
+	CleanupOffscreen();
 	CleanupImGui();
 
 	vkDestroySampler(device, textureSampler, nullptr);
@@ -2289,6 +2317,21 @@ void VulkanRenderer::CleanupSwapChain()
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 
 	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+}
+
+void VulkanRenderer::CleanupOffscreen()
+{
+	CleanupFrameBufferAttachment(offscreenDepthAttachment);
+
+	for (size_t i = 0; i < offscreenFramebuffers.size(); i++)
+	{
+		vkDestroyFramebuffer(device, offscreenFramebuffers[i], nullptr);
+	}
+
+	for (size_t i = 0; i < offscreenAttachments.size(); i++)
+	{
+		CleanupFrameBufferAttachment(offscreenAttachments[i]);
+	}
 }
 
 void VulkanRenderer::CleanupImGui()

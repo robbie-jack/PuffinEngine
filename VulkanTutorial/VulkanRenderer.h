@@ -62,11 +62,13 @@ struct SwapChainSupportDetails
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-#ifdef NDEBUG
+//#ifdef NDEBUG
+//const bool enableValidationLayers = false;
+//#else
+//const bool enableValidationLayers = true;
+//#endif
+
 const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
 
 //#define IMGUI_UNLIMITED_FRAME_RATE
 //#ifdef _DEBUG
@@ -322,7 +324,7 @@ namespace Puffin
 
 			void DrawFrame(float delta_time);
 			void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
-			void UpdateImguiCommandBuffers();
+			void UpdateImguiCommandBuffers(uint32_t currentImage);
 
 			glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 			glm::mat4 BuildMeshTransform(EntityTransform transform);
@@ -331,6 +333,7 @@ namespace Puffin
 
 			void Cleanup();
 			void CleanupSwapChain();
+			void CleanupOffscreen();
 			void CleanupImGui();
 			void CleanupMeshComponent(MeshComponent& mesh_component);
 			void CleanupFrameBufferAttachment(FrameBufferAttachment& attachment);
