@@ -375,13 +375,9 @@ void VulkanRenderer::CreateInstance()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions;
-
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-	createInfo.enabledExtensionCount = glfwExtensionCount;
-	createInfo.ppEnabledExtensionNames = glfwExtensions;
+	auto extensions = GetRequiredExtensions();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	createInfo.ppEnabledExtensionNames = extensions.data();
 
 	if (enableValidationLayers)
 	{
@@ -398,17 +394,17 @@ void VulkanRenderer::CreateInstance()
 		throw std::runtime_error("failed to create instance!");
 	}
 
-	uint32_t extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	uint32_t vulkanExtensionCount = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &vulkanExtensionCount, nullptr);
 
-	std::vector<VkExtensionProperties> extensions(extensionCount);
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+	std::vector<VkExtensionProperties> vulkanExtensions(vulkanExtensionCount);
+	vkEnumerateInstanceExtensionProperties(nullptr, &vulkanExtensionCount, vulkanExtensions.data());
 
 	std::cout << "available extensions:" << std::endl;
 
-	for (const auto& extension : extensions)
+	for (const auto& vulkanExtension : vulkanExtensions)
 	{
-		std::cout << "\t" << extension.extensionName << std::endl;
+		std::cout << "\t" << vulkanExtension.extensionName << std::endl;
 	}
 }
 
@@ -440,6 +436,22 @@ bool VulkanRenderer::CheckValidationLayerSupport()
 	}
 
 	return true;
+}
+
+std::vector<const char*> VulkanRenderer::GetRequiredExtensions()
+{
+	uint32_t glfwExtensionCount = 0;
+	const char** glfwExtensions;
+	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+	if (enableValidationLayers)
+	{
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	}
+
+	return extensions;
 }
 
 void VulkanRenderer::CreateSurface()

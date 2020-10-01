@@ -157,7 +157,7 @@ namespace Puffin
 			std::vector<VkCommandBuffer> imguiCommandBuffers;
 			VkDescriptorPool imguiDescriptorPool;
 
-			// Semaphore/Flights for Synchronisation
+			// Semaphore/Flights for Synchronization
 			std::vector<VkSemaphore> imageAvailableSemaphores;
 			std::vector<VkSemaphore> renderFinishedSemaphores;
 			std::vector<VkFence> inFlightFences;
@@ -228,7 +228,19 @@ namespace Puffin
 				app->framebufferResized = true;
 			}
 
-			// Initialise Window
+			static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+				VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+				VkDebugUtilsMessageTypeFlagsEXT messageType,
+				const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+				void* pUserData) 
+			{
+
+				std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+				return VK_FALSE;
+			}
+
+			// Initialize Window
 			void InitWindow();
 			//void SetupInput();
 
@@ -273,6 +285,7 @@ namespace Puffin
 			void CreateSyncObjects();
 
 			bool CheckValidationLayerSupport();
+			std::vector<const char*> GetRequiredExtensions();
 			int RateDeviceSuitability(VkPhysicalDevice device);
 			bool IsDeviceSuitable(VkPhysicalDevice device);
 			bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
