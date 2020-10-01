@@ -138,17 +138,17 @@ void VulkanRenderer::InitVulkan()
 	InitTexture(offscreenTexture, "textures/texture.jpg");
 	uiWindowViewport->SetSceneTexture(offscreenTexture);
 
-	// Initliaze Camera
+	// Initialize Camera
 	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, 
 		(float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 
-	// Initliase Lights
+	// Initialize Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
 	InitComponent(0, "models/chalet.obj", "textures/chalet.jpg");
 	InitComponent(1, "models/space_engineer.obj", "textures/space_engineer.jpg");
-	InitComponentCube(2, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialise Components with default cube mesh
-	InitComponentCube(3); //Initialise Components with default cube mesh
+	InitComponentCube(2, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
+	InitComponentCube(3); //Initialize Components with default cube mesh
 	InitComponentCube(4);
 
 	//CreateUniformBuffers();
@@ -333,7 +333,7 @@ void VulkanRenderer::RecreateSwapChain()
 
 void VulkanRenderer::InitOffscreen()
 {
-	// Initialise Variables needed for Offscreen Framebuffer/Attachment Creation
+	// Initialize Variables needed for Offscreen Framebuffer/Attachment Creation
 	offscreenExtent.width = 1024;
 	offscreenExtent.height = 1024;
 	//offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
@@ -711,7 +711,7 @@ void VulkanRenderer::CreateLogicalDevice()
 
 void VulkanRenderer::CreateAllocator()
 {
-	// Initiliase Allocator Info
+	// Initialize Allocator Info
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = physicalDevice;
 	allocatorInfo.device = device;
@@ -848,7 +848,7 @@ void VulkanRenderer::CreateOffscreenAttachments()
 	for (size_t i = 0; i < offscreenAttachments.size(); i++)
 	{
 		CreateImage(offscreenExtent.width, offscreenExtent.height,
-			offscreenFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			offscreenFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, offscreenAttachments[i].image, VMA_MEMORY_USAGE_GPU_ONLY, offscreenAttachments[i].allocation);
 
 		offscreenAttachments[i].imageView = CreateImageView(offscreenAttachments[i].image, offscreenFormat, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -915,15 +915,15 @@ void VulkanRenderer::CreateRenderPass()
 	subpass.pColorAttachments = &colorAttachmentRef;
 	subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-	VkSubpassDependency dependency = {};
+	/*VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.dstSubpass = 0;
 	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.srcAccessMask = 0;
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;*/
 
-	/*std::array<VkSubpassDependency, 2> dependencies;
+	std::array<VkSubpassDependency, 2> dependencies;
 
 	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependencies[0].dstSubpass = 0;
@@ -939,7 +939,7 @@ void VulkanRenderer::CreateRenderPass()
 	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;*/
+	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
 	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 	VkRenderPassCreateInfo renderPassInfo = {};
@@ -948,10 +948,10 @@ void VulkanRenderer::CreateRenderPass()
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
-	renderPassInfo.dependencyCount = 1;
-	renderPassInfo.pDependencies = &dependency;
-	/*renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-	renderPassInfo.pDependencies = dependencies.data();*/
+	//renderPassInfo.dependencyCount = 1;
+	//renderPassInfo.pDependencies = &dependency;
+	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	renderPassInfo.pDependencies = dependencies.data();
 
 	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 	{
@@ -1426,7 +1426,7 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 {
 	int texWidth, texHeight, texChannels;
 
-	// Load Texure from file
+	// Load Texture from file
 	stbi_uc* pixels = stbi_load(texture_path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
 	// Get required image size for texture
@@ -1819,7 +1819,7 @@ void VulkanRenderer::CreateImGuiDescriptorPool()
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &imguiDescriptorPool) != VK_SUCCESS)
 	{
-		throw std::runtime_error("failed to create imgui descriptor pool!");
+		throw std::runtime_error("failed to create Imgui descriptor pool!");
 	}
 }
 
