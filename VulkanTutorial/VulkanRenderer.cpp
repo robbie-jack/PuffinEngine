@@ -114,6 +114,7 @@ void VulkanRenderer::InitWindow()
 void VulkanRenderer::InitVulkan()
 {
 	CreateInstance();
+	SetupDebugMessenger();
 	CreateSurface();
 	PickPhysicalDevice();
 	CreateLogicalDevice();
@@ -389,6 +390,21 @@ void VulkanRenderer::CreateInstance()
 		createInfo.enabledLayerCount = 0;
 	}
 
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+	if (enableValidationLayers)
+	{
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+
+		PopulateDebugMessengerCreateInfo(debugCreateInfo);
+		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+	}
+	else {
+		createInfo.enabledLayerCount = 0;
+
+		createInfo.pNext = nullptr;
+	}
+
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create instance!");
@@ -452,6 +468,19 @@ std::vector<const char*> VulkanRenderer::GetRequiredExtensions()
 	}
 
 	return extensions;
+}
+
+void VulkanRenderer::SetupDebugMessenger()
+{
+	if (!enableValidationLayers) return;
+
+	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+	PopulateDebugMessengerCreateInfo(createInfo);
+
+	/*if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to set up debug messenger!");
+	}*/
 }
 
 void VulkanRenderer::CreateSurface()
@@ -2292,12 +2321,18 @@ void VulkanRenderer::Cleanup()
 
 	vkDestroyCommandPool(device, commandPool, nullptr);
 
-	// Destory Memory Allocator
+	// Destroy Memory Allocator
 	vmaDestroyAllocator(allocator);
 
 	vkDestroyDevice(device, nullptr);
 
 	vkDestroySurfaceKHR(instance, surface, nullptr);
+
+	if (enableValidationLayers)
+	{
+		//DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+	}
+
 	vkDestroyInstance(instance, nullptr);
 
 	glfwDestroyWindow(window);
