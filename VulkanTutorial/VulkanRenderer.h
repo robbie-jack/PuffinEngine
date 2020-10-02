@@ -62,13 +62,13 @@ struct SwapChainSupportDetails
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-//#ifdef NDEBUG
-//const bool enableValidationLayers = false;
-//#else
-//const bool enableValidationLayers = true;
-//#endif
-
+#ifdef NDEBUG
 const bool enableValidationLayers = false;
+#else
+const bool enableValidationLayers = true;
+#endif
+
+//const bool enableValidationLayers = false;
 
 //#define IMGUI_UNLIMITED_FRAME_RATE
 //#ifdef _DEBUG
@@ -177,8 +177,6 @@ namespace Puffin
 			Mesh chalet_mesh;
 			Mesh engineer_mesh;
 			Mesh cube_mesh;
-			//Mesh light_cube;
-			//std::vector<Mesh> meshes;
 			std::vector<MeshComponent> meshComponents;
 
 			Texture cube_texture;
@@ -268,7 +266,6 @@ namespace Puffin
 
 			// Initialize Window
 			void InitWindow();
-			//void SetupInput();
 
 			//-------------------------------------------------------------------------------------
 

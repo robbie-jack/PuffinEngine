@@ -91,24 +91,6 @@ void VulkanRenderer::InitWindow()
 	inputManager->SetupInput(window);
 }
 
-//void VulkanRenderer::SetupInput()
-//{
-//	// Actions
-//
-//	// Camera Actions
-//	inputManager.AddAction("CamMoveForward", GLFW_KEY_W);
-//	inputManager.AddAction("CamMoveBackward", GLFW_KEY_S);
-//	inputManager.AddAction("CamMoveLeft", GLFW_KEY_A);
-//	inputManager.AddAction("CamMoveRight", GLFW_KEY_D);
-//	inputManager.AddAction("CamMoveUp", GLFW_KEY_E);
-//	inputManager.AddAction("CamMoveDown", GLFW_KEY_Q);
-//	inputManager.AddAction("CursorSwitch", GLFW_KEY_F1);
-//
-//	// Mouse
-//
-//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-//}
-
 //-------------------------------------------------------------------------------------
 
 void VulkanRenderer::InitVulkan()
