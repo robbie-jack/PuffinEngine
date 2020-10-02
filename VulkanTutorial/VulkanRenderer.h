@@ -62,13 +62,13 @@ struct SwapChainSupportDetails
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
-
+//#ifdef NDEBUG
 //const bool enableValidationLayers = false;
+//#else
+//const bool enableValidationLayers = true;
+//#endif
+
+const bool enableValidationLayers = false;
 
 //#define IMGUI_UNLIMITED_FRAME_RATE
 //#ifdef _DEBUG

@@ -1416,11 +1416,11 @@ void VulkanRenderer::CreateOffscreenFramebuffers()
 {
 	offscreenFramebuffers.resize(offscreenAttachments.size());
 
-	for (int i = 0; i < offscreenAttachments.size(); i++)
+	for (int i = 0; i < offscreenFramebuffers.size(); i++)
 	{
 		std::array<VkImageView, 2> attachments = {
 			offscreenAttachments[i].imageView,
-			depthAttachment.imageView
+			offscreenDepthAttachment.imageView
 		};
 
 		VkFramebufferCreateInfo framebufferInfo = {};
@@ -1458,7 +1458,7 @@ void VulkanRenderer::CreateImGuiFramebuffers()
 
 		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &imguiFramebuffers[i]) != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to create imgui framebuffer!");
+			throw std::runtime_error("failed to create Imgui framebuffer!");
 		}
 	}
 }
@@ -2175,6 +2175,9 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	vkQueueWaitIdle(presentQueue);
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+	/*offscreenTexture.GetTextureAttachment() = offscreenAttachments[imageIndex];
+	uiWindowViewport->SetSceneTexture(offscreenTexture);*/
 }
 
 void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_time)
@@ -2260,7 +2263,7 @@ void VulkanRenderer::UpdateImguiCommandBuffers(uint32_t currentImage)
 
 	if (vkBeginCommandBuffer(imguiCommandBuffers[currentImage], &beginInfo) != VK_SUCCESS)
 	{
-		throw std::runtime_error("failed to begin recording imgui command buffer!");
+		throw std::runtime_error("failed to begin recording Imgui command buffer!");
 	}
 
 	VkRenderPassBeginInfo renderPassInfo = {};
@@ -2277,14 +2280,14 @@ void VulkanRenderer::UpdateImguiCommandBuffers(uint32_t currentImage)
 
 	vkCmdBeginRenderPass(imguiCommandBuffers[currentImage], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	// Record Imgui Draw Data and draw funtions into command buffer
+	// Record Imgui Draw Data and draw functions into command buffer
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), imguiCommandBuffers[currentImage]);
 
 	vkCmdEndRenderPass(imguiCommandBuffers[currentImage]);
 
 	if (vkEndCommandBuffer(imguiCommandBuffers[currentImage]) != VK_SUCCESS)
 	{
-		throw std::runtime_error("failed to record imgui command buffer!");
+		throw std::runtime_error("failed to record Imgui command buffer!");
 	}
 }
 
