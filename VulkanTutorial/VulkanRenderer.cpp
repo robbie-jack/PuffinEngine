@@ -2272,7 +2272,7 @@ void VulkanRenderer::Cleanup()
 	meshComponents.clear();
 
 	// Cleanup Textures
-	CleanupFrameBufferAttachment(offscreenTexture.GetTextureAttachment());
+	//CleanupFrameBufferAttachment(offscreenTexture.GetTextureAttachment());
 	CleanupFrameBufferAttachment(cube_texture.GetTextureAttachment());
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
