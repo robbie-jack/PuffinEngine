@@ -207,6 +207,7 @@ namespace Puffin
 			style->TabBorderSize = 1.0f;
 			style->TabRounding = 0.0f;
 			style->WindowRounding = 4.0f;
+			style->WindowPadding = { 0.0f, 0.0f };
 		}
 
 		void UIManager::AddWindow(UIWindow* window)
