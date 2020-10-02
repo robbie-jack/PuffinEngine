@@ -123,7 +123,7 @@ void VulkanRenderer::InitVulkan()
 
 	// Initialize Camera
 	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, 
-		(float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+		(float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
 
 	// Initialize Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
@@ -299,10 +299,15 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateDepthResources();
 	CreateFrameBuffers();
 
+	// Update offscreen extent to match viewport size
+	ImVec2 viewportSize = uiWindowViewport->GetViewportSize();
+	offscreenExtent.width = static_cast<uint32_t>(viewportSize.x);
+	offscreenExtent.height = static_cast<uint32_t>(viewportSize.y);
+
 	CreateOffscreenVariables();
 
 	// Recalculate Camera Perspective if window size changed
-	camera.SetPerspective(45.0f, (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+	camera.SetPerspective(45.0f, (float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
 
 	CreateUniformBuffers();
 	CreateLightBuffers();
@@ -320,8 +325,6 @@ void VulkanRenderer::InitOffscreen()
 	offscreenExtent.width = 1024;
 	offscreenExtent.height = 1024;
 	offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
-	//offscreenFormat = VK_FORMAT_R8G8B8A8_UNORM;
-	//offscreenFormat = swapChainImageFormat;
 }
 
 void VulkanRenderer::CreateOffscreenVariables()
@@ -965,12 +968,10 @@ void VulkanRenderer::CreateImGuiRenderPass()
 	VkAttachmentDescription colorAttachment = {};
 	colorAttachment.format = swapChainImageFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	//colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	//colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
@@ -1002,7 +1003,7 @@ void VulkanRenderer::CreateImGuiRenderPass()
 
 	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &imguiRenderPass) != VK_SUCCESS)
 	{
-		throw std::runtime_error("failed to create imgui render pass!");
+		throw std::runtime_error("failed to create Imgui render pass!");
 	}
 }
 

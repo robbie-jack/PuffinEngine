@@ -18,8 +18,10 @@ namespace Puffin
 				}
 				else
 				{
+					viewportSize = ImGui::GetWindowSize();
+
 					// Display Scene View Texture
-					ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(textureSampler, sceneTexture.GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), ImGui::GetWindowSize());
+					ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(textureSampler, sceneTexture.GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), viewportSize);
 				}
 			}
 

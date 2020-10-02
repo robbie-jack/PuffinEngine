@@ -16,11 +16,13 @@ namespace Puffin
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
 			inline void SetSceneTexture(Puffin::Rendering::Texture texture) { sceneTexture = texture; };
+			inline ImVec2 GetViewportSize() { return viewportSize; }
 
 		private:
 
 			// Texture Containing Rendered Scene
 			Puffin::Rendering::Texture sceneTexture;
+			ImVec2 viewportSize;
 		};
 	}
 }
