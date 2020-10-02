@@ -2046,6 +2046,12 @@ void VulkanRenderer::DrawFrame(float delta_time)
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
+	if (uiWindowViewport->GetViewportSize().x != (float)offscreenExtent.width || 
+		uiWindowViewport->GetViewportSize().y != (float)offscreenExtent.height)
+	{
+		RecreateSwapChain();
+	}
+
 	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
