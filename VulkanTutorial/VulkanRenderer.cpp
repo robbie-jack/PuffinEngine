@@ -337,9 +337,9 @@ void VulkanRenderer::InitOffscreen()
 	// Initialize Variables needed for Offscreen Framebuffer/Attachment Creation
 	offscreenExtent.width = 1024;
 	offscreenExtent.height = 1024;
-	//offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
+	offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
 	//offscreenFormat = VK_FORMAT_R8G8B8A8_UNORM;
-	offscreenFormat = swapChainImageFormat;
+	//offscreenFormat = swapChainImageFormat;
 }
 
 void VulkanRenderer::CreateOffscreenVariables()
@@ -921,7 +921,6 @@ VkImageView VulkanRenderer::CreateImageView(VkImage image, VkFormat format, VkIm
 void VulkanRenderer::CreateRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
-	//colorAttachment.format = swapChainImageFormat;
 	colorAttachment.format = offscreenFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -929,7 +928,6 @@ void VulkanRenderer::CreateRenderPass()
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkAttachmentReference colorAttachmentRef = {};
@@ -956,31 +954,13 @@ void VulkanRenderer::CreateRenderPass()
 	subpass.pColorAttachments = &colorAttachmentRef;
 	subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-	/*VkSubpassDependency dependency = {};
+	VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.dstSubpass = 0;
 	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.srcAccessMask = 0;
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;*/
-
-	std::array<VkSubpassDependency, 2> dependencies;
-
-	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependencies[0].dstSubpass = 0;
-	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	dependencies[1].srcSubpass = 0;
-	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 	VkRenderPassCreateInfo renderPassInfo = {};
@@ -989,10 +969,8 @@ void VulkanRenderer::CreateRenderPass()
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
-	//renderPassInfo.dependencyCount = 1;
-	//renderPassInfo.pDependencies = &dependency;
-	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-	renderPassInfo.pDependencies = dependencies.data();
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &dependency;
 
 	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 	{
@@ -1944,7 +1922,6 @@ void VulkanRenderer::CreateDescriptorSets()
 
 void VulkanRenderer::CreateMainCommandBuffers()
 {
-	//commandBuffers.resize(swapChainFramebuffers.size());
 	commandBuffers.resize(offscreenFramebuffers.size());
 
 	CreateCommandBuffers(commandBuffers.data(), (uint32_t)commandBuffers.size(), commandPool);
@@ -1964,10 +1941,8 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = renderPass;
-		//renderPassInfo.framebuffer = swapChainFramebuffers[i];
 		renderPassInfo.framebuffer = offscreenFramebuffers[i];
 		renderPassInfo.renderArea.offset = { 0, 0 };
-		//renderPassInfo.renderArea.extent = swapChainExtent;
 		renderPassInfo.renderArea.extent = offscreenExtent;
 
 		std::array<VkClearValue, 2> clearValues = {};
@@ -1983,8 +1958,6 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		//viewport.width = (float)swapChainExtent.width;
-		//viewport.height = (float)swapChainExtent.height;
 		viewport.width = (float)offscreenExtent.width;
 		viewport.height = (float)offscreenExtent.height;
 		viewport.minDepth = 0.0f;
@@ -1995,7 +1968,6 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		// Define Scissor Extent (Pixel Outside Scissor Rectangle will be discarded)
 		VkRect2D scissor = {};
 		scissor.offset = { 0, 0 };
-		//scissor.extent = swapChainExtent;
 		scissor.extent = offscreenExtent;
 
 		vkCmdSetScissor(commandBuffers[i], 0, 1, &scissor);
@@ -2104,8 +2076,6 @@ void VulkanRenderer::DrawFrame(float delta_time)
 
 	std::array<VkCommandBuffer, 2> submitCommandBuffers = {  commandBuffers[imageIndex], imguiCommandBuffers[imageIndex] };
 
-	//std::array<VkCommandBuffer, 1> submitCommandBuffers = { imguiCommandBuffers[imageIndex] };
-
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -2136,17 +2106,7 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	else if (result == VK_ERROR_DEVICE_LOST)
 	{
 		throw std::runtime_error("VkQueueSubmit: Device Lost");
-		
-		// Attempt to recreate logical device when it is lost
-		//vkDestroyDevice(device, nullptr);
-		//CreateLogicalDevice();
-		//RecreateSwapChain();
 	}
-
-	/*if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to submit draw command buffers!");
-	}*/
 
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -2176,8 +2136,8 @@ void VulkanRenderer::DrawFrame(float delta_time)
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-	/*offscreenTexture.GetTextureAttachment() = offscreenAttachments[imageIndex];
-	uiWindowViewport->SetSceneTexture(offscreenTexture);*/
+	offscreenTexture.GetTextureAttachment() = offscreenAttachments[imageIndex];
+	uiWindowViewport->SetSceneTexture(offscreenTexture);
 }
 
 void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_time)
@@ -2333,7 +2293,7 @@ void VulkanRenderer::Cleanup()
 
 	if (enableValidationLayers)
 	{
-		//DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 	}
 
 	vkDestroyInstance(instance, nullptr);
