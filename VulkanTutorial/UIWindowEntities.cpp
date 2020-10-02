@@ -10,8 +10,6 @@ namespace Puffin
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				flags = ImGuiWindowFlags_MenuBar; // MenuBar Flag, remove when Main Menu Bar is removed
-
 				windowName = "Entities";
 				if (!Begin(windowName))
 				{
@@ -19,22 +17,6 @@ namespace Puffin
 				}
 				else
 				{
-					// Main Menu Bar - Temporary until Editor Dockspace is implemented fully
-					if (ImGui::BeginMenuBar())
-					{
-						if (ImGui::BeginMenu("Menu"))
-						{
-							if (ImGui::MenuItem("Quit", "Alt+F4"))
-							{
-								return false;
-							}
-
-							ImGui::EndMenu();
-						}
-
-						ImGui::EndMenuBar();
-					}
-
 					// List All Entities and their ID/Name
 					ImGui::ListBoxHeader("", ImGui::GetWindowSize()); // Make ListBox fill Window
 
