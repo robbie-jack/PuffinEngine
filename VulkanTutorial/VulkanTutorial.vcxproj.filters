@@ -111,13 +111,19 @@
     <ClCompile Include="UIWindow.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="UIWindowMenu.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="UIWindowEntities.cpp">
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="UIWindowViewport.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIWindowSettings.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIWindowEntityProperties.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIWindowPerformance.cpp">
       <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -203,9 +209,6 @@
     <ClInclude Include="UIWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIWindowMenu.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="UIWindowEntities.h">
       <Filter>UI</Filter>
     </ClInclude>
@@ -214,6 +217,15 @@
     </ClInclude>
     <ClInclude Include="FrameBufferAttachment.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWindowSettings.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWindowEntityProperties.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWindowPerformance.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
