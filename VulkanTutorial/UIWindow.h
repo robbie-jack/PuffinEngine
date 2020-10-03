@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.h>
 
 #include "imgui/imgui.h"
+#include "imgui/implot.h"
 #include "InputManager.h"
 
 namespace Puffin

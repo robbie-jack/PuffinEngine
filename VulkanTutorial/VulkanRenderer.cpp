@@ -2347,7 +2347,9 @@ void VulkanRenderer::CleanupImGui()
 
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
+
+	uiManager->Cleanup();
+
 	vkDestroyDescriptorPool(device, imguiDescriptorPool, nullptr);
 }
 

@@ -8,6 +8,7 @@ namespace Puffin
 		{
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
+			ImPlot::CreateContext();
 
 			ImGuiIO& io = ImGui::GetIO(); (void)io;
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -20,7 +21,13 @@ namespace Puffin
 
 		UIManager::~UIManager()
 		{
+			
+		}
 
+		void UIManager::Cleanup()
+		{
+			ImGui::DestroyContext();
+			ImPlot::DestroyContext();
 		}
 
 		bool UIManager::DrawUI(float dt, Input::InputManager* InputManager)
@@ -38,6 +45,7 @@ namespace Puffin
 			}
 
 			//ImGui::ShowDemoWindow(p_open);
+			//ImPlot::ShowDemoWindow(p_open);
 
 			// Draw UI Windows
 			if (windows.size() > 0)
@@ -125,7 +133,7 @@ namespace Puffin
 					{
 						for (int i = 0; i < windows.size(); i++)
 						{
-							// Show/Unshow window if clicked
+							// Show/Hide window if clicked
 							ImGui::MenuItem(windows[i]->GetName().c_str(), NULL, windows[i]->GetShow());
 						}
 					}
