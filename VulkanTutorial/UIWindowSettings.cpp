@@ -6,11 +6,12 @@ namespace Puffin
 	{
 		bool UIWindowSettings::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
+			windowName = "Settings";
+
 			if (show)
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				windowName = "Settings";
 				if (!Begin(windowName))
 				{
 					End();

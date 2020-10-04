@@ -142,7 +142,7 @@ namespace Puffin
 					ImGui::EndMenu();
 				}
 
-				ImGui::Dummy(ImVec2((ImGui::GetWindowSize().x / 2) - 200.0f, 0.0f));
+				ImGui::Dummy(ImVec2((ImGui::GetWindowWidth() / 2) - 200.0f, 0.0f));
 
 				if (ImGui::Button(playButtonLabel.c_str()))
 				{

@@ -6,11 +6,12 @@ namespace Puffin
 	{
 		bool UIWindowEntities::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
+			windowName = "Entities";
+
 			if (show)
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				windowName = "Entities";
 				if (!Begin(windowName))
 				{
 					End();
@@ -20,6 +21,14 @@ namespace Puffin
 					if (ImGui::Button("Create Entity"))
 					{
 						windowProperties->SetEntity(entitySystem->GetEntity(entitySystem->CreateEntity()));
+					}
+
+					ImGui::SameLine();
+
+					if (ImGui::Button("Destroy Entity"))
+					{
+						windowProperties->SetEntity(nullptr);
+						entitySystem->DestroyEntity(selectedID);
 					}
 
 					// List All Entities and their ID/Name
@@ -33,6 +42,7 @@ namespace Puffin
 						std::string entity_string = "ID: " + std::to_string(entityID);
 						if (ImGui::Selectable(entity_string.c_str(), false))
 						{
+							selectedID = entityID;
 							windowProperties->SetEntity(entitySystem->GetEntity(entityID));
 						}
 					}

@@ -35,14 +35,16 @@ namespace Puffin
 		entityMap.insert(std::pair<uint32_t, Entity>(nextID, entity));
 		nextID++;
 
-		entityIDVector.clear();
-
-		for (auto entity : entityMap)
-		{
-			entityIDVector.push_back(entity.first);
-		}
+		UpdateIDVector();
 
 		return entity.GetID();
+	}
+
+	void EntitySystem::DestroyEntity(uint32_t entityID)
+	{
+		entityMap.erase(entityID);
+
+		UpdateIDVector();
 	}
 
 	Entity* EntitySystem::GetEntity(uint32_t entityID)
@@ -53,5 +55,15 @@ namespace Puffin
 	EntitySystem::~EntitySystem()
 	{
 
+	}
+
+	void EntitySystem::UpdateIDVector()
+	{
+		entityIDVector.clear();
+
+		for (auto entity : entityMap)
+		{
+			entityIDVector.push_back(entity.first);
+		}
 	}
 }

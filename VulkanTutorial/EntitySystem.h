@@ -17,7 +17,8 @@ namespace Puffin
 		void SendMessage();
 
 		uint32_t CreateEntity();
-		Entity* GetEntity(uint32_t);
+		void DestroyEntity(uint32_t entityID);
+		Entity* GetEntity(uint32_t entityID);
 
 		inline std::vector<uint32_t> GetEntityIDVector() { return entityIDVector; };
 
@@ -26,5 +27,7 @@ namespace Puffin
 		uint32_t nextID = 1;
 		std::map<uint32_t, Entity> entityMap;
 		std::vector<uint32_t> entityIDVector;
+
+		void UpdateIDVector();
 	};
 }

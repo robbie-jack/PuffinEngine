@@ -7,6 +7,11 @@ namespace Puffin
 		entityID = id;
 	}
 
+	Entity::~Entity()
+	{
+		entityComponents.clear();
+	}
+
 	template<typename T>
 	T* Entity::GetComponent()
 	{

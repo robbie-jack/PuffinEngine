@@ -22,6 +22,7 @@ namespace Puffin
 			EntitySystem* entitySystem;
 			UIWindowEntityProperties* windowProperties;
 
+			uint32_t selectedID;
 			std::vector<uint32_t> entityIDs;
 		};
 	}

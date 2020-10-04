@@ -14,6 +14,7 @@ namespace Puffin
 	public:
 
 		Entity(uint32_t id);
+		~Entity();
 
 		void AttachComponent(BaseComponent* component);
 

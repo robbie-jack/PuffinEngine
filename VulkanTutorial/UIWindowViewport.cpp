@@ -7,11 +7,12 @@ namespace Puffin
 	{
 		bool UIWindowViewport::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
+			windowName = "Viewport";
+
 			if (show)
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				windowName = "Viewport";
 				if (!Begin(windowName))
 				{
 					End();

@@ -7,11 +7,12 @@ namespace Puffin
 	{
 		bool UIWindowPerformance::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
+			windowName = "Performance";
+
 			if (show)
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				windowName = "Performance";
 				if (!Begin(windowName))
 				{
 					End();

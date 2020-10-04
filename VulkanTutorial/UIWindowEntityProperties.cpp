@@ -6,11 +6,12 @@ namespace Puffin
 	{
 		bool UIWindowEntityProperties::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
+			windowName = "Entity Properties";
+
 			if (show)
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				windowName = "Entity Properties";
 				if (!Begin(windowName))
 				{
 					End();

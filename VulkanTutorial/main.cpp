@@ -43,7 +43,6 @@ int main()
 		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&renderSystem);
 
-		windowSettings.Show();
 		windowPerformance.Show();
 
 		uiManager.AddWindow(&windowEntities);
