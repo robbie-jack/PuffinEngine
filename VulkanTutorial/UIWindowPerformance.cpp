@@ -21,14 +21,22 @@ namespace Puffin
 					ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 					if (ImGui::CollapsingHeader("System Info"))
 					{
-						std::string cpuName = "Ryzen 3600";
-						int logicalCores = std::thread::hardware_concurrency();
-						int physicalCores = logicalCores / 2;
+						hardwareStats.cpuName = "Ryzen 3600";
+						hardwareStats.logicalCores = std::thread::hardware_concurrency();
+						hardwareStats.physicalCores = hardwareStats.logicalCores / 2;
+						hardwareStats.gpuName = "GTX 1070";
+						hardwareStats.vramTotal = 16384;
+						hardwareStats.ramTotal = 16384;
 
-						ImGui::Text("CPU: %s", cpuName);
-						ImGui::Text("Physical Cores: %d", physicalCores);
-						ImGui::Text("Logical Cores: %d", logicalCores);
-						ImGui::Text("");
+						ImGui::Text(" CPU: %s", hardwareStats.cpuName);
+						ImGui::Text(" Physical Cores: %d", hardwareStats.physicalCores);
+						ImGui::Text(" Logical Cores: %d", hardwareStats.logicalCores);
+						ImGui::Dummy(ImVec2(0.0f, 10.0f));
+						ImGui::Text(" GPU: %s", hardwareStats.gpuName);
+						ImGui::Text(" VRAM: %d MB", hardwareStats.vramTotal);
+						ImGui::Dummy(ImVec2(0.0f, 10.0f));
+						ImGui::Text(" System Memory: %d MB", hardwareStats.ramTotal);
+						ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					}
 
 					ImGui::SetNextItemOpen(true, ImGuiCond_Once);
@@ -43,7 +51,7 @@ namespace Puffin
 							fps_timer = 0.0f;
 						}
 
-						ImGui::Text("Framerate: %d", fps);
+						ImGui::Text(" Framerate: %d", fps);
 
 						plotBuffer.AddPoint(dt, (float)fps);
 

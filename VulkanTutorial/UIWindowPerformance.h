@@ -31,6 +31,13 @@ namespace Puffin
 			}
 		};
 
+		struct HardwareStats
+		{
+			std::string cpuName, gpuName;
+			int logicalCores, physicalCores, vramTotal, ramTotal;
+			float vramUsage, ramUsage;
+		};
+
 		class UIWindowPerformance : public UIWindow
 		{
 		public:
@@ -41,6 +48,8 @@ namespace Puffin
 			int fps;
 			float fps_timer;
 			Puffin::UI::ScrollingBuffer plotBuffer;
+
+			HardwareStats hardwareStats;
 		};
 	}
 }
