@@ -60,20 +60,17 @@ namespace Puffin
 
 	void Engine::Start()
 	{
-		if (playState == PlayState::STOPPED)
+		for (int i = 0; i < systems.size(); i++)
 		{
-			for (int i = 0; i < systems.size(); i++)
-			{
-				systems[i]->Start();
-			}
-
-			playState = PlayState::PLAYING;
+			systems[i]->Start();
 		}
+
+		playState = PlayState::PLAYING;
 	}
 
 	void Engine::Stop()
 	{
-		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED)
+		if (playState == PlayState::PLAYING | playState == PlayState::PAUSED)
 		{
 			for (int i = 0; i < systems.size(); i++)
 			{
@@ -84,15 +81,19 @@ namespace Puffin
 		}
 	}
 
-	void Engine::PlayPause()
+	void Engine::Play()
 	{
-		if (playState == PlayState::PLAYING)
+		switch (playState)
 		{
+		case PlayState::STOPPED:
+			Start();
+			break;
+		case PlayState::PLAYING:
 			playState = PlayState::PAUSED;
-		}
-		else if (playState == PlayState::PAUSED)
-		{
+			break;
+		case PlayState::PAUSED:
 			playState = PlayState::PLAYING;
+			break;
 		}
 	}
 }

@@ -17,6 +17,7 @@ namespace Puffin
 			SetStyle();
 
 			running = true;
+			playButtonLabel = "Play";
 		}
 
 		UIManager::~UIManager()
@@ -139,6 +140,28 @@ namespace Puffin
 					}
 
 					ImGui::EndMenu();
+				}
+
+				ImGui::Dummy(ImVec2((ImGui::GetWindowSize().x / 2) - 200.0f, 0.0f));
+
+				if (ImGui::Button(playButtonLabel.c_str()))
+				{
+					engine->Play();
+
+					if (engine->GetPlayState() == PlayState::PAUSED)
+					{
+						playButtonLabel == "Pause";
+					}
+					else
+					{
+						playButtonLabel = "Play";
+					}
+				}
+
+				if (ImGui::Button("Stop"))
+				{
+					engine->Stop();
+					playButtonLabel = "Play";
 				}
 
 				ImGui::EndMenuBar();

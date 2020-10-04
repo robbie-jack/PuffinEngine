@@ -6,11 +6,37 @@ namespace Puffin
 	{
 		running = true;
 		updateWhenPlaying = true;
+		Start();
 	}
 
 	void TransformSystem::Start()
 	{
+		transformComponents[0].SetTransform(Puffin::Vector3(2.0f, 0.0f, 0.0f), Puffin::Vector3(0.0f), Puffin::Vector3(1.0f));
+		transformComponents[1].SetTransform(Puffin::Vector3(-1.0f, 0.0f, 0.0f), Puffin::Vector3(0.0f), Puffin::Vector3(1.0f));
+		transformComponents[2].SetTransform(Puffin::Vector3(0.0f), Puffin::Vector3(0.0f), Puffin::Vector3(1.0f));
+		transformComponents[3].SetTransform(Puffin::Vector3(0.0f), Puffin::Vector3(0.0f), Puffin::Vector3(1.0f));
+		transformComponents[4].SetTransform(Puffin::Vector3(0.0f, -5.0f, 0.0f), Puffin::Vector3(0.0f), Puffin::Vector3(1.0f));
 
+		for (int i = 0; i < transformComponents.size(); i++)
+		{
+			Rendering::MeshComponent* meshComp = nullptr;
+
+			// Find entities Mesh component
+			for (int j = 0; j < meshComponents->size(); j++)
+			{
+				if (transformComponents[i].GetEntityID() == meshComponents->at(j).GetEntityID())
+				{
+					meshComp = &meshComponents->at(j);
+					break;
+				}
+			}
+
+			// Update Mesh component transform from entity transform
+			if (meshComp != nullptr)
+			{
+				meshComp->GetMesh().SetTransform(transformComponents[i].GetTransform());
+			}
+		}
 	}
 
 	bool TransformSystem::Update(float dt)
@@ -45,9 +71,6 @@ namespace Puffin
 			{
 				rp3d::Transform physicsTransform = physicsComp->GetLerpTransform();
 
-				//transformComponents[i].SetPosition(ConvertVectorToGLM(physicsTransform.getPosition()));
-				//transformComponents[i].SetRotation(ConvertVectorToGLM(ConvertToEulerAngles(physicsTransform.getOrientation())));
-
 				transformComponents[i].SetPosition(physicsTransform.getPosition());
 				transformComponents[i].SetRotation(ConvertToEulerAngles(physicsTransform.getOrientation()));
 			}
@@ -64,7 +87,7 @@ namespace Puffin
 
 	void TransformSystem::Stop()
 	{
-
+		Start();
 	}
 
 	void TransformSystem::SendMessage()

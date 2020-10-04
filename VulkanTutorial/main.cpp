@@ -48,6 +48,7 @@ int main()
 		uiManager.AddWindow(&windowSettings);
 		uiManager.AddWindow(&windowEntityProperties);
 		uiManager.AddWindow(&windowPerformance);
+		uiManager.SetEngine(&engine);
 
 		renderSystem.SetUI(&uiManager);
 		renderSystem.SetUIWindowViewport(&windowViewport);

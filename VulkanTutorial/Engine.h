@@ -9,7 +9,6 @@ namespace Puffin
 	enum class PlayState
 	{
 		STOPPED, // Game is stopped, no physics or game code is begin run
-		STARTING, // Game is is being started, relevant systems are being initialized
 		PLAYING, // Game is playing, all systems being updated
 		PAUSED // Game
 	};
@@ -20,13 +19,16 @@ namespace Puffin
 
 		void MainLoop();
 		void AddSystem(System* sys);
-		void Start();
+
+		void Play();
 		void Stop();
-		void PlayPause();
+
+		inline PlayState GetPlayState() { return playState; };
 
 	private:
 
 		void Update(float dt);
+		void Start();
 
 		std::vector<System*> systems;
 

@@ -6,6 +6,7 @@
 #include "imgui/implot.h"
 
 #include "InputManager.h"
+#include "Engine.h"
 #include "UIWindow.h"
 
 #include <vector>
@@ -27,9 +28,13 @@ namespace Puffin
 			bool DrawUI(float dt, Puffin::Input::InputManager* InputManager);
 			void AddWindow(UIWindow* window);
 
+			inline void SetEngine(Engine* engine_) { engine = engine_; };
+
 		private:
 			bool running;
+			std::string playButtonLabel;
 
+			Engine* engine;
 			std::vector<UIWindow*> windows;
 
 			bool ShowDockspace(bool* p_open);
