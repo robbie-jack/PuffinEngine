@@ -17,18 +17,23 @@ namespace Puffin
 				}
 				else
 				{
+					if (ImGui::Button("Create Entity"))
+					{
+						windowProperties->SetEntity(entitySystem->GetEntity(entitySystem->CreateEntity()));
+					}
+
 					// List All Entities and their ID/Name
 					ImVec2 listBoxSize = ImGui::GetWindowSize();
-					listBoxSize.y -= 20.0f;
+					listBoxSize.y -= 45.0f;
 
 					ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
-					for (uint32_t entityID : entityIDs)
+					for (uint32_t entityID : entitySystem->GetEntityIDVector())
 					{
 						std::string entity_string = "ID: " + std::to_string(entityID);
 						if (ImGui::Selectable(entity_string.c_str(), false))
 						{
-
+							windowProperties->SetEntity(entitySystem->GetEntity(entityID));
 						}
 					}
 
@@ -37,11 +42,6 @@ namespace Puffin
 			}
 
 			return true;
-		}
-
-		void UIWindowEntities::SetEntityIDs(std::vector<uint32_t> ids)
-		{
-			entityIDs = ids;
 		}
 	}
 }

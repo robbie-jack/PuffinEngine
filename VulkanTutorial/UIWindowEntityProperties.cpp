@@ -17,7 +17,18 @@ namespace Puffin
 				}
 				else
 				{
+					std::string entityIDString;
 
+					if (entity != nullptr)
+					{
+						entityIDString = " Entity ID: " + std::to_string(entity->GetID());
+					}
+					else
+					{
+						entityIDString = " No Entity Selected";
+					}
+
+					ImGui::Text(entityIDString.c_str());
 				}
 			}
 

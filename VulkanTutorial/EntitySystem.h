@@ -19,9 +19,12 @@ namespace Puffin
 		uint32_t CreateEntity();
 		Entity* GetEntity(uint32_t);
 
+		inline std::vector<uint32_t> GetEntityIDVector() { return entityIDVector; };
+
 		~EntitySystem();
 	private:
 		uint32_t nextID = 1;
 		std::map<uint32_t, Entity> entityMap;
+		std::vector<uint32_t> entityIDVector;
 	};
 }

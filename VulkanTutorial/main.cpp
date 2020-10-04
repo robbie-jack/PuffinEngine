@@ -43,12 +43,18 @@ int main()
 		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&renderSystem);
 
+		windowSettings.Show();
+		windowPerformance.Show();
+
 		uiManager.AddWindow(&windowEntities);
 		uiManager.AddWindow(&windowViewport);
 		uiManager.AddWindow(&windowSettings);
 		uiManager.AddWindow(&windowEntityProperties);
 		uiManager.AddWindow(&windowPerformance);
 		uiManager.SetEngine(&engine);
+
+		windowEntities.SetEntitySystem(&entitySystem);
+		windowEntities.SetWindowProperties(&windowEntityProperties);
 
 		renderSystem.SetUI(&uiManager);
 		renderSystem.SetUIWindowViewport(&windowViewport);
@@ -58,12 +64,10 @@ int main()
 
 		for (int i = 0; i < 5; i++)
 		{
-			entityIDs.push_back(entitySystem.CreateEntity());
-			entitySystem.GetEntity(entityIDs[i])->AttachComponent(transformSystem.AddComponent());
-			entitySystem.GetEntity(entityIDs[i])->AttachComponent(renderSystem.AddComponent());
+			uint32_t id = entitySystem.CreateEntity();
+			entitySystem.GetEntity(id)->AttachComponent(transformSystem.AddComponent());
+			entitySystem.GetEntity(id)->AttachComponent(renderSystem.AddComponent());
 		}
-
-		windowEntities.SetEntityIDs(entityIDs);
 
 		entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
 		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());

@@ -4,7 +4,6 @@ namespace Puffin
 {
 	void EntitySystem::Init()
 	{
-		nextID = 1;
 		running = true;
 		updateWhenPlaying = false;
 		type = SystemType::ENTITY;
@@ -35,6 +34,13 @@ namespace Puffin
 		Entity entity(nextID);
 		entityMap.insert(std::pair<uint32_t, Entity>(nextID, entity));
 		nextID++;
+
+		entityIDVector.clear();
+
+		for (auto entity : entityMap)
+		{
+			entityIDVector.push_back(entity.first);
+		}
 
 		return entity.GetID();
 	}

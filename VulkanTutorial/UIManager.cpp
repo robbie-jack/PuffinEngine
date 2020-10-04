@@ -150,11 +150,11 @@ namespace Puffin
 
 					if (engine->GetPlayState() == PlayState::PAUSED)
 					{
-						playButtonLabel == "Pause";
-					}
-					else
-					{
 						playButtonLabel = "Play";
+					}
+					else if (engine->GetPlayState() == PlayState::PLAYING)
+					{
+						playButtonLabel = "Pause";
 					}
 				}
 
