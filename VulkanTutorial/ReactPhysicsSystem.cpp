@@ -9,14 +9,18 @@ namespace Puffin
 		void ReactPhysicsSystem::Init()
 		{
 			running = true;
+			updateWhenPlaying = true;
+		}
 
+		void ReactPhysicsSystem::Start()
+		{
 			// Define Physics World Settings
 			rp3d::PhysicsWorld::WorldSettings settings;
 			settings.defaultPositionSolverNbIterations = 20;
 			settings.isSleepingEnabled = false;
 			settings.gravity = rp3d::Vector3(0.0f, -9.8f, 0.0f);
 
-			// Initialise Physics World
+			// Initialize Physics World
 			physicsWorld = physicsCommon.createPhysicsWorld(settings);
 
 			timeSinceLastUpdate = 0.0f;
@@ -53,11 +57,24 @@ namespace Puffin
 				// Set interpolated transform on component so it can be retrieved by transform system
 				physicsComponents[i].SetLerpTransform(lerpTransform);
 
-				// Set previous transfrom to current transform for this frame
+				// Set previous transform to current transform for this frame
 				physicsComponents[i].SetPrevTransform(currTransform);
 			}
 
 			return running;
+		}
+
+		void ReactPhysicsSystem::Stop()
+		{
+			// Destroy All Rigid Bodies
+			for (auto comp : physicsComponents)
+			{
+				physicsWorld->destroyRigidBody(comp.GetBody());
+			}
+
+			// Destroy Dynamics World
+			physicsCommon.destroyPhysicsWorld(physicsWorld);
+			physicsWorld = NULL;
 		}
 
 		void ReactPhysicsSystem::SendMessage()
@@ -97,18 +114,8 @@ namespace Puffin
 
 		ReactPhysicsSystem::~ReactPhysicsSystem()
 		{
-			// Destory All Rigid Bodies
-			for (auto comp : physicsComponents)
-			{
-				physicsWorld->destroyRigidBody(comp.GetBody());
-			}
-
 			// Clear Components Vector
 			physicsComponents.clear();
-
-			// Destroy Dynamics World
-			physicsCommon.destroyPhysicsWorld(physicsWorld);
-			physicsWorld = NULL;
 		}
 	}
 }

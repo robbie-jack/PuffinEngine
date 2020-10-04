@@ -17,7 +17,13 @@ void VulkanRenderer::Init()
 	InitWindow();
 	InitVulkan();
 	running = true;
+	updateWhenPlaying = false;
 	type = SystemType::RENDER;
+}
+
+void VulkanRenderer::Start()
+{
+
 }
 
 bool VulkanRenderer::Update(float dt)
@@ -34,6 +40,11 @@ bool VulkanRenderer::Update(float dt)
 	uiWindowViewport->SetSceneTexture(offscreenTexture);
 
 	return running;
+}
+
+void VulkanRenderer::Stop()
+{
+
 }
 
 void VulkanRenderer::SendMessage()
@@ -84,7 +95,9 @@ void VulkanRenderer::InitWindow()
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Puffin Engine", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Puffin Engine", monitor, nullptr);
+
+	glfwMaximizeWindow(window);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 

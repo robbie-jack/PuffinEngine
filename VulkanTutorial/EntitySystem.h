@@ -11,7 +11,9 @@ namespace Puffin
 	{
 	public:
 		void Init();
+		void Start();
 		bool Update(float dt);
+		void Stop();
 		void SendMessage();
 
 		uint32_t CreateEntity();

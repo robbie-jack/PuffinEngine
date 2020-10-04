@@ -84,7 +84,9 @@ namespace Puffin
 		public:
 
 			void Init();
+			void Start();
 			bool Update(float dt);
+			void Stop();
 			void SendMessage();
 			MeshComponent* AddComponent();
 
@@ -106,6 +108,7 @@ namespace Puffin
 
 			// Variables
 			GLFWwindow* window;
+			GLFWmonitor* monitor;
 			VkSurfaceKHR surface;
 			VkInstance instance;
 			VkDebugUtilsMessengerEXT debugMessenger;

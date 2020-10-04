@@ -7,13 +7,12 @@ namespace Puffin
 	void Engine::MainLoop()
 	{
 		running = true;
+		playState = PlayState::STOPPED;
 
 		for (int i = 0; i < systems.size(); i++)
 		{
 			systems[i]->Init();
 		}
-
-		//inputManager.SetupInput();
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -31,11 +30,25 @@ namespace Puffin
 
 	void Engine::Update(float dt)
 	{
+		// Only Update Systems marked updateWhenPlaying when Play State = Playing
 		for (int i = 0; i < systems.size(); i++)
 		{
-			if (systems[i]->Update(dt) == false)
+			if (systems[i]->GetUpdateWhenPlaying() == false)
 			{
-				running = false;
+				if (systems[i]->Update(dt) == false)
+				{
+					running = false;
+				}
+			}
+			else
+			{
+				if (playState == PlayState::PLAYING)
+				{
+					if (systems[i]->Update(dt) == false)
+					{
+						running = false;
+					}
+				}
 			}
 		}
 	}
@@ -43,5 +56,43 @@ namespace Puffin
 	void Engine::AddSystem(System* sys)
 	{
 		systems.push_back(sys);
+	}
+
+	void Engine::Start()
+	{
+		if (playState == PlayState::STOPPED)
+		{
+			for (int i = 0; i < systems.size(); i++)
+			{
+				systems[i]->Start();
+			}
+
+			playState = PlayState::PLAYING;
+		}
+	}
+
+	void Engine::Stop()
+	{
+		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED)
+		{
+			for (int i = 0; i < systems.size(); i++)
+			{
+				systems[i]->Stop();
+			}
+
+			playState = PlayState::STOPPED;
+		}
+	}
+
+	void Engine::PlayPause()
+	{
+		if (playState == PlayState::PLAYING)
+		{
+			playState = PlayState::PAUSED;
+		}
+		else if (playState == PlayState::PAUSED)
+		{
+			playState = PlayState::PLAYING;
+		}
 	}
 }

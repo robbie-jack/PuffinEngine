@@ -6,12 +6,23 @@ namespace Puffin
 	{
 		nextID = 1;
 		running = true;
+		updateWhenPlaying = false;
 		type = SystemType::ENTITY;
+	}
+
+	void EntitySystem::Start()
+	{
+
 	}
 
 	bool EntitySystem::Update(float dt)
 	{
 		return running;
+	}
+
+	void EntitySystem::Stop()
+	{
+
 	}
 
 	void EntitySystem::SendMessage()

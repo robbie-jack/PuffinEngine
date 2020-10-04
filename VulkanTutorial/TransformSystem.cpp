@@ -4,6 +4,12 @@ namespace Puffin
 {
 	void TransformSystem::Init()
 	{
+		running = true;
+		updateWhenPlaying = true;
+	}
+
+	void TransformSystem::Start()
+	{
 
 	}
 
@@ -54,6 +60,11 @@ namespace Puffin
 		}
 
 		return true;
+	}
+
+	void TransformSystem::Stop()
+	{
+
 	}
 
 	void TransformSystem::SendMessage()
