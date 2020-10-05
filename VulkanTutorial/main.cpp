@@ -57,6 +57,7 @@ int main()
 
 		renderSystem.SetUI(&uiManager);
 		renderSystem.SetUIWindowViewport(&windowViewport);
+		renderSystem.SetUIWindowSettings(&windowSettings);
 		renderSystem.SetInputManager(&inputManager);
 
 		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());

@@ -135,8 +135,10 @@ void VulkanRenderer::InitVulkan()
 	uiWindowViewport->SetSceneTexture(offscreenTexture);
 
 	// Initialize Camera
-	camera.Init(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f, 
+	camera.Init(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 60.0f, 
 		(float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
+
+	uiWindowSettings->SetCamera(&camera);
 
 	// Initialize Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);

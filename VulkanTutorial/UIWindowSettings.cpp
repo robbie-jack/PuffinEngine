@@ -18,7 +18,16 @@ namespace Puffin
 				}
 				else
 				{
+					float tempfov = fov;
+
 					ImGui::SliderFloat("Sensitivity", &InputManager->GetSensitivity(), 0.01f, 0.1f);
+					ImGui::SliderFloat("Field of View", &fov, 30.0f, 120.0f, "%f");
+
+					// If FOV has been changed this frame, update camera fov
+					if (fov != tempfov)
+					{
+						camera->UpdateFov(fov);
+					}
 				}
 			}
 

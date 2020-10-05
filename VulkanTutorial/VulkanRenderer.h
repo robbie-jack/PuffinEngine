@@ -7,6 +7,7 @@
 #include "UIManager.h"
 #include "InputManager.h"
 #include "UIWindowViewport.h"
+#include "UIWindowSettings.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -99,6 +100,7 @@ namespace Puffin
 
 			inline void SetUI(Puffin::UI::UIManager* UI) { uiManager = UI; };
 			inline void SetUIWindowViewport(Puffin::UI::UIWindowViewport* UIWindowViewport) { uiWindowViewport = UIWindowViewport; };
+			inline void SetUIWindowSettings(Puffin::UI::UIWindowSettings* UIWindowSettings) { uiWindowSettings = UIWindowSettings; };
 			inline void SetInputManager(Puffin::Input::InputManager* InputManager) { inputManager = InputManager; };
 
 			~VulkanRenderer();
@@ -171,6 +173,7 @@ namespace Puffin
 			// UI/Input Manager
 			Puffin::UI::UIManager* uiManager;
 			Puffin::UI::UIWindowViewport* uiWindowViewport;
+			Puffin::UI::UIWindowSettings* uiWindowSettings;
 			Puffin::Input::InputManager* inputManager;
 
 			// Camera

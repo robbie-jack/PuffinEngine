@@ -106,10 +106,18 @@ namespace Puffin
 		void Camera::SetPerspective(float fov_, float aspect_, float zNear_, float zFar_)
 		{
 			fov = fov_;
+			aspect = aspect_;
 			zNear = zNear_;
 			zFar = zFar_;
 
-			matrices.perspective = glm::perspective(glm::radians(fov), aspect_, zNear, zFar);
+			matrices.perspective = glm::perspective(glm::radians(fov), aspect, zNear, zFar);
+		}
+
+		void Camera::UpdateFov(float fov_)
+		{
+			fov = fov_;
+
+			matrices.perspective = glm::perspective(glm::radians(fov), aspect, zNear, zFar);
 		}
 
 		void Camera::UpdateViewMatrix()

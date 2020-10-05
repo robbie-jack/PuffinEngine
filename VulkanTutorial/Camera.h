@@ -45,6 +45,7 @@ namespace Puffin
 			void Update(Puffin::Input::InputManager* input_manager, float delta_time);
 
 			inline glm::vec3 GetPosition() { return position; };
+			inline float GetFov() { return fov; };
 
 			inline void SetPosition(glm::vec3 position_) { position = position_; UpdateViewMatrix(); };
 			inline void SetLookAt(glm::vec3 lookat_) { lookat = lookat_; UpdateViewMatrix(); };
@@ -61,6 +62,7 @@ namespace Puffin
 			inline void SetViewUp(glm::vec3 up_) { view.up = up_; UpdateViewMatrix(); };*/
 
 			void SetPerspective(float fov_, float aspect_, float zNear_, float zFar_);
+			void UpdateFov(float fov_);
 
 			inline ViewBufferObject GetViewBufferObject() { return viewBufferObject; };
 
@@ -71,7 +73,7 @@ namespace Puffin
 			inline std::vector<VmaAllocation>& GetViewAllocationVector() { return viewAllocationVector; };
 
 		private:
-			float zNear, zFar, fov;
+			float zNear, zFar, aspect, fov;
 
 			glm::vec3 position;
 			glm::vec3 lookat;
