@@ -119,6 +119,16 @@ namespace Puffin
 			{
 				if (ImGui::BeginMenu("Menu"))
 				{
+					if (ImGui::MenuItem("Save"))
+					{
+						
+					}
+
+					if (ImGui::MenuItem("Load"))
+					{
+						
+					}
+
 					if (ImGui::MenuItem("Quit", "Alt+F4"))
 					{
 						return false;

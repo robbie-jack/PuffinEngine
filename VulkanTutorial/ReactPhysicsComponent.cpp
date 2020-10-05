@@ -7,6 +7,7 @@ namespace Puffin
 		ReactPhysicsComponent::ReactPhysicsComponent()
 		{
 			type = ComponentType::PHYSICS;
+			name = "Physics Component";
 			prevTransform = rp3d::Transform::identity();
 		}
 

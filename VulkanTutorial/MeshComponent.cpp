@@ -7,6 +7,7 @@ namespace Puffin
 		MeshComponent::MeshComponent()
 		{
 			type = ComponentType::MESH;
+			name = "Mesh Component";
 		}
 
 		MeshComponent::~MeshComponent()

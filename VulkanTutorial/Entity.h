@@ -26,6 +26,8 @@ namespace Puffin
 		template<typename T>
 		T* GetComponent();
 
+		inline std::vector<BaseComponent*> GetComponents() { return entityComponents; };
+
 		Rendering::MeshComponent* GetMeshComponent();
 		Physics::ReactPhysicsComponent* GetPhysicsComponent();
 		TransformComponent* GetTransformComponent();
