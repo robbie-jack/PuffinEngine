@@ -161,6 +161,13 @@ namespace Puffin
 		}
 
 		template<typename T>
+		void ComponentManager::RemoveComponent(Entity entity)
+		{
+			// Remove component from array
+			GetComponentArray<T>()->RemoveData(entity);
+		}
+
+		template<typename T>
 		T& ComponentManager::GetComponent(Entity entity)
 		{
 			// Remove component from array
@@ -175,6 +182,150 @@ namespace Puffin
 				auto const& componentArray = pair.second;
 				componentArray->EntityDestroyed(entity);
 			}
+		}
+
+		////////////////////////////////////////
+		// System Manager
+		////////////////////////////////////////
+
+		template<typename T>
+		std::shared_ptr<T> SystemManager::RegisterSystem()
+		{
+			const char* typeName = typeid(T).name();
+
+			assert(systems.find(typeName) == systems.end() && "Registering system more than once");
+
+			// Create and return a ponter to system so it can be used externally
+			auto system = std::make_shared<T>();
+			systems.insert({ typeName, system });
+			return system;
+		}
+
+		template<typename T>
+		void SystemManager::SetSignature(Signature signature)
+		{
+			const char* typeName = typeid(T).name();
+
+			assert(systems.find(typeName) != systems.end() && "System used before being registered.");
+
+			// Set system signature
+			signatures.insert({ typeName, signature });
+		}
+
+		void SystemManager::EntityDestroyed(Entity entity)
+		{
+			// Erase destroyed entity from all systems
+			for (auto const& pair : systems)
+			{
+				auto const system = pair.second;
+
+				system->Remove(entity);
+			}
+		}
+
+		void SystemManager::EntitySignatureChanged(Entity entity, Signature entitySignature)
+		{
+			// Notify eahc system that entity signature has changed
+			for (auto const& pair : systems)
+			{
+				auto const& type = pair.first;
+				auto const& system = pair.second;
+				auto const& systemSignature = signatures[type];
+
+				// Entity signature matches system signature - insert into set
+				if ((entitySignature & systemSignature) == systemSignature)
+				{
+					system->Add(entity);
+				}
+				// Signatures do not match - erase from set
+				else
+				{
+					system->Remove(entity);
+				}
+			}
+		}
+
+		////////////////////////////////////////
+		// ECS Coordinator
+		////////////////////////////////////////
+
+		// Entity Methods
+		void Coordinator::Init()
+		{
+			// Create pointers to each manager
+			componentManager = std::make_unique<ComponentManager>();
+			entityManager = std::make_unique<EntityManager>();
+			systemManager = std::make_unique<SystemManager>();
+		}
+
+		Entity Coordinator::CreateEntity()
+		{
+			return entityManager->CreateEntity();
+		}
+
+		void Coordinator::DestroyEntity(Entity entity)
+		{
+			entityManager->DestroyEntity(entity);
+
+			componentManager->EntityDestroyed(entity);
+
+			systemManager->EntityDestroyed(entity);
+		}
+
+		// Component Methods
+		template<typename T>
+		void Coordinator::RegisterComponent()
+		{
+			componentManager->RegisterComponent<T>();
+		}
+
+		template<typename T>
+		void Coordinator::AddComponent(Entity entity, T component)
+		{
+			componentManager->AddComponent<T>(entity, component);
+
+			auto signature = entityManager->GetSignature(entity);
+			signature.set(componentManager->GetComponentType<T>(), true);
+			entityManager->SetSignature(entity, signature);
+
+			systemManager->EntitySignatureChanged(entity, signature);
+		}
+
+		template<typename T>
+		void Coordinator::RemoveComponent(Entity entity)
+		{
+			componentManager->RemoveComponent<T>(entity);
+
+			auto signature = entityManager->GetSignature(entity);
+			signature.set(componentManager->GetComponentType<T>(), false);
+			entityManager->SetSignature(entity, signature);
+
+			systemManager->EntitySignatureChanged(entity, signature);
+		}
+
+		template<typename T>
+		T& Coordinator::GetComponent(Entity entity)
+		{
+			return componentManager->GetComponent<T>(entity);
+		}
+
+		template<typename T>
+		ComponentType Coordinator::GetComponentType()
+		{
+			return componentManager->GetComponentType<T>();
+		}
+
+		// System Methods
+		template<typename T>
+		std::shared_ptr<T> Coordinator::RegisterSystem()
+		{
+			return systemManager->RegisterSystem<T>();
+		}
+
+		template<typename T>
+		void Coordinator::SetSystemSignature(Signature signature)
+		{
+			systemManager->SetSignature<T>(signature);
 		}
 	}
 }

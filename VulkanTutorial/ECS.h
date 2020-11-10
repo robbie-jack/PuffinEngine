@@ -5,8 +5,9 @@
 #include <queue>
 #include <array>
 #include <bitset>
-#include <cassert>
+#include <set>
 #include <unordered_map>
+#include <cassert>
 #include <memory>
 
 namespace Puffin
@@ -73,7 +74,7 @@ namespace Puffin
 
 		private:
 
-			// Paccked array of components (of type T) with each spot being uniw to an entity
+			// Packed array of components (of type T) with each spot being uniw to an entity
 			std::array<T, MAX_ENTITIES> componentArray;
 
 			// Map from entity ID to array index
@@ -104,6 +105,9 @@ namespace Puffin
 			void AddComponent(Entity entity, T component);
 
 			template<typename T>
+			void RemoveComponent(Entity entity);
+
+			template<typename T>
 			T& GetComponent(Entity entity);
 
 			void EntityDestroyed(Entity entity);
@@ -122,6 +126,99 @@ namespace Puffin
 			// Get statically cast pointer to component array
 			template<typename T>
 			std::shared_ptr<ComponentArray<T>> GetComponentArray();
+
+		};
+
+		////////////////////////////////////////
+		// System
+		////////////////////////////////////////
+
+		class System
+		{
+		public:
+
+			inline void Add(Entity entity)
+			{
+				entities.insert(entity);
+			}
+
+			inline void Remove(Entity entity)
+			{
+				entities.erase(entity);
+			}
+
+		protected:
+			std::set<Entity> entities;
+		};
+
+		////////////////////////////////////////
+		// System Manager
+		////////////////////////////////////////
+
+		class SystemManager
+		{
+		public:
+
+			template<typename T>
+			std::shared_ptr<T> RegisterSystem();
+
+			template<typename T>
+			void SetSignature(Signature signature);
+
+			void EntityDestroyed(Entity entity);
+			void EntitySignatureChanged(Entity entity, Signature entitySignature);
+
+		private:
+
+			// Map from system type string pointer to a signature
+			std::unordered_map<const char*, Signature> signatures;
+
+			// Map from system type string pointer to system pointer
+			std::unordered_map<const char*, std::shared_ptr<System>> systems;
+
+		};
+
+		////////////////////////////////////////
+		// ECS Coordinator
+		////////////////////////////////////////
+
+		class Coordinator
+		{
+		public:
+
+			// Entity Methods
+			void Init();
+			Entity CreateEntity();
+			void DestroyEntity(Entity entity);
+
+			// Component Methods
+			template<typename T>
+			void RegisterComponent();
+
+			template<typename T>
+			void AddComponent(Entity entity, T component);
+
+			template<typename T>
+			void RemoveComponent(Entity entity);
+
+			template<typename T>
+			T& GetComponent(Entity entity);
+
+			template<typename T>
+			ComponentType GetComponentType();
+
+			// System Methods
+			template<typename T>
+			std::shared_ptr<T> RegisterSystem();
+
+			template<typename T>
+			void SetSystemSignature(Signature signature);
+
+		private:
+
+			std::unique_ptr<ComponentManager> componentManager;
+			std::unique_ptr<EntityManager> entityManager;
+			std::unique_ptr<SystemManager> systemManager;
 
 		};
 	}
