@@ -41,6 +41,9 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{924ac048-2fff-4db3-8182-bb21b3b8f7ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ECS">
+      <UniqueIdentifier>{5bec5de3-2573-4ab0-ac63-591b832acd07}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -134,6 +137,9 @@
     </ClCompile>
     <ClCompile Include="imgui\implot_items.cpp">
       <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS.cpp">
+      <Filter>ECS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +247,9 @@
     </ClInclude>
     <ClInclude Include="imgui\implot_internal.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS.h">
+      <Filter>ECS</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
