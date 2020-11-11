@@ -14,9 +14,6 @@
     <Filter Include="Rendering">
       <UniqueIdentifier>{ed595348-c44a-4203-af53-8e9f670cf0c9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Entity">
-      <UniqueIdentifier>{79301c97-896d-44c6-9b96-7a4df59104a2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Components">
       <UniqueIdentifier>{153ef5b7-8d68-42e8-899b-21c25aa59d9b}</UniqueIdentifier>
     </Filter>
@@ -63,12 +60,6 @@
     </ClCompile>
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Entity.cpp">
-      <Filter>Entity</Filter>
-    </ClCompile>
-    <ClCompile Include="EntitySystem.cpp">
-      <Filter>Entity</Filter>
-    </ClCompile>
     <ClCompile Include="TransformComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
@@ -129,7 +120,16 @@
     <ClCompile Include="UIWindowPerformance.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="ECS.cpp">
+    <ClCompile Include="Entity.cpp">
+      <Filter>ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="EntitySystem.cpp">
+      <Filter>ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityManager.cpp">
+      <Filter>ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentManager.cpp">
       <Filter>ECS</Filter>
     </ClCompile>
   </ItemGroup>
@@ -161,12 +161,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="Entity.h">
-      <Filter>Entity</Filter>
-    </ClInclude>
-    <ClInclude Include="EntitySystem.h">
-      <Filter>Entity</Filter>
-    </ClInclude>
     <ClInclude Include="BaseComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -233,7 +227,16 @@
     <ClInclude Include="UIWindowPerformance.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="ECS.h">
+    <ClInclude Include="Entity.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="EntitySystem.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityManager.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentManager.h">
       <Filter>ECS</Filter>
     </ClInclude>
   </ItemGroup>

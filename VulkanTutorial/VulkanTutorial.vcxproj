@@ -171,9 +171,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ECS.cpp" />
+    <ClCompile Include="ComponentManager.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EntityManager.cpp" />
     <ClCompile Include="EntitySystem.cpp" />
     <ClCompile Include="UIWindow.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
@@ -208,9 +209,10 @@
   <ItemGroup>
     <ClInclude Include="BaseComponent.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="ECS.h" />
+    <ClInclude Include="ComponentManager.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="EntityManager.h" />
     <ClInclude Include="EntitySystem.h" />
     <ClInclude Include="EntityTransform.h" />
     <ClInclude Include="FrameBufferAttachment.h" />
