@@ -54,7 +54,7 @@ namespace Puffin
 
 						ImGui::Text(" Framerate: %d", fps);
 
-						plotBuffer.AddPoint(dt, (float)fps);
+						//plotBuffer.AddPoint(dt, (float)fps);
 
 						/*if (ImPlot::BeginPlot("Framerate", "Time", "FPS"))
 						{

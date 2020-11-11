@@ -175,9 +175,6 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntitySystem.cpp" />
-    <ClCompile Include="imgui\implot.cpp" />
-    <ClCompile Include="imgui\implot_demo.cpp" />
-    <ClCompile Include="imgui\implot_items.cpp" />
     <ClCompile Include="UIWindow.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
@@ -217,8 +214,6 @@
     <ClInclude Include="EntitySystem.h" />
     <ClInclude Include="EntityTransform.h" />
     <ClInclude Include="FrameBufferAttachment.h" />
-    <ClInclude Include="imgui\implot.h" />
-    <ClInclude Include="imgui\implot_internal.h" />
     <ClInclude Include="UIWindowEntityProperties.h" />
     <ClInclude Include="UIWindowPerformance.h" />
     <ClInclude Include="UIWindowSettings.h" />

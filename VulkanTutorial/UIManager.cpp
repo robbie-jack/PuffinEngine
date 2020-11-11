@@ -8,7 +8,7 @@ namespace Puffin
 		{
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
-			ImPlot::CreateContext();
+			//ImPlot::CreateContext();
 
 			ImGuiIO& io = ImGui::GetIO(); (void)io;
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -28,7 +28,7 @@ namespace Puffin
 		void UIManager::Cleanup()
 		{
 			ImGui::DestroyContext();
-			ImPlot::DestroyContext();
+			//ImPlot::DestroyContext();
 		}
 
 		bool UIManager::DrawUI(float dt, Input::InputManager* InputManager)

@@ -129,15 +129,6 @@
     <ClCompile Include="UIWindowPerformance.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\implot.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\implot_demo.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\implot_items.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="ECS.cpp">
       <Filter>ECS</Filter>
     </ClCompile>
@@ -241,12 +232,6 @@
     </ClInclude>
     <ClInclude Include="UIWindowPerformance.h">
       <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\implot.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\implot_internal.h">
-      <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ECS.h">
       <Filter>ECS</Filter>
