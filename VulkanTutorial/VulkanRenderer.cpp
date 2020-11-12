@@ -16,9 +16,9 @@ void VulkanRenderer::Init()
 {
 	InitWindow();
 	InitVulkan();
-	running = true;
-	updateWhenPlaying = false;
-	type = SystemType::RENDER;
+	//running = true;
+	//updateWhenPlaying = false;
+	//type = SystemType::RENDER;
 }
 
 void VulkanRenderer::Start()
@@ -33,7 +33,7 @@ bool VulkanRenderer::Update(float dt)
 	inputManager->UpdateInput(window);
 	camera.Update(inputManager, dt);
 
-	running = uiManager->DrawUI(dt, inputManager);
+	bool running = uiManager->DrawUI(dt, inputManager);
 	DrawFrame(dt);
 
 	// Pass Viewport Texture to Viewport Window

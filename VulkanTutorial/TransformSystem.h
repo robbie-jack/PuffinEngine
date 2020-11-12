@@ -11,7 +11,7 @@
 
 namespace Puffin
 {
-	class TransformSystem : public System
+	class TransformSystem
 	{
 	public:
 

@@ -8,8 +8,8 @@ namespace Puffin
 	{
 		void ReactPhysicsSystem::Init()
 		{
-			running = true;
-			updateWhenPlaying = true;
+			//running = true;
+			//updateWhenPlaying = true;
 		}
 
 		void ReactPhysicsSystem::Start()
@@ -61,7 +61,7 @@ namespace Puffin
 				physicsComponents[i].SetPrevTransform(currTransform);
 			}
 
-			return running;
+			return true;
 		}
 
 		void ReactPhysicsSystem::Stop()

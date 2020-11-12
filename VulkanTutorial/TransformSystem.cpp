@@ -4,8 +4,8 @@ namespace Puffin
 {
 	void TransformSystem::Init()
 	{
-		running = true;
-		updateWhenPlaying = true;
+		//running = true;
+		//updateWhenPlaying = true;
 		Start();
 	}
 

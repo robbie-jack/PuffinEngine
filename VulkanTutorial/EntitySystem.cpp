@@ -4,9 +4,9 @@ namespace Puffin
 {
 	void EntitySystem::Init()
 	{
-		running = true;
-		updateWhenPlaying = false;
-		type = SystemType::ENTITY;
+		//running = true;
+		//updateWhenPlaying = false;
+		//type = SystemType::ENTITY;
 	}
 
 	void EntitySystem::Start()
@@ -16,7 +16,7 @@ namespace Puffin
 
 	bool EntitySystem::Update(float dt)
 	{
-		return running;
+		return true;
 	}
 
 	void EntitySystem::Stop()

@@ -7,7 +7,7 @@
 
 namespace Puffin
 {
-	class EntitySystem : public System
+	class EntitySystem
 	{
 	public:
 		void Init();

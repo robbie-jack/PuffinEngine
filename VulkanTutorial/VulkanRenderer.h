@@ -80,7 +80,7 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		class VulkanRenderer : public System
+		class VulkanRenderer
 		{
 		public:
 

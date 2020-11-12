@@ -19,10 +19,10 @@ namespace Puffin
 		UI::UIManager UIManager;
 		Input::InputManager InputManager;
 
-		AddSystem(&entitySystem);
-		AddSystem(&physicsSystem);
-		AddSystem(&transformSystem);
-		AddSystem(&renderSystem);
+		//AddSystem(&entitySystem);
+		//AddSystem(&physicsSystem);
+		//AddSystem(&transformSystem);
+		//AddSystem(&renderSystem);
 
 		//UIManager.SetEngine(this);
 
@@ -44,10 +44,20 @@ namespace Puffin
 		running = true;
 		playState = PlayState::STOPPED;
 
-		for (int i = 0; i < systems.size(); i++)
+		/*for (int i = 0; i < systems.size(); i++)
 		{
 			systems[i]->Init();
-		}
+		}*/
+
+		entitySystem.Init();
+		transformSystem.Init();
+		physicsSystem.Init();
+		renderSystem.Init();
+
+		entitySystem.Start();
+		transformSystem.Start();
+		physicsSystem.Start();
+		renderSystem.Start();
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -59,7 +69,12 @@ namespace Puffin
 			std::chrono::duration<float> duration = currentTime - lastTime;
 			float delta_time = duration.count();
 
-			Update(delta_time);
+			entitySystem.Update(delta_time);
+			transformSystem.Update(delta_time);
+			physicsSystem.Update(delta_time);
+			running = renderSystem.Update(delta_time);
+
+			//Update(delta_time);
 		}
 	}
 
@@ -95,10 +110,10 @@ namespace Puffin
 
 	void Engine::Start()
 	{
-		for (int i = 0; i < systems.size(); i++)
+		/*for (int i = 0; i < systems.size(); i++)
 		{
 			systems[i]->Start();
-		}
+		}*/
 
 		playState = PlayState::PLAYING;
 	}
@@ -107,10 +122,10 @@ namespace Puffin
 	{
 		if (playState == PlayState::PLAYING | playState == PlayState::PAUSED)
 		{
-			for (int i = 0; i < systems.size(); i++)
+			/*for (int i = 0; i < systems.size(); i++)
 			{
 				systems[i]->Stop();
-			}
+			}*/
 
 			playState = PlayState::STOPPED;
 		}

@@ -10,7 +10,7 @@ namespace Puffin
 {
 	namespace Physics
 	{
-		class ReactPhysicsSystem : public System
+		class ReactPhysicsSystem
 		{
 		public:
 
