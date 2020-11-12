@@ -132,6 +132,9 @@
     <ClCompile Include="UIWindowSceneHierarchy.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="SystemManager.cpp">
+      <Filter>ECS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -238,6 +241,9 @@
     </ClInclude>
     <ClInclude Include="UIWindowSceneHierarchy.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemManager.h">
+      <Filter>ECS</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

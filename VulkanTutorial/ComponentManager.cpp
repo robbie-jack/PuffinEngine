@@ -1,6 +1,7 @@
 #include "ComponentManager.h"
 
 #include <cassert>
+#include <typeinfo>
 
 namespace Puffin
 {
@@ -73,6 +74,88 @@ namespace Puffin
 				entities.pop_back();
 				lookup.erase(entity);
 			}
+		}
+
+		template<typename Component>
+		void ComponentArray<Component>::EntityDestoyed(Entity entity)
+		{
+			if (lookup.find(entity) != lookup.end())
+			{
+				RemoveComponent(entity);
+			}
+		}
+
+		////////////////////////////////////////
+		// Component Manager
+		////////////////////////////////////////
+
+		template<typename Component>
+		void ComponentManager::RegisterComponent()
+		{
+			const char* typeName = typeid(Component).name();
+
+			assert(componentTypes.find(typeName) == componentTypes.end() && "Registering component type more than once");
+
+			// Add this component type to component type map
+			componentTypes.insert({ typeName, nextComponentType });
+
+			// Create new Component Array
+			componentArrays.insert({ typeName, std::make_shared<ComponentArray<Component>>()});
+
+			nextComponentType++;
+		}
+
+		template<typename Component>
+		ComponentType ComponentManager::GetComponentType()
+		{
+			const char* typeName = typeid(Component).name();
+
+			assert(componentTypes.find(typeName) != componentTypes.end() && "Component type not registered before use");
+
+			// Return component's type
+			return componentTypes[typeName];
+		}
+
+		template<typename Component>
+		Component& ComponentManager::CreateComponent(Entity entity)
+		{
+			// Create new component for entity in array
+			return GetComponentArray<Component>()->CreateComponent(entity);
+		}
+
+		template<typename Component>
+		Component* ComponentManager::GetComponent(Entity entity)
+		{
+			// Get Component for this entity from Array, if it exists
+			return GetComponentArray<Component>()->GetComponent(entity);
+		}
+
+		template<typename Component>
+		void ComponentManager::RemoveComponent(Entity entity)
+		{
+			// Remove component fro this entity from array
+			GetComponentArray<Component>()->RemoveComponent(entity);
+		}
+
+		void ComponentManager::EntityDestroyed(Entity entity)
+		{
+			// Remove all components for this entity
+			for (auto const& pair : componentArrays)
+			{
+				auto const& array = pair.second;
+
+				array->EntityDestroyed(entity);
+			}
+		}
+
+		template<typename Component>
+		std::shared_ptr<ComponentArray<Component>> ComponentManager::GetComponentArray()
+		{
+			const char* typeName = typeid(Component).name();
+
+			assert(componentTypes.find(typeName) != componentTypes.end() && "Component type not registered before use");
+
+			return std::static_pointer_cast<ComponentArray<Component>>(componentArrays[typeName]);
 		}
 	}
 }
