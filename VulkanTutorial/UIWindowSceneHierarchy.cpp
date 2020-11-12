@@ -1,12 +1,12 @@
-#include "UIWindowEntities.h"
+#include "UIWindowSceneHierarchy.h"
 
 namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowEntities::Draw(float dt, Puffin::Input::InputManager* InputManager)
+		bool UIWindowSceneHierarchy::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
-			windowName = "Entities";
+			windowName = "Scene Hierarchy";
 
 			if (show)
 			{

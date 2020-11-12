@@ -8,7 +8,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		class UIWindowEntities : public UIWindow
+		class UIWindowSceneHierarchy : public UIWindow
 		{
 		public:
 

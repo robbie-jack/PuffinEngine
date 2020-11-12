@@ -4,7 +4,7 @@
 #include "VulkanRenderer.h"
 #include "ReactPhysicsSystem.h"
 
-#include "UIWindowEntities.h"
+#include "UIWindowSceneHierarchy.h"
 #include "UIWindowViewport.h"
 #include "UIWindowSettings.h"
 #include "UIWindowEntityProperties.h"
@@ -28,7 +28,7 @@ int main()
 	Puffin::UI::UIManager uiManager;
 	Puffin::Input::InputManager inputManager;
 
-	Puffin::UI::UIWindowEntities windowEntities;
+	Puffin::UI::UIWindowSceneHierarchy windowEntities;
 	Puffin::UI::UIWindowViewport windowViewport;
 	Puffin::UI::UIWindowSettings windowSettings;
 	Puffin::UI::UIWindowEntityProperties windowEntityProperties;

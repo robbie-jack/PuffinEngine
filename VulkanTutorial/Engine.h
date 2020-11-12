@@ -8,9 +8,9 @@ namespace Puffin
 {
 	enum class PlayState
 	{
-		STOPPED, // Game is stopped, no physics or game code is begin run
+		STOPPED, // Game is stopped, no physics or game code is begin run, all data is in default state
 		PLAYING, // Game is playing, all systems being updated
-		PAUSED // Game
+		PAUSED // Game is paused, systems not being updated
 	};
 
 	class Engine

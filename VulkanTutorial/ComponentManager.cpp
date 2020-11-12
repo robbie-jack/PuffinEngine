@@ -1,5 +1,7 @@
 #include "ComponentManager.h"
 
+#include <cassert>
+
 namespace Puffin
 {
 	namespace ECS
@@ -12,12 +14,12 @@ namespace Puffin
 		Component& ComponentArray<Component>::CreateComponent(Entity entity)
 		{
 			// 0 is reserved for invalid entities
-			assert(entity != 0 & "Invalid Entity");
+			assert(entity != 0 && "Invalid Entity");
 
-			assert(lookup.find(entity) == lookup.end() & "Component Type already exists for this entity");
+			assert(lookup.find(entity) == lookup.end() && "Component Type already exists for this entity");
 
-			assert(entities.size() == components.size() & "Number of entities must match components");
-			assert(lookup.size() == components.size() & "Number of lookups must match components");
+			assert(entities.size() == components.size() && "Number of entities must match components");
+			assert(lookup.size() == components.size() && "Number of lookups must match components");
 
 			// Update lookup map
 			lookup[entity] = components.size();

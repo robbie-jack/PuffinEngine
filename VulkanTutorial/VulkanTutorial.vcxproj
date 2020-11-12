@@ -194,7 +194,7 @@
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
     <ClCompile Include="UIManager.cpp" />
-    <ClCompile Include="UIWindowEntities.cpp" />
+    <ClCompile Include="UIWindowSceneHierarchy.cpp" />
     <ClCompile Include="UIWindowEntityProperties.cpp" />
     <ClCompile Include="UIWindowPerformance.cpp" />
     <ClCompile Include="UIWindowSettings.cpp" />
@@ -237,7 +237,7 @@
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="TransformSystem.h" />
     <ClInclude Include="UIManager.h" />
-    <ClInclude Include="UIWindowEntities.h" />
+    <ClInclude Include="UIWindowSceneHierarchy.h" />
     <ClInclude Include="VectorConversion.h" />
     <ClInclude Include="VulkanRenderer.h" />
   </ItemGroup>

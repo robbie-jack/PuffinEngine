@@ -21,6 +21,8 @@ namespace Puffin
 
 			activeEntityCount++;
 
+			entityNames.insert({ entity, "New Entity" });
+
 			return entity;
 		}
 
@@ -28,6 +30,7 @@ namespace Puffin
 		{
 			availableEntities.push(entity);
 			activeEntityCount--;
+			entityNames.erase(entity);
 		}
 	}
 }

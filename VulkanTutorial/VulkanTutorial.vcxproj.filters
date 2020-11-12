@@ -105,9 +105,6 @@
     <ClCompile Include="UIWindow.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="UIWindowEntities.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="UIWindowViewport.cpp">
       <Filter>UI</Filter>
     </ClCompile>
@@ -131,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="ComponentManager.cpp">
       <Filter>ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="UIWindowSceneHierarchy.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -209,9 +209,6 @@
     <ClInclude Include="UIWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIWindowEntities.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="UIWindowViewport.h">
       <Filter>UI</Filter>
     </ClInclude>
@@ -238,6 +235,9 @@
     </ClInclude>
     <ClInclude Include="ComponentManager.h">
       <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWindowSceneHierarchy.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
