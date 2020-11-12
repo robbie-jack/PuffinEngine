@@ -4,11 +4,11 @@
 #include "VulkanRenderer.h"
 #include "ReactPhysicsSystem.h"
 
-#include "UIWindowSceneHierarchy.h"
-#include "UIWindowViewport.h"
-#include "UIWindowSettings.h"
-#include "UIWindowEntityProperties.h"
-#include "UIWindowPerformance.h"
+//#include "UIWindowSceneHierarchy.h"
+//#include "UIWindowViewport.h"
+//#include "UIWindowSettings.h"
+//#include "UIWindowEntityProperties.h"
+//#include "UIWindowPerformance.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -28,14 +28,6 @@ int main()
 	Puffin::UI::UIManager uiManager;
 	Puffin::Input::InputManager inputManager;
 
-	Puffin::UI::UIWindowSceneHierarchy windowEntities;
-	Puffin::UI::UIWindowViewport windowViewport;
-	Puffin::UI::UIWindowSettings windowSettings;
-	Puffin::UI::UIWindowEntityProperties windowEntityProperties;
-	Puffin::UI::UIWindowPerformance windowPerformance;
-
-	std::vector<uint32_t> entityIDs;
-
 	try
 	{
 		engine.AddSystem(&entitySystem);
@@ -43,21 +35,9 @@ int main()
 		engine.AddSystem(&transformSystem);
 		engine.AddSystem(&renderSystem);
 
-		windowPerformance.Show();
-
-		uiManager.AddWindow(&windowEntities);
-		uiManager.AddWindow(&windowViewport);
-		uiManager.AddWindow(&windowSettings);
-		uiManager.AddWindow(&windowEntityProperties);
-		uiManager.AddWindow(&windowPerformance);
 		uiManager.SetEngine(&engine);
 
-		windowEntities.SetEntitySystem(&entitySystem);
-		windowEntities.SetWindowProperties(&windowEntityProperties);
-
 		renderSystem.SetUI(&uiManager);
-		renderSystem.SetUIWindowViewport(&windowViewport);
-		renderSystem.SetUIWindowSettings(&windowSettings);
 		renderSystem.SetInputManager(&inputManager);
 
 		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());

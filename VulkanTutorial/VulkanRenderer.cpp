@@ -37,7 +37,7 @@ bool VulkanRenderer::Update(float dt)
 	DrawFrame(dt);
 
 	// Pass Viewport Texture to Viewport Window
-	uiWindowViewport->SetSceneTexture(offscreenTexture);
+	uiManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 
 	return running;
 }
@@ -129,16 +129,16 @@ void VulkanRenderer::InitVulkan()
 
 	// Create Sampler
 	CreateTextureSampler();
-	uiWindowViewport->SetTextureSampler(textureSampler);
+	uiManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
 	InitTexture(offscreenTexture, "textures/texture.jpg");
-	uiWindowViewport->SetSceneTexture(offscreenTexture);
+	uiManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 
 	// Initialize Camera
 	camera.Init(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 60.0f, 
 		(float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
 
-	uiWindowSettings->SetCamera(&camera);
+	uiManager->GetWindowSettings()->SetCamera(&camera);
 
 	// Initialize Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
@@ -315,7 +315,7 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateFrameBuffers();
 
 	// Update offscreen extent to match viewport size
-	ImVec2 viewportSize = uiWindowViewport->GetViewportSize();
+	ImVec2 viewportSize = uiManager->GetWindowViewport()->GetViewportSize();
 	offscreenExtent.width = static_cast<uint32_t>(viewportSize.x);
 	offscreenExtent.height = static_cast<uint32_t>(viewportSize.y);
 
@@ -2061,8 +2061,8 @@ void VulkanRenderer::DrawFrame(float delta_time)
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	if (uiWindowViewport->GetViewportSize().x != (float)offscreenExtent.width || 
-		uiWindowViewport->GetViewportSize().y != (float)offscreenExtent.height)
+	if (uiManager->GetWindowViewport()->GetViewportSize().x != (float)offscreenExtent.width ||
+		uiManager->GetWindowViewport()->GetViewportSize().y != (float)offscreenExtent.height)
 	{
 		RecreateSwapChain();
 	}
@@ -2141,7 +2141,7 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	offscreenTexture.GetTextureAttachment() = offscreenAttachments[imageIndex];
-	uiWindowViewport->SetSceneTexture(offscreenTexture);
+	uiManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 }
 
 void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_time)

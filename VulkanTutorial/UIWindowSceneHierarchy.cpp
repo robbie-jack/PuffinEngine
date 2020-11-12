@@ -35,19 +35,22 @@ namespace Puffin
 					ImVec2 listBoxSize = ImGui::GetWindowSize();
 					listBoxSize.y -= 45.0f;
 
-					ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
+					//ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
-					for (uint32_t entityID : entitySystem->GetEntityIDVector())
-					{
-						std::string entity_string = "ID: " + std::to_string(entityID);
-						if (ImGui::Selectable(entity_string.c_str(), false))
-						{
-							selectedID = entityID;
-							windowProperties->SetEntity(entitySystem->GetEntity(entityID));
-						}
-					}
+					//if (entitySystem != nullptr)
+					//{
+					//	for (uint32_t entityID : entitySystem->GetEntityIDVector())
+					//	{
+					//		std::string entity_string = "ID: " + std::to_string(entityID);
+					//		if (ImGui::Selectable(entity_string.c_str(), false))
+					//		{
+					//			selectedID = entityID;
+					//			windowProperties->SetEntity(entitySystem->GetEntity(entityID));
+					//		}
+					//	}
+					//}
 
-					ImGui::ListBoxFooter();
+					//ImGui::ListBoxFooter();
 				}
 			}
 

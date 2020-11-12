@@ -18,6 +18,22 @@ namespace Puffin
 
 			running = true;
 			playButtonLabel = "Play";
+
+			windowSceneHierarchy = new UIWindowSceneHierarchy();
+			windowViewport = new UIWindowViewport();
+			windowSettings = new UIWindowSettings();
+			windowEntityProperties = new UIWindowEntityProperties();
+			windowPerformance = new UIWindowPerformance();
+
+			//windowPerformance->Show();
+
+			windowSceneHierarchy->SetWindowProperties(windowEntityProperties);
+
+			windows.push_back(windowSceneHierarchy);
+			windows.push_back(windowViewport);
+			windows.push_back(windowSettings);
+			windows.push_back(windowEntityProperties);
+			windows.push_back(windowSceneHierarchy);
 		}
 
 		UIManager::~UIManager()

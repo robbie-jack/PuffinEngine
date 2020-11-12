@@ -9,6 +9,12 @@
 #include "Engine.h"
 #include "UIWindow.h"
 
+#include "UIWindowSceneHierarchy.h"
+#include "UIWindowViewport.h"
+#include "UIWindowSettings.h"
+#include "UIWindowEntityProperties.h"
+#include "UIWindowPerformance.h"
+
 #include <vector>
 #include <memory>
 
@@ -30,12 +36,21 @@ namespace Puffin
 
 			inline void SetEngine(Engine* engine_) { engine = engine_; };
 
+			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
+			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
+
 		private:
 			bool running;
 			std::string playButtonLabel;
 
 			Engine* engine;
 			std::vector<UIWindow*> windows;
+
+			UIWindowSceneHierarchy* windowSceneHierarchy;
+			UIWindowViewport* windowViewport;
+			UIWindowSettings* windowSettings;
+			UIWindowEntityProperties* windowEntityProperties;
+			UIWindowPerformance* windowPerformance;
 
 			bool ShowDockspace(bool* p_open);
 			void SetStyle();
