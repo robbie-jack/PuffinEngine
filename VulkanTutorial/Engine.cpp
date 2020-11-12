@@ -26,8 +26,8 @@ namespace Puffin
 
 		//UIManager.SetEngine(this);
 
-		renderSystem.SetUI(&UIManager);
-		renderSystem.SetInputManager(&InputManager);
+		//renderSystem.SetUI(&UIManager);
+		//renderSystem.SetInputManager(&InputManager);
 
 		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());
 
@@ -52,7 +52,7 @@ namespace Puffin
 		entitySystem.Init();
 		transformSystem.Init();
 		physicsSystem.Init();
-		renderSystem.Init();
+		renderSystem.Init(&UIManager, &InputManager);
 
 		entitySystem.Start();
 		transformSystem.Start();
@@ -72,10 +72,12 @@ namespace Puffin
 			entitySystem.Update(delta_time);
 			transformSystem.Update(delta_time);
 			physicsSystem.Update(delta_time);
-			running = renderSystem.Update(delta_time);
+			running = renderSystem.Update(&UIManager, &InputManager, delta_time);
 
 			//Update(delta_time);
 		}
+
+		UIManager.Cleanup();
 	}
 
 	void Engine::Update(float dt)

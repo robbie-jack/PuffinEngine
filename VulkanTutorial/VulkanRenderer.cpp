@@ -12,10 +12,10 @@
 
 using namespace Puffin::Rendering;
 
-void VulkanRenderer::Init()
+void VulkanRenderer::Init(UI::UIManager* UIManager, Input::InputManager* InputManager)
 {
-	InitWindow();
-	InitVulkan();
+	InitWindow(InputManager);
+	InitVulkan(UIManager);
 	//running = true;
 	//updateWhenPlaying = false;
 	//type = SystemType::RENDER;
@@ -26,18 +26,18 @@ void VulkanRenderer::Start()
 
 }
 
-bool VulkanRenderer::Update(float dt)
+bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
 {
 	glfwPollEvents();
 
-	inputManager->UpdateInput(window);
-	camera.Update(inputManager, dt);
+	InputManager->UpdateInput(window);
+	camera.Update(InputManager, dt);
 
-	bool running = uiManager->DrawUI(dt, inputManager);
-	DrawFrame(dt);
+	bool running = UIManager->DrawUI(dt, InputManager);
+	DrawFrame(UIManager, dt);
 
 	// Pass Viewport Texture to Viewport Window
-	uiManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
+	UIManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 
 	return running;
 }
@@ -88,7 +88,7 @@ VulkanRenderer::~VulkanRenderer()
 
 //-------------------------------------------------------------------------------------
 
-void VulkanRenderer::InitWindow()
+void VulkanRenderer::InitWindow(Input::InputManager* InputManager)
 {
 	glfwInit();
 
@@ -101,12 +101,12 @@ void VulkanRenderer::InitWindow()
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 
-	inputManager->SetupInput(window);
+	InputManager->SetupInput(window);
 }
 
 //-------------------------------------------------------------------------------------
 
-void VulkanRenderer::InitVulkan()
+void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 {
 	CreateInstance();
 	SetupDebugMessenger();
@@ -129,16 +129,16 @@ void VulkanRenderer::InitVulkan()
 
 	// Create Sampler
 	CreateTextureSampler();
-	uiManager->GetWindowViewport()->SetTextureSampler(textureSampler);
+	UIManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
 	InitTexture(offscreenTexture, "textures/texture.jpg");
-	uiManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
+	UIManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 
 	// Initialize Camera
 	camera.Init(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 60.0f, 
 		(float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
 
-	uiManager->GetWindowSettings()->SetCamera(&camera);
+	UIManager->GetWindowSettings()->SetCamera(&camera);
 
 	// Initialize Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
@@ -289,7 +289,7 @@ VkPresentModeKHR VulkanRenderer::SelectPresentMode(const VkPresentModeKHR* reque
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-void VulkanRenderer::RecreateSwapChain()
+void VulkanRenderer::RecreateSwapChain(UI::UIManager* UIManager)
 {
 	int width = 0, height = 0;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -315,7 +315,7 @@ void VulkanRenderer::RecreateSwapChain()
 	CreateFrameBuffers();
 
 	// Update offscreen extent to match viewport size
-	ImVec2 viewportSize = uiManager->GetWindowViewport()->GetViewportSize();
+	ImVec2 viewportSize = UIManager->GetWindowViewport()->GetViewportSize();
 	offscreenExtent.width = static_cast<uint32_t>(viewportSize.x);
 	offscreenExtent.height = static_cast<uint32_t>(viewportSize.y);
 
@@ -2044,7 +2044,7 @@ void VulkanRenderer::CreateSyncObjects()
 
 //-------------------------------------------------------------------------------------
 
-void VulkanRenderer::DrawFrame(float delta_time)
+void VulkanRenderer::DrawFrame(UI::UIManager* UIManager, float delta_time)
 {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -2053,7 +2053,7 @@ void VulkanRenderer::DrawFrame(float delta_time)
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
-		RecreateSwapChain();
+		RecreateSwapChain(UIManager);
 		return;
 	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -2061,10 +2061,10 @@ void VulkanRenderer::DrawFrame(float delta_time)
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	if (uiManager->GetWindowViewport()->GetViewportSize().x != (float)offscreenExtent.width ||
-		uiManager->GetWindowViewport()->GetViewportSize().y != (float)offscreenExtent.height)
+	if (UIManager->GetWindowViewport()->GetViewportSize().x != (float)offscreenExtent.width ||
+		UIManager->GetWindowViewport()->GetViewportSize().y != (float)offscreenExtent.height)
 	{
-		RecreateSwapChain();
+		RecreateSwapChain(UIManager);
 	}
 
 	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
@@ -2129,7 +2129,7 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
 	{
 		framebufferResized = false;
-		RecreateSwapChain();
+		RecreateSwapChain(UIManager);
 	}
 	else if (result != VK_SUCCESS)
 	{
@@ -2141,7 +2141,7 @@ void VulkanRenderer::DrawFrame(float delta_time)
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	offscreenTexture.GetTextureAttachment() = offscreenAttachments[imageIndex];
-	uiManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
+	UIManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 }
 
 void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_time)
@@ -2362,8 +2362,6 @@ void VulkanRenderer::CleanupImGui()
 
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
-
-	uiManager->Cleanup();
 
 	vkDestroyDescriptorPool(device, imguiDescriptorPool, nullptr);
 }

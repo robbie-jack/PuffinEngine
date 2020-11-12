@@ -24,7 +24,7 @@
 #include "Camera.h"
 #include "Light.h"
 
-#include "System.h"
+#include "SystemManager.h"
 #include "MeshComponent.h"
 #include "TransformSystem.h"
 #include "FrameBufferAttachment.h"
@@ -80,13 +80,13 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		class VulkanRenderer
+		class VulkanRenderer : public ECS::System
 		{
 		public:
 
-			void Init();
+			void Init(UI::UIManager* UIManager, Input::InputManager* InputManager);
 			void Start();
-			bool Update(float dt);
+			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
 			void Stop();
 			void SendMessage();
 			MeshComponent* AddComponent();
@@ -98,10 +98,10 @@ namespace Puffin
 
 			inline GLFWwindow* GetWindow() { return window; };
 
-			inline void SetUI(Puffin::UI::UIManager* UI) { uiManager = UI; };
+			//inline void SetUI(Puffin::UI::UIManager* UI) { uiManager = UI; };
 			//inline void SetUIWindowViewport(Puffin::UI::UIWindowViewport* UIWindowViewport) { uiWindowViewport = UIWindowViewport; };
 			//inline void SetUIWindowSettings(Puffin::UI::UIWindowSettings* UIWindowSettings) { uiWindowSettings = UIWindowSettings; };
-			inline void SetInputManager(Puffin::Input::InputManager* InputManager) { inputManager = InputManager; };
+			//inline void SetInputManager(Puffin::Input::InputManager* InputManager) { inputManager = InputManager; };
 
 			~VulkanRenderer();
 
@@ -171,10 +171,10 @@ namespace Puffin
 			size_t currentFrame = 0;
 
 			// UI/Input Manager
-			Puffin::UI::UIManager* uiManager;
+			//Puffin::UI::UIManager* uiManager;
 			//Puffin::UI::UIWindowViewport* uiWindowViewport;
 			//Puffin::UI::UIWindowSettings* uiWindowSettings;
-			Puffin::Input::InputManager* inputManager;
+			//Puffin::Input::InputManager* inputManager;
 
 			// Camera
 			Camera camera;
@@ -271,13 +271,13 @@ namespace Puffin
 			}
 
 			// Initialize Window
-			void InitWindow();
+			void InitWindow(Input::InputManager* InputManager);
 
 			//-------------------------------------------------------------------------------------
 
 			// Initialize Vulkan Renderer
-			void InitVulkan();
-			void RecreateSwapChain();
+			void InitVulkan(UI::UIManager* UIManager);
+			void RecreateSwapChain(UI::UIManager* UIManager);
 
 			void CreateInstance();
 			void SetupDebugMessenger();
@@ -365,7 +365,7 @@ namespace Puffin
 
 			//-------------------------------------------------------------------------------------
 
-			void DrawFrame(float delta_time);
+			void DrawFrame(UI::UIManager* UIManager, float delta_time);
 			void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
 			void UpdateImguiCommandBuffers(uint32_t currentImage);
 
