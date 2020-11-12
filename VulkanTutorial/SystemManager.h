@@ -5,16 +5,14 @@
 #include <bitset>
 #include <unordered_map>
 
-#include "ComponentManager.h"
-
 namespace Puffin
 {
 	namespace ECS
 	{
-		//typedef uint32_t Entity;
-		//typedef uint32_t ComponentType;
+		typedef uint32_t Entity;
+		typedef uint32_t ComponentType;
 
-		//const ComponentType MAX_COMPONENTS = 32;
+		const ComponentType MAX_COMPONENTS = 32;
 
 		typedef std::bitset<MAX_COMPONENTS> Signature;
 
@@ -22,13 +20,10 @@ namespace Puffin
 		// System
 		////////////////////////////////////////
 
-		class SystemManager;
-
 		class System
 		{
 		public:
 			std::set<Entity> entities;
-			std::shared_ptr<SystemManager> systemManager;
 		};
 
 		////////////////////////////////////////
@@ -48,8 +43,6 @@ namespace Puffin
 			void EntityDestroyed(Entity entity);
 
 			void EntitySignatureChanged(Entity entity, Signature entitySignature);
-
-			std::shared_ptr<ComponentManager> componentManager;
 
 		private:
 

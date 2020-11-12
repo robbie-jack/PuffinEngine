@@ -5,33 +5,19 @@
 #include "VulkanRenderer.h"
 #include "ReactPhysicsSystem.h"
 
-#include "EntityManager.h"
-#include "ComponentManager.h"
-#include "SystemManager.h"
-
 #include <chrono>
 
 namespace Puffin
 {
 	void Engine::MainLoop()
 	{
-		// Managers
-		std::shared_ptr<ECS::EntityManager> EntityManager = std::make_shared<ECS::EntityManager>();
-		std::shared_ptr<ECS::ComponentManager> ComponentManager = std::make_shared<ECS::ComponentManager>();
-		std::shared_ptr<ECS::SystemManager> SystemManager = std::make_shared<ECS::SystemManager>();
-		UI::UIManager UIManager;
-		Input::InputManager InputManager;
-
-		SystemManager->componentManager = ComponentManager;
-
-		// Systems
 		EntitySystem entitySystem;
 		TransformSystem transformSystem;
-		std::shared_ptr<Physics::ReactPhysicsSystem> physicsSystem = SystemManager->RegisterSystem<Physics::ReactPhysicsSystem>();
-		std::shared_ptr<Rendering::VulkanRenderer> renderSystem = SystemManager->RegisterSystem<Rendering::VulkanRenderer>();
+		Physics::ReactPhysicsSystem physicsSystem;
+		Rendering::VulkanRenderer renderSystem;
 
-		// Add systems to manager
-		
+		UI::UIManager UIManager;
+		Input::InputManager InputManager;
 
 		//AddSystem(&entitySystem);
 		//AddSystem(&physicsSystem);
@@ -40,20 +26,20 @@ namespace Puffin
 
 		//UIManager.SetEngine(this);
 
-		renderSystem->SetUI(&UIManager);
-		renderSystem->SetInputManager(&InputManager);
+		renderSystem.SetUI(&UIManager);
+		renderSystem.SetInputManager(&InputManager);
 
-		transformSystem.SetPhysicsRenderVectors(physicsSystem->GetComponents(), renderSystem->GetComponents());
+		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());
 
 		for (int i = 0; i < 5; i++)
 		{
 			uint32_t id = entitySystem.CreateEntity();
 			entitySystem.GetEntity(id)->AttachComponent(transformSystem.AddComponent());
-			entitySystem.GetEntity(id)->AttachComponent(renderSystem->AddComponent());
+			entitySystem.GetEntity(id)->AttachComponent(renderSystem.AddComponent());
 		}
 
-		entitySystem.GetEntity(3)->AttachComponent(physicsSystem->AddComponent());
-		entitySystem.GetEntity(5)->AttachComponent(physicsSystem->AddComponent());
+		entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
+		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -65,13 +51,13 @@ namespace Puffin
 
 		entitySystem.Init();
 		transformSystem.Init();
-		physicsSystem->Init();
-		renderSystem->Init();
+		physicsSystem.Init();
+		renderSystem.Init();
 
 		entitySystem.Start();
 		transformSystem.Start();
-		physicsSystem->Start();
-		renderSystem->Start();
+		physicsSystem.Start();
+		renderSystem.Start();
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -85,8 +71,8 @@ namespace Puffin
 
 			entitySystem.Update(delta_time);
 			transformSystem.Update(delta_time);
-			physicsSystem->Update(delta_time);
-			running = renderSystem->Update(delta_time);
+			physicsSystem.Update(delta_time);
+			running = renderSystem.Update(delta_time);
 
 			//Update(delta_time);
 		}
