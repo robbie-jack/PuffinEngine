@@ -34,7 +34,7 @@ namespace Puffin
 			bool DrawUI(float dt, Puffin::Input::InputManager* InputManager);
 			void AddWindow(UIWindow* window);
 
-			inline void SetEngine(Engine* engine_) { engine = engine_; };
+			//inline void SetEngine(Engine* engine_) { engine = engine_; };
 
 			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
 			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };

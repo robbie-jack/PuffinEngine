@@ -1,11 +1,46 @@
 #include "Engine.h"
 
+#include "EntitySystem.h"
+#include "TransformSystem.h"
+#include "VulkanRenderer.h"
+#include "ReactPhysicsSystem.h"
+
 #include <chrono>
 
 namespace Puffin
 {
 	void Engine::MainLoop()
 	{
+		EntitySystem entitySystem;
+		TransformSystem transformSystem;
+		Physics::ReactPhysicsSystem physicsSystem;
+		Rendering::VulkanRenderer renderSystem;
+
+		UI::UIManager UIManager;
+		Input::InputManager InputManager;
+
+		AddSystem(&entitySystem);
+		AddSystem(&physicsSystem);
+		AddSystem(&transformSystem);
+		AddSystem(&renderSystem);
+
+		//UIManager.SetEngine(this);
+
+		renderSystem.SetUI(&UIManager);
+		renderSystem.SetInputManager(&InputManager);
+
+		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());
+
+		for (int i = 0; i < 5; i++)
+		{
+			uint32_t id = entitySystem.CreateEntity();
+			entitySystem.GetEntity(id)->AttachComponent(transformSystem.AddComponent());
+			entitySystem.GetEntity(id)->AttachComponent(renderSystem.AddComponent());
+		}
+
+		entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
+		entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
+
 		running = true;
 		playState = PlayState::STOPPED;
 

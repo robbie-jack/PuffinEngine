@@ -18,7 +18,7 @@ namespace Puffin
 				}
 				else
 				{
-					if (ImGui::Button("Create Entity"))
+					/*if (ImGui::Button("Create Entity"))
 					{
 						windowProperties->SetEntity(entitySystem->GetEntity(entitySystem->CreateEntity()));
 					}
@@ -29,11 +29,11 @@ namespace Puffin
 					{
 						windowProperties->SetEntity(nullptr);
 						entitySystem->DestroyEntity(selectedID);
-					}
+					}*/
 
 					// List All Entities and their ID/Name
-					ImVec2 listBoxSize = ImGui::GetWindowSize();
-					listBoxSize.y -= 45.0f;
+					/*ImVec2 listBoxSize = ImGui::GetWindowSize();
+					listBoxSize.y -= 45.0f;*/
 
 					//ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
