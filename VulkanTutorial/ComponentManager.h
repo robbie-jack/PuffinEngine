@@ -11,6 +11,8 @@ namespace Puffin
 		typedef uint32_t Entity;
 		typedef uint32_t ComponentType;
 
+		const ComponentType MAX_COMPONENTS = 32;
+
 		////////////////////////////////////////
 		// Component Array
 		////////////////////////////////////////

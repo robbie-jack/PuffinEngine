@@ -24,7 +24,7 @@
 #include "Camera.h"
 #include "Light.h"
 
-#include "System.h"
+#include "SystemManager.h"
 #include "MeshComponent.h"
 #include "TransformSystem.h"
 #include "FrameBufferAttachment.h"
@@ -80,7 +80,7 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		class VulkanRenderer
+		class VulkanRenderer : public ECS::System
 		{
 		public:
 
