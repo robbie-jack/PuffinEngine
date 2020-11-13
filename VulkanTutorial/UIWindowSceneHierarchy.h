@@ -2,7 +2,8 @@
 
 #include "UIWindow.h"
 #include "UIWindowEntityProperties.h"
-#include "EntitySystem.h"
+//#include "EntitySystem.h"
+#include "ECS.h"
 
 namespace Puffin
 {
@@ -14,16 +15,16 @@ namespace Puffin
 
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
-			inline void SetEntitySystem(EntitySystem* entitySystem_) { entitySystem = entitySystem_; };
+			inline void SetEntityManager(ECS::EntityManager* entityManager_) { entityManager = entityManager_; };
 			inline void SetWindowProperties(UIWindowEntityProperties* windowProperties_) { windowProperties = windowProperties_; };
 
 		private:
 
-			EntitySystem* entitySystem;
+			ECS::EntityManager* entityManager;
 			UIWindowEntityProperties* windowProperties;
 
-			uint32_t selectedID;
-			std::vector<uint32_t> entityIDs;
+			ECS::Entity selectedEntity;
+			//std::vector<uint32_t> entityIDs;
 		};
 	}
 }

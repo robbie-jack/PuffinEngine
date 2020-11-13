@@ -117,23 +117,8 @@
     <ClCompile Include="UIWindowPerformance.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>ECS</Filter>
-    </ClCompile>
-    <ClCompile Include="EntitySystem.cpp">
-      <Filter>ECS</Filter>
-    </ClCompile>
-    <ClCompile Include="EntityManager.cpp">
-      <Filter>ECS</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentManager.cpp">
-      <Filter>ECS</Filter>
-    </ClCompile>
     <ClCompile Include="UIWindowSceneHierarchy.cpp">
       <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="SystemManager.cpp">
-      <Filter>ECS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -227,22 +212,10 @@
     <ClInclude Include="UIWindowPerformance.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="Entity.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="EntitySystem.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="EntityManager.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="ComponentManager.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
     <ClInclude Include="UIWindowSceneHierarchy.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="SystemManager.h">
+    <ClInclude Include="ECS.h">
       <Filter>ECS</Filter>
     </ClInclude>
   </ItemGroup>

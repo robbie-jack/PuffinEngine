@@ -6,6 +6,7 @@
 //#include "imgui/implot.h"
 
 #include "InputManager.h"
+#include "ECS.h"
 #include "Engine.h"
 #include "UIWindow.h"
 
@@ -38,6 +39,12 @@ namespace Puffin
 
 			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
 			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
+
+			inline void SetEntityManager(ECS::EntityManager* manager) 
+			{ 
+				windowSceneHierarchy->SetEntityManager(manager);
+				windowEntityProperties->SetEntityManager(manager);
+			};
 
 		private:
 			bool running;

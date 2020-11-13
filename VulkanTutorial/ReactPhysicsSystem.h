@@ -1,7 +1,5 @@
 #pragma once
 
-#include "SystemManager.h"
-
 #include "reactphysics3d/reactphysics3d.h"
 #include "ReactPhysicsComponent.h"
 #include "TransformSystem.h"
@@ -10,7 +8,7 @@ namespace Puffin
 {
 	namespace Physics
 	{
-		class ReactPhysicsSystem : public ECS::System
+		class ReactPhysicsSystem
 		{
 		public:
 

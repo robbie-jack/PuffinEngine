@@ -18,39 +18,39 @@ namespace Puffin
 				}
 				else
 				{
-					/*if (ImGui::Button("Create Entity"))
+					if (ImGui::Button("Create Entity"))
 					{
-						windowProperties->SetEntity(entitySystem->GetEntity(entitySystem->CreateEntity()));
+						windowProperties->SetEntity(entityManager->CreateEntity());
 					}
 
 					ImGui::SameLine();
 
 					if (ImGui::Button("Destroy Entity"))
 					{
-						windowProperties->SetEntity(nullptr);
-						entitySystem->DestroyEntity(selectedID);
-					}*/
+						windowProperties->SetEntity(ECS::INVALID_ENTITY);
+						entityManager->DestroyEntity(selectedEntity);
+					}
 
-					// List All Entities and their ID/Name
-					/*ImVec2 listBoxSize = ImGui::GetWindowSize();
-					listBoxSize.y -= 45.0f;*/
+					//List All Entities and their ID/Name
+					ImVec2 listBoxSize = ImGui::GetWindowSize();
+					listBoxSize.y -= 45.0f;
 
-					//ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
+					ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
-					//if (entitySystem != nullptr)
-					//{
-					//	for (uint32_t entityID : entitySystem->GetEntityIDVector())
-					//	{
-					//		std::string entity_string = "ID: " + std::to_string(entityID);
-					//		if (ImGui::Selectable(entity_string.c_str(), false))
-					//		{
-					//			selectedID = entityID;
-					//			windowProperties->SetEntity(entitySystem->GetEntity(entityID));
-					//		}
-					//	}
-					//}
+					if (entityManager != nullptr)
+					{
+						for (ECS::Entity entity : entityManager->GetActiveEntities())
+						{
+							std::string entity_string = "Entity: " + std::to_string(entity);
+							if (ImGui::Selectable(entity_string.c_str(), false))
+							{
+								selectedEntity = entity;
+								windowProperties->SetEntity(entity);
+							}
+						}
+					}
 
-					//ImGui::ListBoxFooter();
+					ImGui::ListBoxFooter();
 				}
 			}
 
