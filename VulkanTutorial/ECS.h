@@ -92,5 +92,86 @@ namespace Puffin
 
 			uint32_t activeEntityCount;
 		};
+
+		class IComponentArray
+		{
+		public:
+			virtual ~IComponentArray() = default;
+			virtual void EntityDestroyed(Entity entity) = 0;
+		};
+
+		template<typename Component>
+		class ComponentArray : IComponentArray
+		{
+		public:
+
+			Component& AddComponent(Entity entity)
+			{
+				assert(entityToIndexMap.find(entity) == entityToIndexMap.end() && "Entity already has a component of this type");
+
+				Component component;
+
+				// Insert new component at end of array
+				size_t newIndex = arraySize;
+				entityToIndexMap[entity] = newIndex;
+				indexToEntityMap[newIndex] = entity;
+				componentArray[newIndex] = component;
+				arraySize++;
+
+				return component;
+			}
+
+			void RemoveComponent(Entity entity)
+			{
+				assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Removing non-existent component.");
+
+				// Copy component at end of array into deleted components spaced to maintain packed araay
+				size_t indexOfRemovedComponent = entityToIndexMap[entity];
+				size_t indexOfLastComponent = arraySize - 1;
+				componentArray[indexOfRemovedComponent] = componentArray[indexOfLastComponent];
+
+				// Update map to point to components new location
+				Entity entityOfLastComponent = indexToEntityMap[indexOfLastComponent];
+				entityToIndexMap[entityOfLastComponent] = indexOfRemovedComponent;
+				indexToEntityMap[indexOfRemovedComponent] = entityOfLastComponent;
+
+				entityToIndexMap.erase(entity);
+				indexToEntityMap.erase(indexOfLastComponent);
+
+				arraySize--;
+			}
+
+			Component& GetComponent(Entity entity)
+			{
+				assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Retrieving non-existent component.");
+
+				// Return reference to component
+				return componentArray[entityToIndexMap[entity]];
+			}
+
+			void EntityDestroyed(Entity entity) override
+			{
+				if (entityToIndexMap.find(entity) != entityToIndexMap.end())
+				{
+					// Remove entities component if it existed
+					RemoveComponent(entity);
+				}
+			}
+
+
+		private:
+
+			// Packed array of components
+			std::array<Component, MAX_ENTITIES> componentArray;
+
+			// Map from entity to array
+			std::unordered_map<Entity, size_t> entityToIndexMap;
+
+			// Map from array to entity
+			std::unordered_map<size_t, Entity> indexToEntityMap;
+
+			// Size of valid entries in array
+			size_t arraySize;
+		};
 	}
 }

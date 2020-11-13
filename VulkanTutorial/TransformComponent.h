@@ -1,11 +1,13 @@
 #pragma once
 
-#include "BaseComponent.h"
-#include "EntityTransform.h"
+//#include "BaseComponent.h"
+//#include "EntityTransform.h"
+
+#include "Vector.h"
 
 namespace Puffin
 {
-	class TransformComponent : public BaseComponent
+	/*class TransformComponent : public BaseComponent
 	{
 	public:
 
@@ -53,5 +55,12 @@ namespace Puffin
 	protected:
 
 		EntityTransform transform;
+	};*/
+
+	struct TransformComponent
+	{
+		Puffin::Vector3 position;
+		Puffin::Vector3 rotation;
+		Puffin::Vector3 scale;
 	};
 }

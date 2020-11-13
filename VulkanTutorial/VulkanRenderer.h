@@ -369,7 +369,7 @@ namespace Puffin
 			void UpdateImguiCommandBuffers(uint32_t currentImage);
 
 			glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
-			glm::mat4 BuildMeshTransform(EntityTransform transform);
+			glm::mat4 BuildMeshTransform(TransformComponent transform);
 
 			//-------------------------------------------------------------------------------------
 

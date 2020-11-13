@@ -72,9 +72,6 @@
     <ClCompile Include="ReactPhysicsComponent.cpp">
       <Filter>Physics\ReactPhysics</Filter>
     </ClCompile>
-    <ClCompile Include="MeshComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>Input</Filter>
     </ClCompile>

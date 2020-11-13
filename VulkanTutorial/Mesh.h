@@ -13,7 +13,8 @@
 #include <vector>
 #include <array>
 
-#include "EntityTransform.h"
+//#include "EntityTransform.h"
+#include "TransformComponent.h"
 
 namespace Puffin
 {
@@ -197,7 +198,7 @@ namespace Puffin
 			inline MeshMatrices GetMatrices() { return matrices; };
 			inline void SetMatrices(MeshMatrices matrices_) { matrices = matrices_; };
 
-			inline void SetTransform(EntityTransform transform_) { transform = transform_; };
+			inline void SetTransform(TransformComponent transform_) { transform = transform_; };
 			inline void SetTransform(glm::vec3 position_, glm::vec3 rotation_, glm::vec3 scale_)
 			{
 				transform.position = position_;
@@ -205,7 +206,7 @@ namespace Puffin
 				transform.scale = scale_;
 			};
 
-			inline EntityTransform GetTransform() { return transform; };
+			inline TransformComponent GetTransform() { return transform; };
 
 			inline void SetPosition(glm::vec3 position_) { transform.position = position_; };
 			inline void SetRotation(glm::vec3 rotation_) { transform.rotation = rotation_; };
@@ -220,7 +221,7 @@ namespace Puffin
 			MeshMatrices matrices;
 			MeshData meshData;
 
-			EntityTransform transform;
+			TransformComponent transform;
 		};
 	}
 }

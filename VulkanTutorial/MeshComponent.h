@@ -14,8 +14,16 @@ namespace Puffin
 		{
 		public:
 
-			MeshComponent();
-			~MeshComponent();
+			MeshComponent()
+			{
+				type = ComponentType::MESH;
+				name = "Mesh Component";
+			}
+
+			~MeshComponent()
+			{
+
+			}
 
 			inline Texture& GetTexture() { return texture; };
 			inline void SetTexture(Texture texture_) { texture = texture_; };

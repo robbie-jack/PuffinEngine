@@ -21,7 +21,7 @@ namespace Puffin
 
 		// Systems
 		//EntitySystem entitySystem;
-		TransformSystem transformSystem;
+		//TransformSystem transformSystem;
 		Physics::ReactPhysicsSystem physicsSystem;
 		Rendering::VulkanRenderer renderSystem;
 
@@ -35,7 +35,7 @@ namespace Puffin
 		//renderSystem.SetUI(&UIManager);
 		//renderSystem.SetInputManager(&InputManager);
 
-		transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());
+		//transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());
 
 		for (int i = 0; i < 5; i++)
 		{
@@ -43,7 +43,7 @@ namespace Puffin
 			//uint32_t id = entitySystem.CreateEntity();
 			//entitySystem.GetEntity(id)->AttachComponent(transformSystem.AddComponent());
 			//entitySystem.GetEntity(id)->AttachComponent(renderSystem.AddComponent());
-			transformSystem.AddComponent();
+			//transformSystem.AddComponent();
 			renderSystem.AddComponent();
 		}
 
@@ -61,12 +61,12 @@ namespace Puffin
 		}*/
 
 		//entitySystem.Init();
-		transformSystem.Init();
+		//transformSystem.Init();
 		physicsSystem.Init();
 		renderSystem.Init(&UIManager, &InputManager);
 
 		//entitySystem.Start();
-		transformSystem.Start();
+		//transformSystem.Start();
 		physicsSystem.Start();
 		renderSystem.Start();
 
@@ -81,8 +81,8 @@ namespace Puffin
 			float delta_time = duration.count();
 
 			//entitySystem.Update(delta_time);
-			transformSystem.Update(delta_time);
-			physicsSystem.Update(delta_time);
+			//transformSystem.Update(delta_time);
+			//physicsSystem.Update(delta_time);
 			running = renderSystem.Update(&UIManager, &InputManager, delta_time);
 
 			//Update(delta_time);
