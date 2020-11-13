@@ -16,6 +16,7 @@ namespace Puffin
 		UI::UIManager UIManager;
 		Input::InputManager InputManager;
 		ECS::EntityManager EntityManager;
+		ECS::ComponentManager ComponentManager;
 
 		UIManager.SetEntityManager(&EntityManager);
 
@@ -36,6 +37,8 @@ namespace Puffin
 		//renderSystem.SetInputManager(&InputManager);
 
 		//transformSystem.SetPhysicsRenderVectors(physicsSystem.GetComponents(), renderSystem.GetComponents());
+
+		ComponentManager.RegisterComponent<TransformComponent>();
 
 		for (int i = 0; i < 5; i++)
 		{

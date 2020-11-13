@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <vector>
 #include <set>
+#include <memory>
+#include <typeinfo>
 
 namespace Puffin
 {
@@ -22,6 +24,10 @@ namespace Puffin
 		const ComponentType MAX_COMPONENTS = 32;
 
 		typedef std::bitset<MAX_COMPONENTS> Signature;
+
+		//////////////////////////////////////////////////
+		// Entity Manager
+		//////////////////////////////////////////////////
 
 		class EntityManager
 		{
@@ -92,6 +98,10 @@ namespace Puffin
 
 			uint32_t activeEntityCount;
 		};
+
+		//////////////////////////////////////////////////
+		// Component Array
+		//////////////////////////////////////////////////
 
 		class IComponentArray
 		{
@@ -172,6 +182,103 @@ namespace Puffin
 
 			// Size of valid entries in array
 			size_t arraySize;
+		};
+
+		//////////////////////////////////////////////////
+		// Component Manager
+		//////////////////////////////////////////////////
+
+		class ComponentManager
+		{
+		public:
+
+			template<typename Component>
+			void RegisterComponent()
+			{
+				const char* typeName = typeid(Component).name();
+
+				assert(componentTypes.find(typeName) == componentTypes.end() && "Registering component type more than once");
+
+				// Add new component type to component type map
+				componentTypes.insert({ typeName, nextComponentType });
+
+				std::shared_ptr<ComponentArray<Component>> array;
+
+				std::pair<const char*, std::shared_ptr<IComponentArray>> pair;
+				pair.first = typeName;
+				pair.second = std::dynamic_pointer_cast<IComponentArray>(array);
+
+				// Create ComponentArray pointer and add to component arrays map
+				componentArrays.insert(pair);
+
+				// Increment next component type
+				nextComponentType++;
+			}
+
+			template<typename Component>
+			ComponentType GetComponentType()
+			{
+				const char* typeName = typeid(Component).name();
+
+				assert(componentTypes.find(typeName) != componentTypes.end() && "Component not registered before use");
+
+				// Return this components type - used for creating signatures
+				return componentTypes[typeName];
+			}
+
+			template<typename Component>
+			Component& AddComponent(Entity entity)
+			{
+				// Add a component to array for this entity
+				return GetComponentArray<Component>()->AddComponent(entity);
+			}
+
+			template<typename Component>
+			void RemoveComponent(Entity entity)
+			{
+				// Remove component from array for this entity
+				GetComponentArray<Component>()->RemoveComponent(entity);
+			}
+
+			template<typename Component>
+			Component& GetComponent(Entity entity)
+			{
+				// Get reference to component for this entity
+				return GetComponentArray<Component>()->GetComponent(entity);
+			}
+
+			void EntityDestroyed(Entity entity)
+			{
+				// Notify each component array that an entity has been destroyed
+				// If array has component for this entity, remove it
+				for (auto const& pair : componentArrays)
+				{
+					auto const& componentArray = pair.second;
+
+					componentArray->EntityDestroyed(entity);
+				}
+			}
+
+		private:
+
+			// Map from type string pointer to component type
+			std::unordered_map<const char*, ComponentType> componentTypes;
+
+			// Map from type string pointer to component array
+			std::unordered_map<const char*, std::shared_ptr<IComponentArray>> componentArrays;
+
+			// Component type to be assigned to netx registered component
+			ComponentType nextComponentType;
+
+			template<typename Component>
+			std::shared_ptr<ComponentArray<Component>> GetComponentArray()
+			{
+				const char* typeName = typeid(Component).name();
+
+				assert(componentTypes.find(typeName) != componentTypes.end() && "Component not registered before use");
+
+				return std::static_pointer_cast<ComponentArray<Component>>(componentArrays[typeName]);
+			}
 		};
 	}
 }
