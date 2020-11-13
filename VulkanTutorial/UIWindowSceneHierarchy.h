@@ -15,16 +15,15 @@ namespace Puffin
 
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
-			inline void SetEntityManager(ECS::EntityManager* entityManager_) { entityManager = entityManager_; };
+			inline void SetWorld(ECS::World* world_) { world = world_; };
 			inline void SetWindowProperties(UIWindowEntityProperties* windowProperties_) { windowProperties = windowProperties_; };
 
 		private:
 
-			ECS::EntityManager* entityManager;
+			ECS::World* world;
 			UIWindowEntityProperties* windowProperties;
 
 			ECS::Entity selectedEntity;
-			//std::vector<uint32_t> entityIDs;
 		};
 	}
 }

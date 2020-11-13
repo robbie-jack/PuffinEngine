@@ -14,11 +14,11 @@ namespace Puffin
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
             inline void SetEntity(ECS::Entity entity_) { entity = entity_; };
-            inline void SetEntityManager(ECS::EntityManager* manager) { entityManager = manager; };
+            inline void SetWorld(ECS::World* world_) { world = world_; };
 
         private:
             ECS::Entity entity;
-            ECS::EntityManager* entityManager;
+            ECS::World* world;
         };
     }
 }

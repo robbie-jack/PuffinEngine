@@ -40,10 +40,10 @@ namespace Puffin
 			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
 			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
 
-			inline void SetEntityManager(ECS::EntityManager* manager) 
+			inline void SetWorld(ECS::World* world) 
 			{ 
-				windowSceneHierarchy->SetEntityManager(manager);
-				windowEntityProperties->SetEntityManager(manager);
+				windowSceneHierarchy->SetWorld(world);
+				windowEntityProperties->SetWorld(world);
 			};
 
 		private:

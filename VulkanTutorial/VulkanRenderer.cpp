@@ -21,10 +21,14 @@ void VulkanRenderer::Init(UI::UIManager* UIManager, Input::InputManager* InputMa
 	//type = SystemType::RENDER;
 }
 
-void VulkanRenderer::Start()
-{
-
-}
+//void VulkanRenderer::Start()
+//{
+//	InitComponent(0, "models/chalet.obj", "textures/chalet.jpg");
+//	InitComponent(1, "models/space_engineer.obj", "textures/space_engineer.jpg");
+//	InitComponentCube(2, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
+//	InitComponentCube(3); //Initialize Components with default cube mesh
+//	InitComponentCube(4);
+//}
 
 bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
 {
@@ -42,15 +46,15 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 	return running;
 }
 
-void VulkanRenderer::Stop()
-{
-
-}
-
-void VulkanRenderer::SendMessage()
-{
-
-}
+//void VulkanRenderer::Stop()
+//{
+//
+//}
+//
+//void VulkanRenderer::SendMessage()
+//{
+//
+//}
 
 MeshComponent* VulkanRenderer::AddComponent()
 {

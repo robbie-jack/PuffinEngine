@@ -4,6 +4,7 @@
 //#include "examples/imgui_impl_glfw.h"
 //#include "examples/imgui_impl_vulkan.h"
 
+#include "ECS.h"
 #include "UIManager.h"
 #include "InputManager.h"
 #include "UIWindowViewport.h"
@@ -79,15 +80,15 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		class VulkanRenderer
+		class VulkanRenderer : public ECS::System
 		{
 		public:
 
 			void Init(UI::UIManager* UIManager, Input::InputManager* InputManager);
-			void Start();
+			//void Start();
 			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
-			void Stop();
-			void SendMessage();
+			//void Stop();
+			//void SendMessage();
 			MeshComponent* AddComponent();
 
 			void InitComponent(int handle, std::string model_path, std::string texture_path);

@@ -20,7 +20,7 @@ namespace Puffin
 				{
 					if (ImGui::Button("Create Entity"))
 					{
-						windowProperties->SetEntity(entityManager->CreateEntity());
+						windowProperties->SetEntity(world->CreateEntity());
 					}
 
 					ImGui::SameLine();
@@ -28,7 +28,7 @@ namespace Puffin
 					if (ImGui::Button("Destroy Entity"))
 					{
 						windowProperties->SetEntity(ECS::INVALID_ENTITY);
-						entityManager->DestroyEntity(selectedEntity);
+						world->DestroyEntity(selectedEntity);
 					}
 
 					//List All Entities and their ID/Name
@@ -37,9 +37,9 @@ namespace Puffin
 
 					ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
-					if (entityManager != nullptr)
+					if (world != nullptr)
 					{
-						for (ECS::Entity entity : entityManager->GetActiveEntities())
+						for (ECS::Entity entity : world->GetActiveEntities())
 						{
 							std::string entity_string = "Entity: " + std::to_string(entity);
 							if (ImGui::Selectable(entity_string.c_str(), false))
