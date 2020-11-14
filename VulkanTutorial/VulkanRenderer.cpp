@@ -1458,14 +1458,14 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 
 	CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		texture.GetTextureImage(), VMA_MEMORY_USAGE_GPU_ONLY, texture.GetTextureAllocation());
+		texture.image, VMA_MEMORY_USAGE_GPU_ONLY, texture.allocation);
 
-	TransitionImageLayout(texture.GetTextureImage(), VK_FORMAT_R8G8B8A8_SRGB,
+	TransitionImageLayout(texture.image, VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-	CopyBufferToImage(stagingBuffer, texture.GetTextureImage(), static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+	CopyBufferToImage(stagingBuffer, texture.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
 
-	TransitionImageLayout(texture.GetTextureImage(), VK_FORMAT_R8G8B8A8_SRGB,
+	TransitionImageLayout(texture.image, VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
@@ -1474,7 +1474,7 @@ void VulkanRenderer::CreateTextureImage(Texture& texture, std::string texture_pa
 
 void VulkanRenderer::CreateTextureImageView(Texture& texture)
 {
-	texture.GetImageView() = CreateImageView(texture.GetTextureImage(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	texture.imageView = CreateImageView(texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
@@ -1864,7 +1864,7 @@ void VulkanRenderer::CreateDescriptorSets()
 
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = comp.texture.GetImageView();
+			imageInfo.imageView = comp.texture.imageView;
 			imageInfo.sampler = textureSampler;
 
 			std::array<VkWriteDescriptorSet, 4> descriptorWrites = {};
@@ -2130,7 +2130,7 @@ void VulkanRenderer::DrawFrame(UI::UIManager* UIManager, float delta_time)
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-	offscreenTexture.GetTextureAttachment() = offscreenAttachments[imageIndex];
+	offscreenTexture = offscreenAttachments[imageIndex];
 	UIManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 }
 
@@ -2269,7 +2269,7 @@ void VulkanRenderer::Cleanup()
 
 	// Cleanup Textures
 	//CleanupFrameBufferAttachment(offscreenTexture.GetTextureAttachment());
-	CleanupFrameBufferAttachment(cube_texture.GetTextureAttachment());
+	CleanupFrameBufferAttachment(cube_texture);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{

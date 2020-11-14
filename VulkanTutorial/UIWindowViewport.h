@@ -1,7 +1,7 @@
 #pragma once
 
 #include "UIWindow.h"
-#include "Texture.h"
+#include "FrameBufferAttachment.h"
 
 //#include <vulkan/vulkan.h>
 

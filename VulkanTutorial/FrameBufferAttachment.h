@@ -3,10 +3,18 @@
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
-// Image, View and Allocation attached to a framebuffer
-struct FrameBufferAttachment
+namespace Puffin
 {
-	VkImage image;
-	VmaAllocation allocation;
-	VkImageView imageView;
-};
+	namespace Rendering
+	{
+		// Image, View and Allocation attached to a framebuffer
+		struct FrameBufferAttachment
+		{
+			VkImage image;
+			VmaAllocation allocation;
+			VkImageView imageView;
+		};
+
+		typedef FrameBufferAttachment Texture;
+	}
+}

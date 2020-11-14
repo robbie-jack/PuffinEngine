@@ -23,7 +23,7 @@ namespace Puffin
 					viewportSize.y -= 20.0f;
 
 					// Display Scene View Texture
-					ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(textureSampler, sceneTexture.GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), viewportSize);
+					ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(textureSampler, sceneTexture.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), viewportSize);
 				}
 			}
 

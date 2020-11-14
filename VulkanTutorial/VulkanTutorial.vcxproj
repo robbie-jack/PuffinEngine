@@ -183,7 +183,6 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ReactPhysicsSystem.cpp" />
-    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
     <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="UIWindowSceneHierarchy.cpp" />
@@ -220,7 +219,6 @@
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="ModelLoader.h" />
     <ClInclude Include="System.h" />
-    <ClInclude Include="Texture.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="TransformSystem.h" />
     <ClInclude Include="UIManager.h" />

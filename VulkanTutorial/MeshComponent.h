@@ -13,7 +13,7 @@
 #include <vector>
 #include <array>
 
-#include "Texture.h"
+#include "FrameBufferAttachment.h"
 
 namespace Puffin
 {
