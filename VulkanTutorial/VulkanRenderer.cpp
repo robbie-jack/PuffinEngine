@@ -25,8 +25,16 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 	InputManager->UpdateInput(window);
 	UpdateCamera(camera, InputManager, dt);
 
+	float prevFov = camera.fov;
+
 	bool running = UIManager->DrawUI(dt, InputManager);
 	DrawFrame(UIManager, dt);
+
+	// Recalculate Perspective if FOV changes
+	if (camera.fov != prevFov)
+	{
+		UpdatePerspective(camera, camera.fov, camera.aspect, camera.zNear, camera.zFar);
+	}
 
 	// Pass Viewport Texture to Viewport Window
 	UIManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
@@ -89,13 +97,15 @@ void VulkanRenderer::InitCamera(CameraComponent& camera, glm::vec3 position_, gl
 	camera.up = up_;
 
 	// Calculate Perspective Projection
-	UpdatePerspective(camera, camera.fov, camera.aspect, camera.zNear, camera.zFar);
+	UpdatePerspective(camera, fov, aspect, near, far);
 
 	// Calculate Right and Up vectors
 	camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
 	camera.up = glm::cross(camera.direction, camera.right);
 
 	camera.yaw = -90.0f;
+
+	camera.speed = 5.0f;
 
 	UpdateViewMatrix(camera);
 }
@@ -341,7 +351,7 @@ void VulkanRenderer::RecreateSwapChain(UI::UIManager* UIManager)
 	CreateOffscreenVariables();
 
 	// Recalculate Camera Perspective if window size changed
-	UpdatePerspective(camera, 45.0f, (float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
+	UpdatePerspective(camera, camera.fov, (float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
 
 	CreateUniformBuffers();
 	CreateLightBuffers();
@@ -2086,8 +2096,8 @@ void VulkanRenderer::DrawFrame(UI::UIManager* UIManager, float delta_time)
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	if (UIManager->GetWindowViewport()->GetViewportSize().x != (float)offscreenExtent.width ||
-		UIManager->GetWindowViewport()->GetViewportSize().y != (float)offscreenExtent.height)
+	if (UIManager->GetWindowViewport()->GetViewportSize().x != (float)offscreenExtent.width 
+		|| UIManager->GetWindowViewport()->GetViewportSize().y != (float)offscreenExtent.height)
 	{
 		RecreateSwapChain(UIManager);
 	}

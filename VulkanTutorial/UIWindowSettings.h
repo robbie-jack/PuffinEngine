@@ -15,12 +15,10 @@ namespace Puffin
 			inline void SetCamera(Puffin::Rendering::CameraComponent* camera_) 
 			{ 
 				camera = camera_; 
-				fov = camera->fov;
 			};
 
 		private:
 			Puffin::Rendering::CameraComponent* camera;
-			float fov;
 		};
 	}
 }
