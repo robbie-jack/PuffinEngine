@@ -40,9 +40,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanRenderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -106,9 +103,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="ModelLoader.h">
       <Filter>Rendering</Filter>
     </ClInclude>
@@ -174,6 +168,9 @@
       <Filter>ECS</Filter>
     </ClInclude>
     <ClInclude Include="LightComponent.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraComponent.h">
       <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>

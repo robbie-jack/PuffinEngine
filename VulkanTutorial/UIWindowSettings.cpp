@@ -26,7 +26,7 @@ namespace Puffin
 					// If FOV has been changed this frame, update camera fov
 					if (fov != tempfov)
 					{
-						camera->UpdateFov(fov);
+						camera->fov = fov;
 					}
 				}
 			}

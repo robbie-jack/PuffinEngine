@@ -23,7 +23,7 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 	glfwPollEvents();
 
 	InputManager->UpdateInput(window);
-	camera.Update(InputManager, dt);
+	UpdateCamera(camera, InputManager, dt);
 
 	bool running = UIManager->DrawUI(dt, InputManager);
 	DrawFrame(UIManager, dt);
@@ -77,6 +77,27 @@ void VulkanRenderer::InitLight(LightComponent& light, glm::vec3 position, glm::v
 	light.uniformBuffer.diffuseColor = diffuse;
 	light.uniformBuffer.specularStrength = specular;
 	light.uniformBuffer.shininess = shininess;
+}
+
+void VulkanRenderer::InitCamera(CameraComponent& camera, glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov, float aspect, float near, float far)
+{
+	camera.direction = direction_;
+
+	// Set Position, LookAt and Up Vectors
+	camera.position = position_;
+	camera.lookat = camera.position + camera.direction;
+	camera.up = up_;
+
+	// Calculate Perspective Projection
+	UpdatePerspective(camera, camera.fov, camera.aspect, camera.zNear, camera.zFar);
+
+	// Calculate Right and Up vectors
+	camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
+	camera.up = glm::cross(camera.direction, camera.right);
+
+	camera.yaw = -90.0f;
+
+	UpdateViewMatrix(camera);
 }
 
 VulkanRenderer::~VulkanRenderer()
@@ -133,13 +154,12 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	UIManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 
 	// Initialize Camera
-	camera.Init(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 60.0f, 
+	InitCamera(camera, glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 60.0f,
 		(float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
 
 	UIManager->GetWindowSettings()->SetCamera(&camera);
 
 	// Initialize Lights
-	//light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 	InitLight(light, glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
 	InitMesh(1, "models/chalet.obj", "textures/chalet.jpg");
@@ -321,7 +341,7 @@ void VulkanRenderer::RecreateSwapChain(UI::UIManager* UIManager)
 	CreateOffscreenVariables();
 
 	// Recalculate Camera Perspective if window size changed
-	camera.SetPerspective(45.0f, (float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
+	UpdatePerspective(camera, 45.0f, (float)offscreenExtent.width / (float)offscreenExtent.height, 0.1f, 100.0f);
 
 	CreateUniformBuffers();
 	CreateLightBuffers();
@@ -1776,14 +1796,14 @@ void VulkanRenderer::CreateViewBuffers()
 {
 	VkDeviceSize bufferSize = sizeof(ViewBufferObject);
 
-	camera.GetViewBufferVector().resize(swapChainImages.size());
-	camera.GetViewAllocationVector().resize(swapChainImages.size());
+	camera.viewBuffers.resize(swapChainImages.size());
+	camera.viewAllocations.resize(swapChainImages.size());
 
 	for (int i = 0; i < swapChainImages.size(); i++)
 	{
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			camera.GetViewBuffer(i), VMA_MEMORY_USAGE_GPU_ONLY, camera.GetViewAllocation(i));
+			camera.viewBuffers[i], VMA_MEMORY_USAGE_GPU_ONLY, camera.viewAllocations[i]);
 	}
 }
 
@@ -1873,7 +1893,7 @@ void VulkanRenderer::CreateDescriptorSets()
 			lightBufferInfo.range = sizeof(LightBufferObject);
 
 			VkDescriptorBufferInfo viewBufferInfo = {};
-			viewBufferInfo.buffer = camera.GetViewBuffer(i);
+			viewBufferInfo.buffer = camera.viewBuffers[i];
 			viewBufferInfo.offset = 0;
 			viewBufferInfo.range = sizeof(ViewBufferObject);
 
@@ -2165,11 +2185,10 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 		matrice.model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
 
 		matrice.inv_model = glm::inverse(matrice.model);
-		matrice.view = camera.GetViewMatrix();
-		matrice.proj = camera.GetPerspectiveMatrix();
+		matrice.view = camera.matrices.view;
+		matrice.proj = camera.matrices.perspective;
 		matrice.proj[1][1] *= -1;
 
-		//comp.mesh.SetMatrices(matrice);
 		comp.matrices = matrice;
 
 		void* data;
@@ -2181,10 +2200,66 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 		memcpy(data, &light.uniformBuffer, sizeof(LightBufferObject));
 		vmaUnmapMemory(allocator, light.allocations[currentImage]);
 
-		vmaMapMemory(allocator, camera.GetViewAllocation(currentImage), &data);
-		memcpy(data, &camera.GetViewBufferObject(), sizeof(ViewBufferObject));
-		vmaUnmapMemory(allocator, camera.GetViewAllocation(currentImage));
+		vmaMapMemory(allocator, camera.viewAllocations[currentImage], &data);
+		memcpy(data, &camera.viewBufferObject, sizeof(ViewBufferObject));
+		vmaUnmapMemory(allocator, camera.viewAllocations[currentImage]);
 	}
+}
+
+void VulkanRenderer::UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time)
+{
+	// Camera Movement
+	if (inputManager->GetAction("CamMoveLeft").state == Puffin::Input::HELD)
+	{
+		camera.position += camera.speed * camera.right * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveRight").state == Puffin::Input::HELD)
+	{
+		camera.position -= camera.speed * camera.right * delta_time;
+	}
+
+	if (inputManager->GetAction("CamMoveForward").state == Puffin::Input::HELD)
+	{
+		camera.position += camera.speed * camera.direction * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveBackward").state == Puffin::Input::HELD)
+	{
+		camera.position -= camera.speed * camera.direction * delta_time;
+	}
+
+	if (inputManager->GetAction("CamMoveUp").state == Puffin::Input::HELD)
+	{
+		camera.position += camera.speed * camera.up * delta_time;
+	}
+	else if (inputManager->GetAction("CamMoveDown").state == Puffin::Input::HELD)
+	{
+		camera.position -= camera.speed * camera.up * delta_time;
+	}
+
+	// Mouse Rotation
+	if (inputManager->IsCursorLocked())
+	{
+		camera.yaw += inputManager->GetMouseXOffset();
+		camera.pitch -= inputManager->GetMouseYOffset();
+
+		if (camera.pitch > 89.0f)
+			camera.pitch = 89.0f;
+
+		if (camera.pitch < -89.0f)
+			camera.pitch = -89.0f;
+
+		// Calculate Direction vector from yaw and pitch of camera
+		camera.direction.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+		camera.direction.y = sin(glm::radians(camera.pitch));
+		camera.direction.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+		camera.direction = glm::normalize(camera.direction);
+	}
+
+	// Calculate Right, Up and LookAt vectors
+	camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
+	camera.lookat = camera.position + camera.direction;
+
+	UpdateViewMatrix(camera);
 }
 
 glm::mat4 VulkanRenderer::BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)

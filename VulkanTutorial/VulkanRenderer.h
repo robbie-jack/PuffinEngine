@@ -18,7 +18,7 @@
 
 //#include "Mesh.h"
 //#include "Texture.h"
-#include "Camera.h"
+#include "CameraComponent.h"
 #include "LightComponent.h"
 #include "MeshComponent.h"
 #include "TransformComponent.h"
@@ -80,25 +80,14 @@ namespace Puffin
 		public:
 
 			void Init(UI::UIManager* UIManager, Input::InputManager* InputManager);
-			//void Start();
 			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
-			//void Stop();
-			//void SendMessage();
-			//MeshComponent* AddComponent();
 
 			void InitMesh(ECS::Entity entity, std::string model_path, std::string texture_path);
 			void InitMeshCube(ECS::Entity entity, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
 			void InitLight(LightComponent& light, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, float specular = 0.5f, int shininess = 32);
-			void InitCamera();
-
-			//inline std::vector<MeshComponent>* GetComponents() { return &meshComponents; };
+			void InitCamera(CameraComponent& camera, glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov, float aspect, float near, float far);
 
 			inline GLFWwindow* GetWindow() { return window; };
-
-			//inline void SetUI(Puffin::UI::UIManager* UI) { uiManager = UI; };
-			//inline void SetUIWindowViewport(Puffin::UI::UIWindowViewport* UIWindowViewport) { uiWindowViewport = UIWindowViewport; };
-			//inline void SetUIWindowSettings(Puffin::UI::UIWindowSettings* UIWindowSettings) { uiWindowSettings = UIWindowSettings; };
-			//inline void SetInputManager(Puffin::Input::InputManager* InputManager) { inputManager = InputManager; };
 
 			~VulkanRenderer();
 
@@ -167,25 +156,12 @@ namespace Puffin
 			std::vector<VkFence> imagesInFlight;
 			size_t currentFrame = 0;
 
-			// UI/Input Manager
-			//Puffin::UI::UIManager* uiManager;
-			//Puffin::UI::UIWindowViewport* uiWindowViewport;
-			//Puffin::UI::UIWindowSettings* uiWindowSettings;
-			//Puffin::Input::InputManager* inputManager;
-
 			// Camera
-			Camera camera;
-
-			// Meshes
-			//Mesh chalet_mesh;
-			//Mesh engineer_mesh;
-			//Mesh cube_mesh;
-			//std::vector<MeshComponent> meshComponents;
+			CameraComponent camera;
 
 			Texture cube_texture;
 
 			// Light
-			//Light light;
 			LightComponent light;
 
 			VkDescriptorPool descriptorPool;
@@ -367,7 +343,7 @@ namespace Puffin
 			void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
 			void UpdateImguiCommandBuffers(uint32_t currentImage);
 
-			//void UpdateCamera(Camera)
+			void UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time);
 
 			glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 			glm::mat4 BuildMeshTransform(TransformComponent transform);

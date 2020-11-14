@@ -1,6 +1,6 @@
 #pragma once
 #include "UIWindow.h"
-#include "Camera.h"
+#include "CameraComponent.h"
 
 namespace Puffin
 {
@@ -12,14 +12,14 @@ namespace Puffin
 
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
-			inline void SetCamera(Puffin::Rendering::Camera* camera_) 
+			inline void SetCamera(Puffin::Rendering::CameraComponent* camera_) 
 			{ 
 				camera = camera_; 
-				fov = camera->GetFov();
+				fov = camera->fov;
 			};
 
 		private:
-			Puffin::Rendering::Camera* camera;
+			Puffin::Rendering::CameraComponent* camera;
 			float fov;
 		};
 	}
