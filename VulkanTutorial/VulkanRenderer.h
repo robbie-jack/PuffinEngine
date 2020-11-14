@@ -16,7 +16,7 @@
 
 #include "vk_mem_alloc.h"
 
-#include "Mesh.h"
+//#include "Mesh.h"
 #include "Texture.h"
 #include "Camera.h"
 #include "Light.h"
@@ -176,9 +176,9 @@ namespace Puffin
 			Camera camera;
 
 			// Meshes
-			Mesh chalet_mesh;
-			Mesh engineer_mesh;
-			Mesh cube_mesh;
+			//Mesh chalet_mesh;
+			//Mesh engineer_mesh;
+			//Mesh cube_mesh;
 			//std::vector<MeshComponent> meshComponents;
 
 			Texture cube_texture;

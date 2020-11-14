@@ -5,7 +5,7 @@
 
 #include <unordered_map>
 
-#include "Mesh.h"
+#include "MeshComponent.h"
 
 namespace Puffin
 {

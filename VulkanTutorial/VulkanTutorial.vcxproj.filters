@@ -49,9 +49,6 @@
     <ClCompile Include="Light.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -125,9 +122,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="ModelLoader.h">

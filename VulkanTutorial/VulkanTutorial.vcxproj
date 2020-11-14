@@ -182,7 +182,6 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="ReactPhysicsSystem.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
@@ -215,7 +214,6 @@
     <ClInclude Include="imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="Mesh.h" />
     <ClInclude Include="ProceduralMeshGenerator.h" />
     <ClInclude Include="ReactPhysicsComponent.h" />
     <ClInclude Include="ReactPhysicsSystem.h" />
