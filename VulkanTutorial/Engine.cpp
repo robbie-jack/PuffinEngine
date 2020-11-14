@@ -19,6 +19,7 @@ namespace Puffin
 
 		ECSWorld.Init();
 
+		//UIManager.SetEngine(this);
 		UIManager.SetWorld(&ECSWorld);
 
 		// Systems
@@ -74,46 +75,15 @@ namespace Puffin
 
 			physicsSystem->Update(delta_time);
 			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
-
-			//Update(delta_time);
 		}
+
+		physicsSystem->Stop();
+
+		physicsSystem.reset();
+		renderSystem.reset();
 
 		UIManager.Cleanup();
-	}
-
-	void Engine::Update(float dt)
-	{
-		// Only Update Systems marked updateWhenPlaying when Play State = Playing
-		for (int i = 0; i < systems.size(); i++)
-		{
-			if (systems[i]->GetUpdateWhenPlaying() == false)
-			{
-				if (systems[i]->Update(dt) == false)
-				{
-					running = false;
-				}
-			}
-			else
-			{
-				if (playState == PlayState::PLAYING)
-				{
-					if (systems[i]->Update(dt) == false)
-					{
-						running = false;
-					}
-				}
-			}
-		}
-	}
-
-	void Engine::AddSystem(System* sys)
-	{
-		systems.push_back(sys);
-	}
-
-	void Engine::Start()
-	{
-		playState = PlayState::PLAYING;
+		ECSWorld.Cleanup();
 	}
 
 	void Engine::Stop()
@@ -129,7 +99,7 @@ namespace Puffin
 		switch (playState)
 		{
 		case PlayState::STOPPED:
-			Start();
+			playState = PlayState::PLAYING;
 			break;
 		case PlayState::PLAYING:
 			playState = PlayState::PAUSED;

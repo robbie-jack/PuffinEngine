@@ -131,6 +131,8 @@ namespace Puffin
 				//ShowDockingDisabledMessage();
 			}
 
+			bool running = true;
+
 			if (ImGui::BeginMenuBar())
 			{
 				if (ImGui::BeginMenu("Menu"))
@@ -147,7 +149,7 @@ namespace Puffin
 
 					if (ImGui::MenuItem("Quit", "Alt+F4"))
 					{
-						return false;
+						running = false;
 					}
 
 					ImGui::EndMenu();
@@ -195,7 +197,7 @@ namespace Puffin
 
 			ImGui::End();
 
-			return true;
+			return running;
 		}
 
 		void UIManager::SetStyle()

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "System.h"
-
 #include <vector>
 
 namespace Puffin
@@ -18,7 +16,6 @@ namespace Puffin
 	public:
 
 		void MainLoop();
-		void AddSystem(System* sys);
 
 		void Play();
 		void Stop();
@@ -26,11 +23,6 @@ namespace Puffin
 		inline PlayState GetPlayState() { return playState; };
 
 	private:
-
-		void Update(float dt);
-		void Start();
-
-		std::vector<System*> systems;
 
 		bool running;
 		PlayState playState;

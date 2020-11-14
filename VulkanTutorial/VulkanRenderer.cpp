@@ -2264,11 +2264,10 @@ void VulkanRenderer::Cleanup()
 		CleanupMeshComponent(comp);
 	}
 
-	//meshComponents.clear();
-	entities.clear();
+	//entities.clear();
+	//world.reset();
 
 	// Cleanup Textures
-	//CleanupFrameBufferAttachment(offscreenTexture.GetTextureAttachment());
 	CleanupFrameBufferAttachment(cube_texture);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

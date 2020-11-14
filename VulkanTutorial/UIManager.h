@@ -50,7 +50,7 @@ namespace Puffin
 			bool running;
 			std::string playButtonLabel;
 
-			Engine* engine;
+			//Engine* engine;
 			std::vector<UIWindow*> windows;
 
 			UIWindowSceneHierarchy* windowSceneHierarchy;

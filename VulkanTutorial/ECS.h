@@ -41,6 +41,16 @@ namespace Puffin
 				}
 			}
 
+			void Cleanup()
+			{
+				while (!availableEntities.empty())
+				{
+					availableEntities.pop();
+				}
+
+				activeEntities.clear();
+			}
+
 			Entity CreateEntity()
 			{
 				assert(activeEntityCount < MAX_ENTITIES && "Max number of allowed entities reached");
@@ -160,6 +170,9 @@ namespace Puffin
 				entityToIndexMap.erase(entity);
 				indexToEntityMap.erase(indexOfLastComponent);
 
+				//delete componentArray[indexOfLastComponent];
+				componentArray[indexOfLastComponent] = {};
+
 				arraySize--;
 			}
 
@@ -203,6 +216,12 @@ namespace Puffin
 		class ComponentManager
 		{
 		public:
+
+			void Cleanup()
+			{
+				componentTypes.clear();
+				componentArrays.clear();
+			}
 
 			template<typename ComponentT>
 			void RegisterComponent()
@@ -318,6 +337,12 @@ namespace Puffin
 		{
 		public:
 
+			void Cleanup()
+			{
+				signatures.clear();
+				systems.clear();
+			}
+
 			template<typename SystemT>
 			std::shared_ptr<SystemT> RegisterSystem(std::shared_ptr<World> world)
 			{
@@ -400,6 +425,22 @@ namespace Puffin
 				componentManager = std::make_unique<ComponentManager>();
 				entityManager = std::make_unique<EntityManager>();
 				systemManager = std::make_unique<SystemManager>();
+			}
+
+			void Cleanup()
+			{
+				for (auto entity : entityManager->GetActiveEntities())
+				{
+					DestroyEntity(entity);
+				}
+
+				componentManager->Cleanup();
+				entityManager->Cleanup();
+				systemManager->Cleanup();
+
+				componentManager.reset();
+				entityManager.reset();
+				systemManager.reset();
 			}
 
 			// Entity Methods

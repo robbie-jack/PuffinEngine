@@ -17,9 +17,6 @@
     <Filter Include="Components">
       <UniqueIdentifier>{153ef5b7-8d68-42e8-899b-21c25aa59d9b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Systems">
-      <UniqueIdentifier>{bcebc206-6027-4080-854d-0ab9754ef911}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Physics\ReactPhysics">
       <UniqueIdentifier>{fc607478-44e0-492a-ba90-0b083a10b1e8}</UniqueIdentifier>
     </Filter>
@@ -54,9 +51,6 @@
     </ClCompile>
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="TransformSystem.cpp">
-      <Filter>Systems</Filter>
-    </ClCompile>
     <ClCompile Include="ReactPhysicsSystem.cpp">
       <Filter>Physics\ReactPhysics</Filter>
     </ClCompile>
@@ -131,20 +125,11 @@
     <ClInclude Include="TransformComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="System.h">
-      <Filter>Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="TransformSystem.h">
-      <Filter>Systems</Filter>
-    </ClInclude>
     <ClInclude Include="ReactPhysicsSystem.h">
       <Filter>Physics\ReactPhysics</Filter>
     </ClInclude>
     <ClInclude Include="ReactPhysicsComponent.h">
       <Filter>Physics\ReactPhysics</Filter>
-    </ClInclude>
-    <ClInclude Include="EntityTransform.h">
-      <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="VectorConversion.h">
       <Filter>Types</Filter>

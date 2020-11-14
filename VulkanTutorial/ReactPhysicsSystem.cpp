@@ -76,7 +76,7 @@ namespace Puffin
 
 			// Destroy Dynamics World
 			physicsCommon.destroyPhysicsWorld(physicsWorld);
-			physicsWorld = NULL;
+			//physicsWorld = NULL;
 		}
 
 		void ReactPhysicsSystem::InitComponent(ECS::Entity entity, rp3d::Vector3 position, rp3d::Vector3 rotation, rp3d::BodyType bodyType)
@@ -96,7 +96,9 @@ namespace Puffin
 		ReactPhysicsSystem::~ReactPhysicsSystem()
 		{
 			// Clear Components Vector
+			Stop();
 			entities.clear();
+			//world.reset();
 		}
 	}
 }
