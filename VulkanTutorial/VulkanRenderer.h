@@ -19,8 +19,7 @@
 //#include "Mesh.h"
 //#include "Texture.h"
 #include "Camera.h"
-#include "Light.h"
-
+#include "LightComponent.h"
 #include "MeshComponent.h"
 #include "TransformComponent.h"
 #include "FrameBufferAttachment.h"
@@ -87,8 +86,10 @@ namespace Puffin
 			//void SendMessage();
 			//MeshComponent* AddComponent();
 
-			void InitComponent(ECS::Entity entity, std::string model_path, std::string texture_path);
-			void InitComponentCube(ECS::Entity entity, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
+			void InitMesh(ECS::Entity entity, std::string model_path, std::string texture_path);
+			void InitMeshCube(ECS::Entity entity, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
+			void InitLight(LightComponent& light, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, float specular = 0.5f, int shininess = 32);
+			void InitCamera();
 
 			//inline std::vector<MeshComponent>* GetComponents() { return &meshComponents; };
 
@@ -184,7 +185,8 @@ namespace Puffin
 			Texture cube_texture;
 
 			// Light
-			Light light;
+			//Light light;
+			LightComponent light;
 
 			VkDescriptorPool descriptorPool;
 
@@ -364,6 +366,8 @@ namespace Puffin
 			void DrawFrame(UI::UIManager* UIManager, float delta_time);
 			void UpdateUniformBuffers(uint32_t currentImage, float delta_time);
 			void UpdateImguiCommandBuffers(uint32_t currentImage);
+
+			//void UpdateCamera(Camera)
 
 			glm::mat4 BuildMeshTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 			glm::mat4 BuildMeshTransform(TransformComponent transform);

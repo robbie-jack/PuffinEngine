@@ -31,10 +31,15 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 	// Pass Viewport Texture to Viewport Window
 	UIManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 
+	if (glfwWindowShouldClose(window))
+	{
+		running = false;
+	}
+
 	return running;
 }
 
-void VulkanRenderer::InitComponent(ECS::Entity entity, std::string model_path, std::string texture_path)
+void VulkanRenderer::InitMesh(ECS::Entity entity, std::string model_path, std::string texture_path)
 {
 	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -47,7 +52,7 @@ void VulkanRenderer::InitComponent(ECS::Entity entity, std::string model_path, s
 	CreateUniformBuffer(comp);
 }
 
-void VulkanRenderer::InitComponentCube(ECS::Entity entity, glm::vec3 color)
+void VulkanRenderer::InitMeshCube(ECS::Entity entity, glm::vec3 color)
 {
 	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -63,6 +68,15 @@ void VulkanRenderer::InitComponentCube(ECS::Entity entity, glm::vec3 color)
 	CreateVertexBuffers(comp);
 	CreateIndexBuffers(comp);
 	CreateUniformBuffer(comp);
+}
+
+void VulkanRenderer::InitLight(LightComponent& light, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, float specular, int shininess)
+{
+	light.uniformBuffer.position = position;
+	light.uniformBuffer.ambientColor = ambient;
+	light.uniformBuffer.diffuseColor = diffuse;
+	light.uniformBuffer.specularStrength = specular;
+	light.uniformBuffer.shininess = shininess;
 }
 
 VulkanRenderer::~VulkanRenderer()
@@ -125,13 +139,14 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	UIManager->GetWindowSettings()->SetCamera(&camera);
 
 	// Initialize Lights
-	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
+	//light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
+	InitLight(light, glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
-	InitComponent(1, "models/chalet.obj", "textures/chalet.jpg");
-	InitComponent(2, "models/space_engineer.obj", "textures/space_engineer.jpg");
-	InitComponentCube(3, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
-	InitComponentCube(4); //Initialize Components with default cube mesh
-	InitComponentCube(5);
+	InitMesh(1, "models/chalet.obj", "textures/chalet.jpg");
+	InitMesh(2, "models/space_engineer.obj", "textures/space_engineer.jpg");
+	InitMeshCube(3, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
+	InitMeshCube(4); //Initialize Components with default cube mesh
+	InitMeshCube(5);
 
 	//CreateUniformBuffers();
 	CreateLightBuffers();
@@ -1744,16 +1759,16 @@ void VulkanRenderer::CreateUniformBuffers()
 
 void VulkanRenderer::CreateLightBuffers()
 {
-	VkDeviceSize bufferSize = sizeof(light.GetLightBufferVector());
+	VkDeviceSize bufferSize = sizeof(light.buffers);
 
-	light.GetLightBufferVector().resize(swapChainImages.size());
-	light.GetLightAllocationVector().resize(swapChainImages.size());
+	light.buffers.resize(swapChainImages.size());
+	light.allocations.resize(swapChainImages.size());
 
 	for (int i = 0; i < swapChainImages.size(); i++)
 	{
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			light.GetLightBuffer(i), VMA_MEMORY_USAGE_GPU_ONLY, light.GetLightAllocation(i));
+			light.buffers[i], VMA_MEMORY_USAGE_GPU_ONLY, light.allocations[i]);
 	}
 }
 
@@ -1853,7 +1868,7 @@ void VulkanRenderer::CreateDescriptorSets()
 			meshBufferInfo.range = sizeof(comp.matrices);
 
 			VkDescriptorBufferInfo lightBufferInfo = {};
-			lightBufferInfo.buffer = light.GetLightBuffer(i);
+			lightBufferInfo.buffer = light.buffers[i];
 			lightBufferInfo.offset = 0;
 			lightBufferInfo.range = sizeof(LightBufferObject);
 
@@ -2162,9 +2177,9 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 		memcpy(data, &matrice, sizeof(matrice));
 		vmaUnmapMemory(allocator, comp.uniformAllocations[currentImage]);
 
-		vmaMapMemory(allocator, light.GetLightAllocation(currentImage), &data);
-		memcpy(data, &light.GetLightBufferObject(), sizeof(LightBufferObject));
-		vmaUnmapMemory(allocator, light.GetLightAllocation(currentImage));
+		vmaMapMemory(allocator, light.allocations[currentImage], &data);
+		memcpy(data, &light.uniformBuffer, sizeof(LightBufferObject));
+		vmaUnmapMemory(allocator, light.allocations[currentImage]);
 
 		vmaMapMemory(allocator, camera.GetViewAllocation(currentImage), &data);
 		memcpy(data, &camera.GetViewBufferObject(), sizeof(ViewBufferObject));

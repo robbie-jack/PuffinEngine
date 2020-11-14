@@ -22,13 +22,6 @@ namespace Puffin
 			glm::mat4 view;
 		};
 
-		//struct View
-		//{
-		//	glm::vec3 eye;
-		//	glm::vec3 centre;
-		//	glm::vec3 up;
-		//};
-
 		struct ViewBufferObject
 		{
 			alignas(16) glm::vec3 viewPos;
@@ -87,13 +80,30 @@ namespace Puffin
 			float speed;
 
 			CameraMatrices matrices;
-			//View view;
 
 			ViewBufferObject viewBufferObject;
 			std::vector<VkBuffer> viewBufferVector;
 			std::vector<VmaAllocation> viewAllocationVector;
 
 			void UpdateViewMatrix();
+		};
+
+		struct CameraComponent
+		{
+			float zNear, zFar, aspect, fov;
+
+			glm::vec3 position;
+			glm::vec3 lookat;
+
+			glm::vec3 direction;
+			glm::vec3 up;
+			glm::vec3 right;
+
+			CameraMatrices matrices;
+
+			ViewBufferObject viewBufferObject;
+			std::vector<VkBuffer> viewBufferVector;
+			std::vector<VmaAllocation> viewAllocationVector;
 		};
 	}
 }

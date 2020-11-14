@@ -180,7 +180,6 @@
     <ClCompile Include="imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ReactPhysicsSystem.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -210,7 +209,7 @@
     <ClInclude Include="imgui\imgui_impl_glfw.h" />
     <ClInclude Include="imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Light.h" />
+    <ClInclude Include="LightComponent.h" />
     <ClInclude Include="ProceduralMeshGenerator.h" />
     <ClInclude Include="ReactPhysicsComponent.h" />
     <ClInclude Include="ReactPhysicsSystem.h" />
