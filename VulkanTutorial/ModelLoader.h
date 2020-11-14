@@ -7,13 +7,11 @@
 
 #include "Mesh.h"
 
-using namespace Puffin::Rendering;
-
 namespace Puffin
 {
 	namespace IO
 	{
-		void LoadMesh(Mesh& mesh, std::string model_path)
+		void LoadMesh(Rendering::MeshComponent& mesh, std::string model_path)
 		{
 			tinyobj::attrib_t attrib;
 			std::vector<tinyobj::shape_t> shapes;
@@ -25,16 +23,16 @@ namespace Puffin
 				throw std::runtime_error(warn + err);
 			}
 
-			std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
+			std::unordered_map<Rendering::Vertex, uint32_t> uniqueVertices = {};
 
-			std::vector<Vertex> vertices;
+			std::vector<Rendering::Vertex> vertices;
 			std::vector<uint32_t> indices;
 
 			for (const auto& shape : shapes)
 			{
 				for (const auto& index : shape.mesh.indices)
 				{
-					Vertex vertex = {};
+					Rendering::Vertex vertex = {};
 
 					vertex.pos =
 					{
@@ -68,7 +66,8 @@ namespace Puffin
 				}
 			}
 
-			mesh.SetupMesh(vertices, indices);
+			mesh.vertices = vertices;
+			mesh.indices = indices;
 		}
 	}
 }

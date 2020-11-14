@@ -1,9 +1,5 @@
 #pragma once
 
-//#include "imgui.h"
-//#include "examples/imgui_impl_glfw.h"
-//#include "examples/imgui_impl_vulkan.h"
-
 #include "ECS.h"
 #include "UIManager.h"
 #include "InputManager.h"

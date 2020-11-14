@@ -16,19 +16,7 @@ void VulkanRenderer::Init(UI::UIManager* UIManager, Input::InputManager* InputMa
 {
 	InitWindow(InputManager);
 	InitVulkan(UIManager);
-	//running = true;
-	//updateWhenPlaying = false;
-	//type = SystemType::RENDER;
 }
-
-//void VulkanRenderer::Start()
-//{
-//	InitComponent(0, "models/chalet.obj", "textures/chalet.jpg");
-//	InitComponent(1, "models/space_engineer.obj", "textures/space_engineer.jpg");
-//	InitComponentCube(2, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
-//	InitComponentCube(3); //Initialize Components with default cube mesh
-//	InitComponentCube(4);
-//}
 
 bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
 {
@@ -46,36 +34,17 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 	return running;
 }
 
-//void VulkanRenderer::Stop()
-//{
-//
-//}
-//
-//void VulkanRenderer::SendMessage()
-//{
-//
-//}
-
-//MeshComponent* VulkanRenderer::AddComponent()
-//{
-//	MeshComponent mesh_component;
-//	meshComponents.push_back(mesh_component);
-//	return &meshComponents.back();
-//}
-
 void VulkanRenderer::InitComponent(ECS::Entity entity, std::string model_path, std::string texture_path)
 {
 	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
 	InitTexture(comp.texture, texture_path);
 	InitTexture(comp.texture, texture_path);
-	Puffin::IO::LoadMesh(comp.mesh, model_path);
+	Puffin::IO::LoadMesh(comp, model_path);
 
 	CreateVertexBuffers(comp);
 	CreateIndexBuffers(comp);
 	CreateUniformBuffer(comp);
-
-	//world->GetComponent<MeshComponent>(entity) = comp;
 }
 
 void VulkanRenderer::InitComponentCube(ECS::Entity entity, glm::vec3 color)
@@ -83,15 +52,17 @@ void VulkanRenderer::InitComponentCube(ECS::Entity entity, glm::vec3 color)
 	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
 	InitTexture(comp.texture, "textures/cube.png");
-	comp.mesh.SetupMesh(cube_vertices, cube_indices);
+	comp.vertices = cube_vertices;
+	comp.indices = cube_indices;
 
-	comp.mesh.SetColor(color);
+	for (int i = 0; i < comp.vertices.size(); i++)
+	{
+		comp.vertices[i].color = color;
+	}
 
 	CreateVertexBuffers(comp);
 	CreateIndexBuffers(comp);
 	CreateUniformBuffer(comp);
-
-	//world->GetComponent<MeshComponent>(entity) = comp;
 }
 
 VulkanRenderer::~VulkanRenderer()
@@ -1508,7 +1479,7 @@ void VulkanRenderer::CreateTextureImageView(Texture& texture)
 
 void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(mesh_component.mesh.GetVertices()[0]) * mesh_component.mesh.GetVertices().size();
+	VkDeviceSize bufferSize = sizeof(mesh_component.vertices[0]) * mesh_component.vertices.size();
 
 	// Create CPU staging buffer for Vertex data
 	VkBuffer stagingBuffer;
@@ -1521,7 +1492,7 @@ void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
 	// Map vertex data to Staging Buffer
 	void* data;
 	vmaMapMemory(allocator, stagingAllocation, &data);
-	memcpy(data, mesh_component.mesh.GetVertices().data(), (size_t)bufferSize);
+	memcpy(data, mesh_component.vertices.data(), (size_t)bufferSize);
 	vmaUnmapMemory(allocator, stagingAllocation);
 
 	// Create GPU vertex buffer
@@ -1537,7 +1508,7 @@ void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
 
 void VulkanRenderer::CreateIndexBuffers(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(mesh_component.mesh.GetIndices()[0]) * mesh_component.mesh.GetIndices().size();
+	VkDeviceSize bufferSize = sizeof(mesh_component.indices[0]) * mesh_component.indices.size();
 
 	// Create CPU staging buffer for Indices data
 	VkBuffer stagingBuffer;
@@ -1550,7 +1521,7 @@ void VulkanRenderer::CreateIndexBuffers(MeshComponent& mesh_component)
 	// Map indices data to Staging Buffer
 	void* data;
 	vmaMapMemory(allocator, stagingAllocation, &data);
-	memcpy(data, mesh_component.mesh.GetIndices().data(), (size_t)bufferSize);
+	memcpy(data, mesh_component.indices.data(), (size_t)bufferSize);
 	vmaUnmapMemory(allocator, stagingAllocation);
 
 	// Create GPU indices buffer
@@ -1748,7 +1719,7 @@ void VulkanRenderer::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
 
 void VulkanRenderer::CreateUniformBuffer(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(mesh_component.mesh.GetMatrices());
+	VkDeviceSize bufferSize = sizeof(mesh_component.matrices);
 
 	mesh_component.uniformBuffers.resize(swapChainImages.size());
 	mesh_component.uniformAllocations.resize(swapChainImages.size());
@@ -1763,11 +1734,6 @@ void VulkanRenderer::CreateUniformBuffer(MeshComponent& mesh_component)
 
 void VulkanRenderer::CreateUniformBuffers()
 {
-	/*for (auto& comp : meshComponents)
-	{
-		CreateUniformBuffer(comp);
-	}*/
-
 	for (ECS::Entity entity : entities)
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
@@ -1884,7 +1850,7 @@ void VulkanRenderer::CreateDescriptorSets()
 			VkDescriptorBufferInfo meshBufferInfo = {};
 			meshBufferInfo.buffer = comp.uniformBuffers[i];
 			meshBufferInfo.offset = 0;
-			meshBufferInfo.range = sizeof(comp.mesh.GetMatrices());
+			meshBufferInfo.range = sizeof(comp.matrices);
 
 			VkDescriptorBufferInfo lightBufferInfo = {};
 			lightBufferInfo.buffer = light.GetLightBuffer(i);
@@ -2007,7 +1973,7 @@ void VulkanRenderer::CreateMainCommandBuffers()
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
 				pipelineLayout, 0, 1, &comp.descriptorSets[i], 0, nullptr);
 
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(comp.mesh.GetIndices().size()), 1, 0, 0, 0); // Draw with Index
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(comp.indices.size()), 1, 0, 0, 0); // Draw with Index
 		}
 
 		vkCmdEndRenderPass(commandBuffers[i]);
@@ -2175,13 +2141,6 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	//MeshComponent& lightComp = world->GetComponent<MeshComponent>(4);
-
-	/*meshComponents[0].mesh.SetTransform(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	meshComponents[1].mesh.SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));*/
-	//lightComp.mesh.SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
-
-
 	for (ECS::Entity entity : entities)
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
@@ -2195,7 +2154,8 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 		matrice.proj = camera.GetPerspectiveMatrix();
 		matrice.proj[1][1] *= -1;
 
-		comp.mesh.SetMatrices(matrice);
+		//comp.mesh.SetMatrices(matrice);
+		comp.matrices = matrice;
 
 		void* data;
 		vmaMapMemory(allocator, comp.uniformAllocations[currentImage], &data);
