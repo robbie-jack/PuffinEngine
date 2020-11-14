@@ -178,10 +178,22 @@ namespace Puffin
 
 			ComponentT& GetComponent(Entity entity)
 			{
-				assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Retrieving non-existent component.");
+				assert(entityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Retrieving non-existent component.");
 
 				// Return reference to component
 				return componentArray[entityToIndexMap[entity]];
+			}
+
+			bool HasComponent(Entity entity)
+			{
+				bool hasComponent = false;
+
+				if (entityToIndexMap.find(entity) != entityToIndexMap.end())
+				{
+					hasComponent = true;
+				}
+
+				return hasComponent;
 			}
 
 			void EntityDestroyed(Entity entity) override
@@ -280,6 +292,13 @@ namespace Puffin
 			{
 				// Get reference to component for this entity
 				return GetComponentArray<ComponentT>()->GetComponent(entity);
+			}
+
+			template<typename ComponentT>
+			bool HasComponent(Entity entity)
+			{
+				// Return true of array has component for this entity
+				return GetComponentArray<ComponentT>()->HasComponent(entity);
 			}
 
 			void EntityDestroyed(Entity entity)
@@ -517,6 +536,12 @@ namespace Puffin
 			ComponentType GetComponentType()
 			{
 				return componentManager->GetComponentType<ComponentT>();
+			}
+
+			template<typename ComponentT>
+			bool HasComponent(Entity entity)
+			{
+				return componentManager->HasComponent<ComponentT>(entity);
 			}
 
 			// System Methods
