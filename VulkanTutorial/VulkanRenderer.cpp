@@ -67,9 +67,9 @@ void VulkanRenderer::InitComponent(ECS::Entity entity, std::string model_path, s
 {
 	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
-	InitTexture(comp.GetTexture(), texture_path);
-	InitTexture(comp.GetTexture(), texture_path);
-	Puffin::IO::LoadMesh(comp.GetMesh(), model_path);
+	InitTexture(comp.texture, texture_path);
+	InitTexture(comp.texture, texture_path);
+	Puffin::IO::LoadMesh(comp.mesh, model_path);
 
 	CreateVertexBuffers(comp);
 	CreateIndexBuffers(comp);
@@ -82,10 +82,10 @@ void VulkanRenderer::InitComponentCube(ECS::Entity entity, glm::vec3 color)
 {
 	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
-	InitTexture(comp.GetTexture(), "textures/cube.png");
-	comp.GetMesh().SetupMesh(cube_vertices, cube_indices);
+	InitTexture(comp.texture, "textures/cube.png");
+	comp.mesh.SetupMesh(cube_vertices, cube_indices);
 
-	comp.GetMesh().SetColor(color);
+	comp.mesh.SetColor(color);
 
 	CreateVertexBuffers(comp);
 	CreateIndexBuffers(comp);
@@ -1508,7 +1508,7 @@ void VulkanRenderer::CreateTextureImageView(Texture& texture)
 
 void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(mesh_component.GetMesh().GetVertices()[0]) * mesh_component.GetMesh().GetVertices().size();
+	VkDeviceSize bufferSize = sizeof(mesh_component.mesh.GetVertices()[0]) * mesh_component.mesh.GetVertices().size();
 
 	// Create CPU staging buffer for Vertex data
 	VkBuffer stagingBuffer;
@@ -1521,15 +1521,15 @@ void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
 	// Map vertex data to Staging Buffer
 	void* data;
 	vmaMapMemory(allocator, stagingAllocation, &data);
-	memcpy(data, mesh_component.GetMesh().GetVertices().data(), (size_t)bufferSize);
+	memcpy(data, mesh_component.mesh.GetVertices().data(), (size_t)bufferSize);
 	vmaUnmapMemory(allocator, stagingAllocation);
 
 	// Create GPU vertex buffer
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mesh_component.GetVertexBuffer(),
-		VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.GetVertexAllocation());
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mesh_component.vertexBuffer,
+		VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.vertexAllocation);
 
-	CopyBuffer(stagingBuffer, mesh_component.GetVertexBuffer(), bufferSize);
+	CopyBuffer(stagingBuffer, mesh_component.vertexBuffer, bufferSize);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vmaFreeMemory(allocator, stagingAllocation);
@@ -1537,7 +1537,7 @@ void VulkanRenderer::CreateVertexBuffers(MeshComponent& mesh_component)
 
 void VulkanRenderer::CreateIndexBuffers(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(mesh_component.GetMesh().GetIndices()[0]) * mesh_component.GetMesh().GetIndices().size();
+	VkDeviceSize bufferSize = sizeof(mesh_component.mesh.GetIndices()[0]) * mesh_component.mesh.GetIndices().size();
 
 	// Create CPU staging buffer for Indices data
 	VkBuffer stagingBuffer;
@@ -1550,15 +1550,15 @@ void VulkanRenderer::CreateIndexBuffers(MeshComponent& mesh_component)
 	// Map indices data to Staging Buffer
 	void* data;
 	vmaMapMemory(allocator, stagingAllocation, &data);
-	memcpy(data, mesh_component.GetMesh().GetIndices().data(), (size_t)bufferSize);
+	memcpy(data, mesh_component.mesh.GetIndices().data(), (size_t)bufferSize);
 	vmaUnmapMemory(allocator, stagingAllocation);
 
 	// Create GPU indices buffer
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 		VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		mesh_component.GetIndexBuffer(), VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.GetIndexAllocation());
+		mesh_component.indexBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.indexAllocation);
 
-	CopyBuffer(stagingBuffer, mesh_component.GetIndexBuffer(), bufferSize);
+	CopyBuffer(stagingBuffer, mesh_component.indexBuffer, bufferSize);
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vmaFreeMemory(allocator, stagingAllocation);
@@ -1748,16 +1748,16 @@ void VulkanRenderer::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
 
 void VulkanRenderer::CreateUniformBuffer(MeshComponent& mesh_component)
 {
-	VkDeviceSize bufferSize = sizeof(mesh_component.GetMesh().GetMatrices());
+	VkDeviceSize bufferSize = sizeof(mesh_component.mesh.GetMatrices());
 
-	mesh_component.GetUniformBufferVector().resize(swapChainImages.size());
-	mesh_component.GetUniformAllocationsVector().resize(swapChainImages.size());
+	mesh_component.uniformBuffers.resize(swapChainImages.size());
+	mesh_component.uniformAllocations.resize(swapChainImages.size());
 
 	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			mesh_component.GetUniformBuffer(i), VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.GetUniformAllocation(i));
+			mesh_component.uniformBuffers[i], VMA_MEMORY_USAGE_CPU_TO_GPU, mesh_component.uniformAllocations[i]);
 	}
 }
 
@@ -1873,8 +1873,8 @@ void VulkanRenderer::CreateDescriptorSets()
 		allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
 		allocInfo.pSetLayouts = layouts.data();
 
-		comp.GetDescriptorSets().resize(swapChainImages.size());
-		if (vkAllocateDescriptorSets(device, &allocInfo, comp.GetDescriptorSets().data()) != VK_SUCCESS)
+		comp.descriptorSets.resize(swapChainImages.size());
+		if (vkAllocateDescriptorSets(device, &allocInfo, comp.descriptorSets.data()) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
@@ -1882,9 +1882,9 @@ void VulkanRenderer::CreateDescriptorSets()
 		for (size_t i = 0; i < swapChainImages.size(); i++)
 		{
 			VkDescriptorBufferInfo meshBufferInfo = {};
-			meshBufferInfo.buffer = comp.GetUniformBuffer(i);
+			meshBufferInfo.buffer = comp.uniformBuffers[i];
 			meshBufferInfo.offset = 0;
-			meshBufferInfo.range = sizeof(comp.GetMesh().GetMatrices());
+			meshBufferInfo.range = sizeof(comp.mesh.GetMatrices());
 
 			VkDescriptorBufferInfo lightBufferInfo = {};
 			lightBufferInfo.buffer = light.GetLightBuffer(i);
@@ -1898,13 +1898,13 @@ void VulkanRenderer::CreateDescriptorSets()
 
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = comp.GetTexture().GetImageView();
+			imageInfo.imageView = comp.texture.GetImageView();
 			imageInfo.sampler = textureSampler;
 
 			std::array<VkWriteDescriptorSet, 4> descriptorWrites = {};
 
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet =comp.GetDescriptorSets()[i];
+			descriptorWrites[0].dstSet =comp.descriptorSets[i];
 			descriptorWrites[0].dstBinding = 0;
 			descriptorWrites[0].dstArrayElement = 0;
 			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1912,7 +1912,7 @@ void VulkanRenderer::CreateDescriptorSets()
 			descriptorWrites[0].pBufferInfo = &meshBufferInfo;
 
 			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = comp.GetDescriptorSets()[i];
+			descriptorWrites[1].dstSet = comp.descriptorSets[i];
 			descriptorWrites[1].dstBinding = 1;
 			descriptorWrites[1].dstArrayElement = 0;
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1920,7 +1920,7 @@ void VulkanRenderer::CreateDescriptorSets()
 			descriptorWrites[1].pBufferInfo = &lightBufferInfo;
 
 			descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[2].dstSet = comp.GetDescriptorSets()[i];
+			descriptorWrites[2].dstSet = comp.descriptorSets[i];
 			descriptorWrites[2].dstBinding = 2;
 			descriptorWrites[2].dstArrayElement = 0;
 			descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1928,7 +1928,7 @@ void VulkanRenderer::CreateDescriptorSets()
 			descriptorWrites[2].pBufferInfo = &viewBufferInfo;
 
 			descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[3].dstSet = comp.GetDescriptorSets()[i];
+			descriptorWrites[3].dstSet = comp.descriptorSets[i];
 			descriptorWrites[3].dstBinding = 3;
 			descriptorWrites[3].dstArrayElement = 0;
 			descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1998,16 +1998,16 @@ void VulkanRenderer::CreateMainCommandBuffers()
 		{
 			MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
-			VkBuffer vertexBuffers[] = { comp.GetVertexBuffer() };
+			VkBuffer vertexBuffers[] = { comp.vertexBuffer };
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-			vkCmdBindIndexBuffer(commandBuffers[i], comp.GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffers[i], comp.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
-				pipelineLayout, 0, 1, &comp.GetDescriptorSets()[i], 0, nullptr);
+				pipelineLayout, 0, 1, &comp.descriptorSets[i], 0, nullptr);
 
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(comp.GetMesh().GetIndices().size()), 1, 0, 0, 0); // Draw with Index
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(comp.mesh.GetIndices().size()), 1, 0, 0, 0); // Draw with Index
 		}
 
 		vkCmdEndRenderPass(commandBuffers[i]);
@@ -2177,9 +2177,9 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 
 	//MeshComponent& lightComp = world->GetComponent<MeshComponent>(4);
 
-	/*meshComponents[0].GetMesh().SetTransform(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	meshComponents[1].GetMesh().SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));*/
-	//lightComp.GetMesh().SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
+	/*meshComponents[0].mesh.SetTransform(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	meshComponents[1].mesh.SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));*/
+	//lightComp.mesh.SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
 
 
 	for (ECS::Entity entity : entities)
@@ -2195,12 +2195,12 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 		matrice.proj = camera.GetPerspectiveMatrix();
 		matrice.proj[1][1] *= -1;
 
-		comp.GetMesh().SetMatrices(matrice);
+		comp.mesh.SetMatrices(matrice);
 
 		void* data;
-		vmaMapMemory(allocator, comp.GetUniformAllocation(currentImage), &data);
+		vmaMapMemory(allocator, comp.uniformAllocations[currentImage], &data);
 		memcpy(data, &matrice, sizeof(matrice));
-		vmaUnmapMemory(allocator, comp.GetUniformAllocation(currentImage));
+		vmaUnmapMemory(allocator, comp.uniformAllocations[currentImage]);
 
 		vmaMapMemory(allocator, light.GetLightAllocation(currentImage), &data);
 		memcpy(data, &light.GetLightBufferObject(), sizeof(LightBufferObject));
@@ -2400,16 +2400,16 @@ void VulkanRenderer::CleanupImGui()
 
 void VulkanRenderer::CleanupMeshComponent(MeshComponent& mesh_component)
 {
-	vkDestroyBuffer(device, mesh_component.GetVertexBuffer(), nullptr);
-	vmaFreeMemory(allocator, mesh_component.GetVertexAllocation());
+	vkDestroyBuffer(device, mesh_component.vertexBuffer, nullptr);
+	vmaFreeMemory(allocator, mesh_component.vertexAllocation);
 
-	vkDestroyBuffer(device, mesh_component.GetIndexBuffer(), nullptr);
-	vmaFreeMemory(allocator, mesh_component.GetIndexAllocation());
+	vkDestroyBuffer(device, mesh_component.indexBuffer, nullptr);
+	vmaFreeMemory(allocator, mesh_component.indexAllocation);
 
-	for (int i = 0; i < mesh_component.GetUniformBufferVector().size(); i++)
+	for (int i = 0; i < mesh_component.uniformBuffers.size(); i++)
 	{
-		vkDestroyBuffer(device, mesh_component.GetUniformBuffer(i), nullptr);
-		vmaFreeMemory(allocator, mesh_component.GetUniformAllocation(i));
+		vkDestroyBuffer(device, mesh_component.uniformBuffers[i], nullptr);
+		vmaFreeMemory(allocator, mesh_component.uniformAllocations[i]);
 	}
 }
 

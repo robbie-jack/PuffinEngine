@@ -60,16 +60,10 @@
     </ClCompile>
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="TransformComponent.cpp">
-      <Filter>Components</Filter>
-    </ClCompile>
     <ClCompile Include="TransformSystem.cpp">
       <Filter>Systems</Filter>
     </ClCompile>
     <ClCompile Include="ReactPhysicsSystem.cpp">
-      <Filter>Physics\ReactPhysics</Filter>
-    </ClCompile>
-    <ClCompile Include="ReactPhysicsComponent.cpp">
       <Filter>Physics\ReactPhysics</Filter>
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
@@ -146,9 +140,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="BaseComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="TransformComponent.h">
       <Filter>Components</Filter>
     </ClInclude>

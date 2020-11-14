@@ -183,10 +183,8 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="ReactPhysicsComponent.cpp" />
     <ClCompile Include="ReactPhysicsSystem.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
     <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="UIWindowSceneHierarchy.cpp" />
@@ -202,7 +200,6 @@
     <None Include="shaders\shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseComponent.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ECS.h" />
     <ClInclude Include="Engine.h" />

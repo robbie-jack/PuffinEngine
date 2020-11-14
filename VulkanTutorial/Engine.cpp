@@ -2,7 +2,7 @@
 
 #include "ECS.h"
 
-#include "TransformSystem.h"
+#include "TransformComponent.h"
 #include "VulkanRenderer.h"
 #include "ReactPhysicsSystem.h"
 
@@ -15,9 +15,6 @@ namespace Puffin
 		// Managers
 		UI::UIManager UIManager;
 		Input::InputManager InputManager;
-		//ECS::EntityManager EntityManager;
-		//ECS::ComponentManager ComponentManager;
-		//ECS::SystemManager SystemManager;
 		ECS::World ECSWorld;
 
 		ECSWorld.Init();
@@ -55,30 +52,15 @@ namespace Puffin
 		ECSWorld.GetComponent<TransformComponent>(4) = { Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
 		ECSWorld.GetComponent<TransformComponent>(5) = { Vector3(0.0f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 
-		//entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
-		//entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
-		//physicsSystem.AddComponent();
-		//physicsSystem.AddComponent();
 		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(3);
 		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(5);
 
 		running = true;
 		playState = PlayState::STOPPED;
 
-		/*for (int i = 0; i < systems.size(); i++)
-		{
-			systems[i]->Init();
-		}*/
-
-		//entitySystem.Init();
-		//transformSystem.Init();
-		physicsSystem->Init();
 		renderSystem->Init(&UIManager, &InputManager);
 
-		//entitySystem.Start();
-		//transformSystem.Start();
 		physicsSystem->Start();
-		//renderSystem->Start();
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -90,8 +72,6 @@ namespace Puffin
 			std::chrono::duration<float> duration = currentTime - lastTime;
 			float delta_time = duration.count();
 
-			//entitySystem.Update(delta_time);
-			//transformSystem.Update(delta_time);
 			physicsSystem->Update(delta_time);
 			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
 
@@ -133,11 +113,6 @@ namespace Puffin
 
 	void Engine::Start()
 	{
-		/*for (int i = 0; i < systems.size(); i++)
-		{
-			systems[i]->Start();
-		}*/
-
 		playState = PlayState::PLAYING;
 	}
 
@@ -145,11 +120,6 @@ namespace Puffin
 	{
 		if (playState == PlayState::PLAYING | playState == PlayState::PAUSED)
 		{
-			/*for (int i = 0; i < systems.size(); i++)
-			{
-				systems[i]->Stop();
-			}*/
-
 			playState = PlayState::STOPPED;
 		}
 	}

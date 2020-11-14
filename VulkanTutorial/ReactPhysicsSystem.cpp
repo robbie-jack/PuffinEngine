@@ -8,12 +8,6 @@ namespace Puffin
 {
 	namespace Physics
 	{
-		void ReactPhysicsSystem::Init()
-		{
-			//running = true;
-			//updateWhenPlaying = true;
-		}
-
 		void ReactPhysicsSystem::Start()
 		{
 			// Define Physics World Settings
@@ -53,19 +47,18 @@ namespace Puffin
 				ReactPhysicsComponent& comp = world->GetComponent<ReactPhysicsComponent>(entity);
 
 				// Get current transform from dynamics world
-				rp3d::Transform currTransform = comp.GetTransform();
+				rp3d::Transform currTransform = comp.body->getTransform();
 
 				// Calculate Interpolated Transform between previous and current transforms
-				rp3d::Transform lerpTransform = rp3d::Transform::interpolateTransforms(comp.GetPrevTransform(), currTransform, factor);
+				rp3d::Transform lerpTransform = rp3d::Transform::interpolateTransforms(comp.prevTransform, currTransform, factor);
 
-				// Set interpolated transform on component so it can be retrieved by transform system
-				//comp.SetLerpTransform(lerpTransform);
+				// Set this entities transform to lerp transform
 				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
 				transformComp.position = lerpTransform.getPosition();
 				transformComp.rotation = ConvertToEulerAngles(lerpTransform.getOrientation());
 
 				// Set previous transform to current transform for this frame
-				comp.SetPrevTransform(currTransform);
+				comp.prevTransform = currTransform;
 			}
 
 			return true;
@@ -78,36 +71,13 @@ namespace Puffin
 			{
 				ReactPhysicsComponent& comp = world->GetComponent<ReactPhysicsComponent>(entity);
 
-				physicsWorld->destroyRigidBody(comp.GetBody());
+				physicsWorld->destroyRigidBody(comp.body);
 			}
 
 			// Destroy Dynamics World
 			physicsCommon.destroyPhysicsWorld(physicsWorld);
 			physicsWorld = NULL;
 		}
-
-		void ReactPhysicsSystem::SendMessage()
-		{
-
-		}
-
-		/*ReactPhysicsComponent* ReactPhysicsSystem::AddComponent()
-		{
-			ReactPhysicsComponent physicsComponent;
-			physicsComponents.push_back(physicsComponent);
-			return &physicsComponents.back();
-		}
-
-		ReactPhysicsComponent* ReactPhysicsSystem::GetComponent(uint32_t entityID)
-		{
-			for (auto comp : physicsComponents)
-			{
-				if (comp.GetEntityID() == entityID)
-				{
-					return &comp;
-				}
-			}
-		}*/
 
 		void ReactPhysicsSystem::InitComponent(ECS::Entity entity, rp3d::Vector3 position, rp3d::Vector3 rotation, rp3d::BodyType bodyType)
 		{
@@ -118,9 +88,9 @@ namespace Puffin
 			rp3d::Transform transform(position, initQuaternion);
 
 			// Create Rigid Body with dynamics world and store in component
-			comp.SetBody(physicsWorld->createRigidBody(transform));
-			comp.SetPrevTransform(transform);
-			comp.GetBody()->setType(bodyType);
+			comp.body = physicsWorld->createRigidBody(transform);
+			comp.prevTransform = transform;
+			comp.body->setType(bodyType);
 		}
 
 		ReactPhysicsSystem::~ReactPhysicsSystem()

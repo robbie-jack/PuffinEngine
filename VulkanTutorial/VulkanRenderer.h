@@ -26,7 +26,7 @@
 #include "Light.h"
 
 #include "MeshComponent.h"
-#include "TransformSystem.h"
+#include "TransformComponent.h"
 #include "FrameBufferAttachment.h"
 
 #include <functional>
