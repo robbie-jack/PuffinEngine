@@ -301,10 +301,13 @@ namespace Puffin
 		// System
 		//////////////////////////////////////////////////
 
+		class World;
+
 		class System
 		{
 		public:
 			std::set<Entity> entities;
+			std::shared_ptr<World> world;
 		};
 
 		//////////////////////////////////////////////////
@@ -316,7 +319,7 @@ namespace Puffin
 		public:
 
 			template<typename SystemT>
-			std::shared_ptr<SystemT> RegisterSystem()
+			std::shared_ptr<SystemT> RegisterSystem(std::shared_ptr<World> world)
 			{
 				const char* typeName = typeid(SystemT).name();
 
@@ -324,6 +327,7 @@ namespace Puffin
 
 				// Create and return pointer to system
 				std::shared_ptr<SystemT> system = std::make_shared<SystemT>();
+				std::static_pointer_cast<System>(system)->world = world;
 				systems.insert({ typeName, std::static_pointer_cast<System>(system) });
 				return system;
 			}
@@ -465,7 +469,7 @@ namespace Puffin
 			template<typename ComponentT>
 			ComponentT& GetComponent(Entity entity)
 			{
-				return componentManager->GetComponentType<ComponentT>(entity);
+				return componentManager->GetComponent<ComponentT>(entity);
 			}
 
 			template<typename ComponentT>
@@ -479,7 +483,8 @@ namespace Puffin
 			template<typename SystemT>
 			std::shared_ptr<SystemT> RegisterSystem()
 			{
-				return systemManager->RegisterSystem<SystemT>();
+				std::shared_ptr<World> worldPtr{ this };
+				return systemManager->RegisterSystem<SystemT>(worldPtr);
 			}
 
 			template<typename SystemT>

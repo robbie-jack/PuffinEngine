@@ -89,12 +89,12 @@ namespace Puffin
 			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
 			//void Stop();
 			//void SendMessage();
-			MeshComponent* AddComponent();
+			//MeshComponent* AddComponent();
 
-			void InitComponent(int handle, std::string model_path, std::string texture_path);
-			void InitComponentCube(int handle, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
+			void InitComponent(ECS::Entity entity, std::string model_path, std::string texture_path);
+			void InitComponentCube(ECS::Entity entity, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
 
-			inline std::vector<MeshComponent>* GetComponents() { return &meshComponents; };
+			//inline std::vector<MeshComponent>* GetComponents() { return &meshComponents; };
 
 			inline GLFWwindow* GetWindow() { return window; };
 
@@ -183,7 +183,7 @@ namespace Puffin
 			Mesh chalet_mesh;
 			Mesh engineer_mesh;
 			Mesh cube_mesh;
-			std::vector<MeshComponent> meshComponents;
+			//std::vector<MeshComponent> meshComponents;
 
 			Texture cube_texture;
 

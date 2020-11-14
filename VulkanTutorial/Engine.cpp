@@ -25,31 +25,42 @@ namespace Puffin
 		UIManager.SetWorld(&ECSWorld);
 
 		// Systems
-		Physics::ReactPhysicsSystem physicsSystem;
+		std::shared_ptr<Physics::ReactPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::ReactPhysicsSystem>();
 		std::shared_ptr<Rendering::VulkanRenderer> renderSystem = ECSWorld.RegisterSystem<Rendering::VulkanRenderer>();
 
 		ECSWorld.RegisterComponent<TransformComponent>();
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
+		ECSWorld.RegisterComponent<Physics::ReactPhysicsComponent>();
 
 		ECS::Signature renderSignature;
 		renderSignature.set(ECSWorld.GetComponentType<TransformComponent>());
 		renderSignature.set(ECSWorld.GetComponentType<Rendering::MeshComponent>());
 		ECSWorld.SetSystemSignature<Rendering::VulkanRenderer>(renderSignature);
 
+		ECS::Signature physicsSignature;
+		physicsSignature.set(ECSWorld.GetComponentType<TransformComponent>());
+		physicsSignature.set(ECSWorld.GetComponentType<Physics::ReactPhysicsComponent>());
+		ECSWorld.SetSystemSignature<Physics::ReactPhysicsSystem>(physicsSignature);
+
 		for (int i = 0; i < 5; i++)
 		{
 			ECS::Entity entity = ECSWorld.CreateEntity();
 			ECSWorld.AddComponent<TransformComponent>(entity);
-			//Rendering::MeshComponent comp;
-			//ECSWorld.AddComponent<Rendering::MeshComponent>(entity, comp);
 			ECSWorld.AddComponent<Rendering::MeshComponent>(entity);
-			renderSystem->AddComponent();
 		}
+
+		ECSWorld.GetComponent<TransformComponent>(1) = { Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		ECSWorld.GetComponent<TransformComponent>(2) = { Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		ECSWorld.GetComponent<TransformComponent>(3) = { Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		ECSWorld.GetComponent<TransformComponent>(4) = { Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
+		ECSWorld.GetComponent<TransformComponent>(5) = { Vector3(0.0f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 
 		//entitySystem.GetEntity(3)->AttachComponent(physicsSystem.AddComponent());
 		//entitySystem.GetEntity(5)->AttachComponent(physicsSystem.AddComponent());
-		physicsSystem.AddComponent();
-		physicsSystem.AddComponent();
+		//physicsSystem.AddComponent();
+		//physicsSystem.AddComponent();
+		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(3);
+		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(5);
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -61,12 +72,12 @@ namespace Puffin
 
 		//entitySystem.Init();
 		//transformSystem.Init();
-		physicsSystem.Init();
+		physicsSystem->Init();
 		renderSystem->Init(&UIManager, &InputManager);
 
 		//entitySystem.Start();
 		//transformSystem.Start();
-		physicsSystem.Start();
+		physicsSystem->Start();
 		//renderSystem->Start();
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
@@ -81,7 +92,7 @@ namespace Puffin
 
 			//entitySystem.Update(delta_time);
 			//transformSystem.Update(delta_time);
-			//physicsSystem.Update(delta_time);
+			physicsSystem->Update(delta_time);
 			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
 
 			//Update(delta_time);

@@ -1,4 +1,6 @@
 #include "ReactPhysicsSystem.h"
+#include "TransformComponent.h"
+#include "VectorConversion.h"
 
 #include <cmath>
 
@@ -25,8 +27,8 @@ namespace Puffin
 
 			timeSinceLastUpdate = 0.0f;
 
-			InitComponent(0);
-			InitComponent(1, rp3d::Vector3(0.0f, -5.0f, 0.0f), rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::BodyType::STATIC);
+			InitComponent(3);
+			InitComponent(5, rp3d::Vector3(0.0f, -5.0f, 0.0f), rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::BodyType::STATIC);
 		}
 
 		bool ReactPhysicsSystem::Update(float dt)
@@ -46,19 +48,24 @@ namespace Puffin
 
 			rp3d::decimal factor = timeSinceLastUpdate / timeStep;
 
-			for (int i = 0; i < physicsComponents.size(); i++)
+			for (ECS::Entity entity : entities)
 			{
+				ReactPhysicsComponent& comp = world->GetComponent<ReactPhysicsComponent>(entity);
+
 				// Get current transform from dynamics world
-				rp3d::Transform currTransform = physicsComponents[i].GetTransform();
+				rp3d::Transform currTransform = comp.GetTransform();
 
 				// Calculate Interpolated Transform between previous and current transforms
-				rp3d::Transform lerpTransform = rp3d::Transform::interpolateTransforms(physicsComponents[i].GetPrevTransform(), currTransform, factor);
+				rp3d::Transform lerpTransform = rp3d::Transform::interpolateTransforms(comp.GetPrevTransform(), currTransform, factor);
 
 				// Set interpolated transform on component so it can be retrieved by transform system
-				physicsComponents[i].SetLerpTransform(lerpTransform);
+				//comp.SetLerpTransform(lerpTransform);
+				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
+				transformComp.position = lerpTransform.getPosition();
+				transformComp.rotation = ConvertToEulerAngles(lerpTransform.getOrientation());
 
 				// Set previous transform to current transform for this frame
-				physicsComponents[i].SetPrevTransform(currTransform);
+				comp.SetPrevTransform(currTransform);
 			}
 
 			return true;
@@ -67,8 +74,10 @@ namespace Puffin
 		void ReactPhysicsSystem::Stop()
 		{
 			// Destroy All Rigid Bodies
-			for (auto comp : physicsComponents)
+			for (ECS::Entity entity : entities)
 			{
+				ReactPhysicsComponent& comp = world->GetComponent<ReactPhysicsComponent>(entity);
+
 				physicsWorld->destroyRigidBody(comp.GetBody());
 			}
 
@@ -82,7 +91,7 @@ namespace Puffin
 
 		}
 
-		ReactPhysicsComponent* ReactPhysicsSystem::AddComponent()
+		/*ReactPhysicsComponent* ReactPhysicsSystem::AddComponent()
 		{
 			ReactPhysicsComponent physicsComponent;
 			physicsComponents.push_back(physicsComponent);
@@ -98,24 +107,26 @@ namespace Puffin
 					return &comp;
 				}
 			}
-		}
+		}*/
 
-		void ReactPhysicsSystem::InitComponent(int handle, rp3d::Vector3 position, rp3d::Vector3 rotation, rp3d::BodyType bodyType)
+		void ReactPhysicsSystem::InitComponent(ECS::Entity entity, rp3d::Vector3 position, rp3d::Vector3 rotation, rp3d::BodyType bodyType)
 		{
+			ReactPhysicsComponent& comp = world->GetComponent<ReactPhysicsComponent>(entity);
+
 			// Create Quaternion/Transform of new rigid body
 			rp3d::Quaternion initQuaternion = rp3d::Quaternion::fromEulerAngles(rotation);
 			rp3d::Transform transform(position, initQuaternion);
 
 			// Create Rigid Body with dynamics world and store in component
-			physicsComponents[handle].SetBody(physicsWorld->createRigidBody(transform));
-			physicsComponents[handle].SetPrevTransform(transform);
-			physicsComponents[handle].GetBody()->setType(bodyType);
+			comp.SetBody(physicsWorld->createRigidBody(transform));
+			comp.SetPrevTransform(transform);
+			comp.GetBody()->setType(bodyType);
 		}
 
 		ReactPhysicsSystem::~ReactPhysicsSystem()
 		{
 			// Clear Components Vector
-			physicsComponents.clear();
+			entities.clear();
 		}
 	}
 }

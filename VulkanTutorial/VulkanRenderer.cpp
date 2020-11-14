@@ -56,33 +56,42 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 //
 //}
 
-MeshComponent* VulkanRenderer::AddComponent()
+//MeshComponent* VulkanRenderer::AddComponent()
+//{
+//	MeshComponent mesh_component;
+//	meshComponents.push_back(mesh_component);
+//	return &meshComponents.back();
+//}
+
+void VulkanRenderer::InitComponent(ECS::Entity entity, std::string model_path, std::string texture_path)
 {
-	MeshComponent mesh_component;
-	meshComponents.push_back(mesh_component);
-	return &meshComponents.back();
+	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+
+	InitTexture(comp.GetTexture(), texture_path);
+	InitTexture(comp.GetTexture(), texture_path);
+	Puffin::IO::LoadMesh(comp.GetMesh(), model_path);
+
+	CreateVertexBuffers(comp);
+	CreateIndexBuffers(comp);
+	CreateUniformBuffer(comp);
+
+	//world->GetComponent<MeshComponent>(entity) = comp;
 }
 
-void VulkanRenderer::InitComponent(int handle, std::string model_path, std::string texture_path)
+void VulkanRenderer::InitComponentCube(ECS::Entity entity, glm::vec3 color)
 {
-	InitTexture(meshComponents[handle].GetTexture(), texture_path);
-	Puffin::IO::LoadMesh(meshComponents[handle].GetMesh(), model_path);
+	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
-	CreateVertexBuffers(meshComponents[handle]);
-	CreateIndexBuffers(meshComponents[handle]);
-	CreateUniformBuffer(meshComponents[handle]);
-}
+	InitTexture(comp.GetTexture(), "textures/cube.png");
+	comp.GetMesh().SetupMesh(cube_vertices, cube_indices);
 
-void VulkanRenderer::InitComponentCube(int handle, glm::vec3 color)
-{
-	InitTexture(meshComponents[handle].GetTexture(), "textures/cube.png");
-	meshComponents[handle].GetMesh().SetupMesh(cube_vertices, cube_indices);
+	comp.GetMesh().SetColor(color);
 
-	meshComponents[handle].GetMesh().SetColor(color);
+	CreateVertexBuffers(comp);
+	CreateIndexBuffers(comp);
+	CreateUniformBuffer(comp);
 
-	CreateVertexBuffers(meshComponents[handle]);
-	CreateIndexBuffers(meshComponents[handle]);
-	CreateUniformBuffer(meshComponents[handle]);
+	//world->GetComponent<MeshComponent>(entity) = comp;
 }
 
 VulkanRenderer::~VulkanRenderer()
@@ -147,11 +156,11 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	// Initialize Lights
 	light.InitLight(glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
-	InitComponent(0, "models/chalet.obj", "textures/chalet.jpg");
-	InitComponent(1, "models/space_engineer.obj", "textures/space_engineer.jpg");
-	InitComponentCube(2, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
-	InitComponentCube(3); //Initialize Components with default cube mesh
-	InitComponentCube(4);
+	InitComponent(1, "models/chalet.obj", "textures/chalet.jpg");
+	InitComponent(2, "models/space_engineer.obj", "textures/space_engineer.jpg");
+	InitComponentCube(3, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
+	InitComponentCube(4); //Initialize Components with default cube mesh
+	InitComponentCube(5);
 
 	//CreateUniformBuffers();
 	CreateLightBuffers();
@@ -1754,8 +1763,15 @@ void VulkanRenderer::CreateUniformBuffer(MeshComponent& mesh_component)
 
 void VulkanRenderer::CreateUniformBuffers()
 {
-	for (auto& comp : meshComponents)
+	/*for (auto& comp : meshComponents)
 	{
+		CreateUniformBuffer(comp);
+	}*/
+
+	for (ECS::Entity entity : entities)
+	{
+		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+
 		CreateUniformBuffer(comp);
 	}
 }
@@ -1794,19 +1810,19 @@ void VulkanRenderer::CreateDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 4> poolSizes = {};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entities.size());
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entities.size());
 	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
+	poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entities.size());
 	poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
+	poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entities.size());
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * meshComponents.size());
+	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * entities.size());
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 	{
@@ -1846,8 +1862,10 @@ void VulkanRenderer::CreateImGuiDescriptorPool()
 
 void VulkanRenderer::CreateDescriptorSets()
 {
-	for (auto& comp : meshComponents)
+	for (ECS::Entity entity : entities)
 	{
+		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+
 		std::vector<VkDescriptorSetLayout> layouts(swapChainImages.size(), descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -1976,8 +1994,10 @@ void VulkanRenderer::CreateMainCommandBuffers()
 
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		for (auto& comp : meshComponents)
+		for (ECS::Entity entity : entities)
 		{
+			MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+
 			VkBuffer vertexBuffers[] = { comp.GetVertexBuffer() };
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
@@ -2155,15 +2175,20 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
+	//MeshComponent& lightComp = world->GetComponent<MeshComponent>(4);
+
 	/*meshComponents[0].GetMesh().SetTransform(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	meshComponents[1].GetMesh().SetTransform(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -time * 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));*/
-	meshComponents[3].GetMesh().SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
+	//lightComp.GetMesh().SetTransform(light.GetLightPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f));
 
-	for (auto& comp : meshComponents)
+
+	for (ECS::Entity entity : entities)
 	{
+		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+
 		MeshMatrices matrice = {};
 
-		matrice.model = BuildMeshTransform(comp.GetMesh().GetTransform());
+		matrice.model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
 
 		matrice.inv_model = glm::inverse(matrice.model);
 		matrice.view = camera.GetViewMatrix();
@@ -2272,12 +2297,15 @@ void VulkanRenderer::Cleanup()
 	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
 	// Cleanup Meshes
-	for (auto& comp : meshComponents)
+	for (ECS::Entity entity : entities)
 	{
+		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+
 		CleanupMeshComponent(comp);
 	}
 
-	meshComponents.clear();
+	//meshComponents.clear();
+	entities.clear();
 
 	// Cleanup Textures
 	//CleanupFrameBufferAttachment(offscreenTexture.GetTextureAttachment());
