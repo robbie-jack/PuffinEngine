@@ -38,6 +38,7 @@ namespace Puffin
 				for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
 				{
 					availableEntities.push(entity);
+					entityNames[entity] = "";
 				}
 			}
 
@@ -61,6 +62,7 @@ namespace Puffin
 				activeEntityCount++;
 
 				activeEntities.insert(entity);
+				entityNames[entity] = "New Entity";
 
 				return entity;
 			}
@@ -71,12 +73,29 @@ namespace Puffin
 
 				// Reset signature for this entity
 				entitySignatures[entity].reset();
+				entityNames[entity] = "";
 
 				activeEntities.erase(entity);
 
 				// Add id to back of queue
 				availableEntities.push(entity);
 				activeEntityCount--;
+			}
+
+			void SetName(Entity entity, std::string name)
+			{
+				assert(entity < MAX_ENTITIES && "Entity out of range");
+
+				// Update Entity Name
+				entityNames[entity] = name;
+			}
+
+			std::string GetName(Entity entity)
+			{
+				assert(entity < MAX_ENTITIES && "Entity out of range");
+
+				// Return Entity Name
+				return entityNames[entity];
 			}
 
 			void SetSignature(Entity entity, Signature signature)
@@ -104,6 +123,7 @@ namespace Puffin
 
 			std::queue<Entity> availableEntities;
 			std::set<Entity> activeEntities;
+			std::array<std::string, MAX_ENTITIES> entityNames;
 			std::array<Signature, MAX_ENTITIES> entitySignatures;
 
 			uint32_t activeEntityCount;
@@ -480,6 +500,16 @@ namespace Puffin
 			std::set<Entity> GetActiveEntities()
 			{
 				return entityManager->GetActiveEntities();
+			}
+
+			void SetEntityName(Entity entity, std::string name)
+			{
+				entityManager->SetName(entity, name);
+			}
+
+			std::string GetEntityName(Entity entity)
+			{
+				return entityManager->GetName(entity);
 			}
 
 			// Component Methods

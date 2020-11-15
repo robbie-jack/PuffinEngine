@@ -3,6 +3,9 @@
 #include "ReactPhysicsComponent.h"
 #include "MeshComponent.h"
 
+#include <iostream>
+#include <string>
+
 namespace Puffin
 {
 	namespace UI
@@ -23,9 +26,29 @@ namespace Puffin
 				{
 					if (entity != 0)
 					{
-						ImGui::Text(" Entity: %d", entity);
+						ImGui::Dummy(ImVec2(0.0f, 5.0f));
+						ImGui::Text(""); ImGui::SameLine(0.0f);
+
+						// Convert Stored String into array of char's
+						std::string str_name = world->GetEntityName(entity);
+						std::vector<char> name(64, '\0');
+						for (int i = 0; i < str_name.size(); i++)
+						{
+							name[i] = str_name[i];
+						}
+						name.push_back('\0');
+
+						// Display InputText and Entity ID
+						if (ImGui::InputText("Name", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
+						{
+							world->SetEntityName(entity, std::string(&name[0]));
+						}
+						ImGui::SameLine(300.0f); ImGui::Text(std::to_string(entity).c_str());
+
+						name.clear();
+
 						ImGui::Dummy(ImVec2(0.0f, 10.0f));
-						ImGui::Text(" List of Components Here");
+						ImGui::Text(" List of Components Here"); 
 
 						// List of all Entity Components
 						ImVec2 listBoxSize = ImGui::GetWindowSize();

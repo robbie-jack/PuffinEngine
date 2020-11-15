@@ -35,6 +35,8 @@ namespace Puffin
 					ImVec2 listBoxSize = ImGui::GetWindowSize();
 					listBoxSize.y -= 45.0f;
 
+					ImGui::Text("Entities"); ImGui::SameLine(275.0f); ImGui::Text("ID");
+
 					ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
 					if (world != nullptr)
@@ -45,21 +47,35 @@ namespace Puffin
 
 						for (ECS::Entity entity : world->GetActiveEntities())
 						{
-							std::string entity_string = "Entity: " + std::to_string(entity);
-
 							ImGuiTreeNodeFlags tree_flags = base_flags;
+							bool has_child = false;
 
+							// Simple test to show leaf and branch nodes
+							if (entity == 1 || entity == 2)
+								has_child = true;
+
+							// Set Selected Flag if entity equals selectedEntity
 							if (selectedEntity == entity)
 								tree_flags |= ImGuiTreeNodeFlags_Selected;
 
-							bool node_open = ImGui::TreeNodeEx(entity_string.c_str(), tree_flags);
+							// Display Entity as Leaf node if it doesn't have any children
+							if (!has_child)
+								tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+							bool node_open = ImGui::TreeNodeEx(world->GetEntityName(entity).c_str(), tree_flags);
+
+							// Set Selected Entity when node is clicked
 							if (ImGui::IsItemClicked())
 							{
 								selectedEntity = entity;
 								windowProperties->SetEntity(entity);
 							}
 
-							if (node_open)
+							// Display Entity ID on same line as name
+							ImGui::SameLine(275.0f);
+							ImGui::Text(std::to_string(entity).c_str());
+
+							if (has_child && node_open)
 							{
 								ImGui::Text("No Child Entities");
 								ImGui::TreePop();

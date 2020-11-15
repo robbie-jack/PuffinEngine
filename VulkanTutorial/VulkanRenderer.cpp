@@ -2221,37 +2221,37 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 
 void VulkanRenderer::UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time)
 {
-	// Camera Movement
-	if (inputManager->GetAction("CamMoveLeft").state == Puffin::Input::HELD)
-	{
-		camera.position += camera.speed * camera.right * delta_time;
-	}
-	else if (inputManager->GetAction("CamMoveRight").state == Puffin::Input::HELD)
-	{
-		camera.position -= camera.speed * camera.right * delta_time;
-	}
-
-	if (inputManager->GetAction("CamMoveForward").state == Puffin::Input::HELD)
-	{
-		camera.position += camera.speed * camera.direction * delta_time;
-	}
-	else if (inputManager->GetAction("CamMoveBackward").state == Puffin::Input::HELD)
-	{
-		camera.position -= camera.speed * camera.direction * delta_time;
-	}
-
-	if (inputManager->GetAction("CamMoveUp").state == Puffin::Input::HELD)
-	{
-		camera.position += camera.speed * camera.up * delta_time;
-	}
-	else if (inputManager->GetAction("CamMoveDown").state == Puffin::Input::HELD)
-	{
-		camera.position -= camera.speed * camera.up * delta_time;
-	}
-
-	// Mouse Rotation
 	if (inputManager->IsCursorLocked())
 	{
+		// Camera Movement
+		if (inputManager->GetAction("CamMoveLeft").state == Puffin::Input::HELD)
+		{
+			camera.position += camera.speed * camera.right * delta_time;
+		}
+		else if (inputManager->GetAction("CamMoveRight").state == Puffin::Input::HELD)
+		{
+			camera.position -= camera.speed * camera.right * delta_time;
+		}
+
+		if (inputManager->GetAction("CamMoveForward").state == Puffin::Input::HELD)
+		{
+			camera.position += camera.speed * camera.direction * delta_time;
+		}
+		else if (inputManager->GetAction("CamMoveBackward").state == Puffin::Input::HELD)
+		{
+			camera.position -= camera.speed * camera.direction * delta_time;
+		}
+
+		if (inputManager->GetAction("CamMoveUp").state == Puffin::Input::HELD)
+		{
+			camera.position += camera.speed * camera.up * delta_time;
+		}
+		else if (inputManager->GetAction("CamMoveDown").state == Puffin::Input::HELD)
+		{
+			camera.position -= camera.speed * camera.up * delta_time;
+		}
+
+		// Mouse Rotation
 		camera.yaw += inputManager->GetMouseXOffset();
 		camera.pitch -= inputManager->GetMouseYOffset();
 
