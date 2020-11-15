@@ -55,8 +55,7 @@ void VulkanRenderer::InitMesh(ECS::Entity entity, std::string model_path, std::s
 	comp.texture_path = texture_path;
 
 	InitTexture(comp.texture, comp.texture_path);
-	InitTexture(comp.texture, comp.texture_path);
-	Puffin::IO::LoadMesh(comp, comp.model_path);
+	IO::LoadMesh(comp, comp.model_path);
 
 	CreateVertexBuffers(comp);
 	CreateIndexBuffers(comp);
@@ -67,7 +66,7 @@ void VulkanRenderer::InitMeshCube(ECS::Entity entity, glm::vec3 color)
 {
 	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
-	InitTexture(comp.texture, "textures/cube.png");
+	InitTexture(comp.texture, "textures\\cube.png");
 	comp.vertices = cube_vertices;
 	comp.indices = cube_indices;
 
@@ -90,7 +89,7 @@ void VulkanRenderer::InitLight(LightComponent& light, glm::vec3 position, glm::v
 	light.uniformBuffer.shininess = shininess;
 }
 
-void VulkanRenderer::InitCamera(CameraComponent& camera, glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov, float aspect, float near, float far)
+void VulkanRenderer::InitCamera(CameraComponent& camera, glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov_, float aspect_, float near_, float far_)
 {
 	camera.direction = direction_;
 
@@ -100,7 +99,7 @@ void VulkanRenderer::InitCamera(CameraComponent& camera, glm::vec3 position_, gl
 	camera.up = up_;
 
 	// Calculate Perspective Projection
-	UpdatePerspective(camera, fov, aspect, near, far);
+	UpdatePerspective(camera, fov_, aspect_, near_, far_);
 
 	// Calculate Right and Up vectors
 	camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
@@ -163,7 +162,7 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	CreateTextureSampler();
 	UIManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
-	InitTexture(offscreenTexture, "textures/texture.jpg");
+	InitTexture(offscreenTexture, "textures\\texture.jpg");
 	UIManager->GetWindowViewport()->SetSceneTexture(offscreenTexture);
 
 	// Initialize Camera
@@ -175,8 +174,8 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	// Initialize Lights
 	InitLight(light, glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
-	InitMesh(1, "models/chalet.obj", "textures/chalet.jpg");
-	InitMesh(2, "models/space_engineer.obj", "textures/space_engineer.jpg");
+	InitMesh(1, "models\\chalet.obj", "textures\\chalet.jpg");
+	InitMesh(2, "models\\space_engineer.obj", "textures\\space_engineer.jpg");
 	InitMeshCube(3, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
 	InitMeshCube(4); //Initialize Components with default cube mesh
 	InitMeshCube(5);
@@ -2100,9 +2099,11 @@ void VulkanRenderer::DrawFrame(UI::UIManager* UIManager, float delta_time)
 	}
 
 	if (UIManager->GetWindowViewport()->GetViewportSize().x != (float)offscreenExtent.width 
-		|| UIManager->GetWindowViewport()->GetViewportSize().y != (float)offscreenExtent.height)
+		|| UIManager->GetWindowViewport()->GetViewportSize().y != (float)offscreenExtent.height
+		|| newMeshAdded)
 	{
 		RecreateSwapChain(UIManager);
+		newMeshAdded = false;
 	}
 
 	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
@@ -2192,6 +2193,13 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	for (ECS::Entity entity : entities)
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+
+		// Init any new components
+		if (comp.vertices.empty())
+		{
+			InitMeshCube(entity);
+			newMeshAdded = true;
+		}
 
 		MeshMatrices matrice = {};
 

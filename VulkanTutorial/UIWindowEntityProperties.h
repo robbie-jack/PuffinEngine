@@ -2,6 +2,7 @@
 #include "UIWindow.h"
 //#include "Entity.h"
 #include "ECS.h"
+#include "imgui/imfilebrowser.h"
 
 namespace Puffin
 {
@@ -15,10 +16,15 @@ namespace Puffin
 
             inline void SetEntity(ECS::Entity entity_) { entity = entity_; };
             inline void SetWorld(ECS::World* world_) { world = world_; };
+            inline void SetFileBrowser(ImGui::FileBrowser* fileDialog_) { fileDialog = fileDialog_; };
 
         private:
             ECS::Entity entity;
             ECS::World* world;
+            ImGui::FileBrowser* fileDialog;
+
+            bool modelSelected = false;
+            bool textureSelected = false;
         };
     }
 }

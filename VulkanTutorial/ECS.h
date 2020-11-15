@@ -149,16 +149,13 @@ namespace Puffin
 			{
 				assert(entityToIndexMap.find(entity) == entityToIndexMap.end() && "Entity already has a component of this type");
 
-				ComponentT component;
-
 				// Insert new component at end of array
 				size_t newIndex = arraySize;
 				entityToIndexMap[entity] = newIndex;
 				indexToEntityMap[newIndex] = entity;
-				componentArray[newIndex] = component;
 				arraySize++;
 
-				return component;
+				return componentArray[newIndex];
 			}
 
 			void AddComponent(Entity entity, ComponentT component)

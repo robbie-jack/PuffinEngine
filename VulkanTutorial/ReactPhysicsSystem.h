@@ -16,7 +16,7 @@ namespace Puffin
 			bool Update(float dt);
 			void Stop();
 
-			void InitComponent(ECS::Entity entity, rp3d::Vector3 position = rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::Vector3 rotation = rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::BodyType bodyType = rp3d::BodyType::DYNAMIC);
+			void InitComponent(ECS::Entity entity, rp3d::BodyType bodyType = rp3d::BodyType::STATIC, rp3d::Vector3 position = rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::Vector3 rotation = rp3d::Vector3(0.0f, 0.0f, 0.0f));
 
 			~ReactPhysicsSystem();
 

@@ -28,6 +28,7 @@ namespace Puffin
 			//windowPerformance->Show();
 
 			windowSceneHierarchy->SetWindowProperties(windowEntityProperties);
+			windowEntityProperties->SetFileBrowser(&fileDialog);
 
 			windows.push_back(windowSceneHierarchy);
 			windows.push_back(windowViewport);
@@ -75,6 +76,8 @@ namespace Puffin
 					}
 				}
 			}
+
+			fileDialog.Display();
 
 			ImGui::Render();
 

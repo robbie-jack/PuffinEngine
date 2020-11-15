@@ -8,7 +8,7 @@ namespace Puffin
 	{
 		struct ReactPhysicsComponent
 		{
-			rp3d::RigidBody* body;
+			rp3d::RigidBody* body = nullptr;
 			rp3d::Transform prevTransform;
 		};
 	}

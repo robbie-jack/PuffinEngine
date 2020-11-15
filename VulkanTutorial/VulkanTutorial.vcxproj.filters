@@ -173,5 +173,8 @@
     <ClInclude Include="CameraComponent.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="imgui\imfilebrowser.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

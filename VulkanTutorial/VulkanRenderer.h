@@ -172,6 +172,8 @@ namespace Puffin
 
 			bool framebufferResized = false;
 
+			bool newMeshAdded = false;
+
 			const int WIDTH = 1280;
 			const int HEIGHT = 720;
 

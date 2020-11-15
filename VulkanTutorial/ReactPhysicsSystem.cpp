@@ -21,8 +21,11 @@ namespace Puffin
 
 			timeSinceLastUpdate = 0.0f;
 
-			InitComponent(3);
-			InitComponent(5, rp3d::Vector3(0.0f, -5.0f, 0.0f), rp3d::Vector3(0.0f, 0.0f, 0.0f), rp3d::BodyType::STATIC);
+			TransformComponent& comp1 = world->GetComponent<TransformComponent>(3);
+			TransformComponent& comp2 = world->GetComponent<TransformComponent>(5);
+
+			InitComponent(3, rp3d::BodyType::DYNAMIC, comp1.position);
+			InitComponent(5, rp3d::BodyType::STATIC, comp2.position);
 		}
 
 		bool ReactPhysicsSystem::Update(float dt)
@@ -44,7 +47,14 @@ namespace Puffin
 
 			for (ECS::Entity entity : entities)
 			{
+				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
 				ReactPhysicsComponent& comp = world->GetComponent<ReactPhysicsComponent>(entity);
+
+				// Initialise any new components
+				if (comp.body == nullptr)
+				{
+					InitComponent(entity, BodyType::STATIC, transformComp.position);
+				}
 
 				// Get current transform from dynamics world
 				rp3d::Transform currTransform = comp.body->getTransform();
@@ -53,7 +63,6 @@ namespace Puffin
 				rp3d::Transform lerpTransform = rp3d::Transform::interpolateTransforms(comp.prevTransform, currTransform, factor);
 
 				// Set this entities transform to lerp transform
-				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
 				transformComp.position = lerpTransform.getPosition();
 				transformComp.rotation = ConvertToEulerAngles(lerpTransform.getOrientation());
 
@@ -79,7 +88,7 @@ namespace Puffin
 			//physicsWorld = NULL;
 		}
 
-		void ReactPhysicsSystem::InitComponent(ECS::Entity entity, rp3d::Vector3 position, rp3d::Vector3 rotation, rp3d::BodyType bodyType)
+		void ReactPhysicsSystem::InitComponent(ECS::Entity entity, rp3d::BodyType bodyType, rp3d::Vector3 position, rp3d::Vector3 rotation)
 		{
 			ReactPhysicsComponent& comp = world->GetComponent<ReactPhysicsComponent>(entity);
 

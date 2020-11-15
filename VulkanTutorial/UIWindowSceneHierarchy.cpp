@@ -1,4 +1,5 @@
 #include "UIWindowSceneHierarchy.h"
+#include "TransformComponent.h"
 
 namespace Puffin
 {
@@ -20,7 +21,12 @@ namespace Puffin
 				{
 					if (ImGui::Button("Create Entity"))
 					{
-						windowProperties->SetEntity(world->CreateEntity());
+						ECS::Entity entity = world->CreateEntity();
+						windowProperties->SetEntity(entity);
+
+						TransformComponent component;
+						component.scale = Vector3(1.0f, 1.0f, 1.0f);
+						world->AddComponent<TransformComponent>(entity, component);
 					}
 
 					ImGui::SameLine();

@@ -1,4 +1,5 @@
 #include "UIWindowEntityProperties.h"
+
 #include "TransformComponent.h"
 #include "ReactPhysicsComponent.h"
 #include "MeshComponent.h"
@@ -52,7 +53,7 @@ namespace Puffin
 
 						// List of all Entity Components
 						ImVec2 listBoxSize = ImGui::GetWindowSize();
-						listBoxSize.y -= 70.0f;
+						listBoxSize.y -= 120.0f;
 
 						ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
@@ -90,12 +91,44 @@ namespace Puffin
 							}
 						}
 
+						// Display Mesh Component - If One Exists
 						if (world->HasComponent<Rendering::MeshComponent>(entity))
 						{
 							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 							if (ImGui::CollapsingHeader("Mesh Component"))
 							{
+								Rendering::MeshComponent& mesh = world->GetComponent<Rendering::MeshComponent>(entity);
 
+								ImGui::Text("Model Path:"); ImGui::SameLine(100.0f);
+								if (ImGui::Selectable(mesh.model_path.c_str(), false))
+								{
+									fileDialog->Open();
+									modelSelected = true;
+								}
+
+								if (fileDialog->HasSelected() && modelSelected)
+								{
+									mesh.model_path = fileDialog->GetSelected().string();
+									modelSelected = false;
+									fileDialog->ClearSelected();
+
+									//IO::LoadMesh(mesh, mesh.model_path);
+									
+								}
+
+								ImGui::Text("Texture Path:"); ImGui::SameLine(100.0f);
+								if (ImGui::Selectable(mesh.texture_path.c_str(), false))
+								{
+									fileDialog->Open();
+									textureSelected = true;
+								}
+
+								if (fileDialog->HasSelected() && textureSelected)
+								{
+									mesh.texture_path = fileDialog->GetSelected().string();
+									textureSelected = false;
+									fileDialog->ClearSelected();
+								}
 							}
 						}
 
@@ -109,6 +142,45 @@ namespace Puffin
 						}
 
 						ImGui::ListBoxFooter();
+
+						ImGui::Dummy(ImVec2(100.0f, 0.0f)); ImGui::SameLine();
+
+						if (ImGui::Button("Add Component"))
+						{
+							ImGui::OpenPopup("Add Component");
+							ImGui::SetNextWindowSize(ImVec2(200.0f, 200.0f));
+						}
+
+						ImGui::SameLine(250.0f);
+
+						if (ImGui::Button("Remove Component"))
+						{
+
+						}
+
+						// Display Add Component Popup
+						if (ImGui::BeginPopup("Add Component"))
+						{
+							if (ImGui::Selectable("Transform Component"))
+							{
+								if (!world->HasComponent<TransformComponent>(entity))
+									world->AddComponent<TransformComponent>(entity);
+							}
+
+							if (ImGui::Selectable("Mesh Component"))
+							{
+								if (!world->HasComponent<Rendering::MeshComponent>(entity))
+									world->AddComponent<Rendering::MeshComponent>(entity);
+							}
+
+							if (ImGui::Selectable("Physics Component"))
+							{
+								if (!world->HasComponent<Physics::ReactPhysicsComponent>(entity))
+									world->AddComponent<Physics::ReactPhysicsComponent>(entity);
+							}
+
+							ImGui::EndPopup();
+						}
 					}
 					else
 					{

@@ -4,6 +4,7 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
 //#include "imgui/implot.h"
+#include "imgui/imfilebrowser.h"
 
 #include "InputManager.h"
 #include "ECS.h"
@@ -58,6 +59,8 @@ namespace Puffin
 			UIWindowSettings* windowSettings;
 			UIWindowEntityProperties* windowEntityProperties;
 			UIWindowPerformance* windowPerformance;
+
+			ImGui::FileBrowser fileDialog;
 
 			bool ShowDockspace(bool* p_open);
 			void SetStyle();
