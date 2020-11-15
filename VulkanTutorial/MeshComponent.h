@@ -162,9 +162,11 @@ namespace Puffin
 			MeshMatrices matrices;
 			std::vector<Vertex> vertices;
 			std::vector<uint32_t> indices;
+			std::string model_path;
 
 			// Texture
 			Texture texture;
+			std::string texture_path;
 
 			// Vertex Buffer
 			VkBuffer vertexBuffer;

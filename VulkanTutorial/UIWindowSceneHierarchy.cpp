@@ -39,14 +39,32 @@ namespace Puffin
 
 					if (world != nullptr)
 					{
+						ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow
+							| ImGuiTreeNodeFlags_OpenOnDoubleClick
+							| ImGuiTreeNodeFlags_SpanAvailWidth;
+
 						for (ECS::Entity entity : world->GetActiveEntities())
 						{
 							std::string entity_string = "Entity: " + std::to_string(entity);
-							if (ImGui::Selectable(entity_string.c_str(), false))
+
+							ImGuiTreeNodeFlags tree_flags = base_flags;
+
+							if (selectedEntity == entity)
+								tree_flags |= ImGuiTreeNodeFlags_Selected;
+
+							bool node_open = ImGui::TreeNodeEx(entity_string.c_str(), tree_flags);
+							if (ImGui::IsItemClicked())
 							{
 								selectedEntity = entity;
 								windowProperties->SetEntity(entity);
 							}
+
+							if (node_open)
+							{
+								ImGui::Text("No Child Entities");
+								ImGui::TreePop();
+							}
+								
 						}
 					}
 

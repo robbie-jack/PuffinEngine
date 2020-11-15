@@ -51,9 +51,12 @@ void VulkanRenderer::InitMesh(ECS::Entity entity, std::string model_path, std::s
 {
 	MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
-	InitTexture(comp.texture, texture_path);
-	InitTexture(comp.texture, texture_path);
-	Puffin::IO::LoadMesh(comp, model_path);
+	comp.model_path = model_path;
+	comp.texture_path = texture_path;
+
+	InitTexture(comp.texture, comp.texture_path);
+	InitTexture(comp.texture, comp.texture_path);
+	Puffin::IO::LoadMesh(comp, comp.model_path);
 
 	CreateVertexBuffers(comp);
 	CreateIndexBuffers(comp);

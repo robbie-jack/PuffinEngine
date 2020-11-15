@@ -61,7 +61,7 @@ namespace Puffin
 				running = false;
 			}
 
-			//ImGui::ShowDemoWindow(p_open);
+			ImGui::ShowDemoWindow(p_open);
 			//ImPlot::ShowDemoWindow(p_open);
 
 			// Draw UI Windows

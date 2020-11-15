@@ -1,5 +1,7 @@
 #include "UIWindowEntityProperties.h"
 #include "TransformComponent.h"
+#include "ReactPhysicsComponent.h"
+#include "MeshComponent.h"
 
 namespace Puffin
 {
@@ -24,6 +26,12 @@ namespace Puffin
 						ImGui::Text(" Entity: %d", entity);
 						ImGui::Dummy(ImVec2(0.0f, 10.0f));
 						ImGui::Text(" List of Components Here");
+
+						// List of all Entity Components
+						ImVec2 listBoxSize = ImGui::GetWindowSize();
+						listBoxSize.y -= 70.0f;
+
+						ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
 						// Display Transform Component - If One Exists
 						if (world->HasComponent<TransformComponent>(entity))
@@ -58,6 +66,26 @@ namespace Puffin
 								}
 							}
 						}
+
+						if (world->HasComponent<Rendering::MeshComponent>(entity))
+						{
+							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+							if (ImGui::CollapsingHeader("Mesh Component"))
+							{
+
+							}
+						}
+
+						if (world->HasComponent<Physics::ReactPhysicsComponent>(entity))
+						{
+							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+							if (ImGui::CollapsingHeader("Physics Component"))
+							{
+
+							}
+						}
+
+						ImGui::ListBoxFooter();
 					}
 					else
 					{
