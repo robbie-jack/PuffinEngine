@@ -41,7 +41,7 @@ namespace Puffin
 					ImVec2 listBoxSize = ImGui::GetWindowSize();
 					listBoxSize.y -= 45.0f;
 
-					ImGui::Text("Entities"); ImGui::SameLine(275.0f); ImGui::Text("ID");
+					ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() - 50.0f); ImGui::Text("ID");
 
 					ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
@@ -78,7 +78,7 @@ namespace Puffin
 							}
 
 							// Display Entity ID on same line as name
-							ImGui::SameLine(275.0f);
+							ImGui::SameLine(ImGui::GetWindowWidth() - 50.0f);
 							ImGui::Text(std::to_string(entity).c_str());
 
 							if (has_child && node_open)

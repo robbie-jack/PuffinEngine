@@ -40,11 +40,10 @@ namespace Puffin
 						name.push_back('\0');
 
 						// Display InputText and Entity ID
-						if (ImGui::InputText("Name", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
+						if (ImGui::InputText("", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 						{
 							world->SetEntityName(entity, std::string(&name[0]));
 						}
-						ImGui::SameLine(300.0f); ImGui::Text(std::to_string(entity).c_str());
 
 						name.clear();
 
@@ -53,9 +52,13 @@ namespace Puffin
 
 						// List of all Entity Components
 						ImVec2 listBoxSize = ImGui::GetWindowSize();
-						listBoxSize.y -= 120.0f;
+						listBoxSize.y -= 110.0f;
 
 						ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
+
+						ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
+							| ImGuiTreeNodeFlags_OpenOnDoubleClick
+							| ImGuiTreeNodeFlags_AllowItemOverlap;
 
 						// Display Transform Component - If One Exists
 						if (world->HasComponent<TransformComponent>(entity))
@@ -66,8 +69,15 @@ namespace Puffin
 							float scale[3] = { transform.scale.x, transform.scale.y, transform.scale.z };
 
 							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-							if (ImGui::CollapsingHeader("Transform Component"))
+							if (ImGui::CollapsingHeader("Transform Component", flags))
 							{
+								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+								if (ImGui::Button("X"))
+								{
+									world->RemoveComponent<TransformComponent>(entity);
+								}
+
 								if (ImGui::DragFloat3("Position", position, 0.1f))
 								{
 									transform.position.x = position[0];
@@ -95,8 +105,15 @@ namespace Puffin
 						if (world->HasComponent<Rendering::MeshComponent>(entity))
 						{
 							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-							if (ImGui::CollapsingHeader("Mesh Component"))
+							if (ImGui::CollapsingHeader("Mesh Component", flags))
 							{
+								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+								if (ImGui::Button("X"))
+								{
+									world->RemoveComponent<Rendering::MeshComponent>(entity);
+								}
+
 								Rendering::MeshComponent& mesh = world->GetComponent<Rendering::MeshComponent>(entity);
 
 								ImGui::Text("Model Path:"); ImGui::SameLine(100.0f);
@@ -135,27 +152,24 @@ namespace Puffin
 						if (world->HasComponent<Physics::ReactPhysicsComponent>(entity))
 						{
 							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-							if (ImGui::CollapsingHeader("Physics Component"))
+							if (ImGui::CollapsingHeader("Physics Component", flags))
 							{
+								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
+								if (ImGui::Button("X"))
+								{
+									world->RemoveComponent<Physics::ReactPhysicsComponent>(entity);
+								}
 							}
 						}
 
 						ImGui::ListBoxFooter();
 
-						ImGui::Dummy(ImVec2(100.0f, 0.0f)); ImGui::SameLine();
+						ImGui::Dummy(ImVec2(ImGui::GetWindowWidth() / 2 - 50.0f, 0.0f)); ImGui::SameLine();
 
 						if (ImGui::Button("Add Component"))
 						{
 							ImGui::OpenPopup("Add Component");
-							ImGui::SetNextWindowSize(ImVec2(200.0f, 200.0f));
-						}
-
-						ImGui::SameLine(250.0f);
-
-						if (ImGui::Button("Remove Component"))
-						{
-
 						}
 
 						// Display Add Component Popup

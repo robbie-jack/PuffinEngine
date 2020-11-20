@@ -363,6 +363,7 @@ namespace Puffin
 		public:
 			std::set<Entity> entities;
 			std::shared_ptr<World> world;
+			Entity entityToDelete;
 		};
 
 		//////////////////////////////////////////////////
