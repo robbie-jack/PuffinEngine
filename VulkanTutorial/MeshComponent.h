@@ -14,6 +14,7 @@
 #include <array>
 
 #include "FrameBufferAttachment.h"
+#include "BaseComponent.h"
 
 namespace Puffin
 {
@@ -156,7 +157,7 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		struct MeshComponent
+		struct MeshComponent : public BaseComponent
 		{
 			// Mesh Data
 			MeshMatrices matrices;

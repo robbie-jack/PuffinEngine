@@ -27,6 +27,35 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 
 	float prevFov = camera.fov;
 
+	for (ECS::Entity entity : entities)
+	{
+		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+
+		// Initialise any new components with default cube mesh
+		if (comp.flag_created)
+		{
+			InitMesh(entity, "models\\cube.obj", "textures\\cube.png");
+			comp.flag_created = false;
+			recreateSwapChain = true;
+		}
+
+		// Recreate any updated meshes
+		if (comp.flag_recreate)
+		{
+			InitMesh(entity, comp.model_path, comp.texture_path);
+			comp.flag_recreate = false;
+			recreateSwapChain = true;
+		}
+
+		// Delete flagged components
+		if (comp.flag_deleted)
+		{
+			CleanupMeshComponent(comp);
+			world->RemoveComponent<MeshComponent>(entity);
+			recreateSwapChain = true;
+		}
+	}
+
 	bool running = UIManager->DrawUI(dt, InputManager);
 	DrawFrame(UIManager, dt);
 
@@ -176,9 +205,12 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 
 	InitMesh(1, "models\\chalet.obj", "textures\\chalet.jpg");
 	InitMesh(2, "models\\space_engineer.obj", "textures\\space_engineer.jpg");
-	InitMeshCube(3, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
-	InitMeshCube(4); //Initialize Components with default cube mesh
-	InitMeshCube(5);
+	//InitMeshCube(3, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
+	//InitMeshCube(4); //Initialize Components with default cube mesh
+	//InitMeshCube(5);
+	InitMesh(3, "models\\cube.obj", "textures\\cube.png");
+	InitMesh(4, "models\\cube.obj", "textures\\cube.png");
+	InitMesh(5, "models\\cube.obj", "textures\\cube.png");
 
 	//CreateUniformBuffers();
 	CreateLightBuffers();
@@ -2100,10 +2132,10 @@ void VulkanRenderer::DrawFrame(UI::UIManager* UIManager, float delta_time)
 
 	if (UIManager->GetWindowViewport()->GetViewportSize().x != (float)offscreenExtent.width 
 		|| UIManager->GetWindowViewport()->GetViewportSize().y != (float)offscreenExtent.height
-		|| newMeshAdded)
+		|| recreateSwapChain)
 	{
 		RecreateSwapChain(UIManager);
-		newMeshAdded = false;
+		recreateSwapChain = false;
 	}
 
 	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
@@ -2193,13 +2225,6 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	for (ECS::Entity entity : entities)
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
-
-		// Init any new components
-		if (comp.vertices.empty())
-		{
-			InitMeshCube(entity);
-			newMeshAdded = true;
-		}
 
 		MeshMatrices matrice = {};
 
@@ -2373,10 +2398,11 @@ void VulkanRenderer::Cleanup()
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
 		CleanupMeshComponent(comp);
+
+		world->RemoveComponent<MeshComponent>(entity);
 	}
 
-	//entities.clear();
-	//world.reset();
+	entities.clear();
 
 	// Cleanup Textures
 	CleanupFrameBufferAttachment(cube_texture);

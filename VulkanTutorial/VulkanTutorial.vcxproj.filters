@@ -176,5 +176,8 @@
     <ClInclude Include="imgui\imfilebrowser.h">
       <Filter>ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="BaseComponent.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

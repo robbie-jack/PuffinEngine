@@ -47,11 +47,11 @@ namespace Puffin
 			ECSWorld.AddComponent<Rendering::MeshComponent>(entity);
 		}
 
-		ECSWorld.GetComponent<TransformComponent>(1) = { Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		ECSWorld.GetComponent<TransformComponent>(2) = { Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		ECSWorld.GetComponent<TransformComponent>(3) = { Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		ECSWorld.GetComponent<TransformComponent>(4) = { Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
-		ECSWorld.GetComponent<TransformComponent>(5) = { Vector3(0.0f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		ECSWorld.GetComponent<TransformComponent>(1) = { false, false, false, Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		ECSWorld.GetComponent<TransformComponent>(2) = { false, false, false, Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		ECSWorld.GetComponent<TransformComponent>(3) = { false, false, false, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		ECSWorld.GetComponent<TransformComponent>(4) = { false, false, false, Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
+		ECSWorld.GetComponent<TransformComponent>(5) = { false, false, false, Vector3(0.0f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 
 		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(3);
 		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(5);

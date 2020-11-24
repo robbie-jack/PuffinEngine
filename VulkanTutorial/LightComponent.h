@@ -9,6 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
+#include "BaseComponent.h"
 
 namespace Puffin
 {
@@ -23,7 +24,7 @@ namespace Puffin
 			alignas(4) int shininess;
 		};
 
-		struct LightComponent
+		struct LightComponent : public BaseComponent
 		{
 			LightBufferObject uniformBuffer;
 			std::vector<VkBuffer> buffers;

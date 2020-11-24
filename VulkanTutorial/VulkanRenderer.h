@@ -172,7 +172,7 @@ namespace Puffin
 
 			bool framebufferResized = false;
 
-			bool newMeshAdded = false;
+			bool recreateSwapChain = false;
 
 			const int WIDTH = 1280;
 			const int HEIGHT = 720;

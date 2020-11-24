@@ -73,7 +73,9 @@ namespace Puffin
 							{
 								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-								if (ImGui::Button("X"))
+								ImGui::Button("X");
+
+								if (ImGui::IsItemActivated())
 								{
 									world->RemoveComponent<TransformComponent>(entity);
 								}
@@ -109,12 +111,14 @@ namespace Puffin
 							{
 								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-								if (ImGui::Button("X"))
-								{
-									world->RemoveComponent<Rendering::MeshComponent>(entity);
-								}
-
 								Rendering::MeshComponent& mesh = world->GetComponent<Rendering::MeshComponent>(entity);
+
+								ImGui::Button("X");
+
+								if (ImGui::IsItemClicked())
+								{
+									mesh.flag_deleted = true;
+								}
 
 								ImGui::Text("Model Path:"); ImGui::SameLine(100.0f);
 								if (ImGui::Selectable(mesh.model_path.c_str(), false))
@@ -126,11 +130,9 @@ namespace Puffin
 								if (fileDialog->HasSelected() && modelSelected)
 								{
 									mesh.model_path = fileDialog->GetSelected().string();
+									mesh.flag_recreate = true;
 									modelSelected = false;
 									fileDialog->ClearSelected();
-
-									//IO::LoadMesh(mesh, mesh.model_path);
-									
 								}
 
 								ImGui::Text("Texture Path:"); ImGui::SameLine(100.0f);
@@ -143,6 +145,7 @@ namespace Puffin
 								if (fileDialog->HasSelected() && textureSelected)
 								{
 									mesh.texture_path = fileDialog->GetSelected().string();
+									mesh.flag_recreate = true;
 									textureSelected = false;
 									fileDialog->ClearSelected();
 								}
@@ -156,9 +159,13 @@ namespace Puffin
 							{
 								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-								if (ImGui::Button("X"))
+								Physics::ReactPhysicsComponent& comp = world->GetComponent<Physics::ReactPhysicsComponent>(entity);
+
+								ImGui::Button("X");
+
+								if (ImGui::IsItemClicked())
 								{
-									world->RemoveComponent<Physics::ReactPhysicsComponent>(entity);
+									comp.flag_deleted = true;
 								}
 							}
 						}
@@ -178,19 +185,27 @@ namespace Puffin
 							if (ImGui::Selectable("Transform Component"))
 							{
 								if (!world->HasComponent<TransformComponent>(entity))
+								{
 									world->AddComponent<TransformComponent>(entity);
+								}
 							}
 
 							if (ImGui::Selectable("Mesh Component"))
 							{
 								if (!world->HasComponent<Rendering::MeshComponent>(entity))
-									world->AddComponent<Rendering::MeshComponent>(entity);
+								{
+									Rendering::MeshComponent& comp = world->AddComponent<Rendering::MeshComponent>(entity);
+									comp.flag_created = true;
+								}
 							}
 
 							if (ImGui::Selectable("Physics Component"))
 							{
 								if (!world->HasComponent<Physics::ReactPhysicsComponent>(entity))
-									world->AddComponent<Physics::ReactPhysicsComponent>(entity);
+								{
+									Physics::ReactPhysicsComponent& comp = world->AddComponent<Physics::ReactPhysicsComponent>(entity);
+									comp.flag_created = true;
+								}
 							}
 
 							ImGui::EndPopup();
