@@ -51,10 +51,17 @@ namespace Puffin
 				ReactPhysicsComponent& comp = world->GetComponent<ReactPhysicsComponent>(entity);
 
 				// Initialise any new components
-				if (comp.body == nullptr)
+				if (comp.flag_created)
 				{
 					InitComponent(entity, BodyType::STATIC, transformComp.position);
+					comp.flag_created = false;
 				}
+
+				// Re-initialse components
+				/*if (comp.flag_recreate)
+				{
+
+				}*/
 
 				// Get current transform from dynamics world
 				rp3d::Transform currTransform = comp.body->getTransform();
@@ -68,6 +75,13 @@ namespace Puffin
 
 				// Set previous transform to current transform for this frame
 				comp.prevTransform = currTransform;
+
+				// Delete marked components
+				if (comp.flag_deleted || world->IsDeleted(entity))
+				{
+					physicsWorld->destroyRigidBody(comp.body);
+					world->RemoveComponent<ReactPhysicsComponent>(entity);
+				}
 			}
 
 			return true;

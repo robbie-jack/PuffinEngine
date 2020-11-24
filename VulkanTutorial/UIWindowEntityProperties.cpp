@@ -120,6 +120,7 @@ namespace Puffin
 									mesh.flag_deleted = true;
 								}
 
+								// Change Model Path
 								ImGui::Text("Model Path:"); ImGui::SameLine(100.0f);
 								if (ImGui::Selectable(mesh.model_path.c_str(), false))
 								{
@@ -135,6 +136,7 @@ namespace Puffin
 									fileDialog->ClearSelected();
 								}
 
+								// Change Texture Path
 								ImGui::Text("Texture Path:"); ImGui::SameLine(100.0f);
 								if (ImGui::Selectable(mesh.texture_path.c_str(), false))
 								{

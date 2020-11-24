@@ -27,6 +27,10 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 
 	float prevFov = camera.fov;
 
+	// Draw ImGui Windows
+	bool running = UIManager->DrawUI(dt, InputManager);
+
+	// Initialise/Recreate/Delete marked components
 	for (ECS::Entity entity : entities)
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
@@ -48,7 +52,7 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 		}
 
 		// Delete flagged components
-		if (comp.flag_deleted)
+		if (comp.flag_deleted || world->IsDeleted(entity))
 		{
 			CleanupMeshComponent(comp);
 			world->RemoveComponent<MeshComponent>(entity);
@@ -56,7 +60,7 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 		}
 	}
 
-	bool running = UIManager->DrawUI(dt, InputManager);
+	// Draw Frame
 	DrawFrame(UIManager, dt);
 
 	// Recalculate Perspective if FOV changes

@@ -39,6 +39,7 @@ namespace Puffin
 				{
 					availableEntities.push(entity);
 					entityNames[entity] = "";
+					entityDeletionFlags[entity] = false;
 				}
 			}
 
@@ -74,6 +75,7 @@ namespace Puffin
 				// Reset signature for this entity
 				entitySignatures[entity].reset();
 				entityNames[entity] = "";
+				entityDeletionFlags[entity] = false;
 
 				activeEntities.erase(entity);
 
@@ -114,6 +116,21 @@ namespace Puffin
 				return entitySignatures[entity];
 			}
 
+			void MarkToDelete(Entity entity)
+			{
+				assert(entity < MAX_ENTITIES && "Entity out of range");
+
+				// Mark this entity for deletion so all its component can be cleaned up by the relevant systems
+				entityDeletionFlags[entity] = true;
+			}
+
+			bool IsDeleted(Entity entity)
+			{
+				assert(entity < MAX_ENTITIES && "Entity out of range");
+
+				return entityDeletionFlags[entity];
+			}
+
 			std::set<Entity> GetActiveEntities()
 			{
 				return activeEntities;
@@ -125,6 +142,7 @@ namespace Puffin
 			std::set<Entity> activeEntities;
 			std::array<std::string, MAX_ENTITIES> entityNames;
 			std::array<Signature, MAX_ENTITIES> entitySignatures;
+			std::array<bool, MAX_ENTITIES> entityDeletionFlags;
 
 			uint32_t activeEntityCount;
 		};
@@ -195,7 +213,7 @@ namespace Puffin
 
 			ComponentT& GetComponent(Entity entity)
 			{
-				assert(entityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Retrieving non-existent component.");
+				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Retrieving non-existent component.");
 
 				// Return reference to component
 				return componentArray[entityToIndexMap[entity]];
@@ -464,6 +482,18 @@ namespace Puffin
 				systemManager = std::make_unique<SystemManager>();
 			}
 
+			void Update()
+			{
+				// Remove all entities marked for deletion
+				for (auto entity : entityManager->GetActiveEntities())
+				{
+					if (IsDeleted(entity))
+					{
+						DestroyEntity(entity);
+					}
+				}
+			}
+
 			void Cleanup()
 			{
 				for (auto entity : entityManager->GetActiveEntities())
@@ -495,11 +525,6 @@ namespace Puffin
 				systemManager->EntityDestroyed(entity);
 			}
 
-			std::set<Entity> GetActiveEntities()
-			{
-				return entityManager->GetActiveEntities();
-			}
-
 			void SetEntityName(Entity entity, std::string name)
 			{
 				entityManager->SetName(entity, name);
@@ -508,6 +533,21 @@ namespace Puffin
 			std::string GetEntityName(Entity entity)
 			{
 				return entityManager->GetName(entity);
+			}
+
+			void MarkToDelete(Entity entity)
+			{
+				entityManager->MarkToDelete(entity);
+			}
+
+			bool IsDeleted(Entity entity)
+			{
+				return entityManager->IsDeleted(entity);
+			}
+
+			std::set<Entity> GetActiveEntities()
+			{
+				return entityManager->GetActiveEntities();
 			}
 
 			// Component Methods
@@ -550,6 +590,7 @@ namespace Puffin
 
 				auto signature = entityManager->GetSignature(entity);
 				signature.set(componentManager->GetComponentType<ComponentT>(), false);
+				entityManager->SetSignature(entity, signature);
 
 				systemManager->EntitySignatureChanged(entity, signature);
 			}

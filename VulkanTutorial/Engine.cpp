@@ -73,8 +73,10 @@ namespace Puffin
 			std::chrono::duration<float> duration = currentTime - lastTime;
 			float delta_time = duration.count();
 
-			physicsSystem->Update(delta_time);
 			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
+			physicsSystem->Update(delta_time);
+
+			ECSWorld.Update();
 		}
 
 		physicsSystem->Stop();

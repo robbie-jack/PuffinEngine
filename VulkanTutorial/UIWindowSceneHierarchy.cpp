@@ -1,5 +1,7 @@
 #include "UIWindowSceneHierarchy.h"
 #include "TransformComponent.h"
+#include "MeshComponent.h"
+#include "ReactPhysicsComponent.h"
 
 namespace Puffin
 {
@@ -34,7 +36,7 @@ namespace Puffin
 					if (ImGui::Button("Destroy Entity"))
 					{
 						windowProperties->SetEntity(ECS::INVALID_ENTITY);
-						world->DestroyEntity(selectedEntity);
+						world->MarkToDelete(selectedEntity);
 					}
 
 					//List All Entities and their ID/Name
