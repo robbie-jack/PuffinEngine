@@ -13,37 +13,38 @@ namespace Puffin
 			// Define Physics World Settings
 			rp3d::PhysicsWorld::WorldSettings settings;
 			settings.defaultPositionSolverNbIterations = 20;
-			settings.isSleepingEnabled = false;
+			settings.defaultVelocitySolverNbIterations = 8;
+			settings.isSleepingEnabled = true;
 			settings.gravity = rp3d::Vector3(0.0f, -9.8f, 0.0f);
 
 			// Initialize Physics World
 			physicsWorld = physicsCommon.createPhysicsWorld(settings);
 
-			timeSinceLastUpdate = 0.0f;
+			accumulatedTime = 0.0f;
 
 			TransformComponent& comp1 = world->GetComponent<TransformComponent>(3);
 			TransformComponent& comp2 = world->GetComponent<TransformComponent>(5);
 
 			InitComponent(3, rp3d::BodyType::DYNAMIC, comp1.position);
-			InitComponent(5, rp3d::BodyType::STATIC, comp2.position);
+			InitComponent(5, rp3d::BodyType::KINEMATIC, comp2.position);
 		}
 
 		bool ReactPhysicsSystem::Update(float dt)
 		{
 			// Add Frame Time onto timeSinceLastUpdate value
-			timeSinceLastUpdate += dt;
+			accumulatedTime += dt;
 
-			// Update Physics World when timeStep is exceeded
-			if (timeSinceLastUpdate >= timeStep)
+			// Update Physics World while timeStep is exceeded
+			while (accumulatedTime >= timeStep)
 			{
 				// Update Physics world with fixed time step
 				physicsWorld->update(timeStep);
 
 				// Decrease time since last update
-				timeSinceLastUpdate -= timeStep;
+				accumulatedTime -= timeStep;
 			}
 
-			rp3d::decimal factor = timeSinceLastUpdate / timeStep;
+			rp3d::decimal factor = accumulatedTime / timeStep;
 
 			for (ECS::Entity entity : entities)
 			{

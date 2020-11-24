@@ -23,7 +23,7 @@ namespace Puffin
 		private:
 
 			const float timeStep = 1.0f / 60.0f;
-			float timeSinceLastUpdate;
+			float accumulatedTime;
 
 			rp3d::PhysicsCommon physicsCommon;
 			rp3d::PhysicsWorld* physicsWorld;
