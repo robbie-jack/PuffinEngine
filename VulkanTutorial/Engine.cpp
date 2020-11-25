@@ -24,13 +24,13 @@ namespace Puffin
 		UIManager.SetWorld(&ECSWorld);
 
 		// Systems
-		std::shared_ptr<Physics::ReactPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::ReactPhysicsSystem>();
-		std::shared_ptr<Physics::BulletPhysicsSystem> bulletPhysicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
+		//std::shared_ptr<Physics::ReactPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::ReactPhysicsSystem>();
+		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
 		std::shared_ptr<Rendering::VulkanRenderer> renderSystem = ECSWorld.RegisterSystem<Rendering::VulkanRenderer>();
 
 		ECSWorld.RegisterComponent<TransformComponent>();
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
-		ECSWorld.RegisterComponent<Physics::ReactPhysicsComponent>();
+		//ECSWorld.RegisterComponent<Physics::ReactPhysicsComponent>();
 		ECSWorld.RegisterComponent<Physics::BulletPhysicsComponent>();
 
 		ECS::Signature renderSignature;
@@ -38,15 +38,15 @@ namespace Puffin
 		renderSignature.set(ECSWorld.GetComponentType<Rendering::MeshComponent>());
 		ECSWorld.SetSystemSignature<Rendering::VulkanRenderer>(renderSignature);
 
-		ECS::Signature physicsSignature;
+		/*ECS::Signature physicsSignature;
 		physicsSignature.set(ECSWorld.GetComponentType<TransformComponent>());
 		physicsSignature.set(ECSWorld.GetComponentType<Physics::ReactPhysicsComponent>());
-		ECSWorld.SetSystemSignature<Physics::ReactPhysicsSystem>(physicsSignature);
+		ECSWorld.SetSystemSignature<Physics::ReactPhysicsSystem>(physicsSignature);*/
 
-		ECS::Signature bulletPhysicsSignature;
-		bulletPhysicsSignature.set(ECSWorld.GetComponentType<TransformComponent>());
-		bulletPhysicsSignature.set(ECSWorld.GetComponentType<Physics::BulletPhysicsComponent>());
-		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(bulletPhysicsSignature);
+		ECS::Signature physicsSignature;
+		physicsSignature.set(ECSWorld.GetComponentType<TransformComponent>());
+		physicsSignature.set(ECSWorld.GetComponentType<Physics::BulletPhysicsComponent>());
+		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(physicsSignature);
 
 		for (int i = 0; i < 5; i++)
 		{
@@ -59,10 +59,10 @@ namespace Puffin
 		ECSWorld.GetComponent<TransformComponent>(2) = { false, false, false, Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		ECSWorld.GetComponent<TransformComponent>(3) = { false, false, false, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		ECSWorld.GetComponent<TransformComponent>(4) = { false, false, false, Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
-		ECSWorld.GetComponent<TransformComponent>(5) = { false, false, false, Vector3(0.0f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		ECSWorld.GetComponent<TransformComponent>(5) = { false, false, false, Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 
-		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(3);
-		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(5);
+		/*ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(3);
+		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(5);*/
 
 		ECSWorld.AddComponent<Physics::BulletPhysicsComponent>(3);
 		ECSWorld.AddComponent<Physics::BulletPhysicsComponent>(5);
@@ -73,7 +73,7 @@ namespace Puffin
 		renderSystem->Init(&UIManager, &InputManager);
 
 		physicsSystem->Start();
-		bulletPhysicsSystem->Start();
+		//bulletPhysicsSystem->Start();
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -86,17 +86,17 @@ namespace Puffin
 			float delta_time = duration.count();
 
 			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
-			//physicsSystem->Update(delta_time);
-			bulletPhysicsSystem->Update(delta_time);
+			physicsSystem->Update(delta_time);
+			//bulletPhysicsSystem->Update(delta_time);
 
 			ECSWorld.Update();
 		}
 
 		physicsSystem->Stop();
-		bulletPhysicsSystem->Stop();
+		//bulletPhysicsSystem->Stop();
 
 		physicsSystem.reset();
-		bulletPhysicsSystem.reset();
+		//bulletPhysicsSystem.reset();
 		renderSystem.reset();
 
 		UIManager.Cleanup();

@@ -54,7 +54,7 @@ namespace Puffin
 				// Initialise any new components
 				if (comp.flag_created)
 				{
-					InitComponent(entity, BodyType::STATIC, transformComp.position);
+					InitComponent(entity, rp3d::BodyType::STATIC, transformComp.position);
 					comp.flag_created = false;
 				}
 

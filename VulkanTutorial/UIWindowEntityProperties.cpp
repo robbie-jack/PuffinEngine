@@ -25,7 +25,7 @@ namespace Puffin
 				}
 				else
 				{
-					if (entity != 0)
+					if (entity != ECS::INVALID_ENTITY)
 					{
 						ImGui::Dummy(ImVec2(0.0f, 5.0f));
 						ImGui::Text(""); ImGui::SameLine(0.0f);
@@ -154,7 +154,7 @@ namespace Puffin
 							}
 						}
 
-						if (world->HasComponent<Physics::ReactPhysicsComponent>(entity))
+						/*if (world->HasComponent<Physics::ReactPhysicsComponent>(entity))
 						{
 							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 							if (ImGui::CollapsingHeader("Physics Component", flags))
@@ -170,7 +170,7 @@ namespace Puffin
 									comp.flag_deleted = true;
 								}
 							}
-						}
+						}*/
 
 						ImGui::ListBoxFooter();
 

@@ -1,5 +1,6 @@
 #include "BulletPhysicsSystem.h"
 #include "TransformComponent.h"
+#include "VectorConversion.h"
 
 namespace Puffin
 {
@@ -14,7 +15,7 @@ namespace Puffin
 			solver = new btSequentialImpulseConstraintSolver;
 			physicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphaseInterface, solver, collisionConfig);
 
-			physicsWorld->setGravity(btVector3(0, -9.8, 0));
+			physicsWorld->setGravity(btVector3(0, -9.81f, 0));
 
 			TransformComponent& comp1 = world->GetComponent<TransformComponent>(3);
 			TransformComponent& comp2 = world->GetComponent<TransformComponent>(5);
@@ -76,21 +77,23 @@ namespace Puffin
 				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
 				BulletPhysicsComponent& physicsComp = world->GetComponent<BulletPhysicsComponent>(entity);
 
-				btCollisionObject* obj = physicsWorld->getCollisionObjectArray()[i];
-				btRigidBody* body = btRigidBody::upcast(obj);
 				btTransform transform;
 
-				if (body && body->getMotionState())
+				if (physicsComp.body && physicsComp.body->getMotionState())
 				{
-					body->getMotionState()->getWorldTransform(transform);
-				}
-				else
-				{
-					transform = obj->getWorldTransform();
+					physicsComp.body->getMotionState()->getWorldTransform(transform);
 				}
 
+				// Update Transform Component Poisiton/Rotation
 				transformComp.position = transform.getOrigin();
-				//transformComp.rotation = transform.getRotation();
+				transform.getRotation().getEulerZYX(transformComp.rotation.z, transformComp.rotation.y, transformComp.rotation.x);
+
+				float PI = 3.14159;
+
+				// Convert stored rotation values from radians to degrees
+				transformComp.rotation.x = transformComp.rotation.x * 180 / PI;
+				transformComp.rotation.y = transformComp.rotation.y * 180 / PI;
+				transformComp.rotation.z = transformComp.rotation.z * 180 / PI;
 
 				i++;
 			}

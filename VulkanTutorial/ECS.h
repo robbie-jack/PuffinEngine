@@ -332,6 +332,8 @@ namespace Puffin
 			template<typename ComponentT>
 			bool HasComponent(Entity entity)
 			{
+				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+
 				// Return true of array has component for this entity
 				return GetComponentArray<ComponentT>()->HasComponent(entity);
 			}
