@@ -1,7 +1,8 @@
 #include "UIWindowEntityProperties.h"
 
 #include "TransformComponent.h"
-#include "ReactPhysicsComponent.h"
+//#include "ReactPhysicsComponent.h"
+#include "BulletPhysicsComponent.h"
 #include "MeshComponent.h"
 
 #include <iostream>
@@ -159,14 +160,14 @@ namespace Puffin
 							}
 						}
 
-						/*if (world->HasComponent<Physics::ReactPhysicsComponent>(entity))
+						if (world->HasComponent<Physics::BulletPhysicsComponent>(entity))
 						{
 							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 							if (ImGui::CollapsingHeader("Physics Component", flags))
 							{
 								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-								Physics::ReactPhysicsComponent& comp = world->GetComponent<Physics::ReactPhysicsComponent>(entity);
+								Physics::BulletPhysicsComponent& comp = world->GetComponent<Physics::BulletPhysicsComponent>(entity);
 
 								ImGui::Button("X");
 
@@ -175,7 +176,7 @@ namespace Puffin
 									comp.flag_deleted = true;
 								}
 							}
-						}*/
+						}
 
 						ImGui::ListBoxFooter();
 
@@ -208,9 +209,9 @@ namespace Puffin
 
 							if (ImGui::Selectable("Physics Component"))
 							{
-								if (!world->HasComponent<Physics::ReactPhysicsComponent>(entity))
+								if (!world->HasComponent<Physics::BulletPhysicsComponent>(entity))
 								{
-									Physics::ReactPhysicsComponent& comp = world->AddComponent<Physics::ReactPhysicsComponent>(entity);
+									Physics::BulletPhysicsComponent& comp = world->AddComponent<Physics::BulletPhysicsComponent>(entity);
 									comp.flag_created = true;
 								}
 							}
