@@ -63,9 +63,14 @@ namespace Puffin
 						// Display Transform Component - If One Exists
 						if (world->HasComponent<TransformComponent>(entity))
 						{
+							float PI = 3.14159;
+
 							TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 							float position[3] = { transform.position.x, transform.position.y, transform.position.z };
-							float rotation[3] = { transform.rotation.x, transform.rotation.y, transform.rotation.z };
+							float rotation[3] = { 
+								transform.rotation.x * 180 / PI, 
+								transform.rotation.y * 180 / PI, 
+								transform.rotation.z * 180 / PI };
 							float scale[3] = { transform.scale.x, transform.scale.y, transform.scale.z };
 
 							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
@@ -89,9 +94,9 @@ namespace Puffin
 
 								if (ImGui::DragFloat3("Rotation", rotation, 0.1f))
 								{
-									transform.rotation.x = rotation[0];
-									transform.rotation.y = rotation[1];
-									transform.rotation.z = rotation[2];
+									transform.rotation.x = rotation[0] * PI / 180;
+									transform.rotation.y = rotation[1] * PI / 180;
+									transform.rotation.z = rotation[2] * PI / 180;
 								}
 
 								if (ImGui::DragFloat3("Scale", scale, 0.1f))

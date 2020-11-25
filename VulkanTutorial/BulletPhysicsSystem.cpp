@@ -88,13 +88,6 @@ namespace Puffin
 				transformComp.position = transform.getOrigin();
 				transform.getRotation().getEulerZYX(transformComp.rotation.z, transformComp.rotation.y, transformComp.rotation.x);
 
-				float PI = 3.14159;
-
-				// Convert stored rotation values from radians to degrees
-				transformComp.rotation.x = transformComp.rotation.x * 180 / PI;
-				transformComp.rotation.y = transformComp.rotation.y * 180 / PI;
-				transformComp.rotation.z = transformComp.rotation.z * 180 / PI;
-
 				i++;
 			}
 		}

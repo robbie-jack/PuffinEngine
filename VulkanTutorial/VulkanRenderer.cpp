@@ -2334,9 +2334,9 @@ glm::mat4 VulkanRenderer::BuildMeshTransform(TransformComponent transform)
 	glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)transform.position);
 
 	// Set Rotation
-	model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	model_transform = glm::rotate(model_transform, transform.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	model_transform = glm::rotate(model_transform, transform.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	model_transform = glm::rotate(model_transform, transform.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	// Set Scale
 	model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);
