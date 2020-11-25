@@ -38,6 +38,9 @@
     <Filter Include="ECS">
       <UniqueIdentifier>{5bec5de3-2573-4ab0-ac63-591b832acd07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\BulletPhysics">
+      <UniqueIdentifier>{5b0f9a15-19f0-4962-81dd-15fdd5f5e06c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VulkanRenderer.cpp">
@@ -92,6 +95,9 @@
     </ClCompile>
     <ClCompile Include="UIWindowSceneHierarchy.cpp">
       <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="BulletPhysicsSystem.cpp">
+      <Filter>Physics\BulletPhysics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +184,12 @@
     </ClInclude>
     <ClInclude Include="BaseComponent.h">
       <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="BulletPhysicsSystem.h">
+      <Filter>Physics\BulletPhysics</Filter>
+    </ClInclude>
+    <ClInclude Include="BulletPhysicsComponent.h">
+      <Filter>Physics\BulletPhysics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

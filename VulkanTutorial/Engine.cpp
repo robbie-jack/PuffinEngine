@@ -5,6 +5,7 @@
 #include "TransformComponent.h"
 #include "VulkanRenderer.h"
 #include "ReactPhysicsSystem.h"
+#include "BulletPhysicsSystem.h"
 
 #include <chrono>
 
@@ -24,11 +25,13 @@ namespace Puffin
 
 		// Systems
 		std::shared_ptr<Physics::ReactPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::ReactPhysicsSystem>();
+		std::shared_ptr<Physics::BulletPhysicsSystem> bulletPhysicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
 		std::shared_ptr<Rendering::VulkanRenderer> renderSystem = ECSWorld.RegisterSystem<Rendering::VulkanRenderer>();
 
 		ECSWorld.RegisterComponent<TransformComponent>();
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
 		ECSWorld.RegisterComponent<Physics::ReactPhysicsComponent>();
+		ECSWorld.RegisterComponent<Physics::BulletPhysicsComponent>();
 
 		ECS::Signature renderSignature;
 		renderSignature.set(ECSWorld.GetComponentType<TransformComponent>());
@@ -39,6 +42,11 @@ namespace Puffin
 		physicsSignature.set(ECSWorld.GetComponentType<TransformComponent>());
 		physicsSignature.set(ECSWorld.GetComponentType<Physics::ReactPhysicsComponent>());
 		ECSWorld.SetSystemSignature<Physics::ReactPhysicsSystem>(physicsSignature);
+
+		ECS::Signature bulletPhysicsSignature;
+		bulletPhysicsSignature.set(ECSWorld.GetComponentType<TransformComponent>());
+		bulletPhysicsSignature.set(ECSWorld.GetComponentType<Physics::BulletPhysicsComponent>());
+		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(bulletPhysicsSignature);
 
 		for (int i = 0; i < 5; i++)
 		{
@@ -56,12 +64,16 @@ namespace Puffin
 		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(3);
 		ECSWorld.AddComponent<Physics::ReactPhysicsComponent>(5);
 
+		ECSWorld.AddComponent<Physics::BulletPhysicsComponent>(3);
+		ECSWorld.AddComponent<Physics::BulletPhysicsComponent>(5);
+
 		running = true;
 		playState = PlayState::STOPPED;
 
 		renderSystem->Init(&UIManager, &InputManager);
 
 		physicsSystem->Start();
+		bulletPhysicsSystem->Start();
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -74,14 +86,17 @@ namespace Puffin
 			float delta_time = duration.count();
 
 			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
-			physicsSystem->Update(delta_time);
+			//physicsSystem->Update(delta_time);
+			bulletPhysicsSystem->Update(delta_time);
 
 			ECSWorld.Update();
 		}
 
 		physicsSystem->Stop();
+		bulletPhysicsSystem->Stop();
 
 		physicsSystem.reset();
+		bulletPhysicsSystem.reset();
 		renderSystem.reset();
 
 		UIManager.Cleanup();

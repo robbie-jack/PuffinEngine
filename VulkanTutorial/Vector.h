@@ -1,5 +1,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "reactphysics3d/reactphysics3d.h"
+#include "btBulletDynamicsCommon.h"
 #include <math.h>
 
 namespace Puffin
@@ -242,6 +243,13 @@ namespace Puffin
 			return vec;
 		}
 
+		operator btVector3() const
+		{
+			btVector3 vec;
+			vec.setValue(x, y, z);
+			return vec;
+		}
+
 		// Operator=
 		void operator=(glm::vec3 vec)
 		{
@@ -255,6 +263,13 @@ namespace Puffin
 			x = vec.x;
 			y = vec.y;
 			z = vec.z;
+		}
+
+		void operator=(btVector3 vec)
+		{
+			x = vec.getX();
+			y = vec.getY();
+			z = vec.getZ();
 		}
 
 		// Operator+=
@@ -272,6 +287,13 @@ namespace Puffin
 			z += vec.z;
 		}
 
+		void operator+=(btVector3 vec)
+		{
+			x += vec.getX();
+			y += vec.getY();
+			z += vec.getZ();
+		}
+
 		// Operator-=
 		void operator-=(glm::vec3 vec)
 		{
@@ -287,6 +309,13 @@ namespace Puffin
 			z -= vec.z;
 		}
 
+		void operator-=(btVector3 vec)
+		{
+			x -= vec.getX();
+			y -= vec.getY();
+			z -= vec.getZ();
+		}
+
 		// Operator+
 		Vector3 operator+(Vector3 vec)
 		{
@@ -300,18 +329,27 @@ namespace Puffin
 		Vector3 operator+ (glm::vec3 vec)
 		{
 			Vector3 vector;
-			vector = x + vec.x;
-			vector = y + vec.y;
-			vector = z + vec.z;
+			vector.x = x + vec.x;
+			vector.y = y + vec.y;
+			vector.z = z + vec.z;
 			return vector;
 		}
 
 		Vector3 operator+ (rp3d::Vector3 vec)
 		{
 			Vector3 vector;
-			vector = x + vec.x;
-			vector = y + vec.y;
-			vector = z + vec.z;
+			vector.x = x + vec.x;
+			vector.y = y + vec.y;
+			vector.z = z + vec.z;
+			return vector;
+		}
+
+		Vector3 operator+(btVector3 vec)
+		{
+			Vector3 vector;
+			vector.x = x + vec.getX();
+			vector.y = y + vec.getY();
+			vector.z = z + vec.getZ();
 			return vector;
 		}
 
@@ -340,6 +378,15 @@ namespace Puffin
 			vector = x - vec.x;
 			vector = y - vec.y;
 			vector = z - vec.z;
+			return vector;
+		}
+
+		Vector3 operator-(btVector3 vec)
+		{
+			Vector3 vector;
+			vector.x = x - vec.getX();
+			vector.y = y - vec.getY();
+			vector.z = z - vec.getZ();
 			return vector;
 		}
 
@@ -374,9 +421,6 @@ namespace Puffin
 
 			return vector;
 		}
-
-
-
 	};
 
 	struct Vector3Double
