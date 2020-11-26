@@ -17,9 +17,6 @@
     <Filter Include="Components">
       <UniqueIdentifier>{153ef5b7-8d68-42e8-899b-21c25aa59d9b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Physics\ReactPhysics">
-      <UniqueIdentifier>{fc607478-44e0-492a-ba90-0b083a10b1e8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Types">
       <UniqueIdentifier>{19004f93-de56-4500-a8ca-ce00b4f542de}</UniqueIdentifier>
     </Filter>
@@ -39,7 +36,7 @@
       <UniqueIdentifier>{5bec5de3-2573-4ab0-ac63-591b832acd07}</UniqueIdentifier>
     </Filter>
     <Filter Include="Physics\BulletPhysics">
-      <UniqueIdentifier>{5b0f9a15-19f0-4962-81dd-15fdd5f5e06c}</UniqueIdentifier>
+      <UniqueIdentifier>{fed274dd-404f-4fc4-880a-a16640bb95b8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,9 +45,6 @@
     </ClCompile>
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="ReactPhysicsSystem.cpp">
-      <Filter>Physics\ReactPhysics</Filter>
-    </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>Input</Filter>
     </ClCompile>
@@ -119,12 +113,6 @@
     <ClInclude Include="TransformComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="ReactPhysicsSystem.h">
-      <Filter>Physics\ReactPhysics</Filter>
-    </ClInclude>
-    <ClInclude Include="ReactPhysicsComponent.h">
-      <Filter>Physics\ReactPhysics</Filter>
-    </ClInclude>
     <ClInclude Include="VectorConversion.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -185,10 +173,10 @@
     <ClInclude Include="BaseComponent.h">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="BulletPhysicsSystem.h">
+    <ClInclude Include="BulletPhysicsComponent.h">
       <Filter>Physics\BulletPhysics</Filter>
     </ClInclude>
-    <ClInclude Include="BulletPhysicsComponent.h">
+    <ClInclude Include="BulletPhysicsSystem.h">
       <Filter>Physics\BulletPhysics</Filter>
     </ClInclude>
   </ItemGroup>

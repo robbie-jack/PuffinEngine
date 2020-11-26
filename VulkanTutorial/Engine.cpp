@@ -4,7 +4,6 @@
 
 #include "TransformComponent.h"
 #include "VulkanRenderer.h"
-#include "ReactPhysicsSystem.h"
 #include "BulletPhysicsSystem.h"
 
 #include <chrono>

@@ -1,5 +1,4 @@
 #include <glm/gtc/matrix_transform.hpp>
-#include "reactphysics3d/reactphysics3d.h"
 #include "btBulletDynamicsCommon.h"
 #include <math.h>
 
@@ -35,12 +34,6 @@ namespace Puffin
 			y = vec.y;
 		}
 
-		Vector2(rp3d::Vector2 vec)
-		{
-			x = vec.x;
-			y = vec.y;
-		}
-
 		// Operator Overrides
 
 		// Operator Conversion
@@ -52,22 +45,9 @@ namespace Puffin
 			return vec;
 		}
 
-		operator rp3d::Vector2() const
-		{
-			rp3d::Vector2 vec;
-			vec.x = x;
-			vec.y = y;
-			return vec;
-		}
 
 		// Operator=
 		void operator=(glm::vec2 vec)
-		{
-			x = vec.x;
-			y = vec.y;
-		}
-
-		void operator=(rp3d::Vector2 vec)
 		{
 			x = vec.x;
 			y = vec.y;
@@ -80,20 +60,8 @@ namespace Puffin
 			y += vec.y;
 		}
 
-		void operator+=(rp3d::Vector2 vec)
-		{
-			x += vec.x;
-			y += vec.y;
-		}
-
 		// Operator-=
 		void operator-=(glm::vec2 vec)
-		{
-			x -= vec.x;
-			y -= vec.y;
-		}
-
-		void operator-=(rp3d::Vector2 vec)
 		{
 			x -= vec.x;
 			y -= vec.y;
@@ -116,14 +84,6 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector2 operator+ (rp3d::Vector2 vec)
-		{
-			Vector2 vector;
-			vector = x + vec.x;
-			vector = y + vec.y;
-			return vector;
-		}
-
 		// Operator-
 		Vector2 operator-(Vector2 vec)
 		{
@@ -134,14 +94,6 @@ namespace Puffin
 		}
 
 		Vector2 operator- (glm::vec2 vec)
-		{
-			Vector2 vector;
-			vector = x - vec.x;
-			vector = y - vec.y;
-			return vector;
-		}
-
-		Vector2 operator- (rp3d::Vector2 vec)
 		{
 			Vector2 vector;
 			vector = x - vec.x;
@@ -215,28 +167,12 @@ namespace Puffin
 			z = vec.z;
 		}
 
-		Vector3(rp3d::Vector3 vec)
-		{
-			x = vec.x;
-			y = vec.y;
-			z = vec.z;
-		}
-
 		// Operator Overrides
 
 		// Operator Conversion
 		operator glm::vec3() const
 		{
 			glm::vec3 vec;
-			vec.x = x;
-			vec.y = y;
-			vec.z = z;
-			return vec;
-		}
-
-		operator rp3d::Vector3() const
-		{
-			rp3d::Vector3 vec;
 			vec.x = x;
 			vec.y = y;
 			vec.z = z;
@@ -258,13 +194,6 @@ namespace Puffin
 			z = vec.z;
 		}
 
-		void operator=(rp3d::Vector3 vec)
-		{
-			x = vec.x;
-			y = vec.y;
-			z = vec.z;
-		}
-
 		void operator=(btVector3 vec)
 		{
 			x = vec.getX();
@@ -280,13 +209,6 @@ namespace Puffin
 			z += vec.z;
 		}
 
-		void operator+=(rp3d::Vector3 vec)
-		{
-			x += vec.x;
-			y += vec.y;
-			z += vec.z;
-		}
-
 		void operator+=(btVector3 vec)
 		{
 			x += vec.getX();
@@ -296,13 +218,6 @@ namespace Puffin
 
 		// Operator-=
 		void operator-=(glm::vec3 vec)
-		{
-			x -= vec.x;
-			y -= vec.y;
-			z -= vec.z;
-		}
-
-		void operator-=(rp3d::Vector3 vec)
 		{
 			x -= vec.x;
 			y -= vec.y;
@@ -335,15 +250,6 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator+ (rp3d::Vector3 vec)
-		{
-			Vector3 vector;
-			vector.x = x + vec.x;
-			vector.y = y + vec.y;
-			vector.z = z + vec.z;
-			return vector;
-		}
-
 		Vector3 operator+(btVector3 vec)
 		{
 			Vector3 vector;
@@ -364,15 +270,6 @@ namespace Puffin
 		}
 
 		Vector3 operator- (glm::vec3 vec)
-		{
-			Vector3 vector;
-			vector = x - vec.x;
-			vector = y - vec.y;
-			vector = z - vec.z;
-			return vector;
-		}
-
-		Vector3 operator- (rp3d::Vector3 vec)
 		{
 			Vector3 vector;
 			vector = x - vec.x;
