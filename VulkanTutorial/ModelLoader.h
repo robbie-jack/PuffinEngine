@@ -3,6 +3,10 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <unordered_map>
 
 #include "MeshComponent.h"
@@ -68,6 +72,89 @@ namespace Puffin
 
 			mesh.vertices = vertices;
 			mesh.indices = indices;
+		}
+
+		bool ImportMesh(Rendering::MeshComponent& meshComp, const std::string model_path)
+		{
+			// Create an Instance of the Assimp Importer Class
+			Assimp::Importer importer;
+
+			// Import Model
+			const aiScene* scene = importer.ReadFile(model_path, 
+				aiProcess_CalcTangentSpace		| // Calculate Tangents and Bitangents (Useful for certain shader effects)
+				aiProcess_Triangulate			| // Ensure all faces are triangles
+				aiProcess_JoinIdenticalVertices	| // Ensure all vertices are unique
+				aiProcess_SortByPType);
+
+			// Check if Import Failed
+			if (!scene)
+			{
+				// Import Failed, Return false and print error message
+				std::cout << "failed to import model" << std::endl;
+				return false;
+			}
+
+			// Local vectors for storing model data
+			std::vector<Rendering::Vertex> vertices;
+			std::vector<uint32_t> indices;
+
+			// Retrieve mesh data from scene file
+			for (int i = 0; i < scene->mNumMeshes; i++)
+			{
+				// Get current aiMesh object
+				const aiMesh* mesh = scene->mMeshes[i];
+
+				// Iterate over all imported vertices and fill vertex vector
+				for (int j = 0; j < mesh->mNumVertices; j++)
+				{
+					Rendering::Vertex vertex = {};
+
+					// Get Position
+					vertex.pos =
+					{
+						mesh->mVertices[j].x,
+						mesh->mVertices[j].y,
+						mesh->mVertices[j].z
+					};
+
+					// Get Normal
+					vertex.normal =
+					{
+						mesh->mNormals[j].x,
+						mesh->mNormals[j].y,
+						mesh->mNormals[j].z
+					};
+
+					// Get Tex Coords
+					vertex.texCoord =
+					{
+						mesh->mTextureCoords[j]->x,
+						mesh->mTextureCoords[j]->y
+					};
+
+					vertex.color = { 1.0f, 1.0f, 1.0f };
+
+					vertices.push_back(vertex);
+				}
+
+				// Iterate over faces in mesh object
+				for (int j = 0; j < mesh->mNumFaces; j++)
+				{
+					const aiFace* face = &mesh->mFaces[j];
+
+					// Store all indices of this face
+					for (int k = 0; k < face->mNumIndices; k++)
+					{
+						indices.push_back(face->mIndices[k]);
+					}
+				}
+			}
+
+			meshComp.vertices = vertices;
+			meshComp.indices = indices;
+
+			// Import was successful, return true
+			return true;
 		}
 	}
 }
