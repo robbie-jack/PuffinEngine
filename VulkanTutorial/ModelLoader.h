@@ -74,6 +74,23 @@ namespace Puffin
 			mesh.indices = indices;
 		}
 
+		// Not for use outside ModelLoader
+		void ProcessNode(aiNode* node, std::vector<aiMesh*>* meshes, const aiScene* scene)
+		{
+			// Process all meshes in this node
+			for (int i = 0; i < node->mNumMeshes; i++)
+			{
+				meshes->push_back(scene->mMeshes[node->mMeshes[i]]);
+			}
+
+			// Process all meshes in child nodes
+			for (int i = 0; i < node->mNumChildren; i++)
+			{
+				ProcessNode(node->mChildren[i], meshes, scene);
+			}
+		}
+
+		// Import Mesh to MeshComponent
 		bool ImportMesh(Rendering::MeshComponent& meshComp, const std::string model_path)
 		{
 			// Create an Instance of the Assimp Importer Class
@@ -84,25 +101,36 @@ namespace Puffin
 				aiProcess_CalcTangentSpace		| // Calculate Tangents and Bitangents (Useful for certain shader effects)
 				aiProcess_Triangulate			| // Ensure all faces are triangles
 				aiProcess_JoinIdenticalVertices	| // Ensure all vertices are unique
-				aiProcess_SortByPType);
+				aiProcess_SortByPType			|
+				aiProcess_FlipUVs				|
+				aiProcess_GenNormals);
 
 			// Check if Import Failed
-			if (!scene)
+			if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 			{
 				// Import Failed, Return false and print error message
-				std::cout << "failed to import model" << std::endl;
+				std::cout << "Failed to import model with Error: " << importer.GetErrorString() << std::endl;
 				return false;
 			}
 
 			// Local vectors for storing model data
 			std::vector<Rendering::Vertex> vertices;
 			std::vector<uint32_t> indices;
+			std::vector<aiMesh*> meshes;
+
+			aiNode* root = scene->mRootNode;
+
+			// Process all meshes in root node
+			for (int i = 0; i < root->mNumChildren; i++)
+			{
+				ProcessNode(root->mChildren[i], &meshes, scene);
+			}
 
 			// Retrieve mesh data from scene file
-			for (int i = 0; i < scene->mNumMeshes; i++)
+			for (int i = 0; i < meshes.size(); i++)
 			{
 				// Get current aiMesh object
-				const aiMesh* mesh = scene->mMeshes[i];
+				const aiMesh* mesh = meshes[i];
 
 				// Iterate over all imported vertices and fill vertex vector
 				for (int j = 0; j < mesh->mNumVertices; j++)
@@ -128,8 +156,8 @@ namespace Puffin
 					// Get Tex Coords
 					vertex.texCoord =
 					{
-						mesh->mTextureCoords[j]->x,
-						mesh->mTextureCoords[j]->y
+						mesh->mTextureCoords[0][j].x,
+						mesh->mTextureCoords[0][j].y
 					};
 
 					vertex.color = { 1.0f, 1.0f, 1.0f };
