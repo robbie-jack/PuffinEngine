@@ -97,8 +97,11 @@ namespace Puffin
 			// Get Component for this entity, if it exists
 			BulletPhysicsComponent& comp = world->GetComponent<BulletPhysicsComponent>(entity);
 
+			comp.size = size;
+			comp.mass = mass;
+
 			// Construct Box Shape for Component
-			comp.shape = new btBoxShape(size);
+			comp.shape = new btBoxShape(comp.size);
 
 			// Store shape for potential re-use
 			collisionShapes.push_back(comp.shape);
@@ -109,17 +112,17 @@ namespace Puffin
 			transform.setOrigin(position);
 
 			// Set Body to dynamic if it has any mass
-			bool isDynamic = (mass != 0.0f);
+			bool isDynamic = (comp.mass != 0.0f);
 
 			btVector3 localInertia(0, 0, 0);
 			if (isDynamic)
-				comp.shape->calculateLocalInertia(mass, localInertia);
+				comp.shape->calculateLocalInertia(comp.mass, localInertia);
 
 			// MotionState is used for interpolation and syncing active objects
 			btDefaultMotionState* motionState = new btDefaultMotionState(transform);
 			
 			// Create Rigid Body
-			btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, comp.shape, localInertia);
+			btRigidBody::btRigidBodyConstructionInfo rbInfo(comp.mass, motionState, comp.shape, localInertia);
 			comp.body = new btRigidBody(rbInfo);
 
 			physicsWorld->addRigidBody(comp.body);

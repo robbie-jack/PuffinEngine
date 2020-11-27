@@ -51,24 +51,6 @@
     <ClCompile Include="Vector.h">
       <Filter>Types</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_demo.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_widgets.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_glfw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_vulkan.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="UIManager.cpp">
       <Filter>UI</Filter>
     </ClCompile>
@@ -92,6 +74,24 @@
     </ClCompile>
     <ClCompile Include="BulletPhysicsSystem.cpp">
       <Filter>Physics\BulletPhysics</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_impl_glfw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,15 +124,6 @@
     </ClInclude>
     <ClInclude Include="ProceduralMeshGenerator.h">
       <Filter>Procedural</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_glfw.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_vulkan.h">
-      <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="UIManager.h">
       <Filter>UI</Filter>
@@ -167,9 +158,6 @@
     <ClInclude Include="CameraComponent.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imfilebrowser.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="BaseComponent.h">
       <Filter>ECS</Filter>
     </ClInclude>
@@ -178,6 +166,18 @@
     </ClInclude>
     <ClInclude Include="BulletPhysicsSystem.h">
       <Filter>Physics\BulletPhysics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\imgui\imfilebrowser.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\imgui\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\imgui\imgui_impl_glfw.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\imgui\imgui_impl_vulkan.h">
+      <Filter>ImGui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

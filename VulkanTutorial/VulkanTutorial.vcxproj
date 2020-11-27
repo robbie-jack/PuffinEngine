@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;D:\Libraries\glfw-3.3.2.bin.WIN64\include;D:\Libraries\glm;D:\Libraries\stb-master;D:\Libraries\bullet3-3.06\src;D:\Libraries\assimp-5.0.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;D:\Libraries\bullet3-3.06\src;$(ProjectDir)\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -114,7 +114,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;D:\Libraries\glfw-3.3.2.bin.WIN64\lib-vc2019;D:\Libraries\bullet3-3.06\lib\Debug;D:\Libraries\assimp-5.0.1\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;$(ProjectDir)\lib\glfw;D:\Libraries\bullet3-3.06\lib\Debug;$(ProjectDir)\lib\assimp\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Bullet3Dynamics.lib;Bullet3Collision.lib;Bullet3Common.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
@@ -151,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;D:\Libraries\glfw-3.3.2.bin.WIN64\include;D:\Libraries\glm;D:\Libraries\stb-master;D:\Libraries\bullet3-3.06\src;D:\Libraries\assimp-5.0.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;D:\Libraries\bullet3-3.06\src;$(ProjectDir)\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -164,7 +164,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;D:\Libraries\glfw-3.3.2.bin.WIN64\lib-vc2019;D:\Libraries\bullet3-3.06\lib\Release;D:\Libraries\assimp-5.0.1\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;$(ProjectDir)\lib\glfw;D:\Libraries\bullet3-3.06\lib\Release;$(ProjectDir)\lib\assimp\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Bullet3Dynamics.lib;Bullet3Collision.lib;Bullet3Common.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
@@ -172,13 +172,13 @@
   <ItemGroup>
     <ClCompile Include="BulletPhysicsSystem.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="include\imgui\imgui.cpp" />
+    <ClCompile Include="include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="include\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="UIWindow.cpp" />
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_demo.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -202,15 +202,15 @@
     <ClInclude Include="ECS.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="FrameBufferAttachment.h" />
-    <ClInclude Include="imgui\imfilebrowser.h" />
+    <ClInclude Include="include\imgui\imfilebrowser.h" />
+    <ClInclude Include="include\imgui\imgui.h" />
+    <ClInclude Include="include\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="include\imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="UIWindowEntityProperties.h" />
     <ClInclude Include="UIWindowPerformance.h" />
     <ClInclude Include="UIWindowSettings.h" />
     <ClInclude Include="UIWindowViewport.h" />
     <ClInclude Include="UIWindow.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_impl_glfw.h" />
-    <ClInclude Include="imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="LightComponent.h" />
     <ClInclude Include="ProceduralMeshGenerator.h" />

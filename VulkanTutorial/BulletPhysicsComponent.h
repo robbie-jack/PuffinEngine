@@ -11,6 +11,9 @@ namespace Puffin
 		{
 			btCollisionShape* shape;
 			btRigidBody* body;
+
+			btVector3 size;
+			btScalar mass;
 		};
 	}
 }
