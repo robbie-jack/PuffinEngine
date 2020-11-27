@@ -179,5 +179,6 @@
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h">
       <Filter>ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="ProjectSettings.h" />
   </ItemGroup>
 </Project>

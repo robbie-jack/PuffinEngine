@@ -33,6 +33,7 @@ namespace Puffin
 
 			// Boolean for if window is currently visible
 			bool show;
+			bool firstTime; // Flag to check if this is first time draw function was run
 
 			// Name of window
 			std::string windowName;

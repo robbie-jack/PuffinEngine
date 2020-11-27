@@ -7,6 +7,7 @@ namespace Puffin
 		UIWindow::UIWindow()
 		{
 			show = true;
+			firstTime = true;
 		}
 
 		UIWindow::~UIWindow()

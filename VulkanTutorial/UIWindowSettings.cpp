@@ -6,7 +6,17 @@ namespace Puffin
 	{
 		bool UIWindowSettings::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
-			windowName = "Settings";
+			if (firstTime)
+			{
+				windowName = "Settings";
+
+				// Load Settings from file
+				settings = IO::LoadSettings("projectsettings.xml");
+				InputManager->GetSensitivity() = settings.mouseSensitivity;
+				camera->fov = settings.cameraFov;
+
+				firstTime = false;
+			}
 
 			if (show)
 			{
@@ -18,8 +28,20 @@ namespace Puffin
 				}
 				else
 				{
-					ImGui::SliderFloat("Sensitivity", &InputManager->GetSensitivity(), 0.01f, 0.1f);
-					ImGui::SliderFloat("Field of View", &camera->fov, 30.0f, 120.0f, "%f");
+					if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
+					{
+						InputManager->GetSensitivity() = settings.mouseSensitivity;
+					}
+
+					if (ImGui::SliderFloat("Field of View", &settings.cameraFov, 30.0f, 120.0f, "%f"))
+					{
+						camera->fov = settings.cameraFov;
+					}
+
+					if (ImGui::Button("Save"))
+					{
+						IO::SaveSettings("projectsettings.xml", settings);
+					}
 				}
 			}
 

@@ -206,6 +206,7 @@
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_glfw.h" />
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h" />
+    <ClInclude Include="ProjectSettings.h" />
     <ClInclude Include="UIWindowEntityProperties.h" />
     <ClInclude Include="UIWindowPerformance.h" />
     <ClInclude Include="UIWindowSettings.h" />

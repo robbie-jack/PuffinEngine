@@ -1,6 +1,7 @@
 #pragma once
 #include "UIWindow.h"
 #include "CameraComponent.h"
+#include "ProjectSettings.h"
 
 namespace Puffin
 {
@@ -19,6 +20,7 @@ namespace Puffin
 
 		private:
 			Puffin::Rendering::CameraComponent* camera;
+			ProjectSettings settings;
 		};
 	}
 }
