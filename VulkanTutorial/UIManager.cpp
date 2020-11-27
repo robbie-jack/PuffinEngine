@@ -140,12 +140,12 @@ namespace Puffin
 			{
 				if (ImGui::BeginMenu("Menu"))
 				{
-					if (ImGui::MenuItem("Save"))
+					if (ImGui::MenuItem("Save Scene"))
 					{
 						
 					}
 
-					if (ImGui::MenuItem("Load"))
+					if (ImGui::MenuItem("Load Scene"))
 					{
 						
 					}

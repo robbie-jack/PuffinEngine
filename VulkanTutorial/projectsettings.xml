@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
 	<value0>
-		<settings.cameraFov>70</settings.cameraFov>
+		<settings.cameraFov>60</settings.cameraFov>
 		<settings.mouseSensitivity>0.05000000074505806</settings.mouseSensitivity>
 	</value0>
 </cereal>

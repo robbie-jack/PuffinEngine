@@ -10,6 +10,7 @@
 #include <set>
 #include <memory>
 #include <typeinfo>
+#include <cereal/archives/binary.hpp>
 
 namespace Puffin
 {
@@ -24,6 +25,18 @@ namespace Puffin
 		const ComponentType MAX_COMPONENTS = 32;
 
 		typedef std::bitset<MAX_COMPONENTS> Signature;
+
+		template<class Archive>
+		void serialize(Archive& archive, Entity& entity, std::string& name, Signature& signature)
+		{
+			archive(entity, name, signature);
+		}
+
+		template<class Archive>
+		void serialize(Archive& archive, ComponentType& type)
+		{
+			archive(type);
+		}
 
 		//////////////////////////////////////////////////
 		// Entity Manager
