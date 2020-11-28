@@ -158,12 +158,6 @@
     <ClInclude Include="CameraComponent.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="BaseComponent.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="BulletPhysicsComponent.h">
-      <Filter>Physics\BulletPhysics</Filter>
-    </ClInclude>
     <ClInclude Include="BulletPhysicsSystem.h">
       <Filter>Physics\BulletPhysics</Filter>
     </ClInclude>
@@ -180,5 +174,12 @@
       <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ProjectSettings.h" />
+    <ClInclude Include="SerializeScene.h" />
+    <ClInclude Include="BaseComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidbodyComponent.h">
+      <Filter>Physics\BulletPhysics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

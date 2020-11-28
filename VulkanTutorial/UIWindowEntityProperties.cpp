@@ -1,9 +1,8 @@
 #include "UIWindowEntityProperties.h"
 
 #include "TransformComponent.h"
-//#include "ReactPhysicsComponent.h"
-#include "BulletPhysicsComponent.h"
 #include "MeshComponent.h"
+#include "RigidbodyComponent.h"
 
 #include <iostream>
 #include <string>
@@ -160,14 +159,14 @@ namespace Puffin
 							}
 						}
 
-						if (world->HasComponent<Physics::BulletPhysicsComponent>(entity))
+						if (world->HasComponent<Physics::RigidbodyComponent>(entity))
 						{
 							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 							if (ImGui::CollapsingHeader("Physics Component", flags))
 							{
 								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-								Physics::BulletPhysicsComponent& comp = world->GetComponent<Physics::BulletPhysicsComponent>(entity);
+								Physics::RigidbodyComponent& comp = world->GetComponent<Physics::RigidbodyComponent>(entity);
 
 								ImGui::Button("X");
 
@@ -209,9 +208,9 @@ namespace Puffin
 
 							if (ImGui::Selectable("Physics Component"))
 							{
-								if (!world->HasComponent<Physics::BulletPhysicsComponent>(entity))
+								if (!world->HasComponent<Physics::RigidbodyComponent>(entity))
 								{
-									Physics::BulletPhysicsComponent& comp = world->AddComponent<Physics::BulletPhysicsComponent>(entity);
+									Physics::RigidbodyComponent& comp = world->AddComponent<Physics::RigidbodyComponent>(entity);
 									comp.flag_created = true;
 								}
 							}

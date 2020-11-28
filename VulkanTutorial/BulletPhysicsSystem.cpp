@@ -75,7 +75,7 @@ namespace Puffin
 			for (ECS::Entity entity : entities)
 			{
 				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
-				BulletPhysicsComponent& physicsComp = world->GetComponent<BulletPhysicsComponent>(entity);
+				RigidbodyComponent& physicsComp = world->GetComponent<RigidbodyComponent>(entity);
 
 				btTransform transform;
 
@@ -95,7 +95,7 @@ namespace Puffin
 		void BulletPhysicsSystem::InitComponent(ECS::Entity entity, btVector3 size, btScalar mass, btVector3 position)
 		{
 			// Get Component for this entity, if it exists
-			BulletPhysicsComponent& comp = world->GetComponent<BulletPhysicsComponent>(entity);
+			RigidbodyComponent& comp = world->GetComponent<RigidbodyComponent>(entity);
 
 			comp.size = size;
 			comp.mass = mass;

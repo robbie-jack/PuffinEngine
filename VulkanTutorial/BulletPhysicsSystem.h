@@ -2,7 +2,7 @@
 
 #include "ECS.h"
 #include "btBulletDynamicsCommon.h"
-#include "BulletPhysicsComponent.h"
+#include "RigidbodyComponent.h"
 
 namespace Puffin
 {

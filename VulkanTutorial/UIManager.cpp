@@ -1,4 +1,5 @@
 #include "UIManager.h"
+#include "SerializeScene.h"
 
 namespace Puffin
 {
@@ -142,12 +143,12 @@ namespace Puffin
 				{
 					if (ImGui::MenuItem("Save Scene"))
 					{
-						
+						IO::SaveScene("default.scn", world);
 					}
 
 					if (ImGui::MenuItem("Load Scene"))
 					{
-						
+						IO::LoadScene("default.scn", world);
 					}
 
 					if (ImGui::MenuItem("Quit", "Alt+F4"))

@@ -10,7 +10,9 @@
 #include <set>
 #include <memory>
 #include <typeinfo>
-#include <cereal/archives/binary.hpp>
+
+#include <cereal/types/bitset.hpp>
+#include <cereal/types/string.hpp>
 
 namespace Puffin
 {
@@ -29,14 +31,14 @@ namespace Puffin
 		template<class Archive>
 		void serialize(Archive& archive, Entity& entity, std::string& name, Signature& signature)
 		{
-			archive(entity, name, signature);
+			archive(CEREAL_NVP(entity), CEREAL_NVP(name), CEREAL_NVP(signature));
 		}
 
-		template<class Archive>
+		/*template<class Archive>
 		void serialize(Archive& archive, ComponentType& type)
 		{
 			archive(type);
-		}
+		}*/
 
 		//////////////////////////////////////////////////
 		// Entity Manager
@@ -548,6 +550,11 @@ namespace Puffin
 			std::string GetEntityName(Entity entity)
 			{
 				return entityManager->GetName(entity);
+			}
+
+			Signature GetEntitySignature(Entity entity)
+			{
+				return entityManager->GetSignature(entity);
 			}
 
 			void MarkToDelete(Entity entity)

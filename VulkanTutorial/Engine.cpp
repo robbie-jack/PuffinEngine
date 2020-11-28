@@ -29,7 +29,7 @@ namespace Puffin
 		ECSWorld.RegisterComponent<TransformComponent>();
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
 
-		ECSWorld.RegisterComponent<Physics::BulletPhysicsComponent>();
+		ECSWorld.RegisterComponent<Physics::RigidbodyComponent>();
 
 		ECS::Signature renderSignature;
 		renderSignature.set(ECSWorld.GetComponentType<TransformComponent>());
@@ -38,7 +38,7 @@ namespace Puffin
 
 		ECS::Signature physicsSignature;
 		physicsSignature.set(ECSWorld.GetComponentType<TransformComponent>());
-		physicsSignature.set(ECSWorld.GetComponentType<Physics::BulletPhysicsComponent>());
+		physicsSignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(physicsSignature);
 
 		for (int i = 0; i < 5; i++)
@@ -55,8 +55,8 @@ namespace Puffin
 		ECSWorld.GetComponent<TransformComponent>(5) = { false, false, false, Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 
 
-		ECSWorld.AddComponent<Physics::BulletPhysicsComponent>(3);
-		ECSWorld.AddComponent<Physics::BulletPhysicsComponent>(5);
+		ECSWorld.AddComponent<Physics::RigidbodyComponent>(3);
+		ECSWorld.AddComponent<Physics::RigidbodyComponent>(5);
 
 		running = true;
 		playState = PlayState::STOPPED;

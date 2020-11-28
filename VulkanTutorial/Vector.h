@@ -1,6 +1,7 @@
-#include <glm/gtc/matrix_transform.hpp>
 #include "btBulletDynamicsCommon.h"
+
 #include <math.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Puffin
 {
@@ -317,6 +318,13 @@ namespace Puffin
 			vector.z / length;
 
 			return vector;
+		}
+
+		// Serialization
+		template<class Archive>
+		void serialize(Archive& archive)
+		{
+			archive(x, y, z);
 		}
 	};
 

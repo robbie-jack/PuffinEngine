@@ -7,7 +7,7 @@ namespace Puffin
 {
 	namespace Physics
 	{
-		struct BulletPhysicsComponent : public BaseComponent
+		struct RigidbodyComponent : public BaseComponent
 		{
 			btCollisionShape* shape;
 			btRigidBody* body;

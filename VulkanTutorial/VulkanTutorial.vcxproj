@@ -196,7 +196,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseComponent.h" />
-    <ClInclude Include="BulletPhysicsComponent.h" />
+    <ClInclude Include="RigidbodyComponent.h" />
     <ClInclude Include="BulletPhysicsSystem.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ECS.h" />
@@ -207,6 +207,7 @@
     <ClInclude Include="include\imgui\imgui_impl_glfw.h" />
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="ProjectSettings.h" />
+    <ClInclude Include="SerializeScene.h" />
     <ClInclude Include="UIWindowEntityProperties.h" />
     <ClInclude Include="UIWindowPerformance.h" />
     <ClInclude Include="UIWindowSettings.h" />

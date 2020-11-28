@@ -41,10 +41,11 @@ namespace Puffin
 			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
 			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
 
-			inline void SetWorld(ECS::World* world) 
+			inline void SetWorld(ECS::World* world_) 
 			{ 
-				windowSceneHierarchy->SetWorld(world);
-				windowEntityProperties->SetWorld(world);
+				world = world_;
+				windowSceneHierarchy->SetWorld(world_);
+				windowEntityProperties->SetWorld(world_);
 			};
 
 		private:
@@ -52,6 +53,8 @@ namespace Puffin
 			std::string playButtonLabel;
 
 			//Engine* engine;
+			ECS::World* world;
+
 			std::vector<UIWindow*> windows;
 
 			UIWindowSceneHierarchy* windowSceneHierarchy;
