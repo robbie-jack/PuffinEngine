@@ -17,31 +17,25 @@ namespace Puffin
 
 			physicsWorld->setGravity(btVector3(0, -9.81f, 0));
 
-			TransformComponent& comp1 = world->GetComponent<TransformComponent>(3);
-			TransformComponent& comp2 = world->GetComponent<TransformComponent>(5);
+			//TransformComponent& comp1 = world->GetComponent<TransformComponent>(3);
+			//TransformComponent& comp2 = world->GetComponent<TransformComponent>(5);
 
-			InitComponent(3, btVector3(1.0f, 1.0f, 1.0f), 1.0f, btVector3(comp1.position.x, comp1.position.y, comp1.position.z));
-			InitComponent(5, btVector3(1.0f, 1.0f, 1.0f), 0.0f, btVector3(comp2.position.x, comp2.position.y, comp2.position.z));
+			//InitComponent(3, btVector3(1.0f, 1.0f, 1.0f), 1.0f, btVector3(comp1.position.x, comp1.position.y, comp1.position.z));
+			//InitComponent(5, btVector3(1.0f, 1.0f, 1.0f), 0.0f, btVector3(comp2.position.x, comp2.position.y, comp2.position.z));
+
+			for (ECS::Entity entity : entities)
+			{
+				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+				RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(entity);
+				InitComponent(entity, rigidbody.size, rigidbody.mass, transform.position);
+			}
 		}
 
 		void BulletPhysicsSystem::Stop()
 		{
-			int i = 0;
-
 			for (ECS::Entity entity : entities)
 			{
-				btCollisionObject* obj = physicsWorld->getCollisionObjectArray()[i];
-				btRigidBody* body = btRigidBody::upcast(obj);
-
-				if (body && body->getMotionState())
-				{
-					delete body->getMotionState();
-				}
-
-				physicsWorld->removeCollisionObject(obj);
-				delete obj;
-
-				i++;
+				CleanupComponent(entity);
 			}
 
 			for (int j = 0; j < collisionShapes.size(); j++)
@@ -76,6 +70,20 @@ namespace Puffin
 			{
 				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
 				RigidbodyComponent& physicsComp = world->GetComponent<RigidbodyComponent>(entity);
+
+				// Init/Recreate Flagged Components
+				if (physicsComp.flag_created)
+				{
+					InitComponent(entity, physicsComp.size, physicsComp.mass, transformComp.position);
+					physicsComp.flag_created = false;
+				}
+
+				// Destroy Dlagged Components
+				if (physicsComp.flag_deleted)
+				{
+					CleanupComponent(entity);
+					world->RemoveComponent<RigidbodyComponent>(entity);
+				}
 
 				btTransform transform;
 
@@ -126,6 +134,21 @@ namespace Puffin
 			comp.body = new btRigidBody(rbInfo);
 
 			physicsWorld->addRigidBody(comp.body);
+		}
+
+		void BulletPhysicsSystem::CleanupComponent(ECS::Entity entity)
+		{
+			RigidbodyComponent& comp = world->GetComponent<RigidbodyComponent>(entity);
+
+			if (comp.body && comp.body->getMotionState())
+			{
+				delete comp.body->getMotionState();
+			}
+
+			physicsWorld->removeRigidBody(comp.body);
+			delete comp.body;
+
+			comp.shape = nullptr;
 		}
 
 		BulletPhysicsSystem::~BulletPhysicsSystem()

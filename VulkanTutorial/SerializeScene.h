@@ -6,10 +6,12 @@
 #include "RigidbodyComponent.h"
 
 #include <vector>
+#include <set>
 #include <map>
 #include <fstream>
 
 #include <cereal/types/vector.hpp>
+#include <cereal/types/set.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/archives/binary.hpp>
 
@@ -24,20 +26,18 @@ namespace Puffin
 			std::ofstream os(scene_name, std::ios::binary);
 			cereal::BinaryOutputArchive archive(os);
 
-			std::vector<ECS::Entity> entities;
-			std::vector<std::string> entity_names;
-			std::vector<ECS::Signature> entity_signatures;
+			std::set<ECS::Entity> entities;
+			std::map<ECS::Entity, std::string> entity_names;
 
 			// Store Entities, Names and Signatures in local vectors
 			for (ECS::Entity entity : world->GetActiveEntities())
 			{
-				entities.push_back(entity);
-				entity_names.push_back(world->GetEntityName(entity));
-				entity_signatures.push_back(world->GetEntitySignature(entity));
+				entities.insert(entity);
+				entity_names.insert({ entity, world->GetEntityName(entity) });
 			}
 
 			// Save Entities, Names and Signatures to Archive
-			archive(entities, entity_names, entity_signatures);
+			archive(entities, entity_names);
 
 			std::map<ECS::Entity, TransformComponent> transformMap;
 			std::map<ECS::Entity, Rendering::MeshComponent> meshMap;
@@ -66,8 +66,8 @@ namespace Puffin
 			}
 
 			archive(transformMap);
-			//archive(meshMap);
-			//archive(rigidbodyMap);
+			archive(meshMap);
+			archive(rigidbodyMap);
 		}
 
 		// Load  Entities/Components from Binary Scene File
@@ -77,18 +77,47 @@ namespace Puffin
 			std::ifstream is(scene_name, std::ios::binary);
 			cereal::BinaryInputArchive archive(is);
 
-			std::vector<ECS::Entity> entities;
-			std::vector<std::string> entity_names;
-			std::vector<ECS::Signature> entity_signatures;
+			std::set<ECS::Entity> entities;
+			std::map<ECS::Entity, std::string> entity_names;
 
 			// Load Entites from Archive
-			archive(entities, entity_names, entity_signatures);
+			archive(entities, entity_names);
 
 			std::map<ECS::Entity, TransformComponent> transformMap;
 			std::map<ECS::Entity, Rendering::MeshComponent> meshMap;
+			std::map<ECS::Entity, Physics::RigidbodyComponent> rigidbodyMap;
 
+			// Load Components into Maps
 			archive(transformMap);
-			//archive(meshMap);
+			archive(meshMap);
+			archive(rigidbodyMap);
+
+			// Initiliase EntityManager with Existing Entities
+			world->InitEntitySystem(entities);
+
+			// Initilize ECS with all loaded data
+			for (ECS::Entity entity : entities)
+			{
+				world->SetEntityName(entity, entity_names.at(entity));
+
+				// If Entity has Transform Component, Insert into ECS
+				if (transformMap.find(entity) != transformMap.end())
+				{
+					world->AddComponent<TransformComponent>(entity, transformMap.at(entity));
+				}
+
+				// If Entity has Mesh Component, Insert into ECS
+				if (meshMap.find(entity) != meshMap.end())
+				{
+					world->AddComponent<Rendering::MeshComponent>(entity, meshMap.at(entity));
+				}
+
+				// If Entity has Rigidbody Component, Insert into ECS
+				if (rigidbodyMap.find(entity) != rigidbodyMap.end())
+				{
+					world->AddComponent<Physics::RigidbodyComponent>(entity, rigidbodyMap.at(entity));
+				}
+			}
 		}
 	}
 }

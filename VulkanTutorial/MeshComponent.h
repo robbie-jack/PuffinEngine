@@ -153,6 +153,8 @@ namespace std
 	};
 };
 
+#include <cereal/types/string.hpp>
+
 namespace Puffin
 {
 	namespace Rendering
@@ -183,5 +185,11 @@ namespace Puffin
 
 			std::vector<VkDescriptorSet> descriptorSets;
 		};
+
+		template<class Archive>
+		void serialize(Archive& archive, MeshComponent& comp)
+		{
+			archive(comp.model_path, comp.texture_path);
+		}
 	}
 }

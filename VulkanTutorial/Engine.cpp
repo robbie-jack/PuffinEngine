@@ -5,6 +5,7 @@
 #include "TransformComponent.h"
 #include "VulkanRenderer.h"
 #include "BulletPhysicsSystem.h"
+#include "SerializeScene.h"
 
 #include <chrono>
 
@@ -28,7 +29,6 @@ namespace Puffin
 
 		ECSWorld.RegisterComponent<TransformComponent>();
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
-
 		ECSWorld.RegisterComponent<Physics::RigidbodyComponent>();
 
 		ECS::Signature renderSignature;
@@ -41,22 +41,8 @@ namespace Puffin
 		physicsSignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(physicsSignature);
 
-		for (int i = 0; i < 5; i++)
-		{
-			ECS::Entity entity = ECSWorld.CreateEntity();
-			ECSWorld.AddComponent<TransformComponent>(entity);
-			ECSWorld.AddComponent<Rendering::MeshComponent>(entity);
-		}
-
-		ECSWorld.GetComponent<TransformComponent>(1) = { false, false, false, Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		ECSWorld.GetComponent<TransformComponent>(2) = { false, false, false, Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		ECSWorld.GetComponent<TransformComponent>(3) = { false, false, false, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		ECSWorld.GetComponent<TransformComponent>(4) = { false, false, false, Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
-		ECSWorld.GetComponent<TransformComponent>(5) = { false, false, false, Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-
-
-		ECSWorld.AddComponent<Physics::RigidbodyComponent>(3);
-		ECSWorld.AddComponent<Physics::RigidbodyComponent>(5);
+		DefaultScene(&ECSWorld);
+		IO::LoadScene("default.scn", &ECSWorld);
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -88,6 +74,46 @@ namespace Puffin
 
 		UIManager.Cleanup();
 		ECSWorld.Cleanup();
+	}
+
+	void Engine::DefaultScene(ECS::World* world)
+	{
+		// Add Default Scene Components to ECS
+		for (int i = 0; i < 5; i++)
+		{
+			ECS::Entity entity = world->CreateEntity();
+			world->AddComponent<TransformComponent>(entity);
+			world->AddComponent<Rendering::MeshComponent>(entity);
+		}
+
+		world->AddComponent<Physics::RigidbodyComponent>(3);
+		world->AddComponent<Physics::RigidbodyComponent>(5);
+
+		// Initialise Components with default values
+		world->GetComponent<TransformComponent>(1) = { false, false, Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		world->GetComponent<TransformComponent>(2) = { false, false, Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		world->GetComponent<TransformComponent>(3) = { false, false, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		world->GetComponent<TransformComponent>(4) = { false, false, Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
+		world->GetComponent<TransformComponent>(5) = { false, false, Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+
+		world->GetComponent<Rendering::MeshComponent>(1).model_path = "models\\chalet.obj";
+		world->GetComponent<Rendering::MeshComponent>(1).texture_path = "textures\\chalet.jpg";
+
+		world->GetComponent<Rendering::MeshComponent>(2).model_path = "models\\space_engineer.obj";
+		world->GetComponent<Rendering::MeshComponent>(2).texture_path = "textures\\space_engineer.jpg";
+
+		world->GetComponent<Rendering::MeshComponent>(3).model_path = "models\\cube.obj";
+		world->GetComponent<Rendering::MeshComponent>(3).texture_path = "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(4).model_path = "models\\cube.obj";
+		world->GetComponent<Rendering::MeshComponent>(4).texture_path = "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(5).model_path = "models\\cube.obj";
+		world->GetComponent<Rendering::MeshComponent>(5).texture_path = "textures\\cube.png";
+
+		world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
+		world->GetComponent<Physics::RigidbodyComponent>(3).mass = 1.0f;
+
+		world->GetComponent<Physics::RigidbodyComponent>(5).size = btVector3(1.0f, 1.0f, 1.0f);
+		world->GetComponent<Physics::RigidbodyComponent>(5).mass = 0.0f;
 	}
 
 	void Engine::Stop()

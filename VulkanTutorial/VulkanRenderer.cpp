@@ -35,19 +35,11 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
-		// Initialise any new components with default cube mesh
+		// Initialise/Recreate flagged components
 		if (comp.flag_created)
 		{
-			InitMesh(entity, "models\\cube.obj", "textures\\cube.png");
-			comp.flag_created = false;
-			recreateSwapChain = true;
-		}
-
-		// Recreate any updated meshes
-		if (comp.flag_recreate)
-		{
 			InitMesh(entity, comp.model_path, comp.texture_path);
-			comp.flag_recreate = false;
+			comp.flag_created = false;
 			recreateSwapChain = true;
 		}
 
@@ -208,14 +200,11 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	// Initialize Lights
 	InitLight(light, glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
-	InitMesh(1, "models\\chalet.obj", "textures\\chalet.jpg");
-	InitMesh(2, "models\\space_engineer.obj", "textures\\space_engineer.jpg");
-	//InitMeshCube(3, glm::vec3(1.0f, 0.0f, 0.0f)); //Initialize Components with default cube mesh
-	//InitMeshCube(4); //Initialize Components with default cube mesh
-	//InitMeshCube(5);
-	InitMesh(3, "models\\cube.obj", "textures\\cube.png");
-	InitMesh(4, "models\\cube.obj", "textures\\cube.png");
-	InitMesh(5, "models\\cube.obj", "textures\\cube.png");
+	for (ECS::Entity entity : entities)
+	{
+		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+		InitMesh(entity, comp.model_path, comp.texture_path);
+	}
 
 	//CreateUniformBuffers();
 	CreateLightBuffers();

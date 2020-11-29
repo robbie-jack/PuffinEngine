@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ECS.h"
+
 #include <vector>
 
 namespace Puffin
@@ -16,6 +18,8 @@ namespace Puffin
 	public:
 
 		void MainLoop();
+
+		void DefaultScene(ECS::World* world);
 
 		void Play();
 		void Stop();

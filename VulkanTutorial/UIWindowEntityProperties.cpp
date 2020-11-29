@@ -136,7 +136,7 @@ namespace Puffin
 								if (fileDialog->HasSelected() && modelSelected)
 								{
 									mesh.model_path = fileDialog->GetSelected().string();
-									mesh.flag_recreate = true;
+									mesh.flag_created = true;
 									modelSelected = false;
 									fileDialog->ClearSelected();
 								}
@@ -152,7 +152,7 @@ namespace Puffin
 								if (fileDialog->HasSelected() && textureSelected)
 								{
 									mesh.texture_path = fileDialog->GetSelected().string();
-									mesh.flag_recreate = true;
+									mesh.flag_created = true;
 									textureSelected = false;
 									fileDialog->ClearSelected();
 								}
@@ -202,6 +202,8 @@ namespace Puffin
 								if (!world->HasComponent<Rendering::MeshComponent>(entity))
 								{
 									Rendering::MeshComponent& comp = world->AddComponent<Rendering::MeshComponent>(entity);
+									comp.model_path = "models\\cube.obj";
+									comp.texture_path = "textures\\cube.png";
 									comp.flag_created = true;
 								}
 							}
@@ -211,6 +213,8 @@ namespace Puffin
 								if (!world->HasComponent<Physics::RigidbodyComponent>(entity))
 								{
 									Physics::RigidbodyComponent& comp = world->AddComponent<Physics::RigidbodyComponent>(entity);
+									comp.size = btVector3(1.0f, 1.0f, 1.0f);
+									comp.mass = 0.0f;
 									comp.flag_created = true;
 								}
 							}

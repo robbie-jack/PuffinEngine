@@ -143,12 +143,12 @@ namespace Puffin
 				{
 					if (ImGui::MenuItem("Save Scene"))
 					{
-						IO::SaveScene("default.scn", world);
+						IO::SaveScene("test.scn", world);
 					}
 
 					if (ImGui::MenuItem("Load Scene"))
 					{
-						IO::LoadScene("default.scn", world);
+						IO::LoadScene("test.scn", world);
 					}
 
 					if (ImGui::MenuItem("Quit", "Alt+F4"))

@@ -28,11 +28,11 @@ namespace Puffin
 
 		typedef std::bitset<MAX_COMPONENTS> Signature;
 
-		template<class Archive>
+		/*template<class Archive>
 		void serialize(Archive& archive, Entity& entity, std::string& name, Signature& signature)
 		{
 			archive(CEREAL_NVP(entity), CEREAL_NVP(name), CEREAL_NVP(signature));
-		}
+		}*/
 
 		/*template<class Archive>
 		void serialize(Archive& archive, ComponentType& type)
@@ -53,6 +53,26 @@ namespace Puffin
 				for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
 				{
 					availableEntities.push(entity);
+					entityNames[entity] = "";
+					entityDeletionFlags[entity] = false;
+				}
+			}
+
+			void Init(std::set<Entity> entities)
+			{
+				for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
+				{
+					// This entity was not active in loaded scene file, insert into queue as normal
+					if (entities.find(entity) == entities.end())
+					{
+						availableEntities.push(entity);
+					}
+					// This entity was active in loaded scene file, insert into activeEntities set
+					else
+					{
+						activeEntities.insert(entity);
+					}
+
 					entityNames[entity] = "";
 					entityDeletionFlags[entity] = false;
 				}
@@ -528,6 +548,11 @@ namespace Puffin
 			}
 
 			// Entity Methods
+			void InitEntitySystem(std::set<Entity> entities)
+			{
+				entityManager->Init(entities);
+			}
+
 			Entity CreateEntity()
 			{
 				return entityManager->CreateEntity();
