@@ -5,6 +5,10 @@
 
 #include "ECS.h"
 
+#include "SerializeScene.h"
+
+#include <GLFW/glfw3.h>
+
 #include <vector>
 
 namespace Puffin
@@ -22,17 +26,20 @@ namespace Puffin
 
 		void MainLoop();
 
-		void DefaultScene(ECS::World* world);
-
 		void Play();
 		void Stop();
 
 		inline PlayState GetPlayState() { return playState; };
+		inline IO::SceneData& GetScene() { return sceneData; };
 
 	private:
 
-		bool running;
+		bool running, firstStopped;
 		PlayState playState;
+
+		IO::SceneData sceneData;
+
+		void DefaultScene(ECS::World* world);
 	};
 
 }

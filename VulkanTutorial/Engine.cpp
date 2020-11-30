@@ -11,12 +11,15 @@
 
 namespace Puffin
 {
+	const int WIDTH = 1280;
+	const int HEIGHT = 720;
+
 	void Engine::MainLoop()
 	{
-		// Managers
+		// Managers/ECS
+		ECS::World ECSWorld;
 		UI::UIManager UIManager;
 		Input::InputManager InputManager;
-		ECS::World ECSWorld;
 
 		ECSWorld.Init();
 
@@ -42,13 +45,20 @@ namespace Puffin
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(physicsSignature);
 
 		//DefaultScene(&ECSWorld);
-		IO::LoadScene("default.scn", &ECSWorld);
+		IO::LoadScene("default.scn", &ECSWorld, sceneData);
+		IO::InitScene(&ECSWorld, sceneData);
 
 		running = true;
+		firstStopped = false;
 		playState = PlayState::STOPPED;
 
-		renderSystem->Init(&UIManager, &InputManager);
+		// Initialize Systems
+		GLFWwindow* window = renderSystem->InitWindow();
+		renderSystem->InitVulkan(&UIManager);
 		physicsSystem->Start();
+
+		// Init Input
+		InputManager.SetupInput(window);
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -60,6 +70,7 @@ namespace Puffin
 			std::chrono::duration<float> duration = currentTime - lastTime;
 			float delta_time = duration.count();
 
+			InputManager.UpdateInput(window);
 			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
 
 			if (playState == PlayState::PLAYING)
@@ -68,6 +79,21 @@ namespace Puffin
 			}
 
 			ECSWorld.Update();
+
+			if (playState == PlayState::STOPPED && firstStopped)
+			{
+				// Cleanup Systems and ECS
+				renderSystem->Stop();
+				physicsSystem->Stop();
+				ECSWorld.Reset();
+
+				// Re-Initialize Systems and ECS
+				IO::InitScene(&ECSWorld, sceneData);
+				renderSystem->Start();
+				physicsSystem->Start();
+
+				firstStopped = false;
+			}
 		}
 
 		physicsSystem->Stop();
@@ -77,6 +103,9 @@ namespace Puffin
 
 		UIManager.Cleanup();
 		ECSWorld.Cleanup();
+
+		glfwDestroyWindow(window);
+		glfwTerminate();
 	}
 
 	void Engine::DefaultScene(ECS::World* world)
@@ -124,6 +153,7 @@ namespace Puffin
 		if (playState == PlayState::PLAYING | playState == PlayState::PAUSED)
 		{
 			playState = PlayState::STOPPED;
+			firstStopped = true;
 		}
 	}
 

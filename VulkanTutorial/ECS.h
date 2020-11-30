@@ -74,6 +74,7 @@ namespace Puffin
 				}
 
 				activeEntities.clear();
+				activeEntityCount = 0;
 			}
 
 			Entity CreateEntity()
@@ -519,6 +520,18 @@ namespace Puffin
 				}
 			}
 
+			// Reset Entities and Components, Leave Systems Intact
+			void Reset()
+			{
+				for (auto entity : entityManager->GetActiveEntities())
+				{
+					DestroyEntity(entity);
+				}
+
+				entityManager->Cleanup();
+			}
+
+			// Cleanup Entire ECS
 			void Cleanup()
 			{
 				for (auto entity : entityManager->GetActiveEntities())
@@ -661,6 +674,12 @@ namespace Puffin
 			void SetSystemSignature(Signature signature)
 			{
 				systemManager->SetSignature<SystemT>(signature);
+
+				// Update System's local entity list with any new entities
+				for (Entity entity : entityManager->GetActiveEntities())
+				{
+					systemManager->EntitySignatureChanged(entity, entityManager->GetSignature(entity));
+				}
 			}
 
 		private:

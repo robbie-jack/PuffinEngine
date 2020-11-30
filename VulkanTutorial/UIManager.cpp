@@ -141,14 +141,24 @@ namespace Puffin
 			{
 				if (ImGui::BeginMenu("Menu"))
 				{
-					if (ImGui::MenuItem("Save Scene"))
+					if (ImGui::MenuItem("New Scene"))
 					{
-						IO::SaveScene("test.scn", world);
+
 					}
 
 					if (ImGui::MenuItem("Load Scene"))
 					{
-						IO::LoadScene("test.scn", world);
+						//IO::LoadScene(engine->GetScene().scene_name, world, engine->GetScene());
+					}
+
+					if (ImGui::MenuItem("Save Scene"))
+					{
+						IO::SaveScene(engine->GetScene().scene_name, world, engine->GetScene());
+					}
+
+					if (ImGui::MenuItem("Save Scene As"))
+					{
+						//IO::SaveScene(engine->GetScene().scene_name, world, engine->GetScene());
 					}
 
 					if (ImGui::MenuItem("Quit", "Alt+F4"))

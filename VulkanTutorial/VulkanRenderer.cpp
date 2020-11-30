@@ -12,17 +12,11 @@
 
 using namespace Puffin::Rendering;
 
-void VulkanRenderer::Init(UI::UIManager* UIManager, Input::InputManager* InputManager)
-{
-	InitWindow(InputManager);
-	InitVulkan(UIManager);
-}
-
 bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
 {
 	glfwPollEvents();
 
-	InputManager->UpdateInput(window);
+	//InputManager->UpdateInput(window);
 	UpdateCamera(camera, InputManager, dt);
 
 	float prevFov = camera.fov;
@@ -145,7 +139,7 @@ VulkanRenderer::~VulkanRenderer()
 
 //-------------------------------------------------------------------------------------
 
-void VulkanRenderer::InitWindow(Input::InputManager* InputManager)
+GLFWwindow* VulkanRenderer::InitWindow()
 {
 	glfwInit();
 
@@ -158,7 +152,7 @@ void VulkanRenderer::InitWindow(Input::InputManager* InputManager)
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 
-	InputManager->SetupInput(window);
+	return window;
 }
 
 //-------------------------------------------------------------------------------------
@@ -200,11 +194,7 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	// Initialize Lights
 	InitLight(light, glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
-	for (ECS::Entity entity : entities)
-	{
-		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
-		InitMesh(entity, comp.model_path, comp.texture_path);
-	}
+	Start();
 
 	//CreateUniformBuffers();
 	CreateLightBuffers();
@@ -216,6 +206,15 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	CreateMainCommandBuffers();
 	CreateSyncObjects();
 	SetupImGui();
+}
+
+void VulkanRenderer::Start()
+{
+	for (ECS::Entity entity : entities)
+	{
+		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+		InitMesh(entity, comp.model_path, comp.texture_path);
+	}
 }
 
 void VulkanRenderer::InitTexture(Texture& texture, std::string texture_path)
@@ -2376,16 +2375,8 @@ void VulkanRenderer::UpdateImguiCommandBuffers(uint32_t currentImage)
 
 //-------------------------------------------------------------------------------------
 
-void VulkanRenderer::Cleanup()
+void VulkanRenderer::Stop()
 {
-	CleanupSwapChain();
-	CleanupOffscreen();
-	CleanupImGui();
-
-	vkDestroySampler(device, textureSampler, nullptr);
-
-	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-
 	// Cleanup Meshes
 	for (ECS::Entity entity : entities)
 	{
@@ -2397,6 +2388,19 @@ void VulkanRenderer::Cleanup()
 	}
 
 	entities.clear();
+
+	recreateSwapChain = true;
+}
+
+void VulkanRenderer::Cleanup()
+{
+	CleanupSwapChain();
+	CleanupOffscreen();
+	CleanupImGui();
+
+	vkDestroySampler(device, textureSampler, nullptr);
+
+	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
 	// Cleanup Textures
 	CleanupFrameBufferAttachment(cube_texture);
@@ -2423,10 +2427,6 @@ void VulkanRenderer::Cleanup()
 	}
 
 	vkDestroyInstance(instance, nullptr);
-
-	glfwDestroyWindow(window);
-
-	glfwTerminate();
 }
 
 void VulkanRenderer::CleanupSwapChain()

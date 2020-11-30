@@ -83,9 +83,14 @@ namespace Puffin
 		{
 		public:
 
-			void Init(UI::UIManager* UIManager, Input::InputManager* InputManager);
+			GLFWwindow* InitWindow(); // Initialize Window
+			void InitVulkan(UI::UIManager* UIManager);
+			void Start();
+
 			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
+
 			void Cleanup();
+			void Stop();
 
 			void InitMesh(ECS::Entity entity, std::string model_path, std::string texture_path);
 			void InitMeshCube(ECS::Entity entity, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
@@ -251,13 +256,9 @@ namespace Puffin
 				createInfo.pfnUserCallback = DebugCallback;
 			}
 
-			// Initialize Window
-			void InitWindow(Input::InputManager* InputManager);
-
 			//-------------------------------------------------------------------------------------
 
 			// Initialize Vulkan Renderer
-			void InitVulkan(UI::UIManager* UIManager);
 			void RecreateSwapChain(UI::UIManager* UIManager);
 
 			void CreateInstance();
