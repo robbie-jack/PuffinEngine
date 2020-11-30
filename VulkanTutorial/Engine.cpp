@@ -20,7 +20,7 @@ namespace Puffin
 
 		ECSWorld.Init();
 
-		//UIManager.SetEngine(this);
+		UIManager.SetEngine(this);
 		UIManager.SetWorld(&ECSWorld);
 
 		// Systems
@@ -41,14 +41,13 @@ namespace Puffin
 		physicsSignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(physicsSignature);
 
-		DefaultScene(&ECSWorld);
+		//DefaultScene(&ECSWorld);
 		IO::LoadScene("default.scn", &ECSWorld);
 
 		running = true;
 		playState = PlayState::STOPPED;
 
 		renderSystem->Init(&UIManager, &InputManager);
-
 		physicsSystem->Start();
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
@@ -62,7 +61,11 @@ namespace Puffin
 			float delta_time = duration.count();
 
 			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
-			physicsSystem->Update(delta_time);
+
+			if (playState == PlayState::PLAYING)
+			{
+				physicsSystem->Update(delta_time);
+			}
 
 			ECSWorld.Update();
 		}

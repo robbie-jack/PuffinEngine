@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef BULLET_PHYSICS_SYSTEM_H
+#define BULLET_PHYSICS_SYSTEM_H
+
 #include "ECS.h"
 #include "btBulletDynamicsCommon.h"
 #include "RigidbodyComponent.h"
@@ -35,3 +38,4 @@ namespace Puffin
 	}
 }
 
+#endif // BULLET_PHYSICS_SYSTEM_H

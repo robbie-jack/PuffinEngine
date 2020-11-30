@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mesh.h"
+#include "MeshComponent.h"
 #include "Vector.h"
 
 namespace Puffin

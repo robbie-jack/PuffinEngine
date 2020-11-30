@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef CAMERA_COMPONENT_H
+#define CAMERA_COMPONENT_H
+
 #include "InputManager.h"
 
 #include <vulkan/vulkan.h>
@@ -73,3 +76,5 @@ namespace Puffin
 		}
 	}
 }
+
+#endif // CAMERA_COMPONENT_H

@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef SERIALIZE_SCENE_H
+#define SERIALIZE_SCENE_H
+
 #include "ECS.h"
 #include "TransformComponent.h"
 #include "MeshComponent.h"
@@ -121,3 +124,5 @@ namespace Puffin
 		}
 	}
 }
+
+#endif // !SERIALIZE_SCENE_H

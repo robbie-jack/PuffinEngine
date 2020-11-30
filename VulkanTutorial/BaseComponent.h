@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef BASE_COMPONENT_H
+#define BASE_COMPONENT_H
+
 namespace Puffin
 {
 	struct BaseComponent
@@ -9,3 +12,5 @@ namespace Puffin
 		bool flag_deleted = false; // Component has been marked for deletion
 	};
 }
+
+#endif // BASE_COMPONENT_H

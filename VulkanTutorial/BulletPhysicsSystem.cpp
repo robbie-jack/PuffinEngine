@@ -63,8 +63,6 @@ namespace Puffin
 			// Step Physics Simulation
 			physicsWorld->stepSimulation(dt);
 
-			int i = 0;
-
 			// Update Entity transfrom from Physics Component
 			for (ECS::Entity entity : entities)
 			{
@@ -95,8 +93,6 @@ namespace Puffin
 				// Update Transform Component Poisiton/Rotation
 				transformComp.position = transform.getOrigin();
 				transform.getRotation().getEulerZYX(transformComp.rotation.z, transformComp.rotation.y, transformComp.rotation.x);
-
-				i++;
 			}
 		}
 

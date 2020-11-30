@@ -176,7 +176,7 @@ namespace Puffin
 
 				ImGui::Dummy(ImVec2((ImGui::GetWindowWidth() / 2) - 200.0f, 0.0f));
 
-				/*if (ImGui::Button(playButtonLabel.c_str()))
+				if (ImGui::Button(playButtonLabel.c_str()))
 				{
 					engine->Play();
 
@@ -194,7 +194,7 @@ namespace Puffin
 				{
 					engine->Stop();
 					playButtonLabel = "Play";
-				}*/
+				}
 
 				ImGui::EndMenuBar();
 			}

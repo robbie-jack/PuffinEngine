@@ -1,3 +1,6 @@
+#ifndef VECTOR_H
+#define VECTOR_H
+
 #include "btBulletDynamicsCommon.h"
 
 #include <math.h>
@@ -335,3 +338,5 @@ namespace Puffin
 		double z;
 	};
 }
+
+#endif // !VECTOR_H

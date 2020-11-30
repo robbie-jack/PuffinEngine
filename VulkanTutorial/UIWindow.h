@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef UI_WINDOW_H
+#define UI_WINDOW_H
+
 #include <string>
 #include <vulkan/vulkan.h>
 
@@ -45,3 +48,5 @@ namespace Puffin
 		};
 	}
 }
+
+#endif // UI_WINDOW_H

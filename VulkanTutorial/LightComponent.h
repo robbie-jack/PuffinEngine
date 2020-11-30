@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef LIGHT_COMPONENT_H
+#define LIGHT_COMPONENT_H
+
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
@@ -32,3 +35,5 @@ namespace Puffin
 		};
 	}
 }
+
+#endif // LIGHT_COMPONENT_H

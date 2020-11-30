@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef MESH_COMPONENT_H
+#define MESH_COMPONENT_H
+
 #include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
@@ -193,3 +196,5 @@ namespace Puffin
 		}
 	}
 }
+
+#endif // !MESH_COMPONENT_H

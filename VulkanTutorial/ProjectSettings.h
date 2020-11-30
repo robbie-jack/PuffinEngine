@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef PROJECT_SETTINGS_H
+#define PROHECT_SETTINGS_H
+
 #include <fstream>
 #include <cereal/archives/xml.hpp>
 
@@ -43,3 +46,5 @@ namespace Puffin
 		}
 	}
 }
+
+#endif // PROJECT_SETTINGS_H

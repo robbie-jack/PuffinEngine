@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef FRAME_BUFFER_ATTACHMENT_H
+#define FRAME_BUFFER_ATTACHMENT_H
+
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
@@ -18,3 +21,5 @@ namespace Puffin
 		typedef FrameBufferAttachment Texture;
 	}
 }
+
+#endif // FRAME_BUFFER_ATTACHMENT_H

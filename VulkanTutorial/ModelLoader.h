@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef MODEL_LOADER_H
+#define MODEL_LOADER_H
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -124,3 +127,5 @@ namespace Puffin
 		}
 	}
 }
+
+#endif // !MODEL_LOADER_H

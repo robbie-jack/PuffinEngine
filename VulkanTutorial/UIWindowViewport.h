@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef UI_WINDOW_VIEWPORT_H
+#define UI_WINDOW_VIEWPORT_H
+
 #include "UIWindow.h"
 #include "FrameBufferAttachment.h"
 
@@ -26,3 +29,5 @@ namespace Puffin
 		};
 	}
 }
+
+#endif // UI_WINDOW_VIEWPORT_H

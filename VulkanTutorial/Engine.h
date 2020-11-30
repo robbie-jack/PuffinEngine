@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef ENGINE_H
+#define ENGINE_H
+
 #include "ECS.h"
 
 #include <vector>
@@ -33,3 +36,5 @@ namespace Puffin
 	};
 
 }
+
+#endif // !ENGINE_H

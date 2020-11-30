@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef RIGIDBODY_COMPONENT_H
+#define RIGIDBODY_COMPONENT_H
+
 #include "btBulletDynamicsCommon.h"
 #include "BaseComponent.h"
 
@@ -48,3 +51,5 @@ namespace Puffin
 		}
 	}
 }
+
+#endif // RIGIDBODY_COMPONENT_H

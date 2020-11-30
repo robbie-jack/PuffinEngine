@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef VULKAN_RENDERER_H
+#define VULKAN_RENDERER_H
+
 #include "ECS.h"
 #include "UIManager.h"
 #include "InputManager.h"
@@ -82,6 +85,7 @@ namespace Puffin
 
 			void Init(UI::UIManager* UIManager, Input::InputManager* InputManager);
 			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
+			void Cleanup();
 
 			void InitMesh(ECS::Entity entity, std::string model_path, std::string texture_path);
 			void InitMeshCube(ECS::Entity entity, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
@@ -353,7 +357,6 @@ namespace Puffin
 
 			//-------------------------------------------------------------------------------------
 
-			void Cleanup();
 			void CleanupSwapChain();
 			void CleanupOffscreen();
 			void CleanupImGui();
@@ -362,3 +365,5 @@ namespace Puffin
 		};
 	}
 }
+
+#endif // VULKAN_RENDERER_H

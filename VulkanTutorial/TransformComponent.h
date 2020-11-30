@@ -1,7 +1,12 @@
 #pragma once
 
+#ifndef TRANSFORM_COMPONENT_H
+#define TRANSFORM_COMPONENT_H
+
 #include "Vector.h"
 #include "BaseComponent.h"
+
+#include <cereal/cereal.hpp>
 
 namespace Puffin
 {
@@ -18,3 +23,5 @@ namespace Puffin
 		archive(CEREAL_NVP(comp.position), CEREAL_NVP(comp.rotation), CEREAL_NVP(comp.scale));
 	}
 }
+
+#endif // TRANSFORM_COMPONENT_H

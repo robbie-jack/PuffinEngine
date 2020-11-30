@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef UI_MANAGER_H
+#define UI_MANAGER_H
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
@@ -8,7 +11,7 @@
 
 #include "InputManager.h"
 #include "ECS.h"
-//#include "Engine.h"
+#include "Engine.h"
 #include "UIWindow.h"
 
 #include "UIWindowSceneHierarchy.h"
@@ -36,7 +39,7 @@ namespace Puffin
 			bool DrawUI(float dt, Puffin::Input::InputManager* InputManager);
 			void AddWindow(UIWindow* window);
 
-			//inline void SetEngine(Engine* engine_) { engine = engine_; };
+			inline void SetEngine(Engine* engine_) { engine = engine_; };
 
 			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
 			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
@@ -52,7 +55,7 @@ namespace Puffin
 			bool running;
 			std::string playButtonLabel;
 
-			//Engine* engine;
+			Engine* engine;
 			ECS::World* world;
 
 			std::vector<UIWindow*> windows;
@@ -70,3 +73,5 @@ namespace Puffin
 		};
 	}
 }
+
+#endif // UI_MANAGER_H

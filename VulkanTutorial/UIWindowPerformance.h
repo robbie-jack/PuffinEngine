@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef UI_WINDOW_PERFORMANCE_H
+#define UI_WINDOW_PERFORMANCE_H
+
 #include "UIWindow.h"
 
 namespace Puffin
@@ -54,3 +58,4 @@ namespace Puffin
 	}
 }
 
+#endif // UI_WINDOW_PERFORMANCE_H

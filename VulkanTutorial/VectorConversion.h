@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef VECTOR_CONVERSION_H
+#define VECTOR_CONVERSION_H
+
 #include "btBulletDynamicsCommon.h"
 
 static btVector3 ConvertToEulerAngles(btQuaternion q)
@@ -26,3 +29,5 @@ static btVector3 ConvertToEulerAngles(btQuaternion q)
 
 	return angles;
 }
+
+#endif // !VECTOR_CONVERSION_H

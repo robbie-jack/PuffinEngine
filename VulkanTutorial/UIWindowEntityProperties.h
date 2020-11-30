@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef UI_WINDOW_ENTITY_PROPERTIES_H
+#define UI_WINDOW_ENTITY_PROPERTIES_H
+
 #include "UIWindow.h"
 //#include "Entity.h"
 #include "ECS.h"
@@ -29,3 +33,4 @@ namespace Puffin
     }
 }
 
+#endif // UI_WINDOW_ENTITY_PROPERTIES_H

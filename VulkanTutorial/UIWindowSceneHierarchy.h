@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef UI_WINDOW_SCENE_HIERARCHY_H
+#define UI_WINDOW_SCENE_HIERARCHY_H
+
 #include "UIWindow.h"
 #include "UIWindowEntityProperties.h"
 //#include "EntitySystem.h"
@@ -27,3 +30,5 @@ namespace Puffin
 		};
 	}
 }
+
+#endif // !UI_WINDOW_SCENE_HIERARCHY_H

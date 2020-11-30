@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef UI_WINDOW_SETTINGS_H
+#define UI_WINDOW_SETTINGS_H
+
 #include "UIWindow.h"
 #include "CameraComponent.h"
 #include "ProjectSettings.h"
@@ -25,3 +29,4 @@ namespace Puffin
 	}
 }
 
+#endif // UI_WINDOW_SETTINGS_H

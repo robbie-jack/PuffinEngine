@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef ECS_H
+#define ECS_H
+
 #include <cstdint>
 #include <bitset>
 #include <queue>
@@ -10,9 +13,6 @@
 #include <set>
 #include <memory>
 #include <typeinfo>
-
-#include <cereal/types/bitset.hpp>
-#include <cereal/types/string.hpp>
 
 namespace Puffin
 {
@@ -27,18 +27,6 @@ namespace Puffin
 		const ComponentType MAX_COMPONENTS = 32;
 
 		typedef std::bitset<MAX_COMPONENTS> Signature;
-
-		/*template<class Archive>
-		void serialize(Archive& archive, Entity& entity, std::string& name, Signature& signature)
-		{
-			archive(CEREAL_NVP(entity), CEREAL_NVP(name), CEREAL_NVP(signature));
-		}*/
-
-		/*template<class Archive>
-		void serialize(Archive& archive, ComponentType& type)
-		{
-			archive(type);
-		}*/
 
 		//////////////////////////////////////////////////
 		// Entity Manager
@@ -684,3 +672,5 @@ namespace Puffin
 		};
 	}
 }
+
+#endif // ECS_H
