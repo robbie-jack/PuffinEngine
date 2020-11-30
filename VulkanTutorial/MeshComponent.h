@@ -19,6 +19,8 @@
 #include "FrameBufferAttachment.h"
 #include "BaseComponent.h"
 
+#include <cereal/types/string.hpp>
+
 namespace Puffin
 {
 	namespace Rendering
@@ -79,6 +81,15 @@ namespace Puffin
 
 				return attributeDescriptions;
 			};
+
+			template<class Archive>
+			void serialize(Archive& archive)
+			{
+				archive(pos.x, pos.y, pos.z);
+				archive(normal.x, normal.y, normal.z);
+				archive(color.x, color.y, color.z);
+				archive(texCoord.x, texCoord.y);
+			}
 		};
 
 		const std::vector<Vertex> cube_vertices =
@@ -155,8 +166,6 @@ namespace std
 		}
 	};
 };
-
-#include <cereal/types/string.hpp>
 
 namespace Puffin
 {

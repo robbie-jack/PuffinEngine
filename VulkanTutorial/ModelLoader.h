@@ -7,7 +7,12 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <cereal/types/vector.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include <iostream>
+#include <fstream>
+#include <filesystem>
 
 #include "MeshComponent.h"
 
@@ -31,8 +36,27 @@ namespace Puffin
 			}
 		}
 
+		void SaveMesh(Rendering::MeshComponent& meshComp)
+		{
+			// Initialize Output File Stream and Cereal Binary Archive
+			std::ofstream os(meshComp.model_path, std::ios::binary);
+			cereal::BinaryOutputArchive archive(os);
+
+			archive(meshComp.vertices);
+			archive(meshComp.indices);
+		}
+
+		void LoadMesh(Rendering::MeshComponent& meshComp)
+		{
+			std::ifstream is(meshComp.model_path, std::ios::binary);
+			cereal::BinaryInputArchive archive(is);
+
+			archive(meshComp.vertices);
+			archive(meshComp.indices);
+		}
+
 		// Import Mesh to MeshComponent
-		bool ImportMesh(Rendering::MeshComponent& meshComp, const std::string model_path)
+		bool ImportMesh(const std::string model_path)
 		{
 			// Create an Instance of the Assimp Importer Class
 			Assimp::Importer importer;
@@ -119,8 +143,15 @@ namespace Puffin
 				}
 			}
 
-			meshComp.vertices = vertices;
-			meshComp.indices = indices;
+			std::filesystem::path path(model_path);
+			std::string import_path = "assets/models/" + path.stem().string() + ".asset_m";
+
+			Rendering::MeshComponent mesh;
+			mesh.vertices = vertices;
+			mesh.indices = indices;
+			mesh.model_path = import_path;
+
+			SaveMesh(mesh);
 
 			// Import was successful, return true
 			return true;

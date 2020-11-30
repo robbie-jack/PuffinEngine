@@ -74,8 +74,7 @@ void VulkanRenderer::InitMesh(ECS::Entity entity, std::string model_path, std::s
 	comp.texture_path = texture_path;
 
 	InitTexture(comp.texture, comp.texture_path);
-	//IO::LoadMesh(comp, comp.model_path);
-	IO::ImportMesh(comp, comp.model_path);
+	IO::LoadMesh(comp);
 
 	CreateVertexBuffers(comp);
 	CreateIndexBuffers(comp);

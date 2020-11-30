@@ -27,7 +27,7 @@ namespace Puffin
 		void MainLoop();
 
 		void Play();
-		void Stop();
+		void Restart();
 
 		inline PlayState GetPlayState() { return playState; };
 		inline IO::SceneData& GetScene() { return sceneData; };

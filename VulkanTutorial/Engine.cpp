@@ -45,6 +45,7 @@ namespace Puffin
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(physicsSignature);
 
 		//DefaultScene(&ECSWorld);
+
 		IO::LoadScene("default.scn", &ECSWorld, sceneData);
 		IO::InitScene(&ECSWorld, sceneData);
 
@@ -148,7 +149,7 @@ namespace Puffin
 		world->GetComponent<Physics::RigidbodyComponent>(5).mass = 0.0f;
 	}
 
-	void Engine::Stop()
+	void Engine::Restart()
 	{
 		if (playState == PlayState::PLAYING | playState == PlayState::PAUSED)
 		{

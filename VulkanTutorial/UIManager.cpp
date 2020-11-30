@@ -148,7 +148,8 @@ namespace Puffin
 
 					if (ImGui::MenuItem("Load Scene"))
 					{
-						//IO::LoadScene(engine->GetScene().scene_name, world, engine->GetScene());
+						//IO::LoadScene("test.scn", world, engine->GetScene());
+						//engine->Restart();
 					}
 
 					if (ImGui::MenuItem("Save Scene"))
@@ -202,7 +203,7 @@ namespace Puffin
 
 				if (ImGui::Button("Stop"))
 				{
-					engine->Stop();
+					engine->Restart();
 					playButtonLabel = "Play";
 				}
 
