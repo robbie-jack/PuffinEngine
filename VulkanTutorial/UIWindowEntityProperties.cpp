@@ -90,6 +90,8 @@ namespace Puffin
 									transform.position.x = position[0];
 									transform.position.y = position[1];
 									transform.position.z = position[2];
+
+									positionChanged = true;
 								}
 
 								if (ImGui::DragFloat3("Rotation", rotation, 0.1f))
@@ -174,8 +176,15 @@ namespace Puffin
 								{
 									comp.flag_deleted = true;
 								}
+
+								if (positionChanged)
+								{
+									comp.flag_created = true;
+								}
 							}
 						}
+
+						positionChanged = false;
 
 						ImGui::ListBoxFooter();
 

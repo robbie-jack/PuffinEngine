@@ -33,14 +33,19 @@ namespace Puffin
 			std::map<ECS::Entity, Physics::RigidbodyComponent> rigidbodyMap;
 		};
 
-		// Save Entities/Components to Binary Scene File
-		static void SaveScene(std::string scene_name, ECS::World* world, SceneData& sceneData)
+		inline static void ClearSceneData(SceneData& sceneData)
 		{
-			sceneData.scene_name = scene_name;
+			sceneData.entities.clear();
+			sceneData.entity_names.clear();
+			sceneData.transformMap.clear();
+			sceneData.meshMap.clear();
+			sceneData.rigidbodyMap.clear();
+		}
 
-			// Initialize Output File Stream and Cereal Binary Archive
-			std::ofstream os(sceneData.scene_name, std::ios::binary);
-			cereal::BinaryOutputArchive archive(os);
+		inline static void UpdateSceneData(ECS::World* world, SceneData& sceneData)
+		{
+			// Clear Out Old Scene Data
+			ClearSceneData(sceneData);
 
 			// Store Entities, Names and Signatures in local vectors
 			for (ECS::Entity entity : world->GetActiveEntities())
@@ -48,9 +53,6 @@ namespace Puffin
 				sceneData.entities.insert(entity);
 				sceneData.entity_names.insert({ entity, world->GetEntityName(entity) });
 			}
-
-			// Save Entities, Names and Signatures to Archive
-			archive(sceneData.entities, sceneData.entity_names);
 
 			// Store component's in map, with entity as key value
 			for (ECS::Entity entity : world->GetActiveEntities())
@@ -73,20 +75,33 @@ namespace Puffin
 					sceneData.rigidbodyMap.insert({ entity, comp });
 				}
 			}
+		}
 
+		// Save Entities/Components to Binary Scene File
+		inline static void SaveScene(ECS::World* world, SceneData& sceneData)
+		{
+			// Initialize Output File Stream and Cereal Binary Archive
+			std::ofstream os(sceneData.scene_name, std::ios::binary);
+			cereal::BinaryOutputArchive archive(os);
+
+			UpdateSceneData(world, sceneData);
+
+			// Save Entities and Components to Archive
+			archive(sceneData.entities, sceneData.entity_names);
 			archive(sceneData.transformMap);
 			archive(sceneData.meshMap);
 			archive(sceneData.rigidbodyMap);
 		}
 
 		// Load  Entities/Components from Binary Scene File
-		static void LoadScene(std::string scene_name, ECS::World* world, SceneData& sceneData)
+		inline static void LoadScene(ECS::World* world, SceneData& sceneData)
 		{
-			sceneData.scene_name = scene_name;
-
 			// Initialize Input File Stream and Cereal Binary Archive
 			std::ifstream is(sceneData.scene_name, std::ios::binary);
 			cereal::BinaryInputArchive archive(is);
+
+			// Clear Old Scene Data
+			ClearSceneData(sceneData);
 
 			// Load Entites from Archive
 			archive(sceneData.entities, sceneData.entity_names);
@@ -95,37 +110,10 @@ namespace Puffin
 			archive(sceneData.transformMap);
 			archive(sceneData.meshMap);
 			archive(sceneData.rigidbodyMap);
-
-			// Initiliase EntityManager with Existing Entities
-			world->InitEntitySystem(sceneData.entities);
-
-			// Initilize ECS with all loaded data
-			for (ECS::Entity entity : sceneData.entities)
-			{
-				world->SetEntityName(entity, sceneData.entity_names.at(entity));
-
-				// If Entity has Transform Component, Insert into ECS
-				if (sceneData.transformMap.find(entity) != sceneData.transformMap.end())
-				{
-					world->AddComponent<TransformComponent>(entity, sceneData.transformMap.at(entity));
-				}
-
-				// If Entity has Mesh Component, Insert into ECS
-				if (sceneData.meshMap.find(entity) != sceneData.meshMap.end())
-				{
-					world->AddComponent<Rendering::MeshComponent>(entity, sceneData.meshMap.at(entity));
-				}
-
-				// If Entity has Rigidbody Component, Insert into ECS
-				if (sceneData.rigidbodyMap.find(entity) != sceneData.rigidbodyMap.end())
-				{
-					world->AddComponent<Physics::RigidbodyComponent>(entity, sceneData.rigidbodyMap.at(entity));
-				}
-			}
 		}
 
 		// Initialize ECS with loaded data
-		static void InitScene(ECS::World* world, SceneData& sceneData)
+		inline static void InitScene(ECS::World* world, SceneData& sceneData)
 		{
 			// Initiliase EntityManager with Existing Entities
 			world->InitEntitySystem(sceneData.entities);

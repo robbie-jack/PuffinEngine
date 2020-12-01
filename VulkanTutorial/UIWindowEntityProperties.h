@@ -29,6 +29,7 @@ namespace Puffin
 
             bool modelSelected = false;
             bool textureSelected = false;
+            bool positionChanged = false;
         };
     }
 }

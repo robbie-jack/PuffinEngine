@@ -21,7 +21,7 @@ namespace Puffin
 	namespace IO
 	{
 		// Not for use outside ModelLoader
-		void ProcessNode(aiNode* node, std::vector<aiMesh*>* meshes, const aiScene* scene)
+		inline void ProcessNode(aiNode* node, std::vector<aiMesh*>* meshes, const aiScene* scene)
 		{
 			// Process all meshes in this node
 			for (int i = 0; i < node->mNumMeshes; i++)
@@ -36,7 +36,7 @@ namespace Puffin
 			}
 		}
 
-		void SaveMesh(Rendering::MeshComponent& meshComp)
+		inline void SaveMesh(Rendering::MeshComponent& meshComp)
 		{
 			// Initialize Output File Stream and Cereal Binary Archive
 			std::ofstream os(meshComp.model_path, std::ios::binary);
@@ -46,7 +46,7 @@ namespace Puffin
 			archive(meshComp.indices);
 		}
 
-		void LoadMesh(Rendering::MeshComponent& meshComp)
+		inline void LoadMesh(Rendering::MeshComponent& meshComp)
 		{
 			std::ifstream is(meshComp.model_path, std::ios::binary);
 			cereal::BinaryInputArchive archive(is);
@@ -56,7 +56,7 @@ namespace Puffin
 		}
 
 		// Import Mesh to MeshComponent
-		bool ImportMesh(const std::string model_path)
+		inline bool ImportMesh(const std::string model_path)
 		{
 			// Create an Instance of the Assimp Importer Class
 			Assimp::Importer importer;

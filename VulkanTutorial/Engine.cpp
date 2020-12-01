@@ -46,11 +46,12 @@ namespace Puffin
 
 		//DefaultScene(&ECSWorld);
 
-		IO::LoadScene("default.scn", &ECSWorld, sceneData);
+		sceneData.scene_name = "assets/scenes/default.scn";
+		IO::LoadScene(&ECSWorld, sceneData);
 		IO::InitScene(&ECSWorld, sceneData);
 
 		running = true;
-		firstStopped = false;
+		restarted = false;
 		playState = PlayState::STOPPED;
 
 		// Initialize Systems
@@ -81,19 +82,25 @@ namespace Puffin
 
 			ECSWorld.Update();
 
-			if (playState == PlayState::STOPPED && firstStopped)
+			UIManager.Update();
+
+			if (playState == PlayState::STOPPED)
 			{
-				// Cleanup Systems and ECS
-				renderSystem->Stop();
-				physicsSystem->Stop();
-				ECSWorld.Reset();
+				if (restarted)
+				{
+					// Cleanup Systems and ECS
+					renderSystem->Stop();
+					physicsSystem->Stop();
+					ECSWorld.Reset();
 
-				// Re-Initialize Systems and ECS
-				IO::InitScene(&ECSWorld, sceneData);
-				renderSystem->Start();
-				physicsSystem->Start();
+					// Re-Initialize Systems and ECS
+					IO::LoadScene(&ECSWorld, sceneData);
+					IO::InitScene(&ECSWorld, sceneData);
+					renderSystem->Start();
+					physicsSystem->Start();
 
-				firstStopped = false;
+					restarted = false;
+				}
 			}
 		}
 
@@ -154,8 +161,9 @@ namespace Puffin
 		if (playState == PlayState::PLAYING | playState == PlayState::PAUSED)
 		{
 			playState = PlayState::STOPPED;
-			firstStopped = true;
 		}
+
+		restarted = true;
 	}
 
 	void Engine::Play()

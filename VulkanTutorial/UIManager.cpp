@@ -1,5 +1,8 @@
 #include "UIManager.h"
 #include "SerializeScene.h"
+#include "ModelLoader.h"
+
+#include <string>
 
 namespace Puffin
 {
@@ -18,6 +21,9 @@ namespace Puffin
 			SetStyle();
 
 			running = true;
+			saveScene = false;
+			loadScene = false;
+			importMesh = false;
 			playButtonLabel = "Play";
 
 			windowSceneHierarchy = new UIWindowSceneHierarchy();
@@ -85,6 +91,39 @@ namespace Puffin
 			return running;
 		}
 
+		// Any functionality which would cause errors/crashes from within 
+		// VulkanRenderer DrawFrame() should be placed here instead
+		void UIManager::Update()
+		{
+			// File Dialog - Load Scene
+			if (fileDialog.HasSelected() && loadScene)
+			{
+				std::string scenePath = fileDialog.GetSelected().string();
+				//IO::LoadScene(scenePath, world, engine->GetScene());
+				engine->GetScene().scene_name = scenePath;
+
+				engine->Restart();
+
+				loadScene = false;
+			}
+
+			// File Dialog - Import Mesh
+			if (fileDialog.HasSelected() && importMesh)
+			{
+				std::string importPath = fileDialog.GetSelected().string();
+				if (IO::ImportMesh(importPath))
+				{
+					std::cout << "Import Successful" << std::endl;
+				}
+				else
+				{
+					std::cout << "Import Failed" << std::endl;
+				}
+
+				importMesh = false;
+			}
+		}
+
 		bool UIManager::ShowDockspace(bool* p_open)
 		{
 			static bool opt_fullscreen_persistant = true;
@@ -139,7 +178,7 @@ namespace Puffin
 
 			if (ImGui::BeginMenuBar())
 			{
-				if (ImGui::BeginMenu("Menu"))
+				if (ImGui::BeginMenu("File"))
 				{
 					if (ImGui::MenuItem("New Scene"))
 					{
@@ -148,18 +187,29 @@ namespace Puffin
 
 					if (ImGui::MenuItem("Load Scene"))
 					{
-						//IO::LoadScene("test.scn", world, engine->GetScene());
-						//engine->Restart();
+						fileDialog.Open();
+						loadScene = true;
 					}
 
 					if (ImGui::MenuItem("Save Scene"))
 					{
-						IO::SaveScene(engine->GetScene().scene_name, world, engine->GetScene());
+						IO::SaveScene(world, engine->GetScene());
 					}
 
 					if (ImGui::MenuItem("Save Scene As"))
 					{
-						//IO::SaveScene(engine->GetScene().scene_name, world, engine->GetScene());
+						saveScene = true;
+					}
+
+					if (ImGui::BeginMenu("Import"))
+					{
+						if (ImGui::MenuItem("Mesh"))
+						{
+							fileDialog.Open();
+							importMesh = true;
+						}
+
+						ImGui::EndMenu();
 					}
 
 					if (ImGui::MenuItem("Quit", "Alt+F4"))
@@ -208,6 +258,48 @@ namespace Puffin
 				}
 
 				ImGui::EndMenuBar();
+			}
+
+			if (saveScene)
+			{
+				saveScene = false;
+				ImGui::OpenPopup("Save Scene");
+			}
+
+			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5, 0.5));
+
+			// Save Scene Modal Window
+			if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				std::string str_name = engine->GetScene().scene_name;
+				std::vector<char> name(256, '\0');
+				for (int i = 0; i < str_name.size(); i++)
+				{
+					name[i] = str_name[i];
+				}
+				name.push_back('\0');
+
+				ImGui::Text("Enter Scene Name:");
+				if (ImGui::InputText("##Edit", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
+				{
+					engine->GetScene().scene_name = std::string(&name[0]);
+				}
+
+				if (ImGui::Button("Save"))
+				{
+					IO::SaveScene(world, engine->GetScene());
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
 			}
 
 			ImGui::End();

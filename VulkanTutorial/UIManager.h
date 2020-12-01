@@ -37,6 +37,7 @@ namespace Puffin
 			void Cleanup();
 
 			bool DrawUI(float dt, Puffin::Input::InputManager* InputManager);
+			void Update();
 			void AddWindow(UIWindow* window);
 
 			inline void SetEngine(Engine* engine_) { engine = engine_; };
@@ -53,6 +54,8 @@ namespace Puffin
 
 		private:
 			bool running;
+			bool saveScene, loadScene, importMesh;
+
 			std::string playButtonLabel;
 
 			Engine* engine;

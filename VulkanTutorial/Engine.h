@@ -34,7 +34,7 @@ namespace Puffin
 
 	private:
 
-		bool running, firstStopped;
+		bool running, restarted;
 		PlayState playState;
 
 		IO::SceneData sceneData;

@@ -36,7 +36,11 @@ namespace Puffin
 			for (ECS::Entity entity : entities)
 			{
 				CleanupComponent(entity);
+
+				world->RemoveComponent<RigidbodyComponent>(entity);
 			}
+
+			entities.clear();
 
 			for (int j = 0; j < collisionShapes.size(); j++)
 			{
