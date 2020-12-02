@@ -25,7 +25,7 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 	bool running = UIManager->DrawUI(dt, InputManager);
 
 	// Initialise/Recreate/Delete marked components
-	for (ECS::Entity entity : entities)
+	for (ECS::Entity entity : entityMap.at("Mesh"))
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -209,7 +209,7 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 
 void VulkanRenderer::Start()
 {
-	for (ECS::Entity entity : entities)
+	for (ECS::Entity entity : entityMap["Mesh"])
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 		InitMesh(entity, comp.model_path, comp.texture_path);
@@ -1805,7 +1805,7 @@ void VulkanRenderer::CreateUniformBuffer(MeshComponent& mesh_component)
 
 void VulkanRenderer::CreateUniformBuffers()
 {
-	for (ECS::Entity entity : entities)
+	for (ECS::Entity entity : entityMap.at("Mesh"))
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -1847,19 +1847,19 @@ void VulkanRenderer::CreateDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 4> poolSizes = {};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entities.size());
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entities.size());
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
 	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entities.size());
+	poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
 	poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entities.size());
+	poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * entities.size());
+	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 	{
@@ -1899,7 +1899,7 @@ void VulkanRenderer::CreateImGuiDescriptorPool()
 
 void VulkanRenderer::CreateDescriptorSets()
 {
-	for (ECS::Entity entity : entities)
+	for (ECS::Entity entity : entityMap.at("Mesh"))
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -2031,7 +2031,7 @@ void VulkanRenderer::CreateMainCommandBuffers()
 
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		for (ECS::Entity entity : entities)
+		for (ECS::Entity entity : entityMap.at("Mesh"))
 		{
 			MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -2214,7 +2214,7 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	for (ECS::Entity entity : entities)
+	for (ECS::Entity entity : entityMap.at("Mesh"))
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -2377,7 +2377,7 @@ void VulkanRenderer::UpdateImguiCommandBuffers(uint32_t currentImage)
 void VulkanRenderer::Stop()
 {
 	// Cleanup Meshes
-	for (ECS::Entity entity : entities)
+	for (ECS::Entity entity : entityMap.at("Mesh"))
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -2386,7 +2386,7 @@ void VulkanRenderer::Stop()
 		world->RemoveComponent<MeshComponent>(entity);
 	}
 
-	entities.clear();
+	entityMap.at("Mesh").clear();
 
 	recreateSwapChain = true;
 }

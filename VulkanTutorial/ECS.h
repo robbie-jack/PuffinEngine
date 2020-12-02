@@ -13,6 +13,7 @@
 #include <set>
 #include <memory>
 #include <typeinfo>
+#include <string_view>
 
 namespace Puffin
 {
@@ -402,10 +403,12 @@ namespace Puffin
 
 		class World;
 
+		typedef std::unordered_map<std::string_view, std::set<Entity>> EntityMap;
+
 		class System
 		{
 		public:
-			std::set<Entity> entities;
+			EntityMap entityMap;
 			std::shared_ptr<World> world;
 			Entity entityToDelete;
 		};
@@ -414,13 +417,18 @@ namespace Puffin
 		// System Manager
 		//////////////////////////////////////////////////
 
+		// Stores all signatures used by a system
+		typedef std::unordered_map<std::string_view, Signature> SignatureMap;
+
 		class SystemManager
 		{
 		public:
 
 			void Cleanup()
 			{
-				signatures.clear();
+				//signatures.clear();
+				signatureMap.clear();
+
 				systems.clear();
 			}
 
@@ -431,6 +439,9 @@ namespace Puffin
 
 				assert(mSystems.find(typeName) == mSystems.end() && "Registering system more than once.");
 
+				// Create New Signature Map for this System
+				signatureMap.insert({ typeName, SignatureMap() });
+
 				// Create and return pointer to system
 				std::shared_ptr<SystemT> system = std::make_shared<SystemT>();
 				std::static_pointer_cast<System>(system)->world = world;
@@ -439,14 +450,17 @@ namespace Puffin
 			}
 
 			template<typename SystemT>
-			void SetSignature(Signature signature)
+			void SetSignature(std::string_view signatureName, Signature signature)
 			{
 				const char* typeName = typeid(SystemT).name();
 
 				assert(mSystems.find(typeName) != mSystems.end() && "System used before registered.");
 
-				// Set Signature for this system
-				signatures.insert({ typeName, signature });
+				// Insert New Signature for this System
+				signatureMap.at(typeName).insert({ signatureName, signature });
+				
+				// Insert New Set for this System
+				systems.at(typeName)->entityMap.insert({ signatureName, std::set<Entity>() });
 			}
 
 			void EntityDestroyed(Entity entity)
@@ -457,7 +471,13 @@ namespace Puffin
 				{
 					auto const& system = pair.second;
 
-					system->entities.erase(entity);
+					// Erase Entity for every set in System
+					for (auto const& map_pair : system->entityMap)
+					{
+						auto const& signatureName = map_pair.first;
+
+						system->entityMap.at(signatureName).erase(entity);
+					}
 				}
 			}
 
@@ -468,17 +488,24 @@ namespace Puffin
 				{
 					auto const& type = pair.first;
 					auto const& system = pair.second;
-					auto const& systemSignature = signatures[type];
+					auto const& systemMap = signatureMap[type];
 
-					// Entity signature matches system signature - insert into set
-					if ((entitySignature & systemSignature) == systemSignature)
+					// Iterate over each signature of of the system
+					for (auto const& map : systemMap)
 					{
-						system->entities.insert(entity);
-					}
-					// Entity signature does not match system signature - erase from set
-					else
-					{
-						system->entities.erase(entity);
+						auto const& signatureName = map.first;
+						auto const& systemSignature = map.second;
+
+						// Entity signature matches system signature - insert into matching set
+						if ((entitySignature & systemSignature) == systemSignature)
+						{
+							system->entityMap.at(signatureName).insert(entity);
+						}
+						// Entity signature does not match system signature - erase from set
+						else
+						{
+							system->entityMap.at(signatureName).erase(entity);
+						}
 					}
 				}
 			}
@@ -486,7 +513,8 @@ namespace Puffin
 		private:
 
 			// Map from system type string pointer to signature
-			std::unordered_map<const char*, Signature> signatures;
+			//std::unordered_map<const char*, Signature> signatures;
+			std::unordered_map<const char*, SignatureMap> signatureMap;
 
 			// Map from system type string to system pointer
 			std::unordered_map<const char*, std::shared_ptr<System>> systems;
@@ -671,9 +699,9 @@ namespace Puffin
 			}
 
 			template<typename SystemT>
-			void SetSystemSignature(Signature signature)
+			void SetSystemSignature(std::string_view signatureName, Signature signature)
 			{
-				systemManager->SetSignature<SystemT>(signature);
+				systemManager->SetSignature<SystemT>(signatureName, signature);
 
 				// Update System's local entity list with any new entities
 				for (Entity entity : entityManager->GetActiveEntities())

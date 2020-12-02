@@ -23,7 +23,7 @@ namespace Puffin
 			//InitComponent(3, btVector3(1.0f, 1.0f, 1.0f), 1.0f, btVector3(comp1.position.x, comp1.position.y, comp1.position.z));
 			//InitComponent(5, btVector3(1.0f, 1.0f, 1.0f), 0.0f, btVector3(comp2.position.x, comp2.position.y, comp2.position.z));
 
-			for (ECS::Entity entity : entities)
+			for (ECS::Entity entity : entityMap.at("Rigidbody"))
 			{
 				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 				RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(entity);
@@ -33,14 +33,14 @@ namespace Puffin
 
 		void BulletPhysicsSystem::Stop()
 		{
-			for (ECS::Entity entity : entities)
+			for (ECS::Entity entity : entityMap.at("Rigidbody"))
 			{
 				CleanupComponent(entity);
 
 				world->RemoveComponent<RigidbodyComponent>(entity);
 			}
 
-			entities.clear();
+			entityMap.at("Rigidbody").clear();
 
 			for (int j = 0; j < collisionShapes.size(); j++)
 			{
@@ -68,7 +68,7 @@ namespace Puffin
 			physicsWorld->stepSimulation(dt);
 
 			// Update Entity transfrom from Physics Component
-			for (ECS::Entity entity : entities)
+			for (ECS::Entity entity : entityMap.at("Rigidbody"))
 			{
 				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
 				RigidbodyComponent& physicsComp = world->GetComponent<RigidbodyComponent>(entity);

@@ -32,17 +32,19 @@ namespace Puffin
 
 		ECSWorld.RegisterComponent<TransformComponent>();
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
+		ECSWorld.RegisterComponent<Rendering::LightComponent>();
 		ECSWorld.RegisterComponent<Physics::RigidbodyComponent>();
 
-		ECS::Signature renderSignature;
-		renderSignature.set(ECSWorld.GetComponentType<TransformComponent>());
-		renderSignature.set(ECSWorld.GetComponentType<Rendering::MeshComponent>());
-		ECSWorld.SetSystemSignature<Rendering::VulkanRenderer>(renderSignature);
+		ECS::Signature meshSignature;
+		meshSignature.set(ECSWorld.GetComponentType<TransformComponent>());
+		meshSignature.set(ECSWorld.GetComponentType<Rendering::MeshComponent>());
+		//renderSignature.set(ECSWorld.GetComponentType<Rendering::LightComponent>());
+		ECSWorld.SetSystemSignature<Rendering::VulkanRenderer>("Mesh", meshSignature);
 
-		ECS::Signature physicsSignature;
-		physicsSignature.set(ECSWorld.GetComponentType<TransformComponent>());
-		physicsSignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
-		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>(physicsSignature);
+		ECS::Signature rigidbodySignature;
+		rigidbodySignature.set(ECSWorld.GetComponentType<TransformComponent>());
+		rigidbodySignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
+		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
 
 		//DefaultScene(&ECSWorld);
 
