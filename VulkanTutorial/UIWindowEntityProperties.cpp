@@ -60,6 +60,8 @@ namespace Puffin
 							| ImGuiTreeNodeFlags_OpenOnDoubleClick
 							| ImGuiTreeNodeFlags_AllowItemOverlap;
 
+						sceneChanged = false;
+
 						// Display Transform Component - If One Exists
 						if (world->HasComponent<TransformComponent>(entity))
 						{
@@ -83,6 +85,7 @@ namespace Puffin
 								if (ImGui::IsItemActivated())
 								{
 									world->RemoveComponent<TransformComponent>(entity);
+									sceneChanged = true;
 								}
 
 								if (ImGui::DragFloat3("Position", position, 0.1f))
@@ -92,6 +95,7 @@ namespace Puffin
 									transform.position.z = position[2];
 
 									positionChanged = true;
+									sceneChanged = true;
 								}
 
 								if (ImGui::DragFloat3("Rotation", rotation, 0.1f))
@@ -99,6 +103,8 @@ namespace Puffin
 									transform.rotation.x = rotation[0] * PI / 180;
 									transform.rotation.y = rotation[1] * PI / 180;
 									transform.rotation.z = rotation[2] * PI / 180;
+
+									sceneChanged = true;
 								}
 
 								if (ImGui::DragFloat3("Scale", scale, 0.1f))
@@ -106,6 +112,8 @@ namespace Puffin
 									transform.scale.x = scale[0];
 									transform.scale.y = scale[1];
 									transform.scale.z = scale[2];
+
+									sceneChanged = true;
 								}
 							}
 						}
@@ -125,6 +133,7 @@ namespace Puffin
 								if (ImGui::IsItemClicked())
 								{
 									mesh.flag_deleted = true;
+									sceneChanged = true;
 								}
 
 								// Change Model Path
@@ -140,6 +149,7 @@ namespace Puffin
 									mesh.model_path = fileDialog->GetSelected().string();
 									mesh.flag_created = true;
 									modelSelected = false;
+									sceneChanged = true;
 									fileDialog->ClearSelected();
 								}
 
@@ -156,6 +166,7 @@ namespace Puffin
 									mesh.texture_path = fileDialog->GetSelected().string();
 									mesh.flag_created = true;
 									textureSelected = false;
+									sceneChanged = true;
 									fileDialog->ClearSelected();
 								}
 							}
@@ -175,6 +186,7 @@ namespace Puffin
 								if (ImGui::IsItemClicked())
 								{
 									comp.flag_deleted = true;
+									sceneChanged = true;
 								}
 
 								if (positionChanged)
@@ -203,6 +215,7 @@ namespace Puffin
 								if (!world->HasComponent<TransformComponent>(entity))
 								{
 									world->AddComponent<TransformComponent>(entity);
+									sceneChanged = true;
 								}
 							}
 
@@ -214,6 +227,7 @@ namespace Puffin
 									comp.model_path = "models\\cube.obj";
 									comp.texture_path = "textures\\cube.png";
 									comp.flag_created = true;
+									sceneChanged = true;
 								}
 							}
 
@@ -225,6 +239,7 @@ namespace Puffin
 									comp.size = btVector3(1.0f, 1.0f, 1.0f);
 									comp.mass = 0.0f;
 									comp.flag_created = true;
+									sceneChanged = true;
 								}
 							}
 

@@ -99,8 +99,9 @@ namespace Puffin
 			if (fileDialog.HasSelected() && loadScene)
 			{
 				std::string scenePath = fileDialog.GetSelected().string();
-				//IO::LoadScene(scenePath, world, engine->GetScene());
 				engine->GetScene().scene_name = scenePath;
+
+				IO::LoadScene(world, engine->GetScene());
 
 				engine->Restart();
 
@@ -121,6 +122,12 @@ namespace Puffin
 				}
 
 				importMesh = false;
+			}
+
+			// Update Scene Data if any changes were made to an entity
+			if (windowEntityProperties->HasSceneChanged())
+			{
+				IO::UpdateSceneData(world, engine->GetScene());
 			}
 		}
 

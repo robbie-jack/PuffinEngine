@@ -94,7 +94,7 @@ namespace Puffin
 					ECSWorld.Reset();
 
 					// Re-Initialize Systems and ECS
-					IO::LoadScene(&ECSWorld, sceneData);
+					//IO::LoadScene(&ECSWorld, sceneData);
 					IO::InitScene(&ECSWorld, sceneData);
 					renderSystem->Start();
 					physicsSystem->Start();

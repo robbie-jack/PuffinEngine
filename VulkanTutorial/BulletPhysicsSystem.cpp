@@ -76,6 +76,7 @@ namespace Puffin
 				// Init/Recreate Flagged Components
 				if (physicsComp.flag_created)
 				{
+					CleanupComponent(entity);
 					InitComponent(entity, physicsComp.size, physicsComp.mass, transformComp.position);
 					physicsComp.flag_created = false;
 				}

@@ -22,6 +22,8 @@ namespace Puffin
             inline void SetWorld(ECS::World* world_) { world = world_; };
             inline void SetFileBrowser(ImGui::FileBrowser* fileDialog_) { fileDialog = fileDialog_; };
 
+            inline bool HasSceneChanged() { return sceneChanged; };
+
         private:
             ECS::Entity entity;
             ECS::World* world;
@@ -30,6 +32,7 @@ namespace Puffin
             bool modelSelected = false;
             bool textureSelected = false;
             bool positionChanged = false;
+            bool sceneChanged = false;
         };
     }
 }
