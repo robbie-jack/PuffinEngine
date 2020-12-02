@@ -93,6 +93,9 @@
     <ClCompile Include="include\imgui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="include\imgui\imgui_stdlib.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -180,6 +183,9 @@
     </ClInclude>
     <ClInclude Include="RigidbodyComponent.h">
       <Filter>Physics\BulletPhysics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\imgui\imgui_stdlib.h">
+      <Filter>ImGui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

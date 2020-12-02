@@ -177,6 +177,7 @@
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_glfw.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="include\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="UIWindow.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -196,6 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseComponent.h" />
+    <ClInclude Include="include\imgui\imgui_stdlib.h" />
     <ClInclude Include="RigidbodyComponent.h" />
     <ClInclude Include="BulletPhysicsSystem.h" />
     <ClInclude Include="CameraComponent.h" />

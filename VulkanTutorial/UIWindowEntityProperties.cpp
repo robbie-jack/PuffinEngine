@@ -4,6 +4,8 @@
 #include "MeshComponent.h"
 #include "RigidbodyComponent.h"
 
+#include "imgui/imgui_stdlib.h"
+
 #include <iostream>
 #include <string>
 
@@ -30,22 +32,12 @@ namespace Puffin
 						ImGui::Dummy(ImVec2(0.0f, 5.0f));
 						ImGui::Text(""); ImGui::SameLine(0.0f);
 
-						// Convert Stored String into array of char's
-						std::string str_name = world->GetEntityName(entity);
-						std::vector<char> name(64, '\0');
-						for (int i = 0; i < str_name.size(); i++)
+						// Edit Entity Name
+						std::string* name = &world->GetEntityName(entity);
+						if (ImGui::InputText("##Name", name, ImGuiInputTextFlags_EnterReturnsTrue))
 						{
-							name[i] = str_name[i];
+							world->SetEntityName(entity, *name);
 						}
-						name.push_back('\0');
-
-						// Display InputText and Entity ID
-						if (ImGui::InputText("", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
-						{
-							world->SetEntityName(entity, std::string(&name[0]));
-						}
-
-						name.clear();
 
 						ImGui::Dummy(ImVec2(0.0f, 10.0f));
 						ImGui::Text(" List of Components Here"); 
