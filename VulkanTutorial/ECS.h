@@ -426,7 +426,6 @@ namespace Puffin
 
 			void Cleanup()
 			{
-				//signatures.clear();
 				signatureMap.clear();
 
 				systems.clear();

@@ -6,6 +6,7 @@
 #include "ECS.h"
 #include "TransformComponent.h"
 #include "MeshComponent.h"
+#include "LightComponent.h"
 #include "RigidbodyComponent.h"
 
 #include <vector>
@@ -30,6 +31,7 @@ namespace Puffin
 			std::map<ECS::Entity, std::string> entity_names;
 			std::map<ECS::Entity, TransformComponent> transformMap;
 			std::map<ECS::Entity, Rendering::MeshComponent> meshMap;
+			std::map<ECS::Entity, Rendering::LightComponent> lightMap;
 			std::map<ECS::Entity, Physics::RigidbodyComponent> rigidbodyMap;
 		};
 
@@ -69,6 +71,12 @@ namespace Puffin
 					sceneData.meshMap.insert({ entity, comp });
 				}
 
+				if (world->HasComponent<Rendering::LightComponent>(entity))
+				{
+					Rendering::LightComponent& comp = world->GetComponent<Rendering::LightComponent>(entity);
+					sceneData.lightMap.insert({ entity, comp });
+				}
+
 				if (world->HasComponent<Physics::RigidbodyComponent>(entity))
 				{
 					Physics::RigidbodyComponent& comp = world->GetComponent<Physics::RigidbodyComponent>(entity);
@@ -90,6 +98,7 @@ namespace Puffin
 			archive(sceneData.entities, sceneData.entity_names);
 			archive(sceneData.transformMap);
 			archive(sceneData.meshMap);
+			archive(sceneData.lightMap);
 			archive(sceneData.rigidbodyMap);
 		}
 
@@ -109,6 +118,7 @@ namespace Puffin
 			// Load Components into Maps
 			archive(sceneData.transformMap);
 			archive(sceneData.meshMap);
+			archive(sceneData.lightMap);
 			archive(sceneData.rigidbodyMap);
 		}
 
@@ -133,6 +143,12 @@ namespace Puffin
 				if (sceneData.meshMap.find(entity) != sceneData.meshMap.end())
 				{
 					world->AddComponent<Rendering::MeshComponent>(entity, sceneData.meshMap.at(entity));
+				}
+
+				// If Entity has Light Component, Insert into ECS
+				if (sceneData.lightMap.find(entity) != sceneData.lightMap.end())
+				{
+					world->AddComponent<Rendering::LightComponent>(entity, sceneData.lightMap.at(entity));
 				}
 
 				// If Entity has Rigidbody Component, Insert into ECS

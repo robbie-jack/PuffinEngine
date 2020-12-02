@@ -27,12 +27,26 @@ namespace Puffin
 			alignas(4) int shininess;
 		};
 
+		template<class Archive>
+		void serialize(Archive& archive, LightBufferObject& buffer)
+		{
+			archive(buffer.ambientColor.x, buffer.ambientColor.y, buffer.ambientColor.z);
+			archive(buffer.diffuseColor.x, buffer.diffuseColor.y, buffer.diffuseColor.z);
+			archive(buffer.specularStrength, buffer.shininess);
+		}
+
 		struct LightComponent : public BaseComponent
 		{
 			LightBufferObject uniformBuffer;
 			std::vector<VkBuffer> buffers;
 			std::vector<VmaAllocation> allocations;
 		};
+
+		template<class Archive>
+		void serialize(Archive& archive, LightComponent& comp)
+		{
+			archive(comp.uniformBuffer);
+		}
 	}
 }
 

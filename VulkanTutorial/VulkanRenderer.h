@@ -94,7 +94,7 @@ namespace Puffin
 
 			void InitMesh(ECS::Entity entity, std::string model_path, std::string texture_path);
 			void InitMeshCube(ECS::Entity entity, glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f));
-			void InitLight(LightComponent& light, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, float specular = 0.5f, int shininess = 32);
+			void InitLight(ECS::Entity entity, glm::vec3 ambient, glm::vec3 diffuse, float specular = 0.5f, int shininess = 32);
 			void InitCamera(CameraComponent& camera, glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov, float aspect, float near, float far);
 
 			inline GLFWwindow* GetWindow() { return window; };
@@ -172,7 +172,7 @@ namespace Puffin
 			Texture cube_texture;
 
 			// Light
-			LightComponent light;
+			//LightComponent light;
 
 			VkDescriptorPool descriptorPool;
 
@@ -287,6 +287,7 @@ namespace Puffin
 
 			void CreateUniformBuffer(MeshComponent& mesh_component);
 			void CreateUniformBuffers();
+			void CreateLightBuffer(LightComponent& light_component);
 			void CreateLightBuffers();
 			void CreateViewBuffers();
 			void CreateDescriptorPool();
@@ -362,6 +363,7 @@ namespace Puffin
 			void CleanupOffscreen();
 			void CleanupImGui();
 			void CleanupMeshComponent(MeshComponent& mesh_component);
+			void CleanupLightComponent(LightComponent& light_component);
 			void CleanupFrameBufferAttachment(FrameBufferAttachment& attachment);
 		};
 	}

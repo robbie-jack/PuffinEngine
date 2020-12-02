@@ -2,6 +2,7 @@
 
 #include "TransformComponent.h"
 #include "MeshComponent.h"
+#include "LightComponent.h"
 #include "RigidbodyComponent.h"
 
 #include "imgui/imgui_stdlib.h"
@@ -160,6 +161,30 @@ namespace Puffin
 									textureSelected = false;
 									sceneChanged = true;
 									fileDialog->ClearSelected();
+								}
+							}
+						}
+
+						if (world->HasComponent<Rendering::LightComponent>(entity))
+						{
+							ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+							if (ImGui::CollapsingHeader("Light Component"), flags)
+							{
+								ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+								Rendering::LightComponent& comp = world->GetComponent<Rendering::LightComponent>(entity);
+
+								ImGui::Button("X");
+
+								if (ImGui::IsItemClicked())
+								{
+									comp.flag_deleted = true;
+									sceneChanged = true;
+								}
+
+								if (positionChanged)
+								{
+									comp.flag_created = true;
 								}
 							}
 						}

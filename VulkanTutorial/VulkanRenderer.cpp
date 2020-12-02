@@ -25,7 +25,7 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 	bool running = UIManager->DrawUI(dt, InputManager);
 
 	// Initialise/Recreate/Delete marked components
-	for (ECS::Entity entity : entityMap.at("Mesh"))
+	for (ECS::Entity entity : entityMap["Mesh"])
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -42,6 +42,25 @@ bool VulkanRenderer::Update(UI::UIManager* UIManager, Input::InputManager* Input
 		{
 			CleanupMeshComponent(comp);
 			world->RemoveComponent<MeshComponent>(entity);
+			recreateSwapChain = true;
+		}
+	}
+
+	for (ECS::Entity entity : entityMap["Light"])
+	{
+		LightComponent& comp = world->GetComponent<LightComponent>(entity);
+		
+		if (comp.flag_created)
+		{
+			InitLight(entity, comp.uniformBuffer.ambientColor, comp.uniformBuffer.diffuseColor, comp.uniformBuffer.specularStrength, comp.uniformBuffer.shininess);
+			comp.flag_created = false;
+			recreateSwapChain = true;
+		}
+
+		if (comp.flag_deleted || world->IsDeleted(entity))
+		{
+			CleanupLightComponent(comp);
+			world->RemoveComponent<LightComponent>(entity);
 			recreateSwapChain = true;
 		}
 	}
@@ -99,13 +118,18 @@ void VulkanRenderer::InitMeshCube(ECS::Entity entity, glm::vec3 color)
 	CreateUniformBuffer(comp);
 }
 
-void VulkanRenderer::InitLight(LightComponent& light, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, float specular, int shininess)
+void VulkanRenderer::InitLight(ECS::Entity entity, glm::vec3 ambient, glm::vec3 diffuse, float specular, int shininess)
 {
-	light.uniformBuffer.position = position;
-	light.uniformBuffer.ambientColor = ambient;
+	TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+	LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+	light.uniformBuffer.position = transform.position;
+	/*light.uniformBuffer.ambientColor = ambient;
 	light.uniformBuffer.diffuseColor = diffuse;
 	light.uniformBuffer.specularStrength = specular;
-	light.uniformBuffer.shininess = shininess;
+	light.uniformBuffer.shininess = shininess;*/
+
+	CreateLightBuffer(light);
 }
 
 void VulkanRenderer::InitCamera(CameraComponent& camera, glm::vec3 position_, glm::vec3 direction_, glm::vec3 up_, float fov_, float aspect_, float near_, float far_)
@@ -191,12 +215,12 @@ void VulkanRenderer::InitVulkan(UI::UIManager* UIManager)
 	UIManager->GetWindowSettings()->SetCamera(&camera);
 
 	// Initialize Lights
-	InitLight(light, glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
+	//InitLight(light, glm::vec3(-2.0f, 0.0f, 2.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.0f), 0.5f, 16);
 
 	Start();
 
 	//CreateUniformBuffers();
-	CreateLightBuffers();
+	//CreateLightBuffers();
 	CreateViewBuffers();
 	CreateDescriptorPool();
 
@@ -213,6 +237,12 @@ void VulkanRenderer::Start()
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 		InitMesh(entity, comp.model_path, comp.texture_path);
+	}
+
+	for (ECS::Entity entity : entityMap["Light"])
+	{
+		LightComponent& comp = world->GetComponent<LightComponent>(entity);
+		InitLight(entity, comp.uniformBuffer.ambientColor, comp.uniformBuffer.diffuseColor, comp.uniformBuffer.specularStrength, comp.uniformBuffer.shininess);
 	}
 }
 
@@ -1805,15 +1835,15 @@ void VulkanRenderer::CreateUniformBuffer(MeshComponent& mesh_component)
 
 void VulkanRenderer::CreateUniformBuffers()
 {
-	for (ECS::Entity entity : entityMap.at("Mesh"))
+	for (ECS::Entity entity : entityMap["Mesh"])
 	{
-		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+		MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-		CreateUniformBuffer(comp);
+		CreateUniformBuffer(mesh);
 	}
 }
 
-void VulkanRenderer::CreateLightBuffers()
+void VulkanRenderer::CreateLightBuffer(LightComponent& light)
 {
 	VkDeviceSize bufferSize = sizeof(light.buffers);
 
@@ -1825,6 +1855,17 @@ void VulkanRenderer::CreateLightBuffers()
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			light.buffers[i], VMA_MEMORY_USAGE_GPU_ONLY, light.allocations[i]);
+	}
+}
+
+void VulkanRenderer::CreateLightBuffers()
+{
+	for (ECS::Entity entity : entityMap["Light"])
+	{
+		LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+		CleanupLightComponent(light);
+		CreateLightBuffer(light);
 	}
 }
 
@@ -1847,19 +1888,19 @@ void VulkanRenderer::CreateDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 4> poolSizes = {};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap["Mesh"].size());
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap["Mesh"].size());
 	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
+	poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap["Mesh"].size());
 	poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
+	poolSizes[3].descriptorCount = static_cast<uint32_t>(swapChainImages.size() * entityMap["Mesh"].size());
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * entityMap.at("Mesh").size());
+	poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size() * entityMap["Mesh"].size());
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 	{
@@ -1899,7 +1940,7 @@ void VulkanRenderer::CreateImGuiDescriptorPool()
 
 void VulkanRenderer::CreateDescriptorSets()
 {
-	for (ECS::Entity entity : entityMap.at("Mesh"))
+	for (ECS::Entity entity : entityMap["Mesh"])
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -1922,6 +1963,8 @@ void VulkanRenderer::CreateDescriptorSets()
 			meshBufferInfo.buffer = comp.uniformBuffers[i];
 			meshBufferInfo.offset = 0;
 			meshBufferInfo.range = sizeof(comp.matrices);
+
+			LightComponent& light = world->GetComponent<LightComponent>(4);
 
 			VkDescriptorBufferInfo lightBufferInfo = {};
 			lightBufferInfo.buffer = light.buffers[i];
@@ -2031,7 +2074,7 @@ void VulkanRenderer::CreateMainCommandBuffers()
 
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		for (ECS::Entity entity : entityMap.at("Mesh"))
+		for (ECS::Entity entity : entityMap["Mesh"])
 		{
 			MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -2214,9 +2257,10 @@ void VulkanRenderer::UpdateUniformBuffers(uint32_t currentImage, float delta_tim
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	for (ECS::Entity entity : entityMap.at("Mesh"))
+	for (ECS::Entity entity : entityMap["Mesh"])
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+		LightComponent& light = world->GetComponent<LightComponent>(4);
 
 		MeshMatrices matrice = {};
 
@@ -2377,7 +2421,7 @@ void VulkanRenderer::UpdateImguiCommandBuffers(uint32_t currentImage)
 void VulkanRenderer::Stop()
 {
 	// Cleanup Meshes
-	for (ECS::Entity entity : entityMap.at("Mesh"))
+	for (ECS::Entity entity : entityMap["Mesh"])
 	{
 		MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
 
@@ -2386,7 +2430,16 @@ void VulkanRenderer::Stop()
 		world->RemoveComponent<MeshComponent>(entity);
 	}
 
-	entityMap.at("Mesh").clear();
+	entityMap["Mesh"].clear();
+
+
+	// Cleanup Lights
+	for (ECS::Entity entity : entityMap["Light"])
+	{
+		LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+		CleanupLightComponent(light);
+	}
 
 	recreateSwapChain = true;
 }
@@ -2499,6 +2552,15 @@ void VulkanRenderer::CleanupMeshComponent(MeshComponent& mesh_component)
 	{
 		vkDestroyBuffer(device, mesh_component.uniformBuffers[i], nullptr);
 		vmaFreeMemory(allocator, mesh_component.uniformAllocations[i]);
+	}
+}
+
+void VulkanRenderer::CleanupLightComponent(LightComponent& light)
+{
+	for (int i = 0; i < light.buffers.size(); i++)
+	{
+		vkDestroyBuffer(device, light.buffers[i], nullptr);
+		vmaFreeMemory(allocator, light.allocations[i]);
 	}
 }
 
