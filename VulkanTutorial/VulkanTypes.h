@@ -21,11 +21,6 @@ namespace Puffin
 			};
 
 			typedef FrameBufferAttachment Texture;
-
-			struct WindowExtent
-			{
-				int width, height;
-			};
 		}
 	}
 }

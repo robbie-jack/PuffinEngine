@@ -115,7 +115,7 @@ namespace Puffin
 				}
 			}
 
-			running = false;
+			//running = false;
 		}
 
 		//physicsSystem->Stop();
