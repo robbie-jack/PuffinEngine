@@ -215,7 +215,7 @@ namespace Puffin
 
 			void RemoveComponent(Entity entity)
 			{
-				assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Removing non-existent component.");
+				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Removing non-existent component.");
 
 				// Copy component at end of array into deleted components spaced to maintain packed araay
 				size_t indexOfRemovedComponent = entityToIndexMap[entity];
@@ -357,6 +357,8 @@ namespace Puffin
 			template<typename ComponentT>
 			bool HasComponent(Entity entity)
 			{
+				const char* typeName = typeid(ComponentT).name();
+
 				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
 
 				// Return true of array has component for this entity
@@ -436,7 +438,7 @@ namespace Puffin
 			{
 				const char* typeName = typeid(SystemT).name();
 
-				assert(mSystems.find(typeName) == mSystems.end() && "Registering system more than once.");
+				assert(systems.find(typeName) == systems.end() && "Registering system more than once.");
 
 				// Create New Signature Map for this System
 				signatureMap.insert({ typeName, SignatureMap() });
@@ -453,7 +455,7 @@ namespace Puffin
 			{
 				const char* typeName = typeid(SystemT).name();
 
-				assert(mSystems.find(typeName) != mSystems.end() && "System used before registered.");
+				assert(systems.find(typeName) != systems.end() && "System used before registered.");
 
 				// Insert New Signature for this System
 				signatureMap.at(typeName).insert({ signatureName, signature });

@@ -3,7 +3,10 @@
 #include "ECS.h"
 
 #include "TransformComponent.h"
-#include "VulkanRenderer.h"
+//#include "VulkanRenderer.h"
+#include "UIManager.h"
+#include "InputManager.h"
+#include "VulkanEngine.h"
 #include "BulletPhysicsSystem.h"
 #include "SerializeScene.h"
 
@@ -17,25 +20,26 @@ namespace Puffin
 	void Engine::MainLoop()
 	{
 		// Managers/ECS
-		ECS::World ECSWorld;
+		/*ECS::World ECSWorld;
 		UI::UIManager UIManager;
 		Input::InputManager InputManager;
 
 		ECSWorld.Init();
 
 		UIManager.SetEngine(this);
-		UIManager.SetWorld(&ECSWorld);
+		UIManager.SetWorld(&ECSWorld);*/
 
 		// Systems
-		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
-		std::shared_ptr<Rendering::VulkanRenderer> renderSystem = ECSWorld.RegisterSystem<Rendering::VulkanRenderer>();
+		//std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
+		//std::shared_ptr<Rendering::VulkanRenderer> renderSystem = ECSWorld.RegisterSystem<Rendering::VulkanRenderer>();
+		Rendering::VulkanEngine vulkanEngine;
 
-		ECSWorld.RegisterComponent<TransformComponent>();
+		/*ECSWorld.RegisterComponent<TransformComponent>();
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
 		ECSWorld.RegisterComponent<Rendering::LightComponent>();
-		ECSWorld.RegisterComponent<Physics::RigidbodyComponent>();
+		ECSWorld.RegisterComponent<Physics::RigidbodyComponent>();*/
 
-		ECS::Signature meshSignature;
+		/*ECS::Signature meshSignature;
 		meshSignature.set(ECSWorld.GetComponentType<TransformComponent>());
 		meshSignature.set(ECSWorld.GetComponentType<Rendering::MeshComponent>());
 		ECSWorld.SetSystemSignature<Rendering::VulkanRenderer>("Mesh", meshSignature);
@@ -43,30 +47,31 @@ namespace Puffin
 		ECS::Signature lightSignature;
 		lightSignature.set(ECSWorld.GetComponentType<TransformComponent>());
 		lightSignature.set(ECSWorld.GetComponentType<Rendering::LightComponent>());
-		ECSWorld.SetSystemSignature<Rendering::VulkanRenderer>("Light", lightSignature);
+		ECSWorld.SetSystemSignature<Rendering::VulkanRenderer>("Light", lightSignature);*/
 
-		ECS::Signature rigidbodySignature;
+		/*ECS::Signature rigidbodySignature;
 		rigidbodySignature.set(ECSWorld.GetComponentType<TransformComponent>());
 		rigidbodySignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
-		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
+		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);*/
 
 		//DefaultScene(&ECSWorld);
 
-		sceneData.scene_name = "assets/scenes/default.scn";
+		/*sceneData.scene_name = "assets/scenes/default.scn";
 		IO::LoadScene(&ECSWorld, sceneData);
-		IO::InitScene(&ECSWorld, sceneData);
+		IO::InitScene(&ECSWorld, sceneData);*/
 
 		running = true;
 		restarted = false;
 		playState = PlayState::STOPPED;
 
 		// Initialize Systems
-		GLFWwindow* window = renderSystem->InitWindow();
-		renderSystem->InitVulkan(&UIManager);
-		physicsSystem->Start();
+		/*GLFWwindow* window = renderSystem->InitWindow();
+		renderSystem->InitVulkan(&UIManager);*/
+		GLFWwindow* window = vulkanEngine.Init();
+		//physicsSystem->Start();
 
 		// Init Input
-		InputManager.SetupInput(window);
+		//InputManager.SetupInput(window);
 
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -78,45 +83,49 @@ namespace Puffin
 			std::chrono::duration<float> duration = currentTime - lastTime;
 			float delta_time = duration.count();
 
-			InputManager.UpdateInput(window);
-			running = renderSystem->Update(&UIManager, &InputManager, delta_time);
+			//InputManager.UpdateInput(window);
+			//running = renderSystem->Update(&UIManager, &InputManager, delta_time);
+			vulkanEngine.Render();
 
 			if (playState == PlayState::PLAYING)
 			{
-				physicsSystem->Update(delta_time);
+				//physicsSystem->Update(delta_time);
 			}
 
-			ECSWorld.Update();
+			//ECSWorld.Update();
 
-			UIManager.Update();
+			//UIManager.Update();
 
 			if (playState == PlayState::STOPPED)
 			{
 				if (restarted)
 				{
 					// Cleanup Systems and ECS
-					renderSystem->Stop();
-					physicsSystem->Stop();
-					ECSWorld.Reset();
+					//renderSystem->Stop();
+					//physicsSystem->Stop();
+					//ECSWorld.Reset();
 
 					// Re-Initialize Systems and ECS
 					//IO::LoadScene(&ECSWorld, sceneData);
-					IO::InitScene(&ECSWorld, sceneData);
-					renderSystem->Start();
-					physicsSystem->Start();
+					//IO::InitScene(&ECSWorld, sceneData);
+					//renderSystem->Start();
+					//physicsSystem->Start();
 
 					restarted = false;
 				}
 			}
+
+			running = false;
 		}
 
-		physicsSystem->Stop();
+		//physicsSystem->Stop();
 
-		physicsSystem.reset();
-		renderSystem.reset();
+		//physicsSystem.reset();
+		//renderSystem.reset();
+		vulkanEngine.Cleanup();
 
-		UIManager.Cleanup();
-		ECSWorld.Cleanup();
+		//UIManager.Cleanup();
+		//ECSWorld.Cleanup();
 
 		glfwDestroyWindow(window);
 		glfwTerminate();

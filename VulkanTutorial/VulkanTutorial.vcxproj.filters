@@ -38,6 +38,9 @@
     <Filter Include="Physics\BulletPhysics">
       <UniqueIdentifier>{fed274dd-404f-4fc4-880a-a16640bb95b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\VK-Bootstrap">
+      <UniqueIdentifier>{484cd380-1c92-4f70-86ee-81edf0f8e251}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VulkanRenderer.cpp">
@@ -95,6 +98,12 @@
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_stdlib.cpp">
       <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanEngine.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
+      <Filter>Rendering\VK-Bootstrap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -186,6 +195,18 @@
     </ClInclude>
     <ClInclude Include="include\imgui\imgui_stdlib.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanEngine.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanInitializers.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanTypes.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
+      <Filter>Rendering\VK-Bootstrap</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

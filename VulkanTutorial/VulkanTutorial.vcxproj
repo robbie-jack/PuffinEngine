@@ -115,7 +115,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;$(ProjectDir)\lib\glfw;D:\Libraries\bullet3-3.06\lib\Debug;$(ProjectDir)\lib\assimp\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Bullet3Dynamics.lib;Bullet3Collision.lib;Bullet3Common.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Bullet3Dynamics_Debug.lib;Bullet3Collision_Debug.lib;Bullet3Common_Debug.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;assimp-vc142-mtd.lib;IrrXMLd.lib;zlibstaticd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
@@ -179,6 +179,7 @@
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="include\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
     <ClCompile Include="UIWindow.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -189,6 +190,7 @@
     <ClCompile Include="UIWindowSettings.cpp" />
     <ClCompile Include="UIWindowViewport.cpp" />
     <ClCompile Include="Vector.h" />
+    <ClCompile Include="VulkanEngine.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -198,6 +200,7 @@
   <ItemGroup>
     <ClInclude Include="BaseComponent.h" />
     <ClInclude Include="include\imgui\imgui_stdlib.h" />
+    <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
     <ClInclude Include="RigidbodyComponent.h" />
     <ClInclude Include="BulletPhysicsSystem.h" />
     <ClInclude Include="CameraComponent.h" />
@@ -224,7 +227,10 @@
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="UIWindowSceneHierarchy.h" />
     <ClInclude Include="VectorConversion.h" />
+    <ClInclude Include="VulkanEngine.h" />
+    <ClInclude Include="VulkanInitializers.h" />
     <ClInclude Include="VulkanRenderer.h" />
+    <ClInclude Include="VulkanTypes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
