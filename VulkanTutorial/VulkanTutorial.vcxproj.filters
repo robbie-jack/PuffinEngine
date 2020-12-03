@@ -208,5 +208,8 @@
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
       <Filter>Rendering\VK-Bootstrap</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanPipeline.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

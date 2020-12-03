@@ -3,7 +3,6 @@
 #ifndef VULKAN_ENGINE_H
 #define VULKAN_ENGINE_H
 
-
 // GLFW and GLM
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -15,6 +14,7 @@
 
 // Vulkan Helper Classes
 #include "VulkanTypes.h"
+#include "VulkanPipeline.h"
 
 #include "vk_mem_alloc.h" // Vulkan Memory Allocator
 #include "vk-boostrap/VkBootstrap.h" // Vk Bootstrap
@@ -23,11 +23,13 @@
 #include "ECS.h"
 
 // Component Includes
+#include "MeshComponent.h"
 
 // STL
 #include <vector>
 #include <deque>
 #include <functional>
+#include <fstream>
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -85,6 +87,8 @@ namespace Puffin
 			std::vector<VkFramebuffer> framebuffers;
 
 			VkRenderPass renderPass;
+			VkPipeline graphicsPipeline;
+			VkPipelineLayout pipelineLayout;
 
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue
@@ -116,6 +120,7 @@ namespace Puffin
 			void InitDefaultRenderpass();
 			void InitFramebuffers();
 			void InitSyncStructures();
+			void InitPipelines();
 
 			// Render Functions
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t swapchainImageIndex);
@@ -124,6 +129,28 @@ namespace Puffin
 			{
 				auto app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
 				app->framebufferResized = true;
+			}
+
+			static inline std::vector<char> ReadFile(const std::string& filename)
+			{
+				std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+				if (!file.is_open())
+				{
+					throw std::runtime_error("failed to open file!");
+				}
+
+				size_t fileSize = (rsize_t)file.tellg();
+				std::vector<char> buffer(fileSize);
+
+				file.seekg(0);
+				file.read(buffer.data(), fileSize);
+
+				file.close();
+
+				//std::cout << "BufferSize: " << buffer.size() << std::endl;
+
+				return buffer;
 			}
 
 		};

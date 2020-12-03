@@ -229,6 +229,7 @@
     <ClInclude Include="VectorConversion.h" />
     <ClInclude Include="VulkanEngine.h" />
     <ClInclude Include="VulkanInitializers.h" />
+    <ClInclude Include="VulkanPipeline.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="VulkanTypes.h" />
   </ItemGroup>

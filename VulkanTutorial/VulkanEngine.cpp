@@ -53,6 +53,9 @@ namespace Puffin
 			// Initialise Semaphores and Fences
 			InitSyncStructures();
 
+			// Initialize Pipelines
+			InitPipelines();
+
 			isInitialized = true;
 
 			return window;
@@ -267,6 +270,40 @@ namespace Puffin
 				vkDestroySemaphore(device, presentSemaphore, nullptr);
 				vkDestroySemaphore(device, renderSemaphore, nullptr);
 			});
+		}
+
+		void VulkanEngine::InitPipelines()
+		{
+			// Read Shader Code from files
+			auto vertShaderCode = ReadFile("shaders/vert.spv");
+			auto fragShaderCode = ReadFile("shaders/frag.spv");
+
+			// Create Shader Modules from code
+			VkShaderModule vertShaderModule = VKInit::create_shader_module(device, vertShaderCode);
+			VkShaderModule fragShaderModule = VKInit::create_shader_module(device, fragShaderCode);
+
+			// Create Pipeline Layout Info
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::pipeline_layout_create_info();
+			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
+
+			// Create Pipeline Builder object
+			PipelineBuilder pipelineBuilder;
+
+			// Create Shader Stage Info
+			pipelineBuilder.shaderStages.push_back(VKInit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
+			pipelineBuilder.shaderStages.push_back(VKInit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
+
+			auto bindingDescription = Vertex::getBindingDescription();
+			auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+			// Create Vertex Input Info
+			pipelineBuilder.vertexInputInfo = VKInit::vertex_input_state_create_info(bindingDescription, attributeDescriptions);
+
+			// Create Input Assembly Info
+			pipelineBuilder.inputAssembly = VKInit::input_assembly_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+			// Define Viewport
+
 		}
 
 		//-------------------------------------------------------------------------------------
