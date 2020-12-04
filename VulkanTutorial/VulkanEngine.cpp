@@ -53,6 +53,9 @@ namespace Puffin
 			// Initialise Semaphores and Fences
 			InitSyncStructures();
 
+			// Initialize Descriptor Sets
+			InitDescriptors();
+
 			// Initialize Pipelines
 			InitPipelines();
 
@@ -134,6 +137,40 @@ namespace Puffin
 			{
 				vkDestroySwapchainKHR(device, swapchain, nullptr);
 			});
+
+			// Depth image size will match window
+			VkExtent3D depthImageExtent =
+			{
+				windowExtent.width,
+				windowExtent.height,
+				1
+			};
+
+			// Hardcode depth format to 32 bit float
+			depthFormat = VK_FORMAT_D32_SFLOAT;
+
+			// Depth image will use format we selected and depth attachment usage flag
+			VkImageCreateInfo depthImageInfo = VKInit::image_create_info(depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
+
+			// Allocate depth image from local gpu memory
+			VmaAllocationCreateInfo depthImageAllocInfo = {};
+			depthImageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+			depthImageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+			// Allocate and create image
+			vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthAttachment.image, &depthAttachment.allocation, nullptr);
+
+			// Build Image View for depth image to use in rendering
+			VkImageViewCreateInfo depthImageViewInfo = VKInit::imageview_create_info(depthFormat, depthAttachment.image, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+			VK_CHECK(vkCreateImageView(device, &depthImageViewInfo, nullptr, &depthAttachment.imageView));
+
+			// Add to deletion queues
+			mainDeletionQueue.push_function([=]()
+			{
+				vkDestroyImageView(device, depthAttachment.imageView, nullptr);
+				vmaDestroyImage(allocator, depthAttachment.image, depthAttachment.allocation);
+			});
 		}
 
 		void VulkanEngine::InitCommands()
@@ -157,43 +194,64 @@ namespace Puffin
 		void VulkanEngine::InitDefaultRenderpass()
 		{
 			// Renderpass will use this color attachment
-			VkAttachmentDescription color_attachment = {};
+			VkAttachmentDescription colorAttachment = {};
 			// attachment will have the format needed by the swapchain
-			color_attachment.format = swapchainImageFormat; // Will want to replace this with the offscreen image format later
+			colorAttachment.format = swapchainImageFormat; // Will want to replace this with the offscreen image format later
 			// 1 sample, we won't be doing msaa
-			color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 			// we clear when this attachment is loaded
-			color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			// keep the attachment stored when renderpass ends
-			color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			// don't care about stencil
-			color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
 			// don't know or care about started layout of the attachment
-			color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 			// after renderpass ends, the imahe has to be on a layout ready for display
-			color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 			VkAttachmentReference color_attachment_ref = {};
 			// attachment number will index into pAttachments array in parent renderpass itself
 			color_attachment_ref.attachment = 0;
 			color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+			// Create Depth Attachment
+			VkAttachmentDescription depthAttachment = {};
+			depthAttachment.flags = 0;
+			depthAttachment.format = depthFormat;
+			depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentReference depthAttachmentRef = {};
+			depthAttachmentRef.attachment = 1;
+			depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 			// We are goin to create 1 subpass, which is the minimum you can do
 			VkSubpassDescription subpass = {};
 			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 			subpass.colorAttachmentCount = 1;
 			subpass.pColorAttachments = &color_attachment_ref;
+			// hook depth attachment into subpass
+			subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+			// Create Attachments Array
+			std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 
 			// Create Renderpass
 			VkRenderPassCreateInfo render_pass_info = {};
 			render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
 			// connect color attachment to info
-			render_pass_info.attachmentCount = 1;
-			render_pass_info.pAttachments = &color_attachment;
+			render_pass_info.attachmentCount = attachments.size();
+			render_pass_info.pAttachments = attachments.data();
 			// connect subpass to info
 			render_pass_info.subpassCount = 1;
 			render_pass_info.pSubpasses = &subpass;
@@ -272,6 +330,66 @@ namespace Puffin
 			});
 		}
 
+		void VulkanEngine::InitDescriptors()
+		{
+			// Initialize Descriptor Pools
+			std::array<VkDescriptorPoolSize, 4> poolSizes = {};
+			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			poolSizes[0].descriptorCount = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
+			poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			poolSizes[1].descriptorCount = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
+			poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			poolSizes[2].descriptorCount = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
+			poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			poolSizes[3].descriptorCount = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
+
+			VkDescriptorPoolCreateInfo poolInfo = {};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+			poolInfo.pPoolSizes = poolSizes.data();
+			poolInfo.maxSets = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
+
+			VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool));
+
+			// Initialize Descriptor Layouts
+			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+			uboLayoutBinding.binding = 0;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+			VkDescriptorSetLayoutBinding lightLayoutBinding = {};
+			lightLayoutBinding.binding = 1;
+			lightLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			lightLayoutBinding.descriptorCount = 1;
+			lightLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			lightLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+			VkDescriptorSetLayoutBinding viewLayoutBinding = {};
+			viewLayoutBinding.binding = 2;
+			viewLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			viewLayoutBinding.descriptorCount = 1;
+			viewLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			viewLayoutBinding.pImmutableSamplers = nullptr;
+
+			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+			samplerLayoutBinding.binding = 3;
+			samplerLayoutBinding.descriptorCount = 1;
+			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			samplerLayoutBinding.pImmutableSamplers = nullptr;
+			samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+			std::array<VkDescriptorSetLayoutBinding, 4> bindings = { uboLayoutBinding, lightLayoutBinding, viewLayoutBinding, samplerLayoutBinding };
+
+			VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+			layoutInfo.pBindings = bindings.data();
+
+			VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout));
+		}
+
 		void VulkanEngine::InitPipelines()
 		{
 			// Read Shader Code from files
@@ -283,7 +401,7 @@ namespace Puffin
 			VkShaderModule fragShaderModule = VKInit::create_shader_module(device, fragShaderCode);
 
 			// Create Pipeline Layout Info
-			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::pipeline_layout_create_info();
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::pipeline_layout_create_info(descriptorSetLayout);
 			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
 
 			// Create Pipeline Builder object
@@ -303,7 +421,31 @@ namespace Puffin
 			pipelineBuilder.inputAssembly = VKInit::input_assembly_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
 			// Define Viewport
+			pipelineBuilder.viewport.x = 0.0f;
+			pipelineBuilder.viewport.y = 0.0f;
+			pipelineBuilder.viewport.width = (float)windowExtent.width;
+			pipelineBuilder.viewport.height = (float)windowExtent.height;
+			pipelineBuilder.viewport.minDepth = 0.0f;
+			pipelineBuilder.viewport.maxDepth = 1.0f;
 
+			// Define Scissor Extent (Pixels Outside Scissor Rectangle will be discarded)
+			pipelineBuilder.scissor.offset = { 0, 0 };
+			pipelineBuilder.scissor.extent = windowExtent;
+
+			// Rasterization Stage Creation - Configured to draw filled triangles
+			pipelineBuilder.rasterizer = VKInit::rasterization_state_create_info(VK_POLYGON_MODE_FILL);
+
+			// Multisampled - Disabled right now so just use default
+			pipelineBuilder.multisampling = VKInit::multisampling_state_create_info();
+
+			// Color Blending - Default RGBA Color Blending
+			pipelineBuilder.colorBlendAttachment = VKInit::color_blend_attachment_state();
+
+			// Assign Pipeline Layout to Pipeline
+			pipelineBuilder.pipelineLayout = pipelineLayout;
+
+			// Build Pipeline
+			graphicsPipeline = pipelineBuilder.build_pipeline(device, renderPass);
 		}
 
 		//-------------------------------------------------------------------------------------

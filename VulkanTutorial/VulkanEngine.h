@@ -61,6 +61,21 @@ namespace Puffin
 			}
 		};
 
+		struct Material
+		{
+			VkPipeline pipeline;
+			VkPipelineLayout pipelineLayout;
+		};
+
+		struct RenderObject
+		{
+			MeshComponent& mesh;
+
+			Material* material;
+
+			glm::mat4 transformMatrix;
+		};
+
 		class VulkanEngine : public ECS::System
 		{
 		public:
@@ -80,15 +95,25 @@ namespace Puffin
 			VkDevice device;							// Vulkan device for commands
 			VkSurfaceKHR surface;						// Vulkan window surface
 
+			// Memory allocator
+			VmaAllocator allocator;
+
 			// Swapchain
 			VkSwapchainKHR swapchain;
 			VkFormat swapchainImageFormat; // Image format expected by windowing system
 			std::vector<Types::FrameBufferAttachment> swapchainAttachments; // Images/Views from swapchain
 			std::vector<VkFramebuffer> framebuffers;
 
+			// Depth Resources
+			FrameBufferAttachment depthAttachment;
+			VkFormat depthFormat;
+
 			VkRenderPass renderPass;
 			VkPipeline graphicsPipeline;
 			VkPipelineLayout pipelineLayout;
+
+			VkDescriptorPool descriptorPool;
+			VkDescriptorSetLayout descriptorSetLayout;
 
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue
@@ -120,6 +145,7 @@ namespace Puffin
 			void InitDefaultRenderpass();
 			void InitFramebuffers();
 			void InitSyncStructures();
+			void InitDescriptors();
 			void InitPipelines();
 
 			// Render Functions

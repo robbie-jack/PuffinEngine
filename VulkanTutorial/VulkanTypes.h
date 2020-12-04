@@ -21,6 +21,12 @@ namespace Puffin
 			};
 
 			typedef FrameBufferAttachment Texture;
+
+			struct AllocatedBuffer
+			{
+				VkBuffer buffer;
+				VmaAllocation allocation;
+			};
 		}
 	}
 }
