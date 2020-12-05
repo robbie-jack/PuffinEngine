@@ -23,7 +23,10 @@
 #include "ECS.h"
 
 // Component Includes
+#include "TransformComponent.h"
 #include "MeshComponent.h"
+#include "LightComponent.h"
+#include "CameraComponent.h"
 
 // STL
 #include <vector>
@@ -76,6 +79,12 @@ namespace Puffin
 			glm::mat4 transformMatrix;
 		};
 
+		struct UploadContext
+		{
+			VkFence uploadFence;
+			VkCommandPool commandPool;
+		};
+
 		class VulkanEngine : public ECS::System
 		{
 		public:
@@ -85,6 +94,10 @@ namespace Puffin
 			void Render();
 
 			void Cleanup();
+
+			UploadContext uploadContext;
+
+			void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 
 		private:
 
@@ -101,7 +114,7 @@ namespace Puffin
 			// Swapchain
 			VkSwapchainKHR swapchain;
 			VkFormat swapchainImageFormat; // Image format expected by windowing system
-			std::vector<Types::FrameBufferAttachment> swapchainAttachments; // Images/Views from swapchain
+			std::vector<FrameBufferAttachment> swapchainAttachments; // Images/Views from swapchain
 			std::vector<VkFramebuffer> framebuffers;
 
 			// Depth Resources
@@ -109,8 +122,11 @@ namespace Puffin
 			VkFormat depthFormat;
 
 			VkRenderPass renderPass;
-			VkPipeline graphicsPipeline;
-			VkPipelineLayout pipelineLayout;
+
+			// Pipelines/Materials
+			Material material;
+			//VkPipeline graphicsPipeline;
+			//VkPipelineLayout pipelineLayout;
 
 			VkDescriptorPool descriptorPool;
 			VkDescriptorSetLayout descriptorSetLayout;
@@ -123,6 +139,11 @@ namespace Puffin
 
 			VkSemaphore presentSemaphore, renderSemaphore;
 			VkFence renderFence;
+
+			std::vector<RenderObject> renderObjects;
+
+			// Camera
+			CameraComponent camera;
 
 			// GLFW
 			GLFWwindow* window;							// Window
@@ -138,7 +159,7 @@ namespace Puffin
 			const int HEIGHT = 720; // Starting Window Height
 			int frameNumber = 0;
 
-			// Init Functions
+			// Init Main Functions
 			void InitVulkan();
 			void InitSwapchain();
 			void InitCommands();
@@ -147,9 +168,23 @@ namespace Puffin
 			void InitSyncStructures();
 			void InitDescriptors();
 			void InitPipelines();
+			void InitScene();
+
+			// Init Component Functions
+			void InitMesh(MeshComponent& mesh);
+			void InitLight(LightComponent& light);
+			void InitCamera(CameraComponent& camera);
+
+			// Init Helper Functions
+			void InitTextureImage(Texture& texture, std::string texture_path);
+			AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+			void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+			void CopyBufferToImage(VkBuffer buffer, VkImage image, VkExtent2D extent);
 
 			// Render Functions
-			VkCommandBuffer RecordMainCommandBuffers(uint32_t swapchainImageIndex);
+			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
+			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
+			glm::mat4 BuildMeshTransform(TransformComponent comp);
 
 			static inline void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 			{

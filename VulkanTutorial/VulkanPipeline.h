@@ -25,6 +25,7 @@ namespace Puffin
 			VkPipelineRasterizationStateCreateInfo rasterizer;
 			VkPipelineColorBlendAttachmentState colorBlendAttachment;
 			VkPipelineMultisampleStateCreateInfo multisampling;
+			VkPipelineDepthStencilStateCreateInfo depthStencil;
 			VkPipelineLayout pipelineLayout;
 
 			VkPipeline build_pipeline(VkDevice device, VkRenderPass pass)
@@ -64,6 +65,7 @@ namespace Puffin
 				pipelineInfo.pRasterizationState = &rasterizer;
 				pipelineInfo.pMultisampleState = &multisampling;
 				pipelineInfo.pColorBlendState = &colorBlending;
+				pipelineInfo.pDepthStencilState = &depthStencil;
 				pipelineInfo.layout = pipelineLayout;
 				pipelineInfo.renderPass = pass;
 				pipelineInfo.subpass = 0;

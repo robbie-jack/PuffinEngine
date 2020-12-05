@@ -16,7 +16,7 @@
 #include <vector>
 #include <array>
 
-#include "FrameBufferAttachment.h"
+#include "VulkanTypes.h"
 #include "BaseComponent.h"
 
 #include <cereal/types/string.hpp>
@@ -184,16 +184,13 @@ namespace Puffin
 			std::string texture_path;
 
 			// Vertex Buffer
-			VkBuffer vertexBuffer;
-			VmaAllocation vertexAllocation;
+			AllocatedBuffer vertexBuffer;
 
 			// Index Buffer
-			VkBuffer indexBuffer;
-			VmaAllocation indexAllocation;
+			AllocatedBuffer indexBuffer;
 
 			// Uniform Buffers
-			std::vector<VkBuffer> uniformBuffers;
-			std::vector<VmaAllocation> uniformAllocations;
+			std::vector<AllocatedBuffer> uniformBuffers;
 
 			std::vector<VkDescriptorSet> descriptorSets;
 		};

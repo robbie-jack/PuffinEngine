@@ -34,6 +34,69 @@ namespace Puffin
 				return info;
 			}
 
+			VkCommandBufferBeginInfo command_buffer_begin_info(VkCommandBufferUsageFlags flags)
+			{
+				VkCommandBufferBeginInfo info = {};
+				info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+				info.pNext = nullptr;
+
+				info.pInheritanceInfo = nullptr;
+				info.flags = flags;
+				return info;
+			}
+
+			VkFenceCreateInfo fence_create_info(VkFenceCreateFlags flags = 0)
+			{
+				VkFenceCreateInfo info = {};
+				info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+				info.pNext = nullptr;
+
+				info.flags = flags;
+
+				return info;
+			}
+
+			VkSemaphoreCreateInfo semaphore_create_info(VkSemaphoreCreateFlags flags = 0)
+			{
+				VkSemaphoreCreateInfo info = {};
+				info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+				info.pNext = nullptr;
+				info.flags = flags;
+				return info;
+			}
+
+			VkSubmitInfo submit_info(VkCommandBuffer* cmd)
+			{
+				VkSubmitInfo info = {};
+				info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+				info.pNext = nullptr;
+
+				info.waitSemaphoreCount = 0;
+				info.pWaitSemaphores = nullptr;
+				info.pWaitDstStageMask = nullptr;
+				info.commandBufferCount = 1;
+				info.pCommandBuffers = cmd;
+				info.signalSemaphoreCount = 0;
+				info.pSignalSemaphores = nullptr;
+
+				return info;
+			}
+
+			VkPresentInfoKHR present_info()
+			{
+				VkPresentInfoKHR info = {};
+				info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+				info.pNext = nullptr;
+
+				info.swapchainCount = 0;
+				info.pSwapchains = nullptr;
+				info.pWaitSemaphores = nullptr;
+				info.waitSemaphoreCount = 0;
+				info.pImageIndices = nullptr;
+
+				return info;
+			}
+
 			// Initialize Shader Module
 			VkShaderModule create_shader_module(VkDevice device, const std::vector<char>& code)
 			{
@@ -150,7 +213,7 @@ namespace Puffin
 			}
 
 			// Initialize Pipeline Layout
-			VkPipelineLayoutCreateInfo pipeline_layout_create_info(VkDescriptorSetLayout layout) 
+			VkPipelineLayoutCreateInfo pipeline_layout_create_info(VkDescriptorSetLayout& layout) 
 			{
 				VkPipelineLayoutCreateInfo info{};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -180,6 +243,7 @@ namespace Puffin
 				info.arrayLayers = 1;
 				info.samples = VK_SAMPLE_COUNT_1_BIT;
 				info.tiling = VK_IMAGE_TILING_OPTIMAL;
+				info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				info.usage = usageFlags;
 
 				return info;
@@ -200,6 +264,23 @@ namespace Puffin
 				info.subresourceRange.baseArrayLayer = 0;
 				info.subresourceRange.layerCount = 1;
 				info.subresourceRange.aspectMask = aspectFlags;
+
+				return info;
+			}
+
+			VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info(bool bDepthTest, bool bDepthWrite, VkCompareOp compareOp)
+			{
+				VkPipelineDepthStencilStateCreateInfo info = {};
+				info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+				info.pNext = nullptr;
+
+				info.depthTestEnable = bDepthTest ? VK_TRUE : VK_FALSE;
+				info.depthWriteEnable = bDepthWrite ? VK_TRUE : VK_FALSE;
+				info.depthCompareOp = bDepthTest ? compareOp : VK_COMPARE_OP_ALWAYS;
+				info.depthBoundsTestEnable = VK_FALSE;
+				info.minDepthBounds = 0.0f; // Optional
+				info.maxDepthBounds = 1.0f; // Optional
+				info.stencilTestEnable = VK_FALSE;
 
 				return info;
 			}
