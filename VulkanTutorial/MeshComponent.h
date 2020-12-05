@@ -184,7 +184,7 @@ namespace Puffin
 			std::string texture_path;
 
 			// Material
-			Material material;
+			Material* material;
 
 			// Vertex Buffer
 			AllocatedBuffer vertexBuffer;

@@ -82,6 +82,20 @@ namespace Puffin
 			VkCommandPool commandPool;
 		};
 
+		struct FrameData
+		{
+			VkSemaphore presentSemaphore, renderSemaphore;
+			VkFence renderFence;
+
+			VkCommandPool commandPool; // Command Pool for our commands
+			VkCommandBuffer mainCommandBuffer; // Buffer commands are recorded into
+		};
+
+		// Number of frames to overlap when rendering
+		constexpr unsigned int FRAME_OVERLAP = 2;
+		const int WIDTH = 1280; // Starting Window Width
+		const int HEIGHT = 720; // Starting Window Height
+
 		class VulkanEngine : public ECS::System
 		{
 		public:
@@ -95,7 +109,7 @@ namespace Puffin
 
 			// Helper Functions
 			void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
-			AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+			AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlags requiredFlags = 0);
 
 			// Memory allocator
 			VmaAllocator allocator;
@@ -117,6 +131,8 @@ namespace Puffin
 			std::vector<AllocatedImage> swapchainAttachments; // Images/Views from swapchain
 			std::vector<VkFramebuffer> framebuffers;
 
+			FrameData frames[FRAME_OVERLAP];
+
 			// Depth Resources
 			AllocatedImage depthAttachment;
 			VkFormat depthFormat;
@@ -132,14 +148,10 @@ namespace Puffin
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue
 
-			VkCommandPool commandPool; // Command Pool for our commands
-			VkCommandBuffer mainCommandBuffer; // Buffer commands are recorded into
-
-			VkSemaphore presentSemaphore, renderSemaphore;
-			VkFence renderFence;
+			VkSampler textureSampler;
 
 			//std::vector<RenderObject> renderObjects;
-			std::unordered_map<std::string_view, Material> materials;
+			//std::unordered_map<std::string_view, Material> materials;
 
 			// Camera
 			CameraComponent camera;
@@ -152,8 +164,6 @@ namespace Puffin
 			bool isInitialized;
 
 			VkExtent2D windowExtent;
-			const int WIDTH = 1280; // Starting Window Width
-			const int HEIGHT = 720; // Starting Window Height
 			int frameNumber = 0;
 			float prevfov;
 
@@ -167,6 +177,8 @@ namespace Puffin
 			void InitDescriptors();
 			void InitPipelines();
 			void InitScene();
+			void InitTextureSampler();
+			void InitDescriptorSets();
 
 			// Init Component Functions
 			void InitMesh(MeshComponent& mesh);
@@ -215,6 +227,10 @@ namespace Puffin
 				return buffer;
 			}
 
+			FrameData& GetCurrentFrame()
+			{
+				return frames[frameNumber % FRAME_OVERLAP];
+			}
 		};
 	}
 }

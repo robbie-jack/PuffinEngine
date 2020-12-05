@@ -67,6 +67,10 @@ namespace Puffin
 			// Initialize All Scene Objects
 			InitScene();
 
+			InitTextureSampler();
+
+			InitDescriptorSets();
+
 			isInitialized = true;
 
 			return window;
@@ -94,12 +98,17 @@ namespace Puffin
 			// Get Surface of window opened by GLFW
 			glfwCreateWindowSurface(instance, window, nullptr, &surface);
 
+			// Specify Desired Device Features
+			VkPhysicalDeviceFeatures supportedFeatures = {};
+			supportedFeatures.samplerAnisotropy = VK_TRUE;
+
 			// Select GPU with VK Bootstrap
 			// We want a gpu which can write to glfw surface and supports vulkan 1.2
 			vkb::PhysicalDeviceSelector selector{ vkb_inst };
 			vkb::PhysicalDevice physicalDevice = selector
 				.set_minimum_version(1, 2)
 				.set_surface(surface)
+				.set_required_features(supportedFeatures)
 				.select()
 				.value();
 
@@ -196,16 +205,20 @@ namespace Puffin
 			// we also want the pool to allow for resetting individual command buffers
 			VkCommandPoolCreateInfo commandPoolInfo = vkinit::command_pool_create_info(graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-			VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool));
+			// Allocate Command Pool/Buffer for each frame data struct
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool));
 
-			// Allocate Default Command Buffer that we will use for rendering
-			VkCommandBufferAllocateInfo cmdAllocInfo = vkinit::command_buffer_allocate_info(commandPool, 1);
+				// Allocate Default Command Buffer that we will use for rendering
+				VkCommandBufferAllocateInfo cmdAllocInfo = vkinit::command_buffer_allocate_info(frames[i].commandPool, 1);
 
-			VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &mainCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &frames[i].mainCommandBuffer));
 
-			mainDeletionQueue.push_function([=]() {
-				vkDestroyCommandPool(device, commandPool, nullptr);
-			});
+				mainDeletionQueue.push_function([=]() {
+					vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
+				});
+			}
 
 			// Create Upload Command Pool
 			VkCommandPoolCreateInfo uploadCommandPoolInfo = vkinit::command_pool_create_info(graphicsQueueFamily);
@@ -334,12 +347,30 @@ namespace Puffin
 			// so we can waut on it before using
 			VkFenceCreateInfo fenceCreateInfo = vkinit::fence_create_info(VK_FENCE_CREATE_SIGNALED_BIT);
 
-			VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence));
+			// Semaphores don't need any flags
+			VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+			semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+			semaphoreCreateInfo.pNext = nullptr;
+			semaphoreCreateInfo.flags = 0;
 
-			//enqueue the destruction of the fence
-			mainDeletionQueue.push_function([=]() {
-				vkDestroyFence(device, renderFence, nullptr);
-			});
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &frames[i].renderFence));
+
+				//enqueue the destruction of the fence
+				mainDeletionQueue.push_function([=]() {
+					vkDestroyFence(device, frames[i].renderFence, nullptr);
+				});
+
+				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].presentSemaphore));
+				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].renderSemaphore));
+
+				//enqueue the destruction of semaphores
+				mainDeletionQueue.push_function([=]() {
+					vkDestroySemaphore(device, frames[i].presentSemaphore, nullptr);
+					vkDestroySemaphore(device, frames[i].renderSemaphore, nullptr);
+				});
+			}
 
 			// Create Upload Fence
 			VkFenceCreateInfo uploadCreateFenceInfo = vkinit::fence_create_info();
@@ -349,21 +380,6 @@ namespace Puffin
 			// enqueue destruction of upload fence
 			mainDeletionQueue.push_function([=]() {
 				vkDestroyFence(device, uploadContext.uploadFence, nullptr);
-			});
-
-			// Semaphores don't need any flags
-			VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-			semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			semaphoreCreateInfo.pNext = nullptr;
-			semaphoreCreateInfo.flags = 0;
-
-			VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &presentSemaphore));
-			VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderSemaphore));
-
-			//enqueue the destruction of semaphores
-			mainDeletionQueue.push_function([=]() {
-				vkDestroySemaphore(device, presentSemaphore, nullptr);
-				vkDestroySemaphore(device, renderSemaphore, nullptr);
 			});
 		}
 
@@ -520,6 +536,9 @@ namespace Puffin
 			// Load Texture Data
 			Util::LoadImageFromFile(*this, mesh.texture_path.c_str(), mesh.texture);
 
+			VkImageViewCreateInfo imageViewInfo = vkinit::imageview_create_info(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
+			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
+
 			// Load Mesh Data
 			IO::LoadMesh(mesh);
 
@@ -528,7 +547,7 @@ namespace Puffin
 			InitIndexBuffer(mesh);
 			InitUniformBuffer(mesh);
 
-			mesh.material = meshMaterial;
+			mesh.material = &meshMaterial;
 		}
 
 		void VulkanEngine::InitLight(LightComponent& light)
@@ -539,7 +558,7 @@ namespace Puffin
 
 			for (int i = 0; i < light.buffers.size(); i++)
 			{
-				light.buffers[i] = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				light.buffers[i] = CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 				// Add destruction of uniform buffer to deletion queue
 				mainDeletionQueue.push_function([=]()
@@ -563,6 +582,22 @@ namespace Puffin
 
 			// Calculate Camera View Matrix
 			camera.matrices.view = glm::lookAt(camera.position, camera.position + camera.direction, camera.up);
+
+			// Create Camera Uniform Buffers
+			VkDeviceSize bufferSize = sizeof(ViewData);
+
+			camera.buffers.resize(swapchainAttachments.size());
+
+			for (int i = 0; i < camera.buffers.size(); i++)
+			{
+				camera.buffers[i] = CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+				// Add destruction of uniform buffer to deletion queue
+				mainDeletionQueue.push_function([=]()
+				{
+					vmaDestroyBuffer(allocator, camera.buffers[i].buffer, camera.buffers[i].allocation);
+				});
+			}
 		}
 
 		void VulkanEngine::InitVertexBuffer(MeshComponent& mesh)
@@ -651,13 +686,110 @@ namespace Puffin
 
 			for (int i = 0; i < mesh.uniformBuffers.size(); i++)
 			{
-				mesh.uniformBuffers[i] = CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+				mesh.uniformBuffers[i] = CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 				// Add destruction of uniform buffer to deletion queue
 				mainDeletionQueue.push_function([=]()
 				{
 					vmaDestroyBuffer(allocator, mesh.uniformBuffers[i].buffer, mesh.uniformBuffers[i].allocation);
 				});
+			}
+		}
+
+		void VulkanEngine::InitTextureSampler()
+		{
+			VkSamplerCreateInfo samplerInfo = vkinit::sampler_create_info(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+			samplerInfo.anisotropyEnable = VK_TRUE;
+			samplerInfo.maxAnisotropy = 16;
+			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+			samplerInfo.unnormalizedCoordinates = VK_FALSE;
+			samplerInfo.compareEnable = VK_FALSE;
+			samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+			samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			samplerInfo.mipLodBias = 0.0f;
+			samplerInfo.minLod = 0.0f;
+			samplerInfo.maxLod = 0.0f;
+
+			VK_CHECK(vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler));
+		}
+
+		void VulkanEngine::InitDescriptorSets()
+		{
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+
+				std::vector<VkDescriptorSetLayout> layouts(swapchainAttachments.size(), descriptorSetLayout);
+				VkDescriptorSetAllocateInfo allocInfo = {};
+				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+				allocInfo.descriptorPool = descriptorPool;
+				allocInfo.descriptorSetCount = static_cast<uint32_t>(swapchainAttachments.size());
+				allocInfo.pSetLayouts = layouts.data();
+
+				mesh.descriptorSets.resize(swapchainAttachments.size());
+				VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, mesh.descriptorSets.data()));
+
+				for (int i = 0; i < swapchainAttachments.size(); i++)
+				{
+					VkDescriptorBufferInfo meshBufferInfo = {};
+					meshBufferInfo.buffer = mesh.uniformBuffers[i].buffer;
+					meshBufferInfo.offset = 0;
+					meshBufferInfo.range = sizeof(mesh.matrices);
+
+					LightComponent& light = world->GetComponent<LightComponent>(4);
+
+					VkDescriptorBufferInfo lightBufferInfo = {};
+					lightBufferInfo.buffer = light.buffers[i].buffer;
+					lightBufferInfo.offset = 0;
+					lightBufferInfo.range = sizeof(LightData);
+
+					VkDescriptorBufferInfo viewBufferInfo = {};
+					viewBufferInfo.buffer = camera.buffers[i].buffer;
+					viewBufferInfo.offset = 0;
+					viewBufferInfo.range = sizeof(ViewData);
+
+					VkDescriptorImageInfo imageInfo = {};
+					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					imageInfo.imageView = mesh.texture.imageView;
+					imageInfo.sampler = textureSampler;
+
+					std::array<VkWriteDescriptorSet, 4> descriptorWrites = {};
+
+					descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrites[0].dstSet = mesh.descriptorSets[i];
+					descriptorWrites[0].dstBinding = 0;
+					descriptorWrites[0].dstArrayElement = 0;
+					descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					descriptorWrites[0].descriptorCount = 1;
+					descriptorWrites[0].pBufferInfo = &meshBufferInfo;
+
+					descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrites[1].dstSet = mesh.descriptorSets[i];
+					descriptorWrites[1].dstBinding = 1;
+					descriptorWrites[1].dstArrayElement = 0;
+					descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					descriptorWrites[1].descriptorCount = 1;
+					descriptorWrites[1].pBufferInfo = &lightBufferInfo;
+
+					descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrites[2].dstSet = mesh.descriptorSets[i];
+					descriptorWrites[2].dstBinding = 2;
+					descriptorWrites[2].dstArrayElement = 0;
+					descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					descriptorWrites[2].descriptorCount = 1;
+					descriptorWrites[2].pBufferInfo = &viewBufferInfo;
+
+					descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrites[3].dstSet = mesh.descriptorSets[i];
+					descriptorWrites[3].dstBinding = 3;
+					descriptorWrites[3].dstArrayElement = 0;
+					descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					descriptorWrites[3].descriptorCount = 1;
+					descriptorWrites[3].pImageInfo = &imageInfo;
+
+					vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+				}
 			}
 		}
 
@@ -743,15 +875,15 @@ namespace Puffin
 		void VulkanEngine::DrawFrame()
 		{
 			// Wait until gpu has finished rendering last frame. Timeout of 1 second
-			VK_CHECK(vkWaitForFences(device, 1, &renderFence, true, 1000000000)); // Wait for fence to complete
-			VK_CHECK(vkResetFences(device, 1, &renderFence)); // Reset fence
+			VK_CHECK(vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000)); // Wait for fence to complete
+			VK_CHECK(vkResetFences(device, 1, &GetCurrentFrame().renderFence)); // Reset fence
 
 			// Request image from swapchain
 			uint32_t swapchainImageIndex;
-			VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 0, presentSemaphore, nullptr, &swapchainImageIndex));
+			VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 0, GetCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
 
 			// Now that we are sure commands are finished executing, reset command buffer
-			VK_CHECK(vkResetCommandBuffer(mainCommandBuffer, 0));
+			VK_CHECK(vkResetCommandBuffer(GetCurrentFrame().mainCommandBuffer, 0));
 
 			VkCommandBuffer cmd = RecordMainCommandBuffers(swapchainImageIndex);
 
@@ -768,17 +900,17 @@ namespace Puffin
 			submit.pWaitDstStageMask = &waitStage;
 
 			submit.waitSemaphoreCount = 1;
-			submit.pWaitSemaphores = &presentSemaphore;
+			submit.pWaitSemaphores = &GetCurrentFrame().presentSemaphore;
 
 			submit.signalSemaphoreCount = 1;
-			submit.pSignalSemaphores = &renderSemaphore;
+			submit.pSignalSemaphores = &GetCurrentFrame().renderSemaphore;
 
 			submit.commandBufferCount = 1;
 			submit.pCommandBuffers = &cmd;
 
 			// Submit command buffer to queue and execute
-			// renderFence will now block until graphics command finish executing
-			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, renderFence));
+			// GetCurrentFrame().renderFence will now block until graphics command finish executing
+			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, GetCurrentFrame().renderFence));
 
 			// This will present the image we just rendered to the visible window
 			// we want to wait on renderSemaphore for that
@@ -790,18 +922,21 @@ namespace Puffin
 			presentInfo.pSwapchains = &swapchain;
 			presentInfo.swapchainCount = 1;
 
-			presentInfo.pWaitSemaphores = &renderSemaphore;
+			presentInfo.pWaitSemaphores = &GetCurrentFrame().renderSemaphore;
 			presentInfo.waitSemaphoreCount = 1;
 
 			presentInfo.pImageIndices = &swapchainImageIndex;
 
 			VK_CHECK(vkQueuePresentKHR(graphicsQueue, &presentInfo));
+
+			// Number of Frames that have completed rendering
+			frameNumber++;
 		}
 
 		VkCommandBuffer VulkanEngine::RecordMainCommandBuffers(uint32_t index)
 		{
 			// Name buffer cmd for shorter writing
-			VkCommandBuffer cmd = mainCommandBuffer;
+			VkCommandBuffer cmd = GetCurrentFrame().mainCommandBuffer;
 
 			// Begin command buffer recording
 			// Let Vulkan know we are only using the buffer once
@@ -844,8 +979,6 @@ namespace Puffin
 			// Begin Render Pass
 			vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-
-
 			// Draw all Mesh objects
 			DrawObjects(cmd, index);
 
@@ -865,6 +998,14 @@ namespace Puffin
 			{
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 				LightComponent& light = world->GetComponent<LightComponent>(4);
+
+				// Bind material pipeline if it does not match previous material
+				if (mesh.material != lastMaterial);
+				{
+					vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+						mesh.material->pipeline);
+					lastMaterial = mesh.material;
+				}
 
 				MeshMatrices matrice = {};
 
@@ -896,7 +1037,7 @@ namespace Puffin
 				vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
 				vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-					mesh.material.pipelineLayout, 0, 1, &mesh.descriptorSets[index], 0, nullptr);
+					mesh.material->pipelineLayout, 0, 1, &mesh.descriptorSets[index], 0, nullptr);
 
 				// Draw Indexed Vertices
 				vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
@@ -926,7 +1067,7 @@ namespace Puffin
 			if (isInitialized)
 			{
 				// Make sure GPU has stopped working
-				vkWaitForFences(device, 1, &renderFence, true, 1000000000);
+				vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000);
 
 				mainDeletionQueue.flush();
 
@@ -938,7 +1079,7 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
-		AllocatedBuffer VulkanEngine::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
+		AllocatedBuffer VulkanEngine::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlags requiredFlags)
 		{
 			// Set what the usage of this buffer is
 			VkBufferCreateInfo bufferInfo = {};
@@ -950,6 +1091,7 @@ namespace Puffin
 			// Let VMA library whether this buffer needs to be used by CPU, GPU, etc...
 			VmaAllocationCreateInfo allocInfo = {};
 			allocInfo.usage = memoryUsage;
+			allocInfo.requiredFlags = requiredFlags;
 
 			AllocatedBuffer newBuffer;
 

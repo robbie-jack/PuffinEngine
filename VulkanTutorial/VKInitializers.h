@@ -284,6 +284,21 @@ namespace Puffin
 
 				return info;
 			}
+
+			VkSamplerCreateInfo sampler_create_info(VkFilter filters, VkSamplerAddressMode samplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT)
+			{
+				VkSamplerCreateInfo info = {};
+				info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+				info.pNext = nullptr;
+
+				info.magFilter = filters;
+				info.minFilter = filters;
+				info.addressModeU = samplerAddressMode;
+				info.addressModeV = samplerAddressMode;
+				info.addressModeW = samplerAddressMode;
+
+				return info;
+			}
 		}
 	}
 }
