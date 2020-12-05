@@ -3,13 +3,13 @@
 #ifndef VULKAN_INITIALIZERS_H
 #define VULKAN_INITIALIZERS_H
 
-#include "VulkanTypes.h"
+#include "VKTypes.h"
 
 namespace Puffin
 {
 	namespace Rendering
 	{
-		namespace VKInit
+		namespace vkinit
 		{
 			VkCommandPoolCreateInfo command_pool_create_info(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0)
 			{

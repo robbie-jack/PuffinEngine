@@ -85,7 +85,7 @@ namespace Puffin
 
 			InputManager.UpdateInput(window);
 			//running = renderSystem->Update(&UIManager, &InputManager, delta_time);
-			vulkanEngine->Render();
+			vulkanEngine->Update(&UIManager, &InputManager, delta_time);
 
 			if (playState == PlayState::PLAYING)
 			{
@@ -165,10 +165,10 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(5).model_path = "assets\\models\\cube.asset_m";
 		world->GetComponent<Rendering::MeshComponent>(5).texture_path = "textures\\cube.png";
 
-		world->GetComponent<Rendering::LightComponent>(4).uniformBuffer.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-		world->GetComponent<Rendering::LightComponent>(4).uniformBuffer.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		world->GetComponent<Rendering::LightComponent>(4).uniformBuffer.specularStrength = 0.5f;
-		world->GetComponent<Rendering::LightComponent>(4).uniformBuffer.shininess = 16;
+		world->GetComponent<Rendering::LightComponent>(4).data.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+		world->GetComponent<Rendering::LightComponent>(4).data.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		world->GetComponent<Rendering::LightComponent>(4).data.specularStrength = 0.5f;
+		world->GetComponent<Rendering::LightComponent>(4).data.shininess = 16;
 
 		world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Physics::RigidbodyComponent>(3).mass = 1.0f;

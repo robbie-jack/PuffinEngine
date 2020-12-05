@@ -4,7 +4,7 @@
 #define UI_WINDOW_VIEWPORT_H
 
 #include "UIWindow.h"
-#include "FrameBufferAttachment.h"
+#include "VKTypes.h"
 
 //#include <vulkan/vulkan.h>
 

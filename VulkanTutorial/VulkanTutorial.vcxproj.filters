@@ -43,9 +43,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="VulkanRenderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="InputManager.cpp">
@@ -99,11 +96,11 @@
     <ClCompile Include="include\imgui\imgui_stdlib.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanEngine.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
       <Filter>Rendering\VK-Bootstrap</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanEngine.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,9 +113,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ModelLoader.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanRenderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Engine.h" />
@@ -145,9 +139,6 @@
     </ClInclude>
     <ClInclude Include="UIWindowViewport.h">
       <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="FrameBufferAttachment.h">
-      <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="UIWindowSettings.h">
       <Filter>UI</Filter>
@@ -196,19 +187,22 @@
     <ClInclude Include="include\imgui\imgui_stdlib.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanEngine.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanInitializers.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanTypes.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
       <Filter>Rendering\VK-Bootstrap</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanPipeline.h">
+    <ClInclude Include="VKTypes.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VKPipeline.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VKInitializers.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VKTexture.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanEngine.h">
       <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>

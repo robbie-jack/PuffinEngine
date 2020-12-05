@@ -25,7 +25,8 @@
 #include "LightComponent.h"
 #include "MeshComponent.h"
 #include "TransformComponent.h"
-#include "FrameBufferAttachment.h"
+//#include "FrameBufferAttachment.h"
+#include "VKTypes.h"
 
 #include <functional>
 #include <vector>

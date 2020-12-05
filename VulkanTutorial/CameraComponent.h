@@ -15,6 +15,7 @@
 
 #include <vector>
 #include "BaseComponent.h"
+#include "VKTypes.h"
 
 namespace Puffin
 {
@@ -26,14 +27,14 @@ namespace Puffin
 			glm::mat4 view;
 		};
 
-		struct ViewBufferObject
+		struct ViewData
 		{
 			alignas(16) glm::vec3 viewPos;
 		};
 
 		struct CameraComponent : public BaseComponent
 		{
-			float zNear, zFar, aspect, fov;
+			float zNear, zFar, aspect, fov, prevFov;
 
 			glm::vec3 position;
 			glm::vec3 lookat;
@@ -48,9 +49,8 @@ namespace Puffin
 
 			CameraMatrices matrices;
 
-			ViewBufferObject viewBufferObject;
-			std::vector<VkBuffer> viewBuffers;
-			std::vector<VmaAllocation> viewAllocations;
+			ViewData data;
+			std::vector<AllocatedBuffer> buffers;
 		};
 
 		static void UpdatePerspective(CameraComponent& camera, float fov_, float aspect_, float zNear_, float zFar_)

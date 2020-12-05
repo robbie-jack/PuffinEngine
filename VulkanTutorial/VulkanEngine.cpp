@@ -1,10 +1,11 @@
 #include "VulkanEngine.h"
 
-#include "VulkanInitializers.h"
+#include "VKInitializers.h"
 #include "ModelLoader.h"
+#include "VKTexture.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb-master\stb_image.h>
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
 
 #include <iostream>
 
@@ -62,6 +63,9 @@ namespace Puffin
 
 			// Initialize Pipelines
 			InitPipelines();
+
+			// Initialize All Scene Objects
+			InitScene();
 
 			isInitialized = true;
 
@@ -138,7 +142,7 @@ namespace Puffin
 
 			for (int i = 0; i < vkbSwapchain.image_count; i++)
 			{
-				FrameBufferAttachment swapchainAttachment;
+				AllocatedImage swapchainAttachment;
 				swapchainAttachment.image = vkbSwapchain.get_images().value()[i];
 				swapchainAttachment.imageView = vkbSwapchain.get_image_views().value()[i];
 				swapchainAttachments.push_back(swapchainAttachment);
@@ -163,7 +167,7 @@ namespace Puffin
 			depthFormat = VK_FORMAT_D32_SFLOAT;
 
 			// Depth image will use format we selected and depth attachment usage flag
-			VkImageCreateInfo depthImageInfo = VKInit::image_create_info(depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
+			VkImageCreateInfo depthImageInfo = vkinit::image_create_info(depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
 
 			// Allocate depth image from local gpu memory
 			VmaAllocationCreateInfo depthImageAllocInfo = {};
@@ -174,7 +178,7 @@ namespace Puffin
 			vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthAttachment.image, &depthAttachment.allocation, nullptr);
 
 			// Build Image View for depth image to use in rendering
-			VkImageViewCreateInfo depthImageViewInfo = VKInit::imageview_create_info(depthFormat, depthAttachment.image, VK_IMAGE_ASPECT_DEPTH_BIT);
+			VkImageViewCreateInfo depthImageViewInfo = vkinit::imageview_create_info(depthFormat, depthAttachment.image, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 			VK_CHECK(vkCreateImageView(device, &depthImageViewInfo, nullptr, &depthAttachment.imageView));
 
@@ -190,12 +194,12 @@ namespace Puffin
 		{
 			// Create Command Pool for commands submitted to graphics queue
 			// we also want the pool to allow for resetting individual command buffers
-			VkCommandPoolCreateInfo commandPoolInfo = VKInit::command_pool_create_info(graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+			VkCommandPoolCreateInfo commandPoolInfo = vkinit::command_pool_create_info(graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
 			VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool));
 
 			// Allocate Default Command Buffer that we will use for rendering
-			VkCommandBufferAllocateInfo cmdAllocInfo = VKInit::command_buffer_allocate_info(commandPool, 1);
+			VkCommandBufferAllocateInfo cmdAllocInfo = vkinit::command_buffer_allocate_info(commandPool, 1);
 
 			VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &mainCommandBuffer));
 
@@ -204,7 +208,7 @@ namespace Puffin
 			});
 
 			// Create Upload Command Pool
-			VkCommandPoolCreateInfo uploadCommandPoolInfo = VKInit::command_pool_create_info(graphicsQueueFamily);
+			VkCommandPoolCreateInfo uploadCommandPoolInfo = vkinit::command_pool_create_info(graphicsQueueFamily);
 
 			VK_CHECK(vkCreateCommandPool(device, &uploadCommandPoolInfo, nullptr, &uploadContext.commandPool));
 
@@ -328,7 +332,7 @@ namespace Puffin
 			// Create Syncronization Structures
 			// We want to create fence with Create Signaled flag
 			// so we can waut on it before using
-			VkFenceCreateInfo fenceCreateInfo = VKInit::fence_create_info(VK_FENCE_CREATE_SIGNALED_BIT);
+			VkFenceCreateInfo fenceCreateInfo = vkinit::fence_create_info(VK_FENCE_CREATE_SIGNALED_BIT);
 
 			VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence));
 
@@ -338,7 +342,7 @@ namespace Puffin
 			});
 
 			// Create Upload Fence
-			VkFenceCreateInfo uploadCreateFenceInfo = VKInit::fence_create_info();
+			VkFenceCreateInfo uploadCreateFenceInfo = vkinit::fence_create_info();
 
 			VK_CHECK(vkCreateFence(device, &uploadCreateFenceInfo, nullptr, &uploadContext.uploadFence));
 
@@ -430,28 +434,28 @@ namespace Puffin
 			auto fragShaderCode = ReadFile("shaders/frag.spv");
 
 			// Create Shader Modules from code
-			VkShaderModule vertShaderModule = VKInit::create_shader_module(device, vertShaderCode);
-			VkShaderModule fragShaderModule = VKInit::create_shader_module(device, fragShaderCode);
+			VkShaderModule vertShaderModule = vkinit::create_shader_module(device, vertShaderCode);
+			VkShaderModule fragShaderModule = vkinit::create_shader_module(device, fragShaderCode);
 
 			// Create Pipeline Layout Info
-			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::pipeline_layout_create_info(descriptorSetLayout);
-			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &material.pipelineLayout));
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = vkinit::pipeline_layout_create_info(descriptorSetLayout);
+			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &meshMaterial.pipelineLayout));
 
 			// Create Pipeline Builder object
 			PipelineBuilder pipelineBuilder;
 
 			// Create Shader Stage Info
-			pipelineBuilder.shaderStages.push_back(VKInit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
-			pipelineBuilder.shaderStages.push_back(VKInit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
+			pipelineBuilder.shaderStages.push_back(vkinit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
+			pipelineBuilder.shaderStages.push_back(vkinit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
 
 			auto bindingDescription = Vertex::getBindingDescription();
 			auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
 			// Create Vertex Input Info
-			pipelineBuilder.vertexInputInfo = VKInit::vertex_input_state_create_info(bindingDescription, attributeDescriptions);
+			pipelineBuilder.vertexInputInfo = vkinit::vertex_input_state_create_info(bindingDescription, attributeDescriptions);
 
 			// Create Input Assembly Info
-			pipelineBuilder.inputAssembly = VKInit::input_assembly_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+			pipelineBuilder.inputAssembly = vkinit::input_assembly_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
 			// Define Viewport
 			pipelineBuilder.viewport.x = 0.0f;
@@ -466,22 +470,22 @@ namespace Puffin
 			pipelineBuilder.scissor.extent = windowExtent;
 
 			// Rasterization Stage Creation - Configured to draw filled triangles
-			pipelineBuilder.rasterizer = VKInit::rasterization_state_create_info(VK_POLYGON_MODE_FILL);
+			pipelineBuilder.rasterizer = vkinit::rasterization_state_create_info(VK_POLYGON_MODE_FILL);
 
 			// Multisampled - Disabled right now so just use default
-			pipelineBuilder.multisampling = VKInit::multisampling_state_create_info();
+			pipelineBuilder.multisampling = vkinit::multisampling_state_create_info();
 
 			// Color Blending - Default RGBA Color Blending
-			pipelineBuilder.colorBlendAttachment = VKInit::color_blend_attachment_state();
+			pipelineBuilder.colorBlendAttachment = vkinit::color_blend_attachment_state();
 
 			// Depth Testing - Default
-			pipelineBuilder.depthStencil = VKInit::depth_stencil_create_info(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+			pipelineBuilder.depthStencil = vkinit::depth_stencil_create_info(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
 
 			// Assign Pipeline Layout to Pipeline
-			pipelineBuilder.pipelineLayout = material.pipelineLayout;
+			pipelineBuilder.pipelineLayout = meshMaterial.pipelineLayout;
 
 			// Build Pipeline
-			material.pipeline = pipelineBuilder.build_pipeline(device, renderPass);
+			meshMaterial.pipeline = pipelineBuilder.build_pipeline(device, renderPass);
 		}
 
 		void VulkanEngine::InitScene()
@@ -513,50 +517,36 @@ namespace Puffin
 
 		void VulkanEngine::InitMesh(MeshComponent& mesh)
 		{
-			//InitTexture(comp.texture, comp.texture_path);
+			// Load Texture Data
+			Util::LoadImageFromFile(*this, mesh.texture_path.c_str(), mesh.texture);
 
 			// Load Mesh Data
 			IO::LoadMesh(mesh);
 
-			// Copy Loaded Mesh data into mesh vertex buffer
-			const size_t bufferSize = mesh.vertices.size() * sizeof(Vertex);
+			// Init Mesh Buffers
+			InitVertexBuffer(mesh);
+			InitIndexBuffer(mesh);
+			InitUniformBuffer(mesh);
 
-			// Allocate Staging Buffer - Map Vertices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-
-			// Map vertex data to staging buffer
-			void* data;
-			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
-			memcpy(data, mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex));
-			vmaUnmapMemory(allocator, stagingBuffer.allocation);
-
-			// Allocate Vertex Buffer - Transfer Vertices into GPU optimised Memory
-			mesh.vertexBuffer = CreateBuffer(bufferSize,
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-				VMA_MEMORY_USAGE_GPU_ONLY);
-
-			ImmediateSubmit([=](VkCommandBuffer cmd)
-			{
-				VkBufferCopy copy;
-				copy.dstOffset = 0;
-				copy.srcOffset = 0;
-				copy.size = bufferSize;
-				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.vertexBuffer.buffer, 1, &copy);
-			});
-
-			// Add destruction of mesh buffer to deletion queue
-			mainDeletionQueue.push_function([=]()
-			{
-				vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
-			});
-
-			// Cleanup Staging Buffer Immediately, It is no longer needed
-			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+			mesh.material = meshMaterial;
 		}
 
 		void VulkanEngine::InitLight(LightComponent& light)
 		{
+			VkDeviceSize bufferSize = sizeof(LightData);
 
+			light.buffers.resize(swapchainAttachments.size());
+
+			for (int i = 0; i < light.buffers.size(); i++)
+			{
+				light.buffers[i] = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+				// Add destruction of uniform buffer to deletion queue
+				mainDeletionQueue.push_function([=]()
+				{
+					vmaDestroyBuffer(allocator, light.buffers[i].buffer, light.buffers[i].allocation);
+				});
+			}
 		}
 
 		void VulkanEngine::InitCamera(CameraComponent& camera)
@@ -575,103 +565,182 @@ namespace Puffin
 			camera.matrices.view = glm::lookAt(camera.position, camera.position + camera.direction, camera.up);
 		}
 
-		void VulkanEngine::InitTextureImage(Texture& texture, std::string texture_path)
+		void VulkanEngine::InitVertexBuffer(MeshComponent& mesh)
 		{
-			int texWidth, texHeight, texChannels;
+			// Copy Loaded Mesh data into mesh vertex buffer
+			const size_t bufferSize = mesh.vertices.size() * sizeof(Vertex);
 
-			// Load Texture from file
-			stbi_uc* pixels = stbi_load(texture_path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+			// Allocate Staging Buffer - Map Vertices in CPU Memory
+			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
-			// Get required image size for texture
-			VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-			if (!pixels)
-			{
-				throw std::runtime_error("failed to load texture image!");
-			}
-
-			// VMA Buffer Creation
-			/*CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingAllocation);*/
-
-			// Create Staging Buffer/Memory for image
-			AllocatedBuffer stagingBuffer = CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-			// Copy Texture data to staging buffer
+			// Map vertex data to staging buffer
 			void* data;
 			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
-			memcpy(data, pixels, static_cast<size_t>(imageSize));
+			memcpy(data, mesh.vertices.data(), bufferSize);
 			vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
-			// Free Loaded texture
-			stbi_image_free(pixels);
+			// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
+			mesh.vertexBuffer = CreateBuffer(bufferSize,
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+				VMA_MEMORY_USAGE_GPU_ONLY);
 
-			/*CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				texture.image, VMA_MEMORY_USAGE_GPU_ONLY, texture.allocation);*/
-
-			VkExtent3D extent
+			//Copy from CPU Memory to GPU Memory
+			ImmediateSubmit([=](VkCommandBuffer cmd)
 			{
-				texWidth,
-				texHeight,
-				0
-			};
+				VkBufferCopy copy;
+				copy.dstOffset = 0;
+				copy.srcOffset = 0;
+				copy.size = bufferSize;
+				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.vertexBuffer.buffer, 1, &copy);
+			});
 
-			// Create Initial Image
-			VkImageCreateInfo imageInfo = VKInit::image_create_info(
-				VK_FORMAT_R8G8B8A8_SRGB,
-				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, extent);
-
-			VmaAllocationCreateInfo allocInfo = {};
-			allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-			if (vmaCreateImage(allocator, &imageInfo, &allocInfo, &texture.image, &texture.allocation, nullptr))
+			// Add destruction of vertex buffer to deletion queue
+			mainDeletionQueue.push_function([=]()
 			{
-				throw std::runtime_error("failed to create image!");
+				vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
+			});
+
+			// Cleanup Staging Buffer Immediately, It is no longer needed
+			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+		}
+
+		void VulkanEngine::InitIndexBuffer(MeshComponent& mesh)
+		{
+			// Copy Loaded Index data into mesh index buffer
+			const size_t bufferSize = mesh.indices.size() * sizeof(uint32_t);
+
+			// Allocated Staging Buffer - Map Indices in CPU Memory
+			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+
+			// Map Index data to staging buffer
+			void* data;
+			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+			memcpy(data, mesh.indices.data(), bufferSize);
+			vmaUnmapMemory(allocator, stagingBuffer.allocation);
+
+			// Allocate Index Buffer - Transfer Indices into GPU Memory
+			mesh.indexBuffer = CreateBuffer(bufferSize,
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+				VMA_MEMORY_USAGE_GPU_ONLY);
+
+			//Copy from CPU Memory to GPU Memory
+			ImmediateSubmit([=](VkCommandBuffer cmd)
+			{
+				VkBufferCopy copy;
+				copy.dstOffset = 0;
+				copy.srcOffset = 0;
+				copy.size = bufferSize;
+				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.indexBuffer.buffer, 1, &copy);
+			});
+
+			// Add destruction of index buffer to deletion queue
+			mainDeletionQueue.push_function([=]()
+			{
+				vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+			});
+
+			// CLeanup Staging Buffer
+			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+		}
+
+		void VulkanEngine::InitUniformBuffer(MeshComponent& mesh)
+		{
+			VkDeviceSize bufferSize = sizeof(mesh.matrices);
+
+			mesh.uniformBuffers.resize(swapchainAttachments.size());
+
+			for (int i = 0; i < mesh.uniformBuffers.size(); i++)
+			{
+				mesh.uniformBuffers[i] = CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				// Add destruction of uniform buffer to deletion queue
+				mainDeletionQueue.push_function([=]()
+				{
+					vmaDestroyBuffer(allocator, mesh.uniformBuffers[i].buffer, mesh.uniformBuffers[i].allocation);
+				});
 			}
-
-			/*TransitionImageLayout(texture.image, VK_FORMAT_R8G8B8A8_SRGB,
-				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);*/
-
-			/*CopyBufferToImage(stagingBuffer, texture.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));*/
-
-			/*TransitionImageLayout(texture.image, VK_FORMAT_R8G8B8A8_SRGB,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
-
-			vkDestroyBuffer(device, stagingBuffer.buffer, nullptr);
-			vmaFreeMemory(allocator, stagingBuffer.allocation);
-		}
-
-		AllocatedBuffer VulkanEngine::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
-		{
-			// Set what the usage of this buffer is
-			VkBufferCreateInfo bufferInfo = {};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.pNext = nullptr;
-			bufferInfo.size = allocSize;
-			bufferInfo.usage = usage;
-
-			// Let VMA library whether this buffer needs to be used by CPU, GPU, etc...
-			VmaAllocationCreateInfo allocInfo = {};
-			allocInfo.usage = memoryUsage;
-
-			AllocatedBuffer newBuffer;
-			
-			// Allocate Buffer
-			VK_CHECK(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &newBuffer.buffer, &newBuffer.allocation, nullptr));
-
-			return newBuffer;
-		}
-
-		void VulkanEngine::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
-		{
-
 		}
 
 		//-------------------------------------------------------------------------------------
 
-		void VulkanEngine::Render()
+		void VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
+		{
+			// Check if there are any 
+			glfwPollEvents();
+
+			//UIManager->DrawUI(dt, InputManager);
+
+			UpdateCamera(camera, InputManager, dt);
+
+			DrawFrame();
+		}
+
+		void VulkanEngine::UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time)
+		{
+			if (inputManager->IsCursorLocked())
+			{
+				// Camera Movement
+				if (inputManager->GetAction("CamMoveLeft").state == Puffin::Input::HELD)
+				{
+					camera.position += camera.speed * camera.right * delta_time;
+				}
+				else if (inputManager->GetAction("CamMoveRight").state == Puffin::Input::HELD)
+				{
+					camera.position -= camera.speed * camera.right * delta_time;
+				}
+
+				if (inputManager->GetAction("CamMoveForward").state == Puffin::Input::HELD)
+				{
+					camera.position += camera.speed * camera.direction * delta_time;
+				}
+				else if (inputManager->GetAction("CamMoveBackward").state == Puffin::Input::HELD)
+				{
+					camera.position -= camera.speed * camera.direction * delta_time;
+				}
+
+				if (inputManager->GetAction("CamMoveUp").state == Puffin::Input::HELD)
+				{
+					camera.position += camera.speed * camera.up * delta_time;
+				}
+				else if (inputManager->GetAction("CamMoveDown").state == Puffin::Input::HELD)
+				{
+					camera.position -= camera.speed * camera.up * delta_time;
+				}
+
+				// Mouse Rotation
+				camera.yaw += inputManager->GetMouseXOffset();
+				camera.pitch -= inputManager->GetMouseYOffset();
+
+				if (camera.pitch > 89.0f)
+					camera.pitch = 89.0f;
+
+				if (camera.pitch < -89.0f)
+					camera.pitch = -89.0f;
+
+				// Calculate Direction vector from yaw and pitch of camera
+				camera.direction.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+				camera.direction.y = sin(glm::radians(camera.pitch));
+				camera.direction.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+				camera.direction = glm::normalize(camera.direction);
+			}
+
+			// Calculate Right, Up and LookAt vectors
+			camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
+			camera.lookat = camera.position + camera.direction;
+
+			// Recalculate camera perspective if fov has changed, store new fov in prevFov
+			if (camera.fov != camera.prevFov)
+			{
+				camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
+				camera.prevFov = camera.fov;
+			}
+
+			camera.matrices.view = glm::lookAt(camera.position, camera.position + camera.direction, camera.up);
+		}
+
+		//-------------------------------------------------------------------------------------
+
+		void VulkanEngine::DrawFrame()
 		{
 			// Wait until gpu has finished rendering last frame. Timeout of 1 second
 			VK_CHECK(vkWaitForFences(device, 1, &renderFence, true, 1000000000)); // Wait for fence to complete
@@ -775,6 +844,8 @@ namespace Puffin
 			// Begin Render Pass
 			vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+
+
 			// Draw all Mesh objects
 			DrawObjects(cmd, index);
 
@@ -789,9 +860,10 @@ namespace Puffin
 
 		void VulkanEngine::DrawObjects(VkCommandBuffer cmd, uint32_t index)
 		{
+			Material* lastMaterial = nullptr;
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 				LightComponent& light = world->GetComponent<LightComponent>(4);
 
 				MeshMatrices matrice = {};
@@ -803,20 +875,31 @@ namespace Puffin
 				matrice.proj = camera.matrices.perspective;
 				matrice.proj[1][1] *= -1;
 
-				comp.matrices = matrice;
+				mesh.matrices = matrice;
 
+				// Map Mesh, Light and Camera Data to Uniform Buffers
 				void* data;
-				vmaMapMemory(allocator, comp.uniformAllocations[index], &data);
+				vmaMapMemory(allocator, mesh.uniformBuffers[index].allocation, &data);
 				memcpy(data, &matrice, sizeof(matrice));
-				vmaUnmapMemory(allocator, comp.uniformAllocations[index]);
+				vmaUnmapMemory(allocator, mesh.uniformBuffers[index].allocation);
 
-				vmaMapMemory(allocator, light.allocations[index], &data);
-				memcpy(data, &light.uniformBuffer, sizeof(LightBufferObject));
-				vmaUnmapMemory(allocator, light.allocations[index]);
+				vmaMapMemory(allocator, light.buffers[index].allocation, &data);
+				memcpy(data, &light.data, sizeof(LightData));
+				vmaUnmapMemory(allocator, light.buffers[index].allocation);
 
-				vmaMapMemory(allocator, camera.viewAllocations[index], &data);
-				memcpy(data, &camera.viewBufferObject, sizeof(ViewBufferObject));
-				vmaUnmapMemory(allocator, camera.viewAllocations[index]);
+				vmaMapMemory(allocator, camera.buffers[index].allocation, &data);
+				memcpy(data, &camera.data, sizeof(ViewData));
+				vmaUnmapMemory(allocator, camera.buffers[index].allocation);
+
+				// Bind Vertices, Indices and Descriptor Sets
+				VkDeviceSize offsets[] = { 0 };
+				vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
+				vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+					mesh.material.pipelineLayout, 0, 1, &mesh.descriptorSets[index], 0, nullptr);
+
+				// Draw Indexed Vertices
+				vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
 			}
 		}
 
@@ -847,41 +930,45 @@ namespace Puffin
 
 				mainDeletionQueue.flush();
 
-				//// Destroy Command Pool
-				//vkDestroyCommandPool(device, commandPool, nullptr);
-
-				//// Destroy Swapchain
-				//vkDestroySwapchainKHR(device, swapchain, nullptr);
-
-				//// Destroy Renderpass
-				//vkDestroyRenderPass(device, renderPass, nullptr);
-
-				//// Destory Swapchain Resoruces
-				//for (int i = 0; i < swapchainAttachments.size(); i++)
-				//{
-				//	vkDestroyFramebuffer(device, framebuffers[i], nullptr);
-				//	vkDestroyImageView(device, swapchainAttachments[i].imageView, nullptr);
-				//}
-
 				vkDestroyDevice(device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);
-				//vkb::destroy_debug_utils_messenger(instance, debug_messenger);
 				vkDestroyInstance(instance, nullptr);
 			}
 		}
 
 		//-------------------------------------------------------------------------------------
 
+		AllocatedBuffer VulkanEngine::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
+		{
+			// Set what the usage of this buffer is
+			VkBufferCreateInfo bufferInfo = {};
+			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferInfo.pNext = nullptr;
+			bufferInfo.size = allocSize;
+			bufferInfo.usage = usage;
+
+			// Let VMA library whether this buffer needs to be used by CPU, GPU, etc...
+			VmaAllocationCreateInfo allocInfo = {};
+			allocInfo.usage = memoryUsage;
+
+			AllocatedBuffer newBuffer;
+
+			// Allocate Buffer
+			VK_CHECK(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &newBuffer.buffer, &newBuffer.allocation, nullptr));
+
+			return newBuffer;
+		}
+
 		void VulkanEngine::ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function)
 		{
 			// Allocate Default command buffer that will be used for instant commands
-			VkCommandBufferAllocateInfo cmdAllocInfo = VKInit::command_buffer_allocate_info(uploadContext.commandPool, 1);
+			VkCommandBufferAllocateInfo cmdAllocInfo = vkinit::command_buffer_allocate_info(uploadContext.commandPool, 1);
 
 			VkCommandBuffer cmd;
 			VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &cmd));
 
 			// Begin Command buffer recording. The command buffer will be used only once, so let vulkan know that
-			VkCommandBufferBeginInfo cmdBeginInfo = VKInit::command_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+			VkCommandBufferBeginInfo cmdBeginInfo = vkinit::command_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
 			VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
@@ -890,7 +977,7 @@ namespace Puffin
 
 			VK_CHECK(vkEndCommandBuffer(cmd));
 
-			VkSubmitInfo submit = VKInit::submit_info(&cmd);
+			VkSubmitInfo submit = vkinit::submit_info(&cmd);
 
 			// Submit Command Buffer to queue and execute
 			// uploadFence will now block until the graphics command finish execution

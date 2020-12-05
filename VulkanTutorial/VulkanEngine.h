@@ -13,14 +13,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // Vulkan Helper Classes
-#include "VulkanTypes.h"
-#include "VulkanPipeline.h"
+#include "VKTypes.h"
+#include "VKPipeline.h"
 
-#include "vk_mem_alloc.h" // Vulkan Memory Allocator
+//#include "vk_mem_alloc.h" // Vulkan Memory Allocator
 #include "vk-boostrap/VkBootstrap.h" // Vk Bootstrap
 
 // Engine Includes
 #include "ECS.h"
+#include "UIManager.h"
+#include "InputManager.h"
 
 // Component Includes
 #include "TransformComponent.h"
@@ -31,6 +33,7 @@
 // STL
 #include <vector>
 #include <deque>
+#include <unordered_map>
 #include <functional>
 #include <fstream>
 
@@ -64,20 +67,14 @@ namespace Puffin
 			}
 		};
 
-		struct Material
-		{
-			VkPipeline pipeline;
-			VkPipelineLayout pipelineLayout;
-		};
-
-		struct RenderObject
+		/*struct RenderObject
 		{
 			MeshComponent& mesh;
 
 			Material* material;
 
 			glm::mat4 transformMatrix;
-		};
+		};*/
 
 		struct UploadContext
 		{
@@ -89,15 +86,21 @@ namespace Puffin
 		{
 		public:
 
+			// Main Functions
 			GLFWwindow* Init();
 
-			void Render();
+			void Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
 
 			void Cleanup();
 
-			UploadContext uploadContext;
-
+			// Helper Functions
 			void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
+			AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+
+			// Memory allocator
+			VmaAllocator allocator;
+			UploadContext uploadContext;
+			DeletionQueue mainDeletionQueue;
 
 		private:
 
@@ -108,25 +111,20 @@ namespace Puffin
 			VkDevice device;							// Vulkan device for commands
 			VkSurfaceKHR surface;						// Vulkan window surface
 
-			// Memory allocator
-			VmaAllocator allocator;
-
 			// Swapchain
 			VkSwapchainKHR swapchain;
 			VkFormat swapchainImageFormat; // Image format expected by windowing system
-			std::vector<FrameBufferAttachment> swapchainAttachments; // Images/Views from swapchain
+			std::vector<AllocatedImage> swapchainAttachments; // Images/Views from swapchain
 			std::vector<VkFramebuffer> framebuffers;
 
 			// Depth Resources
-			FrameBufferAttachment depthAttachment;
+			AllocatedImage depthAttachment;
 			VkFormat depthFormat;
 
 			VkRenderPass renderPass;
 
 			// Pipelines/Materials
-			Material material;
-			//VkPipeline graphicsPipeline;
-			//VkPipelineLayout pipelineLayout;
+			Material meshMaterial;
 
 			VkDescriptorPool descriptorPool;
 			VkDescriptorSetLayout descriptorSetLayout;
@@ -140,7 +138,8 @@ namespace Puffin
 			VkSemaphore presentSemaphore, renderSemaphore;
 			VkFence renderFence;
 
-			std::vector<RenderObject> renderObjects;
+			//std::vector<RenderObject> renderObjects;
+			std::unordered_map<std::string_view, Material> materials;
 
 			// Camera
 			CameraComponent camera;
@@ -149,8 +148,6 @@ namespace Puffin
 			GLFWwindow* window;							// Window
 			GLFWmonitor* monitor;						// Monitor
 
-			DeletionQueue mainDeletionQueue;
-
 			bool framebufferResized = false; // Flag to indicate if GLFW window has been resized
 			bool isInitialized;
 
@@ -158,6 +155,7 @@ namespace Puffin
 			const int WIDTH = 1280; // Starting Window Width
 			const int HEIGHT = 720; // Starting Window Height
 			int frameNumber = 0;
+			float prevfov;
 
 			// Init Main Functions
 			void InitVulkan();
@@ -175,13 +173,16 @@ namespace Puffin
 			void InitLight(LightComponent& light);
 			void InitCamera(CameraComponent& camera);
 
-			// Init Helper Functions
-			void InitTextureImage(Texture& texture, std::string texture_path);
-			AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
-			void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-			void CopyBufferToImage(VkBuffer buffer, VkImage image, VkExtent2D extent);
+			// Init Buffer Functions
+			void InitVertexBuffer(MeshComponent& mesh);
+			void InitIndexBuffer(MeshComponent& mesh);
+			void InitUniformBuffer(MeshComponent& mesh);
+
+			// Update Functions
+			void UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time);
 
 			// Render Functions
+			void DrawFrame();
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
 			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
 			glm::mat4 BuildMeshTransform(TransformComponent comp);

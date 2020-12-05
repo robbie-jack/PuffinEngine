@@ -10,20 +10,26 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		// Image, View and Allocation attached to a framebuffer
-		struct FrameBufferAttachment
+		// Allocated Image/View
+		struct AllocatedImage
 		{
 			VkImage image;
 			VmaAllocation allocation;
 			VkImageView imageView;
 		};
 
-		typedef FrameBufferAttachment Texture;
+		typedef AllocatedImage Texture;
 
 		struct AllocatedBuffer
 		{
 			VkBuffer buffer;
 			VmaAllocation allocation;
+		};
+
+		struct Material
+		{
+			VkPipeline pipeline;
+			VkPipelineLayout pipelineLayout;
 		};
 	}
 }

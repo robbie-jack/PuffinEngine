@@ -16,8 +16,8 @@
 #include <vector>
 #include <array>
 
-#include "VulkanTypes.h"
 #include "BaseComponent.h"
+#include "VKTypes.h"
 
 #include <cereal/types/string.hpp>
 
@@ -182,6 +182,9 @@ namespace Puffin
 			// Texture
 			Texture texture;
 			std::string texture_path;
+
+			// Material
+			Material material;
 
 			// Vertex Buffer
 			AllocatedBuffer vertexBuffer;
