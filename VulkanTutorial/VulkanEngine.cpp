@@ -24,7 +24,7 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		GLFWwindow* VulkanEngine::Init()
+		GLFWwindow* VulkanEngine::Init(UI::UIManager* UIManager)
 		{
 			glfwInit();
 
@@ -66,6 +66,12 @@ namespace Puffin
 
 			// Initialize All Scene Objects
 			InitScene();
+
+			// Pass Camera to UI
+			UIManager->GetWindowSettings()->SetCamera(&camera);
+
+			// Initialize ImGui
+			InitImGui();
 
 			InitTextureSampler();
 
@@ -521,7 +527,7 @@ namespace Puffin
 			}
 
 			// Initialize Camera
-			camera.position = glm::vec3(0.0f, 0.0f, 1.0f);
+			camera.position = glm::vec3(0.0f, 0.0f, 10.0f);
 			camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
 			camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
 			camera.fov = 60.0f;
@@ -793,6 +799,71 @@ namespace Puffin
 			}
 		}
 
+		void VulkanEngine::InitImGui()
+		{
+			// Create Descriptor Pool for ImGui
+			VkDescriptorPoolSize poolSizes[] =
+			{
+				{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+			};
+
+			VkDescriptorPoolCreateInfo pool_info = {};
+			pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			pool_info.maxSets = 1000;
+			pool_info.poolSizeCount = std::size(poolSizes);
+			pool_info.pPoolSizes = poolSizes;
+
+			VkDescriptorPool imguiPool;
+			VK_CHECK(vkCreateDescriptorPool(device, &pool_info, nullptr, &imguiPool));
+
+
+			// Initialize imgui library
+			// this initializes the core structures of imgui
+			//ImGui::CreateContext();
+
+			// Initialize ImGui for GLFW
+			ImGui_ImplGlfw_InitForVulkan(window, true);
+
+			//this initializes imgui for Vulkan
+			ImGui_ImplVulkan_InitInfo init_info = {};
+			init_info.Instance = instance;
+			init_info.PhysicalDevice = chosenGPU;
+			init_info.Device = device;
+			init_info.Queue = graphicsQueue;
+			init_info.DescriptorPool = imguiPool;
+			init_info.MinImageCount = 3;
+			init_info.ImageCount = 3;
+
+			ImGui_ImplVulkan_Init(&init_info, renderPass);
+
+			//execute a gpu command to upload imgui font textures
+			ImmediateSubmit([&](VkCommandBuffer cmd) 
+			{
+				ImGui_ImplVulkan_CreateFontsTexture(cmd);
+			});
+
+			//clear font textures from cpu data
+			ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+			//add the destroy the imgui created structures
+			mainDeletionQueue.push_function([=]() {
+
+				vkDestroyDescriptorPool(device, imguiPool, nullptr);
+				ImGui_ImplVulkan_Shutdown();
+			});
+		}
+
 		//-------------------------------------------------------------------------------------
 
 		void VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
@@ -800,7 +871,7 @@ namespace Puffin
 			// Check if there are any 
 			glfwPollEvents();
 
-			//UIManager->DrawUI(dt, InputManager);
+			UIManager->DrawUI(dt, InputManager);
 
 			UpdateCamera(camera, InputManager, dt);
 
@@ -874,6 +945,9 @@ namespace Puffin
 
 		void VulkanEngine::DrawFrame()
 		{
+			// Draw ImGui
+			ImGui::Render();
+
 			// Wait until gpu has finished rendering last frame. Timeout of 1 second
 			VK_CHECK(vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000)); // Wait for fence to complete
 			VK_CHECK(vkResetFences(device, 1, &GetCurrentFrame().renderFence)); // Reset fence
@@ -981,6 +1055,9 @@ namespace Puffin
 
 			// Draw all Mesh objects
 			DrawObjects(cmd, index);
+
+			// Record Imgui Draw Data and draw functions into command buffer
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
 			// Finalize Render Pass
 			vkCmdEndRenderPass(cmd);

@@ -101,7 +101,7 @@ namespace Puffin
 		public:
 
 			// Main Functions
-			GLFWwindow* Init();
+			GLFWwindow* Init(UI::UIManager* UIManager);
 
 			void Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
 
@@ -177,6 +177,7 @@ namespace Puffin
 			void InitDescriptors();
 			void InitPipelines();
 			void InitScene();
+			void InitImGui();
 			void InitTextureSampler();
 			void InitDescriptorSets();
 

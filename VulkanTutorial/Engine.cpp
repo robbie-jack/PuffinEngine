@@ -67,7 +67,7 @@ namespace Puffin
 		// Initialize Systems
 		/*GLFWwindow* window = renderSystem->InitWindow();
 		renderSystem->InitVulkan(&UIManager);*/
-		GLFWwindow* window = vulkanEngine->Init();
+		GLFWwindow* window = vulkanEngine->Init(&UIManager);
 		physicsSystem->Start();
 
 		// Init Input
@@ -83,17 +83,23 @@ namespace Puffin
 			std::chrono::duration<float> duration = currentTime - lastTime;
 			float delta_time = duration.count();
 
+			// Input
 			InputManager.UpdateInput(window);
-			//running = renderSystem->Update(&UIManager, &InputManager, delta_time);
-			vulkanEngine->Update(&UIManager, &InputManager, delta_time);
 
+			// Physics
 			if (playState == PlayState::PLAYING)
 			{
 				physicsSystem->Update(delta_time);
 			}
 
-			ECSWorld.Update();
+			// UI
 			UIManager.Update();
+
+			// Rendering
+			vulkanEngine->Update(&UIManager, &InputManager, delta_time);
+			
+			// Delete All Marked Objects
+			ECSWorld.Update();
 
 			if (playState == PlayState::STOPPED)
 			{
@@ -113,14 +119,11 @@ namespace Puffin
 					restarted = false;
 				}
 			}
-
-			//running = false;
 		}
 
 		physicsSystem->Stop();
 
 		physicsSystem.reset();
-		//renderSystem.reset();
 		vulkanEngine->Cleanup();
 
 		UIManager.Cleanup();

@@ -86,8 +86,6 @@ namespace Puffin
 
 			fileDialog.Display();
 
-			ImGui::Render();
-
 			return running;
 		}
 
