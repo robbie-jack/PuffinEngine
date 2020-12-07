@@ -87,8 +87,8 @@ namespace Puffin
 			VkSemaphore presentSemaphore, renderSemaphore;
 			VkFence renderFence;
 
-			VkCommandPool commandPool; // Command Pool for our commands
-			VkCommandBuffer mainCommandBuffer; // Buffer commands are recorded into
+			VkCommandPool commandPool, guiCommandPool; // Command Pool for our commands
+			VkCommandBuffer mainCommandBuffer, guiCommandBuffer; // Buffer commands are recorded into
 		};
 
 		// Number of frames to overlap when rendering
@@ -131,6 +131,12 @@ namespace Puffin
 			std::vector<AllocatedImage> swapchainAttachments; // Images/Views from swapchain
 			std::vector<VkFramebuffer> framebuffers;
 
+			// Offscreen
+			VkExtent2D offscreenExtent;
+			VkFormat offscreenFormat;
+			std::vector<AllocatedImage> offscreenAttachments; // Images/Views for Offscreen Rendering
+			std::vector<VkFramebuffer> offscreenFramebuffers;
+
 			FrameData frames[FRAME_OVERLAP];
 
 			// Depth Resources
@@ -138,6 +144,7 @@ namespace Puffin
 			VkFormat depthFormat;
 
 			VkRenderPass renderPass;
+			VkRenderPass renderPassGUI;
 
 			// Pipelines/Materials
 			Material meshMaterial;
@@ -170,8 +177,10 @@ namespace Puffin
 			// Init Main Functions
 			void InitVulkan();
 			void InitSwapchain();
+			void InitOffscreen();
 			void InitCommands();
 			void InitDefaultRenderpass();
+			void InitGUIRenderpass();
 			void InitFramebuffers();
 			void InitSyncStructures();
 			void InitDescriptors();
@@ -195,8 +204,9 @@ namespace Puffin
 			void UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time);
 
 			// Render Functions
-			void DrawFrame();
+			void DrawFrame(UI::UIManager* UIManager);
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
+			VkCommandBuffer RecordGUICommandBuffers(uint32_t index);
 			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
 			glm::mat4 BuildMeshTransform(TransformComponent comp);
 

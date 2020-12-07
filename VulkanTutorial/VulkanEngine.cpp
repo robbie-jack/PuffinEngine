@@ -34,6 +34,11 @@ namespace Puffin
 			windowExtent.width = WIDTH;
 			windowExtent.height = HEIGHT;
 
+			// Initialize Offscreen Variables with Default Values
+			offscreenExtent.width = 1024;
+			offscreenExtent.height = 1024;
+			offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
+
 			window = glfwCreateWindow(windowExtent.width, windowExtent.height, "Puffin Engine", monitor, nullptr);
 
 			//glfwMaximizeWindow(window);
@@ -46,11 +51,17 @@ namespace Puffin
 			// Create Swapchain
 			InitSwapchain();
 
+			// Create Offscreen Variables
+			InitOffscreen();
+
 			// Initialize Command Pool and buffer
 			InitCommands();
 
 			// Initialise Default Renderpass
 			InitDefaultRenderpass();
+
+			// Initialize GUI Renderpass
+			InitGUIRenderpass();
 
 			// Initialise Swapchain Framebuffers
 			InitFramebuffers();
@@ -74,6 +85,8 @@ namespace Puffin
 			InitImGui();
 
 			InitTextureSampler();
+
+			UIManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
 			InitDescriptorSets();
 
@@ -169,12 +182,57 @@ namespace Puffin
 			{
 				vkDestroySwapchainKHR(device, swapchain, nullptr);
 			});
+		}
+
+		void VulkanEngine::InitOffscreen()
+		{
+			// Grab how many images we have in swapchain
+			const uint32_t swapchain_imagecount = swapchainAttachments.size();
+
+			// Create Images/Views for Offscreen Rendering
+			offscreenAttachments = std::vector<AllocatedImage>(swapchain_imagecount);
+
+			VkExtent3D imageExtent =
+			{
+				offscreenExtent.width,
+				offscreenExtent.height,
+				1
+			};
+
+			// Init Image/Allocation Info
+			VkImageCreateInfo imageInfo = vkinit::image_create_info(offscreenFormat, 
+				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageExtent);
+			VmaAllocationCreateInfo imageAllocInfo = {};
+			imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+			imageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+			for (int i = 0; i < swapchain_imagecount; i++)
+			{
+				// Create Image
+				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
+					&offscreenAttachments[i].image, &offscreenAttachments[i].allocation, nullptr);
+
+				// Create Image View
+				VkImageViewCreateInfo imageViewInfo = vkinit::imageview_create_info(offscreenFormat,
+					offscreenAttachments[i].image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &offscreenAttachments[i].imageView));
+
+				// Add to deletion queues
+				mainDeletionQueue.push_function([=]()
+				{
+					vkDestroyImageView(device, offscreenAttachments[i].imageView, nullptr);
+					vmaDestroyImage(allocator, offscreenAttachments[i].image, offscreenAttachments[i].allocation);
+				});
+			}
+
+			// Create Depth Image
 
 			// Depth image size will match window
 			VkExtent3D depthImageExtent =
 			{
-				windowExtent.width,
-				windowExtent.height,
+				offscreenExtent.width,
+				offscreenExtent.height,
 				1
 			};
 
@@ -214,15 +272,24 @@ namespace Puffin
 			// Allocate Command Pool/Buffer for each frame data struct
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
+				// Allocate Command Pools
 				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool));
+				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].guiCommandPool));
 
-				// Allocate Default Command Buffer that we will use for rendering
-				VkCommandBufferAllocateInfo cmdAllocInfo = vkinit::command_buffer_allocate_info(frames[i].commandPool, 1);
+				// Allocate Default Command Buffer that we will use for scene rendering
+				VkCommandBufferAllocateInfo allocInfo = vkinit::command_buffer_allocate_info(frames[i].commandPool, 1); 
 
-				VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &frames[i].mainCommandBuffer));
+				// Allocate GUI Command Buffer used for rendering UI
+				VkCommandBufferAllocateInfo allocInfoGui = vkinit::command_buffer_allocate_info(frames[i].guiCommandPool, 1);
 
+				// Allocate buffers
+				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, &frames[i].mainCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoGui, &frames[i].guiCommandBuffer));
+
+				// Push destruction of both command pools/buffers to deletion queue
 				mainDeletionQueue.push_function([=]() {
 					vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
+					vkDestroyCommandPool(device, frames[i].guiCommandPool, nullptr);
 				});
 			}
 
@@ -242,7 +309,7 @@ namespace Puffin
 			// Renderpass will use this color attachment
 			VkAttachmentDescription colorAttachment = {};
 			// attachment will have the format needed by the swapchain
-			colorAttachment.format = swapchainImageFormat; // Will want to replace this with the offscreen image format later
+			colorAttachment.format = offscreenFormat; // Will want to replace this with the offscreen image format later
 			// 1 sample, we won't be doing msaa
 			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 			// we clear when this attachment is loaded
@@ -310,38 +377,103 @@ namespace Puffin
 			});
 		}
 
+		void VulkanEngine::InitGUIRenderpass()
+		{
+			// Create Color Attachment
+			VkAttachmentDescription colorAttachment = {};
+			colorAttachment.format = swapchainImageFormat;
+			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear screen when attachment is loaded
+			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Keep attachment stored when renderpass ends
+			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Don't care about initial format
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // Final Image layout should be ready for displaying
+
+			VkAttachmentReference colorAttachmentRef = {};
+			colorAttachmentRef.attachment = 0;
+			colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Layout will be optimal for drawing to
+
+			// Create Subpass
+			VkSubpassDescription subpass = {};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = 1;
+			subpass.pColorAttachments = &colorAttachmentRef;
+
+			// Create Renderpass
+			VkRenderPassCreateInfo renderPassInfo = {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+
+			// Connect color attachment
+			renderPassInfo.attachmentCount = 1;
+			renderPassInfo.pAttachments = &colorAttachment;
+			
+			// Connect Subpass
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+
+			VK_CHECK(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPassGUI));
+
+			mainDeletionQueue.push_function([=]()
+			{
+				vkDestroyRenderPass(device, renderPassGUI, nullptr);
+			});
+		}
+
 		void VulkanEngine::InitFramebuffers()
 		{
 			// Create Framebuffers for swapchain images.
 			// This will connect render pass to images for rendering
-			VkFramebufferCreateInfo fb_info = {};
-			fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			fb_info.pNext = nullptr;
 
-			fb_info.renderPass = renderPass;
-			fb_info.width = windowExtent.width;
-			fb_info.height = windowExtent.height;
-			fb_info.layers = 1;
+			// Create Info for Swapchain Framebuffers
+			VkFramebufferCreateInfo fb_gui_info = {};
+			fb_gui_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			fb_gui_info.pNext = nullptr;
+
+			fb_gui_info.renderPass = renderPassGUI;
+			fb_gui_info.width = windowExtent.width;
+			fb_gui_info.height = windowExtent.height;
+			fb_gui_info.layers = 1;
+
+			// Create Info for Offscreen Framebuffers
+			VkFramebufferCreateInfo fb_offscreen_info = {};
+			fb_offscreen_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			fb_offscreen_info.pNext = nullptr;
+
+			fb_offscreen_info.renderPass = renderPass;
+			fb_offscreen_info.width = offscreenExtent.width;
+			fb_offscreen_info.height = offscreenExtent.height;
+			fb_offscreen_info.layers = 1;
 
 			// Grab how many images we have in swapchain
 			const uint32_t swapchain_imagecount = swapchainAttachments.size();
 			framebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
+			offscreenFramebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
 
-			// Create Framebuffers for each of teh swapchain image views
+			// Create Framebuffers for each of the swapchain image views
 			for (int i = 0; i < swapchain_imagecount; i++)
 			{
+				// Attach offscreen and depth image view to Framebuffer
 				VkImageView attachments[2];
-				attachments[0] = swapchainAttachments[i].imageView;
+				attachments[0] = offscreenAttachments[i].imageView;
 				attachments[1] = depthAttachment.imageView;
 
-				fb_info.pAttachments = attachments;
-				fb_info.attachmentCount = 2;
+				fb_offscreen_info.pAttachments = attachments;
+				fb_offscreen_info.attachmentCount = 2;
 
-				VK_CHECK(vkCreateFramebuffer(device, &fb_info, nullptr, &framebuffers[i]));
+				// Attach swapchain image view to Framebuffer
+				fb_gui_info.pAttachments = &swapchainAttachments[i].imageView;
+				fb_gui_info.attachmentCount = 1;
 
+				VK_CHECK(vkCreateFramebuffer(device, &fb_gui_info, nullptr, &framebuffers[i]));
+				VK_CHECK(vkCreateFramebuffer(device, &fb_offscreen_info, nullptr, &offscreenFramebuffers[i]));
+
+				// Push all deletion functions to queue
 				mainDeletionQueue.push_function([=]() {
 					vkDestroyFramebuffer(device, framebuffers[i], nullptr);
 					vkDestroyImageView(device, swapchainAttachments[i].imageView, nullptr);
+					vkDestroyFramebuffer(device, offscreenFramebuffers[i], nullptr);
+					vkDestroyImageView(device, offscreenAttachments[i].imageView, nullptr);
 				});
 			}
 		}
@@ -482,14 +614,14 @@ namespace Puffin
 			// Define Viewport
 			pipelineBuilder.viewport.x = 0.0f;
 			pipelineBuilder.viewport.y = 0.0f;
-			pipelineBuilder.viewport.width = (float)windowExtent.width;
-			pipelineBuilder.viewport.height = (float)windowExtent.height;
+			pipelineBuilder.viewport.width = (float)offscreenExtent.width;
+			pipelineBuilder.viewport.height = (float)offscreenExtent.height;
 			pipelineBuilder.viewport.minDepth = 0.0f;
 			pipelineBuilder.viewport.maxDepth = 1.0f;
 
 			// Define Scissor Extent (Pixels Outside Scissor Rectangle will be discarded)
 			pipelineBuilder.scissor.offset = { 0, 0 };
-			pipelineBuilder.scissor.extent = windowExtent;
+			pipelineBuilder.scissor.extent = offscreenExtent;
 
 			// Rasterization Stage Creation - Configured to draw filled triangles
 			pipelineBuilder.rasterizer = vkinit::rasterization_state_create_info(VK_POLYGON_MODE_FILL);
@@ -875,7 +1007,7 @@ namespace Puffin
 
 			UpdateCamera(camera, InputManager, dt);
 
-			DrawFrame();
+			DrawFrame(UIManager);
 		}
 
 		void VulkanEngine::UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time)
@@ -943,7 +1075,7 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
-		void VulkanEngine::DrawFrame()
+		void VulkanEngine::DrawFrame(UI::UIManager* UIManager)
 		{
 			// Draw ImGui
 			ImGui::Render();
@@ -959,12 +1091,11 @@ namespace Puffin
 			// Now that we are sure commands are finished executing, reset command buffer
 			VK_CHECK(vkResetCommandBuffer(GetCurrentFrame().mainCommandBuffer, 0));
 
-			VkCommandBuffer cmd = RecordMainCommandBuffers(swapchainImageIndex);
+			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
+			VkCommandBuffer cmdGui = RecordGUICommandBuffers(swapchainImageIndex);
 
 			// Prepare the submission into graphics queue
-			// we want to wait on the _presentSemaphore, as that semaphore is signaled when the swapchain is ready
 			// we will signal the _renderSemaphore, to signal that rendering has finished
-
 			VkSubmitInfo submit = {};
 			submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submit.pNext = nullptr;
@@ -973,16 +1104,32 @@ namespace Puffin
 
 			submit.pWaitDstStageMask = &waitStage;
 
-			submit.waitSemaphoreCount = 1;
-			submit.pWaitSemaphores = &GetCurrentFrame().presentSemaphore;
-
 			submit.signalSemaphoreCount = 1;
 			submit.pSignalSemaphores = &GetCurrentFrame().renderSemaphore;
 
 			submit.commandBufferCount = 1;
-			submit.pCommandBuffers = &cmd;
+			submit.pCommandBuffers = &cmdMain;
 
 			// Submit command buffer to queue and execute
+			// GetCurrentFrame().renderFence will now block until graphics command finish executing
+			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, GetCurrentFrame().renderFence));
+
+			// After Main Renderpass has finished, perform GUI renderpass to render offscreen image and ImGui
+
+			// Wait until scene has finished rendering
+			VK_CHECK(vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000)); // Wait for fence to complete
+			VK_CHECK(vkResetFences(device, 1, &GetCurrentFrame().renderFence)); // Reset fence
+
+			// Pass Offscreen Framebuffer to Viewport Window
+			UIManager->GetWindowViewport()->SetSceneTexture(offscreenAttachments[swapchainImageIndex]);
+
+			// Prepare GUI submission into graphics queue
+			// we want to wait on the _presentSemaphore, as that semaphore is signaled when the swapchain is ready
+			submit.waitSemaphoreCount = 1;
+			submit.pWaitSemaphores = &GetCurrentFrame().presentSemaphore;
+			submit.pCommandBuffers = &cmdGui;
+
+			// Submit GUI command buffer to queue and execute
 			// GetCurrentFrame().renderFence will now block until graphics command finish executing
 			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, GetCurrentFrame().renderFence));
 
@@ -1025,8 +1172,7 @@ namespace Puffin
 
 			// Set Clear Color for Framebuffer
 			VkClearValue clearValue;
-			//float flash = abs(sin(frameNumber / 120.0f));
-			clearValue.color = { {0.4f, 0.70f, 1.0f, 1.0f} };
+			clearValue.color = { {0.4f, 0.70f, 1.0f, 1.0f} }; // Sky Blue
 
 			// Set Clear Depth Color for Framebuffer
 			VkClearValue depthClear;
@@ -1041,8 +1187,8 @@ namespace Puffin
 			rpInfo.renderPass = renderPass;
 			rpInfo.renderArea.offset.x = 0;
 			rpInfo.renderArea.offset.y = 0;
-			rpInfo.renderArea.extent = windowExtent;
-			rpInfo.framebuffer = framebuffers[index];
+			rpInfo.renderArea.extent = offscreenExtent;
+			rpInfo.framebuffer = offscreenFramebuffers[index];
 
 			// Connect clear values
 			VkClearValue clearValues[] = { clearValue, depthClear };
@@ -1056,13 +1202,59 @@ namespace Puffin
 			// Draw all Mesh objects
 			DrawObjects(cmd, index);
 
-			// Record Imgui Draw Data and draw functions into command buffer
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
-
 			// Finalize Render Pass
 			vkCmdEndRenderPass(cmd);
 
 			// Finalize the command buffer (we can no longer add commands, so it can be executed)
+			VK_CHECK(vkEndCommandBuffer(cmd));
+
+			return cmd;
+		}
+
+		VkCommandBuffer VulkanEngine::RecordGUICommandBuffers(uint32_t index)
+		{
+			// Name buffer cmd for shorter writing
+			VkCommandBuffer cmd = GetCurrentFrame().guiCommandBuffer;
+
+			// Begin command buffer recording
+			// Let Vulkan know we are only using the buffer once
+			VkCommandBufferBeginInfo cmdBeginInfo = {};
+			cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBeginInfo.pNext = nullptr;
+
+			cmdBeginInfo.pInheritanceInfo = nullptr;
+			cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+			// Begin Command buffer
+			VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
+
+			// Set Clear Color for Framebuffer
+			VkClearValue clearValue;
+			clearValue.color = { {1.0f, 1.0f, 1.0f, 1.0f} }; // Black
+
+			// Start Main Renderpass
+			//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
+			VkRenderPassBeginInfo rpInfo = {};
+			rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			rpInfo.pNext = nullptr;
+
+			rpInfo.renderPass = renderPassGUI;
+			rpInfo.renderArea.offset.x = 0;
+			rpInfo.renderArea.offset.y = 0;
+			rpInfo.renderArea.extent = windowExtent;
+			rpInfo.framebuffer = framebuffers[index];
+			rpInfo.clearValueCount = 1;
+			rpInfo.pClearValues = &clearValue;
+
+			// Begin Render Pass
+			vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			// Record Imgui Draw Data and draw functions into command buffer
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+
+			vkCmdEndRenderPass(cmd);
+
+			// Finialise Command Buffer
 			VK_CHECK(vkEndCommandBuffer(cmd));
 
 			return cmd;
