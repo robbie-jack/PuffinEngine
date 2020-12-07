@@ -38,7 +38,7 @@ namespace Puffin
 			windowEntityProperties->SetFileBrowser(&fileDialog);
 
 			windows.push_back(windowSceneHierarchy);
-			windows.push_back(windowViewport);
+			//windows.push_back(windowViewport);
 			windows.push_back(windowSettings);
 			windows.push_back(windowEntityProperties);
 			windows.push_back(windowPerformance);

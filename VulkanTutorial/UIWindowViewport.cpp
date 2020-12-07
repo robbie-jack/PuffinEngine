@@ -1,11 +1,10 @@
 #include "UIWindowViewport.h"
-#include "imgui/imgui_impl_vulkan.h"
 
 namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowViewport::Draw(float dt, Puffin::Input::InputManager* InputManager)
+		bool UIWindowViewport::Draw(ImTextureID textureID)
 		{
 			windowName = "Viewport";
 
@@ -13,18 +12,15 @@ namespace Puffin
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				if (!Begin(windowName))
-				{
-					End();
-				}
-				else
-				{
-					viewportSize = ImGui::GetWindowSize();
-					viewportSize.y -= 20.0f;
+				Begin(windowName);
+				
+				viewportSize = ImGui::GetWindowSize();
+				viewportSize.y -= 20.0f;
 
-					// Display Scene View Texture
-					ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(textureSampler, sceneTexture.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), viewportSize);
-				}
+				// Display Scene View Texture
+				ImGui::Image(textureID, viewportSize);
+
+				End();
 			}
 
 			return true;

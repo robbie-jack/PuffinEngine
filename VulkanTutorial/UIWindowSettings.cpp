@@ -22,27 +22,24 @@ namespace Puffin
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				if (!Begin(windowName))
-				{
-					End();
-				}
-				else
-				{
-					if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
-					{
-						InputManager->GetSensitivity() = settings.mouseSensitivity;
-					}
+				Begin(windowName);
 
-					if (ImGui::SliderFloat("Field of View", &settings.cameraFov, 30.0f, 120.0f, "%f"))
-					{
-						camera->fov = settings.cameraFov;
-					}
-
-					if (ImGui::Button("Save"))
-					{
-						IO::SaveSettings("projectsettings.xml", settings);
-					}
+				if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
+				{
+					InputManager->GetSensitivity() = settings.mouseSensitivity;
 				}
+
+				if (ImGui::SliderFloat("Field of View", &settings.cameraFov, 30.0f, 120.0f, "%f"))
+				{
+					camera->fov = settings.cameraFov;
+				}
+
+				if (ImGui::Button("Save"))
+				{
+					IO::SaveSettings("projectsettings.xml", settings);
+				}
+
+				End();
 			}
 
 			return true;

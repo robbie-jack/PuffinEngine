@@ -75,6 +75,8 @@ namespace Puffin
 			// Initialize Pipelines
 			InitPipelines();
 
+			InitTextureSampler();
+
 			// Initialize All Scene Objects
 			InitScene();
 
@@ -83,8 +85,6 @@ namespace Puffin
 
 			// Initialize ImGui
 			InitImGui();
-
-			InitTextureSampler();
 
 			UIManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
@@ -323,8 +323,8 @@ namespace Puffin
 			// don't know or care about started layout of the attachment
 			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-			// after renderpass ends, the imahe has to be on a layout ready for display
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			// after renderpass ends, the image has to be on a layout ready for being drawn
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 			VkAttachmentReference color_attachment_ref = {};
 			// attachment number will index into pAttachments array in parent renderpass itself
@@ -400,6 +400,15 @@ namespace Puffin
 			subpass.colorAttachmentCount = 1;
 			subpass.pColorAttachments = &colorAttachmentRef;
 
+			// Create Subpass Dependancy
+			VkSubpassDependency dependency = {};
+			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependency.dstSubpass = 0;
+			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 			// Create Renderpass
 			VkRenderPassCreateInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -411,6 +420,9 @@ namespace Puffin
 			// Connect Subpass
 			renderPassInfo.subpassCount = 1;
 			renderPassInfo.pSubpasses = &subpass;
+
+			renderPassInfo.dependencyCount = 1;
+			renderPassInfo.pDependencies = &dependency;
 
 			VK_CHECK(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPassGUI));
 
@@ -663,7 +675,7 @@ namespace Puffin
 			camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
 			camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
 			camera.fov = 60.0f;
-			camera.aspect = (float)windowExtent.width / (float)windowExtent.height;
+			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
 			camera.zNear = 0.1f;
 			camera.zFar = 100.0f;
 			InitCamera(camera);
@@ -988,6 +1000,18 @@ namespace Puffin
 			//clear font textures from cpu data
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 
+			// Grab how many images we have in swapchain
+			const uint32_t swapchain_imagecount = swapchainAttachments.size();
+
+			viewportTextureIDs = std::vector<ImTextureID>(swapchain_imagecount);
+
+			// Create Texture ID's for rendering Viewport to ImGui Window
+			for (int i = 0; i < swapchain_imagecount; i++)
+			{
+				viewportTextureIDs[i] = ImGui_ImplVulkan_AddTexture(textureSampler, offscreenAttachments[i].imageView,
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			}
+
 			//add the destroy the imgui created structures
 			mainDeletionQueue.push_function([=]() {
 
@@ -1077,22 +1101,29 @@ namespace Puffin
 
 		void VulkanEngine::DrawFrame(UI::UIManager* UIManager)
 		{
-			// Draw ImGui
-			ImGui::Render();
-
 			// Wait until gpu has finished rendering last frame. Timeout of 1 second
 			VK_CHECK(vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000)); // Wait for fence to complete
 			VK_CHECK(vkResetFences(device, 1, &GetCurrentFrame().renderFence)); // Reset fence
-
+			
 			// Request image from swapchain
 			uint32_t swapchainImageIndex;
 			VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 0, GetCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
 
 			// Now that we are sure commands are finished executing, reset command buffer
 			VK_CHECK(vkResetCommandBuffer(GetCurrentFrame().mainCommandBuffer, 0));
+			VK_CHECK(vkResetCommandBuffer(GetCurrentFrame().guiCommandBuffer, 0));
 
+			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
+			UIManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
+
+			// Draw ImGui
+			ImGui::Render();
+
+			// Record Command Buffers
 			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
-			VkCommandBuffer cmdGui = RecordGUICommandBuffers(swapchainImageIndex);
+			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
+
+			std::array<VkCommandBuffer, 2> submitCommandBuffers = { cmdMain, cmdGui };
 
 			// Prepare the submission into graphics queue
 			// we will signal the _renderSemaphore, to signal that rendering has finished
@@ -1104,32 +1135,16 @@ namespace Puffin
 
 			submit.pWaitDstStageMask = &waitStage;
 
+			submit.waitSemaphoreCount = 1;
+			submit.pWaitSemaphores = &GetCurrentFrame().presentSemaphore;
+
 			submit.signalSemaphoreCount = 1;
 			submit.pSignalSemaphores = &GetCurrentFrame().renderSemaphore;
 
-			submit.commandBufferCount = 1;
-			submit.pCommandBuffers = &cmdMain;
+			submit.commandBufferCount = submitCommandBuffers.size();
+			submit.pCommandBuffers = submitCommandBuffers.data();
 
-			// Submit command buffer to queue and execute
-			// GetCurrentFrame().renderFence will now block until graphics command finish executing
-			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, GetCurrentFrame().renderFence));
-
-			// After Main Renderpass has finished, perform GUI renderpass to render offscreen image and ImGui
-
-			// Wait until scene has finished rendering
-			VK_CHECK(vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000)); // Wait for fence to complete
-			VK_CHECK(vkResetFences(device, 1, &GetCurrentFrame().renderFence)); // Reset fence
-
-			// Pass Offscreen Framebuffer to Viewport Window
-			UIManager->GetWindowViewport()->SetSceneTexture(offscreenAttachments[swapchainImageIndex]);
-
-			// Prepare GUI submission into graphics queue
-			// we want to wait on the _presentSemaphore, as that semaphore is signaled when the swapchain is ready
-			submit.waitSemaphoreCount = 1;
-			submit.pWaitSemaphores = &GetCurrentFrame().presentSemaphore;
-			submit.pCommandBuffers = &cmdGui;
-
-			// Submit GUI command buffer to queue and execute
+			// Submit command buffers to queue and execute
 			// GetCurrentFrame().renderFence will now block until graphics command finish executing
 			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, GetCurrentFrame().renderFence));
 
@@ -1211,7 +1226,7 @@ namespace Puffin
 			return cmd;
 		}
 
-		VkCommandBuffer VulkanEngine::RecordGUICommandBuffers(uint32_t index)
+		VkCommandBuffer VulkanEngine::RecordGUICommandBuffer(uint32_t index)
 		{
 			// Name buffer cmd for shorter writing
 			VkCommandBuffer cmd = GetCurrentFrame().guiCommandBuffer;
@@ -1230,7 +1245,7 @@ namespace Puffin
 
 			// Set Clear Color for Framebuffer
 			VkClearValue clearValue;
-			clearValue.color = { {1.0f, 1.0f, 1.0f, 1.0f} }; // Black
+			clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} }; // Black
 
 			// Start Main Renderpass
 			//We will use the clear color from above, and the framebuffer of the index the swapchain gave us

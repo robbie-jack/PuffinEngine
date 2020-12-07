@@ -136,6 +136,7 @@ namespace Puffin
 			VkFormat offscreenFormat;
 			std::vector<AllocatedImage> offscreenAttachments; // Images/Views for Offscreen Rendering
 			std::vector<VkFramebuffer> offscreenFramebuffers;
+			std::vector<ImTextureID> viewportTextureIDs; // Vector of Texture ID's which are passed to Viewport Draw function
 
 			FrameData frames[FRAME_OVERLAP];
 
@@ -206,7 +207,7 @@ namespace Puffin
 			// Render Functions
 			void DrawFrame(UI::UIManager* UIManager);
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
-			VkCommandBuffer RecordGUICommandBuffers(uint32_t index);
+			VkCommandBuffer RecordGUICommandBuffer(uint32_t index);
 			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
 			glm::mat4 BuildMeshTransform(TransformComponent comp);
 
