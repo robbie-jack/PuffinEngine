@@ -89,6 +89,21 @@ namespace Puffin
 
 			VkCommandPool commandPool, guiCommandPool; // Command Pool for our commands
 			VkCommandBuffer mainCommandBuffer, guiCommandBuffer; // Buffer commands are recorded into
+
+			AllocatedBuffer lightBuffer;
+			AllocatedBuffer cameraBuffer;
+			VkDescriptorSet globalDescriptor;
+
+			AllocatedBuffer objectBuffer;
+			VkDescriptorSet objectDescriptor;
+		};
+
+		struct GPUObjectData
+		{
+			alignas(16) glm::mat4 model;
+			alignas(16) glm::mat4 inv_model;
+			alignas(16) glm::mat4 view;
+			alignas(16) glm::mat4 proj;
 		};
 
 		// Number of frames to overlap when rendering
@@ -153,7 +168,9 @@ namespace Puffin
 			Material meshMaterial;
 
 			VkDescriptorPool descriptorPool;
-			VkDescriptorSetLayout descriptorSetLayout;
+			VkDescriptorSetLayout globalSetLayout;
+			VkDescriptorSetLayout objectSetLayout;
+			VkDescriptorSetLayout singleTextureSetLayout;
 
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue
@@ -192,7 +209,6 @@ namespace Puffin
 			void InitScene();
 			void InitImGui();
 			void InitTextureSampler();
-			void InitDescriptorSets();
 
 			// Functions for Re-Initializing Swapchain and Offscreen Variables
 			void RecreateSwapchain();
@@ -206,7 +222,8 @@ namespace Puffin
 			// Init Buffer Functions
 			void InitVertexBuffer(MeshComponent& mesh);
 			void InitIndexBuffer(MeshComponent& mesh);
-			void InitUniformBuffer(MeshComponent& mesh);
+			//void InitUniformBuffer(MeshComponent& mesh);
+			//void InitDescriptorSets(MeshComponent& mesh);
 
 			// Update Functions
 			void UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time);

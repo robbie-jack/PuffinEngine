@@ -25,13 +25,13 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		struct MeshMatrices
+		/*struct MeshMatrices
 		{
 			alignas(16) glm::mat4 model;
 			alignas(16) glm::mat4 inv_model;
 			alignas(16) glm::mat4 view;
 			alignas(16) glm::mat4 proj;
-		};
+		};*/
 
 		struct Vertex
 		{
@@ -174,7 +174,7 @@ namespace Puffin
 		struct MeshComponent : public BaseComponent
 		{
 			// Mesh Data
-			MeshMatrices matrices;
+			//MeshMatrices matrices;
 			std::vector<Vertex> vertices;
 			std::vector<uint32_t> indices;
 			std::string model_path;
@@ -193,9 +193,9 @@ namespace Puffin
 			AllocatedBuffer indexBuffer;
 
 			// Uniform Buffers
-			std::vector<AllocatedBuffer> uniformBuffers;
+			//std::vector<AllocatedBuffer> uniformBuffers;
 
-			std::vector<VkDescriptorSet> descriptorSets;
+			//std::vector<VkDescriptorSet> descriptorSets;
 		};
 
 		template<class Archive>

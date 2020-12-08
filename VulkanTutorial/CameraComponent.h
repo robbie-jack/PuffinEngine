@@ -50,7 +50,7 @@ namespace Puffin
 			CameraMatrices matrices;
 
 			ViewData data;
-			std::vector<AllocatedBuffer> buffers;
+			//std::vector<AllocatedBuffer> buffers;
 		};
 
 		static void UpdatePerspective(CameraComponent& camera, float fov_, float aspect_, float zNear_, float zFar_)

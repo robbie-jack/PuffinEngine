@@ -39,7 +39,7 @@ namespace Puffin
 		struct LightComponent : public BaseComponent
 		{
 			LightData data;
-			std::vector<AllocatedBuffer> buffers;
+			//std::vector<AllocatedBuffer> buffers;
 		};
 
 		template<class Archive>

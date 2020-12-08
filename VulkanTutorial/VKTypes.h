@@ -28,6 +28,7 @@ namespace Puffin
 
 		struct Material
 		{
+			VkDescriptorSet textureSet;
 			VkPipeline pipeline;
 			VkPipelineLayout pipelineLayout;
 		};

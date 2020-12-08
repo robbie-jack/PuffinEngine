@@ -1,7 +1,12 @@
-#version 450
+#version 460
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(binding = 1) uniform LightBufferObject
+layout(set = 0, binding = 0) uniform ViewBufferObject
+{
+	vec3 viewPos;
+} camera;
+
+layout(set = 0, binding = 1) uniform LightBufferObject
 {
 	vec3 position;
 	vec3 ambientColor;
@@ -10,12 +15,7 @@ layout(binding = 1) uniform LightBufferObject
 	int shininess;
 } light;
 
-layout(binding = 2) uniform ViewBufferObject
-{
-	vec3 viewPos;
-} camera;
-
-layout(binding = 3) uniform sampler2D texSampler;
+layout(set = 2, binding = 2) uniform sampler2D texSampler;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;
