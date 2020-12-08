@@ -92,7 +92,7 @@ namespace Puffin
 			UIManager.Update();
 
 			// Rendering
-			vulkanEngine->Update(&UIManager, &InputManager, delta_time);
+			running = vulkanEngine->Update(&UIManager, &InputManager, delta_time);
 			
 			// Delete All Marked Objects
 			ECSWorld.Update();
@@ -112,6 +112,11 @@ namespace Puffin
 
 					restarted = false;
 				}
+			}
+
+			if (glfwWindowShouldClose(window))
+			{
+				running = false;
 			}
 		}
 

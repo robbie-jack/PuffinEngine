@@ -118,7 +118,7 @@ namespace Puffin
 			// Main Functions
 			GLFWwindow* Init(UI::UIManager* UIManager);
 
-			void Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
+			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
 
 			void Cleanup();
 
@@ -222,8 +222,6 @@ namespace Puffin
 			// Init Buffer Functions
 			void InitVertexBuffer(MeshComponent& mesh);
 			void InitIndexBuffer(MeshComponent& mesh);
-			//void InitUniformBuffer(MeshComponent& mesh);
-			//void InitDescriptorSets(MeshComponent& mesh);
 
 			// Update Functions
 			void UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time);

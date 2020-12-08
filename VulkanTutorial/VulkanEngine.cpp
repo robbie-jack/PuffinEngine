@@ -160,8 +160,8 @@ namespace Puffin
 
 			vkb::Swapchain vkbSwapchain = swapchainBuilder
 				.use_default_format_selection()
-				//use vsync present mode
-				.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+				// VK_PRESENT_MODE_FIFO_KHR for double buffering, VK_PRESENT_MODE_MAILBOX_KHR for Triple buffering
+				.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR) 
 				.set_desired_extent(windowExtent.width, windowExtent.height)
 				.build()
 				.value();
@@ -553,20 +553,22 @@ namespace Puffin
 
 		void VulkanEngine::InitDescriptors()
 		{
+			const int MAX_SETS = 100;
+
 			// Initialize Descriptor Pools
 			std::vector<VkDescriptorPoolSize> poolSizes = 
 			{
-				{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10},
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10},
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10},
-				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10}
+				{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_SETS},
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_SETS},
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_SETS},
+				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_SETS}
 			};
 
 			VkDescriptorPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 			poolInfo.pPoolSizes = poolSizes.data();
-			poolInfo.maxSets = 10;
+			poolInfo.maxSets = MAX_SETS;
 
 			VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool));
 
@@ -633,7 +635,7 @@ namespace Puffin
 				allocInfo.descriptorSetCount = 1;
 				allocInfo.pSetLayouts = &globalSetLayout;
 
-				vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDescriptor);
+				VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDescriptor));
 
 				// Allocate descriptor set that will point to object buffer
 				VkDescriptorSetAllocateInfo objectSetAlloc = {};
@@ -643,7 +645,7 @@ namespace Puffin
 				objectSetAlloc.descriptorSetCount = 1;
 				objectSetAlloc.pSetLayouts = &objectSetLayout;
 
-				vkAllocateDescriptorSets(device, &objectSetAlloc, &frames[i].objectDescriptor);
+				VK_CHECK(vkAllocateDescriptorSets(device, &objectSetAlloc, &frames[i].objectDescriptor));
 
 				VkDescriptorBufferInfo cameraInfo;
 				cameraInfo.buffer = frames[i].cameraBuffer.buffer;
@@ -790,7 +792,7 @@ namespace Puffin
 			InitIndexBuffer(mesh);
 			//InitUniformBuffer(mesh);
 
-			mesh.material = &meshMaterial;
+			mesh.material = meshMaterial;
 
 			// Allocate Descriptor Set for texture to use on material
 			VkDescriptorSetAllocateInfo allocInfo = {};
@@ -800,7 +802,7 @@ namespace Puffin
 			allocInfo.descriptorSetCount = 1;
 			allocInfo.pSetLayouts = &singleTextureSetLayout;
 
-			vkAllocateDescriptorSets(device, &allocInfo, &mesh.material->textureSet);
+			VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &mesh.material.textureSet));
 
 			// Write descriptor set so it points to mesh texture
 			VkDescriptorImageInfo imageBufferInfo;
@@ -809,7 +811,7 @@ namespace Puffin
 			imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 			VkWriteDescriptorSet texture = vkinit::write_descriptor_image(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				mesh.material->textureSet, &imageBufferInfo, 2);
+				mesh.material.textureSet, &imageBufferInfo, 2);
 
 			vkUpdateDescriptorSets(device, 1, &texture, 0, nullptr);
 		}
@@ -865,7 +867,7 @@ namespace Puffin
 			});
 
 			// Add destruction of vertex buffer to deletion queue
-			mainDeletionQueue.push_function([=]()
+			offscreenDeletionQueue.push_function([=]()
 			{
 				vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
 			});
@@ -904,32 +906,14 @@ namespace Puffin
 			});
 
 			// Add destruction of index buffer to deletion queue
-			mainDeletionQueue.push_function([=]()
+			offscreenDeletionQueue.push_function([=]()
 			{
-				vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+				vmaDestroyBuffer(allocator, mesh.indexBuffer.buffer, mesh.indexBuffer.allocation);
 			});
 
 			// CLeanup Staging Buffer
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
-
-		//void VulkanEngine::InitUniformBuffer(MeshComponent& mesh)
-		//{
-		//	VkDeviceSize bufferSize = sizeof(GPUObjectData);
-
-		//	mesh.uniformBuffers.resize(swapchainAttachments.size());
-
-		//	for (int i = 0; i < mesh.uniformBuffers.size(); i++)
-		//	{
-		//		mesh.uniformBuffers[i] = CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-
-		//		// Add destruction of uniform buffer to deletion queue
-		//		mainDeletionQueue.push_function([=]()
-		//		{
-		//			vmaDestroyBuffer(allocator, mesh.uniformBuffers[i].buffer, mesh.uniformBuffers[i].allocation);
-		//		});
-		//	}
-		//}
 
 		void VulkanEngine::InitTextureSampler()
 		{
@@ -947,80 +931,6 @@ namespace Puffin
 
 			VK_CHECK(vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler));
 		}
-
-		/*void VulkanEngine::InitDescriptorSets(MeshComponent& mesh)
-		{
-			std::vector<VkDescriptorSetLayout> layouts(swapchainAttachments.size(), globalSetLayout);
-			VkDescriptorSetAllocateInfo allocInfo = {};
-			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			allocInfo.descriptorPool = descriptorPool;
-			allocInfo.descriptorSetCount = static_cast<uint32_t>(swapchainAttachments.size());
-			allocInfo.pSetLayouts = layouts.data();
-
-			mesh.descriptorSets.resize(swapchainAttachments.size());
-			VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, mesh.descriptorSets.data()));
-
-			for (int i = 0; i < swapchainAttachments.size(); i++)
-			{
-				VkDescriptorBufferInfo meshBufferInfo = {};
-				meshBufferInfo.buffer = mesh.uniformBuffers[i].buffer;
-				meshBufferInfo.offset = 0;
-				meshBufferInfo.range = sizeof(GPUObjectData);
-
-				LightComponent& light = world->GetComponent<LightComponent>(4);
-
-				VkDescriptorBufferInfo lightBufferInfo = {};
-				lightBufferInfo.buffer = light.buffers[i].buffer;
-				lightBufferInfo.offset = 0;
-				lightBufferInfo.range = sizeof(LightData);
-
-				VkDescriptorBufferInfo viewBufferInfo = {};
-				viewBufferInfo.buffer = camera.buffers[i].buffer;
-				viewBufferInfo.offset = 0;
-				viewBufferInfo.range = sizeof(ViewData);
-
-				VkDescriptorImageInfo imageInfo = {};
-				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = mesh.texture.imageView;
-				imageInfo.sampler = textureSampler;
-
-				std::array<VkWriteDescriptorSet, 4> descriptorWrites = {};
-
-				descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrites[0].dstSet = mesh.descriptorSets[i];
-				descriptorWrites[0].dstBinding = 0;
-				descriptorWrites[0].dstArrayElement = 0;
-				descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptorWrites[0].descriptorCount = 1;
-				descriptorWrites[0].pBufferInfo = &meshBufferInfo;
-
-				descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrites[1].dstSet = mesh.descriptorSets[i];
-				descriptorWrites[1].dstBinding = 1;
-				descriptorWrites[1].dstArrayElement = 0;
-				descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptorWrites[1].descriptorCount = 1;
-				descriptorWrites[1].pBufferInfo = &lightBufferInfo;
-
-				descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrites[2].dstSet = mesh.descriptorSets[i];
-				descriptorWrites[2].dstBinding = 2;
-				descriptorWrites[2].dstArrayElement = 0;
-				descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptorWrites[2].descriptorCount = 1;
-				descriptorWrites[2].pBufferInfo = &viewBufferInfo;
-
-				descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrites[3].dstSet = mesh.descriptorSets[i];
-				descriptorWrites[3].dstBinding = 3;
-				descriptorWrites[3].dstArrayElement = 0;
-				descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptorWrites[3].descriptorCount = 1;
-				descriptorWrites[3].pImageInfo = &imageInfo;
-
-				vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-			}
-		}*/
 
 		void VulkanEngine::InitImGui()
 		{
@@ -1139,7 +1049,8 @@ namespace Puffin
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
-				mesh.material = &meshMaterial;
+				mesh.material = meshMaterial;
+				InitMesh(mesh);
 			}
 
 			// Calculate Camera Perspective Projection
@@ -1149,11 +1060,11 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
-		void VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
+		bool VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
 		{
 			glfwPollEvents();
 
-			UIManager->DrawUI(dt, InputManager);
+			bool running = UIManager->DrawUI(dt, InputManager);
 
 			UpdateCamera(camera, InputManager, dt);
 
@@ -1177,6 +1088,8 @@ namespace Puffin
 			}
 
 			DrawFrame(UIManager);
+
+			return running;
 		}
 
 		void VulkanEngine::UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time)
@@ -1471,19 +1384,19 @@ namespace Puffin
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
 				// Bind material pipeline if it does not match previous material
-				if (mesh.material != lastMaterial);
+				if (&mesh.material != lastMaterial);
 				{
 					vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material->pipeline);
-					lastMaterial = mesh.material;
+						mesh.material.pipeline);
+					lastMaterial = &mesh.material;
 
 					// Object Data Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material->pipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
+						mesh.material.pipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
 
 					// Texture Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material->pipelineLayout, 2, 1, &mesh.material->textureSet, 0, nullptr);
+						mesh.material.pipelineLayout, 2, 1, &mesh.material.textureSet, 0, nullptr);
 				}
 
 				// Map Light and Camera Data to Uniform Buffers
@@ -1498,7 +1411,7 @@ namespace Puffin
 
 				// Bind Global Descriptor
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-					mesh.material->pipelineLayout, 0, 1, &GetCurrentFrame().globalDescriptor, 0, nullptr);
+					mesh.material.pipelineLayout, 0, 1, &GetCurrentFrame().globalDescriptor, 0, nullptr);
 
 				// Bind Vertices, Indices and Descriptor Sets
 				VkDeviceSize offsets[] = { 0 };
