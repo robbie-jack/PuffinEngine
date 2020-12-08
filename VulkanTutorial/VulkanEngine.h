@@ -115,6 +115,8 @@ namespace Puffin
 			VmaAllocator allocator;
 			UploadContext uploadContext;
 			DeletionQueue mainDeletionQueue;
+			DeletionQueue swapchainDeletionQueue;
+			DeletionQueue offscreenDeletionQueue;
 
 		private:
 
@@ -183,6 +185,7 @@ namespace Puffin
 			void InitDefaultRenderpass();
 			void InitGUIRenderpass();
 			void InitFramebuffers();
+			void InitOffscreenFramebuffers();
 			void InitSyncStructures();
 			void InitDescriptors();
 			void InitPipelines();
@@ -190,6 +193,10 @@ namespace Puffin
 			void InitImGui();
 			void InitTextureSampler();
 			void InitDescriptorSets();
+
+			// Functions for Re-Initializing Swapchain and Offscreen Variables
+			void RecreateSwapchain();
+			void RecreateOffscreen();
 
 			// Init Component Functions
 			void InitMesh(MeshComponent& mesh);

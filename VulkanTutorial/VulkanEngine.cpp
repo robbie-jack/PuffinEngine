@@ -41,9 +41,9 @@ namespace Puffin
 
 			window = glfwCreateWindow(windowExtent.width, windowExtent.height, "Puffin Engine", monitor, nullptr);
 
-			//glfwMaximizeWindow(window);
 			glfwSetWindowUserPointer(window, this);
 			glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
+			glfwMaximizeWindow(window);
 
 			// Load Core Vulkan Structures
 			InitVulkan();
@@ -65,6 +65,9 @@ namespace Puffin
 
 			// Initialise Swapchain Framebuffers
 			InitFramebuffers();
+
+			// Initialize Offscreen Framebuffers
+			InitOffscreenFramebuffers();
 
 			// Initialise Semaphores and Fences
 			InitSyncStructures();
@@ -167,6 +170,7 @@ namespace Puffin
 
 			// Store Swapchain and related images/views
 			swapchain = vkbSwapchain.swapchain;
+			swapchainAttachments.clear();
 
 			for (int i = 0; i < vkbSwapchain.image_count; i++)
 			{
@@ -178,7 +182,7 @@ namespace Puffin
 
 			swapchainImageFormat = vkbSwapchain.image_format;
 
-			mainDeletionQueue.push_function([=]()
+			swapchainDeletionQueue.push_function([=]()
 			{
 				vkDestroySwapchainKHR(device, swapchain, nullptr);
 			});
@@ -219,7 +223,7 @@ namespace Puffin
 				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &offscreenAttachments[i].imageView));
 
 				// Add to deletion queues
-				mainDeletionQueue.push_function([=]()
+				offscreenDeletionQueue.push_function([=]()
 				{
 					vkDestroyImageView(device, offscreenAttachments[i].imageView, nullptr);
 					vmaDestroyImage(allocator, offscreenAttachments[i].image, offscreenAttachments[i].allocation);
@@ -256,7 +260,7 @@ namespace Puffin
 			VK_CHECK(vkCreateImageView(device, &depthImageViewInfo, nullptr, &depthAttachment.imageView));
 
 			// Add to deletion queues
-			mainDeletionQueue.push_function([=]()
+			offscreenDeletionQueue.push_function([=]()
 			{
 				vkDestroyImageView(device, depthAttachment.imageView, nullptr);
 				vmaDestroyImage(allocator, depthAttachment.image, depthAttachment.allocation);
@@ -447,6 +451,30 @@ namespace Puffin
 			fb_gui_info.height = windowExtent.height;
 			fb_gui_info.layers = 1;
 
+			// Grab how many images we have in swapchain
+			const uint32_t swapchain_imagecount = swapchainAttachments.size();
+			framebuffers.clear();
+			framebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
+
+			// Create Framebuffers for each of the swapchain image views
+			for (int i = 0; i < swapchain_imagecount; i++)
+			{
+				// Attach swapchain image view to Framebuffer
+				fb_gui_info.pAttachments = &swapchainAttachments[i].imageView;
+				fb_gui_info.attachmentCount = 1;
+
+				VK_CHECK(vkCreateFramebuffer(device, &fb_gui_info, nullptr, &framebuffers[i]));
+
+				// Push all deletion functions to queue
+				swapchainDeletionQueue.push_function([=]() {
+					vkDestroyFramebuffer(device, framebuffers[i], nullptr);
+					vkDestroyImageView(device, swapchainAttachments[i].imageView, nullptr);
+				});
+			}
+		}
+
+		void VulkanEngine::InitOffscreenFramebuffers()
+		{
 			// Create Info for Offscreen Framebuffers
 			VkFramebufferCreateInfo fb_offscreen_info = {};
 			fb_offscreen_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -459,7 +487,7 @@ namespace Puffin
 
 			// Grab how many images we have in swapchain
 			const uint32_t swapchain_imagecount = swapchainAttachments.size();
-			framebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
+			offscreenFramebuffers.clear();
 			offscreenFramebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
 
 			// Create Framebuffers for each of the swapchain image views
@@ -473,17 +501,10 @@ namespace Puffin
 				fb_offscreen_info.pAttachments = attachments;
 				fb_offscreen_info.attachmentCount = 2;
 
-				// Attach swapchain image view to Framebuffer
-				fb_gui_info.pAttachments = &swapchainAttachments[i].imageView;
-				fb_gui_info.attachmentCount = 1;
-
-				VK_CHECK(vkCreateFramebuffer(device, &fb_gui_info, nullptr, &framebuffers[i]));
 				VK_CHECK(vkCreateFramebuffer(device, &fb_offscreen_info, nullptr, &offscreenFramebuffers[i]));
 
-				// Push all deletion functions to queue
-				mainDeletionQueue.push_function([=]() {
-					vkDestroyFramebuffer(device, framebuffers[i], nullptr);
-					vkDestroyImageView(device, swapchainAttachments[i].imageView, nullptr);
+				offscreenDeletionQueue.push_function([=]()
+				{
 					vkDestroyFramebuffer(device, offscreenFramebuffers[i], nullptr);
 					vkDestroyImageView(device, offscreenAttachments[i].imageView, nullptr);
 				});
@@ -536,7 +557,7 @@ namespace Puffin
 		void VulkanEngine::InitDescriptors()
 		{
 			// Initialize Descriptor Pools
-			std::array<VkDescriptorPoolSize, 4> poolSizes = {};
+			/*std::array<VkDescriptorPoolSize, 4> poolSizes = {};
 			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			poolSizes[0].descriptorCount = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
 			poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -544,13 +565,23 @@ namespace Puffin
 			poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			poolSizes[2].descriptorCount = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
 			poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			poolSizes[3].descriptorCount = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
+			poolSizes[3].descriptorCount = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());*/
+
+			const uint32_t maxBuffers = 10000;
+
+			std::vector<VkDescriptorPoolSize> poolSizes = 
+			{
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxBuffers},
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxBuffers},
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxBuffers},
+				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxBuffers}
+			};
 
 			VkDescriptorPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 			poolInfo.pPoolSizes = poolSizes.data();
-			poolInfo.maxSets = static_cast<uint32_t>(swapchainAttachments.size() * entityMap["Mesh"].size());
+			poolInfo.maxSets = maxBuffers;
 
 			VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool));
 
@@ -1022,14 +1053,82 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
+		void VulkanEngine::RecreateSwapchain()
+		{
+			// Get New Window Size
+			int width = 0, height = 0;
+			glfwGetFramebufferSize(window, &width, &height);
+
+			while (width == 0 || height == 0)
+			{
+				glfwGetFramebufferSize(window, &width, &height);
+				glfwWaitEvents();
+			}
+
+			windowExtent.width = width;
+			windowExtent.height = height;
+
+			// Cleanup Swapchain Variables
+			swapchainDeletionQueue.flush();
+
+			InitSwapchain();
+			InitFramebuffers();
+
+			framebufferResized = false;
+		}
+
+		void VulkanEngine::RecreateOffscreen()
+		{
+			// Delete all Offscreen Variables in deletion queue
+			offscreenDeletionQueue.flush();
+
+			// Initialize Offscreen Variables
+			InitOffscreen();
+			InitOffscreenFramebuffers();
+			InitPipelines();
+
+			// Update Each Mesh's Material
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+				mesh.material = &meshMaterial;
+			}
+
+			// Calculate Camera Perspective Projection
+			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
+		}
+
+		//-------------------------------------------------------------------------------------
+
 		void VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
 		{
-			// Check if there are any 
 			glfwPollEvents();
 
 			UIManager->DrawUI(dt, InputManager);
 
 			UpdateCamera(camera, InputManager, dt);
+
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+
+				// Initialize/Re-Init Mesh
+				if (mesh.flag_created)
+				{
+					InitMesh(mesh);
+					InitDescriptorSets();
+					mesh.flag_created = false;
+				}
+
+				// Remove Mesh
+				if (mesh.flag_deleted)
+				{
+					world->RemoveComponent<MeshComponent>(entity);
+					InitDescriptorSets();
+					mesh.flag_deleted = false;
+				}
+			}
 
 			DrawFrame(UIManager);
 		}
@@ -1118,6 +1217,21 @@ namespace Puffin
 
 			// Draw ImGui
 			ImGui::Render();
+
+			// Recreate Swapchain if window size changes
+			if (framebufferResized)
+			{
+				RecreateSwapchain();
+			}
+
+			// Recreate Viewport if it size changes
+			if (UIManager->GetWindowViewport()->GetViewportSize().x != offscreenExtent.width ||
+				UIManager->GetWindowViewport()->GetViewportSize().y != offscreenExtent.height)
+			{
+				offscreenExtent.width = UIManager->GetWindowViewport()->GetViewportSize().x;
+				offscreenExtent.height = UIManager->GetWindowViewport()->GetViewportSize().y;
+				RecreateOffscreen();
+			}
 
 			// Record Command Buffers
 			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
@@ -1354,6 +1468,8 @@ namespace Puffin
 				vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000);
 
 				mainDeletionQueue.flush();
+				swapchainDeletionQueue.flush();
+				offscreenDeletionQueue.flush();
 
 				vkDestroyDevice(device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);

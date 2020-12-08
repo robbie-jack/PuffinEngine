@@ -3,7 +3,6 @@
 #include "ECS.h"
 
 #include "TransformComponent.h"
-//#include "VulkanRenderer.h"
 #include "UIManager.h"
 #include "InputManager.h"
 #include "VulkanEngine.h"
@@ -31,7 +30,6 @@ namespace Puffin
 
 		// Systems
 		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
-		//std::shared_ptr<Rendering::VulkanRenderer> renderSystem = ECSWorld.RegisterSystem<Rendering::VulkanRenderer>();
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld.RegisterSystem<Rendering::VulkanEngine>();
 
 		ECSWorld.RegisterComponent<TransformComponent>();
@@ -65,8 +63,6 @@ namespace Puffin
 		playState = PlayState::STOPPED;
 
 		// Initialize Systems
-		/*GLFWwindow* window = renderSystem->InitWindow();
-		renderSystem->InitVulkan(&UIManager);*/
 		GLFWwindow* window = vulkanEngine->Init(&UIManager);
 		physicsSystem->Start();
 
@@ -106,14 +102,12 @@ namespace Puffin
 				if (restarted)
 				{
 					// Cleanup Systems and ECS
-					//renderSystem->Stop();
 					physicsSystem->Stop();
 					ECSWorld.Reset();
 
 					// Re-Initialize Systems and ECS
 					IO::LoadScene(&ECSWorld, sceneData);
 					IO::InitScene(&ECSWorld, sceneData);
-					//renderSystem->Start();
 					physicsSystem->Start();
 
 					restarted = false;
