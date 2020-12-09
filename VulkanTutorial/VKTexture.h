@@ -50,7 +50,7 @@ namespace Puffin
 					1
 				};
 
-				VkImageCreateInfo imageInfo = vkinit::image_create_info(imageFormat,
+				VkImageCreateInfo imageInfo = VKInit::ImageCreateInfo(imageFormat,
 					VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
 					imageExtent);
 
@@ -116,6 +116,11 @@ namespace Puffin
 				{
 					vmaDestroyImage(engine.allocator, newImage.image, newImage.allocation);
 				});*/
+
+				engine.offscreenDeletionQueue.push_function([=]()
+				{
+					vmaDestroyImage(engine.allocator, newImage.image, newImage.allocation);
+				});
 
 				vmaDestroyBuffer(engine.allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 

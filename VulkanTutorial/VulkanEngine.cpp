@@ -161,7 +161,7 @@ namespace Puffin
 			vkb::Swapchain vkbSwapchain = swapchainBuilder
 				.use_default_format_selection()
 				// VK_PRESENT_MODE_FIFO_KHR for double buffering, VK_PRESENT_MODE_MAILBOX_KHR for Triple buffering
-				.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR) 
+				.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
 				.set_desired_extent(windowExtent.width, windowExtent.height)
 				.build()
 				.value();
@@ -202,7 +202,7 @@ namespace Puffin
 			};
 
 			// Init Image/Allocation Info
-			VkImageCreateInfo imageInfo = vkinit::image_create_info(offscreenFormat, 
+			VkImageCreateInfo imageInfo = VKInit::ImageCreateInfo(offscreenFormat, 
 				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageExtent);
 			VmaAllocationCreateInfo imageAllocInfo = {};
 			imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -215,7 +215,7 @@ namespace Puffin
 					&offscreenAttachments[i].image, &offscreenAttachments[i].allocation, nullptr);
 
 				// Create Image View
-				VkImageViewCreateInfo imageViewInfo = vkinit::imageview_create_info(offscreenFormat,
+				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(offscreenFormat,
 					offscreenAttachments[i].image, VK_IMAGE_ASPECT_COLOR_BIT);
 
 				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &offscreenAttachments[i].imageView));
@@ -242,7 +242,7 @@ namespace Puffin
 			depthFormat = VK_FORMAT_D32_SFLOAT;
 
 			// Depth image will use format we selected and depth attachment usage flag
-			VkImageCreateInfo depthImageInfo = vkinit::image_create_info(depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
+			VkImageCreateInfo depthImageInfo = VKInit::ImageCreateInfo(depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
 
 			// Allocate depth image from local gpu memory
 			VmaAllocationCreateInfo depthImageAllocInfo = {};
@@ -253,7 +253,7 @@ namespace Puffin
 			vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthAttachment.image, &depthAttachment.allocation, nullptr);
 
 			// Build Image View for depth image to use in rendering
-			VkImageViewCreateInfo depthImageViewInfo = vkinit::imageview_create_info(depthFormat, depthAttachment.image, VK_IMAGE_ASPECT_DEPTH_BIT);
+			VkImageViewCreateInfo depthImageViewInfo = VKInit::ImageViewCreateInfo(depthFormat, depthAttachment.image, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 			VK_CHECK(vkCreateImageView(device, &depthImageViewInfo, nullptr, &depthAttachment.imageView));
 
@@ -269,7 +269,7 @@ namespace Puffin
 		{
 			// Create Command Pool for commands submitted to graphics queue
 			// we also want the pool to allow for resetting individual command buffers
-			VkCommandPoolCreateInfo commandPoolInfo = vkinit::command_pool_create_info(graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+			VkCommandPoolCreateInfo commandPoolInfo = VKInit::CommandPoolCreateInfo(graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
 			// Allocate Command Pool/Buffer for each frame data struct
 			for (int i = 0; i < FRAME_OVERLAP; i++)
@@ -279,10 +279,10 @@ namespace Puffin
 				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].guiCommandPool));
 
 				// Allocate Default Command Buffer that we will use for scene rendering
-				VkCommandBufferAllocateInfo allocInfo = vkinit::command_buffer_allocate_info(frames[i].commandPool, 1); 
+				VkCommandBufferAllocateInfo allocInfo = VKInit::CommandBufferAllocateInfo(frames[i].commandPool, 1); 
 
 				// Allocate GUI Command Buffer used for rendering UI
-				VkCommandBufferAllocateInfo allocInfoGui = vkinit::command_buffer_allocate_info(frames[i].guiCommandPool, 1);
+				VkCommandBufferAllocateInfo allocInfoGui = VKInit::CommandBufferAllocateInfo(frames[i].guiCommandPool, 1);
 
 				// Allocate buffers
 				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, &frames[i].mainCommandBuffer));
@@ -296,7 +296,7 @@ namespace Puffin
 			}
 
 			// Create Upload Command Pool
-			VkCommandPoolCreateInfo uploadCommandPoolInfo = vkinit::command_pool_create_info(graphicsQueueFamily);
+			VkCommandPoolCreateInfo uploadCommandPoolInfo = VKInit::CommandPoolCreateInfo(graphicsQueueFamily);
 
 			VK_CHECK(vkCreateCommandPool(device, &uploadCommandPoolInfo, nullptr, &uploadContext.commandPool));
 
@@ -513,7 +513,7 @@ namespace Puffin
 			// Create Syncronization Structures
 			// We want to create fence with Create Signaled flag
 			// so we can waut on it before using
-			VkFenceCreateInfo fenceCreateInfo = vkinit::fence_create_info(VK_FENCE_CREATE_SIGNALED_BIT);
+			VkFenceCreateInfo fenceCreateInfo = VKInit::FenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 
 			// Semaphores don't need any flags
 			VkSemaphoreCreateInfo semaphoreCreateInfo = {};
@@ -541,7 +541,7 @@ namespace Puffin
 			}
 
 			// Create Upload Fence
-			VkFenceCreateInfo uploadCreateFenceInfo = vkinit::fence_create_info();
+			VkFenceCreateInfo uploadCreateFenceInfo = VKInit::FenceCreateInfo();
 
 			VK_CHECK(vkCreateFence(device, &uploadCreateFenceInfo, nullptr, &uploadContext.uploadFence));
 
@@ -573,9 +573,9 @@ namespace Puffin
 			VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool));
 
 			// Initialize Global Descriptor Layout
-			VkDescriptorSetLayoutBinding viewBinding = vkinit::descriptorset_layout_binding(
+			VkDescriptorSetLayoutBinding viewBinding = VKInit::DescriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-			VkDescriptorSetLayoutBinding lightBinding = vkinit::descriptorset_layout_binding(
+			VkDescriptorSetLayoutBinding lightBinding = VKInit::DescriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
 
 			std::array<VkDescriptorSetLayoutBinding, 2> bindings = { viewBinding, lightBinding};
@@ -588,7 +588,7 @@ namespace Puffin
 			VK_CHECK(vkCreateDescriptorSetLayout(device, &globalLayoutInfo, nullptr, &globalSetLayout));
 
 			// Initialize Object Descriptor Layout
-			VkDescriptorSetLayoutBinding objectBinding = vkinit::descriptorset_layout_binding(
+			VkDescriptorSetLayoutBinding objectBinding = VKInit::DescriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
 
 			VkDescriptorSetLayoutCreateInfo objectLayoutInfo = {};
@@ -601,7 +601,7 @@ namespace Puffin
 			vkCreateDescriptorSetLayout(device, &objectLayoutInfo, nullptr, &objectSetLayout);
 
 			// Initialize Texture Descriptor Layout
-			VkDescriptorSetLayoutBinding textureBinding = vkinit::descriptorset_layout_binding(
+			VkDescriptorSetLayoutBinding textureBinding = VKInit::DescriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
 
 			VkDescriptorSetLayoutCreateInfo textureLayoutInfo = {};
@@ -662,13 +662,13 @@ namespace Puffin
 				objectBufferInfo.offset = 0;
 				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
 
-				VkWriteDescriptorSet cameraWrite = vkinit::write_descriptor_buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VkWriteDescriptorSet cameraWrite = VKInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 					frames[i].globalDescriptor, &cameraInfo, 0);
 
-				VkWriteDescriptorSet lightWrite = vkinit::write_descriptor_buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VkWriteDescriptorSet lightWrite = VKInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 					frames[i].globalDescriptor, &lightInfo, 1);
 
-				VkWriteDescriptorSet objectWrite = vkinit::write_descriptor_buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+				VkWriteDescriptorSet objectWrite = VKInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 					frames[i].objectDescriptor, &objectBufferInfo, 0);
 
 				VkWriteDescriptorSet writes[] = { cameraWrite, lightWrite, objectWrite };
@@ -684,11 +684,11 @@ namespace Puffin
 			auto fragShaderCode = ReadFile("shaders/frag.spv");
 
 			// Create Shader Modules from code
-			VkShaderModule vertShaderModule = vkinit::create_shader_module(device, vertShaderCode);
-			VkShaderModule fragShaderModule = vkinit::create_shader_module(device, fragShaderCode);
+			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
+			VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
 
 			// Create Pipeline Layout Info
-			VkPipelineLayoutCreateInfo pipelineLayoutInfo = vkinit::pipeline_layout_create_info(globalSetLayout);
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(globalSetLayout);
 
 			VkDescriptorSetLayout setLayouts[] =
 			{
@@ -706,17 +706,17 @@ namespace Puffin
 			PipelineBuilder pipelineBuilder;
 
 			// Create Shader Stage Info
-			pipelineBuilder.shaderStages.push_back(vkinit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
-			pipelineBuilder.shaderStages.push_back(vkinit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
+			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
+			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
 
 			auto bindingDescription = Vertex::getBindingDescription();
 			auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
 			// Create Vertex Input Info
-			pipelineBuilder.vertexInputInfo = vkinit::vertex_input_state_create_info(bindingDescription, attributeDescriptions);
+			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
 
 			// Create Input Assembly Info
-			pipelineBuilder.inputAssembly = vkinit::input_assembly_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
 			// Define Viewport
 			pipelineBuilder.viewport.x = 0.0f;
@@ -731,16 +731,16 @@ namespace Puffin
 			pipelineBuilder.scissor.extent = offscreenExtent;
 
 			// Rasterization Stage Creation - Configured to draw filled triangles
-			pipelineBuilder.rasterizer = vkinit::rasterization_state_create_info(VK_POLYGON_MODE_FILL);
+			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
 
 			// Multisampled - Disabled right now so just use default
-			pipelineBuilder.multisampling = vkinit::multisampling_state_create_info();
+			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
 
 			// Color Blending - Default RGBA Color Blending
-			pipelineBuilder.colorBlendAttachment = vkinit::color_blend_attachment_state();
+			pipelineBuilder.colorBlendAttachment = VKInit::ColorBlendAttachmentState();
 
 			// Depth Testing - Default
-			pipelineBuilder.depthStencil = vkinit::depth_stencil_create_info(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
 
 			// Assign Pipeline Layout to Pipeline
 			pipelineBuilder.pipelineLayout = meshMaterial.pipelineLayout;
@@ -781,7 +781,7 @@ namespace Puffin
 			// Load Texture Data
 			Util::LoadImageFromFile(*this, mesh.texture_path.c_str(), mesh.texture);
 
-			VkImageViewCreateInfo imageViewInfo = vkinit::imageview_create_info(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
+			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
 
 			// Load Mesh Data
@@ -810,7 +810,7 @@ namespace Puffin
 			imageBufferInfo.imageView = mesh.texture.imageView;
 			imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			VkWriteDescriptorSet texture = vkinit::write_descriptor_image(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
+			VkWriteDescriptorSet texture = VKInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
 				mesh.material.textureSet, &imageBufferInfo, 2);
 
 			vkUpdateDescriptorSets(device, 1, &texture, 0, nullptr);
@@ -917,7 +917,7 @@ namespace Puffin
 
 		void VulkanEngine::InitTextureSampler()
 		{
-			VkSamplerCreateInfo samplerInfo = vkinit::sampler_create_info(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+			VkSamplerCreateInfo samplerInfo = VKInit::SamplerCreateInfo(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
 			samplerInfo.anisotropyEnable = VK_TRUE;
 			samplerInfo.maxAnisotropy = 16;
 			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
@@ -1487,13 +1487,13 @@ namespace Puffin
 		void VulkanEngine::ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function)
 		{
 			// Allocate Default command buffer that will be used for instant commands
-			VkCommandBufferAllocateInfo cmdAllocInfo = vkinit::command_buffer_allocate_info(uploadContext.commandPool, 1);
+			VkCommandBufferAllocateInfo cmdAllocInfo = VKInit::CommandBufferAllocateInfo(uploadContext.commandPool, 1);
 
 			VkCommandBuffer cmd;
 			VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &cmd));
 
 			// Begin Command buffer recording. The command buffer will be used only once, so let vulkan know that
-			VkCommandBufferBeginInfo cmdBeginInfo = vkinit::command_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+			VkCommandBufferBeginInfo cmdBeginInfo = VKInit::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
 			VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
@@ -1502,7 +1502,7 @@ namespace Puffin
 
 			VK_CHECK(vkEndCommandBuffer(cmd));
 
-			VkSubmitInfo submit = vkinit::submit_info(&cmd);
+			VkSubmitInfo submit = VKInit::SubmitInfo(&cmd);
 
 			// Submit Command Buffer to queue and execute
 			// uploadFence will now block until the graphics command finish execution

@@ -102,6 +102,9 @@
     <ClCompile Include="VulkanEngine.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="VKDescriptors.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -203,6 +206,9 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="VulkanEngine.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VKDescriptors.h">
       <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>
