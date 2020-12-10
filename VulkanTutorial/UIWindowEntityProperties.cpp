@@ -30,10 +30,11 @@ namespace Puffin
 					ImGui::Text(""); ImGui::SameLine(0.0f);
 
 					// Edit Entity Name
-					std::string* name = &world->GetEntityName(entity);
-					if (ImGui::InputText("##Name", name, ImGuiInputTextFlags_EnterReturnsTrue))
+					std::string name = world->GetEntityName(entity);
+					std::string* namePtr = &name;
+					if (ImGui::InputText("##Name", namePtr, ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						world->SetEntityName(entity, *name);
+						world->SetEntityName(entity, *namePtr);
 					}
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));

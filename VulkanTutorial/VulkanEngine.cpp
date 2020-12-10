@@ -1,6 +1,7 @@
 #include "VulkanEngine.h"
 
 #include "VKInitializers.h"
+#include "VKDescriptors.h"
 #include "ModelLoader.h"
 #include "VKTexture.h"
 
@@ -553,52 +554,12 @@ namespace Puffin
 
 		void VulkanEngine::InitDescriptors()
 		{
-			const int MAX_SETS = 100;
+			// Initialize Descriptor Abstractions
+			descriptorAllocator = new VKUtil::DescriptorAllocator{};
+			descriptorAllocator->Init(device);
 
-			// Initialize Descriptor Pools
-			std::vector<VkDescriptorPoolSize> poolSizes = 
-			{
-				{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_SETS},
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_SETS},
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_SETS},
-				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_SETS}
-			};
-
-			VkDescriptorPoolCreateInfo poolInfo = {};
-			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-			poolInfo.pPoolSizes = poolSizes.data();
-			poolInfo.maxSets = MAX_SETS;
-
-			VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool));
-
-			// Initialize Global Descriptor Layout
-			VkDescriptorSetLayoutBinding viewBinding = VKInit::DescriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-			VkDescriptorSetLayoutBinding lightBinding = VKInit::DescriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-
-			std::array<VkDescriptorSetLayoutBinding, 2> bindings = { viewBinding, lightBinding};
-
-			VkDescriptorSetLayoutCreateInfo globalLayoutInfo = {};
-			globalLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			globalLayoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-			globalLayoutInfo.pBindings = bindings.data();
-
-			VK_CHECK(vkCreateDescriptorSetLayout(device, &globalLayoutInfo, nullptr, &globalSetLayout));
-
-			// Initialize Object Descriptor Layout
-			VkDescriptorSetLayoutBinding objectBinding = VKInit::DescriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
-
-			VkDescriptorSetLayoutCreateInfo objectLayoutInfo = {};
-			objectLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			objectLayoutInfo.flags = 0;
-			objectLayoutInfo.pNext = nullptr;
-			objectLayoutInfo.bindingCount = 1;
-			objectLayoutInfo.pBindings = &objectBinding;
-
-			vkCreateDescriptorSetLayout(device, &objectLayoutInfo, nullptr, &objectSetLayout);
+			descriptorLayoutCache = new VKUtil::DescriptorLayoutCache{};
+			descriptorLayoutCache->Init(device);
 
 			// Initialize Texture Descriptor Layout
 			VkDescriptorSetLayoutBinding textureBinding = VKInit::DescriptorSetLayoutBinding(
@@ -611,10 +572,11 @@ namespace Puffin
 			textureLayoutInfo.bindingCount = 1;
 			textureLayoutInfo.pBindings = &textureBinding;
 
-			vkCreateDescriptorSetLayout(device, &textureLayoutInfo, nullptr, &singleTextureSetLayout);
+			singleTextureSetLayout = descriptorLayoutCache->CreateDescriptorSetLayout(&textureLayoutInfo);
 
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
+				// Create Uniform/Storage Buffer for each frame
 				frames[i].cameraBuffer = CreateBuffer(sizeof(ViewData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -627,26 +589,7 @@ namespace Puffin
 				frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				// Allocated descriptor set for camera, light and sampler
-				VkDescriptorSetAllocateInfo allocInfo = {};
-				allocInfo.pNext = nullptr;
-				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-				allocInfo.descriptorPool = descriptorPool;
-				allocInfo.descriptorSetCount = 1;
-				allocInfo.pSetLayouts = &globalSetLayout;
-
-				VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDescriptor));
-
-				// Allocate descriptor set that will point to object buffer
-				VkDescriptorSetAllocateInfo objectSetAlloc = {};
-				objectSetAlloc.pNext = nullptr;
-				objectSetAlloc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-				objectSetAlloc.descriptorPool = descriptorPool;
-				objectSetAlloc.descriptorSetCount = 1;
-				objectSetAlloc.pSetLayouts = &objectSetLayout;
-
-				VK_CHECK(vkAllocateDescriptorSets(device, &objectSetAlloc, &frames[i].objectDescriptor));
-
+				// Allocate/Write Descriptor Sets for each Frame
 				VkDescriptorBufferInfo cameraInfo;
 				cameraInfo.buffer = frames[i].cameraBuffer.buffer;
 				cameraInfo.offset = 0;
@@ -657,23 +600,19 @@ namespace Puffin
 				lightInfo.offset = 0;
 				lightInfo.range = sizeof(LightData);
 
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &cameraInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(1, &lightInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.Build(frames[i].globalDescriptor, globalSetLayout);
+
 				VkDescriptorBufferInfo objectBufferInfo;
 				objectBufferInfo.buffer = frames[i].objectBuffer.buffer;
 				objectBufferInfo.offset = 0;
 				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
 
-				VkWriteDescriptorSet cameraWrite = VKInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-					frames[i].globalDescriptor, &cameraInfo, 0);
-
-				VkWriteDescriptorSet lightWrite = VKInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-					frames[i].globalDescriptor, &lightInfo, 1);
-
-				VkWriteDescriptorSet objectWrite = VKInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-					frames[i].objectDescriptor, &objectBufferInfo, 0);
-
-				VkWriteDescriptorSet writes[] = { cameraWrite, lightWrite, objectWrite };
-
-				vkUpdateDescriptorSets(device, 3, writes, 0, nullptr);
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(frames[i].objectDescriptor, objectSetLayout);
 			}
 		}
 
@@ -795,14 +734,14 @@ namespace Puffin
 			mesh.material = meshMaterial;
 
 			// Allocate Descriptor Set for texture to use on material
-			VkDescriptorSetAllocateInfo allocInfo = {};
+			/*VkDescriptorSetAllocateInfo allocInfo = {};
 			allocInfo.pNext = nullptr;
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			allocInfo.descriptorPool = descriptorPool;
 			allocInfo.descriptorSetCount = 1;
 			allocInfo.pSetLayouts = &singleTextureSetLayout;
 
-			VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &mesh.material.textureSet));
+			VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &mesh.material.textureSet));*/
 
 			// Write descriptor set so it points to mesh texture
 			VkDescriptorImageInfo imageBufferInfo;
@@ -810,10 +749,14 @@ namespace Puffin
 			imageBufferInfo.imageView = mesh.texture.imageView;
 			imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			VkWriteDescriptorSet texture = VKInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
+			VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+				.BindImage(2, &imageBufferInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.Build(mesh.material.textureSet, singleTextureSetLayout);
+
+			/*VkWriteDescriptorSet texture = VKInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
 				mesh.material.textureSet, &imageBufferInfo, 2);
 
-			vkUpdateDescriptorSets(device, 1, &texture, 0, nullptr);
+			vkUpdateDescriptorSets(device, 1, &texture, 0, nullptr);*/
 		}
 
 		void VulkanEngine::InitLight(LightComponent& light)
@@ -1453,6 +1396,9 @@ namespace Puffin
 				mainDeletionQueue.flush();
 				swapchainDeletionQueue.flush();
 				offscreenDeletionQueue.flush();
+
+				descriptorAllocator->Cleanup();
+				descriptorLayoutCache->Cleanup();
 
 				vkDestroyDevice(device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);

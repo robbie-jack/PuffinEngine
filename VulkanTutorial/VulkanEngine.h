@@ -47,6 +47,12 @@ namespace Puffin
 {
 	namespace Rendering
 	{
+		namespace VKUtil
+		{
+			class DescriptorLayoutCache;
+			class DescriptorAllocator;
+		}
+
 		struct DeletionQueue
 		{
 			std::deque<std::function<void()>> deletors;
@@ -161,13 +167,17 @@ namespace Puffin
 			AllocatedImage depthAttachment;
 			VkFormat depthFormat;
 
+			// Descriptor Abstractions
+			VKUtil::DescriptorAllocator* descriptorAllocator;
+			VKUtil::DescriptorLayoutCache* descriptorLayoutCache;
+
 			VkRenderPass renderPass;
 			VkRenderPass renderPassGUI;
 
 			// Pipelines/Materials
 			Material meshMaterial;
 
-			VkDescriptorPool descriptorPool;
+			//VkDescriptorPool descriptorPool;
 			VkDescriptorSetLayout globalSetLayout;
 			VkDescriptorSetLayout objectSetLayout;
 			VkDescriptorSetLayout singleTextureSetLayout;

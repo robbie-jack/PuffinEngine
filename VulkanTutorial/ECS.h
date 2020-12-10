@@ -602,7 +602,7 @@ namespace Puffin
 				entityManager->SetName(entity, name);
 			}
 
-			std::string GetEntityName(Entity entity)
+			std::string GetEntityName(Entity entity) const
 			{
 				return entityManager->GetName(entity);
 			}
