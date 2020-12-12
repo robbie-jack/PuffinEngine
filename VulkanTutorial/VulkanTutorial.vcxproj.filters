@@ -105,6 +105,7 @@
     <ClCompile Include="VKDescriptors.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="JobManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -211,5 +212,6 @@
     <ClInclude Include="VKDescriptors.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="JobManager.h" />
   </ItemGroup>
 </Project>

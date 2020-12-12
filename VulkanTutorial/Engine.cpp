@@ -5,6 +5,7 @@
 #include "TransformComponent.h"
 #include "UIManager.h"
 #include "InputManager.h"
+#include "JobManager.h"
 #include "VulkanEngine.h"
 #include "BulletPhysicsSystem.h"
 #include "SerializeScene.h"
@@ -22,8 +23,10 @@ namespace Puffin
 		ECS::World ECSWorld;
 		UI::UIManager UIManager;
 		Input::InputManager InputManager;
+		Job::JobManager JobManager;
 
 		ECSWorld.Init();
+		JobManager.Init();
 
 		UIManager.SetEngine(this);
 		UIManager.SetWorld(&ECSWorld);

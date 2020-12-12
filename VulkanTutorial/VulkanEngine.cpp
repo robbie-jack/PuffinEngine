@@ -729,19 +729,8 @@ namespace Puffin
 			// Init Mesh Buffers
 			InitVertexBuffer(mesh);
 			InitIndexBuffer(mesh);
-			//InitUniformBuffer(mesh);
 
 			mesh.material = meshMaterial;
-
-			// Allocate Descriptor Set for texture to use on material
-			/*VkDescriptorSetAllocateInfo allocInfo = {};
-			allocInfo.pNext = nullptr;
-			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			allocInfo.descriptorPool = descriptorPool;
-			allocInfo.descriptorSetCount = 1;
-			allocInfo.pSetLayouts = &singleTextureSetLayout;
-
-			VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &mesh.material.textureSet));*/
 
 			// Write descriptor set so it points to mesh texture
 			VkDescriptorImageInfo imageBufferInfo;
@@ -752,11 +741,6 @@ namespace Puffin
 			VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 				.BindImage(2, &imageBufferInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.Build(mesh.material.textureSet, singleTextureSetLayout);
-
-			/*VkWriteDescriptorSet texture = VKInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				mesh.material.textureSet, &imageBufferInfo, 2);
-
-			vkUpdateDescriptorSets(device, 1, &texture, 0, nullptr);*/
 		}
 
 		void VulkanEngine::InitLight(LightComponent& light)

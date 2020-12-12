@@ -180,6 +180,7 @@
     <ClCompile Include="include\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
+    <ClCompile Include="JobManager.cpp" />
     <ClCompile Include="UIWindow.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -201,6 +202,7 @@
     <ClInclude Include="BaseComponent.h" />
     <ClInclude Include="include\imgui\imgui_stdlib.h" />
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
+    <ClInclude Include="JobManager.h" />
     <ClInclude Include="RigidbodyComponent.h" />
     <ClInclude Include="BulletPhysicsSystem.h" />
     <ClInclude Include="CameraComponent.h" />
