@@ -22,6 +22,7 @@ namespace Puffin
 		struct LightData
 		{
 			alignas(16) glm::vec3 position;
+			alignas(16) glm::vec3 direction;
 			alignas(16) glm::vec3 ambientColor;
 			alignas(16) glm::vec3 diffuseColor;
 			alignas(4) float specularStrength;
@@ -38,6 +39,7 @@ namespace Puffin
 		template<class Archive>
 		void serialize(Archive& archive, LightData& data)
 		{
+			archive(data.direction.x, data.direction.y, data.direction.z);
 			archive(data.ambientColor.x, data.ambientColor.y, data.ambientColor.z);
 			archive(data.diffuseColor.x, data.diffuseColor.y, data.diffuseColor.z);
 			archive(data.specularStrength, data.shininess);

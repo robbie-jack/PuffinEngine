@@ -184,6 +184,7 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(6).model_path = "assets\\models\\cube.asset_m";
 		world->GetComponent<Rendering::MeshComponent>(6).texture_path = "textures\\cube.png";
 
+		world->GetComponent<Rendering::LightComponent>(4).data.direction = glm::vec3(1.0f, 0.0f, 0.0f);
 		world->GetComponent<Rendering::LightComponent>(4).data.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
 		world->GetComponent<Rendering::LightComponent>(4).data.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Rendering::LightComponent>(4).data.specularStrength = 0.5f;

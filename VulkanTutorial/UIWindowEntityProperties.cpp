@@ -276,6 +276,19 @@ namespace Puffin
 						ImGui::EndCombo();
 					}
 
+					// Render Direction Edit UI if  light type is Direction or Spot
+					if (comp.type != Rendering::LightType::POINT)
+					{
+						float direction[3] = { comp.data.direction.x, comp.data.direction.y, comp.data.direction.z };
+
+						if (ImGui::DragFloat3("Direction", direction, 0.005f, -1.0f, 1.0f))
+						{
+							comp.data.direction.x = direction[0];
+							comp.data.direction.y = direction[1];
+							comp.data.direction.z = direction[2];
+						}
+					}
+
 					if (positionChanged)
 					{
 						TransformComponent transform = world->GetComponent<TransformComponent>(entity);
