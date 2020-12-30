@@ -39,12 +39,12 @@ namespace Puffin
 
 			EntityManager()
 			{
-				for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
+				/*for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
 				{
 					availableEntities.push(entity);
 					entityNames[entity] = "";
 					entityDeletionFlags[entity] = false;
-				}
+				}*/
 			}
 
 			void Init(std::set<Entity> entities)

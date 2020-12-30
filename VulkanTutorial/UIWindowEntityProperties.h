@@ -29,6 +29,11 @@ namespace Puffin
             ECS::World* world;
             ImGui::FileBrowser* fileDialog;
 
+            void DrawTransformUI(ImGuiTreeNodeFlags flags);
+            void DrawMeshUI(ImGuiTreeNodeFlags flags);
+            void DrawLightUI(ImGuiTreeNodeFlags flags);
+            void DrawRigidbodyUI(ImGuiTreeNodeFlags flags);
+
             bool modelSelected = false;
             bool textureSelected = false;
             bool positionChanged = false;
