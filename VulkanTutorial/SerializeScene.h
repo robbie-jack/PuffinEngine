@@ -41,6 +41,7 @@ namespace Puffin
 			sceneData.entity_names.clear();
 			sceneData.transformMap.clear();
 			sceneData.meshMap.clear();
+			sceneData.lightMap.clear();
 			sceneData.rigidbodyMap.clear();
 		}
 

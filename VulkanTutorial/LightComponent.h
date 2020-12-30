@@ -46,13 +46,31 @@ namespace Puffin
 		struct LightComponent : public BaseComponent
 		{
 			LightData data;
-			LightType type = LightType::POINT;
+			LightType type;
 		};
 
-		template<class Archive>
+		/*template<class Archive>
 		void serialize(Archive& archive, LightComponent& comp)
 		{
-			archive(comp.data);
+			archive(comp.data, comp.type);
+		}*/
+
+		template<class Archive>
+		void save(Archive& archive, const LightComponent& comp)
+		{
+			int lightType = (int)comp.type;
+
+			archive(comp.data, lightType);
+		}
+
+		template<class Archive>
+		void load(Archive& archive, LightComponent& comp)
+		{
+			int lightType;
+
+			archive(comp.data, lightType);
+
+			comp.type = (LightType)lightType;
 		}
 	}
 }

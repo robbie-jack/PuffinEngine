@@ -254,12 +254,33 @@ namespace Puffin
 						sceneChanged = true;
 					}
 
+					const char* items[] = { "Point", "Spot", "Directional" };
+					static int item_current_idx = (int)comp.type;
+					const char* label = items[item_current_idx];
+					if (ImGui::BeginCombo("Light Type", label))
+					{
+						for (int i = 0; i < IM_ARRAYSIZE(items); i++)
+						{
+							const bool is_selected = (item_current_idx == i);
+							if (ImGui::Selectable(items[i], is_selected))
+							{
+								item_current_idx = i;
+								comp.type = (Rendering::LightType)item_current_idx;
+								sceneChanged = true;
+							}
+
+							if (is_selected)
+								ImGui::SetItemDefaultFocus();
+						}
+
+						ImGui::EndCombo();
+					}
+
 					if (positionChanged)
 					{
 						TransformComponent transform = world->GetComponent<TransformComponent>(entity);
 
 						comp.data.position = transform.position;
-						//comp.flag_created = true;
 					}
 				}
 			}

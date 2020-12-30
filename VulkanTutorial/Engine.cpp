@@ -55,9 +55,10 @@ namespace Puffin
 		rigidbodySignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
 
-		//DefaultScene(&ECSWorld);
-
 		sceneData.scene_name = "assets/scenes/default.scn";
+
+		//DefaultScene(&ECSWorld);
+		
 		IO::LoadScene(&ECSWorld, sceneData);
 		IO::InitScene(&ECSWorld, sceneData);
 
@@ -137,13 +138,23 @@ namespace Puffin
 
 	void Engine::DefaultScene(ECS::World* world)
 	{
+		// Initiliase EntityManager with Existing Entities
+		world->InitEntitySystem(std::set<ECS::Entity>());
+
 		// Add Default Scene Components to ECS
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 6; i++)
 		{
 			ECS::Entity entity = world->CreateEntity();
 			world->AddComponent<TransformComponent>(entity);
 			world->AddComponent<Rendering::MeshComponent>(entity);
 		}
+
+		world->SetEntityName(1, "House");
+		world->SetEntityName(2, "Engineer");
+		world->SetEntityName(3, "Falling Cube");
+		world->SetEntityName(4, "Light");
+		world->SetEntityName(5, "Static Cube");
+		world->SetEntityName(6, "Plane");
 
 		world->AddComponent<Rendering::LightComponent>(4);
 
@@ -156,6 +167,7 @@ namespace Puffin
 		world->GetComponent<TransformComponent>(3) = { false, false, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(4) = { false, false, Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
 		world->GetComponent<TransformComponent>(5) = { false, false, Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
+		world->GetComponent<TransformComponent>(6) = { false, false, Vector3(0.0f, -10.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 1.0f, 10.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(1).model_path = "assets\\models\\chalet.asset_m";
 		world->GetComponent<Rendering::MeshComponent>(1).texture_path = "textures\\chalet.jpg";
@@ -169,11 +181,14 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(4).texture_path = "textures\\cube.png";
 		world->GetComponent<Rendering::MeshComponent>(5).model_path = "assets\\models\\cube.asset_m";
 		world->GetComponent<Rendering::MeshComponent>(5).texture_path = "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(6).model_path = "assets\\models\\cube.asset_m";
+		world->GetComponent<Rendering::MeshComponent>(6).texture_path = "textures\\cube.png";
 
 		world->GetComponent<Rendering::LightComponent>(4).data.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
 		world->GetComponent<Rendering::LightComponent>(4).data.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Rendering::LightComponent>(4).data.specularStrength = 0.5f;
 		world->GetComponent<Rendering::LightComponent>(4).data.shininess = 16;
+		world->GetComponent<Rendering::LightComponent>(4).type = Rendering::LightType::POINT;
 
 		world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Physics::RigidbodyComponent>(3).mass = 1.0f;
