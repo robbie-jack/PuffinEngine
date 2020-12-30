@@ -28,6 +28,13 @@ namespace Puffin
 			alignas(4) int shininess;
 		};
 
+		enum class LightType
+		{
+			POINT = 0,
+			SPOT = 1,
+			DIRECTIONAL = 2
+		};
+
 		template<class Archive>
 		void serialize(Archive& archive, LightData& data)
 		{
@@ -39,7 +46,7 @@ namespace Puffin
 		struct LightComponent : public BaseComponent
 		{
 			LightData data;
-			//std::vector<AllocatedBuffer> buffers;
+			LightType type = LightType::POINT;
 		};
 
 		template<class Archive>

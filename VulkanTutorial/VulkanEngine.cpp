@@ -700,12 +700,15 @@ namespace Puffin
 			camera.zFar = 100.0f;
 			InitCamera(camera);
 
-			//// Initialize Lights
-			//for (ECS::Entity entity : entityMap["Light"])
-			//{
-			//	LightComponent& comp = world->GetComponent<LightComponent>(entity);
-			//	InitLight(comp);
-			//}
+			// Initialize Lights
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& comp = world->GetComponent<LightComponent>(entity);
+				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+
+				// Initialise position data from Transform
+				comp.data.position = transform.position;
+			}
 
 			// Initialize Meshes
 			for (ECS::Entity entity : entityMap["Mesh"])
@@ -743,10 +746,10 @@ namespace Puffin
 				.Build(mesh.material.textureSet, singleTextureSetLayout);
 		}
 
-		void VulkanEngine::InitLight(LightComponent& light)
+		/*void VulkanEngine::InitLight(LightComponent& light)
 		{
 			VkDeviceSize bufferSize = sizeof(LightData);
-		}
+		}*/
 
 		void VulkanEngine::InitCamera(CameraComponent& camera)
 		{

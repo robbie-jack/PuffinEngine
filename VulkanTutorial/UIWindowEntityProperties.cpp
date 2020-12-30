@@ -256,7 +256,10 @@ namespace Puffin
 
 					if (positionChanged)
 					{
-						comp.flag_created = true;
+						TransformComponent transform = world->GetComponent<TransformComponent>(entity);
+
+						comp.data.position = transform.position;
+						//comp.flag_created = true;
 					}
 				}
 			}

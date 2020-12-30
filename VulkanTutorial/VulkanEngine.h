@@ -226,7 +226,7 @@ namespace Puffin
 
 			// Init Component Functions
 			void InitMesh(MeshComponent& mesh);
-			void InitLight(LightComponent& light);
+			//void InitLight(LightComponent& light);
 			void InitCamera(CameraComponent& camera);
 
 			// Init Buffer Functions
