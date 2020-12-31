@@ -111,6 +111,9 @@ namespace Puffin
 
 			AllocatedBuffer objectBuffer;
 			VkDescriptorSet objectDescriptor;
+
+			AllocatedBuffer shadowBuffer;
+			VkDescriptorSet shadowDescriptor;
 		};
 
 		struct GPUObjectData
@@ -119,6 +122,12 @@ namespace Puffin
 			alignas(16) glm::mat4 inv_model;
 			alignas(16) glm::mat4 view;
 			alignas(16) glm::mat4 proj;
+		};
+
+		struct GPUShadowData
+		{
+			alignas(16) glm::mat4 lightSpaceMatrix;
+			alignas(16) glm::mat4 model;
 		};
 
 		// Number of frames to overlap when rendering
@@ -170,6 +179,11 @@ namespace Puffin
 			std::vector<VkFramebuffer> offscreenFramebuffers;
 			std::vector<ImTextureID> viewportTextureIDs; // Vector of Texture ID's which are passed to Viewport Draw function
 
+			// Shadows
+			VkExtent2D shadowExtent; // Resolution of rendered shadowmaps
+			VkPipelineLayout shadowPipelineLayout;
+			VkPipeline shadowPipeline;
+
 			FrameData frames[FRAME_OVERLAP];
 
 			// Depth Resources
@@ -182,6 +196,7 @@ namespace Puffin
 
 			VkRenderPass renderPass;
 			VkRenderPass renderPassGUI;
+			VkRenderPass renderPassShadows;
 
 			// Pipelines/Materials
 			Material meshMaterial;
@@ -191,6 +206,7 @@ namespace Puffin
 			VkDescriptorSetLayout lightSetLayout;
 			VkDescriptorSetLayout objectSetLayout;
 			VkDescriptorSetLayout singleTextureSetLayout;
+			VkDescriptorSetLayout shadowSetLayout;
 
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue
@@ -221,11 +237,13 @@ namespace Puffin
 			void InitCommands();
 			void InitDefaultRenderpass();
 			void InitGUIRenderpass();
+			void InitShadowRenderPass();
 			void InitFramebuffers();
 			void InitOffscreenFramebuffers();
 			void InitSyncStructures();
 			void InitDescriptors();
 			void InitPipelines();
+			void InitShadowPipeline();
 			void InitScene();
 			void InitImGui();
 			void InitTextureSampler();
@@ -236,7 +254,7 @@ namespace Puffin
 
 			// Init Component Functions
 			void InitMesh(MeshComponent& mesh);
-			//void InitLight(LightComponent& light);
+			void InitLight(LightComponent& light);
 			void InitCamera(CameraComponent& camera);
 
 			// Init Buffer Functions

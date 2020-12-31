@@ -277,8 +277,10 @@ namespace Puffin
 					// Edit Light Diffuse Color
 					ImGui::ColorEdit3("Diffuse", (float*)&comp.diffuseColor);
 
-					// Edit Light Ambient Colol
+					// Edit Light Ambient Color
 					ImGui::ColorEdit3("Ambient", (float*)&comp.ambientColor);
+
+					ImGui::Checkbox("Cast Shadows", &comp.castShadows);
 
 					// Combo box to select light type
 					const char* items[] = { "Point", "Spot", "Directional" };

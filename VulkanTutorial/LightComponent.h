@@ -80,7 +80,11 @@ namespace Puffin
 			int shininess;
 			float constantAttenuation, linearAttenuation, quadraticAttenuation; // USed to calculate light dropoff based on distance
 			float innerCutoffAngle, outerCutoffAngle; // Used for spotlight
+
+			// Variables for computing shadows cast by lights
 			bool castShadows; // Flag to indicate if light should cast shadows
+			AllocatedImage depthMap;
+			VkFramebuffer depthFramebuffer;
 		};
 
 		template<class Archive>

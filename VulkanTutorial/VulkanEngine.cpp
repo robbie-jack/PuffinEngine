@@ -64,6 +64,9 @@ namespace Puffin
 			// Initialize GUI Renderpass
 			InitGUIRenderpass();
 
+			// Initialize Shadow Renderpass
+			InitShadowRenderPass();
+
 			// Initialise Swapchain Framebuffers
 			InitFramebuffers();
 
@@ -78,6 +81,8 @@ namespace Puffin
 
 			// Initialize Pipelines
 			InitPipelines();
+
+			InitShadowPipeline();
 
 			InitTextureSampler();
 
@@ -435,6 +440,64 @@ namespace Puffin
 			});
 		}
 
+		void VulkanEngine::InitShadowRenderPass()
+		{
+			// Create Depth Attachment
+			VkAttachmentDescription depthAttachment = {};
+			depthAttachment.format = depthFormat;
+			depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+			VkAttachmentReference depthAttachmentRef = {};
+			depthAttachmentRef.attachment = 1;
+			depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpass = {};
+			subpass.colorAttachmentCount = 0;
+			subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+			// Create Subpass dependencies for transition layouts
+			std::array<VkSubpassDependency, 2> dependencies;
+
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+			dependencies[1].srcSubpass = 0;
+			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dependencies[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+			// Create Render Pass
+			VkRenderPassCreateInfo renderPassInfo = {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.attachmentCount = 1;
+			renderPassInfo.pAttachments = &depthAttachment;
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+			renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+			renderPassInfo.pDependencies = dependencies.data();
+
+			VK_CHECK(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPassShadows));
+
+			mainDeletionQueue.push_function([=]()
+			{
+				vkDestroyRenderPass(device, renderPassShadows, nullptr);
+			});
+		}
+
 		void VulkanEngine::InitFramebuffers()
 		{
 			// Create Framebuffers for swapchain images.
@@ -644,6 +707,12 @@ namespace Puffin
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 					.BindBuffer(0, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 					.Build(frames[i].objectDescriptor, objectSetLayout);
+
+				// Initialize Shadow Descriptor Layout
+				VkDescriptorBufferInfo shadowInfo;
+				shadowInfo.buffer = frames[i].shadowBuffer.buffer;
+				shadowInfo.offset = 0;
+				shadowInfo.range = sizeof(GPUShadowData);
 			}
 		}
 
@@ -720,6 +789,72 @@ namespace Puffin
 			meshMaterial.pipeline = pipelineBuilder.build_pipeline(device, renderPass);
 		}
 
+		void VulkanEngine::InitShadowPipeline()
+		{
+			// Read Shader Code from files
+			auto vertShaderCode = ReadFile("shaders/shadowmap_vert.spv");
+
+			// Create Shader Module from code
+			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
+
+			// Create Pipeline Layout Info
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(shadowSetLayout);
+
+			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &shadowPipelineLayout));
+
+			// Create Pipeline Builder Object
+			PipelineBuilder pipelineBuilder;
+
+			// Create Shader Stage Info
+			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
+
+			VkVertexInputBindingDescription bindingDescription = {};
+			bindingDescription.binding = 0;
+			bindingDescription.stride = sizeof(glm::vec3);
+			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+			VkVertexInputAttributeDescription attributeDescription = {};
+			attributeDescription.binding = 0;
+			attributeDescription.location = 0;
+			attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+			attributeDescription.offset = offsetof(Vertex, Vertex::pos);
+
+			// Create Vertex Input Info
+			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescription);
+
+			// Create Input Assembly Info
+			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+			pipelineBuilder.viewport.x = 0.0f;
+			pipelineBuilder.viewport.y = 0.0f;
+			pipelineBuilder.viewport.width = (float)shadowExtent.width;
+			pipelineBuilder.viewport.height = (float)shadowExtent.height;
+			pipelineBuilder.viewport.minDepth = 0.0f;
+			pipelineBuilder.viewport.maxDepth = 1.0f;
+
+			// Define Scissor Extent
+			pipelineBuilder.scissor.offset = { 0, 0 };
+			pipelineBuilder.scissor.extent = shadowExtent;
+
+			// Rasterization Stage Creation - Configured to draw filled triangles
+			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
+
+			// Multisampling
+			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
+
+			// Color Blending - Default RGBA Color Blending
+			pipelineBuilder.colorBlendAttachment = VKInit::ColorBlendAttachmentState();
+
+			// Depth Testing - Default
+			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+
+			// Assign Pipeline Layout
+			pipelineBuilder.pipelineLayout = shadowPipelineLayout;
+
+			// Build Pipeline
+			shadowPipeline = pipelineBuilder.build_pipeline(device, renderPassShadows);
+		}
+
 		void VulkanEngine::InitScene()
 		{
 			// Initialize Camera
@@ -732,15 +867,17 @@ namespace Puffin
 			camera.zFar = 100.0f;
 			InitCamera(camera);
 
-			// Initialize Lights
-			//for (ECS::Entity entity : entityMap["Light"])
-			//{
-			//	LightComponent& comp = world->GetComponent<LightComponent>(entity);
-			//	TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+			// Initialize Shadowmap Resolution
+			shadowExtent.width = 1024;
+			shadowExtent.height = 1024;
 
-			//	// Initialise position data from Transform
-			//	//comp.data.position = transform.position;
-			//}
+			// Initialize Lights
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& comp = world->GetComponent<LightComponent>(entity);
+
+				InitLight(comp);
+			}
 
 			// Initialize Meshes
 			for (ECS::Entity entity : entityMap["Mesh"])
@@ -778,10 +915,30 @@ namespace Puffin
 				.Build(mesh.material.textureSet, singleTextureSetLayout);
 		}
 
-		/*void VulkanEngine::InitLight(LightComponent& light)
+		void VulkanEngine::InitLight(LightComponent& light)
 		{
-			VkDeviceSize bufferSize = sizeof(LightData);
-		}*/
+			// Create Depth Map for Light
+			VkFramebufferCreateInfo depthMapInfo = {};
+			depthMapInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			depthMapInfo.pNext = nullptr;
+
+			depthMapInfo.renderPass = renderPassShadows;
+			depthMapInfo.width = shadowExtent.width;
+			depthMapInfo.height = shadowExtent.height;
+			depthMapInfo.layers = 1;
+
+			VkImageView depthAttachment = light.depthMap.imageView;
+
+			depthMapInfo.pAttachments = &depthAttachment;
+			depthMapInfo.attachmentCount = 1;
+
+			VK_CHECK(vkCreateFramebuffer(device, &depthMapInfo, nullptr, &light.depthFramebuffer));
+
+			offscreenDeletionQueue.push_function([=]()
+			{
+				vkDestroyFramebuffer(device, light.depthFramebuffer, nullptr);
+			});
+		}
 
 		void VulkanEngine::InitCamera(CameraComponent& camera)
 		{

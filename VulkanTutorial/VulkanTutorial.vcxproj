@@ -197,6 +197,7 @@
   <ItemGroup>
     <None Include="shaders\shader.frag" />
     <None Include="shaders\shader.vert" />
+    <None Include="shaders\shadowmap.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseComponent.h" />

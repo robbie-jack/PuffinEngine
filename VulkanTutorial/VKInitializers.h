@@ -147,6 +147,22 @@ namespace Puffin
 				return info;
 			}
 
+			VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo(
+				VkVertexInputBindingDescription bindingDescription,
+				VkVertexInputAttributeDescription attributeDescription)
+			{
+				VkPipelineVertexInputStateCreateInfo info = {};
+				info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+				info.pNext = nullptr;
+
+				//no vertex bindings or attributes
+				info.vertexBindingDescriptionCount = 1;
+				info.vertexAttributeDescriptionCount = 1;
+				info.pVertexBindingDescriptions = &bindingDescription;
+				info.pVertexAttributeDescriptions = &attributeDescription;
+				return info;
+			}
+
 			// Initialize info for what king of topology to draw, i.e triangles, lines, points
 			VkPipelineInputAssemblyStateCreateInfo InputAssemblyCreateInfo(VkPrimitiveTopology topology)
 			{
