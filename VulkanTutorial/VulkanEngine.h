@@ -88,6 +88,13 @@ namespace Puffin
 			VkCommandPool commandPool;
 		};
 
+		struct LightStatsData
+		{
+			int numPLights;
+			int numDLights;
+			int numSLights;
+		};
+
 		struct FrameData
 		{
 			VkSemaphore presentSemaphore, renderSemaphore;
@@ -99,7 +106,7 @@ namespace Puffin
 			AllocatedBuffer cameraBuffer;
 			VkDescriptorSet globalDescriptor;
 
-			AllocatedBuffer pointLightBuffer, directionalLightBuffer, spotLightBuffer;
+			AllocatedBuffer pointLightBuffer, directionalLightBuffer, spotLightBuffer, lightStatsBuffer;
 			VkDescriptorSet lightDescriptor;
 
 			AllocatedBuffer objectBuffer;

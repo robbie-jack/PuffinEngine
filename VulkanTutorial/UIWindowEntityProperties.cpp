@@ -93,6 +93,28 @@ namespace Puffin
 							}
 						}
 
+						if (ImGui::Selectable("Light Component"))
+						{
+							if (!world->HasComponent<Rendering::LightComponent>(entity))
+							{
+								Rendering::LightComponent& comp = world->AddComponent<Rendering::LightComponent>(entity);
+								comp.data.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+								comp.data.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+								comp.innerCutoffAngle = 12.5f;
+								comp.outerCutoffAngle = 17.5f;
+								comp.data.innerCutoff = glm::cos(glm::radians(comp.innerCutoffAngle));
+								comp.data.outerCutoff = glm::cos(glm::radians(comp.outerCutoffAngle));
+								comp.data.constant = 1.0f;
+								comp.data.linear = 0.09f;
+								comp.data.quadratic = 0.032f;
+								comp.data.specularStrength = 0.5f;
+								comp.data.shininess = 16;
+								comp.type = Rendering::LightType::POINT;
+								comp.flag_created = true;
+								sceneChanged = true;
+							}
+						}
+
 						if (ImGui::Selectable("Physics Component"))
 						{
 							if (!world->HasComponent<Physics::RigidbodyComponent>(entity))

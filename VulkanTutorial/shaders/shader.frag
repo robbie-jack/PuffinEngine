@@ -40,7 +40,14 @@ layout(std140, set = 1, binding = 2) readonly buffer SpotLightBuffer
 	LightData lights[];
 } spotBuffer;
 
-layout(set = 2, binding = 0) uniform sampler2D texSampler;
+layout(set = 1, binding = 3) uniform LightStatsData
+{
+	int numPLights;
+	int numDLights;
+	int numSLights;
+} lightStats;
+
+layout(set = 3, binding = 0) uniform sampler2D texSampler;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;
@@ -63,22 +70,24 @@ void main()
 	//result = CalcSpotLight(light.data, fragNormal, viewDir, fragPosition);
 
 	// Calculate Point Lights
-	for (int i = 0; i < pointBuffer.lights.length(); i++)
+	for (int i = 0; i < lightStats.numPLights; i++)
 	{
 		result += CalcPointLight(pointBuffer.lights[i], fragNormal, viewDir, fragPosition);
 	}
 
 	// Calculate Directional Lights
-	for (int i = 0; i < directionalBuffer.lights.length(); i++)
+	for (int i = 0; i < lightStats.numDLights; i++)
 	{
 		result += CalcDirLight(directionalBuffer.lights[i], fragNormal, viewDir);
 	}
 
 	// Calculate Spot Lights
-	for (int i = 0; i < spotBuffer.lights.length(); i++)
+	for (int i = 0; i < lightStats.numSLights; i++)
 	{
 		result += CalcSpotLight(spotBuffer.lights[i], fragNormal, viewDir, fragPosition);
 	}
+
+	//result = CalcSpotLight(spotBuffer.lights[0], fragNormal, viewDir, fragPosition);
 
     outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
 }
