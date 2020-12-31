@@ -165,7 +165,7 @@ namespace Puffin
 		world->GetComponent<TransformComponent>(1) = { false, false, Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(2) = { false, false, Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(3) = { false, false, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		world->GetComponent<TransformComponent>(4) = { false, false, Vector3(-2.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
+		world->GetComponent<TransformComponent>(4) = { false, false, Vector3(-10.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
 		world->GetComponent<TransformComponent>(5) = { false, false, Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(6) = { false, false, Vector3(0.0f, -10.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 1.0f, 10.0f) };
 
@@ -184,19 +184,18 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(6).model_path = "assets\\models\\cube.asset_m";
 		world->GetComponent<Rendering::MeshComponent>(6).texture_path = "textures\\cube.png";
 
-		world->GetComponent<Rendering::LightComponent>(4).data.direction = glm::vec3(1.0f, 0.0f, 0.0f);
-		world->GetComponent<Rendering::LightComponent>(4).data.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-		world->GetComponent<Rendering::LightComponent>(4).data.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		world->GetComponent<Rendering::LightComponent>(4).direction = glm::vec3(1.0f, -1.0f, 0.0f);
+		world->GetComponent<Rendering::LightComponent>(4).ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+		world->GetComponent<Rendering::LightComponent>(4).diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Rendering::LightComponent>(4).innerCutoffAngle = 12.5f;
 		world->GetComponent<Rendering::LightComponent>(4).outerCutoffAngle = 17.5f;
-		world->GetComponent<Rendering::LightComponent>(4).data.innerCutoff = glm::cos(glm::radians(world->GetComponent<Rendering::LightComponent>(4).innerCutoffAngle));
-		world->GetComponent<Rendering::LightComponent>(4).data.outerCutoff = glm::cos(glm::radians(world->GetComponent<Rendering::LightComponent>(4).outerCutoffAngle));
-		world->GetComponent<Rendering::LightComponent>(4).data.constant = 1.0f;
-		world->GetComponent<Rendering::LightComponent>(4).data.linear = 0.09f;
-		world->GetComponent<Rendering::LightComponent>(4).data.quadratic = 0.032f;
-		world->GetComponent<Rendering::LightComponent>(4).data.specularStrength = 0.5f;
-		world->GetComponent<Rendering::LightComponent>(4).data.shininess = 16;
-		world->GetComponent<Rendering::LightComponent>(4).type = Rendering::LightType::POINT;
+		world->GetComponent<Rendering::LightComponent>(4).constantAttenuation = 1.0f;
+		world->GetComponent<Rendering::LightComponent>(4).linearAttenuation = 0.09f;
+		world->GetComponent<Rendering::LightComponent>(4).quadraticAttenuation = 0.032f;
+		world->GetComponent<Rendering::LightComponent>(4).specularStrength = 0.5f;
+		world->GetComponent<Rendering::LightComponent>(4).shininess = 16;
+		world->GetComponent<Rendering::LightComponent>(4).type = Rendering::LightType::SPOT;
+		world->GetComponent<Rendering::LightComponent>(4).castShadows = true;
 
 		world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Physics::RigidbodyComponent>(3).mass = 1.0f;

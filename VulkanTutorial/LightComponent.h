@@ -19,13 +19,39 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		struct LightData
+		struct GPUPointLightData
 		{
-			alignas(16) glm::vec3 position;
-			alignas(16) glm::vec3 direction;
-
 			alignas(16) glm::vec3 ambientColor;
 			alignas(16) glm::vec3 diffuseColor;
+
+			alignas(16) glm::vec3 position;
+
+			alignas(4) float constant;
+			alignas(4) float linear;
+			alignas(4) float quadratic;
+
+			alignas(4) float specularStrength;
+			alignas(4) int shininess;
+		};
+
+		struct GPUDirLightData
+		{
+			alignas(16) glm::vec3 ambientColor;
+			alignas(16) glm::vec3 diffuseColor;
+
+			alignas(16) glm::vec3 direction;
+
+			alignas(4) float specularStrength;
+			alignas(4) int shininess;
+		};
+
+		struct GPUSpotLightData
+		{
+			alignas(16) glm::vec3 ambientColor;
+			alignas(16) glm::vec3 diffuseColor;
+
+			alignas(16) glm::vec3 position;
+			alignas(16) glm::vec3 direction;
 
 			alignas(4) float innerCutoff;
 			alignas(4) float outerCutoff;
@@ -45,37 +71,31 @@ namespace Puffin
 			DIRECTIONAL = 2
 		};
 
-		template<class Archive>
-		void serialize(Archive& archive, LightData& data)
-		{
-			archive(data.direction.x, data.direction.y, data.direction.z);
-			archive(data.ambientColor.x, data.ambientColor.y, data.ambientColor.z);
-			archive(data.diffuseColor.x, data.diffuseColor.y, data.diffuseColor.z);
-			archive(data.innerCutoff, data.outerCutoff);
-			archive(data.constant, data.linear, data.quadratic);
-			archive(data.specularStrength, data.shininess);
-		}
-
 		struct LightComponent : public BaseComponent
 		{
-			LightData data;
 			LightType type;
-			float innerCutoffAngle, outerCutoffAngle;
+			Vector3 ambientColor, diffuseColor;
+			Vector3 direction;
+			float specularStrength;
+			int shininess;
+			float constantAttenuation, linearAttenuation, quadraticAttenuation; // USed to calculate light dropoff based on distance
+			float innerCutoffAngle, outerCutoffAngle; // Used for spotlight
+			bool castShadows; // Flag to indicate if light should cast shadows
 		};
-
-		/*template<class Archive>
-		void serialize(Archive& archive, LightComponent& comp)
-		{
-			archive(comp.data, comp.type);
-		}*/
 
 		template<class Archive>
 		void save(Archive& archive, const LightComponent& comp)
 		{
 			int lightType = (int)comp.type;
 
-			archive(comp.data, lightType);
+			archive(lightType);
+			archive(comp.ambientColor.x, comp.ambientColor.y, comp.ambientColor.z);
+			archive(comp.diffuseColor.x, comp.diffuseColor.y, comp.diffuseColor.z);
+			archive(comp.direction.x, comp.direction.y, comp.direction.z);
+			archive(comp.specularStrength, comp.shininess);
+			archive(comp.constantAttenuation, comp.linearAttenuation, comp.quadraticAttenuation);
 			archive(comp.innerCutoffAngle, comp.outerCutoffAngle);
+			archive(comp.castShadows);
 		}
 
 		template<class Archive>
@@ -83,8 +103,14 @@ namespace Puffin
 		{
 			int lightType;
 
-			archive(comp.data, lightType);
+			archive(lightType);
+			archive(comp.ambientColor.x, comp.ambientColor.y, comp.ambientColor.z);
+			archive(comp.diffuseColor.x, comp.diffuseColor.y, comp.diffuseColor.z);
+			archive(comp.direction.x, comp.direction.y, comp.direction.z);
+			archive(comp.specularStrength, comp.shininess);
+			archive(comp.constantAttenuation, comp.linearAttenuation, comp.quadraticAttenuation);
 			archive(comp.innerCutoffAngle, comp.outerCutoffAngle);
+			archive(comp.castShadows);
 
 			comp.type = (LightType)lightType;
 		}

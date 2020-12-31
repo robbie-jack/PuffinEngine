@@ -98,17 +98,15 @@ namespace Puffin
 							if (!world->HasComponent<Rendering::LightComponent>(entity))
 							{
 								Rendering::LightComponent& comp = world->AddComponent<Rendering::LightComponent>(entity);
-								comp.data.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-								comp.data.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+								comp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+								comp.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
 								comp.innerCutoffAngle = 12.5f;
 								comp.outerCutoffAngle = 17.5f;
-								comp.data.innerCutoff = glm::cos(glm::radians(comp.innerCutoffAngle));
-								comp.data.outerCutoff = glm::cos(glm::radians(comp.outerCutoffAngle));
-								comp.data.constant = 1.0f;
-								comp.data.linear = 0.09f;
-								comp.data.quadratic = 0.032f;
-								comp.data.specularStrength = 0.5f;
-								comp.data.shininess = 16;
+								comp.constantAttenuation = 1.0f;
+								comp.linearAttenuation = 0.09f;
+								comp.quadraticAttenuation = 0.032f;
+								comp.specularStrength = 0.5f;
+								comp.shininess = 16;
 								comp.type = Rendering::LightType::POINT;
 								comp.flag_created = true;
 								sceneChanged = true;
@@ -277,14 +275,14 @@ namespace Puffin
 					}
 
 					// Edit Light Diffuse Color
-					ImGui::ColorEdit3("Diffuse", (float*)&comp.data.diffuseColor);
+					ImGui::ColorEdit3("Diffuse", (float*)&comp.diffuseColor);
 
 					// Edit Light Ambient Colol
-					ImGui::ColorEdit3("Ambient", (float*)&comp.data.ambientColor);
+					ImGui::ColorEdit3("Ambient", (float*)&comp.ambientColor);
 
 					// Combo box to select light type
 					const char* items[] = { "Point", "Spot", "Directional" };
-					static int item_current_idx = (int)comp.type;
+					int item_current_idx = (int)comp.type;
 					const char* label = items[item_current_idx];
 					if (ImGui::BeginCombo("Light Type", label))
 					{
@@ -308,35 +306,15 @@ namespace Puffin
 					// Render Direction Edit UI if  light type is Direction or Spot
 					if (comp.type != Rendering::LightType::POINT)
 					{
-						float direction[3] = { comp.data.direction.x, comp.data.direction.y, comp.data.direction.z };
-
-						if (ImGui::DragFloat3("Direction", direction, 0.005f, -1.0f, 1.0f))
-						{
-							comp.data.direction.x = direction[0];
-							comp.data.direction.y = direction[1];
-							comp.data.direction.z = direction[2];
-						}
+						ImGui::DragFloat3("Direction", (float*)&comp.direction, 0.005f, -1.0f, 1.0f);
 					}
 
 					if (comp.type == Rendering::LightType::SPOT)
 					{
-						if (ImGui::DragFloat("Inner Cutoff Angle", &comp.innerCutoffAngle, 0.25f, 0.0f, 180.0f))
-						{
-							comp.data.innerCutoff = glm::cos(glm::radians(comp.innerCutoffAngle));
-						}
+						ImGui::DragFloat("Inner Cutoff Angle", &comp.innerCutoffAngle, 0.25f, 0.0f, 180.0f);
 
 						// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
-						if (ImGui::DragFloat("Outer Cutoff Angle", &comp.outerCutoffAngle, 0.25f, comp.innerCutoffAngle, 180.0f))
-						{
-							comp.data.outerCutoff = glm::cos(glm::radians(comp.outerCutoffAngle));
-						}
-					}
-
-					if (positionChanged)
-					{
-						TransformComponent transform = world->GetComponent<TransformComponent>(entity);
-
-						comp.data.position = transform.position;
+						ImGui::DragFloat("Outer Cutoff Angle", &comp.outerCutoffAngle, 0.25f, comp.innerCutoffAngle, 180.0f);
 					}
 				}
 			}

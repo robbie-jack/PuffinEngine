@@ -6,13 +6,39 @@ layout(set = 0, binding = 0) uniform ViewBufferObject
 	vec3 viewPos;
 } camera;
 
-struct LightData
+struct PointLightData
 {
-	vec3 position;
-	vec3 direction;
-
 	vec3 ambientColor;
 	vec3 diffuseColor;
+
+	vec3 position;
+
+	float constant;
+	float linear;
+	float quadratic;
+
+	float specularStrength;
+	int shininess;
+};
+
+struct DirectionalLightData
+{
+	vec3 ambientColor;
+	vec3 diffuseColor;
+
+	vec3 direction;
+
+	float specularStrength;
+	int shininess;
+};
+
+struct SpotLightData
+{
+	vec3 ambientColor;
+	vec3 diffuseColor;
+
+	vec3 position;
+	vec3 direction;
 
 	float innerCutoff;
 	float outerCutoff;
@@ -27,17 +53,17 @@ struct LightData
 
 layout(std140, set = 1, binding = 0) readonly buffer PointLightBuffer
 {
-	LightData lights[];
+	PointLightData lights[];
 } pointBuffer;
 
 layout(std140, set = 1, binding = 1) readonly buffer DirectionalLightBuffer
 {
-	LightData lights[];
+	DirectionalLightData lights[];
 } directionalBuffer;
 
 layout(std140, set = 1, binding = 2) readonly buffer SpotLightBuffer
 {
-	LightData lights[];
+	SpotLightData lights[];
 } spotBuffer;
 
 layout(set = 1, binding = 3) uniform LightStatsData
@@ -56,9 +82,9 @@ layout(location = 3) in vec2 fragTexCoord;
 
 layout(location = 0) out vec4 outColor;
 
-vec3 CalcPointLight(LightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
-vec3 CalcDirLight(LightData light, vec3 normal, vec3 viewDir);
-vec3 CalcSpotLight(LightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
+vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
+vec3 CalcDirLight(DirectionalLightData light, vec3 normal, vec3 viewDir);
+vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
 
 void main() 
 {
@@ -92,7 +118,7 @@ void main()
     outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
 }
 
-vec3 CalcPointLight(LightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
+vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 {
 	vec3 lightDir = normalize(light.position - fragPos);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
@@ -111,7 +137,7 @@ vec3 CalcPointLight(LightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 	return ambient + diffuse + specular;
 }
 
-vec3 CalcDirLight(LightData light, vec3 normal, vec3 viewDir)
+vec3 CalcDirLight(DirectionalLightData light, vec3 normal, vec3 viewDir)
 {
 	vec3 lightDir = normalize(-light.direction);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
@@ -125,7 +151,7 @@ vec3 CalcDirLight(LightData light, vec3 normal, vec3 viewDir)
 	return light.ambientColor + diffuse + specular;
 }
 
-vec3 CalcSpotLight(LightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
+vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 {
 	vec3 lightDir = normalize(light.position - fragPos);
 	vec3 halfwayDir = normalize(lightDir + viewDir);

@@ -581,18 +581,14 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-				/*frames[i].lightBuffer = CreateBuffer(sizeof(LightData),
-					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-					VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);*/
-
 				const int MAX_LIGHTS = 4;
-				frames[i].pointLightBuffer = CreateBuffer(sizeof(LightData) * MAX_LIGHTS,
+				frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				frames[i].directionalLightBuffer = CreateBuffer(sizeof(LightData) * MAX_LIGHTS,
+				frames[i].directionalLightBuffer = CreateBuffer(sizeof(GPUDirLightData) * MAX_LIGHTS,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				frames[i].spotLightBuffer = CreateBuffer(sizeof(LightData) * MAX_LIGHTS,
+				frames[i].spotLightBuffer = CreateBuffer(sizeof(GPUSpotLightData) * MAX_LIGHTS,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				frames[i].lightStatsBuffer = CreateBuffer(sizeof(LightStatsData),
@@ -616,17 +612,17 @@ namespace Puffin
 				VkDescriptorBufferInfo pointLightInfo;
 				pointLightInfo.buffer = frames[i].pointLightBuffer.buffer;
 				pointLightInfo.offset = 0;
-				pointLightInfo.range = sizeof(LightData);
+				pointLightInfo.range = sizeof(GPUPointLightData);
 
 				VkDescriptorBufferInfo directionalLightInfo;
 				directionalLightInfo.buffer = frames[i].directionalLightBuffer.buffer;
 				directionalLightInfo.offset = 0;
-				directionalLightInfo.range = sizeof(LightData);
+				directionalLightInfo.range = sizeof(GPUDirLightData);
 
 				VkDescriptorBufferInfo spotLightInfo;
 				spotLightInfo.buffer = frames[i].spotLightBuffer.buffer;
 				spotLightInfo.offset = 0;
-				spotLightInfo.range = sizeof(LightData);
+				spotLightInfo.range = sizeof(GPUSpotLightData);
 
 				VkDescriptorBufferInfo lightStatInfo;
 				lightStatInfo.buffer = frames[i].lightStatsBuffer.buffer;
@@ -737,14 +733,14 @@ namespace Puffin
 			InitCamera(camera);
 
 			// Initialize Lights
-			for (ECS::Entity entity : entityMap["Light"])
-			{
-				LightComponent& comp = world->GetComponent<LightComponent>(entity);
-				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+			//for (ECS::Entity entity : entityMap["Light"])
+			//{
+			//	LightComponent& comp = world->GetComponent<LightComponent>(entity);
+			//	TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 
-				// Initialise position data from Transform
-				comp.data.position = transform.position;
-			}
+			//	// Initialise position data from Transform
+			//	//comp.data.position = transform.position;
+			//}
 
 			// Initialize Meshes
 			for (ECS::Entity entity : entityMap["Mesh"])
@@ -1339,81 +1335,74 @@ namespace Puffin
 
 			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
 
-			LightStatsData lightStats;
+			// Map all light data to storage buffer
+			void* pointLightData;
+			void* dirLightData;
+			void* spotLightData;
 
-			// Map all point light data to storage buffer
-			void* lightData;
+			vmaMapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation, &pointLightData);
+			vmaMapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation, &dirLightData);
+			vmaMapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation, &spotLightData);
 
-			vmaMapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation, &lightData);
+			GPUPointLightData* pointLightSSBO = (GPUPointLightData*)pointLightData;
+			GPUDirLightData* dirLightSSBO = (GPUDirLightData*)dirLightData;
+			GPUSpotLightData* spotLightSSBO = (GPUSpotLightData*)spotLightData;
 
-			LightData* lightSSBO = (LightData*)lightData;
+			int p = 0;
+			int d = 0;
+			int s = 0;
 
-			i = 0;
-
-			// For each light map its data to the appropriate storage buffer
+			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
 			for (ECS::Entity entity : entityMap["Light"])
 			{
 				LightComponent& light = world->GetComponent<LightComponent>(entity);
 
-				if (light.type == LightType::POINT)
+				switch (light.type)
 				{
-					lightSSBO[i] = light.data;
-					i++;
+				case LightType::POINT:
+					pointLightSSBO[p].position = world->GetComponent<TransformComponent>(entity).position;
+					pointLightSSBO[p].ambientColor = light.ambientColor;
+					pointLightSSBO[p].diffuseColor = light.diffuseColor;
+					pointLightSSBO[p].constant = light.constantAttenuation;
+					pointLightSSBO[p].linear = light.linearAttenuation;
+					pointLightSSBO[p].quadratic = light.quadraticAttenuation;
+					pointLightSSBO[p].specularStrength = light.specularStrength;
+					pointLightSSBO[p].shininess = light.shininess;
+					p++;
+					break;
+				case LightType::DIRECTIONAL:
+					dirLightSSBO[d].ambientColor = light.ambientColor;
+					dirLightSSBO[d].diffuseColor = light.diffuseColor;
+					dirLightSSBO[d].direction = light.direction;
+					dirLightSSBO[d].specularStrength = light.specularStrength;
+					dirLightSSBO[d].shininess = light.shininess;
+					d++;
+					break;
+				case LightType::SPOT:
+					spotLightSSBO[s].position = world->GetComponent<TransformComponent>(entity).position;
+					spotLightSSBO[s].direction = light.direction;
+					spotLightSSBO[s].ambientColor = light.ambientColor;
+					spotLightSSBO[s].diffuseColor = light.diffuseColor;
+					spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(light.innerCutoffAngle));
+					spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(light.outerCutoffAngle));
+					spotLightSSBO[s].constant = light.constantAttenuation;
+					spotLightSSBO[s].linear = light.linearAttenuation;
+					spotLightSSBO[s].quadratic = light.quadraticAttenuation;
+					spotLightSSBO[s].specularStrength = light.specularStrength;
+					spotLightSSBO[s].shininess = light.shininess;
+					s++;
+					break;
 				}
 			}
 
 			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
-
-			// Store Number of Point Lights in struct
-			lightStats.numPLights = i;
-			
-			// Map all directional light data to storage buffer
-			vmaMapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation, &lightData);
-
-			lightSSBO = (LightData*)lightData;
-
-			i = 0;
-
-			// For each light map its data to the appropriate storage buffer
-			for (ECS::Entity entity : entityMap["Light"])
-			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
-
-				if (light.type == LightType::DIRECTIONAL)
-				{
-					lightSSBO[i] = light.data;
-					i++;
-				}
-			}
-
 			vmaUnmapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation);
-
-			// Store Number of Directional Lights in struct
-			lightStats.numDLights = i;
-
-			// Map all spot light data to storage buffer
-			vmaMapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation, &lightData);
-
-			lightSSBO = (LightData*)lightData;
-
-			i = 0;
-
-			// For each light map its data to the appropriate storage buffer
-			for (ECS::Entity entity : entityMap["Light"])
-			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
-
-				if (light.type == LightType::SPOT)
-				{
-					lightSSBO[i] = light.data;
-					i++;
-				}
-			}
-
 			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
 
-			// Store Number of Spot Lights in struct
-			lightStats.numSLights = i;
+			LightStatsData lightStats;
+			lightStats.numPLights = p;
+			lightStats.numDLights = d;
+			lightStats.numSLights = s;
 
 			// Map Light stats data to uniform buffer
 			void* data;
