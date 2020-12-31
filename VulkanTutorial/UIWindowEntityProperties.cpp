@@ -254,6 +254,13 @@ namespace Puffin
 						sceneChanged = true;
 					}
 
+					// Edit Light Diffuse Color
+					ImGui::ColorEdit3("Diffuse", (float*)&comp.data.diffuseColor);
+
+					// Edit Light Ambient Colol
+					ImGui::ColorEdit3("Ambient", (float*)&comp.data.ambientColor);
+
+					// Combo box to select light type
 					const char* items[] = { "Point", "Spot", "Directional" };
 					static int item_current_idx = (int)comp.type;
 					const char* label = items[item_current_idx];
@@ -286,6 +293,20 @@ namespace Puffin
 							comp.data.direction.x = direction[0];
 							comp.data.direction.y = direction[1];
 							comp.data.direction.z = direction[2];
+						}
+					}
+
+					if (comp.type == Rendering::LightType::SPOT)
+					{
+						if (ImGui::DragFloat("Inner Cutoff Angle", &comp.innerCutoffAngle, 0.25f, 0.0f, 180.0f))
+						{
+							comp.data.innerCutoff = glm::cos(glm::radians(comp.innerCutoffAngle));
+						}
+
+						// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
+						if (ImGui::DragFloat("Outer Cutoff Angle", &comp.outerCutoffAngle, 0.25f, comp.innerCutoffAngle, 180.0f))
+						{
+							comp.data.outerCutoff = glm::cos(glm::radians(comp.outerCutoffAngle));
 						}
 					}
 

@@ -27,7 +27,8 @@ namespace Puffin
 			alignas(16) glm::vec3 ambientColor;
 			alignas(16) glm::vec3 diffuseColor;
 
-			alignas(4) float cutoff;
+			alignas(4) float innerCutoff;
+			alignas(4) float outerCutoff;
 
 			alignas(4) float constant;
 			alignas(4) float linear;
@@ -50,7 +51,8 @@ namespace Puffin
 			archive(data.direction.x, data.direction.y, data.direction.z);
 			archive(data.ambientColor.x, data.ambientColor.y, data.ambientColor.z);
 			archive(data.diffuseColor.x, data.diffuseColor.y, data.diffuseColor.z);
-			archive(data.cutoff, data.constant, data.linear, data.quadratic);
+			archive(data.innerCutoff, data.outerCutoff);
+			archive(data.constant, data.linear, data.quadratic);
 			archive(data.specularStrength, data.shininess);
 		}
 
@@ -58,6 +60,7 @@ namespace Puffin
 		{
 			LightData data;
 			LightType type;
+			float innerCutoffAngle, outerCutoffAngle;
 		};
 
 		/*template<class Archive>
@@ -72,6 +75,7 @@ namespace Puffin
 			int lightType = (int)comp.type;
 
 			archive(comp.data, lightType);
+			archive(comp.innerCutoffAngle, comp.outerCutoffAngle);
 		}
 
 		template<class Archive>
@@ -80,6 +84,7 @@ namespace Puffin
 			int lightType;
 
 			archive(comp.data, lightType);
+			archive(comp.innerCutoffAngle, comp.outerCutoffAngle);
 
 			comp.type = (LightType)lightType;
 		}

@@ -14,7 +14,8 @@ struct LightData
 	vec3 ambientColor;
 	vec3 diffuseColor;
 
-	float cutoff;
+	float innerCutoff;
+	float outerCutoff;
 
 	float constant;
 	float linear;
@@ -49,6 +50,7 @@ void main()
 	vec3 result = vec3(0.0, 0.0, 0.0);
 	result = CalcDirLight(light.data, fragNormal, viewDir);
 	result = CalcPointLight(light.data, fragNormal, viewDir, fragPosition);
+	result = CalcSpotLight(light.data, fragNormal, viewDir, fragPosition);
 
     outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
 }
@@ -83,10 +85,31 @@ vec3 CalcDirLight(LightData light, vec3 normal, vec3 viewDir)
 	float spec = pow(max(dot(normal, halfwayDir), 0.0), light.shininess);
 	vec3 specular = light.specularStrength * spec * light.diffuseColor;
 	
-	return light.ambientColor + diffuse + specular;return vec3(0.0, 0.0, 0.0);
+	return light.ambientColor + diffuse + specular;
 }
 
 vec3 CalcSpotLight(LightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 {
-	return vec3(0.0, 0.0, 0.0);
+	vec3 lightDir = normalize(light.position - fragPos);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+
+	float distance = length(light.position - fragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+
+	vec3 ambient = light.ambientColor * attenuation;
+
+	float diff = max(dot(normal, lightDir), 0.0);
+	vec3 diffuse = diff * light.diffuseColor * attenuation;
+
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), light.shininess);
+	vec3 specular = light.specularStrength * spec * light.diffuseColor * attenuation;
+
+	float theta = dot(lightDir, normalize(-light.direction));
+	float epsilon = light.innerCutoff - light.outerCutoff;
+	float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
+
+	diffuse *= intensity;
+	specular *= intensity;
+
+	return ambient + diffuse + specular;
 }
