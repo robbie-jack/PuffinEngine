@@ -187,6 +187,10 @@ namespace Puffin
 		world->GetComponent<Rendering::LightComponent>(4).data.direction = glm::vec3(1.0f, 0.0f, 0.0f);
 		world->GetComponent<Rendering::LightComponent>(4).data.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
 		world->GetComponent<Rendering::LightComponent>(4).data.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		world->GetComponent<Rendering::LightComponent>(4).data.cutoff = glm::cos(glm::radians(15.0f));
+		world->GetComponent<Rendering::LightComponent>(4).data.constant = 1.0f;
+		world->GetComponent<Rendering::LightComponent>(4).data.linear = 0.09f;
+		world->GetComponent<Rendering::LightComponent>(4).data.quadratic = 0.032f;
 		world->GetComponent<Rendering::LightComponent>(4).data.specularStrength = 0.5f;
 		world->GetComponent<Rendering::LightComponent>(4).data.shininess = 16;
 		world->GetComponent<Rendering::LightComponent>(4).type = Rendering::LightType::POINT;

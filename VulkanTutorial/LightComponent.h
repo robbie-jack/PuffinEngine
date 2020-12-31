@@ -23,8 +23,16 @@ namespace Puffin
 		{
 			alignas(16) glm::vec3 position;
 			alignas(16) glm::vec3 direction;
+
 			alignas(16) glm::vec3 ambientColor;
 			alignas(16) glm::vec3 diffuseColor;
+
+			alignas(4) float cutoff;
+
+			alignas(4) float constant;
+			alignas(4) float linear;
+			alignas(4) float quadratic;
+
 			alignas(4) float specularStrength;
 			alignas(4) int shininess;
 		};
@@ -42,6 +50,7 @@ namespace Puffin
 			archive(data.direction.x, data.direction.y, data.direction.z);
 			archive(data.ambientColor.x, data.ambientColor.y, data.ambientColor.z);
 			archive(data.diffuseColor.x, data.diffuseColor.y, data.diffuseColor.z);
+			archive(data.cutoff, data.constant, data.linear, data.quadratic);
 			archive(data.specularStrength, data.shininess);
 		}
 

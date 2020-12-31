@@ -10,8 +10,16 @@ struct LightData
 {
 	vec3 position;
 	vec3 direction;
+
 	vec3 ambientColor;
 	vec3 diffuseColor;
+
+	float cutoff;
+
+	float constant;
+	float linear;
+	float quadratic;
+
 	float specularStrength;
 	int shininess;
 };
@@ -39,8 +47,8 @@ void main()
 	vec3 viewDir = normalize(camera.viewPos - fragPosition);
 
 	vec3 result = vec3(0.0, 0.0, 0.0);
-	result = CalcPointLight(light.data, fragNormal, viewDir, fragPosition);
 	result = CalcDirLight(light.data, fragNormal, viewDir);
+	result = CalcPointLight(light.data, fragNormal, viewDir, fragPosition);
 
     outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
 }
@@ -50,13 +58,18 @@ vec3 CalcPointLight(LightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 	vec3 lightDir = normalize(light.position - fragPos);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 
+	float distance = length(light.position - fragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+
+	vec3 ambient = light.ambientColor * attenuation;
+
 	float diff = max(dot(normal, lightDir), 0.0);
-	vec3 diffuse = diff * light.diffuseColor;
+	vec3 diffuse = diff * light.diffuseColor * attenuation;
 
 	float spec = pow(max(dot(normal, halfwayDir), 0.0), light.shininess);
-	vec3 specular = light.specularStrength * spec * light.diffuseColor;
+	vec3 specular = light.specularStrength * spec * light.diffuseColor * attenuation;
 	
-	return light.ambientColor + diffuse + specular;
+	return ambient + diffuse + specular;
 }
 
 vec3 CalcDirLight(LightData light, vec3 normal, vec3 viewDir)
