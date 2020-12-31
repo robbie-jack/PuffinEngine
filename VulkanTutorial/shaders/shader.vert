@@ -9,7 +9,7 @@ struct ObjectData
 	mat4 proj;
 };
 
-layout(std140, set = 1, binding = 0) readonly buffer ObjectBuffer
+layout(std140, set = 0, binding = 0) readonly buffer ObjectBuffer
 {
 	ObjectData objects[];
 } objectBuffer;

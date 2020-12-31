@@ -581,9 +581,19 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-				frames[i].lightBuffer = CreateBuffer(sizeof(LightData),
+				/*frames[i].lightBuffer = CreateBuffer(sizeof(LightData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-					VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+					VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);*/
+
+				const int MAX_LIGHTS = 4;
+				frames[i].pointLightBuffer = CreateBuffer(sizeof(LightData) * MAX_LIGHTS,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].directionalLightBuffer = CreateBuffer(sizeof(LightData) * MAX_LIGHTS,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].spotLightBuffer = CreateBuffer(sizeof(LightData) * MAX_LIGHTS,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				const int MAX_OBJECTS = 10000;
 				frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
@@ -595,15 +605,30 @@ namespace Puffin
 				cameraInfo.offset = 0;
 				cameraInfo.range = sizeof(ViewData);
 
-				VkDescriptorBufferInfo lightInfo;
-				lightInfo.buffer = frames[i].lightBuffer.buffer;
-				lightInfo.offset = 0;
-				lightInfo.range = sizeof(LightData);
-
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 					.BindBuffer(0, &cameraInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.BindBuffer(1, &lightInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.Build(frames[i].globalDescriptor, globalSetLayout);
+
+				VkDescriptorBufferInfo pointLightInfo;
+				pointLightInfo.buffer = frames[i].pointLightBuffer.buffer;
+				pointLightInfo.offset = 0;
+				pointLightInfo.range = sizeof(LightData);
+
+				VkDescriptorBufferInfo directionalLightInfo;
+				directionalLightInfo.buffer = frames[i].directionalLightBuffer.buffer;
+				directionalLightInfo.offset = 0;
+				directionalLightInfo.range = sizeof(LightData);
+
+				VkDescriptorBufferInfo spotLightInfo;
+				spotLightInfo.buffer = frames[i].spotLightBuffer.buffer;
+				spotLightInfo.offset = 0;
+				spotLightInfo.range = sizeof(LightData);
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &pointLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(1, &directionalLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(2, &spotLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.Build(frames[i].lightDescriptor, lightSetLayout);
 
 				VkDescriptorBufferInfo objectBufferInfo;
 				objectBufferInfo.buffer = frames[i].objectBuffer.buffer;
@@ -632,11 +657,12 @@ namespace Puffin
 			VkDescriptorSetLayout setLayouts[] =
 			{
 				globalSetLayout,
+				lightSetLayout,
 				objectSetLayout,
 				singleTextureSetLayout
 			};
 
-			pipelineLayoutInfo.setLayoutCount = 3;
+			pipelineLayoutInfo.setLayoutCount = 4;
 			pipelineLayoutInfo.pSetLayouts = setLayouts;
 
 			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &meshMaterial.pipelineLayout));
@@ -742,7 +768,7 @@ namespace Puffin
 			imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 			VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-				.BindImage(2, &imageBufferInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.BindImage(0, &imageBufferInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.Build(mesh.material.textureSet, singleTextureSetLayout);
 		}
 
@@ -1303,7 +1329,54 @@ namespace Puffin
 
 			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
 
-			LightComponent& light = world->GetComponent<LightComponent>(4);
+			// Map all light data to storage buffers
+			void* pointLightData;
+			void* directionalLightData;
+			void* spotLightData;
+
+			vmaMapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation, &pointLightData);
+			vmaMapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation, &directionalLightData);
+			vmaMapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation, &spotLightData);
+
+			LightData* pointLightSSBO = (LightData*)pointLightData;
+			LightData* directionalLightSSBO = (LightData*)directionalLightData;
+			LightData* spotLightSSBO = (LightData*)spotLightData;
+
+			int pointCount = 0;
+			int dirCount = 0;
+			int spotCount = 0;
+
+			// For each light map its data to the appropriate storage buffer
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+				switch (light.type)
+				{
+				case LightType::POINT:
+					pointLightSSBO[pointCount] = light.data;
+					pointCount++;
+					break;
+				case LightType::DIRECTIONAL:
+					directionalLightSSBO[dirCount] = light.data;
+					dirCount++;
+					break;
+				case LightType::SPOT:
+					spotLightSSBO[spotCount] = light.data;
+					spotCount++;
+					break;
+				}
+			}
+
+			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
+			vmaUnmapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation);
+			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
+
+			// Map camera data to uniform buffer
+			void* data;
+			vmaMapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation, &data);
+			memcpy(data, &camera.data, sizeof(ViewData));
+			vmaUnmapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation);
 
 			i = 0;
 			Material* lastMaterial = nullptr;
@@ -1329,19 +1402,13 @@ namespace Puffin
 						mesh.material.pipelineLayout, 2, 1, &mesh.material.textureSet, 0, nullptr);
 				}
 
-				// Map Light and Camera Data to Uniform Buffers
-				void* data;
-				vmaMapMemory(allocator, GetCurrentFrame().lightBuffer.allocation, &data);
-				memcpy(data, &light.data, sizeof(LightData));
-				vmaUnmapMemory(allocator, GetCurrentFrame().lightBuffer.allocation);
-
-				vmaMapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation, &data);
-				memcpy(data, &camera.data, sizeof(ViewData));
-				vmaUnmapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation);
-
 				// Bind Global Descriptor
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 					mesh.material.pipelineLayout, 0, 1, &GetCurrentFrame().globalDescriptor, 0, nullptr);
+
+				// Bind Light Descriptor
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+					mesh.material.pipelineLayout, 1, 1, &GetCurrentFrame().lightDescriptor, 0, nullptr);
 
 				// Bind Vertices, Indices and Descriptor Sets
 				VkDeviceSize offsets[] = { 0 };

@@ -25,12 +25,22 @@ struct LightData
 	int shininess;
 };
 
-layout(set = 0, binding = 1) uniform Light
+layout(std140, set = 1, binding = 0) readonly buffer PointLightBuffer
 {
-	LightData data;
-} light;
+	LightData lights[];
+} pointBuffer;
 
-layout(set = 2, binding = 2) uniform sampler2D texSampler;
+layout(std140, set = 1, binding = 1) readonly buffer DirectionalLightBuffer
+{
+	LightData lights[];
+} directionalBuffer;
+
+layout(std140, set = 1, binding = 2) readonly buffer SpotLightBuffer
+{
+	LightData lights[];
+} spotBuffer;
+
+layout(set = 2, binding = 0) uniform sampler2D texSampler;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;
@@ -48,9 +58,27 @@ void main()
 	vec3 viewDir = normalize(camera.viewPos - fragPosition);
 
 	vec3 result = vec3(0.0, 0.0, 0.0);
-	result = CalcDirLight(light.data, fragNormal, viewDir);
-	result = CalcPointLight(light.data, fragNormal, viewDir, fragPosition);
-	result = CalcSpotLight(light.data, fragNormal, viewDir, fragPosition);
+	//result = CalcDirLight(light.data, fragNormal, viewDir);
+	//result = CalcPointLight(light.data, fragNormal, viewDir, fragPosition);
+	//result = CalcSpotLight(light.data, fragNormal, viewDir, fragPosition);
+
+	// Calculate Point Lights
+	for (int i = 0; i < pointBuffer.lights.length(); i++)
+	{
+		result += CalcPointLight(pointBuffer.lights[i], fragNormal, viewDir, fragPosition);
+	}
+
+	// Calculate Directional Lights
+	for (int i = 0; i < directionalBuffer.lights.length(); i++)
+	{
+		result += CalcDirLight(directionalBuffer.lights[i], fragNormal, viewDir);
+	}
+
+	// Calculate Spot Lights
+	for (int i = 0; i < spotBuffer.lights.length(); i++)
+	{
+		result += CalcSpotLight(spotBuffer.lights[i], fragNormal, viewDir, fragPosition);
+	}
 
     outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
 }

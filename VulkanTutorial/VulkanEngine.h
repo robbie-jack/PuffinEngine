@@ -96,9 +96,11 @@ namespace Puffin
 			VkCommandPool commandPool, guiCommandPool; // Command Pool for our commands
 			VkCommandBuffer mainCommandBuffer, guiCommandBuffer; // Buffer commands are recorded into
 
-			AllocatedBuffer lightBuffer;
 			AllocatedBuffer cameraBuffer;
 			VkDescriptorSet globalDescriptor;
+
+			AllocatedBuffer pointLightBuffer, directionalLightBuffer, spotLightBuffer;
+			VkDescriptorSet lightDescriptor;
 
 			AllocatedBuffer objectBuffer;
 			VkDescriptorSet objectDescriptor;
@@ -179,6 +181,7 @@ namespace Puffin
 
 			//VkDescriptorPool descriptorPool;
 			VkDescriptorSetLayout globalSetLayout;
+			VkDescriptorSetLayout lightSetLayout;
 			VkDescriptorSetLayout objectSetLayout;
 			VkDescriptorSetLayout singleTextureSetLayout;
 
