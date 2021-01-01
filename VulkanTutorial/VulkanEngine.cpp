@@ -1240,22 +1240,11 @@ namespace Puffin
 			// Delete all Offscreen Variables in deletion queue
 			offscreenDeletionQueue.flush();
 
-			// Initialize Offscreen Variables
+			// Initialize Offscreen Variables and Scene
 			InitOffscreen();
 			InitOffscreenFramebuffers();
 			InitPipelines();
-
-			// Update Each Mesh's Material
-			for (ECS::Entity entity : entityMap["Mesh"])
-			{
-				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
-				mesh.material = meshMaterial;
-				InitMesh(mesh);
-			}
-
-			// Calculate Camera Perspective Projection
-			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
-			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
+			InitScene();
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -1468,7 +1457,7 @@ namespace Puffin
 			depthClear.depthStencil.depth = 1.0f;
 
 			// Render Depth Map for each Light Source
-			//RenderShadowPass(cmd, index);
+			RenderShadowPass(cmd, index);
 
 			// Start Main Renderpass
 			//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
@@ -1656,7 +1645,7 @@ namespace Puffin
 					vkCmdEndRenderPass(cmd);
 
 					/*shadowTextureID = ImGui_ImplVulkan_AddTexture(textureSampler,
-						light.depthMap.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
+						light.depthAttachments[index].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
 				}
 			}
 		}
@@ -1829,9 +1818,9 @@ namespace Puffin
 			glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)transform.position);
 
 			// Set Rotation
-			model_transform = glm::rotate(model_transform, transform.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, transform.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, transform.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 			// Set Scale
 			model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);
