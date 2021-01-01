@@ -147,12 +147,6 @@ namespace Puffin
 				float PI = 3.14159;
 
 				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
-				float position[3] = { transform.position.x, transform.position.y, transform.position.z };
-				float rotation[3] = {
-					transform.rotation.x * 180 / PI,
-					transform.rotation.y * 180 / PI,
-					transform.rotation.z * 180 / PI };
-				float scale[3] = { transform.scale.x, transform.scale.y, transform.scale.z };
 
 				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 				if (ImGui::CollapsingHeader("Transform Component", flags))
@@ -167,31 +161,19 @@ namespace Puffin
 						sceneChanged = true;
 					}
 
-					if (ImGui::DragFloat3("Position", position, 0.1f))
+					if (ImGui::DragFloat3("Position", (float*)&transform.position, 0.1f))
 					{
-						transform.position.x = position[0];
-						transform.position.y = position[1];
-						transform.position.z = position[2];
-
 						positionChanged = true;
 						sceneChanged = true;
 					}
 
-					if (ImGui::DragFloat3("Rotation", rotation, 0.1f))
+					if (ImGui::DragFloat3("Rotation", (float*)&transform.rotation, 0.1f))
 					{
-						transform.rotation.x = rotation[0] * PI / 180;
-						transform.rotation.y = rotation[1] * PI / 180;
-						transform.rotation.z = rotation[2] * PI / 180;
-
 						sceneChanged = true;
 					}
 
-					if (ImGui::DragFloat3("Scale", scale, 0.1f))
+					if (ImGui::DragFloat3("Scale", (float*)&transform.scale, 0.1f))
 					{
-						transform.scale.x = scale[0];
-						transform.scale.y = scale[1];
-						transform.scale.z = scale[2];
-
 						sceneChanged = true;
 					}
 				}
@@ -317,6 +299,12 @@ namespace Puffin
 
 						// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
 						ImGui::DragFloat("Outer Cutoff Angle", &comp.outerCutoffAngle, 0.25f, comp.innerCutoffAngle, 180.0f);
+
+						// Outer Cutoff will match inner cutoff if inner cutoff vecomes larger
+						if (comp.outerCutoffAngle < comp.innerCutoffAngle)
+						{
+							comp.outerCutoffAngle = comp.innerCutoffAngle;
+						}
 					}
 				}
 			}
