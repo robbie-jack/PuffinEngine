@@ -19,6 +19,9 @@ struct PointLightData
 
 	float specularStrength;
 	int shininess;
+
+	mat4 lightSpaceMatrix;
+	int shadowmapIndex;
 };
 
 struct DirectionalLightData
@@ -30,6 +33,9 @@ struct DirectionalLightData
 
 	float specularStrength;
 	int shininess;
+
+	mat4 lightSpaceMatrix;
+	int shadowmapIndex;
 };
 
 struct SpotLightData
@@ -49,6 +55,9 @@ struct SpotLightData
 
 	float specularStrength;
 	int shininess;
+
+	mat4 lightSpaceMatrix;
+	int shadowmapIndex;
 };
 
 layout(std140, set = 3, binding = 0) readonly buffer PointLightBuffer
@@ -73,7 +82,9 @@ layout(set = 3, binding = 3) uniform LightStatsData
 	int numSLights;
 } lightStats;
 
-layout(set = 4, binding = 0) uniform sampler2D texSampler;
+layout(set = 4, binding = 0) uniform sampler2D shadowmaps_spotlight[];
+
+layout(set = 5, binding = 0) uniform sampler2D texSampler;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;
@@ -85,6 +96,8 @@ layout(location = 0) out vec4 outColor;
 vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
 vec3 CalcDirLight(DirectionalLightData light, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
+
+float ShadowCalculation(vec4 fragPosLightSpace);
 
 void main() 
 {
@@ -171,8 +184,17 @@ vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 	float epsilon = light.innerCutoff - light.outerCutoff;
 	float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
 
+	vec4 fragPosLightSpace = light.lightSpaceMatrix * vec4(fragPosition, 1.0);
+
+	float shadow = ShadowCalculation(fragPosLightSpace);
+
 	diffuse *= intensity;
 	specular *= intensity;
 
 	return ambient + diffuse + specular;
+}
+
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+	return 1.0;
 }

@@ -114,6 +114,8 @@ namespace Puffin
 
 			AllocatedBuffer shadowBuffer;
 			VkDescriptorSet shadowDescriptor;
+
+			VkDescriptorSet shadowmapDescriptor;
 		};
 
 		struct GPUObjectData
@@ -137,6 +139,8 @@ namespace Puffin
 		constexpr unsigned int FRAME_OVERLAP = 2;
 		const int WIDTH = 1280; // Starting Window Width
 		const int HEIGHT = 720; // Starting Window Height
+
+		const int MAX_LIGHTS = 4;
 
 		class VulkanEngine : public ECS::System
 		{
@@ -187,7 +191,7 @@ namespace Puffin
 			VkFormat shadowFormat;
 			VkPipelineLayout shadowPipelineLayout;
 			VkPipeline shadowPipeline;
-			//ImTextureID shadowTextureID;
+			
 
 			FrameData frames[FRAME_OVERLAP];
 
@@ -212,6 +216,7 @@ namespace Puffin
 
 			VkDescriptorSetLayout cameraSetLayout;
 			VkDescriptorSetLayout lightSetLayout;
+			VkDescriptorSetLayout shadowMapSetLayout;
 			VkDescriptorSetLayout singleTextureSetLayout;
 
 			VkDescriptorSetLayout shadowSetLayout;
@@ -220,6 +225,7 @@ namespace Puffin
 			uint32_t graphicsQueueFamily; // family of that queue
 
 			VkSampler textureSampler;
+			VkSampler depthSampler;
 
 			//std::vector<RenderObject> renderObjects;
 			//std::unordered_map<std::string_view, Material> materials;

@@ -631,7 +631,7 @@ namespace Puffin
 
 			// Initialize Texture Descriptor Layout
 			VkDescriptorSetLayoutBinding textureBinding = VKInit::DescriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 
 			VkDescriptorSetLayoutCreateInfo textureLayoutInfo = {};
 			textureLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -641,6 +641,19 @@ namespace Puffin
 			textureLayoutInfo.pBindings = &textureBinding;
 
 			singleTextureSetLayout = descriptorLayoutCache->CreateDescriptorSetLayout(&textureLayoutInfo);
+
+			// Create Shadowmap Descriptor Layout
+			VkDescriptorSetLayoutBinding shadowmapBinding = VKInit::DescriptorSetLayoutBinding(
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, MAX_LIGHTS * 3);
+
+			VkDescriptorSetLayoutCreateInfo shadowmapLayoutInfo = {};
+			shadowmapLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			shadowmapLayoutInfo.flags = 0;
+			shadowmapLayoutInfo.pNext = nullptr;
+			shadowmapLayoutInfo.bindingCount = 1;
+			shadowmapLayoutInfo.pBindings = &shadowmapBinding;
+
+			shadowMapSetLayout = descriptorLayoutCache->CreateDescriptorSetLayout(&shadowmapLayoutInfo);
 
 			// Create Uniform/Storage Buffer for each frame
 			for (int i = 0; i < FRAME_OVERLAP; i++)
@@ -683,7 +696,6 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-				const int MAX_LIGHTS = 4;
 				frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
@@ -770,10 +782,11 @@ namespace Puffin
 				objectSetLayout,
 				cameraSetLayout,
 				lightSetLayout,
+				shadowMapSetLayout,
 				singleTextureSetLayout
 			};
 
-			pipelineLayoutInfo.setLayoutCount = 5;
+			pipelineLayoutInfo.setLayoutCount = 6;
 			pipelineLayoutInfo.pSetLayouts = setLayouts;
 
 			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &meshMaterial.pipelineLayout));
@@ -1362,7 +1375,6 @@ namespace Puffin
 
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
 			UIManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
-			//UIManager->GetWindowViewport()->Draw(shadowTextureID);
 
 			// Draw ImGui
 			ImGui::Render();
@@ -1611,6 +1623,8 @@ namespace Puffin
 					GPUShadowData shadowData;
 					shadowData.lightSpaceMatrix = lightProj * lightView;
 
+					light.lightSpaceMatrix = shadowData.lightSpaceMatrix;
+
 					// Map Light data to Uniform Buffer
 					void* data;
 					vmaMapMemory(allocator, GetCurrentFrame().shadowBuffer.allocation, &data);
@@ -1643,9 +1657,6 @@ namespace Puffin
 
 					// Finalize Render Pass
 					vkCmdEndRenderPass(cmd);
-
-					/*shadowTextureID = ImGui_ImplVulkan_AddTexture(textureSampler,
-						light.depthAttachments[index].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
 				}
 			}
 		}
@@ -1654,24 +1665,31 @@ namespace Puffin
 		{
 			// This is already done in ShadowPass so not needed here
 			// Map all object data to storage buffer
-			void* objectData;
-			vmaMapMemory(allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
+			//void* objectData;
+			//vmaMapMemory(allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
 
-			GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+			//GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
 
-			int i = 0;
-			
-			// For each mesh entity, calculate its object data and map to storage buffer
-			for (ECS::Entity entity : entityMap["Mesh"])
-			{
-				// Update object data
-				objectSSBO[i].model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
-				objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
+			//int i = 0;
+			//
+			//// For each mesh entity, calculate its object data and map to storage buffer
+			//for (ECS::Entity entity : entityMap["Mesh"])
+			//{
+			//	// Update object data
+			//	objectSSBO[i].model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
+			//	objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
 
-				i++;
-			}
+			//	i++;
+			//}
 
-			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
+			//vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
+
+			// Write Shadowmap Descriptor Sets
+			VkDescriptorImageInfo shadowmapBufferInfo;
+			shadowmapBufferInfo.sampler = depthSampler;
+			shadowmapBufferInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+			std::vector<VkDescriptorImageInfo> imageInfos;
 
 			// Map all light data to storage buffer
 			void* pointLightData;
@@ -1689,11 +1707,25 @@ namespace Puffin
 			int p = 0;
 			int d = 0;
 			int s = 0;
+			int i = 0;
 
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
 			for (ECS::Entity entity : entityMap["Light"])
 			{
 				LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+				int shadowIndex = -1;
+
+				// Only render depth map if light is set to cast shadows and is spotlight type
+				if (light.castShadows && light.type == LightType::SPOT)
+				{
+					shadowmapBufferInfo.imageView = light.depthAttachments[index].imageView;
+
+					imageInfos.push_back(shadowmapBufferInfo);
+
+					shadowIndex = i;
+					i++;
+				}
 
 				switch (light.type)
 				{
@@ -1706,6 +1738,8 @@ namespace Puffin
 					pointLightSSBO[p].quadratic = light.quadraticAttenuation;
 					pointLightSSBO[p].specularStrength = light.specularStrength;
 					pointLightSSBO[p].shininess = light.shininess;
+					pointLightSSBO[p].lightSpaceMatrix = light.lightSpaceMatrix;
+					pointLightSSBO[p].shadowmapIndex = shadowIndex;
 					p++;
 					break;
 				case LightType::DIRECTIONAL:
@@ -1714,6 +1748,8 @@ namespace Puffin
 					dirLightSSBO[d].direction = light.direction;
 					dirLightSSBO[d].specularStrength = light.specularStrength;
 					dirLightSSBO[d].shininess = light.shininess;
+					dirLightSSBO[d].lightSpaceMatrix = light.lightSpaceMatrix;
+					dirLightSSBO[d].shadowmapIndex = shadowIndex;
 					d++;
 					break;
 				case LightType::SPOT:
@@ -1728,14 +1764,22 @@ namespace Puffin
 					spotLightSSBO[s].quadratic = light.quadraticAttenuation;
 					spotLightSSBO[s].specularStrength = light.specularStrength;
 					spotLightSSBO[s].shininess = light.shininess;
+					spotLightSSBO[s].lightSpaceMatrix = light.lightSpaceMatrix;
+					spotLightSSBO[s].shadowmapIndex = shadowIndex;
 					s++;
 					break;
 				}
+
+				i++;
 			}
 
 			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
+
+			VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+				.BindImages(0, imageInfos, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.Build(GetCurrentFrame().shadowmapDescriptor, shadowMapSetLayout);
 
 			LightStatsData lightStats;
 			lightStats.numPLights = p;
@@ -1795,9 +1839,13 @@ namespace Puffin
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 						mesh.material.pipelineLayout, 3, 1, &GetCurrentFrame().lightDescriptor, 0, nullptr);
 
+					// Shadowmap Descriptor
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+						mesh.material.pipelineLayout, 4, 1, &GetCurrentFrame().shadowDescriptor, 0, nullptr);
+
 					// Texture Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 4, 1, &mesh.material.textureSet, 0, nullptr);
+						mesh.material.pipelineLayout, 5, 1, &mesh.material.textureSet, 0, nullptr);
 				}
 
 				// Bind Vertices, Indices and Descriptor Sets

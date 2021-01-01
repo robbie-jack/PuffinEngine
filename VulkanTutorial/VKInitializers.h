@@ -301,11 +301,11 @@ namespace Puffin
 				return info;
 			}
 
-			VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding)
+			VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t descriptorCount = 1)
 			{
 				VkDescriptorSetLayoutBinding setbind = {};
 				setbind.binding = binding;
-				setbind.descriptorCount = 1;
+				setbind.descriptorCount = descriptorCount;
 				setbind.descriptorType = type;
 				setbind.pImmutableSamplers = nullptr;
 				setbind.stageFlags = stageFlags;
