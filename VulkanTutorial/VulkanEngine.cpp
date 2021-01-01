@@ -40,6 +40,11 @@ namespace Puffin
 			offscreenExtent.height = 1024;
 			offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
+			// Initialize Shadowmap Resolution/Format
+			shadowExtent.width = 1024;
+			shadowExtent.height = 1024;
+			shadowFormat = VK_FORMAT_D16_UNORM;
+
 			window = glfwCreateWindow(windowExtent.width, windowExtent.height, "Puffin Engine", monitor, nullptr);
 
 			glfwSetWindowUserPointer(window, this);
@@ -444,7 +449,7 @@ namespace Puffin
 		{
 			// Create Depth Attachment
 			VkAttachmentDescription depthAttachment = {};
-			depthAttachment.format = depthFormat;
+			depthAttachment.format = shadowFormat;
 			depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -454,7 +459,7 @@ namespace Puffin
 			depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
 			VkAttachmentReference depthAttachmentRef = {};
-			depthAttachmentRef.attachment = 1;
+			depthAttachmentRef.attachment = 0;
 			depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 			VkSubpassDescription subpass = {};
@@ -637,12 +642,46 @@ namespace Puffin
 
 			singleTextureSetLayout = descriptorLayoutCache->CreateDescriptorSetLayout(&textureLayoutInfo);
 
+			// Create Uniform/Storage Buffer for each frame
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				// Create Uniform/Storage Buffer for each frame
+				// Create Descriptor Sets for Vertex Shader Stage
+
+				// Create Camera View/Proj Buffer
+				frames[i].cameraViewProjBuffer = CreateBuffer(sizeof(GPUCameraData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				// Allocate Camera View/Proj Descriptor Set
+				VkDescriptorBufferInfo cameraBufferInfo;
+				cameraBufferInfo.buffer = frames[i].cameraViewProjBuffer.buffer;
+				cameraBufferInfo.offset = 0;
+				cameraBufferInfo.range = sizeof(GPUCameraData);
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(frames[i].cameraViewProjDescriptor, cameraViewProjSetLayout);
+
+				// Create Object Storage Buffers
+				const int MAX_OBJECTS = 10000;
+				frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				// Allocate Object Descriptor Set
+				VkDescriptorBufferInfo objectBufferInfo;
+				objectBufferInfo.buffer = frames[i].objectBuffer.buffer;
+				objectBufferInfo.offset = 0;
+				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(frames[i].objectDescriptor, objectSetLayout);
+
+				// Create Descriptor Sets for Fragment Shader Stage
+
+				// Create Camera/Light Buffers
 				frames[i].cameraBuffer = CreateBuffer(sizeof(ViewData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-					VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 				const int MAX_LIGHTS = 4;
 				frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS,
@@ -658,11 +697,7 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-				const int MAX_OBJECTS = 10000;
-				frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				// Allocate/Write Descriptor Sets for each Frame
+				// Allocate Camera Descriptor Set
 				VkDescriptorBufferInfo cameraInfo;
 				cameraInfo.buffer = frames[i].cameraBuffer.buffer;
 				cameraInfo.offset = 0;
@@ -670,8 +705,9 @@ namespace Puffin
 
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 					.BindBuffer(0, &cameraInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.Build(frames[i].globalDescriptor, globalSetLayout);
+					.Build(frames[i].cameraDescriptor, cameraSetLayout);
 
+				// Allocate Lights Descriptor Set
 				VkDescriptorBufferInfo pointLightInfo;
 				pointLightInfo.buffer = frames[i].pointLightBuffer.buffer;
 				pointLightInfo.offset = 0;
@@ -699,20 +735,19 @@ namespace Puffin
 					.BindBuffer(3, &lightStatInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.Build(frames[i].lightDescriptor, lightSetLayout);
 
-				VkDescriptorBufferInfo objectBufferInfo;
-				objectBufferInfo.buffer = frames[i].objectBuffer.buffer;
-				objectBufferInfo.offset = 0;
-				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
+				// Create Light Buffer for Shadow Vertex Stage
+				frames[i].shadowBuffer = CreateBuffer(sizeof(GPUShadowData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindBuffer(0, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-					.Build(frames[i].objectDescriptor, objectSetLayout);
-
-				// Initialize Shadow Descriptor Layout
+				// Initialize Shadow Descriptor Layout for Shadow Vertex Stage
 				VkDescriptorBufferInfo shadowInfo;
 				shadowInfo.buffer = frames[i].shadowBuffer.buffer;
 				shadowInfo.offset = 0;
 				shadowInfo.range = sizeof(GPUShadowData);
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &shadowInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(frames[i].shadowDescriptor, shadowSetLayout);
 			}
 		}
 
@@ -726,18 +761,19 @@ namespace Puffin
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
 			VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
 
-			// Create Pipeline Layout Info
-			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(globalSetLayout);
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(cameraViewProjSetLayout);
 
+			// Create Pipeline Layout Info
 			VkDescriptorSetLayout setLayouts[] =
 			{
-				globalSetLayout,
-				lightSetLayout,
+				cameraViewProjSetLayout,
 				objectSetLayout,
+				cameraSetLayout,
+				lightSetLayout,
 				singleTextureSetLayout
 			};
 
-			pipelineLayoutInfo.setLayoutCount = 4;
+			pipelineLayoutInfo.setLayoutCount = 5;
 			pipelineLayoutInfo.pSetLayouts = setLayouts;
 
 			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &meshMaterial.pipelineLayout));
@@ -799,6 +835,15 @@ namespace Puffin
 
 			// Create Pipeline Layout Info
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(shadowSetLayout);
+
+			VkDescriptorSetLayout setLayouts[] =
+			{
+				shadowSetLayout,
+				objectSetLayout
+			};
+
+			pipelineLayoutInfo.setLayoutCount = 2;
+			pipelineLayoutInfo.pSetLayouts = setLayouts;
 
 			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &shadowPipelineLayout));
 
@@ -867,10 +912,6 @@ namespace Puffin
 			camera.zFar = 100.0f;
 			InitCamera(camera);
 
-			// Initialize Shadowmap Resolution
-			shadowExtent.width = 1024;
-			shadowExtent.height = 1024;
-
 			// Initialize Lights
 			for (ECS::Entity entity : entityMap["Light"])
 			{
@@ -917,27 +958,67 @@ namespace Puffin
 
 		void VulkanEngine::InitLight(LightComponent& light)
 		{
-			// Create Depth Map for Light
-			VkFramebufferCreateInfo depthMapInfo = {};
-			depthMapInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			depthMapInfo.pNext = nullptr;
-
-			depthMapInfo.renderPass = renderPassShadows;
-			depthMapInfo.width = shadowExtent.width;
-			depthMapInfo.height = shadowExtent.height;
-			depthMapInfo.layers = 1;
-
-			VkImageView depthAttachment = light.depthMap.imageView;
-
-			depthMapInfo.pAttachments = &depthAttachment;
-			depthMapInfo.attachmentCount = 1;
-
-			VK_CHECK(vkCreateFramebuffer(device, &depthMapInfo, nullptr, &light.depthFramebuffer));
-
-			offscreenDeletionQueue.push_function([=]()
+			// Create Depth Image for Light
+			VkExtent3D imageExtent =
 			{
-				vkDestroyFramebuffer(device, light.depthFramebuffer, nullptr);
-			});
+				shadowExtent.width,
+				shadowExtent.height,
+				1
+			};
+			
+			VkImageCreateInfo imageInfo = VKInit::ImageCreateInfo(shadowFormat,
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, imageExtent);
+
+			VmaAllocationCreateInfo imageAllocInfo = {};
+			imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+			imageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+			// Create Framebuffer Info for Light
+			VkFramebufferCreateInfo framebufferInfo = {};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.pNext = nullptr;
+
+			framebufferInfo.renderPass = renderPassShadows;
+			framebufferInfo.width = shadowExtent.width;
+			framebufferInfo.height = shadowExtent.height;
+			framebufferInfo.layers = 1;
+
+			// Grab how many images we have in swapchain
+			const uint32_t swapchain_imagecount = swapchainAttachments.size();
+
+			light.depthAttachments = std::vector<AllocatedImage>(swapchain_imagecount);
+			light.depthFramebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
+
+			for (int i = 0; i < swapchain_imagecount; i++)
+			{
+				// Create Image/Allocation
+				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
+					&light.depthAttachments[i].image, &light.depthAttachments[i].allocation, nullptr);
+
+				// Create Image View
+				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(shadowFormat,
+					light.depthAttachments[i].image, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &light.depthAttachments[i].imageView));
+
+				// Add to deletion queues
+				offscreenDeletionQueue.push_function([=]()
+				{
+					vkDestroyImageView(device, light.depthAttachments[i].imageView, nullptr);
+					vmaDestroyImage(allocator, light.depthAttachments[i].image, light.depthAttachments[i].allocation);
+				});
+
+				// Create Framebuffer
+				framebufferInfo.pAttachments = &light.depthAttachments[i].imageView;
+				framebufferInfo.attachmentCount = 1;
+
+				VK_CHECK(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &light.depthFramebuffers[i]));
+
+				offscreenDeletionQueue.push_function([=]()
+				{
+					vkDestroyFramebuffer(device, light.depthFramebuffers[i], nullptr);
+				});
+			}
 		}
 
 		void VulkanEngine::InitCamera(CameraComponent& camera)
@@ -1292,6 +1373,7 @@ namespace Puffin
 
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
 			UIManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
+			//UIManager->GetWindowViewport()->Draw(shadowTextureID);
 
 			// Draw ImGui
 			ImGui::Render();
@@ -1385,6 +1467,9 @@ namespace Puffin
 			VkClearValue depthClear;
 			depthClear.depthStencil.depth = 1.0f;
 
+			// Render Depth Map for each Light Source
+			//RenderShadowPass(cmd, index);
+
 			// Start Main Renderpass
 			//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
 			VkRenderPassBeginInfo rpInfo = {};
@@ -1403,7 +1488,7 @@ namespace Puffin
 			rpInfo.clearValueCount = 2;
 			rpInfo.pClearValues = &clearValues[0];
 
-			// Begin Render Pass
+			// Begin Main Render Pass
 			vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 			// Draw all Mesh objects
@@ -1467,8 +1552,118 @@ namespace Puffin
 			return cmd;
 		}
 
+		void VulkanEngine::RenderShadowPass(VkCommandBuffer cmd, uint32_t index)
+		{
+			// Shadow Renderpass
+			VkRenderPassBeginInfo shadowRPInfo = {};
+			shadowRPInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			shadowRPInfo.pNext = nullptr;
+			shadowRPInfo.renderPass = renderPassShadows;
+			shadowRPInfo.renderArea.offset.x = 0;
+			shadowRPInfo.renderArea.offset.y = 0;
+			shadowRPInfo.renderArea.extent = shadowExtent;
+
+			// Set Clear Depth Color for Framebuffer
+			VkClearValue depthClear;
+			depthClear.depthStencil.depth = 1.0f;
+
+			shadowRPInfo.clearValueCount = 1;
+			shadowRPInfo.pClearValues = &depthClear;
+
+			// Map all object data to storage buffer
+			void* objectData;
+			vmaMapMemory(allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
+
+			GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+
+			int i = 0;
+
+			// For each mesh entity, calculate its object data and map to storage buffer
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				// Update object data
+				objectSSBO[i].model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
+				objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
+
+				i++;
+			}
+
+			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
+
+			// Bind Pipeline
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipeline);
+
+			// For Each Shadowcasting Light Source
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+				// Only render depth map if light is set to cast shadows and is spotlight type
+				if (light.castShadows && light.type == LightType::SPOT)
+				{
+					TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+
+					shadowRPInfo.framebuffer = light.depthFramebuffers[index];
+
+					// Begin Shadow Render Pass
+					vkCmdBeginRenderPass(cmd, &shadowRPInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+					// Near/Far Plane to render depth within
+					float near_plane = 1.0f;
+					float far_plane = 10.0f;
+
+					// Calculate Light Space Projection Matrix
+					glm::mat4 lightProj = glm::perspective(glm::radians(light.innerCutoffAngle),
+						(float)shadowExtent.width / (float)shadowExtent.height, near_plane, far_plane);
+
+					glm::mat4 lightView = glm::lookAt(glm::vec3(transform.position), 
+						glm::vec3(transform.position + light.direction), glm::vec3(0.0f, 1.0f, 0.0f));
+
+					GPUShadowData shadowData;
+					shadowData.lightSpaceMatrix = lightProj * lightView;
+
+					// Map Light data to Uniform Buffer
+					void* data;
+					vmaMapMemory(allocator, GetCurrentFrame().shadowBuffer.allocation, &data);
+					memcpy(data, &shadowData, sizeof(GPUShadowData));
+					vmaUnmapMemory(allocator, GetCurrentFrame().shadowBuffer.allocation);
+
+					// Bind Descriptors
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+						shadowPipelineLayout, 0, 1, &GetCurrentFrame().shadowDescriptor, 0, nullptr);
+
+					// Bind Object Data Descriptor
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+						shadowPipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
+
+					int i = 0;
+
+					// Render Depth Map for this Light
+					for (ECS::Entity entity : entityMap["Mesh"])
+					{
+						MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+
+						// Bind Vertices and Indices
+						VkDeviceSize offsets[] = { 0 };
+						vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
+						vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+						// Draw Indexed Vertices
+						vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, i);
+					}
+
+					// Finalize Render Pass
+					vkCmdEndRenderPass(cmd);
+
+					/*shadowTextureID = ImGui_ImplVulkan_AddTexture(textureSampler,
+						light.depthMap.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
+				}
+			}
+		}
+
 		void VulkanEngine::DrawObjects(VkCommandBuffer cmd, uint32_t index)
 		{
+			// This is already done in ShadowPass so not needed here
 			// Map all object data to storage buffer
 			void* objectData;
 			vmaMapMemory(allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
@@ -1483,9 +1678,6 @@ namespace Puffin
 				// Update object data
 				objectSSBO[i].model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
 				objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
-				objectSSBO[i].view = camera.matrices.view;
-				objectSSBO[i].proj = camera.matrices.perspective;
-				objectSSBO[i].proj[1][1] *= -1;
 
 				i++;
 			}
@@ -1561,16 +1753,27 @@ namespace Puffin
 			lightStats.numDLights = d;
 			lightStats.numSLights = s;
 
-			// Map Light stats data to uniform buffer
 			void* data;
-			vmaMapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation, &data);
-			memcpy(data, &lightStats, sizeof(LightStatsData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation);
+
+			GPUCameraData cameraData;
+			cameraData.view = camera.matrices.view;
+			cameraData.proj = camera.matrices.perspective;
+			cameraData.proj[1][1] *= -1;
+			
+			// Map camera view/proj data to uniform buffer
+			vmaMapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
+			memcpy(data, &cameraData, sizeof(GPUCameraData));
+			vmaUnmapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
 
 			// Map camera data to uniform buffer
 			vmaMapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation, &data);
 			memcpy(data, &camera.data, sizeof(ViewData));
 			vmaUnmapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation);
+
+			// Map Light stats data to uniform buffer
+			vmaMapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation, &data);
+			memcpy(data, &lightStats, sizeof(LightStatsData));
+			vmaUnmapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation);
 
 			i = 0;
 			Material* lastMaterial = nullptr;
@@ -1587,22 +1790,26 @@ namespace Puffin
 						mesh.material.pipeline);
 					lastMaterial = &mesh.material;
 
-					// Object Data Descriptor
+					// Bind Camera View/Proj Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 2, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
+						mesh.material.pipelineLayout, 0, 1, &GetCurrentFrame().cameraViewProjDescriptor, 0, nullptr);
+
+					// Bind Object Data Descriptor
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+						mesh.material.pipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
+
+					// Bind Camera Descriptor
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+						mesh.material.pipelineLayout, 2, 1, &GetCurrentFrame().cameraDescriptor, 0, nullptr);
+
+					// Bind Light Descriptor
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+						mesh.material.pipelineLayout, 3, 1, &GetCurrentFrame().lightDescriptor, 0, nullptr);
 
 					// Texture Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 3, 1, &mesh.material.textureSet, 0, nullptr);
+						mesh.material.pipelineLayout, 4, 1, &mesh.material.textureSet, 0, nullptr);
 				}
-
-				// Bind Global Descriptor
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-					mesh.material.pipelineLayout, 0, 1, &GetCurrentFrame().globalDescriptor, 0, nullptr);
-
-				// Bind Light Descriptor
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-					mesh.material.pipelineLayout, 1, 1, &GetCurrentFrame().lightDescriptor, 0, nullptr);
 
 				// Bind Vertices, Indices and Descriptor Sets
 				VkDeviceSize offsets[] = { 0 };

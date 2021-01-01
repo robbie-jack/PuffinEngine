@@ -103,8 +103,8 @@ namespace Puffin
 			VkCommandPool commandPool, guiCommandPool; // Command Pool for our commands
 			VkCommandBuffer mainCommandBuffer, guiCommandBuffer; // Buffer commands are recorded into
 
-			AllocatedBuffer cameraBuffer;
-			VkDescriptorSet globalDescriptor;
+			AllocatedBuffer cameraViewProjBuffer, cameraBuffer;
+			VkDescriptorSet cameraViewProjDescriptor, cameraDescriptor;
 
 			AllocatedBuffer pointLightBuffer, directionalLightBuffer, spotLightBuffer, lightStatsBuffer;
 			VkDescriptorSet lightDescriptor;
@@ -120,6 +120,10 @@ namespace Puffin
 		{
 			alignas(16) glm::mat4 model;
 			alignas(16) glm::mat4 inv_model;
+		};
+
+		struct GPUCameraData
+		{
 			alignas(16) glm::mat4 view;
 			alignas(16) glm::mat4 proj;
 		};
@@ -127,7 +131,6 @@ namespace Puffin
 		struct GPUShadowData
 		{
 			alignas(16) glm::mat4 lightSpaceMatrix;
-			alignas(16) glm::mat4 model;
 		};
 
 		// Number of frames to overlap when rendering
@@ -181,8 +184,10 @@ namespace Puffin
 
 			// Shadows
 			VkExtent2D shadowExtent; // Resolution of rendered shadowmaps
+			VkFormat shadowFormat;
 			VkPipelineLayout shadowPipelineLayout;
 			VkPipeline shadowPipeline;
+			//ImTextureID shadowTextureID;
 
 			FrameData frames[FRAME_OVERLAP];
 
@@ -202,10 +207,13 @@ namespace Puffin
 			Material meshMaterial;
 
 			//VkDescriptorPool descriptorPool;
-			VkDescriptorSetLayout globalSetLayout;
-			VkDescriptorSetLayout lightSetLayout;
+			VkDescriptorSetLayout cameraViewProjSetLayout;
 			VkDescriptorSetLayout objectSetLayout;
+
+			VkDescriptorSetLayout cameraSetLayout;
+			VkDescriptorSetLayout lightSetLayout;
 			VkDescriptorSetLayout singleTextureSetLayout;
+
 			VkDescriptorSetLayout shadowSetLayout;
 
 			VkQueue graphicsQueue; // queue we will submit to
@@ -268,6 +276,7 @@ namespace Puffin
 			void DrawFrame(UI::UIManager* UIManager);
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordGUICommandBuffer(uint32_t index);
+			void RenderShadowPass(VkCommandBuffer cmd, uint32_t index);
 			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
 			glm::mat4 BuildMeshTransform(TransformComponent comp);
 

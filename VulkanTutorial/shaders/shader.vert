@@ -1,15 +1,19 @@
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
 
+layout(set = 0, binding = 0) uniform CameraData
+{
+	mat4 view;
+	mat4 proj;
+} camera;
+
 struct ObjectData
 {
 	mat4 model;
 	mat4 inv_model;
-	mat4 view;
-	mat4 proj;
 };
 
-layout(std140, set = 2, binding = 0) readonly buffer ObjectBuffer
+layout(std140, set = 1, binding = 0) readonly buffer ObjectBuffer
 {
 	ObjectData objects[];
 } objectBuffer;
@@ -28,8 +32,8 @@ void main()
 {
 	mat4 modelMatrix = objectBuffer.objects[gl_BaseInstance].model;
 	mat4 inv_modelMatrix = objectBuffer.objects[gl_BaseInstance].inv_model;
-	mat4 viewMatrix = objectBuffer.objects[gl_BaseInstance].view;
-	mat4 projMatrix = objectBuffer.objects[gl_BaseInstance].proj;
+	mat4 viewMatrix = camera.view;
+	mat4 projMatrix = camera.proj;
 
     gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(inPosition, 1.0);
 

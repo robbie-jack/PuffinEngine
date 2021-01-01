@@ -83,8 +83,8 @@ namespace Puffin
 
 			// Variables for computing shadows cast by lights
 			bool castShadows; // Flag to indicate if light should cast shadows
-			AllocatedImage depthMap;
-			VkFramebuffer depthFramebuffer;
+			std::vector<AllocatedImage> depthAttachments;
+			std::vector<VkFramebuffer> depthFramebuffers;
 		};
 
 		template<class Archive>
