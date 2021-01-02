@@ -225,7 +225,7 @@ namespace Puffin
 			uint32_t graphicsQueueFamily; // family of that queue
 
 			VkSampler textureSampler;
-			VkSampler depthSampler;
+			VkSampler depthSampler; // Sampler for reading shadowmaps in shader
 
 			//std::vector<RenderObject> renderObjects;
 			//std::unordered_map<std::string_view, Material> materials;
@@ -261,6 +261,7 @@ namespace Puffin
 			void InitScene();
 			void InitImGui();
 			void InitTextureSampler();
+			void InitDepthSampler();
 
 			// Functions for Re-Initializing Swapchain and Offscreen Variables
 			void RecreateSwapchain();

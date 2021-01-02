@@ -336,7 +336,7 @@ namespace Puffin
 				return *this;
 			}
 
-			DescriptorBuilder& DescriptorBuilder::BindImages(uint32_t binding, std::vector<VkDescriptorImageInfo> imageInfos,
+			DescriptorBuilder& DescriptorBuilder::BindImages(uint32_t binding, std::vector<VkDescriptorImageInfo>& imageInfos,
 				VkDescriptorType type, VkShaderStageFlags stageFlags)
 			{
 				// Create descriptor binding for layout
@@ -359,6 +359,8 @@ namespace Puffin
 				newWrite.descriptorType = type;
 				newWrite.pImageInfo = imageInfos.data();
 				newWrite.dstBinding = binding;
+				newWrite.dstArrayElement = 0;
+				newWrite.pBufferInfo = 0;
 
 				writes.push_back(newWrite);
 				return *this;

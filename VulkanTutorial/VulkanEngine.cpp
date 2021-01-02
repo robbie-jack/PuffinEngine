@@ -91,6 +91,8 @@ namespace Puffin
 
 			InitTextureSampler();
 
+			InitDepthSampler();
+
 			// Initialize All Scene Objects
 			InitScene();
 
@@ -132,6 +134,7 @@ namespace Puffin
 			// Specify Desired Device Features
 			VkPhysicalDeviceFeatures supportedFeatures = {};
 			supportedFeatures.samplerAnisotropy = VK_TRUE;
+			supportedFeatures.shaderSampledImageArrayDynamicIndexing;
 
 			// Select GPU with VK Bootstrap
 			// We want a gpu which can write to glfw surface and supports vulkan 1.2
@@ -928,16 +931,39 @@ namespace Puffin
 			// Initialize Lights
 			for (ECS::Entity entity : entityMap["Light"])
 			{
-				LightComponent& comp = world->GetComponent<LightComponent>(entity);
+				LightComponent& light = world->GetComponent<LightComponent>(entity);
 
-				InitLight(comp);
+				InitLight(light);
+			}
+
+			// Write Shadowmap Descriptor Sets
+			VkDescriptorImageInfo shadowmapBufferInfo;
+			shadowmapBufferInfo.sampler = depthSampler;
+			shadowmapBufferInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+			// Initialise Shadowmap Descriptor
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				std::vector<VkDescriptorImageInfo> imageInfos;
+
+				for (ECS::Entity entity : entityMap["Light"])
+				{
+					LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+					shadowmapBufferInfo.imageView = light.depthAttachments[i].imageView;
+					imageInfos.push_back(shadowmapBufferInfo);
+				}
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindImages(0, imageInfos, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
 			}
 
 			// Initialize Meshes
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& comp = world->GetComponent<MeshComponent>(entity);
-				InitMesh(comp);
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+				InitMesh(mesh);
 			}
 		}
 
@@ -980,7 +1006,7 @@ namespace Puffin
 			};
 			
 			VkImageCreateInfo imageInfo = VKInit::ImageCreateInfo(shadowFormat,
-				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, imageExtent);
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageExtent);
 
 			VmaAllocationCreateInfo imageAllocInfo = {};
 			imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -996,13 +1022,10 @@ namespace Puffin
 			framebufferInfo.height = shadowExtent.height;
 			framebufferInfo.layers = 1;
 
-			// Grab how many images we have in swapchain
-			const uint32_t swapchain_imagecount = swapchainAttachments.size();
+			light.depthAttachments = std::vector<AllocatedImage>(FRAME_OVERLAP);
+			light.depthFramebuffers = std::vector<VkFramebuffer>(FRAME_OVERLAP);
 
-			light.depthAttachments = std::vector<AllocatedImage>(swapchain_imagecount);
-			light.depthFramebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
-
-			for (int i = 0; i < swapchain_imagecount; i++)
+			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Create Image/Allocation
 				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
@@ -1132,7 +1155,7 @@ namespace Puffin
 		{
 			VkSamplerCreateInfo samplerInfo = VKInit::SamplerCreateInfo(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
 			samplerInfo.anisotropyEnable = VK_TRUE;
-			samplerInfo.maxAnisotropy = 16;
+			samplerInfo.maxAnisotropy = 16.0f;
 			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 			samplerInfo.unnormalizedCoordinates = VK_FALSE;
 			samplerInfo.compareEnable = VK_FALSE;
@@ -1143,6 +1166,23 @@ namespace Puffin
 			samplerInfo.maxLod = 0.0f;
 
 			VK_CHECK(vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler));
+		}
+
+		void VulkanEngine::InitDepthSampler()
+		{
+			VkSamplerCreateInfo samplerInfo = VKInit::SamplerCreateInfo(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+			samplerInfo.anisotropyEnable = VK_TRUE;
+			samplerInfo.maxAnisotropy = 1.0f;
+			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+			samplerInfo.unnormalizedCoordinates = VK_FALSE;
+			samplerInfo.compareEnable = VK_FALSE;
+			samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+			samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			samplerInfo.mipLodBias = 0.0f;
+			samplerInfo.minLod = 0.0f;
+			samplerInfo.maxLod = 1.0f;
+
+			VK_CHECK(vkCreateSampler(device, &samplerInfo, nullptr, &depthSampler));
 		}
 
 		void VulkanEngine::InitImGui()
@@ -1604,7 +1644,7 @@ namespace Puffin
 				{
 					TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 
-					shadowRPInfo.framebuffer = light.depthFramebuffers[index];
+					shadowRPInfo.framebuffer = light.depthFramebuffers[frameNumber % FRAME_OVERLAP];
 
 					// Begin Shadow Render Pass
 					vkCmdBeginRenderPass(cmd, &shadowRPInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -1684,12 +1724,12 @@ namespace Puffin
 
 			//vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
 
-			// Write Shadowmap Descriptor Sets
-			VkDescriptorImageInfo shadowmapBufferInfo;
-			shadowmapBufferInfo.sampler = depthSampler;
-			shadowmapBufferInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+			//// Write Shadowmap Descriptor Sets
+			//VkDescriptorImageInfo shadowmapBufferInfo;
+			//shadowmapBufferInfo.sampler = depthSampler;
+			//shadowmapBufferInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
-			std::vector<VkDescriptorImageInfo> imageInfos;
+			//std::vector<VkDescriptorImageInfo> imageInfos;
 
 			// Map all light data to storage buffer
 			void* pointLightData;
@@ -1719,10 +1759,6 @@ namespace Puffin
 				// Only render depth map if light is set to cast shadows and is spotlight type
 				if (light.castShadows && light.type == LightType::SPOT)
 				{
-					shadowmapBufferInfo.imageView = light.depthAttachments[index].imageView;
-
-					imageInfos.push_back(shadowmapBufferInfo);
-
 					shadowIndex = i;
 					i++;
 				}
@@ -1777,9 +1813,9 @@ namespace Puffin
 			vmaUnmapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
 
-			VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+			/*VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 				.BindImages(0, imageInfos, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-				.Build(GetCurrentFrame().shadowmapDescriptor, shadowMapSetLayout);
+				.Build(GetCurrentFrame().shadowmapDescriptor, shadowMapSetLayout);*/
 
 			LightStatsData lightStats;
 			lightStats.numPLights = p;
@@ -1841,7 +1877,7 @@ namespace Puffin
 
 					// Shadowmap Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 4, 1, &GetCurrentFrame().shadowDescriptor, 0, nullptr);
+						mesh.material.pipelineLayout, 4, 1, &GetCurrentFrame().shadowmapDescriptor, 0, nullptr);
 
 					// Texture Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,

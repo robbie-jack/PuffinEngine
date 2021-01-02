@@ -82,7 +82,7 @@ layout(set = 3, binding = 3) uniform LightStatsData
 	int numSLights;
 } lightStats;
 
-layout(set = 4, binding = 0) uniform sampler2D shadowmaps_spotlight[];
+layout(set = 4, binding = 0) uniform sampler2D shadowmaps[];
 
 layout(set = 5, binding = 0) uniform sampler2D texSampler;
 
