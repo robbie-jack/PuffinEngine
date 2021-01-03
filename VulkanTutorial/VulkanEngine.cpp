@@ -104,6 +104,8 @@ namespace Puffin
 			// Initialize ImGui
 			InitImGui();
 
+			InitImGuiTextureIDs();
+
 			UIManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
 			isInitialized = true;
@@ -1243,9 +1245,22 @@ namespace Puffin
 			//clear font textures from cpu data
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 
+			
+
+			//add the destroy the imgui created structures
+			mainDeletionQueue.push_function([=]() {
+
+				vkDestroyDescriptorPool(device, imguiPool, nullptr);
+				ImGui_ImplVulkan_Shutdown();
+			});
+		}
+
+		void VulkanEngine::InitImGuiTextureIDs()
+		{
 			// Grab how many images we have in swapchain
 			const uint32_t swapchain_imagecount = swapchainAttachments.size();
 
+			viewportTextureIDs.clear();
 			viewportTextureIDs = std::vector<ImTextureID>(swapchain_imagecount);
 
 			// Create Texture ID's for rendering Viewport to ImGui Window
@@ -1254,13 +1269,6 @@ namespace Puffin
 				viewportTextureIDs[i] = ImGui_ImplVulkan_AddTexture(textureSampler, offscreenAttachments[i].imageView,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			}
-
-			//add the destroy the imgui created structures
-			mainDeletionQueue.push_function([=]() {
-
-				vkDestroyDescriptorPool(device, imguiPool, nullptr);
-				ImGui_ImplVulkan_Shutdown();
-			});
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -1297,6 +1305,7 @@ namespace Puffin
 			// Initialize Offscreen Variables and Scene
 			InitOffscreen();
 			InitOffscreenFramebuffers();
+			InitImGuiTextureIDs();
 			InitPipelines();
 			InitScene();
 			InitShadowmapDescriptors();
