@@ -82,9 +82,9 @@ layout(set = 3, binding = 3) uniform LightStatsData
 	int numSLights;
 } lightStats;
 
-layout(set = 4, binding = 0) uniform sampler2D shadowmaps[];
+//layout(set = 4, binding = 0) uniform sampler2D shadowmaps[];
 
-layout(set = 5, binding = 0) uniform sampler2D texSampler;
+layout(set = 4, binding = 0) uniform sampler2D texSampler;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;

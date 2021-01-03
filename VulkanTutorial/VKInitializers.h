@@ -244,6 +244,21 @@ namespace Puffin
 				return info;
 			}
 
+			VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo(std::vector<VkDescriptorSetLayout>& layouts)
+			{
+				VkPipelineLayoutCreateInfo info{};
+				info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+				info.pNext = nullptr;
+
+				//empty defaults
+				info.flags = 0;
+				info.setLayoutCount = static_cast<uint32_t>(layouts.size());
+				info.pSetLayouts = layouts.data();
+				info.pushConstantRangeCount = 0;
+				info.pPushConstantRanges = nullptr;
+				return info;
+			}
+
 			VkImageCreateInfo ImageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent)
 			{
 				VkImageCreateInfo info = { };

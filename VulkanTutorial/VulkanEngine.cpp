@@ -96,6 +96,8 @@ namespace Puffin
 			// Initialize All Scene Objects
 			InitScene();
 
+			InitShadowmapDescriptors();
+
 			// Pass Camera to UI
 			UIManager->GetWindowSettings()->SetCamera(&camera);
 
@@ -776,21 +778,18 @@ namespace Puffin
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
 			VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
 
-			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(cameraViewProjSetLayout);
-
 			// Create Pipeline Layout Info
-			VkDescriptorSetLayout setLayouts[] =
+			std::vector<VkDescriptorSetLayout> setLayouts =
 			{
 				cameraViewProjSetLayout,
 				objectSetLayout,
 				cameraSetLayout,
 				lightSetLayout,
-				shadowMapSetLayout,
+				//shadowMapSetLayout,
 				singleTextureSetLayout
 			};
 
-			pipelineLayoutInfo.setLayoutCount = 6;
-			pipelineLayoutInfo.pSetLayouts = setLayouts;
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
 
 			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &meshMaterial.pipelineLayout));
 
@@ -850,16 +849,13 @@ namespace Puffin
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
 
 			// Create Pipeline Layout Info
-			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(shadowSetLayout);
-
-			VkDescriptorSetLayout setLayouts[] =
+			std::vector<VkDescriptorSetLayout> setLayouts =
 			{
 				shadowSetLayout,
 				objectSetLayout
 			};
 
-			pipelineLayoutInfo.setLayoutCount = 2;
-			pipelineLayoutInfo.pSetLayouts = setLayouts;
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
 
 			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &shadowPipelineLayout));
 
@@ -936,29 +932,6 @@ namespace Puffin
 				InitLight(light);
 			}
 
-			// Write Shadowmap Descriptor Sets
-			VkDescriptorImageInfo shadowmapBufferInfo;
-			shadowmapBufferInfo.sampler = depthSampler;
-			shadowmapBufferInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-
-			// Initialise Shadowmap Descriptor
-			for (int i = 0; i < FRAME_OVERLAP; i++)
-			{
-				std::vector<VkDescriptorImageInfo> imageInfos;
-
-				for (ECS::Entity entity : entityMap["Light"])
-				{
-					LightComponent& light = world->GetComponent<LightComponent>(entity);
-
-					shadowmapBufferInfo.imageView = light.depthAttachments[i].imageView;
-					imageInfos.push_back(shadowmapBufferInfo);
-				}
-
-				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindImages(0, imageInfos, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
-			}
-
 			// Initialize Meshes
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
@@ -966,6 +939,8 @@ namespace Puffin
 				InitMesh(mesh);
 			}
 		}
+
+		
 
 		void VulkanEngine::InitMesh(MeshComponent& mesh)
 		{
@@ -1185,6 +1160,32 @@ namespace Puffin
 			VK_CHECK(vkCreateSampler(device, &samplerInfo, nullptr, &depthSampler));
 		}
 
+		void VulkanEngine::InitShadowmapDescriptors()
+		{
+			// Write Shadowmap Descriptor Sets
+			VkDescriptorImageInfo shadowmapBufferInfo;
+			shadowmapBufferInfo.sampler = depthSampler;
+			shadowmapBufferInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+			// Initialise Shadowmap Descriptor
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				std::vector<VkDescriptorImageInfo> imageInfos;
+
+				for (ECS::Entity entity : entityMap["Light"])
+				{
+					LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+					shadowmapBufferInfo.imageView = light.depthAttachments[i].imageView;
+					imageInfos.push_back(shadowmapBufferInfo);
+				}
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindImages(0, imageInfos, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
+			}
+		}
+
 		void VulkanEngine::InitImGui()
 		{
 			// Create Descriptor Pool for ImGui
@@ -1298,6 +1299,7 @@ namespace Puffin
 			InitOffscreenFramebuffers();
 			InitPipelines();
 			InitScene();
+			InitShadowmapDescriptors();
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -1509,7 +1511,7 @@ namespace Puffin
 			depthClear.depthStencil.depth = 1.0f;
 
 			// Render Depth Map for each Light Source
-			RenderShadowPass(cmd, index);
+			//RenderShadowPass(cmd, index);
 
 			// Start Main Renderpass
 			//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
@@ -1705,31 +1707,25 @@ namespace Puffin
 		{
 			// This is already done in ShadowPass so not needed here
 			// Map all object data to storage buffer
-			//void* objectData;
-			//vmaMapMemory(allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
 
-			//GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+			int i = 0;
 
-			//int i = 0;
-			//
-			//// For each mesh entity, calculate its object data and map to storage buffer
-			//for (ECS::Entity entity : entityMap["Mesh"])
-			//{
-			//	// Update object data
-			//	objectSSBO[i].model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
-			//	objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
+			void* objectData;
+			vmaMapMemory(allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
 
-			//	i++;
-			//}
+			GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+			
+			// For each mesh entity, calculate its object data and map to storage buffer
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				// Update object data
+				objectSSBO[i].model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
+				objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
 
-			//vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
+				i++;
+			}
 
-			//// Write Shadowmap Descriptor Sets
-			//VkDescriptorImageInfo shadowmapBufferInfo;
-			//shadowmapBufferInfo.sampler = depthSampler;
-			//shadowmapBufferInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-
-			//std::vector<VkDescriptorImageInfo> imageInfos;
+			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
 
 			// Map all light data to storage buffer
 			void* pointLightData;
@@ -1747,7 +1743,7 @@ namespace Puffin
 			int p = 0;
 			int d = 0;
 			int s = 0;
-			int i = 0;
+			i = 0;
 
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
 			for (ECS::Entity entity : entityMap["Light"])
@@ -1813,10 +1809,6 @@ namespace Puffin
 			vmaUnmapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
 
-			/*VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-				.BindImages(0, imageInfos, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-				.Build(GetCurrentFrame().shadowmapDescriptor, shadowMapSetLayout);*/
-
 			LightStatsData lightStats;
 			lightStats.numPLights = p;
 			lightStats.numDLights = d;
@@ -1876,12 +1868,12 @@ namespace Puffin
 						mesh.material.pipelineLayout, 3, 1, &GetCurrentFrame().lightDescriptor, 0, nullptr);
 
 					// Shadowmap Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 4, 1, &GetCurrentFrame().shadowmapDescriptor, 0, nullptr);
+					/*vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+						mesh.material.pipelineLayout, 4, 1, &GetCurrentFrame().shadowmapDescriptor, 0, nullptr);*/
 
 					// Texture Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 5, 1, &mesh.material.textureSet, 0, nullptr);
+						mesh.material.pipelineLayout, 4, 1, &mesh.material.textureSet, 0, nullptr);
 				}
 
 				// Bind Vertices, Indices and Descriptor Sets
