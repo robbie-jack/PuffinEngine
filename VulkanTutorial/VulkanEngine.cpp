@@ -1065,12 +1065,13 @@ namespace Puffin
 			// Calculate Right and Up Vectors
 			camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
 			camera.up = glm::cross(camera.direction, camera.right);
+			camera.lookat = camera.position + camera.direction;
 
 			camera.yaw = -90.0f;
 			camera.speed = 5.0f;
 
 			// Calculate Camera View Matrix
-			camera.matrices.view = glm::lookAt(camera.position, camera.position + camera.direction, camera.up);
+			camera.matrices.view = glm::lookAt(camera.position, camera.lookat, camera.up);
 		}
 
 		void VulkanEngine::InitVertexBuffer(MeshComponent& mesh)
@@ -1300,7 +1301,7 @@ namespace Puffin
 			LightComponent& light = world->GetComponent<LightComponent>(4);
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				shadowTextureIDs[i] = ImGui_ImplVulkan_AddTexture(textureSampler, light.depthAttachments[i].imageView,
+				shadowTextureIDs[i] = ImGui_ImplVulkan_AddTexture(depthSampler, light.depthAttachments[i].imageView,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			}
 		}
@@ -1446,7 +1447,7 @@ namespace Puffin
 				camera.prevFov = camera.fov;
 			}
 
-			camera.matrices.view = glm::lookAt(camera.position, camera.position + camera.direction, camera.up);
+			camera.matrices.view = glm::lookAt(camera.position, camera.lookat, camera.up);
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -1689,15 +1690,19 @@ namespace Puffin
 				if (light.castShadows && light.type == LightType::SPOT)
 				{
 					// Near/Far Plane to render depth within
-					float near_plane = 1.0f;
-					float far_plane = 100.0f;
+					float near_plane = 2.0f;
+					float far_plane = 10.0f;
 
 					// Calculate Light Space Projection Matrix
-					glm::mat4 lightProj = glm::perspective(glm::radians(light.innerCutoffAngle),
-						(float)shadowExtent.width / (float)shadowExtent.height, near_plane, far_plane);
+					glm::mat4 lightProj = glm::perspective(
+						glm::radians(light.innerCutoffAngle),
+						(float)shadowExtent.width / (float)shadowExtent.height, 
+						near_plane, far_plane);
 
-					glm::mat4 lightView = glm::lookAt(glm::vec3(transform.position),
-						glm::vec3(transform.position + light.direction), glm::vec3(0.0f, 1.0f, 0.0f));
+					glm::mat4 lightView = glm::lookAt(
+						glm::vec3(transform.position),
+						glm::vec3(transform.position + light.direction),
+						glm::vec3(0.0f, 1.0f, 0.0f));
 
 					lightSpaceSSBO[lightIndex].lightSpaceMatrix = lightView * lightProj;
 

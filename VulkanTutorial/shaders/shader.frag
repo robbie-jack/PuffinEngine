@@ -187,10 +187,12 @@ vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 
 	//vec4 fragPosLightSpace = light.lightSpaceMatrix * vec4(fragPosition, 1.0);
 
-	float shadow = 0.0;
+	//float shadow = 0.0;
 
-	if (light.shadowmapIndex != -1)
-		shadow = ShadowCalculation(shadowmaps[light.shadowmapIndex], fragShadowCoords[light.shadowmapIndex]);
+	//if (light.shadowmapIndex != -1)
+		//shadow = ShadowCalculation(shadowmaps[light.shadowmapIndex], fragShadowCoords[light.shadowmapIndex]);
+
+	float shadow = light.shadowmapIndex != -1 ? ShadowCalculation(shadowmaps[light.shadowmapIndex], fragShadowCoords[light.shadowmapIndex]) : 0.0;
 
 	diffuse *= intensity;
 	specular *= intensity;
@@ -212,7 +214,7 @@ float ShadowCalculation(sampler2D shadowMap, vec4 fragShadowCoord)
 	// Calculate depth value of current pixel;
 	float currentDepth = projCoords.z;
 
-	// Check i current fragment is in shadow
+	// Check if current fragment is in shadow
 	float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
 
 	return shadow;
