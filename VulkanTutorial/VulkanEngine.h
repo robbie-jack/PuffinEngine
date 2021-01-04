@@ -112,8 +112,8 @@ namespace Puffin
 			AllocatedBuffer objectBuffer;
 			VkDescriptorSet objectDescriptor;
 
-			AllocatedBuffer shadowBuffer;
-			VkDescriptorSet shadowDescriptor;
+			AllocatedBuffer lightSpaceBuffer, lightSpaceIndexBuffer;
+			VkDescriptorSet lightSpaceDescriptor;
 
 			VkDescriptorSet shadowmapDescriptor;
 		};
@@ -130,7 +130,7 @@ namespace Puffin
 			alignas(16) glm::mat4 proj;
 		};
 
-		struct GPUShadowData
+		struct GPULightSpaceData
 		{
 			alignas(16) glm::mat4 lightSpaceMatrix;
 		};
@@ -185,6 +185,10 @@ namespace Puffin
 			std::vector<AllocatedImage> offscreenAttachments; // Images/Views for Offscreen Rendering
 			std::vector<VkFramebuffer> offscreenFramebuffers;
 			std::vector<ImTextureID> viewportTextureIDs; // Vector of Texture ID's which are passed to Viewport Draw function
+			ImVec2 viewportSize; // Size of ImGui Viewport
+			bool offscreenInitialized;
+
+			std::vector<ImTextureID> shadowTextureIDs;
 
 			// Shadows
 			VkExtent2D shadowExtent; // Resolution of rendered shadowmaps
@@ -219,7 +223,7 @@ namespace Puffin
 			VkDescriptorSetLayout shadowMapSetLayout;
 			VkDescriptorSetLayout singleTextureSetLayout;
 
-			VkDescriptorSetLayout shadowSetLayout;
+			VkDescriptorSetLayout lightSpaceSetLayout;
 
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue
@@ -262,6 +266,7 @@ namespace Puffin
 			void InitShadowmapDescriptors();
 			void InitImGui();
 			void InitImGuiTextureIDs();
+			void InitShadowTextureIDs();
 			void InitTextureSampler();
 			void InitDepthSampler();
 
@@ -287,6 +292,7 @@ namespace Puffin
 			VkCommandBuffer RecordGUICommandBuffer(uint32_t index);
 			void RenderShadowPass(VkCommandBuffer cmd, uint32_t index);
 			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
+			void MapObjectData();
 			glm::mat4 BuildMeshTransform(TransformComponent comp);
 
 			static inline void FramebufferResizeCallback(GLFWwindow* window, int width, int height)

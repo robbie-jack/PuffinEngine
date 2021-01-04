@@ -1,10 +1,15 @@
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(set = 0, binding = 0) uniform LightData
+layout(std140, set = 0, binding = 0) readonly buffer LightBuffer
 {
-	mat4 lightSpaceMatrix;
-} light;
+	mat4 lightSpaceMatrix[];
+} lightBuffer;
+
+layout(set = 0, binding = 1) uniform LightData
+{
+	int index;
+} lightData;
 
 struct ObjectData
 {
@@ -23,5 +28,5 @@ void main()
 {
 	mat4 modelMatrix = objectBuffer.objects[gl_BaseInstance].model;
 
-	gl_Position = light.lightSpaceMatrix * modelMatrix * vec4(inPos, 1.0);
+	gl_Position = lightBuffer.lightSpaceMatrix[lightData.index] * modelMatrix * vec4(inPos, 1.0);
 }

@@ -1,7 +1,8 @@
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
+#extension GL_EXT_nonuniform_qualifier : enable
 
-layout(set = 2, binding = 0) uniform ViewBufferObject
+layout(set = 3, binding = 0) uniform ViewBufferObject
 {
 	vec3 viewPos;
 } camera;
@@ -20,7 +21,6 @@ struct PointLightData
 	float specularStrength;
 	int shininess;
 
-	mat4 lightSpaceMatrix;
 	int shadowmapIndex;
 };
 
@@ -34,7 +34,6 @@ struct DirectionalLightData
 	float specularStrength;
 	int shininess;
 
-	mat4 lightSpaceMatrix;
 	int shadowmapIndex;
 };
 
@@ -56,40 +55,42 @@ struct SpotLightData
 	float specularStrength;
 	int shininess;
 
-	mat4 lightSpaceMatrix;
 	int shadowmapIndex;
 };
 
-layout(std140, set = 3, binding = 0) readonly buffer PointLightBuffer
+layout(std140, set = 4, binding = 0) readonly buffer PointLightBuffer
 {
 	PointLightData lights[];
 } pointBuffer;
 
-layout(std140, set = 3, binding = 1) readonly buffer DirectionalLightBuffer
+layout(std140, set = 4, binding = 1) readonly buffer DirectionalLightBuffer
 {
 	DirectionalLightData lights[];
 } directionalBuffer;
 
-layout(std140, set = 3, binding = 2) readonly buffer SpotLightBuffer
+layout(std140, set = 4, binding = 2) readonly buffer SpotLightBuffer
 {
 	SpotLightData lights[];
 } spotBuffer;
 
-layout(set = 3, binding = 3) uniform LightStatsData
+layout(set = 4, binding = 3) uniform LightStatsData
 {
 	int numPLights;
 	int numDLights;
 	int numSLights;
 } lightStats;
 
-//layout(set = 4, binding = 0) uniform sampler2D shadowmaps[];
+layout(set = 5, binding = 0) uniform sampler2D shadowmaps[];
 
-layout(set = 4, binding = 0) uniform sampler2D texSampler;
+layout(set = 6, binding = 0) uniform sampler2D texSampler;
+
+const int maxLights = 12;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in vec4 fragColor;
 layout(location = 3) in vec2 fragTexCoord;
+layout(location = 4) in vec4 fragShadowCoords[maxLights];
 
 layout(location = 0) out vec4 outColor;
 
@@ -97,7 +98,7 @@ vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPo
 vec3 CalcDirLight(DirectionalLightData light, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
 
-float ShadowCalculation(vec4 fragPosLightSpace);
+float ShadowCalculation(sampler2D shadowMap, vec4 fragShadowCoord);
 
 void main() 
 {
@@ -184,17 +185,35 @@ vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 	float epsilon = light.innerCutoff - light.outerCutoff;
 	float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
 
-	vec4 fragPosLightSpace = light.lightSpaceMatrix * vec4(fragPosition, 1.0);
+	//vec4 fragPosLightSpace = light.lightSpaceMatrix * vec4(fragPosition, 1.0);
 
-	float shadow = ShadowCalculation(fragPosLightSpace);
+	float shadow = 0.0;
+
+	if (light.shadowmapIndex != -1)
+		shadow = ShadowCalculation(shadowmaps[light.shadowmapIndex], fragShadowCoords[light.shadowmapIndex]);
 
 	diffuse *= intensity;
 	specular *= intensity;
 
-	return ambient + diffuse + specular;
+	return ambient + (1.0 - shadow) * (diffuse + specular);
 }
 
-float ShadowCalculation(vec4 fragPosLightSpace)
+float ShadowCalculation(sampler2D shadowMap, vec4 fragShadowCoord)
 {
-	return 1.0;
+	// Perform Perspective Divide
+	vec3 projCoords = fragShadowCoord.xyz / fragShadowCoord.w;
+
+	// Transform to [0,1] range
+	projCoords = projCoords * 0.5 + 0.5;
+
+	// Sample closest depth value from shadowmap
+	float closestDepth = texture(shadowMap, projCoords.xy).r;
+
+	// Calculate depth value of current pixel;
+	float currentDepth = projCoords.z;
+
+	// Check i current fragment is in shadow
+	float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+
+	return shadow;
 }

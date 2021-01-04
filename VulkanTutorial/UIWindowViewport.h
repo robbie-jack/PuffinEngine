@@ -16,6 +16,7 @@ namespace Puffin
 		{
 		public:
 
+			bool DrawWithoutImage();
 			bool Draw(ImTextureID textureID);
 
 			inline ImVec2 GetViewportSize() { return viewportSize; }

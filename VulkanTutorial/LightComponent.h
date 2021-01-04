@@ -33,7 +33,6 @@ namespace Puffin
 			alignas(4) float specularStrength;
 			alignas(4) int shininess;
 
-			alignas(16) glm::mat4 lightSpaceMatrix;
 			alignas(4) int shadowmapIndex;
 		};
 
@@ -47,7 +46,6 @@ namespace Puffin
 			alignas(4) float specularStrength;
 			alignas(4) int shininess;
 
-			alignas(16) glm::mat4 lightSpaceMatrix;
 			alignas(4) int shadowmapIndex;
 		};
 
@@ -69,7 +67,6 @@ namespace Puffin
 			alignas(4) float specularStrength;
 			alignas(4) int shininess;
 
-			alignas(16) glm::mat4 lightSpaceMatrix;
 			alignas(4) int shadowmapIndex;
 		};
 
@@ -92,7 +89,6 @@ namespace Puffin
 
 			// Variables for computing shadows cast by lights
 			bool castShadows; // Flag to indicate if light should cast shadows
-			glm::mat4 lightSpaceMatrix;
 			std::vector<AllocatedImage> depthAttachments;
 			std::vector<VkFramebuffer> depthFramebuffers;
 		};
