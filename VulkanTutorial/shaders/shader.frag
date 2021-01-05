@@ -90,7 +90,7 @@ layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in vec4 fragColor;
 layout(location = 3) in vec2 fragTexCoord;
-layout(location = 4) in vec4 fragShadowCoords[maxLights];
+layout(location = 4) in vec4 fragPosLightSpace[maxLights];
 
 layout(location = 0) out vec4 outColor;
 
@@ -98,7 +98,7 @@ vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPo
 vec3 CalcDirLight(DirectionalLightData light, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
 
-float ShadowCalculation(sampler2D shadowMap, vec4 fragShadowCoord);
+float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace);
 
 void main() 
 {
@@ -129,7 +129,8 @@ void main()
 
 	//result = CalcSpotLight(spotBuffer.lights[0], fragNormal, viewDir, fragPosition);
 
-    outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
+    //outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
+	outColor = vec4(result, fragColor.a);
 }
 
 vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
@@ -185,25 +186,19 @@ vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 	float epsilon = light.innerCutoff - light.outerCutoff;
 	float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
 
-	//vec4 fragPosLightSpace = light.lightSpaceMatrix * vec4(fragPosition, 1.0);
-
-	//float shadow = 0.0;
-
-	//if (light.shadowmapIndex != -1)
-		//shadow = ShadowCalculation(shadowmaps[light.shadowmapIndex], fragShadowCoords[light.shadowmapIndex]);
-
-	float shadow = light.shadowmapIndex != -1 ? ShadowCalculation(shadowmaps[light.shadowmapIndex], fragShadowCoords[light.shadowmapIndex]) : 0.0;
+	float shadow = light.shadowmapIndex != -1 ? ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]) : 0.0;
 
 	diffuse *= intensity;
 	specular *= intensity;
 
-	return ambient + (1.0 - shadow) * (diffuse + specular);
+	//return ambient + (1.0 - shadow) * (diffuse + specular);
+	return vec3(shadow);
 }
 
-float ShadowCalculation(sampler2D shadowMap, vec4 fragShadowCoord)
+float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace)
 {
 	// Perform Perspective Divide
-	vec3 projCoords = fragShadowCoord.xyz / fragShadowCoord.w;
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 
 	// Transform to [0,1] range
 	projCoords = projCoords * 0.5 + 0.5;
@@ -217,5 +212,6 @@ float ShadowCalculation(sampler2D shadowMap, vec4 fragShadowCoord)
 	// Check if current fragment is in shadow
 	float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
 
-	return shadow;
+	//return shadow;
+	return closestDepth;
 }

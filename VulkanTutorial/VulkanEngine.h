@@ -100,8 +100,8 @@ namespace Puffin
 			VkSemaphore presentSemaphore, renderSemaphore;
 			VkFence renderFence;
 
-			VkCommandPool commandPool, guiCommandPool; // Command Pool for our commands
-			VkCommandBuffer mainCommandBuffer, guiCommandBuffer; // Buffer commands are recorded into
+			VkCommandPool commandPool, guiCommandPool, shadowCommandPool; // Command Pool for our commands
+			VkCommandBuffer mainCommandBuffer, guiCommandBuffer, shadowCommandBuffer; // Buffer commands are recorded into
 
 			AllocatedBuffer cameraViewProjBuffer, cameraBuffer;
 			VkDescriptorSet cameraViewProjDescriptor, cameraDescriptor;
@@ -288,9 +288,10 @@ namespace Puffin
 
 			// Render Functions
 			void DrawFrame(UI::UIManager* UIManager);
+			VkCommandBuffer RecordShadowCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordGUICommandBuffer(uint32_t index);
-			void RenderShadowPass(VkCommandBuffer cmd, uint32_t index);
+			//void RenderShadowPass(VkCommandBuffer cmd, uint32_t index);
 			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
 			void MapObjectData();
 			glm::mat4 BuildMeshTransform(TransformComponent comp);

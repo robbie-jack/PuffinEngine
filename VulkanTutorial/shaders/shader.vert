@@ -39,7 +39,7 @@ layout(location = 0) out vec3 fragPosition;
 layout(location = 1) out vec3 fragNormal;
 layout(location = 2) out vec4 fragColor;
 layout(location = 3) out vec2 fragTexCoord;
-layout(location = 4) out vec4 fragShadowCoords[maxLights];
+layout(location = 4) out vec4 fragPosLightSpace[maxLights];
 
 void main() 
 {
@@ -48,8 +48,6 @@ void main()
 	mat4 viewMatrix = camera.view;
 	mat4 projMatrix = camera.proj;
 
-    gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(inPosition, 1.0);
-
 	fragPosition = vec3(modelMatrix * vec4(inPosition, 1.0));
 	fragNormal = normalize(mat3(transpose(inv_modelMatrix)) * inNormal);
     fragColor = vec4(inColor, 1.0);
@@ -57,6 +55,8 @@ void main()
 
 	for (int i = 0; i < lightData.numLights; i++)
 	{
-		fragShadowCoords[i] = lightBuffer.lightSpaceMatrix[i] * vec4(fragPosition, 1.0);
+		fragPosLightSpace[i] = lightBuffer.lightSpaceMatrix[i] * vec4(fragPosition, 1.0);
 	}
+
+	gl_Position = projMatrix * viewMatrix * vec4(fragPosition, 1.0);
 }

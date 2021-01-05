@@ -9,6 +9,7 @@
 #include "vk_mem_alloc.h"
 
 #include <iostream>
+#include <string>
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -154,6 +155,7 @@ namespace Puffin
 				.set_minimum_version(1, 2)
 				.set_surface(surface)
 				.set_required_features(supportedFeatures)
+				.add_desired_extension("VK_EXT_debug_marker")
 				.select()
 				.value();
 
@@ -236,11 +238,21 @@ namespace Puffin
 			imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 			imageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
+			// Set Debug Name for RenderDoc
+			VkDebugMarkerObjectNameInfoEXT nameInfo = {};
+			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+			nameInfo.objectType = VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT;
+
 			for (int i = 0; i < swapchain_imagecount; i++)
 			{
 				// Create Image
 				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
 					&offscreenAttachments[i].image, &offscreenAttachments[i].allocation, nullptr);
+
+				nameInfo.object = (uint64_t)offscreenAttachments[i].image;
+				std::string string = "Offscreen Framebuffer" + std::to_string(i);
+				nameInfo.pObjectName = string.c_str();
+				vkDebugMarkerSetObjectNameEXT(device, &nameInfo);
 
 				// Create Image View
 				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(offscreenFormat,
@@ -305,6 +317,7 @@ namespace Puffin
 				// Allocate Command Pools
 				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool));
 				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].guiCommandPool));
+				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].shadowCommandPool));
 
 				// Allocate Default Command Buffer that we will use for scene rendering
 				VkCommandBufferAllocateInfo allocInfo = VKInit::CommandBufferAllocateInfo(frames[i].commandPool, 1); 
@@ -312,14 +325,18 @@ namespace Puffin
 				// Allocate GUI Command Buffer used for rendering UI
 				VkCommandBufferAllocateInfo allocInfoGui = VKInit::CommandBufferAllocateInfo(frames[i].guiCommandPool, 1);
 
+				VkCommandBufferAllocateInfo allocInfoShadow = VKInit::CommandBufferAllocateInfo(frames[i].shadowCommandPool, 1);
+
 				// Allocate buffers
 				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, &frames[i].mainCommandBuffer));
 				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoGui, &frames[i].guiCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoShadow, &frames[i].shadowCommandBuffer));
 
 				// Push destruction of both command pools/buffers to deletion queue
 				mainDeletionQueue.push_function([=]() {
 					vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
 					vkDestroyCommandPool(device, frames[i].guiCommandPool, nullptr);
+					vkDestroyCommandPool(device, frames[i].shadowCommandPool, nullptr);
 				});
 			}
 
@@ -385,6 +402,24 @@ namespace Puffin
 			// hook depth attachment into subpass
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
+			std::array<VkSubpassDependency, 2> dependencies;
+
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+			dependencies[1].srcSubpass = 0;
+			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
 			// Create Attachments Array
 			std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 
@@ -398,6 +433,8 @@ namespace Puffin
 			// connect subpass to info
 			render_pass_info.subpassCount = 1;
 			render_pass_info.pSubpasses = &subpass;
+			render_pass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
+			render_pass_info.pDependencies = dependencies.data();
 
 			VK_CHECK(vkCreateRenderPass(device, &render_pass_info, nullptr, &renderPass));
 
@@ -470,7 +507,7 @@ namespace Puffin
 			depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
@@ -866,11 +903,11 @@ namespace Puffin
 		{
 			// Read Shader Code from files
 			auto vertShaderCode = ReadFile("shaders/shadowmap_vert.spv");
-			auto fragShaderCode = ReadFile("shaders/shadowmap_frag.spv");
+			//auto fragShaderCode = ReadFile("shaders/shadowmap_frag.spv");
 
 			// Create Shader Module from code
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
-			VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
+			//VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
 
 			// Create Pipeline Layout Info
 			std::vector<VkDescriptorSetLayout> setLayouts =
@@ -888,7 +925,7 @@ namespace Puffin
 
 			// Create Shader Stage Info
 			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
-			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
+			//pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
 
 			VkVertexInputBindingDescription bindingDescription = {};
 			bindingDescription.binding = 0;
@@ -900,6 +937,9 @@ namespace Puffin
 			attributeDescription.location = 0;
 			attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
 			attributeDescription.offset = offsetof(Vertex, Vertex::pos);
+
+			//auto bindingDescription = Vertex::getBindingDescription();
+			//auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescription);
@@ -1492,10 +1532,11 @@ namespace Puffin
 			}
 
 			// Record Command Buffers
+			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
 			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
 			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
 
-			std::array<VkCommandBuffer, 2> submitCommandBuffers = { cmdMain, cmdGui };
+			std::array<VkCommandBuffer, 3> submitCommandBuffers = { cmdShadows, cmdMain, cmdGui };
 
 			// Prepare the submission into graphics queue
 			// we will signal the _renderSemaphore, to signal that rendering has finished
@@ -1566,7 +1607,7 @@ namespace Puffin
 			depthClear.depthStencil.depth = 1.0f;
 
 			// Render Depth Map for each Light Source
-			RenderShadowPass(cmd, index);
+			//RenderShadowPass(cmd, index);
 
 			// Start Main Renderpass
 			//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
@@ -1650,8 +1691,23 @@ namespace Puffin
 			return cmd;
 		}
 
-		void VulkanEngine::RenderShadowPass(VkCommandBuffer cmd, uint32_t index)
+		VkCommandBuffer VulkanEngine::RecordShadowCommandBuffers(uint32_t index)
 		{
+			// Name buffer cmd for shorter writing
+			VkCommandBuffer cmd = GetCurrentFrame().shadowCommandBuffer;
+
+			// Begin command buffer recording
+			// Let Vulkan know we are only using the buffer once
+			VkCommandBufferBeginInfo cmdBeginInfo = {};
+			cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBeginInfo.pNext = nullptr;
+
+			cmdBeginInfo.pInheritanceInfo = nullptr;
+			cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+			// Begin Command buffer
+			VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
+
 			// Shadow Renderpass
 			VkRenderPassBeginInfo shadowRPInfo = {};
 			shadowRPInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1690,12 +1746,12 @@ namespace Puffin
 				if (light.castShadows && light.type == LightType::SPOT)
 				{
 					// Near/Far Plane to render depth within
-					float near_plane = 2.0f;
-					float far_plane = 10.0f;
+					float near_plane = 1.0f;
+					float far_plane = 100.0f;
 
 					// Calculate Light Space Projection Matrix
 					glm::mat4 lightProj = glm::perspective(
-						glm::radians(light.innerCutoffAngle),
+						glm::radians(45.0f),
 						(float)shadowExtent.width / (float)shadowExtent.height, 
 						near_plane, far_plane);
 
@@ -1768,6 +1824,11 @@ namespace Puffin
 					lightIndex++;
 				}
 			}
+
+			// Finialise Command Buffer
+			VK_CHECK(vkEndCommandBuffer(cmd));
+
+			return cmd;
 		}
 
 		void VulkanEngine::DrawObjects(VkCommandBuffer cmd, uint32_t index)
