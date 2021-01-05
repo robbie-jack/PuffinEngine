@@ -219,5 +219,8 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="JobManager.h" />
+    <ClInclude Include="VKDebug.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

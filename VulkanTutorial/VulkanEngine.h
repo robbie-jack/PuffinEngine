@@ -112,8 +112,8 @@ namespace Puffin
 			AllocatedBuffer objectBuffer;
 			VkDescriptorSet objectDescriptor;
 
-			AllocatedBuffer lightSpaceBuffer, lightSpaceIndexBuffer;
-			VkDescriptorSet lightSpaceDescriptor;
+			AllocatedBuffer lightSpaceBuffer, lightSpaceMultiBuffer, lightSpaceIndexBuffer;
+			VkDescriptorSet lightSpaceDescriptor, lightSpaceMultiDescriptor;
 
 			VkDescriptorSet shadowmapDescriptor;
 		};
@@ -133,6 +133,11 @@ namespace Puffin
 		struct GPULightSpaceData
 		{
 			alignas(16) glm::mat4 lightSpaceMatrix;
+		};
+
+		struct GPULightIndexData
+		{
+			alignas(4) int lightSpaceIndex;
 		};
 
 		// Number of frames to overlap when rendering
@@ -224,6 +229,7 @@ namespace Puffin
 			VkDescriptorSetLayout singleTextureSetLayout;
 
 			VkDescriptorSetLayout lightSpaceSetLayout;
+			VkDescriptorSetLayout lightSpaceMultiSetLayout;
 
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue

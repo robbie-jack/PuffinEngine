@@ -127,10 +127,8 @@ void main()
 		result += CalcSpotLight(spotBuffer.lights[i], fragNormal, viewDir, fragPosition);
 	}
 
-	//result = CalcSpotLight(spotBuffer.lights[0], fragNormal, viewDir, fragPosition);
-
-    //outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
-	outColor = vec4(result, fragColor.a);
+    outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
+	//outColor = vec4(result, fragColor.a);
 }
 
 vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
@@ -188,11 +186,15 @@ vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 
 	float shadow = light.shadowmapIndex != -1 ? ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]) : 0.0;
 
+	//float shadow = 0.0;
+	//if (light.shadowmapIndex != -1)
+		//shadow = ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]);
+
 	diffuse *= intensity;
 	specular *= intensity;
 
-	//return ambient + (1.0 - shadow) * (diffuse + specular);
-	return vec3(shadow);
+	return ambient + (1.0 - shadow) * (diffuse + specular);
+	//return vec3(shadow);
 }
 
 float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace)
@@ -212,6 +214,7 @@ float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace)
 	// Check if current fragment is in shadow
 	float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
 
-	//return shadow;
-	return closestDepth;
+	return shadow;
+	//return closestDepth;
+	//return currentDepth;
 }

@@ -230,6 +230,7 @@
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="UIWindowSceneHierarchy.h" />
     <ClInclude Include="VectorConversion.h" />
+    <ClInclude Include="VKDebug.h" />
     <ClInclude Include="VKDescriptors.h" />
     <ClInclude Include="VulkanEngine.h" />
     <ClInclude Include="VKInitializers.h" />

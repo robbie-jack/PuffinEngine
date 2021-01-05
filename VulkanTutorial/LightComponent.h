@@ -91,6 +91,7 @@ namespace Puffin
 			bool castShadows; // Flag to indicate if light should cast shadows
 			std::vector<AllocatedImage> depthAttachments;
 			std::vector<VkFramebuffer> depthFramebuffers;
+			glm::mat4 lightSpaceView;
 		};
 
 		template<class Archive>

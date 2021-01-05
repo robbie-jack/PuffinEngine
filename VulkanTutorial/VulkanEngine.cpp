@@ -4,9 +4,12 @@
 #include "VKDescriptors.h"
 #include "ModelLoader.h"
 #include "VKTexture.h"
+#include "VKDebug.h"
 
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
+
+//#include "renderdoc_app.h"
 
 #include <iostream>
 #include <string>
@@ -155,9 +158,12 @@ namespace Puffin
 				.set_minimum_version(1, 2)
 				.set_surface(surface)
 				.set_required_features(supportedFeatures)
-				.add_desired_extension("VK_EXT_debug_marker")
+				.add_desired_extension("VK_EXT_debug_utils")
 				.select()
 				.value();
+
+			// Setup VKDebug Function Pointers
+			VKDebug::Setup(instance);
 
 			// Create Final Vulkan Device
 			vkb::DeviceBuilder deviceBuilder{ physicalDevice };
@@ -204,6 +210,15 @@ namespace Puffin
 			{
 				AllocatedImage swapchainAttachment;
 				swapchainAttachment.image = vkbSwapchain.get_images().value()[i];
+
+				// Set Debug Name for RenderDoc
+				std::string string = "Swapchain Image " + std::to_string(i);
+
+				VKDebug::SetObjectName(device,
+					(uint64_t)swapchainAttachment.image,
+					VK_OBJECT_TYPE_IMAGE,
+					string.c_str());
+
 				swapchainAttachment.imageView = vkbSwapchain.get_image_views().value()[i];
 				swapchainAttachments.push_back(swapchainAttachment);
 			}
@@ -238,21 +253,19 @@ namespace Puffin
 			imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 			imageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-			// Set Debug Name for RenderDoc
-			VkDebugMarkerObjectNameInfoEXT nameInfo = {};
-			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
-			nameInfo.objectType = VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT;
-
 			for (int i = 0; i < swapchain_imagecount; i++)
 			{
 				// Create Image
 				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
 					&offscreenAttachments[i].image, &offscreenAttachments[i].allocation, nullptr);
 
-				nameInfo.object = (uint64_t)offscreenAttachments[i].image;
-				std::string string = "Offscreen Framebuffer" + std::to_string(i);
-				nameInfo.pObjectName = string.c_str();
-				vkDebugMarkerSetObjectNameEXT(device, &nameInfo);
+				// Set Debug Name for RenderDoc
+				std::string string = "Offscreen Framebuffer " + std::to_string(i);
+
+				VKDebug::SetObjectName(device,
+					(uint64_t)offscreenAttachments[i].image,
+					VK_OBJECT_TYPE_IMAGE,
+					string.c_str());
 
 				// Create Image View
 				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(offscreenFormat,
@@ -291,6 +304,12 @@ namespace Puffin
 
 			// Allocate and create image
 			vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthAttachment.image, &depthAttachment.allocation, nullptr);
+
+			// Set Debug Name for RenderDoc
+			VKDebug::SetObjectName(device,
+				(uint64_t)depthAttachment.image,
+				VK_OBJECT_TYPE_IMAGE,
+				"Offscreen Depth Image");
 
 			// Build Image View for depth image to use in rendering
 			VkImageViewCreateInfo depthImageViewInfo = VKInit::ImageViewCreateInfo(depthFormat, depthAttachment.image, VK_IMAGE_ASPECT_DEPTH_BIT);
@@ -802,27 +821,39 @@ namespace Puffin
 					.Build(frames[i].lightDescriptor, lightSetLayout);
 
 				// Create Light Space Buffer for Shadow Vertex Stage
-				frames[i].lightSpaceBuffer = CreateBuffer(sizeof(GPULightSpaceData) * MAX_LIGHTS,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].lightSpaceIndexBuffer = CreateBuffer(sizeof(int),
+				frames[i].lightSpaceBuffer = CreateBuffer(sizeof(GPULightSpaceData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				// Initialize Light Space Descriptor Layout for Shadow/Shader Vertex Stage
+				frames[i].lightSpaceMultiBuffer = CreateBuffer(sizeof(GPULightSpaceData) * MAX_LIGHTS,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].lightSpaceIndexBuffer = CreateBuffer(sizeof(GPULightIndexData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
 				VkDescriptorBufferInfo lightSpaceInfo;
 				lightSpaceInfo.buffer = frames[i].lightSpaceBuffer.buffer;
 				lightSpaceInfo.offset = 0;
-				lightSpaceInfo.range = sizeof(GPULightSpaceData) * MAX_LIGHTS;
+				lightSpaceInfo.range = sizeof(GPULightSpaceData);
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &lightSpaceInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(frames[i].lightSpaceDescriptor, lightSpaceSetLayout);
+
+				// Initialize Light Space Descriptor Layout for Shadow/Shader Vertex Stage
+				VkDescriptorBufferInfo lightSpaceMultiInfo;
+				lightSpaceMultiInfo.buffer = frames[i].lightSpaceMultiBuffer.buffer;
+				lightSpaceMultiInfo.offset = 0;
+				lightSpaceMultiInfo.range = sizeof(GPULightSpaceData) * MAX_LIGHTS;
 
 				VkDescriptorBufferInfo lightSpaceIndexInfo;
 				lightSpaceIndexInfo.buffer = frames[i].lightSpaceIndexBuffer.buffer;
 				lightSpaceIndexInfo.offset = 0;
-				lightSpaceIndexInfo.range = sizeof(int);
+				lightSpaceIndexInfo.range = sizeof(GPULightIndexData);
 
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindBuffer(0, &lightSpaceInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-					.BindBuffer(1, &lightSpaceIndexInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-					.Build(frames[i].lightSpaceDescriptor, lightSpaceSetLayout);
+					.BindBuffer(0, &lightSpaceMultiInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.BindBuffer(1, &lightSpaceIndexInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(frames[i].lightSpaceMultiDescriptor, lightSpaceMultiSetLayout);
 			}
 		}
 
@@ -841,7 +872,7 @@ namespace Puffin
 			{
 				cameraViewProjSetLayout,
 				objectSetLayout,
-				lightSpaceSetLayout,
+				lightSpaceMultiSetLayout,
 				cameraSetLayout,
 				lightSetLayout,
 				shadowMapSetLayout,
@@ -927,7 +958,7 @@ namespace Puffin
 			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
 			//pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
 
-			VkVertexInputBindingDescription bindingDescription = {};
+			/*VkVertexInputBindingDescription bindingDescription = {};
 			bindingDescription.binding = 0;
 			bindingDescription.stride = sizeof(glm::vec3);
 			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -936,13 +967,13 @@ namespace Puffin
 			attributeDescription.binding = 0;
 			attributeDescription.location = 0;
 			attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescription.offset = offsetof(Vertex, Vertex::pos);
+			attributeDescription.offset = offsetof(Vertex, Vertex::pos);*/
 
-			//auto bindingDescription = Vertex::getBindingDescription();
-			//auto attributeDescriptions = Vertex::getAttributeDescriptions();
+			auto bindingDescription = Vertex::getBindingDescription();
+			auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
 			// Create Vertex Input Info
-			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescription);
+			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
 
 			// Create Input Assembly Info
 			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
@@ -1012,6 +1043,11 @@ namespace Puffin
 			// Load Texture Data
 			Util::LoadImageFromFile(*this, mesh.texture_path.c_str(), mesh.texture);
 
+			VKDebug::SetObjectName(device,
+				(uint64_t)mesh.texture.image,
+				VK_OBJECT_TYPE_IMAGE,
+				"Mesh Texture");
+
 			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
 
@@ -1070,6 +1106,13 @@ namespace Puffin
 				// Create Image/Allocation
 				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
 					&light.depthAttachments[i].image, &light.depthAttachments[i].allocation, nullptr);
+
+				std::string string = "Light Depth Image " + std::to_string(i);
+
+				VKDebug::SetObjectName(device,
+					(uint64_t)light.depthAttachments[i].image,
+					VK_OBJECT_TYPE_IMAGE,
+					string.c_str());
 
 				// Create Image View
 				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(shadowFormat,
@@ -1729,46 +1772,7 @@ namespace Puffin
 			// Bind Pipeline
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipeline);
 
-			// Fill Light Space Buffer
-			void* lightSpaceData;
-			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation, &lightSpaceData);
-
-			GPULightSpaceData* lightSpaceSSBO = (GPULightSpaceData*)lightSpaceData;
-
 			int lightIndex = 0;
-			
-			for (ECS::Entity entity : entityMap["Light"])
-			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
-				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
-
-				// Only render depth map if light is set to cast shadows and is spotlight type
-				if (light.castShadows && light.type == LightType::SPOT)
-				{
-					// Near/Far Plane to render depth within
-					float near_plane = 1.0f;
-					float far_plane = 100.0f;
-
-					// Calculate Light Space Projection Matrix
-					glm::mat4 lightProj = glm::perspective(
-						glm::radians(45.0f),
-						(float)shadowExtent.width / (float)shadowExtent.height, 
-						near_plane, far_plane);
-
-					glm::mat4 lightView = glm::lookAt(
-						glm::vec3(transform.position),
-						glm::vec3(transform.position + light.direction),
-						glm::vec3(0.0f, 1.0f, 0.0f));
-
-					lightSpaceSSBO[lightIndex].lightSpaceMatrix = lightView * lightProj;
-
-					lightIndex++;
-				}
-			}
-
-			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation);
-
-			lightIndex = 0;
 
 			// For Each Shadowcasting Light Source
 			for (ECS::Entity entity : entityMap["Light"])
@@ -1785,12 +1789,30 @@ namespace Puffin
 					// Begin Shadow Render Pass
 					vkCmdBeginRenderPass(cmd, &shadowRPInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-					int lightSpaceIndex = lightIndex;
+					// Near/Far Plane to render depth within
+					float near_plane = 1.0f;
+					float far_plane = 50.0f;
+
+					// Calculate Light Space Projection Matrix
+					glm::mat4 lightProj = glm::perspective(
+						glm::radians(45.0f),
+						(float)shadowExtent.width / (float)shadowExtent.height,
+						near_plane, far_plane);
+
+					glm::mat4 lightView = glm::lookAt(
+						glm::vec3(transform.position),
+						glm::vec3(transform.position + light.direction),
+						glm::vec3(0.0f, 1.0f, 0.0f));
+
+					light.lightSpaceView = lightProj * lightView;
+
+					GPULightSpaceData lightSpaceData;
+					lightSpaceData.lightSpaceMatrix = light.lightSpaceView;
 
 					void* data;
-					vmaMapMemory(allocator, GetCurrentFrame().lightSpaceIndexBuffer.allocation, &data);
-					memcpy(data, &lightSpaceIndex, sizeof(int));
-					vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceIndexBuffer.allocation);
+					vmaMapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation, &data);
+					memcpy(data, &lightSpaceData, sizeof(GPULightSpaceData));
+					vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation);
 
 					// Bind Light Space DataDescriptors
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1807,7 +1829,7 @@ namespace Puffin
 					{
 						MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-						// Bind Vertices and Indices
+						// Bind Vertices, Indices and Descriptor Sets
 						VkDeviceSize offsets[] = { 0 };
 						vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
 						vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -1840,19 +1862,29 @@ namespace Puffin
 			void* pointLightData;
 			void* dirLightData;
 			void* spotLightData;
+			void* lightSpaceData;
 
 			vmaMapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation, &pointLightData);
 			vmaMapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation, &dirLightData);
 			vmaMapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation, &spotLightData);
+			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceMultiBuffer.allocation, &lightSpaceData);
 
 			GPUPointLightData* pointLightSSBO = (GPUPointLightData*)pointLightData;
 			GPUDirLightData* dirLightSSBO = (GPUDirLightData*)dirLightData;
 			GPUSpotLightData* spotLightSSBO = (GPUSpotLightData*)spotLightData;
+			GPULightSpaceData* lightSpaceSSBO = (GPULightSpaceData*)lightSpaceData;
 
 			int p = 0;
 			int d = 0;
 			int s = 0;
 			int lightIndex = 0;
+
+			/*glm::mat4 biasMatrix(
+				0.5, 0.0, 0.0, 0.0,
+				0.0, 0.5, 0.0, 0.0,
+				0.0, 0.0, 0.5, 0.0,
+				0.5, 0.5, 0.5, 1.0
+			);*/
 
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
 			for (ECS::Entity entity : entityMap["Light"])
@@ -1864,6 +1896,8 @@ namespace Puffin
 				// Only render depth map if light is set to cast shadows and is spotlight type
 				if (light.castShadows && light.type == LightType::SPOT)
 				{
+					lightSpaceSSBO[lightIndex].lightSpaceMatrix = light.lightSpaceView;
+
 					shadowIndex = lightIndex;
 					lightIndex++;
 				}
@@ -1907,27 +1941,28 @@ namespace Puffin
 					s++;
 					break;
 				}
-
-				lightIndex++;
 			}
 
 			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
+			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceMultiBuffer.allocation);
 
 			LightStatsData lightStats;
 			lightStats.numPLights = p;
 			lightStats.numDLights = d;
 			lightStats.numSLights = s;
 
-			int lightSpaceIndex = lightIndex;
 
-			void* data;
+			GPULightIndexData lightIndexData;
+			lightIndexData.lightSpaceIndex = lightIndex;
 
 			GPUCameraData cameraData;
 			cameraData.view = camera.matrices.view;
 			cameraData.proj = camera.matrices.perspective;
 			cameraData.proj[1][1] *= -1;
+
+			void* data;
 			
 			// Map camera view/proj data to uniform buffer
 			vmaMapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
@@ -1946,7 +1981,7 @@ namespace Puffin
 
 			// Map Light Space Index to Buffer
 			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceIndexBuffer.allocation, &data);
-			memcpy(data, &lightSpaceIndex, sizeof(int));
+			memcpy(data, &lightIndexData, sizeof(GPULightIndexData));
 			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceIndexBuffer.allocation);
 
 			int meshIndex = 0;
@@ -1974,7 +2009,7 @@ namespace Puffin
 
 					// Bind Light Space Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 2, 1, &GetCurrentFrame().lightSpaceDescriptor, 0, nullptr);
+						mesh.material.pipelineLayout, 2, 1, &GetCurrentFrame().lightSpaceMultiDescriptor, 0, nullptr);
 
 					// Bind Camera Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
