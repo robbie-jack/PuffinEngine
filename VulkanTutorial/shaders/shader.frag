@@ -184,35 +184,32 @@ vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 	float epsilon = light.innerCutoff - light.outerCutoff;
 	float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
 
-	float shadow = light.shadowmapIndex != -1 ? ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]) : 0.0;
-
-	//float shadow = 0.0;
-	//if (light.shadowmapIndex != -1)
-		//shadow = ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]);
+	float shadow = light.shadowmapIndex != -1 ? ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]) : 1.0;
+	//vec3 shadowCoords = ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]);
 
 	diffuse *= intensity;
 	specular *= intensity;
 
-	return ambient + (1.0 - shadow) * (diffuse + specular);
+	return ambient + (shadow * (diffuse + specular));
 	//return vec3(shadow);
+	//return shadowCoords;
 }
 
 float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace)
 {
-	// Perform Perspective Divide
-	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-
-	// Transform to [0,1] range
-	projCoords = projCoords * 0.5 + 0.5;
-
 	// Sample closest depth value from shadowmap
-	float closestDepth = texture(shadowMap, projCoords.xy).r;
+	float closestDepth = textureProj(shadowMap, fragPosLightSpace.xyw).r;
+
+	vec3 shadowCoords = fragPosLightSpace.xyz / fragPosLightSpace.z;
+
+	float bias = 0.05;
 
 	// Calculate depth value of current pixel;
-	float currentDepth = projCoords.z;
+	float currentDepth = (fragPosLightSpace.z / fragPosLightSpace.w) - bias;
+	//float currentDepth = fragPosLightSpace.z;
 
 	// Check if current fragment is in shadow
-	float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+	float shadow = closestDepth < currentDepth ? 0.0 : 1.0;
 
 	return shadow;
 	//return closestDepth;

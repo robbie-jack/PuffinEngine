@@ -912,7 +912,7 @@ namespace Puffin
 			pipelineBuilder.scissor.extent = offscreenExtent;
 
 			// Rasterization Stage Creation - Configured to draw filled triangles
-			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
+			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE);
 
 			// Multisampled - Disabled right now so just use default
 			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
@@ -990,7 +990,7 @@ namespace Puffin
 			pipelineBuilder.scissor.extent = shadowExtent;
 
 			// Rasterization Stage Creation - Configured to draw filled triangles
-			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
+			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT);
 
 			// Multisampling
 			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
@@ -1254,10 +1254,10 @@ namespace Puffin
 
 		void VulkanEngine::InitDepthSampler()
 		{
-			VkSamplerCreateInfo samplerInfo = VKInit::SamplerCreateInfo(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+			VkSamplerCreateInfo samplerInfo = VKInit::SamplerCreateInfo(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
 			samplerInfo.anisotropyEnable = VK_TRUE;
 			samplerInfo.maxAnisotropy = 1.0f;
-			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 			samplerInfo.unnormalizedCoordinates = VK_FALSE;
 			samplerInfo.compareEnable = VK_FALSE;
 			samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
@@ -1795,9 +1795,11 @@ namespace Puffin
 
 					// Calculate Light Space Projection Matrix
 					glm::mat4 lightProj = glm::perspective(
-						glm::radians(45.0f),
+						glm::radians(light.outerCutoffAngle * 2.0f),
 						(float)shadowExtent.width / (float)shadowExtent.height,
 						near_plane, far_plane);
+
+					lightProj[1][1] *= -1;
 
 					glm::mat4 lightView = glm::lookAt(
 						glm::vec3(transform.position),
@@ -1879,12 +1881,12 @@ namespace Puffin
 			int s = 0;
 			int lightIndex = 0;
 
-			/*glm::mat4 biasMatrix(
+			glm::mat4 biasMatrix(
 				0.5, 0.0, 0.0, 0.0,
 				0.0, 0.5, 0.0, 0.0,
 				0.0, 0.0, 0.5, 0.0,
 				0.5, 0.5, 0.5, 1.0
-			);*/
+			);
 
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
 			for (ECS::Entity entity : entityMap["Light"])
@@ -1896,7 +1898,7 @@ namespace Puffin
 				// Only render depth map if light is set to cast shadows and is spotlight type
 				if (light.castShadows && light.type == LightType::SPOT)
 				{
-					lightSpaceSSBO[lightIndex].lightSpaceMatrix = light.lightSpaceView;
+					lightSpaceSSBO[lightIndex].lightSpaceMatrix = biasMatrix * light.lightSpaceView;
 
 					shadowIndex = lightIndex;
 					lightIndex++;

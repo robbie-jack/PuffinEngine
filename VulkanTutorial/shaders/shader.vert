@@ -55,7 +55,7 @@ void main()
 
 	for (int i = 0; i < lightData.numLights; i++)
 	{
-		fragPosLightSpace[i] = lightBuffer.lightSpaceMatrix[i] * vec4(fragPosition, 1.0);
+		fragPosLightSpace[i] = lightBuffer.lightSpaceMatrix[i] * modelMatrix * vec4(inPosition, 1.0);
 	}
 
 	gl_Position = projMatrix * viewMatrix * vec4(fragPosition, 1.0);

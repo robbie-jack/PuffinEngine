@@ -295,10 +295,10 @@ namespace Puffin
 
 					if (comp.type == Rendering::LightType::SPOT)
 					{
-						ImGui::DragFloat("Inner Cutoff Angle", &comp.innerCutoffAngle, 0.25f, 0.0f, 180.0f);
+						ImGui::DragFloat("Inner Cutoff Angle", &comp.innerCutoffAngle, 0.25f, 0.0f, 45.0f);
 
 						// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
-						ImGui::DragFloat("Outer Cutoff Angle", &comp.outerCutoffAngle, 0.25f, comp.innerCutoffAngle, 180.0f);
+						ImGui::DragFloat("Outer Cutoff Angle", &comp.outerCutoffAngle, 0.25f, comp.innerCutoffAngle, 45.0f);
 
 						// Outer Cutoff will match inner cutoff if inner cutoff vecomes larger
 						if (comp.outerCutoffAngle < comp.innerCutoffAngle)
