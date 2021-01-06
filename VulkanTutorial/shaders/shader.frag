@@ -98,16 +98,13 @@ vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPo
 vec3 CalcDirLight(DirectionalLightData light, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos);
 
-float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace);
+float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
 
 void main() 
 {
 	vec3 viewDir = normalize(camera.viewPos - fragPosition);
 
 	vec3 result = vec3(0.0, 0.0, 0.0);
-	//result = CalcDirLight(light.data, fragNormal, viewDir);
-	//result = CalcPointLight(light.data, fragNormal, viewDir, fragPosition);
-	//result = CalcSpotLight(light.data, fragNormal, viewDir, fragPosition);
 
 	// Calculate Point Lights
 	for (int i = 0; i < lightStats.numPLights; i++)
@@ -128,7 +125,6 @@ void main()
 	}
 
     outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
-	//outColor = vec4(result, fragColor.a);
 }
 
 vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
@@ -184,34 +180,34 @@ vec3 CalcSpotLight(SpotLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)
 	float epsilon = light.innerCutoff - light.outerCutoff;
 	float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
 
-	float shadow = light.shadowmapIndex != -1 ? ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]) : 1.0;
-	//vec3 shadowCoords = ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex]);
+	float shadow = light.shadowmapIndex != -1 ? 
+	ShadowCalculation(shadowmaps[light.shadowmapIndex], fragPosLightSpace[light.shadowmapIndex], normal, lightDir) : 1.0;
 
 	diffuse *= intensity;
 	specular *= intensity;
 
 	return ambient + (shadow * (diffuse + specular));
-	//return vec3(shadow);
-	//return shadowCoords;
 }
 
-float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace)
+float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
-	// Sample closest depth value from shadowmap
-	float closestDepth = textureProj(shadowMap, fragPosLightSpace.xyw).r;
+	// Get Projected Shadow Coordinates
+	vec3 shadowCoord = fragPosLightSpace.xyz / fragPosLightSpace.w;
 
-	vec3 shadowCoords = fragPosLightSpace.xyz / fragPosLightSpace.z;
+	// Sample closest depth value from shadowmap
+	float closestDepth = texture(shadowMap, shadowCoord.xy).r;
 
 	float bias = 0.05;
+	//float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 
 	// Calculate depth value of current pixel;
-	float currentDepth = (fragPosLightSpace.z / fragPosLightSpace.w) - bias;
-	//float currentDepth = fragPosLightSpace.z;
+	float currentDepth = shadowCoord.z - bias;
 
 	// Check if current fragment is in shadow
 	float shadow = closestDepth < currentDepth ? 0.0 : 1.0;
 
+	// Depth Values farther than lights far plane should return shadow value of 1
+	shadow =  currentDepth > 1.0 ? 1.0 : shadow;
+
 	return shadow;
-	//return closestDepth;
-	//return currentDepth;
 }

@@ -262,7 +262,11 @@ namespace Puffin
 					// Edit Light Ambient Color
 					ImGui::ColorEdit3("Ambient", (float*)&comp.ambientColor);
 
-					ImGui::Checkbox("Cast Shadows", &comp.castShadows);
+					if (ImGui::Checkbox("Cast Shadows", &comp.castShadows))
+					{
+						sceneChanged = true;
+						comp.flag_created = true;
+					}
 
 					// Combo box to select light type
 					const char* items[] = { "Point", "Spot", "Directional" };

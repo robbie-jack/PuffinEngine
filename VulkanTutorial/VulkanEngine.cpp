@@ -1257,7 +1257,7 @@ namespace Puffin
 			VkSamplerCreateInfo samplerInfo = VKInit::SamplerCreateInfo(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
 			samplerInfo.anisotropyEnable = VK_TRUE;
 			samplerInfo.maxAnisotropy = 1.0f;
-			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
 			samplerInfo.unnormalizedCoordinates = VK_FALSE;
 			samplerInfo.compareEnable = VK_FALSE;
 			samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
@@ -1465,6 +1465,24 @@ namespace Puffin
 				}
 			}
 
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+				if (light.flag_created)
+				{
+					InitLight(light);
+					InitShadowmapDescriptors();
+					light.flag_created = false;
+				}
+
+				if (light.flag_deleted)
+				{
+					world->RemoveComponent<LightComponent>(entity);
+					light.flag_deleted = false;
+				}
+			}
+
 			DrawFrame(UIManager);
 
 			return running;
@@ -1648,9 +1666,6 @@ namespace Puffin
 			// Set Clear Depth Color for Framebuffer
 			VkClearValue depthClear;
 			depthClear.depthStencil.depth = 1.0f;
-
-			// Render Depth Map for each Light Source
-			//RenderShadowPass(cmd, index);
 
 			// Start Main Renderpass
 			//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
