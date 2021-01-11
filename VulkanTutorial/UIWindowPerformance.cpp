@@ -45,10 +45,14 @@ namespace Puffin
 					if (fps_timer >= 0.25f)
 					{
 						fps = 1 / dt;
+						frametime = dt * 1000;
 						fps_timer = 0.0f;
 					}
 
 					ImGui::Text(" Framerate: %d", fps);
+
+					// Display Frametime
+					ImGui::Text(" Frametime: %.1f ms", frametime);
 
 					//plotBuffer.AddPoint(dt, (float)fps);
 

@@ -50,7 +50,7 @@ namespace Puffin
 
 		private:
 			int fps;
-			float fps_timer;
+			float fps_timer, frametime;
 			//Puffin::UI::ScrollingBuffer plotBuffer;
 
 			HardwareStats hardwareStats;
