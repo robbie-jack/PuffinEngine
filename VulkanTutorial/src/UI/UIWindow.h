@@ -8,7 +8,7 @@
 
 #include "imgui/imgui.h"
 //#include "imgui/implot.h"
-#include "InputManager.h"
+#include "../Input/InputManager.h"
 
 namespace Puffin
 {

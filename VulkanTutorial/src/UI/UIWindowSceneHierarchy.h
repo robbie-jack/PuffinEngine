@@ -6,7 +6,7 @@
 #include "UIWindow.h"
 #include "UIWindowEntityProperties.h"
 //#include "EntitySystem.h"
-#include "ECS.h"
+#include "../ECS/ECS.h"
 
 namespace Puffin
 {

@@ -14,7 +14,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "MeshComponent.h"
+#include "Components/MeshComponent.h"
 
 namespace Puffin
 {

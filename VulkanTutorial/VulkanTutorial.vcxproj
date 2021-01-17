@@ -170,8 +170,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BulletPhysicsSystem.cpp" />
-    <ClCompile Include="Engine.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
@@ -180,19 +178,20 @@
     <ClCompile Include="include\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
-    <ClCompile Include="JobManager.cpp" />
-    <ClCompile Include="UIWindow.cpp" />
-    <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="UIManager.cpp" />
-    <ClCompile Include="UIWindowSceneHierarchy.cpp" />
-    <ClCompile Include="UIWindowEntityProperties.cpp" />
-    <ClCompile Include="UIWindowPerformance.cpp" />
-    <ClCompile Include="UIWindowSettings.cpp" />
-    <ClCompile Include="UIWindowViewport.cpp" />
-    <ClCompile Include="Vector.h" />
-    <ClCompile Include="VKDescriptors.cpp" />
-    <ClCompile Include="VulkanEngine.cpp" />
+    <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Input\InputManager.cpp" />
+    <ClCompile Include="src\JobManager.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp" />
+    <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
+    <ClCompile Include="src\Rendering\VulkanEngine.cpp" />
+    <ClCompile Include="src\UI\UIManager.cpp" />
+    <ClCompile Include="src\UI\UIWindow.cpp" />
+    <ClCompile Include="src\UI\UIWindowEntityProperties.cpp" />
+    <ClCompile Include="src\UI\UIWindowPerformance.cpp" />
+    <ClCompile Include="src\UI\UIWindowSceneHierarchy.cpp" />
+    <ClCompile Include="src\UI\UIWindowSettings.cpp" />
+    <ClCompile Include="src\UI\UIWindowViewport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag" />
@@ -201,42 +200,43 @@
     <None Include="shaders\shadowmap.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseComponent.h" />
     <ClInclude Include="include\imgui\imgui_stdlib.h" />
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
-    <ClInclude Include="JobManager.h" />
-    <ClInclude Include="RigidbodyComponent.h" />
-    <ClInclude Include="BulletPhysicsSystem.h" />
-    <ClInclude Include="CameraComponent.h" />
-    <ClInclude Include="ECS.h" />
-    <ClInclude Include="Engine.h" />
     <ClInclude Include="include\imgui\imfilebrowser.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_glfw.h" />
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h" />
-    <ClInclude Include="ProjectSettings.h" />
-    <ClInclude Include="SerializeScene.h" />
-    <ClInclude Include="UIWindowEntityProperties.h" />
-    <ClInclude Include="UIWindowPerformance.h" />
-    <ClInclude Include="UIWindowSettings.h" />
-    <ClInclude Include="UIWindowViewport.h" />
-    <ClInclude Include="UIWindow.h" />
-    <ClInclude Include="InputManager.h" />
-    <ClInclude Include="LightComponent.h" />
-    <ClInclude Include="ProceduralMeshGenerator.h" />
-    <ClInclude Include="MeshComponent.h" />
-    <ClInclude Include="ModelLoader.h" />
-    <ClInclude Include="TransformComponent.h" />
-    <ClInclude Include="UIManager.h" />
-    <ClInclude Include="UIWindowSceneHierarchy.h" />
-    <ClInclude Include="VectorConversion.h" />
-    <ClInclude Include="VKDebug.h" />
-    <ClInclude Include="VKDescriptors.h" />
-    <ClInclude Include="VulkanEngine.h" />
-    <ClInclude Include="VKInitializers.h" />
-    <ClInclude Include="VKPipeline.h" />
-    <ClInclude Include="VKTexture.h" />
-    <ClInclude Include="VKTypes.h" />
+    <ClInclude Include="src\Components\BaseComponent.h" />
+    <ClInclude Include="src\Components\TransformComponent.h" />
+    <ClInclude Include="src\ecs\ECS.h" />
+    <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\Input\InputManager.h" />
+    <ClInclude Include="src\JobManager.h" />
+    <ClInclude Include="src\Physics\BulletPhysicsSystem.h" />
+    <ClInclude Include="src\Physics\RigidbodyComponent.h" />
+    <ClInclude Include="src\ProjectSettings.h" />
+    <ClInclude Include="src\Rendering\Components\CameraComponent.h" />
+    <ClInclude Include="src\Rendering\Components\LightComponent.h" />
+    <ClInclude Include="src\Rendering\Components\MeshComponent.h" />
+    <ClInclude Include="src\Rendering\ModelLoader.h" />
+    <ClInclude Include="src\Rendering\VKDebug.h" />
+    <ClInclude Include="src\Rendering\VKDescriptors.h" />
+    <ClInclude Include="src\Rendering\VKInitializers.h" />
+    <ClInclude Include="src\Rendering\VKPipeline.h" />
+    <ClInclude Include="src\Rendering\VKTexture.h" />
+    <ClInclude Include="src\Rendering\VKTypes.h" />
+    <ClInclude Include="src\Rendering\vk_mem_alloc.h" />
+    <ClInclude Include="src\Rendering\VulkanEngine.h" />
+    <ClInclude Include="src\SerializeScene.h" />
+    <ClInclude Include="src\Types\Vector.h" />
+    <ClInclude Include="src\Types\VectorConversion.h" />
+    <ClInclude Include="src\UI\UIManager.h" />
+    <ClInclude Include="src\UI\UIWindow.h" />
+    <ClInclude Include="src\UI\UIWindowEntityProperties.h" />
+    <ClInclude Include="src\UI\UIWindowPerformance.h" />
+    <ClInclude Include="src\UI\UIWindowSceneHierarchy.h" />
+    <ClInclude Include="src\UI\UIWindowSettings.h" />
+    <ClInclude Include="src\UI\UIWindowViewport.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

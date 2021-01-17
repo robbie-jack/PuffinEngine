@@ -1,13 +1,13 @@
 #include "Engine.h"
 
-#include "ECS.h"
+#include "ECS/ECS.h"
 
-#include "TransformComponent.h"
-#include "UIManager.h"
-#include "InputManager.h"
+#include "Components/TransformComponent.h"
+#include "UI/UIManager.h"
+#include "Input/InputManager.h"
 #include "JobManager.h"
-#include "VulkanEngine.h"
-#include "BulletPhysicsSystem.h"
+#include "Rendering/VulkanEngine.h"
+#include "Physics/BulletPhysicsSystem.h"
 #include "SerializeScene.h"
 
 #include <chrono>

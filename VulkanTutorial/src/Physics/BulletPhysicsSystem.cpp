@@ -1,6 +1,5 @@
 #include "BulletPhysicsSystem.h"
-#include "TransformComponent.h"
-#include "VectorConversion.h"
+#include "../Components/TransformComponent.h"
 
 namespace Puffin
 {

@@ -1,6 +1,6 @@
 #include "UIManager.h"
-#include "SerializeScene.h"
-#include "ModelLoader.h"
+#include "../SerializeScene.h"
+#include "../Rendering/ModelLoader.h"
 
 #include <string>
 

@@ -1,6 +1,6 @@
 #include "UIWindowSceneHierarchy.h"
-#include "TransformComponent.h"
-#include "MeshComponent.h"
+#include "../Components/TransformComponent.h"
+#include "../Rendering/Components/MeshComponent.h"
 
 namespace Puffin
 {

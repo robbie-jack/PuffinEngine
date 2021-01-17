@@ -3,10 +3,10 @@
 #ifndef CAMERA_COMPONENT_H
 #define CAMERA_COMPONENT_H
 
-#include "InputManager.h"
+#include "../src/Input/InputManager.h"
 
 #include <vulkan/vulkan.h>
-#include "vk_mem_alloc.h"
+#include "../vk_mem_alloc.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -14,8 +14,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-#include "BaseComponent.h"
-#include "VKTypes.h"
+#include "../../Components/BaseComponent.h"
+#include "../VKTypes.h"
 
 namespace Puffin
 {

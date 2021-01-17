@@ -4,7 +4,7 @@
 #define RIGIDBODY_COMPONENT_H
 
 #include "btBulletDynamicsCommon.h"
-#include "BaseComponent.h"
+#include "../../Components/BaseComponent.h"
 
 namespace Puffin
 {

@@ -1,9 +1,9 @@
 #include "UIWindowEntityProperties.h"
 
-#include "TransformComponent.h"
-#include "MeshComponent.h"
-#include "LightComponent.h"
-#include "RigidbodyComponent.h"
+#include "../Components/TransformComponent.h"
+#include "../Rendering/Components/MeshComponent.h"
+#include "../Rendering/Components/LightComponent.h"
+#include "../Physics/Components/RigidbodyComponent.h"
 
 #include "imgui/imgui_stdlib.h"
 

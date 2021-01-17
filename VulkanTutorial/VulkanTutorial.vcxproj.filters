@@ -26,9 +26,6 @@
     <Filter Include="Input">
       <UniqueIdentifier>{1a471ca7-c49b-4955-b4a3-87fdc3a6f73f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Procedural">
-      <UniqueIdentifier>{a3625e4d-1aa7-407c-bbf5-b4f0af9081b4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ImGui">
       <UniqueIdentifier>{924ac048-2fff-4db3-8182-bb21b3b8f7ab}</UniqueIdentifier>
     </Filter>
@@ -41,40 +38,14 @@
     <Filter Include="Rendering\VK-Bootstrap">
       <UniqueIdentifier>{484cd380-1c92-4f70-86ee-81edf0f8e251}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\Components">
+      <UniqueIdentifier>{6fee0a71-6907-41cd-8137-3e86027f4a0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\BulletPhysics\Components">
+      <UniqueIdentifier>{046fb092-c8f5-46a1-8aed-9530a0505893}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="Vector.h">
-      <Filter>Types</Filter>
-    </ClCompile>
-    <ClCompile Include="UIManager.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="UIWindow.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="UIWindowViewport.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="UIWindowSettings.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="UIWindowEntityProperties.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="UIWindowPerformance.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="UIWindowSceneHierarchy.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="BulletPhysicsSystem.cpp">
-      <Filter>Physics\BulletPhysics</Filter>
-    </ClCompile>
     <ClCompile Include="include\imgui\imgui.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
@@ -99,13 +70,42 @@
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
       <Filter>Rendering\VK-Bootstrap</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanEngine.cpp">
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\JobManager.cpp" />
+    <ClCompile Include="src\Input\InputManager.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp">
+      <Filter>Physics\BulletPhysics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\VKDescriptors.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="VKDescriptors.cpp">
+    <ClCompile Include="src\Rendering\VulkanEngine.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="JobManager.cpp" />
+    <ClCompile Include="src\UI\UIManager.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\UIWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\UIWindowEntityProperties.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\UIWindowPerformance.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\UIWindowSceneHierarchy.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\UIWindowSettings.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\UIWindowViewport.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -122,58 +122,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ModelLoader.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine.h" />
-    <ClInclude Include="TransformComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="VectorConversion.h">
-      <Filter>Types</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshComponent.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="ProceduralMeshGenerator.h">
-      <Filter>Procedural</Filter>
-    </ClInclude>
-    <ClInclude Include="UIManager.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UIWindow.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UIWindowViewport.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UIWindowSettings.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UIWindowEntityProperties.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UIWindowPerformance.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UIWindowSceneHierarchy.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="ECS.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="LightComponent.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraComponent.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="BulletPhysicsSystem.h">
-      <Filter>Physics\BulletPhysics</Filter>
-    </ClInclude>
     <ClInclude Include="include\imgui\imfilebrowser.h">
       <Filter>ImGui</Filter>
     </ClInclude>
@@ -186,41 +134,96 @@
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ProjectSettings.h" />
-    <ClInclude Include="SerializeScene.h" />
-    <ClInclude Include="BaseComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="RigidbodyComponent.h">
-      <Filter>Physics\BulletPhysics</Filter>
-    </ClInclude>
     <ClInclude Include="include\imgui\imgui_stdlib.h">
       <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
       <Filter>Rendering\VK-Bootstrap</Filter>
     </ClInclude>
-    <ClInclude Include="VKTypes.h">
+    <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\JobManager.h" />
+    <ClInclude Include="src\ProjectSettings.h" />
+    <ClInclude Include="src\SerializeScene.h" />
+    <ClInclude Include="src\ecs\ECS.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input\InputManager.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\BaseComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\TransformComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\BulletPhysicsSystem.h">
+      <Filter>Physics\BulletPhysics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\ModelLoader.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="VKPipeline.h">
+    <ClInclude Include="src\Rendering\vk_mem_alloc.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="VKInitializers.h">
+    <ClInclude Include="src\Rendering\VKDebug.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="VKTexture.h">
+    <ClInclude Include="src\Rendering\VKDescriptors.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanEngine.h">
+    <ClInclude Include="src\Rendering\VKInitializers.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="VKDescriptors.h">
+    <ClInclude Include="src\Rendering\VKPipeline.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="JobManager.h" />
-    <ClInclude Include="VKDebug.h">
+    <ClInclude Include="src\Rendering\VKTexture.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VKTypes.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VulkanEngine.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Components\CameraComponent.h">
+      <Filter>Rendering\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Components\LightComponent.h">
+      <Filter>Rendering\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Components\MeshComponent.h">
+      <Filter>Rendering\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\Vector.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\VectorConversion.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\UIManager.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\UIWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\UIWindowEntityProperties.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\UIWindowPerformance.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\UIWindowSceneHierarchy.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\UIWindowSettings.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\UIWindowViewport.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\RigidbodyComponent.h">
+      <Filter>Physics\BulletPhysics\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

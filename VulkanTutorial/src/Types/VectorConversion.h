@@ -5,6 +5,8 @@
 
 #include "btBulletDynamicsCommon.h"
 
+#include <cmath>
+
 static btVector3 ConvertToEulerAngles(btQuaternion q)
 {
 	btVector3 angles;

@@ -20,15 +20,15 @@
 #include "vk-boostrap/VkBootstrap.h" // Vk Bootstrap
 
 // Engine Includes
-#include "ECS.h"
-#include "UIManager.h"
-#include "InputManager.h"
+#include "../ECS/ECS.h"
+#include "../UI/UIManager.h"
+#include "../Input/InputManager.h"
 
 // Component Includes
-#include "TransformComponent.h"
-#include "MeshComponent.h"
-#include "LightComponent.h"
-#include "CameraComponent.h"
+#include "../Components/TransformComponent.h"
+#include "Components/MeshComponent.h"
+#include "Components/LightComponent.h"
+#include "Components/CameraComponent.h"
 
 // STL
 #include <vector>

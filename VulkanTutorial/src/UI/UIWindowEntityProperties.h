@@ -5,7 +5,7 @@
 
 #include "UIWindow.h"
 //#include "Entity.h"
-#include "ECS.h"
+#include "../ECS/ECS.h"
 #include "imgui/imfilebrowser.h"
 
 namespace Puffin
