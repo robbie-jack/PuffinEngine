@@ -4,9 +4,12 @@
 #define UI_WINDOW_ENTITY_PROPERTIES_H
 
 #include "UIWindow.h"
-//#include "Entity.h"
+
 #include "../ECS/ECS.h"
 #include "imgui/imfilebrowser.h"
+#include "../Rendering/Components/CameraComponent.h"
+
+#include <memory>
 
 namespace Puffin
 {

@@ -1,6 +1,7 @@
 #include "UIManager.h"
 #include "../SerializeScene.h"
 #include "../Rendering/ModelLoader.h"
+#include "imguizmo/ImGuizmo.h"
 
 #include <string>
 
@@ -34,7 +35,6 @@ namespace Puffin
 
 			//windowPerformance->Show();
 
-			windowSceneHierarchy->SetWindowProperties(windowEntityProperties);
 			windowEntityProperties->SetFileBrowser(&fileDialog);
 
 			windows.push_back(windowSceneHierarchy);
@@ -60,6 +60,7 @@ namespace Puffin
 			ImGui_ImplVulkan_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
+			ImGuizmo::BeginFrame();
 
 			bool* p_open = NULL;
 
@@ -120,6 +121,14 @@ namespace Puffin
 				}
 
 				importMesh = false;
+			}
+
+			// Update Selected Entity
+			if (windowSceneHierarchy->HasEntityChanged())
+			{
+				entity = windowSceneHierarchy->GetEntity();
+				windowEntityProperties->SetEntity(entity);
+				windowViewport->SetEntity(entity);
 			}
 
 			// Update Scene Data if any changes were made to an entity

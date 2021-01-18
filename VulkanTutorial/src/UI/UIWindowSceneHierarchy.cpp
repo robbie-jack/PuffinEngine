@@ -14,6 +14,8 @@ namespace Puffin
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
+				entityChanged = false;
+
 				Begin(windowName);
 
 				if (ImGui::Button("Create Entity"))
@@ -71,7 +73,7 @@ namespace Puffin
 						if (ImGui::IsItemClicked())
 						{
 							selectedEntity = entity;
-							windowProperties->SetEntity(entity);
+							entityChanged = true;
 						}
 
 						// Display Entity ID on same line as name

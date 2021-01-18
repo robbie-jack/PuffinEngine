@@ -6,6 +6,7 @@
 #include "../Physics/Components/RigidbodyComponent.h"
 
 #include "imgui/imgui_stdlib.h"
+#include "imguizmo/ImGuizmo.h"
 
 #include <iostream>
 #include <string>
@@ -144,8 +145,6 @@ namespace Puffin
 			// Display Transform Component - If One Exists
 			if (world->HasComponent<TransformComponent>(entity))
 			{
-				float PI = 3.14159;
-
 				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 
 				ImGui::SetNextItemOpen(true, ImGuiCond_Once);

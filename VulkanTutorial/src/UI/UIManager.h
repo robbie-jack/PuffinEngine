@@ -50,6 +50,7 @@ namespace Puffin
 				world = world_;
 				windowSceneHierarchy->SetWorld(world_);
 				windowEntityProperties->SetWorld(world_);
+				windowViewport->SetWorld(world_);
 			};
 
 		private:
@@ -60,6 +61,7 @@ namespace Puffin
 
 			Engine* engine;
 			ECS::World* world;
+			ECS::Entity entity;
 
 			std::vector<UIWindow*> windows;
 
