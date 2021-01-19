@@ -170,7 +170,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="include\imguizmo\ImGuizmo.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
@@ -201,7 +200,6 @@
     <None Include="shaders\shadowmap.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\imguizmo\ImGuizmo.h" />
     <ClInclude Include="include\imgui\imgui_stdlib.h" />
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
     <ClInclude Include="include\imgui\imfilebrowser.h" />

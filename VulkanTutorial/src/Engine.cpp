@@ -19,7 +19,7 @@ namespace Puffin
 
 	void Engine::MainLoop()
 	{
-		// Managers/ECS
+		// Managers/ECS World
 		ECS::World ECSWorld;
 		UI::UIManager UIManager;
 		Input::InputManager InputManager;
@@ -106,6 +106,7 @@ namespace Puffin
 				if (restarted)
 				{
 					// Cleanup Systems and ECS
+					//vulkanEngine->Restart();
 					physicsSystem->Stop();
 					ECSWorld.Reset();
 
@@ -125,10 +126,7 @@ namespace Puffin
 		}
 
 		physicsSystem->Stop();
-
-		physicsSystem.reset();
 		vulkanEngine->Cleanup();
-
 		UIManager.Cleanup();
 		ECSWorld.Cleanup();
 

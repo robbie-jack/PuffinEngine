@@ -16,12 +16,6 @@ namespace Puffin
 
 			physicsWorld->setGravity(btVector3(0, -9.81f, 0));
 
-			//TransformComponent& comp1 = world->GetComponent<TransformComponent>(3);
-			//TransformComponent& comp2 = world->GetComponent<TransformComponent>(5);
-
-			//InitComponent(3, btVector3(1.0f, 1.0f, 1.0f), 1.0f, btVector3(comp1.position.x, comp1.position.y, comp1.position.z));
-			//InitComponent(5, btVector3(1.0f, 1.0f, 1.0f), 0.0f, btVector3(comp2.position.x, comp2.position.y, comp2.position.z));
-
 			for (ECS::Entity entity : entityMap.at("Rigidbody"))
 			{
 				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
@@ -34,12 +28,12 @@ namespace Puffin
 		{
 			for (ECS::Entity entity : entityMap.at("Rigidbody"))
 			{
-				CleanupComponent(entity);
+				//CleanupComponent(entity);
 
-				world->RemoveComponent<RigidbodyComponent>(entity);
+				//world->RemoveComponent<RigidbodyComponent>(entity);
 			}
 
-			entityMap.at("Rigidbody").clear();
+			//entityMap.at("Rigidbody").clear();
 
 			for (int j = 0; j < collisionShapes.size(); j++)
 			{
@@ -149,11 +143,6 @@ namespace Puffin
 			delete comp.body;
 
 			comp.shape = nullptr;
-		}
-
-		BulletPhysicsSystem::~BulletPhysicsSystem()
-		{
-			Stop();
 		}
 	}
 }

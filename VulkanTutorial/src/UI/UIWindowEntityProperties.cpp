@@ -6,7 +6,6 @@
 #include "../Physics/Components/RigidbodyComponent.h"
 
 #include "imgui/imgui_stdlib.h"
-#include "imguizmo/ImGuizmo.h"
 
 #include <iostream>
 #include <string>

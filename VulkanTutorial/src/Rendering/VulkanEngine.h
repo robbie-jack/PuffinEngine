@@ -154,6 +154,8 @@ namespace Puffin
 			// Main Functions
 			GLFWwindow* Init(UI::UIManager* UIManager);
 
+			void Restart();
+
 			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
 
 			void Cleanup();

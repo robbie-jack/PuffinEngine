@@ -1,7 +1,6 @@
 #include "UIManager.h"
 #include "../SerializeScene.h"
 #include "../Rendering/ModelLoader.h"
-#include "imguizmo/ImGuizmo.h"
 
 #include <string>
 
@@ -60,7 +59,6 @@ namespace Puffin
 			ImGui_ImplVulkan_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
-			ImGuizmo::BeginFrame();
 
 			bool* p_open = NULL;
 

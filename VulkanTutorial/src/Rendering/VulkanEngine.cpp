@@ -121,6 +121,11 @@ namespace Puffin
 			return window;
 		}
 
+		void VulkanEngine::Restart()
+		{
+			RecreateOffscreen();
+		}
+
 		void VulkanEngine::InitVulkan()
 		{
 			vkb::InstanceBuilder builder;
@@ -1417,12 +1422,12 @@ namespace Puffin
 
 		void VulkanEngine::RecreateOffscreen()
 		{
+			// Delete all Offscreen Variables in deletion queue
+			offscreenDeletionQueue.flush();
+
 			// Update Offscreen Extents
 			offscreenExtent.width = viewportSize.x;
 			offscreenExtent.height = viewportSize.y;
-
-			// Delete all Offscreen Variables in deletion queue
-			offscreenDeletionQueue.flush();
 
 			// Initialize Offscreen Variables and Scene
 			InitOffscreen();

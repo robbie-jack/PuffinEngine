@@ -22,8 +22,6 @@ namespace Puffin
 			void InitComponent(ECS::Entity entity, btVector3 size = btVector3(1.0f, 1.0f, 1.0f), btScalar mass = 0.0f, btVector3 position = btVector3(0.0f, 0.0f, 0.0f));
 			void CleanupComponent(ECS::Entity entity);
 
-			~BulletPhysicsSystem();
-
 		private:
 
 			// Bullet Physics Objects
