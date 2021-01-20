@@ -26,9 +26,6 @@
     <Filter Include="Input">
       <UniqueIdentifier>{1a471ca7-c49b-4955-b4a3-87fdc3a6f73f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ImGui">
-      <UniqueIdentifier>{924ac048-2fff-4db3-8182-bb21b3b8f7ab}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ECS">
       <UniqueIdentifier>{5bec5de3-2573-4ab0-ac63-591b832acd07}</UniqueIdentifier>
     </Filter>
@@ -44,29 +41,11 @@
     <Filter Include="Physics\BulletPhysics\Components">
       <UniqueIdentifier>{046fb092-c8f5-46a1-8aed-9530a0505893}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{b96c1958-6ef8-4aea-a739-bd880e9f266c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\imgui\imgui.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="include\imgui\imgui_demo.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="include\imgui\imgui_draw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="include\imgui\imgui_impl_glfw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="include\imgui\imgui_widgets.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="include\imgui\imgui_stdlib.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
       <Filter>Rendering\VK-Bootstrap</Filter>
     </ClCompile>
@@ -106,6 +85,30 @@
     <ClCompile Include="src\UI\UIWindowViewport.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\imgui_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\imgui_tables.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\backends\imgui_impl_glfw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\backends\imgui_impl_vulkan.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -128,21 +131,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\imgui\imfilebrowser.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="include\imgui\imgui.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="include\imgui\imgui_impl_glfw.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="include\imgui\imgui_impl_vulkan.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="include\imgui\imgui_stdlib.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
       <Filter>Rendering\VK-Bootstrap</Filter>
     </ClInclude>
@@ -230,6 +218,18 @@
     </ClInclude>
     <ClInclude Include="src\Physics\RigidbodyComponent.h">
       <Filter>Physics\BulletPhysics\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui\backends\imgui_impl_vulkan.h">
+      <Filter>ImGui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

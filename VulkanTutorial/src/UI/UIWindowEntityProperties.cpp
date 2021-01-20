@@ -5,7 +5,7 @@
 #include "../Rendering/Components/LightComponent.h"
 #include "../Physics/Components/RigidbodyComponent.h"
 
-#include "imgui/imgui_stdlib.h"
+#include "imgui/misc/cpp/imgui_stdlib.h"
 
 #include <iostream>
 #include <string>

@@ -6,7 +6,7 @@
 #include "UIWindow.h"
 
 #include "../ECS/ECS.h"
-#include "imgui/imfilebrowser.h"
+#include "imgui-filebrowser/imfilebrowser.h"
 #include "../Rendering/Components/CameraComponent.h"
 
 #include <memory>
