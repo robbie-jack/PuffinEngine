@@ -35,14 +35,14 @@
     <Filter Include="Rendering\VK-Bootstrap">
       <UniqueIdentifier>{484cd380-1c92-4f70-86ee-81edf0f8e251}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering\Components">
-      <UniqueIdentifier>{6fee0a71-6907-41cd-8137-3e86027f4a0b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics\BulletPhysics\Components">
-      <UniqueIdentifier>{046fb092-c8f5-46a1-8aed-9530a0505893}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ImGui">
       <UniqueIdentifier>{b96c1958-6ef8-4aea-a739-bd880e9f266c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Rendering">
+      <UniqueIdentifier>{9d96d30e-eb4f-4cfe-a279-e33235786c7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Physics">
+      <UniqueIdentifier>{ec7b6c70-88f6-4530-b9ca-ad35dd08fee9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -106,7 +106,7 @@
     <ClCompile Include="..\imgui\backends\imgui_impl_glfw.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="..\imgui\backends\imgui_impl_vulkan.cpp">
+    <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
   </ItemGroup>
@@ -180,15 +180,6 @@
     <ClInclude Include="src\Rendering\VulkanEngine.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\Components\CameraComponent.h">
-      <Filter>Rendering\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\Components\LightComponent.h">
-      <Filter>Rendering\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\Components\MeshComponent.h">
-      <Filter>Rendering\Components</Filter>
-    </ClInclude>
     <ClInclude Include="src\Types\Vector.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -216,9 +207,6 @@
     <ClInclude Include="src\UI\UIWindowViewport.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="src\Physics\RigidbodyComponent.h">
-      <Filter>Physics\BulletPhysics\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h">
       <Filter>ImGui</Filter>
     </ClInclude>
@@ -228,8 +216,20 @@
     <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="..\imgui\backends\imgui_impl_vulkan.h">
+    <ClInclude Include="include\imgui\imgui_impl_vulkan.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Rendering\CameraComponent.h">
+      <Filter>Components\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Rendering\LightComponent.h">
+      <Filter>Components\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Rendering\MeshComponent.h">
+      <Filter>Components\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Physics\RigidbodyComponent.h">
+      <Filter>Components\Physics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -16,8 +16,8 @@
 #include <vector>
 #include <array>
 
-#include "../../Components/BaseComponent.h"
-#include "../VKTypes.h"
+#include <Components/BaseComponent.h>
+#include <Rendering/VKTypes.h>
 
 #include <cereal/types/string.hpp>
 

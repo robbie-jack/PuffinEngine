@@ -1,5 +1,5 @@
-#include "BulletPhysicsSystem.h"
-#include "../Components/TransformComponent.h"
+#include <Physics/BulletPhysicsSystem.h>
+#include <Components/TransformComponent.h>
 
 namespace Puffin
 {

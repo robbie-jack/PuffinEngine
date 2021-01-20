@@ -3,7 +3,7 @@
 #ifndef UI_WINDOW_PERFORMANCE_H
 #define UI_WINDOW_PERFORMANCE_H
 
-#include "UIWindow.h"
+#include <UI/UIWindow.h>
 
 namespace Puffin
 {

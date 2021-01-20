@@ -3,8 +3,8 @@
 #ifndef TRANSFORM_COMPONENT_H
 #define TRANSFORM_COMPONENT_H
 
-#include "../Types/Vector.h"
-#include "BaseComponent.h"
+#include <Types/Vector.h>
+#include <Components/BaseComponent.h>
 
 #include <cereal/cereal.hpp>
 

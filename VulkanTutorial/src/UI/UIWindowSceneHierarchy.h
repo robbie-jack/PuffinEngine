@@ -3,10 +3,9 @@
 #ifndef UI_WINDOW_SCENE_HIERARCHY_H
 #define UI_WINDOW_SCENE_HIERARCHY_H
 
-#include "UIWindow.h"
-#include "UIWindowEntityProperties.h"
-//#include "EntitySystem.h"
-#include "../ECS/ECS.h"
+#include <UI/UIWindow.h>
+#include <UI/UIWindowEntityProperties.h>
+#include <ECS/ECS.h>
 
 namespace Puffin
 {

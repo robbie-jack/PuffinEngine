@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;D:\Libraries\bullet3-3.06\src;$(ProjectDir)\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;D:\Libraries\bullet3-3.06\src;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -151,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;D:\Libraries\bullet3-3.06\src;$(ProjectDir)\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;D:\Libraries\bullet3-3.06\src;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -171,13 +171,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\imgui\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\imgui\backends\imgui_impl_vulkan.cpp" />
     <ClCompile Include="..\imgui\imgui.cpp" />
     <ClCompile Include="..\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
@@ -204,22 +204,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h" />
-    <ClInclude Include="..\imgui\backends\imgui_impl_vulkan.h" />
     <ClInclude Include="..\imgui\imgui.h" />
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h" />
+    <ClInclude Include="include\imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
     <ClInclude Include="src\Components\BaseComponent.h" />
+    <ClInclude Include="src\Components\Physics\RigidbodyComponent.h" />
+    <ClInclude Include="src\Components\Rendering\CameraComponent.h" />
+    <ClInclude Include="src\Components\Rendering\LightComponent.h" />
+    <ClInclude Include="src\Components\Rendering\MeshComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ecs\ECS.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\JobManager.h" />
     <ClInclude Include="src\Physics\BulletPhysicsSystem.h" />
-    <ClInclude Include="src\Physics\RigidbodyComponent.h" />
     <ClInclude Include="src\ProjectSettings.h" />
-    <ClInclude Include="src\Rendering\Components\CameraComponent.h" />
-    <ClInclude Include="src\Rendering\Components\LightComponent.h" />
-    <ClInclude Include="src\Rendering\Components\MeshComponent.h" />
     <ClInclude Include="src\Rendering\ModelLoader.h" />
     <ClInclude Include="src\Rendering\VKDebug.h" />
     <ClInclude Include="src\Rendering\VKDescriptors.h" />

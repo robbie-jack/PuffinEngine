@@ -4,7 +4,7 @@
 #define LIGHT_COMPONENT_H
 
 #include <vulkan/vulkan.h>
-#include "../vk_mem_alloc.h"
+#include <Rendering/vk_mem_alloc.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -12,8 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-#include "../../Components/BaseComponent.h"
-#include "../VKTypes.h"
+#include <Components/BaseComponent.h>
+#include <Rendering/VKTypes.h>
 
 namespace Puffin
 {

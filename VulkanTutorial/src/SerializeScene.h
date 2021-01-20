@@ -3,11 +3,11 @@
 #ifndef SERIALIZE_SCENE_H
 #define SERIALIZE_SCENE_H
 
-#include "ECS/ECS.h"
-#include "Components/TransformComponent.h"
-#include "Rendering/Components/MeshComponent.h"
-#include "Rendering/Components/LightComponent.h"
-#include "Physics/Components/RigidbodyComponent.h"
+#include <ECS/ECS.h>
+#include <Components/TransformComponent.h>
+#include <Components/Rendering/MeshComponent.h>
+#include <Components/Rendering/LightComponent.h>
+#include <Components/Physics/RigidbodyComponent.h>
 
 #include <vector>
 #include <set>

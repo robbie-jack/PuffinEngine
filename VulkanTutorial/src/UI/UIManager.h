@@ -3,21 +3,21 @@
 #ifndef UI_MANAGER_H
 #define UI_MANAGER_H
 
-#include "imgui\imgui.h"
-#include "imgui\backends\imgui_impl_glfw.h"
-#include "imgui\backends\imgui_impl_vulkan.h"
-#include "imgui-filebrowser\imfilebrowser.h"
+#include <imgui.h>
+#include <backends\imgui_impl_glfw.h>
+#include <imgui/imgui_impl_vulkan.h>
+#include <imfilebrowser.h>
 
-#include "../Input/InputManager.h"
-#include "../ECS/ECS.h"
-#include "../Engine.h"
-#include "UIWindow.h"
+#include <Input/InputManager.h>
+#include <ECS/ECS.h>
+#include <Engine.h>
 
-#include "UIWindowSceneHierarchy.h"
-#include "UIWindowViewport.h"
-#include "UIWindowSettings.h"
-#include "UIWindowEntityProperties.h"
-#include "UIWindowPerformance.h"
+#include <UI/UIWindow.h>
+#include <UI/UIWindowSceneHierarchy.h>
+#include <UI/UIWindowViewport.h>
+#include <UI/UIWindowSettings.h>
+#include <UI/UIWindowEntityProperties.h>
+#include <UI/UIWindowPerformance.h>
 
 #include <vector>
 #include <memory>

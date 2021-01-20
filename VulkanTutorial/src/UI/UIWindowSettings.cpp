@@ -1,4 +1,4 @@
-#include "UIWindowSettings.h"
+#include <UI/UIWindowSettings.h>
 
 namespace Puffin
 {

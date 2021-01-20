@@ -13,22 +13,22 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // Vulkan Helper Classes
-#include "VKTypes.h"
-#include "VKPipeline.h"
+#include <Rendering/VKTypes.h>
+#include <Rendering/VKPipeline.h>
 
 //#include "vk_mem_alloc.h" // Vulkan Memory Allocator
-#include "vk-boostrap/VkBootstrap.h" // Vk Bootstrap
+#include <vk-boostrap/VkBootstrap.h> // Vk Bootstrap
 
 // Engine Includes
-#include "../ECS/ECS.h"
-#include "../UI/UIManager.h"
-#include "../Input/InputManager.h"
+#include <ECS/ECS.h>
+#include <UI/UIManager.h>
+#include <Input/InputManager.h>
 
 // Component Includes
-#include "../Components/TransformComponent.h"
-#include "Components/MeshComponent.h"
-#include "Components/LightComponent.h"
-#include "Components/CameraComponent.h"
+#include <Components/TransformComponent.h>
+#include <Components/Rendering/MeshComponent.h>
+#include <Components/Rendering/LightComponent.h>
+#include <Components/Rendering/CameraComponent.h>
 
 // STL
 #include <vector>

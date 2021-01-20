@@ -3,9 +3,9 @@
 #ifndef UI_WINDOW_SETTINGS_H
 #define UI_WINDOW_SETTINGS_H
 
-#include "UIWindow.h"
-#include "../Rendering/Components/CameraComponent.h"
-#include "../ProjectSettings.h"
+#include <UI/UIWindow.h>
+#include <Components/Rendering/CameraComponent.h>
+#include <ProjectSettings.h>
 
 namespace Puffin
 {

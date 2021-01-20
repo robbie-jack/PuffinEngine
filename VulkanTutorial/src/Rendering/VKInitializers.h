@@ -3,7 +3,7 @@
 #ifndef VULKAN_INITIALIZERS_H
 #define VULKAN_INITIALIZERS_H
 
-#include "VKTypes.h"
+#include <Rendering/VKTypes.h>
 
 namespace Puffin
 {

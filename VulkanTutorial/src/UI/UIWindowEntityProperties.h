@@ -3,11 +3,11 @@
 #ifndef UI_WINDOW_ENTITY_PROPERTIES_H
 #define UI_WINDOW_ENTITY_PROPERTIES_H
 
-#include "UIWindow.h"
+#include <UI/UIWindow.h>
 
-#include "../ECS/ECS.h"
-#include "imgui-filebrowser/imfilebrowser.h"
-#include "../Rendering/Components/CameraComponent.h"
+#include <ECS/ECS.h>
+#include <imfilebrowser.h>
+#include <Components/Rendering/CameraComponent.h>
 
 #include <memory>
 

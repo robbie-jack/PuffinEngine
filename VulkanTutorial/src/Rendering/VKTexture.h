@@ -1,8 +1,8 @@
 #pragma once
 
-#include "VKTypes.h"
-#include "VKInitializers.h"
-#include "VulkanEngine.h"
+#include <Rendering/VKTypes.h>
+#include <Rendering/VKInitializers.h>
+#include <Rendering/VulkanEngine.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb-master\stb_image.h>

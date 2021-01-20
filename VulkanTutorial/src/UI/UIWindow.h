@@ -6,9 +6,8 @@
 #include <string>
 #include <vulkan/vulkan.h>
 
-#include "imgui/imgui.h"
-//#include "imgui/implot.h"
-#include "../Input/InputManager.h"
+#include <imgui.h>
+#include <Input\InputManager.h>
 
 namespace Puffin
 {

@@ -1,13 +1,13 @@
 #include "VulkanEngine.h"
 
-#include "VKInitializers.h"
-#include "VKDescriptors.h"
-#include "ModelLoader.h"
-#include "VKTexture.h"
-#include "VKDebug.h"
+#include <Rendering/VKInitializers.h>
+#include <Rendering/VKDescriptors.h>
+#include <Rendering/ModelLoader.h>
+#include <Rendering/VKTexture.h>
+#include <Rendering/VKDebug.h>
 
 #define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
+#include <Rendering/vk_mem_alloc.h>
 
 //#include "renderdoc_app.h"
 

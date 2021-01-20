@@ -3,7 +3,7 @@
 #ifndef VECTOR_CONVERSION_H
 #define VECTOR_CONVERSION_H
 
-#include "btBulletDynamicsCommon.h"
+#include <btBulletDynamicsCommon.h>
 
 #include <cmath>
 

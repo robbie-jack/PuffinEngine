@@ -3,9 +3,9 @@
 #ifndef BULLET_PHYSICS_SYSTEM_H
 #define BULLET_PHYSICS_SYSTEM_H
 
-#include "../ECS/ECS.h"
-#include "btBulletDynamicsCommon.h"
-#include "Components/RigidbodyComponent.h"
+#include <ECS/ECS.h>
+#include <btBulletDynamicsCommon.h>
+#include <Components/Physics/RigidbodyComponent.h>
 
 namespace Puffin
 {

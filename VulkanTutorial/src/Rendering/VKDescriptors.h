@@ -3,7 +3,7 @@
 #ifndef VK_DESCRIPTORS_H
 #define VK_DESCRIPTORS_H
 
-#include "VKTypes.h"
+#include <Rendering/VKTypes.h>
 
 // STL
 #include <vector>

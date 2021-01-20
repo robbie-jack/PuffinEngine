@@ -1,4 +1,4 @@
-#include "UIWindowPerformance.h"
+#include <UI/UIWindowPerformance.h>
 #include <thread>
 
 namespace Puffin

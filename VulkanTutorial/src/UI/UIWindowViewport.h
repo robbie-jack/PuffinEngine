@@ -3,10 +3,10 @@
 #ifndef UI_WINDOW_VIEWPORT_H
 #define UI_WINDOW_VIEWPORT_H
 
-#include "UIWindow.h"
-#include "../Rendering/VKTypes.h"
-#include "../ECS/ECS.h"
-#include "../Rendering/Components/CameraComponent.h"
+#include <UI/UIWindow.h>
+#include <Rendering/VKTypes.h>
+#include <ECS/ECS.h>
+#include <Components/Rendering/CameraComponent.h>
 
 //#include <vulkan/vulkan.h>
 
