@@ -120,6 +120,12 @@
     <None Include="shaders\shadowmap.frag">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\debug.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\debug.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\imgui\imfilebrowser.h">

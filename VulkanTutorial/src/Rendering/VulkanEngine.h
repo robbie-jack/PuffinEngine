@@ -164,6 +164,9 @@ namespace Puffin
 			void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 			AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlags requiredFlags = 0);
 
+			// Debug Draw Functions
+			void DrawDebugLine(Vector3 start, Vector3 end, Vector3 color);
+
 			// Memory allocator
 			VmaAllocator allocator;
 			UploadContext uploadContext;
@@ -202,6 +205,10 @@ namespace Puffin
 			VkFormat shadowFormat;
 			VkPipelineLayout shadowPipelineLayout;
 			VkPipeline shadowPipeline;
+
+			// Debug Pipeline
+			VkPipelineLayout debugPipelineLayout;
+			VkPipeline debugPipeline;
 			
 
 			FrameData frames[FRAME_OVERLAP];
@@ -270,6 +277,7 @@ namespace Puffin
 			void InitDescriptors();
 			void InitPipelines();
 			void InitShadowPipeline();
+			void InitDebugPipeline();
 			void InitScene();
 			void InitShadowmapDescriptors();
 			void InitImGui();

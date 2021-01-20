@@ -1013,6 +1013,11 @@ namespace Puffin
 			shadowPipeline = pipelineBuilder.build_pipeline(device, renderPassShadows);
 		}
 
+		void VulkanEngine::InitDebugPipeline()
+		{
+
+		}
+
 		void VulkanEngine::InitScene()
 		{
 			// Initialize Camera
@@ -2178,6 +2183,11 @@ namespace Puffin
 
 			// Clear command pool and free command buffer
 			vkResetCommandPool(device, uploadContext.commandPool, 0);
+		}
+
+		void VulkanEngine::DrawDebugLine(Vector3 start, Vector3 end, Vector3 color)
+		{
+
 		}
 	}
 }
