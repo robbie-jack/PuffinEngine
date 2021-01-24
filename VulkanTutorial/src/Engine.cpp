@@ -101,22 +101,20 @@ namespace Puffin
 			// Delete All Marked Objects
 			ECSWorld.Update();
 
-			if (playState == PlayState::STOPPED)
+			if (playState == PlayState::STOPPED && restarted)
 			{
-				if (restarted)
-				{
-					// Cleanup Systems and ECS
-					//vulkanEngine->Restart();
-					physicsSystem->Stop();
-					ECSWorld.Reset();
+				// Cleanup Systems and ECS
+				vulkanEngine->StopScene();
+				physicsSystem->Stop();
+				ECSWorld.Reset();
 
-					// Re-Initialize Systems and ECS
-					IO::LoadScene(&ECSWorld, sceneData);
-					IO::InitScene(&ECSWorld, sceneData);
-					physicsSystem->Start();
+				// Re-Initialize Systems and ECS
+				IO::LoadScene(&ECSWorld, sceneData);
+				IO::InitScene(&ECSWorld, sceneData);
+				vulkanEngine->StartScene();
+				physicsSystem->Start();
 
-					restarted = false;
-				}
+				restarted = false;
 			}
 
 			if (glfwWindowShouldClose(window))
@@ -204,12 +202,11 @@ namespace Puffin
 
 	void Engine::Restart()
 	{
-		if (playState == PlayState::PLAYING | playState == PlayState::PAUSED)
+		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED)
 		{
 			playState = PlayState::STOPPED;
+			restarted = true;
 		}
-
-		restarted = true;
 	}
 
 	void Engine::Play()

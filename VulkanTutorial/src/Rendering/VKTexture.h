@@ -112,16 +112,6 @@ namespace Puffin
 
 				});
 
-				/*engine.mainDeletionQueue.push_function([=]()
-				{
-					vmaDestroyImage(engine.allocator, newImage.image, newImage.allocation);
-				});*/
-
-				engine.offscreenDeletionQueue.push_function([=]()
-				{
-					vmaDestroyImage(engine.allocator, newImage.image, newImage.allocation);
-				});
-
 				vmaDestroyBuffer(engine.allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 
 				outImage = newImage;

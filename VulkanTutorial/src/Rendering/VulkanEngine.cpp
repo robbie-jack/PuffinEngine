@@ -44,8 +44,19 @@ namespace Puffin
 			offscreenExtent.height = 1024;
 			offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
+			// Initialize Camera Variables
+			camera.position = glm::vec3(0.0f, 0.0f, 10.0f);
+			camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
+			camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+			camera.fov = 60.0f;
+			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+			camera.zNear = 0.1f;
+			camera.zFar = 100.0f;
+			InitCamera(camera);
+
 			viewportSize = ImVec2(0.0f, 0.0f);
 			offscreenInitialized = false;
+			shadowmapDescriptorNeedsUpdated = false;
 
 			// Initialize Shadowmap Resolution/Format
 			shadowExtent.width = 1024;
@@ -112,7 +123,6 @@ namespace Puffin
 			InitImGui();
 
 			InitImGuiTextureIDs();
-			InitShadowTextureIDs();
 
 			UIManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
@@ -121,9 +131,10 @@ namespace Puffin
 			return window;
 		}
 
-		void VulkanEngine::Restart()
+		void VulkanEngine::StartScene()
 		{
-			RecreateOffscreen();
+			InitScene();
+			InitShadowmapDescriptors();
 		}
 
 		void VulkanEngine::InitVulkan()
@@ -1021,14 +1032,9 @@ namespace Puffin
 		void VulkanEngine::InitScene()
 		{
 			// Initialize Camera
-			camera.position = glm::vec3(0.0f, 0.0f, 10.0f);
-			camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
-			camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-			camera.fov = 60.0f;
-			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
-			camera.zNear = 0.1f;
-			camera.zFar = 100.0f;
-			InitCamera(camera);
+			//camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+			//camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+			//InitCamera(camera);
 
 			// Initialize Lights
 			for (ECS::Entity entity : entityMap["Light"])
@@ -1045,8 +1051,6 @@ namespace Puffin
 				InitMesh(mesh);
 			}
 		}
-
-		
 
 		void VulkanEngine::InitMesh(MeshComponent& mesh)
 		{
@@ -1130,23 +1134,11 @@ namespace Puffin
 
 				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &light.depthAttachments[i].imageView));
 
-				// Add to deletion queues
-				offscreenDeletionQueue.push_function([=]()
-				{
-					vkDestroyImageView(device, light.depthAttachments[i].imageView, nullptr);
-					vmaDestroyImage(allocator, light.depthAttachments[i].image, light.depthAttachments[i].allocation);
-				});
-
 				// Create Framebuffer
 				framebufferInfo.pAttachments = &light.depthAttachments[i].imageView;
 				framebufferInfo.attachmentCount = 1;
 
 				VK_CHECK(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &light.depthFramebuffers[i]));
-
-				offscreenDeletionQueue.push_function([=]()
-				{
-					vkDestroyFramebuffer(device, light.depthFramebuffers[i], nullptr);
-				});
 			}
 		}
 
@@ -1196,12 +1188,6 @@ namespace Puffin
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.vertexBuffer.buffer, 1, &copy);
 			});
 
-			// Add destruction of vertex buffer to deletion queue
-			offscreenDeletionQueue.push_function([=]()
-			{
-				vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
-			});
-
 			// Cleanup Staging Buffer Immediately, It is no longer needed
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
@@ -1235,14 +1221,31 @@ namespace Puffin
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.indexBuffer.buffer, 1, &copy);
 			});
 
-			// Add destruction of index buffer to deletion queue
-			offscreenDeletionQueue.push_function([=]()
-			{
-				vmaDestroyBuffer(allocator, mesh.indexBuffer.buffer, mesh.indexBuffer.allocation);
-			});
-
-			// CLeanup Staging Buffer
+			// Cleanup Staging Buffer
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+		}
+
+		void VulkanEngine::CleanupMesh(MeshComponent& mesh)
+		{
+			// Cleanup Texture
+			vmaDestroyImage(allocator, mesh.texture.image, mesh.texture.allocation);
+
+			// Cleanup Vertex/Index Buffers
+			vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
+			vmaDestroyBuffer(allocator, mesh.indexBuffer.buffer, mesh.indexBuffer.allocation);
+		}
+
+		void VulkanEngine::CleanupLight(LightComponent& light)
+		{
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				// Destroy Image/View
+				vkDestroyImageView(device, light.depthAttachments[i].imageView, nullptr);
+				vmaDestroyImage(allocator, light.depthAttachments[i].image, light.depthAttachments[i].allocation);
+
+				// Destroy Framebuffer
+				vkDestroyFramebuffer(device, light.depthFramebuffers[i], nullptr);
+			}
 		}
 
 		void VulkanEngine::InitTextureSampler()
@@ -1386,19 +1389,6 @@ namespace Puffin
 			}
 		}
 
-		void VulkanEngine::InitShadowTextureIDs()
-		{
-			shadowTextureIDs.clear();
-			shadowTextureIDs = std::vector<ImTextureID>(FRAME_OVERLAP);
-
-			LightComponent& light = world->GetComponent<LightComponent>(4);
-			for (int i = 0; i < FRAME_OVERLAP; i++)
-			{
-				shadowTextureIDs[i] = ImGui_ImplVulkan_AddTexture(depthSampler, light.depthAttachments[i].imageView,
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			}
-		}
-
 		//-------------------------------------------------------------------------------------
 
 		void VulkanEngine::RecreateSwapchain()
@@ -1439,9 +1429,15 @@ namespace Puffin
 			InitOffscreenFramebuffers();
 			InitImGuiTextureIDs();
 			InitPipelines();
-			InitScene();
-			InitShadowTextureIDs();
-			InitShadowmapDescriptors();
+
+			//camera.position = glm::vec3(0.0f, 0.0f, 10.0f);
+			//camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
+			/*camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+			camera.fov = 60.0f;
+			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+			camera.zNear = 0.1f;
+			camera.zFar = 100.0f;
+			InitCamera(camera);*/
 
 			offscreenInitialized = true;
 		}
@@ -1463,6 +1459,7 @@ namespace Puffin
 				// Initialize/Re-Init Mesh
 				if (mesh.flag_created)
 				{
+					CleanupMesh(mesh);
 					InitMesh(mesh);
 					mesh.flag_created = false;
 				}
@@ -1470,6 +1467,7 @@ namespace Puffin
 				// Remove Mesh
 				if (mesh.flag_deleted)
 				{
+					CleanupMesh(mesh);
 					world->RemoveComponent<MeshComponent>(entity);
 					mesh.flag_deleted = false;
 				}
@@ -1481,16 +1479,25 @@ namespace Puffin
 
 				if (light.flag_created)
 				{
+					CleanupLight(light);
 					InitLight(light);
-					InitShadowmapDescriptors();
 					light.flag_created = false;
+					shadowmapDescriptorNeedsUpdated = true;
 				}
 
 				if (light.flag_deleted)
 				{
+					CleanupLight(light);
 					world->RemoveComponent<LightComponent>(entity);
 					light.flag_deleted = false;
+					shadowmapDescriptorNeedsUpdated = true;
 				}
+			}
+
+			if (shadowmapDescriptorNeedsUpdated)
+			{
+				InitShadowmapDescriptors();
+				shadowmapDescriptorNeedsUpdated = false;
 			}
 
 			DrawFrame(UIManager);
@@ -1551,9 +1558,12 @@ namespace Puffin
 			camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
 			camera.lookat = camera.position + camera.direction;
 
+			float newAspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+
 			// Recalculate camera perspective if fov has changed, store new fov in prevFov
-			if (camera.fov != camera.prevFov)
+			if (camera.fov != camera.prevFov || camera.aspect != newAspect)
 			{
+				camera.aspect = newAspect;
 				camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
 				camera.prevFov = camera.fov;
 			}
@@ -1580,7 +1590,6 @@ namespace Puffin
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
 			if (offscreenInitialized)
 				UIManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex], camera);
-				//UIManager->GetWindowViewport()->Draw(shadowTextureIDs[frameNumber % FRAME_OVERLAP]);
 			else
 				UIManager->GetWindowViewport()->DrawWithoutImage();
 
@@ -2120,6 +2129,8 @@ namespace Puffin
 				swapchainDeletionQueue.flush();
 				offscreenDeletionQueue.flush();
 
+				StopScene();
+
 				// Cleanup Allocator/Cache
 				descriptorAllocator->Cleanup();
 				descriptorLayoutCache->Cleanup();
@@ -2127,6 +2138,21 @@ namespace Puffin
 				vkDestroyDevice(device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);
 				vkDestroyInstance(instance, nullptr);
+			}
+		}
+
+		void VulkanEngine::StopScene()
+		{
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+				CleanupMesh(mesh);
+			}
+
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& light = world->GetComponent<LightComponent>(entity);
+				CleanupLight(light);
 			}
 		}
 

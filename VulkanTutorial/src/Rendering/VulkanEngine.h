@@ -153,12 +153,14 @@ namespace Puffin
 
 			// Main Functions
 			GLFWwindow* Init(UI::UIManager* UIManager);
+			void StartScene();
 
-			void Restart();
+			//void Restart();
 
 			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
 
 			void Cleanup();
+			void StopScene();
 
 			// Helper Functions
 			void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
@@ -197,8 +199,7 @@ namespace Puffin
 			std::vector<ImTextureID> viewportTextureIDs; // Vector of Texture ID's which are passed to Viewport Draw function
 			ImVec2 viewportSize; // Size of ImGui Viewport
 			bool offscreenInitialized;
-
-			std::vector<ImTextureID> shadowTextureIDs;
+			bool shadowmapDescriptorNeedsUpdated;
 
 			// Shadows
 			VkExtent2D shadowExtent; // Resolution of rendered shadowmaps
@@ -282,7 +283,6 @@ namespace Puffin
 			void InitShadowmapDescriptors();
 			void InitImGui();
 			void InitImGuiTextureIDs();
-			void InitShadowTextureIDs();
 			void InitTextureSampler();
 			void InitDepthSampler();
 
@@ -298,6 +298,10 @@ namespace Puffin
 			// Init Buffer Functions
 			void InitVertexBuffer(MeshComponent& mesh);
 			void InitIndexBuffer(MeshComponent& mesh);
+
+			// Component Cleanup Functions
+			void CleanupMesh(MeshComponent& mesh);
+			void CleanupLight(LightComponent& light);
 
 			// Update Functions
 			void UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time);
