@@ -313,6 +313,7 @@ namespace Puffin
 			VkCommandBuffer RecordGUICommandBuffer(uint32_t index);
 			//void RenderShadowPass(VkCommandBuffer cmd, uint32_t index);
 			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
+			void DrawDebugObjects(VkCommandBuffer cmd, uint32_t index);
 			void MapObjectData();
 			glm::mat4 BuildMeshTransform(TransformComponent comp);
 

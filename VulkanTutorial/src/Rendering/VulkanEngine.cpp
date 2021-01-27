@@ -107,6 +107,8 @@ namespace Puffin
 
 			InitShadowPipeline();
 
+			InitDebugPipeline();
+
 			InitTextureSampler();
 
 			InitDepthSampler();
@@ -959,11 +961,9 @@ namespace Puffin
 		{
 			// Read Shader Code from files
 			auto vertShaderCode = ReadFile("shaders/shadowmap_vert.spv");
-			//auto fragShaderCode = ReadFile("shaders/shadowmap_frag.spv");
 
 			// Create Shader Module from code
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
-			//VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
 
 			// Create Pipeline Layout Info
 			std::vector<VkDescriptorSetLayout> setLayouts =
@@ -981,18 +981,6 @@ namespace Puffin
 
 			// Create Shader Stage Info
 			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
-			//pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
-
-			/*VkVertexInputBindingDescription bindingDescription = {};
-			bindingDescription.binding = 0;
-			bindingDescription.stride = sizeof(glm::vec3);
-			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-			VkVertexInputAttributeDescription attributeDescription = {};
-			attributeDescription.binding = 0;
-			attributeDescription.location = 0;
-			attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescription.offset = offsetof(Vertex, Vertex::pos);*/
 
 			auto bindingDescription = Vertex::getBindingDescription();
 			auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -1035,17 +1023,82 @@ namespace Puffin
 
 		void VulkanEngine::InitDebugPipeline()
 		{
+			// Read Shader Code from Files
 			auto vertShaderCode = ReadFile("shaders/debug_vert.spv");
-			auto fragShaderCode = ReadFile("shaders/debuf_frag.spv");
+			auto fragShaderCode = ReadFile("shaders/debug_frag.spv");
+
+			// Create Shader Modules from code
+			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
+			VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
+
+			// Create Pipeline Layout Info
+			std::vector<VkDescriptorSetLayout> setLayouts =
+			{
+				cameraViewProjSetLayout
+			};
+
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
+
+			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &debugPipelineLayout));
+
+			// Pipeline Builder Object
+			PipelineBuilder pipelineBuilder;
+
+			// Create Shader Stage Info
+			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
+			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
+
+			auto bindingDescription = Vertex::getBindingDescription();
+			auto attributeDesciptions = Vertex::getAttributeDescriptions();
+
+			// Create Vertex Input Info
+			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDesciptions);
+
+			// Create Input Assembly Info - Will do line rendering her instead of filled triangle rendering
+			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+
+			// Define Viewport
+			pipelineBuilder.viewport.x = 0.0f;
+			pipelineBuilder.viewport.y = 0.0f;
+			pipelineBuilder.viewport.width = (float)offscreenExtent.width;
+			pipelineBuilder.viewport.height = (float)offscreenExtent.height;
+			pipelineBuilder.viewport.minDepth = 0.0f;
+			pipelineBuilder.viewport.maxDepth = 1.0f;
+
+			// Define Scissor Extent (Pixels Outside Scissor Rectangle will be discarded)
+			pipelineBuilder.scissor.offset = { 0, 0 };
+			pipelineBuilder.scissor.extent = offscreenExtent;
+
+			// Rasterization Stage Creation - Configured to draw filled triangles
+			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_LINE, VK_CULL_MODE_NONE);
+
+			// Multisampled - Disabled right now so just use default
+			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
+
+			// Color Blending - Default RGBA Color Blending
+			pipelineBuilder.colorBlendAttachment = VKInit::ColorBlendAttachmentState();
+
+			// Depth Testing - Default
+			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+
+			std::vector<VkDynamicState> dynamicStates =
+			{
+				VK_DYNAMIC_STATE_VIEWPORT,
+				VK_DYNAMIC_STATE_SCISSOR
+			};
+
+			// Dynamic Viewport/Scissor Size
+			pipelineBuilder.dynamic = VKInit::DynamicStateCreateInfo(dynamicStates);
+
+			// Assign Pipeline Layout to Pipeline
+			pipelineBuilder.pipelineLayout = debugPipelineLayout;
+
+			// Build Pipeline
+			debugPipeline = pipelineBuilder.build_pipeline(device, renderPass);
 		}
 
 		void VulkanEngine::InitScene()
 		{
-			// Initialize Camera
-			//camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-			//camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
-			//InitCamera(camera);
-
 			// Initialize Lights
 			for (ECS::Entity entity : entityMap["Light"])
 			{
@@ -1438,16 +1491,6 @@ namespace Puffin
 			InitOffscreen();
 			InitOffscreenFramebuffers();
 			InitImGuiTextureIDs();
-			//InitPipelines();
-
-			//camera.position = glm::vec3(0.0f, 0.0f, 10.0f);
-			//camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
-			/*camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-			camera.fov = 60.0f;
-			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
-			camera.zNear = 0.1f;
-			camera.zFar = 100.0f;
-			InitCamera(camera);*/
 
 			offscreenInitialized = true;
 		}
@@ -1720,6 +1763,9 @@ namespace Puffin
 
 			// Draw all Mesh objects
 			DrawObjects(cmd, index);
+
+			// Draw all Debug Lines/Boxes
+			DrawDebugObjects(cmd, index);
 
 			// Finalize Render Pass
 			vkCmdEndRenderPass(cmd);
@@ -2102,6 +2148,34 @@ namespace Puffin
 
 				meshIndex++;
 			}
+		}
+
+		void VulkanEngine::DrawDebugObjects(VkCommandBuffer cmd, uint32_t index)
+		{
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, debugPipeline);
+
+			// Set Pipeline Viewport
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float)offscreenExtent.width;
+			viewport.height = (float)offscreenExtent.height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+
+			vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+			VkRect2D scissor = {};
+			scissor.offset = { 0, 0 };
+			scissor.extent = offscreenExtent;
+
+			vkCmdSetScissor(cmd, 0, 1, &scissor);
+
+			// Bind Camera View/Proj Descriptor
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				debugPipelineLayout, 0, 1, &GetCurrentFrame().cameraViewProjDescriptor, 0, nullptr);
+
+			//vkCmdDraw()
 		}
 
 		void VulkanEngine::MapObjectData()

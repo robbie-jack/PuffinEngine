@@ -111,22 +111,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\shader.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\shader.vert">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="shaders\shadowmap.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\shadowmap.frag">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\debug.frag">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\debug.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\default_lighting.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\default_lighting.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

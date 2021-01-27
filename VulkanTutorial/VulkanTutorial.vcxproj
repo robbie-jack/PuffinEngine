@@ -197,9 +197,8 @@
   <ItemGroup>
     <None Include="shaders\debug.frag" />
     <None Include="shaders\debug.vert" />
-    <None Include="shaders\shader.frag" />
-    <None Include="shaders\shader.vert" />
-    <None Include="shaders\shadowmap.frag" />
+    <None Include="shaders\default_lighting.frag" />
+    <None Include="shaders\default_lighting.vert" />
     <None Include="shaders\shadowmap.vert" />
   </ItemGroup>
   <ItemGroup>

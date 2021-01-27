@@ -217,7 +217,7 @@ namespace Puffin
 				return info;
 			}
 
-			// Initialie info for color vlending
+			// Initialize info for color blending
 			VkPipelineColorBlendAttachmentState ColorBlendAttachmentState()
 			{
 				VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
