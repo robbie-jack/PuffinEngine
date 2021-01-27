@@ -876,8 +876,8 @@ namespace Puffin
 		void VulkanEngine::InitPipelines()
 		{
 			// Read Shader Code from files
-			auto vertShaderCode = ReadFile("shaders/vert.spv");
-			auto fragShaderCode = ReadFile("shaders/frag.spv");
+			auto vertShaderCode = ReadFile("shaders/default_lighting_vert.spv");
+			auto fragShaderCode = ReadFile("shaders/default_lighting_frag.spv");
 
 			// Create Shader Modules from code
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
@@ -1035,7 +1035,8 @@ namespace Puffin
 
 		void VulkanEngine::InitDebugPipeline()
 		{
-
+			auto vertShaderCode = ReadFile("shaders/debug_vert.spv");
+			auto fragShaderCode = ReadFile("shaders/debuf_frag.spv");
 		}
 
 		void VulkanEngine::InitScene()
