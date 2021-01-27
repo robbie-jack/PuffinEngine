@@ -939,6 +939,15 @@ namespace Puffin
 			// Depth Testing - Default
 			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
 
+			std::vector<VkDynamicState> dynamicStates =
+			{
+				VK_DYNAMIC_STATE_VIEWPORT,
+				VK_DYNAMIC_STATE_SCISSOR
+			};
+
+			// Dynamic Viewport/Scissor Size
+			pipelineBuilder.dynamic = VKInit::DynamicStateCreateInfo(dynamicStates);
+
 			// Assign Pipeline Layout to Pipeline
 			pipelineBuilder.pipelineLayout = meshMaterial.pipelineLayout;
 
@@ -1428,7 +1437,7 @@ namespace Puffin
 			InitOffscreen();
 			InitOffscreenFramebuffers();
 			InitImGuiTextureIDs();
-			InitPipelines();
+			//InitPipelines();
 
 			//camera.position = glm::vec3(0.0f, 0.0f, 10.0f);
 			//camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -1605,7 +1614,8 @@ namespace Puffin
 			}
 
 			// Recreate Viewport if it size changes
-			if (viewportSize.x != offscreenExtent.width ||
+			if (!offscreenInitialized || 
+				viewportSize.x != offscreenExtent.width ||
 				viewportSize.y != offscreenExtent.height)
 			{
 				RecreateOffscreen();
@@ -1614,7 +1624,7 @@ namespace Puffin
 			// Record Command Buffers
 			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
 			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
-			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
+ 			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
 
 			std::array<VkCommandBuffer, 3> submitCommandBuffers = { cmdShadows, cmdMain, cmdGui };
 
@@ -2034,6 +2044,23 @@ namespace Puffin
 					vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 						mesh.material.pipeline);
 					lastMaterial = &mesh.material;
+
+					// Set Pipeline Viewport
+					VkViewport viewport = {};
+					viewport.x = 0.0f;
+					viewport.y = 0.0f;
+					viewport.width = (float)offscreenExtent.width;
+					viewport.height = (float)offscreenExtent.height;
+					viewport.minDepth = 0.0f;
+					viewport.maxDepth = 1.0f;
+
+					vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+					VkRect2D scissor = {};
+					scissor.offset = { 0, 0 };
+					scissor.extent = offscreenExtent;
+
+					vkCmdSetScissor(cmd, 0, 1, &scissor);
 
 					// Bind Camera View/Proj Descriptor
 					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,

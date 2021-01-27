@@ -49,7 +49,7 @@ namespace Puffin
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
 		private:
-			int fps;
+			float fps;
 			float fps_timer, frametime;
 			//Puffin::UI::ScrollingBuffer plotBuffer;
 

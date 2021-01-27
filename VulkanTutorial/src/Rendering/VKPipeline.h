@@ -26,6 +26,7 @@ namespace Puffin
 			VkPipelineColorBlendAttachmentState colorBlendAttachment;
 			VkPipelineMultisampleStateCreateInfo multisampling;
 			VkPipelineDepthStencilStateCreateInfo depthStencil;
+			VkPipelineDynamicStateCreateInfo dynamic;
 			VkPipelineLayout pipelineLayout;
 
 			VkPipeline build_pipeline(VkDevice device, VkRenderPass pass)
@@ -66,6 +67,7 @@ namespace Puffin
 				pipelineInfo.pMultisampleState = &multisampling;
 				pipelineInfo.pColorBlendState = &colorBlending;
 				pipelineInfo.pDepthStencilState = &depthStencil;
+				pipelineInfo.pDynamicState = &dynamic;
 				pipelineInfo.layout = pipelineLayout;
 				pipelineInfo.renderPass = pass;
 				pipelineInfo.subpass = 0;

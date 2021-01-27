@@ -49,7 +49,7 @@ namespace Puffin
 						fps_timer = 0.0f;
 					}
 
-					ImGui::Text(" Framerate: %d", fps);
+					ImGui::Text(" Framerate: %.1f", fps);
 
 					// Display Frametime
 					ImGui::Text(" Frametime: %.1f ms", frametime);
