@@ -102,6 +102,8 @@ namespace Puffin
 			// Initialize Descriptor Sets
 			InitDescriptors();
 
+			InitBuffers();
+
 			// Initialize Pipelines
 			InitPipelines();
 
@@ -875,6 +877,17 @@ namespace Puffin
 			}
 		}
 
+		void VulkanEngine::InitBuffers()
+		{
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				const int MAX_DEBUG_COMMANDS = 10000;
+				frames[i].debugIndirectCommandsBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * sizeof(VkDrawIndirectCommand),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+					VMA_MEMORY_USAGE_CPU_TO_GPU);
+			}
+		}
+
 		void VulkanEngine::InitPipelines()
 		{
 			// Read Shader Code from files
@@ -1132,8 +1145,8 @@ namespace Puffin
 			IO::LoadMesh(mesh);
 
 			// Init Mesh Buffers
-			InitVertexBuffer(mesh);
-			InitIndexBuffer(mesh);
+			mesh.vertexBuffer = InitVertexBuffer(mesh.vertices);
+			mesh.indexBuffer = InitIndexBuffer(mesh.indices);
 
 			mesh.material = meshMaterial;
 
@@ -1222,10 +1235,10 @@ namespace Puffin
 			camera.matrices.view = glm::lookAt(camera.position, camera.lookat, camera.up);
 		}
 
-		void VulkanEngine::InitVertexBuffer(MeshComponent& mesh)
+		AllocatedBuffer VulkanEngine::InitVertexBuffer(std::vector<Vertex> vertices)
 		{
 			// Copy Loaded Mesh data into mesh vertex buffer
-			const size_t bufferSize = mesh.vertices.size() * sizeof(Vertex);
+			const size_t bufferSize = vertices.size() * sizeof(Vertex);
 
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
 			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -1233,32 +1246,34 @@ namespace Puffin
 			// Map vertex data to staging buffer
 			void* data;
 			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
-			memcpy(data, mesh.vertices.data(), bufferSize);
+			memcpy(data, vertices.data(), bufferSize);
 			vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
 			// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
-			mesh.vertexBuffer = CreateBuffer(bufferSize,
+			AllocatedBuffer vertexBuffer = CreateBuffer(bufferSize,
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 				VMA_MEMORY_USAGE_GPU_ONLY);
 
-			//Copy from CPU Memory to GPU Memory
+			// Copy from CPU Memory to GPU Memory
 			ImmediateSubmit([=](VkCommandBuffer cmd)
 			{
 				VkBufferCopy copy;
 				copy.dstOffset = 0;
 				copy.srcOffset = 0;
 				copy.size = bufferSize;
-				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.vertexBuffer.buffer, 1, &copy);
+				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, vertexBuffer.buffer, 1, &copy);
 			});
 
 			// Cleanup Staging Buffer Immediately, It is no longer needed
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+
+			return vertexBuffer;
 		}
 
-		void VulkanEngine::InitIndexBuffer(MeshComponent& mesh)
+		AllocatedBuffer VulkanEngine::InitIndexBuffer(std::vector<uint32_t> indices)
 		{
 			// Copy Loaded Index data into mesh index buffer
-			const size_t bufferSize = mesh.indices.size() * sizeof(uint32_t);
+			const size_t bufferSize = indices.size() * sizeof(uint32_t);
 
 			// Allocated Staging Buffer - Map Indices in CPU Memory
 			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -1266,11 +1281,11 @@ namespace Puffin
 			// Map Index data to staging buffer
 			void* data;
 			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
-			memcpy(data, mesh.indices.data(), bufferSize);
+			memcpy(data, indices.data(), bufferSize);
 			vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
 			// Allocate Index Buffer - Transfer Indices into GPU Memory
-			mesh.indexBuffer = CreateBuffer(bufferSize,
+			AllocatedBuffer indexBuffer = CreateBuffer(bufferSize,
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 				VMA_MEMORY_USAGE_GPU_ONLY);
 
@@ -1281,11 +1296,13 @@ namespace Puffin
 				copy.dstOffset = 0;
 				copy.srcOffset = 0;
 				copy.size = bufferSize;
-				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.indexBuffer.buffer, 1, &copy);
+				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, indexBuffer.buffer, 1, &copy);
 			});
 
 			// Cleanup Staging Buffer
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+
+			return indexBuffer;
 		}
 
 		void VulkanEngine::CleanupMesh(MeshComponent& mesh)
@@ -1764,8 +1781,9 @@ namespace Puffin
 			// Draw all Mesh objects
 			DrawObjects(cmd, index);
 
-			// Draw all Debug Lines/Boxes
-			DrawDebugObjects(cmd, index);
+			// Draw all Debug Lines/Boxes if there are any debug commands
+			if (GetCurrentFrame().debugIndirectCommands.size() > 0)
+				DrawDebugObjects(cmd, index);
 
 			// Finalize Render Pass
 			vkCmdEndRenderPass(cmd);
@@ -2175,7 +2193,31 @@ namespace Puffin
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 				debugPipelineLayout, 0, 1, &GetCurrentFrame().cameraViewProjDescriptor, 0, nullptr);
 
-			//vkCmdDraw()
+			// Destroy old vertex buffer before creating new one
+			vmaDestroyBuffer(allocator, GetCurrentFrame().debugVertexBuffer.buffer, GetCurrentFrame().debugVertexBuffer.allocation);
+
+			// Create/Bind Vertex Buffer
+			GetCurrentFrame().debugVertexBuffer = InitVertexBuffer(GetCurrentFrame().debugVertices);
+
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(cmd, 0, 1, &GetCurrentFrame().debugVertexBuffer.buffer, offsets);
+
+			// Map Indirect Commands to buffer
+			void* data;
+			vmaMapMemory(allocator, GetCurrentFrame().debugIndirectCommandsBuffer.allocation, &data);
+
+			memcpy(data, &GetCurrentFrame().debugIndirectCommands, sizeof(VkDrawIndirectCommand) * 10000);
+
+			vmaUnmapMemory(allocator, GetCurrentFrame().debugIndirectCommandsBuffer.allocation);
+			
+			uint32_t draw_count = GetCurrentFrame().debugIndirectCommands.size();
+			uint32_t draw_stride = 0;
+
+			// Draw Debug Lines/Boxes Using Draw Indirect
+			vkCmdDrawIndirect(cmd, GetCurrentFrame().debugIndirectCommandsBuffer.buffer, 0, draw_count, draw_stride);
+
+			GetCurrentFrame().debugIndirectCommands.clear();
+			GetCurrentFrame().debugVertices.clear();
 		}
 
 		void VulkanEngine::MapObjectData()
@@ -2313,9 +2355,34 @@ namespace Puffin
 			vkResetCommandPool(device, uploadContext.commandPool, 0);
 		}
 
+		//-------------------------------------------------------------------------------------
+
 		void VulkanEngine::DrawDebugLine(Vector3 start, Vector3 end, Vector3 color)
 		{
+			// Add debug line vertices to current frames vertices vector
+			Vertex startVertex, endVertex;
+			startVertex.pos = start;
+			startVertex.color = color;
+			startVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
+			startVertex.texCoord = Vector2(0.0f, 0.0f);
 
+			endVertex.pos = end;
+			endVertex.color = color;
+			endVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
+			endVertex.texCoord = Vector2(0.0f, 0.0f);
+			
+			GetCurrentFrame().debugVertices.push_back(startVertex);
+			GetCurrentFrame().debugVertices.push_back(endVertex);
+
+			// Create Indirect Draw Command for Vertices
+			VkDrawIndirectCommand command = {};
+			command.vertexCount = 2;
+			command.instanceCount = 1;
+			command.firstVertex = GetCurrentFrame().debugVertices.size() - 2;
+			command.firstInstance = GetCurrentFrame().debugIndirectCommands.size();
+
+			// Add draw indirect command to current frames commands vector
+			GetCurrentFrame().debugIndirectCommands.push_back(command);
 		}
 	}
 }

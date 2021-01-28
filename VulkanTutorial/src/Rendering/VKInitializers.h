@@ -227,9 +227,10 @@ namespace Puffin
 				return colorBlendAttachment;
 			}
 
-			VkPipelineDynamicStateCreateInfo DynamicStateCreateInfo(const std::vector<VkDynamicState> states)
+			VkPipelineDynamicStateCreateInfo DynamicStateCreateInfo(const std::vector<VkDynamicState>& states)
 			{
 				VkPipelineDynamicStateCreateInfo info = {};
+				info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 				info.dynamicStateCount = states.size();
 				info.pDynamicStates = states.data();
 				return info;

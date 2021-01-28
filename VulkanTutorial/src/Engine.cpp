@@ -95,6 +95,8 @@ namespace Puffin
 			// UI
 			UIManager.Update();
 
+			//vulkanEngine->DrawDebugLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 10.0f), Vector3(1.0f, 0.0f, 0.0f));
+
 			// Rendering
 			running = vulkanEngine->Update(&UIManager, &InputManager, delta_time);
 			

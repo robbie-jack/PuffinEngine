@@ -116,6 +116,11 @@ namespace Puffin
 			VkDescriptorSet lightSpaceDescriptor, lightSpaceMultiDescriptor;
 
 			VkDescriptorSet shadowmapDescriptor;
+
+			// Debug Variables
+			std::vector<Vertex> debugVertices;
+			std::vector<VkDrawIndirectCommand> debugIndirectCommands;
+			AllocatedBuffer debugVertexBuffer, debugIndirectCommandsBuffer;
 		};
 
 		struct GPUObjectData
@@ -210,7 +215,6 @@ namespace Puffin
 			// Debug Pipeline
 			VkPipelineLayout debugPipelineLayout;
 			VkPipeline debugPipeline;
-			
 
 			FrameData frames[FRAME_OVERLAP];
 
@@ -247,9 +251,6 @@ namespace Puffin
 			VkSampler textureSampler;
 			VkSampler depthSampler; // Sampler for reading shadowmaps in shader
 
-			//std::vector<RenderObject> renderObjects;
-			//std::unordered_map<std::string_view, Material> materials;
-
 			// Camera
 			CameraComponent camera;
 
@@ -276,6 +277,7 @@ namespace Puffin
 			void InitOffscreenFramebuffers();
 			void InitSyncStructures();
 			void InitDescriptors();
+			void InitBuffers();
 			void InitPipelines();
 			void InitShadowPipeline();
 			void InitDebugPipeline();
@@ -296,8 +298,8 @@ namespace Puffin
 			void InitCamera(CameraComponent& camera);
 
 			// Init Buffer Functions
-			void InitVertexBuffer(MeshComponent& mesh);
-			void InitIndexBuffer(MeshComponent& mesh);
+			AllocatedBuffer InitVertexBuffer(std::vector<Vertex> vertices);
+			AllocatedBuffer InitIndexBuffer(std::vector<uint32_t> indices);
 
 			// Component Cleanup Functions
 			void CleanupMesh(MeshComponent& mesh);
