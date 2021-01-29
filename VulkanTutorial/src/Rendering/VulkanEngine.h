@@ -119,8 +119,9 @@ namespace Puffin
 
 			// Debug Variables
 			std::vector<Vertex> debugVertices;
-			std::vector<VkDrawIndirectCommand> debugIndirectCommands;
-			AllocatedBuffer debugVertexBuffer, debugIndirectCommandsBuffer;
+			std::vector<uint32_t> debugIndices;
+			std::vector<VkDrawIndexedIndirectCommand> debugIndirectCommands;
+			AllocatedBuffer debugVertexBuffer, debugIndexBuffer, debugIndirectCommandsBuffer;
 		};
 
 		struct GPUObjectData
@@ -151,6 +152,34 @@ namespace Puffin
 		const int HEIGHT = 720; // Starting Window Height
 
 		const int MAX_LIGHTS = 4;
+
+		const Vector3 boxPositions[8] =
+		{
+			Vector3(-1.0f, 1.0f, 1.0f),
+			Vector3(-1.0f, -1.0f, 1.0f),
+			Vector3(1.0f, -1.0f, 1.0f),
+			Vector3(1.0f, 1.0f, 1.0f),
+			Vector3(-1.0f, 1.0f, -1.0f),
+			Vector3(-1.0f, -1.0f, -1.0f),
+			Vector3(1.0f, -1.0f, -1.0f),
+			Vector3(1.0f, 1.0f, -1.0f),
+		};
+
+		const uint32_t boxIndices[24] =
+		{
+			0, 1, // Front Lines
+			1, 2,
+			2, 3,
+			3, 0,
+			4, 5, // Back Lines
+			5, 6,
+			6, 7,
+			7, 4,
+			0, 4, // Side Lines
+			1, 5,
+			2, 6,
+			3, 7
+		};
 
 		class VulkanEngine : public ECS::System
 		{
@@ -303,6 +332,7 @@ namespace Puffin
 			AllocatedBuffer InitIndexBuffer(std::vector<uint32_t> indices);
 
 			void CopyVerticesToBuffer(std::vector<Vertex> vertices, AllocatedBuffer vertexBuffer);
+			void CopyIndicesToBuffer(std::vector<uint32_t> indices, AllocatedBuffer indexBuffer);
 
 			// Component Cleanup Functions
 			void CleanupMesh(MeshComponent& mesh);

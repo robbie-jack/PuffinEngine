@@ -882,14 +882,21 @@ namespace Puffin
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				const int MAX_DEBUG_COMMANDS = 10000;
-				const int MAX_VERTICES_PER_COMMAND = 2;
+				const int MAX_VERTICES_PER_COMMAND = 8;
+				const int MAX_INDICES_PER_COMMAND = 24;
 
 				frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
-				frames[i].debugIndirectCommandsBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * sizeof(VkDrawIndirectCommand),
+				frames[i].debugIndexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND * sizeof(uint32_t),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+				frames[i].debugIndirectCommandsBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * sizeof(VkDrawIndexedIndirectCommand),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].debugVertices.reserve(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND);
+				frames[i].debugIndices.reserve(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND);
 			}
 		}
 
@@ -1246,7 +1253,7 @@ namespace Puffin
 			const size_t bufferSize = vertices.size() * sizeof(Vertex);
 
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map vertex data to staging buffer
 			void* data;
@@ -1281,7 +1288,7 @@ namespace Puffin
 			const size_t bufferSize = indices.size() * sizeof(uint32_t);
 
 			// Allocated Staging Buffer - Map Indices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map Index data to staging buffer
 			void* data;
@@ -1316,7 +1323,7 @@ namespace Puffin
 			const size_t bufferSize = vertices.size() * sizeof(Vertex);
 
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map vertex data to staging buffer
 			void* data;
@@ -1335,6 +1342,34 @@ namespace Puffin
 			});
 
 			// Cleanup Staging Buffer Immediately, It is no longer needed
+			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+		}
+
+		void VulkanEngine::CopyIndicesToBuffer(std::vector<uint32_t> indices, AllocatedBuffer indexBuffer)
+		{
+			// Copy Loaded Index data into mesh index buffer
+			const size_t bufferSize = indices.size() * sizeof(uint32_t);
+
+			// Allocated Staging Buffer - Map Indices in CPU Memory
+			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+
+			// Map Index data to staging buffer
+			void* data;
+			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+			memcpy(data, indices.data(), bufferSize);
+			vmaUnmapMemory(allocator, stagingBuffer.allocation);
+
+			//Copy from CPU Memory to GPU Memory
+			ImmediateSubmit([=](VkCommandBuffer cmd)
+			{
+				VkBufferCopy copy;
+				copy.dstOffset = 0;
+				copy.srcOffset = 0;
+				copy.size = bufferSize;
+				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, indexBuffer.buffer, 1, &copy);
+			});
+
+			// Cleanup Staging Buffer
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 
@@ -1717,7 +1752,10 @@ namespace Puffin
 
 			// Copy Debug Vertices to Vertex Buffer
 			if (GetCurrentFrame().debugVertices.size() > 0)
+			{
 				CopyVerticesToBuffer(GetCurrentFrame().debugVertices, GetCurrentFrame().debugVertexBuffer);
+				CopyIndicesToBuffer(GetCurrentFrame().debugIndices, GetCurrentFrame().debugIndexBuffer);
+			}
 
 			// Record Command Buffers
 			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
@@ -1767,6 +1805,7 @@ namespace Puffin
 			VK_CHECK(vkQueuePresentKHR(graphicsQueue, &presentInfo));
 
 			GetCurrentFrame().debugVertices.clear();
+			GetCurrentFrame().debugIndices.clear();
 			GetCurrentFrame().debugIndirectCommands.clear();
 
 			// Number of Frames that have completed rendering
@@ -2239,14 +2278,17 @@ namespace Puffin
 			// Map Indirect Commands to buffer
 			void* data;
 			vmaMapMemory(allocator, GetCurrentFrame().debugIndirectCommandsBuffer.allocation, &data);
-			memcpy(data, GetCurrentFrame().debugIndirectCommands.data(), sizeof(VkDrawIndirectCommand) * GetCurrentFrame().debugIndirectCommands.size());
+			memcpy(data, GetCurrentFrame().debugIndirectCommands.data(), sizeof(VkDrawIndexedIndirectCommand) * GetCurrentFrame().debugIndirectCommands.size());
 			vmaUnmapMemory(allocator, GetCurrentFrame().debugIndirectCommandsBuffer.allocation);
+
+			// Bind Index Buffer
+			vkCmdBindIndexBuffer(cmd, GetCurrentFrame().debugIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 			
 			uint32_t draw_count = GetCurrentFrame().debugIndirectCommands.size();
-			uint32_t draw_stride = sizeof(VkDrawIndirectCommand);
+			uint32_t draw_stride = sizeof(VkDrawIndexedIndirectCommand);
 
 			// Draw Debug Lines/Boxes Using Draw Indirect
-			vkCmdDrawIndirect(cmd, GetCurrentFrame().debugIndirectCommandsBuffer.buffer, 0, draw_count, draw_stride);
+			vkCmdDrawIndexedIndirect(cmd, GetCurrentFrame().debugIndirectCommandsBuffer.buffer, 0, draw_count, draw_stride);
 		}
 
 		void VulkanEngine::MapObjectData()
@@ -2401,29 +2443,95 @@ namespace Puffin
 			endVertex.texCoord = Vector2(0.0f, 0.0f);
 
 			// Create Indirect Draw Command for Vertices
-			VkDrawIndirectCommand command = {};
+			/*VkDrawIndirectCommand command = {};
 			command.vertexCount = 2;
 			command.instanceCount = 1;
 			command.firstVertex = GetCurrentFrame().debugVertices.size();
+			command.firstInstance = GetCurrentFrame().debugIndirectCommands.size();*/
+
+			// Create Indexed Indirect Draw Command for Vertices
+			VkDrawIndexedIndirectCommand command = {};
+			command.indexCount = 2;
+			command.instanceCount = 1;
+			command.firstIndex = GetCurrentFrame().debugIndices.size();
+			command.vertexOffset = 0;
 			command.firstInstance = GetCurrentFrame().debugIndirectCommands.size();
+
+			uint32_t firstIndex = GetCurrentFrame().debugVertices.size();
 			
-			// Add debug lines vertices to vector
+			// Add vertices to vector
 			GetCurrentFrame().debugVertices.push_back(startVertex);
 			GetCurrentFrame().debugVertices.push_back(endVertex);
 
-			// Add draw indirect command to current frames commands vector
+			// Add indices to vector
+			GetCurrentFrame().debugIndices.push_back(firstIndex);
+			GetCurrentFrame().debugIndices.push_back(firstIndex + 1);
+
+			// Add draw indirect command to current frame commands vector
 			GetCurrentFrame().debugIndirectCommands.push_back(command);
 		}
 
 		void VulkanEngine::DrawDebugBox(Vector3 origin, Vector3 halfSize, Vector3 color)
 		{
-			Vertex vertex;
-			vertex.color = color;
-			vertex.normal = Vector3(0.0f, 0.0f, 0.0f);
-			vertex.texCoord = Vector2(0.0f, 0.0f);
+			//// Draw Front Lines
+			//DrawDebugLine(origin + Vector3(-halfSize.x, halfSize.y, halfSize.z),
+			//	origin + Vector3(-halfSize.x, -halfSize.y, halfSize.z), color);
 
-			vertex.pos = origin + Vector3(0.0f, 0.0f, 0.0f);
-			GetCurrentFrame().debugVertices.push_back(vertex);
+			//DrawDebugLine(origin + Vector3(-halfSize.x, -halfSize.y, halfSize.z),
+			//	origin + Vector3(halfSize.x, -halfSize.y, halfSize.z), color);
+
+			//DrawDebugLine(origin + Vector3(halfSize.x, -halfSize.y, halfSize.z),
+			//	origin + Vector3(halfSize.x, halfSize.y, halfSize.z), color);
+
+			//DrawDebugLine(origin + Vector3(halfSize.x, halfSize.y, halfSize.z),
+			//	origin + Vector3(-halfSize.x, halfSize.y, halfSize.z), color);
+
+			//// Draw Back Lines
+			//DrawDebugLine(origin + Vector3(-halfSize.x, halfSize.y, -halfSize.z),
+			//	origin + Vector3(-halfSize.x, -halfSize.y, -halfSize.z), color);
+
+			//DrawDebugLine(origin + Vector3(-halfSize.x, -halfSize.y, -halfSize.z),
+			//	origin + Vector3(halfSize.x, -halfSize.y, -halfSize.z), color);
+
+			//DrawDebugLine(origin + Vector3(halfSize.x, -halfSize.y, -halfSize.z),
+			//	origin + Vector3(halfSize.x, halfSize.y, -halfSize.z), color);
+
+			//DrawDebugLine(origin + Vector3(halfSize.x, halfSize.y, -halfSize.z),
+			//	origin + Vector3(-halfSize.x, halfSize.y, -halfSize.z), color);
+
+			const int numVertices = 8;
+			const int numIndices = 24;
+
+			int firstVertex = GetCurrentFrame().debugVertices.size();
+			int firstIndex = GetCurrentFrame().debugIndices.size();
+
+			Vertex vert = {};
+			vert.color = color;
+			vert.normal = Vector3(0.0f, 0.0f, 0.0f);
+			vert.texCoord = Vector2(0.0f, 0.0f);
+
+			// Add Vertices to vector
+			for (int i = 0; i < numVertices; i++)
+			{
+				vert.pos = origin + (halfSize * boxPositions[i]);
+				GetCurrentFrame().debugVertices.push_back(vert);
+			}
+
+			// Add Indices to vector
+			for (int i = 0; i < numIndices; i++)
+			{
+				GetCurrentFrame().debugIndices.push_back(firstVertex + boxIndices[i]);
+			}
+
+			// Create Indexed Indirect Draw Command for Vertices
+			VkDrawIndexedIndirectCommand command = {};
+			command.indexCount = numIndices;
+			command.instanceCount = 1;
+			command.firstIndex = firstIndex;
+			command.vertexOffset = 0;
+			command.firstInstance = GetCurrentFrame().debugIndirectCommands.size();
+
+			GetCurrentFrame().debugIndirectCommands.push_back(command);
 		}
 	}
 }

@@ -291,6 +291,16 @@ namespace Puffin
 			return vector;
 		}
 
+		// Operator*
+		Vector3 operator*(Vector3 vec)
+		{
+			Vector3 vector;
+			vector.x = x * vec.x;
+			vector.y = y * vec.y;
+			vector.z = z * vec.z;
+			return vector;
+		}
+
 		// Functions
 		float Dot(Vector3 vec)
 		{
