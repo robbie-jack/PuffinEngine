@@ -173,6 +173,7 @@ namespace Puffin
 
 			// Debug Draw Functions
 			void DrawDebugLine(Vector3 start, Vector3 end, Vector3 color);
+			void DrawDebugBox(Vector3 origin, Vector3 halfSize, Vector3 color);
 
 			// Memory allocator
 			VmaAllocator allocator;
@@ -300,6 +301,8 @@ namespace Puffin
 			// Init Buffer Functions
 			AllocatedBuffer InitVertexBuffer(std::vector<Vertex> vertices);
 			AllocatedBuffer InitIndexBuffer(std::vector<uint32_t> indices);
+
+			void CopyVerticesToBuffer(std::vector<Vertex> vertices, AllocatedBuffer vertexBuffer);
 
 			// Component Cleanup Functions
 			void CleanupMesh(MeshComponent& mesh);
