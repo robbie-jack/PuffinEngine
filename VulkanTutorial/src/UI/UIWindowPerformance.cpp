@@ -22,7 +22,7 @@ namespace Puffin
 					hardwareStats.logicalCores = std::thread::hardware_concurrency();
 					hardwareStats.physicalCores = hardwareStats.logicalCores / 2;
 					hardwareStats.gpuName = "GTX 1070";
-					hardwareStats.vramTotal = 16384;
+					hardwareStats.vramTotal = 8192;
 					hardwareStats.ramTotal = 16384;
 
 					ImGui::Text(" CPU: %s", hardwareStats.cpuName);
@@ -30,9 +30,9 @@ namespace Puffin
 					ImGui::Text(" Logical Cores: %d", hardwareStats.logicalCores);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::Text(" GPU: %s", hardwareStats.gpuName);
-					ImGui::Text(" VRAM: %d MB", hardwareStats.vramTotal);
+					ImGui::Text(" VRAM: %.1f GB", hardwareStats.vramTotal / 1024.0f);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
-					ImGui::Text(" System Memory: %d MB", hardwareStats.ramTotal);
+					ImGui::Text(" System Memory: %.1f GB", hardwareStats.ramTotal / 1024.0f);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 				}
 

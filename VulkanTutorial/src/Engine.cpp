@@ -10,6 +10,8 @@
 #include <Physics/BulletPhysicsSystem.h>
 #include <SerializeScene.h>
 
+#include <Rendering/DebugDraw.h>
+
 #include <chrono>
 
 namespace Puffin
@@ -95,11 +97,11 @@ namespace Puffin
 			// UI
 			UIManager.Update();
 
-			vulkanEngine->DrawDebugLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 5.0f), Vector3(1.0f, 0.0f, 0.0f));
-			vulkanEngine->DrawDebugLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 5.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
-			vulkanEngine->DrawDebugLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
+			//Debug::DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 5.0f), Vector3(1.0f, 0.0f, 0.0f));
+			//Debug::DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 5.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
+			//Debug::DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
 
-			vulkanEngine->DrawDebugBox(Vector3(0.0f, 0.0f, 0.0f), Vector3(1.1f, 1.1f, 1.1f), Vector3(1.0f, 1.0f, 1.0f));
+			//Debug::DrawBox(Vector3(0.0f, 0.0f, 0.0f), Vector3(1.1f, 1.1f, 1.1f), Vector3(1.0f, 1.0f, 1.0f));
 
 			// Rendering
 			running = vulkanEngine->Update(&UIManager, &InputManager, delta_time);

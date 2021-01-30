@@ -10,6 +10,7 @@
 #include <Rendering/vk_mem_alloc.h>
 
 //#include "renderdoc_app.h"
+#include <Rendering/DebugDraw.h>
 
 #include <iostream>
 #include <string>
@@ -1104,7 +1105,7 @@ namespace Puffin
 			pipelineBuilder.colorBlendAttachment = VKInit::ColorBlendAttachmentState();
 
 			// Depth Testing - Default
-			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(false, false, VK_COMPARE_OP_LESS_OR_EQUAL);
 
 			std::vector<VkDynamicState> dynamicStates =
 			{
@@ -1749,6 +1750,9 @@ namespace Puffin
 			{
 				RecreateOffscreen();
 			}
+
+			// Retrieve Debug Draw Data
+			RetrieveDebugData();
 
 			// Copy Debug Vertices to Vertex Buffer
 			if (GetCurrentFrame().debugVertices.size() > 0)
@@ -2428,6 +2432,23 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
+		void VulkanEngine::RetrieveDebugData()
+		{
+			std::vector<Debug::DebugLine> lines = Debug::RetrieveDrawLines();
+
+			for (int i = 0; i < lines.size(); i++)
+			{
+				DrawDebugLine(lines[i].start, lines[i].end, lines[i].color);
+			}
+
+			std::vector<Debug::DebugBox> boxes = Debug::RetrieveDrawBoxes();
+
+			for (int i = 0; i < boxes.size(); i++)
+			{
+				DrawDebugBox(boxes[i].origin, boxes[i].halfSize, boxes[i].color);
+			}
+		}
+
 		void VulkanEngine::DrawDebugLine(Vector3 start, Vector3 end, Vector3 color)
 		{
 			// Create debug line vertices to current frames vertices vector
@@ -2441,13 +2462,6 @@ namespace Puffin
 			endVertex.color = color;
 			endVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
 			endVertex.texCoord = Vector2(0.0f, 0.0f);
-
-			// Create Indirect Draw Command for Vertices
-			/*VkDrawIndirectCommand command = {};
-			command.vertexCount = 2;
-			command.instanceCount = 1;
-			command.firstVertex = GetCurrentFrame().debugVertices.size();
-			command.firstInstance = GetCurrentFrame().debugIndirectCommands.size();*/
 
 			// Create Indexed Indirect Draw Command for Vertices
 			VkDrawIndexedIndirectCommand command = {};
@@ -2473,32 +2487,6 @@ namespace Puffin
 
 		void VulkanEngine::DrawDebugBox(Vector3 origin, Vector3 halfSize, Vector3 color)
 		{
-			//// Draw Front Lines
-			//DrawDebugLine(origin + Vector3(-halfSize.x, halfSize.y, halfSize.z),
-			//	origin + Vector3(-halfSize.x, -halfSize.y, halfSize.z), color);
-
-			//DrawDebugLine(origin + Vector3(-halfSize.x, -halfSize.y, halfSize.z),
-			//	origin + Vector3(halfSize.x, -halfSize.y, halfSize.z), color);
-
-			//DrawDebugLine(origin + Vector3(halfSize.x, -halfSize.y, halfSize.z),
-			//	origin + Vector3(halfSize.x, halfSize.y, halfSize.z), color);
-
-			//DrawDebugLine(origin + Vector3(halfSize.x, halfSize.y, halfSize.z),
-			//	origin + Vector3(-halfSize.x, halfSize.y, halfSize.z), color);
-
-			//// Draw Back Lines
-			//DrawDebugLine(origin + Vector3(-halfSize.x, halfSize.y, -halfSize.z),
-			//	origin + Vector3(-halfSize.x, -halfSize.y, -halfSize.z), color);
-
-			//DrawDebugLine(origin + Vector3(-halfSize.x, -halfSize.y, -halfSize.z),
-			//	origin + Vector3(halfSize.x, -halfSize.y, -halfSize.z), color);
-
-			//DrawDebugLine(origin + Vector3(halfSize.x, -halfSize.y, -halfSize.z),
-			//	origin + Vector3(halfSize.x, halfSize.y, -halfSize.z), color);
-
-			//DrawDebugLine(origin + Vector3(halfSize.x, halfSize.y, -halfSize.z),
-			//	origin + Vector3(-halfSize.x, halfSize.y, -halfSize.z), color);
-
 			const int numVertices = 8;
 			const int numIndices = 24;
 

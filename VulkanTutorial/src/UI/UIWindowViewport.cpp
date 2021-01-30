@@ -1,4 +1,6 @@
 #include <UI/UIWindowViewport.h>
+#include <Rendering\DebugDraw.h>
+#include <Components\TransformComponent.h>
 
 namespace Puffin
 {
@@ -41,10 +43,13 @@ namespace Puffin
 
 				if (entity != ECS::INVALID_ENTITY)
 				{
+					TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+					float lineLength = 2.5f;
 
+					Debug::DrawLine(transform.position, transform.position + Vector3(0.0f, 0.0f, lineLength), Vector3(1.0f, 0.0f, 0.0f));
+					Debug::DrawLine(transform.position, transform.position + Vector3(0.0f, lineLength, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
+					Debug::DrawLine(transform.position, transform.position + Vector3(lineLength, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
 				}
-
-
 
 				End();
 			}

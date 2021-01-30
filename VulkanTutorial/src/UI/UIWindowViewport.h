@@ -8,8 +8,6 @@
 #include <ECS/ECS.h>
 #include <Components/Rendering/CameraComponent.h>
 
-//#include <vulkan/vulkan.h>
-
 namespace Puffin
 {
 	namespace UI

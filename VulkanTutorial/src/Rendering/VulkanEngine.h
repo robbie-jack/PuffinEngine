@@ -200,10 +200,6 @@ namespace Puffin
 			void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 			AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlags requiredFlags = 0);
 
-			// Debug Draw Functions
-			void DrawDebugLine(Vector3 start, Vector3 end, Vector3 color);
-			void DrawDebugBox(Vector3 origin, Vector3 halfSize, Vector3 color);
-
 			// Memory allocator
 			VmaAllocator allocator;
 			UploadContext uploadContext;
@@ -343,14 +339,21 @@ namespace Puffin
 
 			// Render Functions
 			void DrawFrame(UI::UIManager* UIManager);
+
 			VkCommandBuffer RecordShadowCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordGUICommandBuffer(uint32_t index);
-			//void RenderShadowPass(VkCommandBuffer cmd, uint32_t index);
+
 			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
 			void DrawDebugObjects(VkCommandBuffer cmd, uint32_t index);
+
 			void MapObjectData();
 			glm::mat4 BuildMeshTransform(TransformComponent comp);
+
+			// Debug Draw Functions
+			void RetrieveDebugData();
+			void DrawDebugLine(Vector3 start, Vector3 end, Vector3 color);
+			void DrawDebugBox(Vector3 origin, Vector3 halfSize, Vector3 color);
 
 			static inline void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 			{
