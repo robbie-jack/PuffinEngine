@@ -2434,19 +2434,19 @@ namespace Puffin
 
 		void VulkanEngine::RetrieveDebugData()
 		{
-			std::vector<Debug::DebugLine> lines = Debug::RetrieveDrawLines();
-
-			for (int i = 0; i < lines.size(); i++)
+			for (int i = 0; i < Debug::debugLines.size(); i++)
 			{
-				DrawDebugLine(lines[i].start, lines[i].end, lines[i].color);
+				DrawDebugLine(Debug::debugLines[i].start, Debug::debugLines[i].end, Debug::debugLines[i].color);
 			}
 
-			std::vector<Debug::DebugBox> boxes = Debug::RetrieveDrawBoxes();
+			Debug::debugLines.clear();
 
-			for (int i = 0; i < boxes.size(); i++)
+			for (int i = 0; i < Debug::debugBoxes.size(); i++)
 			{
-				DrawDebugBox(boxes[i].origin, boxes[i].halfSize, boxes[i].color);
+				DrawDebugBox(Debug::debugBoxes[i].origin, Debug::debugBoxes[i].halfSize, Debug::debugBoxes[i].color);
 			}
+
+			Debug::debugBoxes.clear();
 		}
 
 		void VulkanEngine::DrawDebugLine(Vector3 start, Vector3 end, Vector3 color)

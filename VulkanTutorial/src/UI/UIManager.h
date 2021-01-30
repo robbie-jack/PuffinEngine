@@ -39,7 +39,11 @@ namespace Puffin
 			void Update();
 			void AddWindow(UIWindow* window);
 
-			inline void SetEngine(Engine* engine_) { engine = engine_; };
+			inline void SetEngine(Engine* engine_) 
+			{ 
+				engine = engine_;
+				windowViewport->SetEngine(engine_);
+			};
 
 			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
 			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
@@ -55,8 +59,6 @@ namespace Puffin
 		private:
 			bool running;
 			bool saveScene, loadScene, importMesh;
-
-			std::string playButtonLabel;
 
 			Engine* engine;
 			ECS::World* world;

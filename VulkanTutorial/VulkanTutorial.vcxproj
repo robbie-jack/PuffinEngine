@@ -177,14 +177,15 @@
     <ClCompile Include="..\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp" />
-    <ClCompile Include="DebugDraw.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\JobManager.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp" />
+    <ClCompile Include="src\Rendering\DebugDraw.cpp" />
     <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
     <ClCompile Include="src\Rendering\VulkanEngine.cpp" />
     <ClCompile Include="src\UI\UIManager.cpp" />
@@ -218,6 +219,7 @@
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\JobManager.h" />
+    <ClInclude Include="src\ManipulationGizmo.h" />
     <ClInclude Include="src\Physics\BulletPhysicsSystem.h" />
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\Rendering\DebugDraw.h" />

@@ -1,6 +1,7 @@
-#include "UIManager.h"
-#include "../SerializeScene.h"
-#include "../Rendering/ModelLoader.h"
+#include <UI\UIManager.h>
+#include <SerializeScene.h>
+#include <Rendering\ModelLoader.h>
+#include <ManipulationGizmo.h>
 
 #include <string>
 
@@ -24,7 +25,6 @@ namespace Puffin
 			saveScene = false;
 			loadScene = false;
 			importMesh = false;
-			playButtonLabel = "Play";
 
 			windowSceneHierarchy = new UIWindowSceneHierarchy();
 			windowViewport = new UIWindowViewport();
@@ -245,28 +245,6 @@ namespace Puffin
 					}
 
 					ImGui::EndMenu();
-				}
-
-				ImGui::Dummy(ImVec2((ImGui::GetWindowWidth() / 2) - 200.0f, 0.0f));
-
-				if (ImGui::Button(playButtonLabel.c_str()))
-				{
-					engine->Play();
-
-					if (engine->GetPlayState() == PlayState::PAUSED)
-					{
-						playButtonLabel = "Play";
-					}
-					else if (engine->GetPlayState() == PlayState::PLAYING)
-					{
-						playButtonLabel = "Pause";
-					}
-				}
-
-				if (ImGui::Button("Stop"))
-				{
-					engine->Restart();
-					playButtonLabel = "Play";
 				}
 
 				ImGui::EndMenuBar();

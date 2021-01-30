@@ -22,6 +22,20 @@ namespace Puffin
 			Vector3 color;
 		};
 
+		struct DebugCircle
+		{
+			Vector3 origin;
+			float radius;
+			int segements;
+		};
+
+		struct DebugGrid
+		{
+			Vector3 origin;
+			Vector3 halfSize;
+			int rows, columns;
+		};
+
 		extern std::vector<DebugLine> debugLines;
 		extern std::vector<DebugBox> debugBoxes;
 
@@ -46,19 +60,14 @@ namespace Puffin
 			debugBoxes.push_back(debugBox);
 		}
 
-		// Retrieve Functions - used by renderer to retrieve draw data
-		inline std::vector<DebugLine> RetrieveDrawLines()
+		inline void DrawCircle(Vector3 origin, float radius, int segments)
 		{
-			std::vector<DebugLine> lines = debugLines;
-			debugLines.clear();
-			return lines;
+
 		}
 
-		inline std::vector<DebugBox> RetrieveDrawBoxes()
+		inline void DrawGrid(Vector3 origin, Vector2 halfSize, int rows, int columns)
 		{
-			std::vector<DebugBox> boxes = debugBoxes;
-			debugBoxes.clear();
-			return boxes;
+
 		}
 	}
 }

@@ -109,9 +109,10 @@
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="DebugDraw.cpp">
+    <ClCompile Include="src\Rendering\DebugDraw.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="src\ManipulationGizmo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shadowmap.vert">
@@ -234,5 +235,6 @@
     <ClInclude Include="src\Rendering\DebugDraw.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="src\ManipulationGizmo.h" />
   </ItemGroup>
 </Project>
