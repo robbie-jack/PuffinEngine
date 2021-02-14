@@ -1,16 +1,15 @@
 #include "Engine.h"
 
-#include <ECS/ECS.h>
-
+#include <Rendering/VulkanEngine.h>
 #include <Components/TransformComponent.h>
-#include <UI/UIManager.h>
+#include <ECS/ECS.h>
 #include <Input/InputManager.h>
 #include <JobManager.h>
-#include <Rendering/VulkanEngine.h>
 #include <Physics/BulletPhysicsSystem.h>
-#include <SerializeScene.h>
-
 #include <Rendering/DebugDraw.h>
+#include <Scripting/JinxScriptingSystem.h>
+#include <SerializeScene.h>
+#include <UI/UIManager.h>
 
 #include <chrono>
 
@@ -36,6 +35,7 @@ namespace Puffin
 		// Systems
 		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld.RegisterSystem<Rendering::VulkanEngine>();
+		std::shared_ptr<Scripting::JinxScriptingSystem> scriptingSystem = ECSWorld.RegisterSystem<Scripting::JinxScriptingSystem>();
 
 		ECSWorld.RegisterComponent<TransformComponent>();
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
@@ -71,10 +71,11 @@ namespace Puffin
 		// Initialize Systems
 		GLFWwindow* window = vulkanEngine->Init(&UIManager);
 		physicsSystem->Start();
+		scriptingSystem->Init();
 
 		// Init Input
 		InputManager.SetupInput(window);
-
+		
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
@@ -92,6 +93,7 @@ namespace Puffin
 			if (playState == PlayState::PLAYING)
 			{
 				physicsSystem->Update(delta_time);
+				scriptingSystem->Update(delta_time);
 			}
 
 			// UI
@@ -105,9 +107,6 @@ namespace Puffin
 
 			// Rendering
 			running = vulkanEngine->Update(&UIManager, &InputManager, delta_time);
-			
-			// Delete All Marked Objects
-			ECSWorld.Update();
 
 			if (playState == PlayState::STOPPED && restarted)
 			{
@@ -129,10 +128,14 @@ namespace Puffin
 			{
 				running = false;
 			}
+
+			// Delete All Marked Objects
+			ECSWorld.Update();
 		}
 
 		physicsSystem->Stop();
 		vulkanEngine->Cleanup();
+		scriptingSystem->Cleanup();
 		UIManager.Cleanup();
 		ECSWorld.Cleanup();
 

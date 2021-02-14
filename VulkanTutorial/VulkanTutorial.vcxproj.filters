@@ -44,6 +44,9 @@
     <Filter Include="Components\Physics">
       <UniqueIdentifier>{ec7b6c70-88f6-4530-b9ca-ad35dd08fee9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{3ab7fd29-7ef4-4a4b-b919-36cec64bd1b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -113,6 +116,9 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="src\ManipulationGizmo.cpp" />
+    <ClCompile Include="src\Scripting\JinxScriptingSystem.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shadowmap.vert">
@@ -236,5 +242,8 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\ManipulationGizmo.h" />
+    <ClInclude Include="src\Scripting\JinxScriptingSystem.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
