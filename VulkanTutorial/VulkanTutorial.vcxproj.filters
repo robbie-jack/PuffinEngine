@@ -47,6 +47,9 @@
     <Filter Include="Scripting">
       <UniqueIdentifier>{3ab7fd29-7ef4-4a4b-b919-36cec64bd1b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripting\Scripts">
+      <UniqueIdentifier>{bf8e133a-03fb-4f16-bb82-08e1c495f46f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -135,6 +138,9 @@
     </None>
     <None Include="shaders\default_lighting.vert">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="content\scripts\test_script.jnx">
+      <Filter>Scripting\Scripts</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -244,6 +250,9 @@
     <ClInclude Include="src\ManipulationGizmo.h" />
     <ClInclude Include="src\Scripting\JinxScriptingSystem.h">
       <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\JinxScriptComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

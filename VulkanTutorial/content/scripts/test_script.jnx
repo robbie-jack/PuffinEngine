@@ -1,0 +1,10 @@
+-- Use the core library
+import core
+
+external delta_time
+
+function update {dt}
+	write line "Delta Time: " + dt
+end
+
+update delta_time

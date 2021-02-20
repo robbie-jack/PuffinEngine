@@ -2,6 +2,7 @@
 
 #include <ECS/ECS.h>
 #include <Jinx.hpp>
+#include <Components/JinxScriptComponent.h>
 
 namespace Puffin
 {
@@ -18,8 +19,10 @@ namespace Puffin
 	
 		private:
 	
-			Jinx::BufferPtr bytecode;
+			//Jinx::BufferPtr bytecode;
 			Jinx::RuntimePtr runtime;
+
+			void InitComponent(JinxScriptComponent& comp);
 		};
 	}
 }

@@ -8,6 +8,7 @@
 #include <Physics/BulletPhysicsSystem.h>
 #include <Rendering/DebugDraw.h>
 #include <Scripting/JinxScriptingSystem.h>
+#include <Components/JinxScriptComponent.h>
 #include <SerializeScene.h>
 #include <UI/UIManager.h>
 
@@ -38,6 +39,7 @@ namespace Puffin
 		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
 		ECSWorld.RegisterComponent<Rendering::LightComponent>();
 		ECSWorld.RegisterComponent<Physics::RigidbodyComponent>();
+		ECSWorld.RegisterComponent<Scripting::JinxScriptComponent>();
 
 		ECS::Signature meshSignature;
 		meshSignature.set(ECSWorld.GetComponentType<TransformComponent>());
@@ -54,6 +56,10 @@ namespace Puffin
 		rigidbodySignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
 
+		ECS::Signature scriptSignature;
+		scriptSignature.set(ECSWorld.GetComponentType<Scripting::JinxScriptComponent>());
+		ECSWorld.SetSystemSignature<Scripting::JinxScriptingSystem>("Script", scriptSignature);
+
 		sceneData.scene_name = "content/scenes/default.pscn";
 		IO::LoadSettings("settings.xml", settings);
 
@@ -61,6 +67,10 @@ namespace Puffin
 		
 		IO::LoadScene(&ECSWorld, sceneData);
 		IO::InitScene(&ECSWorld, sceneData);
+
+		Scripting::JinxScriptComponent scriptComp;
+		scriptComp.Name = "content/scripts/test_script.jnx";
+		ECSWorld.AddComponent(1, scriptComp);
 
 		running = true;
 		restarted = false;

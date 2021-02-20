@@ -198,6 +198,7 @@
     <ClCompile Include="src\UI\UIWindowViewport.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="content\scripts\test_script.jnx" />
     <None Include="shaders\debug.frag" />
     <None Include="shaders\debug.vert" />
     <None Include="shaders\default_lighting.frag" />
@@ -215,6 +216,7 @@
     <ClInclude Include="src\Components\Rendering\CameraComponent.h" />
     <ClInclude Include="src\Components\Rendering\LightComponent.h" />
     <ClInclude Include="src\Components\Rendering\MeshComponent.h" />
+    <ClInclude Include="src\Components\JinxScriptComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ecs\ECS.h" />
     <ClInclude Include="src\Engine.h" />
