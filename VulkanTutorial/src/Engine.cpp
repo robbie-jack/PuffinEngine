@@ -57,7 +57,7 @@ namespace Puffin
 		rigidbodySignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
 
-		sceneData.scene_name = "assets/scenes/default.scn";
+		sceneData.scene_name = "content/scenes/default.pscn";
 
 		//DefaultScene(&ECSWorld);
 		
@@ -99,12 +99,6 @@ namespace Puffin
 			// UI
 			UIManager.Update();
 
-			//Debug::DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 5.0f), Vector3(1.0f, 0.0f, 0.0f));
-			//Debug::DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 5.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
-			//Debug::DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
-
-			//Debug::DrawBox(Vector3(0.0f, 0.0f, 0.0f), Vector3(1.1f, 1.1f, 1.1f), Vector3(1.0f, 1.0f, 1.0f));
-
 			// Rendering
 			running = vulkanEngine->Update(&UIManager, &InputManager, delta_time);
 
@@ -145,7 +139,7 @@ namespace Puffin
 
 	void Engine::DefaultScene(ECS::World* world)
 	{
-		// Initiliase EntityManager with Existing Entities
+		// Initialize EntityManager with Existing Entities
 		world->InitEntitySystem(std::set<ECS::Entity>());
 
 		// Add Default Scene Components to ECS
@@ -168,7 +162,7 @@ namespace Puffin
 		world->AddComponent<Physics::RigidbodyComponent>(3);
 		world->AddComponent<Physics::RigidbodyComponent>(5);
 
-		// Initialise Components with default values
+		// Initialize Components with default values
 		world->GetComponent<TransformComponent>(1) = { false, false, Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(2) = { false, false, Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(3) = { false, false, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
@@ -176,20 +170,20 @@ namespace Puffin
 		world->GetComponent<TransformComponent>(5) = { false, false, Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(6) = { false, false, Vector3(0.0f, -10.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 1.0f, 10.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(1).model_path = "assets\\models\\chalet.asset_m";
-		world->GetComponent<Rendering::MeshComponent>(1).texture_path = "textures\\chalet.jpg";
+		world->GetComponent<Rendering::MeshComponent>(1).model_path = "content\\models\\chalet.psm";
+		world->GetComponent<Rendering::MeshComponent>(1).texture_path = "content\\textures\\chalet.jpg";
 
-		world->GetComponent<Rendering::MeshComponent>(2).model_path = "assets\\models\\space_engineer.asset_m";
-		world->GetComponent<Rendering::MeshComponent>(2).texture_path = "textures\\space_engineer.jpg";
+		world->GetComponent<Rendering::MeshComponent>(2).model_path = "content\\models\\space_engineer.psm";
+		world->GetComponent<Rendering::MeshComponent>(2).texture_path = "content\\textures\\space_engineer.jpg";
 
-		world->GetComponent<Rendering::MeshComponent>(3).model_path = "assets\\models\\cube.asset_m";
-		world->GetComponent<Rendering::MeshComponent>(3).texture_path = "textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(4).model_path = "assets\\models\\cube.asset_m";
-		world->GetComponent<Rendering::MeshComponent>(4).texture_path = "textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(5).model_path = "assets\\models\\cube.asset_m";
-		world->GetComponent<Rendering::MeshComponent>(5).texture_path = "textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(6).model_path = "assets\\models\\cube.asset_m";
-		world->GetComponent<Rendering::MeshComponent>(6).texture_path = "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(3).model_path = "content\\models\\cube.psm";
+		world->GetComponent<Rendering::MeshComponent>(3).texture_path = "content\\textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(4).model_path = "content\\models\\cube.psm";
+		world->GetComponent<Rendering::MeshComponent>(4).texture_path = "content\\textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(5).model_path = "content\\models\\cube.psm";
+		world->GetComponent<Rendering::MeshComponent>(5).texture_path = "content\\textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(6).model_path = "content\\models\\cube.psm";
+		world->GetComponent<Rendering::MeshComponent>(6).texture_path = "content\\textures\\cube.png";
 
 		world->GetComponent<Rendering::LightComponent>(4).direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		world->GetComponent<Rendering::LightComponent>(4).ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
