@@ -9,8 +9,6 @@
 #include <imfilebrowser.h>
 
 #include <Input/InputManager.h>
-//#include <ECS/ECS.h>
-//#include <Engine.h>
 
 #include <UI/UIWindow.h>
 #include <UI/UIWindowSceneHierarchy.h>

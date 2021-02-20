@@ -233,8 +233,31 @@ namespace Puffin
 				if (ImGui::BeginMenu("File"))
 				{
 					// Project Options
+					ImGui::Text("---Project---");
+
+					if (ImGui::MenuItem("New Project"))
+					{
+
+					}
+
+					if (ImGui::MenuItem("Load Project"))
+					{
+
+					}
+
+					if (ImGui::MenuItem("Save Project"))
+					{
+						IO::SaveSettings("settings.xml", engine->GetProjectSettings());
+					}
+
+					if (ImGui::MenuItem("Save Project As"))
+					{
+
+					}
 
 					// Scene Options
+					ImGui::Text("---Scene---");
+
 					if (ImGui::MenuItem("New Scene"))
 					{
 
@@ -255,6 +278,8 @@ namespace Puffin
 					{
 						saveScene = true;
 					}
+
+					ImGui::Text("---Other---");
 
 					if (ImGui::BeginMenu("Import"))
 					{

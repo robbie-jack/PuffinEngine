@@ -12,7 +12,7 @@ namespace Puffin
 	struct ProjectSettings
 	{
 		std::string projectName;
-		std::string projectDir;
+		std::string defaultScene;
 		float mouseSensitivity;
 		float cameraFov;
 	};
@@ -21,7 +21,7 @@ namespace Puffin
 	void serialize(Archive& archive, Puffin::ProjectSettings& settings)
 	{
 		archive(CEREAL_NVP(settings.projectName));
-		archive(CEREAL_NVP(settings.projectDir));
+		archive(CEREAL_NVP(settings.defaultScene));
 		archive(CEREAL_NVP(settings.cameraFov));
 		archive(CEREAL_NVP(settings.mouseSensitivity));
 	}

@@ -2,7 +2,7 @@
 <cereal>
 	<value0>
 		<settings.projectName>PuffinProject</settings.projectName>
-		<settings.projectDir>C:\Projects\PuffinProject</settings.projectDir>
+		<settings.defaultScene>default</settings.defaultScene>
 		<settings.cameraFov>60</settings.cameraFov>
 		<settings.mouseSensitivity>0.05000000074505806</settings.mouseSensitivity>
 	</value0>
