@@ -9,11 +9,15 @@
 
 namespace Puffin
 {
+	class Engine;
+
 	namespace UI
 	{
 		class UIWindowSettings : public UIWindow
 		{
 		public:
+
+			UIWindowSettings(Engine* InEngine, ECS::World* InWorld);
 
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
@@ -24,7 +28,7 @@ namespace Puffin
 
 		private:
 			Puffin::Rendering::CameraComponent* camera;
-			ProjectSettings settings;
+
 		};
 	}
 }

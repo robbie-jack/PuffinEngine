@@ -4,6 +4,7 @@
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
 #include <Components/Physics/RigidbodyComponent.h>
+#include <ECS/ECS.h>
 
 #include <misc/cpp/imgui_stdlib.h>
 
@@ -14,6 +15,12 @@ namespace Puffin
 {
 	namespace UI
 	{
+
+		UIWindowEntityProperties::UIWindowEntityProperties(Engine* InEngine, ECS::World* InWorld) : UIWindow(InEngine, InWorld)
+		{
+
+		}
+
 		bool UIWindowEntityProperties::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
 			windowName = "Entity Properties";

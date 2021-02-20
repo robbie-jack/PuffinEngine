@@ -1,7 +1,9 @@
-#include <UI\UIManager.h>
-#include <SerializeScene.h>
-#include <Rendering\ModelLoader.h>
+#include <UI/UIManager.h>
+#include <ECS/ECS.h>
+#include <Engine.h>
 #include <ManipulationGizmo.h>
+#include <Rendering/ModelLoader.h>
+#include <SerializeScene.h>
 
 #include <string>
 
@@ -9,7 +11,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		UIManager::UIManager()
+		UIManager::UIManager(Engine* InEngine, ECS::World* InWorld)
 		{
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
@@ -21,16 +23,18 @@ namespace Puffin
 
 			SetStyle();
 
-			running = true;
 			saveScene = false;
 			loadScene = false;
 			importMesh = false;
 
-			windowSceneHierarchy = new UIWindowSceneHierarchy();
-			windowViewport = new UIWindowViewport();
-			windowSettings = new UIWindowSettings();
-			windowEntityProperties = new UIWindowEntityProperties();
-			windowPerformance = new UIWindowPerformance();
+			engine = InEngine;
+			world = InWorld;
+
+			windowSceneHierarchy =		new UIWindowSceneHierarchy(engine, world);
+			windowViewport =			new UIWindowViewport(engine, world);
+			windowSettings =			new UIWindowSettings(engine, world);
+			windowEntityProperties =	new UIWindowEntityProperties(engine, world);
+			windowPerformance =			new UIWindowPerformance(engine, world);
 
 			//windowPerformance->Show();
 
@@ -54,7 +58,7 @@ namespace Puffin
 			//ImPlot::DestroyContext();
 		}
 
-		bool UIManager::DrawUI(float dt, Input::InputManager* InputManager)
+		void UIManager::DrawUI(float dt, Input::InputManager* InputManager)
 		{
 			ImGui_ImplVulkan_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
@@ -63,10 +67,7 @@ namespace Puffin
 			bool* p_open = NULL;
 
 			// Show Dockspace with Menu Bar for Editor Windows
-			if (!ShowDockspace(p_open))
-			{
-				running = false;
-			}
+			ShowDockspace(p_open);
 
 			//ImGui::ShowDemoWindow(p_open);
 			//ImPlot::ShowDemoWindow(p_open);
@@ -76,16 +77,11 @@ namespace Puffin
 			{
 				for (int i = 0; i < windows.size(); i++)
 				{
-					if (!windows[i]->Draw(dt, InputManager))
-					{
-						running = false;
-					}
+					windows[i]->Draw(dt, InputManager);
 				}
 			}
 
 			fileDialog.Display();
-
-			return running;
 		}
 
 		// Any functionality which would cause errors/crashes from within 
@@ -136,7 +132,7 @@ namespace Puffin
 			}
 		}
 
-		bool UIManager::ShowDockspace(bool* p_open)
+		void UIManager::ShowDockspace(bool* p_open)
 		{
 			static bool opt_fullscreen_persistant = true;
 			bool opt_fullscreen = opt_fullscreen_persistant;
@@ -181,74 +177,8 @@ namespace Puffin
 				ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 				ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 			}
-			else
-			{
-				//ShowDockingDisabledMessage();
-			}
 
-			bool running = true;
-
-			if (ImGui::BeginMenuBar())
-			{
-				if (ImGui::BeginMenu("File"))
-				{
-					if (ImGui::MenuItem("New Scene"))
-					{
-
-					}
-
-					if (ImGui::MenuItem("Load Scene"))
-					{
-						fileDialog.Open();
-						loadScene = true;
-					}
-
-					if (ImGui::MenuItem("Save Scene"))
-					{
-						IO::SaveScene(world, engine->GetScene());
-					}
-
-					if (ImGui::MenuItem("Save Scene As"))
-					{
-						saveScene = true;
-					}
-
-					if (ImGui::BeginMenu("Import"))
-					{
-						if (ImGui::MenuItem("Mesh"))
-						{
-							fileDialog.Open();
-							importMesh = true;
-						}
-
-						ImGui::EndMenu();
-					}
-
-					if (ImGui::MenuItem("Quit", "Alt+F4"))
-					{
-						running = false;
-					}
-
-					ImGui::EndMenu();
-				}
-
-				// List all windows
-				if (ImGui::BeginMenu("Windows"))
-				{
-					if (windows.size() > 0)
-					{
-						for (int i = 0; i < windows.size(); i++)
-						{
-							// Show/Hide window if clicked
-							ImGui::MenuItem(windows[i]->GetName().c_str(), NULL, windows[i]->GetShow());
-						}
-					}
-
-					ImGui::EndMenu();
-				}
-
-				ImGui::EndMenuBar();
-			}
+			ShowMenuBar();
 
 			if (saveScene)
 			{
@@ -293,8 +223,75 @@ namespace Puffin
 			}
 
 			ImGui::End();
+		}
 
-			return running;
+		void UIManager::ShowMenuBar()
+		{
+			if (ImGui::BeginMenuBar())
+			{
+				// File Options
+				if (ImGui::BeginMenu("File"))
+				{
+					// Project Options
+
+					// Scene Options
+					if (ImGui::MenuItem("New Scene"))
+					{
+
+					}
+
+					if (ImGui::MenuItem("Load Scene"))
+					{
+						fileDialog.Open();
+						loadScene = true;
+					}
+
+					if (ImGui::MenuItem("Save Scene"))
+					{
+						IO::SaveScene(world, engine->GetScene());
+					}
+
+					if (ImGui::MenuItem("Save Scene As"))
+					{
+						saveScene = true;
+					}
+
+					if (ImGui::BeginMenu("Import"))
+					{
+						if (ImGui::MenuItem("Mesh"))
+						{
+							fileDialog.Open();
+							importMesh = true;
+						}
+
+						ImGui::EndMenu();
+					}
+
+					if (ImGui::MenuItem("Quit", "Alt+F4"))
+					{
+						engine->Exit();
+					}
+
+					ImGui::EndMenu();
+				}
+
+				// List all windows
+				if (ImGui::BeginMenu("Windows"))
+				{
+					if (windows.size() > 0)
+					{
+						for (int i = 0; i < windows.size(); i++)
+						{
+							// Show/Hide window if clicked
+							ImGui::MenuItem(windows[i]->GetName().c_str(), NULL, windows[i]->GetShow());
+						}
+					}
+
+					ImGui::EndMenu();
+				}
+
+				ImGui::EndMenuBar();
+			}
 		}
 
 		void UIManager::SetStyle()

@@ -4,8 +4,10 @@ namespace Puffin
 {
 	namespace UI
 	{
-		UIWindow::UIWindow()
+		UIWindow::UIWindow(Engine* InEngine, ECS::World* InWorld)
 		{
+			engine = InEngine;
+			world = InWorld;
 			show = true;
 			firstTime = true;
 		}

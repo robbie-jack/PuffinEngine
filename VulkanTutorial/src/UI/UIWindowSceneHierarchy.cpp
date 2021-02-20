@@ -1,10 +1,17 @@
 #include <UI/UIWindowSceneHierarchy.h>
 #include <Components/TransformComponent.h>
+#include <ECS/ECS.h>
 
 namespace Puffin
 {
 	namespace UI
 	{
+
+		UIWindowSceneHierarchy::UIWindowSceneHierarchy(Engine* InEngine, ECS::World* InWorld) : UIWindow(InEngine, InWorld)
+		{
+
+		}
+
 		bool UIWindowSceneHierarchy::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
 			windowName = "Scene Hierarchy";
@@ -31,9 +38,6 @@ namespace Puffin
 
 				if (ImGui::Button("Destroy Entity"))
 				{
-					//windowProperties->SetEntity(ECS::INVALID_ENTITY);
-					//world->MarkToDelete(selectedEntity);
-
 					selectedEntity = ECS::INVALID_ENTITY;
 					entityChanged = true;
 				}

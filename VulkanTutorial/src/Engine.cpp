@@ -22,15 +22,12 @@ namespace Puffin
 	{
 		// Managers/ECS World
 		ECS::World ECSWorld;
-		UI::UIManager UIManager;
+		UI::UIManager UIManager(this, &ECSWorld);
 		Input::InputManager InputManager;
 		Job::JobManager JobManager;
 
 		ECSWorld.Init();
 		JobManager.Init();
-
-		UIManager.SetEngine(this);
-		UIManager.SetWorld(&ECSWorld);
 
 		// Systems
 		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
@@ -58,6 +55,7 @@ namespace Puffin
 		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
 
 		sceneData.scene_name = "content/scenes/default.pscn";
+		IO::LoadSettings("settings.xml", settings);
 
 		//DefaultScene(&ECSWorld);
 		
@@ -100,7 +98,7 @@ namespace Puffin
 			UIManager.Update();
 
 			// Rendering
-			running = vulkanEngine->Update(&UIManager, &InputManager, delta_time);
+			vulkanEngine->Update(&UIManager, &InputManager, delta_time);
 
 			if (playState == PlayState::STOPPED && restarted)
 			{
@@ -205,15 +203,6 @@ namespace Puffin
 		world->GetComponent<Physics::RigidbodyComponent>(5).mass = 0.0f;
 	}
 
-	void Engine::Restart()
-	{
-		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED)
-		{
-			playState = PlayState::STOPPED;
-			restarted = true;
-		}
-	}
-
 	void Engine::Play()
 	{
 		switch (playState)
@@ -228,5 +217,19 @@ namespace Puffin
 			playState = PlayState::PLAYING;
 			break;
 		}
+	}
+
+	void Engine::Restart()
+	{
+		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED)
+		{
+			playState = PlayState::STOPPED;
+			restarted = true;
+		}
+	}
+
+	void Engine::Exit()
+	{
+		running = false;
 	}
 }

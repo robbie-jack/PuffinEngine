@@ -191,7 +191,7 @@ namespace Puffin
 
 			//void Restart();
 
-			bool Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
+			void Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
 
 			void Cleanup();
 			void StopScene();

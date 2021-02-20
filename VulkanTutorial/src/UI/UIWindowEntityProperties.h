@@ -5,7 +5,7 @@
 
 #include <UI/UIWindow.h>
 
-#include <ECS/ECS.h>
+//#include <ECS/ECS.h>
 #include <imfilebrowser.h>
 #include <Components/Rendering/CameraComponent.h>
 
@@ -19,17 +19,17 @@ namespace Puffin
         {
 		public:
 
+            UIWindowEntityProperties(Engine* InEngine, ECS::World* InWorld);
+
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 
             inline void SetEntity(ECS::Entity entity_) { entity = entity_; };
-            inline void SetWorld(ECS::World* world_) { world = world_; };
             inline void SetFileBrowser(ImGui::FileBrowser* fileDialog_) { fileDialog = fileDialog_; };
 
             inline bool HasSceneChanged() { return sceneChanged; };
 
         private:
             ECS::Entity entity;
-            ECS::World* world;
             ImGui::FileBrowser* fileDialog;
 
             void DrawTransformUI(ImGuiTreeNodeFlags flags);

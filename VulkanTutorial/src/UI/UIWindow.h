@@ -5,19 +5,29 @@
 
 #include <string>
 #include <vulkan/vulkan.h>
-
 #include <imgui.h>
+
 #include <Input\InputManager.h>
+#include <ECS/ECS.h>
+#include <Engine.h>
 
 namespace Puffin
 {
+	namespace ECS
+	{
+		class World;
+		typedef uint32_t Entity;
+	}
+	
+	class Engine;
+
 	namespace UI
 	{
 		class UIWindow
 		{
 		public:
 
-			UIWindow();
+			UIWindow(Engine* InEngine, ECS::World* InWorld);
 			~UIWindow();
 
 			virtual bool Draw(float dt, Puffin::Input::InputManager* InputManager);
@@ -44,6 +54,9 @@ namespace Puffin
 
 			// Vulkan Texture Sampler for Rendering Textures
 			VkSampler textureSampler;
+
+			Engine* engine;
+			ECS::World* world;
 		};
 	}
 }

@@ -4,8 +4,8 @@
 #define ENGINE_H
 
 #include <ECS/ECS.h>
-
 #include <SerializeScene.h>
+#include <ProjectSettings.h>
 
 #include <GLFW/glfw3.h>
 
@@ -28,15 +28,18 @@ namespace Puffin
 
 		void Play();
 		void Restart();
+		void Exit();
 
 		inline PlayState GetPlayState() { return playState; };
 		inline IO::SceneData& GetScene() { return sceneData; };
+		inline ProjectSettings& GetProjectSettings() { return settings; };
 
 	private:
 
 		bool running, restarted;
 		PlayState playState;
 
+		ProjectSettings settings;
 		IO::SceneData sceneData;
 
 		void DefaultScene(ECS::World* world);

@@ -1583,11 +1583,11 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
-		bool VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
+		void VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
 		{
 			glfwPollEvents();
 
-			bool running = UIManager->DrawUI(dt, InputManager);
+			UIManager->DrawUI(dt, InputManager);
 
 			UpdateCamera(camera, InputManager, dt);
 
@@ -1640,8 +1640,6 @@ namespace Puffin
 			}
 
 			DrawFrame(UIManager);
-
-			return running;
 		}
 
 		void VulkanEngine::UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time)

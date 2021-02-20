@@ -1,11 +1,18 @@
 #include <UI/UIWindowViewport.h>
 #include <Components\TransformComponent.h>
 #include <ManipulationGizmo.h>
+#include <ECS/ECS.h>
+#include <Engine.h>
 
 namespace Puffin
 {
 	namespace UI
 	{
+		UIWindowViewport::UIWindowViewport(Engine* InEngine, ECS::World* InWorld) : UIWindow(InEngine, InWorld)
+		{
+
+		}
+
 		bool UIWindowViewport::DrawWithoutImage()
 		{
 			windowName = "Viewport";

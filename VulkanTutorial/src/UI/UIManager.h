@@ -9,8 +9,8 @@
 #include <imfilebrowser.h>
 
 #include <Input/InputManager.h>
-#include <ECS/ECS.h>
-#include <Engine.h>
+//#include <ECS/ECS.h>
+//#include <Engine.h>
 
 #include <UI/UIWindow.h>
 #include <UI/UIWindowSceneHierarchy.h>
@@ -24,40 +24,33 @@
 
 namespace Puffin
 {
+	namespace ECS
+	{
+		class World;
+		typedef uint32_t Entity;
+	}
+
+	class Engine;
+
 	namespace UI
 	{
 		class UIManager
 		{
 		public:
 
-			UIManager();
+			UIManager(Engine* InEngine, ECS::World* InWorld);
 			~UIManager();
 
 			void Cleanup();
 
-			bool DrawUI(float dt, Puffin::Input::InputManager* InputManager);
+			void DrawUI(float dt, Puffin::Input::InputManager* InputManager);
 			void Update();
 			void AddWindow(UIWindow* window);
-
-			inline void SetEngine(Engine* engine_) 
-			{ 
-				engine = engine_;
-				windowViewport->SetEngine(engine_);
-			};
 
 			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
 			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
 
-			inline void SetWorld(ECS::World* world_) 
-			{ 
-				world = world_;
-				windowSceneHierarchy->SetWorld(world_);
-				windowEntityProperties->SetWorld(world_);
-				windowViewport->SetWorld(world_);
-			};
-
 		private:
-			bool running;
 			bool saveScene, loadScene, importMesh;
 
 			Engine* engine;
@@ -74,7 +67,8 @@ namespace Puffin
 
 			ImGui::FileBrowser fileDialog;
 
-			bool ShowDockspace(bool* p_open);
+			void ShowDockspace(bool* p_open);
+			void ShowMenuBar();
 			void SetStyle();
 		};
 	}
