@@ -4,6 +4,7 @@
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
 #include <Components/Physics/RigidbodyComponent.h>
+#include <Components/JinxScriptComponent.h>
 #include <ECS/ECS.h>
 
 #include <misc/cpp/imgui_stdlib.h>
@@ -64,6 +65,7 @@ namespace Puffin
 					DrawMeshUI(flags);
 					DrawLightUI(flags);
 					DrawRigidbodyUI(flags);
+					DrawScriptUI(flags);
 
 					positionChanged = false;
 
@@ -341,6 +343,38 @@ namespace Puffin
 					if (positionChanged)
 					{
 						comp.flag_created = true;
+					}
+				}
+			}
+		}
+
+		void UIWindowEntityProperties::DrawScriptUI(ImGuiTreeNodeFlags flags)
+		{
+			if (world->HasComponent<Scripting::JinxScriptComponent>(entity))
+			{
+				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+				if (ImGui::CollapsingHeader("Script Component", flags))
+				{
+					Scripting::JinxScriptComponent& comp = world->GetComponent<Scripting::JinxScriptComponent>(entity);
+
+					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+					ImGui::Button("X");
+
+					if (ImGui::IsItemClicked())
+					{
+						comp.flag_deleted = true;
+						sceneChanged = true;
+					}
+
+					//ImGui::Text("Script Name: "); ImGui::SameLine(100.0f);
+					ImGui::InputText("Name", &comp.Name);
+					
+
+					ImGui::Text("File Path:"); ImGui::SameLine(80.0f);
+					if (ImGui::Selectable(comp.Dir.c_str(), false))
+					{
+						//fileDialog->Open();
+						//modelSelected = true;
 					}
 				}
 			}

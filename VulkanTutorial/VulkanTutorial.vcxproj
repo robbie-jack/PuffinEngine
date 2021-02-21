@@ -198,7 +198,6 @@
     <ClCompile Include="src\UI\UIWindowViewport.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="content\scripts\test_script.jnx" />
     <None Include="shaders\debug.frag" />
     <None Include="shaders\debug.vert" />
     <None Include="shaders\default_lighting.frag" />

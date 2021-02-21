@@ -36,6 +36,7 @@ namespace Puffin
             void DrawMeshUI(ImGuiTreeNodeFlags flags);
             void DrawLightUI(ImGuiTreeNodeFlags flags);
             void DrawRigidbodyUI(ImGuiTreeNodeFlags flags);
+            void DrawScriptUI(ImGuiTreeNodeFlags flags);
 
             bool modelSelected = false;
             bool textureSelected = false;

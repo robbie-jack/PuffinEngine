@@ -3,6 +3,7 @@
 #include <ECS/ECS.h>
 #include <Jinx.hpp>
 #include <Components/JinxScriptComponent.h>
+#include <unordered_map>
 
 namespace Puffin
 {
@@ -21,6 +22,11 @@ namespace Puffin
 	
 			//Jinx::BufferPtr bytecode;
 			Jinx::RuntimePtr runtime;
+			Jinx::BufferPtr puffinCoreBytecode;
+
+			std::unordered_map<std::string_view, JinxScriptComponent> libraryComponents;
+
+			void InitLibraries();
 
 			void InitComponent(JinxScriptComponent& comp);
 		};

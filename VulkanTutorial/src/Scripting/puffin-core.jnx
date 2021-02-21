@@ -1,0 +1,7 @@
+-- Use the core library
+import core
+
+library 'puffin-core'
+
+external inDeltaTime
+set public readonly deltaTime to inDeltaTime

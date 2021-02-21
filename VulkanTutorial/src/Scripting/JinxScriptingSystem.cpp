@@ -12,6 +12,8 @@ namespace Puffin
 			// Create Jinx runtime object
 			runtime = Jinx::CreateRuntime();
 
+			InitLibraries();
+
 			// Compile Bytecode for script components
 			for (ECS::Entity entity : entityMap["Script"])
 			{
@@ -22,13 +24,19 @@ namespace Puffin
 
 		bool JinxScriptingSystem::Update(float dt)
 		{
+			// Update Core Library Properties
+			libraryComponents["Puffin-Core"].Script->SetVariable("inDeltaTime", dt);
+			libraryComponents["Puffin-Core"].Script->Execute();
+
+			// Execute Script Components
 			for (ECS::Entity entity : entityMap["Script"])
 			{
 				JinxScriptComponent& comp = world->GetComponent<JinxScriptComponent>(entity);
 
-				//comp.Script = runtime->CreateScript(comp.Bytecode);
-				comp.Script->SetVariable("delta_time", dt);
-				comp.Script->Execute();
+				if (comp.Script)
+				{
+					comp.Script->Execute();
+				}
 			}
 
 			return true;
@@ -41,12 +49,24 @@ namespace Puffin
 
 		// Private Functions
 
+		// Load and compile library scripts
+		void JinxScriptingSystem::InitLibraries()
+		{
+			// Compile Core Puffin Library
+			JinxScriptComponent puffinCoreComp;
+			puffinCoreComp.Name = "Puffin-Core";
+			puffinCoreComp.Dir = "src/Scripting/puffin-core.jnx";
+			InitComponent(puffinCoreComp);
+
+			libraryComponents["Puffin-Core"] = puffinCoreComp;
+		}
+
 		// Load and compile plain text into runnable bytecode
 		void JinxScriptingSystem::InitComponent(JinxScriptComponent& comp)
 		{
 			// Open File
 			std::ifstream scriptFile;
-			scriptFile.open(comp.Name.c_str());
+			scriptFile.open(comp.Dir.c_str());
 
 			std::string text, line;
 			// If File opened successfully
@@ -60,13 +80,16 @@ namespace Puffin
 			}
 
 			// Compile text to bytecode and store in component BufferPtr;
-			comp.Bytecode = runtime->Compile(text.c_str());
+			comp.Bytecode = runtime->Compile(text.c_str(), comp.Name.c_str(), { "puffin-core" });
 			if (!comp.Bytecode)
 			{
-				std::cout << "Failed to compile bytecode\n";
+				std::cout << "Failed to compile bytecode for " << comp.Name.c_str() << std::endl;
 			}
-
-			//comp.Script = runtime->CreateScript(comp.Bytecode);
+			else
+			{
+				// Create Runtime Script Object if bytecode compiled successfully
+				comp.Script = runtime->CreateScript(comp.Bytecode);
+			}
 		}
 	}
 }

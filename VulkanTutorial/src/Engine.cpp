@@ -63,14 +63,12 @@ namespace Puffin
 		sceneData.scene_name = "content/scenes/default.pscn";
 		IO::LoadSettings("settings.xml", settings);
 
+		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene(&ECSWorld);
 		
+		// Load Scene -- normal behaviour
 		IO::LoadScene(&ECSWorld, sceneData);
 		IO::InitScene(&ECSWorld, sceneData);
-
-		Scripting::JinxScriptComponent scriptComp;
-		scriptComp.Name = "content/scripts/test_script.jnx";
-		ECSWorld.AddComponent(1, scriptComp);
 
 		running = true;
 		restarted = false;
@@ -211,6 +209,11 @@ namespace Puffin
 
 		world->GetComponent<Physics::RigidbodyComponent>(5).size = btVector3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Physics::RigidbodyComponent>(5).mass = 0.0f;
+
+		Scripting::JinxScriptComponent scriptComp;
+		scriptComp.Name = "TestScript";
+		scriptComp.Dir = "content/scripts/test_script.jnx";
+		world->AddComponent(1, scriptComp);
 	}
 
 	void Engine::Play()
