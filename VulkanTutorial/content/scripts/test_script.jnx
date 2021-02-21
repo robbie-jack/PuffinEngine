@@ -5,8 +5,6 @@ set timePassed to 0.0
 set secondsPassed to 0
 set ticking to true
 
-write line "Time Passed: " + secondsPassed
-
 loop while ticking = true
 	
 	set timePassed to timePassed + deltaTime
@@ -14,6 +12,7 @@ loop while ticking = true
 	if timePassed > secondsPassed + 1
 		set secondsPassed to secondsPassed + 1
 		write line "Seconds Elapsed: " + secondsPassed
+		--write line "Delta Time: " + deltaTime
 	end
 
 	wait

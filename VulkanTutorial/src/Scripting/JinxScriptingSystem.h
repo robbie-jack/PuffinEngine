@@ -12,11 +12,11 @@ namespace Puffin
 		class JinxScriptingSystem : public ECS::System
 		{
 		public:
-			void Init();
+			void Start();
 	
 			bool Update(float dt);
-	
-			void Cleanup();
+
+			void Stop();
 	
 		private:
 	

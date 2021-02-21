@@ -77,7 +77,7 @@ namespace Puffin
 		// Initialize Systems
 		GLFWwindow* window = vulkanEngine->Init(&UIManager);
 		physicsSystem->Start();
-		scriptingSystem->Init();
+		scriptingSystem->Start();
 
 		// Init Input
 		InputManager.SetupInput(window);
@@ -113,6 +113,7 @@ namespace Puffin
 				// Cleanup Systems and ECS
 				vulkanEngine->StopScene();
 				physicsSystem->Stop();
+				scriptingSystem->Stop();
 				ECSWorld.Reset();
 
 				// Re-Initialize Systems and ECS
@@ -120,6 +121,7 @@ namespace Puffin
 				IO::InitScene(&ECSWorld, sceneData);
 				vulkanEngine->StartScene();
 				physicsSystem->Start();
+				scriptingSystem->Start();
 
 				restarted = false;
 			}
@@ -133,9 +135,9 @@ namespace Puffin
 			ECSWorld.Update();
 		}
 
+		scriptingSystem->Stop();
 		physicsSystem->Stop();
 		vulkanEngine->Cleanup();
-		scriptingSystem->Cleanup();
 		UIManager.Cleanup();
 		ECSWorld.Cleanup();
 

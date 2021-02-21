@@ -7,7 +7,7 @@ namespace Puffin
 	namespace Scripting
 	{
 		// Public Functions
-		void JinxScriptingSystem::Init()
+		void JinxScriptingSystem::Start()
 		{
 			// Create Jinx runtime object
 			runtime = Jinx::CreateRuntime();
@@ -42,9 +42,19 @@ namespace Puffin
 			return true;
 		}
 
-		void JinxScriptingSystem::Cleanup()
+		void JinxScriptingSystem::Stop()
 		{
+			runtime = nullptr;
 
+			libraryComponents.clear();
+
+			for (ECS::Entity entity : entityMap["Script"])
+			{
+				JinxScriptComponent& comp = world->GetComponent<JinxScriptComponent>(entity);
+
+				comp.Bytecode = nullptr;
+				comp.Script = nullptr;
+			}
 		}
 
 		// Private Functions
