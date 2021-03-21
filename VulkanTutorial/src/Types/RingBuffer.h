@@ -59,9 +59,9 @@ namespace Puffin
 		}
 
 	private:
-		static int MAX_PENDING;
-		static int head;
-		static int tail;
+		int MAX_PENDING;
+		int head;
+		int tail;
 
 		std::vector<T> queue;
 

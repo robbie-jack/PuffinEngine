@@ -43,7 +43,7 @@ namespace Puffin
 
 			void Subscribe(std::shared_ptr<RingBuffer<EventT>> buffer)
 			{
-				buffers.insert(buffer);
+				buffers.push_back(buffer);
 			}
 
 		private:

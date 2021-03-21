@@ -30,6 +30,9 @@
 #include <Components/Rendering/LightComponent.h>
 #include <Components/Rendering/CameraComponent.h>
 
+// Type Includes
+#include <Types/RingBuffer.h>
+
 // STL
 #include <vector>
 #include <deque>
@@ -292,6 +295,9 @@ namespace Puffin
 			int frameNumber = 0;
 			float prevfov;
 
+			// Event Buffers
+			std::shared_ptr<RingBuffer<Input::InputEvent>> inputEvents;
+
 			// Init Main Functions
 			void InitVulkan();
 			void InitSwapchain();
@@ -336,6 +342,7 @@ namespace Puffin
 			void CleanupLight(LightComponent& light);
 
 			// Update Functions
+			void ProcessEvents();
 			void UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time);
 
 			// Render Functions

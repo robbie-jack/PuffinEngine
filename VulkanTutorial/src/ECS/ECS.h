@@ -708,13 +708,13 @@ namespace Puffin
 			}
 
 			template<typename EventT>
-			void Publish(EventT event)
+			void PublishEvent(EventT event)
 			{
 				eventManager->Publish<EventT>(event);
 			}
 
 			template<typename EventT>
-			void Subscribe(std::shared_ptr<RingBuffer<EventT>> buffer)
+			void SubscribeToEvent(std::shared_ptr<RingBuffer<EventT>> buffer)
 			{
 				eventManager->Subscribe(buffer);
 			}

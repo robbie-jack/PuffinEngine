@@ -4,7 +4,6 @@
 #define INPUT_MANAGER_H
 
 #include <GLFW/glfw3.h>
-//#include <Types/RingBuffer.h>
 
 #include <vector>
 #include <string>
@@ -37,7 +36,9 @@ namespace Puffin
 
 		struct InputEvent
 		{
+			InputEvent() : actionName{ "" }, actionState{ KeyState::UP } {};
 			InputEvent(std::string name, KeyState state) : actionName{ name }, actionState{ state } {};
+
 			std::string actionName;
 			KeyState actionState;
 		};
@@ -72,7 +73,6 @@ namespace Puffin
 			GLFWwindow* window;
 
 			std::shared_ptr<ECS::World> world;
-			//RingBuffer<InputEvent> inputEvents;
 		};
 	}
 }

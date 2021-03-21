@@ -103,13 +103,26 @@ namespace Puffin
 					// Notify subscribers that event changed
 					if (stateChanged == true)
 					{
+						world->PublishEvent<InputEvent>(InputEvent(actions[i].name, actions[i].state));
 						stateChanged = false;
 					}
 				}
 			}
 
 			// Update Mouse
-			
+			if (GetAction("CursorSwitch").state == KeyState::PRESSED)
+			{
+				if (cursor_locked == true)
+				{
+					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				}
+				else
+				{
+					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				}
+
+				cursor_locked = !cursor_locked;
+			}
 
 			// Update Current and Last Mouse Positions
 			last_x_pos = x_pos;
