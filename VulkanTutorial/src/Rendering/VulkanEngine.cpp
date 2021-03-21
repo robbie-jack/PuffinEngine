@@ -119,9 +119,18 @@ namespace Puffin
 			// Pass Camera to UI
 			UIManager->GetWindowSettings()->SetCamera(&camera);
 
-			// Subscribe to input events, pass in buffer to have events added to
+			// Subscribe to events
 			inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
+			drawLineEvents = std::make_shared<RingBuffer<Debug::Line>>();
+			drawBoxEvents = std::make_shared<RingBuffer<Debug::Box>>();
+
+			world->RegisterEvent<Input::InputEvent>();
+			world->RegisterEvent<Debug::Line>();
+			world->RegisterEvent<Debug::Box>();
+
 			world->SubscribeToEvent<Input::InputEvent>(inputEvents);
+			world->SubscribeToEvent<Debug::Line>(drawLineEvents);
+			world->SubscribeToEvent<Debug::Box>(drawBoxEvents);
 
 			// Initialize ImGui
 			InitImGui();
@@ -1643,9 +1652,8 @@ namespace Puffin
 
 		void VulkanEngine::ProcessEvents()
 		{
-			Input::InputEvent inputEvent;
-
 			// Process Input Events
+			Input::InputEvent inputEvent;
 			while (!inputEvents->IsEmpty())
 			{
 				if (inputEvents->Pop(inputEvent))
@@ -1721,6 +1729,25 @@ namespace Puffin
 							moveDown = false;
 						}
 					}
+				}
+			}
+
+			// Process Debug Draw Events
+			Debug::Line drawLineEvent;
+			while (!drawLineEvents->IsEmpty())
+			{
+				if (drawLineEvents->Pop(drawLineEvent))
+				{
+					DrawDebugLine(drawLineEvent);
+				}
+			}
+
+			Debug::Box drawBoxEvent;
+			while (!drawBoxEvents->IsEmpty())
+			{
+				if (drawBoxEvents->Pop(drawBoxEvent))
+				{
+					DrawDebugBox(drawBoxEvent);
 				}
 			}
 		}
@@ -1836,7 +1863,7 @@ namespace Puffin
 			}
 
 			// Retrieve Debug Draw Data
-			RetrieveDebugData();
+			//RetrieveDebugData();
 
 			// Copy Debug Vertices to Vertex Buffer
 			if (GetCurrentFrame().debugVertices.size() > 0)
@@ -2516,7 +2543,7 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
-		void VulkanEngine::RetrieveDebugData()
+		/*void VulkanEngine::RetrieveDebugData()
 		{
 			for (int i = 0; i < Debug::debugLines.size(); i++)
 			{
@@ -2531,19 +2558,19 @@ namespace Puffin
 			}
 
 			Debug::debugBoxes.clear();
-		}
+		}*/
 
-		void VulkanEngine::DrawDebugLine(Vector3 start, Vector3 end, Vector3 color)
+		void VulkanEngine::DrawDebugLine(Debug::Line line)
 		{
 			// Create debug line vertices to current frames vertices vector
 			Vertex startVertex, endVertex;
-			startVertex.pos = start;
-			startVertex.color = color;
+			startVertex.pos = line.start;
+			startVertex.color = line.color;
 			startVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
 			startVertex.texCoord = Vector2(0.0f, 0.0f);
 
-			endVertex.pos = end;
-			endVertex.color = color;
+			endVertex.pos = line.end;
+			endVertex.color = line.color;
 			endVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
 			endVertex.texCoord = Vector2(0.0f, 0.0f);
 
@@ -2569,7 +2596,7 @@ namespace Puffin
 			GetCurrentFrame().debugIndirectCommands.push_back(command);
 		}
 
-		void VulkanEngine::DrawDebugBox(Vector3 origin, Vector3 halfSize, Vector3 color)
+		void VulkanEngine::DrawDebugBox(Debug::Box box)
 		{
 			const int numVertices = 8;
 			const int numIndices = 24;
@@ -2578,14 +2605,14 @@ namespace Puffin
 			int firstIndex = GetCurrentFrame().debugIndices.size();
 
 			Vertex vert = {};
-			vert.color = color;
+			vert.color = box.color;
 			vert.normal = Vector3(0.0f, 0.0f, 0.0f);
 			vert.texCoord = Vector2(0.0f, 0.0f);
 
 			// Add Vertices to vector
 			for (int i = 0; i < numVertices; i++)
 			{
-				vert.pos = origin + (halfSize * boxPositions[i]);
+				vert.pos = box.origin + (box.halfSize * boxPositions[i]);
 				GetCurrentFrame().debugVertices.push_back(vert);
 			}
 

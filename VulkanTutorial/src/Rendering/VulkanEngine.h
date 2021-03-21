@@ -16,6 +16,8 @@
 #include <Rendering/VKTypes.h>
 #include <Rendering/VKPipeline.h>
 
+#include <Rendering/DebugDraw.h>
+
 //#include "vk_mem_alloc.h" // Vulkan Memory Allocator
 #include <vk-boostrap/VkBootstrap.h> // Vk Bootstrap
 
@@ -297,6 +299,8 @@ namespace Puffin
 
 			// Event Buffers
 			std::shared_ptr<RingBuffer<Input::InputEvent>> inputEvents;
+			std::shared_ptr<RingBuffer<Debug::Line>> drawLineEvents;
+			std::shared_ptr<RingBuffer<Debug::Box>> drawBoxEvents;
 
 			// Init Main Functions
 			void InitVulkan();
@@ -359,9 +363,9 @@ namespace Puffin
 			glm::mat4 BuildMeshTransform(TransformComponent comp);
 
 			// Debug Draw Functions
-			void RetrieveDebugData();
-			void DrawDebugLine(Vector3 start, Vector3 end, Vector3 color);
-			void DrawDebugBox(Vector3 origin, Vector3 halfSize, Vector3 color);
+			//void RetrieveDebugData();
+			void DrawDebugLine(Debug::Line line);
+			void DrawDebugBox(Debug::Box box);
 
 			static inline void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 			{

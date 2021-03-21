@@ -112,9 +112,6 @@
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rendering\DebugDraw.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Scripting\JinxScriptingSystem.cpp">
       <Filter>Scripting</Filter>

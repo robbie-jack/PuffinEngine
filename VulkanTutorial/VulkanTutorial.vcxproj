@@ -189,7 +189,6 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp" />
-    <ClCompile Include="src\Rendering\DebugDraw.cpp" />
     <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
     <ClCompile Include="src\Rendering\VulkanEngine.cpp" />
     <ClCompile Include="src\Scripting\JinxScriptingSystem.cpp" />
