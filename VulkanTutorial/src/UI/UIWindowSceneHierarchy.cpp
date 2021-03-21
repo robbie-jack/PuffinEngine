@@ -21,7 +21,6 @@ namespace Puffin
 				if (ImGui::Button("Create Entity"))
 				{
 					ECS::Entity entity = world->CreateEntity();
-					windowProperties->SetEntity(entity);
 
 					TransformComponent component;
 					component.scale = Vector3(1.0f, 1.0f, 1.0f);

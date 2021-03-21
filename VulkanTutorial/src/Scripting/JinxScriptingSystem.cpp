@@ -7,6 +7,14 @@ namespace Puffin
 	namespace Scripting
 	{
 		// Public Functions
+		void JinxScriptingSystem::Init()
+		{
+			scriptEvents = std::make_shared<RingBuffer<JinxScriptEvent>>();
+
+			world->RegisterEvent<JinxScriptEvent>();
+			world->SubscribeToEvent<JinxScriptEvent>(scriptEvents);
+		}
+
 		void JinxScriptingSystem::Start()
 		{
 			// Create Jinx runtime object
@@ -24,6 +32,8 @@ namespace Puffin
 
 		bool JinxScriptingSystem::Update(float dt)
 		{
+			ProcessEvents();
+
 			// Update Core Library Properties
 			libraryComponents["Puffin-Core"].Script->SetVariable("inDeltaTime", dt);
 			libraryComponents["Puffin-Core"].Script->Execute();
@@ -99,6 +109,31 @@ namespace Puffin
 			{
 				// Create Runtime Script Object if bytecode compiled successfully
 				comp.Script = runtime->CreateScript(comp.Bytecode);
+			}
+		}
+
+		void JinxScriptingSystem::ProcessEvents()
+		{
+			// Process Rigidbody Events
+			JinxScriptEvent scriptEvent;
+			while (!scriptEvents->IsEmpty())
+			{
+				if (scriptEvents->Pop(scriptEvent))
+				{
+					JinxScriptComponent& comp = world->GetComponent<JinxScriptComponent>(scriptEvent.entity);
+
+					if (scriptEvent.shouldCreate)
+					{
+						InitComponent(comp);
+					}
+
+					if (scriptEvent.shouldDelete)
+					{
+						comp.Bytecode = nullptr;
+						comp.Script = nullptr;
+						world->RemoveComponent<JinxScriptComponent>(scriptEvent.entity);
+					}
+				}
 			}
 		}
 	}

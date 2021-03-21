@@ -25,11 +25,7 @@ namespace Puffin
 			inline ECS::Entity GetEntity() { return selectedEntity; };
 
 		private:
-
-			UIWindowEntityProperties* windowProperties;
-
 			ECS::Entity selectedEntity;
-
 			bool entityChanged;
 		};
 	}

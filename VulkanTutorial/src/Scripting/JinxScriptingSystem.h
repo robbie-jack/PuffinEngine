@@ -12,6 +12,8 @@ namespace Puffin
 		class JinxScriptingSystem : public ECS::System
 		{
 		public:
+			void Init();
+
 			void Start();
 	
 			bool Update(float dt);
@@ -26,9 +28,13 @@ namespace Puffin
 
 			std::unordered_map<std::string_view, JinxScriptComponent> libraryComponents;
 
+			std::shared_ptr<RingBuffer<JinxScriptEvent>> scriptEvents;
+
 			void InitLibraries();
 
 			void InitComponent(JinxScriptComponent& comp);
+
+			void ProcessEvents();
 		};
 	}
 }

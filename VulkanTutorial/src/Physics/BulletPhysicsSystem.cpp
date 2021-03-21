@@ -5,6 +5,14 @@ namespace Puffin
 {
 	namespace Physics
 	{
+		void BulletPhysicsSystem::Init()
+		{
+			rigidbodyEvents = std::make_shared<RingBuffer<RigidbodyEvent>>();
+
+			world->RegisterEvent<RigidbodyEvent>();
+			world->SubscribeToEvent<RigidbodyEvent>(rigidbodyEvents);
+		}
+
 		void BulletPhysicsSystem::Start()
 		{
 			// Initialise Bullet Physics Objects
@@ -57,6 +65,8 @@ namespace Puffin
 
 		void BulletPhysicsSystem::Update(float dt)
 		{
+			ProcessEvents();
+
 			// Step Physics Simulation
 			physicsWorld->stepSimulation(dt);
 
@@ -65,21 +75,6 @@ namespace Puffin
 			{
 				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
 				RigidbodyComponent& physicsComp = world->GetComponent<RigidbodyComponent>(entity);
-
-				// Init/Recreate Flagged Components
-				if (physicsComp.flag_created)
-				{
-					CleanupComponent(entity);
-					InitComponent(entity, physicsComp.size, physicsComp.mass, transformComp.position);
-					physicsComp.flag_created = false;
-				}
-
-				// Destroy Dlagged Components
-				if (physicsComp.flag_deleted)
-				{
-					CleanupComponent(entity);
-					world->RemoveComponent<RigidbodyComponent>(entity);
-				}
 
 				btTransform transform;
 
@@ -143,6 +138,33 @@ namespace Puffin
 			delete comp.body;
 
 			comp.shape = nullptr;
+		}
+
+		void BulletPhysicsSystem::ProcessEvents()
+		{
+			// Process Rigidbody Events
+			RigidbodyEvent rigidbodyEvent;
+			while (!rigidbodyEvents->IsEmpty())
+			{
+				if (rigidbodyEvents->Pop(rigidbodyEvent))
+				{
+					// Get Component for this entity, if it exists
+					RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(rigidbodyEvent.entity);
+					TransformComponent& transform = world->GetComponent<TransformComponent>(rigidbodyEvent.entity);
+
+					if (rigidbodyEvent.shouldCreate)
+					{
+						CleanupComponent(rigidbodyEvent.entity);
+						InitComponent(rigidbodyEvent.entity, rigidbody.size, rigidbody.mass, transform.position);
+					}
+
+					if (rigidbodyEvent.shouldDelete)
+					{
+						CleanupComponent(rigidbodyEvent.entity);
+						world->RemoveComponent<RigidbodyComponent>(rigidbodyEvent.entity);
+					}
+				}
+			}
 		}
 	}
 }

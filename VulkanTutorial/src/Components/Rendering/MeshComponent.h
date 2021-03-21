@@ -16,7 +16,6 @@
 #include <vector>
 #include <array>
 
-#include <Components/BaseComponent.h>
 #include <Rendering/VKTypes.h>
 
 #include <cereal/types/string.hpp>
@@ -25,14 +24,6 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		/*struct MeshMatrices
-		{
-			alignas(16) glm::mat4 model;
-			alignas(16) glm::mat4 inv_model;
-			alignas(16) glm::mat4 view;
-			alignas(16) glm::mat4 proj;
-		};*/
-
 		struct Vertex
 		{
 			glm::vec3 pos;
@@ -169,12 +160,16 @@ namespace std
 
 namespace Puffin
 {
+	namespace ECS
+	{
+		typedef uint32_t Entity;
+	}
+
 	namespace Rendering
 	{
-		struct MeshComponent : public BaseComponent
+		struct MeshComponent
 		{
 			// Mesh Data
-			//MeshMatrices matrices;
 			std::vector<Vertex> vertices;
 			std::vector<uint32_t> indices;
 			std::string model_path;
@@ -191,11 +186,15 @@ namespace Puffin
 
 			// Index Buffer
 			AllocatedBuffer indexBuffer;
+		};
 
-			// Uniform Buffers
-			//std::vector<AllocatedBuffer> uniformBuffers;
+		struct MeshEvent
+		{
+			MeshEvent(ECS::Entity InEntity = 0, bool InShouldCreate = false, bool InShouldDelete = false) : entity{ InEntity }, shouldCreate { InShouldCreate }, shouldDelete{ InShouldDelete } {};
 
-			//std::vector<VkDescriptorSet> descriptorSets;
+			ECS::Entity entity;
+			bool shouldCreate;
+			bool shouldDelete;
 		};
 
 		template<class Archive>

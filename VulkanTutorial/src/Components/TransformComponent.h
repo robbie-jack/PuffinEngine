@@ -4,13 +4,12 @@
 #define TRANSFORM_COMPONENT_H
 
 #include <Types/Vector.h>
-#include <Components/BaseComponent.h>
 
 #include <cereal/cereal.hpp>
 
 namespace Puffin
 {
-	struct TransformComponent : public BaseComponent
+	struct TransformComponent
 	{
 		Puffin::Vector3 position;
 		Puffin::Vector3 rotation;

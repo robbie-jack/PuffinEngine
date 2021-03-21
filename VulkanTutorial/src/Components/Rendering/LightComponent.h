@@ -12,7 +12,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-#include <Components/BaseComponent.h>
 #include <Rendering/VKTypes.h>
 
 namespace Puffin
@@ -77,7 +76,7 @@ namespace Puffin
 			DIRECTIONAL = 2
 		};
 
-		struct LightComponent : public BaseComponent
+		struct LightComponent
 		{
 			LightType type;
 			Vector3 ambientColor, diffuseColor;
@@ -92,6 +91,15 @@ namespace Puffin
 			std::vector<AllocatedImage> depthAttachments;
 			std::vector<VkFramebuffer> depthFramebuffers;
 			glm::mat4 lightSpaceView;
+		};
+
+		struct LightEvent
+		{
+			LightEvent(ECS::Entity InEntity = 0, bool InShouldCreate = false, bool InShouldDelete = false) : entity{ InEntity }, shouldCreate{ InShouldCreate }, shouldDelete{ InShouldDelete } {};
+
+			ECS::Entity entity;
+			bool shouldCreate;
+			bool shouldDelete;
 		};
 
 		template<class Archive>

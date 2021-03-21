@@ -7,6 +7,9 @@
 #include <btBulletDynamicsCommon.h>
 #include <Components/Physics/RigidbodyComponent.h>
 
+// Type Includes
+#include <Types/RingBuffer.h>
+
 namespace Puffin
 {
 	namespace Physics
@@ -15,6 +18,7 @@ namespace Puffin
 		{
 		public:
 
+			void Init();
 			void Start();
 			void Update(float dt);
 			void Stop();
@@ -32,6 +36,10 @@ namespace Puffin
 			btDiscreteDynamicsWorld* physicsWorld;
 
 			btAlignedObjectArray<btCollisionShape*> collisionShapes;
+
+			std::shared_ptr<RingBuffer<RigidbodyEvent>> rigidbodyEvents;
+
+			void ProcessEvents();
 		};
 	}
 }

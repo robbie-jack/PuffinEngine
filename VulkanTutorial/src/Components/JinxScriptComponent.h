@@ -3,15 +3,13 @@
 #include <Jinx.hpp>
 #include <string>
 
-#include <Components/BaseComponent.h>
-
 #include <cereal/cereal.hpp>
 
 namespace Puffin
 {
 	namespace Scripting
 	{
-		struct JinxScriptComponent : public BaseComponent
+		struct JinxScriptComponent
 		{
 			// Name of the file where script is stored as plain text
 			std::string Name;
@@ -24,6 +22,15 @@ namespace Puffin
 
 			// Jinx Script object ready to be executed
 			Jinx::ScriptPtr Script;
+		};
+
+		struct JinxScriptEvent
+		{
+			JinxScriptEvent(ECS::Entity InEntity = 0, bool InShouldCreate = false, bool InShouldDelete = false) : entity{ InEntity }, shouldCreate{ InShouldCreate }, shouldDelete{ InShouldDelete } {};
+
+			ECS::Entity entity;
+			bool shouldCreate;
+			bool shouldDelete;
 		};
 
 		template<class Archive>

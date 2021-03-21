@@ -120,14 +120,20 @@ namespace Puffin
 			UIManager->GetWindowSettings()->SetCamera(&camera);
 
 			// Subscribe to events
+			meshEvents = std::make_shared<RingBuffer<MeshEvent>>();
+			lightEvents = std::make_shared<RingBuffer<LightEvent>>();
 			inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
 			drawLineEvents = std::make_shared<RingBuffer<Debug::Line>>();
 			drawBoxEvents = std::make_shared<RingBuffer<Debug::Box>>();
 
+			world->RegisterEvent<MeshEvent>();
+			world->RegisterEvent<LightEvent>();
 			world->RegisterEvent<Input::InputEvent>();
 			world->RegisterEvent<Debug::Line>();
 			world->RegisterEvent<Debug::Box>();
 
+			world->SubscribeToEvent<MeshEvent>(meshEvents);
+			world->SubscribeToEvent<LightEvent>(lightEvents);
 			world->SubscribeToEvent<Input::InputEvent>(inputEvents);
 			world->SubscribeToEvent<Debug::Line>(drawLineEvents);
 			world->SubscribeToEvent<Debug::Box>(drawBoxEvents);
@@ -1599,45 +1605,54 @@ namespace Puffin
 
 			UpdateCamera(camera, InputManager, dt);
 
-			for (ECS::Entity entity : entityMap["Mesh"])
+			DrawFrame(UIManager);
+		}
+
+		void VulkanEngine::ProcessEvents()
+		{
+			// Process Mesh Events
+			MeshEvent meshEvent;
+			while (!meshEvents->IsEmpty())
 			{
-				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
-
-				// Initialize/Re-Init Mesh
-				if (mesh.flag_created)
+				if (meshEvents->Pop(meshEvent))
 				{
-					CleanupMesh(mesh);
-					InitMesh(mesh);
-					mesh.flag_created = false;
-				}
+					MeshComponent& mesh = world->GetComponent<MeshComponent>(meshEvent.entity);
 
-				// Remove Mesh
-				if (mesh.flag_deleted)
-				{
-					CleanupMesh(mesh);
-					world->RemoveComponent<MeshComponent>(entity);
-					mesh.flag_deleted = false;
+					if (meshEvent.shouldCreate)
+					{
+						CleanupMesh(mesh);
+						InitMesh(mesh);
+					}
+
+					if (meshEvent.shouldDelete)
+					{
+						CleanupMesh(mesh);
+						world->RemoveComponent<MeshComponent>(meshEvent.entity);
+					}
 				}
 			}
 
-			for (ECS::Entity entity : entityMap["Light"])
+			// Process Light Events
+			LightEvent lightEvent;
+			while (!lightEvents->IsEmpty())
 			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
-
-				if (light.flag_created)
+				if (lightEvents->Pop(lightEvent))
 				{
-					CleanupLight(light);
-					InitLight(light);
-					light.flag_created = false;
-					shadowmapDescriptorNeedsUpdated = true;
-				}
+					LightComponent& light = world->GetComponent<LightComponent>(lightEvent.entity);
 
-				if (light.flag_deleted)
-				{
-					CleanupLight(light);
-					world->RemoveComponent<LightComponent>(entity);
-					light.flag_deleted = false;
-					shadowmapDescriptorNeedsUpdated = true;
+					if (lightEvent.shouldCreate)
+					{
+						CleanupLight(light);
+						InitLight(light);
+						shadowmapDescriptorNeedsUpdated = true;
+					}
+
+					if (lightEvent.shouldDelete)
+					{
+						CleanupLight(light);
+						world->RemoveComponent<LightComponent>(lightEvent.entity);
+						shadowmapDescriptorNeedsUpdated = true;
+					}
 				}
 			}
 
@@ -1647,11 +1662,6 @@ namespace Puffin
 				shadowmapDescriptorNeedsUpdated = false;
 			}
 
-			DrawFrame(UIManager);
-		}
-
-		void VulkanEngine::ProcessEvents()
-		{
 			// Process Input Events
 			Input::InputEvent inputEvent;
 			while (!inputEvents->IsEmpty())

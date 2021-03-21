@@ -91,8 +91,9 @@ namespace Puffin
 								Rendering::MeshComponent& comp = world->AddComponent<Rendering::MeshComponent>(entity);
 								comp.model_path = "assets\\models\\cube.asset_m";
 								comp.texture_path = "textures\\cube.png";
-								comp.flag_created = true;
 								sceneChanged = true;
+
+								world->PublishEvent<Rendering::MeshEvent>(Rendering::MeshEvent(entity, true));
 							}
 						}
 
@@ -111,8 +112,10 @@ namespace Puffin
 								comp.specularStrength = 0.5f;
 								comp.shininess = 16;
 								comp.type = Rendering::LightType::POINT;
-								comp.flag_created = true;
+								
 								sceneChanged = true;
+
+								world->PublishEvent<Rendering::LightEvent>(Rendering::LightEvent(entity, true));
 							}
 						}
 
@@ -123,7 +126,7 @@ namespace Puffin
 								Physics::RigidbodyComponent& comp = world->AddComponent<Physics::RigidbodyComponent>(entity);
 								comp.size = btVector3(1.0f, 1.0f, 1.0f);
 								comp.mass = 0.0f;
-								comp.flag_created = true;
+								world->PublishEvent<Physics::RigidbodyEvent>(Physics::RigidbodyEvent(entity, true));
 								sceneChanged = true;
 							}
 						}
@@ -197,8 +200,8 @@ namespace Puffin
 
 					if (ImGui::IsItemClicked())
 					{
-						mesh.flag_deleted = true;
 						sceneChanged = true;
+						world->PublishEvent<Rendering::MeshEvent>(Rendering::MeshEvent(entity, false, true));
 					}
 
 					// Change Model Path
@@ -212,7 +215,8 @@ namespace Puffin
 					if (fileDialog->HasSelected() && modelSelected)
 					{
 						mesh.model_path = fileDialog->GetSelected().string();
-						mesh.flag_created = true;
+						world->PublishEvent<Rendering::MeshEvent>(Rendering::MeshEvent(entity, true));
+
 						modelSelected = false;
 						sceneChanged = true;
 						fileDialog->ClearSelected();
@@ -229,7 +233,7 @@ namespace Puffin
 					if (fileDialog->HasSelected() && textureSelected)
 					{
 						mesh.texture_path = fileDialog->GetSelected().string();
-						mesh.flag_created = true;
+						world->PublishEvent<Rendering::MeshEvent>(Rendering::MeshEvent(entity, true));
 						textureSelected = false;
 						sceneChanged = true;
 						fileDialog->ClearSelected();
@@ -247,15 +251,15 @@ namespace Puffin
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					Rendering::LightComponent& comp = world->GetComponent<Rendering::LightComponent>(entity);
-
 					ImGui::Button("X");
 
 					if (ImGui::IsItemClicked())
 					{
-						comp.flag_deleted = true;
 						sceneChanged = true;
+						world->PublishEvent<Rendering::LightEvent>(Rendering::LightEvent(entity, false, true));
 					}
+
+					Rendering::LightComponent& comp = world->GetComponent<Rendering::LightComponent>(entity);
 
 					// Edit Light Diffuse Color
 					ImGui::ColorEdit3("Diffuse", (float*)&comp.diffuseColor);
@@ -266,7 +270,7 @@ namespace Puffin
 					if (ImGui::Checkbox("Cast Shadows", &comp.castShadows))
 					{
 						sceneChanged = true;
-						comp.flag_created = true;
+						world->PublishEvent<Rendering::LightEvent>(Rendering::LightEvent(entity, true));
 					}
 
 					// Combo box to select light type
@@ -330,13 +334,13 @@ namespace Puffin
 
 					if (ImGui::IsItemClicked())
 					{
-						comp.flag_deleted = true;
+						world->PublishEvent<Physics::RigidbodyEvent>(Physics::RigidbodyEvent(entity, false, true));
 						sceneChanged = true;
 					}
 
 					if (positionChanged)
 					{
-						comp.flag_created = true;
+						world->PublishEvent<Physics::RigidbodyEvent>(Physics::RigidbodyEvent(entity, true));
 					}
 				}
 			}
@@ -356,7 +360,7 @@ namespace Puffin
 
 					if (ImGui::IsItemClicked())
 					{
-						comp.flag_deleted = true;
+						world->PublishEvent<Scripting::JinxScriptEvent>(Scripting::JinxScriptEvent(entity, false, true));
 						sceneChanged = true;
 					}
 

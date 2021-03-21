@@ -4,13 +4,12 @@
 #define RIGIDBODY_COMPONENT_H
 
 #include "btBulletDynamicsCommon.h"
-#include "../../Components/BaseComponent.h"
 
 namespace Puffin
 {
 	namespace Physics
 	{
-		struct RigidbodyComponent : public BaseComponent
+		struct RigidbodyComponent
 		{
 			btCollisionShape* shape;
 			btRigidBody* body;
@@ -19,16 +18,14 @@ namespace Puffin
 			btScalar mass;
 		};
 
-		/*template<class Archive>
-		void serialize(Archive& archive, RigidbodyComponent& comp)
+		struct RigidbodyEvent
 		{
-			float size_x = comp.size.getX();
-			float size_y = comp.size.getY();
-			float size_z = comp.size.getZ();
-			float mass = comp.mass;
+			RigidbodyEvent(ECS::Entity InEntity = 0, bool InShouldCreate = false, bool InShouldDelete = false) : entity{ InEntity }, shouldCreate{ InShouldCreate }, shouldDelete{ InShouldDelete } {};
 
-			archive(size_x, size_y, size_z, mass);
-		}*/
+			ECS::Entity entity;
+			bool shouldCreate;
+			bool shouldDelete;
+		};
 
 		template<class Archive>
 		void save(Archive& archive, const RigidbodyComponent& comp)
