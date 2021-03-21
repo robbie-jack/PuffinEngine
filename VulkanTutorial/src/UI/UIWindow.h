@@ -27,7 +27,7 @@ namespace Puffin
 		{
 		public:
 
-			UIWindow(Engine* InEngine, ECS::World* InWorld);
+			UIWindow(Engine* InEngine, std::shared_ptr<ECS::World> InWorld);
 			~UIWindow();
 
 			virtual bool Draw(float dt, Puffin::Input::InputManager* InputManager);
@@ -56,7 +56,7 @@ namespace Puffin
 			VkSampler textureSampler;
 
 			Engine* engine;
-			ECS::World* world;
+			std::shared_ptr<ECS::World> world;
 		};
 	}
 }

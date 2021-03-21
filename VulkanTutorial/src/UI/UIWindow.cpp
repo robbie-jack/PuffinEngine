@@ -4,7 +4,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		UIWindow::UIWindow(Engine* InEngine, ECS::World* InWorld)
+		UIWindow::UIWindow(Engine* InEngine, std::shared_ptr<ECS::World> InWorld)
 		{
 			engine = InEngine;
 			world = InWorld;

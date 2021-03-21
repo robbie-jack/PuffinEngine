@@ -3,6 +3,9 @@
 #ifndef ECS_H
 #define ECS_H
 
+#include <ECS\EventManager.h>
+#include <ECS\System.h>
+
 #include <cstdint>
 #include <bitset>
 #include <queue>
@@ -400,22 +403,6 @@ namespace Puffin
 		};
 
 		//////////////////////////////////////////////////
-		// System
-		//////////////////////////////////////////////////
-
-		class World;
-
-		typedef std::unordered_map<std::string_view, std::set<Entity>> EntityMap;
-
-		class System
-		{
-		public:
-			EntityMap entityMap;
-			std::shared_ptr<World> world;
-			Entity entityToDelete;
-		};
-
-		//////////////////////////////////////////////////
 		// System Manager
 		//////////////////////////////////////////////////
 
@@ -535,6 +522,7 @@ namespace Puffin
 				componentManager = std::make_unique<ComponentManager>();
 				entityManager = std::make_unique<EntityManager>();
 				systemManager = std::make_unique<SystemManager>();
+				eventManager = std::make_unique<EventManager>();
 			}
 
 			void Update()
@@ -711,12 +699,32 @@ namespace Puffin
 				}
 			}
 
+			// Event Manager Methods
+
+			template<typename EventT>
+			void RegisterEvent()
+			{
+				eventManager->RegisterEvent<EventT>();
+			}
+
+			template<typename EventT>
+			void Publish(EventT event)
+			{
+				eventManager->Publish<EventT>(event);
+			}
+
+			template<typename EventT>
+			void Subscribe(std::shared_ptr<RingBuffer<EventT>> buffer)
+			{
+				eventManager->Subscribe(buffer);
+			}
+
 		private:
 
 			std::unique_ptr<ComponentManager> componentManager;
 			std::unique_ptr<EntityManager> entityManager;
 			std::unique_ptr<SystemManager> systemManager;
-
+			std::unique_ptr<EventManager> eventManager;
 		};
 	}
 }

@@ -19,7 +19,9 @@ namespace Puffin
         {
 		public:
 
-            UIWindowEntityProperties(Engine* InEngine, ECS::World* InWorld);
+            UIWindowEntityProperties(Engine* InEngine, std::shared_ptr<ECS::World> InWorld) : UIWindow(InEngine, InWorld)
+            {
+            };
 
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 

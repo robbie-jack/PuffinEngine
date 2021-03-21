@@ -1,6 +1,7 @@
 #include "Engine.h"
 
 #include <Rendering/VulkanEngine.h>
+#include <Components/JinxScriptComponent.h>
 #include <Components/TransformComponent.h>
 #include <ECS/ECS.h>
 #include <Input/InputManager.h>
@@ -8,7 +9,6 @@
 #include <Physics/BulletPhysicsSystem.h>
 #include <Rendering/DebugDraw.h>
 #include <Scripting/JinxScriptingSystem.h>
-#include <Components/JinxScriptComponent.h>
 #include <SerializeScene.h>
 #include <UI/UIManager.h>
 
@@ -22,43 +22,52 @@ namespace Puffin
 	void Engine::MainLoop()
 	{
 		// Managers/ECS World
-		ECS::World ECSWorld;
-		UI::UIManager UIManager(this, &ECSWorld);
+		std::shared_ptr<ECS::World> ECSWorld = std::make_shared<ECS::World>();
+		UI::UIManager UIManager(this, ECSWorld);
 		Input::InputManager InputManager;
-		Job::JobManager JobManager;
+		//Job::JobManager JobManager;
 
-		ECSWorld.Init();
-		JobManager.Init();
+		glfwInit();
+
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+		GLFWmonitor* monitor = nullptr;
+		GLFWwindow* window = glfwCreateWindow(1280, 720, "Puffin Engine", monitor, NULL);
+
+		ECSWorld->Init();
+		InputManager.Init(window, ECSWorld);
+		//JobManager.Init();
 
 		// Systems
-		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld.RegisterSystem<Physics::BulletPhysicsSystem>();
-		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld.RegisterSystem<Rendering::VulkanEngine>();
-		std::shared_ptr<Scripting::JinxScriptingSystem> scriptingSystem = ECSWorld.RegisterSystem<Scripting::JinxScriptingSystem>();
+		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld->RegisterSystem<Physics::BulletPhysicsSystem>();
+		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
+		std::shared_ptr<Scripting::JinxScriptingSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::JinxScriptingSystem>();
 
-		ECSWorld.RegisterComponent<TransformComponent>();
-		ECSWorld.RegisterComponent<Rendering::MeshComponent>();
-		ECSWorld.RegisterComponent<Rendering::LightComponent>();
-		ECSWorld.RegisterComponent<Physics::RigidbodyComponent>();
-		ECSWorld.RegisterComponent<Scripting::JinxScriptComponent>();
+		ECSWorld->RegisterComponent<TransformComponent>();
+		ECSWorld->RegisterComponent<Rendering::MeshComponent>();
+		ECSWorld->RegisterComponent<Rendering::LightComponent>();
+		ECSWorld->RegisterComponent<Physics::RigidbodyComponent>();
+		ECSWorld->RegisterComponent<Scripting::JinxScriptComponent>();
 
 		ECS::Signature meshSignature;
-		meshSignature.set(ECSWorld.GetComponentType<TransformComponent>());
-		meshSignature.set(ECSWorld.GetComponentType<Rendering::MeshComponent>());
-		ECSWorld.SetSystemSignature<Rendering::VulkanEngine>("Mesh", meshSignature);
+		meshSignature.set(ECSWorld->GetComponentType<TransformComponent>());
+		meshSignature.set(ECSWorld->GetComponentType<Rendering::MeshComponent>());
+		ECSWorld->SetSystemSignature<Rendering::VulkanEngine>("Mesh", meshSignature);
 
 		ECS::Signature lightSignature;
-		lightSignature.set(ECSWorld.GetComponentType<TransformComponent>());
-		lightSignature.set(ECSWorld.GetComponentType<Rendering::LightComponent>());
-		ECSWorld.SetSystemSignature<Rendering::VulkanEngine>("Light", lightSignature);
+		lightSignature.set(ECSWorld->GetComponentType<TransformComponent>());
+		lightSignature.set(ECSWorld->GetComponentType<Rendering::LightComponent>());
+		ECSWorld->SetSystemSignature<Rendering::VulkanEngine>("Light", lightSignature);
 
 		ECS::Signature rigidbodySignature;
-		rigidbodySignature.set(ECSWorld.GetComponentType<TransformComponent>());
-		rigidbodySignature.set(ECSWorld.GetComponentType<Physics::RigidbodyComponent>());
-		ECSWorld.SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
+		rigidbodySignature.set(ECSWorld->GetComponentType<TransformComponent>());
+		rigidbodySignature.set(ECSWorld->GetComponentType<Physics::RigidbodyComponent>());
+		ECSWorld->SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
 
 		ECS::Signature scriptSignature;
-		scriptSignature.set(ECSWorld.GetComponentType<Scripting::JinxScriptComponent>());
-		ECSWorld.SetSystemSignature<Scripting::JinxScriptingSystem>("Script", scriptSignature);
+		scriptSignature.set(ECSWorld->GetComponentType<Scripting::JinxScriptComponent>());
+		ECSWorld->SetSystemSignature<Scripting::JinxScriptingSystem>("Script", scriptSignature);
 
 		sceneData.scene_name = "content/scenes/default.pscn";
 		IO::LoadSettings("settings.xml", settings);
@@ -67,20 +76,17 @@ namespace Puffin
 		//DefaultScene(&ECSWorld);
 		
 		// Load Scene -- normal behaviour
-		IO::LoadScene(&ECSWorld, sceneData);
-		IO::InitScene(&ECSWorld, sceneData);
+		IO::LoadScene(ECSWorld, sceneData);
+		IO::InitScene(ECSWorld, sceneData);
 
 		running = true;
 		restarted = false;
 		playState = PlayState::STOPPED;
 
 		// Initialize Systems
-		GLFWwindow* window = vulkanEngine->Init(&UIManager);
+		vulkanEngine->Init(window, &UIManager);
 		physicsSystem->Start();
 		scriptingSystem->Start();
-
-		// Init Input
-		InputManager.SetupInput(window);
 		
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -93,13 +99,13 @@ namespace Puffin
 			float delta_time = duration.count();
 
 			// Input
-			InputManager.UpdateInput(window);
+			InputManager.UpdateInput();
 
 			// Physics
 			if (playState == PlayState::PLAYING)
 			{
-				physicsSystem->Update(delta_time);
 				scriptingSystem->Update(delta_time);
+				physicsSystem->Update(delta_time);
 			}
 
 			// UI
@@ -114,11 +120,11 @@ namespace Puffin
 				vulkanEngine->StopScene();
 				physicsSystem->Stop();
 				scriptingSystem->Stop();
-				ECSWorld.Reset();
+				ECSWorld->Reset();
 
 				// Re-Initialize Systems and ECS
-				IO::LoadScene(&ECSWorld, sceneData);
-				IO::InitScene(&ECSWorld, sceneData);
+				IO::LoadScene(ECSWorld, sceneData);
+				IO::InitScene(ECSWorld, sceneData);
 				vulkanEngine->StartScene();
 				physicsSystem->Start();
 				scriptingSystem->Start();
@@ -132,14 +138,14 @@ namespace Puffin
 			}
 
 			// Delete All Marked Objects
-			ECSWorld.Update();
+			ECSWorld->Update();
 		}
 
 		scriptingSystem->Stop();
 		physicsSystem->Stop();
 		vulkanEngine->Cleanup();
 		UIManager.Cleanup();
-		ECSWorld.Cleanup();
+		ECSWorld->Cleanup();
 
 		glfwDestroyWindow(window);
 		glfwTerminate();

@@ -11,7 +11,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		UIManager::UIManager(Engine* InEngine, ECS::World* InWorld)
+		UIManager::UIManager(Engine* InEngine, std::shared_ptr<ECS::World> InWorld)
 		{
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();

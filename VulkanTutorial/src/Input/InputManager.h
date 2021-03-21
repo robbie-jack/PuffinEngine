@@ -4,15 +4,22 @@
 #define INPUT_MANAGER_H
 
 #include <GLFW/glfw3.h>
+//#include <Types/RingBuffer.h>
 
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace Puffin
 {
+	namespace ECS
+	{
+		class World;
+	}
+
 	namespace Input
 	{
-		enum KeyState
+		enum class KeyState
 		{
 			PRESSED = 0,
 			HELD = 1,
@@ -28,15 +35,22 @@ namespace Puffin
 			KeyState state;
 		};
 
+		struct InputEvent
+		{
+			InputEvent(std::string name, KeyState state) : actionName{ name }, actionState{ state } {};
+			std::string actionName;
+			KeyState actionState;
+		};
+
 		class InputManager
 		{
 		public:
 			InputManager();
 			~InputManager();
 
-			void SetupInput(GLFWwindow* window);
+			void Init(GLFWwindow* windowIn, std::shared_ptr<ECS::World> InWorld);
 
-			void UpdateInput(GLFWwindow* window);
+			void UpdateInput();
 			void AddAction(std::string name, int key);
 			void AddAction(std::string name, std::vector<int> keys);
 			InputAction GetAction(std::string name);
@@ -55,6 +69,10 @@ namespace Puffin
 
 			int nextID = 1;
 			std::vector<InputAction> actions;
+			GLFWwindow* window;
+
+			std::shared_ptr<ECS::World> world;
+			//RingBuffer<InputEvent> inputEvents;
 		};
 	}
 }

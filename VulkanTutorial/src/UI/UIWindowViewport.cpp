@@ -8,11 +8,6 @@ namespace Puffin
 {
 	namespace UI
 	{
-		UIWindowViewport::UIWindowViewport(Engine* InEngine, ECS::World* InWorld) : UIWindow(InEngine, InWorld)
-		{
-
-		}
-
 		bool UIWindowViewport::DrawWithoutImage()
 		{
 			windowName = "Viewport";

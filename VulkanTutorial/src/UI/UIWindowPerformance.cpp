@@ -5,12 +5,6 @@ namespace Puffin
 {
 	namespace UI
 	{
-
-		UIWindowPerformance::UIWindowPerformance(Engine* InEngine, ECS::World* InWorld) : UIWindow(InEngine, InWorld)
-		{
-
-		}
-
 		bool UIWindowPerformance::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
 			windowName = "Performance";

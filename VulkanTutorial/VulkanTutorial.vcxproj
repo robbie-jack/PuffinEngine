@@ -91,6 +91,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glfw-3.3.2.bin.WIN64\include;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\glm;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\stb-master;C:\Program Files (x86)\Microsoft Visual Studio\2019\Libraries\tinyobjloader-master;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\imgui-1.75;C:\Program Files %28x86%29\Microsoft Visual Studio\2019\Libraries\bullet3-master\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,6 +111,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,6 +134,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <Optimization>Disabled</Optimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,6 +161,7 @@
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -218,6 +222,9 @@
     <ClInclude Include="src\Components\JinxScriptComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ecs\ECS.h" />
+    <ClInclude Include="src\ECS\Event.h" />
+    <ClInclude Include="src\ECS\EventManager.h" />
+    <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\JobManager.h" />
@@ -236,6 +243,7 @@
     <ClInclude Include="src\Rendering\VulkanEngine.h" />
     <ClInclude Include="src\Scripting\JinxScriptingSystem.h" />
     <ClInclude Include="src\SerializeScene.h" />
+    <ClInclude Include="src\Types\RingBuffer.h" />
     <ClInclude Include="src\Types\Vector.h" />
     <ClInclude Include="src\Types\VectorConversion.h" />
     <ClInclude Include="src\UI\UIManager.h" />

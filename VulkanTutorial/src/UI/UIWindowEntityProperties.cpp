@@ -16,12 +16,6 @@ namespace Puffin
 {
 	namespace UI
 	{
-
-		UIWindowEntityProperties::UIWindowEntityProperties(Engine* InEngine, ECS::World* InWorld) : UIWindow(InEngine, InWorld)
-		{
-
-		}
-
 		bool UIWindowEntityProperties::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
 			windowName = "Entity Properties";

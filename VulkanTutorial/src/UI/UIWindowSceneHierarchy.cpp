@@ -6,12 +6,6 @@ namespace Puffin
 {
 	namespace UI
 	{
-
-		UIWindowSceneHierarchy::UIWindowSceneHierarchy(Engine* InEngine, ECS::World* InWorld) : UIWindow(InEngine, InWorld)
-		{
-
-		}
-
 		bool UIWindowSceneHierarchy::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
 			windowName = "Scene Hierarchy";

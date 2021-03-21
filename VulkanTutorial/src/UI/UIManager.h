@@ -36,7 +36,7 @@ namespace Puffin
 		{
 		public:
 
-			UIManager(Engine* InEngine, ECS::World* InWorld);
+			UIManager(Engine* InEngine, std::shared_ptr<ECS::World> InWorld);
 			~UIManager();
 
 			void Cleanup();
@@ -52,7 +52,7 @@ namespace Puffin
 			bool saveScene, loadScene, importMesh;
 
 			Engine* engine;
-			ECS::World* world;
+			std::shared_ptr<ECS::World> world;
 			ECS::Entity entity;
 
 			std::vector<UIWindow*> windows;

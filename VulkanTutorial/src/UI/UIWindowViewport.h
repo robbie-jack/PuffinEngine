@@ -18,7 +18,9 @@ namespace Puffin
 		{
 		public:
 
-			UIWindowViewport(Engine* InEngine, ECS::World* InWorld);
+			UIWindowViewport(Engine* InEngine, std::shared_ptr<ECS::World> InWorld) : UIWindow(InEngine, InWorld)
+			{
+			};
 
 			bool DrawWithoutImage();
 			bool Draw(ImTextureID textureID, Rendering::CameraComponent& camera);

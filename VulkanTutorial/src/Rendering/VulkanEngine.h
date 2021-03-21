@@ -186,7 +186,7 @@ namespace Puffin
 		public:
 
 			// Main Functions
-			GLFWwindow* Init(UI::UIManager* UIManager);
+			GLFWwindow* Init(GLFWwindow* windowIn, UI::UIManager* UIManager);
 			void StartScene();
 
 			//void Restart();
@@ -279,6 +279,7 @@ namespace Puffin
 
 			// Camera
 			CameraComponent camera;
+			bool moveForward, moveBackward, moveLeft, moveRight, moveUp, moveDown;
 
 			// GLFW
 			GLFWwindow* window;							// Window

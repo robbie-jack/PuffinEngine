@@ -248,5 +248,17 @@
     <ClInclude Include="src\Components\JinxScriptComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\Event.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\EventManager.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\System.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\RingBuffer.h">
+      <Filter>Types</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

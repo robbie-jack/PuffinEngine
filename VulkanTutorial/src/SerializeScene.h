@@ -47,7 +47,7 @@ namespace Puffin
 			sceneData.rigidbodyMap.clear();
 		}
 
-		inline static void UpdateSceneData(ECS::World* world, SceneData& sceneData)
+		inline static void UpdateSceneData(std::shared_ptr<ECS::World> world, SceneData& sceneData)
 		{
 			// Clear Out Old Scene Data
 			ClearSceneData(sceneData);
@@ -95,7 +95,7 @@ namespace Puffin
 		}
 
 		// Save Entities/Components to Binary Scene File
-		inline static void SaveScene(ECS::World* world, SceneData& sceneData)
+		inline static void SaveScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
 		{
 			// Initialize Output File Stream and Cereal Binary Archive
 			std::ofstream os(sceneData.scene_name, std::ios::binary);
@@ -113,7 +113,7 @@ namespace Puffin
 		}
 
 		// Load  Entities/Components from Binary Scene File
-		inline static void LoadScene(ECS::World* world, SceneData& sceneData)
+		inline static void LoadScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
 		{
 			// Initialize Input File Stream and Cereal Binary Archive
 			std::ifstream is(sceneData.scene_name, std::ios::binary);
@@ -134,7 +134,7 @@ namespace Puffin
 		}
 
 		// Initialize ECS with loaded data
-		inline static void InitScene(ECS::World* world, SceneData& sceneData)
+		inline static void InitScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
 		{
 			// Initiliase EntityManager with Existing Entities
 			world->InitEntitySystem(sceneData.entities);

@@ -5,12 +5,6 @@ namespace Puffin
 {
 	namespace UI
 	{
-
-		UIWindowSettings::UIWindowSettings(Engine* InEngine, ECS::World* InWorld) : UIWindow(InEngine, InWorld)
-		{
-
-		}
-
 		bool UIWindowSettings::Draw(float dt, Puffin::Input::InputManager* InputManager)
 		{
 			if (firstTime)

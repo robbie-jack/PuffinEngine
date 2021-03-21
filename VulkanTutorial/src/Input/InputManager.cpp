@@ -1,4 +1,5 @@
 #include <Input/InputManager.h>
+#include <ECS/ECS.h>
 
 namespace Puffin
 {
@@ -19,8 +20,13 @@ namespace Puffin
 
 		}
 
-		void Puffin::Input::InputManager::SetupInput(GLFWwindow* window)
+		void InputManager::Init(GLFWwindow* windowIn, std::shared_ptr<ECS::World> InWorld)
 		{
+			window = windowIn;
+			world = InWorld;
+
+			world->RegisterEvent<InputEvent>();
+
 			// Setup Actions
 
 			// Camera Actions
@@ -43,64 +49,67 @@ namespace Puffin
 			}
 		}
 
-		void Puffin::Input::InputManager::UpdateInput(GLFWwindow* window)
+		void Puffin::Input::InputManager::UpdateInput()
 		{
+			glfwPollEvents();
+
 			// Update Actions
+
+			bool stateChanged = false;
 
 			// Loop through current actions and update action states
 			for (int i = 0; i < actions.size(); i++)
 			{
+				stateChanged = false;
+
 				for (int j = 0; j < actions[i].keys.size(); j++)
 				{
-					//actions[i].state = glfwGetKey(window, actions[i].keys[j]);
 					int state = glfwGetKey(window, actions[i].keys[j]);
 
 					if (state == GLFW_PRESS)
 					{
-						if (actions[i].state == UP)
+						if (!stateChanged && actions[i].state == KeyState::UP)
 						{
-							actions[i].state = PRESSED;
-							break;
+							actions[i].state = KeyState::PRESSED;
+							stateChanged = true;
+							//break;
 						}
 
-						if (actions[i].state == PRESSED)
+						if (!stateChanged && actions[i].state == KeyState::PRESSED)
 						{
-							actions[i].state = HELD;
-							break;
+							actions[i].state = KeyState::HELD;
+							stateChanged = true;
+							//break;
 						}
 					}
 
 					if (state == GLFW_RELEASE)
 					{
-						if (actions[i].state == HELD)
+						if (!stateChanged && actions[i].state == KeyState::HELD)
 						{
-							actions[i].state = RELEASED;
-							break;
+							actions[i].state = KeyState::RELEASED;
+							stateChanged = true;
+							//break;
 						}
 
-						if (actions[i].state == RELEASED)
+						if (!stateChanged && actions[i].state == KeyState::RELEASED)
 						{
-							actions[i].state = UP;
-							break;
+							actions[i].state = KeyState::UP;
+							stateChanged = true;
+							//break;
 						}
+					}
+
+					// Notify subscribers that event changed
+					if (stateChanged == true)
+					{
+						stateChanged = false;
 					}
 				}
 			}
 
 			// Update Mouse
-			if (GetAction("CursorSwitch").state == PRESSED)
-			{
-				if (cursor_locked == true)
-				{
-					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-				}
-				else
-				{
-					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-				}
-
-				cursor_locked = !cursor_locked;
-			}
+			
 
 			// Update Current and Last Mouse Positions
 			last_x_pos = x_pos;
@@ -122,7 +131,7 @@ namespace Puffin
 			new_action.name = name;
 			new_action.id = nextID;
 			new_action.keys.push_back(key);
-			new_action.state = UP;
+			new_action.state = KeyState::UP;
 
 			actions.push_back(new_action);
 
@@ -135,7 +144,7 @@ namespace Puffin
 			new_action.name = name;
 			new_action.id = nextID;
 			new_action.keys = keys;
-			new_action.state = UP;
+			new_action.state = KeyState::UP;
 
 			actions.push_back(new_action);
 

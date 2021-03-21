@@ -45,7 +45,9 @@ namespace Puffin
 		class UIWindowPerformance : public UIWindow
 		{
 		public:
-			UIWindowPerformance(Engine* InEngine, ECS::World* InWorld);
+			UIWindowPerformance(Engine* InEngine, std::shared_ptr<ECS::World> InWorld) : UIWindow(InEngine, InWorld)
+			{
+			};
 
 			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
 

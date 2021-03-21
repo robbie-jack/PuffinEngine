@@ -30,12 +30,12 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		GLFWwindow* VulkanEngine::Init(UI::UIManager* UIManager)
+		GLFWwindow* VulkanEngine::Init(GLFWwindow* windowIn, UI::UIManager* UIManager)
 		{
-			glfwInit();
+			/*glfwInit();
 
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+			glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);*/
 
 			windowExtent.width = WIDTH;
 			windowExtent.height = HEIGHT;
@@ -64,7 +64,8 @@ namespace Puffin
 			shadowExtent.height = 1024;
 			shadowFormat = VK_FORMAT_D16_UNORM;
 
-			window = glfwCreateWindow(windowExtent.width, windowExtent.height, "Puffin Engine", monitor, nullptr);
+			window = windowIn;
+			//window = glfwCreateWindow(1280, 720, "Puffin Engine", monitor, NULL);
 
 			glfwSetWindowUserPointer(window, this);
 			glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
@@ -123,6 +124,13 @@ namespace Puffin
 
 			// Pass Camera to UI
 			UIManager->GetWindowSettings()->SetCamera(&camera);
+
+			/*eventBus->Subscribe(this, &VulkanEngine::OnCamMoveForward);
+			eventBus->Subscribe(this, &VulkanEngine::OnCamMoveBackward);
+			eventBus->Subscribe(this, &VulkanEngine::OnCamMoveLeft);
+			eventBus->Subscribe(this, &VulkanEngine::OnCamMoveRight);
+			eventBus->Subscribe(this, &VulkanEngine::OnCamMoveUp);
+			eventBus->Subscribe(this, &VulkanEngine::OnCamMoveDown);*/
 
 			// Initialize ImGui
 			InitImGui();
@@ -1585,8 +1593,6 @@ namespace Puffin
 
 		void VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
 		{
-			glfwPollEvents();
-
 			UIManager->DrawUI(dt, InputManager);
 
 			UpdateCamera(camera, InputManager, dt);
@@ -1647,29 +1653,56 @@ namespace Puffin
 			if (inputManager->IsCursorLocked())
 			{
 				// Camera Movement
-				if (inputManager->GetAction("CamMoveLeft").state == Puffin::Input::HELD)
+				/*if (inputManager->GetAction("CamMoveLeft").state == Puffin::Input::KeyState::HELD)
 				{
 					camera.position += camera.speed * camera.right * delta_time;
 				}
-				else if (inputManager->GetAction("CamMoveRight").state == Puffin::Input::HELD)
+				else if (inputManager->GetAction("CamMoveRight").state == Puffin::Input::KeyState::HELD)
 				{
 					camera.position -= camera.speed * camera.right * delta_time;
 				}
 
-				if (inputManager->GetAction("CamMoveForward").state == Puffin::Input::HELD)
+				if (inputManager->GetAction("CamMoveForward").state == Puffin::Input::KeyState::HELD)
 				{
 					camera.position += camera.speed * camera.direction * delta_time;
 				}
-				else if (inputManager->GetAction("CamMoveBackward").state == Puffin::Input::HELD)
+				else if (inputManager->GetAction("CamMoveBackward").state == Puffin::Input::KeyState::HELD)
 				{
 					camera.position -= camera.speed * camera.direction * delta_time;
 				}
 
-				if (inputManager->GetAction("CamMoveUp").state == Puffin::Input::HELD)
+				if (inputManager->GetAction("CamMoveUp").state == Puffin::Input::KeyState::HELD)
 				{
 					camera.position += camera.speed * camera.up * delta_time;
 				}
-				else if (inputManager->GetAction("CamMoveDown").state == Puffin::Input::HELD)
+				else if (inputManager->GetAction("CamMoveDown").state == Puffin::Input::KeyState::HELD)
+				{
+					camera.position -= camera.speed * camera.up * delta_time;
+				}*/
+
+				if (moveLeft)
+				{
+					camera.position += camera.speed * camera.right * delta_time;
+				}
+				else if (moveRight)
+				{
+					camera.position -= camera.speed * camera.right * delta_time;
+				}
+
+				if (moveForward)
+				{
+					camera.position += camera.speed * camera.direction * delta_time;
+				}
+				else if (moveBackward)
+				{
+					camera.position -= camera.speed * camera.direction * delta_time;
+				}
+
+				if (moveUp)
+				{
+					camera.position += camera.speed * camera.up * delta_time;
+				}
+				else if (moveDown)
 				{
 					camera.position -= camera.speed * camera.up * delta_time;
 				}
