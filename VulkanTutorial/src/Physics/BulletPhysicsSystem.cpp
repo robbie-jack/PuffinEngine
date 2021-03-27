@@ -85,7 +85,18 @@ namespace Puffin
 
 				// Update Transform Component Poisiton/Rotation
 				transformComp.position = transform.getOrigin();
-				transform.getRotation().getEulerZYX(transformComp.rotation.z, transformComp.rotation.y, transformComp.rotation.x);
+
+				// Convert Rotation from Radians to Degrees
+
+				Puffin::Vector3 rotation;
+				transform.getRotation().getEulerZYX(rotation.z, rotation.y, rotation.x);
+
+				float PI = 3.14159;
+				rotation.x = rotation.x * 180 / PI;
+				rotation.y = rotation.y * 180 / PI;
+				rotation.z = rotation.z * 180 / PI;
+
+				transformComp.rotation = rotation;
 			}
 		}
 
