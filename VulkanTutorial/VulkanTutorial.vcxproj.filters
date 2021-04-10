@@ -47,6 +47,9 @@
     <Filter Include="Scripting">
       <UniqueIdentifier>{3ab7fd29-7ef4-4a4b-b919-36cec64bd1b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{576577dc-891e-40fb-a70d-b402ede7a1dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -115,6 +118,9 @@
     <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Scripting\JinxScriptingSystem.cpp">
       <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Audio\AudioSystem.cpp">
+      <Filter>Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -253,6 +259,9 @@
     </ClInclude>
     <ClInclude Include="src\Types\RingBuffer.h">
       <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Audio\AudioSystem.h">
+      <Filter>Audio</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
