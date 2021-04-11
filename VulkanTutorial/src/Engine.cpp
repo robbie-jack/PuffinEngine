@@ -1,7 +1,6 @@
 #include "Engine.h"
 
 #include <Rendering/VulkanEngine.h>
-//#include <Components/JinxScriptComponent.h>
 #include <Components/AngelScriptComponent.h>
 #include <Components/TransformComponent.h>
 #include <ECS/ECS.h>
@@ -9,7 +8,6 @@
 #include <JobManager.h>
 #include <Physics/BulletPhysicsSystem.h>
 #include <Rendering/DebugDraw.h>
-//#include <Scripting/JinxScriptingSystem.h>
 #include <Scripting/AngelScriptSystem.h>
 #include <SerializeScene.h>
 #include <UI/UIManager.h>
@@ -44,14 +42,12 @@ namespace Puffin
 		// Systems
 		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld->RegisterSystem<Physics::BulletPhysicsSystem>();
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
-		//std::shared_ptr<Scripting::JinxScriptingSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::JinxScriptingSystem>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
 
 		ECSWorld->RegisterComponent<TransformComponent>();
 		ECSWorld->RegisterComponent<Rendering::MeshComponent>();
 		ECSWorld->RegisterComponent<Rendering::LightComponent>();
 		ECSWorld->RegisterComponent<Physics::RigidbodyComponent>();
-		//ECSWorld->RegisterComponent<Scripting::JinxScriptComponent>();
 		ECSWorld->RegisterComponent<Scripting::AngelScriptComponent>();
 
 		ECS::Signature meshSignature;
@@ -68,10 +64,6 @@ namespace Puffin
 		rigidbodySignature.set(ECSWorld->GetComponentType<TransformComponent>());
 		rigidbodySignature.set(ECSWorld->GetComponentType<Physics::RigidbodyComponent>());
 		ECSWorld->SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
-
-		//ECS::Signature scriptSignature;
-		//scriptSignature.set(ECSWorld->GetComponentType<Scripting::JinxScriptComponent>());
-		//ECSWorld->SetSystemSignature<Scripting::JinxScriptingSystem>("Script", scriptSignature);
 
 		ECS::Signature scriptSignature;
 		scriptSignature.set(ECSWorld->GetComponentType<Scripting::AngelScriptComponent>());

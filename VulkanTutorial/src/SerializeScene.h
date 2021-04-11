@@ -8,7 +8,6 @@
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
 #include <Components/Physics/RigidbodyComponent.h>
-#include <Components/JinxScriptComponent.h>
 #include <Components/AngelScriptComponent.h>
 
 #include <vector>
@@ -86,12 +85,6 @@ namespace Puffin
 					Physics::RigidbodyComponent& comp = world->GetComponent<Physics::RigidbodyComponent>(entity);
 					sceneData.rigidbodyMap.insert({ entity, comp });
 				}
-
-				/*if (world->HasComponent<Scripting::JinxScriptComponent>(entity))
-				{
-					Scripting::JinxScriptComponent& comp = world->GetComponent<Scripting::JinxScriptComponent>(entity);
-					sceneData.scriptMap.insert({ entity, comp });
-				}*/
 
 				if (world->HasComponent<Scripting::AngelScriptComponent>(entity))
 				{

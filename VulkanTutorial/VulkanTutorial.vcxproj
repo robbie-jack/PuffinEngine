@@ -195,7 +195,6 @@
     <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
     <ClCompile Include="src\Rendering\VulkanEngine.cpp" />
     <ClCompile Include="src\Scripting\AngelScriptSystem.cpp" />
-    <ClCompile Include="src\Scripting\JinxScriptingSystem.cpp" />
     <ClCompile Include="src\UI\UIManager.cpp" />
     <ClCompile Include="src\UI\UIWindow.cpp" />
     <ClCompile Include="src\UI\UIWindowEntityProperties.cpp" />
@@ -225,7 +224,6 @@
     <ClInclude Include="src\Components\Rendering\CameraComponent.h" />
     <ClInclude Include="src\Components\Rendering\LightComponent.h" />
     <ClInclude Include="src\Components\Rendering\MeshComponent.h" />
-    <ClInclude Include="src\Components\JinxScriptComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ecs\ECS.h" />
     <ClInclude Include="src\ECS\Event.h" />
@@ -248,7 +246,6 @@
     <ClInclude Include="src\Rendering\vk_mem_alloc.h" />
     <ClInclude Include="src\Rendering\VulkanEngine.h" />
     <ClInclude Include="src\Scripting\AngelScriptSystem.h" />
-    <ClInclude Include="src\Scripting\JinxScriptingSystem.h" />
     <ClInclude Include="src\SerializeScene.h" />
     <ClInclude Include="src\Types\RingBuffer.h" />
     <ClInclude Include="src\Types\Vector.h" />

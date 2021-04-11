@@ -119,9 +119,6 @@
       <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\ManipulationGizmo.cpp" />
-    <ClCompile Include="src\Scripting\JinxScriptingSystem.cpp">
-      <Filter>Scripting</Filter>
-    </ClCompile>
     <ClCompile Include="src\Audio\AudioSystem.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
@@ -254,12 +251,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\ManipulationGizmo.h" />
-    <ClInclude Include="src\Scripting\JinxScriptingSystem.h">
-      <Filter>Scripting</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\JinxScriptComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="src\ECS\Event.h">
       <Filter>ECS</Filter>
     </ClInclude>

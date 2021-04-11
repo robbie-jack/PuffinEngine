@@ -4,7 +4,6 @@
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
 #include <Components/Physics/RigidbodyComponent.h>
-#include <Components/JinxScriptComponent.h>
 #include <ECS/ECS.h>
 
 #include <misc/cpp/imgui_stdlib.h>
