@@ -7,6 +7,3 @@
 [submodule "implot"]
 	path = implot
 	url = https://github.com/epezent/implot
-[submodule "Jinx"]
-	path = Jinx
-	url = https://github.com/JamesBoer/Jinx
