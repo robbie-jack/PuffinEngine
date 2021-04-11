@@ -372,6 +372,30 @@ namespace Puffin
 						//fileDialog->Open();
 						//modelSelected = true;
 					}
+
+					if (comp.obj != 0)
+					{
+						// Display Variables in scripts marked as editable
+						for (const int& index : comp.editableProperties)
+						{
+							// Get Property Name/Type
+							const char* propertyName = comp.obj->GetPropertyName(index);
+							int propertyType = comp.obj->GetPropertyTypeId(index);
+
+							// Display property with correct UI based on its type
+							switch (propertyType)
+							{
+							case asTYPEID_INT32:
+
+								// Get address of property
+								int* integerProp = (int*)comp.obj->GetAddressOfProperty(index);
+
+								ImGui::InputInt(propertyName, integerProp);
+
+								break;
+							}
+						}
+					}
 				}
 			}
 		}

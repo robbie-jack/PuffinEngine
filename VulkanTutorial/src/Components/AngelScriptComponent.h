@@ -4,6 +4,7 @@
 #include <angelscript.h>
 
 #include <string>
+#include <set>
 
 #include <cereal/cereal.hpp>
 
@@ -27,6 +28,9 @@ namespace Puffin
 
 			// Interface to store this classes update function, as preparing it each frame is costly
 			asIScriptFunction* updateFunc;
+
+			// Set of class property indexes
+			std::set<int> editableProperties;
 		};
 
 		template<class Archive>

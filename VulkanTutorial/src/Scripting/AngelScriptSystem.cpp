@@ -76,36 +76,40 @@ namespace Puffin
 			{
 				AngelScriptComponent& script = world->GetComponent<AngelScriptComponent>(entity);
 
-				// Prepare Function for execution
-				ctx->Prepare(script.updateFunc);
-
-				// Set Object pointer
-				ctx->SetObject(script.obj);
-
-				// Pass in Delta Time variable
-				ctx->SetArgFloat(0, dt);
-
-				// Execute the function
-				int r = ctx->Execute();
-				if (r != asEXECUTION_FINISHED)
+				// Execute Update function if one was found for script
+				if (script.updateFunc != 0)
 				{
-					// The execution didn't finish as we had planned. Determine why.
-					if (r == asEXECUTION_ABORTED)
-						cout << "The script was aborted before it could finish. Probably it timed out." << endl;
-					else if (r == asEXECUTION_EXCEPTION)
-					{
-						cout << "The script ended with an exception." << endl;
+					// Prepare Function for execution
+					ctx->Prepare(script.updateFunc);
 
-						// Write some information about the script exception
-						asIScriptFunction* func = ctx->GetExceptionFunction();
-						cout << "func: " << func->GetDeclaration() << endl;
-						cout << "modl: " << func->GetModuleName() << endl;
-						//cout << "sect: " << func->GetScriptSectionName() << endl;
-						cout << "line: " << ctx->GetExceptionLineNumber() << endl;
-						cout << "desc: " << ctx->GetExceptionString() << endl;
+					// Set Object pointer
+					ctx->SetObject(script.obj);
+
+					// Pass in Delta Time variable
+					ctx->SetArgFloat(0, dt);
+
+					// Execute the function
+					int r = ctx->Execute();
+					if (r != asEXECUTION_FINISHED)
+					{
+						// The execution didn't finish as we had planned. Determine why.
+						if (r == asEXECUTION_ABORTED)
+							cout << "The script was aborted before it could finish. Probably it timed out." << endl;
+						else if (r == asEXECUTION_EXCEPTION)
+						{
+							cout << "The script ended with an exception." << endl;
+
+							// Write some information about the script exception
+							asIScriptFunction* func = ctx->GetExceptionFunction();
+							cout << "func: " << func->GetDeclaration() << endl;
+							cout << "modl: " << func->GetModuleName() << endl;
+							//cout << "sect: " << func->GetScriptSectionName() << endl;
+							cout << "line: " << ctx->GetExceptionLineNumber() << endl;
+							cout << "desc: " << ctx->GetExceptionString() << endl;
+						}
+						else
+							cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
 					}
-					else
-						cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
 				}
 			}
 
@@ -116,6 +120,12 @@ namespace Puffin
 		{
 			// We must release the contexts when no longer using them
 			ctx->Release();
+
+			for (ECS::Entity entity : entityMap["Script"])
+			{
+				AngelScriptComponent& script = world->GetComponent<AngelScriptComponent>(entity);
+				CleanupScriptComponent(script);
+			}
 		}
 
 		void AngelScriptSystem::Cleanup()
@@ -250,6 +260,22 @@ namespace Puffin
 					{
 						cout << "No factory function existed for this class" << endl;
 					}
+
+					// Get all editable/visible properties
+					int propertyCount = typeToInstantiate->GetPropertyCount();
+					for (int p = 0; p < propertyCount; p++)
+					{
+						std::vector<std::string> metadata = builder.GetMetadataForTypeProperty(typeToInstantiate->GetTypeId(), p);
+
+						// Check each properties metadata
+						for (int m = 0; m < metadata.size(); m++)
+						{
+							if (metadata[m] == "editable")
+							{
+								script.editableProperties.insert(p);
+							}
+						}
+					}
 				}
 			}
 
@@ -266,7 +292,10 @@ namespace Puffin
 
 		void AngelScriptSystem::CleanupScriptComponent(AngelScriptComponent& script)
 		{
-
+			script.type->Release();
+			script.obj->Release();
+			script.updateFunc->Release();
+			script.editableProperties.clear();
 		}
 	}
 }
