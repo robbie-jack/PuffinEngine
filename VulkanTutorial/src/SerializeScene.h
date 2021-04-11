@@ -9,6 +9,7 @@
 #include <Components/Rendering/LightComponent.h>
 #include <Components/Physics/RigidbodyComponent.h>
 #include <Components/JinxScriptComponent.h>
+#include <Components/AngelScriptComponent.h>
 
 #include <vector>
 #include <set>
@@ -34,7 +35,7 @@ namespace Puffin
 			std::map<ECS::Entity, Rendering::MeshComponent> meshMap;
 			std::map<ECS::Entity, Rendering::LightComponent> lightMap;
 			std::map<ECS::Entity, Physics::RigidbodyComponent> rigidbodyMap;
-			std::map<ECS::Entity, Scripting::JinxScriptComponent> scriptMap;
+			std::map<ECS::Entity, Scripting::AngelScriptComponent> scriptMap;
 		};
 
 		inline static void ClearSceneData(SceneData& sceneData)
@@ -86,9 +87,15 @@ namespace Puffin
 					sceneData.rigidbodyMap.insert({ entity, comp });
 				}
 
-				if (world->HasComponent<Scripting::JinxScriptComponent>(entity))
+				/*if (world->HasComponent<Scripting::JinxScriptComponent>(entity))
 				{
 					Scripting::JinxScriptComponent& comp = world->GetComponent<Scripting::JinxScriptComponent>(entity);
+					sceneData.scriptMap.insert({ entity, comp });
+				}*/
+
+				if (world->HasComponent<Scripting::AngelScriptComponent>(entity))
+				{
+					Scripting::AngelScriptComponent& comp = world->GetComponent<Scripting::AngelScriptComponent>(entity);
 					sceneData.scriptMap.insert({ entity, comp });
 				}
 			}
@@ -171,7 +178,7 @@ namespace Puffin
 				// Script Component
 				if (sceneData.scriptMap.find(entity) != sceneData.scriptMap.end())
 				{
-					world->AddComponent<Scripting::JinxScriptComponent>(entity, sceneData.scriptMap.at(entity));
+					world->AddComponent<Scripting::AngelScriptComponent>(entity, sceneData.scriptMap.at(entity));
 				}
 			}
 		}

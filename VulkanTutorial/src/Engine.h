@@ -42,7 +42,7 @@ namespace Puffin
 		ProjectSettings settings;
 		IO::SceneData sceneData;
 
-		void DefaultScene(ECS::World* world);
+		void DefaultScene(std::shared_ptr<ECS::World> world);
 	};
 
 }

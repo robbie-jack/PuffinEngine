@@ -50,6 +50,9 @@
     <Filter Include="Audio">
       <UniqueIdentifier>{576577dc-891e-40fb-a70d-b402ede7a1dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripting\Addons">
+      <UniqueIdentifier>{4ea84309-8d77-49e6-bf91-70e1b363f0af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -121,6 +124,15 @@
     </ClCompile>
     <ClCompile Include="src\Audio\AudioSystem.cpp">
       <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scripting\AngelScriptSystem.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\angelscript_sdk\add_on\scriptstdstring\scriptstdstring.cpp">
+      <Filter>Scripting\Addons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\angelscript_sdk\add_on\scriptbuilder\scriptbuilder.cpp">
+      <Filter>Scripting\Addons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -262,6 +274,18 @@
     </ClInclude>
     <ClInclude Include="src\Audio\AudioSystem.h">
       <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scripting\AngelScriptSystem.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\angelscript_sdk\add_on\scriptstdstring\scriptstdstring.h">
+      <Filter>Scripting\Addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\angelscript_sdk\add_on\scriptbuilder\scriptbuilder.h">
+      <Filter>Scripting\Addons</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\AngelScriptComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

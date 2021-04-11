@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;C:\Projects\Libraries\bullet3-3.06\src;C:\Projects\Libraries\SFML-2.5.1\include;C:\Projects\Libraries\angelscript\include;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\Jinx\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;C:\Projects\Libraries\bullet3-3.06\src;C:\Projects\Libraries\SFML-2.5.1\include;C:\Projects\Libraries\angelscript_sdk\angelscript\include;C:\Projects\Libraries\angelscript_sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\Jinx\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -116,7 +116,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;$(ProjectDir)\lib\glfw;C:\Projects\Libraries\SFML-2.5.1\lib;C:\Projects\Libraries\angelscript\lib;C:\Projects\Libraries\bullet3-3.06\lib\Debug;$(ProjectDir)\lib\assimp\Debug;C:\Projects\Libraries\portaudio\build\msvc\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;$(ProjectDir)\lib\glfw;C:\Projects\Libraries\SFML-2.5.1\lib;C:\Projects\Libraries\angelscript_sdk\angelscript\lib;C:\Projects\Libraries\bullet3-3.06\lib\Debug;$(ProjectDir)\lib\assimp\Debug;C:\Projects\Libraries\portaudio\build\msvc\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Bullet3Dynamics_Debug.lib;Bullet3Collision_Debug.lib;Bullet3Common_Debug.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;assimp-vc142-mtd.lib;IrrXMLd.lib;zlibstaticd.lib;sfml-audio-d.lib;angelscript64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
@@ -154,7 +154,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;C:\Projects\Libraries\bullet3-3.06\src;C:\Projects\Libraries\SFML-2.5.1\include;C:\Projects\Libraries\angelscript\include;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\Jinx\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.148.1\Include;C:\Projects\Libraries\bullet3-3.06\src;C:\Projects\Libraries\SFML-2.5.1\include;C:\Projects\Libraries\angelscript_sdk\angelscript\include;C:\Projects\Libraries\angelscript_sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\Jinx\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -168,12 +168,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;$(ProjectDir)\lib\glfw;C:\Projects\Libraries\SFML-2.5.1\lib;C:\Projects\Libraries\angelscript\lib;C:\Projects\Libraries\bullet3-3.06\lib\Release;$(ProjectDir)\lib\assimp\Release;C:\Projects\Libraries\portaudio\build\msvc\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.141.2\Lib;$(ProjectDir)\lib\glfw;C:\Projects\Libraries\SFML-2.5.1\lib;C:\Projects\Libraries\angelscript_sdk\angelscript\lib;C:\Projects\Libraries\bullet3-3.06\lib\Release;$(ProjectDir)\lib\assimp\Release;C:\Projects\Libraries\portaudio\build\msvc\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Bullet3Dynamics.lib;Bullet3Collision.lib;Bullet3Common.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;sfml-audio.lib;angelscript64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Libraries\angelscript_sdk\add_on\scriptbuilder\scriptbuilder.cpp" />
+    <ClCompile Include="..\..\Libraries\angelscript_sdk\add_on\scriptstdstring\scriptstdstring.cpp" />
     <ClCompile Include="..\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="..\imgui\imgui.cpp" />
     <ClCompile Include="..\imgui\imgui_demo.cpp" />
@@ -192,6 +194,7 @@
     <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp" />
     <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
     <ClCompile Include="src\Rendering\VulkanEngine.cpp" />
+    <ClCompile Include="src\Scripting\AngelScriptSystem.cpp" />
     <ClCompile Include="src\Scripting\JinxScriptingSystem.cpp" />
     <ClCompile Include="src\UI\UIManager.cpp" />
     <ClCompile Include="src\UI\UIWindow.cpp" />
@@ -209,12 +212,15 @@
     <None Include="shaders\shadowmap.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Libraries\angelscript_sdk\add_on\scriptbuilder\scriptbuilder.h" />
+    <ClInclude Include="..\..\Libraries\angelscript_sdk\add_on\scriptstdstring\scriptstdstring.h" />
     <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="..\imgui\imgui.h" />
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
     <ClInclude Include="src\Audio\AudioSystem.h" />
+    <ClInclude Include="src\Components\AngelScriptComponent.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent.h" />
     <ClInclude Include="src\Components\Rendering\CameraComponent.h" />
     <ClInclude Include="src\Components\Rendering\LightComponent.h" />
@@ -241,6 +247,7 @@
     <ClInclude Include="src\Rendering\VKTypes.h" />
     <ClInclude Include="src\Rendering\vk_mem_alloc.h" />
     <ClInclude Include="src\Rendering\VulkanEngine.h" />
+    <ClInclude Include="src\Scripting\AngelScriptSystem.h" />
     <ClInclude Include="src\Scripting\JinxScriptingSystem.h" />
     <ClInclude Include="src\SerializeScene.h" />
     <ClInclude Include="src\Types\RingBuffer.h" />
