@@ -274,6 +274,11 @@ namespace Puffin
 							{
 								script.editableProperties.insert(p);
 							}
+
+							if (metadata[m] == "visible")
+							{
+								script.visibleProperties.insert(p);
+							}
 						}
 					}
 				}
@@ -296,6 +301,7 @@ namespace Puffin
 			script.obj->Release();
 			script.updateFunc->Release();
 			script.editableProperties.clear();
+			script.visibleProperties.clear();
 		}
 	}
 }

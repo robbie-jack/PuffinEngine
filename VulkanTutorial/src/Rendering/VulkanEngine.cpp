@@ -128,7 +128,7 @@ namespace Puffin
 
 			world->RegisterEvent<MeshEvent>();
 			world->RegisterEvent<LightEvent>();
-			world->RegisterEvent<Input::InputEvent>();
+			//world->RegisterEvent<Input::InputEvent>();
 			world->RegisterEvent<Debug::Line>();
 			world->RegisterEvent<Debug::Box>();
 

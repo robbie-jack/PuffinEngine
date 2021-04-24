@@ -31,6 +31,7 @@ namespace Puffin
 
 			// Set of class property indexes
 			std::set<int> editableProperties;
+			std::set<int> visibleProperties;
 		};
 
 		template<class Archive>

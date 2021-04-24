@@ -222,11 +222,6 @@ namespace Puffin
 		world->GetComponent<Physics::RigidbodyComponent>(5).size = btVector3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Physics::RigidbodyComponent>(5).mass = 0.0f;
 
-		/*Scripting::JinxScriptComponent scriptComp;
-		scriptComp.Name = "TestScript";
-		scriptComp.Dir = "content/scripts/test_script.jnx";
-		world->AddComponent(1, scriptComp);*/
-
 		Scripting::AngelScriptComponent script;
 		script.name = "Game";
 		script.dir = "C:/Projects/PuffinProject/content/scripts/game.as";

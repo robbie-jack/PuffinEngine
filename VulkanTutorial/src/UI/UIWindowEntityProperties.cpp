@@ -383,16 +383,56 @@ namespace Puffin
 							int propertyType = comp.obj->GetPropertyTypeId(index);
 
 							// Display property with correct UI based on its type
-							switch (propertyType)
+							if (propertyType == asTYPEID_INT32)
 							{
-							case asTYPEID_INT32:
+								int* intProperty = (int*)comp.obj->GetAddressOfProperty(index);
 
-								// Get address of property
-								int* integerProp = (int*)comp.obj->GetAddressOfProperty(index);
+								ImGui::InputInt(propertyName, intProperty);
+							}
+							else if (propertyType == asTYPEID_FLOAT)
+							{
+								float* floatProperty = (float*)comp.obj->GetAddressOfProperty(index);
 
-								ImGui::InputInt(propertyName, integerProp);
+								ImGui::InputFloat(propertyName, floatProperty);
+							}
+							else
+							{
+								std::string* stringProperty = (std::string*)comp.obj->GetAddressOfProperty(index);
 
-								break;
+								ImGui::InputText(propertyName, stringProperty);
+							}
+						}
+
+						// Display Variables in scripts marked as visible
+						for (const int& index : comp.visibleProperties)
+						{
+							// Get Property Name/Type
+							const char* propertyName = comp.obj->GetPropertyName(index);
+							int propertyType = comp.obj->GetPropertyTypeId(index);
+
+							std::string propertyText = propertyName;
+
+							// Display property with correct UI based on its type
+							if (propertyType == asTYPEID_INT32)
+							{
+								int intProperty = *(int*)comp.obj->GetAddressOfProperty(index);
+								propertyText += ": %d";
+
+								ImGui::Text(propertyText.c_str(), intProperty);
+							}
+							else if (propertyType == asTYPEID_FLOAT)
+							{
+								float floatProperty = *(float*)comp.obj->GetAddressOfProperty(index);
+								propertyText += ": %f";
+
+								ImGui::Text(propertyText.c_str(), floatProperty);
+							}
+							else
+							{
+								std::string stringProperty = *(std::string*)comp.obj->GetAddressOfProperty(index);
+								propertyText += ": %s";
+
+								ImGui::Text(propertyText.c_str(), stringProperty.c_str());
 							}
 						}
 					}
