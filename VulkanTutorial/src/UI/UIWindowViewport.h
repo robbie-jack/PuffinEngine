@@ -35,7 +35,7 @@ namespace Puffin
 
 			ImVec2 viewportSize;
 
-			std::string playButtonLabel;
+			std::string playButtonLabel = "Play";
 		};
 	}
 }

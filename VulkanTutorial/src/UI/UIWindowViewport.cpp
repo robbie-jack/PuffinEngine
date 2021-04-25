@@ -30,7 +30,6 @@ namespace Puffin
 		bool UIWindowViewport::Draw(ImTextureID textureID, Rendering::CameraComponent& camera)
 		{
 			windowName = "Viewport";
-			playButtonLabel = "Play";
 
 			if (show)
 			{
@@ -57,13 +56,14 @@ namespace Puffin
 					{
 						engine->Play();
 
-						if (engine->GetPlayState() == PlayState::PAUSED)
+						switch (engine->GetPlayState())
 						{
+						case PlayState::PAUSED:
 							playButtonLabel = "Play";
-						}
-						else if (engine->GetPlayState() == PlayState::PLAYING)
-						{
+							break;
+						case PlayState::PLAYING:
 							playButtonLabel = "Pause";
+							break;
 						}
 					}
 
