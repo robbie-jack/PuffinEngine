@@ -166,7 +166,7 @@ namespace Puffin
 		world->InitEntitySystem(std::set<ECS::Entity>());
 
 		// Add Default Scene Components to ECS
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			ECS::Entity entity = world->CreateEntity();
 			world->AddComponent<TransformComponent>(entity);
@@ -179,8 +179,10 @@ namespace Puffin
 		world->SetEntityName(4, "Light");
 		world->SetEntityName(5, "Static Cube");
 		world->SetEntityName(6, "Plane");
+		world->SetEntityName(7, "Light 2");
 
 		world->AddComponent<Rendering::LightComponent>(4);
+		world->AddComponent<Rendering::LightComponent>(7);
 
 		world->AddComponent<Physics::RigidbodyComponent>(3);
 		world->AddComponent<Physics::RigidbodyComponent>(5);
@@ -192,6 +194,7 @@ namespace Puffin
 		world->GetComponent<TransformComponent>(4) = { Vector3(-10.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
 		world->GetComponent<TransformComponent>(5) = { Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(6) = { Vector3(0.0f, -10.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 1.0f, 10.0f) };
+		world->GetComponent<TransformComponent>(7) = { Vector3(5.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
 
 		world->GetComponent<Rendering::MeshComponent>(1).model_path = "content\\models\\chalet.psm";
 		world->GetComponent<Rendering::MeshComponent>(1).texture_path = "content\\textures\\chalet.jpg";
@@ -207,6 +210,8 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(5).texture_path = "content\\textures\\cube.png";
 		world->GetComponent<Rendering::MeshComponent>(6).model_path = "content\\models\\cube.psm";
 		world->GetComponent<Rendering::MeshComponent>(6).texture_path = "content\\textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(7).model_path = "content\\models\\cube.psm";
+		world->GetComponent<Rendering::MeshComponent>(7).texture_path = "content\\textures\\cube.png";
 
 		world->GetComponent<Rendering::LightComponent>(4).direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		world->GetComponent<Rendering::LightComponent>(4).ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
@@ -220,6 +225,19 @@ namespace Puffin
 		world->GetComponent<Rendering::LightComponent>(4).shininess = 16;
 		world->GetComponent<Rendering::LightComponent>(4).type = Rendering::LightType::SPOT;
 		world->GetComponent<Rendering::LightComponent>(4).bFlagCastShadows = true;
+
+		world->GetComponent<Rendering::LightComponent>(7).direction = glm::vec3(-1.0f, -1.0f, 0.0f);
+		world->GetComponent<Rendering::LightComponent>(7).ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+		world->GetComponent<Rendering::LightComponent>(7).diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);
+		world->GetComponent<Rendering::LightComponent>(7).innerCutoffAngle = 12.5f;
+		world->GetComponent<Rendering::LightComponent>(7).outerCutoffAngle = 17.5f;
+		world->GetComponent<Rendering::LightComponent>(7).constantAttenuation = 1.0f;
+		world->GetComponent<Rendering::LightComponent>(7).linearAttenuation = 0.09f;
+		world->GetComponent<Rendering::LightComponent>(7).quadraticAttenuation = 0.032f;
+		world->GetComponent<Rendering::LightComponent>(7).specularStrength = 0.5f;
+		world->GetComponent<Rendering::LightComponent>(7).shininess = 16;
+		world->GetComponent<Rendering::LightComponent>(7).type = Rendering::LightType::SPOT;
+		world->GetComponent<Rendering::LightComponent>(7).bFlagCastShadows = false;
 
 		world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Physics::RigidbodyComponent>(3).mass = 1.0f;

@@ -1619,7 +1619,7 @@ namespace Puffin
 				}
 
 				// Cleanup
-				if (mesh.bFlagDeleted)
+				if (mesh.bFlagDeleted || world->IsDeleted(entity))
 				{
 					CleanupMesh(mesh);
 					world->RemoveComponent<MeshComponent>(entity);
@@ -1640,7 +1640,7 @@ namespace Puffin
 				}
 
 				// Cleanup
-				if (light.bFlagDeleted)
+				if (light.bFlagDeleted || world->IsDeleted(entity))
 				{
 					CleanupLight(light);
 					world->RemoveComponent<LightComponent>(entity);
@@ -2145,15 +2145,18 @@ namespace Puffin
 					{
 						MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-						// Bind Vertices, Indices and Descriptor Sets
-						VkDeviceSize offsets[] = { 0 };
-						vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
-						vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+						if (!mesh.bFlagCreated && !mesh.bFlagDeleted)
+						{
+							// Bind Vertices, Indices and Descriptor Sets
+							VkDeviceSize offsets[] = { 0 };
+							vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
+							vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-						// Draw Indexed Vertices
-						vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, meshIndex);
+							// Draw Indexed Vertices
+							vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, meshIndex);
 
-						meshIndex++;
+							meshIndex++;
+						}
 					}
 
 					// Finalize Render Pass
@@ -2308,68 +2311,72 @@ namespace Puffin
 			{
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-				// Bind material pipeline if it does not match previous material
-				if (&mesh.material != lastMaterial);
+				if (!mesh.bFlagCreated && !mesh.bFlagDeleted)
 				{
-					vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipeline);
-					lastMaterial = &mesh.material;
 
-					// Set Pipeline Viewport
-					VkViewport viewport = {};
-					viewport.x = 0.0f;
-					viewport.y = 0.0f;
-					viewport.width = (float)offscreenExtent.width;
-					viewport.height = (float)offscreenExtent.height;
-					viewport.minDepth = 0.0f;
-					viewport.maxDepth = 1.0f;
+					// Bind material pipeline if it does not match previous material
+					if (&mesh.material != lastMaterial);
+					{
+						vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							mesh.material.pipeline);
+						lastMaterial = &mesh.material;
 
-					vkCmdSetViewport(cmd, 0, 1, &viewport);
+						// Set Pipeline Viewport
+						VkViewport viewport = {};
+						viewport.x = 0.0f;
+						viewport.y = 0.0f;
+						viewport.width = (float)offscreenExtent.width;
+						viewport.height = (float)offscreenExtent.height;
+						viewport.minDepth = 0.0f;
+						viewport.maxDepth = 1.0f;
 
-					VkRect2D scissor = {};
-					scissor.offset = { 0, 0 };
-					scissor.extent = offscreenExtent;
+						vkCmdSetViewport(cmd, 0, 1, &viewport);
 
-					vkCmdSetScissor(cmd, 0, 1, &scissor);
+						VkRect2D scissor = {};
+						scissor.offset = { 0, 0 };
+						scissor.extent = offscreenExtent;
 
-					// Bind Camera View/Proj Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 0, 1, &GetCurrentFrame().cameraViewProjDescriptor, 0, nullptr);
+						vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-					// Bind Object Data Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
+						// Bind Camera View/Proj Descriptor
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							mesh.material.pipelineLayout, 0, 1, &GetCurrentFrame().cameraViewProjDescriptor, 0, nullptr);
 
-					// Bind Light Space Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 2, 1, &GetCurrentFrame().lightSpaceMultiDescriptor, 0, nullptr);
+						// Bind Object Data Descriptor
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							mesh.material.pipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
 
-					// Bind Camera Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 3, 1, &GetCurrentFrame().cameraDescriptor, 0, nullptr);
+						// Bind Light Space Descriptor
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							mesh.material.pipelineLayout, 2, 1, &GetCurrentFrame().lightSpaceMultiDescriptor, 0, nullptr);
 
-					// Bind Light Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 4, 1, &GetCurrentFrame().lightDescriptor, 0, nullptr);
+						// Bind Camera Descriptor
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							mesh.material.pipelineLayout, 3, 1, &GetCurrentFrame().cameraDescriptor, 0, nullptr);
 
-					// Shadowmap Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 5, 1, &GetCurrentFrame().shadowmapDescriptor, 0, nullptr);
+						// Bind Light Descriptor
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							mesh.material.pipelineLayout, 4, 1, &GetCurrentFrame().lightDescriptor, 0, nullptr);
 
-					// Texture Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						mesh.material.pipelineLayout, 6, 1, &mesh.material.textureSet, 0, nullptr);
+						// Shadowmap Descriptor
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							mesh.material.pipelineLayout, 5, 1, &GetCurrentFrame().shadowmapDescriptor, 0, nullptr);
+
+						// Texture Descriptor
+						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							mesh.material.pipelineLayout, 6, 1, &mesh.material.textureSet, 0, nullptr);
+					}
+
+					// Bind Vertices, Indices and Descriptor Sets
+					VkDeviceSize offsets[] = { 0 };
+					vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
+					vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+					// Draw Indexed Vertices
+					vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, meshIndex);
+
+					meshIndex++;
 				}
-
-				// Bind Vertices, Indices and Descriptor Sets
-				VkDeviceSize offsets[] = { 0 };
-				vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
-				vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-				// Draw Indexed Vertices
-				vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, meshIndex);
-
-				meshIndex++;
 			}
 		}
 

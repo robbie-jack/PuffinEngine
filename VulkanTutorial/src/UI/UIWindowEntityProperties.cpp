@@ -94,8 +94,8 @@ namespace Puffin
 							if (!world->HasComponent<Rendering::MeshComponent>(entity))
 							{
 								Rendering::MeshComponent& comp = world->AddComponent<Rendering::MeshComponent>(entity);
-								comp.model_path = "assets\\models\\cube.asset_m";
-								comp.texture_path = "textures\\cube.png";
+								comp.model_path = "content\\models\\cube.psm";
+								comp.texture_path = "content\\textures\\cube.png";
 								sceneChanged = true;
 							}
 						}
@@ -120,7 +120,7 @@ namespace Puffin
 							}
 						}
 
-						if (ImGui::Selectable("Physics Component"))
+						if (ImGui::Selectable("Rigidbody Component"))
 						{
 							if (!world->HasComponent<Physics::RigidbodyComponent>(entity))
 							{

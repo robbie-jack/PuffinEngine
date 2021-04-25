@@ -25,9 +25,9 @@ namespace Puffin
 			TransformComponent();
 		}
 
-		Puffin::Vector3 position;
-		Puffin::Vector3 rotation;
-		Puffin::Vector3 scale;
+		Puffin::Vector3 position = Puffin::Vector3(0.0f);
+		Puffin::Vector3 rotation = Puffin::Vector3(0.0f);
+		Puffin::Vector3 scale = Puffin::Vector3(1.0f);
 	};
 
 	template<class Archive>

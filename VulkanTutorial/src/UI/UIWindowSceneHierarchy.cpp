@@ -18,26 +18,9 @@ namespace Puffin
 
 				Begin(windowName);
 
-				if (ImGui::Button("Create Entity"))
-				{
-					ECS::Entity entity = world->CreateEntity();
-
-					TransformComponent component;
-					component.scale = Vector3(1.0f, 1.0f, 1.0f);
-					world->AddComponent<TransformComponent>(entity, component);
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::Button("Destroy Entity"))
-				{
-					selectedEntity = ECS::INVALID_ENTITY;
-					entityChanged = true;
-				}
-
 				//List All Entities and their ID/Name
 				ImVec2 listBoxSize = ImGui::GetWindowSize();
-				listBoxSize.y -= 45.0f;
+				listBoxSize.y -= 75.0f;
 
 				ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() - 50.0f); ImGui::Text("ID");
 
@@ -89,6 +72,36 @@ namespace Puffin
 				}
 
 				ImGui::ListBoxFooter();
+
+				if (ImGui::Button("Create Entity"))
+				{
+					ImGui::OpenPopup("Create Entity");
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Destroy Entity"))
+				{
+					world->MarkToDelete(selectedEntity);
+
+					selectedEntity = ECS::INVALID_ENTITY;
+					entityChanged = true;
+				}
+
+				if (ImGui::BeginPopup("Create Entity"))
+				{
+					if (ImGui::Selectable("Empty"))
+					{
+						ECS::Entity entity = world->CreateEntity();
+
+						world->AddComponent<TransformComponent>(entity);
+
+						selectedEntity = entity;
+						entityChanged = true;
+					}
+
+					ImGui::EndPopup();
+				}
 
 				End();
 			}

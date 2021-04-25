@@ -72,7 +72,7 @@ namespace Puffin
 					rigidbody.bFlagCreated = false;
 				}
 
-				if (rigidbody.bFlagDeleted)
+				if (rigidbody.bFlagDeleted || world->IsDeleted(entity))
 				{
 					CleanupRigidbody(rigidbody);
 					world->RemoveComponent<RigidbodyComponent>(entity);

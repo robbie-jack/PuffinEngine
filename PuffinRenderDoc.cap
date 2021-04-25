@@ -5,7 +5,7 @@
         "commandLine": "",
         "environment": [
         ],
-        "executable": "D:\\Projects\\Visual Studio\\PuffinEngine\\x64\\Release\\PuffinEngine.exe",
+        "executable": "C:\\Projects\\PuffinEngine\\x64\\Release\\PuffinEngine.exe",
         "inject": false,
         "numQueuedFrames": 0,
         "options": {
@@ -22,6 +22,6 @@
             "verifyBufferAccess": false
         },
         "queuedFrameCap": 0,
-        "workingDir": "D:/Projects/Visual Studio/PuffinEngine/VulkanTutorial"
+        "workingDir": "C:/Projects/PuffinEngine/VulkanTutorial"
     }
 }

@@ -84,7 +84,7 @@ namespace Puffin
 				}
 
 				// Script needs cleaned up
-				if (script.bFlagDeleted)
+				if (script.bFlagDeleted || world->IsDeleted(entity))
 				{
 					CleanupScriptComponent(script);
 					world->RemoveComponent<AngelScriptComponent>(entity);
