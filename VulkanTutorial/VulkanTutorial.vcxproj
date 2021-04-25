@@ -220,6 +220,7 @@
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
     <ClInclude Include="src\Audio\AudioSystem.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
+    <ClInclude Include="src\Components\BaseComponent.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent.h" />
     <ClInclude Include="src\Components\Rendering\CameraComponent.h" />
     <ClInclude Include="src\Components\Rendering\LightComponent.h" />

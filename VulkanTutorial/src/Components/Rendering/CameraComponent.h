@@ -13,6 +13,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <Components/BaseComponent.h>
+
 #include <vector>
 #include <Rendering/VKTypes.h>
 
@@ -31,8 +33,14 @@ namespace Puffin
 			alignas(16) glm::vec3 viewPos;
 		};
 
-		struct CameraComponent
+		struct CameraComponent : public BaseComponent
 		{
+			CameraComponent()
+			{
+				bFlagCreated = true;
+				bFlagDeleted = false;
+			}
+
 			float zNear, zFar, aspect, fov, prevFov;
 
 			glm::vec3 position;

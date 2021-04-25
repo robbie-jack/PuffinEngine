@@ -11,6 +11,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <Components/BaseComponent.h>
+
 #include <vector>
 #include <Rendering/VKTypes.h>
 
@@ -76,8 +78,14 @@ namespace Puffin
 			DIRECTIONAL = 2
 		};
 
-		struct LightComponent
+		struct LightComponent : public BaseComponent
 		{
+			LightComponent()
+			{
+				bFlagCreated = true;
+				bFlagDeleted = false;
+			}
+
 			LightType type;
 			Vector3 ambientColor, diffuseColor;
 			Vector3 direction;
@@ -87,19 +95,10 @@ namespace Puffin
 			float innerCutoffAngle, outerCutoffAngle; // Used for spotlight
 
 			// Variables for computing shadows cast by lights
-			bool castShadows; // Flag to indicate if light should cast shadows
+			bool bFlagCastShadows; // Flag to indicate if light should cast shadows
 			std::vector<AllocatedImage> depthAttachments;
 			std::vector<VkFramebuffer> depthFramebuffers;
 			glm::mat4 lightSpaceView;
-		};
-
-		struct LightEvent
-		{
-			LightEvent(ECS::Entity InEntity = 0, bool InShouldCreate = false, bool InShouldDelete = false) : entity{ InEntity }, shouldCreate{ InShouldCreate }, shouldDelete{ InShouldDelete } {};
-
-			ECS::Entity entity;
-			bool shouldCreate;
-			bool shouldDelete;
 		};
 
 		template<class Archive>
@@ -114,7 +113,7 @@ namespace Puffin
 			archive(comp.specularStrength, comp.shininess);
 			archive(comp.constantAttenuation, comp.linearAttenuation, comp.quadraticAttenuation);
 			archive(comp.innerCutoffAngle, comp.outerCutoffAngle);
-			archive(comp.castShadows);
+			archive(comp.bFlagCastShadows);
 		}
 
 		template<class Archive>
@@ -129,7 +128,7 @@ namespace Puffin
 			archive(comp.specularStrength, comp.shininess);
 			archive(comp.constantAttenuation, comp.linearAttenuation, comp.quadraticAttenuation);
 			archive(comp.innerCutoffAngle, comp.outerCutoffAngle);
-			archive(comp.castShadows);
+			archive(comp.bFlagCastShadows);
 
 			comp.type = (LightType)lightType;
 		}

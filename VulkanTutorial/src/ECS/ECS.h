@@ -42,12 +42,7 @@ namespace Puffin
 
 			EntityManager()
 			{
-				/*for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
-				{
-					availableEntities.push(entity);
-					entityNames[entity] = "";
-					entityDeletionFlags[entity] = false;
-				}*/
+				
 			}
 
 			void Init(std::set<Entity> entities)
@@ -416,8 +411,6 @@ namespace Puffin
 			void Cleanup()
 			{
 				signatureMap.clear();
-
-				systems.clear();
 			}
 
 			template<typename SystemT>
@@ -559,10 +552,6 @@ namespace Puffin
 				componentManager->Cleanup();
 				entityManager->Cleanup();
 				systemManager->Cleanup();
-
-				componentManager.reset();
-				entityManager.reset();
-				systemManager.reset();
 			}
 
 			// Entity Methods

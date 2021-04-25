@@ -71,44 +71,67 @@ namespace Puffin
 
 		bool AngelScriptSystem::Update(float dt)
 		{
-			// Compile Scripts
+			// Initialize/Cleanup marked components
 			for (ECS::Entity entity : entityMap["Script"])
 			{
 				AngelScriptComponent& script = world->GetComponent<AngelScriptComponent>(entity);
 
-				// Execute Update function if one was found for script
-				if (script.updateFunc != 0)
+				// Script needs initialized
+				if (script.bFlagCreated)
 				{
-					// Prepare Function for execution
-					ctx->Prepare(script.updateFunc);
+					InitScriptComponent(script);
+					script.bFlagCreated = false;
+				}
 
-					// Set Object pointer
-					ctx->SetObject(script.obj);
+				// Script needs cleaned up
+				if (script.bFlagDeleted)
+				{
+					CleanupScriptComponent(script);
+					world->RemoveComponent<AngelScriptComponent>(entity);
+				}
+			}
 
-					// Pass in Delta Time variable
-					ctx->SetArgFloat(0, dt);
+			if (dt > 0.0f)
+			{
+				// Execute Scripts
+				for (ECS::Entity entity : entityMap["Script"])
+				{
+					AngelScriptComponent& script = world->GetComponent<AngelScriptComponent>(entity);
 
-					// Execute the function
-					int r = ctx->Execute();
-					if (r != asEXECUTION_FINISHED)
+					// Execute Update function if one was found for script
+					if (script.updateFunc != 0)
 					{
-						// The execution didn't finish as we had planned. Determine why.
-						if (r == asEXECUTION_ABORTED)
-							cout << "The script was aborted before it could finish. Probably it timed out." << endl;
-						else if (r == asEXECUTION_EXCEPTION)
-						{
-							cout << "The script ended with an exception." << endl;
+						// Prepare Function for execution
+						ctx->Prepare(script.updateFunc);
 
-							// Write some information about the script exception
-							asIScriptFunction* func = ctx->GetExceptionFunction();
-							cout << "func: " << func->GetDeclaration() << endl;
-							cout << "modl: " << func->GetModuleName() << endl;
-							//cout << "sect: " << func->GetScriptSectionName() << endl;
-							cout << "line: " << ctx->GetExceptionLineNumber() << endl;
-							cout << "desc: " << ctx->GetExceptionString() << endl;
+						// Set Object pointer
+						ctx->SetObject(script.obj);
+
+						// Pass in Delta Time variable
+						ctx->SetArgFloat(0, dt);
+
+						// Execute the function
+						int r = ctx->Execute();
+						if (r != asEXECUTION_FINISHED)
+						{
+							// The execution didn't finish as we had planned. Determine why.
+							if (r == asEXECUTION_ABORTED)
+								cout << "The script was aborted before it could finish. Probably it timed out." << endl;
+							else if (r == asEXECUTION_EXCEPTION)
+							{
+								cout << "The script ended with an exception." << endl;
+
+								// Write some information about the script exception
+								asIScriptFunction* func = ctx->GetExceptionFunction();
+								cout << "func: " << func->GetDeclaration() << endl;
+								cout << "modl: " << func->GetModuleName() << endl;
+								//cout << "sect: " << func->GetScriptSectionName() << endl;
+								cout << "line: " << ctx->GetExceptionLineNumber() << endl;
+								cout << "desc: " << ctx->GetExceptionString() << endl;
+							}
+							else
+								cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
 						}
-						else
-							cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
 					}
 				}
 			}

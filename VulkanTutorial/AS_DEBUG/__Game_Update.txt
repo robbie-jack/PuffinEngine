@@ -1,0 +1,91 @@
+void Game::Update(float)
+
+Temps: 1, 2, 3, 13, 15, 25
+
+Variables: 
+ -002: float dt
+ 000: Game this
+ 013: string {noname}
+ 025: string {noname}
+
+
+- 33,9 -
+               VarDecl  0
+    0  25 *    SUSPEND
+    1  25 *    LoadThisR v52, 134217742
+    3  25 *    RDR4     v1
+    4  25 *    ADDf     v1, v1, v-2
+    6  25 *    WRTV4    v1
+- 34,9 -
+    7  25 *    SUSPEND
+    8  25 *    LoadThisR v52, 134217742
+   10  25 *    RDR4     v3
+   11  25 *    LoadThisR v56, 134217742
+   13  25 *    RDR4     v1
+   14  25 *    ADDIi    v1, v1, 1
+   17  25 *    iTOf     v1
+   18  25 *    CMPf     v3, v1
+   20  25 *    JNP      +68              (d:90)
+- 36,13 -
+            {
+   22  25 *    SUSPEND
+   23  25 *    LoadThisR v56, 134217742
+   25  25 *    RDR4     v1
+   26  25 *    ADDIi    v3, v1, 1
+   29  25 *    WRTV4    v3
+- 38,13 -
+   30  25 *    SUSPEND
+   31  25 *    LoadThisR v32, 134217742
+   33  25 *    RDR4     v2
+   34  25 *    SUBIi    v1, v2, 5
+   37  25 *    WRTV4    v1
+- 40,13 -
+   38  25 *    SUSPEND
+   39  25 *    PGA      0xe7b58a40          (str:Time Passed: )
+   42  27 *    PSF      v13
+   43  29 *    CALLSYS  20           (string::string(const string&in))
+               ObjInfo  v13, 1
+   45  25 *    LoadThisR v56, 134217742
+   47  25 *    RDR4     v3
+   48  25 *    iTOi64   v15, v3
+   50  25 *    PshV8    v15
+   51  27 *    PSF      v25
+   52  29 *    PSF      v13
+   53  31 *    CALLSYS  42           (string string::opAdd(int64) const)
+               ObjInfo  v25, 1
+   55  25 *    PSF      v13
+   56  27 *    CALLSYS  21           (string::~string())
+               ObjInfo  v13, 0
+   58  25 *    PSF      v25
+   59  27 *    CALLSYS  67           (void print(string&in))
+   61  25 *    PSF      v25
+   62  27 *    CALLSYS  21           (string::~string())
+- 41,13 -
+               ObjInfo  v25, 0
+   64  25 *    SUSPEND
+   65  25 *    PGA      0xe7b56c40          (str:Health Remaining: )
+   68  27 *    PSF      v13
+   69  29 *    CALLSYS  20           (string::string(const string&in))
+               ObjInfo  v13, 1
+   71  25 *    LoadThisR v32, 134217742
+   73  25 *    RDR4     v1
+   74  25 *    iTOi64   v15, v1
+   76  25 *    PshV8    v15
+   77  27 *    PSF      v25
+   78  29 *    PSF      v13
+   79  31 *    CALLSYS  42           (string string::opAdd(int64) const)
+               ObjInfo  v25, 1
+   81  25 *    PSF      v13
+   82  27 *    CALLSYS  21           (string::~string())
+               ObjInfo  v13, 0
+   84  25 *    PSF      v25
+   85  27 *    CALLSYS  67           (void print(string&in))
+   87  25 *    PSF      v25
+   88  27 *    CALLSYS  21           (string::~string())
+- 43,6 -
+               ObjInfo  v25, 0
+            }
+            1:
+   90  25 *    SUSPEND
+            0:
+   91  25 *    RET      3

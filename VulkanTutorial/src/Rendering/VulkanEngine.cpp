@@ -120,20 +120,20 @@ namespace Puffin
 			UIManager->GetWindowSettings()->SetCamera(&camera);
 
 			// Subscribe to events
-			meshEvents = std::make_shared<RingBuffer<MeshEvent>>();
-			lightEvents = std::make_shared<RingBuffer<LightEvent>>();
+			//meshEvents = std::make_shared<RingBuffer<MeshEvent>>();
+			//lightEvents = std::make_shared<RingBuffer<LightEvent>>();
 			inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
 			drawLineEvents = std::make_shared<RingBuffer<Debug::Line>>();
 			drawBoxEvents = std::make_shared<RingBuffer<Debug::Box>>();
 
-			world->RegisterEvent<MeshEvent>();
-			world->RegisterEvent<LightEvent>();
+			//world->RegisterEvent<MeshEvent>();
+			//world->RegisterEvent<LightEvent>();
 			//world->RegisterEvent<Input::InputEvent>();
 			world->RegisterEvent<Debug::Line>();
 			world->RegisterEvent<Debug::Box>();
 
-			world->SubscribeToEvent<MeshEvent>(meshEvents);
-			world->SubscribeToEvent<LightEvent>(lightEvents);
+			//world->SubscribeToEvent<MeshEvent>(meshEvents);
+			//world->SubscribeToEvent<LightEvent>(lightEvents);
 			world->SubscribeToEvent<Input::InputEvent>(inputEvents);
 			world->SubscribeToEvent<Debug::Line>(drawLineEvents);
 			world->SubscribeToEvent<Debug::Box>(drawBoxEvents);
@@ -1447,6 +1447,11 @@ namespace Puffin
 
 		void VulkanEngine::InitShadowmapDescriptors()
 		{
+			if (entityMap["Light"].empty())
+			{
+				return;
+			}
+
 			// Write Shadowmap Descriptor Sets
 			VkDescriptorImageInfo shadowmapBufferInfo;
 			shadowmapBufferInfo.sampler = depthSampler;
@@ -1601,6 +1606,55 @@ namespace Puffin
 		{
 			ProcessEvents();
 
+			// Initialize/Cleanup marked components
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+
+				// Initialize
+				if (mesh.bFlagCreated)
+				{
+					InitMesh(mesh);
+					mesh.bFlagCreated = false;
+				}
+
+				// Cleanup
+				if (mesh.bFlagDeleted)
+				{
+					CleanupMesh(mesh);
+					world->RemoveComponent<MeshComponent>(entity);
+				}
+			}
+
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+				// Initialize
+
+				if (light.bFlagCreated)
+				{
+					InitLight(light);
+					light.bFlagCreated = false;
+					shadowmapDescriptorNeedsUpdated = true;
+				}
+
+				// Cleanup
+				if (light.bFlagDeleted)
+				{
+					CleanupLight(light);
+					world->RemoveComponent<LightComponent>(entity);
+					shadowmapDescriptorNeedsUpdated = true;
+				}
+			}
+
+			// Rebuild Shadowmaps if needed
+			if (shadowmapDescriptorNeedsUpdated)
+			{
+				InitShadowmapDescriptors();
+				shadowmapDescriptorNeedsUpdated = false;
+			}
+
 			UIManager->DrawUI(dt, InputManager);
 
 			UpdateCamera(camera, InputManager, dt);
@@ -1610,58 +1664,6 @@ namespace Puffin
 
 		void VulkanEngine::ProcessEvents()
 		{
-			// Process Mesh Events
-			MeshEvent meshEvent;
-			while (!meshEvents->IsEmpty())
-			{
-				if (meshEvents->Pop(meshEvent))
-				{
-					MeshComponent& mesh = world->GetComponent<MeshComponent>(meshEvent.entity);
-
-					if (meshEvent.shouldCreate)
-					{
-						CleanupMesh(mesh);
-						InitMesh(mesh);
-					}
-
-					if (meshEvent.shouldDelete)
-					{
-						CleanupMesh(mesh);
-						world->RemoveComponent<MeshComponent>(meshEvent.entity);
-					}
-				}
-			}
-
-			// Process Light Events
-			LightEvent lightEvent;
-			while (!lightEvents->IsEmpty())
-			{
-				if (lightEvents->Pop(lightEvent))
-				{
-					LightComponent& light = world->GetComponent<LightComponent>(lightEvent.entity);
-
-					if (lightEvent.shouldCreate)
-					{
-						CleanupLight(light);
-						InitLight(light);
-						shadowmapDescriptorNeedsUpdated = true;
-					}
-
-					if (lightEvent.shouldDelete)
-					{
-						CleanupLight(light);
-						world->RemoveComponent<LightComponent>(lightEvent.entity);
-						shadowmapDescriptorNeedsUpdated = true;
-					}
-				}
-			}
-
-			if (shadowmapDescriptorNeedsUpdated)
-			{
-				InitShadowmapDescriptors();
-				shadowmapDescriptorNeedsUpdated = false;
-			}
-
 			// Process Input Events
 			Input::InputEvent inputEvent;
 			while (!inputEvents->IsEmpty())
@@ -2092,7 +2094,7 @@ namespace Puffin
 				LightComponent& light = world->GetComponent<LightComponent>(entity);
 
 				// Only render depth map if light is set to cast shadows and is spotlight type
-				if (light.castShadows && light.type == LightType::SPOT)
+				if (light.bFlagCastShadows && light.type == LightType::SPOT)
 				{
 					TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 
@@ -2208,7 +2210,7 @@ namespace Puffin
 				int shadowIndex = -1;
 
 				// Only render depth map if light is set to cast shadows and is spotlight type
-				if (light.castShadows && light.type == LightType::SPOT)
+				if (light.bFlagCastShadows && light.type == LightType::SPOT)
 				{
 					lightSpaceSSBO[lightIndex].lightSpaceMatrix = biasMatrix * light.lightSpaceView;
 

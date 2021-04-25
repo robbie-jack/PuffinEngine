@@ -278,5 +278,8 @@
     <ClInclude Include="src\Components\AngelScriptComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="src\Components\BaseComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

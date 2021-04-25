@@ -1,0 +1,43 @@
+Game::Game()
+
+Temps: 1
+
+Variables: 
+ 000: Game this
+
+
+- 5,19 -
+    0   1 *    SUSPEND
+    1   1 *    SetV4    v1, 0x64          (i:100, f:1.4013e-43)
+    3   1 *    LoadThisR v32, 134217742
+    5   1 *    WRTV4    v1
+- 8,21 -
+    6   1 *    SUSPEND
+    7   1 *    SetV4    v1, 0x40a00000          (i:1084227584, f:5)
+    9   1 *    LoadThisR v36, 134217742
+   11   1 *    WRTV4    v1
+- 11,19 -
+   12   1 *    SUSPEND
+   13   1 *    SetV4    v1, 0x32          (i:50, f:7.00649e-44)
+   15   1 *    LoadThisR v40, 134217742
+   17   1 *    WRTV4    v1
+- 14,22 -
+   18   1 *    SUSPEND
+   19   1 *    PshVPtr  v0
+   20   3 *    ADDSi    v44, 134217742
+   22   3 *    PGA      0xe7b53440          (str:Player)
+   25   5 *    ALLOC    0x252e7b41220, 20             (type:string, string::string(const string&in))
+- 26,9 -
+   29   1 *    SUSPEND
+   30   1 *    SetV4    v1, 0x0          (i:0, f:0)
+   32   1 *    LoadThisR v52, 134217742
+   34   1 *    WRTV4    v1
+- 27,9 -
+   35   1 *    SUSPEND
+   36   1 *    SetV4    v1, 0x0          (i:0, f:0)
+   38   1 *    LoadThisR v56, 134217742
+   40   1 *    WRTV4    v1
+- 29,6 -
+   41   1 *    SUSPEND
+            0:
+   42   1 *    RET      2

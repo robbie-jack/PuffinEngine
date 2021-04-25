@@ -105,11 +105,16 @@ namespace Puffin
 			// Input
 			InputManager.UpdateInput();
 
-			// Physics
+			// Physics/Scripting
 			if (playState == PlayState::PLAYING)
 			{
 				scriptingSystem->Update(delta_time);
 				physicsSystem->Update(delta_time);
+			}
+			else
+			{
+				scriptingSystem->Update(0.0f);
+				physicsSystem->Update(0.0f);
 			}
 
 			// UI
@@ -214,7 +219,7 @@ namespace Puffin
 		world->GetComponent<Rendering::LightComponent>(4).specularStrength = 0.5f;
 		world->GetComponent<Rendering::LightComponent>(4).shininess = 16;
 		world->GetComponent<Rendering::LightComponent>(4).type = Rendering::LightType::SPOT;
-		world->GetComponent<Rendering::LightComponent>(4).castShadows = true;
+		world->GetComponent<Rendering::LightComponent>(4).bFlagCastShadows = true;
 
 		world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Physics::RigidbodyComponent>(3).mass = 1.0f;

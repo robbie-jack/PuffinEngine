@@ -13,6 +13,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
+#include <Components/BaseComponent.h>
+
 #include <vector>
 #include <array>
 
@@ -167,8 +169,20 @@ namespace Puffin
 
 	namespace Rendering
 	{
-		struct MeshComponent
+		struct MeshComponent : public BaseComponent
 		{
+			MeshComponent()
+			{
+				bFlagCreated = true;
+				bFlagDeleted = false;
+			}
+
+			MeshComponent(std::string InModelPath, std::string InTexturePath) :
+				model_path(InModelPath), texture_path(InTexturePath)
+			{
+				MeshComponent();
+			}
+
 			// Mesh Data
 			std::vector<Vertex> vertices;
 			std::vector<uint32_t> indices;
@@ -186,15 +200,6 @@ namespace Puffin
 
 			// Index Buffer
 			AllocatedBuffer indexBuffer;
-		};
-
-		struct MeshEvent
-		{
-			MeshEvent(ECS::Entity InEntity = 0, bool InShouldCreate = false, bool InShouldDelete = false) : entity{ InEntity }, shouldCreate { InShouldCreate }, shouldDelete{ InShouldDelete } {};
-
-			ECS::Entity entity;
-			bool shouldCreate;
-			bool shouldDelete;
 		};
 
 		template<class Archive>

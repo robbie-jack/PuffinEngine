@@ -298,8 +298,8 @@ namespace Puffin
 			float prevfov;
 
 			// Event Buffers
-			std::shared_ptr<RingBuffer<MeshEvent>> meshEvents;
-			std::shared_ptr<RingBuffer<LightEvent>> lightEvents;
+			//std::shared_ptr<RingBuffer<MeshEvent>> meshEvents;
+			//std::shared_ptr<RingBuffer<LightEvent>> lightEvents;
 			std::shared_ptr<RingBuffer<Input::InputEvent>> inputEvents;
 			std::shared_ptr<RingBuffer<Debug::Line>> drawLineEvents;
 			std::shared_ptr<RingBuffer<Debug::Box>> drawBoxEvents;

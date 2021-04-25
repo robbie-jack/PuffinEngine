@@ -5,26 +5,25 @@
 
 #include "btBulletDynamicsCommon.h"
 
+#include <Components/BaseComponent.h>
+
 namespace Puffin
 {
 	namespace Physics
 	{
-		struct RigidbodyComponent
+		struct RigidbodyComponent : public BaseComponent
 		{
+			RigidbodyComponent()
+			{
+				bFlagCreated = true;
+				bFlagDeleted = false;
+			}
+
 			btCollisionShape* shape;
 			btRigidBody* body;
 
 			btVector3 size;
 			btScalar mass;
-		};
-
-		struct RigidbodyEvent
-		{
-			RigidbodyEvent(ECS::Entity InEntity = 0, bool InShouldCreate = false, bool InShouldDelete = false) : entity{ InEntity }, shouldCreate{ InShouldCreate }, shouldDelete{ InShouldDelete } {};
-
-			ECS::Entity entity;
-			bool shouldCreate;
-			bool shouldDelete;
 		};
 
 		template<class Archive>

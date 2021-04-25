@@ -6,6 +6,7 @@
 #include <ECS/ECS.h>
 #include <btBulletDynamicsCommon.h>
 #include <Components/Physics/RigidbodyComponent.h>
+#include <Components/TransformComponent.h>
 
 // Type Includes
 #include <Types/RingBuffer.h>
@@ -23,7 +24,9 @@ namespace Puffin
 			void Update(float dt);
 			void Stop();
 
-			void InitComponent(ECS::Entity entity, btVector3 size = btVector3(1.0f, 1.0f, 1.0f), btScalar mass = 0.0f, btVector3 position = btVector3(0.0f, 0.0f, 0.0f));
+			void InitRigidbody(RigidbodyComponent& rigidbody, TransformComponent& worldTransform);
+			void CleanupRigidbody(RigidbodyComponent& rigidbody);
+
 			void CleanupComponent(ECS::Entity entity);
 
 		private:
@@ -36,8 +39,6 @@ namespace Puffin
 			btDiscreteDynamicsWorld* physicsWorld;
 
 			btAlignedObjectArray<btCollisionShape*> collisionShapes;
-
-			std::shared_ptr<RingBuffer<RigidbodyEvent>> rigidbodyEvents;
 
 			void ProcessEvents();
 		};

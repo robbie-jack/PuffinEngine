@@ -7,10 +7,7 @@ namespace Puffin
 	{
 		void BulletPhysicsSystem::Init()
 		{
-			rigidbodyEvents = std::make_shared<RingBuffer<RigidbodyEvent>>();
-
-			world->RegisterEvent<RigidbodyEvent>();
-			world->SubscribeToEvent<RigidbodyEvent>(rigidbodyEvents);
+			
 		}
 
 		void BulletPhysicsSystem::Start()
@@ -28,7 +25,7 @@ namespace Puffin
 			{
 				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 				RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(entity);
-				InitComponent(entity, rigidbody.size, rigidbody.mass, transform.position);
+				InitRigidbody(rigidbody, transform);
 			}
 		}
 
@@ -36,12 +33,10 @@ namespace Puffin
 		{
 			for (ECS::Entity entity : entityMap.at("Rigidbody"))
 			{
-				//CleanupComponent(entity);
+				CleanupComponent(entity);
 
 				//world->RemoveComponent<RigidbodyComponent>(entity);
 			}
-
-			//entityMap.at("Rigidbody").clear();
 
 			for (int j = 0; j < collisionShapes.size(); j++)
 			{
@@ -65,75 +60,94 @@ namespace Puffin
 
 		void BulletPhysicsSystem::Update(float dt)
 		{
-			ProcessEvents();
-
-			// Step Physics Simulation
-			physicsWorld->stepSimulation(dt);
-
-			// Update Entity transfrom from Physics Component
 			for (ECS::Entity entity : entityMap.at("Rigidbody"))
 			{
-				TransformComponent& transformComp = world->GetComponent<TransformComponent>(entity);
-				RigidbodyComponent& physicsComp = world->GetComponent<RigidbodyComponent>(entity);
+				 //Get Component for this entity, if it exists
+				RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(entity);
+				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 
-				btTransform transform;
-
-				if (physicsComp.body && physicsComp.body->getMotionState())
+				if (rigidbody.bFlagCreated)
 				{
-					physicsComp.body->getMotionState()->getWorldTransform(transform);
+					InitRigidbody(rigidbody, transform);
+					rigidbody.bFlagCreated = false;
 				}
 
-				// Update Transform Component Poisiton/Rotation
-				transformComp.position = transform.getOrigin();
+				if (rigidbody.bFlagDeleted)
+				{
+					CleanupRigidbody(rigidbody);
+					world->RemoveComponent<RigidbodyComponent>(entity);
+				}
+			}
 
-				// Convert Rotation from Radians to Degrees
+			if (dt > 0.0f)
+			{
+				// Step Physics Simulation
+				physicsWorld->stepSimulation(dt);
 
-				Puffin::Vector3 rotation;
-				transform.getRotation().getEulerZYX(rotation.z, rotation.y, rotation.x);
+				// Update Entity transfrom from Physics Component
+				for (ECS::Entity entity : entityMap.at("Rigidbody"))
+				{
+					TransformComponent& worldTransform = world->GetComponent<TransformComponent>(entity);
+					RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(entity);
 
-				float PI = 3.14159;
-				rotation.x = rotation.x * 180 / PI;
-				rotation.y = rotation.y * 180 / PI;
-				rotation.z = rotation.z * 180 / PI;
+					if (rigidbody.mass > 0.0f)
+					{
+						btTransform physicsTransform;
 
-				transformComp.rotation = rotation;
+						if (rigidbody.body && rigidbody.body->getMotionState())
+						{
+							rigidbody.body->getMotionState()->getWorldTransform(physicsTransform);
+						}
+
+						// Update Transform Component Poisiton/Rotation
+						worldTransform.position = physicsTransform.getOrigin();
+
+						// Convert Rotation from Radians to Degrees
+						physicsTransform.getRotation().getEulerZYX(worldTransform.rotation.z, worldTransform.rotation.y, worldTransform.rotation.x);
+
+						// Convert from Radians to Degrees
+						float PI = 3.14159;
+						worldTransform.rotation.x *= 180 / PI;
+						worldTransform.rotation.y *= 180 / PI;
+						worldTransform.rotation.z *= 180 / PI;
+					}
+				}
 			}
 		}
 
-		void BulletPhysicsSystem::InitComponent(ECS::Entity entity, btVector3 size, btScalar mass, btVector3 position)
+		void BulletPhysicsSystem::InitRigidbody(RigidbodyComponent& rigidbody, TransformComponent& worldTransform)
 		{
-			// Get Component for this entity, if it exists
-			RigidbodyComponent& comp = world->GetComponent<RigidbodyComponent>(entity);
-
-			comp.size = size;
-			comp.mass = mass;
-
 			// Construct Box Shape for Component
-			comp.shape = new btBoxShape(comp.size);
+			rigidbody.shape = new btBoxShape(rigidbody.size);
 
 			// Store shape for potential re-use
-			collisionShapes.push_back(comp.shape);
+			collisionShapes.push_back(rigidbody.shape);
 
 			// Initialise Component with Starting Position
 			btTransform transform;
 			transform.setIdentity();
-			transform.setOrigin(position);
+			transform.setOrigin(worldTransform.position);
 
 			// Set Body to dynamic if it has any mass
-			bool isDynamic = (comp.mass != 0.0f);
+			bool isDynamic = (rigidbody.mass != 0.0f);
 
 			btVector3 localInertia(0, 0, 0);
 			if (isDynamic)
-				comp.shape->calculateLocalInertia(comp.mass, localInertia);
+				rigidbody.shape->calculateLocalInertia(rigidbody.mass, localInertia);
 
 			// MotionState is used for interpolation and syncing active objects
 			btDefaultMotionState* motionState = new btDefaultMotionState(transform);
-			
-			// Create Rigid Body
-			btRigidBody::btRigidBodyConstructionInfo rbInfo(comp.mass, motionState, comp.shape, localInertia);
-			comp.body = new btRigidBody(rbInfo);
 
-			physicsWorld->addRigidBody(comp.body);
+			// Create Rigid Body
+			btRigidBody::btRigidBodyConstructionInfo rbInfo(rigidbody.mass, motionState, rigidbody.shape, localInertia);
+			rigidbody.body = new btRigidBody(rbInfo);
+
+			physicsWorld->addRigidBody(rigidbody.body);
+		}
+
+		void BulletPhysicsSystem::CleanupRigidbody(RigidbodyComponent& rigidbody)
+		{
+
 		}
 
 		void BulletPhysicsSystem::CleanupComponent(ECS::Entity entity)
@@ -154,28 +168,28 @@ namespace Puffin
 		void BulletPhysicsSystem::ProcessEvents()
 		{
 			// Process Rigidbody Events
-			RigidbodyEvent rigidbodyEvent;
-			while (!rigidbodyEvents->IsEmpty())
-			{
-				if (rigidbodyEvents->Pop(rigidbodyEvent))
-				{
-					// Get Component for this entity, if it exists
-					RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(rigidbodyEvent.entity);
-					TransformComponent& transform = world->GetComponent<TransformComponent>(rigidbodyEvent.entity);
+			//RigidbodyEvent rigidbodyEvent;
+			//while (!rigidbodyEvents->IsEmpty())
+			//{
+			//	if (rigidbodyEvents->Pop(rigidbodyEvent))
+			//	{
+			//		// Get Component for this entity, if it exists
+			//		RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(rigidbodyEvent.entity);
+			//		TransformComponent& transform = world->GetComponent<TransformComponent>(rigidbodyEvent.entity);
 
-					if (rigidbodyEvent.shouldCreate)
-					{
-						CleanupComponent(rigidbodyEvent.entity);
-						InitComponent(rigidbodyEvent.entity, rigidbody.size, rigidbody.mass, transform.position);
-					}
+			//		if (rigidbodyEvent.shouldCreate)
+			//		{
+			//			CleanupComponent(rigidbodyEvent.entity);
+			//			InitComponent(rigidbodyEvent.entity, rigidbody.size, rigidbody.mass, transform.position);
+			//		}
 
-					if (rigidbodyEvent.shouldDelete)
-					{
-						CleanupComponent(rigidbodyEvent.entity);
-						world->RemoveComponent<RigidbodyComponent>(rigidbodyEvent.entity);
-					}
-				}
-			}
+			//		if (rigidbodyEvent.shouldDelete)
+			//		{
+			//			CleanupComponent(rigidbodyEvent.entity);
+			//			world->RemoveComponent<RigidbodyComponent>(rigidbodyEvent.entity);
+			//		}
+			//	}
+			//}
 		}
 	}
 }

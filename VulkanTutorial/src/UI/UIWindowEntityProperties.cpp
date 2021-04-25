@@ -47,9 +47,15 @@ namespace Puffin
 
 					ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
-					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
-						| ImGuiTreeNodeFlags_OpenOnDoubleClick
-						| ImGuiTreeNodeFlags_AllowItemOverlap;
+					ImGuiTreeNodeFlags flags = 0;
+					//flags |= ImGuiTreeNodeFlags_Framed;
+					//flags |= ImGuiTreeNodeFlags_NoTreePushOnOpen;
+					flags |= ImGuiTreeNodeFlags_NoAutoOpenOnLog;
+					flags |= ImGuiTreeNodeFlags_OpenOnArrow;
+					flags |= ImGuiTreeNodeFlags_OpenOnDoubleClick;
+					flags |= ImGuiTreeNodeFlags_AllowItemOverlap;
+					flags |= ImGuiTreeNodeFlags_DefaultOpen;
+					flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
 					sceneChanged = false;
 
@@ -91,8 +97,6 @@ namespace Puffin
 								comp.model_path = "assets\\models\\cube.asset_m";
 								comp.texture_path = "textures\\cube.png";
 								sceneChanged = true;
-
-								world->PublishEvent<Rendering::MeshEvent>(Rendering::MeshEvent(entity, true));
 							}
 						}
 
@@ -113,8 +117,6 @@ namespace Puffin
 								comp.type = Rendering::LightType::POINT;
 								
 								sceneChanged = true;
-
-								world->PublishEvent<Rendering::LightEvent>(Rendering::LightEvent(entity, true));
 							}
 						}
 
@@ -125,7 +127,6 @@ namespace Puffin
 								Physics::RigidbodyComponent& comp = world->AddComponent<Physics::RigidbodyComponent>(entity);
 								comp.size = btVector3(1.0f, 1.0f, 1.0f);
 								comp.mass = 0.0f;
-								world->PublishEvent<Physics::RigidbodyEvent>(Physics::RigidbodyEvent(entity, true));
 								sceneChanged = true;
 							}
 						}
@@ -151,14 +152,11 @@ namespace Puffin
 			{
 				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 
-				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-				if (ImGui::CollapsingHeader("Transform Component", flags))
+				if (ImGui::TreeNodeEx("Transform Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					ImGui::Button("X");
-
-					if (ImGui::IsItemActivated())
+					if (ImGui::SmallButton("X##Transform"))
 					{
 						world->RemoveComponent<TransformComponent>(entity);
 						sceneChanged = true;
@@ -179,6 +177,8 @@ namespace Puffin
 					{
 						sceneChanged = true;
 					}
+
+					ImGui::TreePop();
 				}
 			}
 		}
@@ -188,23 +188,20 @@ namespace Puffin
 			// Display Mesh Component - If One Exists
 			if (world->HasComponent<Rendering::MeshComponent>(entity))
 			{
-				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-				if (ImGui::CollapsingHeader("Mesh Component", flags))
+				if (ImGui::TreeNodeEx("Mesh Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
 					Rendering::MeshComponent& mesh = world->GetComponent<Rendering::MeshComponent>(entity);
 
-					ImGui::Button("X");
-
-					if (ImGui::IsItemClicked())
+					if (ImGui::SmallButton("X##Mesh"))
 					{
 						sceneChanged = true;
-						world->PublishEvent<Rendering::MeshEvent>(Rendering::MeshEvent(entity, false, true));
+						mesh.bFlagDeleted = true;
 					}
 
 					// Change Model Path
-					ImGui::Text("Model Path:"); ImGui::SameLine(100.0f);
+					ImGui::Text("Model Path:"); ImGui::SameLine();
 					if (ImGui::Selectable(mesh.model_path.c_str(), false))
 					{
 						fileDialog->Open();
@@ -214,7 +211,7 @@ namespace Puffin
 					if (fileDialog->HasSelected() && modelSelected)
 					{
 						mesh.model_path = fileDialog->GetSelected().string();
-						world->PublishEvent<Rendering::MeshEvent>(Rendering::MeshEvent(entity, true));
+						mesh.bFlagCreated = true;
 
 						modelSelected = false;
 						sceneChanged = true;
@@ -222,7 +219,7 @@ namespace Puffin
 					}
 
 					// Change Texture Path
-					ImGui::Text("Texture Path:"); ImGui::SameLine(100.0f);
+					ImGui::Text("Texture Path:"); ImGui::SameLine();
 					if (ImGui::Selectable(mesh.texture_path.c_str(), false))
 					{
 						fileDialog->Open();
@@ -232,11 +229,14 @@ namespace Puffin
 					if (fileDialog->HasSelected() && textureSelected)
 					{
 						mesh.texture_path = fileDialog->GetSelected().string();
-						world->PublishEvent<Rendering::MeshEvent>(Rendering::MeshEvent(entity, true));
+						mesh.bFlagCreated = true;
+
 						textureSelected = false;
 						sceneChanged = true;
 						fileDialog->ClearSelected();
 					}
+
+					ImGui::TreePop();
 				}
 			}
 		}
@@ -245,20 +245,17 @@ namespace Puffin
 		{
 			if (world->HasComponent<Rendering::LightComponent>(entity))
 			{
-				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-				if (ImGui::CollapsingHeader("Light Component"), flags)
+				Rendering::LightComponent& comp = world->GetComponent<Rendering::LightComponent>(entity);
+
+				if (ImGui::TreeNodeEx("Light Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					ImGui::Button("X");
-
-					if (ImGui::IsItemClicked())
+					if (ImGui::SmallButton("X##Light"))
 					{
 						sceneChanged = true;
-						world->PublishEvent<Rendering::LightEvent>(Rendering::LightEvent(entity, false, true));
+						comp.bFlagDeleted = true;
 					}
-
-					Rendering::LightComponent& comp = world->GetComponent<Rendering::LightComponent>(entity);
 
 					// Edit Light Diffuse Color
 					ImGui::ColorEdit3("Diffuse", (float*)&comp.diffuseColor);
@@ -266,10 +263,10 @@ namespace Puffin
 					// Edit Light Ambient Color
 					ImGui::ColorEdit3("Ambient", (float*)&comp.ambientColor);
 
-					if (ImGui::Checkbox("Cast Shadows", &comp.castShadows))
+					if (ImGui::Checkbox("Cast Shadows", &comp.bFlagCastShadows))
 					{
 						sceneChanged = true;
-						world->PublishEvent<Rendering::LightEvent>(Rendering::LightEvent(entity, true));
+						comp.bFlagCreated = true;
 					}
 
 					// Combo box to select light type
@@ -314,6 +311,8 @@ namespace Puffin
 							comp.outerCutoffAngle = comp.innerCutoffAngle;
 						}
 					}
+
+					ImGui::TreePop();
 				}
 			}
 		}
@@ -322,25 +321,24 @@ namespace Puffin
 		{
 			if (world->HasComponent<Physics::RigidbodyComponent>(entity))
 			{
-				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-				if (ImGui::CollapsingHeader("Physics Component", flags))
+				if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					Physics::RigidbodyComponent& comp = world->GetComponent<Physics::RigidbodyComponent>(entity);
+					Physics::RigidbodyComponent& rigidbody = world->GetComponent<Physics::RigidbodyComponent>(entity);
 
-					ImGui::Button("X");
-
-					if (ImGui::IsItemClicked())
+					if (ImGui::SmallButton("X##Rigidbody"))
 					{
-						world->PublishEvent<Physics::RigidbodyEvent>(Physics::RigidbodyEvent(entity, false, true));
+						rigidbody.bFlagDeleted = true;
 						sceneChanged = true;
 					}
 
 					if (positionChanged)
 					{
-						world->PublishEvent<Physics::RigidbodyEvent>(Physics::RigidbodyEvent(entity, true));
+						rigidbody.bFlagCreated = true;
 					}
+
+					ImGui::TreePop();
 				}
 			}
 		}
@@ -349,24 +347,21 @@ namespace Puffin
 		{
 			if (world->HasComponent<Scripting::AngelScriptComponent>(entity))
 			{
-				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-				if (ImGui::CollapsingHeader("Script Component", flags))
+				Scripting::AngelScriptComponent& comp = world->GetComponent<Scripting::AngelScriptComponent>(entity);
+
+				if (ImGui::TreeNodeEx("Script Component", flags))
 				{
-					Scripting::AngelScriptComponent& comp = world->GetComponent<Scripting::AngelScriptComponent>(entity);
-
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
-					ImGui::Button("X");
 
-					if (ImGui::IsItemClicked())
+					if (ImGui::SmallButton("X##Script"))
 					{
-						//world->PublishEvent<Scripting::JinxScriptEvent>(Scripting::JinxScriptEvent(entity, false, true));
+						comp.bFlagDeleted = true;
 						sceneChanged = true;
 					}
 
-					ImGui::Text("Script Name: "); ImGui::SameLine(100.0f);
-					ImGui::InputText("##ScriptName", &comp.name);
+					ImGui::InputText("Script Name", &comp.name);
 
-					ImGui::Text("File Path:"); ImGui::SameLine(80.0f);
+					ImGui::Text("File Path:"); ImGui::SameLine(0.0f);
 					if (ImGui::Selectable(comp.dir.c_str(), false))
 					{
 						//fileDialog->Open();
@@ -375,6 +370,9 @@ namespace Puffin
 
 					if (comp.obj != 0)
 					{
+						ImGui::Separator();
+						ImGui::Text("Editable Properties");
+
 						// Display Variables in scripts marked as editable
 						for (const int& index : comp.editableProperties)
 						{
@@ -402,6 +400,9 @@ namespace Puffin
 								ImGui::InputText(propertyName, stringProperty);
 							}
 						}
+
+						ImGui::Separator();
+						ImGui::Text("Visible Properties");
 
 						// Display Variables in scripts marked as visible
 						for (const int& index : comp.visibleProperties)
@@ -436,6 +437,8 @@ namespace Puffin
 							}
 						}
 					}
+
+					ImGui::TreePop();
 				}
 			}
 		}
