@@ -1,6 +1,9 @@
 #include <UI/UIWindowPerformance.h>
 #include <thread>
 
+#include <math.h>
+#include <stdio.h> 
+
 namespace Puffin
 {
 	namespace UI
@@ -42,25 +45,72 @@ namespace Puffin
 					// Display FPS
 					fps_timer += dt;
 
-					if (fps_timer >= 0.25f)
+					const int num_values = 120;
+					static int value_offset = 0;
+
+					static float framerate_values[num_values] = {};
+					static float framerate_min = 10000.0f;
+					static float framerate_max = 0.0f;
+
+					static float frametime_values[num_values] = {};
+					static float frametime_min = 1000.0f;
+					static float frametime_max = 0.0f;
+
+					const float refresh_time = 1 / 60.0f;
+					if (fps_timer >= refresh_time)
 					{
 						fps = 1 / dt;
 						frametime = dt * 1000;
 						fps_timer = 0.0f;
+
+						if (fps > framerate_max)
+							framerate_max = fps;
+
+						if (fps < framerate_min)
+							framerate_min = fps;
+
+						if (frametime > frametime_max)
+							frametime_max = frametime;
+
+						if (frametime < frametime_min)
+							frametime_min = frametime;
+
+						framerate_values[value_offset] = fps;
+						frametime_values[value_offset] = frametime;
+						value_offset = (value_offset + 1) % num_values;
 					}
 
-					ImGui::Text(" Framerate: %.1f", fps);
+					// Display Framerate
+					float framerate_average = 0.0f;
+					for (int n = 0; n < num_values; n++)
+					{
+						framerate_average += framerate_values[n];
+					}
+					framerate_average /= (float)num_values;
+
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine();
+					ImGui::PlotLines("Framerate", framerate_values, num_values, value_offset, (const char*)0, 0.0f, 144.0f, ImVec2(0.0f, 80.0f));
+
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Current: %.1f", fps);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Average: %.1f", framerate_average);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Minimum: %.1f", framerate_min);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Maximum: %.1f", framerate_max);
 
 					// Display Frametime
-					ImGui::Text(" Frametime: %.1f ms", frametime);
-
-					//plotBuffer.AddPoint(dt, (float)fps);
-
-					/*if (ImPlot::BeginPlot("Framerate", "Time", "FPS"))
+					float frametime_average = 0.0f;
+					for (int n = 0; n < num_values; n++)
 					{
-						ImPlot::PlotLine("FPS", &plotBuffer.Data[0], plotBuffer.Data.size());
-						ImPlot::EndPlot();
-					}*/
+						frametime_average += frametime_values[n];
+					}
+					frametime_average /= (float)num_values;
+
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine();
+					ImGui::PlotLines("Frametime", frametime_values, num_values, value_offset, (const char*)0, 0.0f, 100.0f, ImVec2(0.0f, 80.0f));
+
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Current: %.1f", frametime);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Average: %.1f", frametime_average);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Minimum: %.1f", frametime_min);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Maximum: %.1f", frametime_max);
 				}
 
 				End();

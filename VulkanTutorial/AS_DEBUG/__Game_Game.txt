@@ -25,8 +25,8 @@ Variables:
    18   1 *    SUSPEND
    19   1 *    PshVPtr  v0
    20   3 *    ADDSi    v44, 134217742
-   22   3 *    PGA      0xe7b53440          (str:Player)
-   25   5 *    ALLOC    0x252e7b41220, 20             (type:string, string::string(const string&in))
+   22   3 *    PGA      0x9f892880          (str:Player)
+   25   5 *    ALLOC    0x2c99c529880, 20             (type:string, string::string(const string&in))
 - 26,9 -
    29   1 *    SUSPEND
    30   1 *    SetV4    v1, 0x0          (i:0, f:0)
