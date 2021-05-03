@@ -47,10 +47,26 @@ namespace Puffin
 				std::vector<VkCommandPool>& commandPools,
 				int inFrameOverlap, VkExtent2D inExtent);
 
+			// Pass Data Needed for Geometry Rendering
+			inline void SetGeometryDescriptorSet(VkDescriptorSet* inGeometrySet)
+			{
+				geometrySet = inGeometrySet;
+			}
+
+			inline void SetVertexBuffer(VkBuffer* inVertexBuffer)
+			{
+				sceneVertexBuffer = inVertexBuffer;
+			}
+
+			inline void SetIndexBuffer(VkBuffer* inIndexBuffer)
+			{
+				sceneIndexBuffer = inIndexBuffer;
+			}
+
 			/*
-			* Render Scene with deferred shading, using passed in scene data
+			* Render Scene with deferred shading
 			*/
-			void DrawScene();
+			void DrawScene(int frameIndex);
 
 			// Cleanup Functions
 			void Cleanup();
@@ -71,7 +87,6 @@ namespace Puffin
 
 			// G-Buffer
 			int frameOverlap = 2;
-			int frameNumber = 0;
 			std::vector<DeferredFrameData> frameData;
 
 			VkExtent3D gBufferExtent;
@@ -83,6 +98,10 @@ namespace Puffin
 			VkPipeline gPipeline;
 			VkPipelineLayout gPipelineLayout;
 
+			VkDescriptorSet* geometrySet;
+			VkBuffer* sceneVertexBuffer;
+			VkBuffer* sceneIndexBuffer;
+
 			// Functions
 
 			// Setup Functions
@@ -91,7 +110,7 @@ namespace Puffin
 			void SetupGFramebuffer(); // Setup Geometry Framebuffer
 			void SetupGColorSampler(); // Setup Geometry Color Sampler
 			void SetupCommandBuffers(std::vector<VkCommandPool>& commandPools); // Setup Command Pools/Buffers
-			void SetupDescriptorSets(); // Setup Descriptor Sets for Geometry Pass
+			//void SetupDescriptorSets(); // Setup Descriptor Sets for Geometry Pass
 			void SetupPipelines(); // Setup Geometry/Shading Pipelines
 
 			/*
@@ -101,8 +120,8 @@ namespace Puffin
 				AllocatedImage* allocatedImage, std::string debug_name = "");
 
 			// Draw Functions
-			VkCommandBuffer RecordGeometryCommandBuffer();
-			VkCommandBuffer RecordShadingCommandBuffer();
+			VkCommandBuffer RecordGeometryCommandBuffer(int frameIndex);
+			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex);
 
 			static inline std::vector<char> ReadFile(const std::string& filename)
 			{
@@ -124,11 +143,6 @@ namespace Puffin
 				//std::cout << "BufferSize: " << buffer.size() << std::endl;
 
 				return buffer;
-			}
-
-			DeferredFrameData& GetCurrentFrame()
-			{
-				return frameData[frameNumber % frameOverlap];
 			}
 		};
 	}

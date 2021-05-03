@@ -53,6 +53,9 @@ namespace Puffin
 
 			archive(meshComp.vertices);
 			archive(meshComp.indices);
+
+			meshComp.vertices.shrink_to_fit();
+			meshComp.indices.shrink_to_fit();
 		}
 
 		// Import Mesh to MeshComponent

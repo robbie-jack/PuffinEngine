@@ -336,13 +336,14 @@ namespace Puffin
 				return *this;
 			}
 
-			DescriptorBuilder& DescriptorBuilder::BindImages(uint32_t binding, std::vector<VkDescriptorImageInfo>& imageInfos,
+			DescriptorBuilder& DescriptorBuilder::BindImages(uint32_t binding, 
+				uint32_t imageCount, const VkDescriptorImageInfo* imageInfos,
 				VkDescriptorType type, VkShaderStageFlags stageFlags)
 			{
 				// Create descriptor binding for layout
 				VkDescriptorSetLayoutBinding newBinding{};
 
-				newBinding.descriptorCount = static_cast<uint32_t>(imageInfos.size());
+				newBinding.descriptorCount = imageCount;
 				newBinding.descriptorType = type;
 				newBinding.pImmutableSamplers = nullptr;
 				newBinding.stageFlags = stageFlags;
@@ -355,9 +356,9 @@ namespace Puffin
 				newWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				newWrite.pNext = nullptr;
 
-				newWrite.descriptorCount = static_cast<uint32_t>(imageInfos.size());
+				newWrite.descriptorCount = imageCount;
 				newWrite.descriptorType = type;
-				newWrite.pImageInfo = imageInfos.data();
+				newWrite.pImageInfo = imageInfos;
 				newWrite.dstBinding = binding;
 				newWrite.dstArrayElement = 0;
 				newWrite.pBufferInfo = 0;
@@ -397,6 +398,38 @@ namespace Puffin
 			{
 				VkDescriptorSetLayout layout;
 				return Build(set, layout);
+			}
+
+			DescriptorBuilder& DescriptorBuilder::UpdateImages(uint32_t binding, uint32_t imageCount, const VkDescriptorImageInfo* imageInfos, VkDescriptorType type)
+			{
+				// Create descriptor write
+				VkWriteDescriptorSet newWrite{};
+				newWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				newWrite.pNext = nullptr;
+
+				newWrite.descriptorCount = imageCount;
+				newWrite.descriptorType = type;
+				newWrite.pImageInfo = imageInfos;
+				newWrite.dstBinding = binding;
+				newWrite.dstArrayElement = 0;
+				newWrite.pBufferInfo = 0;
+
+				writes.push_back(newWrite);
+
+				return *this;
+			}
+
+			bool DescriptorBuilder::Update(VkDescriptorSet& set)
+			{
+				// Write Descriptor
+				for (VkWriteDescriptorSet& w : writes)
+				{
+					w.dstSet = set;
+				}
+
+				vkUpdateDescriptorSets(alloc->device, writes.size(), writes.data(), 0, nullptr);
+
+				return true;
 			}
 		}
 	}

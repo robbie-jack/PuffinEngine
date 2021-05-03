@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -95,11 +96,11 @@ namespace Puffin
 			// Initialise Semaphores and Fences
 			InitSyncStructures();
 
+			InitBuffers();
+			InitSceneBuffers();
+
 			// Initialize Descriptor Sets
 			InitDescriptors();
-			InitDeferredDescriptors();
-
-			InitBuffers();
 
 			// Initialize Pipelines
 			InitPipelines();
@@ -113,9 +114,7 @@ namespace Puffin
 			InitDepthSampler();
 
 			// Initialize All Scene Objects
-			InitScene();
-
-			InitShadowmapDescriptors();
+			StartScene();
 
 			// Setup Deferred Renderer
 			std::vector<VkCommandPool> commandPools;
@@ -163,6 +162,7 @@ namespace Puffin
 		void VulkanEngine::StartScene()
 		{
 			InitScene();
+			InitDeferredDescriptors();
 			InitShadowmapDescriptors();
 		}
 
@@ -732,6 +732,81 @@ namespace Puffin
 			});
 		}
 
+		void VulkanEngine::InitBuffers()
+		{
+			// Create Buffers for each Frame's Data
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				// Create Camera View/Proj Buffer
+				frames[i].cameraViewProjBuffer = CreateBuffer(sizeof(GPUCameraData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				// Create Object Storage Buffers
+				
+				frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				// Create Camera/Light Buffers
+				frames[i].cameraBuffer = CreateBuffer(sizeof(ViewData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+				frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS_PER_TYPE,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].directionalLightBuffer = CreateBuffer(sizeof(GPUDirLightData) * MAX_LIGHTS_PER_TYPE,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].spotLightBuffer = CreateBuffer(sizeof(GPUSpotLightData) * MAX_LIGHTS_PER_TYPE,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].lightStatsBuffer = CreateBuffer(sizeof(LightStatsData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+				// Create Light Space Buffer for Shadow Vertex Stage
+				frames[i].lightSpaceBuffer = CreateBuffer(sizeof(GPULightSpaceData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].lightSpaceMultiBuffer = CreateBuffer(sizeof(GPULightSpaceData) * MAX_LIGHTS_PER_TYPE,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].lightSpaceIndexBuffer = CreateBuffer(sizeof(GPULightIndexData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				// Debug Buffers
+				frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+				frames[i].debugIndexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND * sizeof(uint32_t),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+				frames[i].debugIndirectCommandsBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * sizeof(VkDrawIndexedIndirectCommand),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+					VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].debugVertices.reserve(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND);
+				frames[i].debugIndices.reserve(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND);
+			}
+		}
+
+		void VulkanEngine::InitSceneBuffers()
+		{
+			// Scene Buffers
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				frames[i].sceneVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+				frames[i].sceneIndexBuffer = CreateBuffer(CURRENT_INDEX_BUFFER_SIZE * sizeof(uint32_t),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+				frames[i].sceneIndirectCommandsBuffer = CreateBuffer(MAX_OBJECTS * sizeof(VkDrawIndexedIndirectCommand),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+					VMA_MEMORY_USAGE_CPU_TO_GPU);
+			}
+		}
+
 		void VulkanEngine::InitDescriptors()
 		{
 			// Initialize Descriptor Abstractions
@@ -756,7 +831,7 @@ namespace Puffin
 
 			// Create Shadowmap Descriptor Layout
 			VkDescriptorSetLayoutBinding shadowmapBinding = VKInit::DescriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, MAX_LIGHTS * 3);
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, MAX_LIGHTS_PER_TYPE * 3);
 
 			VkDescriptorSetLayoutCreateInfo shadowmapLayoutInfo = {};
 			shadowmapLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -772,10 +847,6 @@ namespace Puffin
 			{
 				// Create Descriptor Sets for Vertex Shader Stage
 
-				// Create Camera View/Proj Buffer
-				frames[i].cameraViewProjBuffer = CreateBuffer(sizeof(GPUCameraData),
-					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
 				// Allocate Camera View/Proj Descriptor Set
 				VkDescriptorBufferInfo cameraBufferInfo;
 				cameraBufferInfo.buffer = frames[i].cameraViewProjBuffer.buffer;
@@ -785,11 +856,6 @@ namespace Puffin
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 					.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 					.Build(frames[i].cameraViewProjDescriptor, cameraViewProjSetLayout);
-
-				// Create Object Storage Buffers
-				const int MAX_OBJECTS = 10000;
-				frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Allocate Object Descriptor Set
 				VkDescriptorBufferInfo objectBufferInfo;
@@ -802,24 +868,6 @@ namespace Puffin
 					.Build(frames[i].objectDescriptor, objectSetLayout);
 
 				// Create Descriptor Sets for Fragment Shader Stage
-
-				// Create Camera/Light Buffers
-				frames[i].cameraBuffer = CreateBuffer(sizeof(ViewData),
-					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-
-				frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].directionalLightBuffer = CreateBuffer(sizeof(GPUDirLightData) * MAX_LIGHTS,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].spotLightBuffer = CreateBuffer(sizeof(GPUSpotLightData) * MAX_LIGHTS,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].lightStatsBuffer = CreateBuffer(sizeof(LightStatsData),
-					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 				// Allocate Camera Descriptor Set
 				VkDescriptorBufferInfo cameraInfo;
@@ -835,17 +883,17 @@ namespace Puffin
 				VkDescriptorBufferInfo pointLightInfo;
 				pointLightInfo.buffer = frames[i].pointLightBuffer.buffer;
 				pointLightInfo.offset = 0;
-				pointLightInfo.range = sizeof(GPUPointLightData) * MAX_LIGHTS;
+				pointLightInfo.range = sizeof(GPUPointLightData) * MAX_LIGHTS_PER_TYPE;
 
 				VkDescriptorBufferInfo directionalLightInfo;
 				directionalLightInfo.buffer = frames[i].directionalLightBuffer.buffer;
 				directionalLightInfo.offset = 0;
-				directionalLightInfo.range = sizeof(GPUDirLightData) * MAX_LIGHTS;
+				directionalLightInfo.range = sizeof(GPUDirLightData) * MAX_LIGHTS_PER_TYPE;
 
 				VkDescriptorBufferInfo spotLightInfo;
 				spotLightInfo.buffer = frames[i].spotLightBuffer.buffer;
 				spotLightInfo.offset = 0;
-				spotLightInfo.range = sizeof(GPUSpotLightData) * MAX_LIGHTS;
+				spotLightInfo.range = sizeof(GPUSpotLightData) * MAX_LIGHTS_PER_TYPE;
 
 				VkDescriptorBufferInfo lightStatInfo;
 				lightStatInfo.buffer = frames[i].lightStatsBuffer.buffer;
@@ -858,16 +906,6 @@ namespace Puffin
 					.BindBuffer(2, &spotLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.BindBuffer(3, &lightStatInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.Build(frames[i].lightDescriptor, lightSetLayout);
-
-				// Create Light Space Buffer for Shadow Vertex Stage
-				frames[i].lightSpaceBuffer = CreateBuffer(sizeof(GPULightSpaceData),
-					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].lightSpaceMultiBuffer = CreateBuffer(sizeof(GPULightSpaceData) * MAX_LIGHTS,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].lightSpaceIndexBuffer = CreateBuffer(sizeof(GPULightIndexData),
-					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				VkDescriptorBufferInfo lightSpaceInfo;
 				lightSpaceInfo.buffer = frames[i].lightSpaceBuffer.buffer;
@@ -882,7 +920,7 @@ namespace Puffin
 				VkDescriptorBufferInfo lightSpaceMultiInfo;
 				lightSpaceMultiInfo.buffer = frames[i].lightSpaceMultiBuffer.buffer;
 				lightSpaceMultiInfo.offset = 0;
-				lightSpaceMultiInfo.range = sizeof(GPULightSpaceData) * MAX_LIGHTS;
+				lightSpaceMultiInfo.range = sizeof(GPULightSpaceData) * MAX_LIGHTS_PER_TYPE;
 
 				VkDescriptorBufferInfo lightSpaceIndexInfo;
 				lightSpaceIndexInfo.buffer = frames[i].lightSpaceIndexBuffer.buffer;
@@ -899,29 +937,54 @@ namespace Puffin
 		// Init Descriptors that will be passed to the Deferred Renderer
 		void VulkanEngine::InitDeferredDescriptors()
 		{
+			// Grab Image Views from Initialized Meshes
+			std::vector<VkDescriptorImageInfo> albedoImageInfo;
+			std::vector<VkDescriptorImageInfo> normalImageInfo;
 
-		}
+			VkDescriptorImageInfo textureImageInfo;
+			textureImageInfo.sampler = depthSampler;
+			textureImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		void VulkanEngine::InitBuffers()
-		{
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+
+				//Albedo Textures
+				textureImageInfo.imageView = mesh.texture.imageView;
+				albedoImageInfo.push_back(textureImageInfo);
+
+				// Normal Maps	
+				textureImageInfo.imageView = mesh.texture.imageView;
+				normalImageInfo.push_back(textureImageInfo);
+			}
+
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				const int MAX_DEBUG_COMMANDS = 10000;
-				const int MAX_VERTICES_PER_COMMAND = 8;
-				const int MAX_INDICES_PER_COMMAND = 24;
+				// Create Descriptor Bindings
 
-				frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex),
-					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				// Camera ViewProj
+				VkDescriptorBufferInfo cameraBufferInfo;
+				cameraBufferInfo.buffer = frames[i].cameraViewProjBuffer.buffer;
+				cameraBufferInfo.offset = 0;
+				cameraBufferInfo.range = sizeof(GPUCameraData);
 
-				frames[i].debugIndexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND * sizeof(uint32_t),
-					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				// Object SSBO
+				VkDescriptorBufferInfo objectBufferInfo;
+				objectBufferInfo.buffer = frames[i].objectBuffer.buffer;
+				objectBufferInfo.offset = 0;
+				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
 
-				frames[i].debugIndirectCommandsBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * sizeof(VkDrawIndexedIndirectCommand),
-					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
-					VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].debugVertices.reserve(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND);
-				frames[i].debugIndices.reserve(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND);
+				// Build Descriptor Set
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.BindBuffer(1, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.BindImages(2, static_cast<uint32_t>(albedoImageInfo.size()),
+						albedoImageInfo.data(),
+						VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindImages(3, static_cast<uint32_t>(normalImageInfo.size()),
+						normalImageInfo.data(),
+						VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.Build(frames[i].geometryDescriptor, geometrySetLayout);
 			}
 		}
 
@@ -1166,6 +1229,7 @@ namespace Puffin
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 				InitMesh(mesh);
 			}
+
 		}
 
 		void VulkanEngine::InitMesh(MeshComponent& mesh)
@@ -1281,7 +1345,8 @@ namespace Puffin
 			const size_t bufferSize = vertices.size() * sizeof(Vertex);
 
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, 
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map vertex data to staging buffer
 			void* data;
@@ -1291,7 +1356,7 @@ namespace Puffin
 
 			// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
 			AllocatedBuffer vertexBuffer = CreateBuffer(bufferSize,
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT |VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 				VMA_MEMORY_USAGE_GPU_ONLY);
 
 			// Copy from CPU Memory to GPU Memory
@@ -1316,7 +1381,8 @@ namespace Puffin
 			const size_t bufferSize = indices.size() * sizeof(uint32_t);
 
 			// Allocated Staging Buffer - Map Indices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, 
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map Index data to staging buffer
 			void* data;
@@ -1326,7 +1392,7 @@ namespace Puffin
 
 			// Allocate Index Buffer - Transfer Indices into GPU Memory
 			AllocatedBuffer indexBuffer = CreateBuffer(bufferSize,
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 				VMA_MEMORY_USAGE_GPU_ONLY);
 
 			//Copy from CPU Memory to GPU Memory
@@ -1345,7 +1411,7 @@ namespace Puffin
 			return indexBuffer;
 		}
 
-		void VulkanEngine::CopyVerticesToBuffer(std::vector<Vertex> vertices, AllocatedBuffer vertexBuffer)
+		void VulkanEngine::CopyVerticesToBuffer(const std::vector<Vertex>& vertices, AllocatedBuffer vertexBuffer, uint32_t copyOffset)
 		{
 			// Get Size of data to be transfered to vertex buffer
 			const size_t bufferSize = vertices.size() * sizeof(Vertex);
@@ -1363,7 +1429,7 @@ namespace Puffin
 			ImmediateSubmit([=](VkCommandBuffer cmd)
 			{
 				VkBufferCopy copy;
-				copy.dstOffset = 0;
+				copy.dstOffset = copyOffset * sizeof(Vertex);
 				copy.srcOffset = 0;
 				copy.size = bufferSize;
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, vertexBuffer.buffer, 1, &copy);
@@ -1373,7 +1439,7 @@ namespace Puffin
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 
-		void VulkanEngine::CopyIndicesToBuffer(std::vector<uint32_t> indices, AllocatedBuffer indexBuffer)
+		void VulkanEngine::CopyIndicesToBuffer(const std::vector<uint32_t>& indices, AllocatedBuffer indexBuffer, uint32_t copyOffset)
 		{
 			// Copy Loaded Index data into mesh index buffer
 			const size_t bufferSize = indices.size() * sizeof(uint32_t);
@@ -1391,7 +1457,7 @@ namespace Puffin
 			ImmediateSubmit([=](VkCommandBuffer cmd)
 			{
 				VkBufferCopy copy;
-				copy.dstOffset = 0;
+				copy.dstOffset = copyOffset;
 				copy.srcOffset = 0;
 				copy.size = bufferSize;
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, indexBuffer.buffer, 1, &copy);
@@ -1484,7 +1550,7 @@ namespace Puffin
 				}
 
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindImages(0, imageInfos, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindImages(0, static_cast<uint32_t>(imageInfos.size()), imageInfos.data(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
 			}
 		}
@@ -1629,6 +1695,11 @@ namespace Puffin
 				{
 					InitMesh(mesh);
 					mesh.bFlagCreated = false;
+
+					for (int i = 0; i < FRAME_OVERLAP; i++)
+					{
+						frames[i].bFlagSceneChanged = true;
+					}
 				}
 
 				// Cleanup
@@ -1636,6 +1707,11 @@ namespace Puffin
 				{
 					CleanupMesh(mesh);
 					world->RemoveComponent<MeshComponent>(entity);
+					
+					for (int i = 0; i < FRAME_OVERLAP; i++)
+					{
+						frames[i].bFlagSceneChanged = true;
+					}
 				}
 			}
 
@@ -1650,6 +1726,11 @@ namespace Puffin
 					InitLight(light);
 					light.bFlagCreated = false;
 					shadowmapDescriptorNeedsUpdated = true;
+					
+					/*for (int i = 0; i < FRAME_OVERLAP; i++)
+					{
+						frames[i].bFlagSceneChanged = true;
+					}*/
 				}
 
 				// Cleanup
@@ -1658,6 +1739,11 @@ namespace Puffin
 					CleanupLight(light);
 					world->RemoveComponent<LightComponent>(entity);
 					shadowmapDescriptorNeedsUpdated = true;
+					
+					/*for (int i = 0; i < FRAME_OVERLAP; i++)
+					{
+						frames[i].bFlagSceneChanged = true;
+					}*/
 				}
 			}
 
@@ -1893,6 +1979,15 @@ namespace Puffin
 				CopyIndicesToBuffer(GetCurrentFrame().debugIndices, GetCurrentFrame().debugIndexBuffer);
 			}
 
+			// Prepare Scene Data for Rendering
+			PrepareScene();
+
+			// Deferred Render
+			/*deferredRenderer.SetGeometryDescriptorSet(&GetCurrentFrame().geometryDescriptor);
+			deferredRenderer.SetVertexBuffer(&GetCurrentFrame().sceneVertexBuffer.buffer);
+			deferredRenderer.SetIndexBuffer(&GetCurrentFrame().sceneIndexBuffer.buffer);
+			deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP);*/
+
 			// Record Command Buffers
 			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
 			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
@@ -1946,6 +2041,115 @@ namespace Puffin
 
 			// Number of Frames that have completed rendering
 			frameNumber++;
+		}
+
+		void VulkanEngine::PrepareScene()
+		{
+			// Map Camera Data to Uniform Buffer
+			GPUCameraData cameraData;
+			glm::mat4 projMat = camera.matrices.perspective;
+			projMat[1][1] *= -1;
+			cameraData.viewProj = projMat * camera.matrices.view;
+
+			void* data;
+
+			// Map camera view/proj data to uniform buffer
+			vmaMapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
+			memcpy(data, &cameraData, sizeof(GPUCameraData));
+			vmaUnmapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
+			
+			if (GetCurrentFrame().bFlagSceneChanged == true)
+			{
+				// Map Mesh Matrices to Storage Buffer
+				MapObjectData();
+
+				uint32_t totalVertices = 0;
+				uint32_t totalIndices = 0;
+
+				// Check how many vertices there are
+				for (ECS::Entity entity : entityMap["Mesh"])
+				{
+					MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+
+					totalVertices += mesh.vertices.size();
+					totalIndices += mesh.indices.size();
+				}
+
+				// If total vertices exceeds currently allocted buffer size, allocate new buffer
+				if (totalVertices > CURRENT_VERTEX_BUFFER_SIZE)
+				{
+					// Free Old Buffer
+					vmaDestroyBuffer(allocator,
+						GetCurrentFrame().sceneVertexBuffer.buffer,
+						GetCurrentFrame().sceneVertexBuffer.allocation);
+
+					// Double buffer size until it is greater than total vertices
+					while (CURRENT_VERTEX_BUFFER_SIZE <= totalVertices)
+					{
+						CURRENT_VERTEX_BUFFER_SIZE *= 2;
+					}
+
+					// Create New Buffer
+					GetCurrentFrame().sceneVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
+						VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				}
+
+				// Same as above for Indices
+				if (totalIndices > CURRENT_INDEX_BUFFER_SIZE)
+				{
+					// Free Old Buffer
+					vmaDestroyBuffer(allocator,
+						GetCurrentFrame().sceneIndexBuffer.buffer,
+						GetCurrentFrame().sceneIndexBuffer.allocation);
+
+					// Double buffer size until it is greater than total indices
+					while (CURRENT_INDEX_BUFFER_SIZE <= totalIndices)
+					{
+						CURRENT_INDEX_BUFFER_SIZE *= 2;
+					}
+
+					// Create New Buffer
+					GetCurrentFrame().sceneIndexBuffer = CreateBuffer(CURRENT_INDEX_BUFFER_SIZE * sizeof(uint32_t),
+						VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				}
+
+				// Reset Counts
+				totalVertices = 0;
+				totalIndices = 0;
+
+				ImmediateSubmit([=](VkCommandBuffer cmd)
+				{
+					uint32_t vertexOffset = 0;
+					uint32_t indexOffset = 0;
+
+					// Copy Vertices/Indices for each mesh to Buffers
+					for (ECS::Entity entity : entityMap["Mesh"])
+					{
+						MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+
+						// Copy directly from mesh vertex buffer to scene vertex buffer
+						VkBufferCopy vertexCopy;
+						vertexCopy.dstOffset = vertexOffset * sizeof(Vertex);
+						vertexCopy.size = mesh.vertices.size() * sizeof(Vertex);
+						vertexCopy.srcOffset = 0;
+
+						vkCmdCopyBuffer(cmd, mesh.vertexBuffer.buffer, GetCurrentFrame().sceneVertexBuffer.buffer, 1, &vertexCopy);
+
+						// Copt directly from mesh index buffer to scene index buffer
+						VkBufferCopy indexCopy;
+						indexCopy.dstOffset = indexOffset * sizeof(uint32_t);
+						indexCopy.size = mesh.indices.size() * sizeof(uint32_t);
+						indexCopy.srcOffset = 0;
+
+						vkCmdCopyBuffer(cmd, mesh.indexBuffer.buffer, GetCurrentFrame().sceneIndexBuffer.buffer, 1, &indexCopy);
+
+						vertexOffset += mesh.vertices.size();
+						indexOffset += mesh.indices.size();
+					}
+				});
+
+				GetCurrentFrame().bFlagSceneChanged = false;
+			}
 		}
 
 		VkCommandBuffer VulkanEngine::RecordMainCommandBuffers(uint32_t index)
@@ -2090,8 +2294,6 @@ namespace Puffin
 			shadowRPInfo.clearValueCount = 1;
 			shadowRPInfo.pClearValues = &depthClear;
 
-			MapObjectData();
-
 			// Bind Pipeline
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipeline);
 
@@ -2183,9 +2385,6 @@ namespace Puffin
 
 		void VulkanEngine::DrawObjects(VkCommandBuffer cmd, uint32_t index)
 		{
-			// This is already done in ShadowPass so not needed here
-			//MapObjectData();
-
 			// Map all light data to storage buffer
 			void* pointLightData;
 			void* dirLightData;
@@ -2285,17 +2484,17 @@ namespace Puffin
 			GPULightIndexData lightIndexData;
 			lightIndexData.lightSpaceIndex = lightIndex;
 
-			GPUCameraData cameraData;
-			cameraData.view = camera.matrices.view;
-			cameraData.proj = camera.matrices.perspective;
-			cameraData.proj[1][1] *= -1;
+			/*GPUCameraData cameraData;
+			glm::mat4 projMat = camera.matrices.perspective;
+			projMat[1][1] *= -1;
+			cameraData.viewProj = projMat * camera.matrices.view;*/
 
 			void* data;
 			
-			// Map camera view/proj data to uniform buffer
-			vmaMapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
-			memcpy(data, &cameraData, sizeof(GPUCameraData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
+			//// Map camera view/proj data to uniform buffer
+			//vmaMapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
+			//memcpy(data, &cameraData, sizeof(GPUCameraData));
+			//vmaUnmapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
 
 			// Map camera data to uniform buffer
 			vmaMapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation, &data);

@@ -51,6 +51,18 @@ namespace Puffin
 {
 	namespace Rendering
 	{
+		// Number of frames to overlap when rendering
+		constexpr unsigned int FRAME_OVERLAP = 2;
+		const int WIDTH = 1280; // Starting Window Width
+		const int HEIGHT = 720; // Starting Window Height
+
+		const int MAX_LIGHTS_PER_TYPE = 4;
+		const int MAX_OBJECTS = 10000;
+		const int MAX_TEXTURES = 10000;
+		const int MAX_DEBUG_COMMANDS = 10000;
+		const int MAX_VERTICES_PER_COMMAND = 8;
+		const int MAX_INDICES_PER_COMMAND = 24;
+
 		namespace VKUtil
 		{
 			class DescriptorLayoutCache;
@@ -101,11 +113,19 @@ namespace Puffin
 
 			VkDescriptorSet shadowmapDescriptor;
 
+			// Scene Data
+			VkDescriptorSet geometryDescriptor;
+
+			std::vector<VkDrawIndexedIndirectCommand> sceneDrawIndirectCommands;
+			AllocatedBuffer sceneVertexBuffer, sceneIndexBuffer, sceneIndirectCommandsBuffer;
+
 			// Debug Variables
 			std::vector<Vertex> debugVertices;
 			std::vector<uint32_t> debugIndices;
 			std::vector<VkDrawIndexedIndirectCommand> debugIndirectCommands;
 			AllocatedBuffer debugVertexBuffer, debugIndexBuffer, debugIndirectCommandsBuffer;
+
+			bool bFlagSceneChanged = true;
 		};
 
 		struct GPUObjectData
@@ -116,8 +136,7 @@ namespace Puffin
 
 		struct GPUCameraData
 		{
-			alignas(16) glm::mat4 view;
-			alignas(16) glm::mat4 proj;
+			alignas(16) glm::mat4 viewProj;
 		};
 
 		struct GPULightSpaceData
@@ -129,13 +148,6 @@ namespace Puffin
 		{
 			alignas(4) int lightSpaceIndex;
 		};
-
-		// Number of frames to overlap when rendering
-		constexpr unsigned int FRAME_OVERLAP = 2;
-		const int WIDTH = 1280; // Starting Window Width
-		const int HEIGHT = 720; // Starting Window Height
-
-		const int MAX_LIGHTS = 4;
 
 		const Vector3 boxPositions[8] =
 		{
@@ -213,6 +225,7 @@ namespace Puffin
 			std::vector<VkFramebuffer> offscreenFramebuffers;
 			std::vector<ImTextureID> viewportTextureIDs; // Vector of Texture ID's which are passed to Viewport Draw function
 			ImVec2 viewportSize; // Size of ImGui Viewport
+
 			bool offscreenInitialized;
 			bool shadowmapDescriptorNeedsUpdated;
 
@@ -281,6 +294,9 @@ namespace Puffin
 			int frameNumber = 0;
 			float prevfov;
 
+			int CURRENT_VERTEX_BUFFER_SIZE = 750000;
+			int CURRENT_INDEX_BUFFER_SIZE = 300000;
+
 			// Event Buffers
 			std::shared_ptr<RingBuffer<Input::InputEvent>> inputEvents;
 			std::shared_ptr<RingBuffer<Debug::Line>> drawLineEvents;
@@ -297,9 +313,10 @@ namespace Puffin
 			void InitFramebuffers();
 			void InitOffscreenFramebuffers();
 			void InitSyncStructures();
+			void InitBuffers();
+			void InitSceneBuffers();
 			void InitDescriptors();
 			void InitDeferredDescriptors();
-			void InitBuffers();
 			void InitPipelines();
 			void InitShadowPipeline();
 			void InitDebugPipeline();
@@ -323,8 +340,8 @@ namespace Puffin
 			AllocatedBuffer InitVertexBuffer(std::vector<Vertex> vertices);
 			AllocatedBuffer InitIndexBuffer(std::vector<uint32_t> indices);
 
-			void CopyVerticesToBuffer(std::vector<Vertex> vertices, AllocatedBuffer vertexBuffer);
-			void CopyIndicesToBuffer(std::vector<uint32_t> indices, AllocatedBuffer indexBuffer);
+			void CopyVerticesToBuffer(const std::vector<Vertex>& vertices, AllocatedBuffer vertexBuffer, uint32_t copyOffset = 0);
+			void CopyIndicesToBuffer(const std::vector<uint32_t>& indices, AllocatedBuffer indexBuffer, uint32_t copyOffset = 0);
 
 			// Component Cleanup Functions
 			void CleanupMesh(MeshComponent& mesh);
@@ -336,6 +353,11 @@ namespace Puffin
 
 			// Render Functions
 			void DrawFrame(UI::UIManager* UIManager);
+
+			/*
+			* Prepare Scene Data for rendering
+			*/
+			void PrepareScene();
 
 			VkCommandBuffer RecordShadowCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);

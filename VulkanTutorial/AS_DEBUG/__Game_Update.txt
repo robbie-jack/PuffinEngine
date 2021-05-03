@@ -41,7 +41,7 @@ Variables:
    37  25 *    WRTV4    v1
 - 40,13 -
    38  25 *    SUSPEND
-   39  25 *    PGA      0x3e498c30          (str:Time Passed: )
+   39  25 *    PGA      0x4b6b54b0          (str:Time Passed: )
    42  27 *    PSF      v13
    43  29 *    CALLSYS  20           (string::string(const string&in))
                ObjInfo  v13, 1
@@ -63,7 +63,7 @@ Variables:
 - 41,13 -
                ObjInfo  v25, 0
    64  25 *    SUSPEND
-   65  25 *    PGA      0x3e49ca50          (str:Health Remaining: )
+   65  25 *    PGA      0x4b6b80d0          (str:Health Remaining: )
    68  27 *    PSF      v13
    69  29 *    CALLSYS  20           (string::string(const string&in))
                ObjInfo  v13, 1

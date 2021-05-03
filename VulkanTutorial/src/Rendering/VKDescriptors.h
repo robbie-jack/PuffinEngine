@@ -117,11 +117,18 @@ namespace Puffin
 				DescriptorBuilder& BindImage(uint32_t binding, VkDescriptorImageInfo* imageInfo,
 					VkDescriptorType type, VkShaderStageFlags stageFlags);
 
-				DescriptorBuilder& BindImages(uint32_t binding, std::vector<VkDescriptorImageInfo>& imageInfos,
+				DescriptorBuilder& BindImages(uint32_t binding, 
+					uint32_t imageCount, const VkDescriptorImageInfo* imageInfos,
 					VkDescriptorType type, VkShaderStageFlags shaderFlags);
 
 				bool Build(VkDescriptorSet& set, VkDescriptorSetLayout& layout);
 				bool Build(VkDescriptorSet& set);
+
+				// Used for writing to descriptor set which is alreayd built
+				DescriptorBuilder& UpdateImages(uint32_t binding, uint32_t imageCount,
+					const VkDescriptorImageInfo* imageInfos, VkDescriptorType type);
+
+				bool Update(VkDescriptorSet& set);
 
 			private:
 

@@ -3,8 +3,7 @@
 
 layout(set = 0, binding = 0) uniform CameraData
 {
-	mat4 view;
-	mat4 proj;
+	mat4 viewProj;
 } camera;
 
 struct ObjectData
@@ -46,8 +45,6 @@ void main()
 {
 	mat4 modelMatrix = objectBuffer.objects[gl_BaseInstance].model;
 	mat4 inv_modelMatrix = objectBuffer.objects[gl_BaseInstance].inv_model;
-	mat4 viewMatrix = camera.view;
-	mat4 projMatrix = camera.proj;
 
 	fragPos = vec3(modelMatrix * vec4(inPos, 1.0));
 	fragNormal = normalize(mat3(transpose(inv_modelMatrix)) * inNormal);
@@ -59,5 +56,5 @@ void main()
 		fragPosLightSpace[i] = lightBuffer.lightSpaceMatrix[i] * modelMatrix * vec4(inPos, 1.0);
 	}
 
-	gl_Position = projMatrix * viewMatrix * vec4(fragPos, 1.0);
+	gl_Position = camera.viewProj * vec4(fragPos, 1.0);
 }

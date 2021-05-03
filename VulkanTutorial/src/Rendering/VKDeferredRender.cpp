@@ -71,19 +71,17 @@ namespace Puffin
 			SetupGColorSampler();
 
 			SetupCommandBuffers(commandPools);
-			SetupDescriptorSets();
-			//SetupPipelines();
+			//SetupDescriptorSets();
+			SetupPipelines();
 		}
 
-		void VKDeferredRender::DrawScene()
+		void VKDeferredRender::DrawScene(int frameIndex)
 		{
 			// 1. Geometry Pass: Render all geometric/color data to g-buffer
-			VkCommandBuffer cmdGeometry = RecordGeometryCommandBuffer();
+			VkCommandBuffer cmdGeometry = RecordGeometryCommandBuffer(frameIndex);
 
 			// 2. Lighting Pass: Use G-Buffer to calculate the scenes lighting
-			VkCommandBuffer cmdShading = RecordShadingCommandBuffer();
-
-			frameNumber++;
+			VkCommandBuffer cmdShading = RecordShadingCommandBuffer(frameIndex);
 		}
 
 		void VKDeferredRender::Cleanup()
@@ -297,10 +295,10 @@ namespace Puffin
 			}
 		}
 
-		void VKDeferredRender::SetupDescriptorSets()
+		/*void VKDeferredRender::SetupDescriptorSets()
 		{
 
-		}
+		}*/
 
 		void VKDeferredRender::SetupPipelines()
 		{
@@ -358,7 +356,6 @@ namespace Puffin
 			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
 
 			// Color Blending - Default RGBA Color Blending
-			//pipelineBuilder.colorBlendAttachment = VKInit::ColorBlendAttachmentState();
 			std::array<VkPipelineColorBlendAttachmentState, 3> blendAttachmentStates =
 			{
 				VKInit::ColorBlendAttachmentState(0xf, VK_FALSE),
@@ -446,9 +443,9 @@ namespace Puffin
 		// Draw
 		//-------------------------------------------------------------------------------------
 
-		VkCommandBuffer VKDeferredRender::RecordGeometryCommandBuffer()
+		VkCommandBuffer VKDeferredRender::RecordGeometryCommandBuffer(int frameIndex)
 		{
-			VkCommandBuffer cmd = GetCurrentFrame().gCommandBuffer;
+			VkCommandBuffer cmd = frameData[frameIndex].gCommandBuffer;
 
 			// Setup Command Buffer Info
 			VkCommandBufferBeginInfo cmdBeginInfo = {};
@@ -469,7 +466,7 @@ namespace Puffin
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassBeginInfo.pNext = nullptr;
 			renderPassBeginInfo.renderPass = gRenderPass;
-			renderPassBeginInfo.framebuffer = GetCurrentFrame().gFramebuffer;
+			renderPassBeginInfo.framebuffer = frameData[frameIndex].gFramebuffer;
 			renderPassBeginInfo.renderArea.extent.width = gBufferExtent.width;
 			renderPassBeginInfo.renderArea.extent.height = gBufferExtent.height;
 			renderPassBeginInfo.renderArea.offset = { 0, 0 };
@@ -502,10 +499,16 @@ namespace Puffin
 			vkCmdSetScissor(cmd, 0, 1, &scissor);
 
 			// Bind Pipeline
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, gPipeline);
 
 			// Bind Global Descriptor Sets
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				gPipelineLayout, 0, 1, geometrySet, 0, nullptr);
 
 			// Bind Vertex/Index Buffers
+			VkDeviceSize offsets[] = { 0 };
+			//vkCmdBindVertexBuffers(cmd, 0, 1, sceneVertexBuffer, offsets);
+			//vkCmdBindIndexBuffer(cmd, *sceneIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 			// Render Scene with Draw Indirect
 
@@ -518,9 +521,9 @@ namespace Puffin
 			return cmd;
 		}
 
-		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer()
+		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex)
 		{
-			VkCommandBuffer cmd = GetCurrentFrame().sCommandBuffer;
+			VkCommandBuffer cmd = frameData[frameIndex].sCommandBuffer;
 
 			return cmd;
 		}
