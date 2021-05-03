@@ -78,9 +78,10 @@ namespace Puffin
 				return false;
 			}
 
+
+
 			// Local vectors for storing model data
-			std::vector<Rendering::Vertex> vertices;
-			std::vector<uint32_t> indices;
+			Rendering::MeshComponent meshComp;
 			std::vector<aiMesh*> meshes;
 
 			aiNode* root = scene->mRootNode;
@@ -110,6 +111,8 @@ namespace Puffin
 						mesh->mVertices[j].z
 					};
 
+					vertex.color = { 1.0f, 1.0f, 1.0f };
+
 					// Get Normal
 					vertex.normal =
 					{
@@ -118,16 +121,22 @@ namespace Puffin
 						mesh->mNormals[j].z
 					};
 
+					// Calculate Tangent
+					vertex.tangent =
+					{
+						mesh->mTangents[j].x,
+						mesh->mTangents[j].y,
+						mesh->mTangents[j].z
+					};
+
 					// Get Tex Coords
-					vertex.texCoord =
+					vertex.uv =
 					{
 						mesh->mTextureCoords[0][j].x,
 						mesh->mTextureCoords[0][j].y
 					};
 
-					vertex.color = { 1.0f, 1.0f, 1.0f };
-
-					vertices.push_back(vertex);
+					meshComp.vertices.push_back(vertex);
 				}
 
 				// Iterate over faces in mesh object
@@ -138,20 +147,17 @@ namespace Puffin
 					// Store all indices of this face
 					for (int k = 0; k < face->mNumIndices; k++)
 					{
-						indices.push_back(face->mIndices[k]);
+						meshComp.indices.push_back(face->mIndices[k]);
 					}
 				}
 			}
 
 			std::filesystem::path path(model_path);
-			std::string import_path = "assets/models/" + path.stem().string() + ".asset_m";
+			std::string import_path = "content/models/" + path.stem().string() + ".psm";
 
-			Rendering::MeshComponent mesh;
-			mesh.vertices = vertices;
-			mesh.indices = indices;
-			mesh.model_path = import_path;
+			meshComp.model_path = import_path;
 
-			SaveMesh(mesh);
+			SaveMesh(meshComp);
 
 			// Import was successful, return true
 			return true;

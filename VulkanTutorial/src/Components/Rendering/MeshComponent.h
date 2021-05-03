@@ -29,13 +29,18 @@ namespace Puffin
 		struct Vertex
 		{
 			glm::vec3 pos;
-			glm::vec3 normal;
 			glm::vec3 color;
-			glm::vec2 texCoord;
+			glm::vec3 normal;
+			glm::vec3 tangent;
+			glm::vec2 uv;
 
 			bool operator==(const Vertex& other) const
 			{
-				return pos == other.pos && color == other.color && texCoord == other.texCoord;
+				return pos == other.pos
+					&& color == other.color
+					&& normal == other.normal
+					&& tangent == other.tangent
+					&& uv == other.uv;
 			}
 
 			static VkVertexInputBindingDescription getBindingDescription()
@@ -48,9 +53,9 @@ namespace Puffin
 				return bindingDescription;
 			}
 
-			static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions()
+			static std::array<VkVertexInputAttributeDescription, 5> getAttributeDescriptions()
 			{
-				std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
+				std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions = {};
 
 				attributeDescriptions[0].binding = 0;
 				attributeDescriptions[0].location = 0;
@@ -60,17 +65,22 @@ namespace Puffin
 				attributeDescriptions[1].binding = 0;
 				attributeDescriptions[1].location = 1;
 				attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-				attributeDescriptions[1].offset = offsetof(Vertex, normal);
+				attributeDescriptions[1].offset = offsetof(Vertex, color);
 
 				attributeDescriptions[2].binding = 0;
 				attributeDescriptions[2].location = 2;
 				attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-				attributeDescriptions[2].offset = offsetof(Vertex, color);
+				attributeDescriptions[2].offset = offsetof(Vertex, normal);
 
 				attributeDescriptions[3].binding = 0;
 				attributeDescriptions[3].location = 3;
-				attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
-				attributeDescriptions[3].offset = offsetof(Vertex, texCoord);
+				attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+				attributeDescriptions[3].offset = offsetof(Vertex, tangent);
+
+				attributeDescriptions[4].binding = 0;
+				attributeDescriptions[4].location = 4;
+				attributeDescriptions[4].format = VK_FORMAT_R32G32_SFLOAT;
+				attributeDescriptions[4].offset = offsetof(Vertex, uv);
 
 				return attributeDescriptions;
 			};
@@ -79,70 +89,11 @@ namespace Puffin
 			void serialize(Archive& archive)
 			{
 				archive(pos.x, pos.y, pos.z);
-				archive(normal.x, normal.y, normal.z);
 				archive(color.x, color.y, color.z);
-				archive(texCoord.x, texCoord.y);
+				archive(normal.x, normal.y, normal.z);
+				archive(tangent.x, tangent.y, tangent.z);
+				archive(uv.x, uv.y);
 			}
-		};
-
-		const std::vector<Vertex> cube_vertices =
-		{
-			// Front
-			{{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}}, // 0
-			{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}, // 1
-			{{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}, // 2
-			{{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}, // 3
-
-			// Left
-			{{-0.5f, 0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}, // 4
-			{{-0.5f, -0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}, // 5
-			{{-0.5f, -0.5f, 0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}, // 6
-			{{-0.5f, 0.5f, 0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}}, // 7
-
-			// Back
-			{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}}, // 9
-			{{0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}, // 9
-			{{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}, // 10
-			{{-0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}, // 11
-
-			// Right
-			{{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}, // 12
-			{{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}, // 13
-			{{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}, // 14
-			{{0.5f, 0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}}, // 15
-
-			// Top
-			{{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}, // 16
-			{{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}}, // 17
-			{{0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}, // 18
-			{{0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}}, // 19
-
-			// Bottom
-			{{-0.5f, -0.5f, 0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}, // 20
-			{{-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}, // 21
-			{{0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}, // 22
-			{{0.5f, -0.5f, 0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}} // 23
-		};
-
-		const std::vector<uint32_t> cube_indices =
-		{
-			0, 1, 2, // Front
-			0, 2, 3,
-
-			4, 5, 6, // Left
-			4, 6, 7,
-
-			8, 9, 10, // Back
-			8, 10, 11,
-
-			12, 13, 14, // Right
-			12, 14, 15,
-
-			16, 17, 18, // Top
-			16, 18, 19,
-
-			20, 21, 22, // Bottom
-			20, 22, 23
 		};
 	}
 }
@@ -155,18 +106,15 @@ namespace std
 		{
 			return ((hash<glm::vec3>()(vertex.pos) ^
 				(hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-				(hash<glm::vec2>()(vertex.texCoord) << 1);
+				(hash<glm::vec3>()(vertex.normal) << 1) ^
+				(hash<glm::vec3>()(vertex.tangent) << 1) ^
+				(hash<glm::vec2>()(vertex.uv) << 1);
 		}
 	};
 };
 
 namespace Puffin
 {
-	namespace ECS
-	{
-		typedef uint32_t Entity;
-	}
-
 	namespace Rendering
 	{
 		struct MeshComponent : public BaseComponent

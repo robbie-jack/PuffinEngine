@@ -15,13 +15,13 @@ endif()
  
 
 file(GLOB_RECURSE GLSL_SOURCE_FILES
-    "${PROJECT_SOURCE_DIR}/shaders/*.frag"  
+    "${PROJECT_SOURCE_DIR}/content/shaders/*.frag"  
     )
 
 foreach(GLSL ${GLSL_SOURCE_FILES})
   message(STATUS "BUILDING SHADER")
   get_filename_component(FILE_NAME ${GLSL} NAME_WE)
-  set(SPIRV "${PROJECT_SOURCE_DIR}/shaders/${FILE_NAME}_frag.spv")
+  set(SPIRV "${PROJECT_SOURCE_DIR}/content/shaders/${FILE_NAME}_frag.spv")
   message(STATUS ${GLSL})
   add_custom_command(
     OUTPUT ${SPIRV}
@@ -31,13 +31,13 @@ foreach(GLSL ${GLSL_SOURCE_FILES})
 endforeach(GLSL)
 
 file(GLOB_RECURSE GLSL_SOURCE_FILES
-    "${PROJECT_SOURCE_DIR}/shaders/*.vert"
+    "${PROJECT_SOURCE_DIR}/content/shaders/*.vert"
     )
 
 foreach(GLSL ${GLSL_SOURCE_FILES})
   message(STATUS "BUILDING SHADER")
   get_filename_component(FILE_NAME ${GLSL} NAME_WE)
-  set(SPIRV "${PROJECT_SOURCE_DIR}/shaders/${FILE_NAME}_vert.spv")
+  set(SPIRV "${PROJECT_SOURCE_DIR}/content/shaders/${FILE_NAME}_vert.spv")
   message(STATUS ${GLSL})
   add_custom_command(
     OUTPUT ${SPIRV}
@@ -47,13 +47,13 @@ foreach(GLSL ${GLSL_SOURCE_FILES})
 endforeach(GLSL)
 
 file(GLOB_RECURSE GLSL_SOURCE_FILES
-    "${PROJECT_SOURCE_DIR}/shaders/*.comp"
+    "${PROJECT_SOURCE_DIR}/content/shaders/*.comp"
     )
 
 foreach(GLSL ${GLSL_SOURCE_FILES})
   message(STATUS "BUILDING SHADER")
   get_filename_component(FILE_NAME ${GLSL} NAME_WE)
-  set(SPIRV "${PROJECT_SOURCE_DIR}/shaders/${FILE_NAME}_comp.spv")
+  set(SPIRV "${PROJECT_SOURCE_DIR}/content/shaders/${FILE_NAME}_comp.spv")
   message(STATUS ${GLSL})
   add_custom_command(
     OUTPUT ${SPIRV}

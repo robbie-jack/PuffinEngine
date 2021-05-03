@@ -23,7 +23,7 @@ namespace Puffin
 			VkViewport viewport;
 			VkRect2D scissor;
 			VkPipelineRasterizationStateCreateInfo rasterizer;
-			VkPipelineColorBlendAttachmentState colorBlendAttachment;
+			VkPipelineColorBlendStateCreateInfo colorBlendCreateInfo;
 			VkPipelineMultisampleStateCreateInfo multisampling;
 			VkPipelineDepthStencilStateCreateInfo depthStencil;
 			VkPipelineDynamicStateCreateInfo dynamic;
@@ -43,14 +43,8 @@ namespace Puffin
 
 				// Setup dummy color blending. We aren't using transparent objects yet
 				// the blendind is just no blend, but we do write to the color attachment
-				VkPipelineColorBlendStateCreateInfo colorBlending = {};
-				colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-				colorBlending.pNext = nullptr;
-
-				colorBlending.logicOpEnable = VK_FALSE;
-				colorBlending.logicOp = VK_LOGIC_OP_COPY;
-				colorBlending.attachmentCount = 1;
-				colorBlending.pAttachments = &colorBlendAttachment;
+				colorBlendCreateInfo.logicOpEnable = VK_FALSE;
+				colorBlendCreateInfo.logicOp = VK_LOGIC_OP_COPY;
 
 				// Build the actual pipeline
 				// we now use all of the info structs we have been writing into this one to create the pipeline
@@ -65,7 +59,7 @@ namespace Puffin
 				pipelineInfo.pViewportState = &viewportState;
 				pipelineInfo.pRasterizationState = &rasterizer;
 				pipelineInfo.pMultisampleState = &multisampling;
-				pipelineInfo.pColorBlendState = &colorBlending;
+				pipelineInfo.pColorBlendState = &colorBlendCreateInfo;
 				pipelineInfo.pDepthStencilState = &depthStencil;
 				pipelineInfo.pDynamicState = &dynamic;
 				pipelineInfo.layout = pipelineLayout;

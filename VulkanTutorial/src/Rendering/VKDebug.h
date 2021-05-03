@@ -10,12 +10,12 @@ namespace Puffin
 		{
 			static PFN_vkSetDebugUtilsObjectNameEXT pfnSetDebugUtilsObjectNameEXT;
 
-			void Setup(VkInstance instance)
+			inline void Setup(VkInstance instance)
 			{
 				pfnSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(instance, "vkSetDebugUtilsObjectNameEXT");
 			}
 
-			void SetObjectName(VkDevice device, uint64_t objectHandle, VkObjectType objectType, const char* name)
+			inline void SetObjectName(VkDevice device, uint64_t objectHandle, VkObjectType objectType, const char* name)
 			{
 				if (pfnSetDebugUtilsObjectNameEXT)
 				{

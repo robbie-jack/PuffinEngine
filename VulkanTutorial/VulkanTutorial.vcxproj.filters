@@ -53,6 +53,12 @@
     <Filter Include="Scripting\Addons">
       <UniqueIdentifier>{4ea84309-8d77-49e6-bf91-70e1b363f0af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\Helper Classes">
+      <UniqueIdentifier>{730e7aaf-cb6c-4eea-a3aa-ca4bdf3ed417}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Deferred">
+      <UniqueIdentifier>{1c769954-8ad8-4c73-a241-ffb8b5d0d1d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -66,9 +72,6 @@
     </ClCompile>
     <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp">
       <Filter>Physics\BulletPhysics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rendering\VKDescriptors.cpp">
-      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\VulkanEngine.cpp">
       <Filter>Rendering</Filter>
@@ -131,23 +134,15 @@
     <ClCompile Include="..\..\Libraries\angelscript_sdk\add_on\scriptbuilder\scriptbuilder.cpp">
       <Filter>Scripting\Addons</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\shadowmap.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\debug.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\debug.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\default_lighting.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\default_lighting.vert">
-      <Filter>Shaders</Filter>
-    </None>
+    <ClCompile Include="src\Rendering\VKDeferredRender.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\VKDescriptors.cpp">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\VKHelper.cpp">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -173,18 +168,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\vk_mem_alloc.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKDebug.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKDescriptors.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKInitializers.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKPipeline.h">
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\VKTexture.h">
@@ -281,5 +264,52 @@
     <ClInclude Include="src\Components\BaseComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rendering\VKDeferredRender.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VKDebug.h">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VKDescriptors.h">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VKInitializers.h">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VKHelper.h">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VKPipeline.h">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="content\shaders\debug.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="content\shaders\debug.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="content\shaders\default_lighting.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="content\shaders\default_lighting.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="content\shaders\shadowmap.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="content\shaders\deferred_geometry.frag">
+      <Filter>Shaders\Deferred</Filter>
+    </None>
+    <None Include="content\shaders\deferred_geometry.vert">
+      <Filter>Shaders\Deferred</Filter>
+    </None>
+    <None Include="content\shaders\deferred_shading.frag">
+      <Filter>Shaders\Deferred</Filter>
+    </None>
+    <None Include="content\shaders\deferred_shading.vert">
+      <Filter>Shaders\Deferred</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -15,8 +15,9 @@
 // Vulkan Helper Classes
 #include <Rendering/VKTypes.h>
 #include <Rendering/VKPipeline.h>
-
 #include <Rendering/DebugDraw.h>
+
+#include <Rendering/VKDeferredRender.h>
 
 //#include "vk_mem_alloc.h" // Vulkan Memory Allocator
 #include <vk-boostrap/VkBootstrap.h> // Vk Bootstrap
@@ -37,9 +38,7 @@
 
 // STL
 #include <vector>
-#include <deque>
 #include <unordered_map>
-#include <functional>
 #include <fstream>
 
 #ifdef NDEBUG
@@ -57,26 +56,6 @@ namespace Puffin
 			class DescriptorLayoutCache;
 			class DescriptorAllocator;
 		}
-
-		struct DeletionQueue
-		{
-			std::deque<std::function<void()>> deletors;
-
-			void push_function(std::function<void()>&& function)
-			{
-				deletors.push_back(function);
-			}
-
-			void flush()
-			{
-				// reverse iterate the deletion queue to execute all the functions
-				for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
-					(*it)(); //call functors
-				}
-
-				deletors.clear();
-			}
-		};
 
 		/*struct RenderObject
 		{
@@ -105,7 +84,7 @@ namespace Puffin
 			VkSemaphore presentSemaphore, renderSemaphore;
 			VkFence renderFence;
 
-			VkCommandPool commandPool, guiCommandPool, shadowCommandPool; // Command Pool for our commands
+			VkCommandPool commandPool; // Command Pool for our commands
 			VkCommandBuffer mainCommandBuffer, guiCommandBuffer, shadowCommandBuffer; // Buffer commands are recorded into
 
 			AllocatedBuffer cameraViewProjBuffer, cameraBuffer;
@@ -217,7 +196,7 @@ namespace Puffin
 			// Variables
 			VkInstance instance;						// Vulkan Library Handle
 			VkDebugUtilsMessengerEXT debug_messenger;	// Vulkan Debug Output Handle
-			VkPhysicalDevice chosenGPU;					// GPU chosen as default device
+			VkPhysicalDevice physicalDevice;			// Handle to physical GPU chosen for rendering
 			VkDevice device;							// Vulkan device for commands
 			VkSurfaceKHR surface;						// Vulkan window surface
 
@@ -242,6 +221,9 @@ namespace Puffin
 			VkFormat shadowFormat;
 			VkPipelineLayout shadowPipelineLayout;
 			VkPipeline shadowPipeline;
+
+			// Deferred Renderer
+			VKDeferredRender deferredRenderer;
 
 			// Debug Pipeline
 			VkPipelineLayout debugPipelineLayout;
@@ -276,6 +258,8 @@ namespace Puffin
 			VkDescriptorSetLayout lightSpaceSetLayout;
 			VkDescriptorSetLayout lightSpaceMultiSetLayout;
 
+			VkDescriptorSetLayout geometrySetLayout; // Descriptor Layout for Deferred Geometry Pass
+
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue
 
@@ -298,8 +282,6 @@ namespace Puffin
 			float prevfov;
 
 			// Event Buffers
-			//std::shared_ptr<RingBuffer<MeshEvent>> meshEvents;
-			//std::shared_ptr<RingBuffer<LightEvent>> lightEvents;
 			std::shared_ptr<RingBuffer<Input::InputEvent>> inputEvents;
 			std::shared_ptr<RingBuffer<Debug::Line>> drawLineEvents;
 			std::shared_ptr<RingBuffer<Debug::Box>> drawBoxEvents;
@@ -316,6 +298,7 @@ namespace Puffin
 			void InitOffscreenFramebuffers();
 			void InitSyncStructures();
 			void InitDescriptors();
+			void InitDeferredDescriptors();
 			void InitBuffers();
 			void InitPipelines();
 			void InitShadowPipeline();
@@ -365,7 +348,6 @@ namespace Puffin
 			glm::mat4 BuildMeshTransform(TransformComponent comp);
 
 			// Debug Draw Functions
-			//void RetrieveDebugData();
 			void DrawDebugLine(Debug::Line line);
 			void DrawDebugBox(Debug::Box box);
 

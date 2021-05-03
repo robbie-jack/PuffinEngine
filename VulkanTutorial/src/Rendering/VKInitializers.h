@@ -5,13 +5,16 @@
 
 #include <Rendering/VKTypes.h>
 
+#include <stdexcept>
+#include <array>
+
 namespace Puffin
 {
 	namespace Rendering
 	{
 		namespace VKInit
 		{
-			VkCommandPoolCreateInfo CommandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0)
+			inline VkCommandPoolCreateInfo CommandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0)
 			{
 				VkCommandPoolCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -22,7 +25,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count = 1, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+			inline VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count = 1, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY)
 			{
 				VkCommandBufferAllocateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -34,7 +37,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags)
+			inline VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags)
 			{
 				VkCommandBufferBeginInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -45,7 +48,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkFenceCreateInfo FenceCreateInfo(VkFenceCreateFlags flags = 0)
+			inline VkFenceCreateInfo FenceCreateInfo(VkFenceCreateFlags flags = 0)
 			{
 				VkFenceCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -56,7 +59,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkSemaphoreCreateInfo SemaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0)
+			inline VkSemaphoreCreateInfo SemaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0)
 			{
 				VkSemaphoreCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -65,7 +68,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkSubmitInfo SubmitInfo(VkCommandBuffer* cmd)
+			inline VkSubmitInfo SubmitInfo(VkCommandBuffer* cmd)
 			{
 				VkSubmitInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -82,7 +85,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkPresentInfoKHR PresentInfo()
+			inline VkPresentInfoKHR PresentInfo()
 			{
 				VkPresentInfoKHR info = {};
 				info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -98,7 +101,7 @@ namespace Puffin
 			}
 
 			// Initialize Shader Module
-			VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char>& code)
+			inline VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char>& code)
 			{
 				VkShaderModuleCreateInfo createInfo = {};
 				createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -115,7 +118,7 @@ namespace Puffin
 			}
 
 			// Initialize infor for one shader stage
-			VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule) 
+			inline VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule) 
 			{
 				VkPipelineShaderStageCreateInfo info{};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -131,9 +134,9 @@ namespace Puffin
 			}
 
 			// Initialize info for vertex buffers and formats
-			VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo(
+			inline VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo(
 				VkVertexInputBindingDescription bindingDescription, 
-				std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions)
+				std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions)
 			{
 				VkPipelineVertexInputStateCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -147,7 +150,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo(
+			inline VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo(
 				VkVertexInputBindingDescription bindingDescription,
 				VkVertexInputAttributeDescription attributeDescription)
 			{
@@ -164,7 +167,7 @@ namespace Puffin
 			}
 
 			// Initialize info for what king of topology to draw, i.e triangles, lines, points
-			VkPipelineInputAssemblyStateCreateInfo InputAssemblyCreateInfo(VkPrimitiveTopology topology)
+			inline VkPipelineInputAssemblyStateCreateInfo InputAssemblyCreateInfo(VkPrimitiveTopology topology)
 			{
 				VkPipelineInputAssemblyStateCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -177,7 +180,7 @@ namespace Puffin
 			}
 
 			// Initialize info for rasterization i.i backface culling, line width, wireframe drawing
-			VkPipelineRasterizationStateCreateInfo RasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlags cullFlags)
+			inline VkPipelineRasterizationStateCreateInfo RasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlags cullFlags)
 			{
 				VkPipelineRasterizationStateCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -201,7 +204,7 @@ namespace Puffin
 			}
 
 			// Initialize info for multisampling
-			VkPipelineMultisampleStateCreateInfo MultisamplingStateCreateInfo()
+			inline VkPipelineMultisampleStateCreateInfo MultisamplingStateCreateInfo()
 			{
 				VkPipelineMultisampleStateCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -218,16 +221,32 @@ namespace Puffin
 			}
 
 			// Initialize info for color blending
-			VkPipelineColorBlendAttachmentState ColorBlendAttachmentState()
+			inline VkPipelineColorBlendAttachmentState ColorBlendAttachmentState(
+				VkColorComponentFlags colorWriteMask = 
+				VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+				VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+				VkBool32 blendEnable = VK_FALSE)
 			{
 				VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-				colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-					VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-				colorBlendAttachment.blendEnable = VK_FALSE;
+				colorBlendAttachment.colorWriteMask = colorWriteMask;
+				colorBlendAttachment.blendEnable = blendEnable;
 				return colorBlendAttachment;
 			}
 
-			VkPipelineDynamicStateCreateInfo DynamicStateCreateInfo(const std::vector<VkDynamicState>& states)
+			inline VkPipelineColorBlendStateCreateInfo ColorBlendStateCreateInfo(
+				uint32_t attachmentCount,
+				const VkPipelineColorBlendAttachmentState* pAttachments)
+			{
+				VkPipelineColorBlendStateCreateInfo colorBlending = {};
+				colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+				colorBlending.pNext = nullptr;
+				colorBlending.attachmentCount = attachmentCount;
+				colorBlending.pAttachments = pAttachments;
+
+				return colorBlending;
+			}
+
+			inline VkPipelineDynamicStateCreateInfo DynamicStateCreateInfo(const std::vector<VkDynamicState>& states)
 			{
 				VkPipelineDynamicStateCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -237,7 +256,7 @@ namespace Puffin
 			}
 
 			// Initialize Pipeline Layout
-			VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo(VkDescriptorSetLayout& layout)
+			inline VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo(VkDescriptorSetLayout& layout)
 			{
 				VkPipelineLayoutCreateInfo info{};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -252,7 +271,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo(std::vector<VkDescriptorSetLayout>& layouts)
+			inline VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo(std::vector<VkDescriptorSetLayout>& layouts)
 			{
 				VkPipelineLayoutCreateInfo info{};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -267,7 +286,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkImageCreateInfo ImageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent)
+			inline VkImageCreateInfo ImageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent)
 			{
 				VkImageCreateInfo info = { };
 				info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -288,7 +307,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkImageViewCreateInfo ImageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags)
+			inline VkImageViewCreateInfo ImageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags)
 			{
 				//build a image-view for the image to use for rendering
 				VkImageViewCreateInfo info = {};
@@ -307,7 +326,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkPipelineDepthStencilStateCreateInfo DepthStencilCreateInfo(bool bDepthTest, bool bDepthWrite, VkCompareOp compareOp)
+			inline VkPipelineDepthStencilStateCreateInfo DepthStencilCreateInfo(bool bDepthTest, bool bDepthWrite, VkCompareOp compareOp)
 			{
 				VkPipelineDepthStencilStateCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -324,7 +343,7 @@ namespace Puffin
 				return info;
 			}
 
-			VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t descriptorCount = 1)
+			inline VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t descriptorCount = 1)
 			{
 				VkDescriptorSetLayoutBinding setbind = {};
 				setbind.binding = binding;
@@ -336,7 +355,7 @@ namespace Puffin
 				return setbind;
 			}
 
-			VkWriteDescriptorSet WriteDescriptorBuffer(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorBufferInfo* bufferInfo, uint32_t binding)
+			inline VkWriteDescriptorSet WriteDescriptorBuffer(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorBufferInfo* bufferInfo, uint32_t binding)
 			{
 				VkWriteDescriptorSet write = {};
 				write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -351,7 +370,7 @@ namespace Puffin
 				return write;
 			}
 
-			VkWriteDescriptorSet WriteDescriptorImage(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorImageInfo* imageInfo, uint32_t binding)
+			inline VkWriteDescriptorSet WriteDescriptorImage(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorImageInfo* imageInfo, uint32_t binding)
 			{
 				VkWriteDescriptorSet write = {};
 				write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -366,7 +385,7 @@ namespace Puffin
 				return write;
 			}
 
-			VkSamplerCreateInfo SamplerCreateInfo(VkFilter filters, VkSamplerAddressMode samplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT)
+			inline VkSamplerCreateInfo SamplerCreateInfo(VkFilter filters, VkSamplerAddressMode samplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT)
 			{
 				VkSamplerCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

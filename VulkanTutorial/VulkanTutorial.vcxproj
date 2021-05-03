@@ -192,7 +192,9 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp" />
+    <ClCompile Include="src\Rendering\VKDeferredRender.cpp" />
     <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
+    <ClCompile Include="src\Rendering\VKHelper.cpp" />
     <ClCompile Include="src\Rendering\VulkanEngine.cpp" />
     <ClCompile Include="src\Scripting\AngelScriptSystem.cpp" />
     <ClCompile Include="src\UI\UIManager.cpp" />
@@ -202,13 +204,6 @@
     <ClCompile Include="src\UI\UIWindowSceneHierarchy.cpp" />
     <ClCompile Include="src\UI\UIWindowSettings.cpp" />
     <ClCompile Include="src\UI\UIWindowViewport.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\debug.frag" />
-    <None Include="shaders\debug.vert" />
-    <None Include="shaders\default_lighting.frag" />
-    <None Include="shaders\default_lighting.vert" />
-    <None Include="shaders\shadowmap.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Libraries\angelscript_sdk\add_on\scriptbuilder\scriptbuilder.h" />
@@ -239,7 +234,9 @@
     <ClInclude Include="src\Rendering\DebugDraw.h" />
     <ClInclude Include="src\Rendering\ModelLoader.h" />
     <ClInclude Include="src\Rendering\VKDebug.h" />
+    <ClInclude Include="src\Rendering\VKDeferredRender.h" />
     <ClInclude Include="src\Rendering\VKDescriptors.h" />
+    <ClInclude Include="src\Rendering\VKHelper.h" />
     <ClInclude Include="src\Rendering\VKInitializers.h" />
     <ClInclude Include="src\Rendering\VKPipeline.h" />
     <ClInclude Include="src\Rendering\VKTexture.h" />
@@ -258,6 +255,17 @@
     <ClInclude Include="src\UI\UIWindowSceneHierarchy.h" />
     <ClInclude Include="src\UI\UIWindowSettings.h" />
     <ClInclude Include="src\UI\UIWindowViewport.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="content\shaders\debug.frag" />
+    <None Include="content\shaders\debug.vert" />
+    <None Include="content\shaders\default_lighting.frag" />
+    <None Include="content\shaders\default_lighting.vert" />
+    <None Include="content\shaders\deferred_geometry.frag" />
+    <None Include="content\shaders\deferred_geometry.vert" />
+    <None Include="content\shaders\deferred_shading.frag" />
+    <None Include="content\shaders\deferred_shading.vert" />
+    <None Include="content\shaders\shadowmap.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

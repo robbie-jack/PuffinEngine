@@ -86,10 +86,10 @@ layout(set = 6, binding = 0) uniform sampler2D texSampler;
 
 const int maxLights = 12;
 
-layout(location = 0) in vec3 fragPosition;
+layout(location = 0) in vec3 fragPos;
 layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in vec4 fragColor;
-layout(location = 3) in vec2 fragTexCoord;
+layout(location = 3) in vec2 fragUV;
 layout(location = 4) in vec4 fragPosLightSpace[maxLights];
 
 layout(location = 0) out vec4 outColor;
@@ -102,14 +102,14 @@ float ShadowCalculation(sampler2D shadowMap, vec4 fragPosLightSpace, vec3 normal
 
 void main() 
 {
-	vec3 viewDir = normalize(camera.viewPos - fragPosition);
+	vec3 viewDir = normalize(camera.viewPos - fragPos);
 
 	vec3 result = vec3(0.0, 0.0, 0.0);
 
 	// Calculate Point Lights
 	for (int i = 0; i < lightStats.numPLights; i++)
 	{
-		result += CalcPointLight(pointBuffer.lights[i], fragNormal, viewDir, fragPosition);
+		result += CalcPointLight(pointBuffer.lights[i], fragNormal, viewDir, fragPos);
 	}
 
 	// Calculate Directional Lights
@@ -121,10 +121,10 @@ void main()
 	// Calculate Spot Lights
 	for (int i = 0; i < lightStats.numSLights; i++)
 	{
-		result += CalcSpotLight(spotBuffer.lights[i], fragNormal, viewDir, fragPosition);
+		result += CalcSpotLight(spotBuffer.lights[i], fragNormal, viewDir, fragPos);
 	}
 
-    outColor = vec4(result * texture(texSampler, fragTexCoord).rgb, fragColor.a);
+    outColor = vec4(result * texture(texSampler, fragUV).rgb, fragColor.a);
 }
 
 vec3 CalcPointLight(PointLightData light, vec3 normal, vec3 viewDir, vec3 fragPos)

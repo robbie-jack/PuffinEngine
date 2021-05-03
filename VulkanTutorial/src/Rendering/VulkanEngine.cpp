@@ -97,6 +97,7 @@ namespace Puffin
 
 			// Initialize Descriptor Sets
 			InitDescriptors();
+			InitDeferredDescriptors();
 
 			InitBuffers();
 
@@ -116,24 +117,33 @@ namespace Puffin
 
 			InitShadowmapDescriptors();
 
+			// Setup Deferred Renderer
+			std::vector<VkCommandPool> commandPools;
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				commandPools.push_back(frames[i].commandPool);
+			}
+
+			deferredRenderer.Setup(physicalDevice, 
+				device, 
+				allocator,
+				descriptorAllocator,
+				descriptorLayoutCache,
+				geometrySetLayout,
+				commandPools,
+				FRAME_OVERLAP, offscreenExtent);
+
 			// Pass Camera to UI
 			UIManager->GetWindowSettings()->SetCamera(&camera);
 
 			// Subscribe to events
-			//meshEvents = std::make_shared<RingBuffer<MeshEvent>>();
-			//lightEvents = std::make_shared<RingBuffer<LightEvent>>();
 			inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
 			drawLineEvents = std::make_shared<RingBuffer<Debug::Line>>();
 			drawBoxEvents = std::make_shared<RingBuffer<Debug::Box>>();
 
-			//world->RegisterEvent<MeshEvent>();
-			//world->RegisterEvent<LightEvent>();
-			//world->RegisterEvent<Input::InputEvent>();
 			world->RegisterEvent<Debug::Line>();
 			world->RegisterEvent<Debug::Box>();
 
-			//world->SubscribeToEvent<MeshEvent>(meshEvents);
-			//world->SubscribeToEvent<LightEvent>(lightEvents);
 			world->SubscribeToEvent<Input::InputEvent>(inputEvents);
 			world->SubscribeToEvent<Debug::Line>(drawLineEvents);
 			world->SubscribeToEvent<Debug::Box>(drawBoxEvents);
@@ -189,7 +199,7 @@ namespace Puffin
 			// Select GPU with VK Bootstrap
 			// We want a gpu which can write to glfw surface and supports vulkan 1.2
 			vkb::PhysicalDeviceSelector selector{ vkb_inst };
-			vkb::PhysicalDevice physicalDevice = selector
+			vkb::PhysicalDevice vkbPhysicalDevice = selector
 				.set_minimum_version(1, 2)
 				.set_surface(surface)
 				.set_required_features(supportedFeatures)
@@ -201,7 +211,7 @@ namespace Puffin
 			VKDebug::Setup(instance);
 
 			// Create Final Vulkan Device
-			vkb::DeviceBuilder deviceBuilder{ physicalDevice };
+			vkb::DeviceBuilder deviceBuilder{ vkbPhysicalDevice };
 			vkb::Device vkbDevice = deviceBuilder
 				.add_pNext(&supportedDescriptorFeatures)
 				.build()
@@ -209,7 +219,7 @@ namespace Puffin
 
 			// Get VKDevice handle used in rest of vulkan application
 			device = vkbDevice.device;
-			chosenGPU = physicalDevice.physical_device;
+			physicalDevice = vkbPhysicalDevice.physical_device;
 
 			// Use vkbootstrap to get a graphics queue
 			graphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
@@ -217,7 +227,7 @@ namespace Puffin
 
 			// Initialize Memory Allocator
 			VmaAllocatorCreateInfo allocatorInfo = {};
-			allocatorInfo.physicalDevice = chosenGPU;
+			allocatorInfo.physicalDevice = physicalDevice;
 			allocatorInfo.device = device;
 			allocatorInfo.instance = instance;
 
@@ -227,7 +237,7 @@ namespace Puffin
 
 		void VulkanEngine::InitSwapchain()
 		{
-			vkb::SwapchainBuilder swapchainBuilder{ chosenGPU, device, surface };
+			vkb::SwapchainBuilder swapchainBuilder{ physicalDevice, device, surface };
 
 			vkb::Swapchain vkbSwapchain = swapchainBuilder
 				.use_default_format_selection()
@@ -370,16 +380,11 @@ namespace Puffin
 			{
 				// Allocate Command Pools
 				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool));
-				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].guiCommandPool));
-				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].shadowCommandPool));
 
-				// Allocate Default Command Buffer that we will use for scene rendering
+				// Allocate Default GUI and Shadow Command Buffer that we will use for scene rendering
 				VkCommandBufferAllocateInfo allocInfo = VKInit::CommandBufferAllocateInfo(frames[i].commandPool, 1); 
-
-				// Allocate GUI Command Buffer used for rendering UI
-				VkCommandBufferAllocateInfo allocInfoGui = VKInit::CommandBufferAllocateInfo(frames[i].guiCommandPool, 1);
-
-				VkCommandBufferAllocateInfo allocInfoShadow = VKInit::CommandBufferAllocateInfo(frames[i].shadowCommandPool, 1);
+				VkCommandBufferAllocateInfo allocInfoGui = VKInit::CommandBufferAllocateInfo(frames[i].commandPool, 1);
+				VkCommandBufferAllocateInfo allocInfoShadow = VKInit::CommandBufferAllocateInfo(frames[i].commandPool, 1);
 
 				// Allocate buffers
 				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, &frames[i].mainCommandBuffer));
@@ -387,10 +392,9 @@ namespace Puffin
 				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoShadow, &frames[i].shadowCommandBuffer));
 
 				// Push destruction of both command pools/buffers to deletion queue
-				mainDeletionQueue.push_function([=]() {
+				mainDeletionQueue.push_function([=]() 
+				{
 					vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
-					vkDestroyCommandPool(device, frames[i].guiCommandPool, nullptr);
-					vkDestroyCommandPool(device, frames[i].shadowCommandPool, nullptr);
 				});
 			}
 
@@ -892,6 +896,12 @@ namespace Puffin
 			}
 		}
 
+		// Init Descriptors that will be passed to the Deferred Renderer
+		void VulkanEngine::InitDeferredDescriptors()
+		{
+
+		}
+
 		void VulkanEngine::InitBuffers()
 		{
 			for (int i = 0; i < FRAME_OVERLAP; i++)
@@ -976,7 +986,8 @@ namespace Puffin
 			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
 
 			// Color Blending - Default RGBA Color Blending
-			pipelineBuilder.colorBlendAttachment = VKInit::ColorBlendAttachmentState();
+			VkPipelineColorBlendAttachmentState colorBlendAttachment = VKInit::ColorBlendAttachmentState();
+			pipelineBuilder.colorBlendCreateInfo = VKInit::ColorBlendStateCreateInfo(1, &colorBlendAttachment);
 
 			// Depth Testing - Default
 			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
@@ -1049,7 +1060,8 @@ namespace Puffin
 			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
 
 			// Color Blending - Default RGBA Color Blending
-			pipelineBuilder.colorBlendAttachment = VKInit::ColorBlendAttachmentState();
+			VkPipelineColorBlendAttachmentState colorBlendAttachment = VKInit::ColorBlendAttachmentState();
+			pipelineBuilder.colorBlendCreateInfo = VKInit::ColorBlendStateCreateInfo(1, &colorBlendAttachment);
 
 			// Depth Testing - Default
 			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
@@ -1116,7 +1128,8 @@ namespace Puffin
 			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
 
 			// Color Blending - Default RGBA Color Blending
-			pipelineBuilder.colorBlendAttachment = VKInit::ColorBlendAttachmentState();
+			VkPipelineColorBlendAttachmentState colorBlendAttachment = VKInit::ColorBlendAttachmentState();
+			pipelineBuilder.colorBlendCreateInfo = VKInit::ColorBlendStateCreateInfo(1, &colorBlendAttachment);
 
 			// Depth Testing - Default
 			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(false, false, VK_COMPARE_OP_LESS_OR_EQUAL);
@@ -1515,7 +1528,7 @@ namespace Puffin
 			//this initializes imgui for Vulkan
 			ImGui_ImplVulkan_InitInfo init_info = {};
 			init_info.Instance = instance;
-			init_info.PhysicalDevice = chosenGPU;
+			init_info.PhysicalDevice = physicalDevice;
 			init_info.Device = device;
 			init_info.Queue = graphicsQueue;
 			init_info.DescriptorPool = imguiPool;
@@ -1845,9 +1858,8 @@ namespace Puffin
 			uint32_t swapchainImageIndex;
 			VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 0, GetCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
 
-			// Now that we are sure commands are finished executing, reset command buffer
-			VK_CHECK(vkResetCommandBuffer(GetCurrentFrame().mainCommandBuffer, 0));
-			VK_CHECK(vkResetCommandBuffer(GetCurrentFrame().guiCommandBuffer, 0));
+			// Now that we are sure commands are finished executing, reset command buffers
+			VK_CHECK(vkResetCommandPool(device, GetCurrentFrame().commandPool, 0));
 
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
 			if (offscreenInitialized)
@@ -1873,9 +1885,6 @@ namespace Puffin
 			{
 				RecreateOffscreen();
 			}
-
-			// Retrieve Debug Draw Data
-			//RetrieveDebugData();
 
 			// Copy Debug Vertices to Vertex Buffer
 			if (GetCurrentFrame().debugVertices.size() > 0)
@@ -2473,6 +2482,9 @@ namespace Puffin
 				// Make sure GPU has stopped working
 				vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000);
 
+				// Cleanup Deferred Renderer
+				deferredRenderer.Cleanup();
+
 				// Flush all queues, destorying all created resources
 				mainDeletionQueue.flush();
 				swapchainDeletionQueue.flush();
@@ -2562,23 +2574,6 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
-		/*void VulkanEngine::RetrieveDebugData()
-		{
-			for (int i = 0; i < Debug::debugLines.size(); i++)
-			{
-				DrawDebugLine(Debug::debugLines[i].start, Debug::debugLines[i].end, Debug::debugLines[i].color);
-			}
-
-			Debug::debugLines.clear();
-
-			for (int i = 0; i < Debug::debugBoxes.size(); i++)
-			{
-				DrawDebugBox(Debug::debugBoxes[i].origin, Debug::debugBoxes[i].halfSize, Debug::debugBoxes[i].color);
-			}
-
-			Debug::debugBoxes.clear();
-		}*/
-
 		void VulkanEngine::DrawDebugLine(Debug::Line line)
 		{
 			// Create debug line vertices to current frames vertices vector
@@ -2586,12 +2581,12 @@ namespace Puffin
 			startVertex.pos = line.start;
 			startVertex.color = line.color;
 			startVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
-			startVertex.texCoord = Vector2(0.0f, 0.0f);
+			startVertex.uv = Vector2(0.0f, 0.0f);
 
 			endVertex.pos = line.end;
 			endVertex.color = line.color;
 			endVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
-			endVertex.texCoord = Vector2(0.0f, 0.0f);
+			endVertex.uv = Vector2(0.0f, 0.0f);
 
 			// Create Indexed Indirect Draw Command for Vertices
 			VkDrawIndexedIndirectCommand command = {};
@@ -2626,7 +2621,7 @@ namespace Puffin
 			Vertex vert = {};
 			vert.color = box.color;
 			vert.normal = Vector3(0.0f, 0.0f, 0.0f);
-			vert.texCoord = Vector2(0.0f, 0.0f);
+			vert.uv = Vector2(0.0f, 0.0f);
 
 			// Add Vertices to vector
 			for (int i = 0; i < numVertices; i++)
