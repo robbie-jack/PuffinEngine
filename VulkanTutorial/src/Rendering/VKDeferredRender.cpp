@@ -68,6 +68,7 @@ namespace Puffin
 			SetupGBuffer();
 			SetupGRenderPass();
 			SetupGFramebuffer();
+			SetupSynchronization();
 			SetupGColorSampler();
 
 			SetupCommandBuffers(commandPools);
@@ -75,13 +76,30 @@ namespace Puffin
 			SetupPipelines();
 		}
 
-		void VKDeferredRender::DrawScene(int frameIndex)
+		void VKDeferredRender::DrawScene(int frameIndex, SceneData* sceneData, VkQueue graphicsQueue)
 		{
 			// 1. Geometry Pass: Render all geometric/color data to g-buffer
-			VkCommandBuffer cmdGeometry = RecordGeometryCommandBuffer(frameIndex);
+			VkCommandBuffer cmdGeometry = RecordGeometryCommandBuffer(frameIndex, sceneData);
+
+			// Submit Geometry Command Buffer
+			VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+			VkSubmitInfo submit = {};
+			submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submit.pNext = nullptr;
+			//submit.waitSemaphoreCount = 1;
+			//submit.pWaitSemaphores = &frameData[frameIndex].shadingSemaphore;
+			submit.signalSemaphoreCount = 1;
+			submit.pSignalSemaphores = &frameData[frameIndex].geometrySemaphore;
+			submit.commandBufferCount = 1;
+			submit.pCommandBuffers = &cmdGeometry;
+
+			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE));
 
 			// 2. Lighting Pass: Use G-Buffer to calculate the scenes lighting
-			VkCommandBuffer cmdShading = RecordShadingCommandBuffer(frameIndex);
+			//VkCommandBuffer cmdShading = RecordShadingCommandBuffer(frameIndex, sceneData);
+
+			// Submit Shading Command Buffer
 		}
 
 		void VKDeferredRender::Cleanup()
@@ -257,6 +275,31 @@ namespace Puffin
 				deletionQueue.push_function([=]()
 				{
 					vkDestroyFramebuffer(device, frameData[i].gFramebuffer, nullptr);
+				});
+			}
+		}
+
+		void VKDeferredRender::SetupSynchronization()
+		{
+			// Create Geometry and Shading Semaphores
+			VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+			semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+			semaphoreCreateInfo.pNext = nullptr;
+			semaphoreCreateInfo.flags = 0;
+
+			// For each overlapping frames data
+			for (uint32_t i = 0; i < frameOverlap; i++)
+			{
+				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo,
+					nullptr, &frameData[i].geometrySemaphore));
+
+				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo,
+					nullptr, &frameData[i].shadingSemaphore));
+
+				deletionQueue.push_function([=]()
+				{
+						vkDestroySemaphore(device, frameData[i].geometrySemaphore, nullptr);
+						vkDestroySemaphore(device, frameData[i].shadingSemaphore, nullptr);
 				});
 			}
 		}
@@ -443,7 +486,7 @@ namespace Puffin
 		// Draw
 		//-------------------------------------------------------------------------------------
 
-		VkCommandBuffer VKDeferredRender::RecordGeometryCommandBuffer(int frameIndex)
+		VkCommandBuffer VKDeferredRender::RecordGeometryCommandBuffer(int frameIndex, SceneData* sceneData)
 		{
 			VkCommandBuffer cmd = frameData[frameIndex].gCommandBuffer;
 
@@ -501,16 +544,21 @@ namespace Puffin
 			// Bind Pipeline
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, gPipeline);
 
-			// Bind Global Descriptor Sets
+			// Bind Geometry Descriptor Sets
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 				gPipelineLayout, 0, 1, geometrySet, 0, nullptr);
 
 			// Bind Vertex/Index Buffers
 			VkDeviceSize offsets[] = { 0 };
-			//vkCmdBindVertexBuffers(cmd, 0, 1, sceneVertexBuffer, offsets);
-			//vkCmdBindIndexBuffer(cmd, *sceneIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindVertexBuffers(cmd, 0, 1, &sceneData->mergedVertexBuffer.buffer, offsets);
+			vkCmdBindIndexBuffer(cmd, sceneData->mergedIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 			// Render Scene with Draw Indirect
+			uint32_t draw_count = indirectDrawBatch->drawIndirectCommands.size();
+			uint32_t draw_stride = sizeof(VkDrawIndexedIndirectCommand);
+
+			vkCmdDrawIndexedIndirect(cmd, indirectDrawBatch->drawIndirectCommandsBuffer.buffer,
+				0, draw_count, draw_stride);
 
 			// End Render Pass
 			vkCmdEndRenderPass(cmd);
@@ -521,7 +569,7 @@ namespace Puffin
 			return cmd;
 		}
 
-		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex)
+		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex, SceneData* sceneData)
 		{
 			VkCommandBuffer cmd = frameData[frameIndex].sCommandBuffer;
 

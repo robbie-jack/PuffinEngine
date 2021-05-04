@@ -795,16 +795,16 @@ namespace Puffin
 			// Scene Buffers
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				frames[i].sceneVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
-					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-
-				frames[i].sceneIndexBuffer = CreateBuffer(CURRENT_INDEX_BUFFER_SIZE * sizeof(uint32_t),
-					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-
-				frames[i].sceneIndirectCommandsBuffer = CreateBuffer(MAX_OBJECTS * sizeof(VkDrawIndexedIndirectCommand),
+				frames[i].drawBatch.drawIndirectCommandsBuffer = CreateBuffer(MAX_OBJECTS * sizeof(VkDrawIndexedIndirectCommand),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU);
 			}
+
+			sceneData.mergedVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+			sceneData.mergedIndexBuffer = CreateBuffer(CURRENT_INDEX_BUFFER_SIZE * sizeof(uint32_t),
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 		}
 
 		void VulkanEngine::InitDescriptors()
@@ -1671,6 +1671,24 @@ namespace Puffin
 			offscreenExtent.width = viewportSize.x;
 			offscreenExtent.height = viewportSize.y;
 
+			// Setup Deferred Renderer
+			deferredRenderer.Cleanup();
+
+			std::vector<VkCommandPool> commandPools;
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				commandPools.push_back(frames[i].commandPool);
+			}
+			
+			deferredRenderer.Setup(physicalDevice,
+				device,
+				allocator,
+				descriptorAllocator,
+				descriptorLayoutCache,
+				geometrySetLayout,
+				commandPools,
+				FRAME_OVERLAP, offscreenExtent);
+
 			// Initialize Offscreen Variables and Scene
 			InitOffscreen();
 			InitOffscreenFramebuffers();
@@ -1696,10 +1714,7 @@ namespace Puffin
 					InitMesh(mesh);
 					mesh.bFlagCreated = false;
 
-					for (int i = 0; i < FRAME_OVERLAP; i++)
-					{
-						frames[i].bFlagSceneChanged = true;
-					}
+					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
@@ -1708,10 +1723,8 @@ namespace Puffin
 					CleanupMesh(mesh);
 					world->RemoveComponent<MeshComponent>(entity);
 					
-					for (int i = 0; i < FRAME_OVERLAP; i++)
-					{
-						frames[i].bFlagSceneChanged = true;
-					}
+					sceneData.bFlagSceneChanged = true;
+
 				}
 			}
 
@@ -1727,10 +1740,7 @@ namespace Puffin
 					light.bFlagCreated = false;
 					shadowmapDescriptorNeedsUpdated = true;
 					
-					/*for (int i = 0; i < FRAME_OVERLAP; i++)
-					{
-						frames[i].bFlagSceneChanged = true;
-					}*/
+					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
@@ -1740,10 +1750,7 @@ namespace Puffin
 					world->RemoveComponent<LightComponent>(entity);
 					shadowmapDescriptorNeedsUpdated = true;
 					
-					/*for (int i = 0; i < FRAME_OVERLAP; i++)
-					{
-						frames[i].bFlagSceneChanged = true;
-					}*/
+					sceneData.bFlagSceneChanged = true;
 				}
 			}
 
@@ -1983,10 +1990,8 @@ namespace Puffin
 			PrepareScene();
 
 			// Deferred Render
-			/*deferredRenderer.SetGeometryDescriptorSet(&GetCurrentFrame().geometryDescriptor);
-			deferredRenderer.SetVertexBuffer(&GetCurrentFrame().sceneVertexBuffer.buffer);
-			deferredRenderer.SetIndexBuffer(&GetCurrentFrame().sceneIndexBuffer.buffer);
-			deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP);*/
+			deferredRenderer.SetGeometryDescriptorSet(&GetCurrentFrame().geometryDescriptor);
+			deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &sceneData, graphicsQueue);
 
 			// Record Command Buffers
 			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
@@ -2057,14 +2062,47 @@ namespace Puffin
 			vmaMapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
 			memcpy(data, &cameraData, sizeof(GPUCameraData));
 			vmaUnmapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
+
+			// Map Mesh Matrices date to GPU 
+			MapObjectData();
 			
-			if (GetCurrentFrame().bFlagSceneChanged == true)
+			uint32_t totalIndices = 0;
+
+			// Empty indirect commands vector
+			GetCurrentFrame().drawBatch.drawIndirectCommands.clear();
+			GetCurrentFrame().drawBatch.drawIndirectCommands.reserve(entityMap["Mesh"].size());
+
+			// Build Draw Indirect Commands
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+
+				VkDrawIndexedIndirectCommand indirectCommand = {};
+				indirectCommand.indexCount = mesh.indices.size();
+				indirectCommand.instanceCount = 1;
+				indirectCommand.firstIndex = totalIndices;
+				indirectCommand.vertexOffset = 0;
+				indirectCommand.firstInstance = GetCurrentFrame().drawBatch.drawIndirectCommands.size();
+
+				GetCurrentFrame().drawBatch.drawIndirectCommands.push_back(indirectCommand);
+
+				totalIndices += mesh.indices.size();
+			}
+
+			// Map indirect commands to buffer
+			vmaMapMemory(allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation, &data);
+			memcpy(data, GetCurrentFrame().drawBatch.drawIndirectCommands.data(), 
+				sizeof(VkDrawIndexedIndirectCommand) * GetCurrentFrame().drawBatch.drawIndirectCommands.size());
+			vmaUnmapMemory(allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation);
+
+			deferredRenderer.SetDrawIndirectCommandsBuffer(&GetCurrentFrame().drawBatch);
+
+			// Update Vertex/Index Merged Buffer
+			if (sceneData.bFlagSceneChanged == true)
 			{
 				// Map Mesh Matrices to Storage Buffer
-				MapObjectData();
-
 				uint32_t totalVertices = 0;
-				uint32_t totalIndices = 0;
+				totalIndices = 0;
 
 				// Check how many vertices there are
 				for (ECS::Entity entity : entityMap["Mesh"])
@@ -2080,8 +2118,8 @@ namespace Puffin
 				{
 					// Free Old Buffer
 					vmaDestroyBuffer(allocator,
-						GetCurrentFrame().sceneVertexBuffer.buffer,
-						GetCurrentFrame().sceneVertexBuffer.allocation);
+						sceneData.mergedVertexBuffer.buffer,
+						sceneData.mergedVertexBuffer.allocation);
 
 					// Double buffer size until it is greater than total vertices
 					while (CURRENT_VERTEX_BUFFER_SIZE <= totalVertices)
@@ -2090,7 +2128,7 @@ namespace Puffin
 					}
 
 					// Create New Buffer
-					GetCurrentFrame().sceneVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
+					sceneData.mergedVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
 						VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 
@@ -2099,8 +2137,8 @@ namespace Puffin
 				{
 					// Free Old Buffer
 					vmaDestroyBuffer(allocator,
-						GetCurrentFrame().sceneIndexBuffer.buffer,
-						GetCurrentFrame().sceneIndexBuffer.allocation);
+						sceneData.mergedIndexBuffer.buffer,
+						sceneData.mergedIndexBuffer.allocation);
 
 					// Double buffer size until it is greater than total indices
 					while (CURRENT_INDEX_BUFFER_SIZE <= totalIndices)
@@ -2109,14 +2147,11 @@ namespace Puffin
 					}
 
 					// Create New Buffer
-					GetCurrentFrame().sceneIndexBuffer = CreateBuffer(CURRENT_INDEX_BUFFER_SIZE * sizeof(uint32_t),
+					sceneData.mergedIndexBuffer = CreateBuffer(CURRENT_INDEX_BUFFER_SIZE * sizeof(uint32_t),
 						VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 
-				// Reset Counts
-				totalVertices = 0;
-				totalIndices = 0;
-
+				// Copy Vertices/Indices to GPU buffer
 				ImmediateSubmit([=](VkCommandBuffer cmd)
 				{
 					uint32_t vertexOffset = 0;
@@ -2133,7 +2168,7 @@ namespace Puffin
 						vertexCopy.size = mesh.vertices.size() * sizeof(Vertex);
 						vertexCopy.srcOffset = 0;
 
-						vkCmdCopyBuffer(cmd, mesh.vertexBuffer.buffer, GetCurrentFrame().sceneVertexBuffer.buffer, 1, &vertexCopy);
+						vkCmdCopyBuffer(cmd, mesh.vertexBuffer.buffer, sceneData.mergedVertexBuffer.buffer, 1, &vertexCopy);
 
 						// Copt directly from mesh index buffer to scene index buffer
 						VkBufferCopy indexCopy;
@@ -2141,14 +2176,14 @@ namespace Puffin
 						indexCopy.size = mesh.indices.size() * sizeof(uint32_t);
 						indexCopy.srcOffset = 0;
 
-						vkCmdCopyBuffer(cmd, mesh.indexBuffer.buffer, GetCurrentFrame().sceneIndexBuffer.buffer, 1, &indexCopy);
+						vkCmdCopyBuffer(cmd, mesh.indexBuffer.buffer, sceneData.mergedIndexBuffer.buffer, 1, &indexCopy);
 
 						vertexOffset += mesh.vertices.size();
 						indexOffset += mesh.indices.size();
 					}
 				});
 
-				GetCurrentFrame().bFlagSceneChanged = false;
+				sceneData.bFlagSceneChanged = false;
 			}
 		}
 
@@ -2484,17 +2519,7 @@ namespace Puffin
 			GPULightIndexData lightIndexData;
 			lightIndexData.lightSpaceIndex = lightIndex;
 
-			/*GPUCameraData cameraData;
-			glm::mat4 projMat = camera.matrices.perspective;
-			projMat[1][1] *= -1;
-			cameraData.viewProj = projMat * camera.matrices.view;*/
-
 			void* data;
-			
-			//// Map camera view/proj data to uniform buffer
-			//vmaMapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
-			//memcpy(data, &cameraData, sizeof(GPUCameraData));
-			//vmaUnmapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
 
 			// Map camera data to uniform buffer
 			vmaMapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation, &data);
@@ -2764,11 +2789,11 @@ namespace Puffin
 			// uploadFence will now block until the graphics command finish execution
 			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, uploadContext.uploadFence));
 
-			vkWaitForFences(device, 1, &uploadContext.uploadFence, true, 9999999999);
-			vkResetFences(device, 1, &uploadContext.uploadFence);
+			VK_CHECK(vkWaitForFences(device, 1, &uploadContext.uploadFence, true, 9999999999));
+			VK_CHECK(vkResetFences(device, 1, &uploadContext.uploadFence));
 
 			// Clear command pool and free command buffer
-			vkResetCommandPool(device, uploadContext.commandPool, 0);
+			VK_CHECK(vkResetCommandPool(device, uploadContext.commandPool, 0));
 		}
 
 		//-------------------------------------------------------------------------------------

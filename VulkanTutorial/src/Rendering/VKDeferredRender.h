@@ -27,6 +27,9 @@ namespace Puffin
 			AllocatedImage gDepth;
 
 			VkCommandBuffer gCommandBuffer, sCommandBuffer;
+
+			// Synchronization
+			VkSemaphore geometrySemaphore, shadingSemaphore;
 		};
 
 		class VKDeferredRender
@@ -53,20 +56,15 @@ namespace Puffin
 				geometrySet = inGeometrySet;
 			}
 
-			inline void SetVertexBuffer(VkBuffer* inVertexBuffer)
+			inline void SetDrawIndirectCommandsBuffer(IndirectDrawBatch* inIndirectDrawBatch)
 			{
-				sceneVertexBuffer = inVertexBuffer;
-			}
-
-			inline void SetIndexBuffer(VkBuffer* inIndexBuffer)
-			{
-				sceneIndexBuffer = inIndexBuffer;
+				indirectDrawBatch = inIndirectDrawBatch;
 			}
 
 			/*
 			* Render Scene with deferred shading
 			*/
-			void DrawScene(int frameIndex);
+			void DrawScene(int frameIndex, SceneData* sceneData, VkQueue graphicsQueue);
 
 			// Cleanup Functions
 			void Cleanup();
@@ -99,8 +97,7 @@ namespace Puffin
 			VkPipelineLayout gPipelineLayout;
 
 			VkDescriptorSet* geometrySet;
-			VkBuffer* sceneVertexBuffer;
-			VkBuffer* sceneIndexBuffer;
+			IndirectDrawBatch* indirectDrawBatch;
 
 			// Functions
 
@@ -108,6 +105,7 @@ namespace Puffin
 			void SetupGBuffer(); // Setup Geometry Framebuffer Attachments
 			void SetupGRenderPass(); // Setup Geometry Render Pass
 			void SetupGFramebuffer(); // Setup Geometry Framebuffer
+			void SetupSynchronization(); // Setup Synchronization Objects
 			void SetupGColorSampler(); // Setup Geometry Color Sampler
 			void SetupCommandBuffers(std::vector<VkCommandPool>& commandPools); // Setup Command Pools/Buffers
 			//void SetupDescriptorSets(); // Setup Descriptor Sets for Geometry Pass
@@ -120,8 +118,8 @@ namespace Puffin
 				AllocatedImage* allocatedImage, std::string debug_name = "");
 
 			// Draw Functions
-			VkCommandBuffer RecordGeometryCommandBuffer(int frameIndex);
-			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex);
+			VkCommandBuffer RecordGeometryCommandBuffer(int frameIndex, SceneData* sceneData);
+			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneData* sceneData);
 
 			static inline std::vector<char> ReadFile(const std::string& filename)
 			{

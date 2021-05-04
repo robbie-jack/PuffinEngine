@@ -56,6 +56,20 @@ namespace Puffin
 				deletors.clear();
 			}
 		};
+
+		// <Merged Vertex and Index buffers for all the objects in the scene
+		struct SceneData
+		{
+			AllocatedBuffer mergedVertexBuffer, mergedIndexBuffer;
+			bool bFlagSceneChanged = true;
+		};
+
+		// Draw Commands and buffer for Indirect rendering
+		struct IndirectDrawBatch
+		{
+			std::vector<VkDrawIndexedIndirectCommand> drawIndirectCommands;
+			AllocatedBuffer drawIndirectCommandsBuffer;
+		};
 	}
 }
 

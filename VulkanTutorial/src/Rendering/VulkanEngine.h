@@ -115,17 +115,13 @@ namespace Puffin
 
 			// Scene Data
 			VkDescriptorSet geometryDescriptor;
-
-			std::vector<VkDrawIndexedIndirectCommand> sceneDrawIndirectCommands;
-			AllocatedBuffer sceneVertexBuffer, sceneIndexBuffer, sceneIndirectCommandsBuffer;
+			IndirectDrawBatch drawBatch;
 
 			// Debug Variables
 			std::vector<Vertex> debugVertices;
 			std::vector<uint32_t> debugIndices;
 			std::vector<VkDrawIndexedIndirectCommand> debugIndirectCommands;
 			AllocatedBuffer debugVertexBuffer, debugIndexBuffer, debugIndirectCommandsBuffer;
-
-			bool bFlagSceneChanged = true;
 		};
 
 		struct GPUObjectData
@@ -243,6 +239,8 @@ namespace Puffin
 			VkPipeline debugPipeline;
 
 			FrameData frames[FRAME_OVERLAP];
+
+			SceneData sceneData;
 
 			// Depth Resources
 			AllocatedImage depthAttachment;
