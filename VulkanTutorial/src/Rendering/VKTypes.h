@@ -5,6 +5,7 @@
 
 #include <vulkan/vulkan.h>
 #include <Rendering/vk_mem_alloc.h>
+#include <glm/glm.hpp>
 
 #include <deque>
 #include <functional>
@@ -69,6 +70,12 @@ namespace Puffin
 		{
 			std::vector<VkDrawIndexedIndirectCommand> drawIndirectCommands;
 			AllocatedBuffer drawIndirectCommandsBuffer;
+		};
+
+		struct ShadingUBO
+		{
+			alignas(16) glm::vec3 viewPos;
+			alignas(4) int displayDebugTarget;
 		};
 	}
 }

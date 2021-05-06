@@ -117,20 +117,7 @@ namespace Puffin
 			StartScene();
 
 			// Setup Deferred Renderer
-			std::vector<VkCommandPool> commandPools;
-			for (int i = 0; i < FRAME_OVERLAP; i++)
-			{
-				commandPools.push_back(frames[i].commandPool);
-			}
-
-			deferredRenderer.Setup(physicalDevice, 
-				device, 
-				allocator,
-				descriptorAllocator,
-				descriptorLayoutCache,
-				geometrySetLayout,
-				commandPools,
-				FRAME_OVERLAP, offscreenExtent);
+			SetupDeferredRenderer();
 
 			// Pass Camera to UI
 			UIManager->GetWindowSettings()->SetCamera(&camera);
@@ -751,15 +738,6 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-				frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS_PER_TYPE,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].directionalLightBuffer = CreateBuffer(sizeof(GPUDirLightData) * MAX_LIGHTS_PER_TYPE,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-				frames[i].spotLightBuffer = CreateBuffer(sizeof(GPUSpotLightData) * MAX_LIGHTS_PER_TYPE,
-					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
 				frames[i].lightStatsBuffer = CreateBuffer(sizeof(LightStatsData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -792,14 +770,30 @@ namespace Puffin
 
 		void VulkanEngine::InitSceneBuffers()
 		{
-			// Scene Buffers
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
+				// Model Data
 				frames[i].drawBatch.drawIndirectCommandsBuffer = CreateBuffer(MAX_OBJECTS * sizeof(VkDrawIndexedIndirectCommand),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				// Camera/Debug Buffer
+				frames[i].uboBuffer = CreateBuffer(sizeof(ShadingUBO),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+				// Light Buffers
+				frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS_PER_TYPE,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].dirLightBuffer = CreateBuffer(sizeof(GPUDirLightData) * MAX_LIGHTS_PER_TYPE,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				frames[i].spotLightBuffer = CreateBuffer(sizeof(GPUSpotLightData) * MAX_LIGHTS_PER_TYPE,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 			}
 
+			// Merged Vertex/Index Buffers
 			sceneData.mergedVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
@@ -886,7 +880,7 @@ namespace Puffin
 				pointLightInfo.range = sizeof(GPUPointLightData) * MAX_LIGHTS_PER_TYPE;
 
 				VkDescriptorBufferInfo directionalLightInfo;
-				directionalLightInfo.buffer = frames[i].directionalLightBuffer.buffer;
+				directionalLightInfo.buffer = frames[i].dirLightBuffer.buffer;
 				directionalLightInfo.offset = 0;
 				directionalLightInfo.range = sizeof(GPUDirLightData) * MAX_LIGHTS_PER_TYPE;
 
@@ -1524,6 +1518,35 @@ namespace Puffin
 			VK_CHECK(vkCreateSampler(device, &samplerInfo, nullptr, &depthSampler));
 		}
 
+		void VulkanEngine::SetupDeferredRenderer()
+		{
+			std::vector<VkCommandPool> commandPools;
+			std::vector<AllocatedBuffer> uboBuffers;
+			std::vector<AllocatedBuffer> lightBuffers;
+
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				commandPools.push_back(frames[i].commandPool);
+
+				uboBuffers.push_back(frames[i].uboBuffer);
+
+				lightBuffers.push_back(frames[i].pointLightBuffer);
+				lightBuffers.push_back(frames[i].dirLightBuffer);
+				lightBuffers.push_back(frames[i].spotLightBuffer);
+			}
+
+			deferredRenderer.Setup(physicalDevice,
+				device,
+				allocator,
+				descriptorAllocator,
+				descriptorLayoutCache,
+				commandPools,
+				FRAME_OVERLAP, offscreenExtent);
+
+			deferredRenderer.SetupGeometry(geometrySetLayout);
+			deferredRenderer.SetupShading(uboBuffers, MAX_LIGHTS_PER_TYPE, lightBuffers, renderPass);
+		}
+
 		void VulkanEngine::InitShadowmapDescriptors()
 		{
 			if (entityMap["Light"].empty())
@@ -1680,14 +1703,7 @@ namespace Puffin
 				commandPools.push_back(frames[i].commandPool);
 			}
 			
-			deferredRenderer.Setup(physicalDevice,
-				device,
-				allocator,
-				descriptorAllocator,
-				descriptorLayoutCache,
-				geometrySetLayout,
-				commandPools,
-				FRAME_OVERLAP, offscreenExtent);
+			SetupDeferredRenderer();
 
 			// Initialize Offscreen Variables and Scene
 			InitOffscreen();
@@ -1988,17 +2004,22 @@ namespace Puffin
 
 			// Prepare Scene Data for Rendering
 			PrepareScene();
+			PrepareLights();
 
 			// Deferred Render
 			deferredRenderer.SetGeometryDescriptorSet(&GetCurrentFrame().geometryDescriptor);
-			deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &sceneData, graphicsQueue);
+			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &sceneData, graphicsQueue, offscreenFramebuffers[frameNumber % FRAME_OVERLAP]);
 
 			// Record Command Buffers
-			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
-			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
+			//VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
+			//VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
  			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
 
-			std::array<VkCommandBuffer, 3> submitCommandBuffers = { cmdShadows, cmdMain, cmdGui };
+			//std::array<VkCommandBuffer, 3> submitCommandBuffers = { cmdShadows, cmdMain, cmdGui };
+
+			std::vector<VkSemaphore> waitSemaphores;
+			waitSemaphores.push_back(GetCurrentFrame().presentSemaphore);
+			waitSemaphores.push_back(deferredSemaphore);
 
 			// Prepare the submission into graphics queue
 			// we will signal the _renderSemaphore, to signal that rendering has finished
@@ -2010,14 +2031,14 @@ namespace Puffin
 
 			submit.pWaitDstStageMask = &waitStage;
 
-			submit.waitSemaphoreCount = 1;
-			submit.pWaitSemaphores = &GetCurrentFrame().presentSemaphore;
+			submit.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
+			submit.pWaitSemaphores = waitSemaphores.data();
 
 			submit.signalSemaphoreCount = 1;
 			submit.pSignalSemaphores = &GetCurrentFrame().renderSemaphore;
 
-			submit.commandBufferCount = submitCommandBuffers.size();
-			submit.pCommandBuffers = submitCommandBuffers.data();
+			submit.commandBufferCount = 1;
+			submit.pCommandBuffers = &cmdGui;
 
 			// Submit command buffers to queue and execute
 			// GetCurrentFrame().renderFence will now block until graphics command finish executing
@@ -2185,6 +2206,96 @@ namespace Puffin
 
 				sceneData.bFlagSceneChanged = false;
 			}
+		}
+
+		void VulkanEngine::PrepareLights()
+		{
+			// Map shaing data to uniform buffer
+			ShadingUBO uboData;
+			uboData.viewPos = camera.position;
+			uboData.displayDebugTarget = 1;
+
+			void* data;
+			vmaMapMemory(allocator, GetCurrentFrame().uboBuffer.allocation, &data);
+			memcpy(data, &uboData, sizeof(ShadingUBO));
+			vmaUnmapMemory(allocator, GetCurrentFrame().uboBuffer.allocation);
+
+			// Map all light data to storage buffer
+			void* pointLightData;
+			void* dirLightData;
+			void* spotLightData;
+
+			vmaMapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation, &pointLightData);
+			vmaMapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation, &dirLightData);
+			vmaMapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation, &spotLightData);
+
+			GPUPointLightData* pointLightSSBO = (GPUPointLightData*)pointLightData;
+			GPUDirLightData* dirLightSSBO = (GPUDirLightData*)dirLightData;
+			GPUSpotLightData* spotLightSSBO = (GPUSpotLightData*)spotLightData;
+
+			int p = 0;
+			int d = 0;
+			int s = 0;
+			int lightIndex = 0;
+
+			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& light = world->GetComponent<LightComponent>(entity);
+
+				int shadowIndex = -1;
+
+				// Only render depth map if light is set to cast shadows and is spotlight type
+				if (light.bFlagCastShadows && light.type == LightType::SPOT)
+				{
+					shadowIndex = lightIndex;
+					lightIndex++;
+				}
+
+				switch (light.type)
+				{
+				case LightType::POINT:
+					pointLightSSBO[p].position = world->GetComponent<TransformComponent>(entity).position;
+					pointLightSSBO[p].ambientColor = light.ambientColor;
+					pointLightSSBO[p].diffuseColor = light.diffuseColor;
+					pointLightSSBO[p].constant = light.constantAttenuation;
+					pointLightSSBO[p].linear = light.linearAttenuation;
+					pointLightSSBO[p].quadratic = light.quadraticAttenuation;
+					pointLightSSBO[p].specularStrength = light.specularStrength;
+					pointLightSSBO[p].shininess = light.shininess;
+					pointLightSSBO[p].shadowmapIndex = shadowIndex;
+					p++;
+					break;
+				case LightType::DIRECTIONAL:
+					dirLightSSBO[d].ambientColor = light.ambientColor;
+					dirLightSSBO[d].diffuseColor = light.diffuseColor;
+					dirLightSSBO[d].direction = light.direction;
+					dirLightSSBO[d].specularStrength = light.specularStrength;
+					dirLightSSBO[d].shininess = light.shininess;
+					dirLightSSBO[d].shadowmapIndex = shadowIndex;
+					d++;
+					break;
+				case LightType::SPOT:
+					spotLightSSBO[s].position = world->GetComponent<TransformComponent>(entity).position;
+					spotLightSSBO[s].direction = light.direction;
+					spotLightSSBO[s].ambientColor = light.ambientColor;
+					spotLightSSBO[s].diffuseColor = light.diffuseColor;
+					spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(light.innerCutoffAngle));
+					spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(light.outerCutoffAngle));
+					spotLightSSBO[s].constant = light.constantAttenuation;
+					spotLightSSBO[s].linear = light.linearAttenuation;
+					spotLightSSBO[s].quadratic = light.quadraticAttenuation;
+					spotLightSSBO[s].specularStrength = light.specularStrength;
+					spotLightSSBO[s].shininess = light.shininess;
+					spotLightSSBO[s].shadowmapIndex = shadowIndex;
+					s++;
+					break;
+				}
+			}
+
+			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
+			vmaUnmapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation);
+			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
 		}
 
 		VkCommandBuffer VulkanEngine::RecordMainCommandBuffers(uint32_t index)
@@ -2427,7 +2538,7 @@ namespace Puffin
 			void* lightSpaceData;
 
 			vmaMapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation, &pointLightData);
-			vmaMapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation, &dirLightData);
+			vmaMapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation, &dirLightData);
 			vmaMapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation, &spotLightData);
 			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceMultiBuffer.allocation, &lightSpaceData);
 
@@ -2506,7 +2617,7 @@ namespace Puffin
 			}
 
 			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
-			vmaUnmapMemory(allocator, GetCurrentFrame().directionalLightBuffer.allocation);
+			vmaUnmapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceMultiBuffer.allocation);
 
@@ -2514,7 +2625,6 @@ namespace Puffin
 			lightStats.numPLights = p;
 			lightStats.numDLights = d;
 			lightStats.numSLights = s;
-
 
 			GPULightIndexData lightIndexData;
 			lightIndexData.lightSpaceIndex = lightIndex;

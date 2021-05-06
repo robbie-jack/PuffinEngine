@@ -13,6 +13,8 @@
 
 #include <Components/BaseComponent.h>
 
+#include <Types/Vector.h>
+
 #include <vector>
 #include <Rendering/VKTypes.h>
 

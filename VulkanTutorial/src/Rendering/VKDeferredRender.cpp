@@ -5,6 +5,7 @@
 #include <Rendering/VKHelper.h>
 
 #include <Components/Rendering/MeshComponent.h>
+#include <Components/Rendering/LightComponent.h>
 
 // STL
 #include <iostream>
@@ -35,7 +36,6 @@ namespace Puffin
 			VmaAllocator inAllocator,
 			VKUtil::DescriptorAllocator* inDescriptorAllocator,
 			VKUtil::DescriptorLayoutCache* inDescriptorLayoutCache,
-			VkDescriptorSetLayout inGeometrySetLayout,
 			std::vector<VkCommandPool>& commandPools,
 			int inFrameOverlap, VkExtent2D inExtent)
 		{
@@ -45,7 +45,7 @@ namespace Puffin
 			allocator = inAllocator;
 			descriptorAllocator = inDescriptorAllocator;
 			descriptorLayoutCache = inDescriptorLayoutCache;
-			geometrySetLayout = inGeometrySetLayout;
+			
 
 			// Setup Frame Data
 			frameOverlap = inFrameOverlap;
@@ -64,19 +64,35 @@ namespace Puffin
 				inExtent.width, inExtent.height, 1
 			};
 
+			SetupCommandBuffers(commandPools);
+		}
+
+		void VKDeferredRender::SetupGeometry(VkDescriptorSetLayout inGeometrySetLayout)
+		{
+			geometrySetLayout = inGeometrySetLayout;
+
 			// Setup GBuffer framebuffer, attachments, render pass and color sampler
 			SetupGBuffer();
 			SetupGRenderPass();
 			SetupGFramebuffer();
 			SetupSynchronization();
 			SetupGColorSampler();
-
-			SetupCommandBuffers(commandPools);
-			//SetupDescriptorSets();
-			SetupPipelines();
+			SetupGPipeline();
 		}
 
-		void VKDeferredRender::DrawScene(int frameIndex, SceneData* sceneData, VkQueue graphicsQueue)
+		void VKDeferredRender::SetupShading(std::vector<AllocatedBuffer>& uboBuffers, 
+			int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers,
+			VkRenderPass renderPass)
+		{
+			sRenderPass = renderPass;
+
+			// Setup Shading Structures
+			//SetupSRenderPass();
+			SetupSDescriptorSets(uboBuffers, lightsPerType, lightBuffers);
+			SetupSPipeline();
+		}
+
+		VkSemaphore& VKDeferredRender::DrawScene(int frameIndex, SceneData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer)
 		{
 			// 1. Geometry Pass: Render all geometric/color data to g-buffer
 			VkCommandBuffer cmdGeometry = RecordGeometryCommandBuffer(frameIndex, sceneData);
@@ -87,8 +103,9 @@ namespace Puffin
 			VkSubmitInfo submit = {};
 			submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submit.pNext = nullptr;
-			//submit.waitSemaphoreCount = 1;
-			//submit.pWaitSemaphores = &frameData[frameIndex].shadingSemaphore;
+			submit.pWaitDstStageMask = &waitStage;
+			submit.waitSemaphoreCount = 1;
+			submit.pWaitSemaphores = &frameData[frameIndex].shadingSemaphore;
 			submit.signalSemaphoreCount = 1;
 			submit.pSignalSemaphores = &frameData[frameIndex].geometrySemaphore;
 			submit.commandBufferCount = 1;
@@ -97,9 +114,19 @@ namespace Puffin
 			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE));
 
 			// 2. Lighting Pass: Use G-Buffer to calculate the scenes lighting
-			//VkCommandBuffer cmdShading = RecordShadingCommandBuffer(frameIndex, sceneData);
+			VkCommandBuffer cmdShading = RecordShadingCommandBuffer(frameIndex, sceneData, sFramebuffer);
 
 			// Submit Shading Command Buffer
+			submit.waitSemaphoreCount = 1;
+			submit.pWaitSemaphores = &frameData[frameIndex].geometrySemaphore;
+			submit.signalSemaphoreCount = 1;
+			submit.pSignalSemaphores = &frameData[frameIndex].shadingSemaphore;
+			submit.commandBufferCount = 1;
+			submit.pCommandBuffers = &cmdShading;
+			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE));
+
+			// Return Shading Semaphore so Vulkan Engine can know when shading is done
+			return frameData[frameIndex].shadingSemaphore;
 		}
 
 		void VKDeferredRender::Cleanup()
@@ -338,12 +365,7 @@ namespace Puffin
 			}
 		}
 
-		/*void VKDeferredRender::SetupDescriptorSets()
-		{
-
-		}*/
-
-		void VKDeferredRender::SetupPipelines()
+		void VKDeferredRender::SetupGPipeline()
 		{
 			// Read Shader code from Files
 			auto vertShaderCode = ReadFile("content/shaders/deferred_geometry_vert.spv");
@@ -427,6 +449,146 @@ namespace Puffin
 
 			// Build Pipeline
 			gPipeline = pipelineBuilder.build_pipeline(device, gRenderPass);
+		}
+
+		//void VKDeferredRender::SetupSRenderPass()
+		//{
+		//	// Setup Final Color Attachment
+		//	//VkAttachmentDescription colorAttachment = {};
+		//	//colorAttachment.format = 
+		//}
+
+		void VKDeferredRender::SetupSDescriptorSets(std::vector<AllocatedBuffer>& uboBuffers, int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers)
+		{
+			for (int i = 0; i < frameOverlap; i++)
+			{
+				// Camera/Debug Shading Info
+				VkDescriptorBufferInfo uboBufferInfo;
+				uboBufferInfo.buffer = uboBuffers[i].buffer;
+				uboBufferInfo.offset = 0;
+				uboBufferInfo.range = sizeof(ShadingUBO);
+
+				// Light Info
+				VkDescriptorBufferInfo pointLightInfo;
+				pointLightInfo.buffer = lightBuffers[0 + (i * 3)].buffer;
+				pointLightInfo.offset = 0;
+				pointLightInfo.range = sizeof(GPUPointLightData) * lightsPerType;
+
+				VkDescriptorBufferInfo dirLightInfo;
+				dirLightInfo.buffer = lightBuffers[1 + (i * 3)].buffer;
+				dirLightInfo.offset = 0;
+				dirLightInfo.range = sizeof(GPUDirLightData) * lightsPerType;
+
+				VkDescriptorBufferInfo spotLightInfo;
+				spotLightInfo.buffer = lightBuffers[2 + (i * 3)].buffer;
+				spotLightInfo.offset = 0;
+				spotLightInfo.range = sizeof(GPUSpotLightData) * lightsPerType;
+
+				// G-Buffer Info
+				VkDescriptorImageInfo gPositionInfo;
+				gPositionInfo.sampler = gColorSampler;
+				gPositionInfo.imageView = frameData[i].gPosition.imageView;
+				gPositionInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				VkDescriptorImageInfo gNormalInfo;
+				gNormalInfo.sampler = gColorSampler;
+				gNormalInfo.imageView = frameData[i].gNormal.imageView;
+				gNormalInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				VkDescriptorImageInfo gAlbedoSpecInfo;
+				gAlbedoSpecInfo.sampler = gColorSampler;
+				gAlbedoSpecInfo.imageView = frameData[i].gAlbedoSpec.imageView;
+				gAlbedoSpecInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &uboBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindImage(1, &gPositionInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindImage(2, &gNormalInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindImage(3, &gAlbedoSpecInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(4, &pointLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(5, &dirLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(6, &spotLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.Build(frameData[i].shadingDescriptor, shadingSetLayout);
+			}
+		}
+
+		void VKDeferredRender::SetupSPipeline()
+		{
+			// Read Shader code from Files
+			auto vertShaderCode = ReadFile("content/shaders/deferred_shading_vert.spv");
+			auto fragShaderCode = ReadFile("content/shaders/deferred_shading_frag.spv");
+
+			// Create Shader Modules
+			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
+			VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
+
+			// Create Pipeline Layout Info
+			std::vector<VkDescriptorSetLayout> setLayouts =
+			{
+				shadingSetLayout
+			};
+
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
+
+			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &sPipelineLayout));
+
+			// Pipeline Builder Object
+			PipelineBuilder pipelineBuilder;
+
+			// Create Shader Stage info
+			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
+			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
+
+			VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
+			pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+			// Create Vertex Input Info
+			pipelineBuilder.vertexInputInfo = pipelineVertexInputStateCreateInfo;
+
+			// Create Input Assembly Info
+			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+			// Define Viewport
+			pipelineBuilder.viewport.x = 0.0f;
+			pipelineBuilder.viewport.y = 0.0f;
+			pipelineBuilder.viewport.width = (float)gBufferExtent.width;
+			pipelineBuilder.viewport.height = (float)gBufferExtent.height;
+			pipelineBuilder.viewport.minDepth = 0.0f;
+			pipelineBuilder.viewport.maxDepth = 1.0f;
+
+			// Define Scissor Extent (Pixels Outside Scissor Rectangle will be discarded)
+			pipelineBuilder.scissor.offset = { 0, 0 };
+			pipelineBuilder.scissor.extent.width = gBufferExtent.width;
+			pipelineBuilder.scissor.extent.height = gBufferExtent.height;
+
+			// Rasterization Stage Creation - Configured to draw filled triangles
+			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+
+			// Multisampled - Disabled right now so just use default
+			pipelineBuilder.multisampling = VKInit::MultisamplingStateCreateInfo();
+
+			// Color Blending - Default RGBA Color Blending
+			VkPipelineColorBlendAttachmentState blendAttachState = VKInit::ColorBlendAttachmentState(0xf, VK_FALSE);
+
+			pipelineBuilder.colorBlendCreateInfo = VKInit::ColorBlendStateCreateInfo(1, &blendAttachState);
+
+			// Depth Testing - Default
+			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+
+			std::vector<VkDynamicState> dynamicStates =
+			{
+				VK_DYNAMIC_STATE_VIEWPORT,
+				VK_DYNAMIC_STATE_SCISSOR
+			};
+
+			// Dynamic Viewport/Scissor Size
+			pipelineBuilder.dynamic = VKInit::DynamicStateCreateInfo(dynamicStates);
+
+			// Assign Pipeline Layout to Pipeline
+			pipelineBuilder.pipelineLayout = sPipelineLayout;
+
+			// Build Pipeline
+			sPipeline = pipelineBuilder.build_pipeline(device, sRenderPass);
 		}
 
 		void VKDeferredRender::CreateAllocatedImage(VkFormat format, VkImageUsageFlags usage, AllocatedImage* allocatedImage, std::string debug_name)
@@ -569,9 +731,73 @@ namespace Puffin
 			return cmd;
 		}
 
-		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex, SceneData* sceneData)
+		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex, SceneData* sceneData, VkFramebuffer sFramebuffer)
 		{
 			VkCommandBuffer cmd = frameData[frameIndex].sCommandBuffer;
+
+			// Setup Command Buffer Info
+			VkCommandBufferBeginInfo cmdBeginInfo = {};
+			cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBeginInfo.pNext = nullptr;
+			cmdBeginInfo.pInheritanceInfo = nullptr;
+			cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+			// Set Clear Color
+			std::array<VkClearValue, 2> clearValues;
+			clearValues[0].color = { {0.0f, 0.0f, 0.0f, 0.0f} };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			// Setup Render Pass Info
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.pNext = nullptr;
+			renderPassBeginInfo.renderPass = sRenderPass;
+			renderPassBeginInfo.framebuffer = sFramebuffer;
+			renderPassBeginInfo.renderArea.extent.width = gBufferExtent.width;
+			renderPassBeginInfo.renderArea.extent.height = gBufferExtent.height;
+			renderPassBeginInfo.renderArea.offset = { 0, 0 };
+			renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+			renderPassBeginInfo.pClearValues = clearValues.data();
+
+			// Begin Command Buffer Recording
+			VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
+
+			// Begin Render Pass
+			vkCmdBeginRenderPass(cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			// Setup Viewport
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float)gBufferExtent.width;
+			viewport.height = (float)gBufferExtent.height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+
+			vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+			// Setup Scissor
+			VkRect2D scissor = {};
+			scissor.offset = { 0, 0 };
+			scissor.extent.width = gBufferExtent.width;
+			scissor.extent.height = gBufferExtent.height;
+
+			vkCmdSetScissor(cmd, 0, 1, &scissor);
+
+			// Bind Pipeline
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, sPipeline);
+
+			// Bind Shading Geometry Set
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				gPipelineLayout, 0, 1, &frameData[frameIndex].shadingDescriptor, 0, nullptr);
+
+			vkCmdDraw(cmd, 3, 1, 0, 0);
+
+			// End Render Pass
+			vkCmdEndRenderPass(cmd);
+
+			// End Command Buffer Recording
+			VK_CHECK(vkEndCommandBuffer(cmd));
 
 			return cmd;
 		}

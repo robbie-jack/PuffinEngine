@@ -1,19 +1,19 @@
 {
     "rdocCaptureSettings": 1,
     "settings": {
-        "autoStart": false,
+        "autoStart": true,
         "commandLine": "",
         "environment": [
         ],
         "executable": "C:\\Projects\\PuffinEngine\\x64\\Release\\PuffinEngine.exe",
         "inject": false,
-        "numQueuedFrames": 0,
+        "numQueuedFrames": 1,
         "options": {
             "allowFullscreen": true,
             "allowVSync": true,
             "apiValidation": false,
             "captureAllCmdLists": false,
-            "captureCallstacks": false,
+            "captureCallstacks": true,
             "captureCallstacksOnlyDraws": false,
             "debugOutputMute": true,
             "delayForDebugger": 0,
@@ -21,7 +21,7 @@
             "refAllResources": false,
             "verifyBufferAccess": false
         },
-        "queuedFrameCap": 0,
+        "queuedFrameCap": 100,
         "workingDir": "C:/Projects/PuffinEngine/VulkanTutorial"
     }
 }

@@ -180,7 +180,7 @@ namespace Puffin
 			}
 
 			// Initialize info for rasterization i.i backface culling, line width, wireframe drawing
-			inline VkPipelineRasterizationStateCreateInfo RasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlags cullFlags)
+			inline VkPipelineRasterizationStateCreateInfo RasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlags cullFlags, VkFrontFace frontFace = VK_FRONT_FACE_CLOCKWISE)
 			{
 				VkPipelineRasterizationStateCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -193,7 +193,7 @@ namespace Puffin
 				info.polygonMode = polygonMode;
 				info.lineWidth = 1.0f;
 				info.cullMode = cullFlags;
-				info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+				info.frontFace = frontFace;
 				//no depth bias
 				info.depthBiasEnable = VK_FALSE;
 				info.depthBiasConstantFactor = 0.0f;

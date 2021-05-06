@@ -102,7 +102,7 @@ namespace Puffin
 			AllocatedBuffer cameraViewProjBuffer, cameraBuffer;
 			VkDescriptorSet cameraViewProjDescriptor, cameraDescriptor;
 
-			AllocatedBuffer pointLightBuffer, directionalLightBuffer, spotLightBuffer, lightStatsBuffer;
+			AllocatedBuffer lightStatsBuffer;
 			VkDescriptorSet lightDescriptor;
 
 			AllocatedBuffer objectBuffer;
@@ -116,6 +116,9 @@ namespace Puffin
 			// Scene Data
 			VkDescriptorSet geometryDescriptor;
 			IndirectDrawBatch drawBatch;
+
+			AllocatedBuffer uboBuffer; // Buffer Containing Camera/Debug data for Fragment Shader
+			AllocatedBuffer pointLightBuffer, dirLightBuffer, spotLightBuffer;
 
 			// Debug Variables
 			std::vector<Vertex> debugVertices;
@@ -325,6 +328,8 @@ namespace Puffin
 			void InitTextureSampler();
 			void InitDepthSampler();
 
+			void SetupDeferredRenderer();
+
 			// Functions for Re-Initializing Swapchain and Offscreen Variables
 			void RecreateSwapchain();
 			void RecreateOffscreen();
@@ -353,9 +358,10 @@ namespace Puffin
 			void DrawFrame(UI::UIManager* UIManager);
 
 			/*
-			* Prepare Scene Data for rendering
+			* Prepare Scene/Data Data for rendering
 			*/
 			void PrepareScene();
+			void PrepareLights();
 
 			VkCommandBuffer RecordShadowCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);

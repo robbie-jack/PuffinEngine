@@ -26,6 +26,10 @@ namespace Puffin
 			AllocatedImage gPosition, gNormal, gAlbedoSpec;
 			AllocatedImage gDepth;
 
+			// Shading
+			VkDescriptorSet shadingDescriptor;
+
+			// Command Buffers
 			VkCommandBuffer gCommandBuffer, sCommandBuffer;
 
 			// Synchronization
@@ -46,9 +50,20 @@ namespace Puffin
 				VmaAllocator inAllocator,
 				VKUtil::DescriptorAllocator* inDescriptorAllocator,
 				VKUtil::DescriptorLayoutCache* inDescriptorLayoutCache,
-				VkDescriptorSetLayout inGeometrySetLayout,
 				std::vector<VkCommandPool>& commandPools,
 				int inFrameOverlap, VkExtent2D inExtent);
+
+			/* 
+			* Setup Deferred Geometry Pass
+			*/
+			void SetupGeometry(VkDescriptorSetLayout inGeometrySetLayout);
+
+			/*
+			* Setup Deferred Shading Pass
+			*/
+			void SetupShading(std::vector<AllocatedBuffer>& uboBuffers, 
+				int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers,
+				VkRenderPass renderPass);
 
 			// Pass Data Needed for Geometry Rendering
 			inline void SetGeometryDescriptorSet(VkDescriptorSet* inGeometrySet)
@@ -64,7 +79,7 @@ namespace Puffin
 			/*
 			* Render Scene with deferred shading
 			*/
-			void DrawScene(int frameIndex, SceneData* sceneData, VkQueue graphicsQueue);
+			VkSemaphore& DrawScene(int frameIndex, SceneData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer);
 
 			// Cleanup Functions
 			void Cleanup();
@@ -99,17 +114,31 @@ namespace Puffin
 			VkDescriptorSet* geometrySet;
 			IndirectDrawBatch* indirectDrawBatch;
 
+			// Shading
+			VkRenderPass sRenderPass;
+
+			VkDescriptorSetLayout shadingSetLayout;
+
+			VkPipeline sPipeline;
+			VkPipelineLayout sPipelineLayout;
+
 			// Functions
 
 			// Setup Functions
+
+			// Geometry Stage
 			void SetupGBuffer(); // Setup Geometry Framebuffer Attachments
 			void SetupGRenderPass(); // Setup Geometry Render Pass
 			void SetupGFramebuffer(); // Setup Geometry Framebuffer
 			void SetupSynchronization(); // Setup Synchronization Objects
 			void SetupGColorSampler(); // Setup Geometry Color Sampler
 			void SetupCommandBuffers(std::vector<VkCommandPool>& commandPools); // Setup Command Pools/Buffers
-			//void SetupDescriptorSets(); // Setup Descriptor Sets for Geometry Pass
-			void SetupPipelines(); // Setup Geometry/Shading Pipelines
+			void SetupGPipeline(); // Setup Geometry/Shading Pipelines
+
+			// Shading Stage
+			//void SetupSRenderPass();
+			void SetupSDescriptorSets(std::vector<AllocatedBuffer>& uboBuffers, int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers); // Setup Descriptor Sets for Shading Pass
+			void SetupSPipeline();
 
 			/*
 			* Create Allocated Images for the GBuffer
@@ -119,7 +148,7 @@ namespace Puffin
 
 			// Draw Functions
 			VkCommandBuffer RecordGeometryCommandBuffer(int frameIndex, SceneData* sceneData);
-			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneData* sceneData);
+			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneData* sceneData, VkFramebuffer sFramebuffer);
 
 			static inline std::vector<char> ReadFile(const std::string& filename)
 			{
