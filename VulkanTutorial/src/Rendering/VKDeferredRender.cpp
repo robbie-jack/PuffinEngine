@@ -152,21 +152,21 @@ namespace Puffin
 				// (World Space) Positions
 				CreateAllocatedImage(
 					VK_FORMAT_R16G16B16A16_SFLOAT,
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					&frameData[i].gPosition,
 					"GBuffer - Positions " + std::to_string(i));
 
 				// (World Space) Normals
 				CreateAllocatedImage(
 					VK_FORMAT_R16G16B16A16_SFLOAT,
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					&frameData[i].gNormal,
 					"GBuffer - Normals " + std::to_string(i));
 
 				// Albedo/Specular (Color/Light Reflection)
 				CreateAllocatedImage(
 					VK_FORMAT_R8G8B8A8_UNORM,
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					&frameData[i].gAlbedoSpec,
 					"GBuffer - Albedo/Specular " + std::to_string(i));
 
@@ -181,7 +181,7 @@ namespace Puffin
 
 				// Create Depth Attachment
 				CreateAllocatedImage(depthFormat,
-					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					&frameData[i].gDepth,
 					"GBuffer - Depth " + std::to_string(i));
 			}
@@ -470,19 +470,24 @@ namespace Puffin
 
 				// Light Info
 				VkDescriptorBufferInfo pointLightInfo;
-				pointLightInfo.buffer = lightBuffers[0 + (i * 3)].buffer;
+				pointLightInfo.buffer = lightBuffers[0 + (i * 4)].buffer;
 				pointLightInfo.offset = 0;
 				pointLightInfo.range = sizeof(GPUPointLightData) * lightsPerType;
 
 				VkDescriptorBufferInfo dirLightInfo;
-				dirLightInfo.buffer = lightBuffers[1 + (i * 3)].buffer;
+				dirLightInfo.buffer = lightBuffers[1 + (i * 4)].buffer;
 				dirLightInfo.offset = 0;
 				dirLightInfo.range = sizeof(GPUDirLightData) * lightsPerType;
 
 				VkDescriptorBufferInfo spotLightInfo;
-				spotLightInfo.buffer = lightBuffers[2 + (i * 3)].buffer;
+				spotLightInfo.buffer = lightBuffers[2 + (i * 4)].buffer;
 				spotLightInfo.offset = 0;
 				spotLightInfo.range = sizeof(GPUSpotLightData) * lightsPerType;
+
+				VkDescriptorBufferInfo lightStatsInfo;
+				lightStatsInfo.buffer = lightBuffers[3 + (i * 4)].buffer;
+				lightStatsInfo.offset = 0;
+				lightStatsInfo.range = sizeof(GPULightStatsData);
 
 				// G-Buffer Info
 				VkDescriptorImageInfo gPositionInfo;
@@ -508,6 +513,7 @@ namespace Puffin
 					.BindBuffer(4, &pointLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.BindBuffer(5, &dirLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.BindBuffer(6, &spotLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(7, &lightStatsInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.Build(frameData[i].shadingDescriptor, shadingSetLayout);
 			}
 		}
@@ -716,11 +722,8 @@ namespace Puffin
 			vkCmdBindIndexBuffer(cmd, sceneData->mergedIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 			// Render Scene with Draw Indirect
-			uint32_t draw_count = indirectDrawBatch->drawIndirectCommands.size();
-			uint32_t draw_stride = sizeof(VkDrawIndexedIndirectCommand);
-
 			vkCmdDrawIndexedIndirect(cmd, indirectDrawBatch->drawIndirectCommandsBuffer.buffer,
-				0, draw_count, draw_stride);
+				0, indirectDrawBatch->count, sizeof(VkDrawIndexedIndirectCommand));
 
 			// End Render Pass
 			vkCmdEndRenderPass(cmd);
@@ -789,7 +792,7 @@ namespace Puffin
 
 			// Bind Shading Geometry Set
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-				gPipelineLayout, 0, 1, &frameData[frameIndex].shadingDescriptor, 0, nullptr);
+				sPipelineLayout, 0, 1, &frameData[frameIndex].shadingDescriptor, 0, nullptr);
 
 			vkCmdDraw(cmd, 3, 1, 0, 0);
 

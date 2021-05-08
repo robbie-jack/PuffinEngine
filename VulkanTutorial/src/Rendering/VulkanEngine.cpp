@@ -179,6 +179,7 @@ namespace Puffin
 			VkPhysicalDeviceFeatures supportedFeatures = {};
 			supportedFeatures.samplerAnisotropy = VK_TRUE;
 			supportedFeatures.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+			supportedFeatures.multiDrawIndirect = VK_TRUE;
 
 			VkPhysicalDeviceDescriptorIndexingFeatures supportedDescriptorFeatures = {};
 			supportedDescriptorFeatures.runtimeDescriptorArray = VK_TRUE;
@@ -738,10 +739,6 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-				frames[i].lightStatsBuffer = CreateBuffer(sizeof(LightStatsData),
-					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-
 				// Create Light Space Buffer for Shadow Vertex Stage
 				frames[i].lightSpaceBuffer = CreateBuffer(sizeof(GPULightSpaceData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -774,7 +771,7 @@ namespace Puffin
 			{
 				// Model Data
 				frames[i].drawBatch.drawIndirectCommandsBuffer = CreateBuffer(MAX_OBJECTS * sizeof(VkDrawIndexedIndirectCommand),
-					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Camera/Debug Buffer
@@ -791,6 +788,11 @@ namespace Puffin
 
 				frames[i].spotLightBuffer = CreateBuffer(sizeof(GPUSpotLightData) * MAX_LIGHTS_PER_TYPE,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+				// Light Stats Buffer
+				frames[i].lightStatsBuffer = CreateBuffer(sizeof(GPULightStatsData),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 			}
 
 			// Merged Vertex/Index Buffers
@@ -892,7 +894,7 @@ namespace Puffin
 				VkDescriptorBufferInfo lightStatInfo;
 				lightStatInfo.buffer = frames[i].lightStatsBuffer.buffer;
 				lightStatInfo.offset = 0;
-				lightStatInfo.range = sizeof(LightStatsData);
+				lightStatInfo.range = sizeof(GPULightStatsData);
 
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 					.BindBuffer(0, &pointLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -1533,6 +1535,7 @@ namespace Puffin
 				lightBuffers.push_back(frames[i].pointLightBuffer);
 				lightBuffers.push_back(frames[i].dirLightBuffer);
 				lightBuffers.push_back(frames[i].spotLightBuffer);
+				lightBuffers.push_back(frames[i].lightStatsBuffer);
 			}
 
 			deferredRenderer.Setup(physicalDevice,
@@ -2011,15 +2014,17 @@ namespace Puffin
 			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &sceneData, graphicsQueue, offscreenFramebuffers[frameNumber % FRAME_OVERLAP]);
 
 			// Record Command Buffers
-			//VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
-			//VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
+			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
+			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
  			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
 
-			//std::array<VkCommandBuffer, 3> submitCommandBuffers = { cmdShadows, cmdMain, cmdGui };
+			std::vector<VkCommandBuffer> submitCommandBuffers = { /*cmdShadows, cmdMain,*/ cmdGui };
 
-			std::vector<VkSemaphore> waitSemaphores;
-			waitSemaphores.push_back(GetCurrentFrame().presentSemaphore);
-			waitSemaphores.push_back(deferredSemaphore);
+			std::vector<VkSemaphore> waitSemaphores = 
+			{
+				GetCurrentFrame().presentSemaphore,
+				deferredSemaphore
+			};
 
 			// Prepare the submission into graphics queue
 			// we will signal the _renderSemaphore, to signal that rendering has finished
@@ -2027,9 +2032,13 @@ namespace Puffin
 			submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submit.pNext = nullptr;
 
-			VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			std::vector<VkPipelineStageFlags> waitStages =
+			{
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+			};
 
-			submit.pWaitDstStageMask = &waitStage;
+			submit.pWaitDstStageMask = waitStages.data();
 
 			submit.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
 			submit.pWaitSemaphores = waitSemaphores.data();
@@ -2037,8 +2046,8 @@ namespace Puffin
 			submit.signalSemaphoreCount = 1;
 			submit.pSignalSemaphores = &GetCurrentFrame().renderSemaphore;
 
-			submit.commandBufferCount = 1;
-			submit.pCommandBuffers = &cmdGui;
+			submit.commandBufferCount = static_cast<uint32_t>(submitCommandBuffers.size());
+			submit.pCommandBuffers = submitCommandBuffers.data();
 
 			// Submit command buffers to queue and execute
 			// GetCurrentFrame().renderFence will now block until graphics command finish executing
@@ -2086,35 +2095,33 @@ namespace Puffin
 
 			// Map Mesh Matrices date to GPU 
 			MapObjectData();
-			
-			uint32_t totalIndices = 0;
 
-			// Empty indirect commands vector
-			GetCurrentFrame().drawBatch.drawIndirectCommands.clear();
-			GetCurrentFrame().drawBatch.drawIndirectCommands.reserve(entityMap["Mesh"].size());
+			// Map indirect commands to buffer
+			vmaMapMemory(allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation, &data);
+
+			VkDrawIndexedIndirectCommand* indirectData = (VkDrawIndexedIndirectCommand*)data;
+
+			uint32_t meshIndex = 0;
+			uint32_t totalIndices = 0;
 
 			// Build Draw Indirect Commands
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-				VkDrawIndexedIndirectCommand indirectCommand = {};
-				indirectCommand.indexCount = mesh.indices.size();
-				indirectCommand.instanceCount = 1;
-				indirectCommand.firstIndex = totalIndices;
-				indirectCommand.vertexOffset = 0;
-				indirectCommand.firstInstance = GetCurrentFrame().drawBatch.drawIndirectCommands.size();
-
-				GetCurrentFrame().drawBatch.drawIndirectCommands.push_back(indirectCommand);
+				indirectData[meshIndex].indexCount = mesh.indices.size();
+				indirectData[meshIndex].instanceCount = 1;
+				indirectData[meshIndex].firstIndex = totalIndices;
+				indirectData[meshIndex].vertexOffset = 0;
+				indirectData[meshIndex].firstInstance = meshIndex;
 
 				totalIndices += mesh.indices.size();
+				meshIndex++;
 			}
 
-			// Map indirect commands to buffer
-			vmaMapMemory(allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation, &data);
-			memcpy(data, GetCurrentFrame().drawBatch.drawIndirectCommands.data(), 
-				sizeof(VkDrawIndexedIndirectCommand) * GetCurrentFrame().drawBatch.drawIndirectCommands.size());
 			vmaUnmapMemory(allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation);
+
+			GetCurrentFrame().drawBatch.count = meshIndex;
 
 			deferredRenderer.SetDrawIndirectCommandsBuffer(&GetCurrentFrame().drawBatch);
 
@@ -2213,7 +2220,7 @@ namespace Puffin
 			// Map shaing data to uniform buffer
 			ShadingUBO uboData;
 			uboData.viewPos = camera.position;
-			uboData.displayDebugTarget = 1;
+			uboData.displayDebugTarget = 0;
 
 			void* data;
 			vmaMapMemory(allocator, GetCurrentFrame().uboBuffer.allocation, &data);
@@ -2296,6 +2303,16 @@ namespace Puffin
 			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
+
+			GPULightStatsData lightStatsData;
+			lightStatsData.numPLights = p;
+			lightStatsData.numDLights = d;
+			lightStatsData.numSLights = s;
+
+			// Map Light stats data to uniform buffer
+			vmaMapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation, &data);
+			memcpy(data, &lightStatsData, sizeof(GPULightStatsData));
+			vmaUnmapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation);
 		}
 
 		VkCommandBuffer VulkanEngine::RecordMainCommandBuffers(uint32_t index)
@@ -2621,7 +2638,7 @@ namespace Puffin
 			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
 			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceMultiBuffer.allocation);
 
-			LightStatsData lightStats;
+			GPULightStatsData lightStats;
 			lightStats.numPLights = p;
 			lightStats.numDLights = d;
 			lightStats.numSLights = s;
@@ -2635,11 +2652,6 @@ namespace Puffin
 			vmaMapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation, &data);
 			memcpy(data, &camera.data, sizeof(ViewData));
 			vmaUnmapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation);
-
-			// Map Light stats data to uniform buffer
-			vmaMapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation, &data);
-			memcpy(data, &lightStats, sizeof(LightStatsData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation);
 
 			// Map Light Space Index to Buffer
 			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceIndexBuffer.allocation, &data);

@@ -174,7 +174,7 @@ namespace Puffin
 		}
 
 		world->SetEntityName(1, "House");
-		world->SetEntityName(2, "Engineer");
+		world->SetEntityName(2, "Sphere");
 		world->SetEntityName(3, "Falling Cube");
 		world->SetEntityName(4, "Light");
 		world->SetEntityName(5, "Static Cube");
@@ -199,8 +199,8 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(1).model_path = "content\\models\\chalet.psm";
 		world->GetComponent<Rendering::MeshComponent>(1).texture_path = "content\\textures\\chalet.jpg";
 
-		world->GetComponent<Rendering::MeshComponent>(2).model_path = "content\\models\\space_engineer.psm";
-		world->GetComponent<Rendering::MeshComponent>(2).texture_path = "content\\textures\\space_engineer.jpg";
+		world->GetComponent<Rendering::MeshComponent>(2).model_path = "content\\models\\sphere.psm";
+		world->GetComponent<Rendering::MeshComponent>(2).texture_path = "content\\textures\\cube.png";
 
 		world->GetComponent<Rendering::MeshComponent>(3).model_path = "content\\models\\cube.psm";
 		world->GetComponent<Rendering::MeshComponent>(3).texture_path = "content\\textures\\cube.png";

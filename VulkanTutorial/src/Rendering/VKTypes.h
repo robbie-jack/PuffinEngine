@@ -68,8 +68,9 @@ namespace Puffin
 		// Draw Commands and buffer for Indirect rendering
 		struct IndirectDrawBatch
 		{
-			std::vector<VkDrawIndexedIndirectCommand> drawIndirectCommands;
-			AllocatedBuffer drawIndirectCommandsBuffer;
+			//std::vector<VkDrawIndexedIndirectCommand> drawIndirectCommands;
+			AllocatedBuffer drawIndirectCommandsBuffer; // Buffer containing draw commands
+			uint32_t count; // Number of commands mapped to buffer
 		};
 
 		struct ShadingUBO

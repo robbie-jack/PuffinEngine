@@ -78,6 +78,13 @@ layout(std140, set = 0, binding = 6) readonly buffer SpotLightBuffer
 	SpotLightData data[];
 } spotLights;
 
+layout(set = 0, binding = 7) uniform LightStatsData
+{
+	int numPointLights;
+	int numDirLights;
+	int numSpotLights;
+} lightStats;
+
 layout(location = 0) in vec2 fragUV;
 
 layout (location = 0) out vec4 outColor;
@@ -124,21 +131,21 @@ void main()
 	vec3 result = vec3(0.0, 0.0, 0.0);
 
 	// Calculate Point Lights
-	int pLights = pointLights.data.length();
+	int pLights = lightStats.numPointLights;
 	for (int i = 0; i < pLights; i++)
 	{
 		result += CalcPointLight(pointLights.data[i], fragNormal, viewDir, fragPos);
 	}
 
 	// Calculate Directional Lights
-	int dLights = dirLights.data.length();
+	int dLights = lightStats.numDirLights;
 	for (int i = 0; i < dLights; i++)
 	{
 		result += CalcDirLight(dirLights.data[i], fragNormal, viewDir);
 	}
 
 	// Calculate Spot Lights
-	int sLights = spotLights.data.length();
+	int sLights = lightStats.numSpotLights;
 	for (int i = 0; i < sLights; i++)
 	{
 		result += CalcSpotLight(spotLights.data[i], fragNormal, viewDir, fragPos);

@@ -84,13 +84,6 @@ namespace Puffin
 			VkCommandPool commandPool;
 		};
 
-		struct LightStatsData
-		{
-			int numPLights;
-			int numDLights;
-			int numSLights;
-		};
-
 		struct FrameData
 		{
 			VkSemaphore presentSemaphore, renderSemaphore;
@@ -102,7 +95,6 @@ namespace Puffin
 			AllocatedBuffer cameraViewProjBuffer, cameraBuffer;
 			VkDescriptorSet cameraViewProjDescriptor, cameraDescriptor;
 
-			AllocatedBuffer lightStatsBuffer;
 			VkDescriptorSet lightDescriptor;
 
 			AllocatedBuffer objectBuffer;
@@ -118,7 +110,7 @@ namespace Puffin
 			IndirectDrawBatch drawBatch;
 
 			AllocatedBuffer uboBuffer; // Buffer Containing Camera/Debug data for Fragment Shader
-			AllocatedBuffer pointLightBuffer, dirLightBuffer, spotLightBuffer;
+			AllocatedBuffer pointLightBuffer, dirLightBuffer, spotLightBuffer, lightStatsBuffer;
 
 			// Debug Variables
 			std::vector<Vertex> debugVertices;

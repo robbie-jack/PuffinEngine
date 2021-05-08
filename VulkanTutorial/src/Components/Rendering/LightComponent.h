@@ -73,6 +73,13 @@ namespace Puffin
 			alignas(4) int shadowmapIndex;
 		};
 
+		struct GPULightStatsData
+		{
+			alignas(4) int numPLights;
+			alignas(4) int numDLights;
+			alignas(4) int numSLights;
+		};
+
 		enum class LightType
 		{
 			POINT = 0,
