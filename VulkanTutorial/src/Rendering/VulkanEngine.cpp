@@ -1241,12 +1241,21 @@ namespace Puffin
 			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
 
+			std::vector<Vertex> vertices;
+			std::vector<uint32_t> indices;
+
 			// Load Mesh Data
-			IO::LoadMesh(mesh);
+			IO::LoadMesh(mesh.model_path, vertices, indices);
+
+			mesh.vertexCount = static_cast<uint32_t>(vertices.size());
+			mesh.indexCount = static_cast<uint32_t>(indices.size());
 
 			// Init Mesh Buffers
-			mesh.vertexBuffer = InitVertexBuffer(mesh.vertices);
-			mesh.indexBuffer = InitIndexBuffer(mesh.indices);
+			mesh.vertexBuffer = InitVertexBuffer(vertices);
+			mesh.indexBuffer = InitIndexBuffer(indices);
+
+			vertices.clear();
+			indices.clear();
 
 			mesh.material = meshMaterial;
 
@@ -2102,6 +2111,7 @@ namespace Puffin
 			VkDrawIndexedIndirectCommand* indirectData = (VkDrawIndexedIndirectCommand*)data;
 
 			uint32_t meshIndex = 0;
+			uint32_t totalVertices = 0;
 			uint32_t totalIndices = 0;
 
 			// Build Draw Indirect Commands
@@ -2109,13 +2119,14 @@ namespace Puffin
 			{
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-				indirectData[meshIndex].indexCount = mesh.indices.size();
+				indirectData[meshIndex].indexCount = mesh.indexCount;
 				indirectData[meshIndex].instanceCount = 1;
 				indirectData[meshIndex].firstIndex = totalIndices;
-				indirectData[meshIndex].vertexOffset = 0;
+				indirectData[meshIndex].vertexOffset = totalVertices;
 				indirectData[meshIndex].firstInstance = meshIndex;
 
-				totalIndices += mesh.indices.size();
+				totalVertices += mesh.vertexCount;
+				totalIndices += mesh.indexCount;
 				meshIndex++;
 			}
 
@@ -2129,7 +2140,7 @@ namespace Puffin
 			if (sceneData.bFlagSceneChanged == true)
 			{
 				// Map Mesh Matrices to Storage Buffer
-				uint32_t totalVertices = 0;
+				totalVertices = 0;
 				totalIndices = 0;
 
 				// Check how many vertices there are
@@ -2137,8 +2148,8 @@ namespace Puffin
 				{
 					MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-					totalVertices += mesh.vertices.size();
-					totalIndices += mesh.indices.size();
+					totalVertices += mesh.vertexCount;
+					totalIndices += mesh.indexCount;
 				}
 
 				// If total vertices exceeds currently allocted buffer size, allocate new buffer
@@ -2193,7 +2204,7 @@ namespace Puffin
 						// Copy directly from mesh vertex buffer to scene vertex buffer
 						VkBufferCopy vertexCopy;
 						vertexCopy.dstOffset = vertexOffset * sizeof(Vertex);
-						vertexCopy.size = mesh.vertices.size() * sizeof(Vertex);
+						vertexCopy.size = mesh.vertexCount * sizeof(Vertex);
 						vertexCopy.srcOffset = 0;
 
 						vkCmdCopyBuffer(cmd, mesh.vertexBuffer.buffer, sceneData.mergedVertexBuffer.buffer, 1, &vertexCopy);
@@ -2201,13 +2212,13 @@ namespace Puffin
 						// Copt directly from mesh index buffer to scene index buffer
 						VkBufferCopy indexCopy;
 						indexCopy.dstOffset = indexOffset * sizeof(uint32_t);
-						indexCopy.size = mesh.indices.size() * sizeof(uint32_t);
+						indexCopy.size = mesh.indexCount * sizeof(uint32_t);
 						indexCopy.srcOffset = 0;
 
 						vkCmdCopyBuffer(cmd, mesh.indexBuffer.buffer, sceneData.mergedIndexBuffer.buffer, 1, &indexCopy);
 
-						vertexOffset += mesh.vertices.size();
-						indexOffset += mesh.indices.size();
+						vertexOffset += mesh.vertexCount;
+						indexOffset += mesh.indexCount;
 					}
 				});
 
@@ -2527,7 +2538,7 @@ namespace Puffin
 							vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 							// Draw Indexed Vertices
-							vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, meshIndex);
+							vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indexCount), 1, 0, 0, meshIndex);
 
 							meshIndex++;
 						}
@@ -2728,7 +2739,7 @@ namespace Puffin
 					vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 					// Draw Indexed Vertices
-					vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, meshIndex);
+					vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indexCount), 1, 0, 0, meshIndex);
 
 					meshIndex++;
 				}

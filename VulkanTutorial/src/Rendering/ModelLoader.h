@@ -13,6 +13,8 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <vector>
+#include <string>
 
 #include <Components/Rendering/MeshComponent.h>
 
@@ -36,26 +38,26 @@ namespace Puffin
 			}
 		}
 
-		inline void SaveMesh(Rendering::MeshComponent& meshComp)
+		inline void SaveMesh(const std::string& model_path, const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices)
 		{
 			// Initialize Output File Stream and Cereal Binary Archive
-			std::ofstream os(meshComp.model_path, std::ios::binary);
+			std::ofstream os(model_path, std::ios::binary);
 			cereal::BinaryOutputArchive archive(os);
 
-			archive(meshComp.vertices);
-			archive(meshComp.indices);
+			archive(vertices);
+			archive(indices);
 		}
 
-		inline void LoadMesh(Rendering::MeshComponent& meshComp)
+		inline void LoadMesh(const std::string& model_path, std::vector<Rendering::Vertex>& vertices, std::vector<uint32_t>& indices)
 		{
-			std::ifstream is(meshComp.model_path, std::ios::binary);
+			std::ifstream is(model_path, std::ios::binary);
 			cereal::BinaryInputArchive archive(is);
 
-			archive(meshComp.vertices);
-			archive(meshComp.indices);
+			archive(vertices);
+			archive(indices);
 
-			meshComp.vertices.shrink_to_fit();
-			meshComp.indices.shrink_to_fit();
+			vertices.shrink_to_fit();
+			indices.shrink_to_fit();
 		}
 
 		// Import Mesh to MeshComponent
@@ -84,7 +86,8 @@ namespace Puffin
 
 
 			// Local vectors for storing model data
-			Rendering::MeshComponent meshComp;
+			std::vector<Rendering::Vertex> vertices;
+			std::vector<uint32_t> indices;
 			std::vector<aiMesh*> meshes;
 
 			aiNode* root = scene->mRootNode;
@@ -139,7 +142,7 @@ namespace Puffin
 						mesh->mTextureCoords[0][j].y
 					};
 
-					meshComp.vertices.push_back(vertex);
+					vertices.push_back(vertex);
 				}
 
 				// Iterate over faces in mesh object
@@ -150,7 +153,7 @@ namespace Puffin
 					// Store all indices of this face
 					for (int k = 0; k < face->mNumIndices; k++)
 					{
-						meshComp.indices.push_back(face->mIndices[k]);
+						indices.push_back(face->mIndices[k]);
 					}
 				}
 			}
@@ -158,9 +161,7 @@ namespace Puffin
 			std::filesystem::path path(model_path);
 			std::string import_path = "content/models/" + path.stem().string() + ".psm";
 
-			meshComp.model_path = import_path;
-
-			SaveMesh(meshComp);
+			SaveMesh(import_path, vertices, indices);
 
 			// Import was successful, return true
 			return true;

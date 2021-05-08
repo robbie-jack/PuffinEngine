@@ -132,9 +132,11 @@ namespace Puffin
 			}
 
 			// Mesh Data
-			std::vector<Vertex> vertices;
-			std::vector<uint32_t> indices;
+			//std::vector<Vertex> vertices;
+			//std::vector<uint32_t> indices;
 			std::string model_path;
+			uint32_t vertexCount;
+			uint32_t indexCount;
 
 			// Texture
 			Texture texture;
