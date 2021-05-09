@@ -2020,7 +2020,7 @@ namespace Puffin
 
 			// Deferred Render
 			deferredRenderer.SetGeometryDescriptorSet(&GetCurrentFrame().geometryDescriptor);
-			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &sceneData, graphicsQueue, offscreenFramebuffers[frameNumber % FRAME_OVERLAP]);
+			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &sceneData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex]);
 
 			// Record Command Buffers
 			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
