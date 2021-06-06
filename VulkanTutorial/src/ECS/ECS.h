@@ -45,8 +45,31 @@ namespace Puffin
 				
 			}
 
-			void Init(std::set<Entity> entities)
+			void Init()
 			{
+				if (bInitialized)
+				{
+					return;
+				}
+
+				for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
+				{
+					availableEntities.push(entity);
+
+					entityNames[entity] = "";
+					entityDeletionFlags[entity] = false;
+				}
+
+				bInitialized = true;
+			}
+
+			void Init(std::set<Entity>& entities)
+			{
+				if (bInitialized)
+				{
+					return;
+				}
+
 				for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
 				{
 					// This entity was not active in loaded scene file, insert into queue as normal
@@ -63,6 +86,8 @@ namespace Puffin
 					entityNames[entity] = "";
 					entityDeletionFlags[entity] = false;
 				}
+
+				bInitialized = true;
 			}
 
 			void Cleanup()
@@ -74,6 +99,8 @@ namespace Puffin
 
 				activeEntities.clear();
 				activeEntityCount = 0;
+
+				bInitialized = false;
 			}
 
 			Entity CreateEntity()
@@ -168,6 +195,8 @@ namespace Puffin
 			std::array<bool, MAX_ENTITIES> entityDeletionFlags;
 
 			uint32_t activeEntityCount;
+
+			bool bInitialized = false;
 		};
 
 		//////////////////////////////////////////////////
@@ -555,7 +584,12 @@ namespace Puffin
 			}
 
 			// Entity Methods
-			void InitEntitySystem(std::set<Entity> entities)
+			void InitEntitySystem()
+			{
+				entityManager->Init();
+			}
+
+			void InitEntitySystem(std::set<Entity>& entities)
 			{
 				entityManager->Init(entities);
 			}

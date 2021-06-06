@@ -1,13 +1,13 @@
 {
     "rdocCaptureSettings": 1,
     "settings": {
-        "autoStart": true,
+        "autoStart": false,
         "commandLine": "",
         "environment": [
         ],
         "executable": "C:\\Projects\\PuffinEngine\\x64\\Release\\PuffinEngine.exe",
         "inject": false,
-        "numQueuedFrames": 1,
+        "numQueuedFrames": 4,
         "options": {
             "allowFullscreen": true,
             "allowVSync": true,

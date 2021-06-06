@@ -69,15 +69,18 @@ namespace Puffin
 		scriptSignature.set(ECSWorld->GetComponentType<Scripting::AngelScriptComponent>());
 		ECSWorld->SetSystemSignature<Scripting::AngelScriptSystem>("Script", scriptSignature);
 
-		sceneData.scene_name = "content/scenes/default.pscn";
+		sceneData.scene_name = "content/scenes/physics.pscn";
 		IO::LoadSettings("settings.xml", settings);
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene(ECSWorld);
+		//PhysicsScene(ECSWorld);
 		
 		// Load Scene -- normal behaviour
 		IO::LoadScene(ECSWorld, sceneData);
 		IO::InitScene(ECSWorld, sceneData);
+
+		ECSWorld->InitEntitySystem();
 
 		running = true;
 		restarted = false;
@@ -163,7 +166,7 @@ namespace Puffin
 	void Engine::DefaultScene(std::shared_ptr<ECS::World> world)
 	{
 		// Initialize EntityManager with Existing Entities
-		world->InitEntitySystem(std::set<ECS::Entity>());
+		world->InitEntitySystem();
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < 7; i++)
@@ -249,6 +252,60 @@ namespace Puffin
 		script.name = "Game";
 		script.dir = "C:/Projects/PuffinProject/content/scripts/game.as";
 		world->AddComponent(1, script);
+	}
+
+	void Engine::PhysicsScene(std::shared_ptr<ECS::World> world)
+	{
+		world->InitEntitySystem();
+
+		// Creater Light Entity
+		ECS::Entity lightEntity = world->CreateEntity();
+
+		world->SetEntityName(lightEntity, "Light");
+
+		world->AddComponent<TransformComponent>(lightEntity);
+		world->AddComponent<Rendering::LightComponent>(lightEntity);
+
+		world->GetComponent<TransformComponent>(lightEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
+
+		world->GetComponent<Rendering::LightComponent>(lightEntity).direction = glm::vec3(1.0f, -1.0f, 0.0f);
+		world->GetComponent<Rendering::LightComponent>(lightEntity).ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
+		world->GetComponent<Rendering::LightComponent>(lightEntity).diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		world->GetComponent<Rendering::LightComponent>(lightEntity).innerCutoffAngle = 12.5f;
+		world->GetComponent<Rendering::LightComponent>(lightEntity).outerCutoffAngle = 17.5f;
+		world->GetComponent<Rendering::LightComponent>(lightEntity).constantAttenuation = 1.0f;
+		world->GetComponent<Rendering::LightComponent>(lightEntity).linearAttenuation = 0.09f;
+		world->GetComponent<Rendering::LightComponent>(lightEntity).quadraticAttenuation = 0.032f;
+		world->GetComponent<Rendering::LightComponent>(lightEntity).specularStrength = 0.5f;
+		world->GetComponent<Rendering::LightComponent>(lightEntity).shininess = 16;
+		world->GetComponent<Rendering::LightComponent>(lightEntity).type = Rendering::LightType::DIRECTIONAL;
+		world->GetComponent<Rendering::LightComponent>(lightEntity).bFlagCastShadows = false;
+
+		// Create Box Entity
+		ECS::Entity boxEntity = world->CreateEntity();
+
+		world->SetEntityName(boxEntity, "Box");
+
+		world->AddComponent<TransformComponent>(boxEntity);
+		world->AddComponent<Rendering::MeshComponent>(boxEntity);
+
+		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
+
+		world->GetComponent<Rendering::MeshComponent>(boxEntity).model_path = "content\\models\\cube.psm";
+		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = "content\\textures\\cube.png";
+
+		// Create Floor Entity
+		ECS::Entity floorEntity = world->CreateEntity();
+
+		world->SetEntityName(floorEntity, "Floor");
+
+		world->AddComponent<TransformComponent>(floorEntity);
+		world->AddComponent<Rendering::MeshComponent>(floorEntity);
+
+		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(0.0f), Vector3(0.0f), Vector3(10.0f, 1.0f, 1.0f) };
+
+		world->GetComponent<Rendering::MeshComponent>(floorEntity).model_path = "content\\models\\cube.psm";
+		world->GetComponent<Rendering::MeshComponent>(floorEntity).texture_path = "content\\textures\\cube.png";
 	}
 
 	void Engine::Play()

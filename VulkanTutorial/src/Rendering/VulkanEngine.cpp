@@ -970,17 +970,29 @@ namespace Puffin
 				objectBufferInfo.offset = 0;
 				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
 
-				// Build Descriptor Set
-				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-					.BindBuffer(1, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-					.BindImages(2, static_cast<uint32_t>(albedoImageInfo.size()),
-						albedoImageInfo.data(),
-						VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.BindImages(3, static_cast<uint32_t>(normalImageInfo.size()),
-						normalImageInfo.data(),
-						VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.Build(frames[i].geometryDescriptor, geometrySetLayout);
+				if (albedoImageInfo.size() > 0 && normalImageInfo.size() > 0)
+				{
+
+					// Build Descriptor Set
+					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+						.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+						.BindBuffer(1, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+						.BindImages(2, static_cast<uint32_t>(albedoImageInfo.size()),
+							albedoImageInfo.data(),
+							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+						.BindImages(3, static_cast<uint32_t>(normalImageInfo.size()),
+							normalImageInfo.data(),
+							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+						.Build(frames[i].geometryDescriptor, geometrySetLayout);
+				}
+				else
+				{
+					// Build Descriptor Set
+					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+						.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+						.BindBuffer(1, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+						.Build(frames[i].geometryDescriptor, geometrySetLayout);
+				}
 			}
 		}
 
@@ -2023,8 +2035,8 @@ namespace Puffin
 			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &sceneData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex]);
 
 			// Record Command Buffers
-			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
-			VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
+			//VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
+			//VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
  			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
 
 			std::vector<VkCommandBuffer> submitCommandBuffers = { /*cmdShadows, cmdMain,*/ cmdGui };
@@ -2820,9 +2832,9 @@ namespace Puffin
 			glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)transform.position);
 
 			// Set Rotation
-			model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.y)), glm::vec3(0.0f, 1.0f, 0.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.z)), glm::vec3(0.0f, 0.0f, 1.0f));
 
 			// Set Scale
 			model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);

@@ -6,11 +6,19 @@
 #include <math.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define PFN_USE_DOUBLE_PRECISION
+
 namespace Puffin
 {
+	#ifdef PFN_USE_DOUBLE_PRECISION
+		typedef double Float;
+	#else
+		typedef float Float;
+	#endif
+
 	struct Vector2
 	{
-		float x, y;
+		Float x, y;
 
 		// Constructors
 		Vector2()
@@ -19,14 +27,14 @@ namespace Puffin
 			y = 0.0f;
 		}
 
-		Vector2(float x_, float y_)
+		Vector2(Float x_, Float y_)
 		{
 			x = x_;
 			y = y_;
 		}
 
 		// Fill X/Y/Z Components with Val
-		Vector2(float val)
+		Vector2(Float val)
 		{
 			x = val;
 			y = val;
@@ -106,7 +114,7 @@ namespace Puffin
 		}
 
 		// Functions
-		float Dot(Vector2 vec)
+		Float Dot(Vector2 vec)
 		{
 			return (x * vec.x) + (y * vec.y);
 		}
@@ -120,7 +128,7 @@ namespace Puffin
 			return cross;
 		}*/
 
-		float Length()
+		Float Length()
 		{
 			return sqrtf(x * x + y * y);
 		}
@@ -128,7 +136,7 @@ namespace Puffin
 		Vector2 Normalised()
 		{
 			Vector2 vector;
-			float length = Length();
+			Float length = Length();
 
 			vector.x / length;
 			vector.y / length;
@@ -139,7 +147,7 @@ namespace Puffin
 
 	struct Vector3
 	{
-		float x, y, z;
+		Float x, y, z;
 
 		// Constructors
 		Vector3()
@@ -149,7 +157,7 @@ namespace Puffin
 			z = 0.0f;
 		}
 
-		Vector3(float x_, float y_, float z_)
+		Vector3(Float x_, Float y_, Float z_)
 		{
 			x = x_;
 			y = y_;
@@ -157,7 +165,7 @@ namespace Puffin
 		}
 
 		// Fill X/Y/Z Components with Val
-		Vector3(float val)
+		Vector3(Float val)
 		{
 			x = val;
 			y = val;
@@ -302,7 +310,7 @@ namespace Puffin
 		}
 
 		// Functions
-		float Dot(Vector3 vec)
+		Float Dot(Vector3 vec)
 		{
 			return (x * vec.x) + (y * vec.y) + (z * vec.z);
 		}
@@ -316,7 +324,7 @@ namespace Puffin
 			return cross;
 		}
 
-		float Length()
+		Float Length()
 		{
 			return sqrtf(x * x + y * y + z * z);
 		}
@@ -324,7 +332,7 @@ namespace Puffin
 		Vector3 Normalised()
 		{
 			Vector3 vector;
-			float length = Length();
+			Float length = Length();
 
 			vector.x / length;
 			vector.y / length;
@@ -339,13 +347,6 @@ namespace Puffin
 		{
 			archive(x, y, z);
 		}
-	};
-
-	struct Vector3Double
-	{
-		double x;
-		double y;
-		double z;
 	};
 }
 

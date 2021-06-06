@@ -103,7 +103,7 @@ namespace Puffin
 						worldTransform.position = physicsTransform.getOrigin();
 
 						// Convert Rotation from Radians to Degrees
-						physicsTransform.getRotation().getEulerZYX(worldTransform.rotation.z, worldTransform.rotation.y, worldTransform.rotation.x);
+						//physicsTransform.getRotation().getEulerZYX(worldTransform.rotation.z, worldTransform.rotation.y, worldTransform.rotation.x);
 
 						// Convert from Radians to Degrees
 						float PI = 3.14159;

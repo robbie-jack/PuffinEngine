@@ -38,8 +38,8 @@ namespace Puffin
 						bool has_child = false;
 
 						// Simple test to show leaf and branch nodes
-						if (entity == 1 || entity == 2)
-							has_child = true;
+						/*if (entity == 1 || entity == 2)
+							has_child = true;*/
 
 						// Set Selected Flag if entity equals selectedEntity
 						if (selectedEntity == entity)
