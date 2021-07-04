@@ -6,7 +6,8 @@
 #include <ECS/ECS.h>
 #include <Input/InputManager.h>
 #include <JobManager.h>
-#include <Physics/BulletPhysicsSystem.h>
+//#include <Physics/BulletPhysicsSystem.h>
+#include <Physics/PhysicsSystem2D.h>
 #include <Rendering/DebugDraw.h>
 #include <Scripting/AngelScriptSystem.h>
 #include <SerializeScene.h>
@@ -40,14 +41,16 @@ namespace Puffin
 		//JobManager.Init();
 
 		// Systems
-		std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld->RegisterSystem<Physics::BulletPhysicsSystem>();
+		//std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld->RegisterSystem<Physics::BulletPhysicsSystem>();
+		std::shared_ptr<Physics::PhysicsSystem2D> physicsSystem = ECSWorld->RegisterSystem<Physics::PhysicsSystem2D>();
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
 
 		ECSWorld->RegisterComponent<TransformComponent>();
 		ECSWorld->RegisterComponent<Rendering::MeshComponent>();
 		ECSWorld->RegisterComponent<Rendering::LightComponent>();
-		ECSWorld->RegisterComponent<Physics::RigidbodyComponent>();
+		ECSWorld->RegisterComponent<Physics::RigidbodyComponent2D>();
+		ECSWorld->RegisterComponent<Physics::ShapeComponent2D>();
 		ECSWorld->RegisterComponent<Scripting::AngelScriptComponent>();
 
 		ECS::Signature meshSignature;
@@ -62,8 +65,13 @@ namespace Puffin
 
 		ECS::Signature rigidbodySignature;
 		rigidbodySignature.set(ECSWorld->GetComponentType<TransformComponent>());
-		rigidbodySignature.set(ECSWorld->GetComponentType<Physics::RigidbodyComponent>());
-		ECSWorld->SetSystemSignature<Physics::BulletPhysicsSystem>("Rigidbody", rigidbodySignature);
+		rigidbodySignature.set(ECSWorld->GetComponentType<Physics::RigidbodyComponent2D>());
+		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("Rigidbody", rigidbodySignature);
+
+		ECS::Signature collisionSignature;
+		collisionSignature.set(ECSWorld->GetComponentType<TransformComponent>());
+		collisionSignature.set(ECSWorld->GetComponentType<Physics::ShapeComponent2D>());
+		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("Collision", collisionSignature);
 
 		ECS::Signature scriptSignature;
 		scriptSignature.set(ECSWorld->GetComponentType<Scripting::AngelScriptComponent>());
@@ -90,7 +98,6 @@ namespace Puffin
 		vulkanEngine->Init(window, &UIManager);
 
 		physicsSystem->Init();
-		physicsSystem->Start();
 
 		scriptingSystem->Init();
 		scriptingSystem->Start();
@@ -130,7 +137,6 @@ namespace Puffin
 			{
 				// Cleanup Systems and ECS
 				vulkanEngine->StopScene();
-				physicsSystem->Stop();
 				scriptingSystem->Stop();
 				ECSWorld->Reset();
 
@@ -138,7 +144,6 @@ namespace Puffin
 				IO::LoadScene(ECSWorld, sceneData);
 				IO::InitScene(ECSWorld, sceneData);
 				vulkanEngine->StartScene();
-				physicsSystem->Start();
 				scriptingSystem->Start();
 
 				restarted = false;
@@ -154,7 +159,7 @@ namespace Puffin
 		}
 
 		scriptingSystem->Stop();
-		physicsSystem->Stop();
+		physicsSystem->Cleanup();
 		vulkanEngine->Cleanup();
 		UIManager.Cleanup();
 		ECSWorld->Cleanup();
@@ -187,8 +192,8 @@ namespace Puffin
 		world->AddComponent<Rendering::LightComponent>(4);
 		world->AddComponent<Rendering::LightComponent>(7);
 
-		world->AddComponent<Physics::RigidbodyComponent>(3);
-		world->AddComponent<Physics::RigidbodyComponent>(5);
+		//world->AddComponent<Physics::RigidbodyComponent>(3);
+		//world->AddComponent<Physics::RigidbodyComponent>(5);
 
 		// Initialize Components with default values
 		world->GetComponent<TransformComponent>(1) = { Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
@@ -242,11 +247,11 @@ namespace Puffin
 		world->GetComponent<Rendering::LightComponent>(7).type = Rendering::LightType::SPOT;
 		world->GetComponent<Rendering::LightComponent>(7).bFlagCastShadows = false;
 
-		world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
+		/*world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
 		world->GetComponent<Physics::RigidbodyComponent>(3).mass = 1.0f;
 
 		world->GetComponent<Physics::RigidbodyComponent>(5).size = btVector3(1.0f, 1.0f, 1.0f);
-		world->GetComponent<Physics::RigidbodyComponent>(5).mass = 0.0f;
+		world->GetComponent<Physics::RigidbodyComponent>(5).mass = 0.0f;*/
 
 		Scripting::AngelScriptComponent script;
 		script.name = "Game";
@@ -288,11 +293,18 @@ namespace Puffin
 
 		world->AddComponent<TransformComponent>(boxEntity);
 		world->AddComponent<Rendering::MeshComponent>(boxEntity);
+		world->AddComponent<Physics::RigidbodyComponent2D>(boxEntity);
+		world->AddComponent<Physics::ShapeComponent2D>(boxEntity);
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).model_path = "content\\models\\cube.psm";
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = "content\\textures\\cube.png";
+
+		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).mass = 100.0f;
+
+		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).type = Physics::ShapeType::BOX;
+		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).box.halfExtent = Vector2(5.0f, 5.0f);
 
 		// Create Floor Entity
 		ECS::Entity floorEntity = world->CreateEntity();

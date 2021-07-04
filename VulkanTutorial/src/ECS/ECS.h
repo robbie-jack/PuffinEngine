@@ -473,6 +473,31 @@ namespace Puffin
 				systems.at(typeName)->entityMap.insert({ signatureName, std::set<Entity>() });
 			}
 
+			template<typename SystemT>
+			SystemT& GetSystem()
+			{
+				const char* typeName = typeid(SystemT).name();
+
+				assert(systems.find(typeName) != systems.end() && "System used before registered.");
+
+				return std::static_pointer_cast<SystemT>(systems[typeName]);
+			}
+
+			template<typename SystemT>
+			bool HasSystem()
+			{
+				const char* typeName = typeid(SystemT).name();
+
+				assert(systems.find(typeName) != systems.end() && "System used before registered.");
+
+				bool hasSystem = false;
+
+				if (systems.find(typeName) != systems.end())
+					hasSystem = true;
+
+				return hasSystem;
+			}
+
 			void EntityDestroyed(Entity entity)
 			{
 				// Erase destroyed entity from all system lists

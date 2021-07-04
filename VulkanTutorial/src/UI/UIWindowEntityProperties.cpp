@@ -319,7 +319,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawRigidbodyUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Physics::RigidbodyComponent>(entity))
+			/*if (world->HasComponent<Physics::RigidbodyComponent>(entity))
 			{
 				if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 				{
@@ -340,7 +340,7 @@ namespace Puffin
 
 					ImGui::TreePop();
 				}
-			}
+			}*/
 		}
 
 		void UIWindowEntityProperties::DrawScriptUI(ImGuiTreeNodeFlags flags)

@@ -7,7 +7,8 @@
 #include <Components/TransformComponent.h>
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
-#include <Components/Physics/RigidbodyComponent.h>
+#include <Components/Physics/RigidbodyComponent2D.h>
+#include <Components/Physics/ShapeComponent2D.h>
 #include <Components/AngelScriptComponent.h>
 
 #include <vector>
@@ -33,7 +34,8 @@ namespace Puffin
 			std::map<ECS::Entity, TransformComponent> transformMap;
 			std::map<ECS::Entity, Rendering::MeshComponent> meshMap;
 			std::map<ECS::Entity, Rendering::LightComponent> lightMap;
-			std::map<ECS::Entity, Physics::RigidbodyComponent> rigidbodyMap;
+			std::map<ECS::Entity, Physics::RigidbodyComponent2D> rigidbody2DMap;
+			std::map<ECS::Entity, Physics::ShapeComponent2D> shape2DMap;
 			std::map<ECS::Entity, Scripting::AngelScriptComponent> scriptMap;
 		};
 
@@ -44,7 +46,9 @@ namespace Puffin
 			sceneData.transformMap.clear();
 			sceneData.meshMap.clear();
 			sceneData.lightMap.clear();
-			sceneData.rigidbodyMap.clear();
+			sceneData.rigidbody2DMap.clear();
+			sceneData.shape2DMap.clear();
+			sceneData.scriptMap.clear();
 		}
 
 		inline static void UpdateSceneData(std::shared_ptr<ECS::World> world, SceneData& sceneData)
@@ -80,10 +84,16 @@ namespace Puffin
 					sceneData.lightMap.insert({ entity, comp });
 				}
 
-				if (world->HasComponent<Physics::RigidbodyComponent>(entity))
+				if (world->HasComponent<Physics::RigidbodyComponent2D>(entity))
 				{
-					Physics::RigidbodyComponent& comp = world->GetComponent<Physics::RigidbodyComponent>(entity);
-					sceneData.rigidbodyMap.insert({ entity, comp });
+					Physics::RigidbodyComponent2D& comp = world->GetComponent<Physics::RigidbodyComponent2D>(entity);
+					sceneData.rigidbody2DMap.insert({ entity, comp });
+				}
+
+				if (world->HasComponent<Physics::ShapeComponent2D>(entity))
+				{
+					Physics::ShapeComponent2D& comp = world->GetComponent<Physics::ShapeComponent2D>(entity);
+					sceneData.shape2DMap.insert({entity, comp});
 				}
 
 				if (world->HasComponent<Scripting::AngelScriptComponent>(entity))
@@ -108,7 +118,8 @@ namespace Puffin
 			archive(sceneData.transformMap);
 			archive(sceneData.meshMap);
 			archive(sceneData.lightMap);
-			archive(sceneData.rigidbodyMap);
+			archive(sceneData.rigidbody2DMap);
+			archive(sceneData.shape2DMap);
 			archive(sceneData.scriptMap);
 		}
 
@@ -129,7 +140,8 @@ namespace Puffin
 			archive(sceneData.transformMap);
 			archive(sceneData.meshMap);
 			archive(sceneData.lightMap);
-			archive(sceneData.rigidbodyMap);
+			archive(sceneData.rigidbody2DMap);
+			archive(sceneData.shape2DMap);
 			archive(sceneData.scriptMap);
 		}
 
@@ -163,9 +175,15 @@ namespace Puffin
 				}
 
 				// If Entity has Rigidbody Component, Insert into ECS
-				if (sceneData.rigidbodyMap.find(entity) != sceneData.rigidbodyMap.end())
+				if (sceneData.rigidbody2DMap.find(entity) != sceneData.rigidbody2DMap.end())
 				{
-					world->AddComponent<Physics::RigidbodyComponent>(entity, sceneData.rigidbodyMap.at(entity));
+					world->AddComponent<Physics::RigidbodyComponent2D>(entity, sceneData.rigidbody2DMap.at(entity));
+				}
+
+				// Shape Component 2D
+				if (sceneData.shape2DMap.find(entity) != sceneData.shape2DMap.end())
+				{
+					world->AddComponent<Physics::ShapeComponent2D>(entity, sceneData.shape2DMap.at(entity));
 				}
 
 				// Script Component

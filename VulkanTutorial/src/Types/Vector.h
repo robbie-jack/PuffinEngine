@@ -6,7 +6,7 @@
 #include <math.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#define PFN_USE_DOUBLE_PRECISION
+//#define PFN_USE_DOUBLE_PRECISION
 
 namespace Puffin
 {
@@ -72,6 +72,12 @@ namespace Puffin
 			y += vec.y;
 		}
 
+		void operator+=(Vector2 vec)
+		{
+			x += vec.x;
+			y += vec.y;
+		}
+
 		// Operator-=
 		void operator-=(glm::vec2 vec)
 		{
@@ -108,9 +114,41 @@ namespace Puffin
 		Vector2 operator- (glm::vec2 vec)
 		{
 			Vector2 vector;
-			vector = x - vec.x;
-			vector = y - vec.y;
+			vector.x = x - vec.x;
+			vector.y = y - vec.y;
 			return vector;
+		}
+
+		// Operator*
+		Vector2 operator* (Float inFloat)
+		{
+			Vector2 vector;
+			vector.x = x * inFloat;
+			vector.y = y * inFloat;
+			return vector;
+		}
+
+		// Operator*=
+		void operator*= (Float inFloat)
+		{
+			x *= inFloat;
+			y *= inFloat;
+		}
+
+		// Operator/
+		Vector2 operator/ (Float inFloat)
+		{
+			Vector2 vector;
+			vector.x = x / inFloat;
+			vector.y = y / inFloat;
+			return vector;
+		}
+		
+		// Operator/=
+		void operator/= (Float inFloat)
+		{
+			x /= inFloat;
+			y /= inFloat;
 		}
 
 		// Functions
@@ -118,15 +156,6 @@ namespace Puffin
 		{
 			return (x * vec.x) + (y * vec.y);
 		}
-
-		/*Vector2 Cross(Vector2 vec)
-		{
-			Vector2 cross;
-			cross.x = y * vec.z - z * vec.y;
-			cross.y = x * vec.z - z * vec.x;
-			cross.z = x * vec.y - y * vec.x;
-			return cross;
-		}*/
 
 		Float Length()
 		{
@@ -142,6 +171,13 @@ namespace Puffin
 			vector.y / length;
 
 			return vector;
+		}
+
+		// Serialization
+		template<class Archive>
+		void serialize(Archive& archive)
+		{
+			archive(x, y);
 		}
 	};
 
@@ -226,6 +262,12 @@ namespace Puffin
 			x += vec.getX();
 			y += vec.getY();
 			z += vec.getZ();
+		}
+
+		void operator+=(Vector2 vec)
+		{
+			x += vec.x;
+			y += vec.y;
 		}
 
 		// Operator-=
@@ -334,9 +376,9 @@ namespace Puffin
 			Vector3 vector;
 			Float length = Length();
 
-			vector.x / length;
-			vector.y / length;
-			vector.z / length;
+			vector.x /= length;
+			vector.y /= length;
+			vector.z /= length;
 
 			return vector;
 		}

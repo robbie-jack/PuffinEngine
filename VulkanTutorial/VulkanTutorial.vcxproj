@@ -192,6 +192,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp" />
+    <ClCompile Include="src\Physics\PhysicsSystem2D.cpp" />
     <ClCompile Include="src\Rendering\VKDeferredRender.cpp" />
     <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
     <ClCompile Include="src\Rendering\VKHelper.cpp" />
@@ -216,7 +217,9 @@
     <ClInclude Include="src\Audio\AudioSystem.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
     <ClInclude Include="src\Components\BaseComponent.h" />
+    <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent.h" />
+    <ClInclude Include="src\Components\Physics\ShapeComponent2D.h" />
     <ClInclude Include="src\Components\Rendering\CameraComponent.h" />
     <ClInclude Include="src\Components\Rendering\LightComponent.h" />
     <ClInclude Include="src\Components\Rendering\MeshComponent.h" />
@@ -230,6 +233,7 @@
     <ClInclude Include="src\JobManager.h" />
     <ClInclude Include="src\ManipulationGizmo.h" />
     <ClInclude Include="src\Physics\BulletPhysicsSystem.h" />
+    <ClInclude Include="src\Physics\PhysicsSystem2D.h" />
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\Rendering\DebugDraw.h" />
     <ClInclude Include="src\Rendering\ModelLoader.h" />

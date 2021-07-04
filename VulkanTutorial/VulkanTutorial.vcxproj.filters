@@ -143,6 +143,9 @@
     <ClCompile Include="src\Rendering\VKHelper.cpp">
       <Filter>Rendering\Helper Classes</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics\PhysicsSystem2D.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -281,6 +284,15 @@
     </ClInclude>
     <ClInclude Include="src\Rendering\VKPipeline.h">
       <Filter>Rendering\Helper Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsSystem2D.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Physics\ShapeComponent2D.h">
+      <Filter>Components\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
