@@ -82,13 +82,15 @@ namespace Puffin
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene(ECSWorld);
-		//PhysicsScene(ECSWorld);
+		PhysicsScene(ECSWorld);
 		
 		// Load Scene -- normal behaviour
-		IO::LoadScene(ECSWorld, sceneData);
-		IO::InitScene(ECSWorld, sceneData);
+		//IO::LoadScene(ECSWorld, sceneData);
+		//IO::InitScene(ECSWorld, sceneData);
 
 		ECSWorld->InitEntitySystem();
+
+		IO::SaveScene(ECSWorld, sceneData);
 
 		running = true;
 		restarted = false;
@@ -138,6 +140,7 @@ namespace Puffin
 				// Cleanup Systems and ECS
 				vulkanEngine->StopScene();
 				scriptingSystem->Stop();
+				physicsSystem->Cleanup();
 				ECSWorld->Reset();
 
 				// Re-Initialize Systems and ECS
@@ -145,6 +148,7 @@ namespace Puffin
 				IO::InitScene(ECSWorld, sceneData);
 				vulkanEngine->StartScene();
 				scriptingSystem->Start();
+				physicsSystem->Init();
 
 				restarted = false;
 			}
@@ -301,10 +305,14 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).model_path = "content\\models\\cube.psm";
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = "content\\textures\\cube.png";
 
-		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).mass = 100.0f;
+		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
+		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = .5f;
 
-		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).type = Physics::ShapeType::BOX;
-		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).box.halfExtent = Vector2(5.0f, 5.0f);
+		/*world->GetComponent<Physics::ShapeComponent2D>(boxEntity).type = Physics::Collision2D::ShapeType::BOX;
+		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).box.halfExtent = Vector2(1.0f);*/
+
+		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).type = Physics::Collision2D::ShapeType::CIRCLE;
+		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).circle.radius = 1.0f;
 
 		// Create Floor Entity
 		ECS::Entity floorEntity = world->CreateEntity();
@@ -313,11 +321,21 @@ namespace Puffin
 
 		world->AddComponent<TransformComponent>(floorEntity);
 		world->AddComponent<Rendering::MeshComponent>(floorEntity);
+		world->AddComponent<Physics::RigidbodyComponent2D>(floorEntity);
+		world->AddComponent<Physics::ShapeComponent2D>(floorEntity);
 
 		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(0.0f), Vector3(0.0f), Vector3(10.0f, 1.0f, 1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).model_path = "content\\models\\cube.psm";
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).texture_path = "content\\textures\\cube.png";
+
+		world->GetComponent<Physics::RigidbodyComponent2D>(floorEntity).invMass = 0.0f; // Setting mass to zero makes rigidbody kinematic instead of dynamic
+
+		/*world->GetComponent<Physics::ShapeComponent2D>(floorEntity).type = Physics::Collision2D::ShapeType::BOX;
+		world->GetComponent<Physics::ShapeComponent2D>(floorEntity).box.halfExtent = Vector2(10.0f, 1.0f);*/
+
+		world->GetComponent<Physics::ShapeComponent2D>(floorEntity).type = Physics::Collision2D::ShapeType::CIRCLE;
+		world->GetComponent<Physics::ShapeComponent2D>(floorEntity).circle.radius = 1.0f;
 	}
 
 	void Engine::Play()

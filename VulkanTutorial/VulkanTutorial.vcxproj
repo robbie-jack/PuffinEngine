@@ -232,7 +232,9 @@
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\JobManager.h" />
     <ClInclude Include="src\ManipulationGizmo.h" />
+    <ClInclude Include="src\MathHelpers.h" />
     <ClInclude Include="src\Physics\BulletPhysicsSystem.h" />
+    <ClInclude Include="src\Physics\PhysicsHelpers2D.h" />
     <ClInclude Include="src\Physics\PhysicsSystem2D.h" />
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\Rendering\DebugDraw.h" />
@@ -249,6 +251,9 @@
     <ClInclude Include="src\Rendering\VulkanEngine.h" />
     <ClInclude Include="src\Scripting\AngelScriptSystem.h" />
     <ClInclude Include="src\SerializeScene.h" />
+    <ClInclude Include="src\Types\Matrix.h" />
+    <ClInclude Include="src\Types\PhysicsTypes2D.h" />
+    <ClInclude Include="src\Types\Quat.h" />
     <ClInclude Include="src\Types\RingBuffer.h" />
     <ClInclude Include="src\Types\Vector.h" />
     <ClInclude Include="src\Types\VectorConversion.h" />

@@ -4,40 +4,14 @@
 #define SHAPE_COMPONENT_2D_H
 
 #include <Components/BaseComponent.h>
+
+#include <Types/PhysicsTypes2D.h>
 #include <Types/Vector.h>
 
 namespace Puffin
 {
 	namespace Physics
 	{
-		enum class ShapeType : uint8_t
-		{
-			CIRCLE = 0,
-			BOX = 1
-		};
-
-		struct ShapeCircle
-		{
-			float radius;
-		};
-
-		template<class Archive>
-		void serialize(Archive& archive, ShapeCircle& circle)
-		{
-			archive(circle.radius);
-		}
-
-		struct ShapeBox
-		{
-			Vector2 halfExtent;
-		};
-
-		template<class Archive>
-		void serialize(Archive& archive, ShapeBox& box)
-		{
-			archive(box.halfExtent);
-		}
-
 		struct ShapeComponent2D : public BaseComponent
 		{
 			ShapeComponent2D()
@@ -46,17 +20,17 @@ namespace Puffin
 				bFlagDeleted = false;
 			}
 
-			ShapeComponent2D(ShapeType inType) :
+			ShapeComponent2D(Collision2D::ShapeType inType) :
 				type(inType)
 			{
 				ShapeComponent2D();
 			}
 
-			ShapeType type = ShapeType::CIRCLE; // Shape Type
+			Collision2D::ShapeType type = Collision2D::ShapeType::CIRCLE; // Shape Type
 
 			// Shapes
-			ShapeCircle circle;
-			ShapeBox box;
+			Collision2D::ShapeCircle circle;
+			Collision2D::ShapeBox box;
 		};
 
 		template<class Archive>
@@ -68,10 +42,10 @@ namespace Puffin
 
 			switch (shape.type)
 			{
-			case ShapeType::CIRCLE:
+			case Collision2D::ShapeType::CIRCLE:
 				archive(shape.circle);
 				break;
-			case ShapeType::BOX:
+			case Collision2D::ShapeType::BOX:
 				archive(shape.box);
 				break;
 			}
@@ -83,14 +57,14 @@ namespace Puffin
 			uint8_t shapeType;
 
 			archive(shapeType);
-			shape.type = (ShapeType)shapeType;
+			shape.type = (Collision2D::ShapeType)shapeType;
 
 			switch (shape.type)
 			{
-			case ShapeType::CIRCLE:
+			case Collision2D::ShapeType::CIRCLE:
 				archive(shape.circle);
 				break;
-			case ShapeType::BOX:
+			case Collision2D::ShapeType::BOX:
 				archive(shape.box);
 				break;
 			}

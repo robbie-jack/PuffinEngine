@@ -294,6 +294,19 @@
     <ClInclude Include="src\Components\Physics\ShapeComponent2D.h">
       <Filter>Components\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="src\MathHelpers.h" />
+    <ClInclude Include="src\Physics\PhysicsHelpers2D.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\PhysicsTypes2D.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\Matrix.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\Quat.h">
+      <Filter>Types</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="content\shaders\debug.frag">

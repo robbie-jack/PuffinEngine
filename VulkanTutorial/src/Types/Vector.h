@@ -16,6 +16,11 @@ namespace Puffin
 		typedef float Float;
 	#endif
 
+	/*
+	====================
+	Vector 2
+	====================
+	*/
 	struct Vector2
 	{
 		Float x, y;
@@ -85,8 +90,14 @@ namespace Puffin
 			y -= vec.y;
 		}
 
+		void operator-=(Vector2 vec)
+		{
+			x -= vec.x;
+			y -= vec.y;
+		}
+
 		// Operator+
-		Vector2 operator+(Vector2 vec)
+		Vector2 operator+ (Vector2 vec) const
 		{
 			Vector2 vector;
 			vector.x = x + vec.x;
@@ -94,7 +105,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector2 operator+ (glm::vec2 vec)
+		Vector2 operator+ (glm::vec2 vec) const
 		{
 			Vector2 vector;
 			vector = x + vec.x;
@@ -102,8 +113,13 @@ namespace Puffin
 			return vector;
 		}
 
+		Vector2 operator+ (Float value) const
+		{
+			return Vector2(x + value, y + value);
+		}
+
 		// Operator-
-		Vector2 operator-(Vector2 vec)
+		Vector2 operator- (Vector2 vec) const
 		{
 			Vector2 vector;
 			vector.x = x - vec.x;
@@ -111,16 +127,24 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector2 operator- (glm::vec2 vec)
+		Vector2 operator- (glm::vec2 vec) const
 		{
 			Vector2 vector;
 			vector.x = x - vec.x;
 			vector.y = y - vec.y;
+			return vector;
+		}
+
+		Vector2 operator-() const
+		{
+			Vector2 vector;
+			vector.x = -x;
+			vector.y = y;
 			return vector;
 		}
 
 		// Operator*
-		Vector2 operator* (Float inFloat)
+		Vector2 operator* (Float inFloat) const
 		{
 			Vector2 vector;
 			vector.x = x * inFloat;
@@ -136,7 +160,7 @@ namespace Puffin
 		}
 
 		// Operator/
-		Vector2 operator/ (Float inFloat)
+		Vector2 operator/ (Float inFloat) const
 		{
 			Vector2 vector;
 			vector.x = x / inFloat;
@@ -152,25 +176,49 @@ namespace Puffin
 		}
 
 		// Functions
-		Float Dot(Vector2 vec)
+		Float Dot(const Vector2& vec) const
 		{
 			return (x * vec.x) + (y * vec.y);
 		}
 
+		Float LengthSquared()
+		{
+			return x * x + y * y;
+		}
+
 		Float Length()
 		{
-			return sqrtf(x * x + y * y);
+			return sqrtf(LengthSquared());
+		}
+
+		Float DistanceToSquared(Vector2 vec)
+		{
+			Float deltaX = x - vec.x;
+			Float deltaY = y - vec.y;
+
+			return (deltaX * deltaX) + (deltaY * deltaY);
+		}
+
+		Float DistanceTo(Vector2 vec)
+		{
+			return sqrtf(DistanceTo(vec));
 		}
 
 		Vector2 Normalised()
 		{
-			Vector2 vector;
+			Vector2 vector = *this;
 			Float length = Length();
 
-			vector.x / length;
-			vector.y / length;
+			vector.x /= length;
+			vector.y /= length;
 
 			return vector;
+		}
+
+		void Zero()
+		{
+			x = 0.0f;
+			y = 0.0f;
 		}
 
 		// Serialization
@@ -181,6 +229,11 @@ namespace Puffin
 		}
 	};
 
+	/*
+	====================
+	Vector 3
+	====================
+	*/
 	struct Vector3
 	{
 		Float x, y, z;
@@ -213,6 +266,13 @@ namespace Puffin
 			x = vec.x;
 			y = vec.y;
 			z = vec.z;
+		}
+
+		Vector3(Vector2 vec)
+		{
+			x = vec.x;
+			y = vec.y;
+			z = 0.0f;
 		}
 
 		// Operator Overrides
@@ -366,9 +426,14 @@ namespace Puffin
 			return cross;
 		}
 
+		Float LengthSquared()
+		{
+			return x * x + y * y + z * z;
+		}
+
 		Float Length()
 		{
-			return sqrtf(x * x + y * y + z * z);
+			return sqrtf(LengthSquared());
 		}
 
 		Vector3 Normalised()
@@ -381,6 +446,18 @@ namespace Puffin
 			vector.z /= length;
 
 			return vector;
+		}
+
+		void Zero()
+		{
+			x = 0.0f;
+			y = 0.0f;
+			z = 0.0f;
+		}
+
+		Vector2 GetXY() const
+		{
+			return Vector2(x, y);
 		}
 
 		// Serialization
