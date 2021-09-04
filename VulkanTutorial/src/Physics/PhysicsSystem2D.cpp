@@ -43,13 +43,13 @@ namespace Puffin
 				// Update Dynamic Objects
 				UpdateDynamics();
 
-				// Perform Collision Broadphase to check if two Colliders can collide
+				// Perform Collision2D Broadphase to check if two Colliders can collide
 				CollisionBroadphase();
 
-				// Check for Collision between Colliders
+				// Check for Collision2D between Colliders
 				CollisionDetection();
 
-				// Resolve Collision between Colliders
+				// Resolve Collision2D between Colliders
 				CollisionResolve();
 			}
 		}
@@ -61,33 +61,17 @@ namespace Puffin
 				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 				RigidbodyComponent2D& rigidbody = world->GetComponent<RigidbodyComponent2D>(entity);
 
-				//// If a body has no mass, then it is kinematic and should not experience forces
-				//if (rigidbody.invMass == 0.0f)
-				//	continue;
-
-				//Float mass = 1.0f / rigidbody.invMass;
-				//
-				////Apply Gravity to Rigidbody Force
-				//rigidbody.force += gravity * mass;
-
-				//// Update Position, Velocity and Acceleration Using Verlet Integration
-				//Vector2 lastAcceleration = rigidbody.acceleration;
-
-				//// Update Position
-				//transform.position += rigidbody.velocity * timeStep + (rigidbody.acceleration * 0.5 * (timeStep * timeStep));
-
-				//// Update Acceleration
-				//rigidbody.acceleration = rigidbody.force / mass;
-
-				//// Update Velocity using average of current and last frames acceleration
-				//rigidbody.velocity += ((lastAcceleration + rigidbody.acceleration) / 2) * timeStep;
-
-				//rigidbody.force = Vector2(0.0f, 0.0f);
+				// If a body has no mass, then it is kinematic and should not experience forces
+				if (rigidbody.invMass == 0.0f)
+					continue;
 
 				CalculateImpulseByGravity(rigidbody, timeStep);
 
 				// Update Position
 				transform.position += rigidbody.linearVelocity * timeStep;
+
+				// Update Rotation
+				transform.rotation.y += rigidbody.angularVelocity * timeStep;
 			}
 		}
 
@@ -201,8 +185,8 @@ namespace Puffin
 					const Float impulseJ = -(1.0f + elasticity) * vab.Dot(contact.normal) / (bodyA.invMass + bodyB.invMass);
 					const Vector2 vectorImpulseJ = contact.normal * impulseJ;
 
-					ApplyLinearImpulse(bodyA, vectorImpulseJ * 1.0f);
-					ApplyLinearImpulse(bodyB, vectorImpulseJ * -1.0f);
+					ApplyImpulse(bodyA, shapeA.circle, contact.pointOnA, vectorImpulseJ * 1.0f);
+					ApplyImpulse(bodyB, shapeB.circle, contact.pointOnB, vectorImpulseJ * -1.0f);
 
 					// Move colliding bodies to just outside each other
 					const Float tA = bodyA.invMass / (bodyA.invMass + bodyB.invMass);

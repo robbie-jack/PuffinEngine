@@ -13,7 +13,7 @@ namespace Puffin
 	namespace Physics
 	{
 		typedef std::pair<ECS::Entity, ECS::Entity> CollisionPair;
-		
+
 		class PhysicsSystem2D : public ECS::System
 		{
 		public:

@@ -306,7 +306,7 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = "content\\textures\\cube.png";
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
-		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = .5f;
+		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = 0.75f;
 
 		/*world->GetComponent<Physics::ShapeComponent2D>(boxEntity).type = Physics::Collision2D::ShapeType::BOX;
 		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).box.halfExtent = Vector2(1.0f);*/

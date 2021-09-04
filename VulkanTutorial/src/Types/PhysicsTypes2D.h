@@ -3,8 +3,6 @@
 #ifndef PHYSICS_TYPES_2D_H
 #define PHYSICS_TYPES_2D_H
 
-//#include <Types/Matrix.h>
-
 namespace Puffin
 {
 	namespace Physics
@@ -24,18 +22,13 @@ namespace Puffin
 
 			struct ShapeCircle : Shape
 			{
+				ShapeCircle()
+				{
+					centerOfMass.Zero();
+				}
+
 				float radius;
 			};
-
-			/*Mat3 GetInertiaTensor(const ShapeCircle& Circle)
-			{
-				Mat3 tensor;
-				tensor.Zero();
-				tensor.rows[0][0] = 2.0f * Circle.radius * Circle.radius / 5.0f;
-				tensor.rows[1][1] = 2.0f * Circle.radius * Circle.radius / 5.0f;
-				tensor.rows[2][2] = 2.0f * Circle.radius * Circle.radius / 5.0f;
-				return tensor;
-			};*/
 
 			template<class Archive>
 			void serialize(Archive& archive, ShapeCircle& circle)

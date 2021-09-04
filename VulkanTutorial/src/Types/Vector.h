@@ -32,20 +32,20 @@ namespace Puffin
 			y = 0.0f;
 		}
 
-		Vector2(Float x_, Float y_)
+		Vector2(const Float& x_, const Float& y_)
 		{
 			x = x_;
 			y = y_;
 		}
 
 		// Fill X/Y/Z Components with Val
-		Vector2(Float val)
+		Vector2(const Float& val)
 		{
 			x = val;
 			y = val;
 		}
 
-		Vector2(glm::vec2 vec)
+		Vector2(const glm::vec2& vec)
 		{
 			x = vec.x;
 			y = vec.y;
@@ -62,42 +62,47 @@ namespace Puffin
 			return vec;
 		}
 
-
 		// Operator=
-		void operator=(glm::vec2 vec)
+		void operator=(const glm::vec2& vec)
 		{
 			x = vec.x;
 			y = vec.y;
 		}
 
+		void operator=(const Float* rhs)
+		{
+			x = rhs[0];
+			y = rhs[1];
+		}
+
 		// Operator+=
-		void operator+=(glm::vec2 vec)
+		void operator+=(const glm::vec2& vec)
 		{
 			x += vec.x;
 			y += vec.y;
 		}
 
-		void operator+=(Vector2 vec)
+		void operator+=(const Vector2& vec)
 		{
 			x += vec.x;
 			y += vec.y;
 		}
 
 		// Operator-=
-		void operator-=(glm::vec2 vec)
+		void operator-=(const glm::vec2& vec)
 		{
 			x -= vec.x;
 			y -= vec.y;
 		}
 
-		void operator-=(Vector2 vec)
+		void operator-=(const Vector2& vec)
 		{
 			x -= vec.x;
 			y -= vec.y;
 		}
 
 		// Operator+
-		Vector2 operator+ (Vector2 vec) const
+		Vector2 operator+ (const Vector2& vec) const
 		{
 			Vector2 vector;
 			vector.x = x + vec.x;
@@ -105,7 +110,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector2 operator+ (glm::vec2 vec) const
+		Vector2 operator+ (const glm::vec2& vec) const
 		{
 			Vector2 vector;
 			vector = x + vec.x;
@@ -113,13 +118,13 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector2 operator+ (Float value) const
+		Vector2 operator+ (const Float& value) const
 		{
 			return Vector2(x + value, y + value);
 		}
 
 		// Operator-
-		Vector2 operator- (Vector2 vec) const
+		Vector2 operator- (const Vector2& vec) const
 		{
 			Vector2 vector;
 			vector.x = x - vec.x;
@@ -127,7 +132,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector2 operator- (glm::vec2 vec) const
+		Vector2 operator- (const glm::vec2& vec) const
 		{
 			Vector2 vector;
 			vector.x = x - vec.x;
@@ -144,7 +149,7 @@ namespace Puffin
 		}
 
 		// Operator*
-		Vector2 operator* (Float inFloat) const
+		Vector2 operator* (const Float& inFloat) const
 		{
 			Vector2 vector;
 			vector.x = x * inFloat;
@@ -153,14 +158,14 @@ namespace Puffin
 		}
 
 		// Operator*=
-		void operator*= (Float inFloat)
+		void operator*= (const Float& inFloat)
 		{
 			x *= inFloat;
 			y *= inFloat;
 		}
 
 		// Operator/
-		Vector2 operator/ (Float inFloat) const
+		Vector2 operator/ (const Float& inFloat) const
 		{
 			Vector2 vector;
 			vector.x = x / inFloat;
@@ -169,10 +174,25 @@ namespace Puffin
 		}
 		
 		// Operator/=
-		void operator/= (Float inFloat)
+		void operator/= (const Float& inFloat)
 		{
 			x /= inFloat;
 			y /= inFloat;
+		}
+
+		// Operator[]
+		Float operator[] (const int idx) const
+		{
+			assert(idx >= 0 && idx < 2);
+
+			return (&x)[idx];
+		}
+
+		Float& operator[] (const int idx)
+		{
+			assert(idx >= 0 && idx < 2);
+
+			return (&x)[idx];
 		}
 
 		// Functions
@@ -181,17 +201,22 @@ namespace Puffin
 			return (x * vec.x) + (y * vec.y);
 		}
 
-		Float LengthSquared()
+		Float Cross(const Vector2& vec) const
+		{
+			return x * vec.y - y * vec.x;
+		}
+
+		Float LengthSquared() const
 		{
 			return x * x + y * y;
 		}
 
-		Float Length()
+		Float Length() const
 		{
 			return sqrtf(LengthSquared());
 		}
 
-		Float DistanceToSquared(Vector2 vec)
+		Float DistanceToSquared(const Vector2& vec)
 		{
 			Float deltaX = x - vec.x;
 			Float deltaY = y - vec.y;
@@ -199,12 +224,20 @@ namespace Puffin
 			return (deltaX * deltaX) + (deltaY * deltaY);
 		}
 
-		Float DistanceTo(Vector2 vec)
+		Float DistanceTo(const Vector2& vec)
 		{
 			return sqrtf(DistanceTo(vec));
 		}
 
-		Vector2 Normalised()
+		void Normalise()
+		{
+			Float length = Length();
+
+			x /= length;
+			y /= length;
+		}
+
+		Vector2 Normalised() const
 		{
 			Vector2 vector = *this;
 			Float length = Length();
@@ -246,7 +279,7 @@ namespace Puffin
 			z = 0.0f;
 		}
 
-		Vector3(Float x_, Float y_, Float z_)
+		Vector3(const Float& x_, const Float& y_, const Float& z_)
 		{
 			x = x_;
 			y = y_;
@@ -254,21 +287,21 @@ namespace Puffin
 		}
 
 		// Fill X/Y/Z Components with Val
-		Vector3(Float val)
+		Vector3(const Float& val)
 		{
 			x = val;
 			y = val;
 			z = val;
 		}
 
-		Vector3(glm::vec3 vec)
+		Vector3(const glm::vec3& vec)
 		{
 			x = vec.x;
 			y = vec.y;
 			z = vec.z;
 		}
 
-		Vector3(Vector2 vec)
+		Vector3(const Vector2& vec)
 		{
 			x = vec.x;
 			y = vec.y;
@@ -295,50 +328,65 @@ namespace Puffin
 		}
 
 		// Operator=
-		void operator=(glm::vec3 vec)
+		void operator=(const Vector3& vec)
 		{
 			x = vec.x;
 			y = vec.y;
 			z = vec.z;
 		}
 
-		void operator=(btVector3 vec)
+		void operator=(const glm::vec3& vec)
+		{
+			x = vec.x;
+			y = vec.y;
+			z = vec.z;
+		}
+
+		void operator=(const btVector3& vec)
 		{
 			x = vec.getX();
 			y = vec.getY();
 			z = vec.getZ();
 		}
 
+		void operator=(const Float* rhs)
+		{
+			x = rhs[0];
+			y = rhs[1];
+			z = rhs[2];
+		}
+
 		// Operator+=
-		void operator+=(glm::vec3 vec)
+		void operator+=(const glm::vec3& vec)
 		{
 			x += vec.x;
 			y += vec.y;
 			z += vec.z;
 		}
 
-		void operator+=(btVector3 vec)
+		void operator+=(const btVector3& vec)
 		{
 			x += vec.getX();
 			y += vec.getY();
 			z += vec.getZ();
 		}
 
-		void operator+=(Vector2 vec)
+		void operator+=(const Vector3& vec)
 		{
 			x += vec.x;
 			y += vec.y;
+			z += vec.z;
 		}
 
 		// Operator-=
-		void operator-=(glm::vec3 vec)
+		void operator-=(const glm::vec3& vec)
 		{
 			x -= vec.x;
 			y -= vec.y;
 			z -= vec.z;
 		}
 
-		void operator-=(btVector3 vec)
+		void operator-=(const btVector3& vec)
 		{
 			x -= vec.getX();
 			y -= vec.getY();
@@ -346,7 +394,7 @@ namespace Puffin
 		}
 
 		// Operator+
-		Vector3 operator+(Vector3 vec)
+		Vector3 operator+(const Vector3& vec)
 		{
 			Vector3 vector;
 			vector.x = x + vec.x;
@@ -355,7 +403,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator+ (glm::vec3 vec)
+		Vector3 operator+ (const glm::vec3& vec)
 		{
 			Vector3 vector;
 			vector.x = x + vec.x;
@@ -364,7 +412,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator+(btVector3 vec)
+		Vector3 operator+(const btVector3& vec)
 		{
 			Vector3 vector;
 			vector.x = x + vec.getX();
@@ -374,7 +422,7 @@ namespace Puffin
 		}
 
 		// Operator-
-		Vector3 operator-(Vector3 vec)
+		Vector3 operator-(const Vector3& vec)
 		{
 			Vector3 vector;
 			vector.x = x - vec.x;
@@ -383,7 +431,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator- (glm::vec3 vec)
+		Vector3 operator- (const glm::vec3& vec)
 		{
 			Vector3 vector;
 			vector = x - vec.x;
@@ -392,7 +440,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator-(btVector3 vec)
+		Vector3 operator-(const btVector3& vec)
 		{
 			Vector3 vector;
 			vector.x = x - vec.getX();
@@ -402,7 +450,7 @@ namespace Puffin
 		}
 
 		// Operator*
-		Vector3 operator*(Vector3 vec)
+		Vector3 operator*(const Vector3& vec)
 		{
 			Vector3 vector;
 			vector.x = x * vec.x;
@@ -411,13 +459,38 @@ namespace Puffin
 			return vector;
 		}
 
-		// Functions
-		Float Dot(Vector3 vec)
+		// Operator*=
+		const Vector3& operator*=(const Float& rhs)
 		{
-			return (x * vec.x) + (y * vec.y) + (z * vec.z);
+			x *= rhs;
+			y *= rhs;
+			z *= rhs;
+			return *this;
 		}
 
-		Vector3 Cross(Vector3 vec)
+		// Operator[]
+		Float operator[] (const int idx) const
+		{
+			assert(idx >= 0 && idx < 3);
+
+			return (&x)[idx];
+		}
+
+		Float& operator[] (const int idx)
+		{
+			assert(idx >= 0 && idx < 3);
+
+			return (&x)[idx];
+		}
+
+		// Functions
+		Float Dot(const Vector3& vec) const
+		{
+			Float temp = (x * vec.x) + (y * vec.y) + (z * vec.z);
+			return temp;
+		}
+
+		Vector3 Cross(const Vector3& vec)
 		{
 			Vector3 cross;
 			cross.x = y * vec.z - z * vec.y;
@@ -426,19 +499,28 @@ namespace Puffin
 			return cross;
 		}
 
-		Float LengthSquared()
+		Float LengthSquared() const
 		{
 			return x * x + y * y + z * z;
 		}
 
-		Float Length()
+		Float Length() const
 		{
 			return sqrtf(LengthSquared());
 		}
 
-		Vector3 Normalised()
+		void Normalise()
 		{
-			Vector3 vector;
+			Float length = Length();
+
+			x /= length;
+			y /= length;
+			z /= length;
+		}
+
+		Vector3 Normalised() const
+		{
+			Vector3 vector = *this;
 			Float length = Length();
 
 			vector.x /= length;

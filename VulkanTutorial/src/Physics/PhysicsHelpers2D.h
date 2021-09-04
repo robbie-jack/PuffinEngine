@@ -11,8 +11,10 @@
 #include <ECS/ECS.h>
 
 #include <Types/Matrix.h>
+#include <Types/PhysicsTypes2D.h>
 
 #include <algorithm>
+#include <cmath>
 
 namespace Puffin
 {
@@ -36,7 +38,7 @@ namespace Puffin
 				aabb.max = Transform.position.GetXY() + Box.halfExtent;
 				return aabb;
 			}
-			
+
 			bool TestBoxVsBox(const TransformComponent& TransformA, const ShapeBox& BoxA, const TransformComponent& TransformB, const ShapeBox& BoxB, Contact& OutContact)
 			{
 				// Get Min/Max bounds of each box
@@ -46,7 +48,7 @@ namespace Puffin
 				// Exit with no intersection if found with separating axis
 				if (a.max.x < b.min.x || a.min.x > b.max.x) return false;
 				if (a.max.y < b.min.y || a.min.y > b.max.y) return false;
-				
+
 				// No separating axis found, shapes must be colliding
 				return true;
 			}
@@ -92,23 +94,39 @@ namespace Puffin
 			}
 		}
 
-		/*Mat3 GetInverseInertiaTensorBodySpace(const RigidbodyComponent2D& body, const ShapeCircle* circle)
-		{
-			Mat3 inertiaTensor = GetInertiaTensor(circle);
-			Mat3 invInertiaTensor = inertiaTensor.Inverse() * body.invMass;
-			return invInertiaTensor;
-		};
+		// Apply Impulse
 
-		Mat3 GetInverseInertiaTensorWorldSpace(const RigidbodyComponent2D& body, const ShapeCircle* circle)
+		static inline void ApplyLinearImpulse(RigidbodyComponent2D& body, const Vector2& impulse)
 		{
-			Mat3 inertiaTensor = GetInertiaTensor(circle);
-			Mat3 invInertiaTensor = inertiaTensor.Inverse() * body.invMass;
-			Mat3 orient = body.orientation.ToMat3();
-			Mat3 invInertiaTensor = orient * invInertiaTensor * orient.Transpose();
-			return invInertiaTensor;
-		}*/
+			if (body.invMass == 0.0f)
+				return;
+
+			// Apply Accumulated Impulse
+			body.linearVelocity += impulse * body.invMass;
+		}
+
+		static inline void ApplyAngularImpulse(RigidbodyComponent2D& body, const Collision2D::ShapeCircle& circle, const Float& impulse)
+		{
+			if (body.invMass == 0.0f)
+				return;
+
+			body.angularVelocity += std::asin(impulse * body.invMass) * (180 / 3.14);
+		}
+
+		static inline void ApplyImpulse(RigidbodyComponent2D& body, const Collision2D::ShapeCircle& circle, const Vector2& impulsePoint, const Vector2& impulse)
+		{
+			if (body.invMass == 0.0f)
+				return;
+
+			// impulsePoint is the world space location of the application of the impulse
+			// impulse is the world space direction and magnitude of the impulse
+			ApplyLinearImpulse(body, impulse);
+
+			// Get the 2D cross of impulsePoint against impulse
+			// this is the sin of the angle between the vectors in radians
+			ApplyAngularImpulse(body, circle, impulsePoint.Cross(impulse));
+		}
 	}
 }
-
 
 #endif //PHYSICS_HELPERS_2D_H
