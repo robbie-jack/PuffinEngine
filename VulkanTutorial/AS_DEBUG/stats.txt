@@ -1,27 +1,18 @@
 
 Total count
-PSF        : 2
-RET        : 4
-PshVPtr    : 2
-SUSPEND    : 14
-ALLOC      : 4
-LOADOBJ    : 2
-SetV4      : 10
-ADDSi      : 2
-WRTV4      : 10
-PGA        : 2
-LoadThisR  : 10
 
 Never executed
 PopPtr    
 PshGPtr   
 PshC4     
 PshV4     
+PSF       
 SwapPtr   
 NOT       
 PshG4     
 LdGRdR4   
 CALL      
+RET       
 JMP       
 JZ        
 JNZ       
@@ -59,6 +50,7 @@ BSRL
 BSRA      
 COPY      
 PshC8     
+PshVPtr   
 RDSPtr    
 CMPd      
 CMPu      
@@ -73,7 +65,10 @@ PshRPtr
 STR       
 CALLSYS   
 CALLBND   
+SUSPEND   
+ALLOC     
 FREE      
+LOADOBJ   
 STOREOBJ  
 GETOBJ    
 REFCPY    
@@ -84,7 +79,9 @@ PshNull
 ClrVPtr   
 OBJTYPE   
 TYPEID    
+SetV4     
 SetV8     
+ADDSi     
 CpyVtoV4  
 CpyVtoV8  
 CpyVtoR4  
@@ -95,6 +92,7 @@ CpyRtoV8
 CpyGtoV4  
 WRTV1     
 WRTV2     
+WRTV4     
 WRTV8     
 RDR1      
 RDR2      
@@ -102,6 +100,7 @@ RDR4
 RDR8      
 LDG       
 LDV       
+PGA       
 CmpPtr    
 VAR       
 iTOf      
@@ -181,6 +180,7 @@ ClrHi
 JitEntry  
 CallPtr   
 FuncPtr   
+LoadThisR 
 PshV8     
 DIVu      
 MODu      
@@ -205,18 +205,3 @@ POWu64
 Thiscall1 
 
 Sequences
-PSF       , ALLOC      : 2
-RET       , PSF        : 1
-RET       , LOADOBJ    : 2
-PshVPtr   , ADDSi      : 2
-SUSPEND   , RET        : 2
-SUSPEND   , PshVPtr    : 2
-SUSPEND   , SetV4      : 10
-ALLOC     , SUSPEND    : 4
-LOADOBJ   , RET        : 2
-SetV4     , LoadThisR  : 10
-ADDSi     , PGA        : 2
-WRTV4     , SUSPEND    : 10
-PGA       , ALLOC      : 2
-LoadThisR , WRTV4      : 10
-LABEL     , PSF        : 1

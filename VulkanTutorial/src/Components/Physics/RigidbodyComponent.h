@@ -5,20 +5,12 @@
 
 #include "btBulletDynamicsCommon.h"
 
-#include <Components/BaseComponent.h>
-
 namespace Puffin
 {
 	namespace Physics
 	{
-		struct RigidbodyComponent : public BaseComponent
+		struct RigidbodyComponent
 		{
-			RigidbodyComponent()
-			{
-				bFlagCreated = true;
-				bFlagDeleted = false;
-			}
-
 			btCollisionShape* shape;
 			btRigidBody* body;
 

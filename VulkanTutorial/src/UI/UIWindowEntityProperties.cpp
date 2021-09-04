@@ -197,7 +197,7 @@ namespace Puffin
 					if (ImGui::SmallButton("X##Mesh"))
 					{
 						sceneChanged = true;
-						mesh.bFlagDeleted = true;
+						world->SetComponentDeleted<Rendering::MeshComponent>(entity, true);
 					}
 
 					// Change Model Path
@@ -211,7 +211,7 @@ namespace Puffin
 					if (fileDialog->HasSelected() && modelSelected)
 					{
 						mesh.model_path = fileDialog->GetSelected().string();
-						mesh.bFlagCreated = true;
+						world->SetComponentInitialized<Rendering::MeshComponent>(entity, false);
 
 						modelSelected = false;
 						sceneChanged = true;
@@ -229,7 +229,7 @@ namespace Puffin
 					if (fileDialog->HasSelected() && textureSelected)
 					{
 						mesh.texture_path = fileDialog->GetSelected().string();
-						mesh.bFlagCreated = true;
+						world->SetComponentInitialized<Rendering::MeshComponent>(entity, false);
 
 						textureSelected = false;
 						sceneChanged = true;
@@ -254,7 +254,7 @@ namespace Puffin
 					if (ImGui::SmallButton("X##Light"))
 					{
 						sceneChanged = true;
-						comp.bFlagDeleted = true;
+						world->SetComponentDeleted<Rendering::LightComponent>(entity, true);
 					}
 
 					// Edit Light Diffuse Color
@@ -266,7 +266,7 @@ namespace Puffin
 					if (ImGui::Checkbox("Cast Shadows", &comp.bFlagCastShadows))
 					{
 						sceneChanged = true;
-						comp.bFlagCreated = true;
+						world->SetComponentInitialized<Rendering::LightComponent>(entity, false);
 					}
 
 					// Combo box to select light type
@@ -355,7 +355,7 @@ namespace Puffin
 
 					if (ImGui::SmallButton("X##Script"))
 					{
-						comp.bFlagDeleted = true;
+						world->SetComponentDeleted<Scripting::AngelScriptComponent>(entity, true);
 						sceneChanged = true;
 					}
 

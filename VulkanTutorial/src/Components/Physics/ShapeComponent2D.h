@@ -3,8 +3,6 @@
 #ifndef SHAPE_COMPONENT_2D_H
 #define SHAPE_COMPONENT_2D_H
 
-#include <Components/BaseComponent.h>
-
 #include <Types/PhysicsTypes2D.h>
 #include <Types/Vector.h>
 
@@ -12,18 +10,13 @@ namespace Puffin
 {
 	namespace Physics
 	{
-		struct ShapeComponent2D : public BaseComponent
+		struct ShapeComponent2D
 		{
-			ShapeComponent2D()
-			{
-				bFlagCreated = false;
-				bFlagDeleted = false;
-			}
+			ShapeComponent2D() {}
 
 			ShapeComponent2D(Collision2D::ShapeType inType) :
 				type(inType)
 			{
-				ShapeComponent2D();
 			}
 
 			Collision2D::ShapeType type = Collision2D::ShapeType::CIRCLE; // Shape Type

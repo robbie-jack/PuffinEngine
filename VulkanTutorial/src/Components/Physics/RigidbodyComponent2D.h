@@ -3,26 +3,19 @@
 #ifndef RIGIDBODY_COMPONENT_2D_H
 #define RIGIDBODY_COMPONENT_2D_H
 
-#include <Components/BaseComponent.h>
-
 //#include <Types/Quat.h>
 
 namespace Puffin
 {
 	namespace Physics
 	{
-		struct RigidbodyComponent2D : public BaseComponent
+		struct RigidbodyComponent2D
 		{
-			RigidbodyComponent2D()
-			{
-				bFlagCreated = false;
-				bFlagDeleted = false;
-			}
+			RigidbodyComponent2D() {}
 
 			RigidbodyComponent2D(Float InInvMass) :
 				invMass(InInvMass)
 			{
-				RigidbodyComponent2D();
 			}
 			
 			Vector2 linearVelocity = Vector2(0.0f);

@@ -1749,22 +1749,21 @@ namespace Puffin
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
 				// Initialize
-				if (mesh.bFlagCreated)
+				if (!world->ComponentInitialized<MeshComponent>(entity))
 				{
 					InitMesh(mesh);
-					mesh.bFlagCreated = false;
+					world->SetComponentInitialized<MeshComponent>(entity, true);
 
 					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
-				if (mesh.bFlagDeleted || world->IsDeleted(entity))
+				if (world->ComponentDeleted<MeshComponent>(entity) || world->IsDeleted(entity))
 				{
 					CleanupMesh(mesh);
 					world->RemoveComponent<MeshComponent>(entity);
 					
 					sceneData.bFlagSceneChanged = true;
-
 				}
 			}
 
@@ -1774,17 +1773,17 @@ namespace Puffin
 
 				// Initialize
 
-				if (light.bFlagCreated)
+				if (!world->ComponentInitialized<LightComponent>(entity))
 				{
 					InitLight(light);
-					light.bFlagCreated = false;
+					world->SetComponentInitialized<LightComponent>(entity, true);
 					shadowmapDescriptorNeedsUpdated = true;
 					
 					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
-				if (light.bFlagDeleted || world->IsDeleted(entity))
+				if (world->ComponentDeleted<LightComponent>(entity) || world->IsDeleted(entity))
 				{
 					CleanupLight(light);
 					world->RemoveComponent<LightComponent>(entity);
@@ -2542,7 +2541,7 @@ namespace Puffin
 					{
 						MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-						if (!mesh.bFlagCreated && !mesh.bFlagDeleted)
+						if (world->ComponentInitialized<MeshComponent>(entity) && !world->ComponentDeleted<MeshComponent>(entity))
 						{
 							// Bind Vertices, Indices and Descriptor Sets
 							VkDeviceSize offsets[] = { 0 };
@@ -2689,7 +2688,7 @@ namespace Puffin
 			{
 				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
 
-				if (!mesh.bFlagCreated && !mesh.bFlagDeleted)
+				if (world->ComponentInitialized<MeshComponent>(entity) && !world->ComponentDeleted<MeshComponent>(entity))
 				{
 
 					// Bind material pipeline if it does not match previous material

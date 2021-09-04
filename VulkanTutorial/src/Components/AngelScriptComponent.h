@@ -3,8 +3,6 @@
 #define ANGELSCRIPT_DLL_LIBRARY_IMPORT
 #include <angelscript.h>
 
-#include <Components/BaseComponent.h>
-
 #include <string>
 #include <set>
 
@@ -14,14 +12,8 @@ namespace Puffin
 {
 	namespace Scripting
 	{
-		struct AngelScriptComponent : public BaseComponent
+		struct AngelScriptComponent
 		{
-			AngelScriptComponent()
-			{
-				bFlagCreated = true;
-				bFlagDeleted = false;
-			}
-
 			// Name of script
 			std::string name;
 

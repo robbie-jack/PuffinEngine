@@ -13,8 +13,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-#include <Components/BaseComponent.h>
-
 #include <vector>
 #include <array>
 
@@ -117,18 +115,13 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		struct MeshComponent : public BaseComponent
+		struct MeshComponent
 		{
-			MeshComponent()
-			{
-				bFlagCreated = true;
-				bFlagDeleted = false;
-			}
-
+			MeshComponent() {}
+			
 			MeshComponent(std::string InModelPath, std::string InTexturePath) :
 				model_path(InModelPath), texture_path(InTexturePath)
 			{
-				MeshComponent();
 			}
 
 			// Mesh Data

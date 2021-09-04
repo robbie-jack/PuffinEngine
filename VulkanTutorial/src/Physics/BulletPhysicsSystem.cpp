@@ -66,7 +66,7 @@ namespace Puffin
 				RigidbodyComponent& rigidbody = world->GetComponent<RigidbodyComponent>(entity);
 				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
 
-				if (rigidbody.bFlagCreated)
+				/*if (rigidbody.bFlagCreated)
 				{
 					InitRigidbody(rigidbody, transform);
 					rigidbody.bFlagCreated = false;
@@ -76,7 +76,7 @@ namespace Puffin
 				{
 					CleanupRigidbody(rigidbody);
 					world->RemoveComponent<RigidbodyComponent>(entity);
-				}
+				}*/
 			}
 
 			if (dt > 0.0f)

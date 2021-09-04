@@ -17,6 +17,7 @@
 #include <memory>
 #include <typeinfo>
 #include <string_view>
+#include <bitset>
 
 namespace Puffin
 {
@@ -223,6 +224,8 @@ namespace Puffin
 				size_t newIndex = arraySize;
 				entityToIndexMap[entity] = newIndex;
 				indexToEntityMap[newIndex] = entity;
+				componentInitialized[newIndex] = false;
+				componentDeleted[newIndex] = false;
 				arraySize++;
 
 				return componentArray[newIndex];
@@ -237,6 +240,8 @@ namespace Puffin
 				entityToIndexMap[entity] = newIndex;
 				indexToEntityMap[newIndex] = entity;
 				componentArray[newIndex] = component;
+				componentInitialized[newIndex] = false;
+				componentDeleted[newIndex] = false;
 				arraySize++;
 			}
 
@@ -248,6 +253,8 @@ namespace Puffin
 				size_t indexOfRemovedComponent = entityToIndexMap[entity];
 				size_t indexOfLastComponent = arraySize - 1;
 				componentArray[indexOfRemovedComponent] = componentArray[indexOfLastComponent];
+				componentInitialized[indexOfRemovedComponent] = componentInitialized[indexOfLastComponent];
+				componentDeleted[indexOfRemovedComponent] = componentDeleted[indexOfLastComponent];
 
 				// Update map to point to components new location
 				Entity entityOfLastComponent = indexToEntityMap[indexOfLastComponent];
@@ -257,8 +264,9 @@ namespace Puffin
 				entityToIndexMap.erase(entity);
 				indexToEntityMap.erase(indexOfLastComponent);
 
-				//delete componentArray[indexOfLastComponent];
-				componentArray[indexOfLastComponent] = {};
+				//componentArray[indexOfLastComponent] = {};
+				componentInitialized[indexOfLastComponent] = false;
+				componentDeleted[indexOfLastComponent] = false;
 
 				arraySize--;
 			}
@@ -273,14 +281,36 @@ namespace Puffin
 
 			bool HasComponent(Entity entity)
 			{
-				bool hasComponent = false;
+				return entityToIndexMap.find(entity) != entityToIndexMap.end();
+			}
 
-				if (entityToIndexMap.find(entity) != entityToIndexMap.end())
-				{
-					hasComponent = true;
-				}
+			bool ComponentInitialized(Entity entity)
+			{
+				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
 
-				return hasComponent;
+				return componentInitialized[entityToIndexMap[entity]];
+			}
+
+			void SetComponentInitialized(Entity entity, bool isCreated)
+			{
+				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
+
+				componentInitialized[entityToIndexMap[entity]] = isCreated;
+			}
+
+			bool ComponentDeleted(Entity entity)
+			{
+				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
+
+				return componentDeleted[entityToIndexMap[entity]];
+			}
+
+			void SetComponentDeleted(Entity entity, bool isDeleted)
+			{
+				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
+
+				componentDeleted[entityToIndexMap[entity]] = isDeleted;
+
 			}
 
 			void EntityDestroyed(Entity entity) override
@@ -297,6 +327,10 @@ namespace Puffin
 
 			// Packed array of components
 			std::array<ComponentT, MAX_ENTITIES> componentArray;
+
+			// Packed bit sets of flags indicating Component Status
+			std::bitset<MAX_ENTITIES> componentInitialized;
+			std::bitset<MAX_ENTITIES> componentDeleted;
 
 			// Map from entity to array
 			std::unordered_map<Entity, size_t> entityToIndexMap;
@@ -388,8 +422,48 @@ namespace Puffin
 
 				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
 
-				// Return true of array has component for this entity
+				// Return true if array has component for this entity
 				return GetComponentArray<ComponentT>()->HasComponent(entity);
+			}
+
+			template<typename ComponentT>
+			bool ComponentInitialized(Entity entity)
+			{
+				const char* typeName = typeid(ComponentT).name();
+
+				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+
+				return GetComponentArray<ComponentT>()->ComponentInitialized(entity);
+			}
+
+			template<typename ComponentT>
+			void SetComponentInitialized(Entity entity, bool isCreated)
+			{
+				const char* typeName = typeid(ComponentT).name();
+
+				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+
+				GetComponentArray<ComponentT>()->SetComponentInitialized(entity, isCreated);
+			}
+
+			template<typename ComponentT>
+			bool ComponentDeleted(Entity entity)
+			{
+				const char* typeName = typeid(ComponentT).name();
+
+				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+
+				return GetComponentArray<ComponentT>()->ComponentDeleted(entity);
+			}
+
+			template<typename ComponentT>
+			void SetComponentDeleted(Entity entity, bool isDeleted)
+			{
+				const char* typeName = typeid(ComponentT).name();
+
+				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+
+				GetComponentArray<ComponentT>()->SetComponentDeleted(entity, isDeleted);
 			}
 
 			void EntityDestroyed(Entity entity)
@@ -724,6 +798,30 @@ namespace Puffin
 			bool HasComponent(Entity entity)
 			{
 				return componentManager->HasComponent<ComponentT>(entity);
+			}
+
+			template<typename ComponentT>
+			bool ComponentInitialized(Entity entity)
+			{
+				return componentManager->ComponentInitialized<ComponentT>(entity);
+			}
+
+			template<typename ComponentT>
+			void SetComponentInitialized(Entity entity, bool isCreated)
+			{
+				componentManager->SetComponentInitialized<ComponentT>(entity, isCreated);
+			}
+
+			template<typename ComponentT>
+			bool ComponentDeleted(Entity entity)
+			{
+				return componentManager->ComponentDeleted<ComponentT>(entity);
+			}
+
+			template<typename ComponentT>
+			void SetComponentDeleted(Entity entity, bool isDeleted)
+			{
+				componentManager->SetComponentDeleted<ComponentT>(entity, isDeleted);
 			}
 
 			// System Methods

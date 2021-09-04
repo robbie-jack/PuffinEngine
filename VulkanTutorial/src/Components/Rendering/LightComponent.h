@@ -11,8 +11,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <Components/BaseComponent.h>
-
 #include <Types/Vector.h>
 
 #include <vector>
@@ -87,14 +85,8 @@ namespace Puffin
 			DIRECTIONAL = 2
 		};
 
-		struct LightComponent : public BaseComponent
+		struct LightComponent
 		{
-			LightComponent()
-			{
-				bFlagCreated = true;
-				bFlagDeleted = false;
-			}
-
 			LightType type;
 			Vector3 ambientColor, diffuseColor;
 			Vector3 direction;

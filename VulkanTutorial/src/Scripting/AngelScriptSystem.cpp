@@ -77,14 +77,14 @@ namespace Puffin
 				AngelScriptComponent& script = world->GetComponent<AngelScriptComponent>(entity);
 
 				// Script needs initialized
-				if (script.bFlagCreated)
+				if (!world->ComponentInitialized<AngelScriptComponent>(entity))
 				{
 					InitScriptComponent(script);
-					script.bFlagCreated = false;
+					world->SetComponentInitialized<AngelScriptComponent>(entity, true);
 				}
 
 				// Script needs cleaned up
-				if (script.bFlagDeleted || world->IsDeleted(entity))
+				if (world->ComponentDeleted<AngelScriptComponent>(entity) || world->IsDeleted(entity))
 				{
 					CleanupScriptComponent(script);
 					world->RemoveComponent<AngelScriptComponent>(entity);
