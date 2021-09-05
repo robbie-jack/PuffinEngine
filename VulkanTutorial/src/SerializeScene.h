@@ -8,7 +8,7 @@
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
 #include <Components/Physics/RigidbodyComponent2D.h>
-#include <Components/Physics/ShapeComponent2D.h>
+#include <Components/Physics/ShapeComponents2D.h>
 #include <Components/AngelScriptComponent.h>
 
 #include <vector>
@@ -35,7 +35,8 @@ namespace Puffin
 			std::map<ECS::Entity, Rendering::MeshComponent> meshMap;
 			std::map<ECS::Entity, Rendering::LightComponent> lightMap;
 			std::map<ECS::Entity, Physics::RigidbodyComponent2D> rigidbody2DMap;
-			std::map<ECS::Entity, Physics::ShapeComponent2D> shape2DMap;
+			std::map<ECS::Entity, Physics::CircleComponent2D> circle2DMap;
+			std::map<ECS::Entity, Physics::BoxComponent2D> box2DMap;
 			std::map<ECS::Entity, Scripting::AngelScriptComponent> scriptMap;
 		};
 
@@ -47,7 +48,8 @@ namespace Puffin
 			sceneData.meshMap.clear();
 			sceneData.lightMap.clear();
 			sceneData.rigidbody2DMap.clear();
-			sceneData.shape2DMap.clear();
+			sceneData.circle2DMap.clear();
+			sceneData.box2DMap.clear();
 			sceneData.scriptMap.clear();
 		}
 
@@ -90,10 +92,16 @@ namespace Puffin
 					sceneData.rigidbody2DMap.insert({ entity, comp });
 				}
 
-				if (world->HasComponent<Physics::ShapeComponent2D>(entity))
+				if (world->HasComponent<Physics::CircleComponent2D>(entity))
 				{
-					Physics::ShapeComponent2D& comp = world->GetComponent<Physics::ShapeComponent2D>(entity);
-					sceneData.shape2DMap.insert({entity, comp});
+					Physics::CircleComponent2D& comp = world->GetComponent<Physics::CircleComponent2D>(entity);
+					sceneData.circle2DMap.insert({entity, comp});
+				}
+
+				if (world->HasComponent<Physics::BoxComponent2D>(entity))
+				{
+					Physics::BoxComponent2D& comp = world->GetComponent<Physics::BoxComponent2D>(entity);
+					sceneData.box2DMap.insert({ entity, comp });
 				}
 
 				if (world->HasComponent<Scripting::AngelScriptComponent>(entity))
@@ -119,7 +127,8 @@ namespace Puffin
 			archive(sceneData.meshMap);
 			archive(sceneData.lightMap);
 			archive(sceneData.rigidbody2DMap);
-			archive(sceneData.shape2DMap);
+			archive(sceneData.circle2DMap);
+			archive(sceneData.box2DMap);
 			archive(sceneData.scriptMap);
 		}
 
@@ -141,7 +150,8 @@ namespace Puffin
 			archive(sceneData.meshMap);
 			archive(sceneData.lightMap);
 			archive(sceneData.rigidbody2DMap);
-			archive(sceneData.shape2DMap);
+			archive(sceneData.circle2DMap);
+			archive(sceneData.box2DMap);
 			archive(sceneData.scriptMap);
 		}
 
@@ -180,10 +190,15 @@ namespace Puffin
 					world->AddComponent<Physics::RigidbodyComponent2D>(entity, sceneData.rigidbody2DMap.at(entity));
 				}
 
-				// Shape Component 2D
-				if (sceneData.shape2DMap.find(entity) != sceneData.shape2DMap.end())
+				// Shape Components 2D
+				if (sceneData.circle2DMap.find(entity) != sceneData.circle2DMap.end())
 				{
-					world->AddComponent<Physics::ShapeComponent2D>(entity, sceneData.shape2DMap.at(entity));
+					world->AddComponent<Physics::CircleComponent2D>(entity, sceneData.circle2DMap.at(entity));
+				}
+
+				if (sceneData.box2DMap.find(entity) != sceneData.box2DMap.end())
+				{
+					world->AddComponent<Physics::BoxComponent2D>(entity, sceneData.box2DMap.at(entity));
 				}
 
 				// Script Component

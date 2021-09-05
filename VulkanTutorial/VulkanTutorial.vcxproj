@@ -218,7 +218,7 @@
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent.h" />
-    <ClInclude Include="src\Components\Physics\ShapeComponent2D.h" />
+    <ClInclude Include="src\Components\Physics\ShapeComponents2D.h" />
     <ClInclude Include="src\Components\Rendering\CameraComponent.h" />
     <ClInclude Include="src\Components\Rendering\LightComponent.h" />
     <ClInclude Include="src\Components\Rendering\MeshComponent.h" />

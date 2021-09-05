@@ -11,41 +11,10 @@ namespace Puffin
 		{
 			enum class ShapeType : uint8_t
 			{
-				CIRCLE = 0,
-				BOX = 1
+				NONE = 0,
+				CIRCLE = 1,
+				BOX = 2
 			};
-
-			struct Shape
-			{
-				Vector2 centerOfMass;
-			};
-
-			struct ShapeCircle : Shape
-			{
-				ShapeCircle()
-				{
-					centerOfMass.Zero();
-				}
-
-				float radius;
-			};
-
-			template<class Archive>
-			void serialize(Archive& archive, ShapeCircle& circle)
-			{
-				archive(circle.radius);
-			}
-
-			struct ShapeBox : Shape
-			{
-				Vector2 halfExtent;
-			};
-
-			template<class Archive>
-			void serialize(Archive& archive, ShapeBox& box)
-			{
-				archive(box.halfExtent);
-			}
 
 			struct Contact
 			{

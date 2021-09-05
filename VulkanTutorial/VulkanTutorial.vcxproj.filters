@@ -288,7 +288,7 @@
     <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h">
       <Filter>Components\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="src\Components\Physics\ShapeComponent2D.h">
+    <ClInclude Include="src\Components\Physics\ShapeComponents2D.h">
       <Filter>Components\Physics</Filter>
     </ClInclude>
     <ClInclude Include="src\MathHelpers.h" />

@@ -5,13 +5,12 @@
 
 #include <Components/TransformComponent.h>
 #include <Components/Physics/RigidbodyComponent2D.h>
-#include <Components/Physics/ShapeComponent2D.h>
+#include <Components/Physics/ShapeComponents2D.h>
 
 #include <MathHelpers.h>
 #include <ECS/ECS.h>
 
 #include <Types/Matrix.h>
-#include <Types/PhysicsTypes2D.h>
 
 #include <algorithm>
 #include <cmath>
@@ -31,7 +30,7 @@ namespace Puffin
 			// Collection of Functions to test for collisions between 2D Shapes
 
 			// Get AABB from Entity Transform and Box Shape
-			AABB& GetAABB(const TransformComponent& Transform, const ShapeBox& Box)
+			AABB& GetAABB(const TransformComponent& Transform, const BoxComponent2D& Box)
 			{
 				AABB aabb;
 				aabb.min = Transform.position.GetXY() - Box.halfExtent;
@@ -39,7 +38,7 @@ namespace Puffin
 				return aabb;
 			}
 
-			bool TestBoxVsBox(const TransformComponent& TransformA, const ShapeBox& BoxA, const TransformComponent& TransformB, const ShapeBox& BoxB, Contact& OutContact)
+			bool TestBoxVsBox(const TransformComponent& TransformA, const BoxComponent2D& BoxA, const TransformComponent& TransformB, const BoxComponent2D& BoxB, Contact& OutContact)
 			{
 				// Get Min/Max bounds of each box
 				AABB a = GetAABB(TransformA, BoxA);
@@ -53,7 +52,7 @@ namespace Puffin
 				return true;
 			}
 
-			bool TestCircleVsCircle(const TransformComponent& TransformA, const ShapeCircle& CirlceA, const TransformComponent& TransformB, const ShapeCircle& CirlceB, Contact& OutContact)
+			bool TestCircleVsCircle(const TransformComponent& TransformA, const CircleComponent2D& CirlceA, const TransformComponent& TransformB, const CircleComponent2D& CirlceB, Contact& OutContact)
 			{
 				// Vector from A to B
 				Vector2 ab = TransformB.position.GetXY() - TransformA.position.GetXY();
@@ -73,7 +72,7 @@ namespace Puffin
 				return true;
 			}
 
-			bool TestCircleVsBox(const TransformComponent& TransformA, const ShapeCircle& CircleA, const TransformComponent& TransformB, const ShapeBox& BoxB, Contact& OutContact)
+			bool TestCircleVsBox(const TransformComponent& TransformA, const CircleComponent2D& CircleA, const TransformComponent& TransformB, const BoxComponent2D& BoxB, Contact& OutContact)
 			{
 				// Get Circle/Box Centres
 				Vector2 centreCircle = TransformA.position.GetXY() + CircleA.radius;
@@ -105,7 +104,7 @@ namespace Puffin
 			body.linearVelocity += impulse * body.invMass;
 		}
 
-		static inline void ApplyAngularImpulse(RigidbodyComponent2D& body, const Collision2D::ShapeCircle& circle, const Float& impulse)
+		static inline void ApplyAngularImpulse(RigidbodyComponent2D& body, const CircleComponent2D& circle, const Float& impulse)
 		{
 			if (body.invMass == 0.0f)
 				return;
@@ -113,7 +112,7 @@ namespace Puffin
 			body.angularVelocity += std::asin(impulse * body.invMass) * (180 / 3.14);
 		}
 
-		static inline void ApplyImpulse(RigidbodyComponent2D& body, const Collision2D::ShapeCircle& circle, const Vector2& impulsePoint, const Vector2& impulse)
+		static inline void ApplyImpulse(RigidbodyComponent2D& body, const CircleComponent2D& circle, const Vector2& impulsePoint, const Vector2& impulse)
 		{
 			if (body.invMass == 0.0f)
 				return;

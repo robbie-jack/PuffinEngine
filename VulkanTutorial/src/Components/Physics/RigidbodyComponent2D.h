@@ -3,6 +3,8 @@
 #ifndef RIGIDBODY_COMPONENT_2D_H
 #define RIGIDBODY_COMPONENT_2D_H
 
+#include <Types/PhysicsTypes2D.h>
+
 namespace Puffin
 {
 	namespace Physics
@@ -14,7 +16,10 @@ namespace Puffin
 			RigidbodyComponent2D(Float InInvMass) :
 				invMass(InInvMass)
 			{
+				shapeType = Collision2D::ShapeType::NONE;
 			}
+
+			Collision2D::ShapeType shapeType; // Type of shape attached to same entity, if any
 
 			Vector2 linearVelocity = Vector2(0.0f);
 			Float angularVelocity = 0.0f;

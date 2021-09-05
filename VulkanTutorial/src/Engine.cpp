@@ -1,15 +1,18 @@
 #include "Engine.h"
 
+#include <ECS/ECS.h>
+
 #include <Rendering/VulkanEngine.h>
+#include <Physics/PhysicsSystem2D.h>
+#include <Scripting/AngelScriptSystem.h>
+//#include <Physics/BulletPhysicsSystem.h>
+
 #include <Components/AngelScriptComponent.h>
 #include <Components/TransformComponent.h>
-#include <ECS/ECS.h>
+
 #include <Input/InputManager.h>
 #include <JobManager.h>
-//#include <Physics/BulletPhysicsSystem.h>
-#include <Physics/PhysicsSystem2D.h>
-#include <Rendering/DebugDraw.h>
-#include <Scripting/AngelScriptSystem.h>
+
 #include <SerializeScene.h>
 #include <UI/UIManager.h>
 
@@ -50,7 +53,8 @@ namespace Puffin
 		ECSWorld->RegisterComponent<Rendering::MeshComponent>();
 		ECSWorld->RegisterComponent<Rendering::LightComponent>();
 		ECSWorld->RegisterComponent<Physics::RigidbodyComponent2D>();
-		ECSWorld->RegisterComponent<Physics::ShapeComponent2D>();
+		ECSWorld->RegisterComponent<Physics::CircleComponent2D>();
+		ECSWorld->RegisterComponent<Physics::BoxComponent2D>();
 		ECSWorld->RegisterComponent<Scripting::AngelScriptComponent>();
 
 		ECS::Signature meshSignature;
@@ -68,10 +72,15 @@ namespace Puffin
 		rigidbodySignature.set(ECSWorld->GetComponentType<Physics::RigidbodyComponent2D>());
 		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("Rigidbody", rigidbodySignature);
 
-		ECS::Signature collisionSignature;
-		collisionSignature.set(ECSWorld->GetComponentType<TransformComponent>());
-		collisionSignature.set(ECSWorld->GetComponentType<Physics::ShapeComponent2D>());
-		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("Collision", collisionSignature);
+		ECS::Signature circleSignature;
+		circleSignature.set(ECSWorld->GetComponentType<TransformComponent>());
+		circleSignature.set(ECSWorld->GetComponentType<Physics::CircleComponent2D>());
+		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("CircleCollision", circleSignature);
+
+		ECS::Signature boxSignature;
+		boxSignature.set(ECSWorld->GetComponentType<TransformComponent>());
+		boxSignature.set(ECSWorld->GetComponentType<Physics::BoxComponent2D>());
+		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("BoxCollision", boxSignature);
 
 		ECS::Signature scriptSignature;
 		scriptSignature.set(ECSWorld->GetComponentType<Scripting::AngelScriptComponent>());
@@ -298,7 +307,7 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(boxEntity);
 		world->AddComponent<Rendering::MeshComponent>(boxEntity);
 		world->AddComponent<Physics::RigidbodyComponent2D>(boxEntity);
-		world->AddComponent<Physics::ShapeComponent2D>(boxEntity);
+		world->AddComponent<Physics::CircleComponent2D>(boxEntity);
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
 
@@ -311,8 +320,7 @@ namespace Puffin
 		/*world->GetComponent<Physics::ShapeComponent2D>(boxEntity).type = Physics::Collision2D::ShapeType::BOX;
 		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).box.halfExtent = Vector2(1.0f);*/
 
-		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).type = Physics::Collision2D::ShapeType::CIRCLE;
-		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).circle.radius = 1.0f;
+		world->GetComponent<Physics::CircleComponent2D>(boxEntity).radius = 1.0f;
 
 		// Create Floor Entity
 		ECS::Entity floorEntity = world->CreateEntity();
@@ -322,7 +330,7 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(floorEntity);
 		world->AddComponent<Rendering::MeshComponent>(floorEntity);
 		world->AddComponent<Physics::RigidbodyComponent2D>(floorEntity);
-		world->AddComponent<Physics::ShapeComponent2D>(floorEntity);
+		world->AddComponent<Physics::CircleComponent2D>(floorEntity);
 
 		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(0.0f), Vector3(0.0f), Vector3(10.0f, 1.0f, 1.0f) };
 
@@ -334,8 +342,7 @@ namespace Puffin
 		/*world->GetComponent<Physics::ShapeComponent2D>(floorEntity).type = Physics::Collision2D::ShapeType::BOX;
 		world->GetComponent<Physics::ShapeComponent2D>(floorEntity).box.halfExtent = Vector2(10.0f, 1.0f);*/
 
-		world->GetComponent<Physics::ShapeComponent2D>(floorEntity).type = Physics::Collision2D::ShapeType::CIRCLE;
-		world->GetComponent<Physics::ShapeComponent2D>(floorEntity).circle.radius = 1.0f;
+		world->GetComponent<Physics::CircleComponent2D>(floorEntity).radius = 1.0f;
 	}
 
 	void Engine::Play()
