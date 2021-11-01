@@ -20,7 +20,7 @@ namespace Puffin
 
 				Begin(windowName);
 
-				ProjectSettings& settings = engine->GetProjectSettings();
+				IO::ProjectSettings& settings = engine->GetProjectSettings();
 
 				if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
 				{

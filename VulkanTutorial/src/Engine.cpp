@@ -5,7 +5,6 @@
 #include <Rendering/VulkanEngine.h>
 #include <Physics/PhysicsSystem2D.h>
 #include <Scripting/AngelScriptSystem.h>
-//#include <Physics/BulletPhysicsSystem.h>
 
 #include <Components/AngelScriptComponent.h>
 #include <Components/TransformComponent.h>
@@ -86,16 +85,24 @@ namespace Puffin
 		scriptSignature.set(ECSWorld->GetComponentType<Scripting::AngelScriptComponent>());
 		ECSWorld->SetSystemSignature<Scripting::AngelScriptSystem>("Script", scriptSignature);
 
-		sceneData.scene_name = "content/scenes/physics.pscn";
-		IO::LoadSettings("settings.xml", settings);
+		// Load Project File
+		projectFilePath = fs::path("C:\\Projects\\PuffinProject\\Puffin.pproject");
+
+		IO::LoadProject(projectFilePath, projectFile);
+
+		// Load Project Settings
+		IO::LoadSettings(projectFilePath.parent_path() / "settings.json", settings);
+
+		// Load Default Scene (if set)
+		sceneData.scene_path = projectFilePath.parent_path() / projectFile.defaultScenePath;
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene(ECSWorld);
-		PhysicsScene(ECSWorld);
+		//PhysicsScene(ECSWorld);
 		
 		// Load Scene -- normal behaviour
-		//IO::LoadScene(ECSWorld, sceneData);
-		//IO::InitScene(ECSWorld, sceneData);
+		IO::LoadScene(ECSWorld, sceneData);
+		IO::InitScene(ECSWorld, sceneData);
 
 		ECSWorld->InitEntitySystem();
 

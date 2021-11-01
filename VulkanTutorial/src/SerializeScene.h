@@ -15,11 +15,14 @@
 #include <set>
 #include <map>
 #include <fstream>
+#include <filesystem>
 
 #include <cereal/types/vector.hpp>
 #include <cereal/types/set.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/archives/binary.hpp>
+
+namespace fs = std::filesystem;
 
 namespace Puffin
 {
@@ -28,7 +31,7 @@ namespace Puffin
 		// Stores Loaded Scene Data
 		struct SceneData
 		{
-			std::string scene_name;
+			fs::path scene_path;
 			std::set<ECS::Entity> entities;
 			std::map<ECS::Entity, std::string> entity_names;
 			std::map<ECS::Entity, TransformComponent> transformMap;
@@ -116,7 +119,7 @@ namespace Puffin
 		inline static void SaveScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
 		{
 			// Initialize Output File Stream and Cereal Binary Archive
-			std::ofstream os(sceneData.scene_name, std::ios::binary);
+			std::ofstream os(sceneData.scene_path, std::ios::binary);
 			cereal::BinaryOutputArchive archive(os);
 
 			UpdateSceneData(world, sceneData);
@@ -136,7 +139,7 @@ namespace Puffin
 		inline static void LoadScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
 		{
 			// Initialize Input File Stream and Cereal Binary Archive
-			std::ifstream is(sceneData.scene_name, std::ios::binary);
+			std::ifstream is(sceneData.scene_path, std::ios::binary);
 			cereal::BinaryInputArchive archive(is);
 
 			// Clear Old Scene Data

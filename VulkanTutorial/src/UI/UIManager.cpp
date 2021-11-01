@@ -92,7 +92,7 @@ namespace Puffin
 			if (fileDialog.HasSelected() && loadScene)
 			{
 				std::string scenePath = fileDialog.GetSelected().string();
-				engine->GetScene().scene_name = scenePath;
+				engine->GetScene().scene_path = scenePath;
 
 				IO::LoadScene(world, engine->GetScene());
 
@@ -192,7 +192,7 @@ namespace Puffin
 			// Save Scene Modal Window
 			if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				std::string str_name = engine->GetScene().scene_name;
+				std::string str_name = engine->GetScene().scene_path.string();
 				std::vector<char> name(256, '\0');
 				for (int i = 0; i < str_name.size(); i++)
 				{
@@ -203,7 +203,7 @@ namespace Puffin
 				ImGui::Text("Enter Scene Name:");
 				if (ImGui::InputText("##Edit", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 				{
-					engine->GetScene().scene_name = std::string(&name[0]);
+					engine->GetScene().scene_path = std::string(&name[0]);
 				}
 
 				if (ImGui::Button("Save"))

@@ -10,6 +10,9 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace Puffin
 {
@@ -32,14 +35,18 @@ namespace Puffin
 
 		inline PlayState GetPlayState() { return playState; };
 		inline IO::SceneData& GetScene() { return sceneData; };
-		inline ProjectSettings& GetProjectSettings() { return settings; };
+		inline IO::ProjectSettings& GetProjectSettings() { return settings; };
 
 	private:
 
 		bool running, restarted;
 		PlayState playState;
 
-		ProjectSettings settings;
+		fs::path projectFilePath;
+		IO::ProjectFile projectFile;
+
+		IO::ProjectSettings settings;
+
 		IO::SceneData sceneData;
 
 		void DefaultScene(std::shared_ptr<ECS::World> world);
