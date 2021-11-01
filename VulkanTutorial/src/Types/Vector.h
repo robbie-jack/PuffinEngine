@@ -1,8 +1,6 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <btBulletDynamicsCommon.h>
-
 #include <math.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -320,13 +318,6 @@ namespace Puffin
 			return vec;
 		}
 
-		operator btVector3() const
-		{
-			btVector3 vec;
-			vec.setValue(x, y, z);
-			return vec;
-		}
-
 		// Operator=
 		void operator=(const Vector3& vec)
 		{
@@ -340,13 +331,6 @@ namespace Puffin
 			x = vec.x;
 			y = vec.y;
 			z = vec.z;
-		}
-
-		void operator=(const btVector3& vec)
-		{
-			x = vec.getX();
-			y = vec.getY();
-			z = vec.getZ();
 		}
 
 		void operator=(const Float* rhs)
@@ -364,13 +348,6 @@ namespace Puffin
 			z += vec.z;
 		}
 
-		void operator+=(const btVector3& vec)
-		{
-			x += vec.getX();
-			y += vec.getY();
-			z += vec.getZ();
-		}
-
 		void operator+=(const Vector3& vec)
 		{
 			x += vec.x;
@@ -386,15 +363,8 @@ namespace Puffin
 			z -= vec.z;
 		}
 
-		void operator-=(const btVector3& vec)
-		{
-			x -= vec.getX();
-			y -= vec.getY();
-			z -= vec.getZ();
-		}
-
 		// Operator+
-		Vector3 operator+(const Vector3& vec)
+		Vector3 operator+(const Vector3& vec) const
 		{
 			Vector3 vector;
 			vector.x = x + vec.x;
@@ -403,21 +373,12 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator+ (const glm::vec3& vec)
+		Vector3 operator+(const glm::vec3& vec) const
 		{
 			Vector3 vector;
 			vector.x = x + vec.x;
 			vector.y = y + vec.y;
 			vector.z = z + vec.z;
-			return vector;
-		}
-
-		Vector3 operator+(const btVector3& vec)
-		{
-			Vector3 vector;
-			vector.x = x + vec.getX();
-			vector.y = y + vec.getY();
-			vector.z = z + vec.getZ();
 			return vector;
 		}
 
@@ -440,22 +401,22 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator-(const btVector3& vec)
-		{
-			Vector3 vector;
-			vector.x = x - vec.getX();
-			vector.y = y - vec.getY();
-			vector.z = z - vec.getZ();
-			return vector;
-		}
-
 		// Operator*
-		Vector3 operator*(const Vector3& vec)
+		Vector3 operator*(const Vector3& vec) const
 		{
 			Vector3 vector;
 			vector.x = x * vec.x;
 			vector.y = y * vec.y;
 			vector.z = z * vec.z;
+			return vector;
+		}
+
+		Vector3 operator*(const Float& rhs) const
+		{
+			Vector3 vector;
+			vector.x = x * rhs;
+			vector.y = y * rhs;
+			vector.z = z * rhs;
 			return vector;
 		}
 

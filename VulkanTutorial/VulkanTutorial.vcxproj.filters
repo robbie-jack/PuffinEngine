@@ -29,9 +29,6 @@
     <Filter Include="ECS">
       <UniqueIdentifier>{5bec5de3-2573-4ab0-ac63-591b832acd07}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Physics\BulletPhysics">
-      <UniqueIdentifier>{fed274dd-404f-4fc4-880a-a16640bb95b8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Rendering\VK-Bootstrap">
       <UniqueIdentifier>{484cd380-1c92-4f70-86ee-81edf0f8e251}</UniqueIdentifier>
     </Filter>
@@ -50,14 +47,14 @@
     <Filter Include="Audio">
       <UniqueIdentifier>{576577dc-891e-40fb-a70d-b402ede7a1dc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scripting\Addons">
-      <UniqueIdentifier>{4ea84309-8d77-49e6-bf91-70e1b363f0af}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Rendering\Helper Classes">
       <UniqueIdentifier>{730e7aaf-cb6c-4eea-a3aa-ca4bdf3ed417}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Deferred">
       <UniqueIdentifier>{1c769954-8ad8-4c73-a241-ffb8b5d0d1d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting\Addons">
+      <UniqueIdentifier>{a9fc6b40-9b01-4ede-8228-ebe9dada421d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -69,9 +66,6 @@
     <ClCompile Include="src\JobManager.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp">
       <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Physics\BulletPhysicsSystem.cpp">
-      <Filter>Physics\BulletPhysics</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\VulkanEngine.cpp">
       <Filter>Rendering</Filter>
@@ -128,12 +122,6 @@
     <ClCompile Include="src\Scripting\AngelScriptSystem.cpp">
       <Filter>Scripting</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Libraries\angelscript_sdk\add_on\scriptstdstring\scriptstdstring.cpp">
-      <Filter>Scripting\Addons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Libraries\angelscript_sdk\add_on\scriptbuilder\scriptbuilder.cpp">
-      <Filter>Scripting\Addons</Filter>
-    </ClCompile>
     <ClCompile Include="src\Rendering\VKDeferredRender.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -145,6 +133,12 @@
     </ClCompile>
     <ClCompile Include="src\Physics\PhysicsSystem2D.cpp">
       <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.cpp">
+      <Filter>Scripting\Addons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.cpp">
+      <Filter>Scripting\Addons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -163,9 +157,6 @@
     </ClInclude>
     <ClInclude Include="src\Components\TransformComponent.h">
       <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\BulletPhysicsSystem.h">
-      <Filter>Physics\BulletPhysics</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\ModelLoader.h">
       <Filter>Rendering</Filter>
@@ -230,9 +221,6 @@
     <ClInclude Include="src\Components\Rendering\MeshComponent.h">
       <Filter>Components\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="src\Components\Physics\RigidbodyComponent.h">
-      <Filter>Components\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="src\Rendering\DebugDraw.h">
       <Filter>Rendering</Filter>
     </ClInclude>
@@ -254,12 +242,6 @@
     </ClInclude>
     <ClInclude Include="src\Scripting\AngelScriptSystem.h">
       <Filter>Scripting</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Libraries\angelscript_sdk\add_on\scriptstdstring\scriptstdstring.h">
-      <Filter>Scripting\Addons</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Libraries\angelscript_sdk\add_on\scriptbuilder\scriptbuilder.h">
-      <Filter>Scripting\Addons</Filter>
     </ClInclude>
     <ClInclude Include="src\Components\AngelScriptComponent.h">
       <Filter>Components</Filter>
@@ -303,6 +285,12 @@
     </ClInclude>
     <ClInclude Include="src\Types\Quat.h">
       <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.h">
+      <Filter>Scripting\Addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h">
+      <Filter>Scripting\Addons</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

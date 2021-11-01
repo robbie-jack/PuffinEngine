@@ -3,7 +3,6 @@
 #include <Components/TransformComponent.h>
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
-#include <Components/Physics/RigidbodyComponent.h>
 #include <ECS/ECS.h>
 
 #include <misc/cpp/imgui_stdlib.h>
@@ -122,13 +121,7 @@ namespace Puffin
 
 						if (ImGui::Selectable("Rigidbody Component"))
 						{
-							if (!world->HasComponent<Physics::RigidbodyComponent>(entity))
-							{
-								Physics::RigidbodyComponent& comp = world->AddComponent<Physics::RigidbodyComponent>(entity);
-								comp.size = btVector3(1.0f, 1.0f, 1.0f);
-								comp.mass = 0.0f;
-								sceneChanged = true;
-							}
+							
 						}
 
 						ImGui::EndPopup();
