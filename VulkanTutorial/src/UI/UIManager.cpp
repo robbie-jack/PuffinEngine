@@ -247,7 +247,7 @@ namespace Puffin
 
 					if (ImGui::MenuItem("Save Project"))
 					{
-						IO::SaveSettings("settings.xml", engine->GetProjectSettings());
+						IO::SaveSettings(engine->GetProjectSettingsFilePath(), engine->GetProjectSettings());
 					}
 
 					if (ImGui::MenuItem("Save Project As"))

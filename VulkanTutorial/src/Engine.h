@@ -35,6 +35,8 @@ namespace Puffin
 
 		inline PlayState GetPlayState() { return playState; };
 		inline IO::SceneData& GetScene() { return sceneData; };
+
+		inline fs::path GetProjectSettingsFilePath() { return projectFilePath.parent_path() / "settings.json"; };
 		inline IO::ProjectSettings& GetProjectSettings() { return settings; };
 
 	private:
