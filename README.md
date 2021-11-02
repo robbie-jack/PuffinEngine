@@ -7,7 +7,7 @@ Uses the following API's/Libraries:
 
 Vulkan - Rendering API - https://www.khronos.org/vulkan/
 
-Bullet - Physics Simulation - https://github.com/bulletphysics/bullet3
+VK-Bootstrap - Utility Library for Vulkan - https://github.com/charles-lunarg/vk-bootstrap
 
 GLFW - Window Creation/Management - https://www.glfw.org/
 
@@ -16,3 +16,7 @@ ImGui - Editor UI - https://github.com/ocornut/imgui
 Assimp - Model Importer https://www.assimp.org/
 
 Cereal - Serilization - https://uscilab.github.io/cereal/
+
+AngelScript - Scripting - https://www.angelcode.com/angelscript/
+
+SoLoud - Audio - https://sol.gfxile.net/soloud/
