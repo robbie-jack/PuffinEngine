@@ -368,8 +368,8 @@ namespace Puffin
 		void VKDeferredRender::SetupGPipeline()
 		{
 			// Read Shader code from Files
-			auto vertShaderCode = ReadFile("content/shaders/deferred_geometry_vert.spv");
-			auto fragShaderCode = ReadFile("content/shaders/deferred_geometry_frag.spv");
+			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\deferred_geometry_vert.spv");
+			auto fragShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\deferred_geometry_frag.spv");
 
 			// Create Shader Modules
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
@@ -521,8 +521,8 @@ namespace Puffin
 		void VKDeferredRender::SetupSPipeline()
 		{
 			// Read Shader code from Files
-			auto vertShaderCode = ReadFile("content/shaders/deferred_shading_vert.spv");
-			auto fragShaderCode = ReadFile("content/shaders/deferred_shading_frag.spv");
+			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\deferred_shading_vert.spv");
+			auto fragShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\deferred_shading_frag.spv");
 
 			// Create Shader Modules
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);

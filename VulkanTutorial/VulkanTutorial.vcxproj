@@ -188,7 +188,6 @@
     <ClCompile Include="src\Audio\AudioSystem.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
-    <ClCompile Include="src\JobManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Physics\PhysicsSystem2D.cpp" />
@@ -227,7 +226,6 @@
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Input\InputManager.h" />
-    <ClInclude Include="src\JobManager.h" />
     <ClInclude Include="src\ManipulationGizmo.h" />
     <ClInclude Include="src\MathHelpers.h" />
     <ClInclude Include="src\Physics\PhysicsHelpers2D.h" />

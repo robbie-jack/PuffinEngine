@@ -7,20 +7,24 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb-master\stb_image.h>
 
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 namespace Puffin
 {
 	namespace Rendering
 	{
 		namespace Util
 		{
-			bool LoadImageFromFile(VulkanEngine& engine, const char* file, AllocatedImage& outImage)
+			bool LoadImageFromFile(VulkanEngine& engine, fs::path texturePath, AllocatedImage& outImage)
 			{
 				int texWidth, texHeight, texChannels;
 
-				stbi_uc* pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+				stbi_uc* pixels = stbi_load(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
 				if (!pixels) {
-					std::cout << "Failed to load texture file " << file << std::endl;
+					std::cout << "Failed to load texture file " << texturePath.string() << std::endl;
 					return false;
 				}
 

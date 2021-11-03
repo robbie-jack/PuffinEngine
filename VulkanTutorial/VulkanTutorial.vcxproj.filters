@@ -63,7 +63,6 @@
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Engine.cpp" />
-    <ClCompile Include="src\JobManager.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp">
       <Filter>Input</Filter>
     </ClCompile>
@@ -146,7 +145,6 @@
       <Filter>Rendering\VK-Bootstrap</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine.h" />
-    <ClInclude Include="src\JobManager.h" />
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\SerializeScene.h" />
     <ClInclude Include="src\ecs\ECS.h">

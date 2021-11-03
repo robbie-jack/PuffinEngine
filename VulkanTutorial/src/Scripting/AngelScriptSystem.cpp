@@ -210,7 +210,7 @@ namespace Puffin
 			{
 				cout << "Failed to start new module" << endl;
 			}
-			r = builder.AddSectionFromFile(script.dir.c_str());
+			r = builder.AddSectionFromFile(script.dir.string().c_str());
 			if (r < 0)
 			{
 				cout << "Failed to add script file" << endl;

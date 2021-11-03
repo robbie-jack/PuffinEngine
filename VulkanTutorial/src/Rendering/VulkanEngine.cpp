@@ -999,8 +999,8 @@ namespace Puffin
 		void VulkanEngine::InitPipelines()
 		{
 			// Read Shader Code from files
-			auto vertShaderCode = ReadFile("content/shaders/default_lighting_vert.spv");
-			auto fragShaderCode = ReadFile("content/shaders/default_lighting_frag.spv");
+			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\default_lighting_vert.spv");
+			auto fragShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\default_lighting_frag.spv");
 
 			// Create Shader Modules from code
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
@@ -1082,7 +1082,7 @@ namespace Puffin
 		void VulkanEngine::InitShadowPipeline()
 		{
 			// Read Shader Code from files
-			auto vertShaderCode = ReadFile("content/shaders/shadowmap_vert.spv");
+			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\shadowmap_vert.spv");
 
 			// Create Shader Module from code
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
@@ -1147,8 +1147,8 @@ namespace Puffin
 		void VulkanEngine::InitDebugPipeline()
 		{
 			// Read Shader Code from Files
-			auto vertShaderCode = ReadFile("content/shaders/debug_vert.spv");
-			auto fragShaderCode = ReadFile("content/shaders/debug_frag.spv");
+			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\debug_vert.spv");
+			auto fragShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\debug_frag.spv");
 
 			// Create Shader Modules from code
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
@@ -1243,7 +1243,7 @@ namespace Puffin
 		void VulkanEngine::InitMesh(MeshComponent& mesh)
 		{
 			// Load Texture Data
-			Util::LoadImageFromFile(*this, mesh.texture_path.c_str(), mesh.texture);
+			Util::LoadImageFromFile(*this, mesh.texture_path, mesh.texture);
 
 			VKDebug::SetObjectName(device,
 				(uint64_t)mesh.texture.image,

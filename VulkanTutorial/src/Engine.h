@@ -39,6 +39,8 @@ namespace Puffin
 		inline fs::path GetProjectSettingsFilePath() { return projectFilePath.parent_path() / "settings.json"; };
 		inline IO::ProjectSettings& GetProjectSettings() { return settings; };
 
+		inline fs::path GetProjectContentPath() { return projectFilePath.parent_path() / "content"; };
+
 	private:
 
 		bool running, restarted;

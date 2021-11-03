@@ -3,6 +3,8 @@
 #ifndef MODEL_LOADER_H
 #define MODEL_LOADER_H
 
+#include <Components/Rendering/MeshComponent.h>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -12,11 +14,11 @@
 
 #include <iostream>
 #include <fstream>
-#include <filesystem>
 #include <vector>
 #include <string>
+#include <filesystem>
 
-#include <Components/Rendering/MeshComponent.h>
+namespace fs = std::filesystem;
 
 namespace Puffin
 {
@@ -38,19 +40,21 @@ namespace Puffin
 			}
 		}
 
-		inline void SaveMesh(const std::string& model_path, const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices)
+		inline void SaveMesh(fs::path model_path, const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices)
 		{
 			// Initialize Output File Stream and Cereal Binary Archive
-			std::ofstream os(model_path, std::ios::binary);
+			const std::string string = model_path.string();
+			std::ofstream os(string, std::ios::binary);
 			cereal::BinaryOutputArchive archive(os);
 
 			archive(vertices);
 			archive(indices);
 		}
 
-		inline void LoadMesh(const std::string& model_path, std::vector<Rendering::Vertex>& vertices, std::vector<uint32_t>& indices)
+		inline void LoadMesh(fs::path model_path, std::vector<Rendering::Vertex>& vertices, std::vector<uint32_t>& indices)
 		{
-			std::ifstream is(model_path, std::ios::binary);
+			const std::string string = model_path.string();
+			std::ifstream is(string, std::ios::binary);
 			cereal::BinaryInputArchive archive(is);
 
 			archive(vertices);
@@ -61,13 +65,13 @@ namespace Puffin
 		}
 
 		// Import Mesh to MeshComponent
-		inline bool ImportMesh(const std::string model_path)
+		inline bool ImportMesh(fs::path model_path)
 		{
 			// Create an Instance of the Assimp Importer Class
 			Assimp::Importer importer;
 
 			// Import Model
-			const aiScene* scene = importer.ReadFile(model_path, 
+			const aiScene* scene = importer.ReadFile((const char*)model_path.c_str(),
 				aiProcess_CalcTangentSpace		| // Calculate Tangents and Bitangents (Useful for certain shader effects)
 				aiProcess_Triangulate			| // Ensure all faces are triangles
 				aiProcess_JoinIdenticalVertices	| // Ensure all vertices are unique

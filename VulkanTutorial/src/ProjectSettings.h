@@ -25,8 +25,8 @@ namespace Puffin
 		template<class Archive>
 		void serialize(Archive& archive, ProjectFile& file)
 		{
-			archive(file.name);
-			archive(file.defaultScenePath);
+			archive(cereal::make_nvp("Project Name", file.name));
+			archive(cereal::make_nvp("Default Scene", file.defaultScenePath));
 		}
 
 		struct ProjectSettings
@@ -38,14 +38,14 @@ namespace Puffin
 		template<class Archive>
 		void serialize(Archive& archive, ProjectSettings& settings)
 		{
-			archive(CEREAL_NVP(settings.cameraFov));
-			archive(CEREAL_NVP(settings.mouseSensitivity));
+			archive(cereal::make_nvp("Camera FOV",settings.cameraFov));
+			archive(cereal::make_nvp("Mouse Sensitivity", settings.mouseSensitivity));
 		}
 
 		// IO Static Functions
 		static void SaveProject(fs::path file_path, const ProjectFile& file)
 		{
-			std::ofstream os(file_path);
+			std::ofstream os(file_path.string());
 			cereal::JSONOutputArchive archive(os);
 
 			archive(file);
@@ -56,7 +56,7 @@ namespace Puffin
 			if (!fs::exists(file_path))
 				return;
 
-			std::ifstream is(file_path);
+			std::ifstream is(file_path.string());
 			cereal::JSONInputArchive archive(is);
 
 			archive(file);

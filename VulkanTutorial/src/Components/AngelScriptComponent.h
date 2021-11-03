@@ -3,10 +3,13 @@
 #define ANGELSCRIPT_DLL_LIBRARY_IMPORT
 #include <angelscript.h>
 
+#include <cereal/cereal.hpp>
+
 #include <string>
 #include <set>
+#include <filesystem>
 
-#include <cereal/cereal.hpp>
+namespace fs = std::filesystem;
 
 namespace Puffin
 {
@@ -18,7 +21,7 @@ namespace Puffin
 			std::string name;
 
 			// Location of File relative to project
-			std::string dir;
+			fs::path dir;
 
 			// Interface that describes instantiated type
 			asITypeInfo* type;
@@ -35,9 +38,18 @@ namespace Puffin
 		};
 
 		template<class Archive>
-		void serialize(Archive& archive, AngelScriptComponent& comp)
+		void save(Archive& archive, const AngelScriptComponent& comp)
 		{
-			archive(CEREAL_NVP(comp.name), CEREAL_NVP(comp.dir));
+			archive(CEREAL_NVP(comp.name), CEREAL_NVP(comp.dir.string()));
+		}
+
+		template<class Archive>
+		void load(Archive& archive, AngelScriptComponent& comp)
+		{
+			std::string dir;
+			archive(CEREAL_NVP(comp.name), CEREAL_NVP(dir));
+
+			comp.dir = dir;
 		}
 	}
 }

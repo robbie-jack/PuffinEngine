@@ -195,7 +195,7 @@ namespace Puffin
 
 					// Change Model Path
 					ImGui::Text("Model Path:"); ImGui::SameLine();
-					if (ImGui::Selectable(mesh.model_path.c_str(), false))
+					if (ImGui::Selectable((const char*)mesh.model_path.c_str(), false))
 					{
 						fileDialog->Open();
 						modelSelected = true;
@@ -213,7 +213,7 @@ namespace Puffin
 
 					// Change Texture Path
 					ImGui::Text("Texture Path:"); ImGui::SameLine();
-					if (ImGui::Selectable(mesh.texture_path.c_str(), false))
+					if (ImGui::Selectable((const char*)mesh.texture_path.c_str(), false))
 					{
 						fileDialog->Open();
 						textureSelected = true;
@@ -355,7 +355,7 @@ namespace Puffin
 					ImGui::InputText("Script Name", &comp.name);
 
 					ImGui::Text("File Path:"); ImGui::SameLine(0.0f);
-					if (ImGui::Selectable(comp.dir.c_str(), false))
+					if (ImGui::Selectable(comp.dir.string().c_str(), false))
 					{
 						//fileDialog->Open();
 						//modelSelected = true;

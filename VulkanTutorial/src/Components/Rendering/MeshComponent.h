@@ -3,6 +3,8 @@
 #ifndef MESH_COMPONENT_H
 #define MESH_COMPONENT_H
 
+#include <Rendering/VKTypes.h>
+
 #include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
@@ -13,12 +15,13 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
+#include <cereal/types/string.hpp>
+
 #include <vector>
 #include <array>
+#include <filesystem>
 
-#include <Rendering/VKTypes.h>
-
-#include <cereal/types/string.hpp>
+namespace fs = std::filesystem;
 
 namespace Puffin
 {
@@ -125,15 +128,13 @@ namespace Puffin
 			}
 
 			// Mesh Data
-			//std::vector<Vertex> vertices;
-			//std::vector<uint32_t> indices;
-			std::string model_path;
+			fs::path model_path;
 			uint32_t vertexCount;
 			uint32_t indexCount;
 
 			// Texture
 			Texture texture;
-			std::string texture_path;
+			fs::path texture_path;
 
 			// Material
 			Material material;
@@ -146,9 +147,19 @@ namespace Puffin
 		};
 
 		template<class Archive>
-		void serialize(Archive& archive, MeshComponent& comp)
+		void save(Archive& archive, const MeshComponent& comp)
 		{
-			archive(comp.model_path, comp.texture_path);
+			archive(comp.model_path.string(), comp.texture_path.string());
+		}
+
+		template<class Archive>
+		void load(Archive& archive, MeshComponent& comp)
+		{
+			std::string modelPath, texturePath;
+			archive(modelPath, texturePath);
+
+			comp.model_path = modelPath;
+			comp.texture_path = texturePath;
 		}
 	}
 }

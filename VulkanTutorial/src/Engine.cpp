@@ -10,12 +10,17 @@
 #include <Components/TransformComponent.h>
 
 #include <Input/InputManager.h>
-#include <JobManager.h>
 
 #include <SerializeScene.h>
 #include <UI/UIManager.h>
 
 #include <chrono>
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace Puffin
 {
@@ -28,7 +33,6 @@ namespace Puffin
 		std::shared_ptr<ECS::World> ECSWorld = std::make_shared<ECS::World>();
 		UI::UIManager UIManager(this, ECSWorld);
 		Input::InputManager InputManager;
-		//Job::JobManager JobManager;
 
 		glfwInit();
 
@@ -40,10 +44,8 @@ namespace Puffin
 
 		ECSWorld->Init();
 		InputManager.Init(window, ECSWorld);
-		//JobManager.Init();
 
 		// Systems
-		//std::shared_ptr<Physics::BulletPhysicsSystem> physicsSystem = ECSWorld->RegisterSystem<Physics::BulletPhysicsSystem>();
 		std::shared_ptr<Physics::PhysicsSystem2D> physicsSystem = ECSWorld->RegisterSystem<Physics::PhysicsSystem2D>();
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
@@ -91,10 +93,10 @@ namespace Puffin
 		IO::LoadProject(projectFilePath, projectFile);
 
 		// Load Project Settings
-		IO::LoadSettings(projectFilePath.parent_path() / "settings.json", settings);
+		IO::LoadSettings(projectFilePath.parent_path() / "Settings.json", settings);
 
 		// Load Default Scene (if set)
-		sceneData.scene_path = projectFilePath.parent_path() / projectFile.defaultScenePath;
+		sceneData.scene_path = projectFilePath.parent_path() / "content" / projectFile.defaultScenePath;
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene(ECSWorld);
@@ -128,7 +130,7 @@ namespace Puffin
 			lastTime = currentTime;
 			currentTime = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<float> duration = currentTime - lastTime;
-			float delta_time = duration.count();
+			float deltaTime = duration.count();
 
 			// Input
 			InputManager.UpdateInput();
@@ -136,20 +138,15 @@ namespace Puffin
 			// Physics/Scripting
 			if (playState == PlayState::PLAYING)
 			{
-				scriptingSystem->Update(delta_time);
-				physicsSystem->Update(delta_time);
-			}
-			else
-			{
-				scriptingSystem->Update(0.0f);
-				physicsSystem->Update(0.0f);
+				scriptingSystem->Update(deltaTime);
+				physicsSystem->Update(deltaTime);
 			}
 
 			// UI
 			UIManager.Update();
 
 			// Rendering
-			vulkanEngine->Update(&UIManager, &InputManager, delta_time);
+			vulkanEngine->Update(&UIManager, &InputManager, deltaTime);
 
 			if (playState == PlayState::STOPPED && restarted)
 			{
@@ -212,9 +209,6 @@ namespace Puffin
 		world->AddComponent<Rendering::LightComponent>(4);
 		world->AddComponent<Rendering::LightComponent>(7);
 
-		//world->AddComponent<Physics::RigidbodyComponent>(3);
-		//world->AddComponent<Physics::RigidbodyComponent>(5);
-
 		// Initialize Components with default values
 		world->GetComponent<TransformComponent>(1) = { Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
 		world->GetComponent<TransformComponent>(2) = { Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
@@ -224,22 +218,22 @@ namespace Puffin
 		world->GetComponent<TransformComponent>(6) = { Vector3(0.0f, -10.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 1.0f, 10.0f) };
 		world->GetComponent<TransformComponent>(7) = { Vector3(5.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
 
-		world->GetComponent<Rendering::MeshComponent>(1).model_path = "content\\models\\chalet.psm";
-		world->GetComponent<Rendering::MeshComponent>(1).texture_path = "content\\textures\\chalet.jpg";
+		world->GetComponent<Rendering::MeshComponent>(1).model_path = GetProjectContentPath() / "models\\chalet.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(1).texture_path = GetProjectContentPath() / "textures\\chalet.jpg";
 
-		world->GetComponent<Rendering::MeshComponent>(2).model_path = "content\\models\\sphere.psm";
-		world->GetComponent<Rendering::MeshComponent>(2).texture_path = "content\\textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(2).model_path = GetProjectContentPath() / "models\\sphere.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(2).texture_path = GetProjectContentPath() / "textures\\cube.png";
 
-		world->GetComponent<Rendering::MeshComponent>(3).model_path = "content\\models\\cube.psm";
-		world->GetComponent<Rendering::MeshComponent>(3).texture_path = "content\\textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(4).model_path = "content\\models\\cube.psm";
-		world->GetComponent<Rendering::MeshComponent>(4).texture_path = "content\\textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(5).model_path = "content\\models\\cube.psm";
-		world->GetComponent<Rendering::MeshComponent>(5).texture_path = "content\\textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(6).model_path = "content\\models\\cube.psm";
-		world->GetComponent<Rendering::MeshComponent>(6).texture_path = "content\\textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(7).model_path = "content\\models\\cube.psm";
-		world->GetComponent<Rendering::MeshComponent>(7).texture_path = "content\\textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(3).model_path = GetProjectContentPath() / "models\\cube.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(3).texture_path = GetProjectContentPath() / "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(4).model_path = GetProjectContentPath() / "models\\cube.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(4).texture_path = GetProjectContentPath() / "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(5).model_path = GetProjectContentPath() / "models\\cube.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(5).texture_path = GetProjectContentPath() / "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(6).model_path = GetProjectContentPath() / "models\\cube.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(6).texture_path = GetProjectContentPath() / "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(7).model_path = GetProjectContentPath() / "models\\cube.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(7).texture_path = GetProjectContentPath() / "textures\\cube.png";
 
 		world->GetComponent<Rendering::LightComponent>(4).direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		world->GetComponent<Rendering::LightComponent>(4).ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
@@ -267,16 +261,10 @@ namespace Puffin
 		world->GetComponent<Rendering::LightComponent>(7).type = Rendering::LightType::SPOT;
 		world->GetComponent<Rendering::LightComponent>(7).bFlagCastShadows = false;
 
-		/*world->GetComponent<Physics::RigidbodyComponent>(3).size = btVector3(1.0f, 1.0f, 1.0f);
-		world->GetComponent<Physics::RigidbodyComponent>(3).mass = 1.0f;
-
-		world->GetComponent<Physics::RigidbodyComponent>(5).size = btVector3(1.0f, 1.0f, 1.0f);
-		world->GetComponent<Physics::RigidbodyComponent>(5).mass = 0.0f;*/
-
-		Scripting::AngelScriptComponent script;
+		/*Scripting::AngelScriptComponent script;
 		script.name = "Game";
-		script.dir = "C:/Projects/PuffinProject/content/scripts/game.as";
-		world->AddComponent(1, script);
+		script.dir = GetProjectContentPath() / "scripts\\game.as";
+		world->AddComponent(1, script);*/
 	}
 
 	void Engine::PhysicsScene(std::shared_ptr<ECS::World> world)
@@ -318,8 +306,8 @@ namespace Puffin
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(boxEntity).model_path = "content\\models\\cube.psm";
-		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = "content\\textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(boxEntity).model_path = GetProjectContentPath() / "models\\cube.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = GetProjectContentPath() / "textures\\cube.png";
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = 0.75f;
@@ -341,8 +329,8 @@ namespace Puffin
 
 		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(0.0f), Vector3(0.0f), Vector3(10.0f, 1.0f, 1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(floorEntity).model_path = "content\\models\\cube.psm";
-		world->GetComponent<Rendering::MeshComponent>(floorEntity).texture_path = "content\\textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(floorEntity).model_path = GetProjectContentPath() / "models\\cube.pstaticmesh";
+		world->GetComponent<Rendering::MeshComponent>(floorEntity).texture_path = GetProjectContentPath() / "textures\\cube.png";
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(floorEntity).invMass = 0.0f; // Setting mass to zero makes rigidbody kinematic instead of dynamic
 
