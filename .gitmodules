@@ -7,3 +7,6 @@
 [submodule "implot"]
 	path = implot
 	url = https://github.com/epezent/implot
+[submodule "stduuid"]
+	path = stduuid
+	url = https://github.com/mariusbancila/stduuid
