@@ -4,6 +4,7 @@
 #define MESH_COMPONENT_H
 
 #include <Rendering/VKTypes.h>
+#include <Types/UUID.h>
 
 #include <vulkan/vulkan.h>
 
@@ -122,13 +123,13 @@ namespace Puffin
 		{
 			MeshComponent() {}
 			
-			MeshComponent(std::string InModelPath, std::string InTexturePath) :
-				model_path(InModelPath), texture_path(InTexturePath)
+			MeshComponent(UUID InMeshID, std::string InTexturePath) :
+				assetID(InMeshID), texture_path(InTexturePath)
 			{
 			}
 
 			// Mesh Data
-			fs::path model_path;
+			UUID assetID;
 			uint32_t vertexCount;
 			uint32_t indexCount;
 
@@ -149,16 +150,20 @@ namespace Puffin
 		template<class Archive>
 		void save(Archive& archive, const MeshComponent& comp)
 		{
-			archive(comp.model_path.string(), comp.texture_path.string());
+			uint64_t id = comp.assetID;
+			archive(cereal::make_nvp("UUID", id));
+			archive(cereal::make_nvp("Texture Path", comp.texture_path.string()));
 		}
 
 		template<class Archive>
 		void load(Archive& archive, MeshComponent& comp)
 		{
-			std::string modelPath, texturePath;
-			archive(modelPath, texturePath);
+			uint64_t id;
+			archive(cereal::make_nvp("UUID", id));
+			comp.assetID = id;
 
-			comp.model_path = modelPath;
+			std::string texturePath;
+			archive(cereal::make_nvp("Texture Path", texturePath));
 			comp.texture_path = texturePath;
 		}
 	}

@@ -4,6 +4,7 @@
 #include <ManipulationGizmo.h>
 #include <Rendering/ModelLoader.h>
 #include <SerializeScene.h>
+#include <AssetRegistry.h>
 
 #include <string>
 
@@ -247,7 +248,7 @@ namespace Puffin
 
 					if (ImGui::MenuItem("Save Project"))
 					{
-						IO::SaveSettings(engine->GetProjectSettingsFilePath(), engine->GetProjectSettings());
+						IO::SaveSettings(AssetRegistry::Get()->ProjectRoot() / "settings.json", engine->GetProjectSettings());
 					}
 
 					if (ImGui::MenuItem("Save Project As"))

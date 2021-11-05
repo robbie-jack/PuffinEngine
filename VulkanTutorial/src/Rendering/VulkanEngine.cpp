@@ -2,9 +2,11 @@
 
 #include <Rendering/VKInitializers.h>
 #include <Rendering/VKDescriptors.h>
-#include <Rendering/ModelLoader.h>
 #include <Rendering/VKTexture.h>
 #include <Rendering/VKDebug.h>
+
+#include <AssetRegistry.h>
+#include <Assets/MeshAsset.h>
 
 #define VMA_IMPLEMENTATION
 #include <Rendering/vk_mem_alloc.h>
@@ -1253,21 +1255,22 @@ namespace Puffin
 			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
 
-			std::vector<Vertex> vertices;
-			std::vector<uint32_t> indices;
+			std::shared_ptr<IO::StaticMeshAsset> staticMeshAsset = std::static_pointer_cast<IO::StaticMeshAsset>(AssetRegistry::Get()->GetAsset(mesh.assetID));
 
 			// Load Mesh Data
-			IO::LoadMesh(mesh.model_path, vertices, indices);
+			if (staticMeshAsset)
+			{
+				staticMeshAsset->Load();
 
-			mesh.vertexCount = static_cast<uint32_t>(vertices.size());
-			mesh.indexCount = static_cast<uint32_t>(indices.size());
+				mesh.vertexCount = static_cast<uint32_t>(staticMeshAsset->vertices_.size());
+				mesh.indexCount = static_cast<uint32_t>(staticMeshAsset->indices_.size());
 
-			// Init Mesh Buffers
-			mesh.vertexBuffer = InitVertexBuffer(vertices);
-			mesh.indexBuffer = InitIndexBuffer(indices);
+				// Init Mesh Buffers
+				mesh.vertexBuffer = InitVertexBuffer(staticMeshAsset->vertices_);
+				mesh.indexBuffer = InitIndexBuffer(staticMeshAsset->indices_);
 
-			vertices.clear();
-			indices.clear();
+				staticMeshAsset->Unload();
+			}
 
 			mesh.material = meshMaterial;
 

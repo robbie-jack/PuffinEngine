@@ -185,6 +185,8 @@
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
+    <ClCompile Include="src\AssetRegistry.cpp" />
+    <ClCompile Include="src\Assets\MeshAsset.cpp" />
     <ClCompile Include="src\Audio\AudioSystem.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
@@ -212,6 +214,8 @@
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
+    <ClInclude Include="src\AssetRegistry.h" />
+    <ClInclude Include="src\Assets\MeshAsset.h" />
     <ClInclude Include="src\Audio\AudioSystem.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h" />
@@ -249,6 +253,7 @@
     <ClInclude Include="src\Types\PhysicsTypes2D.h" />
     <ClInclude Include="src\Types\Quat.h" />
     <ClInclude Include="src\Types\RingBuffer.h" />
+    <ClInclude Include="src\Types\UUID.h" />
     <ClInclude Include="src\Types\Vector.h" />
     <ClInclude Include="src\Types\VectorConversion.h" />
     <ClInclude Include="src\UI\UIManager.h" />

@@ -56,6 +56,9 @@
     <Filter Include="Scripting\Addons">
       <UniqueIdentifier>{a9fc6b40-9b01-4ede-8228-ebe9dada421d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{f616ea0c-0a82-4f78-9de3-fd7968a20200}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -139,6 +142,10 @@
     <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.cpp">
       <Filter>Scripting\Addons</Filter>
     </ClCompile>
+    <ClCompile Include="src\Assets\MeshAsset.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetRegistry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -289,6 +296,13 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h">
       <Filter>Scripting\Addons</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\UUID.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AssetRegistry.h" />
+    <ClInclude Include="src\Assets\MeshAsset.h">
+      <Filter>Assets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

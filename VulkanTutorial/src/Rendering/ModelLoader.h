@@ -3,14 +3,11 @@
 #ifndef MODEL_LOADER_H
 #define MODEL_LOADER_H
 
-#include <Components/Rendering/MeshComponent.h>
+#include <Assets/MeshAsset.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-#include <cereal/types/vector.hpp>
-#include <cereal/archives/binary.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -24,8 +21,12 @@ namespace Puffin
 {
 	namespace IO
 	{
-		// Not for use outside ModelLoader
-		inline void ProcessNode(aiNode* node, std::vector<aiMesh*>* meshes, const aiScene* scene)
+		////////////////////////////////
+		// Helper Function
+		////////////////////////////////
+
+		// Not for use outside MeshAsset
+		static void ProcessNode(aiNode* node, std::vector<aiMesh*>* meshes, const aiScene* scene)
 		{
 			// Process all meshes in this node
 			for (int i = 0; i < node->mNumMeshes; i++)
@@ -40,43 +41,20 @@ namespace Puffin
 			}
 		}
 
-		inline void SaveMesh(fs::path model_path, const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices)
-		{
-			// Initialize Output File Stream and Cereal Binary Archive
-			const std::string string = model_path.string();
-			std::ofstream os(string, std::ios::binary);
-			cereal::BinaryOutputArchive archive(os);
-
-			archive(vertices);
-			archive(indices);
-		}
-
-		inline void LoadMesh(fs::path model_path, std::vector<Rendering::Vertex>& vertices, std::vector<uint32_t>& indices)
-		{
-			const std::string string = model_path.string();
-			std::ifstream is(string, std::ios::binary);
-			cereal::BinaryInputArchive archive(is);
-
-			archive(vertices);
-			archive(indices);
-
-			vertices.shrink_to_fit();
-			indices.shrink_to_fit();
-		}
-
 		// Import Mesh to MeshComponent
-		inline bool ImportMesh(fs::path model_path)
+		static bool ImportMesh(fs::path model_path)
 		{
 			// Create an Instance of the Assimp Importer Class
 			Assimp::Importer importer;
 
 			// Import Model
-			const aiScene* scene = importer.ReadFile((const char*)model_path.c_str(),
-				aiProcess_CalcTangentSpace		| // Calculate Tangents and Bitangents (Useful for certain shader effects)
-				aiProcess_Triangulate			| // Ensure all faces are triangles
-				aiProcess_JoinIdenticalVertices	| // Ensure all vertices are unique
-				aiProcess_SortByPType			|
-				aiProcess_FlipUVs				|
+			const std::string& string = model_path.string();
+			const aiScene* scene = importer.ReadFile(string.c_str(),
+				aiProcess_CalcTangentSpace | // Calculate Tangents and Bitangents (Useful for certain shader effects)
+				aiProcess_Triangulate | // Ensure all faces are triangles
+				aiProcess_JoinIdenticalVertices | // Ensure all vertices are unique
+				aiProcess_SortByPType |
+				aiProcess_FlipUVs |
 				aiProcess_GenNormals);
 
 			// Check if Import Failed
@@ -87,11 +65,14 @@ namespace Puffin
 				return false;
 			}
 
+			// Instantiate new Mesh Asset to store loaded Vertex/Index data in
+			fs::path import_path = fs::path() / "meshes" / model_path.stem();
+			import_path += ".pstaticmesh";
 
+			std::shared_ptr<StaticMeshAsset> meshAsset = std::make_shared<StaticMeshAsset>(import_path);
+			AssetRegistry::Get()->RegisterAsset(meshAsset);
 
-			// Local vectors for storing model data
-			std::vector<Rendering::Vertex> vertices;
-			std::vector<uint32_t> indices;
+			// Local vector for storing model data
 			std::vector<aiMesh*> meshes;
 
 			aiNode* root = scene->mRootNode;
@@ -146,7 +127,7 @@ namespace Puffin
 						mesh->mTextureCoords[0][j].y
 					};
 
-					vertices.push_back(vertex);
+					meshAsset->vertices_.push_back(vertex);
 				}
 
 				// Iterate over faces in mesh object
@@ -157,15 +138,12 @@ namespace Puffin
 					// Store all indices of this face
 					for (int k = 0; k < face->mNumIndices; k++)
 					{
-						indices.push_back(face->mIndices[k]);
+						meshAsset->indices_.push_back(face->mIndices[k]);
 					}
 				}
 			}
 
-			std::filesystem::path path(model_path);
-			std::string import_path = "content/models/" + path.stem().string() + ".psm";
-
-			SaveMesh(import_path, vertices, indices);
+			meshAsset->Save();
 
 			// Import was successful, return true
 			return true;
