@@ -35,8 +35,8 @@ namespace Puffin
 		}
 
 		virtual std::string Type() = 0;
-		virtual void Save() = 0;
-		virtual void Load() = 0;
+		virtual bool Save() = 0;
+		virtual bool Load() = 0;
 		virtual void Unload() = 0;
 
 		template<class Archive>
@@ -92,12 +92,31 @@ namespace Puffin
 		// Get Asset from Registry
 		std::shared_ptr<Asset> GetAsset(const UUID& uuid);
 
+		std::shared_ptr<Asset> GetAsset(const fs::path& path);
+
 		// Get Typed Asset from Registry
 		template<typename AssetType>
-		std::shared_ptr<AssetType> GetAsset(const UUID& uuid);
+		std::shared_ptr<AssetType> GetAsset(const UUID& uuid)
+		{
+			return std::static_pointer_cast<AssetType>(GetAsset(uuid));
+		}
+
+		template<typename AssetType>
+		std::shared_ptr<AssetType> GetAsset(const fs::path& path)
+		{
+			return std::static_pointer_cast<AssetType>(GetAsset(path));
+		}
 
 		// Register new Asset to Registry
-		UUID RegisterAsset(std::shared_ptr<Asset> asset);
+		template<typename AssetType>
+		std::shared_ptr<AssetType> RegisterAsset(const fs::path& path)
+		{
+			std::shared_ptr<AssetType> asset = std::make_shared<AssetType>(path);
+
+			idToAssetMap_.insert({ asset->ID(), asset });
+			pathToIDMap_.insert({ asset->RelativePath().string(), asset->ID() });
+			return asset;
+		}
 
 	private:
 
@@ -105,6 +124,7 @@ namespace Puffin
 
 		// Map of ID's to Asset, generated at runtime
 		std::unordered_map<UUID, std::shared_ptr<Asset>> idToAssetMap_;
+		std::unordered_map<std::string_view, UUID> pathToIDMap_;
 
 	};
 }

@@ -113,7 +113,7 @@ namespace Puffin
 		//IO::LoadScene(ECSWorld, sceneData);
 		//IO::InitScene(ECSWorld, sceneData);
 
-		//IO::SaveScene(ECSWorld, sceneData);
+		IO::SaveScene(ECSWorld, sceneData);
 
 		running = true;
 		restarted = false;
@@ -195,15 +195,15 @@ namespace Puffin
 		// Initialize Assets
 		fs::path contentRootPath = AssetRegistry::Get()->ContentRoot();
 
-		std::shared_ptr<IO::StaticMeshAsset> meshAsset1 = std::make_shared<IO::StaticMeshAsset>(contentRootPath / "meshes\\chalet.pstaticmesh");
-		std::shared_ptr<IO::StaticMeshAsset> meshAsset2 = std::make_shared<IO::StaticMeshAsset>(contentRootPath / "meshes\\sphere.pstaticmesh");
-		std::shared_ptr<IO::StaticMeshAsset> meshAsset3 = std::make_shared<IO::StaticMeshAsset>(contentRootPath / "meshes\\cube.pstaticmesh");
-		std::shared_ptr<IO::StaticMeshAsset> meshAsset4 = std::make_shared<IO::StaticMeshAsset>(contentRootPath / "meshes\\space_engineer.pstaticmesh");
+		const fs::path& meshPath1 = contentRootPath / "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = contentRootPath / "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = AssetRegistry::Get()->RegisterAsset(meshAsset1);
-		UUID meshId2 = AssetRegistry::Get()->RegisterAsset(meshAsset2);
-		UUID meshId3 = AssetRegistry::Get()->RegisterAsset(meshAsset3);
-		UUID meshId4 = AssetRegistry::Get()->RegisterAsset(meshAsset4);
+		UUID meshId1 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath1)->ID();
+		UUID meshId2 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath2)->ID();
+		UUID meshId3 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath3)->ID();
+		UUID meshId4 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath4)->ID();
 
 		// Initialize EntityManager with Existing Entities
 		world->InitEntitySystem();
@@ -290,15 +290,15 @@ namespace Puffin
 		// Initialize Assets
 		fs::path contentRootPath = AssetRegistry::Get()->ContentRoot();
 
-		std::shared_ptr<IO::StaticMeshAsset> meshAsset1 = std::make_shared<IO::StaticMeshAsset>(contentRootPath / "meshes\\chalet.pstaticmesh");
-		std::shared_ptr<IO::StaticMeshAsset> meshAsset2 = std::make_shared<IO::StaticMeshAsset>(contentRootPath / "meshes\\sphere.pstaticmesh");
-		std::shared_ptr<IO::StaticMeshAsset> meshAsset3 = std::make_shared<IO::StaticMeshAsset>(contentRootPath / "meshes\\cube.pstaticmesh");
-		std::shared_ptr<IO::StaticMeshAsset> meshAsset4 = std::make_shared<IO::StaticMeshAsset>(contentRootPath / "meshes\\space_engineer.pstaticmesh");
+		fs::path meshPath1 = contentRootPath / "meshes\\chalet.pstaticmesh";
+		fs::path meshPath2 = contentRootPath / "meshes\\sphere.pstaticmesh";
+		fs::path meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
+		fs::path meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = AssetRegistry::Get()->RegisterAsset(meshAsset1);
-		UUID meshId2 = AssetRegistry::Get()->RegisterAsset(meshAsset2);
-		UUID meshId3 = AssetRegistry::Get()->RegisterAsset(meshAsset3);
-		UUID meshId4 = AssetRegistry::Get()->RegisterAsset(meshAsset4);
+		UUID meshId1 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath1)->ID();
+		UUID meshId2 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath2)->ID();
+		UUID meshId3 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath3)->ID();
+		UUID meshId4 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath4)->ID();
 
 		world->InitEntitySystem();
 

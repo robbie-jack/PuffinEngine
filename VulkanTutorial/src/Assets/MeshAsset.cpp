@@ -26,7 +26,7 @@ namespace Puffin
 			return "StaticMeshAsset";
 		}
 
-		void StaticMeshAsset::Save()
+		bool StaticMeshAsset::Save()
 		{
 			fs::path fullPath = AssetRegistry::Get()->ContentRoot() / path_;
 			const std::string string = fullPath.string();
@@ -43,11 +43,16 @@ namespace Puffin
 			// Save Vertex/Index Data in Base64 Encoded Binary
 			archive(vertices_);
 			archive(indices_);
+
+			return true;
 		}
 
-		void StaticMeshAsset::Load()
+		bool StaticMeshAsset::Load()
 		{
 			fs::path fullPath = AssetRegistry::Get()->ContentRoot() / path_;
+			if (!fs::exists(fullPath))
+				return false;
+
 			const std::string string = fullPath.string();
 			std::ifstream is(string, std::ios::binary);
 			cereal::BinaryInputArchive archive(is);
@@ -64,6 +69,8 @@ namespace Puffin
 			// Load Vertex/Index Data
 			archive(vertices_);
 			archive(indices_);
+
+			return true;
 		}
 
 		void StaticMeshAsset::Unload()

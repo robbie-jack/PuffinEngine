@@ -20,9 +20,16 @@ namespace Puffin
 		class System
 		{
 		public:
+
 			EntityMap entityMap;
 			std::shared_ptr<World> world;
-			Entity entityToDelete;
+
+		protected:
+
+
+		private:
+
+
 		};
 	}
 }

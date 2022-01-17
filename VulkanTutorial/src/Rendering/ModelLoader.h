@@ -69,8 +69,7 @@ namespace Puffin
 			fs::path import_path = fs::path() / "meshes" / model_path.stem();
 			import_path += ".pstaticmesh";
 
-			std::shared_ptr<StaticMeshAsset> meshAsset = std::make_shared<StaticMeshAsset>(import_path);
-			AssetRegistry::Get()->RegisterAsset(meshAsset);
+			std::shared_ptr<StaticMeshAsset> meshAsset = AssetRegistry::Get()->GetAsset<StaticMeshAsset>(import_path);
 
 			// Local vector for storing model data
 			std::vector<aiMesh*> meshes;

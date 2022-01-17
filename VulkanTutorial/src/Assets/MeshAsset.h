@@ -12,8 +12,6 @@ namespace Puffin
 {
 	namespace IO
 	{
-		static bool ImportMesh(fs::path model_path);
-
 		class StaticMeshAsset : public Asset
 		{
 		public:
@@ -24,9 +22,9 @@ namespace Puffin
 
 			std::string Type();
 
-			void Save();
+			bool Save();
 
-			void Load();
+			bool Load();
 
 			void Unload();
 

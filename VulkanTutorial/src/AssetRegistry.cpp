@@ -22,20 +22,25 @@ namespace Puffin
 	// Get Asset from Registry
 	std::shared_ptr<Asset> AssetRegistry::GetAsset(const UUID& uuid)
 	{
-		return idToAssetMap_[uuid];
-	}
-	
-	// Get Typed Asset from Registry
-	template<typename AssetType>
-	std::shared_ptr<AssetType> AssetRegistry::GetAsset(const UUID& uuid)
-	{
-		return std::static_pointer_cast<AssetType>(idToAssetMap_[uuid]);
+		// Return asset if it has been registered
+		if (idToAssetMap_.count(uuid))
+		{
+			return idToAssetMap_[uuid];
+		}
+
+		// No asset with that ID has been registered, return nullptr
+		return nullptr;
 	}
 
-	// Register new Asset to Registry
-	UUID AssetRegistry::RegisterAsset(std::shared_ptr<Asset> asset)
+	std::shared_ptr<Asset> AssetRegistry::GetAsset(const fs::path& path)
 	{
-		idToAssetMap_.insert({ asset->ID(), asset });
-		return asset->ID();
+		// Return asset if it has been registered
+		if (pathToIDMap_.count(path.string()))
+		{
+			return GetAsset(pathToIDMap_[path.string()]);
+		}
+		
+		// No asset with that path has been registered, return nullptr
+		return nullptr;
 	}
 }

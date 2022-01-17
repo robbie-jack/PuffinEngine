@@ -1258,10 +1258,8 @@ namespace Puffin
 			std::shared_ptr<IO::StaticMeshAsset> staticMeshAsset = std::static_pointer_cast<IO::StaticMeshAsset>(AssetRegistry::Get()->GetAsset(mesh.assetID));
 
 			// Load Mesh Data
-			if (staticMeshAsset)
+			if (staticMeshAsset && staticMeshAsset->Load())
 			{
-				staticMeshAsset->Load();
-
 				mesh.vertexCount = static_cast<uint32_t>(staticMeshAsset->vertices_.size());
 				mesh.indexCount = static_cast<uint32_t>(staticMeshAsset->indices_.size());
 
