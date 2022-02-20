@@ -332,8 +332,8 @@ namespace Puffin
 			void InitCamera(CameraComponent& camera);
 
 			// Init Buffer Functions
-			AllocatedBuffer InitVertexBuffer(std::vector<Vertex> vertices);
-			AllocatedBuffer InitIndexBuffer(std::vector<uint32_t> indices);
+			AllocatedBuffer InitVertexBuffer(const std::vector<Vertex>& vertices);
+			AllocatedBuffer InitIndexBuffer(const std::vector<uint32_t>& indices);
 
 			void CopyVerticesToBuffer(const std::vector<Vertex>& vertices, AllocatedBuffer vertexBuffer, uint32_t copyOffset = 0);
 			void CopyIndicesToBuffer(const std::vector<uint32_t>& indices, AllocatedBuffer indexBuffer, uint32_t copyOffset = 0);

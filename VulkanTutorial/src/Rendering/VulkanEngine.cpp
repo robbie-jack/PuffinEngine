@@ -1260,12 +1260,12 @@ namespace Puffin
 			// Load Mesh Data
 			if (staticMeshAsset && staticMeshAsset->Load())
 			{
-				mesh.vertexCount = static_cast<uint32_t>(staticMeshAsset->vertices_.size());
-				mesh.indexCount = static_cast<uint32_t>(staticMeshAsset->indices_.size());
+				mesh.vertexCount = static_cast<uint32_t>(staticMeshAsset->GetVertices().size());
+				mesh.indexCount = static_cast<uint32_t>(staticMeshAsset->GetIndices().size());
 
 				// Init Mesh Buffers
-				mesh.vertexBuffer = InitVertexBuffer(staticMeshAsset->vertices_);
-				mesh.indexBuffer = InitIndexBuffer(staticMeshAsset->indices_);
+				mesh.vertexBuffer = InitVertexBuffer(staticMeshAsset->GetVertices());
+				mesh.indexBuffer = InitIndexBuffer(staticMeshAsset->GetIndices());
 
 				staticMeshAsset->Unload();
 			}
@@ -1357,7 +1357,7 @@ namespace Puffin
 			camera.matrices.view = glm::lookAt(camera.position, camera.lookat, camera.up);
 		}
 
-		AllocatedBuffer VulkanEngine::InitVertexBuffer(std::vector<Vertex> vertices)
+		AllocatedBuffer VulkanEngine::InitVertexBuffer(const std::vector<Vertex>& vertices)
 		{
 			// Copy Loaded Mesh data into mesh vertex buffer
 			const size_t bufferSize = vertices.size() * sizeof(Vertex);
@@ -1393,7 +1393,7 @@ namespace Puffin
 			return vertexBuffer;
 		}
 
-		AllocatedBuffer VulkanEngine::InitIndexBuffer(std::vector<uint32_t> indices)
+		AllocatedBuffer VulkanEngine::InitIndexBuffer(const std::vector<uint32_t>& indices)
 		{
 			// Copy Loaded Index data into mesh index buffer
 			const size_t bufferSize = indices.size() * sizeof(uint32_t);

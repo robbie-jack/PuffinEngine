@@ -102,9 +102,15 @@ namespace Puffin
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
-		AssetRegistry::Get()->ProjectRoot(projectDirPath);
-
 		IO::LoadProject(projectPath, projectFile);
+
+		// Register Assets
+		AssetRegistry::Get()->RegisterAssetType<IO::StaticMeshAsset>();
+
+		// Load Asset Cache
+		AssetRegistry::Get()->ProjectName(projectFile.name);
+		AssetRegistry::Get()->ProjectRoot(projectDirPath);
+		AssetRegistry::Get()->LoadAssetCache();
 
 		// Load Project Settings
 		IO::LoadSettings(projectDirPath.parent_path() / "settings.json", settings);
@@ -113,14 +119,16 @@ namespace Puffin
 		sceneData.scene_path = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		//DefaultScene(ECSWorld);
-		PhysicsScene(ECSWorld);
+		DefaultScene(ECSWorld);
+		//PhysicsScene(ECSWorld);
 		
 		// Load Scene -- normal behaviour
 		//IO::LoadScene(ECSWorld, sceneData);
 		//IO::InitScene(ECSWorld, sceneData);
 
 		//IO::SaveScene(ECSWorld, sceneData);
+
+		AssetRegistry::Get()->SaveAssetCache();
 
 		running = true;
 		restarted = false;
@@ -207,10 +215,10 @@ namespace Puffin
 		const fs::path& meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath1)->ID();
-		UUID meshId2 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath2)->ID();
-		UUID meshId3 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath3)->ID();
-		UUID meshId4 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath4)->ID();
+		UUID meshId1 = AssetRegistry::Get()->GetAsset<IO::StaticMeshAsset>(meshPath1)->ID();
+		UUID meshId2 = AssetRegistry::Get()->GetAsset<IO::StaticMeshAsset>(meshPath2)->ID();
+		UUID meshId3 = AssetRegistry::Get()->GetAsset<IO::StaticMeshAsset>(meshPath3)->ID();
+		UUID meshId4 = AssetRegistry::Get()->GetAsset<IO::StaticMeshAsset>(meshPath4)->ID();
 
 		// Initialize EntityManager with Existing Entities
 		world->InitEntitySystem();
@@ -302,10 +310,10 @@ namespace Puffin
 		fs::path meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
 		fs::path meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath1)->ID();
-		UUID meshId2 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath2)->ID();
-		UUID meshId3 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath3)->ID();
-		UUID meshId4 = AssetRegistry::Get()->RegisterAsset<IO::StaticMeshAsset>(meshPath4)->ID();
+		UUID meshId1 = AssetRegistry::Get()->AddAsset<IO::StaticMeshAsset>(meshPath1)->ID();
+		UUID meshId2 = AssetRegistry::Get()->AddAsset<IO::StaticMeshAsset>(meshPath2)->ID();
+		UUID meshId3 = AssetRegistry::Get()->AddAsset<IO::StaticMeshAsset>(meshPath3)->ID();
+		UUID meshId4 = AssetRegistry::Get()->AddAsset<IO::StaticMeshAsset>(meshPath4)->ID();
 
 		world->InitEntitySystem();
 

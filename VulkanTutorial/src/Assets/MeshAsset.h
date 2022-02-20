@@ -16,26 +16,49 @@ namespace Puffin
 		{
 		public:
 
-			StaticMeshAsset() : Asset(fs::path()) {};
+			StaticMeshAsset() : Asset(fs::path()) {}
+			StaticMeshAsset(fs::path path) : Asset(path) {}
+			StaticMeshAsset(UUID id, fs::path path) : Asset(id, path) {}
 
-			StaticMeshAsset(fs::path path) : Asset(path) {};
+			std::string Type() override;
 
-			std::string Type();
+			bool Save() override;
 
-			bool Save();
+			bool Load() override;
 
-			bool Load();
+			void Unload() override;
 
-			void Unload();
+			void AddVertex(Rendering::Vertex vertex)
+			{
+				m_vertices.emplace_back(vertex);
+			}
 
-			std::vector<Rendering::Vertex> vertices_;
-			std::vector<uint32_t> indices_;
+			void AddIndex(uint32_t index)
+			{
+				m_indices.emplace_back(index);
+			}
+
+			const std::vector<Rendering::Vertex>& GetVertices() const
+			{
+				return m_vertices;
+			}
+
+			const std::vector<uint32_t>& GetIndices() const
+			{
+				return m_indices;
+			}
 
 			template<class Archive>
 			void serialize(Archive& archive) const
 			{
 				archive(cereal::base_class<Asset>(this));
 			}
+
+		private:
+
+			std::vector<Rendering::Vertex> m_vertices;
+			std::vector<uint32_t> m_indices;
+
 		};
 	}
 }

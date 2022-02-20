@@ -126,7 +126,7 @@ namespace Puffin
 						mesh->mTextureCoords[0][j].y
 					};
 
-					meshAsset->vertices_.push_back(vertex);
+					meshAsset->AddVertex(vertex);
 				}
 
 				// Iterate over faces in mesh object
@@ -137,7 +137,7 @@ namespace Puffin
 					// Store all indices of this face
 					for (int k = 0; k < face->mNumIndices; k++)
 					{
-						meshAsset->indices_.push_back(face->mIndices[k]);
+						meshAsset->AddIndex(face->mIndices[k]);
 					}
 				}
 			}

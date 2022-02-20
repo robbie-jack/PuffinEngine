@@ -23,33 +23,33 @@ namespace Puffin
 
 		std::string StaticMeshAsset::Type()
 		{
-			return "StaticMeshAsset";
+			return "StaticMesh";
 		}
 
 		bool StaticMeshAsset::Save()
 		{
-			fs::path fullPath = AssetRegistry::Get()->ContentRoot() / path_;
+			fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
 			const std::string string = fullPath.string();
 			std::ofstream os(string, std::ios::binary);
 			cereal::BinaryOutputArchive archive(os);
 
-			const int numVertices = vertices_.size();
-			const int numIndices = indices_.size();
+			const int numVertices = m_vertices.size();
+			const int numIndices = m_indices.size();
 
 			// Save Number of Vertices/Indices in human readable format
 			archive(numVertices);
 			archive(numIndices);
 
 			// Save Vertex/Index Data in Base64 Encoded Binary
-			archive(vertices_);
-			archive(indices_);
+			archive(m_vertices);
+			archive(m_indices);
 
 			return true;
 		}
 
 		bool StaticMeshAsset::Load()
 		{
-			fs::path fullPath = AssetRegistry::Get()->ContentRoot() / path_;
+			fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
 			if (!fs::exists(fullPath))
 				return false;
 
@@ -63,23 +63,23 @@ namespace Puffin
 			archive(numVertices);
 			archive(numIndices);
 
-			vertices_.resize(numVertices);
-			indices_.resize(numIndices);
+			m_vertices.resize(numVertices);
+			m_indices.resize(numIndices);
 
 			// Load Vertex/Index Data
-			archive(vertices_);
-			archive(indices_);
+			archive(m_vertices);
+			archive(m_indices);
 
 			return true;
 		}
 
 		void StaticMeshAsset::Unload()
 		{
-			vertices_.clear();
-			vertices_.shrink_to_fit();
+			m_vertices.clear();
+			m_vertices.shrink_to_fit();
 
-			indices_.clear();
-			indices_.shrink_to_fit();
+			m_indices.clear();
+			m_indices.shrink_to_fit();
 		}
 	}
 }

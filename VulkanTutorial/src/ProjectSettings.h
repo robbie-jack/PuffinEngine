@@ -5,9 +5,9 @@
 
 #include <fstream>
 #include <string>
-#include <cereal/archives/json.hpp>
-
 #include <filesystem>
+
+#include <cereal/archives/json.hpp>
 
 namespace fs = std::filesystem;
 
