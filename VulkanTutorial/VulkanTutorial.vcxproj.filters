@@ -59,6 +59,12 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{f616ea0c-0a82-4f78-9de3-fd7968a20200}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\Shapes">
+      <UniqueIdentifier>{2de39666-6781-4374-9e9c-6312a2f3709f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Colliders">
+      <UniqueIdentifier>{f3961285-1613-4cdf-bc5a-66725870620e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -146,6 +152,18 @@
       <Filter>Assets</Filter>
     </ClCompile>
     <ClCompile Include="src\AssetRegistry.cpp" />
+    <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp">
+      <Filter>Physics\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\Shapes\CircleShape2D.cpp">
+      <Filter>Physics\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\Colliders\CircleCollider2D.cpp">
+      <Filter>Physics\Colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\Colliders\BoxCollider2D.cpp">
+      <Filter>Physics\Colliders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -282,9 +300,6 @@
     <ClInclude Include="src\Physics\PhysicsHelpers2D.h">
       <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="src\Types\PhysicsTypes2D.h">
-      <Filter>Types</Filter>
-    </ClInclude>
     <ClInclude Include="src\Types\Matrix.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -303,6 +318,30 @@
     <ClInclude Include="src\AssetRegistry.h" />
     <ClInclude Include="src\Assets\MeshAsset.h">
       <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Shapes\Shape2D.h">
+      <Filter>Physics\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Shapes\BoxShape2D.h">
+      <Filter>Physics\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Shapes\CircleShape2D.h">
+      <Filter>Physics\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\ComponentFlags.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Colliders\BoxCollider2D.h">
+      <Filter>Physics\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Colliders\CircleCollider2D.h">
+      <Filter>Physics\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Colliders\Collider2D.h">
+      <Filter>Physics\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsTypes2D.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

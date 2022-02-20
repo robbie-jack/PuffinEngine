@@ -1,6 +1,7 @@
 #include "PhysicsSystem2D.h"
 
 #include <Components/TransformComponent.h>
+#include "Types/ComponentFlags.h"
 
 #include <Physics/PhysicsHelpers2D.h>
 
@@ -35,49 +36,48 @@ namespace Puffin
 
 		void PhysicsSystem2D::UpdateComponents()
 		{
-			for (ECS::Entity entity : entityMap["CircleCollision"])
+			for (ECS::Entity entity : entityMap["BoxCollision"])
 			{
-				if (!world->ComponentInitialized<CircleComponent2D>(entity))
+				auto& box = world->GetComponent<BoxComponent2D>(entity);
+				auto& transform = world->GetComponent<TransformComponent>(entity);
+
+				if (world->GetComponentFlag<BoxComponent2D, FlagDirty>(entity))
 				{
-					if (world->HasComponent<RigidbodyComponent2D>(entity))
+					// Create default box shape if component does not have one assigned
+					if (box.shape_ == nullptr)
 					{
-						world->GetComponent<RigidbodyComponent2D>(entity).shapeType = Collision2D::ShapeType::CIRCLE;
+						boxShapes_.emplace_back(BoxShape2D());
+
+						box.shape_ = &boxShapes_.back();
 					}
 
-					world->SetComponentInitialized<CircleComponent2D>(entity, true);
-				}
+					// Create Collider for this component if one does not exist
+					if (box.shape_ != nullptr)
+						colliders_.emplace_back(new Collision2D::BoxCollider2D(entity, box.shape_));
 
-				if (world->ComponentDeleted<CircleComponent2D>(entity))
-				{
-					if (world->HasComponent<RigidbodyComponent2D>(entity))
-					{
-						world->GetComponent<RigidbodyComponent2D>(entity).shapeType = Collision2D::ShapeType::NONE;
-					}
-
-					world->RemoveComponent<CircleComponent2D>(entity);
+					world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
 				}
 			}
 
-			for (ECS::Entity entity : entityMap["BoxCollision"])
+			for (ECS::Entity entity : entityMap["CircleCollision"])
 			{
-				if (!world->ComponentInitialized<BoxComponent2D>(entity))
+				auto& circle = world->GetComponent<CircleComponent2D>(entity);
+				auto& transform = world->GetComponent<TransformComponent>(entity);
+
+				if (world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
 				{
-					if (world->HasComponent<RigidbodyComponent2D>(entity))
+					// Create default box shape if component does not have one assigned
+					if (circle.shape_ == nullptr)
 					{
-						world->GetComponent<RigidbodyComponent2D>(entity).shapeType = Collision2D::ShapeType::BOX;
+						circleShapes_.emplace_back(CircleShape2D());
+
+						circle.shape_ = &circleShapes_.back();
 					}
 
-					world->SetComponentInitialized<BoxComponent2D>(entity, true);
-				}
+					if (circle.shape_ != nullptr)
+						colliders_.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape_));
 
-				if (world->ComponentDeleted<BoxComponent2D>(entity))
-				{
-					if (world->HasComponent<RigidbodyComponent2D>(entity))
-					{
-						world->GetComponent<RigidbodyComponent2D>(entity).shapeType = Collision2D::ShapeType::NONE;
-					}
-
-					world->RemoveComponent<BoxComponent2D>(entity);
+					world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
 				}
 			}
 		}
@@ -93,6 +93,14 @@ namespace Puffin
 				// Update Dynamic Objects
 				UpdateDynamics();
 
+				// Copy component transform into collider
+				for (auto& collider : colliders_)
+				{
+					const auto& transform = world->GetComponent<TransformComponent>(collider->entity_);
+
+					collider->transform_ = transform;
+				}
+
 				// Perform Collision2D Broadphase to check if two Colliders can collide
 				CollisionBroadphase();
 
@@ -101,6 +109,14 @@ namespace Puffin
 
 				// Resolve Collision2D between Colliders
 				CollisionResolve();
+
+				// Copy collider transform back to component
+				for (auto& collider : colliders_)
+				{
+					auto& transform = world->GetComponent<TransformComponent>(collider->entity_);
+
+					transform = collider->transform_;
+				}
 			}
 		}
 
@@ -130,7 +146,7 @@ namespace Puffin
 			if (Body.invMass == 0.0f)
 				return;
 
-			Float mass = 1.0 / Body.invMass;
+			Float mass = 1.0f / Body.invMass;
 			Vector2 impulseGravity = gravity * mass * dt;
 			
 			ApplyLinearImpulse(Body, impulseGravity);
@@ -141,29 +157,29 @@ namespace Puffin
 			collisionPairs.clear();
 			
 			// Basic N-Squared Brute Force Broadphase
-			GenerateCollisionPairs(entityMap["CircleCollision"], entityMap["CircleCollision"]);
+			GenerateCollisionPairs();
 		}
 
-		void PhysicsSystem2D::GenerateCollisionPairs(std::set<ECS::Entity>& setA, std::set<ECS::Entity>& setB)
+		void PhysicsSystem2D::GenerateCollisionPairs()
 		{
-			for (ECS::Entity entityA : setA)
+			for (const Collision2D::Collider2D* colliderA : colliders_)
 			{
-				for (ECS::Entity entityB : setB)
+				for (const Collision2D::Collider2D* colliderB : colliders_)
 				{
-					if (entityA == entityB)
+					if (colliderA->entity_ == colliderB->entity_)
 						continue;
 
 					bool collisionPairAlreadyExists = false;
 
 					for (const CollisionPair& collisionPair : collisionPairs)
 					{
-						collisionPairAlreadyExists |= collisionPair.first == entityB && collisionPair.second == entityA;
+						collisionPairAlreadyExists |= collisionPair.first->entity_ == colliderB->entity_ && collisionPair.second->entity_ == colliderA->entity_;
 					}
 
 					if (collisionPairAlreadyExists)
 						continue;
 
-					collisionPairs.emplace_back(std::make_pair(entityA, entityB));
+					collisionPairs.emplace_back(std::make_pair(colliderA, colliderB));
 				}
 			}
 		}
@@ -174,55 +190,10 @@ namespace Puffin
 
 			for (const CollisionPair& collisionPair : collisionPairs)
 			{
-				TransformComponent& transformA = world->GetComponent<TransformComponent>(collisionPair.first);
-				TransformComponent& transformB = world->GetComponent<TransformComponent>(collisionPair.second);
+				Collision2D::Contact contact;
 
-				bool collided = false;
-				Collision2D::Contact contact(collisionPair.first, collisionPair.second);
-
-				// Circle Collision
-				if (world->HasComponent<CircleComponent2D>(collisionPair.first))
-				{
-					CircleComponent2D& circleA =  world->GetComponent<CircleComponent2D>(collisionPair.first);
-
-					if (world->HasComponent<CircleComponent2D>(collisionPair.second))
-					{
-						CircleComponent2D& circleB = world->GetComponent<CircleComponent2D>(collisionPair.first);
-
-						collided |= Collision2D::TestCircleVsCircle(transformA, circleA, transformB, circleB, contact);
-					}
-
-					if (world->HasComponent<BoxComponent2D>(collisionPair.second))
-					{
-						BoxComponent2D& boxB = world->GetComponent<BoxComponent2D>(collisionPair.first);
-
-						collided |= Collision2D::TestCircleVsBox(transformA, circleA, transformB, boxB, contact);
-					}
-				}
-				
-				// Box Collision
-				if (world->HasComponent<BoxComponent2D>(collisionPair.first))
-				{
-					BoxComponent2D& boxA = world->GetComponent<BoxComponent2D>(collisionPair.first);
-
-					if (world->HasComponent<CircleComponent2D>(collisionPair.second))
-					{
-						CircleComponent2D& circleB = world->GetComponent<CircleComponent2D>(collisionPair.first);
-						contact.a = collisionPair.second;
-						contact.b = collisionPair.first;
-
-						collided |= Collision2D::TestCircleVsBox(transformB, circleB, transformA, boxA, contact);
-					}
-
-					if (world->HasComponent<BoxComponent2D>(collisionPair.second))
-					{
-						BoxComponent2D& boxB = world->GetComponent<BoxComponent2D>(collisionPair.first);
-
-						collided |= Collision2D::TestBoxVsBox(transformA, boxA, transformB, boxB, contact);
-					}
-				}
-
-				if (collided)
+				// Put collision detection here
+				if (collisionPair.first->TestCollision(collisionPair.second, contact))
 				{
 					collisionContacts.emplace_back(contact);
 				}

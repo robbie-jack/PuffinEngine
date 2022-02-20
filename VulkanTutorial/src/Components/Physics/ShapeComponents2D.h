@@ -3,53 +3,35 @@
 #ifndef SHAPE_COMPONENT_2D_H
 #define SHAPE_COMPONENT_2D_H
 
-#include <Types/PhysicsTypes2D.h>
+#include "Physics/Shapes/CircleShape2D.h"
+#include "Physics/Shapes/BoxShape2D.h"
 #include <Types/Vector.h>
 
 namespace Puffin
 {
 	namespace Physics
 	{
-		struct ShapeComponent2D
+		struct CircleComponent2D
 		{
-			Vector2 centreOfMass;
-		};
+			CircleShape2D* shape_;
 
-		struct CircleComponent2D : public ShapeComponent2D
-		{
-			CircleComponent2D()
+			template<class Archive>
+			void serialize(Archive& archive)
 			{
-				centreOfMass.Zero();
-				radius = 1.0f;
+				archive(*shape_);
 			}
-
-			Float radius;
 		};
 
-		template<class Archive>
-		void serialize(Archive& archive, CircleComponent2D& circle)
+		struct BoxComponent2D
 		{
-			archive(circle.centreOfMass);
-			archive(circle.radius);
-		}
+			BoxShape2D* shape_;
 
-		struct BoxComponent2D : public ShapeComponent2D
-		{
-			BoxComponent2D()
+			template<class Archive>
+			void serialize(Archive& archive)
 			{
-				centreOfMass.Zero();
-				halfExtent = Vector2(.5f, .5f);
+				archive(*shape_);
 			}
-
-			Vector2 halfExtent;
 		};
-
-		template<class Archive>
-		void serialize(Archive& archive, BoxComponent2D& box)
-		{
-			archive(box.centreOfMass);
-			archive(box.halfExtent);
-		}
 	}
 }
 

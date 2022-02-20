@@ -9,6 +9,8 @@
 #include <Components/AngelScriptComponent.h>
 #include <Components/TransformComponent.h>
 
+#include "Types/ComponentFlags.h"
+
 #include <Input/InputManager.h>
 
 #include <SerializeScene.h>
@@ -49,10 +51,11 @@ namespace Puffin
 		InputManager.Init(window, ECSWorld);
 
 		// Systems
-		std::shared_ptr<Physics::PhysicsSystem2D> physicsSystem = ECSWorld->RegisterSystem<Physics::PhysicsSystem2D>();
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
+		std::shared_ptr<Physics::PhysicsSystem2D> physicsSystem = ECSWorld->RegisterSystem<Physics::PhysicsSystem2D>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
 
+		// Register Components
 		ECSWorld->RegisterComponent<TransformComponent>();
 		ECSWorld->RegisterComponent<Rendering::MeshComponent>();
 		ECSWorld->RegisterComponent<Rendering::LightComponent>();
@@ -60,6 +63,10 @@ namespace Puffin
 		ECSWorld->RegisterComponent<Physics::CircleComponent2D>();
 		ECSWorld->RegisterComponent<Physics::BoxComponent2D>();
 		ECSWorld->RegisterComponent<Scripting::AngelScriptComponent>();
+
+		// Register Component Flags
+		ECSWorld->RegisterComponentFlag<FlagDirty>(true);
+		ECSWorld->RegisterComponentFlag<FlagDeleted>();
 
 		ECS::Signature meshSignature;
 		meshSignature.set(ECSWorld->GetComponentType<TransformComponent>());
@@ -106,14 +113,14 @@ namespace Puffin
 		sceneData.scene_path = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		DefaultScene(ECSWorld);
-		//PhysicsScene(ECSWorld);
+		//DefaultScene(ECSWorld);
+		PhysicsScene(ECSWorld);
 		
 		// Load Scene -- normal behaviour
 		//IO::LoadScene(ECSWorld, sceneData);
 		//IO::InitScene(ECSWorld, sceneData);
 
-		IO::SaveScene(ECSWorld, sceneData);
+		//IO::SaveScene(ECSWorld, sceneData);
 
 		running = true;
 		restarted = false;
@@ -333,7 +340,7 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(boxEntity);
 		world->AddComponent<Rendering::MeshComponent>(boxEntity);
 		world->AddComponent<Physics::RigidbodyComponent2D>(boxEntity);
-		world->AddComponent<Physics::CircleComponent2D>(boxEntity);
+		world->AddComponent<Physics::BoxComponent2D>(boxEntity);
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
 
@@ -343,11 +350,6 @@ namespace Puffin
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = 0.75f;
 
-		/*world->GetComponent<Physics::ShapeComponent2D>(boxEntity).type = Physics::Collision2D::ShapeType::BOX;
-		world->GetComponent<Physics::ShapeComponent2D>(boxEntity).box.halfExtent = Vector2(1.0f);*/
-
-		world->GetComponent<Physics::CircleComponent2D>(boxEntity).radius = 1.0f;
-
 		// Create Floor Entity
 		ECS::Entity floorEntity = world->CreateEntity();
 
@@ -356,7 +358,7 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(floorEntity);
 		world->AddComponent<Rendering::MeshComponent>(floorEntity);
 		world->AddComponent<Physics::RigidbodyComponent2D>(floorEntity);
-		world->AddComponent<Physics::CircleComponent2D>(floorEntity);
+		world->AddComponent<Physics::BoxComponent2D>(floorEntity);
 
 		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(0.0f), Vector3(0.0f), Vector3(10.0f, 1.0f, 1.0f) };
 
@@ -364,11 +366,6 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).texture_path = AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(floorEntity).invMass = 0.0f; // Setting mass to zero makes rigidbody kinematic instead of dynamic
-
-		/*world->GetComponent<Physics::ShapeComponent2D>(floorEntity).type = Physics::Collision2D::ShapeType::BOX;
-		world->GetComponent<Physics::ShapeComponent2D>(floorEntity).box.halfExtent = Vector2(10.0f, 1.0f);*/
-
-		world->GetComponent<Physics::CircleComponent2D>(floorEntity).radius = 1.0f;
 	}
 
 	void Engine::Play()

@@ -29,9 +29,12 @@ namespace Puffin
 		static const Entity INVALID_ENTITY = 0;
 
 		typedef uint8_t ComponentType;
-		const ComponentType MAX_COMPONENTS = 32;
+		const ComponentType MAX_COMPONENTS = 255;
 
 		typedef std::bitset<MAX_COMPONENTS> Signature;
+
+		typedef uint8_t FlagType;
+		const FlagType MAX_FLAGS = 255;
 
 		//////////////////////////////////////////////////
 		// Entity Manager
@@ -208,6 +211,7 @@ namespace Puffin
 		{
 		public:
 			virtual ~IComponentArray() = default;
+			virtual void RegisterComponentFlag(FlagType flagType, bool flagDefault) = 0;
 			virtual void EntityDestroyed(Entity entity) = 0;
 		};
 
@@ -226,6 +230,14 @@ namespace Puffin
 				indexToEntityMap[newIndex] = entity;
 				componentInitialized[newIndex] = false;
 				componentDeleted[newIndex] = false;
+
+				for (auto& pair : flagSets)
+				{
+					auto& flagSet = pair.second;
+
+					flagSet[newIndex] = flagDefaults[pair.first];
+				}
+
 				arraySize++;
 
 				return componentArray[newIndex];
@@ -242,6 +254,14 @@ namespace Puffin
 				componentArray[newIndex] = component;
 				componentInitialized[newIndex] = false;
 				componentDeleted[newIndex] = false;
+
+				for (auto& pair : flagSets)
+				{
+					auto& flagSet = pair.second;
+
+					flagSet[newIndex] = flagDefaults[pair.first];
+				}
+
 				arraySize++;
 			}
 
@@ -249,12 +269,19 @@ namespace Puffin
 			{
 				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Removing non-existent component.");
 
-				// Copy component at end of array into deleted components spaced to maintain packed araay
+				// Copy component at end of array into deleted components spaced to maintain packed array
 				size_t indexOfRemovedComponent = entityToIndexMap[entity];
 				size_t indexOfLastComponent = arraySize - 1;
 				componentArray[indexOfRemovedComponent] = componentArray[indexOfLastComponent];
 				componentInitialized[indexOfRemovedComponent] = componentInitialized[indexOfLastComponent];
 				componentDeleted[indexOfRemovedComponent] = componentDeleted[indexOfLastComponent];
+
+				for (auto& pair : flagSets)
+				{
+					auto& flagSet = pair.second;
+
+					flagSet[indexOfRemovedComponent] = flagSet[indexOfLastComponent];
+				}
 
 				// Update map to point to components new location
 				Entity entityOfLastComponent = indexToEntityMap[indexOfLastComponent];
@@ -313,6 +340,26 @@ namespace Puffin
 
 			}
 
+			void RegisterComponentFlag(FlagType flagType, bool flagDefault) override
+			{
+				flagSets[flagType] = std::bitset<MAX_ENTITIES>();
+				flagDefaults[flagType] = flagDefault;
+			}
+
+			bool GetComponentFlag(FlagType flagType, Entity entity)
+			{
+				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
+
+				return flagSets[flagType][entityToIndexMap[entity]];
+			}
+
+			void SetComponentFlag(FlagType flagType, Entity entity, bool flag)
+			{
+				assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
+
+				flagSets[flagType][entityToIndexMap[entity]] = flag;
+			}
+
 			void EntityDestroyed(Entity entity) override
 			{
 				if (entityToIndexMap.find(entity) != entityToIndexMap.end())
@@ -322,15 +369,17 @@ namespace Puffin
 				}
 			}
 
-
 		private:
 
 			// Packed array of components
 			std::array<ComponentT, MAX_ENTITIES> componentArray;
 
-			// Packed bit sets of flags indicating Component Status
+			// Packed bit sets of flags for each individual component
 			std::bitset<MAX_ENTITIES> componentInitialized;
 			std::bitset<MAX_ENTITIES> componentDeleted;
+
+			std::unordered_map<FlagType, std::bitset<MAX_ENTITIES>> flagSets;
+			std::unordered_map<FlagType, bool> flagDefaults; // What to have each flag type default to
 
 			// Map from entity to array
 			std::unordered_map<Entity, size_t> entityToIndexMap;
@@ -466,7 +515,58 @@ namespace Puffin
 				GetComponentArray<ComponentT>()->SetComponentDeleted(entity, isDeleted);
 			}
 
-			void EntityDestroyed(Entity entity)
+			// Functions for Registering and Updating Component Flags
+			template<typename FlagT>
+			void RegisterComponentFlag(bool defaultFlag)
+			{
+				const char* typeName = typeid(FlagT).name();
+
+				assert(flagTypes.find(typeName) == flagTypes.end() && "Registering flag type more than once");
+
+				// Add new flag type to flag type map
+				flagTypes.insert({typeName, nextFlagType});
+				 
+				// Add flag bitset to all component arrays
+				for (auto const& pair : componentArrays)
+				{
+					auto const& componentArray = pair.second;
+
+					componentArray->RegisterComponentFlag(nextFlagType, defaultFlag);
+				}
+
+				// Increment next flag type
+				nextFlagType++;
+			}
+
+			template<typename ComponentT, typename FlagT>
+			bool GetComponentFlag(Entity entity)
+			{
+				const char* typeName = typeid(ComponentT).name();
+
+				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+
+				const char* flagTypeName = typeid(FlagT).name();
+
+				assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
+
+				return GetComponentArray<ComponentT>()->GetComponentFlag(flagTypes[flagTypeName], entity);
+			}
+
+			template<typename ComponentT, typename FlagT>
+			void SetComponentFlag(Entity entity, bool flag)
+			{
+				const char* typeName = typeid(ComponentT).name();
+
+				assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+
+				const char* flagTypeName = typeid(FlagT).name();
+
+				assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
+
+				GetComponentArray<ComponentT>()->SetComponentFlag(flagTypes[flagTypeName], entity, flag);
+			}
+
+			void EntityDestroyed(Entity entity) const
 			{
 				// Notify each component array that an entity has been destroyed
 				// If array has component for this entity, remove it
@@ -480,14 +580,20 @@ namespace Puffin
 
 		private:
 
+			// ComponentType type to be assigned to next registered component
+			ComponentType nextComponentType;
+
 			// Map from type string pointer to component type
 			std::unordered_map<const char*, ComponentType> componentTypes;
 
 			// Map from type string pointer to component array
 			std::unordered_map<const char*, std::shared_ptr<IComponentArray>> componentArrays;
 
-			// ComponentType type to be assigned to netx registered component
-			ComponentType nextComponentType;
+			// FlagType to be assigned to next registered flag
+			FlagType nextFlagType;
+
+			// Map from type string pointer to flag type
+			std::unordered_map<const char*, FlagType> flagTypes;
 
 			template<typename ComponentT>
 			std::shared_ptr<ComponentArray<ComponentT>> GetComponentArray()
@@ -822,6 +928,24 @@ namespace Puffin
 			void SetComponentDeleted(Entity entity, bool isDeleted)
 			{
 				componentManager->SetComponentDeleted<ComponentT>(entity, isDeleted);
+			}
+
+			template<typename FlagT>
+			void RegisterComponentFlag(bool defaultFlag = false)
+			{
+				componentManager->RegisterComponentFlag<FlagT>(defaultFlag);
+			}
+
+			template<typename ComponentT, typename FlagT>
+			bool GetComponentFlag(Entity entity)
+			{
+				return componentManager->GetComponentFlag<ComponentT, FlagT>(entity);
+			}
+
+			template<typename ComponentT, typename FlagT>
+			void SetComponentFlag(Entity entity, bool flag)
+			{
+				componentManager->SetComponentFlag<ComponentT, FlagT>(entity, flag);
 			}
 
 			// System Methods
