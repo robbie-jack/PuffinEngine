@@ -8,12 +8,12 @@ namespace Puffin::Physics
 	{
 		CircleShape2D() : Shape2D()
 		{
-			radius_ = .5f;
+			radius_ = 2.f;
 		}
 
 		ShapeType2D GetType() const override;
 
-		AABB GetAABB(const TransformComponent& transform) const override;
+		AABB GetAABB(const TransformComponent& transform) const;
 
 		Float radius_;
 

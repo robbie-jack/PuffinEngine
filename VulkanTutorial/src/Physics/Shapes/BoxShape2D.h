@@ -15,7 +15,7 @@ namespace Puffin::Physics
 
 		ShapeType2D GetType() const override;
 
-		AABB GetAABB(const TransformComponent& transform) const override;
+		AABB GetAABB(const TransformComponent& transform) const;
 
 		Vector2 halfExtent_;
 

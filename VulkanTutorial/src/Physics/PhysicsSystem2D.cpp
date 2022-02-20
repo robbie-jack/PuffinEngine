@@ -109,14 +109,6 @@ namespace Puffin
 
 				// Resolve Collision2D between Colliders
 				CollisionResolve();
-
-				// Copy collider transform back to component
-				for (auto& collider : colliders_)
-				{
-					auto& transform = world->GetComponent<TransformComponent>(collider->entity_);
-
-					transform = collider->transform_;
-				}
 			}
 		}
 
@@ -204,13 +196,13 @@ namespace Puffin
 		{
 			for (const Collision2D::Contact& contact : collisionContacts)
 			{
-				TransformComponent& transformA = world->GetComponent<TransformComponent>(contact.a);
-				TransformComponent& transformB = world->GetComponent<TransformComponent>(contact.b);
+				auto& transformA = world->GetComponent<TransformComponent>(contact.a);
+				auto& transformB = world->GetComponent<TransformComponent>(contact.b);
 
 				if (world->HasComponent<RigidbodyComponent2D>(contact.a) && world->HasComponent<RigidbodyComponent2D>(contact.b))
 				{
-					RigidbodyComponent2D& bodyA = world->GetComponent<RigidbodyComponent2D>(contact.a);
-					RigidbodyComponent2D& bodyB = world->GetComponent<RigidbodyComponent2D>(contact.b);
+					auto& bodyA = world->GetComponent<RigidbodyComponent2D>(contact.a);
+					auto& bodyB = world->GetComponent<RigidbodyComponent2D>(contact.b);
 
 					const Float elasticity = bodyA.elasticity * bodyB.elasticity;
 
@@ -220,20 +212,10 @@ namespace Puffin
 					const Vector2 vectorImpulseJ = contact.normal * impulseJ;
 
 					// Apply Impulse to body A
-					if (world->HasComponent<CircleComponent2D>(contact.a))
-					{
-						CircleComponent2D& circle = world->GetComponent<CircleComponent2D>(contact.a);
-
-						ApplyImpulse(bodyA, circle, contact.pointOnA, vectorImpulseJ * 1.0f);
-					}
+					ApplyImpulse(bodyA, contact.pointOnA, vectorImpulseJ * 1.0f);
 
 					// Apply Impulse to body B
-					if (world->HasComponent<CircleComponent2D>(contact.b))
-					{
-						CircleComponent2D& circle = world->GetComponent<CircleComponent2D>(contact.b);
-
-						ApplyImpulse(bodyB, circle, contact.pointOnA, vectorImpulseJ * -1.0f);
-					}
+					ApplyImpulse(bodyB, contact.pointOnB, vectorImpulseJ * -1.0f);
 
 					// Move colliding bodies to just outside each other
 					const Float tA = bodyA.invMass / (bodyA.invMass + bodyB.invMass);

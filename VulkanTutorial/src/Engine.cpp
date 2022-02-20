@@ -340,7 +340,8 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(boxEntity);
 		world->AddComponent<Rendering::MeshComponent>(boxEntity);
 		world->AddComponent<Physics::RigidbodyComponent2D>(boxEntity);
-		world->AddComponent<Physics::BoxComponent2D>(boxEntity);
+		//world->AddComponent<Physics::BoxComponent2D>(boxEntity);
+		world->AddComponent<Physics::CircleComponent2D>(boxEntity);
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
 
@@ -348,7 +349,7 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
-		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = 0.75f;
+		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = .5f;
 
 		// Create Floor Entity
 		ECS::Entity floorEntity = world->CreateEntity();
@@ -358,7 +359,8 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(floorEntity);
 		world->AddComponent<Rendering::MeshComponent>(floorEntity);
 		world->AddComponent<Physics::RigidbodyComponent2D>(floorEntity);
-		world->AddComponent<Physics::BoxComponent2D>(floorEntity);
+		//world->AddComponent<Physics::BoxComponent2D>(floorEntity);
+		world->AddComponent<Physics::CircleComponent2D>(floorEntity);
 
 		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(0.0f), Vector3(0.0f), Vector3(10.0f, 1.0f, 1.0f) };
 

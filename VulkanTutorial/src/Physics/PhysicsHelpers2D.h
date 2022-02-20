@@ -70,9 +70,9 @@ namespace Puffin::Physics
 			Vector2 diffClamped = Maths::Clamp(diff, Vector2(-boxB->shape_->halfExtent_.x, -boxB->shape_->halfExtent_.y), boxB->shape_->halfExtent_);
 
 			// Add clamped value to Box centre to get point of box closest to circle
-			Vector2 closest = centreBox + diffClamped;
+			const Vector2 closest = centreBox + diffClamped;
 
-			// Get diff between centreCircle and closts point
+			// Get diff between centreCircle and closest point
 			diff = closest - centreCircle;
 
 			outContact.a = circleA->entity_;
@@ -94,7 +94,7 @@ namespace Puffin::Physics
 		body.linearVelocity += impulse * body.invMass;
 	}
 
-	static inline void ApplyAngularImpulse(RigidbodyComponent2D& body, const CircleComponent2D& circle, const Float& impulse)
+	static inline void ApplyAngularImpulse(RigidbodyComponent2D& body, const Float& impulse)
 	{
 		if (body.invMass == 0.0f)
 			return;
@@ -102,7 +102,7 @@ namespace Puffin::Physics
 		body.angularVelocity += std::asin(impulse * body.invMass) * (180 / 3.14);
 	}
 
-	static inline void ApplyImpulse(RigidbodyComponent2D& body, const CircleComponent2D& circle, const Vector2& impulsePoint, const Vector2& impulse)
+	static inline void ApplyImpulse(RigidbodyComponent2D& body, const Vector2& impulsePoint, const Vector2& impulse)
 	{
 		if (body.invMass == 0.0f)
 			return;
@@ -113,7 +113,7 @@ namespace Puffin::Physics
 
 		// Get the 2D cross of impulsePoint against impulse
 		// this is the sin of the angle between the vectors in radians
-		ApplyAngularImpulse(body, circle, impulsePoint.Cross(impulse));
+		ApplyAngularImpulse(body, impulsePoint.Cross(impulse));
 	}
 }
 
