@@ -36,35 +36,39 @@ namespace Puffin::Physics
 
 	private:
 
-		Vector2 gravity = Vector2(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
+		Vector2 m_gravity = Vector2(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
-		float timeStep = 1.0f / 60.0f; // How often the physics world will update, defaults to 60 times a second
-		float accumulatedTime = 0.0f; // Time Accumulated Since last Physics Step
+		float m_timeStep = 1.0f / 60.0f; // How often the physics world will update, defaults to 60 times a second
+		float m_accumulatedTime = 0.0f; // Time Accumulated Since last Physics Step
 
-		std::vector<BoxShape2D> boxShapes_;
-		std::vector<CircleShape2D> circleShapes_;
-		std::vector<Collision2D::Collider2D*> colliders_;
+		std::vector<BoxShape2D> m_boxShapes;
+		std::vector<CircleShape2D> m_circleShapes;
+		std::vector<Collision2D::Collider2D*> m_colliders;
 
-		std::vector<CollisionPair> collisionPairs; // Pairs of entities which should be checked for collisions
-		std::vector<Collision2D::Contact> collisionContacts; // Pairs of entities which have collided
+		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
+		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided
 
+		// Perform Initialization/Updating/Deltion of Physics Related Components
 		void UpdateComponents();
 
+		/* Step Physics Simulation
+		 * dt - delta time value passed in by engine
+		 * */
 		void Step(float dt);
 
 		// Dynamics
-		void UpdateDynamics();
-		void CalculateImpulseByGravity(RigidbodyComponent2D& Body, const float& dt);
+		void UpdateDynamics(); // Perform velocity updates for all rigid bodies
+		void CalculateImpulseByGravity(RigidbodyComponent2D& body, const float& dt); // Calculate Impulse due to force of gravity
 
 		// Collision Broadphase
-		void CollisionBroadphase();
-		void GenerateCollisionPairs();
+		void CollisionBroadphase(); // Perform collision broadphase to decide which entities should collider together
+		void GenerateCollisionPairs(); // Generate collision pairs using the N_Squared Broadphase
 
 		// Collision Detection
 		void CollisionDetection();
 
-		// Collision Resolve
-		void CollisionResolve();
+		// Resolve collisions found during collision detection, applying the correct Impulse 
+		void CollisionResponse();
 
 	};
 

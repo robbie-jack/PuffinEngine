@@ -15,8 +15,8 @@ namespace Puffin
 
 		void PhysicsSystem2D::Init(float inTimeStep)
 		{
-			timeStep = inTimeStep;
-			accumulatedTime = 0.0f;
+			m_timeStep = inTimeStep;
+			m_accumulatedTime = 0.0f;
 		}
 
 		void PhysicsSystem2D::Update(float dt)
@@ -46,14 +46,14 @@ namespace Puffin
 					// Create default box shape if component does not have one assigned
 					if (box.shape_ == nullptr)
 					{
-						boxShapes_.emplace_back(BoxShape2D());
+						m_boxShapes.emplace_back(BoxShape2D());
 
-						box.shape_ = &boxShapes_.back();
+						box.shape_ = &m_boxShapes.back();
 					}
 
 					// Create Collider for this component if one does not exist
 					if (box.shape_ != nullptr)
-						colliders_.emplace_back(new Collision2D::BoxCollider2D(entity, box.shape_));
+						m_colliders.emplace_back(new Collision2D::BoxCollider2D(entity, box.shape_));
 
 					world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
 				}
@@ -69,13 +69,13 @@ namespace Puffin
 					// Create default box shape if component does not have one assigned
 					if (circle.shape_ == nullptr)
 					{
-						circleShapes_.emplace_back(CircleShape2D());
+						m_circleShapes.emplace_back(CircleShape2D());
 
-						circle.shape_ = &circleShapes_.back();
+						circle.shape_ = &m_circleShapes.back();
 					}
 
 					if (circle.shape_ != nullptr)
-						colliders_.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape_));
+						m_colliders.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape_));
 
 					world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
 				}
@@ -84,17 +84,17 @@ namespace Puffin
 
 		void PhysicsSystem2D::Step(float dt)
 		{
-			accumulatedTime += dt;
+			m_accumulatedTime += dt;
 
-			if (accumulatedTime >= timeStep)
+			if (m_accumulatedTime >= m_timeStep)
 			{
-				accumulatedTime -= timeStep;
+				m_accumulatedTime -= m_timeStep;
 
 				// Update Dynamic Objects
 				UpdateDynamics();
 
 				// Copy component transform into collider
-				for (auto& collider : colliders_)
+				for (auto& collider : m_colliders)
 				{
 					const auto& transform = world->GetComponent<TransformComponent>(collider->entity_);
 
@@ -108,7 +108,7 @@ namespace Puffin
 				CollisionDetection();
 
 				// Resolve Collision2D between Colliders
-				CollisionResolve();
+				CollisionResponse();
 			}
 		}
 
@@ -123,30 +123,30 @@ namespace Puffin
 				if (rigidbody.invMass == 0.0f)
 					continue;
 
-				CalculateImpulseByGravity(rigidbody, timeStep);
+				CalculateImpulseByGravity(rigidbody, m_timeStep);
 
 				// Update Position
-				transform.position += rigidbody.linearVelocity * timeStep;
+				transform.position += rigidbody.linearVelocity * m_timeStep;
 
 				// Update Rotation
-				transform.rotation.y += rigidbody.angularVelocity * timeStep;
+				transform.rotation.y += rigidbody.angularVelocity * m_timeStep;
 			}
 		}
 
-		void PhysicsSystem2D::CalculateImpulseByGravity(RigidbodyComponent2D& Body, const float& dt)
+		void PhysicsSystem2D::CalculateImpulseByGravity(RigidbodyComponent2D& body, const float& dt)
 		{
-			if (Body.invMass == 0.0f)
+			if (body.invMass == 0.0f)
 				return;
 
-			Float mass = 1.0f / Body.invMass;
-			Vector2 impulseGravity = gravity * mass * dt;
+			Float mass = 1.0f / body.invMass;
+			Vector2 impulseGravity = m_gravity * mass * dt;
 			
-			ApplyLinearImpulse(Body, impulseGravity);
+			ApplyLinearImpulse(body, impulseGravity);
 		}
 
 		void PhysicsSystem2D::CollisionBroadphase()
 		{
-			collisionPairs.clear();
+			m_collisionPairs.clear();
 			
 			// Basic N-Squared Brute Force Broadphase
 			GenerateCollisionPairs();
@@ -154,16 +154,16 @@ namespace Puffin
 
 		void PhysicsSystem2D::GenerateCollisionPairs()
 		{
-			for (const Collision2D::Collider2D* colliderA : colliders_)
+			for (const Collision2D::Collider2D* colliderA : m_colliders)
 			{
-				for (const Collision2D::Collider2D* colliderB : colliders_)
+				for (const Collision2D::Collider2D* colliderB : m_colliders)
 				{
 					if (colliderA->entity_ == colliderB->entity_)
 						continue;
 
 					bool collisionPairAlreadyExists = false;
 
-					for (const CollisionPair& collisionPair : collisionPairs)
+					for (const CollisionPair& collisionPair : m_collisionPairs)
 					{
 						collisionPairAlreadyExists |= collisionPair.first->entity_ == colliderB->entity_ && collisionPair.second->entity_ == colliderA->entity_;
 					}
@@ -171,30 +171,30 @@ namespace Puffin
 					if (collisionPairAlreadyExists)
 						continue;
 
-					collisionPairs.emplace_back(std::make_pair(colliderA, colliderB));
+					m_collisionPairs.emplace_back(std::make_pair(colliderA, colliderB));
 				}
 			}
 		}
 
 		void PhysicsSystem2D::CollisionDetection()
 		{
-			collisionContacts.clear();
+			m_collisionContacts.clear();
 
-			for (const CollisionPair& collisionPair : collisionPairs)
+			for (const CollisionPair& collisionPair : m_collisionPairs)
 			{
 				Collision2D::Contact contact;
 
 				// Put collision detection here
 				if (collisionPair.first->TestCollision(collisionPair.second, contact))
 				{
-					collisionContacts.emplace_back(contact);
+					m_collisionContacts.emplace_back(contact);
 				}
 			}
 		}
 
-		void PhysicsSystem2D::CollisionResolve()
+		void PhysicsSystem2D::CollisionResponse()
 		{
-			for (const Collision2D::Contact& contact : collisionContacts)
+			for (const Collision2D::Contact& contact : m_collisionContacts)
 			{
 				auto& transformA = world->GetComponent<TransformComponent>(contact.a);
 				auto& transformB = world->GetComponent<TransformComponent>(contact.b);
@@ -216,6 +216,9 @@ namespace Puffin
 
 					// Apply Impulse to body B
 					ApplyImpulse(bodyB, contact.pointOnB, vectorImpulseJ * -1.0f);
+
+					// Calculate impulse caused by friction
+
 
 					// Move colliding bodies to just outside each other
 					const Float tA = bodyA.invMass / (bodyA.invMass + bodyB.invMass);

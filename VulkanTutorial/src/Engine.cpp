@@ -345,7 +345,7 @@ namespace Puffin
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(boxEntity).assetID = meshId3;
+		world->GetComponent<Rendering::MeshComponent>(boxEntity).assetID = meshId2;
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
@@ -362,9 +362,9 @@ namespace Puffin
 		//world->AddComponent<Physics::BoxComponent2D>(floorEntity);
 		world->AddComponent<Physics::CircleComponent2D>(floorEntity);
 
-		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(0.0f), Vector3(0.0f), Vector3(10.0f, 1.0f, 1.0f) };
+		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(.0f), Vector3(0.0f), Vector3(1.0f, 1.0f, 1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(floorEntity).assetID = meshId3;;
+		world->GetComponent<Rendering::MeshComponent>(floorEntity).assetID = meshId2;
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).texture_path = AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(floorEntity).invMass = 0.0f; // Setting mass to zero makes rigidbody kinematic instead of dynamic
