@@ -5,7 +5,7 @@
 
 #include <cereal/archives/binary.hpp>
 
-namespace Puffin
+namespace Puffin::Assets
 {
 	AssetRegistry* AssetRegistry::s_instance = 0;
 

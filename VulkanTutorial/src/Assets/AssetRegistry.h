@@ -1,76 +1,19 @@
 #pragma once
 
-#include "Types/UUID.h"
-
-#include <cereal/types/string.hpp>
+#include "Asset.h"
 
 #include <string>
 #include <memory>
 #include <unordered_map>
-#include <set>
 #include <filesystem>
 
+#include <cereal/types/string.hpp>
 #include <cereal/types/map.hpp>
-
-#include "AssetRegistry.h"
 
 namespace fs = std::filesystem;
 
-namespace Puffin
+namespace Puffin::Assets
 {
-	class Asset
-	{
-	public:
-
-		Asset(fs::path path) : m_path(path) { m_isLoaded = false; }
-		Asset(UUID uuid, fs::path path) : m_id(uuid), m_path(path) { m_isLoaded = false; }
-
-		UUID ID()
-		{
-			return m_id;
-		}
-
-		fs::path RelativePath()
-		{
-			return m_path;
-		}
-
-		void RelativePath(fs::path path)
-		{
-			m_path = path;
-		}
-
-		virtual std::string Type() = 0;
-		virtual bool Save() = 0;
-		virtual bool Load() = 0;
-		virtual void Unload() = 0;
-
-		template<class Archive>
-		void save(Archive& archive) const
-		{
-			archive(cereal::make_nvp("UUID", m_id));
-			archive(cereal::make_nvp("Path", m_path.string()));
-		}
-
-		template<class Archive>
-		void load(Archive& archive)
-		{
-			std::string path;
-			archive(cereal::make_nvp("UUID", m_id));
-			archive(cereal::make_nvp("Path", path));
-
-			m_path = path;
-		}
-
-	private:
-
-		UUID m_id; // UUID of Asset
-		fs::path m_path; // Relative Asset Path
-
-		bool m_isLoaded; // Is Asset Currently Loaded
-
-	};
-
 	/*
 	 * Asset Cache
 	 * Struct which Asset ID/Path, ID/Type pairs are stored in when saving/loading

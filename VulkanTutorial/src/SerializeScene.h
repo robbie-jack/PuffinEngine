@@ -11,7 +11,7 @@
 #include <Components/Physics/ShapeComponents2D.h>
 #include <Components/AngelScriptComponent.h>
 
-#include <AssetRegistry.h>
+#include "Assets/AssetRegistry.h"
 
 #include <vector>
 #include <set>

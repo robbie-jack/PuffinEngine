@@ -1,68 +1,65 @@
 #pragma once
 
-#ifndef MESH_ASSET_H
-#define MESH_ASSET_H
-
-#include <AssetRegistry.h>
+#include "AssetRegistry.h"
 #include <Components/Rendering/MeshComponent.h>
 
 #include <vector>
 
-namespace Puffin
+namespace Puffin::Assets
 {
-	namespace IO
+	static const std::string G_STATIC_MESH_TYPE = "StaticMesh";
+	static constexpr uint32_t G_STATIC_MESH_VERSION = 1; // Latest version of Static Mesh Asset Format
+
+	class StaticMeshAsset : public Asset
 	{
-		class StaticMeshAsset : public Asset
+	public:
+
+		StaticMeshAsset() : Asset(fs::path()) {}
+
+		StaticMeshAsset(const fs::path& path) : Asset(path) {}
+
+		StaticMeshAsset(const UUID id, const fs::path& path) : Asset(id, path) {}
+
+		const std::string& Type() const
 		{
-		public:
+			return G_STATIC_MESH_TYPE;
+		}
 
-			StaticMeshAsset() : Asset(fs::path()) {}
-			StaticMeshAsset(fs::path path) : Asset(path) {}
-			StaticMeshAsset(UUID id, fs::path path) : Asset(id, path) {}
+		const uint32_t& Version() const
+		{
+			return G_STATIC_MESH_VERSION;
+		}
 
-			std::string Type() override;
+		bool Save(const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices);
 
-			bool Save() override;
+		bool Load();
 
-			bool Load() override;
+		void Unload();
 
-			void Unload() override;
+		void AddVertex(Rendering::Vertex vertex)
+		{
+			m_vertices.emplace_back(vertex);
+		}
 
-			void AddVertex(Rendering::Vertex vertex)
-			{
-				m_vertices.emplace_back(vertex);
-			}
+		void AddIndex(uint32_t index)
+		{
+			m_indices.emplace_back(index);
+		}
 
-			void AddIndex(uint32_t index)
-			{
-				m_indices.emplace_back(index);
-			}
+		const std::vector<Rendering::Vertex>& GetVertices() const
+		{
+			return m_vertices;
+		}
 
-			const std::vector<Rendering::Vertex>& GetVertices() const
-			{
-				return m_vertices;
-			}
+		const std::vector<uint32_t>& GetIndices() const
+		{
+			return m_indices;
+		}
 
-			const std::vector<uint32_t>& GetIndices() const
-			{
-				return m_indices;
-			}
+	private:
 
-			template<class Archive>
-			void serialize(Archive& archive) const
-			{
-				archive(cereal::base_class<Asset>(this));
-			}
+		std::vector<Rendering::Vertex> m_vertices;
+		std::vector<uint32_t> m_indices;
 
-		private:
-
-			std::vector<Rendering::Vertex> m_vertices;
-			std::vector<uint32_t> m_indices;
-
-		};
-	}
+	};
 }
-
-
-
-#endif // !MESH_ASSET_H

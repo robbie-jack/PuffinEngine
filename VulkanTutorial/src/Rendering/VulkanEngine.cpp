@@ -5,8 +5,8 @@
 #include <Rendering/VKTexture.h>
 #include <Rendering/VKDebug.h>
 
-#include <AssetRegistry.h>
-#include <Assets/MeshAsset.h>
+#include "Assets/AssetRegistry.h"
+#include "Assets/MeshAsset.h"
 
 #define VMA_IMPLEMENTATION
 #include <Rendering/vk_mem_alloc.h>
@@ -1255,7 +1255,7 @@ namespace Puffin
 			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
 
-			std::shared_ptr<IO::StaticMeshAsset> staticMeshAsset = std::static_pointer_cast<IO::StaticMeshAsset>(AssetRegistry::Get()->GetAsset(mesh.assetID));
+			const std::shared_ptr<Assets::StaticMeshAsset> staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.assetID));
 
 			// Load Mesh Data
 			if (staticMeshAsset && staticMeshAsset->Load())

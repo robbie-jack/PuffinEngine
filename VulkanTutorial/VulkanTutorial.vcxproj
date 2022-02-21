@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.189.2\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.189.2\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -154,7 +154,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.189.2\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.189.2\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -185,7 +185,8 @@
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
-    <ClCompile Include="src\AssetRegistry.cpp" />
+    <ClCompile Include="src\Assets\Asset.cpp" />
+    <ClCompile Include="src\Assets\AssetRegistry.cpp" />
     <ClCompile Include="src\Assets\MeshAsset.cpp" />
     <ClCompile Include="src\Audio\AudioSystem.cpp" />
     <ClCompile Include="src\Engine.cpp" />
@@ -218,7 +219,8 @@
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
-    <ClInclude Include="src\AssetRegistry.h" />
+    <ClInclude Include="src\Assets\Asset.h" />
+    <ClInclude Include="src\Assets\AssetRegistry.h" />
     <ClInclude Include="src\Assets\MeshAsset.h" />
     <ClInclude Include="src\Audio\AudioSystem.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />

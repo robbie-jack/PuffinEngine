@@ -151,7 +151,6 @@
     <ClCompile Include="src\Assets\MeshAsset.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="src\AssetRegistry.cpp" />
     <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp">
       <Filter>Physics\Shapes</Filter>
     </ClCompile>
@@ -163,6 +162,12 @@
     </ClCompile>
     <ClCompile Include="src\Physics\Colliders\BoxCollider2D.cpp">
       <Filter>Physics\Colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Assets\AssetRegistry.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Assets\Asset.cpp">
+      <Filter>Assets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -315,7 +320,6 @@
     <ClInclude Include="src\Types\UUID.h">
       <Filter>Types</Filter>
     </ClInclude>
-    <ClInclude Include="src\AssetRegistry.h" />
     <ClInclude Include="src\Assets\MeshAsset.h">
       <Filter>Assets</Filter>
     </ClInclude>
@@ -342,6 +346,12 @@
     </ClInclude>
     <ClInclude Include="src\Physics\PhysicsTypes2D.h">
       <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Assets\AssetRegistry.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Assets\Asset.h">
+      <Filter>Assets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

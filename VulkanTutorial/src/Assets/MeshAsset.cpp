@@ -1,87 +1,52 @@
 #include "MeshAsset.h"
+#include "nlohmann/json.hpp"
+#include "lz4/lz4.h"
 
-#include <AssetRegistry.h>
+using json = nlohmann::json;
 
-#include <cereal/types/vector.hpp>
-#include <cereal/types/polymorphic.hpp>
-#include <cereal/archives/binary.hpp>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include <iostream>
-#include <fstream>
-
-namespace Puffin
+namespace Puffin::Assets
 {
-	namespace IO
+	////////////////////////////////
+	// StaticMeshAsset
+	////////////////////////////////
+
+	bool StaticMeshAsset::Save(const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices)
 	{
-		////////////////////////////////
-		// StaticMeshAsset
-		////////////////////////////////
+		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
 
-		std::string StaticMeshAsset::Type()
-		{
-			return "StaticMesh";
-		}
+		json meshMetadata;
+		meshMetadata["vertex_format"] = "PNCTV_F32";
+		meshMetadata["vertex_buffer_size"] = vertices.size();
+		meshMetadata["index_buffer_size"] = indices.size();
 
-		bool StaticMeshAsset::Save()
-		{
-			fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
-			const std::string string = fullPath.string();
-			std::ofstream os(string, std::ios::binary);
-			cereal::BinaryOutputArchive archive(os);
+		//size_t fullSize = 
 
-			const int numVertices = m_vertices.size();
-			const int numIndices = m_indices.size();
+		return true;
+	}
 
-			// Save Number of Vertices/Indices in human readable format
-			archive(numVertices);
-			archive(numIndices);
-
-			// Save Vertex/Index Data in Base64 Encoded Binary
-			archive(m_vertices);
-			archive(m_indices);
-
+	bool StaticMeshAsset::Load()
+	{
+		if (m_isLoaded)
 			return true;
-		}
 
-		bool StaticMeshAsset::Load()
-		{
-			fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
-			if (!fs::exists(fullPath))
-				return false;
+		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
+		if (!fs::exists(fullPath))
+			return false;
 
-			const std::string string = fullPath.string();
-			std::ifstream is(string, std::ios::binary);
-			cereal::BinaryInputArchive archive(is);
 
-			int numVertices, numIndices;
 
-			// Load Number of Vertices/Indices
-			archive(numVertices);
-			archive(numIndices);
+		m_isLoaded = true;
+		return true;
+	}
 
-			m_vertices.resize(numVertices);
-			m_indices.resize(numIndices);
+	void StaticMeshAsset::Unload()
+	{
+		m_vertices.clear();
+		m_vertices.shrink_to_fit();
 
-			// Load Vertex/Index Data
-			archive(m_vertices);
-			archive(m_indices);
+		m_indices.clear();
+		m_indices.shrink_to_fit();
 
-			return true;
-		}
-
-		void StaticMeshAsset::Unload()
-		{
-			m_vertices.clear();
-			m_vertices.shrink_to_fit();
-
-			m_indices.clear();
-			m_indices.shrink_to_fit();
-		}
+		m_isLoaded = false;
 	}
 }
-
-CEREAL_REGISTER_TYPE_WITH_NAME(Puffin::IO::StaticMeshAsset, "StaticMeshAsset");

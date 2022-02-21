@@ -69,7 +69,7 @@ namespace Puffin
 			fs::path import_path = fs::path() / "meshes" / model_path.stem();
 			import_path += ".pstaticmesh";
 
-			std::shared_ptr<StaticMeshAsset> meshAsset = AssetRegistry::Get()->GetAsset<StaticMeshAsset>(import_path);
+			std::shared_ptr<Assets::StaticMeshAsset> meshAsset = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(import_path);
 
 			// Local vector for storing model data
 			std::vector<aiMesh*> meshes;
@@ -81,6 +81,32 @@ namespace Puffin
 			{
 				ProcessNode(root->mChildren[i], &meshes, scene);
 			}
+
+			// Reserve space in vectors for vertices/indices
+			std::vector<Rendering::Vertex> vertices;
+			std::vector<uint32_t> indices;
+
+			unsigned numVertices = 0;
+			unsigned numIndices = 0;
+
+			for (int i = 0; i < meshes.size(); i++)
+			{
+				// Get current aiMesh object
+				const aiMesh* mesh = meshes[i];
+
+				numVertices += mesh->mNumVertices;
+
+				// Iterate over faces in mesh object
+				for (int j = 0; j < mesh->mNumFaces; j++)
+				{
+					const aiFace* face = &mesh->mFaces[j];
+
+					numIndices += face->mNumIndices;
+				}
+			}
+
+			vertices.reserve(numVertices);
+			indices.reserve(numIndices);
 
 			// Retrieve mesh data from scene file
 			for (int i = 0; i < meshes.size(); i++)
@@ -126,7 +152,7 @@ namespace Puffin
 						mesh->mTextureCoords[0][j].y
 					};
 
-					meshAsset->AddVertex(vertex);
+					vertices.push_back(vertex);
 				}
 
 				// Iterate over faces in mesh object
@@ -137,12 +163,12 @@ namespace Puffin
 					// Store all indices of this face
 					for (int k = 0; k < face->mNumIndices; k++)
 					{
-						meshAsset->AddIndex(face->mIndices[k]);
+						indices.push_back(face->mIndices[k]);
 					}
 				}
 			}
 
-			meshAsset->Save();
+			meshAsset->Save(vertices, indices);
 
 			// Import was successful, return true
 			return true;
