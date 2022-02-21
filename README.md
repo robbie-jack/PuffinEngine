@@ -20,3 +20,7 @@ Cereal - Serilization - https://uscilab.github.io/cereal/
 AngelScript - Scripting - https://www.angelcode.com/angelscript/
 
 SoLoud - Audio - https://sol.gfxile.net/soloud/
+
+nlohmann/json - Json Parsing - https://github.com/nlohmann/json
+
+LZ4 - LZ4 Compression - https://github.com/lz4/lz4
