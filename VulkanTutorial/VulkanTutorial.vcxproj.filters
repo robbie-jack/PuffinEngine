@@ -166,9 +166,6 @@
     <ClCompile Include="src\Assets\AssetRegistry.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="src\Assets\Asset.cpp">
-      <Filter>Assets</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">

@@ -116,8 +116,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.189.2\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\assimp\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mtd.lib;IrrXMLd.lib;zlibstaticd.lib;angelscript64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.189.2\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\assimp\Debug;$(ProjectDir)\lib\lz4;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mtd.lib;IrrXMLd.lib;zlibstaticd.lib;angelscript64d.lib;liblz4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
@@ -168,8 +168,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.189.2\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\assimp\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;angelscript64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.189.2\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\assimp\Release;$(ProjectDir)\lib\lz4;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;angelscript64.lib;liblz4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
@@ -185,7 +185,6 @@
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
-    <ClCompile Include="src\Assets\Asset.cpp" />
     <ClCompile Include="src\Assets\AssetRegistry.cpp" />
     <ClCompile Include="src\Assets\MeshAsset.cpp" />
     <ClCompile Include="src\Audio\AudioSystem.cpp" />

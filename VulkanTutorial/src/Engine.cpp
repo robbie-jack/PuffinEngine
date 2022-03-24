@@ -110,7 +110,7 @@ namespace Puffin
 		// Load Asset Cache
 		Assets::AssetRegistry::Get()->ProjectName(projectFile.name);
 		Assets::AssetRegistry::Get()->ProjectRoot(projectDirPath);
-		Assets::AssetRegistry::Get()->LoadAssetCache();
+		//Assets::AssetRegistry::Get()->LoadAssetCache();
 
 		// Load Project Settings
 		IO::LoadSettings(projectDirPath.parent_path() / "settings.json", settings);
@@ -215,10 +215,10 @@ namespace Puffin
 		const fs::path& meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
-		UUID meshId2 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
-		UUID meshId3 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
-		UUID meshId4 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
+		UUID meshId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
+		UUID meshId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
+		UUID meshId3 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
+		UUID meshId4 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
 
 		// Initialize EntityManager with Existing Entities
 		world->InitEntitySystem();

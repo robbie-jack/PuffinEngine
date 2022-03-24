@@ -65,12 +65,6 @@ namespace Puffin
 				return false;
 			}
 
-			// Instantiate new Mesh Asset to store loaded Vertex/Index data in
-			fs::path import_path = fs::path() / "meshes" / model_path.stem();
-			import_path += ".pstaticmesh";
-
-			std::shared_ptr<Assets::StaticMeshAsset> meshAsset = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(import_path);
-
 			// Local vector for storing model data
 			std::vector<aiMesh*> meshes;
 
@@ -168,7 +162,21 @@ namespace Puffin
 				}
 			}
 
-			meshAsset->Save(vertices, indices);
+			// Instantiate new Mesh Asset to store loaded Vertex/Index data in
+			fs::path import_path = fs::path() / "meshes" / model_path.stem();
+			import_path += ".pstaticmesh";
+
+			Assets::MeshInfo info;
+			info.vertexFormat = Assets::VertexFormat::PNCTV_F32;
+			info.numVertices = vertices.size();
+			info.numIndices = indices.size();
+			info.verticesSize = vertices.size() * sizeof(Rendering::Vertex);
+			info.indicesSize = indices.size() * sizeof(uint32_t);
+			info.compressionMode = Assets::CompressionMode::LZ4;
+			info.originalFile = model_path.string();
+
+			std::shared_ptr<Assets::StaticMeshAsset> asset = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(import_path);
+			asset->Save(info, vertices, indices);
 
 			// Import was successful, return true
 			return true;

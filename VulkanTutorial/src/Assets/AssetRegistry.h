@@ -127,10 +127,18 @@ namespace Puffin::Assets
 		template<typename AssetType>
 		std::shared_ptr<AssetType> AddAsset(const fs::path& path)
 		{
-			std::shared_ptr<AssetType> asset = std::make_shared<AssetType>(path);
+			// First check if there is already an asset using this path
+			std::shared_ptr<AssetType> asset = GetAsset<AssetType>(path);
+			if (asset == nullptr)
+			{
+				// If there isn't create a new asset
+				asset = std::make_shared<AssetType>(path);
 
-			m_idToAssetMap.insert({ asset->ID(), asset });
-			m_pathToIDMap.insert({ asset->RelativePath().string(), asset->ID() });
+				m_idToAssetMap.insert({ asset->ID(), asset });
+				m_pathToIDMap.insert({ asset->RelativePath().string(), asset->ID() });
+			}
+
+			// Return existing/created asset
 			return asset;
 		}
 

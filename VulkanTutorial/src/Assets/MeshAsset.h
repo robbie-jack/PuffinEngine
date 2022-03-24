@@ -10,6 +10,35 @@ namespace Puffin::Assets
 	static const std::string G_STATIC_MESH_TYPE = "StaticMesh";
 	static constexpr uint32_t G_STATIC_MESH_VERSION = 1; // Latest version of Static Mesh Asset Format
 
+	enum class VertexFormat : uint8_t
+	{
+		Unknown = 0,
+		PNCTV_F32
+	};
+
+	static VertexFormat ParseVertexFormat(const char* f)
+	{
+		if (strcmp(f, "PNCTV_F32"))
+		{
+			return VertexFormat::PNCTV_F32;
+		}
+		else
+		{
+			return VertexFormat::Unknown;
+		}
+	}
+
+	struct MeshInfo
+	{
+		VertexFormat vertexFormat;
+		uint64_t numVertices;
+		uint64_t numIndices;
+		uint64_t verticesSize;
+		uint64_t indicesSize;
+		CompressionMode compressionMode;
+		std::string originalFile;
+	};
+
 	class StaticMeshAsset : public Asset
 	{
 	public:
@@ -30,21 +59,11 @@ namespace Puffin::Assets
 			return G_STATIC_MESH_VERSION;
 		}
 
-		bool Save(const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices);
+		bool Save(const MeshInfo& info, const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices);
 
 		bool Load();
 
 		void Unload();
-
-		void AddVertex(Rendering::Vertex vertex)
-		{
-			m_vertices.emplace_back(vertex);
-		}
-
-		void AddIndex(uint32_t index)
-		{
-			m_indices.emplace_back(index);
-		}
 
 		const std::vector<Rendering::Vertex>& GetVertices() const
 		{
@@ -61,5 +80,6 @@ namespace Puffin::Assets
 		std::vector<Rendering::Vertex> m_vertices;
 		std::vector<uint32_t> m_indices;
 
+		MeshInfo ParseMeshInfo(const AssetData& data);
 	};
 }
