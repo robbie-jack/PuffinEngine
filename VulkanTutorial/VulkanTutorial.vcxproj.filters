@@ -65,6 +65,9 @@
     <Filter Include="Physics\Colliders">
       <UniqueIdentifier>{f3961285-1613-4cdf-bc5a-66725870620e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Importers">
+      <UniqueIdentifier>{f2802aea-7dbd-4c88-b414-71ea8ac9d947}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -166,6 +169,7 @@
     <ClCompile Include="src\Assets\AssetRegistry.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
+    <ClCompile Include="src\Assets\TextureAsset.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -182,9 +186,6 @@
     </ClInclude>
     <ClInclude Include="src\Components\TransformComponent.h">
       <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\ModelLoader.h">
-      <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\vk_mem_alloc.h">
       <Filter>Rendering</Filter>
@@ -349,6 +350,15 @@
     </ClInclude>
     <ClInclude Include="src\Assets\Asset.h">
       <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Assets\TextureAsset.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Assets\Importers\ModelImporter.h">
+      <Filter>Assets\Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Assets\Importers\TextureImporter.h">
+      <Filter>Assets\Importers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

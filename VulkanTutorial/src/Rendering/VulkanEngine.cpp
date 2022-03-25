@@ -7,6 +7,7 @@
 
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
+#include "Assets/TextureAsset.h"
 
 #define VMA_IMPLEMENTATION
 #include <Rendering/vk_mem_alloc.h>
@@ -1245,7 +1246,16 @@ namespace Puffin
 		void VulkanEngine::InitMesh(MeshComponent& mesh)
 		{
 			// Load Texture Data
-			Util::LoadImageFromFile(*this, mesh.texture_path, mesh.texture);
+			//IO::LoadImageFromFile(*this, mesh.texture_path, mesh.texture);
+
+			const auto textureAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.textureAssetID));
+
+			if (textureAsset && textureAsset->Load())
+			{
+				IO::InitTextureImage(*this, textureAsset->GetPixels(), textureAsset->GetTextureWidth(), textureAsset->GetTextureHeight(), mesh.texture);
+
+				textureAsset->Unload();
+			}
 
 			VKDebug::SetObjectName(device,
 				(uint64_t)mesh.texture.image,
@@ -1255,7 +1265,7 @@ namespace Puffin
 			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
 
-			const std::shared_ptr<Assets::StaticMeshAsset> staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.assetID));
+			const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.meshAssetID));
 
 			// Load Mesh Data
 			if (staticMeshAsset && staticMeshAsset->Load())

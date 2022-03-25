@@ -30,13 +30,13 @@ namespace Puffin::Assets
 
 	struct MeshInfo
 	{
+		CompressionMode compressionMode;
+		std::string originalFile;
 		VertexFormat vertexFormat;
 		uint64_t numVertices;
 		uint64_t numIndices;
 		uint64_t verticesSize;
 		uint64_t indicesSize;
-		CompressionMode compressionMode;
-		std::string originalFile;
 	};
 
 	class StaticMeshAsset : public Asset

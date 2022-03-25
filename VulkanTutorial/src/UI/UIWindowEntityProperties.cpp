@@ -93,7 +93,6 @@ namespace Puffin
 							if (!world->HasComponent<Rendering::MeshComponent>(entity))
 							{
 								Rendering::MeshComponent& comp = world->AddComponent<Rendering::MeshComponent>(entity);
-								comp.texture_path = "content\\textures\\cube.png";
 								sceneChanged = true;
 							}
 						}
@@ -211,7 +210,7 @@ namespace Puffin
 					}*/
 
 					// Change Texture Path
-					ImGui::Text("Texture Path:"); ImGui::SameLine();
+					/*ImGui::Text("Texture Path:"); ImGui::SameLine();
 					if (ImGui::Selectable((const char*)mesh.texture_path.c_str(), false))
 					{
 						fileDialog->Open();
@@ -226,7 +225,7 @@ namespace Puffin
 						textureSelected = false;
 						sceneChanged = true;
 						fileDialog->ClearSelected();
-					}
+					}*/
 
 					ImGui::TreePop();
 				}

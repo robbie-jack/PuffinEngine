@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef UI_MANAGER_H
-#define UI_MANAGER_H
-
 #include <imgui.h>
 #include <backends\imgui_impl_glfw.h>
 #include <imgui/imgui_impl_vulkan.h>
@@ -32,6 +29,13 @@ namespace Puffin
 
 	namespace UI
 	{
+		enum class ImportAssetUI
+		{
+			None,
+			Mesh,
+			Texture
+		};
+
 		class UIManager
 		{
 		public:
@@ -49,7 +53,8 @@ namespace Puffin
 			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
 
 		private:
-			bool saveScene, loadScene, importMesh;
+			bool saveScene, loadScene;
+			ImportAssetUI importAssetUI;
 
 			Engine* engine;
 			std::shared_ptr<ECS::World> world;
@@ -71,5 +76,3 @@ namespace Puffin
 		};
 	}
 }
-
-#endif // UI_MANAGER_H

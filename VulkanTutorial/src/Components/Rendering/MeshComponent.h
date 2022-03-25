@@ -123,19 +123,19 @@ namespace Puffin
 		{
 			MeshComponent() {}
 			
-			MeshComponent(UUID InMeshID, std::string InTexturePath) :
-				assetID(InMeshID), texture_path(InTexturePath)
+			MeshComponent(UUID InMeshID, UUID InTextureID) :
+				meshAssetID(InMeshID), textureAssetID(InTextureID)
 			{
 			}
 
 			// Mesh Data
-			UUID assetID;
+			UUID meshAssetID;
 			uint32_t vertexCount;
 			uint32_t indexCount;
 
 			// Texture
 			Texture texture;
-			fs::path texture_path;
+			UUID textureAssetID;
 
 			// Material
 			Material material;
@@ -150,21 +150,22 @@ namespace Puffin
 		template<class Archive>
 		void save(Archive& archive, const MeshComponent& comp)
 		{
-			uint64_t id = comp.assetID;
-			archive(cereal::make_nvp("UUID", id));
-			archive(cereal::make_nvp("Texture Path", comp.texture_path.string()));
+			uint64_t meshID = comp.meshAssetID;
+			uint64_t textureID = comp.textureAssetID;
+			archive(cereal::make_nvp("Mesh ID", meshID));
+			archive(cereal::make_nvp("Texture ID", textureID));
 		}
 
 		template<class Archive>
 		void load(Archive& archive, MeshComponent& comp)
 		{
-			uint64_t id;
-			archive(cereal::make_nvp("UUID", id));
-			comp.assetID = id;
+			uint64_t meshID;
+			archive(cereal::make_nvp("Mesh ID", meshID));
+			comp.meshAssetID = meshID;
 
-			std::string texturePath;
-			archive(cereal::make_nvp("Texture Path", texturePath));
-			comp.texture_path = texturePath;
+			uint64_t textureID;
+			archive(cereal::make_nvp("Texture ID", textureID));
+			comp.textureAssetID = textureID;
 		}
 	}
 }

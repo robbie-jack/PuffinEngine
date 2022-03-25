@@ -187,6 +187,7 @@
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
     <ClCompile Include="src\Assets\AssetRegistry.cpp" />
     <ClCompile Include="src\Assets\MeshAsset.cpp" />
+    <ClCompile Include="src\Assets\TextureAsset.cpp" />
     <ClCompile Include="src\Audio\AudioSystem.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
@@ -220,7 +221,10 @@
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h" />
     <ClInclude Include="src\Assets\Asset.h" />
     <ClInclude Include="src\Assets\AssetRegistry.h" />
+    <ClInclude Include="src\Assets\Importers\ModelImporter.h" />
+    <ClInclude Include="src\Assets\Importers\TextureImporter.h" />
     <ClInclude Include="src\Assets\MeshAsset.h" />
+    <ClInclude Include="src\Assets\TextureAsset.h" />
     <ClInclude Include="src\Audio\AudioSystem.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h" />
@@ -248,7 +252,6 @@
     <ClInclude Include="src\Physics\Shapes\Shape2D.h" />
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\Rendering\DebugDraw.h" />
-    <ClInclude Include="src\Rendering\ModelLoader.h" />
     <ClInclude Include="src\Rendering\VKDebug.h" />
     <ClInclude Include="src\Rendering\VKDeferredRender.h" />
     <ClInclude Include="src\Rendering\VKDescriptors.h" />

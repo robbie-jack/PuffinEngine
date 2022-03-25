@@ -36,6 +36,9 @@ namespace Puffin::Assets
 		metadata["compression"] = "LZ4";
 		metadata["original_file"] = info.originalFile;
 
+		// Pass metadata to asset data struct
+		data.json = metadata.dump();
+
 		// Copy Vertices/Indices to binary blob
 		size_t fullSize = info.verticesSize + info.indicesSize;
 
@@ -55,9 +58,6 @@ namespace Puffin::Assets
 
 		int compressedSize = LZ4_compress_default(mergedBuffer.data(), data.binaryBlob.data(), static_cast<int>(mergedBuffer.size()), static_cast<int>(compressStaging));
 		data.binaryBlob.resize(compressedSize);
-
-		// Pass metadata to asset data struct
-		data.json = metadata.dump();
 
 		// Save Asset Data out to Binary File
 		return SaveBinaryFile(fullPath, data);
@@ -88,7 +88,8 @@ namespace Puffin::Assets
 		std::vector<char> decompressedBuffer;
 		decompressedBuffer.resize(info.verticesSize + info.indicesSize);
 
-		LZ4_decompress_safe(data.binaryBlob.data(), decompressedBuffer.data(), static_cast<int>(data.binaryBlob.size()), static_cast<int>(decompressedBuffer.size()));
+		LZ4_decompress_safe(data.binaryBlob.data(), decompressedBuffer.data(), 
+		static_cast<int>(data.binaryBlob.size()), static_cast<int>(decompressedBuffer.size()));
 
 		// Copy Vertex Buffer
 		m_vertices.resize(info.numVertices);

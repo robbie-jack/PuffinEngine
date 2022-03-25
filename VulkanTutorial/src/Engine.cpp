@@ -18,6 +18,7 @@
 
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
+#include "Assets/TextureAsset.h"
 
 #include <chrono>
 
@@ -106,6 +107,7 @@ namespace Puffin
 
 		// Register Assets
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::StaticMeshAsset>();
+		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::TextureAsset>();
 
 		// Load Asset Cache
 		Assets::AssetRegistry::Get()->ProjectName(projectFile.name);
@@ -220,6 +222,12 @@ namespace Puffin
 		UUID meshId3 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
 		UUID meshId4 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
 
+		const fs::path& texturePath1 = contentRootPath / "textures\\chalet.ptexture";
+		const fs::path& texturePath2 = contentRootPath / "textures\\cube.ptexture";
+
+		UUID textureId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath1)->ID();
+		UUID textureId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath2)->ID();
+
 		// Initialize EntityManager with Existing Entities
 		world->InitEntitySystem();
 
@@ -251,22 +259,22 @@ namespace Puffin
 		world->GetComponent<TransformComponent>(6) = { Vector3(0.0f, -10.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 1.0f, 10.0f) };
 		world->GetComponent<TransformComponent>(7) = { Vector3(5.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
 
-		world->GetComponent<Rendering::MeshComponent>(1).assetID = meshId1;
-		world->GetComponent<Rendering::MeshComponent>(1).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\chalet.jpg";
+		world->GetComponent<Rendering::MeshComponent>(1).meshAssetID = meshId1;
+		world->GetComponent<Rendering::MeshComponent>(1).textureAssetID = textureId1;
 
-		world->GetComponent<Rendering::MeshComponent>(2).assetID = meshId2;
-		world->GetComponent<Rendering::MeshComponent>(2).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(2).meshAssetID = meshId2;
+		world->GetComponent<Rendering::MeshComponent>(2).textureAssetID = textureId2;
 
-		world->GetComponent<Rendering::MeshComponent>(3).assetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(3).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(4).assetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(4).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(5).assetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(5).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(6).assetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(6).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
-		world->GetComponent<Rendering::MeshComponent>(7).assetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(7).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(3).meshAssetID = meshId3;
+		world->GetComponent<Rendering::MeshComponent>(3).textureAssetID = textureId2;
+		world->GetComponent<Rendering::MeshComponent>(4).meshAssetID = meshId3;
+		world->GetComponent<Rendering::MeshComponent>(4).textureAssetID = textureId2;
+		world->GetComponent<Rendering::MeshComponent>(5).meshAssetID = meshId3;
+		world->GetComponent<Rendering::MeshComponent>(5).textureAssetID = textureId2;
+		world->GetComponent<Rendering::MeshComponent>(6).meshAssetID = meshId3;
+		world->GetComponent<Rendering::MeshComponent>(6).textureAssetID = textureId2;
+		world->GetComponent<Rendering::MeshComponent>(7).meshAssetID = meshId3;
+		world->GetComponent<Rendering::MeshComponent>(7).textureAssetID = textureId2;
 
 		world->GetComponent<Rendering::LightComponent>(4).direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		world->GetComponent<Rendering::LightComponent>(4).ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
@@ -305,15 +313,21 @@ namespace Puffin
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
 
-		fs::path meshPath1 = contentRootPath / "meshes\\chalet.pstaticmesh";
-		fs::path meshPath2 = contentRootPath / "meshes\\sphere.pstaticmesh";
-		fs::path meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
-		fs::path meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
+		const fs::path& meshPath1 = contentRootPath / "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = contentRootPath / "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
 
 		UUID meshId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
 		UUID meshId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
 		UUID meshId3 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
 		UUID meshId4 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
+
+		const fs::path& texturePath1 = contentRootPath / "textures\\chalet.jpg";
+		const fs::path& texturePath2 = contentRootPath / "textures\\cube.png";
+
+		UUID textureId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath1)->ID();
+		UUID textureId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath2)->ID();
 
 		world->InitEntitySystem();
 
@@ -353,8 +367,8 @@ namespace Puffin
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(boxEntity).assetID = meshId2;
-		world->GetComponent<Rendering::MeshComponent>(boxEntity).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(boxEntity).meshAssetID = meshId2;
+		world->GetComponent<Rendering::MeshComponent>(boxEntity).textureAssetID = textureId2;
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = .5f;
@@ -372,8 +386,8 @@ namespace Puffin
 
 		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(.0f), Vector3(0.0f), Vector3(1.0f, 1.0f, 1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(floorEntity).assetID = meshId2;
-		world->GetComponent<Rendering::MeshComponent>(floorEntity).texture_path = Assets::AssetRegistry::Get()->ContentRoot() / "textures\\cube.png";
+		world->GetComponent<Rendering::MeshComponent>(floorEntity).meshAssetID = meshId2;
+		world->GetComponent<Rendering::MeshComponent>(floorEntity).textureAssetID = textureId2;
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(floorEntity).invMass = 0.0f; // Setting mass to zero makes rigidbody kinematic instead of dynamic
 	}
