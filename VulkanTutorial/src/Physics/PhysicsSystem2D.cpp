@@ -13,16 +13,30 @@ namespace Puffin
 		// Public Functions
 		//--------------------------------------------------
 
+		void PhysicsSystem2D::Init()
+		{
+			Init(1 / 60.0);
+		}
+
 		void PhysicsSystem2D::Init(float inTimeStep)
 		{
 			m_timeStep = inTimeStep;
-			m_accumulatedTime = 0.0f;
+			m_accumulatedTime = 0.0;
 		}
 
-		void PhysicsSystem2D::Update(float dt)
+		void PhysicsSystem2D::Start()
 		{
 			UpdateComponents();
-			Step(dt);
+		}
+
+		void PhysicsSystem2D::Update()
+		{
+			UpdateComponents();
+			Step();
+		}
+
+		void PhysicsSystem2D::Stop()
+		{
 		}
 
 		void PhysicsSystem2D::Cleanup()
@@ -38,10 +52,10 @@ namespace Puffin
 		{
 			for (ECS::Entity entity : entityMap["BoxCollision"])
 			{
-				auto& box = world->GetComponent<BoxComponent2D>(entity);
-				auto& transform = world->GetComponent<TransformComponent>(entity);
+				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
+				auto& transform = m_world->GetComponent<TransformComponent>(entity);
 
-				if (world->GetComponentFlag<BoxComponent2D, FlagDirty>(entity))
+				if (m_world->GetComponentFlag<BoxComponent2D, FlagDirty>(entity))
 				{
 					// Create default box shape if component does not have one assigned
 					if (box.shape_ == nullptr)
@@ -55,16 +69,16 @@ namespace Puffin
 					if (box.shape_ != nullptr)
 						m_colliders.emplace_back(new Collision2D::BoxCollider2D(entity, box.shape_));
 
-					world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
+					m_world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
 				}
 			}
 
 			for (ECS::Entity entity : entityMap["CircleCollision"])
 			{
-				auto& circle = world->GetComponent<CircleComponent2D>(entity);
-				auto& transform = world->GetComponent<TransformComponent>(entity);
+				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
+				auto& transform = m_world->GetComponent<TransformComponent>(entity);
 
-				if (world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
+				if (m_world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
 				{
 					// Create default box shape if component does not have one assigned
 					if (circle.shape_ == nullptr)
@@ -77,16 +91,16 @@ namespace Puffin
 					if (circle.shape_ != nullptr)
 						m_colliders.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape_));
 
-					world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
+					m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
 				}
 			}
 		}
 
-		void PhysicsSystem2D::Step(float dt)
+		void PhysicsSystem2D::Step()
 		{
-			m_accumulatedTime += dt;
+			m_accumulatedTime += m_deltaTime;
 
-			if (m_accumulatedTime >= m_timeStep)
+			while (m_accumulatedTime >= m_timeStep)
 			{
 				m_accumulatedTime -= m_timeStep;
 
@@ -96,7 +110,7 @@ namespace Puffin
 				// Copy component transform into collider
 				for (auto& collider : m_colliders)
 				{
-					const auto& transform = world->GetComponent<TransformComponent>(collider->entity_);
+					const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity_);
 
 					collider->transform_ = transform;
 				}
@@ -116,14 +130,14 @@ namespace Puffin
 		{
 			for (ECS::Entity entity : entityMap["Rigidbody"])
 			{
-				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
-				RigidbodyComponent2D& rigidbody = world->GetComponent<RigidbodyComponent2D>(entity);
+				TransformComponent& transform = m_world->GetComponent<TransformComponent>(entity);
+				RigidbodyComponent2D& rigidbody = m_world->GetComponent<RigidbodyComponent2D>(entity);
 
 				// If a body has no mass, then it is kinematic and should not experience forces
 				if (rigidbody.invMass == 0.0f)
 					continue;
 
-				CalculateImpulseByGravity(rigidbody, m_timeStep);
+				CalculateImpulseByGravity(rigidbody);
 
 				// Update Position
 				transform.position += rigidbody.linearVelocity * m_timeStep;
@@ -133,13 +147,13 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::CalculateImpulseByGravity(RigidbodyComponent2D& body, const float& dt)
+		void PhysicsSystem2D::CalculateImpulseByGravity(RigidbodyComponent2D& body)
 		{
 			if (body.invMass == 0.0f)
 				return;
 
 			Float mass = 1.0f / body.invMass;
-			Vector2 impulseGravity = m_gravity * mass * dt;
+			Vector2 impulseGravity = m_gravity * mass * m_timeStep;
 			
 			ApplyLinearImpulse(body, impulseGravity);
 		}
@@ -196,13 +210,13 @@ namespace Puffin
 		{
 			for (const Collision2D::Contact& contact : m_collisionContacts)
 			{
-				auto& transformA = world->GetComponent<TransformComponent>(contact.a);
-				auto& transformB = world->GetComponent<TransformComponent>(contact.b);
+				auto& transformA = m_world->GetComponent<TransformComponent>(contact.a);
+				auto& transformB = m_world->GetComponent<TransformComponent>(contact.b);
 
-				if (world->HasComponent<RigidbodyComponent2D>(contact.a) && world->HasComponent<RigidbodyComponent2D>(contact.b))
+				if (m_world->HasComponent<RigidbodyComponent2D>(contact.a) && m_world->HasComponent<RigidbodyComponent2D>(contact.b))
 				{
-					auto& bodyA = world->GetComponent<RigidbodyComponent2D>(contact.a);
-					auto& bodyB = world->GetComponent<RigidbodyComponent2D>(contact.b);
+					auto& bodyA = m_world->GetComponent<RigidbodyComponent2D>(contact.a);
+					auto& bodyB = m_world->GetComponent<RigidbodyComponent2D>(contact.b);
 
 					const Float elasticity = bodyA.elasticity * bodyB.elasticity;
 

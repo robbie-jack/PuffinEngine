@@ -30,16 +30,28 @@ namespace Puffin::Physics
 	{
 	public:
 
-		void Init(float inTimeStep = 1 / 60.0f);
-		void Update(float dt);
-		void Cleanup();
+		void Init() override;
+		void Init(float inTimeStep);
+		void Start() override;
+		void Update() override;
+		void Stop() override;
+		void Cleanup() override;
+
+		ECS::SystemInfo GetInfo() override
+		{
+			ECS::SystemInfo info;
+
+			info.updateOrder = ECS::UpdateOrder::None;
+
+			return info;
+		}
 
 	private:
 
 		Vector2 m_gravity = Vector2(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
-		float m_timeStep = 1.0f / 60.0f; // How often the physics world will update, defaults to 60 times a second
-		float m_accumulatedTime = 0.0f; // Time Accumulated Since last Physics Step
+		double m_timeStep = 1.0f / 60.0; // How often the physics world will update, defaults to 60 times a second
+		double m_accumulatedTime = 0.0; // Time Accumulated Since last Physics Step
 
 		std::vector<BoxShape2D> m_boxShapes;
 		std::vector<CircleShape2D> m_circleShapes;
@@ -54,11 +66,11 @@ namespace Puffin::Physics
 		/* Step Physics Simulation
 		 * dt - delta time value passed in by engine
 		 * */
-		void Step(float dt);
+		void Step();
 
 		// Dynamics
 		void UpdateDynamics(); // Perform velocity updates for all rigid bodies
-		void CalculateImpulseByGravity(RigidbodyComponent2D& body, const float& dt); // Calculate Impulse due to force of gravity
+		void CalculateImpulseByGravity(RigidbodyComponent2D& body); // Calculate Impulse due to force of gravity
 
 		// Collision Broadphase
 		void CollisionBroadphase(); // Perform collision broadphase to decide which entities should collider together

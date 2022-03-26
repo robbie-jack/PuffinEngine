@@ -34,8 +34,11 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		GLFWwindow* VulkanEngine::Init(GLFWwindow* windowIn, UI::UIManager* UIManager)
+		GLFWwindow* VulkanEngine::Init(GLFWwindow* windowIn, UI::UIManager* inUIManager, Input::InputManager* inInputManager)
 		{
+			m_uiManager = inUIManager;
+			m_inputManager = inInputManager;
+
 			windowExtent.width = WIDTH;
 			windowExtent.height = HEIGHT;
 
@@ -117,39 +120,39 @@ namespace Puffin
 			InitDepthSampler();
 
 			// Initialize All Scene Objects
-			StartScene();
+			Start();
 
 			// Setup Deferred Renderer
 			SetupDeferredRenderer();
 
 			// Pass Camera to UI
-			UIManager->GetWindowSettings()->SetCamera(&camera);
+			m_uiManager->GetWindowSettings()->SetCamera(&camera);
 
 			// Subscribe to events
 			inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
 			drawLineEvents = std::make_shared<RingBuffer<Debug::Line>>();
 			drawBoxEvents = std::make_shared<RingBuffer<Debug::Box>>();
 
-			world->RegisterEvent<Debug::Line>();
-			world->RegisterEvent<Debug::Box>();
+			m_world->RegisterEvent<Debug::Line>();
+			m_world->RegisterEvent<Debug::Box>();
 
-			world->SubscribeToEvent<Input::InputEvent>(inputEvents);
-			world->SubscribeToEvent<Debug::Line>(drawLineEvents);
-			world->SubscribeToEvent<Debug::Box>(drawBoxEvents);
+			m_world->SubscribeToEvent<Input::InputEvent>(inputEvents);
+			m_world->SubscribeToEvent<Debug::Line>(drawLineEvents);
+			m_world->SubscribeToEvent<Debug::Box>(drawBoxEvents);
 
 			// Initialize ImGui
 			InitImGui();
 
 			InitImGuiTextureIDs();
 
-			UIManager->GetWindowViewport()->SetTextureSampler(textureSampler);
+			m_uiManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
 			isInitialized = true;
 
 			return window;
 		}
 
-		void VulkanEngine::StartScene()
+		void VulkanEngine::Start()
 		{
 			InitScene();
 			InitDeferredDescriptors();
@@ -946,7 +949,7 @@ namespace Puffin
 
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
 				//Albedo Textures
 				textureImageInfo.imageView = mesh.texture.imageView;
@@ -1229,7 +1232,7 @@ namespace Puffin
 			// Initialize Lights
 			for (ECS::Entity entity : entityMap["Light"])
 			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
+				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
 				InitLight(light);
 			}
@@ -1237,7 +1240,7 @@ namespace Puffin
 			// Initialize Meshes
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 				InitMesh(mesh);
 			}
 
@@ -1601,7 +1604,7 @@ namespace Puffin
 
 				for (ECS::Entity entity : entityMap["Light"])
 				{
-					LightComponent& light = world->GetComponent<LightComponent>(entity);
+					LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
 					shadowmapBufferInfo.imageView = light.depthAttachments[i].imageView;
 					imageInfos.push_back(shadowmapBufferInfo);
@@ -1750,29 +1753,29 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
-		void VulkanEngine::Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt)
+		void VulkanEngine::Update()
 		{
 			ProcessEvents();
 
 			// Initialize/Cleanup marked components
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
 				// Initialize
-				if (!world->ComponentInitialized<MeshComponent>(entity))
+				if (!m_world->ComponentInitialized<MeshComponent>(entity))
 				{
 					InitMesh(mesh);
-					world->SetComponentInitialized<MeshComponent>(entity, true);
+					m_world->SetComponentInitialized<MeshComponent>(entity, true);
 
 					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
-				if (world->ComponentDeleted<MeshComponent>(entity) || world->IsDeleted(entity))
+				if (m_world->ComponentDeleted<MeshComponent>(entity) || m_world->IsDeleted(entity))
 				{
 					CleanupMesh(mesh);
-					world->RemoveComponent<MeshComponent>(entity);
+					m_world->RemoveComponent<MeshComponent>(entity);
 					
 					sceneData.bFlagSceneChanged = true;
 				}
@@ -1780,24 +1783,24 @@ namespace Puffin
 
 			for (ECS::Entity entity : entityMap["Light"])
 			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
+				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
 				// Initialize
 
-				if (!world->ComponentInitialized<LightComponent>(entity))
+				if (!m_world->ComponentInitialized<LightComponent>(entity))
 				{
 					InitLight(light);
-					world->SetComponentInitialized<LightComponent>(entity, true);
+					m_world->SetComponentInitialized<LightComponent>(entity, true);
 					shadowmapDescriptorNeedsUpdated = true;
 					
 					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
-				if (world->ComponentDeleted<LightComponent>(entity) || world->IsDeleted(entity))
+				if (m_world->ComponentDeleted<LightComponent>(entity) || m_world->IsDeleted(entity))
 				{
 					CleanupLight(light);
-					world->RemoveComponent<LightComponent>(entity);
+					m_world->RemoveComponent<LightComponent>(entity);
 					shadowmapDescriptorNeedsUpdated = true;
 					
 					sceneData.bFlagSceneChanged = true;
@@ -1811,11 +1814,26 @@ namespace Puffin
 				shadowmapDescriptorNeedsUpdated = false;
 			}
 
-			UIManager->DrawUI(dt, InputManager);
+			m_uiManager->DrawUI(m_deltaTime, m_inputManager);
 
-			UpdateCamera(camera, InputManager, dt);
+			UpdateCamera(camera);
 
-			DrawFrame(UIManager);
+			DrawFrame();
+		}
+
+		void VulkanEngine::Stop()
+		{
+			for (ECS::Entity entity : entityMap["Mesh"])
+			{
+				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
+				CleanupMesh(mesh);
+			}
+
+			for (ECS::Entity entity : entityMap["Light"])
+			{
+				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
+				CleanupLight(light);
+			}
 		}
 
 		void VulkanEngine::ProcessEvents()
@@ -1920,44 +1938,44 @@ namespace Puffin
 			}
 		}
 
-		void VulkanEngine::UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time)
+		void VulkanEngine::UpdateCamera(CameraComponent& camera)
 		{
-			if (inputManager->IsCursorLocked())
+			if (m_inputManager->IsCursorLocked())
 			{
 				// Camera Movement
 				if (moveLeft)
 				{
-					camera.position += camera.speed * camera.right * delta_time;
+					camera.position += camera.speed * camera.right * (float)m_deltaTime;
 				}
 				
 				if (moveRight)
 				{
-					camera.position -= camera.speed * camera.right * delta_time;
+					camera.position -= camera.speed * camera.right * (float)m_deltaTime;
 				}
 
 				if (moveForward)
 				{
-					camera.position += camera.speed * camera.direction * delta_time;
+					camera.position += camera.speed * camera.direction * (float)m_deltaTime;
 				}
 				
 				if (moveBackward)
 				{
-					camera.position -= camera.speed * camera.direction * delta_time;
+					camera.position -= camera.speed * camera.direction * (float)m_deltaTime;
 				}
 
 				if (moveUp)
 				{
-					camera.position += camera.speed * camera.up * delta_time;
+					camera.position += camera.speed * camera.up * (float)m_deltaTime;
 				}
 				
 				if (moveDown)
 				{
-					camera.position -= camera.speed * camera.up * delta_time;
+					camera.position -= camera.speed * camera.up * (float)m_deltaTime;
 				}
 
 				// Mouse Rotation
-				camera.yaw += inputManager->GetMouseXOffset();
-				camera.pitch -= inputManager->GetMouseYOffset();
+				camera.yaw += m_inputManager->GetMouseXOffset();
+				camera.pitch -= m_inputManager->GetMouseYOffset();
 
 				if (camera.pitch > 89.0f)
 					camera.pitch = 89.0f;
@@ -1991,7 +2009,7 @@ namespace Puffin
 
 		//-------------------------------------------------------------------------------------
 
-		void VulkanEngine::DrawFrame(UI::UIManager* UIManager)
+		void VulkanEngine::DrawFrame()
 		{
 			// Wait until gpu has finished rendering last frame. Timeout of 1 second
 			VK_CHECK(vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000)); // Wait for fence to complete
@@ -2006,11 +2024,11 @@ namespace Puffin
 
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
 			if (offscreenInitialized)
-				UIManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex], camera);
+				m_uiManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex], camera);
 			else
-				UIManager->GetWindowViewport()->DrawWithoutImage();
+				m_uiManager->GetWindowViewport()->DrawWithoutImage();
 
-			viewportSize = UIManager->GetWindowViewport()->GetViewportSize();
+			viewportSize = m_uiManager->GetWindowViewport()->GetViewportSize();
 
 			// Draw ImGui
 			ImGui::Render();
@@ -2139,7 +2157,7 @@ namespace Puffin
 			// Build Draw Indirect Commands
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
 				indirectData[meshIndex].indexCount = mesh.indexCount;
 				indirectData[meshIndex].instanceCount = 1;
@@ -2168,7 +2186,7 @@ namespace Puffin
 				// Check how many vertices there are
 				for (ECS::Entity entity : entityMap["Mesh"])
 				{
-					MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+					MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
 					totalVertices += mesh.vertexCount;
 					totalIndices += mesh.indexCount;
@@ -2221,7 +2239,7 @@ namespace Puffin
 					// Copy Vertices/Indices for each mesh to Buffers
 					for (ECS::Entity entity : entityMap["Mesh"])
 					{
-						MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+						MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
 						// Copy directly from mesh vertex buffer to scene vertex buffer
 						VkBufferCopy vertexCopy;
@@ -2281,7 +2299,7 @@ namespace Puffin
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
 			for (ECS::Entity entity : entityMap["Light"])
 			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
+				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
 				int shadowIndex = -1;
 
@@ -2295,7 +2313,7 @@ namespace Puffin
 				switch (light.type)
 				{
 				case LightType::POINT:
-					pointLightSSBO[p].position = world->GetComponent<TransformComponent>(entity).position;
+					pointLightSSBO[p].position = m_world->GetComponent<TransformComponent>(entity).position;
 					pointLightSSBO[p].ambientColor = light.ambientColor;
 					pointLightSSBO[p].diffuseColor = light.diffuseColor;
 					pointLightSSBO[p].constant = light.constantAttenuation;
@@ -2316,7 +2334,7 @@ namespace Puffin
 					d++;
 					break;
 				case LightType::SPOT:
-					spotLightSSBO[s].position = world->GetComponent<TransformComponent>(entity).position;
+					spotLightSSBO[s].position = m_world->GetComponent<TransformComponent>(entity).position;
 					spotLightSSBO[s].direction = light.direction;
 					spotLightSSBO[s].ambientColor = light.ambientColor;
 					spotLightSSBO[s].diffuseColor = light.diffuseColor;
@@ -2498,12 +2516,12 @@ namespace Puffin
 			// For Each Shadowcasting Light Source
 			for (ECS::Entity entity : entityMap["Light"])
 			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
+				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
 				// Only render depth map if light is set to cast shadows and is spotlight type
 				if (light.bFlagCastShadows && light.type == LightType::SPOT)
 				{
-					TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+					TransformComponent& transform = m_world->GetComponent<TransformComponent>(entity);
 
 					shadowRPInfo.framebuffer = light.depthFramebuffers[frameNumber % FRAME_OVERLAP];
 
@@ -2550,9 +2568,9 @@ namespace Puffin
 					// Render Depth Map for this Light
 					for (ECS::Entity entity : entityMap["Mesh"])
 					{
-						MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+						MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
-						if (world->ComponentInitialized<MeshComponent>(entity) && !world->ComponentDeleted<MeshComponent>(entity))
+						if (m_world->ComponentInitialized<MeshComponent>(entity) && !m_world->ComponentDeleted<MeshComponent>(entity))
 						{
 							// Bind Vertices, Indices and Descriptor Sets
 							VkDeviceSize offsets[] = { 0 };
@@ -2612,7 +2630,7 @@ namespace Puffin
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
 			for (ECS::Entity entity : entityMap["Light"])
 			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
+				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
 				int shadowIndex = -1;
 
@@ -2628,7 +2646,7 @@ namespace Puffin
 				switch (light.type)
 				{
 				case LightType::POINT:
-					pointLightSSBO[p].position = world->GetComponent<TransformComponent>(entity).position;
+					pointLightSSBO[p].position = m_world->GetComponent<TransformComponent>(entity).position;
 					pointLightSSBO[p].ambientColor = light.ambientColor;
 					pointLightSSBO[p].diffuseColor = light.diffuseColor;
 					pointLightSSBO[p].constant = light.constantAttenuation;
@@ -2649,7 +2667,7 @@ namespace Puffin
 					d++;
 					break;
 				case LightType::SPOT:
-					spotLightSSBO[s].position = world->GetComponent<TransformComponent>(entity).position;
+					spotLightSSBO[s].position = m_world->GetComponent<TransformComponent>(entity).position;
 					spotLightSSBO[s].direction = light.direction;
 					spotLightSSBO[s].ambientColor = light.ambientColor;
 					spotLightSSBO[s].diffuseColor = light.diffuseColor;
@@ -2697,9 +2715,9 @@ namespace Puffin
 			// Render each mesh
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
+				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
-				if (world->ComponentInitialized<MeshComponent>(entity) && !world->ComponentDeleted<MeshComponent>(entity))
+				if (m_world->ComponentInitialized<MeshComponent>(entity) && !m_world->ComponentDeleted<MeshComponent>(entity))
 				{
 
 					// Bind material pipeline if it does not match previous material
@@ -2827,7 +2845,7 @@ namespace Puffin
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
 				// Update object data
-				objectSSBO[i].model = BuildMeshTransform(world->GetComponent<TransformComponent>(entity));
+				objectSSBO[i].model = BuildMeshTransform(m_world->GetComponent<TransformComponent>(entity));
 				objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
 
 				i++;
@@ -2869,7 +2887,7 @@ namespace Puffin
 				swapchainDeletionQueue.flush();
 				offscreenDeletionQueue.flush();
 
-				StopScene();
+				Stop();
 
 				// Cleanup Allocator/Cache
 				descriptorAllocator->Cleanup();
@@ -2878,21 +2896,6 @@ namespace Puffin
 				vkDestroyDevice(device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);
 				vkDestroyInstance(instance, nullptr);
-			}
-		}
-
-		void VulkanEngine::StopScene()
-		{
-			for (ECS::Entity entity : entityMap["Mesh"])
-			{
-				MeshComponent& mesh = world->GetComponent<MeshComponent>(entity);
-				CleanupMesh(mesh);
-			}
-
-			for (ECS::Entity entity : entityMap["Light"])
-			{
-				LightComponent& light = world->GetComponent<LightComponent>(entity);
-				CleanupLight(light);
 			}
 		}
 

@@ -69,6 +69,7 @@ namespace Puffin
 		ECSWorld->RegisterComponentFlag<FlagDirty>(true);
 		ECSWorld->RegisterComponentFlag<FlagDeleted>();
 
+		// Setup Entity Signatures
 		ECS::Signature meshSignature;
 		meshSignature.set(ECSWorld->GetComponentType<TransformComponent>());
 		meshSignature.set(ECSWorld->GetComponentType<Rendering::MeshComponent>());
@@ -128,7 +129,7 @@ namespace Puffin
 		//IO::LoadScene(ECSWorld, sceneData);
 		//IO::InitScene(ECSWorld, sceneData);
 
-		//IO::SaveScene(ECSWorld, sceneData);
+		IO::SaveScene(ECSWorld, sceneData);
 
 		Assets::AssetRegistry::Get()->SaveAssetCache();
 
@@ -137,53 +138,95 @@ namespace Puffin
 		playState = PlayState::STOPPED;
 
 		// Initialize Systems
-		vulkanEngine->Init(window, &UIManager);
+		vulkanEngine->Init(window, &UIManager, &InputManager);
 
-		physicsSystem->Init();
-
-		scriptingSystem->Init();
-		scriptingSystem->Start();
+		for (auto system : ECSWorld->GetAllSystems())
+		{
+			system->Init();
+		}
 		
+		// Run Game Loop;
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
+		auto accumulatedTime = 0.0;
+		auto timeStep = 1 / 60.0;
 
 		while (running)
 		{
 			lastTime = currentTime;
 			currentTime = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<float> duration = currentTime - lastTime;
-			float deltaTime = duration.count();
+			double deltaTime = duration.count();
+
+			// Set delta time for all systems
+			for (auto system : ECSWorld->GetAllSystems())
+			{
+				system->SetDeltaTime(deltaTime);
+			}
+
+			// Call system start functions to prepare for gameplay
+			if (playState == PlayState::STARTED)
+			{
+				for (auto system : ECSWorld->GetAllSystems())
+				{
+					system->Start();
+				}
+				
+				accumulatedTime = 0.0;
+				playState = PlayState::PLAYING;
+			}
+
+			// Fixed Update
+			if (playState == PlayState::PLAYING)
+			{
+				accumulatedTime += deltaTime;
+				
+				while(accumulatedTime >= timeStep)
+				{
+					accumulatedTime -= timeStep;
+
+					// Update Physics System
+					physicsSystem->Update();
+
+					// FixedUpdate Systems
+					for (auto system : ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::FixedUpdate))
+					{
+						system->Update();
+					}
+				}
+			}
 
 			// Input
 			InputManager.UpdateInput();
 
-			// Physics/Scripting
+			// Update
 			if (playState == PlayState::PLAYING)
 			{
-				scriptingSystem->Update(deltaTime);
-				physicsSystem->Update(deltaTime);
+				for (auto system : ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Update))
+				{
+					system->Update();
+				}
 			}
 
 			// UI
 			UIManager.Update();
 
 			// Rendering
-			vulkanEngine->Update(&UIManager, &InputManager, deltaTime);
+			vulkanEngine->Update();
 
 			if (playState == PlayState::STOPPED && restarted)
 			{
 				// Cleanup Systems and ECS
-				vulkanEngine->StopScene();
-				scriptingSystem->Stop();
-				physicsSystem->Cleanup();
+				for (auto system : ECSWorld->GetAllSystems())
+				{
+					system->Stop();
+				}
 				ECSWorld->Reset();
 
 				// Re-Initialize Systems and ECS
 				IO::LoadScene(ECSWorld, sceneData);
 				IO::InitScene(ECSWorld, sceneData);
-				vulkanEngine->StartScene();
-				scriptingSystem->Start();
-				physicsSystem->Init();
+				vulkanEngine->Start();
 
 				restarted = false;
 			}
@@ -397,7 +440,7 @@ namespace Puffin
 		switch (playState)
 		{
 		case PlayState::STOPPED:
-			playState = PlayState::PLAYING;
+			playState = PlayState::STARTED;
 			break;
 		case PlayState::PLAYING:
 			playState = PlayState::PAUSED;

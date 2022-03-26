@@ -17,15 +17,24 @@ namespace Puffin
 		class AngelScriptSystem : public ECS::System
 		{
 		public:
-			void Init();
+			void Init() override;
 
-			void Start();
+			void Start() override;
 
-			bool Update(float dt);
+			void Update() override;
 
-			void Stop();
+			void Stop() override;
 
-			void Cleanup();
+			void Cleanup() override;
+
+			ECS::SystemInfo GetInfo() override
+			{
+				ECS::SystemInfo info;
+
+				info.updateOrder = ECS::UpdateOrder::Update;
+
+				return info;
+			}
 
 		private:
 

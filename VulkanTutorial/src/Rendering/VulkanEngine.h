@@ -173,15 +173,21 @@ namespace Puffin
 		public:
 
 			// Main Functions
-			GLFWwindow* Init(GLFWwindow* windowIn, UI::UIManager* UIManager);
-			void StartScene();
+			GLFWwindow* Init(GLFWwindow* windowIn, UI::UIManager* inUIManager, Input::InputManager* inInputManager);
+			void Init() override {};
+			void Start() override;
+			void Update() override;
+			void Stop()  override;
+			void Cleanup() override;
 
-			//void Restart();
+			ECS::SystemInfo GetInfo() override
+			{
+				ECS::SystemInfo info;
 
-			void Update(UI::UIManager* UIManager, Input::InputManager* InputManager, float dt);
+				info.updateOrder = ECS::UpdateOrder::None;
 
-			void Cleanup();
-			void StopScene();
+				return info;
+			}
 
 			// Helper Functions
 			void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
@@ -195,6 +201,9 @@ namespace Puffin
 			DeletionQueue offscreenDeletionQueue;
 
 		private:
+
+			UI::UIManager* m_uiManager;
+			Input::InputManager* m_inputManager;
 
 			// Variables
 			VkInstance instance;						// Vulkan Library Handle
@@ -326,6 +335,8 @@ namespace Puffin
 			void RecreateSwapchain();
 			void RecreateOffscreen();
 
+			void StartScene();
+
 			// Init Component Functions
 			void InitMesh(MeshComponent& mesh);
 			void InitLight(LightComponent& light);
@@ -344,10 +355,10 @@ namespace Puffin
 
 			// Update Functions
 			void ProcessEvents();
-			void UpdateCamera(CameraComponent& camera, Puffin::Input::InputManager* inputManager, float delta_time);
+			void UpdateCamera(CameraComponent& camera);
 
 			// Render Functions
-			void DrawFrame(UI::UIManager* UIManager);
+			void DrawFrame();
 
 			/*
 			* Prepare Scene/Data Data for rendering

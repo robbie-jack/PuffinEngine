@@ -8,6 +8,21 @@ namespace Puffin
 {
 	namespace ECS
 	{
+		// Enum for setting when a system's update function should be called
+		enum class UpdateOrder
+		{
+			None = 0,		// Do not perform updates for this system
+			FixedUpdate,	// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
+			Update,			// Update occurs once a frame - Useful for non-determinstic gameplay code
+			Rendering		// Update once a frame - Useful for code which relates to the rendering pipeline
+		};
+
+		// Info about the system
+		struct SystemInfo
+		{
+			UpdateOrder updateOrder;
+		};
+
 		//////////////////////////////////////////////////
 		// System
 		//////////////////////////////////////////////////
@@ -22,10 +37,31 @@ namespace Puffin
 		public:
 
 			EntityMap entityMap;
-			std::shared_ptr<World> world;
+
+			// Virtual functions to be called by ECSWorld
+			virtual void Init() = 0;	// Called when engine starts
+			virtual void Start() = 0;	// Called when gameplay starts
+			virtual void Update() = 0;	// Called each frame, depending on what update order is set
+			virtual void Stop() = 0;	// Called when gameplay ends
+			virtual void Cleanup() = 0;	// Called when engine exits
+			
+			//
+			virtual SystemInfo GetInfo() = 0;
+
+			void SetWorld(std::shared_ptr<World> inWorld)
+			{
+				m_world = inWorld;
+			}
+
+			void SetDeltaTime(double inDeltaTime)
+			{
+				m_deltaTime = inDeltaTime;
+			}
 
 		protected:
 
+			std::shared_ptr<World> m_world;
+			double m_deltaTime;
 
 		private:
 

@@ -7,6 +7,8 @@ Vulkan - Rendering API - https://www.khronos.org/vulkan/
 
 VK-Bootstrap - Utility Library for Vulkan - https://github.com/charles-lunarg/vk-bootstrap
 
+VMA - Memory Allocation Library for Vulkan - https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+
 GLFW - Window Creation/Management - https://www.glfw.org/
 
 ImGui - Editor UI - https://github.com/ocornut/imgui
@@ -22,3 +24,5 @@ SoLoud - Audio - https://sol.gfxile.net/soloud/
 nlohmann/json - Json Parsing - https://github.com/nlohmann/json
 
 LZ4 - LZ4 Compression - https://github.com/lz4/lz4
+
+enkTS - Multithreaded Task Scheduler - https://github.com/dougbinks/enkiTS
