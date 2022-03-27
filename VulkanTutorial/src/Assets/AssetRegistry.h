@@ -94,6 +94,19 @@ namespace Puffin::Assets
 			return s_instance;
 		}
 
+		static void Clear()
+		{
+			delete s_instance;
+			s_instance = nullptr;
+		}
+
+		~AssetRegistry()
+		{
+			m_idToAssetMap.clear();
+			m_pathToIDMap.clear();
+			m_assetFactories.clear();
+		}
+
 		void ProjectName(const std::string& projectName);
 
 		void ProjectRoot(fs::path contentRootPath);

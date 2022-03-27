@@ -54,7 +54,7 @@ namespace Puffin
 		// Systems
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
 		std::shared_ptr<Physics::PhysicsSystem2D> physicsSystem = ECSWorld->RegisterSystem<Physics::PhysicsSystem2D>();
-		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
+		ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
 
 		// Register Components
 		ECSWorld->RegisterComponent<TransformComponent>();
@@ -149,7 +149,7 @@ namespace Puffin
 		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		auto accumulatedTime = 0.0;
-		auto timeStep = 1 / 60.0;
+		auto timeStep = 1 / 60.0; // How often deterministic code like physics should occur
 
 		while (running)
 		{
@@ -162,6 +162,7 @@ namespace Puffin
 			for (auto system : ECSWorld->GetAllSystems())
 			{
 				system->SetDeltaTime(deltaTime);
+				system->SetFixedTime(timeStep);
 			}
 
 			// Call system start functions to prepare for gameplay
@@ -179,8 +180,12 @@ namespace Puffin
 			// Fixed Update
 			if (playState == PlayState::PLAYING)
 			{
+				// Add onto accumulated time
 				accumulatedTime += deltaTime;
 				
+				// Perform system updates until simulation is caught up
+				std::vector<std::shared_ptr<ECS::System>> fixedUpdateSystems;
+				ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::FixedUpdate, fixedUpdateSystems);
 				while(accumulatedTime >= timeStep)
 				{
 					accumulatedTime -= timeStep;
@@ -189,7 +194,7 @@ namespace Puffin
 					physicsSystem->Update();
 
 					// FixedUpdate Systems
-					for (auto system : ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::FixedUpdate))
+					for (auto system : fixedUpdateSystems)
 					{
 						system->Update();
 					}
@@ -202,7 +207,9 @@ namespace Puffin
 			// Update
 			if (playState == PlayState::PLAYING)
 			{
-				for (auto system : ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Update))
+				std::vector<std::shared_ptr<ECS::System>> updateSystems;
+				ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Update, updateSystems);
+				for (auto system : updateSystems)
 				{
 					system->Update();
 				}
@@ -240,11 +247,20 @@ namespace Puffin
 			ECSWorld->Update();
 		}
 
-		scriptingSystem->Stop();
-		physicsSystem->Cleanup();
-		vulkanEngine->Cleanup();
+		// Cleanup All Systems
+		for (auto system : ECSWorld->GetAllSystems())
+		{
+			system->Cleanup();
+		}
+
 		UIManager.Cleanup();
 		ECSWorld->Cleanup();
+
+		Assets::AssetRegistry::Clear();
+
+		//physicsSystem.reset();
+		//vulkanEngine.reset();
+		//ECSWorld.reset();
 
 		glfwDestroyWindow(window);
 		glfwTerminate();
@@ -345,10 +361,10 @@ namespace Puffin
 		world->GetComponent<Rendering::LightComponent>(7).type = Rendering::LightType::SPOT;
 		world->GetComponent<Rendering::LightComponent>(7).bFlagCastShadows = false;
 
-		/*Scripting::AngelScriptComponent script;
-		script.name = "Game";
-		script.dir = GetProjectContentPath() / "scripts\\game.as";
-		world->AddComponent(1, script);*/
+		Scripting::AngelScriptComponent script;
+		script.name = "Test";
+		script.dir = contentRootPath / "scripts\\test.pscript";
+		world->AddComponent(1, script);
 	}
 
 	void Engine::PhysicsScene(std::shared_ptr<ECS::World> world)

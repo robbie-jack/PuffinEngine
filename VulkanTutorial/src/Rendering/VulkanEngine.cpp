@@ -2879,6 +2879,13 @@ namespace Puffin
 				// Make sure GPU has stopped working
 				vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000);
 
+				m_inputManager = nullptr;
+				m_uiManager = nullptr;
+
+				inputEvents.reset();
+				drawLineEvents.reset();
+				drawBoxEvents.reset();
+
 				// Cleanup Deferred Renderer
 				deferredRenderer.Cleanup();
 

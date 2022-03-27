@@ -31,7 +31,6 @@ namespace Puffin::Physics
 	public:
 
 		void Init() override;
-		void Init(float inTimeStep);
 		void Start() override;
 		void Update() override;
 		void Stop() override;
@@ -49,9 +48,6 @@ namespace Puffin::Physics
 	private:
 
 		Vector2 m_gravity = Vector2(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
-
-		double m_timeStep = 1.0f / 60.0; // How often the physics world will update, defaults to 60 times a second
-		double m_accumulatedTime = 0.0; // Time Accumulated Since last Physics Step
 
 		std::vector<BoxShape2D> m_boxShapes;
 		std::vector<CircleShape2D> m_circleShapes;

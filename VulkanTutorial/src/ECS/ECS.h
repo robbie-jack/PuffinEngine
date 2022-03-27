@@ -399,6 +399,7 @@ namespace Puffin::ECS
 		{
 			componentTypes.clear();
 			componentArrays.clear();
+			flagTypes.clear();
 		}
 
 		template<typename ComponentT>
@@ -615,16 +616,14 @@ namespace Puffin::ECS
 
 		void Init()
 		{
-			systemsByUpdateOrderMap.insert({ UpdateOrder::FixedUpdate, std::vector<std::shared_ptr<System>>() });
-			systemsByUpdateOrderMap.insert({ UpdateOrder::Update, std::vector<std::shared_ptr<System>>() });
-			systemsByUpdateOrderMap.insert({ UpdateOrder::Rendering, std::vector<std::shared_ptr<System>>() });
+			
 		}
 
 		void Cleanup()
 		{
 			signatureMaps.clear();
-			systemsVector.clear();
 			systemsMap.clear();
+			systemsVector.clear();
 			systemsByUpdateOrderMap.clear();
 		}
 
@@ -648,7 +647,7 @@ namespace Puffin::ECS
 			// Add System to Vectors/Maps
 			systemsVector.push_back(systemBase);
 			systemsMap.insert({ typeName, systemBase });
-			systemsByUpdateOrderMap[systemBase->GetInfo().updateOrder].push_back(systemBase);
+			systemsByUpdateOrderMap.insert({ systemBase->GetInfo().updateOrder, systemBase });
 
 			return system;
 		}
@@ -682,11 +681,16 @@ namespace Puffin::ECS
 			return systemsVector;
 		}
 
-		const std::vector<std::shared_ptr<System>>& GetSystemsWithUpdateOrder(UpdateOrder updateOrder)
+		void GetSystemsWithUpdateOrder(UpdateOrder updateOrder, std::vector<std::shared_ptr<System>>& outSystems)
 		{
 			assert(systemsByUpdateOrderMap.find(updateOrder) != systemsByUpdateOrderMap.end() && "Trying to access update order which doesn't have any systems assigned");
 
-			return systemsByUpdateOrderMap[updateOrder];
+			outSystems.clear();
+
+			for (auto it = systemsByUpdateOrderMap.lower_bound(updateOrder); it != systemsByUpdateOrderMap.upper_bound(updateOrder); ++it)
+			{
+				outSystems.push_back((*it).second);
+			}
 		}
 
 		void EntityDestroyed(Entity entity)
@@ -748,7 +752,7 @@ namespace Puffin::ECS
 		std::unordered_map<const char*, std::shared_ptr<System>> systemsMap;
 
 		// Map from update order to system pointers
-		std::unordered_map<UpdateOrder, std::vector<std::shared_ptr<System>>> systemsByUpdateOrderMap;
+		std::multimap<UpdateOrder, std::shared_ptr<System>> systemsByUpdateOrderMap;
 	};
 
 	//////////////////////////////////////////////////
@@ -800,8 +804,16 @@ namespace Puffin::ECS
 			}
 
 			componentManager->Cleanup();
+			componentManager.reset();
+
 			entityManager->Cleanup();
+			entityManager.reset();
+
 			systemManager->Cleanup();
+			systemManager.reset();
+
+			eventManager->Cleanup();
+			eventManager.reset();
 		}
 
 		// Entity Methods
@@ -984,9 +996,9 @@ namespace Puffin::ECS
 			return systemManager->GetAllSystems();
 		}
 
-		const std::vector<std::shared_ptr<System>>& GetSystemsWithUpdateOrder(UpdateOrder updateOrder)
+		void GetSystemsWithUpdateOrder(UpdateOrder updateOrder, std::vector<std::shared_ptr<System>>& outSystems)
 		{
-			return systemManager->GetSystemsWithUpdateOrder(updateOrder);
+			systemManager->GetSystemsWithUpdateOrder(updateOrder, outSystems);
 		}
 
 		template<typename SystemT>

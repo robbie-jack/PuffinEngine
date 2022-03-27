@@ -29,8 +29,10 @@ namespace Puffin
 			// Interface for instance of script object
 			asIScriptObject* obj;
 
-			// Interface to store this classes update function, as preparing it each frame is costly
+			// Interface to store this classes functions, as preparing them each frame is costly
+			asIScriptFunction* startFunc;
 			asIScriptFunction* updateFunc;
+			asIScriptFunction* stopFunc;
 
 			// Set of class property indexes
 			std::set<int> editableProperties;

@@ -36,6 +36,11 @@ namespace Puffin
 		{
 		public:
 
+			~System()
+			{
+				//m_world.reset();
+			}
+
 			EntityMap entityMap;
 
 			// Virtual functions to be called by ECSWorld
@@ -58,10 +63,16 @@ namespace Puffin
 				m_deltaTime = inDeltaTime;
 			}
 
+			void SetFixedTime(double inFixedTime)
+			{
+				m_fixedTime = inFixedTime;
+			}
+
 		protected:
 
 			std::shared_ptr<World> m_world;
-			double m_deltaTime;
+			double m_deltaTime; // Time it took last frame to complete
+			double m_fixedTime; // Fixed time step used by deterministic physics code
 
 		private:
 

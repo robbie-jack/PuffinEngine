@@ -15,13 +15,6 @@ namespace Puffin
 
 		void PhysicsSystem2D::Init()
 		{
-			Init(1 / 60.0);
-		}
-
-		void PhysicsSystem2D::Init(float inTimeStep)
-		{
-			m_timeStep = inTimeStep;
-			m_accumulatedTime = 0.0;
 		}
 
 		void PhysicsSystem2D::Start()
@@ -98,32 +91,25 @@ namespace Puffin
 
 		void PhysicsSystem2D::Step()
 		{
-			m_accumulatedTime += m_deltaTime;
+			// Update Dynamic Objects
+			UpdateDynamics();
 
-			while (m_accumulatedTime >= m_timeStep)
+			// Copy component transform into collider
+			for (auto& collider : m_colliders)
 			{
-				m_accumulatedTime -= m_timeStep;
+				const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity_);
 
-				// Update Dynamic Objects
-				UpdateDynamics();
-
-				// Copy component transform into collider
-				for (auto& collider : m_colliders)
-				{
-					const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity_);
-
-					collider->transform_ = transform;
-				}
-
-				// Perform Collision2D Broadphase to check if two Colliders can collide
-				CollisionBroadphase();
-
-				// Check for Collision2D between Colliders
-				CollisionDetection();
-
-				// Resolve Collision2D between Colliders
-				CollisionResponse();
+				collider->transform_ = transform;
 			}
+
+			// Perform Collision2D Broadphase to check if two Colliders can collide
+			CollisionBroadphase();
+
+			// Check for Collision2D between Colliders
+			CollisionDetection();
+
+			// Resolve Collision2D between Colliders
+			CollisionResponse();
 		}
 
 		void PhysicsSystem2D::UpdateDynamics()
@@ -140,10 +126,10 @@ namespace Puffin
 				CalculateImpulseByGravity(rigidbody);
 
 				// Update Position
-				transform.position += rigidbody.linearVelocity * m_timeStep;
+				transform.position += rigidbody.linearVelocity * m_fixedTime;
 
 				// Update Rotation
-				transform.rotation.y += rigidbody.angularVelocity * m_timeStep;
+				transform.rotation.y += rigidbody.angularVelocity * m_fixedTime;
 			}
 		}
 
@@ -153,7 +139,7 @@ namespace Puffin
 				return;
 
 			Float mass = 1.0f / body.invMass;
-			Vector2 impulseGravity = m_gravity * mass * m_timeStep;
+			Vector2 impulseGravity = m_gravity * mass * m_fixedTime;
 			
 			ApplyLinearImpulse(body, impulseGravity);
 		}

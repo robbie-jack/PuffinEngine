@@ -55,6 +55,12 @@ namespace Puffin
 		{
 		public:
 
+			void Cleanup()
+			{
+				eventTypes.clear();
+				eventQueues.clear();
+			}
+
 			template<typename EventT>
 			void RegisterEvent()
 			{

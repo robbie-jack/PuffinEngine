@@ -61,11 +61,13 @@ namespace Puffin
 				scriptEngine->Release();
 			}
 
-			// Compile Scripts
+			// Compile Scripts and Execute Start Methods
 			for (ECS::Entity entity : entityMap["Script"])
 			{
 				AngelScriptComponent& script = m_world->GetComponent<AngelScriptComponent>(entity);
 				InitScriptComponent(script);
+
+				ExecuteScriptMethod(script.obj, script.startFunc);
 			}
 		}
 
@@ -81,61 +83,37 @@ namespace Puffin
 				{
 					InitScriptComponent(script);
 					m_world->SetComponentInitialized<AngelScriptComponent>(entity, true);
+					ExecuteScriptMethod(script.obj, script.startFunc);
 				}
 
 				// Script needs cleaned up
 				if (m_world->ComponentDeleted<AngelScriptComponent>(entity) || m_world->IsDeleted(entity))
 				{
+					ExecuteScriptMethod(script.obj, script.stopFunc);
 					CleanupScriptComponent(script);
 					m_world->RemoveComponent<AngelScriptComponent>(entity);
 				}
 			}
 
-			// Execute Scripts
+			// Execute Scripts Update Method
 			for (ECS::Entity entity : entityMap["Script"])
 			{
 				AngelScriptComponent& script = m_world->GetComponent<AngelScriptComponent>(entity);
 
 				// Execute Update function if one was found for script
-				if (script.updateFunc != 0)
-				{
-					// Prepare Function for execution
-					ctx->Prepare(script.updateFunc);
-
-					// Set Object pointer
-					ctx->SetObject(script.obj);
-
-					// Pass in Delta Time variable
-					ctx->SetArgFloat(0, m_deltaTime);
-
-					// Execute the function
-					int r = ctx->Execute();
-					if (r != asEXECUTION_FINISHED)
-					{
-						// The execution didn't finish as we had planned. Determine why.
-						if (r == asEXECUTION_ABORTED)
-							cout << "The script was aborted before it could finish. Probably it timed out." << endl;
-						else if (r == asEXECUTION_EXCEPTION)
-						{
-							cout << "The script ended with an exception." << endl;
-
-							// Write some information about the script exception
-							asIScriptFunction* func = ctx->GetExceptionFunction();
-							cout << "func: " << func->GetDeclaration() << endl;
-							cout << "modl: " << func->GetModuleName() << endl;
-							//cout << "sect: " << func->GetScriptSectionName() << endl;
-							cout << "line: " << ctx->GetExceptionLineNumber() << endl;
-							cout << "desc: " << ctx->GetExceptionString() << endl;
-						}
-						else
-							cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
-					}
-				}
+				ExecuteScriptMethod(script.obj, script.updateFunc);
 			}
 		}
 
 		void AngelScriptSystem::Stop()
 		{
+			// Execute Script Stop Methods
+			for (ECS::Entity entity : entityMap["Script"])
+			{
+				AngelScriptComponent& script = m_world->GetComponent<AngelScriptComponent>(entity);
+				ExecuteScriptMethod(script.obj, script.stopFunc);
+			}
+
 			// We must release the contexts when no longer using them
 			if (ctx)
 			{
@@ -153,6 +131,7 @@ namespace Puffin
 		{
 			// Shut down the engine
 			scriptEngine->ShutDownAndRelease();
+			scriptEngine = nullptr;
 		}
 
 		void AngelScriptSystem::ConfigureEngine()
@@ -172,14 +151,17 @@ namespace Puffin
 				// with a lot of if's. If an error occurs in release mode it will
 				// be caught when a script is being built, so it is not necessary
 				// to do the verification here as well.
-				r = scriptEngine->RegisterGlobalFunction("void print(string &in)", asFUNCTION(PrintString), asCALL_CDECL); assert(r >= 0);
+				r = scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString), asCALL_CDECL); assert(r >= 0);
 			}
 			else
 			{
 				// Notice how the registration is almost identical to the above. 
-				r = scriptEngine->RegisterGlobalFunction("void print(string &in)", asFUNCTION(PrintString_Generic), asCALL_GENERIC); assert(r >= 0);
+				r = scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString_Generic), asCALL_GENERIC); assert(r >= 0);
 			}
 
+			// Define Global Functions for Scripts
+			r = scriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptSystem, GetDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+			r = scriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptSystem, GetFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 			// It is possible to register the functions, properties, and types in 
 			// configuration groups as well. When compiling the scripts it then
@@ -236,7 +218,7 @@ namespace Puffin
 					for (int m = 0; m < metadata.size(); m++)
 					{
 						// If the type has metadata "instantiate" that means it should have an object ptr created
-						if (metadata[m] == "instantiate")
+						if (metadata[m] == "Instantiate")
 						{
 							typeToInstantiate = type;
 						}
@@ -265,17 +247,16 @@ namespace Puffin
 						script.type = typeToInstantiate;
 						script.type->AddRef();
 
-						// Get Update function, if its defined
-						script.updateFunc = script.type->GetMethodByName("Update");
+						// Get Common Functions, if they are defined
 
-						if (script.updateFunc != 0)
-						{
-							script.updateFunc->AddRef();
-						}
-						else
-						{
-							cout << "Failed to find update method" << endl;
-						}
+						// Start
+						script.startFunc = GetScriptMethod(script, "Start");
+
+						// Update
+						script.updateFunc = GetScriptMethod(script, "Update");
+
+						// Stop
+						script.stopFunc = GetScriptMethod(script, "Stop");
 					}
 					else
 					{
@@ -291,12 +272,12 @@ namespace Puffin
 						// Check each properties metadata
 						for (int m = 0; m < metadata.size(); m++)
 						{
-							if (metadata[m] == "editable")
+							if (metadata[m] == "Editable")
 							{
 								script.editableProperties.insert(p);
 							}
 
-							if (metadata[m] == "visible")
+							if (metadata[m] == "Visible")
 							{
 								script.visibleProperties.insert(p);
 							}
@@ -316,13 +297,85 @@ namespace Puffin
 			// each other.
 		}
 
+		asIScriptFunction* AngelScriptSystem::GetScriptMethod(const AngelScriptComponent& script, const char* funcName)
+		{
+			asIScriptFunction* scriptFunc = script.type->GetMethodByName(funcName);
+
+			if (scriptFunc != 0)
+			{
+				scriptFunc->AddRef();
+			}
+			else
+			{
+				cout << "Failed to find " << funcName << " method for " << script.name << endl;
+			}
+
+			return scriptFunc;
+		}
+
 		void AngelScriptSystem::CleanupScriptComponent(AngelScriptComponent& script)
 		{
 			script.type->Release();
 			script.obj->Release();
+			script.startFunc->Release();
 			script.updateFunc->Release();
+			script.stopFunc->Release();
 			script.editableProperties.clear();
 			script.visibleProperties.clear();
+		}
+
+		bool AngelScriptSystem::ExecuteScriptMethod(asIScriptObject* scriptObj, asIScriptFunction* scriptFunc)
+		{
+			if (scriptObj != 0 && scriptFunc != 0)
+			{
+				// Prepare Function for execution
+				ctx->Prepare(scriptFunc);
+
+				// Set Object pointer
+				ctx->SetObject(scriptObj);
+
+				// Execute the function
+				int r = ctx->Execute();
+				if (r != asEXECUTION_FINISHED)
+				{
+					// The execution didn't finish as we had planned. Determine why.
+					if (r == asEXECUTION_ABORTED)
+						cout << "The script was aborted before it could finish. Probably it timed out." << endl;
+					else if (r == asEXECUTION_EXCEPTION)
+					{
+						cout << "The script ended with an exception." << endl;
+
+						// Write some information about the script exception
+						asIScriptFunction* func = ctx->GetExceptionFunction();
+						cout << "func: " << func->GetDeclaration() << endl;
+						cout << "modl: " << func->GetModuleName() << endl;
+						//cout << "sect: " << func->GetScriptSectionName() << endl;
+						cout << "line: " << ctx->GetExceptionLineNumber() << endl;
+						cout << "desc: " << ctx->GetExceptionString() << endl;
+					}
+					else
+						cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
+
+					return false;
+				}
+
+				return true;
+			}
+
+			cout << "Either the Script Object or Function was null" << endl;
+			return false;
+		}
+
+		// Global Script Functions
+
+		double AngelScriptSystem::GetDeltaTime()
+		{
+			return m_deltaTime;
+		}
+
+		double AngelScriptSystem::GetFixedTime()
+		{
+			return m_fixedTime;
 		}
 	}
 }

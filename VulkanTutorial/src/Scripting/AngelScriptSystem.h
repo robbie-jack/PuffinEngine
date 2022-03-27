@@ -44,7 +44,15 @@ namespace Puffin
 			void ConfigureEngine();
 
 			void InitScriptComponent(AngelScriptComponent& script);
+			asIScriptFunction* GetScriptMethod(const AngelScriptComponent& script, const char* funcName);
+
 			void CleanupScriptComponent(AngelScriptComponent& script);
+
+			bool ExecuteScriptMethod(asIScriptObject* scriptObj, asIScriptFunction* scriptFunc);
+
+			// Global Script Functions
+			double GetDeltaTime();
+			double GetFixedTime();
 
 		};
 	}
