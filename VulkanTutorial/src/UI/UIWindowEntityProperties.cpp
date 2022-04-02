@@ -372,7 +372,13 @@ namespace Puffin
 							int propertyType = comp.obj->GetPropertyTypeId(index);
 
 							// Display property with correct UI based on its type
-							if (propertyType == asTYPEID_INT32)
+							if (propertyType == asTYPEID_BOOL)
+							{
+								bool* boolProperty = (bool*)comp.obj->GetAddressOfProperty(index);
+
+								ImGui::Checkbox(propertyName, boolProperty);
+							}
+							else if (propertyType == asTYPEID_INT32)
 							{
 								int* intProperty = (int*)comp.obj->GetAddressOfProperty(index);
 
@@ -383,6 +389,12 @@ namespace Puffin
 								float* floatProperty = (float*)comp.obj->GetAddressOfProperty(index);
 
 								ImGui::InputFloat(propertyName, floatProperty);
+							}
+							else if (propertyType == asTYPEID_DOUBLE)
+							{
+								double* doubleProperty = (double*)comp.obj->GetAddressOfProperty(index);
+
+								ImGui::InputDouble(propertyName, doubleProperty);
 							}
 							else
 							{
@@ -415,9 +427,16 @@ namespace Puffin
 							else if (propertyType == asTYPEID_FLOAT)
 							{
 								float floatProperty = *(float*)comp.obj->GetAddressOfProperty(index);
-								propertyText += ": %f";
+								propertyText += ": %.20f";
 
 								ImGui::Text(propertyText.c_str(), floatProperty);
+							}
+							else if (propertyType == asTYPEID_DOUBLE)
+							{
+								double doubleProperty = *(double*)comp.obj->GetAddressOfProperty(index);
+								propertyText += ": %.20f";
+
+								ImGui::Text(propertyText.c_str(), doubleProperty);
 							}
 							else
 							{

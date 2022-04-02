@@ -274,6 +274,7 @@ namespace Puffin::UI
 				if (ImGui::MenuItem("Save Project"))
 				{
 					IO::SaveSettings(Assets::AssetRegistry::Get()->ProjectRoot() / "settings.json", engine->GetProjectSettings());
+					Assets::AssetRegistry::Get()->SaveAssetCache();
 				}
 
 				if (ImGui::MenuItem("Save Project As"))

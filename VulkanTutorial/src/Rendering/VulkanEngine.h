@@ -174,7 +174,8 @@ namespace Puffin
 
 			// Main Functions
 			GLFWwindow* Init(GLFWwindow* windowIn, UI::UIManager* inUIManager, Input::InputManager* inInputManager);
-			void Init() override {};
+			void Init() override;
+			void PreStart() override;
 			void Start() override;
 			void Update() override;
 			void Stop()  override;

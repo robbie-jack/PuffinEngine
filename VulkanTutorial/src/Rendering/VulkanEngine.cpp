@@ -152,6 +152,16 @@ namespace Puffin
 			return window;
 		}
 
+		void VulkanEngine::Init()
+		{
+			
+		}
+
+		void VulkanEngine::PreStart()
+		{
+			
+		}
+
 		void VulkanEngine::Start()
 		{
 			InitScene();

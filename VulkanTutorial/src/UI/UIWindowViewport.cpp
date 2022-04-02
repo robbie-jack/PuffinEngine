@@ -56,14 +56,14 @@ namespace Puffin
 					{
 						engine->Play();
 
-						switch (engine->GetPlayState())
+						PlayState playState = engine->GetPlayState();
+						if (playState == PlayState::PAUSED || playState == PlayState::STOPPED)
 						{
-						case PlayState::PAUSED:
 							playButtonLabel = "Play";
-							break;
-						case PlayState::PLAYING:
+						}
+						else
+						{
 							playButtonLabel = "Pause";
-							break;
 						}
 					}
 
@@ -71,6 +71,14 @@ namespace Puffin
 					{
 						engine->Restart();
 						playButtonLabel = "Play";
+					}
+
+					ImGui::Dummy(ImVec2(100.0f, 0.0f));
+
+					// Compile Button
+					if (ImGui::Button("Compile"))
+					{
+						
 					}
 
 					ImGui::EndMenuBar();

@@ -212,6 +212,13 @@ namespace Puffin::IO
 			}
 		}
 	}
+
+	// Load & Initialize Scene Data
+	inline static void LoadAndInitScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
+	{
+		LoadScene(world, sceneData);
+		InitScene(world, sceneData);
+	}
 }
 
 #endif // !SERIALIZE_SCENE_H

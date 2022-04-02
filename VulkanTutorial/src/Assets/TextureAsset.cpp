@@ -89,6 +89,9 @@ namespace Puffin::Assets
 		m_textureHeight = info.textureHeight;
 		m_textureWidth = info.textureWidth;
 
+		data.binaryBlob.clear();
+		data.json.clear();
+
 		m_isLoaded = true;
 		return true;
 	}

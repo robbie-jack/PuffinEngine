@@ -39,35 +39,50 @@ namespace Puffin
 		void AngelScriptSystem::Init()
 		{
 			// Create Script Engine
-			scriptEngine = asCreateScriptEngine();
-			if (scriptEngine == 0)
+			m_scriptEngine = asCreateScriptEngine();
+			if (m_scriptEngine == 0)
 			{
 				cout << "Failed to create script engine." << endl;
 			}
 
 			// Set message callback to receive information on errors in human readable form
-			int r = scriptEngine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); assert(r >= 0);
+			int r = m_scriptEngine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); assert(r >= 0);
 
 			ConfigureEngine();
 		}
 
-		void AngelScriptSystem::Start()
+		void AngelScriptSystem::PreStart()
 		{
 			// Create a context that will execute the script
-			ctx = scriptEngine->CreateContext();
-			if (ctx == 0)
+			m_ctx = m_scriptEngine->CreateContext();
+			if (m_ctx == 0)
 			{
 				cout << "Failed to create the context." << endl;
-				scriptEngine->Release();
+				m_scriptEngine->Release();
 			}
 
-			// Compile Scripts and Execute Start Methods
+			// Compile Scripts/Instantiate Objects
 			for (ECS::Entity entity : entityMap["Script"])
 			{
-				AngelScriptComponent& script = m_world->GetComponent<AngelScriptComponent>(entity);
-				InitScriptComponent(script);
+				auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 
-				ExecuteScriptMethod(script.obj, script.startFunc);
+				InitializeScript(script);
+
+				m_world->SetComponentInitialized<AngelScriptComponent>(entity, true);
+			}
+		}
+
+		void AngelScriptSystem::Start()
+		{
+			// Execute Start Methods
+			for (ECS::Entity entity : entityMap["Script"])
+			{
+				auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
+
+				ExportEditablePropertiesToScriptData(script, script.serializedData);
+
+				asIScriptFunction* startFunc = GetScriptMethod(script, "Start");
+				ExecuteScriptMethod(script.obj, startFunc);
 			}
 		}
 
@@ -76,20 +91,25 @@ namespace Puffin
 			// Initialize/Cleanup marked components
 			for (ECS::Entity entity : entityMap["Script"])
 			{
-				AngelScriptComponent& script = m_world->GetComponent<AngelScriptComponent>(entity);
+				auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 
 				// Script needs initialized
 				if (!m_world->ComponentInitialized<AngelScriptComponent>(entity))
 				{
-					InitScriptComponent(script);
+					InitializeScript(script);
+
+					asIScriptFunction* startFunc = GetScriptMethod(script, "Start");
+					ExecuteScriptMethod(script.obj, startFunc);
+
 					m_world->SetComponentInitialized<AngelScriptComponent>(entity, true);
-					ExecuteScriptMethod(script.obj, script.startFunc);
 				}
 
 				// Script needs cleaned up
 				if (m_world->ComponentDeleted<AngelScriptComponent>(entity) || m_world->IsDeleted(entity))
 				{
-					ExecuteScriptMethod(script.obj, script.stopFunc);
+					asIScriptFunction* stopFunc = GetScriptMethod(script, "Stop");
+					ExecuteScriptMethod(script.obj, stopFunc);
+
 					CleanupScriptComponent(script);
 					m_world->RemoveComponent<AngelScriptComponent>(entity);
 				}
@@ -98,10 +118,11 @@ namespace Puffin
 			// Execute Scripts Update Method
 			for (ECS::Entity entity : entityMap["Script"])
 			{
-				AngelScriptComponent& script = m_world->GetComponent<AngelScriptComponent>(entity);
+				auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 
 				// Execute Update function if one was found for script
-				ExecuteScriptMethod(script.obj, script.updateFunc);
+				asIScriptFunction* updateFunc = GetScriptMethod(script, "Update");
+				ExecuteScriptMethod(script.obj, updateFunc);
 			}
 		}
 
@@ -110,19 +131,21 @@ namespace Puffin
 			// Execute Script Stop Methods
 			for (ECS::Entity entity : entityMap["Script"])
 			{
-				AngelScriptComponent& script = m_world->GetComponent<AngelScriptComponent>(entity);
-				ExecuteScriptMethod(script.obj, script.stopFunc);
+				auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
+
+				asIScriptFunction* stopFunc = GetScriptMethod(script, "Stop");
+				ExecuteScriptMethod(script.obj, stopFunc);
 			}
 
 			// We must release the contexts when no longer using them
-			if (ctx)
+			if (m_ctx)
 			{
-				ctx->Release();
+				m_ctx->Release();
 			}
 
 			for (ECS::Entity entity : entityMap["Script"])
 			{
-				AngelScriptComponent& script = m_world->GetComponent<AngelScriptComponent>(entity);
+				auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 				CleanupScriptComponent(script);
 			}
 		}
@@ -130,8 +153,8 @@ namespace Puffin
 		void AngelScriptSystem::Cleanup()
 		{
 			// Shut down the engine
-			scriptEngine->ShutDownAndRelease();
-			scriptEngine = nullptr;
+			m_scriptEngine->ShutDownAndRelease();
+			m_scriptEngine = nullptr;
 		}
 
 		void AngelScriptSystem::ConfigureEngine()
@@ -141,7 +164,7 @@ namespace Puffin
 			// Register the script string type
 			// Look at the implementation for this function for more information  
 			// on how to register a custom string type, and other object types.
-			RegisterStdString(scriptEngine);
+			RegisterStdString(m_scriptEngine);
 
 			if (!strstr(asGetLibraryOptions(), "AS_MAX_PORTABILITY"))
 			{
@@ -151,17 +174,17 @@ namespace Puffin
 				// with a lot of if's. If an error occurs in release mode it will
 				// be caught when a script is being built, so it is not necessary
 				// to do the verification here as well.
-				r = scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString), asCALL_CDECL); assert(r >= 0);
+				r = m_scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString), asCALL_CDECL); assert(r >= 0);
 			}
 			else
 			{
 				// Notice how the registration is almost identical to the above. 
-				r = scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString_Generic), asCALL_GENERIC); assert(r >= 0);
+				r = m_scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString_Generic), asCALL_GENERIC); assert(r >= 0);
 			}
 
 			// Define Global Functions for Scripts
-			r = scriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptSystem, GetDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-			r = scriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptSystem, GetFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+			r = m_scriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptSystem, GetDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+			r = m_scriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptSystem, GetFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 			// It is possible to register the functions, properties, and types in 
 			// configuration groups as well. When compiling the scripts it then
@@ -171,7 +194,14 @@ namespace Puffin
 			// without having to recompile all the scripts.
 		}
 
-		void AngelScriptSystem::InitScriptComponent(AngelScriptComponent& script)
+		void AngelScriptSystem::InitializeScript(AngelScriptComponent& script)
+		{
+			CompileScript(script);
+			InstantiateScriptObj(script);
+			ImportEditableProperties(script, script.serializedData);
+		}
+
+		void AngelScriptSystem::CompileScript(AngelScriptComponent& script)
 		{
 			// Compile the script into a module
 			int r;
@@ -185,7 +215,7 @@ namespace Puffin
 			// be written to the message stream that we set right after creating the 
 			// script engine. If there are no errors, and no warnings, nothing will
 			// be written to the stream.
-			r = builder.StartNewModule(scriptEngine, script.name.c_str());
+			r = builder.StartNewModule(m_scriptEngine, script.name.c_str());
 			if (r < 0)
 			{
 				cout << "Failed to start new module" << endl;
@@ -203,7 +233,7 @@ namespace Puffin
 			else
 			{
 				// Get the object type from the compiled module
-				asIScriptModule* mod = scriptEngine->GetModule(script.name.c_str());
+				asIScriptModule* mod = m_scriptEngine->GetModule(script.name.c_str());
 
 				asITypeInfo* typeToInstantiate = nullptr;
 
@@ -230,33 +260,11 @@ namespace Puffin
 				{
 					if (typeToInstantiate->GetFactoryCount() > 0)
 					{
-						// Create the type using its factory function
-						asIScriptFunction* factory = typeToInstantiate->GetFactoryByIndex(0);
-
-						// Prepare context to call factory function
-						ctx->Prepare(factory);
-
-						// Execute Call
-						ctx->Execute();
-
-						// Get created object, and increase its reference count by one
-						script.obj = *(asIScriptObject**)ctx->GetAddressOfReturnValue();
-						script.obj->AddRef();
+						script.obj = nullptr;
 
 						// Store type interface for later
 						script.type = typeToInstantiate;
 						script.type->AddRef();
-
-						// Get Common Functions, if they are defined
-
-						// Start
-						script.startFunc = GetScriptMethod(script, "Start");
-
-						// Update
-						script.updateFunc = GetScriptMethod(script, "Update");
-
-						// Stop
-						script.stopFunc = GetScriptMethod(script, "Stop");
 					}
 					else
 					{
@@ -272,12 +280,15 @@ namespace Puffin
 						// Check each properties metadata
 						for (int m = 0; m < metadata.size(); m++)
 						{
+							bool isEditable = false;
+
 							if (metadata[m] == "Editable")
 							{
 								script.editableProperties.insert(p);
+								isEditable = true;
 							}
 
-							if (metadata[m] == "Visible")
+							if (metadata[m] == "Visible" && !isEditable)
 							{
 								script.visibleProperties.insert(p);
 							}
@@ -285,16 +296,25 @@ namespace Puffin
 					}
 				}
 			}
+		}
 
-			// The engine doesn't keep a copy of the script sections after Build() has
-			// returned. So if the script needs to be recompiled, then all the script
-			// sections must be added again.
+		void AngelScriptSystem::InstantiateScriptObj(AngelScriptComponent& script)
+		{
+			if (script.type != nullptr && script.type->GetFactoryCount() > 0)
+			{
+				// Create the type using its factory function
+				asIScriptFunction* factory = script.type->GetFactoryByIndex(0);
 
-			// If we want to have several scripts executing at different times but 
-			// that have no direct relation with each other, then we can compile them
-			// into separate script modules. Each module use their own namespace and 
-			// scope, so function names, and global variables will not conflict with
-			// each other.
+				// Prepare context to call factory function
+				m_ctx->Prepare(factory);
+
+				// Execute Call
+				m_ctx->Execute();
+
+				// Get created object if nullptr, and increase its reference count by one
+				script.obj = *(asIScriptObject**)m_ctx->GetAddressOfReturnValue();
+				script.obj->AddRef();
+			}
 		}
 
 		asIScriptFunction* AngelScriptSystem::GetScriptMethod(const AngelScriptComponent& script, const char* funcName)
@@ -316,10 +336,12 @@ namespace Puffin
 		void AngelScriptSystem::CleanupScriptComponent(AngelScriptComponent& script)
 		{
 			script.type->Release();
-			script.obj->Release();
-			script.startFunc->Release();
-			script.updateFunc->Release();
-			script.stopFunc->Release();
+
+			if (script.obj != nullptr)
+			{
+				script.obj->Release();
+			}
+
 			script.editableProperties.clear();
 			script.visibleProperties.clear();
 		}
@@ -329,13 +351,13 @@ namespace Puffin
 			if (scriptObj != 0 && scriptFunc != 0)
 			{
 				// Prepare Function for execution
-				ctx->Prepare(scriptFunc);
+				m_ctx->Prepare(scriptFunc);
 
 				// Set Object pointer
-				ctx->SetObject(scriptObj);
+				m_ctx->SetObject(scriptObj);
 
 				// Execute the function
-				int r = ctx->Execute();
+				int r = m_ctx->Execute();
 				if (r != asEXECUTION_FINISHED)
 				{
 					// The execution didn't finish as we had planned. Determine why.
@@ -346,12 +368,12 @@ namespace Puffin
 						cout << "The script ended with an exception." << endl;
 
 						// Write some information about the script exception
-						asIScriptFunction* func = ctx->GetExceptionFunction();
+						asIScriptFunction* func = m_ctx->GetExceptionFunction();
 						cout << "func: " << func->GetDeclaration() << endl;
 						cout << "modl: " << func->GetModuleName() << endl;
 						//cout << "sect: " << func->GetScriptSectionName() << endl;
-						cout << "line: " << ctx->GetExceptionLineNumber() << endl;
-						cout << "desc: " << ctx->GetExceptionString() << endl;
+						cout << "line: " << m_ctx->GetExceptionLineNumber() << endl;
+						cout << "desc: " << m_ctx->GetExceptionString() << endl;
 					}
 					else
 						cout << "The script ended for some unforeseen reason (" << r << ")." << endl;

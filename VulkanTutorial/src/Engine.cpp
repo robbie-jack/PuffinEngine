@@ -113,7 +113,6 @@ namespace Puffin
 		// Load Asset Cache
 		Assets::AssetRegistry::Get()->ProjectName(projectFile.name);
 		Assets::AssetRegistry::Get()->ProjectRoot(projectDirPath);
-		//Assets::AssetRegistry::Get()->LoadAssetCache();
 
 		// Load Project Settings
 		IO::LoadSettings(projectDirPath.parent_path() / "settings.json", settings);
@@ -122,16 +121,12 @@ namespace Puffin
 		sceneData.scene_path = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		DefaultScene(ECSWorld);
+		//DefaultScene(ECSWorld);
 		//PhysicsScene(ECSWorld);
 		
 		// Load Scene -- normal behaviour
-		//IO::LoadScene(ECSWorld, sceneData);
-		//IO::InitScene(ECSWorld, sceneData);
-
-		IO::SaveScene(ECSWorld, sceneData);
-
-		Assets::AssetRegistry::Get()->SaveAssetCache();
+		IO::LoadAndInitScene(ECSWorld, sceneData);
+		Assets::AssetRegistry::Get()->LoadAssetCache();
 
 		running = true;
 		restarted = false;
@@ -143,6 +138,7 @@ namespace Puffin
 		for (auto system : ECSWorld->GetAllSystems())
 		{
 			system->Init();
+			system->PreStart();
 		}
 		
 		// Run Game Loop;
@@ -172,6 +168,9 @@ namespace Puffin
 				{
 					system->Start();
 				}
+
+				// Get Snapshot of current scene data
+				IO::UpdateSceneData(ECSWorld, sceneData);
 				
 				accumulatedTime = 0.0;
 				playState = PlayState::PLAYING;
@@ -231,9 +230,14 @@ namespace Puffin
 				ECSWorld->Reset();
 
 				// Re-Initialize Systems and ECS
-				IO::LoadScene(ECSWorld, sceneData);
 				IO::InitScene(ECSWorld, sceneData);
 				vulkanEngine->Start();
+
+				// Perform Pre-Gameplay Initiualization on Systems
+				for (auto system : ECSWorld->GetAllSystems())
+				{
+					system->PreStart();
+				}
 
 				restarted = false;
 			}
@@ -362,8 +366,8 @@ namespace Puffin
 		world->GetComponent<Rendering::LightComponent>(7).bFlagCastShadows = false;
 
 		Scripting::AngelScriptComponent script;
-		script.name = "Test";
-		script.dir = contentRootPath / "scripts\\test.pscript";
+		script.name = "ExampleScript";
+		script.dir = contentRootPath / "scripts\\Example.pscript";
 		world->AddComponent(1, script);
 	}
 

@@ -19,6 +19,8 @@ namespace Puffin
 		public:
 			void Init() override;
 
+			void PreStart() override;
+
 			void Start() override;
 
 			void Update() override;
@@ -26,6 +28,9 @@ namespace Puffin
 			void Stop() override;
 
 			void Cleanup() override;
+
+			// Hot-Reloads all scripts when called
+			void Reload();
 
 			ECS::SystemInfo GetInfo() override
 			{
@@ -38,22 +43,23 @@ namespace Puffin
 
 		private:
 
-			asIScriptEngine* scriptEngine;
-			asIScriptContext* ctx;
+			asIScriptEngine* m_scriptEngine;
+			asIScriptContext* m_ctx;
 
 			void ConfigureEngine();
 
-			void InitScriptComponent(AngelScriptComponent& script);
-			asIScriptFunction* GetScriptMethod(const AngelScriptComponent& script, const char* funcName);
+			void InitializeScript(AngelScriptComponent& script);
+			void CompileScript(AngelScriptComponent& script);
+			void InstantiateScriptObj(AngelScriptComponent& script);
 
 			void CleanupScriptComponent(AngelScriptComponent& script);
 
+			asIScriptFunction* GetScriptMethod(const AngelScriptComponent& script, const char* funcName);
 			bool ExecuteScriptMethod(asIScriptObject* scriptObj, asIScriptFunction* scriptFunc);
 
 			// Global Script Functions
 			double GetDeltaTime();
 			double GetFixedTime();
-
 		};
 	}
 }

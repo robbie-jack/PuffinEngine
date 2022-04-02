@@ -15,6 +15,12 @@ namespace Puffin
 
 		void PhysicsSystem2D::Init()
 		{
+			
+		}
+
+		void PhysicsSystem2D::PreStart()
+		{
+			
 		}
 
 		void PhysicsSystem2D::Start()
@@ -30,6 +36,7 @@ namespace Puffin
 
 		void PhysicsSystem2D::Stop()
 		{
+			
 		}
 
 		void PhysicsSystem2D::Cleanup()

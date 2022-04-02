@@ -44,11 +44,12 @@ namespace Puffin
 			EntityMap entityMap;
 
 			// Virtual functions to be called by ECSWorld
-			virtual void Init() = 0;	// Called when engine starts
-			virtual void Start() = 0;	// Called when gameplay starts
-			virtual void Update() = 0;	// Called each frame, depending on what update order is set
-			virtual void Stop() = 0;	// Called when gameplay ends
-			virtual void Cleanup() = 0;	// Called when engine exits
+			virtual void Init() = 0;		// Called when engine starts
+			virtual void PreStart() = 0;	// Called prior to gameplay starting to do some pre-start initialization
+			virtual void Start() = 0;		// Called when gameplay starts
+			virtual void Update() = 0;		// Called each frame, depending on what update order is set
+			virtual void Stop() = 0;		// Called when gameplay ends
+			virtual void Cleanup() = 0;		// Called when engine exits
 			
 			//
 			virtual SystemInfo GetInfo() = 0;

@@ -31,6 +31,7 @@ namespace Puffin::Physics
 	public:
 
 		void Init() override;
+		void PreStart() override;
 		void Start() override;
 		void Update() override;
 		void Stop() override;
