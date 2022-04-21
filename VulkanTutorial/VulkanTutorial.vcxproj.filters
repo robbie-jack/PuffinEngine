@@ -178,9 +178,6 @@
     <ClCompile Include="src\Assets\TextureAsset.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="src\Assets\SoundAsset.cpp">
-      <Filter>Assets</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">

@@ -187,7 +187,6 @@
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
     <ClCompile Include="src\Assets\AssetRegistry.cpp" />
     <ClCompile Include="src\Assets\MeshAsset.cpp" />
-    <ClCompile Include="src\Assets\SoundAsset.cpp" />
     <ClCompile Include="src\Assets\TextureAsset.cpp" />
     <ClCompile Include="src\Audio\AudioManager.cpp" />
     <ClCompile Include="src\Engine.cpp" />
