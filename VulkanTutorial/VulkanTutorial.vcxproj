@@ -116,8 +116,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.189.2\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\assimp\Debug;$(ProjectDir)\lib\lz4;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mtd.lib;IrrXMLd.lib;zlibstaticd.lib;angelscript64d.lib;liblz4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.189.2\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\lz4;$(ProjectDir)\lib\irrKlang;$(ProjectDir)\lib\assimp\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;liblz4.lib;irrKlang.lib;assimp-vc142-mtd.lib;IrrXMLd.lib;zlibstaticd.lib;angelscript64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
@@ -168,8 +168,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.189.2\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\assimp\Release;$(ProjectDir)\lib\lz4;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;angelscript64.lib;liblz4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.189.2\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\lz4;$(ProjectDir)\lib\irrKlang;$(ProjectDir)\lib\assimp\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;liblz4.lib;irrKlang.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;angelscript64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
@@ -187,8 +187,9 @@
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp" />
     <ClCompile Include="src\Assets\AssetRegistry.cpp" />
     <ClCompile Include="src\Assets\MeshAsset.cpp" />
+    <ClCompile Include="src\Assets\SoundAsset.cpp" />
     <ClCompile Include="src\Assets\TextureAsset.cpp" />
-    <ClCompile Include="src\Audio\AudioSystem.cpp" />
+    <ClCompile Include="src\Audio\AudioManager.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -224,8 +225,9 @@
     <ClInclude Include="src\Assets\Importers\ModelImporter.h" />
     <ClInclude Include="src\Assets\Importers\TextureImporter.h" />
     <ClInclude Include="src\Assets\MeshAsset.h" />
+    <ClInclude Include="src\Assets\SoundAsset.h" />
     <ClInclude Include="src\Assets\TextureAsset.h" />
-    <ClInclude Include="src\Audio\AudioSystem.h" />
+    <ClInclude Include="src\Audio\AudioManager.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h" />
     <ClInclude Include="src\Components\Physics\ShapeComponents2D.h" />
@@ -234,7 +236,6 @@
     <ClInclude Include="src\Components\Rendering\MeshComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ecs\ECS.h" />
-    <ClInclude Include="src\ECS\Event.h" />
     <ClInclude Include="src\ECS\EventManager.h" />
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\Engine.h" />

@@ -19,7 +19,7 @@ Cereal - Serilization - https://uscilab.github.io/cereal/
 
 AngelScript - Scripting - https://www.angelcode.com/angelscript/
 
-SoLoud - Audio - https://sol.gfxile.net/soloud/
+irrKlang - Audio - https://www.ambiera.com/irrklang/
 
 nlohmann/json - Json Parsing - https://github.com/nlohmann/json
 

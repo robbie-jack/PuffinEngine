@@ -18,10 +18,13 @@ namespace Puffin
 {
 	enum class PlayState
 	{
-		STARTED, // Game has just started, gameplay systems need to be initialized
-		PLAYING, // Game is playing, all systems being updated
-		STOPPED, // Game is stopped, no physics or game code is begin run, all data is in default state
-		PAUSED // Game is paused, systems not being updated
+		STARTED,		// Game has just started, gameplay systems need to be initialized
+		PLAYING,		// Game is playing, all systems being updated
+		JUST_STOPPED,	// Game has just been stopped, perform all system stop functions
+		STOPPED,		// Game is stopped, no physics or game code is begin run, all data is in default state
+		JUST_PAUSED,	// Game has just been paused
+		PAUSED,			// Game is paused, systems not being updated,
+		JUST_UNPAUSED	// Game has just been unpaused
 	};
 
 	class Engine
@@ -41,7 +44,7 @@ namespace Puffin
 
 	private:
 
-		bool running, restarted;
+		bool running;
 		PlayState playState;
 
 		IO::ProjectFile projectFile;

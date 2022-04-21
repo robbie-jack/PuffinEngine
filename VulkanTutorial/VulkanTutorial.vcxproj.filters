@@ -29,12 +29,6 @@
     <Filter Include="ECS">
       <UniqueIdentifier>{5bec5de3-2573-4ab0-ac63-591b832acd07}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering\VK-Bootstrap">
-      <UniqueIdentifier>{484cd380-1c92-4f70-86ee-81edf0f8e251}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ImGui">
-      <UniqueIdentifier>{b96c1958-6ef8-4aea-a739-bd880e9f266c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Components\Rendering">
       <UniqueIdentifier>{9d96d30e-eb4f-4cfe-a279-e33235786c7e}</UniqueIdentifier>
     </Filter>
@@ -68,10 +62,22 @@
     <Filter Include="Assets\Importers">
       <UniqueIdentifier>{f2802aea-7dbd-4c88-b414-71ea8ac9d947}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{96c64c5f-7bca-4a1c-9d0f-42307273a2f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\ImGui">
+      <UniqueIdentifier>{b96c1958-6ef8-4aea-a739-bd880e9f266c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\VK-Bootstrap">
+      <UniqueIdentifier>{484cd380-1c92-4f70-86ee-81edf0f8e251}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\VMA">
+      <UniqueIdentifier>{33f38952-8e59-4e33-b414-d7753a5bdad9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
-      <Filter>Rendering\VK-Bootstrap</Filter>
+      <Filter>Libraries\VK-Bootstrap</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Engine.cpp" />
@@ -103,33 +109,30 @@
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\imgui.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\imgui_demo.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\imgui_draw.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\imgui_tables.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\imgui_widgets.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\backends\imgui_impl_glfw.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\ManipulationGizmo.cpp" />
-    <ClCompile Include="src\Audio\AudioSystem.cpp">
-      <Filter>Audio</Filter>
-    </ClCompile>
     <ClCompile Include="src\Scripting\AngelScriptSystem.cpp">
       <Filter>Scripting</Filter>
     </ClCompile>
@@ -169,11 +172,19 @@
     <ClCompile Include="src\Assets\AssetRegistry.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="src\Assets\TextureAsset.cpp" />
+    <ClCompile Include="src\Audio\AudioManager.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Assets\TextureAsset.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Assets\SoundAsset.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
-      <Filter>Rendering\VK-Bootstrap</Filter>
+      <Filter>Libraries\VK-Bootstrap</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\ProjectSettings.h" />
@@ -186,9 +197,6 @@
     </ClInclude>
     <ClInclude Include="src\Components\TransformComponent.h">
       <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\vk_mem_alloc.h">
-      <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\VKTexture.h">
       <Filter>Rendering</Filter>
@@ -227,16 +235,16 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\imgui\imgui.h">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imgui_impl_vulkan.h">
-      <Filter>ImGui</Filter>
+      <Filter>Libraries\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="src\Components\Rendering\CameraComponent.h">
       <Filter>Components\Rendering</Filter>
@@ -251,9 +259,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\ManipulationGizmo.h" />
-    <ClInclude Include="src\ECS\Event.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
     <ClInclude Include="src\ECS\EventManager.h">
       <Filter>ECS</Filter>
     </ClInclude>
@@ -262,9 +267,6 @@
     </ClInclude>
     <ClInclude Include="src\Types\RingBuffer.h">
       <Filter>Types</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Audio\AudioSystem.h">
-      <Filter>Audio</Filter>
     </ClInclude>
     <ClInclude Include="src\Scripting\AngelScriptSystem.h">
       <Filter>Scripting</Filter>
@@ -359,6 +361,15 @@
     </ClInclude>
     <ClInclude Include="src\Assets\Importers\TextureImporter.h">
       <Filter>Assets\Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Audio\AudioManager.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\vk_mem_alloc.h">
+      <Filter>Libraries\VMA</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Assets\SoundAsset.h">
+      <Filter>Assets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

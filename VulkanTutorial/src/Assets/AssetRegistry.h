@@ -170,7 +170,7 @@ namespace Puffin::Assets
 
 		// Map of ID's to Asset, generated at runtime
 		std::unordered_map<UUID, std::shared_ptr<Asset>> m_idToAssetMap;
-		std::unordered_map<std::string_view, UUID> m_pathToIDMap;
+		std::unordered_map<std::string, UUID> m_pathToIDMap;
 
 		// Asset Factories for creating assets at runtime
 		std::vector<std::shared_ptr<IAssetFactory>> m_assetFactories;

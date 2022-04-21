@@ -1,24 +1,27 @@
 #include "Engine.h"
 
-#include <ECS/ECS.h>
+#include "ECS/ECS.h"
 
-#include <Rendering/VulkanEngine.h>
-#include <Physics/PhysicsSystem2D.h>
-#include <Scripting/AngelScriptSystem.h>
+#include "Rendering/VulkanEngine.h"
+#include "Physics/PhysicsSystem2D.h"
+#include "Scripting/AngelScriptSystem.h"
 
-#include <Components/AngelScriptComponent.h>
-#include <Components/TransformComponent.h>
+#include "Components/AngelScriptComponent.h"
+#include "Components/TransformComponent.h"
 
 #include "Types/ComponentFlags.h"
 
-#include <Input/InputManager.h>
+#include "Input/InputManager.h"
 
-#include <SerializeScene.h>
-#include <UI/UIManager.h>
+#include "SerializeScene.h"
+#include "UI/UIManager.h"
+
+#include "Audio/AudioManager.h"
 
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/TextureAsset.h"
+#include "Assets/SoundAsset.h"
 
 #include <chrono>
 
@@ -39,6 +42,7 @@ namespace Puffin
 		std::shared_ptr<ECS::World> ECSWorld = std::make_shared<ECS::World>();
 		UI::UIManager UIManager(this, ECSWorld);
 		Input::InputManager InputManager;
+		Audio::AudioManager AudioManager;
 
 		glfwInit();
 
@@ -50,6 +54,7 @@ namespace Puffin
 
 		ECSWorld->Init();
 		InputManager.Init(window, ECSWorld);
+		AudioManager.Init();
 
 		// Systems
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
@@ -109,6 +114,7 @@ namespace Puffin
 		// Register Assets
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::StaticMeshAsset>();
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::TextureAsset>();
+		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::SoundAsset>();
 
 		// Load Asset Cache
 		Assets::AssetRegistry::Get()->ProjectName(projectFile.name);
@@ -129,7 +135,6 @@ namespace Puffin
 		Assets::AssetRegistry::Get()->LoadAssetCache();
 
 		running = true;
-		restarted = false;
 		playState = PlayState::STOPPED;
 
 		// Initialize Systems
@@ -171,8 +176,25 @@ namespace Puffin
 
 				// Get Snapshot of current scene data
 				IO::UpdateSceneData(ECSWorld, sceneData);
+
+				UUID soundId = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>("sounds\\Select 1.wav")->ID();
+				AudioManager.PlaySound(soundId, 0.5f, true);
 				
 				accumulatedTime = 0.0;
+				playState = PlayState::PLAYING;
+			}
+
+			if (playState == PlayState::JUST_PAUSED)
+			{
+				AudioManager.PauseAllSounds();
+
+				playState = PlayState::PAUSED;
+			}
+
+			if (playState == PlayState::JUST_UNPAUSED)
+			{
+				AudioManager.PlayAllSounds();
+
 				playState = PlayState::PLAYING;
 			}
 
@@ -220,7 +242,7 @@ namespace Puffin
 			// Rendering
 			vulkanEngine->Update();
 
-			if (playState == PlayState::STOPPED && restarted)
+			if (playState == PlayState::JUST_STOPPED)
 			{
 				// Cleanup Systems and ECS
 				for (auto system : ECSWorld->GetAllSystems())
@@ -239,8 +261,13 @@ namespace Puffin
 					system->PreStart();
 				}
 
-				restarted = false;
+				AudioManager.StopAllSounds();
+
+				playState = PlayState::STOPPED;
 			}
+
+			// Audio
+			AudioManager.Update();
 
 			if (glfwWindowShouldClose(window))
 			{
@@ -257,6 +284,7 @@ namespace Puffin
 			system->Cleanup();
 		}
 
+		AudioManager.Cleanup();
 		UIManager.Cleanup();
 		ECSWorld->Cleanup();
 
@@ -275,21 +303,25 @@ namespace Puffin
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
 
-		const fs::path& meshPath1 = contentRootPath / "meshes\\chalet.pstaticmesh";
-		const fs::path& meshPath2 = contentRootPath / "meshes\\sphere.pstaticmesh";
-		const fs::path& meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
-		const fs::path& meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
+		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
 		UUID meshId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
 		UUID meshId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
 		UUID meshId3 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
 		UUID meshId4 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
 
-		const fs::path& texturePath1 = contentRootPath / "textures\\chalet.ptexture";
-		const fs::path& texturePath2 = contentRootPath / "textures\\cube.ptexture";
+		const fs::path& texturePath1 = "textures\\chalet.ptexture";
+		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
 		UUID textureId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath1)->ID();
 		UUID textureId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath2)->ID();
+
+		const fs::path& soundPath1 = "sounds\\Select 1.wav";
+
+		UUID soundId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::SoundAsset>(soundPath1)->ID();
 
 		// Initialize EntityManager with Existing Entities
 		world->InitEntitySystem();
@@ -376,18 +408,18 @@ namespace Puffin
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
 
-		const fs::path& meshPath1 = contentRootPath / "meshes\\chalet.pstaticmesh";
-		const fs::path& meshPath2 = contentRootPath / "meshes\\sphere.pstaticmesh";
-		const fs::path& meshPath3 = contentRootPath / "meshes\\cube.pstaticmesh";
-		const fs::path& meshPath4 = contentRootPath / "meshes\\space_engineer.pstaticmesh";
+		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
 		UUID meshId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
 		UUID meshId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
 		UUID meshId3 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
 		UUID meshId4 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
 
-		const fs::path& texturePath1 = contentRootPath / "textures\\chalet.jpg";
-		const fs::path& texturePath2 = contentRootPath / "textures\\cube.png";
+		const fs::path& texturePath1 = "textures\\chalet.ptexture";
+		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
 		UUID textureId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath1)->ID();
 		UUID textureId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath2)->ID();
@@ -463,10 +495,10 @@ namespace Puffin
 			playState = PlayState::STARTED;
 			break;
 		case PlayState::PLAYING:
-			playState = PlayState::PAUSED;
+			playState = PlayState::JUST_PAUSED;
 			break;
 		case PlayState::PAUSED:
-			playState = PlayState::PLAYING;
+			playState = PlayState::JUST_UNPAUSED;
 			break;
 		}
 	}
@@ -475,8 +507,7 @@ namespace Puffin
 	{
 		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED)
 		{
-			playState = PlayState::STOPPED;
-			restarted = true;
+			playState = PlayState::JUST_STOPPED;
 		}
 	}
 
