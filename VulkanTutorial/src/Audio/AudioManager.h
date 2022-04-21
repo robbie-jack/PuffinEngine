@@ -41,6 +41,7 @@ namespace Puffin::Audio
 		// Play Sound, If this sound is already active, but paused, start playing it again
 		void PlaySound(UUID soundId, float volume = 1.0f, bool looping = false, bool restart = false);
 		void StopSound(UUID soundId);
+		void PauseSound(UUID soundId);
 
 		void PlayAllSounds(bool forcePlay = false);
 		void PauseAllSounds();
