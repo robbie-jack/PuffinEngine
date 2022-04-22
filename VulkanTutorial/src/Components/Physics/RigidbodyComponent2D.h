@@ -11,16 +11,16 @@ namespace Puffin
 		{
 			RigidbodyComponent2D() {}
 
-			RigidbodyComponent2D(Float InInvMass) :
+			RigidbodyComponent2D(float InInvMass) :
 				invMass(InInvMass)
 			{
 			}
 
-			Vector2 linearVelocity = Vector2(0.0f);
-			Float angularVelocity = 0.0f;
+			Vector2f linearVelocity = Vector2f(0.0f);
+			float angularVelocity = 0.0f;
 
-			Float invMass = 0.0f;
-			Float elasticity = 1.0f;
+			float invMass = 0.0f;
+			float elasticity = 1.0f;
 		};
 
 		template<class Archive>

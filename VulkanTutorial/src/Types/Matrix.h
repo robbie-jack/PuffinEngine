@@ -27,13 +27,13 @@ namespace Puffin
 				rows[1] = mat.rows[1];
 			}
 
-			Mat2(const Float* mat)
+			Mat2(const float* mat)
 			{
 				rows[0] = mat + 0;
 				rows[1] = mat + 2;
 			}
 
-			Mat2(const Vector2& row0, const Vector2& row1)
+			Mat2(const Vector2f& row0, const Vector2f& row1)
 			{
 				rows[0] = row0;
 				rows[1] = row1;
@@ -46,7 +46,7 @@ namespace Puffin
 				return *this;
 			}
 
-			const Mat2& operator*=(const Float val)
+			const Mat2& operator*=(const float val)
 			{
 				rows[0] *= val;
 				rows[1] *= val;
@@ -60,7 +60,7 @@ namespace Puffin
 				return *this;
 			}
 
-			Float Determinant() const
+			float Determinant() const
 			{
 				return rows[0].x * rows[1].y - rows[0].y * rows[1].x;
 			}
@@ -71,7 +71,7 @@ namespace Puffin
 				rows[1].Zero();
 			}
 
-			Vector2 rows[2];
+			Vector2f rows[2];
 		};
 //
 		/*
@@ -91,14 +91,14 @@ namespace Puffin
 				rows[2] = mat.rows[2];
 			}
 
-			Mat3(const Float* mat)
+			Mat3(const float* mat)
 			{
 				rows[0] = mat + 0;
 				rows[1] = mat + 3;
 				rows[2] = mat + 6;
 			}
 
-			Mat3(const Vector3& row0, const Vector3& row1, const Vector3& row2)
+			Mat3(const Vector3f& row0, const Vector3f& row1, const Vector3f& row2)
 			{
 				rows[0] = row0;
 				rows[1] = row1;
@@ -113,24 +113,24 @@ namespace Puffin
 				return *this;
 			}
 
-			Vector2 operator* (const Vector2& vec) const
+			Vector2f operator* (const Vector2f& vec) const
 			{
-				Vector2 tmp;
+				Vector2f tmp;
 				tmp[0] = rows[0].Dot(vec);
 				tmp[1] = rows[1].Dot(vec);
 				return tmp;
 			}
 
-			Vector3 operator* (const Vector3& vec) const
+			Vector3f operator* (const Vector3f& vec) const
 			{
-				Vector3 tmp;
+				Vector3f tmp;
 				tmp[0] = rows[0].Dot(vec);
 				tmp[1] = rows[1].Dot(vec);
 				tmp[2] = rows[2].Dot(vec);
 				return tmp;
 			}
 
-			Mat3 operator* (const Float val) const
+			Mat3 operator* (const float val) const
 			{
 				Mat3 tmp;
 				tmp.rows[0] = rows[0] * val;
@@ -161,7 +161,7 @@ namespace Puffin
 				return tmp;
 			}
 
-			const Mat3& operator*=(const Float val)
+			const Mat3& operator*=(const float val)
 			{
 				rows[0] *= val;
 				rows[1] *= val;
@@ -191,11 +191,11 @@ namespace Puffin
 				rows[2] = Vector3(0.0f, 0.0f, 1.0f);
 			}
 
-			Float Determinant() const
+			float Determinant() const
 			{
-				const Float i = rows[0][0] * (rows[1][1] * rows[2][2] - rows[1][2] * rows[2][1]);
-				const Float j = rows[0][1] * (rows[1][0] * rows[2][2] - rows[1][2] * rows[2][0]);
-				const Float k = rows[0][2] * (rows[1][0] * rows[2][1] - rows[1][1] * rows[2][0]);
+				const float i = rows[0][0] * (rows[1][1] * rows[2][2] - rows[1][2] * rows[2][1]);
+				const float j = rows[0][1] * (rows[1][0] * rows[2][2] - rows[1][2] * rows[2][0]);
+				const float k = rows[0][2] * (rows[1][0] * rows[2][1] - rows[1][1] * rows[2][0]);
 				return (i - j + k);
 			}
 
@@ -223,8 +223,8 @@ namespace Puffin
 					}
 				}
 
-				Float det = Determinant();
-				Float invDet = 1.0f / det;
+				float det = Determinant();
+				float invDet = 1.0f / det;
 				inv *= invDet;
 				return inv;
 			}
@@ -256,14 +256,14 @@ namespace Puffin
 				return minor;
 			}
 
-			Float Cofactor(const int i, const int j) const
+			float Cofactor(const int i, const int j) const
 			{
 				const Mat2 minor = Minor(i, j);
-				const Float C = Float(pow(-1, i + 1 + j + 1)) * minor.Determinant();
+				const float C = float(pow(-1, i + 1 + j + 1)) * minor.Determinant();
 				return C;
 			}
 
-			Vector3 rows[3];
+			Vector3f rows[3];
 		};
 
 		/*

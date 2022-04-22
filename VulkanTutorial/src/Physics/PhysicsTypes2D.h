@@ -11,8 +11,8 @@ namespace Puffin
 	{
 		struct AABB
 		{
-			Vector2 min;
-			Vector2 max;
+			Vector2f min;
+			Vector2f max;
 		};
 
 		namespace Collision2D
@@ -23,9 +23,9 @@ namespace Puffin
 
 				ECS::Entity a, b; // Entities which collided
 
-				Vector2 pointOnA, pointOnB;
-				Vector2 normal;
-				Float seperation;
+				Vector2f pointOnA, pointOnB;
+				Vector2f normal;
+				float seperation;
 			};
 		}
 	}

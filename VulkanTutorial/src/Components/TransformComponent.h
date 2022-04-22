@@ -13,14 +13,14 @@ namespace Puffin
 	{
 		TransformComponent() {}
 
-		TransformComponent(Puffin::Vector3 InPosition, Puffin::Vector3 InRotation, Puffin::Vector3 InScale) :
+		TransformComponent(Puffin::Vector3f InPosition, Puffin::Vector3f InRotation, Puffin::Vector3f InScale) :
 			position(InPosition), rotation(InRotation), scale(InScale)
 		{
 		}
 
-		Puffin::Vector3 position = Puffin::Vector3(0.0f);
-		Puffin::Vector3 rotation = Puffin::Vector3(0.0f);
-		Puffin::Vector3 scale = Puffin::Vector3(1.0f);
+		Puffin::Vector3f position = Puffin::Vector3f(0.0f);
+		Puffin::Vector3f rotation = Puffin::Vector3f(0.0f);
+		Puffin::Vector3f scale = Puffin::Vector3f(1.0f);
 	};
 
 	template<class Archive>

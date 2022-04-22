@@ -88,8 +88,8 @@ namespace Puffin
 		struct LightComponent
 		{
 			LightType type;
-			Vector3 ambientColor, diffuseColor;
-			Vector3 direction;
+			Vector3f ambientColor, diffuseColor;
+			Vector3f direction;
 			float specularStrength;
 			int shininess;
 			float constantAttenuation, linearAttenuation, quadraticAttenuation; // USed to calculate light dropoff based on distance

@@ -21,16 +21,16 @@ namespace Puffin
 
 			Quat(const Quat& quat) : x(quat.x), y(quat.y), z(quat.z), w(quat.w) {}
 
-			Quat(Float inX, Float inY, Float inZ, Float inW) : x(inX), y(inY), z(inZ), w(inW) {}
+			Quat(float inX, float inY, float inZ, float inW) : x(inX), y(inY), z(inZ), w(inW) {}
 
-			Quat(Vector3 n, const Float angleRadians)
+			Quat(Vector3f n, const float angleRadians)
 			{
-				const Float halfAngleRadians = 0.5f * angleRadians;
+				const float halfAngleRadians = 0.5f * angleRadians;
 
 				w = cosf(halfAngleRadians);
 
-				const Float halfSine = sinf(halfAngleRadians);
-				Vector3 nNormal = n.Normalised();
+				const float halfSine = sinf(halfAngleRadians);
+				Vector3f nNormal = n.Normalised();
 				x = nNormal.x * halfSine;
 				y = nNormal.y * halfSine;
 				z = nNormal.z * halfSine;
@@ -45,7 +45,7 @@ namespace Puffin
 				return *this;
 			}
 
-			Quat& operator*= (const Float& val)
+			Quat& operator*= (const float& val)
 			{
 				x *= val;
 				y *= val;
@@ -76,7 +76,7 @@ namespace Puffin
 
 			void Normalize()
 			{
-				Float invMag = 1.0f / GetMagnitude();
+				float invMag = 1.0f / GetMagnitude();
 
 				if (invMag * 0.0f == invMag * 0.0f)
 				{
@@ -102,21 +102,21 @@ namespace Puffin
 				return val;
 			}
 
-			Float MagnitudeSquared() const
+			float MagnitudeSquared() const
 			{
 				return x * x + y * y + z * z + w * w;
 			}
 
-			Float GetMagnitude() const
+			float GetMagnitude() const
 			{
 				return sqrtf(MagnitudeSquared());
 			}
 
-			Vector3 RotatePoint(const Vector3& vec) const
+			Vector3f RotatePoint(const Vector3f& vec) const
 			{
 				Quat vector(vec.x, vec.y, vec.z, 0.0f);
 				Quat finalQuat = *this * vector * Inverse();
-				return Vector3(finalQuat.x, finalQuat.y, finalQuat.z);
+				return Vector3f(finalQuat.x, finalQuat.y, finalQuat.z);
 			}
 
 			Mat3 RotateMatrix(const Mat3& rhs)
@@ -128,9 +128,9 @@ namespace Puffin
 				return mat;
 			}
 
-			Vector3 GetXYZ() const
+			Vector3f GetXYZ() const
 			{
-				return Vector3(x, y, z);
+				return Vector3f(x, y, z);
 			}
 
 			bool IsValid() const
@@ -161,7 +161,7 @@ namespace Puffin
 				return mat;
 			}
 
-			Float w, x, y, z;
+			float w, x, y, z;
 		};
 	}
 }

@@ -270,7 +270,6 @@
     <ClInclude Include="src\Types\RingBuffer.h" />
     <ClInclude Include="src\Types\UUID.h" />
     <ClInclude Include="src\Types\Vector.h" />
-    <ClInclude Include="src\Types\VectorConversion.h" />
     <ClInclude Include="src\UI\UIManager.h" />
     <ClInclude Include="src\UI\UIWindow.h" />
     <ClInclude Include="src\UI\UIWindowEntityProperties.h" />

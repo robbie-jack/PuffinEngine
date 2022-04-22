@@ -346,13 +346,13 @@ namespace Puffin
 		world->AddComponent<Rendering::LightComponent>(7);
 
 		// Initialize Components with default values
-		world->GetComponent<TransformComponent>(1) = { Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		world->GetComponent<TransformComponent>(2) = { Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		world->GetComponent<TransformComponent>(3) = { Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		world->GetComponent<TransformComponent>(4) = { Vector3(-10.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
-		world->GetComponent<TransformComponent>(5) = { Vector3(-1.75f, -5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f) };
-		world->GetComponent<TransformComponent>(6) = { Vector3(0.0f, -10.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 1.0f, 10.0f) };
-		world->GetComponent<TransformComponent>(7) = { Vector3(5.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.25f) };
+		world->GetComponent<TransformComponent>(1) = { Vector3f(2.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
+		world->GetComponent<TransformComponent>(2) = { Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
+		world->GetComponent<TransformComponent>(3) = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
+		world->GetComponent<TransformComponent>(4) = { Vector3f(-10.0f, 0.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
+		world->GetComponent<TransformComponent>(5) = { Vector3f(-1.75f, -5.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
+		world->GetComponent<TransformComponent>(6) = { Vector3f(0.0f, -10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(10.0f, 1.0f, 10.0f) };
+		world->GetComponent<TransformComponent>(7) = { Vector3f(5.0f, 0.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
 
 		world->GetComponent<Rendering::MeshComponent>(1).meshAssetID = meshId1;
 		world->GetComponent<Rendering::MeshComponent>(1).textureAssetID = textureId1;
@@ -434,7 +434,7 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(lightEntity);
 		world->AddComponent<Rendering::LightComponent>(lightEntity);
 
-		world->GetComponent<TransformComponent>(lightEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
+		world->GetComponent<TransformComponent>(lightEntity) = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
 		world->GetComponent<Rendering::LightComponent>(lightEntity).direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		world->GetComponent<Rendering::LightComponent>(lightEntity).ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -460,7 +460,7 @@ namespace Puffin
 		//world->AddComponent<Physics::BoxComponent2D>(boxEntity);
 		world->AddComponent<Physics::CircleComponent2D>(boxEntity);
 
-		world->GetComponent<TransformComponent>(boxEntity) = { Vector3(0.0f, 10.0f, 0.0f), Vector3(0.0f), Vector3(1.0f) };
+		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).meshAssetID = meshId2;
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).textureAssetID = textureId2;
@@ -479,7 +479,7 @@ namespace Puffin
 		//world->AddComponent<Physics::BoxComponent2D>(floorEntity);
 		world->AddComponent<Physics::CircleComponent2D>(floorEntity);
 
-		world->GetComponent<TransformComponent>(floorEntity) = { Vector3(.0f), Vector3(0.0f), Vector3(1.0f, 1.0f, 1.0f) };
+		world->GetComponent<TransformComponent>(floorEntity) = { Vector3f(.0f), Vector3f(0.0f), Vector3f(1.0f, 1.0f, 1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).meshAssetID = meshId2;
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).textureAssetID = textureId2;

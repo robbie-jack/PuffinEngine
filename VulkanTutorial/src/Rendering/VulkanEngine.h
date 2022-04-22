@@ -140,16 +140,16 @@ namespace Puffin
 			alignas(4) int lightSpaceIndex;
 		};
 
-		const Vector3 boxPositions[8] =
+		const Vector3f boxPositions[8] =
 		{
-			Vector3(-1.0f, 1.0f, 1.0f),
-			Vector3(-1.0f, -1.0f, 1.0f),
-			Vector3(1.0f, -1.0f, 1.0f),
-			Vector3(1.0f, 1.0f, 1.0f),
-			Vector3(-1.0f, 1.0f, -1.0f),
-			Vector3(-1.0f, -1.0f, -1.0f),
-			Vector3(1.0f, -1.0f, -1.0f),
-			Vector3(1.0f, 1.0f, -1.0f),
+			Vector3f(-1.0f, 1.0f, 1.0f),
+			Vector3f(-1.0f, -1.0f, 1.0f),
+			Vector3f(1.0f, -1.0f, 1.0f),
+			Vector3f(1.0f, 1.0f, 1.0f),
+			Vector3f(-1.0f, 1.0f, -1.0f),
+			Vector3f(-1.0f, -1.0f, -1.0f),
+			Vector3f(1.0f, -1.0f, -1.0f),
+			Vector3f(1.0f, 1.0f, -1.0f),
 		};
 
 		const uint32_t boxIndices[24] =

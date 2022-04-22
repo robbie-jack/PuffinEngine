@@ -62,15 +62,15 @@ namespace Puffin::Physics
 		inline bool TestCircleVsBox(const CircleCollider2D* circleA, const BoxCollider2D* boxB, Contact& outContact)
 		{
 			// Get Circle/Box Centres
-			Vector2 centreCircle = circleA->transform_.position.GetXY() + circleA->shape_->radius_;
-			Vector2 centreBox = boxB->transform_.position.GetXY() + boxB->shape_->halfExtent_;
+			Vector2f centreCircle = circleA->transform_.position.GetXY() + circleA->shape_->radius_;
+			Vector2f centreBox = boxB->transform_.position.GetXY() + boxB->shape_->halfExtent_;
 
 			// Get Clamped Diff between Centres
-			Vector2 diff = centreCircle - centreBox;
-			Vector2 diffClamped = Maths::Clamp(diff, Vector2(-boxB->shape_->halfExtent_.x, -boxB->shape_->halfExtent_.y), boxB->shape_->halfExtent_);
+			Vector2f diff = centreCircle - centreBox;
+			Vector2f diffClamped = Maths::Clamp(diff, Vector2f(-boxB->shape_->halfExtent_.x, -boxB->shape_->halfExtent_.y), boxB->shape_->halfExtent_);
 
 			// Add clamped value to Box centre to get point of box closest to circle
-			const Vector2 closest = centreBox + diffClamped;
+			const Vector2f closest = centreBox + diffClamped;
 
 			// Get diff between centreCircle and closest point
 			diff = closest - centreCircle;
@@ -85,7 +85,7 @@ namespace Puffin::Physics
 
 	// Apply Impulse
 
-	static inline void ApplyLinearImpulse(RigidbodyComponent2D& body, const Vector2& impulse)
+	static inline void ApplyLinearImpulse(RigidbodyComponent2D& body, const Vector2f& impulse)
 	{
 		if (body.invMass == 0.0f)
 			return;
@@ -94,7 +94,7 @@ namespace Puffin::Physics
 		body.linearVelocity += impulse * body.invMass;
 	}
 
-	static inline void ApplyAngularImpulse(RigidbodyComponent2D& body, const Float& impulse)
+	static inline void ApplyAngularImpulse(RigidbodyComponent2D& body, const float& impulse)
 	{
 		if (body.invMass == 0.0f)
 			return;
@@ -102,7 +102,7 @@ namespace Puffin::Physics
 		body.angularVelocity += std::asin(impulse * body.invMass) * (180 / 3.14);
 	}
 
-	static inline void ApplyImpulse(RigidbodyComponent2D& body, const Vector2& impulsePoint, const Vector2& impulse)
+	static inline void ApplyImpulse(RigidbodyComponent2D& body, const Vector2f& impulsePoint, const Vector2f& impulse)
 	{
 		if (body.invMass == 0.0f)
 			return;

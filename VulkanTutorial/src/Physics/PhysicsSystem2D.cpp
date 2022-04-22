@@ -145,7 +145,7 @@ namespace Puffin
 			if (body.invMass == 0.0f)
 				return;
 
-			Float mass = 1.0f / body.invMass;
+			float mass = 1.0f / body.invMass;
 			Vector2 impulseGravity = m_gravity * mass * m_fixedTime;
 			
 			ApplyLinearImpulse(body, impulseGravity);
@@ -211,11 +211,11 @@ namespace Puffin
 					auto& bodyA = m_world->GetComponent<RigidbodyComponent2D>(contact.a);
 					auto& bodyB = m_world->GetComponent<RigidbodyComponent2D>(contact.b);
 
-					const Float elasticity = bodyA.elasticity * bodyB.elasticity;
+					const float elasticity = bodyA.elasticity * bodyB.elasticity;
 
 					// Calculate Collision Impulse
 					const Vector2 vab = bodyA.linearVelocity - bodyB.linearVelocity;
-					const Float impulseJ = -(1.0f + elasticity) * vab.Dot(contact.normal) / (bodyA.invMass + bodyB.invMass);
+					const float impulseJ = -(1.0f + elasticity) * vab.Dot(contact.normal) / (bodyA.invMass + bodyB.invMass);
 					const Vector2 vectorImpulseJ = contact.normal * impulseJ;
 
 					// Apply Impulse to body A
@@ -228,8 +228,8 @@ namespace Puffin
 
 
 					// Move colliding bodies to just outside each other
-					const Float tA = bodyA.invMass / (bodyA.invMass + bodyB.invMass);
-					const Float tB = bodyB.invMass / (bodyA.invMass + bodyB.invMass);
+					const float tA = bodyA.invMass / (bodyA.invMass + bodyB.invMass);
+					const float tB = bodyB.invMass / (bodyA.invMass + bodyB.invMass);
 
 					const Vector2 ds = contact.pointOnB - contact.pointOnA;
 					transformA.position.x += ds.x * tA;

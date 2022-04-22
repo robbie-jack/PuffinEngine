@@ -15,7 +15,7 @@ namespace Puffin::Physics
 
 		AABB GetAABB(const TransformComponent& transform) const;
 
-		Float radius_;
+		float radius_;
 
 		template<class Archive>
 		void serialize(Archive& archive)

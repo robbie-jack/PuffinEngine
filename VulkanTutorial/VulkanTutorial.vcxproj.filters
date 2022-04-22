@@ -207,9 +207,6 @@
     <ClInclude Include="src\Types\Vector.h">
       <Filter>Types</Filter>
     </ClInclude>
-    <ClInclude Include="src\Types\VectorConversion.h">
-      <Filter>Types</Filter>
-    </ClInclude>
     <ClInclude Include="src\UI\UIManager.h">
       <Filter>UI</Filter>
     </ClInclude>

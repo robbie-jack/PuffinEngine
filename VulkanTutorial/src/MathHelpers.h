@@ -11,14 +11,15 @@ namespace Puffin
 {
 	namespace Maths
 	{
-		inline Float Clamp(const Float& Value, const Float& Min, const Float& Max)
+		template<typename T>
+		inline T Clamp(const T& Value, const T& Min, const T& Max)
 		{
 			return std::max(Min, std::min(Max, Value));
 		}
 
-		inline Vector2 Clamp(const Vector2& Vector, const Vector2& Min, const Vector2& Max)
+		inline Vector2f Clamp(const Vector2f& Vector, const Vector2f& Min, const Vector2f& Max)
 		{
-			return Vector2(Clamp(Vector.x, Min.x, Max.x), Clamp(Vector.y, Min.y, Max.y));
+			return Vector2f(Clamp(Vector.x, Min.x, Max.x), Clamp(Vector.y, Min.y, Max.y));
 		}
 	}
 }

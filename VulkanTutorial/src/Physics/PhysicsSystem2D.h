@@ -48,7 +48,7 @@ namespace Puffin::Physics
 
 	private:
 
-		Vector2 m_gravity = Vector2(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
+		Vector2f m_gravity = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
 		std::vector<BoxShape2D> m_boxShapes;
 		std::vector<CircleShape2D> m_circleShapes;

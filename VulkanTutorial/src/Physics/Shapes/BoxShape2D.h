@@ -10,14 +10,14 @@ namespace Puffin::Physics
 
 		BoxShape2D() : Shape2D()
 		{
-			halfExtent_ = Vector2(.5f, .5f);
+			halfExtent_ = Vector2f(.5f, .5f);
 		}
 
 		ShapeType2D GetType() const override;
 
 		AABB GetAABB(const TransformComponent& transform) const;
 
-		Vector2 halfExtent_;
+		Vector2f halfExtent_;
 
 		template<class Archive>
 		void serialize(Archive& archive)

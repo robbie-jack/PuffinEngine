@@ -27,6 +27,6 @@ namespace Puffin::Physics
 
 		//virtual AABB GetAABB(const TransformComponent& transform) const = 0;
 
-		Vector2 centreOfMass_; // Centre of mass for this shape
+		Vector2f centreOfMass_; // Centre of mass for this shape
 	};
 }

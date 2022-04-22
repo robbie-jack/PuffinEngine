@@ -8,36 +8,27 @@
 
 namespace Puffin
 {
-	#ifdef PFN_USE_DOUBLE_PRECISION
-		typedef double Float;
-	#else
-		typedef float Float;
-	#endif
-
 	/*
 	====================
 	Vector 2
 	====================
 	*/
+	template<typename T>
 	struct Vector2
 	{
-		Float x, y;
+		T x, y;
 
 		// Constructors
-		Vector2()
-		{
-			x = 0.0f;
-			y = 0.0f;
-		}
+		Vector2() {}
 
-		Vector2(const Float& x_, const Float& y_)
+		Vector2(const T& x_, const T& y_)
 		{
 			x = x_;
 			y = y_;
 		}
 
 		// Fill X/Y/Z Components with Val
-		Vector2(const Float& val)
+		Vector2(const T& val)
 		{
 			x = val;
 			y = val;
@@ -67,7 +58,7 @@ namespace Puffin
 			y = vec.y;
 		}
 
-		void operator=(const Float* rhs)
+		void operator=(const T* rhs)
 		{
 			x = rhs[0];
 			y = rhs[1];
@@ -116,7 +107,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector2 operator+ (const Float& value) const
+		Vector2 operator+ (const T& value) const
 		{
 			return Vector2(x + value, y + value);
 		}
@@ -147,7 +138,7 @@ namespace Puffin
 		}
 
 		// Operator*
-		Vector2 operator* (const Float& inFloat) const
+		Vector2 operator* (const T& inFloat) const
 		{
 			Vector2 vector;
 			vector.x = x * inFloat;
@@ -156,14 +147,14 @@ namespace Puffin
 		}
 
 		// Operator*=
-		void operator*= (const Float& inFloat)
+		void operator*= (const T& inFloat)
 		{
 			x *= inFloat;
 			y *= inFloat;
 		}
 
 		// Operator/
-		Vector2 operator/ (const Float& inFloat) const
+		Vector2 operator/ (const T& inFloat) const
 		{
 			Vector2 vector;
 			vector.x = x / inFloat;
@@ -172,21 +163,21 @@ namespace Puffin
 		}
 		
 		// Operator/=
-		void operator/= (const Float& inFloat)
+		void operator/= (const T& inFloat)
 		{
 			x /= inFloat;
 			y /= inFloat;
 		}
 
 		// Operator[]
-		Float operator[] (const int idx) const
+		T operator[] (const int idx) const
 		{
 			assert(idx >= 0 && idx < 2);
 
 			return (&x)[idx];
 		}
 
-		Float& operator[] (const int idx)
+		T& operator[] (const int idx)
 		{
 			assert(idx >= 0 && idx < 2);
 
@@ -194,42 +185,42 @@ namespace Puffin
 		}
 
 		// Functions
-		Float Dot(const Vector2& vec) const
+		T Dot(const Vector2& vec) const
 		{
 			return (x * vec.x) + (y * vec.y);
 		}
 
-		Float Cross(const Vector2& vec) const
+		T Cross(const Vector2& vec) const
 		{
 			return x * vec.y - y * vec.x;
 		}
 
-		Float LengthSquared() const
+		T LengthSquared() const
 		{
 			return x * x + y * y;
 		}
 
-		Float Length() const
+		T Length() const
 		{
 			return sqrtf(LengthSquared());
 		}
 
-		Float DistanceToSquared(const Vector2& vec)
+		T DistanceToSquared(const Vector2& vec)
 		{
-			Float deltaX = x - vec.x;
-			Float deltaY = y - vec.y;
+			T deltaX = x - vec.x;
+			T deltaY = y - vec.y;
 
 			return (deltaX * deltaX) + (deltaY * deltaY);
 		}
 
-		Float DistanceTo(const Vector2& vec)
+		T DistanceTo(const Vector2& vec)
 		{
 			return sqrtf(DistanceTo(vec));
 		}
 
 		void Normalise()
 		{
-			Float length = Length();
+			T length = Length();
 
 			x /= length;
 			y /= length;
@@ -238,7 +229,7 @@ namespace Puffin
 		Vector2 Normalised() const
 		{
 			Vector2 vector = *this;
-			Float length = Length();
+			T length = Length();
 
 			vector.x /= length;
 			vector.y /= length;
@@ -260,24 +251,24 @@ namespace Puffin
 		}
 	};
 
+	typedef Vector2<float> Vector2f;
+	typedef Vector2<double> Vector2d;
+	typedef Vector2<int> Vector2i;
+
 	/*
 	====================
 	Vector 3
 	====================
 	*/
+	template<typename T>
 	struct Vector3
 	{
-		Float x, y, z;
+		T x, y, z;
 
 		// Constructors
-		Vector3()
-		{
-			x = 0.0f;
-			y = 0.0f;
-			z = 0.0f;
-		}
+		Vector3() {}
 
-		Vector3(const Float& x_, const Float& y_, const Float& z_)
+		Vector3(const T& x_, const T& y_, const T& z_)
 		{
 			x = x_;
 			y = y_;
@@ -285,7 +276,7 @@ namespace Puffin
 		}
 
 		// Fill X/Y/Z Components with Val
-		Vector3(const Float& val)
+		Vector3(const T& val)
 		{
 			x = val;
 			y = val;
@@ -299,7 +290,7 @@ namespace Puffin
 			z = vec.z;
 		}
 
-		Vector3(const Vector2& vec)
+		Vector3(const Vector2<T>& vec)
 		{
 			x = vec.x;
 			y = vec.y;
@@ -333,7 +324,7 @@ namespace Puffin
 			z = vec.z;
 		}
 
-		void operator=(const Float* rhs)
+		void operator=(const T* rhs)
 		{
 			x = rhs[0];
 			y = rhs[1];
@@ -411,7 +402,7 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator*(const Float& rhs) const
+		Vector3 operator*(const T& rhs) const
 		{
 			Vector3 vector;
 			vector.x = x * rhs;
@@ -421,7 +412,7 @@ namespace Puffin
 		}
 
 		// Operator*=
-		const Vector3& operator*=(const Float& rhs)
+		const Vector3& operator*=(const T& rhs)
 		{
 			x *= rhs;
 			y *= rhs;
@@ -430,14 +421,14 @@ namespace Puffin
 		}
 
 		// Operator[]
-		Float operator[] (const int idx) const
+		T operator[] (const int idx) const
 		{
 			assert(idx >= 0 && idx < 3);
 
 			return (&x)[idx];
 		}
 
-		Float& operator[] (const int idx)
+		T& operator[] (const int idx)
 		{
 			assert(idx >= 0 && idx < 3);
 
@@ -445,9 +436,9 @@ namespace Puffin
 		}
 
 		// Functions
-		Float Dot(const Vector3& vec) const
+		T Dot(const Vector3& vec) const
 		{
-			Float temp = (x * vec.x) + (y * vec.y) + (z * vec.z);
+			T temp = (x * vec.x) + (y * vec.y) + (z * vec.z);
 			return temp;
 		}
 
@@ -460,19 +451,19 @@ namespace Puffin
 			return cross;
 		}
 
-		Float LengthSquared() const
+		T LengthSquared() const
 		{
 			return x * x + y * y + z * z;
 		}
 
-		Float Length() const
+		T Length() const
 		{
 			return sqrtf(LengthSquared());
 		}
 
 		void Normalise()
 		{
-			Float length = Length();
+			T length = Length();
 
 			x /= length;
 			y /= length;
@@ -482,7 +473,7 @@ namespace Puffin
 		Vector3 Normalised() const
 		{
 			Vector3 vector = *this;
-			Float length = Length();
+			T length = Length();
 
 			vector.x /= length;
 			vector.y /= length;
@@ -498,9 +489,9 @@ namespace Puffin
 			z = 0.0f;
 		}
 
-		Vector2 GetXY() const
+		Vector2<T> GetXY() const
 		{
-			return Vector2(x, y);
+			return Vector2<T>(x, y);
 		}
 
 		// Serialization
@@ -510,6 +501,10 @@ namespace Puffin
 			archive(x, y, z);
 		}
 	};
+
+	typedef Vector3<float> Vector3f;
+	typedef Vector3<double> Vector3d;
+	typedef Vector3<int> Vector3i;
 }
 
 #endif // !VECTOR_H
