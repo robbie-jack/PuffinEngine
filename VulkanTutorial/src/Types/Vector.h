@@ -4,8 +4,6 @@
 #include <math.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-//#define PFN_USE_DOUBLE_PRECISION
-
 namespace Puffin
 {
 	/*
@@ -51,13 +49,17 @@ namespace Puffin
 			return vec;
 		}
 
-		// Operator=
-		void operator=(const glm::vec2& vec)
+		operator Vector2<float>() const
 		{
-			x = vec.x;
-			y = vec.y;
+			return Vector2<float>(x, y);
 		}
 
+		operator Vector2<double>() const
+		{
+			return Vector2<double>(x, y);
+		}
+
+		// Operator=
 		void operator=(const T* rhs)
 		{
 			x = rhs[0];
@@ -65,12 +67,6 @@ namespace Puffin
 		}
 
 		// Operator+=
-		void operator+=(const glm::vec2& vec)
-		{
-			x += vec.x;
-			y += vec.y;
-		}
-
 		void operator+=(const Vector2& vec)
 		{
 			x += vec.x;
@@ -78,12 +74,6 @@ namespace Puffin
 		}
 
 		// Operator-=
-		void operator-=(const glm::vec2& vec)
-		{
-			x -= vec.x;
-			y -= vec.y;
-		}
-
 		void operator-=(const Vector2& vec)
 		{
 			x -= vec.x;
@@ -99,14 +89,6 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector2 operator+ (const glm::vec2& vec) const
-		{
-			Vector2 vector;
-			vector = x + vec.x;
-			vector = y + vec.y;
-			return vector;
-		}
-
 		Vector2 operator+ (const T& value) const
 		{
 			return Vector2(x + value, y + value);
@@ -114,14 +96,6 @@ namespace Puffin
 
 		// Operator-
 		Vector2 operator- (const Vector2& vec) const
-		{
-			Vector2 vector;
-			vector.x = x - vec.x;
-			vector.y = y - vec.y;
-			return vector;
-		}
-
-		Vector2 operator- (const glm::vec2& vec) const
 		{
 			Vector2 vector;
 			vector.x = x - vec.x;
@@ -309,15 +283,18 @@ namespace Puffin
 			return vec;
 		}
 
-		// Operator=
-		void operator=(const Vector3& vec)
+		operator Vector3<float>() const
 		{
-			x = vec.x;
-			y = vec.y;
-			z = vec.z;
+			return Vector3<float>(x, y, z);
 		}
 
-		void operator=(const glm::vec3& vec)
+		operator Vector3<double>() const
+		{
+			return Vector3<double>(x, y, z);
+		}
+
+		// Operator=
+		void operator=(const Vector3& vec)
 		{
 			x = vec.x;
 			y = vec.y;
@@ -332,13 +309,6 @@ namespace Puffin
 		}
 
 		// Operator+=
-		void operator+=(const glm::vec3& vec)
-		{
-			x += vec.x;
-			y += vec.y;
-			z += vec.z;
-		}
-
 		void operator+=(const Vector3& vec)
 		{
 			x += vec.x;
@@ -346,8 +316,14 @@ namespace Puffin
 			z += vec.z;
 		}
 
+		void operator+=(const Vector2<T>& vec)
+		{
+			x += vec.x;
+			y += vec.y;
+		}
+
 		// Operator-=
-		void operator-=(const glm::vec3& vec)
+		void operator-=(const Vector3& vec)
 		{
 			x -= vec.x;
 			y -= vec.y;
@@ -364,12 +340,11 @@ namespace Puffin
 			return vector;
 		}
 
-		Vector3 operator+(const glm::vec3& vec) const
+		Vector3 operator+(const Vector2<T>& vec) const
 		{
 			Vector3 vector;
 			vector.x = x + vec.x;
 			vector.y = y + vec.y;
-			vector.z = z + vec.z;
 			return vector;
 		}
 
@@ -380,15 +355,6 @@ namespace Puffin
 			vector.x = x - vec.x;
 			vector.y = y - vec.y;
 			vector.z = z - vec.z;
-			return vector;
-		}
-
-		Vector3 operator- (const glm::vec3& vec)
-		{
-			Vector3 vector;
-			vector = x - vec.x;
-			vector = y - vec.y;
-			vector = z - vec.z;
 			return vector;
 		}
 

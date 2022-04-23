@@ -7,26 +7,47 @@
 
 #include <cereal/cereal.hpp>
 
+//#define PFN_USE_DOUBLE_PRECISION
+
 namespace Puffin
 {
-	struct TransformComponent
+	template<typename T>
+	struct Transform
 	{
-		TransformComponent() {}
+		Transform() {}
 
-		TransformComponent(Puffin::Vector3f InPosition, Puffin::Vector3f InRotation, Puffin::Vector3f InScale) :
+		Transform(T InPosition, Vector3f InRotation, Vector3f InScale) :
 			position(InPosition), rotation(InRotation), scale(InScale)
 		{
 		}
 
-		Puffin::Vector3f position = Puffin::Vector3f(0.0f);
-		Puffin::Vector3f rotation = Puffin::Vector3f(0.0f);
-		Puffin::Vector3f scale = Puffin::Vector3f(1.0f);
+		T position = T(0.0f);
+		Vector3f rotation = Vector3f(0.0f);
+		Vector3f scale = Vector3f(1.0f);
 	};
 
+	#ifdef PFN_USE_DOUBLE_PRECISION
+		typedef Transform<Vector3d> TransformComponent;
+	#else
+		typedef Transform<Vector3f> TransformComponent;
+	#endif
+
 	template<class Archive>
-	void serialize(Archive& archive, TransformComponent& comp)
+	void save(Archive& archive, const TransformComponent& comp)
 	{
-		archive(CEREAL_NVP(comp.position), CEREAL_NVP(comp.rotation), CEREAL_NVP(comp.scale));
+		Vector3d position = comp.position;
+			
+		archive(CEREAL_NVP(position), CEREAL_NVP(comp.rotation), CEREAL_NVP(comp.scale));
+	}
+
+	template<class Archive>
+	void load(Archive& archive, TransformComponent& comp)
+	{
+		Vector3d position;
+
+		archive(CEREAL_NVP(position), CEREAL_NVP(comp.rotation), CEREAL_NVP(comp.scale));
+
+		comp.position = position;
 	}
 }
 
