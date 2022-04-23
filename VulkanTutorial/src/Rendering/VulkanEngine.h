@@ -336,8 +336,6 @@ namespace Puffin
 			void RecreateSwapchain();
 			void RecreateOffscreen();
 
-			void StartScene();
-
 			// Init Component Functions
 			void InitMesh(MeshComponent& mesh);
 			void InitLight(LightComponent& light);

@@ -365,6 +365,9 @@
     <ClInclude Include="src\Assets\SoundAsset.h">
       <Filter>Assets</Filter>
     </ClInclude>
+    <ClInclude Include="src\Input\InputEvent.h">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="content\shaders\debug.frag">

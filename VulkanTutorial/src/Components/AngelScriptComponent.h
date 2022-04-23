@@ -60,6 +60,11 @@ namespace Puffin::Scripting
 		// Interface for instance of script object
 		asIScriptObject* obj;
 
+		// Script Functions
+		asIScriptFunction* startFunc;
+		asIScriptFunction* updateFunc;
+		asIScriptFunction* stopFunc;
+
 		// Set of class property indexes
 		std::set<int> editableProperties;
 		std::set<int> visibleProperties;

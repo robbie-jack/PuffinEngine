@@ -37,6 +37,7 @@ namespace Puffin
 			AddAction("CamMoveUp", GLFW_KEY_E);
 			AddAction("CamMoveDown", GLFW_KEY_Q);
 			AddAction("CursorSwitch", GLFW_KEY_F1);
+			AddAction("Spacebar", GLFW_KEY_SPACE);
 
 			// Setup Mouse Cursor
 			if (cursor_locked == true)
