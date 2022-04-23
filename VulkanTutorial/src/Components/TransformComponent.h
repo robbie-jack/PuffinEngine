@@ -21,6 +21,17 @@ namespace Puffin
 		{
 		}
 
+		~Transform() {};
+
+		Transform<T>& operator=(const Transform<T>& rhs)
+		{
+			position = rhs.position;
+			rotation = rhs.rotation;
+			scale = rhs.scale;
+
+			return *this;
+		}
+
 		T position = T(0.0f);
 		Vector3f rotation = Vector3f(0.0f);
 		Vector3f scale = Vector3f(1.0f);

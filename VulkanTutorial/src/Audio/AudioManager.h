@@ -39,9 +39,10 @@ namespace Puffin::Audio
 		void Cleanup();
 
 		// Play Sound, If this sound is already active, but paused, start playing it again
-		void PlaySound(UUID soundId, float volume = 1.0f, bool looping = false, bool restart = false);
-		void StopSound(UUID soundId);
-		void PauseSound(UUID soundId);
+		void PlaySoundEffect(UUID soundId, float volume = 1.0f, bool looping = false, bool restart = false);
+		UUID PlaySoundEffect(const std::string& soundId, float volume = 1.0f, bool looping = false, bool restart = false);
+		void StopSoundEffect(UUID soundId);
+		void PauseSoundEffect(UUID soundId);
 
 		void PlayAllSounds(bool forcePlay = false);
 		void PauseAllSounds();

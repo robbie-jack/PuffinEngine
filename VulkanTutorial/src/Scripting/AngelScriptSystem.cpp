@@ -1,5 +1,7 @@
 #include "AngelScriptSystem.h"
 
+#include "RegisterTypeHelpers.h"
+
 #include <iostream>  // cout
 #include <assert.h>  // assert()
 #include <string.h>
@@ -209,10 +211,16 @@ namespace Puffin
 				r = m_scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString_Generic), asCALL_GENERIC); assert(r >= 0);
 			}
 
-			// Define Global Functions for Scripts
+			// Define Global Methods for Scripts
 			r = m_scriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptSystem, GetDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 			r = m_scriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptSystem, GetFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 			r = m_scriptEngine->RegisterGlobalFunction("uint GetEntityID()", asMETHOD(AngelScriptSystem, GetEntityID), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+
+			r = m_scriptEngine->RegisterGlobalFunction("void PlaySoundEffect(uint64, float, bool, bool)", asMETHODPR(AngelScriptSystem, PlaySoundEffect, (uint64_t, float, bool, bool), void), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+			r = m_scriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSystem, PlaySoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+
+			// Register Components and their constructors, functions and properties
+			RegisterTransformComponent(m_scriptEngine, m_world.get());
 
 			// Register Input Funcdefs and Bind Callback Methods
 			r = m_scriptEngine->RegisterFuncdef("void OnInputPressed()"); assert(r >= 0);
@@ -494,6 +502,26 @@ namespace Puffin
 		double AngelScriptSystem::GetFixedTime()
 		{
 			return m_fixedTime;
+		}
+
+		void AngelScriptSystem::PlaySoundEffect(uint64_t id, float volume, bool looping, bool restart)
+		{
+			if (m_audioManager)
+			{
+				m_audioManager->PlaySoundEffect(id, volume, looping, restart);
+			}
+		}
+
+		uint64_t AngelScriptSystem::PlaySoundEffect(const std::string& path, float volume, bool looping, bool restart)
+		{
+			uint64_t id = 0;
+
+			if (m_audioManager)
+			{
+				id = m_audioManager->PlaySoundEffect(path, volume, looping, restart);
+			}
+
+			return id;
 		}
 
 		int AngelScriptSystem::GetEntityID()

@@ -178,6 +178,9 @@
     <ClCompile Include="src\Assets\TextureAsset.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.cpp">
+      <Filter>Scripting\Addons</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -367,6 +370,12 @@
     </ClInclude>
     <ClInclude Include="src\Input\InputEvent.h">
       <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scripting\RegisterTypeHelpers.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h">
+      <Filter>Scripting\Addons</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

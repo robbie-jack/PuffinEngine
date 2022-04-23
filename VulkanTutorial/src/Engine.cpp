@@ -42,7 +42,7 @@ namespace Puffin
 		std::shared_ptr<ECS::World> ECSWorld = std::make_shared<ECS::World>();
 		UI::UIManager UIManager(this, ECSWorld);
 		Input::InputManager InputManager;
-		Audio::AudioManager AudioManager;
+		std::shared_ptr<Audio::AudioManager> AudioManager = std::make_shared<Audio::AudioManager>();
 
 		glfwInit();
 
@@ -54,12 +54,14 @@ namespace Puffin
 
 		ECSWorld->Init();
 		InputManager.Init(window, ECSWorld);
-		AudioManager.Init();
+		AudioManager->Init();
 
 		// Systems
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
 		std::shared_ptr<Physics::PhysicsSystem2D> physicsSystem = ECSWorld->RegisterSystem<Physics::PhysicsSystem2D>();
-		ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
+		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
+
+		scriptingSystem->SetAudioManager(AudioManager);
 
 		// Register Components
 		ECSWorld->RegisterComponent<TransformComponent>();
@@ -177,8 +179,8 @@ namespace Puffin
 				// Get Snapshot of current scene data
 				IO::UpdateSceneData(ECSWorld, sceneData);
 
-				UUID soundId = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>("sounds\\Select 1.wav")->ID();
-				AudioManager.PlaySound(soundId, 0.5f, true);
+				/*UUID soundId = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>("sounds\\Select 1.wav")->ID();
+				AudioManager->PlaySound(soundId, 0.5f, true);*/
 				
 				accumulatedTime = 0.0;
 				playState = PlayState::PLAYING;
@@ -186,14 +188,14 @@ namespace Puffin
 
 			if (playState == PlayState::JUST_PAUSED)
 			{
-				AudioManager.PauseAllSounds();
+				AudioManager->PauseAllSounds();
 
 				playState = PlayState::PAUSED;
 			}
 
 			if (playState == PlayState::JUST_UNPAUSED)
 			{
-				AudioManager.PlayAllSounds();
+				AudioManager->PlayAllSounds();
 
 				playState = PlayState::PLAYING;
 			}
@@ -261,13 +263,13 @@ namespace Puffin
 					system->PreStart();
 				}
 
-				AudioManager.StopAllSounds();
+				AudioManager->StopAllSounds();
 
 				playState = PlayState::STOPPED;
 			}
 
 			// Audio
-			AudioManager.Update();
+			AudioManager->Update();
 
 			if (glfwWindowShouldClose(window))
 			{
@@ -284,7 +286,10 @@ namespace Puffin
 			system->Cleanup();
 		}
 
-		AudioManager.Cleanup();
+		AudioManager->Cleanup();
+		AudioManager.reset();
+		AudioManager = 0;
+
 		UIManager.Cleanup();
 		ECSWorld->Cleanup();
 

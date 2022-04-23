@@ -1,21 +1,24 @@
 #pragma once
 
-#include <ECS/ECS.h>
+#include "ECS/ECS.h"
 
 // AngelScript Includes
 #define ANGELSCRIPT_DLL_LIBRARY_IMPORT
-#include <angelscript.h>
-#include <scriptbuilder/scriptbuilder.h>
-#include <scriptstdstring/scriptstdstring.h>
+#include "angelscript.h"
+#include "scriptbuilder/scriptbuilder.h"
+#include "scriptstdstring/scriptstdstring.h"
 
-#include <Components/AngelScriptComponent.h>
+#include "Components/AngelScriptComponent.h"
 
 #include "Input/InputEvent.h"
 
-#include <Types/RingBuffer.h>
+#include "Types/RingBuffer.h"
+
+#include "Audio/AudioManager.h"
 
 #include <unordered_map>
 #include <map>
+#include <memory>
 
 namespace Puffin
 {
@@ -58,10 +61,17 @@ namespace Puffin
 				return info;
 			}
 
+			inline void SetAudioManager(std::shared_ptr<Audio::AudioManager> inAudioManager)
+			{
+				m_audioManager = inAudioManager;
+			}
+
 		private:
 
 			asIScriptEngine* m_scriptEngine;
 			asIScriptContext* m_ctx;
+
+			std::shared_ptr<Audio::AudioManager> m_audioManager;
 
 			ECS::Entity m_currentEntityID; // Entity ID for currently executing script
 
@@ -92,10 +102,12 @@ namespace Puffin
 			double GetDeltaTime();
 			double GetFixedTime();
 
+			void PlaySoundEffect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
+			uint64_t PlaySoundEffect(const std::string& path, float volume = 1.0f, bool looping = false, bool restart = false);
+
 			int GetEntityID(); // Return the Entity ID for the attached script
 
 			// Script Callbacks
-			void ExecuteCallback(const ScriptCallback& callback);
 			ScriptCallback BindCallback(uint32_t entity, asIScriptFunction* cb);
 			void ReleaseCallback(ScriptCallback& scriptCallback);
 
