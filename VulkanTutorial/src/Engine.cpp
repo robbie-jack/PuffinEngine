@@ -76,6 +76,9 @@ namespace Puffin
 		ECSWorld->RegisterComponentFlag<FlagDirty>(true);
 		ECSWorld->RegisterComponentFlag<FlagDeleted>();
 
+		// Register Entity Flags
+
+
 		// Setup Entity Signatures
 		ECS::Signature meshSignature;
 		meshSignature.set(ECSWorld->GetComponentType<TransformComponent>());
@@ -128,13 +131,16 @@ namespace Puffin
 		// Load Default Scene (if set)
 		sceneData.scene_path = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
 
+		// Load/Initialize Assets
+		//AddDefaultAssets();
+		Assets::AssetRegistry::Get()->LoadAssetCache();
+
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene(ECSWorld);
 		//PhysicsScene(ECSWorld);
 		
 		// Load Scene -- normal behaviour
 		IO::LoadAndInitScene(ECSWorld, sceneData);
-		Assets::AssetRegistry::Get()->LoadAssetCache();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -303,11 +309,8 @@ namespace Puffin
 		glfwTerminate();
 	}
 
-	void Engine::DefaultScene(std::shared_ptr<ECS::World> world)
+	void Engine::AddDefaultAssets()
 	{
-		// Initialize Assets
-		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
-
 		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
 		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
@@ -327,6 +330,32 @@ namespace Puffin
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
 		UUID soundId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::SoundAsset>(soundPath1)->ID();
+	}
+
+	void Engine::DefaultScene(std::shared_ptr<ECS::World> world)
+	{
+		// Initialize Assets
+		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
+
+		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
+
+		UUID meshId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
+		UUID meshId2 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
+		UUID meshId3 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
+		UUID meshId4 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
+
+		const fs::path& texturePath1 = "textures\\chalet.ptexture";
+		const fs::path& texturePath2 = "textures\\cube.ptexture";
+
+		UUID textureId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(texturePath1)->ID();
+		UUID textureId2 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(texturePath2)->ID();
+
+		const fs::path& soundPath1 = "sounds\\Select 1.wav";
+
+		UUID soundId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath1)->ID();
 
 		// Initialize EntityManager with Existing Entities
 		world->InitEntitySystem();
@@ -418,16 +447,20 @@ namespace Puffin
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
-		UUID meshId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
-		UUID meshId3 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
-		UUID meshId4 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
+		UUID meshId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
+		UUID meshId2 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
+		UUID meshId3 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
+		UUID meshId4 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
 
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		UUID textureId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath1)->ID();
-		UUID textureId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(texturePath2)->ID();
+		UUID textureId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(texturePath1)->ID();
+		UUID textureId2 = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(texturePath2)->ID();
+
+		const fs::path& soundPath1 = "sounds\\Select 1.wav";
+
+		UUID soundId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath1)->ID();
 
 		world->InitEntitySystem();
 

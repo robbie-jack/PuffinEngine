@@ -9,6 +9,8 @@
 #include "Assets/MeshAsset.h"
 #include "Assets/TextureAsset.h"
 
+#include "Types/ComponentFlags.h"
+
 #define VMA_IMPLEMENTATION
 #include <Rendering/vk_mem_alloc.h>
 
@@ -1773,16 +1775,17 @@ namespace Puffin
 				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
 				// Initialize
-				if (!m_world->ComponentInitialized<MeshComponent>(entity))
+				if (m_world->GetComponentFlag<MeshComponent, FlagDirty>(entity))
 				{
 					InitMesh(mesh);
-					m_world->SetComponentInitialized<MeshComponent>(entity, true);
+
+					m_world->SetComponentFlag<MeshComponent, FlagDirty>(entity, false);
 
 					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
-				if (m_world->ComponentDeleted<MeshComponent>(entity) || m_world->IsDeleted(entity))
+				if (m_world->GetComponentFlag<MeshComponent, FlagDeleted>(entity) || m_world->GetEntityFlag<FlagDeleted>(entity))
 				{
 					CleanupMesh(mesh);
 					m_world->RemoveComponent<MeshComponent>(entity);
@@ -1797,17 +1800,17 @@ namespace Puffin
 
 				// Initialize
 
-				if (!m_world->ComponentInitialized<LightComponent>(entity))
+				if (m_world->GetComponentFlag<LightComponent, FlagDirty>(entity))
 				{
 					InitLight(light);
-					m_world->SetComponentInitialized<LightComponent>(entity, true);
+					m_world->SetComponentFlag<LightComponent, FlagDirty>(entity, true);
 					shadowmapDescriptorNeedsUpdated = true;
 					
 					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
-				if (m_world->ComponentDeleted<LightComponent>(entity) || m_world->IsDeleted(entity))
+				if (m_world->GetComponentFlag<LightComponent, FlagDeleted>(entity) || m_world->GetEntityFlag<FlagDeleted>(entity))
 				{
 					CleanupLight(light);
 					m_world->RemoveComponent<LightComponent>(entity);
@@ -2580,7 +2583,8 @@ namespace Puffin
 					{
 						MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
-						if (m_world->ComponentInitialized<MeshComponent>(entity) && !m_world->ComponentDeleted<MeshComponent>(entity))
+						if (!m_world->GetComponentFlag<MeshComponent, FlagDirty>(entity) &&
+							!m_world->GetComponentFlag<MeshComponent, FlagDeleted>(entity))
 						{
 							// Bind Vertices, Indices and Descriptor Sets
 							VkDeviceSize offsets[] = { 0 };
@@ -2727,7 +2731,8 @@ namespace Puffin
 			{
 				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
-				if (m_world->ComponentInitialized<MeshComponent>(entity) && !m_world->ComponentDeleted<MeshComponent>(entity))
+				if (!m_world->GetComponentFlag<MeshComponent, FlagDirty>(entity) &&
+					!m_world->GetComponentFlag<MeshComponent, FlagDeleted>(entity))
 				{
 
 					// Bind material pipeline if it does not match previous material

@@ -1,6 +1,7 @@
 #include "AngelScriptSystem.h"
 
 #include "RegisterTypeHelpers.h"
+#include "Types/ComponentFlags.h"
 
 #include <iostream>  // cout
 #include <assert.h>  // assert()
@@ -75,7 +76,7 @@ namespace Puffin
 
 				InitializeScript(entity, script);
 
-				m_world->SetComponentInitialized<AngelScriptComponent>(entity, true);
+				m_world->SetComponentFlag<AngelScriptComponent, FlagDirty>(entity, false);
 			}
 		}
 
@@ -109,17 +110,17 @@ namespace Puffin
 				m_currentEntityID = entity;
 
 				// Script needs initialized
-				if (!m_world->ComponentInitialized<AngelScriptComponent>(entity))
+				if (m_world->GetComponentFlag<AngelScriptComponent, FlagDirty>(entity))
 				{
 					InitializeScript(entity, script);
 
 					PrepareAndExecuteScriptMethod(script.obj, script.startFunc);
 
-					m_world->SetComponentInitialized<AngelScriptComponent>(entity, true);
+					m_world->SetComponentFlag<AngelScriptComponent, FlagDirty>(entity, false);
 				}
 
 				// Script needs cleaned up
-				if (m_world->ComponentDeleted<AngelScriptComponent>(entity) || m_world->IsDeleted(entity))
+				if (m_world->GetComponentFlag<AngelScriptComponent, FlagDeleted>(entity) || m_world->GetEntityFlag<FlagDeleted>(entity))
 				{
 					PrepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 

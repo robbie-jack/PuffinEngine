@@ -13,23 +13,41 @@ namespace Puffin
 	{
 		struct CircleComponent2D
 		{
-			CircleShape2D* shape_;
+			CircleShape2D* shape;
 
 			template<class Archive>
-			void serialize(Archive& archive)
+			void save(Archive& archive) const 
 			{
-				archive(*shape_);
+				if (shape != nullptr)
+					archive(*shape);
+			}
+
+			template<class Archive>
+			void load(Archive& archive)
+			{
+				shape = new CircleShape2D();
+
+				archive(*shape);
 			}
 		};
 
 		struct BoxComponent2D
 		{
-			BoxShape2D* shape_;
+			BoxShape2D* shape;
 
 			template<class Archive>
-			void serialize(Archive& archive)
+			void save(Archive& archive) const
 			{
-				archive(*shape_);
+				if (shape != nullptr)
+					archive(*shape);
+			}
+
+			template<class Archive>
+			void load(Archive& archive)
+			{
+				shape = new BoxShape2D();
+
+				archive(*shape);
 			}
 		};
 	}

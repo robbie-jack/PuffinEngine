@@ -3,6 +3,9 @@
 #include "ECS\EventManager.h"
 #include "ECS\System.h"
 
+#include "Types/PackedArray.h"
+#include "Types/ComponentFlags.h"
+
 #include <cstdint>
 #include <bitset>
 #include <queue>
@@ -57,7 +60,12 @@ namespace Puffin::ECS
 				availableEntities.push(entity);
 
 				entityNames[entity] = "";
-				entityDeletionFlags[entity] = false;
+				
+				// Set all flags back to default
+				for (auto& pair : flagSets)
+				{
+					pair.second[entity] = flagDefaults[pair.first];
+				}
 			}
 
 			bInitialized = true;
@@ -84,7 +92,12 @@ namespace Puffin::ECS
 				}
 
 				entityNames[entity] = "";
-				entityDeletionFlags[entity] = false;
+				
+				// Set all flags back to default
+				for (auto& pair : flagSets)
+				{
+					pair.second[entity] = flagDefaults[pair.first];
+				}
 			}
 
 			bInitialized = true;
@@ -115,6 +128,12 @@ namespace Puffin::ECS
 			activeEntities.insert(entity);
 			entityNames[entity] = "New Entity";
 
+			// Set all flags back to default
+			for (auto& pair : flagSets)
+			{
+				pair.second[entity] = flagDefaults[pair.first];
+			}
+
 			return entity;
 		}
 
@@ -125,7 +144,6 @@ namespace Puffin::ECS
 			// Reset signature for this entity
 			entitySignatures[entity].reset();
 			entityNames[entity] = "";
-			entityDeletionFlags[entity] = false;
 
 			activeEntities.erase(entity);
 
@@ -166,19 +184,44 @@ namespace Puffin::ECS
 			return entitySignatures[entity];
 		}
 
-		void MarkToDelete(Entity entity)
+		template<typename FlagT>
+		void RegisterEntityFlag(bool flagDefault)
 		{
-			assert(entity < MAX_ENTITIES && "Entity out of range");
+			const char* typeName = typeid(FlagT).name();
 
-			// Mark this entity for deletion so all its component can be cleaned up by the relevant systems
-			entityDeletionFlags[entity] = true;
+			assert(flagTypes.find(typeName) == flagTypes.end() && "Registering flag type more than once");
+			assert(nextFlagType < MAX_FLAGS && "Registering more than maximum number of flags");
+
+			// Add new flag type to flag type map
+			flagTypes.insert({typeName, nextFlagType});
+
+			// Add new flag bitset
+			flagSets[flagTypes[typeName]] = std::bitset<MAX_ENTITIES>();
+			flagDefaults[flagTypes[typeName]] = flagDefault;
+
+			nextFlagType++;
 		}
 
-		bool IsDeleted(Entity entity)
+		template<typename FlagT>
+		bool GetEntityFlag(Entity entity)
 		{
-			assert(entity < MAX_ENTITIES && "Entity out of range");
+			const char* typeName = typeid(FlagT).name();
 
-			return entityDeletionFlags[entity];
+			assert(activeEntities.count(entity) == 1 && "Entity does not exist");
+			assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
+
+			return flagSets[flagTypes[typeName]][entity];
+		}
+
+		template<typename FlagT>
+		void SetEntityFlag(Entity entity, bool flag)
+		{
+			const char* typeName = typeid(FlagT).name();
+
+			assert(activeEntities.count(entity) == 1 && "Entity does not exist");
+			assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
+
+			flagSets[flagTypes[typeName]][entity] = flag;
 		}
 
 		std::set<Entity> GetActiveEntities()
@@ -192,7 +235,15 @@ namespace Puffin::ECS
 		std::set<Entity> activeEntities;
 		std::array<std::string, MAX_ENTITIES> entityNames;
 		std::array<Signature, MAX_ENTITIES> entitySignatures;
-		std::array<bool, MAX_ENTITIES> entityDeletionFlags;
+
+		// FlagType to be assigned to next registered flag
+		FlagType nextFlagType;
+
+		// Map from type string pointer to flag type
+		std::unordered_map<const char*, FlagType> flagTypes;
+
+		std::unordered_map<FlagType, std::bitset<MAX_ENTITIES>> flagSets;
+		std::unordered_map<FlagType, bool> flagDefaults; // What to have each flag type default to
 
 		uint32_t activeEntityCount;
 
@@ -218,122 +269,42 @@ namespace Puffin::ECS
 
 		ComponentT& AddComponent(Entity entity)
 		{
-			assert(entityToIndexMap.find(entity) == entityToIndexMap.end() && "Entity already has a component of this type");
+			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
 
-			// Insert new component at end of array
-			size_t newIndex = arraySize;
-			entityToIndexMap[entity] = newIndex;
-			indexToEntityMap[newIndex] = entity;
-			componentInitialized[newIndex] = false;
-			componentDeleted[newIndex] = false;
-
-			for (auto& pair : flagSets)
-			{
-				auto& flagSet = pair.second;
-
-				flagSet[newIndex] = flagDefaults[pair.first];
-			}
-
-			arraySize++;
-
-			return componentArray[newIndex];
+			componentArray.Insert(entity, ComponentT());
+			return componentArray[entity];
 		}
 
 		void AddComponent(Entity entity, ComponentT component)
 		{
-			assert(entityToIndexMap.find(entity) == entityToIndexMap.end() && "Entity already has a component of this type");
+			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
 
-			// Insert new component at end of array
-			size_t newIndex = arraySize;
-			entityToIndexMap[entity] = newIndex;
-			indexToEntityMap[newIndex] = entity;
-			componentArray[newIndex] = component;
-			componentInitialized[newIndex] = false;
-			componentDeleted[newIndex] = false;
+			componentArray.Insert(entity, component);
 
+			// Set all flags back to default
 			for (auto& pair : flagSets)
 			{
-				auto& flagSet = pair.second;
-
-				flagSet[newIndex] = flagDefaults[pair.first];
+				pair.second[entity] = flagDefaults[pair.first];
 			}
-
-			arraySize++;
 		}
 
 		void RemoveComponent(Entity entity)
 		{
-			assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Removing non-existent component.");
+			assert(componentArray.Contains(entity) && "Removing non-existent component.");
 
-			// Copy component at end of array into deleted components spaced to maintain packed array
-			size_t indexOfRemovedComponent = entityToIndexMap[entity];
-			size_t indexOfLastComponent = arraySize - 1;
-			componentArray[indexOfRemovedComponent] = componentArray[indexOfLastComponent];
-			componentInitialized[indexOfRemovedComponent] = componentInitialized[indexOfLastComponent];
-			componentDeleted[indexOfRemovedComponent] = componentDeleted[indexOfLastComponent];
-
-			for (auto& pair : flagSets)
-			{
-				auto& flagSet = pair.second;
-
-				flagSet[indexOfRemovedComponent] = flagSet[indexOfLastComponent];
-			}
-
-			// Update map to point to components new location
-			Entity entityOfLastComponent = indexToEntityMap[indexOfLastComponent];
-			entityToIndexMap[entityOfLastComponent] = indexOfRemovedComponent;
-			indexToEntityMap[indexOfRemovedComponent] = entityOfLastComponent;
-
-			entityToIndexMap.erase(entity);
-			indexToEntityMap.erase(indexOfLastComponent);
-
-			//componentArray[indexOfLastComponent] = {};
-			componentInitialized[indexOfLastComponent] = false;
-			componentDeleted[indexOfLastComponent] = false;
-
-			arraySize--;
+			componentArray.Erase(entity);
 		}
 
 		ComponentT& GetComponent(Entity entity)
 		{
-			assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Retrieving non-existent component.");
+			assert(componentArray.Contains(entity) && "Retrieving non-existent component.");
 
-			// Return reference to component
-			return componentArray[entityToIndexMap[entity]];
+			return componentArray[entity];
 		}
 
 		bool HasComponent(Entity entity)
 		{
-			return entityToIndexMap.find(entity) != entityToIndexMap.end();
-		}
-
-		bool ComponentInitialized(Entity entity)
-		{
-			assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
-
-			return componentInitialized[entityToIndexMap[entity]];
-		}
-
-		void SetComponentInitialized(Entity entity, bool isCreated)
-		{
-			assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
-
-			componentInitialized[entityToIndexMap[entity]] = isCreated;
-		}
-
-		bool ComponentDeleted(Entity entity)
-		{
-			assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
-
-			return componentDeleted[entityToIndexMap[entity]];
-		}
-
-		void SetComponentDeleted(Entity entity, bool isDeleted)
-		{
-			assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
-
-			componentDeleted[entityToIndexMap[entity]] = isDeleted;
-
+			return componentArray.Contains(entity);
 		}
 
 		void RegisterComponentFlag(FlagType flagType, bool flagDefault) override
@@ -344,21 +315,21 @@ namespace Puffin::ECS
 
 		bool GetComponentFlag(FlagType flagType, Entity entity)
 		{
-			assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
+			assert(componentArray.Contains(entity) && "Accessing non-existent component.");
 
-			return flagSets[flagType][entityToIndexMap[entity]];
+			return flagSets[flagType][entity];
 		}
 
 		void SetComponentFlag(FlagType flagType, Entity entity, bool flag)
 		{
-			assert(entityToIndexMap.find(entity) != entityToIndexMap.end() && "Accessing non-existent component.");
+			assert(componentArray.Contains(entity) && "Accessing non-existent component.");
 
-			flagSets[flagType][entityToIndexMap[entity]] = flag;
+			flagSets[flagType][entity] = flag;
 		}
 
 		void EntityDestroyed(Entity entity) override
 		{
-			if (entityToIndexMap.find(entity) != entityToIndexMap.end())
+			if (componentArray.Contains(entity))
 			{
 				// Remove entities component if it existed
 				RemoveComponent(entity);
@@ -368,23 +339,10 @@ namespace Puffin::ECS
 	private:
 
 		// Packed array of components
-		std::array<ComponentT, MAX_ENTITIES> componentArray;
-
-		// Packed bit sets of flags for each individual component
-		std::bitset<MAX_ENTITIES> componentInitialized;
-		std::bitset<MAX_ENTITIES> componentDeleted;
+		PackedArray<ECS::Entity, ComponentT, MAX_ENTITIES> componentArray;
 
 		std::unordered_map<FlagType, std::bitset<MAX_ENTITIES>> flagSets;
 		std::unordered_map<FlagType, bool> flagDefaults; // What to have each flag type default to
-
-		// Map from entity to array
-		std::unordered_map<Entity, size_t> entityToIndexMap;
-
-		// Map from array to entity
-		std::unordered_map<size_t, Entity> indexToEntityMap;
-
-		// Size of valid entries in array
-		size_t arraySize;
 	};
 
 	//////////////////////////////////////////////////
@@ -472,46 +430,6 @@ namespace Puffin::ECS
 			return GetComponentArray<ComponentT>()->HasComponent(entity);
 		}
 
-		template<typename ComponentT>
-		bool ComponentInitialized(Entity entity)
-		{
-			const char* typeName = typeid(ComponentT).name();
-
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
-
-			return GetComponentArray<ComponentT>()->ComponentInitialized(entity);
-		}
-
-		template<typename ComponentT>
-		void SetComponentInitialized(Entity entity, bool isCreated)
-		{
-			const char* typeName = typeid(ComponentT).name();
-
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
-
-			GetComponentArray<ComponentT>()->SetComponentInitialized(entity, isCreated);
-		}
-
-		template<typename ComponentT>
-		bool ComponentDeleted(Entity entity)
-		{
-			const char* typeName = typeid(ComponentT).name();
-
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
-
-			return GetComponentArray<ComponentT>()->ComponentDeleted(entity);
-		}
-
-		template<typename ComponentT>
-		void SetComponentDeleted(Entity entity, bool isDeleted)
-		{
-			const char* typeName = typeid(ComponentT).name();
-
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
-
-			GetComponentArray<ComponentT>()->SetComponentDeleted(entity, isDeleted);
-		}
-
 		// Functions for Registering and Updating Component Flags
 		template<typename FlagT>
 		void RegisterComponentFlag(bool defaultFlag)
@@ -519,6 +437,7 @@ namespace Puffin::ECS
 			const char* typeName = typeid(FlagT).name();
 
 			assert(flagTypes.find(typeName) == flagTypes.end() && "Registering flag type more than once");
+			assert(nextFlagType < MAX_FLAGS && "Registering more than maximum number of flags");
 
 			// Add new flag type to flag type map
 			flagTypes.insert({typeName, nextFlagType});
@@ -770,6 +689,8 @@ namespace Puffin::ECS
 			entityManager = std::make_unique<EntityManager>();
 			systemManager = std::make_unique<SystemManager>();
 			eventManager = std::make_unique<EventManager>();
+
+			RegisterEntityFlag<FlagDeleted>();
 		}
 
 		void Update()
@@ -777,7 +698,7 @@ namespace Puffin::ECS
 			// Remove all entities marked for deletion
 			for (auto entity : entityManager->GetActiveEntities())
 			{
-				if (IsDeleted(entity))
+				if (GetEntityFlag<FlagDeleted>(entity))
 				{
 					DestroyEntity(entity);
 				}
@@ -856,14 +777,22 @@ namespace Puffin::ECS
 			return entityManager->GetSignature(entity);
 		}
 
-		void MarkToDelete(Entity entity)
+		template<typename FlagT>
+		void RegisterEntityFlag(bool defaultFlag = false)
 		{
-			entityManager->MarkToDelete(entity);
+			entityManager->RegisterEntityFlag<FlagT>(defaultFlag);
 		}
 
-		bool IsDeleted(Entity entity)
+		template<typename FlagT>
+		bool GetEntityFlag(Entity entity)
 		{
-			return entityManager->IsDeleted(entity);
+			return entityManager->GetEntityFlag<FlagT>(entity);
+		}
+
+		template<typename FlagT>
+		void SetEntityFlag(Entity entity, bool flag)
+		{
+			entityManager->SetEntityFlag<FlagT>(entity, flag);
 		}
 
 		std::set<Entity> GetActiveEntities()
@@ -932,30 +861,6 @@ namespace Puffin::ECS
 		bool HasComponent(Entity entity)
 		{
 			return componentManager->HasComponent<ComponentT>(entity);
-		}
-
-		template<typename ComponentT>
-		bool ComponentInitialized(Entity entity)
-		{
-			return componentManager->ComponentInitialized<ComponentT>(entity);
-		}
-
-		template<typename ComponentT>
-		void SetComponentInitialized(Entity entity, bool isCreated)
-		{
-			componentManager->SetComponentInitialized<ComponentT>(entity, isCreated);
-		}
-
-		template<typename ComponentT>
-		bool ComponentDeleted(Entity entity)
-		{
-			return componentManager->ComponentDeleted<ComponentT>(entity);
-		}
-
-		template<typename ComponentT>
-		void SetComponentDeleted(Entity entity, bool isDeleted)
-		{
-			componentManager->SetComponentDeleted<ComponentT>(entity, isDeleted);
 		}
 
 		template<typename FlagT>

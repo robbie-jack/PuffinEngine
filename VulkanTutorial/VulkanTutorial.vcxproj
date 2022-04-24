@@ -270,6 +270,7 @@
     <ClInclude Include="src\SerializeScene.h" />
     <ClInclude Include="src\Types\ComponentFlags.h" />
     <ClInclude Include="src\Types\Matrix.h" />
+    <ClInclude Include="src\Types\PackedArray.h" />
     <ClInclude Include="src\Types\Quat.h" />
     <ClInclude Include="src\Types\RingBuffer.h" />
     <ClInclude Include="src\Types\UUID.h" />

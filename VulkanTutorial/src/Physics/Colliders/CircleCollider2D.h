@@ -7,7 +7,7 @@ namespace Puffin::Physics::Collision2D
 {
 	struct CircleCollider2D : public Collider2D
 	{
-		CircleCollider2D(ECS::Entity entity, CircleShape2D* shape) : Collider2D(entity), shape_(shape) {}
+		CircleCollider2D(ECS::Entity entity, CircleShape2D* shape) : Collider2D(entity), shape(shape) {}
 
 		AABB GetAABB() const override;
 
@@ -15,6 +15,6 @@ namespace Puffin::Physics::Collision2D
 		bool TestCollision(const BoxCollider2D* collider, Collision2D::Contact& outContact) const override;
 		bool TestCollision(const CircleCollider2D* collider, Collision2D::Contact& outContact) const override;
 
-		CircleShape2D* shape_;
+		CircleShape2D* shape;
 	};
 }

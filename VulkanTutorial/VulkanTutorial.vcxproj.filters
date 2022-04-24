@@ -377,6 +377,9 @@
     <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h">
       <Filter>Scripting\Addons</Filter>
     </ClInclude>
+    <ClInclude Include="src\Types\PackedArray.h">
+      <Filter>Types</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="content\shaders\debug.frag">

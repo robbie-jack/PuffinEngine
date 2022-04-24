@@ -20,12 +20,11 @@ namespace Puffin
 
 		void PhysicsSystem2D::PreStart()
 		{
-			
+			UpdateComponents();
 		}
 
 		void PhysicsSystem2D::Start()
 		{
-			UpdateComponents();
 		}
 
 		void PhysicsSystem2D::Update()
@@ -48,6 +47,47 @@ namespace Puffin
 		// Private Functions
 		//--------------------------------------------------
 
+		void PhysicsSystem2D::InitComponents()
+		{
+			for (ECS::Entity entity : entityMap["BoxCollision"])
+			{
+				if (m_world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
+				{
+					
+				}
+			}
+			
+			for (ECS::Entity entity : entityMap["CircleCollision"])
+			{
+				
+			}
+		}
+
+		void PhysicsSystem2D::InitCircle2D(ECS::Entity entity)
+		{
+			auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
+
+			// Check if this entity already has
+
+			// Create default box shape if component does not have one assigned
+			if (circle.shape == nullptr)
+			{
+				m_circleShapes.emplace_back(CircleShape2D());
+
+				circle.shape = &m_circleShapes.back();
+			}
+
+			if (circle.shape != nullptr)
+				m_colliders.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape));
+
+			m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
+		}
+
+		void PhysicsSystem2D::InitBox2D(ECS::Entity entity)
+		{
+			auto& box = m_world->GetComponent<BoxComponent2D>(entity);
+		}
+
 		void PhysicsSystem2D::UpdateComponents()
 		{
 			for (ECS::Entity entity : entityMap["BoxCollision"])
@@ -58,16 +98,16 @@ namespace Puffin
 				if (m_world->GetComponentFlag<BoxComponent2D, FlagDirty>(entity))
 				{
 					// Create default box shape if component does not have one assigned
-					if (box.shape_ == nullptr)
+					if (box.shape == nullptr)
 					{
 						m_boxShapes.emplace_back(BoxShape2D());
 
-						box.shape_ = &m_boxShapes.back();
+						box.shape = &m_boxShapes.back();
 					}
 
 					// Create Collider for this component if one does not exist
-					if (box.shape_ != nullptr)
-						m_colliders.emplace_back(new Collision2D::BoxCollider2D(entity, box.shape_));
+					if (box.shape != nullptr)
+						m_colliders.emplace_back(new Collision2D::BoxCollider2D(entity, box.shape));
 
 					m_world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
 				}
@@ -81,15 +121,15 @@ namespace Puffin
 				if (m_world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
 				{
 					// Create default box shape if component does not have one assigned
-					if (circle.shape_ == nullptr)
+					if (circle.shape == nullptr)
 					{
 						m_circleShapes.emplace_back(CircleShape2D());
 
-						circle.shape_ = &m_circleShapes.back();
+						circle.shape = &m_circleShapes.back();
 					}
 
-					if (circle.shape_ != nullptr)
-						m_colliders.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape_));
+					if (circle.shape != nullptr)
+						m_colliders.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape));
 
 					m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
 				}

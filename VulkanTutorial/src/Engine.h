@@ -53,6 +53,8 @@ namespace Puffin
 
 		IO::SceneData sceneData;
 
+		void AddDefaultAssets();
+
 		void DefaultScene(std::shared_ptr<ECS::World> world);
 		void PhysicsScene(std::shared_ptr<ECS::World> world);
 

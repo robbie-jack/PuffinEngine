@@ -6,7 +6,7 @@ namespace Puffin::Physics::Collision2D
 {
 	AABB BoxCollider2D::GetAABB() const
 	{
-		return shape_->GetAABB(transform_);
+		return shape->GetAABB(transform_);
 	}
 
 	bool BoxCollider2D::TestCollision(const Collider2D* collider, Collision2D::Contact& outContact) const

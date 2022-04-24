@@ -42,7 +42,7 @@ namespace Puffin::Physics
 			const Vector2 ab = circleB->transform_.position.GetXY() - circleA->transform_.position.GetXY();
 
 			// Get Cumulative Radius of Circles
-			const float radiusAB = circleA->shape_->radius_ + circleB->shape_->radius_;
+			const float radiusAB = circleA->shape->radius_ + circleB->shape->radius_;
 			const float radiusABSq = radiusAB * radiusAB;
 
 			if (ab.LengthSquared() > radiusABSq)
@@ -53,8 +53,8 @@ namespace Puffin::Physics
 
 			outContact.normal = ab.Normalised();
 
-			outContact.pointOnA = circleA->transform_.position.GetXY() + outContact.normal * circleA->shape_->radius_;
-			outContact.pointOnB = circleB->transform_.position.GetXY() - outContact.normal * circleB->shape_->radius_;
+			outContact.pointOnA = circleA->transform_.position.GetXY() + outContact.normal * circleA->shape->radius_;
+			outContact.pointOnB = circleB->transform_.position.GetXY() - outContact.normal * circleB->shape->radius_;
 
 			return true;
 		}
@@ -62,12 +62,12 @@ namespace Puffin::Physics
 		inline bool TestCircleVsBox(const CircleCollider2D* circleA, const BoxCollider2D* boxB, Contact& outContact)
 		{
 			// Get Circle/Box Centres
-			Vector2f centreCircle = circleA->transform_.position.GetXY() + circleA->shape_->radius_;
-			Vector2f centreBox = boxB->transform_.position.GetXY() + boxB->shape_->halfExtent_;
+			Vector2f centreCircle = circleA->transform_.position.GetXY() + circleA->shape->radius_;
+			Vector2f centreBox = boxB->transform_.position.GetXY() + boxB->shape->halfExtent_;
 
 			// Get Clamped Diff between Centres
 			Vector2f diff = centreCircle - centreBox;
-			Vector2f diffClamped = Maths::Clamp(diff, Vector2f(-boxB->shape_->halfExtent_.x, -boxB->shape_->halfExtent_.y), boxB->shape_->halfExtent_);
+			Vector2f diffClamped = Maths::Clamp(diff, Vector2f(-boxB->shape->halfExtent_.x, -boxB->shape->halfExtent_.y), boxB->shape->halfExtent_);
 
 			// Add clamped value to Box centre to get point of box closest to circle
 			const Vector2f closest = centreBox + diffClamped;
@@ -79,7 +79,7 @@ namespace Puffin::Physics
 			outContact.b = boxB->entity_;
 
 			// If length of diff is less than Circle radius, then Circle and Box are colliding
-			return diff.LengthSquared() < circleA->shape_->radius_ * circleA->shape_->radius_;
+			return diff.LengthSquared() < circleA->shape->radius_ * circleA->shape->radius_;
 		}
 	}
 

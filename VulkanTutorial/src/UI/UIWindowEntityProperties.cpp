@@ -5,6 +5,8 @@
 #include <Components/Rendering/LightComponent.h>
 #include <ECS/ECS.h>
 
+#include "Types/ComponentFlags.h"
+
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <iostream>
@@ -188,7 +190,7 @@ namespace Puffin
 					if (ImGui::SmallButton("X##Mesh"))
 					{
 						sceneChanged = true;
-						world->SetComponentDeleted<Rendering::MeshComponent>(entity, true);
+						world->SetComponentFlag<Rendering::MeshComponent, FlagDeleted>(entity, true);
 					}
 
 					// Change Model Path
@@ -245,7 +247,7 @@ namespace Puffin
 					if (ImGui::SmallButton("X##Light"))
 					{
 						sceneChanged = true;
-						world->SetComponentDeleted<Rendering::LightComponent>(entity, true);
+						world->SetComponentFlag<Rendering::LightComponent, FlagDeleted>(entity, true);
 					}
 
 					// Edit Light Diffuse Color
@@ -257,7 +259,7 @@ namespace Puffin
 					if (ImGui::Checkbox("Cast Shadows", &comp.bFlagCastShadows))
 					{
 						sceneChanged = true;
-						world->SetComponentInitialized<Rendering::LightComponent>(entity, false);
+						world->SetComponentFlag<Rendering::LightComponent, FlagDirty>(entity, true);
 					}
 
 					// Combo box to select light type
@@ -346,7 +348,7 @@ namespace Puffin
 
 					if (ImGui::SmallButton("X##Script"))
 					{
-						world->SetComponentDeleted<Scripting::AngelScriptComponent>(entity, true);
+						world->SetComponentFlag<Scripting::AngelScriptComponent, FlagDeleted>(entity, true);
 						sceneChanged = true;
 					}
 

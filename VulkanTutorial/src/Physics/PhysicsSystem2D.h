@@ -53,9 +53,14 @@ namespace Puffin::Physics
 		std::vector<BoxShape2D> m_boxShapes;
 		std::vector<CircleShape2D> m_circleShapes;
 		std::vector<Collision2D::Collider2D*> m_colliders;
+		std::map<ECS::Entity, uint32_t> m_entityToIndexMap; // Map of Entity ID's to index of their positon in shape and collider vectors
 
 		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
 		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided
+
+		void InitComponents();
+		void InitCircle2D(ECS::Entity entity);
+		void InitBox2D(ECS::Entity entity);
 
 		// Perform Initialization/Updating/Deltion of Physics Related Components
 		void UpdateComponents();
