@@ -72,13 +72,6 @@ namespace Puffin
 		ECSWorld->RegisterComponent<Physics::BoxComponent2D>();
 		ECSWorld->RegisterComponent<Scripting::AngelScriptComponent>();
 
-		// Register Component Flags
-		ECSWorld->RegisterComponentFlag<FlagDirty>(true);
-		ECSWorld->RegisterComponentFlag<FlagDeleted>();
-
-		// Register Entity Flags
-
-
 		// Setup Entity Signatures
 		ECS::Signature meshSignature;
 		meshSignature.set(ECSWorld->GetComponentType<TransformComponent>());
@@ -108,6 +101,12 @@ namespace Puffin
 		ECS::Signature scriptSignature;
 		scriptSignature.set(ECSWorld->GetComponentType<Scripting::AngelScriptComponent>());
 		ECSWorld->SetSystemSignature<Scripting::AngelScriptSystem>("Script", scriptSignature);
+
+		// Register Entity Flags
+
+		// Register Component Flags
+		ECSWorld->RegisterComponentFlag<FlagDirty>(true);
+		ECSWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Load Project File
 		fs::path projectPath = fs::path("C:\\Projects\\PuffinProject\\Puffin.pproject");
@@ -184,9 +183,6 @@ namespace Puffin
 
 				// Get Snapshot of current scene data
 				IO::UpdateSceneData(ECSWorld, sceneData);
-
-				/*UUID soundId = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>("sounds\\Select 1.wav")->ID();
-				AudioManager->PlaySound(soundId, 0.5f, true);*/
 				
 				accumulatedTime = 0.0;
 				playState = PlayState::PLAYING;
@@ -495,16 +491,33 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(boxEntity);
 		world->AddComponent<Rendering::MeshComponent>(boxEntity);
 		world->AddComponent<Physics::RigidbodyComponent2D>(boxEntity);
-		//world->AddComponent<Physics::BoxComponent2D>(boxEntity);
-		world->AddComponent<Physics::CircleComponent2D>(boxEntity);
+		world->AddComponent<Physics::BoxComponent2D>(boxEntity);
 
-		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(-2.5f, 5.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(boxEntity).meshAssetID = meshId2;
+		world->GetComponent<Rendering::MeshComponent>(boxEntity).meshAssetID = meshId3;
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).textureAssetID = textureId2;
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = .5f;
+
+		// Create Circle Entity
+		/*ECS::Entity circleEntity = world->CreateEntity();
+
+		world->SetEntityName(circleEntity, "Circle");
+
+		world->AddComponent<TransformComponent>(circleEntity);
+		world->AddComponent<Rendering::MeshComponent>(circleEntity);
+		world->AddComponent<Physics::RigidbodyComponent2D>(circleEntity);
+		world->AddComponent<Physics::CircleComponent2D>(circleEntity);
+
+		world->GetComponent<TransformComponent>(circleEntity) = { Vector3f(2.5f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+
+		world->GetComponent<Rendering::MeshComponent>(circleEntity).meshAssetID = meshId2;
+		world->GetComponent<Rendering::MeshComponent>(circleEntity).textureAssetID = textureId2;
+
+		world->GetComponent<Physics::RigidbodyComponent2D>(circleEntity).invMass = 1.0f;
+		world->GetComponent<Physics::RigidbodyComponent2D>(circleEntity).elasticity = .5f;*/
 
 		// Create Floor Entity
 		ECS::Entity floorEntity = world->CreateEntity();
@@ -514,12 +527,11 @@ namespace Puffin
 		world->AddComponent<TransformComponent>(floorEntity);
 		world->AddComponent<Rendering::MeshComponent>(floorEntity);
 		world->AddComponent<Physics::RigidbodyComponent2D>(floorEntity);
-		//world->AddComponent<Physics::BoxComponent2D>(floorEntity);
-		world->AddComponent<Physics::CircleComponent2D>(floorEntity);
+		world->AddComponent<Physics::BoxComponent2D>(floorEntity);
 
-		world->GetComponent<TransformComponent>(floorEntity) = { Vector3f(.0f), Vector3f(0.0f), Vector3f(1.0f, 1.0f, 1.0f) };
+		world->GetComponent<TransformComponent>(floorEntity) = { Vector3f(.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(floorEntity).meshAssetID = meshId2;
+		world->GetComponent<Rendering::MeshComponent>(floorEntity).meshAssetID = meshId3;
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).textureAssetID = textureId2;
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(floorEntity).invMass = 0.0f; // Setting mass to zero makes rigidbody kinematic instead of dynamic

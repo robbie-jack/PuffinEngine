@@ -151,8 +151,8 @@ namespace Puffin::UI
 			windowViewport->SetEntity(entity);
 		}
 
-		// Update Scene Data if any changes were made to an entity
-		if (windowEntityProperties->HasSceneChanged())
+		// Update Scene Data if any changes were made to an entity, and game is not currently playing
+		if (windowEntityProperties->HasSceneChanged() && engine->GetPlayState() == PlayState::STOPPED)
 		{
 			IO::UpdateSceneData(world, engine->GetScene());
 		}

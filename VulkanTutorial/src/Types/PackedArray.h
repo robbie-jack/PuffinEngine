@@ -21,7 +21,7 @@ namespace Puffin
 		}
 
 		// Insert new Value into Array
-		void Insert(IdT id, ValueT value)
+		void Insert(IdT id, const ValueT& value)
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Value with that ID already exists");
 
@@ -67,6 +67,16 @@ namespace Puffin
 			m_arraySize = 0;
 		}
 
+		auto begin()
+		{
+			return m_array.begin();
+		}
+
+		auto end()
+		{
+			return m_array.end();
+		}
+
 		const ValueT& operator[](IdT id) const
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
@@ -108,7 +118,7 @@ namespace Puffin
 		}
 
 		// Insert new Value into Array
-		void Insert(IdT id, ValueT value)
+		void Insert(IdT id, const ValueT& value)
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Value with that ID already exists");
 
@@ -121,10 +131,17 @@ namespace Puffin
 			m_vectorSize++;
 		}
 
-		ValueT& Insert(IdT id, ValueT value)
+		void Emplace(IdT id, const ValueT& value)
 		{
-			Insert(id, value);
-			return m_vector[id];
+			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Value with that ID already exists");
+
+			// Insert Value at end of array
+			size_t newIndex = m_vectorSize;
+			m_idToIndexMap[id] = newIndex;
+			m_indexToIDMap[newIndex] = id;
+			m_vector.emplace_back(value);
+
+			m_vectorSize++;
 		}
 
 		// Remove value from Array
@@ -167,6 +184,16 @@ namespace Puffin
 		void Reserve(size_t size)
 		{
 			m_vector.reserve(size);
+		}
+
+		auto begin()
+		{
+			return m_vector.begin();
+		}
+
+		auto end()
+		{
+			return m_vector.end();
 		}
 
 		const ValueT& operator[](IdT id) const

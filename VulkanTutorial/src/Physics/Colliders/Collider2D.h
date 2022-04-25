@@ -11,17 +11,20 @@ namespace Puffin::Physics::Collision2D
 
 	struct Collider2D
 	{
-		Collider2D(ECS::Entity entity) : entity_(entity) {}
+		Collider2D(ECS::Entity inEntity) : entity(inEntity) {}
 
 		virtual ~Collider2D() = default;
 
+		// Get AABB representing the maximum bounds of this shape
 		virtual AABB GetAABB() const = 0;
 
-		virtual bool TestCollision(const Collider2D* collider, Collision2D::Contact& outContact) const = 0;
-		virtual bool TestCollision(const BoxCollider2D* collider, Collision2D::Contact& outContact) const = 0;
-		virtual bool TestCollision(const CircleCollider2D* collider, Collision2D::Contact& outContact) const = 0;
+		virtual Vector2f FindFurthestPoint(Vector2f direction) const = 0;
 
-		ECS::Entity entity_;
-		TransformComponent transform_;
+		virtual bool TestCollision(const Collision2D::Collider2D* collider, Collision2D::Contact& outContact) const = 0;
+		virtual bool TestCollision(const Collision2D::BoxCollider2D* collider, Collision2D::Contact& outContact) const = 0;
+		virtual bool TestCollision(const Collision2D::CircleCollider2D* collider, Collision2D::Contact& outContact) const = 0;
+
+		ECS::Entity entity;
+		TransformComponent transform;
 	};
 }

@@ -2,33 +2,62 @@
 
 #include "ECS/ECS.h"
 
-#ifndef PHYSICS_TYPES_2D_H
-#define PHYSICS_TYPES_2D_H
-
-namespace Puffin
+namespace Puffin::Physics
 {
-	namespace Physics
+	struct AABB
 	{
-		struct AABB
+		Vector2f min;
+		Vector2f max;
+	};
+
+	namespace Collision2D
+	{
+		struct Contact
 		{
-			Vector2f min;
-			Vector2f max;
+			Contact() {}
+
+			ECS::Entity a, b; // Entities which collided
+
+			Vector2f pointOnA, pointOnB;
+			Vector2f normal;
+			float seperation;
 		};
 
-		namespace Collision2D
+		class Simplex2D
 		{
-			struct Contact
+		public:
+
+			Simplex2D() : m_size(0) {}
+
+			Simplex2D& operator=(std::initializer_list<Vector2f> list)
 			{
-				Contact() {}
+				for (auto v = list.begin(); v != list.end(); v++)
+				{
+					m_points[std::distance(list.begin(), v)] = *v;
+				}
 
-				ECS::Entity a, b; // Entities which collided
+				m_size = list.size();
 
-				Vector2f pointOnA, pointOnB;
-				Vector2f normal;
-				float seperation;
-			};
-		}
+				return *this;
+			}
+
+			void push_front(Vector2f point)
+			{
+				m_points = { point, m_points[0], m_points[1] };
+				m_size = std::min(m_size + 1, 3u);
+			}
+
+			Vector2f operator[](uint32_t i) { return m_points[i]; }
+			uint32_t size() const { return m_size; }
+
+			auto begin() const { return m_points.begin(); }
+			auto end() const { return m_points.end() - (3 - m_size); }
+
+		private:
+
+			std::array<Vector2f, 3> m_points;
+			uint32_t m_size;
+
+		};
 	}
 }
-
-#endif // PHYSICS_TYPES_2D_H

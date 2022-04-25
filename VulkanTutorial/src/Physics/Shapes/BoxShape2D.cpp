@@ -13,8 +13,18 @@ namespace Puffin::Physics
 	AABB BoxShape2D::GetAABB(const TransformComponent& transform) const
 	{
 		AABB aabb;
-		aabb.min = transform.position.GetXY() - halfExtent_;
-		aabb.max = transform.position.GetXY() + halfExtent_;
+		aabb.min = transform.position.GetXY() - halfExtent;
+		aabb.max = transform.position.GetXY() + halfExtent;
 		return aabb;
+	}
+
+	void BoxShape2D::UpdatePoints()
+	{
+		points.clear();
+
+		points.emplace_back(-halfExtent.x, -halfExtent.y);
+		points.emplace_back(-halfExtent.x, halfExtent.y);
+		points.emplace_back(halfExtent.x, halfExtent.y);
+		points.emplace_back(halfExtent.x, -halfExtent.y);
 	}
 }

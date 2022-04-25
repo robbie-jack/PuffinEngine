@@ -272,6 +272,13 @@ namespace Puffin::ECS
 			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
 
 			componentArray.Insert(entity, ComponentT());
+
+			// Set all flags back to default
+			for (auto& pair : flagSets)
+			{
+				pair.second[entity] = flagDefaults[pair.first];
+			}
+
 			return componentArray[entity];
 		}
 

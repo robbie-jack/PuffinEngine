@@ -1,29 +1,35 @@
 #pragma once
 
-#include "Shape2D.h"
+#include "PolygonShape2D.h"
+
+#include <vector>
 
 namespace Puffin::Physics
 {
-	struct BoxShape2D : public Shape2D
+	struct BoxShape2D : public PolygonShape2D
 	{
 	public:
 
-		BoxShape2D() : Shape2D()
+		BoxShape2D() : PolygonShape2D()
 		{
-			halfExtent_ = Vector2f(.5f, .5f);
+			halfExtent = Vector2f(1.0f, 1.0f);
+			points.reserve(4);
 		}
 
 		ShapeType2D GetType() const override;
 
 		AABB GetAABB(const TransformComponent& transform) const;
 
-		Vector2f halfExtent_;
+		// Regenerate points based on half bound
+		void UpdatePoints() override;
+
+		Vector2f halfExtent;
 
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
-			archive(centreOfMass_);
-			archive(halfExtent_);
+			archive(centreOfMass);
+			archive(halfExtent);
 		}
 	};
 }

@@ -12,74 +12,177 @@
 #include "MathHelpers.h"
 
 #include <cmath>
+#include <memory>
 
 namespace Puffin::Physics
 {
 	namespace Collision2D
-	{
+	{		
+		// Support function to Generate Minkowski Difference/Sum for GJK Algorithm
+		static inline Vector2f Support(const Collider2D* colliderA, const Collider2D* colliderB, Vector2f direction)
+		{
+			return colliderA->FindFurthestPoint(direction) - colliderB->FindFurthestPoint(-direction);
+		}
+
+		static inline bool SameDirection(const Vector2f& direction1, const Vector2f& direction2)
+		{
+			return direction1.Dot(direction2) >= 0.0f;
+		}
+
+		static inline Vector2f GetPerpendicularDirection(const Vector2f& ab, const Vector2f& direction)
+		{
+			Vector2f abcw = ab.PerpendicularClockwise();
+			Vector2f abccw = ab.PerpendicularCounterClockwise();
+
+			if (SameDirection(abcw, direction))
+				return abcw;
+			else
+				return abccw;
+		}
+
+		static inline bool AddSupport(Simplex2D& points, const Collider2D* colliderA, const Collider2D* colliderB, Vector2f direction)
+		{
+			if (points.size() == 3)
+				return true;
+
+			Vector2f support = Support(colliderA, colliderB, direction);
+
+			points.push_front(support);
+
+			bool isSameDirection = SameDirection(support, direction);
+			return isSameDirection;
+		}
+
+		static inline bool Line(Simplex2D& points, Vector2f& direction)
+		{
+			Vector2f a = points[0];
+			Vector2f b = points[1];
+
+			Vector2f ab = b - a;
+			Vector2f ao = -a;
+
+			// If origin is not in same direction as ab, discard b
+			direction = GetPerpendicularDirection(ab, ao);
+
+			return false;
+		}
+
+		static inline bool Triangle(Simplex2D& points, Vector2f& direction)
+		{
+			Vector2f a = points[0];
+			Vector2f b = points[1];
+			Vector2f c = points[2];
+
+			Vector2f ab = b - a;
+			Vector2f ac = c - a;
+			Vector2f ao = -a;
+
+			Vector2f abp = GetPerpendicularDirection(ab, -ac);
+			Vector2f acp = GetPerpendicularDirection(ac, -ab);
+
+			// If Vector Perpendicular to AC in direction of Origin?
+			if (SameDirection(abp, ao))
+			{
+				points = { a, b };
+				direction = abp;
+			}
+			else if (SameDirection(acp, ao))
+			{
+				// Is Vector Perpendicular to AB in dirtection of Origin
+				points = { a, c };
+				direction = acp;
+			}
+			else
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		static inline bool NextSimplex(Simplex2D& points, Vector2f& direction)
+		{
+			switch (points.size())
+			{
+				case 2: return Line(points, direction);
+				case 3: return Triangle(points, direction);
+			}
+
+			return false;
+		}
+
+		// GJK Algorithm to see if any two shapes with minkoski support funciton collide
+		static inline bool GJK(const Collider2D* colliderA, const Collider2D* colliderB)
+		{
+			Vector2f direction = (colliderB->transform.position.GetXY() - colliderA->transform.position.GetXY()).Normalised();
+			Vector2f support = Support(colliderA, colliderB, direction);
+
+			Simplex2D points;
+			points.push_front(support);
+
+			direction *= -1;
+
+			int maxIterations = 10;
+			int currentIterations = 1;
+			while (currentIterations <= maxIterations)
+			{
+				if (!AddSupport(points, colliderA, colliderB, direction))
+				{
+					return false;
+				}
+
+				if (NextSimplex(points, direction))
+				{
+					return true;
+				}
+
+				currentIterations++;
+			}
+		}
+
 		// Collection of Functions to test for collisions between 2D Shapes
 
-		inline bool TestBoxVsBox(const BoxCollider2D* boxA, const BoxCollider2D* boxB, Contact& outContact)
+		static inline bool TestBoxVsBox(const BoxCollider2D* boxA, const BoxCollider2D* boxB, Contact& outContact)
 		{
-			// Get Min/Max bounds of each box
-			const AABB a = boxA->GetAABB();
-			const AABB b = boxB->GetAABB();
+			if (!GJK(boxA, boxB))
+				return false;
 
-			// Exit with no intersection if found with separating axis
-			if (a.max.x < b.min.x || a.min.x > b.max.x) return false;
-			if (a.max.y < b.min.y || a.min.y > b.max.y) return false;
-
-			outContact.a = boxA->entity_;
-			outContact.b = boxB->entity_;
+			outContact.a = boxA->entity;
+			outContact.b = boxB->entity;
 
 			// No separating axis found, shapes must be colliding
 			return true;
 		}
 
-		inline bool TestCircleVsCircle(const CircleCollider2D* circleA, const CircleCollider2D* circleB, Contact& outContact)
+		static inline bool TestCircleVsCircle(const CircleCollider2D* circleA, const CircleCollider2D* circleB, Contact& outContact)
 		{
 			// Vector from A to B
-			const Vector2 ab = circleB->transform_.position.GetXY() - circleA->transform_.position.GetXY();
+			const Vector2 ab = circleB->transform.position.GetXY() - circleA->transform.position.GetXY();
 
 			// Get Cumulative Radius of Circles
-			const float radiusAB = circleA->shape->radius_ + circleB->shape->radius_;
+			const float radiusAB = circleA->shape->radius + circleB->shape->radius;
 			const float radiusABSq = radiusAB * radiusAB;
 
 			if (ab.LengthSquared() > radiusABSq)
 				return false;
 
-			outContact.a = circleA->entity_;
-			outContact.b = circleB->entity_;
+			outContact.a = circleA->entity;
+			outContact.b = circleB->entity;
 
 			outContact.normal = ab.Normalised();
 
-			outContact.pointOnA = circleA->transform_.position.GetXY() + outContact.normal * circleA->shape->radius_;
-			outContact.pointOnB = circleB->transform_.position.GetXY() - outContact.normal * circleB->shape->radius_;
+			outContact.pointOnA = circleA->transform.position.GetXY() + outContact.normal * circleA->shape->radius;
+			outContact.pointOnB = circleB->transform.position.GetXY() - outContact.normal * circleB->shape->radius;
 
 			return true;
 		}
 
-		inline bool TestCircleVsBox(const CircleCollider2D* circleA, const BoxCollider2D* boxB, Contact& outContact)
+		static inline bool TestCircleVsBox(const CircleCollider2D* circleA, const BoxCollider2D* boxB, Contact& outContact)
 		{
 			// Get Circle/Box Centres
-			Vector2f centreCircle = circleA->transform_.position.GetXY() + circleA->shape->radius_;
-			Vector2f centreBox = boxB->transform_.position.GetXY() + boxB->shape->halfExtent_;
+			
 
-			// Get Clamped Diff between Centres
-			Vector2f diff = centreCircle - centreBox;
-			Vector2f diffClamped = Maths::Clamp(diff, Vector2f(-boxB->shape->halfExtent_.x, -boxB->shape->halfExtent_.y), boxB->shape->halfExtent_);
-
-			// Add clamped value to Box centre to get point of box closest to circle
-			const Vector2f closest = centreBox + diffClamped;
-
-			// Get diff between centreCircle and closest point
-			diff = closest - centreCircle;
-
-			outContact.a = circleA->entity_;
-			outContact.b = boxB->entity_;
-
-			// If length of diff is less than Circle radius, then Circle and Box are colliding
-			return diff.LengthSquared() < circleA->shape->radius_ * circleA->shape->radius_;
+			return false;
 		}
 	}
 

@@ -7,11 +7,12 @@
 #include <Physics/Shapes/CircleShape2D.h>
 
 #include "Physics/Colliders/Collider2D.h"
+#include "Physics/PhysicsTypes2D.h"
 
 #include <Components/Physics/RigidbodyComponent2D.h>
 #include <Components/Physics/ShapeComponents2D.h>
 
-#include "Physics/PhysicsTypes2D.h"
+#include "Types/PackedArray.h"
 
 #include <utility>
 #include <vector>
@@ -20,7 +21,7 @@ namespace Puffin::Physics
 {
 	const uint32_t MAX_SHAPES_PER_TYPE = 128; // Maximum number of shapes of each type
 
-	typedef std::pair<const Collision2D::Collider2D*, const Collision2D::Collider2D*> CollisionPair;
+	typedef std::pair<const std::shared_ptr<Collision2D::Collider2D>, const std::shared_ptr<Collision2D::Collider2D>> CollisionPair;
 
 	//////////////////////////////////////////////////
 	// Physics System 2D
@@ -50,17 +51,18 @@ namespace Puffin::Physics
 
 		Vector2f m_gravity = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
-		std::vector<BoxShape2D> m_boxShapes;
-		std::vector<CircleShape2D> m_circleShapes;
-		std::vector<Collision2D::Collider2D*> m_colliders;
-		std::map<ECS::Entity, uint32_t> m_entityToIndexMap; // Map of Entity ID's to index of their positon in shape and collider vectors
+		PackedVector<ECS::Entity, BoxShape2D> m_boxShapes;
+		PackedVector<ECS::Entity, CircleShape2D> m_circleShapes;
+		PackedVector<ECS::Entity, std::shared_ptr<Collision2D::Collider2D>> m_colliders;
 
 		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
 		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided
 
-		void InitComponents();
-		void InitCircle2D(ECS::Entity entity);
-		void InitBox2D(ECS::Entity entity);
+		void InitCircle2D(ECS::Entity entity, CircleComponent2D& circle);
+		void InitBox2D(ECS::Entity entity, BoxComponent2D& box);
+
+		void CleanupCircle2D(ECS::Entity entity, CircleComponent2D& circle);
+		void CleanupBox2D(ECS::Entity entity, BoxComponent2D& circle);
 
 		// Perform Initialization/Updating/Deltion of Physics Related Components
 		void UpdateComponents();

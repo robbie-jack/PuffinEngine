@@ -1803,9 +1803,10 @@ namespace Puffin
 				if (m_world->GetComponentFlag<LightComponent, FlagDirty>(entity))
 				{
 					InitLight(light);
-					m_world->SetComponentFlag<LightComponent, FlagDirty>(entity, true);
+
+					m_world->SetComponentFlag<LightComponent, FlagDirty>(entity, false);
+
 					shadowmapDescriptorNeedsUpdated = true;
-					
 					sceneData.bFlagSceneChanged = true;
 				}
 

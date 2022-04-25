@@ -196,6 +196,7 @@
     <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Physics\Colliders\BoxCollider2D.cpp" />
     <ClCompile Include="src\Physics\Colliders\CircleCollider2D.cpp" />
+    <ClCompile Include="src\Physics\Colliders\PolygonCollider2D.cpp" />
     <ClCompile Include="src\Physics\PhysicsSystem2D.cpp" />
     <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp" />
     <ClCompile Include="src\Physics\Shapes\CircleShape2D.cpp" />
@@ -247,11 +248,14 @@
     <ClInclude Include="src\Physics\Colliders\BoxCollider2D.h" />
     <ClInclude Include="src\Physics\Colliders\CircleCollider2D.h" />
     <ClInclude Include="src\Physics\Colliders\Collider2D.h" />
+    <ClInclude Include="src\Physics\Colliders\PolygonCollider2D.h" />
+    <ClInclude Include="src\Physics\CollisionTests2D.h" />
     <ClInclude Include="src\Physics\PhysicsHelpers2D.h" />
     <ClInclude Include="src\Physics\PhysicsSystem2D.h" />
     <ClInclude Include="src\Physics\PhysicsTypes2D.h" />
     <ClInclude Include="src\Physics\Shapes\BoxShape2D.h" />
     <ClInclude Include="src\Physics\Shapes\CircleShape2D.h" />
+    <ClInclude Include="src\Physics\Shapes\PolygonShape2D.h" />
     <ClInclude Include="src\Physics\Shapes\Shape2D.h" />
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\Rendering\DebugDraw.h" />

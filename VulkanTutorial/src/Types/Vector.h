@@ -17,7 +17,11 @@ namespace Puffin
 		T x, y;
 
 		// Constructors
-		Vector2() {}
+		Vector2()
+		{
+			x = 0;
+			y = 0;
+		}
 
 		Vector2(const T& x_, const T& y_)
 		{
@@ -107,7 +111,7 @@ namespace Puffin
 		{
 			Vector2 vector;
 			vector.x = -x;
-			vector.y = y;
+			vector.y = -y;
 			return vector;
 		}
 
@@ -159,14 +163,24 @@ namespace Puffin
 		}
 
 		// Functions
-		T Dot(const Vector2& vec) const
+		T Dot(const Vector2<T>& vec) const
 		{
 			return (x * vec.x) + (y * vec.y);
 		}
 
-		T Cross(const Vector2& vec) const
+		T Cross(const Vector2<T>& vec) const
 		{
 			return x * vec.y - y * vec.x;
+		}
+
+		Vector2<T> PerpendicularClockwise() const
+		{
+			return Vector2<T>(y, -x);
+		}
+
+		Vector2<T> PerpendicularCounterClockwise() const
+		{
+			return Vector2<T>(-y, x);
 		}
 
 		T LengthSquared() const
@@ -240,7 +254,12 @@ namespace Puffin
 		T x, y, z;
 
 		// Constructors
-		Vector3() {}
+		Vector3()
+		{
+			x = 0;
+			y = 0;
+			z = 0;
+		}
 
 		Vector3(const T& x_, const T& y_, const T& z_)
 		{

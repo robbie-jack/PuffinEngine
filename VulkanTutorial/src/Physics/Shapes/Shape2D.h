@@ -18,15 +18,15 @@ namespace Puffin::Physics
 	{
 		Shape2D()
 		{
-			centreOfMass_.Zero();
+			centreOfMass.Zero();
 		}
 
 		virtual ~Shape2D() = default;
 
 		virtual ShapeType2D GetType() const = 0;
 
-		//virtual AABB GetAABB(const TransformComponent& transform) const = 0;
+		virtual AABB GetAABB(const TransformComponent& transform) const = 0;
 
-		Vector2f centreOfMass_; // Centre of mass for this shape
+		Vector2f centreOfMass; // Centre of mass for this shape
 	};
 }

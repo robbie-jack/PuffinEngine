@@ -1,9 +1,12 @@
-#include <UI/UIWindowEntityProperties.h>
+#include "UIWindowEntityProperties.h"
 
-#include <Components/TransformComponent.h>
-#include <Components/Rendering/MeshComponent.h>
-#include <Components/Rendering/LightComponent.h>
-#include <ECS/ECS.h>
+#include "Components/TransformComponent.h"
+#include "Components/Rendering/MeshComponent.h"
+#include "Components/Rendering/LightComponent.h"
+#include "Components/Physics/RigidbodyComponent2D.h"
+#include "Components/Physics/ShapeComponents2D.h"
+
+#include "ECS/ECS.h"
 
 #include "Types/ComponentFlags.h"
 
@@ -62,9 +65,14 @@ namespace Puffin
 
 					// Display Component UI
 					DrawTransformUI(flags);
+
 					DrawMeshUI(flags);
 					DrawLightUI(flags);
-					DrawRigidbodyUI(flags);
+
+					DrawRigidbody2DUI(flags);
+					DrawCircle2DUI(flags);
+					DrawBox2DUI(flags);
+
 					DrawScriptUI(flags);
 
 					positionChanged = false;
@@ -119,9 +127,24 @@ namespace Puffin
 							}
 						}
 
-						if (ImGui::Selectable("Rigidbody Component"))
+						if (ImGui::BeginPopup("Physics"))
 						{
-							
+							if (ImGui::Selectable("Rigidbody Component"))
+							{
+
+							}
+
+							if (ImGui::Selectable("Circle2D Component"))
+							{
+
+							}
+
+							if (ImGui::Selectable("Box2D Component"))
+							{
+
+							}
+
+							ImGui::EndPopup();
 						}
 
 						ImGui::EndPopup();
@@ -155,11 +178,19 @@ namespace Puffin
 						sceneChanged = true;
 					}
 
-					if (ImGui::DragFloat3("Position", (float*)&transform.position, 0.1f))
-					{
-						positionChanged = true;
-						sceneChanged = true;
-					}
+					#ifdef PFN_USE_DOUBLE_PRECISION
+						if (ImGui::DragScalarN("Position", ImGuiDataType_Double, (float*)&transform.position, 0.1f))
+						{
+							positionChanged = true;
+							sceneChanged = true;
+						}
+					#else
+						if (ImGui::DragFloat3("Position", (float*)&transform.position, 0.1f))
+						{
+							positionChanged = true;
+							sceneChanged = true;
+						}
+					#endif
 
 					if (ImGui::DragFloat3("Rotation", (float*)&transform.rotation, 0.1f))
 					{
@@ -310,30 +341,106 @@ namespace Puffin
 			}
 		}
 
-		void UIWindowEntityProperties::DrawRigidbodyUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::DrawRigidbody2DUI(ImGuiTreeNodeFlags flags)
 		{
-			/*if (world->HasComponent<Physics::RigidbodyComponent>(entity))
+			if (world->HasComponent<Physics::RigidbodyComponent2D>(entity))
 			{
 				if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					Physics::RigidbodyComponent& rigidbody = world->GetComponent<Physics::RigidbodyComponent>(entity);
+					auto& rigidbody = world->GetComponent<Physics::RigidbodyComponent2D>(entity);
 
 					if (ImGui::SmallButton("X##Rigidbody"))
 					{
-						rigidbody.bFlagDeleted = true;
+						world->SetComponentFlag< Physics::RigidbodyComponent2D, FlagDeleted>(entity, true);
+							
 						sceneChanged = true;
 					}
 
-					if (positionChanged)
+					if (ImGui::DragFloat("Mass", &rigidbody.invMass, 1.0f, 0.0f))
 					{
-						rigidbody.bFlagCreated = true;
+						sceneChanged = true;
+					}
+
+					if (ImGui::DragFloat("Elasticty", &rigidbody.elasticity, 0.001f, 0.0f, 1.0f))
+					{
+						sceneChanged = true;
 					}
 
 					ImGui::TreePop();
 				}
-			}*/
+			}
+		}
+
+		void UIWindowEntityProperties::DrawCircle2DUI(ImGuiTreeNodeFlags flags)
+		{
+			if (world->HasComponent<Physics::CircleComponent2D>(entity))
+			{
+				if (ImGui::TreeNodeEx("Circle Component 2D", flags))
+				{
+					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+					auto& circle = world->GetComponent<Physics::CircleComponent2D>(entity);
+
+					if (ImGui::SmallButton("X##Circle2D"))
+					{
+						world->SetComponentFlag< Physics::CircleComponent2D, FlagDeleted>(entity, true);
+
+						sceneChanged = true;
+					}
+
+					if (circle.shape != nullptr)
+					{
+						if (ImGui::DragFloat2("Centre Of Mass", (float*)&circle.shape->centreOfMass, 0.1f))
+						{
+							sceneChanged = true;
+						}
+
+						if (ImGui::DragFloat("Radius", &circle.shape->radius, 0.1f, 0.0f))
+						{
+							sceneChanged = true;
+						}
+					}
+
+					ImGui::TreePop();
+				}
+			}
+		}
+
+		void UIWindowEntityProperties::DrawBox2DUI(ImGuiTreeNodeFlags flags)
+		{
+			if (world->HasComponent<Physics::BoxComponent2D>(entity))
+			{
+				if (ImGui::TreeNodeEx("Box Component 2D", flags))
+				{
+					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+					auto& box = world->GetComponent<Physics::BoxComponent2D>(entity);
+
+					if (ImGui::SmallButton("X##Box2D"))
+					{
+						world->SetComponentFlag< Physics::BoxComponent2D, FlagDeleted>(entity, true);
+
+						sceneChanged = true;
+					}
+
+					if (box.shape != nullptr)
+					{
+						if (ImGui::DragFloat2("Centre Of Mass", (float*)&box.shape->centreOfMass, 0.1f))
+						{
+							sceneChanged = true;
+						}
+						
+						if (ImGui::DragFloat2("Half Extent", (float*)&box.shape->halfExtent, 0.1f, 0.0f))
+						{
+							sceneChanged = true;
+						}
+					}
+
+					ImGui::TreePop();
+				}
+			}
 		}
 
 		void UIWindowEntityProperties::DrawScriptUI(ImGuiTreeNodeFlags flags)

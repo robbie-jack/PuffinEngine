@@ -35,9 +35,14 @@ namespace Puffin
             ImGui::FileBrowser* fileDialog;
 
             void DrawTransformUI(ImGuiTreeNodeFlags flags);
+
             void DrawMeshUI(ImGuiTreeNodeFlags flags);
             void DrawLightUI(ImGuiTreeNodeFlags flags);
-            void DrawRigidbodyUI(ImGuiTreeNodeFlags flags);
+
+            void DrawRigidbody2DUI(ImGuiTreeNodeFlags flags);
+            void DrawCircle2DUI(ImGuiTreeNodeFlags flags);
+            void DrawBox2DUI(ImGuiTreeNodeFlags flags);
+
             void DrawScriptUI(ImGuiTreeNodeFlags flags);
 
             bool modelSelected = false;

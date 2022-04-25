@@ -181,6 +181,9 @@
     <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.cpp">
       <Filter>Scripting\Addons</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics\Colliders\PolygonCollider2D.cpp">
+      <Filter>Physics\Colliders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -194,9 +197,6 @@
     </ClInclude>
     <ClInclude Include="src\Input\InputManager.h">
       <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\TransformComponent.h">
-      <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\VKTexture.h">
       <Filter>Rendering</Filter>
@@ -379,6 +379,18 @@
     </ClInclude>
     <ClInclude Include="src\Types\PackedArray.h">
       <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Shapes\PolygonShape2D.h">
+      <Filter>Physics\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Colliders\PolygonCollider2D.h">
+      <Filter>Physics\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\TransformComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\CollisionTests2D.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -15,12 +15,36 @@ namespace Puffin
 
 		void PhysicsSystem2D::Init()
 		{
-			
+			m_boxShapes.Reserve(100);
+			m_circleShapes.Reserve(100);
+			m_colliders.Reserve(100);
 		}
 
 		void PhysicsSystem2D::PreStart()
 		{
-			UpdateComponents();
+			for (ECS::Entity entity : entityMap["BoxCollision"])
+			{
+				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
+
+				if (m_world->GetComponentFlag<BoxComponent2D, FlagDirty>(entity))
+				{
+					InitBox2D(entity, box);
+
+					m_world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
+				}
+			}
+
+			for (ECS::Entity entity : entityMap["CircleCollision"])
+			{
+				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
+
+				if (m_world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
+				{
+					InitCircle2D(entity, circle);
+
+					m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
+				}
+			}
 		}
 
 		void PhysicsSystem2D::Start()
@@ -35,7 +59,25 @@ namespace Puffin
 
 		void PhysicsSystem2D::Stop()
 		{
-			
+			m_boxShapes.Clear();
+			m_circleShapes.Clear();
+			m_colliders.Clear();
+			m_collisionPairs.clear();
+			m_collisionContacts.clear();
+
+			for (ECS::Entity entity : entityMap["BoxCollision"])
+			{
+				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
+
+				CleanupBox2D(entity, box);
+			}
+
+			for (ECS::Entity entity : entityMap["CircleCollision"])
+			{
+				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
+
+				CleanupCircle2D(entity, circle);
+			}
 		}
 
 		void PhysicsSystem2D::Cleanup()
@@ -47,45 +89,94 @@ namespace Puffin
 		// Private Functions
 		//--------------------------------------------------
 
-		void PhysicsSystem2D::InitComponents()
+		void PhysicsSystem2D::InitCircle2D(ECS::Entity entity, CircleComponent2D& circle)
 		{
-			for (ECS::Entity entity : entityMap["BoxCollision"])
+			// If there is no shape for this entity in vector
+			if (!m_circleShapes.Contains(entity))
 			{
-				if (m_world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
+				// If this component already has a shape (it's been loaded from the scene file),
+				// copy shape vector and switch pointer to new location
+				if (circle.shape != nullptr)
 				{
-					
+					m_circleShapes.Insert(entity, *circle.shape);
+
+					circle.shape = nullptr;
 				}
+				else
+				{
+					m_circleShapes.Emplace(entity, CircleShape2D());
+				}
+
+				circle.shape = std::shared_ptr<CircleShape2D>(&m_circleShapes[entity]);
 			}
 			
-			for (ECS::Entity entity : entityMap["CircleCollision"])
+			// If there is no collider for this entity, create new one
+			if (!m_colliders.Contains(entity))
 			{
-				
+				auto collider = std::make_shared<Collision2D::CircleCollider2D>(entity, circle.shape);
+
+				m_colliders.Insert(entity, collider);
 			}
 		}
 
-		void PhysicsSystem2D::InitCircle2D(ECS::Entity entity)
+		void PhysicsSystem2D::InitBox2D(ECS::Entity entity, BoxComponent2D& box)
 		{
-			auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
-
-			// Check if this entity already has
-
-			// Create default box shape if component does not have one assigned
-			if (circle.shape == nullptr)
+			// If there is no shape for this entity in vector
+			if (!m_circleShapes.Contains(entity))
 			{
-				m_circleShapes.emplace_back(CircleShape2D());
+				// If this component already has a shape (it's been loaded from the scene file),
+				// copy shape vector and switch pointer to new location
+				if (box.shape != nullptr)
+				{
+					m_boxShapes.Insert(entity, *box.shape);
 
-				circle.shape = &m_circleShapes.back();
+					box.shape = nullptr;
+				}
+				else
+				{
+					m_boxShapes.Emplace(entity, BoxShape2D());
+				}
+
+				box.shape = std::shared_ptr<BoxShape2D>(&m_boxShapes[entity]);
+
+				box.shape->UpdatePoints();
 			}
 
-			if (circle.shape != nullptr)
-				m_colliders.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape));
+			// If there is no collider for this entity, create new one
+			if (!m_colliders.Contains(entity))
+			{
+				auto collider = std::make_shared<Collision2D::BoxCollider2D>(entity, box.shape);
 
-			m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
+				m_colliders.Insert(entity, collider);
+			}
 		}
 
-		void PhysicsSystem2D::InitBox2D(ECS::Entity entity)
+		void PhysicsSystem2D::CleanupCircle2D(ECS::Entity entity, CircleComponent2D& circle)
 		{
-			auto& box = m_world->GetComponent<BoxComponent2D>(entity);
+			if (m_circleShapes.Contains(entity))
+			{
+				m_circleShapes.Erase(entity);
+				circle.shape = 0;
+			}
+
+			if (m_colliders.Contains(entity))
+			{
+				m_colliders.Erase(entity);
+			}
+		}
+
+		void PhysicsSystem2D::CleanupBox2D(ECS::Entity entity, BoxComponent2D& box)
+		{
+			if (m_boxShapes.Contains(entity))
+			{
+				m_boxShapes.Erase(entity);
+				box.shape = 0;
+			}
+
+			if (m_colliders.Contains(entity))
+			{
+				m_colliders.Erase(entity);
+			}
 		}
 
 		void PhysicsSystem2D::UpdateComponents()
@@ -95,21 +186,18 @@ namespace Puffin
 				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
 				auto& transform = m_world->GetComponent<TransformComponent>(entity);
 
+				// Initialize Boxes
 				if (m_world->GetComponentFlag<BoxComponent2D, FlagDirty>(entity))
 				{
-					// Create default box shape if component does not have one assigned
-					if (box.shape == nullptr)
-					{
-						m_boxShapes.emplace_back(BoxShape2D());
-
-						box.shape = &m_boxShapes.back();
-					}
-
-					// Create Collider for this component if one does not exist
-					if (box.shape != nullptr)
-						m_colliders.emplace_back(new Collision2D::BoxCollider2D(entity, box.shape));
+					InitBox2D(entity, box);
 
 					m_world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
+				}
+
+				// Cleanup Boxes
+				if (m_world->GetComponentFlag<BoxComponent2D, FlagDeleted>(entity))
+				{
+					CleanupBox2D(entity, box);
 				}
 			}
 
@@ -118,20 +206,18 @@ namespace Puffin
 				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
 				auto& transform = m_world->GetComponent<TransformComponent>(entity);
 
+				// Initialize Circle
 				if (m_world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
 				{
-					// Create default box shape if component does not have one assigned
-					if (circle.shape == nullptr)
-					{
-						m_circleShapes.emplace_back(CircleShape2D());
-
-						circle.shape = &m_circleShapes.back();
-					}
-
-					if (circle.shape != nullptr)
-						m_colliders.emplace_back(new Collision2D::CircleCollider2D(entity, circle.shape));
+					InitCircle2D(entity, circle);
 
 					m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
+				}
+
+				// Cleanup Circles
+				if (m_world->GetComponentFlag<CircleComponent2D, FlagDeleted>(entity))
+				{
+					CleanupCircle2D(entity, circle);
 				}
 			}
 		}
@@ -142,11 +228,11 @@ namespace Puffin
 			UpdateDynamics();
 
 			// Copy component transform into collider
-			for (auto& collider : m_colliders)
+			for (auto collider : m_colliders)
 			{
-				const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity_);
+				const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity);
 
-				collider->transform_ = transform;
+				collider->transform = transform;
 			}
 
 			// Perform Collision2D Broadphase to check if two Colliders can collide
@@ -201,18 +287,18 @@ namespace Puffin
 
 		void PhysicsSystem2D::GenerateCollisionPairs()
 		{
-			for (const Collision2D::Collider2D* colliderA : m_colliders)
+			for (const auto colliderA : m_colliders)
 			{
-				for (const Collision2D::Collider2D* colliderB : m_colliders)
+				for (const auto colliderB : m_colliders)
 				{
-					if (colliderA->entity_ == colliderB->entity_)
+					if (colliderA->entity == colliderB->entity)
 						continue;
 
 					bool collisionPairAlreadyExists = false;
 
 					for (const CollisionPair& collisionPair : m_collisionPairs)
 					{
-						collisionPairAlreadyExists |= collisionPair.first->entity_ == colliderB->entity_ && collisionPair.second->entity_ == colliderA->entity_;
+						collisionPairAlreadyExists |= collisionPair.first->entity == colliderB->entity && collisionPair.second->entity == colliderA->entity;
 					}
 
 					if (collisionPairAlreadyExists)
@@ -232,7 +318,7 @@ namespace Puffin
 				Collision2D::Contact contact;
 
 				// Put collision detection here
-				if (collisionPair.first->TestCollision(collisionPair.second, contact))
+				if (collisionPair.first->TestCollision(collisionPair.second.get(), contact))
 				{
 					m_collisionContacts.emplace_back(contact);
 				}

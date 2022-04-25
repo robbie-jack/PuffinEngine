@@ -8,20 +8,20 @@ namespace Puffin::Physics
 	{
 		CircleShape2D() : Shape2D()
 		{
-			radius_ = 2.f;
+			radius = 0.5f;
 		}
 
 		ShapeType2D GetType() const override;
 
 		AABB GetAABB(const TransformComponent& transform) const;
 
-		float radius_;
+		float radius;
 
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
-			archive(centreOfMass_);
-			archive(radius_);
+			archive(centreOfMass);
+			archive(radius);
 		}
 	};
 }

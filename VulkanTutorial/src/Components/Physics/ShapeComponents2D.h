@@ -5,7 +5,10 @@
 
 #include "Physics/Shapes/CircleShape2D.h"
 #include "Physics/Shapes/BoxShape2D.h"
+
 #include <Types/Vector.h>
+
+#include <memory>
 
 namespace Puffin
 {
@@ -13,7 +16,7 @@ namespace Puffin
 	{
 		struct CircleComponent2D
 		{
-			CircleShape2D* shape;
+			std::shared_ptr<CircleShape2D> shape;
 
 			template<class Archive>
 			void save(Archive& archive) const 
@@ -25,7 +28,7 @@ namespace Puffin
 			template<class Archive>
 			void load(Archive& archive)
 			{
-				shape = new CircleShape2D();
+				shape = std::make_shared<CircleShape2D>();
 
 				archive(*shape);
 			}
@@ -33,7 +36,7 @@ namespace Puffin
 
 		struct BoxComponent2D
 		{
-			BoxShape2D* shape;
+			std::shared_ptr<BoxShape2D> shape;
 
 			template<class Archive>
 			void save(Archive& archive) const
@@ -45,7 +48,7 @@ namespace Puffin
 			template<class Archive>
 			void load(Archive& archive)
 			{
-				shape = new BoxShape2D();
+				shape = std::make_shared<BoxShape2D>();
 
 				archive(*shape);
 			}
