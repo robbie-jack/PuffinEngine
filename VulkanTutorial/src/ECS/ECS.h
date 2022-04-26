@@ -45,7 +45,16 @@ namespace Puffin::ECS
 
 		EntityManager()
 		{
-				
+			activeEntityCount = 0;
+			nextFlagType = 0;
+		}
+
+		~EntityManager()
+		{
+			Cleanup();
+			flagTypes.clear();
+			flagSets.clear();
+			flagDefaults.clear();
 		}
 
 		void Init()
@@ -112,7 +121,6 @@ namespace Puffin::ECS
 
 			activeEntities.clear();
 			activeEntityCount = 0;
-
 			bInitialized = false;
 		}
 
@@ -267,6 +275,12 @@ namespace Puffin::ECS
 	{
 	public:
 
+		~ComponentArray()
+		{
+			flagSets.clear();
+			flagDefaults.clear();
+		}
+
 		ComponentT& AddComponent(Entity entity)
 		{
 			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
@@ -360,7 +374,13 @@ namespace Puffin::ECS
 	{
 	public:
 
-		void Cleanup()
+		ComponentManager()
+		{
+			nextComponentType = 0;
+			nextFlagType = 0;
+		}
+
+		~ComponentManager()
 		{
 			componentTypes.clear();
 			componentArrays.clear();
@@ -540,12 +560,9 @@ namespace Puffin::ECS
 	{
 	public:
 
-		void Init()
-		{
-			
-		}
+		SystemManager() {}
 
-		void Cleanup()
+		~SystemManager()
 		{
 			signatureMaps.clear();
 			systemsMap.clear();
@@ -689,7 +706,7 @@ namespace Puffin::ECS
 	{
 	public:
 
-		void Init()
+		World()
 		{
 			// Create pointers to each manager
 			componentManager = std::make_unique<ComponentManager>();
@@ -698,6 +715,19 @@ namespace Puffin::ECS
 			eventManager = std::make_unique<EventManager>();
 
 			RegisterEntityFlag<FlagDeleted>();
+		}
+
+		~World()
+		{
+			for (auto entity : entityManager->GetActiveEntities())
+			{
+				DestroyEntity(entity);
+			}
+
+			entityManager = nullptr;
+			componentManager = nullptr;
+			systemManager = nullptr;
+			eventManager = nullptr;
 		}
 
 		void Update()
@@ -721,27 +751,6 @@ namespace Puffin::ECS
 			}
 
 			entityManager->Cleanup();
-		}
-
-		// Cleanup Entire ECS
-		void Cleanup()
-		{
-			for (auto entity : entityManager->GetActiveEntities())
-			{
-				DestroyEntity(entity);
-			}
-
-			componentManager->Cleanup();
-			componentManager.reset();
-
-			entityManager->Cleanup();
-			entityManager.reset();
-
-			systemManager->Cleanup();
-			systemManager.reset();
-
-			eventManager->Cleanup();
-			eventManager.reset();
 		}
 
 		// Entity Methods

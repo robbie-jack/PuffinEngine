@@ -30,7 +30,7 @@ namespace Puffin
 			UIWindow(Engine* InEngine, std::shared_ptr<ECS::World> InWorld);
 			~UIWindow();
 
-			virtual bool Draw(float dt, Puffin::Input::InputManager* InputManager);
+			virtual bool Draw(float dt, std::shared_ptr<Input::InputManager> InputManager);
 
 			void Show();
 

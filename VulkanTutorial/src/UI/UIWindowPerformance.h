@@ -49,7 +49,7 @@ namespace Puffin
 			{
 			};
 
-			bool Draw(float dt, Puffin::Input::InputManager* InputManager) override;
+			bool Draw(float dt, std::shared_ptr<Input::InputManager> InputManager) override;
 
 		private:
 			float fps;

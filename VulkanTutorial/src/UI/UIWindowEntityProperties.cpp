@@ -19,7 +19,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowEntityProperties::Draw(float dt, Puffin::Input::InputManager* InputManager)
+		bool UIWindowEntityProperties::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
 		{
 			windowName = "Entity Properties";
 

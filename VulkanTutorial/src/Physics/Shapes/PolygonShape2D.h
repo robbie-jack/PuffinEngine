@@ -10,6 +10,11 @@ namespace Puffin::Physics
 	{
 		PolygonShape2D() : Shape2D() {}
 
+		~PolygonShape2D()
+		{
+			points.clear();
+		}
+
 		AABB GetAABB(const TransformComponent& transform) const = 0;
 
 		virtual void UpdatePoints() = 0;

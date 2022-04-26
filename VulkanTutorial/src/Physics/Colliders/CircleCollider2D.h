@@ -11,6 +11,11 @@ namespace Puffin::Physics::Collision2D
 	{
 		CircleCollider2D(ECS::Entity entity, std::shared_ptr<CircleShape2D> shape) : Collider2D(entity), shape(shape) {}
 
+		~CircleCollider2D()
+		{
+			shape = nullptr;
+		}
+
 		AABB GetAABB() const override;
 
 		Vector2f FindFurthestPoint(Vector2f direction) const override;

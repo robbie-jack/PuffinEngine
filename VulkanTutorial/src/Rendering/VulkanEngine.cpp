@@ -36,7 +36,7 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		GLFWwindow* VulkanEngine::Init(GLFWwindow* windowIn, UI::UIManager* inUIManager, Input::InputManager* inInputManager)
+		GLFWwindow* VulkanEngine::Init(GLFWwindow* windowIn, std::shared_ptr<UI::UIManager> inUIManager, std::shared_ptr<Input::InputManager> inInputManager)
 		{
 			m_uiManager = inUIManager;
 			m_inputManager = inInputManager;
@@ -131,16 +131,16 @@ namespace Puffin
 			m_uiManager->GetWindowSettings()->SetCamera(&camera);
 
 			// Subscribe to events
-			inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
-			drawLineEvents = std::make_shared<RingBuffer<Debug::Line>>();
-			drawBoxEvents = std::make_shared<RingBuffer<Debug::Box>>();
+			m_inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
+			m_drawLineEvents = std::make_shared<RingBuffer<Debug::Line>>();
+			m_drawBoxEvents = std::make_shared<RingBuffer<Debug::Box>>();
 
 			m_world->RegisterEvent<Debug::Line>();
 			m_world->RegisterEvent<Debug::Box>();
 
-			m_world->SubscribeToEvent<Input::InputEvent>(inputEvents);
-			m_world->SubscribeToEvent<Debug::Line>(drawLineEvents);
-			m_world->SubscribeToEvent<Debug::Box>(drawBoxEvents);
+			m_world->SubscribeToEvent<Input::InputEvent>(m_inputEvents);
+			m_world->SubscribeToEvent<Debug::Line>(m_drawLineEvents);
+			m_world->SubscribeToEvent<Debug::Box>(m_drawBoxEvents);
 
 			// Initialize ImGui
 			InitImGui();
@@ -152,16 +152,6 @@ namespace Puffin
 			isInitialized = true;
 
 			return window;
-		}
-
-		void VulkanEngine::Init()
-		{
-			
-		}
-
-		void VulkanEngine::PreStart()
-		{
-			
 		}
 
 		void VulkanEngine::Start()
@@ -1854,9 +1844,9 @@ namespace Puffin
 		{
 			// Process Input Events
 			Input::InputEvent inputEvent;
-			while (!inputEvents->IsEmpty())
+			while (!m_inputEvents->IsEmpty())
 			{
-				if (inputEvents->Pop(inputEvent))
+				if (m_inputEvents->Pop(inputEvent))
 				{
 					if (inputEvent.actionName == "CamMoveLeft")
 					{
@@ -1934,18 +1924,18 @@ namespace Puffin
 
 			// Process Debug Draw Events
 			Debug::Line drawLineEvent;
-			while (!drawLineEvents->IsEmpty())
+			while (!m_drawLineEvents->IsEmpty())
 			{
-				if (drawLineEvents->Pop(drawLineEvent))
+				if (m_drawLineEvents->Pop(drawLineEvent))
 				{
 					DrawDebugLine(drawLineEvent);
 				}
 			}
 
 			Debug::Box drawBoxEvent;
-			while (!drawBoxEvents->IsEmpty())
+			while (!m_drawBoxEvents->IsEmpty())
 			{
-				if (drawBoxEvents->Pop(drawBoxEvent))
+				if (m_drawBoxEvents->Pop(drawBoxEvent))
 				{
 					DrawDebugBox(drawBoxEvent);
 				}
@@ -2894,13 +2884,6 @@ namespace Puffin
 			{
 				// Make sure GPU has stopped working
 				vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000);
-
-				m_inputManager = nullptr;
-				m_uiManager = nullptr;
-
-				inputEvents.reset();
-				drawLineEvents.reset();
-				drawBoxEvents.reset();
 
 				// Cleanup Deferred Renderer
 				deferredRenderer.Cleanup();

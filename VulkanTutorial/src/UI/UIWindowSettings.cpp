@@ -5,7 +5,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowSettings::Draw(float dt, Puffin::Input::InputManager* InputManager)
+		bool UIWindowSettings::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
 		{
 			if (firstTime)
 			{

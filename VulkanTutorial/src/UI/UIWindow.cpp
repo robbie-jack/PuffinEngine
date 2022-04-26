@@ -17,7 +17,7 @@ namespace Puffin
 
 		}
 
-		bool UIWindow::Draw(float dt, Puffin::Input::InputManager* InputManager)
+		bool UIWindow::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
 		{
 			return true;
 		}

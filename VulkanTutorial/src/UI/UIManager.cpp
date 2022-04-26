@@ -61,7 +61,7 @@ namespace Puffin::UI
 		//ImPlot::DestroyContext();
 	}
 
-	void UIManager::DrawUI(float dt, Input::InputManager* InputManager)
+	void UIManager::DrawUI(float dt, std::shared_ptr<Input::InputManager> InputManager)
 	{
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

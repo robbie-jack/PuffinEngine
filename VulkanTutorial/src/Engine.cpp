@@ -40,8 +40,8 @@ namespace Puffin
 	{
 		// Managers/ECS World
 		std::shared_ptr<ECS::World> ECSWorld = std::make_shared<ECS::World>();
-		UI::UIManager UIManager(this, ECSWorld);
-		Input::InputManager InputManager;
+		std::shared_ptr<UI::UIManager> UIManager = std::make_shared<UI::UIManager>(this, ECSWorld);
+		std::shared_ptr<Input::InputManager> InputManager = std::make_shared<Input::InputManager>();
 		std::shared_ptr<Audio::AudioManager> AudioManager = std::make_shared<Audio::AudioManager>();
 
 		glfwInit();
@@ -52,9 +52,7 @@ namespace Puffin
 		GLFWmonitor* monitor = nullptr;
 		GLFWwindow* window = glfwCreateWindow(1280, 720, "Puffin Engine", monitor, NULL);
 
-		ECSWorld->Init();
-		InputManager.Init(window, ECSWorld);
-		AudioManager->Init();
+		InputManager->Init(window, ECSWorld);
 
 		// Systems
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
@@ -145,7 +143,7 @@ namespace Puffin
 		playState = PlayState::STOPPED;
 
 		// Initialize Systems
-		vulkanEngine->Init(window, &UIManager, &InputManager);
+		vulkanEngine->Init(window, UIManager, InputManager);
 
 		for (auto system : ECSWorld->GetAllSystems())
 		{
@@ -227,7 +225,7 @@ namespace Puffin
 			}
 
 			// Input
-			InputManager.UpdateInput();
+			InputManager->UpdateInput();
 
 			// Update
 			if (playState == PlayState::PLAYING)
@@ -241,7 +239,7 @@ namespace Puffin
 			}
 
 			// UI
-			UIManager.Update();
+			UIManager->Update();
 
 			// Rendering
 			vulkanEngine->Update();
@@ -256,7 +254,7 @@ namespace Puffin
 				ECSWorld->Reset();
 
 				// Re-Initialize Systems and ECS
-				IO::InitScene(ECSWorld, sceneData);
+				IO::LoadAndInitScene(ECSWorld, sceneData);
 				vulkanEngine->Start();
 
 				// Perform Pre-Gameplay Initiualization on Systems
@@ -266,6 +264,8 @@ namespace Puffin
 				}
 
 				AudioManager->StopAllSounds();
+
+				//IO::ClearSceneData(sceneData);
 
 				playState = PlayState::STOPPED;
 			}
@@ -288,18 +288,16 @@ namespace Puffin
 			system->Cleanup();
 		}
 
-		AudioManager->Cleanup();
-		AudioManager.reset();
-		AudioManager = 0;
-
-		UIManager.Cleanup();
-		ECSWorld->Cleanup();
+		UIManager->Cleanup();
 
 		Assets::AssetRegistry::Clear();
 
-		//physicsSystem.reset();
-		//vulkanEngine.reset();
-		//ECSWorld.reset();
+		physicsSystem = nullptr;
+		vulkanEngine = nullptr;
+
+		AudioManager = nullptr;
+
+		ECSWorld = nullptr;
 
 		glfwDestroyWindow(window);
 		glfwTerminate();
@@ -493,7 +491,7 @@ namespace Puffin
 		world->AddComponent<Physics::RigidbodyComponent2D>(boxEntity);
 		world->AddComponent<Physics::BoxComponent2D>(boxEntity);
 
-		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(-2.5f, 5.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(-2.5f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).meshAssetID = meshId3;
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).textureAssetID = textureId2;
@@ -502,7 +500,7 @@ namespace Puffin
 		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = .5f;
 
 		// Create Circle Entity
-		/*ECS::Entity circleEntity = world->CreateEntity();
+		ECS::Entity circleEntity = world->CreateEntity();
 
 		world->SetEntityName(circleEntity, "Circle");
 
@@ -517,7 +515,7 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(circleEntity).textureAssetID = textureId2;
 
 		world->GetComponent<Physics::RigidbodyComponent2D>(circleEntity).invMass = 1.0f;
-		world->GetComponent<Physics::RigidbodyComponent2D>(circleEntity).elasticity = .5f;*/
+		world->GetComponent<Physics::RigidbodyComponent2D>(circleEntity).elasticity = .5f;
 
 		// Create Floor Entity
 		ECS::Entity floorEntity = world->CreateEntity();
@@ -529,7 +527,7 @@ namespace Puffin
 		world->AddComponent<Physics::RigidbodyComponent2D>(floorEntity);
 		world->AddComponent<Physics::BoxComponent2D>(floorEntity);
 
-		world->GetComponent<TransformComponent>(floorEntity) = { Vector3f(.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
+		world->GetComponent<TransformComponent>(floorEntity) = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).meshAssetID = meshId3;
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).textureAssetID = textureId2;

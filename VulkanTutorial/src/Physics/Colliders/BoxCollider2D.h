@@ -10,11 +10,13 @@
 
 namespace Puffin::Physics::Collision2D
 {
-	struct BoxCollider2D : public PolygonCollider2D, public std::enable_shared_from_this<BoxCollider2D>
+	struct BoxCollider2D : public PolygonCollider2D
 	{
-		BoxCollider2D(ECS::Entity entity, std::shared_ptr<BoxShape2D> shape) : PolygonCollider2D(entity, shape)
+		BoxCollider2D(ECS::Entity entity, std::shared_ptr<BoxShape2D> shape) : PolygonCollider2D(entity, shape) {}
+
+		~BoxCollider2D()
 		{
-			
+			shape = nullptr;
 		}
 
 		bool TestCollision(const Collision2D::Collider2D* collider, Collision2D::Contact& outContact) const override;

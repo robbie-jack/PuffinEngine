@@ -8,8 +8,10 @@ namespace Puffin::Physics
 	{
 		CircleShape2D() : Shape2D()
 		{
-			radius = 0.5f;
+			radius = 1.0f;
 		}
+
+		~CircleShape2D() {}
 
 		ShapeType2D GetType() const override;
 

@@ -16,6 +16,8 @@ namespace Puffin::Physics
 			points.reserve(4);
 		}
 
+		~BoxShape2D() {}
+
 		ShapeType2D GetType() const override;
 
 		AABB GetAABB(const TransformComponent& transform) const;

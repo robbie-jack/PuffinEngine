@@ -172,10 +172,26 @@ namespace Puffin
 		{
 		public:
 
+			VulkanEngine() {}
+			~VulkanEngine()
+			{
+				m_uiManager = nullptr;
+				m_inputManager = nullptr;
+
+				m_inputEvents->Flush();
+				m_inputEvents = nullptr;
+
+				m_drawLineEvents->Flush();
+				m_drawLineEvents = nullptr;
+
+				m_drawBoxEvents->Flush();
+				m_drawBoxEvents = nullptr;
+			}
+
 			// Main Functions
-			GLFWwindow* Init(GLFWwindow* windowIn, UI::UIManager* inUIManager, Input::InputManager* inInputManager);
-			void Init() override;
-			void PreStart() override;
+			GLFWwindow* Init(GLFWwindow* windowIn, std::shared_ptr<UI::UIManager> inUIManager, std::shared_ptr<Input::InputManager> inInputManager);
+			void Init() override {};
+			void PreStart() override {};
 			void Start() override;
 			void Update() override;
 			void Stop()  override;
@@ -203,8 +219,8 @@ namespace Puffin
 
 		private:
 
-			UI::UIManager* m_uiManager;
-			Input::InputManager* m_inputManager;
+			std::shared_ptr<UI::UIManager> m_uiManager;
+			std::shared_ptr<Input::InputManager> m_inputManager;
 
 			// Variables
 			VkInstance instance;						// Vulkan Library Handle
@@ -301,9 +317,9 @@ namespace Puffin
 			int CURRENT_INDEX_BUFFER_SIZE = 300000;
 
 			// Event Buffers
-			std::shared_ptr<RingBuffer<Input::InputEvent>> inputEvents;
-			std::shared_ptr<RingBuffer<Debug::Line>> drawLineEvents;
-			std::shared_ptr<RingBuffer<Debug::Box>> drawBoxEvents;
+			std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents;
+			std::shared_ptr<RingBuffer<Debug::Line>> m_drawLineEvents;
+			std::shared_ptr<RingBuffer<Debug::Box>> m_drawBoxEvents;
 
 			// Init Main Functions
 			void InitVulkan();

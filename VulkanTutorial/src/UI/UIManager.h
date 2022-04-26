@@ -45,7 +45,7 @@ namespace Puffin
 
 			void Cleanup();
 
-			void DrawUI(float dt, Puffin::Input::InputManager* InputManager);
+			void DrawUI(float dt, std::shared_ptr<Input::InputManager> InputManager);
 			void Update();
 			void AddWindow(UIWindow* window);
 

@@ -9,20 +9,12 @@ using namespace irrklang;
 
 namespace Puffin::Audio
 {
-	void AudioManager::Init()
+	AudioManager::AudioManager()
 	{
 		m_engine = createIrrKlangDevice();
 	}
 
-	void AudioManager::Update()
-	{
-		if (m_engine)
-		{
-			ProcessSoundEvents();
-		}
-	}
-
-	void AudioManager::Cleanup()
+	AudioManager::~AudioManager()
 	{
 		StopAllSounds();
 
@@ -30,6 +22,14 @@ namespace Puffin::Audio
 		{
 			m_engine->drop();
 			m_engine = 0;
+		}
+	}
+
+	void AudioManager::Update()
+	{
+		if (m_engine)
+		{
+			ProcessSoundEvents();
 		}
 	}
 

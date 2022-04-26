@@ -8,7 +8,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowPerformance::Draw(float dt, Puffin::Input::InputManager* InputManager)
+		bool UIWindowPerformance::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
 		{
 			windowName = "Performance";
 

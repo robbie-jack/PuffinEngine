@@ -59,5 +59,43 @@ namespace Puffin::Physics
 			uint32_t m_size;
 
 		};
+
+		struct Edge
+		{
+			float distance;
+			Vector2f normal;
+			int index;
+		};
+
+		class Polygon2D
+		{
+		public:
+
+			Polygon2D() {};
+
+			Polygon2D(const Simplex2D& simplex)
+			{
+				for (auto point : simplex)
+				{
+					m_points.push_back(point);
+				}
+			}
+
+			void insert(int index, Vector2f point)
+			{
+				m_points.insert(m_points.begin() + index, point);
+			}
+
+			Vector2f operator[](uint32_t i) { return m_points[i]; }
+			const Vector2f operator[](uint32_t i) const { return m_points[i]; }
+			uint32_t size() const { return m_points.size(); }
+
+			auto begin() const { return m_points.begin(); }
+			auto end() const { return m_points.end(); }
+
+		private:
+
+			std::vector<Vector2f> m_points;
+		};
 	}
 }

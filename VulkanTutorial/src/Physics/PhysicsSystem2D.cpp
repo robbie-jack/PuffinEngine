@@ -357,7 +357,7 @@ namespace Puffin
 					const float tA = bodyA.invMass / (bodyA.invMass + bodyB.invMass);
 					const float tB = bodyB.invMass / (bodyA.invMass + bodyB.invMass);
 
-					const Vector2 ds = contact.pointOnB - contact.pointOnA;
+					const Vector2 ds = (contact.pointOnB - contact.pointOnA) * -contact.normal;
 					transformA.position.x += ds.x * tA;
 					transformA.position.y += ds.y * tA;
 					transformB.position.x -= ds.x * tB;

@@ -12,6 +12,11 @@ namespace Puffin::Physics::Collision2D
 	{
 		PolygonCollider2D(ECS::Entity entity, std::shared_ptr<PolygonShape2D> inShape) : Collider2D(entity), shape(inShape) {}
 
+		~PolygonCollider2D()
+		{
+			shape = nullptr;
+		}
+
 		AABB GetAABB() const override;
 
 		Vector2f FindFurthestPoint(Vector2f direction) const override;

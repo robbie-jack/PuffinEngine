@@ -124,6 +124,14 @@ namespace Puffin
 			return vector;
 		}
 
+		Vector2 operator* (const Vector2& inVec) const
+		{
+			Vector2 vector;
+			vector.x = x * inVec.x;
+			vector.y = y * inVec.y;
+			return vector;
+		}
+
 		// Operator*=
 		void operator*= (const T& inFloat)
 		{

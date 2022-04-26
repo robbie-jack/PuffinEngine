@@ -8,7 +8,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowSceneHierarchy::Draw(float dt, Puffin::Input::InputManager* InputManager)
+		bool UIWindowSceneHierarchy::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
 		{
 			windowName = "Scene Hierarchy";
 
