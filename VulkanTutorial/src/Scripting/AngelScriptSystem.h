@@ -37,17 +37,16 @@ namespace Puffin
 		class AngelScriptSystem : public ECS::System
 		{
 		public:
+
+			AngelScriptSystem();
+			~AngelScriptSystem();
+
 			void Init() override;
-
 			void PreStart() override;
-
 			void Start() override;
-
 			void Update() override;
-
 			void Stop() override;
-
-			void Cleanup() override;
+			void Cleanup() override {};
 
 			// Hot-Reloads all scripts when called
 			void Reload();
@@ -68,12 +67,12 @@ namespace Puffin
 
 		private:
 
-			asIScriptEngine* m_scriptEngine;
-			asIScriptContext* m_ctx;
+			asIScriptEngine* m_scriptEngine = nullptr;
+			asIScriptContext* m_ctx = nullptr;
 
 			std::shared_ptr<Audio::AudioManager> m_audioManager;
 
-			ECS::Entity m_currentEntityID; // Entity ID for currently executing script
+			ECS::Entity m_currentEntityID = 0; // Entity ID for currently executing script
 
 			// Event Buffers
 			std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents;
@@ -81,6 +80,8 @@ namespace Puffin
 			// Maps of Input Callbacks
 			std::unordered_map<std::string, ScriptCallbackMap> m_onInputPressedCallbacks;
 			std::unordered_map<std::string, ScriptCallbackMap> m_onInputReleasedCallbacks;
+
+			bool m_firstInitialize = true;
 
 			void ConfigureEngine();
 

@@ -51,12 +51,7 @@ namespace Puffin
 
 			// Initialize Camera Variables
 			camera.position = glm::vec3(0.0f, 0.0f, 10.0f);
-			camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
-			camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-			camera.fov = 60.0f;
 			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
-			camera.zNear = 0.1f;
-			camera.zFar = 100.0f;
 			InitCamera(camera);
 
 			viewportSize = ImVec2(0.0f, 0.0f);
@@ -1365,9 +1360,6 @@ namespace Puffin
 			camera.up = glm::cross(camera.direction, camera.right);
 			camera.lookat = camera.position + camera.direction;
 
-			camera.yaw = -90.0f;
-			camera.speed = 5.0f;
-
 			// Calculate Camera View Matrix
 			camera.matrices.view = glm::lookAt(camera.position, camera.lookat, camera.up);
 		}
@@ -1947,32 +1939,32 @@ namespace Puffin
 			if (m_inputManager->IsCursorLocked())
 			{
 				// Camera Movement
-				if (moveLeft)
+				if (moveLeft && !moveRight)
 				{
 					camera.position += camera.speed * camera.right * (float)m_deltaTime;
 				}
 				
-				if (moveRight)
+				if (moveRight && !moveLeft)
 				{
 					camera.position -= camera.speed * camera.right * (float)m_deltaTime;
 				}
 
-				if (moveForward)
+				if (moveForward && !moveBackward)
 				{
 					camera.position += camera.speed * camera.direction * (float)m_deltaTime;
 				}
 				
-				if (moveBackward)
+				if (moveBackward && !moveForward)
 				{
 					camera.position -= camera.speed * camera.direction * (float)m_deltaTime;
 				}
 
-				if (moveUp)
+				if (moveUp && !moveDown)
 				{
 					camera.position += camera.speed * camera.up * (float)m_deltaTime;
 				}
 				
-				if (moveDown)
+				if (moveDown && !moveUp)
 				{
 					camera.position -= camera.speed * camera.up * (float)m_deltaTime;
 				}

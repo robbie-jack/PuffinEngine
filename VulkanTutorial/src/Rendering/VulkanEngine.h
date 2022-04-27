@@ -300,18 +300,22 @@ namespace Puffin
 
 			// Camera
 			CameraComponent camera;
-			bool moveForward, moveBackward, moveLeft, moveRight, moveUp, moveDown;
+			bool moveForward = false;
+			bool moveBackward = false;
+			bool moveLeft = false;
+			bool moveRight = false;
+			bool moveUp = false;
+			bool moveDown = false;
 
 			// GLFW
 			GLFWwindow* window;							// Window
 			GLFWmonitor* monitor;						// Monitor
 
 			bool framebufferResized = false; // Flag to indicate if GLFW window has been resized
-			bool isInitialized;
+			bool isInitialized = false;
 
 			VkExtent2D windowExtent;
 			int frameNumber = 0;
-			float prevfov;
 
 			int CURRENT_VERTEX_BUFFER_SIZE = 750000;
 			int CURRENT_INDEX_BUFFER_SIZE = 300000;

@@ -33,23 +33,28 @@ namespace Puffin
 
 		struct CameraComponent
 		{
-			float zNear, zFar, aspect, fov, prevFov;
+			CameraComponent() {}
+
+			float zNear = 0.01f;
+			float zFar = 100.0f;
+			float aspect = 16.0f / 9.0f;
+			float fov = 60.0f;
+			float prevFov = 90.0f;
 
 			glm::vec3 position;
 			glm::vec3 lookat;
 
-			glm::vec3 direction;
-			glm::vec3 up;
+			glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
+			glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 			glm::vec3 right;
 
-			float yaw;
-			float pitch;
-			float speed;
+			float yaw = -90.0f;
+			float pitch = 0.0f;
+			float speed = 5.0f;
 
 			CameraMatrices matrices;
 
 			ViewData data;
-			//std::vector<AllocatedBuffer> buffers;
 		};
 
 		static void UpdatePerspective(CameraComponent& camera, float fov_, float aspect_, float zNear_, float zFar_)

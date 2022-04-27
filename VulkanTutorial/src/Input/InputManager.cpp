@@ -59,52 +59,49 @@ namespace Puffin
 			bool stateChanged = false;
 
 			// Loop through current actions and update action states
-			for (int i = 0; i < actions.size(); i++)
+			for (auto& action : actions)
 			{
 				stateChanged = false;
 
-				for (int j = 0; j < actions[i].keys.size(); j++)
+				// Loop over each key in this action
+				for (auto key : action.keys)
 				{
-					int state = glfwGetKey(window, actions[i].keys[j]);
+					int state = glfwGetKey(window, key);
 
 					if (state == GLFW_PRESS)
 					{
-						if (!stateChanged && actions[i].state == KeyState::UP)
+						if (!stateChanged && action.state == KeyState::UP)
 						{
-							actions[i].state = KeyState::PRESSED;
+							action.state = KeyState::PRESSED;
 							stateChanged = true;
-							//break;
 						}
 
-						if (!stateChanged && actions[i].state == KeyState::PRESSED)
+						if (!stateChanged && action.state == KeyState::PRESSED)
 						{
-							actions[i].state = KeyState::HELD;
+							action.state = KeyState::HELD;
 							stateChanged = true;
-							//break;
 						}
 					}
 
 					if (state == GLFW_RELEASE)
 					{
-						if (!stateChanged && actions[i].state == KeyState::HELD)
+						if (!stateChanged && action.state == KeyState::HELD)
 						{
-							actions[i].state = KeyState::RELEASED;
+							action.state = KeyState::RELEASED;
 							stateChanged = true;
-							//break;
 						}
 
-						if (!stateChanged && actions[i].state == KeyState::RELEASED)
+						if (!stateChanged && action.state == KeyState::RELEASED)
 						{
-							actions[i].state = KeyState::UP;
+							action.state = KeyState::UP;
 							stateChanged = true;
-							//break;
 						}
 					}
 
 					// Notify subscribers that event changed
 					if (stateChanged == true)
 					{
-						world->PublishEvent<InputEvent>(InputEvent(actions[i].name, actions[i].state));
+						world->PublishEvent<InputEvent>(InputEvent(action.name, action.state));
 						stateChanged = false;
 					}
 				}
@@ -167,11 +164,11 @@ namespace Puffin
 
 		Puffin::Input::InputAction Puffin::Input::InputManager::GetAction(std::string name)
 		{
-			for (int i = 0; i < actions.size(); i++)
+			for (auto action : actions)
 			{
-				if (actions[i].name == name)
+				if (action.name == name)
 				{
-					return actions[i];
+					return action;
 				}
 			}
 		}

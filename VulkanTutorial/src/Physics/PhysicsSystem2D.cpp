@@ -10,15 +10,19 @@ namespace Puffin
 	namespace Physics
 	{
 		//--------------------------------------------------
-		// Public Functions
+		// Constructor/Destructor
 		//--------------------------------------------------
 
-		void PhysicsSystem2D::Init()
+		PhysicsSystem2D::PhysicsSystem2D()
 		{
 			m_boxShapes.Reserve(100);
 			m_circleShapes.Reserve(100);
 			m_colliders.Reserve(100);
 		}
+
+		//--------------------------------------------------
+		// Public Functions
+		//--------------------------------------------------
 
 		void PhysicsSystem2D::PreStart()
 		{
@@ -45,10 +49,6 @@ namespace Puffin
 					m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
 				}
 			}
-		}
-
-		void PhysicsSystem2D::Start()
-		{
 		}
 
 		void PhysicsSystem2D::Update()
@@ -78,11 +78,6 @@ namespace Puffin
 
 				CleanupCircle2D(entity, circle);
 			}
-		}
-
-		void PhysicsSystem2D::Cleanup()
-		{
-			
 		}
 
 		//--------------------------------------------------

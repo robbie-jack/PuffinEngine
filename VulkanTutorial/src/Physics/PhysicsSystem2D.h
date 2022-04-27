@@ -31,12 +31,15 @@ namespace Puffin::Physics
 	{
 	public:
 
-		void Init() override;
+		PhysicsSystem2D();
+		~PhysicsSystem2D() {};
+
+		void Init() override {};
 		void PreStart() override;
-		void Start() override;
+		void Start() override {};
 		void Update() override;
 		void Stop() override;
-		void Cleanup() override;
+		void Cleanup() override {};
 
 		ECS::SystemInfo GetInfo() override
 		{

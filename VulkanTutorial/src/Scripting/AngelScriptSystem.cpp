@@ -39,7 +39,7 @@ namespace Puffin
 {
 	namespace Scripting
 	{
-		void AngelScriptSystem::Init()
+		AngelScriptSystem::AngelScriptSystem()
 		{
 			// Create Script Engine
 			m_scriptEngine = asCreateScriptEngine();
@@ -50,7 +50,17 @@ namespace Puffin
 
 			// Set message callback to receive information on errors in human readable form
 			int r = m_scriptEngine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); assert(r >= 0);
+		}
 
+		AngelScriptSystem::~AngelScriptSystem()
+		{
+			// Shut down the engine
+			m_scriptEngine->ShutDownAndRelease();
+			m_scriptEngine = nullptr;
+		}
+
+		void AngelScriptSystem::Init()
+		{
 			// Configure Engine and Setup Global Function Callbacks
 			ConfigureEngine();
 
@@ -178,13 +188,6 @@ namespace Puffin
 				auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 				CleanupScriptComponent(script);
 			}
-		}
-
-		void AngelScriptSystem::Cleanup()
-		{
-			// Shut down the engine
-			m_scriptEngine->ShutDownAndRelease();
-			m_scriptEngine = nullptr;
 		}
 
 		void AngelScriptSystem::ConfigureEngine()
