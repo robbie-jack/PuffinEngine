@@ -353,7 +353,7 @@ namespace Puffin
 
 					if (ImGui::SmallButton("X##Rigidbody"))
 					{
-						world->SetComponentFlag< Physics::RigidbodyComponent2D, FlagDeleted>(entity, true);
+						world->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDeleted>(entity, true);
 							
 						sceneChanged = true;
 					}

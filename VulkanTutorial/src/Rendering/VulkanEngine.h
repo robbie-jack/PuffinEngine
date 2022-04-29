@@ -140,7 +140,23 @@ namespace Puffin
 			alignas(4) int lightSpaceIndex;
 		};
 
-		const Vector3f boxPositions[8] =
+		const Vector2f boxPositions[4] =
+		{
+			Vector2f(-0.5f, -0.5f),	// Bottom Left
+			Vector2f(-0.5f, 0.5f),	// Top Left
+			Vector2f(0.5f, 0.5f),	// Top Right
+			Vector2f(0.5f, -0.5f)	// Bottom Right
+		};
+
+		const uint32_t boxIndices[8] =
+		{
+			0, 1,
+			1, 2,
+			2, 3,
+			3, 0
+		};
+
+		const Vector3f cubePositions[8] =
 		{
 			Vector3f(-1.0f, 1.0f, 1.0f),
 			Vector3f(-1.0f, -1.0f, 1.0f),
@@ -152,7 +168,7 @@ namespace Puffin
 			Vector3f(1.0f, 1.0f, -1.0f),
 		};
 
-		const uint32_t boxIndices[24] =
+		const uint32_t cubeIndices[24] =
 		{
 			0, 1, // Front Lines
 			1, 2,
@@ -398,6 +414,7 @@ namespace Puffin
 			// Debug Draw Functions
 			void DrawDebugLine(Debug::Line line);
 			void DrawDebugBox(Debug::Box box);
+			void DrawDebugCube(Debug::Cube cube);
 
 			static inline void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 			{

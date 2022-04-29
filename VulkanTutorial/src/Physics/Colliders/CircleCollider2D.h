@@ -13,6 +13,7 @@ namespace Puffin::Physics::Collision2D
 
 		~CircleCollider2D()
 		{
+			entity = ECS::INVALID_ENTITY;
 			shape = nullptr;
 		}
 
@@ -24,6 +25,6 @@ namespace Puffin::Physics::Collision2D
 		bool TestCollision(const Collision2D::BoxCollider2D*, Collision2D::Contact& outContact) const override;
 		bool TestCollision(const Collision2D::CircleCollider2D*, Collision2D::Contact& outContact) const override;
 
-		std::shared_ptr<CircleShape2D> shape;
+		std::shared_ptr<CircleShape2D> shape = nullptr;
 	};
 }

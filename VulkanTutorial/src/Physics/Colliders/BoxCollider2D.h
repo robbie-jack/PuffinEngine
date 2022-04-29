@@ -16,6 +16,7 @@ namespace Puffin::Physics::Collision2D
 
 		~BoxCollider2D()
 		{
+			entity = ECS::INVALID_ENTITY;
 			shape = nullptr;
 		}
 

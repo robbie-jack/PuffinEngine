@@ -22,7 +22,19 @@ namespace Puffin
 		struct Box
 		{
 			Box() {};
-			Box(Vector3f InOrigin, Vector3f InHalfSize, Vector3f InColor)
+			Box(Vector2f InOrigin, Vector2f InHalfSize, Vector3f InColor)
+				: origin{ InOrigin }, halfSize{ InHalfSize }, color{ InColor } {};
+
+			Vector2f origin;
+			Vector2f halfSize;
+			float angle;
+			Vector3f color;
+		};
+
+		struct Cube
+		{
+			Cube() {};
+			Cube(Vector3f InOrigin, Vector3f InHalfSize, Vector3f InColor)
 				: origin{ InOrigin }, halfSize{ InHalfSize }, color{ InColor } {};
 
 			Vector3f origin;

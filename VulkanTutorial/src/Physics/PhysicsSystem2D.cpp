@@ -151,7 +151,7 @@ namespace Puffin
 			if (m_circleShapes.Contains(entity))
 			{
 				m_circleShapes.Erase(entity);
-				circle.shape = 0;
+				circle.shape = nullptr;
 			}
 
 			if (m_colliders.Contains(entity))
@@ -165,7 +165,7 @@ namespace Puffin
 			if (m_boxShapes.Contains(entity))
 			{
 				m_boxShapes.Erase(entity);
-				box.shape = 0;
+				box.shape = nullptr;
 			}
 
 			if (m_colliders.Contains(entity))
@@ -176,6 +176,17 @@ namespace Puffin
 
 		void PhysicsSystem2D::UpdateComponents()
 		{
+			for (ECS::Entity entity : entityMap["Rigidbody"])
+			{
+				if (m_world->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>(entity))
+				{
+					if (m_world->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>(entity))
+					{
+						m_world->RemoveComponent<RigidbodyComponent2D>(entity);
+					}
+				}
+			}
+
 			for (ECS::Entity entity : entityMap["BoxCollision"])
 			{
 				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
@@ -257,7 +268,12 @@ namespace Puffin
 				transform.position += rigidbody.linearVelocity * m_fixedTime;
 
 				// Update Rotation
-				transform.rotation.y += rigidbody.angularVelocity * m_fixedTime;
+				transform.rotation.z += rigidbody.angularVelocity * m_fixedTime;
+
+				if (transform.rotation.z > 360.0)
+				{
+					transform.rotation.z = 0;
+				}
 			}
 		}
 
@@ -336,7 +352,12 @@ namespace Puffin
 
 					// Calculate Collision Impulse
 					const Vector2 vab = bodyA.linearVelocity - bodyB.linearVelocity;
-					const float impulseJ = -(1.0f + elasticity) * vab.Dot(contact.normal) / (bodyA.invMass + bodyB.invMass);
+					const float nVab = vab.Dot(contact.normal);
+
+					/*if (nVab <= 0)
+						continue;*/
+
+					const float impulseJ = -(1.0f + elasticity) * nVab / (bodyA.invMass + bodyB.invMass);
 					const Vector2 vectorImpulseJ = contact.normal * impulseJ;
 
 					// Apply Impulse to body A

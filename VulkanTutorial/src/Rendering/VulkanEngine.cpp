@@ -2860,7 +2860,7 @@ namespace Puffin
 			// Set Rotation
 			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f));
 			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.y)), glm::vec3(0.0f, 1.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.z)), glm::vec3(0.0f, 0.0f, 1.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.z)), glm::vec3(0.0f, 0.0f, -1.0f));
 
 			// Set Scale
 			model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);
@@ -2992,6 +2992,32 @@ namespace Puffin
 
 		void VulkanEngine::DrawDebugBox(Debug::Box box)
 		{
+			const int numVertices = 4;
+			const int numIndices = 8;
+
+			const int firstVertex = GetCurrentFrame().debugVertices.size();
+			const int firstIndex = GetCurrentFrame().debugIndices.size();
+
+			Vertex vert = {};
+			vert.color = box.color;
+			vert.normal = Vector3f(0.0f, 0.0f, 0.0f);
+			vert.uv = Vector2(0.0f, 0.0f);
+
+			// Add Vertices to vector
+			for (int i = 0; i < numVertices; i++)
+			{
+				//Vector2f point = origin + Maths::Rot
+			}
+
+			// Add Indices to vector
+			for (int i = 0; i < numIndices; i++)
+			{
+
+			}
+		}
+
+		void VulkanEngine::DrawDebugCube(Debug::Cube cube)
+		{
 			const int numVertices = 8;
 			const int numIndices = 24;
 
@@ -2999,21 +3025,21 @@ namespace Puffin
 			int firstIndex = GetCurrentFrame().debugIndices.size();
 
 			Vertex vert = {};
-			vert.color = box.color;
+			vert.color = cube.color;
 			vert.normal = Vector3(0.0f, 0.0f, 0.0f);
 			vert.uv = Vector2(0.0f, 0.0f);
 
 			// Add Vertices to vector
 			for (int i = 0; i < numVertices; i++)
 			{
-				vert.pos = box.origin + (box.halfSize * boxPositions[i]);
+				vert.pos = cube.origin + (cube.halfSize * cubePositions[i]);
 				GetCurrentFrame().debugVertices.push_back(vert);
 			}
 
 			// Add Indices to vector
 			for (int i = 0; i < numIndices; i++)
 			{
-				GetCurrentFrame().debugIndices.push_back(firstVertex + boxIndices[i]);
+				GetCurrentFrame().debugIndices.push_back(firstVertex + cubeIndices[i]);
 			}
 
 			// Create Indexed Indirect Draw Command for Vertices

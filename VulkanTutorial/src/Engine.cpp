@@ -156,6 +156,7 @@ namespace Puffin
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		auto accumulatedTime = 0.0;
 		auto timeStep = 1 / 60.0; // How often deterministic code like physics should occur
+		auto maxTimeStep = 1 / 30.0;
 
 		while (running)
 		{
@@ -163,6 +164,12 @@ namespace Puffin
 			currentTime = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<float> duration = currentTime - lastTime;
 			double deltaTime = duration.count();
+
+			// Make sure delta time never exceeds 1/30th of a second to stop
+			if (deltaTime > maxTimeStep)
+			{
+				deltaTime = maxTimeStep;
+			}
 
 			// Set delta time for all systems
 			for (auto system : ECSWorld->GetAllSystems())
@@ -254,7 +261,7 @@ namespace Puffin
 				ECSWorld->Reset();
 
 				// Re-Initialize Systems and ECS
-				IO::LoadAndInitScene(ECSWorld, sceneData);
+				IO::InitScene(ECSWorld, sceneData);
 				vulkanEngine->Start();
 
 				// Perform Pre-Gameplay Initiualization on Systems
@@ -264,8 +271,6 @@ namespace Puffin
 				}
 
 				AudioManager->StopAllSounds();
-
-				//IO::ClearSceneData(sceneData);
 
 				playState = PlayState::STOPPED;
 			}
@@ -491,7 +496,7 @@ namespace Puffin
 		world->AddComponent<Physics::RigidbodyComponent2D>(boxEntity);
 		world->AddComponent<Physics::BoxComponent2D>(boxEntity);
 
-		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(-2.5f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(-2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).meshAssetID = meshId3;
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).textureAssetID = textureId2;
@@ -509,7 +514,7 @@ namespace Puffin
 		world->AddComponent<Physics::RigidbodyComponent2D>(circleEntity);
 		world->AddComponent<Physics::CircleComponent2D>(circleEntity);
 
-		world->GetComponent<TransformComponent>(circleEntity) = { Vector3f(2.5f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		world->GetComponent<TransformComponent>(circleEntity) = { Vector3f(2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(circleEntity).meshAssetID = meshId2;
 		world->GetComponent<Rendering::MeshComponent>(circleEntity).textureAssetID = textureId2;

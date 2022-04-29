@@ -16,7 +16,20 @@ namespace Puffin
 	{
 		struct CircleComponent2D
 		{
-			std::shared_ptr<CircleShape2D> shape;
+			std::shared_ptr<CircleShape2D> shape = nullptr;
+
+			CircleComponent2D() = default;
+			CircleComponent2D(const CircleComponent2D& circle)
+			{
+				shape = circle.shape;
+			}
+
+			~CircleComponent2D()
+			{
+				shape = nullptr;
+			}
+
+			CircleComponent2D& operator=(const CircleComponent2D& circle) = default;
 
 			template<class Archive>
 			void save(Archive& archive) const 
@@ -36,7 +49,20 @@ namespace Puffin
 
 		struct BoxComponent2D
 		{
-			std::shared_ptr<BoxShape2D> shape;
+			std::shared_ptr<BoxShape2D> shape = nullptr;
+
+			BoxComponent2D() = default;
+			BoxComponent2D(const BoxComponent2D& box)
+			{
+				shape = box.shape;
+			}
+
+			~BoxComponent2D()
+			{
+				shape = nullptr;
+			}
+
+			BoxComponent2D& operator=(const BoxComponent2D& circle) = default;
 
 			template<class Archive>
 			void save(Archive& archive) const

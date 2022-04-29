@@ -14,7 +14,17 @@ namespace Puffin::Physics
 	{
 		struct Contact
 		{
-			Contact() {}
+			Contact()
+			{
+				a = 0;
+				b = 0;
+
+				pointOnA.Zero();
+				pointOnB.Zero();
+				normal.Zero();
+
+				seperation = 0.0f;
+			}
 
 			ECS::Entity a, b; // Entities which collided
 
@@ -62,16 +72,19 @@ namespace Puffin::Physics
 
 		struct Edge
 		{
-			float distance;
-			Vector2f normal;
-			int index;
+			float distance = 0.0f;
+			Vector2f normal = Vector2f(0.0f);
+			int index = -1;
 		};
 
 		class Polygon2D
 		{
 		public:
 
-			Polygon2D() {};
+			Polygon2D()
+			{
+				m_points.reserve(32);
+			};
 
 			Polygon2D(const Simplex2D& simplex)
 			{

@@ -101,7 +101,7 @@ namespace Puffin::Physics
 			}
 			else
 			{
-				// Origin is boeyond neither ac or ab, so it must be within triangle
+				// Origin is beyond neither ac or ab, so it must be within triangle
 				return true;
 			}
 
@@ -331,7 +331,22 @@ namespace Puffin::Physics
 		if (body.invMass == 0.0f)
 			return;
 
-		body.angularVelocity += std::asin(impulse * body.invMass) * (180 / 3.14);
+		float impulseMultMass = impulse * body.invMass;
+		float as = std::asin(impulseMultMass);
+
+		body.angularVelocity += as * (180 / 3.14);
+
+		const float maxAngularSpeed = 30.0f;
+
+		// Cap angular speed at 30 deg/s
+		if (body.angularVelocity > 0.0)
+		{
+			body.angularVelocity = std::min(body.angularVelocity, maxAngularSpeed);
+		}
+		else if (body.angularVelocity < 0.0)
+		{
+			body.angularVelocity = std::max(body.angularVelocity, -maxAngularSpeed);
+		}
 	}
 
 	static inline void ApplyImpulse(RigidbodyComponent2D& body, const Vector2f& impulsePoint, const Vector2f& impulse)
@@ -345,7 +360,7 @@ namespace Puffin::Physics
 
 		// Get the 2D cross of impulsePoint against impulse
 		// this is the sin of the angle between the vectors in radians
-		//ApplyAngularImpulse(body, impulsePoint.Cross(impulse));
+		ApplyAngularImpulse(body, impulsePoint.Normalised().Cross(impulse.Normalised()));
 	}
 }
 

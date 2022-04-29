@@ -144,7 +144,7 @@ namespace Puffin::IO
 		cereal::BinaryInputArchive archive(is);
 
 		// Clear Old Scene Data
-		ClearSceneData(sceneData);
+		//ClearSceneData(sceneData);
 
 		// Load Entites from Archive
 		archive(sceneData.entities, sceneData.entity_names);

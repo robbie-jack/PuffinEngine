@@ -16,7 +16,12 @@ namespace Puffin::Physics
 			points.reserve(4);
 		}
 
-		~BoxShape2D() {}
+		~BoxShape2D()
+		{
+			centreOfMass.Zero();
+			halfExtent.Zero();
+			points.clear();
+		}
 
 		ShapeType2D GetType() const override;
 
