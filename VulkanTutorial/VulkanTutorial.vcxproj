@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.189.2\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.189.2\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -154,7 +154,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.189.2\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.189.2\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -177,6 +177,51 @@
     <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.cpp" />
     <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.cpp" />
     <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_broad_phase.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_chain_shape.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_circle_shape.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_collide_circle.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_collide_edge.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_collide_polygon.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_collision.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_distance.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_dynamic_tree.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_edge_shape.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_polygon_shape.cpp" />
+    <ClCompile Include="..\box2d\src\collision\b2_time_of_impact.cpp" />
+    <ClCompile Include="..\box2d\src\common\b2_block_allocator.cpp" />
+    <ClCompile Include="..\box2d\src\common\b2_draw.cpp" />
+    <ClCompile Include="..\box2d\src\common\b2_math.cpp" />
+    <ClCompile Include="..\box2d\src\common\b2_settings.cpp" />
+    <ClCompile Include="..\box2d\src\common\b2_stack_allocator.cpp" />
+    <ClCompile Include="..\box2d\src\common\b2_timer.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_body.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_chain_circle_contact.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_chain_polygon_contact.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_circle_contact.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_contact.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_contact_manager.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_contact_solver.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_distance_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_edge_circle_contact.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_edge_polygon_contact.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_fixture.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_friction_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_gear_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_island.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_motor_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_mouse_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_polygon_circle_contact.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_polygon_contact.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_prismatic_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_pulley_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_revolute_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_weld_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_wheel_joint.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_world.cpp" />
+    <ClCompile Include="..\box2d\src\dynamics\b2_world_callbacks.cpp" />
+    <ClCompile Include="..\box2d\src\rope\b2_rope.cpp" />
     <ClCompile Include="..\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="..\imgui\imgui.cpp" />
     <ClCompile Include="..\imgui\imgui_demo.cpp" />
@@ -194,6 +239,7 @@
     <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
+    <ClCompile Include="src\Physics\Box2D\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="src\Physics\Colliders\BoxCollider2D.cpp" />
     <ClCompile Include="src\Physics\Colliders\CircleCollider2D.cpp" />
     <ClCompile Include="src\Physics\Colliders\PolygonCollider2D.cpp" />
@@ -217,6 +263,15 @@
     <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h" />
     <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.h" />
     <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_chain_circle_contact.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_chain_polygon_contact.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_circle_contact.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_contact_solver.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_edge_circle_contact.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_edge_polygon_contact.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_island.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_polygon_circle_contact.h" />
+    <ClInclude Include="..\box2d\src\dynamics\b2_polygon_contact.h" />
     <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="..\imgui\imgui.h" />
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h" />
@@ -231,6 +286,8 @@
     <ClInclude Include="src\Assets\TextureAsset.h" />
     <ClInclude Include="src\Audio\AudioManager.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
+    <ClInclude Include="src\Components\Physics\Box2D\Box2DRigidbodyComponent.h" />
+    <ClInclude Include="src\Components\Physics\Box2D\Box2DShapeComponents.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h" />
     <ClInclude Include="src\Components\Physics\ShapeComponents2D.h" />
     <ClInclude Include="src\Components\Rendering\CameraComponent.h" />
@@ -245,6 +302,7 @@
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\ManipulationGizmo.h" />
     <ClInclude Include="src\MathHelpers.h" />
+    <ClInclude Include="src\Physics\Box2D\Box2DPhysicsSystem.h" />
     <ClInclude Include="src\Physics\Colliders\BoxCollider2D.h" />
     <ClInclude Include="src\Physics\Colliders\CircleCollider2D.h" />
     <ClInclude Include="src\Physics\Colliders\Collider2D.h" />

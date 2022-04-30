@@ -3,6 +3,11 @@
 
 #include <math.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include "box2d/box2d.h"
+
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 namespace Puffin
 {
@@ -48,6 +53,14 @@ namespace Puffin
 		operator glm::vec2() const
 		{
 			glm::vec2 vec;
+			vec.x = x;
+			vec.y = y;
+			return vec;
+		}
+
+		operator b2Vec2() const
+		{
+			b2Vec2 vec;
 			vec.x = x;
 			vec.y = y;
 			return vec;
@@ -239,12 +252,8 @@ namespace Puffin
 			y = 0.0f;
 		}
 
-		// Serialization
-		template<class Archive>
-		void serialize(Archive& archive)
-		{
-			archive(x, y);
-		}
+		// Json
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector2, x, y);
 	};
 
 	typedef Vector2<float> Vector2f;
@@ -301,7 +310,7 @@ namespace Puffin
 		// Operator Overrides
 
 		// Operator Conversion
-		operator glm::vec3() const
+		explicit operator glm::vec3() const
 		{
 			glm::vec3 vec;
 			vec.x = x;
@@ -321,18 +330,20 @@ namespace Puffin
 		}
 
 		// Operator=
-		void operator=(const Vector3& vec)
+		Vector3<T>& operator=(const Vector3& vec)
 		{
 			x = vec.x;
 			y = vec.y;
 			z = vec.z;
+			return *this;
 		}
 
-		void operator=(const T* rhs)
+		Vector3<T>& operator=(const T* rhs)
 		{
 			x = rhs[0];
 			y = rhs[1];
 			z = rhs[2];
+			return *this;
 		}
 
 		// Operator+=
@@ -487,12 +498,9 @@ namespace Puffin
 			return Vector2<T>(x, y);
 		}
 
-		// Serialization
-		template<class Archive>
-		void serialize(Archive& archive)
-		{
-			archive(x, y, z);
-		}
+
+		// Json
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector3, x, y, z);
 	};
 
 	typedef Vector3<float> Vector3f;

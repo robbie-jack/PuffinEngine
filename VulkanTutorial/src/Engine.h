@@ -37,10 +37,10 @@ namespace Puffin
 		void Restart();
 		void Exit();
 
-		inline PlayState GetPlayState() { return playState; };
-		inline IO::SceneData& GetScene() { return sceneData; };
+		inline PlayState GetPlayState() const { return playState; }
+		inline std::shared_ptr<IO::SceneData> GetScene() { return m_sceneData; }
 
-		inline IO::ProjectSettings& GetProjectSettings() { return settings; };
+		inline IO::ProjectSettings& GetProjectSettings() { return settings; }
 
 	private:
 
@@ -51,7 +51,7 @@ namespace Puffin
 
 		IO::ProjectSettings settings;
 
-		IO::SceneData sceneData;
+		std::shared_ptr<IO::SceneData> m_sceneData = nullptr;
 
 		void AddDefaultAssets();
 

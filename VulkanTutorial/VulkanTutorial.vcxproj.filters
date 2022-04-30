@@ -53,12 +53,6 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{f616ea0c-0a82-4f78-9de3-fd7968a20200}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Physics\Shapes">
-      <UniqueIdentifier>{2de39666-6781-4374-9e9c-6312a2f3709f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics\Colliders">
-      <UniqueIdentifier>{f3961285-1613-4cdf-bc5a-66725870620e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Assets\Importers">
       <UniqueIdentifier>{f2802aea-7dbd-4c88-b414-71ea8ac9d947}</UniqueIdentifier>
     </Filter>
@@ -73,6 +67,27 @@
     </Filter>
     <Filter Include="Libraries\VMA">
       <UniqueIdentifier>{33f38952-8e59-4e33-b414-d7753a5bdad9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\CustomPhysics2D">
+      <UniqueIdentifier>{33ce4f3a-b719-4696-b905-0f0a0392dffb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\CustomPhysics2D\Shapes">
+      <UniqueIdentifier>{2de39666-6781-4374-9e9c-6312a2f3709f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\CustomPhysics2D\Colliders">
+      <UniqueIdentifier>{f3961285-1613-4cdf-bc5a-66725870620e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Box2D">
+      <UniqueIdentifier>{30a1567e-9bda-48dd-9393-d97e05743956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\Box2D">
+      <UniqueIdentifier>{04d3e15d-a88b-49a8-a6a2-9a3afd4ffedb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Physics\PuffinPhysics2D">
+      <UniqueIdentifier>{8c32c545-fce1-484a-8b83-462b192e05aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Physics\Box2D">
+      <UniqueIdentifier>{c43087e6-6720-43be-845e-4f9c5abd5ef5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -145,9 +160,6 @@
     <ClCompile Include="src\Rendering\VKHelper.cpp">
       <Filter>Rendering\Helper Classes</Filter>
     </ClCompile>
-    <ClCompile Include="src\Physics\PhysicsSystem2D.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.cpp">
       <Filter>Scripting\Addons</Filter>
     </ClCompile>
@@ -158,16 +170,16 @@
       <Filter>Assets</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp">
-      <Filter>Physics\Shapes</Filter>
+      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Shapes\CircleShape2D.cpp">
-      <Filter>Physics\Shapes</Filter>
+      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Colliders\CircleCollider2D.cpp">
-      <Filter>Physics\Colliders</Filter>
+      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Colliders\BoxCollider2D.cpp">
-      <Filter>Physics\Colliders</Filter>
+      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
     </ClCompile>
     <ClCompile Include="src\Assets\AssetRegistry.cpp">
       <Filter>Assets</Filter>
@@ -182,7 +194,148 @@
       <Filter>Scripting\Addons</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Colliders\PolygonCollider2D.cpp">
-      <Filter>Physics\Colliders</Filter>
+      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PhysicsSystem2D.cpp">
+      <Filter>Physics\CustomPhysics2D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\Box2D\Box2DPhysicsSystem.cpp">
+      <Filter>Physics\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_broad_phase.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_chain_shape.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_circle_shape.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_collide_circle.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_collide_edge.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_collide_polygon.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_collision.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_distance.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_dynamic_tree.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_edge_shape.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_polygon_shape.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\collision\b2_time_of_impact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\common\b2_block_allocator.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\common\b2_draw.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\common\b2_math.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\common\b2_settings.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\common\b2_stack_allocator.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\common\b2_timer.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_body.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_chain_circle_contact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_chain_polygon_contact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_circle_contact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_contact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_contact_manager.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_contact_solver.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_distance_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_edge_circle_contact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_edge_polygon_contact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_fixture.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_friction_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_gear_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_island.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_motor_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_mouse_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_polygon_circle_contact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_polygon_contact.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_prismatic_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_pulley_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_revolute_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_weld_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_wheel_joint.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_world.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\dynamics\b2_world_callbacks.cpp">
+      <Filter>Libraries\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\box2d\src\rope\b2_rope.cpp">
+      <Filter>Libraries\Box2D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -289,19 +442,7 @@
     <ClInclude Include="src\Rendering\VKPipeline.h">
       <Filter>Rendering\Helper Classes</Filter>
     </ClInclude>
-    <ClInclude Include="src\Physics\PhysicsSystem2D.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h">
-      <Filter>Components\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\Physics\ShapeComponents2D.h">
-      <Filter>Components\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="src\MathHelpers.h" />
-    <ClInclude Include="src\Physics\PhysicsHelpers2D.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
     <ClInclude Include="src\Types\Matrix.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -321,28 +462,25 @@
       <Filter>Assets</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Shapes\Shape2D.h">
-      <Filter>Physics\Shapes</Filter>
+      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Shapes\BoxShape2D.h">
-      <Filter>Physics\Shapes</Filter>
+      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Shapes\CircleShape2D.h">
-      <Filter>Physics\Shapes</Filter>
+      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="src\Types\ComponentFlags.h">
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Colliders\BoxCollider2D.h">
-      <Filter>Physics\Colliders</Filter>
+      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Colliders\CircleCollider2D.h">
-      <Filter>Physics\Colliders</Filter>
+      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Colliders\Collider2D.h">
-      <Filter>Physics\Colliders</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\PhysicsTypes2D.h">
-      <Filter>Physics</Filter>
+      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="src\Assets\AssetRegistry.h">
       <Filter>Assets</Filter>
@@ -381,13 +519,64 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Shapes\PolygonShape2D.h">
-      <Filter>Physics\Shapes</Filter>
+      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Colliders\PolygonCollider2D.h">
-      <Filter>Physics\Colliders</Filter>
+      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="src\Components\TransformComponent.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsHelpers2D.h">
+      <Filter>Physics\CustomPhysics2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsSystem2D.h">
+      <Filter>Physics\CustomPhysics2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsTypes2D.h">
+      <Filter>Physics\CustomPhysics2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Box2D\Box2DPhysicsSystem.h">
+      <Filter>Physics\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h">
+      <Filter>Components\Physics\PuffinPhysics2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Physics\ShapeComponents2D.h">
+      <Filter>Components\Physics\PuffinPhysics2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Physics\Box2D\Box2DRigidbodyComponent.h">
+      <Filter>Components\Physics\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\Physics\Box2D\Box2DShapeComponents.h">
+      <Filter>Components\Physics\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_chain_circle_contact.h">
+      <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_chain_polygon_contact.h">
+      <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_circle_contact.h">
+      <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_contact_solver.h">
+      <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_edge_circle_contact.h">
+      <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_edge_polygon_contact.h">
+      <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_island.h">
+      <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_polygon_circle_contact.h">
+      <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\box2d\src\dynamics\b2_polygon_contact.h">
+      <Filter>Libraries\Box2D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

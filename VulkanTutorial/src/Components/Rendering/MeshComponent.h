@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef MESH_COMPONENT_H
-#define MESH_COMPONENT_H
-
 #include <Rendering/VKTypes.h>
 #include <Types/UUID.h>
 
@@ -16,11 +13,11 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-#include <cereal/types/string.hpp>
-
 #include <vector>
 #include <array>
 #include <filesystem>
+
+#include "nlohmann/json.hpp"
 
 namespace fs = std::filesystem;
 
@@ -85,16 +82,6 @@ namespace Puffin
 				attributeDescriptions[4].offset = offsetof(Vertex, uv);
 
 				return attributeDescriptions;
-			};
-
-			template<class Archive>
-			void serialize(Archive& archive)
-			{
-				archive(pos.x, pos.y, pos.z);
-				archive(color.x, color.y, color.z);
-				archive(normal.x, normal.y, normal.z);
-				archive(tangent.x, tangent.y, tangent.z);
-				archive(uv.x, uv.y);
 			}
 		};
 	}
@@ -145,29 +132,8 @@ namespace Puffin
 
 			// Index Buffer
 			AllocatedBuffer indexBuffer;
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetID, textureAssetID)
 		};
-
-		template<class Archive>
-		void save(Archive& archive, const MeshComponent& comp)
-		{
-			uint64_t meshID = comp.meshAssetID;
-			uint64_t textureID = comp.textureAssetID;
-			archive(cereal::make_nvp("Mesh ID", meshID));
-			archive(cereal::make_nvp("Texture ID", textureID));
-		}
-
-		template<class Archive>
-		void load(Archive& archive, MeshComponent& comp)
-		{
-			uint64_t meshID;
-			archive(cereal::make_nvp("Mesh ID", meshID));
-			comp.meshAssetID = meshID;
-
-			uint64_t textureID;
-			archive(cereal::make_nvp("Texture ID", textureID));
-			comp.textureAssetID = textureID;
-		}
 	}
 }
-
-#endif // !MESH_COMPONENT_H

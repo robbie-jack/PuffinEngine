@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef SERIALIZE_SCENE_H
-#define SERIALIZE_SCENE_H
-
 #include <ECS/ECS.h>
 #include <Components/TransformComponent.h>
 #include <Components/Rendering/MeshComponent.h>
@@ -12,6 +9,7 @@
 #include <Components/AngelScriptComponent.h>
 
 #include "Assets/AssetRegistry.h"
+#include "nlohmann/json.hpp"
 
 #include <vector>
 #include <set>
@@ -19,206 +17,233 @@
 #include <fstream>
 #include <filesystem>
 
-#include <cereal/types/vector.hpp>
-#include <cereal/types/set.hpp>
-#include <cereal/types/map.hpp>
-
-#include <cereal/archives/binary.hpp>
-
 namespace fs = std::filesystem;
+using json = nlohmann::json;
 
 namespace Puffin::IO
 {
-	// Stores Loaded Scene Data
-	struct SceneData
+	// Interface for array to store scene data
+	class ISceneDataArray
 	{
-		fs::path scene_path;
-		std::set<ECS::Entity> entities;
-		std::map<ECS::Entity, std::string> entity_names;
-		std::map<ECS::Entity, TransformComponent> transformMap;
-		std::map<ECS::Entity, Rendering::MeshComponent> meshMap;
-		std::map<ECS::Entity, Rendering::LightComponent> lightMap;
-		std::map<ECS::Entity, Physics::RigidbodyComponent2D> rigidbody2DMap;
-		std::map<ECS::Entity, Physics::CircleComponent2D> circle2DMap;
-		std::map<ECS::Entity, Physics::BoxComponent2D> box2DMap;
-		std::map<ECS::Entity, Scripting::AngelScriptComponent> scriptMap;
+	public:
+
+		virtual ~ISceneDataArray() = default;
+		virtual void InitSceneData() = 0;
+		virtual void UpdateData() = 0;
+		virtual void Clear() = 0;
+		virtual json SaveToJson() const = 0;
+		virtual void LoadFromJson(const std::string& componentType, std::set<ECS::Entity> entities, const json& data) = 0;
 	};
 
-	inline static void ClearSceneData(SceneData& sceneData)
+	template<typename CompT>
+	class SceneDataArray : public ISceneDataArray
 	{
-		sceneData.entities.clear();
-		sceneData.entity_names.clear();
-		sceneData.transformMap.clear();
-		sceneData.meshMap.clear();
-		sceneData.lightMap.clear();
-		sceneData.rigidbody2DMap.clear();
-		sceneData.circle2DMap.clear();
-		sceneData.box2DMap.clear();
-		sceneData.scriptMap.clear();
-	}
+	public:
 
-	inline static void UpdateSceneData(std::shared_ptr<ECS::World> world, SceneData& sceneData)
-	{
-		// Clear Out Old Scene Data
-		ClearSceneData(sceneData);
+		SceneDataArray(std::shared_ptr<ECS::World> inWorld) : m_world(inWorld) {}
+		~SceneDataArray() override = default;
 
-		// Store Entities, Names and Signatures in local vectors
-		for (ECS::Entity entity : world->GetActiveEntities())
+		void InitSceneData() override
 		{
-			sceneData.entities.insert(entity);
-			sceneData.entity_names.insert({ entity, world->GetEntityName(entity) });
+			for (auto& pair : m_componentMap)
+			{
+				m_world->AddComponent<CompT>(pair.first, pair.second);
+			}
 		}
 
-		// Store component's in map, with entity as key value
-		for (ECS::Entity entity : world->GetActiveEntities())
+		void UpdateData() override
 		{
-			if (world->HasComponent<TransformComponent>(entity))
-			{
-				TransformComponent& comp = world->GetComponent<TransformComponent>(entity);
-				sceneData.transformMap.insert({ entity, comp });
-			}
+			Clear();
 
-			if (world->HasComponent<Rendering::MeshComponent>(entity))
-			{
-				Rendering::MeshComponent& comp = world->GetComponent<Rendering::MeshComponent>(entity);
-				sceneData.meshMap.insert({ entity, comp });
-			}
+			const std::set<ECS::Entity> entities = m_world->GetActiveEntities();
 
-			if (world->HasComponent<Rendering::LightComponent>(entity))
+			for (auto entity : entities)
 			{
-				Rendering::LightComponent& comp = world->GetComponent<Rendering::LightComponent>(entity);
-				sceneData.lightMap.insert({ entity, comp });
-			}
-
-			if (world->HasComponent<Physics::RigidbodyComponent2D>(entity))
-			{
-				Physics::RigidbodyComponent2D& comp = world->GetComponent<Physics::RigidbodyComponent2D>(entity);
-				sceneData.rigidbody2DMap.insert({ entity, comp });
-			}
-
-			if (world->HasComponent<Physics::CircleComponent2D>(entity))
-			{
-				Physics::CircleComponent2D& comp = world->GetComponent<Physics::CircleComponent2D>(entity);
-				sceneData.circle2DMap.insert({entity, comp});
-			}
-
-			if (world->HasComponent<Physics::BoxComponent2D>(entity))
-			{
-				Physics::BoxComponent2D& comp = world->GetComponent<Physics::BoxComponent2D>(entity);
-				sceneData.box2DMap.insert({ entity, comp });
-			}
-
-			if (world->HasComponent<Scripting::AngelScriptComponent>(entity))
-			{
-				Scripting::AngelScriptComponent& comp = world->GetComponent<Scripting::AngelScriptComponent>(entity);
-				sceneData.scriptMap.insert({ entity, comp });
+				if (m_world->HasComponent<CompT>(entity))
+				{
+					auto& comp = m_world->GetComponent<CompT>(entity);
+					m_componentMap.insert({ entity, comp });
+				}
 			}
 		}
-	}
 
-	// Save Entities/Components to Binary Scene File
-	inline static void SaveScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
-	{
-		// Initialize Output File Stream and Cereal Binary Archive
-		std::ofstream os(sceneData.scene_path, std::ios::binary);
-		cereal::BinaryOutputArchive archive(os);
-
-		UpdateSceneData(world, sceneData);
-
-		// Save Entities and Components to Archive
-		archive(sceneData.entities, sceneData.entity_names);
-		archive(sceneData.transformMap);
-		archive(sceneData.meshMap);
-		archive(sceneData.lightMap);
-		archive(sceneData.rigidbody2DMap);
-		archive(sceneData.circle2DMap);
-		archive(sceneData.box2DMap);
-		archive(sceneData.scriptMap);
-	}
-
-	// Load  Entities/Components from Binary Scene File
-	inline static void LoadScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
-	{
-		// Initialize Input File Stream and Cereal Binary Archive
-		std::ifstream is(sceneData.scene_path, std::ios::binary);
-		cereal::BinaryInputArchive archive(is);
-
-		// Clear Old Scene Data
-		//ClearSceneData(sceneData);
-
-		// Load Entites from Archive
-		archive(sceneData.entities, sceneData.entity_names);
-
-		// Load Components into Maps
-		archive(sceneData.transformMap);
-		archive(sceneData.meshMap);
-		archive(sceneData.lightMap);
-		archive(sceneData.rigidbody2DMap);
-		archive(sceneData.circle2DMap);
-		archive(sceneData.box2DMap);
-		archive(sceneData.scriptMap);
-	}
-
-	// Initialize ECS with loaded data
-	inline static void InitScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
-	{
-		// Initialize EntityManager with Existing Entities
-		world->InitEntitySystem(sceneData.entities);
-
-		// Initialize ECS with all loaded data
-		for (ECS::Entity entity : sceneData.entities)
+		void Clear() override
 		{
-			world->SetEntityName(entity, sceneData.entity_names.at(entity));
+			m_componentMap.clear();
+		}
 
-			// If Entity has Transform Component, Insert into ECS
-			if (sceneData.transformMap.find(entity) != sceneData.transformMap.end())
+		json SaveToJson() const override
+		{
+			json data;
+
+			int i = 0;
+			for (auto& pair : m_componentMap)
 			{
-				world->AddComponent<TransformComponent>(entity, sceneData.transformMap.at(entity));
+				data[i] = { pair.first, pair.second };
+
+				i++;
 			}
 
-			// If Entity has Mesh Component, Insert into ECS
-			if (sceneData.meshMap.find(entity) != sceneData.meshMap.end())
-			{
-				world->AddComponent<Rendering::MeshComponent>(entity, sceneData.meshMap.at(entity));
-			}
+			return data;
+		}
 
-			// If Entity has Light Component, Insert into ECS
-			if (sceneData.lightMap.find(entity) != sceneData.lightMap.end())
-			{
-				world->AddComponent<Rendering::LightComponent>(entity, sceneData.lightMap.at(entity));
-			}
+		void LoadFromJson(const std::string& componentType, std::set<ECS::Entity> entities, const json& data) override
+		{
+			const int size = data[componentType].size();
 
-			// If Entity has Rigidbody Component, Insert into ECS
-			if (sceneData.rigidbody2DMap.find(entity) != sceneData.rigidbody2DMap.end())
+			for (int i = 0; i < size; i++)
 			{
-				world->AddComponent<Physics::RigidbodyComponent2D>(entity, sceneData.rigidbody2DMap.at(entity));
-			}
+				ECS::Entity entity = data[componentType].at(i).at(0);
 
-			// Shape Components 2D
-			if (sceneData.circle2DMap.find(entity) != sceneData.circle2DMap.end())
-			{
-				world->AddComponent<Physics::CircleComponent2D>(entity, sceneData.circle2DMap.at(entity));
-			}
-
-			if (sceneData.box2DMap.find(entity) != sceneData.box2DMap.end())
-			{
-				world->AddComponent<Physics::BoxComponent2D>(entity, sceneData.box2DMap.at(entity));
-			}
-
-			// Script Component
-			if (sceneData.scriptMap.find(entity) != sceneData.scriptMap.end())
-			{
-				world->AddComponent<Scripting::AngelScriptComponent>(entity, sceneData.scriptMap.at(entity));
+				m_componentMap[entity] = data[componentType].at(i).at(1);
 			}
 		}
-	}
 
-	// Load & Initialize Scene Data
-	inline static void LoadAndInitScene(std::shared_ptr<ECS::World> world, SceneData& sceneData)
+	private:
+
+		std::shared_ptr<ECS::World> m_world; // Pointer to ECS World
+		std::map<ECS::Entity, CompT> m_componentMap; // Map of entity id to component
+
+	};
+
+	// Stores Loaded Scene Data
+	class SceneData
 	{
-		LoadScene(world, sceneData);
-		InitScene(world, sceneData);
-	}
+	public:
+
+		SceneData(std::shared_ptr<ECS::World> inWorld, fs::path inPath) : m_world(inWorld), m_scenePath(inPath) {}
+
+		// Initialize ECS with loaded data
+		void Init()
+		{
+			// Initialize ECS World with Entities
+			m_world->InitEntitySystem(m_entities);
+
+			// Set Entity Names
+			for (ECS::Entity entity : m_entities)
+			{
+				m_world->SetEntityName(entity, m_entityNames[entity]);
+			}
+
+			// Init Each Component Type
+			for (auto& pair : m_sceneDataArrays)
+			{
+				pair.second->InitSceneData();
+			}
+		}
+
+		void UpdateData()
+		{
+			Clear();
+
+			m_entities = m_world->GetActiveEntities();
+
+			for (ECS::Entity entity : m_entities)
+			{
+				m_entityNames.insert({ entity, m_world->GetEntityName(entity) });
+			}
+
+			for (auto& pair : m_sceneDataArrays)
+			{
+				pair.second->UpdateData();
+			}
+		}
+
+		void Clear()
+		{
+			m_entities.clear();
+			m_entityNames.clear();
+
+			for (auto& pair : m_sceneDataArrays)
+			{
+				pair.second->Clear();
+			}
+		}
+
+		template<typename CompT>
+		void RegisterComponent(std::string componentType)
+		{
+			assert(m_sceneDataArrays.find(componentType) == m_sceneDataArrays.end() && "Registering component type more than once");
+
+			// Create
+			std::shared_ptr<SceneDataArray<CompT>> sceneDataArray = std::make_shared<SceneDataArray<CompT>>(m_world);
+
+			m_sceneDataArrays.insert({ componentType, std::static_pointer_cast<ISceneDataArray>(sceneDataArray) });
+		}
+
+		// Save Entities/Components to Binary Scene File
+		void Save()
+		{
+			UpdateData();
+
+			// Initialize Output File Stream and Cereal Binary Archive
+			
+			json data;
+			data["Entities"] = m_entities;
+			data["EntityNames"] = m_entityNames;
+
+			for (auto& pair : m_sceneDataArrays)
+			{
+				data[pair.first] = pair.second->SaveToJson();
+			}
+
+			std::ofstream os(m_scenePath, std::ios::out);
+
+			os << std::setw(4) << data << std::endl;
+
+			os.close();
+		}
+
+		// Load  Entities/Components from Binary Scene File
+		void Load()
+		{
+			if (!fs::exists(m_scenePath))
+				return;
+
+			// Initialize Input File Stream and Cereal Binary Archive
+			std::ifstream is(m_scenePath);
+
+			json data;
+			is >> data;
+
+			is.close();
+
+			const std::set<ECS::Entity> entities = data["Entities"];
+			m_entities = entities;
+
+			const std::unordered_map<ECS::Entity, std::string> entityNames = data["EntityNames"];
+			m_entityNames = entityNames;
+
+			for (auto& pair : m_sceneDataArrays)
+			{
+				pair.second->LoadFromJson(pair.first, m_entities, data);
+			}
+		}
+
+		void LoadAndInit()
+		{
+			Load();
+			Init();
+		}
+
+		void SetPath(const fs::path& path)
+		{
+			m_scenePath = path;
+		}
+
+		const fs::path& GetPath()
+		{
+			return m_scenePath;
+		}
+
+	private:
+
+		std::shared_ptr<ECS::World> m_world; // Pointer to ECS World
+		fs::path m_scenePath;
+
+		std::set<ECS::Entity> m_entities;
+		std::unordered_map<ECS::Entity, std::string> m_entityNames;
+		std::unordered_map<std::string, std::shared_ptr<ISceneDataArray>> m_sceneDataArrays; // Map of scene data arrays
+
+	};
 }
-
-#endif // !SERIALIZE_SCENE_H

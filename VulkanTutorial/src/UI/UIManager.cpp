@@ -93,14 +93,14 @@ namespace Puffin::UI
 	{
 		if (fileDialog.HasSelected())
 		{
-			fs::path selectedPath = fileDialog.GetSelected();
+			const fs::path selectedPath = fileDialog.GetSelected();
 
 			// File Dialog - Load Scene
 			if (loadScene)
 			{
-				engine->GetScene().scene_path = selectedPath.string();
+				engine->GetScene()->SetPath(selectedPath);
 
-				IO::LoadScene(world, engine->GetScene());
+				engine->GetScene()->Load();
 
 				engine->Restart();
 
@@ -154,7 +154,7 @@ namespace Puffin::UI
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing
 		if (windowEntityProperties->HasSceneChanged() && engine->GetPlayState() == PlayState::STOPPED)
 		{
-			IO::UpdateSceneData(world, engine->GetScene());
+			engine->GetScene()->UpdateData();
 		}
 	}
 
@@ -218,7 +218,7 @@ namespace Puffin::UI
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			std::string str_name = engine->GetScene().scene_path.string();
+			std::string str_name = engine->GetScene()->GetPath().string();
 			std::vector<char> name(256, '\0');
 			for (int i = 0; i < str_name.size(); i++)
 			{
@@ -229,12 +229,12 @@ namespace Puffin::UI
 			ImGui::Text("Enter Scene Name:");
 			if (ImGui::InputText("##Edit", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				engine->GetScene().scene_path = std::string(&name[0]);
+				engine->GetScene()->SetPath(std::string(&name[0]));
 			}
 
 			if (ImGui::Button("Save"))
 			{
-				IO::SaveScene(world, engine->GetScene());
+				engine->GetScene()->Save();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -273,6 +273,7 @@ namespace Puffin::UI
 
 				if (ImGui::MenuItem("Save Project"))
 				{
+					//IO::SaveProject(Assets::AssetRegistry::Get()->ProjectRoot() / Assets::AssetRegistry::Get()->ProjectName() + ".pproject", engine->)
 					IO::SaveSettings(Assets::AssetRegistry::Get()->ProjectRoot() / "settings.json", engine->GetProjectSettings());
 					Assets::AssetRegistry::Get()->SaveAssetCache();
 				}
@@ -298,7 +299,7 @@ namespace Puffin::UI
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					IO::SaveScene(world, engine->GetScene());
+					engine->GetScene()->Save();
 				}
 
 				if (ImGui::MenuItem("Save Scene As"))

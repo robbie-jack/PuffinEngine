@@ -1,14 +1,12 @@
 #pragma once
 
-#ifndef PROJECT_SETTINGS_H
-#define PROJECT_SETTINGS_H
-
 #include <fstream>
 #include <string>
 #include <filesystem>
 
-#include <cereal/archives/json.hpp>
+#include "nlohmann/json.hpp"
 
+using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 namespace Puffin
@@ -20,35 +18,28 @@ namespace Puffin
 		{
 			std::string name;
 			std::string defaultScenePath;
-		};
 
-		template<class Archive>
-		void serialize(Archive& archive, ProjectFile& file)
-		{
-			archive(cereal::make_nvp("Project Name", file.name));
-			archive(cereal::make_nvp("Default Scene", file.defaultScenePath));
-		}
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, defaultScenePath)
+		};
 
 		struct ProjectSettings
 		{
 			float mouseSensitivity;
 			float cameraFov;
-		};
 
-		template<class Archive>
-		void serialize(Archive& archive, ProjectSettings& settings)
-		{
-			archive(cereal::make_nvp("Camera FOV",settings.cameraFov));
-			archive(cereal::make_nvp("Mouse Sensitivity", settings.mouseSensitivity));
-		}
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectSettings, mouseSensitivity, cameraFov)
+		};
 
 		// IO Static Functions
 		static void SaveProject(fs::path file_path, const ProjectFile& file)
 		{
-			std::ofstream os(file_path.string());
-			cereal::JSONOutputArchive archive(os);
+			const json data = file;
 
-			archive(file);
+			std::ofstream os(file_path.string());
+
+			os << std::setw(4) << data << std::endl;
+
+			os.close();
 		}
 
 		static void LoadProject(fs::path file_path, ProjectFile& file)
@@ -57,27 +48,39 @@ namespace Puffin
 				return;
 
 			std::ifstream is(file_path.string());
-			cereal::JSONInputArchive archive(is);
 
-			archive(file);
+			json data;
+			is >> data;
+
+			is.close();
+
+			file = data;
 		}
 		
 		static void SaveSettings(fs::path file_path, const ProjectSettings& settings)
 		{
-			std::ofstream os(file_path);
-			cereal::JSONOutputArchive archive(os);
+			const json data = settings;
 
-			archive(settings);
+			std::ofstream os(file_path.string());
+
+			os << std::setw(4) << data << std::endl;
+
+			os.close();
 		}
 
 		static void LoadSettings(fs::path file_path, ProjectSettings& settings)
 		{
-			std::ifstream is(file_path);
-			cereal::JSONInputArchive archive(is);
+			if (!fs::exists(file_path))
+				return;
 
-			archive(settings);
+			std::ifstream is(file_path.string());
+
+			json data;
+			is >> data;
+
+			is.close();
+
+			settings = data;
 		}
 	}
 }
-
-#endif // PROJECT_SETTINGS_H

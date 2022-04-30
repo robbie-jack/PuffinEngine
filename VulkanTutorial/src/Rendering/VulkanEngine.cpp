@@ -1356,12 +1356,13 @@ namespace Puffin
 			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
 
 			// Calculate Right and Up Vectors
-			camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
-			camera.up = glm::cross(camera.direction, camera.right);
+			camera.right = glm::normalize(glm::cross(static_cast<glm::vec3>(camera.up), static_cast<glm::vec3>(camera.direction)));
+			camera.up = glm::cross(static_cast<glm::vec3>(camera.direction), static_cast<glm::vec3>(camera.right));
 			camera.lookat = camera.position + camera.direction;
 
 			// Calculate Camera View Matrix
-			camera.matrices.view = glm::lookAt(camera.position, camera.lookat, camera.up);
+			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(camera.position), 
+				static_cast<glm::vec3>(camera.lookat), static_cast<glm::vec3>(camera.up));
 		}
 
 		AllocatedBuffer VulkanEngine::InitVertexBuffer(const std::vector<Vertex>& vertices)
@@ -1941,32 +1942,32 @@ namespace Puffin
 				// Camera Movement
 				if (moveLeft && !moveRight)
 				{
-					camera.position += camera.speed * camera.right * (float)m_deltaTime;
+					camera.position +=  camera.right * camera.speed * m_deltaTime;
 				}
 				
 				if (moveRight && !moveLeft)
 				{
-					camera.position -= camera.speed * camera.right * (float)m_deltaTime;
+					camera.position -= camera.right * camera.speed * m_deltaTime;
 				}
 
 				if (moveForward && !moveBackward)
 				{
-					camera.position += camera.speed * camera.direction * (float)m_deltaTime;
+					camera.position += camera.direction * camera.speed * m_deltaTime;
 				}
 				
 				if (moveBackward && !moveForward)
 				{
-					camera.position -= camera.speed * camera.direction * (float)m_deltaTime;
+					camera.position -= camera.direction * camera.speed * m_deltaTime;
 				}
 
 				if (moveUp && !moveDown)
 				{
-					camera.position += camera.speed * camera.up * (float)m_deltaTime;
+					camera.position += camera.up * camera.speed * m_deltaTime;
 				}
 				
 				if (moveDown && !moveUp)
 				{
-					camera.position -= camera.speed * camera.up * (float)m_deltaTime;
+					camera.position -= camera.up * camera.speed * m_deltaTime;
 				}
 
 				// Mouse Rotation
@@ -1983,11 +1984,11 @@ namespace Puffin
 				camera.direction.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
 				camera.direction.y = sin(glm::radians(camera.pitch));
 				camera.direction.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-				camera.direction = glm::normalize(camera.direction);
+				camera.direction.Normalise();
 			}
 
 			// Calculate Right, Up and LookAt vectors
-			camera.right = glm::normalize(glm::cross(camera.up, camera.direction));
+			camera.right = camera.up.Cross(camera.direction).Normalised();
 			camera.lookat = camera.position + camera.direction;
 
 			float newAspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
@@ -2000,7 +2001,8 @@ namespace Puffin
 				camera.prevFov = camera.fov;
 			}
 
-			camera.matrices.view = glm::lookAt(camera.position, camera.lookat, camera.up);
+			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(camera.position),
+				static_cast<glm::vec3>(camera.lookat), static_cast<glm::vec3>(camera.up));
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -2266,7 +2268,7 @@ namespace Puffin
 		{
 			// Map shaing data to uniform buffer
 			ShadingUBO uboData;
-			uboData.viewPos = camera.position;
+			uboData.viewPos = static_cast<glm::vec3>(camera.position);
 			uboData.displayDebugTarget = 0;
 
 			void* data;
@@ -2309,9 +2311,9 @@ namespace Puffin
 				switch (light.type)
 				{
 				case LightType::POINT:
-					pointLightSSBO[p].position = m_world->GetComponent<TransformComponent>(entity).position;
-					pointLightSSBO[p].ambientColor = light.ambientColor;
-					pointLightSSBO[p].diffuseColor = light.diffuseColor;
+					pointLightSSBO[p].position = static_cast<glm::vec3>(m_world->GetComponent<TransformComponent>(entity).position);
+					pointLightSSBO[p].ambientColor = static_cast<glm::vec3>(light.ambientColor);
+					pointLightSSBO[p].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
 					pointLightSSBO[p].constant = light.constantAttenuation;
 					pointLightSSBO[p].linear = light.linearAttenuation;
 					pointLightSSBO[p].quadratic = light.quadraticAttenuation;
@@ -2321,19 +2323,19 @@ namespace Puffin
 					p++;
 					break;
 				case LightType::DIRECTIONAL:
-					dirLightSSBO[d].ambientColor = light.ambientColor;
-					dirLightSSBO[d].diffuseColor = light.diffuseColor;
-					dirLightSSBO[d].direction = light.direction;
+					dirLightSSBO[d].ambientColor = static_cast<glm::vec3>(light.ambientColor);
+					dirLightSSBO[d].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
+					dirLightSSBO[d].direction = static_cast<glm::vec3>(light.direction);
 					dirLightSSBO[d].specularStrength = light.specularStrength;
 					dirLightSSBO[d].shininess = light.shininess;
 					dirLightSSBO[d].shadowmapIndex = shadowIndex;
 					d++;
 					break;
 				case LightType::SPOT:
-					spotLightSSBO[s].position = m_world->GetComponent<TransformComponent>(entity).position;
-					spotLightSSBO[s].direction = light.direction;
-					spotLightSSBO[s].ambientColor = light.ambientColor;
-					spotLightSSBO[s].diffuseColor = light.diffuseColor;
+					spotLightSSBO[s].position = static_cast<glm::vec3>(m_world->GetComponent<TransformComponent>(entity).position);
+					spotLightSSBO[s].direction = static_cast<glm::vec3>(light.direction);
+					spotLightSSBO[s].ambientColor = static_cast<glm::vec3>(light.ambientColor);
+					spotLightSSBO[s].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
 					spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(light.innerCutoffAngle));
 					spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(light.outerCutoffAngle));
 					spotLightSSBO[s].constant = light.constantAttenuation;
@@ -2643,9 +2645,9 @@ namespace Puffin
 				switch (light.type)
 				{
 				case LightType::POINT:
-					pointLightSSBO[p].position = m_world->GetComponent<TransformComponent>(entity).position;
-					pointLightSSBO[p].ambientColor = light.ambientColor;
-					pointLightSSBO[p].diffuseColor = light.diffuseColor;
+					pointLightSSBO[p].position = static_cast<glm::vec3>(m_world->GetComponent<TransformComponent>(entity).position);
+					pointLightSSBO[p].ambientColor = static_cast<glm::vec3>(light.ambientColor);
+					pointLightSSBO[p].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
 					pointLightSSBO[p].constant = light.constantAttenuation;
 					pointLightSSBO[p].linear = light.linearAttenuation;
 					pointLightSSBO[p].quadratic = light.quadraticAttenuation;
@@ -2655,19 +2657,19 @@ namespace Puffin
 					p++;
 					break;
 				case LightType::DIRECTIONAL:
-					dirLightSSBO[d].ambientColor = light.ambientColor;
-					dirLightSSBO[d].diffuseColor = light.diffuseColor;
-					dirLightSSBO[d].direction = light.direction;
+					dirLightSSBO[d].ambientColor = static_cast<glm::vec3>(light.ambientColor);
+					dirLightSSBO[d].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
+					dirLightSSBO[d].direction = static_cast<glm::vec3>(light.direction);
 					dirLightSSBO[d].specularStrength = light.specularStrength;
 					dirLightSSBO[d].shininess = light.shininess;
 					dirLightSSBO[d].shadowmapIndex = shadowIndex;
 					d++;
 					break;
 				case LightType::SPOT:
-					spotLightSSBO[s].position = m_world->GetComponent<TransformComponent>(entity).position;
-					spotLightSSBO[s].direction = light.direction;
-					spotLightSSBO[s].ambientColor = light.ambientColor;
-					spotLightSSBO[s].diffuseColor = light.diffuseColor;
+					spotLightSSBO[s].position = static_cast<glm::vec3>(m_world->GetComponent<TransformComponent>(entity).position);
+					spotLightSSBO[s].direction = static_cast<glm::vec3>(light.direction);
+					spotLightSSBO[s].ambientColor = static_cast<glm::vec3>(light.ambientColor);
+					spotLightSSBO[s].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
 					spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(light.innerCutoffAngle));
 					spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(light.outerCutoffAngle));
 					spotLightSSBO[s].constant = light.constantAttenuation;
@@ -2958,15 +2960,15 @@ namespace Puffin
 		{
 			// Create debug line vertices to current frames vertices vector
 			Vertex startVertex, endVertex;
-			startVertex.pos = line.start;
-			startVertex.color = line.color;
-			startVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
-			startVertex.uv = Vector2(0.0f, 0.0f);
+			startVertex.pos = static_cast<glm::vec3>(line.start);
+			startVertex.color = static_cast<glm::vec3>(line.color);
+			startVertex.normal = glm::vec3(0.0f, 0.0f, 0.0f);
+			startVertex.uv = Vector2f(0.0f, 0.0f);
 
-			endVertex.pos = line.end;
-			endVertex.color = line.color;
-			endVertex.normal = Vector3(0.0f, 0.0f, 0.0f);
-			endVertex.uv = Vector2(0.0f, 0.0f);
+			endVertex.pos = static_cast<glm::vec3>(line.end);
+			endVertex.color = static_cast<glm::vec3>(line.color);
+			endVertex.normal = static_cast<glm::vec3>(Vector3(0.0f, 0.0f, 0.0f));
+			endVertex.uv = Vector2f(0.0f, 0.0f);
 
 			// Create Indexed Indirect Draw Command for Vertices
 			VkDrawIndexedIndirectCommand command = {};
@@ -2999,9 +3001,9 @@ namespace Puffin
 			const int firstIndex = GetCurrentFrame().debugIndices.size();
 
 			Vertex vert = {};
-			vert.color = box.color;
-			vert.normal = Vector3f(0.0f, 0.0f, 0.0f);
-			vert.uv = Vector2(0.0f, 0.0f);
+			vert.color = static_cast<glm::vec3>(box.color);
+			vert.normal = static_cast<glm::vec3>(Vector3f(0.0f, 0.0f, 0.0f));
+			vert.uv = Vector2f(0.0f, 0.0f);
 
 			// Add Vertices to vector
 			for (int i = 0; i < numVertices; i++)
@@ -3025,14 +3027,14 @@ namespace Puffin
 			int firstIndex = GetCurrentFrame().debugIndices.size();
 
 			Vertex vert = {};
-			vert.color = cube.color;
-			vert.normal = Vector3(0.0f, 0.0f, 0.0f);
-			vert.uv = Vector2(0.0f, 0.0f);
+			vert.color = static_cast<glm::vec3>(cube.color);
+			vert.normal = static_cast<glm::vec3>(Vector3f(0.0f, 0.0f, 0.0f));
+			vert.uv = Vector2f(0.0f, 0.0f);
 
 			// Add Vertices to vector
 			for (int i = 0; i < numVertices; i++)
 			{
-				vert.pos = cube.origin + (cube.halfSize * cubePositions[i]);
+				vert.pos = static_cast<glm::vec3>(cube.origin + (cube.halfSize * cubePositions[i]));
 				GetCurrentFrame().debugVertices.push_back(vert);
 			}
 

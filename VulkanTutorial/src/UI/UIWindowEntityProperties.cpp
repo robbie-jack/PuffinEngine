@@ -3,8 +3,8 @@
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
-#include "Components/Physics/RigidbodyComponent2D.h"
-#include "Components/Physics/ShapeComponents2D.h"
+#include "Components/Physics/Box2D/Box2DRigidbodyComponent.h"
+#include "Components/Physics/Box2D/Box2DShapeComponents.h"
 
 #include "ECS/ECS.h"
 
@@ -343,22 +343,22 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawRigidbody2DUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Physics::RigidbodyComponent2D>(entity))
+			if (world->HasComponent<Physics::Box2DRigidbodyComponent>(entity))
 			{
 				if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& rigidbody = world->GetComponent<Physics::RigidbodyComponent2D>(entity);
+					auto& rigidbody = world->GetComponent<Physics::Box2DRigidbodyComponent>(entity);
 
 					if (ImGui::SmallButton("X##Rigidbody"))
 					{
-						world->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDeleted>(entity, true);
+						world->SetComponentFlag<Physics::Box2DRigidbodyComponent, FlagDeleted>(entity, true);
 							
 						sceneChanged = true;
 					}
 
-					if (ImGui::DragFloat("Mass", &rigidbody.invMass, 1.0f, 0.0f))
+					/*if (ImGui::DragFloat("Mass", &rigidbody.invMass, 1.0f, 0.0f))
 					{
 						sceneChanged = true;
 					}
@@ -366,7 +366,7 @@ namespace Puffin
 					if (ImGui::DragFloat("Elasticty", &rigidbody.elasticity, 0.001f, 0.0f, 1.0f))
 					{
 						sceneChanged = true;
-					}
+					}*/
 
 					ImGui::TreePop();
 				}
@@ -375,24 +375,24 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawCircle2DUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Physics::CircleComponent2D>(entity))
+			if (world->HasComponent<Physics::Box2DCircleComponent>(entity))
 			{
 				if (ImGui::TreeNodeEx("Circle Component 2D", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& circle = world->GetComponent<Physics::CircleComponent2D>(entity);
+					auto& circle = world->GetComponent<Physics::Box2DCircleComponent>(entity);
 
 					if (ImGui::SmallButton("X##Circle2D"))
 					{
-						world->SetComponentFlag< Physics::CircleComponent2D, FlagDeleted>(entity, true);
+						world->SetComponentFlag< Physics::Box2DCircleComponent, FlagDeleted>(entity, true);
 
 						sceneChanged = true;
 					}
 
 					if (circle.shape != nullptr)
 					{
-						if (ImGui::DragFloat2("Centre Of Mass", (float*)&circle.shape->centreOfMass, 0.1f))
+						/*if (ImGui::DragFloat2("Centre Of Mass", (float*)&circle.shape->centreOfMass, 0.1f))
 						{
 							sceneChanged = true;
 						}
@@ -400,7 +400,7 @@ namespace Puffin
 						if (ImGui::DragFloat("Radius", &circle.shape->radius, 0.1f, 0.0f))
 						{
 							sceneChanged = true;
-						}
+						}*/
 					}
 
 					ImGui::TreePop();
@@ -410,24 +410,24 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawBox2DUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Physics::BoxComponent2D>(entity))
+			if (world->HasComponent<Physics::Box2DBoxComponent>(entity))
 			{
 				if (ImGui::TreeNodeEx("Box Component 2D", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& box = world->GetComponent<Physics::BoxComponent2D>(entity);
+					auto& box = world->GetComponent<Physics::Box2DBoxComponent>(entity);
 
 					if (ImGui::SmallButton("X##Box2D"))
 					{
-						world->SetComponentFlag< Physics::BoxComponent2D, FlagDeleted>(entity, true);
+						world->SetComponentFlag< Physics::Box2DBoxComponent, FlagDeleted>(entity, true);
 
 						sceneChanged = true;
 					}
 
 					if (box.shape != nullptr)
 					{
-						if (ImGui::DragFloat2("Centre Of Mass", (float*)&box.shape->centreOfMass, 0.1f))
+						/*if (ImGui::DragFloat2("Centre Of Mass", (float*)&box.shape->centreOfMass, 0.1f))
 						{
 							sceneChanged = true;
 						}
@@ -435,7 +435,7 @@ namespace Puffin
 						if (ImGui::DragFloat2("Half Extent", (float*)&box.shape->halfExtent, 0.1f, 0.0f))
 						{
 							sceneChanged = true;
-						}
+						}*/
 					}
 
 					ImGui::TreePop();

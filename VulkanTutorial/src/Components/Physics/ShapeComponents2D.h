@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef SHAPE_COMPONENT_2D_H
-#define SHAPE_COMPONENT_2D_H
-
 #include "Physics/Shapes/CircleShape2D.h"
 #include "Physics/Shapes/BoxShape2D.h"
 
@@ -30,21 +27,6 @@ namespace Puffin
 			}
 
 			CircleComponent2D& operator=(const CircleComponent2D& circle) = default;
-
-			template<class Archive>
-			void save(Archive& archive) const 
-			{
-				if (shape != nullptr)
-					archive(*shape);
-			}
-
-			template<class Archive>
-			void load(Archive& archive)
-			{
-				shape = std::make_shared<CircleShape2D>();
-
-				archive(*shape);
-			}
 		};
 
 		struct BoxComponent2D
@@ -63,23 +45,6 @@ namespace Puffin
 			}
 
 			BoxComponent2D& operator=(const BoxComponent2D& circle) = default;
-
-			template<class Archive>
-			void save(Archive& archive) const
-			{
-				if (shape != nullptr)
-					archive(*shape);
-			}
-
-			template<class Archive>
-			void load(Archive& archive)
-			{
-				shape = std::make_shared<BoxShape2D>();
-
-				archive(*shape);
-			}
 		};
 	}
 }
-
-#endif //SHAPE_COMPONENT_2D_H

@@ -1,20 +1,13 @@
 #pragma once
 
-#ifndef CAMERA_COMPONENT_H
-#define CAMERA_COMPONENT_H
-
-#include <Input/InputManager.h>
-
-#include <vulkan/vulkan.h>
-#include <Rendering/vk_mem_alloc.h>
-
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <vector>
-#include <Rendering/VKTypes.h>
+#include "Types/Vector.h"
+
+#include "nlohmann/json.hpp"
 
 namespace Puffin
 {
@@ -41,12 +34,12 @@ namespace Puffin
 			float fov = 60.0f;
 			float prevFov = 90.0f;
 
-			glm::vec3 position;
-			glm::vec3 lookat;
+			Vector3f position;
+			Vector3f lookat;
 
-			glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
-			glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-			glm::vec3 right;
+			Vector3f direction = glm::vec3(0.0f, 0.0f, -1.0f);
+			Vector3f up = glm::vec3(0.0f, 1.0f, 0.0f);
+			Vector3f right;
 
 			float yaw = -90.0f;
 			float pitch = 0.0f;
@@ -55,6 +48,10 @@ namespace Puffin
 			CameraMatrices matrices;
 
 			ViewData data;
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, zNear, zFar, aspect, fov,
+				lookat, direction, up, right,
+				yaw, pitch, speed)
 		};
 
 		static void UpdatePerspective(CameraComponent& camera, float fov_, float aspect_, float zNear_, float zFar_)
@@ -76,9 +73,7 @@ namespace Puffin
 
 		static void UpdateViewMatrix(CameraComponent& camera)
 		{
-			camera.matrices.view = glm::lookAt(camera.position, camera.position + camera.direction, camera.up);
+			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(camera.position), static_cast<glm::vec3>(camera.position + camera.direction), static_cast<glm::vec3>(camera.up));
 		}
 	}
 }
-
-#endif // CAMERA_COMPONENT_H

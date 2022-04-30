@@ -1,10 +1,6 @@
 #pragma once
 
-#ifndef LIGHT_COMPONENT_H
-#define LIGHT_COMPONENT_H
-
 #include <vulkan/vulkan.h>
-#include <Rendering/vk_mem_alloc.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -15,6 +11,8 @@
 
 #include <vector>
 #include <Rendering/VKTypes.h>
+
+#include "nlohmann/json.hpp"
 
 namespace Puffin
 {
@@ -85,6 +83,12 @@ namespace Puffin
 			DIRECTIONAL = 2
 		};
 
+		NLOHMANN_JSON_SERIALIZE_ENUM(LightType, {
+			{ LightType::POINT, "Point"},
+			{ LightType::SPOT, "Spot"},
+			{ LightType::DIRECTIONAL, "Directional"}
+		})
+
 		struct LightComponent
 		{
 			LightType type;
@@ -100,40 +104,10 @@ namespace Puffin
 			std::vector<AllocatedImage> depthAttachments;
 			std::vector<VkFramebuffer> depthFramebuffers;
 			glm::mat4 lightSpaceView;
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent, type, ambientColor, diffuseColor, direction,
+				specularStrength, shininess, constantAttenuation, linearAttenuation, quadraticAttenuation,
+				innerCutoffAngle, outerCutoffAngle, bFlagCastShadows)
 		};
-
-		template<class Archive>
-		void save(Archive& archive, const LightComponent& comp)
-		{
-			int lightType = (int)comp.type;
-
-			archive(lightType);
-			archive(comp.ambientColor.x, comp.ambientColor.y, comp.ambientColor.z);
-			archive(comp.diffuseColor.x, comp.diffuseColor.y, comp.diffuseColor.z);
-			archive(comp.direction.x, comp.direction.y, comp.direction.z);
-			archive(comp.specularStrength, comp.shininess);
-			archive(comp.constantAttenuation, comp.linearAttenuation, comp.quadraticAttenuation);
-			archive(comp.innerCutoffAngle, comp.outerCutoffAngle);
-			archive(comp.bFlagCastShadows);
-		}
-
-		template<class Archive>
-		void load(Archive& archive, LightComponent& comp)
-		{
-			int lightType;
-
-			archive(lightType);
-			archive(comp.ambientColor.x, comp.ambientColor.y, comp.ambientColor.z);
-			archive(comp.diffuseColor.x, comp.diffuseColor.y, comp.diffuseColor.z);
-			archive(comp.direction.x, comp.direction.y, comp.direction.z);
-			archive(comp.specularStrength, comp.shininess);
-			archive(comp.constantAttenuation, comp.linearAttenuation, comp.quadraticAttenuation);
-			archive(comp.innerCutoffAngle, comp.outerCutoffAngle);
-			archive(comp.bFlagCastShadows);
-
-			comp.type = (LightType)lightType;
-		}
 	}
 }
-
-#endif // LIGHT_COMPONENT_H

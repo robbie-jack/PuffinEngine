@@ -3,7 +3,8 @@
 #include "ECS/ECS.h"
 
 #include "Rendering/VulkanEngine.h"
-#include "Physics/PhysicsSystem2D.h"
+//#include "Physics/PhysicsSystem2D.h"
+#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
 
 #include "Components/AngelScriptComponent.h"
@@ -56,18 +57,18 @@ namespace Puffin
 
 		// Systems
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
-		std::shared_ptr<Physics::PhysicsSystem2D> physicsSystem = ECSWorld->RegisterSystem<Physics::PhysicsSystem2D>();
+		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = ECSWorld->RegisterSystem<Physics::Box2DPhysicsSystem>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
 
 		scriptingSystem->SetAudioManager(AudioManager);
 
-		// Register Components
+		// Register Components to ECS World
 		ECSWorld->RegisterComponent<TransformComponent>();
 		ECSWorld->RegisterComponent<Rendering::MeshComponent>();
 		ECSWorld->RegisterComponent<Rendering::LightComponent>();
-		ECSWorld->RegisterComponent<Physics::RigidbodyComponent2D>();
-		ECSWorld->RegisterComponent<Physics::CircleComponent2D>();
-		ECSWorld->RegisterComponent<Physics::BoxComponent2D>();
+		ECSWorld->RegisterComponent<Physics::Box2DRigidbodyComponent>();
+		ECSWorld->RegisterComponent<Physics::Box2DBoxComponent>();
+		ECSWorld->RegisterComponent<Physics::Box2DCircleComponent>();
 		ECSWorld->RegisterComponent<Scripting::AngelScriptComponent>();
 
 		// Setup Entity Signatures
@@ -80,21 +81,6 @@ namespace Puffin
 		lightSignature.set(ECSWorld->GetComponentType<TransformComponent>());
 		lightSignature.set(ECSWorld->GetComponentType<Rendering::LightComponent>());
 		ECSWorld->SetSystemSignature<Rendering::VulkanEngine>("Light", lightSignature);
-
-		ECS::Signature rigidbodySignature;
-		rigidbodySignature.set(ECSWorld->GetComponentType<TransformComponent>());
-		rigidbodySignature.set(ECSWorld->GetComponentType<Physics::RigidbodyComponent2D>());
-		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("Rigidbody", rigidbodySignature);
-
-		ECS::Signature circleSignature;
-		circleSignature.set(ECSWorld->GetComponentType<TransformComponent>());
-		circleSignature.set(ECSWorld->GetComponentType<Physics::CircleComponent2D>());
-		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("CircleCollision", circleSignature);
-
-		ECS::Signature boxSignature;
-		boxSignature.set(ECSWorld->GetComponentType<TransformComponent>());
-		boxSignature.set(ECSWorld->GetComponentType<Physics::BoxComponent2D>());
-		ECSWorld->SetSystemSignature<Physics::PhysicsSystem2D>("BoxCollision", boxSignature);
 
 		ECS::Signature scriptSignature;
 		scriptSignature.set(ECSWorld->GetComponentType<Scripting::AngelScriptComponent>());
@@ -123,10 +109,20 @@ namespace Puffin
 		Assets::AssetRegistry::Get()->ProjectRoot(projectDirPath);
 
 		// Load Project Settings
-		IO::LoadSettings(projectDirPath.parent_path() / "settings.json", settings);
+		IO::LoadSettings(projectDirPath.parent_path() / "Settings.json", settings);
 
 		// Load Default Scene (if set)
-		sceneData.scene_path = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
+		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
+		m_sceneData = std::make_shared<IO::SceneData>(ECSWorld, defaultScenePath);
+
+		// Register Components to Scene Data
+		m_sceneData->RegisterComponent<TransformComponent>("Transforms");
+		m_sceneData->RegisterComponent<Rendering::MeshComponent>("Meshes");
+		m_sceneData->RegisterComponent<Rendering::LightComponent>("Lights");
+		m_sceneData->RegisterComponent<Physics::Box2DRigidbodyComponent>("Rigidbodies");
+		m_sceneData->RegisterComponent<Physics::Box2DBoxComponent>("Boxes");
+		m_sceneData->RegisterComponent<Physics::Box2DCircleComponent>("Circles");
+		m_sceneData->RegisterComponent<Scripting::AngelScriptComponent>("Scripts");
 
 		// Load/Initialize Assets
 		//AddDefaultAssets();
@@ -137,7 +133,7 @@ namespace Puffin
 		//PhysicsScene(ECSWorld);
 		
 		// Load Scene -- normal behaviour
-		IO::LoadAndInitScene(ECSWorld, sceneData);
+		m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -162,7 +158,7 @@ namespace Puffin
 		{
 			lastTime = currentTime;
 			currentTime = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<float> duration = currentTime - lastTime;
+			std::chrono::duration<double> duration = currentTime - lastTime;
 			double deltaTime = duration.count();
 
 			// Make sure delta time never exceeds 1/30th of a second to stop
@@ -187,7 +183,7 @@ namespace Puffin
 				}
 
 				// Get Snapshot of current scene data
-				IO::UpdateSceneData(ECSWorld, sceneData);
+				m_sceneData->UpdateData();
 				
 				accumulatedTime = 0.0;
 				playState = PlayState::PLAYING;
@@ -261,7 +257,7 @@ namespace Puffin
 				ECSWorld->Reset();
 
 				// Re-Initialize Systems and ECS
-				IO::InitScene(ECSWorld, sceneData);
+				m_sceneData->Init();
 				vulkanEngine->Start();
 
 				// Perform Pre-Gameplay Initiualization on Systems
@@ -297,7 +293,7 @@ namespace Puffin
 
 		Assets::AssetRegistry::Clear();
 
-		physicsSystem = nullptr;
+		//physicsSystem = nullptr;
 		vulkanEngine = nullptr;
 
 		AudioManager = nullptr;
@@ -463,13 +459,13 @@ namespace Puffin
 
 		world->InitEntitySystem();
 
-		// Creater Light Entity
-		ECS::Entity lightEntity = world->CreateEntity();
+		// Create Light Entity
+		const ECS::Entity lightEntity = world->CreateEntity();
 
 		world->SetEntityName(lightEntity, "Light");
 
 		world->AddComponent<TransformComponent>(lightEntity);
-		world->AddComponent<Rendering::LightComponent>(lightEntity);
+		auto light = world->AddComponent<Rendering::LightComponent>(lightEntity);
 
 		world->GetComponent<TransformComponent>(lightEntity) = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
@@ -487,57 +483,56 @@ namespace Puffin
 		world->GetComponent<Rendering::LightComponent>(lightEntity).bFlagCastShadows = false;
 
 		// Create Box Entity
-		ECS::Entity boxEntity = world->CreateEntity();
+		const ECS::Entity boxEntity = world->CreateEntity();
 
 		world->SetEntityName(boxEntity, "Box");
 
 		world->AddComponent<TransformComponent>(boxEntity);
 		world->AddComponent<Rendering::MeshComponent>(boxEntity);
-		world->AddComponent<Physics::RigidbodyComponent2D>(boxEntity);
-		world->AddComponent<Physics::BoxComponent2D>(boxEntity);
+		world->AddComponent<Physics::Box2DRigidbodyComponent>(boxEntity);
+		world->AddComponent<Physics::Box2DBoxComponent>(boxEntity);
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(-2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).meshAssetID = meshId3;
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).textureAssetID = textureId2;
 
-		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).invMass = 1.0f;
-		world->GetComponent<Physics::RigidbodyComponent2D>(boxEntity).elasticity = .5f;
+		world->GetComponent<Physics::Box2DRigidbodyComponent>(boxEntity).bodyDef.type = b2_dynamicBody;
 
 		// Create Circle Entity
-		ECS::Entity circleEntity = world->CreateEntity();
+		const ECS::Entity circleEntity = world->CreateEntity();
 
 		world->SetEntityName(circleEntity, "Circle");
 
 		world->AddComponent<TransformComponent>(circleEntity);
 		world->AddComponent<Rendering::MeshComponent>(circleEntity);
-		world->AddComponent<Physics::RigidbodyComponent2D>(circleEntity);
-		world->AddComponent<Physics::CircleComponent2D>(circleEntity);
+		world->AddComponent<Physics::Box2DRigidbodyComponent>(circleEntity);
+		world->AddComponent<Physics::Box2DCircleComponent>(circleEntity);
 
 		world->GetComponent<TransformComponent>(circleEntity) = { Vector3f(2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(circleEntity).meshAssetID = meshId2;
 		world->GetComponent<Rendering::MeshComponent>(circleEntity).textureAssetID = textureId2;
 
-		world->GetComponent<Physics::RigidbodyComponent2D>(circleEntity).invMass = 1.0f;
-		world->GetComponent<Physics::RigidbodyComponent2D>(circleEntity).elasticity = .5f;
+		world->GetComponent<Physics::Box2DRigidbodyComponent>(circleEntity).bodyDef.type = b2_dynamicBody;
 
 		// Create Floor Entity
-		ECS::Entity floorEntity = world->CreateEntity();
+		const ECS::Entity floorEntity = world->CreateEntity();
 
 		world->SetEntityName(floorEntity, "Floor");
 
 		world->AddComponent<TransformComponent>(floorEntity);
 		world->AddComponent<Rendering::MeshComponent>(floorEntity);
-		world->AddComponent<Physics::RigidbodyComponent2D>(floorEntity);
-		world->AddComponent<Physics::BoxComponent2D>(floorEntity);
+		world->AddComponent<Physics::Box2DRigidbodyComponent>(floorEntity);
+		world->AddComponent<Physics::Box2DBoxComponent>(floorEntity);
 
 		world->GetComponent<TransformComponent>(floorEntity) = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
 
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).meshAssetID = meshId3;
 		world->GetComponent<Rendering::MeshComponent>(floorEntity).textureAssetID = textureId2;
 
-		world->GetComponent<Physics::RigidbodyComponent2D>(floorEntity).invMass = 0.0f; // Setting mass to zero makes rigidbody kinematic instead of dynamic
+		world->GetComponent<Physics::Box2DRigidbodyComponent>(floorEntity).bodyDef.type = b2_staticBody;
+		world->GetComponent<Physics::Box2DBoxComponent>(floorEntity).data.halfExtent = Vector2f(5.0f, 1.0f);
 	}
 
 	void Engine::Play()
@@ -558,7 +553,7 @@ namespace Puffin
 
 	void Engine::Restart()
 	{
-		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED)
+		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED || playState == PlayState::STOPPED)
 		{
 			playState = PlayState::JUST_STOPPED;
 		}

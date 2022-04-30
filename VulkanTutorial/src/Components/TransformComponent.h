@@ -5,7 +5,7 @@
 
 #include <Types/Vector.h>
 
-#include <cereal/cereal.hpp>
+#include "nlohmann/json.hpp"
 
 //#define PFN_USE_DOUBLE_PRECISION
 
@@ -35,6 +35,8 @@ namespace Puffin
 		T position = T(0.0f);
 		Vector3f rotation = Vector3f(0.0f);
 		Vector3f scale = Vector3f(1.0f);
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Transform, position, rotation, scale)
 	};
 
 	#ifdef PFN_USE_DOUBLE_PRECISION
@@ -42,24 +44,6 @@ namespace Puffin
 	#else
 		typedef Transform<Vector3f> TransformComponent;
 	#endif
-
-	template<class Archive>
-	void save(Archive& archive, const TransformComponent& comp)
-	{
-		Vector3d position = comp.position;
-			
-		archive(CEREAL_NVP(position), CEREAL_NVP(comp.rotation), CEREAL_NVP(comp.scale));
-	}
-
-	template<class Archive>
-	void load(Archive& archive, TransformComponent& comp)
-	{
-		Vector3d position;
-
-		archive(CEREAL_NVP(position), CEREAL_NVP(comp.rotation), CEREAL_NVP(comp.scale));
-
-		comp.position = position;
-	}
 }
 
 #endif // TRANSFORM_COMPONENT_H

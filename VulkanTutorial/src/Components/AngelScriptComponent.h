@@ -2,9 +2,7 @@
 
 #define ANGELSCRIPT_DLL_LIBRARY_IMPORT
 #include <angelscript.h>
-
-#include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
+#include "nlohmann/json.hpp"
 
 #include <string>
 #include <set>
@@ -12,6 +10,7 @@
 #include <filesystem>
 
 namespace fs = std::filesystem;
+using json = nlohmann::json;
 
 namespace Puffin::Scripting
 {
@@ -28,23 +27,20 @@ namespace Puffin::Scripting
 		std::unordered_map<std::string, uint64_t> uint64Properties;
 		std::unordered_map<std::string, float> floatProperties;
 		std::unordered_map<std::string, double> doubleProperties;
-	};
 
-	template<class Archive>
-	void serialize(Archive& archive, SerializedScriptData& data)
-	{
-		archive(data.boolProperties);
-		archive(data.int8Properties);
-		archive(data.int16Properties);
-		archive(data.int32Properties);
-		archive(data.int64Properties);
-		archive(data.uint8Properties);
-		archive(data.uint16Properties);
-		archive(data.uint32Properties);
-		archive(data.uint64Properties);
-		archive(data.floatProperties);
-		archive(data.doubleProperties);
-	}
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(SerializedScriptData,
+		boolProperties,
+		int8Properties,
+		int16Properties,
+		int32Properties,
+		int64Properties,
+		uint8Properties,
+		uint16Properties,
+		uint32Properties,
+		uint64Properties,
+		floatProperties,
+		doubleProperties)
+	};
 
 	struct AngelScriptComponent
 	{
@@ -70,9 +66,11 @@ namespace Puffin::Scripting
 		std::set<int> visibleProperties;
 
 		SerializedScriptData serializedData;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(AngelScriptComponent, name, dir, serializedData)
 	};
 
-	// Expoirt Script Data
+	// Export Script Data
 
 	static void ExportPropertyToScriptData(const AngelScriptComponent& script, SerializedScriptData& scriptData, const int index)
 	{
@@ -295,29 +293,5 @@ namespace Puffin::Scripting
 				ImportScriptProperty(script, scriptData, index);
 			}
 		}
-	}
-
-	template<class Archive>
-	void save(Archive& archive, const AngelScriptComponent& script)
-	{
-		archive(cereal::make_nvp("Script Name", script.name));
-		archive(cereal::make_nvp("Script Dir", script.dir.string()));
-
-		SerializedScriptData scriptData;
-		ExportEditablePropertiesToScriptData(script, scriptData);
-
-		archive(cereal::make_nvp("Script Data", scriptData));
-	}
-
-	template<class Archive>
-	void load(Archive& archive, AngelScriptComponent& script)
-	{
-		archive(cereal::make_nvp("Script Name", script.name));
-
-		std::string dir;
-		archive(cereal::make_nvp("Script Dir", dir));
-		script.dir = dir;
-
-		archive(cereal::make_nvp("Script Data", script.serializedData));
 	}
 }

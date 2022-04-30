@@ -213,23 +213,23 @@ namespace Puffin::ECS
 		template<typename FlagT>
 		bool GetEntityFlag(Entity entity)
 		{
-			const char* typeName = typeid(FlagT).name();
+			const char* flagTypeName = typeid(FlagT).name();			
 
 			assert(activeEntities.count(entity) == 1 && "Entity does not exist");
 			assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
 
-			return flagSets[flagTypes[typeName]][entity];
+			return flagSets[flagTypes[flagTypeName]][entity];
 		}
 
 		template<typename FlagT>
 		void SetEntityFlag(Entity entity, bool flag)
 		{
-			const char* typeName = typeid(FlagT).name();
+			const char* flagTypeName = typeid(FlagT).name();
 
 			assert(activeEntities.count(entity) == 1 && "Entity does not exist");
 			assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
 
-			flagSets[flagTypes[typeName]][entity] = flag;
+			flagSets[flagTypes[flagTypeName]][entity] = flag;
 		}
 
 		std::set<Entity> GetActiveEntities()

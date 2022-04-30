@@ -7,9 +7,9 @@
 #include <unordered_map>
 #include <filesystem>
 
-#include <cereal/types/string.hpp>
-#include <cereal/types/map.hpp>
+#include "nlohmann/json.hpp"
 
+using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 namespace Puffin::Assets
@@ -22,6 +22,8 @@ namespace Puffin::Assets
 	{
 		std::unordered_map<UUID, std::string> paths;
 		std::unordered_map<UUID, std::string> types;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(AssetCache, paths, types)
 
 		template<class Archive>
 		void serialize(Archive& archive)
@@ -108,6 +110,7 @@ namespace Puffin::Assets
 		}
 
 		void ProjectName(const std::string& projectName);
+		std::string ProjectName();
 
 		void ProjectRoot(fs::path contentRootPath);
 		fs::path ProjectRoot();

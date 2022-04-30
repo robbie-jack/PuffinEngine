@@ -3,8 +3,6 @@
 
 #include <fstream>
 
-#include <cereal/archives/binary.hpp>
-
 namespace Puffin::Assets
 {
 	AssetRegistry* AssetRegistry::s_instance = 0;
@@ -12,6 +10,11 @@ namespace Puffin::Assets
 	void AssetRegistry::ProjectName(const std::string& projectName)
 	{
 		m_projectName = projectName;
+	}
+
+	std::string AssetRegistry::ProjectName()
+	{
+		return m_projectName;
 	}
 
 	void AssetRegistry::ProjectRoot(fs::path projectRootPath)
@@ -40,25 +43,28 @@ namespace Puffin::Assets
 			assetCache.types[pair.first] = pair.second->Type();
 		}
 
+		json data = assetCache; 
+
 		// Initialize Output File Stream and Cereal Binary Archive
 		const fs::path assetCachePath = m_projectRootPath / (m_projectName + ".passetcache");
-		std::ofstream os(assetCachePath, std::ios::binary);
-		cereal::BinaryOutputArchive archive(os);
+		std::ofstream os(assetCachePath, std::ios::out);
 
-		// Save AssetCache
-		archive(assetCache);
+		os << std::setw(4) << data << std::endl;
+
+		os.close();
 	}
 
 	void AssetRegistry::LoadAssetCache()
 	{
 		// Initialize Input File Stream and Cereal Binary Archive
 		const fs::path assetCachePath = m_projectRootPath / (m_projectName + ".passetcache");
-		std::ifstream is(assetCachePath, std::ios::binary);
-		cereal::BinaryInputArchive archive(is);
+		std::ifstream is(assetCachePath);
+
+		json data;
+		is >> data;
 
 		// Load AssetCache from file
-		AssetCache assetCache;
-		archive(assetCache);
+		AssetCache assetCache = data;
 
 		// Create Assets from factories based on their stored type
 		for (const auto& pair : assetCache.paths)

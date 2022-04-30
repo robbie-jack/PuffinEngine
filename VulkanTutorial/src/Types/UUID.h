@@ -2,6 +2,7 @@
 
 #include <xhash>
 #include <random>
+#include "nlohmann/json.hpp"
 
 namespace Puffin
 {
@@ -43,6 +44,8 @@ namespace Puffin
 
 	private:
 		uint64_t uuid;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(UUID, uuid)
 	};
 }
 

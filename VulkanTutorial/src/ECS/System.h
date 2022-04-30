@@ -20,7 +20,7 @@ namespace Puffin
 		// Info about the system
 		struct SystemInfo
 		{
-			UpdateOrder updateOrder;
+			UpdateOrder updateOrder = UpdateOrder::None;
 		};
 
 		//////////////////////////////////////////////////
@@ -36,9 +36,9 @@ namespace Puffin
 		{
 		public:
 
-			~System()
+			virtual ~System()
 			{
-				//m_world.reset();
+				m_world = nullptr;
 			}
 
 			EntityMap entityMap;
