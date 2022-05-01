@@ -11,6 +11,7 @@
 #include "Components/AngelScriptComponent.h"
 
 #include "Input/InputEvent.h"
+#include "Physics/Box2D/CollisionEvent.h"
 
 #include "Types/RingBuffer.h"
 
@@ -75,11 +76,17 @@ namespace Puffin
 			ECS::Entity m_currentEntityID = 0; // Entity ID for currently executing script
 
 			// Event Buffers
-			std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents;
+			std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents = nullptr;;
+			std::shared_ptr<RingBuffer<Physics::CollisionBeginEvent>> m_collisionBeginEvents = nullptr;
+			std::shared_ptr<RingBuffer<Physics::CollisionEndEvent>> m_collisionEndEvents = nullptr;
 
 			// Maps of Input Callbacks
 			std::unordered_map<std::string, ScriptCallbackMap> m_onInputPressedCallbacks;
 			std::unordered_map<std::string, ScriptCallbackMap> m_onInputReleasedCallbacks;
+
+			// Collision Callbacks
+			ScriptCallbackMap m_onCollisionBeginCallbacks;
+			ScriptCallbackMap m_onCollisionEndCallbacks;
 
 			bool m_firstInitialize = true;
 
@@ -109,8 +116,8 @@ namespace Puffin
 			int GetEntityID(); // Return the Entity ID for the attached script
 
 			// Script Callbacks
-			ScriptCallback BindCallback(uint32_t entity, asIScriptFunction* cb);
-			void ReleaseCallback(ScriptCallback& scriptCallback);
+			ScriptCallback BindCallback(uint32_t entity, asIScriptFunction* cb) const;
+			void ReleaseCallback(ScriptCallback& scriptCallback) const;
 
 			// Input Functions
 			void BindOnInputPressed(uint32_t entity, const std::string& actionName, asIScriptFunction* cb);
@@ -118,6 +125,13 @@ namespace Puffin
 
 			void ReleaseOnInputPressed(uint32_t entity, const std::string& actionName);
 			void ReleaseOnInputReleased(uint32_t entity, const std::string& actionName);
+
+			// Collision Functions
+			void BindOnCollisionBegin(uint32_t entity, asIScriptFunction* cb);
+			void BindOnCollisionEnd(uint32_t entity, asIScriptFunction* cb);
+
+			void ReleaseOnCollisionBegin(uint32_t entity);
+			void ReleaseOnCollisionEnd(uint32_t entity);
 		};
 	}
 }

@@ -15,8 +15,6 @@ ImGui - Editor UI - https://github.com/ocornut/imgui
 
 Assimp - Model Importer https://www.assimp.org/
 
-Cereal - Serilization - https://uscilab.github.io/cereal/
-
 AngelScript - Scripting - https://www.angelcode.com/angelscript/
 
 irrKlang - Audio - https://www.ambiera.com/irrklang/
@@ -26,3 +24,5 @@ nlohmann/json - Json Parsing - https://github.com/nlohmann/json
 LZ4 - LZ4 Compression - https://github.com/lz4/lz4
 
 enkTS - Multithreaded Task Scheduler - https://github.com/dougbinks/enkiTS
+
+Box2D - 2D Physics - https://box2d.org/

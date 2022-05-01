@@ -22,12 +22,20 @@ namespace Puffin::Physics
 		boxSignature.set(m_world->GetComponentType<TransformComponent>());
 		boxSignature.set(m_world->GetComponentType<Box2DBoxComponent>());
 		m_world->SetSystemSignature<Box2DPhysicsSystem>("Box", boxSignature);
+
+		// Register Events
+		m_world->RegisterEvent<CollisionBeginEvent>();
+		m_world->RegisterEvent<CollisionEndEvent>();
 	}
 
 	void Box2DPhysicsSystem::PreStart()
 	{
 		// Create Physics World
 		m_physicsWorld = std::make_unique<b2World>(m_gravity);
+
+		// Create Contact Listener and pass it to physics world
+		m_contactListener = std::make_unique<Box2DContactListener>();
+		m_physicsWorld->SetContactListener(m_contactListener.get());
 
 		// Perform Initial Setup of Components
 		UpdateComponents();
@@ -40,6 +48,9 @@ namespace Puffin::Physics
 
 		// Step Physics World
 		m_physicsWorld->Step(m_fixedTime, m_velocityIterations, m_positionIterations);
+
+		// Publish Collision Events
+		PublishCollisionEvents();
 
 		// Updated entity position/rotation from simulation
 		for (ECS::Entity entity : entityMap["Rigidbody"])
@@ -79,6 +90,22 @@ namespace Puffin::Physics
 		m_updateShapePointers = false;
 
 		m_physicsWorld = nullptr;
+		m_contactListener = nullptr;
+	}
+
+	void Box2DPhysicsSystem::PublishCollisionEvents() const
+	{
+		CollisionBeginEvent collisionBeginEvent;
+		while (m_contactListener->GetNextCollisionBeginEvent(collisionBeginEvent))
+		{
+			m_world->PublishEvent(collisionBeginEvent);
+		}
+
+		CollisionEndEvent collisionEndEvent;
+		while (m_contactListener->GetNextCollisionEndEvent(collisionEndEvent))
+		{
+			m_world->PublishEvent(collisionEndEvent);
+		}
 	}
 
 	void Box2DPhysicsSystem::UpdateComponents()
@@ -189,12 +216,13 @@ namespace Puffin::Physics
 
 	void Box2DPhysicsSystem::InitRigidbodyComponent(ECS::Entity entity)
 	{
-		auto transform = m_world->GetComponent<TransformComponent>(entity);
+		const auto transform = m_world->GetComponent<TransformComponent>(entity);
 		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
 
 		if (rb.body == nullptr)
 		{
 			b2BodyDef bodyDef = rb.bodyDef;
+			bodyDef.userData.pointer = static_cast<uintptr_t>(entity);
 
 			bodyDef.position.Set(transform.position.x, transform.position.y);
 			bodyDef.angle = Maths::DegreesToRadians(-transform.rotation.z);

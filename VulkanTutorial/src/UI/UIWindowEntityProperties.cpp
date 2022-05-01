@@ -89,7 +89,7 @@ namespace Puffin
 					// Display Add Component Popup
 					if (ImGui::BeginPopup("Add Component"))
 					{
-						if (ImGui::Selectable("Transform Component"))
+						if (ImGui::Selectable("Transform"))
 						{
 							if (!world->HasComponent<TransformComponent>(entity))
 							{
@@ -98,7 +98,7 @@ namespace Puffin
 							}
 						}
 
-						if (ImGui::Selectable("Mesh Component"))
+						if (ImGui::Selectable("Static Mesh"))
 						{
 							if (!world->HasComponent<Rendering::MeshComponent>(entity))
 							{
@@ -107,7 +107,7 @@ namespace Puffin
 							}
 						}
 
-						if (ImGui::Selectable("Light Component"))
+						if (ImGui::Selectable("Light"))
 						{
 							if (!world->HasComponent<Rendering::LightComponent>(entity))
 							{
@@ -129,19 +129,19 @@ namespace Puffin
 
 						if (ImGui::BeginPopup("Physics"))
 						{
-							if (ImGui::Selectable("Rigidbody Component"))
+							if (ImGui::Selectable("Rigidbody"))
 							{
-
+								world->AddComponent<Physics::Box2DRigidbodyComponent>(entity);
 							}
 
-							if (ImGui::Selectable("Circle2D Component"))
+							if (ImGui::Selectable("Circle2D"))
 							{
-
+								world->AddComponent<Physics::Box2DCircleComponent>(entity);
 							}
 
-							if (ImGui::Selectable("Box2D Component"))
+							if (ImGui::Selectable("Box2D"))
 							{
-
+								world->AddComponent<Physics::Box2DBoxComponent>(entity);
 							}
 
 							ImGui::EndPopup();
@@ -305,7 +305,7 @@ namespace Puffin
 							if (ImGui::Selectable(items[i], is_selected))
 							{
 								item_current_idx = i;
-								comp.type = (Rendering::LightType)item_current_idx;
+								comp.type = static_cast<Rendering::LightType>(item_current_idx);
 								sceneChanged = true;
 							}
 
@@ -329,7 +329,7 @@ namespace Puffin
 						// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
 						ImGui::DragFloat("Outer Cutoff Angle", &comp.outerCutoffAngle, 0.25f, comp.innerCutoffAngle, 45.0f);
 
-						// Outer Cutoff will match inner cutoff if inner cutoff vecomes larger
+						// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
 						if (comp.outerCutoffAngle < comp.innerCutoffAngle)
 						{
 							comp.outerCutoffAngle = comp.innerCutoffAngle;
@@ -349,7 +349,7 @@ namespace Puffin
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& rigidbody = world->GetComponent<Physics::Box2DRigidbodyComponent>(entity);
+					auto& rb = world->GetComponent<Physics::Box2DRigidbodyComponent>(entity);
 
 					if (ImGui::SmallButton("X##Rigidbody"))
 					{
@@ -358,15 +358,152 @@ namespace Puffin
 						sceneChanged = true;
 					}
 
-					/*if (ImGui::DragFloat("Mass", &rigidbody.invMass, 1.0f, 0.0f))
+					// Edit Body Properties
+					if (rb.body != nullptr)
 					{
-						sceneChanged = true;
+						auto* body = rb.body;
+						bool bodyChanged = false;
+
+						// Combo box for Body Type Selection
+						const char* items[] = { "Static", "Kinematic", "Dynamic" };
+						int item_current_idx = (int)body->GetType();
+						const char* label = items[item_current_idx];
+						if (ImGui::BeginCombo("Body Type", label))
+						{
+							for (int i = 0; i < IM_ARRAYSIZE(items); i++)
+							{
+								const bool isSelected = (item_current_idx == i);
+								if (ImGui::Selectable(items[i], isSelected))
+								{
+									item_current_idx = i;
+									body->SetType(static_cast<b2BodyType>(item_current_idx));
+									bodyChanged = true;
+								}
+
+								if (isSelected)
+								{
+									ImGui::SetItemDefaultFocus();
+								}
+							}
+
+							ImGui::EndCombo();
+						}
+
+						// Sleep
+						bool sleep = body->IsSleepingAllowed();
+						if (ImGui::Checkbox("Sleeping Allowed", &sleep))
+						{
+							body->SetSleepingAllowed(sleep);
+							bodyChanged = true;
+						}
+
+						// Bullet
+						bool bullet = body->IsBullet();
+						if (ImGui::Checkbox("Bullet", &bullet))
+						{
+							body->SetBullet(bullet);
+							bodyChanged = true;
+						}
+
+						// Awake
+						bool awake = body->IsAwake();
+						if (ImGui::Checkbox("Awake", &awake))
+						{
+							body->SetAwake(awake);
+							bodyChanged = true;
+						}
+
+						// Enabled
+						bool enabled = body->IsEnabled();
+						if (ImGui::Checkbox("Enabled", &enabled))
+						{
+							body->SetEnabled(enabled);
+							bodyChanged = true;
+						}
+
+						// Fixed Rotation
+						bool fixedRotation = body->IsFixedRotation();
+						if (ImGui::Checkbox("Rotation Fixed", &fixedRotation))
+						{
+							body->SetFixedRotation(fixedRotation);
+							bodyChanged = true;
+						}
+
+						// Angular Damping
+						float angularDamping = body->GetAngularDamping();
+						if (ImGui::DragFloat("Angular Damping", &angularDamping))
+						{
+							body->SetAngularDamping(angularDamping);
+							bodyChanged = true;
+						}
+
+						// Linear Damping
+						float linearDamping = body->GetLinearDamping();
+						if (ImGui::DragFloat("Linear Damping", &linearDamping))
+						{
+							body->SetLinearDamping(linearDamping);
+							bodyChanged = true;
+						}
+
+						// Gravity Scale
+						float gravityScale = body->GetGravityScale();
+						if (ImGui::DragFloat("Gravity Scale", &gravityScale))
+						{
+							body->SetGravityScale(gravityScale);
+							bodyChanged = true;
+						}
+
+						if(bodyChanged)
+						{
+							Physics::UpdateBodyDef(rb);
+							sceneChanged = true;
+						}
 					}
 
-					if (ImGui::DragFloat("Elasticty", &rigidbody.elasticity, 0.001f, 0.0f, 1.0f))
+					// Edit Fixture Properties
+					if (rb.fixture != nullptr)
 					{
-						sceneChanged = true;
-					}*/
+						auto* fixture = rb.fixture;
+						bool fixtureChanged = false;
+
+						// Density
+						float density = fixture->GetDensity();
+						if (ImGui::DragFloat("Density", &density))
+						{
+							fixture->SetDensity(density);
+							fixtureChanged = true;
+						}
+
+						// Friction
+						float friction = fixture->GetFriction();
+						if (ImGui::DragFloat("Friction", &friction))
+						{
+							fixture->SetFriction(friction);
+							fixtureChanged = true;
+						}
+
+						// Restitution/Elasticity
+						float restitution = fixture->GetRestitution();
+						if (ImGui::DragFloat("Restitution/Elasticity", &restitution))
+						{
+							fixture->SetRestitution(restitution);
+							fixtureChanged = true;
+						}
+
+						// Restitution/Elasticity Threshold
+						float restitutionThreshold = fixture->GetRestitutionThreshold();
+						if (ImGui::DragFloat("Restitution/Elasticity Threshold", &restitutionThreshold))
+						{
+							fixture->SetRestitutionThreshold(restitutionThreshold);
+							fixtureChanged = true;
+						}
+
+						if (fixtureChanged)
+						{
+							Physics::UpdateFixtureDef(rb);
+							sceneChanged = true;
+						}
+					}
 
 					ImGui::TreePop();
 				}
@@ -392,15 +529,13 @@ namespace Puffin
 
 					if (circle.shape != nullptr)
 					{
-						/*if (ImGui::DragFloat2("Centre Of Mass", (float*)&circle.shape->centreOfMass, 0.1f))
+						auto* shape = circle.shape;
+
+						if (ImGui::DragFloat("Radius", &shape->m_radius))
 						{
+							circle.data.radius = shape->m_radius;
 							sceneChanged = true;
 						}
-
-						if (ImGui::DragFloat("Radius", &circle.shape->radius, 0.1f, 0.0f))
-						{
-							sceneChanged = true;
-						}*/
 					}
 
 					ImGui::TreePop();
@@ -427,15 +562,13 @@ namespace Puffin
 
 					if (box.shape != nullptr)
 					{
-						/*if (ImGui::DragFloat2("Centre Of Mass", (float*)&box.shape->centreOfMass, 0.1f))
+						auto* shape = box.shape;
+
+						if (ImGui::DragFloat2("Half Extent", reinterpret_cast<float*>(&box.data.halfExtent), 0.1f, 0.0f))
 						{
+							shape->SetAsBox(box.data.halfExtent.x, box.data.halfExtent.y);
 							sceneChanged = true;
 						}
-						
-						if (ImGui::DragFloat2("Half Extent", (float*)&box.shape->halfExtent, 0.1f, 0.0f))
-						{
-							sceneChanged = true;
-						}*/
 					}
 
 					ImGui::TreePop();

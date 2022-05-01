@@ -337,6 +337,9 @@
     <ClCompile Include="..\box2d\src\rope\b2_rope.cpp">
       <Filter>Libraries\Box2D</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics\Box2D\Box2DContactListener.cpp">
+      <Filter>Physics\Box2D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -577,6 +580,12 @@
     </ClInclude>
     <ClInclude Include="..\box2d\src\dynamics\b2_polygon_contact.h">
       <Filter>Libraries\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Box2D\CollisionEvent.h">
+      <Filter>Physics\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Box2D\Box2DContactListener.h">
+      <Filter>Physics\Box2D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -491,6 +491,7 @@ namespace Puffin
 		world->AddComponent<Rendering::MeshComponent>(boxEntity);
 		world->AddComponent<Physics::Box2DRigidbodyComponent>(boxEntity);
 		world->AddComponent<Physics::Box2DBoxComponent>(boxEntity);
+		world->AddComponent<Scripting::AngelScriptComponent>(boxEntity);
 
 		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(-2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
@@ -498,6 +499,9 @@ namespace Puffin
 		world->GetComponent<Rendering::MeshComponent>(boxEntity).textureAssetID = textureId2;
 
 		world->GetComponent<Physics::Box2DRigidbodyComponent>(boxEntity).bodyDef.type = b2_dynamicBody;
+
+		world->GetComponent<Scripting::AngelScriptComponent>(boxEntity).name = "PhysicsScript";
+		world->GetComponent<Scripting::AngelScriptComponent>(boxEntity).dir = contentRootPath / "scripts\\Physics.pscript";
 
 		// Create Circle Entity
 		const ECS::Entity circleEntity = world->CreateEntity();

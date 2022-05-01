@@ -2,13 +2,11 @@
 
 #include "box2d/box2d.h"
 #include "box2d/b2_world.h"
-
 #include "ECS/ECS.h"
-
 #include "Components/Physics/Box2D/Box2DRigidbodyComponent.h"
 #include "Components/Physics/Box2D/Box2DShapeComponents.h"
-
 #include "Types/PackedArray.h"
+#include "Box2DContactListener.h"
 
 namespace Puffin::Physics
 {
@@ -42,12 +40,15 @@ namespace Puffin::Physics
 		int32 m_positionIterations = 3;
 
 		std::unique_ptr<b2World> m_physicsWorld = nullptr;
+		std::unique_ptr<Box2DContactListener> m_contactListener = nullptr;
+
 		PackedVector<ECS::Entity, b2CircleShape> m_circleShapes; // Packed Vector of circle shapes which are not attached to a rigidbody
 		PackedVector<ECS::Entity, b2PolygonShape> m_polygonShapes; // Packed Vector of polygon shapes which are not attached to a rigidbody
 
 		// Update shape components to point at correct shape in packed arrays
 		bool m_updateShapePointers = false;
 
+		void PublishCollisionEvents() const;
 		void UpdateComponents();
 
 		void InitRigidbodyComponent(ECS::Entity entity);

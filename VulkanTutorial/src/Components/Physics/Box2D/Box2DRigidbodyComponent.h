@@ -39,4 +39,31 @@ namespace Puffin::Physics
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Box2DRigidbodyComponent, bodyDef, fixtureDef)
 	};
+
+	// Copy current body properties to bodyDef
+	static void UpdateBodyDef(Box2DRigidbodyComponent& rb)
+	{
+		const auto* body = rb.body;
+
+		rb.bodyDef.type = body->GetType();
+		rb.bodyDef.allowSleep = body->IsSleepingAllowed();
+		rb.bodyDef.bullet = body->IsBullet();
+		rb.bodyDef.awake = body->IsAwake();
+		rb.bodyDef.enabled = body->IsEnabled();
+		rb.bodyDef.fixedRotation = body->IsFixedRotation();
+		rb.bodyDef.angularDamping = body->GetAngularDamping();
+		rb.bodyDef.linearDamping = body->GetLinearDamping();
+		rb.bodyDef.gravityScale = body->GetGravityScale();
+	}
+
+	// Copy current fixture properties to bodyDef
+	static void UpdateFixtureDef(Box2DRigidbodyComponent& rb)
+	{
+		const auto* fixture = rb.fixture;
+
+		rb.fixtureDef.density = fixture->GetDensity();
+		rb.fixtureDef.friction = fixture->GetFriction();
+		rb.fixtureDef.restitution = fixture->GetRestitution();
+		rb.fixtureDef.restitutionThreshold = fixture->GetRestitutionThreshold();
+	}
 }

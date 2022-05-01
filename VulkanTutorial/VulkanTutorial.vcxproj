@@ -239,6 +239,7 @@
     <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
+    <ClCompile Include="src\Physics\Box2D\Box2DContactListener.cpp" />
     <ClCompile Include="src\Physics\Box2D\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="src\Physics\Colliders\BoxCollider2D.cpp" />
     <ClCompile Include="src\Physics\Colliders\CircleCollider2D.cpp" />
@@ -302,7 +303,9 @@
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\ManipulationGizmo.h" />
     <ClInclude Include="src\MathHelpers.h" />
+    <ClInclude Include="src\Physics\Box2D\Box2DContactListener.h" />
     <ClInclude Include="src\Physics\Box2D\Box2DPhysicsSystem.h" />
+    <ClInclude Include="src\Physics\Box2D\CollisionEvent.h" />
     <ClInclude Include="src\Physics\Colliders\BoxCollider2D.h" />
     <ClInclude Include="src\Physics\Colliders\CircleCollider2D.h" />
     <ClInclude Include="src\Physics\Colliders\Collider2D.h" />

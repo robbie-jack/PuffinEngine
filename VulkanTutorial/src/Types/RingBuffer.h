@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace Puffin
 {
 	// Ring Buffer Interface
@@ -12,35 +14,35 @@ namespace Puffin
 
 		RingBuffer()
 		{
-			MAX_PENDING = 16;
-			queue.resize(MAX_PENDING);
+			m_maxPending = 16;
+			m_queue.resize(m_maxPending);
 
-			head = 0;
-			tail = head;
+			m_head = 0;
+			m_tail = m_head;
 		}
 
 		// Push new event onto back of queue
 		void Push(T event)
 		{
-			if ((tail + 1) % MAX_PENDING == head)
+			if ((m_tail + 1) % m_maxPending == m_head)
 			{
 				Resize();
 			}
 
 			// Add event to end of list
-			queue[tail] = event;
-			tail = (tail + 1) % MAX_PENDING;
+			m_queue[m_tail] = event;
+			m_tail = (m_tail + 1) % m_maxPending;
 		}
 
 		// Pop event off front of queue
 		bool Pop(T& event)
 		{
 			// Return false if there are no events in queue
-			if (head == tail) return false;
+			if (m_head == m_tail) return false;
 
-			event = queue[head];
+			event = m_queue[m_head];
 
-			head = (head + 1) % MAX_PENDING;
+			m_head = (m_head + 1) % m_maxPending;
 
 			return true;
 		}
@@ -48,46 +50,46 @@ namespace Puffin
 		// Flushes all stored objects
 		void Flush()
 		{
-			head = 0;
-			tail = head;
+			m_head = 0;
+			m_tail = m_head;
 		}
 
 		// Check if buffer is empty
 		bool IsEmpty()
 		{
-			return head == tail;
+			return m_head == m_tail;
 		}
 
 	private:
-		int MAX_PENDING;
-		int head;
-		int tail;
+		int m_maxPending;
+		int m_head;
+		int m_tail;
 
-		std::vector<T> queue;
+		std::vector<T> m_queue;
 
 		// Resizes queue
 		void Resize()
 		{
 			// Copy elements to another vector
-			std::vector<T> oldQueue = queue;
+			std::vector<T> oldQueue = m_queue;
 
 			// Double size of queue
-			MAX_PENDING *= 2;
-			queue.resize(MAX_PENDING);
+			m_maxPending *= 2;
+			m_queue.resize(m_maxPending);
 
 			// Iterate over each event in old queue
 			for (int i = 0; i < oldQueue.size(); i++)
 			{
 				// Get index into old queue starting from head
-				int index = (head + i) % oldQueue.size();
+				int index = (m_head + i) % oldQueue.size();
 
 				// For each event, add to front of resized queue
-				queue[i] = oldQueue[index];
+				m_queue[i] = oldQueue[index];
 			}
 
 			// After copying events back into queue, set head to 0 and tail to the size of old queue so it as after last element
-			head = 0;
-			tail = oldQueue.size();
+			m_head = 0;
+			m_tail = oldQueue.size();
 		}
 	};
 }
