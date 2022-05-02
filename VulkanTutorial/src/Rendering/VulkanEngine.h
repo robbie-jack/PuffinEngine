@@ -367,6 +367,8 @@ namespace Puffin
 			void InitLight(ECS::Entity entity);
 			void InitCamera(CameraComponent& camera);
 
+			void InitAlbedoTexture(UUID uuid);
+
 			// Init Buffer Functions
 			AllocatedBuffer InitVertexBuffer(const std::vector<Vertex>& vertices);
 			AllocatedBuffer InitIndexBuffer(const std::vector<uint32_t>& indices);

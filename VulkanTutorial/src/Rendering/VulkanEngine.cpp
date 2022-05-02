@@ -870,11 +870,11 @@ namespace Puffin
 				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
 				//Albedo Textures
-				textureImageInfo.imageView = mesh.texture.imageView;
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
 				albedoImageInfo.push_back(textureImageInfo);
 
 				// Normal Maps	
-				textureImageInfo.imageView = mesh.texture.imageView;
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
 				normalImageInfo.push_back(textureImageInfo);
 			}
 
@@ -1082,23 +1082,8 @@ namespace Puffin
 		{
 			auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
-			// Load Texture Data
-			const auto textureAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.textureAssetID));
-
-			if (textureAsset && textureAsset->Load())
-			{
-				IO::InitTextureImage(*this, textureAsset->GetPixels(), textureAsset->GetTextureWidth(), textureAsset->GetTextureHeight(), mesh.texture);
-
-				textureAsset->Unload();
-			}
-
-			VKDebug::SetObjectName(device,
-				(uint64_t)mesh.texture.image,
-				VK_OBJECT_TYPE_IMAGE,
-				"Mesh Texture");
-
-			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
-			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
+			InitAlbedoTexture(mesh.textureAssetID);
+			m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.insert(entity);
 
 			// Setup Mesh Render Data
 			if (m_sceneRenderData.meshRenderDataMap.count(mesh.meshAssetID) == 0)
@@ -1186,6 +1171,33 @@ namespace Puffin
 			// Calculate Camera View Matrix
 			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(camera.position), 
 				static_cast<glm::vec3>(camera.lookat), static_cast<glm::vec3>(camera.up));
+		}
+
+		void VulkanEngine::InitAlbedoTexture(UUID uuid)
+		{
+			if (m_sceneRenderData.albedoTextureData.count(uuid) == 0)
+			{
+				TextureRenderData data;
+
+				const auto textureAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(uuid));
+
+				if (textureAsset && textureAsset->Load())
+				{
+					IO::InitTextureImage(*this, textureAsset->GetPixels(), textureAsset->GetTextureWidth(), textureAsset->GetTextureHeight(), data.texture);
+
+					textureAsset->Unload();
+				}
+
+				VKDebug::SetObjectName(device,
+					(uint64_t)data.texture.image,
+					VK_OBJECT_TYPE_IMAGE,
+					"Mesh Texture");
+
+				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, data.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
+				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &data.texture.imageView));
+
+				m_sceneRenderData.albedoTextureData[uuid] = data;
+			}
 		}
 
 		AllocatedBuffer VulkanEngine::InitVertexBuffer(const std::vector<Vertex>& vertices)
@@ -1321,7 +1333,13 @@ namespace Puffin
 			auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
 			// Cleanup Texture
-			vmaDestroyImage(allocator, mesh.texture.image, mesh.texture.allocation);
+			m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.erase(entity);
+
+			if (m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.empty())
+			{
+				vmaDestroyImage(allocator, m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.image,
+					m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.allocation);
+			}
 
 			if (m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.count(entity) == 1)
 			{

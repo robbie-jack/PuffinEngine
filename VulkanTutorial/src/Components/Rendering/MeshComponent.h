@@ -119,11 +119,7 @@ namespace Puffin
 			UUID meshAssetID;
 
 			// Texture
-			Texture texture;
 			UUID textureAssetID;
-
-			// Material
-			Material material;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetID, textureAssetID)
 		};
