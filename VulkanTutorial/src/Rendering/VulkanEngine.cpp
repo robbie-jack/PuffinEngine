@@ -799,10 +799,10 @@ namespace Puffin
 			}
 
 			// Merged Vertex/Index Buffers
-			sceneData.mergedVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
+			m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex),
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
-			sceneData.mergedIndexBuffer = CreateBuffer(CURRENT_INDEX_BUFFER_SIZE * sizeof(uint32_t),
+			m_sceneRenderData.mergedIndexBuffer = CreateBuffer(m_sceneRenderData.indexBufferSize * sizeof(uint32_t),
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 		}
 
@@ -1237,17 +1237,16 @@ namespace Puffin
 			// Initialize Meshes
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
-				InitMesh(mesh);
+				InitMesh(entity);
 			}
 
 		}
 
-		void VulkanEngine::InitMesh(MeshComponent& mesh)
+		void VulkanEngine::InitMesh(ECS::Entity entity)
 		{
-			// Load Texture Data
-			//IO::LoadImageFromFile(*this, mesh.texture_path, mesh.texture);
+			auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
+			// Load Texture Data
 			const auto textureAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.textureAssetID));
 
 			if (textureAsset && textureAsset->Load())
@@ -1265,20 +1264,15 @@ namespace Puffin
 			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, mesh.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &mesh.texture.imageView));
 
-			const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.meshAssetID));
-
-			// Load Mesh Data
-			if (staticMeshAsset && staticMeshAsset->Load())
+			// Setup Mesh Render Data
+			if (m_sceneRenderData.meshRenderDataMap.count(mesh.meshAssetID) == 0)
 			{
-				mesh.vertexCount = static_cast<uint32_t>(staticMeshAsset->GetVertices().size());
-				mesh.indexCount = static_cast<uint32_t>(staticMeshAsset->GetIndices().size());
-
-				// Init Mesh Buffers
-				mesh.vertexBuffer = InitVertexBuffer(staticMeshAsset->GetVertices());
-				mesh.indexBuffer = InitIndexBuffer(staticMeshAsset->GetIndices());
-
-				staticMeshAsset->Unload();
+				// This is the first entity to render with this mesh, create a new render data struct
+				AddMeshRenderDataToScene(mesh.meshAssetID);
 			}
+
+			// Increment instance count and add entity to set
+			m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.insert(entity);
 
 			mesh.material = meshMaterial;
 
@@ -1493,14 +1487,18 @@ namespace Puffin
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 
-		void VulkanEngine::CleanupMesh(MeshComponent& mesh)
+		void VulkanEngine::CleanupMesh(ECS::Entity entity)
 		{
+			auto& mesh = m_world->GetComponent<MeshComponent>(entity);
+
 			// Cleanup Texture
 			vmaDestroyImage(allocator, mesh.texture.image, mesh.texture.allocation);
 
-			// Cleanup Vertex/Index Buffers
-			vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
-			vmaDestroyBuffer(allocator, mesh.indexBuffer.buffer, mesh.indexBuffer.allocation);
+			if (m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.count(entity) == 1)
+			{
+				// Decrement instance count and remove entity from set
+				m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.erase(entity);
+			}
 		}
 
 		void VulkanEngine::CleanupLight(LightComponent& light)
@@ -1755,25 +1753,19 @@ namespace Puffin
 			// Initialize/Cleanup marked components
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
-
 				// Initialize
 				if (m_world->GetComponentFlag<MeshComponent, FlagDirty>(entity))
 				{
-					InitMesh(mesh);
+					InitMesh(entity);
 
 					m_world->SetComponentFlag<MeshComponent, FlagDirty>(entity, false);
-
-					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
 				if (m_world->GetComponentFlag<MeshComponent, FlagDeleted>(entity) || m_world->GetEntityFlag<FlagDeleted>(entity))
 				{
-					CleanupMesh(mesh);
+					CleanupMesh(entity);
 					m_world->RemoveComponent<MeshComponent>(entity);
-					
-					sceneData.bFlagSceneChanged = true;
 				}
 			}
 
@@ -1782,7 +1774,6 @@ namespace Puffin
 				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
 				// Initialize
-
 				if (m_world->GetComponentFlag<LightComponent, FlagDirty>(entity))
 				{
 					InitLight(light);
@@ -1790,17 +1781,16 @@ namespace Puffin
 					m_world->SetComponentFlag<LightComponent, FlagDirty>(entity, false);
 
 					shadowmapDescriptorNeedsUpdated = true;
-					sceneData.bFlagSceneChanged = true;
 				}
 
 				// Cleanup
 				if (m_world->GetComponentFlag<LightComponent, FlagDeleted>(entity) || m_world->GetEntityFlag<FlagDeleted>(entity))
 				{
 					CleanupLight(light);
+
 					m_world->RemoveComponent<LightComponent>(entity);
+
 					shadowmapDescriptorNeedsUpdated = true;
-					
-					sceneData.bFlagSceneChanged = true;
 				}
 			}
 
@@ -1822,8 +1812,7 @@ namespace Puffin
 		{
 			for (ECS::Entity entity : entityMap["Mesh"])
 			{
-				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
-				CleanupMesh(mesh);
+				CleanupMesh(entity);
 			}
 
 			for (ECS::Entity entity : entityMap["Light"])
@@ -2058,7 +2047,7 @@ namespace Puffin
 
 			// Deferred Render
 			deferredRenderer.SetGeometryDescriptorSet(&GetCurrentFrame().geometryDescriptor);
-			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &sceneData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex]);
+			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, &m_sceneRenderData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex]);
 
 			// Record Command Buffers
 			//VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
@@ -2140,7 +2129,7 @@ namespace Puffin
 			memcpy(data, &cameraData, sizeof(GPUCameraData));
 			vmaUnmapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
 
-			// Map Mesh Matrices date to GPU 
+			// Map Mesh Matrices data to GPU 
 			MapObjectData();
 
 			// Map indirect commands to buffer
@@ -2149,22 +2138,18 @@ namespace Puffin
 			VkDrawIndexedIndirectCommand* indirectData = (VkDrawIndexedIndirectCommand*)data;
 
 			uint32_t meshIndex = 0;
-			uint32_t totalVertices = 0;
-			uint32_t totalIndices = 0;
 
-			// Build Draw Indirect Commands
-			for (ECS::Entity entity : entityMap["Mesh"])
+			// For each mesh data struct, Build Indirect Draw Command
+			for (const auto& [fst, snd] : m_sceneRenderData.meshRenderDataMap)
 			{
-				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
+				const auto& meshData = snd;
 
-				indirectData[meshIndex].indexCount = mesh.indexCount;
-				indirectData[meshIndex].instanceCount = 1;
-				indirectData[meshIndex].firstIndex = totalIndices;
-				indirectData[meshIndex].vertexOffset = totalVertices;
+				indirectData[meshIndex].indexCount = meshData.indexCount;
+				indirectData[meshIndex].instanceCount = meshData.entities.size();
+				indirectData[meshIndex].firstIndex = meshData.indexOffset;
+				indirectData[meshIndex].vertexOffset = meshData.vertexOffset;
 				indirectData[meshIndex].firstInstance = meshIndex;
 
-				totalVertices += mesh.vertexCount;
-				totalIndices += mesh.indexCount;
 				meshIndex++;
 			}
 
@@ -2173,95 +2158,136 @@ namespace Puffin
 			GetCurrentFrame().drawBatch.count = meshIndex;
 
 			deferredRenderer.SetDrawIndirectCommandsBuffer(&GetCurrentFrame().drawBatch);
+		}
 
-			// Update Vertex/Index Merged Buffer
-			if (sceneData.bFlagSceneChanged == true)
+		void VulkanEngine::UpdateMergedVertexBuffer(const uint32_t newSize)
+		{
+			// If total vertices exceeds currently allocated buffer size, allocate new buffer
+			if (newSize > m_sceneRenderData.vertexBufferSize)
 			{
-				// Map Mesh Matrices to Storage Buffer
-				totalVertices = 0;
-				totalIndices = 0;
+				AllocatedBuffer oldVertexBuffer = m_sceneRenderData.mergedVertexBuffer;
+				const uint32_t oldSize = m_sceneRenderData.vertexBufferSize;
 
-				// Check how many vertices there are
-				for (ECS::Entity entity : entityMap["Mesh"])
+				// Double buffer size until it is greater than total vertices
+				while (m_sceneRenderData.vertexBufferSize <= newSize)
 				{
-					MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
-
-					totalVertices += mesh.vertexCount;
-					totalIndices += mesh.indexCount;
+					m_sceneRenderData.vertexBufferSize *= 2;
 				}
 
-				// If total vertices exceeds currently allocted buffer size, allocate new buffer
-				if (totalVertices > CURRENT_VERTEX_BUFFER_SIZE)
-				{
-					// Free Old Buffer
-					vmaDestroyBuffer(allocator,
-						sceneData.mergedVertexBuffer.buffer,
-						sceneData.mergedVertexBuffer.allocation);
+				// Create New Buffer
+				m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
-					// Double buffer size until it is greater than total vertices
-					while (CURRENT_VERTEX_BUFFER_SIZE <= totalVertices)
-					{
-						CURRENT_VERTEX_BUFFER_SIZE *= 2;
-					}
-
-					// Create New Buffer
-					sceneData.mergedVertexBuffer = CreateBuffer(CURRENT_VERTEX_BUFFER_SIZE * sizeof(Vertex),
-						VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-				}
-
-				// Same as above for Indices
-				if (totalIndices > CURRENT_INDEX_BUFFER_SIZE)
-				{
-					// Free Old Buffer
-					vmaDestroyBuffer(allocator,
-						sceneData.mergedIndexBuffer.buffer,
-						sceneData.mergedIndexBuffer.allocation);
-
-					// Double buffer size until it is greater than total indices
-					while (CURRENT_INDEX_BUFFER_SIZE <= totalIndices)
-					{
-						CURRENT_INDEX_BUFFER_SIZE *= 2;
-					}
-
-					// Create New Buffer
-					sceneData.mergedIndexBuffer = CreateBuffer(CURRENT_INDEX_BUFFER_SIZE * sizeof(uint32_t),
-						VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-				}
-
-				// Copy Vertices/Indices to GPU buffer
+				// Copy data to new buffer
 				ImmediateSubmit([=](VkCommandBuffer cmd)
 				{
-					uint32_t vertexOffset = 0;
-					uint32_t indexOffset = 0;
+					// Copy from staging vertex buffer to scene vertex buffer
+					VkBufferCopy vertexCopy;
+					vertexCopy.dstOffset = 0;
+					vertexCopy.size = oldSize * sizeof(Vertex);
+					vertexCopy.srcOffset = 0;
 
-					// Copy Vertices/Indices for each mesh to Buffers
-					for (ECS::Entity entity : entityMap["Mesh"])
-					{
-						MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
-
-						// Copy directly from mesh vertex buffer to scene vertex buffer
-						VkBufferCopy vertexCopy;
-						vertexCopy.dstOffset = vertexOffset * sizeof(Vertex);
-						vertexCopy.size = mesh.vertexCount * sizeof(Vertex);
-						vertexCopy.srcOffset = 0;
-
-						vkCmdCopyBuffer(cmd, mesh.vertexBuffer.buffer, sceneData.mergedVertexBuffer.buffer, 1, &vertexCopy);
-
-						// Copt directly from mesh index buffer to scene index buffer
-						VkBufferCopy indexCopy;
-						indexCopy.dstOffset = indexOffset * sizeof(uint32_t);
-						indexCopy.size = mesh.indexCount * sizeof(uint32_t);
-						indexCopy.srcOffset = 0;
-
-						vkCmdCopyBuffer(cmd, mesh.indexBuffer.buffer, sceneData.mergedIndexBuffer.buffer, 1, &indexCopy);
-
-						vertexOffset += mesh.vertexCount;
-						indexOffset += mesh.indexCount;
-					}
+					vkCmdCopyBuffer(cmd, oldVertexBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
 				});
 
-				sceneData.bFlagSceneChanged = false;
+				// Free Old Buffer
+				vmaDestroyBuffer(allocator, oldVertexBuffer.buffer, oldVertexBuffer.allocation);
 			}
+		}
+
+		void VulkanEngine::UpdateMergedIndexBuffer(const uint32_t newSize)
+		{
+			// Same as above for Indices
+			if (newSize > m_sceneRenderData.indexBufferSize)
+			{
+				AllocatedBuffer oldIndexBuffer = m_sceneRenderData.mergedIndexBuffer;
+				const uint32_t oldSize = m_sceneRenderData.indexBufferSize;
+
+				// Double buffer size until it is greater than total indices
+				while (m_sceneRenderData.indexBufferSize <= newSize)
+				{
+					m_sceneRenderData.indexBufferSize *= 2;
+				}
+
+				// Create New Buffer
+				m_sceneRenderData.mergedIndexBuffer = CreateBuffer(m_sceneRenderData.indexBufferSize * sizeof(uint32_t),
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+				// Copy data to new buffer
+				ImmediateSubmit([=](VkCommandBuffer cmd)
+				{
+					// Copy from staging vertex buffer to scene vertex buffer
+					VkBufferCopy indexCopy;
+					indexCopy.dstOffset = 0;
+					indexCopy.size = oldSize * sizeof(uint32_t);
+					indexCopy.srcOffset = 0;
+
+					vkCmdCopyBuffer(cmd, oldIndexBuffer.buffer, m_sceneRenderData.mergedIndexBuffer.buffer, 1, &indexCopy);
+				});
+
+				// Free Old Buffer
+				vmaDestroyBuffer(allocator, oldIndexBuffer.buffer, oldIndexBuffer.allocation);
+			}
+		}
+
+		inline void VulkanEngine::AddMeshRenderDataToScene(UUID meshID)
+		{
+			const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
+			MeshRenderData meshData;
+			meshData.meshAssetID = meshID;
+
+			// Load Mesh Data
+			if (staticMeshAsset && staticMeshAsset->Load())
+			{
+				// Set Vertex/Index Count & Offsets
+				meshData.vertexCount = static_cast<uint32_t>(staticMeshAsset->GetVertices().size());
+				meshData.indexCount = static_cast<uint32_t>(staticMeshAsset->GetIndices().size());
+
+				// Resize merged Vertex/Index buffers if new size exceeds 
+				UpdateMergedVertexBuffer(m_sceneRenderData.vertexOffset + meshData.vertexCount);
+				UpdateMergedIndexBuffer(m_sceneRenderData.indexOffset + meshData.indexCount);
+
+				meshData.vertexOffset = m_sceneRenderData.vertexOffset;
+				meshData.indexOffset = m_sceneRenderData.indexOffset;
+
+				// Init Mesh Staging Buffers
+				AllocatedBuffer vertexStagingBuffer = InitVertexBuffer(staticMeshAsset->GetVertices());
+				AllocatedBuffer indexStagingBuffer = InitIndexBuffer(staticMeshAsset->GetIndices());
+
+				// Unload vertices from main memory
+				staticMeshAsset->Unload();
+
+				// Copy Vertex/Index data to merged buffers
+				ImmediateSubmit([=](VkCommandBuffer cmd)
+				{
+					// Copy from staging vertex buffer to scene vertex buffer
+					VkBufferCopy vertexCopy;
+					vertexCopy.dstOffset = m_sceneRenderData.vertexOffset * sizeof(Vertex);
+					vertexCopy.size = meshData.vertexCount * sizeof(Vertex);
+					vertexCopy.srcOffset = 0;
+
+					vkCmdCopyBuffer(cmd, vertexStagingBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
+
+					// Copy from staging index buffer to scene index buffer
+					VkBufferCopy indexCopy;
+					indexCopy.dstOffset = m_sceneRenderData.indexOffset * sizeof(uint32_t);
+					indexCopy.size = meshData.indexCount * sizeof(uint32_t);
+					indexCopy.srcOffset = 0;
+
+					vkCmdCopyBuffer(cmd, indexStagingBuffer.buffer, m_sceneRenderData.mergedIndexBuffer.buffer, 1, &indexCopy);
+				});
+
+				// Update scene render data with new info
+				m_sceneRenderData.vertexOffset += meshData.vertexCount;
+				m_sceneRenderData.indexOffset += meshData.indexCount;
+
+				// Destroy Staging Buffers
+				vmaDestroyBuffer(allocator, vertexStagingBuffer.buffer, vertexStagingBuffer.allocation);
+				vmaDestroyBuffer(allocator, indexStagingBuffer.buffer, indexStagingBuffer.allocation);
+			}
+
+			// Add mesh data to map
+			m_sceneRenderData.meshRenderDataMap[meshID] = meshData;
 		}
 
 		void VulkanEngine::PrepareLights()
@@ -2408,9 +2434,6 @@ namespace Puffin
 
 			// Begin Main Render Pass
 			vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-			// Draw all Mesh objects
-			DrawObjects(cmd, index);
 
 			// Draw all Debug Lines/Boxes
 			DrawDebugObjects(cmd, index);
@@ -2573,11 +2596,11 @@ namespace Puffin
 						{
 							// Bind Vertices, Indices and Descriptor Sets
 							VkDeviceSize offsets[] = { 0 };
-							vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
-							vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+							//vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
+							//vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 							// Draw Indexed Vertices
-							vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indexCount), 1, 0, 0, meshIndex);
+							//vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indexCount), 1, 0, 0, meshIndex);
 
 							meshIndex++;
 						}
@@ -2594,196 +2617,6 @@ namespace Puffin
 			VK_CHECK(vkEndCommandBuffer(cmd));
 
 			return cmd;
-		}
-
-		void VulkanEngine::DrawObjects(VkCommandBuffer cmd, uint32_t index)
-		{
-			// Map all light data to storage buffer
-			void* pointLightData;
-			void* dirLightData;
-			void* spotLightData;
-			void* lightSpaceData;
-
-			vmaMapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation, &pointLightData);
-			vmaMapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation, &dirLightData);
-			vmaMapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation, &spotLightData);
-			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceMultiBuffer.allocation, &lightSpaceData);
-
-			GPUPointLightData* pointLightSSBO = (GPUPointLightData*)pointLightData;
-			GPUDirLightData* dirLightSSBO = (GPUDirLightData*)dirLightData;
-			GPUSpotLightData* spotLightSSBO = (GPUSpotLightData*)spotLightData;
-			GPULightSpaceData* lightSpaceSSBO = (GPULightSpaceData*)lightSpaceData;
-
-			int p = 0;
-			int d = 0;
-			int s = 0;
-			int lightIndex = 0;
-
-			glm::mat4 biasMatrix(
-				0.5, 0.0, 0.0, 0.0,
-				0.0, 0.5, 0.0, 0.0,
-				0.0, 0.0, 0.5, 0.0,
-				0.5, 0.5, 0.5, 1.0
-			);
-
-			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
-			for (ECS::Entity entity : entityMap["Light"])
-			{
-				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
-
-				int shadowIndex = -1;
-
-				// Only render depth map if light is set to cast shadows and is spotlight type
-				if (light.bFlagCastShadows && light.type == LightType::SPOT)
-				{
-					lightSpaceSSBO[lightIndex].lightSpaceMatrix = biasMatrix * light.lightSpaceView;
-
-					shadowIndex = lightIndex;
-					lightIndex++;
-				}
-
-				switch (light.type)
-				{
-				case LightType::POINT:
-					pointLightSSBO[p].position = static_cast<glm::vec3>(m_world->GetComponent<TransformComponent>(entity).position);
-					pointLightSSBO[p].ambientColor = static_cast<glm::vec3>(light.ambientColor);
-					pointLightSSBO[p].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
-					pointLightSSBO[p].constant = light.constantAttenuation;
-					pointLightSSBO[p].linear = light.linearAttenuation;
-					pointLightSSBO[p].quadratic = light.quadraticAttenuation;
-					pointLightSSBO[p].specularStrength = light.specularStrength;
-					pointLightSSBO[p].shininess = light.shininess;
-					pointLightSSBO[p].shadowmapIndex = shadowIndex;
-					p++;
-					break;
-				case LightType::DIRECTIONAL:
-					dirLightSSBO[d].ambientColor = static_cast<glm::vec3>(light.ambientColor);
-					dirLightSSBO[d].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
-					dirLightSSBO[d].direction = static_cast<glm::vec3>(light.direction);
-					dirLightSSBO[d].specularStrength = light.specularStrength;
-					dirLightSSBO[d].shininess = light.shininess;
-					dirLightSSBO[d].shadowmapIndex = shadowIndex;
-					d++;
-					break;
-				case LightType::SPOT:
-					spotLightSSBO[s].position = static_cast<glm::vec3>(m_world->GetComponent<TransformComponent>(entity).position);
-					spotLightSSBO[s].direction = static_cast<glm::vec3>(light.direction);
-					spotLightSSBO[s].ambientColor = static_cast<glm::vec3>(light.ambientColor);
-					spotLightSSBO[s].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
-					spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(light.innerCutoffAngle));
-					spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(light.outerCutoffAngle));
-					spotLightSSBO[s].constant = light.constantAttenuation;
-					spotLightSSBO[s].linear = light.linearAttenuation;
-					spotLightSSBO[s].quadratic = light.quadraticAttenuation;
-					spotLightSSBO[s].specularStrength = light.specularStrength;
-					spotLightSSBO[s].shininess = light.shininess;
-					spotLightSSBO[s].shadowmapIndex = shadowIndex;
-					s++;
-					break;
-				}
-			}
-
-			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
-			vmaUnmapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation);
-			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
-			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceMultiBuffer.allocation);
-
-			GPULightStatsData lightStats;
-			lightStats.numPLights = p;
-			lightStats.numDLights = d;
-			lightStats.numSLights = s;
-
-			GPULightIndexData lightIndexData;
-			lightIndexData.lightSpaceIndex = lightIndex;
-
-			void* data;
-
-			// Map camera data to uniform buffer
-			vmaMapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation, &data);
-			memcpy(data, &camera.data, sizeof(ViewData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().cameraBuffer.allocation);
-
-			// Map Light Space Index to Buffer
-			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceIndexBuffer.allocation, &data);
-			memcpy(data, &lightIndexData, sizeof(GPULightIndexData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceIndexBuffer.allocation);
-
-			int meshIndex = 0;
-			Material* lastMaterial = nullptr;
-
-			// Render each mesh
-			for (ECS::Entity entity : entityMap["Mesh"])
-			{
-				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
-
-				if (!m_world->GetComponentFlag<MeshComponent, FlagDirty>(entity) &&
-					!m_world->GetComponentFlag<MeshComponent, FlagDeleted>(entity))
-				{
-
-					// Bind material pipeline if it does not match previous material
-					if (&mesh.material != lastMaterial);
-					{
-						vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							mesh.material.pipeline);
-						lastMaterial = &mesh.material;
-
-						// Set Pipeline Viewport
-						VkViewport viewport = {};
-						viewport.x = 0.0f;
-						viewport.y = 0.0f;
-						viewport.width = (float)offscreenExtent.width;
-						viewport.height = (float)offscreenExtent.height;
-						viewport.minDepth = 0.0f;
-						viewport.maxDepth = 1.0f;
-
-						vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-						VkRect2D scissor = {};
-						scissor.offset = { 0, 0 };
-						scissor.extent = offscreenExtent;
-
-						vkCmdSetScissor(cmd, 0, 1, &scissor);
-
-						// Bind Camera View/Proj Descriptor
-						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							mesh.material.pipelineLayout, 0, 1, &GetCurrentFrame().cameraViewProjDescriptor, 0, nullptr);
-
-						// Bind Object Data Descriptor
-						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							mesh.material.pipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
-
-						// Bind Light Space Descriptor
-						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							mesh.material.pipelineLayout, 2, 1, &GetCurrentFrame().lightSpaceMultiDescriptor, 0, nullptr);
-
-						// Bind Camera Descriptor
-						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							mesh.material.pipelineLayout, 3, 1, &GetCurrentFrame().cameraDescriptor, 0, nullptr);
-
-						// Bind Light Descriptor
-						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							mesh.material.pipelineLayout, 4, 1, &GetCurrentFrame().lightDescriptor, 0, nullptr);
-
-						// Shadowmap Descriptor
-						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							mesh.material.pipelineLayout, 5, 1, &GetCurrentFrame().shadowmapDescriptor, 0, nullptr);
-
-						// Texture Descriptor
-						vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							mesh.material.pipelineLayout, 6, 1, &mesh.material.textureSet, 0, nullptr);
-					}
-
-					// Bind Vertices, Indices and Descriptor Sets
-					VkDeviceSize offsets[] = { 0 };
-					vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertexBuffer.buffer, offsets);
-					vkCmdBindIndexBuffer(cmd, mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-					// Draw Indexed Vertices
-					vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indexCount), 1, 0, 0, meshIndex);
-
-					meshIndex++;
-				}
-			}
 		}
 
 		void VulkanEngine::DrawDebugObjects(VkCommandBuffer cmd, uint32_t index)
@@ -2842,13 +2675,27 @@ namespace Puffin
 			int i = 0;
 
 			// For each mesh entity, calculate its object data and map to storage buffer
-			for (ECS::Entity entity : entityMap["Mesh"])
-			{
-				// Update object data
-				objectSSBO[i].model = BuildMeshTransform(m_world->GetComponent<TransformComponent>(entity));
-				objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
+			//for (ECS::Entity entity : entityMap["Mesh"])
+			//{
+			//	// Update object data
+			//	objectSSBO[i].model = BuildMeshTransform(m_world->GetComponent<TransformComponent>(entity));
+			//	objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
 
-				i++;
+			//	i++;
+			//}
+
+			// For each mesh entity, calculate its object data and map to storage buffer
+			for (const auto& [fst, snd] : m_sceneRenderData.meshRenderDataMap)
+			{
+				const auto& meshData = snd;
+
+				for (auto entity : meshData.entities)
+				{
+					objectSSBO[i].model = BuildMeshTransform(m_world->GetComponent<TransformComponent>(entity));
+					objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
+
+					i++;
+				}
 			}
 
 			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);

@@ -117,8 +117,6 @@ namespace Puffin
 
 			// Mesh Data
 			UUID meshAssetID;
-			uint32_t vertexCount;
-			uint32_t indexCount;
 
 			// Texture
 			Texture texture;
@@ -126,12 +124,6 @@ namespace Puffin
 
 			// Material
 			Material material;
-
-			// Vertex Buffer
-			AllocatedBuffer vertexBuffer;
-
-			// Index Buffer
-			AllocatedBuffer indexBuffer;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetID, textureAssetID)
 		};

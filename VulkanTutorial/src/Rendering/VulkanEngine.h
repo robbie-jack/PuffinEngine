@@ -277,7 +277,7 @@ namespace Puffin
 
 			FrameData frames[FRAME_OVERLAP];
 
-			SceneData sceneData;
+			SceneRenderData m_sceneRenderData;
 
 			// Depth Resources
 			AllocatedImage depthAttachment;
@@ -333,9 +333,6 @@ namespace Puffin
 			VkExtent2D windowExtent;
 			int frameNumber = 0;
 
-			int CURRENT_VERTEX_BUFFER_SIZE = 750000;
-			int CURRENT_INDEX_BUFFER_SIZE = 300000;
-
 			// Event Buffers
 			std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents;
 			std::shared_ptr<RingBuffer<Debug::Line>> m_drawLineEvents;
@@ -373,7 +370,7 @@ namespace Puffin
 			void RecreateOffscreen();
 
 			// Init Component Functions
-			void InitMesh(MeshComponent& mesh);
+			void InitMesh(ECS::Entity entity);
 			void InitLight(LightComponent& light);
 			void InitCamera(CameraComponent& camera);
 
@@ -385,7 +382,7 @@ namespace Puffin
 			void CopyIndicesToBuffer(const std::vector<uint32_t>& indices, AllocatedBuffer indexBuffer, uint32_t copyOffset = 0);
 
 			// Component Cleanup Functions
-			void CleanupMesh(MeshComponent& mesh);
+			void CleanupMesh(ECS::Entity entity);
 			void CleanupLight(LightComponent& light);
 
 			// Update Functions
@@ -399,13 +396,16 @@ namespace Puffin
 			* Prepare Scene/Data Data for rendering
 			*/
 			void PrepareScene();
+			void UpdateMergedVertexBuffer(const uint32_t newSize);
+			void UpdateMergedIndexBuffer(const uint32_t newSize);
+			void AddMeshRenderDataToScene(UUID meshID);
+
 			void PrepareLights();
 
 			VkCommandBuffer RecordShadowCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordGUICommandBuffer(uint32_t index);
 
-			void DrawObjects(VkCommandBuffer cmd, uint32_t index);
 			void DrawDebugObjects(VkCommandBuffer cmd, uint32_t index);
 
 			void MapObjectData();

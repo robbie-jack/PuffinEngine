@@ -9,6 +9,11 @@
 
 #include <deque>
 #include <functional>
+#include <map>
+#include <set>
+
+#include "ECS/Entity.h"
+#include "Types/UUID.h"
 
 namespace Puffin
 {
@@ -58,17 +63,37 @@ namespace Puffin
 			}
 		};
 
-		// <Merged Vertex and Index buffers for all the objects in the scene
-		struct SceneData
+		// Data needed for indirect rendering of a single mesh in scene
+		struct MeshRenderData
 		{
-			AllocatedBuffer mergedVertexBuffer, mergedIndexBuffer;
-			bool bFlagSceneChanged = true;
+			UUID meshAssetID; // UUID of Mesh Asset
+
+			uint32_t vertexCount = 0; // Number of Vertices in Mesh
+			uint32_t indexCount = 0; // Number of Indices in Mesh
+
+			uint32_t vertexOffset = 0; // Offset into merged Vertex Buffer
+			uint32_t indexOffset = 0; // Offset into merged index buffer
+
+			std::set<ECS::Entity> entities; // Entities using this mesh
+		};
+
+		// Merged Vertex and Index buffers for all the objects in the scene
+		struct SceneRenderData
+		{
+			AllocatedBuffer mergedVertexBuffer, mergedIndexBuffer; // Merged Vertex/Index Buffers
+
+			uint32_t vertexBufferSize = 750000; // Size of current Merged Vertex Buffers
+			uint32_t indexBufferSize = 300000; // Size of current Merged Index Buffers
+
+			uint32_t vertexOffset = 0; // Offset into merged Vertex Buffer
+			uint32_t indexOffset = 0; // Offset into merged index buffer
+
+			std::unordered_map<UUID, MeshRenderData> meshRenderDataMap; // Map of Mesh Render Data Structs
 		};
 
 		// Draw Commands and buffer for Indirect rendering
 		struct IndirectDrawBatch
 		{
-			//std::vector<VkDrawIndexedIndirectCommand> drawIndirectCommands;
 			AllocatedBuffer drawIndirectCommandsBuffer; // Buffer containing draw commands
 			uint32_t count; // Number of commands mapped to buffer
 		};

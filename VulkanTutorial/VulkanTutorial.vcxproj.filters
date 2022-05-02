@@ -587,6 +587,9 @@
     <ClInclude Include="src\Physics\Box2D\Box2DContactListener.h">
       <Filter>Physics\Box2D</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\Entity.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="content\shaders\debug.frag">

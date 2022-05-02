@@ -79,7 +79,7 @@ namespace Puffin
 			/*
 			* Render Scene with deferred shading
 			*/
-			VkSemaphore& DrawScene(int frameIndex, SceneData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer);
+			VkSemaphore& DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer);
 
 			// Cleanup Functions
 			void Cleanup();
@@ -147,8 +147,8 @@ namespace Puffin
 				AllocatedImage* allocatedImage, std::string debug_name = "");
 
 			// Draw Functions
-			VkCommandBuffer RecordGeometryCommandBuffer(int frameIndex, SceneData* sceneData);
-			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneData* sceneData, VkFramebuffer sFramebuffer);
+			VkCommandBuffer RecordGeometryCommandBuffer(int frameIndex, SceneRenderData* sceneData);
+			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneRenderData* sceneData, VkFramebuffer sFramebuffer);
 
 			static inline std::vector<char> ReadFile(const std::string& filename)
 			{

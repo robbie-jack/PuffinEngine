@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ECS\EventManager.h"
-#include "ECS\System.h"
+#include "ECS/Entity.h"
+#include "ECS/EventManager.h"
+#include "ECS/System.h"
 
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"
@@ -22,11 +23,6 @@
 
 namespace Puffin::ECS
 {
-	typedef uint32_t Entity;
-	const Entity MAX_ENTITIES = 5000;
-
-	static const Entity INVALID_ENTITY = 0;
-
 	typedef uint8_t ComponentType;
 	const ComponentType MAX_COMPONENTS = 255;
 

@@ -92,7 +92,7 @@ namespace Puffin
 			SetupSPipeline();
 		}
 
-		VkSemaphore& VKDeferredRender::DrawScene(int frameIndex, SceneData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer)
+		VkSemaphore& VKDeferredRender::DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer)
 		{
 			// 1. Geometry Pass: Render all geometric/color data to g-buffer
 			VkCommandBuffer cmdGeometry = RecordGeometryCommandBuffer(frameIndex, sceneData);
@@ -654,7 +654,7 @@ namespace Puffin
 		// Draw
 		//-------------------------------------------------------------------------------------
 
-		VkCommandBuffer VKDeferredRender::RecordGeometryCommandBuffer(int frameIndex, SceneData* sceneData)
+		VkCommandBuffer VKDeferredRender::RecordGeometryCommandBuffer(int frameIndex, SceneRenderData* sceneData)
 		{
 			VkCommandBuffer cmd = frameData[frameIndex].gCommandBuffer;
 
@@ -734,7 +734,7 @@ namespace Puffin
 			return cmd;
 		}
 
-		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex, SceneData* sceneData, VkFramebuffer sFramebuffer)
+		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex, SceneRenderData* sceneData, VkFramebuffer sFramebuffer)
 		{
 			VkCommandBuffer cmd = frameData[frameIndex].sCommandBuffer;
 

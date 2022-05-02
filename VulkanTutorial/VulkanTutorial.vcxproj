@@ -296,6 +296,7 @@
     <ClInclude Include="src\Components\Rendering\MeshComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ecs\ECS.h" />
+    <ClInclude Include="src\ECS\Entity.h" />
     <ClInclude Include="src\ECS\EventManager.h" />
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\Engine.h" />
