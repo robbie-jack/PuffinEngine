@@ -7,7 +7,7 @@
         ],
         "executable": "C:\\Projects\\PuffinEngine\\x64\\Release\\PuffinEngine.exe",
         "inject": false,
-        "numQueuedFrames": 4,
+        "numQueuedFrames": 0,
         "options": {
             "allowFullscreen": true,
             "allowVSync": true,
@@ -21,7 +21,7 @@
             "refAllResources": false,
             "verifyBufferAccess": false
         },
-        "queuedFrameCap": 100,
+        "queuedFrameCap": 0,
         "workingDir": "C:/Projects/PuffinEngine/VulkanTutorial"
     }
 }

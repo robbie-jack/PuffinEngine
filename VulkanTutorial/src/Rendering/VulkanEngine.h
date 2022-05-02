@@ -86,31 +86,32 @@ namespace Puffin
 
 		struct FrameData
 		{
-			VkSemaphore presentSemaphore, renderSemaphore;
+			VkSemaphore presentSemaphore, renderSemaphore, shadowmapSemaphore;
 			VkFence renderFence;
 
 			VkCommandPool commandPool; // Command Pool for our commands
 			VkCommandBuffer mainCommandBuffer, guiCommandBuffer, shadowCommandBuffer; // Buffer commands are recorded into
 
-			AllocatedBuffer cameraViewProjBuffer, cameraBuffer;
-			VkDescriptorSet cameraViewProjDescriptor, cameraDescriptor;
-
-			VkDescriptorSet lightDescriptor;
+			AllocatedBuffer cameraViewProjBuffer;
+			VkDescriptorSet cameraViewProjDescriptor;
 
 			AllocatedBuffer objectBuffer;
 			VkDescriptorSet objectDescriptor;
 
-			AllocatedBuffer lightSpaceBuffer, lightSpaceMultiBuffer, lightSpaceIndexBuffer;
-			VkDescriptorSet lightSpaceDescriptor, lightSpaceMultiDescriptor;
+			AllocatedBuffer lightSpaceBuffer;
+			VkDescriptorSet lightSpaceDescriptor;
 
+			// Shadowmap Rendering
 			VkDescriptorSet shadowmapDescriptor;
+			std::unordered_map<ECS::Entity, AllocatedImage> shadowmapImages;
+			std::unordered_map<ECS::Entity, VkFramebuffer> shadowmapFramebuffers;
 
 			// Scene Data
 			VkDescriptorSet geometryDescriptor;
 			IndirectDrawBatch drawBatch;
 
 			AllocatedBuffer uboBuffer; // Buffer Containing Camera/Debug data for Fragment Shader
-			AllocatedBuffer pointLightBuffer, dirLightBuffer, spotLightBuffer, lightStatsBuffer;
+			AllocatedBuffer lightBuffer, pointLightBuffer, dirLightBuffer, spotLightBuffer, lightStatsBuffer;
 
 			// Debug Variables
 			std::vector<Vertex> debugVertices;
@@ -260,7 +261,7 @@ namespace Puffin
 			ImVec2 viewportSize; // Size of ImGui Viewport
 
 			bool offscreenInitialized;
-			bool shadowmapDescriptorNeedsUpdated;
+			bool m_shadowmapsNeedsUpdated;
 
 			// Shadows
 			VkExtent2D shadowExtent; // Resolution of rendered shadowmaps
@@ -292,20 +293,13 @@ namespace Puffin
 			VkRenderPass renderPassShadows;
 
 			// Pipelines/Materials
-			Material meshMaterial;
+			//Material meshMaterial;
 
 			//VkDescriptorPool descriptorPool;
 			VkDescriptorSetLayout cameraViewProjSetLayout;
 			VkDescriptorSetLayout objectSetLayout;
-
-			VkDescriptorSetLayout cameraSetLayout;
-			VkDescriptorSetLayout lightSetLayout;
 			VkDescriptorSetLayout shadowMapSetLayout;
-			VkDescriptorSetLayout singleTextureSetLayout;
-
 			VkDescriptorSetLayout lightSpaceSetLayout;
-			VkDescriptorSetLayout lightSpaceMultiSetLayout;
-
 			VkDescriptorSetLayout geometrySetLayout; // Descriptor Layout for Deferred Geometry Pass
 
 			VkQueue graphicsQueue; // queue we will submit to
@@ -353,7 +347,6 @@ namespace Puffin
 			void InitSceneBuffers();
 			void InitDescriptors();
 			void InitDeferredDescriptors();
-			void InitPipelines();
 			void InitShadowPipeline();
 			void InitDebugPipeline();
 			void InitScene();
@@ -371,7 +364,7 @@ namespace Puffin
 
 			// Init Component Functions
 			void InitMesh(ECS::Entity entity);
-			void InitLight(LightComponent& light);
+			void InitLight(ECS::Entity entity);
 			void InitCamera(CameraComponent& camera);
 
 			// Init Buffer Functions
@@ -383,7 +376,7 @@ namespace Puffin
 
 			// Component Cleanup Functions
 			void CleanupMesh(ECS::Entity entity);
-			void CleanupLight(LightComponent& light);
+			void CleanupLight(ECS::Entity entity);
 
 			// Update Functions
 			void ProcessEvents();

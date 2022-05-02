@@ -18,41 +18,38 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		struct GPUPointLightData
+		struct GPULightData
 		{
 			alignas(16) glm::vec3 ambientColor;
 			alignas(16) glm::vec3 diffuseColor;
 
+			alignas(4) float specularStrength;
+			alignas(4) int shininess;
+
+			alignas(16) glm::mat4 lightSpaceMatrix;
+			alignas(4) int shadowmapIndex;
+		};
+
+		struct GPUPointLightData
+		{
 			alignas(16) glm::vec3 position;
 
 			alignas(4) float constant;
 			alignas(4) float linear;
 			alignas(4) float quadratic;
 
-			alignas(4) float specularStrength;
-			alignas(4) int shininess;
-
-			alignas(4) int shadowmapIndex;
+			alignas(4) int dataIndex;
 		};
 
 		struct GPUDirLightData
 		{
-			alignas(16) glm::vec3 ambientColor;
-			alignas(16) glm::vec3 diffuseColor;
-
 			alignas(16) glm::vec3 direction;
 
-			alignas(4) float specularStrength;
-			alignas(4) int shininess;
-
-			alignas(4) int shadowmapIndex;
+			alignas(4) int dataIndex;
 		};
 
 		struct GPUSpotLightData
 		{
-			alignas(16) glm::vec3 ambientColor;
-			alignas(16) glm::vec3 diffuseColor;
-
 			alignas(16) glm::vec3 position;
 			alignas(16) glm::vec3 direction;
 
@@ -63,10 +60,7 @@ namespace Puffin
 			alignas(4) float linear;
 			alignas(4) float quadratic;
 
-			alignas(4) float specularStrength;
-			alignas(4) int shininess;
-
-			alignas(4) int shadowmapIndex;
+			alignas(4) int dataIndex;
 		};
 
 		struct GPULightStatsData
@@ -101,8 +95,6 @@ namespace Puffin
 
 			// Variables for computing shadows cast by lights
 			bool bFlagCastShadows; // Flag to indicate if light should cast shadows
-			std::vector<AllocatedImage> depthAttachments;
-			std::vector<VkFramebuffer> depthFramebuffers;
 			glm::mat4 lightSpaceView;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent, type, ambientColor, diffuseColor, direction,

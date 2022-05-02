@@ -224,6 +224,9 @@ namespace Puffin
 						world->SetComponentFlag<Rendering::MeshComponent, FlagDeleted>(entity, true);
 					}
 
+					ImGui::Text("Model UUID: %d", mesh.meshAssetID);
+					ImGui::Text("Texture UUID: %d", mesh.textureAssetID);
+
 					// Change Model Path
 					/*ImGui::Text("Model Path:"); ImGui::SameLine();
 					if (ImGui::Selectable((const char*)mesh.model_path.c_str(), false))

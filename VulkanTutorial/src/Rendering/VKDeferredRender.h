@@ -61,9 +61,9 @@ namespace Puffin
 			/*
 			* Setup Deferred Shading Pass
 			*/
-			void SetupShading(std::vector<AllocatedBuffer>& uboBuffers, 
-				int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers,
-				VkRenderPass renderPass);
+			void SetupShading(std::vector<AllocatedBuffer>& uboBuffers,
+			                  int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers,
+			                  VkRenderPass renderPass, VkDescriptorSetLayout& shadowmapSetLayout);
 
 			// Pass Data Needed for Geometry Rendering
 			inline void SetGeometryDescriptorSet(VkDescriptorSet* inGeometrySet)
@@ -79,7 +79,8 @@ namespace Puffin
 			/*
 			* Render Scene with deferred shading
 			*/
-			VkSemaphore& DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer);
+			VkSemaphore& DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer, VkDescriptorSet&
+			                       shadowmapDescriptor, VkSemaphore& shadowmapWaitSemaphore);
 
 			// Cleanup Functions
 			void Cleanup();
@@ -136,9 +137,8 @@ namespace Puffin
 			void SetupGPipeline(); // Setup Geometry/Shading Pipelines
 
 			// Shading Stage
-			//void SetupSRenderPass();
 			void SetupSDescriptorSets(std::vector<AllocatedBuffer>& uboBuffers, int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers); // Setup Descriptor Sets for Shading Pass
-			void SetupSPipeline();
+			void SetupSPipeline(VkDescriptorSetLayout& shadowmapSetLayout);
 
 			/*
 			* Create Allocated Images for the GBuffer
@@ -148,7 +148,7 @@ namespace Puffin
 
 			// Draw Functions
 			VkCommandBuffer RecordGeometryCommandBuffer(int frameIndex, SceneRenderData* sceneData);
-			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneRenderData* sceneData, VkFramebuffer sFramebuffer);
+			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneRenderData* sceneData, VkFramebuffer sFramebuffer, VkDescriptorSet& shadowmapSet);
 
 			static inline std::vector<char> ReadFile(const std::string& filename)
 			{
