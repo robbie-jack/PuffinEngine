@@ -2,8 +2,10 @@
 #define VECTOR_H
 
 #include <math.h>
-#include <glm/gtc/matrix_transform.hpp>
+
 #include "box2d/box2d.h"
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
 
 #include "nlohmann/json.hpp"
 

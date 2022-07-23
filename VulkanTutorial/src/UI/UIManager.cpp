@@ -1,4 +1,5 @@
-#include <UI/UIManager.h>
+#include "UIManager.h"
+
 #include <ECS/ECS.h>
 #include <Engine.h>
 #include <ManipulationGizmo.h>
@@ -14,7 +15,7 @@ namespace fs = std::filesystem;
 
 namespace Puffin::UI
 {
-	UIManager::UIManager(Engine* InEngine, std::shared_ptr<ECS::World> InWorld)
+	UIManager::UIManager(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -30,24 +31,23 @@ namespace Puffin::UI
 		loadScene = false;
 		importAssetUI = ImportAssetUI::None;
 
-		engine = InEngine;
-		world = InWorld;
+		m_engine = InEngine;
+		m_world = InWorld;
 
-		windowSceneHierarchy =		new UIWindowSceneHierarchy(engine, world);
-		windowViewport =			new UIWindowViewport(engine, world);
-		windowSettings =			new UIWindowSettings(engine, world);
-		windowEntityProperties =	new UIWindowEntityProperties(engine, world);
-		windowPerformance =			new UIWindowPerformance(engine, world);
-
-		//windowPerformance->Show();
+		windowSceneHierarchy =	std::make_shared<UIWindowSceneHierarchy>(m_engine, m_world, InInput);
+		windowViewport = std::make_shared<UIWindowViewport>(m_engine, m_world, InInput);
+		windowSettings = std::make_shared<UIWindowSettings>(m_engine, m_world, InInput);
+		windowEntityProperties = std::make_shared<UIWindowEntityProperties>(m_engine, m_world, InInput);
+		windowPerformance = std::make_shared<UIWindowPerformance>(m_engine, m_world, InInput);
+		contentBrowser = std::make_shared<UIContentBrowser>(m_engine, m_world, InInput);
 
 		windowEntityProperties->SetFileBrowser(&fileDialog);
 
-		windows.push_back(windowSceneHierarchy);
-		//windows.push_back(windowViewport);
-		windows.push_back(windowSettings);
-		windows.push_back(windowEntityProperties);
-		windows.push_back(windowPerformance);
+		AddWindow(windowSceneHierarchy);
+		AddWindow(windowSettings);
+		AddWindow(windowEntityProperties);
+		AddWindow(windowPerformance);
+		AddWindow(contentBrowser);
 	}
 
 	UIManager::~UIManager()
@@ -76,11 +76,11 @@ namespace Puffin::UI
 		//ImPlot::ShowDemoWindow(p_open);
 
 		// Draw UI Windows
-		if (windows.size() > 0)
+		if (m_windows.size() > 0)
 		{
-			for (int i = 0; i < windows.size(); i++)
+			for (int i = 0; i < m_windows.size(); i++)
 			{
-				windows[i]->Draw(dt, InputManager);
+				m_windows[i]->Draw(dt);
 			}
 		}
 
@@ -98,11 +98,11 @@ namespace Puffin::UI
 			// File Dialog - Load Scene
 			if (loadScene)
 			{
-				engine->GetScene()->SetPath(selectedPath);
+				m_engine->GetScene()->SetPath(selectedPath);
 
-				engine->GetScene()->Load();
+				m_engine->GetScene()->Load();
 
-				engine->Restart();
+				m_engine->Restart();
 
 				loadScene = false;
 			}
@@ -146,15 +146,15 @@ namespace Puffin::UI
 		// Update Selected Entity
 		if (windowSceneHierarchy->HasEntityChanged())
 		{
-			entity = windowSceneHierarchy->GetEntity();
-			windowEntityProperties->SetEntity(entity);
-			windowViewport->SetEntity(entity);
+			m_entity = windowSceneHierarchy->GetEntity();
+			windowEntityProperties->SetEntity(m_entity);
+			windowViewport->SetEntity(m_entity);
 		}
 
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing
-		if (windowEntityProperties->HasSceneChanged() && engine->GetPlayState() == PlayState::STOPPED)
+		if (windowEntityProperties->HasSceneChanged() && m_engine->GetPlayState() == PlayState::STOPPED)
 		{
-			engine->GetScene()->UpdateData();
+			m_engine->GetScene()->UpdateData();
 		}
 	}
 
@@ -218,7 +218,7 @@ namespace Puffin::UI
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			std::string str_name = engine->GetScene()->GetPath().string();
+			std::string str_name = m_engine->GetScene()->GetPath().string();
 			std::vector<char> name(256, '\0');
 			for (int i = 0; i < str_name.size(); i++)
 			{
@@ -229,12 +229,12 @@ namespace Puffin::UI
 			ImGui::Text("Enter Scene Name:");
 			if (ImGui::InputText("##Edit", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				engine->GetScene()->SetPath(std::string(&name[0]));
+				m_engine->GetScene()->SetPath(std::string(&name[0]));
 			}
 
 			if (ImGui::Button("Save"))
 			{
-				engine->GetScene()->Save();
+				m_engine->GetScene()->Save();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -274,7 +274,7 @@ namespace Puffin::UI
 				if (ImGui::MenuItem("Save Project"))
 				{
 					//IO::SaveProject(Assets::AssetRegistry::Get()->ProjectRoot() / Assets::AssetRegistry::Get()->ProjectName() + ".pproject", engine->)
-					IO::SaveSettings(Assets::AssetRegistry::Get()->ProjectRoot() / "settings.json", engine->GetProjectSettings());
+					IO::SaveSettings(Assets::AssetRegistry::Get()->ProjectRoot() / "settings.json", m_engine->GetProjectSettings());
 					Assets::AssetRegistry::Get()->SaveAssetCache();
 				}
 
@@ -299,7 +299,7 @@ namespace Puffin::UI
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					engine->GetScene()->Save();
+					m_engine->GetScene()->Save();
 				}
 
 				if (ImGui::MenuItem("Save Scene As"))
@@ -328,7 +328,7 @@ namespace Puffin::UI
 
 				if (ImGui::MenuItem("Quit", "Alt+F4"))
 				{
-					engine->Exit();
+					m_engine->Exit();
 				}
 
 				ImGui::EndMenu();
@@ -337,12 +337,12 @@ namespace Puffin::UI
 			// List all windows
 			if (ImGui::BeginMenu("Windows"))
 			{
-				if (windows.size() > 0)
+				if (m_windows.size() > 0)
 				{
-					for (int i = 0; i < windows.size(); i++)
+					for (int i = 0; i < m_windows.size(); i++)
 					{
 						// Show/Hide window if clicked
-						ImGui::MenuItem(windows[i]->GetName().c_str(), NULL, windows[i]->GetShow());
+						ImGui::MenuItem(m_windows[i]->GetName().c_str(), NULL, m_windows[i]->GetShow());
 					}
 				}
 
@@ -422,8 +422,8 @@ namespace Puffin::UI
 		style->WindowPadding = { 0.0f, 0.0f };
 	}
 
-	void UIManager::AddWindow(UIWindow* window)
+	void UIManager::AddWindow(std::shared_ptr<UIWindow> window)
 	{
-		windows.push_back(window);
+		m_windows.push_back(window);
 	}
 }

@@ -1,4 +1,4 @@
-#include "UI/UIWindowSceneHierarchy.h"
+#include "UIWindowSceneHierarchy.h"
 
 #include "Components/TransformComponent.h"
 
@@ -8,7 +8,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowSceneHierarchy::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
+		void UIWindowSceneHierarchy::Draw(float dt)
 		{
 			windowName = "Scene Hierarchy";
 
@@ -28,13 +28,13 @@ namespace Puffin
 
 				ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
-				if (world != nullptr)
+				if (m_world != nullptr)
 				{
 					ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					for (ECS::Entity entity : world->GetActiveEntities())
+					for (ECS::Entity entity : m_world->GetActiveEntities())
 					{
 						ImGuiTreeNodeFlags tree_flags = base_flags;
 						bool has_child = false;
@@ -51,7 +51,7 @@ namespace Puffin
 						if (!has_child)
 							tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-						bool node_open = ImGui::TreeNodeEx(world->GetEntityName(entity).c_str(), tree_flags);
+						bool node_open = ImGui::TreeNodeEx(m_world->GetEntityName(entity).c_str(), tree_flags);
 
 						// Set Selected Entity when node is clicked
 						if (ImGui::IsItemClicked())
@@ -84,7 +84,7 @@ namespace Puffin
 
 				if (ImGui::Button("Destroy Entity"))
 				{
-					world->SetEntityFlag<FlagDeleted>(selectedEntity, true);
+					m_world->SetEntityFlag<FlagDeleted>(selectedEntity, true);
 
 					selectedEntity = ECS::INVALID_ENTITY;
 					entityChanged = true;
@@ -94,9 +94,9 @@ namespace Puffin
 				{
 					if (ImGui::Selectable("Empty"))
 					{
-						ECS::Entity entity = world->CreateEntity();
+						ECS::Entity entity = m_world->CreateEntity();
 
-						world->AddComponent<TransformComponent>(entity);
+						m_world->AddComponent<TransformComponent>(entity);
 
 						selectedEntity = entity;
 						entityChanged = true;
@@ -107,8 +107,6 @@ namespace Puffin
 
 				End();
 			}
-
-			return true;
 		}
 	}
 }

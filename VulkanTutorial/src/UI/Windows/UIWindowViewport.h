@@ -3,7 +3,7 @@
 #ifndef UI_WINDOW_VIEWPORT_H
 #define UI_WINDOW_VIEWPORT_H
 
-#include <UI/UIWindow.h>
+#include "UIWindow.h"
 #include <Types\Vector.h>
 #include <Rendering/VKTypes.h>
 #include <Components/Rendering/CameraComponent.h>
@@ -18,16 +18,18 @@ namespace Puffin
 		{
 		public:
 
-			UIWindowViewport(Engine* InEngine, std::shared_ptr<ECS::World> InWorld) : UIWindow(InEngine, InWorld)
+			UIWindowViewport(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+			: UIWindow(InEngine, InWorld, InInput)
 			{
 			};
 
-			bool DrawWithoutImage();
-			bool Draw(ImTextureID textureID, Rendering::CameraComponent& camera);
+			void DrawWithoutImage();
+			void Draw(ImTextureID textureID);
+			void Draw(float dt) override {}
 
 			inline ImVec2 GetViewportSize() { return viewportSize; }
 
-			inline void SetEntity(ECS::Entity entity_) { entity = entity_; };
+			inline void SetEntity(ECS::Entity entity_) { entity = entity_; }
 
 		private:
 

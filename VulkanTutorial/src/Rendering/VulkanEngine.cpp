@@ -1860,7 +1860,7 @@ namespace Puffin
 
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
 			if (offscreenInitialized)
-				m_uiManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex], camera);
+				m_uiManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
 			else
 				m_uiManager->GetWindowViewport()->DrawWithoutImage();
 

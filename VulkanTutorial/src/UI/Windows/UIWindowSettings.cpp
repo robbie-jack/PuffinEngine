@@ -1,11 +1,11 @@
-#include <UI/UIWindowSettings.h>
+#include "UIWindowSettings.h"
 #include <Engine.h>
 
 namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowSettings::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
+		void UIWindowSettings::Draw(float dt)
 		{
 			if (firstTime)
 			{
@@ -20,22 +20,20 @@ namespace Puffin
 
 				Begin(windowName);
 
-				IO::ProjectSettings& settings = engine->GetProjectSettings();
+				IO::ProjectSettings& settings = m_engine->GetProjectSettings();
 
 				if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
 				{
-					InputManager->GetSensitivity() = settings.mouseSensitivity;
+					m_inputManager->GetSensitivity() = settings.mouseSensitivity;
 				}
 
 				if (ImGui::SliderFloat("Field of View", &settings.cameraFov, 30.0f, 120.0f, "%f"))
 				{
-					camera->fov = settings.cameraFov;
+					m_camera->fov = settings.cameraFov;
 				}
 
 				End();
 			}
-
-			return true;
 		}
 	}
 }

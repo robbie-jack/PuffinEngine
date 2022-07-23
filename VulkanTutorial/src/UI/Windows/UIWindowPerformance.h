@@ -3,7 +3,7 @@
 #ifndef UI_WINDOW_PERFORMANCE_H
 #define UI_WINDOW_PERFORMANCE_H
 
-#include <UI/UIWindow.h>
+#include "UIWindow.h"
 
 namespace Puffin
 {
@@ -45,11 +45,12 @@ namespace Puffin
 		class UIWindowPerformance : public UIWindow
 		{
 		public:
-			UIWindowPerformance(Engine* InEngine, std::shared_ptr<ECS::World> InWorld) : UIWindow(InEngine, InWorld)
+			UIWindowPerformance(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+			: UIWindow(InEngine, InWorld, InInput)
 			{
 			};
 
-			bool Draw(float dt, std::shared_ptr<Input::InputManager> InputManager) override;
+			void Draw(float dt) override;
 
 		private:
 			float fps;

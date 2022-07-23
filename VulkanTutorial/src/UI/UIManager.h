@@ -7,12 +7,13 @@
 
 #include <Input/InputManager.h>
 
-#include <UI/UIWindow.h>
-#include <UI/UIWindowSceneHierarchy.h>
-#include <UI/UIWindowViewport.h>
-#include <UI/UIWindowSettings.h>
-#include <UI/UIWindowEntityProperties.h>
-#include <UI/UIWindowPerformance.h>
+#include "Windows/UIWindow.h"
+#include "Windows/UIWindowSceneHierarchy.h"
+#include "UI/Windows/UIWindowViewport.h"
+#include "UI/Windows/UIWindowSettings.h"
+#include "UI/Windows/UIWindowEntityProperties.h"
+#include "UI/Windows/UIWindowPerformance.h"
+#include "Windows/UIContentBrowser.h"
 
 #include <vector>
 #include <memory>
@@ -40,33 +41,34 @@ namespace Puffin
 		{
 		public:
 
-			UIManager(Engine* InEngine, std::shared_ptr<ECS::World> InWorld);
+			UIManager(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput);
 			~UIManager();
 
 			void Cleanup();
 
 			void DrawUI(float dt, std::shared_ptr<Input::InputManager> InputManager);
 			void Update();
-			void AddWindow(UIWindow* window);
+			void AddWindow(std::shared_ptr<UIWindow> window);
 
-			inline UIWindowViewport* GetWindowViewport() { return windowViewport; };
-			inline UIWindowSettings* GetWindowSettings() { return windowSettings; };
+			inline std::shared_ptr<UIWindowViewport> GetWindowViewport() { return windowViewport; }
+			inline std::shared_ptr<UIWindowSettings> GetWindowSettings() { return windowSettings; }
 
 		private:
 			bool saveScene, loadScene;
 			ImportAssetUI importAssetUI;
 
-			Engine* engine;
-			std::shared_ptr<ECS::World> world;
-			ECS::Entity entity;
+			Engine* m_engine;
+			std::shared_ptr<ECS::World> m_world;
+			ECS::Entity m_entity;
 
-			std::vector<UIWindow*> windows;
+			std::vector<std::shared_ptr<UIWindow>> m_windows;
 
-			UIWindowSceneHierarchy* windowSceneHierarchy;
-			UIWindowViewport* windowViewport;
-			UIWindowSettings* windowSettings;
-			UIWindowEntityProperties* windowEntityProperties;
-			UIWindowPerformance* windowPerformance;
+			std::shared_ptr <UIWindowSceneHierarchy> windowSceneHierarchy;
+			std::shared_ptr<UIWindowViewport> windowViewport;
+			std::shared_ptr<UIWindowSettings> windowSettings;
+			std::shared_ptr<UIWindowEntityProperties> windowEntityProperties;
+			std::shared_ptr<UIWindowPerformance> windowPerformance;
+			std::shared_ptr<UIContentBrowser> contentBrowser;
 
 			ImGui::FileBrowser fileDialog;
 

@@ -19,7 +19,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowEntityProperties::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
+		void UIWindowEntityProperties::Draw(float dt)
 		{
 			windowName = "Entity Properties";
 
@@ -29,17 +29,17 @@ namespace Puffin
 
 				Begin(windowName);
 
-				if (entity != ECS::INVALID_ENTITY)
+				if (m_entity != ECS::INVALID_ENTITY)
 				{
 					ImGui::Dummy(ImVec2(0.0f, 5.0f));
 					ImGui::Text(""); ImGui::SameLine(0.0f);
 
 					// Edit Entity Name
-					std::string name = world->GetEntityName(entity);
+					std::string name = m_world->GetEntityName(m_entity);
 					std::string* namePtr = &name;
 					if (ImGui::InputText("##Name", namePtr, ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						world->SetEntityName(entity, *namePtr);
+						m_world->SetEntityName(m_entity, *namePtr);
 					}
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
@@ -91,27 +91,27 @@ namespace Puffin
 					{
 						if (ImGui::Selectable("Transform"))
 						{
-							if (!world->HasComponent<TransformComponent>(entity))
+							if (!m_world->HasComponent<TransformComponent>(m_entity))
 							{
-								world->AddComponent<TransformComponent>(entity);
+								m_world->AddComponent<TransformComponent>(m_entity);
 								sceneChanged = true;
 							}
 						}
 
 						if (ImGui::Selectable("Static Mesh"))
 						{
-							if (!world->HasComponent<Rendering::MeshComponent>(entity))
+							if (!m_world->HasComponent<Rendering::MeshComponent>(m_entity))
 							{
-								Rendering::MeshComponent& comp = world->AddComponent<Rendering::MeshComponent>(entity);
+								Rendering::MeshComponent& comp = m_world->AddComponent<Rendering::MeshComponent>(m_entity);
 								sceneChanged = true;
 							}
 						}
 
 						if (ImGui::Selectable("Light"))
 						{
-							if (!world->HasComponent<Rendering::LightComponent>(entity))
+							if (!m_world->HasComponent<Rendering::LightComponent>(m_entity))
 							{
-								Rendering::LightComponent& comp = world->AddComponent<Rendering::LightComponent>(entity);
+								Rendering::LightComponent& comp = m_world->AddComponent<Rendering::LightComponent>(m_entity);
 								comp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
 								comp.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
 								comp.innerCutoffAngle = 12.5f;
@@ -131,17 +131,17 @@ namespace Puffin
 						{
 							if (ImGui::Selectable("Rigidbody"))
 							{
-								world->AddComponent<Physics::Box2DRigidbodyComponent>(entity);
+								m_world->AddComponent<Physics::Box2DRigidbodyComponent>(m_entity);
 							}
 
 							if (ImGui::Selectable("Circle2D"))
 							{
-								world->AddComponent<Physics::Box2DCircleComponent>(entity);
+								m_world->AddComponent<Physics::Box2DCircleComponent>(m_entity);
 							}
 
 							if (ImGui::Selectable("Box2D"))
 							{
-								world->AddComponent<Physics::Box2DBoxComponent>(entity);
+								m_world->AddComponent<Physics::Box2DBoxComponent>(m_entity);
 							}
 
 							ImGui::EndPopup();
@@ -157,16 +157,14 @@ namespace Puffin
 
 				End();
 			}
-
-			return true;
 		}
 
 		void UIWindowEntityProperties::DrawTransformUI(ImGuiTreeNodeFlags flags)
 		{
 			// Display Transform Component - If One Exists
-			if (world->HasComponent<TransformComponent>(entity))
+			if (m_world->HasComponent<TransformComponent>(m_entity))
 			{
-				TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+				TransformComponent& transform = m_world->GetComponent<TransformComponent>(m_entity);
 
 				if (ImGui::TreeNodeEx("Transform Component", flags))
 				{
@@ -174,7 +172,7 @@ namespace Puffin
 
 					if (ImGui::SmallButton("X##Transform"))
 					{
-						world->RemoveComponent<TransformComponent>(entity);
+						m_world->RemoveComponent<TransformComponent>(m_entity);
 						sceneChanged = true;
 					}
 
@@ -210,18 +208,18 @@ namespace Puffin
 		void UIWindowEntityProperties::DrawMeshUI(ImGuiTreeNodeFlags flags)
 		{
 			// Display Mesh Component - If One Exists
-			if (world->HasComponent<Rendering::MeshComponent>(entity))
+			if (m_world->HasComponent<Rendering::MeshComponent>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Mesh Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					Rendering::MeshComponent& mesh = world->GetComponent<Rendering::MeshComponent>(entity);
+					Rendering::MeshComponent& mesh = m_world->GetComponent<Rendering::MeshComponent>(m_entity);
 
 					if (ImGui::SmallButton("X##Mesh"))
 					{
 						sceneChanged = true;
-						world->SetComponentFlag<Rendering::MeshComponent, FlagDeleted>(entity, true);
+						m_world->SetComponentFlag<Rendering::MeshComponent, FlagDeleted>(m_entity, true);
 					}
 
 					ImGui::Text("Model UUID: %d", mesh.meshAssetID);
@@ -270,9 +268,9 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawLightUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Rendering::LightComponent>(entity))
+			if (m_world->HasComponent<Rendering::LightComponent>(m_entity))
 			{
-				Rendering::LightComponent& comp = world->GetComponent<Rendering::LightComponent>(entity);
+				Rendering::LightComponent& comp = m_world->GetComponent<Rendering::LightComponent>(m_entity);
 
 				if (ImGui::TreeNodeEx("Light Component", flags))
 				{
@@ -281,7 +279,7 @@ namespace Puffin
 					if (ImGui::SmallButton("X##Light"))
 					{
 						sceneChanged = true;
-						world->SetComponentFlag<Rendering::LightComponent, FlagDeleted>(entity, true);
+						m_world->SetComponentFlag<Rendering::LightComponent, FlagDeleted>(m_entity, true);
 					}
 
 					// Edit Light Diffuse Color
@@ -293,7 +291,7 @@ namespace Puffin
 					if (ImGui::Checkbox("Cast Shadows", &comp.bFlagCastShadows))
 					{
 						sceneChanged = true;
-						world->SetComponentFlag<Rendering::LightComponent, FlagDirty>(entity, true);
+						m_world->SetComponentFlag<Rendering::LightComponent, FlagDirty>(m_entity, true);
 					}
 
 					// Combo box to select light type
@@ -346,17 +344,17 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawRigidbody2DUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Physics::Box2DRigidbodyComponent>(entity))
+			if (m_world->HasComponent<Physics::Box2DRigidbodyComponent>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& rb = world->GetComponent<Physics::Box2DRigidbodyComponent>(entity);
+					auto& rb = m_world->GetComponent<Physics::Box2DRigidbodyComponent>(m_entity);
 
 					if (ImGui::SmallButton("X##Rigidbody"))
 					{
-						world->SetComponentFlag<Physics::Box2DRigidbodyComponent, FlagDeleted>(entity, true);
+						m_world->SetComponentFlag<Physics::Box2DRigidbodyComponent, FlagDeleted>(m_entity, true);
 							
 						sceneChanged = true;
 					}
@@ -515,17 +513,17 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawCircle2DUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Physics::Box2DCircleComponent>(entity))
+			if (m_world->HasComponent<Physics::Box2DCircleComponent>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Circle Component 2D", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& circle = world->GetComponent<Physics::Box2DCircleComponent>(entity);
+					auto& circle = m_world->GetComponent<Physics::Box2DCircleComponent>(m_entity);
 
 					if (ImGui::SmallButton("X##Circle2D"))
 					{
-						world->SetComponentFlag< Physics::Box2DCircleComponent, FlagDeleted>(entity, true);
+						m_world->SetComponentFlag< Physics::Box2DCircleComponent, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
@@ -548,17 +546,17 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawBox2DUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Physics::Box2DBoxComponent>(entity))
+			if (m_world->HasComponent<Physics::Box2DBoxComponent>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Box Component 2D", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& box = world->GetComponent<Physics::Box2DBoxComponent>(entity);
+					auto& box = m_world->GetComponent<Physics::Box2DBoxComponent>(m_entity);
 
 					if (ImGui::SmallButton("X##Box2D"))
 					{
-						world->SetComponentFlag< Physics::Box2DBoxComponent, FlagDeleted>(entity, true);
+						m_world->SetComponentFlag< Physics::Box2DBoxComponent, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
@@ -581,9 +579,9 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawScriptUI(ImGuiTreeNodeFlags flags)
 		{
-			if (world->HasComponent<Scripting::AngelScriptComponent>(entity))
+			if (m_world->HasComponent<Scripting::AngelScriptComponent>(m_entity))
 			{
-				Scripting::AngelScriptComponent& comp = world->GetComponent<Scripting::AngelScriptComponent>(entity);
+				Scripting::AngelScriptComponent& comp = m_world->GetComponent<Scripting::AngelScriptComponent>(m_entity);
 
 				if (ImGui::TreeNodeEx("Script Component", flags))
 				{
@@ -591,7 +589,7 @@ namespace Puffin
 
 					if (ImGui::SmallButton("X##Script"))
 					{
-						world->SetComponentFlag<Scripting::AngelScriptComponent, FlagDeleted>(entity, true);
+						m_world->SetComponentFlag<Scripting::AngelScriptComponent, FlagDeleted>(m_entity, true);
 						sceneChanged = true;
 					}
 

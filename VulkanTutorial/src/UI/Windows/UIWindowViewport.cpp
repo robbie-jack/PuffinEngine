@@ -1,4 +1,5 @@
-#include <UI/UIWindowViewport.h>
+#include "UIWindowViewport.h"
+
 #include <Components\TransformComponent.h>
 #include <ManipulationGizmo.h>
 #include <ECS/ECS.h>
@@ -8,7 +9,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowViewport::DrawWithoutImage()
+		void UIWindowViewport::DrawWithoutImage()
 		{
 			windowName = "Viewport";
 
@@ -23,11 +24,9 @@ namespace Puffin
 
 				End();
 			}
-
-			return true;
 		}
 
-		bool UIWindowViewport::Draw(ImTextureID textureID, Rendering::CameraComponent& camera)
+		void UIWindowViewport::Draw(ImTextureID textureID)
 		{
 			windowName = "Viewport";
 
@@ -54,9 +53,9 @@ namespace Puffin
 					ImGui::Dummy(ImVec2((ImGui::GetWindowWidth() / 2) - 350.0f, 0.0f));
 					if (ImGui::Button(playButtonLabel.c_str()))
 					{
-						engine->Play();
+						m_engine->Play();
 
-						PlayState playState = engine->GetPlayState();
+						PlayState playState = m_engine->GetPlayState();
 						if (playState == PlayState::PAUSED || playState == PlayState::STOPPED)
 						{
 							playButtonLabel = "Play";
@@ -69,7 +68,7 @@ namespace Puffin
 
 					if (ImGui::Button("Stop"))
 					{
-						engine->Restart();
+						m_engine->Restart();
 						playButtonLabel = "Play";
 					}
 
@@ -92,15 +91,13 @@ namespace Puffin
 
 				if (entity != ECS::INVALID_ENTITY)
 				{
-					TransformComponent& transform = world->GetComponent<TransformComponent>(entity);
+					TransformComponent& transform = m_world->GetComponent<TransformComponent>(entity);
 					
-					DrawManipulationGizmo(world, transform);
+					DrawManipulationGizmo(m_world, transform);
 				}
 
 				End();
 			}
-
-			return true;
 		}
 	}
 }

@@ -27,16 +27,28 @@ namespace Puffin
 		{
 		public:
 
-			UIWindow(Engine* InEngine, std::shared_ptr<ECS::World> InWorld);
-			~UIWindow();
+			UIWindow(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+				: m_engine(InEngine), m_world(InWorld), m_inputManager(InInput)
+			{
+				show = true;
+				firstTime = true;
+				flags = ImGuiWindowFlags_None;
+			}
 
-			virtual bool Draw(float dt, std::shared_ptr<Input::InputManager> InputManager);
+			virtual ~UIWindow()
+			{
+				m_world = nullptr;
+				m_engine = nullptr;
+				m_inputManager = nullptr;
+			}
+
+			virtual void Draw(float dt) = 0;
 
 			void Show();
 
-			inline bool* GetShow() { return &show; };
-			inline std::string GetName() { return windowName; };
-			inline void SetTextureSampler(VkSampler sampler) { textureSampler = sampler; };
+			inline bool* GetShow() { return &show; }
+			inline std::string GetName() { return windowName; }
+			inline void SetTextureSampler(VkSampler sampler) { textureSampler = sampler; }
 
 		protected:
 
@@ -55,8 +67,9 @@ namespace Puffin
 			// Vulkan Texture Sampler for Rendering Textures
 			VkSampler textureSampler;
 
-			Engine* engine;
-			std::shared_ptr<ECS::World> world;
+			Engine* m_engine;
+			std::shared_ptr<ECS::World> m_world;
+			std::shared_ptr<Input::InputManager> m_inputManager;
 		};
 	}
 }

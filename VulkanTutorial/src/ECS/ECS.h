@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ECS/Entity.h"
+#include "ECS/ComponentType.h"
+#include "ECS/EntityView.h"
 #include "ECS/EventManager.h"
 #include "ECS/System.h"
 
@@ -23,11 +25,6 @@
 
 namespace Puffin::ECS
 {
-	typedef uint8_t ComponentType;
-	const ComponentType MAX_COMPONENTS = 255;
-
-	typedef std::bitset<MAX_COMPONENTS> Signature;
-
 	typedef uint8_t FlagType;
 	const FlagType MAX_FLAGS = 255;
 
@@ -233,10 +230,18 @@ namespace Puffin::ECS
 			return activeEntities;
 		}
 
+		// Get count of active entities
+		int GetEntityCount() const
+		{
+			return activeEntityCount;
+		}
+
 	private:
 
 		std::queue<Entity> availableEntities;
 		std::set<Entity> activeEntities;
+		std::unordered_map<int, Entity> m_indexToEntityMap;
+
 		std::array<std::string, MAX_ENTITIES> entityNames;
 		std::array<Signature, MAX_ENTITIES> entitySignatures;
 

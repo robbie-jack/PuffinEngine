@@ -89,6 +89,9 @@
     <Filter Include="Components\Physics\Box2D">
       <UniqueIdentifier>{c43087e6-6720-43be-845e-4f9c5abd5ef5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Windows">
+      <UniqueIdentifier>{443d6f10-db6a-42db-82bc-0bdad2d9023c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -103,24 +106,6 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="src\UI\UIManager.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\UIWindow.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\UIWindowEntityProperties.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\UIWindowPerformance.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\UIWindowSceneHierarchy.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\UIWindowSettings.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\UIWindowViewport.cpp">
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp">
@@ -340,6 +325,30 @@
     <ClCompile Include="src\Physics\Box2D\Box2DContactListener.cpp">
       <Filter>Physics\Box2D</Filter>
     </ClCompile>
+    <ClCompile Include="src\UI\Windows\UIWindow.cpp">
+      <Filter>UI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Windows\UIWindowEntityProperties.cpp">
+      <Filter>UI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Windows\UIWindowPerformance.cpp">
+      <Filter>UI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Windows\UIWindowSceneHierarchy.cpp">
+      <Filter>UI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Windows\UIWindowSettings.cpp">
+      <Filter>UI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Windows\UIWindowViewport.cpp">
+      <Filter>UI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Windows\UIContentBrowser.cpp">
+      <Filter>UI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\EntityView.cpp">
+      <Filter>ECS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -367,24 +376,6 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\UI\UIManager.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\UIWindow.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\UIWindowEntityProperties.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\UIWindowPerformance.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\UIWindowSceneHierarchy.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\UIWindowSettings.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\UIWindowViewport.h">
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h">
@@ -588,6 +579,33 @@
       <Filter>Physics\Box2D</Filter>
     </ClInclude>
     <ClInclude Include="src\ECS\Entity.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\Windows\UIWindow.h">
+      <Filter>UI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\Windows\UIWindowEntityProperties.h">
+      <Filter>UI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\Windows\UIWindowPerformance.h">
+      <Filter>UI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\Windows\UIWindowSceneHierarchy.h">
+      <Filter>UI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\Windows\UIWindowSettings.h">
+      <Filter>UI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\Windows\UIWindowViewport.h">
+      <Filter>UI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\Windows\UIContentBrowser.h">
+      <Filter>UI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\EntityView.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\ComponentType.h">
       <Filter>ECS</Filter>
     </ClInclude>
   </ItemGroup>

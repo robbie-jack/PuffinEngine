@@ -41,9 +41,9 @@ namespace Puffin
 	{
 		// Managers/ECS World
 		std::shared_ptr<ECS::World> ECSWorld = std::make_shared<ECS::World>();
-		std::shared_ptr<UI::UIManager> UIManager = std::make_shared<UI::UIManager>(this, ECSWorld);
 		std::shared_ptr<Input::InputManager> InputManager = std::make_shared<Input::InputManager>();
 		std::shared_ptr<Audio::AudioManager> AudioManager = std::make_shared<Audio::AudioManager>();
+		std::shared_ptr<UI::UIManager> UIManager = std::make_shared<UI::UIManager>(this, ECSWorld, InputManager);
 
 		glfwInit();
 

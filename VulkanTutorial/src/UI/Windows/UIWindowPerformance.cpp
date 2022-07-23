@@ -1,4 +1,5 @@
-#include <UI/UIWindowPerformance.h>
+#include "UIWindowPerformance.h"
+
 #include <thread>
 
 #include <math.h>
@@ -8,7 +9,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		bool UIWindowPerformance::Draw(float dt, std::shared_ptr<Input::InputManager> InputManager)
+		void UIWindowPerformance::Draw(float dt)
 		{
 			windowName = "Performance";
 
@@ -115,8 +116,6 @@ namespace Puffin
 
 				End();
 			}
-
-			return true;
 		}
 	}
 }

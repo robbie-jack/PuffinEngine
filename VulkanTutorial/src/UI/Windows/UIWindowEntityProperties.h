@@ -3,7 +3,7 @@
 #ifndef UI_WINDOW_ENTITY_PROPERTIES_H
 #define UI_WINDOW_ENTITY_PROPERTIES_H
 
-#include <UI/UIWindow.h>
+#include "UIWindow.h"
 
 //#include <ECS/ECS.h>
 #include <imfilebrowser.h>
@@ -19,19 +19,20 @@ namespace Puffin
         {
 		public:
 
-            UIWindowEntityProperties(Engine* InEngine, std::shared_ptr<ECS::World> InWorld) : UIWindow(InEngine, InWorld)
+            UIWindowEntityProperties(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+        		: UIWindow(InEngine, InWorld, InInput)
             {
             };
 
-			bool Draw(float dt, std::shared_ptr<Input::InputManager> InputManager) override;
+            void Draw(float dt) override;
 
-            inline void SetEntity(ECS::Entity entity_) { entity = entity_; };
+            inline void SetEntity(ECS::Entity entity_) { m_entity = entity_; };
             inline void SetFileBrowser(ImGui::FileBrowser* fileDialog_) { fileDialog = fileDialog_; };
 
             inline bool HasSceneChanged() { return sceneChanged; };
 
         private:
-            ECS::Entity entity;
+            ECS::Entity m_entity = 0;
             ImGui::FileBrowser* fileDialog;
 
             void DrawTransformUI(ImGuiTreeNodeFlags flags);

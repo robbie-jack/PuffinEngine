@@ -235,6 +235,7 @@
     <ClCompile Include="src\Assets\MeshAsset.cpp" />
     <ClCompile Include="src\Assets\TextureAsset.cpp" />
     <ClCompile Include="src\Audio\AudioManager.cpp" />
+    <ClCompile Include="src\ECS\EntityView.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -253,12 +254,13 @@
     <ClCompile Include="src\Rendering\VulkanEngine.cpp" />
     <ClCompile Include="src\Scripting\AngelScriptSystem.cpp" />
     <ClCompile Include="src\UI\UIManager.cpp" />
-    <ClCompile Include="src\UI\UIWindow.cpp" />
-    <ClCompile Include="src\UI\UIWindowEntityProperties.cpp" />
-    <ClCompile Include="src\UI\UIWindowPerformance.cpp" />
-    <ClCompile Include="src\UI\UIWindowSceneHierarchy.cpp" />
-    <ClCompile Include="src\UI\UIWindowSettings.cpp" />
-    <ClCompile Include="src\UI\UIWindowViewport.cpp" />
+    <ClCompile Include="src\UI\Windows\UIContentBrowser.cpp" />
+    <ClCompile Include="src\UI\Windows\UIWindow.cpp" />
+    <ClCompile Include="src\UI\Windows\UIWindowEntityProperties.cpp" />
+    <ClCompile Include="src\UI\Windows\UIWindowPerformance.cpp" />
+    <ClCompile Include="src\UI\Windows\UIWindowSceneHierarchy.cpp" />
+    <ClCompile Include="src\UI\Windows\UIWindowSettings.cpp" />
+    <ClCompile Include="src\UI\Windows\UIWindowViewport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h" />
@@ -295,8 +297,10 @@
     <ClInclude Include="src\Components\Rendering\LightComponent.h" />
     <ClInclude Include="src\Components\Rendering\MeshComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
+    <ClInclude Include="src\ECS\ComponentType.h" />
     <ClInclude Include="src\ecs\ECS.h" />
     <ClInclude Include="src\ECS\Entity.h" />
+    <ClInclude Include="src\ECS\EntityView.h" />
     <ClInclude Include="src\ECS\EventManager.h" />
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\Engine.h" />
@@ -341,12 +345,13 @@
     <ClInclude Include="src\Types\UUID.h" />
     <ClInclude Include="src\Types\Vector.h" />
     <ClInclude Include="src\UI\UIManager.h" />
-    <ClInclude Include="src\UI\UIWindow.h" />
-    <ClInclude Include="src\UI\UIWindowEntityProperties.h" />
-    <ClInclude Include="src\UI\UIWindowPerformance.h" />
-    <ClInclude Include="src\UI\UIWindowSceneHierarchy.h" />
-    <ClInclude Include="src\UI\UIWindowSettings.h" />
-    <ClInclude Include="src\UI\UIWindowViewport.h" />
+    <ClInclude Include="src\UI\Windows\UIContentBrowser.h" />
+    <ClInclude Include="src\UI\Windows\UIWindow.h" />
+    <ClInclude Include="src\UI\Windows\UIWindowEntityProperties.h" />
+    <ClInclude Include="src\UI\Windows\UIWindowPerformance.h" />
+    <ClInclude Include="src\UI\Windows\UIWindowSceneHierarchy.h" />
+    <ClInclude Include="src\UI\Windows\UIWindowSettings.h" />
+    <ClInclude Include="src\UI\Windows\UIWindowViewport.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="content\shaders\debug.frag" />
