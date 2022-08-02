@@ -2,7 +2,6 @@
 
 #include "ECS/Entity.h"
 #include "ECS/ComponentType.h"
-#include "ECS/EntityView.h"
 #include "ECS/EventManager.h"
 #include "ECS/System.h"
 

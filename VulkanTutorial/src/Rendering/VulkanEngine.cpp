@@ -923,7 +923,8 @@ namespace Puffin
 		void VulkanEngine::InitShadowPipeline()
 		{
 			// Read Shader Code from files
-			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\shadowmap_vert.spv");
+			const fs::path shaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\shadowmap_vert.spv";
+			auto vertShaderCode = ReadFile(shaderPath.string());
 
 			// Create Shader Module from code
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
@@ -987,9 +988,12 @@ namespace Puffin
 
 		void VulkanEngine::InitDebugPipeline()
 		{
+			const fs::path vertShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\debug_vert.spv";
+			const fs::path fragShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\debug_frag.spv";
+
 			// Read Shader Code from Files
-			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\debug_vert.spv");
-			auto fragShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\debug_frag.spv");
+			auto vertShaderCode = ReadFile(vertShaderPath.string());
+			auto fragShaderCode = ReadFile(fragShaderPath.string());
 
 			// Create Shader Modules from code
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);

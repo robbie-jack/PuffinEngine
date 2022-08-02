@@ -7,6 +7,8 @@
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
 
+#include "Assets/AssetRegistry.h"
+
 // STL
 #include <iostream>
 #include <cassert>
@@ -373,9 +375,12 @@ namespace Puffin
 
 		void VKDeferredRender::SetupGPipeline()
 		{
+			const fs::path vertShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\deferred_geometry_vert.spv";
+			const fs::path fragShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\deferred_geometry_frag.spv";
+
 			// Read Shader code from Files
-			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\deferred_geometry_vert.spv");
-			auto fragShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\deferred_geometry_frag.spv");
+			auto vertShaderCode = ReadFile(vertShaderPath.string());
+			auto fragShaderCode = ReadFile(fragShaderPath.string());
 
 			// Create Shader Modules
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
@@ -525,9 +530,12 @@ namespace Puffin
 
 		void VKDeferredRender::SetupSPipeline(VkDescriptorSetLayout& shadowmapSetLayout)
 		{
+			const fs::path vertShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\deferred_shading_vert.spv";
+			const fs::path fragShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\deferred_shading_frag.spv";
+
 			// Read Shader code from Files
-			auto vertShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\deferred_shading_vert.spv");
-			auto fragShaderCode = ReadFile("C:\\Projects\\PuffinProject\\content\\shaders\\deferred_shading_frag.spv");
+			auto vertShaderCode = ReadFile(vertShaderPath.string());
+			auto fragShaderCode = ReadFile(fragShaderPath.string());
 
 			// Create Shader Modules
 			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);

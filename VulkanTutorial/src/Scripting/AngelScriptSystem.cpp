@@ -3,6 +3,8 @@
 #include "RegisterTypeHelpers.h"
 #include "Types/ComponentFlags.h"
 
+#include "Assets/AssetRegistry.h"
+
 #include <iostream>  // cout
 #include <assert.h>  // assert()
 #include <string.h>
@@ -299,7 +301,10 @@ namespace Puffin::Scripting
 		{
 			cout << "Failed to start new module" << endl;
 		}
-		r = builder.AddSectionFromFile(script.dir.string().c_str());
+
+		fs::path scriptPath = Assets::AssetRegistry::Get()->ContentRoot() / script.dir;
+
+		r = builder.AddSectionFromFile(scriptPath.string().c_str());
 		if (r < 0)
 		{
 			cout << "Failed to add script file" << endl;

@@ -93,7 +93,7 @@ namespace Puffin
 		ECSWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Load Project File
-		fs::path projectPath = fs::path("C:\\Projects\\PuffinProject\\Puffin.pproject");
+		fs::path projectPath = fs::path("D:\\Projects\\PuffinProject\\Puffin.pproject");
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
@@ -216,9 +216,6 @@ namespace Puffin
 				{
 					accumulatedTime -= timeStep;
 
-					// Update Physics System
-					physicsSystem->Update();
-
 					// FixedUpdate Systems
 					for (auto system : fixedUpdateSystems)
 					{
@@ -245,7 +242,13 @@ namespace Puffin
 			UIManager->Update();
 
 			// Rendering
-			vulkanEngine->Update();
+			std::vector<std::shared_ptr<ECS::System>> renderingSystems;
+			ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Rendering, renderingSystems);
+
+			for (auto system : renderingSystems)
+			{
+				system->Update();
+			}
 
 			if (playState == PlayState::JUST_STOPPED)
 			{

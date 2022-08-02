@@ -82,7 +82,7 @@ namespace Puffin::ECS
 		};
 
 		// Return an iterator to beginning of this view
-		Iterator Begin() const
+		Iterator begin() const
 		{
 			auto iterator = m_world->GetActiveEntities().begin();
 
@@ -95,7 +95,7 @@ namespace Puffin::ECS
 		}
 
 		// Return an iterator to end of this view
-		Iterator End() const
+		Iterator end() const
 		{
 			auto iterator = m_world->GetActiveEntities().end();
 
@@ -104,7 +104,19 @@ namespace Puffin::ECS
 
 	private:
 
-		void Init();
+		void Init()
+		{
+			assert(m_world != nullptr && "World pointer is null");
+
+			//Unpack component types into initializer list
+			ComponentType componentTypes[] = { m_world->GetComponentType<ComponentTypes>() ... };
+
+			// Iterate over component types, setting bit for each in signature
+			for (int i = 0; i < sizeof...(ComponentTypes); i++)
+			{
+				m_signature.set(componentTypes[i]);
+			}
+		}
 
 		std::shared_ptr<World> m_world = nullptr;
 		Signature m_signature;

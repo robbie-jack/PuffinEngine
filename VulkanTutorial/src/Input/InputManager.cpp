@@ -171,6 +171,8 @@ namespace Puffin
 					return action;
 				}
 			}
+
+			return InputAction();
 		}
 	}
 }

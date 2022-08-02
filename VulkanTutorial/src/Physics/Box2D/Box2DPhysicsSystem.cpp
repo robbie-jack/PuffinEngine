@@ -1,5 +1,7 @@
 #include "Box2DPhysicsSystem.h"
 
+#include "ECS/ECS.h"
+#include "ECS/EntityView.h"
 #include "Components/TransformComponent.h"
 #include "MathHelpers.h"
 
@@ -53,6 +55,7 @@ namespace Puffin::Physics
 		PublishCollisionEvents();
 
 		// Updated entity position/rotation from simulation
+				
 		for (ECS::Entity entity : entityMap["Rigidbody"])
 		{
 			auto& transform = m_world->GetComponent<TransformComponent>(entity);
@@ -62,6 +65,18 @@ namespace Puffin::Physics
 			transform.position.y = rb.body->GetPosition().y;
 			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
 		}
+
+		/*ECS::EntityView<TransformComponent, Physics::Box2DRigidbodyComponent> rigidbodyView(m_world);
+
+		for (ECS::Entity entity : rigidbodyView)
+		{
+			auto& transform = m_world->GetComponent<TransformComponent>(entity);
+			auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
+
+			transform.position.x = rb.body->GetPosition().x;
+			transform.position.y = rb.body->GetPosition().y;
+			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
+		}*/
 	}
 
 	void Box2DPhysicsSystem::Stop()

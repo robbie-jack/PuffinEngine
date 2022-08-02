@@ -218,7 +218,7 @@ namespace Puffin
 			{
 				ECS::SystemInfo info;
 
-				info.updateOrder = ECS::UpdateOrder::None;
+				info.updateOrder = ECS::UpdateOrder::Rendering;
 
 				return info;
 			}
