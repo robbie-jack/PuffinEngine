@@ -301,7 +301,6 @@
     <ClInclude Include="src\ecs\ECS.h" />
     <ClInclude Include="src\ECS\Entity.h" />
     <ClInclude Include="src\ECS\EntityID.h" />
-    <ClInclude Include="src\ECS\EntityView.h" />
     <ClInclude Include="src\ECS\EventManager.h" />
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\Engine.h" />

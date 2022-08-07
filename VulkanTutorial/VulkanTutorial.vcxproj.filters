@@ -593,9 +593,6 @@
     <ClInclude Include="src\UI\Windows\UIContentBrowser.h">
       <Filter>UI\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="src\ECS\EntityView.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
     <ClInclude Include="src\ECS\ComponentType.h">
       <Filter>ECS</Filter>
     </ClInclude>

@@ -143,8 +143,29 @@ namespace Puffin::ECS
 		return std::make_shared<Entity>(world, world->CreateEntity());
 	}
 
-	static inline std::shared_ptr<Entity> CreateEntity(std::shared_ptr<World> world, EntityID id)
+	static inline std::shared_ptr<Entity> GetEntity(std::shared_ptr<World> world, EntityID id)
 	{
+		if (!world->EntityExists(id))
+		{
+			return nullptr;
+		}
+
 		return std::make_shared<Entity>(world, id);
+	}
+
+	template<typename... ComponentTypes>
+	static inline void GetEntities(std::shared_ptr<World> world, std::vector<std::shared_ptr<Entity>>& outEntities)
+	{
+		std::vector<EntityID> entityIDs;
+
+		world->GetEntities<ComponentTypes ...>(entityIDs);
+
+		outEntities.clear();
+		outEntities.reserve(entityIDs.size());
+
+		for (const auto entityID : entityIDs)
+		{
+			outEntities.push_back(GetEntity(world, entityID));
+		}
 	}
 }

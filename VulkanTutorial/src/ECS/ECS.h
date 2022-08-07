@@ -152,6 +152,18 @@ namespace Puffin::ECS
 			activeEntityCount--;
 		}
 
+		bool EntityExists(EntityID entity) const
+		{
+			assert(entity < MAX_ENTITIES && "Entity out of range");
+
+			if (activeEntities.count(entity) == 0)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		void SetName(EntityID entity, std::string name)
 		{
 			assert(entity < MAX_ENTITIES && "Entity out of range");
@@ -227,6 +239,21 @@ namespace Puffin::ECS
 		std::set<EntityID> GetActiveEntities()
 		{
 			return activeEntities;
+		}
+
+		void GetEntities(Signature signature, std::vector<EntityID>& outEntities) const
+		{
+			outEntities.clear();
+
+			for (auto entity : activeEntities)
+			{
+				Signature entitySignature = entitySignatures[entity];
+
+				if ((entitySignature & signature) == signature)
+				{
+					outEntities.push_back(entity);
+				}
+			}
 		}
 
 		// Get count of active entities
@@ -773,11 +800,22 @@ namespace Puffin::ECS
 		}
 
 		template<typename... ComponentTypes>
-		void GetEntities() const
+		void GetEntities(std::vector<EntityID>& outEntities) const
 		{
 			if (sizeof...(ComponentTypes) != 0)
 			{
-				
+				//Unpack component types into initializer list
+				ComponentType componentTypes[] = { this->GetComponentType<ComponentTypes>() ... };
+				Signature signature;
+
+				// Iterate over component types, setting bit for each in signature
+				for (int i = 0; i < sizeof...(ComponentTypes); i++)
+				{
+					signature.set(componentTypes[i]);
+				}
+
+				outEntities.clear();
+				m_entityManager->GetEntities(signature, outEntities);
 			}
 		}
 
@@ -793,6 +831,11 @@ namespace Puffin::ECS
 			m_componentManager->EntityDestroyed(entity);
 
 			m_systemManager->EntityDestroyed(entity);
+		}
+
+		bool EntityExists(EntityID entity) const
+		{
+			return m_entityManager->EntityExists(entity);
 		}
 
 		void SetEntityName(EntityID entity, std::string name) const

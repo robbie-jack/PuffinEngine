@@ -1,7 +1,7 @@
 #include "Box2DPhysicsSystem.h"
 
 #include "ECS/ECS.h"
-#include "ECS/EntityView.h"
+#include "ECS/Entity.h"
 #include "Components/TransformComponent.h"
 #include "MathHelpers.h"
 
@@ -56,19 +56,7 @@ namespace Puffin::Physics
 
 		// Updated entity position/rotation from simulation
 
-		for (ECS::EntityID entity : entityMap["Rigidbody"])
-		{
-			auto& transform = m_world->GetComponent<TransformComponent>(entity);
-			auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
-
-			transform.position.x = rb.body->GetPosition().x;
-			transform.position.y = rb.body->GetPosition().y;
-			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
-		}
-
-		/*ECS::EntityView<TransformComponent, Physics::Box2DRigidbodyComponent> rigidbodyView(m_world);
-
-		for (ECS::Entity entity : rigidbodyView)
+		/*for (ECS::EntityID entity : entityMap["Rigidbody"])
 		{
 			auto& transform = m_world->GetComponent<TransformComponent>(entity);
 			auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
@@ -77,6 +65,19 @@ namespace Puffin::Physics
 			transform.position.y = rb.body->GetPosition().y;
 			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
 		}*/
+
+		std::vector<std::shared_ptr<ECS::Entity>> boxRigidbodyEntities;
+		ECS::GetEntities<TransformComponent, Box2DRigidbodyComponent>(m_world, boxRigidbodyEntities);
+
+		for (const auto entity : boxRigidbodyEntities)
+		{
+			auto& transform = entity->GetComponent<TransformComponent>();
+			const auto& rb = entity->GetComponent<Box2DRigidbodyComponent>();
+
+			transform.position.x = rb.body->GetPosition().x;
+			transform.position.y = rb.body->GetPosition().y;
+			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
+		}
 	}
 
 	void Box2DPhysicsSystem::Stop()
