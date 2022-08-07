@@ -1,11 +1,150 @@
 #pragma once
 
+#include "ECS/ECS.h"
+#include "ECS/EntityID.h"
+#include "ECS/ComponentType.h"
+
 #include <cstdint>
+#include <memory>
+#include <string>
 
 namespace Puffin::ECS
 {
-	typedef uint32_t Entity;
-	const Entity MAX_ENTITIES = 5000;
+	class Entity
+	{
+	public:
 
-	static const Entity INVALID_ENTITY = 0;
+		Entity(std::shared_ptr<World> world, EntityID entityID) : m_world(world), m_id(entityID) {}
+
+		~Entity() { m_world = nullptr; }
+
+		Entity(const Entity& entity)
+		{
+			m_world = entity.m_world;
+			m_id = entity.m_id;
+		}
+
+		Entity(Entity&& entity) noexcept
+		{
+			m_world = entity.m_world;
+			m_id = entity.m_id;
+		}
+
+		Entity& operator=(const Entity& entity)
+		{
+			return *this = entity;
+		}
+
+		Entity& operator=(Entity&& entity) noexcept
+		{
+			return *this = entity;
+		}
+
+		operator EntityID() const
+		{
+			return m_id;
+		}
+
+		bool operator==(EntityID id) const
+		{
+			return m_id == id;
+		}
+
+		EntityID ID() const
+		{
+			return m_id;
+		}
+
+		////////////////////////////////
+		// Entity Methods
+		////////////////////////////////
+
+		void SetName(std::string name) const
+		{
+			m_world->SetEntityName(m_id, name);
+		}
+
+		std::string GetName() const
+		{
+			return m_world->GetEntityName(m_id);
+		}
+
+		Signature GetSignature() const
+		{
+			return m_world->GetEntitySignature(m_id);
+		}
+
+		template<typename FlagT>
+		void SetFlag(bool flag) const
+		{
+			m_world->SetEntityFlag<FlagT>(m_id, flag);
+		}
+
+		template<typename FlagT>
+		bool GetFlag() const
+		{
+			return m_world->GetEntityFlag<FlagT>(m_id);
+		}
+
+		////////////////////////////////
+		// Component Methods
+		////////////////////////////////
+
+		template<typename CompT>
+		CompT& AddComponent() const
+		{
+			return m_world->AddComponent<CompT>(m_id);
+		}
+
+		template<typename CompT>
+		void AddComponent(CompT& component) const
+		{
+			m_world->AddComponent<CompT>(m_id, component);
+		}
+
+		template<typename CompT>
+		void RemoveComponent() const
+		{
+			m_world->RemoveComponent<CompT>(m_id);
+		}
+
+		template<typename CompT>
+		CompT& GetComponent() const
+		{
+			return m_world->GetComponent<CompT>(m_id);
+		}
+
+		template<typename CompT>
+		bool HasComponent() const
+		{
+			return m_world->HasComponent<CompT>(m_id);
+		}
+
+		template<typename CompT, typename FlagT>
+		bool GetComponentFlag() const
+		{
+			return m_world->GetComponentFlag<CompT, FlagT>(m_id);
+		}
+
+		template<typename CompT, typename FlagT>
+		void SetComponentFlag(bool flag) const
+		{
+			m_world->SetComponentFlag<CompT, FlagT>(m_id);
+		}
+
+	private:
+
+		std::shared_ptr<World> m_world = nullptr;
+		EntityID m_id = INVALID_ENTITY;
+	};
+
+	static inline std::shared_ptr<Entity> CreateEntity(std::shared_ptr<World> world)
+	{
+		return std::make_shared<Entity>(world, world->CreateEntity());
+	}
+
+	static inline std::shared_ptr<Entity> CreateEntity(std::shared_ptr<World> world, EntityID id)
+	{
+		return std::make_shared<Entity>(world, id);
+	}
 }

@@ -1,17 +1,8 @@
 #pragma once
 
 #include <ECS/ECS.h>
-#include <Components/TransformComponent.h>
-#include <Components/Rendering/MeshComponent.h>
-#include <Components/Rendering/LightComponent.h>
-#include <Components/Physics/RigidbodyComponent2D.h>
-#include <Components/Physics/ShapeComponents2D.h>
-#include <Components/AngelScriptComponent.h>
-
-#include "Assets/AssetRegistry.h"
 #include "nlohmann/json.hpp"
 
-#include <vector>
 #include <set>
 #include <map>
 #include <fstream>
@@ -32,7 +23,7 @@ namespace Puffin::IO
 		virtual void UpdateData() = 0;
 		virtual void Clear() = 0;
 		virtual json SaveToJson() const = 0;
-		virtual void LoadFromJson(const std::string& componentType, std::set<ECS::Entity> entities, const json& data) = 0;
+		virtual void LoadFromJson(const std::string& componentType, std::set<ECS::EntityID> entities, const json& data) = 0;
 	};
 
 	template<typename CompT>
@@ -55,7 +46,7 @@ namespace Puffin::IO
 		{
 			Clear();
 
-			const std::set<ECS::Entity> entities = m_world->GetActiveEntities();
+			const std::set<ECS::EntityID> entities = m_world->GetActiveEntities();
 
 			for (auto entity : entities)
 			{
@@ -77,9 +68,9 @@ namespace Puffin::IO
 			json data;
 
 			int i = 0;
-			for (auto& pair : m_componentMap)
+			for (auto& [fst, snd] : m_componentMap)
 			{
-				data[i] = { pair.first, pair.second };
+				data[i] = { fst, snd };
 
 				i++;
 			}
@@ -87,13 +78,13 @@ namespace Puffin::IO
 			return data;
 		}
 
-		void LoadFromJson(const std::string& componentType, std::set<ECS::Entity> entities, const json& data) override
+		void LoadFromJson(const std::string& componentType, std::set<ECS::EntityID> entities, const json& data) override
 		{
 			const int size = data[componentType].size();
 
 			for (int i = 0; i < size; i++)
 			{
-				ECS::Entity entity = data[componentType].at(i).at(0);
+				ECS::EntityID entity = data[componentType].at(i).at(0);
 
 				m_componentMap[entity] = data[componentType].at(i).at(1);
 			}
@@ -102,7 +93,7 @@ namespace Puffin::IO
 	private:
 
 		std::shared_ptr<ECS::World> m_world; // Pointer to ECS World
-		std::map<ECS::Entity, CompT> m_componentMap; // Map of entity id to component
+		std::map<ECS::EntityID, CompT> m_componentMap; // Map of entity id to component
 
 	};
 
@@ -120,7 +111,7 @@ namespace Puffin::IO
 			m_world->InitEntitySystem(m_entities);
 
 			// Set Entity Names
-			for (ECS::Entity entity : m_entities)
+			for (ECS::EntityID entity : m_entities)
 			{
 				m_world->SetEntityName(entity, m_entityNames[entity]);
 			}
@@ -138,14 +129,14 @@ namespace Puffin::IO
 
 			m_entities = m_world->GetActiveEntities();
 
-			for (ECS::Entity entity : m_entities)
+			for (ECS::EntityID entity : m_entities)
 			{
 				m_entityNames.insert({ entity, m_world->GetEntityName(entity) });
 			}
 
-			for (auto& pair : m_sceneDataArrays)
+			for (auto& [fst, snd] : m_sceneDataArrays)
 			{
-				pair.second->UpdateData();
+				snd->UpdateData();
 			}
 		}
 
@@ -182,9 +173,9 @@ namespace Puffin::IO
 			data["Entities"] = m_entities;
 			data["EntityNames"] = m_entityNames;
 
-			for (auto& pair : m_sceneDataArrays)
+			for (auto& [fst, snd] : m_sceneDataArrays)
 			{
-				data[pair.first] = pair.second->SaveToJson();
+				data[fst] = snd->SaveToJson();
 			}
 
 			std::ofstream os(m_scenePath, std::ios::out);
@@ -208,15 +199,15 @@ namespace Puffin::IO
 
 			is.close();
 
-			const std::set<ECS::Entity> entities = data["Entities"];
+			const std::set<ECS::EntityID> entities = data["Entities"];
 			m_entities = entities;
 
-			const std::unordered_map<ECS::Entity, std::string> entityNames = data["EntityNames"];
+			const std::unordered_map<ECS::EntityID, std::string> entityNames = data["EntityNames"];
 			m_entityNames = entityNames;
 
-			for (auto& pair : m_sceneDataArrays)
+			for (auto& [fst, snd] : m_sceneDataArrays)
 			{
-				pair.second->LoadFromJson(pair.first, m_entities, data);
+				snd->LoadFromJson(fst, m_entities, data);
 			}
 		}
 
@@ -241,8 +232,8 @@ namespace Puffin::IO
 		std::shared_ptr<ECS::World> m_world; // Pointer to ECS World
 		fs::path m_scenePath;
 
-		std::set<ECS::Entity> m_entities;
-		std::unordered_map<ECS::Entity, std::string> m_entityNames;
+		std::set<ECS::EntityID> m_entities;
+		std::unordered_map<ECS::EntityID, std::string> m_entityNames;
 		std::unordered_map<std::string, std::shared_ptr<ISceneDataArray>> m_sceneDataArrays; // Map of scene data arrays
 
 	};

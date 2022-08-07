@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ECS/Entity.h"
+#include "ECS/EntityID.h"
 #include "ECS/ComponentType.h"
 #include "ECS/EventManager.h"
 #include "ECS/System.h"
@@ -56,7 +56,7 @@ namespace Puffin::ECS
 				return;
 			}
 
-			for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
+			for (EntityID entity = 1; entity < MAX_ENTITIES; entity++)
 			{
 				availableEntities.push(entity);
 
@@ -72,14 +72,14 @@ namespace Puffin::ECS
 			bInitialized = true;
 		}
 
-		void Init(std::set<Entity>& entities)
+		void Init(std::set<EntityID>& entities)
 		{
 			if (bInitialized)
 			{
 				return;
 			}
 
-			for (Entity entity = 1; entity < MAX_ENTITIES; entity++)
+			for (EntityID entity = 1; entity < MAX_ENTITIES; entity++)
 			{
 				// This entity was not active in loaded scene file, insert into queue as normal
 				if (entities.find(entity) == entities.end())
@@ -116,12 +116,12 @@ namespace Puffin::ECS
 			bInitialized = false;
 		}
 
-		Entity CreateEntity()
+		EntityID CreateEntity()
 		{
 			assert(activeEntityCount < MAX_ENTITIES && "Max number of allowed entities reached");
 
 			// Get next available ID from queue
-			Entity entity = availableEntities.front();
+			EntityID entity = availableEntities.front();
 			availableEntities.pop();
 			activeEntityCount++;
 
@@ -137,7 +137,7 @@ namespace Puffin::ECS
 			return entity;
 		}
 
-		void DestroyEntity(Entity entity)
+		void DestroyEntity(EntityID entity)
 		{
 			assert(entity < MAX_ENTITIES && "Entity out of range");
 
@@ -152,7 +152,7 @@ namespace Puffin::ECS
 			activeEntityCount--;
 		}
 
-		void SetName(Entity entity, std::string name)
+		void SetName(EntityID entity, std::string name)
 		{
 			assert(entity < MAX_ENTITIES && "Entity out of range");
 
@@ -160,7 +160,7 @@ namespace Puffin::ECS
 			entityNames[entity] = name;
 		}
 
-		std::string GetName(Entity entity)
+		std::string GetName(EntityID entity)
 		{
 			assert(entity < MAX_ENTITIES && "Entity out of range");
 
@@ -168,7 +168,7 @@ namespace Puffin::ECS
 			return entityNames[entity];
 		}
 
-		void SetSignature(Entity entity, Signature signature)
+		void SetSignature(EntityID entity, Signature signature)
 		{
 			assert(entity < MAX_ENTITIES && "Entity out of range");
 
@@ -176,7 +176,7 @@ namespace Puffin::ECS
 			entitySignatures[entity] = signature;
 		}
 
-		Signature GetSignature(Entity entity)
+		Signature GetSignature(EntityID entity)
 		{
 			assert(entity < MAX_ENTITIES && "Entity out of range");
 
@@ -203,7 +203,7 @@ namespace Puffin::ECS
 		}
 
 		template<typename FlagT>
-		bool GetEntityFlag(Entity entity)
+		bool GetEntityFlag(EntityID entity)
 		{
 			const char* flagTypeName = typeid(FlagT).name();			
 
@@ -214,7 +214,7 @@ namespace Puffin::ECS
 		}
 
 		template<typename FlagT>
-		void SetEntityFlag(Entity entity, bool flag)
+		void SetEntityFlag(EntityID entity, bool flag)
 		{
 			const char* flagTypeName = typeid(FlagT).name();
 
@@ -224,7 +224,7 @@ namespace Puffin::ECS
 			flagSets[flagTypes[flagTypeName]][entity] = flag;
 		}
 
-		std::set<Entity> GetActiveEntities()
+		std::set<EntityID> GetActiveEntities()
 		{
 			return activeEntities;
 		}
@@ -237,9 +237,9 @@ namespace Puffin::ECS
 
 	private:
 
-		std::queue<Entity> availableEntities;
-		std::set<Entity> activeEntities;
-		std::unordered_map<int, Entity> m_indexToEntityMap;
+		std::queue<EntityID> availableEntities;
+		std::set<EntityID> activeEntities;
+		std::unordered_map<int, EntityID> m_indexToEntityMap;
 
 		std::array<std::string, MAX_ENTITIES> entityNames;
 		std::array<Signature, MAX_ENTITIES> entitySignatures;
@@ -267,7 +267,7 @@ namespace Puffin::ECS
 	public:
 		virtual ~IComponentArray() = default;
 		virtual void RegisterComponentFlag(FlagType flagType, bool flagDefault) = 0;
-		virtual void EntityDestroyed(Entity entity) = 0;
+		virtual void EntityDestroyed(EntityID entity) = 0;
 	};
 
 	template<typename ComponentT>
@@ -281,7 +281,7 @@ namespace Puffin::ECS
 			flagDefaults.clear();
 		}
 
-		ComponentT& AddComponent(Entity entity)
+		ComponentT& AddComponent(EntityID entity)
 		{
 			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
 
@@ -296,7 +296,7 @@ namespace Puffin::ECS
 			return componentArray[entity];
 		}
 
-		void AddComponent(Entity entity, ComponentT component)
+		void AddComponent(EntityID entity, ComponentT& component)
 		{
 			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
 
@@ -309,21 +309,21 @@ namespace Puffin::ECS
 			}
 		}
 
-		void RemoveComponent(Entity entity)
+		void RemoveComponent(EntityID entity)
 		{
 			assert(componentArray.Contains(entity) && "Removing non-existent component.");
 
 			componentArray.Erase(entity);
 		}
 
-		ComponentT& GetComponent(Entity entity)
+		ComponentT& GetComponent(EntityID entity)
 		{
 			assert(componentArray.Contains(entity) && "Retrieving non-existent component.");
 
 			return componentArray[entity];
 		}
 
-		bool HasComponent(Entity entity)
+		bool HasComponent(EntityID entity)
 		{
 			return componentArray.Contains(entity);
 		}
@@ -334,21 +334,21 @@ namespace Puffin::ECS
 			flagDefaults[flagType] = flagDefault;
 		}
 
-		bool GetComponentFlag(FlagType flagType, Entity entity)
+		bool GetComponentFlag(FlagType flagType, EntityID entity)
 		{
 			assert(componentArray.Contains(entity) && "Accessing non-existent component.");
 
 			return flagSets[flagType][entity];
 		}
 
-		void SetComponentFlag(FlagType flagType, Entity entity, bool flag)
+		void SetComponentFlag(FlagType flagType, EntityID entity, bool flag)
 		{
 			assert(componentArray.Contains(entity) && "Accessing non-existent component.");
 
 			flagSets[flagType][entity] = flag;
 		}
 
-		void EntityDestroyed(Entity entity) override
+		void EntityDestroyed(EntityID entity) override
 		{
 			if (componentArray.Contains(entity))
 			{
@@ -360,7 +360,7 @@ namespace Puffin::ECS
 	private:
 
 		// Packed array of components
-		PackedArray<ECS::Entity, ComponentT, MAX_ENTITIES> componentArray;
+		PackedArray<ECS::EntityID, ComponentT, MAX_ENTITIES> componentArray;
 
 		std::unordered_map<FlagType, std::bitset<MAX_ENTITIES>> flagSets;
 		std::unordered_map<FlagType, bool> flagDefaults; // What to have each flag type default to
@@ -419,35 +419,35 @@ namespace Puffin::ECS
 		}
 
 		template<typename ComponentT>
-		ComponentT& AddComponent(Entity entity)
+		ComponentT& AddComponent(EntityID entity)
 		{
 			// Add a component to array for this entity
 			return GetComponentArray<ComponentT>()->AddComponent(entity);
 		}
 
 		template<typename ComponentT>
-		void AddComponent(Entity entity, ComponentT component)
+		void AddComponent(EntityID entity, ComponentT& component)
 		{
 			// Add a component to array for this entity
 			GetComponentArray<ComponentT>()->AddComponent(entity, component);
 		}
 
 		template<typename ComponentT>
-		void RemoveComponent(Entity entity)
+		void RemoveComponent(EntityID entity)
 		{
 			// Remove component from array for this entity
 			GetComponentArray<ComponentT>()->RemoveComponent(entity);
 		}
 
 		template<typename ComponentT>
-		ComponentT& GetComponent(Entity entity)
+		ComponentT& GetComponent(EntityID entity)
 		{
 			// Get reference to component for this entity
 			return GetComponentArray<ComponentT>()->GetComponent(entity);
 		}
 
 		template<typename ComponentT>
-		bool HasComponent(Entity entity)
+		bool HasComponent(EntityID entity)
 		{
 			const char* typeName = typeid(ComponentT).name();
 
@@ -482,7 +482,7 @@ namespace Puffin::ECS
 		}
 
 		template<typename ComponentT, typename FlagT>
-		bool GetComponentFlag(Entity entity)
+		bool GetComponentFlag(EntityID entity)
 		{
 			const char* typeName = typeid(ComponentT).name();
 
@@ -496,7 +496,7 @@ namespace Puffin::ECS
 		}
 
 		template<typename ComponentT, typename FlagT>
-		void SetComponentFlag(Entity entity, bool flag)
+		void SetComponentFlag(EntityID entity, bool flag)
 		{
 			const char* typeName = typeid(ComponentT).name();
 
@@ -509,7 +509,7 @@ namespace Puffin::ECS
 			GetComponentArray<ComponentT>()->SetComponentFlag(flagTypes[flagTypeName], entity, flag);
 		}
 
-		void EntityDestroyed(Entity entity) const
+		void EntityDestroyed(EntityID entity) const
 		{
 			// Notify each component array that an entity has been destroyed
 			// If array has component for this entity, remove it
@@ -606,7 +606,7 @@ namespace Puffin::ECS
 			signatureMaps.at(typeName).insert({ signatureName, signature });
 				
 			// Insert New Set for this System
-			systemsMap.at(typeName)->entityMap.insert({ signatureName, std::set<Entity>() });
+			systemsMap.at(typeName)->entityMap.insert({ signatureName, std::set<EntityID>() });
 		}
 
 		template<typename SystemT>
@@ -636,7 +636,7 @@ namespace Puffin::ECS
 			}
 		}
 
-		void EntityDestroyed(Entity entity)
+		void EntityDestroyed(EntityID entity)
 		{
 			// Erase destroyed entity from all system lists
 			// Entities is a set so no check needed
@@ -654,7 +654,7 @@ namespace Puffin::ECS
 			}
 		}
 
-		void EntitySignatureChanged(Entity entity, Signature entitySignature)
+		void EntitySignatureChanged(EntityID entity, Signature entitySignature)
 		{
 			// Notify each system that entity signature has changed
 			for (auto const& systemTypePairs : systemsMap)
@@ -702,38 +702,38 @@ namespace Puffin::ECS
 	// ECS World
 	//////////////////////////////////////////////////
 
-	class World
+	class World : std::enable_shared_from_this<World>
 	{
 	public:
 
 		World()
 		{
 			// Create pointers to each manager
-			componentManager = std::make_unique<ComponentManager>();
-			entityManager = std::make_unique<EntityManager>();
-			systemManager = std::make_unique<SystemManager>();
-			eventManager = std::make_unique<EventManager>();
+			m_componentManager = std::make_unique<ComponentManager>();
+			m_entityManager = std::make_unique<EntityManager>();
+			m_systemManager = std::make_unique<SystemManager>();
+			m_eventManager = std::make_unique<EventManager>();
 
 			RegisterEntityFlag<FlagDeleted>();
 		}
 
 		~World()
 		{
-			for (auto entity : entityManager->GetActiveEntities())
+			for (auto entity : m_entityManager->GetActiveEntities())
 			{
 				DestroyEntity(entity);
 			}
 
-			entityManager = nullptr;
-			componentManager = nullptr;
-			systemManager = nullptr;
-			eventManager = nullptr;
+			m_entityManager = nullptr;
+			m_componentManager = nullptr;
+			m_systemManager = nullptr;
+			m_eventManager = nullptr;
 		}
 
 		void Update()
 		{
 			// Remove all entities marked for deletion
-			for (auto entity : entityManager->GetActiveEntities())
+			for (auto entity : m_entityManager->GetActiveEntities())
 			{
 				if (GetEntityFlag<FlagDeleted>(entity))
 				{
@@ -745,220 +745,239 @@ namespace Puffin::ECS
 		// Reset Entities and Components, Leave Systems Intact
 		void Reset()
 		{
-			for (auto entity : entityManager->GetActiveEntities())
+			for (auto entity : m_entityManager->GetActiveEntities())
 			{
 				DestroyEntity(entity);
 			}
 
-			entityManager->Cleanup();
+			m_entityManager->Cleanup();
 		}
 
+		////////////////////////////////
 		// Entity Methods
-		void InitEntitySystem()
+		////////////////////////////////
+
+		void InitEntitySystem() const
 		{
-			entityManager->Init();
+			m_entityManager->Init();
 		}
 
-		void InitEntitySystem(std::set<Entity>& entities)
+		void InitEntitySystem(std::set<EntityID>& entities) const
 		{
-			entityManager->Init(entities);
+			m_entityManager->Init(entities);
 		}
 
-		Entity CreateEntity()
+		EntityID CreateEntity() const
 		{
-			return entityManager->CreateEntity();
+			return m_entityManager->CreateEntity();
 		}
 
-		void DestroyEntity(Entity entity)
+		template<typename... ComponentTypes>
+		void GetEntities() const
 		{
-			entityManager->DestroyEntity(entity);
-
-			componentManager->EntityDestroyed(entity);
-
-			systemManager->EntityDestroyed(entity);
+			if (sizeof...(ComponentTypes) != 0)
+			{
+				
+			}
 		}
 
-		void SetEntityName(Entity entity, std::string name)
+		std::set<EntityID> GetActiveEntities() const
 		{
-			entityManager->SetName(entity, name);
+			return m_entityManager->GetActiveEntities();
 		}
 
-		std::string GetEntityName(Entity entity) const
+		void DestroyEntity(EntityID entity) const
 		{
-			return entityManager->GetName(entity);
+			m_entityManager->DestroyEntity(entity);
+
+			m_componentManager->EntityDestroyed(entity);
+
+			m_systemManager->EntityDestroyed(entity);
 		}
 
-		Signature GetEntitySignature(Entity entity)
+		void SetEntityName(EntityID entity, std::string name) const
 		{
-			return entityManager->GetSignature(entity);
+			m_entityManager->SetName(entity, name);
+		}
+
+		std::string GetEntityName(EntityID entity) const
+		{
+			return m_entityManager->GetName(entity);
+		}
+
+		Signature GetEntitySignature(EntityID entity) const
+		{
+			return m_entityManager->GetSignature(entity);
 		}
 
 		template<typename FlagT>
-		void RegisterEntityFlag(bool defaultFlag = false)
+		void RegisterEntityFlag(bool defaultFlag = false) const
 		{
-			entityManager->RegisterEntityFlag<FlagT>(defaultFlag);
+			m_entityManager->RegisterEntityFlag<FlagT>(defaultFlag);
 		}
 
 		template<typename FlagT>
-		bool GetEntityFlag(Entity entity)
+		bool GetEntityFlag(EntityID entity) const
 		{
-			return entityManager->GetEntityFlag<FlagT>(entity);
+			return m_entityManager->GetEntityFlag<FlagT>(entity);
 		}
 
 		template<typename FlagT>
-		void SetEntityFlag(Entity entity, bool flag)
+		void SetEntityFlag(EntityID entity, bool flag) const
 		{
-			entityManager->SetEntityFlag<FlagT>(entity, flag);
+			m_entityManager->SetEntityFlag<FlagT>(entity, flag);
 		}
 
-		std::set<Entity> GetActiveEntities()
-		{
-			return entityManager->GetActiveEntities();
-		}
-
+		////////////////////////////////
 		// Component Methods
+		////////////////////////////////
+		
 		template<typename ComponentT>
-		void RegisterComponent()
+		void RegisterComponent() const
 		{
-			componentManager->RegisterComponent<ComponentT>();
+			m_componentManager->RegisterComponent<ComponentT>();
 		}
 
 		template<typename ComponentT>
-		ComponentT& AddComponent(Entity entity)
+		ComponentT& AddComponent(EntityID entity)
 		{
-			ComponentT& comp = componentManager->AddComponent<ComponentT>(entity);
+			ComponentT& comp = m_componentManager->AddComponent<ComponentT>(entity);
 
-			auto signature = entityManager->GetSignature(entity);
-			signature.set(componentManager->GetComponentType<ComponentT>(), true);
-			entityManager->SetSignature(entity, signature);
+			auto signature = m_entityManager->GetSignature(entity);
+			signature.set(m_componentManager->GetComponentType<ComponentT>(), true);
+			m_entityManager->SetSignature(entity, signature);
 
-			systemManager->EntitySignatureChanged(entity, signature);
+			m_systemManager->EntitySignatureChanged(entity, signature);
 
 			return comp;
 		}
 
 		template<typename ComponentT>
-		void AddComponent(Entity entity, ComponentT component)
+		void AddComponent(EntityID entity, ComponentT& component)
 		{
-			componentManager->AddComponent<ComponentT>(entity, component);
+			m_componentManager->AddComponent<ComponentT>(entity, component);
 
-			auto signature = entityManager->GetSignature(entity);
-			signature.set(componentManager->GetComponentType<ComponentT>(), true);
-			entityManager->SetSignature(entity, signature);
+			auto signature = m_entityManager->GetSignature(entity);
+			signature.set(m_componentManager->GetComponentType<ComponentT>(), true);
+			m_entityManager->SetSignature(entity, signature);
 
-			systemManager->EntitySignatureChanged(entity, signature);
+			m_systemManager->EntitySignatureChanged(entity, signature);
 		}
 
 		template<typename ComponentT>
-		void RemoveComponent(Entity entity)
+		void RemoveComponent(EntityID entity) const
 		{
-			componentManager->RemoveComponent<ComponentT>(entity);
+			m_componentManager->RemoveComponent<ComponentT>(entity);
 
-			auto signature = entityManager->GetSignature(entity);
-			signature.set(componentManager->GetComponentType<ComponentT>(), false);
-			entityManager->SetSignature(entity, signature);
+			auto signature = m_entityManager->GetSignature(entity);
+			signature.set(m_componentManager->GetComponentType<ComponentT>(), false);
+			m_entityManager->SetSignature(entity, signature);
 
-			systemManager->EntitySignatureChanged(entity, signature);
+			m_systemManager->EntitySignatureChanged(entity, signature);
 		}
 
 		template<typename ComponentT>
-		ComponentT& GetComponent(Entity entity)
+		ComponentT& GetComponent(EntityID entity)
 		{
-			return componentManager->GetComponent<ComponentT>(entity);
+			return m_componentManager->GetComponent<ComponentT>(entity);
 		}
 
 		template<typename ComponentT>
-		ComponentType GetComponentType()
+		ComponentType GetComponentType() const
 		{
-			return componentManager->GetComponentType<ComponentT>();
+			return m_componentManager->GetComponentType<ComponentT>();
 		}
 
 		template<typename ComponentT>
-		bool HasComponent(Entity entity)
+		bool HasComponent(EntityID entity) const
 		{
-			return componentManager->HasComponent<ComponentT>(entity);
+			return m_componentManager->HasComponent<ComponentT>(entity);
 		}
 
 		template<typename FlagT>
-		void RegisterComponentFlag(bool defaultFlag = false)
+		void RegisterComponentFlag(bool defaultFlag = false) const
 		{
-			componentManager->RegisterComponentFlag<FlagT>(defaultFlag);
+			m_componentManager->RegisterComponentFlag<FlagT>(defaultFlag);
 		}
 
 		template<typename ComponentT, typename FlagT>
-		bool GetComponentFlag(Entity entity)
+		bool GetComponentFlag(EntityID entity) const
 		{
-			return componentManager->GetComponentFlag<ComponentT, FlagT>(entity);
+			return m_componentManager->GetComponentFlag<ComponentT, FlagT>(entity);
 		}
 
 		template<typename ComponentT, typename FlagT>
-		void SetComponentFlag(Entity entity, bool flag)
+		void SetComponentFlag(EntityID entity, bool flag) const
 		{
-			componentManager->SetComponentFlag<ComponentT, FlagT>(entity, flag);
+			m_componentManager->SetComponentFlag<ComponentT, FlagT>(entity, flag);
 		}
 
+		////////////////////////////////
 		// System Methods
+		////////////////////////////////
 
 		template<typename SystemT>
 		std::shared_ptr<SystemT> RegisterSystem()
 		{
 			std::shared_ptr<World> worldPtr{ this };
-			return systemManager->RegisterSystem<SystemT>(worldPtr);
+			return m_systemManager->RegisterSystem<SystemT>(worldPtr);
 		}
 
 		template<typename SystemT>
 		std::shared_ptr<SystemT> GetSystem()
 		{
-			return systemManager->GetSystem<SystemT>();
+			return m_systemManager->GetSystem<SystemT>();
 		}
 
 		const std::vector<std::shared_ptr<System>>& GetAllSystems()
 		{
-			return systemManager->GetAllSystems();
+			return m_systemManager->GetAllSystems();
 		}
 
-		void GetSystemsWithUpdateOrder(UpdateOrder updateOrder, std::vector<std::shared_ptr<System>>& outSystems)
+		void GetSystemsWithUpdateOrder(UpdateOrder updateOrder, std::vector<std::shared_ptr<System>>& outSystems) const
 		{
-			systemManager->GetSystemsWithUpdateOrder(updateOrder, outSystems);
+			m_systemManager->GetSystemsWithUpdateOrder(updateOrder, outSystems);
 		}
 
 		template<typename SystemT>
-		void SetSystemSignature(std::string_view signatureName, Signature signature)
+		void SetSystemSignature(std::string_view signatureName, Signature signature) const
 		{
-			systemManager->SetSignature<SystemT>(signatureName, signature);
+			m_systemManager->SetSignature<SystemT>(signatureName, signature);
 
 			// Update System's local entity list with any new entities
-			for (Entity entity : entityManager->GetActiveEntities())
+			for (EntityID entity : m_entityManager->GetActiveEntities())
 			{
-				systemManager->EntitySignatureChanged(entity, entityManager->GetSignature(entity));
+				m_systemManager->EntitySignatureChanged(entity, m_entityManager->GetSignature(entity));
 			}
 		}
 
+		////////////////////////////////
 		// Event Manager Methods
+		////////////////////////////////
 
 		template<typename EventT>
-		void RegisterEvent()
+		void RegisterEvent() const
 		{
-			eventManager->RegisterEvent<EventT>();
+			m_eventManager->RegisterEvent<EventT>();
 		}
 
 		template<typename EventT>
 		void PublishEvent(EventT event)
 		{
-			eventManager->Publish<EventT>(event);
+			m_eventManager->Publish<EventT>(event);
 		}
 
 		template<typename EventT>
 		void SubscribeToEvent(std::shared_ptr<RingBuffer<EventT>> buffer)
 		{
-			eventManager->Subscribe(buffer);
+			m_eventManager->Subscribe(buffer);
 		}
 
 	private:
 
-		std::unique_ptr<ComponentManager> componentManager;
-		std::unique_ptr<EntityManager> entityManager;
-		std::unique_ptr<SystemManager> systemManager;
-		std::unique_ptr<EventManager> eventManager;
+		std::unique_ptr<ComponentManager> m_componentManager;
+		std::unique_ptr<EntityManager> m_entityManager;
+		std::unique_ptr<SystemManager> m_systemManager;
+		std::unique_ptr<EventManager> m_eventManager;
 	};
 }

@@ -55,8 +55,8 @@ namespace Puffin::Physics
 		PublishCollisionEvents();
 
 		// Updated entity position/rotation from simulation
-				
-		for (ECS::Entity entity : entityMap["Rigidbody"])
+
+		for (ECS::EntityID entity : entityMap["Rigidbody"])
 		{
 			auto& transform = m_world->GetComponent<TransformComponent>(entity);
 			auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
@@ -82,19 +82,19 @@ namespace Puffin::Physics
 	void Box2DPhysicsSystem::Stop()
 	{
 		// Cleanup Rigidbody Components
-		for (ECS::Entity entity : entityMap["Rigidbody"])
+		for (ECS::EntityID entity : entityMap["Rigidbody"])
 		{
 			CleanupRigidbodyComponent(entity);
 		}
 
 		// Cleanup Box Components
-		for (ECS::Entity entity : entityMap["Box"])
+		for (ECS::EntityID entity : entityMap["Box"])
 		{
 			CleanupBoxComponent(entity);
 		}
 
 		// Cleanup Box Components
-		for (ECS::Entity entity : entityMap["Circle"])
+		for (ECS::EntityID entity : entityMap["Circle"])
 		{
 			CleanupCircleComponent(entity);
 		}
@@ -126,7 +126,7 @@ namespace Puffin::Physics
 	void Box2DPhysicsSystem::UpdateComponents()
 	{
 		// Update Rigidbody
-		for (ECS::Entity entity : entityMap["Rigidbody"])
+		for (ECS::EntityID entity : entityMap["Rigidbody"])
 		{
 			if (m_world->GetComponentFlag<Box2DRigidbodyComponent, FlagDirty>(entity))
 			{
@@ -145,7 +145,7 @@ namespace Puffin::Physics
 		}
 				
 		// Update Box Components
-		for (ECS::Entity entity : entityMap["Box"])
+		for (ECS::EntityID entity : entityMap["Box"])
 		{
 			auto& box = m_world->GetComponent<Box2DBoxComponent>(entity);
 
@@ -186,7 +186,7 @@ namespace Puffin::Physics
 		}
 
 		// Update Circle Components
-		for (ECS::Entity entity : entityMap["Circle"])
+		for (ECS::EntityID entity : entityMap["Circle"])
 		{
 			auto& circle = m_world->GetComponent<Box2DCircleComponent>(entity);
 
@@ -229,7 +229,7 @@ namespace Puffin::Physics
 		m_updateShapePointers = false;
 	}
 
-	void Box2DPhysicsSystem::InitRigidbodyComponent(ECS::Entity entity)
+	void Box2DPhysicsSystem::InitRigidbodyComponent(ECS::EntityID entity)
 	{
 		const auto transform = m_world->GetComponent<TransformComponent>(entity);
 		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
@@ -247,7 +247,7 @@ namespace Puffin::Physics
 		}
 	}
 
-	void Box2DPhysicsSystem::InitBoxForRigidbody(ECS::Entity entity)
+	void Box2DPhysicsSystem::InitBoxForRigidbody(ECS::EntityID entity)
 	{
 		auto& box = m_world->GetComponent<Box2DBoxComponent>(entity);
 		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
@@ -264,7 +264,7 @@ namespace Puffin::Physics
 		box.shape = static_cast<b2PolygonShape*>(rb.fixture->GetShape());
 	}
 
-	void Box2DPhysicsSystem::InitCircleForRigidbody(ECS::Entity entity)
+	void Box2DPhysicsSystem::InitCircleForRigidbody(ECS::EntityID entity)
 	{
 		auto& circle = m_world->GetComponent<Box2DCircleComponent>(entity);
 		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
@@ -285,7 +285,7 @@ namespace Puffin::Physics
 		circle.shape = static_cast<b2CircleShape*>(rb.fixture->GetShape());
 	}
 
-	void Box2DPhysicsSystem::InitBoxComponent(ECS::Entity entity)
+	void Box2DPhysicsSystem::InitBoxComponent(ECS::EntityID entity)
 	{
 		auto& box = m_world->GetComponent<Box2DBoxComponent>(entity);
 		auto& transform = m_world->GetComponent<TransformComponent>(entity);
@@ -300,7 +300,7 @@ namespace Puffin::Physics
 		}
 	}
 
-	void Box2DPhysicsSystem::InitCircleComponent(ECS::Entity entity)
+	void Box2DPhysicsSystem::InitCircleComponent(ECS::EntityID entity)
 	{
 		auto& circle = m_world->GetComponent<Box2DCircleComponent>(entity);
 		auto& transform = m_world->GetComponent<TransformComponent>(entity);
@@ -316,14 +316,14 @@ namespace Puffin::Physics
 		}
 	}
 
-	void Box2DPhysicsSystem::CleanupRigidbodyComponent(ECS::Entity entity)
+	void Box2DPhysicsSystem::CleanupRigidbodyComponent(ECS::EntityID entity)
 	{
 		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
 
 		rb.body = nullptr;
 	}
 
-	void Box2DPhysicsSystem::CleanupBoxComponent(ECS::Entity entity)
+	void Box2DPhysicsSystem::CleanupBoxComponent(ECS::EntityID entity)
 	{
 		auto& box = m_world->GetComponent<Box2DBoxComponent>(entity);
 
@@ -340,7 +340,7 @@ namespace Puffin::Physics
 		}
 	}
 
-	void Box2DPhysicsSystem::CleanupCircleComponent(ECS::Entity entity)
+	void Box2DPhysicsSystem::CleanupCircleComponent(ECS::EntityID entity)
 	{
 		auto& circle = m_world->GetComponent<Box2DCircleComponent>(entity);
 

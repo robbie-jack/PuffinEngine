@@ -608,6 +608,9 @@
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h">
       <Filter>Scripting\Addons</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\EntityID.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="content\shaders\debug.frag">

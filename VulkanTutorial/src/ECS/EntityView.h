@@ -35,11 +35,11 @@ namespace Puffin::ECS
 		{
 		public:
 
-			Iterator(std::shared_ptr<World> world, std::set<Entity>::iterator iterator, Signature signature, bool allEntities)
+			Iterator(std::shared_ptr<World> world, std::set<EntityID>::iterator iterator, Signature signature, bool allEntities)
 				: m_world(world), m_entitiesIterator(iterator), m_signature(signature), m_allEntities(allEntities) {}
 
 			// Return entity that we're currently at
-			Entity operator*() const
+			EntityID operator*() const
 			{
 				return *m_entitiesIterator;
 			}
@@ -75,7 +75,7 @@ namespace Puffin::ECS
 			}
 
 			std::shared_ptr<World> m_world = nullptr;
-			std::set<Entity>::iterator m_entitiesIterator;
+			std::set<EntityID>::iterator m_entitiesIterator;
 
 			Signature m_signature;
 			bool m_allEntities = false;

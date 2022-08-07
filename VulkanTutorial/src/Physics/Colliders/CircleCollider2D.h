@@ -9,7 +9,7 @@ namespace Puffin::Physics::Collision2D
 {
 	struct CircleCollider2D : public Collider2D
 	{
-		CircleCollider2D(ECS::Entity entity, std::shared_ptr<CircleShape2D> shape) : Collider2D(entity), shape(shape) {}
+		CircleCollider2D(ECS::EntityID entity, std::shared_ptr<CircleShape2D> shape) : Collider2D(entity), shape(shape) {}
 
 		~CircleCollider2D()
 		{

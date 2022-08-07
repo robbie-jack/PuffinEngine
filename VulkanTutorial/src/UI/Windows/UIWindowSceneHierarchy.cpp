@@ -3,6 +3,7 @@
 #include "Components/TransformComponent.h"
 
 #include "ECS/ECS.h"
+#include "ECS/Entity.h"
 
 namespace Puffin
 {
@@ -34,7 +35,7 @@ namespace Puffin
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					for (ECS::Entity entity : m_world->GetActiveEntities())
+					for (ECS::EntityID entity : m_world->GetActiveEntities())
 					{
 						ImGuiTreeNodeFlags tree_flags = base_flags;
 						bool has_child = false;
@@ -94,11 +95,11 @@ namespace Puffin
 				{
 					if (ImGui::Selectable("Empty"))
 					{
-						ECS::Entity entity = m_world->CreateEntity();
+						const auto entity = ECS::CreateEntity(m_world);
 
-						m_world->AddComponent<TransformComponent>(entity);
+						entity->AddComponent<TransformComponent>();
 
-						selectedEntity = entity;
+						selectedEntity = entity->ID();
 						entityChanged = true;
 					}
 

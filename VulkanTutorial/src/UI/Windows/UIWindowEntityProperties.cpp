@@ -5,6 +5,7 @@
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Physics/Box2D/Box2DRigidbodyComponent.h"
 #include "Components/Physics/Box2D/Box2DShapeComponents.h"
+#include "Components/AngelScriptComponent.h"
 
 #include "ECS/ECS.h"
 

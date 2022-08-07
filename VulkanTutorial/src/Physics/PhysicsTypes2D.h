@@ -26,7 +26,7 @@ namespace Puffin::Physics
 				seperation = 0.0f;
 			}
 
-			ECS::Entity a, b; // Entities which collided
+			ECS::EntityID a, b; // Entities which collided
 
 			Vector2f pointOnA, pointOnB;
 			Vector2f normal;

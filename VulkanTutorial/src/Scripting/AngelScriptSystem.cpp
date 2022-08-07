@@ -86,7 +86,7 @@ namespace Puffin::Scripting
 		}
 
 		// Compile Scripts/Instantiate Objects
-		for (ECS::Entity entity : entityMap["Script"])
+		for (ECS::EntityID entity : entityMap["Script"])
 		{
 			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 
@@ -99,7 +99,7 @@ namespace Puffin::Scripting
 	void AngelScriptSystem::Start()
 	{
 		// Execute Start Methods
-		for (ECS::Entity entity : entityMap["Script"])
+		for (ECS::EntityID entity : entityMap["Script"])
 		{
 			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 
@@ -119,7 +119,7 @@ namespace Puffin::Scripting
 		ProcessEvents();
 		
 		// Initialize/Cleanup marked components
-		for (ECS::Entity entity : entityMap["Script"])
+		for (ECS::EntityID entity : entityMap["Script"])
 		{
 			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 
@@ -152,7 +152,7 @@ namespace Puffin::Scripting
 	void AngelScriptSystem::Stop()
 	{
 		// Execute Script Stop Methods
-		for (ECS::Entity entity : entityMap["Script"])
+		for (ECS::EntityID entity : entityMap["Script"])
 		{
 			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 
@@ -205,7 +205,7 @@ namespace Puffin::Scripting
 			m_ctx->Release();
 		}
 
-		for (ECS::Entity entity : entityMap["Script"])
+		for (ECS::EntityID entity : entityMap["Script"])
 		{
 			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
 			CleanupScriptComponent(script);
@@ -274,7 +274,7 @@ namespace Puffin::Scripting
 		// without having to recompile all the scripts.
 	}
 
-	void AngelScriptSystem::InitializeScript(ECS::Entity entity, AngelScriptComponent& script)
+	void AngelScriptSystem::InitializeScript(ECS::EntityID entity, AngelScriptComponent& script)
 	{
 		CompileScript(script);
 		UpdateScriptMethods(script);
@@ -392,7 +392,7 @@ namespace Puffin::Scripting
 		}
 	}
 
-	void AngelScriptSystem::InstantiateScriptObj(ECS::Entity entity, AngelScriptComponent& script)
+	void AngelScriptSystem::InstantiateScriptObj(ECS::EntityID entity, AngelScriptComponent& script)
 	{
 		if (script.type != 0 && script.type->GetFactoryCount() > 0)
 		{

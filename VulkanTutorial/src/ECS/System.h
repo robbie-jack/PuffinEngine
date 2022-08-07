@@ -29,9 +29,9 @@ namespace Puffin
 		//////////////////////////////////////////////////
 
 		class World;
-		typedef uint32_t Entity;
+		typedef uint32_t EntityID;
 
-		typedef std::unordered_map<std::string_view, std::set<Entity>> EntityMap;
+		typedef std::unordered_map<std::string_view, std::set<EntityID>> EntityMap;
 
 		class System
 		{

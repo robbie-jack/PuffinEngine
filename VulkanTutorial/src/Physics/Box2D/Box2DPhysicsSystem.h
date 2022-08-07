@@ -42,8 +42,8 @@ namespace Puffin::Physics
 		std::unique_ptr<b2World> m_physicsWorld = nullptr;
 		std::unique_ptr<Box2DContactListener> m_contactListener = nullptr;
 
-		PackedVector<ECS::Entity, b2CircleShape> m_circleShapes; // Packed Vector of circle shapes which are not attached to a rigidbody
-		PackedVector<ECS::Entity, b2PolygonShape> m_polygonShapes; // Packed Vector of polygon shapes which are not attached to a rigidbody
+		PackedVector<ECS::EntityID, b2CircleShape> m_circleShapes; // Packed Vector of circle shapes which are not attached to a rigidbody
+		PackedVector<ECS::EntityID, b2PolygonShape> m_polygonShapes; // Packed Vector of polygon shapes which are not attached to a rigidbody
 
 		// Update shape components to point at correct shape in packed arrays
 		bool m_updateShapePointers = false;
@@ -51,15 +51,15 @@ namespace Puffin::Physics
 		void PublishCollisionEvents() const;
 		void UpdateComponents();
 
-		void InitRigidbodyComponent(ECS::Entity entity);
-		void InitBoxForRigidbody(ECS::Entity entity);
-		void InitCircleForRigidbody(ECS::Entity entity);
+		void InitRigidbodyComponent(ECS::EntityID entity);
+		void InitBoxForRigidbody(ECS::EntityID entity);
+		void InitCircleForRigidbody(ECS::EntityID entity);
 
-		void InitBoxComponent(ECS::Entity entity);
-		void InitCircleComponent(ECS::Entity entity);
+		void InitBoxComponent(ECS::EntityID entity);
+		void InitCircleComponent(ECS::EntityID entity);
 
-		void CleanupRigidbodyComponent(ECS::Entity entity);
-		void CleanupBoxComponent(ECS::Entity entity);
-		void CleanupCircleComponent(ECS::Entity entity);
+		void CleanupRigidbodyComponent(ECS::EntityID entity);
+		void CleanupBoxComponent(ECS::EntityID entity);
+		void CleanupCircleComponent(ECS::EntityID entity);
 	};
 }

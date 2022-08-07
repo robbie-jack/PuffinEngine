@@ -6,8 +6,8 @@ namespace Puffin::Physics
 {
 	struct CollisionEvent
 	{
-		ECS::Entity entityA;
-		ECS::Entity entityB;
+		ECS::EntityID entityA;
+		ECS::EntityID entityB;
 	};
 
 	typedef CollisionEvent CollisionBeginEvent;

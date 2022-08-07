@@ -865,7 +865,7 @@ namespace Puffin
 			textureImageInfo.sampler = depthSampler;
 			textureImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			for (ECS::Entity entity : entityMap["Mesh"])
+			for (ECS::EntityID entity : entityMap["Mesh"])
 			{
 				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
 
@@ -1069,20 +1069,20 @@ namespace Puffin
 		void VulkanEngine::InitScene()
 		{
 			// Initialize Lights
-			for (ECS::Entity entity : entityMap["Light"])
+			for (ECS::EntityID entity : entityMap["Light"])
 			{
 				InitLight(entity);
 			}
 
 			// Initialize Meshes
-			for (ECS::Entity entity : entityMap["Mesh"])
+			for (ECS::EntityID entity : entityMap["Mesh"])
 			{
 				InitMesh(entity);
 			}
 
 		}
 
-		void VulkanEngine::InitMesh(ECS::Entity entity)
+		void VulkanEngine::InitMesh(ECS::EntityID entity)
 		{
 			auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
@@ -1100,7 +1100,7 @@ namespace Puffin
 			m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.insert(entity);
 		}
 
-		void VulkanEngine::InitLight(ECS::Entity entity)
+		void VulkanEngine::InitLight(ECS::EntityID entity)
 		{
 			auto& light = m_world->GetComponent<LightComponent>(entity);
 
@@ -1332,7 +1332,7 @@ namespace Puffin
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 
-		void VulkanEngine::CleanupMesh(ECS::Entity entity)
+		void VulkanEngine::CleanupMesh(ECS::EntityID entity)
 		{
 			auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
@@ -1352,7 +1352,7 @@ namespace Puffin
 			}
 		}
 
-		void VulkanEngine::CleanupLight(ECS::Entity entity)
+		void VulkanEngine::CleanupLight(ECS::EntityID entity)
 		{
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
@@ -1451,7 +1451,7 @@ namespace Puffin
 			{
 				std::vector<VkDescriptorImageInfo> imageInfos;
 
-				for (ECS::Entity entity : entityMap["Light"])
+				for (ECS::EntityID entity : entityMap["Light"])
 				{
 					LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
@@ -1607,7 +1607,7 @@ namespace Puffin
 			ProcessEvents();
 
 			// Initialize/Cleanup marked components
-			for (ECS::Entity entity : entityMap["Mesh"])
+			for (ECS::EntityID entity : entityMap["Mesh"])
 			{
 				// Initialize
 				if (m_world->GetComponentFlag<MeshComponent, FlagDirty>(entity))
@@ -1625,7 +1625,7 @@ namespace Puffin
 				}
 			}
 
-			for (ECS::Entity entity : entityMap["Light"])
+			for (ECS::EntityID entity : entityMap["Light"])
 			{
 				// Initialize
 				if (m_world->GetComponentFlag<LightComponent, FlagDirty>(entity))
@@ -1664,12 +1664,12 @@ namespace Puffin
 
 		void VulkanEngine::Stop()
 		{
-			for (ECS::Entity entity : entityMap["Mesh"])
+			for (ECS::EntityID entity : entityMap["Mesh"])
 			{
 				CleanupMesh(entity);
 			}
 
-			for (ECS::Entity entity : entityMap["Light"])
+			for (ECS::EntityID entity : entityMap["Light"])
 			{
 				CleanupLight(entity);
 			}
@@ -2199,7 +2199,7 @@ namespace Puffin
 			);
 
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
-			for (ECS::Entity entity : entityMap["Light"])
+			for (ECS::EntityID entity : entityMap["Light"])
 			{
 				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 
@@ -2434,7 +2434,7 @@ namespace Puffin
 			int lightIndex = 0;
 
 			// For Each Shadowcasting Light Source
-			for (ECS::Entity entity : entityMap["Light"])
+			for (ECS::EntityID entity : entityMap["Light"])
 			{
 				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
 

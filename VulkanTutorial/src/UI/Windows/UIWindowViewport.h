@@ -29,11 +29,11 @@ namespace Puffin
 
 			inline ImVec2 GetViewportSize() { return viewportSize; }
 
-			inline void SetEntity(ECS::Entity entity_) { entity = entity_; }
+			inline void SetEntity(ECS::EntityID entity_) { entity = entity_; }
 
 		private:
 
-			ECS::Entity entity;
+			ECS::EntityID entity;
 
 			ImVec2 viewportSize;
 

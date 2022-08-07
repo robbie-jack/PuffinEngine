@@ -26,7 +26,7 @@ namespace Puffin
 
 		void PhysicsSystem2D::PreStart()
 		{
-			for (ECS::Entity entity : entityMap["BoxCollision"])
+			for (ECS::EntityID entity : entityMap["BoxCollision"])
 			{
 				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
 
@@ -38,7 +38,7 @@ namespace Puffin
 				}
 			}
 
-			for (ECS::Entity entity : entityMap["CircleCollision"])
+			for (ECS::EntityID entity : entityMap["CircleCollision"])
 			{
 				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
 
@@ -65,14 +65,14 @@ namespace Puffin
 			m_collisionPairs.clear();
 			m_collisionContacts.clear();
 
-			for (ECS::Entity entity : entityMap["BoxCollision"])
+			for (ECS::EntityID entity : entityMap["BoxCollision"])
 			{
 				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
 
 				CleanupBox2D(entity, box);
 			}
 
-			for (ECS::Entity entity : entityMap["CircleCollision"])
+			for (ECS::EntityID entity : entityMap["CircleCollision"])
 			{
 				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
 
@@ -84,7 +84,7 @@ namespace Puffin
 		// Private Functions
 		//--------------------------------------------------
 
-		void PhysicsSystem2D::InitCircle2D(ECS::Entity entity, CircleComponent2D& circle)
+		void PhysicsSystem2D::InitCircle2D(ECS::EntityID entity, CircleComponent2D& circle)
 		{
 			// If there is no shape for this entity in vector
 			if (!m_circleShapes.Contains(entity))
@@ -114,7 +114,7 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::InitBox2D(ECS::Entity entity, BoxComponent2D& box)
+		void PhysicsSystem2D::InitBox2D(ECS::EntityID entity, BoxComponent2D& box)
 		{
 			// If there is no shape for this entity in vector
 			if (!m_circleShapes.Contains(entity))
@@ -146,7 +146,7 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::CleanupCircle2D(ECS::Entity entity, CircleComponent2D& circle)
+		void PhysicsSystem2D::CleanupCircle2D(ECS::EntityID entity, CircleComponent2D& circle)
 		{
 			if (m_circleShapes.Contains(entity))
 			{
@@ -160,7 +160,7 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::CleanupBox2D(ECS::Entity entity, BoxComponent2D& box)
+		void PhysicsSystem2D::CleanupBox2D(ECS::EntityID entity, BoxComponent2D& box)
 		{
 			if (m_boxShapes.Contains(entity))
 			{
@@ -176,7 +176,7 @@ namespace Puffin
 
 		void PhysicsSystem2D::UpdateComponents()
 		{
-			for (ECS::Entity entity : entityMap["Rigidbody"])
+			for (ECS::EntityID entity : entityMap["Rigidbody"])
 			{
 				if (m_world->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>(entity))
 				{
@@ -187,7 +187,7 @@ namespace Puffin
 				}
 			}
 
-			for (ECS::Entity entity : entityMap["BoxCollision"])
+			for (ECS::EntityID entity : entityMap["BoxCollision"])
 			{
 				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
 				auto& transform = m_world->GetComponent<TransformComponent>(entity);
@@ -207,7 +207,7 @@ namespace Puffin
 				}
 			}
 
-			for (ECS::Entity entity : entityMap["CircleCollision"])
+			for (ECS::EntityID entity : entityMap["CircleCollision"])
 			{
 				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
 				auto& transform = m_world->GetComponent<TransformComponent>(entity);
@@ -253,7 +253,7 @@ namespace Puffin
 
 		void PhysicsSystem2D::UpdateDynamics()
 		{
-			for (ECS::Entity entity : entityMap["Rigidbody"])
+			for (ECS::EntityID entity : entityMap["Rigidbody"])
 			{
 				TransformComponent& transform = m_world->GetComponent<TransformComponent>(entity);
 				RigidbodyComponent2D& rigidbody = m_world->GetComponent<RigidbodyComponent2D>(entity);

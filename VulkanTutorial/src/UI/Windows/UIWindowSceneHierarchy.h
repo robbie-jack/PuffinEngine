@@ -21,10 +21,10 @@ namespace Puffin
 			void Draw(float dt) override;
 
 			inline bool HasEntityChanged() { return entityChanged; };
-			inline ECS::Entity GetEntity() { return selectedEntity; };
+			inline ECS::EntityID GetEntity() { return selectedEntity; };
 
 		private:
-			ECS::Entity selectedEntity;
+			ECS::EntityID selectedEntity;
 			bool entityChanged;
 		};
 	}

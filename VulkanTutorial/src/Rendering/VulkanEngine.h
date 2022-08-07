@@ -103,8 +103,8 @@ namespace Puffin
 
 			// Shadowmap Rendering
 			VkDescriptorSet shadowmapDescriptor;
-			std::unordered_map<ECS::Entity, AllocatedImage> shadowmapImages;
-			std::unordered_map<ECS::Entity, VkFramebuffer> shadowmapFramebuffers;
+			std::unordered_map<ECS::EntityID, AllocatedImage> shadowmapImages;
+			std::unordered_map<ECS::EntityID, VkFramebuffer> shadowmapFramebuffers;
 
 			// Scene Data
 			VkDescriptorSet geometryDescriptor;
@@ -363,8 +363,8 @@ namespace Puffin
 			void RecreateOffscreen();
 
 			// Init Component Functions
-			void InitMesh(ECS::Entity entity);
-			void InitLight(ECS::Entity entity);
+			void InitMesh(ECS::EntityID entity);
+			void InitLight(ECS::EntityID entity);
 			void InitCamera(CameraComponent& camera);
 
 			void InitAlbedoTexture(UUID uuid);
@@ -377,8 +377,8 @@ namespace Puffin
 			void CopyIndicesToBuffer(const std::vector<uint32_t>& indices, AllocatedBuffer indexBuffer, uint32_t copyOffset = 0);
 
 			// Component Cleanup Functions
-			void CleanupMesh(ECS::Entity entity);
-			void CleanupLight(ECS::Entity entity);
+			void CleanupMesh(ECS::EntityID entity);
+			void CleanupLight(ECS::EntityID entity);
 
 			// Update Functions
 			void ProcessEvents();

@@ -16,7 +16,7 @@ namespace Puffin
 	namespace ECS
 	{
 		class World;
-		typedef uint32_t Entity;
+		typedef uint32_t EntityID;
 	}
 	
 	class Engine;

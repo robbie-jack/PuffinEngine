@@ -11,7 +11,7 @@ namespace Puffin::Physics::Collision2D
 
 	struct Collider2D
 	{
-		Collider2D(ECS::Entity inEntity) : entity(inEntity) {}
+		Collider2D(ECS::EntityID inEntity) : entity(inEntity) {}
 
 		virtual ~Collider2D() = default;
 
@@ -24,7 +24,7 @@ namespace Puffin::Physics::Collision2D
 		virtual bool TestCollision(const Collision2D::BoxCollider2D* collider, Collision2D::Contact& outContact) const = 0;
 		virtual bool TestCollision(const Collision2D::CircleCollider2D* collider, Collision2D::Contact& outContact) const = 0;
 
-		ECS::Entity entity = ECS::INVALID_ENTITY;
+		ECS::EntityID entity = ECS::INVALID_ENTITY;
 		TransformComponent transform;
 	};
 }

@@ -27,13 +27,13 @@ namespace Puffin
 	{
 		struct ScriptCallback
 		{
-			ECS::Entity entity;
+			ECS::EntityID entity;
 			asIScriptFunction* func = 0;
 			void* object = 0;
 			asITypeInfo* objectType = 0;
 		};
 
-		typedef std::map<ECS::Entity, ScriptCallback> ScriptCallbackMap;
+		typedef std::map<ECS::EntityID, ScriptCallback> ScriptCallbackMap;
 
 		class AngelScriptSystem : public ECS::System
 		{
@@ -73,7 +73,7 @@ namespace Puffin
 
 			std::shared_ptr<Audio::AudioManager> m_audioManager;
 
-			ECS::Entity m_currentEntityID = 0; // Entity ID for currently executing script
+			ECS::EntityID m_currentEntityID = 0; // Entity ID for currently executing script
 
 			// Event Buffers
 			std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents = nullptr;;
@@ -92,10 +92,10 @@ namespace Puffin
 
 			void ConfigureEngine();
 
-			void InitializeScript(ECS::Entity entity, AngelScriptComponent& script);
+			void InitializeScript(ECS::EntityID entity, AngelScriptComponent& script);
 			void CompileScript(AngelScriptComponent& script);
 			void UpdateScriptMethods(AngelScriptComponent& script);
-			void InstantiateScriptObj(ECS::Entity entity, AngelScriptComponent& script);
+			void InstantiateScriptObj(ECS::EntityID entity, AngelScriptComponent& script);
 
 			void CleanupScriptComponent(AngelScriptComponent& script);
 

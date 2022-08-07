@@ -1,6 +1,7 @@
 #include "Engine.h"
 
 #include "ECS/ECS.h"
+#include "ECS/Entity.h"
 
 #include "Rendering/VulkanEngine.h"
 //#include "Physics/PhysicsSystem2D.h"
@@ -358,12 +359,17 @@ namespace Puffin
 		// Initialize EntityManager with Existing Entities
 		world->InitEntitySystem();
 
+		const int numEntities = 7;
+		std::vector<std::shared_ptr<ECS::Entity>> entities;
+		entities.reserve(numEntities);
+
 		// Add Default Scene Components to ECS
-		for (int i = 0; i < 7; i++)
+		for (int i = 0; i < numEntities; i++)
 		{
-			ECS::Entity entity = world->CreateEntity();
-			world->AddComponent<TransformComponent>(entity);
-			world->AddComponent<Rendering::MeshComponent>(entity);
+			const auto entity = ECS::CreateEntity(world);
+			entity->AddComponent<TransformComponent>();
+			entity->AddComponent<Rendering::MeshComponent>();
+			entities.push_back(entity);
 		}
 
 		world->SetEntityName(1, "House");
@@ -374,65 +380,65 @@ namespace Puffin
 		world->SetEntityName(6, "Plane");
 		world->SetEntityName(7, "Light 2");
 
-		world->AddComponent<Rendering::LightComponent>(4);
-		world->AddComponent<Rendering::LightComponent>(7);
+		entities[3]->AddComponent<Rendering::LightComponent>();
+		entities[6]->AddComponent<Rendering::LightComponent>();
 
 		// Initialize Components with default values
-		world->GetComponent<TransformComponent>(1) = { Vector3f(2.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
-		world->GetComponent<TransformComponent>(2) = { Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
-		world->GetComponent<TransformComponent>(3) = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
-		world->GetComponent<TransformComponent>(4) = { Vector3f(-10.0f, 0.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
-		world->GetComponent<TransformComponent>(5) = { Vector3f(-1.75f, -5.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
-		world->GetComponent<TransformComponent>(6) = { Vector3f(0.0f, -10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(10.0f, 1.0f, 10.0f) };
-		world->GetComponent<TransformComponent>(7) = { Vector3f(5.0f, 0.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
+		entities[0]->GetComponent<TransformComponent>() = {Vector3f(2.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f)};
+		entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
+		entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
+		entities[3]->GetComponent<TransformComponent>() = { Vector3f(-10.0f, 0.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
+		entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
+		entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(10.0f, 1.0f, 10.0f) };
+		entities[6]->GetComponent<TransformComponent>() = { Vector3f(5.0f, 0.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
 
-		world->GetComponent<Rendering::MeshComponent>(1).meshAssetID = meshId1;
-		world->GetComponent<Rendering::MeshComponent>(1).textureAssetID = textureId1;
+		entities[0]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId1;
+		entities[0]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId1;
 
-		world->GetComponent<Rendering::MeshComponent>(2).meshAssetID = meshId2;
-		world->GetComponent<Rendering::MeshComponent>(2).textureAssetID = textureId2;
+		entities[1]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId2;
+		entities[1]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		world->GetComponent<Rendering::MeshComponent>(3).meshAssetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(3).textureAssetID = textureId2;
-		world->GetComponent<Rendering::MeshComponent>(4).meshAssetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(4).textureAssetID = textureId2;
-		world->GetComponent<Rendering::MeshComponent>(5).meshAssetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(5).textureAssetID = textureId2;
-		world->GetComponent<Rendering::MeshComponent>(6).meshAssetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(6).textureAssetID = textureId2;
-		world->GetComponent<Rendering::MeshComponent>(7).meshAssetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(7).textureAssetID = textureId2;
+		entities[2]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		entities[2]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		entities[3]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		entities[3]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		entities[4]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		entities[4]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		entities[5]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		entities[5]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		entities[6]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		entities[6]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		world->GetComponent<Rendering::LightComponent>(4).direction = glm::vec3(1.0f, -1.0f, 0.0f);
-		world->GetComponent<Rendering::LightComponent>(4).ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-		world->GetComponent<Rendering::LightComponent>(4).diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		world->GetComponent<Rendering::LightComponent>(4).innerCutoffAngle = 12.5f;
-		world->GetComponent<Rendering::LightComponent>(4).outerCutoffAngle = 17.5f;
-		world->GetComponent<Rendering::LightComponent>(4).constantAttenuation = 1.0f;
-		world->GetComponent<Rendering::LightComponent>(4).linearAttenuation = 0.09f;
-		world->GetComponent<Rendering::LightComponent>(4).quadraticAttenuation = 0.032f;
-		world->GetComponent<Rendering::LightComponent>(4).specularStrength = 0.5f;
-		world->GetComponent<Rendering::LightComponent>(4).shininess = 16;
-		world->GetComponent<Rendering::LightComponent>(4).type = Rendering::LightType::SPOT;
-		world->GetComponent<Rendering::LightComponent>(4).bFlagCastShadows = true;
+		entities[3]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(1.0f, -1.0f, 0.0f);
+		entities[3]->GetComponent<Rendering::LightComponent>().ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+		entities[3]->GetComponent<Rendering::LightComponent>().diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		entities[3]->GetComponent<Rendering::LightComponent>().innerCutoffAngle = 12.5f;
+		entities[3]->GetComponent<Rendering::LightComponent>().outerCutoffAngle = 17.5f;
+		entities[3]->GetComponent<Rendering::LightComponent>().constantAttenuation = 1.0f;
+		entities[3]->GetComponent<Rendering::LightComponent>().linearAttenuation = 0.09f;
+		entities[3]->GetComponent<Rendering::LightComponent>().quadraticAttenuation = 0.032f;
+		entities[3]->GetComponent<Rendering::LightComponent>().specularStrength = 0.5f;
+		entities[3]->GetComponent<Rendering::LightComponent>().shininess = 16;
+		entities[3]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::SPOT;
+		entities[3]->GetComponent<Rendering::LightComponent>().bFlagCastShadows = true;
 
-		world->GetComponent<Rendering::LightComponent>(7).direction = glm::vec3(-1.0f, -1.0f, 0.0f);
-		world->GetComponent<Rendering::LightComponent>(7).ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-		world->GetComponent<Rendering::LightComponent>(7).diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);
-		world->GetComponent<Rendering::LightComponent>(7).innerCutoffAngle = 12.5f;
-		world->GetComponent<Rendering::LightComponent>(7).outerCutoffAngle = 17.5f;
-		world->GetComponent<Rendering::LightComponent>(7).constantAttenuation = 1.0f;
-		world->GetComponent<Rendering::LightComponent>(7).linearAttenuation = 0.09f;
-		world->GetComponent<Rendering::LightComponent>(7).quadraticAttenuation = 0.032f;
-		world->GetComponent<Rendering::LightComponent>(7).specularStrength = 0.5f;
-		world->GetComponent<Rendering::LightComponent>(7).shininess = 16;
-		world->GetComponent<Rendering::LightComponent>(7).type = Rendering::LightType::SPOT;
-		world->GetComponent<Rendering::LightComponent>(7).bFlagCastShadows = false;
+		entities[6]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
+		entities[6]->GetComponent<Rendering::LightComponent>().ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+		entities[6]->GetComponent<Rendering::LightComponent>().diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);
+		entities[6]->GetComponent<Rendering::LightComponent>().innerCutoffAngle = 12.5f;
+		entities[6]->GetComponent<Rendering::LightComponent>().outerCutoffAngle = 17.5f;
+		entities[6]->GetComponent<Rendering::LightComponent>().constantAttenuation = 1.0f;
+		entities[6]->GetComponent<Rendering::LightComponent>().linearAttenuation = 0.09f;
+		entities[6]->GetComponent<Rendering::LightComponent>().quadraticAttenuation = 0.032f;
+		entities[6]->GetComponent<Rendering::LightComponent>().specularStrength = 0.5f;
+		entities[6]->GetComponent<Rendering::LightComponent>().shininess = 16;
+		entities[6]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::SPOT;
+		entities[6]->GetComponent<Rendering::LightComponent>().bFlagCastShadows = false;
 
 		Scripting::AngelScriptComponent script;
 		script.name = "ExampleScript";
 		script.dir = contentRootPath / "scripts\\Example.pscript";
-		world->AddComponent(1, script);
+		entities[0]->AddComponent(script);
 	}
 
 	void Engine::PhysicsScene(std::shared_ptr<ECS::World> world)
@@ -463,83 +469,84 @@ namespace Puffin
 		world->InitEntitySystem();
 
 		// Create Light Entity
-		const ECS::Entity lightEntity = world->CreateEntity();
+		const auto lightEntity = ECS::CreateEntity(world);
 
-		world->SetEntityName(lightEntity, "Light");
+		lightEntity->SetName("Light");
 
-		world->AddComponent<TransformComponent>(lightEntity);
-		auto light = world->AddComponent<Rendering::LightComponent>(lightEntity);
+		lightEntity->AddComponent<TransformComponent>();
+		lightEntity->AddComponent<Rendering::LightComponent>();
 
-		world->GetComponent<TransformComponent>(lightEntity) = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		lightEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
-		world->GetComponent<Rendering::LightComponent>(lightEntity).direction = glm::vec3(1.0f, -1.0f, 0.0f);
-		world->GetComponent<Rendering::LightComponent>(lightEntity).ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
-		world->GetComponent<Rendering::LightComponent>(lightEntity).diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		world->GetComponent<Rendering::LightComponent>(lightEntity).innerCutoffAngle = 12.5f;
-		world->GetComponent<Rendering::LightComponent>(lightEntity).outerCutoffAngle = 17.5f;
-		world->GetComponent<Rendering::LightComponent>(lightEntity).constantAttenuation = 1.0f;
-		world->GetComponent<Rendering::LightComponent>(lightEntity).linearAttenuation = 0.09f;
-		world->GetComponent<Rendering::LightComponent>(lightEntity).quadraticAttenuation = 0.032f;
-		world->GetComponent<Rendering::LightComponent>(lightEntity).specularStrength = 0.5f;
-		world->GetComponent<Rendering::LightComponent>(lightEntity).shininess = 16;
-		world->GetComponent<Rendering::LightComponent>(lightEntity).type = Rendering::LightType::DIRECTIONAL;
-		world->GetComponent<Rendering::LightComponent>(lightEntity).bFlagCastShadows = false;
+		auto& lightComp = lightEntity->GetComponent<Rendering::LightComponent>();
+		lightComp.direction = glm::vec3(1.0f, -1.0f, 0.0f);
+		lightComp.ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
+		lightComp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		lightComp.innerCutoffAngle = 12.5f;
+		lightComp.outerCutoffAngle = 17.5f;
+		lightComp.constantAttenuation = 1.0f;
+		lightComp.linearAttenuation = 0.09f;
+		lightComp.quadraticAttenuation = 0.032f;
+		lightComp.specularStrength = 0.5f;
+		lightComp.shininess = 16;
+		lightComp.type = Rendering::LightType::DIRECTIONAL;
+		lightComp.bFlagCastShadows = false;
 
 		// Create Box Entity
-		const ECS::Entity boxEntity = world->CreateEntity();
+		const auto boxEntity = ECS::CreateEntity(world);
 
-		world->SetEntityName(boxEntity, "Box");
+		boxEntity->SetName("Box");
 
-		world->AddComponent<TransformComponent>(boxEntity);
-		world->AddComponent<Rendering::MeshComponent>(boxEntity);
-		world->AddComponent<Physics::Box2DRigidbodyComponent>(boxEntity);
-		world->AddComponent<Physics::Box2DBoxComponent>(boxEntity);
-		world->AddComponent<Scripting::AngelScriptComponent>(boxEntity);
+		boxEntity->AddComponent<TransformComponent>();
+		boxEntity->AddComponent<Rendering::MeshComponent>();
+		boxEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
+		boxEntity->AddComponent<Physics::Box2DBoxComponent>();
+		boxEntity->AddComponent<Scripting::AngelScriptComponent>();
 
-		world->GetComponent<TransformComponent>(boxEntity) = { Vector3f(-2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		boxEntity->GetComponent<TransformComponent>() = { Vector3f(-2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(boxEntity).meshAssetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(boxEntity).textureAssetID = textureId2;
+		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		world->GetComponent<Physics::Box2DRigidbodyComponent>(boxEntity).bodyDef.type = b2_dynamicBody;
+		boxEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
 
-		world->GetComponent<Scripting::AngelScriptComponent>(boxEntity).name = "PhysicsScript";
-		world->GetComponent<Scripting::AngelScriptComponent>(boxEntity).dir = contentRootPath / "scripts\\Physics.pscript";
+		boxEntity->GetComponent<Scripting::AngelScriptComponent>().name = "PhysicsScript";
+		boxEntity->GetComponent<Scripting::AngelScriptComponent>().dir = contentRootPath / "scripts\\Physics.pscript";
 
 		// Create Circle Entity
-		const ECS::Entity circleEntity = world->CreateEntity();
+		const auto circleEntity = ECS::CreateEntity(world);
 
-		world->SetEntityName(circleEntity, "Circle");
+		circleEntity->SetName("Circle");
 
-		world->AddComponent<TransformComponent>(circleEntity);
-		world->AddComponent<Rendering::MeshComponent>(circleEntity);
-		world->AddComponent<Physics::Box2DRigidbodyComponent>(circleEntity);
-		world->AddComponent<Physics::Box2DCircleComponent>(circleEntity);
+		circleEntity->AddComponent<TransformComponent>();
+		circleEntity->AddComponent<Rendering::MeshComponent>();
+		circleEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
+		circleEntity->AddComponent<Physics::Box2DCircleComponent>();
 
-		world->GetComponent<TransformComponent>(circleEntity) = { Vector3f(2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		circleEntity->GetComponent<TransformComponent>() = { Vector3f(2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(circleEntity).meshAssetID = meshId2;
-		world->GetComponent<Rendering::MeshComponent>(circleEntity).textureAssetID = textureId2;
+		circleEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId2;
+		circleEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		world->GetComponent<Physics::Box2DRigidbodyComponent>(circleEntity).bodyDef.type = b2_dynamicBody;
+		circleEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
 
 		// Create Floor Entity
-		const ECS::Entity floorEntity = world->CreateEntity();
+		const auto floorEntity = ECS::CreateEntity(world);
 
-		world->SetEntityName(floorEntity, "Floor");
+		floorEntity->SetName("Floor");
 
-		world->AddComponent<TransformComponent>(floorEntity);
-		world->AddComponent<Rendering::MeshComponent>(floorEntity);
-		world->AddComponent<Physics::Box2DRigidbodyComponent>(floorEntity);
-		world->AddComponent<Physics::Box2DBoxComponent>(floorEntity);
+		floorEntity->AddComponent<TransformComponent>();
+		floorEntity->AddComponent<Rendering::MeshComponent>();
+		floorEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
+		floorEntity->AddComponent<Physics::Box2DBoxComponent>();
 
-		world->GetComponent<TransformComponent>(floorEntity) = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
+		floorEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
 
-		world->GetComponent<Rendering::MeshComponent>(floorEntity).meshAssetID = meshId3;
-		world->GetComponent<Rendering::MeshComponent>(floorEntity).textureAssetID = textureId2;
+		floorEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		world->GetComponent<Physics::Box2DRigidbodyComponent>(floorEntity).bodyDef.type = b2_staticBody;
-		world->GetComponent<Physics::Box2DBoxComponent>(floorEntity).data.halfExtent = Vector2f(5.0f, 1.0f);
+		floorEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_staticBody;
+		floorEntity->GetComponent<Physics::Box2DBoxComponent>().data.halfExtent = Vector2f(5.0f, 1.0f);
 	}
 
 	void Engine::Play()

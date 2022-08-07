@@ -74,7 +74,7 @@ namespace Puffin
 			uint32_t vertexOffset = 0; // Offset into merged Vertex Buffer
 			uint32_t indexOffset = 0; // Offset into merged index buffer
 
-			std::set<ECS::Entity> entities; // Entities using this mesh
+			std::set<ECS::EntityID> entities; // Entities using this mesh
 		};
 
 		struct TextureRenderData
@@ -83,7 +83,7 @@ namespace Puffin
 
 			Texture texture;
 
-			std::set<ECS::Entity> entities; // Entities using this texture
+			std::set<ECS::EntityID> entities; // Entities using this texture
 		};
 
 		// Merged Vertex and Index buffers for all the objects in the scene

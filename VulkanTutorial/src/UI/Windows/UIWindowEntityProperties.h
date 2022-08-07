@@ -26,13 +26,13 @@ namespace Puffin
 
             void Draw(float dt) override;
 
-            inline void SetEntity(ECS::Entity entity_) { m_entity = entity_; };
+            inline void SetEntity(ECS::EntityID entity_) { m_entity = entity_; };
             inline void SetFileBrowser(ImGui::FileBrowser* fileDialog_) { fileDialog = fileDialog_; };
 
             inline bool HasSceneChanged() { return sceneChanged; };
 
         private:
-            ECS::Entity m_entity = 0;
+            ECS::EntityID m_entity = 0;
             ImGui::FileBrowser* fileDialog;
 
             void DrawTransformUI(ImGuiTreeNodeFlags flags);

@@ -23,7 +23,7 @@ namespace Puffin
 	namespace ECS
 	{
 		class World;
-		typedef uint32_t Entity;
+		typedef uint32_t EntityID;
 	}
 
 	class Engine;
@@ -59,7 +59,7 @@ namespace Puffin
 
 			Engine* m_engine;
 			std::shared_ptr<ECS::World> m_world;
-			ECS::Entity m_entity;
+			ECS::EntityID m_entity;
 
 			std::vector<std::shared_ptr<UIWindow>> m_windows;
 
