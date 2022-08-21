@@ -2,6 +2,8 @@
 
 #include "irrKlang\irrKlang.h"
 
+#include "Engine/Subsystem.hpp"
+
 #include "Types/UUID.h"
 #include "Types/RingBuffer.h"
 
@@ -28,18 +30,25 @@ namespace Puffin::Audio
 		bool restart = false;
 	};
 
-	class AudioManager
+	class AudioManager : public Core::Subsystem
 	{
 	public:
 
-		AudioManager();
-		~AudioManager();
+		AudioManager() = default;
+		~AudioManager() override = default;
 
-		void Update();
+		bool ShouldUpdate() const override
+		{
+			return true;
+		}
+
+		void Init() override;
+		void Update() override;
+		void Destroy() override;
 
 		// Play Sound, If this sound is already active, but paused, start playing it again
 		void PlaySoundEffect(UUID soundId, float volume = 1.0f, bool looping = false, bool restart = false);
-		UUID PlaySoundEffect(const std::string& soundId, float volume = 1.0f, bool looping = false, bool restart = false);
+		UUID PlaySoundEffect(const std::string& soundPath, float volume = 1.0f, bool looping = false, bool restart = false);
 		void StopSoundEffect(UUID soundId);
 		void PauseSoundEffect(UUID soundId);
 
@@ -49,7 +58,7 @@ namespace Puffin::Audio
 
 	private:
 
-		irrklang::ISoundEngine* m_engine;
+		irrklang::ISoundEngine* m_soundEngine = nullptr;
 
 		//std::vector<irrklang::ISoundSource*> soundSources; // Loaded Sound Sources
 		std::unordered_map<UUID, irrklang::ISound*> m_activeSounds; // Active Sound Effects

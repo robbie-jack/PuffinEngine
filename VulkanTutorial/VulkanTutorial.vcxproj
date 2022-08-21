@@ -237,6 +237,7 @@
     <ClCompile Include="src\Assets\TextureAsset.cpp" />
     <ClCompile Include="src\Audio\AudioManager.cpp" />
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Engine\Application.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
@@ -304,6 +305,8 @@
     <ClInclude Include="src\ECS\EventManager.h" />
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\Engine\Application.hpp" />
+    <ClInclude Include="src\Engine\Subsystem.hpp" />
     <ClInclude Include="src\Input\InputEvent.h" />
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\ManipulationGizmo.h" />

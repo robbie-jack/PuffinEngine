@@ -24,8 +24,8 @@ namespace Puffin
 
 		struct ProjectSettings
 		{
-			float mouseSensitivity;
-			float cameraFov;
+			float mouseSensitivity = 0.05f;
+			float cameraFov = 60.f;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectSettings, mouseSensitivity, cameraFov)
 		};

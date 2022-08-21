@@ -92,6 +92,9 @@
     <Filter Include="UI\Windows">
       <UniqueIdentifier>{443d6f10-db6a-42db-82bc-0bdad2d9023c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{89dfe535-7021-4f6c-bf16-5cfff2b0b7b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
@@ -348,6 +351,9 @@
     </ClCompile>
     <ClCompile Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring_utils.cpp">
       <Filter>Scripting\Addons</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Application.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -607,6 +613,12 @@
     </ClInclude>
     <ClInclude Include="src\ECS\EntityID.h">
       <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Application.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Subsystem.hpp">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

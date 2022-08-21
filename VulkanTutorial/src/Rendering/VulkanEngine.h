@@ -1,11 +1,8 @@
 #pragma once
 
-#ifndef VULKAN_ENGINE_H
-#define VULKAN_ENGINE_H
-
 // GLFW and GLM
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <glfw/glfw3.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -446,5 +443,3 @@ namespace Puffin
 		};
 	}
 }
-
-#endif // VULKAN_ENGINE_H

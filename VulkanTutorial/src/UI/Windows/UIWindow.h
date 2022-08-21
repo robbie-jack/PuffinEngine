@@ -18,8 +18,11 @@ namespace Puffin
 		class World;
 		typedef uint32_t EntityID;
 	}
-	
-	class Engine;
+
+	namespace Core
+	{
+		class Engine;
+	}
 
 	namespace UI
 	{
@@ -27,7 +30,7 @@ namespace Puffin
 		{
 		public:
 
-			UIWindow(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+			UIWindow(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
 				: m_engine(InEngine), m_world(InWorld), m_inputManager(InInput)
 			{
 				show = true;
@@ -67,7 +70,7 @@ namespace Puffin
 			// Vulkan Texture Sampler for Rendering Textures
 			VkSampler textureSampler;
 
-			Engine* m_engine;
+			Core::Engine* m_engine;
 			std::shared_ptr<ECS::World> m_world;
 			std::shared_ptr<Input::InputManager> m_inputManager;
 		};

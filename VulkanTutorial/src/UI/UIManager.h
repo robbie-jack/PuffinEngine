@@ -26,7 +26,10 @@ namespace Puffin
 		typedef uint32_t EntityID;
 	}
 
-	class Engine;
+	namespace Core
+	{
+		class Engine;
+	}
 
 	namespace UI
 	{
@@ -41,7 +44,7 @@ namespace Puffin
 		{
 		public:
 
-			UIManager(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput);
+			UIManager(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput);
 			~UIManager();
 
 			void Cleanup();
@@ -57,7 +60,7 @@ namespace Puffin
 			bool saveScene, loadScene;
 			ImportAssetUI importAssetUI;
 
-			Engine* m_engine;
+			Core::Engine* m_engine;
 			std::shared_ptr<ECS::World> m_world;
 			ECS::EntityID m_entity;
 

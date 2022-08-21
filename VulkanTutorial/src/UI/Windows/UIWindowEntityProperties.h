@@ -19,7 +19,7 @@ namespace Puffin
         {
 		public:
 
-            UIWindowEntityProperties(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+            UIWindowEntityProperties(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
         		: UIWindow(InEngine, InWorld, InInput)
             {
             };

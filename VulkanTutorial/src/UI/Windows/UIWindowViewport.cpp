@@ -55,8 +55,8 @@ namespace Puffin
 					{
 						m_engine->Play();
 
-						PlayState playState = m_engine->GetPlayState();
-						if (playState == PlayState::PAUSED || playState == PlayState::STOPPED)
+						Core::PlayState playState = m_engine->GetPlayState();
+						if (playState == Core::PlayState::PAUSED || playState == Core::PlayState::STOPPED)
 						{
 							playButtonLabel = "Play";
 						}

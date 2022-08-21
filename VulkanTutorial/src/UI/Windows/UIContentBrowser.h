@@ -8,7 +8,7 @@ namespace Puffin::UI
 	{
 	public:
 			
-		UIContentBrowser(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+		UIContentBrowser(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
 			: UIWindow(InEngine, InWorld, InInput)
 		{
 			windowName = "Content Browser";

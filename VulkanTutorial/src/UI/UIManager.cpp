@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 namespace Puffin::UI
 {
-	UIManager::UIManager(Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+	UIManager::UIManager(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -152,7 +152,7 @@ namespace Puffin::UI
 		}
 
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing
-		if (windowEntityProperties->HasSceneChanged() && m_engine->GetPlayState() == PlayState::STOPPED)
+		if (windowEntityProperties->HasSceneChanged() && m_engine->GetPlayState() == Core::PlayState::STOPPED)
 		{
 			m_engine->GetScene()->UpdateData();
 		}

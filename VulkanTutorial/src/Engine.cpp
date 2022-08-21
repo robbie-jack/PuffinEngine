@@ -33,35 +33,42 @@
 #include <unistd.h>
 #endif
 
-namespace Puffin
+namespace Puffin::Core
 {
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
+
+	void Engine::Init()
+	{
+		glfwInit();
+
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+		m_window = glfwCreateWindow(1280, 720, "Puffin Engine", m_monitor, nullptr);
+
+
+	}
 
 	void Engine::MainLoop()
 	{
 		// Managers/ECS World
 		std::shared_ptr<ECS::World> ECSWorld = std::make_shared<ECS::World>();
 		std::shared_ptr<Input::InputManager> InputManager = std::make_shared<Input::InputManager>();
-		std::shared_ptr<Audio::AudioManager> AudioManager = std::make_shared<Audio::AudioManager>();
+		//std::shared_ptr<Audio::AudioManager> AudioManager = std::make_shared<Audio::AudioManager>();
 		std::shared_ptr<UI::UIManager> UIManager = std::make_shared<UI::UIManager>(this, ECSWorld, InputManager);
 
-		glfwInit();
+		// Subsystems
+		m_audioManager = RegisterSubsystem<Audio::AudioManager>();
 
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-		GLFWmonitor* monitor = nullptr;
-		GLFWwindow* window = glfwCreateWindow(1280, 720, "Puffin Engine", monitor, NULL);
-
-		InputManager->Init(window, ECSWorld);
+		InputManager->Init(m_window, ECSWorld);
 
 		// Systems
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
 		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = ECSWorld->RegisterSystem<Physics::Box2DPhysicsSystem>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
 
-		scriptingSystem->SetAudioManager(AudioManager);
+		scriptingSystem->SetAudioManager(m_audioManager);
 
 		// Register Components to ECS World
 		ECSWorld->RegisterComponent<TransformComponent>();
@@ -140,7 +147,7 @@ namespace Puffin
 		playState = PlayState::STOPPED;
 
 		// Initialize Systems
-		vulkanEngine->Init(window, UIManager, InputManager);
+		vulkanEngine->Init(m_window, UIManager, InputManager);
 
 		for (auto system : ECSWorld->GetAllSystems())
 		{
@@ -192,14 +199,14 @@ namespace Puffin
 
 			if (playState == PlayState::JUST_PAUSED)
 			{
-				AudioManager->PauseAllSounds();
+				m_audioManager->PauseAllSounds();
 
 				playState = PlayState::PAUSED;
 			}
 
 			if (playState == PlayState::JUST_UNPAUSED)
 			{
-				AudioManager->PlayAllSounds();
+				m_audioManager->PlayAllSounds();
 
 				playState = PlayState::PLAYING;
 			}
@@ -270,15 +277,15 @@ namespace Puffin
 					system->PreStart();
 				}
 
-				AudioManager->StopAllSounds();
+				m_audioManager->StopAllSounds();
 
 				playState = PlayState::STOPPED;
 			}
 
 			// Audio
-			AudioManager->Update();
+			m_audioManager->Update();
 
-			if (glfwWindowShouldClose(window))
+			if (glfwWindowShouldClose(m_window))
 			{
 				running = false;
 			}
@@ -300,12 +307,24 @@ namespace Puffin
 		//physicsSystem = nullptr;
 		vulkanEngine = nullptr;
 
-		AudioManager = nullptr;
+		m_audioManager = nullptr;
 
 		ECSWorld = nullptr;
 
-		glfwDestroyWindow(window);
+		glfwDestroyWindow(m_window);
 		glfwTerminate();
+	}
+
+	bool Engine::Update()
+	{
+		
+
+		return true;
+	}
+
+	void Engine::Destroy()
+	{
+
 	}
 
 	void Engine::AddDefaultAssets()

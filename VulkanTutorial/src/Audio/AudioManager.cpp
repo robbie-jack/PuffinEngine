@@ -9,27 +9,27 @@ using namespace irrklang;
 
 namespace Puffin::Audio
 {
-	AudioManager::AudioManager()
+	void AudioManager::Init()
 	{
-		m_engine = createIrrKlangDevice();
-	}
 
-	AudioManager::~AudioManager()
-	{
-		StopAllSounds();
-
-		if (m_engine)
-		{
-			m_engine->drop();
-			m_engine = 0;
-		}
 	}
 
 	void AudioManager::Update()
 	{
-		if (m_engine)
+		if (m_soundEngine)
 		{
 			ProcessSoundEvents();
+		}
+	}
+
+	void AudioManager::Destroy()
+	{
+		StopAllSounds();
+
+		if (m_soundEngine)
+		{
+			m_soundEngine->drop();
+			m_soundEngine = nullptr;
 		}
 	}
 
@@ -154,7 +154,7 @@ namespace Puffin::Audio
 		{
 			const std::string& soundPath = (Assets::AssetRegistry::Get()->ContentRoot() / soundAsset->RelativePath()).string();
 		
-			ISound* sound = m_engine->play2D(soundPath.c_str(), soundEvent.looping, false, true);
+			ISound* sound = m_soundEngine->play2D(soundPath.c_str(), soundEvent.looping, false, true);
 			if (sound)
 			{
 				m_activeSounds[soundEvent.id] = sound;
