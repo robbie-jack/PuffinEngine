@@ -2,7 +2,7 @@
 
 #include <Rendering\DebugDraw.h>
 #include <Components\TransformComponent.h>
-#include <ECS/ECS.h>
+#include "Engine/EventSubsystem.h"
 
 namespace Puffin
 {
@@ -15,37 +15,37 @@ namespace Puffin
 
 	extern GizmoMode gizmoMode;
 
-	inline void DrawTranslationGizmo(std::shared_ptr<ECS::World> world, Vector3f position)
+	inline void DrawTranslationGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, Vector3f position)
 	{
 		float lineLength = 2.5f;
 
-		world->PublishEvent<Debug::Line>(Debug::Line(position, position + Vector3f(0.0f, 0.0f, lineLength), Vector3f(1.0f, 0.0f, 0.0f)));
-		world->PublishEvent<Debug::Line>(Debug::Line(position, position + Vector3f(0.0f, lineLength, 0.0f), Vector3f(0.0f, 1.0f, 0.0f)));
-		world->PublishEvent<Debug::Line>(Debug::Line(position, position + Vector3f(lineLength, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f)));
+		eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(0.0f, 0.0f, lineLength), Vector3f(1.0f, 0.0f, 0.0f)));
+		eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(0.0f, lineLength, 0.0f), Vector3f(0.0f, 1.0f, 0.0f)));
+		eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(lineLength, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f)));
 	}
 
-	inline void DrawRotationGizmo(std::shared_ptr<ECS::World> world, Vector3f position)
+	inline void DrawRotationGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, Vector3f position)
 	{
 
 	}
 
-	inline void DrawScaleGizmo(std::shared_ptr<ECS::World> world, Vector3f position)
+	inline void DrawScaleGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, Vector3f position)
 	{
 
 	}
 
-	inline void DrawManipulationGizmo(std::shared_ptr<ECS::World> world, TransformComponent transform)
+	inline void DrawManipulationGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, TransformComponent transform)
 	{
 		switch (gizmoMode)
 		{
 			case GizmoMode::Translation:
-				DrawTranslationGizmo(world, transform.position);
+				DrawTranslationGizmo(eventSubsystem, transform.position);
 				break;
 			case GizmoMode::Rotation:
-				DrawRotationGizmo(world, transform.position);
+				DrawRotationGizmo(eventSubsystem, transform.position);
 				break;
 			case GizmoMode::Scale:
-				DrawScaleGizmo(world, transform.position);
+				DrawScaleGizmo(eventSubsystem, transform.position);
 				break;
 		}
 	}

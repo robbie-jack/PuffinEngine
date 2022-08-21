@@ -93,7 +93,7 @@ namespace Puffin
 				{
 					TransformComponent& transform = m_world->GetComponent<TransformComponent>(entity);
 					
-					DrawManipulationGizmo(m_world, transform);
+					DrawManipulationGizmo(m_engine->GetSubsystem<Core::EventSubsystem>(), transform);
 				}
 
 				End();

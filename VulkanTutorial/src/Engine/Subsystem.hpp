@@ -31,7 +31,7 @@ namespace Puffin::Core
 
 	protected:
 
-		bool m_shouldUpdate = false;;
+		bool m_shouldUpdate = false;
 		std::shared_ptr<Engine> m_engine = nullptr;
 
 	};

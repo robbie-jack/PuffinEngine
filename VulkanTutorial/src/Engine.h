@@ -88,6 +88,24 @@ namespace Puffin::Core
 			return std::static_pointer_cast<SubsystemT>(m_subsystems[typeName]);
 		}
 
+		// Register System using Engine method because their update methods will not be called each frame otherwise
+		template<typename SystemT>
+		std::shared_ptr<SystemT> RegisterSystem()
+		{
+			std::shared_ptr<SystemT> system = nullptr;
+
+			if (auto ecsWorld = GetSubsystem<ECS::World>())
+			{
+				system = ecsWorld->RegisterSystem<SystemT>();
+				auto systemBase = std::static_pointer_cast<ECS::System>(system);
+
+				m_systems.push_back(systemBase);
+				m_systemUpdateVectors[systemBase->GetInfo().updateOrder].push_back(systemBase);
+			}
+
+			return nullptr;
+		}
+
 		PlayState GetPlayState() const { return playState; }
 		inline std::shared_ptr<IO::SceneData> GetScene() { return m_sceneData; }
 
@@ -96,6 +114,11 @@ namespace Puffin::Core
 		GLFWwindow* GetWindow() const
 		{
 			return m_window;
+		}
+
+		std::shared_ptr<UI::UIManager> GetUIManager() const
+		{
+			return m_uiManager;
 		}
 
 		void SetTimeStep(const double timeStep)
@@ -115,6 +138,9 @@ namespace Puffin::Core
 
 		std::chrono::time_point<std::chrono::steady_clock> m_lastTime, m_currentTime;
 		double m_accumulatedTime, m_timeStep, m_maxTimeStep;
+
+		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers
+		std::map<Core::UpdateOrder, std::vector<std::shared_ptr<ECS::System>>> m_systemUpdateVectors; // Map from update order to system pointers
 
 		IO::ProjectFile projectFile;
 

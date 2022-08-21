@@ -40,7 +40,7 @@ namespace Puffin
 		public:
 
 			AngelScriptSystem();
-			~AngelScriptSystem();
+			~AngelScriptSystem() override;
 
 			void Init() override;
 			void PreStart() override;
@@ -50,28 +50,14 @@ namespace Puffin
 			void Cleanup() override {};
 
 			// Hot-Reloads all scripts when called
-			void Reload();
-
-			ECS::SystemInfo GetInfo() override
-			{
-				ECS::SystemInfo info;
-
-				info.updateOrder = ECS::UpdateOrder::Update;
-
-				return info;
-			}
-
-			inline void SetAudioManager(std::shared_ptr<Audio::AudioSubsystem> inAudioManager)
-			{
-				m_audioManager = inAudioManager;
-			}
+			void Reload() {}
 
 		private:
 
 			asIScriptEngine* m_scriptEngine = nullptr;
 			asIScriptContext* m_ctx = nullptr;
 
-			std::shared_ptr<Audio::AudioSubsystem> m_audioManager;
+			std::shared_ptr<Audio::AudioSubsystem> m_audioSubsystem;
 
 			ECS::EntityID m_currentEntityID = 0; // Entity ID for currently executing script
 

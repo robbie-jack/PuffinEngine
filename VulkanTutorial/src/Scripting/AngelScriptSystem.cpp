@@ -5,6 +5,9 @@
 
 #include "Assets/AssetRegistry.h"
 
+#include "Engine.h"
+#include "Engine/EventSubsystem.h"
+
 #include <iostream>  // cout
 #include <assert.h>  // assert()
 #include <string.h>
@@ -50,6 +53,8 @@ namespace Puffin::Scripting
 
 		// Set message callback to receive information on errors in human readable form
 		int r = m_scriptEngine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); assert(r >= 0);
+
+		m_systemInfo.updateOrder = Core::UpdateOrder::Update;
 	}
 
 	AngelScriptSystem::~AngelScriptSystem()
@@ -64,15 +69,19 @@ namespace Puffin::Scripting
 		// Configure Engine and Setup Global Function Callbacks
 		ConfigureEngine();
 
+		auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+
 		// Subscribe to events
 		m_inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
-		m_world->SubscribeToEvent<Input::InputEvent>(m_inputEvents);
+		eventSubsystem->Subscribe<Input::InputEvent>(m_inputEvents);
 
 		m_collisionBeginEvents = std::make_shared<RingBuffer<Physics::CollisionBeginEvent>>();
-		m_world->SubscribeToEvent<Physics::CollisionBeginEvent>(m_collisionBeginEvents);
+		eventSubsystem->Subscribe<Physics::CollisionBeginEvent>(m_collisionBeginEvents);
 
 		m_collisionEndEvents = std::make_shared<RingBuffer<Physics::CollisionEndEvent>>();
-		m_world->SubscribeToEvent<Physics::CollisionEndEvent>(m_collisionEndEvents);
+		eventSubsystem->Subscribe<Physics::CollisionEndEvent>(m_collisionEndEvents);
+
+		m_audioSubsystem = m_engine->GetSubsystem<Audio::AudioSubsystem>();
 	}
 
 	void AngelScriptSystem::PreStart()
@@ -615,9 +624,9 @@ namespace Puffin::Scripting
 
 	void AngelScriptSystem::PlaySoundEffect(uint64_t id, float volume, bool looping, bool restart)
 	{
-		if (m_audioManager)
+		if (m_audioSubsystem)
 		{
-			m_audioManager->PlaySoundEffect(id, volume, looping, restart);
+			m_audioSubsystem->PlaySoundEffect(id, volume, looping, restart);
 		}
 	}
 
@@ -625,9 +634,9 @@ namespace Puffin::Scripting
 	{
 		uint64_t id = 0;
 
-		if (m_audioManager)
+		if (m_audioSubsystem)
 		{
-			id = m_audioManager->PlaySoundEffect(path, volume, looping, restart);
+			id = m_audioSubsystem->PlaySoundEffect(path, volume, looping, restart);
 		}
 
 		return id;

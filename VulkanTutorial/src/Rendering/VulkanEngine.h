@@ -186,11 +186,15 @@ namespace Puffin
 		{
 		public:
 
-			VulkanEngine() = default;
+			VulkanEngine()
+			{
+				m_systemInfo.updateOrder = Core::UpdateOrder::Rendering;
+			}
+
 			~VulkanEngine() override
 			{
 				m_uiManager = nullptr;
-				m_inputManager = nullptr;
+				m_inputSubsystem = nullptr;
 
 				m_inputEvents->Flush();
 				m_inputEvents = nullptr;
@@ -203,22 +207,12 @@ namespace Puffin
 			}
 
 			// Main Functions
-			GLFWwindow* Init(GLFWwindow* windowIn, std::shared_ptr<UI::UIManager> inUIManager, std::shared_ptr<Input::InputSubsystem> inInputManager);
-			void Init() override {}
+			void Init() override;
 			void PreStart() override;
 			void Start() override {}
 			void Update() override;
 			void Stop()  override;
 			void Cleanup() override;
-
-			ECS::SystemInfo GetInfo() override
-			{
-				ECS::SystemInfo info;
-
-				info.updateOrder = ECS::UpdateOrder::Rendering;
-
-				return info;
-			}
 
 			// Helper Functions
 			void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
@@ -234,7 +228,7 @@ namespace Puffin
 		private:
 
 			std::shared_ptr<UI::UIManager> m_uiManager;
-			std::shared_ptr<Input::InputSubsystem> m_inputManager;
+			std::shared_ptr<Input::InputSubsystem> m_inputSubsystem;
 
 			// Variables
 			VkInstance instance;						// Vulkan Library Handle
@@ -320,6 +314,7 @@ namespace Puffin
 
 			bool framebufferResized = false; // Flag to indicate if GLFW window has been resized
 			bool isInitialized = false;
+			bool m_needsStarted = true; // Scene Rendering data needs setup in PreStart function
 
 			VkExtent2D windowExtent;
 			int frameNumber = 0;

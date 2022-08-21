@@ -2,6 +2,7 @@
 #include <ECS/ECS.h>
 
 #include "Engine.h"
+#include "Engine/EventSubsystem.h"
 
 namespace Puffin
 {
@@ -12,7 +13,9 @@ namespace Puffin
 			window = m_engine->GetWindow();
 			world = m_engine->GetSubsystem<ECS::World>();
 
-			world->RegisterEvent<InputEvent>();
+			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+
+			eventSubsystem->RegisterEvent<InputEvent>();
 
 			// Setup Actions
 
@@ -88,7 +91,9 @@ namespace Puffin
 					// Notify subscribers that event changed
 					if (stateChanged == true)
 					{
-						world->PublishEvent<InputEvent>(InputEvent(action.name, action.state));
+						auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+
+						eventSubsystem->Publish<InputEvent>(InputEvent(action.name, action.state));
 						stateChanged = false;
 					}
 				}

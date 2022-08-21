@@ -14,7 +14,11 @@ namespace Puffin::Physics
 	{
 	public:
 
-		Box2DPhysicsSystem() = default;
+		Box2DPhysicsSystem()
+		{
+			m_systemInfo.updateOrder = Core::UpdateOrder::FixedUpdate;
+		}
+
 		~Box2DPhysicsSystem() override = default;
 
 		void Init() override;
@@ -23,15 +27,6 @@ namespace Puffin::Physics
 		void Update() override;
 		void Stop() override;
 		void Cleanup() override {}
-
-		ECS::SystemInfo GetInfo() override
-		{
-			ECS::SystemInfo info;
-
-			info.updateOrder = ECS::UpdateOrder::FixedUpdate;
-
-			return info;
-		}
 
 	private:
 

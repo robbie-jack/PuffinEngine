@@ -1,5 +1,7 @@
 #include "Box2DPhysicsSystem.h"
 
+#include "Engine.h"
+#include "Engine/Subsystem.hpp"
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 #include "Components/TransformComponent.h"
@@ -25,9 +27,11 @@ namespace Puffin::Physics
 		boxSignature.set(m_world->GetComponentType<Box2DBoxComponent>());
 		m_world->SetSystemSignature<Box2DPhysicsSystem>("Box", boxSignature);
 
+		auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+
 		// Register Events
-		m_world->RegisterEvent<CollisionBeginEvent>();
-		m_world->RegisterEvent<CollisionEndEvent>();
+		eventSubsystem->RegisterEvent<CollisionBeginEvent>();
+		eventSubsystem->RegisterEvent<CollisionEndEvent>();
 	}
 
 	void Box2DPhysicsSystem::PreStart()
@@ -111,16 +115,18 @@ namespace Puffin::Physics
 
 	void Box2DPhysicsSystem::PublishCollisionEvents() const
 	{
+		auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+
 		CollisionBeginEvent collisionBeginEvent;
 		while (m_contactListener->GetNextCollisionBeginEvent(collisionBeginEvent))
 		{
-			m_world->PublishEvent(collisionBeginEvent);
+			eventSubsystem->Publish(collisionBeginEvent);
 		}
 
 		CollisionEndEvent collisionEndEvent;
 		while (m_contactListener->GetNextCollisionEndEvent(collisionEndEvent))
 		{
-			m_world->PublishEvent(collisionEndEvent);
+			eventSubsystem->Publish(collisionEndEvent);
 		}
 	}
 

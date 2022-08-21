@@ -7,8 +7,10 @@
 
 namespace Puffin
 {
-	namespace ECS
+	namespace Core
 	{
+		class Engine;
+
 		// Enum for setting when a system's update function should be called
 		enum class UpdateOrder
 		{
@@ -23,6 +25,10 @@ namespace Puffin
 		{
 			UpdateOrder updateOrder = UpdateOrder::None;
 		};
+	}
+
+	namespace ECS
+	{
 
 		//////////////////////////////////////////////////
 		// System
@@ -37,7 +43,11 @@ namespace Puffin
 		{
 		public:
 
-			virtual ~System() { m_world = nullptr; }
+			virtual ~System()
+			{
+				m_world = nullptr;
+				m_engine = nullptr;
+			}
 
 			EntityMap entityMap;
 
@@ -49,12 +59,17 @@ namespace Puffin
 			virtual void Stop() = 0;		// Called when gameplay ends
 			virtual void Cleanup() = 0;		// Called when engine exits
 			
-			//
-			virtual SystemInfo GetInfo() = 0;
+			// Get struct with info on system such as its update order
+			const Core::SystemInfo& GetInfo() { return m_systemInfo; } const
 
 			void SetWorld(std::shared_ptr<World> inWorld)
 			{
 				m_world = inWorld;
+			}
+
+			void SetEngine(std::shared_ptr<Core::Engine> inEngine)
+			{
+				m_engine = inEngine;
 			}
 
 			void SetDeltaTime(double inDeltaTime)
@@ -69,9 +84,13 @@ namespace Puffin
 
 		protected:
 
-			std::shared_ptr<World> m_world;
-			double m_deltaTime; // Time it took last frame to complete
-			double m_fixedTime; // Fixed time step used by deterministic physics code
+			std::shared_ptr<World> m_world = nullptr;
+			std::shared_ptr<Core::Engine> m_engine = nullptr;
+
+			Core::SystemInfo m_systemInfo;
+
+			double m_deltaTime = 0.0; // Time it took last frame to complete
+			double m_fixedTime = 1 / 60.0; // Fixed time step used by deterministic physics code
 
 		private:
 

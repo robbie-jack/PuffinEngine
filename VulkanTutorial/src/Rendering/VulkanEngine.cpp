@@ -36,10 +36,10 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		GLFWwindow* VulkanEngine::Init(GLFWwindow* windowIn, std::shared_ptr<UI::UIManager> inUIManager, std::shared_ptr<Input::InputSubsystem> inInputManager)
+		void VulkanEngine::Init()
 		{
-			m_uiManager = inUIManager;
-			m_inputManager = inInputManager;
+			m_uiManager = m_engine->GetUIManager();
+			m_inputSubsystem = m_engine->GetSubsystem<Input::InputSubsystem>();
 
 			windowExtent.width = WIDTH;
 			windowExtent.height = HEIGHT;
@@ -63,7 +63,7 @@ namespace Puffin
 			shadowExtent.height = 1024;
 			shadowFormat = VK_FORMAT_D16_UNORM;
 
-			window = windowIn;
+			window = m_engine->GetWindow();
 
 			glfwSetWindowUserPointer(window, this);
 			glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
@@ -127,12 +127,14 @@ namespace Puffin
 			m_drawLineEvents = std::make_shared<RingBuffer<Debug::Line>>();
 			m_drawBoxEvents = std::make_shared<RingBuffer<Debug::Box>>();
 
-			m_world->RegisterEvent<Debug::Line>();
-			m_world->RegisterEvent<Debug::Box>();
+			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
 
-			m_world->SubscribeToEvent<Input::InputEvent>(m_inputEvents);
-			m_world->SubscribeToEvent<Debug::Line>(m_drawLineEvents);
-			m_world->SubscribeToEvent<Debug::Box>(m_drawBoxEvents);
+			eventSubsystem->RegisterEvent<Debug::Line>();
+			eventSubsystem->RegisterEvent<Debug::Box>();
+
+			eventSubsystem->Subscribe<Input::InputEvent>(m_inputEvents);
+			eventSubsystem->Subscribe<Debug::Line>(m_drawLineEvents);
+			eventSubsystem->Subscribe<Debug::Box>(m_drawBoxEvents);
 
 			// Initialize ImGui
 			InitImGui();
@@ -142,15 +144,18 @@ namespace Puffin
 			m_uiManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
 			isInitialized = true;
-
-			return window;
 		}
 
 		void VulkanEngine::PreStart()
 		{
-			InitScene();
-			InitShadowmapDescriptors();
-			InitDeferredDescriptors();
+			if (m_needsStarted)
+			{
+				InitScene();
+				InitShadowmapDescriptors();
+				InitDeferredDescriptors();
+
+				m_needsStarted = false;
+			}
 		}
 
 		void VulkanEngine::InitVulkan()
@@ -1655,7 +1660,7 @@ namespace Puffin
 				m_shadowmapsNeedsUpdated = false;
 			}
 
-			m_uiManager->DrawUI(m_deltaTime, m_inputManager);
+			m_uiManager->DrawUI(m_deltaTime, m_inputSubsystem);
 
 			UpdateCamera(camera);
 
@@ -1673,6 +1678,8 @@ namespace Puffin
 			{
 				CleanupLight(entity);
 			}
+
+			m_needsStarted = true;
 		}
 
 		void VulkanEngine::ProcessEvents()
@@ -1779,7 +1786,7 @@ namespace Puffin
 
 		void VulkanEngine::UpdateCamera(CameraComponent& camera)
 		{
-			if (m_inputManager->IsCursorLocked())
+			if (m_inputSubsystem->IsCursorLocked())
 			{
 				// Camera Movement
 				if (moveLeft && !moveRight)
@@ -1813,8 +1820,8 @@ namespace Puffin
 				}
 
 				// Mouse Rotation
-				camera.yaw += m_inputManager->GetMouseXOffset();
-				camera.pitch -= m_inputManager->GetMouseYOffset();
+				camera.yaw += m_inputSubsystem->GetMouseXOffset();
+				camera.pitch -= m_inputSubsystem->GetMouseYOffset();
 
 				if (camera.pitch > 89.0f)
 					camera.pitch = 89.0f;

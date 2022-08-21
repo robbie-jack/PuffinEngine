@@ -14,6 +14,7 @@
 #include "Types/ComponentFlags.h"
 
 #include "Input/InputSubsystem.h"
+#include "Engine/EventSubsystem.h"
 
 #include "SerializeScene.h"
 #include "UI/UIManager.h"
@@ -47,16 +48,16 @@ namespace Puffin::Core
 
 		// Subsystems
 		auto ecsWorld = RegisterSubsystem<ECS::World>();
+		auto eventSubsystem = RegisterSubsystem<Core::EventSubsystem>();
 		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
 		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
 
 		m_uiManager = std::make_shared<UI::UIManager>(this, ecsWorld, inputSubsystem);
 
 		// Systems
-		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ecsWorld->RegisterSystem<Rendering::VulkanEngine>();
-		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = ecsWorld->RegisterSystem<Physics::Box2DPhysicsSystem>();
-		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ecsWorld->RegisterSystem<Scripting::AngelScriptSystem>();
-		scriptingSystem->SetAudioManager(audioSubsystem);
+		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = RegisterSystem<Rendering::VulkanEngine>();
+		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = RegisterSystem<Physics::Box2DPhysicsSystem>();
+		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = RegisterSystem<Scripting::AngelScriptSystem>();
 
 		// Register Components to ECS World
 		ecsWorld->RegisterComponent<TransformComponent>();
@@ -141,9 +142,7 @@ namespace Puffin::Core
 		}
 
 		// Initialize Systems
-		vulkanEngine->Init(m_window, m_uiManager, inputSubsystem);
-
-		for (auto& system : ecsWorld->GetAllSystems())
+		for (auto& system : m_systems)
 		{
 			system->Init();
 			system->PreStart();
@@ -174,7 +173,7 @@ namespace Puffin::Core
 		auto audioSubsystem = GetSubsystem<Audio::AudioSubsystem>();
 
 		// Set delta time for all systems
-		for (auto& system : ecsWorld->GetAllSystems())
+		for (auto& system : m_systems)
 		{
 			system->SetDeltaTime(deltaTime);
 			system->SetFixedTime(m_timeStep);
@@ -192,7 +191,7 @@ namespace Puffin::Core
 		// Call system start functions to prepare for gameplay
 		if (playState == PlayState::STARTED)
 		{
-			for (auto& system : ecsWorld->GetAllSystems())
+			for (auto& system : m_systems)
 			{
 				system->Start();
 			}
@@ -225,14 +224,12 @@ namespace Puffin::Core
 			m_accumulatedTime += deltaTime;
 
 			// Perform system updates until simulation is caught up
-			std::vector<std::shared_ptr<ECS::System>> fixedUpdateSystems;
-			ecsWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::FixedUpdate, fixedUpdateSystems);
 			while (m_accumulatedTime >= m_timeStep)
 			{
 				m_accumulatedTime -= m_timeStep;
 
 				// FixedUpdate Systems
-				for (auto& system : fixedUpdateSystems)
+				for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
 				{
 					system->Update();
 				}
@@ -242,9 +239,7 @@ namespace Puffin::Core
 		// Update
 		if (playState == PlayState::PLAYING)
 		{
-			std::vector<std::shared_ptr<ECS::System>> updateSystems;
-			ecsWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Update, updateSystems);
-			for (auto& system : updateSystems)
+			for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Update])
 			{
 				system->Update();
 			}
@@ -254,10 +249,7 @@ namespace Puffin::Core
 		m_uiManager->Update();
 
 		// Rendering
-		std::vector<std::shared_ptr<ECS::System>> renderingSystems;
-		ecsWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Rendering, renderingSystems);
-
-		for (auto system : renderingSystems)
+		for (auto system : m_systemUpdateVectors[Core::UpdateOrder::Rendering])
 		{
 			system->Update();
 		}
@@ -265,7 +257,7 @@ namespace Puffin::Core
 		if (playState == PlayState::JUST_STOPPED)
 		{
 			// Cleanup Systems and ECS
-			for (auto system : ecsWorld->GetAllSystems())
+			for (auto system : m_systems)
 			{
 				system->Stop();
 			}
@@ -275,7 +267,7 @@ namespace Puffin::Core
 			m_sceneData->Init();
 
 			// Perform Pre-Gameplay Initiualization on Systems
-			for (auto system : ecsWorld->GetAllSystems())
+			for (auto system : m_systems)
 			{
 				system->PreStart();
 			}
@@ -298,7 +290,7 @@ namespace Puffin::Core
 		auto ecsWorld = GetSubsystem<ECS::World>();
 
 		// Cleanup All Systems
-		for (auto system : ecsWorld->GetAllSystems())
+		for (auto system : m_systems)
 		{
 			system->Cleanup();
 		}

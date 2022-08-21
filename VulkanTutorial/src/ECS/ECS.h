@@ -2,9 +2,9 @@
 
 #include "ECS/EntityID.h"
 #include "ECS/ComponentType.h"
-#include "ECS/EventManager.h"
 #include "ECS/System.h"
 #include "Engine/Subsystem.hpp"
+#include "Engine/EventSubsystem.h"
 
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"
@@ -594,12 +594,10 @@ namespace Puffin::ECS
 		{
 			signatureMaps.clear();
 			systemsMap.clear();
-			systemsVector.clear();
-			systemsByUpdateOrderMap.clear();
 		}
 
 		template<typename SystemT>
-		std::shared_ptr<SystemT> RegisterSystem(std::shared_ptr<World> world)
+		std::shared_ptr<SystemT> RegisterSystem(std::shared_ptr<World> world, std::shared_ptr<Core::Engine> engine)
 		{
 			const char* typeName = typeid(SystemT).name();
 
@@ -614,11 +612,10 @@ namespace Puffin::ECS
 
 			// Set system world pointer
 			systemBase->SetWorld(world);
+			systemBase->SetEngine(engine);
 
 			// Add System to Vectors/Maps
-			systemsVector.push_back(systemBase);
 			systemsMap.insert({ typeName, systemBase });
-			systemsByUpdateOrderMap.insert({ systemBase->GetInfo().updateOrder, systemBase });
 
 			return system;
 		}
@@ -645,23 +642,6 @@ namespace Puffin::ECS
 			assert(systemsMap.find(typeName) != systemsMap.end() && "System used before registered.");
 
 			return std::static_pointer_cast<SystemT>(systemsMap[typeName]);
-		}
-
-		const std::vector<std::shared_ptr<System>>& GetAllSystems()
-		{
-			return systemsVector;
-		}
-
-		void GetSystemsWithUpdateOrder(UpdateOrder updateOrder, std::vector<std::shared_ptr<System>>& outSystems)
-		{
-			assert(systemsByUpdateOrderMap.find(updateOrder) != systemsByUpdateOrderMap.end() && "Trying to access update order which doesn't have any systems assigned");
-
-			outSystems.clear();
-
-			for (auto it = systemsByUpdateOrderMap.lower_bound(updateOrder); it != systemsByUpdateOrderMap.upper_bound(updateOrder); ++it)
-			{
-				outSystems.push_back((*it).second);
-			}
 		}
 
 		void EntityDestroyed(EntityID entity)
@@ -716,21 +696,15 @@ namespace Puffin::ECS
 		// Map from system type string pointer to signature
 		std::unordered_map<const char*, SignatureMap> signatureMaps;
 
-		// Vector of system pointers
-		std::vector<std::shared_ptr<System>> systemsVector;
-
 		// Map from system type string to system pointer
 		std::unordered_map<const char*, std::shared_ptr<System>> systemsMap;
-
-		// Map from update order to system pointers
-		std::multimap<UpdateOrder, std::shared_ptr<System>> systemsByUpdateOrderMap;
 	};
 
 	//////////////////////////////////////////////////
 	// ECS World
 	//////////////////////////////////////////////////
 
-	class World : public Core::Subsystem, std::enable_shared_from_this<World>
+	class World : public Core::Subsystem, public std::enable_shared_from_this<World>
 	{
 	public:
 
@@ -742,7 +716,6 @@ namespace Puffin::ECS
 			m_componentManager = std::make_unique<ComponentManager>();
 			m_entityManager = std::make_unique<EntityManager>();
 			m_systemManager = std::make_unique<SystemManager>();
-			m_eventManager = std::make_unique<EventManager>();
 
 			RegisterEntityFlag<FlagDeleted>();
 		}
@@ -773,7 +746,6 @@ namespace Puffin::ECS
 			m_entityManager = nullptr;
 			m_componentManager = nullptr;
 			m_systemManager = nullptr;
-			m_eventManager = nullptr;
 		}
 
 		// Reset Entities and Components, Leave Systems Intact
@@ -969,24 +941,13 @@ namespace Puffin::ECS
 		template<typename SystemT>
 		std::shared_ptr<SystemT> RegisterSystem()
 		{
-			std::shared_ptr<World> worldPtr{ this };
-			return m_systemManager->RegisterSystem<SystemT>(worldPtr);
+			return m_systemManager->RegisterSystem<SystemT>(shared_from_this(), m_engine);
 		}
 
 		template<typename SystemT>
 		std::shared_ptr<SystemT> GetSystem()
 		{
 			return m_systemManager->GetSystem<SystemT>();
-		}
-
-		const std::vector<std::shared_ptr<System>>& GetAllSystems()
-		{
-			return m_systemManager->GetAllSystems();
-		}
-
-		void GetSystemsWithUpdateOrder(UpdateOrder updateOrder, std::vector<std::shared_ptr<System>>& outSystems) const
-		{
-			m_systemManager->GetSystemsWithUpdateOrder(updateOrder, outSystems);
 		}
 
 		template<typename SystemT>
@@ -1001,33 +962,10 @@ namespace Puffin::ECS
 			}
 		}
 
-		////////////////////////////////
-		// Event Manager Methods
-		////////////////////////////////
-
-		template<typename EventT>
-		void RegisterEvent() const
-		{
-			m_eventManager->RegisterEvent<EventT>();
-		}
-
-		template<typename EventT>
-		void PublishEvent(EventT event)
-		{
-			m_eventManager->Publish<EventT>(event);
-		}
-
-		template<typename EventT>
-		void SubscribeToEvent(std::shared_ptr<RingBuffer<EventT>> buffer)
-		{
-			m_eventManager->Subscribe(buffer);
-		}
-
 	private:
 
 		std::unique_ptr<ComponentManager> m_componentManager = nullptr;
 		std::unique_ptr<EntityManager> m_entityManager = nullptr;
 		std::unique_ptr<SystemManager> m_systemManager = nullptr;
-		std::unique_ptr<EventManager> m_eventManager = nullptr;
 	};
 }

@@ -409,9 +409,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\ManipulationGizmo.h" />
-    <ClInclude Include="src\ECS\EventManager.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
     <ClInclude Include="src\ECS\System.h">
       <Filter>ECS</Filter>
     </ClInclude>
@@ -618,6 +615,9 @@
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\Subsystem.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\EventSubsystem.h">
       <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>

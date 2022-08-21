@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ECS\System.h>
+#include "Engine/Subsystem.hpp"
 #include <Types\RingBuffer.h>
 
 #include <vector>
@@ -15,11 +16,9 @@
 
 namespace Puffin
 {
-	namespace ECS
+	namespace Core
 	{
 		typedef uint8_t EventType;
-
-		typedef std::set<std::shared_ptr<System>> SystemSet;
 
 		class IEventQueue
 		{
@@ -51,11 +50,15 @@ namespace Puffin
 			std::vector<std::shared_ptr<Puffin::RingBuffer<EventT>>> buffers;
 		};
 
-		class EventManager
+		class EventSubsystem : public Core::Subsystem
 		{
 		public:
 
-			void Cleanup()
+			~EventSubsystem() override = default;
+
+			void Init() override {}
+			void Update() override {}
+			void Destroy() override
 			{
 				eventTypes.clear();
 				eventQueues.clear();
@@ -106,7 +109,7 @@ namespace Puffin
 			// Map from event type to event queue
 			std::unordered_map<std::type_index, std::shared_ptr<IEventQueue>> eventQueues;
 
-			EventType nextEventType;
+			EventType nextEventType = 0;
 
 			template<typename EventT>
 			std::shared_ptr<EventQueue<EventT>> GetEventQueue()
