@@ -14,7 +14,7 @@ namespace Puffin
 		{
 		public:
 
-			UIWindowSettings(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+			UIWindowSettings(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
 				: UIWindow(InEngine, InWorld, InInput)
 			{
 			};

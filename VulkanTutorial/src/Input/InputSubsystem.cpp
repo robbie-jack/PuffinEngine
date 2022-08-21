@@ -1,29 +1,16 @@
-#include <Input/InputManager.h>
+#include <Input/InputSubsystem.h>
 #include <ECS/ECS.h>
+
+#include "Engine.h"
 
 namespace Puffin
 {
 	namespace Input
 	{
-		Puffin::Input::InputManager::InputManager()
+		void InputSubsystem::Init()
 		{
-			nextID = 1;
-			last_x_pos = 640.0f;
-			last_y_pos = 360.0f;
-			sensitivity = 0.05f;
-			cursor_locked = false;
-			firstMouse = true;
-		}
-
-		Puffin::Input::InputManager::~InputManager()
-		{
-
-		}
-
-		void InputManager::Init(GLFWwindow* windowIn, std::shared_ptr<ECS::World> InWorld)
-		{
-			window = windowIn;
-			world = InWorld;
+			window = m_engine->GetWindow();
+			world = m_engine->GetSubsystem<ECS::World>();
 
 			world->RegisterEvent<InputEvent>();
 
@@ -50,7 +37,7 @@ namespace Puffin
 			}
 		}
 
-		void Puffin::Input::InputManager::UpdateInput()
+		void Puffin::Input::InputSubsystem::Update()
 		{
 			glfwPollEvents();
 
@@ -136,7 +123,13 @@ namespace Puffin
 			}
 		}
 
-		void Puffin::Input::InputManager::AddAction(std::string name, int key)
+		void InputSubsystem::Destroy()
+		{
+			world = nullptr;
+			window = nullptr;
+		}
+
+		void Puffin::Input::InputSubsystem::AddAction(std::string name, int key)
 		{
 			InputAction new_action;
 			new_action.name = name;
@@ -149,7 +142,7 @@ namespace Puffin
 			nextID++;
 		}
 
-		void Puffin::Input::InputManager::AddAction(std::string name, std::vector<int> keys)
+		void Puffin::Input::InputSubsystem::AddAction(std::string name, std::vector<int> keys)
 		{
 			InputAction new_action;
 			new_action.name = name;
@@ -162,7 +155,7 @@ namespace Puffin
 			nextID++;
 		}
 
-		Puffin::Input::InputAction Puffin::Input::InputManager::GetAction(std::string name)
+		Puffin::Input::InputAction Puffin::Input::InputSubsystem::GetAction(std::string name)
 		{
 			for (auto action : actions)
 			{

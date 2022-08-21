@@ -7,7 +7,7 @@
 #include <vulkan/vulkan.h>
 #include <imgui.h>
 
-#include <Input\InputManager.h>
+#include <Input\InputSubsystem.h>
 #include <ECS/ECS.h>
 #include <Engine.h>
 
@@ -30,7 +30,7 @@ namespace Puffin
 		{
 		public:
 
-			UIWindow(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+			UIWindow(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
 				: m_engine(InEngine), m_world(InWorld), m_inputManager(InInput)
 			{
 				show = true;
@@ -72,7 +72,7 @@ namespace Puffin
 
 			Core::Engine* m_engine;
 			std::shared_ptr<ECS::World> m_world;
-			std::shared_ptr<Input::InputManager> m_inputManager;
+			std::shared_ptr<Input::InputSubsystem> m_inputManager;
 		};
 	}
 }

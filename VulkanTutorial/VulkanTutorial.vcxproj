@@ -235,10 +235,10 @@
     <ClCompile Include="src\Assets\AssetRegistry.cpp" />
     <ClCompile Include="src\Assets\MeshAsset.cpp" />
     <ClCompile Include="src\Assets\TextureAsset.cpp" />
-    <ClCompile Include="src\Audio\AudioManager.cpp" />
+    <ClCompile Include="src\Audio\AudioSubsystem.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Engine\Application.cpp" />
-    <ClCompile Include="src\Input\InputManager.cpp" />
+    <ClCompile Include="src\Input\InputSubsystem.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
     <ClCompile Include="src\Physics\Box2D\Box2DContactListener.cpp" />
@@ -288,7 +288,7 @@
     <ClInclude Include="src\Assets\MeshAsset.h" />
     <ClInclude Include="src\Assets\SoundAsset.h" />
     <ClInclude Include="src\Assets\TextureAsset.h" />
-    <ClInclude Include="src\Audio\AudioManager.h" />
+    <ClInclude Include="src\Audio\AudioSubsystem.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
     <ClInclude Include="src\Components\Physics\Box2D\Box2DRigidbodyComponent.h" />
     <ClInclude Include="src\Components\Physics\Box2D\Box2DShapeComponents.h" />
@@ -308,7 +308,7 @@
     <ClInclude Include="src\Engine\Application.hpp" />
     <ClInclude Include="src\Engine\Subsystem.hpp" />
     <ClInclude Include="src\Input\InputEvent.h" />
-    <ClInclude Include="src\Input\InputManager.h" />
+    <ClInclude Include="src\Input\InputSubsystem.h" />
     <ClInclude Include="src\ManipulationGizmo.h" />
     <ClInclude Include="src\MathHelpers.h" />
     <ClInclude Include="src\Physics\Box2D\Box2DContactListener.h" />

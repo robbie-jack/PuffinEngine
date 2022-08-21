@@ -18,7 +18,7 @@ namespace Puffin
 		{
 		public:
 
-			UIWindowViewport(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+			UIWindowViewport(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
 			: UIWindow(InEngine, InWorld, InInput)
 			{
 			};

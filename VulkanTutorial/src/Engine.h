@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <memory>
 #include <unordered_map>
+#include <chrono>
 
 namespace fs = std::filesystem;
 
@@ -21,7 +22,12 @@ namespace Puffin
 {
 	namespace Audio
 	{
-		class AudioManager;
+		class AudioSubsystem;
+	}
+
+	namespace UI
+	{
+		class UIManager;
 	}
 }
 
@@ -38,14 +44,14 @@ namespace Puffin::Core
 		JUST_UNPAUSED	// Game has just been unpaused
 	};
 
-	class Engine : std::enable_shared_from_this<Engine>
+	class Engine : public std::enable_shared_from_this<Engine>
 	{
 	public:
 
 		Engine() = default;
+		~Engine() = default;
 
 		void Init();
-		void MainLoop();
 		bool Update();
 		void Destroy();
 
@@ -87,16 +93,28 @@ namespace Puffin::Core
 
 		inline IO::ProjectSettings& GetProjectSettings() { return settings; }
 
+		GLFWwindow* GetWindow() const
+		{
+			return m_window;
+		}
+
+		void SetTimeStep(const double timeStep)
+		{
+			m_timeStep = timeStep;
+		}
+
 	private:
 
 		GLFWwindow* m_window = nullptr;
 		GLFWmonitor* m_monitor = nullptr;
 
-		// Subsystems
-		std::shared_ptr<Audio::AudioManager> m_audioManager = nullptr;
+		std::shared_ptr<UI::UIManager> m_uiManager = nullptr;
 
 		bool running = true;
 		PlayState playState = PlayState::STOPPED;
+
+		std::chrono::time_point<std::chrono::steady_clock> m_lastTime, m_currentTime;
+		double m_accumulatedTime, m_timeStep, m_maxTimeStep;
 
 		IO::ProjectFile projectFile;
 

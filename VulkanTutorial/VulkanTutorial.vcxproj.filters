@@ -102,7 +102,7 @@
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Engine.cpp" />
-    <ClCompile Include="src\Input\InputManager.cpp">
+    <ClCompile Include="src\Input\InputSubsystem.cpp">
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\VulkanEngine.cpp">
@@ -166,7 +166,7 @@
     <ClCompile Include="src\Assets\AssetRegistry.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="src\Audio\AudioManager.cpp">
+    <ClCompile Include="src\Audio\AudioSubsystem.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
     <ClCompile Include="src\Assets\TextureAsset.cpp">
@@ -366,7 +366,7 @@
     <ClInclude Include="src\ecs\ECS.h">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="src\Input\InputManager.h">
+    <ClInclude Include="src\Input\InputSubsystem.h">
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\VKTexture.h">
@@ -491,7 +491,7 @@
     <ClInclude Include="src\Assets\Importers\TextureImporter.h">
       <Filter>Assets\Importers</Filter>
     </ClInclude>
-    <ClInclude Include="src\Audio\AudioManager.h">
+    <ClInclude Include="src\Audio\AudioSubsystem.h">
       <Filter>Audio</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\vk_mem_alloc.h">

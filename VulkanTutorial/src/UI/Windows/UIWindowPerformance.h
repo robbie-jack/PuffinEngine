@@ -45,7 +45,7 @@ namespace Puffin
 		class UIWindowPerformance : public UIWindow
 		{
 		public:
-			UIWindowPerformance(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+			UIWindowPerformance(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
 			: UIWindow(InEngine, InWorld, InInput)
 			{
 			};

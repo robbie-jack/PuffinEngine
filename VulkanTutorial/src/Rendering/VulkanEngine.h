@@ -22,7 +22,7 @@
 // Engine Includes
 #include <ECS/ECS.h>
 #include <UI/UIManager.h>
-#include <Input/InputManager.h>
+#include <Input/InputSubsystem.h>
 
 // Component Includes
 #include <Components/TransformComponent.h>
@@ -186,8 +186,8 @@ namespace Puffin
 		{
 		public:
 
-			VulkanEngine() {}
-			~VulkanEngine()
+			VulkanEngine() = default;
+			~VulkanEngine() override
 			{
 				m_uiManager = nullptr;
 				m_inputManager = nullptr;
@@ -203,10 +203,10 @@ namespace Puffin
 			}
 
 			// Main Functions
-			GLFWwindow* Init(GLFWwindow* windowIn, std::shared_ptr<UI::UIManager> inUIManager, std::shared_ptr<Input::InputManager> inInputManager);
-			void Init() override {};
-			void PreStart() override {};
-			void Start() override;
+			GLFWwindow* Init(GLFWwindow* windowIn, std::shared_ptr<UI::UIManager> inUIManager, std::shared_ptr<Input::InputSubsystem> inInputManager);
+			void Init() override {}
+			void PreStart() override;
+			void Start() override {}
 			void Update() override;
 			void Stop()  override;
 			void Cleanup() override;
@@ -234,7 +234,7 @@ namespace Puffin
 		private:
 
 			std::shared_ptr<UI::UIManager> m_uiManager;
-			std::shared_ptr<Input::InputManager> m_inputManager;
+			std::shared_ptr<Input::InputSubsystem> m_inputManager;
 
 			// Variables
 			VkInstance instance;						// Vulkan Library Handle

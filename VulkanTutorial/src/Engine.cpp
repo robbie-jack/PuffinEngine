@@ -13,19 +13,17 @@
 
 #include "Types/ComponentFlags.h"
 
-#include "Input/InputManager.h"
+#include "Input/InputSubsystem.h"
 
 #include "SerializeScene.h"
 #include "UI/UIManager.h"
 
-#include "Audio/AudioManager.h"
+#include "Audio/AudioSubsystem.h"
 
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/TextureAsset.h"
 #include "Assets/SoundAsset.h"
-
-#include <chrono>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -47,58 +45,48 @@ namespace Puffin::Core
 
 		m_window = glfwCreateWindow(1280, 720, "Puffin Engine", m_monitor, nullptr);
 
-
-	}
-
-	void Engine::MainLoop()
-	{
-		// Managers/ECS World
-		std::shared_ptr<ECS::World> ECSWorld = std::make_shared<ECS::World>();
-		std::shared_ptr<Input::InputManager> InputManager = std::make_shared<Input::InputManager>();
-		//std::shared_ptr<Audio::AudioManager> AudioManager = std::make_shared<Audio::AudioManager>();
-		std::shared_ptr<UI::UIManager> UIManager = std::make_shared<UI::UIManager>(this, ECSWorld, InputManager);
-
 		// Subsystems
-		m_audioManager = RegisterSubsystem<Audio::AudioManager>();
+		auto ecsWorld = RegisterSubsystem<ECS::World>();
+		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
+		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
 
-		InputManager->Init(m_window, ECSWorld);
+		m_uiManager = std::make_shared<UI::UIManager>(this, ecsWorld, inputSubsystem);
 
 		// Systems
-		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ECSWorld->RegisterSystem<Rendering::VulkanEngine>();
-		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = ECSWorld->RegisterSystem<Physics::Box2DPhysicsSystem>();
-		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ECSWorld->RegisterSystem<Scripting::AngelScriptSystem>();
-
-		scriptingSystem->SetAudioManager(m_audioManager);
+		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = ecsWorld->RegisterSystem<Rendering::VulkanEngine>();
+		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = ecsWorld->RegisterSystem<Physics::Box2DPhysicsSystem>();
+		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = ecsWorld->RegisterSystem<Scripting::AngelScriptSystem>();
+		scriptingSystem->SetAudioManager(audioSubsystem);
 
 		// Register Components to ECS World
-		ECSWorld->RegisterComponent<TransformComponent>();
-		ECSWorld->RegisterComponent<Rendering::MeshComponent>();
-		ECSWorld->RegisterComponent<Rendering::LightComponent>();
-		ECSWorld->RegisterComponent<Physics::Box2DRigidbodyComponent>();
-		ECSWorld->RegisterComponent<Physics::Box2DBoxComponent>();
-		ECSWorld->RegisterComponent<Physics::Box2DCircleComponent>();
-		ECSWorld->RegisterComponent<Scripting::AngelScriptComponent>();
+		ecsWorld->RegisterComponent<TransformComponent>();
+		ecsWorld->RegisterComponent<Rendering::MeshComponent>();
+		ecsWorld->RegisterComponent<Rendering::LightComponent>();
+		ecsWorld->RegisterComponent<Physics::Box2DRigidbodyComponent>();
+		ecsWorld->RegisterComponent<Physics::Box2DBoxComponent>();
+		ecsWorld->RegisterComponent<Physics::Box2DCircleComponent>();
+		ecsWorld->RegisterComponent<Scripting::AngelScriptComponent>();
 
 		// Setup Entity Signatures
 		ECS::Signature meshSignature;
-		meshSignature.set(ECSWorld->GetComponentType<TransformComponent>());
-		meshSignature.set(ECSWorld->GetComponentType<Rendering::MeshComponent>());
-		ECSWorld->SetSystemSignature<Rendering::VulkanEngine>("Mesh", meshSignature);
+		meshSignature.set(ecsWorld->GetComponentType<TransformComponent>());
+		meshSignature.set(ecsWorld->GetComponentType<Rendering::MeshComponent>());
+		ecsWorld->SetSystemSignature<Rendering::VulkanEngine>("Mesh", meshSignature);
 
 		ECS::Signature lightSignature;
-		lightSignature.set(ECSWorld->GetComponentType<TransformComponent>());
-		lightSignature.set(ECSWorld->GetComponentType<Rendering::LightComponent>());
-		ECSWorld->SetSystemSignature<Rendering::VulkanEngine>("Light", lightSignature);
+		lightSignature.set(ecsWorld->GetComponentType<TransformComponent>());
+		lightSignature.set(ecsWorld->GetComponentType<Rendering::LightComponent>());
+		ecsWorld->SetSystemSignature<Rendering::VulkanEngine>("Light", lightSignature);
 
 		ECS::Signature scriptSignature;
-		scriptSignature.set(ECSWorld->GetComponentType<Scripting::AngelScriptComponent>());
-		ECSWorld->SetSystemSignature<Scripting::AngelScriptSystem>("Script", scriptSignature);
+		scriptSignature.set(ecsWorld->GetComponentType<Scripting::AngelScriptComponent>());
+		ecsWorld->SetSystemSignature<Scripting::AngelScriptSystem>("Script", scriptSignature);
 
 		// Register Entity Flags
 
 		// Register Component Flags
-		ECSWorld->RegisterComponentFlag<FlagDirty>(true);
-		ECSWorld->RegisterComponentFlag<FlagDeleted>();
+		ecsWorld->RegisterComponentFlag<FlagDirty>(true);
+		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Load Project File
 		fs::path projectPath = fs::path("D:\\Projects\\PuffinProject\\Puffin.pproject");
@@ -121,7 +109,7 @@ namespace Puffin::Core
 
 		// Load Default Scene (if set)
 		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
-		m_sceneData = std::make_shared<IO::SceneData>(ECSWorld, defaultScenePath);
+		m_sceneData = std::make_shared<IO::SceneData>(ecsWorld, defaultScenePath);
 
 		// Register Components to Scene Data
 		m_sceneData->RegisterComponent<TransformComponent>("Transforms");
@@ -137,194 +125,199 @@ namespace Puffin::Core
 		Assets::AssetRegistry::Get()->LoadAssetCache();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		//DefaultScene(ECSWorld);
-		//PhysicsScene(ECSWorld);
-		
+		//DefaultScene(ecsWorld);
+		//PhysicsScene(ecsWorld);
+
 		// Load Scene -- normal behaviour
 		m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;
 
-		// Initialize Systems
-		vulkanEngine->Init(m_window, UIManager, InputManager);
+		// Initialize Subsystems
+		for (auto& [fst, snd] : m_subsystems)
+		{
+			snd->Init();
+		}
 
-		for (auto system : ECSWorld->GetAllSystems())
+		// Initialize Systems
+		vulkanEngine->Init(m_window, m_uiManager, inputSubsystem);
+
+		for (auto& system : ecsWorld->GetAllSystems())
 		{
 			system->Init();
 			system->PreStart();
 		}
-		
-		// Run Game Loop;
-		auto lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		auto accumulatedTime = 0.0;
-		auto timeStep = 1 / 60.0; // How often deterministic code like physics should occur
-		auto maxTimeStep = 1 / 30.0;
 
-		while (running)
-		{
-			lastTime = currentTime;
-			currentTime = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<double> duration = currentTime - lastTime;
-			double deltaTime = duration.count();
-
-			// Make sure delta time never exceeds 1/30th of a second to stop
-			if (deltaTime > maxTimeStep)
-			{
-				deltaTime = maxTimeStep;
-			}
-
-			// Set delta time for all systems
-			for (auto system : ECSWorld->GetAllSystems())
-			{
-				system->SetDeltaTime(deltaTime);
-				system->SetFixedTime(timeStep);
-			}
-
-			// Call system start functions to prepare for gameplay
-			if (playState == PlayState::STARTED)
-			{
-				for (auto system : ECSWorld->GetAllSystems())
-				{
-					system->Start();
-				}
-
-				// Get Snapshot of current scene data
-				m_sceneData->UpdateData();
-				
-				accumulatedTime = 0.0;
-				playState = PlayState::PLAYING;
-			}
-
-			if (playState == PlayState::JUST_PAUSED)
-			{
-				m_audioManager->PauseAllSounds();
-
-				playState = PlayState::PAUSED;
-			}
-
-			if (playState == PlayState::JUST_UNPAUSED)
-			{
-				m_audioManager->PlayAllSounds();
-
-				playState = PlayState::PLAYING;
-			}
-
-			// Fixed Update
-			if (playState == PlayState::PLAYING)
-			{
-				// Add onto accumulated time
-				accumulatedTime += deltaTime;
-				
-				// Perform system updates until simulation is caught up
-				std::vector<std::shared_ptr<ECS::System>> fixedUpdateSystems;
-				ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::FixedUpdate, fixedUpdateSystems);
-				while(accumulatedTime >= timeStep)
-				{
-					accumulatedTime -= timeStep;
-
-					// FixedUpdate Systems
-					for (auto system : fixedUpdateSystems)
-					{
-						system->Update();
-					}
-				}
-			}
-
-			// Input
-			InputManager->UpdateInput();
-
-			// Update
-			if (playState == PlayState::PLAYING)
-			{
-				std::vector<std::shared_ptr<ECS::System>> updateSystems;
-				ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Update, updateSystems);
-				for (auto system : updateSystems)
-				{
-					system->Update();
-				}
-			}
-
-			// UI
-			UIManager->Update();
-
-			// Rendering
-			std::vector<std::shared_ptr<ECS::System>> renderingSystems;
-			ECSWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Rendering, renderingSystems);
-
-			for (auto system : renderingSystems)
-			{
-				system->Update();
-			}
-
-			if (playState == PlayState::JUST_STOPPED)
-			{
-				// Cleanup Systems and ECS
-				for (auto system : ECSWorld->GetAllSystems())
-				{
-					system->Stop();
-				}
-				ECSWorld->Reset();
-
-				// Re-Initialize Systems and ECS
-				m_sceneData->Init();
-				vulkanEngine->Start();
-
-				// Perform Pre-Gameplay Initiualization on Systems
-				for (auto system : ECSWorld->GetAllSystems())
-				{
-					system->PreStart();
-				}
-
-				m_audioManager->StopAllSounds();
-
-				playState = PlayState::STOPPED;
-			}
-
-			// Audio
-			m_audioManager->Update();
-
-			if (glfwWindowShouldClose(m_window))
-			{
-				running = false;
-			}
-
-			// Delete All Marked Objects
-			ECSWorld->Update();
-		}
-
-		// Cleanup All Systems
-		for (auto system : ECSWorld->GetAllSystems())
-		{
-			system->Cleanup();
-		}
-
-		UIManager->Cleanup();
-
-		Assets::AssetRegistry::Clear();
-
-		//physicsSystem = nullptr;
-		vulkanEngine = nullptr;
-
-		m_audioManager = nullptr;
-
-		ECSWorld = nullptr;
-
-		glfwDestroyWindow(m_window);
-		glfwTerminate();
+		m_lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
+		m_currentTime = std::chrono::high_resolution_clock::now();
+		m_accumulatedTime = 0.0;
+		m_timeStep = 1 / 60.0; // How often deterministic code like physics should occur (defaults to 60 times a second)
+		m_maxTimeStep = 1 / 30.0;
 	}
 
 	bool Engine::Update()
 	{
-		
+		// Run Game Loop;
+		m_lastTime = m_currentTime;
+		m_currentTime = std::chrono::high_resolution_clock::now();
+		const std::chrono::duration<double> duration = m_currentTime - m_lastTime;
+		double deltaTime = duration.count();
 
-		return true;
+		// Make sure delta time never exceeds 1/30th of a second
+		if (deltaTime > m_maxTimeStep)
+		{
+			deltaTime = m_maxTimeStep;
+		}
+
+		auto ecsWorld = GetSubsystem<ECS::World>();
+		auto audioSubsystem = GetSubsystem<Audio::AudioSubsystem>();
+
+		// Set delta time for all systems
+		for (auto& system : ecsWorld->GetAllSystems())
+		{
+			system->SetDeltaTime(deltaTime);
+			system->SetFixedTime(m_timeStep);
+		}
+
+		// Update all Subsystems
+		for (auto& [fst, snd] : m_subsystems)
+		{
+			if (snd->ShouldUpdate())
+			{
+				snd->Update();
+			}
+		}
+
+		// Call system start functions to prepare for gameplay
+		if (playState == PlayState::STARTED)
+		{
+			for (auto& system : ecsWorld->GetAllSystems())
+			{
+				system->Start();
+			}
+
+			// Get Snapshot of current scene data
+			m_sceneData->UpdateData();
+
+			m_accumulatedTime = 0.0;
+			playState = PlayState::PLAYING;
+		}
+
+		if (playState == PlayState::JUST_PAUSED)
+		{
+			audioSubsystem->PauseAllSounds();
+
+			playState = PlayState::PAUSED;
+		}
+
+		if (playState == PlayState::JUST_UNPAUSED)
+		{
+			audioSubsystem->PlayAllSounds();
+
+			playState = PlayState::PLAYING;
+		}
+
+		// Fixed Update
+		if (playState == PlayState::PLAYING)
+		{
+			// Add onto accumulated time
+			m_accumulatedTime += deltaTime;
+
+			// Perform system updates until simulation is caught up
+			std::vector<std::shared_ptr<ECS::System>> fixedUpdateSystems;
+			ecsWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::FixedUpdate, fixedUpdateSystems);
+			while (m_accumulatedTime >= m_timeStep)
+			{
+				m_accumulatedTime -= m_timeStep;
+
+				// FixedUpdate Systems
+				for (auto& system : fixedUpdateSystems)
+				{
+					system->Update();
+				}
+			}
+		}
+
+		// Update
+		if (playState == PlayState::PLAYING)
+		{
+			std::vector<std::shared_ptr<ECS::System>> updateSystems;
+			ecsWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Update, updateSystems);
+			for (auto& system : updateSystems)
+			{
+				system->Update();
+			}
+		}
+
+		// UI
+		m_uiManager->Update();
+
+		// Rendering
+		std::vector<std::shared_ptr<ECS::System>> renderingSystems;
+		ecsWorld->GetSystemsWithUpdateOrder(ECS::UpdateOrder::Rendering, renderingSystems);
+
+		for (auto system : renderingSystems)
+		{
+			system->Update();
+		}
+
+		if (playState == PlayState::JUST_STOPPED)
+		{
+			// Cleanup Systems and ECS
+			for (auto system : ecsWorld->GetAllSystems())
+			{
+				system->Stop();
+			}
+			ecsWorld->Reset();
+
+			// Re-Initialize Systems and ECS
+			m_sceneData->Init();
+
+			// Perform Pre-Gameplay Initiualization on Systems
+			for (auto system : ecsWorld->GetAllSystems())
+			{
+				system->PreStart();
+			}
+
+			audioSubsystem->StopAllSounds();
+
+			playState = PlayState::STOPPED;
+		}
+
+		if (glfwWindowShouldClose(m_window))
+		{
+			running = false;
+		}
+
+		return running;
 	}
 
 	void Engine::Destroy()
 	{
+		auto ecsWorld = GetSubsystem<ECS::World>();
 
+		// Cleanup All Systems
+		for (auto system : ecsWorld->GetAllSystems())
+		{
+			system->Cleanup();
+		}
+
+		for (auto& [fst, snd] : m_subsystems)
+		{
+			snd->Destroy();
+			snd = nullptr;
+		}
+
+		m_subsystems.clear();
+
+		m_uiManager->Cleanup();
+		m_uiManager = nullptr;
+
+		Assets::AssetRegistry::Clear();
+
+		glfwDestroyWindow(m_window);
+		glfwTerminate();
 	}
 
 	void Engine::AddDefaultAssets()

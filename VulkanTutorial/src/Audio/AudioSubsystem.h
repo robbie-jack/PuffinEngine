@@ -30,17 +30,12 @@ namespace Puffin::Audio
 		bool restart = false;
 	};
 
-	class AudioManager : public Core::Subsystem
+	class AudioSubsystem : public Core::Subsystem
 	{
 	public:
 
-		AudioManager() = default;
-		~AudioManager() override = default;
-
-		bool ShouldUpdate() const override
-		{
-			return true;
-		}
+		AudioSubsystem() { m_shouldUpdate = true; }
+		~AudioSubsystem() override = default;
 
 		void Init() override;
 		void Update() override;

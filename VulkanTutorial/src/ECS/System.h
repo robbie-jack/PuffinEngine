@@ -37,10 +37,7 @@ namespace Puffin
 		{
 		public:
 
-			virtual ~System()
-			{
-				m_world = nullptr;
-			}
+			virtual ~System() { m_world = nullptr; }
 
 			EntityMap entityMap;
 

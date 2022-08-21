@@ -8,16 +8,16 @@ namespace Puffin::Core
 
 	class Engine;
 
-	// Subsystems manage
+	// Subsystems manage essential low level functionality like Audio and Input
 	class Subsystem
 	{
 	public:
 
-		virtual ~Subsystem() = default;
+		virtual ~Subsystem() { m_engine = nullptr; }
 
-		virtual bool ShouldUpdate() const
+		bool ShouldUpdate() const
 		{
-			return false;
+			return m_shouldUpdate;
 		}
 
 		virtual void Init() = 0;
@@ -31,6 +31,7 @@ namespace Puffin::Core
 
 	protected:
 
+		bool m_shouldUpdate = false;;
 		std::shared_ptr<Engine> m_engine = nullptr;
 
 	};

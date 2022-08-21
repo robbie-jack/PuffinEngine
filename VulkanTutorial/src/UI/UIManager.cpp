@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 namespace Puffin::UI
 {
-	UIManager::UIManager(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+	UIManager::UIManager(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -61,7 +61,7 @@ namespace Puffin::UI
 		//ImPlot::DestroyContext();
 	}
 
-	void UIManager::DrawUI(float dt, std::shared_ptr<Input::InputManager> InputManager)
+	void UIManager::DrawUI(float dt, std::shared_ptr<Input::InputSubsystem> InputManager)
 	{
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

@@ -15,7 +15,7 @@
 
 #include "Types/RingBuffer.h"
 
-#include "Audio/AudioManager.h"
+#include "Audio/AudioSubsystem.h"
 
 #include <unordered_map>
 #include <map>
@@ -61,7 +61,7 @@ namespace Puffin
 				return info;
 			}
 
-			inline void SetAudioManager(std::shared_ptr<Audio::AudioManager> inAudioManager)
+			inline void SetAudioManager(std::shared_ptr<Audio::AudioSubsystem> inAudioManager)
 			{
 				m_audioManager = inAudioManager;
 			}
@@ -71,7 +71,7 @@ namespace Puffin
 			asIScriptEngine* m_scriptEngine = nullptr;
 			asIScriptContext* m_ctx = nullptr;
 
-			std::shared_ptr<Audio::AudioManager> m_audioManager;
+			std::shared_ptr<Audio::AudioSubsystem> m_audioManager;
 
 			ECS::EntityID m_currentEntityID = 0; // Entity ID for currently executing script
 

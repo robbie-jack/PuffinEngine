@@ -1,4 +1,4 @@
-#include "AudioManager.h"
+#include "AudioSubsystem.h"
 
 #include "Assets/AssetRegistry.h"
 #include "Assets/SoundAsset.h"
@@ -9,12 +9,12 @@ using namespace irrklang;
 
 namespace Puffin::Audio
 {
-	void AudioManager::Init()
+	void AudioSubsystem::Init()
 	{
 
 	}
 
-	void AudioManager::Update()
+	void AudioSubsystem::Update()
 	{
 		if (m_soundEngine)
 		{
@@ -22,7 +22,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioManager::Destroy()
+	void AudioSubsystem::Destroy()
 	{
 		StopAllSounds();
 
@@ -33,7 +33,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioManager::PlaySoundEffect(UUID soundId, float volume, bool looping, bool restart)
+	void AudioSubsystem::PlaySoundEffect(UUID soundId, float volume, bool looping, bool restart)
 	{
 		SoundEvent soundEvent;
 		soundEvent.type = SoundEventType::PLAY;
@@ -45,7 +45,7 @@ namespace Puffin::Audio
 		m_soundEventBuffer.Push(soundEvent);
 	}
 
-	UUID AudioManager::PlaySoundEffect(const std::string& soundPath, float volume, bool looping, bool restart)
+	UUID AudioSubsystem::PlaySoundEffect(const std::string& soundPath, float volume, bool looping, bool restart)
 	{
 		UUID soundId = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath)->ID();
 
@@ -54,7 +54,7 @@ namespace Puffin::Audio
 		return soundId;
 	}
 
-	void AudioManager::StopSoundEffect(UUID soundId)
+	void AudioSubsystem::StopSoundEffect(UUID soundId)
 	{
 		SoundEvent soundEvent;
 		soundEvent.type = SoundEventType::STOP;
@@ -63,7 +63,7 @@ namespace Puffin::Audio
 		m_soundEventBuffer.Push(soundEvent);
 	}
 
-	void AudioManager::PauseSoundEffect(UUID soundId)
+	void AudioSubsystem::PauseSoundEffect(UUID soundId)
 	{
 		SoundEvent soundEvent;
 		soundEvent.type = SoundEventType::PAUSE;
@@ -72,7 +72,7 @@ namespace Puffin::Audio
 		m_soundEventBuffer.Push(soundEvent);
 	}
 
-	void AudioManager::PlayAllSounds(bool forcePlay)
+	void AudioSubsystem::PlayAllSounds(bool forcePlay)
 	{
 		for (const auto pair : m_activeSounds)
 		{
@@ -87,7 +87,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioManager::PauseAllSounds()
+	void AudioSubsystem::PauseAllSounds()
 	{
 		for (const auto pair : m_activeSounds)
 		{
@@ -97,7 +97,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioManager::StopAllSounds()
+	void AudioSubsystem::StopAllSounds()
 	{
 		for (const auto pair : m_activeSounds)
 		{
@@ -108,7 +108,7 @@ namespace Puffin::Audio
 		m_activeSounds.clear();
 	}
 
-	void AudioManager::ProcessSoundEvents()
+	void AudioSubsystem::ProcessSoundEvents()
 	{
 		SoundEvent soundEvent;
 
@@ -139,7 +139,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioManager::PlaySound(SoundEvent soundEvent)
+	void AudioSubsystem::PlaySound(SoundEvent soundEvent)
 	{
 		// Unpause sound if it already exists, and the restart flag has not been set
 		if (m_activeSounds.count(soundEvent.id) && !soundEvent.restart)
@@ -163,7 +163,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioManager::ModifySound(SoundEvent soundEvent)
+	void AudioSubsystem::ModifySound(SoundEvent soundEvent)
 	{
 		if (m_activeSounds.count(soundEvent.id))
 		{
@@ -175,7 +175,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioManager::PauseSound(SoundEvent soundEvent)
+	void AudioSubsystem::PauseSound(SoundEvent soundEvent)
 	{
 		if (m_activeSounds.count(soundEvent.id))
 		{
@@ -183,7 +183,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioManager::StopSound(SoundEvent soundEvent)
+	void AudioSubsystem::StopSound(SoundEvent soundEvent)
 	{
 		if (m_activeSounds.count(soundEvent.id))
 		{

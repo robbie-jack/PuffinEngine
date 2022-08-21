@@ -5,7 +5,7 @@
 #include <imgui/imgui_impl_vulkan.h>
 #include <imfilebrowser.h>
 
-#include <Input/InputManager.h>
+#include <Input/InputSubsystem.h>
 
 #include "Windows/UIWindow.h"
 #include "Windows/UIWindowSceneHierarchy.h"
@@ -44,12 +44,12 @@ namespace Puffin
 		{
 		public:
 
-			UIManager(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput);
+			UIManager(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput);
 			~UIManager();
 
 			void Cleanup();
 
-			void DrawUI(float dt, std::shared_ptr<Input::InputManager> InputManager);
+			void DrawUI(float dt, std::shared_ptr<Input::InputSubsystem> InputManager);
 			void Update();
 			void AddWindow(std::shared_ptr<UIWindow> window);
 

@@ -4,6 +4,7 @@
 #include "ECS/ComponentType.h"
 #include "ECS/EventManager.h"
 #include "ECS/System.h"
+#include "Engine/Subsystem.hpp"
 
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"
@@ -729,12 +730,14 @@ namespace Puffin::ECS
 	// ECS World
 	//////////////////////////////////////////////////
 
-	class World : std::enable_shared_from_this<World>
+	class World : public Core::Subsystem, std::enable_shared_from_this<World>
 	{
 	public:
 
 		World()
 		{
+			m_shouldUpdate = true;
+
 			// Create pointers to each manager
 			m_componentManager = std::make_unique<ComponentManager>();
 			m_entityManager = std::make_unique<EntityManager>();
@@ -744,7 +747,23 @@ namespace Puffin::ECS
 			RegisterEntityFlag<FlagDeleted>();
 		}
 
-		~World()
+		~World() override = default;
+
+		void Init() override {}
+
+		void Update() override
+		{
+			// Remove all entities marked for deletion
+			for (auto entity : m_entityManager->GetActiveEntities())
+			{
+				if (GetEntityFlag<FlagDeleted>(entity))
+				{
+					DestroyEntity(entity);
+				}
+			}
+		}
+
+		void Destroy() override
 		{
 			for (auto entity : m_entityManager->GetActiveEntities())
 			{
@@ -755,18 +774,6 @@ namespace Puffin::ECS
 			m_componentManager = nullptr;
 			m_systemManager = nullptr;
 			m_eventManager = nullptr;
-		}
-
-		void Update()
-		{
-			// Remove all entities marked for deletion
-			for (auto entity : m_entityManager->GetActiveEntities())
-			{
-				if (GetEntityFlag<FlagDeleted>(entity))
-				{
-					DestroyEntity(entity);
-				}
-			}
 		}
 
 		// Reset Entities and Components, Leave Systems Intact
@@ -1018,9 +1025,9 @@ namespace Puffin::ECS
 
 	private:
 
-		std::unique_ptr<ComponentManager> m_componentManager;
-		std::unique_ptr<EntityManager> m_entityManager;
-		std::unique_ptr<SystemManager> m_systemManager;
-		std::unique_ptr<EventManager> m_eventManager;
+		std::unique_ptr<ComponentManager> m_componentManager = nullptr;
+		std::unique_ptr<EntityManager> m_entityManager = nullptr;
+		std::unique_ptr<SystemManager> m_systemManager = nullptr;
+		std::unique_ptr<EventManager> m_eventManager = nullptr;
 	};
 }

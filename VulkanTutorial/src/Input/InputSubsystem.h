@@ -5,6 +5,7 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Engine/Subsystem.hpp"
 #include "InputEvent.h"
 
 #include <vector>
@@ -28,15 +29,28 @@ namespace Puffin
 			KeyState state;
 		};
 
-		class InputManager
+		class InputSubsystem : public Core::Subsystem
 		{
 		public:
-			InputManager();
-			~InputManager();
 
-			void Init(GLFWwindow* windowIn, std::shared_ptr<ECS::World> InWorld);
+			InputSubsystem()
+			{
+				m_shouldUpdate = true;
 
-			void UpdateInput();
+				nextID = 1;
+				last_x_pos = 640.0f;
+				last_y_pos = 360.0f;
+				sensitivity = 0.05f;
+				cursor_locked = false;
+				firstMouse = true;
+			}
+
+			~InputSubsystem() override = default;
+
+			void Init() override;
+			void Update() override;
+			void Destroy() override;
+
 			void AddAction(std::string name, int key);
 			void AddAction(std::string name, std::vector<int> keys);
 			InputAction GetAction(std::string name);

@@ -13,7 +13,7 @@ namespace Puffin
 		{
 		public:
 
-			UIWindowSceneHierarchy(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputManager> InInput)
+			UIWindowSceneHierarchy(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
 				: UIWindow(InEngine, InWorld, InInput)
 			{
 			};

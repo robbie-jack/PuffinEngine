@@ -5,17 +5,15 @@
 
 int main()
 {
-	Puffin::Core::Engine engine;
+	const auto engine = std::make_shared<Puffin::Core::Engine>();
 
-	engine.Init();
+	engine->Init();
 
 	try
 	{
-		//engine.MainLoop();
-
 		while(true)
 		{
-			if (!engine.Update())
+			if (!engine->Update())
 			{
 				break;
 			}
@@ -27,7 +25,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	engine.Destroy();
+	engine->Destroy();
 
 	return EXIT_SUCCESS;
 }

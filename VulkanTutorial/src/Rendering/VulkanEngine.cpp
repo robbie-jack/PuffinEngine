@@ -36,7 +36,7 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		GLFWwindow* VulkanEngine::Init(GLFWwindow* windowIn, std::shared_ptr<UI::UIManager> inUIManager, std::shared_ptr<Input::InputManager> inInputManager)
+		GLFWwindow* VulkanEngine::Init(GLFWwindow* windowIn, std::shared_ptr<UI::UIManager> inUIManager, std::shared_ptr<Input::InputSubsystem> inInputManager)
 		{
 			m_uiManager = inUIManager;
 			m_inputManager = inInputManager;
@@ -114,7 +114,7 @@ namespace Puffin
 			InitDepthSampler();
 
 			// Initialize All Scene Objects
-			Start();
+			PreStart();
 
 			// Setup Deferred Renderer
 			SetupDeferredRenderer();
@@ -146,7 +146,7 @@ namespace Puffin
 			return window;
 		}
 
-		void VulkanEngine::Start()
+		void VulkanEngine::PreStart()
 		{
 			InitScene();
 			InitShadowmapDescriptors();
