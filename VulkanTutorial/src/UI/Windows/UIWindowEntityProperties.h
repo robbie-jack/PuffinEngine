@@ -5,7 +5,6 @@
 
 #include "UIWindow.h"
 
-//#include <ECS/ECS.h>
 #include <imfilebrowser.h>
 #include <Components/Rendering/CameraComponent.h>
 
@@ -19,10 +18,8 @@ namespace Puffin
         {
 		public:
 
-            UIWindowEntityProperties(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
-        		: UIWindow(InEngine, InWorld, InInput)
-            {
-            };
+            UIWindowEntityProperties(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
+            ~UIWindowEntityProperties() override {}
 
             void Draw(float dt) override;
 
@@ -32,8 +29,9 @@ namespace Puffin
             inline bool HasSceneChanged() { return sceneChanged; };
 
         private:
+
             ECS::EntityID m_entity = 0;
-            ImGui::FileBrowser* fileDialog;
+            ImGui::FileBrowser* fileDialog = nullptr;
 
             void DrawTransformUI(ImGuiTreeNodeFlags flags);
 

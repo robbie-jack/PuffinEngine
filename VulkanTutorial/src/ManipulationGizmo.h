@@ -2,7 +2,7 @@
 
 #include <Rendering\DebugDraw.h>
 #include <Components\TransformComponent.h>
-#include "Engine/EventSubsystem.h"
+#include "Engine/EventSubsystem.hpp"
 
 namespace Puffin
 {

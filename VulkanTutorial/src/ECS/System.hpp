@@ -29,12 +29,12 @@ namespace Puffin
 
 	namespace ECS
 	{
-
 		//////////////////////////////////////////////////
 		// System
 		//////////////////////////////////////////////////
 
 		class World;
+		class ECSSubsystem;
 		typedef uint32_t EntityID;
 
 		typedef std::unordered_map<std::string_view, std::set<EntityID>> EntityMap;
@@ -62,14 +62,19 @@ namespace Puffin
 			// Get struct with info on system such as its update order
 			const Core::SystemInfo& GetInfo() { return m_systemInfo; } const
 
+			void SetEngine(std::shared_ptr<Core::Engine> inEngine)
+			{
+				m_engine = inEngine;
+			}
+
 			void SetWorld(std::shared_ptr<World> inWorld)
 			{
 				m_world = inWorld;
 			}
 
-			void SetEngine(std::shared_ptr<Core::Engine> inEngine)
+			void SetECS(std::shared_ptr<ECSSubsystem> inECS)
 			{
-				m_engine = inEngine;
+				m_ecs = inECS;
 			}
 
 			void SetDeltaTime(double inDeltaTime)
@@ -84,8 +89,9 @@ namespace Puffin
 
 		protected:
 
-			std::shared_ptr<World> m_world = nullptr;
 			std::shared_ptr<Core::Engine> m_engine = nullptr;
+			std::shared_ptr<World> m_world = nullptr;
+			std::shared_ptr<ECSSubsystem> m_ecs = nullptr;
 
 			Core::SystemInfo m_systemInfo;
 

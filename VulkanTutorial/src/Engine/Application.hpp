@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine.h"
+#include "Engine/Engine.hpp"
 
 namespace Puffin::Core
 {

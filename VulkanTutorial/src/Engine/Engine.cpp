@@ -1,10 +1,9 @@
-#include "Engine.h"
+#include "Engine/Engine.hpp"
 
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 
 #include "Rendering/VulkanEngine.h"
-//#include "Physics/PhysicsSystem2D.h"
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
 
@@ -14,7 +13,7 @@
 #include "Types/ComponentFlags.h"
 
 #include "Input/InputSubsystem.h"
-#include "Engine/EventSubsystem.h"
+#include "Engine/EventSubsystem.hpp"
 
 #include "SerializeScene.h"
 #include "UI/UIManager.h"
@@ -52,7 +51,7 @@ namespace Puffin::Core
 		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
 		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
 
-		m_uiManager = std::make_shared<UI::UIManager>(this, ecsWorld, inputSubsystem);
+		m_uiManager = std::make_shared<UI::UIManager>(shared_from_this());
 
 		// Systems
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = RegisterSystem<Rendering::VulkanEngine>();

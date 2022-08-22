@@ -101,7 +101,6 @@
       <Filter>Libraries\VK-Bootstrap</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Input\InputSubsystem.cpp">
       <Filter>Input</Filter>
     </ClCompile>
@@ -355,12 +354,14 @@
     <ClCompile Include="src\Engine\Application.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\Engine.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
       <Filter>Libraries\VK-Bootstrap</Filter>
     </ClInclude>
-    <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\SerializeScene.h" />
     <ClInclude Include="src\ecs\ECS.h">
@@ -409,7 +410,7 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="src\ManipulationGizmo.h" />
-    <ClInclude Include="src\ECS\System.h">
+    <ClInclude Include="src\ECS\System.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
     <ClInclude Include="src\Types\RingBuffer.h">
@@ -617,7 +618,13 @@
     <ClInclude Include="src\Engine\Subsystem.hpp">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="src\Engine\EventSubsystem.h">
+    <ClInclude Include="src\ECS\ECSSubsystem.hpp">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Engine.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\EventSubsystem.hpp">
       <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>

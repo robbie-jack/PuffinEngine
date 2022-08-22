@@ -44,12 +44,12 @@ namespace Puffin
 		{
 		public:
 
-			UIManager(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput);
-			~UIManager();
+			UIManager(std::shared_ptr<Core::Engine> engine);
+			~UIManager() {}
 
 			void Cleanup();
 
-			void DrawUI(float dt, std::shared_ptr<Input::InputSubsystem> InputManager);
+			void DrawUI(float dt);
 			void Update();
 			void AddWindow(std::shared_ptr<UIWindow> window);
 
@@ -60,8 +60,7 @@ namespace Puffin
 			bool saveScene, loadScene;
 			ImportAssetUI importAssetUI;
 
-			Core::Engine* m_engine;
-			std::shared_ptr<ECS::World> m_world;
+			std::shared_ptr<Core::Engine> m_engine = nullptr;
 			ECS::EntityID m_entity;
 
 			std::vector<std::shared_ptr<UIWindow>> m_windows;

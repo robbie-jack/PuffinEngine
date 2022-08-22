@@ -18,10 +18,8 @@ namespace Puffin
 		{
 		public:
 
-			UIWindowViewport(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
-			: UIWindow(InEngine, InWorld, InInput)
-			{
-			};
+			UIWindowViewport(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
+			~UIWindowViewport() override {}
 
 			void DrawWithoutImage();
 			void Draw(ImTextureID textureID);
@@ -33,9 +31,9 @@ namespace Puffin
 
 		private:
 
-			ECS::EntityID entity;
+			ECS::EntityID entity = ECS::INVALID_ENTITY;
 
-			ImVec2 viewportSize;
+			ImVec2 viewportSize = ImVec2(640.0f, 480.0f);
 
 			std::string playButtonLabel = "Play";
 		};

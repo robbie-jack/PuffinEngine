@@ -2,9 +2,9 @@
 
 #include "ECS/EntityID.h"
 #include "ECS/ComponentType.h"
-#include "ECS/System.h"
+#include "ECS/System.hpp"
 #include "Engine/Subsystem.hpp"
-#include "Engine/EventSubsystem.h"
+#include "Engine/EventSubsystem.hpp"
 
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"

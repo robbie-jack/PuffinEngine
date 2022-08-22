@@ -8,12 +8,11 @@ namespace Puffin::UI
 	{
 	public:
 			
-		UIContentBrowser(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
-			: UIWindow(InEngine, InWorld, InInput)
+		UIContentBrowser(std::shared_ptr<Core::Engine> engine) : UIWindow(engine)
 		{
 			windowName = "Content Browser";
 		}
-		~UIContentBrowser() {}
+		~UIContentBrowser() override {}
 
 		void Draw(float dt) override;
 	};

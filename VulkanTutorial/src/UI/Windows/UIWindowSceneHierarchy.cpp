@@ -29,13 +29,14 @@ namespace Puffin
 
 				ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
 
-				if (m_world != nullptr)
+				auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+				if (ecsWorld)
 				{
 					ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					for (ECS::EntityID entity : m_world->GetActiveEntities())
+					for (ECS::EntityID entity : ecsWorld->GetActiveEntities())
 					{
 						ImGuiTreeNodeFlags tree_flags = base_flags;
 						bool has_child = false;
@@ -52,7 +53,7 @@ namespace Puffin
 						if (!has_child)
 							tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-						bool node_open = ImGui::TreeNodeEx(m_world->GetEntityName(entity).c_str(), tree_flags);
+						bool node_open = ImGui::TreeNodeEx(ecsWorld->GetEntityName(entity).c_str(), tree_flags);
 
 						// Set Selected Entity when node is clicked
 						if (ImGui::IsItemClicked())
@@ -85,7 +86,7 @@ namespace Puffin
 
 				if (ImGui::Button("Destroy Entity"))
 				{
-					m_world->SetEntityFlag<FlagDeleted>(selectedEntity, true);
+					ecsWorld->SetEntityFlag<FlagDeleted>(selectedEntity, true);
 
 					selectedEntity = ECS::INVALID_ENTITY;
 					entityChanged = true;
@@ -95,7 +96,7 @@ namespace Puffin
 				{
 					if (ImGui::Selectable("Empty"))
 					{
-						const auto entity = ECS::CreateEntity(m_world);
+						const auto entity = ECS::CreateEntity(ecsWorld);
 
 						entity->AddComponent<TransformComponent>();
 

@@ -1,9 +1,10 @@
 #include "UIWindowViewport.h"
 
+#include "Engine/Engine.hpp"
+
 #include <Components\TransformComponent.h>
 #include <ManipulationGizmo.h>
 #include <ECS/ECS.h>
-#include <Engine.h>
 
 namespace Puffin
 {
@@ -29,6 +30,8 @@ namespace Puffin
 		void UIWindowViewport::Draw(ImTextureID textureID)
 		{
 			windowName = "Viewport";
+
+			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
 
 			if (show)
 			{
@@ -91,7 +94,7 @@ namespace Puffin
 
 				if (entity != ECS::INVALID_ENTITY)
 				{
-					TransformComponent& transform = m_world->GetComponent<TransformComponent>(entity);
+					TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(entity);
 					
 					DrawManipulationGizmo(m_engine->GetSubsystem<Core::EventSubsystem>(), transform);
 				}

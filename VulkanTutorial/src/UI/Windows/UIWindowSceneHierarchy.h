@@ -13,10 +13,8 @@ namespace Puffin
 		{
 		public:
 
-			UIWindowSceneHierarchy(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
-				: UIWindow(InEngine, InWorld, InInput)
-			{
-			};
+			UIWindowSceneHierarchy(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
+			~UIWindowSceneHierarchy() override {}
 
 			void Draw(float dt) override;
 
@@ -24,8 +22,8 @@ namespace Puffin
 			inline ECS::EntityID GetEntity() { return selectedEntity; };
 
 		private:
-			ECS::EntityID selectedEntity;
-			bool entityChanged;
+			ECS::EntityID selectedEntity = ECS::INVALID_ENTITY;
+			bool entityChanged = false;
 		};
 	}
 }

@@ -103,7 +103,7 @@ namespace Puffin::Core
 				m_systemUpdateVectors[systemBase->GetInfo().updateOrder].push_back(systemBase);
 			}
 
-			return nullptr;
+			return system;
 		}
 
 		PlayState GetPlayState() const { return playState; }

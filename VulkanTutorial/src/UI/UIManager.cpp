@@ -1,7 +1,8 @@
 #include "UIManager.h"
 
+#include "Engine/Engine.hpp"
+
 #include <ECS/ECS.h>
-#include <Engine.h>
 #include <ManipulationGizmo.h>
 
 #include "SerializeScene.h"
@@ -15,7 +16,7 @@ namespace fs = std::filesystem;
 
 namespace Puffin::UI
 {
-	UIManager::UIManager(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
+	UIManager::UIManager(std::shared_ptr<Core::Engine> engine)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -31,15 +32,14 @@ namespace Puffin::UI
 		loadScene = false;
 		importAssetUI = ImportAssetUI::None;
 
-		m_engine = InEngine;
-		m_world = InWorld;
+		m_engine = engine;
 
-		windowSceneHierarchy =	std::make_shared<UIWindowSceneHierarchy>(m_engine, m_world, InInput);
-		windowViewport = std::make_shared<UIWindowViewport>(m_engine, m_world, InInput);
-		windowSettings = std::make_shared<UIWindowSettings>(m_engine, m_world, InInput);
-		windowEntityProperties = std::make_shared<UIWindowEntityProperties>(m_engine, m_world, InInput);
-		windowPerformance = std::make_shared<UIWindowPerformance>(m_engine, m_world, InInput);
-		contentBrowser = std::make_shared<UIContentBrowser>(m_engine, m_world, InInput);
+		windowSceneHierarchy =	std::make_shared<UIWindowSceneHierarchy>(m_engine);
+		windowViewport = std::make_shared<UIWindowViewport>(m_engine);
+		windowSettings = std::make_shared<UIWindowSettings>(m_engine);
+		windowEntityProperties = std::make_shared<UIWindowEntityProperties>(m_engine);
+		windowPerformance = std::make_shared<UIWindowPerformance>(m_engine);
+		contentBrowser = std::make_shared<UIContentBrowser>(m_engine);
 
 		windowEntityProperties->SetFileBrowser(&fileDialog);
 
@@ -50,18 +50,13 @@ namespace Puffin::UI
 		AddWindow(contentBrowser);
 	}
 
-	UIManager::~UIManager()
-	{
-			
-	}
-
 	void UIManager::Cleanup()
 	{
 		ImGui::DestroyContext();
 		//ImPlot::DestroyContext();
 	}
 
-	void UIManager::DrawUI(float dt, std::shared_ptr<Input::InputSubsystem> InputManager)
+	void UIManager::DrawUI(float dt)
 	{
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

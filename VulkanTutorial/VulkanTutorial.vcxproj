@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\entt\single_include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -154,7 +154,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\entt\single_include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -236,8 +236,8 @@
     <ClCompile Include="src\Assets\MeshAsset.cpp" />
     <ClCompile Include="src\Assets\TextureAsset.cpp" />
     <ClCompile Include="src\Audio\AudioSubsystem.cpp" />
-    <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Engine\Application.cpp" />
+    <ClCompile Include="src\Engine\Engine.cpp" />
     <ClCompile Include="src\Input\InputSubsystem.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ManipulationGizmo.cpp" />
@@ -300,12 +300,13 @@
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ECS\ComponentType.h" />
     <ClInclude Include="src\ecs\ECS.h" />
+    <ClInclude Include="src\ECS\ECSSubsystem.hpp" />
     <ClInclude Include="src\ECS\Entity.h" />
     <ClInclude Include="src\ECS\EntityID.h" />
-    <ClInclude Include="src\ECS\System.h" />
-    <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\ECS\System.hpp" />
     <ClInclude Include="src\Engine\Application.hpp" />
-    <ClInclude Include="src\Engine\EventSubsystem.h" />
+    <ClInclude Include="src\Engine\Engine.hpp" />
+    <ClInclude Include="src\Engine\EventSubsystem.hpp" />
     <ClInclude Include="src\Engine\Subsystem.hpp" />
     <ClInclude Include="src\Input\InputEvent.h" />
     <ClInclude Include="src\Input\InputSubsystem.h" />

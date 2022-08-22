@@ -1660,7 +1660,7 @@ namespace Puffin
 				m_shadowmapsNeedsUpdated = false;
 			}
 
-			m_uiManager->DrawUI(m_deltaTime, m_inputSubsystem);
+			m_uiManager->DrawUI(m_deltaTime);
 
 			UpdateCamera(camera);
 

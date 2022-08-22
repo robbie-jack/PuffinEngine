@@ -1,8 +1,8 @@
 #include <Input/InputSubsystem.h>
 #include <ECS/ECS.h>
 
-#include "Engine.h"
-#include "Engine/EventSubsystem.h"
+#include "Engine/Engine.hpp"
+#include "Engine/EventSubsystem.hpp"
 
 namespace Puffin
 {

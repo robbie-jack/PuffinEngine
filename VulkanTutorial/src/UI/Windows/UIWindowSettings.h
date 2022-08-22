@@ -14,17 +14,16 @@ namespace Puffin
 		{
 		public:
 
-			UIWindowSettings(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
-				: UIWindow(InEngine, InWorld, InInput)
-			{
-			};
+			UIWindowSettings(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
+			~UIWindowSettings() override {}
 
 			void Draw(float dt) override;
 
 			inline void SetCamera(Puffin::Rendering::CameraComponent* camera) { m_camera = camera; }
 
 		private:
-			Puffin::Rendering::CameraComponent* m_camera;
+
+			Puffin::Rendering::CameraComponent* m_camera = nullptr;
 
 		};
 	}

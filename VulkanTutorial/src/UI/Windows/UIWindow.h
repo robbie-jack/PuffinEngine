@@ -9,7 +9,7 @@
 
 #include <Input\InputSubsystem.h>
 #include <ECS/ECS.h>
-#include <Engine.h>
+#include "Engine/Engine.hpp"
 
 namespace Puffin
 {
@@ -30,8 +30,7 @@ namespace Puffin
 		{
 		public:
 
-			UIWindow(Core::Engine* InEngine, std::shared_ptr<ECS::World> InWorld, std::shared_ptr<Input::InputSubsystem> InInput)
-				: m_engine(InEngine), m_world(InWorld), m_inputManager(InInput)
+			UIWindow(std::shared_ptr<Core::Engine> engine) : m_engine(engine)
 			{
 				show = true;
 				firstTime = true;
@@ -40,9 +39,7 @@ namespace Puffin
 
 			virtual ~UIWindow()
 			{
-				m_world = nullptr;
 				m_engine = nullptr;
-				m_inputManager = nullptr;
 			}
 
 			virtual void Draw(float dt) = 0;
@@ -70,9 +67,7 @@ namespace Puffin
 			// Vulkan Texture Sampler for Rendering Textures
 			VkSampler textureSampler;
 
-			Core::Engine* m_engine;
-			std::shared_ptr<ECS::World> m_world;
-			std::shared_ptr<Input::InputSubsystem> m_inputManager;
+			std::shared_ptr<Core::Engine> m_engine;
 		};
 	}
 }

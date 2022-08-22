@@ -5,8 +5,8 @@
 
 #include "Assets/AssetRegistry.h"
 
-#include "Engine.h"
-#include "Engine/EventSubsystem.h"
+#include "Engine/Engine.hpp"
+#include "Engine/EventSubsystem.hpp"
 
 #include <iostream>  // cout
 #include <assert.h>  // assert()

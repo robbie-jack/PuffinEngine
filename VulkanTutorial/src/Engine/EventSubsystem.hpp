@@ -1,8 +1,7 @@
 #pragma once
 
-#include <ECS\System.h>
 #include "Engine/Subsystem.hpp"
-#include <Types\RingBuffer.h>
+#include <Types/RingBuffer.h>
 
 #include <vector>
 #include <array>
