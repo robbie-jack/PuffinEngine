@@ -294,6 +294,8 @@ namespace Puffin::ECS
 	{
 	public:
 		virtual ~IComponentArray() = default;
+		virtual void AddComponent(EntityID entity) = 0;
+		virtual bool HasComponent(EntityID entity) = 0;
 		virtual void RegisterComponentFlag(FlagType flagType, bool flagDefault) = 0;
 		virtual void EntityDestroyed(EntityID entity) = 0;
 	};
@@ -309,26 +311,39 @@ namespace Puffin::ECS
 			flagDefaults.clear();
 		}
 
-		ComponentT& AddComponent(EntityID entity)
-		{
-			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
+		//ComponentT& AddComponent(EntityID entity)
+		//{
+		//	assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
 
-			componentArray.Insert(entity, ComponentT());
+		//	componentArray.Insert(entity, ComponentT());
 
-			// Set all flags back to default
-			for (auto& pair : flagSets)
-			{
-				pair.second[entity] = flagDefaults[pair.first];
-			}
+		//	// Set all flags back to default
+		//	for (auto& pair : flagSets)
+		//	{
+		//		pair.second[entity] = flagDefaults[pair.first];
+		//	}
 
-			return componentArray[entity];
-		}
+		//	return componentArray[entity];
+		//}
 
 		void AddComponent(EntityID entity, ComponentT& component)
 		{
 			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
 
 			componentArray.Insert(entity, component);
+
+			// Set all flags back to default
+			for (auto& pair : flagSets)
+			{
+				pair.second[entity] = flagDefaults[pair.first];
+			}
+		}
+
+		void AddComponent(EntityID entity) override
+		{
+			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
+
+			componentArray.Insert(entity, ComponentT());
 
 			// Set all flags back to default
 			for (auto& pair : flagSets)
@@ -351,7 +366,7 @@ namespace Puffin::ECS
 			return componentArray[entity];
 		}
 
-		bool HasComponent(EntityID entity)
+		bool HasComponent(EntityID entity) override
 		{
 			return componentArray.Contains(entity);
 		}
@@ -429,7 +444,7 @@ namespace Puffin::ECS
 			std::shared_ptr<ComponentArray<ComponentT>> array = std::make_shared<ComponentArray<ComponentT>>();
 
 			// Cast ComponentArray pointer to IComponentArray and add to component arrays map
-			componentArrays.insert({typeName, std::static_pointer_cast<IComponentArray>(array) });
+			componentArrays.insert({ nextComponentType, std::static_pointer_cast<IComponentArray>(array) });
 
 			// Increment next component type
 			nextComponentType++;
@@ -450,7 +465,19 @@ namespace Puffin::ECS
 		ComponentT& AddComponent(EntityID entity)
 		{
 			// Add a component to array for this entity
-			return GetComponentArray<ComponentT>()->AddComponent(entity);
+			GetComponentArray<ComponentT>()->AddComponent(entity);
+
+			for (auto& compType : m_requiredComponentTypes[GetComponentType<ComponentT>()])
+			{
+				const std::shared_ptr<IComponentArray> compArray = GetComponentArray(compType);
+
+				if (!compArray->HasComponent(entity))
+				{
+					compArray->AddComponent(entity);
+				}
+			}
+
+			return GetComponentArray<ComponentT>()->GetComponent(entity);
 		}
 
 		template<typename ComponentT>
@@ -458,6 +485,16 @@ namespace Puffin::ECS
 		{
 			// Add a component to array for this entity
 			GetComponentArray<ComponentT>()->AddComponent(entity, component);
+
+			for (auto& compType : m_requiredComponentTypes[GetComponentType<ComponentT>()])
+			{
+				const std::shared_ptr<IComponentArray> compArray = GetComponentArray(compType);
+
+				if (!compArray->HasComponent(entity))
+				{
+					compArray->AddComponent(entity);
+				}
+			}
 		}
 
 		template<typename ComponentT>
@@ -483,6 +520,29 @@ namespace Puffin::ECS
 
 			// Return true if array has component for this entity
 			return GetComponentArray<ComponentT>()->HasComponent(entity);
+		}
+
+		// Register Component Dependencies for other Components
+		template<typename ComponentT, typename... RequiredTypes>
+		void AddComponentDependencies()
+		{
+			const char* typeName = typeid(ComponentT).name();
+
+			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+
+			const ComponentType componentType = componentTypes[typeName];
+
+			if (sizeof...(RequiredTypes) != 0)
+			{
+				//Unpack component types into initializer list
+				ComponentType requiredTypes[] = { GetComponentType<RequiredTypes>() ... };
+
+				// Iterate over component types, setting bit for each in signature
+				for (int i = 0; i < sizeof...(RequiredTypes); i++)
+				{
+					m_requiredComponentTypes[componentType].insert(requiredTypes[i]);
+				}
+			}
 		}
 
 		// Functions for Registering and Updating Component Flags
@@ -558,7 +618,9 @@ namespace Puffin::ECS
 		std::unordered_map<const char*, ComponentType> componentTypes;
 
 		// Map from type string pointer to component array
-		std::unordered_map<const char*, std::shared_ptr<IComponentArray>> componentArrays;
+		std::unordered_map<ComponentType, std::shared_ptr<IComponentArray>> componentArrays;
+
+		std::unordered_map<ComponentType, std::set<ComponentType>> m_requiredComponentTypes; // Map of required components
 
 		// FlagType to be assigned to next registered flag
 		FlagType nextFlagType;
@@ -573,7 +635,12 @@ namespace Puffin::ECS
 
 			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
 
-			return std::static_pointer_cast<ComponentArray<ComponentT>>(componentArrays[typeName]);
+			return std::static_pointer_cast<ComponentArray<ComponentT>>(componentArrays[GetComponentType<ComponentT>()]);
+		}
+
+		std::shared_ptr<IComponentArray> GetComponentArray(ComponentType compType)
+		{
+			return componentArrays[compType];
 		}
 	};
 
@@ -784,7 +851,7 @@ namespace Puffin::ECS
 			if (sizeof...(ComponentTypes) != 0)
 			{
 				//Unpack component types into initializer list
-				ComponentType componentTypes[] = { this->GetComponentType<ComponentTypes>() ... };
+				ComponentType componentTypes[] = { GetComponentType<ComponentTypes>() ... };
 				Signature signature;
 
 				// Iterate over component types, setting bit for each in signature
@@ -914,6 +981,13 @@ namespace Puffin::ECS
 		bool HasComponent(EntityID entity) const
 		{
 			return m_componentManager->HasComponent<ComponentT>(entity);
+		}
+
+		// Register Component Dependencies for other Components
+		template<typename ComponentT, typename... RequiredTypes>
+		void AddComponentDependencies() const
+		{
+			m_componentManager->AddComponentDependencies<ComponentT, RequiredTypes>();
 		}
 
 		template<typename FlagT>
