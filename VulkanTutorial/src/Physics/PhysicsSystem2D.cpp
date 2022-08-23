@@ -5,6 +5,8 @@
 
 #include <Physics/PhysicsHelpers2D.h>
 
+#include "Engine/Engine.hpp"
+
 namespace Puffin
 {
 	namespace Physics
@@ -265,10 +267,10 @@ namespace Puffin
 				CalculateImpulseByGravity(rigidbody);
 
 				// Update Position
-				transform.position += rigidbody.linearVelocity * m_fixedTime;
+				transform.position += rigidbody.linearVelocity * m_engine->GetTimeStep();
 
 				// Update Rotation
-				transform.rotation.z += rigidbody.angularVelocity * m_fixedTime;
+				transform.rotation.z += rigidbody.angularVelocity * m_engine->GetTimeStep();
 
 				if (transform.rotation.z > 360.0)
 				{
@@ -283,7 +285,7 @@ namespace Puffin
 				return;
 
 			float mass = 1.0f / body.invMass;
-			Vector2 impulseGravity = m_gravity * mass * m_fixedTime;
+			Vector2 impulseGravity = m_gravity * mass * m_engine->GetTimeStep();
 			
 			ApplyLinearImpulse(body, impulseGravity);
 		}

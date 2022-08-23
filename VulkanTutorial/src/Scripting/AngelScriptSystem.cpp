@@ -612,14 +612,14 @@ namespace Puffin::Scripting
 
 	// Global Script Functions
 
-	double AngelScriptSystem::GetDeltaTime()
+	const double& AngelScriptSystem::GetDeltaTime() const
 	{
-		return m_deltaTime;
+		return m_engine->GetDeltaTime();
 	}
 
-	double AngelScriptSystem::GetFixedTime()
+	const double& AngelScriptSystem::GetFixedTime() const
 	{
-		return m_fixedTime;
+		return m_engine->GetTimeStep();
 	}
 
 	void AngelScriptSystem::PlaySoundEffect(uint64_t id, float volume, bool looping, bool restart)

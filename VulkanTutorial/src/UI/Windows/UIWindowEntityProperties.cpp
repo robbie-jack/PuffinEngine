@@ -106,7 +106,7 @@ namespace Puffin
 						{
 							if (!ecsWorld->HasComponent<Rendering::MeshComponent>(m_entity))
 							{
-								Rendering::MeshComponent& comp = ecsWorld->AddComponent<Rendering::MeshComponent>(m_entity);
+								ecsWorld->AddComponent<Rendering::MeshComponent>(m_entity);
 								sceneChanged = true;
 							}
 						}
@@ -115,17 +115,17 @@ namespace Puffin
 						{
 							if (!ecsWorld->HasComponent<Rendering::LightComponent>(m_entity))
 							{
-								Rendering::LightComponent& comp = ecsWorld->AddComponent<Rendering::LightComponent>(m_entity);
-								comp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-								comp.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-								comp.innerCutoffAngle = 12.5f;
-								comp.outerCutoffAngle = 17.5f;
-								comp.constantAttenuation = 1.0f;
-								comp.linearAttenuation = 0.09f;
-								comp.quadraticAttenuation = 0.032f;
-								comp.specularStrength = 0.5f;
-								comp.shininess = 16;
-								comp.type = Rendering::LightType::POINT;
+								auto& light = ecsWorld->AddAndGetComponent<Rendering::LightComponent>(m_entity);
+								light.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+								light.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+								light.innerCutoffAngle = 12.5f;
+								light.outerCutoffAngle = 17.5f;
+								light.constantAttenuation = 1.0f;
+								light.linearAttenuation = 0.09f;
+								light.quadraticAttenuation = 0.032f;
+								light.specularStrength = 0.5f;
+								light.shininess = 16;
+								light.type = Rendering::LightType::POINT;
 								
 								sceneChanged = true;
 							}

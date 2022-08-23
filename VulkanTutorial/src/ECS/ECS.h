@@ -311,34 +311,6 @@ namespace Puffin::ECS
 			flagDefaults.clear();
 		}
 
-		//ComponentT& AddComponent(EntityID entity)
-		//{
-		//	assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
-
-		//	componentArray.Insert(entity, ComponentT());
-
-		//	// Set all flags back to default
-		//	for (auto& pair : flagSets)
-		//	{
-		//		pair.second[entity] = flagDefaults[pair.first];
-		//	}
-
-		//	return componentArray[entity];
-		//}
-
-		void AddComponent(EntityID entity, ComponentT& component)
-		{
-			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
-
-			componentArray.Insert(entity, component);
-
-			// Set all flags back to default
-			for (auto& pair : flagSets)
-			{
-				pair.second[entity] = flagDefaults[pair.first];
-			}
-		}
-
 		void AddComponent(EntityID entity) override
 		{
 			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
@@ -352,18 +324,18 @@ namespace Puffin::ECS
 			}
 		}
 
-		void RemoveComponent(EntityID entity)
-		{
-			assert(componentArray.Contains(entity) && "Removing non-existent component.");
-
-			componentArray.Erase(entity);
-		}
-
 		ComponentT& GetComponent(EntityID entity)
 		{
 			assert(componentArray.Contains(entity) && "Retrieving non-existent component.");
 
 			return componentArray[entity];
+		}
+
+		void RemoveComponent(EntityID entity)
+		{
+			assert(componentArray.Contains(entity) && "Removing non-existent component.");
+
+			componentArray.Erase(entity);
 		}
 
 		bool HasComponent(EntityID entity) override
@@ -462,7 +434,7 @@ namespace Puffin::ECS
 		}
 
 		template<typename ComponentT>
-		ComponentT& AddComponent(EntityID entity)
+		void AddComponent(EntityID entity)
 		{
 			// Add a component to array for this entity
 			GetComponentArray<ComponentT>()->AddComponent(entity);
@@ -476,32 +448,6 @@ namespace Puffin::ECS
 					compArray->AddComponent(entity);
 				}
 			}
-
-			return GetComponentArray<ComponentT>()->GetComponent(entity);
-		}
-
-		template<typename ComponentT>
-		void AddComponent(EntityID entity, ComponentT& component)
-		{
-			// Add a component to array for this entity
-			GetComponentArray<ComponentT>()->AddComponent(entity, component);
-
-			for (auto& compType : m_requiredComponentTypes[GetComponentType<ComponentT>()])
-			{
-				const std::shared_ptr<IComponentArray> compArray = GetComponentArray(compType);
-
-				if (!compArray->HasComponent(entity))
-				{
-					compArray->AddComponent(entity);
-				}
-			}
-		}
-
-		template<typename ComponentT>
-		void RemoveComponent(EntityID entity)
-		{
-			// Remove component from array for this entity
-			GetComponentArray<ComponentT>()->RemoveComponent(entity);
 		}
 
 		template<typename ComponentT>
@@ -509,6 +455,13 @@ namespace Puffin::ECS
 		{
 			// Get reference to component for this entity
 			return GetComponentArray<ComponentT>()->GetComponent(entity);
+		}
+
+		template<typename ComponentT>
+		void RemoveComponent(EntityID entity)
+		{
+			// Remove component from array for this entity
+			GetComponentArray<ComponentT>()->RemoveComponent(entity);
 		}
 
 		template<typename ComponentT>
@@ -543,6 +496,14 @@ namespace Puffin::ECS
 					m_requiredComponentTypes[componentType].insert(requiredTypes[i]);
 				}
 			}
+		}
+
+		template<typename ComponentT>
+		const std::set<ComponentType>& GetRequiredComponentTypes()
+		{
+			ComponentType type = GetComponentType<ComponentT>();
+
+			return m_requiredComponentTypes[type];
 		}
 
 		// Functions for Registering and Updating Component Flags
@@ -655,7 +616,7 @@ namespace Puffin::ECS
 	{
 	public:
 
-		SystemManager() {}
+		SystemManager() = default;
 
 		~SystemManager()
 		{
@@ -928,29 +889,35 @@ namespace Puffin::ECS
 		}
 
 		template<typename ComponentT>
-		ComponentT& AddComponent(EntityID entity)
+		void AddComponent(EntityID entity) const
 		{
-			ComponentT& comp = m_componentManager->AddComponent<ComponentT>(entity);
+			m_componentManager->AddComponent<ComponentT>(entity);
 
 			auto signature = m_entityManager->GetSignature(entity);
 			signature.set(m_componentManager->GetComponentType<ComponentT>(), true);
+
+			const std::set<ComponentType>& requiredTypes = m_componentManager->GetRequiredComponentTypes<ComponentT>();
+			for (const auto& componentType : requiredTypes)
+			{
+				signature.set(componentType, true);
+			}
+
 			m_entityManager->SetSignature(entity, signature);
 
 			m_systemManager->EntitySignatureChanged(entity, signature);
-
-			return comp;
 		}
 
 		template<typename ComponentT>
-		void AddComponent(EntityID entity, ComponentT& component)
+		ComponentT& GetComponent(EntityID entity)
 		{
-			m_componentManager->AddComponent<ComponentT>(entity, component);
+			return m_componentManager->GetComponent<ComponentT>(entity);
+		}
 
-			auto signature = m_entityManager->GetSignature(entity);
-			signature.set(m_componentManager->GetComponentType<ComponentT>(), true);
-			m_entityManager->SetSignature(entity, signature);
-
-			m_systemManager->EntitySignatureChanged(entity, signature);
+		template<typename ComponentT>
+		ComponentT& AddAndGetComponent(EntityID entity)
+		{
+			AddComponent<ComponentT>(entity);
+			return GetComponent<ComponentT>(entity);
 		}
 
 		template<typename ComponentT>
@@ -963,12 +930,6 @@ namespace Puffin::ECS
 			m_entityManager->SetSignature(entity, signature);
 
 			m_systemManager->EntitySignatureChanged(entity, signature);
-		}
-
-		template<typename ComponentT>
-		ComponentT& GetComponent(EntityID entity)
-		{
-			return m_componentManager->GetComponent<ComponentT>(entity);
 		}
 
 		template<typename ComponentT>
@@ -987,7 +948,7 @@ namespace Puffin::ECS
 		template<typename ComponentT, typename... RequiredTypes>
 		void AddComponentDependencies() const
 		{
-			m_componentManager->AddComponentDependencies<ComponentT, RequiredTypes>();
+			m_componentManager->AddComponentDependencies<ComponentT, RequiredTypes...>();
 		}
 
 		template<typename FlagT>

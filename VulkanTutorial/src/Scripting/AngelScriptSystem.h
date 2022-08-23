@@ -93,8 +93,8 @@ namespace Puffin
 			bool PrepareAndExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
 
 			// Global Script Functions
-			double GetDeltaTime();
-			double GetFixedTime();
+			const double& GetDeltaTime() const;
+			const double& GetFixedTime() const;
 
 			void PlaySoundEffect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
 			uint64_t PlaySoundEffect(const std::string& path, float volume = 1.0f, bool looping = false, bool restart = false);

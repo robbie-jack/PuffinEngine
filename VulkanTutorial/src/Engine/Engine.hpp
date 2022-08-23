@@ -121,9 +121,24 @@ namespace Puffin::Core
 			return m_uiManager;
 		}
 
+		const double& GetTimeStep() const
+		{
+			return m_timeStep;
+		}
+
 		void SetTimeStep(const double timeStep)
 		{
 			m_timeStep = timeStep;
+		}
+
+		const double& GetDeltaTime() const
+		{
+			return m_deltaTime;
+		}
+
+		const double& GetAccumulatedTime() const
+		{
+			return m_accumulatedTime;
 		}
 
 	private:
@@ -137,7 +152,7 @@ namespace Puffin::Core
 		PlayState playState = PlayState::STOPPED;
 
 		std::chrono::time_point<std::chrono::steady_clock> m_lastTime, m_currentTime;
-		double m_accumulatedTime, m_timeStep, m_maxTimeStep;
+		double m_deltaTime, m_accumulatedTime, m_timeStep, m_maxTimeStep;
 
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers
 		std::map<Core::UpdateOrder, std::vector<std::shared_ptr<ECS::System>>> m_systemUpdateVectors; // Map from update order to system pointers

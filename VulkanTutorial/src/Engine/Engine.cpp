@@ -7,8 +7,8 @@
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
 
-#include "Components/AngelScriptComponent.h"
 #include "Components/TransformComponent.h"
+#include "Components/AngelScriptComponent.h"
 
 #include "Types/ComponentFlags.h"
 
@@ -60,12 +60,18 @@ namespace Puffin::Core
 
 		// Register Components to ECS World
 		ecsWorld->RegisterComponent<TransformComponent>();
+		ecsWorld->RegisterComponent<InterpolatedTransformComponent>();
 		ecsWorld->RegisterComponent<Rendering::MeshComponent>();
 		ecsWorld->RegisterComponent<Rendering::LightComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DRigidbodyComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DBoxComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DCircleComponent>();
 		ecsWorld->RegisterComponent<Scripting::AngelScriptComponent>();
+
+		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
+		ecsWorld->AddComponentDependencies<Rendering::LightComponent, TransformComponent>();
+		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, TransformComponent>();
+		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, InterpolatedTransformComponent>();
 
 		// Setup Entity Signatures
 		ECS::Signature meshSignature;
@@ -160,23 +166,16 @@ namespace Puffin::Core
 		m_lastTime = m_currentTime;
 		m_currentTime = std::chrono::high_resolution_clock::now();
 		const std::chrono::duration<double> duration = m_currentTime - m_lastTime;
-		double deltaTime = duration.count();
+		m_deltaTime = duration.count();
 
 		// Make sure delta time never exceeds 1/30th of a second
-		if (deltaTime > m_maxTimeStep)
+		if (m_deltaTime > m_maxTimeStep)
 		{
-			deltaTime = m_maxTimeStep;
+			m_deltaTime = m_maxTimeStep;
 		}
 
 		auto ecsWorld = GetSubsystem<ECS::World>();
 		auto audioSubsystem = GetSubsystem<Audio::AudioSubsystem>();
-
-		// Set delta time for all systems
-		for (auto& system : m_systems)
-		{
-			system->SetDeltaTime(deltaTime);
-			system->SetFixedTime(m_timeStep);
-		}
 
 		// Update all Subsystems
 		for (auto& [fst, snd] : m_subsystems)
@@ -220,7 +219,7 @@ namespace Puffin::Core
 		if (playState == PlayState::PLAYING)
 		{
 			// Add onto accumulated time
-			m_accumulatedTime += deltaTime;
+			m_accumulatedTime += m_deltaTime;
 
 			// Perform system updates until simulation is caught up
 			while (m_accumulatedTime >= m_timeStep)
@@ -273,6 +272,7 @@ namespace Puffin::Core
 
 			audioSubsystem->StopAllSounds();
 
+			m_accumulatedTime = 0.0;
 			playState = PlayState::STOPPED;
 		}
 
@@ -438,10 +438,9 @@ namespace Puffin::Core
 		entities[6]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::SPOT;
 		entities[6]->GetComponent<Rendering::LightComponent>().bFlagCastShadows = false;
 
-		Scripting::AngelScriptComponent script;
+		auto& script = entities[0]->AddAndGetComponent<Scripting::AngelScriptComponent>();
 		script.name = "ExampleScript";
 		script.dir = contentRootPath / "scripts\\Example.pscript";
-		entities[0]->AddComponent(script);
 	}
 
 	void Engine::PhysicsScene(std::shared_ptr<ECS::World> world)

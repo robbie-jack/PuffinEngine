@@ -38,7 +38,8 @@ namespace Puffin::IO
 		{
 			for (auto& pair : m_componentMap)
 			{
-				m_world->AddComponent<CompT>(pair.first, pair.second);
+				CompT& comp = m_world->AddAndGetComponent<CompT>(pair.first);
+				comp = pair.second;
 			}
 		}
 

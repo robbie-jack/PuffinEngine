@@ -21,7 +21,7 @@ namespace Puffin
 		{
 		}
 
-		~Transform() {};
+		~Transform() {}
 
 		Transform<T>& operator=(const Transform<T>& rhs)
 		{
@@ -39,10 +39,28 @@ namespace Puffin
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Transform, position, rotation, scale)
 	};
 
+	template<typename T>
+	struct InterpolatedTransform
+	{
+		InterpolatedTransform() {}
+
+		InterpolatedTransform(T InPosition, Vector3f InRotation, Vector3f InScale) :
+			position(InPosition), rotation(InRotation)
+		{
+		}
+
+		~InterpolatedTransform() {}
+
+		T position = T(0.0f);
+		Vector3f rotation = Vector3f(0.0f);
+	};
+
 	#ifdef PFN_USE_DOUBLE_PRECISION
 		typedef Transform<Vector3d> TransformComponent;
+		typedef InterpolatedTransform<Vector3d> InterpolatedTransformComponent;
 	#else
 		typedef Transform<Vector3f> TransformComponent;
+		typedef InterpolatedTransform<Vector3f> InterpolatedTransformComponent;
 	#endif
 }
 

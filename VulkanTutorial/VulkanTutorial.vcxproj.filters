@@ -618,9 +618,6 @@
     <ClInclude Include="src\Engine\Subsystem.hpp">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="src\ECS\ECSSubsystem.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
     <ClInclude Include="src\Engine\Engine.hpp">
       <Filter>Engine</Filter>
     </ClInclude>

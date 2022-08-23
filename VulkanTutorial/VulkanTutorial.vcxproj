@@ -300,7 +300,6 @@
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ECS\ComponentType.h" />
     <ClInclude Include="src\ecs\ECS.h" />
-    <ClInclude Include="src\ECS\ECSSubsystem.hpp" />
     <ClInclude Include="src\ECS\Entity.h" />
     <ClInclude Include="src\ECS\EntityID.h" />
     <ClInclude Include="src\ECS\System.hpp" />

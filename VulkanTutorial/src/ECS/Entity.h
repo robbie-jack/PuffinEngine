@@ -91,27 +91,27 @@ namespace Puffin::ECS
 		////////////////////////////////
 
 		template<typename CompT>
-		CompT& AddComponent() const
+		void AddComponent() const
 		{
 			return m_world->AddComponent<CompT>(m_id);
-		}
-
-		template<typename CompT>
-		void AddComponent(CompT& component) const
-		{
-			m_world->AddComponent<CompT>(m_id, component);
-		}
-
-		template<typename CompT>
-		void RemoveComponent() const
-		{
-			m_world->RemoveComponent<CompT>(m_id);
 		}
 
 		template<typename CompT>
 		CompT& GetComponent() const
 		{
 			return m_world->GetComponent<CompT>(m_id);
+		}
+
+		template<typename CompT>
+		CompT& AddAndGetComponent() const
+		{
+			return m_world->AddAndGetComponent<CompT>(m_id);
+		}
+
+		template<typename CompT>
+		void RemoveComponent() const
+		{
+			m_world->RemoveComponent<CompT>(m_id);
 		}
 
 		template<typename CompT>

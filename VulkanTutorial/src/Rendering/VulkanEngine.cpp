@@ -11,6 +11,8 @@
 
 #include "Types/ComponentFlags.h"
 
+#include "MathHelpers.h"
+
 #define VMA_IMPLEMENTATION
 #include <Rendering/vk_mem_alloc.h>
 
@@ -1660,7 +1662,7 @@ namespace Puffin
 				m_shadowmapsNeedsUpdated = false;
 			}
 
-			m_uiManager->DrawUI(m_deltaTime);
+			m_uiManager->DrawUI(m_engine->GetDeltaTime());
 
 			UpdateCamera(camera);
 
@@ -1791,32 +1793,32 @@ namespace Puffin
 				// Camera Movement
 				if (moveLeft && !moveRight)
 				{
-					camera.position +=  camera.right * camera.speed * m_deltaTime;
+					camera.position +=  camera.right * camera.speed * m_engine->GetDeltaTime();
 				}
 				
 				if (moveRight && !moveLeft)
 				{
-					camera.position -= camera.right * camera.speed * m_deltaTime;
+					camera.position -= camera.right * camera.speed * m_engine->GetDeltaTime();
 				}
 
 				if (moveForward && !moveBackward)
 				{
-					camera.position += camera.direction * camera.speed * m_deltaTime;
+					camera.position += camera.direction * camera.speed * m_engine->GetDeltaTime();
 				}
 				
 				if (moveBackward && !moveForward)
 				{
-					camera.position -= camera.direction * camera.speed * m_deltaTime;
+					camera.position -= camera.direction * camera.speed * m_engine->GetDeltaTime();
 				}
 
 				if (moveUp && !moveDown)
 				{
-					camera.position += camera.up * camera.speed * m_deltaTime;
+					camera.position += camera.up * camera.speed * m_engine->GetDeltaTime();
 				}
 				
 				if (moveDown && !moveUp)
 				{
-					camera.position -= camera.up * camera.speed * m_deltaTime;
+					camera.position -= camera.up * camera.speed * m_engine->GetDeltaTime();
 				}
 
 				// Mouse Rotation
@@ -2546,23 +2548,22 @@ namespace Puffin
 			int i = 0;
 
 			// For each mesh entity, calculate its object data and map to storage buffer
-			//for (ECS::Entity entity : entityMap["Mesh"])
-			//{
-			//	// Update object data
-			//	objectSSBO[i].model = BuildMeshTransform(m_world->GetComponent<TransformComponent>(entity));
-			//	objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
-
-			//	i++;
-			//}
-
-			// For each mesh entity, calculate its object data and map to storage buffer
 			for (const auto& [fst, snd] : m_sceneRenderData.meshRenderDataMap)
 			{
 				const auto& meshData = snd;
 
 				for (auto entity : meshData.entities)
 				{
-					objectSSBO[i].model = BuildMeshTransform(m_world->GetComponent<TransformComponent>(entity));
+					if (m_world->HasComponent<InterpolatedTransformComponent>(entity))
+					{
+
+						objectSSBO[i].model = BuildInterpolatedMeshTransform(m_world->GetComponent<TransformComponent>(entity),
+							m_world->GetComponent<InterpolatedTransformComponent>(entity));
+					}
+					else
+					{
+						objectSSBO[i].model = BuildMeshTransform(m_world->GetComponent<TransformComponent>(entity));
+					}
 					objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
 
 					i++;
@@ -2572,10 +2573,27 @@ namespace Puffin
 			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
 		}
 
-		glm::mat4 VulkanEngine::BuildMeshTransform(TransformComponent transform)
+		glm::mat4 VulkanEngine::BuildMeshTransform(const TransformComponent& transform) const
 		{
 			// Set Translation
 			glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)transform.position);
+
+			// Set Rotation
+			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.y)), glm::vec3(0.0f, 1.0f, 0.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.z)), glm::vec3(0.0f, 0.0f, -1.0f));
+
+			// Set Scale
+			model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);
+
+			return model_transform;
+		}
+
+		glm::mat4 VulkanEngine::BuildInterpolatedMeshTransform(const TransformComponent& transform, const InterpolatedTransformComponent& interpolatedTransform) const
+		{
+			// Set Translation
+			glm::vec3 interpolatedPosition = (glm::vec3)Maths::Lerp(transform.position, interpolatedTransform.position, m_engine->GetAccumulatedTime() / m_engine->GetTimeStep());
+			glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), interpolatedPosition);
 
 			// Set Rotation
 			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f));

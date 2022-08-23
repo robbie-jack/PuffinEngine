@@ -53,7 +53,7 @@ namespace Puffin::Physics
 		UpdateComponents();
 
 		// Step Physics World
-		m_physicsWorld->Step(m_fixedTime, m_velocityIterations, m_positionIterations);
+		m_physicsWorld->Step(m_engine->GetTimeStep(), m_velocityIterations, m_positionIterations);
 
 		// Publish Collision Events
 		PublishCollisionEvents();
@@ -71,16 +71,23 @@ namespace Puffin::Physics
 		}*/
 
 		std::vector<std::shared_ptr<ECS::Entity>> boxRigidbodyEntities;
-		ECS::GetEntities<TransformComponent, Box2DRigidbodyComponent>(m_world, boxRigidbodyEntities);
+		ECS::GetEntities<TransformComponent, InterpolatedTransformComponent, Box2DRigidbodyComponent>(m_world, boxRigidbodyEntities);
 
 		for (const auto entity : boxRigidbodyEntities)
 		{
 			auto& transform = entity->GetComponent<TransformComponent>();
+			auto& interpolatedTransform = entity->GetComponent<InterpolatedTransformComponent>();
 			const auto& rb = entity->GetComponent<Box2DRigidbodyComponent>();
 
+			// Update Transform from Rigidbody Position
 			transform.position.x = rb.body->GetPosition().x;
 			transform.position.y = rb.body->GetPosition().y;
 			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
+
+			// Update Interpolated Transform with Linear/Angular Velocity
+			interpolatedTransform.position.x = transform.position.x + (rb.body->GetLinearVelocity().x * m_engine->GetTimeStep());
+			interpolatedTransform.position.y = transform.position.y + (rb.body->GetLinearVelocity().y * m_engine->GetTimeStep());
+			interpolatedTransform.rotation.z = transform.rotation.z + (rb.body->GetAngularVelocity() * m_engine->GetTimeStep());
 		}
 	}
 
@@ -102,6 +109,15 @@ namespace Puffin::Physics
 		for (ECS::EntityID entity : entityMap["Circle"])
 		{
 			CleanupCircleComponent(entity);
+		}
+
+		std::vector<std::shared_ptr<ECS::Entity>> interpolatedEntities;
+		ECS::GetEntities<InterpolatedTransformComponent>(m_world, interpolatedEntities);
+		for (const auto entity : interpolatedEntities)
+		{
+			auto& interpolatedTransform = entity->GetComponent<InterpolatedTransformComponent>();
+			interpolatedTransform.position = Vector3f(0.0f);
+			interpolatedTransform.rotation = Vector3f(0.0f);
 		}
 
 		m_circleShapes.Clear();

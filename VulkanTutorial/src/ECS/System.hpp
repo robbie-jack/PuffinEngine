@@ -77,16 +77,6 @@ namespace Puffin
 				m_ecs = inECS;
 			}
 
-			void SetDeltaTime(double inDeltaTime)
-			{
-				m_deltaTime = inDeltaTime;
-			}
-
-			void SetFixedTime(double inFixedTime)
-			{
-				m_fixedTime = inFixedTime;
-			}
-
 		protected:
 
 			std::shared_ptr<Core::Engine> m_engine = nullptr;
@@ -94,9 +84,6 @@ namespace Puffin
 			std::shared_ptr<ECSSubsystem> m_ecs = nullptr;
 
 			Core::SystemInfo m_systemInfo;
-
-			double m_deltaTime = 0.0; // Time it took last frame to complete
-			double m_fixedTime = 1 / 60.0; // Fixed time step used by deterministic physics code
 
 		private:
 

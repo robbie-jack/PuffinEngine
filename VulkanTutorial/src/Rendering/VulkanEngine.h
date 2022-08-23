@@ -38,6 +38,9 @@
 #include <unordered_map>
 #include <fstream>
 
+#include "Components/Rendering/CameraComponent.h"
+#include "Components/Rendering/CameraComponent.h"
+
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
@@ -396,7 +399,8 @@ namespace Puffin
 			void DrawDebugObjects(VkCommandBuffer cmd, uint32_t index);
 
 			void MapObjectData();
-			glm::mat4 BuildMeshTransform(TransformComponent comp);
+			glm::mat4 BuildMeshTransform(const TransformComponent& transform) const;
+			glm::mat4 BuildInterpolatedMeshTransform(const TransformComponent& transform, const InterpolatedTransformComponent& interpolatedTransform) const;
 
 			// Debug Draw Functions
 			void DrawDebugLine(Debug::Line line);
