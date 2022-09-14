@@ -191,6 +191,7 @@ namespace Puffin
 
 			VulkanEngine()
 			{
+				m_systemInfo.name = "VulkanRenderer";
 				m_systemInfo.updateOrder = Core::UpdateOrder::Rendering;
 			}
 

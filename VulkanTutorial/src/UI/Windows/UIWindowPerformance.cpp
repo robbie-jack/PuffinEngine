@@ -25,7 +25,7 @@ namespace Puffin
 					hardwareStats.cpuName = "Ryzen 3600";
 					hardwareStats.logicalCores = std::thread::hardware_concurrency();
 					hardwareStats.physicalCores = hardwareStats.logicalCores / 2;
-					hardwareStats.gpuName = "GTX 1070";
+					hardwareStats.gpuName = "GTX 3070";
 					hardwareStats.vramTotal = 8192;
 					hardwareStats.ramTotal = 16384;
 
@@ -97,6 +97,8 @@ namespace Puffin
 					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Minimum: %.1f", framerate_min);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Maximum: %.1f", framerate_max);
 
+					ImGui::NewLine();
+
 					// Display Frametime
 					float frametime_average = 0.0f;
 					for (int n = 0; n < num_values; n++)
@@ -112,6 +114,45 @@ namespace Puffin
 					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Average: %.1f", frametime_average);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Minimum: %.1f", frametime_min);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Maximum: %.1f", frametime_max);
+
+					ImGui::NewLine();
+
+					// Display Stage/System Frametime breakdown
+					ImGui::Text("Frametime Breakdown");
+					ImGui::NewLine();
+
+					double fixedUpdateFrametime = m_engine->GetStageExecutionTime(Core::UpdateOrder::FixedUpdate) * 1000.0;
+					ImGui::Text("Fixed Update: %.1f", fixedUpdateFrametime);
+
+					ImGui::Indent();
+					for (auto [fst, snd] : m_engine->GetSystemExecutionTimeForUpdateStage(Core::UpdateOrder::FixedUpdate))
+					{
+						double systemFrametime = snd * 1000.0;
+						ImGui::Text("%s: %.1f", fst, systemFrametime);
+					}
+					ImGui::Unindent();
+
+					double updateFrametime = m_engine->GetStageExecutionTime(Core::UpdateOrder::Update) * 1000.0;
+					ImGui::Text("Update: %.1f", updateFrametime);
+
+					ImGui::Indent();
+					for (auto [fst, snd] : m_engine->GetSystemExecutionTimeForUpdateStage(Core::UpdateOrder::Update))
+					{
+						double systemFrametime = snd * 1000.0;
+						ImGui::Text("%s: %.1f", fst, systemFrametime);
+					}
+					ImGui::Unindent();
+
+					double renderFrametime = m_engine->GetStageExecutionTime(Core::UpdateOrder::Rendering) * 1000.0;
+					ImGui::Text("Rendering: %.1f", renderFrametime);
+
+					ImGui::Indent();
+					for (auto [fst, snd] : m_engine->GetSystemExecutionTimeForUpdateStage(Core::UpdateOrder::Rendering))
+					{
+						double systemFrametime = snd * 1000.0;
+						ImGui::Text("%s: %.1f", fst, systemFrametime);
+					}
+					ImGui::Unindent();
 				}
 
 				End();

@@ -221,6 +221,8 @@ namespace Puffin::Core
 			// Add onto accumulated time
 			m_accumulatedTime += m_deltaTime;
 
+			auto stageStartTime = std::chrono::high_resolution_clock::now();
+
 			// Perform system updates until simulation is caught up
 			while (m_accumulatedTime >= m_timeStep)
 			{
@@ -229,28 +231,68 @@ namespace Puffin::Core
 				// FixedUpdate Systems
 				for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
 				{
+					auto startTime = std::chrono::high_resolution_clock::now();
+
 					system->Update();
+
+					auto endTime = std::chrono::high_resolution_clock::now();
+
+					const std::chrono::duration<double> systemDuration = endTime - startTime;
+					m_systemExecutionTime[Core::UpdateOrder::FixedUpdate][system->GetInfo().name] = systemDuration.count();
 				}
 			}
+
+			auto stageEndTime = std::chrono::high_resolution_clock::now();
+
+			const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
+			m_stageExecutionTime[Core::UpdateOrder::FixedUpdate] = stageDuration.count();
 		}
 
 		// Update
 		if (playState == PlayState::PLAYING)
 		{
+			auto stageStartTime = std::chrono::high_resolution_clock::now();
+
 			for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Update])
 			{
+				auto startTime = std::chrono::high_resolution_clock::now();
+
 				system->Update();
+
+				auto endTime = std::chrono::high_resolution_clock::now();
+
+				const std::chrono::duration<double> systemDuration = endTime - startTime;
+				m_systemExecutionTime[Core::UpdateOrder::Update][system->GetInfo().name] = systemDuration.count();
 			}
+
+			auto stageEndTime = std::chrono::high_resolution_clock::now();
+
+			const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
+			m_stageExecutionTime[Core::UpdateOrder::Update] = stageDuration.count();
 		}
 
 		// UI
 		m_uiManager->Update();
 
+		auto stageStartTime = std::chrono::high_resolution_clock::now();
+
 		// Rendering
 		for (auto system : m_systemUpdateVectors[Core::UpdateOrder::Rendering])
 		{
+			auto startTime = std::chrono::high_resolution_clock::now();
+
 			system->Update();
+
+			auto endTime = std::chrono::high_resolution_clock::now();
+
+			const std::chrono::duration<double> systemDuration = endTime - startTime;
+			m_systemExecutionTime[Core::UpdateOrder::Rendering][system->GetInfo().name] = systemDuration.count();
 		}
+
+		auto stageEndTime = std::chrono::high_resolution_clock::now();
+
+		const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
+		m_stageExecutionTime[Core::UpdateOrder::Rendering] = stageDuration.count();
 
 		if (playState == PlayState::JUST_STOPPED)
 		{

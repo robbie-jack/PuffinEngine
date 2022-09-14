@@ -16,6 +16,7 @@ namespace Puffin::Physics
 
 		Box2DPhysicsSystem()
 		{
+			m_systemInfo.name = "Box2DPhysicsSystem";
 			m_systemInfo.updateOrder = Core::UpdateOrder::FixedUpdate;
 		}
 

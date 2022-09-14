@@ -23,6 +23,7 @@ namespace Puffin
 		// Info about the system
 		struct SystemInfo
 		{
+			std::string name;
 			UpdateOrder updateOrder = UpdateOrder::None;
 		};
 	}

@@ -101,6 +101,8 @@ namespace Puffin::Core
 
 				m_systems.push_back(systemBase);
 				m_systemUpdateVectors[systemBase->GetInfo().updateOrder].push_back(systemBase);
+
+				m_systemExecutionTime[system->GetInfo().updateOrder][system->GetInfo().name] = 0.0;
 			}
 
 			return system;
@@ -141,6 +143,21 @@ namespace Puffin::Core
 			return m_accumulatedTime;
 		}
 
+		const double& GetStageExecutionTime(const Core::UpdateOrder& updateOrder)
+		{
+			return m_stageExecutionTime[updateOrder];
+		}
+
+		const double& GetSystemExecutionTime(const Core::UpdateOrder& updateOrder, const std::string& systemName)
+		{
+			return m_systemExecutionTime[updateOrder][systemName];
+		}
+
+		const std::unordered_map<std::string, double>& GetSystemExecutionTimeForUpdateStage(const Core::UpdateOrder& updateOrder)
+		{
+			return m_systemExecutionTime[updateOrder];
+		}
+
 	private:
 
 		GLFWwindow* m_window = nullptr;
@@ -151,11 +168,16 @@ namespace Puffin::Core
 		bool running = true;
 		PlayState playState = PlayState::STOPPED;
 
+		// Time Members
 		std::chrono::time_point<std::chrono::steady_clock> m_lastTime, m_currentTime;
 		double m_deltaTime, m_accumulatedTime, m_timeStep, m_maxTimeStep;
 
+		// System Members
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers
-		std::map<Core::UpdateOrder, std::vector<std::shared_ptr<ECS::System>>> m_systemUpdateVectors; // Map from update order to system pointers
+		std::unordered_map<Core::UpdateOrder, std::vector<std::shared_ptr<ECS::System>>> m_systemUpdateVectors; // Map from update order to system pointers
+
+		std::unordered_map<Core::UpdateOrder, double> m_stageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
+		std::unordered_map<Core::UpdateOrder, std::unordered_map<std::string, double>> m_systemExecutionTime; // Map of time it takes for each system to execute
 
 		IO::ProjectFile projectFile;
 
