@@ -49,7 +49,7 @@ namespace Puffin
 			UIWindowPerformance(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowPerformance() override {}
 
-			void Draw(float dt) override;
+			void Draw(double dt) override;
 
 		private:
 			float fps;

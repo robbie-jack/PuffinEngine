@@ -8,7 +8,7 @@ namespace fs = std::filesystem;
 
 namespace Puffin::UI
 {
-	void UIContentBrowser::Draw(float dt)
+	void UIContentBrowser::Draw(double dt)
 	{
 		if (show)
 		{

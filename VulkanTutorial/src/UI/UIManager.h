@@ -49,7 +49,7 @@ namespace Puffin
 
 			void Cleanup();
 
-			void DrawUI(float dt);
+			void DrawUI(double dt);
 			void Update();
 			void AddWindow(std::shared_ptr<UIWindow> window);
 

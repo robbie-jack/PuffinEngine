@@ -56,7 +56,7 @@ namespace Puffin::UI
 		//ImPlot::DestroyContext();
 	}
 
-	void UIManager::DrawUI(float dt)
+	void UIManager::DrawUI(double dt)
 	{
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

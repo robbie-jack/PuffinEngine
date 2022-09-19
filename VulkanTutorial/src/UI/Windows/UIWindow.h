@@ -42,7 +42,7 @@ namespace Puffin
 				m_engine = nullptr;
 			}
 
-			virtual void Draw(float dt) = 0;
+			virtual void Draw(double dt) = 0;
 
 			void Show();
 

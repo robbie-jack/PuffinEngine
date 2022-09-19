@@ -36,6 +36,7 @@
 // STL
 #include <vector>
 #include <unordered_map>
+#include <set>
 #include <fstream>
 
 #include "Components/Rendering/CameraComponent.h"
@@ -259,7 +260,6 @@ namespace Puffin
 			bool m_shadowmapsNeedsUpdated;
 
 			// Shadows
-			VkExtent2D shadowExtent; // Resolution of rendered shadowmaps
 			VkFormat shadowFormat;
 			VkPipelineLayout shadowPipelineLayout;
 			VkPipeline shadowPipeline;
@@ -360,7 +360,7 @@ namespace Puffin
 
 			// Init Component Functions
 			void InitMesh(ECS::EntityID entity);
-			void InitLight(ECS::EntityID entity);
+			void InitShadowcasterLight(ECS::EntityID entity);
 			void InitCamera(CameraComponent& camera);
 
 			void InitAlbedoTexture(UUID uuid);
@@ -374,7 +374,7 @@ namespace Puffin
 
 			// Component Cleanup Functions
 			void CleanupMesh(ECS::EntityID entity);
-			void CleanupLight(ECS::EntityID entity);
+			void CleanupShadowcasterLight(ECS::EntityID entity);
 
 			// Update Functions
 			void ProcessEvents();
@@ -393,7 +393,11 @@ namespace Puffin
 
 			void PrepareLights();
 
+			glm::mat4 CalculateLightSpaceView(std::shared_ptr<ECS::Entity> entity, float outerRadius, Vector3f direction);
+
 			VkCommandBuffer RecordShadowCommandBuffers(uint32_t index);
+			void RecordShadowRenderPass(VkCommandBuffer cmd, const VkRenderPassBeginInfo& renderPassInfo, const glm::mat4& lightSpaceView);
+
 			VkCommandBuffer RecordMainCommandBuffers(uint32_t index);
 			VkCommandBuffer RecordGUICommandBuffer(uint32_t index);
 

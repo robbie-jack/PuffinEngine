@@ -129,7 +129,7 @@ namespace Puffin::ECS
 		template<typename CompT, typename FlagT>
 		void SetComponentFlag(bool flag) const
 		{
-			m_world->SetComponentFlag<CompT, FlagT>(m_id);
+			m_world->SetComponentFlag<CompT, FlagT>(m_id, flag);
 		}
 
 	private:

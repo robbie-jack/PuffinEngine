@@ -17,7 +17,7 @@ namespace Puffin
 			UIWindowSettings(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowSettings() override {}
 
-			void Draw(float dt) override;
+			void Draw(double dt) override;
 
 			inline void SetCamera(Puffin::Rendering::CameraComponent* camera) { m_camera = camera; }
 

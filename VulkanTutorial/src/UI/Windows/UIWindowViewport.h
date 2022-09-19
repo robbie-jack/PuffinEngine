@@ -23,7 +23,7 @@ namespace Puffin
 
 			void DrawWithoutImage();
 			void Draw(ImTextureID textureID);
-			void Draw(float dt) override {}
+			void Draw(double dt) override {}
 
 			inline ImVec2 GetViewportSize() { return viewportSize; }
 

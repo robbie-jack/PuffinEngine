@@ -14,6 +14,6 @@ namespace Puffin::UI
 		}
 		~UIContentBrowser() override {}
 
-		void Draw(float dt) override;
+		void Draw(double dt) override;
 	};
 }

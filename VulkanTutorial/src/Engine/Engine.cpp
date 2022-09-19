@@ -62,7 +62,10 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponent<TransformComponent>();
 		ecsWorld->RegisterComponent<InterpolatedTransformComponent>();
 		ecsWorld->RegisterComponent<Rendering::MeshComponent>();
-		ecsWorld->RegisterComponent<Rendering::LightComponent>();
+		ecsWorld->RegisterComponent<Rendering::PointLightComponent>();
+		ecsWorld->RegisterComponent<Rendering::DirectionalLightComponent>();
+		ecsWorld->RegisterComponent<Rendering::SpotLightComponent>();
+		ecsWorld->RegisterComponent<Rendering::ShadowCasterComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DRigidbodyComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DBoxComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DCircleComponent>();
@@ -74,16 +77,6 @@ namespace Puffin::Core
 		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, InterpolatedTransformComponent>();
 
 		// Setup Entity Signatures
-		ECS::Signature meshSignature;
-		meshSignature.set(ecsWorld->GetComponentType<TransformComponent>());
-		meshSignature.set(ecsWorld->GetComponentType<Rendering::MeshComponent>());
-		ecsWorld->SetSystemSignature<Rendering::VulkanEngine>("Mesh", meshSignature);
-
-		ECS::Signature lightSignature;
-		lightSignature.set(ecsWorld->GetComponentType<TransformComponent>());
-		lightSignature.set(ecsWorld->GetComponentType<Rendering::LightComponent>());
-		ecsWorld->SetSystemSignature<Rendering::VulkanEngine>("Light", lightSignature);
-
 		ECS::Signature scriptSignature;
 		scriptSignature.set(ecsWorld->GetComponentType<Scripting::AngelScriptComponent>());
 		ecsWorld->SetSystemSignature<Scripting::AngelScriptSystem>("Script", scriptSignature);
@@ -120,7 +113,10 @@ namespace Puffin::Core
 		// Register Components to Scene Data
 		m_sceneData->RegisterComponent<TransformComponent>("Transforms");
 		m_sceneData->RegisterComponent<Rendering::MeshComponent>("Meshes");
-		m_sceneData->RegisterComponent<Rendering::LightComponent>("Lights");
+		m_sceneData->RegisterComponent<Rendering::PointLightComponent>("PointLights");
+		m_sceneData->RegisterComponent<Rendering::DirectionalLightComponent>("DirectionalLights");
+		m_sceneData->RegisterComponent<Rendering::SpotLightComponent>("SpotLights");
+		m_sceneData->RegisterComponent<Rendering::ShadowCasterComponent>("Shadowcasters");
 		m_sceneData->RegisterComponent<Physics::Box2DRigidbodyComponent>("Rigidbodies");
 		m_sceneData->RegisterComponent<Physics::Box2DBoxComponent>("Boxes");
 		m_sceneData->RegisterComponent<Physics::Box2DCircleComponent>("Circles");
@@ -131,11 +127,11 @@ namespace Puffin::Core
 		Assets::AssetRegistry::Get()->LoadAssetCache();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		//DefaultScene(ecsWorld);
+		DefaultScene(ecsWorld);
 		//PhysicsScene(ecsWorld);
 
 		// Load Scene -- normal behaviour
-		m_sceneData->LoadAndInit();
+		//m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -425,8 +421,8 @@ namespace Puffin::Core
 		world->SetEntityName(6, "Plane");
 		world->SetEntityName(7, "Light 2");
 
-		entities[3]->AddComponent<Rendering::LightComponent>();
-		entities[6]->AddComponent<Rendering::LightComponent>();
+		entities[3]->AddComponent<Rendering::SpotLightComponent>();
+		entities[6]->AddComponent<Rendering::SpotLightComponent>();
 
 		// Initialize Components with default values
 		entities[0]->GetComponent<TransformComponent>() = {Vector3f(2.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f)};
@@ -454,31 +450,11 @@ namespace Puffin::Core
 		entities[6]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		entities[6]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		entities[3]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(1.0f, -1.0f, 0.0f);
-		entities[3]->GetComponent<Rendering::LightComponent>().ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-		entities[3]->GetComponent<Rendering::LightComponent>().diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		entities[3]->GetComponent<Rendering::LightComponent>().innerCutoffAngle = 12.5f;
-		entities[3]->GetComponent<Rendering::LightComponent>().outerCutoffAngle = 17.5f;
-		entities[3]->GetComponent<Rendering::LightComponent>().constantAttenuation = 1.0f;
-		entities[3]->GetComponent<Rendering::LightComponent>().linearAttenuation = 0.09f;
-		entities[3]->GetComponent<Rendering::LightComponent>().quadraticAttenuation = 0.032f;
-		entities[3]->GetComponent<Rendering::LightComponent>().specularStrength = 0.5f;
-		entities[3]->GetComponent<Rendering::LightComponent>().shininess = 16;
-		entities[3]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::SPOT;
-		entities[3]->GetComponent<Rendering::LightComponent>().bFlagCastShadows = true;
+		entities[3]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(1.0f, -1.0f, 0.0f);
+		entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
-		entities[6]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
-		entities[6]->GetComponent<Rendering::LightComponent>().ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-		entities[6]->GetComponent<Rendering::LightComponent>().diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);
-		entities[6]->GetComponent<Rendering::LightComponent>().innerCutoffAngle = 12.5f;
-		entities[6]->GetComponent<Rendering::LightComponent>().outerCutoffAngle = 17.5f;
-		entities[6]->GetComponent<Rendering::LightComponent>().constantAttenuation = 1.0f;
-		entities[6]->GetComponent<Rendering::LightComponent>().linearAttenuation = 0.09f;
-		entities[6]->GetComponent<Rendering::LightComponent>().quadraticAttenuation = 0.032f;
-		entities[6]->GetComponent<Rendering::LightComponent>().specularStrength = 0.5f;
-		entities[6]->GetComponent<Rendering::LightComponent>().shininess = 16;
-		entities[6]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::SPOT;
-		entities[6]->GetComponent<Rendering::LightComponent>().bFlagCastShadows = false;
+		entities[6]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
+		entities[6]->GetComponent<Rendering::SpotLightComponent>().diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);
 
 		auto& script = entities[0]->AddAndGetComponent<Scripting::AngelScriptComponent>();
 		script.name = "ExampleScript";
@@ -522,19 +498,10 @@ namespace Puffin::Core
 
 		lightEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
-		auto& lightComp = lightEntity->GetComponent<Rendering::LightComponent>();
+		auto& lightComp = lightEntity->GetComponent<Rendering::DirectionalLightComponent>();
 		lightComp.direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		lightComp.ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
 		lightComp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		lightComp.innerCutoffAngle = 12.5f;
-		lightComp.outerCutoffAngle = 17.5f;
-		lightComp.constantAttenuation = 1.0f;
-		lightComp.linearAttenuation = 0.09f;
-		lightComp.quadraticAttenuation = 0.032f;
-		lightComp.specularStrength = 0.5f;
-		lightComp.shininess = 16;
-		lightComp.type = Rendering::LightType::DIRECTIONAL;
-		lightComp.bFlagCastShadows = false;
 
 		// Create Box Entity
 		const auto boxEntity = ECS::CreateEntity(world);

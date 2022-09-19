@@ -9,7 +9,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		void UIWindowPerformance::Draw(float dt)
+		void UIWindowPerformance::Draw(double dt)
 		{
 			windowName = "Performance";
 

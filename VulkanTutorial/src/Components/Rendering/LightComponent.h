@@ -85,21 +85,46 @@ namespace Puffin
 
 		struct LightComponent
 		{
-			LightType type;
-			Vector3f ambientColor, diffuseColor;
-			Vector3f direction;
-			float specularStrength;
-			int shininess;
-			float constantAttenuation, linearAttenuation, quadraticAttenuation; // USed to calculate light dropoff based on distance
-			float innerCutoffAngle, outerCutoffAngle; // Used for spotlight
+			Vector3f ambientColor = {.1f, .1f, .1f};
+			Vector3f diffuseColor = {1.f, 1.f, 1.f};
+			float specularStrength = .5f;
+			int shininess = 16;
+		};
 
-			// Variables for computing shadows cast by lights
-			bool bFlagCastShadows; // Flag to indicate if light should cast shadows
+		struct PointLightComponent : public LightComponent
+		{
+			float constantAttenuation = 1.f;
+			float linearAttenuation = .09f;
+			float quadraticAttenuation = .032f;
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(PointLightComponent, ambientColor, diffuseColor, specularStrength, shininess, constantAttenuation, linearAttenuation, quadraticAttenuation)
+		};
+
+		struct DirectionalLightComponent : public LightComponent
+		{
+			Vector3f direction = {.5f, .5f, 0.f};
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(DirectionalLightComponent, ambientColor, diffuseColor, specularStrength, shininess, direction)
+		};
+
+		struct SpotLightComponent : public PointLightComponent
+		{
+			Vector3f direction = { .5f, .5f, 0.f };
+
+			float innerCutoffAngle = 12.5f;
+			float outerCutoffAngle = 17.5f;
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(SpotLightComponent, ambientColor, diffuseColor, specularStrength, shininess, direction, constantAttenuation, linearAttenuation, quadraticAttenuation, innerCutoffAngle, outerCutoffAngle)
+		};
+
+		// Component for lights that cast shadows
+		struct ShadowCasterComponent
+		{
+			uint32_t shadowmapWidth = 2048;
+			uint32_t shadowmapHeight = 2048;
 			glm::mat4 lightSpaceView;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent, type, ambientColor, diffuseColor, direction,
-				specularStrength, shininess, constantAttenuation, linearAttenuation, quadraticAttenuation,
-				innerCutoffAngle, outerCutoffAngle, bFlagCastShadows)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, shadowmapWidth, shadowmapHeight)
 		};
 	}
 }

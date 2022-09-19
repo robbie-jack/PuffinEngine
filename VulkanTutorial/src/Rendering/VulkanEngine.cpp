@@ -61,8 +61,6 @@ namespace Puffin
 			m_shadowmapsNeedsUpdated = false;
 
 			// Initialize Shadowmap Resolution/Format
-			shadowExtent.width = 1024;
-			shadowExtent.height = 1024;
 			shadowFormat = VK_FORMAT_D16_UNORM;
 
 			window = m_engine->GetWindow();
@@ -872,9 +870,11 @@ namespace Puffin
 			textureImageInfo.sampler = depthSampler;
 			textureImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			for (ECS::EntityID entity : entityMap["Mesh"])
+			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+			for (const auto entity : meshEntities)
 			{
-				MeshComponent& mesh = m_world->GetComponent<MeshComponent>(entity);
+				MeshComponent& mesh = entity->GetComponent<MeshComponent>();
 
 				//Albedo Textures
 				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
@@ -962,17 +962,6 @@ namespace Puffin
 			// Create Input Assembly Info
 			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
-			pipelineBuilder.viewport.x = 0.0f;
-			pipelineBuilder.viewport.y = 0.0f;
-			pipelineBuilder.viewport.width = (float)shadowExtent.width;
-			pipelineBuilder.viewport.height = (float)shadowExtent.height;
-			pipelineBuilder.viewport.minDepth = 0.0f;
-			pipelineBuilder.viewport.maxDepth = 1.0f;
-
-			// Define Scissor Extent
-			pipelineBuilder.scissor.offset = { 0, 0 };
-			pipelineBuilder.scissor.extent = shadowExtent;
-
 			// Rasterization Stage Creation - Configured to draw filled triangles
 			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT);
 
@@ -985,6 +974,16 @@ namespace Puffin
 
 			// Depth Testing - Default
 			pipelineBuilder.depthStencil = VKInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+
+			// Define Viewport/Scissor as Dynamic State for Pipeline
+			std::vector<VkDynamicState> dynamicStates =
+			{
+				VK_DYNAMIC_STATE_VIEWPORT,
+				VK_DYNAMIC_STATE_SCISSOR
+			};
+
+			// Dynamic Viewport/Scissor Size
+			pipelineBuilder.dynamic = VKInit::DynamicStateCreateInfo(dynamicStates);
 
 			// Assign Pipeline Layout
 			pipelineBuilder.pipelineLayout = shadowPipelineLayout;
@@ -1075,16 +1074,20 @@ namespace Puffin
 
 		void VulkanEngine::InitScene()
 		{
-			// Initialize Lights
-			for (ECS::EntityID entity : entityMap["Light"])
+			// Initialize Shadowcaster Lights
+			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
+			for (const auto entity : shadowcasterLightEntities)
 			{
-				InitLight(entity);
+				InitShadowcasterLight(entity->ID());
 			}
 
 			// Initialize Meshes
-			for (ECS::EntityID entity : entityMap["Mesh"])
+			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+			for (const auto entity : meshEntities)
 			{
-				InitMesh(entity);
+				InitMesh(entity->ID());
 			}
 
 		}
@@ -1107,15 +1110,15 @@ namespace Puffin
 			m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.insert(entity);
 		}
 
-		void VulkanEngine::InitLight(ECS::EntityID entity)
+		void VulkanEngine::InitShadowcasterLight(ECS::EntityID entity)
 		{
-			auto& light = m_world->GetComponent<LightComponent>(entity);
+			auto& shadowcaster = m_world->GetComponent<ShadowCasterComponent>(entity);
 
 			// Create Depth Image for Light
 			VkExtent3D imageExtent =
 			{
-				shadowExtent.width,
-				shadowExtent.height,
+				shadowcaster.shadowmapWidth,
+				shadowcaster.shadowmapHeight,
 				1
 			};
 			
@@ -1132,8 +1135,8 @@ namespace Puffin
 			framebufferInfo.pNext = nullptr;
 
 			framebufferInfo.renderPass = renderPassShadows;
-			framebufferInfo.width = shadowExtent.width;
-			framebufferInfo.height = shadowExtent.height;
+			framebufferInfo.width = shadowcaster.shadowmapWidth;
+			framebufferInfo.height = shadowcaster.shadowmapHeight;
 			framebufferInfo.layers = 1;
 
 			for (int i = 0; i < FRAME_OVERLAP; i++)
@@ -1359,7 +1362,7 @@ namespace Puffin
 			}
 		}
 
-		void VulkanEngine::CleanupLight(ECS::EntityID entity)
+		void VulkanEngine::CleanupShadowcasterLight(ECS::EntityID entity)
 		{
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
@@ -1443,11 +1446,6 @@ namespace Puffin
 
 		void VulkanEngine::InitShadowmapDescriptors()
 		{
-			if (entityMap["Light"].empty())
-			{
-				return;
-			}
-
 			// Write Shadowmap Descriptor Sets
 			VkDescriptorImageInfo shadowmapBufferInfo;
 			shadowmapBufferInfo.sampler = depthSampler;
@@ -1458,17 +1456,25 @@ namespace Puffin
 			{
 				std::vector<VkDescriptorImageInfo> imageInfos;
 
-				for (ECS::EntityID entity : entityMap["Light"])
+				std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+				ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
+				for (const auto entity : shadowcasterLightEntities)
 				{
-					LightComponent& light = m_world->GetComponent<LightComponent>(entity);
-
-					shadowmapBufferInfo.imageView = frames[i].shadowmapImages[entity].imageView;
+					shadowmapBufferInfo.imageView = frames[i].shadowmapImages[entity->ID()].imageView;
 					imageInfos.push_back(shadowmapBufferInfo);
 				}
 
-				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindImages(0, static_cast<uint32_t>(imageInfos.size()), imageInfos.data(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
+				if (shadowcasterLightEntities.empty())
+				{
+					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+						.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
+				}
+				else
+				{
+					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+						.BindImages(0, static_cast<uint32_t>(imageInfos.size()), imageInfos.data(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+						.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
+				}
 			}
 		}
 
@@ -1614,42 +1620,89 @@ namespace Puffin
 			ProcessEvents();
 
 			// Initialize/Cleanup marked components
-			for (ECS::EntityID entity : entityMap["Mesh"])
+			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+			for (const auto entity : meshEntities)
 			{
 				// Initialize
-				if (m_world->GetComponentFlag<MeshComponent, FlagDirty>(entity))
+				if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
 				{
-					InitMesh(entity);
+					InitMesh(entity->ID());
 
-					m_world->SetComponentFlag<MeshComponent, FlagDirty>(entity, false);
+					entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
 				}
 
 				// Cleanup
-				if (m_world->GetComponentFlag<MeshComponent, FlagDeleted>(entity) || m_world->GetEntityFlag<FlagDeleted>(entity))
+				if (entity->GetComponentFlag<MeshComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
 				{
-					CleanupMesh(entity);
-					m_world->RemoveComponent<MeshComponent>(entity);
+					CleanupMesh(entity->ID());
+					entity->RemoveComponent<MeshComponent>();
+				}
+			}
+			
+			/*std::vector<std::shared_ptr<ECS::Entity>> pointLightEntities;
+			ECS::GetEntities<TransformComponent, PointLightComponent>(m_world, pointLightEntities);
+			for (const auto entity : pointLightEntities)
+			{
+				if (entity->GetComponentFlag<PointLightComponent, FlagDirty>())
+				{
+					
+				}
+
+				if (entity->GetComponentFlag<PointLightComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
+				{
+					
 				}
 			}
 
-			for (ECS::EntityID entity : entityMap["Light"])
+			std::vector<std::shared_ptr<ECS::Entity>> dirLightEntities;
+			ECS::GetEntities<TransformComponent, DirectionalLightComponent>(m_world, dirLightEntities);
+			for (const auto entity : dirLightEntities)
 			{
-				// Initialize
-				if (m_world->GetComponentFlag<LightComponent, FlagDirty>(entity))
+				if (entity->GetComponentFlag<DirectionalLightComponent, FlagDirty>())
 				{
-					InitLight(entity);
+					
+				}
 
-					m_world->SetComponentFlag<LightComponent, FlagDirty>(entity, false);
+				if (entity->GetComponentFlag<DirectionalLightComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
+				{
+					
+				}
+			}
+
+			std::vector<std::shared_ptr<ECS::Entity>> spotLightEntities;
+			ECS::GetEntities<TransformComponent, SpotLightComponent>(m_world, spotLightEntities);
+			for (const auto entity : spotLightEntities)
+			{
+				if (entity->GetComponentFlag<SpotLightComponent, FlagDirty>())
+				{
+
+				}
+
+				if (entity->GetComponentFlag<SpotLightComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
+				{
+
+				}
+			}*/
+
+			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
+			for (const auto entity : shadowcasterLightEntities)
+			{
+				if (entity->GetComponentFlag<ShadowCasterComponent, FlagDirty>())
+				{
+					InitShadowcasterLight(entity->ID());
+
+					entity->SetComponentFlag<ShadowCasterComponent, FlagDirty>(false);
 
 					m_shadowmapsNeedsUpdated = true;
 				}
 
-				// Cleanup
-				if (m_world->GetComponentFlag<LightComponent, FlagDeleted>(entity) || m_world->GetEntityFlag<FlagDeleted>(entity))
+				if (entity->GetComponentFlag<ShadowCasterComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
 				{
-					CleanupLight(entity);
+					CleanupShadowcasterLight(entity->ID());
 
-					m_world->RemoveComponent<LightComponent>(entity);
+					entity->RemoveComponent<ShadowCasterComponent>();
 
 					m_shadowmapsNeedsUpdated = true;
 				}
@@ -1671,14 +1724,18 @@ namespace Puffin
 
 		void VulkanEngine::Stop()
 		{
-			for (ECS::EntityID entity : entityMap["Mesh"])
+			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+			for (const auto entity : meshEntities)
 			{
-				CleanupMesh(entity);
+				CleanupMesh(entity->ID());
 			}
 
-			for (ECS::EntityID entity : entityMap["Light"])
+			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
+			for (const auto entity : shadowcasterLightEntities)
 			{
-				CleanupLight(entity);
+				CleanupShadowcasterLight(entity->ID());
 			}
 
 			m_needsStarted = true;
@@ -1907,22 +1964,28 @@ namespace Puffin
 			PrepareScene();
 			PrepareLights();
 
-			// Render Shadowmaps
-			VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
-
 			VkSubmitInfo submit = {};
 			submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submit.pNext = nullptr;
-			submit.pWaitDstStageMask = nullptr;
-			submit.waitSemaphoreCount = 0;
-			submit.pWaitSemaphores = nullptr;
-			submit.signalSemaphoreCount = 1;
-			submit.pSignalSemaphores = &GetCurrentFrame().shadowmapSemaphore;
-			submit.commandBufferCount = 1;
-			submit.pCommandBuffers = &cmdShadows;
 
-			// Submit Shadowmaps command buffer
-			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE));
+			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
+			if (!shadowcasterLightEntities.empty())
+			{
+				// Render Shadowmaps
+				VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
+				
+				submit.pWaitDstStageMask = nullptr;
+				submit.waitSemaphoreCount = 0;
+				submit.pWaitSemaphores = nullptr;
+				submit.signalSemaphoreCount = 1;
+				submit.pSignalSemaphores = &GetCurrentFrame().shadowmapSemaphore;
+				submit.commandBufferCount = 1;
+				submit.pCommandBuffers = &cmdShadows;
+
+				// Submit Shadowmaps command buffer
+				VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE));
+			}
 
 			// Deferred Render
 			deferredRenderer.SetGeometryDescriptorSet(&GetCurrentFrame().geometryDescriptor);
@@ -1934,7 +1997,7 @@ namespace Puffin
 			//VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
  			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
 
-			std::vector<VkCommandBuffer> submitCommandBuffers = { cmdGui};
+			std::vector<VkCommandBuffer> submitCommandBuffers = { cmdGui };
 
 			std::vector<VkSemaphore> waitSemaphores = 
 			{
@@ -2198,7 +2261,7 @@ namespace Puffin
 			int p = 0;
 			int d = 0;
 			int s = 0;
-			int lightIndex = 0;
+			int shadowIndex = 0;
 
 			glm::mat4 biasMatrix(
 				0.5, 0.0, 0.0, 0.0,
@@ -2208,77 +2271,104 @@ namespace Puffin
 			);
 
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
-			for (ECS::EntityID entity : entityMap["Light"])
+			std::vector<std::shared_ptr<ECS::Entity>> pointLightEntities;
+			ECS::GetEntities<TransformComponent, PointLightComponent>(m_world, pointLightEntities);
+			for (const auto entity : pointLightEntities)
 			{
-				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
+				auto& pointLight = entity->GetComponent<PointLightComponent>();
 
-				int shadowIndex = -1;
+				int tempShadowIndex = -1;
 
-				// Only render depth map if light is set to cast shadows and is spotlight type
-				if (light.bFlagCastShadows && light.type == LightType::SPOT)
+				// TO DO - Add support for point light shadows
+				/*if (entity->HasComponent<ShadowCasterComponent>())
 				{
-					TransformComponent& transform = m_world->GetComponent<TransformComponent>(entity);
+					auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
+				
+					tempShadowIndex = shadowIndex;
+					shadowIndex++;
+				}*/
 
-					// Calculate Light Space View Matrix
+				lightSSBO[l].ambientColor = static_cast<glm::vec3>(pointLight.ambientColor);
+				lightSSBO[l].diffuseColor = static_cast<glm::vec3>(pointLight.diffuseColor);
+				lightSSBO[l].specularStrength = pointLight.specularStrength;
+				lightSSBO[l].shininess = pointLight.shininess;
+				lightSSBO[l].shadowmapIndex = tempShadowIndex;
 
-					// Near/Far Plane to render depth within
-					const float near_plane = 1.0f;
-					const float far_plane = 50.0f;
+				pointLightSSBO[p].position = static_cast<glm::vec3>(entity->GetComponent<TransformComponent>().position);
+				pointLightSSBO[p].constant = pointLight.constantAttenuation;
+				pointLightSSBO[p].linear = pointLight.linearAttenuation;
+				pointLightSSBO[p].quadratic = pointLight.quadraticAttenuation;
+				pointLightSSBO[p].dataIndex = l;
 
-					// Calculate Light Space Projection Matrix
-					glm::mat4 lightProj = glm::perspective(
-						glm::radians(light.outerCutoffAngle * 2.0f),
-						static_cast<float>(shadowExtent.width) / static_cast<float>(shadowExtent.height),
-						near_plane, far_plane);
+				p++;
+				l++;
+			}
 
-					lightProj[1][1] *= -1;
+			std::vector<std::shared_ptr<ECS::Entity>> dirLightEntities;
+			ECS::GetEntities<TransformComponent, DirectionalLightComponent>(m_world, dirLightEntities);
+			for (const auto entity : dirLightEntities)
+			{
+				auto& dirLight = entity->GetComponent<SpotLightComponent>();
 
-					glm::mat4 lightView = glm::lookAt(
-						glm::vec3(transform.position),
-						glm::vec3(transform.position + light.direction),
-						glm::vec3(0.0f, 1.0f, 0.0f));
+				int tempShadowIndex = -1;
 
-					light.lightSpaceView = lightProj * lightView;
+				// TO DO - Add support for directional light shadows
+				/*if (entity->HasComponent<ShadowCasterComponent>())
+				{
+					auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
+					
+					tempShadowIndex = shadowIndex;
+					shadowIndex++;
+				}*/
 
-					shadowIndex = lightIndex;
-					lightIndex++;
-				}
-
-				lightSSBO[l].ambientColor = static_cast<glm::vec3>(light.ambientColor);
-				lightSSBO[l].diffuseColor = static_cast<glm::vec3>(light.diffuseColor);
-				lightSSBO[l].specularStrength = light.specularStrength;
-				lightSSBO[l].shininess = light.shininess;
-				lightSSBO[l].lightSpaceMatrix = biasMatrix * light.lightSpaceView;
+				lightSSBO[l].ambientColor = static_cast<glm::vec3>(dirLight.ambientColor);
+				lightSSBO[l].diffuseColor = static_cast<glm::vec3>(dirLight.diffuseColor);
+				lightSSBO[l].specularStrength = dirLight.specularStrength;
+				lightSSBO[l].shininess = dirLight.shininess;
 				lightSSBO[l].shadowmapIndex = shadowIndex;
 
-				switch (light.type)
+				dirLightSSBO[d].direction = static_cast<glm::vec3>(dirLight.direction);
+				dirLightSSBO[d].dataIndex = l;
+
+				d++;
+				l++;
+			}
+
+			std::vector<std::shared_ptr<ECS::Entity>> spotLightEntities;
+			ECS::GetEntities<TransformComponent, SpotLightComponent>(m_world, spotLightEntities);
+			for (const auto entity : spotLightEntities)
+			{
+				auto& spotLight = entity->GetComponent<SpotLightComponent>();
+
+				int tempShadowIndex = -1;
+
+				if (entity->HasComponent<ShadowCasterComponent>())
 				{
-				case LightType::POINT:
-					pointLightSSBO[p].position = static_cast<glm::vec3>(m_world->GetComponent<TransformComponent>(entity).position);
-					pointLightSSBO[p].constant = light.constantAttenuation;
-					pointLightSSBO[p].linear = light.linearAttenuation;
-					pointLightSSBO[p].quadratic = light.quadraticAttenuation;
-					pointLightSSBO[p].dataIndex = l;
-					p++;
-					break;
-				case LightType::DIRECTIONAL:
-					dirLightSSBO[d].direction = static_cast<glm::vec3>(light.direction);
-					dirLightSSBO[d].dataIndex = l;
-					d++;
-					break;
-				case LightType::SPOT:
-					spotLightSSBO[s].position = static_cast<glm::vec3>(m_world->GetComponent<TransformComponent>(entity).position);
-					spotLightSSBO[s].direction = static_cast<glm::vec3>(light.direction);
-					spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(light.innerCutoffAngle));
-					spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(light.outerCutoffAngle));
-					spotLightSSBO[s].constant = light.constantAttenuation;
-					spotLightSSBO[s].linear = light.linearAttenuation;
-					spotLightSSBO[s].quadratic = light.quadraticAttenuation;
-					spotLightSSBO[s].dataIndex = l;
-					s++;
-					break;
+					auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
+
+					shadowcaster.lightSpaceView = CalculateLightSpaceView(entity, spotLight.outerCutoffAngle, spotLight.direction);
+					lightSSBO[l].lightSpaceMatrix = biasMatrix * shadowcaster.lightSpaceView;
+
+					tempShadowIndex = shadowIndex;
+					shadowIndex++;
 				}
 
+				lightSSBO[l].ambientColor = static_cast<glm::vec3>(spotLight.ambientColor);
+				lightSSBO[l].diffuseColor = static_cast<glm::vec3>(spotLight.diffuseColor);
+				lightSSBO[l].specularStrength = spotLight.specularStrength;
+				lightSSBO[l].shininess = spotLight.shininess;
+				lightSSBO[l].shadowmapIndex = tempShadowIndex;
+
+				spotLightSSBO[s].position = static_cast<glm::vec3>(entity->GetComponent<TransformComponent>().position);
+				spotLightSSBO[s].direction = static_cast<glm::vec3>(spotLight.direction);
+				spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(spotLight.innerCutoffAngle));
+				spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(spotLight.outerCutoffAngle));
+				spotLightSSBO[s].constant = spotLight.constantAttenuation;
+				spotLightSSBO[s].linear = spotLight.linearAttenuation;
+				spotLightSSBO[s].quadratic = spotLight.quadraticAttenuation;
+				spotLightSSBO[s].dataIndex = l;
+
+				s++;
 				l++;
 			}
 
@@ -2296,6 +2386,32 @@ namespace Puffin
 			vmaMapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation, &data);
 			memcpy(data, &lightStatsData, sizeof(GPULightStatsData));
 			vmaUnmapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation);
+		}
+
+		glm::mat4 VulkanEngine::CalculateLightSpaceView(std::shared_ptr<ECS::Entity> entity, float outerRadius, Vector3f direction)
+		{
+			const auto& transform = entity->GetComponent<TransformComponent>();
+			const auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
+
+			// Near/Far Plane to render depth within
+			const float near_plane = 1.0f;
+			const float far_plane = 50.0f;
+
+			// Calculate Light Space Projection Matrix
+			glm::mat4 lightProj = glm::perspective(
+				glm::radians(outerRadius * 2.0f),
+				static_cast<float>(shadowcaster.shadowmapWidth) / static_cast<float>(shadowcaster.shadowmapHeight),
+				near_plane, far_plane);
+
+			lightProj[1][1] *= -1;
+
+			// Calculate Light Space View Matrix
+			glm::mat4 lightView = glm::lookAt(
+				glm::vec3(transform.position),
+				glm::vec3(transform.position + direction),
+				glm::vec3(0.0f, 1.0f, 0.0f));
+
+			return lightProj * lightView;
 		}
 
 		VkCommandBuffer VulkanEngine::RecordMainCommandBuffers(uint32_t index)
@@ -2428,7 +2544,6 @@ namespace Puffin
 			shadowRPInfo.renderPass = renderPassShadows;
 			shadowRPInfo.renderArea.offset.x = 0;
 			shadowRPInfo.renderArea.offset.y = 0;
-			shadowRPInfo.renderArea.extent = shadowExtent;
 
 			// Set Clear Depth Color for Framebuffer
 			VkClearValue depthClear;
@@ -2440,56 +2555,76 @@ namespace Puffin
 			// Bind Pipeline
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipeline);
 
-			int lightIndex = 0;
-
 			// For Each Shadowcasting Light Source
-			for (ECS::EntityID entity : entityMap["Light"])
+			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
+			for (const auto entity : shadowcasterLightEntities)
 			{
-				LightComponent& light = m_world->GetComponent<LightComponent>(entity);
+				const auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
 
-				// Only render depth map if light is set to cast shadows and is spotlight type
-				if (light.bFlagCastShadows && light.type == LightType::SPOT)
-				{
-					shadowRPInfo.framebuffer = frames[frameNumber % FRAME_OVERLAP].shadowmapFramebuffers[entity];
+				VkExtent2D shadowmapExtent = { shadowcaster.shadowmapWidth, shadowcaster.shadowmapHeight };
 
-					// Begin Shadow Render Pass
-					vkCmdBeginRenderPass(cmd, &shadowRPInfo, VK_SUBPASS_CONTENTS_INLINE);
+				shadowRPInfo.framebuffer = frames[frameNumber % FRAME_OVERLAP].shadowmapFramebuffers[entity->ID()];
+				shadowRPInfo.renderArea.extent = shadowmapExtent;
 
-					GPULightSpaceData lightSpaceData;
-					lightSpaceData.lightSpaceMatrix = light.lightSpaceView;
+				// Set Pipeline Viewport
+				VkViewport viewport = {};
+				viewport.x = 0.0f;
+				viewport.y = 0.0f;
+				viewport.width = static_cast<float>(shadowmapExtent.width);
+				viewport.height = static_cast<float>(shadowmapExtent.height);
+				viewport.minDepth = 0.0f;
+				viewport.maxDepth = 1.0f;
 
-					void* data;
-					vmaMapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation, &data);
-					memcpy(data, &lightSpaceData, sizeof(GPULightSpaceData));
-					vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation);
+				vkCmdSetViewport(cmd, 0, 1, &viewport);
 
-					// Bind Light Space DataDescriptors
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						shadowPipelineLayout, 0, 1, &GetCurrentFrame().lightSpaceDescriptor, 0, nullptr);
+				VkRect2D scissor = {};
+				scissor.offset = { 0, 0 };
+				scissor.extent = shadowmapExtent;
 
-					// Bind Object Data Descriptor
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						shadowPipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
+				vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-					// Bind Vertex/Index Buffers
-					VkDeviceSize offsets[] = { 0 };
-					vkCmdBindVertexBuffers(cmd, 0, 1, &m_sceneRenderData.mergedVertexBuffer.buffer, offsets);
-					vkCmdBindIndexBuffer(cmd, m_sceneRenderData.mergedIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-					vkCmdDrawIndexedIndirect(cmd, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.buffer,
-						0, GetCurrentFrame().drawBatch.count, sizeof(VkDrawIndexedIndirectCommand));
-
-					// Finalize Render Pass
-					vkCmdEndRenderPass(cmd);
-
-					lightIndex++;
-				}
+				// Record Shadow Render Pass
+				RecordShadowRenderPass(cmd, shadowRPInfo, shadowcaster.lightSpaceView);
 			}
 
 			// Finalize Command Buffer
 			VK_CHECK(vkEndCommandBuffer(cmd));
 
 			return cmd;
+		}
+
+		void VulkanEngine::RecordShadowRenderPass(VkCommandBuffer cmd, const VkRenderPassBeginInfo& renderPassInfo, const glm::mat4& lightSpaceView)
+		{
+			// Begin Shadow Render Pass
+			vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			GPULightSpaceData lightSpaceData;
+			lightSpaceData.lightSpaceMatrix = lightSpaceView;
+
+			void* data;
+			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation, &data);
+			memcpy(data, &lightSpaceData, sizeof(GPULightSpaceData));
+			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation);
+
+			// Bind Light Space DataDescriptors
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				shadowPipelineLayout, 0, 1, &GetCurrentFrame().lightSpaceDescriptor, 0, nullptr);
+
+			// Bind Object Data Descriptor
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				shadowPipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
+
+			// Bind Vertex/Index Buffers
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(cmd, 0, 1, &m_sceneRenderData.mergedVertexBuffer.buffer, offsets);
+			vkCmdBindIndexBuffer(cmd, m_sceneRenderData.mergedIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+			vkCmdDrawIndexedIndirect(cmd, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.buffer,
+				0, GetCurrentFrame().drawBatch.count, sizeof(VkDrawIndexedIndirectCommand));
+
+			// Finalize Render Pass
+			vkCmdEndRenderPass(cmd);
 		}
 
 		void VulkanEngine::DrawDebugObjects(VkCommandBuffer cmd, uint32_t index)

@@ -412,19 +412,6 @@ namespace Puffin
 			// Create Input Assembly Info
 			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
-			// Define Viewport
-			pipelineBuilder.viewport.x = 0.0f;
-			pipelineBuilder.viewport.y = 0.0f;
-			pipelineBuilder.viewport.width = (float)gBufferExtent.width;
-			pipelineBuilder.viewport.height = (float)gBufferExtent.height;
-			pipelineBuilder.viewport.minDepth = 0.0f;
-			pipelineBuilder.viewport.maxDepth = 1.0f;
-
-			// Define Scissor Extent (Pixels Outside Scissor Rectangle will be discarded)
-			pipelineBuilder.scissor.offset = { 0, 0 };
-			pipelineBuilder.scissor.extent.width = gBufferExtent.width;
-			pipelineBuilder.scissor.extent.height = gBufferExtent.height;
-
 			// Rasterization Stage Creation - Configured to draw filled triangles
 			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE);
 
@@ -567,19 +554,6 @@ namespace Puffin
 
 			// Create Input Assembly Info
 			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-
-			// Define Viewport
-			pipelineBuilder.viewport.x = 0.0f;
-			pipelineBuilder.viewport.y = 0.0f;
-			pipelineBuilder.viewport.width = (float)gBufferExtent.width;
-			pipelineBuilder.viewport.height = (float)gBufferExtent.height;
-			pipelineBuilder.viewport.minDepth = 0.0f;
-			pipelineBuilder.viewport.maxDepth = 1.0f;
-
-			// Define Scissor Extent (Pixels Outside Scissor Rectangle will be discarded)
-			pipelineBuilder.scissor.offset = { 0, 0 };
-			pipelineBuilder.scissor.extent.width = gBufferExtent.width;
-			pipelineBuilder.scissor.extent.height = gBufferExtent.height;
 
 			// Rasterization Stage Creation - Configured to draw filled triangles
 			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);

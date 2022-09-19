@@ -5,7 +5,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		void UIWindowSettings::Draw(float dt)
+		void UIWindowSettings::Draw(double dt)
 		{
 			if (firstTime)
 			{

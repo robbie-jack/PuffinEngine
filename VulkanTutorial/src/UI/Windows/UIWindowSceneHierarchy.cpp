@@ -9,7 +9,7 @@ namespace Puffin
 {
 	namespace UI
 	{
-		void UIWindowSceneHierarchy::Draw(float dt)
+		void UIWindowSceneHierarchy::Draw(double dt)
 		{
 			windowName = "Scene Hierarchy";
 

@@ -16,7 +16,7 @@ namespace Puffin
 			UIWindowSceneHierarchy(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowSceneHierarchy() override {}
 
-			void Draw(float dt) override;
+			void Draw(double dt) override;
 
 			inline bool HasEntityChanged() { return entityChanged; };
 			inline ECS::EntityID GetEntity() { return selectedEntity; };
