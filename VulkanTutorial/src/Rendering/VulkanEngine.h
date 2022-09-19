@@ -347,6 +347,7 @@ namespace Puffin
 			void InitDebugPipeline();
 			void InitScene();
 			void InitShadowmapDescriptors();
+			void UpdateShadowmapDescriptors();
 			void InitImGui();
 			void InitImGuiTextureIDs();
 			void InitTextureSampler();

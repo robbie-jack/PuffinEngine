@@ -8,6 +8,8 @@
 #include "Engine/Engine.hpp"
 #include "Engine/EventSubsystem.hpp"
 
+#include "ECS/Entity.h"
+
 #include <iostream>  // cout
 #include <assert.h>  // assert()
 #include <string.h>
@@ -95,27 +97,30 @@ namespace Puffin::Scripting
 			m_scriptEngine->Release();
 		}
 
-		// Compile Scripts/Instantiate Objects
-		for (ECS::EntityID entity : entityMap["Script"])
+		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
+		for (const auto entity : shadowcasterLightEntities)
 		{
-			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
+			auto& script = entity->GetComponent<AngelScriptComponent>();
 
-			InitializeScript(entity, script);
+			InitializeScript(entity->ID(), script);
 
-			m_world->SetComponentFlag<AngelScriptComponent, FlagDirty>(entity, false);
+			entity->SetComponentFlag<AngelScriptComponent, FlagDirty>(false);
 		}
 	}
 
 	void AngelScriptSystem::Start()
 	{
 		// Execute Start Methods
-		for (ECS::EntityID entity : entityMap["Script"])
+		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
+		for (const auto entity : shadowcasterLightEntities)
 		{
-			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
+			auto& script = entity->GetComponent<AngelScriptComponent>();
 
 			ExportEditablePropertiesToScriptData(script, script.serializedData);
 
-			m_currentEntityID = entity;
+			m_currentEntityID = entity->ID();
 
 			asIScriptFunction* startFunc = GetScriptMethod(script, "Start");
 			PrepareAndExecuteScriptMethod(script.obj, startFunc);
@@ -129,29 +134,31 @@ namespace Puffin::Scripting
 		ProcessEvents();
 		
 		// Initialize/Cleanup marked components
-		for (ECS::EntityID entity : entityMap["Script"])
+		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
+		for (const auto entity : shadowcasterLightEntities)
 		{
-			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
+			auto& script = entity->GetComponent<AngelScriptComponent>();
 
-			m_currentEntityID = entity;
+			m_currentEntityID = entity->ID();
 
 			// Script needs initialized
-			if (m_world->GetComponentFlag<AngelScriptComponent, FlagDirty>(entity))
+			if (entity->GetComponentFlag<AngelScriptComponent, FlagDirty>())
 			{
-				InitializeScript(entity, script);
+				InitializeScript(entity->ID(), script);
 
 				PrepareAndExecuteScriptMethod(script.obj, script.startFunc);
 
-				m_world->SetComponentFlag<AngelScriptComponent, FlagDirty>(entity, false);
+				entity->SetComponentFlag<AngelScriptComponent, FlagDirty>(false);
 			}
 
 			// Script needs cleaned up
-			if (m_world->GetComponentFlag<AngelScriptComponent, FlagDeleted>(entity) || m_world->GetEntityFlag<FlagDeleted>(entity))
+			if (entity->GetComponentFlag<AngelScriptComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
 			{
 				PrepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 
 				CleanupScriptComponent(script);
-				m_world->RemoveComponent<AngelScriptComponent>(entity);
+				entity->RemoveComponent<AngelScriptComponent>();
 			}
 
 			// Execute Update function if one was found for script
@@ -162,11 +169,13 @@ namespace Puffin::Scripting
 	void AngelScriptSystem::Stop()
 	{
 		// Execute Script Stop Methods
-		for (ECS::EntityID entity : entityMap["Script"])
+		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
+		for (const auto entity : shadowcasterLightEntities)
 		{
-			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
+			auto& script = entity->GetComponent<AngelScriptComponent>();
 
-			m_currentEntityID = entity;
+			m_currentEntityID = entity->ID();
 
 			PrepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 		}

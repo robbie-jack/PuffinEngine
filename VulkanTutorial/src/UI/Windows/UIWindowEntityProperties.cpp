@@ -75,6 +75,7 @@ namespace Puffin
 					DrawPointLightUI(flags);
 					DrawDirectionalLightUI(flags);
 					DrawSpotLightUI(flags);
+					DrawShadowcasterUI(flags);
 
 					DrawRigidbody2DUI(flags);
 					DrawCircle2DUI(flags);
@@ -114,61 +115,43 @@ namespace Puffin
 							}
 						}
 
-						/*if (ImGui::Selectable("Light"))
-						{
-							if (!ecsWorld->HasComponent<Rendering::LightComponent>(m_entity))
-							{
-								auto& light = ecsWorld->AddAndGetComponent<Rendering::LightComponent>(m_entity);
-								light.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-								light.ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-								light.innerCutoffAngle = 12.5f;
-								light.outerCutoffAngle = 17.5f;
-								light.constantAttenuation = 1.0f;
-								light.linearAttenuation = 0.09f;
-								light.quadraticAttenuation = 0.032f;
-								light.specularStrength = 0.5f;
-								light.shininess = 16;
-								light.type = Rendering::LightType::POINT;
-								
-								sceneChanged = true;
-							}
-						}*/
-						if (ImGui::BeginPopup("Lights"))
-						{
-							if (ImGui::Selectable("Point Light"))
-							{
-								ecsWorld->AddComponent<Rendering::PointLightComponent>(m_entity);
-							}
+						ImGui::Separator();
 
-							if (ImGui::Selectable("Directional Light"))
-							{
-								ecsWorld->AddComponent<Rendering::DirectionalLightComponent>(m_entity);
-							}
-
-							if (ImGui::Selectable("Spot Light"))
-							{
-								ecsWorld->AddComponent<Rendering::SpotLightComponent>(m_entity);
-							}
+						if (ImGui::Selectable("Point Light"))
+						{
+							ecsWorld->AddComponent<Rendering::PointLightComponent>(m_entity);
 						}
 
-						if (ImGui::BeginPopup("Physics"))
+						if (ImGui::Selectable("Directional Light"))
 						{
-							if (ImGui::Selectable("Rigidbody"))
-							{
-								ecsWorld->AddComponent<Physics::Box2DRigidbodyComponent>(m_entity);
-							}
+							ecsWorld->AddComponent<Rendering::DirectionalLightComponent>(m_entity);
+						}
 
-							if (ImGui::Selectable("Circle2D"))
-							{
-								ecsWorld->AddComponent<Physics::Box2DCircleComponent>(m_entity);
-							}
+						if (ImGui::Selectable("Spot Light"))
+						{
+							ecsWorld->AddComponent<Rendering::SpotLightComponent>(m_entity);
+						}
 
-							if (ImGui::Selectable("Box2D"))
-							{
-								ecsWorld->AddComponent<Physics::Box2DBoxComponent>(m_entity);
-							}
+						if (ImGui::Selectable("Shadow Caster"))
+						{
+							ecsWorld->AddComponent<Rendering::ShadowCasterComponent>(m_entity);
+						}
 
-							ImGui::EndPopup();
+						ImGui::Separator();
+							
+						if (ImGui::Selectable("Rigidbody"))
+						{
+							ecsWorld->AddComponent<Physics::Box2DRigidbodyComponent>(m_entity);
+						}
+
+						if (ImGui::Selectable("Circle2D"))
+						{
+							ecsWorld->AddComponent<Physics::Box2DCircleComponent>(m_entity);
+						}
+
+						if (ImGui::Selectable("Box2D"))
+						{
+							ecsWorld->AddComponent<Physics::Box2DBoxComponent>(m_entity);
 						}
 
 						ImGui::EndPopup();
@@ -301,16 +284,10 @@ namespace Puffin
 			if (light != nullptr)
 			{
 				// Edit Light Diffuse Color
-				if (ImGui::ColorEdit3("Diffuse", (float*)&light->diffuseColor))
-				{
-					dirty = true;
-				}
+				dirty |= ImGui::ColorEdit3("Diffuse", (float*)&light->diffuseColor);
 
 				// Edit Light Ambient Color
-				if (ImGui::ColorEdit3("Ambient", (float*)&light->ambientColor))
-				{
-					dirty = true;
-				}
+				dirty |= ImGui::ColorEdit3("Ambient", (float*)&light->ambientColor);
 			}
 
 			return dirty;
@@ -335,20 +312,11 @@ namespace Puffin
 						sceneChanged = true;
 					}
 
-					if (DrawLightUI(&light))
-					{
-						dirty = true;
-					}
+					dirty |= DrawLightUI(&light);
 
-					if (ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f"))
-					{
-						dirty = true;
-					}
+					dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
 
-					if (ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f"))
-					{
-						dirty = true;
-					}
+					dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
 
 					ImGui::TreePop();
 				}
@@ -356,7 +324,7 @@ namespace Puffin
 				if (dirty)
 				{
 					sceneChanged = true;
-					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDeleted>(m_entity, true);
+					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDirty>(m_entity, true);
 				}
 			}
 		}
@@ -380,15 +348,9 @@ namespace Puffin
 						sceneChanged = true;
 					}
 
-					if (DrawLightUI(&light))
-					{
-						dirty = true;
-					}
+					dirty |= DrawLightUI(&light);
 
-					if (ImGui::DragFloat3("Direction", (float*)&light.direction, 0.005f, -1.0f, 1.0f))
-					{
-						dirty = true;
-					}
+					dirty |= ImGui::DragFloat3("Direction", (float*)&light.direction, 0.005f, -1.0f, 1.0f);
 
 					ImGui::TreePop();
 				}
@@ -396,7 +358,7 @@ namespace Puffin
 				if (dirty)
 				{
 					sceneChanged = true;
-					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDeleted>(m_entity, true);
+					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDirty>(m_entity, true);
 				}
 			}
 		}
@@ -420,37 +382,18 @@ namespace Puffin
 						sceneChanged = true;
 					}
 
-					if (DrawLightUI(&light))
-					{
-						sceneChanged = true;
-						ecsWorld->SetComponentFlag<Rendering::SpotLightComponent, FlagDeleted>(m_entity, true);
-					}
+					dirty |= DrawLightUI(&light);
 
-					if (ImGui::DragFloat3("Direction", (float*)&light.direction, 0.005f, -1.0f, 1.0f))
-					{
-						dirty = true;
-					}
+					dirty |= ImGui::DragFloat3("Direction", (float*)&light.direction, 0.005f, -1.0f, 1.0f);
 
-					if (ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f"))
-					{
-						dirty = true;
-					}
+					dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
 
-					if (ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f"))
-					{
-						dirty = true;
-					}
+					dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
 
-					if (ImGui::DragFloat("Inner Cutoff Angle", &light.innerCutoffAngle, 0.25f, 0.0f, 45.0f))
-					{
-						dirty = true;
-					}
+					dirty |= ImGui::DragFloat("Inner Cutoff Angle", &light.innerCutoffAngle, 0.25f, 0.0f, 45.0f);
 
 					// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
-					if (ImGui::DragFloat("Outer Cutoff Angle", &light.outerCutoffAngle, 0.25f, light.innerCutoffAngle, 45.0f))
-					{
-						dirty = true;
-					}
+					dirty |= ImGui::DragFloat("Outer Cutoff Angle", &light.outerCutoffAngle, 0.25f, light.innerCutoffAngle, 45.0f);
 
 					// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
 					if (light.outerCutoffAngle < light.innerCutoffAngle)
@@ -464,7 +407,70 @@ namespace Puffin
 				if (dirty)
 				{
 					sceneChanged = true;
-					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDeleted>(m_entity, true);
+					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDirty>(m_entity, true);
+				}
+			}
+		}
+
+		void UIWindowEntityProperties::DrawShadowcasterUI(ImGuiTreeNodeFlags flags)
+		{
+			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			if (ecsWorld->HasComponent<Rendering::ShadowCasterComponent>(m_entity))
+			{
+				auto& shadowcaster = ecsWorld->GetComponent<Rendering::ShadowCasterComponent>(m_entity);
+				bool dirty = false;
+
+				if (ImGui::TreeNodeEx("Shadow Caster Component", flags))
+				{
+					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+					if (ImGui::SmallButton("X##Shadow Caster"))
+					{
+						ecsWorld->SetComponentFlag<Rendering::ShadowCasterComponent, FlagDeleted>(m_entity, true);
+						sceneChanged = true;
+					}
+
+					int item_current_idx = 0;
+					for (int i = 0; i < Rendering::SHADOW_RESOLUTION_VALUES.size(); i++)
+					{
+						if (Rendering::SHADOW_RESOLUTION_VALUES[i] == shadowcaster.shadowmapWidth)
+						{
+							item_current_idx = i;
+							break;
+						}
+					}
+
+					const char* label = Rendering::SHADOW_RESOLUTION_LABELS[item_current_idx].c_str();
+					if (ImGui::BeginCombo("Shadow Resolution", label))
+					{
+						for (int i = 0; i < Rendering::SHADOW_RESOLUTION_VALUES.size(); i++)
+						{
+							const bool is_selected = (item_current_idx == i);
+
+							if (ImGui::Selectable(Rendering::SHADOW_RESOLUTION_LABELS[i].c_str(), is_selected))
+							{
+								item_current_idx = i;
+
+								shadowcaster.shadowmapWidth = Rendering::SHADOW_RESOLUTION_VALUES[item_current_idx];
+								shadowcaster.shadowmapHeight = Rendering::SHADOW_RESOLUTION_VALUES[item_current_idx];
+
+								dirty = true;
+							}
+
+							if (is_selected)
+								ImGui::SetItemDefaultFocus();
+						}
+
+						ImGui::EndCombo();
+					}
+
+					ImGui::TreePop();
+				}
+
+				if (dirty)
+				{
+					sceneChanged = true;
+					ecsWorld->SetComponentFlag<Rendering::ShadowCasterComponent, FlagDirty>(m_entity, true);
 				}
 			}
 		}

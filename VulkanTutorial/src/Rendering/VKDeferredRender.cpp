@@ -33,13 +33,14 @@ namespace Puffin
 	{
 		// Public
 
-		void VKDeferredRender::Setup(VkPhysicalDevice inPhysicalDevice, 
-			VkDevice inDevice, 
-			VmaAllocator inAllocator,
-			VKUtil::DescriptorAllocator* inDescriptorAllocator,
-			VKUtil::DescriptorLayoutCache* inDescriptorLayoutCache,
-			std::vector<VkCommandPool>& commandPools,
-			int inFrameOverlap, VkExtent2D inExtent)
+		void VKDeferredRender::Setup(VkPhysicalDevice inPhysicalDevice,
+		                             VkDevice inDevice,
+		                             VmaAllocator inAllocator,
+		                             VKUtil::DescriptorAllocator* inDescriptorAllocator,
+		                             VKUtil::DescriptorLayoutCache* inDescriptorLayoutCache,
+		                             std::vector<VkCommandPool>& commandPools,
+		                             int inFrameOverlap,
+		                             VkExtent2D inExtent)
 		{
 			// Pass in vulkan engine handles
 			device = inDevice;
@@ -60,11 +61,7 @@ namespace Puffin
 				frameData.emplace_back();
 			}
 
-			// Set Extent
-			gBufferExtent =
-			{
-				inExtent.width, inExtent.height, 1
-			};
+			gBufferExtent = { inExtent.width, inExtent.height, 1 };
 
 			SetupCommandBuffers(commandPools);
 		}
@@ -91,6 +88,17 @@ namespace Puffin
 			// Setup Shading Structures
 			SetupSDescriptorSets(uboBuffers, lightsPerType, lightBuffers);
 			SetupSPipeline(shadowmapSetLayout);
+		}
+
+		void VKDeferredRender::RecreateFramebuffer(VkExtent2D inExtent)
+		{
+			m_framebufferDeletionQueue.flush();
+
+			gBufferExtent = { inExtent.width, inExtent.height, 1 };
+
+			SetupGBuffer();
+			SetupGFramebuffer();
+			UpdateSDescriptorSets();
 		}
 
 		VkSemaphore& VKDeferredRender::DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer, VkDescriptorSet&
@@ -139,7 +147,8 @@ namespace Puffin
 
 		void VKDeferredRender::Cleanup()
 		{
-			deletionQueue.flush();
+			m_deletionQueue.flush();
+			m_framebufferDeletionQueue.flush();
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -184,7 +193,7 @@ namespace Puffin
 				VkFormat depthFormat;
 				VkBool32 bFoundValidDepthFormat = VKHelper::GetSupportedDepthFormat(physicalDevice, &depthFormat);
 
-				// If bFoundValidDepth format is false, a suitable depth format wasd not found
+				// If bFoundValidDepth format is false, a suitable depth format was not found
 				assert(bFoundValidDepthFormat);
 
 				// Create Depth Attachment
@@ -275,9 +284,9 @@ namespace Puffin
 
 			VK_CHECK(vkCreateRenderPass(device, &renderPassInfo, nullptr, &gRenderPass));
 
-			deletionQueue.push_function([=]()
+			m_deletionQueue.push_function([=]()
 			{
-					vkDestroyRenderPass(device, gRenderPass, nullptr);
+				vkDestroyRenderPass(device, gRenderPass, nullptr);
 			});
 
 		}
@@ -307,7 +316,7 @@ namespace Puffin
 
 				VK_CHECK(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameData[i].gFramebuffer));
 
-				deletionQueue.push_function([=]()
+				m_framebufferDeletionQueue.push_function([=]()
 				{
 					vkDestroyFramebuffer(device, frameData[i].gFramebuffer, nullptr);
 				});
@@ -331,7 +340,7 @@ namespace Puffin
 				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo,
 					nullptr, &frameData[i].shadingSemaphore));
 
-				deletionQueue.push_function([=]()
+				m_deletionQueue.push_function([=]()
 				{
 					vkDestroySemaphore(device, frameData[i].geometrySemaphore, nullptr);
 					vkDestroySemaphore(device, frameData[i].shadingSemaphore, nullptr);
@@ -585,6 +594,34 @@ namespace Puffin
 			sPipeline = pipelineBuilder.build_pipeline(device, sRenderPass);
 		}
 
+		void VKDeferredRender::UpdateSDescriptorSets()
+		{
+			for (int i = 0; i < frameOverlap; i++)
+			{
+				// G-Buffer Info
+				VkDescriptorImageInfo gPositionInfo;
+				gPositionInfo.sampler = gColorSampler;
+				gPositionInfo.imageView = frameData[i].gPosition.imageView;
+				gPositionInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				VkDescriptorImageInfo gNormalInfo;
+				gNormalInfo.sampler = gColorSampler;
+				gNormalInfo.imageView = frameData[i].gNormal.imageView;
+				gNormalInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				VkDescriptorImageInfo gAlbedoSpecInfo;
+				gAlbedoSpecInfo.sampler = gColorSampler;
+				gAlbedoSpecInfo.imageView = frameData[i].gAlbedoSpec.imageView;
+				gAlbedoSpecInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.UpdateImage(1, &gPositionInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+					.UpdateImage(2, &gNormalInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+					.UpdateImage(3, &gAlbedoSpecInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+					.Update(frameData[i].shadingDescriptor);
+			}
+		}
+
 		void VKDeferredRender::CreateAllocatedImage(VkFormat format, VkImageUsageFlags usage, AllocatedImage* allocatedImage, std::string debug_name)
 		{
 			// Set Image format
@@ -631,7 +668,7 @@ namespace Puffin
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &allocatedImage->imageView));
 
 			// Add image/view to deletion queue for cleanup
-			deletionQueue.push_function([=]()
+			m_framebufferDeletionQueue.push_function([=]()
 			{
 				vkDestroyImageView(device, allocatedImage->imageView, nullptr);
 				vmaDestroyImage(allocator, allocatedImage->image, allocatedImage->allocation);

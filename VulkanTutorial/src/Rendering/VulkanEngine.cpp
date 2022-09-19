@@ -1433,12 +1433,13 @@ namespace Puffin
 			}
 
 			deferredRenderer.Setup(physicalDevice,
-				device,
-				allocator,
-				descriptorAllocator,
-				descriptorLayoutCache,
-				commandPools,
-				FRAME_OVERLAP, offscreenExtent);
+			                       device,
+			                       allocator,
+			                       descriptorAllocator,
+			                       descriptorLayoutCache,
+			                       commandPools,
+			                       FRAME_OVERLAP,
+								   offscreenExtent);
 
 			deferredRenderer.SetupGeometry(geometrySetLayout);
 			deferredRenderer.SetupShading(uboBuffers, MAX_LIGHTS_PER_TYPE, lightBuffers, renderPass, shadowMapSetLayout);
@@ -1474,6 +1475,35 @@ namespace Puffin
 					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 						.BindImages(0, static_cast<uint32_t>(imageInfos.size()), imageInfos.data(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 						.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
+				}
+			}
+		}
+
+		void VulkanEngine::UpdateShadowmapDescriptors()
+		{
+			// Write Shadowmap Descriptor Sets
+			VkDescriptorImageInfo shadowmapBufferInfo;
+			shadowmapBufferInfo.sampler = depthSampler;
+			shadowmapBufferInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+			// Initialise Shadowmap Descriptor
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				std::vector<VkDescriptorImageInfo> imageInfos;
+
+				std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
+				ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
+				for (const auto entity : shadowcasterLightEntities)
+				{
+					shadowmapBufferInfo.imageView = frames[i].shadowmapImages[entity->ID()].imageView;
+					imageInfos.push_back(shadowmapBufferInfo);
+				}
+
+				if (!shadowcasterLightEntities.empty())
+				{
+					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+						.UpdateImages(0, static_cast<uint32_t>(imageInfos.size()), imageInfos.data(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+						.Update(frames[i].shadowmapDescriptor);
 				}
 			}
 		}
@@ -1595,15 +1625,7 @@ namespace Puffin
 			offscreenExtent.height = viewportSize.y;
 
 			// Setup Deferred Renderer
-			deferredRenderer.Cleanup();
-
-			std::vector<VkCommandPool> commandPools;
-			for (int i = 0; i < FRAME_OVERLAP; i++)
-			{
-				commandPools.push_back(frames[i].commandPool);
-			}
-			
-			SetupDeferredRenderer();
+			deferredRenderer.RecreateFramebuffer(offscreenExtent);
 
 			// Initialize Offscreen Variables and Scene
 			InitOffscreen();
@@ -1711,7 +1733,7 @@ namespace Puffin
 			// Rebuild Shadowmaps if needed
 			if (m_shadowmapsNeedsUpdated)
 			{
-				InitShadowmapDescriptors();
+				UpdateShadowmapDescriptors();
 				m_shadowmapsNeedsUpdated = false;
 			}
 
@@ -1954,11 +1976,11 @@ namespace Puffin
 			}
 
 			// Copy Debug Vertices to Vertex Buffer
-			if (GetCurrentFrame().debugVertices.size() > 0)
+			/*if (GetCurrentFrame().debugVertices.size() > 0)
 			{
 				CopyVerticesToBuffer(GetCurrentFrame().debugVertices, GetCurrentFrame().debugVertexBuffer);
 				CopyIndicesToBuffer(GetCurrentFrame().debugIndices, GetCurrentFrame().debugIndexBuffer);
-			}
+			}*/
 
 			// Prepare Scene Data for Rendering
 			PrepareScene();
@@ -1968,9 +1990,16 @@ namespace Puffin
 			submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submit.pNext = nullptr;
 
+			bool shadowCasterNeedsInitialized = false;
+
 			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
-			if (!shadowcasterLightEntities.empty())
+			for (const auto entity : shadowcasterLightEntities)
+			{
+				shadowCasterNeedsInitialized |= entity->GetComponentFlag<ShadowCasterComponent, FlagDirty>();
+			}
+
+			if (!shadowcasterLightEntities.empty() && !shadowCasterNeedsInitialized)
 			{
 				// Render Shadowmaps
 				VkCommandBuffer cmdShadows = RecordShadowCommandBuffers(swapchainImageIndex);
@@ -2308,7 +2337,7 @@ namespace Puffin
 			ECS::GetEntities<TransformComponent, DirectionalLightComponent>(m_world, dirLightEntities);
 			for (const auto entity : dirLightEntities)
 			{
-				auto& dirLight = entity->GetComponent<SpotLightComponent>();
+				auto& dirLight = entity->GetComponent<DirectionalLightComponent>();
 
 				int tempShadowIndex = -1;
 

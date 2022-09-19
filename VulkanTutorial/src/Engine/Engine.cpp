@@ -76,11 +76,6 @@ namespace Puffin::Core
 		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, InterpolatedTransformComponent>();
 
-		// Setup Entity Signatures
-		ECS::Signature scriptSignature;
-		scriptSignature.set(ecsWorld->GetComponentType<Scripting::AngelScriptComponent>());
-		ecsWorld->SetSystemSignature<Scripting::AngelScriptSystem>("Script", scriptSignature);
-
 		// Register Entity Flags
 
 		// Register Component Flags
@@ -127,11 +122,11 @@ namespace Puffin::Core
 		Assets::AssetRegistry::Get()->LoadAssetCache();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		DefaultScene(ecsWorld);
+		//DefaultScene(ecsWorld);
 		//PhysicsScene(ecsWorld);
 
 		// Load Scene -- normal behaviour
-		//m_sceneData->LoadAndInit();
+		m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -493,12 +488,9 @@ namespace Puffin::Core
 
 		lightEntity->SetName("Light");
 
-		lightEntity->AddComponent<TransformComponent>();
-		lightEntity->AddComponent<Rendering::LightComponent>();
+		lightEntity->AddAndGetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
-		lightEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
-
-		auto& lightComp = lightEntity->GetComponent<Rendering::DirectionalLightComponent>();
+		auto& lightComp = lightEntity->AddAndGetComponent<Rendering::DirectionalLightComponent>();
 		lightComp.direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		lightComp.ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
 		lightComp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);

@@ -400,6 +400,26 @@ namespace Puffin
 				return Build(set, layout);
 			}
 
+			DescriptorBuilder& DescriptorBuilder::UpdateImage(uint32_t binding, VkDescriptorImageInfo* imageInfo,
+				VkDescriptorType type)
+			{
+				// Create descriptor write
+				VkWriteDescriptorSet newWrite{};
+				newWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				newWrite.pNext = nullptr;
+
+				newWrite.descriptorCount = 1;
+				newWrite.descriptorType = type;
+				newWrite.pImageInfo = imageInfo;
+				newWrite.dstBinding = binding;
+				newWrite.dstArrayElement = 0;
+				newWrite.pBufferInfo = 0;
+
+				writes.push_back(newWrite);
+
+				return *this;
+			}
+
 			DescriptorBuilder& DescriptorBuilder::UpdateImages(uint32_t binding, uint32_t imageCount, const VkDescriptorImageInfo* imageInfos, VkDescriptorType type)
 			{
 				// Create descriptor write

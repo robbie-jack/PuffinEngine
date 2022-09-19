@@ -125,6 +125,9 @@ namespace Puffin
 				bool Build(VkDescriptorSet& set);
 
 				// Used for writing to descriptor set which is alreayd built
+				DescriptorBuilder& UpdateImage(uint32_t binding, VkDescriptorImageInfo* imageInfo,
+					VkDescriptorType type);
+
 				DescriptorBuilder& UpdateImages(uint32_t binding, uint32_t imageCount,
 					const VkDescriptorImageInfo* imageInfos, VkDescriptorType type);
 

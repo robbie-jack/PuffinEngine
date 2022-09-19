@@ -10,6 +10,7 @@
 #include <Types/Vector.h>
 
 #include <vector>
+#include <string>
 #include <Rendering/VKTypes.h>
 
 #include "nlohmann/json.hpp"
@@ -117,11 +118,14 @@ namespace Puffin
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(SpotLightComponent, ambientColor, diffuseColor, specularStrength, shininess, direction, constantAttenuation, linearAttenuation, quadraticAttenuation, innerCutoffAngle, outerCutoffAngle)
 		};
 
+		const std::vector<uint16_t> SHADOW_RESOLUTION_VALUES = { 512, 1024, 2048, 4096 };
+		const std::vector<std::string> SHADOW_RESOLUTION_LABELS = { "512", "1024", "2048", "4096" };
+
 		// Component for lights that cast shadows
 		struct ShadowCasterComponent
 		{
-			uint32_t shadowmapWidth = 2048;
-			uint32_t shadowmapHeight = 2048;
+			uint16_t shadowmapWidth = 2048;
+			uint16_t shadowmapHeight = 2048;
 			glm::mat4 lightSpaceView;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, shadowmapWidth, shadowmapHeight)

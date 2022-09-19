@@ -42,6 +42,7 @@ namespace Puffin
             void DrawPointLightUI(ImGuiTreeNodeFlags flags);
             void DrawDirectionalLightUI(ImGuiTreeNodeFlags flags);
             void DrawSpotLightUI(ImGuiTreeNodeFlags flags);
+            void DrawShadowcasterUI(ImGuiTreeNodeFlags flags);
 
             void DrawRigidbody2DUI(ImGuiTreeNodeFlags flags);
             void DrawCircle2DUI(ImGuiTreeNodeFlags flags);

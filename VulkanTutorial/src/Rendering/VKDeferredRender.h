@@ -45,13 +45,14 @@ namespace Puffin
 			* 
 			* frameOverlap - number of frames to overlap when rendering
 			*/
-			void Setup(VkPhysicalDevice inPhysicalDevice, 
-				VkDevice inDevice, 
-				VmaAllocator inAllocator,
-				VKUtil::DescriptorAllocator* inDescriptorAllocator,
-				VKUtil::DescriptorLayoutCache* inDescriptorLayoutCache,
-				std::vector<VkCommandPool>& commandPools,
-				int inFrameOverlap, VkExtent2D inExtent);
+			void Setup(VkPhysicalDevice inPhysicalDevice,
+			           VkDevice inDevice,
+			           VmaAllocator inAllocator,
+			           VKUtil::DescriptorAllocator* inDescriptorAllocator,
+			           VKUtil::DescriptorLayoutCache* inDescriptorLayoutCache,
+			           std::vector<VkCommandPool>& commandPools,
+			           int inFrameOverlap,
+			           VkExtent2D inExtent);
 
 			/* 
 			* Setup Deferred Geometry Pass
@@ -64,6 +65,8 @@ namespace Puffin
 			void SetupShading(std::vector<AllocatedBuffer>& uboBuffers,
 			                  int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers,
 			                  VkRenderPass renderPass, VkDescriptorSetLayout& shadowmapSetLayout);
+
+			void RecreateFramebuffer(VkExtent2D inExtent);
 
 			// Pass Data Needed for Geometry Rendering
 			inline void SetGeometryDescriptorSet(VkDescriptorSet* inGeometrySet)
@@ -97,7 +100,8 @@ namespace Puffin
 			VKUtil::DescriptorLayoutCache* descriptorLayoutCache;
 
 			// Deletion Queue to cleanup up all Vulkan Objects
-			DeletionQueue deletionQueue;
+			DeletionQueue m_deletionQueue;
+			DeletionQueue m_framebufferDeletionQueue;
 
 			// G-Buffer
 			int frameOverlap = 2;
@@ -139,6 +143,8 @@ namespace Puffin
 			// Shading Stage
 			void SetupSDescriptorSets(std::vector<AllocatedBuffer>& uboBuffers, int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers); // Setup Descriptor Sets for Shading Pass
 			void SetupSPipeline(VkDescriptorSetLayout& shadowmapSetLayout);
+
+			void UpdateSDescriptorSets(); // Update GBuffer Image data in Shading Descriptor Set
 
 			/*
 			* Create Allocated Images for the GBuffer
