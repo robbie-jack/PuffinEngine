@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef TRANSFORM_COMPONENT_H
-#define TRANSFORM_COMPONENT_H
-
 #include <Types/Vector.h>
 
 #include "nlohmann/json.hpp"
@@ -11,57 +8,49 @@
 
 namespace Puffin
 {
-	template<typename T>
-	struct Transform
+	struct TransformComponent
 	{
-		Transform() {}
+		TransformComponent() = default;
 
-		Transform(T InPosition, Vector3f InRotation, Vector3f InScale) :
-			position(InPosition), rotation(InRotation), scale(InScale)
-		{
-		}
+#ifdef PFN_USE_DOUBLE_PRECISION
+		TransformComponent(Vector3d InPosition, Vector3f InRotation, Vector3f InScale) :
+			position(InPosition), rotation(InRotation), scale(InScale) {}
+#else
+		TransformComponent(Vector3f InPosition, Vector3f InRotation, Vector3f InScale) :
+			position(InPosition), rotation(InRotation), scale(InScale) {}
+#endif
 
-		~Transform() {}
+		~TransformComponent() = default;
 
-		Transform<T>& operator=(const Transform<T>& rhs)
-		{
-			position = rhs.position;
-			rotation = rhs.rotation;
-			scale = rhs.scale;
+		TransformComponent& operator=(const TransformComponent& rhs) = default;
 
-			return *this;
-		}
-
-		T position = T(0.0f);
+#ifdef PFN_USE_DOUBLE_PRECISION
+		Vector3d position = Vector3d(0.0);
+#else
+		Vector3f position = Vector3f(0.0f);
+#endif
 		Vector3f rotation = Vector3f(0.0f);
 		Vector3f scale = Vector3f(1.0f);
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Transform, position, rotation, scale)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent, position, rotation, scale)
 	};
 
-	template<typename T>
-	struct InterpolatedTransform
+	struct InterpolatedTransformComponent
 	{
-		InterpolatedTransform() {}
+		InterpolatedTransformComponent() {}
 
-		InterpolatedTransform(T InPosition, Vector3f InRotation, Vector3f InScale) :
+		InterpolatedTransformComponent(Vector3f InPosition, Vector3f InRotation, Vector3f InScale) :
 			position(InPosition), rotation(InRotation)
 		{
 		}
 
-		~InterpolatedTransform() {}
+		~InterpolatedTransformComponent() {}
 
-		T position = T(0.0f);
+#ifdef PFN_USE_DOUBLE_PRECISION
+		Vector3d position = Vector3d(0.0);
+#else
+		Vector3f position = Vector3f(0.0f);
+#endif
 		Vector3f rotation = Vector3f(0.0f);
 	};
-
-	#ifdef PFN_USE_DOUBLE_PRECISION
-		typedef Transform<Vector3d> TransformComponent;
-		typedef InterpolatedTransform<Vector3d> InterpolatedTransformComponent;
-	#else
-		typedef Transform<Vector3f> TransformComponent;
-		typedef InterpolatedTransform<Vector3f> InterpolatedTransformComponent;
-	#endif
 }
-
-#endif // TRANSFORM_COMPONENT_H

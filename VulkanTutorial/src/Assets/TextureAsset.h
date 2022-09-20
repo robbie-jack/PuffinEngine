@@ -67,6 +67,11 @@ namespace Puffin::Assets
 			return m_pixels;
 		}
 
+		const void* GetPixelData() const
+		{
+			return m_pixels.data();
+		}
+
 		const uint32_t GetTextureWidth() const
 		{
 			return m_textureWidth;

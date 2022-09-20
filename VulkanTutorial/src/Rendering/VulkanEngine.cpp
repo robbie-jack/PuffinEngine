@@ -745,7 +745,7 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Debug Buffers
-				frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex),
+				frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex_PNCTV_32),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 				frames[i].debugIndexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND * sizeof(uint32_t),
@@ -794,7 +794,7 @@ namespace Puffin
 			}
 
 			// Merged Vertex/Index Buffers
-			m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex),
+			m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex_PNCTV_32),
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 			m_sceneRenderData.mergedIndexBuffer = CreateBuffer(m_sceneRenderData.indexBufferSize * sizeof(uint32_t),
@@ -953,8 +953,9 @@ namespace Puffin
 			// Create Shader Stage Info
 			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
 
-			auto bindingDescription = Vertex::getBindingDescription();
-			auto attributeDescriptions = Vertex::getAttributeDescriptions();
+			VkVertexInputBindingDescription bindingDescription;
+			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+			Vertex_PNCTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
@@ -1022,11 +1023,12 @@ namespace Puffin
 			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
 			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
 
-			auto bindingDescription = Vertex::getBindingDescription();
-			auto attributeDesciptions = Vertex::getAttributeDescriptions();
+			VkVertexInputBindingDescription bindingDescription;
+			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+			Vertex_PNCTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
-			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDesciptions);
+			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
 
 			// Create Input Assembly Info - Will do line rendering her instead of filled triangle rendering
 			pipelineBuilder.inputAssembly = VKInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
@@ -1197,7 +1199,7 @@ namespace Puffin
 
 				if (textureAsset && textureAsset->Load())
 				{
-					IO::InitTextureImage(*this, textureAsset->GetPixels(), textureAsset->GetTextureWidth(), textureAsset->GetTextureHeight(), data.texture);
+					IO::InitTextureImage(*this, textureAsset->GetPixelData(), textureAsset->GetTextureWidth(), textureAsset->GetTextureHeight(), data.texture);
 
 					textureAsset->Unload();
 				}
@@ -1214,10 +1216,10 @@ namespace Puffin
 			}
 		}
 
-		AllocatedBuffer VulkanEngine::InitVertexBuffer(const std::vector<Vertex>& vertices)
+		AllocatedBuffer VulkanEngine::InitVertexBuffer(const std::vector<Vertex_PNCTV_32>& vertices)
 		{
 			// Copy Loaded Mesh data into mesh vertex buffer
-			const size_t bufferSize = vertices.size() * sizeof(Vertex);
+			const size_t bufferSize = vertices.size() * sizeof(Vertex_PNCTV_32);
 
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
 			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, 
@@ -1286,10 +1288,10 @@ namespace Puffin
 			return indexBuffer;
 		}
 
-		void VulkanEngine::CopyVerticesToBuffer(const std::vector<Vertex>& vertices, AllocatedBuffer vertexBuffer, uint32_t copyOffset)
+		void VulkanEngine::CopyVerticesToBuffer(const std::vector<Vertex_PNCTV_32>& vertices, AllocatedBuffer vertexBuffer, uint32_t copyOffset)
 		{
 			// Get Size of data to be transfered to vertex buffer
-			const size_t bufferSize = vertices.size() * sizeof(Vertex);
+			const size_t bufferSize = vertices.size() * sizeof(Vertex_PNCTV_32);
 
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
 			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -1304,7 +1306,7 @@ namespace Puffin
 			ImmediateSubmit([=](VkCommandBuffer cmd)
 			{
 				VkBufferCopy copy;
-				copy.dstOffset = copyOffset * sizeof(Vertex);
+				copy.dstOffset = copyOffset * sizeof(Vertex_PNCTV_32);
 				copy.srcOffset = 0;
 				copy.size = bufferSize;
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, vertexBuffer.buffer, 1, &copy);
@@ -2143,7 +2145,7 @@ namespace Puffin
 				}
 
 				// Create New Buffer
-				m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex),
+				m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex_PNCTV_32),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 				// Copy data to new buffer
@@ -2152,7 +2154,7 @@ namespace Puffin
 					// Copy from staging vertex buffer to scene vertex buffer
 					VkBufferCopy vertexCopy;
 					vertexCopy.dstOffset = 0;
-					vertexCopy.size = oldSize * sizeof(Vertex);
+					vertexCopy.size = oldSize * sizeof(Vertex_PNCTV_32);
 					vertexCopy.srcOffset = 0;
 
 					vkCmdCopyBuffer(cmd, oldVertexBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
@@ -2230,8 +2232,8 @@ namespace Puffin
 				{
 					// Copy from staging vertex buffer to scene vertex buffer
 					VkBufferCopy vertexCopy;
-					vertexCopy.dstOffset = m_sceneRenderData.vertexOffset * sizeof(Vertex);
-					vertexCopy.size = meshData.vertexCount * sizeof(Vertex);
+					vertexCopy.dstOffset = m_sceneRenderData.vertexOffset * sizeof(Vertex_PNCTV_32);
+					vertexCopy.size = meshData.vertexCount * sizeof(Vertex_PNCTV_32);
 					vertexCopy.srcOffset = 0;
 
 					vkCmdCopyBuffer(cmd, vertexStagingBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
@@ -2859,7 +2861,7 @@ namespace Puffin
 		void VulkanEngine::DrawDebugLine(Debug::Line line)
 		{
 			// Create debug line vertices to current frames vertices vector
-			Vertex startVertex, endVertex;
+			Vertex_PNCTV_32 startVertex, endVertex;
 			startVertex.pos = static_cast<glm::vec3>(line.start);
 			startVertex.color = static_cast<glm::vec3>(line.color);
 			startVertex.normal = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -2900,7 +2902,7 @@ namespace Puffin
 			const int firstVertex = GetCurrentFrame().debugVertices.size();
 			const int firstIndex = GetCurrentFrame().debugIndices.size();
 
-			Vertex vert = {};
+			Vertex_PNCTV_32 vert = {};
 			vert.color = static_cast<glm::vec3>(box.color);
 			vert.normal = static_cast<glm::vec3>(Vector3f(0.0f, 0.0f, 0.0f));
 			vert.uv = Vector2f(0.0f, 0.0f);
@@ -2926,7 +2928,7 @@ namespace Puffin
 			int firstVertex = GetCurrentFrame().debugVertices.size();
 			int firstIndex = GetCurrentFrame().debugIndices.size();
 
-			Vertex vert = {};
+			Vertex_PNCTV_32 vert = {};
 			vert.color = static_cast<glm::vec3>(cube.color);
 			vert.normal = static_cast<glm::vec3>(Vector3f(0.0f, 0.0f, 0.0f));
 			vert.uv = Vector2f(0.0f, 0.0f);

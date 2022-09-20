@@ -7,6 +7,8 @@
 #include <Components/Rendering/MeshComponent.h>
 #include <Components/Rendering/LightComponent.h>
 
+#include "Types/Vertex.hpp"
+
 #include "Assets/AssetRegistry.h"
 
 // STL
@@ -412,8 +414,9 @@ namespace Puffin
 			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule));
 			pipelineBuilder.shaderStages.push_back(VKInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule));
 
-			auto bindingDescription = Vertex::getBindingDescription();
-			auto attributeDescriptions = Vertex::getAttributeDescriptions();
+			VkVertexInputBindingDescription bindingDescription;
+			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+			Vertex_PNCTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);

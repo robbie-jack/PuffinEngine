@@ -249,6 +249,7 @@
     <ClCompile Include="src\Physics\PhysicsSystem2D.cpp" />
     <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp" />
     <ClCompile Include="src\Physics\Shapes\CircleShape2D.cpp" />
+    <ClCompile Include="src\Rendering\Helper Classes\VKVertex.cpp" />
     <ClCompile Include="src\Rendering\VKDeferredRender.cpp" />
     <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
     <ClCompile Include="src\Rendering\VKHelper.cpp" />
@@ -327,6 +328,7 @@
     <ClInclude Include="src\Physics\Shapes\Shape2D.h" />
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\Rendering\DebugDraw.h" />
+    <ClInclude Include="src\Rendering\Helper Classes\VKVertex.hpp" />
     <ClInclude Include="src\Rendering\VKDebug.h" />
     <ClInclude Include="src\Rendering\VKDeferredRender.h" />
     <ClInclude Include="src\Rendering\VKDescriptors.h" />
@@ -347,6 +349,7 @@
     <ClInclude Include="src\Types\RingBuffer.h" />
     <ClInclude Include="src\Types\UUID.h" />
     <ClInclude Include="src\Types\Vector.h" />
+    <ClInclude Include="src\Types\Vertex.hpp" />
     <ClInclude Include="src\UI\UIManager.h" />
     <ClInclude Include="src\UI\Windows\UIContentBrowser.h" />
     <ClInclude Include="src\UI\Windows\UIWindow.h" />

@@ -136,7 +136,7 @@ namespace Puffin
 			// Initialize info for vertex buffers and formats
 			inline VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo(
 				VkVertexInputBindingDescription bindingDescription, 
-				std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions)
+				std::vector<VkVertexInputAttributeDescription> attributeDescriptions)
 			{
 				VkPipelineVertexInputStateCreateInfo info = {};
 				info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

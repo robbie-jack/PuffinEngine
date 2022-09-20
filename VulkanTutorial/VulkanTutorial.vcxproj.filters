@@ -357,6 +357,9 @@
     <ClCompile Include="src\Engine\Engine.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rendering\Helper Classes\VKVertex.cpp">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
@@ -623,6 +626,12 @@
     </ClInclude>
     <ClInclude Include="src\Engine\EventSubsystem.hpp">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Helper Classes\VKVertex.hpp">
+      <Filter>Rendering\Helper Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\Vertex.hpp">
+      <Filter>Types</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Assets/MeshAsset.h>
+#include "Types/Vertex.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -72,7 +73,7 @@ namespace Puffin::IO
 		}
 
 		// Reserve space in vectors for vertices/indices
-		std::vector<Rendering::Vertex> vertices;
+		std::vector<Rendering::Vertex_PNCTV_32> vertices;
 		std::vector<uint32_t> indices;
 
 		unsigned numVertices = 0;
@@ -106,7 +107,7 @@ namespace Puffin::IO
 			// Iterate over all imported vertices and fill vertex vector
 			for (int j = 0; j < mesh->mNumVertices; j++)
 			{
-				Rendering::Vertex vertex = {};
+				Rendering::Vertex_PNCTV_32 vertex = {};
 
 				// Get Position
 				vertex.pos =
@@ -164,13 +165,13 @@ namespace Puffin::IO
 		Assets::MeshInfo info;
 		info.compressionMode = Assets::CompressionMode::LZ4;
 		info.originalFile = modelPath.string();
-		info.vertexFormat = Assets::VertexFormat::PNCTV_F32;
+		info.vertexFormat = Rendering::VertexFormat::PNCTV_32;
 		info.numVertices = vertices.size();
 		info.numIndices = indices.size();
-		info.verticesSize = vertices.size() * sizeof(Rendering::Vertex);
+		info.verticesSize = vertices.size() * sizeof(Rendering::Vertex_PNCTV_32);
 		info.indicesSize = indices.size() * sizeof(uint32_t);
 
 		auto asset = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(importPath);
-		return asset->Save(info, vertices, indices);
+		return asset->Save(info, vertices.data(), indices.data());
 	}
 }

@@ -12,7 +12,7 @@ namespace Puffin::Assets
 
 	// Public
 
-	bool StaticMeshAsset::Save(const MeshInfo& info, const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices)
+	bool StaticMeshAsset::Save(const MeshInfo& info, const void* verticesData, const void* indicesData)
 	{
 		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
 
@@ -24,11 +24,7 @@ namespace Puffin::Assets
 		// Fill Metadata from Info struct
 		json metadata;
 
-		if (info.vertexFormat == VertexFormat::PNCTV_F32)
-		{
-			metadata["vertex_format"] = "PNCTV_F32";
-		}
-
+		metadata["vertex_format"] = Rendering::ParseVertexStringFromFormat(info.vertexFormat);
 		metadata["num_vertices"] = info.numVertices;
 		metadata["num_indices"] = info.numIndices;
 		metadata["vertex_buffer_size"] = info.verticesSize;
@@ -46,10 +42,10 @@ namespace Puffin::Assets
 		mergedBuffer.resize(fullSize);
 
 		// Copy Vertex Buffer
-		memcpy(mergedBuffer.data(), vertices.data(), info.verticesSize);
+		memcpy(mergedBuffer.data(), verticesData, info.verticesSize);
 
 		// Copy Index Buffer
-		memcpy(mergedBuffer.data() + info.verticesSize, indices.data(), info.indicesSize);
+		memcpy(mergedBuffer.data() + info.verticesSize, indicesData, info.indicesSize);
 
 		// Compress Data and store in binary blob
 		size_t compressStaging = LZ4_compressBound(static_cast<int>(fullSize));
@@ -130,7 +126,7 @@ namespace Puffin::Assets
 		info.originalFile = metadata["original_file"];
 
 		std::string vertexFormat = metadata["vertex_format"];
-		info.vertexFormat = ParseVertexFormat(vertexFormat.c_str());
+		info.vertexFormat = Rendering::ParseVertexFormatFromString(vertexFormat.c_str());
 		
 		std::string compressionMode = metadata["compression"];
 		info.compressionMode = ParseCompressionMode(compressionMode.c_str());

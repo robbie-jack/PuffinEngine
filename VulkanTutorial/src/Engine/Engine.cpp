@@ -25,6 +25,8 @@
 #include "Assets/TextureAsset.h"
 #include "Assets/SoundAsset.h"
 
+#include "Assets/Importers/ModelImporter.h"
+
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -346,6 +348,14 @@ namespace Puffin::Core
 
 	void Engine::AddDefaultAssets()
 	{
+		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\chalet.obj");
+		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\cube.obj");
+		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
+		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
+
+		//IO::ImportTexture("D:\\Projects\\PuffinProject\\texture_backups\\chalet.jpg");
+		//IO::ImportTexture("D:\\Projects\\PuffinProject\\texture_backups\\cube.png");
+
 		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
 		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";

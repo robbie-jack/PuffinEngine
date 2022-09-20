@@ -2,6 +2,7 @@
 
 #include "AssetRegistry.h"
 #include <Components/Rendering/MeshComponent.h>
+#include "Types/Vertex.hpp"
 
 #include <vector>
 
@@ -10,29 +11,11 @@ namespace Puffin::Assets
 	static const std::string G_STATIC_MESH_TYPE = "StaticMesh";
 	static constexpr uint32_t G_STATIC_MESH_VERSION = 1; // Latest version of Static Mesh Asset Format
 
-	enum class VertexFormat : uint8_t
-	{
-		Unknown = 0,
-		PNCTV_F32
-	};
-
-	static VertexFormat ParseVertexFormat(const char* f)
-	{
-		if (strcmp(f, "PNCTV_F32"))
-		{
-			return VertexFormat::PNCTV_F32;
-		}
-		else
-		{
-			return VertexFormat::Unknown;
-		}
-	}
-
 	struct MeshInfo
 	{
 		CompressionMode compressionMode;
 		std::string originalFile;
-		VertexFormat vertexFormat;
+		Rendering::VertexFormat vertexFormat;
 		uint64_t numVertices;
 		uint64_t numIndices;
 		uint64_t verticesSize;
@@ -59,13 +42,13 @@ namespace Puffin::Assets
 			return G_STATIC_MESH_VERSION;
 		}
 
-		bool Save(const MeshInfo& info, const std::vector<Rendering::Vertex>& vertices, const std::vector<uint32_t>& indices);
+		bool Save(const MeshInfo& info, const void* verticesData, const void* indicesData);
 
 		bool Load();
 
 		void Unload();
 
-		const std::vector<Rendering::Vertex>& GetVertices() const
+		const std::vector<Rendering::Vertex_PNCTV_32>& GetVertices() const
 		{
 			return m_vertices;
 		}
@@ -77,7 +60,7 @@ namespace Puffin::Assets
 
 	private:
 
-		std::vector<Rendering::Vertex> m_vertices;
+		std::vector<Rendering::Vertex_PNCTV_32> m_vertices;
 		std::vector<uint32_t> m_indices;
 
 		MeshInfo ParseMeshInfo(const AssetData& data);
