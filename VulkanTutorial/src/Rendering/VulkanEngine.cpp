@@ -107,7 +107,7 @@ namespace Puffin
 
 			InitShadowPipeline();
 
-			InitDebugPipeline();
+			//InitDebugPipeline();
 
 			InitTextureSampler();
 
@@ -745,7 +745,7 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Debug Buffers
-				frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex_PNCTV_32),
+				frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex_PNTV_32),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 				frames[i].debugIndexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND * sizeof(uint32_t),
@@ -794,7 +794,7 @@ namespace Puffin
 			}
 
 			// Merged Vertex/Index Buffers
-			m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex_PNCTV_32),
+			m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex_PNTV_32),
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 			m_sceneRenderData.mergedIndexBuffer = CreateBuffer(m_sceneRenderData.indexBufferSize * sizeof(uint32_t),
@@ -955,7 +955,7 @@ namespace Puffin
 
 			VkVertexInputBindingDescription bindingDescription;
 			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-			Vertex_PNCTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
+			Vertex_PNTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
@@ -990,7 +990,7 @@ namespace Puffin
 			pipelineBuilder.pipelineLayout = shadowPipelineLayout;
 
 			// Build Pipeline
-			shadowPipeline = pipelineBuilder.build_pipeline(device, renderPassShadows);
+			shadowPipeline = pipelineBuilder.BuildPipeline(device, renderPassShadows);
 		}
 
 		void VulkanEngine::InitDebugPipeline()
@@ -1025,7 +1025,7 @@ namespace Puffin
 
 			VkVertexInputBindingDescription bindingDescription;
 			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-			Vertex_PNCTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
+			Vertex_PC_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
@@ -1071,7 +1071,7 @@ namespace Puffin
 			pipelineBuilder.pipelineLayout = debugPipelineLayout;
 
 			// Build Pipeline
-			debugPipeline = pipelineBuilder.build_pipeline(device, renderPass);
+			debugPipeline = pipelineBuilder.BuildPipeline(device, renderPass);
 		}
 
 		void VulkanEngine::InitScene()
@@ -1216,23 +1216,22 @@ namespace Puffin
 			}
 		}
 
-		AllocatedBuffer VulkanEngine::InitVertexBuffer(const std::vector<Vertex_PNCTV_32>& vertices)
+		AllocatedBuffer VulkanEngine::InitVertexBuffer(const void* vertexData, const size_t verticesSize)
 		{
 			// Copy Loaded Mesh data into mesh vertex buffer
-			const size_t bufferSize = vertices.size() * sizeof(Vertex_PNCTV_32);
 
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, 
+			AllocatedBuffer stagingBuffer = CreateBuffer(verticesSize,
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map vertex data to staging buffer
 			void* data;
 			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
-			memcpy(data, vertices.data(), bufferSize);
+			memcpy(data, vertexData, verticesSize);
 			vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
 			// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
-			AllocatedBuffer vertexBuffer = CreateBuffer(bufferSize,
+			AllocatedBuffer vertexBuffer = CreateBuffer(verticesSize,
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT |VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 				VMA_MEMORY_USAGE_GPU_ONLY);
 
@@ -1242,7 +1241,7 @@ namespace Puffin
 				VkBufferCopy copy;
 				copy.dstOffset = 0;
 				copy.srcOffset = 0;
-				copy.size = bufferSize;
+				copy.size = verticesSize;
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, vertexBuffer.buffer, 1, &copy);
 			});
 
@@ -1252,23 +1251,22 @@ namespace Puffin
 			return vertexBuffer;
 		}
 
-		AllocatedBuffer VulkanEngine::InitIndexBuffer(const std::vector<uint32_t>& indices)
+		AllocatedBuffer VulkanEngine::InitIndexBuffer(const void* indexData, const size_t indicesSize)
 		{
 			// Copy Loaded Index data into mesh index buffer
-			const size_t bufferSize = indices.size() * sizeof(uint32_t);
 
 			// Allocated Staging Buffer - Map Indices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, 
+			AllocatedBuffer stagingBuffer = CreateBuffer(indicesSize,
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map Index data to staging buffer
 			void* data;
 			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
-			memcpy(data, indices.data(), bufferSize);
+			memcpy(data, indexData, indicesSize);
 			vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
 			// Allocate Index Buffer - Transfer Indices into GPU Memory
-			AllocatedBuffer indexBuffer = CreateBuffer(bufferSize,
+			AllocatedBuffer indexBuffer = CreateBuffer(indicesSize,
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 				VMA_MEMORY_USAGE_GPU_ONLY);
 
@@ -1278,7 +1276,7 @@ namespace Puffin
 				VkBufferCopy copy;
 				copy.dstOffset = 0;
 				copy.srcOffset = 0;
-				copy.size = bufferSize;
+				copy.size = indicesSize;
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, indexBuffer.buffer, 1, &copy);
 			});
 
@@ -1288,27 +1286,26 @@ namespace Puffin
 			return indexBuffer;
 		}
 
-		void VulkanEngine::CopyVerticesToBuffer(const std::vector<Vertex_PNCTV_32>& vertices, AllocatedBuffer vertexBuffer, uint32_t copyOffset)
+		void VulkanEngine::CopyVerticesToBuffer(const void* vertexData, const size_t verticesSize, AllocatedBuffer vertexBuffer, uint32_t copyOffset)
 		{
 			// Get Size of data to be transfered to vertex buffer
-			const size_t bufferSize = vertices.size() * sizeof(Vertex_PNCTV_32);
 
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+			AllocatedBuffer stagingBuffer = CreateBuffer(verticesSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map vertex data to staging buffer
 			void* data;
 			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
-			memcpy(data, vertices.data(), bufferSize);
+			memcpy(data, vertexData, verticesSize);
 			vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
 			// Copy from CPU Memory to GPU Memory
 			ImmediateSubmit([=](VkCommandBuffer cmd)
 			{
 				VkBufferCopy copy;
-				copy.dstOffset = copyOffset * sizeof(Vertex_PNCTV_32);
+				copy.dstOffset = copyOffset;
 				copy.srcOffset = 0;
-				copy.size = bufferSize;
+				copy.size = verticesSize;
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, vertexBuffer.buffer, 1, &copy);
 			});
 
@@ -1316,18 +1313,17 @@ namespace Puffin
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 
-		void VulkanEngine::CopyIndicesToBuffer(const std::vector<uint32_t>& indices, AllocatedBuffer indexBuffer, uint32_t copyOffset)
+		void VulkanEngine::CopyIndicesToBuffer(const void* indexData, const size_t indicesSize, AllocatedBuffer indexBuffer, uint32_t copyOffset)
 		{
 			// Copy Loaded Index data into mesh index buffer
-			const size_t bufferSize = indices.size() * sizeof(uint32_t);
 
 			// Allocated Staging Buffer - Map Indices in CPU Memory
-			AllocatedBuffer stagingBuffer = CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+			AllocatedBuffer stagingBuffer = CreateBuffer(indicesSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			// Map Index data to staging buffer
 			void* data;
 			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
-			memcpy(data, indices.data(), bufferSize);
+			memcpy(data, indexData, indicesSize);
 			vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
 			//Copy from CPU Memory to GPU Memory
@@ -1336,7 +1332,7 @@ namespace Puffin
 				VkBufferCopy copy;
 				copy.dstOffset = copyOffset;
 				copy.srcOffset = 0;
-				copy.size = bufferSize;
+				copy.size = indicesSize;
 				vkCmdCopyBuffer(cmd, stagingBuffer.buffer, indexBuffer.buffer, 1, &copy);
 			});
 
@@ -2145,7 +2141,7 @@ namespace Puffin
 				}
 
 				// Create New Buffer
-				m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex_PNCTV_32),
+				m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex_PNTV_32),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 				// Copy data to new buffer
@@ -2154,7 +2150,7 @@ namespace Puffin
 					// Copy from staging vertex buffer to scene vertex buffer
 					VkBufferCopy vertexCopy;
 					vertexCopy.dstOffset = 0;
-					vertexCopy.size = oldSize * sizeof(Vertex_PNCTV_32);
+					vertexCopy.size = oldSize * sizeof(Vertex_PNTV_32);
 					vertexCopy.srcOffset = 0;
 
 					vkCmdCopyBuffer(cmd, oldVertexBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
@@ -2221,8 +2217,8 @@ namespace Puffin
 				meshData.indexOffset = m_sceneRenderData.indexOffset;
 
 				// Init Mesh Staging Buffers
-				AllocatedBuffer vertexStagingBuffer = InitVertexBuffer(staticMeshAsset->GetVertices());
-				AllocatedBuffer indexStagingBuffer = InitIndexBuffer(staticMeshAsset->GetIndices());
+				AllocatedBuffer vertexStagingBuffer = InitVertexBuffer(staticMeshAsset->GetVertices().data(), staticMeshAsset->GetVertices().size() * sizeof(Vertex_PNTV_32));
+				AllocatedBuffer indexStagingBuffer = InitIndexBuffer(staticMeshAsset->GetIndices().data(), staticMeshAsset->GetIndices().size() * sizeof(uint32_t));
 
 				// Unload vertices from main memory
 				staticMeshAsset->Unload();
@@ -2232,8 +2228,8 @@ namespace Puffin
 				{
 					// Copy from staging vertex buffer to scene vertex buffer
 					VkBufferCopy vertexCopy;
-					vertexCopy.dstOffset = m_sceneRenderData.vertexOffset * sizeof(Vertex_PNCTV_32);
-					vertexCopy.size = meshData.vertexCount * sizeof(Vertex_PNCTV_32);
+					vertexCopy.dstOffset = m_sceneRenderData.vertexOffset * sizeof(Vertex_PNTV_32);
+					vertexCopy.size = meshData.vertexCount * sizeof(Vertex_PNTV_32);
 					vertexCopy.srcOffset = 0;
 
 					vkCmdCopyBuffer(cmd, vertexStagingBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
@@ -2861,16 +2857,12 @@ namespace Puffin
 		void VulkanEngine::DrawDebugLine(Debug::Line line)
 		{
 			// Create debug line vertices to current frames vertices vector
-			Vertex_PNCTV_32 startVertex, endVertex;
+			Vertex_PC_32 startVertex, endVertex;
 			startVertex.pos = static_cast<glm::vec3>(line.start);
 			startVertex.color = static_cast<glm::vec3>(line.color);
-			startVertex.normal = glm::vec3(0.0f, 0.0f, 0.0f);
-			startVertex.uv = Vector2f(0.0f, 0.0f);
 
 			endVertex.pos = static_cast<glm::vec3>(line.end);
 			endVertex.color = static_cast<glm::vec3>(line.color);
-			endVertex.normal = static_cast<glm::vec3>(Vector3(0.0f, 0.0f, 0.0f));
-			endVertex.uv = Vector2f(0.0f, 0.0f);
 
 			// Create Indexed Indirect Draw Command for Vertices
 			VkDrawIndexedIndirectCommand command = {};
@@ -2902,10 +2894,8 @@ namespace Puffin
 			const int firstVertex = GetCurrentFrame().debugVertices.size();
 			const int firstIndex = GetCurrentFrame().debugIndices.size();
 
-			Vertex_PNCTV_32 vert = {};
+			Vertex_PC_32 vert = {};
 			vert.color = static_cast<glm::vec3>(box.color);
-			vert.normal = static_cast<glm::vec3>(Vector3f(0.0f, 0.0f, 0.0f));
-			vert.uv = Vector2f(0.0f, 0.0f);
 
 			// Add Vertices to vector
 			for (int i = 0; i < numVertices; i++)
@@ -2916,7 +2906,7 @@ namespace Puffin
 			// Add Indices to vector
 			for (int i = 0; i < numIndices; i++)
 			{
-
+				
 			}
 		}
 
@@ -2928,10 +2918,8 @@ namespace Puffin
 			int firstVertex = GetCurrentFrame().debugVertices.size();
 			int firstIndex = GetCurrentFrame().debugIndices.size();
 
-			Vertex_PNCTV_32 vert = {};
+			Vertex_PC_32 vert = {};
 			vert.color = static_cast<glm::vec3>(cube.color);
-			vert.normal = static_cast<glm::vec3>(Vector3f(0.0f, 0.0f, 0.0f));
-			vert.uv = Vector2f(0.0f, 0.0f);
 
 			// Add Vertices to vector
 			for (int i = 0; i < numVertices; i++)

@@ -416,7 +416,7 @@ namespace Puffin
 
 			VkVertexInputBindingDescription bindingDescription;
 			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-			Vertex_PNCTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
+			Vertex_PNTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
@@ -458,7 +458,7 @@ namespace Puffin
 			pipelineBuilder.pipelineLayout = gPipelineLayout;
 
 			// Build Pipeline
-			gPipeline = pipelineBuilder.build_pipeline(device, gRenderPass);
+			gPipeline = pipelineBuilder.BuildPipeline(device, gRenderPass);
 		}
 
 		void VKDeferredRender::SetupSDescriptorSets(std::vector<AllocatedBuffer>& uboBuffers, int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers)
@@ -594,7 +594,7 @@ namespace Puffin
 			pipelineBuilder.pipelineLayout = sPipelineLayout;
 
 			// Build Pipeline
-			sPipeline = pipelineBuilder.build_pipeline(device, sRenderPass);
+			sPipeline = pipelineBuilder.BuildPipeline(device, sRenderPass);
 		}
 
 		void VKDeferredRender::UpdateSDescriptorSets()

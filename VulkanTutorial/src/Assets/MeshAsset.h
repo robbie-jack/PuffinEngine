@@ -42,13 +42,13 @@ namespace Puffin::Assets
 			return G_STATIC_MESH_VERSION;
 		}
 
-		bool Save(const MeshInfo& info, const void* verticesData, const void* indicesData);
+		bool Save(const MeshInfo& info, const void* vertexData, const void* indexData);
 
 		bool Load();
 
 		void Unload();
 
-		const std::vector<Rendering::Vertex_PNCTV_32>& GetVertices() const
+		const std::vector<Rendering::Vertex_PNTV_32>& GetVertices() const
 		{
 			return m_vertices;
 		}
@@ -60,7 +60,7 @@ namespace Puffin::Assets
 
 	private:
 
-		std::vector<Rendering::Vertex_PNCTV_32> m_vertices;
+		std::vector<Rendering::Vertex_PNTV_32> m_vertices;
 		std::vector<uint32_t> m_indices;
 
 		MeshInfo ParseMeshInfo(const AssetData& data);

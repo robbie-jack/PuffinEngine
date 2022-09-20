@@ -189,6 +189,7 @@ namespace Puffin::Core
 		std::unordered_map<const char*, std::shared_ptr<Core::Subsystem>> m_subsystems;
 
 		void AddDefaultAssets();
+		void ReimportDefaultAssets();
 
 		void DefaultScene(std::shared_ptr<ECS::World> world);
 		void PhysicsScene(std::shared_ptr<ECS::World> world);

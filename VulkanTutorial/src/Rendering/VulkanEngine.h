@@ -116,7 +116,7 @@ namespace Puffin
 			AllocatedBuffer lightBuffer, pointLightBuffer, dirLightBuffer, spotLightBuffer, lightStatsBuffer;
 
 			// Debug Variables
-			std::vector<Vertex_PNCTV_32> debugVertices;
+			std::vector<Vertex_PC_32> debugVertices;
 			std::vector<uint32_t> debugIndices;
 			std::vector<VkDrawIndexedIndirectCommand> debugIndirectCommands;
 			AllocatedBuffer debugVertexBuffer, debugIndexBuffer, debugIndirectCommandsBuffer;
@@ -368,11 +368,11 @@ namespace Puffin
 			void InitAlbedoTexture(UUID uuid);
 
 			// Init Buffer Functions
-			AllocatedBuffer InitVertexBuffer(const std::vector<Vertex_PNCTV_32>& vertices);
-			AllocatedBuffer InitIndexBuffer(const std::vector<uint32_t>& indices);
+			AllocatedBuffer InitVertexBuffer(const void* vertexData, const size_t verticesSize);
+			AllocatedBuffer InitIndexBuffer(const void* indexData, const size_t indicesSize);
 
-			void CopyVerticesToBuffer(const std::vector<Vertex_PNCTV_32>& vertices, AllocatedBuffer vertexBuffer, uint32_t copyOffset = 0);
-			void CopyIndicesToBuffer(const std::vector<uint32_t>& indices, AllocatedBuffer indexBuffer, uint32_t copyOffset = 0);
+			void CopyVerticesToBuffer(const void* vertexData, const size_t verticesSize, AllocatedBuffer vertexBuffer, uint32_t copyOffset = 0);
+			void CopyIndicesToBuffer(const void* indexData, const size_t indicesSize, AllocatedBuffer indexBuffer, uint32_t copyOffset = 0);
 
 			// Component Cleanup Functions
 			void CleanupMesh(ECS::EntityID entity);

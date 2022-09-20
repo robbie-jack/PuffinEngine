@@ -29,7 +29,7 @@ namespace Puffin
 			VkPipelineDynamicStateCreateInfo dynamic;
 			VkPipelineLayout pipelineLayout;
 
-			VkPipeline build_pipeline(VkDevice device, VkRenderPass pass)
+			VkPipeline BuildPipeline(VkDevice device, VkRenderPass pass)
 			{
 				// Make viewport state from our stored viewport and scissor
 				VkPipelineViewportStateCreateInfo viewportState = {};
@@ -69,9 +69,11 @@ namespace Puffin
 
 				//its easy to error out on create graphics pipeline, so we handle it a bit better than the common VK_CHECK case
 				VkPipeline newPipeline;
-				if (vkCreateGraphicsPipelines(
-					device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline) != VK_SUCCESS) {
-					std::cout << "failed to create pipline\n";
+				VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline);
+				if (result != VK_SUCCESS)
+				{
+					std::cout << "Failed to Create Pipeline\n";
+					std::cout << "Detected Vulkan error: " << result << std::endl;
 					return VK_NULL_HANDLE; // failed to create graphics pipeline
 				}
 				else

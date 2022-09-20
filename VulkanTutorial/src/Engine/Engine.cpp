@@ -122,6 +122,7 @@ namespace Puffin::Core
 		// Load/Initialize Assets
 		//AddDefaultAssets();
 		Assets::AssetRegistry::Get()->LoadAssetCache();
+		ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene(ecsWorld);
@@ -348,14 +349,6 @@ namespace Puffin::Core
 
 	void Engine::AddDefaultAssets()
 	{
-		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\chalet.obj");
-		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\cube.obj");
-		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
-		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
-
-		//IO::ImportTexture("D:\\Projects\\PuffinProject\\texture_backups\\chalet.jpg");
-		//IO::ImportTexture("D:\\Projects\\PuffinProject\\texture_backups\\cube.png");
-
 		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
 		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
@@ -375,6 +368,14 @@ namespace Puffin::Core
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
 		UUID soundId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::SoundAsset>(soundPath1)->ID();
+	}
+
+	void Engine::ReimportDefaultAssets()
+	{
+		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\chalet.obj");
+		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\cube.obj");
+		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
+		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
 	}
 
 	void Engine::DefaultScene(std::shared_ptr<ECS::World> world)

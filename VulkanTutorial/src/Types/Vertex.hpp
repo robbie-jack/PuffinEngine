@@ -15,9 +15,59 @@ namespace Puffin::Rendering
 	enum class VertexFormat : uint8_t
 	{
 		Unknown = 0,
+		PC_32,
 		PNCTV_32,
 		PNTV_32,
 		P_64_NTV_32
+	};
+
+	struct Vertex_PC_32
+	{
+		glm::vec3 pos;
+		glm::vec3 color;
+
+		bool operator==(const Vertex_PC_32& other) const
+		{
+			return pos == other.pos && color == other.color;
+		}
+
+		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
+			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
+		{
+			VKUtil::VertexBuilder::Begin()
+				.BindSize(sizeof(Vertex_PC_32))
+				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PC_32, pos))
+				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PC_32, color))
+				.Build(bindingDescription, attributeDescriptions);
+		}
+	};
+
+	struct Vertex_PNTV_32
+	{
+		glm::vec3 pos;
+		glm::vec3 normal;
+		glm::vec3 tangent;
+		glm::vec2 uv;
+
+		bool operator==(const Vertex_PNTV_32& other) const
+		{
+			return pos == other.pos
+				&& normal == other.normal
+				&& tangent == other.tangent
+				&& uv == other.uv;
+		}
+
+		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
+			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
+		{
+			VKUtil::VertexBuilder::Begin()
+				.BindSize(sizeof(Vertex_PNTV_32))
+				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, pos))
+				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, normal))
+				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, tangent))
+				.BindAttribute(VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex_PNTV_32, uv))
+				.Build(bindingDescription, attributeDescriptions);
+		}
 	};
 
 	struct Vertex_PNCTV_32
@@ -47,34 +97,6 @@ namespace Puffin::Rendering
 				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNCTV_32, normal))
 				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNCTV_32, tangent))
 				.BindAttribute(VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex_PNCTV_32, uv))
-				.Build(bindingDescription, attributeDescriptions);
-		}
-	};
-
-	struct Vertex_PNTV_32
-	{
-		glm::vec3 pos;
-		glm::vec3 normal;
-		glm::vec3 tangent;
-		glm::vec2 uv;
-
-		bool operator==(const Vertex_PNTV_32& other) const
-		{
-			return pos == other.pos
-				&& normal == other.normal
-				&& tangent == other.tangent
-				&& uv == other.uv;
-		}
-
-		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
-			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-		{
-			VKUtil::VertexBuilder::Begin()
-				.BindSize(sizeof(Vertex_PNTV_32))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, pos))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, normal))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, tangent))
-				.BindAttribute(VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex_PNTV_32, uv))
 				.Build(bindingDescription, attributeDescriptions);
 		}
 	};

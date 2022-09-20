@@ -73,7 +73,7 @@ namespace Puffin::IO
 		}
 
 		// Reserve space in vectors for vertices/indices
-		std::vector<Rendering::Vertex_PNCTV_32> vertices;
+		std::vector<Rendering::Vertex_PNTV_32> vertices;
 		std::vector<uint32_t> indices;
 
 		unsigned numVertices = 0;
@@ -107,7 +107,7 @@ namespace Puffin::IO
 			// Iterate over all imported vertices and fill vertex vector
 			for (int j = 0; j < mesh->mNumVertices; j++)
 			{
-				Rendering::Vertex_PNCTV_32 vertex = {};
+				Rendering::Vertex_PNTV_32 vertex = {};
 
 				// Get Position
 				vertex.pos =
@@ -116,8 +116,6 @@ namespace Puffin::IO
 					mesh->mVertices[j].y,
 					mesh->mVertices[j].z
 				};
-
-				vertex.color = { 1.0f, 1.0f, 1.0f };
 
 				// Get Normal
 				vertex.normal =
@@ -165,10 +163,10 @@ namespace Puffin::IO
 		Assets::MeshInfo info;
 		info.compressionMode = Assets::CompressionMode::LZ4;
 		info.originalFile = modelPath.string();
-		info.vertexFormat = Rendering::VertexFormat::PNCTV_32;
+		info.vertexFormat = Rendering::VertexFormat::PNTV_32;
 		info.numVertices = vertices.size();
 		info.numIndices = indices.size();
-		info.verticesSize = vertices.size() * sizeof(Rendering::Vertex_PNCTV_32);
+		info.verticesSize = vertices.size() * sizeof(Rendering::Vertex_PNTV_32);
 		info.indicesSize = indices.size() * sizeof(uint32_t);
 
 		auto asset = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(importPath);

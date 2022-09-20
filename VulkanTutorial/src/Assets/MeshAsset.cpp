@@ -12,7 +12,7 @@ namespace Puffin::Assets
 
 	// Public
 
-	bool StaticMeshAsset::Save(const MeshInfo& info, const void* verticesData, const void* indicesData)
+	bool StaticMeshAsset::Save(const MeshInfo& info, const void* vertexData, const void* indexData)
 	{
 		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
 
@@ -42,10 +42,10 @@ namespace Puffin::Assets
 		mergedBuffer.resize(fullSize);
 
 		// Copy Vertex Buffer
-		memcpy(mergedBuffer.data(), verticesData, info.verticesSize);
+		memcpy(mergedBuffer.data(), vertexData, info.verticesSize);
 
 		// Copy Index Buffer
-		memcpy(mergedBuffer.data() + info.verticesSize, indicesData, info.indicesSize);
+		memcpy(mergedBuffer.data() + info.verticesSize, indexData, info.indicesSize);
 
 		// Compress Data and store in binary blob
 		size_t compressStaging = LZ4_compressBound(static_cast<int>(fullSize));
