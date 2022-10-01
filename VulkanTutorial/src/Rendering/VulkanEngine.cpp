@@ -23,6 +23,9 @@
 #include <string>
 #include <algorithm>
 
+#include "Components/Rendering/CameraComponent.h"
+#include "Components/Rendering/CameraComponent.h"
+
 #define VK_CHECK(x)                                                 \
 	do                                                              \
 	{                                                               \
@@ -52,9 +55,9 @@ namespace Puffin
 			offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
 			// Initialize Camera Variables
-			camera.position = glm::vec3(0.0f, 0.0f, 10.0f);
-			camera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
-			InitCamera(camera);
+			editorCamera.position = glm::vec3(0.0f, 0.0f, 10.0f);
+			editorCamera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+			InitEditorCamera();
 
 			viewportSize = ImVec2(0.0f, 0.0f);
 			offscreenInitialized = false;
@@ -120,7 +123,7 @@ namespace Puffin
 			SetupDeferredRenderer();
 
 			// Pass Camera to UI
-			m_uiManager->GetWindowSettings()->SetCamera(&camera);
+			m_uiManager->GetWindowSettings()->SetCamera(&editorCamera);
 
 			// Subscribe to events
 			m_inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
@@ -1174,19 +1177,35 @@ namespace Puffin
 			}
 		}
 
-		void VulkanEngine::InitCamera(CameraComponent& camera)
+		void VulkanEngine::InitCamera(ECS::EntityID entity)
 		{
+			auto& transform = m_world->GetComponent<TransformComponent>(entity);
+			auto& camera = m_world->GetComponent<CameraComponent>(entity);
+
 			// Calculate Perspective Projection
-			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
+			UpdateCameraPerspective(camera, camera.fov, camera.aspect, camera.zNear, camera.zFar);
 
 			// Calculate Right and Up Vectors
 			camera.right = glm::normalize(glm::cross(static_cast<glm::vec3>(camera.up), static_cast<glm::vec3>(camera.direction)));
 			camera.up = glm::cross(static_cast<glm::vec3>(camera.direction), static_cast<glm::vec3>(camera.right));
-			camera.lookat = camera.position + camera.direction;
+			camera.lookat = transform.position + camera.direction;
 
 			// Calculate Camera View Matrix
-			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(camera.position), 
-				static_cast<glm::vec3>(camera.lookat), static_cast<glm::vec3>(camera.up));
+			UpdateCameraView(camera, Vector3f(0.0f));
+		}
+
+		void VulkanEngine::InitEditorCamera()
+		{
+			// Calculate Perspective Projection
+			UpdateCameraPerspective(editorCamera, editorCamera.fov, editorCamera.aspect, editorCamera.zNear, editorCamera.zFar);
+
+			// Calculate Right and Up Vectors
+			editorCamera.right = glm::normalize(glm::cross(static_cast<glm::vec3>(editorCamera.up), static_cast<glm::vec3>(editorCamera.direction)));
+			editorCamera.up = glm::cross(static_cast<glm::vec3>(editorCamera.direction), static_cast<glm::vec3>(editorCamera.right));
+			editorCamera.lookat = editorCamera.position + editorCamera.direction;
+
+			// Calculate Camera View Matrix
+			UpdateCameraView(editorCamera, Vector3f(0.0f));
 		}
 
 		void VulkanEngine::InitAlbedoTexture(UUID uuid)
@@ -1353,11 +1372,8 @@ namespace Puffin
 					m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.allocation);
 			}
 
-			if (m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.count(entity) == 1)
-			{
-				// Decrement instance count and remove entity from set
-				m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.erase(entity);
-			}
+			// Decrement instance count and remove entity from set
+			m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.erase(entity);
 		}
 
 		void VulkanEngine::CleanupShadowcasterLight(ECS::EntityID entity)
@@ -1639,6 +1655,8 @@ namespace Puffin
 		{
 			ProcessEvents();
 
+			m_uiManager->DrawUI(m_engine->GetDeltaTime());
+
 			// Initialize/Cleanup marked components
 			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
 			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
@@ -1728,6 +1746,15 @@ namespace Puffin
 				}
 			}
 
+			std::vector<std::shared_ptr<ECS::Entity>> cameraEntities;
+			ECS::GetEntities<TransformComponent, CameraComponent>(m_world, cameraEntities);
+			for (const auto entity : cameraEntities)
+			{
+				UpdateCamera(entity->ID());
+			}
+
+			UpdateEditorCamera();
+
 			// Rebuild Shadowmaps if needed
 			if (m_shadowmapsNeedsUpdated)
 			{
@@ -1735,9 +1762,6 @@ namespace Puffin
 				m_shadowmapsNeedsUpdated = false;
 			}
 
-			m_uiManager->DrawUI(m_engine->GetDeltaTime());
-
-			UpdateCamera(camera);
 
 			DrawFrame();
 		}
@@ -1863,74 +1887,91 @@ namespace Puffin
 			}
 		}
 
-		void VulkanEngine::UpdateCamera(CameraComponent& camera)
+		void VulkanEngine::UpdateCamera(ECS::EntityID entity)
 		{
-			if (m_inputSubsystem->IsCursorLocked())
-			{
-				// Camera Movement
-				if (moveLeft && !moveRight)
-				{
-					camera.position +=  camera.right * camera.speed * m_engine->GetDeltaTime();
-				}
-				
-				if (moveRight && !moveLeft)
-				{
-					camera.position -= camera.right * camera.speed * m_engine->GetDeltaTime();
-				}
-
-				if (moveForward && !moveBackward)
-				{
-					camera.position += camera.direction * camera.speed * m_engine->GetDeltaTime();
-				}
-				
-				if (moveBackward && !moveForward)
-				{
-					camera.position -= camera.direction * camera.speed * m_engine->GetDeltaTime();
-				}
-
-				if (moveUp && !moveDown)
-				{
-					camera.position += camera.up * camera.speed * m_engine->GetDeltaTime();
-				}
-				
-				if (moveDown && !moveUp)
-				{
-					camera.position -= camera.up * camera.speed * m_engine->GetDeltaTime();
-				}
-
-				// Mouse Rotation
-				camera.yaw += m_inputSubsystem->GetMouseXOffset();
-				camera.pitch -= m_inputSubsystem->GetMouseYOffset();
-
-				if (camera.pitch > 89.0f)
-					camera.pitch = 89.0f;
-
-				if (camera.pitch < -89.0f)
-					camera.pitch = -89.0f;
-
-				// Calculate Direction vector from yaw and pitch of camera
-				camera.direction.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-				camera.direction.y = sin(glm::radians(camera.pitch));
-				camera.direction.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-				camera.direction.Normalise();
-			}
+			auto& transform = m_world->GetComponent<TransformComponent>(entity);
+			auto& camera = m_world->GetComponent<CameraComponent>(entity);
 
 			// Calculate Right, Up and LookAt vectors
 			camera.right = camera.up.Cross(camera.direction).Normalised();
-			camera.lookat = camera.position + camera.direction;
+			camera.lookat = transform.position + camera.direction;
 
 			float newAspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
 
 			// Recalculate camera perspective if fov has changed, store new fov in prevFov
 			if (camera.fov != camera.prevFov || camera.aspect != newAspect)
 			{
-				camera.aspect = newAspect;
-				camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
-				camera.prevFov = camera.fov;
+				UpdateCameraPerspective(camera, camera.fov, newAspect, camera.zNear, camera.zFar);
 			}
 
-			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(camera.position),
-				static_cast<glm::vec3>(camera.lookat), static_cast<glm::vec3>(camera.up));
+			UpdateCameraView(camera, Vector3f(0.0f));
+		}
+
+		void VulkanEngine::UpdateEditorCamera()
+		{
+			if (m_inputSubsystem->IsCursorLocked())
+			{
+				// Camera Movement
+				if (moveLeft && !moveRight)
+				{
+					editorCamera.position += editorCamera.right * editorCamera.speed * m_engine->GetDeltaTime();
+				}
+
+				if (moveRight && !moveLeft)
+				{
+					editorCamera.position -= editorCamera.right * editorCamera.speed * m_engine->GetDeltaTime();
+				}
+
+				if (moveForward && !moveBackward)
+				{
+					editorCamera.position += editorCamera.direction * editorCamera.speed * m_engine->GetDeltaTime();
+				}
+
+				if (moveBackward && !moveForward)
+				{
+					editorCamera.position -= editorCamera.direction * editorCamera.speed * m_engine->GetDeltaTime();
+				}
+
+				if (moveUp && !moveDown)
+				{
+					editorCamera.position += editorCamera.up * editorCamera.speed * m_engine->GetDeltaTime();
+				}
+
+				if (moveDown && !moveUp)
+				{
+					editorCamera.position -= editorCamera.up * editorCamera.speed * m_engine->GetDeltaTime();
+				}
+
+				// Mouse Rotation
+				editorCamera.yaw += m_inputSubsystem->GetMouseXOffset();
+				editorCamera.pitch -= m_inputSubsystem->GetMouseYOffset();
+
+				if (editorCamera.pitch > 89.0f)
+					editorCamera.pitch = 89.0f;
+
+				if (editorCamera.pitch < -89.0f)
+					editorCamera.pitch = -89.0f;
+
+				// Calculate Direction vector from yaw and pitch of camera
+				editorCamera.direction.x = cos(glm::radians(editorCamera.yaw)) * cos(glm::radians(editorCamera.pitch));
+				editorCamera.direction.y = sin(glm::radians(editorCamera.pitch));
+				editorCamera.direction.z = sin(glm::radians(editorCamera.yaw)) * cos(glm::radians(editorCamera.pitch));
+				editorCamera.direction.Normalise();
+			}
+
+			// Calculate Right, Up and LookAt vectors
+			editorCamera.right = editorCamera.up.Cross(editorCamera.direction).Normalised();
+			editorCamera.lookat = editorCamera.position + editorCamera.direction;
+
+			float newAspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+
+			// Recalculate camera perspective if fov has changed, store new fov in prevFov
+			if (editorCamera.fov != editorCamera.prevFov || editorCamera.aspect != newAspect)
+			{
+				UpdateCameraPerspective(editorCamera, editorCamera.fov, newAspect, editorCamera.zNear, editorCamera.zFar);
+			}
+
+			UpdateCameraView(editorCamera, Vector3f(0.0f));
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -2084,9 +2125,10 @@ namespace Puffin
 		{
 			// Map Camera Data to Uniform Buffer
 			GPUCameraData cameraData;
-			glm::mat4 projMat = camera.matrices.perspective;
+			glm::mat4 projMat = editorCamera.matrices.perspective;
+
 			projMat[1][1] *= -1;
-			cameraData.viewProj = projMat * camera.matrices.view;
+			cameraData.viewProj = projMat * editorCamera.matrices.view;
 
 			void* data;
 
@@ -2198,9 +2240,17 @@ namespace Puffin
 
 		inline void VulkanEngine::AddMeshRenderDataToScene(UUID meshID)
 		{
-			const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
 			MeshRenderData meshData;
+
+			// Get Mesh Data if it already exists
+			if (m_sceneRenderData.meshRenderDataMap.count(meshID) == 1)
+			{
+				meshData = m_sceneRenderData.meshRenderDataMap[meshID];
+			}
+
 			meshData.meshAssetID = meshID;
+
+			const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
 
 			// Load Mesh Data
 			if (staticMeshAsset && staticMeshAsset->Load())
@@ -2260,7 +2310,8 @@ namespace Puffin
 		{
 			// Map shaing data to uniform buffer
 			ShadingUBO uboData;
-			uboData.viewPos = static_cast<glm::vec3>(camera.position);
+			//uboData.viewPos = static_cast<glm::vec3>(editorCamera.position);
+			uboData.viewPos = glm::vec3(0.0f);
 			uboData.displayDebugTarget = 0;
 
 			void* data;
@@ -2303,6 +2354,9 @@ namespace Puffin
 			for (const auto entity : pointLightEntities)
 			{
 				auto& pointLight = entity->GetComponent<PointLightComponent>();
+				const auto& transform = entity->GetComponent<TransformComponent>();
+
+				Vector3f cameraRelativePosition = static_cast<Vector3f>(transform.position - editorCamera.position);
 
 				int tempShadowIndex = -1;
 
@@ -2321,7 +2375,7 @@ namespace Puffin
 				lightSSBO[l].shininess = pointLight.shininess;
 				lightSSBO[l].shadowmapIndex = tempShadowIndex;
 
-				pointLightSSBO[p].position = static_cast<glm::vec3>(entity->GetComponent<TransformComponent>().position);
+				pointLightSSBO[p].position = static_cast<glm::vec3>(cameraRelativePosition);
 				pointLightSSBO[p].constant = pointLight.constantAttenuation;
 				pointLightSSBO[p].linear = pointLight.linearAttenuation;
 				pointLightSSBO[p].quadratic = pointLight.quadraticAttenuation;
@@ -2366,6 +2420,8 @@ namespace Puffin
 			for (const auto entity : spotLightEntities)
 			{
 				auto& spotLight = entity->GetComponent<SpotLightComponent>();
+				const auto& transform = entity->GetComponent<TransformComponent>();
+				Vector3f cameraRelativePosition = static_cast<Vector3f>(transform.position - editorCamera.position);
 
 				int tempShadowIndex = -1;
 
@@ -2373,7 +2429,8 @@ namespace Puffin
 				{
 					auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
 
-					shadowcaster.lightSpaceView = CalculateLightSpaceView(entity, spotLight.outerCutoffAngle, spotLight.direction);
+					const float aspectRatio = static_cast<float>(shadowcaster.shadowmapWidth) / static_cast<float>(shadowcaster.shadowmapHeight);
+					shadowcaster.lightSpaceView = CalculateLightSpaceView(aspectRatio, spotLight.outerCutoffAngle, cameraRelativePosition, spotLight.direction);
 					lightSSBO[l].lightSpaceMatrix = biasMatrix * shadowcaster.lightSpaceView;
 
 					tempShadowIndex = shadowIndex;
@@ -2386,7 +2443,7 @@ namespace Puffin
 				lightSSBO[l].shininess = spotLight.shininess;
 				lightSSBO[l].shadowmapIndex = tempShadowIndex;
 
-				spotLightSSBO[s].position = static_cast<glm::vec3>(entity->GetComponent<TransformComponent>().position);
+				spotLightSSBO[p].position = static_cast<glm::vec3>(cameraRelativePosition);
 				spotLightSSBO[s].direction = static_cast<glm::vec3>(spotLight.direction);
 				spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(spotLight.innerCutoffAngle));
 				spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(spotLight.outerCutoffAngle));
@@ -2415,11 +2472,8 @@ namespace Puffin
 			vmaUnmapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation);
 		}
 
-		glm::mat4 VulkanEngine::CalculateLightSpaceView(std::shared_ptr<ECS::Entity> entity, float outerRadius, Vector3f direction)
+		glm::mat4 VulkanEngine::CalculateLightSpaceView(const float& aspectRatio, const float& outerRadius, const Vector3f& position, const Vector3f& direction) const
 		{
-			const auto& transform = entity->GetComponent<TransformComponent>();
-			const auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
-
 			// Near/Far Plane to render depth within
 			const float near_plane = 1.0f;
 			const float far_plane = 50.0f;
@@ -2427,15 +2481,15 @@ namespace Puffin
 			// Calculate Light Space Projection Matrix
 			glm::mat4 lightProj = glm::perspective(
 				glm::radians(outerRadius * 2.0f),
-				static_cast<float>(shadowcaster.shadowmapWidth) / static_cast<float>(shadowcaster.shadowmapHeight),
+				aspectRatio,
 				near_plane, far_plane);
 
 			lightProj[1][1] *= -1;
 
 			// Calculate Light Space View Matrix
 			glm::mat4 lightView = glm::lookAt(
-				glm::vec3(transform.position),
-				glm::vec3(transform.position + direction),
+				glm::vec3(position),
+				glm::vec3(position + direction),
 				glm::vec3(0.0f, 1.0f, 0.0f));
 
 			return lightProj * lightView;
@@ -2716,16 +2770,29 @@ namespace Puffin
 
 				for (auto entity : meshData.entities)
 				{
+					const auto& transform = m_world->GetComponent<TransformComponent>(entity);
+
+#ifdef PFN_USE_DOUBLE_PRECISION
+					Vector3d position = Vector3f(0.0f);
+#else
+					Vector3f position = Vector3f(0.0f);
+#endif
+
 					if (m_world->HasComponent<InterpolatedTransformComponent>(entity))
 					{
+						const auto& interpolatedTransform = m_world->GetComponent<InterpolatedTransformComponent>(entity);
 
-						objectSSBO[i].model = BuildInterpolatedMeshTransform(m_world->GetComponent<TransformComponent>(entity),
-							m_world->GetComponent<InterpolatedTransformComponent>(entity));
+						position = Maths::Lerp(transform.position, interpolatedTransform.position,
+							m_engine->GetAccumulatedTime() / m_engine->GetTimeStep());
 					}
 					else
 					{
-						objectSSBO[i].model = BuildMeshTransform(m_world->GetComponent<TransformComponent>(entity));
+						position = transform.position;
 					}
+
+					const Vector3f cameraRelativePosition = static_cast<Vector3f>(position - editorCamera.position);
+					objectSSBO[i].model = BuildMeshTransform(cameraRelativePosition, transform.rotation, transform.scale);
+
 					objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
 
 					i++;
@@ -2735,35 +2802,18 @@ namespace Puffin
 			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
 		}
 
-		glm::mat4 VulkanEngine::BuildMeshTransform(const TransformComponent& transform) const
+		glm::mat4 VulkanEngine::BuildMeshTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale) const
 		{
 			// Set Translation
-			glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)transform.position);
+			glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)position);
 
 			// Set Rotation
-			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.y)), glm::vec3(0.0f, 1.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.z)), glm::vec3(0.0f, 0.0f, -1.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+			model_transform = glm::rotate(model_transform, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, -1.0f));
 
 			// Set Scale
-			model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);
-
-			return model_transform;
-		}
-
-		glm::mat4 VulkanEngine::BuildInterpolatedMeshTransform(const TransformComponent& transform, const InterpolatedTransformComponent& interpolatedTransform) const
-		{
-			// Set Translation
-			glm::vec3 interpolatedPosition = (glm::vec3)Maths::Lerp(transform.position, interpolatedTransform.position, m_engine->GetAccumulatedTime() / m_engine->GetTimeStep());
-			glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), interpolatedPosition);
-
-			// Set Rotation
-			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.y)), glm::vec3(0.0f, 1.0f, 0.0f));
-			model_transform = glm::rotate(model_transform, glm::radians(float(transform.rotation.z)), glm::vec3(0.0f, 0.0f, -1.0f));
-
-			// Set Scale
-			model_transform = glm::scale(model_transform, (glm::vec3)transform.scale);
+			model_transform = glm::scale(model_transform, (glm::vec3)scale);
 
 			return model_transform;
 		}
@@ -2787,6 +2837,8 @@ namespace Puffin
 
 				Stop();
 
+				CleanupBuffers();
+
 				// Cleanup Allocator/Cache
 				descriptorAllocator->Cleanup();
 				descriptorLayoutCache->Cleanup();
@@ -2795,6 +2847,30 @@ namespace Puffin
 				vkDestroySurfaceKHR(instance, surface, nullptr);
 				vkDestroyInstance(instance, nullptr);
 			}
+		}
+
+		void VulkanEngine::CleanupBuffers()
+		{
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				vmaDestroyBuffer(allocator, frames[i].cameraViewProjBuffer.buffer, frames[i].cameraViewProjBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].objectBuffer.buffer, frames[i].objectBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].lightSpaceBuffer.buffer, frames[i].lightSpaceBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].debugVertexBuffer.buffer, frames[i].debugVertexBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].debugIndexBuffer.buffer, frames[i].debugIndexBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].debugIndirectCommandsBuffer.buffer, frames[i].debugIndirectCommandsBuffer.allocation);
+
+				vmaDestroyBuffer(allocator, frames[i].drawBatch.drawIndirectCommandsBuffer.buffer, frames[i].drawBatch.drawIndirectCommandsBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].uboBuffer.buffer, frames[i].uboBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].lightBuffer.buffer, frames[i].lightBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].pointLightBuffer.buffer, frames[i].pointLightBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].dirLightBuffer.buffer, frames[i].dirLightBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].spotLightBuffer.buffer, frames[i].spotLightBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].lightStatsBuffer.buffer, frames[i].lightStatsBuffer.allocation);
+			}
+
+			vmaDestroyBuffer(allocator, m_sceneRenderData.mergedVertexBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.allocation);
+			vmaDestroyBuffer(allocator, m_sceneRenderData.mergedIndexBuffer.buffer, m_sceneRenderData.mergedIndexBuffer.allocation);
 		}
 
 		//-------------------------------------------------------------------------------------

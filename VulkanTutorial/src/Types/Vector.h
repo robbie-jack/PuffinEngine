@@ -389,7 +389,7 @@ namespace Puffin
 		}
 
 		// Operator-
-		Vector3 operator-(const Vector3& vec)
+		Vector3 operator-(const Vector3& vec) const
 		{
 			Vector3 vector;
 			vector.x = x - vec.x;

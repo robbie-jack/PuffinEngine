@@ -112,8 +112,8 @@ namespace Puffin
 		{
 			Vector3f direction = { .5f, .5f, 0.f };
 
-			float innerCutoffAngle = 12.5f;
-			float outerCutoffAngle = 17.5f;
+			float innerCutoffAngle = 30.0f;
+			float outerCutoffAngle = 45.0f;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(SpotLightComponent, ambientColor, diffuseColor, specularStrength, shininess, direction, constantAttenuation, linearAttenuation, quadraticAttenuation, innerCutoffAngle, outerCutoffAngle)
 		};

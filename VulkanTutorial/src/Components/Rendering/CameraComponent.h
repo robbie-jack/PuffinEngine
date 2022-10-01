@@ -30,11 +30,10 @@ namespace Puffin
 
 			float zNear = 0.01f;
 			float zFar = 100.0f;
-			float aspect = 16.0f / 9.0f;
+			float aspect = 0.0f;
 			float fov = 60.0f;
-			float prevFov = 90.0f;
+			float prevFov = 0.0f;
 
-			Vector3f position;
 			Vector3f lookat;
 
 			Vector3f direction = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -54,26 +53,36 @@ namespace Puffin
 				yaw, pitch, speed)
 		};
 
-		static void UpdatePerspective(CameraComponent& camera, float fov_, float aspect_, float zNear_, float zFar_)
+		struct EditorCamera : public CameraComponent
 		{
-			camera.fov = fov_;
-			camera.aspect = aspect_;
-			camera.zNear = zNear_;
-			camera.zFar = zFar_;
+#ifdef PFN_USE_DOUBLE_PRECISION
+			Vector3d position;
+#else
+			Vector3f position;
+#endif
+		};
+
+		static void UpdateCameraPerspective(CameraComponent& camera, float fov, float aspect, float zNear, float zFar)
+		{
+			camera.prevFov = camera.fov;
+			camera.fov = fov;
+			camera.aspect = aspect;
+			camera.zNear = zNear;
+			camera.zFar = zFar;
 
 			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
 		}
 
-		static void UpdateFov(CameraComponent& camera, float fov_)
+		static void UpdateCameraFov(CameraComponent& camera, float fov_)
 		{
 			camera.fov = fov_;
 
 			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
 		}
 
-		static void UpdateViewMatrix(CameraComponent& camera)
+		static void UpdateCameraView(CameraComponent& camera, Vector3f position)
 		{
-			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(camera.position), static_cast<glm::vec3>(camera.position + camera.direction), static_cast<glm::vec3>(camera.up));
+			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(position), static_cast<glm::vec3>(position + camera.direction), static_cast<glm::vec3>(camera.up));
 		}
 	}
 }

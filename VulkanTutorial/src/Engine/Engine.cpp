@@ -68,6 +68,7 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponent<Rendering::DirectionalLightComponent>();
 		ecsWorld->RegisterComponent<Rendering::SpotLightComponent>();
 		ecsWorld->RegisterComponent<Rendering::ShadowCasterComponent>();
+		ecsWorld->RegisterComponent<Rendering::CameraComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DRigidbodyComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DBoxComponent>();
 		ecsWorld->RegisterComponent<Physics::Box2DCircleComponent>();
@@ -114,6 +115,7 @@ namespace Puffin::Core
 		m_sceneData->RegisterComponent<Rendering::DirectionalLightComponent>("DirectionalLights");
 		m_sceneData->RegisterComponent<Rendering::SpotLightComponent>("SpotLights");
 		m_sceneData->RegisterComponent<Rendering::ShadowCasterComponent>("Shadowcasters");
+		m_sceneData->RegisterComponent<Rendering::CameraComponent>("Cameras");
 		m_sceneData->RegisterComponent<Physics::Box2DRigidbodyComponent>("Rigidbodies");
 		m_sceneData->RegisterComponent<Physics::Box2DBoxComponent>("Boxes");
 		m_sceneData->RegisterComponent<Physics::Box2DCircleComponent>("Circles");
@@ -122,14 +124,14 @@ namespace Puffin::Core
 		// Load/Initialize Assets
 		//AddDefaultAssets();
 		Assets::AssetRegistry::Get()->LoadAssetCache();
-		ReimportDefaultAssets();
+		//ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		//DefaultScene(ecsWorld);
+		DefaultScene(ecsWorld);
 		//PhysicsScene(ecsWorld);
 
 		// Load Scene -- normal behaviour
-		m_sceneData->LoadAndInit();
+		//m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -434,10 +436,10 @@ namespace Puffin::Core
 		entities[0]->GetComponent<TransformComponent>() = {Vector3f(2.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f)};
 		entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
 		entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
-		entities[3]->GetComponent<TransformComponent>() = { Vector3f(-10.0f, 0.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
+		entities[3]->GetComponent<TransformComponent>() = { Vector3f(-5.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
 		entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
 		entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(10.0f, 1.0f, 10.0f) };
-		entities[6]->GetComponent<TransformComponent>() = { Vector3f(5.0f, 0.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
+		entities[6]->GetComponent<TransformComponent>() = { Vector3f(5.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
 
 		entities[0]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId1;
 		entities[0]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId1;
@@ -456,7 +458,7 @@ namespace Puffin::Core
 		entities[6]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		entities[6]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		entities[3]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(1.0f, -1.0f, 0.0f);
+		entities[3]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(0.2f, -0.8f, 0.0f);
 		entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
 		entities[6]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);

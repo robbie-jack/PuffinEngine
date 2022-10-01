@@ -305,7 +305,7 @@ namespace Puffin
 			VkSampler depthSampler; // Sampler for reading shadowmaps in shader
 
 			// Camera
-			CameraComponent camera;
+			EditorCamera editorCamera;
 			bool moveForward = false;
 			bool moveBackward = false;
 			bool moveLeft = false;
@@ -363,7 +363,9 @@ namespace Puffin
 			// Init Component Functions
 			void InitMesh(ECS::EntityID entity);
 			void InitShadowcasterLight(ECS::EntityID entity);
-			void InitCamera(CameraComponent& camera);
+			void InitCamera(ECS::EntityID entity);
+
+			void InitEditorCamera();
 
 			void InitAlbedoTexture(UUID uuid);
 
@@ -380,7 +382,8 @@ namespace Puffin
 
 			// Update Functions
 			void ProcessEvents();
-			void UpdateCamera(CameraComponent& camera);
+			void UpdateCamera(ECS::EntityID entity);
+			void UpdateEditorCamera();
 
 			// Render Functions
 			void DrawFrame();
@@ -395,7 +398,7 @@ namespace Puffin
 
 			void PrepareLights();
 
-			glm::mat4 CalculateLightSpaceView(std::shared_ptr<ECS::Entity> entity, float outerRadius, Vector3f direction);
+			glm::mat4 CalculateLightSpaceView(const float& aspectRatio, const float& outerRadius, const Vector3f& position, const Vector3f& direction) const;
 
 			VkCommandBuffer RecordShadowCommandBuffers(uint32_t index);
 			void RecordShadowRenderPass(VkCommandBuffer cmd, const VkRenderPassBeginInfo& renderPassInfo, const glm::mat4& lightSpaceView);
@@ -406,8 +409,10 @@ namespace Puffin
 			void DrawDebugObjects(VkCommandBuffer cmd, uint32_t index);
 
 			void MapObjectData();
-			glm::mat4 BuildMeshTransform(const TransformComponent& transform) const;
-			glm::mat4 BuildInterpolatedMeshTransform(const TransformComponent& transform, const InterpolatedTransformComponent& interpolatedTransform) const;
+
+			glm::mat4 BuildMeshTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale) const;
+
+			void CleanupBuffers();
 
 			// Debug Draw Functions
 			void DrawDebugLine(Debug::Line line);

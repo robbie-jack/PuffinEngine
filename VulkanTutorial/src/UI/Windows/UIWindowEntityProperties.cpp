@@ -186,7 +186,7 @@ namespace Puffin
 					}
 
 					#ifdef PFN_USE_DOUBLE_PRECISION
-						if (ImGui::DragScalarN("Position", ImGuiDataType_Double, (float*)&transform.position, 0.1f))
+						if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &transform.position, 3, 0.1f))
 						{
 							positionChanged = true;
 							sceneChanged = true;

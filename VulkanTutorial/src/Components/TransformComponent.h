@@ -4,10 +4,16 @@
 
 #include "nlohmann/json.hpp"
 
-//#define PFN_USE_DOUBLE_PRECISION
+#define PFN_USE_DOUBLE_PRECISION
 
 namespace Puffin
 {
+#ifdef PFN_USE_DOUBLE_PRECISION
+	constexpr bool G_USE_DOUBLE_PRECISION = true;
+#else
+	constexpr bool G_USE_DOUBLE_PRECISION = false;
+#endif
+
 	struct TransformComponent
 	{
 		TransformComponent() = default;
@@ -51,6 +57,7 @@ namespace Puffin
 #else
 		Vector3f position = Vector3f(0.0f);
 #endif
+
 		Vector3f rotation = Vector3f(0.0f);
 	};
 }

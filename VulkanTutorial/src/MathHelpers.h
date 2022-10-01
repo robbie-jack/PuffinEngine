@@ -52,7 +52,12 @@ namespace Puffin
 			return RotatePointAroundPoint(inPoint, Vector2f(0.0f), inAngle);
 		}
 
-		static inline float Lerp(const double& v1, const double& v2, double t)
+		static inline float Lerp(const float& v1, const float& v2, double t)
+		{
+			return (1 - t) * v1 + t * v2;
+		}
+
+		static inline double Lerp(const double& v1, const double& v2, double t)
 		{
 			return (1 - t) * v1 + t * v2;
 		}
