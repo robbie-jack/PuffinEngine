@@ -97,9 +97,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\vk-boostrap\VkBootstrap.cpp">
-      <Filter>Libraries\VK-Bootstrap</Filter>
-    </ClCompile>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Input\InputSubsystem.cpp">
       <Filter>Input</Filter>
@@ -129,9 +126,6 @@
       <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\backends\imgui_impl_glfw.cpp">
-      <Filter>Libraries\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="include\imgui\imgui_impl_vulkan.cpp">
       <Filter>Libraries\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\ManipulationGizmo.cpp" />
@@ -360,11 +354,14 @@
     <ClCompile Include="src\Rendering\Helper Classes\VKVertex.cpp">
       <Filter>Rendering\Helper Classes</Filter>
     </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_impl_vulkan.cpp">
+      <Filter>Libraries\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\vk-boostrap\VkBootstrap.cpp">
+      <Filter>Libraries\VK-Bootstrap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\vk-boostrap\VkBootstrap.h">
-      <Filter>Libraries\VK-Bootstrap</Filter>
-    </ClInclude>
     <ClInclude Include="src\ProjectSettings.h" />
     <ClInclude Include="src\SerializeScene.h" />
     <ClInclude Include="src\ecs\ECS.h">
@@ -395,9 +392,6 @@
       <Filter>Libraries\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h">
-      <Filter>Libraries\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="include\imgui\imgui_impl_vulkan.h">
       <Filter>Libraries\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="src\Components\Rendering\CameraComponent.h">
@@ -632,6 +626,12 @@
     </ClInclude>
     <ClInclude Include="src\Types\Vertex.hpp">
       <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imgui_impl_vulkan.h">
+      <Filter>Libraries\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\vk-boostrap\VkBootstrap.h">
+      <Filter>Libraries\VK-Bootstrap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
