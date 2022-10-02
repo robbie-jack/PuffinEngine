@@ -55,24 +55,30 @@ namespace Puffin::Core
 
 		m_uiManager = std::make_shared<UI::UIManager>(shared_from_this());
 
-		// Systems
-		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = RegisterSystem<Rendering::VulkanEngine>();
-		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = RegisterSystem<Physics::Box2DPhysicsSystem>();
-		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = RegisterSystem<Scripting::AngelScriptSystem>();
+		// Load Project File
+		fs::path projectPath = fs::path("D:\\Projects\\PuffinProject\\Puffin.pproject");
+		fs::path projectDirPath = projectPath;
+		projectDirPath.remove_filename();
 
-		// Register Components to ECS World
-		ecsWorld->RegisterComponent<TransformComponent>();
-		ecsWorld->RegisterComponent<InterpolatedTransformComponent>();
-		ecsWorld->RegisterComponent<Rendering::MeshComponent>();
-		ecsWorld->RegisterComponent<Rendering::PointLightComponent>();
-		ecsWorld->RegisterComponent<Rendering::DirectionalLightComponent>();
-		ecsWorld->RegisterComponent<Rendering::SpotLightComponent>();
-		ecsWorld->RegisterComponent<Rendering::ShadowCasterComponent>();
-		ecsWorld->RegisterComponent<Rendering::CameraComponent>();
-		ecsWorld->RegisterComponent<Physics::Box2DRigidbodyComponent>();
-		ecsWorld->RegisterComponent<Physics::Box2DBoxComponent>();
-		ecsWorld->RegisterComponent<Physics::Box2DCircleComponent>();
-		ecsWorld->RegisterComponent<Scripting::AngelScriptComponent>();
+		IO::LoadProject(projectPath, projectFile);
+
+		// Load Default Scene (if set)
+		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
+		m_sceneData = std::make_shared<IO::SceneData>(ecsWorld, defaultScenePath);
+
+		// Register Components to ECS World and Scene Data Class
+		RegisterComponent<TransformComponent>();
+		RegisterComponent<InterpolatedTransformComponent>(false);
+		RegisterComponent<Rendering::MeshComponent>();
+		RegisterComponent<Rendering::PointLightComponent>();
+		RegisterComponent<Rendering::DirectionalLightComponent>();
+		RegisterComponent<Rendering::SpotLightComponent>();
+		RegisterComponent<Rendering::ShadowCasterComponent>();
+		RegisterComponent<Rendering::CameraComponent>();
+		RegisterComponent<Physics::Box2DRigidbodyComponent>();
+		RegisterComponent<Physics::Box2DBoxComponent>();
+		RegisterComponent<Physics::Box2DCircleComponent>();
+		RegisterComponent<Scripting::AngelScriptComponent>();
 
 		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Rendering::LightComponent, TransformComponent>();
@@ -85,12 +91,10 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponentFlag<FlagDirty>(true);
 		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
-		// Load Project File
-		fs::path projectPath = fs::path("D:\\Projects\\PuffinProject\\Puffin.pproject");
-		fs::path projectDirPath = projectPath;
-		projectDirPath.remove_filename();
-
-		IO::LoadProject(projectPath, projectFile);
+		// Systems
+		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = RegisterSystem<Rendering::VulkanEngine>();
+		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = RegisterSystem<Physics::Box2DPhysicsSystem>();
+		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = RegisterSystem<Scripting::AngelScriptSystem>();
 
 		// Register Assets
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::StaticMeshAsset>();
@@ -104,34 +108,17 @@ namespace Puffin::Core
 		// Load Project Settings
 		IO::LoadSettings(projectDirPath.parent_path() / "Settings.json", settings);
 
-		// Load Default Scene (if set)
-		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
-		m_sceneData = std::make_shared<IO::SceneData>(ecsWorld, defaultScenePath);
-
-		// Register Components to Scene Data
-		m_sceneData->RegisterComponent<TransformComponent>("Transforms");
-		m_sceneData->RegisterComponent<Rendering::MeshComponent>("Meshes");
-		m_sceneData->RegisterComponent<Rendering::PointLightComponent>("PointLights");
-		m_sceneData->RegisterComponent<Rendering::DirectionalLightComponent>("DirectionalLights");
-		m_sceneData->RegisterComponent<Rendering::SpotLightComponent>("SpotLights");
-		m_sceneData->RegisterComponent<Rendering::ShadowCasterComponent>("Shadowcasters");
-		m_sceneData->RegisterComponent<Rendering::CameraComponent>("Cameras");
-		m_sceneData->RegisterComponent<Physics::Box2DRigidbodyComponent>("Rigidbodies");
-		m_sceneData->RegisterComponent<Physics::Box2DBoxComponent>("Boxes");
-		m_sceneData->RegisterComponent<Physics::Box2DCircleComponent>("Circles");
-		m_sceneData->RegisterComponent<Scripting::AngelScriptComponent>("Scripts");
-
 		// Load/Initialize Assets
 		//AddDefaultAssets();
 		Assets::AssetRegistry::Get()->LoadAssetCache();
 		//ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		DefaultScene(ecsWorld);
+		//DefaultScene(ecsWorld);
 		//PhysicsScene(ecsWorld);
 
 		// Load Scene -- normal behaviour
-		//m_sceneData->LoadAndInit();
+		m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;

@@ -65,7 +65,7 @@ namespace Puffin::Core
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
-			assert(m_subsystemTypes.find(typeName) == m_subsystemTypes.end() && "Registering subsystem more than once");
+			assert(m_subsystems.find(typeName) == m_subsystems.end() && "Registering subsystem more than once");
 
 			// Create subsystem pointer
 			std::shared_ptr<SubsystemT> subsystem = std::make_shared<SubsystemT>();
@@ -83,7 +83,7 @@ namespace Puffin::Core
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
-			assert(m_subsystemTypes.find(typeName) != m_subsystemTypes.end() && "Subsystem used before registering.");
+			assert(m_subsystems.find(typeName) != m_subsystems.end() && "Subsystem used before registering.");
 
 			return std::static_pointer_cast<SubsystemT>(m_subsystems[typeName]);
 		}
@@ -106,6 +106,23 @@ namespace Puffin::Core
 			}
 
 			return system;
+		}
+
+		/*
+		 * shouldSerialize - Should this component be serialized to scene data
+		 */
+		template<typename CompT>
+		void RegisterComponent(bool shouldSerialize = true)
+		{
+			if (auto ecsWorld = GetSubsystem<ECS::World>())
+			{
+				ecsWorld->RegisterComponent<CompT>();
+			}
+
+			if (m_sceneData != nullptr && shouldSerialize)
+			{
+				m_sceneData->RegisterComponent<CompT>();
+			}
 		}
 
 		PlayState GetPlayState() const { return playState; }

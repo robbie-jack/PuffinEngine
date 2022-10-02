@@ -255,7 +255,7 @@ namespace Puffin
 		}
 
 		// Json
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector2, x, y);
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector2, x, y)
 	};
 
 	typedef Vector2<float> Vector2f;
@@ -502,7 +502,7 @@ namespace Puffin
 
 
 		// Json
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector3, x, y, z);
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector3, x, y, z)
 	};
 
 	typedef Vector3<float> Vector3f;

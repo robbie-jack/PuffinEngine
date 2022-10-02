@@ -59,5 +59,7 @@ namespace Puffin
 #endif
 
 		Vector3f rotation = Vector3f(0.0f);
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(InterpolatedTransformComponent, position, rotation)
 	};
 }

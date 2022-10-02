@@ -153,14 +153,16 @@ namespace Puffin::IO
 		}
 
 		template<typename CompT>
-		void RegisterComponent(std::string componentType)
+		void RegisterComponent()
 		{
-			assert(m_sceneDataArrays.find(componentType) == m_sceneDataArrays.end() && "Registering component type more than once");
+			const char* typeName = typeid(CompT).name();
+
+			assert(m_sceneDataArrays.find(typeName) == m_sceneDataArrays.end() && "Registering component type more than once");
 
 			// Create
 			std::shared_ptr<SceneDataArray<CompT>> sceneDataArray = std::make_shared<SceneDataArray<CompT>>(m_world);
 
-			m_sceneDataArrays.insert({ componentType, std::static_pointer_cast<ISceneDataArray>(sceneDataArray) });
+			m_sceneDataArrays.insert({ typeName, std::static_pointer_cast<ISceneDataArray>(sceneDataArray) });
 		}
 
 		// Save Entities/Components to Binary Scene File
