@@ -136,7 +136,7 @@ namespace Puffin::Scripting
 		// Initialize/Cleanup marked components
 		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
-		for (const auto entity : shadowcasterLightEntities)
+		for (const auto& entity : shadowcasterLightEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
 
@@ -171,7 +171,7 @@ namespace Puffin::Scripting
 		// Execute Script Stop Methods
 		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
-		for (const auto entity : shadowcasterLightEntities)
+		for (const auto& entity : shadowcasterLightEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
 

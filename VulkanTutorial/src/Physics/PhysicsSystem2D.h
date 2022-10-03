@@ -45,9 +45,9 @@ namespace Puffin::Physics
 
 		Vector2f m_gravity = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
-		PackedVector<ECS::EntityID, BoxShape2D> m_boxShapes;
-		PackedVector<ECS::EntityID, CircleShape2D> m_circleShapes;
-		PackedVector<ECS::EntityID, std::shared_ptr<Collision2D::Collider2D>> m_colliders;
+		PackedVector<BoxShape2D> m_boxShapes;
+		PackedVector<CircleShape2D> m_circleShapes;
+		PackedVector<std::shared_ptr<Collision2D::Collider2D>> m_colliders;
 
 		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
 		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided

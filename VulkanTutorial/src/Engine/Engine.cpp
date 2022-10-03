@@ -6,9 +6,11 @@
 #include "Rendering/VulkanEngine.h"
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
+#include "Procedural/ProceduralMeshGenSystem.hpp"
 
 #include "Components/TransformComponent.h"
 #include "Components/AngelScriptComponent.h"
+#include "Components/Procedural/ProceduralComponent.hpp"
 
 #include "Types/ComponentFlags.h"
 
@@ -79,9 +81,11 @@ namespace Puffin::Core
 		RegisterComponent<Physics::Box2DBoxComponent>();
 		RegisterComponent<Physics::Box2DCircleComponent>();
 		RegisterComponent<Scripting::AngelScriptComponent>();
+		RegisterComponent<Procedural::ProceduralPlaneComponent>();
 
 		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
-		ecsWorld->AddComponentDependencies<Rendering::LightComponent, TransformComponent>();
+		ecsWorld->AddComponentDependencies<Rendering::PointLightComponent, TransformComponent>();
+		ecsWorld->AddComponentDependencies<Rendering::SpotLightComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, InterpolatedTransformComponent>();
 
@@ -95,6 +99,7 @@ namespace Puffin::Core
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = RegisterSystem<Rendering::VulkanEngine>();
 		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = RegisterSystem<Physics::Box2DPhysicsSystem>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = RegisterSystem<Scripting::AngelScriptSystem>();
+		RegisterSystem<Procedural::ProceduralMeshGenSystem>();
 
 		// Register Assets
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::StaticMeshAsset>();
@@ -114,8 +119,9 @@ namespace Puffin::Core
 		//ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		//DefaultScene(ecsWorld);
-		//PhysicsScene(ecsWorld);
+		//DefaultScene();
+		//PhysicsScene();
+		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
 		m_sceneData->LoadAndInit();
@@ -367,8 +373,10 @@ namespace Puffin::Core
 		IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
 	}
 
-	void Engine::DefaultScene(std::shared_ptr<ECS::World> world)
+	void Engine::DefaultScene()
 	{
+		auto ecsWorld = GetSubsystem<ECS::World>();
+
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
 
@@ -392,9 +400,6 @@ namespace Puffin::Core
 
 		UUID soundId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath1)->ID();
 
-		// Initialize EntityManager with Existing Entities
-		world->InitEntitySystem();
-
 		const int numEntities = 7;
 		std::vector<std::shared_ptr<ECS::Entity>> entities;
 		entities.reserve(numEntities);
@@ -402,19 +407,19 @@ namespace Puffin::Core
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)
 		{
-			const auto entity = ECS::CreateEntity(world);
+			const auto entity = ECS::CreateEntity(ecsWorld);
 			entity->AddComponent<TransformComponent>();
 			entity->AddComponent<Rendering::MeshComponent>();
 			entities.push_back(entity);
 		}
 
-		world->SetEntityName(1, "House");
-		world->SetEntityName(2, "Sphere");
-		world->SetEntityName(3, "Falling Cube");
-		world->SetEntityName(4, "Light");
-		world->SetEntityName(5, "Static Cube");
-		world->SetEntityName(6, "Plane");
-		world->SetEntityName(7, "Light 2");
+		ecsWorld->SetEntityName(1, "House");
+		ecsWorld->SetEntityName(2, "Sphere");
+		ecsWorld->SetEntityName(3, "Falling Cube");
+		ecsWorld->SetEntityName(4, "Light");
+		ecsWorld->SetEntityName(5, "Static Cube");
+		ecsWorld->SetEntityName(6, "Plane");
+		ecsWorld->SetEntityName(7, "Light 2");
 
 		entities[3]->AddComponent<Rendering::SpotLightComponent>();
 		entities[6]->AddComponent<Rendering::SpotLightComponent>();
@@ -456,8 +461,10 @@ namespace Puffin::Core
 		script.dir = contentRootPath / "scripts\\Example.pscript";
 	}
 
-	void Engine::PhysicsScene(std::shared_ptr<ECS::World> world)
+	void Engine::PhysicsScene()
 	{
+		auto ecsWorld = GetSubsystem<ECS::World>();
+
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
 
@@ -481,10 +488,8 @@ namespace Puffin::Core
 
 		UUID soundId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath1)->ID();
 
-		world->InitEntitySystem();
-
 		// Create Light Entity
-		const auto lightEntity = ECS::CreateEntity(world);
+		const auto lightEntity = ECS::CreateEntity(ecsWorld);
 
 		lightEntity->SetName("Light");
 
@@ -496,7 +501,7 @@ namespace Puffin::Core
 		lightComp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		// Create Box Entity
-		const auto boxEntity = ECS::CreateEntity(world);
+		const auto boxEntity = ECS::CreateEntity(ecsWorld);
 
 		boxEntity->SetName("Box");
 
@@ -517,7 +522,7 @@ namespace Puffin::Core
 		boxEntity->GetComponent<Scripting::AngelScriptComponent>().dir = contentRootPath / "scripts\\Physics.pscript";
 
 		// Create Circle Entity
-		const auto circleEntity = ECS::CreateEntity(world);
+		const auto circleEntity = ECS::CreateEntity(ecsWorld);
 
 		circleEntity->SetName("Circle");
 
@@ -534,7 +539,7 @@ namespace Puffin::Core
 		circleEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
 
 		// Create Floor Entity
-		const auto floorEntity = ECS::CreateEntity(world);
+		const auto floorEntity = ECS::CreateEntity(ecsWorld);
 
 		floorEntity->SetName("Floor");
 
@@ -550,6 +555,31 @@ namespace Puffin::Core
 
 		floorEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_staticBody;
 		floorEntity->GetComponent<Physics::Box2DBoxComponent>().data.halfExtent = Vector2f(5.0f, 1.0f);
+	}
+
+	void Engine::ProceduralScene()
+	{
+		auto ecsWorld = GetSubsystem<ECS::World>();
+
+		// Initialize Assets
+		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
+
+		const fs::path& cubeMeshPath = "meshes\\cube.pstaticmesh";
+
+		UUID cubeMeshId = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(cubeMeshPath)->ID();
+
+		const fs::path& cubeTexturePath = "textures\\cube.ptexture";
+
+		UUID cubeTextureId = Assets::AssetRegistry::Get()->GetAsset<Assets::StaticMeshAsset>(cubeTexturePath)->ID();
+
+		const auto lightEntity = ECS::CreateEntity(ecsWorld);
+		lightEntity->SetName("Light");
+
+		lightEntity->AddAndGetComponent<TransformComponent>().scale = { 0.25f };
+		lightEntity->AddComponent<Rendering::DirectionalLightComponent>();
+		lightEntity->AddComponent<Rendering::MeshComponent>();
+		lightEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = cubeMeshId;
+		lightEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;
 	}
 
 	void Engine::Play()

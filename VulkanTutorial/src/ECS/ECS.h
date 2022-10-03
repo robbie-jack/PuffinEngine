@@ -8,6 +8,7 @@
 
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"
+#include "Types/UUID.h"
 
 #include <cstdint>
 #include <bitset>
@@ -26,7 +27,7 @@
 namespace Puffin::ECS
 {
 	typedef uint8_t FlagType;
-	const FlagType MAX_FLAGS = 255;
+	constexpr FlagType MAX_FLAGS = 255;
 
 	//////////////////////////////////////////////////
 	// Entity Manager
@@ -38,39 +39,15 @@ namespace Puffin::ECS
 
 		EntityManager()
 		{
-			activeEntityCount = 0;
-			nextFlagType = 0;
+			m_nextFlagType = 0;
 		}
 
 		~EntityManager()
 		{
 			Cleanup();
-			flagTypes.clear();
-			flagSets.clear();
-			flagDefaults.clear();
-		}
-
-		void Init()
-		{
-			if (bInitialized)
-			{
-				return;
-			}
-
-			for (EntityID entity = 1; entity < MAX_ENTITIES; entity++)
-			{
-				availableEntities.push(entity);
-
-				entityNames[entity] = "";
-				
-				// Set all flags back to default
-				for (auto& pair : flagSets)
-				{
-					pair.second[entity] = flagDefaults[pair.first];
-				}
-			}
-
-			bInitialized = true;
+			m_flagTypes.clear();
+			m_flagSets.clear();
+			m_flagDefaults.clear();
 		}
 
 		void Init(std::set<EntityID>& entities)
@@ -80,25 +57,16 @@ namespace Puffin::ECS
 				return;
 			}
 
-			for (EntityID entity = 1; entity < MAX_ENTITIES; entity++)
+			for (const auto& entityID : entities)
 			{
-				// This entity was not active in loaded scene file, insert into queue as normal
-				if (entities.find(entity) == entities.end())
-				{
-					availableEntities.push(entity);
-				}
-				// This entity was active in loaded scene file, insert into activeEntities set
-				else
-				{
-					activeEntities.insert(entity);
-				}
+				m_activeEntities.insert(entityID);
+				m_entitySignatures.Insert(entityID, Signature());
+				m_entityNames.Insert(entityID, "Entity");
 
-				entityNames[entity] = "";
-				
 				// Set all flags back to default
-				for (auto& pair : flagSets)
+				for (auto& [fst, snd] : m_flagSets)
 				{
-					pair.second[entity] = flagDefaults[pair.first];
+					snd[entityID] = m_flagDefaults[fst];
 				}
 			}
 
@@ -107,57 +75,53 @@ namespace Puffin::ECS
 
 		void Cleanup()
 		{
-			while (!availableEntities.empty())
-			{
-				availableEntities.pop();
-			}
+			m_activeEntities.clear();
+			m_entityNames.Clear();
+			m_entitySignatures.Clear();
 
-			activeEntities.clear();
-			activeEntityCount = 0;
 			bInitialized = false;
 		}
 
 		EntityID CreateEntity()
 		{
-			assert(activeEntityCount < MAX_ENTITIES && "Max number of allowed entities reached");
+			assert(m_activeEntities.size() < MAX_ENTITIES && "Max number of allowed entities reached");
 
 			// Get next available ID from queue
-			EntityID entity = availableEntities.front();
-			availableEntities.pop();
-			activeEntityCount++;
+			const EntityID entityID;
 
-			activeEntities.insert(entity);
-			entityNames[entity] = "New Entity";
+			m_activeEntities.insert(entityID);
+			m_entitySignatures.Insert(entityID, Signature());
+			m_entityNames.Insert(entityID, "Entity");
 
 			// Set all flags back to default
-			for (auto& pair : flagSets)
+			for (auto& [fst, snd] : m_flagSets)
 			{
-				pair.second[entity] = flagDefaults[pair.first];
+				snd.Insert(entityID);
+				snd[entityID] = m_flagDefaults[fst];
 			}
 
-			return entity;
+			return entityID;
 		}
 
-		void DestroyEntity(EntityID entity)
+		void DestroyEntity(EntityID entityID)
 		{
-			assert(entity < MAX_ENTITIES && "Entity out of range");
+			assert(m_activeEntities.count(entityID) == 1 && "Entity doesn't exists");
 
 			// Reset signature for this entity
-			entitySignatures[entity].reset();
-			entityNames[entity] = "";
+			m_entitySignatures.Erase(entityID);
+			m_entityNames.Erase(entityID);
 
-			activeEntities.erase(entity);
+			m_activeEntities.erase(entityID);
 
-			// Add id to back of queue
-			availableEntities.push(entity);
-			activeEntityCount--;
+			for (auto& [fst, snd] : m_flagSets)
+			{
+				snd.Erase(entityID);
+			}
 		}
 
-		bool EntityExists(EntityID entity) const
+		bool EntityExists(EntityID entityID) const
 		{
-			assert(entity < MAX_ENTITIES && "Entity out of range");
-
-			if (activeEntities.count(entity) == 0)
+			if (m_activeEntities.count(entityID) == 0)
 			{
 				return false;
 			}
@@ -165,36 +129,36 @@ namespace Puffin::ECS
 			return true;
 		}
 
-		void SetName(EntityID entity, std::string name)
+		void SetName(EntityID entityID, std::string name)
 		{
-			assert(entity < MAX_ENTITIES && "Entity out of range");
+			assert(m_activeEntities.count(entityID) == 1 && "Entity doesn't exists");
 
 			// Update Entity Name
-			entityNames[entity] = name;
+			m_entityNames[entityID] = name;
 		}
 
-		std::string GetName(EntityID entity)
+		std::string GetName(EntityID entityID)
 		{
-			assert(entity < MAX_ENTITIES && "Entity out of range");
+			assert(m_activeEntities.count(entityID) == 1 && "Entity doesn't exists");
 
 			// Return Entity Name
-			return entityNames[entity];
+			return m_entityNames[entityID];
 		}
 
 		void SetSignature(EntityID entity, Signature signature)
 		{
-			assert(entity < MAX_ENTITIES && "Entity out of range");
+			assert(m_activeEntities.count(entity) == 1 && "Entity doesn't exists");
 
 			// Update this entity's signature
-			entitySignatures[entity] = signature;
+			m_entitySignatures[entity] = signature;
 		}
 
-		Signature GetSignature(EntityID entity)
+		const Signature& GetSignature(EntityID entityID)
 		{
-			assert(entity < MAX_ENTITIES && "Entity out of range");
+			assert(m_activeEntities.count(entityID) == 1 && "Entity doesn't exists");
 
 			// Get entity signature
-			return entitySignatures[entity];
+			return m_entitySignatures[entityID];
 		}
 
 		template<typename FlagT>
@@ -202,86 +166,82 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(FlagT).name();
 
-			assert(flagTypes.find(typeName) == flagTypes.end() && "Registering flag type more than once");
-			assert(nextFlagType < MAX_FLAGS && "Registering more than maximum number of flags");
+			assert(m_flagTypes.find(typeName) == m_flagTypes.end() && "Registering flag type more than once");
+			assert(m_nextFlagType < MAX_FLAGS && "Registering more than maximum number of flags");
 
 			// Add new flag type to flag type map
-			flagTypes.insert({typeName, nextFlagType});
+			m_flagTypes.insert({typeName, m_nextFlagType});
 
 			// Add new flag bitset
-			flagSets[flagTypes[typeName]] = std::bitset<MAX_ENTITIES>();
-			flagDefaults[flagTypes[typeName]] = flagDefault;
+			m_flagSets.emplace(m_flagTypes[typeName], PackedBitset<MAX_ENTITIES>());
+			m_flagDefaults[m_flagTypes[typeName]] = flagDefault;
 
-			nextFlagType++;
+			m_nextFlagType++;
 		}
 
 		template<typename FlagT>
-		bool GetEntityFlag(EntityID entity)
+		bool GetEntityFlag(EntityID entityID)
 		{
 			const char* flagTypeName = typeid(FlagT).name();			
 
-			assert(activeEntities.count(entity) == 1 && "Entity does not exist");
-			assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
+			assert(m_activeEntities.count(entityID) == 1 && "Entity doesn't exists");
+			assert(m_flagTypes.find(flagTypeName) != m_flagTypes.end() && "FlagType not registered before use");
 
-			return flagSets[flagTypes[flagTypeName]][entity];
+			return m_flagSets[m_flagTypes[flagTypeName]][entityID];
 		}
 
 		template<typename FlagT>
-		void SetEntityFlag(EntityID entity, bool flag)
+		void SetEntityFlag(EntityID entityID, bool flag)
 		{
 			const char* flagTypeName = typeid(FlagT).name();
 
-			assert(activeEntities.count(entity) == 1 && "Entity does not exist");
-			assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
+			assert(m_activeEntities.count(entityID) == 1 && "Entity doesn't exists");
+			assert(m_flagTypes.find(flagTypeName) != m_flagTypes.end() && "FlagType not registered before use");
 
-			flagSets[flagTypes[flagTypeName]][entity] = flag;
+			m_flagSets[m_flagTypes[flagTypeName]][entityID] = flag;
 		}
 
 		std::set<EntityID> GetActiveEntities()
 		{
-			return activeEntities;
+			return m_activeEntities;
 		}
 
 		void GetEntities(Signature signature, std::vector<EntityID>& outEntities) const
 		{
 			outEntities.clear();
 
-			for (auto entity : activeEntities)
+			for (auto entityID : m_activeEntities)
 			{
-				Signature entitySignature = entitySignatures[entity];
+				Signature entitySignature = m_entitySignatures[entityID];
 
 				if ((entitySignature & signature) == signature)
 				{
-					outEntities.push_back(entity);
+					outEntities.push_back(entityID);
 				}
 			}
 		}
 
 		// Get count of active entities
-		int GetEntityCount() const
+		const size_t& GetEntityCount() const
 		{
-			return activeEntityCount;
+			return m_activeEntities.size();
 		}
 
 	private:
 
-		std::queue<EntityID> availableEntities;
-		std::set<EntityID> activeEntities;
-		std::unordered_map<int, EntityID> m_indexToEntityMap;
+		std::set<EntityID> m_activeEntities;
 
-		std::array<std::string, MAX_ENTITIES> entityNames;
-		std::array<Signature, MAX_ENTITIES> entitySignatures;
+		PackedArray<std::string, MAX_ENTITIES> m_entityNames;
+		PackedArray<Signature, MAX_ENTITIES> m_entitySignatures;
 
 		// FlagType to be assigned to next registered flag
-		FlagType nextFlagType;
+		FlagType m_nextFlagType;
 
 		// Map from type string pointer to flag type
-		std::unordered_map<const char*, FlagType> flagTypes;
+		std::unordered_map<const char*, FlagType> m_flagTypes;
 
-		std::unordered_map<FlagType, std::bitset<MAX_ENTITIES>> flagSets;
-		std::unordered_map<FlagType, bool> flagDefaults; // What to have each flag type default to
-
-		uint32_t activeEntityCount;
+		std::unordered_map<FlagType, PackedBitset<MAX_ENTITIES>> m_flagSets;
+		std::unordered_map<FlagType, bool> m_flagDefaults; // What to have each flag type default to
 
 		bool bInitialized = false;
 	};
@@ -307,65 +267,65 @@ namespace Puffin::ECS
 
 		~ComponentArray()
 		{
-			flagSets.clear();
-			flagDefaults.clear();
+			m_flagSets.clear();
+			m_flagDefaults.clear();
 		}
 
 		void AddComponent(EntityID entity) override
 		{
-			assert(!componentArray.Contains(entity) && "Entity already has a component of this type");
+			assert(!m_componentArray.Contains(entity) && "Entity already has a component of this type");
 
-			componentArray.Insert(entity, ComponentT());
+			m_componentArray.Insert(entity, ComponentT());
 
 			// Set all flags back to default
-			for (auto& pair : flagSets)
+			for (auto& [fst, snd] : m_flagSets)
 			{
-				pair.second[entity] = flagDefaults[pair.first];
+				snd.Insert(entity, m_flagDefaults[fst]);
 			}
 		}
 
 		ComponentT& GetComponent(EntityID entity)
 		{
-			assert(componentArray.Contains(entity) && "Retrieving non-existent component.");
+			assert(m_componentArray.Contains(entity) && "Retrieving non-existent component.");
 
-			return componentArray[entity];
+			return m_componentArray[entity];
 		}
 
 		void RemoveComponent(EntityID entity)
 		{
-			assert(componentArray.Contains(entity) && "Removing non-existent component.");
+			assert(m_componentArray.Contains(entity) && "Removing non-existent component.");
 
-			componentArray.Erase(entity);
+			m_componentArray.Erase(entity);
 		}
 
 		bool HasComponent(EntityID entity) override
 		{
-			return componentArray.Contains(entity);
+			return m_componentArray.Contains(entity);
 		}
 
 		void RegisterComponentFlag(FlagType flagType, bool flagDefault) override
 		{
-			flagSets[flagType] = std::bitset<MAX_ENTITIES>();
-			flagDefaults[flagType] = flagDefault;
+			m_flagSets.emplace(flagType, PackedBitset<MAX_ENTITIES>());
+			m_flagDefaults[flagType] = flagDefault;
 		}
 
 		bool GetComponentFlag(FlagType flagType, EntityID entity)
 		{
-			assert(componentArray.Contains(entity) && "Accessing non-existent component.");
+			assert(m_componentArray.Contains(entity) && "Accessing non-existent component.");
 
-			return flagSets[flagType][entity];
+			return m_flagSets[flagType][entity];
 		}
 
 		void SetComponentFlag(FlagType flagType, EntityID entity, bool flag)
 		{
-			assert(componentArray.Contains(entity) && "Accessing non-existent component.");
+			assert(m_componentArray.Contains(entity) && "Accessing non-existent component.");
 
-			flagSets[flagType][entity] = flag;
+			m_flagSets[flagType][entity] = flag;
 		}
 
 		void EntityDestroyed(EntityID entity) override
 		{
-			if (componentArray.Contains(entity))
+			if (m_componentArray.Contains(entity))
 			{
 				// Remove entities component if it existed
 				RemoveComponent(entity);
@@ -375,10 +335,10 @@ namespace Puffin::ECS
 	private:
 
 		// Packed array of components
-		PackedArray<ECS::EntityID, ComponentT, MAX_ENTITIES> componentArray;
+		PackedArray<ComponentT, MAX_ENTITIES> m_componentArray;
 
-		std::unordered_map<FlagType, std::bitset<MAX_ENTITIES>> flagSets;
-		std::unordered_map<FlagType, bool> flagDefaults; // What to have each flag type default to
+		std::unordered_map<FlagType, PackedBitset<MAX_ENTITIES>> m_flagSets;
+		std::unordered_map<FlagType, bool> m_flagDefaults; // What to have each flag type default to
 	};
 
 	//////////////////////////////////////////////////
@@ -391,15 +351,15 @@ namespace Puffin::ECS
 
 		ComponentManager()
 		{
-			nextComponentType = 0;
-			nextFlagType = 0;
+			m_nextComponentType = 0;
+			m_nextFlagType = 0;
 		}
 
 		~ComponentManager()
 		{
-			componentTypes.clear();
-			componentArrays.clear();
-			flagTypes.clear();
+			m_componentTypes.clear();
+			m_componentArrays.clear();
+			m_flagTypes.clear();
 		}
 
 		template<typename ComponentT>
@@ -407,19 +367,19 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(ComponentT).name();
 
-			assert(componentTypes.find(typeName) == componentTypes.end() && "Registering component type more than once");
+			assert(m_componentTypes.find(typeName) == m_componentTypes.end() && "Registering component type more than once");
 
 			// Add new component type to component type map
-			componentTypes.insert({ typeName, nextComponentType });
+			m_componentTypes.insert({ typeName, m_nextComponentType });
 
 			// Create ComponentT Array Pointers
 			std::shared_ptr<ComponentArray<ComponentT>> array = std::make_shared<ComponentArray<ComponentT>>();
 
 			// Cast ComponentArray pointer to IComponentArray and add to component arrays map
-			componentArrays.insert({ nextComponentType, std::static_pointer_cast<IComponentArray>(array) });
+			m_componentArrays.insert({ m_nextComponentType, std::static_pointer_cast<IComponentArray>(array) });
 
 			// Increment next component type
-			nextComponentType++;
+			m_nextComponentType++;
 		}
 
 		template<typename ComponentT>
@@ -427,10 +387,10 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(ComponentT).name();
 
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
 
 			// Return this components type - used for creating signatures
-			return componentTypes[typeName];
+			return m_componentTypes[typeName];
 		}
 
 		template<typename ComponentT>
@@ -469,7 +429,7 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(ComponentT).name();
 
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
 
 			// Return true if array has component for this entity
 			return GetComponentArray<ComponentT>()->HasComponent(entity);
@@ -481,9 +441,9 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(ComponentT).name();
 
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
 
-			const ComponentType componentType = componentTypes[typeName];
+			const ComponentType componentType = m_componentTypes[typeName];
 
 			if (sizeof...(RequiredTypes) != 0)
 			{
@@ -512,22 +472,22 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(FlagT).name();
 
-			assert(flagTypes.find(typeName) == flagTypes.end() && "Registering flag type more than once");
-			assert(nextFlagType < MAX_FLAGS && "Registering more than maximum number of flags");
+			assert(m_flagTypes.find(typeName) == m_flagTypes.end() && "Registering flag type more than once");
+			assert(m_nextFlagType < MAX_FLAGS && "Registering more than maximum number of flags");
 
 			// Add new flag type to flag type map
-			flagTypes.insert({typeName, nextFlagType});
+			m_flagTypes.insert({typeName, m_nextFlagType});
 				 
 			// Add flag bitset to all component arrays
-			for (auto const& pair : componentArrays)
+			for (auto const& pair : m_componentArrays)
 			{
 				auto const& componentArray = pair.second;
 
-				componentArray->RegisterComponentFlag(nextFlagType, defaultFlag);
+				componentArray->RegisterComponentFlag(m_nextFlagType, defaultFlag);
 			}
 
 			// Increment next flag type
-			nextFlagType++;
+			m_nextFlagType++;
 		}
 
 		template<typename ComponentT, typename FlagT>
@@ -535,13 +495,13 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(ComponentT).name();
 
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
 
 			const char* flagTypeName = typeid(FlagT).name();
 
-			assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
+			assert(m_flagTypes.find(flagTypeName) != m_flagTypes.end() && "FlagType not registered before use");
 
-			return GetComponentArray<ComponentT>()->GetComponentFlag(flagTypes[flagTypeName], entity);
+			return GetComponentArray<ComponentT>()->GetComponentFlag(m_flagTypes[flagTypeName], entity);
 		}
 
 		template<typename ComponentT, typename FlagT>
@@ -549,20 +509,20 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(ComponentT).name();
 
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
 
 			const char* flagTypeName = typeid(FlagT).name();
 
-			assert(flagTypes.find(flagTypeName) != flagTypes.end() && "FlagType not registered before use");
+			assert(m_flagTypes.find(flagTypeName) != m_flagTypes.end() && "FlagType not registered before use");
 
-			GetComponentArray<ComponentT>()->SetComponentFlag(flagTypes[flagTypeName], entity, flag);
+			GetComponentArray<ComponentT>()->SetComponentFlag(m_flagTypes[flagTypeName], entity, flag);
 		}
 
 		void EntityDestroyed(EntityID entity) const
 		{
 			// Notify each component array that an entity has been destroyed
 			// If array has component for this entity, remove it
-			for (auto const& pair : componentArrays)
+			for (auto const& pair : m_componentArrays)
 			{
 				auto const& componentArray = pair.second;
 
@@ -573,35 +533,35 @@ namespace Puffin::ECS
 	private:
 
 		// ComponentType type to be assigned to next registered component
-		ComponentType nextComponentType;
+		ComponentType m_nextComponentType;
 
 		// Map from type string pointer to component type
-		std::unordered_map<const char*, ComponentType> componentTypes;
+		std::unordered_map<const char*, ComponentType> m_componentTypes;
 
 		// Map from type string pointer to component array
-		std::unordered_map<ComponentType, std::shared_ptr<IComponentArray>> componentArrays;
+		std::unordered_map<ComponentType, std::shared_ptr<IComponentArray>> m_componentArrays;
 
 		std::unordered_map<ComponentType, std::set<ComponentType>> m_requiredComponentTypes; // Map of required components
 
 		// FlagType to be assigned to next registered flag
-		FlagType nextFlagType;
+		FlagType m_nextFlagType;
 
 		// Map from type string pointer to flag type
-		std::unordered_map<const char*, FlagType> flagTypes;
+		std::unordered_map<const char*, FlagType> m_flagTypes;
 
 		template<typename ComponentT>
 		std::shared_ptr<ComponentArray<ComponentT>> GetComponentArray()
 		{
 			const char* typeName = typeid(ComponentT).name();
 
-			assert(componentTypes.find(typeName) != componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
 
-			return std::static_pointer_cast<ComponentArray<ComponentT>>(componentArrays[GetComponentType<ComponentT>()]);
+			return std::static_pointer_cast<ComponentArray<ComponentT>>(m_componentArrays[GetComponentType<ComponentT>()]);
 		}
 
 		std::shared_ptr<IComponentArray> GetComponentArray(ComponentType compType)
 		{
-			return componentArrays[compType];
+			return m_componentArrays[compType];
 		}
 	};
 
@@ -620,8 +580,8 @@ namespace Puffin::ECS
 
 		~SystemManager()
 		{
-			signatureMaps.clear();
-			systemsMap.clear();
+			m_signatureMaps.clear();
+			m_systemsMap.clear();
 		}
 
 		template<typename SystemT>
@@ -629,10 +589,10 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(SystemT).name();
 
-			assert(systemsMap.find(typeName) == systemsMap.end() && "Registering system more than once.");
+			assert(m_systemsMap.find(typeName) == m_systemsMap.end() && "Registering system more than once.");
 
 			// Create New Signature Map for this System
-			signatureMaps.insert({ typeName, SignatureMap() });
+			m_signatureMaps.insert({ typeName, SignatureMap() });
 
 			// Create and return pointer to system
 			std::shared_ptr<SystemT> system = std::make_shared<SystemT>();
@@ -643,7 +603,7 @@ namespace Puffin::ECS
 			systemBase->SetEngine(engine);
 
 			// Add System to Vectors/Maps
-			systemsMap.insert({ typeName, systemBase });
+			m_systemsMap.insert({ typeName, systemBase });
 
 			return system;
 		}
@@ -653,13 +613,13 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(SystemT).name();
 
-			assert(systemsMap.find(typeName) != systemsMap.end() && "System used before registered.");
+			assert(m_systemsMap.find(typeName) != m_systemsMap.end() && "System used before registered.");
 
 			// Insert New Signature for this System
-			signatureMaps.at(typeName).insert({ signatureName, signature });
+			m_signatureMaps.at(typeName).insert({ signatureName, signature });
 				
 			// Insert New Set for this System
-			systemsMap.at(typeName)->entityMap.insert({ signatureName, std::set<EntityID>() });
+			m_systemsMap.at(typeName)->entityMap.insert({ signatureName, std::set<EntityID>() });
 		}
 
 		template<typename SystemT>
@@ -667,16 +627,16 @@ namespace Puffin::ECS
 		{
 			const char* typeName = typeid(SystemT).name();
 
-			assert(systemsMap.find(typeName) != systemsMap.end() && "System used before registered.");
+			assert(m_systemsMap.find(typeName) != m_systemsMap.end() && "System used before registered.");
 
-			return std::static_pointer_cast<SystemT>(systemsMap[typeName]);
+			return std::static_pointer_cast<SystemT>(m_systemsMap[typeName]);
 		}
 
 		void EntityDestroyed(EntityID entity)
 		{
 			// Erase destroyed entity from all system lists
 			// Entities is a set so no check needed
-			for (auto const& pair : systemsMap)
+			for (auto const& pair : m_systemsMap)
 			{
 				auto const& system = pair.second;
 
@@ -693,11 +653,11 @@ namespace Puffin::ECS
 		void EntitySignatureChanged(EntityID entity, Signature entitySignature)
 		{
 			// Notify each system that entity signature has changed
-			for (auto const& systemTypePairs : systemsMap)
+			for (auto const& systemTypePairs : m_systemsMap)
 			{
 				auto const& type = systemTypePairs.first;
 				auto const& system = systemTypePairs.second;
-				auto const& systemSignatureMap = signatureMaps[type];
+				auto const& systemSignatureMap = m_signatureMaps[type];
 
 				// Iterate over each signature of of the system
 				for (auto const& systemSignaturePairs : systemSignatureMap)
@@ -722,10 +682,10 @@ namespace Puffin::ECS
 	private:
 
 		// Map from system type string pointer to signature
-		std::unordered_map<const char*, SignatureMap> signatureMaps;
+		std::unordered_map<const char*, SignatureMap> m_signatureMaps;
 
 		// Map from system type string to system pointer
-		std::unordered_map<const char*, std::shared_ptr<System>> systemsMap;
+		std::unordered_map<const char*, std::shared_ptr<System>> m_systemsMap;
 	};
 
 	//////////////////////////////////////////////////
@@ -790,11 +750,6 @@ namespace Puffin::ECS
 		////////////////////////////////
 		// Entity Methods
 		////////////////////////////////
-
-		void InitEntitySystem() const
-		{
-			m_entityManager->Init();
-		}
 
 		void InitEntitySystem(std::set<EntityID>& entities) const
 		{

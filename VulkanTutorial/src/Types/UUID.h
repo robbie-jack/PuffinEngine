@@ -30,18 +30,6 @@ namespace Puffin
 
 		operator uint64_t() const { return uuid; }
 
-		template<class Archive>
-		void save(Archive& archive) const
-		{
-			archive(uuid);
-		}
-
-		template<class Archive>
-		void load(Archive& archive)
-		{
-			archive(uuid);
-		}
-
 	private:
 		uint64_t uuid;
 

@@ -103,7 +103,7 @@ namespace Puffin
 
 		struct DirectionalLightComponent : public LightComponent
 		{
-			Vector3f direction = {.5f, .5f, 0.f};
+			Vector3f direction = {.5f, -.5f, 0.f};
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(DirectionalLightComponent, ambientColor, diffuseColor, specularStrength, shininess, direction)
 		};

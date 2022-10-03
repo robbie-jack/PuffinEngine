@@ -16,7 +16,6 @@ namespace Puffin
 	namespace ECS
 	{
 		class World;
-		typedef uint32_t EntityID;
 	}
 
 	namespace Core

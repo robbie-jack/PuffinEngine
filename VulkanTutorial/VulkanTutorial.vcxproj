@@ -112,6 +112,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -247,6 +248,7 @@
     <ClCompile Include="src\Physics\PhysicsSystem2D.cpp" />
     <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp" />
     <ClCompile Include="src\Physics\Shapes\CircleShape2D.cpp" />
+    <ClCompile Include="src\Procedural\ProceduralMeshGenSystem.cpp" />
     <ClCompile Include="src\Rendering\Helper Classes\VKVertex.cpp" />
     <ClCompile Include="src\Rendering\VKDeferredRender.cpp" />
     <ClCompile Include="src\Rendering\VKDescriptors.cpp" />
@@ -280,6 +282,8 @@
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h" />
+    <ClInclude Include="include\Components\Procedural\ProceduralComponent.hpp" />
+    <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp" />
     <ClInclude Include="src\Assets\Asset.h" />
     <ClInclude Include="src\Assets\AssetRegistry.h" />
     <ClInclude Include="src\Assets\Importers\ModelImporter.h" />

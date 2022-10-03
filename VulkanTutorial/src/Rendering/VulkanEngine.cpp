@@ -875,7 +875,7 @@ namespace Puffin
 
 			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
 			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
-			for (const auto entity : meshEntities)
+			for (const auto& entity : meshEntities)
 			{
 				MeshComponent& mesh = entity->GetComponent<MeshComponent>();
 
@@ -1082,7 +1082,7 @@ namespace Puffin
 			// Initialize Shadowcaster Lights
 			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
-			for (const auto entity : shadowcasterLightEntities)
+			for (const auto& entity : shadowcasterLightEntities)
 			{
 				InitShadowcasterLight(entity->ID());
 			}
@@ -1473,7 +1473,7 @@ namespace Puffin
 
 				std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 				ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
-				for (const auto entity : shadowcasterLightEntities)
+				for (const auto& entity : shadowcasterLightEntities)
 				{
 					shadowmapBufferInfo.imageView = frames[i].shadowmapImages[entity->ID()].imageView;
 					imageInfos.push_back(shadowmapBufferInfo);
@@ -1507,7 +1507,7 @@ namespace Puffin
 
 				std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 				ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
-				for (const auto entity : shadowcasterLightEntities)
+				for (const auto& entity : shadowcasterLightEntities)
 				{
 					shadowmapBufferInfo.imageView = frames[i].shadowmapImages[entity->ID()].imageView;
 					imageInfos.push_back(shadowmapBufferInfo);
@@ -1660,7 +1660,7 @@ namespace Puffin
 			// Initialize/Cleanup marked components
 			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
 			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
-			for (const auto entity : meshEntities)
+			for (const auto& entity : meshEntities)
 			{
 				// Initialize
 				if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
@@ -1680,7 +1680,7 @@ namespace Puffin
 			
 			/*std::vector<std::shared_ptr<ECS::Entity>> pointLightEntities;
 			ECS::GetEntities<TransformComponent, PointLightComponent>(m_world, pointLightEntities);
-			for (const auto entity : pointLightEntities)
+			for (const auto& entity : pointLightEntities)
 			{
 				if (entity->GetComponentFlag<PointLightComponent, FlagDirty>())
 				{
@@ -1695,7 +1695,7 @@ namespace Puffin
 
 			std::vector<std::shared_ptr<ECS::Entity>> dirLightEntities;
 			ECS::GetEntities<TransformComponent, DirectionalLightComponent>(m_world, dirLightEntities);
-			for (const auto entity : dirLightEntities)
+			for (const auto& entity : dirLightEntities)
 			{
 				if (entity->GetComponentFlag<DirectionalLightComponent, FlagDirty>())
 				{
@@ -1710,7 +1710,7 @@ namespace Puffin
 
 			std::vector<std::shared_ptr<ECS::Entity>> spotLightEntities;
 			ECS::GetEntities<TransformComponent, SpotLightComponent>(m_world, spotLightEntities);
-			for (const auto entity : spotLightEntities)
+			for (const auto& entity : spotLightEntities)
 			{
 				if (entity->GetComponentFlag<SpotLightComponent, FlagDirty>())
 				{
@@ -1725,7 +1725,7 @@ namespace Puffin
 
 			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
-			for (const auto entity : shadowcasterLightEntities)
+			for (const auto& entity : shadowcasterLightEntities)
 			{
 				if (entity->GetComponentFlag<ShadowCasterComponent, FlagDirty>())
 				{
@@ -1748,7 +1748,7 @@ namespace Puffin
 
 			std::vector<std::shared_ptr<ECS::Entity>> cameraEntities;
 			ECS::GetEntities<TransformComponent, CameraComponent>(m_world, cameraEntities);
-			for (const auto entity : cameraEntities)
+			for (const auto& entity : cameraEntities)
 			{
 				UpdateCamera(entity->ID());
 			}
@@ -1770,14 +1770,14 @@ namespace Puffin
 		{
 			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
 			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
-			for (const auto entity : meshEntities)
+			for (const auto& entity : meshEntities)
 			{
 				CleanupMesh(entity->ID());
 			}
 
 			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
-			for (const auto entity : shadowcasterLightEntities)
+			for (const auto& entity : shadowcasterLightEntities)
 			{
 				CleanupShadowcasterLight(entity->ID());
 			}
@@ -2033,7 +2033,7 @@ namespace Puffin
 
 			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
-			for (const auto entity : shadowcasterLightEntities)
+			for (const auto& entity : shadowcasterLightEntities)
 			{
 				shadowCasterNeedsInitialized |= entity->GetComponentFlag<ShadowCasterComponent, FlagDirty>();
 			}
@@ -2351,7 +2351,7 @@ namespace Puffin
 			// For each light map its data to the appropriate storage buffer, incrementing light counter by 1 for each
 			std::vector<std::shared_ptr<ECS::Entity>> pointLightEntities;
 			ECS::GetEntities<TransformComponent, PointLightComponent>(m_world, pointLightEntities);
-			for (const auto entity : pointLightEntities)
+			for (const auto& entity : pointLightEntities)
 			{
 				auto& pointLight = entity->GetComponent<PointLightComponent>();
 				const auto& transform = entity->GetComponent<TransformComponent>();
@@ -2387,7 +2387,7 @@ namespace Puffin
 
 			std::vector<std::shared_ptr<ECS::Entity>> dirLightEntities;
 			ECS::GetEntities<TransformComponent, DirectionalLightComponent>(m_world, dirLightEntities);
-			for (const auto entity : dirLightEntities)
+			for (const auto& entity : dirLightEntities)
 			{
 				auto& dirLight = entity->GetComponent<DirectionalLightComponent>();
 
@@ -2417,7 +2417,7 @@ namespace Puffin
 
 			std::vector<std::shared_ptr<ECS::Entity>> spotLightEntities;
 			ECS::GetEntities<TransformComponent, SpotLightComponent>(m_world, spotLightEntities);
-			for (const auto entity : spotLightEntities)
+			for (const auto& entity : spotLightEntities)
 			{
 				auto& spotLight = entity->GetComponent<SpotLightComponent>();
 				const auto& transform = entity->GetComponent<TransformComponent>();
@@ -2639,7 +2639,7 @@ namespace Puffin
 			// For Each Shadowcasting Light Source
 			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
 			ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
-			for (const auto entity : shadowcasterLightEntities)
+			for (const auto& entity : shadowcasterLightEntities)
 			{
 				const auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
 

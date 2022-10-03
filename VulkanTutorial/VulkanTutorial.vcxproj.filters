@@ -95,6 +95,12 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{89dfe535-7021-4f6c-bf16-5cfff2b0b7b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Components\Procedural">
+      <UniqueIdentifier>{c8650ef6-12d9-4505-be0b-5f1f4f3ea30b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Procedural">
+      <UniqueIdentifier>{aa3386c1-227d-411b-9f3d-28275116a624}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -359,6 +365,9 @@
     </ClCompile>
     <ClCompile Include="third_party\vk-boostrap\VkBootstrap.cpp">
       <Filter>Libraries\VK-Bootstrap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Procedural\ProceduralMeshGenSystem.cpp">
+      <Filter>Procedural</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -632,6 +641,12 @@
     </ClInclude>
     <ClInclude Include="third_party\vk-boostrap\VkBootstrap.h">
       <Filter>Libraries\VK-Bootstrap</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Components\Procedural\ProceduralComponent.hpp">
+      <Filter>Components\Procedural</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp">
+      <Filter>Procedural</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

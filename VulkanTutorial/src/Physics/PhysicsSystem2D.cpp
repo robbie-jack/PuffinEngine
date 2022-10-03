@@ -7,6 +7,8 @@
 
 #include "Engine/Engine.hpp"
 
+#include "ECS/Entity.h"
+
 namespace Puffin
 {
 	namespace Physics
@@ -28,27 +30,31 @@ namespace Puffin
 
 		void PhysicsSystem2D::PreStart()
 		{
-			for (ECS::EntityID entity : entityMap["BoxCollision"])
+			std::vector<std::shared_ptr<ECS::Entity>> boxEntites;
+			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
+			for (const auto& entity : boxEntites)
 			{
-				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
+				auto& box = entity->GetComponent<BoxComponent2D>();
 
-				if (m_world->GetComponentFlag<BoxComponent2D, FlagDirty>(entity))
+				if (entity->GetComponentFlag<BoxComponent2D, FlagDirty>())
 				{
-					InitBox2D(entity, box);
+					InitBox2D(entity->ID(), box);
 
-					m_world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
+					entity->SetComponentFlag<BoxComponent2D, FlagDirty>(false);
 				}
 			}
 
-			for (ECS::EntityID entity : entityMap["CircleCollision"])
+			std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
+			for (const auto& entity : circleEntities)
 			{
-				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
+				auto& circle = entity->GetComponent<CircleComponent2D>();
 
-				if (m_world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
+				if (entity->GetComponentFlag<CircleComponent2D, FlagDirty>())
 				{
-					InitCircle2D(entity, circle);
+					InitCircle2D(entity->ID(), circle);
 
-					m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
+					entity->SetComponentFlag<CircleComponent2D, FlagDirty>(false);
 				}
 			}
 		}
@@ -67,18 +73,22 @@ namespace Puffin
 			m_collisionPairs.clear();
 			m_collisionContacts.clear();
 
-			for (ECS::EntityID entity : entityMap["BoxCollision"])
+			std::vector<std::shared_ptr<ECS::Entity>> boxEntites;
+			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
+			for (const auto& entity : boxEntites)
 			{
-				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
+				auto& box = entity->GetComponent<BoxComponent2D>();
 
-				CleanupBox2D(entity, box);
+				CleanupBox2D(entity->ID(), box);
 			}
 
-			for (ECS::EntityID entity : entityMap["CircleCollision"])
+			std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
+			for (const auto& entity : circleEntities)
 			{
-				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
+				auto& circle = entity->GetComponent<CircleComponent2D>();
 
-				CleanupCircle2D(entity, circle);
+				CleanupCircle2D(entity->ID(), circle);
 			}
 		}
 
@@ -178,54 +188,60 @@ namespace Puffin
 
 		void PhysicsSystem2D::UpdateComponents()
 		{
-			for (ECS::EntityID entity : entityMap["Rigidbody"])
+			std::vector<std::shared_ptr<ECS::Entity>> rigidbodyEntities;
+			ECS::GetEntities<TransformComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
+			for (const auto& entity : rigidbodyEntities)
 			{
-				if (m_world->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>(entity))
+				if (entity->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>())
 				{
-					if (m_world->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>(entity))
+					if (entity->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>())
 					{
-						m_world->RemoveComponent<RigidbodyComponent2D>(entity);
+						entity->RemoveComponent<RigidbodyComponent2D>();
 					}
 				}
 			}
 
-			for (ECS::EntityID entity : entityMap["BoxCollision"])
+			std::vector<std::shared_ptr<ECS::Entity>> boxEntites;
+			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
+			for (const auto& entity : boxEntites)
 			{
-				auto& box = m_world->GetComponent<BoxComponent2D>(entity);
-				auto& transform = m_world->GetComponent<TransformComponent>(entity);
+				auto& box = entity->GetComponent<BoxComponent2D>();
+				auto& transform = entity->GetComponent<TransformComponent>();
 
 				// Initialize Boxes
-				if (m_world->GetComponentFlag<BoxComponent2D, FlagDirty>(entity))
+				if (entity->GetComponentFlag<BoxComponent2D, FlagDirty>())
 				{
-					InitBox2D(entity, box);
+					InitBox2D(entity->ID(), box);
 
-					m_world->SetComponentFlag<BoxComponent2D, FlagDirty>(entity, false);
+					entity->SetComponentFlag<BoxComponent2D, FlagDirty>(false);
 				}
 
 				// Cleanup Boxes
-				if (m_world->GetComponentFlag<BoxComponent2D, FlagDeleted>(entity))
+				if (entity->GetComponentFlag<BoxComponent2D, FlagDeleted>())
 				{
-					CleanupBox2D(entity, box);
+					CleanupBox2D(entity->ID(), box);
 				}
 			}
 
-			for (ECS::EntityID entity : entityMap["CircleCollision"])
+			std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
+			for (const auto& entity : circleEntities)
 			{
-				auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
-				auto& transform = m_world->GetComponent<TransformComponent>(entity);
+				auto& circle = entity->GetComponent<CircleComponent2D>();
+				auto& transform = entity->GetComponent<TransformComponent>();
 
 				// Initialize Circle
-				if (m_world->GetComponentFlag<CircleComponent2D, FlagDirty>(entity))
+				if (entity->GetComponentFlag<CircleComponent2D, FlagDirty>())
 				{
-					InitCircle2D(entity, circle);
+					InitCircle2D(entity->ID(), circle);
 
-					m_world->SetComponentFlag<CircleComponent2D, FlagDirty>(entity, false);
+					entity->SetComponentFlag<CircleComponent2D, FlagDirty>(false);
 				}
 
 				// Cleanup Circles
-				if (m_world->GetComponentFlag<CircleComponent2D, FlagDeleted>(entity))
+				if (entity->GetComponentFlag<CircleComponent2D, FlagDeleted>())
 				{
-					CleanupCircle2D(entity, circle);
+					CleanupCircle2D(entity->ID(), circle);
 				}
 			}
 		}
@@ -255,10 +271,12 @@ namespace Puffin
 
 		void PhysicsSystem2D::UpdateDynamics()
 		{
-			for (ECS::EntityID entity : entityMap["Rigidbody"])
+			std::vector<std::shared_ptr<ECS::Entity>> rigidbodyEntities;
+			ECS::GetEntities<TransformComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
+			for (const auto& entity : rigidbodyEntities)
 			{
-				TransformComponent& transform = m_world->GetComponent<TransformComponent>(entity);
-				RigidbodyComponent2D& rigidbody = m_world->GetComponent<RigidbodyComponent2D>(entity);
+				TransformComponent& transform = entity->GetComponent<TransformComponent>();
+				RigidbodyComponent2D& rigidbody = entity->GetComponent<RigidbodyComponent2D>();
 
 				// If a body has no mass, then it is kinematic and should not experience forces
 				if (rigidbody.invMass == 0.0f)

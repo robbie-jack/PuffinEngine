@@ -10,7 +10,7 @@ namespace Puffin
 	// Fixed and Dynamically Sized Arrays which ensure data is packed tightly to maximize cache utilization
 	
 	// Packed Fixed Array
-	template<typename IdT, typename ValueT, size_t Size>
+	template<typename ValueT, size_t Size>
 	class PackedArray
 	{
 	public:
@@ -21,7 +21,7 @@ namespace Puffin
 		}
 
 		// Insert new Value into Array
-		void Insert(IdT id, const ValueT& value)
+		void Insert(size_t id, const ValueT& value)
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Value with that ID already exists");
 
@@ -35,7 +35,7 @@ namespace Puffin
 		}
 
 		// Remove value from Array
-		void Erase(IdT id)
+		void Erase(size_t id)
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
 
@@ -45,7 +45,7 @@ namespace Puffin
 			m_array[indexOfRemovedValue] = m_array[indexOfLastValue];
 
 			// Update map to point to values new location
-			IdT idOfLastValue = m_indexToIDMap[indexOfLastValue];
+			size_t idOfLastValue = m_indexToIDMap[indexOfLastValue];
 			m_idToIndexMap[idOfLastValue] = indexOfRemovedValue;
 			m_indexToIDMap[indexOfRemovedValue] = idOfLastValue;
 
@@ -55,7 +55,7 @@ namespace Puffin
 			m_arraySize--;
 		}
 
-		bool Contains(IdT id)
+		bool Contains(size_t id) const
 		{
 			return m_idToIndexMap.count(id) == 1;
 		}
@@ -77,14 +77,14 @@ namespace Puffin
 			return m_array.end();
 		}
 
-		const ValueT& operator[](IdT id) const
+		const ValueT& operator[](const size_t id) const
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
 
-			return m_array[m_idToIndexMap[id]];
+			return m_array[m_idToIndexMap.at(id)];
 		}
 
-		ValueT& operator[](IdT id)
+		ValueT& operator[](const size_t id)
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
 
@@ -96,12 +96,12 @@ namespace Puffin
 		std::array<ValueT, Size> m_array; // Packed array of types
 		size_t m_arraySize; // Number of valid entities in array
 
-		std::unordered_map<IdT, size_t> m_idToIndexMap; // Map from id to index
-		std::unordered_map<size_t, IdT> m_indexToIDMap; // Map from index to id
+		std::unordered_map<size_t, size_t> m_idToIndexMap; // Map from id to index
+		std::unordered_map<size_t, size_t> m_indexToIDMap; // Map from index to id
 	};
 
 	// Packed Dynamic Array
-	template<typename IdT, typename ValueT>
+	template<typename ValueT>
 	class PackedVector
 	{
 	public:
@@ -118,7 +118,7 @@ namespace Puffin
 		}
 
 		// Insert new Value into Array
-		void Insert(IdT id, const ValueT& value)
+		void Insert(size_t id, const ValueT& value)
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Value with that ID already exists");
 
@@ -131,7 +131,7 @@ namespace Puffin
 			m_vectorSize++;
 		}
 
-		void Emplace(IdT id, const ValueT& value)
+		void Emplace(size_t id, const ValueT& value)
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Value with that ID already exists");
 
@@ -145,7 +145,7 @@ namespace Puffin
 		}
 
 		// Remove value from Array
-		void Erase(IdT id)
+		void Erase(size_t id)
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
 
@@ -158,7 +158,7 @@ namespace Puffin
 			m_vector.pop_back();
 
 			// Update map to point to values new location
-			IdT idOfLastValue = m_indexToIDMap[indexOfLastValue];
+			size_t idOfLastValue = m_indexToIDMap[indexOfLastValue];
 			m_idToIndexMap[idOfLastValue] = indexOfRemovedValue;
 			m_indexToIDMap[indexOfRemovedValue] = idOfLastValue;
 
@@ -168,7 +168,7 @@ namespace Puffin
 			m_vectorSize--;
 		}
 
-		bool Contains(IdT id)
+		bool Contains(size_t id) const
 		{
 			return m_idToIndexMap.count(id) == 1;
 		}
@@ -196,14 +196,14 @@ namespace Puffin
 			return m_vector.end();
 		}
 
-		const ValueT& operator[](IdT id) const
+		const ValueT& operator[](size_t id) const
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
 
 			return m_vector[m_idToIndexMap[id]];
 		}
 
-		ValueT& operator[](IdT id)
+		ValueT& operator[](size_t id)
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
 
@@ -215,7 +215,80 @@ namespace Puffin
 		std::vector<ValueT> m_vector; // Packed vector of types
 		size_t m_vectorSize; // Number of valid entities in vector
 
-		std::unordered_map<IdT, size_t> m_idToIndexMap; // Map from id to index
-		std::unordered_map<size_t, IdT> m_indexToIDMap; // Map from index to id
+		std::unordered_map<size_t, size_t> m_idToIndexMap; // Map from id to index
+		std::unordered_map<size_t, size_t> m_indexToIDMap; // Map from index to id
+	};
+
+	// Custom bitset that ensures in use bits are packed together
+	template<size_t Size>
+	class PackedBitset
+	{
+	public:
+
+		PackedBitset()
+		{
+			m_bitsetSize = 0;
+		}
+
+		void Insert(size_t id, const bool& value = false)
+		{
+			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Value with that ID already exists");
+
+			// Insert value at end of bitset
+			size_t newIndex = m_bitsetSize;
+			m_idToIndexMap[id] = newIndex;
+			m_indexToIDMap[newIndex] = id;
+			m_bitset[newIndex] = value;
+
+			m_bitsetSize++;
+		}
+
+		// Remove value from bitset
+		void Erase(size_t id)
+		{
+			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
+
+			// Copy value at end of array into deleted values space to maintain packed array
+			size_t indexOfRemovedValue = m_idToIndexMap[id];
+			size_t indexOfLastValue = m_bitsetSize - 1;
+			m_bitset[indexOfRemovedValue] = m_bitset[indexOfLastValue];
+
+			// Update map to point to values new location
+			size_t idOfLastValue = m_indexToIDMap[indexOfLastValue];
+			m_idToIndexMap[idOfLastValue] = indexOfRemovedValue;
+			m_indexToIDMap[indexOfRemovedValue] = idOfLastValue;
+
+			m_idToIndexMap.erase(id);
+			m_idToIndexMap.erase(indexOfLastValue);
+
+			m_bitsetSize--;
+		}
+
+		bool Contains(size_t id)
+		{
+			return m_idToIndexMap.count(id) == 1;
+		}
+
+		void Clear()
+		{
+			m_idToIndexMap.clear();
+			m_idToIndexMap.clear();
+			m_bitsetSize = 0;
+		}
+
+		typename std::bitset<Size>::reference operator[](size_t id)
+		{
+			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
+
+			return m_bitset[m_idToIndexMap[id]];
+		}
+
+	private:
+
+		std::bitset<Size> m_bitset; // Internal Bitset
+		size_t m_bitsetSize; // Number of bits currently occupied in bitset
+
+		std::unordered_map<size_t, size_t> m_idToIndexMap; // Map from id to index
+		std::unordered_map<size_t, size_t> m_indexToIDMap; // Map from index to id
 	};
 }

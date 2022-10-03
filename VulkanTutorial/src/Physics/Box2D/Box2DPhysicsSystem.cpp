@@ -73,7 +73,7 @@ namespace Puffin::Physics
 		std::vector<std::shared_ptr<ECS::Entity>> boxRigidbodyEntities;
 		ECS::GetEntities<TransformComponent, InterpolatedTransformComponent, Box2DRigidbodyComponent>(m_world, boxRigidbodyEntities);
 
-		for (const auto entity : boxRigidbodyEntities)
+		for (const auto& entity : boxRigidbodyEntities)
 		{
 			auto& transform = entity->GetComponent<TransformComponent>();
 			auto& interpolatedTransform = entity->GetComponent<InterpolatedTransformComponent>();

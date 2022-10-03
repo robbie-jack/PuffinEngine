@@ -36,7 +36,6 @@ namespace Puffin
 
 		class World;
 		class ECSSubsystem;
-		typedef uint32_t EntityID;
 
 		typedef std::unordered_map<std::string_view, std::set<EntityID>> EntityMap;
 

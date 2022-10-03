@@ -208,8 +208,9 @@ namespace Puffin::Core
 		void AddDefaultAssets();
 		void ReimportDefaultAssets();
 
-		void DefaultScene(std::shared_ptr<ECS::World> world);
-		void PhysicsScene(std::shared_ptr<ECS::World> world);
+		void DefaultScene();
+		void PhysicsScene();
+		void ProceduralScene();
 
 	};
 }

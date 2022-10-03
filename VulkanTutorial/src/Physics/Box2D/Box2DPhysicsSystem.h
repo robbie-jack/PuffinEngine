@@ -38,8 +38,8 @@ namespace Puffin::Physics
 		std::unique_ptr<b2World> m_physicsWorld = nullptr;
 		std::unique_ptr<Box2DContactListener> m_contactListener = nullptr;
 
-		PackedVector<ECS::EntityID, b2CircleShape> m_circleShapes; // Packed Vector of circle shapes which are not attached to a rigidbody
-		PackedVector<ECS::EntityID, b2PolygonShape> m_polygonShapes; // Packed Vector of polygon shapes which are not attached to a rigidbody
+		PackedVector<b2CircleShape> m_circleShapes; // Packed Vector of circle shapes which are not attached to a rigidbody
+		PackedVector<b2PolygonShape> m_polygonShapes; // Packed Vector of polygon shapes which are not attached to a rigidbody
 
 		// Update shape components to point at correct shape in packed arrays
 		bool m_updateShapePointers = false;
