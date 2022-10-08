@@ -282,7 +282,7 @@
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h" />
-    <ClInclude Include="include\Components\Procedural\ProceduralComponent.hpp" />
+    <ClInclude Include="include\Components\Procedural\ProceduralMeshComponent.hpp" />
     <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp" />
     <ClInclude Include="src\Assets\Asset.h" />
     <ClInclude Include="src\Assets\AssetRegistry.h" />

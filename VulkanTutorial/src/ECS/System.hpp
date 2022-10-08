@@ -16,8 +16,9 @@ namespace Puffin
 		{
 			None = 0,		// Do not perform updates for this system
 			FixedUpdate,	// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
-			Update,			// Update occurs once a frame - Useful for non-determinstic gameplay code
-			Rendering		// Update once a frame - Useful for code which relates to the rendering pipeline
+			Update,			// Update once a frame - Useful for non-determinstic gameplay code
+			PreRender,		// Update once a frame - Use for code which should be ran before rendering
+			Render			// Update once a frame - Useful for code which relates to the rendering pipeline
 		};
 
 		// Info about the system

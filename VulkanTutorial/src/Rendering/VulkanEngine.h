@@ -194,7 +194,7 @@ namespace Puffin
 			VulkanEngine()
 			{
 				m_systemInfo.name = "VulkanRenderer";
-				m_systemInfo.updateOrder = Core::UpdateOrder::Rendering;
+				m_systemInfo.updateOrder = Core::UpdateOrder::Render;
 			}
 
 			~VulkanEngine() override
@@ -361,7 +361,8 @@ namespace Puffin
 			void RecreateOffscreen();
 
 			// Init Component Functions
-			void InitMesh(ECS::EntityID entity);
+			void InitMesh(ECS::EntityID entityID, UUID meshID);
+			void InitProceduralPlaneMesh(ECS::EntityID entity);
 			void InitShadowcasterLight(ECS::EntityID entity);
 			void InitCamera(ECS::EntityID entity);
 
@@ -377,7 +378,8 @@ namespace Puffin
 			void CopyIndicesToBuffer(const void* indexData, const size_t indicesSize, AllocatedBuffer indexBuffer, uint32_t copyOffset = 0);
 
 			// Component Cleanup Functions
-			void CleanupMesh(ECS::EntityID entity);
+			void CleanupTexture(ECS::EntityID entityID, UUID textureID);
+			void CleanupMesh(ECS::EntityID entityID, UUID meshID);
 			void CleanupShadowcasterLight(ECS::EntityID entity);
 
 			// Update Functions
@@ -394,7 +396,7 @@ namespace Puffin
 			void PrepareScene();
 			void UpdateMergedVertexBuffer(const uint32_t newSize);
 			void UpdateMergedIndexBuffer(const uint32_t newSize);
-			void AddMeshRenderDataToScene(UUID meshID);
+			void AddMeshRenderDataToScene(MeshRenderData& meshRenderData, const MeshBufferData& meshBufferData);
 
 			void PrepareLights();
 

@@ -10,7 +10,7 @@
 
 #include "Components/TransformComponent.h"
 #include "Components/AngelScriptComponent.h"
-#include "Components/Procedural/ProceduralComponent.hpp"
+#include "Components/Procedural/ProceduralMeshComponent.hpp"
 
 #include "Types/ComponentFlags.h"
 
@@ -81,7 +81,7 @@ namespace Puffin::Core
 		RegisterComponent<Physics::Box2DBoxComponent>();
 		RegisterComponent<Physics::Box2DCircleComponent>();
 		RegisterComponent<Scripting::AngelScriptComponent>();
-		RegisterComponent<Procedural::ProceduralPlaneComponent>();
+		RegisterComponent<Rendering::Procedural::ProceduralPlaneComponent>();
 
 		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Rendering::PointLightComponent, TransformComponent>();
@@ -99,7 +99,7 @@ namespace Puffin::Core
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = RegisterSystem<Rendering::VulkanEngine>();
 		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = RegisterSystem<Physics::Box2DPhysicsSystem>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = RegisterSystem<Scripting::AngelScriptSystem>();
-		RegisterSystem<Procedural::ProceduralMeshGenSystem>();
+		RegisterSystem<Rendering::Procedural::ProceduralMeshGenSystem>();
 
 		// Register Assets
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::StaticMeshAsset>();
@@ -121,10 +121,10 @@ namespace Puffin::Core
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene();
 		//PhysicsScene();
-		//ProceduralScene();
+		ProceduralScene();
 
 		// Load Scene -- normal behaviour
-		m_sceneData->LoadAndInit();
+		//m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -136,7 +136,25 @@ namespace Puffin::Core
 		}
 
 		// Initialize Systems
-		for (auto& system : m_systems)
+		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
+		{
+			system->Init();
+			system->PreStart();
+		}
+
+		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Update])
+		{
+			system->Init();
+			system->PreStart();
+		}
+
+		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::PreRender])
+		{
+			system->Init();
+			system->PreStart();
+		}
+
+		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Render])
 		{
 			system->Init();
 			system->PreStart();
@@ -262,26 +280,51 @@ namespace Puffin::Core
 
 		// UI
 		m_uiManager->Update();
+		m_uiManager->DrawUI(m_deltaTime);
 
-		auto stageStartTime = std::chrono::high_resolution_clock::now();
-
-		// Rendering
-		for (auto system : m_systemUpdateVectors[Core::UpdateOrder::Rendering])
+		// PreRender
 		{
-			auto startTime = std::chrono::high_resolution_clock::now();
+			auto stageStartTime = std::chrono::high_resolution_clock::now();
 
-			system->Update();
+			for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::PreRender])
+			{
+				auto startTime = std::chrono::high_resolution_clock::now();
 
-			auto endTime = std::chrono::high_resolution_clock::now();
+				system->Update();
 
-			const std::chrono::duration<double> systemDuration = endTime - startTime;
-			m_systemExecutionTime[Core::UpdateOrder::Rendering][system->GetInfo().name] = systemDuration.count();
+				auto endTime = std::chrono::high_resolution_clock::now();
+
+				const std::chrono::duration<double> systemDuration = endTime - startTime;
+				m_systemExecutionTime[Core::UpdateOrder::PreRender][system->GetInfo().name] = systemDuration.count();
+			}
+
+			auto stageEndTime = std::chrono::high_resolution_clock::now();
+
+			const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
+			m_stageExecutionTime[Core::UpdateOrder::Render] = stageDuration.count();
 		}
 
-		auto stageEndTime = std::chrono::high_resolution_clock::now();
+		// Render
+		{
+			auto stageStartTime = std::chrono::high_resolution_clock::now();
 
-		const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
-		m_stageExecutionTime[Core::UpdateOrder::Rendering] = stageDuration.count();
+			for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Render])
+			{
+				auto startTime = std::chrono::high_resolution_clock::now();
+
+				system->Update();
+
+				auto endTime = std::chrono::high_resolution_clock::now();
+
+				const std::chrono::duration<double> systemDuration = endTime - startTime;
+				m_systemExecutionTime[Core::UpdateOrder::Render][system->GetInfo().name] = systemDuration.count();
+			}
+
+			auto stageEndTime = std::chrono::high_resolution_clock::now();
+
+			const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
+			m_stageExecutionTime[Core::UpdateOrder::Render] = stageDuration.count();
+		}
 
 		if (playState == PlayState::JUST_STOPPED)
 		{
@@ -574,12 +617,26 @@ namespace Puffin::Core
 
 		const auto lightEntity = ECS::CreateEntity(ecsWorld);
 		lightEntity->SetName("Light");
-
-		lightEntity->AddAndGetComponent<TransformComponent>().scale = { 0.25f };
+		lightEntity->AddComponent<TransformComponent>();
+		lightEntity->GetComponent<TransformComponent>().position = { 0.0f, 10.0f, 0.0f };
+		lightEntity->GetComponent<TransformComponent>().scale = { 0.25f };
 		lightEntity->AddComponent<Rendering::DirectionalLightComponent>();
 		lightEntity->AddComponent<Rendering::MeshComponent>();
 		lightEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = cubeMeshId;
 		lightEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;
+		//lightEntity->AddComponent<Rendering::ShadowCasterComponent>();
+
+		const auto planeEntity = ECS::CreateEntity(ecsWorld);
+		planeEntity->SetName("Plane");
+		planeEntity->AddComponent<TransformComponent>();
+		planeEntity->AddAndGetComponent<Rendering::Procedural::ProceduralPlaneComponent>().textureAssetID = cubeTextureId;
+
+		const auto boxEntity = ECS::CreateEntity(ecsWorld);
+		boxEntity->SetName("Box");
+		boxEntity->AddComponent<TransformComponent>();
+		boxEntity->AddComponent<Rendering::MeshComponent>();
+		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = cubeMeshId;
+		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;
 	}
 
 	void Engine::Play()

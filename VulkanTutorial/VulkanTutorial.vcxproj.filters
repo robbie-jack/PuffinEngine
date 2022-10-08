@@ -642,7 +642,7 @@
     <ClInclude Include="third_party\vk-boostrap\VkBootstrap.h">
       <Filter>Libraries\VK-Bootstrap</Filter>
     </ClInclude>
-    <ClInclude Include="include\Components\Procedural\ProceduralComponent.hpp">
+    <ClInclude Include="include\Components\Procedural\ProceduralMeshComponent.hpp">
       <Filter>Components\Procedural</Filter>
     </ClInclude>
     <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp">

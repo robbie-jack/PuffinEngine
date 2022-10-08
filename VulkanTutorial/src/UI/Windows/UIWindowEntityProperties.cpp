@@ -7,6 +7,7 @@
 #include "Components/Physics/Box2D/Box2DRigidbodyComponent.h"
 #include "Components/Physics/Box2D/Box2DShapeComponents.h"
 #include "Components/AngelScriptComponent.h"
+#include "Components/Procedural/ProceduralMeshComponent.hpp"
 
 #include "ECS/ECS.h"
 
@@ -76,6 +77,8 @@ namespace Puffin
 					DrawDirectionalLightUI(flags);
 					DrawSpotLightUI(flags);
 					DrawShadowcasterUI(flags);
+
+					DrawProceduralPlaneUI(flags);
 
 					DrawRigidbody2DUI(flags);
 					DrawCircle2DUI(flags);
@@ -471,6 +474,39 @@ namespace Puffin
 				{
 					sceneChanged = true;
 					ecsWorld->SetComponentFlag<Rendering::ShadowCasterComponent, FlagDirty>(m_entity, true);
+				}
+			}
+		}
+
+		void UIWindowEntityProperties::DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags)
+		{
+			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			if (ecsWorld->HasComponent<Rendering::Procedural::ProceduralPlaneComponent>(m_entity))
+			{
+				if (ImGui::TreeNodeEx("Procedural Plane Component"), flags)
+				{
+					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+					auto& plane = ecsWorld->GetComponent<Rendering::Procedural::ProceduralPlaneComponent>(m_entity);
+					bool dirty = false;
+
+					if (ImGui::SmallButton("X##ProceduralPlane"))
+					{
+						ecsWorld->SetComponentFlag<Rendering::Procedural::ProceduralPlaneComponent, FlagDeleted>(m_entity, true);
+
+						sceneChanged = true;
+					}
+
+					dirty |= ImGui::DragFloat2("Half Size", (float*)&plane.halfSize, 0.1f);
+					dirty |= ImGui::DragInt2("Num Quads", (int*)&plane.numQuads);
+
+					if (dirty)
+					{
+						sceneChanged = true;
+						ecsWorld->SetComponentFlag<Rendering::Procedural::ProceduralPlaneComponent, FlagDirty>(m_entity, true);
+					}
+
+					ImGui::TreePop();
 				}
 			}
 		}

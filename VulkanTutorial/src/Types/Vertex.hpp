@@ -44,10 +44,10 @@ namespace Puffin::Rendering
 
 	struct Vertex_PNTV_32
 	{
-		glm::vec3 pos;
-		glm::vec3 normal;
-		glm::vec3 tangent;
-		glm::vec2 uv;
+		glm::vec3 pos = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 normal = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 tangent = { 0.0f, 0.0f, 0.0f };
+		glm::vec2 uv = { 0.0f, 0.0f};
 
 		bool operator==(const Vertex_PNTV_32& other) const
 		{

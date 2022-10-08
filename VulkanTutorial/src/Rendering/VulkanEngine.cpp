@@ -24,7 +24,7 @@
 #include <algorithm>
 
 #include "Components/Rendering/CameraComponent.h"
-#include "Components/Rendering/CameraComponent.h"
+#include "Components/Procedural/ProceduralMeshComponent.hpp"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -108,7 +108,7 @@ namespace Puffin
 			// Initialize Descriptor Sets
 			InitDescriptors();
 
-			InitShadowPipeline();
+			//InitShadowPipeline();
 
 			//InitDebugPipeline();
 
@@ -888,6 +888,21 @@ namespace Puffin
 				normalImageInfo.push_back(textureImageInfo);
 			}
 
+			std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
+			ECS::GetEntities<TransformComponent, Procedural::ProceduralPlaneComponent>(m_world, proceduralPlaneEntities);
+			for (const auto& entity : proceduralPlaneEntities)
+			{
+				Procedural::ProceduralPlaneComponent& plane = entity->GetComponent<Procedural::ProceduralPlaneComponent>();
+
+				//Albedo Textures
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[plane.textureAssetID].texture.imageView;
+				albedoImageInfo.push_back(textureImageInfo);
+
+				// Normal Maps	
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[plane.textureAssetID].texture.imageView;
+				normalImageInfo.push_back(textureImageInfo);
+			}
+
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Create Descriptor Bindings
@@ -1085,6 +1100,8 @@ namespace Puffin
 			for (const auto& entity : shadowcasterLightEntities)
 			{
 				InitShadowcasterLight(entity->ID());
+
+				entity->SetComponentFlag<ShadowCasterComponent, FlagDirty>(false);
 			}
 
 			// Initialize Meshes
@@ -1092,27 +1109,101 @@ namespace Puffin
 			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
 			for (const auto entity : meshEntities)
 			{
-				InitMesh(entity->ID());
+				auto& mesh = entity->GetComponent<MeshComponent>();
+
+				InitAlbedoTexture(mesh.textureAssetID);
+				m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.insert(entity->ID());
+
+				InitMesh(entity->ID(), mesh.meshAssetID);
+
+				entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
 			}
 
+			std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
+			ECS::GetEntities<TransformComponent, Procedural::ProceduralPlaneComponent>(m_world, proceduralPlaneEntities);
+			for (const auto& entity : proceduralPlaneEntities)
+			{
+				auto& plane = entity->GetComponent<Procedural::ProceduralPlaneComponent>();
+
+				InitAlbedoTexture(plane.textureAssetID);
+				m_sceneRenderData.albedoTextureData[plane.textureAssetID].entities.insert(entity->ID());
+
+				InitProceduralPlaneMesh(entity->ID());
+
+				entity->SetComponentFlag<Procedural::ProceduralPlaneComponent, FlagDirty>(false);
+			}
 		}
 
-		void VulkanEngine::InitMesh(ECS::EntityID entity)
+		void VulkanEngine::InitMesh(ECS::EntityID entityID, UUID meshID)
 		{
-			auto& mesh = m_world->GetComponent<MeshComponent>(entity);
-
-			InitAlbedoTexture(mesh.textureAssetID);
-			m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.insert(entity);
-
 			// Setup Mesh Render Data
-			if (m_sceneRenderData.meshRenderDataMap.count(mesh.meshAssetID) == 0)
+			if (m_sceneRenderData.meshRenderDataMap.count(meshID) == 0)
 			{
 				// This is the first entity to render with this mesh, create a new render data struct
-				AddMeshRenderDataToScene(mesh.meshAssetID);
+				MeshRenderData meshData;
+
+				meshData.meshAssetID = meshID;
+
+				const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
+
+				// Load Mesh Data
+				if (staticMeshAsset && staticMeshAsset->Load())
+				{
+					meshData.vertexCount = static_cast<uint32_t>(staticMeshAsset->GetVertices().size());
+					meshData.indexCount = static_cast<uint32_t>(staticMeshAsset->GetIndices().size());
+
+					MeshBufferData bufferData;
+					bufferData.vertexData = (void*)staticMeshAsset->GetVertices().data();
+					bufferData.vertexSize = sizeof(Vertex_PNTV_32);
+					bufferData.indexData = (void*)staticMeshAsset->GetIndices().data();
+					bufferData.indexSize = sizeof(uint32_t);
+
+					AddMeshRenderDataToScene(meshData, bufferData);
+				}
+
+				// Unload vertices from main memory
+				staticMeshAsset->Unload();
+
+				// Add mesh data to map
+				m_sceneRenderData.meshRenderDataMap[meshID] = meshData;
 			}
 
 			// Increment instance count and add entity to set
-			m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.insert(entity);
+			m_sceneRenderData.meshRenderDataMap[meshID].entities.insert(entityID);
+		}
+
+		void VulkanEngine::InitProceduralPlaneMesh(ECS::EntityID entity)
+		{
+			auto& plane = m_world->GetComponent<Procedural::ProceduralPlaneComponent>(entity);
+
+			// Setup Mesh Render Data
+			if (m_sceneRenderData.meshRenderDataMap.count(entity) == 0)
+			{
+				MeshRenderData meshData;
+
+				meshData.meshAssetID = entity;
+
+				// Load Mesh Data
+				if (!plane.vertices.empty() && !plane.indices.empty())
+				{
+					meshData.vertexCount = static_cast<uint32_t>(plane.vertices.size());
+					meshData.indexCount = static_cast<uint32_t>(plane.indices.size());
+
+					MeshBufferData bufferData;
+					bufferData.vertexData = (void*)plane.vertices.data();
+					bufferData.vertexSize = sizeof(Vertex_PNTV_32);
+					bufferData.indexData = (void*)plane.indices.data();
+					bufferData.indexSize = sizeof(uint32_t);
+
+					AddMeshRenderDataToScene(meshData, bufferData);
+				}
+
+				// Add mesh data to map
+				m_sceneRenderData.meshRenderDataMap[entity] = meshData;
+			}
+
+			// Increment instance count and add entity to set
+			m_sceneRenderData.meshRenderDataMap[entity].entities.insert(entity);
 		}
 
 		void VulkanEngine::InitShadowcasterLight(ECS::EntityID entity)
@@ -1359,21 +1450,22 @@ namespace Puffin
 			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 
-		void VulkanEngine::CleanupMesh(ECS::EntityID entity)
+		void VulkanEngine::CleanupTexture(ECS::EntityID entityID, UUID textureID)
 		{
-			auto& mesh = m_world->GetComponent<MeshComponent>(entity);
-
 			// Cleanup Texture
-			m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.erase(entity);
+			m_sceneRenderData.albedoTextureData[textureID].entities.erase(entityID);
 
-			if (m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.empty())
+			if (m_sceneRenderData.albedoTextureData[textureID].entities.empty())
 			{
-				vmaDestroyImage(allocator, m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.image,
-					m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.allocation);
+				vmaDestroyImage(allocator, m_sceneRenderData.albedoTextureData[textureID].texture.image,
+					m_sceneRenderData.albedoTextureData[textureID].texture.allocation);
 			}
+		}
 
+		void VulkanEngine::CleanupMesh(ECS::EntityID entityID, UUID meshID)
+		{
 			// Decrement instance count and remove entity from set
-			m_sceneRenderData.meshRenderDataMap[mesh.meshAssetID].entities.erase(entity);
+			m_sceneRenderData.meshRenderDataMap[meshID].entities.erase(entityID);
 		}
 
 		void VulkanEngine::CleanupShadowcasterLight(ECS::EntityID entity)
@@ -1655,17 +1747,22 @@ namespace Puffin
 		{
 			ProcessEvents();
 
-			m_uiManager->DrawUI(m_engine->GetDeltaTime());
+			//m_uiManager->DrawUI(m_engine->GetDeltaTime());
 
 			// Initialize/Cleanup marked components
 			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
 			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
 			for (const auto& entity : meshEntities)
 			{
+				auto& mesh = entity->GetComponent<MeshComponent>();
+
 				// Initialize
 				if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
 				{
-					InitMesh(entity->ID());
+					InitAlbedoTexture(mesh.textureAssetID);
+					m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.insert(entity->ID());
+
+					InitMesh(entity->ID(), mesh.meshAssetID);
 
 					entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
 				}
@@ -1673,8 +1770,37 @@ namespace Puffin
 				// Cleanup
 				if (entity->GetComponentFlag<MeshComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
 				{
-					CleanupMesh(entity->ID());
+					CleanupTexture(entity->ID(), mesh.textureAssetID);
+					CleanupMesh(entity->ID(), mesh.meshAssetID);
+
 					entity->RemoveComponent<MeshComponent>();
+				}
+			}
+
+			std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
+			ECS::GetEntities<TransformComponent, Procedural::ProceduralPlaneComponent>(m_world, proceduralPlaneEntities);
+			for (const auto& entity : proceduralPlaneEntities)
+			{
+				auto& plane = entity->GetComponent<Procedural::ProceduralPlaneComponent>();
+
+				if (entity->GetComponentFlag<Procedural::ProceduralPlaneComponent, FlagDirty>())
+				{
+					InitAlbedoTexture(plane.textureAssetID);
+					m_sceneRenderData.albedoTextureData[plane.textureAssetID].entities.insert(entity->ID());
+
+					InitProceduralPlaneMesh(entity->ID());
+
+					entity->SetComponentFlag<Procedural::ProceduralPlaneComponent, FlagDirty>(false);
+				}
+
+				if (entity->GetComponentFlag<Procedural::ProceduralPlaneComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
+				{
+					CleanupTexture(entity->ID(), plane.textureAssetID);
+
+					// Decrement instance count and remove entity from set
+					m_sceneRenderData.meshRenderDataMap[entity->ID()].entities.erase(entity->ID());
+
+					entity->RemoveComponent<Procedural::ProceduralPlaneComponent>();
 				}
 			}
 			
@@ -1772,7 +1898,9 @@ namespace Puffin
 			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
 			for (const auto& entity : meshEntities)
 			{
-				CleanupMesh(entity->ID());
+				auto& mesh = entity->GetComponent<MeshComponent>();
+
+				CleanupMesh(entity->ID(), mesh.meshAssetID);
 			}
 
 			std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
@@ -2238,72 +2366,46 @@ namespace Puffin
 			}
 		}
 
-		inline void VulkanEngine::AddMeshRenderDataToScene(UUID meshID)
+		inline void VulkanEngine::AddMeshRenderDataToScene(MeshRenderData& meshRenderData, const MeshBufferData& meshBufferData)
 		{
-			MeshRenderData meshData;
+			// Resize merged Vertex/Index buffers if new size exceeds old size
+			UpdateMergedVertexBuffer(m_sceneRenderData.vertexOffset + meshRenderData.vertexCount);
+			UpdateMergedIndexBuffer(m_sceneRenderData.indexOffset + meshRenderData.indexCount);
 
-			// Get Mesh Data if it already exists
-			if (m_sceneRenderData.meshRenderDataMap.count(meshID) == 1)
+			meshRenderData.vertexOffset = m_sceneRenderData.vertexOffset;
+			meshRenderData.indexOffset = m_sceneRenderData.indexOffset;
+
+			// Init Mesh Staging Buffers
+			AllocatedBuffer vertexStagingBuffer = InitVertexBuffer(meshBufferData.vertexData, meshRenderData.vertexCount * meshBufferData.vertexSize);
+			AllocatedBuffer indexStagingBuffer = InitIndexBuffer(meshBufferData.indexData, meshRenderData.indexCount * meshBufferData.indexSize);
+
+			// Copy Vertex/Index data to merged buffers
+			ImmediateSubmit([=](VkCommandBuffer cmd)
 			{
-				meshData = m_sceneRenderData.meshRenderDataMap[meshID];
-			}
+				// Copy from staging vertex buffer to scene vertex buffer
+				VkBufferCopy vertexCopy;
+				vertexCopy.dstOffset = m_sceneRenderData.vertexOffset * meshBufferData.vertexSize;
+				vertexCopy.size = meshRenderData.vertexCount * meshBufferData.vertexSize;
+				vertexCopy.srcOffset = 0;
 
-			meshData.meshAssetID = meshID;
+				vkCmdCopyBuffer(cmd, vertexStagingBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
 
-			const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
+				// Copy from staging index buffer to scene index buffer
+				VkBufferCopy indexCopy;
+				indexCopy.dstOffset = m_sceneRenderData.indexOffset * meshBufferData.indexSize;
+				indexCopy.size = meshRenderData.indexCount * meshBufferData.indexSize;
+				indexCopy.srcOffset = 0;
 
-			// Load Mesh Data
-			if (staticMeshAsset && staticMeshAsset->Load())
-			{
-				// Set Vertex/Index Count & Offsets
-				meshData.vertexCount = static_cast<uint32_t>(staticMeshAsset->GetVertices().size());
-				meshData.indexCount = static_cast<uint32_t>(staticMeshAsset->GetIndices().size());
+				vkCmdCopyBuffer(cmd, indexStagingBuffer.buffer, m_sceneRenderData.mergedIndexBuffer.buffer, 1, &indexCopy);
+			});
 
-				// Resize merged Vertex/Index buffers if new size exceeds 
-				UpdateMergedVertexBuffer(m_sceneRenderData.vertexOffset + meshData.vertexCount);
-				UpdateMergedIndexBuffer(m_sceneRenderData.indexOffset + meshData.indexCount);
+			// Update scene render data with new info
+			m_sceneRenderData.vertexOffset += meshRenderData.vertexCount;
+			m_sceneRenderData.indexOffset += meshRenderData.indexCount;
 
-				meshData.vertexOffset = m_sceneRenderData.vertexOffset;
-				meshData.indexOffset = m_sceneRenderData.indexOffset;
-
-				// Init Mesh Staging Buffers
-				AllocatedBuffer vertexStagingBuffer = InitVertexBuffer(staticMeshAsset->GetVertices().data(), staticMeshAsset->GetVertices().size() * sizeof(Vertex_PNTV_32));
-				AllocatedBuffer indexStagingBuffer = InitIndexBuffer(staticMeshAsset->GetIndices().data(), staticMeshAsset->GetIndices().size() * sizeof(uint32_t));
-
-				// Unload vertices from main memory
-				staticMeshAsset->Unload();
-
-				// Copy Vertex/Index data to merged buffers
-				ImmediateSubmit([=](VkCommandBuffer cmd)
-				{
-					// Copy from staging vertex buffer to scene vertex buffer
-					VkBufferCopy vertexCopy;
-					vertexCopy.dstOffset = m_sceneRenderData.vertexOffset * sizeof(Vertex_PNTV_32);
-					vertexCopy.size = meshData.vertexCount * sizeof(Vertex_PNTV_32);
-					vertexCopy.srcOffset = 0;
-
-					vkCmdCopyBuffer(cmd, vertexStagingBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
-
-					// Copy from staging index buffer to scene index buffer
-					VkBufferCopy indexCopy;
-					indexCopy.dstOffset = m_sceneRenderData.indexOffset * sizeof(uint32_t);
-					indexCopy.size = meshData.indexCount * sizeof(uint32_t);
-					indexCopy.srcOffset = 0;
-
-					vkCmdCopyBuffer(cmd, indexStagingBuffer.buffer, m_sceneRenderData.mergedIndexBuffer.buffer, 1, &indexCopy);
-				});
-
-				// Update scene render data with new info
-				m_sceneRenderData.vertexOffset += meshData.vertexCount;
-				m_sceneRenderData.indexOffset += meshData.indexCount;
-
-				// Destroy Staging Buffers
-				vmaDestroyBuffer(allocator, vertexStagingBuffer.buffer, vertexStagingBuffer.allocation);
-				vmaDestroyBuffer(allocator, indexStagingBuffer.buffer, indexStagingBuffer.allocation);
-			}
-
-			// Add mesh data to map
-			m_sceneRenderData.meshRenderDataMap[meshID] = meshData;
+			// Destroy Staging Buffers
+			vmaDestroyBuffer(allocator, vertexStagingBuffer.buffer, vertexStagingBuffer.allocation);
+			vmaDestroyBuffer(allocator, indexStagingBuffer.buffer, indexStagingBuffer.allocation);
 		}
 
 		void VulkanEngine::PrepareLights()

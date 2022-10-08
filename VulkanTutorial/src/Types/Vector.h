@@ -52,7 +52,7 @@ namespace Puffin
 		// Operator Overrides
 
 		// Operator Conversion
-		operator glm::vec2() const
+		explicit operator glm::vec2() const
 		{
 			glm::vec2 vec;
 			vec.x = x;

@@ -143,11 +143,11 @@ namespace Puffin
 					}
 					ImGui::Unindent();
 
-					double renderFrametime = m_engine->GetStageExecutionTime(Core::UpdateOrder::Rendering) * 1000.0;
-					ImGui::Text("Rendering: %.1f", renderFrametime);
+					double renderFrametime = m_engine->GetStageExecutionTime(Core::UpdateOrder::Render) * 1000.0;
+					ImGui::Text("Render: %.1f", renderFrametime);
 
 					ImGui::Indent();
-					for (auto [fst, snd] : m_engine->GetSystemExecutionTimeForUpdateStage(Core::UpdateOrder::Rendering))
+					for (auto [fst, snd] : m_engine->GetSystemExecutionTimeForUpdateStage(Core::UpdateOrder::Render))
 					{
 						double systemFrametime = snd * 1000.0;
 						ImGui::Text("%s: %.1f", fst, systemFrametime);

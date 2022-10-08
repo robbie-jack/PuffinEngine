@@ -77,6 +77,16 @@ namespace Puffin
 			std::set<ECS::EntityID> entities; // Entities using this mesh
 		};
 
+		// Data needed to copy vertex/index data to buffer
+		struct MeshBufferData
+		{
+			void* vertexData = nullptr; // Pointer to Vertex Data
+			void* indexData = nullptr; // Pointer to Index Data
+
+			uint32_t vertexSize = 0; // Size of individual vertex
+			uint32_t indexSize = 0; // Size of individual index
+		};
+
 		struct TextureRenderData
 		{
 			UUID textureAssetID;
