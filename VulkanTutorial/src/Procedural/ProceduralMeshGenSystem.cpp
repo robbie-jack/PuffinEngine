@@ -27,6 +27,8 @@ namespace Puffin::Procedural
 			auto& plane = entity->GetComponent<PlaneComponent>();
 
 			GeneratePlaneVertices(plane.halfSize, plane.numQuads, mesh.vertices, mesh.indices);
+
+			entity->SetComponentFlag<PlaneComponent, FlagDirty>(false);
 		}
 
 		std::vector<std::shared_ptr<ECS::Entity>> proceduralTerrainEntities;
@@ -38,6 +40,20 @@ namespace Puffin::Procedural
 
 			GeneratePlaneVertices(terrain.halfSize, terrain.numQuads, mesh.vertices, mesh.indices);
 			GenerateTerrain(mesh.vertices, terrain.seed, terrain.heightMultiplier, terrain.frequency, terrain.octaves, terrain.frequencyMult);
+
+			entity->SetComponentFlag<TerrainComponent, FlagDirty>(false);
+		}
+
+		std::vector<std::shared_ptr<ECS::Entity>> proceduralIcoSphereEntities;
+		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
+		for (const auto& entity : proceduralIcoSphereEntities)
+		{
+			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& sphere = entity->GetComponent<IcoSphereComponent>();
+
+			GenerateIcoSphere(mesh.vertices, mesh.indices, sphere.subdivisions);
+
+			entity->SetComponentFlag<IcoSphereComponent, FlagDirty>(false);
 		}
 	}
 
@@ -84,6 +100,28 @@ namespace Puffin::Procedural
 			if (entity->GetComponentFlag<TerrainComponent, FlagDeleted>())
 			{
 				entity->RemoveComponent<TerrainComponent>();
+				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDeleted>(true);
+			}
+		}
+
+		std::vector<std::shared_ptr<ECS::Entity>> proceduralIcoSphereEntities;
+		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
+		for (const auto& entity : proceduralIcoSphereEntities)
+		{
+			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& sphere = entity->GetComponent<IcoSphereComponent>();
+
+			if (entity->GetComponentFlag<IcoSphereComponent, FlagDirty>())
+			{
+				GenerateIcoSphere(mesh.vertices, mesh.indices, sphere.subdivisions);
+
+				entity->SetComponentFlag<IcoSphereComponent, FlagDirty>(false);
+				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDirty>(true);
+			}
+
+			if (entity->GetComponentFlag<IcoSphereComponent, FlagDeleted>())
+			{
+				entity->RemoveComponent<IcoSphereComponent>();
 				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDeleted>(true);
 			}
 		}
@@ -181,5 +219,27 @@ namespace Puffin::Procedural
 		{
 			vertices[v].pos.y = (noiseValues[v] / amplitudeSum) * heightMultiplier;
 		}
+	}
+
+	void ProceduralMeshGenSystem::GenerateIcoSphere(std::vector<Rendering::Vertex_PNTV_32>& vertices,
+		std::vector<uint32_t>& indices, const int& subdivisions)
+	{
+		vertices.clear();
+		indices.clear();
+
+		std::vector<Vector3f> positions;
+		Icosahedron::VertexPositions(positions);
+
+		vertices.resize(positions.size());
+		for (int i = 0; i < positions.size(); i++)
+		{
+			Rendering::Vertex_PNTV_32& vertex = vertices[i];
+			vertex.pos = static_cast<glm::vec3>(positions[i]);
+			vertex.normal = static_cast<glm::vec3>(positions[i].Normalised());
+			vertex.tangent = { 0.0f, 0.0f, 0.0f };
+			vertex.uv = { 0.0f, 0.0f };
+		}
+
+		Icosahedron::Indices(indices);
 	}
 }

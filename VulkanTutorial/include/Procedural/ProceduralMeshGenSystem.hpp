@@ -30,5 +30,7 @@ namespace Puffin::Procedural
 		static void GenerateTerrain(std::vector<Rendering::Vertex_PNTV_32>& vertices, const int64_t& seed, const double& heightMultiplier, const double&
 		                            startFrequency, const int& octaves, const double& frequencyMultiplier);
 
+		static void GenerateIcoSphere(std::vector<Rendering::Vertex_PNTV_32>& vertices, std::vector<uint32_t>& indices, const int& subdivisions);
+
 	};
 }

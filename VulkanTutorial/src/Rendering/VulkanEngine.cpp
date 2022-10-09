@@ -743,6 +743,9 @@ namespace Puffin
 				frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
+				frames[i].instanceBuffer = CreateBuffer(sizeof(GPUInstanceData) * MAX_INSTANCES,
+					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
 				// Create Light Space Buffer for Shadow Vertex Stage
 				frames[i].lightSpaceBuffer = CreateBuffer(sizeof(GPULightSpaceData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -851,6 +854,16 @@ namespace Puffin
 					.BindBuffer(0, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 					.Build(frames[i].objectDescriptor, objectSetLayout);
 
+				// Allocated Instance Descriptor Set
+				VkDescriptorBufferInfo instanceBufferInfo;
+				instanceBufferInfo.buffer = frames[i].instanceBuffer.buffer;
+				instanceBufferInfo.offset = 0;
+				instanceBufferInfo.range = sizeof(GPUInstanceData) * MAX_INSTANCES;
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &instanceBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(frames[i].instanceDescriptor, instanceSetLayout);
+
 				VkDescriptorBufferInfo lightSpaceInfo;
 				lightSpaceInfo.buffer = frames[i].lightSpaceBuffer.buffer;
 				lightSpaceInfo.offset = 0;
@@ -919,6 +932,12 @@ namespace Puffin
 				objectBufferInfo.offset = 0;
 				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
 
+				// Instance SSBO
+				VkDescriptorBufferInfo instanceBufferInfo;
+				instanceBufferInfo.buffer = frames[i].instanceBuffer.buffer;
+				instanceBufferInfo.offset = 0;
+				instanceBufferInfo.range = sizeof(GPUInstanceData) * MAX_INSTANCES;
+
 				if (albedoImageInfo.size() > 0 && normalImageInfo.size() > 0)
 				{
 
@@ -926,10 +945,11 @@ namespace Puffin
 					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 						.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 						.BindBuffer(1, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-						.BindImages(2, static_cast<uint32_t>(albedoImageInfo.size()),
+						.BindBuffer(2, &instanceBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+						.BindImages(3, static_cast<uint32_t>(albedoImageInfo.size()),
 							albedoImageInfo.data(),
 							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-						.BindImages(3, static_cast<uint32_t>(normalImageInfo.size()),
+						.BindImages(4, static_cast<uint32_t>(normalImageInfo.size()),
 							normalImageInfo.data(),
 							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 						.Build(frames[i].geometryDescriptor, geometrySetLayout);
@@ -940,6 +960,7 @@ namespace Puffin
 					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 						.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 						.BindBuffer(1, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+						.BindBuffer(2, &instanceBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 						.Build(frames[i].geometryDescriptor, geometrySetLayout);
 				}
 			}
@@ -2860,19 +2881,28 @@ namespace Puffin
 
 		void VulkanEngine::MapObjectData()
 		{
-			// Map all object data to storage buffer
+			// Map all instance/object data to storage buffers
 			void* objectData;
 			vmaMapMemory(allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
 
-			GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+			void* instanceData;
+			vmaMapMemory(allocator, GetCurrentFrame().instanceBuffer.allocation, &instanceData);
 
+			GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+			GPUInstanceData* instanceSSBO = (GPUInstanceData*)instanceData;
+
+			int o = 0;
 			int i = 0;
 
-			// For each mesh entity, calculate its object data and map to storage buffer
+			// For each instance, map object offset
 			for (const auto& [fst, snd] : m_sceneRenderData.meshRenderDataMap)
 			{
 				const auto& meshData = snd;
 
+				// Map Instance Data
+				instanceSSBO[i].objectOffset = o;
+
+				// For each instance entity, calculate its object data and map to storage buffer
 				for (auto entity : meshData.entities)
 				{
 					const auto& transform = m_world->GetComponent<TransformComponent>(entity);
@@ -2896,15 +2926,18 @@ namespace Puffin
 					}
 
 					const Vector3f cameraRelativePosition = static_cast<Vector3f>(position - editorCamera.position);
-					objectSSBO[i].model = BuildMeshTransform(cameraRelativePosition, transform.rotation, transform.scale);
+					objectSSBO[o].model = BuildMeshTransform(cameraRelativePosition, transform.rotation, transform.scale);
 
-					objectSSBO[i].inv_model = glm::inverse(objectSSBO[i].model);
+					objectSSBO[o].inv_model = glm::inverse(objectSSBO[o].model);
 
-					i++;
+					o++;
 				}
+
+				i++;
 			}
 
 			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
+			vmaUnmapMemory(allocator, GetCurrentFrame().instanceBuffer.allocation);
 		}
 
 		glm::mat4 VulkanEngine::BuildMeshTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale) const
@@ -2960,6 +2993,7 @@ namespace Puffin
 			{
 				vmaDestroyBuffer(allocator, frames[i].cameraViewProjBuffer.buffer, frames[i].cameraViewProjBuffer.allocation);
 				vmaDestroyBuffer(allocator, frames[i].objectBuffer.buffer, frames[i].objectBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].instanceBuffer.buffer, frames[i].instanceBuffer.allocation);
 				vmaDestroyBuffer(allocator, frames[i].lightSpaceBuffer.buffer, frames[i].lightSpaceBuffer.allocation);
 				vmaDestroyBuffer(allocator, frames[i].debugVertexBuffer.buffer, frames[i].debugVertexBuffer.allocation);
 				vmaDestroyBuffer(allocator, frames[i].debugIndexBuffer.buffer, frames[i].debugIndexBuffer.allocation);

@@ -71,20 +71,24 @@ namespace Puffin::Core
 		// Register Components to ECS World and Scene Data Class
 		RegisterComponent<TransformComponent>();
 		RegisterComponent<InterpolatedTransformComponent>(false);
+
 		RegisterComponent<Rendering::MeshComponent>();
 		RegisterComponent<Rendering::PointLightComponent>();
 		RegisterComponent<Rendering::DirectionalLightComponent>();
 		RegisterComponent<Rendering::SpotLightComponent>();
 		RegisterComponent<Rendering::ShadowCasterComponent>();
 		RegisterComponent<Rendering::CameraComponent>();
+
 		RegisterComponent<Physics::Box2DRigidbodyComponent>();
 		RegisterComponent<Physics::Box2DBoxComponent>();
 		RegisterComponent<Physics::Box2DCircleComponent>();
+
 		RegisterComponent<Scripting::AngelScriptComponent>();
 
 		RegisterComponent<Rendering::ProceduralMeshComponent>();
 		RegisterComponent<Procedural::PlaneComponent>();
 		RegisterComponent<Procedural::TerrainComponent>();
+		RegisterComponent<Procedural::IcoSphereComponent>();
 
 		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Rendering::PointLightComponent, TransformComponent>();
@@ -93,6 +97,7 @@ namespace Puffin::Core
 		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, InterpolatedTransformComponent>();
 		ecsWorld->AddComponentDependencies<Procedural::PlaneComponent, Rendering::ProceduralMeshComponent>();
 		ecsWorld->AddComponentDependencies<Procedural::TerrainComponent, Rendering::ProceduralMeshComponent>();
+		ecsWorld->AddComponentDependencies<Procedural::IcoSphereComponent, Rendering::ProceduralMeshComponent>();
 
 		// Register Entity Flags
 
@@ -623,7 +628,7 @@ namespace Puffin::Core
 		const auto lightEntity = ECS::CreateEntity(ecsWorld);
 		lightEntity->SetName("Light");
 		lightEntity->AddComponent<TransformComponent>();
-		lightEntity->GetComponent<TransformComponent>().position = { 0.0f, 10.0f, 0.0f };
+		lightEntity->GetComponent<TransformComponent>().position = { 0.0, 10.0, 0.0 };
 		lightEntity->GetComponent<TransformComponent>().scale = { 0.25f };
 		lightEntity->AddComponent<Rendering::DirectionalLightComponent>();
 		lightEntity->AddComponent<Rendering::MeshComponent>();
@@ -633,19 +638,25 @@ namespace Puffin::Core
 
 		const auto planeEntity = ECS::CreateEntity(ecsWorld);
 		planeEntity->SetName("Terrain");
-		planeEntity->AddComponent<TransformComponent>();
+		planeEntity->AddAndGetComponent<TransformComponent>().position = { 0.0, -10.0f, 0.0 };
 		planeEntity->AddAndGetComponent<Rendering::ProceduralMeshComponent>().textureAssetID = cubeTextureId;
 		planeEntity->AddComponent<Procedural::TerrainComponent>();
 		planeEntity->GetComponent<Procedural::TerrainComponent>().halfSize = { 50 };
 		planeEntity->GetComponent<Procedural::TerrainComponent>().numQuads = { 50 };
 		planeEntity->GetComponent<Procedural::TerrainComponent>().heightMultiplier = 10;
 
-		const auto boxEntity = ECS::CreateEntity(ecsWorld);
+		const auto sphereEntity = ECS::CreateEntity(ecsWorld);
+		sphereEntity->SetName("Sphere");
+		sphereEntity->AddAndGetComponent<TransformComponent>().position = { 0.0, 5.0, 0.0 };
+		sphereEntity->AddAndGetComponent<Rendering::ProceduralMeshComponent>().textureAssetID = cubeTextureId;
+		sphereEntity->AddComponent<Procedural::IcoSphereComponent>();
+
+		/*const auto boxEntity = ECS::CreateEntity(ecsWorld);
 		boxEntity->SetName("Box");
 		boxEntity->AddComponent<TransformComponent>();
 		boxEntity->AddComponent<Rendering::MeshComponent>();
 		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = cubeMeshId;
-		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;
+		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;*/
 	}
 
 	void Engine::Play()

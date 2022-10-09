@@ -60,6 +60,7 @@ namespace Puffin
 
 		const int MAX_LIGHTS_PER_TYPE = 4;
 		const int MAX_OBJECTS = 10000;
+		const int MAX_INSTANCES = 10000;
 		const int MAX_TEXTURES = 10000;
 		const int MAX_DEBUG_COMMANDS = 10000;
 		const int MAX_VERTICES_PER_COMMAND = 8;
@@ -100,6 +101,9 @@ namespace Puffin
 			AllocatedBuffer objectBuffer;
 			VkDescriptorSet objectDescriptor;
 
+			AllocatedBuffer instanceBuffer;
+			VkDescriptorSet instanceDescriptor;
+
 			AllocatedBuffer lightSpaceBuffer;
 			VkDescriptorSet lightSpaceDescriptor;
 
@@ -126,6 +130,11 @@ namespace Puffin
 		{
 			alignas(16) glm::mat4 model;
 			alignas(16) glm::mat4 inv_model;
+		};
+
+		struct GPUInstanceData
+		{
+			alignas(4) int objectOffset; // Object Buffer Offset
 		};
 
 		struct GPUCameraData
@@ -294,6 +303,7 @@ namespace Puffin
 			//VkDescriptorPool descriptorPool;
 			VkDescriptorSetLayout cameraViewProjSetLayout;
 			VkDescriptorSetLayout objectSetLayout;
+			VkDescriptorSetLayout instanceSetLayout;
 			VkDescriptorSetLayout shadowMapSetLayout;
 			VkDescriptorSetLayout lightSpaceSetLayout;
 			VkDescriptorSetLayout geometrySetLayout; // Descriptor Layout for Deferred Geometry Pass
