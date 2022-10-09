@@ -3,9 +3,13 @@
 #include "Engine/Engine.hpp"
 #include "ECS/Entity.h"
 
-#include "Components/TransformComponent.h"
+#include "OpenSimplexNoise/OpenSimplexNoise.h"
 
-namespace Puffin::Rendering::Procedural
+#include "Components/TransformComponent.h"
+#include "Components/Rendering/MeshComponent.h"
+#include "Components/Procedural/ProceduralMeshComponent.hpp"
+
+namespace Puffin::Procedural
 {
 	ProceduralMeshGenSystem::ProceduralMeshGenSystem()
 	{
@@ -16,38 +20,77 @@ namespace Puffin::Rendering::Procedural
 	void ProceduralMeshGenSystem::PreStart()
 	{
 		std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
-		ECS::GetEntities<TransformComponent, ProceduralPlaneComponent>(m_world, proceduralPlaneEntities);
+		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
 		for (const auto& entity : proceduralPlaneEntities)
 		{
-			auto& plane = entity->GetComponent<ProceduralPlaneComponent>();
+			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& plane = entity->GetComponent<PlaneComponent>();
 
-			GeneratePlaneVertices(plane.halfSize, plane.numQuads, plane.vertices, plane.indices);
+			GeneratePlaneVertices(plane.halfSize, plane.numQuads, mesh.vertices, mesh.indices);
+		}
+
+		std::vector<std::shared_ptr<ECS::Entity>> proceduralTerrainEntities;
+		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
+		for (const auto& entity : proceduralTerrainEntities)
+		{
+			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& terrain = entity->GetComponent<TerrainComponent>();
+
+			GeneratePlaneVertices(terrain.halfSize, terrain.numQuads, mesh.vertices, mesh.indices);
+			GenerateTerrain(mesh.vertices, terrain.seed, terrain.heightMultiplier, terrain.frequency, terrain.octaves, terrain.frequencyMult);
 		}
 	}
 
 	void ProceduralMeshGenSystem::Update()
 	{
 		std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
-		ECS::GetEntities<TransformComponent, ProceduralPlaneComponent>(m_world, proceduralPlaneEntities);
+		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
 		for (const auto& entity : proceduralPlaneEntities)
 		{
-			auto& plane = entity->GetComponent<ProceduralPlaneComponent>();
+			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& plane = entity->GetComponent<PlaneComponent>();
 
-			if (entity->GetComponentFlag<ProceduralPlaneComponent, FlagDirty>())
+			if (entity->GetComponentFlag<PlaneComponent, FlagDirty>())
 			{
-				GeneratePlaneVertices(plane.halfSize, plane.numQuads, plane.vertices, plane.indices);
+				GeneratePlaneVertices(plane.halfSize, plane.numQuads, mesh.vertices, mesh.indices);
+
+				entity->SetComponentFlag<PlaneComponent, FlagDirty>(false);
+				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDirty>(true);
 			}
 
-			if (entity->GetComponentFlag<ProceduralPlaneComponent, FlagDeleted>())
+			if (entity->GetComponentFlag<PlaneComponent, FlagDeleted>())
 			{
-				plane.vertices.clear();
-				plane.indices.clear();
+				entity->RemoveComponent<PlaneComponent>();
+				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDeleted>(true);
+			}
+		}
+
+		std::vector<std::shared_ptr<ECS::Entity>> proceduralTerrainEntities;
+		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
+		for (const auto& entity : proceduralTerrainEntities)
+		{
+			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& terrain = entity->GetComponent<TerrainComponent>();
+
+			if (entity->GetComponentFlag<TerrainComponent, FlagDirty>())
+			{
+				GeneratePlaneVertices(terrain.halfSize, terrain.numQuads, mesh.vertices, mesh.indices);
+				GenerateTerrain(mesh.vertices, terrain.seed, terrain.heightMultiplier, terrain.frequency, terrain.octaves, terrain.frequencyMult);
+
+				entity->SetComponentFlag<TerrainComponent, FlagDirty>(false);
+				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDirty>(true);
+			}
+
+			if (entity->GetComponentFlag<TerrainComponent, FlagDeleted>())
+			{
+				entity->RemoveComponent<TerrainComponent>();
+				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDeleted>(true);
 			}
 		}
 	}
 
 	void ProceduralMeshGenSystem::GeneratePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads,
-		std::vector<Vertex_PNTV_32>& vertices, std::vector<uint32_t>& indices)
+		std::vector<Rendering::Vertex_PNTV_32>& vertices, std::vector<uint32_t>& indices)
 	{
 		vertices.clear();
 		indices.clear();
@@ -74,7 +117,7 @@ namespace Puffin::Rendering::Procedural
 		{
 			for (int x = 0; x < numVerticesX; x++)
 			{
-				Vertex_PNTV_32& vertex = vertices[x + (y * numVerticesX)];
+				Rendering::Vertex_PNTV_32& vertex = vertices[x + (y * numVerticesX)];
 				vertex.pos = { ((float)x * quadSize.x) - halfSize.x, 0.0f, ((float)y * quadSize.y) - halfSize.y };
 				vertex.normal = { 0.0f, 1.0f, 0.0f };
 				vertex.tangent = { 1.0f, 0.0f, 0.0f};
@@ -106,6 +149,37 @@ namespace Puffin::Rendering::Procedural
 				indices.push_back(bottomRight);
 				indices.push_back(bottomLeft);
 			}
+		}
+	}
+
+	void ProceduralMeshGenSystem::GenerateTerrain(std::vector<Rendering::Vertex_PNTV_32>& vertices, const int64_t& seed,
+	                                              const double& heightMultiplier, const double& startFrequency, const int& octaves,
+	                                              const double& frequencyMultiplier)
+	{
+		const OpenSimplexNoise::Noise noise(seed);
+		double frequency = startFrequency;
+		double amplitude = 1.0f;
+		double amplitudeSum = 0.0f;
+
+		std::vector<double> noiseValues;
+		noiseValues.resize(vertices.size());
+
+		for (int i = 0; i < octaves; i++)
+		{
+			for (int n = 0; n < noiseValues.size(); n++)
+			{
+				double noiseVal = noise.eval(vertices[n].uv.x * frequency, vertices[n].uv.y * frequency);
+				noiseValues[n] += ((noiseVal + 1.0) / 2.0) * amplitude;
+			}
+
+			frequency *= frequencyMultiplier;
+			amplitudeSum += amplitude;
+			amplitude /= frequencyMultiplier;
+		}
+
+		for (int v = 0; v < noiseValues.size(); v++)
+		{
+			vertices[v].pos.y = (noiseValues[v] / amplitudeSum) * heightMultiplier;
 		}
 	}
 }

@@ -481,18 +481,18 @@ namespace Puffin
 		void UIWindowEntityProperties::DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Rendering::Procedural::ProceduralPlaneComponent>(m_entity))
+			if (ecsWorld->HasComponent<Procedural::PlaneComponent>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Procedural Plane Component"), flags)
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& plane = ecsWorld->GetComponent<Rendering::Procedural::ProceduralPlaneComponent>(m_entity);
+					auto& plane = ecsWorld->GetComponent<Procedural::PlaneComponent>(m_entity);
 					bool dirty = false;
 
 					if (ImGui::SmallButton("X##ProceduralPlane"))
 					{
-						ecsWorld->SetComponentFlag<Rendering::Procedural::ProceduralPlaneComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<Procedural::PlaneComponent, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
@@ -503,7 +503,7 @@ namespace Puffin
 					if (dirty)
 					{
 						sceneChanged = true;
-						ecsWorld->SetComponentFlag<Rendering::Procedural::ProceduralPlaneComponent, FlagDirty>(m_entity, true);
+						ecsWorld->SetComponentFlag<Procedural::PlaneComponent, FlagDirty>(m_entity, true);
 					}
 
 					ImGui::TreePop();

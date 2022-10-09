@@ -2,9 +2,10 @@
 
 #include "ECS/ECS.h"
 
-#include "Components/Procedural/ProceduralMeshComponent.hpp"
+#include "Types/Vector.h"
+#include "Types/Vertex.hpp"
 
-namespace Puffin::Rendering::Procedural
+namespace Puffin::Procedural
 {
 	class ProceduralMeshGenSystem : public ECS::System
 	{
@@ -24,7 +25,10 @@ namespace Puffin::Rendering::Procedural
 
 		// Generator list of vertices/indices for a flat plane
 		static void GeneratePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads,
-			std::vector<Vertex_PNTV_32>& vertices, std::vector<uint32_t>& indices);
+			std::vector<Rendering::Vertex_PNTV_32>& vertices, std::vector<uint32_t>& indices);
+
+		static void GenerateTerrain(std::vector<Rendering::Vertex_PNTV_32>& vertices, const int64_t& seed, const double& heightMultiplier, const double&
+		                            startFrequency, const int& octaves, const double& frequencyMultiplier);
 
 	};
 }

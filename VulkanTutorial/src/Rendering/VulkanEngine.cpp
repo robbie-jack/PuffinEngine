@@ -877,7 +877,7 @@ namespace Puffin
 			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
 			for (const auto& entity : meshEntities)
 			{
-				MeshComponent& mesh = entity->GetComponent<MeshComponent>();
+				auto& mesh = entity->GetComponent<MeshComponent>();
 
 				//Albedo Textures
 				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
@@ -888,18 +888,18 @@ namespace Puffin
 				normalImageInfo.push_back(textureImageInfo);
 			}
 
-			std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
-			ECS::GetEntities<TransformComponent, Procedural::ProceduralPlaneComponent>(m_world, proceduralPlaneEntities);
-			for (const auto& entity : proceduralPlaneEntities)
+			std::vector<std::shared_ptr<ECS::Entity>> proceduralMeshEntities;
+			ECS::GetEntities<TransformComponent, ProceduralMeshComponent>(m_world, proceduralMeshEntities);
+			for (const auto& entity : proceduralMeshEntities)
 			{
-				Procedural::ProceduralPlaneComponent& plane = entity->GetComponent<Procedural::ProceduralPlaneComponent>();
+				auto& mesh = entity->GetComponent<ProceduralMeshComponent>();
 
 				//Albedo Textures
-				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[plane.textureAssetID].texture.imageView;
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
 				albedoImageInfo.push_back(textureImageInfo);
 
 				// Normal Maps	
-				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[plane.textureAssetID].texture.imageView;
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
 				normalImageInfo.push_back(textureImageInfo);
 			}
 
@@ -1119,18 +1119,18 @@ namespace Puffin
 				entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
 			}
 
-			std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
-			ECS::GetEntities<TransformComponent, Procedural::ProceduralPlaneComponent>(m_world, proceduralPlaneEntities);
-			for (const auto& entity : proceduralPlaneEntities)
+			std::vector<std::shared_ptr<ECS::Entity>> proceduralMeshEntities;
+			ECS::GetEntities<TransformComponent, ProceduralMeshComponent>(m_world, proceduralMeshEntities);
+			for (const auto& entity : proceduralMeshEntities)
 			{
-				auto& plane = entity->GetComponent<Procedural::ProceduralPlaneComponent>();
+				auto& mesh = entity->GetComponent<ProceduralMeshComponent>();
 
-				InitAlbedoTexture(plane.textureAssetID);
-				m_sceneRenderData.albedoTextureData[plane.textureAssetID].entities.insert(entity->ID());
+				InitAlbedoTexture(mesh.textureAssetID);
+				m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.insert(entity->ID());
 
-				InitProceduralPlaneMesh(entity->ID());
+				InitProceduralMesh(entity->ID());
 
-				entity->SetComponentFlag<Procedural::ProceduralPlaneComponent, FlagDirty>(false);
+				entity->SetComponentFlag<ProceduralMeshComponent, FlagDirty>(false);
 			}
 		}
 
@@ -1172,9 +1172,9 @@ namespace Puffin
 			m_sceneRenderData.meshRenderDataMap[meshID].entities.insert(entityID);
 		}
 
-		void VulkanEngine::InitProceduralPlaneMesh(ECS::EntityID entity)
+		void VulkanEngine::InitProceduralMesh(ECS::EntityID entity)
 		{
-			auto& plane = m_world->GetComponent<Procedural::ProceduralPlaneComponent>(entity);
+			auto& mesh = m_world->GetComponent<ProceduralMeshComponent>(entity);
 
 			// Setup Mesh Render Data
 			if (m_sceneRenderData.meshRenderDataMap.count(entity) == 0)
@@ -1184,19 +1184,22 @@ namespace Puffin
 				meshData.meshAssetID = entity;
 
 				// Load Mesh Data
-				if (!plane.vertices.empty() && !plane.indices.empty())
+				if (!mesh.vertices.empty() && !mesh.indices.empty())
 				{
-					meshData.vertexCount = static_cast<uint32_t>(plane.vertices.size());
-					meshData.indexCount = static_cast<uint32_t>(plane.indices.size());
+					meshData.vertexCount = static_cast<uint32_t>(mesh.vertices.size());
+					meshData.indexCount = static_cast<uint32_t>(mesh.indices.size());
 
 					MeshBufferData bufferData;
-					bufferData.vertexData = (void*)plane.vertices.data();
+					bufferData.vertexData = (void*)mesh.vertices.data();
 					bufferData.vertexSize = sizeof(Vertex_PNTV_32);
-					bufferData.indexData = (void*)plane.indices.data();
+					bufferData.indexData = (void*)mesh.indices.data();
 					bufferData.indexSize = sizeof(uint32_t);
 
 					AddMeshRenderDataToScene(meshData, bufferData);
 				}
+
+				mesh.vertices.clear();
+				mesh.indices.clear();
 
 				// Add mesh data to map
 				m_sceneRenderData.meshRenderDataMap[entity] = meshData;
@@ -1777,30 +1780,30 @@ namespace Puffin
 				}
 			}
 
-			std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
-			ECS::GetEntities<TransformComponent, Procedural::ProceduralPlaneComponent>(m_world, proceduralPlaneEntities);
-			for (const auto& entity : proceduralPlaneEntities)
+			std::vector<std::shared_ptr<ECS::Entity>> proceduralMeshEntities;
+			ECS::GetEntities<TransformComponent, ProceduralMeshComponent>(m_world, proceduralMeshEntities);
+			for (const auto& entity : proceduralMeshEntities)
 			{
-				auto& plane = entity->GetComponent<Procedural::ProceduralPlaneComponent>();
+				auto& mesh = entity->GetComponent<ProceduralMeshComponent>();
 
-				if (entity->GetComponentFlag<Procedural::ProceduralPlaneComponent, FlagDirty>())
+				if (entity->GetComponentFlag<ProceduralMeshComponent, FlagDirty>())
 				{
-					InitAlbedoTexture(plane.textureAssetID);
-					m_sceneRenderData.albedoTextureData[plane.textureAssetID].entities.insert(entity->ID());
+					InitAlbedoTexture(mesh.textureAssetID);
+					m_sceneRenderData.albedoTextureData[mesh.textureAssetID].entities.insert(entity->ID());
 
-					InitProceduralPlaneMesh(entity->ID());
+					InitProceduralMesh(entity->ID());
 
-					entity->SetComponentFlag<Procedural::ProceduralPlaneComponent, FlagDirty>(false);
+					entity->SetComponentFlag<ProceduralMeshComponent, FlagDirty>(false);
 				}
 
-				if (entity->GetComponentFlag<Procedural::ProceduralPlaneComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
+				if (entity->GetComponentFlag<ProceduralMeshComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
 				{
-					CleanupTexture(entity->ID(), plane.textureAssetID);
+					CleanupTexture(entity->ID(), mesh.textureAssetID);
 
 					// Decrement instance count and remove entity from set
 					m_sceneRenderData.meshRenderDataMap[entity->ID()].entities.erase(entity->ID());
 
-					entity->RemoveComponent<Procedural::ProceduralPlaneComponent>();
+					entity->RemoveComponent<ProceduralMeshComponent>();
 				}
 			}
 			

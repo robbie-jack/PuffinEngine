@@ -362,7 +362,7 @@ namespace Puffin
 
 			// Init Component Functions
 			void InitMesh(ECS::EntityID entityID, UUID meshID);
-			void InitProceduralPlaneMesh(ECS::EntityID entity);
+			void InitProceduralMesh(ECS::EntityID entity);
 			void InitShadowcasterLight(ECS::EntityID entity);
 			void InitCamera(ECS::EntityID entity);
 

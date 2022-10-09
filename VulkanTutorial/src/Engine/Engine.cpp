@@ -81,13 +81,18 @@ namespace Puffin::Core
 		RegisterComponent<Physics::Box2DBoxComponent>();
 		RegisterComponent<Physics::Box2DCircleComponent>();
 		RegisterComponent<Scripting::AngelScriptComponent>();
-		RegisterComponent<Rendering::Procedural::ProceduralPlaneComponent>();
+
+		RegisterComponent<Rendering::ProceduralMeshComponent>();
+		RegisterComponent<Procedural::PlaneComponent>();
+		RegisterComponent<Procedural::TerrainComponent>();
 
 		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Rendering::PointLightComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Rendering::SpotLightComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, InterpolatedTransformComponent>();
+		ecsWorld->AddComponentDependencies<Procedural::PlaneComponent, Rendering::ProceduralMeshComponent>();
+		ecsWorld->AddComponentDependencies<Procedural::TerrainComponent, Rendering::ProceduralMeshComponent>();
 
 		// Register Entity Flags
 
@@ -99,7 +104,7 @@ namespace Puffin::Core
 		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = RegisterSystem<Rendering::VulkanEngine>();
 		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = RegisterSystem<Physics::Box2DPhysicsSystem>();
 		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = RegisterSystem<Scripting::AngelScriptSystem>();
-		RegisterSystem<Rendering::Procedural::ProceduralMeshGenSystem>();
+		RegisterSystem<Procedural::ProceduralMeshGenSystem>();
 
 		// Register Assets
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::StaticMeshAsset>();
@@ -627,9 +632,13 @@ namespace Puffin::Core
 		//lightEntity->AddComponent<Rendering::ShadowCasterComponent>();
 
 		const auto planeEntity = ECS::CreateEntity(ecsWorld);
-		planeEntity->SetName("Plane");
+		planeEntity->SetName("Terrain");
 		planeEntity->AddComponent<TransformComponent>();
-		planeEntity->AddAndGetComponent<Rendering::Procedural::ProceduralPlaneComponent>().textureAssetID = cubeTextureId;
+		planeEntity->AddAndGetComponent<Rendering::ProceduralMeshComponent>().textureAssetID = cubeTextureId;
+		planeEntity->AddComponent<Procedural::TerrainComponent>();
+		planeEntity->GetComponent<Procedural::TerrainComponent>().halfSize = { 50 };
+		planeEntity->GetComponent<Procedural::TerrainComponent>().numQuads = { 50 };
+		planeEntity->GetComponent<Procedural::TerrainComponent>().heightMultiplier = 10;
 
 		const auto boxEntity = ECS::CreateEntity(ecsWorld);
 		boxEntity->SetName("Box");

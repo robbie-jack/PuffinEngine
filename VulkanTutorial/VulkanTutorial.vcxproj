@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\third_party;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\entt\single_include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\third_party;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\entt\single_include;$(SolutionDir)\OpenSimplexNoise</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -155,7 +155,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\third_party;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\entt\single_include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\third_party;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\entt\single_include;$(SolutionDir)\OpenSimplexNoise</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -227,6 +227,7 @@
     <ClCompile Include="..\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="..\OpenSimplexNoise\OpenSimplexNoise\OpenSimplexNoise.cpp" />
     <ClCompile Include="C:\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.cpp" />
     <ClCompile Include="C:\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.cpp" />
     <ClCompile Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.cpp" />
@@ -279,6 +280,7 @@
     <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="..\imgui\imgui.h" />
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h" />
+    <ClInclude Include="..\OpenSimplexNoise\OpenSimplexNoise\OpenSimplexNoise.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h" />

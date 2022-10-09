@@ -101,6 +101,9 @@
     <Filter Include="Procedural">
       <UniqueIdentifier>{aa3386c1-227d-411b-9f3d-28275116a624}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries\OpenSimplexNoise">
+      <UniqueIdentifier>{64334c93-7dcc-4b90-a3ab-884c677c5887}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -368,6 +371,9 @@
     </ClCompile>
     <ClCompile Include="src\Procedural\ProceduralMeshGenSystem.cpp">
       <Filter>Procedural</Filter>
+    </ClCompile>
+    <ClCompile Include="..\OpenSimplexNoise\OpenSimplexNoise\OpenSimplexNoise.cpp">
+      <Filter>Libraries\OpenSimplexNoise</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -647,6 +653,9 @@
     </ClInclude>
     <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp">
       <Filter>Procedural</Filter>
+    </ClInclude>
+    <ClInclude Include="..\OpenSimplexNoise\OpenSimplexNoise\OpenSimplexNoise.h">
+      <Filter>Libraries\OpenSimplexNoise</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
