@@ -6,12 +6,12 @@ namespace Puffin::Physics::Collision2D
 {
 	AABB CircleCollider2D::GetAABB() const
 	{
-		return shape->GetAABB(transform);
+		return shape->GetAABB(position, rotation);
 	}
 
 	Vector2f CircleCollider2D::FindFurthestPoint(Vector2f direction) const
 	{
-		return transform.position.GetXY() + direction.Normalised() * shape->radius;
+		return position + direction.Normalised() * shape->radius;
 	}
 
 	bool CircleCollider2D::TestCollision(const Collision2D::Collider2D* collider, Collision2D::Contact& outContact) const

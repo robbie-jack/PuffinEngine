@@ -25,7 +25,7 @@ namespace Puffin::Physics
 
 		virtual ShapeType2D GetType() const = 0;
 
-		virtual AABB GetAABB(const TransformComponent& transform) const = 0;
+		virtual AABB GetAABB(const Vector2f& position, const float& rotation) const = 0;
 
 		Vector2f centreOfMass; // Centre of mass for this shape
 	};

@@ -23,6 +23,7 @@
 #include <string>
 #include <algorithm>
 
+#include "Components/Physics/VelocityComponent.hpp"
 #include "Components/Rendering/CameraComponent.h"
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
 
@@ -2913,11 +2914,12 @@ namespace Puffin
 					Vector3f position = Vector3f(0.0f);
 #endif
 
-					if (m_world->HasComponent<InterpolatedTransformComponent>(entity))
+					if (m_world->HasComponent<Physics::VelocityComponent>(entity))
 					{
-						const auto& interpolatedTransform = m_world->GetComponent<InterpolatedTransformComponent>(entity);
+						const auto& velocity = m_world->GetComponent<Physics::VelocityComponent>(entity);
+						const Vector3f interpolatedPosition = transform.position + (velocity.linear * m_engine->GetDeltaTime());
 
-						position = Maths::Lerp(transform.position, interpolatedTransform.position,
+						position = Maths::Lerp(transform.position, interpolatedPosition,
 							m_engine->GetAccumulatedTime() / m_engine->GetTimeStep());
 					}
 					else
@@ -2927,7 +2929,6 @@ namespace Puffin
 
 					const Vector3f cameraRelativePosition = static_cast<Vector3f>(position - editorCamera.position);
 					objectSSBO[o].model = BuildMeshTransform(cameraRelativePosition, transform.rotation, transform.scale);
-
 					objectSSBO[o].inv_model = glm::inverse(objectSSBO[o].model);
 
 					o++;

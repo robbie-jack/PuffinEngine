@@ -12,7 +12,7 @@ namespace Puffin::Physics::Collision2D
 {
 	struct BoxCollider2D : public PolygonCollider2D
 	{
-		BoxCollider2D(ECS::EntityID entity, std::shared_ptr<BoxShape2D> shape) : PolygonCollider2D(entity, shape) {}
+		BoxCollider2D(ECS::EntityID entity, BoxShape2D* shape) : PolygonCollider2D(entity, shape) {}
 
 		~BoxCollider2D()
 		{

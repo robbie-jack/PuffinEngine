@@ -284,6 +284,7 @@
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptbuilder\scriptbuilder.h" />
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h" />
+    <ClInclude Include="include\Components\Physics\VelocityComponent.hpp" />
     <ClInclude Include="include\Components\Procedural\ProceduralMeshComponent.hpp" />
     <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp" />
     <ClInclude Include="src\Assets\Asset.h" />

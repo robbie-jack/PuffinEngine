@@ -10,7 +10,7 @@ namespace Puffin::Physics::Collision2D
 {
 	struct PolygonCollider2D : public Collider2D
 	{
-		PolygonCollider2D(ECS::EntityID entity, std::shared_ptr<PolygonShape2D> inShape) : Collider2D(entity), shape(inShape) {}
+		PolygonCollider2D(ECS::EntityID entity, PolygonShape2D* inShape) : Collider2D(entity), shape(inShape) {}
 
 		~PolygonCollider2D()
 		{
@@ -22,6 +22,6 @@ namespace Puffin::Physics::Collision2D
 
 		Vector2f FindFurthestPoint(Vector2f direction) const override;
 
-		std::shared_ptr<PolygonShape2D> shape = nullptr;
+		PolygonShape2D* shape = nullptr;
 	};
 }

@@ -39,6 +39,9 @@ namespace Puffin
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
 
+			if (m_arraySize == 0 || m_idToIndexMap.count(id) == 0)
+				return;
+
 			// Copy value at end of array into deleted values space to maintain packed array
 			size_t indexOfRemovedValue = m_idToIndexMap[id];
 			size_t indexOfLastValue = m_arraySize - 1;
@@ -149,6 +152,9 @@ namespace Puffin
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
 
+			if (m_vectorSize == 0 || m_idToIndexMap.count(id) == 0)
+				return;
+
 			// Copy value at end of array into deleted values space to maintain packed array
 			size_t indexOfRemovedValue = m_idToIndexMap[id];
 			size_t indexOfLastValue = m_vectorSize - 1;
@@ -163,7 +169,7 @@ namespace Puffin
 			m_indexToIDMap[indexOfRemovedValue] = idOfLastValue;
 
 			m_idToIndexMap.erase(id);
-			m_idToIndexMap.erase(indexOfLastValue);
+			m_indexToIDMap.erase(indexOfLastValue);
 
 			m_vectorSize--;
 		}
@@ -248,6 +254,9 @@ namespace Puffin
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
 
+			if (m_bitsetSize == 0 || m_idToIndexMap.count(id) == 0)
+				return;
+
 			// Copy value at end of array into deleted values space to maintain packed array
 			size_t indexOfRemovedValue = m_idToIndexMap[id];
 			size_t indexOfLastValue = m_bitsetSize - 1;
@@ -259,7 +268,7 @@ namespace Puffin
 			m_indexToIDMap[indexOfRemovedValue] = idOfLastValue;
 
 			m_idToIndexMap.erase(id);
-			m_idToIndexMap.erase(indexOfLastValue);
+			m_indexToIDMap.erase(indexOfLastValue);
 
 			m_bitsetSize--;
 		}

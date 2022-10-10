@@ -19,15 +19,8 @@ namespace Puffin::Physics
 
 		ShapeType2D GetType() const override;
 
-		AABB GetAABB(const TransformComponent& transform) const;
+		AABB GetAABB(const Vector2f& position, const float& rotation) const;
 
 		float radius;
-
-		template<class Archive>
-		void serialize(Archive& archive)
-		{
-			archive(centreOfMass);
-			archive(radius);
-		}
 	};
 }

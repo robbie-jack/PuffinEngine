@@ -16,7 +16,7 @@ namespace Puffin::Physics
 			points.clear();
 		}
 
-		AABB GetAABB(const TransformComponent& transform) const = 0;
+		AABB GetAABB(const Vector2f& position, const float& rotation) const = 0;
 
 		virtual void UpdatePoints() = 0;
 

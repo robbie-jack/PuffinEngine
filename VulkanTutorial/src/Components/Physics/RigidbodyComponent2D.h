@@ -1,23 +1,38 @@
 #pragma once
 
+#include "Types/Vector.h"
+
+#include "nlohmann/json.hpp"
+
 namespace Puffin
 {
 	namespace Physics
 	{
+		enum class BodyType
+		{
+			Static = 0,
+			Kinematic = 1,
+			Dynamic = 2
+		};
+
+		NLOHMANN_JSON_SERIALIZE_ENUM(BodyType,
+		{
+			{BodyType::Static, "Static"},
+			{BodyType::Kinematic, "Kinematic"},
+			{BodyType::Dynamic, "Static"}
+		})
+
 		struct RigidbodyComponent2D
 		{
-			RigidbodyComponent2D() {}
-
-			RigidbodyComponent2D(float InInvMass) :
-				invMass(InInvMass)
-			{
-			}
-
 			Vector2f linearVelocity = Vector2f(0.0f);
 			float angularVelocity = 0.0f;
 
 			float invMass = 0.0f;
 			float elasticity = 1.0f;
+
+			BodyType bodyType = BodyType::Static;
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent2D, invMass, elasticity)
 		};
 	}
 }

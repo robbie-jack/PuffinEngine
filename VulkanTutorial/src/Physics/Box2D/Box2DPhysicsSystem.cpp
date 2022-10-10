@@ -1,11 +1,12 @@
 #include "Box2DPhysicsSystem.h"
 
 #include "Engine/Engine.hpp"
-#include "Engine/Subsystem.hpp"
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
-#include "Components/TransformComponent.h"
 #include "MathHelpers.h"
+
+#include "Components/TransformComponent.h"
+#include "Components/Physics/VelocityComponent.hpp"
 
 namespace Puffin::Physics
 {
@@ -59,24 +60,12 @@ namespace Puffin::Physics
 		PublishCollisionEvents();
 
 		// Updated entity position/rotation from simulation
-
-		/*for (ECS::EntityID entity : entityMap["Rigidbody"])
-		{
-			auto& transform = m_world->GetComponent<TransformComponent>(entity);
-			auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
-
-			transform.position.x = rb.body->GetPosition().x;
-			transform.position.y = rb.body->GetPosition().y;
-			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
-		}*/
-
-		std::vector<std::shared_ptr<ECS::Entity>> boxRigidbodyEntities;
-		ECS::GetEntities<TransformComponent, InterpolatedTransformComponent, Box2DRigidbodyComponent>(m_world, boxRigidbodyEntities);
-
-		for (const auto& entity : boxRigidbodyEntities)
+		std::vector<std::shared_ptr<ECS::Entity>> rbEntities;
+		ECS::GetEntities<TransformComponent, VelocityComponent, Box2DRigidbodyComponent>(m_world, rbEntities);
+		for (const auto& entity : rbEntities)
 		{
 			auto& transform = entity->GetComponent<TransformComponent>();
-			auto& interpolatedTransform = entity->GetComponent<InterpolatedTransformComponent>();
+			auto& velocity = entity->GetComponent<VelocityComponent>();
 			const auto& rb = entity->GetComponent<Box2DRigidbodyComponent>();
 
 			// Update Transform from Rigidbody Position
@@ -85,39 +74,40 @@ namespace Puffin::Physics
 			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
 
 			// Update Interpolated Transform with Linear/Angular Velocity
-			interpolatedTransform.position.x = transform.position.x + (rb.body->GetLinearVelocity().x * m_engine->GetTimeStep());
-			interpolatedTransform.position.y = transform.position.y + (rb.body->GetLinearVelocity().y * m_engine->GetTimeStep());
-			interpolatedTransform.rotation.z = transform.rotation.z + (rb.body->GetAngularVelocity() * m_engine->GetTimeStep());
+			velocity.linear.x = rb.body->GetLinearVelocity().x;
+			velocity.linear.y = rb.body->GetLinearVelocity().y;
+			velocity.angular.z = rb.body->GetAngularVelocity();
 		}
 	}
 
 	void Box2DPhysicsSystem::Stop()
 	{
 		// Cleanup Rigidbody Components
-		for (ECS::EntityID entity : entityMap["Rigidbody"])
+		std::vector<std::shared_ptr<ECS::Entity>> rbEntities;
+		ECS::GetEntities<TransformComponent, VelocityComponent, Box2DRigidbodyComponent>(m_world, rbEntities);
+		for (const auto& entity : rbEntities)
 		{
-			CleanupRigidbodyComponent(entity);
+			auto& velocity = entity->GetComponent<VelocityComponent>();
+			velocity.linear = Vector3f(0.0f);
+			velocity.angular = Vector3f(0.0f);
+
+			CleanupRigidbodyComponent(entity->ID());
 		}
 
 		// Cleanup Box Components
-		for (ECS::EntityID entity : entityMap["Box"])
+		std::vector<std::shared_ptr<ECS::Entity>> boxEntities;
+		ECS::GetEntities<TransformComponent, Box2DBoxComponent>(m_world, boxEntities);
+		for (const auto& entity : boxEntities)
 		{
-			CleanupBoxComponent(entity);
+			CleanupBoxComponent(entity->ID());
 		}
 
 		// Cleanup Box Components
-		for (ECS::EntityID entity : entityMap["Circle"])
+		std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+		ECS::GetEntities<TransformComponent, Box2DCircleComponent>(m_world, circleEntities);
+		for (const auto& entity : circleEntities)
 		{
-			CleanupCircleComponent(entity);
-		}
-
-		std::vector<std::shared_ptr<ECS::Entity>> interpolatedEntities;
-		ECS::GetEntities<InterpolatedTransformComponent>(m_world, interpolatedEntities);
-		for (const auto entity : interpolatedEntities)
-		{
-			auto& interpolatedTransform = entity->GetComponent<InterpolatedTransformComponent>();
-			interpolatedTransform.position = Vector3f(0.0f);
-			interpolatedTransform.rotation = Vector3f(0.0f);
+			CleanupCircleComponent(entity->ID());
 		}
 
 		m_circleShapes.Clear();

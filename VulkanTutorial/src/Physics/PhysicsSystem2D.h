@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+#include "ECS/Entity.h"
+
 namespace Puffin::Physics
 {
 	const uint32_t MAX_SHAPES_PER_TYPE = 128; // Maximum number of shapes of each type
@@ -34,7 +36,7 @@ namespace Puffin::Physics
 		PhysicsSystem2D();
 		~PhysicsSystem2D() override {}
 
-		void Init() override {}
+		void Init() override;
 		void PreStart() override;
 		void Start() override {}
 		void Update() override;
@@ -52,11 +54,11 @@ namespace Puffin::Physics
 		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
 		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided
 
-		void InitCircle2D(ECS::EntityID entity, CircleComponent2D& circle);
-		void InitBox2D(ECS::EntityID entity, BoxComponent2D& box);
+		void InitCircle2D(std::shared_ptr<ECS::Entity> entity);
+		void InitBox2D(std::shared_ptr<ECS::Entity> entity);
 
-		void CleanupCircle2D(ECS::EntityID entity, CircleComponent2D& circle);
-		void CleanupBox2D(ECS::EntityID entity, BoxComponent2D& circle);
+		void CleanupCircle2D(std::shared_ptr<ECS::Entity> entity);
+		void CleanupBox2D(std::shared_ptr<ECS::Entity> entity);
 
 		// Perform Initialization/Updating/Deltion of Physics Related Components
 		void UpdateComponents();
@@ -67,8 +69,8 @@ namespace Puffin::Physics
 		void Step();
 
 		// Dynamics
-		void UpdateDynamics(); // Perform velocity updates for all rigid bodies
-		void CalculateImpulseByGravity(RigidbodyComponent2D& body); // Calculate Impulse due to force of gravity
+		void UpdateDynamics() const; // Perform velocity updates for all rigid bodies
+		void CalculateImpulseByGravity(RigidbodyComponent2D& body) const; // Calculate Impulse due to force of gravity
 
 		// Collision Broadphase
 		void CollisionBroadphase(); // Perform collision broadphase to decide which entities should collider together
@@ -78,7 +80,7 @@ namespace Puffin::Physics
 		void CollisionDetection();
 
 		// Resolve collisions found during collision detection, applying the correct Impulse 
-		void CollisionResponse();
+		void CollisionResponse() const;
 
 	};
 

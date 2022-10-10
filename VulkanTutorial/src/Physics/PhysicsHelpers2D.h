@@ -6,8 +6,8 @@
 #include "Physics/Colliders/BoxCollider2D.h"
 #include "Physics/Colliders/CircleCollider2D.h"
 
-#include <Components/Physics/RigidbodyComponent2D.h>
-#include <Components/Physics/ShapeComponents2D.h>
+#include "Components/Physics/RigidbodyComponent2D.h"
+#include "Components/Physics/ShapeComponents2D.h"
 
 #include "MathHelpers.h"
 
@@ -119,10 +119,10 @@ namespace Puffin::Physics
 			return false;
 		}
 
-		// GJK Algorithm to see if any two shapes with minkoski support funciton collide
+		// GJK Algorithm to see if any two shapes with minkowski support function collide
 		static inline bool GJK(const Collider2D* colliderA, const Collider2D* colliderB, Simplex2D& points)
 		{
-			Vector2f direction = (colliderB->transform.position.GetXY() - colliderA->transform.position.GetXY()).Normalised();
+			Vector2f direction = (colliderB->position - colliderA->position).Normalised();
 			Vector2f support = Support(colliderA, colliderB, direction);
 
 			points.push_front(support);
@@ -252,8 +252,8 @@ namespace Puffin::Physics
 
 			EPA(boxA, boxB, outContact, points);
 
-			outContact.pointOnA = boxA->transform.position.GetXY() + outContact.normal * std::static_pointer_cast<BoxShape2D>(boxA->shape)->halfExtent;
-			outContact.pointOnB = boxB->transform.position.GetXY() - outContact.normal * std::static_pointer_cast<BoxShape2D>(boxB->shape)->halfExtent;
+			outContact.pointOnA = boxA->position + outContact.normal * dynamic_cast<BoxShape2D*>(boxA->shape)->halfExtent;
+			outContact.pointOnB = boxB->position - outContact.normal * dynamic_cast<BoxShape2D*>(boxB->shape)->halfExtent;
 
 			// No separating axis found, shapes must be colliding
 			return true;
@@ -263,7 +263,7 @@ namespace Puffin::Physics
 		{
 			// Non-GJK Circle Collision Test
 			// Vector from A to B
-			const Vector2 ab = circleB->transform.position.GetXY() - circleA->transform.position.GetXY();
+			const Vector2 ab = circleB->position - circleA->position;
 
 			// Get Cumulative Radius of Circles
 			const float radiusAB = circleA->shape->radius + circleB->shape->radius;
@@ -288,8 +288,8 @@ namespace Puffin::Physics
 
 			EPA(circleA, circleB, outContact, points);*/
 
-			outContact.pointOnA = circleA->transform.position.GetXY() + outContact.normal * circleA->shape->radius;
-			outContact.pointOnB = circleB->transform.position.GetXY() - outContact.normal * circleB->shape->radius;
+			outContact.pointOnA = circleA->position + outContact.normal * circleA->shape->radius;
+			outContact.pointOnB = circleB->position - outContact.normal * circleB->shape->radius;
 
 			return true;
 		}
@@ -306,8 +306,8 @@ namespace Puffin::Physics
 
 			EPA(circleA, boxB, outContact, points);
 
-			outContact.pointOnA = circleA->transform.position.GetXY() + outContact.normal * circleA->shape->radius;
-			outContact.pointOnB = boxB->transform.position.GetXY() - outContact.normal * std::static_pointer_cast<BoxShape2D>(boxB->shape)->halfExtent;
+			outContact.pointOnA = circleA->position + outContact.normal * circleA->shape->radius;
+			outContact.pointOnB = boxB->position - outContact.normal * dynamic_cast<BoxShape2D*>(boxB->shape)->halfExtent;
 
 			return true;
 		}
@@ -360,7 +360,7 @@ namespace Puffin::Physics
 
 		// Get the 2D cross of impulsePoint against impulse
 		// this is the sin of the angle between the vectors in radians
-		ApplyAngularImpulse(body, impulsePoint.Normalised().Cross(impulse.Normalised()));
+		//ApplyAngularImpulse(body, impulsePoint.Normalised().Cross(impulse.Normalised()));
 	}
 }
 

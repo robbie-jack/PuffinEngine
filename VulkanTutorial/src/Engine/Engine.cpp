@@ -5,6 +5,7 @@
 
 #include "Rendering/VulkanEngine.h"
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
+#include "Physics/PhysicsSystem2D.h"
 #include "Scripting/AngelScriptSystem.h"
 #include "Procedural/ProceduralMeshGenSystem.hpp"
 
@@ -28,6 +29,7 @@
 #include "Assets/SoundAsset.h"
 
 #include "Assets/Importers/ModelImporter.h"
+#include "Components/Physics/VelocityComponent.hpp"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -70,7 +72,6 @@ namespace Puffin::Core
 
 		// Register Components to ECS World and Scene Data Class
 		RegisterComponent<TransformComponent>();
-		RegisterComponent<InterpolatedTransformComponent>(false);
 
 		RegisterComponent<Rendering::MeshComponent>();
 		RegisterComponent<Rendering::PointLightComponent>();
@@ -79,9 +80,15 @@ namespace Puffin::Core
 		RegisterComponent<Rendering::ShadowCasterComponent>();
 		RegisterComponent<Rendering::CameraComponent>();
 
-		RegisterComponent<Physics::Box2DRigidbodyComponent>();
-		RegisterComponent<Physics::Box2DBoxComponent>();
-		RegisterComponent<Physics::Box2DCircleComponent>();
+		RegisterComponent<Physics::VelocityComponent>(false);
+
+		RegisterComponent<Physics::RigidbodyComponent2D>();
+		RegisterComponent<Physics::BoxComponent2D>();
+		RegisterComponent<Physics::CircleComponent2D>();
+
+		//RegisterComponent<Physics::Box2DRigidbodyComponent>();
+		//RegisterComponent<Physics::Box2DBoxComponent>();
+		//RegisterComponent<Physics::Box2DCircleComponent>();
 
 		RegisterComponent<Scripting::AngelScriptComponent>();
 
@@ -93,8 +100,13 @@ namespace Puffin::Core
 		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Rendering::PointLightComponent, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Rendering::SpotLightComponent, TransformComponent>();
-		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, TransformComponent>();
-		ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, InterpolatedTransformComponent>();
+
+		ecsWorld->AddComponentDependencies<Physics::RigidbodyComponent2D, TransformComponent>();
+		ecsWorld->AddComponentDependencies<Physics::RigidbodyComponent2D, Physics::VelocityComponent>();
+
+		//ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, TransformComponent>();
+		//ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, Physics::VelocityComponent>();
+
 		ecsWorld->AddComponentDependencies<Procedural::PlaneComponent, Rendering::ProceduralMeshComponent>();
 		ecsWorld->AddComponentDependencies<Procedural::TerrainComponent, Rendering::ProceduralMeshComponent>();
 		ecsWorld->AddComponentDependencies<Procedural::IcoSphereComponent, Rendering::ProceduralMeshComponent>();
@@ -106,9 +118,10 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Systems
-		std::shared_ptr<Rendering::VulkanEngine> vulkanEngine = RegisterSystem<Rendering::VulkanEngine>();
-		std::shared_ptr<Physics::Box2DPhysicsSystem> physicsSystem = RegisterSystem<Physics::Box2DPhysicsSystem>();
-		std::shared_ptr<Scripting::AngelScriptSystem> scriptingSystem = RegisterSystem<Scripting::AngelScriptSystem>();
+		RegisterSystem<Rendering::VulkanEngine>();
+		RegisterSystem<Physics::PhysicsSystem2D>();
+		//RegisterSystem<Physics::Box2DPhysicsSystem>();
+		RegisterSystem<Scripting::AngelScriptSystem>();
 		RegisterSystem<Procedural::ProceduralMeshGenSystem>();
 
 		// Register Assets
@@ -130,8 +143,8 @@ namespace Puffin::Core
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene();
-		//PhysicsScene();
-		ProceduralScene();
+		PhysicsScene();
+		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
 		//m_sceneData->LoadAndInit();
@@ -172,9 +185,6 @@ namespace Puffin::Core
 
 		m_lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
 		m_currentTime = std::chrono::high_resolution_clock::now();
-		m_accumulatedTime = 0.0;
-		m_timeStep = 1 / 60.0; // How often deterministic code like physics should occur (defaults to 60 times a second)
-		m_maxTimeStep = 1 / 30.0;
 	}
 
 	bool Engine::Update()
@@ -232,21 +242,45 @@ namespace Puffin::Core
 			playState = PlayState::PLAYING;
 		}
 
-		// Fixed Update
 		if (playState == PlayState::PLAYING)
 		{
-			// Add onto accumulated time
-			m_accumulatedTime += m_deltaTime;
-
-			auto stageStartTime = std::chrono::high_resolution_clock::now();
-
-			// Perform system updates until simulation is caught up
-			while (m_accumulatedTime >= m_timeStep)
+			// Fixed Update
 			{
-				m_accumulatedTime -= m_timeStep;
+				// Add onto accumulated time
+				m_accumulatedTime += m_deltaTime;
 
-				// FixedUpdate Systems
-				for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
+				auto stageStartTime = std::chrono::high_resolution_clock::now();
+
+				// Perform system updates until simulation is caught up
+				while (m_accumulatedTime >= m_timeStep)
+				{
+					m_accumulatedTime -= m_timeStep;
+
+					// FixedUpdate Systems
+					for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
+					{
+						auto startTime = std::chrono::high_resolution_clock::now();
+
+						system->Update();
+
+						auto endTime = std::chrono::high_resolution_clock::now();
+
+						const std::chrono::duration<double> systemDuration = endTime - startTime;
+						m_systemExecutionTime[Core::UpdateOrder::FixedUpdate][system->GetInfo().name] = systemDuration.count();
+					}
+				}
+
+				auto stageEndTime = std::chrono::high_resolution_clock::now();
+
+				const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
+				m_stageExecutionTime[Core::UpdateOrder::FixedUpdate] = stageDuration.count();
+			}
+
+			// Update
+			{
+				auto stageStartTime = std::chrono::high_resolution_clock::now();
+
+				for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Update])
 				{
 					auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -255,37 +289,14 @@ namespace Puffin::Core
 					auto endTime = std::chrono::high_resolution_clock::now();
 
 					const std::chrono::duration<double> systemDuration = endTime - startTime;
-					m_systemExecutionTime[Core::UpdateOrder::FixedUpdate][system->GetInfo().name] = systemDuration.count();
+					m_systemExecutionTime[Core::UpdateOrder::Update][system->GetInfo().name] = systemDuration.count();
 				}
+
+				auto stageEndTime = std::chrono::high_resolution_clock::now();
+
+				const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
+				m_stageExecutionTime[Core::UpdateOrder::Update] = stageDuration.count();
 			}
-
-			auto stageEndTime = std::chrono::high_resolution_clock::now();
-
-			const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
-			m_stageExecutionTime[Core::UpdateOrder::FixedUpdate] = stageDuration.count();
-		}
-
-		// Update
-		if (playState == PlayState::PLAYING)
-		{
-			auto stageStartTime = std::chrono::high_resolution_clock::now();
-
-			for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Update])
-			{
-				auto startTime = std::chrono::high_resolution_clock::now();
-
-				system->Update();
-
-				auto endTime = std::chrono::high_resolution_clock::now();
-
-				const std::chrono::duration<double> systemDuration = endTime - startTime;
-				m_systemExecutionTime[Core::UpdateOrder::Update][system->GetInfo().name] = systemDuration.count();
-			}
-
-			auto stageEndTime = std::chrono::high_resolution_clock::now();
-
-			const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
-			m_stageExecutionTime[Core::UpdateOrder::Update] = stageDuration.count();
 		}
 
 		// UI
@@ -560,8 +571,12 @@ namespace Puffin::Core
 
 		boxEntity->AddComponent<TransformComponent>();
 		boxEntity->AddComponent<Rendering::MeshComponent>();
-		boxEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
-		boxEntity->AddComponent<Physics::Box2DBoxComponent>();
+
+		boxEntity->AddComponent<Physics::RigidbodyComponent2D>();
+		boxEntity->AddComponent<Physics::BoxComponent2D>();
+		//boxEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
+		//boxEntity->AddComponent<Physics::Box2DBoxComponent>();
+
 		boxEntity->AddComponent<Scripting::AngelScriptComponent>();
 
 		boxEntity->GetComponent<TransformComponent>() = { Vector3f(-2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
@@ -569,27 +584,35 @@ namespace Puffin::Core
 		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		boxEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
+		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
+		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.7f;
+		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
+		//boxEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
 
 		boxEntity->GetComponent<Scripting::AngelScriptComponent>().name = "PhysicsScript";
 		boxEntity->GetComponent<Scripting::AngelScriptComponent>().dir = contentRootPath / "scripts\\Physics.pscript";
 
 		// Create Circle Entity
-		const auto circleEntity = ECS::CreateEntity(ecsWorld);
+		//const auto circleEntity = ECS::CreateEntity(ecsWorld);
 
-		circleEntity->SetName("Circle");
+		//circleEntity->SetName("Circle");
 
-		circleEntity->AddComponent<TransformComponent>();
-		circleEntity->AddComponent<Rendering::MeshComponent>();
-		circleEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
-		circleEntity->AddComponent<Physics::Box2DCircleComponent>();
+		//circleEntity->AddComponent<TransformComponent>();
+		//circleEntity->AddComponent<Rendering::MeshComponent>();
 
-		circleEntity->GetComponent<TransformComponent>() = { Vector3f(2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		//circleEntity->AddComponent<Physics::RigidbodyComponent2D>();
+		//circleEntity->AddComponent<Physics::CircleComponent2D>();
+		////circleEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
+		////circleEntity->AddComponent<Physics::Box2DCircleComponent>();
 
-		circleEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId2;
-		circleEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		//circleEntity->GetComponent<TransformComponent>() = { Vector3f(2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 
-		circleEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
+		//circleEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId2;
+		//circleEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+
+		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
+		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
+		////circleEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
 
 		// Create Floor Entity
 		const auto floorEntity = ECS::CreateEntity(ecsWorld);
@@ -598,16 +621,20 @@ namespace Puffin::Core
 
 		floorEntity->AddComponent<TransformComponent>();
 		floorEntity->AddComponent<Rendering::MeshComponent>();
-		floorEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
-		floorEntity->AddComponent<Physics::Box2DBoxComponent>();
+
+		floorEntity->AddComponent<Physics::RigidbodyComponent2D>();
+		floorEntity->AddComponent<Physics::CircleComponent2D>();
+		//floorEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
+		//floorEntity->AddComponent<Physics::Box2DBoxComponent>();
 
 		floorEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
 
 		floorEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		floorEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_staticBody;
-		floorEntity->GetComponent<Physics::Box2DBoxComponent>().data.halfExtent = Vector2f(5.0f, 1.0f);
+		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(5.0f, 1.0f);
+		/*floorEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_staticBody;
+		floorEntity->GetComponent<Physics::Box2DBoxComponent>().data.halfExtent = Vector2f(5.0f, 1.0f);*/
 	}
 
 	void Engine::ProceduralScene()

@@ -25,6 +25,8 @@ namespace Puffin::Physics::Collision2D
 		virtual bool TestCollision(const Collision2D::CircleCollider2D* collider, Collision2D::Contact& outContact) const = 0;
 
 		ECS::EntityID entity = ECS::INVALID_ENTITY;
-		TransformComponent transform;
+
+		Vector2f position;
+		float rotation;
 	};
 }

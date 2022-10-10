@@ -80,9 +80,9 @@ namespace Puffin
 
 					DrawProceduralPlaneUI(flags);
 
-					DrawRigidbody2DUI(flags);
-					DrawCircle2DUI(flags);
-					DrawBox2DUI(flags);
+					//DrawRigidbody2DUI(flags);
+					//DrawCircle2DUI(flags);
+					//DrawBox2DUI(flags);
 
 					DrawScriptUI(flags);
 

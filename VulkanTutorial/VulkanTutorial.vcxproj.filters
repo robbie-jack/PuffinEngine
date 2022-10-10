@@ -657,6 +657,9 @@
     <ClInclude Include="..\OpenSimplexNoise\OpenSimplexNoise\OpenSimplexNoise.h">
       <Filter>Libraries\OpenSimplexNoise</Filter>
     </ClInclude>
+    <ClInclude Include="include\Components\Physics\VelocityComponent.hpp">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="content\shaders\debug.frag">

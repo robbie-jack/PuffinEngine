@@ -5,46 +5,31 @@
 
 #include <Types/Vector.h>
 
+#include "nlohmann/json.hpp"
+
 #include <memory>
 
 namespace Puffin
 {
 	namespace Physics
 	{
-		struct CircleComponent2D
+		struct ShapeComponent2D
 		{
-			std::shared_ptr<CircleShape2D> shape = nullptr;
-
-			CircleComponent2D() = default;
-			CircleComponent2D(const CircleComponent2D& circle)
-			{
-				shape = circle.shape;
-			}
-
-			~CircleComponent2D()
-			{
-				shape = nullptr;
-			}
-
-			CircleComponent2D& operator=(const CircleComponent2D& circle) = default;
+			Vector2f centreOfMass = Vector2f(0.0f);
 		};
 
-		struct BoxComponent2D
+		struct CircleComponent2D : public ShapeComponent2D
 		{
-			std::shared_ptr<BoxShape2D> shape = nullptr;
+			float radius = 0.5f;
 
-			BoxComponent2D() = default;
-			BoxComponent2D(const BoxComponent2D& box)
-			{
-				shape = box.shape;
-			}
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CircleComponent2D, centreOfMass, radius)
+		};
 
-			~BoxComponent2D()
-			{
-				shape = nullptr;
-			}
+		struct BoxComponent2D : public ShapeComponent2D
+		{
+			Vector2f halfExtent = { 0.5f };
 
-			BoxComponent2D& operator=(const BoxComponent2D& circle) = default;
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(BoxComponent2D, centreOfMass, halfExtent)
 		};
 	}
 }

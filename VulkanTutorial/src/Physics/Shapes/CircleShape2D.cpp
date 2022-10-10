@@ -9,11 +9,11 @@ namespace Puffin::Physics
 		return ShapeType2D::Circle;
 	}
 
-	AABB CircleShape2D::GetAABB(const TransformComponent& transform) const
+	AABB CircleShape2D::GetAABB(const Vector2f& position, const float& rotation) const
 	{
 		AABB aabb;
-		aabb.min = transform.position.GetXY() - Vector2(radius, radius);
-		aabb.max = transform.position.GetXY() + Vector2(radius, radius);
+		aabb.min = position - Vector2(radius, radius);
+		aabb.max = position + Vector2(radius, radius);
 		return aabb;
 	}
 }

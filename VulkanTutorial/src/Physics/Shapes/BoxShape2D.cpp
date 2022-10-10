@@ -10,11 +10,11 @@ namespace Puffin::Physics
 		return ShapeType2D::Box;
 	}
 
-	AABB BoxShape2D::GetAABB(const TransformComponent& transform) const
+	AABB BoxShape2D::GetAABB(const Vector2f& position, const float& rotation) const
 	{
 		AABB aabb;
-		aabb.min = transform.position.GetXY() - halfExtent;
-		aabb.max = transform.position.GetXY() + halfExtent;
+		aabb.min = position - halfExtent;
+		aabb.max = position + halfExtent;
 		return aabb;
 	}
 
