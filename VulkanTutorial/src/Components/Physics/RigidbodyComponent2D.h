@@ -19,7 +19,7 @@ namespace Puffin
 		{
 			{BodyType::Static, "Static"},
 			{BodyType::Kinematic, "Kinematic"},
-			{BodyType::Dynamic, "Static"}
+			{BodyType::Dynamic, "Dynamic"}
 		})
 
 		struct RigidbodyComponent2D
@@ -32,7 +32,7 @@ namespace Puffin
 
 			BodyType bodyType = BodyType::Static;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent2D, invMass, elasticity)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent2D, invMass, elasticity, bodyType)
 		};
 	}
 }

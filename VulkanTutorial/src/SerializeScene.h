@@ -22,8 +22,9 @@ namespace Puffin::IO
 		virtual void InitSceneData() = 0;
 		virtual void UpdateData() = 0;
 		virtual void Clear() = 0;
+		virtual int Size() = 0;
 		virtual json SaveToJson() const = 0;
-		virtual void LoadFromJson(const std::string& componentType, std::set<ECS::EntityID> entities, const json& data) = 0;
+		virtual void LoadFromJson(const std::string& componentType, const json& data) = 0;
 	};
 
 	template<typename CompT>
@@ -64,6 +65,11 @@ namespace Puffin::IO
 			m_componentMap.clear();
 		}
 
+		int Size() override
+		{
+			return m_componentMap.size();
+		}
+
 		json SaveToJson() const override
 		{
 			json data;
@@ -79,8 +85,11 @@ namespace Puffin::IO
 			return data;
 		}
 
-		void LoadFromJson(const std::string& componentType, std::set<ECS::EntityID> entities, const json& data) override
+		void LoadFromJson(const std::string& componentType, const json& data) override
 		{
+			if (!data.contains(componentType))
+				return;
+
 			const int size = data[componentType].size();
 
 			for (int i = 0; i < size; i++)
@@ -98,6 +107,14 @@ namespace Puffin::IO
 
 	};
 
+	struct EntityData
+	{
+		ECS::EntityID id;
+		std::string name;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(EntityData, id, name)
+	};
+
 	// Stores Loaded Scene Data
 	class SceneData
 	{
@@ -109,12 +126,18 @@ namespace Puffin::IO
 		void Init()
 		{
 			// Initialize ECS World with Entities
-			m_world->InitEntitySystem(m_entities);
+			std::set<ECS::EntityID> entities;
+			for (auto& entityData : m_entityData)
+			{
+				entities.insert(entityData.id);
+			}
+
+			m_world->InitEntitySystem(entities);
 
 			// Set Entity Names
-			for (ECS::EntityID entity : m_entities)
+			for (auto& entityData : m_entityData)
 			{
-				m_world->SetEntityName(entity, m_entityNames[entity]);
+				m_world->SetEntityName(entityData.id, entityData.name);
 			}
 
 			// Init Each Component Type
@@ -128,11 +151,15 @@ namespace Puffin::IO
 		{
 			Clear();
 
-			m_entities = m_world->GetActiveEntities();
+			std::set<ECS::EntityID> entities = m_world->GetActiveEntities();
 
-			for (ECS::EntityID entity : m_entities)
+			for (ECS::EntityID entity : entities)
 			{
-				m_entityNames.insert({ entity, m_world->GetEntityName(entity) });
+				EntityData data;
+				data.id = entity;
+				data.name = m_world->GetEntityName(entity);
+
+				m_entityData.push_back(data);
 			}
 
 			for (auto& [fst, snd] : m_sceneDataArrays)
@@ -143,8 +170,7 @@ namespace Puffin::IO
 
 		void Clear()
 		{
-			m_entities.clear();
-			m_entityNames.clear();
+			m_entityData.clear();
 
 			for (auto& pair : m_sceneDataArrays)
 			{
@@ -173,12 +199,12 @@ namespace Puffin::IO
 			// Initialize Output File Stream and Cereal Binary Archive
 			
 			json data;
-			data["Entities"] = m_entities;
-			data["EntityNames"] = m_entityNames;
+			data["Entities"] = m_entityData;
 
 			for (auto& [fst, snd] : m_sceneDataArrays)
 			{
-				data[fst] = snd->SaveToJson();
+				if (snd->Size() > 0)
+					data[fst] = snd->SaveToJson();
 			}
 
 			std::ofstream os(m_scenePath, std::ios::out);
@@ -202,15 +228,11 @@ namespace Puffin::IO
 
 			is.close();
 
-			const std::set<ECS::EntityID> entities = data["Entities"];
-			m_entities = entities;
-
-			const std::unordered_map<ECS::EntityID, std::string> entityNames = data["EntityNames"];
-			m_entityNames = entityNames;
+			m_entityData = data["Entities"];
 
 			for (auto& [fst, snd] : m_sceneDataArrays)
 			{
-				snd->LoadFromJson(fst, m_entities, data);
+				snd->LoadFromJson(fst, data);
 			}
 		}
 
@@ -235,8 +257,7 @@ namespace Puffin::IO
 		std::shared_ptr<ECS::World> m_world; // Pointer to ECS World
 		fs::path m_scenePath;
 
-		std::set<ECS::EntityID> m_entities;
-		std::unordered_map<ECS::EntityID, std::string> m_entityNames;
+		std::vector<EntityData> m_entityData;
 		std::unordered_map<std::string, std::shared_ptr<ISceneDataArray>> m_sceneDataArrays; // Map of scene data arrays
 
 	};
