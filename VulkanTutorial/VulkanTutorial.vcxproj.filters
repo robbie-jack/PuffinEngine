@@ -68,15 +68,6 @@
     <Filter Include="Libraries\VMA">
       <UniqueIdentifier>{33f38952-8e59-4e33-b414-d7753a5bdad9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Physics\CustomPhysics2D">
-      <UniqueIdentifier>{33ce4f3a-b719-4696-b905-0f0a0392dffb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics\CustomPhysics2D\Shapes">
-      <UniqueIdentifier>{2de39666-6781-4374-9e9c-6312a2f3709f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics\CustomPhysics2D\Colliders">
-      <UniqueIdentifier>{f3961285-1613-4cdf-bc5a-66725870620e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Physics\Box2D">
       <UniqueIdentifier>{30a1567e-9bda-48dd-9393-d97e05743956}</UniqueIdentifier>
     </Filter>
@@ -103,6 +94,18 @@
     </Filter>
     <Filter Include="Libraries\OpenSimplexNoise">
       <UniqueIdentifier>{64334c93-7dcc-4b90-a3ab-884c677c5887}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\PuffinPhysics2D">
+      <UniqueIdentifier>{33ce4f3a-b719-4696-b905-0f0a0392dffb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\PuffinPhysics2D\Shapes">
+      <UniqueIdentifier>{2de39666-6781-4374-9e9c-6312a2f3709f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\PuffinPhysics2D\Colliders">
+      <UniqueIdentifier>{f3961285-1613-4cdf-bc5a-66725870620e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\PuffinPhysics2D\Broadphases">
+      <UniqueIdentifier>{907782c7-b818-4e52-a564-8adb406a0ffb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -154,16 +157,16 @@
       <Filter>Assets</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp">
-      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Shapes\CircleShape2D.cpp">
-      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Colliders\CircleCollider2D.cpp">
-      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Colliders\BoxCollider2D.cpp">
-      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
     </ClCompile>
     <ClCompile Include="src\Assets\AssetRegistry.cpp">
       <Filter>Assets</Filter>
@@ -175,10 +178,10 @@
       <Filter>Assets</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Colliders\PolygonCollider2D.cpp">
-      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\PhysicsSystem2D.cpp">
-      <Filter>Physics\CustomPhysics2D</Filter>
+      <Filter>Physics\PuffinPhysics2D</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Box2D\Box2DPhysicsSystem.cpp">
       <Filter>Physics\Box2D</Filter>
@@ -466,25 +469,25 @@
       <Filter>Assets</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Shapes\Shape2D.h">
-      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Shapes\BoxShape2D.h">
-      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Shapes\CircleShape2D.h">
-      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="src\Types\ComponentFlags.h">
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Colliders\BoxCollider2D.h">
-      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Colliders\CircleCollider2D.h">
-      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Colliders\Collider2D.h">
-      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="src\Assets\AssetRegistry.h">
       <Filter>Assets</Filter>
@@ -520,22 +523,22 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Shapes\PolygonShape2D.h">
-      <Filter>Physics\CustomPhysics2D\Shapes</Filter>
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Colliders\PolygonCollider2D.h">
-      <Filter>Physics\CustomPhysics2D\Colliders</Filter>
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="src\Components\TransformComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\PhysicsHelpers2D.h">
-      <Filter>Physics\CustomPhysics2D</Filter>
+      <Filter>Physics\PuffinPhysics2D</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\PhysicsSystem2D.h">
-      <Filter>Physics\CustomPhysics2D</Filter>
+      <Filter>Physics\PuffinPhysics2D</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\PhysicsTypes2D.h">
-      <Filter>Physics\CustomPhysics2D</Filter>
+      <Filter>Physics\PuffinPhysics2D</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\Box2D\Box2DPhysicsSystem.h">
       <Filter>Physics\Box2D</Filter>
@@ -659,6 +662,9 @@
     </ClInclude>
     <ClInclude Include="include\Components\Physics\VelocityComponent.hpp">
       <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\Broadphase2D.hpp">
+      <Filter>Physics\PuffinPhysics2D\Broadphases</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

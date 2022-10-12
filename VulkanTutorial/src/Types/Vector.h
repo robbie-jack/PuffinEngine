@@ -1,7 +1,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <math.h>
+#include <cmath>
 
 #include "box2d/box2d.h"
 #include "glm/vec2.hpp"
@@ -252,6 +252,11 @@ namespace Puffin
 		{
 			x = 0.0f;
 			y = 0.0f;
+		}
+
+		Vector2 Abs() const
+		{
+			return Vector2(abs(x), abs(y));
 		}
 
 		// Json

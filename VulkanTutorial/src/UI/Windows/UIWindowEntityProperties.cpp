@@ -4,10 +4,12 @@
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
-#include "Components/Physics/Box2D/Box2DRigidbodyComponent.h"
-#include "Components/Physics/Box2D/Box2DShapeComponents.h"
 #include "Components/AngelScriptComponent.h"
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
+#include "Components/Physics/RigidbodyComponent2D.h"
+#include "Components/Physics/ShapeComponents2D.h"
+#include "Components/Physics/Box2D/Box2DRigidbodyComponent.h"
+#include "Components/Physics/Box2D/Box2DShapeComponents.h"
 
 #include "ECS/ECS.h"
 
@@ -80,9 +82,9 @@ namespace Puffin
 
 					DrawProceduralPlaneUI(flags);
 
-					//DrawRigidbody2DUI(flags);
-					//DrawCircle2DUI(flags);
-					//DrawBox2DUI(flags);
+					DrawRigidbody2DUI(flags);
+					DrawCircle2DUI(flags);
+					DrawBox2DUI(flags);
 
 					DrawScriptUI(flags);
 
@@ -144,17 +146,17 @@ namespace Puffin
 							
 						if (ImGui::Selectable("Rigidbody"))
 						{
-							ecsWorld->AddComponent<Physics::Box2DRigidbodyComponent>(m_entity);
+							ecsWorld->AddComponent<Physics::RigidbodyComponent2D>(m_entity);
 						}
 
 						if (ImGui::Selectable("Circle2D"))
 						{
-							ecsWorld->AddComponent<Physics::Box2DCircleComponent>(m_entity);
+							ecsWorld->AddComponent<Physics::CircleComponent2D>(m_entity);
 						}
 
 						if (ImGui::Selectable("Box2D"))
 						{
-							ecsWorld->AddComponent<Physics::Box2DBoxComponent>(m_entity);
+							ecsWorld->AddComponent<Physics::BoxComponent2D>(m_entity);
 						}
 
 						ImGui::EndPopup();
@@ -514,166 +516,61 @@ namespace Puffin
 		void UIWindowEntityProperties::DrawRigidbody2DUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Physics::Box2DRigidbodyComponent>(m_entity))
+			if (ecsWorld->HasComponent<Physics::RigidbodyComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& rb = ecsWorld->GetComponent<Physics::Box2DRigidbodyComponent>(m_entity);
+					auto& rb = ecsWorld->GetComponent<Physics::RigidbodyComponent2D>(m_entity);
+					bool dirty = false;
 
 					if (ImGui::SmallButton("X##Rigidbody"))
 					{
-						ecsWorld->SetComponentFlag<Physics::Box2DRigidbodyComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDeleted>(m_entity, true);
 							
 						sceneChanged = true;
 					}
 
-					// Edit Body Properties
-					if (rb.body != nullptr)
+					// Combo box for Body Type Selection
+					const char* items[] = { "Static", "Kinematic", "Dynamic" };
+					int item_current_idx = static_cast<int>(rb.bodyType);
+					const char* label = items[item_current_idx];
+					if (ImGui::BeginCombo("Body Type", label))
 					{
-						auto* body = rb.body;
-						bool bodyChanged = false;
-
-						// Combo box for Body Type Selection
-						const char* items[] = { "Static", "Kinematic", "Dynamic" };
-						int item_current_idx = (int)body->GetType();
-						const char* label = items[item_current_idx];
-						if (ImGui::BeginCombo("Body Type", label))
+						for (int i = 0; i < IM_ARRAYSIZE(items); i++)
 						{
-							for (int i = 0; i < IM_ARRAYSIZE(items); i++)
+							const bool isSelected = (item_current_idx == i);
+							if (ImGui::Selectable(items[i], isSelected))
 							{
-								const bool isSelected = (item_current_idx == i);
-								if (ImGui::Selectable(items[i], isSelected))
-								{
-									item_current_idx = i;
-									body->SetType(static_cast<b2BodyType>(item_current_idx));
-									bodyChanged = true;
-								}
-
-								if (isSelected)
-								{
-									ImGui::SetItemDefaultFocus();
-								}
+								item_current_idx = i;
+								rb.bodyType = static_cast<Physics::BodyType>(item_current_idx);
+								dirty = true;
 							}
 
-							ImGui::EndCombo();
+							if (isSelected)
+							{
+								ImGui::SetItemDefaultFocus();
+							}
 						}
 
-						// Sleep
-						bool sleep = body->IsSleepingAllowed();
-						if (ImGui::Checkbox("Sleeping Allowed", &sleep))
-						{
-							body->SetSleepingAllowed(sleep);
-							bodyChanged = true;
-						}
-
-						// Bullet
-						bool bullet = body->IsBullet();
-						if (ImGui::Checkbox("Bullet", &bullet))
-						{
-							body->SetBullet(bullet);
-							bodyChanged = true;
-						}
-
-						// Awake
-						bool awake = body->IsAwake();
-						if (ImGui::Checkbox("Awake", &awake))
-						{
-							body->SetAwake(awake);
-							bodyChanged = true;
-						}
-
-						// Enabled
-						bool enabled = body->IsEnabled();
-						if (ImGui::Checkbox("Enabled", &enabled))
-						{
-							body->SetEnabled(enabled);
-							bodyChanged = true;
-						}
-
-						// Fixed Rotation
-						bool fixedRotation = body->IsFixedRotation();
-						if (ImGui::Checkbox("Rotation Fixed", &fixedRotation))
-						{
-							body->SetFixedRotation(fixedRotation);
-							bodyChanged = true;
-						}
-
-						// Angular Damping
-						float angularDamping = body->GetAngularDamping();
-						if (ImGui::DragFloat("Angular Damping", &angularDamping))
-						{
-							body->SetAngularDamping(angularDamping);
-							bodyChanged = true;
-						}
-
-						// Linear Damping
-						float linearDamping = body->GetLinearDamping();
-						if (ImGui::DragFloat("Linear Damping", &linearDamping))
-						{
-							body->SetLinearDamping(linearDamping);
-							bodyChanged = true;
-						}
-
-						// Gravity Scale
-						float gravityScale = body->GetGravityScale();
-						if (ImGui::DragFloat("Gravity Scale", &gravityScale))
-						{
-							body->SetGravityScale(gravityScale);
-							bodyChanged = true;
-						}
-
-						if(bodyChanged)
-						{
-							Physics::UpdateBodyDef(rb);
-							sceneChanged = true;
-						}
+						ImGui::EndCombo();
 					}
 
-					// Edit Fixture Properties
-					if (rb.fixture != nullptr)
+					dirty |= ImGui::DragFloat("Inverse Mass", &rb.invMass);
+					dirty |= ImGui::DragFloat("Elasticity", &rb.elasticity);
+					//dirty |= ImGui::Checkbox("Sleeping Allowed", &sleep);
+					//dirty |= ImGui::Checkbox("Bullet", &bullet);
+					//dirty |= ImGui::Checkbox("Awake", &awake);
+					//dirty |= ImGui::Checkbox("Rotation Fixed", &fixedRotation);
+					//dirty |= ImGui::DragFloat("Angular Damping", &angularDamping);
+					//dirty |= ImGui::DragFloat("Linear Damping", &linearDamping);
+					//dirty |= ImGui::DragFloat("Gravity Scale", &gravityScale);
+
+					if(dirty)
 					{
-						auto* fixture = rb.fixture;
-						bool fixtureChanged = false;
-
-						// Density
-						float density = fixture->GetDensity();
-						if (ImGui::DragFloat("Density", &density))
-						{
-							fixture->SetDensity(density);
-							fixtureChanged = true;
-						}
-
-						// Friction
-						float friction = fixture->GetFriction();
-						if (ImGui::DragFloat("Friction", &friction))
-						{
-							fixture->SetFriction(friction);
-							fixtureChanged = true;
-						}
-
-						// Restitution/Elasticity
-						float restitution = fixture->GetRestitution();
-						if (ImGui::DragFloat("Restitution/Elasticity", &restitution))
-						{
-							fixture->SetRestitution(restitution);
-							fixtureChanged = true;
-						}
-
-						// Restitution/Elasticity Threshold
-						float restitutionThreshold = fixture->GetRestitutionThreshold();
-						if (ImGui::DragFloat("Restitution/Elasticity Threshold", &restitutionThreshold))
-						{
-							fixture->SetRestitutionThreshold(restitutionThreshold);
-							fixtureChanged = true;
-						}
-
-						if (fixtureChanged)
-						{
-							Physics::UpdateFixtureDef(rb);
-							sceneChanged = true;
-						}
+						sceneChanged = true;
+						ecsWorld->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
 					}
 
 					ImGui::TreePop();
@@ -684,30 +581,28 @@ namespace Puffin
 		void UIWindowEntityProperties::DrawCircle2DUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Physics::Box2DCircleComponent>(m_entity))
+			if (ecsWorld->HasComponent<Physics::CircleComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Circle Component 2D", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& circle = ecsWorld->GetComponent<Physics::Box2DCircleComponent>(m_entity);
+					auto& circle = ecsWorld->GetComponent<Physics::CircleComponent2D>(m_entity);
+					bool dirty = false;
 
 					if (ImGui::SmallButton("X##Circle2D"))
 					{
-						ecsWorld->SetComponentFlag<Physics::Box2DCircleComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<Physics::CircleComponent2D, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
 
-					if (circle.shape != nullptr)
-					{
-						auto* shape = circle.shape;
+					dirty |= ImGui::DragFloat("Radius", &circle.radius);
 
-						if (ImGui::DragFloat("Radius", &shape->m_radius))
-						{
-							circle.data.radius = shape->m_radius;
-							sceneChanged = true;
-						}
+					if (dirty)
+					{
+						sceneChanged = true;
+						ecsWorld->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
 					}
 
 					ImGui::TreePop();
@@ -718,30 +613,28 @@ namespace Puffin
 		void UIWindowEntityProperties::DrawBox2DUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Physics::Box2DBoxComponent>(m_entity))
+			if (ecsWorld->HasComponent<Physics::BoxComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Box Component 2D", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& box = ecsWorld->GetComponent<Physics::Box2DBoxComponent>(m_entity);
+					auto& box = ecsWorld->GetComponent<Physics::BoxComponent2D>(m_entity);
+					bool dirty = false;
 
 					if (ImGui::SmallButton("X##Box2D"))
 					{
-						ecsWorld->SetComponentFlag< Physics::Box2DBoxComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag< Physics::BoxComponent2D, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
 
-					if (box.shape != nullptr)
-					{
-						auto* shape = box.shape;
+					dirty |= ImGui::DragFloat2("Half Extent", reinterpret_cast<float*>(&box.halfExtent), 0.1f, 0.0f);
 
-						if (ImGui::DragFloat2("Half Extent", reinterpret_cast<float*>(&box.data.halfExtent), 0.1f, 0.0f))
-						{
-							shape->SetAsBox(box.data.halfExtent.x, box.data.halfExtent.y);
-							sceneChanged = true;
-						}
+					if (dirty)
+					{
+						sceneChanged = true;
+						ecsWorld->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
 					}
 
 					ImGui::TreePop();

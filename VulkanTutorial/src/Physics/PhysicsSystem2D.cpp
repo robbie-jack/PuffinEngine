@@ -247,6 +247,9 @@ namespace Puffin
 
 			// Resolve Collision2D between Colliders
 			CollisionResponse();
+
+			// Generate Collision Events for this Tick
+			GenerateCollisionEvents();
 		}
 
 		void PhysicsSystem2D::UpdateDynamics() const
@@ -295,43 +298,10 @@ namespace Puffin
 
 		void PhysicsSystem2D::CollisionBroadphase()
 		{
-			m_collisionPairs.clear();
-			
-			// Basic N-Squared Brute Force Broadphase
-			GenerateCollisionPairs();
-		}
-
-		void PhysicsSystem2D::GenerateCollisionPairs()
-		{
-			for (const auto colliderA : m_colliders)
-			{
-				for (const auto colliderB : m_colliders)
-				{
-					// Don't perform collision check between collider and itself
-					if (colliderA->entity == colliderB->entity)
-						continue;
-
-					// Don't perform collision check between colliders which both have infinite mass
-					auto& rbA = m_world->GetComponent<RigidbodyComponent2D>(colliderA->entity);
-					auto& rbB = m_world->GetComponent<RigidbodyComponent2D>(colliderB->entity);
-
-					if (rbA.invMass == 0.0f && rbB.invMass == 0.0f)
-						continue;
-
-					// Don't perform collision check if this pair is already in list
-					bool collisionPairAlreadyExists = false;
-
-					for (const CollisionPair& collisionPair : m_collisionPairs)
-					{
-						collisionPairAlreadyExists |= collisionPair.first->entity == colliderB->entity && collisionPair.second->entity == colliderA->entity;
-					}
-
-					if (collisionPairAlreadyExists)
-						continue;
-
-					m_collisionPairs.emplace_back(std::make_pair(colliderA, colliderB));
-				}
-			}
+			// Perform Collision Broadphase to Generate Collision Pairs
+			NSquaredBroadphase broadphase;
+			broadphase.SetWorld(m_world);
+			broadphase.GenerateCollisionPairs(m_colliders, m_collisionPairs);
 		}
 
 		void PhysicsSystem2D::CollisionDetection()
@@ -387,10 +357,53 @@ namespace Puffin
 					const float tA = bodyA.invMass / (bodyA.invMass + bodyB.invMass);
 					const float tB = bodyB.invMass / (bodyA.invMass + bodyB.invMass);
 
-					const Vector2 ds = (contact.pointOnB - contact.pointOnA) * contact.normal;
+					const Vector2 ds = (contact.pointOnB - contact.pointOnA) * contact.normal.Abs();
 					transformA.position += ds * tA;
 					transformB.position -= ds * tB;
 				}
+			}
+		}
+
+		void PhysicsSystem2D::GenerateCollisionEvents()
+		{
+			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+
+			std::set<Collision2D::Contact> existingContacts;
+
+			// Iterate over contacts for this tick
+			for (const Collision2D::Contact& contact : m_collisionContacts)
+			{
+				// Publish Begin Collision Event when a contact was not in active contacts set
+				if (m_activeContacts.count(contact) == 0)
+				{
+					m_activeContacts.insert(contact);
+
+					eventSubsystem->Publish<CollisionBeginEvent>({ contact.a, contact.b });
+				}
+				else
+				{
+					existingContacts.insert(contact);
+				}
+			}
+
+			std::set<Collision2D::Contact> collisionsToRemove;
+
+			// Iterate over contacts that were already in active set
+			for (const Collision2D::Contact& contact : existingContacts)
+			{
+				// Publish End 
+				if (existingContacts.count(contact) == 0)
+				{
+					collisionsToRemove.insert(contact);
+				}
+			}
+
+			// Remove inactive contacts from active set and publish End Collision Event
+			for (const Collision2D::Contact& contact : collisionsToRemove)
+			{
+				m_activeContacts.erase(contact);
+
+				eventSubsystem->Publish<CollisionEndEvent>({ contact.a, contact.b });
 			}
 		}
 	}

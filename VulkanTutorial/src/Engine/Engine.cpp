@@ -143,11 +143,11 @@ namespace Puffin::Core
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene();
-		//PhysicsScene();
+		PhysicsScene();
 		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
-		m_sceneData->LoadAndInit();
+		//m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -557,7 +557,7 @@ namespace Puffin::Core
 
 		lightEntity->SetName("Light");
 
-		lightEntity->AddAndGetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		lightEntity->AddComponent<TransformComponent>();
 
 		auto& lightComp = lightEntity->AddAndGetComponent<Rendering::DirectionalLightComponent>();
 		lightComp.direction = glm::vec3(1.0f, -1.0f, 0.0f);
@@ -571,48 +571,37 @@ namespace Puffin::Core
 
 		boxEntity->AddComponent<TransformComponent>();
 		boxEntity->AddComponent<Rendering::MeshComponent>();
-
 		boxEntity->AddComponent<Physics::RigidbodyComponent2D>();
 		boxEntity->AddComponent<Physics::BoxComponent2D>();
-		//boxEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
-		//boxEntity->AddComponent<Physics::Box2DBoxComponent>();
-
 		boxEntity->AddComponent<Scripting::AngelScriptComponent>();
 
-		boxEntity->GetComponent<TransformComponent>() = { Vector3f(-2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
-
+		boxEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 2.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
 		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-
-		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
-		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.7f;
+		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 0.5f;
+		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.5f;
 		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
-		//boxEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
-
+		boxEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
 		boxEntity->GetComponent<Scripting::AngelScriptComponent>().name = "PhysicsScript";
 		boxEntity->GetComponent<Scripting::AngelScriptComponent>().dir = contentRootPath / "scripts\\Physics.pscript";
 
 		// Create Circle Entity
-		//const auto circleEntity = ECS::CreateEntity(ecsWorld);
+		const auto circleEntity = ECS::CreateEntity(ecsWorld);
 
-		//circleEntity->SetName("Circle");
+		circleEntity->SetName("Circle");
 
-		//circleEntity->AddComponent<TransformComponent>();
-		//circleEntity->AddComponent<Rendering::MeshComponent>();
+		circleEntity->AddComponent<TransformComponent>();
+		circleEntity->AddComponent<Rendering::MeshComponent>();
+		circleEntity->AddComponent<Physics::RigidbodyComponent2D>();
+		circleEntity->AddComponent<Physics::BoxComponent2D>();
 
-		//circleEntity->AddComponent<Physics::RigidbodyComponent2D>();
-		//circleEntity->AddComponent<Physics::CircleComponent2D>();
-		////circleEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
-		////circleEntity->AddComponent<Physics::Box2DCircleComponent>();
-
-		//circleEntity->GetComponent<TransformComponent>() = { Vector3f(2.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
-
-		//circleEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId2;
-		//circleEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-
-		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
-		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
-		////circleEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_dynamicBody;
+		circleEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		circleEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		circleEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		circleEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
+		circleEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.75f;
+		circleEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
+		circleEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
 
 		// Create Floor Entity
 		const auto floorEntity = ECS::CreateEntity(ecsWorld);
@@ -621,20 +610,13 @@ namespace Puffin::Core
 
 		floorEntity->AddComponent<TransformComponent>();
 		floorEntity->AddComponent<Rendering::MeshComponent>();
-
 		floorEntity->AddComponent<Physics::RigidbodyComponent2D>();
-		floorEntity->AddComponent<Physics::CircleComponent2D>();
-		//floorEntity->AddComponent<Physics::Box2DRigidbodyComponent>();
-		//floorEntity->AddComponent<Physics::Box2DBoxComponent>();
+		floorEntity->AddComponent<Physics::BoxComponent2D>();
 
 		floorEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
-
 		floorEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-
 		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(5.0f, 1.0f);
-		/*floorEntity->GetComponent<Physics::Box2DRigidbodyComponent>().bodyDef.type = b2_staticBody;
-		floorEntity->GetComponent<Physics::Box2DBoxComponent>().data.halfExtent = Vector2f(5.0f, 1.0f);*/
 	}
 
 	void Engine::ProceduralScene()

@@ -6,6 +6,7 @@
 #include <Physics/Shapes/BoxShape2D.h>
 #include <Physics/Shapes/CircleShape2D.h>
 
+#include "Physics/PuffinPhysics2D/Broadphases/Broadphase2D.hpp"
 #include "Physics/Colliders/Collider2D.h"
 #include "Physics/PhysicsTypes2D.h"
 
@@ -19,11 +20,16 @@
 
 #include "ECS/Entity.h"
 
+
 namespace Puffin::Physics
 {
 	const uint32_t MAX_SHAPES_PER_TYPE = 128; // Maximum number of shapes of each type
 
-	typedef std::pair<const std::shared_ptr<Collision2D::Collider2D>, const std::shared_ptr<Collision2D::Collider2D>> CollisionPair;
+	enum class BroadphaseType
+	{
+		NSquared = 0,
+		PruneAndSweep = 1
+	};
 
 	//////////////////////////////////////////////////
 	// Physics System 2D
@@ -53,6 +59,7 @@ namespace Puffin::Physics
 
 		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
 		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided
+		std::set<Collision2D::Contact> m_activeContacts; // Set for tracking active collisions
 
 		void InitCircle2D(std::shared_ptr<ECS::Entity> entity);
 		void InitBox2D(std::shared_ptr<ECS::Entity> entity);
@@ -74,13 +81,14 @@ namespace Puffin::Physics
 
 		// Collision Broadphase
 		void CollisionBroadphase(); // Perform collision broadphase to decide which entities should collider together
-		void GenerateCollisionPairs(); // Generate collision pairs using the N_Squared Broadphase
 
 		// Collision Detection
 		void CollisionDetection();
 
 		// Resolve collisions found during collision detection, applying the correct Impulse 
 		void CollisionResponse() const;
+
+		void GenerateCollisionEvents();
 
 	};
 

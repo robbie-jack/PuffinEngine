@@ -192,6 +192,11 @@ namespace Puffin
 			m_vector.reserve(size);
 		}
 
+		size_t Size() const
+		{
+			return m_vector.size();
+		}
+
 		auto begin()
 		{
 			return m_vector.begin();
