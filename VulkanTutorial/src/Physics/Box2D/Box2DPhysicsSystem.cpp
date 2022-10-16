@@ -6,28 +6,14 @@
 #include "MathHelpers.h"
 
 #include "Components/TransformComponent.h"
+#include "Components/Physics/RigidbodyComponent2D.h"
+#include "Components/Physics/ShapeComponents2D.h"
 #include "Components/Physics/VelocityComponent.hpp"
 
 namespace Puffin::Physics
 {
 	void Box2DPhysicsSystem::Init()
 	{
-		// Signature for all rigidbodies
-		ECS::Signature rbSignature;
-		rbSignature.set(m_world->GetComponentType<TransformComponent>());
-		rbSignature.set(m_world->GetComponentType<Physics::Box2DRigidbodyComponent>());
-		m_world->SetSystemSignature<Physics::Box2DPhysicsSystem>("Rigidbody", rbSignature);
-
-		ECS::Signature circleSignature;
-		circleSignature.set(m_world->GetComponentType<TransformComponent>());
-		circleSignature.set(m_world->GetComponentType<Box2DCircleComponent>());
-		m_world->SetSystemSignature<Box2DPhysicsSystem>("Circle", circleSignature);
-
-		ECS::Signature boxSignature;
-		boxSignature.set(m_world->GetComponentType<TransformComponent>());
-		boxSignature.set(m_world->GetComponentType<Box2DBoxComponent>());
-		m_world->SetSystemSignature<Box2DPhysicsSystem>("Box", boxSignature);
-
 		auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
 
 		// Register Events
@@ -61,22 +47,21 @@ namespace Puffin::Physics
 
 		// Updated entity position/rotation from simulation
 		std::vector<std::shared_ptr<ECS::Entity>> rbEntities;
-		ECS::GetEntities<TransformComponent, VelocityComponent, Box2DRigidbodyComponent>(m_world, rbEntities);
+		ECS::GetEntities<TransformComponent, VelocityComponent, RigidbodyComponent2D>(m_world, rbEntities);
 		for (const auto& entity : rbEntities)
 		{
 			auto& transform = entity->GetComponent<TransformComponent>();
 			auto& velocity = entity->GetComponent<VelocityComponent>();
-			const auto& rb = entity->GetComponent<Box2DRigidbodyComponent>();
 
 			// Update Transform from Rigidbody Position
-			transform.position.x = rb.body->GetPosition().x;
-			transform.position.y = rb.body->GetPosition().y;
-			transform.rotation.z = Maths::RadiansToDegrees(-rb.body->GetAngle());
+			transform.position.x = m_bodies[entity->ID()]->GetPosition().x;
+			transform.position.y = m_bodies[entity->ID()]->GetPosition().y;
+			transform.rotation.z = Maths::RadiansToDegrees(-m_bodies[entity->ID()]->GetAngle());
 
 			// Update Interpolated Transform with Linear/Angular Velocity
-			velocity.linear.x = rb.body->GetLinearVelocity().x;
-			velocity.linear.y = rb.body->GetLinearVelocity().y;
-			velocity.angular.z = rb.body->GetAngularVelocity();
+			velocity.linear.x = m_bodies[entity->ID()]->GetLinearVelocity().x;
+			velocity.linear.y = m_bodies[entity->ID()]->GetLinearVelocity().y;
+			velocity.angular.z = m_bodies[entity->ID()]->GetAngularVelocity();
 		}
 	}
 
@@ -84,7 +69,7 @@ namespace Puffin::Physics
 	{
 		// Cleanup Rigidbody Components
 		std::vector<std::shared_ptr<ECS::Entity>> rbEntities;
-		ECS::GetEntities<TransformComponent, VelocityComponent, Box2DRigidbodyComponent>(m_world, rbEntities);
+		ECS::GetEntities<TransformComponent, VelocityComponent, RigidbodyComponent2D>(m_world, rbEntities);
 		for (const auto& entity : rbEntities)
 		{
 			auto& velocity = entity->GetComponent<VelocityComponent>();
@@ -96,7 +81,7 @@ namespace Puffin::Physics
 
 		// Cleanup Box Components
 		std::vector<std::shared_ptr<ECS::Entity>> boxEntities;
-		ECS::GetEntities<TransformComponent, Box2DBoxComponent>(m_world, boxEntities);
+		ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntities);
 		for (const auto& entity : boxEntities)
 		{
 			CleanupBoxComponent(entity->ID());
@@ -104,7 +89,7 @@ namespace Puffin::Physics
 
 		// Cleanup Box Components
 		std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
-		ECS::GetEntities<TransformComponent, Box2DCircleComponent>(m_world, circleEntities);
+		ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
 		for (const auto& entity : circleEntities)
 		{
 			CleanupCircleComponent(entity->ID());
@@ -112,8 +97,6 @@ namespace Puffin::Physics
 
 		m_circleShapes.Clear();
 		m_polygonShapes.Clear();
-
-		m_updateShapePointers = false;
 
 		m_physicsWorld = nullptr;
 		m_contactListener = nullptr;
@@ -139,234 +122,181 @@ namespace Puffin::Physics
 	void Box2DPhysicsSystem::UpdateComponents()
 	{
 		// Update Rigidbody
-		for (ECS::EntityID entity : entityMap["Rigidbody"])
+		std::vector<std::shared_ptr<ECS::Entity>> rigidbodyEntities;
+		ECS::GetEntities<TransformComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
+		for (const auto& entity : rigidbodyEntities)
 		{
-			if (m_world->GetComponentFlag<Box2DRigidbodyComponent, FlagDirty>(entity))
+			if (entity->GetComponentFlag<RigidbodyComponent2D, FlagDirty>())
 			{
-				CleanupRigidbodyComponent(entity);
-				InitRigidbodyComponent(entity);
+				CleanupRigidbodyComponent(entity->ID());
+				InitRigidbodyComponent(entity->ID());
 
-				m_world->SetComponentFlag<Box2DRigidbodyComponent, FlagDirty>(entity, false);
+				entity->SetComponentFlag<RigidbodyComponent2D, FlagDirty>(false);
 			}
 
-			if (m_world->GetComponentFlag<Box2DRigidbodyComponent, FlagDeleted>(entity))
+			if (entity->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>())
 			{
-				CleanupRigidbodyComponent(entity);
+				CleanupRigidbodyComponent(entity->ID());
 
-				m_world->SetComponentFlag<Box2DRigidbodyComponent, FlagDeleted>(entity, false);
+				entity->RemoveComponent<RigidbodyComponent2D>();
 			}
 		}
 				
 		// Update Box Components
-		for (ECS::EntityID entity : entityMap["Box"])
+		std::vector<std::shared_ptr<ECS::Entity>> boxEntities;
+		ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntities);
+		for (const auto& entity : boxEntities)
 		{
-			auto& box = m_world->GetComponent<Box2DBoxComponent>(entity);
+			auto& box = m_world->GetComponent<BoxComponent2D>(entity->ID());
 
-			if (m_world->GetComponentFlag<Box2DBoxComponent, FlagDirty>(entity))
+			if (entity->GetComponentFlag<BoxComponent2D, FlagDirty>())
 			{
-				CleanupBoxComponent(entity);
+				InitBoxComponent(entity->ID());
 
-				if (m_world->HasComponent<Box2DRigidbodyComponent>(entity))
-				{
-					auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
-
-					rb.fixture = nullptr;
-
-					InitBoxForRigidbody(entity);
-				}
-				else
-				{
-					InitBoxComponent(entity);
-				}
-
-				m_world->SetComponentFlag<Box2DBoxComponent, FlagDirty>(entity, false);
+				entity->SetComponentFlag<BoxComponent2D, FlagDirty>(false);
 			}
 
-			if (m_world->GetComponentFlag<Box2DBoxComponent, FlagDeleted>(entity))
+			if (entity->GetComponentFlag<BoxComponent2D, FlagDeleted>())
 			{
-				CleanupBoxComponent(entity);
+				CleanupBoxComponent(entity->ID());
 
-				m_world->SetComponentFlag<Box2DBoxComponent, FlagDeleted>(entity, false);
-			}
-
-			if (!m_world->HasComponent<Box2DRigidbodyComponent>(entity))
-			{
-				if (m_updateShapePointers)
-				{
-					box.shape = &m_polygonShapes[entity];
-				}
+				entity->RemoveComponent<BoxComponent2D>();
 			}
 		}
 
 		// Update Circle Components
-		for (ECS::EntityID entity : entityMap["Circle"])
+		std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+		ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
+		for (const auto& entity : circleEntities)
 		{
-			auto& circle = m_world->GetComponent<Box2DCircleComponent>(entity);
+			auto& circle = entity->GetComponent<CircleComponent2D>();
 
-			if (m_world->GetComponentFlag<Box2DCircleComponent, FlagDirty>(entity))
+			if (entity->GetComponentFlag<CircleComponent2D, FlagDirty>())
 			{
-				CleanupCircleComponent(entity);
+				InitCircleComponent(entity->ID());
 
-				if (m_world->HasComponent<Box2DRigidbodyComponent>(entity))
-				{
-					auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
-
-					rb.fixture = nullptr;
-
-					InitCircleForRigidbody(entity);
-				}
-				else
-				{
-					InitCircleComponent(entity);
-				}
-
-				m_world->SetComponentFlag<Box2DCircleComponent, FlagDirty>(entity, false);
+				entity->SetComponentFlag<CircleComponent2D, FlagDirty>(false);
 			}
 
-			if (m_world->GetComponentFlag<Box2DCircleComponent, FlagDeleted>(entity))
+			if (entity->GetComponentFlag<CircleComponent2D, FlagDeleted>())
 			{
-				CleanupCircleComponent(entity);
+				CleanupCircleComponent(entity->ID());
 
-				m_world->SetComponentFlag<Box2DCircleComponent, FlagDeleted>(entity, false);
-			}
-
-			if (!m_world->HasComponent<Box2DRigidbodyComponent>(entity))
-			{
-				if (m_updateShapePointers)
-				{
-					circle.shape = &m_circleShapes[entity];
-				}
+				entity->RemoveComponent<CircleComponent2D>();
 			}
 		}
-
-		m_updateShapePointers = false;
 	}
 
 	void Box2DPhysicsSystem::InitRigidbodyComponent(ECS::EntityID entity)
 	{
 		const auto transform = m_world->GetComponent<TransformComponent>(entity);
-		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
 
-		if (rb.body == nullptr)
+		if (!m_bodies.Contains(entity))
 		{
-			b2BodyDef bodyDef = rb.bodyDef;
-			bodyDef.userData.pointer = static_cast<uintptr_t>(entity);
+			m_bodies.Insert(entity, nullptr);
 
+			b2BodyDef bodyDef;
+			bodyDef.userData.pointer = static_cast<uintptr_t>(entity);
 			bodyDef.position.Set(transform.position.x, transform.position.y);
 			bodyDef.angle = Maths::DegreesToRadians(-transform.rotation.z);
 
 			// Created Body from Physics World
-			rb.body = m_physicsWorld->CreateBody(&bodyDef);
+			m_bodies[entity] = m_physicsWorld->CreateBody(&bodyDef);
 		}
-	}
-
-	void Box2DPhysicsSystem::InitBoxForRigidbody(ECS::EntityID entity)
-	{
-		auto& box = m_world->GetComponent<Box2DBoxComponent>(entity);
-		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
-
-		// Initialize Shape
-		b2PolygonShape shape;
-		shape.SetAsBox(box.data.halfExtent.x, box.data.halfExtent.y);
-
-		b2FixtureDef fixtureDef = rb.fixtureDef;
-		fixtureDef.shape = &shape;
-
-		// Create Fixture between shape & rigidbody and store shape in component
-		rb.fixture = rb.body->CreateFixture(&fixtureDef);
-		box.shape = static_cast<b2PolygonShape*>(rb.fixture->GetShape());
-	}
-
-	void Box2DPhysicsSystem::InitCircleForRigidbody(ECS::EntityID entity)
-	{
-		auto& circle = m_world->GetComponent<Box2DCircleComponent>(entity);
-		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
-
-		// Cleanup existing shape, if any
-		CleanupCircleComponent(entity);
-
-		// Initialize Shape
-		b2CircleShape shape;
-		shape.m_radius = circle.data.radius;
-
-		// Create fixture def
-		b2FixtureDef fixtureDef = rb.fixtureDef;
-		fixtureDef.shape = &shape;
-
-		// Create Fixture between shape & rigidbody and store shape in component
-		rb.fixture = rb.body->CreateFixture(&fixtureDef);
-		circle.shape = static_cast<b2CircleShape*>(rb.fixture->GetShape());
 	}
 
 	void Box2DPhysicsSystem::InitBoxComponent(ECS::EntityID entity)
 	{
-		auto& box = m_world->GetComponent<Box2DBoxComponent>(entity);
+		auto& box = m_world->GetComponent<BoxComponent2D>(entity);
 		auto& transform = m_world->GetComponent<TransformComponent>(entity);
 
-		if (box.shape == nullptr)
+		if (!m_polygonShapes.Contains(entity))
 		{
-			b2PolygonShape shape;
-			shape.SetAsBox(box.data.halfExtent.x, box.data.halfExtent.y, transform.position.GetXY(), Maths::DegreesToRadians(transform.rotation.z));
+			m_polygonShapes.Insert(entity, b2PolygonShape());
+		}
 
-			m_polygonShapes.Insert(entity, shape);
-			box.shape = &m_polygonShapes[entity];
+		m_polygonShapes[entity].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), Maths::DegreesToRadians(transform.rotation.z));
+
+		if (m_world->HasComponent<RigidbodyComponent2D>(entity))
+		{
+			InitFixture(entity, &m_polygonShapes[entity]);
 		}
 	}
 
 	void Box2DPhysicsSystem::InitCircleComponent(ECS::EntityID entity)
 	{
-		auto& circle = m_world->GetComponent<Box2DCircleComponent>(entity);
+		auto& circle = m_world->GetComponent<CircleComponent2D>(entity);
 		auto& transform = m_world->GetComponent<TransformComponent>(entity);
 
-		if (circle.shape == nullptr)
+		if (!m_circleShapes.Contains(entity))
 		{
-			b2CircleShape shape;
-			shape.m_radius = circle.data.radius;
-			shape.m_p.Set(transform.position.x, transform.position.y);
+			m_circleShapes.Insert(entity, b2CircleShape());
+		}
 
-			m_circleShapes.Insert(entity, shape);
-			circle.shape = &m_circleShapes[entity];
+		m_circleShapes[entity].m_radius = circle.radius;
+		m_circleShapes[entity].m_p.Set(transform.position.x, transform.position.y);
+
+		if (m_world->HasComponent<RigidbodyComponent2D>(entity))
+		{
+			InitFixture(entity, &m_circleShapes[entity]);
+		}
+	}
+
+	void Box2DPhysicsSystem::InitFixture(ECS::EntityID entity, b2Shape* shape)
+	{
+		if (m_bodies.Contains(entity))
+		{
+			b2FixtureDef fixtureDef;
+			fixtureDef.shape = shape;
+
+			if (!m_fixtures.Contains(entity))
+			{
+				m_fixtures.Insert(entity, nullptr);
+			}
+
+			m_fixtures[entity] = m_bodies[entity]->CreateFixture(&fixtureDef);
 		}
 	}
 
 	void Box2DPhysicsSystem::CleanupRigidbodyComponent(ECS::EntityID entity)
 	{
-		auto& rb = m_world->GetComponent<Box2DRigidbodyComponent>(entity);
+		CleanupFixture(entity);
 
-		rb.body = nullptr;
+		if (m_bodies.Contains(entity))
+		{
+			m_physicsWorld->DestroyBody(m_bodies[entity]);
+			m_bodies[entity] = nullptr;
+			m_bodies.Erase(entity);
+		}
 	}
 
 	void Box2DPhysicsSystem::CleanupBoxComponent(ECS::EntityID entity)
 	{
-		auto& box = m_world->GetComponent<Box2DBoxComponent>(entity);
+		CleanupFixture(entity);
 
-		if (box.shape != nullptr)
+		if (m_polygonShapes.Contains(entity))
 		{
-			// Check if packed vector contains shape
-			if (m_polygonShapes.Contains(entity))
-			{
-				m_polygonShapes.Erase(entity);
-				m_updateShapePointers = true;
-			}
-
-			box.shape = nullptr;
+			m_polygonShapes.Erase(entity);
 		}
 	}
 
 	void Box2DPhysicsSystem::CleanupCircleComponent(ECS::EntityID entity)
 	{
-		auto& circle = m_world->GetComponent<Box2DCircleComponent>(entity);
+		CleanupFixture(entity);
 
-		if (circle.shape != nullptr)
+		if (m_circleShapes.Contains(entity))
 		{
-			// Check if packed vector contains shape
-			if (m_circleShapes.Contains(entity))
-			{
-				m_circleShapes.Erase(entity);
-				m_updateShapePointers = true;
-			}
+			m_circleShapes.Erase(entity);
+		}
+	}
 
-			circle.shape = nullptr;
+	void Box2DPhysicsSystem::CleanupFixture(ECS::EntityID entity)
+	{
+		if (m_fixtures.Contains(entity))
+		{
+			m_bodies[entity]->DestroyFixture(m_fixtures[entity]);
+			m_fixtures[entity] = nullptr;
+			m_fixtures.Erase(entity);
 		}
 	}
 }

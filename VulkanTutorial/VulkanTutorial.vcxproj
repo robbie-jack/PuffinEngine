@@ -247,6 +247,7 @@
     <ClCompile Include="src\Physics\Colliders\CircleCollider2D.cpp" />
     <ClCompile Include="src\Physics\Colliders\PolygonCollider2D.cpp" />
     <ClCompile Include="src\Physics\PhysicsSystem2D.cpp" />
+    <ClCompile Include="src\Physics\PuffinPhysics2D\Broadphases\PruneAndSweepBroadphase.cpp" />
     <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp" />
     <ClCompile Include="src\Physics\Shapes\CircleShape2D.cpp" />
     <ClCompile Include="src\Procedural\ProceduralMeshGenSystem.cpp" />
@@ -287,6 +288,7 @@
     <ClInclude Include="include\Components\Physics\VelocityComponent.hpp" />
     <ClInclude Include="include\Components\Procedural\ProceduralMeshComponent.hpp" />
     <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\Broadphase2D.hpp" />
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\PruneAndSweepBroadphase.h" />
     <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp" />
     <ClInclude Include="src\Assets\Asset.h" />
     <ClInclude Include="src\Assets\AssetRegistry.h" />
@@ -297,8 +299,6 @@
     <ClInclude Include="src\Assets\TextureAsset.h" />
     <ClInclude Include="src\Audio\AudioSubsystem.h" />
     <ClInclude Include="src\Components\AngelScriptComponent.h" />
-    <ClInclude Include="src\Components\Physics\Box2D\Box2DRigidbodyComponent.h" />
-    <ClInclude Include="src\Components\Physics\Box2D\Box2DShapeComponents.h" />
     <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h" />
     <ClInclude Include="src\Components\Physics\ShapeComponents2D.h" />
     <ClInclude Include="src\Components\Rendering\CameraComponent.h" />

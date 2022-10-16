@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ECS/Entity.h"
 #include <ECS/ECS.h>
 #include <Types/Vector.h>
 
@@ -17,19 +18,12 @@
 
 #include <utility>
 #include <vector>
-
-#include "ECS/Entity.h"
-
+#include <unordered_map>
+#include <memory>
 
 namespace Puffin::Physics
 {
 	const uint32_t MAX_SHAPES_PER_TYPE = 128; // Maximum number of shapes of each type
-
-	enum class BroadphaseType
-	{
-		NSquared = 0,
-		PruneAndSweep = 1
-	};
 
 	//////////////////////////////////////////////////
 	// Physics System 2D
@@ -49,6 +43,32 @@ namespace Puffin::Physics
 		void Stop() override;
 		void Cleanup() override {}
 
+		template<typename T>
+		void RegisterBroadphase()
+		{
+			const char* typeName = typeid(T).name();
+
+			if (m_broadphases.count(typeName) == 1)
+				return;
+
+			std::shared_ptr<T> broadphase = std::make_shared<T>();
+			std::shared_ptr<Broadphase> broadphaseBase = std::static_pointer_cast<Broadphase>(broadphase);
+			broadphaseBase->SetWorld(m_world);
+
+			m_broadphases.insert({typeName, broadphaseBase});
+		}
+
+		template<typename T>
+		void SetBroadphase()
+		{
+			const char* typeName = typeid(T).name();
+
+			if (m_broadphases.count(typeName) == 0)
+				return;
+
+			m_activeBroadphase = m_broadphases[typeName];
+		}
+
 	private:
 
 		Vector2f m_gravity = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
@@ -60,6 +80,9 @@ namespace Puffin::Physics
 		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
 		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided
 		std::set<Collision2D::Contact> m_activeContacts; // Set for tracking active collisions
+
+		std::shared_ptr<Broadphase> m_activeBroadphase = nullptr;
+		std::unordered_map<const char*, std::shared_ptr<Broadphase>> m_broadphases; // Map of registered broadphases
 
 		void InitCircle2D(std::shared_ptr<ECS::Entity> entity);
 		void InitBox2D(std::shared_ptr<ECS::Entity> entity);
@@ -91,5 +114,4 @@ namespace Puffin::Physics
 		void GenerateCollisionEvents();
 
 	};
-
 }

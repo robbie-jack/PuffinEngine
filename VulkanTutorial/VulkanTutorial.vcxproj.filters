@@ -77,9 +77,6 @@
     <Filter Include="Components\Physics\PuffinPhysics2D">
       <UniqueIdentifier>{8c32c545-fce1-484a-8b83-462b192e05aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Components\Physics\Box2D">
-      <UniqueIdentifier>{c43087e6-6720-43be-845e-4f9c5abd5ef5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI\Windows">
       <UniqueIdentifier>{443d6f10-db6a-42db-82bc-0bdad2d9023c}</UniqueIdentifier>
     </Filter>
@@ -378,6 +375,9 @@
     <ClCompile Include="..\OpenSimplexNoise\OpenSimplexNoise\OpenSimplexNoise.cpp">
       <Filter>Libraries\OpenSimplexNoise</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics\PuffinPhysics2D\Broadphases\PruneAndSweepBroadphase.cpp">
+      <Filter>Physics\PuffinPhysics2D\Broadphases</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ProjectSettings.h" />
@@ -549,12 +549,6 @@
     <ClInclude Include="src\Components\Physics\ShapeComponents2D.h">
       <Filter>Components\Physics\PuffinPhysics2D</Filter>
     </ClInclude>
-    <ClInclude Include="src\Components\Physics\Box2D\Box2DRigidbodyComponent.h">
-      <Filter>Components\Physics\Box2D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\Physics\Box2D\Box2DShapeComponents.h">
-      <Filter>Components\Physics\Box2D</Filter>
-    </ClInclude>
     <ClInclude Include="..\box2d\src\dynamics\b2_chain_circle_contact.h">
       <Filter>Libraries\Box2D</Filter>
     </ClInclude>
@@ -664,6 +658,9 @@
       <Filter>Components\Physics</Filter>
     </ClInclude>
     <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\Broadphase2D.hpp">
+      <Filter>Physics\PuffinPhysics2D\Broadphases</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\PruneAndSweepBroadphase.h">
       <Filter>Physics\PuffinPhysics2D\Broadphases</Filter>
     </ClInclude>
   </ItemGroup>

@@ -41,6 +41,10 @@ namespace Puffin
 			// Register Events
 			eventSubsystem->RegisterEvent<CollisionBeginEvent>();
 			eventSubsystem->RegisterEvent<CollisionEndEvent>();
+
+			RegisterBroadphase<NSquaredBroadphase>();
+
+			SetBroadphase<NSquaredBroadphase>();
 		}
 
 		void PhysicsSystem2D::PreStart()
@@ -299,9 +303,8 @@ namespace Puffin
 		void PhysicsSystem2D::CollisionBroadphase()
 		{
 			// Perform Collision Broadphase to Generate Collision Pairs
-			NSquaredBroadphase broadphase;
-			broadphase.SetWorld(m_world);
-			broadphase.GenerateCollisionPairs(m_colliders, m_collisionPairs);
+			if (m_activeBroadphase)
+				m_activeBroadphase->GenerateCollisionPairs(m_colliders, m_collisionPairs);
 		}
 
 		void PhysicsSystem2D::CollisionDetection()

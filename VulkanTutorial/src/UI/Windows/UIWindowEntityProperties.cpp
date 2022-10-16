@@ -8,8 +8,6 @@
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
-#include "Components/Physics/Box2D/Box2DRigidbodyComponent.h"
-#include "Components/Physics/Box2D/Box2DShapeComponents.h"
 
 #include "ECS/ECS.h"
 
