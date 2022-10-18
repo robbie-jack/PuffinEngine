@@ -79,6 +79,21 @@ namespace Puffin
 			vec.z = Lerp(vec1.z, vec2.z, t);
 			return vec;
 		}
+
+		// Split double into high and low floats
+		static inline void SplitDouble(const double& in, float& high, float& low)
+		{
+			high = static_cast<float>(in);
+			low = static_cast<float>(in - static_cast<double>(high));
+		}
+
+		// Split eahc component of double vector into high and low parts
+		static inline void SplitDouble(const Vector3d& in, Vector3f& high, Vector3f& low)
+		{
+			SplitDouble(in.x, high.x, low.x);
+			SplitDouble(in.y, high.y, low.y);
+			SplitDouble(in.z, high.z, low.z);
+		}
 	}
 }
 

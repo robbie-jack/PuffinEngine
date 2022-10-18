@@ -1,6 +1,6 @@
 #include "PhysicsSystem2D.h"
 
-#include "Box2D/CollisionEvent.h"
+#include "Physics/CollisionEvent.h"
 #include "Components/TransformComponent.h"
 #include "Components/Physics/VelocityComponent.hpp"
 
@@ -278,9 +278,9 @@ namespace Puffin
 				// Update Rotation
 				//transform.rotation.z += rigidbody.angularVelocity * m_engine->GetTimeStep();
 
-				if (transform.rotation.z > 360.0)
+				if (transform.rotation.z > 360.0f)
 				{
-					transform.rotation.z = 0.0;
+					transform.rotation.z = 0.0f;
 				}
 
 				velocity.linear.x = rigidbody.linearVelocity.x;

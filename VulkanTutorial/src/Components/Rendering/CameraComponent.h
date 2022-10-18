@@ -9,6 +9,8 @@
 
 #include "nlohmann/json.hpp"
 
+//#define PFN_USE_DOUBLE_PRECISION
+
 namespace Puffin
 {
 	namespace Rendering
@@ -80,9 +82,9 @@ namespace Puffin
 			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
 		}
 
-		static void UpdateCameraView(CameraComponent& camera, Vector3f position)
+		static glm::mat4 UpdateCameraView(const Vector3f& position, const Vector3f& lookat, const Vector3f& up)
 		{
-			camera.matrices.view = glm::lookAt(static_cast<glm::vec3>(position), static_cast<glm::vec3>(position + camera.direction), static_cast<glm::vec3>(camera.up));
+			return glm::lookAt(static_cast<glm::vec3>(position), static_cast<glm::vec3>(lookat), static_cast<glm::vec3>(up));
 		}
 	}
 }

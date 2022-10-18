@@ -375,6 +375,12 @@ namespace Puffin
 			z -= vec.z;
 		}
 
+		void operator-=(const Vector2<T>& vec)
+		{
+			x -= vec.x;
+			y -= vec.y;
+		}
+
 		// Operator+
 		Vector3 operator+(const Vector3& vec) const
 		{

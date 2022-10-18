@@ -118,7 +118,33 @@ namespace Puffin
 			uint32_t count; // Number of commands mapped to buffer
 		};
 
-		struct ShadingUBO
+		struct GPUObjectData
+		{
+			alignas(16) glm::mat4 model;
+			alignas(16) glm::mat4 inv_model;
+		};
+
+		struct GPUInstanceData
+		{
+			alignas(4) int objectOffset; // Object Buffer Offset
+		};
+
+		struct GPUCameraData
+		{
+			alignas(16) glm::mat4 viewProj;
+		};
+
+		struct GPULightSpaceData
+		{
+			alignas(16) glm::mat4 lightSpaceMatrix;
+		};
+
+		struct GPULightIndexData
+		{
+			alignas(4) int lightSpaceIndex;
+		};
+
+		struct GPUShadingData
 		{
 			alignas(16) glm::vec3 viewPos;
 			alignas(4) int displayDebugTarget;

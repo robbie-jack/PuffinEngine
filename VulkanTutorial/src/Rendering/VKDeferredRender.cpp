@@ -170,7 +170,7 @@ namespace Puffin
 
 				// (World Space) Positions
 				CreateAllocatedImage(
-					VK_FORMAT_R16G16B16A16_SFLOAT,
+					VK_FORMAT_R32G32B32A32_SFLOAT,
 					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					&frameData[i].gPosition,
 					"GBuffer - Positions " + std::to_string(i));
@@ -208,11 +208,13 @@ namespace Puffin
 
 		void VKDeferredRender::SetupGRenderPass()
 		{
+			const int numAttachments = 4;
+
 			// Setup Descriptions for Position, Normal, AlbedoSpec and Depth Attachments
-			std::array<VkAttachmentDescription, 4> attachmentDescs = {};
+			std::array<VkAttachmentDescription, numAttachments> attachmentDescs = {};
 
 			// Attachment Properties
-			for (uint32_t i = 0; i < 4; i++)
+			for (uint32_t i = 0; i < numAttachments; i++)
 			{
 				attachmentDescs[i].samples = VK_SAMPLE_COUNT_1_BIT;
 				attachmentDescs[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -469,7 +471,7 @@ namespace Puffin
 				VkDescriptorBufferInfo uboBufferInfo;
 				uboBufferInfo.buffer = uboBuffers[i].buffer;
 				uboBufferInfo.offset = 0;
-				uboBufferInfo.range = sizeof(ShadingUBO);
+				uboBufferInfo.range = sizeof(GPUShadingData);
 
 				// Light Info
 				VkDescriptorBufferInfo lightInfo;

@@ -116,7 +116,7 @@ namespace Puffin
 			VkDescriptorSet geometryDescriptor;
 			IndirectDrawBatch drawBatch;
 
-			AllocatedBuffer uboBuffer; // Buffer Containing Camera/Debug data for Fragment Shader
+			AllocatedBuffer shadingBuffer; // Buffer Containing Camera/Debug data for Fragment Shader
 			AllocatedBuffer lightBuffer, pointLightBuffer, dirLightBuffer, spotLightBuffer, lightStatsBuffer;
 
 			// Debug Variables
@@ -124,32 +124,6 @@ namespace Puffin
 			std::vector<uint32_t> debugIndices;
 			std::vector<VkDrawIndexedIndirectCommand> debugIndirectCommands;
 			AllocatedBuffer debugVertexBuffer, debugIndexBuffer, debugIndirectCommandsBuffer;
-		};
-
-		struct GPUObjectData
-		{
-			alignas(16) glm::mat4 model;
-			alignas(16) glm::mat4 inv_model;
-		};
-
-		struct GPUInstanceData
-		{
-			alignas(4) int objectOffset; // Object Buffer Offset
-		};
-
-		struct GPUCameraData
-		{
-			alignas(16) glm::mat4 viewProj;
-		};
-
-		struct GPULightSpaceData
-		{
-			alignas(16) glm::mat4 lightSpaceMatrix;
-		};
-
-		struct GPULightIndexData
-		{
-			alignas(4) int lightSpaceIndex;
 		};
 
 		const Vector2f boxPositions[4] =

@@ -287,6 +287,7 @@
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h" />
     <ClInclude Include="include\Components\Physics\VelocityComponent.hpp" />
     <ClInclude Include="include\Components\Procedural\ProceduralMeshComponent.hpp" />
+    <ClInclude Include="include\Physics\CollisionEvent.h" />
     <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\Broadphase2D.hpp" />
     <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\PruneAndSweepBroadphase.h" />
     <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp" />
@@ -320,7 +321,6 @@
     <ClInclude Include="src\MathHelpers.h" />
     <ClInclude Include="src\Physics\Box2D\Box2DContactListener.h" />
     <ClInclude Include="src\Physics\Box2D\Box2DPhysicsSystem.h" />
-    <ClInclude Include="src\Physics\Box2D\CollisionEvent.h" />
     <ClInclude Include="src\Physics\Colliders\BoxCollider2D.h" />
     <ClInclude Include="src\Physics\Colliders\CircleCollider2D.h" />
     <ClInclude Include="src\Physics\Colliders\Collider2D.h" />

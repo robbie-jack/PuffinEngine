@@ -576,9 +576,6 @@
     <ClInclude Include="..\box2d\src\dynamics\b2_polygon_contact.h">
       <Filter>Libraries\Box2D</Filter>
     </ClInclude>
-    <ClInclude Include="src\Physics\Box2D\CollisionEvent.h">
-      <Filter>Physics\Box2D</Filter>
-    </ClInclude>
     <ClInclude Include="src\Physics\Box2D\Box2DContactListener.h">
       <Filter>Physics\Box2D</Filter>
     </ClInclude>
@@ -662,6 +659,9 @@
     </ClInclude>
     <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\PruneAndSweepBroadphase.h">
       <Filter>Physics\PuffinPhysics2D\Broadphases</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\CollisionEvent.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

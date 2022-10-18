@@ -9,7 +9,7 @@ namespace Puffin::Physics
 	struct VelocityComponent
 	{
 #ifdef PFN_USE_DOUBLE_PRECISION
-		Vector3d linearVelocity = Vector3d(0.0);
+		Vector3d linear = Vector3d(0.0);
 #else
 		Vector3f linear = Vector3f(0.0f);
 #endif

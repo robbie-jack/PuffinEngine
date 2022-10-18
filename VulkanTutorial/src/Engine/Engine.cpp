@@ -142,8 +142,8 @@ namespace Puffin::Core
 		//ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		//DefaultScene();
-		PhysicsScene();
+		DefaultScene();
+		//PhysicsScene();
 		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
@@ -468,22 +468,17 @@ namespace Puffin::Core
 		std::vector<std::shared_ptr<ECS::Entity>> entities;
 		entities.reserve(numEntities);
 
+		std::string names[7] = { "House", "Sphere", "Falling Cube", "Light", "Static Cube", "Plane", "Light 2" };
+
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)
 		{
 			const auto entity = ECS::CreateEntity(ecsWorld);
+			entity->SetName(names[i]);
 			entity->AddComponent<TransformComponent>();
 			entity->AddComponent<Rendering::MeshComponent>();
 			entities.push_back(entity);
 		}
-
-		ecsWorld->SetEntityName(1, "House");
-		ecsWorld->SetEntityName(2, "Sphere");
-		ecsWorld->SetEntityName(3, "Falling Cube");
-		ecsWorld->SetEntityName(4, "Light");
-		ecsWorld->SetEntityName(5, "Static Cube");
-		ecsWorld->SetEntityName(6, "Plane");
-		ecsWorld->SetEntityName(7, "Light 2");
 
 		entities[3]->AddComponent<Rendering::SpotLightComponent>();
 		entities[6]->AddComponent<Rendering::SpotLightComponent>();
@@ -564,45 +559,6 @@ namespace Puffin::Core
 		lightComp.ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
 		lightComp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
-		// Create Box Entity
-		const auto boxEntity = ECS::CreateEntity(ecsWorld);
-
-		boxEntity->SetName("Box");
-
-		boxEntity->AddComponent<TransformComponent>();
-		boxEntity->AddComponent<Rendering::MeshComponent>();
-		boxEntity->AddComponent<Physics::RigidbodyComponent2D>();
-		boxEntity->AddComponent<Physics::BoxComponent2D>();
-		boxEntity->AddComponent<Scripting::AngelScriptComponent>();
-
-		boxEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 2.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
-		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
-		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 0.5f;
-		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.5f;
-		boxEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
-		boxEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
-		boxEntity->GetComponent<Scripting::AngelScriptComponent>().name = "PhysicsScript";
-		boxEntity->GetComponent<Scripting::AngelScriptComponent>().dir = contentRootPath / "scripts\\Physics.pscript";
-
-		// Create Circle Entity
-		const auto circleEntity = ECS::CreateEntity(ecsWorld);
-
-		circleEntity->SetName("Circle");
-
-		circleEntity->AddComponent<TransformComponent>();
-		circleEntity->AddComponent<Rendering::MeshComponent>();
-		circleEntity->AddComponent<Physics::RigidbodyComponent2D>();
-		circleEntity->AddComponent<Physics::BoxComponent2D>();
-
-		circleEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
-		circleEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
-		circleEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-		circleEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
-		circleEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.75f;
-		circleEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
-		circleEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
-
 		// Create Floor Entity
 		const auto floorEntity = ECS::CreateEntity(ecsWorld);
 
@@ -613,10 +569,75 @@ namespace Puffin::Core
 		floorEntity->AddComponent<Physics::RigidbodyComponent2D>();
 		floorEntity->AddComponent<Physics::BoxComponent2D>();
 
-		floorEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(5.0f, 1.0f, 1.0f) };
+		floorEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(250.0f, 1.0f, 1.0f) };
 		floorEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(5.0f, 1.0f);
+		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(250.0f, 1.0f);
+
+		const Vector3f startPosition(-250.0f, 10.f, 0.f);
+		const Vector3f endPosition(250.f, 10.f, 0.f);
+		const int numBodies = 100;
+		Vector3f positionOffset = endPosition - startPosition;
+		positionOffset.x /= numBodies;
+		for (int i = 0; i < numBodies; i++)
+		{
+			const auto entity = ECS::CreateEntity(ecsWorld);
+
+			entity->SetName("Box " + std::to_string(i + 1));
+			
+			entity->AddComponent<TransformComponent>();
+			entity->AddComponent<Rendering::MeshComponent>();
+			entity->AddComponent<Physics::RigidbodyComponent2D>();
+			entity->AddComponent<Physics::BoxComponent2D>();
+
+			Vector3f position = startPosition + (positionOffset * (float)i);
+			entity->GetComponent<TransformComponent>() = { position, Vector3f(0.0f), Vector3f(1.0f) };
+			entity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+			entity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+			entity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
+			entity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 1.0f;
+			entity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
+			entity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
+		}
+
+		//// Create Box Entity
+		//const auto boxEntity = ECS::CreateEntity(ecsWorld);
+
+		//boxEntity->SetName("Box");
+
+		//boxEntity->AddComponent<TransformComponent>();
+		//boxEntity->AddComponent<Rendering::MeshComponent>();
+		//boxEntity->AddComponent<Physics::RigidbodyComponent2D>();
+		//boxEntity->AddComponent<Physics::BoxComponent2D>();
+		//boxEntity->AddComponent<Scripting::AngelScriptComponent>();
+
+		//boxEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 2.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		//boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		//boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		//boxEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 0.5f;
+		//boxEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.5f;
+		//boxEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
+		//boxEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
+		//boxEntity->GetComponent<Scripting::AngelScriptComponent>().name = "PhysicsScript";
+		//boxEntity->GetComponent<Scripting::AngelScriptComponent>().dir = contentRootPath / "scripts\\Physics.pscript";
+
+		//// Create Circle Entity
+		//const auto circleEntity = ECS::CreateEntity(ecsWorld);
+
+		//circleEntity->SetName("Circle");
+
+		//circleEntity->AddComponent<TransformComponent>();
+		//circleEntity->AddComponent<Rendering::MeshComponent>();
+		//circleEntity->AddComponent<Physics::RigidbodyComponent2D>();
+		//circleEntity->AddComponent<Physics::BoxComponent2D>();
+
+		//circleEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
+		//circleEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		//circleEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
+		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.75f;
+		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
+		//circleEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
 	}
 
 	void Engine::ProceduralScene()

@@ -11,7 +11,7 @@
 #include "Components/AngelScriptComponent.h"
 
 #include "Input/InputEvent.h"
-#include "Physics/Box2D/CollisionEvent.h"
+#include "Physics/CollisionEvent.h"
 
 #include "Types/RingBuffer.h"
 

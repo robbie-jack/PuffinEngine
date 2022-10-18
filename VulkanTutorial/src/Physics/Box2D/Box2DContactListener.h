@@ -1,7 +1,7 @@
 #pragma once
 
 #include "box2d/b2_world_callbacks.h"
-#include "CollisionEvent.h"
+#include "Physics/CollisionEvent.h"
 #include "Types/RingBuffer.h"
 
 namespace Puffin::Physics

@@ -522,7 +522,7 @@ namespace Puffin::Scripting
 		}
 
 		// Process Collision End Events
-		Physics::CollisionBeginEvent collisionEndEvent;
+		Physics::CollisionEndEvent collisionEndEvent;
 		while (m_collisionEndEvents->Pop(collisionEndEvent))
 		{
 			// Invoke collision EntityA callback if one exists

@@ -56,7 +56,7 @@ namespace Puffin
 			offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
 			// Initialize Camera Variables
-			editorCamera.position = glm::vec3(0.0f, 0.0f, 10.0f);
+			editorCamera.position = glm::vec3(0.0f, 0.0f, 15.0f);
 			editorCamera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
 			InitEditorCamera();
 
@@ -109,7 +109,7 @@ namespace Puffin
 			// Initialize Descriptor Sets
 			InitDescriptors();
 
-			//InitShadowPipeline();
+			InitShadowPipeline();
 
 			//InitDebugPipeline();
 
@@ -777,7 +777,7 @@ namespace Puffin
 					VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Camera/Debug Buffer
-				frames[i].uboBuffer = CreateBuffer(sizeof(ShadingUBO),
+				frames[i].shadingBuffer = CreateBuffer(sizeof(GPUShadingData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
@@ -1307,7 +1307,7 @@ namespace Puffin
 			camera.lookat = transform.position + camera.direction;
 
 			// Calculate Camera View Matrix
-			UpdateCameraView(camera, Vector3f(0.0f));
+			camera.matrices.view = UpdateCameraView(transform.position, camera.lookat, camera.up);
 		}
 
 		void VulkanEngine::InitEditorCamera()
@@ -1321,7 +1321,7 @@ namespace Puffin
 			editorCamera.lookat = editorCamera.position + editorCamera.direction;
 
 			// Calculate Camera View Matrix
-			UpdateCameraView(editorCamera, Vector3f(0.0f));
+			editorCamera.matrices.view = UpdateCameraView(editorCamera.position, editorCamera.lookat, editorCamera.up);
 		}
 
 		void VulkanEngine::InitAlbedoTexture(UUID uuid)
@@ -1554,7 +1554,7 @@ namespace Puffin
 			{
 				commandPools.push_back(frames[i].commandPool);
 
-				uboBuffers.push_back(frames[i].uboBuffer);
+				uboBuffers.push_back(frames[i].shadingBuffer);
 
 				lightBuffers.push_back(frames[i].lightBuffer);
 				lightBuffers.push_back(frames[i].pointLightBuffer);
@@ -2057,7 +2057,7 @@ namespace Puffin
 				UpdateCameraPerspective(camera, camera.fov, newAspect, camera.zNear, camera.zFar);
 			}
 
-			UpdateCameraView(camera, Vector3f(0.0f));
+			camera.matrices.view = UpdateCameraView(transform.position, camera.lookat, camera.up);
 		}
 
 		void VulkanEngine::UpdateEditorCamera()
@@ -2124,7 +2124,7 @@ namespace Puffin
 				UpdateCameraPerspective(editorCamera, editorCamera.fov, newAspect, editorCamera.zNear, editorCamera.zFar);
 			}
 
-			UpdateCameraView(editorCamera, Vector3f(0.0f));
+			editorCamera.matrices.view = UpdateCameraView(editorCamera.position, editorCamera.lookat, editorCamera.up);
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -2436,15 +2436,14 @@ namespace Puffin
 		void VulkanEngine::PrepareLights()
 		{
 			// Map shaing data to uniform buffer
-			ShadingUBO uboData;
-			//uboData.viewPos = static_cast<glm::vec3>(editorCamera.position);
-			uboData.viewPos = glm::vec3(0.0f);
-			uboData.displayDebugTarget = 0;
+			GPUShadingData shadingData;
+			shadingData.viewPos = static_cast<glm::vec3>(editorCamera.position);
+			shadingData.displayDebugTarget = 0;
 
 			void* data;
-			vmaMapMemory(allocator, GetCurrentFrame().uboBuffer.allocation, &data);
-			memcpy(data, &uboData, sizeof(ShadingUBO));
-			vmaUnmapMemory(allocator, GetCurrentFrame().uboBuffer.allocation);
+			vmaMapMemory(allocator, GetCurrentFrame().shadingBuffer.allocation, &data);
+			memcpy(data, &shadingData, sizeof(GPUShadingData));
+			vmaUnmapMemory(allocator, GetCurrentFrame().shadingBuffer.allocation);
 
 			// Map all light data to storage buffer
 			void* lightData;
@@ -2483,8 +2482,6 @@ namespace Puffin
 				auto& pointLight = entity->GetComponent<PointLightComponent>();
 				const auto& transform = entity->GetComponent<TransformComponent>();
 
-				Vector3f cameraRelativePosition = static_cast<Vector3f>(transform.position - editorCamera.position);
-
 				int tempShadowIndex = -1;
 
 				// TO DO - Add support for point light shadows
@@ -2502,7 +2499,7 @@ namespace Puffin
 				lightSSBO[l].shininess = pointLight.shininess;
 				lightSSBO[l].shadowmapIndex = tempShadowIndex;
 
-				pointLightSSBO[p].position = static_cast<glm::vec3>(cameraRelativePosition);
+				pointLightSSBO[p].position = static_cast<glm::vec3>(transform.position);
 				pointLightSSBO[p].constant = pointLight.constantAttenuation;
 				pointLightSSBO[p].linear = pointLight.linearAttenuation;
 				pointLightSSBO[p].quadratic = pointLight.quadraticAttenuation;
@@ -2548,7 +2545,6 @@ namespace Puffin
 			{
 				auto& spotLight = entity->GetComponent<SpotLightComponent>();
 				const auto& transform = entity->GetComponent<TransformComponent>();
-				Vector3f cameraRelativePosition = static_cast<Vector3f>(transform.position - editorCamera.position);
 
 				int tempShadowIndex = -1;
 
@@ -2557,7 +2553,7 @@ namespace Puffin
 					auto& shadowcaster = entity->GetComponent<ShadowCasterComponent>();
 
 					const float aspectRatio = static_cast<float>(shadowcaster.shadowmapWidth) / static_cast<float>(shadowcaster.shadowmapHeight);
-					shadowcaster.lightSpaceView = CalculateLightSpaceView(aspectRatio, spotLight.outerCutoffAngle, cameraRelativePosition, spotLight.direction);
+					shadowcaster.lightSpaceView = CalculateLightSpaceView(aspectRatio, spotLight.outerCutoffAngle, transform.position, spotLight.direction);
 					lightSSBO[l].lightSpaceMatrix = biasMatrix * shadowcaster.lightSpaceView;
 
 					tempShadowIndex = shadowIndex;
@@ -2570,7 +2566,7 @@ namespace Puffin
 				lightSSBO[l].shininess = spotLight.shininess;
 				lightSSBO[l].shadowmapIndex = tempShadowIndex;
 
-				spotLightSSBO[p].position = static_cast<glm::vec3>(cameraRelativePosition);
+				spotLightSSBO[p].position = static_cast<glm::vec3>(transform.position);
 				spotLightSSBO[s].direction = static_cast<glm::vec3>(spotLight.direction);
 				spotLightSSBO[s].innerCutoff = glm::cos(glm::radians(spotLight.innerCutoffAngle));
 				spotLightSSBO[s].outerCutoff = glm::cos(glm::radians(spotLight.outerCutoffAngle));
@@ -2909,15 +2905,17 @@ namespace Puffin
 					const auto& transform = m_world->GetComponent<TransformComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
-					Vector3d position = Vector3f(0.0f);
+					Vector3d position = Vector3d(0.0);
+					Vector3d interpolatedPosition = Vector3d(0.0);
 #else
 					Vector3f position = Vector3f(0.0f);
+					Vector3f interpolatedPosition = Vector3f(0.0f);
 #endif
 
 					if (m_world->HasComponent<Physics::VelocityComponent>(entity))
 					{
 						const auto& velocity = m_world->GetComponent<Physics::VelocityComponent>(entity);
-						const Vector3f interpolatedPosition = transform.position + (velocity.linear * m_engine->GetDeltaTime());
+						interpolatedPosition = transform.position + (velocity.linear * m_engine->GetDeltaTime());
 
 						position = Maths::Lerp(transform.position, interpolatedPosition,
 							m_engine->GetAccumulatedTime() / m_engine->GetTimeStep());
@@ -2927,8 +2925,7 @@ namespace Puffin
 						position = transform.position;
 					}
 
-					const Vector3f cameraRelativePosition = static_cast<Vector3f>(position - editorCamera.position);
-					objectSSBO[o].model = BuildMeshTransform(cameraRelativePosition, transform.rotation, transform.scale);
+					objectSSBO[o].model = BuildMeshTransform(position, transform.rotation, transform.scale);
 					objectSSBO[o].inv_model = glm::inverse(objectSSBO[o].model);
 
 					o++;
@@ -3001,7 +2998,7 @@ namespace Puffin
 				vmaDestroyBuffer(allocator, frames[i].debugIndirectCommandsBuffer.buffer, frames[i].debugIndirectCommandsBuffer.allocation);
 
 				vmaDestroyBuffer(allocator, frames[i].drawBatch.drawIndirectCommandsBuffer.buffer, frames[i].drawBatch.drawIndirectCommandsBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].uboBuffer.buffer, frames[i].uboBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].shadingBuffer.buffer, frames[i].shadingBuffer.allocation);
 				vmaDestroyBuffer(allocator, frames[i].lightBuffer.buffer, frames[i].lightBuffer.allocation);
 				vmaDestroyBuffer(allocator, frames[i].pointLightBuffer.buffer, frames[i].pointLightBuffer.allocation);
 				vmaDestroyBuffer(allocator, frames[i].dirLightBuffer.buffer, frames[i].dirLightBuffer.allocation);
