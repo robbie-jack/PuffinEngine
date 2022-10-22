@@ -19,11 +19,11 @@ Variables:
 - 13,9 -
     7  27 *    SUSPEND
     8  27 *    PshVPtr  v0
-    9  29 *    FuncPtr  0xc2b26630          (func:void CExample::OnSpacebarPressed())
+    9  29 *    FuncPtr  0xaf7dcab0          (func:void CExample::OnSpacebarPressed())
    12  31 *    CALLSYS  18           ($func@ $dlgte(int&in, int&in))
    14  27 *    STOREOBJ v3
    15  27 *    VAR      v3
-   16  29 *    PGA      0xc28f1bb0          (str:Spacebar)
+   16  29 *    PGA      0xb0731f30          (str:Spacebar)
    19  31 *    CALLSYS  70           (uint GetEntityID())
    21  31 *    CpyRtoV4 v1
    22  31 *    PshV4    v1
@@ -32,11 +32,11 @@ Variables:
 - 14,9 -
    26  27 *    SUSPEND
    27  27 *    PshVPtr  v0
-   28  29 *    FuncPtr  0xc2b267d0          (func:void CExample::OnSpacebarReleased())
+   28  29 *    FuncPtr  0xaf7dde30          (func:void CExample::OnSpacebarReleased())
    31  31 *    CALLSYS  18           ($func@ $dlgte(int&in, int&in))
    33  27 *    STOREOBJ v5
    34  27 *    VAR      v5
-   35  29 *    PGA      0xc28f1bb0          (str:Spacebar)
+   35  29 *    PGA      0xb0731f30          (str:Spacebar)
    38  31 *    CALLSYS  70           (uint GetEntityID())
    40  31 *    CpyRtoV4 v1
    41  31 *    PshV4    v1
@@ -44,7 +44,7 @@ Variables:
    43  32 *    CALLSYS  84           (void BindOnInputReleased(uint, const string&in, OnInputReleasedCallback@))
 - 16,9 -
    45  27 *    SUSPEND
-   46  27 *    PGA      0xc28f0b30          (str:Game Starting)
+   46  27 *    PGA      0xb0731c30          (str:Game Starting)
    49  29 *    PSF      v15
    50  31 *    CALLSYS  20           (string::string(const string&in))
                ObjInfo  v15, 1
@@ -55,7 +55,7 @@ Variables:
 - 17,9 -
                ObjInfo  v15, 0
    58  27 *    SUSPEND
-   59  27 *    PGA      0xc28f03b0          (str:Starting Time: )
+   59  27 *    PGA      0xb0730430          (str:Starting Time: )
    62  29 *    PSF      v15
    63  31 *    CALLSYS  20           (string::string(const string&in))
                ObjInfo  v15, 1
@@ -77,7 +77,7 @@ Variables:
 - 18,9 -
                ObjInfo  v27, 0
    84  27 *    SUSPEND
-   85  27 *    PGA      0xc28f35b0          (str:Entity ID: )
+   85  27 *    PGA      0xb07321b0          (str:Entity ID: )
    88  29 *    PSF      v27
    89  31 *    CALLSYS  20           (string::string(const string&in))
                ObjInfo  v27, 1

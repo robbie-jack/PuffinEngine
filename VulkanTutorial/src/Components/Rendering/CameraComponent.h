@@ -9,7 +9,7 @@
 
 #include "nlohmann/json.hpp"
 
-//#define PFN_USE_DOUBLE_PRECISION
+#define PFN_USE_DOUBLE_PRECISION
 
 namespace Puffin
 {
@@ -31,7 +31,7 @@ namespace Puffin
 			CameraComponent() {}
 
 			float zNear = 0.01f;
-			float zFar = 100.0f;
+			float zFar = 10000.0f;
 			float aspect = 0.0f;
 			float fov = 60.0f;
 			float prevFov = 0.0f;

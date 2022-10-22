@@ -68,9 +68,11 @@ namespace Puffin
 			SetupCommandBuffers(commandPools);
 		}
 
-		void VKDeferredRender::SetupGeometry(VkDescriptorSetLayout inGeometrySetLayout)
+		void VKDeferredRender::SetupGeometry(VkDescriptorSetLayout& inCameraVPSetLayout, VkDescriptorSetLayout& inObjectInstanceSetLayout, VkDescriptorSetLayout& inMatTextureSetLayout)
 		{
-			geometrySetLayout = inGeometrySetLayout;
+			m_cameraVPLayout = inCameraVPSetLayout;
+			m_objectInstanceLayout = inObjectInstanceSetLayout;
+			m_matTextureLayout = inMatTextureSetLayout;
 
 			// Setup GBuffer framebuffer, attachments, render pass and color sampler
 			SetupGBuffer();
@@ -81,15 +83,16 @@ namespace Puffin
 			SetupGPipeline();
 		}
 
-		void VKDeferredRender::SetupShading(std::vector<AllocatedBuffer>& uboBuffers,
-		                                    int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers,
-		                                    VkRenderPass renderPass, VkDescriptorSetLayout& shadowmapSetLayout)
+		void VKDeferredRender::SetupShading(VkRenderPass inRenderPass, VkDescriptorSetLayout& inCameraShadingSetLayout, VkDescriptorSetLayout& inLightSetLayout, VkDescriptorSetLayout& inShadowmapSetLayout)
 		{
-			sRenderPass = renderPass;
+			sRenderPass = inRenderPass;
+			m_cameraShadingLayout = inCameraShadingSetLayout;
+			m_lightLayout = inLightSetLayout;
+			m_shadowmapLayout = inShadowmapSetLayout;
 
 			// Setup Shading Structures
-			SetupSDescriptorSets(uboBuffers, lightsPerType, lightBuffers);
-			SetupSPipeline(shadowmapSetLayout);
+			SetupGBufferDescriptorSets();
+			SetupSPipeline();
 		}
 
 		void VKDeferredRender::RecreateFramebuffer(VkExtent2D inExtent)
@@ -100,11 +103,10 @@ namespace Puffin
 
 			SetupGBuffer();
 			SetupGFramebuffer();
-			UpdateSDescriptorSets();
+			UpdateGBufferDescriptorSets();
 		}
 
-		VkSemaphore& VKDeferredRender::DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer, VkDescriptorSet&
-		                                         shadowmapDescriptor, VkSemaphore& shadowmapWaitSemaphore)
+		VkSemaphore& VKDeferredRender::DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer, VkSemaphore& shadowmapWaitSemaphore)
 		{
 			// 1. Geometry Pass: Render all geometric/color data to g-buffer
 			VkCommandBuffer cmdGeometry = RecordGeometryCommandBuffer(frameIndex, sceneData);
@@ -116,8 +118,8 @@ namespace Puffin
 			submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submit.pNext = nullptr;
 			submit.pWaitDstStageMask = &waitStage;
-			submit.waitSemaphoreCount = 1;
-			submit.pWaitSemaphores = &frameData[frameIndex].shadingSemaphore;
+			submit.waitSemaphoreCount = 0;
+			submit.pWaitSemaphores = nullptr;
 			submit.signalSemaphoreCount = 1;
 			submit.pSignalSemaphores = &frameData[frameIndex].geometrySemaphore;
 			submit.commandBufferCount = 1;
@@ -126,7 +128,7 @@ namespace Puffin
 			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE));
 
 			// 2. Lighting Pass: Use G-Buffer to calculate the scenes lighting
-			VkCommandBuffer cmdShading = RecordShadingCommandBuffer(frameIndex, sceneData, sFramebuffer, shadowmapDescriptor);
+			VkCommandBuffer cmdShading = RecordShadingCommandBuffer(frameIndex, sceneData, sFramebuffer);
 
 			std::vector<VkSemaphore> waitSemaphores =
 			{
@@ -335,6 +337,8 @@ namespace Puffin
 			semaphoreCreateInfo.pNext = nullptr;
 			semaphoreCreateInfo.flags = 0;
 
+			VkFenceCreateInfo fenceCreateInfo = VKInit::FenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
+
 			// For each overlapping frames data
 			for (uint32_t i = 0; i < frameOverlap; i++)
 			{
@@ -402,7 +406,9 @@ namespace Puffin
 			// Create Pipeline Layout Info
 			std::vector<VkDescriptorSetLayout> setLayouts =
 			{
-				geometrySetLayout
+				m_cameraVPLayout,
+				m_objectInstanceLayout,
+				m_matTextureLayout
 			};
 
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
@@ -463,42 +469,10 @@ namespace Puffin
 			gPipeline = pipelineBuilder.BuildPipeline(device, gRenderPass);
 		}
 
-		void VKDeferredRender::SetupSDescriptorSets(std::vector<AllocatedBuffer>& uboBuffers, int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers)
+		void VKDeferredRender::SetupGBufferDescriptorSets()
 		{
 			for (int i = 0; i < frameOverlap; i++)
 			{
-				// Camera/Debug Shading Info
-				VkDescriptorBufferInfo uboBufferInfo;
-				uboBufferInfo.buffer = uboBuffers[i].buffer;
-				uboBufferInfo.offset = 0;
-				uboBufferInfo.range = sizeof(GPUShadingData);
-
-				// Light Info
-				VkDescriptorBufferInfo lightInfo;
-				lightInfo.buffer = lightBuffers[0 + (i * 5)].buffer;
-				lightInfo.offset = 0;
-				lightInfo.range = sizeof(GPULightData) * lightsPerType * 3;
-
-				VkDescriptorBufferInfo pointLightInfo;
-				pointLightInfo.buffer = lightBuffers[1 + (i * 5)].buffer;
-				pointLightInfo.offset = 0;
-				pointLightInfo.range = sizeof(GPUPointLightData) * lightsPerType;
-
-				VkDescriptorBufferInfo dirLightInfo;
-				dirLightInfo.buffer = lightBuffers[2 + (i * 5)].buffer;
-				dirLightInfo.offset = 0;
-				dirLightInfo.range = sizeof(GPUDirLightData) * lightsPerType;
-
-				VkDescriptorBufferInfo spotLightInfo;
-				spotLightInfo.buffer = lightBuffers[3 + (i * 5)].buffer;
-				spotLightInfo.offset = 0;
-				spotLightInfo.range = sizeof(GPUSpotLightData) * lightsPerType;
-
-				VkDescriptorBufferInfo lightStatsInfo;
-				lightStatsInfo.buffer = lightBuffers[4 + (i * 5)].buffer;
-				lightStatsInfo.offset = 0;
-				lightStatsInfo.range = sizeof(GPULightStatsData);
-
 				// G-Buffer Info
 				VkDescriptorImageInfo gPositionInfo;
 				gPositionInfo.sampler = gColorSampler;
@@ -516,20 +490,14 @@ namespace Puffin
 				gAlbedoSpecInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindBuffer(0, &uboBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.BindImage(1, &gPositionInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.BindImage(2, &gNormalInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 					.BindImage(3, &gAlbedoSpecInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.BindBuffer(4, &lightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.BindBuffer(5, &pointLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.BindBuffer(6, &dirLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.BindBuffer(7, &spotLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.BindBuffer(8, &lightStatsInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-					.Build(frameData[i].shadingDescriptor, shadingSetLayout);
+					.Build(frameData[i].gBufferDescriptor, m_gBufferLayout);
 			}
 		}
 
-		void VKDeferredRender::SetupSPipeline(VkDescriptorSetLayout& shadowmapSetLayout)
+		void VKDeferredRender::SetupSPipeline()
 		{
 			const fs::path vertShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\deferred_shading_vert.spv";
 			const fs::path fragShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\deferred_shading_frag.spv";
@@ -545,8 +513,10 @@ namespace Puffin
 			// Create Pipeline Layout Info
 			std::vector<VkDescriptorSetLayout> setLayouts =
 			{
-				shadingSetLayout,
-				shadowmapSetLayout
+				m_cameraShadingLayout,
+				m_gBufferLayout,
+				m_lightLayout,
+				m_shadowmapLayout
 			};
 
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
@@ -599,7 +569,7 @@ namespace Puffin
 			sPipeline = pipelineBuilder.BuildPipeline(device, sRenderPass);
 		}
 
-		void VKDeferredRender::UpdateSDescriptorSets()
+		void VKDeferredRender::UpdateGBufferDescriptorSets()
 		{
 			for (int i = 0; i < frameOverlap; i++)
 			{
@@ -623,7 +593,7 @@ namespace Puffin
 					.UpdateImage(1, &gPositionInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
 					.UpdateImage(2, &gNormalInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
 					.UpdateImage(3, &gAlbedoSpecInfo, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-					.Update(frameData[i].shadingDescriptor);
+					.Update(frameData[i].gBufferDescriptor);
 			}
 		}
 
@@ -744,7 +714,13 @@ namespace Puffin
 
 			// Bind Geometry Descriptor Sets
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-				gPipelineLayout, 0, 1, geometrySet, 0, nullptr);
+				gPipelineLayout, 0, 1, m_cameraVPSet, 0, nullptr);
+
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				gPipelineLayout, 1, 1, m_modelInstanceSet, 0, nullptr);
+
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				gPipelineLayout, 2, 1, m_matTextureSet, 0, nullptr);
 
 			// Bind Vertex/Index Buffers
 			VkDeviceSize offsets[] = { 0 };
@@ -764,7 +740,7 @@ namespace Puffin
 			return cmd;
 		}
 
-		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex, SceneRenderData* sceneData, VkFramebuffer sFramebuffer, VkDescriptorSet& shadowmapDescriptor)
+		VkCommandBuffer VKDeferredRender::RecordShadingCommandBuffer(int frameIndex, SceneRenderData* sceneData, VkFramebuffer sFramebuffer)
 		{
 			VkCommandBuffer cmd = frameData[frameIndex].sCommandBuffer;
 
@@ -822,10 +798,16 @@ namespace Puffin
 
 			// Bind Shading Geometry Set
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-				sPipelineLayout, 0, 1, &frameData[frameIndex].shadingDescriptor, 0, nullptr);
+				sPipelineLayout, 0, 1, m_cameraShadingSet, 0, nullptr);
 
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-				sPipelineLayout, 1, 1, &shadowmapDescriptor, 0, nullptr);
+				sPipelineLayout, 1, 1, &frameData[frameIndex].gBufferDescriptor, 0, nullptr);
+
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				sPipelineLayout, 2, 1, m_lightDataSet, 0, nullptr);
+
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				sPipelineLayout, 3, 1, m_shadowmapSet, 0, nullptr);
 
 			vkCmdDraw(cmd, 3, 1, 0, 0);
 

@@ -117,7 +117,7 @@ namespace Puffin
 				return shaderModule;
 			}
 
-			// Initialize infor for one shader stage
+			// Initialize info for one shader stage
 			inline VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule) 
 			{
 				VkPipelineShaderStageCreateInfo info{};

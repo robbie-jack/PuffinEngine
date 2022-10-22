@@ -155,8 +155,8 @@ namespace Puffin
 			if (m_needsStarted)
 			{
 				InitScene();
+				InitMatTextureDescriptors();
 				InitShadowmapDescriptors();
-				InitDeferredDescriptors();
 
 				m_needsStarted = false;
 			}
@@ -169,7 +169,7 @@ namespace Puffin
 			// Init Vulkan Instance
 			auto inst_ret = builder.set_app_name("Puffin Engine")
 				.request_validation_layers(enableValidationLayers)
-				.require_api_version(1, 2, 0)
+				.require_api_version(1, 3, 0)
 				.use_default_debug_messenger()
 				.build();
 
@@ -190,14 +190,11 @@ namespace Puffin
 			supportedFeatures.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
 			supportedFeatures.multiDrawIndirect = VK_TRUE;
 
-			VkPhysicalDeviceDescriptorIndexingFeatures supportedDescriptorFeatures = {};
-			supportedDescriptorFeatures.runtimeDescriptorArray = VK_TRUE;
-
 			// Select GPU with VK Bootstrap
 			// We want a gpu which can write to glfw surface and supports vulkan 1.2
 			vkb::PhysicalDeviceSelector selector{ vkb_inst };
 			vkb::PhysicalDevice vkbPhysicalDevice = selector
-				.set_minimum_version(1, 2)
+				.set_minimum_version(1, 3)
 				.set_surface(surface)
 				.set_required_features(supportedFeatures)
 				.add_desired_extension("VK_EXT_debug_utils")
@@ -207,10 +204,21 @@ namespace Puffin
 			// Setup VKDebug Function Pointers
 			VKDebug::Setup(instance);
 
+			VkPhysicalDeviceDescriptorIndexingFeatures supportedDescriptorFeatures = {};
+			supportedDescriptorFeatures.runtimeDescriptorArray = VK_TRUE;
+
+			/*VkPhysicalDeviceVulkan11Features physicalDeviceVulkan11Features = {};
+			physicalDeviceVulkan11Features.shaderDrawParameters = VK_TRUE;
+
+			VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = {};
+			physicalDeviceVulkan12Features.runtimeDescriptorArray = VK_TRUE;*/
+
 			// Create Final Vulkan Device
 			vkb::DeviceBuilder deviceBuilder{ vkbPhysicalDevice };
 			vkb::Device vkbDevice = deviceBuilder
 				.add_pNext(&supportedDescriptorFeatures)
+				/*.add_pNext(&physicalDeviceVulkan11Features)
+				.add_pNext(&physicalDeviceVulkan12Features)*/
 				.build()
 				.value();
 
@@ -376,22 +384,22 @@ namespace Puffin
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Allocate Command Pools
-				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool));
+				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &m_frames[i].commandPool));
 
 				// Allocate Default GUI and Shadow Command Buffer that we will use for scene rendering
-				VkCommandBufferAllocateInfo allocInfo = VKInit::CommandBufferAllocateInfo(frames[i].commandPool, 1); 
-				VkCommandBufferAllocateInfo allocInfoGui = VKInit::CommandBufferAllocateInfo(frames[i].commandPool, 1);
-				VkCommandBufferAllocateInfo allocInfoShadow = VKInit::CommandBufferAllocateInfo(frames[i].commandPool, 1);
+				VkCommandBufferAllocateInfo allocInfo = VKInit::CommandBufferAllocateInfo(m_frames[i].commandPool, 1); 
+				VkCommandBufferAllocateInfo allocInfoGui = VKInit::CommandBufferAllocateInfo(m_frames[i].commandPool, 1);
+				VkCommandBufferAllocateInfo allocInfoShadow = VKInit::CommandBufferAllocateInfo(m_frames[i].commandPool, 1);
 
 				// Allocate buffers
-				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, &frames[i].mainCommandBuffer));
-				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoGui, &frames[i].guiCommandBuffer));
-				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoShadow, &frames[i].shadowCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, &m_frames[i].mainCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoGui, &m_frames[i].guiCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoShadow, &m_frames[i].shadowCommandBuffer));
 
 				// Push destruction of both command pools/buffers to deletion queue
 				mainDeletionQueue.push_function([=]() 
 				{
-					vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
+					vkDestroyCommandPool(device, m_frames[i].commandPool, nullptr);
 				});
 			}
 
@@ -701,21 +709,21 @@ namespace Puffin
 
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &frames[i].renderFence));
+				VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &m_frames[i].renderFence));
 
 				//enqueue the destruction of the fence
 				mainDeletionQueue.push_function([=]() {
-					vkDestroyFence(device, frames[i].renderFence, nullptr);
+					vkDestroyFence(device, m_frames[i].renderFence, nullptr);
 				});
 
-				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].shadowmapSemaphore));
-				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].presentSemaphore));
-				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].renderSemaphore));
+				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_frames[i].shadowmapSemaphore));
+				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_frames[i].presentSemaphore));
+				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_frames[i].renderSemaphore));
 
 				//enqueue the destruction of semaphores
 				mainDeletionQueue.push_function([=]() {
-					vkDestroySemaphore(device, frames[i].presentSemaphore, nullptr);
-					vkDestroySemaphore(device, frames[i].renderSemaphore, nullptr);
+					vkDestroySemaphore(device, m_frames[i].presentSemaphore, nullptr);
+					vkDestroySemaphore(device, m_frames[i].renderSemaphore, nullptr);
 				});
 			}
 
@@ -736,34 +744,34 @@ namespace Puffin
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Create Camera View/Proj Buffer
-				frames[i].cameraViewProjBuffer = CreateBuffer(sizeof(GPUCameraData),
+				m_frames[i].cameraViewProjBuffer = CreateBuffer(sizeof(GPUCameraData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Create Object Storage Buffers
 				
-				frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
+				m_frames[i].objectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				frames[i].instanceBuffer = CreateBuffer(sizeof(GPUInstanceData) * MAX_INSTANCES,
+				m_frames[i].instanceBuffer = CreateBuffer(sizeof(GPUInstanceData) * MAX_INSTANCES,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Create Light Space Buffer for Shadow Vertex Stage
-				frames[i].lightSpaceBuffer = CreateBuffer(sizeof(GPULightSpaceData),
+				m_frames[i].lightSpaceBuffer = CreateBuffer(sizeof(GPULightSpaceData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Debug Buffers
-				frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex_PNTV_32),
+				m_frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex_PNTV_32),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
-				frames[i].debugIndexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND * sizeof(uint32_t),
+				m_frames[i].debugIndexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND * sizeof(uint32_t),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
-				frames[i].debugIndirectCommandsBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * sizeof(VkDrawIndexedIndirectCommand),
+				m_frames[i].debugIndirectCommandsBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * sizeof(VkDrawIndexedIndirectCommand),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				frames[i].debugVertices.reserve(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND);
-				frames[i].debugIndices.reserve(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND);
+				m_frames[i].debugVertices.reserve(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND);
+				m_frames[i].debugIndices.reserve(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND);
 			}
 		}
 
@@ -772,30 +780,30 @@ namespace Puffin
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Model Data
-				frames[i].drawBatch.drawIndirectCommandsBuffer = CreateBuffer(MAX_OBJECTS * sizeof(VkDrawIndexedIndirectCommand),
+				m_frames[i].drawBatch.drawIndirectCommandsBuffer = CreateBuffer(MAX_OBJECTS * sizeof(VkDrawIndexedIndirectCommand),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Camera/Debug Buffer
-				frames[i].shadingBuffer = CreateBuffer(sizeof(GPUShadingData),
+				m_frames[i].cameraShadingBuffer = CreateBuffer(sizeof(GPUShadingData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 				// Light Buffers
-				frames[i].lightBuffer = CreateBuffer(sizeof(GPULightData) * MAX_LIGHTS_PER_TYPE * 3,
+				m_frames[i].lightBuffer = CreateBuffer(sizeof(GPULightData) * MAX_LIGHTS_PER_TYPE * 3,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS_PER_TYPE,
+				m_frames[i].pointLightBuffer = CreateBuffer(sizeof(GPUPointLightData) * MAX_LIGHTS_PER_TYPE,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				frames[i].dirLightBuffer = CreateBuffer(sizeof(GPUDirLightData) * MAX_LIGHTS_PER_TYPE,
+				m_frames[i].dirLightBuffer = CreateBuffer(sizeof(GPUDirLightData) * MAX_LIGHTS_PER_TYPE,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-				frames[i].spotLightBuffer = CreateBuffer(sizeof(GPUSpotLightData) * MAX_LIGHTS_PER_TYPE,
+				m_frames[i].spotLightBuffer = CreateBuffer(sizeof(GPUSpotLightData) * MAX_LIGHTS_PER_TYPE,
 					VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Light Stats Buffer
-				frames[i].lightStatsBuffer = CreateBuffer(sizeof(GPULightStatsData),
+				m_frames[i].lightStatsBuffer = CreateBuffer(sizeof(GPULightStatsData),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 			}
@@ -817,153 +825,121 @@ namespace Puffin
 			descriptorLayoutCache = new VKUtil::DescriptorLayoutCache{};
 			descriptorLayoutCache->Init(device);
 
-			// Create Shadowmap Descriptor Layout
-			VkDescriptorSetLayoutBinding shadowmapBinding = VKInit::DescriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, MAX_LIGHTS_PER_TYPE * 3);
+			InitCameraVPDescriptors();
+			InitObjectInstanceDescriptors();
+			InitCameraShadingDescriptors();
+			InitLightDataDescriptors();
+			InitLightSpaceDescriptors();
+		}
 
-			VkDescriptorSetLayoutCreateInfo shadowmapLayoutInfo = {};
-			shadowmapLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			shadowmapLayoutInfo.flags = 0;
-			shadowmapLayoutInfo.pNext = nullptr;
-			shadowmapLayoutInfo.bindingCount = 1;
-			shadowmapLayoutInfo.pBindings = &shadowmapBinding;
-
-			shadowMapSetLayout = descriptorLayoutCache->CreateDescriptorSetLayout(&shadowmapLayoutInfo);
-
-			// Create Uniform/Storage Buffer for each frame
+		void VulkanEngine::InitCameraVPDescriptors()
+		{
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				// Create Descriptor Sets for Vertex Shader Stage
-
 				// Allocate Camera View/Proj Descriptor Set
 				VkDescriptorBufferInfo cameraBufferInfo;
-				cameraBufferInfo.buffer = frames[i].cameraViewProjBuffer.buffer;
+				cameraBufferInfo.buffer = m_frames[i].cameraViewProjBuffer.buffer;
 				cameraBufferInfo.offset = 0;
 				cameraBufferInfo.range = sizeof(GPUCameraData);
 
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 					.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-					.Build(frames[i].cameraViewProjDescriptor, cameraViewProjSetLayout);
+					.Build(m_frames[i].cameraViewProjDescriptor, m_cameraViewProjSetLayout);
+			}
+		}
 
+		void VulkanEngine::InitObjectInstanceDescriptors()
+		{
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
 				// Allocate Object Descriptor Set
 				VkDescriptorBufferInfo objectBufferInfo;
-				objectBufferInfo.buffer = frames[i].objectBuffer.buffer;
+				objectBufferInfo.buffer = m_frames[i].objectBuffer.buffer;
 				objectBufferInfo.offset = 0;
 				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
 
-				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindBuffer(0, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-					.Build(frames[i].objectDescriptor, objectSetLayout);
-
 				// Allocated Instance Descriptor Set
 				VkDescriptorBufferInfo instanceBufferInfo;
-				instanceBufferInfo.buffer = frames[i].instanceBuffer.buffer;
+				instanceBufferInfo.buffer = m_frames[i].instanceBuffer.buffer;
 				instanceBufferInfo.offset = 0;
 				instanceBufferInfo.range = sizeof(GPUInstanceData) * MAX_INSTANCES;
 
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-					.BindBuffer(0, &instanceBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-					.Build(frames[i].instanceDescriptor, instanceSetLayout);
+					.BindBuffer(0, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.BindBuffer(1, &instanceBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(m_frames[i].objectInstanceDescriptor, m_objectInstanceSetLayout);
+			}
+		}
 
+		void VulkanEngine::InitCameraShadingDescriptors()
+		{
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				// Camera/Debug Shading Info
+				VkDescriptorBufferInfo cameraShadingInfo;
+				cameraShadingInfo.buffer = m_frames[i].cameraShadingBuffer.buffer;
+				cameraShadingInfo.offset = 0;
+				cameraShadingInfo.range = sizeof(GPUShadingData);
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &cameraShadingInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+					.Build(m_frames[i].cameraShadingDescriptor, m_cameraShadingSetLayout);
+			}
+		}
+
+		void VulkanEngine::InitLightDataDescriptors()
+		{
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				// Light Info
+				VkDescriptorBufferInfo lightInfo;
+				lightInfo.buffer = m_frames[i].lightBuffer.buffer;
+				lightInfo.offset = 0;
+				lightInfo.range = sizeof(GPULightData) * MAX_LIGHTS_PER_TYPE * 3;
+
+				VkDescriptorBufferInfo pointLightInfo;
+				pointLightInfo.buffer = m_frames[i].pointLightBuffer.buffer;
+				pointLightInfo.offset = 0;
+				pointLightInfo.offset = 0;
+				pointLightInfo.range = sizeof(GPUPointLightData) * MAX_LIGHTS_PER_TYPE;
+
+				VkDescriptorBufferInfo dirLightInfo;
+				dirLightInfo.buffer = m_frames[i].dirLightBuffer.buffer;
+				dirLightInfo.offset = 0;
+				dirLightInfo.range = sizeof(GPUDirLightData) * MAX_LIGHTS_PER_TYPE;
+
+				VkDescriptorBufferInfo spotLightInfo;
+				spotLightInfo.buffer = m_frames[i].spotLightBuffer.buffer;
+				spotLightInfo.offset = 0;
+				spotLightInfo.range = sizeof(GPUSpotLightData) * MAX_LIGHTS_PER_TYPE;
+
+				VkDescriptorBufferInfo lightStatsInfo;
+				lightStatsInfo.buffer = m_frames[i].lightStatsBuffer.buffer;
+				lightStatsInfo.offset = 0;
+				lightStatsInfo.range = sizeof(GPULightStatsData);
+
+				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+					.BindBuffer(0, &lightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(1, &pointLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(2, &dirLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(3, &spotLightInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.BindBuffer(4, &lightStatsInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+					.Build(m_frames[i].lightDataDescriptor, m_lightDataSetLayout);
+			}
+		}
+
+		void VulkanEngine::InitLightSpaceDescriptors()
+		{
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
 				VkDescriptorBufferInfo lightSpaceInfo;
-				lightSpaceInfo.buffer = frames[i].lightSpaceBuffer.buffer;
+				lightSpaceInfo.buffer = m_frames[i].lightSpaceBuffer.buffer;
 				lightSpaceInfo.offset = 0;
 				lightSpaceInfo.range = sizeof(GPULightSpaceData);
 
 				VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 					.BindBuffer(0, &lightSpaceInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-					.Build(frames[i].lightSpaceDescriptor, lightSpaceSetLayout);
-			}
-		}
-
-		// Init Descriptors that will be passed to the Deferred Renderer
-		void VulkanEngine::InitDeferredDescriptors()
-		{
-			// Grab Image Views from Initialized Meshes
-			std::vector<VkDescriptorImageInfo> albedoImageInfo;
-			std::vector<VkDescriptorImageInfo> normalImageInfo;
-
-			VkDescriptorImageInfo textureImageInfo;
-			textureImageInfo.sampler = depthSampler;
-			textureImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
-			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
-			for (const auto& entity : meshEntities)
-			{
-				auto& mesh = entity->GetComponent<MeshComponent>();
-
-				//Albedo Textures
-				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
-				albedoImageInfo.push_back(textureImageInfo);
-
-				// Normal Maps	
-				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
-				normalImageInfo.push_back(textureImageInfo);
-			}
-
-			std::vector<std::shared_ptr<ECS::Entity>> proceduralMeshEntities;
-			ECS::GetEntities<TransformComponent, ProceduralMeshComponent>(m_world, proceduralMeshEntities);
-			for (const auto& entity : proceduralMeshEntities)
-			{
-				auto& mesh = entity->GetComponent<ProceduralMeshComponent>();
-
-				//Albedo Textures
-				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
-				albedoImageInfo.push_back(textureImageInfo);
-
-				// Normal Maps	
-				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
-				normalImageInfo.push_back(textureImageInfo);
-			}
-
-			for (int i = 0; i < FRAME_OVERLAP; i++)
-			{
-				// Create Descriptor Bindings
-
-				// Camera ViewProj
-				VkDescriptorBufferInfo cameraBufferInfo;
-				cameraBufferInfo.buffer = frames[i].cameraViewProjBuffer.buffer;
-				cameraBufferInfo.offset = 0;
-				cameraBufferInfo.range = sizeof(GPUCameraData);
-
-				// Object SSBO
-				VkDescriptorBufferInfo objectBufferInfo;
-				objectBufferInfo.buffer = frames[i].objectBuffer.buffer;
-				objectBufferInfo.offset = 0;
-				objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
-
-				// Instance SSBO
-				VkDescriptorBufferInfo instanceBufferInfo;
-				instanceBufferInfo.buffer = frames[i].instanceBuffer.buffer;
-				instanceBufferInfo.offset = 0;
-				instanceBufferInfo.range = sizeof(GPUInstanceData) * MAX_INSTANCES;
-
-				if (albedoImageInfo.size() > 0 && normalImageInfo.size() > 0)
-				{
-
-					// Build Descriptor Set
-					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-						.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-						.BindBuffer(1, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-						.BindBuffer(2, &instanceBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-						.BindImages(3, static_cast<uint32_t>(albedoImageInfo.size()),
-							albedoImageInfo.data(),
-							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-						.BindImages(4, static_cast<uint32_t>(normalImageInfo.size()),
-							normalImageInfo.data(),
-							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-						.Build(frames[i].geometryDescriptor, geometrySetLayout);
-				}
-				else
-				{
-					// Build Descriptor Set
-					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-						.BindBuffer(0, &cameraBufferInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-						.BindBuffer(1, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-						.BindBuffer(2, &instanceBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-						.Build(frames[i].geometryDescriptor, geometrySetLayout);
-				}
+					.Build(m_frames[i].lightSpaceDescriptor, m_lightSpaceSetLayout);
 			}
 		}
 
@@ -979,8 +955,8 @@ namespace Puffin
 			// Create Pipeline Layout Info
 			std::vector<VkDescriptorSetLayout> setLayouts =
 			{
-				lightSpaceSetLayout,
-				objectSetLayout
+				m_lightSpaceSetLayout,
+				m_objectInstanceSetLayout
 			};
 
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
@@ -1049,7 +1025,7 @@ namespace Puffin
 			// Create Pipeline Layout Info
 			std::vector<VkDescriptorSetLayout> setLayouts =
 			{
-				cameraViewProjSetLayout
+				m_cameraViewProjSetLayout
 			};
 
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
@@ -1153,6 +1129,62 @@ namespace Puffin
 				InitProceduralMesh(entity->ID());
 
 				entity->SetComponentFlag<ProceduralMeshComponent, FlagDirty>(false);
+			}
+		}
+
+		void VulkanEngine::InitMatTextureDescriptors()
+		{
+			// Grab Image Views from Initialized Meshes
+			std::vector<VkDescriptorImageInfo> albedoImageInfo;
+			std::vector<VkDescriptorImageInfo> normalImageInfo;
+
+			VkDescriptorImageInfo textureImageInfo;
+			textureImageInfo.sampler = depthSampler;
+			textureImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+			ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+			for (const auto& entity : meshEntities)
+			{
+				auto& mesh = entity->GetComponent<MeshComponent>();
+
+				//Albedo Textures
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
+				albedoImageInfo.push_back(textureImageInfo);
+
+				// Normal Maps	
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
+				normalImageInfo.push_back(textureImageInfo);
+			}
+
+			std::vector<std::shared_ptr<ECS::Entity>> proceduralMeshEntities;
+			ECS::GetEntities<TransformComponent, ProceduralMeshComponent>(m_world, proceduralMeshEntities);
+			for (const auto& entity : proceduralMeshEntities)
+			{
+				auto& mesh = entity->GetComponent<ProceduralMeshComponent>();
+
+				//Albedo Textures
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
+				albedoImageInfo.push_back(textureImageInfo);
+
+				// Normal Maps	
+				textureImageInfo.imageView = m_sceneRenderData.albedoTextureData[mesh.textureAssetID].texture.imageView;
+				normalImageInfo.push_back(textureImageInfo);
+			}
+
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				if (albedoImageInfo.size() > 0 && normalImageInfo.size() > 0)
+				{
+					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+						.BindImages(0, static_cast<uint32_t>(albedoImageInfo.size()),
+							albedoImageInfo.data(),
+							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+						.BindImages(1, static_cast<uint32_t>(normalImageInfo.size()),
+							normalImageInfo.data(),
+							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+						.Build(m_frames[i].matTextureDescriptor, m_matTextureSetLayout);
+				}
 			}
 		}
 
@@ -1263,33 +1295,33 @@ namespace Puffin
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Create Image/Allocation
-				if (frames[i].shadowmapImages.count(entity) == 0)
+				if (m_frames[i].shadowmapImages.count(entity) == 0)
 				{
-					frames[i].shadowmapImages[entity] = AllocatedImage();
+					m_frames[i].shadowmapImages[entity] = AllocatedImage();
 				}
 
 				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
-					&frames[i].shadowmapImages[entity].image,
-					&frames[i].shadowmapImages[entity].allocation, nullptr);
+					&m_frames[i].shadowmapImages[entity].image,
+					&m_frames[i].shadowmapImages[entity].allocation, nullptr);
 
 				std::string string = "Light Depth Image " + std::to_string(i);
 
 				VKDebug::SetObjectName(device,
-					(uint64_t)frames[i].shadowmapImages[entity].image,
+					(uint64_t)m_frames[i].shadowmapImages[entity].image,
 					VK_OBJECT_TYPE_IMAGE,
 					string.c_str());
 
 				// Create Image View
 				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(shadowFormat,
-					frames[i].shadowmapImages[entity].image, VK_IMAGE_ASPECT_DEPTH_BIT);
+					m_frames[i].shadowmapImages[entity].image, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &frames[i].shadowmapImages[entity].imageView));
+				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &m_frames[i].shadowmapImages[entity].imageView));
 
 				// Create Framebuffer
-				framebufferInfo.pAttachments = &frames[i].shadowmapImages[entity].imageView;
+				framebufferInfo.pAttachments = &m_frames[i].shadowmapImages[entity].imageView;
 				framebufferInfo.attachmentCount = 1;
 
-				VK_CHECK(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &frames[i].shadowmapFramebuffers[entity]));
+				VK_CHECK(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_frames[i].shadowmapFramebuffers[entity]));
 			}
 		}
 
@@ -1498,15 +1530,15 @@ namespace Puffin
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Destroy Image/View
-				vkDestroyImageView(device, frames[i].shadowmapImages[entity].imageView, nullptr);
-				vmaDestroyImage(allocator, frames[i].shadowmapImages[entity].image, frames[i].shadowmapImages[entity].allocation);
+				vkDestroyImageView(device, m_frames[i].shadowmapImages[entity].imageView, nullptr);
+				vmaDestroyImage(allocator, m_frames[i].shadowmapImages[entity].image, m_frames[i].shadowmapImages[entity].allocation);
 
-				frames[i].shadowmapImages.erase(entity);
+				m_frames[i].shadowmapImages.erase(entity);
 
 				// Destroy Framebuffer
-				vkDestroyFramebuffer(device, frames[i].shadowmapFramebuffers[entity], nullptr);
+				vkDestroyFramebuffer(device, m_frames[i].shadowmapFramebuffers[entity], nullptr);
 
-				frames[i].shadowmapFramebuffers.erase(entity);
+				m_frames[i].shadowmapFramebuffers.erase(entity);
 			}
 		}
 
@@ -1547,20 +1579,10 @@ namespace Puffin
 		void VulkanEngine::SetupDeferredRenderer()
 		{
 			std::vector<VkCommandPool> commandPools;
-			std::vector<AllocatedBuffer> uboBuffers;
-			std::vector<AllocatedBuffer> lightBuffers;
 
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				commandPools.push_back(frames[i].commandPool);
-
-				uboBuffers.push_back(frames[i].shadingBuffer);
-
-				lightBuffers.push_back(frames[i].lightBuffer);
-				lightBuffers.push_back(frames[i].pointLightBuffer);
-				lightBuffers.push_back(frames[i].dirLightBuffer);
-				lightBuffers.push_back(frames[i].spotLightBuffer);
-				lightBuffers.push_back(frames[i].lightStatsBuffer);
+				commandPools.push_back(m_frames[i].commandPool);
 			}
 
 			deferredRenderer.Setup(physicalDevice,
@@ -1572,8 +1594,8 @@ namespace Puffin
 			                       FRAME_OVERLAP,
 								   offscreenExtent);
 
-			deferredRenderer.SetupGeometry(geometrySetLayout);
-			deferredRenderer.SetupShading(uboBuffers, MAX_LIGHTS_PER_TYPE, lightBuffers, renderPass, shadowMapSetLayout);
+			deferredRenderer.SetupGeometry(m_cameraViewProjSetLayout, m_objectInstanceSetLayout, m_matTextureSetLayout);
+			deferredRenderer.SetupShading(renderPass, m_cameraShadingSetLayout, m_lightDataSetLayout, m_shadowMapSetLayout);
 		}
 
 		void VulkanEngine::InitShadowmapDescriptors()
@@ -1592,20 +1614,20 @@ namespace Puffin
 				ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
 				for (const auto& entity : shadowcasterLightEntities)
 				{
-					shadowmapBufferInfo.imageView = frames[i].shadowmapImages[entity->ID()].imageView;
+					shadowmapBufferInfo.imageView = m_frames[i].shadowmapImages[entity->ID()].imageView;
 					imageInfos.push_back(shadowmapBufferInfo);
 				}
 
 				if (shadowcasterLightEntities.empty())
 				{
 					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
-						.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
+						.Build(m_frames[i].shadowmapDescriptor, m_shadowMapSetLayout);
 				}
 				else
 				{
 					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 						.BindImages(0, static_cast<uint32_t>(imageInfos.size()), imageInfos.data(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-						.Build(frames[i].shadowmapDescriptor, shadowMapSetLayout);
+						.Build(m_frames[i].shadowmapDescriptor, m_shadowMapSetLayout);
 				}
 			}
 		}
@@ -1626,7 +1648,7 @@ namespace Puffin
 				ECS::GetEntities<TransformComponent, ShadowCasterComponent>(m_world, shadowcasterLightEntities);
 				for (const auto& entity : shadowcasterLightEntities)
 				{
-					shadowmapBufferInfo.imageView = frames[i].shadowmapImages[entity->ID()].imageView;
+					shadowmapBufferInfo.imageView = m_frames[i].shadowmapImages[entity->ID()].imageView;
 					imageInfos.push_back(shadowmapBufferInfo);
 				}
 
@@ -1634,7 +1656,7 @@ namespace Puffin
 				{
 					VKUtil::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
 						.UpdateImages(0, static_cast<uint32_t>(imageInfos.size()), imageInfos.data(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-						.Update(frames[i].shadowmapDescriptor);
+						.Update(m_frames[i].shadowmapDescriptor);
 				}
 			}
 		}
@@ -1685,7 +1707,7 @@ namespace Puffin
 			init_info.MinImageCount = 3;
 			init_info.ImageCount = 3;
 
-			ImGui_ImplVulkan_Init(&init_info, renderPass);
+			ImGui_ImplVulkan_Init(&init_info, renderPassGUI);
 
 			//execute a gpu command to upload imgui font textures
 			ImmediateSubmit([&](VkCommandBuffer cmd) 
@@ -2209,10 +2231,14 @@ namespace Puffin
 			}
 
 			// Deferred Render
-			deferredRenderer.SetGeometryDescriptorSet(&GetCurrentFrame().geometryDescriptor);
-			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP, 
-				&m_sceneRenderData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex], 
-				GetCurrentFrame().shadowmapDescriptor, GetCurrentFrame().shadowmapSemaphore);
+			deferredRenderer.SetGeometryDescriptorSets(&GetCurrentFrame().cameraViewProjDescriptor, 
+			&GetCurrentFrame().objectInstanceDescriptor, &GetCurrentFrame().matTextureDescriptor);
+
+			deferredRenderer.SetShadingDescriptorSets(&GetCurrentFrame().cameraShadingDescriptor, 
+			&GetCurrentFrame().lightDataDescriptor, &GetCurrentFrame().shadowmapDescriptor);
+
+			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP,
+						&m_sceneRenderData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex], GetCurrentFrame().shadowmapSemaphore);
 
 			// Record Command Buffers
 			//VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
@@ -2441,9 +2467,9 @@ namespace Puffin
 			shadingData.displayDebugTarget = 0;
 
 			void* data;
-			vmaMapMemory(allocator, GetCurrentFrame().shadingBuffer.allocation, &data);
+			vmaMapMemory(allocator, GetCurrentFrame().cameraShadingBuffer.allocation, &data);
 			memcpy(data, &shadingData, sizeof(GPUShadingData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().shadingBuffer.allocation);
+			vmaUnmapMemory(allocator, GetCurrentFrame().cameraShadingBuffer.allocation);
 
 			// Map all light data to storage buffer
 			void* lightData;
@@ -2768,7 +2794,7 @@ namespace Puffin
 
 				VkExtent2D shadowmapExtent = { shadowcaster.shadowmapWidth, shadowcaster.shadowmapHeight };
 
-				shadowRPInfo.framebuffer = frames[frameNumber % FRAME_OVERLAP].shadowmapFramebuffers[entity->ID()];
+				shadowRPInfo.framebuffer = m_frames[frameNumber % FRAME_OVERLAP].shadowmapFramebuffers[entity->ID()];
 				shadowRPInfo.renderArea.extent = shadowmapExtent;
 
 				// Set Pipeline Viewport
@@ -2817,7 +2843,7 @@ namespace Puffin
 
 			// Bind Object Data Descriptor
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-				shadowPipelineLayout, 1, 1, &GetCurrentFrame().objectDescriptor, 0, nullptr);
+				shadowPipelineLayout, 1, 1, &GetCurrentFrame().objectInstanceDescriptor, 0, nullptr);
 
 			// Bind Vertex/Index Buffers
 			VkDeviceSize offsets[] = { 0 };
@@ -2989,21 +3015,21 @@ namespace Puffin
 		{
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				vmaDestroyBuffer(allocator, frames[i].cameraViewProjBuffer.buffer, frames[i].cameraViewProjBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].objectBuffer.buffer, frames[i].objectBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].instanceBuffer.buffer, frames[i].instanceBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].lightSpaceBuffer.buffer, frames[i].lightSpaceBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].debugVertexBuffer.buffer, frames[i].debugVertexBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].debugIndexBuffer.buffer, frames[i].debugIndexBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].debugIndirectCommandsBuffer.buffer, frames[i].debugIndirectCommandsBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].cameraViewProjBuffer.buffer, m_frames[i].cameraViewProjBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].objectBuffer.buffer, m_frames[i].objectBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].instanceBuffer.buffer, m_frames[i].instanceBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].lightSpaceBuffer.buffer, m_frames[i].lightSpaceBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].debugVertexBuffer.buffer, m_frames[i].debugVertexBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].debugIndexBuffer.buffer, m_frames[i].debugIndexBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].debugIndirectCommandsBuffer.buffer, m_frames[i].debugIndirectCommandsBuffer.allocation);
 
-				vmaDestroyBuffer(allocator, frames[i].drawBatch.drawIndirectCommandsBuffer.buffer, frames[i].drawBatch.drawIndirectCommandsBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].shadingBuffer.buffer, frames[i].shadingBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].lightBuffer.buffer, frames[i].lightBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].pointLightBuffer.buffer, frames[i].pointLightBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].dirLightBuffer.buffer, frames[i].dirLightBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].spotLightBuffer.buffer, frames[i].spotLightBuffer.allocation);
-				vmaDestroyBuffer(allocator, frames[i].lightStatsBuffer.buffer, frames[i].lightStatsBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].drawBatch.drawIndirectCommandsBuffer.buffer, m_frames[i].drawBatch.drawIndirectCommandsBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].cameraShadingBuffer.buffer, m_frames[i].cameraShadingBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].lightBuffer.buffer, m_frames[i].lightBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].pointLightBuffer.buffer, m_frames[i].pointLightBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].dirLightBuffer.buffer, m_frames[i].dirLightBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].spotLightBuffer.buffer, m_frames[i].spotLightBuffer.allocation);
+				vmaDestroyBuffer(allocator, m_frames[i].lightStatsBuffer.buffer, m_frames[i].lightStatsBuffer.allocation);
 			}
 
 			vmaDestroyBuffer(allocator, m_sceneRenderData.mergedVertexBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.allocation);

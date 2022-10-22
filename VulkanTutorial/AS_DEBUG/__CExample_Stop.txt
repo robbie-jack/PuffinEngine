@@ -9,7 +9,7 @@ Variables:
 
 - 42,9 -
     0  10 *    SUSPEND
-    1  10 *    PGA      0xc28f3e30          (str:Game Stopping
+    1  10 *    PGA      0xb07327b0          (str:Game Stopping
 )
     4  12 *    PSF      v10
     5  14 *    CALLSYS  20           (string::string(const string&in))

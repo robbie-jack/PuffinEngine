@@ -27,7 +27,7 @@ namespace Puffin
 			AllocatedImage gDepth;
 
 			// Shading
-			VkDescriptorSet shadingDescriptor;
+			VkDescriptorSet gBufferDescriptor;
 
 			// Command Buffers
 			VkCommandBuffer gCommandBuffer, sCommandBuffer;
@@ -57,21 +57,29 @@ namespace Puffin
 			/* 
 			* Setup Deferred Geometry Pass
 			*/
-			void SetupGeometry(VkDescriptorSetLayout inGeometrySetLayout);
+			void SetupGeometry(VkDescriptorSetLayout& inCameraVPSetLayout, VkDescriptorSetLayout& inObjectInstanceSetLayout, VkDescriptorSetLayout& inMatTextureSetLayout);
 
 			/*
 			* Setup Deferred Shading Pass
 			*/
-			void SetupShading(std::vector<AllocatedBuffer>& uboBuffers,
-			                  int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers,
-			                  VkRenderPass renderPass, VkDescriptorSetLayout& shadowmapSetLayout);
+			void SetupShading(VkRenderPass inRenderPass, VkDescriptorSetLayout& inCameraShadingSetLayout, VkDescriptorSetLayout& inLightSetLayout, VkDescriptorSetLayout& inShadowmapSetLayout);
 
 			void RecreateFramebuffer(VkExtent2D inExtent);
 
 			// Pass Data Needed for Geometry Rendering
-			inline void SetGeometryDescriptorSet(VkDescriptorSet* inGeometrySet)
+			// Pass Data Needed for Geometry Rendering
+			inline void SetGeometryDescriptorSets(VkDescriptorSet* inCameraVPSet, VkDescriptorSet* inObjectInstanceSet, VkDescriptorSet* inMatTextureSet)
 			{
-				geometrySet = inGeometrySet;
+				m_cameraVPSet = inCameraVPSet;
+				m_modelInstanceSet = inObjectInstanceSet;
+				m_matTextureSet = inMatTextureSet;
+			}
+
+			inline void SetShadingDescriptorSets(VkDescriptorSet* inCameraShadingSet, VkDescriptorSet* inLightDataSet, VkDescriptorSet* inShadowmapSet)
+			{
+				m_cameraShadingSet = inCameraShadingSet;
+				m_lightDataSet = inLightDataSet;
+				m_shadowmapSet = inShadowmapSet;
 			}
 
 			inline void SetDrawIndirectCommandsBuffer(IndirectDrawBatch* inIndirectDrawBatch)
@@ -82,8 +90,7 @@ namespace Puffin
 			/*
 			* Render Scene with deferred shading
 			*/
-			VkSemaphore& DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer, VkDescriptorSet&
-			                       shadowmapDescriptor, VkSemaphore& shadowmapWaitSemaphore);
+			VkSemaphore& DrawScene(int frameIndex, SceneRenderData* sceneData, VkQueue graphicsQueue, VkFramebuffer sFramebuffer, VkSemaphore& shadowmapWaitSemaphore);
 
 			// Cleanup Functions
 			void Cleanup();
@@ -111,18 +118,31 @@ namespace Puffin
 			VkRenderPass gRenderPass;
 			VkSampler gColorSampler;
 
-			VkDescriptorSetLayout geometrySetLayout;
+			// Geometry
+			VkDescriptorSetLayout m_cameraVPLayout;
+			VkDescriptorSetLayout m_objectInstanceLayout;
+			VkDescriptorSetLayout m_matTextureLayout;
 
 			VkPipeline gPipeline;
 			VkPipelineLayout gPipelineLayout;
 
-			VkDescriptorSet* geometrySet;
+			VkDescriptorSet* m_cameraVPSet = nullptr;
+			VkDescriptorSet* m_modelInstanceSet = nullptr;
+			VkDescriptorSet* m_matTextureSet = nullptr;
+
 			IndirectDrawBatch* indirectDrawBatch;
 
 			// Shading
 			VkRenderPass sRenderPass;
 
-			VkDescriptorSetLayout shadingSetLayout;
+			VkDescriptorSetLayout m_gBufferLayout;
+			VkDescriptorSetLayout m_cameraShadingLayout;
+			VkDescriptorSetLayout m_lightLayout;
+			VkDescriptorSetLayout m_shadowmapLayout;
+
+			VkDescriptorSet* m_cameraShadingSet = nullptr;
+			VkDescriptorSet* m_lightDataSet = nullptr;
+			VkDescriptorSet* m_shadowmapSet = nullptr;
 
 			VkPipeline sPipeline;
 			VkPipelineLayout sPipelineLayout;
@@ -141,10 +161,10 @@ namespace Puffin
 			void SetupGPipeline(); // Setup Geometry/Shading Pipelines
 
 			// Shading Stage
-			void SetupSDescriptorSets(std::vector<AllocatedBuffer>& uboBuffers, int lightsPerType, std::vector<AllocatedBuffer>& lightBuffers); // Setup Descriptor Sets for Shading Pass
-			void SetupSPipeline(VkDescriptorSetLayout& shadowmapSetLayout);
+			void SetupGBufferDescriptorSets(); // Setup Descriptor Sets for Shading Pass
+			void SetupSPipeline();
 
-			void UpdateSDescriptorSets(); // Update GBuffer Image data in Shading Descriptor Set
+			void UpdateGBufferDescriptorSets(); // Update GBuffer Image data in Shading Descriptor Set
 
 			/*
 			* Create Allocated Images for the GBuffer
@@ -154,7 +174,7 @@ namespace Puffin
 
 			// Draw Functions
 			VkCommandBuffer RecordGeometryCommandBuffer(int frameIndex, SceneRenderData* sceneData);
-			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneRenderData* sceneData, VkFramebuffer sFramebuffer, VkDescriptorSet& shadowmapSet);
+			VkCommandBuffer RecordShadingCommandBuffer(int frameIndex, SceneRenderData* sceneData, VkFramebuffer sFramebuffer);
 
 			static inline std::vector<char> ReadFile(const std::string& filename)
 			{

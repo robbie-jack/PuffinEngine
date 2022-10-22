@@ -99,13 +99,19 @@ namespace Puffin
 			VkDescriptorSet cameraViewProjDescriptor;
 
 			AllocatedBuffer objectBuffer;
-			VkDescriptorSet objectDescriptor;
-
 			AllocatedBuffer instanceBuffer;
-			VkDescriptorSet instanceDescriptor;
+			VkDescriptorSet objectInstanceDescriptor;
 
 			AllocatedBuffer lightSpaceBuffer;
 			VkDescriptorSet lightSpaceDescriptor;
+
+			VkDescriptorSet matTextureDescriptor;
+
+			AllocatedBuffer cameraShadingBuffer; // Buffer Containing Camera/Debug data for Fragment Shader
+			VkDescriptorSet cameraShadingDescriptor;
+
+			AllocatedBuffer lightBuffer, pointLightBuffer, dirLightBuffer, spotLightBuffer, lightStatsBuffer;
+			VkDescriptorSet lightDataDescriptor;
 
 			// Shadowmap Rendering
 			VkDescriptorSet shadowmapDescriptor;
@@ -113,11 +119,7 @@ namespace Puffin
 			std::unordered_map<ECS::EntityID, VkFramebuffer> shadowmapFramebuffers;
 
 			// Scene Data
-			VkDescriptorSet geometryDescriptor;
 			IndirectDrawBatch drawBatch;
-
-			AllocatedBuffer shadingBuffer; // Buffer Containing Camera/Debug data for Fragment Shader
-			AllocatedBuffer lightBuffer, pointLightBuffer, dirLightBuffer, spotLightBuffer, lightStatsBuffer;
 
 			// Debug Variables
 			std::vector<Vertex_PC_32> debugVertices;
@@ -255,7 +257,7 @@ namespace Puffin
 			VkPipelineLayout debugPipelineLayout;
 			VkPipeline debugPipeline;
 
-			FrameData frames[FRAME_OVERLAP];
+			FrameData m_frames[FRAME_OVERLAP];
 
 			SceneRenderData m_sceneRenderData;
 
@@ -275,12 +277,13 @@ namespace Puffin
 			//Material meshMaterial;
 
 			//VkDescriptorPool descriptorPool;
-			VkDescriptorSetLayout cameraViewProjSetLayout;
-			VkDescriptorSetLayout objectSetLayout;
-			VkDescriptorSetLayout instanceSetLayout;
-			VkDescriptorSetLayout shadowMapSetLayout;
-			VkDescriptorSetLayout lightSpaceSetLayout;
-			VkDescriptorSetLayout geometrySetLayout; // Descriptor Layout for Deferred Geometry Pass
+			VkDescriptorSetLayout m_cameraViewProjSetLayout;
+			VkDescriptorSetLayout m_objectInstanceSetLayout;
+			VkDescriptorSetLayout m_matTextureSetLayout;
+			VkDescriptorSetLayout m_cameraShadingSetLayout;
+			VkDescriptorSetLayout m_lightDataSetLayout;
+			VkDescriptorSetLayout m_shadowMapSetLayout;
+			VkDescriptorSetLayout m_lightSpaceSetLayout;
 
 			VkQueue graphicsQueue; // queue we will submit to
 			uint32_t graphicsQueueFamily; // family of that queue
@@ -313,31 +316,55 @@ namespace Puffin
 			std::shared_ptr<RingBuffer<Debug::Line>> m_drawLineEvents;
 			std::shared_ptr<RingBuffer<Debug::Box>> m_drawBoxEvents;
 
-			// Init Main Functions
+			// Init Main Methods
 			void InitVulkan();
 			void InitSwapchain();
 			void InitOffscreen();
 			void InitCommands();
+
+			// Init Renderpass Methods
 			void InitDefaultRenderpass();
 			void InitGUIRenderpass();
 			void InitShadowRenderPass();
+
+			// Init Framebuffer Methods
 			void InitFramebuffers();
 			void InitOffscreenFramebuffers();
 			void InitSyncStructures();
+
+			// Init Buffer Methods
 			void InitBuffers();
 			void InitSceneBuffers();
+
+			// Init Descriptor Methods
 			void InitDescriptors();
-			void InitDeferredDescriptors();
+			void InitCameraVPDescriptors();
+			void InitObjectInstanceDescriptors();
+			void InitCameraShadingDescriptors();
+			void InitLightDataDescriptors();
+			void InitLightSpaceDescriptors();
+
+			// Init Pipeline Methods
 			void InitShadowPipeline();
 			void InitDebugPipeline();
+
+			// Init Scene Methods
 			void InitScene();
+			void InitMatTextureDescriptors();
 			void InitShadowmapDescriptors();
+
+			// Update Scene Methods
 			void UpdateShadowmapDescriptors();
+
+			// Init ImGui Methods
 			void InitImGui();
 			void InitImGuiTextureIDs();
+
+			// Init Sampler Methods
 			void InitTextureSampler();
 			void InitDepthSampler();
 
+			// Init Deferred Renderer Method
 			void SetupDeferredRenderer();
 
 			// Functions for Re-Initializing Swapchain and Offscreen Variables
@@ -435,7 +462,7 @@ namespace Puffin
 
 			FrameData& GetCurrentFrame()
 			{
-				return frames[frameNumber % FRAME_OVERLAP];
+				return m_frames[frameNumber % FRAME_OVERLAP];
 			}
 		};
 	}

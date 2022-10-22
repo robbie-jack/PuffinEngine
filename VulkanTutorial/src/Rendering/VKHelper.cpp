@@ -25,12 +25,19 @@ namespace Puffin
 					VkFormatProperties formatProps;
 					vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
 
-					// Format must support depth stencil attachment for optimal tiling
-					if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+					if (formatProps.linearTilingFeatures & !VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT & !VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
 					{
-						*depthFormat = format;
-						return true;
+						continue;
 					}
+
+					// Format must support depth stencil attachment for optimal tiling
+					if (formatProps.optimalTilingFeatures & !VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+					{
+						continue;
+					}
+
+					*depthFormat = format;
+					return true;
 				}
 
 				return false;

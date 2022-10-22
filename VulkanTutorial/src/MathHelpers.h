@@ -87,7 +87,7 @@ namespace Puffin
 			low = static_cast<float>(in - static_cast<double>(high));
 		}
 
-		// Split eahc component of double vector into high and low parts
+		// Split each component of double vector into high and low parts
 		static inline void SplitDouble(const Vector3d& in, Vector3f& high, Vector3f& low)
 		{
 			SplitDouble(in.x, high.x, low.x);
