@@ -265,6 +265,7 @@
     <ClCompile Include="src\UI\Windows\UIWindowSceneHierarchy.cpp" />
     <ClCompile Include="src\UI\Windows\UIWindowSettings.cpp" />
     <ClCompile Include="src\UI\Windows\UIWindowViewport.cpp" />
+    <ClCompile Include="src\Window\WindowSubsystem.cpp" />
     <ClCompile Include="third_party\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="third_party\vk-boostrap\VkBootstrap.cpp" />
   </ItemGroup>
@@ -291,6 +292,7 @@
     <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\Broadphase2D.hpp" />
     <ClInclude Include="include\Physics\PuffinPhysics2D\Broadphases\PruneAndSweepBroadphase.h" />
     <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp" />
+    <ClInclude Include="include\Window\WindowSubsystem.hpp" />
     <ClInclude Include="src\Assets\Asset.h" />
     <ClInclude Include="src\Assets\AssetRegistry.h" />
     <ClInclude Include="src\Assets\Importers\ModelImporter.h" />

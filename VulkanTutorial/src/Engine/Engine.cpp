@@ -15,6 +15,7 @@
 
 #include "Types/ComponentFlags.h"
 
+#include "Window/WindowSubsystem.hpp"
 #include "Input/InputSubsystem.h"
 #include "Engine/EventSubsystem.hpp"
 
@@ -44,18 +45,12 @@ namespace Puffin::Core
 
 	void Engine::Init()
 	{
-		glfwInit();
-
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-		m_window = glfwCreateWindow(1280, 720, "Puffin Engine", m_monitor, nullptr);
-
 		// Subsystems
-		auto ecsWorld = RegisterSubsystem<ECS::World>();
+		auto windowSubsystem = RegisterSubsystem<Window::WindowSubsystem>();
 		auto eventSubsystem = RegisterSubsystem<Core::EventSubsystem>();
 		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
 		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
+		auto ecsWorld = RegisterSubsystem<ECS::World>();
 
 		m_uiManager = std::make_shared<UI::UIManager>(shared_from_this());
 
@@ -157,6 +152,8 @@ namespace Puffin::Core
 		{
 			snd->Init();
 		}
+
+		m_window = windowSubsystem->GetPrimaryWindow();
 
 		// Initialize Systems
 		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
@@ -371,7 +368,8 @@ namespace Puffin::Core
 			playState = PlayState::STOPPED;
 		}
 
-		if (glfwWindowShouldClose(m_window))
+		auto windowSubsystem = GetSubsystem<Window::WindowSubsystem>();
+		if (windowSubsystem->ShouldPrimaryWindowClose())
 		{
 			running = false;
 		}
@@ -401,9 +399,6 @@ namespace Puffin::Core
 		m_uiManager = nullptr;
 
 		Assets::AssetRegistry::Clear();
-
-		glfwDestroyWindow(m_window);
-		glfwTerminate();
 	}
 
 	void Engine::AddDefaultAssets()
@@ -510,7 +505,7 @@ namespace Puffin::Core
 		entities[6]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
 		entities[3]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(0.2f, -0.8f, 0.0f);
-		entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
+		//entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
 		entities[6]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
 		entities[6]->GetComponent<Rendering::SpotLightComponent>().diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);

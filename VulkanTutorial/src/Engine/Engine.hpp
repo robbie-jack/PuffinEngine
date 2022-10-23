@@ -8,7 +8,7 @@
 #include <ProjectSettings.h>
 #include "Engine/Subsystem.hpp"
 
-#include <glfw/glfw3.h>
+#include "glfw/glfw3.h"
 
 #include <vector>
 #include <filesystem>

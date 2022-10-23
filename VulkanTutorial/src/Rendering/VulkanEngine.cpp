@@ -109,7 +109,7 @@ namespace Puffin
 			// Initialize Descriptor Sets
 			InitDescriptors();
 
-			InitShadowPipeline();
+			//InitShadowPipeline();
 
 			//InitDebugPipeline();
 
@@ -2237,8 +2237,8 @@ namespace Puffin
 			deferredRenderer.SetShadingDescriptorSets(&GetCurrentFrame().cameraShadingDescriptor, 
 			&GetCurrentFrame().lightDataDescriptor, &GetCurrentFrame().shadowmapDescriptor);
 
-			VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP,
-						&m_sceneRenderData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex], GetCurrentFrame().shadowmapSemaphore);
+			/*VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP,
+						&m_sceneRenderData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex], GetCurrentFrame().shadowmapSemaphore);*/
 
 			// Record Command Buffers
 			//VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
@@ -2248,8 +2248,8 @@ namespace Puffin
 
 			std::vector<VkSemaphore> waitSemaphores = 
 			{
-				GetCurrentFrame().presentSemaphore,
-				deferredSemaphore
+				GetCurrentFrame().presentSemaphore/*,
+				deferredSemaphore*/
 			};
 
 			// Prepare the submission into graphics queue

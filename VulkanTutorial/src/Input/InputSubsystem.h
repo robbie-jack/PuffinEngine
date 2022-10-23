@@ -1,9 +1,6 @@
 #pragma once
 
-#ifndef INPUT_MANAGER_H
-#define INPUT_MANAGER_H
-
-#include <GLFW/glfw3.h>
+#include "glfw/glfw3.h"
 
 #include "Engine/Subsystem.hpp"
 #include "InputEvent.h"
@@ -75,5 +72,3 @@ namespace Puffin
 		};
 	}
 }
-
-#endif // INPUT_MANAGER_H

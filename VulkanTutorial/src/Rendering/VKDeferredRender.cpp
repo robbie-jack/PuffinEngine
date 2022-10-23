@@ -132,8 +132,8 @@ namespace Puffin
 
 			std::vector<VkSemaphore> waitSemaphores =
 			{
-				frameData[frameIndex].geometrySemaphore,
-				shadowmapWaitSemaphore
+				frameData[frameIndex].geometrySemaphore/*,
+				shadowmapWaitSemaphore*/
 			};
 
 			// Submit Shading Command Buffer

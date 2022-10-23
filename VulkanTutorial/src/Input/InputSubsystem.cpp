@@ -3,6 +3,7 @@
 
 #include "Engine/Engine.hpp"
 #include "Engine/EventSubsystem.hpp"
+#include "Window/WindowSubsystem.hpp"
 
 namespace Puffin
 {
@@ -10,7 +11,7 @@ namespace Puffin
 	{
 		void InputSubsystem::Init()
 		{
-			window = m_engine->GetWindow();
+			window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 			world = m_engine->GetSubsystem<ECS::World>();
 
 			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();

@@ -34,7 +34,7 @@ Variables:
    31  13 *    WRTV8    v13
 - 6,9 -
    32  13 *    SUSPEND
-   33  13 *    PGA      0xb072a8b0          (str:Hello world
+   33  13 *    PGA      0x578d9930          (str:Hello world
 )
    36  15 *    PSF      v10
    37  17 *    CALLSYS  20           (string::string(const string&in))

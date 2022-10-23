@@ -104,6 +104,9 @@
     <Filter Include="Physics\PuffinPhysics2D\Broadphases">
       <UniqueIdentifier>{907782c7-b818-4e52-a564-8adb406a0ffb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Window">
+      <UniqueIdentifier>{eacd51cd-c617-4b53-bb82-c3d086a4ed82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -377,6 +380,9 @@
     </ClCompile>
     <ClCompile Include="src\Physics\PuffinPhysics2D\Broadphases\PruneAndSweepBroadphase.cpp">
       <Filter>Physics\PuffinPhysics2D\Broadphases</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\WindowSubsystem.cpp">
+      <Filter>Window</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -662,6 +668,9 @@
     </ClInclude>
     <ClInclude Include="include\Physics\CollisionEvent.h">
       <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Window\WindowSubsystem.hpp">
+      <Filter>Window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
