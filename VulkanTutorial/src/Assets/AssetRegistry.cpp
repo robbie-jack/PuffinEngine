@@ -1,4 +1,4 @@
-#include "AssetRegistry.h"
+#include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
 
 #include <fstream>

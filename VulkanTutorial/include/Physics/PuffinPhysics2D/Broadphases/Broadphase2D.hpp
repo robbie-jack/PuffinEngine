@@ -2,7 +2,7 @@
 
 #include "ECS/ECS.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
-#include "Physics/Colliders/Collider2D.h"
+#include "Physics/PuffinPhysics2D/Colliders/Collider2D.h"
 
 #include "Types/PackedArray.h"
 

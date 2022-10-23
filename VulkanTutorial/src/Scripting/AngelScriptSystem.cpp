@@ -1,6 +1,6 @@
-#include "AngelScriptSystem.h"
+#include "Scripting/AngelScriptSystem.h"
 
-#include "RegisterTypeHelpers.h"
+#include "Scripting/RegisterTypeHelpers.h"
 #include "Types/ComponentFlags.h"
 
 #include "Assets/AssetRegistry.h"

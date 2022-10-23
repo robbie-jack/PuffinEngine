@@ -41,9 +41,6 @@
     <Filter Include="Audio">
       <UniqueIdentifier>{576577dc-891e-40fb-a70d-b402ede7a1dc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering\Helper Classes">
-      <UniqueIdentifier>{730e7aaf-cb6c-4eea-a3aa-ca4bdf3ed417}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\Deferred">
       <UniqueIdentifier>{1c769954-8ad8-4c73-a241-ffb8b5d0d1d8}</UniqueIdentifier>
     </Filter>
@@ -74,12 +71,6 @@
     <Filter Include="Libraries\Box2D">
       <UniqueIdentifier>{04d3e15d-a88b-49a8-a6a2-9a3afd4ffedb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Components\Physics\PuffinPhysics2D">
-      <UniqueIdentifier>{8c32c545-fce1-484a-8b83-462b192e05aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Windows">
-      <UniqueIdentifier>{443d6f10-db6a-42db-82bc-0bdad2d9023c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine">
       <UniqueIdentifier>{89dfe535-7021-4f6c-bf16-5cfff2b0b7b1}</UniqueIdentifier>
     </Filter>
@@ -107,17 +98,29 @@
     <Filter Include="Window">
       <UniqueIdentifier>{eacd51cd-c617-4b53-bb82-c3d086a4ed82}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\Vulkan">
+      <UniqueIdentifier>{68ac4689-9a2f-44de-9080-0afef6ca6e59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\OpenGL">
+      <UniqueIdentifier>{720be2e7-8f0d-44bf-93a8-9bbf11d2ad32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Vulkan\Helpers">
+      <UniqueIdentifier>{43278362-aa43-4908-b077-3d23979eb427}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\OpenGL\Helpers">
+      <UniqueIdentifier>{f3fc598f-ab8d-402d-adca-1c27f87a9901}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Editor">
+      <UniqueIdentifier>{9429437d-852d-4463-bec5-979c25b48b94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Editor\Windows">
+      <UniqueIdentifier>{443d6f10-db6a-42db-82bc-0bdad2d9023c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Input\InputSubsystem.cpp">
       <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rendering\VulkanEngine.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\UIManager.cpp">
-      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\imgui\misc\cpp\imgui_stdlib.cpp">
       <Filter>Libraries\ImGui</Filter>
@@ -144,29 +147,8 @@
     <ClCompile Include="src\Scripting\AngelScriptSystem.cpp">
       <Filter>Scripting</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rendering\VKDeferredRender.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rendering\VKDescriptors.cpp">
-      <Filter>Rendering\Helper Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rendering\VKHelper.cpp">
-      <Filter>Rendering\Helper Classes</Filter>
-    </ClCompile>
     <ClCompile Include="src\Assets\MeshAsset.cpp">
       <Filter>Assets</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Physics\Shapes\BoxShape2D.cpp">
-      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Physics\Shapes\CircleShape2D.cpp">
-      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Physics\Colliders\CircleCollider2D.cpp">
-      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Physics\Colliders\BoxCollider2D.cpp">
-      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
     </ClCompile>
     <ClCompile Include="src\Assets\AssetRegistry.cpp">
       <Filter>Assets</Filter>
@@ -176,12 +158,6 @@
     </ClCompile>
     <ClCompile Include="src\Assets\TextureAsset.cpp">
       <Filter>Assets</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Physics\Colliders\PolygonCollider2D.cpp">
-      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Physics\PhysicsSystem2D.cpp">
-      <Filter>Physics\PuffinPhysics2D</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\Box2D\Box2DPhysicsSystem.cpp">
       <Filter>Physics\Box2D</Filter>
@@ -324,27 +300,6 @@
     <ClCompile Include="src\Physics\Box2D\Box2DContactListener.cpp">
       <Filter>Physics\Box2D</Filter>
     </ClCompile>
-    <ClCompile Include="src\UI\Windows\UIWindow.cpp">
-      <Filter>UI\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\Windows\UIWindowEntityProperties.cpp">
-      <Filter>UI\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\Windows\UIWindowPerformance.cpp">
-      <Filter>UI\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\Windows\UIWindowSceneHierarchy.cpp">
-      <Filter>UI\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\Windows\UIWindowSettings.cpp">
-      <Filter>UI\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\Windows\UIWindowViewport.cpp">
-      <Filter>UI\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UI\Windows\UIContentBrowser.cpp">
-      <Filter>UI\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.cpp">
       <Filter>Scripting\Addons</Filter>
     </ClCompile>
@@ -362,9 +317,6 @@
     </ClCompile>
     <ClCompile Include="src\Engine\Engine.cpp">
       <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rendering\Helper Classes\VKVertex.cpp">
-      <Filter>Rendering\Helper Classes</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui_impl_vulkan.cpp">
       <Filter>Libraries\ImGui</Filter>
@@ -384,30 +336,67 @@
     <ClCompile Include="src\Window\WindowSubsystem.cpp">
       <Filter>Window</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rendering\Vulkan\VKDeferredRender.cpp">
+      <Filter>Rendering\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Vulkan\VulkanEngine.cpp">
+      <Filter>Rendering\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Vulkan\Helpers\VKDescriptors.cpp">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Vulkan\Helpers\VKHelper.cpp">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Vulkan\Helpers\VKVertex.cpp">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PuffinPhysics2D\Colliders\BoxCollider2D.cpp">
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PuffinPhysics2D\Colliders\CircleCollider2D.cpp">
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PuffinPhysics2D\Colliders\PolygonCollider2D.cpp">
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PuffinPhysics2D\Shapes\BoxShape2D.cpp">
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PuffinPhysics2D\Shapes\CircleShape2D.cpp">
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PuffinPhysics2D\PhysicsSystem2D.cpp">
+      <Filter>Physics\PuffinPhysics2D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Editor\UIManager.cpp">
+      <Filter>UI\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Editor\Windows\UIContentBrowser.cpp">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Editor\Windows\UIWindow.cpp">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Editor\Windows\UIWindowEntityProperties.cpp">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Editor\Windows\UIWindowPerformance.cpp">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Editor\Windows\UIWindowSceneHierarchy.cpp">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Editor\Windows\UIWindowSettings.cpp">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Editor\Windows\UIWindowViewport.cpp">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\ProjectSettings.h" />
-    <ClInclude Include="src\SerializeScene.h" />
-    <ClInclude Include="src\ecs\ECS.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Input\InputSubsystem.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKTexture.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKTypes.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VulkanEngine.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="src\Types\Vector.h">
       <Filter>Types</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\UIManager.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\imgui\misc\cpp\imgui_stdlib.h">
       <Filter>Libraries\ImGui</Filter>
@@ -418,50 +407,9 @@
     <ClInclude Include="..\imgui\backends\imgui_impl_glfw.h">
       <Filter>Libraries\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\Components\Rendering\CameraComponent.h">
-      <Filter>Components\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\Rendering\LightComponent.h">
-      <Filter>Components\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\Rendering\MeshComponent.h">
-      <Filter>Components\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\DebugDraw.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ManipulationGizmo.h" />
-    <ClInclude Include="src\ECS\System.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
     <ClInclude Include="src\Types\RingBuffer.h">
       <Filter>Types</Filter>
     </ClInclude>
-    <ClInclude Include="src\Scripting\AngelScriptSystem.h">
-      <Filter>Scripting</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\AngelScriptComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKDeferredRender.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKDebug.h">
-      <Filter>Rendering\Helper Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKDescriptors.h">
-      <Filter>Rendering\Helper Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKInitializers.h">
-      <Filter>Rendering\Helper Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKHelper.h">
-      <Filter>Rendering\Helper Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\VKPipeline.h">
-      <Filter>Rendering\Helper Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MathHelpers.h" />
     <ClInclude Include="src\Types\Matrix.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -471,89 +419,14 @@
     <ClInclude Include="src\Types\UUID.h">
       <Filter>Types</Filter>
     </ClInclude>
-    <ClInclude Include="src\Assets\MeshAsset.h">
-      <Filter>Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Shapes\Shape2D.h">
-      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Shapes\BoxShape2D.h">
-      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Shapes\CircleShape2D.h">
-      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
-    </ClInclude>
     <ClInclude Include="src\Types\ComponentFlags.h">
       <Filter>Types</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Colliders\BoxCollider2D.h">
-      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Colliders\CircleCollider2D.h">
-      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Colliders\Collider2D.h">
-      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Assets\AssetRegistry.h">
-      <Filter>Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Assets\Asset.h">
-      <Filter>Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Assets\TextureAsset.h">
-      <Filter>Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Assets\Importers\ModelImporter.h">
-      <Filter>Assets\Importers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Assets\Importers\TextureImporter.h">
-      <Filter>Assets\Importers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Audio\AudioSubsystem.h">
-      <Filter>Audio</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\vk_mem_alloc.h">
       <Filter>Libraries\VMA</Filter>
     </ClInclude>
-    <ClInclude Include="src\Assets\SoundAsset.h">
-      <Filter>Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Input\InputEvent.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Scripting\RegisterTypeHelpers.h">
-      <Filter>Scripting</Filter>
-    </ClInclude>
     <ClInclude Include="src\Types\PackedArray.h">
       <Filter>Types</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Shapes\PolygonShape2D.h">
-      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Colliders\PolygonCollider2D.h">
-      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\TransformComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\PhysicsHelpers2D.h">
-      <Filter>Physics\PuffinPhysics2D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\PhysicsSystem2D.h">
-      <Filter>Physics\PuffinPhysics2D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\PhysicsTypes2D.h">
-      <Filter>Physics\PuffinPhysics2D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Box2D\Box2DPhysicsSystem.h">
-      <Filter>Physics\Box2D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\Physics\RigidbodyComponent2D.h">
-      <Filter>Components\Physics\PuffinPhysics2D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\Physics\ShapeComponents2D.h">
-      <Filter>Components\Physics\PuffinPhysics2D</Filter>
     </ClInclude>
     <ClInclude Include="..\box2d\src\dynamics\b2_chain_circle_contact.h">
       <Filter>Libraries\Box2D</Filter>
@@ -582,36 +455,6 @@
     <ClInclude Include="..\box2d\src\dynamics\b2_polygon_contact.h">
       <Filter>Libraries\Box2D</Filter>
     </ClInclude>
-    <ClInclude Include="src\Physics\Box2D\Box2DContactListener.h">
-      <Filter>Physics\Box2D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ECS\Entity.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\Windows\UIWindow.h">
-      <Filter>UI\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\Windows\UIWindowEntityProperties.h">
-      <Filter>UI\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\Windows\UIWindowPerformance.h">
-      <Filter>UI\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\Windows\UIWindowSceneHierarchy.h">
-      <Filter>UI\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\Windows\UIWindowSettings.h">
-      <Filter>UI\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\Windows\UIWindowViewport.h">
-      <Filter>UI\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UI\Windows\UIContentBrowser.h">
-      <Filter>UI\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ECS\ComponentType.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptarray\scriptarray.h">
       <Filter>Scripting\Addons</Filter>
     </ClInclude>
@@ -621,23 +464,8 @@
     <ClInclude Include="C:\Libraries\angelscript\sdk\add_on\scriptstdstring\scriptstdstring.h">
       <Filter>Scripting\Addons</Filter>
     </ClInclude>
-    <ClInclude Include="src\ECS\EntityID.h">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Engine\Application.hpp">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Engine\Subsystem.hpp">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Engine\Engine.hpp">
-      <Filter>Engine</Filter>
-    </ClInclude>
     <ClInclude Include="src\Engine\EventSubsystem.hpp">
       <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\Helper Classes\VKVertex.hpp">
-      <Filter>Rendering\Helper Classes</Filter>
     </ClInclude>
     <ClInclude Include="src\Types\Vertex.hpp">
       <Filter>Types</Filter>
@@ -671,6 +499,190 @@
     </ClInclude>
     <ClInclude Include="include\Window\WindowSubsystem.hpp">
       <Filter>Window</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\DebugDraw.h">
+      <Filter>Rendering\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\vk_mem_alloc.h">
+      <Filter>Rendering\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\VKDeferredRender.h">
+      <Filter>Rendering\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\VKTypes.h">
+      <Filter>Rendering\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\VulkanEngine.h">
+      <Filter>Rendering\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\Helpers\VKDebug.h">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\Helpers\VKDescriptors.h">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\Helpers\VKHelper.h">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\Helpers\VKInitializers.h">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\Helpers\VKPipeline.h">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\Helpers\VKTexture.h">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\Vulkan\Helpers\VKVertex.hpp">
+      <Filter>Rendering\Vulkan\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ManipulationGizmo.h" />
+    <ClInclude Include="include\MathHelpers.h" />
+    <ClInclude Include="include\ProjectSettings.h" />
+    <ClInclude Include="include\SerializeScene.h" />
+    <ClInclude Include="include\Physics\Box2D\Box2DContactListener.h">
+      <Filter>Physics\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\Box2D\Box2DPhysicsSystem.h">
+      <Filter>Physics\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\PhysicsHelpers2D.h">
+      <Filter>Physics\PuffinPhysics2D</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\PhysicsSystem2D.h">
+      <Filter>Physics\PuffinPhysics2D</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\PhysicsTypes2D.h">
+      <Filter>Physics\PuffinPhysics2D</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Colliders\BoxCollider2D.h">
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Colliders\CircleCollider2D.h">
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Colliders\Collider2D.h">
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Colliders\PolygonCollider2D.h">
+      <Filter>Physics\PuffinPhysics2D\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Shapes\BoxShape2D.h">
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Shapes\CircleShape2D.h">
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Shapes\PolygonShape2D.h">
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PuffinPhysics2D\Shapes\Shape2D.h">
+      <Filter>Physics\PuffinPhysics2D\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Input\InputEvent.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Input\InputSubsystem.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Assets\Importers\ModelImporter.h">
+      <Filter>Assets\Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Assets\Importers\TextureImporter.h">
+      <Filter>Assets\Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Assets\Asset.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Assets\AssetRegistry.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Assets\MeshAsset.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Assets\SoundAsset.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Assets\TextureAsset.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Audio\AudioSubsystem.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Components\AngelScriptComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Components\TransformComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Components\Rendering\CameraComponent.h">
+      <Filter>Components\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Components\Rendering\LightComponent.h">
+      <Filter>Components\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Components\Rendering\MeshComponent.h">
+      <Filter>Components\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Components\Physics\RigidbodyComponent2D.h">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Components\Physics\ShapeComponents2D.h">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\ComponentType.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\ECS.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\Entity.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\EntityID.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ECS\System.hpp">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\Application.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\Engine.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\Subsystem.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Scripting\AngelScriptSystem.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Scripting\RegisterTypeHelpers.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UI\Editor\UIManager.h">
+      <Filter>UI\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UI\Editor\Windows\UIContentBrowser.h">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UI\Editor\Windows\UIWindow.h">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UI\Editor\Windows\UIWindowEntityProperties.h">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UI\Editor\Windows\UIWindowPerformance.h">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UI\Editor\Windows\UIWindowSceneHierarchy.h">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UI\Editor\Windows\UIWindowSettings.h">
+      <Filter>UI\Editor\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UI\Editor\Windows\UIWindowViewport.h">
+      <Filter>UI\Editor\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-#include "MeshAsset.h"
+#include "Assets/MeshAsset.h"
 #include "nlohmann/json.hpp"
 #include "lz4/lz4.h"
 

@@ -3,9 +3,9 @@
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 
-#include "Rendering/VulkanEngine.h"
+#include "Rendering/Vulkan/VulkanEngine.h"
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
-#include "Physics/PhysicsSystem2D.h"
+#include "Physics/PuffinPhysics2D/PhysicsSystem2D.h"
 #include "Scripting/AngelScriptSystem.h"
 #include "Procedural/ProceduralMeshGenSystem.hpp"
 
@@ -20,7 +20,7 @@
 #include "Engine/EventSubsystem.hpp"
 
 #include "SerializeScene.h"
-#include "UI/UIManager.h"
+#include "UI/Editor/UIManager.h"
 
 #include "Audio/AudioSubsystem.h"
 
