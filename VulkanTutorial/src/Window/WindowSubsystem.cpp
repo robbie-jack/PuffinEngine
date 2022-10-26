@@ -1,5 +1,10 @@
 #include "Window/WindowSubsystem.hpp"
 
+#include <glfw/glfw3.h>
+
+#include <iostream>
+
+
 namespace Puffin::Window
 {
 	//==================================================
@@ -9,7 +14,7 @@ namespace Puffin::Window
 	void WindowSubsystem::Init()
 	{
 		glfwInit();
-
+		
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -17,6 +22,13 @@ namespace Puffin::Window
 
 		// Create Primary Window
 		m_primaryWindow = glfwCreateWindow(1280, 720, "Puffin Engine", nullptr, nullptr);
+		if (m_primaryWindow == nullptr)
+		{
+			std::cout << "Failed to create GLFW window" << std::endl;
+			glfwTerminate();
+		}
+
+		glfwMakeContextCurrent(m_primaryWindow);
 	}
 
 	void WindowSubsystem::Update()
@@ -38,10 +50,22 @@ namespace Puffin::Window
 		glfwTerminate();
 	}
 
+	bool WindowSubsystem::ShouldPrimaryWindowClose() const
+	{
+		return glfwWindowShouldClose(m_primaryWindow);
+	}
+
 	UUID WindowSubsystem::CreateNewWindow(const int& width, const int& height)
 	{
 		// Create new window and store it in windows map
 		GLFWwindow* window = glfwCreateWindow(width, height, "Puffin Engine", nullptr, nullptr);
+		if (window == nullptr)
+		{
+			std::cout << "Failed to create GLFW window" << std::endl;
+			glfwTerminate();
+			return 0;
+		}
+
 		UUID id;
 
 		m_windows.insert({ id, window });

@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\third_party;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\entt\single_include;$(SolutionDir)\OpenSimplexNoise</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\third_party;$(ProjectDir)\third_party\bgfx;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\OpenSimplexNoise;$(SolutionDir)\entt\single_include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -117,8 +117,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.216.0\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\lz4;$(ProjectDir)\lib\irrKlang;$(ProjectDir)\lib\assimp\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;liblz4.lib;irrKlang.lib;assimp-vc142-mtd.lib;IrrXMLd.lib;zlibstaticd.lib;angelscript64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.216.0\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)lib\glfw;$(ProjectDir)lib\lz4;$(ProjectDir)lib\irrKlang;$(ProjectDir)lib\bgfx\debug\lib;$(ProjectDir)\lib\assimp\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;liblz4.lib;irrKlang.lib;bgfx.lib;assimp-vc142-mtd.lib;IrrXMLd.lib;zlibstaticd.lib;angelscript64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
@@ -155,7 +155,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\third_party;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\entt\single_include;$(SolutionDir)\OpenSimplexNoise</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Libraries\angelscript\sdk\angelscript\include;C:\Libraries\angelscript\sdk\add_on;$(ProjectDir)\third_party;$(ProjectDir)\third_party\bgfx;$(ProjectDir)\include;$(ProjectDir)\src;$(SolutionDir)\imgui;$(SolutionDir)\imgui-filebrowser;$(SolutionDir)\implot;$(SolutionDir)\json\include;$(SolutionDir)\box2d\include;$(SolutionDir)\OpenSimplexNoise;$(SolutionDir)\entt\single_include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -169,8 +169,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.216.0\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)\lib\glfw;$(ProjectDir)\lib\lz4;$(ProjectDir)\lib\irrKlang;$(ProjectDir)\lib\assimp\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;liblz4.lib;irrKlang.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;angelscript64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.216.0\Lib;C:\Libraries\angelscript\sdk\angelscript\lib;$(ProjectDir)lib\glfw;$(ProjectDir)lib\lz4;$(ProjectDir)lib\irrKlang;$(ProjectDir)lib\bgfx\release\lib;$(ProjectDir)\lib\assimp\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;liblz4.lib;irrKlang.lib;bgfx.lib;assimp-vc142-mt.lib;IrrXML.lib;zlibstatic.lib;angelscript64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
@@ -251,6 +251,7 @@
     <ClCompile Include="src\Physics\PuffinPhysics2D\Shapes\BoxShape2D.cpp" />
     <ClCompile Include="src\Physics\PuffinPhysics2D\Shapes\CircleShape2D.cpp" />
     <ClCompile Include="src\Procedural\ProceduralMeshGenSystem.cpp" />
+    <ClCompile Include="src\Rendering\BGFX\BGFXRenderer3D.cpp" />
     <ClCompile Include="src\Rendering\Vulkan\Helpers\VKDescriptors.cpp" />
     <ClCompile Include="src\Rendering\Vulkan\Helpers\VKHelper.cpp" />
     <ClCompile Include="src\Rendering\Vulkan\Helpers\VKVertex.cpp" />
@@ -333,6 +334,7 @@
     <ClInclude Include="include\Physics\PuffinPhysics2D\Shapes\Shape2D.h" />
     <ClInclude Include="include\Procedural\ProceduralMeshGenSystem.hpp" />
     <ClInclude Include="include\ProjectSettings.h" />
+    <ClInclude Include="include\Rendering\BGFX\BGFXRenderer3D.hpp" />
     <ClInclude Include="include\Rendering\Vulkan\DebugDraw.h" />
     <ClInclude Include="include\Rendering\Vulkan\Helpers\VKDebug.h" />
     <ClInclude Include="include\Rendering\Vulkan\Helpers\VKDescriptors.h" />

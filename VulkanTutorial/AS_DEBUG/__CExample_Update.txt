@@ -17,7 +17,7 @@ Variables:
     3  31 *    CpyRtoV4 v3
     4  31 *    PshV4    v3
     5  32 *    CALLSYS  79           (STransformComponent@ GetTransformComponent(uint))
-    7  31 *    FREE     v2, 0x57953790          (type:STransformComponent)
+    7  31 *    FREE     v2, 0x4ea4b260          (type:STransformComponent)
    10  31 *    STOREOBJ v2
 - 25,9 -
    11  31 *    SUSPEND
@@ -70,7 +70,7 @@ Variables:
    71  31 *    INCi
 - 36,13 -
    72  31 *    SUSPEND
-   73  31 *    PGA      0x578e0e30          (str:Time Since Game Star...)
+   73  31 *    PGA      0x4e7ef630          (str:Time Since Game Star...)
    76  33 *    PSF      v21
    77  35 *    CALLSYS  20           (string::string(const string&in))
                ObjInfo  v21, 1
@@ -85,7 +85,7 @@ Variables:
    89  31 *    PSF      v21
    90  33 *    CALLSYS  21           (string::~string())
                ObjInfo  v21, 0
-   92  31 *    PGA      0x578e06b0          (str: Seconds)
+   92  31 *    PGA      0x4e7efc30          (str: Seconds)
    95  33 *    PSF      v21
    96  35 *    PSF      v31
    97  37 *    CALLSYS  26           (string string::opAdd(const string&in) const)
@@ -102,6 +102,6 @@ Variables:
             }
             2:
   108  31 *    SUSPEND
-  109  31 *    FREE     v2, 0x57953790          (type:STransformComponent)
+  109  31 *    FREE     v2, 0x4ea4b260          (type:STransformComponent)
             0:
   112  31 *    RET      2

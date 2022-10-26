@@ -101,20 +101,23 @@
     <Filter Include="Rendering\Vulkan">
       <UniqueIdentifier>{68ac4689-9a2f-44de-9080-0afef6ca6e59}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering\OpenGL">
-      <UniqueIdentifier>{720be2e7-8f0d-44bf-93a8-9bbf11d2ad32}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Rendering\Vulkan\Helpers">
       <UniqueIdentifier>{43278362-aa43-4908-b077-3d23979eb427}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Rendering\OpenGL\Helpers">
-      <UniqueIdentifier>{f3fc598f-ab8d-402d-adca-1c27f87a9901}</UniqueIdentifier>
     </Filter>
     <Filter Include="UI\Editor">
       <UniqueIdentifier>{9429437d-852d-4463-bec5-979c25b48b94}</UniqueIdentifier>
     </Filter>
     <Filter Include="UI\Editor\Windows">
       <UniqueIdentifier>{443d6f10-db6a-42db-82bc-0bdad2d9023c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\BGFX">
+      <UniqueIdentifier>{720be2e7-8f0d-44bf-93a8-9bbf11d2ad32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\BGFX\Helpers">
+      <UniqueIdentifier>{f3fc598f-ab8d-402d-adca-1c27f87a9901}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\BGFX">
+      <UniqueIdentifier>{5b988dbd-0ad6-4f58-814a-6a407f9d8e9b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -392,6 +395,9 @@
     </ClCompile>
     <ClCompile Include="src\UI\Editor\Windows\UIWindowViewport.cpp">
       <Filter>UI\Editor\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\BGFX\BGFXRenderer3D.cpp">
+      <Filter>Rendering\BGFX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -683,6 +689,9 @@
     </ClInclude>
     <ClInclude Include="include\UI\Editor\Windows\UIWindowViewport.h">
       <Filter>UI\Editor\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\BGFX\BGFXRenderer3D.hpp">
+      <Filter>Rendering\BGFX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

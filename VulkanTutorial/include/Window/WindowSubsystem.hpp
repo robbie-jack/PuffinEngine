@@ -1,11 +1,12 @@
 #pragma once
 
-#include "glfw/glfw3.h"
-
 #include "Engine/Subsystem.hpp"
 #include "Types/UUID.h"
 
 #include <unordered_map>
+
+class GLFWwindow;
+class GLFWmonitor;
 
 namespace Puffin::Window
 {
@@ -25,9 +26,11 @@ namespace Puffin::Window
 			return m_primaryWindow;
 		}
 
-		bool ShouldPrimaryWindowClose() const
+		bool ShouldPrimaryWindowClose() const;
+
+		GLFWmonitor* GetPrimaryMonitor() const
 		{
-			return glfwWindowShouldClose(m_primaryWindow);
+			return m_primaryMonitor;
 		}
 
 		// Create new window and return UUID handle to it

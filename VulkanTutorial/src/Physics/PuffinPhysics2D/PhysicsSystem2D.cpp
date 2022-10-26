@@ -1,4 +1,5 @@
-#include "PhysicsSystem2D.h"
+
+#include "Physics/PuffinPhysics2D/PhysicsSystem2D.h"
 
 #include "Physics/CollisionEvent.h"
 #include "Components/TransformComponent.h"
@@ -6,7 +7,7 @@
 
 #include "Types/ComponentFlags.h"
 
-#include "Physics/PhysicsHelpers2D.h"
+#include "Physics/PuffinPhysics2D/PhysicsHelpers2D.h"
 
 #include "Engine/Engine.hpp"
 

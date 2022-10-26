@@ -16,3 +16,6 @@
 [submodule "OpenSimplexNoise"]
 	path = OpenSimplexNoise
 	url = https://github.com/deerel/OpenSimplexNoise
+[submodule "bgfx.cmake"]
+	path = bgfx.cmake
+	url = https://github.com/bkaradzic/bgfx.cmake

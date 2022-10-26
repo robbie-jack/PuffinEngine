@@ -1,14 +1,9 @@
 #pragma once
 
-#ifndef ENGINE_H
-#define ENGINE_H
-
 #include <ECS/ECS.h>
 #include <SerializeScene.h>
 #include <ProjectSettings.h>
 #include "Engine/Subsystem.hpp"
-
-#include "glfw/glfw3.h"
 
 #include <vector>
 #include <filesystem>
@@ -130,11 +125,6 @@ namespace Puffin::Core
 
 		inline IO::ProjectSettings& GetProjectSettings() { return settings; }
 
-		GLFWwindow* GetWindow() const
-		{
-			return m_window;
-		}
-
 		std::shared_ptr<UI::UIManager> GetUIManager() const
 		{
 			return m_uiManager;
@@ -177,9 +167,6 @@ namespace Puffin::Core
 
 	private:
 
-		GLFWwindow* m_window = nullptr;
-		GLFWmonitor* m_monitor = nullptr;
-
 		std::shared_ptr<UI::UIManager> m_uiManager = nullptr;
 
 		bool running = true;
@@ -217,5 +204,3 @@ namespace Puffin::Core
 
 	};
 }
-
-#endif // !ENGINE_H

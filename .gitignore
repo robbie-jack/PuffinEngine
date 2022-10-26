@@ -71,6 +71,9 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 
+# CPM.cmake
+cmake
+
 # Roslyn cache directories
 *.ide/
 

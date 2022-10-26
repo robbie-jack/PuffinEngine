@@ -14,7 +14,7 @@ Variables:
     5  11 *    WRTV1    v1
 - 61,9 -
     6  11 *    SUSPEND
-    7  11 *    PGA      0x578e1b30          (str:Space Released)
+    7  11 *    PGA      0x4e7ef2b0          (str:Space Released)
    10  13 *    PSF      v11
    11  15 *    CALLSYS  20           (string::string(const string&in))
                ObjInfo  v11, 1

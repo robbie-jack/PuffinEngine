@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ECS/EntityID.h"
+
 #include <unordered_map>
 #include <set>
 #include <memory>
@@ -36,7 +38,6 @@ namespace Puffin
 		//////////////////////////////////////////////////
 
 		class World;
-		class ECSSubsystem;
 
 		typedef std::unordered_map<std::string_view, std::set<EntityID>> EntityMap;
 
@@ -73,16 +74,10 @@ namespace Puffin
 				m_world = inWorld;
 			}
 
-			void SetECS(std::shared_ptr<ECSSubsystem> inECS)
-			{
-				m_ecs = inECS;
-			}
-
 		protected:
 
 			std::shared_ptr<Core::Engine> m_engine = nullptr;
 			std::shared_ptr<World> m_world = nullptr;
-			std::shared_ptr<ECSSubsystem> m_ecs = nullptr;
 
 			Core::SystemInfo m_systemInfo;
 

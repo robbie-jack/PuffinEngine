@@ -1,6 +1,7 @@
 
-#include "Physics/Shapes/CircleShape2D.h"
-#include "Physics/PhysicsTypes2D.h"
+#include "Physics/PuffinPhysics2D/Shapes/CircleShape2D.h"
+#include "Physics/PuffinPhysics2D/Shapes/Shape2D.h"
+#include "Physics/PuffinPhysics2D/PhysicsTypes2D.h"
 
 namespace Puffin::Physics
 {

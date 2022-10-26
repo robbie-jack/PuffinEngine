@@ -113,7 +113,7 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Systems
-		RegisterSystem<Rendering::VulkanEngine>();
+		//RegisterSystem<Rendering::VulkanEngine>();
 		RegisterSystem<Physics::PhysicsSystem2D>();
 		//RegisterSystem<Physics::Box2DPhysicsSystem>();
 		RegisterSystem<Scripting::AngelScriptSystem>();
@@ -152,8 +152,6 @@ namespace Puffin::Core
 		{
 			snd->Init();
 		}
-
-		m_window = windowSubsystem->GetPrimaryWindow();
 
 		// Initialize Systems
 		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
@@ -297,8 +295,8 @@ namespace Puffin::Core
 		}
 
 		// UI
-		m_uiManager->Update();
-		m_uiManager->DrawUI(m_deltaTime);
+		//m_uiManager->Update();
+		//m_uiManager->DrawUI(m_deltaTime);
 
 		// PreRender
 		{
