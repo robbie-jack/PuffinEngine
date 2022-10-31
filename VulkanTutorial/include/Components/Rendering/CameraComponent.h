@@ -9,8 +9,6 @@
 
 #include "nlohmann/json.hpp"
 
-#define PFN_USE_DOUBLE_PRECISION
-
 namespace Puffin
 {
 	namespace Rendering

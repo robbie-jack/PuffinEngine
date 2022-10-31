@@ -4,9 +4,9 @@
 
 // AngelScript Includes
 #define ANGELSCRIPT_DLL_LIBRARY_IMPORT
-#include "angelscript.h"
-#include "scriptbuilder/scriptbuilder.h"
-#include "scriptstdstring/scriptstdstring.h"
+#include "angelscript/angelscript.h"
+#include "angelscript/scriptbuilder/scriptbuilder.h"
+#include "angelscript/scriptstdstring/scriptstdstring.h"
 
 #include "Components/AngelScriptComponent.h"
 

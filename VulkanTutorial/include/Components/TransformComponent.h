@@ -4,8 +4,6 @@
 
 #include "nlohmann/json.hpp"
 
-#define PFN_USE_DOUBLE_PRECISION
-
 namespace Puffin
 {
 #ifdef PFN_USE_DOUBLE_PRECISION

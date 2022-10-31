@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.24.2)
 
 # Download CPM.cmake
 set(CPM_DOWNLOAD_VERSION 0.36.0)
@@ -47,7 +47,7 @@ execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${branch}
 endfunction(checkout_git_branch)
 
 # Init/Update Submodules
-#add_git_submodule("bgfx.cmake")
+add_git_submodule("bgfx.cmake")
 add_git_submodule("box2d")
 add_git_submodule("implot")
 add_git_submodule("OpenSimplexNoise")
@@ -55,7 +55,7 @@ add_git_submodule("OpenSimplexNoise")
 add_git_submodule("imgui")
 checkout_git_branch("imgui" "docking")
 
-add_git_submodule("bgfx.cmake")
+add_git_submodule("imgui-filebrowser")
 
 # Define CMAKE Variables
 set(PROJECT_NAME PuffinEngine)
@@ -66,8 +66,12 @@ project (${PROJECT_NAME} DESCRIPTION "3D ECS Based Game Engine" LANGUAGES CXX)
 
 # Set C++ Language Standard to C++ 17
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/src)
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 
 set(HEADERS 
 	# Assets
@@ -100,6 +104,7 @@ set(HEADERS
 	${HEADER_DIR}/Engine/Engine.hpp
 	${HEADER_DIR}/Engine/Application.hpp
 	${HEADER_DIR}/Engine/Subsystem.hpp
+	${HEADER_DIR}/Engine/EventSubsystem.hpp
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
 	${HEADER_DIR}/Input/InputSubsystem.h
@@ -121,24 +126,112 @@ set(HEADERS
 	${HEADER_DIR}/Physics/Box2D/Box2DPhysicsSystem.h
 	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
 	# Procedural
-	
+	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.hpp
 	# Rendering
-	
+	${HEADER_DIR}/Rendering/BGFX/BGFXRenderer3D.hpp
+	${HEADER_DIR}/Rendering/Vulkan/VulkanEngine.h
+	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
+	${HEADER_DIR}/Rendering/Vulkan/VKDeferredRender.h
+	${HEADER_DIR}/Rendering/Vulkan/DebugDraw.h
+	${HEADER_DIR}/Rendering/Vulkan/vk_mem_alloc.h
+	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDebug.h
+	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.h
+	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKHelper.h
+	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKInitializers.h
+	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKPipeline.h
+	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKTexture.h
+	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKVertex.hpp
 	# Scripting
-	
+	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
+	${HEADER_DIR}/Scripting/AngelScriptSystem.h
 	# Types
-	
+	${HEADER_DIR}/Types/ComponentFlags.h
+	${HEADER_DIR}/Types/Matrix.h
+	${HEADER_DIR}/Types/PackedArray.h
+	${HEADER_DIR}/Types/Quat.h
+	${HEADER_DIR}/Types/RingBuffer.h
+	${HEADER_DIR}/Types/Simplex.h
+	${HEADER_DIR}/Types/UUID.h
+	${HEADER_DIR}/Types/Vector.h
+	${HEADER_DIR}/Types/Vertex.hpp
 	# UI
-	
+	${HEADER_DIR}/UI/Editor/UIManager.h
+	${HEADER_DIR}/UI/Editor/Windows/UIWindow.h
+	${HEADER_DIR}/UI/Editor/Windows/UIContentBrowser.h
+	${HEADER_DIR}/UI/Editor/Windows/UIWindowEntityProperties.h
+	${HEADER_DIR}/UI/Editor/Windows/UIWindowPerformance.h
+	${HEADER_DIR}/UI/Editor/Windows/UIWindowSceneHierarchy.h
+	${HEADER_DIR}/UI/Editor/Windows/UIWindowSettings.h
+	${HEADER_DIR}/UI/Editor/Windows/UIWindowViewport.h
 	# Window
+	${HEADER_DIR}/Window/WindowSubsystem.hpp
+	# Root
+	${HEADER_DIR}/ManipulationGizmo.h
+	${HEADER_DIR}/MathHelpers.h
+	${HEADER_DIR}/ProjectSettings.h
+	${HEADER_DIR}/SerializeScene.h
 	)
 
 set(SOURCES 
+	# Assets
+	${SOURCE_DIR}/Assets/AssetRegistry.cpp
+	${SOURCE_DIR}/Assets/MeshAsset.cpp
+	${SOURCE_DIR}/Assets/TextureAsset.cpp
+	# Audio
+	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
+	# Engine
+	${SOURCE_DIR}/Engine/Engine.cpp
+	${SOURCE_DIR}/Engine/Application.cpp
+	# Input
+	${SOURCE_DIR}/Input/InputSubsystem.cpp
+	# Physics
+	${SOURCE_DIR}/Physics/PuffinPhysics2D/PhysicsSystem2D.cpp
+	${SOURCE_DIR}/Physics/PuffinPhysics2D/Shapes/CircleShape2D.cpp
+	${SOURCE_DIR}/Physics/PuffinPhysics2D/Shapes/BoxShape2D.cpp
+	${SOURCE_DIR}/Physics/PuffinPhysics2D/Shapes/CircleShape2D.cpp
+	${SOURCE_DIR}/Physics/PuffinPhysics2D/Colliders/BoxCollider2D.cpp
+	${SOURCE_DIR}/Physics/PuffinPhysics2D/Colliders/CircleCollider2D.cpp
+	${SOURCE_DIR}/Physics/PuffinPhysics2D/Colliders/PolygonCollider2D.cpp
+	${SOURCE_DIR}/Physics/PuffinPhysics2D/Broadphases/PruneAndSweepBroadphase.cpp
+	${SOURCE_DIR}/Physics/Box2D/Box2DContactListener.cpp
+	${SOURCE_DIR}/Physics/Box2D/Box2DPhysicsSystem.cpp
+	# Procedural
+	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
+	# Rendering
+	${SOURCE_DIR}/Rendering/BGFX/BGFXRenderer3D.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/VulkanEngine.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKHelper.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKVertex.cpp
+	# Scripting
+	${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
+	# UI
+	${SOURCE_DIR}/UI/Editor/UIManager.cpp
+	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp
+	${SOURCE_DIR}/UI/Editor/Windows/UIContentBrowser.cpp
+	${SOURCE_DIR}/UI/Editor/Windows/UIWindowEntityProperties.cpp
+	${SOURCE_DIR}/UI/Editor/Windows/UIWindowPerformance.cpp
+	${SOURCE_DIR}/UI/Editor/Windows/UIWindowSceneHierarchy.cpp
+	${SOURCE_DIR}/UI/Editor/Windows/UIWindowSettings.cpp
+	${SOURCE_DIR}/UI/Editor/Windows/UIWindowViewport.cpp
+	# Window
+	${SOURCE_DIR}/Window/WindowSubsystem.cpp
+	# Root
 	${SOURCE_DIR}/main.cpp 
-	${SOURCE_DIR}/Engine/Engine.cpp)
+	${SOURCE_DIR}/ManipulationGizmo.cpp
+	)
+	
+set (IMGUI_SOURCES
+	${IMGUI_DIR}/imgui.cpp
+	${IMGUI_DIR}/imgui_demo.cpp
+	${IMGUI_DIR}/imgui_draw.cpp
+	${IMGUI_DIR}/imgui_tables.cpp
+	${IMGUI_DIR}/imgui_widgets.cpp
+	)
 
 # Add Main as Executable
-add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} ${IMGUI_SOURCES})
 
 message("")
 message("============================================================")
@@ -183,15 +276,22 @@ target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial
 # Define Debug Libs
 target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/assimp-vc142-mtd.lib)
 target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/IrrXMLd.lib)
+target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/angelscript/angelscript64d.lib)
 
 # Define Release Libs
 target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Release/assimp-vc142-mt.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/IrrXML.lib)
+target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/angelscript/angelscript64.lib)
 
 # Add include paths
 target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/include)
 target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/third_party)
 target_include_directories(${PROJECT_NAME} PRIVATE ${VULKAN_SDK_PATH}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE box2d/include)
+target_include_directories(${PROJECT_NAME} PRIVATE imgui)
+target_include_directories(${PROJECT_NAME} PRIVATE imgui-filebrowser)
+target_include_directories(${PROJECT_NAME} PRIVATE bgfx.cmake/bgfx/include)
+target_include_directories(${PROJECT_NAME} PRIVATE bgfx.cmake/bx/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 

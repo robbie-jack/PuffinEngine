@@ -1,7 +1,7 @@
 #pragma once
 
 #define ANGELSCRIPT_DLL_LIBRARY_IMPORT
-#include <angelscript.h>
+#include <angelscript/angelscript.h>
 #include "nlohmann/json.hpp"
 
 #include <string>
