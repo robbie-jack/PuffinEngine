@@ -1,6 +1,6 @@
 #pragma once
 
-#include "angelscript.h"
+#include "angelscript/angelscript.h"
 
 #include "ECS/ECS.h"
 

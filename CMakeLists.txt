@@ -62,7 +62,7 @@ set(PROJECT_NAME PuffinEngine)
 set(VULKAN_SDK_PATH "C:/VulkanSDK/1.3.216.0")
 
 # Set Project Name
-project (${PROJECT_NAME} DESCRIPTION "3D ECS Based Game Engine" LANGUAGES CXX)
+project (${PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
 
 # Set C++ Language Standard to C++ 17
 set(CMAKE_CXX_STANDARD 17)
@@ -128,7 +128,7 @@ set(HEADERS
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.hpp
 	# Rendering
-	${HEADER_DIR}/Rendering/BGFX/BGFXRenderer3D.hpp
+	#${HEADER_DIR}/Rendering/BGFX/BGFXRenderer3D.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VulkanEngine.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
 	${HEADER_DIR}/Rendering/Vulkan/VKDeferredRender.h
@@ -198,7 +198,7 @@ set(SOURCES
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
 	# Rendering
-	${SOURCE_DIR}/Rendering/BGFX/BGFXRenderer3D.cpp
+	#${SOURCE_DIR}/Rendering/BGFX/BGFXRenderer3D.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VulkanEngine.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.cpp
@@ -281,13 +281,14 @@ target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTu
 # Define Release Libs
 target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Release/assimp-vc142-mt.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/IrrXML.lib)
-target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/angelscript/angelscript64.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/angelscript/angelscript64.lib)
 
 # Add include paths
 target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/include)
 target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/third_party)
 target_include_directories(${PROJECT_NAME} PRIVATE ${VULKAN_SDK_PATH}/include)
 target_include_directories(${PROJECT_NAME} PRIVATE box2d/include)
+target_include_directories(${PROJECT_NAME} PRIVATE OpenSimplexNoise)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui-filebrowser)
 target_include_directories(${PROJECT_NAME} PRIVATE bgfx.cmake/bgfx/include)
@@ -295,5 +296,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE bgfx.cmake/bx/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
-add_compile_definitions(${PROJECT_NAME} PRIVATE PFN_USE_DOUBLE_PRECISION)
-option(PFN_USE_DOUBLE_PRECISION "Enabled Double Precision Support" OFF)
+target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_USE_DOUBLE_PRECISION)
+option(PFN_USE_DOUBLE_PRECISION "Enabled Double Precision Support" ON)
+
+if (MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+else ()
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wa,-mbig-obj)
+endif ()

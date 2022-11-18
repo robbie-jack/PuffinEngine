@@ -4,7 +4,7 @@
 #include "ECS/Entity.h"
 
 #include "Rendering/Vulkan/VulkanEngine.h"
-#include "Physics/Box2D/Box2DPhysicsSystem.h"
+//#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Physics/PuffinPhysics2D/PhysicsSystem2D.h"
 #include "Scripting/AngelScriptSystem.h"
 #include "Procedural/ProceduralMeshGenSystem.hpp"
