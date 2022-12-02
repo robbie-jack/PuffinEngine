@@ -1,5 +1,6 @@
 #pragma once
 
+#define ANGELSCRIPT_DLL_LIBRARY_IMPORT
 #include "angelscript/angelscript.h"
 
 #include "ECS/ECS.h"

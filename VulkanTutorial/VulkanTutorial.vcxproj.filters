@@ -116,9 +116,6 @@
     <Filter Include="Rendering\BGFX\Helpers">
       <UniqueIdentifier>{f3fc598f-ab8d-402d-adca-1c27f87a9901}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Libraries\BGFX">
-      <UniqueIdentifier>{5b988dbd-0ad6-4f58-814a-6a407f9d8e9b}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />

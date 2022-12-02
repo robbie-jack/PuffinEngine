@@ -47,7 +47,6 @@ execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${branch}
 endfunction(checkout_git_branch)
 
 # Init/Update Submodules
-add_git_submodule("bgfx.cmake")
 add_git_submodule("box2d")
 add_git_submodule("implot")
 add_git_submodule("OpenSimplexNoise")
@@ -72,6 +71,10 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/src)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+set(IMGUI_VULKAN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/third_party/imgui)
+set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/OpenSimplexNoise/OpenSimplexNoise)
+set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/third_party/vk-bootstrap)
+set(ANGELSCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/third_party/angelscript)
 
 set(HEADERS 
 	# Assets
@@ -128,12 +131,10 @@ set(HEADERS
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.hpp
 	# Rendering
-	#${HEADER_DIR}/Rendering/BGFX/BGFXRenderer3D.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VulkanEngine.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
 	${HEADER_DIR}/Rendering/Vulkan/VKDeferredRender.h
 	${HEADER_DIR}/Rendering/Vulkan/DebugDraw.h
-	${HEADER_DIR}/Rendering/Vulkan/vk_mem_alloc.h
 	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDebug.h
 	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.h
 	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKHelper.h
@@ -198,7 +199,6 @@ set(SOURCES
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
 	# Rendering
-	#${SOURCE_DIR}/Rendering/BGFX/BGFXRenderer3D.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VulkanEngine.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.cpp
@@ -229,36 +229,56 @@ set (IMGUI_SOURCES
 	${IMGUI_DIR}/imgui_tables.cpp
 	${IMGUI_DIR}/imgui_widgets.cpp
 	)
+	
+set (IMGUI_VULKAN_SOURCES
+	${IMGUI_VULKAN_DIR}/imgui_impl_vulkan.cpp
+	)
+	
+set (OPENSIMPLEX_SOURCES
+	${OPENSIMPLEX_DIR}/OpenSimplexNoise.cpp
+	)
+	
+set (VKBOOTSTRAP_SOURCES
+	${VKBOOTSTRAP_DIR}/VkBootstrap.cpp
+	)
+	
+set (ANGELSCRIPT_SOURCES
+	${ANGELSCRIPT_DIR}/scriptarray/scriptarray.cpp
+	${ANGELSCRIPT_DIR}/scriptbuilder/scriptbuilder.cpp
+	${ANGELSCRIPT_DIR}/scriptstdstring/scriptstdstring.cpp
+	${ANGELSCRIPT_DIR}/scriptstdstring/scriptstdstring_utils.cpp
+	)
 
 # Add Main as Executable
-add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} ${IMGUI_SOURCES})
+add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} ${IMGUI_SOURCES} ${IMGUI_VULKAN_SOURCES} ${OPENSIMPLEX_SOURCES} ${VKBOOTSTRAP_SOURCES} ${ANGELSCRIPT_SOURCES})
 
 message("")
 message("============================================================")
 message("Sorting Source Files into relative Subfolders")
 message("============================================================")
 
-foreach(header IN LISTS HEADERS)
+function(sort_into_source_group files dir sort_dir)
+
+foreach(file IN LISTS ${files})
 	message("")
-	message("Generating Source Group for " ${header})
-	file(RELATIVE_PATH relative_path ${HEADER_DIR} ${header})
+	message("Generating Source Group for " ${file})
+	file(RELATIVE_PATH relative_path ${dir} ${file})
 	get_filename_component(relative_dir ${relative_path} DIRECTORY)
 	message("Relative Path: " ${relative_path})
 	message("Relative Dir: " ${relative_dir})
     string(REPLACE "/" "\\" relative_path_msvc "${relative_dir}")
-    source_group("${relative_path_msvc}" FILES "${header}")
+    source_group("${sort_dir}/${relative_path_msvc}" FILES "${file}")
 endforeach()
 
-foreach(source IN LISTS SOURCES)
-	message("")
-	message("Generating Source Group for " ${source})
-	file(RELATIVE_PATH relative_path ${SOURCE_DIR} ${source})
-	get_filename_component(relative_dir ${relative_path} DIRECTORY)
-	message("Relative Path: " ${relative_path})
-	message("Relative Dir: " ${relative_dir})
-    string(REPLACE "/" "\\" relative_path_msvc "${relative_dir}")
-    source_group("${relative_path_msvc}" FILES "${source}")
-endforeach()
+endfunction(sort_into_source_group)
+
+sort_into_source_group(HEADERS ${HEADER_DIR} "")
+sort_into_source_group(SOURCES ${SOURCE_DIR} "")
+sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} Libraries/ImGui)
+sort_into_source_group(IMGUI_VULKAN_SOURCES ${IMGUI_VULKAN_DIR} Libraries/ImGui)
+sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} Libraries/OpenSimplexNoise)
+sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} Libraries/VKBootstrap)
+sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)
 
 message("")
 
@@ -277,27 +297,32 @@ target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial
 target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/assimp-vc142-mtd.lib)
 target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/IrrXMLd.lib)
 target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/angelscript/angelscript64d.lib)
+target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/box2d/build/bin/Debug/box2d.lib)
 
 # Define Release Libs
 target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Release/assimp-vc142-mt.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/IrrXML.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Release/IrrXML.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/angelscript/angelscript64.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/box2d/build/bin/Release/box2d.lib)
 
 # Add include paths
 target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/include)
 target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/third_party)
+target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/third_party/angelscript)
 target_include_directories(${PROJECT_NAME} PRIVATE ${VULKAN_SDK_PATH}/include)
 target_include_directories(${PROJECT_NAME} PRIVATE box2d/include)
 target_include_directories(${PROJECT_NAME} PRIVATE OpenSimplexNoise)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui-filebrowser)
-target_include_directories(${PROJECT_NAME} PRIVATE bgfx.cmake/bgfx/include)
-target_include_directories(${PROJECT_NAME} PRIVATE bgfx.cmake/bx/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_USE_DOUBLE_PRECISION)
 option(PFN_USE_DOUBLE_PRECISION "Enabled Double Precision Support" ON)
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+target_compile_options(${PROJECT_NAME} PRIVATE /MP)
 
 if (MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
