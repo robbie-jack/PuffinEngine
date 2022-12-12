@@ -228,6 +228,7 @@ set (IMGUI_SOURCES
 	${IMGUI_DIR}/imgui_draw.cpp
 	${IMGUI_DIR}/imgui_tables.cpp
 	${IMGUI_DIR}/imgui_widgets.cpp
+	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
 	)
 	
 set (IMGUI_VULKAN_SOURCES
@@ -250,7 +251,12 @@ set (ANGELSCRIPT_SOURCES
 	)
 
 # Add Main as Executable
-add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} ${IMGUI_SOURCES} ${IMGUI_VULKAN_SOURCES} ${OPENSIMPLEX_SOURCES} ${VKBOOTSTRAP_SOURCES} ${ANGELSCRIPT_SOURCES})
+add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_VULKAN_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
 
 message("")
 message("============================================================")
@@ -320,7 +326,10 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_USE_DOUBLE_PRECISION)
 option(PFN_USE_DOUBLE_PRECISION "Enabled Double Precision Support" ON)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET ${PROJECT_NAME} PROPERTY 
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 target_compile_options(${PROJECT_NAME} PRIVATE /MP)
 
