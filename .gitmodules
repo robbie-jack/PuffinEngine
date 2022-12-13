@@ -16,3 +16,9 @@
 [submodule "OpenSimplexNoise"]
 	path = OpenSimplexNoise
 	url = https://github.com/deerel/OpenSimplexNoise
+[submodule "lz4"]
+	path = lz4
+	url = https://github.com/lz4/lz4
+[submodule "assimp"]
+	path = assimp
+	url = https://github.com/assimp/assimp

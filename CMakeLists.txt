@@ -55,6 +55,8 @@ add_git_submodule("imgui")
 checkout_git_branch("imgui" "docking")
 
 add_git_submodule("imgui-filebrowser")
+add_git_submodule("lz4")
+add_git_submodule("assimp")
 
 # Define CMAKE Variables
 set(PROJECT_NAME PuffinEngine)
@@ -68,13 +70,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/include)
-set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/src)
+set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-set(IMGUI_VULKAN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/third_party/imgui)
+set(IMGUI_VULKAN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/OpenSimplexNoise/OpenSimplexNoise)
-set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/third_party/vk-bootstrap)
-set(ANGELSCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/third_party/angelscript)
+set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/vk-bootstrap)
+set(ANGELSCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/angelscript)
 
 set(HEADERS 
 	# Assets
@@ -223,12 +225,15 @@ set(SOURCES
 	)
 	
 set (IMGUI_SOURCES
+	${IMGUI_DIR}/imgui.h
 	${IMGUI_DIR}/imgui.cpp
 	${IMGUI_DIR}/imgui_demo.cpp
 	${IMGUI_DIR}/imgui_draw.cpp
 	${IMGUI_DIR}/imgui_tables.cpp
 	${IMGUI_DIR}/imgui_widgets.cpp
 	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+	${IMGUI_DIR}/misc/cpp/imgui_stdlib.h
+	${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 	)
 	
 set (IMGUI_VULKAN_SOURCES
@@ -295,31 +300,35 @@ CPMAddPackage("gh:nlohmann/json@3.11.2")
 target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 
-target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/glfw/glfw3.lib)
-target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/irrklang/irrKlang.lib)
-target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/lz4/liblz4.lib)
+set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+
+target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrklang/irrKlang.lib)
 
 # Define Debug Libs
-target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/assimp-vc142-mtd.lib)
-target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Debug/IrrXMLd.lib)
-target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/angelscript/angelscript64d.lib)
-target_link_libraries(${PROJECT_NAME} debug ${CMAKE_CURRENT_SOURCE_DIR}/box2d/build/bin/Debug/box2d.lib)
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d.lib)
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/assimp/Debug/assimp-vc143-mtd.lib)
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3.lib)
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d.lib)
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static.lib)
 
 # Define Release Libs
-target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Release/assimp-vc142-mt.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/assimp/Release/IrrXML.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/VulkanTutorial/lib/angelscript/angelscript64.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/box2d/build/bin/Release/box2d.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/assimp/Release/assimp-vc143-mt.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static.lib)
 
 # Add include paths
-target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/include)
-target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/third_party)
-target_include_directories(${PROJECT_NAME} PRIVATE VulkanTutorial/third_party/angelscript)
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(${PROJECT_NAME} PRIVATE third_party)
+target_include_directories(${PROJECT_NAME} PRIVATE third_party/angelscript)
 target_include_directories(${PROJECT_NAME} PRIVATE ${VULKAN_SDK_PATH}/include)
 target_include_directories(${PROJECT_NAME} PRIVATE box2d/include)
 target_include_directories(${PROJECT_NAME} PRIVATE OpenSimplexNoise)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui-filebrowser)
+target_include_directories(${PROJECT_NAME} PRIVATE lz4/lib)
+target_include_directories(${PROJECT_NAME} PRIVATE assimp/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
