@@ -4,12 +4,12 @@
 #include <ECS/ECS.h>
 #include <Types/Vector.h>
 
-#include <Physics/PuffinPhysics2D/Shapes/BoxShape2D.h>
-#include <Physics/PuffinPhysics2D/Shapes/CircleShape2D.h>
+#include <Physics/Onager2D/Shapes/BoxShape2D.h>
+#include <Physics/Onager2D/Shapes/CircleShape2D.h>
 
-#include "Physics/PuffinPhysics2D/Broadphases/Broadphase2D.hpp"
-#include "Physics/PuffinPhysics2D/Colliders/Collider2D.h"
-#include "Physics/PuffinPhysics2D/PhysicsTypes2D.h"
+#include "Physics/Onager2D/Broadphases/Broadphase2D.hpp"
+#include "Physics/Onager2D/Colliders/Collider2D.h"
+#include "Physics/Onager2D/PhysicsTypes2D.h"
 
 #include <Components/Physics/RigidbodyComponent2D.h>
 #include <Components/Physics/ShapeComponents2D.h>
@@ -29,12 +29,12 @@ namespace Puffin::Physics
 	// Physics System 2D
 	//////////////////////////////////////////////////
 
-	class PhysicsSystem2D : public ECS::System
+	class Onager2DPhysicsSystem : public ECS::System
 	{
 	public:
 
-		PhysicsSystem2D();
-		~PhysicsSystem2D() override {}
+		Onager2DPhysicsSystem();
+		~Onager2DPhysicsSystem() override {}
 
 		void Init() override;
 		void PreStart() override;

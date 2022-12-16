@@ -3,9 +3,9 @@
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 
-#include "Rendering/Vulkan/VulkanEngine.h"
+#include "Rendering/Vulkan/VulkanRenderSystem.h"
 //#include "Physics/Box2D/Box2DPhysicsSystem.h"
-#include "Physics/PuffinPhysics2D/PhysicsSystem2D.h"
+#include "Physics/Onager2D/Onager2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
 #include "Procedural/ProceduralMeshGenSystem.hpp"
 
@@ -113,8 +113,8 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Systems
-		//RegisterSystem<Rendering::VulkanEngine>();
-		RegisterSystem<Physics::PhysicsSystem2D>();
+		RegisterSystem<Rendering::VulkanRenderSystem>();
+		RegisterSystem<Physics::Onager2DPhysicsSystem>();
 		//RegisterSystem<Physics::Box2DPhysicsSystem>();
 		RegisterSystem<Scripting::AngelScriptSystem>();
 		RegisterSystem<Procedural::ProceduralMeshGenSystem>();
@@ -137,7 +137,7 @@ namespace Puffin::Core
 		//ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		DefaultScene();
+		//DefaultScene();
 		//PhysicsScene();
 		//ProceduralScene();
 
@@ -295,8 +295,8 @@ namespace Puffin::Core
 		}
 
 		// UI
-		//m_uiManager->Update();
-		//m_uiManager->DrawUI(m_deltaTime);
+		m_uiManager->Update();
+		m_uiManager->DrawUI(m_deltaTime);
 
 		// PreRender
 		{

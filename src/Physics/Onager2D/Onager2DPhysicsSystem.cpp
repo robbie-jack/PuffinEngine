@@ -1,5 +1,5 @@
 
-#include "Physics/PuffinPhysics2D/PhysicsSystem2D.h"
+#include "Physics/Onager2D/Onager2DPhysicsSystem.h"
 
 #include "Physics/CollisionEvent.h"
 #include "Components/TransformComponent.h"
@@ -7,7 +7,7 @@
 
 #include "Types/ComponentFlags.h"
 
-#include "Physics/PuffinPhysics2D/PhysicsHelpers2D.h"
+#include "Physics/Onager2D/PhysicsHelpers2D.h"
 
 #include "Engine/Engine.hpp"
 
@@ -21,13 +21,13 @@ namespace Puffin
 		// Constructor/Destructor
 		//--------------------------------------------------
 
-		PhysicsSystem2D::PhysicsSystem2D()
+		Onager2DPhysicsSystem::Onager2DPhysicsSystem()
 		{
 			m_boxShapes.Reserve(100);
 			m_circleShapes.Reserve(100);
 			m_colliders.Reserve(200);
 
-			m_systemInfo.name = "PhysicsSystem2D";
+			m_systemInfo.name = "Onager2DPhysicsSystem";
 			m_systemInfo.updateOrder = Core::UpdateOrder::FixedUpdate;
 		}
 
@@ -35,7 +35,7 @@ namespace Puffin
 		// Public Functions
 		//--------------------------------------------------
 
-		void PhysicsSystem2D::Init()
+		void Onager2DPhysicsSystem::Init()
 		{
 			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
 
@@ -48,7 +48,7 @@ namespace Puffin
 			SetBroadphase<NSquaredBroadphase>();
 		}
 
-		void PhysicsSystem2D::PreStart()
+		void Onager2DPhysicsSystem::PreStart()
 		{
 			std::vector<std::shared_ptr<ECS::Entity>> boxEntites;
 			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
@@ -79,13 +79,13 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::Update()
+		void Onager2DPhysicsSystem::Update()
 		{
 			UpdateComponents();
 			Step();
 		}
 
-		void PhysicsSystem2D::Stop()
+		void Onager2DPhysicsSystem::Stop()
 		{
 			m_boxShapes.Clear();
 			m_circleShapes.Clear();
@@ -112,7 +112,7 @@ namespace Puffin
 		// Private Functions
 		//--------------------------------------------------
 
-		void PhysicsSystem2D::InitCircle2D(std::shared_ptr<ECS::Entity> entity)
+		void Onager2DPhysicsSystem::InitCircle2D(std::shared_ptr<ECS::Entity> entity)
 		{
 			auto& circle = entity->GetComponent<CircleComponent2D>();
 
@@ -134,7 +134,7 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::InitBox2D(std::shared_ptr<ECS::Entity> entity)
+		void Onager2DPhysicsSystem::InitBox2D(std::shared_ptr<ECS::Entity> entity)
 		{
 			auto& box = entity->GetComponent<BoxComponent2D>();
 
@@ -157,19 +157,19 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::CleanupCircle2D(std::shared_ptr<ECS::Entity> entity)
+		void Onager2DPhysicsSystem::CleanupCircle2D(std::shared_ptr<ECS::Entity> entity)
 		{
 			m_circleShapes.Erase(entity->ID());
 			m_colliders.Erase(entity->ID());
 		}
 
-		void PhysicsSystem2D::CleanupBox2D(std::shared_ptr<ECS::Entity> entity)
+		void Onager2DPhysicsSystem::CleanupBox2D(std::shared_ptr<ECS::Entity> entity)
 		{
 			m_boxShapes.Erase(entity->ID());
 			m_colliders.Erase(entity->ID());
 		}
 
-		void PhysicsSystem2D::UpdateComponents()
+		void Onager2DPhysicsSystem::UpdateComponents()
 		{
 			std::vector<std::shared_ptr<ECS::Entity>> rigidbodyEntities;
 			ECS::GetEntities<TransformComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
@@ -230,7 +230,7 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::Step()
+		void Onager2DPhysicsSystem::Step()
 		{
 			// Update Dynamic Objects
 			UpdateDynamics();
@@ -257,7 +257,7 @@ namespace Puffin
 			GenerateCollisionEvents();
 		}
 
-		void PhysicsSystem2D::UpdateDynamics() const
+		void Onager2DPhysicsSystem::UpdateDynamics() const
 		{
 			std::vector<std::shared_ptr<ECS::Entity>> rigidbodyEntities;
 			ECS::GetEntities<TransformComponent, VelocityComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
@@ -290,7 +290,7 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::CalculateImpulseByGravity(RigidbodyComponent2D& body) const
+		void Onager2DPhysicsSystem::CalculateImpulseByGravity(RigidbodyComponent2D& body) const
 		{
 			if (body.invMass == 0.0f)
 				return;
@@ -301,14 +301,14 @@ namespace Puffin
 			ApplyLinearImpulse(body, impulseGravity);
 		}
 
-		void PhysicsSystem2D::CollisionBroadphase()
+		void Onager2DPhysicsSystem::CollisionBroadphase()
 		{
 			// Perform Collision Broadphase to Generate Collision Pairs
 			if (m_activeBroadphase)
 				m_activeBroadphase->GenerateCollisionPairs(m_colliders, m_collisionPairs);
 		}
 
-		void PhysicsSystem2D::CollisionDetection()
+		void Onager2DPhysicsSystem::CollisionDetection()
 		{
 			m_collisionContacts.clear();
 
@@ -324,7 +324,7 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::CollisionResponse() const
+		void Onager2DPhysicsSystem::CollisionResponse() const
 		{
 			for (const Collision2D::Contact& contact : m_collisionContacts)
 			{
@@ -368,7 +368,7 @@ namespace Puffin
 			}
 		}
 
-		void PhysicsSystem2D::GenerateCollisionEvents()
+		void Onager2DPhysicsSystem::GenerateCollisionEvents()
 		{
 			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
 

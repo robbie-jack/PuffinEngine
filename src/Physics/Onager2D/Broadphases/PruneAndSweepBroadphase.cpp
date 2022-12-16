@@ -1,5 +1,5 @@
 
-#include "Physics/PuffinPhysics2D/Broadphases/PruneAndSweepBroadphase.h"
+#include "Physics/Onager2D/Broadphases/PruneAndSweepBroadphase.h"
 
 namespace Puffin::Physics
 {

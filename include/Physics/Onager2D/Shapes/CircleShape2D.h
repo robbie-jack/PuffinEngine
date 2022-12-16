@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Physics/PuffinPhysics2D/Shapes/Shape2D.h"
+#include "Physics/Onager2D/Shapes/Shape2D.h"
 
 namespace Puffin::Physics
 {

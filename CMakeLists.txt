@@ -115,25 +115,25 @@ set(HEADERS
 	${HEADER_DIR}/Input/InputSubsystem.h
 	# Physics
 	${HEADER_DIR}/Physics/CollisionEvent.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/PhysicsTypes2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/PhysicsSystem2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/PhysicsHelpers2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Shapes/Shape2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Shapes/PolygonShape2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Shapes/CircleShape2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Shapes/BoxShape2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Colliders/Collider2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Colliders/PolygonCollider2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Colliders/BoxCollider2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Colliders/CircleCollider2D.h
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Broadphases/Broadphase2D.hpp
-	${HEADER_DIR}/Physics/PuffinPhysics2D/Broadphases/PruneAndSweepBroadphase.h
+	${HEADER_DIR}/Physics/Onager2D/PhysicsTypes2D.h
+	${HEADER_DIR}/Physics/Onager2D/Onager2DPhysicsSystem.h
+	${HEADER_DIR}/Physics/Onager2D/PhysicsHelpers2D.h
+	${HEADER_DIR}/Physics/Onager2D/Shapes/Shape2D.h
+	${HEADER_DIR}/Physics/Onager2D/Shapes/PolygonShape2D.h
+	${HEADER_DIR}/Physics/Onager2D/Shapes/CircleShape2D.h
+	${HEADER_DIR}/Physics/Onager2D/Shapes/BoxShape2D.h
+	${HEADER_DIR}/Physics/Onager2D/Colliders/Collider2D.h
+	${HEADER_DIR}/Physics/Onager2D/Colliders/PolygonCollider2D.h
+	${HEADER_DIR}/Physics/Onager2D/Colliders/BoxCollider2D.h
+	${HEADER_DIR}/Physics/Onager2D/Colliders/CircleCollider2D.h
+	${HEADER_DIR}/Physics/Onager2D/Broadphases/Broadphase2D.hpp
+	${HEADER_DIR}/Physics/Onager2D/Broadphases/PruneAndSweepBroadphase.h
 	${HEADER_DIR}/Physics/Box2D/Box2DPhysicsSystem.h
 	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.hpp
 	# Rendering
-	${HEADER_DIR}/Rendering/Vulkan/VulkanEngine.h
+	${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
 	${HEADER_DIR}/Rendering/Vulkan/VKDeferredRender.h
 	${HEADER_DIR}/Rendering/Vulkan/DebugDraw.h
@@ -188,20 +188,20 @@ set(SOURCES
 	# Input
 	${SOURCE_DIR}/Input/InputSubsystem.cpp
 	# Physics
-	${SOURCE_DIR}/Physics/PuffinPhysics2D/PhysicsSystem2D.cpp
-	${SOURCE_DIR}/Physics/PuffinPhysics2D/Shapes/CircleShape2D.cpp
-	${SOURCE_DIR}/Physics/PuffinPhysics2D/Shapes/BoxShape2D.cpp
-	${SOURCE_DIR}/Physics/PuffinPhysics2D/Shapes/CircleShape2D.cpp
-	${SOURCE_DIR}/Physics/PuffinPhysics2D/Colliders/BoxCollider2D.cpp
-	${SOURCE_DIR}/Physics/PuffinPhysics2D/Colliders/CircleCollider2D.cpp
-	${SOURCE_DIR}/Physics/PuffinPhysics2D/Colliders/PolygonCollider2D.cpp
-	${SOURCE_DIR}/Physics/PuffinPhysics2D/Broadphases/PruneAndSweepBroadphase.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Onager2DPhysicsSystem.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Shapes/CircleShape2D.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Shapes/BoxShape2D.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Shapes/CircleShape2D.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Colliders/BoxCollider2D.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Colliders/CircleCollider2D.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Colliders/PolygonCollider2D.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Broadphases/PruneAndSweepBroadphase.cpp
 	${SOURCE_DIR}/Physics/Box2D/Box2DContactListener.cpp
 	${SOURCE_DIR}/Physics/Box2D/Box2DPhysicsSystem.cpp
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
 	# Rendering
-	${SOURCE_DIR}/Rendering/Vulkan/VulkanEngine.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/VulkanRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKHelper.cpp

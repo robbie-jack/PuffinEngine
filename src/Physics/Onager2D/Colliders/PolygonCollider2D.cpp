@@ -1,6 +1,6 @@
 
-#include "Physics/PuffinPhysics2D/Colliders/PolygonCollider2D.h"
-#include "Physics/PuffinPhysics2D/PhysicsTypes2D.h"
+#include "Physics/Onager2D/Colliders/PolygonCollider2D.h"
+#include "Physics/Onager2D/PhysicsTypes2D.h"
 #include "MathHelpers.h"
 
 namespace Puffin::Physics::Collision2D

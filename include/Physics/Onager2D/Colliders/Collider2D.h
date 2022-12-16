@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Components/TransformComponent.h"
-#include "Physics/PuffinPhysics2D/PhysicsTypes2D.h"
+#include "Physics/Onager2D/PhysicsTypes2D.h"
 #include "ECS/ECS.h"
 
 namespace Puffin::Physics::Collision2D

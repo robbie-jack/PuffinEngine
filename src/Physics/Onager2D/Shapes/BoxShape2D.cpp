@@ -1,8 +1,8 @@
-#include "Physics/PuffinPhysics2D/Shapes/BoxShape2D.h"
+#include "Physics/Onager2D/Shapes/BoxShape2D.h"
 
-#include "Physics/PuffinPhysics2D/PhysicsHelpers2D.h"
-#include "Physics/PuffinPhysics2D/PhysicsTypes2D.h"
-#include "Physics/PuffinPhysics2D/Shapes/Shape2D.h"
+#include "Physics/Onager2D/PhysicsHelpers2D.h"
+#include "Physics/Onager2D/PhysicsTypes2D.h"
+#include "Physics/Onager2D/Shapes/Shape2D.h"
 
 namespace Puffin::Physics
 {

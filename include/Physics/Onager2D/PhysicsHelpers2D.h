@@ -3,8 +3,8 @@
 #ifndef PHYSICS_HELPERS_2D_H
 #define PHYSICS_HELPERS_2D_H
 
-#include "Physics/PuffinPhysics2D/Colliders/BoxCollider2D.h"
-#include "Physics/PuffinPhysics2D/Colliders/CircleCollider2D.h"
+#include "Physics/Onager2D/Colliders/BoxCollider2D.h"
+#include "Physics/Onager2D/Colliders/CircleCollider2D.h"
 
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"

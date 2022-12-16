@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Physics/PuffinPhysics2D/Shapes/CircleShape2D.h"
-#include "Physics/PuffinPhysics2D/Shapes/BoxShape2D.h"
+#include "Physics/Onager2D/Shapes/CircleShape2D.h"
+#include "Physics/Onager2D/Shapes/BoxShape2D.h"
 
 #include <Types/Vector.h>
 
