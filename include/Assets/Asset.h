@@ -11,6 +11,16 @@ namespace Puffin::Assets
 {
 	struct AssetData
 	{
+		AssetData()
+		{
+			type = "";
+			version = 0;
+			json = "";
+			binaryBlob.clear();
+		}
+
+		~AssetData() {}
+
 		std::string type;
 		uint32_t version;
 		std::string json;
@@ -25,7 +35,7 @@ namespace Puffin::Assets
 
 	static CompressionMode ParseCompressionMode(const char* f)
 	{
-		if (strcmp(f, "LZ4"))
+		if (strcmp(f, "LZ4") == 0)
 		{
 			return CompressionMode::LZ4;
 		}

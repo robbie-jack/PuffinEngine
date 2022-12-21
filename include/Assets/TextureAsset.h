@@ -15,7 +15,7 @@ namespace Puffin::Assets
 
 	static TextureFormat ParseTextureFormat(const char* f)
 	{
-		if (strcmp(f, "RGBA8"))
+		if (strcmp(f, "RGBA8") == 0)
 		{
 			return TextureFormat::RGBA8;
 		}

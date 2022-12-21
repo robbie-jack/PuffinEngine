@@ -55,7 +55,7 @@ namespace Puffin::Core
 		m_uiManager = std::make_shared<UI::UIManager>(shared_from_this());
 
 		// Load Project File
-		fs::path projectPath = fs::path("D:\\Projects\\PuffinProject\\Puffin.pproject");
+		fs::path projectPath = fs::path("C:\\Projects\\PuffinProject\\Puffin.pproject");
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
@@ -142,7 +142,7 @@ namespace Puffin::Core
 		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
-		//m_sceneData->LoadAndInit();
+		m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;

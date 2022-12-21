@@ -306,14 +306,14 @@ target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrklang/irrKlang.lib)
 
 # Define Debug Libs
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/assimp/Debug/assimp-vc143-mtd.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/assimp/Debug/assimp-vc143-mtd.lib)
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3.lib)
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d.lib)
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static.lib)
 
 # Define Release Libs
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/assimp/Release/assimp-vc143-mt.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/assimp/Release/assimp-vc143-mt.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static.lib)
@@ -328,7 +328,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE OpenSimplexNoise)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui-filebrowser)
 target_include_directories(${PROJECT_NAME} PRIVATE lz4/lib)
-target_include_directories(${PROJECT_NAME} PRIVATE assimp/include)
+#target_include_directories(${PROJECT_NAME} PRIVATE assimp/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 

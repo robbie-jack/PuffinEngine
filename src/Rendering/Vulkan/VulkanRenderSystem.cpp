@@ -1937,7 +1937,6 @@ namespace Puffin
 				m_shadowmapsNeedsUpdated = false;
 			}
 
-
 			DrawFrame();
 		}
 
@@ -2167,9 +2166,9 @@ namespace Puffin
 			VK_CHECK(vkResetCommandPool(device, GetCurrentFrame().commandPool, 0));
 
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
-			if (offscreenInitialized)
+			/*if (offscreenInitialized)
 				m_uiManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
-			else
+			else*/
 				m_uiManager->GetWindowViewport()->DrawWithoutImage();
 
 			viewportSize = m_uiManager->GetWindowViewport()->GetViewportSize();
