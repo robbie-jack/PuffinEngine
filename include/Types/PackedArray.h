@@ -37,7 +37,7 @@ namespace Puffin
 		// Remove value from Array
 		void Erase(size_t id)
 		{
-			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
+			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "Removing non-existent value");
 
 			if (m_arraySize == 0 || m_idToIndexMap.count(id) == 0)
 				return;
@@ -257,7 +257,7 @@ namespace Puffin
 		// Remove value from bitset
 		void Erase(size_t id)
 		{
-			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
+			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "Removing non-existent value");
 
 			if (m_bitsetSize == 0 || m_idToIndexMap.count(id) == 0)
 				return;

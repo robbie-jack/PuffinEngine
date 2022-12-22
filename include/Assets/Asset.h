@@ -4,6 +4,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string>
+#include <string_view>
 
 namespace fs = std::filesystem;
 
@@ -21,7 +23,7 @@ namespace Puffin::Assets
 
 		~AssetData() {}
 
-		std::string type;
+		std::string_view type;
 		uint32_t version;
 		std::string json;
 		std::vector<char> binaryBlob;
