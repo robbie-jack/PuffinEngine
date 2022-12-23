@@ -135,7 +135,9 @@ set(HEADERS
 	# Rendering
 	${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
+	${HEADER_DIR}/Rendering/Vulkan/VKBaseRenderer.h
 	${HEADER_DIR}/Rendering/Vulkan/VKDeferredRender.h
+	${HEADER_DIR}/Rendering/Vulkan/VKForwardRenderer.h
 	${HEADER_DIR}/Rendering/Vulkan/DebugDraw.h
 	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDebug.h
 	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.h
@@ -203,6 +205,7 @@ set(SOURCES
 	# Rendering
 	${SOURCE_DIR}/Rendering/Vulkan/VulkanRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/VKForwardRenderer.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKHelper.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKVertex.cpp

@@ -14,6 +14,7 @@
 #include <Rendering/Vulkan/Helpers/VKPipeline.h>
 #include <Rendering/Vulkan/DebugDraw.h>
 
+#include "Rendering/Vulkan/VKForwardRenderer.h"
 #include <Rendering/Vulkan/VKDeferredRender.h>
 
 //#include "vk_mem_alloc.h" // Vulkan Memory Allocator
@@ -39,6 +40,7 @@
 #include <unordered_map>
 #include <set>
 #include <fstream>
+#include <memory>
 
 #include "Components/Rendering/CameraComponent.h"
 #include "Components/Rendering/CameraComponent.h"
@@ -172,7 +174,7 @@ namespace Puffin
 			3, 7
 		};
 
-		class VulkanRenderSystem : public ECS::System
+		class VulkanRenderSystem : public ECS::System, std::enable_shared_from_this<VulkanRenderSystem>
 		{
 		public:
 
@@ -218,6 +220,8 @@ namespace Puffin
 
 		private:
 
+			friend VKForwardRenderer;
+
 			std::shared_ptr<UI::UIManager> m_uiManager;
 			std::shared_ptr<Input::InputSubsystem> m_inputSubsystem;
 
@@ -250,6 +254,9 @@ namespace Puffin
 			VkPipelineLayout shadowPipelineLayout;
 			VkPipeline shadowPipeline;
 
+			// Forward Renderer
+			std::shared_ptr<VKForwardRenderer> m_forwardRenderer = nullptr;
+
 			// Deferred Renderer
 			VKDeferredRender deferredRenderer;
 
@@ -269,7 +276,7 @@ namespace Puffin
 			VKUtil::DescriptorAllocator* descriptorAllocator;
 			VKUtil::DescriptorLayoutCache* descriptorLayoutCache;
 
-			VkRenderPass renderPass;
+			VkRenderPass m_renderPass;
 			VkRenderPass renderPassGUI;
 			VkRenderPass renderPassShadows;
 
@@ -364,7 +371,7 @@ namespace Puffin
 			void InitTextureSampler();
 			void InitDepthSampler();
 
-			// Init Deferred Renderer Method
+			// Init Renderer Methods
 			void SetupDeferredRenderer();
 
 			// Functions for Re-Initializing Swapchain and Offscreen Variables

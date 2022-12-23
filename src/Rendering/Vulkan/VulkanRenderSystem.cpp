@@ -122,6 +122,10 @@ namespace Puffin
 			// Initialize All Scene Objects
 			PreStart();
 
+			// Setup Forward Renderer
+			m_forwardRenderer = std::make_shared<VKForwardRenderer>(shared_from_this());
+			m_forwardRenderer->Setup();
+
 			// Setup Deferred Renderer
 			//SetupDeferredRenderer();
 
@@ -501,11 +505,11 @@ namespace Puffin
 			render_pass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
 			render_pass_info.pDependencies = dependencies.data();
 
-			VK_CHECK(vkCreateRenderPass(device, &render_pass_info, nullptr, &renderPass));
+			VK_CHECK(vkCreateRenderPass(device, &render_pass_info, nullptr, &m_renderPass));
 
 			mainDeletionQueue.push_function([=]()
 			{
-				vkDestroyRenderPass(device, renderPass, nullptr);
+				vkDestroyRenderPass(device, m_renderPass, nullptr);
 			});
 		}
 
@@ -666,7 +670,7 @@ namespace Puffin
 			fb_offscreen_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			fb_offscreen_info.pNext = nullptr;
 
-			fb_offscreen_info.renderPass = renderPass;
+			fb_offscreen_info.renderPass = m_renderPass;
 			fb_offscreen_info.width = offscreenExtent.width;
 			fb_offscreen_info.height = offscreenExtent.height;
 			fb_offscreen_info.layers = 1;
@@ -1089,7 +1093,7 @@ namespace Puffin
 			pipelineBuilder.pipelineLayout = debugPipelineLayout;
 
 			// Build Pipeline
-			debugPipeline = pipelineBuilder.BuildPipeline(device, renderPass);
+			debugPipeline = pipelineBuilder.BuildPipeline(device, m_renderPass);
 		}
 
 		void VulkanRenderSystem::InitScene()
@@ -1597,7 +1601,7 @@ namespace Puffin
 								   offscreenExtent);
 
 			deferredRenderer.SetupGeometry(m_cameraViewProjSetLayout, m_objectInstanceSetLayout, m_matTextureSetLayout);
-			deferredRenderer.SetupShading(renderPass, m_cameraShadingSetLayout, m_lightDataSetLayout, m_shadowMapSetLayout);
+			deferredRenderer.SetupShading(m_renderPass, m_cameraShadingSetLayout, m_lightDataSetLayout, m_shadowMapSetLayout);
 		}
 
 		void VulkanRenderSystem::InitShadowmapDescriptors()
@@ -2231,12 +2235,15 @@ namespace Puffin
 				VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE));
 			}
 
+			// Forward Render
+			VkSemaphore& forwardSemaphore = m_forwardRenderer->DrawScene(frameNumber % FRAME_OVERLAP);
+
 			// Deferred Render
-			deferredRenderer.SetGeometryDescriptorSets(&GetCurrentFrame().cameraViewProjDescriptor, 
+			/*deferredRenderer.SetGeometryDescriptorSets(&GetCurrentFrame().cameraViewProjDescriptor, 
 			&GetCurrentFrame().objectInstanceDescriptor, &GetCurrentFrame().matTextureDescriptor);
 
 			deferredRenderer.SetShadingDescriptorSets(&GetCurrentFrame().cameraShadingDescriptor, 
-			&GetCurrentFrame().lightDataDescriptor, &GetCurrentFrame().shadowmapDescriptor);
+			&GetCurrentFrame().lightDataDescriptor, &GetCurrentFrame().shadowmapDescriptor);*/
 
 			/*VkSemaphore& deferredSemaphore = deferredRenderer.DrawScene(frameNumber % FRAME_OVERLAP,
 						&m_sceneRenderData, graphicsQueue, offscreenFramebuffers[swapchainImageIndex], GetCurrentFrame().shadowmapSemaphore);*/
@@ -2675,7 +2682,7 @@ namespace Puffin
 			rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			rpInfo.pNext = nullptr;
 
-			rpInfo.renderPass = renderPass;
+			rpInfo.renderPass = m_renderPass;
 			rpInfo.renderArea.offset.x = 0;
 			rpInfo.renderArea.offset.y = 0;
 			rpInfo.renderArea.extent = offscreenExtent;
@@ -2990,7 +2997,10 @@ namespace Puffin
 				// Make sure GPU has stopped working
 				vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000);
 
-				// Cleanup Deferred Renderer
+				// Cleanup Forward/Deferred Renderer
+				m_forwardRenderer->Cleanup();
+				m_forwardRenderer = nullptr;
+
 				deferredRenderer.Cleanup();
 
 				// Flush all queues, destroying all created resources
