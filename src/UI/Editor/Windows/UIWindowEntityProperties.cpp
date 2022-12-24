@@ -5,7 +5,7 @@
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
-#include "Components/AngelScriptComponent.h"
+#include "Components/Scripting/AngelScriptComponent.hpp"
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"

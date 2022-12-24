@@ -8,7 +8,7 @@
 #include "angelscript/scriptbuilder/scriptbuilder.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h"
 
-#include "Components/AngelScriptComponent.h"
+#include "Components/Scripting/AngelScriptComponent.hpp"
 
 #include "Input/InputEvent.h"
 #include "Physics/CollisionEvent.h"
@@ -47,7 +47,7 @@ namespace Puffin
 			void Start() override;
 			void Update() override;
 			void Stop() override;
-			void Cleanup() override {};
+			void Cleanup() override {}
 
 			// Hot-Reloads all scripts when called
 			void Reload() {}

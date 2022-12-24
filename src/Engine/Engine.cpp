@@ -7,10 +7,12 @@
 //#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Physics/Onager2D/Onager2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
+#include "Scripting/NativeScriptSystem.hpp"
 #include "Procedural/ProceduralMeshGenSystem.hpp"
 
 #include "Components/TransformComponent.h"
-#include "Components/AngelScriptComponent.h"
+#include "Components/Scripting/AngelScriptComponent.hpp"
+#include "Components/Scripting/NativeScriptComponent.hpp"
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
 
 #include "Types/ComponentFlags.h"
@@ -86,6 +88,7 @@ namespace Puffin::Core
 		//RegisterComponent<Physics::Box2DCircleComponent>();
 
 		RegisterComponent<Scripting::AngelScriptComponent>();
+		RegisterComponent<Scripting::NativeScriptComponent>();
 
 		RegisterComponent<Rendering::ProceduralMeshComponent>();
 		RegisterComponent<Procedural::PlaneComponent>();
@@ -117,6 +120,7 @@ namespace Puffin::Core
 		RegisterSystem<Physics::Onager2DPhysicsSystem>();
 		//RegisterSystem<Physics::Box2DPhysicsSystem>();
 		RegisterSystem<Scripting::AngelScriptSystem>();
+		RegisterSystem<Scripting::NativeScriptSystem>();
 		RegisterSystem<Procedural::ProceduralMeshGenSystem>();
 
 		// Register Assets

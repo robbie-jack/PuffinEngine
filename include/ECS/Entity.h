@@ -50,10 +50,9 @@ namespace Puffin::ECS
 			return m_id == id;
 		}
 
-		EntityID ID() const
-		{
-			return m_id;
-		}
+		EntityID ID() const { return m_id; }
+
+		std::shared_ptr<ECS::World> World() const { return m_world; }
 
 		////////////////////////////////
 		// Entity Methods
@@ -134,7 +133,7 @@ namespace Puffin::ECS
 
 	private:
 
-		std::shared_ptr<World> m_world = nullptr;
+		std::shared_ptr<ECS::World> m_world = nullptr;
 		EntityID m_id = INVALID_ENTITY;
 	};
 

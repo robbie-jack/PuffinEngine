@@ -97,9 +97,9 @@ namespace Puffin::Scripting
 			m_scriptEngine->Release();
 		}
 
-		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
-		for (const auto entity : shadowcasterLightEntities)
+		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
+		for (const auto entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
 
@@ -112,9 +112,9 @@ namespace Puffin::Scripting
 	void AngelScriptSystem::Start()
 	{
 		// Execute Start Methods
-		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
-		for (const auto entity : shadowcasterLightEntities)
+		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
+		for (const auto entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
 
@@ -134,9 +134,9 @@ namespace Puffin::Scripting
 		ProcessEvents();
 		
 		// Initialize/Cleanup marked components
-		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
-		for (const auto& entity : shadowcasterLightEntities)
+		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
+		for (const auto& entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
 
@@ -169,9 +169,9 @@ namespace Puffin::Scripting
 	void AngelScriptSystem::Stop()
 	{
 		// Execute Script Stop Methods
-		std::vector<std::shared_ptr<ECS::Entity>> shadowcasterLightEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, shadowcasterLightEntities);
-		for (const auto& entity : shadowcasterLightEntities)
+		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
+		for (const auto& entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
 

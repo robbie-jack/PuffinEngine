@@ -91,7 +91,6 @@ set(HEADERS
 	${HEADER_DIR}/Audio/AudioSubsystem.h
 	# Components
 	${HEADER_DIR}/Components/TransformComponent.h
-	${HEADER_DIR}/Components/AngelScriptComponent.h
 	${HEADER_DIR}/Components/Rendering/CameraComponent.h
 	${HEADER_DIR}/Components/Rendering/LightComponent.h
 	${HEADER_DIR}/Components/Rendering/MeshComponent.h
@@ -99,6 +98,8 @@ set(HEADERS
 	${HEADER_DIR}/Components/Physics/ShapeComponents2D.h
 	${HEADER_DIR}/Components/Physics/VelocityComponent.hpp
 	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.hpp
+	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.hpp
+	${HEADER_DIR}/Components/Scripting/NativeScriptComponent.hpp
 	# ECS
 	${HEADER_DIR}/ECS/ComponentType.h
 	${HEADER_DIR}/ECS/ECS.h
@@ -149,6 +150,7 @@ set(HEADERS
 	# Scripting
 	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScriptSystem.h
+	${HEADER_DIR}/Scripting/NativeScriptSystem.hpp
 	# Types
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h
@@ -211,6 +213,7 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKVertex.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
+	${SOURCE_DIR}/Scripting/NativeScriptSystem.cpp
 	# UI
 	${SOURCE_DIR}/UI/Editor/UIManager.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp
