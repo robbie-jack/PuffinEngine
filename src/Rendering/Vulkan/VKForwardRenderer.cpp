@@ -17,44 +17,52 @@
 
 namespace Puffin::Rendering
 {
-	void VKForwardRenderer::Setup()
+	void VKForwardRenderer::Setup(std::shared_ptr<VulkanRenderSystem> vulkanRenderSystem)
 	{
-		// Setup Frame Data
-		m_forwardFrameData.clear();
-		m_forwardFrameData.reserve(FRAME_OVERLAP);
+		m_vulkanRenderSystem = vulkanRenderSystem;
 
-		for (int i = 0; i < FRAME_OVERLAP; i++)
+		if (m_vulkanRenderSystem)
 		{
-			m_forwardFrameData.emplace_back();
+			// Setup Frame Data
+			m_forwardFrameData.clear();
+			m_forwardFrameData.reserve(FRAME_OVERLAP);
+
+			for (int i = 0; i < FRAME_OVERLAP; i++)
+			{
+				m_forwardFrameData.emplace_back();
+			}
+
+			// Initialize Extent
+			m_bufferExtent = { m_vulkanRenderSystem->offscreenExtent.width, m_vulkanRenderSystem->offscreenExtent.height, 1 };
+
+			// Perform Setup
+			SetupCommandBuffers();
+			SetupSemaphores();
+			SetupPipeline();
 		}
-
-		// Initialize Extent
-		m_bufferExtent = { m_vulkanRenderSystem->offscreenExtent.width, m_vulkanRenderSystem->offscreenExtent.height, 1};
-
-		// Perform Setup
-		SetupCommandBuffers();
-		SetupSemaphores();
-		SetupPipeline();
 	}
 
 	VkSemaphore& VKForwardRenderer::DrawScene(const int& frameIndex)
 	{
-		VkCommandBuffer cmd = RecordCommandBuffer(frameIndex);
+		if (m_vulkanRenderSystem)
+		{
+			VkCommandBuffer cmd = RecordCommandBuffer(frameIndex);
 
-		VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-		VkSubmitInfo submit = {};
-		submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submit.pNext = nullptr;
-		submit.pWaitDstStageMask = &waitStage;
-		submit.waitSemaphoreCount = 0;
-		submit.pWaitSemaphores = nullptr;
-		submit.signalSemaphoreCount = 1;
-		submit.pSignalSemaphores = &m_forwardFrameData[frameIndex].renderSemaphore;
-		submit.commandBufferCount = 1;
-		submit.pCommandBuffers = &cmd;
+			VkSubmitInfo submit = {};
+			submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submit.pNext = nullptr;
+			submit.pWaitDstStageMask = &waitStage;
+			submit.waitSemaphoreCount = 0;
+			submit.pWaitSemaphores = nullptr;
+			submit.signalSemaphoreCount = 1;
+			submit.pSignalSemaphores = &m_forwardFrameData[frameIndex].renderSemaphore;
+			submit.commandBufferCount = 1;
+			submit.pCommandBuffers = &cmd;
 
-		VK_CHECK(vkQueueSubmit(m_vulkanRenderSystem->graphicsQueue, 1, &submit, VK_NULL_HANDLE));
+			VK_CHECK(vkQueueSubmit(m_vulkanRenderSystem->graphicsQueue, 1, &submit, VK_NULL_HANDLE));
+		}
 
 		return m_forwardFrameData[frameIndex].renderSemaphore;
 	}
@@ -102,8 +110,8 @@ namespace Puffin::Rendering
 
 	void VKForwardRenderer::SetupPipeline()
 	{
-		const fs::path vertShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\deferred_shading_vert.spv";
-		const fs::path fragShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\deferred_shading_frag.spv";
+		const fs::path vertShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\forward_rendering_vert.spv";
+		const fs::path fragShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\forward_rendering_frag.spv";
 
 		// Read Shader code from Files
 		auto vertShaderCode = ReadFile(vertShaderPath.string());
@@ -116,10 +124,10 @@ namespace Puffin::Rendering
 		// Create Pipeline Layout Info
 		std::vector<VkDescriptorSetLayout> setLayouts =
 		{
-			/*m_cameraShadingLayout,
-			m_gBufferLayout,
-			m_lightLayout,
-			m_shadowmapLayout*/
+			m_vulkanRenderSystem->m_cameraViewProjSetLayout,
+			m_vulkanRenderSystem->m_objectInstanceSetLayout,
+			m_vulkanRenderSystem->m_matTextureSetLayout
+			
 		};
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
@@ -228,17 +236,21 @@ namespace Puffin::Rendering
 		// Bind Pipeline
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
-		// Bind Descriptor Sets
-		/*vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		// Bind Descriptor Sets (Vertex)
+
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 			m_pipelineLayout, 0, 1, &m_vulkanRenderSystem->GetCurrentFrame().cameraViewProjDescriptor, 0, nullptr);
 
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 			m_pipelineLayout, 1, 1, &m_vulkanRenderSystem->GetCurrentFrame().objectInstanceDescriptor, 0, nullptr);
 
+
+		// Bind Descriptor Sets (Fragment)
+
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 			m_pipelineLayout, 2, 1, &m_vulkanRenderSystem->GetCurrentFrame().matTextureDescriptor, 0, nullptr);
 
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		/*vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 			m_pipelineLayout, 3, 1, &m_vulkanRenderSystem->GetCurrentFrame().cameraShadingDescriptor, 0, nullptr);
 
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,

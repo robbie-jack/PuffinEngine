@@ -174,7 +174,7 @@ namespace Puffin
 			3, 7
 		};
 
-		class VulkanRenderSystem : public ECS::System, std::enable_shared_from_this<VulkanRenderSystem>
+		class VulkanRenderSystem : public ECS::System, public std::enable_shared_from_this<VulkanRenderSystem>
 		{
 		public:
 

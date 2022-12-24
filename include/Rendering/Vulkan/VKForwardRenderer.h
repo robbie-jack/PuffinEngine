@@ -23,10 +23,10 @@ namespace Puffin::Rendering
 	{
 	public:
 
-		VKForwardRenderer(std::shared_ptr<VulkanRenderSystem> vulkanRenderSystem): VKBaseRenderer(vulkanRenderSystem) {}
+		VKForwardRenderer(): VKBaseRenderer() {}
 		~VKForwardRenderer() override = default;
 
-		void Setup() override;
+		void Setup(std::shared_ptr<VulkanRenderSystem> vulkanRenderSystem) override;
 
 		VkSemaphore& DrawScene(const int& frameIndex) override;
 

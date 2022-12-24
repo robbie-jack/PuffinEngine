@@ -123,8 +123,8 @@ namespace Puffin
 			PreStart();
 
 			// Setup Forward Renderer
-			m_forwardRenderer = std::make_shared<VKForwardRenderer>(shared_from_this());
-			m_forwardRenderer->Setup();
+			m_forwardRenderer = std::make_shared<VKForwardRenderer>();
+			m_forwardRenderer->Setup(shared_from_this());
 
 			// Setup Deferred Renderer
 			//SetupDeferredRenderer();
@@ -2170,9 +2170,9 @@ namespace Puffin
 			VK_CHECK(vkResetCommandPool(device, GetCurrentFrame().commandPool, 0));
 
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
-			/*if (offscreenInitialized)
+			if (offscreenInitialized)
 				m_uiManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
-			else*/
+			else
 				m_uiManager->GetWindowViewport()->DrawWithoutImage();
 
 			viewportSize = m_uiManager->GetWindowViewport()->GetViewportSize();
@@ -2256,8 +2256,8 @@ namespace Puffin
 
 			std::vector<VkSemaphore> waitSemaphores = 
 			{
-				GetCurrentFrame().presentSemaphore/*,
-				deferredSemaphore*/
+				GetCurrentFrame().presentSemaphore,
+				forwardSemaphore
 			};
 
 			// Prepare the submission into graphics queue
