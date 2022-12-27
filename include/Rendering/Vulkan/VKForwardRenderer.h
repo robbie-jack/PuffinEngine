@@ -32,11 +32,16 @@ namespace Puffin::Rendering
 
 		void Cleanup() override;
 
+		void SetRenderExtent(const VkExtent2D renderExtent)
+		{
+			m_renderExtent = { renderExtent.width, renderExtent.height, 1 };
+		}
+
 	private:
 
 		std::vector<ForwardFrameData> m_forwardFrameData;
 
-		VkExtent3D m_bufferExtent = { 0, 0, 0 };
+		VkExtent3D m_renderExtent = { 0, 0, 0 };
 
 		VkPipeline m_pipeline;
 		VkPipelineLayout m_pipelineLayout;

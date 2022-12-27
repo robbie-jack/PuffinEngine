@@ -33,7 +33,7 @@ namespace Puffin::Rendering
 			}
 
 			// Initialize Extent
-			m_bufferExtent = { m_vulkanRenderSystem->offscreenExtent.width, m_vulkanRenderSystem->offscreenExtent.height, 1 };
+			m_renderExtent = { m_vulkanRenderSystem->offscreenExtent.width, m_vulkanRenderSystem->offscreenExtent.height, 1 };
 
 			// Perform Setup
 			SetupCommandBuffers();
@@ -202,8 +202,8 @@ namespace Puffin::Rendering
 		renderPassBeginInfo.pNext = nullptr;
 		renderPassBeginInfo.renderPass = m_vulkanRenderSystem->m_renderPass;
 		renderPassBeginInfo.framebuffer = m_vulkanRenderSystem->offscreenFramebuffers[frameIndex];
-		renderPassBeginInfo.renderArea.extent.width = m_bufferExtent.width;
-		renderPassBeginInfo.renderArea.extent.height = m_bufferExtent.height;
+		renderPassBeginInfo.renderArea.extent.width = m_renderExtent.width;
+		renderPassBeginInfo.renderArea.extent.height = m_renderExtent.height;
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
 		renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassBeginInfo.pClearValues = clearValues.data();
@@ -218,8 +218,8 @@ namespace Puffin::Rendering
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = (float)m_bufferExtent.width;
-		viewport.height = (float)m_bufferExtent.height;
+		viewport.width = (float)m_renderExtent.width;
+		viewport.height = (float)m_renderExtent.height;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 
@@ -228,8 +228,8 @@ namespace Puffin::Rendering
 		// Setup Scissor
 		VkRect2D scissor = {};
 		scissor.offset = { 0, 0 };
-		scissor.extent.width = m_bufferExtent.width;
-		scissor.extent.height = m_bufferExtent.height;
+		scissor.extent.width = m_renderExtent.width;
+		scissor.extent.height = m_renderExtent.height;
 
 		vkCmdSetScissor(cmd, 0, 1, &scissor);
 

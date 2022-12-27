@@ -238,6 +238,7 @@ set (IMGUI_SOURCES
 	${IMGUI_DIR}/imgui_tables.cpp
 	${IMGUI_DIR}/imgui_widgets.cpp
 	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+	${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
 	${IMGUI_DIR}/misc/cpp/imgui_stdlib.h
 	${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 	)
@@ -264,7 +265,7 @@ set (ANGELSCRIPT_SOURCES
 # Add Main as Executable
 add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_VULKAN_SOURCES})
+#target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_VULKAN_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
@@ -292,7 +293,7 @@ endfunction(sort_into_source_group)
 sort_into_source_group(HEADERS ${HEADER_DIR} "")
 sort_into_source_group(SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} Libraries/ImGui)
-sort_into_source_group(IMGUI_VULKAN_SOURCES ${IMGUI_VULKAN_DIR} Libraries/ImGui)
+#sort_into_source_group(IMGUI_VULKAN_SOURCES ${IMGUI_VULKAN_DIR} Libraries/ImGui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} Libraries/OpenSimplexNoise)
 sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} Libraries/VKBootstrap)
 sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)

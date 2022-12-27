@@ -70,6 +70,34 @@ namespace Puffin::Rendering
 		}
 	};
 
+	struct Vertex_P_64_NTV_32
+	{
+		glm::dvec3 pos = { 0.0, 0.0, 0.0 };
+		glm::vec3 normal = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 tangent = { 0.0f, 0.0f, 0.0f };
+		glm::vec2 uv = { 0.0f, 0.0f };
+
+		bool operator==(const Vertex_P_64_NTV_32& other) const
+		{
+			return pos == other.pos
+				&& normal == other.normal
+				&& tangent == other.tangent
+				&& uv == other.uv;
+		}
+
+		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
+			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
+		{
+			VKUtil::VertexBuilder::Begin()
+				.BindSize(sizeof(Vertex_P_64_NTV_32))
+				.BindAttribute(VK_FORMAT_R64G64B64_SFLOAT, offsetof(Vertex_P_64_NTV_32, pos))
+				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_P_64_NTV_32, normal))
+				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_P_64_NTV_32, tangent))
+				.BindAttribute(VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex_P_64_NTV_32, uv))
+				.Build(bindingDescription, attributeDescriptions);
+		}
+	};
+
 	struct Vertex_PNCTV_32
 	{
 		glm::vec3 pos;
@@ -159,6 +187,17 @@ namespace std
 		size_t operator()(Puffin::Rendering::Vertex_PNTV_32 const& vertex) const
 		{
 			return (hash<glm::vec3>()(vertex.pos) ^
+				(hash<glm::vec3>()(vertex.normal) << 1) ^
+				(hash<glm::vec3>()(vertex.tangent) << 1) ^
+				(hash<glm::vec2>()(vertex.uv) << 1) >> 1);
+		}
+	};
+
+	template<> struct hash<Puffin::Rendering::Vertex_P_64_NTV_32>
+	{
+		size_t operator()(Puffin::Rendering::Vertex_P_64_NTV_32 const& vertex) const
+		{
+			return (hash<glm::dvec3>()(vertex.pos) ^
 				(hash<glm::vec3>()(vertex.normal) << 1) ^
 				(hash<glm::vec3>()(vertex.tangent) << 1) ^
 				(hash<glm::vec2>()(vertex.uv) << 1) >> 1);

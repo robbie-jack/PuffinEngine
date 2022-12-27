@@ -1737,6 +1737,14 @@ namespace Puffin
 			// Grab how many images we have in swapchain
 			const uint32_t swapchain_imagecount = swapchainAttachments.size();
 
+			if (viewportTextureIDs.empty() == false)
+			{
+				for (int i = 0; i < swapchain_imagecount; i++)
+				{
+					ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(viewportTextureIDs[i]));
+				}
+			}
+
 			viewportTextureIDs.clear();
 			viewportTextureIDs = std::vector<ImTextureID>(swapchain_imagecount);
 
@@ -1782,6 +1790,9 @@ namespace Puffin
 			// Update Offscreen Extents
 			offscreenExtent.width = viewportSize.x;
 			offscreenExtent.height = viewportSize.y;
+
+			// Set Forward Render Extent
+			m_forwardRenderer->SetRenderExtent(offscreenExtent);
 
 			// Setup Deferred Renderer
 			//deferredRenderer.RecreateFramebuffer(offscreenExtent);
