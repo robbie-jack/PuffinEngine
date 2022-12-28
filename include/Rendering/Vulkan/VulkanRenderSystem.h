@@ -239,7 +239,7 @@ namespace Puffin
 			std::vector<VkFramebuffer> framebuffers;
 
 			// Offscreen
-			VkExtent2D offscreenExtent;
+			VkExtent2D m_offscreenExtent;
 			VkFormat offscreenFormat;
 			std::vector<AllocatedImage> offscreenAttachments; // Images/Views for Offscreen Rendering
 			std::vector<VkFramebuffer> offscreenFramebuffers;

@@ -33,7 +33,7 @@ namespace Puffin::Rendering
 			}
 
 			// Initialize Extent
-			m_renderExtent = { m_vulkanRenderSystem->offscreenExtent.width, m_vulkanRenderSystem->offscreenExtent.height, 1 };
+			m_renderExtent = { m_vulkanRenderSystem->m_offscreenExtent.width, m_vulkanRenderSystem->m_offscreenExtent.height, 1 };
 
 			// Perform Setup
 			SetupCommandBuffers();

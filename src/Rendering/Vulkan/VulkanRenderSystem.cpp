@@ -32,7 +32,7 @@
 	do                                                              \
 	{                                                               \
 		VkResult err = x;                                           \
-		if (err)                                                    \
+		if (err < 0)                                               \
 		{                                                           \
 			std::cout <<"Detected Vulkan error: " << err << std::endl; \
 			abort();                                                \
@@ -52,13 +52,13 @@ namespace Puffin
 			windowExtent.height = HEIGHT;
 
 			// Initialize Offscreen Variables with Default Values
-			offscreenExtent.width = 1024;
-			offscreenExtent.height = 1024;
+			m_offscreenExtent.width = 1024;
+			m_offscreenExtent.height = 1024;
 			offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
 			// Initialize Camera Variables
 			editorCamera.position = glm::vec3(0.0f, 0.0f, 15.0f);
-			editorCamera.aspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+			editorCamera.aspect = (float)m_offscreenExtent.width / (float)m_offscreenExtent.height;
 			InitEditorCamera();
 
 			viewportSize = ImVec2(0.0f, 0.0f);
@@ -297,8 +297,8 @@ namespace Puffin
 
 			VkExtent3D imageExtent =
 			{
-				offscreenExtent.width,
-				offscreenExtent.height,
+				m_offscreenExtent.width,
+				m_offscreenExtent.height,
 				1
 			};
 
@@ -312,8 +312,14 @@ namespace Puffin
 			for (int i = 0; i < swapchain_imagecount; i++)
 			{
 				// Create Image
-				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
-					&offscreenAttachments[i].image, &offscreenAttachments[i].allocation, nullptr);
+				VK_CHECK(vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
+					&offscreenAttachments[i].image, &offscreenAttachments[i].allocation, nullptr));
+
+				// Create Image View
+				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(offscreenFormat,
+					offscreenAttachments[i].image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &offscreenAttachments[i].imageView));
 
 				// Set Debug Name for RenderDoc
 				std::string string = "Offscreen Framebuffer " + std::to_string(i);
@@ -322,12 +328,6 @@ namespace Puffin
 					(uint64_t)offscreenAttachments[i].image,
 					VK_OBJECT_TYPE_IMAGE,
 					string.c_str());
-
-				// Create Image View
-				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(offscreenFormat,
-					offscreenAttachments[i].image, VK_IMAGE_ASPECT_COLOR_BIT);
-
-				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &offscreenAttachments[i].imageView));
 
 				// Add to deletion queues
 				offscreenDeletionQueue.push_function([=]()
@@ -342,8 +342,8 @@ namespace Puffin
 			// Depth image size will match window
 			VkExtent3D depthImageExtent =
 			{
-				offscreenExtent.width,
-				offscreenExtent.height,
+				m_offscreenExtent.width,
+				m_offscreenExtent.height,
 				1
 			};
 
@@ -671,8 +671,8 @@ namespace Puffin
 			fb_offscreen_info.pNext = nullptr;
 
 			fb_offscreen_info.renderPass = m_renderPass;
-			fb_offscreen_info.width = offscreenExtent.width;
-			fb_offscreen_info.height = offscreenExtent.height;
+			fb_offscreen_info.width = m_offscreenExtent.width;
+			fb_offscreen_info.height = m_offscreenExtent.height;
 			fb_offscreen_info.layers = 1;
 
 			// Grab how many images we have in swapchain
@@ -1058,14 +1058,14 @@ namespace Puffin
 			// Define Viewport
 			pipelineBuilder.viewport.x = 0.0f;
 			pipelineBuilder.viewport.y = 0.0f;
-			pipelineBuilder.viewport.width = (float)offscreenExtent.width;
-			pipelineBuilder.viewport.height = (float)offscreenExtent.height;
+			pipelineBuilder.viewport.width = (float)m_offscreenExtent.width;
+			pipelineBuilder.viewport.height = (float)m_offscreenExtent.height;
 			pipelineBuilder.viewport.minDepth = 0.0f;
 			pipelineBuilder.viewport.maxDepth = 1.0f;
 
 			// Define Scissor Extent (Pixels Outside Scissor Rectangle will be discarded)
 			pipelineBuilder.scissor.offset = { 0, 0 };
-			pipelineBuilder.scissor.extent = offscreenExtent;
+			pipelineBuilder.scissor.extent = m_offscreenExtent;
 
 			// Rasterization Stage Creation - Configured to draw filled triangles
 			pipelineBuilder.rasterizer = VKInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_LINE, VK_CULL_MODE_NONE);
@@ -1598,7 +1598,7 @@ namespace Puffin
 			                       descriptorLayoutCache,
 			                       commandPools,
 			                       FRAME_OVERLAP,
-								   offscreenExtent);
+								   m_offscreenExtent);
 
 			deferredRenderer.SetupGeometry(m_cameraViewProjSetLayout, m_objectInstanceSetLayout, m_matTextureSetLayout);
 			deferredRenderer.SetupShading(m_renderPass, m_cameraShadingSetLayout, m_lightDataSetLayout, m_shadowMapSetLayout);
@@ -1788,14 +1788,24 @@ namespace Puffin
 			offscreenDeletionQueue.flush();
 
 			// Update Offscreen Extents
-			offscreenExtent.width = viewportSize.x;
-			offscreenExtent.height = viewportSize.y;
+			m_offscreenExtent.width = viewportSize.x;
+			m_offscreenExtent.height = viewportSize.y;
+
+			if (m_offscreenExtent.width == 0)
+			{
+				m_offscreenExtent.width = 1024;
+			}
+
+			if (m_offscreenExtent.height == 0)
+			{
+				m_offscreenExtent.height = 1024;
+			}
 
 			// Set Forward Render Extent
-			m_forwardRenderer->SetRenderExtent(offscreenExtent);
+			m_forwardRenderer->SetRenderExtent(m_offscreenExtent);
 
 			// Setup Deferred Renderer
-			//deferredRenderer.RecreateFramebuffer(offscreenExtent);
+			//deferredRenderer.RecreateFramebuffer(m_offscreenExtent);
 
 			// Initialize Offscreen Variables and Scene
 			InitOffscreen();
@@ -2087,7 +2097,7 @@ namespace Puffin
 			camera.right = camera.up.Cross(camera.direction).Normalised();
 			camera.lookat = transform.position + camera.direction;
 
-			float newAspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+			float newAspect = (float)m_offscreenExtent.width / (float)m_offscreenExtent.height;
 
 			// Recalculate camera perspective if fov has changed, store new fov in prevFov
 			if (camera.fov != camera.prevFov || camera.aspect != newAspect)
@@ -2154,7 +2164,7 @@ namespace Puffin
 			editorCamera.right = editorCamera.up.Cross(editorCamera.direction).Normalised();
 			editorCamera.lookat = editorCamera.position + editorCamera.direction;
 
-			float newAspect = (float)offscreenExtent.width / (float)offscreenExtent.height;
+			float newAspect = (float)m_offscreenExtent.width / (float)m_offscreenExtent.height;
 
 			// Recalculate camera perspective if fov has changed, store new fov in prevFov
 			if (editorCamera.fov != editorCamera.prevFov || editorCamera.aspect != newAspect)
@@ -2180,17 +2190,6 @@ namespace Puffin
 			// Now that we are sure commands are finished executing, reset command buffers
 			VK_CHECK(vkResetCommandPool(device, GetCurrentFrame().commandPool, 0));
 
-			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
-			if (offscreenInitialized)
-				m_uiManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
-			else
-				m_uiManager->GetWindowViewport()->DrawWithoutImage();
-
-			viewportSize = m_uiManager->GetWindowViewport()->GetViewportSize();
-
-			// Draw ImGui
-			ImGui::Render();
-
 			// Recreate Swapchain if window size changes
 			if (framebufferResized)
 			{
@@ -2199,8 +2198,8 @@ namespace Puffin
 
 			// Recreate Viewport if it size changes
 			if (!offscreenInitialized || 
-				viewportSize.x != offscreenExtent.width ||
-				viewportSize.y != offscreenExtent.height)
+				viewportSize.x != m_offscreenExtent.width ||
+				viewportSize.y != m_offscreenExtent.height)
 			{
 				RecreateOffscreen();
 			}
@@ -2261,6 +2260,18 @@ namespace Puffin
 
 			// Record Command Buffers
 			//VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
+
+			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
+			if (offscreenInitialized)
+				m_uiManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
+			else
+				m_uiManager->GetWindowViewport()->DrawWithoutImage();
+
+			viewportSize = m_uiManager->GetWindowViewport()->GetViewportSize();
+
+			// Draw ImGui
+			ImGui::Render();
+
  			VkCommandBuffer cmdGui = RecordGUICommandBuffer(swapchainImageIndex);
 
 			std::vector<VkCommandBuffer> submitCommandBuffers = { cmdGui };
@@ -2696,7 +2707,7 @@ namespace Puffin
 			rpInfo.renderPass = m_renderPass;
 			rpInfo.renderArea.offset.x = 0;
 			rpInfo.renderArea.offset.y = 0;
-			rpInfo.renderArea.extent = offscreenExtent;
+			rpInfo.renderArea.extent = m_offscreenExtent;
 			rpInfo.framebuffer = offscreenFramebuffers[index];
 
 			// Connect clear values
@@ -2884,8 +2895,8 @@ namespace Puffin
 			VkViewport viewport = {};
 			viewport.x = 0.0f;
 			viewport.y = 0.0f;
-			viewport.width = (float)offscreenExtent.width;
-			viewport.height = (float)offscreenExtent.height;
+			viewport.width = (float)m_offscreenExtent.width;
+			viewport.height = (float)m_offscreenExtent.height;
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
 
@@ -2893,7 +2904,7 @@ namespace Puffin
 
 			VkRect2D scissor = {};
 			scissor.offset = { 0, 0 };
-			scissor.extent = offscreenExtent;
+			scissor.extent = m_offscreenExtent;
 
 			vkCmdSetScissor(cmd, 0, 1, &scissor);
 
