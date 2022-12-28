@@ -50,7 +50,7 @@ namespace Puffin
 
 			void AddAction(std::string name, int key);
 			void AddAction(std::string name, std::vector<int> keys);
-			InputAction GetAction(std::string name);
+			InputAction& GetAction(std::string name) const;
 
 			inline float GetMouseXOffset() { return (x_pos - last_x_pos) * sensitivity; };
 			inline float GetMouseYOffset() { return (y_pos - last_y_pos) * sensitivity; };
@@ -65,10 +65,10 @@ namespace Puffin
 			bool firstMouse;
 
 			int nextID = 1;
-			std::vector<InputAction> actions;
-			GLFWwindow* window;
+			std::vector<InputAction> m_actions;
+			GLFWwindow* m_window;
 
-			std::shared_ptr<ECS::World> world;
+			std::shared_ptr<ECS::World> m_world;
 		};
 	}
 }

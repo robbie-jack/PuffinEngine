@@ -48,7 +48,10 @@ namespace Puffin::Core
 	void Engine::Init()
 	{
 		// Subsystems
-		auto windowSubsystem = RegisterSubsystem<Window::WindowSubsystem>();
+
+		// Insert with priority 0 so window subsystem is initialized first
+		auto windowSubsystem = RegisterSubsystem<Window::WindowSubsystem>(0);
+
 		auto eventSubsystem = RegisterSubsystem<Core::EventSubsystem>();
 		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
 		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
@@ -152,34 +155,54 @@ namespace Puffin::Core
 		playState = PlayState::STOPPED;
 
 		// Initialize Subsystems
-		for (auto& [fst, snd] : m_subsystems)
+		for (auto& [fst, snd] : m_subsystemsPriority)
 		{
-			snd->Init();
+			m_subsystems[snd]->Init();
 		}
 
 		// Initialize Systems
-		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
 		{
-			system->Init();
-			system->PreStart();
+			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::FixedUpdate);
+			for (auto& it = itr.first; it != itr.second; ++it)
+			{
+				std::shared_ptr<ECS::System> system = it->second;
+
+				system->Init();
+				system->PreStart();
+			}
 		}
 
-		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Update])
 		{
-			system->Init();
-			system->PreStart();
+			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Update);
+			for (auto& it = itr.first; it != itr.second; ++it)
+			{
+				std::shared_ptr<ECS::System> system = it->second;
+
+				system->Init();
+				system->PreStart();
+			}
 		}
 
-		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::PreRender])
 		{
-			system->Init();
-			system->PreStart();
+			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::PreRender);
+			for (auto& it = itr.first; it != itr.second; ++it)
+			{
+				std::shared_ptr<ECS::System> system = it->second;
+
+				system->Init();
+				system->PreStart();
+			}
 		}
 
-		for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Render])
 		{
-			system->Init();
-			system->PreStart();
+			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Render);
+			for (auto& it = itr.first; it != itr.second; ++it)
+			{
+				std::shared_ptr<ECS::System> system = it->second;
+
+				system->Init();
+				system->PreStart();
+			}
 		}
 
 		m_lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
@@ -256,8 +279,11 @@ namespace Puffin::Core
 					m_accumulatedTime -= m_timeStep;
 
 					// FixedUpdate Systems
-					for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::FixedUpdate])
+					auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::FixedUpdate);
+					for (auto& it = itr.first; it != itr.second; ++it)
 					{
+						std::shared_ptr<ECS::System> system = it->second;
+
 						auto startTime = std::chrono::high_resolution_clock::now();
 
 						system->Update();
@@ -279,8 +305,11 @@ namespace Puffin::Core
 			{
 				auto stageStartTime = std::chrono::high_resolution_clock::now();
 
-				for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Update])
+				auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Update);
+				for (auto& it = itr.first; it != itr.second; ++it)
 				{
+					std::shared_ptr<ECS::System> system = it->second;
+
 					auto startTime = std::chrono::high_resolution_clock::now();
 
 					system->Update();
@@ -306,8 +335,11 @@ namespace Puffin::Core
 		{
 			auto stageStartTime = std::chrono::high_resolution_clock::now();
 
-			for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::PreRender])
+			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::PreRender);
+			for (auto& it = itr.first; it != itr.second; ++it)
 			{
+				std::shared_ptr<ECS::System> system = it->second;
+
 				auto startTime = std::chrono::high_resolution_clock::now();
 
 				system->Update();
@@ -328,8 +360,11 @@ namespace Puffin::Core
 		{
 			auto stageStartTime = std::chrono::high_resolution_clock::now();
 
-			for (auto& system : m_systemUpdateVectors[Core::UpdateOrder::Render])
+			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Render);
+			for (auto& it = itr.first; it != itr.second; ++it)
 			{
+				std::shared_ptr<ECS::System> system = it->second;
+
 				auto startTime = std::chrono::high_resolution_clock::now();
 
 				system->Update();
@@ -381,14 +416,15 @@ namespace Puffin::Core
 
 	void Engine::Destroy()
 	{
-		auto ecsWorld = GetSubsystem<ECS::World>();
-
 		// Cleanup All Systems
 		for (auto system : m_systems)
 		{
 			system->Cleanup();
 		}
 
+		m_systems.clear();
+
+		// Cleanup all subsystems
 		for (auto& [fst, snd] : m_subsystems)
 		{
 			snd->Destroy();
@@ -397,9 +433,11 @@ namespace Puffin::Core
 
 		m_subsystems.clear();
 
+		// Cleanup UI Manager
 		m_uiManager->Cleanup();
 		m_uiManager = nullptr;
 
+		// Clear Asset Registry
 		Assets::AssetRegistry::Clear();
 	}
 

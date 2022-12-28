@@ -130,6 +130,24 @@ namespace Puffin
 			AllocatedBuffer debugVertexBuffer, debugIndexBuffer, debugIndirectCommandsBuffer;
 		};
 
+		struct SwapchainData
+		{
+			AllocatedImage attachment;
+			VkFramebuffer framebuffer;
+
+			bool needsRecreated = false;
+		};
+
+		struct OffscreenData
+		{
+			AllocatedImage attachment;
+			AllocatedImage depthAttachment;
+			VkFramebuffer framebuffer;
+			ImTextureID viewportTexture;
+
+			bool needsRecreated = false;
+		};
+
 		const Vector2f boxPositions[4] =
 		{
 			Vector2f(-0.5f, -0.5f),	// Bottom Left
@@ -212,11 +230,9 @@ namespace Puffin
 			AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlags requiredFlags = 0);
 
 			// Memory allocator
-			VmaAllocator allocator;
+			VmaAllocator m_allocator;
 			UploadContext uploadContext;
 			DeletionQueue mainDeletionQueue;
-			DeletionQueue swapchainDeletionQueue;
-			DeletionQueue offscreenDeletionQueue;
 
 		private:
 
@@ -229,24 +245,23 @@ namespace Puffin
 			VkInstance instance;						// Vulkan Library Handle
 			VkDebugUtilsMessengerEXT debug_messenger;	// Vulkan Debug Output Handle
 			VkPhysicalDevice physicalDevice;			// Handle to physical GPU chosen for rendering
-			VkDevice device;							// Vulkan device for commands
+			VkDevice m_device;							// Vulkan device for commands
 			VkSurfaceKHR surface;						// Vulkan window surface
 
 			// Swapchain
-			VkSwapchainKHR swapchain;
+			VkSwapchainKHR m_swapchain = VK_NULL_HANDLE, m_oldSwapchain = VK_NULL_HANDLE;
 			VkFormat swapchainImageFormat; // Image format expected by windowing system
-			std::vector<AllocatedImage> swapchainAttachments; // Images/Views from swapchain
-			std::vector<VkFramebuffer> framebuffers;
+
+			vkb::Swapchain m_vkbSwapchain;
+			std::vector<SwapchainData> m_swapchainData;
 
 			// Offscreen
 			VkExtent2D m_offscreenExtent;
 			VkFormat offscreenFormat;
-			std::vector<AllocatedImage> offscreenAttachments; // Images/Views for Offscreen Rendering
-			std::vector<VkFramebuffer> offscreenFramebuffers;
-			std::vector<ImTextureID> viewportTextureIDs; // Vector of Texture ID's which are passed to Viewport Draw function
-			ImVec2 viewportSize; // Size of ImGui Viewport
+			ImVec2 m_viewportSize; // Size of ImGui Viewport
 
-			bool offscreenInitialized;
+			std::vector<OffscreenData> m_offscreenData;
+
 			bool m_shadowmapsNeedsUpdated;
 
 			// Shadows
@@ -269,7 +284,6 @@ namespace Puffin
 			SceneRenderData m_sceneRenderData;
 
 			// Depth Resources
-			AllocatedImage depthAttachment;
 			VkFormat depthFormat;
 
 			// Descriptor Abstractions
@@ -311,7 +325,7 @@ namespace Puffin
 			GLFWwindow* window;							// Window
 			GLFWmonitor* monitor;						// Monitor
 
-			bool framebufferResized = false; // Flag to indicate if GLFW window has been resized
+			bool m_framebufferResized = false; // Flag to indicate if GLFW window has been resized
 			bool isInitialized = false;
 			bool m_needsStarted = true; // Scene Rendering data needs setup in PreStart function
 
@@ -326,7 +340,11 @@ namespace Puffin
 			// Init Main Methods
 			void InitVulkan();
 			void InitSwapchain();
-			void InitOffscreen();
+			void UpdateSwapchainImageViews();
+			void UpdateSwapchainImageView(uint32_t index);
+			void InitOffscreenAttachments();
+			void InitOffscreenAttachment(uint32_t index);
+			void InitOffscreenDepthAttachment(uint32_t index);
 			void InitCommands();
 
 			// Init Renderpass Methods
@@ -335,8 +353,10 @@ namespace Puffin
 			void InitShadowRenderPass();
 
 			// Init Framebuffer Methods
-			void InitFramebuffers();
+			void InitSwapchainFramebuffers();
+			void InitSwapchainFramebuffer(uint32_t index);
 			void InitOffscreenFramebuffers();
+			void InitOffscreenFramebuffer(uint32_t index);
 			void InitSyncStructures();
 
 			// Init Buffer Methods
@@ -365,7 +385,9 @@ namespace Puffin
 
 			// Init ImGui Methods
 			void InitImGui();
-			void InitImGuiTextureIDs();
+			void InitImguiTextures();
+			void InitImGuiTexture(uint32_t index);
+			void DestroyImguiTexture(uint32_t index);
 
 			// Init Sampler Methods
 			void InitTextureSampler();
@@ -374,9 +396,12 @@ namespace Puffin
 			// Init Renderer Methods
 			void SetupDeferredRenderer();
 
-			// Functions for Re-Initializing Swapchain and Offscreen Variables
-			void RecreateSwapchain();
-			void RecreateOffscreen();
+			// Functions for Initializing/Destroying Swapchain and Offscreen Variables
+			void UpdatSwapchainData(uint32_t index);
+			void DestroySwapchainData(uint32_t index);
+
+			void UpdateOffscreenData(uint32_t index);
+			void DestroyOffscreenData(uint32_t index);
 
 			// Init Component Functions
 			void InitMesh(ECS::EntityID entityID, UUID meshID);
@@ -442,7 +467,7 @@ namespace Puffin
 			static inline void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 			{
 				auto app = reinterpret_cast<VulkanRenderSystem*>(glfwGetWindowUserPointer(window));
-				app->framebufferResized = true;
+				app->m_framebufferResized = true;
 			}
 
 			static inline std::vector<char> ReadFile(const std::string& filename)

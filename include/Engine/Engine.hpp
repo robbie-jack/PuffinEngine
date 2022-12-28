@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <memory>
 #include <unordered_map>
+#include <map>
 #include <chrono>
 
 namespace fs = std::filesystem;
@@ -56,11 +57,14 @@ namespace Puffin::Core
 
 		// Subsystem Methods
 		template<typename SubsystemT>
-		std::shared_ptr<SubsystemT> RegisterSubsystem()
+		std::shared_ptr<SubsystemT> RegisterSubsystem(uint8_t priority = 100)
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
 			assert(m_subsystems.find(typeName) == m_subsystems.end() && "Registering subsystem more than once");
+
+			// Insert into priority map
+			m_subsystemsPriority.insert(std::pair(priority, typeName));
 
 			// Create subsystem pointer
 			std::shared_ptr<SubsystemT> subsystem = std::make_shared<SubsystemT>();
@@ -95,7 +99,7 @@ namespace Puffin::Core
 				auto systemBase = std::static_pointer_cast<ECS::System>(system);
 
 				m_systems.push_back(systemBase);
-				m_systemUpdateVectors[systemBase->GetInfo().updateOrder].push_back(systemBase);
+				m_systemUpdateVectors.insert(std::pair(systemBase->GetInfo().updateOrder, systemBase));
 
 				m_systemExecutionTime[system->GetInfo().updateOrder][system->GetInfo().name] = 0.0;
 			}
@@ -181,7 +185,7 @@ namespace Puffin::Core
 
 		// System Members
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers
-		std::unordered_map<Core::UpdateOrder, std::vector<std::shared_ptr<ECS::System>>> m_systemUpdateVectors; // Map from update order to system pointers
+		std::unordered_multimap<Core::UpdateOrder, std::shared_ptr<ECS::System>> m_systemUpdateVectors; // Map from update order to system pointers
 
 		std::unordered_map<Core::UpdateOrder, double> m_stageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
 		std::unordered_map<Core::UpdateOrder, std::unordered_map<std::string, double>> m_systemExecutionTime; // Map of time it takes for each system to execute
@@ -194,6 +198,7 @@ namespace Puffin::Core
 
 		// Subsystem Members
 		std::unordered_map<const char*, std::shared_ptr<Core::Subsystem>> m_subsystems;
+		std::multimap<uint8_t, const char*> m_subsystemsPriority;
 
 		void AddDefaultAssets();
 		void ReimportDefaultAssets();

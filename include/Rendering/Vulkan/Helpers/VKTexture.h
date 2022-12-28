@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 namespace Puffin::IO
 {
-	static bool InitTextureImage(Rendering::VulkanRenderSystem& engine, const void* pixels, const uint32_t texWidth, const uint32_t texHeight, Rendering::AllocatedImage& outImage)
+	static bool InitTextureImage(Rendering::VulkanRenderSystem& renderSystem, const void* pixels, const uint32_t texWidth, const uint32_t texHeight, Rendering::AllocatedImage& outImage)
 	{
 		VkDeviceSize imageSize = texWidth * texHeight * 4;
 
@@ -23,13 +23,13 @@ namespace Puffin::IO
 		VkFormat imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
 		// Allocate Staging buffer for holding texture data to upload
-		Rendering::AllocatedBuffer stagingBuffer = engine.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+		Rendering::AllocatedBuffer stagingBuffer = renderSystem.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 		// Copy Texture Data to Buffer
 		void* data;
-		vmaMapMemory(engine.allocator, stagingBuffer.allocation, &data);
+		vmaMapMemory(renderSystem.m_allocator, stagingBuffer.allocation, &data);
 		memcpy(data, pixels, static_cast<size_t>(imageSize));
-		vmaUnmapMemory(engine.allocator, stagingBuffer.allocation);
+		vmaUnmapMemory(renderSystem.m_allocator, stagingBuffer.allocation);
 		
 		// Allocated and Create Texture Image
 		VkExtent3D imageExtent =
@@ -48,10 +48,10 @@ namespace Puffin::IO
 		VmaAllocationCreateInfo imageAllocInfo = {};
 		imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-		vmaCreateImage(engine.allocator, &imageInfo, &imageAllocInfo, &newImage.image, &newImage.allocation, nullptr);
+		vmaCreateImage(renderSystem.m_allocator, &imageInfo, &imageAllocInfo, &newImage.image, &newImage.allocation, nullptr);
 
 		// Fill Command for transitioning texture image layout
-		engine.ImmediateSubmit([&](VkCommandBuffer cmd)
+		renderSystem.ImmediateSubmit([&](VkCommandBuffer cmd)
 			{
 				VkImageSubresourceRange range;
 				range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -101,7 +101,7 @@ namespace Puffin::IO
 
 			});
 
-		vmaDestroyBuffer(engine.allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+		vmaDestroyBuffer(renderSystem.m_allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 
 		outImage = newImage;
 

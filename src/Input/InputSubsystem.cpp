@@ -11,8 +11,8 @@ namespace Puffin
 	{
 		void InputSubsystem::Init()
 		{
-			window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
-			world = m_engine->GetSubsystem<ECS::World>();
+			m_window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+			m_world = m_engine->GetSubsystem<ECS::World>();
 
 			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
 
@@ -33,11 +33,11 @@ namespace Puffin
 			// Setup Mouse Cursor
 			if (cursor_locked == true)
 			{
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			}
 			else
 			{
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
 		}
 
@@ -50,14 +50,14 @@ namespace Puffin
 			bool stateChanged = false;
 
 			// Loop through current actions and update action states
-			for (auto& action : actions)
+			for (auto& action : m_actions)
 			{
 				stateChanged = false;
 
 				// Loop over each key in this action
 				for (auto key : action.keys)
 				{
-					int state = glfwGetKey(window, key);
+					int state = glfwGetKey(m_window, key);
 
 					if (state == GLFW_PRESS)
 					{
@@ -105,11 +105,11 @@ namespace Puffin
 			{
 				if (cursor_locked == true)
 				{
-					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 				}
 				else
 				{
-					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 				}
 
 				cursor_locked = !cursor_locked;
@@ -118,7 +118,7 @@ namespace Puffin
 			// Update Current and Last Mouse Positions
 			last_x_pos = x_pos;
 			last_y_pos = y_pos;
-			glfwGetCursorPos(window, &x_pos, &y_pos);
+			glfwGetCursorPos(m_window, &x_pos, &y_pos);
 
 			// Prevent Camera Jumping when window first starts
 			if (firstMouse)
@@ -131,8 +131,8 @@ namespace Puffin
 
 		void InputSubsystem::Destroy()
 		{
-			world = nullptr;
-			window = nullptr;
+			m_world = nullptr;
+			m_window = nullptr;
 		}
 
 		void Puffin::Input::InputSubsystem::AddAction(std::string name, int key)
@@ -143,7 +143,7 @@ namespace Puffin
 			new_action.keys.push_back(key);
 			new_action.state = KeyState::UP;
 
-			actions.push_back(new_action);
+			m_actions.push_back(new_action);
 
 			nextID++;
 		}
@@ -156,14 +156,14 @@ namespace Puffin
 			new_action.keys = keys;
 			new_action.state = KeyState::UP;
 
-			actions.push_back(new_action);
+			m_actions.push_back(new_action);
 
 			nextID++;
 		}
 
-		Puffin::Input::InputAction Puffin::Input::InputSubsystem::GetAction(std::string name)
+		InputAction& Puffin::Input::InputSubsystem::GetAction(std::string name) const
 		{
-			for (auto action : actions)
+			for (auto action : m_actions)
 			{
 				if (action.name == name)
 				{

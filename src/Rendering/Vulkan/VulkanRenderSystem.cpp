@@ -61,8 +61,7 @@ namespace Puffin
 			editorCamera.aspect = (float)m_offscreenExtent.width / (float)m_offscreenExtent.height;
 			InitEditorCamera();
 
-			viewportSize = ImVec2(0.0f, 0.0f);
-			offscreenInitialized = false;
+			m_viewportSize = ImVec2(0.0f, 0.0f);
 			m_shadowmapsNeedsUpdated = false;
 
 			// Initialize Shadowmap Resolution/Format
@@ -80,9 +79,10 @@ namespace Puffin
 
 			// Create Swapchain
 			InitSwapchain();
+			UpdateSwapchainImageViews();
 
 			// Create Offscreen Variables
-			InitOffscreen();
+			InitOffscreenAttachments();
 
 			// Initialize Command Pool and buffer
 			InitCommands();
@@ -97,7 +97,7 @@ namespace Puffin
 			InitShadowRenderPass();
 
 			// Initialise Swapchain Framebuffers
-			InitFramebuffers();
+			InitSwapchainFramebuffers();
 
 			// Initialize Offscreen Framebuffers
 			InitOffscreenFramebuffers();
@@ -148,8 +148,7 @@ namespace Puffin
 
 			// Initialize ImGui
 			InitImGui();
-
-			InitImGuiTextureIDs();
+			InitImguiTextures();
 
 			m_uiManager->GetWindowViewport()->SetTextureSampler(textureSampler);
 
@@ -229,7 +228,7 @@ namespace Puffin
 				.value();
 
 			// Get VKDevice handle used in rest of vulkan application
-			device = vkbDevice.device;
+			m_device = vkbDevice.device;
 			physicalDevice = vkbPhysicalDevice.physical_device;
 
 			// Use vkbootstrap to get a graphics queue
@@ -239,18 +238,20 @@ namespace Puffin
 			// Initialize Memory Allocator
 			VmaAllocatorCreateInfo allocatorInfo = {};
 			allocatorInfo.physicalDevice = physicalDevice;
-			allocatorInfo.device = device;
+			allocatorInfo.device = m_device;
 			allocatorInfo.instance = instance;
 
 			// Create Allocator
-			vmaCreateAllocator(&allocatorInfo, &allocator);
+			vmaCreateAllocator(&allocatorInfo, &m_allocator);
 		}
 
 		void VulkanRenderSystem::InitSwapchain()
 		{
-			vkb::SwapchainBuilder swapchainBuilder{ physicalDevice, device, surface };
+			vkb::SwapchainBuilder swapchainBuilder{ physicalDevice, m_device, surface };
 
-			vkb::Swapchain vkbSwapchain = swapchainBuilder
+			m_vkbSwapchain = {};
+			m_vkbSwapchain = swapchainBuilder
+				.set_old_swapchain(m_oldSwapchain)
 				.use_default_format_selection()
 				// VK_PRESENT_MODE_FIFO_KHR for double buffering, VK_PRESENT_MODE_MAILBOX_KHR for Triple buffering
 				.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
@@ -259,42 +260,58 @@ namespace Puffin
 				.value();
 
 			// Store Swapchain and related images/views
-			swapchain = vkbSwapchain.swapchain;
-			swapchainAttachments.clear();
+			m_swapchain = m_vkbSwapchain.swapchain;
 
-			for (int i = 0; i < vkbSwapchain.image_count; i++)
-			{
-				AllocatedImage swapchainAttachment;
-				swapchainAttachment.image = vkbSwapchain.get_images().value()[i];
-
-				// Set Debug Name for RenderDoc
-				std::string string = "Swapchain Image " + std::to_string(i);
-
-				VKDebug::SetObjectName(device,
-					(uint64_t)swapchainAttachment.image,
-					VK_OBJECT_TYPE_IMAGE,
-					string.c_str());
-
-				swapchainAttachment.imageView = vkbSwapchain.get_image_views().value()[i];
-				swapchainAttachments.push_back(swapchainAttachment);
-			}
-
-			swapchainImageFormat = vkbSwapchain.image_format;
-
-			swapchainDeletionQueue.push_function([=]()
-			{
-				vkDestroySwapchainKHR(device, swapchain, nullptr);
-			});
+			swapchainImageFormat = m_vkbSwapchain.image_format;
 		}
 
-		void VulkanRenderSystem::InitOffscreen()
+		void VulkanRenderSystem::UpdateSwapchainImageViews()
+		{
+			m_swapchainData.resize(m_vkbSwapchain.image_count);
+
+			for (int i = 0; i < m_swapchainData.size(); i++)
+			{
+				UpdateSwapchainImageView(i);
+			}
+		}
+
+		void VulkanRenderSystem::UpdateSwapchainImageView(uint32_t index)
+		{
+			AllocatedImage& swapchainAttachment = m_swapchainData[index].attachment;
+			swapchainAttachment.image = m_vkbSwapchain.get_images().value()[INDEXID_OBJECT];
+
+			// Set Debug Name for RenderDoc
+			std::string string = "Swapchain Image " + std::to_string(index);
+
+			VKDebug::SetObjectName(m_device,
+				(uint64_t)swapchainAttachment.image,
+				VK_OBJECT_TYPE_IMAGE,
+				string.c_str());
+
+			swapchainAttachment.imageView = m_vkbSwapchain.get_image_views().value()[index];
+		}
+
+		void VulkanRenderSystem::InitOffscreenAttachments()
 		{
 			// Grab how many images we have in swapchain
-			const uint32_t swapchain_imagecount = swapchainAttachments.size();
+			const uint32_t swapchain_imagecount = m_swapchainData.size();
+
+			m_offscreenData.resize(swapchain_imagecount);
+
+			// Create Framebuffers for each of the swapchain image views
+			for (int i = 0; i < swapchain_imagecount; i++)
+			{
+				InitOffscreenAttachment(i);
+				InitOffscreenDepthAttachment(i);
+			}
+		}
+
+		void VulkanRenderSystem::InitOffscreenAttachment(uint32_t index)
+		{
+			// Grab how many images we have in swapchain
+			const uint32_t swapchain_imagecount = m_swapchainData.size();
 
 			// Create Images/Views for Offscreen Rendering
-			offscreenAttachments = std::vector<AllocatedImage>(swapchain_imagecount);
-
 			VkExtent3D imageExtent =
 			{
 				m_offscreenExtent.width,
@@ -309,34 +326,29 @@ namespace Puffin
 			imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 			imageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-			for (int i = 0; i < swapchain_imagecount; i++)
-			{
-				// Create Image
-				VK_CHECK(vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
-					&offscreenAttachments[i].image, &offscreenAttachments[i].allocation, nullptr));
+			AllocatedImage& offscreenAttachment = m_offscreenData[index].attachment;
 
-				// Create Image View
-				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(offscreenFormat,
-					offscreenAttachments[i].image, VK_IMAGE_ASPECT_COLOR_BIT);
+			// Create Image
+			VK_CHECK(vmaCreateImage(m_allocator, &imageInfo, &imageAllocInfo,
+				&offscreenAttachment.image, &offscreenAttachment.allocation, nullptr));
 
-				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &offscreenAttachments[i].imageView));
+			// Create Image View
+			VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(offscreenFormat,
+				offscreenAttachment.image, VK_IMAGE_ASPECT_COLOR_BIT);
 
-				// Set Debug Name for RenderDoc
-				std::string string = "Offscreen Framebuffer " + std::to_string(i);
+			VK_CHECK(vkCreateImageView(m_device, &imageViewInfo, nullptr, &offscreenAttachment.imageView));
 
-				VKDebug::SetObjectName(device,
-					(uint64_t)offscreenAttachments[i].image,
-					VK_OBJECT_TYPE_IMAGE,
-					string.c_str());
+			// Set Debug Name for RenderDoc
+			std::string string = "Offscreen Framebuffer " + std::to_string(index);
 
-				// Add to deletion queues
-				offscreenDeletionQueue.push_function([=]()
-				{
-					vkDestroyImageView(device, offscreenAttachments[i].imageView, nullptr);
-					vmaDestroyImage(allocator, offscreenAttachments[i].image, offscreenAttachments[i].allocation);
-				});
-			}
+			VKDebug::SetObjectName(m_device,
+				(uint64_t)offscreenAttachment.image,
+				VK_OBJECT_TYPE_IMAGE,
+				string.c_str());
+		}
 
+		void VulkanRenderSystem::InitOffscreenDepthAttachment(uint32_t index)
+		{
 			// Create Depth Image
 
 			// Depth image size will match window
@@ -358,26 +370,23 @@ namespace Puffin
 			depthImageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 			depthImageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
+			AllocatedImage& depthAttachment = m_offscreenData[index].depthAttachment;
+
 			// Allocate and create image
-			vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthAttachment.image, &depthAttachment.allocation, nullptr);
+			vmaCreateImage(m_allocator, &depthImageInfo, &depthImageAllocInfo, &depthAttachment.image, &depthAttachment.allocation, nullptr);
 
 			// Set Debug Name for RenderDoc
-			VKDebug::SetObjectName(device,
+			std::string string = "Offscreen Depth Image " + std::to_string(index);
+
+			VKDebug::SetObjectName(m_device,
 				(uint64_t)depthAttachment.image,
 				VK_OBJECT_TYPE_IMAGE,
-				"Offscreen Depth Image");
+				string.c_str());
 
 			// Build Image View for depth image to use in rendering
 			VkImageViewCreateInfo depthImageViewInfo = VKInit::ImageViewCreateInfo(depthFormat, depthAttachment.image, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-			VK_CHECK(vkCreateImageView(device, &depthImageViewInfo, nullptr, &depthAttachment.imageView));
-
-			// Add to deletion queues
-			offscreenDeletionQueue.push_function([=]()
-			{
-				vkDestroyImageView(device, depthAttachment.imageView, nullptr);
-				vmaDestroyImage(allocator, depthAttachment.image, depthAttachment.allocation);
-			});
+			VK_CHECK(vkCreateImageView(m_device, &depthImageViewInfo, nullptr, &depthAttachment.imageView));
 		}
 
 		void VulkanRenderSystem::InitCommands()
@@ -390,7 +399,7 @@ namespace Puffin
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Allocate Command Pools
-				VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &m_frames[i].commandPool));
+				VK_CHECK(vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_frames[i].commandPool));
 
 				// Allocate Default GUI and Shadow Command Buffer that we will use for scene rendering
 				VkCommandBufferAllocateInfo allocInfo = VKInit::CommandBufferAllocateInfo(m_frames[i].commandPool, 1); 
@@ -398,25 +407,25 @@ namespace Puffin
 				VkCommandBufferAllocateInfo allocInfoShadow = VKInit::CommandBufferAllocateInfo(m_frames[i].commandPool, 1);
 
 				// Allocate buffers
-				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, &m_frames[i].mainCommandBuffer));
-				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoGui, &m_frames[i].guiCommandBuffer));
-				VK_CHECK(vkAllocateCommandBuffers(device, &allocInfoShadow, &m_frames[i].shadowCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(m_device, &allocInfo, &m_frames[i].mainCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(m_device, &allocInfoGui, &m_frames[i].guiCommandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(m_device, &allocInfoShadow, &m_frames[i].shadowCommandBuffer));
 
 				// Push destruction of both command pools/buffers to deletion queue
 				mainDeletionQueue.push_function([=]() 
 				{
-					vkDestroyCommandPool(device, m_frames[i].commandPool, nullptr);
+					vkDestroyCommandPool(m_device, m_frames[i].commandPool, nullptr);
 				});
 			}
 
 			// Create Upload Command Pool
 			VkCommandPoolCreateInfo uploadCommandPoolInfo = VKInit::CommandPoolCreateInfo(graphicsQueueFamily);
 
-			VK_CHECK(vkCreateCommandPool(device, &uploadCommandPoolInfo, nullptr, &uploadContext.commandPool));
+			VK_CHECK(vkCreateCommandPool(m_device, &uploadCommandPoolInfo, nullptr, &uploadContext.commandPool));
 
 			mainDeletionQueue.push_function([=]()
 			{
-				vkDestroyCommandPool(device, uploadContext.commandPool, nullptr);
+				vkDestroyCommandPool(m_device, uploadContext.commandPool, nullptr);
 			});
 		}
 
@@ -505,11 +514,11 @@ namespace Puffin
 			render_pass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
 			render_pass_info.pDependencies = dependencies.data();
 
-			VK_CHECK(vkCreateRenderPass(device, &render_pass_info, nullptr, &m_renderPass));
+			VK_CHECK(vkCreateRenderPass(m_device, &render_pass_info, nullptr, &m_renderPass));
 
 			mainDeletionQueue.push_function([=]()
 			{
-				vkDestroyRenderPass(device, m_renderPass, nullptr);
+				vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 			});
 		}
 
@@ -560,11 +569,11 @@ namespace Puffin
 			renderPassInfo.dependencyCount = 1;
 			renderPassInfo.pDependencies = &dependency;
 
-			VK_CHECK(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPassGUI));
+			VK_CHECK(vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &renderPassGUI));
 
 			mainDeletionQueue.push_function([=]()
 			{
-				vkDestroyRenderPass(device, renderPassGUI, nullptr);
+				vkDestroyRenderPass(m_device, renderPassGUI, nullptr);
 			});
 		}
 
@@ -618,19 +627,28 @@ namespace Puffin
 			renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 			renderPassInfo.pDependencies = dependencies.data();
 
-			VK_CHECK(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPassShadows));
+			VK_CHECK(vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &renderPassShadows));
 
 			mainDeletionQueue.push_function([=]()
 			{
-				vkDestroyRenderPass(device, renderPassShadows, nullptr);
+				vkDestroyRenderPass(m_device, renderPassShadows, nullptr);
 			});
 		}
 
-		void VulkanRenderSystem::InitFramebuffers()
+		void VulkanRenderSystem::InitSwapchainFramebuffers()
 		{
 			// Create Framebuffers for swapchain images.
 			// This will connect render pass to images for rendering
 
+			// Create Framebuffers for each of the swapchain image views
+			for (int i = 0; i < m_swapchainData.size(); i++)
+			{
+				InitSwapchainFramebuffer(i);
+			}
+		}
+
+		void VulkanRenderSystem::InitSwapchainFramebuffer(uint32_t index)
+		{
 			// Create Info for Swapchain Framebuffers
 			VkFramebufferCreateInfo fb_gui_info = {};
 			fb_gui_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -641,29 +659,23 @@ namespace Puffin
 			fb_gui_info.height = windowExtent.height;
 			fb_gui_info.layers = 1;
 
-			// Grab how many images we have in swapchain
-			const uint32_t swapchain_imagecount = swapchainAttachments.size();
-			framebuffers.clear();
-			framebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
+			// Attach swapchain image view to Framebuffer
+			fb_gui_info.pAttachments = &m_swapchainData[index].attachment.imageView;
+			fb_gui_info.attachmentCount = 1;
 
-			// Create Framebuffers for each of the swapchain image views
-			for (int i = 0; i < swapchain_imagecount; i++)
-			{
-				// Attach swapchain image view to Framebuffer
-				fb_gui_info.pAttachments = &swapchainAttachments[i].imageView;
-				fb_gui_info.attachmentCount = 1;
-
-				VK_CHECK(vkCreateFramebuffer(device, &fb_gui_info, nullptr, &framebuffers[i]));
-
-				// Push all deletion functions to queue
-				swapchainDeletionQueue.push_function([=]() {
-					vkDestroyFramebuffer(device, framebuffers[i], nullptr);
-					vkDestroyImageView(device, swapchainAttachments[i].imageView, nullptr);
-				});
-			}
+			VK_CHECK(vkCreateFramebuffer(m_device, &fb_gui_info, nullptr, &m_swapchainData[index].framebuffer));
 		}
 
 		void VulkanRenderSystem::InitOffscreenFramebuffers()
+		{
+			// Create Framebuffers for each of the swapchain image views
+			for (int i = 0; i < m_offscreenData.size(); i++)
+			{
+				InitOffscreenFramebuffer(i);
+			}
+		}
+
+		void VulkanRenderSystem::InitOffscreenFramebuffer(uint32_t index)
 		{
 			// Create Info for Offscreen Framebuffers
 			VkFramebufferCreateInfo fb_offscreen_info = {};
@@ -675,29 +687,19 @@ namespace Puffin
 			fb_offscreen_info.height = m_offscreenExtent.height;
 			fb_offscreen_info.layers = 1;
 
-			// Grab how many images we have in swapchain
-			const uint32_t swapchain_imagecount = swapchainAttachments.size();
-			offscreenFramebuffers.clear();
-			offscreenFramebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
+			AllocatedImage& offscreenAttachment = m_offscreenData[index].attachment;
+			AllocatedImage& offscreenDepthAttachment = m_offscreenData[index].depthAttachment;
+			VkFramebuffer& offscreenFramebuffer = m_offscreenData[index].framebuffer;
 
-			// Create Framebuffers for each of the swapchain image views
-			for (int i = 0; i < swapchain_imagecount; i++)
-			{
-				// Attach offscreen and depth image view to Framebuffer
-				VkImageView attachments[2];
-				attachments[0] = offscreenAttachments[i].imageView;
-				attachments[1] = depthAttachment.imageView;
+			// Attach offscreen and depth image view to Framebuffer
+			VkImageView attachments[2];
+			attachments[0] = offscreenAttachment.imageView;
+			attachments[1] = offscreenDepthAttachment.imageView;
 
-				fb_offscreen_info.pAttachments = attachments;
-				fb_offscreen_info.attachmentCount = 2;
+			fb_offscreen_info.pAttachments = attachments;
+			fb_offscreen_info.attachmentCount = 2;
 
-				VK_CHECK(vkCreateFramebuffer(device, &fb_offscreen_info, nullptr, &offscreenFramebuffers[i]));
-
-				offscreenDeletionQueue.push_function([=]()
-				{
-					vkDestroyFramebuffer(device, offscreenFramebuffers[i], nullptr);
-				});
-			}
+			VK_CHECK(vkCreateFramebuffer(m_device, &fb_offscreen_info, nullptr, &offscreenFramebuffer));
 		}
 
 		void VulkanRenderSystem::InitSyncStructures()
@@ -715,32 +717,32 @@ namespace Puffin
 
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &m_frames[i].renderFence));
+				VK_CHECK(vkCreateFence(m_device, &fenceCreateInfo, nullptr, &m_frames[i].renderFence));
 
 				//enqueue the destruction of the fence
 				mainDeletionQueue.push_function([=]() {
-					vkDestroyFence(device, m_frames[i].renderFence, nullptr);
+					vkDestroyFence(m_device, m_frames[i].renderFence, nullptr);
 				});
 
-				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_frames[i].shadowmapSemaphore));
-				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_frames[i].presentSemaphore));
-				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_frames[i].renderSemaphore));
+				VK_CHECK(vkCreateSemaphore(m_device, &semaphoreCreateInfo, nullptr, &m_frames[i].shadowmapSemaphore));
+				VK_CHECK(vkCreateSemaphore(m_device, &semaphoreCreateInfo, nullptr, &m_frames[i].presentSemaphore));
+				VK_CHECK(vkCreateSemaphore(m_device, &semaphoreCreateInfo, nullptr, &m_frames[i].renderSemaphore));
 
 				//enqueue the destruction of semaphores
 				mainDeletionQueue.push_function([=]() {
-					vkDestroySemaphore(device, m_frames[i].presentSemaphore, nullptr);
-					vkDestroySemaphore(device, m_frames[i].renderSemaphore, nullptr);
+					vkDestroySemaphore(m_device, m_frames[i].presentSemaphore, nullptr);
+					vkDestroySemaphore(m_device, m_frames[i].renderSemaphore, nullptr);
 				});
 			}
 
 			// Create Upload Fence
 			VkFenceCreateInfo uploadCreateFenceInfo = VKInit::FenceCreateInfo();
 
-			VK_CHECK(vkCreateFence(device, &uploadCreateFenceInfo, nullptr, &uploadContext.uploadFence));
+			VK_CHECK(vkCreateFence(m_device, &uploadCreateFenceInfo, nullptr, &uploadContext.uploadFence));
 
 			// enqueue destruction of upload fence
 			mainDeletionQueue.push_function([=]() {
-				vkDestroyFence(device, uploadContext.uploadFence, nullptr);
+				vkDestroyFence(m_device, uploadContext.uploadFence, nullptr);
 			});
 		}
 
@@ -826,10 +828,10 @@ namespace Puffin
 		{
 			// Initialize Descriptor Abstractions
 			descriptorAllocator = new VKUtil::DescriptorAllocator{};
-			descriptorAllocator->Init(device);
+			descriptorAllocator->Init(m_device);
 
 			descriptorLayoutCache = new VKUtil::DescriptorLayoutCache{};
-			descriptorLayoutCache->Init(device);
+			descriptorLayoutCache->Init(m_device);
 
 			InitCameraVPDescriptors();
 			InitObjectInstanceDescriptors();
@@ -956,7 +958,7 @@ namespace Puffin
 			auto vertShaderCode = ReadFile(shaderPath.string());
 
 			// Create Shader Module from code
-			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
+			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(m_device, vertShaderCode);
 
 			// Create Pipeline Layout Info
 			std::vector<VkDescriptorSetLayout> setLayouts =
@@ -967,7 +969,7 @@ namespace Puffin
 
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
 
-			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &shadowPipelineLayout));
+			VK_CHECK(vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr, &shadowPipelineLayout));
 
 			// Create Pipeline Builder Object
 			PipelineBuilder pipelineBuilder;
@@ -1012,7 +1014,7 @@ namespace Puffin
 			pipelineBuilder.pipelineLayout = shadowPipelineLayout;
 
 			// Build Pipeline
-			shadowPipeline = pipelineBuilder.BuildPipeline(device, renderPassShadows);
+			shadowPipeline = pipelineBuilder.BuildPipeline(m_device, renderPassShadows);
 		}
 
 		void VulkanRenderSystem::InitDebugPipeline()
@@ -1025,8 +1027,8 @@ namespace Puffin
 			auto fragShaderCode = ReadFile(fragShaderPath.string());
 
 			// Create Shader Modules from code
-			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(device, vertShaderCode);
-			VkShaderModule fragShaderModule = VKInit::CreateShaderModule(device, fragShaderCode);
+			VkShaderModule vertShaderModule = VKInit::CreateShaderModule(m_device, vertShaderCode);
+			VkShaderModule fragShaderModule = VKInit::CreateShaderModule(m_device, fragShaderCode);
 
 			// Create Pipeline Layout Info
 			std::vector<VkDescriptorSetLayout> setLayouts =
@@ -1036,7 +1038,7 @@ namespace Puffin
 
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
 
-			VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &debugPipelineLayout));
+			VK_CHECK(vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr, &debugPipelineLayout));
 
 			// Pipeline Builder Object
 			PipelineBuilder pipelineBuilder;
@@ -1093,7 +1095,7 @@ namespace Puffin
 			pipelineBuilder.pipelineLayout = debugPipelineLayout;
 
 			// Build Pipeline
-			debugPipeline = pipelineBuilder.BuildPipeline(device, m_renderPass);
+			debugPipeline = pipelineBuilder.BuildPipeline(m_device, m_renderPass);
 		}
 
 		void VulkanRenderSystem::InitScene()
@@ -1306,13 +1308,13 @@ namespace Puffin
 					m_frames[i].shadowmapImages[entity] = AllocatedImage();
 				}
 
-				vmaCreateImage(allocator, &imageInfo, &imageAllocInfo,
+				vmaCreateImage(m_allocator, &imageInfo, &imageAllocInfo,
 					&m_frames[i].shadowmapImages[entity].image,
 					&m_frames[i].shadowmapImages[entity].allocation, nullptr);
 
 				std::string string = "Light Depth Image " + std::to_string(i);
 
-				VKDebug::SetObjectName(device,
+				VKDebug::SetObjectName(m_device,
 					(uint64_t)m_frames[i].shadowmapImages[entity].image,
 					VK_OBJECT_TYPE_IMAGE,
 					string.c_str());
@@ -1321,13 +1323,13 @@ namespace Puffin
 				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(shadowFormat,
 					m_frames[i].shadowmapImages[entity].image, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &m_frames[i].shadowmapImages[entity].imageView));
+				VK_CHECK(vkCreateImageView(m_device, &imageViewInfo, nullptr, &m_frames[i].shadowmapImages[entity].imageView));
 
 				// Create Framebuffer
 				framebufferInfo.pAttachments = &m_frames[i].shadowmapImages[entity].imageView;
 				framebufferInfo.attachmentCount = 1;
 
-				VK_CHECK(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_frames[i].shadowmapFramebuffers[entity]));
+				VK_CHECK(vkCreateFramebuffer(m_device, &framebufferInfo, nullptr, &m_frames[i].shadowmapFramebuffers[entity]));
 			}
 		}
 
@@ -1377,13 +1379,13 @@ namespace Puffin
 					textureAsset->Unload();
 				}
 
-				VKDebug::SetObjectName(device,
+				VKDebug::SetObjectName(m_device,
 					(uint64_t)data.texture.image,
 					VK_OBJECT_TYPE_IMAGE,
 					"Mesh Texture");
 
 				VkImageViewCreateInfo imageViewInfo = VKInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_UNORM, data.texture.image, VK_IMAGE_ASPECT_COLOR_BIT);
-				VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &data.texture.imageView));
+				VK_CHECK(vkCreateImageView(m_device, &imageViewInfo, nullptr, &data.texture.imageView));
 
 				m_sceneRenderData.albedoTextureData[uuid] = data;
 			}
@@ -1399,9 +1401,9 @@ namespace Puffin
 
 			// Map vertex data to staging buffer
 			void* data;
-			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, stagingBuffer.allocation, &data);
 			memcpy(data, vertexData, verticesSize);
-			vmaUnmapMemory(allocator, stagingBuffer.allocation);
+			vmaUnmapMemory(m_allocator, stagingBuffer.allocation);
 
 			// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
 			AllocatedBuffer vertexBuffer = CreateBuffer(verticesSize,
@@ -1419,7 +1421,7 @@ namespace Puffin
 			});
 
 			// Cleanup Staging Buffer Immediately, It is no longer needed
-			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+			vmaDestroyBuffer(m_allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 
 			return vertexBuffer;
 		}
@@ -1434,9 +1436,9 @@ namespace Puffin
 
 			// Map Index data to staging buffer
 			void* data;
-			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, stagingBuffer.allocation, &data);
 			memcpy(data, indexData, indicesSize);
-			vmaUnmapMemory(allocator, stagingBuffer.allocation);
+			vmaUnmapMemory(m_allocator, stagingBuffer.allocation);
 
 			// Allocate Index Buffer - Transfer Indices into GPU Memory
 			AllocatedBuffer indexBuffer = CreateBuffer(indicesSize,
@@ -1454,7 +1456,7 @@ namespace Puffin
 			});
 
 			// Cleanup Staging Buffer
-			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+			vmaDestroyBuffer(m_allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 
 			return indexBuffer;
 		}
@@ -1468,9 +1470,9 @@ namespace Puffin
 
 			// Map vertex data to staging buffer
 			void* data;
-			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, stagingBuffer.allocation, &data);
 			memcpy(data, vertexData, verticesSize);
-			vmaUnmapMemory(allocator, stagingBuffer.allocation);
+			vmaUnmapMemory(m_allocator, stagingBuffer.allocation);
 
 			// Copy from CPU Memory to GPU Memory
 			ImmediateSubmit([=](VkCommandBuffer cmd)
@@ -1483,7 +1485,7 @@ namespace Puffin
 			});
 
 			// Cleanup Staging Buffer Immediately, It is no longer needed
-			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+			vmaDestroyBuffer(m_allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 
 		void VulkanRenderSystem::CopyIndicesToBuffer(const void* indexData, const size_t indicesSize, AllocatedBuffer indexBuffer, uint32_t copyOffset)
@@ -1495,9 +1497,9 @@ namespace Puffin
 
 			// Map Index data to staging buffer
 			void* data;
-			vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, stagingBuffer.allocation, &data);
 			memcpy(data, indexData, indicesSize);
-			vmaUnmapMemory(allocator, stagingBuffer.allocation);
+			vmaUnmapMemory(m_allocator, stagingBuffer.allocation);
 
 			//Copy from CPU Memory to GPU Memory
 			ImmediateSubmit([=](VkCommandBuffer cmd)
@@ -1510,7 +1512,7 @@ namespace Puffin
 			});
 
 			// Cleanup Staging Buffer
-			vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+			vmaDestroyBuffer(m_allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 
 		void VulkanRenderSystem::CleanupTexture(ECS::EntityID entityID, UUID textureID)
@@ -1520,7 +1522,7 @@ namespace Puffin
 
 			if (m_sceneRenderData.albedoTextureData[textureID].entities.empty())
 			{
-				vmaDestroyImage(allocator, m_sceneRenderData.albedoTextureData[textureID].texture.image,
+				vmaDestroyImage(m_allocator, m_sceneRenderData.albedoTextureData[textureID].texture.image,
 					m_sceneRenderData.albedoTextureData[textureID].texture.allocation);
 			}
 		}
@@ -1536,13 +1538,13 @@ namespace Puffin
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
 				// Destroy Image/View
-				vkDestroyImageView(device, m_frames[i].shadowmapImages[entity].imageView, nullptr);
-				vmaDestroyImage(allocator, m_frames[i].shadowmapImages[entity].image, m_frames[i].shadowmapImages[entity].allocation);
+				vkDestroyImageView(m_device, m_frames[i].shadowmapImages[entity].imageView, nullptr);
+				vmaDestroyImage(m_allocator, m_frames[i].shadowmapImages[entity].image, m_frames[i].shadowmapImages[entity].allocation);
 
 				m_frames[i].shadowmapImages.erase(entity);
 
 				// Destroy Framebuffer
-				vkDestroyFramebuffer(device, m_frames[i].shadowmapFramebuffers[entity], nullptr);
+				vkDestroyFramebuffer(m_device, m_frames[i].shadowmapFramebuffers[entity], nullptr);
 
 				m_frames[i].shadowmapFramebuffers.erase(entity);
 			}
@@ -1562,7 +1564,7 @@ namespace Puffin
 			samplerInfo.minLod = 0.0f;
 			samplerInfo.maxLod = 0.0f;
 
-			VK_CHECK(vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler));
+			VK_CHECK(vkCreateSampler(m_device, &samplerInfo, nullptr, &textureSampler));
 		}
 
 		void VulkanRenderSystem::InitDepthSampler()
@@ -1579,7 +1581,7 @@ namespace Puffin
 			samplerInfo.minLod = 0.0f;
 			samplerInfo.maxLod = 1.0f;
 
-			VK_CHECK(vkCreateSampler(device, &samplerInfo, nullptr, &depthSampler));
+			VK_CHECK(vkCreateSampler(m_device, &samplerInfo, nullptr, &depthSampler));
 		}
 
 		void VulkanRenderSystem::SetupDeferredRenderer()
@@ -1592,8 +1594,8 @@ namespace Puffin
 			}
 
 			deferredRenderer.Setup(physicalDevice,
-			                       device,
-			                       allocator,
+			                       m_device,
+			                       m_allocator,
 			                       descriptorAllocator,
 			                       descriptorLayoutCache,
 			                       commandPools,
@@ -1693,7 +1695,7 @@ namespace Puffin
 			pool_info.pPoolSizes = poolSizes;
 
 			VkDescriptorPool imguiPool;
-			VK_CHECK(vkCreateDescriptorPool(device, &pool_info, nullptr, &imguiPool));
+			VK_CHECK(vkCreateDescriptorPool(m_device, &pool_info, nullptr, &imguiPool));
 
 
 			// Initialize imgui library
@@ -1707,7 +1709,7 @@ namespace Puffin
 			ImGui_ImplVulkan_InitInfo init_info = {};
 			init_info.Instance = instance;
 			init_info.PhysicalDevice = physicalDevice;
-			init_info.Device = device;
+			init_info.Device = m_device;
 			init_info.Queue = graphicsQueue;
 			init_info.DescriptorPool = imguiPool;
 			init_info.MinImageCount = 3;
@@ -1727,92 +1729,97 @@ namespace Puffin
 			//add the destroy the imgui created structures
 			mainDeletionQueue.push_function([=]() {
 
-				vkDestroyDescriptorPool(device, imguiPool, nullptr);
+				vkDestroyDescriptorPool(m_device, imguiPool, nullptr);
 				ImGui_ImplVulkan_Shutdown();
 			});
 		}
 
-		void VulkanRenderSystem::InitImGuiTextureIDs()
+		void VulkanRenderSystem::InitImguiTextures()
 		{
-			// Grab how many images we have in swapchain
-			const uint32_t swapchain_imagecount = swapchainAttachments.size();
-
-			if (viewportTextureIDs.empty() == false)
+			// Create Framebuffers for each of the swapchain image views
+			for (int i = 0; i < m_offscreenData.size(); i++)
 			{
-				for (int i = 0; i < swapchain_imagecount; i++)
-				{
-					ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(viewportTextureIDs[i]));
-				}
+				InitImGuiTexture(i);
 			}
+		}
 
-			viewportTextureIDs.clear();
-			viewportTextureIDs = std::vector<ImTextureID>(swapchain_imagecount);
+		void VulkanRenderSystem::InitImGuiTexture(uint32_t index)
+		{
+			AllocatedImage& offscreenAttachment = m_offscreenData[index].attachment;
 
-			// Create Texture ID's for rendering Viewport to ImGui Window
-			for (int i = 0; i < swapchain_imagecount; i++)
-			{
-				viewportTextureIDs[i] = ImGui_ImplVulkan_AddTexture(textureSampler, offscreenAttachments[i].imageView,
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			}
+			// Create Texture ID for rendering Viewport to ImGui Window
+			m_offscreenData[index].viewportTexture = ImGui_ImplVulkan_AddTexture(textureSampler, offscreenAttachment.imageView,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+
+		void VulkanRenderSystem::DestroyImguiTexture(uint32_t index)
+		{
+			ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)m_offscreenData[index].viewportTexture);
+			m_offscreenData[index].viewportTexture = nullptr;
 		}
 
 		//-------------------------------------------------------------------------------------
 
-		void VulkanRenderSystem::RecreateSwapchain()
+		void VulkanRenderSystem::UpdatSwapchainData(uint32_t index)
 		{
-			// Get New Window Size
-			int width = 0, height = 0;
-			glfwGetFramebufferSize(window, &width, &height);
-
-			while (width == 0 || height == 0)
+			if (m_swapchainData[index].needsRecreated == true)
 			{
-				glfwGetFramebufferSize(window, &width, &height);
-				glfwWaitEvents();
+				DestroySwapchainData(index);
+
+				UpdateSwapchainImageView(index);
+				InitSwapchainFramebuffer(index);
+
+				m_swapchainData[index].needsRecreated = false;
+
+				// Exit out of method if there is still swapchain data needing updated
+				for (int i = 0; i < m_swapchainData.size(); i++)
+				{
+					if (m_swapchainData[i].needsRecreated == true)
+						return;
+				}
+
+				// Cleanup old swapchain (only if it hasn't been reused
+				if (m_oldSwapchain != m_swapchain)
+				{
+					vkDestroySwapchainKHR(m_device, m_oldSwapchain, nullptr);
+				}
 			}
-
-			windowExtent.width = width;
-			windowExtent.height = height;
-
-			// Cleanup Swapchain Variables
-			swapchainDeletionQueue.flush();
-
-			InitSwapchain();
-			InitFramebuffers();
-
-			framebufferResized = false;
 		}
 
-		void VulkanRenderSystem::RecreateOffscreen()
+		void VulkanRenderSystem::DestroySwapchainData(uint32_t index)
 		{
-			// Delete all Offscreen Variables in deletion queue
-			offscreenDeletionQueue.flush();
+			vkDestroyFramebuffer(m_device, m_swapchainData[index].framebuffer, nullptr);
+			vkDestroyImageView(m_device, m_swapchainData[index].attachment.imageView, nullptr);
+		}
 
-			// Update Offscreen Extents
-			m_offscreenExtent.width = viewportSize.x;
-			m_offscreenExtent.height = viewportSize.y;
-
-			if (m_offscreenExtent.width == 0)
+		void VulkanRenderSystem::UpdateOffscreenData(uint32_t index)
+		{
+			if (m_offscreenData[index].needsRecreated == true)
 			{
-				m_offscreenExtent.width = 1024;
+				// Destroy all Offscreen Variables
+				DestroyOffscreenData(index);
+
+				// Initialize Offscreen Variables and Scene
+				InitOffscreenAttachment(index);
+				InitOffscreenDepthAttachment(index);
+				InitOffscreenFramebuffer(index);
+				InitImGuiTexture(index);
+
+				m_offscreenData[index].needsRecreated = false;
 			}
+		}
 
-			if (m_offscreenExtent.height == 0)
-			{
-				m_offscreenExtent.height = 1024;
-			}
+		void VulkanRenderSystem::DestroyOffscreenData(uint32_t index)
+		{
+			vkDestroyImageView(m_device, m_offscreenData[index].attachment.imageView, nullptr);
+			vmaDestroyImage(m_allocator, m_offscreenData[index].attachment.image, m_offscreenData[index].attachment.allocation);
 
-			// Set Forward Render Extent
-			m_forwardRenderer->SetRenderExtent(m_offscreenExtent);
+			vkDestroyImageView(m_device, m_offscreenData[index].depthAttachment.imageView, nullptr);
+			vmaDestroyImage(m_allocator, m_offscreenData[index].depthAttachment.image, m_offscreenData[index].depthAttachment.allocation);
 
-			// Setup Deferred Renderer
-			//deferredRenderer.RecreateFramebuffer(m_offscreenExtent);
+			vkDestroyFramebuffer(m_device, m_offscreenData[index].framebuffer, nullptr);
 
-			// Initialize Offscreen Variables and Scene
-			InitOffscreen();
-			InitOffscreenFramebuffers();
-			InitImGuiTextureIDs();
-
-			offscreenInitialized = true;
+			DestroyImguiTexture(index);
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -2180,29 +2187,81 @@ namespace Puffin
 		void VulkanRenderSystem::DrawFrame()
 		{
 			// Wait until gpu has finished rendering last frame. Timeout of 1 second
-			VK_CHECK(vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000)); // Wait for fence to complete
-			VK_CHECK(vkResetFences(device, 1, &GetCurrentFrame().renderFence)); // Reset fence
-			
-			// Request image from swapchain
-			uint32_t swapchainImageIndex;
-			VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 0, GetCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
-
-			// Now that we are sure commands are finished executing, reset command buffers
-			VK_CHECK(vkResetCommandPool(device, GetCurrentFrame().commandPool, 0));
+			VK_CHECK(vkWaitForFences(m_device, 1, &GetCurrentFrame().renderFence, true, 1000000000)); // Wait for fence to complete
+			VK_CHECK(vkResetFences(m_device, 1, &GetCurrentFrame().renderFence)); // Reset fence
 
 			// Recreate Swapchain if window size changes
-			if (framebufferResized)
+			if (m_framebufferResized)
 			{
-				RecreateSwapchain();
+				// Get New Window Size
+				int width = 0, height = 0;
+				glfwGetFramebufferSize(window, &width, &height);
+
+				while (width == 0 || height == 0)
+				{
+					glfwGetFramebufferSize(window, &width, &height);
+					glfwWaitEvents();
+				}
+
+				windowExtent.width = width;
+				windowExtent.height = height;
+
+				for (int i = 0; i < m_offscreenData.size(); i++)
+				{
+					m_swapchainData[i].needsRecreated = true;
+				}
+
+				// Copy old swapchain and get new one
+				m_oldSwapchain = m_swapchain;
+				InitSwapchain();
+
+				m_framebufferResized = false;
 			}
 
 			// Recreate Viewport if it size changes
-			if (!offscreenInitialized || 
-				viewportSize.x != m_offscreenExtent.width ||
-				viewportSize.y != m_offscreenExtent.height)
+			m_viewportSize = m_uiManager->GetWindowViewport()->GetViewportSize();
+
+			if (m_viewportSize.x != m_offscreenExtent.width ||
+				m_viewportSize.y != m_offscreenExtent.height)
 			{
-				RecreateOffscreen();
+				for (int i = 0; i < m_offscreenData.size(); i++)
+				{
+					m_offscreenData[i].needsRecreated = true;
+				}
+
+				// Update Offscreen Extents
+				m_offscreenExtent.width = m_viewportSize.x;
+				m_offscreenExtent.height = m_viewportSize.y;
+
+				if (m_offscreenExtent.width == 0)
+				{
+					m_offscreenExtent.width = 1024;
+				}
+
+				if (m_offscreenExtent.height == 0)
+				{
+					m_offscreenExtent.height = 1024;
+				}
+
+				// Set Forward Render Extent
+				m_forwardRenderer->SetRenderExtent(m_offscreenExtent);
+
+				// Setup Deferred Renderer
+				//deferredRenderer.RecreateFramebuffer(m_offscreenExtent);
 			}
+
+			// Request image from swapchain
+			uint32_t swapchainImageIndex;
+			VK_CHECK(vkAcquireNextImageKHR(m_device, m_swapchain, 0, GetCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
+
+			// Now that we are sure commands are finished executing, reset command buffers
+			VK_CHECK(vkResetCommandPool(m_device, GetCurrentFrame().commandPool, 0));
+
+			// Update swapchain data for this frame (if needed)
+			UpdatSwapchainData(swapchainImageIndex);
+
+			// Update offscreen for this frame (if needed)
+			UpdateOffscreenData(swapchainImageIndex);
 
 			// Copy Debug Vertices to Vertex Buffer
 			/*if (GetCurrentFrame().debugVertices.size() > 0)
@@ -2262,12 +2321,10 @@ namespace Puffin
 			//VkCommandBuffer cmdMain = RecordMainCommandBuffers(swapchainImageIndex);
 
 			// Pass Offscreen Framebuffer to Viewport Window and Render Viewport
-			if (offscreenInitialized)
-				m_uiManager->GetWindowViewport()->Draw(viewportTextureIDs[swapchainImageIndex]);
+			if (m_offscreenData[swapchainImageIndex].needsRecreated == false)
+				m_uiManager->GetWindowViewport()->Draw(m_offscreenData[swapchainImageIndex].viewportTexture);
 			else
 				m_uiManager->GetWindowViewport()->DrawWithoutImage();
-
-			viewportSize = m_uiManager->GetWindowViewport()->GetViewportSize();
 
 			// Draw ImGui
 			ImGui::Render();
@@ -2312,7 +2369,7 @@ namespace Puffin
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 			presentInfo.pNext = nullptr;
 
-			presentInfo.pSwapchains = &swapchain;
+			presentInfo.pSwapchains = &m_swapchain;
 			presentInfo.swapchainCount = 1;
 
 			presentInfo.pWaitSemaphores = &GetCurrentFrame().renderSemaphore;
@@ -2342,15 +2399,15 @@ namespace Puffin
 			void* data;
 
 			// Map camera view/proj data to uniform buffer
-			vmaMapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, GetCurrentFrame().cameraViewProjBuffer.allocation, &data);
 			memcpy(data, &cameraData, sizeof(GPUCameraData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().cameraViewProjBuffer.allocation);
 
 			// Map Mesh Matrices data to GPU 
 			MapObjectData();
 
 			// Map indirect commands to buffer
-			vmaMapMemory(allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation, &data);
 
 			VkDrawIndexedIndirectCommand* indirectData = (VkDrawIndexedIndirectCommand*)data;
 
@@ -2370,7 +2427,7 @@ namespace Puffin
 				meshIndex++;
 			}
 
-			vmaUnmapMemory(allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().drawBatch.drawIndirectCommandsBuffer.allocation);
 
 			GetCurrentFrame().drawBatch.count = meshIndex;
 
@@ -2408,7 +2465,7 @@ namespace Puffin
 				});
 
 				// Free Old Buffer
-				vmaDestroyBuffer(allocator, oldVertexBuffer.buffer, oldVertexBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, oldVertexBuffer.buffer, oldVertexBuffer.allocation);
 			}
 		}
 
@@ -2443,7 +2500,7 @@ namespace Puffin
 				});
 
 				// Free Old Buffer
-				vmaDestroyBuffer(allocator, oldIndexBuffer.buffer, oldIndexBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, oldIndexBuffer.buffer, oldIndexBuffer.allocation);
 			}
 		}
 
@@ -2485,8 +2542,8 @@ namespace Puffin
 			m_sceneRenderData.indexOffset += meshRenderData.indexCount;
 
 			// Destroy Staging Buffers
-			vmaDestroyBuffer(allocator, vertexStagingBuffer.buffer, vertexStagingBuffer.allocation);
-			vmaDestroyBuffer(allocator, indexStagingBuffer.buffer, indexStagingBuffer.allocation);
+			vmaDestroyBuffer(m_allocator, vertexStagingBuffer.buffer, vertexStagingBuffer.allocation);
+			vmaDestroyBuffer(m_allocator, indexStagingBuffer.buffer, indexStagingBuffer.allocation);
 		}
 
 		void VulkanRenderSystem::PrepareLights()
@@ -2497,9 +2554,9 @@ namespace Puffin
 			shadingData.displayDebugTarget = 0;
 
 			void* data;
-			vmaMapMemory(allocator, GetCurrentFrame().cameraShadingBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, GetCurrentFrame().cameraShadingBuffer.allocation, &data);
 			memcpy(data, &shadingData, sizeof(GPUShadingData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().cameraShadingBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().cameraShadingBuffer.allocation);
 
 			// Map all light data to storage buffer
 			void* lightData;
@@ -2507,10 +2564,10 @@ namespace Puffin
 			void* dirLightData;
 			void* spotLightData;
 
-			vmaMapMemory(allocator, GetCurrentFrame().lightBuffer.allocation, &lightData);
-			vmaMapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation, &pointLightData);
-			vmaMapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation, &dirLightData);
-			vmaMapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation, &spotLightData);
+			vmaMapMemory(m_allocator, GetCurrentFrame().lightBuffer.allocation, &lightData);
+			vmaMapMemory(m_allocator, GetCurrentFrame().pointLightBuffer.allocation, &pointLightData);
+			vmaMapMemory(m_allocator, GetCurrentFrame().dirLightBuffer.allocation, &dirLightData);
+			vmaMapMemory(m_allocator, GetCurrentFrame().spotLightBuffer.allocation, &spotLightData);
 
 			GPULightData* lightSSBO = (GPULightData*)lightData;
 			GPUPointLightData* pointLightSSBO = (GPUPointLightData*)pointLightData;
@@ -2635,10 +2692,10 @@ namespace Puffin
 				l++;
 			}
 
-			vmaUnmapMemory(allocator, GetCurrentFrame().lightBuffer.allocation);
-			vmaUnmapMemory(allocator, GetCurrentFrame().pointLightBuffer.allocation);
-			vmaUnmapMemory(allocator, GetCurrentFrame().dirLightBuffer.allocation);
-			vmaUnmapMemory(allocator, GetCurrentFrame().spotLightBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().lightBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().pointLightBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().dirLightBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().spotLightBuffer.allocation);
 
 			GPULightStatsData lightStatsData;
 			lightStatsData.numPLights = p;
@@ -2646,9 +2703,9 @@ namespace Puffin
 			lightStatsData.numSLights = s;
 
 			// Map Light stats data to uniform buffer
-			vmaMapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, GetCurrentFrame().lightStatsBuffer.allocation, &data);
 			memcpy(data, &lightStatsData, sizeof(GPULightStatsData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().lightStatsBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().lightStatsBuffer.allocation);
 		}
 
 		glm::mat4 VulkanRenderSystem::CalculateLightSpaceView(const float& aspectRatio, const float& outerRadius, const Vector3f& position, const Vector3f& direction) const
@@ -2708,7 +2765,7 @@ namespace Puffin
 			rpInfo.renderArea.offset.x = 0;
 			rpInfo.renderArea.offset.y = 0;
 			rpInfo.renderArea.extent = m_offscreenExtent;
-			rpInfo.framebuffer = offscreenFramebuffers[index];
+			//rpInfo.framebuffer = offscreenFramebuffers[index];
 
 			// Connect clear values
 			VkClearValue clearValues[] = { clearValue, depthClear };
@@ -2762,7 +2819,7 @@ namespace Puffin
 			rpInfo.renderArea.offset.x = 0;
 			rpInfo.renderArea.offset.y = 0;
 			rpInfo.renderArea.extent = windowExtent;
-			rpInfo.framebuffer = framebuffers[index];
+			rpInfo.framebuffer = m_swapchainData[index].framebuffer;
 			rpInfo.clearValueCount = 1;
 			rpInfo.pClearValues = &clearValue;
 
@@ -2863,9 +2920,9 @@ namespace Puffin
 			lightSpaceData.lightSpaceMatrix = lightSpaceView;
 
 			void* data;
-			vmaMapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, GetCurrentFrame().lightSpaceBuffer.allocation, &data);
 			memcpy(data, &lightSpaceData, sizeof(GPULightSpaceData));
-			vmaUnmapMemory(allocator, GetCurrentFrame().lightSpaceBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().lightSpaceBuffer.allocation);
 
 			// Bind Light Space DataDescriptors
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -2918,9 +2975,9 @@ namespace Puffin
 
 			// Map Indirect Commands to buffer
 			void* data;
-			vmaMapMemory(allocator, GetCurrentFrame().debugIndirectCommandsBuffer.allocation, &data);
+			vmaMapMemory(m_allocator, GetCurrentFrame().debugIndirectCommandsBuffer.allocation, &data);
 			memcpy(data, GetCurrentFrame().debugIndirectCommands.data(), sizeof(VkDrawIndexedIndirectCommand) * GetCurrentFrame().debugIndirectCommands.size());
-			vmaUnmapMemory(allocator, GetCurrentFrame().debugIndirectCommandsBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().debugIndirectCommandsBuffer.allocation);
 
 			// Bind Index Buffer
 			vkCmdBindIndexBuffer(cmd, GetCurrentFrame().debugIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -2936,10 +2993,10 @@ namespace Puffin
 		{
 			// Map all instance/object data to storage buffers
 			void* objectData;
-			vmaMapMemory(allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
+			vmaMapMemory(m_allocator, GetCurrentFrame().objectBuffer.allocation, &objectData);
 
 			void* instanceData;
-			vmaMapMemory(allocator, GetCurrentFrame().instanceBuffer.allocation, &instanceData);
+			vmaMapMemory(m_allocator, GetCurrentFrame().instanceBuffer.allocation, &instanceData);
 
 			GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
 			GPUInstanceData* instanceSSBO = (GPUInstanceData*)instanceData;
@@ -2990,8 +3047,8 @@ namespace Puffin
 				i++;
 			}
 
-			vmaUnmapMemory(allocator, GetCurrentFrame().objectBuffer.allocation);
-			vmaUnmapMemory(allocator, GetCurrentFrame().instanceBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().objectBuffer.allocation);
+			vmaUnmapMemory(m_allocator, GetCurrentFrame().instanceBuffer.allocation);
 		}
 
 		glm::mat4 VulkanRenderSystem::BuildMeshTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale) const
@@ -3017,7 +3074,7 @@ namespace Puffin
 			if (isInitialized)
 			{
 				// Make sure GPU has stopped working
-				vkWaitForFences(device, 1, &GetCurrentFrame().renderFence, true, 1000000000);
+				vkWaitForFences(m_device, 1, &GetCurrentFrame().renderFence, true, 1000000000);
 
 				// Cleanup Forward/Deferred Renderer
 				m_forwardRenderer->Cleanup();
@@ -3027,8 +3084,17 @@ namespace Puffin
 
 				// Flush all queues, destroying all created resources
 				mainDeletionQueue.flush();
-				swapchainDeletionQueue.flush();
-				offscreenDeletionQueue.flush();
+
+				vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+				for (int i = 0; i < m_swapchainData.size(); i++)
+				{
+					DestroySwapchainData(i);
+				}
+
+				for (int i = 0; i < m_offscreenData.size(); i++)
+				{
+					DestroyOffscreenData(i);
+				}
 
 				Stop();
 
@@ -3038,7 +3104,7 @@ namespace Puffin
 				descriptorAllocator->Cleanup();
 				descriptorLayoutCache->Cleanup();
 
-				vkDestroyDevice(device, nullptr);
+				vkDestroyDevice(m_device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);
 				vkDestroyInstance(instance, nullptr);
 			}
@@ -3048,25 +3114,25 @@ namespace Puffin
 		{
 			for (int i = 0; i < FRAME_OVERLAP; i++)
 			{
-				vmaDestroyBuffer(allocator, m_frames[i].cameraViewProjBuffer.buffer, m_frames[i].cameraViewProjBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].objectBuffer.buffer, m_frames[i].objectBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].instanceBuffer.buffer, m_frames[i].instanceBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].lightSpaceBuffer.buffer, m_frames[i].lightSpaceBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].debugVertexBuffer.buffer, m_frames[i].debugVertexBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].debugIndexBuffer.buffer, m_frames[i].debugIndexBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].debugIndirectCommandsBuffer.buffer, m_frames[i].debugIndirectCommandsBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].cameraViewProjBuffer.buffer, m_frames[i].cameraViewProjBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].objectBuffer.buffer, m_frames[i].objectBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].instanceBuffer.buffer, m_frames[i].instanceBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].lightSpaceBuffer.buffer, m_frames[i].lightSpaceBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].debugVertexBuffer.buffer, m_frames[i].debugVertexBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].debugIndexBuffer.buffer, m_frames[i].debugIndexBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].debugIndirectCommandsBuffer.buffer, m_frames[i].debugIndirectCommandsBuffer.allocation);
 
-				vmaDestroyBuffer(allocator, m_frames[i].drawBatch.drawIndirectCommandsBuffer.buffer, m_frames[i].drawBatch.drawIndirectCommandsBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].cameraShadingBuffer.buffer, m_frames[i].cameraShadingBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].lightBuffer.buffer, m_frames[i].lightBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].pointLightBuffer.buffer, m_frames[i].pointLightBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].dirLightBuffer.buffer, m_frames[i].dirLightBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].spotLightBuffer.buffer, m_frames[i].spotLightBuffer.allocation);
-				vmaDestroyBuffer(allocator, m_frames[i].lightStatsBuffer.buffer, m_frames[i].lightStatsBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].drawBatch.drawIndirectCommandsBuffer.buffer, m_frames[i].drawBatch.drawIndirectCommandsBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].cameraShadingBuffer.buffer, m_frames[i].cameraShadingBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].lightBuffer.buffer, m_frames[i].lightBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].pointLightBuffer.buffer, m_frames[i].pointLightBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].dirLightBuffer.buffer, m_frames[i].dirLightBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].spotLightBuffer.buffer, m_frames[i].spotLightBuffer.allocation);
+				vmaDestroyBuffer(m_allocator, m_frames[i].lightStatsBuffer.buffer, m_frames[i].lightStatsBuffer.allocation);
 			}
 
-			vmaDestroyBuffer(allocator, m_sceneRenderData.mergedVertexBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.allocation);
-			vmaDestroyBuffer(allocator, m_sceneRenderData.mergedIndexBuffer.buffer, m_sceneRenderData.mergedIndexBuffer.allocation);
+			vmaDestroyBuffer(m_allocator, m_sceneRenderData.mergedVertexBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.allocation);
+			vmaDestroyBuffer(m_allocator, m_sceneRenderData.mergedIndexBuffer.buffer, m_sceneRenderData.mergedIndexBuffer.allocation);
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -3088,7 +3154,7 @@ namespace Puffin
 			AllocatedBuffer newBuffer;
 
 			// Allocate Buffer
-			VK_CHECK(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &newBuffer.buffer, &newBuffer.allocation, nullptr));
+			VK_CHECK(vmaCreateBuffer(m_allocator, &bufferInfo, &allocInfo, &newBuffer.buffer, &newBuffer.allocation, nullptr));
 
 			return newBuffer;
 		}
@@ -3099,7 +3165,7 @@ namespace Puffin
 			VkCommandBufferAllocateInfo cmdAllocInfo = VKInit::CommandBufferAllocateInfo(uploadContext.commandPool, 1);
 
 			VkCommandBuffer cmd;
-			VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &cmd));
+			VK_CHECK(vkAllocateCommandBuffers(m_device, &cmdAllocInfo, &cmd));
 
 			// Begin Command buffer recording. The command buffer will be used only once, so let vulkan know that
 			VkCommandBufferBeginInfo cmdBeginInfo = VKInit::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -3117,11 +3183,11 @@ namespace Puffin
 			// uploadFence will now block until the graphics command finish execution
 			VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, uploadContext.uploadFence));
 
-			VK_CHECK(vkWaitForFences(device, 1, &uploadContext.uploadFence, true, 9999999999));
-			VK_CHECK(vkResetFences(device, 1, &uploadContext.uploadFence));
+			VK_CHECK(vkWaitForFences(m_device, 1, &uploadContext.uploadFence, true, 9999999999));
+			VK_CHECK(vkResetFences(m_device, 1, &uploadContext.uploadFence));
 
 			// Clear command pool and free command buffer
-			VK_CHECK(vkResetCommandPool(device, uploadContext.commandPool, 0));
+			VK_CHECK(vkResetCommandPool(m_device, uploadContext.commandPool, 0));
 		}
 
 		//-------------------------------------------------------------------------------------

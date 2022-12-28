@@ -81,7 +81,7 @@ namespace Puffin::Rendering
 
 			if (m_forwardFrameData[i].commandBuffer == VK_NULL_HANDLE)
 			{
-				VK_CHECK(vkAllocateCommandBuffers(m_vulkanRenderSystem->device, &allocInfo, &m_forwardFrameData[i].commandBuffer));
+				VK_CHECK(vkAllocateCommandBuffers(m_vulkanRenderSystem->m_device, &allocInfo, &m_forwardFrameData[i].commandBuffer));
 			}
 		}
 	}
@@ -99,11 +99,11 @@ namespace Puffin::Rendering
 		// For each overlapping frames data
 		for (uint32_t i = 0; i < FRAME_OVERLAP; i++)
 		{
-			VK_CHECK(vkCreateSemaphore(m_vulkanRenderSystem->device, &semaphoreCreateInfo, nullptr, &m_forwardFrameData[i].renderSemaphore));
+			VK_CHECK(vkCreateSemaphore(m_vulkanRenderSystem->m_device, &semaphoreCreateInfo, nullptr, &m_forwardFrameData[i].renderSemaphore));
 
 			m_mainDeletionQueue.push_function([=]()
 			{
-				vkDestroySemaphore(m_vulkanRenderSystem->device, m_forwardFrameData[i].renderSemaphore, nullptr);
+				vkDestroySemaphore(m_vulkanRenderSystem->m_device, m_forwardFrameData[i].renderSemaphore, nullptr);
 			});
 		}
 	}
@@ -118,8 +118,8 @@ namespace Puffin::Rendering
 		auto fragShaderCode = ReadFile(fragShaderPath.string());
 
 		// Create Shader Modules
-		VkShaderModule vertShaderModule = VKInit::CreateShaderModule(m_vulkanRenderSystem->device, vertShaderCode);
-		VkShaderModule fragShaderModule = VKInit::CreateShaderModule(m_vulkanRenderSystem->device, fragShaderCode);
+		VkShaderModule vertShaderModule = VKInit::CreateShaderModule(m_vulkanRenderSystem->m_device, vertShaderCode);
+		VkShaderModule fragShaderModule = VKInit::CreateShaderModule(m_vulkanRenderSystem->m_device, fragShaderCode);
 
 		// Create Pipeline Layout Info
 		std::vector<VkDescriptorSetLayout> setLayouts =
@@ -132,7 +132,7 @@ namespace Puffin::Rendering
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = VKInit::PipelineLayoutCreateInfo(setLayouts);
 
-		VK_CHECK(vkCreatePipelineLayout(m_vulkanRenderSystem->device, &pipelineLayoutInfo, nullptr, &m_pipelineLayout));
+		VK_CHECK(vkCreatePipelineLayout(m_vulkanRenderSystem->m_device, &pipelineLayoutInfo, nullptr, &m_pipelineLayout));
 
 		// Pipeline Builder Object
 		PipelineBuilder pipelineBuilder;
@@ -177,7 +177,7 @@ namespace Puffin::Rendering
 		pipelineBuilder.pipelineLayout = m_pipelineLayout;
 
 		// Build Pipeline
-		m_pipeline = pipelineBuilder.BuildPipeline(m_vulkanRenderSystem->device, m_vulkanRenderSystem->m_renderPass);
+		m_pipeline = pipelineBuilder.BuildPipeline(m_vulkanRenderSystem->m_device, m_vulkanRenderSystem->m_renderPass);
 	}
 
 	VkCommandBuffer VKForwardRenderer::RecordCommandBuffer(const int& frameIndex)
@@ -201,7 +201,7 @@ namespace Puffin::Rendering
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.pNext = nullptr;
 		renderPassBeginInfo.renderPass = m_vulkanRenderSystem->m_renderPass;
-		renderPassBeginInfo.framebuffer = m_vulkanRenderSystem->offscreenFramebuffers[frameIndex];
+		renderPassBeginInfo.framebuffer = m_vulkanRenderSystem->m_offscreenData[frameIndex].framebuffer;
 		renderPassBeginInfo.renderArea.extent.width = m_renderExtent.width;
 		renderPassBeginInfo.renderArea.extent.height = m_renderExtent.height;
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
@@ -236,31 +236,24 @@ namespace Puffin::Rendering
 		// Bind Pipeline
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
-		// Bind Descriptor Sets (Vertex)
+		// Bind Descriptor Sets
+		std::vector<VkDescriptorSet> descSets = 
+		{
+			// (Vertex Stage)
+			m_vulkanRenderSystem->GetCurrentFrame().cameraViewProjDescriptor,
+			m_vulkanRenderSystem->GetCurrentFrame().objectInstanceDescriptor,
+
+			// (Fragment Stage)
+			m_vulkanRenderSystem->GetCurrentFrame().matTextureDescriptor/*,
+			m_vulkanRenderSystem->GetCurrentFrame().cameraShadingDescriptor,
+			m_vulkanRenderSystem->GetCurrentFrame().lightDataDescriptor,
+			m_vulkanRenderSystem->GetCurrentFrame().shadowmapDescriptor*/
+		};
 
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			m_pipelineLayout, 0, 1, &m_vulkanRenderSystem->GetCurrentFrame().cameraViewProjDescriptor, 0, nullptr);
+			m_pipelineLayout, 0, descSets.size(), descSets.data(), 0, nullptr);
 
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			m_pipelineLayout, 1, 1, &m_vulkanRenderSystem->GetCurrentFrame().objectInstanceDescriptor, 0, nullptr);
-
-
-		// Bind Descriptor Sets (Fragment)
-
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			m_pipelineLayout, 2, 1, &m_vulkanRenderSystem->GetCurrentFrame().matTextureDescriptor, 0, nullptr);
-
-		/*vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			m_pipelineLayout, 3, 1, &m_vulkanRenderSystem->GetCurrentFrame().cameraShadingDescriptor, 0, nullptr);
-
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			m_pipelineLayout, 4, 1, &m_vulkanRenderSystem->GetCurrentFrame().lightDataDescriptor, 0, nullptr);
-
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			m_pipelineLayout, 5, 1, &m_vulkanRenderSystem->GetCurrentFrame().shadowmapDescriptor, 0, nullptr);*/
-
-
-			// Bind Vertex/Index Buffers
+		// Bind Vertex/Index Buffers
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(cmd, 0, 1, &m_vulkanRenderSystem->m_sceneRenderData.mergedVertexBuffer.buffer, offsets);
 		vkCmdBindIndexBuffer(cmd, m_vulkanRenderSystem->m_sceneRenderData.mergedIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
