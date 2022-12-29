@@ -18,7 +18,7 @@ namespace Puffin::Rendering
 		virtual ~VKBaseRenderer() { m_vulkanRenderSystem = nullptr; }
 
 		virtual void Setup(std::shared_ptr<VulkanRenderSystem> vulkanRenderSystem) = 0;
-		virtual VkSemaphore& DrawScene(const int& frameIndex) = 0;
+		virtual VkSemaphore& DrawScene(const int& frameIndex, const int& swapchainIndex) = 0;
 		virtual void Cleanup() = 0;
 
 	protected:

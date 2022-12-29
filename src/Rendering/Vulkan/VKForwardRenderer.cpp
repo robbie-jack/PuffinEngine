@@ -42,11 +42,11 @@ namespace Puffin::Rendering
 		}
 	}
 
-	VkSemaphore& VKForwardRenderer::DrawScene(const int& frameIndex)
+	VkSemaphore& VKForwardRenderer::DrawScene(const int& frameIndex, const int& swapchainIndex)
 	{
 		if (m_vulkanRenderSystem)
 		{
-			VkCommandBuffer cmd = RecordCommandBuffer(frameIndex);
+			VkCommandBuffer cmd = RecordCommandBuffer(frameIndex, swapchainIndex);
 
 			VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -180,7 +180,7 @@ namespace Puffin::Rendering
 		m_pipeline = pipelineBuilder.BuildPipeline(m_vulkanRenderSystem->m_device, m_vulkanRenderSystem->m_renderPass);
 	}
 
-	VkCommandBuffer VKForwardRenderer::RecordCommandBuffer(const int& frameIndex)
+	VkCommandBuffer VKForwardRenderer::RecordCommandBuffer(const int& frameIndex, const int& swapchainIndex)
 	{
 		VkCommandBuffer cmd = m_forwardFrameData[frameIndex].commandBuffer;
 
@@ -201,7 +201,7 @@ namespace Puffin::Rendering
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.pNext = nullptr;
 		renderPassBeginInfo.renderPass = m_vulkanRenderSystem->m_renderPass;
-		renderPassBeginInfo.framebuffer = m_vulkanRenderSystem->m_offscreenData[frameIndex].framebuffer;
+		renderPassBeginInfo.framebuffer = m_vulkanRenderSystem->m_offscreenData[swapchainIndex].framebuffer;
 		renderPassBeginInfo.renderArea.extent.width = m_renderExtent.width;
 		renderPassBeginInfo.renderArea.extent.height = m_renderExtent.height;
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };

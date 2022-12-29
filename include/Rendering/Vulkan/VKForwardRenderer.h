@@ -28,7 +28,7 @@ namespace Puffin::Rendering
 
 		void Setup(std::shared_ptr<VulkanRenderSystem> vulkanRenderSystem) override;
 
-		VkSemaphore& DrawScene(const int& frameIndex) override;
+		VkSemaphore& DrawScene(const int& frameIndex, const int& swapchainIndex) override;
 
 		void Cleanup() override;
 
@@ -50,7 +50,7 @@ namespace Puffin::Rendering
 		void SetupSemaphores();
 		void SetupPipeline();
 
-		VkCommandBuffer RecordCommandBuffer(const int& frameIndex);
+		VkCommandBuffer RecordCommandBuffer(const int& frameIndex, const int& swapchainIndex);
 
 	};
 }

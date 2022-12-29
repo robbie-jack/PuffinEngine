@@ -2305,7 +2305,7 @@ namespace Puffin
 			}
 
 			// Forward Render
-			VkSemaphore& forwardSemaphore = m_forwardRenderer->DrawScene(frameNumber % FRAME_OVERLAP);
+			VkSemaphore& forwardSemaphore = m_forwardRenderer->DrawScene(frameNumber % FRAME_OVERLAP, swapchainImageIndex);
 
 			// Deferred Render
 			/*deferredRenderer.SetGeometryDescriptorSets(&GetCurrentFrame().cameraViewProjDescriptor, 
