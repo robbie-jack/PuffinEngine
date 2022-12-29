@@ -3083,7 +3083,6 @@ namespace Puffin
 				deferredRenderer.Cleanup();
 
 				// Flush all queues, destroying all created resources
-				mainDeletionQueue.flush();
 
 				vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
 				for (int i = 0; i < m_swapchainData.size(); i++)
@@ -3095,6 +3094,8 @@ namespace Puffin
 				{
 					DestroyOffscreenData(i);
 				}
+
+				mainDeletionQueue.flush();
 
 				Stop();
 
