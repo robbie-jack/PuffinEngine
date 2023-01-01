@@ -22,3 +22,6 @@
 [submodule "assimp"]
 	path = assimp
 	url = https://github.com/assimp/assimp
+[submodule "bgfx.cmake"]
+	path = bgfx.cmake
+	url = https://github.com/bkaradzic/bgfx.cmake

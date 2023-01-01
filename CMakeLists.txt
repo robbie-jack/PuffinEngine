@@ -57,6 +57,7 @@ checkout_git_branch("imgui" "docking")
 add_git_submodule("imgui-filebrowser")
 add_git_submodule("lz4")
 add_git_submodule("assimp")
+add_git_submodule("bgfx.cmake")
 
 # Define CMAKE Variables
 set(PROJECT_NAME PuffinEngine)
@@ -134,6 +135,7 @@ set(HEADERS
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.hpp
 	# Rendering
+	${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
 	${HEADER_DIR}/Rendering/Vulkan/VKBaseRenderer.h
@@ -205,6 +207,7 @@ set(SOURCES
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
 	# Rendering
+	${SOURCE_DIR}/Rendering/BGFX/BGFXRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VulkanRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKForwardRenderer.cpp
@@ -318,12 +321,29 @@ target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3.lib)
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d.lib)
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static.lib)
 
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bgfx.lib)
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bimg.lib)
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bx.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/astc-encoder.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/edtaa3.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/etc1.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/etc2.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/iqa.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/nvtt.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/pvrtc.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/squish.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/tinyexr.lib)
+
 # Define Release Libs
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d.lib)
 #target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/assimp/Release/assimp-vc143-mt.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static.lib)
+
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bgfx.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bimg.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bx.lib)
 
 # Add include paths
 target_include_directories(${PROJECT_NAME} PRIVATE include)
@@ -335,6 +355,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE OpenSimplexNoise)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui)
 target_include_directories(${PROJECT_NAME} PRIVATE imgui-filebrowser)
 target_include_directories(${PROJECT_NAME} PRIVATE lz4/lib)
+target_include_directories(${PROJECT_NAME} PRIVATE bgfx.cmake/bgfx/include)
 #target_include_directories(${PROJECT_NAME} PRIVATE assimp/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
