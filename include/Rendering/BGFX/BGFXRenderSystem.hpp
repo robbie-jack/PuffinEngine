@@ -12,11 +12,11 @@ namespace Puffin::Rendering
 		~BGFXRenderSystem() override;
 
 		void Init() override;
-		void PreStart() override {};
-		void Start() override {};
-		void Update() override {};
-		void Stop() override {};
-		void Cleanup() override {};
+		void PreStart() override {}
+		void Start() override {}
+		void Update() override {}
+		void Stop() override {}
+		void Cleanup() override {}
 
 	};
 }
