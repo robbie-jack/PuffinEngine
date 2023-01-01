@@ -7,9 +7,6 @@
 [submodule "implot"]
 	path = deps/implot
 	url = https://github.com/epezent/implot
-[submodule "json"]
-	path = deps/json
-	url = https://github.com/nlohmann/json
 [submodule "box2d"]
 	path = deps/box2d
 	url = https://github.com/erincatto/box2d
@@ -25,3 +22,6 @@
 [submodule "bgfx.cmake"]
 	path = deps/bgfx.cmake
 	url = https://github.com/bkaradzic/bgfx.cmake
+[submodule "deps/json"]
+	path = deps/json
+	url = https://github.com/nlohmann/json
