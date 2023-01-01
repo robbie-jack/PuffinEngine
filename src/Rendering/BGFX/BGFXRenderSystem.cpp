@@ -7,10 +7,11 @@
 
 #include "GLFW/glfw3.h"
 
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD 
-	#define GLFW_EXPOSE_NATIVE_X11
-#else
+#if PFN_PLATFORM_WIN32
 	#define GLFW_EXPOSE_NATIVE_WIN32
+#else
+X_PLATFORM_LINUX || BX_PLATFORM_BSD
+	#define GLFW_EXPOSE_NATIVE_X11
 #endif
 
 #include "GLFW/glfw3native.h"
@@ -21,30 +22,25 @@ namespace Puffin::Rendering
 	{
         bgfx::PlatformData pd;
         GLFWwindow* window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+
+#if PFN_PLATFORM_WIN32
+
+        pd.ndt = NULL;
         pd.nwh = glfwGetWin32Window(window);
 
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD 
+#else
 
-#if ENTRY_CONFIG_USE_WAYLAND // examples entry options define
-        pd.ndt = glfwGetWaylandDisplay();
-#else 
         pd.ndt = glfwGetX11Display();
         pd.nwh = (void*)glfwGetX11Window(window);
-#endif 
 
-#elif BX_PLATFORM_OSX
+        // Set Wayland instead of X11
+        // pd.ndt = glfwGetWaylandDisplay();
 
-        pd.ndt = NULL;
+#endif
 
-#elif BX_PLATFORM_WINDOWS 
-
-        pd.ndt = NULL;
-        pd.nwh = glfwGetWin32Window(window);
-
-#endif // BX_PLATFORM_*
         bgfx::Init bgfxInit;
 
-        // seems to default to vulkan which is fine by me!
+        // Set Renderer API to Vulkan
         bgfxInit.type = bgfx::RendererType::Vulkan;
         //bgfxInit.type = bgfx::RendererType::OpenGL;
 

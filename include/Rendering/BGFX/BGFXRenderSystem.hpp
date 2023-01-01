@@ -8,8 +8,13 @@ namespace Puffin::Rendering
 	{
 	public:
 
-		BGFXRenderSystem() = default;
-		~BGFXRenderSystem() override;
+		BGFXRenderSystem()
+		{
+			m_systemInfo.name = "BGFXRenderSystem";
+			m_systemInfo.updateOrder = Core::UpdateOrder::Render;
+		}
+
+		~BGFXRenderSystem() override {}
 
 		void Init() override;
 		void PreStart() override {}

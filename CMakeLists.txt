@@ -74,7 +74,6 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
-set(IMGUI_VULKAN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui)
 set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/vk-bootstrap)
 set(ANGELSCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/angelscript)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimplexNoise)
@@ -246,10 +245,6 @@ set (IMGUI_SOURCES
 	${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 	)
 	
-set (IMGUI_VULKAN_SOURCES
-	${IMGUI_VULKAN_DIR}/imgui_impl_vulkan.cpp
-	)
-	
 set (OPENSIMPLEX_SOURCES
 	${OPENSIMPLEX_DIR}/OpenSimplexNoise.cpp
 	)
@@ -268,7 +263,6 @@ set (ANGELSCRIPT_SOURCES
 # Add Main as Executable
 add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
-#target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_VULKAN_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
@@ -382,6 +376,10 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 target_compile_options(${PROJECT_NAME} PRIVATE /MP)
+
+if (WIN32)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_PLATFORM_WIN32)
+endif()
 
 if (MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
