@@ -1,27 +1,36 @@
 [submodule "imgui"]
 	path = deps/imgui
 	url = https://github.com/ocornut/imgui
+	ignore = dirty
 [submodule "imgui-filebrowser"]
 	path = deps/imgui-filebrowser
 	url = https://github.com/AirGuanZ/imgui-filebrowser
+	ignore = dirty
 [submodule "implot"]
 	path = deps/implot
 	url = https://github.com/epezent/implot
+	ignore = dirty
 [submodule "box2d"]
 	path = deps/box2d
 	url = https://github.com/erincatto/box2d
+	ignore = dirty
 [submodule "OpenSimplexNoise"]
 	path = deps/OpenSimplexNoise
 	url = https://github.com/deerel/OpenSimplexNoise
+	ignore = dirty
 [submodule "lz4"]
 	path = deps/lz4
 	url = https://github.com/lz4/lz4
+	ignore = dirty
 [submodule "assimp"]
 	path = deps/assimp
 	url = https://github.com/assimp/assimp
+	ignore = dirty
 [submodule "bgfx.cmake"]
 	path = deps/bgfx.cmake
 	url = https://github.com/bkaradzic/bgfx.cmake
+	ignore = dirty
 [submodule "deps/json"]
 	path = deps/json
 	url = https://github.com/nlohmann/json
+	ignore = dirty
