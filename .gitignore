@@ -286,12 +286,3 @@ data/models/cerberus/*.*
     Training
     Blog
     About
-
-deps/bgfx.cmake/
-deps/box2d/
-deps/imgui-filebrowser/
-deps/imgui/
-deps/implot/
-deps/lz4/
-deps/OpenSimplexNoise/
-deps/json
