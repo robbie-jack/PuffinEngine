@@ -120,7 +120,7 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Systems
-		RegisterSystem<Rendering::BGFXRenderSystem>();
+		RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
 		//RegisterSystem<Rendering::VulkanRenderSystem>();
 		RegisterSystem<Physics::Onager2DPhysicsSystem>();
 		//RegisterSystem<Physics::Box2DPhysicsSystem>();
@@ -330,8 +330,8 @@ namespace Puffin::Core
 		}
 
 		// UI
-		m_uiManager->Update();
-		m_uiManager->DrawUI(m_deltaTime);
+		//m_uiManager->Update();
+		//m_uiManager->DrawUI(m_deltaTime);
 
 		// PreRender
 		{

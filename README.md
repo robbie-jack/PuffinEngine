@@ -3,6 +3,8 @@ Puffin is a 3D Game Engine built with Vulkan which serves as a foundation for di
 
 Uses the following API's/Libraries:
 
+bgfx - Rendering API - https://github.com/bkaradzic/bgfx
+
 Vulkan - Rendering API - https://www.khronos.org/vulkan/
 
 VK-Bootstrap - Utility Library for Vulkan - https://github.com/charles-lunarg/vk-bootstrap

@@ -1,6 +1,7 @@
 #include "Rendering/BGFX/BGFXRenderSystem.hpp"
 
 #include "bgfx/bgfx.h"
+#include "bx/math.h"
 
 #include "Engine/Engine.hpp"
 #include "Window/WindowSubsystem.hpp"
@@ -16,7 +17,7 @@ X_PLATFORM_LINUX || BX_PLATFORM_BSD
 
 #include "GLFW/glfw3native.h"
 
-namespace Puffin::Rendering
+namespace Puffin::Rendering::BGFX
 {
 	void BGFXRenderSystem::Init()
 	{
@@ -42,16 +43,64 @@ namespace Puffin::Rendering
 
         // Set Renderer API to Vulkan
         bgfxInit.type = bgfx::RendererType::Vulkan;
-        //bgfxInit.type = bgfx::RendererType::OpenGL;
 
-        bgfxInit.resolution.width = 1280;
-        bgfxInit.resolution.height = 720;
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+
+        bgfxInit.resolution.width = static_cast<uint32_t>(width);
+        bgfxInit.resolution.height = static_cast<uint32_t>(height);
         bgfxInit.resolution.reset = BGFX_RESET_VSYNC;
-
-        // seems bgfx is bright enough to not use the active but unused integrated device!
-        //bgfxInit.vendorId = BGFX_PCI_ID_NVIDIA; // just in case its selecting unused integrated device?
-
         bgfxInit.platformData = pd;
         bgfx::init(bgfxInit);
+
+        bgfx::setDebug(BGFX_DEBUG_NONE);
+
+        bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00B5E2FF, 1.0f, 0);
+        bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(width), static_cast<uint16_t>(height));
+
+        // Create Static Vertex Buffer
+        m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), s_layoutVertexPC32);
+
+        // Create Static Index Buffer
+        m_ibh = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
+	}
+
+	void BGFXRenderSystem::Update()
+	{
+        GLFWwindow* window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+
+        // Dummy draw call to make sure view 0 is cleared
+		bgfx::touch(0);
+
+        // Setup View/Projection Matrices
+        const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
+        const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
+
+        float view[16];
+        bx::mtxLookAt(view, eye, at);
+
+        float proj[16];
+        bx::mtxProj(proj, 60.0f, width / height, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+        bgfx::setViewTransform(0, view, proj);
+
+        // Set Vertex/Index Buffers
+        bgfx::setVertexBuffer(0, m_vbh);
+        bgfx::setIndexBuffer(m_ibh);
+
+        // Advance to next frame
+		bgfx::frame();
+
+        m_frameCounter++;
+	}
+
+	void BGFXRenderSystem::Cleanup()
+	{
+        bgfx::destroy(m_ibh);
+		bgfx::destroy(m_vbh);
+
+		bgfx::shutdown();
 	}
 }

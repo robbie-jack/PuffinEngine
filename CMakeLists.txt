@@ -135,6 +135,7 @@ set(HEADERS
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.hpp
 	# Rendering
 	${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.hpp
+	${HEADER_DIR}/Rendering/BGFX/BGFXVertex.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
 	${HEADER_DIR}/Rendering/Vulkan/VKBaseRenderer.h
@@ -362,6 +363,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/imgui-filebrowser
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/lz4/lib)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include/compat/msvc)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bimg/include)
 #target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/assimp/include)
 
@@ -375,12 +377,21 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY
 	
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
+# Defines to get bx compilation working
+target_compile_definitions(${PROJECT_NAME} PRIVATE BX_CONFIG_DEBUG)
+
+# Enabled updated __cplusplus macro (needed for bx compilation)
+target_compile_options(${PROJECT_NAME} PRIVATE "/Zc:__cplusplus")
+
+# Multiprocessor (Multithreaded) Compilation Support
 target_compile_options(${PROJECT_NAME} PRIVATE /MP)
 
+# Platform defines (WIN32)
 if (WIN32)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_PLATFORM_WIN32)
 endif()
 
+# Big Object Support (MSCV/Linux)
 if (MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
 else ()
