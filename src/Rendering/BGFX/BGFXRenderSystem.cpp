@@ -15,6 +15,7 @@ X_PLATFORM_LINUX || BX_PLATFORM_BSD
 	#define GLFW_EXPOSE_NATIVE_X11
 #endif
 
+#include "Assets/AssetRegistry.h"
 #include "GLFW/glfw3native.h"
 
 namespace Puffin::Rendering::BGFX
@@ -63,6 +64,9 @@ namespace Puffin::Rendering::BGFX
 
         // Create Static Index Buffer
         m_ibh = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
+
+        //const fs::path vertShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\forward_rendering_vert.spv";
+        //const fs::path fragShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\forward_rendering_frag.spv";
 	}
 
 	void BGFXRenderSystem::Update()
