@@ -25,12 +25,12 @@ namespace Puffin::Procedural
 
 		// Generator list of vertices/indices for a flat plane
 		static void GeneratePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads,
-			std::vector<Rendering::Vertex_PNTV_32>& vertices, std::vector<uint32_t>& indices);
+			std::vector<Rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices);
 
-		static void GenerateTerrain(std::vector<Rendering::Vertex_PNTV_32>& vertices, const int64_t& seed, const double& heightMultiplier, const double&
+		static void GenerateTerrain(std::vector<Rendering::VertexPNTV32>& vertices, const int64_t& seed, const double& heightMultiplier, const double&
 		                            startFrequency, const int& octaves, const double& frequencyMultiplier);
 
-		static void GenerateIcoSphere(std::vector<Rendering::Vertex_PNTV_32>& vertices, std::vector<uint32_t>& indices, const int& subdivisions);
+		static void GenerateIcoSphere(std::vector<Rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices, const int& subdivisions);
 
 	};
 }

@@ -1,55 +1,51 @@
 #pragma once
 
-#include "Rendering/Vulkan/Helpers/VKVertex.hpp"
+#include "Types/Vector.h"
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <vector>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
+struct VkVertexInputBindingDescription;
+struct VkVertexInputAttributeDescription;
+
+namespace bgfx
+{
+	struct VertexLayout;
+}
 
 namespace Puffin::Rendering
 {
 	enum class VertexFormat : uint8_t
 	{
 		Unknown = 0,
-		PC_32,
-		PNCTV_32,
-		PNTV_32,
-		P_64_NTV_32
+		PC32,
+		PNTV32,
+		P64NTV32
 	};
 
-	struct Vertex_PC_32
+	struct VertexPC32
 	{
-		glm::vec3 pos;
-		glm::vec3 color;
+		Vector3f pos;
+		Vector3f color;
 
-		bool operator==(const Vertex_PC_32& other) const
+		bool operator==(const VertexPC32& other) const
 		{
 			return pos == other.pos && color == other.color;
 		}
 
+		static bgfx::VertexLayout GetLayout();
+
 		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
-			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-		{
-			VKUtil::VertexBuilder::Begin()
-				.BindSize(sizeof(Vertex_PC_32))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PC_32, pos))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PC_32, color))
-				.Build(bindingDescription, attributeDescriptions);
-		}
+		                                          std::vector<VkVertexInputAttributeDescription>& attributeDescriptions);
 	};
 
-	struct Vertex_PNTV_32
+	struct VertexPNTV32
 	{
-		glm::vec3 pos = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 normal = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 tangent = { 0.0f, 0.0f, 0.0f };
-		glm::vec2 uv = { 0.0f, 0.0f};
+		Vector3f pos = { 0.0f, 0.0f, 0.0f };
+		Vector3f normal = { 0.0f, 0.0f, 0.0f };
+		Vector3f tangent = { 0.0f, 0.0f, 0.0f };
+		Vector2f uv = { 0.0f, 0.0f};
 
-		bool operator==(const Vertex_PNTV_32& other) const
+		bool operator==(const VertexPNTV32& other) const
 		{
 			return pos == other.pos
 				&& normal == other.normal
@@ -57,27 +53,20 @@ namespace Puffin::Rendering
 				&& uv == other.uv;
 		}
 
+		static bgfx::VertexLayout GetLayout();
+
 		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
-			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-		{
-			VKUtil::VertexBuilder::Begin()
-				.BindSize(sizeof(Vertex_PNTV_32))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, pos))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, normal))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNTV_32, tangent))
-				.BindAttribute(VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex_PNTV_32, uv))
-				.Build(bindingDescription, attributeDescriptions);
-		}
+			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions);
 	};
 
-	struct Vertex_P_64_NTV_32
+	struct VertexP64NTV32
 	{
-		glm::dvec3 pos = { 0.0, 0.0, 0.0 };
-		glm::vec3 normal = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 tangent = { 0.0f, 0.0f, 0.0f };
-		glm::vec2 uv = { 0.0f, 0.0f };
+		Vector3d pos = { 0.0, 0.0, 0.0 };
+		Vector3f normal = { 0.0f, 0.0f, 0.0f };
+		Vector3f tangent = { 0.0f, 0.0f, 0.0f };
+		Vector2f uv = { 0.0f, 0.0f };
 
-		bool operator==(const Vertex_P_64_NTV_32& other) const
+		bool operator==(const VertexP64NTV32& other) const
 		{
 			return pos == other.pos
 				&& normal == other.normal
@@ -85,63 +74,21 @@ namespace Puffin::Rendering
 				&& uv == other.uv;
 		}
 
-		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
-			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-		{
-			VKUtil::VertexBuilder::Begin()
-				.BindSize(sizeof(Vertex_P_64_NTV_32))
-				.BindAttribute(VK_FORMAT_R64G64B64_SFLOAT, offsetof(Vertex_P_64_NTV_32, pos))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_P_64_NTV_32, normal))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_P_64_NTV_32, tangent))
-				.BindAttribute(VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex_P_64_NTV_32, uv))
-				.Build(bindingDescription, attributeDescriptions);
-		}
-	};
-
-	struct Vertex_PNCTV_32
-	{
-		glm::vec3 pos;
-		glm::vec3 color;
-		glm::vec3 normal;
-		glm::vec3 tangent;
-		glm::vec2 uv;
-
-		bool operator==(const Vertex_PNCTV_32& other) const
-		{
-			return pos == other.pos
-				&& color == other.color
-				&& normal == other.normal
-				&& tangent == other.tangent
-				&& uv == other.uv;
-		}
+		static bgfx::VertexLayout GetLayout();
 
 		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
-			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-		{
-			VKUtil::VertexBuilder::Begin()
-				.BindSize(sizeof(Vertex_PNCTV_32))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNCTV_32, pos))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNCTV_32, color))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNCTV_32, normal))
-				.BindAttribute(VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex_PNCTV_32, tangent))
-				.BindAttribute(VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex_PNCTV_32, uv))
-				.Build(bindingDescription, attributeDescriptions);
-		}
+			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions);
 	};
 
 	static VertexFormat ParseVertexFormatFromString(const char* f)
 	{
-		if (strcmp(f, "PNCTV_F32"))
+		if (strcmp(f, "PNTV32") == 0)
 		{
-			return VertexFormat::PNCTV_32;
+			return VertexFormat::PNTV32;
 		}
-		else if (strcmp(f, "PNTV_32"))
+		else if (strcmp(f, "P64NTV32") == 0)
 		{
-			return VertexFormat::PNTV_32;
-		}
-		else if (strcmp(f, "P_64_NTV_32"))
-		{
-			return VertexFormat::P_64_NTV_32;
+			return VertexFormat::P64NTV32;
 		}
 		else
 		{
@@ -151,17 +98,13 @@ namespace Puffin::Rendering
 
 	static const char* ParseVertexStringFromFormat(VertexFormat format)
 	{
-		if (format == VertexFormat::PNCTV_32)
+		if (format == VertexFormat::PNTV32)
 		{
-			return "PNCTV_F32";
+			return "PNTV32";
 		}
-		else if (format == VertexFormat::PNTV_32)
+		else if (format == VertexFormat::P64NTV32)
 		{
-			return "PNTV_32";
-		}
-		else if (format == VertexFormat::P_64_NTV_32)
-		{
-			return "P_64_NTV_32";
+			return "P64NTV32";
 		}
 
 		return "Invalid Format";
@@ -170,37 +113,25 @@ namespace Puffin::Rendering
 
 namespace std
 {
-	template<> struct hash<Puffin::Rendering::Vertex_PNCTV_32>
+	template<> struct hash<Puffin::Rendering::VertexPNTV32>
 	{
-		size_t operator()(Puffin::Rendering::Vertex_PNCTV_32 const& vertex) const
+		size_t operator()(Puffin::Rendering::VertexPNTV32 const& vertex) const
 		{
-			return (hash<glm::vec3>()(vertex.pos) ^
-				(hash<glm::vec3>()(vertex.color) << 1) ^
-				(hash<glm::vec3>()(vertex.normal) << 1) ^
-				(hash<glm::vec3>()(vertex.tangent) << 1) ^
-				(hash<glm::vec2>()(vertex.uv) << 1) >> 1);
+			return (hash<Puffin::Vector3f>()(vertex.pos) ^
+				(hash<Puffin::Vector3f>()(vertex.normal) << 1) ^
+				(hash<Puffin::Vector3f>()(vertex.tangent) << 1) ^
+				(hash<Puffin::Vector2f>()(vertex.uv) << 1) >> 1);
 		}
 	};
 
-	template<> struct hash<Puffin::Rendering::Vertex_PNTV_32>
+	template<> struct hash<Puffin::Rendering::VertexP64NTV32>
 	{
-		size_t operator()(Puffin::Rendering::Vertex_PNTV_32 const& vertex) const
+		size_t operator()(Puffin::Rendering::VertexP64NTV32 const& vertex) const
 		{
-			return (hash<glm::vec3>()(vertex.pos) ^
-				(hash<glm::vec3>()(vertex.normal) << 1) ^
-				(hash<glm::vec3>()(vertex.tangent) << 1) ^
-				(hash<glm::vec2>()(vertex.uv) << 1) >> 1);
-		}
-	};
-
-	template<> struct hash<Puffin::Rendering::Vertex_P_64_NTV_32>
-	{
-		size_t operator()(Puffin::Rendering::Vertex_P_64_NTV_32 const& vertex) const
-		{
-			return (hash<glm::dvec3>()(vertex.pos) ^
-				(hash<glm::vec3>()(vertex.normal) << 1) ^
-				(hash<glm::vec3>()(vertex.tangent) << 1) ^
-				(hash<glm::vec2>()(vertex.uv) << 1) >> 1);
+			return (hash<Puffin::Vector3d>()(vertex.pos) ^
+				(hash<Puffin::Vector3f>()(vertex.normal) << 1) ^
+				(hash<Puffin::Vector3f>()(vertex.tangent) << 1) ^
+				(hash<Puffin::Vector2f>()(vertex.uv) << 1) >> 1);
 		}
 	};
 };

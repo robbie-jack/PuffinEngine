@@ -32,7 +32,7 @@ namespace Puffin::Rendering
 	{
 		ProceduralMeshComponent() {}
 
-		std::vector<Rendering::Vertex_PNTV_32> vertices;
+		std::vector<Rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
 		ProceduralMeshComponent(UUID InTextureID) : textureAssetID(InTextureID) {}

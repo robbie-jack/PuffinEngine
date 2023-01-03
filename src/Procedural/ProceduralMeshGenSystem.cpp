@@ -128,7 +128,7 @@ namespace Puffin::Procedural
 	}
 
 	void ProceduralMeshGenSystem::GeneratePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads,
-		std::vector<Rendering::Vertex_PNTV_32>& vertices, std::vector<uint32_t>& indices)
+		std::vector<Rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices)
 	{
 		vertices.clear();
 		indices.clear();
@@ -155,7 +155,7 @@ namespace Puffin::Procedural
 		{
 			for (int x = 0; x < numVerticesX; x++)
 			{
-				Rendering::Vertex_PNTV_32& vertex = vertices[x + (y * numVerticesX)];
+				Rendering::VertexPNTV32& vertex = vertices[x + (y * numVerticesX)];
 				vertex.pos = { ((float)x * quadSize.x) - halfSize.x, 0.0f, ((float)y * quadSize.y) - halfSize.y };
 				vertex.normal = { 0.0f, 1.0f, 0.0f };
 				vertex.tangent = { 1.0f, 0.0f, 0.0f};
@@ -190,7 +190,7 @@ namespace Puffin::Procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::GenerateTerrain(std::vector<Rendering::Vertex_PNTV_32>& vertices, const int64_t& seed,
+	void ProceduralMeshGenSystem::GenerateTerrain(std::vector<Rendering::VertexPNTV32>& vertices, const int64_t& seed,
 	                                              const double& heightMultiplier, const double& startFrequency, const int& octaves,
 	                                              const double& frequencyMultiplier)
 	{
@@ -221,7 +221,7 @@ namespace Puffin::Procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::GenerateIcoSphere(std::vector<Rendering::Vertex_PNTV_32>& vertices,
+	void ProceduralMeshGenSystem::GenerateIcoSphere(std::vector<Rendering::VertexPNTV32>& vertices,
 		std::vector<uint32_t>& indices, const int& subdivisions)
 	{
 		vertices.clear();
@@ -233,7 +233,7 @@ namespace Puffin::Procedural
 		vertices.resize(positions.size());
 		for (int i = 0; i < positions.size(); i++)
 		{
-			Rendering::Vertex_PNTV_32& vertex = vertices[i];
+			Rendering::VertexPNTV32& vertex = vertices[i];
 			vertex.pos = static_cast<glm::vec3>(positions[i]);
 			vertex.normal = static_cast<glm::vec3>(positions[i].Normalised());
 			vertex.tangent = { 0.0f, 0.0f, 0.0f };

@@ -136,6 +136,7 @@ set(HEADERS
 	# Rendering
 	${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.hpp
 	${HEADER_DIR}/Rendering/BGFX/BGFXVertex.hpp
+	${HEADER_DIR}/Rendering/BGFX/BGFXTypes.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
 	${HEADER_DIR}/Rendering/Vulkan/VKBaseRenderer.h

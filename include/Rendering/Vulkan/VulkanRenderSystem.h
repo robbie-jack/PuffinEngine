@@ -32,8 +32,8 @@
 #include <Components/Rendering/CameraComponent.h>
 
 // Type Includes
-#include <Types/RingBuffer.h>
-#include "Types/Vertex.hpp"
+#include "Types/RingBuffer.h"
+#include "Helpers/VKVertex.hpp"
 
 // STL
 #include <vector>
@@ -124,7 +124,7 @@ namespace Puffin
 			IndirectDrawBatch drawBatch;
 
 			// Debug Variables
-			std::vector<Vertex_PC_32> debugVertices;
+			std::vector<VertexPC32> debugVertices;
 			std::vector<uint32_t> debugIndices;
 			std::vector<VkDrawIndexedIndirectCommand> debugIndirectCommands;
 			AllocatedBuffer debugVertexBuffer, debugIndexBuffer, debugIndirectCommandsBuffer;

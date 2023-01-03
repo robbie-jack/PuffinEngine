@@ -48,7 +48,7 @@ namespace Puffin::Assets
 
 		void Unload();
 
-		const std::vector<Rendering::Vertex_PNTV_32>& GetVertices() const
+		const std::vector<Rendering::VertexPNTV32>& GetVertices() const
 		{
 			return m_vertices;
 		}
@@ -60,7 +60,7 @@ namespace Puffin::Assets
 
 	private:
 
-		std::vector<Rendering::Vertex_PNTV_32> m_vertices;
+		std::vector<Rendering::VertexPNTV32> m_vertices;
 		std::vector<uint32_t> m_indices;
 
 		MeshInfo ParseMeshInfo(const AssetData& data);

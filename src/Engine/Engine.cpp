@@ -395,7 +395,7 @@ namespace Puffin::Core
 			// Re-Initialize Systems and ECS
 			m_sceneData->Init();
 
-			// Perform Pre-Gameplay Initiualization on Systems
+			// Perform Pre-Gameplay Initialization on Systems
 			for (auto system : m_systems)
 			{
 				system->PreStart();

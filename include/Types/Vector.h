@@ -1,5 +1,4 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#pragma once
 
 #include <cmath>
 
@@ -50,6 +49,10 @@ namespace Puffin
 		}
 
 		// Operator Overrides
+		bool operator== (const Vector2<T>& vec)
+		{
+			return x == vec.x && y == vec.y;
+		}
 
 		// Operator Conversion
 		explicit operator glm::vec2() const
@@ -315,6 +318,10 @@ namespace Puffin
 		}
 
 		// Operator Overrides
+		bool operator== (const Vector3<T>& vec) const
+		{
+			return x == vec.x && y == vec.y && z == vec.z;
+		}
 
 		// Operator Conversion
 		explicit operator glm::vec3() const
@@ -521,4 +528,34 @@ namespace Puffin
 	typedef Vector3<int> Vector3i;
 }
 
-#endif // !VECTOR_H
+namespace std
+{
+	template<> struct hash<Puffin::Vector2f>
+	{
+		size_t operator()(Puffin::Vector2f const& vec) const
+		{
+			return (hash<float>()(vec.x) ^
+				(hash<float>()(vec.y) << 1) >> 1);
+		}
+	};
+
+	template<> struct hash<Puffin::Vector3f>
+	{
+		size_t operator()(Puffin::Vector3f const& vec) const
+		{
+			return (hash<float>()(vec.x) ^
+				(hash<float>()(vec.y) << 1) ^
+				(hash<float>()(vec.z) << 1) >> 1);
+		}
+	};
+
+	template<> struct hash<Puffin::Vector3d>
+	{
+		size_t operator()(Puffin::Vector3d const& vec) const
+		{
+			return (hash<double>()(vec.x) ^
+				(hash<double>()(vec.y) << 1) ^
+				(hash<double>()(vec.z) << 1) >> 1);
+		}
+	};
+}

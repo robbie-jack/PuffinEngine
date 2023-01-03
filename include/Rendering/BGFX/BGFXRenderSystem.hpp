@@ -4,18 +4,20 @@
 
 #include "Rendering/BGFX/BGFXVertex.hpp"
 
+#include <vector>
+
 namespace Puffin::Rendering::BGFX
 {
 	static VertexPC32 s_cubeVertices[] =
 	{
-		{-1.0f,  1.0f,  1.0f, 0xff000000 },
-		{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
-		{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-		{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
-		{-1.0f,  1.0f, -1.0f, 0xffff0000 },
-		{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
-		{-1.0f, -1.0f, -1.0f, 0xffffff00 },
-		{ 1.0f, -1.0f, -1.0f, 0xffffffff },
+		{{-1.0f,  1.0f,  1.0f}, 0xff000000 },
+		{ {1.0f,  1.0f,  1.0f}, 0xff0000ff },
+		{{-1.0f, -1.0f,  1.0f}, 0xff00ff00 },
+		{ {1.0f, -1.0f,  1.0f}, 0xff00ffff },
+		{{-1.0f,  1.0f, -1.0f}, 0xffff0000 },
+		{ {1.0f,  1.0f, -1.0f}, 0xffff00ff },
+		{{-1.0f, -1.0f, -1.0f}, 0xffffff00 },
+		{ {1.0f, -1.0f, -1.0f}, 0xffffffff },
 	};
 
 	static const uint16_t s_cubeTriList[] =

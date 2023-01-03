@@ -422,7 +422,7 @@ namespace Puffin
 
 			VkVertexInputBindingDescription bindingDescription;
 			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-			Vertex_PNTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
+			VertexPNTV32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);

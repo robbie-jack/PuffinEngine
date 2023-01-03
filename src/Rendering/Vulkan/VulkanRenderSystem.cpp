@@ -768,7 +768,7 @@ namespace Puffin
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 				// Debug Buffers
-				m_frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(Vertex_PNTV_32),
+				m_frames[i].debugVertexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_VERTICES_PER_COMMAND * sizeof(VertexPNTV32),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 				m_frames[i].debugIndexBuffer = CreateBuffer(MAX_DEBUG_COMMANDS * MAX_INDICES_PER_COMMAND * sizeof(uint32_t),
@@ -817,7 +817,7 @@ namespace Puffin
 			}
 
 			// Merged Vertex/Index Buffers
-			m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex_PNTV_32),
+			m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(VertexPNTV32),
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 			m_sceneRenderData.mergedIndexBuffer = CreateBuffer(m_sceneRenderData.indexBufferSize * sizeof(uint32_t),
@@ -979,7 +979,7 @@ namespace Puffin
 
 			VkVertexInputBindingDescription bindingDescription;
 			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-			Vertex_PNTV_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
+			VertexPNTV32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
@@ -1049,7 +1049,7 @@ namespace Puffin
 
 			VkVertexInputBindingDescription bindingDescription;
 			std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-			Vertex_PC_32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
+			VertexPC32::GetVertexBindingAndAttributes(bindingDescription, attributeDescriptions);
 
 			// Create Vertex Input Info
 			pipelineBuilder.vertexInputInfo = VKInit::VertexInputStateCreateInfo(bindingDescription, attributeDescriptions);
@@ -1216,7 +1216,7 @@ namespace Puffin
 
 					MeshBufferData bufferData;
 					bufferData.vertexData = (void*)staticMeshAsset->GetVertices().data();
-					bufferData.vertexSize = sizeof(Vertex_PNTV_32);
+					bufferData.vertexSize = sizeof(VertexPNTV32);
 					bufferData.indexData = (void*)staticMeshAsset->GetIndices().data();
 					bufferData.indexSize = sizeof(uint32_t);
 
@@ -1253,7 +1253,7 @@ namespace Puffin
 
 					MeshBufferData bufferData;
 					bufferData.vertexData = (void*)mesh.vertices.data();
-					bufferData.vertexSize = sizeof(Vertex_PNTV_32);
+					bufferData.vertexSize = sizeof(VertexPNTV32);
 					bufferData.indexData = (void*)mesh.indices.data();
 					bufferData.indexSize = sizeof(uint32_t);
 
@@ -2449,7 +2449,7 @@ namespace Puffin
 				}
 
 				// Create New Buffer
-				m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(Vertex_PNTV_32),
+				m_sceneRenderData.mergedVertexBuffer = CreateBuffer(m_sceneRenderData.vertexBufferSize * sizeof(VertexPNTV32),
 					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
 				// Copy data to new buffer
@@ -2458,7 +2458,7 @@ namespace Puffin
 					// Copy from staging vertex buffer to scene vertex buffer
 					VkBufferCopy vertexCopy;
 					vertexCopy.dstOffset = 0;
-					vertexCopy.size = oldSize * sizeof(Vertex_PNTV_32);
+					vertexCopy.size = oldSize * sizeof(VertexPNTV32);
 					vertexCopy.srcOffset = 0;
 
 					vkCmdCopyBuffer(cmd, oldVertexBuffer.buffer, m_sceneRenderData.mergedVertexBuffer.buffer, 1, &vertexCopy);
@@ -3196,7 +3196,7 @@ namespace Puffin
 		void VulkanRenderSystem::DrawDebugLine(Debug::Line line)
 		{
 			// Create debug line vertices to current frames vertices vector
-			Vertex_PC_32 startVertex, endVertex;
+			VertexPC32 startVertex, endVertex;
 			startVertex.pos = static_cast<glm::vec3>(line.start);
 			startVertex.color = static_cast<glm::vec3>(line.color);
 
@@ -3233,7 +3233,7 @@ namespace Puffin
 			const int firstVertex = GetCurrentFrame().debugVertices.size();
 			const int firstIndex = GetCurrentFrame().debugIndices.size();
 
-			Vertex_PC_32 vert = {};
+			VertexPC32 vert = {};
 			vert.color = static_cast<glm::vec3>(box.color);
 
 			// Add Vertices to vector
@@ -3257,7 +3257,7 @@ namespace Puffin
 			int firstVertex = GetCurrentFrame().debugVertices.size();
 			int firstIndex = GetCurrentFrame().debugIndices.size();
 
-			Vertex_PC_32 vert = {};
+			VertexPC32 vert = {};
 			vert.color = static_cast<glm::vec3>(cube.color);
 
 			// Add Vertices to vector
