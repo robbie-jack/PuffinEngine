@@ -65,8 +65,10 @@ namespace Puffin::Rendering::BGFX
         // Create Static Index Buffer
         m_ibh = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
 
-        //const fs::path vertShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\forward_rendering_vert.spv";
-        //const fs::path fragShaderPath = Assets::AssetRegistry::Get()->ContentRoot() / "shaders\\forward_rendering_frag.spv";
+        m_vsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\vs_cubes.bin");
+        m_fsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\fs_cubes.bin");
+
+        m_program = bgfx::createProgram(m_vsh, m_fsh, true);
 	}
 
 	void BGFXRenderSystem::Update()
@@ -88,11 +90,20 @@ namespace Puffin::Rendering::BGFX
 
         float proj[16];
         bx::mtxProj(proj, 60.0f, width / height, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+
         bgfx::setViewTransform(0, view, proj);
+
+        // Setup Transform
+        float mtx[16];
+        bx::mtxRotateXY(mtx, m_frameCounter * 0.01f, m_frameCounter * 0.01f);
+        bgfx::setTransform(mtx);
 
         // Set Vertex/Index Buffers
         bgfx::setVertexBuffer(0, m_vbh);
         bgfx::setIndexBuffer(m_ibh);
+
+        // Submit Program
+        bgfx::submit(0, m_program);
 
         // Advance to next frame
 		bgfx::frame();
@@ -104,6 +115,8 @@ namespace Puffin::Rendering::BGFX
 	{
         bgfx::destroy(m_ibh);
 		bgfx::destroy(m_vbh);
+
+        bgfx::destroy(m_program);
 
 		bgfx::shutdown();
 	}

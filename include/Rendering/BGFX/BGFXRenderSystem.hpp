@@ -36,14 +36,14 @@ namespace Puffin::Rendering::BGFX
 
 	static bgfx::ShaderHandle LoadShader(const char* filename)
 	{
-		const char* shaderPath = "???";
+		/*const char* shaderPath = "???";
 
 		switch (bgfx::getRendererType())
 		{
 			case bgfx::RendererType::Noop:
 			case bgfx::RendererType::Direct3D9:  shaderPath = "shaders/dx9/";   break;
 			case bgfx::RendererType::Direct3D11: shaderPath = "shaders/dx11/";	break;
-			case bgfx::RendererType::Direct3D12: shaderPath = "shaders/dx12/";  break;
+			case bgfx::RendererType::Direct3D12: shaderPath = "shaders/dx11/";  break;
 			case bgfx::RendererType::Gnm:        shaderPath = "shaders/pssl/";  break;
 			case bgfx::RendererType::Metal:      shaderPath = "shaders/metal/"; break;
 			case bgfx::RendererType::OpenGL:     shaderPath = "shaders/glsl/";  break;
@@ -55,7 +55,7 @@ namespace Puffin::Rendering::BGFX
 		size_t fileLen = strlen(filename);
 		char* filePath = (char*)malloc(shaderLen + fileLen);
 		memcpy(filePath, shaderPath, shaderLen);
-		memcpy(&filePath[shaderLen], filename, fileLen);
+		memcpy(&filePath[shaderLen], filename, fileLen);*/
 
 		FILE* file = fopen(filename, "rb");
 		fseek(file, 0, SEEK_END);
@@ -95,6 +95,9 @@ namespace Puffin::Rendering::BGFX
 
 		bgfx::VertexBufferHandle m_vbh;
 		bgfx::IndexBufferHandle m_ibh;
+
+		bgfx::ShaderHandle m_vsh, m_fsh;
+		bgfx::ProgramHandle m_program;
 
 	};
 }
