@@ -65,8 +65,11 @@ namespace Puffin::Rendering::BGFX
         // Create Static Index Buffer
         m_ibh = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
 
-        m_vsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\vs_cubes.bin");
-        m_fsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\fs_cubes.bin");
+        /*m_vsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\vs_cubes.bin");
+        m_fsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\fs_cubes.bin");*/
+
+        m_vsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\forward_shading\\vs_forward_shading.bin");
+        m_fsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\forward_shading\\fs_forward_shading.bin");
 
         m_program = bgfx::createProgram(m_vsh, m_fsh, true);
 	}
