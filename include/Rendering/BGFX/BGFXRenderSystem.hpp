@@ -101,5 +101,8 @@ namespace Puffin::Rendering::BGFX
 		bgfx::ShaderHandle m_vsh, m_fsh;
 		bgfx::ProgramHandle m_program;
 
+		void UpdateComponents();
+		void Draw();
+
 	};
 }

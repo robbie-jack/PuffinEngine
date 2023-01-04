@@ -76,16 +76,38 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::Update()
 	{
+		UpdateComponents();
+
+        Draw();
+	}
+
+	void BGFXRenderSystem::Cleanup()
+	{
+        bgfx::destroy(m_ibh);
+		bgfx::destroy(m_vbh);
+
+        bgfx::destroy(m_program);
+
+		bgfx::shutdown();
+	}
+
+	void BGFXRenderSystem::UpdateComponents()
+	{
+
+	}
+
+	void BGFXRenderSystem::Draw()
+	{
         GLFWwindow* window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 
         int width, height;
         glfwGetWindowSize(window, &width, &height);
 
         // Dummy draw call to make sure view 0 is cleared
-		bgfx::touch(0);
+        bgfx::touch(0);
 
         // Setup View/Projection Matrices
-        const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
+        const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
         const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
 
         float view[16];
@@ -98,7 +120,8 @@ namespace Puffin::Rendering::BGFX
 
         // Setup Transform
         float mtx[16];
-        bx::mtxRotateXY(mtx, m_frameCounter * 0.01f, m_frameCounter * 0.01f);
+        bx::mtxIdentity(mtx);
+        //bx::mtxRotateY(mtx, m_frameCounter * 0.01f);
         bgfx::setTransform(mtx);
 
         // Set Vertex/Index Buffers
@@ -109,18 +132,8 @@ namespace Puffin::Rendering::BGFX
         bgfx::submit(0, m_program);
 
         // Advance to next frame
-		bgfx::frame();
+        bgfx::frame();
 
         m_frameCounter++;
-	}
-
-	void BGFXRenderSystem::Cleanup()
-	{
-        bgfx::destroy(m_ibh);
-		bgfx::destroy(m_vbh);
-
-        bgfx::destroy(m_program);
-
-		bgfx::shutdown();
 	}
 }

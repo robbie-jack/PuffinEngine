@@ -14,7 +14,7 @@ set (CMAKE_SHADER_INCLUDE_SRC "${SOURCE_PARENT_DIR}/deps/bgfx.cmake/bgfx/src")
 set (SHADER_SOURCE_FILES)
 set (SHADER_BINARY_FILES)
 
-function(compile_shaders shader_model shader_type shader_dir shader_extension)
+function(compile_shaders shader_model shader_model_dir shader_type shader_dir shader_extension)
 
 file(GLOB SOURCE_FILES "${shader_dir}/*.${shader_extension}")
 
@@ -24,7 +24,10 @@ foreach(SOURCE_FILE ${SOURCE_FILES})
 	
 	get_filename_component(FILE_NAME ${SOURCE_FILE} NAME_WE)
 	
-	set(BINARY_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${shader_model}/${shader_dir}/${shader_extension}_${FILE_NAME}.bin")
+	# Make directory if it doesn't exist
+	file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${shader_model_dir}/${shader_dir}")
+	
+	set(BINARY_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${shader_model_dir}/${shader_dir}/${shader_extension}_${FILE_NAME}.bin")
 	set(VARYING_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${shader_dir}/varying.def.sc")
 	
 	message(STATUS "${SOURCE_FILE}")
@@ -62,10 +65,13 @@ endforeach(SOURCE_FILE)
 
 endfunction(compile_shaders)
 
-function(compile_all_shaders_in_dir shader_dir shader_model)
+function(compile_all_shaders_in_dir shader_dir shader_model shader_model_dir)
 
-	compile_shaders("${shader_model}" "vertex" "${shader_dir}" "vs")
-	compile_shaders("${shader_model}" "fragment" "${shader_dir}" "fs")
+	# Make directory if it doesn't exist
+	file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${shader_model_dir}")
+	
+	compile_shaders("${shader_model}" "${shader_model_dir}" "vertex" "${shader_dir}" "vs")
+	compile_shaders("${shader_model}" "${shader_model_dir}" "fragment" "${shader_dir}" "fs")
 
 endfunction(compile_all_shaders_in_dir)
 
@@ -80,11 +86,12 @@ function(compile_all_shaders shader_dir)
 
 endfunction(compile_all_shaders)
 
-compile_all_shaders_in_dir("forward_shading" "spirv")
+compile_all_shaders_in_dir("forward_shading" "440" "glsl")
+compile_all_shaders_in_dir("forward_shading" "spirv" "spirv")
 #compile_all_shaders("shaders")
 
-add_custom_target(
-    Shaders 
-    DEPENDS ${SHADER_BINARY_FILES}
-	SOURCES ${SHADER_SOURCE_FILES}
-    )
+# add_custom_target(
+    # Shaders 
+    # DEPENDS ${SHADER_BINARY_FILES}
+	# SOURCES ${SHADER_SOURCE_FILES}
+    # )
