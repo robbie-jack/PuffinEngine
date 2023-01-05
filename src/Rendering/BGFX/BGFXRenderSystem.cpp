@@ -18,6 +18,13 @@ X_PLATFORM_LINUX || BX_PLATFORM_BSD
 #include "Assets/AssetRegistry.h"
 #include "GLFW/glfw3native.h"
 
+#include "Components/TransformComponent.h"
+#include "Components/Rendering/MeshComponent.h"
+#include "Components/Rendering/CameraComponent.h"
+#include "Assets/AssetRegistry.h"
+
+#include <vector>
+
 namespace Puffin::Rendering::BGFX
 {
 	void BGFXRenderSystem::Init()
@@ -74,11 +81,21 @@ namespace Puffin::Rendering::BGFX
         m_program = bgfx::createProgram(m_vsh, m_fsh, true);
 	}
 
+	void BGFXRenderSystem::PreStart()
+	{
+        InitComponents();
+	}
+
 	void BGFXRenderSystem::Update()
 	{
 		UpdateComponents();
 
         Draw();
+	}
+
+	void BGFXRenderSystem::Stop()
+	{
+		CleanupComponents();
 	}
 
 	void BGFXRenderSystem::Cleanup()
@@ -91,9 +108,52 @@ namespace Puffin::Rendering::BGFX
 		bgfx::shutdown();
 	}
 
+	void BGFXRenderSystem::InitComponents()
+	{
+        std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+        ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+        for (const auto& entity : meshEntities)
+        {
+            if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
+            {
+                InitMeshComponent(entity);
+
+                entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
+            }
+        }
+	}
+
 	void BGFXRenderSystem::UpdateComponents()
 	{
+        std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+        ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+        for (const auto& entity : meshEntities)
+        {
+			if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
+			{
+                CleanupMeshComponent(entity);
+				InitMeshComponent(entity);
 
+                entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
+			}
+
+            if (entity->GetComponentFlag<MeshComponent, FlagDeleted>())
+            {
+				CleanupMeshComponent(entity);
+
+                entity->RemoveComponent<MeshComponent>();
+            }
+        }
+	}
+
+	void BGFXRenderSystem::CleanupComponents()
+	{
+        std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+        ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+        for (const auto& entity : meshEntities)
+        {
+            CleanupMeshComponent(entity);
+        }
 	}
 
 	void BGFXRenderSystem::Draw()
@@ -135,5 +195,109 @@ namespace Puffin::Rendering::BGFX
         bgfx::frame();
 
         m_frameCounter++;
+	}
+
+	void BGFXRenderSystem::InitMeshComponent(std::shared_ptr<ECS::Entity> entity)
+	{
+        auto& mesh = entity->GetComponent<MeshComponent>();
+
+        if (!m_meshData.Contains(mesh.meshAssetID))
+        {
+	        LoadAndInitMesh(mesh.meshAssetID);
+
+            m_meshData[mesh.meshAssetID].entities.insert(entity->ID());
+        }
+
+        if (!m_meshDrawBatches.Contains(mesh.meshAssetID))
+        {
+	        MeshDrawBatch batch;
+            batch.programHandle = m_program;
+            batch.vertexBufferHandle = m_meshData[mesh.meshAssetID].vertexBufferHandle;
+            batch.indexBufferHandle = m_meshData[mesh.meshAssetID].indexBufferHandle;
+
+            m_meshDrawBatches.Insert(mesh.meshAssetID, batch);
+        }
+
+        m_meshDrawBatches[mesh.meshAssetID].entities.insert(entity->ID());
+	}
+
+	void BGFXRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
+	{
+        auto& mesh = entity->GetComponent<MeshComponent>();
+
+        m_meshDrawBatches[mesh.meshAssetID].entities.erase(entity->ID());
+
+        if (m_meshDrawBatches[mesh.meshAssetID].entities.empty())
+        {
+	        m_meshDrawBatches.Erase(mesh.meshAssetID);
+        }
+
+        m_meshData[mesh.meshAssetID].entities.erase(entity->ID());
+
+        if (m_meshData[mesh.meshAssetID].entities.empty())
+        {
+            bgfx::destroy(m_meshData[mesh.meshAssetID].vertexBufferHandle);
+            bgfx::destroy(m_meshData[mesh.meshAssetID].indexBufferHandle);
+
+            m_meshData.Erase(mesh.meshAssetID);
+        }
+	}
+
+	void BGFXRenderSystem::LoadAndInitMesh(UUID meshID)
+	{
+        const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
+
+        if (staticMeshAsset && staticMeshAsset->Load())
+        {
+	        MeshData data;
+            data.assetID = meshID;
+            data.numVertices = staticMeshAsset->GetVertices().size();
+            data.numIndices = staticMeshAsset->GetIndices().size();
+
+            data.vertexBufferHandle = InitVertexBuffer(staticMeshAsset->GetVertices().data(), data.numVertices, s_layoutVertexPNTV32);
+            data.indexBufferHandle = InitIndexBuffer(staticMeshAsset->GetIndices().data(), data.numIndices, true);
+
+            m_meshData.Insert(meshID, data);
+        }
+	}
+
+	bgfx::VertexBufferHandle BGFXRenderSystem::InitVertexBuffer(const void* vertices, const uint32_t& numVertices,
+		const bgfx::VertexLayout& layout)
+	{
+		// Allocate memory for vertex buffer
+        const bgfx::Memory* mem = bgfx::alloc(numVertices * layout.getStride());
+
+        // Copy vertices to allocated memory
+        bx::memCopy(mem->data, vertices, mem->size);
+
+        // Create vertex buffer
+        return bgfx::createVertexBuffer(mem, layout);
+	}
+
+	bgfx::IndexBufferHandle BGFXRenderSystem::InitIndexBuffer(const void* indices, const uint32_t numIndices,
+		bool use32BitIndices)
+	{
+        // Set indices size and flags based on whether 16 or 32 bit indices are used
+		uint16_t indicesSize;
+        uint16_t indexFlags = 0;
+
+        if (use32BitIndices)
+        {
+	        indicesSize = sizeof(uint32_t);
+            indexFlags = BGFX_BUFFER_INDEX32;
+        }
+        else
+        {
+            indicesSize = sizeof(uint16_t);
+        }
+
+        // Allocate memory for index buffer
+        const bgfx::Memory* mem = bgfx::alloc(numIndices * indicesSize);
+
+        // Copy indices to allocated memory
+        bx::memCopy(mem->data, indices, mem->size);
+
+        // Create index buffer
+        return bgfx::createIndexBuffer(mem, indexFlags);
 	}
 }

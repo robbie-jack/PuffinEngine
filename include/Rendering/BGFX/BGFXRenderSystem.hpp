@@ -2,9 +2,11 @@
 
 #include "ECS/System.hpp"
 
+#include "Assets/MeshAsset.h"
+#include "ECS/Entity.h"
+#include "Rendering/BGFX/BGFXTypes.hpp"
 #include "Rendering/BGFX/BGFXVertex.hpp"
-
-#include <vector>
+#include "Types/PackedArray.h"
 
 namespace Puffin::Rendering::BGFX
 {
@@ -85,10 +87,10 @@ namespace Puffin::Rendering::BGFX
 		~BGFXRenderSystem() override {}
 
 		void Init() override;
-		void PreStart() override {}
+		void PreStart() override;
 		void Start() override {}
 		void Update() override;
-		void Stop() override {}
+		void Stop() override;
 		void Cleanup() override;
 
 	private:
@@ -101,8 +103,20 @@ namespace Puffin::Rendering::BGFX
 		bgfx::ShaderHandle m_vsh, m_fsh;
 		bgfx::ProgramHandle m_program;
 
+		PackedVector<MeshData> m_meshData;
+		PackedVector<MeshDrawBatch> m_meshDrawBatches;
+
+		void InitComponents();
 		void UpdateComponents();
+		void CleanupComponents();
+
 		void Draw();
 
+		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
+		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
+
+		void LoadAndInitMesh(UUID meshID);
+		static inline bgfx::VertexBufferHandle InitVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
+		static inline bgfx::IndexBufferHandle InitIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
 	};
 }
