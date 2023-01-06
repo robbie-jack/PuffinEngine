@@ -5,7 +5,9 @@
 #include "ECS/EntityID.h"
 #include "Types/UUID.h"
 
+
 #include <set>
+#include <bx/math.h>
 
 namespace Puffin::Rendering::BGFX
 {
@@ -28,5 +30,11 @@ namespace Puffin::Rendering::BGFX
 		bgfx::ProgramHandle programHandle;
 
 		std::set<ECS::EntityID> entities; // Set of Entities using this mesh/shader combo
+	};
+
+	struct CameraData
+	{
+		bx::Vec3 eye, at;
+		float fovy, aspect, cNear, cFar;
 	};
 }

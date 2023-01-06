@@ -25,6 +25,16 @@ namespace Puffin
 			return Vector2f(Clamp(Vector.x, Min.x, Max.x), Clamp(Vector.y, Min.y, Max.y));
 		}
 
+		static inline float DegreesToRadians(float degrees)
+		{
+			return degrees * (PI / 180.0f);
+		}
+
+		static inline float RadiansToDegrees(float radians)
+		{
+			return radians * (180.0f / PI);
+		}
+
 		static inline double DegreesToRadians(double degrees)
 		{
 			return degrees * (PI / 180.0f);

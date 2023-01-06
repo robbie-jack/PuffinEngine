@@ -22,6 +22,7 @@ X_PLATFORM_LINUX || BX_PLATFORM_BSD
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Rendering/CameraComponent.h"
 #include "Assets/AssetRegistry.h"
+#include "MathHelpers.h"
 
 #include <vector>
 
@@ -299,5 +300,31 @@ namespace Puffin::Rendering::BGFX
 
         // Create index buffer
         return bgfx::createIndexBuffer(mem, indexFlags);
+	}
+
+	void BGFXRenderSystem::BuildModelTransform(const TransformComponent& transform, float* mtx)
+	{
+        // Identity
+		bx::mtxIdentity(mtx);
+
+        // Scale
+        bx::mtxScale(mtx, transform.scale.x, transform.scale.y, transform.scale.z);
+
+        // Rotation 
+        bx::mtxRotateX(mtx, Maths::DegreesToRadians(transform.rotation.x));
+        bx::mtxRotateY(mtx, Maths::DegreesToRadians(transform.rotation.y));
+        bx::mtxRotateZ(mtx, Maths::DegreesToRadians(transform.rotation.z));
+
+        // Translation
+        bx::mtxTranslate(mtx, static_cast<float>(transform.position.x), static_cast<float>(transform.position.y), static_cast<float>(transform.position.z));
+	}
+
+	void BGFXRenderSystem::BuildViewAndProjTransform(const CameraData& camera, float* view, float* proj)
+	{
+        // View
+		bx::mtxLookAt(view, camera.eye, camera.at);
+
+        // Projection
+        bx::mtxProj(proj, camera.fovy, camera.aspect, camera.cNear, camera.cFar, bgfx::getCaps()->homogeneousDepth);
 	}
 }

@@ -3,6 +3,8 @@
 #include "ECS/System.hpp"
 
 #include "Assets/MeshAsset.h"
+#include "Components/TransformComponent.h"
+#include "Components/Rendering/CameraComponent.h"
 #include "ECS/Entity.h"
 #include "Rendering/BGFX/BGFXTypes.hpp"
 #include "Rendering/BGFX/BGFXVertex.hpp"
@@ -106,6 +108,8 @@ namespace Puffin::Rendering::BGFX
 		PackedVector<MeshData> m_meshData;
 		PackedVector<MeshDrawBatch> m_meshDrawBatches;
 
+		EditorCamera m_EditorCamera;
+
 		void InitComponents();
 		void UpdateComponents();
 		void CleanupComponents();
@@ -118,5 +122,8 @@ namespace Puffin::Rendering::BGFX
 		void LoadAndInitMesh(UUID meshID);
 		static inline bgfx::VertexBufferHandle InitVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
 		static inline bgfx::IndexBufferHandle InitIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
+
+		static void BuildModelTransform(const TransformComponent& transform, float* mtx);
+		static void BuildViewAndProjTransform(const CameraData& camera, float* view, float* proj);
 	};
 }
