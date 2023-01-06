@@ -111,6 +111,7 @@ set(HEADERS
 	${HEADER_DIR}/Engine/Application.hpp
 	${HEADER_DIR}/Engine/Subsystem.hpp
 	${HEADER_DIR}/Engine/EventSubsystem.hpp
+	${HEADER_DIR}/Engine/SignalSubsystem.hpp
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
 	${HEADER_DIR}/Input/InputSubsystem.h

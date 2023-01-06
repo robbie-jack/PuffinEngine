@@ -14,8 +14,8 @@ namespace Puffin::Input
 
 	struct InputEvent
 	{
-		InputEvent() : actionName{ "" }, actionState{ KeyState::UP } {};
-		InputEvent(std::string name, KeyState state) : actionName{ name }, actionState{ state } {};
+		InputEvent() : actionName{ "" }, actionState{ KeyState::UP } {}
+		InputEvent(std::string name, KeyState state) : actionName{ name }, actionState{ state } {}
 
 		std::string actionName;
 		KeyState actionState;

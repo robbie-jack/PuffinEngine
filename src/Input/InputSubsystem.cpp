@@ -3,6 +3,7 @@
 
 #include "Engine/Engine.hpp"
 #include "Engine/EventSubsystem.hpp"
+#include "Engine/SignalSubsystem.hpp"
 #include "Window/WindowSubsystem.hpp"
 
 namespace Puffin
@@ -93,8 +94,11 @@ namespace Puffin
 					if (stateChanged == true)
 					{
 						auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+						auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
 
-						eventSubsystem->Publish<InputEvent>(InputEvent(action.name, action.state));
+						eventSubsystem->Publish(InputEvent(action.name, action.state));
+						signalSubsystem->Signal(InputEvent(action.name, action.state));
+
 						stateChanged = false;
 					}
 				}

@@ -23,6 +23,7 @@ X_PLATFORM_LINUX || BX_PLATFORM_BSD
 #include "Components/Rendering/CameraComponent.h"
 #include "Assets/AssetRegistry.h"
 #include "MathHelpers.h"
+#include "Engine/SignalSubsystem.hpp"
 
 #include <vector>
 
@@ -80,6 +81,16 @@ namespace Puffin::Rendering::BGFX
         m_fsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\forward_shading\\fs_forward_shading.bin");
 
         m_program = bgfx::createProgram(m_vsh, m_fsh, true);
+
+        // Connect Signls
+        auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
+
+        signalSubsystem->Connect<Input::InputEvent>(
+			[&](const Input::InputEvent& inputEvent)
+			{
+				shared_from_this()->OnInputEvent(inputEvent);
+			}
+        );
 	}
 
 	void BGFXRenderSystem::PreStart()
@@ -107,6 +118,15 @@ namespace Puffin::Rendering::BGFX
         bgfx::destroy(m_program);
 
 		bgfx::shutdown();
+	}
+
+	void BGFXRenderSystem::OnInputEvent(const Input::InputEvent& inputEvent)
+	{
+        Input::InputEvent event = inputEvent;
+	}
+
+	void BGFXRenderSystem::ProcessEvents()
+	{
 	}
 
 	void BGFXRenderSystem::InitComponents()

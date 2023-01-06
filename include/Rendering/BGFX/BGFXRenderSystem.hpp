@@ -9,6 +9,10 @@
 #include "Rendering/BGFX/BGFXTypes.hpp"
 #include "Rendering/BGFX/BGFXVertex.hpp"
 #include "Types/PackedArray.h"
+#include "Types/RingBuffer.h"
+#include "Input/InputEvent.h"
+
+#include <memory>
 
 namespace Puffin::Rendering::BGFX
 {
@@ -76,7 +80,7 @@ namespace Puffin::Rendering::BGFX
 		return bgfx::createShader(mem);
 	}
 
-	class BGFXRenderSystem : public ECS::System
+	class BGFXRenderSystem : public ECS::System, public std::enable_shared_from_this<BGFXRenderSystem>
 	{
 	public:
 
@@ -95,6 +99,8 @@ namespace Puffin::Rendering::BGFX
 		void Stop() override;
 		void Cleanup() override;
 
+		void OnInputEvent(const Input::InputEvent& inputEvent);
+
 	private:
 
 		uint32_t m_frameCounter = 0;
@@ -109,6 +115,10 @@ namespace Puffin::Rendering::BGFX
 		PackedVector<MeshDrawBatch> m_meshDrawBatches;
 
 		EditorCamera m_EditorCamera;
+
+		std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents = nullptr;
+
+		void ProcessEvents();
 
 		void InitComponents();
 		void UpdateComponents();

@@ -20,6 +20,7 @@
 
 #include "Window/WindowSubsystem.hpp"
 #include "Input/InputSubsystem.h"
+#include "Engine/SignalSubsystem.hpp"
 #include "Engine/EventSubsystem.hpp"
 
 #include "SerializeScene.h"
@@ -54,6 +55,7 @@ namespace Puffin::Core
 		auto windowSubsystem = RegisterSubsystem<Window::WindowSubsystem>(0);
 
 		auto eventSubsystem = RegisterSubsystem<Core::EventSubsystem>();
+		auto signalSubsystem = RegisterSubsystem<Core::SignalSubsystem>();
 		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
 		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
 		auto ecsWorld = RegisterSubsystem<ECS::World>();
