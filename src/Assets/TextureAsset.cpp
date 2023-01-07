@@ -86,8 +86,10 @@ namespace Puffin::Assets
 		LZ4_decompress_safe(data.binaryBlob.data(), m_pixels.data(), 
 		static_cast<int>(info.compressedSize), static_cast<int>(info.originalSize));
 
-		m_textureHeight = info.textureHeight;
-		m_textureWidth = info.textureWidth;
+		m_texHeight = info.textureHeight;
+		m_texWidth = info.textureWidth;
+
+		m_texFormat = info.textureFormat;
 
 		data.binaryBlob.clear();
 		data.json.clear();
@@ -101,8 +103,8 @@ namespace Puffin::Assets
 		m_pixels.clear();
 		m_pixels.shrink_to_fit();
 
-		m_textureWidth = 0;
-		m_textureHeight = 0;
+		m_texWidth = 0;
+		m_texHeight = 0;
 
 		m_isLoaded = false;
 	}

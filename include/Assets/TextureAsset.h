@@ -13,6 +13,12 @@ namespace Puffin::Assets
 		RGBA8
 	};
 
+	// Map of texture format to number of bytes per pixel
+	const static std::unordered_map<TextureFormat, uint32_t> g_texSizeMap =
+	{
+		{ TextureFormat::RGBA8, 4 }
+	};
+
 	static TextureFormat ParseTextureFormat(const char* f)
 	{
 		if (strcmp(f, "RGBA8") == 0)
@@ -46,6 +52,8 @@ namespace Puffin::Assets
 
 		TextureAsset(const UUID id, const fs::path& path) : Asset(id, path) {}
 
+		~TextureAsset() override = default;
+
 		const std::string& Type() const
 		{
 			return G_TEXTURE_TYPE;
@@ -74,19 +82,35 @@ namespace Puffin::Assets
 
 		const uint32_t GetTextureWidth() const
 		{
-			return m_textureWidth;
+			return m_texWidth;
 		}
 
 		const uint32_t GetTextureHeight() const
 		{
-			return m_textureHeight;
+			return m_texHeight;
+		}
+
+		const uint32_t GetTexturePixelSize() const
+		{
+			return g_texSizeMap.at(m_texFormat);
+		}
+
+		const TextureFormat GetTextureFormat() const
+		{
+			return m_texFormat;
+		}
+
+		const uint32_t GetTextureSize() const
+		{
+			return m_texWidth * m_texHeight * g_texSizeMap.at(m_texFormat);
 		}
 
 	private:
 
 		std::vector<char> m_pixels;
-		uint32_t m_textureWidth;
-		uint32_t m_textureHeight;
+		uint32_t m_texWidth;
+		uint32_t m_texHeight;
+		TextureFormat m_texFormat;
 
 		TextureInfo ParseTextureInfo(const AssetData& data);
 	};

@@ -130,6 +130,8 @@ namespace Puffin::Assets
 		Asset(const fs::path& path) : m_path(path) {}
 		Asset(const UUID uuid, const fs::path& path) : m_id(uuid), m_path(path) {}
 
+		virtual ~Asset() = default;
+
 		UUID ID()
 		{
 			return m_id;

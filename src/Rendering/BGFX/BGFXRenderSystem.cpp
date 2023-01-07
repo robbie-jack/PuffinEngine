@@ -21,63 +21,27 @@ X_PLATFORM_LINUX || BX_PLATFORM_BSD
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Rendering/CameraComponent.h"
-#include "Assets/AssetRegistry.h"
 #include "MathHelpers.h"
 #include "Engine/SignalSubsystem.hpp"
+#include "Assets/TextureAsset.h"
+#include "Input/InputSubsystem.h"
 
 #include <vector>
-
-#include "Input/InputSubsystem.h"
 
 namespace Puffin::Rendering::BGFX
 {
 	void BGFXRenderSystem::Init()
 	{
-        bgfx::PlatformData pd;
-        GLFWwindow* window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
-
-        glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
-
-#if PFN_PLATFORM_WIN32
-
-        pd.ndt = NULL;
-        pd.nwh = glfwGetWin32Window(window);
-
-#else
-
-        pd.ndt = glfwGetX11Display();
-        pd.nwh = (void*)glfwGetX11Window(window);
-
-        // Set Wayland instead of X11
-        // pd.ndt = glfwGetWaylandDisplay();
-
-#endif
-
-        bgfx::Init bgfxInit;
-
-        // Set Renderer API to Vulkan
-        bgfxInit.type = bgfx::RendererType::Vulkan;
-
-        glfwGetWindowSize(window, &m_windowWidth, &m_windowHeight);
-
-        bgfxInit.resolution.width = static_cast<uint32_t>(m_windowWidth);
-        bgfxInit.resolution.height = static_cast<uint32_t>(m_windowHeight);
-        bgfxInit.resolution.reset = BGFX_RESET_VSYNC;
-        bgfxInit.platformData = pd;
-        bgfx::init(bgfxInit);
-
-        bgfx::setDebug(BGFX_DEBUG_NONE);
-
-        bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00B5E2FF, 1.0f, 0);
-        bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
+        InitBGFX();
 
         InitStaticCubeData();
 
         InitMeshProgram();
 
-        // Connect Signls
-        auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
+        InitTexSamplers();
+
+        // Connect Signals
+        const auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
 
         signalSubsystem->Connect<Input::InputEvent>(
 			[&](const Input::InputEvent& inputEvent)
@@ -126,6 +90,48 @@ namespace Puffin::Rendering::BGFX
         m_inputEvents.Push(inputEvent);
 	}
 
+	void BGFXRenderSystem::InitBGFX()
+	{
+        bgfx::PlatformData pd;
+        GLFWwindow* window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+
+        glfwSetWindowUserPointer(window, this);
+        glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
+
+#if PFN_PLATFORM_WIN32
+
+        pd.ndt = NULL;
+        pd.nwh = glfwGetWin32Window(window);
+
+#else
+
+        pd.ndt = glfwGetX11Display();
+        pd.nwh = (void*)glfwGetX11Window(window);
+
+        // Set Wayland instead of X11
+        // pd.ndt = glfwGetWaylandDisplay();
+
+#endif
+
+        bgfx::Init bgfxInit;
+
+        // Set Renderer API to Vulkan
+        bgfxInit.type = bgfx::RendererType::Vulkan;
+
+        glfwGetWindowSize(window, &m_windowWidth, &m_windowHeight);
+
+        bgfxInit.resolution.width = static_cast<uint32_t>(m_windowWidth);
+        bgfxInit.resolution.height = static_cast<uint32_t>(m_windowHeight);
+        bgfxInit.resolution.reset = BGFX_RESET_VSYNC;
+        bgfxInit.platformData = pd;
+        bgfx::init(bgfxInit);
+
+        bgfx::setDebug(BGFX_DEBUG_NONE);
+
+        bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00B5E2FF, 1.0f, 0);
+        bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
+	}
+
 	void BGFXRenderSystem::InitStaticCubeData()
 	{
         // Create Static Vertex Buffer
@@ -157,6 +163,18 @@ namespace Puffin::Rendering::BGFX
         m_deletionQueue.PushFunction([=]()
         {
         	bgfx::destroy(m_meshProgram);
+        });
+	}
+
+	void BGFXRenderSystem::InitTexSamplers()
+	{
+        m_texAlbedoSampler = bgfx::createUniform("m_texAlbedoSampler", bgfx::UniformType::Sampler);
+        m_texNormalSampler = bgfx::createUniform("m_texNormalSampler", bgfx::UniformType::Sampler);
+
+        m_deletionQueue.PushFunction([=]()
+        {
+        	bgfx::destroy(m_texAlbedoSampler);
+			bgfx::destroy(m_texNormalSampler);
         });
 	}
 
@@ -366,6 +384,7 @@ namespace Puffin::Rendering::BGFX
 	{
         auto& mesh = entity->GetComponent<MeshComponent>();
 
+        // Init Mesh
         if (!m_meshData.Contains(mesh.meshAssetID))
         {
 	        LoadAndInitMesh(mesh.meshAssetID);
@@ -384,12 +403,24 @@ namespace Puffin::Rendering::BGFX
         }
 
         m_meshDrawBatches[mesh.meshAssetID].entities.insert(entity->ID());
+
+        // Init Textures
+        if (!m_texAlbedoHandles.Contains(mesh.textureAssetID))
+        {
+            TextureData texData;
+            texData.handle = LoadAndInitTexture(mesh.textureAssetID);
+
+            m_texAlbedoHandles.Emplace(mesh.textureAssetID, texData);
+        }
+
+        m_texAlbedoHandles[mesh.textureAssetID].entities.insert(entity->ID());
 	}
 
 	void BGFXRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
 	{
         auto& mesh = entity->GetComponent<MeshComponent>();
 
+        // Cleanup Mesh Data
         m_meshDrawBatches[mesh.meshAssetID].entities.erase(entity->ID());
 
         if (m_meshDrawBatches[mesh.meshAssetID].entities.empty())
@@ -405,6 +436,16 @@ namespace Puffin::Rendering::BGFX
             bgfx::destroy(m_meshData[mesh.meshAssetID].indexBufferHandle);
 
             m_meshData.Erase(mesh.meshAssetID);
+        }
+
+        // Cleanup Texture Data
+        m_texAlbedoHandles[mesh.textureAssetID].entities.erase(entity->ID());
+
+        if (m_texAlbedoHandles[mesh.textureAssetID].entities.empty())
+        {
+			bgfx::destroy(m_texAlbedoHandles[mesh.textureAssetID].handle);
+
+            m_texAlbedoHandles.Erase(mesh.textureAssetID);
         }
 	}
 
@@ -509,19 +550,21 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::LoadAndInitMesh(UUID meshID)
 	{
-        const auto staticMeshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
+        const auto meshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
 
-        if (staticMeshAsset && staticMeshAsset->Load())
+        if (meshAsset && meshAsset->Load())
         {
 	        MeshData data;
             data.assetID = meshID;
-            data.numVertices = staticMeshAsset->GetVertices().size();
-            data.numIndices = staticMeshAsset->GetIndices().size();
+            data.numVertices = meshAsset->GetVertices().size();
+            data.numIndices = meshAsset->GetIndices().size();
 
-            data.vertexBufferHandle = InitVertexBuffer(staticMeshAsset->GetVertices().data(), data.numVertices, s_layoutVertexPNTV32);
-            data.indexBufferHandle = InitIndexBuffer(staticMeshAsset->GetIndices().data(), data.numIndices, true);
+            data.vertexBufferHandle = InitVertexBuffer(meshAsset->GetVertices().data(), data.numVertices, s_layoutVertexPNTV32);
+            data.indexBufferHandle = InitIndexBuffer(meshAsset->GetIndices().data(), data.numIndices, true);
 
             m_meshData.Insert(meshID, data);
+
+            meshAsset->Unload();
         }
 	}
 
@@ -564,6 +607,29 @@ namespace Puffin::Rendering::BGFX
         // Create index buffer
         return bgfx::createIndexBuffer(mem, indexFlags);
 	}
+
+    bgfx::TextureHandle BGFXRenderSystem::LoadAndInitTexture(UUID texID) const
+    {
+        const auto texAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(texID));
+
+        bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
+
+        if (texAsset && texAsset->Load())
+        {
+			uint32_t texSize = texAsset->GetTextureSize();
+
+	        const bgfx::Memory* mem = bgfx::alloc(texSize);
+
+            bx::memCopy(mem->data, texAsset->GetPixelData(), mem->size);
+
+            handle = bgfx::createTexture2D(texAsset->GetTextureWidth(), texAsset->GetTextureHeight(),
+            false, 1, g_texFormatMap.at(texAsset->GetTextureFormat()));
+
+            texAsset->Unload();
+        }
+
+        return handle;
+    }
 
 	void BGFXRenderSystem::BuildModelTransform(const TransformComponent& transform, float* model)
 	{

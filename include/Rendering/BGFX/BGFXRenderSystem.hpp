@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "ECS/System.hpp"
 
 #include "Assets/MeshAsset.h"
@@ -12,9 +14,7 @@
 #include "Types/RingBuffer.h"
 #include "Input/InputEvent.h"
 #include "Types/DeletionQueue.hpp"
-
-#include <memory>
-
+#include "Assets/TextureAsset.h"
 #include "UI/Editor/Windows/UIWindow.h"
 
 namespace Puffin::Rendering::BGFX
@@ -45,6 +45,11 @@ namespace Puffin::Rendering::BGFX
 		4, 5, 1,
 		2, 3, 6, // 10
 		6, 3, 7,
+	};
+
+	const static std::unordered_map<Assets::TextureFormat, bgfx::TextureFormat::Enum> g_texFormatMap =
+	{
+		{ Assets::TextureFormat::RGBA8, bgfx::TextureFormat::RGBA8 }
 	};
 
 	static bgfx::ShaderHandle LoadShader(const char* filename)
@@ -110,6 +115,7 @@ namespace Puffin::Rendering::BGFX
 		int m_windowWidth, m_windowHeight;
 		bool m_windowResized = false;
 
+		// Mesh Vars
 		MeshData m_cubeMeshData;
 		bgfx::ProgramHandle m_cubeProgram;
 
@@ -117,6 +123,13 @@ namespace Puffin::Rendering::BGFX
 
 		PackedVector<MeshData> m_meshData;
 		PackedVector<MeshDrawBatch> m_meshDrawBatches;
+
+		// Texture Vars
+		bgfx::UniformHandle m_texAlbedoSampler;
+		bgfx::UniformHandle m_texNormalSampler;
+
+		PackedVector<TextureData> m_texAlbedoHandles;
+		PackedVector<TextureData> m_texNormalHandles;
 
 		EditorCamera m_editorCam;
 		CameraMatComponent m_editorCamMats;
@@ -131,9 +144,10 @@ namespace Puffin::Rendering::BGFX
 
 		DeletionQueue m_deletionQueue;
 
+		void InitBGFX();
 		void InitStaticCubeData();
-
 		void InitMeshProgram();
+		void InitTexSamplers();
 
 		void ProcessEvents();
 
@@ -153,6 +167,8 @@ namespace Puffin::Rendering::BGFX
 		void LoadAndInitMesh(UUID meshID);
 		static inline bgfx::VertexBufferHandle InitVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
 		static inline bgfx::IndexBufferHandle InitIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
+
+		bgfx::TextureHandle LoadAndInitTexture(UUID texID) const;
 
 		static void BuildModelTransform(const TransformComponent& transform, float* model);
 

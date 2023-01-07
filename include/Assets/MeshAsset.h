@@ -32,6 +32,8 @@ namespace Puffin::Assets
 
 		StaticMeshAsset(const UUID id, const fs::path& path) : Asset(id, path) {}
 
+		~StaticMeshAsset() override = default;
+
 		const std::string& Type() const
 		{
 			return G_STATIC_MESH_TYPE;
