@@ -27,12 +27,17 @@ X_PLATFORM_LINUX || BX_PLATFORM_BSD
 
 #include <vector>
 
+#include "Input/InputSubsystem.h"
+
 namespace Puffin::Rendering::BGFX
 {
 	void BGFXRenderSystem::Init()
 	{
         bgfx::PlatformData pd;
         GLFWwindow* window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+
+        glfwSetWindowUserPointer(window, this);
+        glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
 
 #if PFN_PLATFORM_WIN32
 
@@ -54,11 +59,10 @@ namespace Puffin::Rendering::BGFX
         // Set Renderer API to Vulkan
         bgfxInit.type = bgfx::RendererType::Vulkan;
 
-        int width, height;
-        glfwGetWindowSize(window, &width, &height);
+        glfwGetWindowSize(window, &m_windowWidth, &m_windowHeight);
 
-        bgfxInit.resolution.width = static_cast<uint32_t>(width);
-        bgfxInit.resolution.height = static_cast<uint32_t>(height);
+        bgfxInit.resolution.width = static_cast<uint32_t>(m_windowWidth);
+        bgfxInit.resolution.height = static_cast<uint32_t>(m_windowHeight);
         bgfxInit.resolution.reset = BGFX_RESET_VSYNC;
         bgfxInit.platformData = pd;
         bgfx::init(bgfxInit);
@@ -66,7 +70,7 @@ namespace Puffin::Rendering::BGFX
         bgfx::setDebug(BGFX_DEBUG_NONE);
 
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00B5E2FF, 1.0f, 0);
-        bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(width), static_cast<uint16_t>(height));
+        bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
 
         // Create Static Vertex Buffer
         m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), s_layoutVertexPC32);
@@ -91,15 +95,25 @@ namespace Puffin::Rendering::BGFX
 				shared_from_this()->OnInputEvent(inputEvent);
 			}
         );
+
+        // Register Components
+        m_world->RegisterComponent<CameraMatComponent>();
+        m_world->AddComponentDependencies<CameraComponent, CameraMatComponent>();
 	}
 
 	void BGFXRenderSystem::PreStart()
 	{
+		InitEditorCamera();
+
         InitComponents();
 	}
 
 	void BGFXRenderSystem::Update()
 	{
+		ProcessEvents();
+
+        UpdateEditorCamera();
+
 		UpdateComponents();
 
         Draw();
@@ -122,11 +136,86 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::OnInputEvent(const Input::InputEvent& inputEvent)
 	{
-        Input::InputEvent event = inputEvent;
+        m_inputEvents.Push(inputEvent);
 	}
 
 	void BGFXRenderSystem::ProcessEvents()
 	{
+        Input::InputEvent inputEvent;
+		while(m_inputEvents.Pop(inputEvent))
+		{
+            if (inputEvent.actionName == "CamMoveLeft")
+            {
+                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                {
+                    m_moveLeft = true;
+                }
+                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                {
+                    m_moveLeft = false;
+                }
+            }
+
+            if (inputEvent.actionName == "CamMoveRight")
+            {
+                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                {
+                    m_moveRight = true;
+                }
+                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                {
+                    m_moveRight = false;
+                }
+            }
+
+            if (inputEvent.actionName == "CamMoveForward")
+            {
+                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                {
+                    m_moveForward = true;
+                }
+                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                {
+                    m_moveForward = false;
+                }
+            }
+
+            if (inputEvent.actionName == "CamMoveBackward")
+            {
+                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                {
+                    m_moveBackward = true;
+                }
+                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                {
+                    m_moveBackward = false;
+                }
+            }
+
+            if (inputEvent.actionName == "CamMoveUp")
+            {
+                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                {
+                    m_moveUp = true;
+                }
+                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                {
+                    m_moveUp = false;
+                }
+            }
+
+            if (inputEvent.actionName == "CamMoveDown")
+            {
+                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                {
+                    m_moveDown = true;
+                }
+                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                {
+                    m_moveDown = false;
+                }
+            }
+		}
 	}
 
 	void BGFXRenderSystem::InitComponents()
@@ -140,6 +229,18 @@ namespace Puffin::Rendering::BGFX
                 InitMeshComponent(entity);
 
                 entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
+            }
+        }
+
+        std::vector<std::shared_ptr<ECS::Entity>> cameraEntities;
+        ECS::GetEntities<TransformComponent, CameraComponent>(m_world, cameraEntities);
+        for (const auto& entity : cameraEntities)
+        {
+            if (entity->GetComponentFlag<CameraComponent, FlagDirty>())
+            {
+				UpdateCameraComponent(entity);
+
+                entity->SetComponentFlag<CameraComponent, FlagDirty>(false);
             }
         }
 	}
@@ -165,6 +266,24 @@ namespace Puffin::Rendering::BGFX
                 entity->RemoveComponent<MeshComponent>();
             }
         }
+
+        std::vector<std::shared_ptr<ECS::Entity>> cameraEntities;
+        ECS::GetEntities<TransformComponent, CameraComponent>(m_world, cameraEntities);
+        for (const auto& entity : cameraEntities)
+        {
+            if (entity->GetComponentFlag<CameraComponent, FlagDirty>())
+            {
+                UpdateCameraComponent(entity);
+
+                entity->SetComponentFlag<CameraComponent, FlagDirty>(false);
+            }
+
+            if (entity->GetComponentFlag<CameraComponent, FlagDeleted>())
+            {
+                entity->RemoveComponent<CameraComponent>();
+                entity->RemoveComponent<CameraMatComponent>();
+            }
+        }
 	}
 
 	void BGFXRenderSystem::CleanupComponents()
@@ -179,25 +298,19 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::Draw()
 	{
-        GLFWwindow* window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+        // Resize view and back-buffer
+        if (m_windowResized)
+        {
+            bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
+            bgfx::reset(static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
 
-        int width, height;
-        glfwGetWindowSize(window, &width, &height);
+            m_windowResized = false;
+        }
 
         // Dummy draw call to make sure view 0 is cleared
         bgfx::touch(0);
 
-        // Setup View/Projection Matrices
-        const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
-        const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
-
-        float view[16];
-        bx::mtxLookAt(view, eye, at);
-
-        float proj[16];
-        bx::mtxProj(proj, 60.0f, width / height, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-
-        bgfx::setViewTransform(0, view, proj);
+        bgfx::setViewTransform(0, m_editorCamMats.view, m_editorCamMats.proj);
 
         // Setup Transform
         float mtx[16];
@@ -261,6 +374,105 @@ namespace Puffin::Rendering::BGFX
             bgfx::destroy(m_meshData[mesh.meshAssetID].indexBufferHandle);
 
             m_meshData.Erase(mesh.meshAssetID);
+        }
+	}
+
+	void BGFXRenderSystem::InitEditorCamera()
+	{
+        m_editorCam.position = {0.0f, 0.0f, 15.0f};
+        m_editorCam.aspect = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
+        m_editorCam.lookat = m_editorCam.position + m_editorCam.direction;
+
+        bx::mtxLookAt(m_editorCamMats.view, static_cast<bx::Vec3>(m_editorCam.position), static_cast<bx::Vec3>(m_editorCam.lookat), { 0, 1, 0 }, bx::Handedness::Right);
+        bx::mtxProj(m_editorCamMats.proj, m_editorCam.fovY, m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
+	}
+
+	void BGFXRenderSystem::UpdateEditorCamera()
+    {
+        const auto inputSubsystem = m_engine->GetSubsystem<Input::InputSubsystem>();
+
+        if (inputSubsystem->IsCursorLocked())
+        {
+            // Camera Movement
+            if (m_moveLeft && !m_moveRight)
+            {
+                m_editorCam.position += m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
+            }
+
+            if (m_moveRight && !m_moveLeft)
+            {
+                m_editorCam.position -= m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
+            }
+
+            if (m_moveForward && !m_moveBackward)
+            {
+                m_editorCam.position += m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
+            }
+
+            if (m_moveBackward && !m_moveForward)
+            {
+                m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
+            }
+
+            if (m_moveUp && !m_moveDown)
+            {
+                m_editorCam.position += m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
+            }
+
+            if (m_moveDown && !m_moveUp)
+            {
+                m_editorCam.position -= m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
+            }
+
+            // Mouse Rotation
+            m_editorCam.yaw += inputSubsystem->GetMouseXOffset();
+            m_editorCam.pitch -= inputSubsystem->GetMouseYOffset();
+
+            if (m_editorCam.pitch > 89.0f)
+                m_editorCam.pitch = 89.0f;
+
+            if (m_editorCam.pitch < -89.0f)
+                m_editorCam.pitch = -89.0f;
+
+            // Calculate Direction vector from yaw and pitch of camera
+            m_editorCam.direction.x = cos(Maths::DegreesToRadians(m_editorCam.yaw)) * cos(Maths::DegreesToRadians(m_editorCam.pitch));
+            m_editorCam.direction.y = sin(Maths::DegreesToRadians(m_editorCam.pitch));
+            m_editorCam.direction.z = sin(Maths::DegreesToRadians(m_editorCam.yaw)) * cos(Maths::DegreesToRadians(m_editorCam.pitch));
+
+            m_editorCam.direction.Normalise();
+        }
+
+        // Calculate Right, Up and LookAt vectors
+        m_editorCam.right = m_editorCam.up.Cross(m_editorCam.direction).Normalised();
+        m_editorCam.lookat = m_editorCam.position + m_editorCam.direction;
+
+        if (m_windowResized)
+        {
+            m_editorCam.aspect = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
+        }
+
+        bx::mtxLookAt(m_editorCamMats.view, static_cast<bx::Vec3>(m_editorCam.position), static_cast<bx::Vec3>(m_editorCam.lookat), {0, 1, 0}, bx::Handedness::Right);
+        bx::mtxProj(m_editorCamMats.proj, m_editorCam.fovY, m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
+    }
+
+	void BGFXRenderSystem::UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity)
+	{
+        auto& transform = entity->GetComponent<TransformComponent>();
+        auto& cam = entity->GetComponent<CameraComponent>();
+        auto& camMats = entity->GetComponent<CameraMatComponent>();
+
+        // Calculate Right, Up and LookAt vectors
+        cam.right = cam.up.Cross(cam.direction).Normalised();
+        cam.lookat = transform.position + cam.direction;
+
+        bx::mtxLookAt(camMats.view, static_cast<bx::Vec3>(transform.position), static_cast<bx::Vec3>(cam.lookat), { 0, 1, 0 }, bx::Handedness::Right);
+
+        // Recalculate camera perspective if fov has changed, store new fov in prevFov
+        if (cam.fovY != cam.prevFovY)
+        {
+            cam.prevFovY = cam.fovY;
+
+            bx::mtxProj(camMats.proj, cam.fovY, cam.aspect, cam.zNear, cam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
         }
 	}
 
@@ -337,14 +549,5 @@ namespace Puffin::Rendering::BGFX
 
         // Translation
         bx::mtxTranslate(mtx, static_cast<float>(transform.position.x), static_cast<float>(transform.position.y), static_cast<float>(transform.position.z));
-	}
-
-	void BGFXRenderSystem::BuildViewAndProjTransform(const CameraData& camera, float* view, float* proj)
-	{
-        // View
-		bx::mtxLookAt(view, camera.eye, camera.at);
-
-        // Projection
-        bx::mtxProj(proj, camera.fovy, camera.aspect, camera.cNear, camera.cFar, bgfx::getCaps()->homogeneousDepth);
 	}
 }

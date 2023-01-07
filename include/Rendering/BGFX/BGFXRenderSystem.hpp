@@ -14,6 +14,8 @@
 
 #include <memory>
 
+#include "UI/Editor/Windows/UIWindow.h"
+
 namespace Puffin::Rendering::BGFX
 {
 	static VertexPC32 s_cubeVertices[] =
@@ -104,6 +106,8 @@ namespace Puffin::Rendering::BGFX
 	private:
 
 		uint32_t m_frameCounter = 0;
+		int m_windowWidth, m_windowHeight;
+		bool m_windowResized = false;
 
 		bgfx::VertexBufferHandle m_vbh;
 		bgfx::IndexBufferHandle m_ibh;
@@ -114,9 +118,16 @@ namespace Puffin::Rendering::BGFX
 		PackedVector<MeshData> m_meshData;
 		PackedVector<MeshDrawBatch> m_meshDrawBatches;
 
-		EditorCamera m_EditorCamera;
+		EditorCamera m_editorCam;
+		CameraMatComponent m_editorCamMats;
+		bool m_moveLeft = false;
+		bool m_moveRight = false;
+		bool m_moveForward = false;
+		bool m_moveBackward = false;
+		bool m_moveUp = false;
+		bool m_moveDown = false;
 
-		std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents = nullptr;
+		RingBuffer<Input::InputEvent> m_inputEvents;
 
 		void ProcessEvents();
 
@@ -129,11 +140,23 @@ namespace Puffin::Rendering::BGFX
 		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
 		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
 
+		void InitEditorCamera();
+		void UpdateEditorCamera();
+		void UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity);
+
 		void LoadAndInitMesh(UUID meshID);
 		static inline bgfx::VertexBufferHandle InitVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
 		static inline bgfx::IndexBufferHandle InitIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
 
 		static void BuildModelTransform(const TransformComponent& transform, float* mtx);
-		static void BuildViewAndProjTransform(const CameraData& camera, float* view, float* proj);
+
+		static inline void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
+		{
+			auto app = reinterpret_cast<BGFXRenderSystem*>(glfwGetWindowUserPointer(window));
+
+			app->m_windowResized = true;
+			app->m_windowWidth = width;
+			app->m_windowHeight = height;
+		}
 	};
 }

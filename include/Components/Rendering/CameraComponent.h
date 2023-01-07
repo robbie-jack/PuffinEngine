@@ -13,17 +13,6 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		struct CameraMatrices
-		{
-			glm::mat4 perspective;
-			glm::mat4 view;
-		};
-
-		struct ViewData
-		{
-			alignas(16) glm::vec3 viewPos;
-		};
-
 		struct CameraComponent
 		{
 			CameraComponent() {}
@@ -31,24 +20,20 @@ namespace Puffin
 			float zNear = 0.01f;
 			float zFar = 10000.0f;
 			float aspect = 0.0f;
-			float fov = 60.0f;
-			float prevFov = 0.0f;
+			float fovY = 60.0f;
+			float prevFovY = 60.0f;
 
 			Vector3f lookat;
 
-			Vector3f direction = glm::vec3(0.0f, 0.0f, -1.0f);
-			Vector3f up = glm::vec3(0.0f, 1.0f, 0.0f);
-			Vector3f right;
+			Vector3f direction = Vector3f(0.0f, 0.0f, -1.0f);
+			Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
+			Vector3f right = Vector3f(1.0f, 0.0f, 0.0f);
 
 			float yaw = -90.0f;
 			float pitch = 0.0f;
 			float speed = 5.0f;
 
-			CameraMatrices matrices;
-
-			ViewData data;
-
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, zNear, zFar, aspect, fov,
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, zNear, zFar, aspect, fovY,
 				lookat, direction, up, right,
 				yaw, pitch, speed)
 		};
@@ -62,27 +47,22 @@ namespace Puffin
 #endif
 		};
 
-		static void UpdateCameraPerspective(CameraComponent& camera, float fov, float aspect, float zNear, float zFar)
+		namespace VK
 		{
-			camera.prevFov = camera.fov;
-			camera.fov = fov;
-			camera.aspect = aspect;
-			camera.zNear = zNear;
-			camera.zFar = zFar;
-
-			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
+			struct CameraMatComponent
+			{
+				glm::mat4 perspective;
+				glm::mat4 view;
+			};
 		}
 
-		static void UpdateCameraFov(CameraComponent& camera, float fov_)
+		namespace BGFX
 		{
-			camera.fov = fov_;
-
-			camera.matrices.perspective = glm::perspective(glm::radians(camera.fov), camera.aspect, camera.zNear, camera.zFar);
-		}
-
-		static glm::mat4 UpdateCameraView(const Vector3f& position, const Vector3f& lookat, const Vector3f& up)
-		{
-			return glm::lookAt(static_cast<glm::vec3>(position), static_cast<glm::vec3>(lookat), static_cast<glm::vec3>(up));
+			struct CameraMatComponent
+			{
+				float view[16];
+				float proj[16];
+			};
 		}
 	}
 }

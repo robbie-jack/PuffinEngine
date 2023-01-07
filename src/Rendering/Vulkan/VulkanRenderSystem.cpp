@@ -57,8 +57,8 @@ namespace Puffin
 			offscreenFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
 			// Initialize Camera Variables
-			editorCamera.position = glm::vec3(0.0f, 0.0f, 15.0f);
-			editorCamera.aspect = (float)m_offscreenExtent.width / (float)m_offscreenExtent.height;
+			m_editorCam.position = glm::vec3(0.0f, 0.0f, 15.0f);
+			m_editorCam.aspect = (float)m_offscreenExtent.width / (float)m_offscreenExtent.height;
 			InitEditorCamera();
 
 			m_viewportSize = ImVec2(0.0f, 0.0f);
@@ -119,6 +119,9 @@ namespace Puffin
 
 			InitDepthSampler();
 
+			m_world->RegisterComponent<VK::CameraMatComponent>();
+			m_world->AddComponentDependencies<CameraComponent, VK::CameraMatComponent>();
+
 			// Initialize All Scene Objects
 			PreStart();
 
@@ -130,7 +133,7 @@ namespace Puffin
 			//SetupDeferredRenderer();
 
 			// Pass Camera to UI
-			m_uiManager->GetWindowSettings()->SetCamera(&editorCamera);
+			m_uiManager->GetWindowSettings()->SetCamera(&m_editorCam);
 
 			// Subscribe to events
 			m_inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
@@ -1337,9 +1340,10 @@ namespace Puffin
 		{
 			auto& transform = m_world->GetComponent<TransformComponent>(entity);
 			auto& camera = m_world->GetComponent<CameraComponent>(entity);
+			auto& camMats = m_world->GetComponent<VK::CameraMatComponent>(entity);
 
 			// Calculate Perspective Projection
-			UpdateCameraPerspective(camera, camera.fov, camera.aspect, camera.zNear, camera.zFar);
+			camMats.perspective = VK::UpdateCameraPerspective(camera, camera.fovY, camera.aspect, camera.zNear, camera.zFar);
 
 			// Calculate Right and Up Vectors
 			camera.right = glm::normalize(glm::cross(static_cast<glm::vec3>(camera.up), static_cast<glm::vec3>(camera.direction)));
@@ -1347,21 +1351,21 @@ namespace Puffin
 			camera.lookat = transform.position + camera.direction;
 
 			// Calculate Camera View Matrix
-			camera.matrices.view = UpdateCameraView(transform.position, camera.lookat, camera.up);
+			camMats.view = VK::UpdateCameraView(transform.position, camera.lookat, camera.up);
 		}
 
 		void VulkanRenderSystem::InitEditorCamera()
 		{
 			// Calculate Perspective Projection
-			UpdateCameraPerspective(editorCamera, editorCamera.fov, editorCamera.aspect, editorCamera.zNear, editorCamera.zFar);
+			m_editorCamMats.perspective = VK::UpdateCameraPerspective(m_editorCam, m_editorCam.fovY, m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar);
 
 			// Calculate Right and Up Vectors
-			editorCamera.right = glm::normalize(glm::cross(static_cast<glm::vec3>(editorCamera.up), static_cast<glm::vec3>(editorCamera.direction)));
-			editorCamera.up = glm::cross(static_cast<glm::vec3>(editorCamera.direction), static_cast<glm::vec3>(editorCamera.right));
-			editorCamera.lookat = editorCamera.position + editorCamera.direction;
+			m_editorCam.right = glm::normalize(glm::cross(static_cast<glm::vec3>(m_editorCam.up), static_cast<glm::vec3>(m_editorCam.direction)));
+			m_editorCam.up = glm::cross(static_cast<glm::vec3>(m_editorCam.direction), static_cast<glm::vec3>(m_editorCam.right));
+			m_editorCam.lookat = m_editorCam.position + m_editorCam.direction;
 
 			// Calculate Camera View Matrix
-			editorCamera.matrices.view = UpdateCameraView(editorCamera.position, editorCamera.lookat, editorCamera.up);
+			m_editorCamMats.view = VK::UpdateCameraView(m_editorCam.position, m_editorCam.lookat, m_editorCam.up);
 		}
 
 		void VulkanRenderSystem::InitAlbedoTexture(UUID uuid)
@@ -2098,21 +2102,22 @@ namespace Puffin
 		void VulkanRenderSystem::UpdateCamera(ECS::EntityID entity)
 		{
 			auto& transform = m_world->GetComponent<TransformComponent>(entity);
-			auto& camera = m_world->GetComponent<CameraComponent>(entity);
+			auto& cam = m_world->GetComponent<CameraComponent>(entity);
+			auto& camMats = m_world->GetComponent<VK::CameraMatComponent>(entity);
 
 			// Calculate Right, Up and LookAt vectors
-			camera.right = camera.up.Cross(camera.direction).Normalised();
-			camera.lookat = transform.position + camera.direction;
+			cam.right = cam.up.Cross(cam.direction).Normalised();
+			cam.lookat = transform.position + cam.direction;
 
 			float newAspect = (float)m_offscreenExtent.width / (float)m_offscreenExtent.height;
 
 			// Recalculate camera perspective if fov has changed, store new fov in prevFov
-			if (camera.fov != camera.prevFov || camera.aspect != newAspect)
+			if (cam.fovY != cam.prevFovY || cam.aspect != newAspect)
 			{
-				UpdateCameraPerspective(camera, camera.fov, newAspect, camera.zNear, camera.zFar);
+				camMats.perspective = VK::UpdateCameraPerspective(cam, cam.fovY, newAspect, cam.zNear, cam.zFar);
 			}
 
-			camera.matrices.view = UpdateCameraView(transform.position, camera.lookat, camera.up);
+			camMats.view = VK::UpdateCameraView(transform.position, cam.lookat, cam.up);
 		}
 
 		void VulkanRenderSystem::UpdateEditorCamera()
@@ -2122,64 +2127,64 @@ namespace Puffin
 				// Camera Movement
 				if (moveLeft && !moveRight)
 				{
-					editorCamera.position += editorCamera.right * editorCamera.speed * m_engine->GetDeltaTime();
+					m_editorCam.position += m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
 				}
 
 				if (moveRight && !moveLeft)
 				{
-					editorCamera.position -= editorCamera.right * editorCamera.speed * m_engine->GetDeltaTime();
+					m_editorCam.position -= m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
 				}
 
 				if (moveForward && !moveBackward)
 				{
-					editorCamera.position += editorCamera.direction * editorCamera.speed * m_engine->GetDeltaTime();
+					m_editorCam.position += m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
 				}
 
 				if (moveBackward && !moveForward)
 				{
-					editorCamera.position -= editorCamera.direction * editorCamera.speed * m_engine->GetDeltaTime();
+					m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
 				}
 
 				if (moveUp && !moveDown)
 				{
-					editorCamera.position += editorCamera.up * editorCamera.speed * m_engine->GetDeltaTime();
+					m_editorCam.position += m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
 				}
 
 				if (moveDown && !moveUp)
 				{
-					editorCamera.position -= editorCamera.up * editorCamera.speed * m_engine->GetDeltaTime();
+					m_editorCam.position -= m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
 				}
 
 				// Mouse Rotation
-				editorCamera.yaw += m_inputSubsystem->GetMouseXOffset();
-				editorCamera.pitch -= m_inputSubsystem->GetMouseYOffset();
+				m_editorCam.yaw += m_inputSubsystem->GetMouseXOffset();
+				m_editorCam.pitch -= m_inputSubsystem->GetMouseYOffset();
 
-				if (editorCamera.pitch > 89.0f)
-					editorCamera.pitch = 89.0f;
+				if (m_editorCam.pitch > 89.0f)
+					m_editorCam.pitch = 89.0f;
 
-				if (editorCamera.pitch < -89.0f)
-					editorCamera.pitch = -89.0f;
+				if (m_editorCam.pitch < -89.0f)
+					m_editorCam.pitch = -89.0f;
 
 				// Calculate Direction vector from yaw and pitch of camera
-				editorCamera.direction.x = cos(glm::radians(editorCamera.yaw)) * cos(glm::radians(editorCamera.pitch));
-				editorCamera.direction.y = sin(glm::radians(editorCamera.pitch));
-				editorCamera.direction.z = sin(glm::radians(editorCamera.yaw)) * cos(glm::radians(editorCamera.pitch));
-				editorCamera.direction.Normalise();
+				m_editorCam.direction.x = cos(glm::radians(m_editorCam.yaw)) * cos(glm::radians(m_editorCam.pitch));
+				m_editorCam.direction.y = sin(glm::radians(m_editorCam.pitch));
+				m_editorCam.direction.z = sin(glm::radians(m_editorCam.yaw)) * cos(glm::radians(m_editorCam.pitch));
+				m_editorCam.direction.Normalise();
 			}
 
 			// Calculate Right, Up and LookAt vectors
-			editorCamera.right = editorCamera.up.Cross(editorCamera.direction).Normalised();
-			editorCamera.lookat = editorCamera.position + editorCamera.direction;
+			m_editorCam.right = m_editorCam.up.Cross(m_editorCam.direction).Normalised();
+			m_editorCam.lookat = m_editorCam.position + m_editorCam.direction;
 
 			float newAspect = (float)m_offscreenExtent.width / (float)m_offscreenExtent.height;
 
 			// Recalculate camera perspective if fov has changed, store new fov in prevFov
-			if (editorCamera.fov != editorCamera.prevFov || editorCamera.aspect != newAspect)
+			if (m_editorCam.fovY != m_editorCam.prevFovY || m_editorCam.aspect != newAspect)
 			{
-				UpdateCameraPerspective(editorCamera, editorCamera.fov, newAspect, editorCamera.zNear, editorCamera.zFar);
+				m_editorCamMats.perspective = VK::UpdateCameraPerspective(m_editorCam, m_editorCam.fovY, newAspect, m_editorCam.zNear, m_editorCam.zFar);
 			}
 
-			editorCamera.matrices.view = UpdateCameraView(editorCamera.position, editorCamera.lookat, editorCamera.up);
+			m_editorCamMats.view = VK::UpdateCameraView(m_editorCam.position, m_editorCam.lookat, m_editorCam.up);
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -2391,10 +2396,10 @@ namespace Puffin
 		{
 			// Map Camera Data to Uniform Buffer
 			GPUCameraData cameraData;
-			glm::mat4 projMat = editorCamera.matrices.perspective;
+			glm::mat4 projMat = m_editorCamMats.perspective;
 
 			projMat[1][1] *= -1;
-			cameraData.viewProj = projMat * editorCamera.matrices.view;
+			cameraData.viewProj = projMat * m_editorCamMats.view;
 
 			void* data;
 
@@ -2550,7 +2555,7 @@ namespace Puffin
 		{
 			// Map shaing data to uniform buffer
 			GPUShadingData shadingData;
-			shadingData.viewPos = static_cast<glm::vec3>(editorCamera.position);
+			shadingData.viewPos = static_cast<glm::vec3>(m_editorCam.position);
 			shadingData.displayDebugTarget = 0;
 
 			void* data;

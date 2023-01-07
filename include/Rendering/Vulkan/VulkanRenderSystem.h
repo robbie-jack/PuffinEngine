@@ -192,6 +192,32 @@ namespace Puffin
 			3, 7
 		};
 
+		namespace VK
+		{
+			static glm::mat4 UpdateCameraPerspective(CameraComponent& camera, float fov, float aspect, float zNear, float zFar)
+			{
+				camera.prevFovY = camera.fovY;
+				camera.fovY = fov;
+				camera.aspect = aspect;
+				camera.zNear = zNear;
+				camera.zFar = zFar;
+
+				return glm::perspective(glm::radians(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
+			}
+
+			static glm::mat4 UpdateCameraFov(CameraComponent& camera, float fov_)
+			{
+				camera.fovY = fov_;
+
+				return glm::perspective(glm::radians(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
+			}
+
+			static glm::mat4 UpdateCameraView(const Vector3f& position, const Vector3f& lookat, const Vector3f& up)
+			{
+				return glm::lookAt(static_cast<glm::vec3>(position), static_cast<glm::vec3>(lookat), static_cast<glm::vec3>(up));
+			}
+		}
+
 		class VulkanRenderSystem : public ECS::System, public std::enable_shared_from_this<VulkanRenderSystem>
 		{
 		public:
@@ -313,7 +339,9 @@ namespace Puffin
 			VkSampler depthSampler; // Sampler for reading shadowmaps in shader
 
 			// Camera
-			EditorCamera editorCamera;
+			EditorCamera m_editorCam;
+			VK::CameraMatComponent m_editorCamMats;
+
 			bool moveForward = false;
 			bool moveBackward = false;
 			bool moveLeft = false;

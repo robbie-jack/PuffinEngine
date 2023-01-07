@@ -32,7 +32,7 @@ namespace Puffin
 
 				if (ImGui::SliderFloat("Field of View", &settings.cameraFov, 30.0f, 120.0f, "%f"))
 				{
-					m_camera->fov = settings.cameraFov;
+					m_camera->fovY = settings.cameraFov;
 				}
 
 				End();

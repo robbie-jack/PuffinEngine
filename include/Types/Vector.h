@@ -1,12 +1,13 @@
 #pragma once
 
-#include <cmath>
-
 #include "box2d/box2d.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
+#include "bx/math.h"
 
 #include "nlohmann/json.hpp"
+
+#include <cmath>
 
 using json = nlohmann::json;
 
@@ -310,6 +311,13 @@ namespace Puffin
 			z = vec.z;
 		}
 
+		Vector3(const bx::Vec3& vec)
+		{
+			x = vec.x;
+			y = vec.y;
+			z = vec.z;
+		}
+
 		Vector3(const Vector2<T>& vec)
 		{
 			x = vec.x;
@@ -326,10 +334,18 @@ namespace Puffin
 		// Operator Conversion
 		explicit operator glm::vec3() const
 		{
-			glm::vec3 vec;
-			vec.x = x;
-			vec.y = y;
-			vec.z = z;
+			const glm::vec3 vec = {x, y, z};
+			return vec;
+		}
+
+		explicit operator bx::Vec3() const
+		{
+			const bx::Vec3 vec = 
+			{
+				static_cast<float>(x),
+				static_cast<float>(y),
+				static_cast<float>(z)
+			};
 			return vec;
 		}
 
