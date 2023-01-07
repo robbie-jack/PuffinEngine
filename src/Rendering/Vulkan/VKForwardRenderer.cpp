@@ -69,7 +69,7 @@ namespace Puffin::Rendering
 
 	void VKForwardRenderer::Cleanup()
 	{
-		m_mainDeletionQueue.flush();
+		m_mainDeletionQueue.Flush();
 	}
 
 	void VKForwardRenderer::SetupCommandBuffers()
@@ -101,7 +101,7 @@ namespace Puffin::Rendering
 		{
 			VK_CHECK(vkCreateSemaphore(m_vulkanRenderSystem->m_device, &semaphoreCreateInfo, nullptr, &m_forwardFrameData[i].renderSemaphore));
 
-			m_mainDeletionQueue.push_function([=]()
+			m_mainDeletionQueue.PushFunction([=]()
 			{
 				vkDestroySemaphore(m_vulkanRenderSystem->m_device, m_forwardFrameData[i].renderSemaphore, nullptr);
 			});

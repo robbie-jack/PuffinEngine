@@ -165,6 +165,7 @@ set(HEADERS
 	${HEADER_DIR}/Types/UUID.h
 	${HEADER_DIR}/Types/Vector.h
 	${HEADER_DIR}/Types/Vertex.hpp
+	${HEADER_DIR}/Types/DeletionQueue.hpp
 	# UI
 	${HEADER_DIR}/UI/Editor/UIManager.h
 	${HEADER_DIR}/UI/Editor/Windows/UIWindow.h

@@ -5,6 +5,8 @@
 #include <memory>
 #include <fstream>
 
+#include "Types/DeletionQueue.hpp"
+
 namespace Puffin::Rendering
 {
 	// Forward Declaration

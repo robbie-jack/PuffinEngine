@@ -415,7 +415,7 @@ namespace Puffin
 				VK_CHECK(vkAllocateCommandBuffers(m_device, &allocInfoShadow, &m_frames[i].shadowCommandBuffer));
 
 				// Push destruction of both command pools/buffers to deletion queue
-				mainDeletionQueue.push_function([=]() 
+				mainDeletionQueue.PushFunction([=]() 
 				{
 					vkDestroyCommandPool(m_device, m_frames[i].commandPool, nullptr);
 				});
@@ -426,7 +426,7 @@ namespace Puffin
 
 			VK_CHECK(vkCreateCommandPool(m_device, &uploadCommandPoolInfo, nullptr, &uploadContext.commandPool));
 
-			mainDeletionQueue.push_function([=]()
+			mainDeletionQueue.PushFunction([=]()
 			{
 				vkDestroyCommandPool(m_device, uploadContext.commandPool, nullptr);
 			});
@@ -519,7 +519,7 @@ namespace Puffin
 
 			VK_CHECK(vkCreateRenderPass(m_device, &render_pass_info, nullptr, &m_renderPass));
 
-			mainDeletionQueue.push_function([=]()
+			mainDeletionQueue.PushFunction([=]()
 			{
 				vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 			});
@@ -574,7 +574,7 @@ namespace Puffin
 
 			VK_CHECK(vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &renderPassGUI));
 
-			mainDeletionQueue.push_function([=]()
+			mainDeletionQueue.PushFunction([=]()
 			{
 				vkDestroyRenderPass(m_device, renderPassGUI, nullptr);
 			});
@@ -632,7 +632,7 @@ namespace Puffin
 
 			VK_CHECK(vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &renderPassShadows));
 
-			mainDeletionQueue.push_function([=]()
+			mainDeletionQueue.PushFunction([=]()
 			{
 				vkDestroyRenderPass(m_device, renderPassShadows, nullptr);
 			});
@@ -723,7 +723,7 @@ namespace Puffin
 				VK_CHECK(vkCreateFence(m_device, &fenceCreateInfo, nullptr, &m_frames[i].renderFence));
 
 				//enqueue the destruction of the fence
-				mainDeletionQueue.push_function([=]() {
+				mainDeletionQueue.PushFunction([=]() {
 					vkDestroyFence(m_device, m_frames[i].renderFence, nullptr);
 				});
 
@@ -732,7 +732,7 @@ namespace Puffin
 				VK_CHECK(vkCreateSemaphore(m_device, &semaphoreCreateInfo, nullptr, &m_frames[i].renderSemaphore));
 
 				//enqueue the destruction of semaphores
-				mainDeletionQueue.push_function([=]() {
+				mainDeletionQueue.PushFunction([=]() {
 					vkDestroySemaphore(m_device, m_frames[i].presentSemaphore, nullptr);
 					vkDestroySemaphore(m_device, m_frames[i].renderSemaphore, nullptr);
 				});
@@ -744,7 +744,7 @@ namespace Puffin
 			VK_CHECK(vkCreateFence(m_device, &uploadCreateFenceInfo, nullptr, &uploadContext.uploadFence));
 
 			// enqueue destruction of upload fence
-			mainDeletionQueue.push_function([=]() {
+			mainDeletionQueue.PushFunction([=]() {
 				vkDestroyFence(m_device, uploadContext.uploadFence, nullptr);
 			});
 		}
@@ -1731,7 +1731,7 @@ namespace Puffin
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 
 			//add the destroy the imgui created structures
-			mainDeletionQueue.push_function([=]() {
+			mainDeletionQueue.PushFunction([=]() {
 
 				vkDestroyDescriptorPool(m_device, imguiPool, nullptr);
 				ImGui_ImplVulkan_Shutdown();
@@ -3100,7 +3100,7 @@ namespace Puffin
 					DestroyOffscreenData(i);
 				}
 
-				mainDeletionQueue.flush();
+				mainDeletionQueue.Flush();
 
 				Stop();
 

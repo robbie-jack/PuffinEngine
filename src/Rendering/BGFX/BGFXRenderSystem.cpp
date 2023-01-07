@@ -116,9 +116,7 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::Cleanup()
 	{
-        bgfx::destroy(m_meshProgram);
-
-        DestroyStaticCubeData();
+        m_deletionQueue.Flush();
 
 		bgfx::shutdown();
 	}
@@ -139,14 +137,14 @@ namespace Puffin::Rendering::BGFX
         bgfx::ShaderHandle cubeVSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\vs_cubes.bin");
         bgfx::ShaderHandle cubeFSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\fs_cubes.bin");
         m_cubeProgram = bgfx::createProgram(cubeVSH, cubeFSH, true);
-	}
 
-	void BGFXRenderSystem::DestroyStaticCubeData()
-	{
-        bgfx::destroy(m_cubeMeshData.indexBufferHandle);
-        bgfx::destroy(m_cubeMeshData.vertexBufferHandle);
+        m_deletionQueue.PushFunction([=]()
+        {
+        	bgfx::destroy(m_cubeMeshData.indexBufferHandle);
+			bgfx::destroy(m_cubeMeshData.vertexBufferHandle);
 
-        bgfx::destroy(m_cubeProgram);
+			bgfx::destroy(m_cubeProgram);
+        });
 	}
 
 	void BGFXRenderSystem::InitMeshProgram()
@@ -155,6 +153,11 @@ namespace Puffin::Rendering::BGFX
         bgfx::ShaderHandle meshFSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\forward_shading\\fs_forward_shading.bin");
 
         m_meshProgram = bgfx::createProgram(meshVSH, meshFSH, true);
+
+        m_deletionQueue.PushFunction([=]()
+        {
+        	bgfx::destroy(m_meshProgram);
+        });
 	}
 
 	void BGFXRenderSystem::ProcessEvents()

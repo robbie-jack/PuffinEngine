@@ -11,6 +11,7 @@
 #include "Types/PackedArray.h"
 #include "Types/RingBuffer.h"
 #include "Input/InputEvent.h"
+#include "Types/DeletionQueue.hpp"
 
 #include <memory>
 
@@ -128,8 +129,9 @@ namespace Puffin::Rendering::BGFX
 
 		RingBuffer<Input::InputEvent> m_inputEvents;
 
+		DeletionQueue m_deletionQueue;
+
 		void InitStaticCubeData();
-		void DestroyStaticCubeData();
 
 		void InitMeshProgram();
 

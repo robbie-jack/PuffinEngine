@@ -7,12 +7,14 @@
 #include <Rendering/Vulkan/VKTypes.h>
 #include <Rendering/Vulkan/Helpers/VKDescriptors.h>
 
+#include "vma/vk_mem_alloc.h"  // for VmaAllocator
+#include "vulkan/vulkan_core.h"      // for VkExtent2D, VkExtent3D, VkFormat, VkFramebuffer, VkImageUsageFlags
+
+#include "Types/DeletionQueue.hpp"
+
 // STL
 #include <vector>
 #include <fstream>
-
-#include "vma/vk_mem_alloc.h"  // for VmaAllocator
-#include "vulkan/vulkan_core.h"      // for VkExtent2D, VkExtent3D, VkFormat, VkFramebuffer, VkImageUsageFlags
 
 namespace Puffin
 {

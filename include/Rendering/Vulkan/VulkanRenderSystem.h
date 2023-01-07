@@ -35,15 +35,16 @@
 #include "Types/RingBuffer.h"
 #include "Helpers/VKVertex.hpp"
 
+#include "Components/Rendering/CameraComponent.h"
+#include "Components/Rendering/CameraComponent.h"
+#include "Types/DeletionQueue.hpp"
+
 // STL
 #include <vector>
 #include <unordered_map>
 #include <set>
 #include <fstream>
 #include <memory>
-
-#include "Components/Rendering/CameraComponent.h"
-#include "Components/Rendering/CameraComponent.h"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;

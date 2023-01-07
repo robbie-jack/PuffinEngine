@@ -95,7 +95,7 @@ namespace Puffin
 
 		void VKDeferredRender::RecreateFramebuffer(VkExtent2D inExtent)
 		{
-			m_framebufferDeletionQueue.flush();
+			m_framebufferDeletionQueue.Flush();
 
 			gBufferExtent = { inExtent.width, inExtent.height, 1 };
 
@@ -149,8 +149,8 @@ namespace Puffin
 
 		void VKDeferredRender::Cleanup()
 		{
-			m_deletionQueue.flush();
-			m_framebufferDeletionQueue.flush();
+			m_deletionQueue.Flush();
+			m_framebufferDeletionQueue.Flush();
 		}
 
 		//-------------------------------------------------------------------------------------
@@ -288,7 +288,7 @@ namespace Puffin
 
 			VK_CHECK(vkCreateRenderPass(device, &renderPassInfo, nullptr, &gRenderPass));
 
-			m_deletionQueue.push_function([=]()
+			m_deletionQueue.PushFunction([=]()
 			{
 				vkDestroyRenderPass(device, gRenderPass, nullptr);
 			});
@@ -320,7 +320,7 @@ namespace Puffin
 
 				VK_CHECK(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameData[i].gFramebuffer));
 
-				m_framebufferDeletionQueue.push_function([=]()
+				m_framebufferDeletionQueue.PushFunction([=]()
 				{
 					vkDestroyFramebuffer(device, frameData[i].gFramebuffer, nullptr);
 				});
@@ -346,7 +346,7 @@ namespace Puffin
 				VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo,
 					nullptr, &frameData[i].shadingSemaphore));
 
-				m_deletionQueue.push_function([=]()
+				m_deletionQueue.PushFunction([=]()
 				{
 					vkDestroySemaphore(device, frameData[i].geometrySemaphore, nullptr);
 					vkDestroySemaphore(device, frameData[i].shadingSemaphore, nullptr);
@@ -641,7 +641,7 @@ namespace Puffin
 			VK_CHECK(vkCreateImageView(device, &imageViewInfo, nullptr, &allocatedImage->imageView));
 
 			// Add image/view to deletion queue for cleanup
-			m_framebufferDeletionQueue.push_function([=]()
+			m_framebufferDeletionQueue.PushFunction([=]()
 			{
 				vkDestroyImageView(device, allocatedImage->imageView, nullptr);
 				vmaDestroyImage(allocator, allocatedImage->image, allocatedImage->allocation);
