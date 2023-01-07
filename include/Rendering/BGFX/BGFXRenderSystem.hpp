@@ -109,11 +109,10 @@ namespace Puffin::Rendering::BGFX
 		int m_windowWidth, m_windowHeight;
 		bool m_windowResized = false;
 
-		bgfx::VertexBufferHandle m_vbh;
-		bgfx::IndexBufferHandle m_ibh;
+		MeshData m_cubeMeshData;
+		bgfx::ProgramHandle m_cubeProgram;
 
-		bgfx::ShaderHandle m_vsh, m_fsh;
-		bgfx::ProgramHandle m_program;
+		bgfx::ProgramHandle m_meshProgram;
 
 		PackedVector<MeshData> m_meshData;
 		PackedVector<MeshDrawBatch> m_meshDrawBatches;
@@ -128,6 +127,11 @@ namespace Puffin::Rendering::BGFX
 		bool m_moveDown = false;
 
 		RingBuffer<Input::InputEvent> m_inputEvents;
+
+		void InitStaticCubeData();
+		void DestroyStaticCubeData();
+
+		void InitMeshProgram();
 
 		void ProcessEvents();
 
@@ -148,7 +152,7 @@ namespace Puffin::Rendering::BGFX
 		static inline bgfx::VertexBufferHandle InitVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
 		static inline bgfx::IndexBufferHandle InitIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
 
-		static void BuildModelTransform(const TransformComponent& transform, float* mtx);
+		static void BuildModelTransform(const TransformComponent& transform, float* model);
 
 		static inline void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
 		{

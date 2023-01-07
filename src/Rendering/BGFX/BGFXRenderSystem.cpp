@@ -72,19 +72,9 @@ namespace Puffin::Rendering::BGFX
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00B5E2FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
 
-        // Create Static Vertex Buffer
-        m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), s_layoutVertexPC32);
+        InitStaticCubeData();
 
-        // Create Static Index Buffer
-        m_ibh = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
-
-        /*m_vsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\vs_cubes.bin");
-        m_fsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\fs_cubes.bin");*/
-
-        m_vsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\forward_shading\\vs_forward_shading.bin");
-        m_fsh = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\forward_shading\\fs_forward_shading.bin");
-
-        m_program = bgfx::createProgram(m_vsh, m_fsh, true);
+        InitMeshProgram();
 
         // Connect Signls
         auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
@@ -126,10 +116,9 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::Cleanup()
 	{
-        bgfx::destroy(m_ibh);
-		bgfx::destroy(m_vbh);
+        bgfx::destroy(m_meshProgram);
 
-        bgfx::destroy(m_program);
+        DestroyStaticCubeData();
 
 		bgfx::shutdown();
 	}
@@ -137,6 +126,35 @@ namespace Puffin::Rendering::BGFX
 	void BGFXRenderSystem::OnInputEvent(const Input::InputEvent& inputEvent)
 	{
         m_inputEvents.Push(inputEvent);
+	}
+
+	void BGFXRenderSystem::InitStaticCubeData()
+	{
+        // Create Static Vertex Buffer
+        m_cubeMeshData.vertexBufferHandle = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), s_layoutVertexPC32);
+
+        // Create Static Index Buffer
+        m_cubeMeshData.indexBufferHandle = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
+
+        bgfx::ShaderHandle cubeVSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\vs_cubes.bin");
+        bgfx::ShaderHandle cubeFSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\fs_cubes.bin");
+        m_cubeProgram = bgfx::createProgram(cubeVSH, cubeFSH, true);
+	}
+
+	void BGFXRenderSystem::DestroyStaticCubeData()
+	{
+        bgfx::destroy(m_cubeMeshData.indexBufferHandle);
+        bgfx::destroy(m_cubeMeshData.vertexBufferHandle);
+
+        bgfx::destroy(m_cubeProgram);
+	}
+
+	void BGFXRenderSystem::InitMeshProgram()
+	{
+        bgfx::ShaderHandle meshVSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\forward_shading\\vs_forward_shading.bin");
+        bgfx::ShaderHandle meshFSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\spirv\\forward_shading\\fs_forward_shading.bin");
+
+        m_meshProgram = bgfx::createProgram(meshVSH, meshFSH, true);
 	}
 
 	void BGFXRenderSystem::ProcessEvents()
@@ -310,20 +328,30 @@ namespace Puffin::Rendering::BGFX
         // Dummy draw call to make sure view 0 is cleared
         bgfx::touch(0);
 
+        // Set Camera Matrices
         bgfx::setViewTransform(0, m_editorCamMats.view, m_editorCamMats.proj);
 
-        // Setup Transform
-        float mtx[16];
-        bx::mtxIdentity(mtx);
-        //bx::mtxRotateY(mtx, m_frameCounter * 0.01f);
-        bgfx::setTransform(mtx);
+        for (const auto& drawBatch : m_meshDrawBatches)
+        {
+            // Set Vertex/Index Buffers
+	        bgfx::setVertexBuffer(0, drawBatch.vertexBufferHandle);
+	        bgfx::setIndexBuffer(drawBatch.indexBufferHandle);
 
-        // Set Vertex/Index Buffers
-        bgfx::setVertexBuffer(0, m_vbh);
-        bgfx::setIndexBuffer(m_ibh);
+            for (const auto& entity : drawBatch.entities)
+            {
+				const auto& transform = m_world->GetComponent<TransformComponent>(entity);
 
-        // Submit Program
-        bgfx::submit(0, m_program);
+                // Setup Transform
+				float model[16];
+
+                BuildModelTransform(transform, model);
+
+                bgfx::setTransform(model);
+
+                // Submit Program
+				bgfx::submit(0, drawBatch.programHandle);
+            }
+        }
 
         // Advance to next frame
         bgfx::frame();
@@ -345,7 +373,7 @@ namespace Puffin::Rendering::BGFX
         if (!m_meshDrawBatches.Contains(mesh.meshAssetID))
         {
 	        MeshDrawBatch batch;
-            batch.programHandle = m_program;
+            batch.programHandle = m_meshProgram;
             batch.vertexBufferHandle = m_meshData[mesh.meshAssetID].vertexBufferHandle;
             batch.indexBufferHandle = m_meshData[mesh.meshAssetID].indexBufferHandle;
 
@@ -534,20 +562,20 @@ namespace Puffin::Rendering::BGFX
         return bgfx::createIndexBuffer(mem, indexFlags);
 	}
 
-	void BGFXRenderSystem::BuildModelTransform(const TransformComponent& transform, float* mtx)
+	void BGFXRenderSystem::BuildModelTransform(const TransformComponent& transform, float* model)
 	{
         // Identity
-		bx::mtxIdentity(mtx);
+		bx::mtxIdentity(model);
 
         // Scale
-        bx::mtxScale(mtx, transform.scale.x, transform.scale.y, transform.scale.z);
+        bx::mtxScale(model, transform.scale.x, transform.scale.y, transform.scale.z);
 
         // Rotation 
-        bx::mtxRotateX(mtx, Maths::DegreesToRadians(transform.rotation.x));
-        bx::mtxRotateY(mtx, Maths::DegreesToRadians(transform.rotation.y));
-        bx::mtxRotateZ(mtx, Maths::DegreesToRadians(transform.rotation.z));
+        bx::mtxRotateX(model, Maths::DegreesToRadians(transform.rotation.x));
+        bx::mtxRotateY(model, Maths::DegreesToRadians(transform.rotation.y));
+        bx::mtxRotateZ(model, Maths::DegreesToRadians(transform.rotation.z));
 
         // Translation
-        bx::mtxTranslate(mtx, static_cast<float>(transform.position.x), static_cast<float>(transform.position.y), static_cast<float>(transform.position.z));
+        bx::mtxTranslate(model, static_cast<float>(transform.position.x), static_cast<float>(transform.position.y), static_cast<float>(transform.position.z));
 	}
 }
