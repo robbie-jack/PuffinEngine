@@ -38,10 +38,4 @@ namespace Puffin::Rendering::BGFX
 
 		std::set<ECS::EntityID> entities; // Set of Entities using this texture
 	};
-
-	struct CameraData
-	{
-		bx::Vec3 eye, at;
-		float fovy, aspect, cNear, cFar;
-	};
 }

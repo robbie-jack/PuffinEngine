@@ -361,6 +361,7 @@ namespace Puffin::Rendering::BGFX
             for (const auto& entity : drawBatch.entities)
             {
 				const auto& transform = m_world->GetComponent<TransformComponent>(entity);
+                const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
                 // Setup Transform
 				float model[16];
@@ -368,6 +369,9 @@ namespace Puffin::Rendering::BGFX
                 BuildModelTransform(transform, model);
 
                 bgfx::setTransform(model);
+
+                // Set Texture
+                bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoHandles[mesh.textureAssetID].handle);
 
                 // Submit Program
 				bgfx::submit(0, drawBatch.programHandle);
@@ -623,7 +627,7 @@ namespace Puffin::Rendering::BGFX
             bx::memCopy(mem->data, texAsset->GetPixelData(), mem->size);
 
             handle = bgfx::createTexture2D(texAsset->GetTextureWidth(), texAsset->GetTextureHeight(),
-            false, 1, g_texFormatMap.at(texAsset->GetTextureFormat()));
+            false, 1, g_texFormatMap.at(texAsset->GetTextureFormat()), 0, mem);
 
             texAsset->Unload();
         }
