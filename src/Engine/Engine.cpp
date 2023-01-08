@@ -507,7 +507,7 @@ namespace Puffin::Core
 		std::vector<std::shared_ptr<ECS::Entity>> entities;
 		entities.reserve(numEntities);
 
-		std::string names[7] = { "House", "Sphere", "Falling Cube", "Light", "Static Cube", "Plane", "Light 2" };
+		std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Light", "Static Cube", "Plane", "Light 2" };
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)

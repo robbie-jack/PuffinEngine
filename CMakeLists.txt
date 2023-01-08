@@ -134,10 +134,12 @@ set(HEADERS
 	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.hpp
-	# Rendering
+	# Rendering BGFX
 	${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.hpp
 	${HEADER_DIR}/Rendering/BGFX/BGFXVertex.hpp
 	${HEADER_DIR}/Rendering/BGFX/BGFXTypes.hpp
+	${HEADER_DIR}/Rendering/BGFX/Forward/BGFXForwardRenderer.hpp
+	# Rendering Vulkan
 	${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
 	${HEADER_DIR}/Rendering/Vulkan/VKBaseRenderer.h
@@ -209,8 +211,10 @@ set(SOURCES
 	${SOURCE_DIR}/Physics/Box2D/Box2DPhysicsSystem.cpp
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
-	# Rendering
+	# Rendering BGFX
 	${SOURCE_DIR}/Rendering/BGFX/BGFXRenderSystem.cpp
+	${SOURCE_DIR}/Rendering/BGFX/Forward/BGFXForwardRenderer.cpp
+	# Rendering Vulkan
 	${SOURCE_DIR}/Rendering/Vulkan/VulkanRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKForwardRenderer.cpp

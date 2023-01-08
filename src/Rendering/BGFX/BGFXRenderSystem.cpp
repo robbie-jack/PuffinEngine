@@ -21,6 +21,7 @@ X_PLATFORM_LINUX || BX_PLATFORM_BSD
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Rendering/CameraComponent.h"
+#include "Components/Rendering/LightComponent.h"
 #include "MathHelpers.h"
 #include "Engine/SignalSubsystem.hpp"
 #include "Assets/TextureAsset.h"
@@ -178,6 +179,28 @@ namespace Puffin::Rendering::BGFX
         });
 	}
 
+	void BGFXRenderSystem::InitLightUniforms()
+	{
+        m_lightUniformHandles.position = bgfx::createUniform("m_lightPosition", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        m_lightUniformHandles.direction = bgfx::createUniform("m_lightDirection", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+
+        m_lightUniformHandles.colorAmbient = bgfx::createUniform("m_lightColorAmbient", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        m_lightUniformHandles.colorDiffuse = bgfx::createUniform("m_lightColorDiffuse", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+
+        m_lightUniformHandles.specular = bgfx::createUniform("m_lightSpecular", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        m_lightUniformHandles.attenuation = bgfx::createUniform("m_lightAttenuation", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+
+        m_deletionQueue.PushFunction([=]()
+        {
+            bgfx::destroy(m_lightUniformHandles.position);
+	        bgfx::destroy(m_lightUniformHandles.direction);
+	        bgfx::destroy(m_lightUniformHandles.colorAmbient);
+	        bgfx::destroy(m_lightUniformHandles.colorDiffuse);
+	        bgfx::destroy(m_lightUniformHandles.specular);
+	        bgfx::destroy(m_lightUniformHandles.attenuation);
+        });
+	}
+
 	void BGFXRenderSystem::ProcessEvents()
 	{
         Input::InputEvent inputEvent;
@@ -323,6 +346,27 @@ namespace Puffin::Rendering::BGFX
                 entity->RemoveComponent<CameraMatComponent>();
             }
         }
+
+        std::vector<std::shared_ptr<ECS::Entity>> pointLightEntities;
+        ECS::GetEntities<TransformComponent, PointLightComponent>(m_world, pointLightEntities);
+        for (const auto& entity : pointLightEntities)
+        {
+	        
+        }
+
+        std::vector<std::shared_ptr<ECS::Entity>> spotLightEntities;
+        ECS::GetEntities<TransformComponent, SpotLightComponent>(m_world, spotLightEntities);
+        for (const auto& entity : spotLightEntities)
+        {
+
+        }
+
+        std::vector<std::shared_ptr<ECS::Entity>> dirLightEntities;
+        ECS::GetEntities<TransformComponent, DirectionalLightComponent>(m_world, dirLightEntities);
+        for (const auto& entity : dirLightEntities)
+        {
+			
+        }
 	}
 
 	void BGFXRenderSystem::CleanupComponents()
@@ -349,22 +393,32 @@ namespace Puffin::Rendering::BGFX
         // Dummy draw call to make sure view 0 is cleared
         bgfx::touch(0);
 
+        DrawScene();
+
+        // Advance to next frame
+        bgfx::frame();
+
+        m_frameCounter++;
+	}
+
+	void BGFXRenderSystem::DrawScene()
+	{
         // Set Camera Matrices
         bgfx::setViewTransform(0, m_editorCamMats.view, m_editorCamMats.proj);
 
         for (const auto& drawBatch : m_meshDrawBatches)
         {
             // Set Vertex/Index Buffers
-	        bgfx::setVertexBuffer(0, drawBatch.vertexBufferHandle);
-	        bgfx::setIndexBuffer(drawBatch.indexBufferHandle);
+            bgfx::setVertexBuffer(0, drawBatch.vertexBufferHandle);
+            bgfx::setIndexBuffer(drawBatch.indexBufferHandle);
 
             for (const auto& entity : drawBatch.entities)
             {
-				const auto& transform = m_world->GetComponent<TransformComponent>(entity);
+                const auto& transform = m_world->GetComponent<TransformComponent>(entity);
                 const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
                 // Setup Transform
-				float model[16];
+                float model[16];
 
                 BuildModelTransform(transform, model);
 
@@ -374,14 +428,9 @@ namespace Puffin::Rendering::BGFX
                 bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoHandles[mesh.textureAssetID].handle);
 
                 // Submit Program
-				bgfx::submit(0, drawBatch.programHandle);
+                bgfx::submit(0, drawBatch.programHandle);
             }
         }
-
-        // Advance to next frame
-        bgfx::frame();
-
-        m_frameCounter++;
 	}
 
 	void BGFXRenderSystem::InitMeshComponent(std::shared_ptr<ECS::Entity> entity)

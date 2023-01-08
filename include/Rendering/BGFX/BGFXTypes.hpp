@@ -5,7 +5,6 @@
 #include "ECS/EntityID.h"
 #include "Types/UUID.h"
 
-
 #include <set>
 #include <bx/math.h>
 
@@ -37,5 +36,22 @@ namespace Puffin::Rendering::BGFX
 		bgfx::TextureHandle handle;
 
 		std::set<ECS::EntityID> entities; // Set of Entities using this texture
+	};
+
+	struct LightInstance
+	{
+		
+	};
+
+	struct LightUniformHandles
+	{
+		bgfx::UniformHandle position;
+		bgfx::UniformHandle direction;
+
+		bgfx::UniformHandle colorAmbient;
+		bgfx::UniformHandle colorDiffuse;
+		bgfx::UniformHandle specular;
+
+		bgfx::UniformHandle attenuation;
 	};
 }

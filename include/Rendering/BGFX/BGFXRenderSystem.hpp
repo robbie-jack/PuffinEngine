@@ -52,6 +52,8 @@ namespace Puffin::Rendering::BGFX
 		{ Assets::TextureFormat::RGBA8, bgfx::TextureFormat::RGBA8 }
 	};
 
+	constexpr uint16_t G_MAX_LIGHTS = 16;
+
 	static bgfx::ShaderHandle LoadShader(const char* filename)
 	{
 		/*const char* shaderPath = "???";
@@ -131,6 +133,9 @@ namespace Puffin::Rendering::BGFX
 		PackedVector<TextureData> m_texAlbedoHandles;
 		PackedVector<TextureData> m_texNormalHandles;
 
+		// Light Vars
+		LightUniformHandles m_lightUniformHandles;
+
 		EditorCamera m_editorCam;
 		CameraMatComponent m_editorCamMats;
 		bool m_moveLeft = false;
@@ -148,6 +153,7 @@ namespace Puffin::Rendering::BGFX
 		void InitStaticCubeData();
 		void InitMeshProgram();
 		void InitTexSamplers();
+		void InitLightUniforms();
 
 		void ProcessEvents();
 
@@ -156,6 +162,7 @@ namespace Puffin::Rendering::BGFX
 		void CleanupComponents();
 
 		void Draw();
+		void DrawScene();
 
 		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
 		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);

@@ -19,58 +19,6 @@ namespace Puffin
 {
 	namespace Rendering
 	{
-		struct GPULightData
-		{
-			alignas(16) glm::vec3 ambientColor;
-			alignas(16) glm::vec3 diffuseColor;
-
-			alignas(4) float specularStrength;
-			alignas(4) int shininess;
-
-			alignas(16) glm::mat4 lightSpaceMatrix;
-			alignas(4) int shadowmapIndex;
-		};
-
-		struct GPUPointLightData
-		{
-			alignas(16) glm::vec3 position;
-
-			alignas(4) float constant;
-			alignas(4) float linear;
-			alignas(4) float quadratic;
-
-			alignas(4) int dataIndex;
-		};
-
-		struct GPUDirLightData
-		{
-			alignas(16) glm::vec3 direction;
-
-			alignas(4) int dataIndex;
-		};
-
-		struct GPUSpotLightData
-		{
-			alignas(16) glm::vec3 position;
-			alignas(16) glm::vec3 direction;
-
-			alignas(4) float innerCutoff;
-			alignas(4) float outerCutoff;
-
-			alignas(4) float constant;
-			alignas(4) float linear;
-			alignas(4) float quadratic;
-
-			alignas(4) int dataIndex;
-		};
-
-		struct GPULightStatsData
-		{
-			alignas(4) int numPLights;
-			alignas(4) int numDLights;
-			alignas(4) int numSLights;
-		};
-
 		enum class LightType
 		{
 			POINT = 0,
