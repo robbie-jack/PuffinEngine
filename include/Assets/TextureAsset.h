@@ -68,7 +68,7 @@ namespace Puffin::Assets
 
 		bool Load();
 
-		void Unload();
+		void Unload() override;
 
 		const std::vector<char>& GetPixels() const
 		{

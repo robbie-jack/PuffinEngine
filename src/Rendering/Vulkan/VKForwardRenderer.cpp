@@ -3,6 +3,7 @@
 #include "Assets/AssetRegistry.h"
 #include "Rendering/Vulkan/VulkanRenderSystem.h"
 #include "Rendering/Vulkan/Helpers/VKInitializers.h"
+#include "Rendering/Vulkan/Helpers/VKVertex.hpp"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \

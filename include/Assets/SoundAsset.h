@@ -26,6 +26,8 @@ namespace Puffin::Assets
 		{
 			return G_SOUND_VERSION;
 		}
+
+		void Unload() override {}
 	};
 
 }

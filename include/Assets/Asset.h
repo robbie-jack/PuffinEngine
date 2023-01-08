@@ -149,6 +149,7 @@ namespace Puffin::Assets
 
 		virtual const std::string& Type() const = 0;
 		virtual const uint32_t& Version() const = 0;
+		virtual void Unload() = 0;
 
 	protected:
 

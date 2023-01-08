@@ -104,6 +104,11 @@ namespace Puffin::Assets
 
 		~AssetRegistry()
 		{
+			for (const auto& [fst, snd] : m_idToAssetMap)
+			{
+				snd->Unload();
+			}
+
 			m_idToAssetMap.clear();
 			m_pathToIDMap.clear();
 			m_assetFactories.clear();

@@ -48,7 +48,7 @@ namespace Puffin::Assets
 
 		bool Load();
 
-		void Unload();
+		void Unload() override;
 
 		const std::vector<Rendering::VertexPNTV32>& GetVertices() const
 		{

@@ -8,6 +8,7 @@
 #include "Types/Vertex.hpp"
 #include "Assets/AssetRegistry.h"
 #include "Rendering/Vulkan/Helpers/VKPipeline.h"
+#include "Rendering/Vulkan/Helpers/VKVertex.hpp"
 
 // STL
 #include <iostream>
