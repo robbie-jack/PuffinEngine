@@ -8,7 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Types/Vector.h"
-#include "Rendering/Vulkan/VKTypes.h"
 
 #include <vector>
 #include <string>

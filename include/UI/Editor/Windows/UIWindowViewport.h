@@ -4,7 +4,6 @@
 #define UI_WINDOW_VIEWPORT_H
 
 #include "UIWindow.h"
-#include "Rendering/Vulkan/VKTypes.h"
 
 #include <string>
 

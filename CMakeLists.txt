@@ -140,19 +140,21 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/BGFX/BGFXTypes.hpp
 	${HEADER_DIR}/Rendering/BGFX/Forward/BGFXForwardRenderer.hpp
 	# Rendering Vulkan
-	${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
-	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
-	${HEADER_DIR}/Rendering/Vulkan/VKBaseRenderer.h
-	${HEADER_DIR}/Rendering/Vulkan/VKDeferredRender.h
-	${HEADER_DIR}/Rendering/Vulkan/VKForwardRenderer.h
-	${HEADER_DIR}/Rendering/Vulkan/DebugDraw.h
-	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDebug.h
-	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.h
-	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKHelper.h
-	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKInitializers.h
-	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKPipeline.h
-	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKTexture.h
-	${HEADER_DIR}/Rendering/Vulkan/Helpers/VKVertex.hpp
+	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.hpp
+	
+	# ${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
+	# ${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
+	# ${HEADER_DIR}/Rendering/Vulkan/VKBaseRenderer.h
+	# ${HEADER_DIR}/Rendering/Vulkan/VKDeferredRender.h
+	# ${HEADER_DIR}/Rendering/Vulkan/VKForwardRenderer.h
+	# ${HEADER_DIR}/Rendering/Vulkan/DebugDraw.h
+	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDebug.h
+	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.h
+	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKHelper.h
+	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKInitializers.h
+	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKPipeline.h
+	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKTexture.h
+	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKVertex.hpp
 	# Scripting
 	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScriptSystem.h
@@ -215,12 +217,14 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/BGFX/BGFXRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/BGFX/Forward/BGFXForwardRenderer.cpp
 	# Rendering Vulkan
-	${SOURCE_DIR}/Rendering/Vulkan/VulkanRenderSystem.cpp
-	${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
-	${SOURCE_DIR}/Rendering/Vulkan/VKForwardRenderer.cpp
-	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.cpp
-	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKHelper.cpp
-	${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKVertex.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/VKRenderSystem.cpp
+	
+	# ${SOURCE_DIR}/Rendering/Vulkan/VulkanRenderSystem.cpp
+	# ${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
+	# ${SOURCE_DIR}/Rendering/Vulkan/VKForwardRenderer.cpp
+	# ${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.cpp
+	# ${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKHelper.cpp
+	# ${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKVertex.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
 	${SOURCE_DIR}/Scripting/NativeScriptSystem.cpp
@@ -298,7 +302,6 @@ endfunction(sort_into_source_group)
 sort_into_source_group(HEADERS ${HEADER_DIR} "")
 sort_into_source_group(SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} Libraries/ImGui)
-#sort_into_source_group(IMGUI_VULKAN_SOURCES ${IMGUI_VULKAN_DIR} Libraries/ImGui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} Libraries/OpenSimplexNoise)
 sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} Libraries/VKBootstrap)
 sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)
@@ -368,6 +371,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/OpenSimplexNoise)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/imgui)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/imgui-filebrowser)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/lz4/lib)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vookoo/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include/compat/msvc)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Rendering/Vulkan/DebugDraw.h>
+//#include <Rendering/Vulkan/DebugDraw.h>
 #include <Components\TransformComponent.h>
 #include "Engine/EventSubsystem.hpp"
 
@@ -19,9 +19,9 @@ namespace Puffin
 	{
 		float lineLength = 2.5f;
 
-		eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(0.0f, 0.0f, lineLength), Vector3f(1.0f, 0.0f, 0.0f)));
-		eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(0.0f, lineLength, 0.0f), Vector3f(0.0f, 1.0f, 0.0f)));
-		eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(lineLength, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f)));
+		//eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(0.0f, 0.0f, lineLength), Vector3f(1.0f, 0.0f, 0.0f)));
+		//eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(0.0f, lineLength, 0.0f), Vector3f(0.0f, 1.0f, 0.0f)));
+		//eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(lineLength, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f)));
 	}
 
 	inline void DrawRotationGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, Vector3f position)

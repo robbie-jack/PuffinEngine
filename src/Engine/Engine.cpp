@@ -4,7 +4,7 @@
 #include "ECS/Entity.h"
 
 #include "Rendering/BGFX/BGFXRenderSystem.hpp"
-#include "Rendering/Vulkan/VulkanRenderSystem.h"
+//#include "Rendering/Vulkan/VulkanRenderSystem.h"
 //#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Physics/Onager2D/Onager2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
