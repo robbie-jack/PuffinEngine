@@ -2,6 +2,7 @@
 
 #include "Window/WindowSubsystem.hpp"
 #include "Engine/Engine.hpp"
+#include "vku/vku_framework.hpp"
 
 #include <iostream>
 

@@ -47,17 +47,17 @@ execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${branch}
 endfunction(checkout_git_branch)
 
 # Init/Update Submodules
-add_git_submodule("deps/box2d")
-add_git_submodule("deps/implot")
-add_git_submodule("deps/OpenSimplexNoise")
-
-add_git_submodule("deps/imgui")
-checkout_git_branch("deps/imgui" "docking")
-
-add_git_submodule("deps/imgui-filebrowser")
-add_git_submodule("deps/lz4")
 add_git_submodule("deps/assimp")
 add_git_submodule("deps/bgfx.cmake")
+add_git_submodule("deps/box2d")
+add_git_submodule("deps/imgui")
+add_git_submodule("deps/imgui-filebrowser")
+add_git_submodule("deps/implot")
+add_git_submodule("deps/lz4")
+add_git_submodule("deps/OpenSimplexNoise")
+add_git_submodule("deps/vookoo")
+
+checkout_git_branch("deps/imgui" "docking")
 
 # Define CMAKE Variables
 set(PROJECT_NAME PuffinEngine)
@@ -287,12 +287,12 @@ message("============================================================")
 function(sort_into_source_group files dir sort_dir)
 
 foreach(file IN LISTS ${files})
-	message("")
+	#message("")
 	message("Generating Source Group for " ${file})
 	file(RELATIVE_PATH relative_path ${dir} ${file})
 	get_filename_component(relative_dir ${relative_path} DIRECTORY)
-	message("Relative Path: " ${relative_path})
-	message("Relative Dir: " ${relative_dir})
+	#message("Relative Path: " ${relative_path})
+	#message("Relative Dir: " ${relative_dir})
     string(REPLACE "/" "\\" relative_path_msvc "${relative_dir}")
     source_group("${sort_dir}/${relative_path_msvc}" FILES "${file}")
 endforeach()
