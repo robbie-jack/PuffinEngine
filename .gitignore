@@ -251,6 +251,8 @@ FakesAssemblies/
 
 # DLLs in bin
 !bin/*.dll
+!bin/*.bin
+!bin/*.spv
 
 # Android validation layer libraries
 android/layers/*/*.so
