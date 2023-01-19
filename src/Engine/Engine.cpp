@@ -4,7 +4,7 @@
 #include "ECS/Entity.h"
 
 #include "Rendering/BGFX/BGFXRenderSystem.hpp"
-//#include "Rendering/Vulkan/VulkanRenderSystem.h"
+#include "Rendering/Vulkan/VKRenderSystem.hpp"
 //#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Physics/Onager2D/Onager2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
@@ -122,8 +122,8 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Systems
-		RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
-		//RegisterSystem<Rendering::VulkanRenderSystem>();
+		//RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
+		RegisterSystem<Rendering::VK::VKRenderSystem>();
 		RegisterSystem<Physics::Onager2DPhysicsSystem>();
 		//RegisterSystem<Physics::Box2DPhysicsSystem>();
 		RegisterSystem<Scripting::AngelScriptSystem>();

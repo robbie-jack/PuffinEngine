@@ -29,3 +29,6 @@
 [submodule "deps/vookoo"]
 	path = deps/vookoo
 	url = https://github.com/andy-thomason/Vookoo/
+[submodule "deps/vma-hpp"]
+	path = deps/vma-hpp
+	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp

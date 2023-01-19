@@ -1,11 +1,20 @@
 #pragma once
 
-#define VK_USE_PLATFORM_WIN32_KHR
-#define NOMINMAX
+#define GLFW_INCLUDE_VULKAN
+#include <glfw/glfw3.h>
+#include <glfw/glfw3native.h>
 
-#include "vulkan/vulkan.hpp"
-#include "vku/vku.hpp"
+//#define VMA_IMPLEMENTATION
+
+// If you don't like the `vma::` prefix:
+//#define VMA_HPP_NAMESPACE <prefix>
+
+#include <vulkan/vulkan.hpp>
+//#include <vma/vk_mem_alloc.h>
+
+//#include "vk_mem_alloc.hpp"
 #include "vku/vku_framework.hpp"
+#include "vku/vku.hpp"
 
 #include "ECS/System.hpp"
 

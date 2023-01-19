@@ -1,8 +1,17 @@
 #include "Rendering/Vulkan/VKRenderSystem.hpp"
 
+//#define VK_USE_PLATFORM_WIN32_KHR
+//#define VMA_IMPLEMENTATION
+
+// If you don't like the `vma::` prefix:
+//#define VMA_HPP_NAMESPACE <prefix>
+
+//#include <vulkan/vulkan.hpp>
+//#include "vk_mem_alloc.hpp"
+//#include "vku/vku_framework.hpp"
+
 #include "Window/WindowSubsystem.hpp"
 #include "Engine/Engine.hpp"
-#include "vku/vku_framework.hpp"
 
 #include <iostream>
 

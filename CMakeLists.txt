@@ -55,6 +55,7 @@ add_git_submodule("deps/imgui-filebrowser")
 add_git_submodule("deps/implot")
 add_git_submodule("deps/lz4")
 add_git_submodule("deps/OpenSimplexNoise")
+add_git_submodule("deps/vma-hpp")
 add_git_submodule("deps/vookoo")
 
 checkout_git_branch("deps/imgui" "docking")
@@ -74,7 +75,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
-set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/vk-bootstrap)
+#set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/vk-bootstrap)
 set(ANGELSCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/angelscript)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimplexNoise)
 
@@ -261,9 +262,9 @@ set (OPENSIMPLEX_SOURCES
 	${OPENSIMPLEX_DIR}/OpenSimplexNoise.cpp
 	)
 	
-set (VKBOOTSTRAP_SOURCES
-	${VKBOOTSTRAP_DIR}/VkBootstrap.cpp
-	)
+# set (VKBOOTSTRAP_SOURCES
+	# ${VKBOOTSTRAP_DIR}/VkBootstrap.cpp
+	# )
 	
 set (ANGELSCRIPT_SOURCES
 	${ANGELSCRIPT_DIR}/scriptarray/scriptarray.cpp
@@ -276,7 +277,7 @@ set (ANGELSCRIPT_SOURCES
 add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
+#target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
 
 message("")
@@ -303,7 +304,7 @@ sort_into_source_group(HEADERS ${HEADER_DIR} "")
 sort_into_source_group(SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} Libraries/ImGui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} Libraries/OpenSimplexNoise)
-sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} Libraries/VKBootstrap)
+#sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} Libraries/VKBootstrap)
 sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)
 
 message("")
@@ -371,6 +372,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/OpenSimplexNoise)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/imgui)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/imgui-filebrowser)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/lz4/lib)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/Vulkan-Hpp/Vulkan-Headers/include/vulkan)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vookoo/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
@@ -400,6 +404,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE /MP)
 # Platform defines (WIN32)
 if (WIN32)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_PLATFORM_WIN32)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_EXPOSE_NATIVE_WIN32)
 endif()
 
 # Big Object Support (MSCV/Linux)
