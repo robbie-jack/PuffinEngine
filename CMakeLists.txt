@@ -407,6 +407,8 @@ if (WIN32)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_EXPOSE_NATIVE_WIN32)
+else()
+	target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_EXPOSE_NATIVE_X11)
 endif()
 
 # Big Object Support (MSCV/Linux)

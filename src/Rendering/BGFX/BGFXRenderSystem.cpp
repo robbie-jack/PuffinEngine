@@ -6,16 +6,8 @@
 #include "Engine/Engine.hpp"
 #include "Window/WindowSubsystem.hpp"
 
-#include "GLFW/glfw3.h"
-
-#if PFN_PLATFORM_WIN32
-	#define GLFW_EXPOSE_NATIVE_WIN32
-#else
-X_PLATFORM_LINUX || BX_PLATFORM_BSD
-	#define GLFW_EXPOSE_NATIVE_X11
-#endif
-
 #include "Assets/AssetRegistry.h"
+#include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"
 
 #include "Components/TransformComponent.h"

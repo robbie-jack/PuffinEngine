@@ -136,12 +136,12 @@ namespace Puffin::Core
 
 		const double& GetTimeStep() const
 		{
-			return m_timeStep;
+			return m_timeStepFixed;
 		}
 
 		void SetTimeStep(const double timeStep)
 		{
-			m_timeStep = timeStep;
+			m_timeStepFixed = timeStep;
 		}
 
 		const double& GetDeltaTime() const
@@ -174,14 +174,17 @@ namespace Puffin::Core
 		std::shared_ptr<UI::UIManager> m_uiManager = nullptr;
 
 		bool running = true;
+		bool m_shouldLimitFrameRate = true; // Whether framerate should be capped at m_frameRateMax
 		PlayState playState = PlayState::STOPPED;
 
 		// Time Members
 		std::chrono::time_point<std::chrono::steady_clock> m_lastTime, m_currentTime;
 		double m_deltaTime = 0.0; // How long it took last frame to complete
 		double m_accumulatedTime = 0.0; // Time passed since last physics tick
-		double m_timeStep = 1 / 60.0; // How often deterministic code like physics should occur (defaults to 60 times a second)
-		double m_maxTimeStep = 1 / 25.0; // Maximum amount of time each frame should take to complete
+		double m_timeStepFixed = 1 / 60.0; // How often deterministic code like physics should occur (defaults to 60 times a second)
+		double m_timeStepLimit = 1 / 25.0; // Maximum amount of time each frame should take to complete
+
+		uint16_t m_frameRateMax = 60; // Limit on how fast game runs
 
 		// System Members
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers

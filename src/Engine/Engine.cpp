@@ -222,9 +222,9 @@ namespace Puffin::Core
 		m_deltaTime = duration.count();
 
 		// Make sure delta time never exceeds 1/30th of a second
-		if (m_deltaTime > m_maxTimeStep)
+		if (m_deltaTime > m_timeStepLimit)
 		{
-			m_deltaTime = m_maxTimeStep;
+			m_deltaTime = m_timeStepLimit;
 		}
 
 		auto ecsWorld = GetSubsystem<ECS::World>();
@@ -278,9 +278,9 @@ namespace Puffin::Core
 				auto stageStartTime = std::chrono::high_resolution_clock::now();
 
 				// Perform system updates until simulation is caught up
-				while (m_accumulatedTime >= m_timeStep)
+				while (m_accumulatedTime >= m_timeStepFixed)
 				{
-					m_accumulatedTime -= m_timeStep;
+					m_accumulatedTime -= m_timeStepFixed;
 
 					// FixedUpdate Systems
 					auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::FixedUpdate);
@@ -413,6 +413,18 @@ namespace Puffin::Core
 		if (windowSubsystem->ShouldPrimaryWindowClose())
 		{
 			running = false;
+		}
+
+		// Sleep if frame completed before frame rate limit
+		std::chrono::time_point<std::chrono::steady_clock> frameEndTime = std::chrono::high_resolution_clock::now();
+		const std::chrono::duration<double> actualDuration = frameEndTime - m_currentTime;
+
+		const auto timeStepMax = std::chrono::duration<double>(1.0 / m_frameRateMax);
+		if (actualDuration < timeStepMax)
+		{
+			auto sleepTime = timeStepMax - actualDuration;
+
+			std::this_thread::sleep_for(sleepTime);
 		}
 
 		return running;
