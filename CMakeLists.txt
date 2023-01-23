@@ -62,7 +62,7 @@ checkout_git_branch("deps/imgui" "docking")
 
 # Define CMAKE Variables
 set(PROJECT_NAME PuffinEngine)
-set(VULKAN_SDK_PATH "C:/VulkanSDK/1.3.216.0")
+set(VULKAN_SDK_PATH "C:/VulkanSDK/1.3.236.0")
 
 # Set Project Name
 project (${PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
@@ -313,7 +313,8 @@ message("")
 find_package(Vulkan REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
 
-target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${VULKAN_SDK_PATH}/Lib/vulkan-1.lib)
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
