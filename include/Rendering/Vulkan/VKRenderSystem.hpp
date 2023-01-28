@@ -86,12 +86,15 @@ namespace Puffin::Rendering::VK
 		vku::Window m_window;
 
 		vku::HostVertexBuffer m_triVertexBuffer;
+
+		vku::ShaderModule m_vertMod, m_fragMod;
 		vk::UniquePipeline m_triPipeline;
 
 		// Indicated initialization completed without any failures
 		bool m_isInitialized = false;
 
 		void InitVulkan();
+		vk::UniquePipeline BuildTrianglePipeline();
 		void InitTriangleRender();
 
 	};

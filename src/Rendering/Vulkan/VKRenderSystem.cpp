@@ -40,6 +40,8 @@ namespace Puffin::Rendering::VK
 		// Initialize makers
 		vku::InstanceMaker im{};
 		im.defaultLayers();
+		im.extensionValidation();
+
 		vku::DeviceMaker dm{};
 		dm.defaultLayers();
 
@@ -68,42 +70,50 @@ namespace Puffin::Rendering::VK
 			return;
 		}
 
+		m_window.clearColorValue() = { .0f, .7f, .9f, 1.0f };
+
 		m_isInitialized = true;
+	}
+
+	vk::UniquePipeline VKRenderSystem::BuildTrianglePipeline()
+	{
+		vku::PipelineLayoutMaker plm{};
+		vk::UniquePipelineLayout pl = plm.createUnique(m_device);
+
+		vku::PipelineMaker pm{ m_window.width(), m_window.height() };
+		return pm
+			.shader(vk::ShaderStageFlagBits::eVertex, m_vertMod)
+			.shader(vk::ShaderStageFlagBits::eFragment, m_fragMod)
+			.vertexBinding(0, sizeof(VertexPC32))
+			.vertexAttribute(0, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPC32, pos))
+			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color))
+			.createUnique(m_device, m_framework.pipelineCache(), *pl, m_window.renderPass());
 	}
 
 	void VKRenderSystem::InitTriangleRender()
 	{
 		vku::HostVertexBuffer buffer(m_device, m_framework.memprops(), s_triangleVertices);
 
-		vku::ShaderModule vert{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\hellotriangle\\hello_triangle_vs.spv" };
-		vku::ShaderModule frag{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\hellotriangle\\hello_triangle_fs.spv" };
+		m_vertMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\hellotriangle\\hello_triangle_vs.spv" };
+		m_fragMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\hellotriangle\\hello_triangle_fs.spv" };
 
-		vku::PipelineLayoutMaker plm{};
-		auto pipelineLayout = plm.createUnique(m_device);
+		// Make a pipeline to use the vertex format and shaders.
+		m_triPipeline = BuildTrianglePipeline();
 
-		auto buildPipeline = [&]()
-		{
-			// Make a pipeline to use the vertex format and shaders.
-			vku::PipelineMaker pm{ m_window.width(), m_window.height() };
-			return pm
-				.shader(vk::ShaderStageFlagBits::eVertex, vert)
-				.shader(vk::ShaderStageFlagBits::eFragment, frag)
-				.vertexBinding(0, sizeof(VertexPC32))
-				.vertexAttribute(0, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPC32, pos))
-				.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color))
-				.createUnique(m_device, m_framework.pipelineCache(), *pipelineLayout, m_window.renderPass());
-		};
-		m_triPipeline = buildPipeline();
-
-		m_window.setStaticCommands([this, &buildPipeline](vk::CommandBuffer cb, int imageIndex, vk::RenderPassBeginInfo& rpbi)
+		m_window.setStaticCommands([&](vk::CommandBuffer cb, int imageIndex, vk::RenderPassBeginInfo& rpbi)
 		{
 			static auto ww = m_window.width();
 			static auto wh = m_window.height();
 
-			if (ww != m_window.width() || wh != m_window.height()) {
+			if (ww != m_window.width() || wh != m_window.height()) 
+			{
 				ww = m_window.width();
 				wh = m_window.height();
-				m_triPipeline = buildPipeline();
+
+				// Make a pipeline to use the vertex format and shaders.
+				vku::PipelineMaker pm{ m_window.width(), m_window.height() };
+
+				m_triPipeline = BuildTrianglePipeline();
 			}
 
 			vk::CommandBufferBeginInfo cbbi{};
