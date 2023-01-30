@@ -10,7 +10,6 @@
 #include <memory>
 #include <unordered_map>
 #include <map>
-#include <chrono>
 
 namespace fs = std::filesystem;
 
@@ -178,13 +177,13 @@ namespace Puffin::Core
 		PlayState playState = PlayState::STOPPED;
 
 		// Time Members
-		std::chrono::time_point<std::chrono::steady_clock> m_lastTime, m_currentTime;
+		double m_lastTime, m_currentTime;
 		double m_deltaTime = 0.0; // How long it took last frame to complete
 		double m_accumulatedTime = 0.0; // Time passed since last physics tick
 		double m_timeStepFixed = 1 / 60.0; // How often deterministic code like physics should occur (defaults to 60 times a second)
 		double m_timeStepLimit = 1 / 25.0; // Maximum amount of time each frame should take to complete
 
-		uint16_t m_frameRateMax = 60; // Limit on how fast game runs
+		uint16_t m_frameRateMax = 120; // Limit on how fast game runs
 
 		// System Members
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers

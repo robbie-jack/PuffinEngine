@@ -36,6 +36,9 @@
 #include "Assets/Importers/ModelImporter.h"
 #include "Components/Physics/VelocityComponent.hpp"
 
+#include <chrono>
+#include <thread>
+
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -122,8 +125,8 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Systems
-		//RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
-		RegisterSystem<Rendering::VK::VKRenderSystem>();
+		RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
+		//RegisterSystem<Rendering::VK::VKRenderSystem>();
 		RegisterSystem<Physics::Onager2DPhysicsSystem>();
 		//RegisterSystem<Physics::Box2DPhysicsSystem>();
 		RegisterSystem<Scripting::AngelScriptSystem>();
@@ -209,17 +212,25 @@ namespace Puffin::Core
 			}
 		}
 
-		m_lastTime = std::chrono::high_resolution_clock::now(); // Time Count Started
-		m_currentTime = std::chrono::high_resolution_clock::now();
+		m_lastTime = glfwGetTime(); // Time Count Started
+		m_currentTime = m_lastTime;
 	}
 
 	bool Engine::Update()
 	{
 		// Run Game Loop;
 		m_lastTime = m_currentTime;
-		m_currentTime = std::chrono::high_resolution_clock::now();
-		const std::chrono::duration<double> duration = m_currentTime - m_lastTime;
-		m_deltaTime = duration.count();
+		m_currentTime = glfwGetTime();
+		m_deltaTime = m_currentTime - m_lastTime;
+		const double deltaTimeMax = 1.0 / m_frameRateMax;
+
+		while (m_deltaTime < deltaTimeMax)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(0));
+
+			m_currentTime = glfwGetTime();
+			m_deltaTime = m_currentTime - m_lastTime;
+		}
 
 		// Make sure delta time never exceeds 1/30th of a second
 		if (m_deltaTime > m_timeStepLimit)
@@ -275,7 +286,7 @@ namespace Puffin::Core
 				// Add onto accumulated time
 				m_accumulatedTime += m_deltaTime;
 
-				auto stageStartTime = std::chrono::high_resolution_clock::now();
+				auto stageStartTime = glfwGetTime();
 
 				// Perform system updates until simulation is caught up
 				while (m_accumulatedTime >= m_timeStepFixed)
@@ -288,46 +299,42 @@ namespace Puffin::Core
 					{
 						std::shared_ptr<ECS::System> system = it->second;
 
-						auto startTime = std::chrono::high_resolution_clock::now();
+						auto startTime = glfwGetTime();
 
 						system->Update();
 
-						auto endTime = std::chrono::high_resolution_clock::now();
+						auto endTime = glfwGetTime();
 
-						const std::chrono::duration<double> systemDuration = endTime - startTime;
-						m_systemExecutionTime[Core::UpdateOrder::FixedUpdate][system->GetInfo().name] = systemDuration.count();
+						m_systemExecutionTime[Core::UpdateOrder::FixedUpdate][system->GetInfo().name] = endTime - startTime;
 					}
 				}
 
-				auto stageEndTime = std::chrono::high_resolution_clock::now();
+				auto stageEndTime = glfwGetTime();
 
-				const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
-				m_stageExecutionTime[Core::UpdateOrder::FixedUpdate] = stageDuration.count();
+				m_stageExecutionTime[Core::UpdateOrder::FixedUpdate] = stageEndTime - stageStartTime;
 			}
 
 			// Update
 			{
-				auto stageStartTime = std::chrono::high_resolution_clock::now();
+				auto stageStartTime = glfwGetTime();
 
 				auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Update);
 				for (auto& it = itr.first; it != itr.second; ++it)
 				{
 					std::shared_ptr<ECS::System> system = it->second;
 
-					auto startTime = std::chrono::high_resolution_clock::now();
+					auto startTime = glfwGetTime();
 
 					system->Update();
 
-					auto endTime = std::chrono::high_resolution_clock::now();
+					auto endTime = glfwGetTime();
 
-					const std::chrono::duration<double> systemDuration = endTime - startTime;
-					m_systemExecutionTime[Core::UpdateOrder::Update][system->GetInfo().name] = systemDuration.count();
+					m_systemExecutionTime[Core::UpdateOrder::Update][system->GetInfo().name] = endTime - startTime;
 				}
 
-				auto stageEndTime = std::chrono::high_resolution_clock::now();
+				auto stageEndTime = glfwGetTime();
 
-				const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
-				m_stageExecutionTime[Core::UpdateOrder::Update] = stageDuration.count();
+				m_stageExecutionTime[Core::UpdateOrder::Update] = stageEndTime - stageStartTime;
 			}
 		}
 
@@ -337,52 +344,48 @@ namespace Puffin::Core
 
 		// PreRender
 		{
-			auto stageStartTime = std::chrono::high_resolution_clock::now();
+			auto stageStartTime = glfwGetTime();
 
 			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::PreRender);
 			for (auto& it = itr.first; it != itr.second; ++it)
 			{
 				std::shared_ptr<ECS::System> system = it->second;
 
-				auto startTime = std::chrono::high_resolution_clock::now();
+				auto startTime = glfwGetTime();
 
 				system->Update();
 
-				auto endTime = std::chrono::high_resolution_clock::now();
+				auto endTime = glfwGetTime();
 
-				const std::chrono::duration<double> systemDuration = endTime - startTime;
-				m_systemExecutionTime[Core::UpdateOrder::PreRender][system->GetInfo().name] = systemDuration.count();
+				m_systemExecutionTime[Core::UpdateOrder::PreRender][system->GetInfo().name] = endTime - startTime;
 			}
 
-			auto stageEndTime = std::chrono::high_resolution_clock::now();
+			auto stageEndTime = glfwGetTime();
 
-			const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
-			m_stageExecutionTime[Core::UpdateOrder::Render] = stageDuration.count();
+			m_stageExecutionTime[Core::UpdateOrder::Render] = stageEndTime - stageStartTime;
 		}
 
 		// Render
 		{
-			auto stageStartTime = std::chrono::high_resolution_clock::now();
+			auto stageStartTime = glfwGetTime();
 
 			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Render);
 			for (auto& it = itr.first; it != itr.second; ++it)
 			{
 				std::shared_ptr<ECS::System> system = it->second;
 
-				auto startTime = std::chrono::high_resolution_clock::now();
+				auto startTime = glfwGetTime();
 
 				system->Update();
 
-				auto endTime = std::chrono::high_resolution_clock::now();
+				auto endTime = glfwGetTime();
 
-				const std::chrono::duration<double> systemDuration = endTime - startTime;
-				m_systemExecutionTime[Core::UpdateOrder::Render][system->GetInfo().name] = systemDuration.count();
+				m_systemExecutionTime[Core::UpdateOrder::Render][system->GetInfo().name] = endTime - startTime;
 			}
 
-			auto stageEndTime = std::chrono::high_resolution_clock::now();
+			auto stageEndTime = glfwGetTime();
 
-			const std::chrono::duration<double> stageDuration = stageEndTime - stageStartTime;
-			m_stageExecutionTime[Core::UpdateOrder::Render] = stageDuration.count();
+			m_stageExecutionTime[Core::UpdateOrder::Render] = stageEndTime - stageStartTime;
 		}
 
 		if (playState == PlayState::JUST_STOPPED)
@@ -413,18 +416,6 @@ namespace Puffin::Core
 		if (windowSubsystem->ShouldPrimaryWindowClose())
 		{
 			running = false;
-		}
-
-		// Sleep if frame completed before frame rate limit
-		std::chrono::time_point<std::chrono::steady_clock> frameEndTime = std::chrono::high_resolution_clock::now();
-		const std::chrono::duration<double> actualDuration = frameEndTime - m_currentTime;
-
-		const auto timeStepMax = std::chrono::duration<double>(1.0 / m_frameRateMax);
-		if (actualDuration < timeStepMax)
-		{
-			auto sleepTime = timeStepMax - actualDuration;
-
-			std::this_thread::sleep_for(sleepTime);
 		}
 
 		return running;
