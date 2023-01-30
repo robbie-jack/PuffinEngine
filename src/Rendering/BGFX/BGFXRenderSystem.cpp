@@ -33,6 +33,8 @@ namespace Puffin::Rendering::BGFX
 
         InitTexSamplers();
 
+        InitLightUniforms();
+
         // Connect Signals
         const auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
 
@@ -339,25 +341,11 @@ namespace Puffin::Rendering::BGFX
             }
         }
 
-        std::vector<std::shared_ptr<ECS::Entity>> pointLightEntities;
-        ECS::GetEntities<TransformComponent, PointLightComponent>(m_world, pointLightEntities);
-        for (const auto& entity : pointLightEntities)
+        std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
+        ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
+        for (const auto& entity : lightEntities)
         {
 	        
-        }
-
-        std::vector<std::shared_ptr<ECS::Entity>> spotLightEntities;
-        ECS::GetEntities<TransformComponent, SpotLightComponent>(m_world, spotLightEntities);
-        for (const auto& entity : spotLightEntities)
-        {
-
-        }
-
-        std::vector<std::shared_ptr<ECS::Entity>> dirLightEntities;
-        ECS::GetEntities<TransformComponent, DirectionalLightComponent>(m_world, dirLightEntities);
-        for (const auto& entity : dirLightEntities)
-        {
-			
         }
 	}
 

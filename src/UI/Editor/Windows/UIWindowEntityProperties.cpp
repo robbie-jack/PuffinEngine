@@ -73,10 +73,8 @@ namespace Puffin
 					DrawTransformUI(flags);
 
 					DrawMeshUI(flags);
-					
-					DrawPointLightUI(flags);
-					DrawDirectionalLightUI(flags);
-					DrawSpotLightUI(flags);
+
+					DrawLightUI(flags);
 					DrawShadowcasterUI(flags);
 
 					DrawProceduralPlaneUI(flags);
@@ -121,19 +119,9 @@ namespace Puffin
 
 						ImGui::Separator();
 
-						if (ImGui::Selectable("Point Light"))
+						if (ImGui::Selectable("Light"))
 						{
-							ecsWorld->AddComponent<Rendering::PointLightComponent>(m_entity);
-						}
-
-						if (ImGui::Selectable("Directional Light"))
-						{
-							ecsWorld->AddComponent<Rendering::DirectionalLightComponent>(m_entity);
-						}
-
-						if (ImGui::Selectable("Spot Light"))
-						{
-							ecsWorld->AddComponent<Rendering::SpotLightComponent>(m_entity);
+							ecsWorld->AddComponent<Rendering::LightComponent>(m_entity);
 						}
 
 						if (ImGui::Selectable("Shadow Caster"))
@@ -281,128 +269,79 @@ namespace Puffin
 			}
 		}
 
-		bool UIWindowEntityProperties::DrawLightUI(Rendering::LightComponent* light)
-		{
-			bool dirty = false;
-
-			if (light != nullptr)
-			{
-				// Edit Light Diffuse Color
-				dirty |= ImGui::ColorEdit3("Diffuse", (float*)&light->diffuseColor);
-
-				// Edit Light Ambient Color
-				dirty |= ImGui::ColorEdit3("Ambient", (float*)&light->ambientColor);
-			}
-
-			return dirty;
-		}
-
-		void UIWindowEntityProperties::DrawPointLightUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::DrawLightUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Rendering::PointLightComponent>(m_entity))
+			if (ecsWorld->HasComponent<Rendering::LightComponent>(m_entity))
 			{
-				auto& light = ecsWorld->GetComponent<Rendering::PointLightComponent>(m_entity);
+				auto& light = ecsWorld->GetComponent<Rendering::LightComponent>(m_entity);
 				bool dirty = false;
 
-				if (ImGui::TreeNodeEx("Point Light Component", flags))
+				if (ImGui::TreeNodeEx("Light Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
 					if (ImGui::SmallButton("X##Point Light"))
 					{
-						ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<Rendering::LightComponent, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
 
-					dirty |= DrawLightUI(&light);
+					int item_current_idx = static_cast<int>(light.type);
 
-					dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
-
-					dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
-
-					ImGui::TreePop();
-				}
-
-				if (dirty)
-				{
-					sceneChanged = true;
-					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDirty>(m_entity, true);
-				}
-			}
-		}
-
-		void UIWindowEntityProperties::DrawDirectionalLightUI(ImGuiTreeNodeFlags flags)
-		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Rendering::DirectionalLightComponent>(m_entity))
-			{
-				auto& light = ecsWorld->GetComponent<Rendering::DirectionalLightComponent>(m_entity);
-				bool dirty = false;
-
-				if (ImGui::TreeNodeEx("Directional Light Component", flags))
-				{
-					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
-
-					if (ImGui::SmallButton("X##Directional Light"))
+					// Edit Light Type
+					const char* comboLabel = Rendering::LIGHT_TYPE_LABELS[item_current_idx].c_str();
+					if (ImGui::BeginCombo("Type", comboLabel))
 					{
-						ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDeleted>(m_entity, true);
+						for (int i = 0; i < Rendering::LIGHT_TYPE_LABELS.size(); i++)
+						{
+							const bool is_selected = (item_current_idx == i);
 
-						sceneChanged = true;
+							if (ImGui::Selectable(Rendering::LIGHT_TYPE_LABELS[i].c_str(), is_selected))
+							{
+								item_current_idx = i;
+
+								light.type = static_cast<Rendering::LightType>(item_current_idx);
+
+								dirty = true;
+							}
+
+							if (is_selected)
+								ImGui::SetItemDefaultFocus();
+						}
 					}
 
-					dirty |= DrawLightUI(&light);
+					// Edit Light Diffuse Color
+					dirty |= ImGui::ColorEdit3("Diffuse", (float*)&light.diffuseColor);
 
-					dirty |= ImGui::DragFloat3("Direction", (float*)&light.direction, 0.005f, -1.0f, 1.0f);
+					// Edit Light Ambient Color
+					dirty |= ImGui::ColorEdit3("Ambient", (float*)&light.ambientColor);
 
-					ImGui::TreePop();
-				}
-
-				if (dirty)
-				{
-					sceneChanged = true;
-					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDirty>(m_entity, true);
-				}
-			}
-		}
-
-		void UIWindowEntityProperties::DrawSpotLightUI(ImGuiTreeNodeFlags flags)
-		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Rendering::SpotLightComponent>(m_entity))
-			{
-				auto& light = ecsWorld->GetComponent<Rendering::SpotLightComponent>(m_entity);
-				bool dirty = false;
-
-				if (ImGui::TreeNodeEx("Spot Light Component", flags))
-				{
-					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
-
-					if (ImGui::SmallButton("X##Spot Light"))
+					if (light.type == Rendering::LightType::DIRECTIONAL || light.type == Rendering::LightType::SPOT)
 					{
-						ecsWorld->SetComponentFlag<Rendering::SpotLightComponent, FlagDeleted>(m_entity, true);
-
-						sceneChanged = true;
+						dirty |= ImGui::DragFloat3("Direction", (float*)&light.direction, 0.005f, -1.0f, 1.0f);
 					}
 
-					dirty |= DrawLightUI(&light);
-
-					dirty |= ImGui::DragFloat3("Direction", (float*)&light.direction, 0.005f, -1.0f, 1.0f);
-
-					dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
-
-					dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
-
-					dirty |= ImGui::DragFloat("Inner Cutoff Angle", &light.innerCutoffAngle, 0.25f, 0.0f, 45.0f);
-
-					// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
-					dirty |= ImGui::DragFloat("Outer Cutoff Angle", &light.outerCutoffAngle, 0.25f, light.innerCutoffAngle, 45.0f);
-
-					// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
-					if (light.outerCutoffAngle < light.innerCutoffAngle)
+					if (light.type == Rendering::LightType::POINT || light.type == Rendering::LightType::SPOT)
 					{
-						light.outerCutoffAngle = light.innerCutoffAngle;
+						dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
+
+						dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
+					}
+
+					if (light.type == Rendering::LightType::SPOT)
+					{
+						dirty |= ImGui::DragFloat("Inner Cutoff Angle", &light.innerCutoffAngle, 0.25f, 0.0f, 45.0f);
+
+						// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
+						dirty |= ImGui::DragFloat("Outer Cutoff Angle", &light.outerCutoffAngle, 0.25f, light.innerCutoffAngle, 45.0f);
+
+						// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
+						if (light.outerCutoffAngle < light.innerCutoffAngle)
+						{
+							light.outerCutoffAngle = light.innerCutoffAngle;
+						}
 					}
 
 					ImGui::TreePop();
@@ -411,7 +350,7 @@ namespace Puffin
 				if (dirty)
 				{
 					sceneChanged = true;
-					ecsWorld->SetComponentFlag<Rendering::PointLightComponent, FlagDirty>(m_entity, true);
+					ecsWorld->SetComponentFlag<Rendering::LightComponent, FlagDirty>(m_entity, true);
 				}
 			}
 		}

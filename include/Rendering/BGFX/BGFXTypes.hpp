@@ -38,11 +38,6 @@ namespace Puffin::Rendering::BGFX
 		std::set<ECS::EntityID> entities; // Set of Entities using this texture
 	};
 
-	struct LightInstance
-	{
-		
-	};
-
 	struct LightUniformHandles
 	{
 		bgfx::UniformHandle position;

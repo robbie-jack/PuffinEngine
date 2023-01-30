@@ -25,6 +25,8 @@ namespace Puffin
 			DIRECTIONAL = 2
 		};
 
+		const std::vector<std::string> LIGHT_TYPE_LABELS = { "Point", "Spot", "Directional" };
+
 		NLOHMANN_JSON_SERIALIZE_ENUM(LightType, {
 			{ LightType::POINT, "Point"},
 			{ LightType::SPOT, "Spot"},
@@ -35,34 +37,33 @@ namespace Puffin
 		{
 			Vector3f ambientColor = {.1f, .1f, .1f};
 			Vector3f diffuseColor = {1.f, 1.f, 1.f};
+
+			Vector3f direction = { .5f, -.5f, 0.f };
+
 			float specularStrength = .5f;
 			int shininess = 16;
-		};
 
-		struct PointLightComponent : public LightComponent
-		{
 			float constantAttenuation = 1.f;
 			float linearAttenuation = .09f;
 			float quadraticAttenuation = .032f;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(PointLightComponent, ambientColor, diffuseColor, specularStrength, shininess, constantAttenuation, linearAttenuation, quadraticAttenuation)
-		};
-
-		struct DirectionalLightComponent : public LightComponent
-		{
-			Vector3f direction = {.5f, -.5f, 0.f};
-
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(DirectionalLightComponent, ambientColor, diffuseColor, specularStrength, shininess, direction)
-		};
-
-		struct SpotLightComponent : public PointLightComponent
-		{
-			Vector3f direction = { .5f, .5f, 0.f };
-
 			float innerCutoffAngle = 30.0f;
 			float outerCutoffAngle = 45.0f;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(SpotLightComponent, ambientColor, diffuseColor, specularStrength, shininess, direction, constantAttenuation, linearAttenuation, quadraticAttenuation, innerCutoffAngle, outerCutoffAngle)
+			LightType type = LightType::POINT;
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent, 
+				ambientColor, 
+				diffuseColor, 
+				direction, 
+				specularStrength, 
+				shininess, 
+				constantAttenuation, 
+				linearAttenuation, 
+				quadraticAttenuation,
+				innerCutoffAngle,
+				outerCutoffAngle,
+				type)
 		};
 
 		const std::vector<uint16_t> SHADOW_RESOLUTION_VALUES = { 512, 1024, 2048, 4096 };

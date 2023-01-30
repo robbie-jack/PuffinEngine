@@ -183,7 +183,7 @@ namespace Puffin::Core
 		double m_timeStepFixed = 1 / 60.0; // How often deterministic code like physics should occur (defaults to 60 times a second)
 		double m_timeStepLimit = 1 / 25.0; // Maximum amount of time each frame should take to complete
 
-		uint16_t m_frameRateMax = 120; // Limit on how fast game runs
+		uint16_t m_frameRateMax = 60; // Limit on how fast game runs
 
 		// System Members
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers

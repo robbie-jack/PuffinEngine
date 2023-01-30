@@ -38,10 +38,7 @@ namespace Puffin
 
             void DrawMeshUI(ImGuiTreeNodeFlags flags);
 
-            bool DrawLightUI(Rendering::LightComponent* light);
-            void DrawPointLightUI(ImGuiTreeNodeFlags flags);
-            void DrawDirectionalLightUI(ImGuiTreeNodeFlags flags);
-            void DrawSpotLightUI(ImGuiTreeNodeFlags flags);
+            void DrawLightUI(ImGuiTreeNodeFlags flags);
             void DrawShadowcasterUI(ImGuiTreeNodeFlags flags);
 
             void DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags);

@@ -80,9 +80,7 @@ namespace Puffin::Core
 		RegisterComponent<TransformComponent>();
 
 		RegisterComponent<Rendering::MeshComponent>();
-		RegisterComponent<Rendering::PointLightComponent>();
-		RegisterComponent<Rendering::DirectionalLightComponent>();
-		RegisterComponent<Rendering::SpotLightComponent>();
+		RegisterComponent<Rendering::LightComponent>();
 		RegisterComponent<Rendering::ShadowCasterComponent>();
 		RegisterComponent<Rendering::CameraComponent>();
 
@@ -91,10 +89,6 @@ namespace Puffin::Core
 		RegisterComponent<Physics::RigidbodyComponent2D>();
 		RegisterComponent<Physics::BoxComponent2D>();
 		RegisterComponent<Physics::CircleComponent2D>();
-
-		//RegisterComponent<Physics::Box2DRigidbodyComponent>();
-		//RegisterComponent<Physics::Box2DBoxComponent>();
-		//RegisterComponent<Physics::Box2DCircleComponent>();
 
 		RegisterComponent<Scripting::AngelScriptComponent>();
 		RegisterComponent<Scripting::NativeScriptComponent>();
@@ -105,14 +99,11 @@ namespace Puffin::Core
 		RegisterComponent<Procedural::IcoSphereComponent>();
 
 		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
-		ecsWorld->AddComponentDependencies<Rendering::PointLightComponent, TransformComponent>();
-		ecsWorld->AddComponentDependencies<Rendering::SpotLightComponent, TransformComponent>();
+		ecsWorld->AddComponentDependencies<Rendering::LightComponent, TransformComponent>();
+		ecsWorld->AddComponentDependencies<Rendering::ShadowCasterComponent, Rendering::LightComponent>();
 
 		ecsWorld->AddComponentDependencies<Physics::RigidbodyComponent2D, TransformComponent>();
 		ecsWorld->AddComponentDependencies<Physics::RigidbodyComponent2D, Physics::VelocityComponent>();
-
-		//ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, TransformComponent>();
-		//ecsWorld->AddComponentDependencies<Physics::Box2DRigidbodyComponent, Physics::VelocityComponent>();
 
 		ecsWorld->AddComponentDependencies<Procedural::PlaneComponent, Rendering::ProceduralMeshComponent>();
 		ecsWorld->AddComponentDependencies<Procedural::TerrainComponent, Rendering::ProceduralMeshComponent>();
@@ -151,12 +142,12 @@ namespace Puffin::Core
 		//ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		//DefaultScene();
+		DefaultScene();
 		//PhysicsScene();
 		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
-		m_sceneData->LoadAndInit();
+		//m_sceneData->LoadAndInit();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -522,8 +513,8 @@ namespace Puffin::Core
 			entities.push_back(entity);
 		}
 
-		entities[3]->AddComponent<Rendering::SpotLightComponent>();
-		entities[6]->AddComponent<Rendering::SpotLightComponent>();
+		entities[3]->AddComponent<Rendering::LightComponent>();
+		entities[6]->AddComponent<Rendering::LightComponent>();
 
 		// Initialize Components with default values
 		entities[0]->GetComponent<TransformComponent>() = {Vector3f(2.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f)};
@@ -551,11 +542,11 @@ namespace Puffin::Core
 		entities[6]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		entities[6]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
-		entities[3]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(0.2f, -0.8f, 0.0f);
+		entities[3]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(0.2f, -0.8f, 0.0f);
 		//entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
-		entities[6]->GetComponent<Rendering::SpotLightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
-		entities[6]->GetComponent<Rendering::SpotLightComponent>().diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);
+		entities[6]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
+		entities[6]->GetComponent<Rendering::LightComponent>().diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);
 
 		auto& script = entities[0]->AddAndGetComponent<Scripting::AngelScriptComponent>();
 		script.name = "ExampleScript";
@@ -596,7 +587,8 @@ namespace Puffin::Core
 
 		lightEntity->AddComponent<TransformComponent>();
 
-		auto& lightComp = lightEntity->AddAndGetComponent<Rendering::DirectionalLightComponent>();
+		auto& lightComp = lightEntity->AddAndGetComponent<Rendering::LightComponent>();
+		lightComp.type = Rendering::LightType::DIRECTIONAL;
 		lightComp.direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		lightComp.ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
 		lightComp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -702,7 +694,8 @@ namespace Puffin::Core
 		lightEntity->AddComponent<TransformComponent>();
 		lightEntity->GetComponent<TransformComponent>().position = { 0.0, 10.0, 0.0 };
 		lightEntity->GetComponent<TransformComponent>().scale = { 0.25f };
-		lightEntity->AddComponent<Rendering::DirectionalLightComponent>();
+		lightEntity->AddComponent<Rendering::LightComponent>();
+		lightEntity->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::DIRECTIONAL;
 		lightEntity->AddComponent<Rendering::MeshComponent>();
 		lightEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = cubeMeshId;
 		lightEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;
