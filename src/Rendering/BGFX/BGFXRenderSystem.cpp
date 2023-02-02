@@ -163,8 +163,8 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::InitTexSamplers()
 	{
-        m_texAlbedoSampler = bgfx::createUniform("m_texAlbedoSampler", bgfx::UniformType::Sampler);
-        m_texNormalSampler = bgfx::createUniform("m_texNormalSampler", bgfx::UniformType::Sampler);
+        m_texAlbedoSampler = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+        m_texNormalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 
         m_deletionQueue.PushFunction([=]()
         {
@@ -175,22 +175,20 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::InitLightUniforms()
 	{
-        m_lightUniformHandles.position = bgfx::createUniform("m_lightPosition", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-        m_lightUniformHandles.direction = bgfx::createUniform("m_lightDirection", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        m_lightUniformHandles.position = bgfx::createUniform("u_lightPos", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        m_lightUniformHandles.direction = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
 
-        m_lightUniformHandles.colorAmbient = bgfx::createUniform("m_lightColorAmbient", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-        m_lightUniformHandles.colorDiffuse = bgfx::createUniform("m_lightColorDiffuse", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        m_lightUniformHandles.color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
 
-        m_lightUniformHandles.specular = bgfx::createUniform("m_lightSpecular", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-        m_lightUniformHandles.attenuation = bgfx::createUniform("m_lightAttenuation", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        m_lightUniformHandles.ambientSpecular = bgfx::createUniform("u_lightAmbientSpecular", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        m_lightUniformHandles.attenuation = bgfx::createUniform("u_lightAttenuation", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
 
         m_deletionQueue.PushFunction([=]()
         {
             bgfx::destroy(m_lightUniformHandles.position);
 	        bgfx::destroy(m_lightUniformHandles.direction);
-	        bgfx::destroy(m_lightUniformHandles.colorAmbient);
-	        bgfx::destroy(m_lightUniformHandles.colorDiffuse);
-	        bgfx::destroy(m_lightUniformHandles.specular);
+	        bgfx::destroy(m_lightUniformHandles.color);
+	        bgfx::destroy(m_lightUniformHandles.ambientSpecular);
 	        bgfx::destroy(m_lightUniformHandles.attenuation);
         });
 	}
@@ -385,6 +383,9 @@ namespace Puffin::Rendering::BGFX
 	{
         // Set Camera Matrices
         bgfx::setViewTransform(0, m_editorCamMats.view, m_editorCamMats.proj);
+
+        // Set Light Uniforms
+        SetupLightUniformsForDraw();
 
         for (const auto& drawBatch : m_meshDrawBatches)
         {
@@ -664,7 +665,63 @@ namespace Puffin::Rendering::BGFX
         return handle;
     }
 
-	void BGFXRenderSystem::BuildModelTransform(const TransformComponent& transform, float* model)
+    void BGFXRenderSystem::SetupLightUniformsForDraw() const
+    {
+		// Setup Light Data
+
+        float lightPos[G_MAX_LIGHTS][4];
+        float lightDir[G_MAX_LIGHTS][4];
+        float lightColor[G_MAX_LIGHTS][4];
+        float lightAmbientSpec[G_MAX_LIGHTS][4];
+        float lightAttenuation[G_MAX_LIGHTS][4];
+
+        int index = 0;
+
+        std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
+        ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
+        for (const auto& entity : lightEntities)
+        {
+            const auto& transform = entity->GetComponent<TransformComponent>();
+            const auto& light = entity->GetComponent<LightComponent>();
+
+            lightPos[index][0] = transform.position.x;
+            lightPos[index][1] = transform.position.y;
+            lightPos[index][2] = transform.position.z;
+            lightPos[index][3] = 0.0f;
+
+            lightDir[index][0] = light.direction.x;
+            lightDir[index][1] = light.direction.y;
+            lightDir[index][2] = light.direction.z;
+            lightDir[index][3] = 0.0f;
+
+            lightColor[index][0] = light.color.x;
+            lightColor[index][1] = light.color.y;
+            lightColor[index][2] = light.color.z;
+            lightColor[index][3] = 0.0f;
+
+            lightAmbientSpec[index][0] = light.ambientIntensity;
+            lightAmbientSpec[index][1] = light.specularIntensity;
+            lightAmbientSpec[index][2] = static_cast<float>(light.specularExponent);
+            lightAmbientSpec[index][3] = 0.0f;
+
+            lightAttenuation[index][0] = light.constantAttenuation;
+            lightAttenuation[index][1] = light.linearAttenuation;
+            lightAttenuation[index][2] = light.quadraticAttenuation;
+            lightAttenuation[index][3] = 0.0f;
+
+            index++;
+        }
+
+        // Set Light Uniforms
+
+		bgfx::setUniform(m_lightUniformHandles.position, lightPos, G_MAX_LIGHTS);
+        bgfx::setUniform(m_lightUniformHandles.direction, lightDir, G_MAX_LIGHTS);
+        bgfx::setUniform(m_lightUniformHandles.color, lightColor, G_MAX_LIGHTS);
+        bgfx::setUniform(m_lightUniformHandles.ambientSpecular, lightAmbientSpec, G_MAX_LIGHTS);
+        bgfx::setUniform(m_lightUniformHandles.attenuation, lightAttenuation, G_MAX_LIGHTS);
+    }
+
+    void BGFXRenderSystem::BuildModelTransform(const TransformComponent& transform, float* model)
 	{
         // Identity
 		bx::mtxIdentity(model);

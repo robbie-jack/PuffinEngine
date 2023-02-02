@@ -177,6 +177,8 @@ namespace Puffin::Rendering::BGFX
 
 		bgfx::TextureHandle LoadAndInitTexture(UUID texID) const;
 
+		void SetupLightUniformsForDraw() const;
+
 		static void BuildModelTransform(const TransformComponent& transform, float* model);
 
 		static inline void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)

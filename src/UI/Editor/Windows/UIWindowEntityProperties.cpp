@@ -313,10 +313,16 @@ namespace Puffin
 					}
 
 					// Edit Light Diffuse Color
-					dirty |= ImGui::ColorEdit3("Diffuse", (float*)&light.diffuseColor);
+					dirty |= ImGui::ColorEdit3("Diffuse", (float*)&light.color);
 
-					// Edit Light Ambient Color
-					dirty |= ImGui::ColorEdit3("Ambient", (float*)&light.ambientColor);
+					// Edit Light Ambient Intensity
+					dirty |= ImGui::DragFloat("Ambient Intensity", &light.ambientIntensity);
+
+					// Edit Light Specular Intensity
+					dirty |= ImGui::DragFloat("Specular Intensity", &light.specularIntensity);
+
+					// Edit Light Specular Exponent
+					dirty |= ImGui::DragInt("Specular Exponent", &light.specularExponent);
 
 					if (light.type == Rendering::LightType::DIRECTIONAL || light.type == Rendering::LightType::SPOT)
 					{

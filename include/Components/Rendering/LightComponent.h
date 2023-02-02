@@ -35,13 +35,12 @@ namespace Puffin
 
 		struct LightComponent
 		{
-			Vector3f ambientColor = {.1f, .1f, .1f};
-			Vector3f diffuseColor = {1.f, 1.f, 1.f};
-
+			Vector3f color = {1.f, 1.f, 1.f};
 			Vector3f direction = { .5f, -.5f, 0.f };
 
-			float specularStrength = .5f;
-			int shininess = 16;
+			float ambientIntensity = 0.1f; // Intensity multiplier applied to ambient/indirect color
+			float specularIntensity = .5f; // Intensity multiplier applied to specular highlights
+			int specularExponent = 16; // Exponent Specular value is raised to
 
 			float constantAttenuation = 1.f;
 			float linearAttenuation = .09f;
@@ -53,11 +52,11 @@ namespace Puffin
 			LightType type = LightType::POINT;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent, 
-				ambientColor, 
-				diffuseColor, 
-				direction, 
-				specularStrength, 
-				shininess, 
+				color, 
+				direction,
+				ambientIntensity,
+				specularIntensity, 
+				specularExponent, 
 				constantAttenuation, 
 				linearAttenuation, 
 				quadraticAttenuation,

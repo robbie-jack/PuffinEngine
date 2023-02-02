@@ -546,7 +546,7 @@ namespace Puffin::Core
 		//entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
 		entities[6]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
-		entities[6]->GetComponent<Rendering::LightComponent>().diffuseColor = glm::vec3(0.25f, 0.25f, 1.0f);
+		entities[6]->GetComponent<Rendering::LightComponent>().color = glm::vec3(0.25f, 0.25f, 1.0f);
 
 		auto& script = entities[0]->AddAndGetComponent<Scripting::AngelScriptComponent>();
 		script.name = "ExampleScript";
@@ -590,8 +590,7 @@ namespace Puffin::Core
 		auto& lightComp = lightEntity->AddAndGetComponent<Rendering::LightComponent>();
 		lightComp.type = Rendering::LightType::DIRECTIONAL;
 		lightComp.direction = glm::vec3(1.0f, -1.0f, 0.0f);
-		lightComp.ambientColor = glm::vec3(0.5f, 0.5f, 0.5f);
-		lightComp.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		lightComp.color = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		// Create Floor Entity
 		const auto floorEntity = ECS::CreateEntity(ecsWorld);

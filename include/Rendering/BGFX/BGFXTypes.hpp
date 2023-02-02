@@ -43,9 +43,8 @@ namespace Puffin::Rendering::BGFX
 		bgfx::UniformHandle position;
 		bgfx::UniformHandle direction;
 
-		bgfx::UniformHandle colorAmbient;
-		bgfx::UniformHandle colorDiffuse;
-		bgfx::UniformHandle specular;
+		bgfx::UniformHandle color;
+		bgfx::UniformHandle ambientSpecular;
 
 		bgfx::UniformHandle attenuation;
 	};
