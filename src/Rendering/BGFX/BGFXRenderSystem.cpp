@@ -33,6 +33,8 @@ namespace Puffin::Rendering::BGFX
 
         InitTexSamplers();
 
+        InitCamUniforms();
+
         InitLightUniforms();
 
         // Connect Signals
@@ -173,15 +175,25 @@ namespace Puffin::Rendering::BGFX
         });
 	}
 
+	void BGFXRenderSystem::InitCamUniforms()
+	{
+		m_camPosHandle = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4, 1);
+
+        m_deletionQueue.PushFunction([=]()
+        {
+        	bgfx::destroy(m_camPosHandle);
+        });
+	}
+
 	void BGFXRenderSystem::InitLightUniforms()
 	{
         m_lightUniformHandles.position = bgfx::createUniform("u_lightPos", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
         m_lightUniformHandles.direction = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-
         m_lightUniformHandles.color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-
         m_lightUniformHandles.ambientSpecular = bgfx::createUniform("u_lightAmbientSpecular", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
         m_lightUniformHandles.attenuation = bgfx::createUniform("u_lightAttenuation", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+
+        m_lightUniformHandles.index = bgfx::createUniform("u_lightIndex", bgfx::UniformType::Vec4, 1);
 
         m_deletionQueue.PushFunction([=]()
         {
@@ -189,7 +201,8 @@ namespace Puffin::Rendering::BGFX
 	        bgfx::destroy(m_lightUniformHandles.direction);
 	        bgfx::destroy(m_lightUniformHandles.color);
 	        bgfx::destroy(m_lightUniformHandles.ambientSpecular);
-	        bgfx::destroy(m_lightUniformHandles.attenuation);
+            bgfx::destroy(m_lightUniformHandles.attenuation);
+            bgfx::destroy(m_lightUniformHandles.index);
         });
 	}
 
@@ -668,19 +681,89 @@ namespace Puffin::Rendering::BGFX
     void BGFXRenderSystem::SetupLightUniformsForDraw() const
     {
 		// Setup Light Data
-
         float lightPos[G_MAX_LIGHTS][4];
         float lightDir[G_MAX_LIGHTS][4];
         float lightColor[G_MAX_LIGHTS][4];
         float lightAmbientSpec[G_MAX_LIGHTS][4];
         float lightAttenuation[G_MAX_LIGHTS][4];
+        float lightIndex[4];
 
         int index = 0;
 
-        std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
+        std::vector<std::shared_ptr<ECS::Entity>> lightEntities, lightEntitiesOrdered;
         ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
+
+        // Sort Lights into DIRECTIONAL, POINT, SPOT Order
+        lightEntitiesOrdered.reserve(lightEntities.size());
+        
         for (const auto& entity : lightEntities)
         {
+            // Break out of loop when number of lights exceeds max
+            if (index >= G_MAX_LIGHTS)
+            {
+                break;
+            }
+
+            const auto& light = entity->GetComponent<LightComponent>();
+
+	        if (light.type == LightType::DIRECTIONAL)
+	        {
+                lightEntitiesOrdered.push_back(entity);
+                index++;
+	        }
+        }
+
+        lightIndex[0] = static_cast<float>(index);
+
+        for (const auto& entity : lightEntities)
+        {
+            // Break out of loop when number of lights exceeds max
+            if (index >= G_MAX_LIGHTS)
+            {
+                break;
+            }
+
+            const auto& light = entity->GetComponent<LightComponent>();
+
+            if (light.type == LightType::POINT)
+            {
+                lightEntitiesOrdered.push_back(entity);
+                index++;
+            }
+        }
+
+        lightIndex[1] = static_cast<float>(index);
+
+        for (const auto& entity : lightEntities)
+        {
+            // Break out of loop when number of lights exceeds max
+            if (index >= G_MAX_LIGHTS)
+            {
+                break;
+            }
+
+            const auto& light = entity->GetComponent<LightComponent>();
+
+            if (light.type == LightType::SPOT)
+            {
+                lightEntitiesOrdered.push_back(entity);
+                index++;
+            }
+        }
+
+        lightIndex[2] = static_cast<float>(index);
+
+        index = 0;
+
+        // Iterate through sorted 
+        for (const auto& entity : lightEntitiesOrdered)
+        {
+            // Break out of loop when number of lights exceeds max
+			if (index >= G_MAX_LIGHTS)
+			{
+				break;
+			}
+
             const auto& transform = entity->GetComponent<TransformComponent>();
             const auto& light = entity->GetComponent<LightComponent>();
 
@@ -713,12 +796,13 @@ namespace Puffin::Rendering::BGFX
         }
 
         // Set Light Uniforms
-
+        
 		bgfx::setUniform(m_lightUniformHandles.position, lightPos, G_MAX_LIGHTS);
         bgfx::setUniform(m_lightUniformHandles.direction, lightDir, G_MAX_LIGHTS);
         bgfx::setUniform(m_lightUniformHandles.color, lightColor, G_MAX_LIGHTS);
         bgfx::setUniform(m_lightUniformHandles.ambientSpecular, lightAmbientSpec, G_MAX_LIGHTS);
         bgfx::setUniform(m_lightUniformHandles.attenuation, lightAttenuation, G_MAX_LIGHTS);
+        bgfx::setUniform(m_lightUniformHandles.index, lightIndex, 1);
     }
 
     void BGFXRenderSystem::BuildModelTransform(const TransformComponent& transform, float* model)

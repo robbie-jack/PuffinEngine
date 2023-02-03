@@ -38,7 +38,7 @@ namespace Puffin
 			Vector3f color = {1.f, 1.f, 1.f};
 			Vector3f direction = { .5f, -.5f, 0.f };
 
-			float ambientIntensity = 0.1f; // Intensity multiplier applied to ambient/indirect color
+			float ambientIntensity = .1f; // Intensity multiplier applied to ambient/indirect color
 			float specularIntensity = .5f; // Intensity multiplier applied to specular highlights
 			int specularExponent = 16; // Exponent Specular value is raised to
 

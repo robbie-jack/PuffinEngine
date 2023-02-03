@@ -144,6 +144,7 @@ namespace Puffin::Rendering::BGFX
 		bool m_moveBackward = false;
 		bool m_moveUp = false;
 		bool m_moveDown = false;
+		bgfx::UniformHandle m_camPosHandle;
 
 		RingBuffer<Input::InputEvent> m_inputEvents;
 
@@ -153,6 +154,7 @@ namespace Puffin::Rendering::BGFX
 		void InitStaticCubeData();
 		void InitMeshProgram();
 		void InitTexSamplers();
+		void InitCamUniforms();
 		void InitLightUniforms();
 
 		void ProcessEvents();

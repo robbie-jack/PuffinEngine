@@ -42,10 +42,10 @@ namespace Puffin::Rendering::BGFX
 	{
 		bgfx::UniformHandle position;
 		bgfx::UniformHandle direction;
-
 		bgfx::UniformHandle color;
 		bgfx::UniformHandle ambientSpecular;
-
 		bgfx::UniformHandle attenuation;
+
+		bgfx::UniformHandle index; // Index into light array for each light type
 	};
 }
