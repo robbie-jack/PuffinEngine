@@ -422,8 +422,11 @@ namespace Puffin::Rendering::BGFX
                 bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoHandles[mesh.textureAssetID].handle);
 
                 // Submit Program
-                bgfx::submit(0, drawBatch.programHandle);
+                bgfx::submit(0, drawBatch.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE |BGFX_DISCARD_BINDINGS);
             }
+
+            // Discard Vertex/Index Buffers after rendering all entities in batch
+            bgfx::discard(BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER);
         }
 	}
 
