@@ -1,21 +1,22 @@
 #pragma once
 
-#include <memory>
-
 #include "ECS/System.hpp"
 
+#include "BGFXTextureArray.hpp"
 #include "Assets/MeshAsset.h"
+#include "Assets/TextureAsset.h"
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/CameraComponent.h"
 #include "ECS/Entity.h"
+#include "Input/InputEvent.h"
 #include "Rendering/BGFX/BGFXTypes.hpp"
 #include "Rendering/BGFX/BGFXVertex.hpp"
+#include "Types/DeletionQueue.hpp"
 #include "Types/PackedArray.h"
 #include "Types/RingBuffer.h"
-#include "Input/InputEvent.h"
-#include "Types/DeletionQueue.hpp"
-#include "Assets/TextureAsset.h"
 #include "UI/Editor/Windows/UIWindow.h"
+
+#include <memory>
 
 namespace Puffin::Rendering::BGFX
 {
@@ -132,6 +133,8 @@ namespace Puffin::Rendering::BGFX
 
 		PackedVector<TextureData> m_texAlbedoHandles;
 		PackedVector<TextureData> m_texNormalHandles;
+
+		TextureArray m_texAlbedoArray;
 
 		// Light Vars
 		LightUniformHandles m_lightUniformHandles;

@@ -168,6 +168,8 @@ namespace Puffin::Rendering::BGFX
         m_texAlbedoSampler = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
         m_texNormalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 
+        m_texAlbedoArray.Init();
+
         m_deletionQueue.PushFunction([=]()
         {
         	bgfx::destroy(m_texAlbedoSampler);
@@ -400,34 +402,55 @@ namespace Puffin::Rendering::BGFX
         // Set Light Uniforms
         SetupLightUniformsForDraw();
 
+        // Setup stride for instanced rendering
+        const uint16_t instanceStride = 80; // 64 Bytes for 4x4 matrix, 16 Bytes for Texture Index
+
+        // Set Texture Arrays
+        bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoArray.Handle());
+
         for (const auto& drawBatch : m_meshDrawBatches)
         {
             // Set Vertex/Index Buffers
             bgfx::setVertexBuffer(0, drawBatch.vertexBufferHandle);
             bgfx::setIndexBuffer(drawBatch.indexBufferHandle);
 
+            const uint32_t numEntities = drawBatch.entities.size();
+            const uint32_t numInstances = bgfx::getAvailInstanceDataBuffer(numEntities, instanceStride);
+
+            bgfx::InstanceDataBuffer idb = {};
+            bgfx::allocInstanceDataBuffer(&idb, numInstances, instanceStride);
+
+            uint8_t* data = idb.data;
+                        
             for (const auto& entity : drawBatch.entities)
             {
                 const auto& transform = m_world->GetComponent<TransformComponent>(entity);
                 const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
                 // Setup Transform
-                float model[16];
+                float* mtx = (float*)data;
 
-                BuildModelTransform(transform, model);
+                BuildModelTransform(transform, mtx);
 
-                bgfx::setTransform(model);
+                float* index = (float*)&data[64];
+                index[0] = static_cast<float>(m_texAlbedoArray.GetTextureIndex(mesh.textureAssetID));
+                index[1] = 0.0f;
+                index[2] = 0.0f;
+                index[3] = 0.0f;
 
-                // Set Texture
-                bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoHandles[mesh.textureAssetID].handle);
-
-                // Submit Program
-                bgfx::submit(0, drawBatch.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE |BGFX_DISCARD_BINDINGS);
+                data += instanceStride;
             }
 
-            // Discard Vertex/Index Buffers after rendering all entities in batch
-            bgfx::discard(BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER);
+            bgfx::setInstanceDataBuffer(&idb, 0, numInstances);
+
+            bgfx::setState(BGFX_STATE_DEFAULT);
+
+            // Submit Program
+            bgfx::submit(0, drawBatch.programHandle, 0, BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER);
         }
+
+        // Discard Texture/Buffer bindings
+        bgfx::discard(BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_BINDINGS | BGFX_DISCARD_STATE);
 	}
 
 	void BGFXRenderSystem::InitMeshComponent(std::shared_ptr<ECS::Entity> entity)
@@ -464,6 +487,8 @@ namespace Puffin::Rendering::BGFX
         }
 
         m_texAlbedoHandles[mesh.textureAssetID].entities.insert(entity->ID());
+
+        m_texAlbedoArray.AddTexture(mesh.textureAssetID);
 	}
 
 	void BGFXRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)

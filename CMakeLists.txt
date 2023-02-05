@@ -139,6 +139,7 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.hpp
 	${HEADER_DIR}/Rendering/BGFX/BGFXVertex.hpp
 	${HEADER_DIR}/Rendering/BGFX/BGFXTypes.hpp
+	${HEADER_DIR}/Rendering/BGFX/BGFXTextureArray.hpp
 	${HEADER_DIR}/Rendering/BGFX/Forward/BGFXForwardRenderer.hpp
 	# Rendering Vulkan
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.hpp

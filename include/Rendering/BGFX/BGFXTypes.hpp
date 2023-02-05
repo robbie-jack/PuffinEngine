@@ -6,7 +6,6 @@
 #include "Types/UUID.h"
 
 #include <set>
-#include <bx/math.h>
 
 namespace Puffin::Rendering::BGFX
 {
