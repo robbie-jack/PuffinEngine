@@ -32,7 +32,7 @@ namespace Puffin::Rendering::BGFX
 			m_texHeight = texHeight;
 
 			m_handle = bgfx::createTexture2D(m_texWidth, m_texHeight,
-				false, m_numTextures, m_format, 0, 0);
+				false, m_numTextures, m_format, 0, nullptr);
 		}
 
 		bool AddTexture(UUID uuid)
@@ -54,13 +54,15 @@ namespace Puffin::Rendering::BGFX
 				bx::memCopy(mem->data, texAsset->GetPixelData(), mem->size);
 
 				// Add texture to array
-				bgfx::updateTexture2D(m_handle, m_numActiveTextures, 0, 0, 0, 
+				bgfx::updateTexture2D(m_handle, 0, m_numActiveTextures, 0, 0,
 										texAsset->GetTextureWidth(), texAsset->GetTextureHeight(), mem);
 
 				m_idtoLayersMap[uuid] = m_numActiveTextures;
 				m_numActiveTextures++;
 
 				texAsset->Unload();
+
+				return true;
 			}
 
 			return false;

@@ -118,11 +118,15 @@ namespace Puffin::Rendering::BGFX
 		int m_windowWidth, m_windowHeight;
 		bool m_windowResized = false;
 
+		bool m_useInstancing = false;
+		bool m_supportsInstancing = false;
+
 		// Mesh Vars
 		MeshData m_cubeMeshData;
 		bgfx::ProgramHandle m_cubeProgram;
 
 		bgfx::ProgramHandle m_meshProgram;
+		bgfx::ProgramHandle m_meshInstancedProgram;
 
 		PackedVector<MeshData> m_meshData;
 		PackedVector<MeshDrawBatch> m_meshDrawBatches;
@@ -156,6 +160,7 @@ namespace Puffin::Rendering::BGFX
 		void InitBGFX();
 		void InitStaticCubeData();
 		void InitMeshProgram();
+		void InitMeshInstancedProgram();
 		void InitTexSamplers();
 		void InitCamUniforms();
 		void InitLightUniforms();
@@ -168,6 +173,7 @@ namespace Puffin::Rendering::BGFX
 
 		void Draw();
 		void DrawScene();
+		void DrawSceneInstanced();
 
 		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
 		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);

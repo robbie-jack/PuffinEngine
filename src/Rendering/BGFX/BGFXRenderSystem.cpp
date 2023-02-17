@@ -127,6 +127,11 @@ namespace Puffin::Rendering::BGFX
 
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00B5E2FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
+
+        // Check supported features
+        const bgfx::Caps* caps = bgfx::getCaps();
+
+        m_supportsInstancing = 0 != (BGFX_CAPS_INSTANCING & caps->supported);
 	}
 
 	void BGFXRenderSystem::InitStaticCubeData()
@@ -163,12 +168,25 @@ namespace Puffin::Rendering::BGFX
         });
 	}
 
+	void BGFXRenderSystem::InitMeshInstancedProgram()
+	{
+        bgfx::ShaderHandle meshVSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\vs_forward_shading_instanced.bin");
+        bgfx::ShaderHandle meshFSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\fs_forward_shading_instanced.bin");
+
+        m_meshInstancedProgram = bgfx::createProgram(meshVSH, meshFSH, true);
+
+        m_deletionQueue.PushFunction([=]()
+            {
+                bgfx::destroy(m_meshInstancedProgram);
+            });
+	}
+
 	void BGFXRenderSystem::InitTexSamplers()
 	{
         m_texAlbedoSampler = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
         m_texNormalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 
-        m_texAlbedoArray.Init();
+        m_texAlbedoArray.Init(4096, 4096);
 
         m_deletionQueue.PushFunction([=]()
         {
@@ -386,7 +404,14 @@ namespace Puffin::Rendering::BGFX
         // Dummy draw call to make sure view 0 is cleared
         bgfx::touch(0);
 
-        DrawScene();
+        if (m_useInstancing && m_supportsInstancing)
+        {
+            DrawSceneInstanced();
+        }
+        else
+        {
+            DrawScene();
+        }
 
         // Advance to next frame
         bgfx::frame();
@@ -395,6 +420,44 @@ namespace Puffin::Rendering::BGFX
 	}
 
 	void BGFXRenderSystem::DrawScene()
+	{
+        // Set Camera Matrices
+        bgfx::setViewTransform(0, m_editorCamMats.view, m_editorCamMats.proj);
+
+        // Set Light Uniforms
+        SetupLightUniformsForDraw();
+
+        for (const auto& drawBatch : m_meshDrawBatches)
+        {
+            // Set Vertex/Index Buffers
+            bgfx::setVertexBuffer(0, drawBatch.vertexBufferHandle);
+            bgfx::setIndexBuffer(drawBatch.indexBufferHandle);
+
+            for (const auto& entity : drawBatch.entities)
+            {
+                const auto& transform = m_world->GetComponent<TransformComponent>(entity);
+                const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
+
+                // Setup Transform
+                float model[16];
+
+                BuildModelTransform(transform, model);
+
+                bgfx::setTransform(model);
+
+                // Set Texture
+                bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoHandles[mesh.textureAssetID].handle);
+
+                // Submit Program
+                bgfx::submit(0, drawBatch.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE | BGFX_DISCARD_BINDINGS);
+            }
+
+            // Discard Vertex/Index Buffers after rendering all entities in batch
+            bgfx::discard(BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER);
+        }
+	}
+
+	void BGFXRenderSystem::DrawSceneInstanced()
 	{
         // Set Camera Matrices
         bgfx::setViewTransform(0, m_editorCamMats.view, m_editorCamMats.proj);
@@ -421,7 +484,7 @@ namespace Puffin::Rendering::BGFX
             bgfx::allocInstanceDataBuffer(&idb, numInstances, instanceStride);
 
             uint8_t* data = idb.data;
-                        
+
             for (const auto& entity : drawBatch.entities)
             {
                 const auto& transform = m_world->GetComponent<TransformComponent>(entity);
@@ -468,7 +531,17 @@ namespace Puffin::Rendering::BGFX
         if (!m_meshDrawBatches.Contains(mesh.meshAssetID))
         {
 	        MeshDrawBatch batch;
-            batch.programHandle = m_meshProgram;
+
+            // Set shader program depending on if instancing is supported
+            if (m_useInstancing && m_supportsInstancing)
+            {
+                batch.programHandle = m_meshInstancedProgram;
+            }
+            else
+            {
+                batch.programHandle = m_meshProgram;
+            }
+            
             batch.vertexBufferHandle = m_meshData[mesh.meshAssetID].vertexBufferHandle;
             batch.indexBufferHandle = m_meshData[mesh.meshAssetID].indexBufferHandle;
 
@@ -488,7 +561,10 @@ namespace Puffin::Rendering::BGFX
 
         m_texAlbedoHandles[mesh.textureAssetID].entities.insert(entity->ID());
 
-        m_texAlbedoArray.AddTexture(mesh.textureAssetID);
+        if (m_useInstancing && m_supportsInstancing)
+        {
+			m_texAlbedoArray.AddTexture(mesh.textureAssetID);
+        }
 	}
 
 	void BGFXRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
