@@ -1,4 +1,4 @@
-$input v_normal, v_tangent, v_bitangent, v_texcoord0, v_wpos, v_view, v_texIndex
+$input v_normal, v_tangent, v_bitangent, v_texcoord0, v_wpos, v_view, v_instIndex
 
 /*
  * Copyright 2011-2022 Branimir Karadzic. All rights reserved.
@@ -9,8 +9,8 @@ $input v_normal, v_tangent, v_bitangent, v_texcoord0, v_wpos, v_view, v_texIndex
 
 #define MAX_LIGHTS 12
 
-SAMPLER2DARRAY(s_texColor,  0);
-//SAMPLER2DARRAY(s_texNormal, 1);
+SAMPLER2D(s_texColor,  0);
+//SAMPLER2D(s_texNormal, 1);
 
 uniform vec4 u_lightPos[MAX_LIGHTS];
 uniform vec4 u_lightDir[MAX_LIGHTS];
@@ -25,7 +25,7 @@ vec3 CalcSpotLight(int lightIndex, vec3 normal, vec3 viewDir, vec3 fragPos);
 
 void main()
 {
-	vec4 albedo = toLinear(texture2DArray(s_texColor, vec3(v_texcoord0.xy, v_texIndex)));
+	vec4 albedo = toLinear(texture2D(s_texColor, v_texcoord0));
 	
 	vec3 result = vec3(0.0, 0.0, 0.0);
 	

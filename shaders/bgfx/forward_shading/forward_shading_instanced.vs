@@ -1,5 +1,5 @@
 $input a_position, a_normal, a_tangent, a_texcoord0, i_data0, i_data1, i_data2, i_data3, i_data4
-$output v_normal, v_tangent, v_bitangent, v_texcoord0, v_wpos, v_view, v_texIndex
+$output v_normal, v_tangent, v_bitangent, v_texcoord0, v_wpos, v_view, v_instIndex
 
 /*
  * Copyright 2011-2022 Branimir Karadzic. All rights reserved.
@@ -40,5 +40,5 @@ void main()
 	// Texture Coordinate
 	v_texcoord0 = a_texcoord0;
 	
-	v_texIndex = i_data4;
+	v_instIndex = i_data4;
 }

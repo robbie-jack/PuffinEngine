@@ -25,7 +25,7 @@ vec3 CalcSpotLight(int lightIndex, vec3 normal, vec3 viewDir, vec3 fragPos);
 
 void main()
 {
-	vec4 albedo = toLinear(texture2D(s_texColor, v_texcoord0) );
+	vec4 albedo = toLinear(texture2D(s_texColor, v_texcoord0));
 	
 	vec3 result = vec3(0.0, 0.0, 0.0);
 	

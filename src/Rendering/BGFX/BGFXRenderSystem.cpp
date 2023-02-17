@@ -186,8 +186,6 @@ namespace Puffin::Rendering::BGFX
         m_texAlbedoSampler = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
         m_texNormalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 
-        m_texAlbedoArray.Init(4096, 4096);
-
         m_deletionQueue.PushFunction([=]()
         {
         	bgfx::destroy(m_texAlbedoSampler);
@@ -404,14 +402,7 @@ namespace Puffin::Rendering::BGFX
         // Dummy draw call to make sure view 0 is cleared
         bgfx::touch(0);
 
-        if (m_useInstancing && m_supportsInstancing)
-        {
-            DrawSceneInstanced();
-        }
-        else
-        {
-            DrawScene();
-        }
+        DrawScene();
 
         // Advance to next frame
         bgfx::frame();
@@ -427,94 +418,96 @@ namespace Puffin::Rendering::BGFX
         // Set Light Uniforms
         SetupLightUniformsForDraw();
 
+        // Generate Mesh Batches (Batches of entities which share same mesh and material) for this frame
+
+        // Render each batch
         for (const auto& drawBatch : m_meshDrawBatches)
         {
             // Set Vertex/Index Buffers
             bgfx::setVertexBuffer(0, drawBatch.vertexBufferHandle);
             bgfx::setIndexBuffer(drawBatch.indexBufferHandle);
 
-            for (const auto& entity : drawBatch.entities)
+            // Set Material/Textures
+
+            // Render using instanced rendering if supported/enableded, and there is more than one entity in batch
+            if (m_useInstancing && m_supportsInstancing && drawBatch.entities.size() > 1)
             {
-                const auto& transform = m_world->GetComponent<TransformComponent>(entity);
-                const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
-
-                // Setup Transform
-                float model[16];
-
-                BuildModelTransform(transform, model);
-
-                bgfx::setTransform(model);
-
-                // Set Texture
-                bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoHandles[mesh.textureAssetID].handle);
-
-                // Submit Program
-                bgfx::submit(0, drawBatch.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE | BGFX_DISCARD_BINDINGS);
+	            DrawMeshBatchInstanced(drawBatch);
+            }
+            // Else use normal rendering path
+            else
+            {
+	            DrawMeshBatch(drawBatch);
             }
 
-            // Discard Vertex/Index Buffers after rendering all entities in batch
-            bgfx::discard(BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER);
+            // Discard Vertex/Index/Buffers/Textures after rendering all entities in batch
+            bgfx::discard(BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_BINDINGS);
         }
 	}
 
-	void BGFXRenderSystem::DrawSceneInstanced()
+	void BGFXRenderSystem::DrawMeshBatch(const MeshDrawBatch& meshDrawBatch)
 	{
-        // Set Camera Matrices
-        bgfx::setViewTransform(0, m_editorCamMats.view, m_editorCamMats.proj);
-
-        // Set Light Uniforms
-        SetupLightUniformsForDraw();
-
-        // Setup stride for instanced rendering
-        const uint16_t instanceStride = 80; // 64 Bytes for 4x4 matrix, 16 Bytes for Texture Index
-
-        // Set Texture Arrays
-        bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoArray.Handle());
-
-        for (const auto& drawBatch : m_meshDrawBatches)
+        for (const auto& entity : meshDrawBatch.entities)
         {
-            // Set Vertex/Index Buffers
-            bgfx::setVertexBuffer(0, drawBatch.vertexBufferHandle);
-            bgfx::setIndexBuffer(drawBatch.indexBufferHandle);
+            const auto& transform = m_world->GetComponent<TransformComponent>(entity);
+            const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
-            const uint32_t numEntities = drawBatch.entities.size();
-            const uint32_t numInstances = bgfx::getAvailInstanceDataBuffer(numEntities, instanceStride);
+            // Setup Transform
+            float model[16];
 
-            bgfx::InstanceDataBuffer idb = {};
-            bgfx::allocInstanceDataBuffer(&idb, numInstances, instanceStride);
+            BuildModelTransform(transform, model);
 
-            uint8_t* data = idb.data;
+            bgfx::setTransform(model);
 
-            for (const auto& entity : drawBatch.entities)
-            {
-                const auto& transform = m_world->GetComponent<TransformComponent>(entity);
-                const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
-
-                // Setup Transform
-                float* mtx = (float*)data;
-
-                BuildModelTransform(transform, mtx);
-
-                float* index = (float*)&data[64];
-                index[0] = static_cast<float>(m_texAlbedoArray.GetTextureIndex(mesh.textureAssetID));
-                index[1] = 0.0f;
-                index[2] = 0.0f;
-                index[3] = 0.0f;
-
-                data += instanceStride;
-            }
-
-            bgfx::setInstanceDataBuffer(&idb, 0, numInstances);
-
-            bgfx::setState(BGFX_STATE_DEFAULT);
+            // Set Texture
+            bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoHandles[mesh.textureAssetID].handle);
 
             // Submit Program
-            bgfx::submit(0, drawBatch.programHandle, 0, BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER);
+            bgfx::submit(0, meshDrawBatch.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE | BGFX_DISCARD_BINDINGS);
+        }
+	}
+
+	void BGFXRenderSystem::DrawMeshBatchInstanced(const MeshDrawBatch& meshDrawBatch)
+	{
+        // Setup stride for instanced rendering
+        const uint16_t instanceStride = 80; // 64 Bytes for 4x4 matrix, 16 Bytes for Instance Index
+
+        const uint32_t numEntities = meshDrawBatch.entities.size();
+        const uint32_t numInstances = bgfx::getAvailInstanceDataBuffer(numEntities, instanceStride);
+
+        bgfx::InstanceDataBuffer idb = {};
+        bgfx::allocInstanceDataBuffer(&idb, numInstances, instanceStride);
+
+        uint8_t* data = idb.data;
+
+        int idx = 0;
+        for (const auto& entity : meshDrawBatch.entities)
+        {
+            const auto& transform = m_world->GetComponent<TransformComponent>(entity);
+            const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
+
+            // Setup Transform
+            float* mtx = (float*)data;
+
+            BuildModelTransform(transform, mtx);
+
+            float* index = (float*)&data[64];
+            index[0] = static_cast<float>(idx);
+            index[1] = 0.0f;
+            index[2] = 0.0f;
+            index[3] = 0.0f;
+
+            data += instanceStride;
+            idx++;
         }
 
-        // Discard Texture/Buffer bindings
-        bgfx::discard(BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_BINDINGS | BGFX_DISCARD_STATE);
-	}
+        bgfx::setInstanceDataBuffer(&idb, 0, numInstances);
+
+        bgfx::setState(BGFX_STATE_DEFAULT);
+
+        // Submit Program
+        bgfx::submit(0, meshDrawBatch.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE | BGFX_DISCARD_BINDINGS);
+    }
 
 	void BGFXRenderSystem::InitMeshComponent(std::shared_ptr<ECS::Entity> entity)
 	{
@@ -560,11 +553,6 @@ namespace Puffin::Rendering::BGFX
         }
 
         m_texAlbedoHandles[mesh.textureAssetID].entities.insert(entity->ID());
-
-        if (m_useInstancing && m_supportsInstancing)
-        {
-			m_texAlbedoArray.AddTexture(mesh.textureAssetID);
-        }
 	}
 
 	void BGFXRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)

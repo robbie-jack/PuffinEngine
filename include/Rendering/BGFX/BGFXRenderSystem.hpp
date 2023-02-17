@@ -138,7 +138,7 @@ namespace Puffin::Rendering::BGFX
 		PackedVector<TextureData> m_texAlbedoHandles;
 		PackedVector<TextureData> m_texNormalHandles;
 
-		TextureArray m_texAlbedoArray;
+		//TextureArray m_texAlbedoArray;
 
 		// Light Vars
 		LightUniformHandles m_lightUniformHandles;
@@ -173,7 +173,8 @@ namespace Puffin::Rendering::BGFX
 
 		void Draw();
 		void DrawScene();
-		void DrawSceneInstanced();
+		void DrawMeshBatch(const MeshDrawBatch& meshDrawBatch);
+		void DrawMeshBatchInstanced(const MeshDrawBatch& meshDrawBatch);
 
 		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
 		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
