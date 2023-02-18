@@ -116,8 +116,8 @@ namespace Puffin::Core
 		ecsWorld->RegisterComponentFlag<FlagDeleted>();
 
 		// Systems
-		RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
-		//RegisterSystem<Rendering::VK::VKRenderSystem>();
+		//RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
+		RegisterSystem<Rendering::VK::VKRenderSystem>();
 		RegisterSystem<Physics::Onager2DPhysicsSystem>();
 		//RegisterSystem<Physics::Box2DPhysicsSystem>();
 		RegisterSystem<Scripting::AngelScriptSystem>();

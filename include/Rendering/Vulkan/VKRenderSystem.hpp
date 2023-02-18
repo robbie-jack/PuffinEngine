@@ -4,20 +4,23 @@
 #include <glfw/glfw3.h>
 #include <glfw/glfw3native.h>
 
-//#define VMA_IMPLEMENTATION
-
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
 #include <vulkan/vulkan.hpp>
-//#include <vma/vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 
-//#include "vk_mem_alloc.hpp"
-#include "vku/vku_framework.hpp"
+//#include "vku/vku_framework.hpp"
 #include "vku/vku.hpp"
 
 #include "ECS/System.hpp"
 #include "Types/Vertex.hpp"
+
+#ifdef NDEBUG
+const bool enableValidationLayers = false;
+#else
+const bool enableValidationLayers = true;
+#endif
 
 namespace Puffin::Rendering::VK
 {
@@ -81,9 +84,20 @@ namespace Puffin::Rendering::VK
 	private:
 
 		// Initialization Members
-		vku::Framework m_framework;
 		vk::Device m_device;
-		vku::Window m_window;
+		vk::Instance m_instance;
+		vk::PhysicalDevice m_physicalDevice;
+		vk::SurfaceKHR m_surface;
+		vk::DebugUtilsMessengerEXT m_debugMessenger;
+
+		// Swapchain
+		vk::SwapchainKHR m_swapchain;
+		vk::Format m_swapchainImageFormat;
+		std::vector<vk::Image> m_swapchainImages;
+		std::vector<vk::ImageView> m_swapchainImageViews;
+
+		//vku::Framework m_framework;
+		//vku::Window m_window;
 
 		vku::HostVertexBuffer m_triVertexBuffer;
 
@@ -94,6 +108,8 @@ namespace Puffin::Rendering::VK
 		bool m_isInitialized = false;
 
 		void InitVulkan();
+		void InitSwapchain();
+
 		vk::UniquePipeline BuildTrianglePipeline();
 		void InitTriangleRender();
 
