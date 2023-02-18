@@ -14,6 +14,7 @@
 #include "vku/vku.hpp"
 
 #include "ECS/System.hpp"
+#include "Types/DeletionQueue.hpp"
 #include "Types/Vertex.hpp"
 
 #ifdef NDEBUG
@@ -90,28 +91,34 @@ namespace Puffin::Rendering::VK
 		vk::SurfaceKHR m_surface;
 		vk::DebugUtilsMessengerEXT m_debugMessenger;
 
+		vk::Extent2D m_windowSize;
+
 		// Swapchain
 		vk::SwapchainKHR m_swapchain;
 		vk::Format m_swapchainImageFormat;
 		std::vector<vk::Image> m_swapchainImages;
 		std::vector<vk::ImageView> m_swapchainImageViews;
 
-		//vku::Framework m_framework;
-		//vku::Window m_window;
+		// Command Execution
+		vk::Queue m_graphicsQueue;
+		uint32_t m_graphicsQueueFamily;
 
-		vku::HostVertexBuffer m_triVertexBuffer;
+		vk::CommandPool m_commandPool;
+		vk::CommandBuffer m_mainCommandBuffer;
 
-		vku::ShaderModule m_vertMod, m_fragMod;
-		vk::UniquePipeline m_triPipeline;
+		/*vku::ShaderModule m_vertMod, m_fragMod;
+		vk::UniquePipeline m_triPipeline;*/
+
+		DeletionQueue m_deletionQueue;
 
 		// Indicated initialization completed without any failures
 		bool m_isInitialized = false;
 
 		void InitVulkan();
 		void InitSwapchain();
+		void InitCommands();
 
 		vk::UniquePipeline BuildTrianglePipeline();
-		void InitTriangleRender();
 
 	};
 }
