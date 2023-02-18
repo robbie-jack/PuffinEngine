@@ -419,15 +419,24 @@ namespace Puffin::Rendering::BGFX
         SetupLightUniformsForDraw();
 
         // Generate Mesh Batches (Batches of entities which share same mesh and material) for this frame
+        std::vector<MeshDrawBatch> batches;
+        BuildBatches(batches);
 
         // Render each batch
-        for (const auto& drawBatch : m_meshDrawBatches)
+        for (const auto& drawBatch : batches)
         {
             // Set Vertex/Index Buffers
-            bgfx::setVertexBuffer(0, drawBatch.vertexBufferHandle);
-            bgfx::setIndexBuffer(drawBatch.indexBufferHandle);
+            bgfx::setVertexBuffer(0, drawBatch.meshData.vertexBufferHandle);
+            bgfx::setIndexBuffer(drawBatch.meshData.indexBufferHandle);
 
             // Set Material/Textures
+            int tidx = 0;
+            for (const auto& id : drawBatch.matData.texIDs)
+            {
+                bgfx::setTexture(tidx, m_texAlbedoSampler, m_texData[id].handle);
+
+                tidx++;
+            }
 
             // Render using instanced rendering if supported/enableded, and there is more than one entity in batch
             if (m_useInstancing && m_supportsInstancing && drawBatch.entities.size() > 1)
@@ -443,6 +452,51 @@ namespace Puffin::Rendering::BGFX
             // Discard Vertex/Index/Buffers/Textures after rendering all entities in batch
             bgfx::discard(BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_BINDINGS);
         }
+
+        bgfx::discard(BGFX_DISCARD_ALL);
+	}
+
+	void BGFXRenderSystem::BuildBatches(std::vector<MeshDrawBatch>& batches)
+	{
+		batches.clear();
+
+        batches.reserve(m_meshData.Size() * m_matData.Size());
+
+        std::unordered_map<MeshMatPair, std::set<ECS::EntityID>> meshMatMap;
+
+        // Generate set of entities for each unique mesh/material pair
+        for (const auto& meshData : m_meshData)
+        {
+	        const std::set<ECS::EntityID>& meshEntities = m_meshSets[meshData.assetID];
+
+            for (const ECS::EntityID& entity : meshEntities)
+            {
+                auto& mesh = m_world->GetComponent<MeshComponent>(entity);
+
+                MeshMatPair pair(mesh.textureAssetID, meshData.assetID);
+
+                if (meshMatMap.count(pair) == 0)
+                {
+                    meshMatMap.emplace(pair, std::set<ECS::EntityID>());
+                }
+
+                meshMatMap[pair].insert(entity);
+            }
+        }
+
+        // Generate batch for each unique mesh/material pair
+        for (const auto& [fst, snd] : meshMatMap)
+        {
+			UUID matID = fst.first;
+            UUID meshID = fst.second;
+
+	        MeshDrawBatch batch;
+            batch.meshData = m_meshData[meshID];
+            batch.matData = m_matData[matID];
+            batch.entities = snd;
+
+            batches.push_back(batch);
+        }
 	}
 
 	void BGFXRenderSystem::DrawMeshBatch(const MeshDrawBatch& meshDrawBatch)
@@ -450,7 +504,6 @@ namespace Puffin::Rendering::BGFX
         for (const auto& entity : meshDrawBatch.entities)
         {
             const auto& transform = m_world->GetComponent<TransformComponent>(entity);
-            const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
             // Setup Transform
             float model[16];
@@ -459,11 +512,8 @@ namespace Puffin::Rendering::BGFX
 
             bgfx::setTransform(model);
 
-            // Set Texture
-            bgfx::setTexture(0, m_texAlbedoSampler, m_texAlbedoHandles[mesh.textureAssetID].handle);
-
             // Submit Program
-            bgfx::submit(0, meshDrawBatch.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE | BGFX_DISCARD_BINDINGS);
+            bgfx::submit(0, meshDrawBatch.matData.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE);
         }
 	}
 
@@ -484,7 +534,6 @@ namespace Puffin::Rendering::BGFX
         for (const auto& entity : meshDrawBatch.entities)
         {
             const auto& transform = m_world->GetComponent<TransformComponent>(entity);
-            const auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
             // Setup Transform
             float* mtx = (float*)data;
@@ -506,7 +555,7 @@ namespace Puffin::Rendering::BGFX
         bgfx::setState(BGFX_STATE_DEFAULT);
 
         // Submit Program
-        bgfx::submit(0, meshDrawBatch.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE | BGFX_DISCARD_BINDINGS);
+        bgfx::submit(0, meshDrawBatch.matData.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE | BGFX_DISCARD_INSTANCE_DATA);
     }
 
 	void BGFXRenderSystem::InitMeshComponent(std::shared_ptr<ECS::Entity> entity)
@@ -516,43 +565,52 @@ namespace Puffin::Rendering::BGFX
         // Init Mesh
         if (!m_meshData.Contains(mesh.meshAssetID))
         {
-	        LoadAndInitMesh(mesh.meshAssetID);
+			MeshData meshData;
 
-            m_meshData[mesh.meshAssetID].entities.insert(entity->ID());
+			LoadAndInitMesh(mesh.meshAssetID, meshData);
+
+            m_meshData.Insert(mesh.meshAssetID, meshData);
+            m_meshSets.emplace(mesh.meshAssetID, std::set<ECS::EntityID>());
         }
 
-        if (!m_meshDrawBatches.Contains(mesh.meshAssetID))
-        {
-	        MeshDrawBatch batch;
+        m_meshSets[mesh.meshAssetID].insert(entity->ID());
 
-            // Set shader program depending on if instancing is supported
+        // Init Textures
+        if (!m_texData.Contains(mesh.textureAssetID))
+        {
+			TextureData texData;
+
+            LoadAndInitTexture(mesh.textureAssetID, texData);
+
+            m_texData.Insert(mesh.textureAssetID, texData);
+            m_texSets.emplace(mesh.textureAssetID, std::set<ECS::EntityID>());
+        }
+
+        m_texSets[mesh.textureAssetID].insert(entity->ID());
+
+        // Init Materials (Currently using default mesh program, will add proper material system later)
+        if (!m_matData.Contains(mesh.textureAssetID))
+        {
+	        MaterialData matData;
+
+            matData.assetID = mesh.textureAssetID;
+
             if (m_useInstancing && m_supportsInstancing)
             {
-                batch.programHandle = m_meshInstancedProgram;
+                matData.programHandle = m_meshInstancedProgram;
             }
             else
             {
-                batch.programHandle = m_meshProgram;
+                matData.programHandle = m_meshProgram;
             }
-            
-            batch.vertexBufferHandle = m_meshData[mesh.meshAssetID].vertexBufferHandle;
-            batch.indexBufferHandle = m_meshData[mesh.meshAssetID].indexBufferHandle;
 
-            m_meshDrawBatches.Insert(mesh.meshAssetID, batch);
+            matData.texIDs.push_back(mesh.textureAssetID);
+
+            m_matData.Insert(mesh.textureAssetID, matData);
+            m_matSets.emplace(mesh.textureAssetID, std::set<ECS::EntityID>());
         }
 
-        m_meshDrawBatches[mesh.meshAssetID].entities.insert(entity->ID());
-
-        // Init Textures
-        if (!m_texAlbedoHandles.Contains(mesh.textureAssetID))
-        {
-            TextureData texData;
-            texData.handle = LoadAndInitTexture(mesh.textureAssetID);
-
-            m_texAlbedoHandles.Emplace(mesh.textureAssetID, texData);
-        }
-
-        m_texAlbedoHandles[mesh.textureAssetID].entities.insert(entity->ID());
+        m_matSets[mesh.textureAssetID].insert(entity->ID());
 	}
 
 	void BGFXRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
@@ -560,31 +618,35 @@ namespace Puffin::Rendering::BGFX
         auto& mesh = entity->GetComponent<MeshComponent>();
 
         // Cleanup Mesh Data
-        m_meshDrawBatches[mesh.meshAssetID].entities.erase(entity->ID());
+        m_meshSets[mesh.meshAssetID].erase(entity->ID());
 
-        if (m_meshDrawBatches[mesh.meshAssetID].entities.empty())
-        {
-	        m_meshDrawBatches.Erase(mesh.meshAssetID);
-        }
-
-        m_meshData[mesh.meshAssetID].entities.erase(entity->ID());
-
-        if (m_meshData[mesh.meshAssetID].entities.empty())
+        if (m_meshSets[mesh.meshAssetID].empty())
         {
             bgfx::destroy(m_meshData[mesh.meshAssetID].vertexBufferHandle);
             bgfx::destroy(m_meshData[mesh.meshAssetID].indexBufferHandle);
 
             m_meshData.Erase(mesh.meshAssetID);
+            m_meshSets.erase(mesh.meshAssetID);
+        }
+
+        // Cleanup Material Data
+        m_matSets[mesh.textureAssetID].erase(entity->ID());
+
+        if (m_matSets[mesh.textureAssetID].empty())
+        {
+			m_matData.Erase(mesh.textureAssetID);
+            m_matSets.erase(mesh.textureAssetID);
         }
 
         // Cleanup Texture Data
-        m_texAlbedoHandles[mesh.textureAssetID].entities.erase(entity->ID());
+        m_texSets[mesh.textureAssetID].erase(entity->ID());
 
-        if (m_texAlbedoHandles[mesh.textureAssetID].entities.empty())
+        if (m_texSets[mesh.textureAssetID].empty())
         {
-			bgfx::destroy(m_texAlbedoHandles[mesh.textureAssetID].handle);
+			bgfx::destroy(m_texData[mesh.textureAssetID].handle);
 
-            m_texAlbedoHandles.Erase(mesh.textureAssetID);
+            m_texData.Erase(mesh.textureAssetID);
+            m_texSets.erase(mesh.textureAssetID);
         }
 	}
 
@@ -687,21 +749,18 @@ namespace Puffin::Rendering::BGFX
         }
 	}
 
-	void BGFXRenderSystem::LoadAndInitMesh(UUID meshID)
+	void BGFXRenderSystem::LoadAndInitMesh(UUID meshID, MeshData& meshData)
 	{
         const auto meshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
 
         if (meshAsset && meshAsset->Load())
         {
-	        MeshData data;
-            data.assetID = meshID;
-            data.numVertices = meshAsset->GetVertices().size();
-            data.numIndices = meshAsset->GetIndices().size();
+            meshData.assetID = meshID;
+            meshData.numVertices = meshAsset->GetVertices().size();
+            meshData.numIndices = meshAsset->GetIndices().size();
 
-            data.vertexBufferHandle = InitVertexBuffer(meshAsset->GetVertices().data(), data.numVertices, s_layoutVertexPNTV32);
-            data.indexBufferHandle = InitIndexBuffer(meshAsset->GetIndices().data(), data.numIndices, true);
-
-            m_meshData.Insert(meshID, data);
+            meshData.vertexBufferHandle = InitVertexBuffer(meshAsset->GetVertices().data(), meshData.numVertices, s_layoutVertexPNTV32);
+            meshData.indexBufferHandle = InitIndexBuffer(meshAsset->GetIndices().data(), meshData.numIndices, true);
 
             meshAsset->Unload();
         }
@@ -747,27 +806,25 @@ namespace Puffin::Rendering::BGFX
         return bgfx::createIndexBuffer(mem, indexFlags);
 	}
 
-    bgfx::TextureHandle BGFXRenderSystem::LoadAndInitTexture(UUID texID) const
+    void BGFXRenderSystem::LoadAndInitTexture(UUID texID, TextureData& texData)
     {
         const auto texAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(texID));
 
-        bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
-
         if (texAsset && texAsset->Load())
         {
-			uint32_t texSize = texAsset->GetTextureSize();
+            texData.assetID = texID;
 
-	        const bgfx::Memory* mem = bgfx::alloc(texSize);
+            uint32_t texSize = texAsset->GetTextureSize();
+
+            const bgfx::Memory* mem = bgfx::alloc(texSize);
 
             bx::memCopy(mem->data, texAsset->GetPixelData(), mem->size);
 
-            handle = bgfx::createTexture2D(texAsset->GetTextureWidth(), texAsset->GetTextureHeight(),
-            false, 1, g_texFormatMap.at(texAsset->GetTextureFormat()), 0, mem);
+            texData.handle = bgfx::createTexture2D(texAsset->GetTextureWidth(), texAsset->GetTextureHeight(),
+                false, 1, g_texFormatMap.at(texAsset->GetTextureFormat()), 0, mem);
 
             texAsset->Unload();
         }
-
-        return handle;
     }
 
     void BGFXRenderSystem::SetupLightUniformsForDraw() const

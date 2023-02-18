@@ -6,35 +6,42 @@
 #include "Types/UUID.h"
 
 #include <set>
+#include <vector>
 
 namespace Puffin::Rendering::BGFX
 {
 	struct MeshData
 	{
+		UUID assetID; // ID of mesh asset
+
 		bgfx::VertexBufferHandle vertexBufferHandle;
 		bgfx::IndexBufferHandle indexBufferHandle;
 
-		UUID assetID; // ID of Mesh Asset
 		uint32_t numVertices; // Number of Vertices in Mesh
 		uint32_t numIndices; // Number of Indices in Mesh
-
-		std::set<ECS::EntityID> entities; // Set of Entities using this mesh
-	};
-
-	struct MeshDrawBatch
-	{
-		bgfx::VertexBufferHandle vertexBufferHandle;
-		bgfx::IndexBufferHandle indexBufferHandle;
-		bgfx::ProgramHandle programHandle;
-
-		std::set<ECS::EntityID> entities; // Set of Entities using this mesh/shader combo
 	};
 
 	struct TextureData
 	{
-		bgfx::TextureHandle handle;
+		UUID assetID; // ID of texture asset
 
-		std::set<ECS::EntityID> entities; // Set of Entities using this texture
+		bgfx::TextureHandle handle;
+	};
+
+	struct MaterialData
+	{
+		UUID assetID; // ID of material asset
+
+		bgfx::ProgramHandle programHandle;
+		std::vector<UUID> texIDs;
+	};
+
+	struct MeshDrawBatch
+	{
+		MeshData meshData;
+		MaterialData matData;
+
+		std::set<ECS::EntityID> entities; // Set of Entities using this mesh/shader combo
 	};
 
 	struct LightUniformHandles

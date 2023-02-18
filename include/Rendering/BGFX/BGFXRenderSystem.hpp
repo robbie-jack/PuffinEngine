@@ -18,6 +18,18 @@
 
 #include <memory>
 
+namespace std
+{
+	template<>
+	struct hash<std::pair<Puffin::UUID, Puffin::UUID>>
+	{
+		std::size_t operator()(const std::pair<Puffin::UUID, Puffin::UUID>& pair) const
+		{
+			return hash<uint64_t>()((uint64_t)pair.first) ^ hash<uint64_t>()((uint64_t)pair.second);
+		}
+	};
+}
+
 namespace Puffin::Rendering::BGFX
 {
 	static VertexPC32 s_cubeVertices[] =
@@ -54,6 +66,9 @@ namespace Puffin::Rendering::BGFX
 	};
 
 	constexpr uint16_t G_MAX_LIGHTS = 16;
+
+	typedef std::unordered_map<UUID, std::set<ECS::EntityID>> AssetSetMap; // Used for tracking which entities are using each loaded asset
+	typedef std::pair<UUID, UUID> MeshMatPair;
 
 	static bgfx::ShaderHandle LoadShader(const char* filename)
 	{
@@ -129,14 +144,19 @@ namespace Puffin::Rendering::BGFX
 		bgfx::ProgramHandle m_meshInstancedProgram;
 
 		PackedVector<MeshData> m_meshData;
-		PackedVector<MeshDrawBatch> m_meshDrawBatches;
+		PackedVector<TextureData> m_texData;
+		PackedVector<MaterialData> m_matData;
+
+		AssetSetMap m_meshSets;
+		AssetSetMap m_texSets;
+		AssetSetMap m_matSets;
 
 		// Texture Vars
 		bgfx::UniformHandle m_texAlbedoSampler;
 		bgfx::UniformHandle m_texNormalSampler;
 
-		PackedVector<TextureData> m_texAlbedoHandles;
-		PackedVector<TextureData> m_texNormalHandles;
+		//PackedVector<TextureData> m_texAlbedoHandles;
+		//PackedVector<TextureData> m_texNormalHandles;
 
 		//TextureArray m_texAlbedoArray;
 
@@ -173,6 +193,7 @@ namespace Puffin::Rendering::BGFX
 
 		void Draw();
 		void DrawScene();
+		void BuildBatches(std::vector<MeshDrawBatch>& batches);
 		void DrawMeshBatch(const MeshDrawBatch& meshDrawBatch);
 		void DrawMeshBatchInstanced(const MeshDrawBatch& meshDrawBatch);
 
@@ -183,11 +204,11 @@ namespace Puffin::Rendering::BGFX
 		void UpdateEditorCamera();
 		void UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity);
 
-		void LoadAndInitMesh(UUID meshID);
+		static inline void LoadAndInitMesh(UUID meshID, MeshData& meshData);
 		static inline bgfx::VertexBufferHandle InitVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
 		static inline bgfx::IndexBufferHandle InitIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
 
-		bgfx::TextureHandle LoadAndInitTexture(UUID texID) const;
+		static inline void LoadAndInitTexture(UUID texID, TextureData& texData);
 
 		void SetupLightUniformsForDraw() const;
 
