@@ -143,6 +143,8 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/BGFX/Forward/BGFXForwardRenderer.hpp
 	# Rendering Vulkan
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.hpp
+	${HEADER_DIR}/Rendering/Vulkan/VKTypes.hpp
+	${HEADER_DIR}/Rendering/Vulkan/VKVertex.hpp
 	
 	# ${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
 	# ${HEADER_DIR}/Rendering/Vulkan/VKTypes.h

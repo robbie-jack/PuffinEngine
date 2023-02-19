@@ -8,10 +8,10 @@
 //#define VMA_HPP_NAMESPACE <prefix>
 
 #include <vulkan/vulkan.hpp>
-#include <vma/vk_mem_alloc.h>
 
 //#include "vku/vku_framework.hpp"
 #include "vku/vku.hpp"
+#include "vk_mem_alloc.hpp"
 
 #include "ECS/System.hpp"
 #include "Types/DeletionQueue.hpp"
@@ -93,6 +93,8 @@ namespace Puffin::Rendering::VK
 
 		vk::Extent2D m_windowSize;
 
+		vma::Allocator m_allocator;
+
 		// Swapchain
 		vk::SwapchainKHR m_swapchain;
 		vk::Format m_swapchainImageFormat;
@@ -118,7 +120,8 @@ namespace Puffin::Rendering::VK
 		// Pipelines
 		vk::PipelineCache m_pipelineCache;
 
-		vku::ShaderModule m_vertMod, m_fragMod;
+		vku::ShaderModule m_triVertMod, m_triFragMod;
+		vk::UniquePipelineLayout m_triPipelineLayout;
 		vk::UniquePipeline m_triPipeline;
 
 		DeletionQueue m_deletionQueue;
@@ -134,9 +137,9 @@ namespace Puffin::Rendering::VK
 		void InitSyncStructures();
 		void InitPipelines();
 
-		void Draw();
+		void BuildTrianglePipeline();
 
-		vk::UniquePipeline BuildTrianglePipeline();
+		void Draw();
 
 	};
 }

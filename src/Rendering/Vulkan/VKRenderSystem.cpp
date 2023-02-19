@@ -5,6 +5,7 @@
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
+#include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
 #include "VkBootstrap.h"
 
@@ -104,8 +105,16 @@ namespace Puffin::Rendering::VK
 		m_graphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
 		m_graphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
 
+		// Init memory allocator
+		vma::AllocatorCreateInfo allocatorInfo = { {}, m_physicalDevice, m_device};
+		allocatorInfo.instance = m_instance;
+
+		VK_CHECK(vma::createAllocator(&allocatorInfo, &m_allocator));
+
 		m_deletionQueue.PushFunction([=]()
 		{
+			m_allocator.destroy();
+
 			m_device.destroy();
 			m_instance.destroySurfaceKHR(m_surface);
 			vkb::destroy_debug_utils_messenger(m_instance, m_debugMessenger);
@@ -237,10 +246,34 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::InitPipelines()
 	{
-		m_vertMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_vs.spv" };
-		m_fragMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_fs.spv" };
+		BuildTrianglePipeline();		
+	}
 
-		m_triPipeline = BuildTrianglePipeline();
+	void VKRenderSystem::BuildTrianglePipeline()
+	{
+		m_triVertMod = vku::ShaderModule { m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_vs.spv" };
+		m_triFragMod = vku::ShaderModule { m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_fs.spv" };
+
+		vku::PipelineLayoutMaker plm{};
+		m_triPipelineLayout = plm.createUnique(m_device);
+
+		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
+		m_triPipeline = pm
+			.shader(vk::ShaderStageFlagBits::eVertex, m_triVertMod)
+			.shader(vk::ShaderStageFlagBits::eFragment, m_triFragMod)
+			/*.vertexBinding(0, sizeof(VertexPC32))
+			.vertexAttribute(0, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPC32, pos))
+			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color))*/
+			.createUnique(m_device, m_pipelineCache, *m_triPipelineLayout, m_renderPass);
+
+		m_device.destroyShaderModule(m_triVertMod.module());
+		m_device.destroyShaderModule(m_triFragMod.module());
+
+		m_deletionQueue.PushFunction([=]()
+		{
+			m_triPipelineLayout = {};
+			m_triPipeline = {};
+		});
 	}
 
 	void VKRenderSystem::Draw()
@@ -301,20 +334,5 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
 
 		m_frameNumber++;
-	}
-
-	vk::UniquePipeline VKRenderSystem::BuildTrianglePipeline()
-	{
-		vku::PipelineLayoutMaker plm{};
-		vk::UniquePipelineLayout pl = plm.createUnique(m_device);
-
-		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
-		return pm
-			.shader(vk::ShaderStageFlagBits::eVertex, m_vertMod)
-			.shader(vk::ShaderStageFlagBits::eFragment, m_fragMod)
-			/*.vertexBinding(0, sizeof(VertexPC32))
-			.vertexAttribute(0, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPC32, pos))
-			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color))*/
-			.createUnique(m_device, m_pipelineCache, *pl, m_renderPass);
 	}
 }

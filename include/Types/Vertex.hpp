@@ -4,8 +4,11 @@
 
 #include <vector>
 
-struct VkVertexInputBindingDescription;
-struct VkVertexInputAttributeDescription;
+namespace vk
+{
+	struct VertexInputBindingDescription;
+	struct VertexInputAttributeDescription;
+}
 
 namespace bgfx
 {
@@ -18,6 +21,7 @@ namespace Puffin::Rendering
 	{
 		Unknown = 0,
 		PC32,
+		PNC32,
 		PNTV32,
 		P64NTV32
 	};
@@ -34,8 +38,25 @@ namespace Puffin::Rendering
 
 		static bgfx::VertexLayout GetLayout();
 
-		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
-		                                          std::vector<VkVertexInputAttributeDescription>& attributeDescriptions);
+		static void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
+			std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
+	};
+
+	struct VertexPNC32
+	{
+		Vector3f pos;
+		Vector3f normal;
+		Vector3f color;
+
+		bool operator==(const VertexPNC32& other) const
+		{
+			return pos == other.pos && normal == other.normal && color == other.color;
+		}
+
+		static bgfx::VertexLayout GetLayout();
+
+		static void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
+			std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
 	};
 
 	struct VertexPNTV32
@@ -55,8 +76,8 @@ namespace Puffin::Rendering
 
 		static bgfx::VertexLayout GetLayout();
 
-		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
-			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions);
+		static void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
+			std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
 	};
 
 	struct VertexP64NTV32
@@ -76,8 +97,8 @@ namespace Puffin::Rendering
 
 		static bgfx::VertexLayout GetLayout();
 
-		static void GetVertexBindingAndAttributes(VkVertexInputBindingDescription& bindingDescription,
-			std::vector<VkVertexInputAttributeDescription>& attributeDescriptions);
+		static void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
+			std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
 	};
 
 	static VertexFormat ParseVertexFormatFromString(const char* f)
