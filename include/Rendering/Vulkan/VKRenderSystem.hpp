@@ -115,8 +115,11 @@ namespace Puffin::Rendering::VK
 
 		uint32_t m_frameNumber;
 
-		/*vku::ShaderModule m_vertMod, m_fragMod;
-		vk::UniquePipeline m_triPipeline;*/
+		// Pipelines
+		vk::PipelineCache m_pipelineCache;
+
+		vku::ShaderModule m_vertMod, m_fragMod;
+		vk::UniquePipeline m_triPipeline;
 
 		DeletionQueue m_deletionQueue;
 
@@ -129,6 +132,7 @@ namespace Puffin::Rendering::VK
 		void InitDefaultRenderPass();
 		void InitFramebuffers();
 		void InitSyncStructures();
+		void InitPipelines();
 
 		void Draw();
 

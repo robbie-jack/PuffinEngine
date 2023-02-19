@@ -34,6 +34,7 @@ namespace Puffin::Rendering::VK
 		InitDefaultRenderPass();
 		InitFramebuffers();
 		InitSyncStructures();
+		InitPipelines();
 
 		m_isInitialized = true;
 	}
@@ -234,6 +235,14 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
+	void VKRenderSystem::InitPipelines()
+	{
+		m_vertMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_vs.spv" };
+		m_fragMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_fs.spv" };
+
+		m_triPipeline = BuildTrianglePipeline();
+	}
+
 	void VKRenderSystem::Draw()
 	{
 		// Wait until GPU has finished rendering last frame. Timeout of 1 second
@@ -264,7 +273,8 @@ namespace Puffin::Rendering::VK
 
 		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
 
-
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_triPipeline.get());
+		cmd.draw(3, 1, 0, 0);
 
 		// End main renderpass
 		cmd.endRenderPass();
@@ -295,18 +305,16 @@ namespace Puffin::Rendering::VK
 
 	vk::UniquePipeline VKRenderSystem::BuildTrianglePipeline()
 	{
-		/*vku::PipelineLayoutMaker plm{};
-		vk::UniquePipelineLayout pl = plm.createUnique(m_device);*/
+		vku::PipelineLayoutMaker plm{};
+		vk::UniquePipelineLayout pl = plm.createUnique(m_device);
 
-		/*vku::PipelineMaker pm{ m_window.width(), m_window.height() };
+		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
 		return pm
 			.shader(vk::ShaderStageFlagBits::eVertex, m_vertMod)
 			.shader(vk::ShaderStageFlagBits::eFragment, m_fragMod)
-			.vertexBinding(0, sizeof(VertexPC32))
+			/*.vertexBinding(0, sizeof(VertexPC32))
 			.vertexAttribute(0, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPC32, pos))
-			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color))
-			.createUnique(m_device, m_framework.pipelineCache(), *pl, m_window.renderPass());*/
-
-		return vk::UniquePipeline();
+			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color))*/
+			.createUnique(m_device, m_pipelineCache, *pl, m_renderPass);
 	}
 }

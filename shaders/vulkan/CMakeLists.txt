@@ -109,7 +109,7 @@ endfunction(build_shader_commands)
   # list(APPEND SPIRV_BINARY_FILES ${SPIRV})
 # endforeach(GLSL)
 
-build_shader_commands("hellotriangle")
+build_shader_commands("triangle")
 
 add_custom_target(
     Shaders 
