@@ -5,6 +5,13 @@
 
 namespace Puffin::Rendering::VK
 {
+	struct UploadContext
+	{
+		vk::Fence uploadFence;
+		vk::CommandPool commandPool;
+		vk::CommandBuffer commandBuffer;
+	};
+
 	struct AllocatedBuffer
 	{
 		vk::Buffer buffer;

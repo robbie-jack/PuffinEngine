@@ -16,6 +16,7 @@
 #include "ECS/System.hpp"
 #include "Types/DeletionQueue.hpp"
 #include "Types/Vertex.hpp"
+#include "VKTypes.hpp"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -25,45 +26,6 @@ const bool enableValidationLayers = true;
 
 namespace Puffin::Rendering::VK
 {
-	static std::vector<VertexPC32> s_triangleVertices =
-	{
-		{ {0.5f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-		{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-		{{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-
-		{{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-		{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-		{{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}},
-	};
-
-	//static VertexPC32 s_cubeVertices[] =
-	//{
-	//	{{-1.0f,  1.0f,  1.0f}, 0xff000000 },
-	//	{ {1.0f,  1.0f,  1.0f}, 0xff0000ff },
-	//	{{-1.0f, -1.0f,  1.0f}, 0xff00ff00 },
-	//	{ {1.0f, -1.0f,  1.0f}, 0xff00ffff },
-	//	{{-1.0f,  1.0f, -1.0f}, 0xffff0000 },
-	//	{ {1.0f,  1.0f, -1.0f}, 0xffff00ff },
-	//	{{-1.0f, -1.0f, -1.0f}, 0xffffff00 },
-	//	{ {1.0f, -1.0f, -1.0f}, 0xffffffff },
-	//};
-
-	//static const uint16_t s_cubeTriList[] =
-	//{
-	//	0, 1, 2, // 0
-	//	1, 3, 2,
-	//	4, 6, 5, // 2
-	//	5, 6, 7,
-	//	0, 2, 4, // 4
-	//	4, 2, 6,
-	//	1, 5, 3, // 6
-	//	5, 7, 3,
-	//	0, 4, 1, // 8
-	//	4, 5, 1,
-	//	2, 3, 6, // 10
-	//	6, 3, 7,
-	//};
-
 	// Vulkan Rendering System
 	class VKRenderSystem : public ECS::System
 	{
@@ -81,6 +43,11 @@ namespace Puffin::Rendering::VK
 		void Update() override;
 		void Stop() override {}
 		void Cleanup() override;
+
+		const vma::Allocator& GetAllocator() const { return m_allocator ;}
+		const vk::Device& GetDevice() const { return m_device; }
+		const UploadContext& GetUploadContext() const { return m_uploadContext; }
+		const vk::Queue& GetGraphicsQueue() const { return m_graphicsQueue; }
 
 	private:
 
@@ -124,6 +91,8 @@ namespace Puffin::Rendering::VK
 		vk::UniquePipelineLayout m_triPipelineLayout;
 		vk::UniquePipeline m_triPipeline;
 
+		UploadContext m_uploadContext;
+
 		DeletionQueue m_deletionQueue;
 
 		// Indicated initialization completed without any failures
@@ -140,6 +109,5 @@ namespace Puffin::Rendering::VK
 		void BuildTrianglePipeline();
 
 		void Draw();
-
 	};
 }

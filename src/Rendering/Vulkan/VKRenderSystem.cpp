@@ -11,6 +11,7 @@
 
 #include "Window/WindowSubsystem.hpp"
 #include "Engine/Engine.hpp"
+#include "Rendering/Vulkan/VKHelpers.hpp"
 
 #include <iostream>
 
@@ -171,9 +172,17 @@ namespace Puffin::Rendering::VK
 		vk::CommandBufferAllocateInfo commandBufferInfo = { m_commandPool, vk::CommandBufferLevel::ePrimary, 1 };
 		VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_mainCommandBuffer));
 
+		// Init Upload Context Command Pool/Buffer
+		commandPoolInfo = { vk::CommandPoolCreateFlagBits::eResetCommandBuffer, m_graphicsQueueFamily };
+		VK_CHECK(m_device.createCommandPool(&commandPoolInfo, nullptr, &m_uploadContext.commandPool));
+
+		commandBufferInfo = { m_commandPool, vk::CommandBufferLevel::ePrimary, 1 };
+		VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_uploadContext.commandBuffer));
+
 		m_deletionQueue.PushFunction([=]()
 		{
 			m_device.destroyCommandPool(m_commandPool);
+			m_device.destroyCommandPool(m_uploadContext.commandPool);
 		});
 	}
 
@@ -230,6 +239,10 @@ namespace Puffin::Rendering::VK
 
 		VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_renderFence));
 
+		// Init Upload Context Fence
+		fenceCreateInfo = vk::FenceCreateInfo{ {}, nullptr };
+		VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_uploadContext.uploadFence));
+
 		vk::SemaphoreCreateInfo semaphoreCreateInfo = { {}, nullptr };
 
 		VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_presentSemaphore));
@@ -238,6 +251,7 @@ namespace Puffin::Rendering::VK
 		m_deletionQueue.PushFunction([=]()
 		{
 			m_device.destroyFence(m_renderFence);
+			m_device.destroyFence(m_uploadContext.uploadFence);
 
 			m_device.destroySemaphore(m_presentSemaphore);
 			m_device.destroySemaphore(m_renderSemaphore);
