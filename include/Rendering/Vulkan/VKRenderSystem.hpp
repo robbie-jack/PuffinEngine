@@ -106,6 +106,15 @@ namespace Puffin::Rendering::VK
 		vk::CommandPool m_commandPool;
 		vk::CommandBuffer m_mainCommandBuffer;
 
+		vk::RenderPass m_renderPass;
+		std::vector<vk::Framebuffer> m_framebuffers;
+
+		// Synchronization
+		vk::Semaphore m_presentSemaphore, m_renderSemaphore;
+		vk::Fence m_renderFence;
+
+		uint32_t m_frameNumber;
+
 		/*vku::ShaderModule m_vertMod, m_fragMod;
 		vk::UniquePipeline m_triPipeline;*/
 
@@ -117,6 +126,11 @@ namespace Puffin::Rendering::VK
 		void InitVulkan();
 		void InitSwapchain();
 		void InitCommands();
+		void InitDefaultRenderPass();
+		void InitFramebuffers();
+		void InitSyncStructures();
+
+		void Draw();
 
 		vk::UniquePipeline BuildTrianglePipeline();
 

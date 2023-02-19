@@ -13,6 +13,17 @@
 
 #include <iostream>
 
+#define VK_CHECK(x)                                                 \
+	do                                                              \
+	{                                                               \
+		vk::Result err = x;                                         \
+		if (err != vk::Result::eSuccess)                            \
+		{                                                           \
+			std::cout <<"Detected Vulkan error: " << err << std::endl; \
+			abort();                                                \
+		}                                                           \
+	} while (0)
+
 namespace Puffin::Rendering::VK
 {
 	void VKRenderSystem::Init()
@@ -20,11 +31,16 @@ namespace Puffin::Rendering::VK
 		InitVulkan();
 		InitSwapchain();
 		InitCommands();
+		InitDefaultRenderPass();
+		InitFramebuffers();
+		InitSyncStructures();
+
+		m_isInitialized = true;
 	}
 
 	void VKRenderSystem::Update()
 	{
-		
+		Draw();
 	}
 
 	void VKRenderSystem::Cleanup()
@@ -94,8 +110,6 @@ namespace Puffin::Rendering::VK
 			vkb::destroy_debug_utils_messenger(m_instance, m_debugMessenger);
 			m_instance.destroy();
 		});
-
-		m_isInitialized = true;
 	}
 
 	void VKRenderSystem::InitSwapchain()
@@ -142,15 +156,141 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::InitCommands()
 	{
 		vk::CommandPoolCreateInfo commandPoolInfo = { vk::CommandPoolCreateFlagBits::eResetCommandBuffer, m_graphicsQueueFamily };
-		m_commandPool = m_device.createCommandPool(commandPoolInfo);
+		VK_CHECK(m_device.createCommandPool(&commandPoolInfo, nullptr, &m_commandPool));
 
 		vk::CommandBufferAllocateInfo commandBufferInfo = { m_commandPool, vk::CommandBufferLevel::ePrimary, 1 };
-		m_mainCommandBuffer = m_device.allocateCommandBuffers(commandBufferInfo)[0];
+		VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_mainCommandBuffer));
 
 		m_deletionQueue.PushFunction([=]()
 		{
 			m_device.destroyCommandPool(m_commandPool);
 		});
+	}
+
+	void VKRenderSystem::InitDefaultRenderPass()
+	{
+		vk::AttachmentDescription colorAttachment = 
+		{
+			{}, m_swapchainImageFormat, vk::SampleCountFlagBits::e1,
+			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+			vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR
+		};
+
+		vk::AttachmentReference colorAttachmentRef = { 0, vk::ImageLayout::eColorAttachmentOptimal };
+
+		vk::SubpassDescription subpass = { {}, vk::PipelineBindPoint::eGraphics, 0, nullptr, 1, &colorAttachmentRef };
+
+		vk::RenderPassCreateInfo renderPassInfo = { {}, 1, &colorAttachment, 1, &subpass };
+
+		VK_CHECK(m_device.createRenderPass(&renderPassInfo, nullptr, &m_renderPass));
+
+		m_deletionQueue.PushFunction([=]()
+		{
+			m_device.destroyRenderPass(m_renderPass);
+		});
+	}
+
+	void VKRenderSystem::InitFramebuffers()
+	{
+		vk::FramebufferCreateInfo fbInfo = { {}, m_renderPass, 1, nullptr, m_windowSize.width, m_windowSize.height, 1 };
+
+		// Grab number of images in swapchain
+		const uint32_t swapchainImageCount = m_swapchainImages.size();
+		m_framebuffers.resize(swapchainImageCount);
+
+		for (int i = 0; i < swapchainImageCount; i++)
+		{
+			fbInfo.pAttachments = &m_swapchainImageViews[i];
+			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &m_framebuffers[i]));
+		}
+
+		m_deletionQueue.PushFunction([=]()
+		{
+			for (int i = 0; i < m_framebuffers.size(); i++)
+			{
+				m_device.destroyFramebuffer(m_framebuffers[i]);
+			}
+		});
+	}
+
+	void VKRenderSystem::InitSyncStructures()
+	{
+		vk::FenceCreateInfo fenceCreateInfo = { vk::FenceCreateFlagBits::eSignaled, nullptr };
+
+		VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_renderFence));
+
+		vk::SemaphoreCreateInfo semaphoreCreateInfo = { {}, nullptr };
+
+		VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_presentSemaphore));
+		VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_renderSemaphore));
+
+		m_deletionQueue.PushFunction([=]()
+		{
+			m_device.destroyFence(m_renderFence);
+
+			m_device.destroySemaphore(m_presentSemaphore);
+			m_device.destroySemaphore(m_renderSemaphore);
+		});
+	}
+
+	void VKRenderSystem::Draw()
+	{
+		// Wait until GPU has finished rendering last frame. Timeout of 1 second
+		VK_CHECK(m_device.waitForFences(1, &m_renderFence, true, 1000000000));
+		VK_CHECK(m_device.resetFences(1, &m_renderFence));
+
+		uint32_t swapchainImageIdx;
+		VK_CHECK(m_device.acquireNextImageKHR(m_swapchain, 1000000000, m_presentSemaphore, nullptr, &swapchainImageIdx));
+
+		vk::CommandBuffer cmd = m_mainCommandBuffer;
+
+		// Reset command buffer for recording new commands
+		cmd.reset();
+
+		// Begin command buffer execution
+		vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+			nullptr, nullptr };
+
+		VK_CHECK(cmd.begin(&cmdBeginInfo));
+
+		vk::ClearValue clearValue;
+		float flash = abs(sin(m_frameNumber / 120.0f));
+		clearValue.color = { 0.0f, 0.0f, flash, 1.0f };
+
+		// Begin main renderpass
+		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_framebuffers[swapchainImageIdx],
+			vk::Rect2D{ {0, 0}, m_windowSize }, 1, &clearValue, nullptr };
+
+		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
+
+
+
+		// End main renderpass
+		cmd.endRenderPass();
+
+		// Finish command buffer recording
+		cmd.end();
+
+		// Prepare submission to queue
+		vk::PipelineStageFlags waitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+		vk::SubmitInfo submit = 
+		{
+			1, &m_presentSemaphore,
+			&waitStage, 1, &cmd,
+			1, &m_renderSemaphore, nullptr
+		};
+
+		VK_CHECK(m_graphicsQueue.submit(1, &submit, m_renderFence));
+
+		vk::PresentInfoKHR presentInfo =
+		{
+			1, &m_renderSemaphore, 1, &m_swapchain, &swapchainImageIdx
+		};
+
+		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
+
+		m_frameNumber++;
 	}
 
 	vk::UniquePipeline VKRenderSystem::BuildTrianglePipeline()
