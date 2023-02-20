@@ -12,6 +12,24 @@ namespace Puffin::Assets
 
 	// Public
 
+	bool StaticMeshAsset::Save()
+	{
+		if (m_isLoaded)
+		{
+			MeshInfo info;
+			info.vertexFormat = m_vertexFormat;
+			info.numVertices = m_numVertices;
+			info.numIndices = m_numIndices;
+			info.verticesSize = m_numVertices * GetVertexSize();
+			info.indicesSize = m_numIndices * GetIndexSize();
+			info.originalFile = m_originalFile;
+
+			return Save(info, m_vertices.data(), m_indices.data());
+		}
+
+		return false;
+	}
+
 	bool StaticMeshAsset::Save(const MeshInfo& info, const void* vertexData, const void* indexData)
 	{
 		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
@@ -80,6 +98,11 @@ namespace Puffin::Assets
 		// Parse Metadata from Json
 		MeshInfo info = ParseMeshInfo(data);
 
+		m_vertexFormat = info.vertexFormat;
+		m_numVertices = info.numVertices;
+		m_numIndices = info.numIndices;
+		m_originalFile = info.originalFile;
+
 		// Decompress Binary Data
 		std::vector<char> decompressedBuffer;
 		decompressedBuffer.resize(info.verticesSize + info.indicesSize);
@@ -88,11 +111,11 @@ namespace Puffin::Assets
 		static_cast<int>(data.binaryBlob.size()), static_cast<int>(decompressedBuffer.size()));
 
 		// Copy Vertex Buffer
-		m_vertices.resize(info.numVertices);
+		m_vertices.resize(info.verticesSize);
 		memcpy(m_vertices.data(), decompressedBuffer.data(), info.verticesSize);
 
 		// Copy Index Buffer
-		m_indices.resize(info.numIndices);
+		m_indices.resize(info.indicesSize);
 		memcpy(m_indices.data(), decompressedBuffer.data() + info.verticesSize, info.indicesSize);
 
 		m_isLoaded = true;

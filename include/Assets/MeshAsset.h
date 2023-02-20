@@ -44,26 +44,35 @@ namespace Puffin::Assets
 			return G_STATIC_MESH_VERSION;
 		}
 
+		bool Save();
+
 		bool Save(const MeshInfo& info, const void* vertexData, const void* indexData);
 
 		bool Load();
 
 		void Unload() override;
 
-		const std::vector<Rendering::VertexPNTV32>& GetVertices() const
-		{
-			return m_vertices;
-		}
+		const std::vector<char>& GetVertices() const { return m_vertices; }
 
-		const std::vector<uint32_t>& GetIndices() const
-		{
-			return m_indices;
-		}
+		const std::vector<uint32_t>& GetIndices() const { return m_indices; }
+
+		Rendering::VertexFormat GetFormat() const { return m_vertexFormat; }
+
+		uint32_t GetNumVertices() const { return m_numVertices; }
+		uint32_t GetNumIndices() const { return m_numIndices; }
+
+		uint32_t GetVertexSize() const { return Rendering::GetVertexSizeFromFormat(m_vertexFormat); }
+		uint32_t GetIndexSize() const { return sizeof(uint32_t); }
 
 	private:
 
-		std::vector<Rendering::VertexPNTV32> m_vertices;
+		std::vector<char> m_vertices;
 		std::vector<uint32_t> m_indices;
+
+		Rendering::VertexFormat m_vertexFormat;
+		uint32_t m_numVertices, m_numIndices;
+
+		std::string m_originalFile;
 
 		MeshInfo ParseMeshInfo(const AssetData& data);
 	};

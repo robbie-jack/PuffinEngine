@@ -204,6 +204,7 @@ namespace Puffin::Core
 
 		void AddDefaultAssets();
 		void ReimportDefaultAssets();
+		void LoadAndResaveAssets();
 
 		void DefaultScene();
 		void PhysicsScene();

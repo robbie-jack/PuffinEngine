@@ -3,6 +3,10 @@
 #include <vulkan/vulkan.hpp>
 #include "vk_mem_alloc.hpp"
 
+#include "ECS/EntityID.h"
+
+#include <set>
+
 namespace Puffin::Rendering::VK
 {
 	struct UploadContext
@@ -16,5 +20,15 @@ namespace Puffin::Rendering::VK
 	{
 		vk::Buffer buffer;
 		vma::Allocation allocation;
+	};
+
+	struct MeshData
+	{
+		UUID assetID;
+
+		AllocatedBuffer vertexBuffer;
+		AllocatedBuffer indexBuffer;
+
+		std::set<ECS::EntityID> entities;
 	};
 }

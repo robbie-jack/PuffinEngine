@@ -756,8 +756,8 @@ namespace Puffin::Rendering::BGFX
         if (meshAsset && meshAsset->Load())
         {
             meshData.assetID = meshID;
-            meshData.numVertices = meshAsset->GetVertices().size();
-            meshData.numIndices = meshAsset->GetIndices().size();
+            meshData.numVertices = meshAsset->GetNumVertices();
+            meshData.numIndices = meshAsset->GetNumIndices();
 
             meshData.vertexBufferHandle = InitVertexBuffer(meshAsset->GetVertices().data(), meshData.numVertices, s_layoutVertexPNTV32);
             meshData.indexBufferHandle = InitIndexBuffer(meshAsset->GetIndices().data(), meshData.numIndices, true);

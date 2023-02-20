@@ -130,6 +130,20 @@ namespace Puffin::Rendering
 
 		return "Invalid Format";
 	}
+
+	static uint32_t GetVertexSizeFromFormat(VertexFormat format)
+	{
+		if (format == VertexFormat::PNTV32)
+		{
+			return sizeof(VertexPNTV32);
+		}
+		else if (format == VertexFormat::P64NTV32)
+		{
+			return sizeof(VertexP64NTV32);
+		}
+
+		return 0;
+	}
 }
 
 namespace std

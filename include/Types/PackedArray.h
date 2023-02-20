@@ -150,7 +150,7 @@ namespace Puffin
 		// Remove value from Array
 		void Erase(size_t id)
 		{
-			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Removing non-existent value");
+			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "Removing non-existent value");
 
 			if (m_vectorSize == 0 || m_idToIndexMap.count(id) == 0)
 				return;

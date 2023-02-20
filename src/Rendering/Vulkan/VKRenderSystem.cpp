@@ -5,6 +5,8 @@
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
+#include <iostream>
+
 #include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
 #include "VkBootstrap.h"
@@ -12,8 +14,11 @@
 #include "Window/WindowSubsystem.hpp"
 #include "Engine/Engine.hpp"
 #include "Rendering/Vulkan/VKHelpers.hpp"
+#include "Components/Rendering/MeshComponent.h"
+#include "Assets/AssetRegistry.h"
+#include "Assets/MeshAsset.h"
 
-#include <iostream>
+#include "Components/TransformComponent.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -38,11 +43,33 @@ namespace Puffin::Rendering::VK
 		InitSyncStructures();
 		InitPipelines();
 
+		InitComponents();
+
 		m_isInitialized = true;
 	}
 
 	void VKRenderSystem::Update()
 	{
+		UpdateComponents();
+
+		std::vector<UUID> removedMeshIDs;
+
+		for (const auto& meshData : m_meshData)
+		{
+			if (meshData.entities.empty())
+			{
+				m_allocator.destroyBuffer(meshData.vertexBuffer.buffer, meshData.vertexBuffer.allocation);
+				m_allocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
+
+				removedMeshIDs.push_back(meshData.assetID);
+			}
+		}
+
+		for (const auto& meshID : removedMeshIDs)
+		{
+			m_meshData.Erase(meshID);
+		}
+
 		Draw();
 	}
 
@@ -52,6 +79,8 @@ namespace Puffin::Rendering::VK
 
 		if (m_isInitialized)
 		{
+			CleanupComponents();
+
 			m_deletionQueue.Flush();
 
 			m_isInitialized = false;
@@ -290,6 +319,47 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
+	void VKRenderSystem::InitComponents()
+	{
+		std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+		ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+		for (const auto& entity : meshEntities)
+		{
+			if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
+			{
+				InitMeshComponent(entity);
+
+				entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
+			}
+		}
+	}
+
+	void VKRenderSystem::UpdateComponents()
+	{
+		std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+		ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+		for (const auto& entity : meshEntities)
+		{
+			if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
+			{
+				CleanupMeshComponent(entity);
+				InitMeshComponent(entity);
+
+				entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
+			}
+		}
+	}
+
+	void VKRenderSystem::CleanupComponents()
+	{
+		std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+		ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+		for (const auto& entity : meshEntities)
+		{
+			CleanupMeshComponent(entity);
+		}
+	}
+
 	void VKRenderSystem::Draw()
 	{
 		// Wait until GPU has finished rendering last frame. Timeout of 1 second
@@ -348,5 +418,51 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
 
 		m_frameNumber++;
+	}
+
+	void VKRenderSystem::InitMeshComponent(std::shared_ptr<ECS::Entity> entity)
+	{
+		auto& mesh = entity->GetComponent<MeshComponent>();
+
+		if (!m_meshData.Contains(mesh.meshAssetID))
+		{
+			const auto meshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.meshAssetID));
+
+			if (meshAsset && meshAsset->Load())
+			{
+				MeshData meshData;
+				meshData.assetID = mesh.meshAssetID;
+
+				meshData.vertexBuffer = Util::InitVertexBuffer(shared_from_this(), meshAsset->GetVertices().data(), 
+					meshAsset->GetNumVertices(), meshAsset->GetVertexSize());
+
+				meshData.indexBuffer = Util::InitIndexBuffer(shared_from_this(), meshAsset->GetIndices().data(),
+					meshAsset->GetNumIndices(), meshAsset->GetIndexSize());
+
+				m_meshData.Insert(mesh.meshAssetID, meshData);
+
+				meshAsset->Unload();
+			}
+		}
+
+		m_meshData[mesh.meshAssetID].entities.insert(entity->ID());
+	}
+
+	void VKRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
+	{
+		auto& mesh = entity->GetComponent<MeshComponent>();
+
+		if (m_meshData.Contains(mesh.meshAssetID))
+		{
+			m_meshData[mesh.meshAssetID].entities.erase(entity->ID());
+
+			if (m_meshData[mesh.meshAssetID].entities.empty())
+			{
+				m_allocator.destroyBuffer(m_meshData[mesh.meshAssetID].vertexBuffer.buffer, m_meshData[mesh.meshAssetID].vertexBuffer.allocation);
+				m_allocator.destroyBuffer(m_meshData[mesh.meshAssetID].indexBuffer.buffer, m_meshData[mesh.meshAssetID].indexBuffer.allocation);
+
+				m_meshData.Erase(mesh.meshAssetID);
+			}
+		}
 	}
 }

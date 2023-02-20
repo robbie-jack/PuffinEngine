@@ -464,10 +464,38 @@ namespace Puffin::Core
 
 	void Engine::ReimportDefaultAssets()
 	{
-		//IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\chalet.obj");
-		//IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\cube.obj");
-		//IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
-		//IO::ImportMesh("D:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
+		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\chalet.obj");
+		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\cube.obj");
+		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
+		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
+	}
+
+	void Engine::LoadAndResaveAssets()
+	{
+		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
+
+		UUID meshId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath1)->ID();
+		UUID meshId2 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath2)->ID();
+		UUID meshId3 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath3)->ID();
+		UUID meshId4 = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(meshPath4)->ID();
+
+		const auto meshAsset1 = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshId1));
+		const auto meshAsset2 = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshId2));
+		const auto meshAsset3 = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshId3));
+		const auto meshAsset4 = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshId4));
+
+		meshAsset1->Load();
+		meshAsset2->Load();
+		meshAsset3->Load();
+		meshAsset4->Load();
+
+		meshAsset1->Save();
+		meshAsset2->Save();
+		meshAsset3->Save();
+		meshAsset4->Save();
 	}
 
 	void Engine::DefaultScene()

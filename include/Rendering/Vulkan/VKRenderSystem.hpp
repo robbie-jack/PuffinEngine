@@ -17,6 +17,7 @@
 #include "Types/DeletionQueue.hpp"
 #include "Types/Vertex.hpp"
 #include "VKTypes.hpp"
+#include "ECS/Entity.h"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -27,7 +28,7 @@ const bool enableValidationLayers = true;
 namespace Puffin::Rendering::VK
 {
 	// Vulkan Rendering System
-	class VKRenderSystem : public ECS::System
+	class VKRenderSystem : public ECS::System, public std::enable_shared_from_this<VKRenderSystem>
 	{
 	public:
 
@@ -93,6 +94,8 @@ namespace Puffin::Rendering::VK
 
 		UploadContext m_uploadContext;
 
+		PackedVector<MeshData> m_meshData;
+
 		DeletionQueue m_deletionQueue;
 
 		// Indicated initialization completed without any failures
@@ -108,6 +111,13 @@ namespace Puffin::Rendering::VK
 
 		void BuildTrianglePipeline();
 
+		void InitComponents();
+		void UpdateComponents();
+		void CleanupComponents();
+
 		void Draw();
+
+		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
+		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
 	};
 }

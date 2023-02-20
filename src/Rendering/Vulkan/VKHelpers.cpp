@@ -17,21 +17,6 @@
 
 namespace Puffin::Rendering::VK::Util
 {
-
-	AllocatedBuffer CreateBuffer(const vma::Allocator& allocator, size_t allocSize, vk::BufferUsageFlags usage,
-		vma::MemoryUsage memoryUsage, vk::MemoryPropertyFlags requiredFlags)
-	{
-		vk::BufferCreateInfo bufferInfo = { {}, allocSize, usage };
-
-		vma::AllocationCreateInfo allocInfo = { {}, memoryUsage, requiredFlags };
-
-		AllocatedBuffer buffer;
-
-		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, nullptr));
-
-		return buffer;
-	}
-
 	AllocatedBuffer InitVertexBuffer(std::shared_ptr<VKRenderSystem> renderer, const void* vertexData, const size_t numVertices, const size_t vertexSize)
 	{
 		// Copy Loaded Mesh data into mesh vertex buffer
@@ -39,8 +24,8 @@ namespace Puffin::Rendering::VK::Util
 
 		// Allocate Staging Buffer - Map Vertices in CPU Memory
 		AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), verticesSize,
-			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc }, 
-				vma::MemoryUsage::eCpuOnly);
+	         { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc }, 
+	         vma::MemoryUsage::eAutoPreferHost, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
 		// Map vertex data to staging buffer
 		void* data;
@@ -50,8 +35,8 @@ namespace Puffin::Rendering::VK::Util
 
 		// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
 		AllocatedBuffer vertexBuffer = CreateBuffer(renderer->GetAllocator(), verticesSize,
-			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc }, 
-				vma::MemoryUsage::eGpuOnly);
+            { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc }, 
+            vma::MemoryUsage::eAutoPreferDevice);
 
 		// Copy from CPU Memory to GPU Memory
 		ImmediateSubmit(renderer, [=](vk::CommandBuffer cmd)
@@ -65,6 +50,59 @@ namespace Puffin::Rendering::VK::Util
 
 		// Cleanup Staging Buffer Immediately, It is no longer needed
 		renderer->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+
+		return vertexBuffer;
+	}
+
+	AllocatedBuffer InitIndexBuffer(std::shared_ptr<VKRenderSystem> renderer, const void* indexData,
+		const size_t numIndices, const size_t indexSize)
+	{
+		uint32_t indicesSize = numIndices * indexSize;
+
+		// Allocate Staging Buffer - Map Indices in CPU Memory
+		AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), indicesSize, 
+			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc }, 
+			vma::MemoryUsage::eAutoPreferHost, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+
+		// Map Index data to staging buffer
+		void* data;
+		VK_CHECK(renderer->GetAllocator().mapMemory(stagingBuffer.allocation, &data));
+		memcpy(data, indexData, indicesSize);
+		renderer->GetAllocator().unmapMemory(stagingBuffer.allocation);
+
+		// Allocate Index Buffer - Transfer indices into GPU memory
+		AllocatedBuffer indexBuffer = CreateBuffer(renderer->GetAllocator(), indicesSize,
+			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
+			vma::MemoryUsage::eAutoPreferDevice, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+
+		// Copy from CPU memory to GPU memory
+		ImmediateSubmit(renderer, [=](vk::CommandBuffer cmd)
+		{
+			vk::BufferCopy copy;
+			copy.dstOffset = 0;
+			copy.srcOffset = 0;
+			copy.size = indicesSize;
+			cmd.copyBuffer(stagingBuffer.buffer, indexBuffer.buffer, 1, &copy);
+		});
+
+		// Cleanup staging buffer, it is no longer needed
+		renderer->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+
+		return indexBuffer;
+	}
+
+	AllocatedBuffer CreateBuffer(const vma::Allocator& allocator, size_t allocSize, vk::BufferUsageFlags usage,
+		vma::MemoryUsage memoryUsage, vma::AllocationCreateFlags allocFlags, vk::MemoryPropertyFlags requiredFlags)
+	{
+		vk::BufferCreateInfo bufferInfo = { {}, allocSize, usage };
+
+		vma::AllocationCreateInfo allocInfo = { allocFlags, memoryUsage, requiredFlags };
+
+		AllocatedBuffer buffer;
+
+		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, nullptr));
+
+		return buffer;
 	}
 
 	void ImmediateSubmit(std::shared_ptr<VKRenderSystem> renderSystem, std::function<void(VkCommandBuffer cmd)>&& function)
