@@ -167,6 +167,7 @@ namespace Puffin::Rendering::VK
 		m_swapchain = vkbSwapchain.swapchain;
 		m_swapchainImageFormat = static_cast<vk::Format>(vkbSwapchain.image_format);
 
+		// Grab Images
 		std::vector<VkImage> images = vkbSwapchain.get_images().value();
 		std::vector<VkImageView> imageViews = vkbSwapchain.get_image_views().value();
 
@@ -182,8 +183,16 @@ namespace Puffin::Rendering::VK
 		images.clear();
 		imageViews.clear();
 
+		// Create Swapchain Depth Image
+		vk::Extent3D depthExtent = { m_windowSize.width, m_windowSize.height, 1 };
+
+		m_swapchainDepthImage = Util::InitDepthImage(shared_from_this(), depthExtent, vk::Format::eD32Sfloat);
+
 		m_deletionQueue.PushFunction([=]()
 		{
+			m_device.destroyImageView(m_swapchainDepthImage.imageView);
+			m_allocator.destroyImage(m_swapchainDepthImage.image, m_swapchainDepthImage.allocation);
+
 			for (int i = 0; i < m_swapchainImageViews.size(); i++)
 			{
 				m_device.destroyImageView(m_swapchainImageViews[i]);
@@ -217,6 +226,8 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::InitDefaultRenderPass()
 	{
+		// Setup Attachments
+
 		vk::AttachmentDescription colorAttachment = 
 		{
 			{}, m_swapchainImageFormat, vk::SampleCountFlagBits::e1,
@@ -227,9 +238,36 @@ namespace Puffin::Rendering::VK
 
 		vk::AttachmentReference colorAttachmentRef = { 0, vk::ImageLayout::eColorAttachmentOptimal };
 
-		vk::SubpassDescription subpass = { {}, vk::PipelineBindPoint::eGraphics, 0, nullptr, 1, &colorAttachmentRef };
+		vk::AttachmentDescription depthAttachment =
+		{
+			{}, m_swapchainDepthImage.format, vk::SampleCountFlagBits::e1,
+			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal
+		};
 
-		vk::RenderPassCreateInfo renderPassInfo = { {}, 1, &colorAttachment, 1, &subpass };
+		vk::AttachmentReference depthAttachRef = { 1, vk::ImageLayout::eDepthStencilAttachmentOptimal };
+
+		vk::SubpassDescription subpass = { {}, vk::PipelineBindPoint::eGraphics, 0, nullptr,
+			1, &colorAttachmentRef, {}, & depthAttachRef };
+
+		std::array<vk::AttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+
+		// Setup Dependencies
+		vk::SubpassDependency colorDependency = { VK_SUBPASS_EXTERNAL, 0, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits::eColorAttachmentOutput, {}, vk::AccessFlagBits::eColorAttachmentWrite };
+
+		vk::SubpassDependency depthDependecy = { VK_SUBPASS_EXTERNAL, 0,
+			{ vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests },
+			{ vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests },
+			{}, vk::AccessFlagBits::eDepthStencilAttachmentWrite };
+
+		std::array<vk::SubpassDependency, 2> dependencies = { colorDependency, depthDependecy };
+
+		vk::RenderPassCreateInfo renderPassInfo = { {}, attachments.size(), attachments.data(), 1, &subpass,
+			dependencies.size(), dependencies.data() };
+
+		// Create Render Pass
 
 		VK_CHECK(m_device.createRenderPass(&renderPassInfo, nullptr, &m_renderPass));
 
@@ -249,7 +287,11 @@ namespace Puffin::Rendering::VK
 
 		for (int i = 0; i < swapchainImageCount; i++)
 		{
-			fbInfo.pAttachments = &m_swapchainImageViews[i];
+			std::array<vk::ImageView, 2> attachments = { m_swapchainImageViews[i], m_swapchainDepthImage.imageView };
+
+			fbInfo.pAttachments = attachments.data();
+			fbInfo.attachmentCount = attachments.size();
+
 			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &m_framebuffers[i]));
 		}
 
@@ -289,7 +331,8 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::InitPipelines()
 	{
-		BuildTrianglePipeline();		
+		BuildTrianglePipeline();
+		BuildForwardRendererPipeline();
 	}
 
 	void VKRenderSystem::BuildTrianglePipeline()
@@ -300,10 +343,14 @@ namespace Puffin::Rendering::VK
 		vku::PipelineLayoutMaker plm{};
 		m_triPipelineLayout = plm.createUnique(m_device);
 
+		/*vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
+			vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };*/
+
 		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
 		m_triPipeline = pm
 			.shader(vk::ShaderStageFlagBits::eVertex, m_triVertMod)
 			.shader(vk::ShaderStageFlagBits::eFragment, m_triFragMod)
+			//.depthStencilState(depthStencilInfo)
 			/*.vertexBinding(0, sizeof(VertexPC32))
 			.vertexAttribute(0, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPC32, pos))
 			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color))*/
@@ -316,6 +363,40 @@ namespace Puffin::Rendering::VK
 		{
 			m_triPipelineLayout = {};
 			m_triPipeline = {};
+		});
+	}
+
+	void VKRenderSystem::BuildForwardRendererPipeline()
+	{
+		m_forwardVertMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_vs.spv" };
+		m_forwardFragMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_fs.spv" };
+
+		vku::PipelineLayoutMaker plm{};
+		m_forwardPipelineLayout = plm
+			.createUnique(m_device);
+
+		vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
+			vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };
+
+		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
+		m_forwardPipeline = pm
+			.shader(vk::ShaderStageFlagBits::eVertex, m_forwardVertMod)
+			.shader(vk::ShaderStageFlagBits::eFragment, m_forwardFragMod)
+			.depthStencilState(depthStencilInfo)
+			.vertexBinding(0, sizeof(VertexPNTV32))
+			.vertexAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, pos))
+			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, normal))
+			.vertexAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, tangent))
+			.vertexAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv))
+			.createUnique(m_device, m_pipelineCache, *m_forwardPipelineLayout, m_renderPass);
+
+		m_device.destroyShaderModule(m_forwardVertMod.module());
+		m_device.destroyShaderModule(m_forwardFragMod.module());
+
+		m_deletionQueue.PushFunction([=]()
+		{
+			m_forwardPipelineLayout = {};
+			m_forwardPipeline = {};
 		});
 	}
 
@@ -384,9 +465,14 @@ namespace Puffin::Rendering::VK
 		float flash = abs(sin(m_frameNumber / 120.0f));
 		clearValue.color = { 0.0f, 0.0f, flash, 1.0f };
 
+		vk::ClearValue depthClear;
+		depthClear.depthStencil.depth = 1.f;
+
+		std::array<vk::ClearValue, 2> clearValues = { clearValue, depthClear };
+
 		// Begin main renderpass
 		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_framebuffers[swapchainImageIdx],
-			vk::Rect2D{ {0, 0}, m_windowSize }, 1, &clearValue, nullptr };
+			vk::Rect2D{ {0, 0}, m_windowSize }, clearValues.size(), clearValues.data(), nullptr };
 
 		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
 

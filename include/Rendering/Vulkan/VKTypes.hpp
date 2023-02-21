@@ -22,6 +22,16 @@ namespace Puffin::Rendering::VK
 		vma::Allocation allocation;
 	};
 
+	struct AllocatedImage
+	{
+		vk::Image image;
+		vk::ImageView imageView;
+		vk::Format format;
+		vma::Allocation allocation;
+	};
+
+	typedef AllocatedImage Texture;
+
 	struct MeshData
 	{
 		UUID assetID;

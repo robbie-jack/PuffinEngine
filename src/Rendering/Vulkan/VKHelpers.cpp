@@ -17,6 +17,41 @@
 
 namespace Puffin::Rendering::VK::Util
 {
+	void ImmediateSubmit(std::shared_ptr<VKRenderSystem> renderSystem, std::function<void(VkCommandBuffer cmd)>&& function)
+	{
+		vk::CommandBuffer cmd = renderSystem->GetUploadContext().commandBuffer;
+
+		vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
+		VK_CHECK(cmd.begin(&cmdBeginInfo));
+
+		function(cmd);
+
+		cmd.end();
+
+		vk::SubmitInfo submit = { {}, {}, {}, 1, &cmd };
+
+		VK_CHECK(renderSystem->GetGraphicsQueue().submit(1, &submit, renderSystem->GetUploadContext().uploadFence));
+
+		VK_CHECK(renderSystem->GetDevice().waitForFences(1, &renderSystem->GetUploadContext().uploadFence, true, 9999999999));
+		VK_CHECK(renderSystem->GetDevice().resetFences(1, &renderSystem->GetUploadContext().uploadFence));
+
+		renderSystem->GetDevice().resetCommandPool(renderSystem->GetUploadContext().commandPool);
+	}
+
+	AllocatedBuffer CreateBuffer(const vma::Allocator& allocator, size_t allocSize, vk::BufferUsageFlags usage,
+		vma::MemoryUsage memoryUsage, vma::AllocationCreateFlags allocFlags, vk::MemoryPropertyFlags requiredFlags)
+	{
+		vk::BufferCreateInfo bufferInfo = { {}, allocSize, usage };
+
+		vma::AllocationCreateInfo allocInfo = { allocFlags, memoryUsage, requiredFlags };
+
+		AllocatedBuffer buffer;
+
+		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, nullptr));
+
+		return buffer;
+	}
+
 	AllocatedBuffer InitVertexBuffer(std::shared_ptr<VKRenderSystem> renderer, const void* vertexData, const size_t numVertices, const size_t vertexSize)
 	{
 		// Copy Loaded Mesh data into mesh vertex buffer
@@ -91,38 +126,33 @@ namespace Puffin::Rendering::VK::Util
 		return indexBuffer;
 	}
 
-	AllocatedBuffer CreateBuffer(const vma::Allocator& allocator, size_t allocSize, vk::BufferUsageFlags usage,
-		vma::MemoryUsage memoryUsage, vma::AllocationCreateFlags allocFlags, vk::MemoryPropertyFlags requiredFlags)
+	AllocatedImage InitImage(std::shared_ptr<VKRenderSystem> renderer, vk::ImageCreateInfo imageInfo, vk::ImageViewCreateInfo imageViewInfo)
 	{
-		vk::BufferCreateInfo bufferInfo = { {}, allocSize, usage };
+		AllocatedImage allocImage;
+		allocImage.format = imageInfo.format;
 
-		vma::AllocationCreateInfo allocInfo = { allocFlags, memoryUsage, requiredFlags };
+		// Create Image
+		vma::AllocationCreateInfo imageAllocInfo = { {}, vma::MemoryUsage::eAutoPreferDevice, vk::MemoryPropertyFlagBits::eDeviceLocal };
 
-		AllocatedBuffer buffer;
+		VK_CHECK(renderer->GetAllocator().createImage(&imageInfo, &imageAllocInfo, &allocImage.image, &allocImage.allocation, nullptr));
 
-		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, nullptr));
+		// Create Image View
+		imageViewInfo.image = allocImage.image;
 
-		return buffer;
+		VK_CHECK(renderer->GetDevice().createImageView(&imageViewInfo, nullptr, &allocImage.imageView));
+
+		return allocImage;
 	}
 
-	void ImmediateSubmit(std::shared_ptr<VKRenderSystem> renderSystem, std::function<void(VkCommandBuffer cmd)>&& function)
+	AllocatedImage InitDepthImage(std::shared_ptr<VKRenderSystem> renderer, vk::Extent3D extent, vk::Format format)
 	{
-		vk::CommandBuffer cmd = renderSystem->GetUploadContext().commandBuffer;
+		vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
+			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment };
 
-		vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
-		VK_CHECK(cmd.begin(&cmdBeginInfo));
+		vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 };
 
-		function(cmd);
+		vk::ImageViewCreateInfo imageViewInfo({}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange);
 
-		cmd.end();
-
-		vk::SubmitInfo submit = { {}, {}, {}, 1, &cmd };
-
-		VK_CHECK(renderSystem->GetGraphicsQueue().submit(1, &submit, renderSystem->GetUploadContext().uploadFence));
-
-		VK_CHECK(renderSystem->GetDevice().waitForFences(1, &renderSystem->GetUploadContext().uploadFence, true, 9999999999));
-		VK_CHECK(renderSystem->GetDevice().resetFences(1, &renderSystem->GetUploadContext().uploadFence));
-
-		renderSystem->GetDevice().resetCommandPool(renderSystem->GetUploadContext().commandPool);
+		return InitImage(renderer, imageInfo, imageViewInfo);
 	}
 }

@@ -68,6 +68,7 @@ namespace Puffin::Rendering::VK
 		vk::Format m_swapchainImageFormat;
 		std::vector<vk::Image> m_swapchainImages;
 		std::vector<vk::ImageView> m_swapchainImageViews;
+		AllocatedImage m_swapchainDepthImage;
 
 		// Command Execution
 		vk::Queue m_graphicsQueue;
@@ -92,6 +93,10 @@ namespace Puffin::Rendering::VK
 		vk::UniquePipelineLayout m_triPipelineLayout;
 		vk::UniquePipeline m_triPipeline;
 
+		vku::ShaderModule m_forwardVertMod, m_forwardFragMod;
+		vk::UniquePipelineLayout m_forwardPipelineLayout;
+		vk::UniquePipeline m_forwardPipeline;
+
 		UploadContext m_uploadContext;
 
 		PackedVector<MeshData> m_meshData;
@@ -110,6 +115,7 @@ namespace Puffin::Rendering::VK
 		void InitPipelines();
 
 		void BuildTrianglePipeline();
+		void BuildForwardRendererPipeline();
 
 		void InitComponents();
 		void UpdateComponents();
