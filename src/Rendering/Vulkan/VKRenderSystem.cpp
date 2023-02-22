@@ -205,21 +205,31 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::InitCommands()
 	{
 		vk::CommandPoolCreateInfo commandPoolInfo = { vk::CommandPoolCreateFlagBits::eResetCommandBuffer, m_graphicsQueueFamily };
-		VK_CHECK(m_device.createCommandPool(&commandPoolInfo, nullptr, &m_commandPool));
+		vk::CommandBufferAllocateInfo commandBufferInfo = { {}, vk::CommandBufferLevel::ePrimary, 1 };
 
-		vk::CommandBufferAllocateInfo commandBufferInfo = { m_commandPool, vk::CommandBufferLevel::ePrimary, 1 };
-		VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_mainCommandBuffer));
+		// Init Main Command Pools/Buffers
+		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
+		{
+			VK_CHECK(m_device.createCommandPool(&commandPoolInfo, nullptr, &m_renderFrameData[i].commandPool));
+
+			commandBufferInfo.commandPool = m_renderFrameData[i].commandPool;
+			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_renderFrameData[i].mainCommandBuffer));
+
+			m_deletionQueue.PushFunction([=]()
+			{
+				m_device.destroyCommandPool(m_renderFrameData[i].commandPool);
+			});
+		}
 
 		// Init Upload Context Command Pool/Buffer
 		commandPoolInfo = { vk::CommandPoolCreateFlagBits::eResetCommandBuffer, m_graphicsQueueFamily };
 		VK_CHECK(m_device.createCommandPool(&commandPoolInfo, nullptr, &m_uploadContext.commandPool));
 
-		commandBufferInfo = { m_commandPool, vk::CommandBufferLevel::ePrimary, 1 };
+		commandBufferInfo = { m_uploadContext.commandPool, vk::CommandBufferLevel::ePrimary, 1 };
 		VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_uploadContext.commandBuffer));
 
 		m_deletionQueue.PushFunction([=]()
 		{
-			m_device.destroyCommandPool(m_commandPool);
 			m_device.destroyCommandPool(m_uploadContext.commandPool);
 		});
 	}
@@ -307,25 +317,31 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::InitSyncStructures()
 	{
 		vk::FenceCreateInfo fenceCreateInfo = { vk::FenceCreateFlagBits::eSignaled, nullptr };
+		vk::SemaphoreCreateInfo semaphoreCreateInfo = { {}, nullptr };
 
-		VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_renderFence));
+		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
+		{
+			VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_renderFrameData[i].renderFence));
+
+			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_renderFrameData[i].presentSemaphore));
+			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_renderFrameData[i].renderSemaphore));
+
+			m_deletionQueue.PushFunction([=]()
+			{
+				m_device.destroyFence(m_renderFrameData[i].renderFence);
+
+				m_device.destroySemaphore(m_renderFrameData[i].presentSemaphore);
+				m_device.destroySemaphore(m_renderFrameData[i].renderSemaphore);
+			});
+		}
 
 		// Init Upload Context Fence
 		fenceCreateInfo = vk::FenceCreateInfo{ {}, nullptr };
 		VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_uploadContext.uploadFence));
 
-		vk::SemaphoreCreateInfo semaphoreCreateInfo = { {}, nullptr };
-
-		VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_presentSemaphore));
-		VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_renderSemaphore));
-
 		m_deletionQueue.PushFunction([=]()
 		{
-			m_device.destroyFence(m_renderFence);
 			m_device.destroyFence(m_uploadContext.uploadFence);
-
-			m_device.destroySemaphore(m_presentSemaphore);
-			m_device.destroySemaphore(m_renderSemaphore);
 		});
 	}
 
@@ -444,13 +460,13 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::Draw()
 	{
 		// Wait until GPU has finished rendering last frame. Timeout of 1 second
-		VK_CHECK(m_device.waitForFences(1, &m_renderFence, true, 1000000000));
-		VK_CHECK(m_device.resetFences(1, &m_renderFence));
+		VK_CHECK(m_device.waitForFences(1, &GetCurrentFrameData().renderFence, true, 1000000000));
+		VK_CHECK(m_device.resetFences(1, &GetCurrentFrameData().renderFence));
 
 		uint32_t swapchainImageIdx;
-		VK_CHECK(m_device.acquireNextImageKHR(m_swapchain, 1000000000, m_presentSemaphore, nullptr, &swapchainImageIdx));
+		VK_CHECK(m_device.acquireNextImageKHR(m_swapchain, 1000000000, GetCurrentFrameData().presentSemaphore, nullptr, &swapchainImageIdx));
 
-		vk::CommandBuffer cmd = m_mainCommandBuffer;
+		vk::CommandBuffer cmd = GetCurrentFrameData().mainCommandBuffer;
 
 		// Reset command buffer for recording new commands
 		cmd.reset();
@@ -489,16 +505,16 @@ namespace Puffin::Rendering::VK
 		vk::PipelineStageFlags waitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 		vk::SubmitInfo submit = 
 		{
-			1, &m_presentSemaphore,
+			1, & GetCurrentFrameData().presentSemaphore,
 			&waitStage, 1, &cmd,
-			1, &m_renderSemaphore, nullptr
+			1, & GetCurrentFrameData().renderSemaphore, nullptr
 		};
 
-		VK_CHECK(m_graphicsQueue.submit(1, &submit, m_renderFence));
+		VK_CHECK(m_graphicsQueue.submit(1, &submit, GetCurrentFrameData().renderFence));
 
 		vk::PresentInfoKHR presentInfo =
 		{
-			1, &m_renderSemaphore, 1, &m_swapchain, &swapchainImageIdx
+			1, &GetCurrentFrameData().renderSemaphore, 1, &m_swapchain, &swapchainImageIdx
 		};
 
 		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));

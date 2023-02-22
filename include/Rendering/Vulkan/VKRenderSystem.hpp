@@ -27,6 +27,17 @@ const bool enableValidationLayers = true;
 
 namespace Puffin::Rendering::VK
 {
+	struct RenderFrameData
+	{
+		vk::Semaphore presentSemaphore, renderSemaphore;
+		vk::Fence renderFence;
+
+		vk::CommandPool commandPool;
+		vk::CommandBuffer mainCommandBuffer;
+	};
+
+	constexpr  uint32_t G_BUFFERED_FRAMES = 2;
+
 	// Vulkan Rendering System
 	class VKRenderSystem : public ECS::System, public std::enable_shared_from_this<VKRenderSystem>
 	{
@@ -74,15 +85,10 @@ namespace Puffin::Rendering::VK
 		vk::Queue m_graphicsQueue;
 		uint32_t m_graphicsQueueFamily;
 
-		vk::CommandPool m_commandPool;
-		vk::CommandBuffer m_mainCommandBuffer;
-
 		vk::RenderPass m_renderPass;
 		std::vector<vk::Framebuffer> m_framebuffers;
 
-		// Synchronization
-		vk::Semaphore m_presentSemaphore, m_renderSemaphore;
-		vk::Fence m_renderFence;
+		std::array<RenderFrameData, G_BUFFERED_FRAMES> m_renderFrameData;
 
 		uint32_t m_frameNumber;
 
@@ -125,5 +131,10 @@ namespace Puffin::Rendering::VK
 
 		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
 		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
+
+		RenderFrameData& GetCurrentFrameData()
+		{
+			return m_renderFrameData[m_frameNumber % G_BUFFERED_FRAMES];
+		}
 	};
 }
