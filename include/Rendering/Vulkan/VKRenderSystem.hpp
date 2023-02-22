@@ -27,16 +27,44 @@ const bool enableValidationLayers = true;
 
 namespace Puffin::Rendering::VK
 {
-	struct RenderFrameData
+	// Struct containing render data that is static between frames
+	struct StaticRenderData
 	{
+		vk::DescriptorPool descriptorPool;
+
+		vk::DescriptorSetLayout globalSetLayout;
+		vk::DescriptorSetLayout materialSetLayout;
+		vk::DescriptorSetLayout objectSetLayout;
+	};
+
+	// Struct containing data that changes each frame
+	struct FrameRenderData
+	{
+		// Synchronization
 		vk::Semaphore presentSemaphore, renderSemaphore;
 		vk::Fence renderFence;
 
+		// Command Execution
 		vk::CommandPool commandPool;
 		vk::CommandBuffer mainCommandBuffer;
+
+		// Global Data (Set for entire frame)
+		vk::DescriptorSet globalDescriptor;
+
+		AllocatedBuffer cameraBuffer;
+		
+		// Material Data (Set for each unique material i.e textures)
+		vk::DescriptorSet materialDescriptor;
+
+		// Object Data (Set for each object/instance i.e model matrix)
+		vk::DescriptorSet objectDescriptor;
+
+		AllocatedBuffer objectBuffer;
 	};
 
-	constexpr  uint32_t G_BUFFERED_FRAMES = 2;
+	constexpr uint32_t G_BUFFERED_FRAMES = 2;
+
+	constexpr uint32_t G_MAX_OBJECTS = 10000;
 
 	// Vulkan Rendering System
 	class VKRenderSystem : public ECS::System, public std::enable_shared_from_this<VKRenderSystem>
@@ -88,7 +116,8 @@ namespace Puffin::Rendering::VK
 		vk::RenderPass m_renderPass;
 		std::vector<vk::Framebuffer> m_framebuffers;
 
-		std::array<RenderFrameData, G_BUFFERED_FRAMES> m_renderFrameData;
+		StaticRenderData m_staticRenderData;
+		std::array<FrameRenderData, G_BUFFERED_FRAMES> m_frameRenderData;
 
 		uint32_t m_frameNumber;
 
@@ -118,6 +147,8 @@ namespace Puffin::Rendering::VK
 		void InitDefaultRenderPass();
 		void InitFramebuffers();
 		void InitSyncStructures();
+		void InitBuffers();
+		void InitDescriptors();
 		void InitPipelines();
 
 		void BuildTrianglePipeline();
@@ -132,9 +163,9 @@ namespace Puffin::Rendering::VK
 		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
 		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
 
-		RenderFrameData& GetCurrentFrameData()
+		FrameRenderData& GetCurrentFrameData()
 		{
-			return m_renderFrameData[m_frameNumber % G_BUFFERED_FRAMES];
+			return m_frameRenderData[m_frameNumber % G_BUFFERED_FRAMES];
 		}
 	};
 }

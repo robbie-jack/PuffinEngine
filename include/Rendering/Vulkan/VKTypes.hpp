@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include "vk_mem_alloc.hpp"
 
+#include "glm/glm.hpp"
 #include "ECS/EntityID.h"
 
 #include <set>
@@ -40,5 +41,17 @@ namespace Puffin::Rendering::VK
 		AllocatedBuffer indexBuffer;
 
 		std::set<ECS::EntityID> entities;
+	};
+
+	struct GPUCameraData
+	{
+		glm::mat4 view;
+		glm::mat4 proj;
+		glm::mat4 viewProj;
+	};
+
+	struct GPUObjectData
+	{
+		
 	};
 }

@@ -41,6 +41,8 @@ namespace Puffin::Rendering::VK
 		InitDefaultRenderPass();
 		InitFramebuffers();
 		InitSyncStructures();
+		InitBuffers();
+		InitDescriptors();
 		InitPipelines();
 
 		InitComponents();
@@ -210,14 +212,14 @@ namespace Puffin::Rendering::VK
 		// Init Main Command Pools/Buffers
 		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
 		{
-			VK_CHECK(m_device.createCommandPool(&commandPoolInfo, nullptr, &m_renderFrameData[i].commandPool));
+			VK_CHECK(m_device.createCommandPool(&commandPoolInfo, nullptr, &m_frameRenderData[i].commandPool));
 
-			commandBufferInfo.commandPool = m_renderFrameData[i].commandPool;
-			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_renderFrameData[i].mainCommandBuffer));
+			commandBufferInfo.commandPool = m_frameRenderData[i].commandPool;
+			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_frameRenderData[i].mainCommandBuffer));
 
 			m_deletionQueue.PushFunction([=]()
 			{
-				m_device.destroyCommandPool(m_renderFrameData[i].commandPool);
+				m_device.destroyCommandPool(m_frameRenderData[i].commandPool);
 			});
 		}
 
@@ -321,17 +323,17 @@ namespace Puffin::Rendering::VK
 
 		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
 		{
-			VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_renderFrameData[i].renderFence));
+			VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_frameRenderData[i].renderFence));
 
-			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_renderFrameData[i].presentSemaphore));
-			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_renderFrameData[i].renderSemaphore));
+			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frameRenderData[i].presentSemaphore));
+			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frameRenderData[i].renderSemaphore));
 
 			m_deletionQueue.PushFunction([=]()
 			{
-				m_device.destroyFence(m_renderFrameData[i].renderFence);
+				m_device.destroyFence(m_frameRenderData[i].renderFence);
 
-				m_device.destroySemaphore(m_renderFrameData[i].presentSemaphore);
-				m_device.destroySemaphore(m_renderFrameData[i].renderSemaphore);
+				m_device.destroySemaphore(m_frameRenderData[i].presentSemaphore);
+				m_device.destroySemaphore(m_frameRenderData[i].renderSemaphore);
 			});
 		}
 
@@ -342,6 +344,93 @@ namespace Puffin::Rendering::VK
 		m_deletionQueue.PushFunction([=]()
 		{
 			m_device.destroyFence(m_uploadContext.uploadFence);
+		});
+	}
+
+	void VKRenderSystem::InitBuffers()
+	{
+		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
+		{
+			// Global Buffers
+			m_frameRenderData[i].cameraBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUCameraData),
+				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto);
+
+			// Material Buffers
+
+			// Object Buffers
+			m_frameRenderData[i].objectBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUObjectData) * G_MAX_OBJECTS,
+				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto);
+
+			m_deletionQueue.PushFunction([=]()
+			{
+				m_allocator.destroyBuffer(m_frameRenderData[i].objectBuffer.buffer, m_frameRenderData[i].objectBuffer.allocation);
+				m_allocator.destroyBuffer(m_frameRenderData[i].cameraBuffer.buffer, m_frameRenderData[i].cameraBuffer.allocation);
+			});
+		}
+	}
+
+	void VKRenderSystem::InitDescriptors()
+	{
+		// Descriptor Pools
+
+		std::vector<vk::DescriptorPoolSize> sizes =
+		{
+			{ vk::DescriptorType::eUniformBuffer, 10 },
+			{ vk::DescriptorType::eStorageBuffer, 10 }
+		};
+
+		vk::DescriptorPoolCreateInfo poolInfo = { {}, 10, static_cast<uint32_t>(sizes.size()), sizes.data() };
+
+		VK_CHECK(m_device.createDescriptorPool(&poolInfo, nullptr, &m_staticRenderData.descriptorPool));
+
+		// Global Descriptor Layout
+
+		vk::DescriptorSetLayoutBinding camBufferBinding = { 0, vk::DescriptorType::eUniformBuffer,
+				1, vk::ShaderStageFlagBits::eVertex };
+
+		std::vector<vk::DescriptorSetLayoutBinding> globalLayoutBindings =
+		{
+			camBufferBinding
+		};
+
+		vk::DescriptorSetLayoutCreateInfo globalSetInfo = { {},
+			static_cast<uint32_t>(globalLayoutBindings.size()), globalLayoutBindings.data() };
+
+		VK_CHECK(m_device.createDescriptorSetLayout(&globalSetInfo, nullptr, &m_staticRenderData.globalSetLayout));
+
+		// Material Descriptor Layout
+
+
+
+		// Object Descriptor Layout
+
+
+
+
+		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
+		{
+			// Global Descriptors
+
+			
+
+			// Material Descriptors
+
+
+
+			// Object Descriptors
+
+
+
+			m_deletionQueue.PushFunction([=]()
+			{
+				
+			});
+		}
+
+		m_deletionQueue.PushFunction([=]()
+		{
+			m_device.destroyDescriptorSetLayout(m_staticRenderData.globalSetLayout, nullptr);
+			m_device.destroyDescriptorPool(m_staticRenderData.descriptorPool, nullptr);
 		});
 	}
 
