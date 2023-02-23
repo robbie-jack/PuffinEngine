@@ -3,6 +3,7 @@
 #include "Rendering/Vulkan/VKTypes.hpp"
 
 #include <unordered_map>
+#include <memory>
 
 namespace Puffin::Rendering::VK::Util
 {
@@ -28,12 +29,15 @@ namespace Puffin::Rendering::VK::Util
 			};
 		};
 
-		void Init(vk::Device device);
+		DescriptorAllocator(vk::Device device) : m_device(device) {}
+		~DescriptorAllocator();
 
 		void ResetPools();
 		bool Allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout);
 
 		void Cleanup();
+
+		const vk::Device& Device() { return m_device; }
 
 	private:
 
@@ -54,7 +58,9 @@ namespace Puffin::Rendering::VK::Util
 	{
 	public:
 
-		void Init(vk::Device device);
+		DescriptorLayoutCache(vk::Device device) : m_device(device) {}
+		~DescriptorLayoutCache();
+
 		void Cleanup();
 
 		vk::DescriptorSetLayout CreateDescriptorLayout(vk::DescriptorSetLayoutCreateInfo* info);
@@ -88,7 +94,9 @@ namespace Puffin::Rendering::VK::Util
 	{
 	public:
 
-		static DescriptorBuilder Begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator);
+		DescriptorBuilder(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<DescriptorAllocator> allocator) : m_cache(layoutCache), m_alloc(allocator) {}
+
+		static DescriptorBuilder Begin(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<DescriptorAllocator> allocator);
 
 		DescriptorBuilder& BindBuffer(uint32_t binding, vk::DescriptorBufferInfo* bufferInfo, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
 
@@ -97,7 +105,6 @@ namespace Puffin::Rendering::VK::Util
 		DescriptorBuilder& BindImages(uint32_t binding, uint32_t imageCount, vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
 
 		bool Build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
-		bool Build(vk::DescriptorSet& set);
 
 		// Used for writing to descriptor set which is already built
 		DescriptorBuilder& UpdateImage(uint32_t binding, vk::DescriptorImageInfo* imageInfo,
@@ -113,8 +120,8 @@ namespace Puffin::Rendering::VK::Util
 		std::vector<vk::WriteDescriptorSet> m_writes;
 		std::vector<vk::DescriptorSetLayoutBinding> m_bindings;
 
-		DescriptorLayoutCache* m_cache;
-		DescriptorAllocator* m_alloc;
+		std::shared_ptr<DescriptorLayoutCache> m_cache;
+		std::shared_ptr<DescriptorAllocator> m_alloc;
 
 	};
 }

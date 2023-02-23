@@ -17,6 +17,7 @@
 #include "Types/DeletionQueue.hpp"
 #include "Types/Vertex.hpp"
 #include "VKTypes.hpp"
+#include "VKDescriptors.hpp"
 #include "ECS/Entity.h"
 
 #ifdef NDEBUG
@@ -30,11 +31,12 @@ namespace Puffin::Rendering::VK
 	// Struct containing render data that is static between frames
 	struct StaticRenderData
 	{
-		vk::DescriptorPool descriptorPool;
+		std::shared_ptr<Util::DescriptorAllocator> descriptorAllocator = nullptr;
+		std::shared_ptr<Util::DescriptorLayoutCache> descriptorLayoutCache = nullptr;
 
 		vk::DescriptorSetLayout globalSetLayout;
 		vk::DescriptorSetLayout materialSetLayout;
-		vk::DescriptorSetLayout objectSetLayout;
+		vk::DescriptorSetLayout instanceSetLayout;
 	};
 
 	// Struct containing data that changes each frame
@@ -52,14 +54,14 @@ namespace Puffin::Rendering::VK
 		vk::DescriptorSet globalDescriptor;
 
 		AllocatedBuffer cameraBuffer;
+		AllocatedBuffer objectBuffer;
 		
 		// Material Data (Set for each unique material i.e textures)
 		vk::DescriptorSet materialDescriptor;
 
-		// Object Data (Set for each object/instance i.e model matrix)
-		vk::DescriptorSet objectDescriptor;
-
-		AllocatedBuffer objectBuffer;
+		// Instance Data (Set for each instance)
+		vk::DescriptorSet instanceDescriptor;
+		
 	};
 
 	constexpr uint32_t G_BUFFERED_FRAMES = 2;
@@ -119,6 +121,9 @@ namespace Puffin::Rendering::VK
 		StaticRenderData m_staticRenderData;
 		std::array<FrameRenderData, G_BUFFERED_FRAMES> m_frameRenderData;
 
+		PackedVector<MeshData> m_meshData;
+		std::unordered_map<UUID, std::set<ECS::EntityID>> m_meshDrawList;
+
 		uint32_t m_frameNumber;
 
 		// Pipelines
@@ -133,8 +138,6 @@ namespace Puffin::Rendering::VK
 		vk::UniquePipeline m_forwardPipeline;
 
 		UploadContext m_uploadContext;
-
-		PackedVector<MeshData> m_meshData;
 
 		DeletionQueue m_deletionQueue;
 
@@ -154,14 +157,17 @@ namespace Puffin::Rendering::VK
 		void BuildTrianglePipeline();
 		void BuildForwardRendererPipeline();
 
-		void InitComponents();
-		void UpdateComponents();
-		void CleanupComponents();
-
+		void ProcessComponents();
+		void UpdateRenderData();
 		void Draw();
 
-		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
-		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
+		void PrepareSceneData();
+		void DrawObjects(vk::CommandBuffer cmd);
+
+		glm::mat4 BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale);
+
+		bool LoadMesh(UUID meshID, MeshData& meshData);
+		void UnloadMesh(MeshData& meshData) const;
 
 		FrameRenderData& GetCurrentFrameData()
 		{

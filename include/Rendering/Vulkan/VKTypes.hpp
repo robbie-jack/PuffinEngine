@@ -39,8 +39,6 @@ namespace Puffin::Rendering::VK
 
 		AllocatedBuffer vertexBuffer;
 		AllocatedBuffer indexBuffer;
-
-		std::set<ECS::EntityID> entities;
 	};
 
 	struct GPUCameraData
@@ -52,6 +50,6 @@ namespace Puffin::Rendering::VK
 
 	struct GPUObjectData
 	{
-		
+		glm::mat4 model;
 	};
 }

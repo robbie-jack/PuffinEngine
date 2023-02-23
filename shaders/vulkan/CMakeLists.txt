@@ -110,6 +110,7 @@ endfunction(build_shader_commands)
 # endforeach(GLSL)
 
 build_shader_commands("triangle")
+build_shader_commands("forward_shading")
 
 add_custom_target(
     Shaders 

@@ -6,10 +6,13 @@
 //#define VMA_HPP_NAMESPACE <prefix>
 
 #include <iostream>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 #include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
 #include "VkBootstrap.h"
+#include "glm/glm.hpp"
 
 #include "Window/WindowSubsystem.hpp"
 #include "Engine/Engine.hpp"
@@ -45,32 +48,19 @@ namespace Puffin::Rendering::VK
 		InitDescriptors();
 		InitPipelines();
 
-		InitComponents();
+		ProcessComponents();
+		UpdateRenderData();
 
 		m_isInitialized = true;
 	}
 
 	void VKRenderSystem::Update()
 	{
-		UpdateComponents();
+		m_meshDrawList.clear();
 
-		std::vector<UUID> removedMeshIDs;
+		ProcessComponents();
 
-		for (const auto& meshData : m_meshData)
-		{
-			if (meshData.entities.empty())
-			{
-				m_allocator.destroyBuffer(meshData.vertexBuffer.buffer, meshData.vertexBuffer.allocation);
-				m_allocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
-
-				removedMeshIDs.push_back(meshData.assetID);
-			}
-		}
-
-		for (const auto& meshID : removedMeshIDs)
-		{
-			m_meshData.Erase(meshID);
-		}
+		UpdateRenderData();
 
 		Draw();
 	}
@@ -81,7 +71,12 @@ namespace Puffin::Rendering::VK
 
 		if (m_isInitialized)
 		{
-			CleanupComponents();
+			for (auto meshData : m_meshData)
+			{
+				UnloadMesh(meshData);
+			}
+
+			m_meshData.Clear();
 
 			m_deletionQueue.Flush();
 
@@ -128,7 +123,10 @@ namespace Puffin::Rendering::VK
 
 		// Create Vulkan Device
 		vkb::DeviceBuilder deviceBuilder { physDevice };
-		vkb::Device vkbDevice = deviceBuilder.build().value();
+
+		vk::PhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeatures = { true };
+
+		vkb::Device vkbDevice = deviceBuilder.add_pNext(&shaderDrawParametersFeatures).build().value();
 
 		m_device = vkbDevice.device;
 		m_physicalDevice = physDevice.physical_device;
@@ -355,11 +353,12 @@ namespace Puffin::Rendering::VK
 			m_frameRenderData[i].cameraBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUCameraData),
 				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto);
 
+			m_frameRenderData[i].objectBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUObjectData) * G_MAX_OBJECTS,
+				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto);
+
 			// Material Buffers
 
 			// Object Buffers
-			m_frameRenderData[i].objectBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUObjectData) * G_MAX_OBJECTS,
-				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto);
 
 			m_deletionQueue.PushFunction([=]()
 			{
@@ -371,66 +370,37 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::InitDescriptors()
 	{
-		// Descriptor Pools
+		// Descriptor Allocator/Cache
 
-		std::vector<vk::DescriptorPoolSize> sizes =
-		{
-			{ vk::DescriptorType::eUniformBuffer, 10 },
-			{ vk::DescriptorType::eStorageBuffer, 10 }
-		};
-
-		vk::DescriptorPoolCreateInfo poolInfo = { {}, 10, static_cast<uint32_t>(sizes.size()), sizes.data() };
-
-		VK_CHECK(m_device.createDescriptorPool(&poolInfo, nullptr, &m_staticRenderData.descriptorPool));
-
-		// Global Descriptor Layout
-
-		vk::DescriptorSetLayoutBinding camBufferBinding = { 0, vk::DescriptorType::eUniformBuffer,
-				1, vk::ShaderStageFlagBits::eVertex };
-
-		std::vector<vk::DescriptorSetLayoutBinding> globalLayoutBindings =
-		{
-			camBufferBinding
-		};
-
-		vk::DescriptorSetLayoutCreateInfo globalSetInfo = { {},
-			static_cast<uint32_t>(globalLayoutBindings.size()), globalLayoutBindings.data() };
-
-		VK_CHECK(m_device.createDescriptorSetLayout(&globalSetInfo, nullptr, &m_staticRenderData.globalSetLayout));
-
-		// Material Descriptor Layout
-
-
-
-		// Object Descriptor Layout
-
-
-
+		m_staticRenderData.descriptorAllocator = std::make_shared<Util::DescriptorAllocator>(m_device);
+		m_staticRenderData.descriptorLayoutCache = std::make_shared<Util::DescriptorLayoutCache>(m_device);
 
 		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
 		{
 			// Global Descriptors
 
-			
+			vk::DescriptorBufferInfo cameraBufferInfo = { m_frameRenderData[i].cameraBuffer.buffer, 0, sizeof(GPUCameraData) };
+			vk::DescriptorBufferInfo objectBufferInfo = { m_frameRenderData[i].objectBuffer.buffer, 0, sizeof(GPUObjectData) * G_MAX_OBJECTS };
+
+			Util::DescriptorBuilder::Begin(m_staticRenderData.descriptorLayoutCache, m_staticRenderData.descriptorAllocator)
+				.BindBuffer(0, &cameraBufferInfo, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex )
+				.BindBuffer(1, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
+				.Build(m_frameRenderData[i].globalDescriptor, m_staticRenderData.globalSetLayout);
 
 			// Material Descriptors
 
 
 
-			// Object Descriptors
+			// Instance Descriptors
 
 
 
-			m_deletionQueue.PushFunction([=]()
-			{
-				
-			});
 		}
 
 		m_deletionQueue.PushFunction([=]()
 		{
-			m_device.destroyDescriptorSetLayout(m_staticRenderData.globalSetLayout, nullptr);
-			m_device.destroyDescriptorPool(m_staticRenderData.descriptorPool, nullptr);
+			m_staticRenderData.descriptorLayoutCache = nullptr;
+			m_staticRenderData.descriptorAllocator = nullptr;
 		});
 	}
 
@@ -448,17 +418,10 @@ namespace Puffin::Rendering::VK
 		vku::PipelineLayoutMaker plm{};
 		m_triPipelineLayout = plm.createUnique(m_device);
 
-		/*vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
-			vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };*/
-
 		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
 		m_triPipeline = pm
 			.shader(vk::ShaderStageFlagBits::eVertex, m_triVertMod)
 			.shader(vk::ShaderStageFlagBits::eFragment, m_triFragMod)
-			//.depthStencilState(depthStencilInfo)
-			/*.vertexBinding(0, sizeof(VertexPC32))
-			.vertexAttribute(0, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPC32, pos))
-			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color))*/
 			.createUnique(m_device, m_pipelineCache, *m_triPipelineLayout, m_renderPass);
 
 		m_device.destroyShaderModule(m_triVertMod.module());
@@ -478,6 +441,7 @@ namespace Puffin::Rendering::VK
 
 		vku::PipelineLayoutMaker plm{};
 		m_forwardPipelineLayout = plm
+			.descriptorSetLayout(m_staticRenderData.globalSetLayout)
 			.createUnique(m_device);
 
 		vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
@@ -505,44 +469,34 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
-	void VKRenderSystem::InitComponents()
+	void VKRenderSystem::ProcessComponents()
 	{
 		std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
 		ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
 		for (const auto& entity : meshEntities)
 		{
-			if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
-			{
-				InitMeshComponent(entity);
+			const auto& mesh = entity->GetComponent<MeshComponent>();
 
-				entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
+			if (m_meshDrawList.count(mesh.meshAssetID) == 0)
+			{
+				m_meshDrawList.insert({mesh.meshAssetID, std::set<ECS::EntityID>()});
 			}
+
+			m_meshDrawList[mesh.meshAssetID].insert(entity->ID());
 		}
 	}
 
-	void VKRenderSystem::UpdateComponents()
+	void VKRenderSystem::UpdateRenderData()
 	{
-		std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
-		ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
-		for (const auto& entity : meshEntities)
+		for (const auto [fst, snd] : m_meshDrawList)
 		{
-			if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
+			if (!m_meshData.Contains(fst))
 			{
-				CleanupMeshComponent(entity);
-				InitMeshComponent(entity);
+				MeshData meshData;
+				LoadMesh(fst, meshData);
 
-				entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
+				m_meshData.Insert(fst, meshData);
 			}
-		}
-	}
-
-	void VKRenderSystem::CleanupComponents()
-	{
-		std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
-		ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
-		for (const auto& entity : meshEntities)
-		{
-			CleanupMeshComponent(entity);
 		}
 	}
 
@@ -560,6 +514,8 @@ namespace Puffin::Rendering::VK
 		// Reset command buffer for recording new commands
 		cmd.reset();
 
+		//PrepareSceneData();
+
 		// Begin command buffer execution
 		vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
 			nullptr, nullptr };
@@ -567,8 +523,7 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(cmd.begin(&cmdBeginInfo));
 
 		vk::ClearValue clearValue;
-		float flash = abs(sin(m_frameNumber / 120.0f));
-		clearValue.color = { 0.0f, 0.0f, flash, 1.0f };
+		clearValue.color = { 0.0f, 0.7f, 0.9f, 1.0f };
 
 		vk::ClearValue depthClear;
 		depthClear.depthStencil.depth = 1.f;
@@ -583,6 +538,8 @@ namespace Puffin::Rendering::VK
 
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_triPipeline.get());
 		cmd.draw(3, 1, 0, 0);
+
+		DrawObjects(cmd);
 
 		// End main renderpass
 		cmd.endRenderPass();
@@ -611,49 +568,100 @@ namespace Puffin::Rendering::VK
 		m_frameNumber++;
 	}
 
-	void VKRenderSystem::InitMeshComponent(std::shared_ptr<ECS::Entity> entity)
+	void VKRenderSystem::PrepareSceneData()
 	{
-		auto& mesh = entity->GetComponent<MeshComponent>();
+		// Prepare Camera Data
 
-		if (!m_meshData.Contains(mesh.meshAssetID))
+		Vector3f camPos = { 0.0f, 0.0f, -10.0f };
+
+		glm::mat4 view = glm::translate(glm::mat4(1.f), static_cast<glm::vec3>(camPos));
+		glm::mat4 projection = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 200.0f);
+		projection[1][1] *= -1;
+
+		GPUCameraData camData;
+		camData.proj = projection;
+		camData.view = view;
+		camData.viewProj = projection * view;
+
+		void* data;
+		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().cameraBuffer.allocation, &data));
+
+		memcpy(data, &camData, sizeof(GPUCameraData));
+
+		m_allocator.unmapMemory(GetCurrentFrameData().cameraBuffer.allocation);
+
+		// Prepare Object Data
+
+		void* objectData;
+		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().objectBuffer.allocation, &objectData));
+
+		GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+
+		int i = 0;
+
+		for (const auto [fst, snd] : m_meshDrawList)
 		{
-			const auto meshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(mesh.meshAssetID));
-
-			if (meshAsset && meshAsset->Load())
+			for (const auto entityID : snd)
 			{
-				MeshData meshData;
-				meshData.assetID = mesh.meshAssetID;
+				const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
 
-				meshData.vertexBuffer = Util::InitVertexBuffer(shared_from_this(), meshAsset->GetVertices().data(), 
-					meshAsset->GetNumVertices(), meshAsset->GetVertexSize());
+				objectSSBO[i].model = BuildModelTransform(transform.position, transform.rotation, transform.scale);
 
-				meshData.indexBuffer = Util::InitIndexBuffer(shared_from_this(), meshAsset->GetIndices().data(),
-					meshAsset->GetNumIndices(), meshAsset->GetIndexSize());
-
-				m_meshData.Insert(mesh.meshAssetID, meshData);
-
-				meshAsset->Unload();
+				i++;
 			}
 		}
 
-		m_meshData[mesh.meshAssetID].entities.insert(entity->ID());
+		m_allocator.unmapMemory(GetCurrentFrameData().objectBuffer.allocation);
 	}
 
-	void VKRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
+	void VKRenderSystem::DrawObjects(vk::CommandBuffer cmd)
 	{
-		auto& mesh = entity->GetComponent<MeshComponent>();
 
-		if (m_meshData.Contains(mesh.meshAssetID))
+	}
+
+	glm::mat4 VKRenderSystem::BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)
+	{
+		// Set Translation
+		glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)position);
+
+		// Set Rotation
+		model_transform = glm::rotate(model_transform, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		model_transform = glm::rotate(model_transform, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		model_transform = glm::rotate(model_transform, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, -1.0f));
+
+		// Set Scale
+		model_transform = glm::scale(model_transform, (glm::vec3)scale);
+
+		return model_transform;
+	}
+
+	bool VKRenderSystem::LoadMesh(UUID meshID, MeshData& meshData)
+	{
+		const auto meshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
+
+		if (meshAsset && meshAsset->Load())
 		{
-			m_meshData[mesh.meshAssetID].entities.erase(entity->ID());
+			meshData.assetID = meshID;
 
-			if (m_meshData[mesh.meshAssetID].entities.empty())
-			{
-				m_allocator.destroyBuffer(m_meshData[mesh.meshAssetID].vertexBuffer.buffer, m_meshData[mesh.meshAssetID].vertexBuffer.allocation);
-				m_allocator.destroyBuffer(m_meshData[mesh.meshAssetID].indexBuffer.buffer, m_meshData[mesh.meshAssetID].indexBuffer.allocation);
+			meshData.vertexBuffer = Util::InitVertexBuffer(shared_from_this(), meshAsset->GetVertices().data(),
+				meshAsset->GetNumVertices(), meshAsset->GetVertexSize());
 
-				m_meshData.Erase(mesh.meshAssetID);
-			}
+			meshData.indexBuffer = Util::InitIndexBuffer(shared_from_this(), meshAsset->GetIndices().data(),
+				meshAsset->GetNumIndices(), meshAsset->GetIndexSize());
+
+			meshAsset->Unload();
+
+			return true;
 		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void VKRenderSystem::UnloadMesh(MeshData& meshData) const
+	{
+		m_allocator.destroyBuffer(meshData.vertexBuffer.buffer, meshData.vertexBuffer.allocation);
+		m_allocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
 	}
 }

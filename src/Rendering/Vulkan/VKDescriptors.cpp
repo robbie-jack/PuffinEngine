@@ -34,9 +34,9 @@ namespace Puffin::Rendering::VK::Util
 		return pool;
 	}
 
-	void DescriptorAllocator::Init(vk::Device device)
+	DescriptorAllocator::~DescriptorAllocator()
 	{
-		m_device = device;
+		Cleanup();
 	}
 
 	void DescriptorAllocator::ResetPools()
@@ -134,9 +134,9 @@ namespace Puffin::Rendering::VK::Util
 		}
 	}
 
-	void DescriptorLayoutCache::Init(vk::Device device)
+	DescriptorLayoutCache::~DescriptorLayoutCache()
 	{
-		m_device = device;
+		Cleanup();
 	}
 
 	void DescriptorLayoutCache::Cleanup()
@@ -242,53 +242,77 @@ namespace Puffin::Rendering::VK::Util
 		return result;
 	}
 
-	DescriptorBuilder DescriptorBuilder::Begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator)
+	DescriptorBuilder DescriptorBuilder::Begin(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<DescriptorAllocator> allocator)
 	{
-
+		return DescriptorBuilder{ layoutCache, allocator };
 	}
 
 	DescriptorBuilder& DescriptorBuilder::BindBuffer(uint32_t binding, vk::DescriptorBufferInfo* bufferInfo,
 		vk::DescriptorType type, vk::ShaderStageFlags stageFlags)
 	{
+		m_bindings.emplace_back(vk::DescriptorSetLayoutBinding{ binding, type, 1, stageFlags });
+		m_writes.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, 1, type, nullptr, bufferInfo });
 
+		return *this;
 	}
 
 	DescriptorBuilder& DescriptorBuilder::BindImage(uint32_t binding, vk::DescriptorImageInfo* imageInfo,
 		vk::DescriptorType type, vk::ShaderStageFlags stageFlags)
 	{
+		m_bindings.emplace_back(vk::DescriptorSetLayoutBinding{ binding, type, 1, stageFlags });
+		m_writes.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, 1, type, imageInfo, nullptr });
 
+		return *this;
 	}
 
 	DescriptorBuilder& DescriptorBuilder::BindImages(uint32_t binding, uint32_t imageCount,
 		vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type, vk::ShaderStageFlags stageFlags)
 	{
+		m_bindings.emplace_back(vk::DescriptorSetLayoutBinding{ binding, type, 1, stageFlags });
+		m_writes.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, imageCount, type, imageInfos, nullptr });
 
+		return *this;
 	}
 
 	bool DescriptorBuilder::Build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout)
 	{
+		vk::DescriptorSetLayoutCreateInfo layoutInfo = { {}, static_cast<uint32_t>(m_bindings.size()), m_bindings.data() };
 
-	}
+		layout = m_cache->CreateDescriptorLayout(&layoutInfo);
 
-	bool DescriptorBuilder::Build(vk::DescriptorSet& set)
-	{
+		// Allocate Descriptor
+		bool success = m_alloc->Allocate(&set, layout);
+		if (!success) { return false; }
 
+		// Write Descriptor
+		for (auto& w : m_writes)
+		{
+			w.dstSet = set;
+		}
+
+		m_alloc->Device().updateDescriptorSets(m_writes.size(), m_writes.data(), 0, nullptr);
+
+		return true;
 	}
 
 	DescriptorBuilder& DescriptorBuilder::UpdateImage(uint32_t binding, vk::DescriptorImageInfo* imageInfo,
 		vk::DescriptorType type)
 	{
+		
 
+		return *this;
 	}
 
 	DescriptorBuilder& DescriptorBuilder::UpdateImages(uint32_t binding, uint32_t imageCount,
 		const vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type)
 	{
+		
 
+		return *this;
 	}
 
 	bool DescriptorBuilder::Update(vk::DescriptorSet& set)
 	{
-
+		return false;
 	}
 }
