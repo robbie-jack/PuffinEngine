@@ -351,10 +351,10 @@ namespace Puffin::Rendering::VK
 		{
 			// Global Buffers
 			m_frameRenderData[i].cameraBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUCameraData),
-				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto);
+				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
 			m_frameRenderData[i].objectBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUObjectData) * G_MAX_OBJECTS,
-				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto);
+				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
 			// Material Buffers
 
@@ -436,8 +436,8 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::BuildForwardRendererPipeline()
 	{
-		m_forwardVertMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_vs.spv" };
-		m_forwardFragMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_fs.spv" };
+		m_forwardVertMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_vs.spv" };
+		m_forwardFragMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_fs.spv" };
 
 		vku::PipelineLayoutMaker plm{};
 		m_forwardPipelineLayout = plm
@@ -514,7 +514,7 @@ namespace Puffin::Rendering::VK
 		// Reset command buffer for recording new commands
 		cmd.reset();
 
-		//PrepareSceneData();
+		PrepareSceneData();
 
 		// Begin command buffer execution
 		vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
@@ -536,8 +536,8 @@ namespace Puffin::Rendering::VK
 
 		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
 
-		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_triPipeline.get());
-		cmd.draw(3, 1, 0, 0);
+		//cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_triPipeline.get());
+		//cmd.draw(3, 1, 0, 0);
 
 		DrawObjects(cmd);
 
@@ -616,7 +616,23 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::DrawObjects(vk::CommandBuffer cmd)
 	{
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_forwardPipeline.get());
 
+		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forwardPipelineLayout.get(), 0, 1, &GetCurrentFrameData().globalDescriptor, 0, nullptr);
+
+		int i = 0;
+		for (const auto [fst, snd] : m_meshDrawList)
+		{
+			cmd.bindVertexBuffers(0, m_meshData[fst].vertexBuffer.buffer, { 0 });
+			cmd.bindIndexBuffer(m_meshData[fst].indexBuffer.buffer, 0, vk::IndexType::eUint32);
+
+			for (const auto entityID : snd)
+			{
+				cmd.drawIndexed(m_meshData[fst].numIndices, 1, 0, 0, i);
+
+				i++;
+			}
+		}
 	}
 
 	glm::mat4 VKRenderSystem::BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)
@@ -642,6 +658,8 @@ namespace Puffin::Rendering::VK
 		if (meshAsset && meshAsset->Load())
 		{
 			meshData.assetID = meshID;
+			meshData.numVertices = meshAsset->GetNumVertices();
+			meshData.numIndices = meshAsset->GetNumIndices();
 
 			meshData.vertexBuffer = Util::InitVertexBuffer(shared_from_this(), meshAsset->GetVertices().data(),
 				meshAsset->GetNumVertices(), meshAsset->GetVertexSize());

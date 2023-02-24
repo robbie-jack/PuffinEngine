@@ -39,6 +39,9 @@ namespace Puffin::Rendering::VK
 
 		AllocatedBuffer vertexBuffer;
 		AllocatedBuffer indexBuffer;
+
+		uint32_t numVertices;
+		uint32_t numIndices;
 	};
 
 	struct GPUCameraData
