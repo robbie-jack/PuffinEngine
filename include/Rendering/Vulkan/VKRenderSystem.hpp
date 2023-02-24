@@ -19,6 +19,8 @@
 #include "VKTypes.hpp"
 #include "VKDescriptors.hpp"
 #include "ECS/Entity.h"
+#include "Components/Rendering/CameraComponent.h"
+#include "Input/InputEvent.h"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -91,6 +93,8 @@ namespace Puffin::Rendering::VK
 		const UploadContext& GetUploadContext() const { return m_uploadContext; }
 		const vk::Queue& GetGraphicsQueue() const { return m_graphicsQueue; }
 
+		void OnInputEvent(const Input::InputEvent& inputEvent);
+
 	private:
 
 		// Initialization Members
@@ -141,6 +145,17 @@ namespace Puffin::Rendering::VK
 
 		DeletionQueue m_deletionQueue;
 
+		EditorCamera m_editorCam;
+		CameraMatComponent m_editorCamMats;
+		bool m_moveLeft = false;
+		bool m_moveRight = false;
+		bool m_moveForward = false;
+		bool m_moveBackward = false;
+		bool m_moveUp = false;
+		bool m_moveDown = false;
+
+		RingBuffer<Input::InputEvent> m_inputEvents;
+
 		// Indicated initialization completed without any failures
 		bool m_isInitialized = false;
 
@@ -157,9 +172,13 @@ namespace Puffin::Rendering::VK
 		void BuildTrianglePipeline();
 		void BuildForwardRendererPipeline();
 
+		void ProcessEvents();
 		void ProcessComponents();
+		void UpdateEditorCamera();
 		void UpdateRenderData();
 		void Draw();
+
+		void UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity);
 
 		void PrepareSceneData();
 		void DrawObjects(vk::CommandBuffer cmd);

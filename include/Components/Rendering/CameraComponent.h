@@ -51,8 +51,9 @@ namespace Puffin
 		{
 			struct CameraMatComponent
 			{
-				glm::mat4 perspective;
 				glm::mat4 view;
+				glm::mat4 proj;
+				glm::mat4 viewProj;
 			};
 		}
 

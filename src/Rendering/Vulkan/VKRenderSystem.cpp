@@ -9,6 +9,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+#include "MathHelpers.h"
 #include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
 #include "VkBootstrap.h"
@@ -22,6 +23,8 @@
 #include "Assets/MeshAsset.h"
 
 #include "Components/TransformComponent.h"
+#include "Engine/SignalSubsystem.hpp"
+#include "Input/InputSubsystem.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -48,21 +51,41 @@ namespace Puffin::Rendering::VK
 		InitDescriptors();
 		InitPipelines();
 
+		// Register Components
+		m_world->RegisterComponent<CameraMatComponent>();
+		m_world->AddComponentDependencies<CameraComponent, CameraMatComponent>();
+
 		ProcessComponents();
 		UpdateRenderData();
+
+		m_editorCam.position = { 0.0f, 0.0f, 15.0f };
+
+		// Connect Signals
+		const auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
+
+		signalSubsystem->Connect<Input::InputEvent>(
+			[&](const Input::InputEvent& inputEvent)
+			{
+				shared_from_this()->OnInputEvent(inputEvent);
+			}
+		);
 
 		m_isInitialized = true;
 	}
 
 	void VKRenderSystem::Update()
 	{
-		m_meshDrawList.clear();
+		ProcessEvents();
 
 		ProcessComponents();
+
+		UpdateEditorCamera();
 
 		UpdateRenderData();
 
 		Draw();
+
+		m_meshDrawList.clear();
 	}
 
 	void VKRenderSystem::Cleanup()
@@ -82,6 +105,11 @@ namespace Puffin::Rendering::VK
 
 			m_isInitialized = false;
 		}
+	}
+
+	void VKRenderSystem::OnInputEvent(const Input::InputEvent& inputEvent)
+	{
+		m_inputEvents.Push(inputEvent);
 	}
 
 	void VKRenderSystem::InitVulkan()
@@ -469,6 +497,85 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
+	void VKRenderSystem::ProcessEvents()
+	{
+		Input::InputEvent inputEvent;
+		while (m_inputEvents.Pop(inputEvent))
+		{
+			if (inputEvent.actionName == "CamMoveLeft")
+			{
+				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				{
+					m_moveLeft = true;
+				}
+				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				{
+					m_moveLeft = false;
+				}
+			}
+
+			if (inputEvent.actionName == "CamMoveRight")
+			{
+				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				{
+					m_moveRight = true;
+				}
+				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				{
+					m_moveRight = false;
+				}
+			}
+
+			if (inputEvent.actionName == "CamMoveForward")
+			{
+				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				{
+					m_moveForward = true;
+				}
+				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				{
+					m_moveForward = false;
+				}
+			}
+
+			if (inputEvent.actionName == "CamMoveBackward")
+			{
+				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				{
+					m_moveBackward = true;
+				}
+				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				{
+					m_moveBackward = false;
+				}
+			}
+
+			if (inputEvent.actionName == "CamMoveUp")
+			{
+				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				{
+					m_moveUp = true;
+				}
+				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				{
+					m_moveUp = false;
+				}
+			}
+
+			if (inputEvent.actionName == "CamMoveDown")
+			{
+				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				{
+					m_moveDown = true;
+				}
+				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				{
+					m_moveDown = false;
+				}
+			}
+		}
+	}
+
 	void VKRenderSystem::ProcessComponents()
 	{
 		std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
@@ -484,6 +591,83 @@ namespace Puffin::Rendering::VK
 
 			m_meshDrawList[mesh.meshAssetID].insert(entity->ID());
 		}
+
+		std::vector<std::shared_ptr<ECS::Entity>> camEntities;
+		ECS::GetEntities<TransformComponent, CameraComponent, CameraMatComponent>(m_world, camEntities);
+		for (const auto& entity : camEntities)
+		{
+			UpdateCameraComponent(entity);
+		}
+	}
+
+	void VKRenderSystem::UpdateEditorCamera()
+	{
+		const auto inputSubsystem = m_engine->GetSubsystem<Input::InputSubsystem>();
+
+		if (inputSubsystem->IsCursorLocked())
+		{
+			// Camera Movement
+			if (m_moveLeft && !m_moveRight)
+			{
+				m_editorCam.position += m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
+			}
+
+			if (m_moveRight && !m_moveLeft)
+			{
+				m_editorCam.position -= m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
+			}
+
+			if (m_moveForward && !m_moveBackward)
+			{
+				m_editorCam.position += m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
+			}
+
+			if (m_moveBackward && !m_moveForward)
+			{
+				m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
+			}
+
+			if (m_moveUp && !m_moveDown)
+			{
+				m_editorCam.position += m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
+			}
+
+			if (m_moveDown && !m_moveUp)
+			{
+				m_editorCam.position -= m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
+			}
+
+			// Mouse Rotation
+			m_editorCam.yaw += inputSubsystem->GetMouseXOffset();
+			m_editorCam.pitch -= inputSubsystem->GetMouseYOffset();
+
+			if (m_editorCam.pitch > 89.0f)
+				m_editorCam.pitch = 89.0f;
+
+			if (m_editorCam.pitch < -89.0f)
+				m_editorCam.pitch = -89.0f;
+
+			// Calculate Direction vector from yaw and pitch of camera
+			m_editorCam.direction.x = cos(Maths::DegreesToRadians(m_editorCam.yaw)) * cos(Maths::DegreesToRadians(m_editorCam.pitch));
+			m_editorCam.direction.y = sin(Maths::DegreesToRadians(m_editorCam.pitch));
+			m_editorCam.direction.z = sin(Maths::DegreesToRadians(m_editorCam.yaw)) * cos(Maths::DegreesToRadians(m_editorCam.pitch));
+
+			m_editorCam.direction.Normalise();
+		}
+
+		// Calculate Right, Up and LookAt vectors
+		m_editorCam.right = m_editorCam.up.Cross(m_editorCam.direction).Normalised();
+		m_editorCam.lookat = m_editorCam.position + m_editorCam.direction;
+
+		m_editorCam.aspect = static_cast<float>(m_windowSize.width) / static_cast<float>(m_windowSize.height);
+
+		m_editorCamMats.view = glm::lookAt(static_cast<glm::vec3>(m_editorCam.position),
+			static_cast<glm::vec3>(m_editorCam.lookat), static_cast<glm::vec3>(m_editorCam.up));
+
+		m_editorCamMats.proj = glm::perspective(Maths::DegreesToRadians(m_editorCam.fovY), m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar);
+		m_editorCamMats.proj[1][1] *= -1;
+
+		m_editorCamMats.viewProj = m_editorCamMats.proj * m_editorCamMats.view;
 	}
 
 	void VKRenderSystem::UpdateRenderData()
@@ -568,20 +752,43 @@ namespace Puffin::Rendering::VK
 		m_frameNumber++;
 	}
 
+	void VKRenderSystem::UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity)
+	{
+		auto& transform = entity->GetComponent<TransformComponent>();
+		auto& cam = entity->GetComponent<CameraComponent>();
+		auto& camMats = entity->GetComponent<CameraMatComponent>();
+
+		// Calculate Right, Up and LookAt vectors
+		cam.right = cam.up.Cross(cam.direction).Normalised();
+		cam.lookat = transform.position + cam.direction;
+
+		cam.aspect = (float)m_windowSize.width / (float)m_windowSize.height;
+
+		camMats.view = glm::lookAt(static_cast<glm::vec3>(transform.position), 
+			static_cast<glm::vec3>(cam.lookat), static_cast<glm::vec3>(cam.up));
+
+		camMats.proj = glm::perspective(Maths::DegreesToRadians(cam.fovY), cam.aspect, cam.zNear, cam.zFar);
+		camMats.proj[1][1] *= -1;
+
+		camMats.viewProj = camMats.proj * camMats.view;
+	}
+
 	void VKRenderSystem::PrepareSceneData()
 	{
 		// Prepare Camera Data
 
-		Vector3f camPos = { 0.0f, 0.0f, -10.0f };
+		/*Vector3f camPos = { 0.0f, 0.0f, -10.0f };
+
+		float aspect = (float)m_windowSize.width / (float)m_windowSize.height;
 
 		glm::mat4 view = glm::translate(glm::mat4(1.f), static_cast<glm::vec3>(camPos));
-		glm::mat4 projection = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 200.0f);
-		projection[1][1] *= -1;
+		glm::mat4 projection = glm::perspective(glm::radians(70.0f), aspect, 0.1f, 200.0f);
+		projection[1][1] *= -1;*/
 
 		GPUCameraData camData;
-		camData.proj = projection;
-		camData.view = view;
-		camData.viewProj = projection * view;
+		camData.proj = m_editorCamMats.proj;
+		camData.view = m_editorCamMats.view;
+		camData.viewProj = m_editorCamMats.viewProj;
 
 		void* data;
 		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().cameraBuffer.allocation, &data));
