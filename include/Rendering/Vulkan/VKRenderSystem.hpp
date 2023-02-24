@@ -63,7 +63,8 @@ namespace Puffin::Rendering::VK
 
 		// Instance Data (Set for each instance)
 		vk::DescriptorSet instanceDescriptor;
-		
+
+		bool swapchainNeedsUpdated = false;
 	};
 
 	constexpr uint32_t G_BUFFERED_FRAMES = 2;
@@ -109,18 +110,14 @@ namespace Puffin::Rendering::VK
 		vma::Allocator m_allocator;
 
 		// Swapchain
-		vk::SwapchainKHR m_swapchain;
-		vk::Format m_swapchainImageFormat;
-		std::vector<vk::Image> m_swapchainImages;
-		std::vector<vk::ImageView> m_swapchainImageViews;
-		AllocatedImage m_swapchainDepthImage;
+		SwapchainData m_swapchainData;
+		SwapchainData m_oldSwapchainData;
 
 		// Command Execution
 		vk::Queue m_graphicsQueue;
 		uint32_t m_graphicsQueueFamily;
 
 		vk::RenderPass m_renderPass;
-		std::vector<vk::Framebuffer> m_framebuffers;
 
 		StaticRenderData m_staticRenderData;
 		std::array<FrameRenderData, G_BUFFERED_FRAMES> m_frameRenderData;
@@ -158,12 +155,13 @@ namespace Puffin::Rendering::VK
 
 		// Indicated initialization completed without any failures
 		bool m_isInitialized = false;
+		bool m_windowResized = false;
 
 		void InitVulkan();
-		void InitSwapchain();
+		void InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain);
 		void InitCommands();
 		void InitDefaultRenderPass();
-		void InitFramebuffers();
+		void InitSwapchainFramebuffers(SwapchainData& swapchainData);
 		void InitSyncStructures();
 		void InitBuffers();
 		void InitDescriptors();
@@ -180,6 +178,9 @@ namespace Puffin::Rendering::VK
 
 		void UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity);
 
+		void RecreateSwapchain();
+		void CleanSwapchain(SwapchainData& swapchainData);
+
 		void PrepareSceneData();
 		void DrawObjects(vk::CommandBuffer cmd);
 
@@ -191,6 +192,15 @@ namespace Puffin::Rendering::VK
 		FrameRenderData& GetCurrentFrameData()
 		{
 			return m_frameRenderData[m_frameNumber % G_BUFFERED_FRAMES];
+		}
+
+		static inline void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
+		{
+			auto app = reinterpret_cast<VKRenderSystem*>(glfwGetWindowUserPointer(window));
+
+			app->m_windowResized = true;
+			app->m_windowSize.width = width;
+			app->m_windowSize.height = height;
 		}
 	};
 }

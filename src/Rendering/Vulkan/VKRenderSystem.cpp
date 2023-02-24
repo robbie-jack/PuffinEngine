@@ -42,10 +42,10 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::Init()
 	{
 		InitVulkan();
-		InitSwapchain();
+		InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain);
 		InitCommands();
 		InitDefaultRenderPass();
-		InitFramebuffers();
+		InitSwapchainFramebuffers(m_swapchainData);
 		InitSyncStructures();
 		InitBuffers();
 		InitDescriptors();
@@ -101,6 +101,13 @@ namespace Puffin::Rendering::VK
 
 			m_meshData.Clear();
 
+			CleanSwapchain(m_swapchainData);
+
+			if (m_oldSwapchainData.needsCleaned)
+			{
+				CleanSwapchain(m_oldSwapchainData);
+			}
+
 			m_deletionQueue.Flush();
 
 			m_isInitialized = false;
@@ -115,6 +122,9 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::InitVulkan()
 	{
 		GLFWwindow* glfwWindow = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+
+		glfwSetWindowUserPointer(glfwWindow, this);
+		glfwSetFramebufferSizeCallback(glfwWindow, FrameBufferResizeCallback);
 
 		// Create Vulkan Instance
 		int width, height;
@@ -180,32 +190,33 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
-	void VKRenderSystem::InitSwapchain()
+	void VKRenderSystem::InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain)
 	{
 		vkb::SwapchainBuilder swapchainBuilder { m_physicalDevice, m_device, m_surface};
 
 		vkb::Swapchain vkbSwapchain = swapchainBuilder
 			.use_default_format_selection()
 			// Vsync present mode
+			.set_old_swapchain(oldSwapchain)
 			.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
 			.set_desired_extent(m_windowSize.width, m_windowSize.height)
 			.build()
 			.value();
 
-		m_swapchain = vkbSwapchain.swapchain;
-		m_swapchainImageFormat = static_cast<vk::Format>(vkbSwapchain.image_format);
+		swapchainData.swapchain = vkbSwapchain.swapchain;
+		swapchainData.imageFormat = static_cast<vk::Format>(vkbSwapchain.image_format);
 
 		// Grab Images
 		std::vector<VkImage> images = vkbSwapchain.get_images().value();
 		std::vector<VkImageView> imageViews = vkbSwapchain.get_image_views().value();
 
-		m_swapchainImages.resize(images.size());
-		m_swapchainImageViews.resize(imageViews.size());
+		swapchainData.images.resize(images.size());
+		swapchainData.imageViews.resize(imageViews.size());
 
 		for (int i = 0; i < images.size(); i++)
 		{
-			m_swapchainImages[i] = static_cast<vk::Image>(images[i]);
-			m_swapchainImageViews[i] = static_cast<vk::ImageView>(imageViews[i]);
+			swapchainData.images[i] = static_cast<vk::Image>(images[i]);
+			swapchainData.imageViews[i] = static_cast<vk::ImageView>(imageViews[i]);
 		}
 
 		images.clear();
@@ -214,20 +225,7 @@ namespace Puffin::Rendering::VK
 		// Create Swapchain Depth Image
 		vk::Extent3D depthExtent = { m_windowSize.width, m_windowSize.height, 1 };
 
-		m_swapchainDepthImage = Util::InitDepthImage(shared_from_this(), depthExtent, vk::Format::eD32Sfloat);
-
-		m_deletionQueue.PushFunction([=]()
-		{
-			m_device.destroyImageView(m_swapchainDepthImage.imageView);
-			m_allocator.destroyImage(m_swapchainDepthImage.image, m_swapchainDepthImage.allocation);
-
-			for (int i = 0; i < m_swapchainImageViews.size(); i++)
-			{
-				m_device.destroyImageView(m_swapchainImageViews[i]);
-			}
-
-			m_device.destroySwapchainKHR(m_swapchain);
-		});
+		swapchainData.depthImage = Util::InitDepthImage(shared_from_this(), depthExtent, vk::Format::eD32Sfloat);
 	}
 
 	void VKRenderSystem::InitCommands()
@@ -268,7 +266,7 @@ namespace Puffin::Rendering::VK
 
 		vk::AttachmentDescription colorAttachment = 
 		{
-			{}, m_swapchainImageFormat, vk::SampleCountFlagBits::e1,
+			{}, m_swapchainData.imageFormat, vk::SampleCountFlagBits::e1,
 			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 			vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
 			vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR
@@ -278,7 +276,7 @@ namespace Puffin::Rendering::VK
 
 		vk::AttachmentDescription depthAttachment =
 		{
-			{}, m_swapchainDepthImage.format, vk::SampleCountFlagBits::e1,
+			{}, m_swapchainData.depthImage.format, vk::SampleCountFlagBits::e1,
 			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
 			vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal
@@ -315,30 +313,27 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
-	void VKRenderSystem::InitFramebuffers()
+	void VKRenderSystem::InitSwapchainFramebuffers(SwapchainData& swapchainData)
 	{
 		vk::FramebufferCreateInfo fbInfo = { {}, m_renderPass, 1, nullptr, m_windowSize.width, m_windowSize.height, 1 };
 
 		// Grab number of images in swapchain
-		const uint32_t swapchainImageCount = m_swapchainImages.size();
-		m_framebuffers.resize(swapchainImageCount);
+		const uint32_t swapchainImageCount = swapchainData.images.size();
+		swapchainData.framebuffers.resize(swapchainImageCount);
 
 		for (int i = 0; i < swapchainImageCount; i++)
 		{
-			std::array<vk::ImageView, 2> attachments = { m_swapchainImageViews[i], m_swapchainDepthImage.imageView };
+			std::array<vk::ImageView, 2> attachments = { swapchainData.imageViews[i], swapchainData.depthImage.imageView };
 
 			fbInfo.pAttachments = attachments.data();
 			fbInfo.attachmentCount = attachments.size();
 
-			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &m_framebuffers[i]));
+			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &swapchainData.framebuffers[i]));
 		}
 
 		m_deletionQueue.PushFunction([=]()
 		{
-			for (int i = 0; i < m_framebuffers.size(); i++)
-			{
-				m_device.destroyFramebuffer(m_framebuffers[i]);
-			}
+			
 		});
 	}
 
@@ -477,14 +472,20 @@ namespace Puffin::Rendering::VK
 
 		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
 		m_forwardPipeline = pm
+			// Define dynamic state which can change each frame (currently viewport and scissor size)
+			.dynamicState(vk::DynamicState::eViewport)
+			.dynamicState(vk::DynamicState::eScissor)
+			// Define vertex/fragment shaders
 			.shader(vk::ShaderStageFlagBits::eVertex, m_forwardVertMod)
 			.shader(vk::ShaderStageFlagBits::eFragment, m_forwardFragMod)
 			.depthStencilState(depthStencilInfo)
+			// Define vertex binding/attributes
 			.vertexBinding(0, sizeof(VertexPNTV32))
 			.vertexAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, pos))
 			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, normal))
 			.vertexAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, tangent))
 			.vertexAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv))
+			// Create pipeline
 			.createUnique(m_device, m_pipelineCache, *m_forwardPipelineLayout, m_renderPass);
 
 		m_device.destroyShaderModule(m_forwardVertMod.module());
@@ -690,8 +691,10 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_device.waitForFences(1, &GetCurrentFrameData().renderFence, true, 1000000000));
 		VK_CHECK(m_device.resetFences(1, &GetCurrentFrameData().renderFence));
 
+		RecreateSwapchain();
+
 		uint32_t swapchainImageIdx;
-		VK_CHECK(m_device.acquireNextImageKHR(m_swapchain, 1000000000, GetCurrentFrameData().presentSemaphore, nullptr, &swapchainImageIdx));
+		VK_CHECK(m_device.acquireNextImageKHR(m_swapchainData.swapchain, 1000000000, GetCurrentFrameData().presentSemaphore, nullptr, &swapchainImageIdx));
 
 		vk::CommandBuffer cmd = GetCurrentFrameData().mainCommandBuffer;
 
@@ -715,7 +718,7 @@ namespace Puffin::Rendering::VK
 		std::array<vk::ClearValue, 2> clearValues = { clearValue, depthClear };
 
 		// Begin main renderpass
-		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_framebuffers[swapchainImageIdx],
+		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_swapchainData.framebuffers[swapchainImageIdx],
 			vk::Rect2D{ {0, 0}, m_windowSize }, clearValues.size(), clearValues.data(), nullptr };
 
 		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
@@ -744,7 +747,7 @@ namespace Puffin::Rendering::VK
 
 		vk::PresentInfoKHR presentInfo =
 		{
-			1, &GetCurrentFrameData().renderSemaphore, 1, &m_swapchain, &swapchainImageIdx
+			1, &GetCurrentFrameData().renderSemaphore, 1, &m_swapchainData.swapchain, &swapchainImageIdx
 		};
 
 		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
@@ -771,6 +774,69 @@ namespace Puffin::Rendering::VK
 		camMats.proj[1][1] *= -1;
 
 		camMats.viewProj = camMats.proj * camMats.view;
+	}
+
+	void VKRenderSystem::RecreateSwapchain()
+	{
+		// Recreate swapchain when window is resized
+		if (m_windowResized)
+		{
+			for (int i = 0; i < G_BUFFERED_FRAMES; i++)
+			{
+				m_frameRenderData[i].swapchainNeedsUpdated = true;
+			}
+
+			m_oldSwapchainData = m_swapchainData;
+
+			InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain);
+			InitSwapchainFramebuffers(m_swapchainData);
+
+			m_oldSwapchainData.needsCleaned = true;
+
+			m_windowResized = false;
+		}
+
+		if (m_oldSwapchainData.needsCleaned == true)
+		{
+			if (GetCurrentFrameData().swapchainNeedsUpdated == true)
+			{
+				GetCurrentFrameData().swapchainNeedsUpdated = false;
+			}
+
+			int framesUsingNewSwapchain = 0;
+			for (int i = 0; i < G_BUFFERED_FRAMES; i++)
+			{
+				if (m_frameRenderData[i].swapchainNeedsUpdated == false)
+				{
+					framesUsingNewSwapchain++;
+				}
+			}
+
+			if (framesUsingNewSwapchain == G_BUFFERED_FRAMES)
+			{
+				CleanSwapchain(m_oldSwapchainData);
+
+				m_oldSwapchainData.needsCleaned = false;
+			}
+		}
+	}
+
+	void VKRenderSystem::CleanSwapchain(SwapchainData& swapchainData)
+	{
+		for (int i = 0; i < swapchainData.framebuffers.size(); i++)
+		{
+			m_device.destroyFramebuffer(swapchainData.framebuffers[i]);
+		}
+
+		m_device.destroyImageView(swapchainData.depthImage.imageView);
+		m_allocator.destroyImage(swapchainData.depthImage.image, swapchainData.depthImage.allocation);
+
+		for (int i = 0; i < swapchainData.imageViews.size(); i++)
+		{
+			m_device.destroyImageView(swapchainData.imageViews[i]);
+		}
+
+		m_device.destroySwapchainKHR(swapchainData.swapchain);
 	}
 
 	void VKRenderSystem::PrepareSceneData()
@@ -824,6 +890,12 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::DrawObjects(vk::CommandBuffer cmd)
 	{
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_forwardPipeline.get());
+
+		vk::Viewport viewport = { 0, 0, static_cast<float>(m_windowSize.width), static_cast<float>(m_windowSize.height), 0.1f, 1.0f };
+		cmd.setViewport(0, 1, &viewport);
+
+		vk::Rect2D scissor = { { 0, 0 }, { m_windowSize.width, m_windowSize.height } };
+		cmd.setScissor(0, 1, &scissor);
 
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forwardPipelineLayout.get(), 0, 1, &GetCurrentFrameData().globalDescriptor, 0, nullptr);
 

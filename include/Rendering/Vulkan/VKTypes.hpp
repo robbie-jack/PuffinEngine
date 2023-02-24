@@ -33,6 +33,35 @@ namespace Puffin::Rendering::VK
 
 	typedef AllocatedImage Texture;
 
+	struct SwapchainData
+	{
+		void operator=(const SwapchainData& other)
+		{
+			swapchain = other.swapchain;
+
+			imageFormat = other.imageFormat;
+			images = other.images;
+			imageViews = other.imageViews;
+
+			framebuffers = other.framebuffers;
+
+			depthImage = other.depthImage;
+
+			needsCleaned = other.needsCleaned;
+		}
+
+		vk::SwapchainKHR swapchain;
+
+		vk::Format imageFormat;
+		std::vector<vk::Image> images;
+		std::vector<vk::ImageView> imageViews;
+		std::vector<vk::Framebuffer> framebuffers;
+
+		AllocatedImage depthImage;
+
+		bool needsCleaned = false;
+	};
+
 	struct MeshData
 	{
 		UUID assetID;
