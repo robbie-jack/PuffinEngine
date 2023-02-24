@@ -6,47 +6,36 @@
 
 namespace Puffin::Rendering::VK::Util
 {
-	class VertexBuilder
+	class VertexLayout
 	{
 	public:
 
-		static VertexBuilder Begin()
+		static VertexLayout Begin()
 		{
-			VertexBuilder builder;
-			return builder;
+			VertexLayout layout;
+			return layout;
 		}
 
-		VertexBuilder& BindInput(uint32_t size, uint32_t binding = 0)
+		VertexLayout& BindInput(uint32_t binding, uint32_t stride)
 		{
-			m_bindingDescription = { binding, size };
+			m_bindingDescriptions.emplace_back(binding, stride);
 
 			return *this;
 		}
 
-		VertexBuilder& BindAttribute(vk::Format format, uint32_t offset)
+		VertexLayout& BindAttribute(uint32_t location, uint32_t binding, vk::Format format, uint32_t offset)
 		{
-			vk::VertexInputAttributeDescription attributeDescription = 
-			{
-				static_cast<uint32_t>(m_attributeDescriptions.size()),
-				0, format, offset
-			};
-
-			m_attributeDescriptions.push_back(attributeDescription);
+			m_attributeDescriptions.emplace_back(location, binding, format, offset);
 
 			return *this;
 		}
 
-		bool Build(vk::VertexInputBindingDescription& bindingDescription, std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions)
-		{
-			bindingDescription = m_bindingDescription;
-			attributeDescriptions = m_attributeDescriptions;
-
-			return true;
-		}
+		[[nodiscard]] std::vector<vk::VertexInputBindingDescription> Bindings() const { return m_bindingDescriptions; }
+		[[nodiscard]] std::vector <vk::VertexInputAttributeDescription> Attributes() const { return m_attributeDescriptions; }
 
 	private:
 
-		vk::VertexInputBindingDescription m_bindingDescription = {};
+		std::vector<vk::VertexInputBindingDescription> m_bindingDescriptions;
 		std::vector<vk::VertexInputAttributeDescription> m_attributeDescriptions;
 
 	};
@@ -54,17 +43,32 @@ namespace Puffin::Rendering::VK::Util
 
 namespace Puffin::Rendering
 {
-	/*inline void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
-		std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);*/
-
-	inline void VertexPNC32::GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
-		std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions)
+	inline VK::Util::VertexLayout VertexPNC32::GetLayoutVK()
 	{
-		VK::Util::VertexBuilder::Begin()
-			.BindInput(sizeof(VertexPNC32))
-			.BindAttribute(vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, pos))
-			.BindAttribute(vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, normal))
-			.BindAttribute(vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, color))
-			.Build(bindingDescription, attributeDescriptions);
+		return VK::Util::VertexLayout::Begin()
+			.BindInput(0, sizeof(VertexPNC32))
+			.BindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, pos))
+			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, normal))
+			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, color));
+	}
+
+	inline VK::Util::VertexLayout VertexPNTV32::GetLayoutVK()
+	{
+		return VK::Util::VertexLayout::Begin()
+			.BindInput(0, sizeof(VertexPNTV32))
+			.BindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, pos))
+			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, normal))
+			.BindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, tangent))
+			.BindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv));
+	}
+
+	inline VK::Util::VertexLayout VertexP64NTV32::GetLayoutVK()
+	{
+		return VK::Util::VertexLayout::Begin()
+			.BindInput(0, sizeof(VertexP64NTV32))
+			.BindAttribute(0, 0, vk::Format::eR64G64B64Sfloat, offsetof(VertexP64NTV32, pos))
+			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexP64NTV32, normal))
+			.BindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexP64NTV32, tangent))
+			.BindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexP64NTV32, uv));
 	}
 }

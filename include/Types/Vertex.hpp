@@ -4,12 +4,6 @@
 
 #include <vector>
 
-namespace vk
-{
-	struct VertexInputBindingDescription;
-	struct VertexInputAttributeDescription;
-}
-
 namespace bgfx
 {
 	struct VertexLayout;
@@ -17,6 +11,11 @@ namespace bgfx
 
 namespace Puffin::Rendering
 {
+	namespace VK::Util
+	{
+		class VertexLayout;
+	}
+
 	enum class VertexFormat : uint8_t
 	{
 		Unknown = 0,
@@ -38,8 +37,7 @@ namespace Puffin::Rendering
 
 		static bgfx::VertexLayout GetLayout();
 
-		static void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
-			std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
+		static VK::Util::VertexLayout GetLayoutVK();
 	};
 
 	struct VertexPNC32
@@ -55,8 +53,7 @@ namespace Puffin::Rendering
 
 		static bgfx::VertexLayout GetLayout();
 
-		static void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
-			std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
+		static VK::Util::VertexLayout GetLayoutVK();
 	};
 
 	struct VertexPNTV32
@@ -76,8 +73,7 @@ namespace Puffin::Rendering
 
 		static bgfx::VertexLayout GetLayout();
 
-		static void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
-			std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
+		static VK::Util::VertexLayout GetLayoutVK();
 	};
 
 	struct VertexP64NTV32
@@ -97,8 +93,7 @@ namespace Puffin::Rendering
 
 		static bgfx::VertexLayout GetLayout();
 
-		static void GetVertexBindingAndAttributes(vk::VertexInputBindingDescription& bindingDescription,
-			std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
+		static VK::Util::VertexLayout GetLayoutVK();
 	};
 
 	static VertexFormat ParseVertexFormatFromString(const char* f)

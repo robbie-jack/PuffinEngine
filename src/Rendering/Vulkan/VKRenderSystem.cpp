@@ -429,32 +429,7 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::InitPipelines()
 	{
-		BuildTrianglePipeline();
 		BuildForwardRendererPipeline();
-	}
-
-	void VKRenderSystem::BuildTrianglePipeline()
-	{
-		m_triVertMod = vku::ShaderModule { m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_vs.spv" };
-		m_triFragMod = vku::ShaderModule { m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\triangle\\triangle_fs.spv" };
-
-		vku::PipelineLayoutMaker plm{};
-		m_triPipelineLayout = plm.createUnique(m_device);
-
-		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
-		m_triPipeline = pm
-			.shader(vk::ShaderStageFlagBits::eVertex, m_triVertMod)
-			.shader(vk::ShaderStageFlagBits::eFragment, m_triFragMod)
-			.createUnique(m_device, m_pipelineCache, *m_triPipelineLayout, m_renderPass);
-
-		m_device.destroyShaderModule(m_triVertMod.module());
-		m_device.destroyShaderModule(m_triFragMod.module());
-
-		m_deletionQueue.PushFunction([=]()
-		{
-			m_triPipelineLayout = {};
-			m_triPipeline = {};
-		});
 	}
 
 	void VKRenderSystem::BuildForwardRendererPipeline()

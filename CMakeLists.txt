@@ -147,6 +147,7 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKVertex.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VKHelpers.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VKDescriptors.hpp
+	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.hpp
 	
 	# ${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
 	# ${HEADER_DIR}/Rendering/Vulkan/VKTypes.h

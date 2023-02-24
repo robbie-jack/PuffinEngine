@@ -130,10 +130,6 @@ namespace Puffin::Rendering::VK
 		// Pipelines
 		vk::PipelineCache m_pipelineCache;
 
-		vku::ShaderModule m_triVertMod, m_triFragMod;
-		vk::UniquePipelineLayout m_triPipelineLayout;
-		vk::UniquePipeline m_triPipeline;
-
 		vku::ShaderModule m_forwardVertMod, m_forwardFragMod;
 		vk::UniquePipelineLayout m_forwardPipelineLayout;
 		vk::UniquePipeline m_forwardPipeline;
@@ -167,7 +163,6 @@ namespace Puffin::Rendering::VK
 		void InitDescriptors();
 		void InitPipelines();
 
-		void BuildTrianglePipeline();
 		void BuildForwardRendererPipeline();
 
 		void ProcessEvents();
