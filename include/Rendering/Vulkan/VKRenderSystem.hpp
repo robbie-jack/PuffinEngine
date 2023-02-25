@@ -9,8 +9,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-//#include "vku/vku_framework.hpp"
-#include "vku/vku.hpp"
 #include "vk_mem_alloc.hpp"
 
 #include "ECS/System.hpp"
@@ -18,6 +16,7 @@
 #include "Types/Vertex.hpp"
 #include "VKTypes.hpp"
 #include "VKDescriptors.hpp"
+#include "VKPipeline.hpp"
 #include "ECS/Entity.h"
 #include "Components/Rendering/CameraComponent.h"
 #include "Input/InputEvent.h"
@@ -130,7 +129,7 @@ namespace Puffin::Rendering::VK
 		// Pipelines
 		vk::PipelineCache m_pipelineCache;
 
-		vku::ShaderModule m_forwardVertMod, m_forwardFragMod;
+		Util::ShaderModule m_forwardVertMod, m_forwardFragMod;
 		vk::UniquePipelineLayout m_forwardPipelineLayout;
 		vk::UniquePipeline m_forwardPipeline;
 

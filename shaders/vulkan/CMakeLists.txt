@@ -61,54 +61,6 @@ function(build_shader_commands shader_dir)
 
 endfunction(build_shader_commands)
 
-# file(GLOB_RECURSE GLSL_SOURCE_FILES
-    # "${PROJECT_SOURCE_DIR}/content/shaders/*.frag"  
-    # )
-
-# foreach(GLSL ${GLSL_SOURCE_FILES})
-  # message(STATUS "BUILDING SHADER")
-  # get_filename_component(FILE_NAME ${GLSL} NAME_WE)
-  # set(SPIRV "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${FILE_NAME}_fs.spv")
-  # message(STATUS ${GLSL})
-  # add_custom_command(
-    # OUTPUT ${SPIRV}
-    # COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
-    # DEPENDS ${GLSL})
-  # list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-# endforeach(GLSL)
-
-# file(GLOB_RECURSE GLSL_SOURCE_FILES
-    # "${PROJECT_SOURCE_DIR}/content/shaders/*.vert"
-    # )
-
-# foreach(GLSL ${GLSL_SOURCE_FILES})
-  # message(STATUS "BUILDING SHADER")
-  # get_filename_component(FILE_NAME ${GLSL} NAME_WE)
-  # set(SPIRV "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${FILE_NAME}_vs.spv")
-  # message(STATUS ${GLSL})
-  # add_custom_command(
-    # OUTPUT ${SPIRV}
-    # COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
-    # DEPENDS ${GLSL})
-  # list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-# endforeach(GLSL)
-
-# file(GLOB_RECURSE GLSL_SOURCE_FILES
-    # "${PROJECT_SOURCE_DIR}/content/shaders/*.comp"
-    # )
-
-# foreach(GLSL ${GLSL_SOURCE_FILES})
-  # message(STATUS "BUILDING SHADER")
-  # get_filename_component(FILE_NAME ${GLSL} NAME_WE)
-  # set(SPIRV "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${FILE_NAME}_cs.spv")
-  # message(STATUS ${GLSL})
-  # add_custom_command(
-    # OUTPUT ${SPIRV}
-    # COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
-    # DEPENDS ${GLSL})
-  # list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-# endforeach(GLSL)
-
 build_shader_commands("triangle")
 build_shader_commands("forward_shading")
 

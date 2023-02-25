@@ -37,15 +37,15 @@ namespace Puffin::Rendering::VK::Util
 
 			file.close();
 
-			vk::ShaderModuleCreateInfo createInfo = { {}, buffer.size() * sizeof(uint32_t), buffer.data() };
+			const vk::ShaderModuleCreateInfo createInfo = { {}, buffer.size() * sizeof(uint32_t), buffer.data() };
 
-			m_module = device.createShaderModuleUnique(&createInfo, nullptr);
+			m_module = device.createShaderModuleUnique(createInfo, nullptr);
 
 			m_successful = true;
 		}
 
 		bool Successful() const { return m_successful; }
-		vk::UniqueShaderModule Module() const { return m_module; }
+		[[nodiscard]] vk::ShaderModule Module() const { return m_module.get(); }
 
 	private:
 
@@ -148,12 +148,83 @@ namespace Puffin::Rendering::VK::Util
 			return *this;
 		}
 
+		PipelineBuilder& Shader(vk::ShaderStageFlagBits stage, const ShaderModule& shader,
+			const char* entryPoint = "main")
+		{
+			vk::PipelineShaderStageCreateInfo info = { {}, stage, shader.Module(), entryPoint };
+
+			m_modules.emplace_back(info);
+			return *this;
+		}
+
+		PipelineBuilder& Subpass(uint32_t subpass) { m_subpass = subpass; return *this; }
+
+		// TODO Add Methods for setting up color blend attachments & color blend state
+
+		PipelineBuilder& InputAssemblyState(const vk::PipelineInputAssemblyStateCreateInfo& value) { m_inputAssemblyState = value; return *this; }
+
+		PipelineBuilder& RasterizationState(const vk::PipelineRasterizationStateCreateInfo& value) { m_rasterizationState = value; return *this; }
+
+		PipelineBuilder& MultisampleState(const vk::PipelineMultisampleStateCreateInfo& value) { m_multisampleState = value; return *this; }
+
+		PipelineBuilder& DepthStencilState(const vk::PipelineDepthStencilStateCreateInfo& value) { m_depthStencilState = value; return *this; }
+
+		PipelineBuilder& DynamicState(vk::DynamicState value) { m_dynamicState.push_back(value); return *this; }
+
 		vk::UniquePipeline CreateUnique(const vk::Device& device,
 			const vk::PipelineCache& pipelineCache,
 			const vk::PipelineLayout& pipelineLayout,
 			const vk::RenderPass& renderPass, bool defaultBlend = true)
 		{
-			
+			// Add default colour blend attachment if necessary.
+			if (m_colorBlendAttachments.empty() && defaultBlend) {
+				vk::PipelineColorBlendAttachmentState blend{};
+				blend.blendEnable = 0;
+				blend.srcColorBlendFactor = vk::BlendFactor::eOne;
+				blend.dstColorBlendFactor = vk::BlendFactor::eZero;
+				blend.colorBlendOp = vk::BlendOp::eAdd;
+				blend.srcAlphaBlendFactor = vk::BlendFactor::eOne;
+				blend.dstAlphaBlendFactor = vk::BlendFactor::eZero;
+				blend.alphaBlendOp = vk::BlendOp::eAdd;
+				typedef vk::ColorComponentFlagBits ccbf;
+				blend.colorWriteMask = ccbf::eR | ccbf::eG | ccbf::eB | ccbf::eA;
+				m_colorBlendAttachments.push_back(blend);
+			}
+
+			auto count = (uint32_t)m_colorBlendAttachments.size();
+			m_colorBlendState.attachmentCount = count;
+			m_colorBlendState.pAttachments = count ? m_colorBlendAttachments.data() : nullptr;
+
+			vk::PipelineViewportStateCreateInfo viewportState{
+				{}, (uint32_t)m_viewports.size(), m_viewports.data(), (uint32_t)m_scissors.size(), m_scissors.data() };
+
+			vk::PipelineVertexInputStateCreateInfo vertexInputState;
+			vertexInputState.vertexAttributeDescriptionCount = (uint32_t)m_vertexAttributeDescriptions.size();
+			vertexInputState.pVertexAttributeDescriptions = m_vertexAttributeDescriptions.data();
+			vertexInputState.vertexBindingDescriptionCount = (uint32_t)m_vertexBindingDescriptions.size();
+			vertexInputState.pVertexBindingDescriptions = m_vertexBindingDescriptions.data();
+
+			vk::PipelineDynamicStateCreateInfo dynState{ {}, (uint32_t)m_dynamicState.size(), m_dynamicState.data() };
+
+			vk::GraphicsPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.pVertexInputState = &vertexInputState;
+			pipelineInfo.stageCount = (uint32_t)m_modules.size();
+			pipelineInfo.pStages = m_modules.data();
+			pipelineInfo.pInputAssemblyState = &m_inputAssemblyState;
+			pipelineInfo.pViewportState = &viewportState;
+			pipelineInfo.pRasterizationState = &m_rasterizationState;
+			pipelineInfo.pMultisampleState = &m_multisampleState;
+			pipelineInfo.pColorBlendState = &m_colorBlendState;
+			pipelineInfo.pDepthStencilState = &m_depthStencilState;
+			pipelineInfo.layout = pipelineLayout;
+			pipelineInfo.renderPass = renderPass;
+			pipelineInfo.pDynamicState = m_dynamicState.empty() ? nullptr : &dynState;
+			pipelineInfo.subpass = m_subpass;
+			pipelineInfo.pTessellationState = &m_tessellationState;
+
+			auto [result, pipeline] = device.createGraphicsPipelineUnique(pipelineCache, pipelineInfo);
+			// TODO check result for vk::Result::ePipelineCompileRequiredEXT
+			return std::move(pipeline);
 		}
 
 	private:
@@ -163,6 +234,7 @@ namespace Puffin::Rendering::VK::Util
 
 		vk::PipelineInputAssemblyStateCreateInfo m_inputAssemblyState;
 		vk::PipelineRasterizationStateCreateInfo m_rasterizationState;
+		vk::PipelineMultisampleStateCreateInfo m_multisampleState;
 		vk::PipelineDepthStencilStateCreateInfo m_depthStencilState;
 		vk::PipelineColorBlendStateCreateInfo m_colorBlendState;
 		vk::PipelineTessellationStateCreateInfo m_tessellationState;

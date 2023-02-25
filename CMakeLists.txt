@@ -56,7 +56,6 @@ add_git_submodule("deps/implot")
 add_git_submodule("deps/lz4")
 add_git_submodule("deps/OpenSimplexNoise")
 add_git_submodule("deps/vma-hpp")
-add_git_submodule("deps/vookoo")
 
 checkout_git_branch("deps/imgui" "docking")
 
@@ -383,7 +382,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/imgui-filebrowser
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/lz4/lib)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vookoo/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vkb/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)

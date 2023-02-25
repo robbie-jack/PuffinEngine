@@ -434,37 +434,33 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::BuildForwardRendererPipeline()
 	{
-		m_forwardVertMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_vs.spv" };
-		m_forwardFragMod = vku::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_fs.spv" };
+		m_forwardVertMod = Util::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_vs.spv" };
+		m_forwardFragMod = Util::ShaderModule{ m_device, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_fs.spv" };
 
-		vku::PipelineLayoutMaker plm{};
-		m_forwardPipelineLayout = plm
-			.descriptorSetLayout(m_staticRenderData.globalSetLayout)
-			.createUnique(m_device);
+		Util::PipelineLayoutBuilder plb{};
+		m_forwardPipelineLayout = plb
+			.DescriptorSetLayout(m_staticRenderData.globalSetLayout)
+			.CreateUnique(m_device);
 
 		vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
 			vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };
 
-		vku::PipelineMaker pm{ m_windowSize.width, m_windowSize.height };
-		m_forwardPipeline = pm
+		Util::PipelineBuilder pb{ m_windowSize.width, m_windowSize.height };
+		m_forwardPipeline = pb
 			// Define dynamic state which can change each frame (currently viewport and scissor size)
-			.dynamicState(vk::DynamicState::eViewport)
-			.dynamicState(vk::DynamicState::eScissor)
+			.DynamicState(vk::DynamicState::eViewport)
+			.DynamicState(vk::DynamicState::eScissor)
 			// Define vertex/fragment shaders
-			.shader(vk::ShaderStageFlagBits::eVertex, m_forwardVertMod)
-			.shader(vk::ShaderStageFlagBits::eFragment, m_forwardFragMod)
-			.depthStencilState(depthStencilInfo)
+			.Shader(vk::ShaderStageFlagBits::eVertex, m_forwardVertMod)
+			.Shader(vk::ShaderStageFlagBits::eFragment, m_forwardFragMod)
+			.DepthStencilState(depthStencilInfo)
 			// Define vertex binding/attributes
-			.vertexBinding(0, sizeof(VertexPNTV32))
-			.vertexAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, pos))
-			.vertexAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, normal))
-			.vertexAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, tangent))
-			.vertexAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv))
+			.VertexLayout(VertexPNTV32::GetLayoutVK())
 			// Create pipeline
-			.createUnique(m_device, m_pipelineCache, *m_forwardPipelineLayout, m_renderPass);
+			.CreateUnique(m_device, m_pipelineCache, *m_forwardPipelineLayout, m_renderPass);
 
-		m_device.destroyShaderModule(m_forwardVertMod.module());
-		m_device.destroyShaderModule(m_forwardFragMod.module());
+		m_device.destroyShaderModule(m_forwardVertMod.Module());
+		m_device.destroyShaderModule(m_forwardFragMod.Module());
 
 		m_deletionQueue.PushFunction([=]()
 		{
@@ -698,9 +694,6 @@ namespace Puffin::Rendering::VK
 
 		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
 
-		//cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_triPipeline.get());
-		//cmd.draw(3, 1, 0, 0);
-
 		DrawObjects(cmd);
 
 		// End main renderpass
@@ -817,14 +810,6 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::PrepareSceneData()
 	{
 		// Prepare Camera Data
-
-		/*Vector3f camPos = { 0.0f, 0.0f, -10.0f };
-
-		float aspect = (float)m_windowSize.width / (float)m_windowSize.height;
-
-		glm::mat4 view = glm::translate(glm::mat4(1.f), static_cast<glm::vec3>(camPos));
-		glm::mat4 projection = glm::perspective(glm::radians(70.0f), aspect, 0.1f, 200.0f);
-		projection[1][1] *= -1;*/
 
 		GPUCameraData camData;
 		camData.proj = m_editorCamMats.proj;
