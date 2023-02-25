@@ -39,6 +39,8 @@ namespace Puffin::Rendering::VK
 		vk::DescriptorSetLayout globalSetLayout;
 		vk::DescriptorSetLayout materialSetLayout;
 		vk::DescriptorSetLayout instanceSetLayout;
+
+		vk::UniqueSampler textureSampler;
 	};
 
 	// Struct containing data that changes each frame
@@ -65,6 +67,7 @@ namespace Puffin::Rendering::VK
 		vk::DescriptorSet instanceDescriptor;
 
 		bool swapchainNeedsUpdated = false;
+		bool textureDescriptorNeedsupdated = false;
 	};
 
 	const static std::unordered_map<Assets::TextureFormat, vk::Format> g_texFormatMap =
@@ -168,6 +171,7 @@ namespace Puffin::Rendering::VK
 		void InitSwapchainFramebuffers(SwapchainData& swapchainData);
 		void InitSyncStructures();
 		void InitBuffers();
+		void InitSamplers();
 		void InitDescriptors();
 		void InitPipelines();
 
