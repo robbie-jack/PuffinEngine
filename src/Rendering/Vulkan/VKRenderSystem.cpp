@@ -21,6 +21,7 @@
 #include "Components/Rendering/MeshComponent.h"
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
+#include "Assets/TextureAsset.h"
 
 #include "Components/TransformComponent.h"
 #include "Engine/SignalSubsystem.hpp"
@@ -100,6 +101,13 @@ namespace Puffin::Rendering::VK
 			}
 
 			m_meshData.Clear();
+
+			for (auto texData : m_texData)
+			{
+				UnloadTexture(texData);
+			}
+
+			m_texData.Clear();
 
 			CleanSwapchain(m_swapchainData);
 
@@ -330,11 +338,6 @@ namespace Puffin::Rendering::VK
 
 			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &swapchainData.framebuffers[i]));
 		}
-
-		m_deletionQueue.PushFunction([=]()
-		{
-			
-		});
 	}
 
 	void VKRenderSystem::InitSyncStructures()
@@ -562,6 +565,13 @@ namespace Puffin::Rendering::VK
 			}
 
 			m_meshDrawList[mesh.meshAssetID].insert(entity->ID());
+
+			if (m_texDrawList.count(mesh.textureAssetID) == 0)
+			{
+				m_texDrawList.insert({mesh.textureAssetID, std::set<ECS::EntityID>()});
+			}
+
+			m_texDrawList[mesh.textureAssetID].insert(entity->ID());
 		}
 
 		std::vector<std::shared_ptr<ECS::Entity>> camEntities;
@@ -652,6 +662,17 @@ namespace Puffin::Rendering::VK
 				LoadMesh(fst, meshData);
 
 				m_meshData.Insert(fst, meshData);
+			}
+		}
+
+		for (const auto [fst, snd] : m_texDrawList)
+		{
+			if (!m_texData.Contains(fst))
+			{
+				TextureData texData;
+				LoadTexture(fst, texData);
+
+				m_texData.Insert(fst, texData);
 			}
 		}
 	}
@@ -839,6 +860,8 @@ namespace Puffin::Rendering::VK
 				const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
 
 				objectSSBO[i].model = BuildModelTransform(transform.position, transform.rotation, transform.scale);
+				objectSSBO[i].invModel = glm::inverse(objectSSBO[i].model);
+
 
 				i++;
 			}
@@ -920,5 +943,32 @@ namespace Puffin::Rendering::VK
 	{
 		m_allocator.destroyBuffer(meshData.vertexBuffer.buffer, meshData.vertexBuffer.allocation);
 		m_allocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
+	}
+
+	bool VKRenderSystem::LoadTexture(UUID texID, TextureData& texData)
+	{
+		const auto texAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(texID));
+
+		if (texAsset && texAsset->Load())
+		{
+			texData.assetID = texID;
+			texData.texture = Util::InitTexture(shared_from_this(), texAsset->GetPixelData(), 
+				texAsset->GetTextureWidth(), texAsset->GetTextureHeight(), 
+				texAsset->GetTexturePixelSize(), g_texFormatMap.at(texAsset->GetTextureFormat()));
+
+			texAsset->Unload();
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void VKRenderSystem::UnloadTexture(TextureData& texData) const
+	{
+		m_device.destroyImageView(texData.texture.imageView);
+		m_allocator.destroyImage(texData.texture.image, texData.texture.allocation);
 	}
 }

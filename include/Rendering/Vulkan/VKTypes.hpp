@@ -73,15 +73,26 @@ namespace Puffin::Rendering::VK
 		uint32_t numIndices;
 	};
 
+	struct TextureData
+	{
+		UUID assetID;
+
+		Texture texture;
+	};
+
+	// GPU Data Structs
+
 	struct GPUCameraData
 	{
-		glm::mat4 view;
-		glm::mat4 proj;
-		glm::mat4 viewProj;
+		alignas(16) glm::mat4 view;
+		alignas(16) glm::mat4 proj;
+		alignas(16) glm::mat4 viewProj;
 	};
 
 	struct GPUObjectData
 	{
-		glm::mat4 model;
+		alignas(16) glm::mat4 model;
+		alignas(16) glm::mat4 invModel;
+		alignas(4) int texIndex;
 	};
 }

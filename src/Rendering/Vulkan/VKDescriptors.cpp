@@ -268,7 +268,7 @@ namespace Puffin::Rendering::VK::Util
 	DescriptorBuilder& DescriptorBuilder::BindImages(uint32_t binding, uint32_t imageCount,
 		vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type, vk::ShaderStageFlags stageFlags)
 	{
-		m_bindings.emplace_back(vk::DescriptorSetLayoutBinding{ binding, type, 1, stageFlags });
+		m_bindings.emplace_back(vk::DescriptorSetLayoutBinding{ binding, type, imageCount, stageFlags });
 		m_writes.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, imageCount, type, imageInfos, nullptr });
 
 		return *this;
@@ -298,7 +298,7 @@ namespace Puffin::Rendering::VK::Util
 	DescriptorBuilder& DescriptorBuilder::UpdateImage(uint32_t binding, vk::DescriptorImageInfo* imageInfo,
 		vk::DescriptorType type)
 	{
-		
+		m_writes.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, 1, type, imageInfo, nullptr });
 
 		return *this;
 	}
@@ -306,13 +306,20 @@ namespace Puffin::Rendering::VK::Util
 	DescriptorBuilder& DescriptorBuilder::UpdateImages(uint32_t binding, uint32_t imageCount,
 		const vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type)
 	{
-		
+		m_writes.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, imageCount, type, imageInfos, nullptr });
 
 		return *this;
 	}
 
 	bool DescriptorBuilder::Update(vk::DescriptorSet& set)
 	{
-		return false;
+		for (vk::WriteDescriptorSet& w : m_writes)
+		{
+			w.dstSet = set;
+		}
+
+		m_alloc->Device().updateDescriptorSets(m_writes.size(), m_writes.data(), 0, nullptr);
+
+		return true;
 	}
 }

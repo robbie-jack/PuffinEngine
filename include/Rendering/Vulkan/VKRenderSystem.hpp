@@ -17,6 +17,7 @@
 #include "VKTypes.hpp"
 #include "VKDescriptors.hpp"
 #include "VKPipeline.hpp"
+#include "Assets/TextureAsset.h"
 #include "ECS/Entity.h"
 #include "Components/Rendering/CameraComponent.h"
 #include "Input/InputEvent.h"
@@ -64,6 +65,11 @@ namespace Puffin::Rendering::VK
 		vk::DescriptorSet instanceDescriptor;
 
 		bool swapchainNeedsUpdated = false;
+	};
+
+	const static std::unordered_map<Assets::TextureFormat, vk::Format> g_texFormatMap =
+	{
+		{ Assets::TextureFormat::RGBA8, vk::Format::eR8G8B8A8Unorm }
 	};
 
 	constexpr uint32_t G_BUFFERED_FRAMES = 2;
@@ -124,6 +130,9 @@ namespace Puffin::Rendering::VK
 		PackedVector<MeshData> m_meshData;
 		std::unordered_map<UUID, std::set<ECS::EntityID>> m_meshDrawList;
 
+		PackedVector<TextureData> m_texData;
+		std::unordered_map<UUID, std::set<ECS::EntityID>> m_texDrawList;
+
 		uint32_t m_frameNumber;
 
 		// Pipelines
@@ -182,6 +191,9 @@ namespace Puffin::Rendering::VK
 
 		bool LoadMesh(UUID meshID, MeshData& meshData);
 		void UnloadMesh(MeshData& meshData) const;
+
+		bool LoadTexture(UUID texID, TextureData& texData);
+		void UnloadTexture(TextureData& texData) const;
 
 		FrameRenderData& GetCurrentFrameData()
 		{

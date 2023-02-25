@@ -43,13 +43,21 @@ namespace Puffin::Rendering::VK::Util
 
 namespace Puffin::Rendering
 {
+	inline VK::Util::VertexLayout VertexPC32::GetLayoutVK()
+	{
+		return VK::Util::VertexLayout::Begin()
+			.BindInput(0, sizeof(VertexPC32))
+			.BindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, pos))
+			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color));
+	}
+
 	inline VK::Util::VertexLayout VertexPNC32::GetLayoutVK()
 	{
 		return VK::Util::VertexLayout::Begin()
 			.BindInput(0, sizeof(VertexPNC32))
 			.BindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, pos))
 			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, normal))
-			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, color));
+			.BindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, color));
 	}
 
 	inline VK::Util::VertexLayout VertexPNTV32::GetLayoutVK()

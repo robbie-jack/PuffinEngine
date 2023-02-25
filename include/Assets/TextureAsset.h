@@ -80,27 +80,27 @@ namespace Puffin::Assets
 			return m_pixels.data();
 		}
 
-		const uint32_t GetTextureWidth() const
+		[[nodiscard]] uint32_t GetTextureWidth() const
 		{
 			return m_texWidth;
 		}
 
-		const uint32_t GetTextureHeight() const
+		[[nodiscard]] uint32_t GetTextureHeight() const
 		{
 			return m_texHeight;
 		}
 
-		const uint32_t GetTexturePixelSize() const
+		[[nodiscard]] uint32_t GetTexturePixelSize() const
 		{
 			return g_texSizeMap.at(m_texFormat);
 		}
 
-		const TextureFormat GetTextureFormat() const
+		[[nodiscard]] TextureFormat GetTextureFormat() const
 		{
 			return m_texFormat;
 		}
 
-		const uint32_t GetTextureSize() const
+		[[nodiscard]] uint32_t GetTextureSize() const
 		{
 			return m_texWidth * m_texHeight * g_texSizeMap.at(m_texFormat);
 		}

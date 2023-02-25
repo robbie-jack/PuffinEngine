@@ -126,7 +126,7 @@ namespace Puffin::Rendering::VK::Util
 		return indexBuffer;
 	}
 
-	AllocatedImage InitImage(std::shared_ptr<VKRenderSystem> renderer, vk::ImageCreateInfo imageInfo, vk::ImageViewCreateInfo imageViewInfo)
+	AllocatedImage CreateImage(std::shared_ptr<VKRenderSystem> renderer, vk::ImageCreateInfo imageInfo, vk::ImageViewCreateInfo imageViewInfo)
 	{
 		AllocatedImage allocImage;
 		allocImage.format = imageInfo.format;
@@ -153,6 +153,71 @@ namespace Puffin::Rendering::VK::Util
 
 		vk::ImageViewCreateInfo imageViewInfo({}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange);
 
-		return InitImage(renderer, imageInfo, imageViewInfo);
+		return CreateImage(renderer, imageInfo, imageViewInfo);
+	}
+
+	AllocatedImage InitTexture(std::shared_ptr<VKRenderSystem> renderer, const void* pixelData, uint32_t width, uint32_t height, uint32_t pixelSize, vk::Format format)
+	{
+		const vk::DeviceSize imageSize = width * height * pixelSize;
+
+		// Allocate staging buffer on CPU for holding texture data to upload
+		const AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), imageSize, 
+			vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAutoPreferHost, 
+			vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+
+		// Copy texture data to buffer
+		void* data;
+		VK_CHECK(renderer->GetAllocator().mapMemory(stagingBuffer.allocation, &data));
+		memcpy(data, pixelData, imageSize);
+		renderer->GetAllocator().unmapMemory(stagingBuffer.allocation);
+
+		// Allocate and create texture in GPU memory
+		const vk::Extent3D imageExtent = { width, height, 1 };
+
+		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, imageExtent,
+			1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eLinear,
+			{ vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst } };
+
+		const vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+
+		const vk::ImageViewCreateInfo imageViewInfo = { {}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange };
+
+		const AllocatedImage texture = CreateImage(renderer, imageInfo, imageViewInfo);
+
+		// Fill command for copying pixels to texture and transitioning image layout
+		ImmediateSubmit(renderer, [=](vk::CommandBuffer cmd)
+		{
+			// Barrier image into transfer-receive layout
+			const vk::ImageSubresourceRange range = { vk::ImageAspectFlagBits::eColor,
+				0, 1, 0, 1 };
+
+			const vk::ImageMemoryBarrier imageBarrierToTransfer = { {}, vk::AccessFlagBits::eTransferWrite,
+				vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,
+				0, 0, texture.image, range };
+
+			cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {},
+				0, nullptr, 0, nullptr, 1, & imageBarrierToTransfer);
+
+			// Copy buffer into image
+			const vk::BufferImageCopy copyRegion = { 0, 0, 0,
+				{ vk::ImageAspectFlagBits::eColor, 0, 0, 1 }, {}, imageExtent };
+
+			cmd.copyBufferToImage(stagingBuffer.buffer, texture.image, vk::ImageLayout::eTransferDstOptimal, 1, &copyRegion);
+
+			// Barrier image into shader readable layout
+			vk::ImageMemoryBarrier imageBarrierToReadable = imageBarrierToTransfer;
+			imageBarrierToReadable.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+			imageBarrierToReadable.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+			imageBarrierToReadable.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+			imageBarrierToReadable.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+			cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {},
+				0, nullptr, 0, nullptr, 1, & imageBarrierToReadable);
+		});
+
+		// Cleanup Staging Buffer Immediately, It is no longer needed
+		renderer->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+
+		return texture;
 	}
 }

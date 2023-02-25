@@ -20,7 +20,9 @@ namespace Puffin::Rendering::VK::Util
 
 	AllocatedBuffer InitIndexBuffer(std::shared_ptr<VKRenderSystem> renderer, const void* indexData, const size_t numIndices, const size_t indexSize);
 
-	AllocatedImage InitImage(std::shared_ptr<VKRenderSystem> renderer, vk::ImageCreateInfo imageInfo, vk::ImageViewCreateInfo imageViewInfo);
+	AllocatedImage CreateImage(std::shared_ptr<VKRenderSystem> renderer, vk::ImageCreateInfo imageInfo, vk::ImageViewCreateInfo imageViewInfo);
 
 	AllocatedImage InitDepthImage(std::shared_ptr<VKRenderSystem> renderer, vk::Extent3D extent, vk::Format format);
+
+	AllocatedImage InitTexture(std::shared_ptr<VKRenderSystem> renderer, const void* pixelData, uint32_t width, uint32_t height, uint32_t pixelSize, vk::Format format);
 }
