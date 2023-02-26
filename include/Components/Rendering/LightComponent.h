@@ -40,7 +40,7 @@ namespace Puffin
 
 			float ambientIntensity = .1f; // Intensity multiplier applied to ambient/indirect color
 			float specularIntensity = .5f; // Intensity multiplier applied to specular highlights
-			int specularExponent = 16; // Exponent Specular value is raised to
+			int specularExponent = 32; // Exponent specular value is raised to
 
 			float constantAttenuation = 1.f;
 			float linearAttenuation = .09f;

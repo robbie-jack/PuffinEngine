@@ -58,6 +58,8 @@ namespace Puffin::Rendering::VK
 
 		AllocatedBuffer cameraBuffer;
 		AllocatedBuffer objectBuffer;
+		AllocatedBuffer lightBuffer;
+		AllocatedBuffer lightStaticBuffer;
 		
 		// Material Data (Set for each unique material i.e textures)
 		vk::DescriptorSet materialDescriptor;
@@ -74,6 +76,7 @@ namespace Puffin::Rendering::VK
 	constexpr uint32_t G_BUFFERED_FRAMES = 2;
 
 	constexpr uint32_t G_MAX_OBJECTS = 10000;
+	constexpr uint32_t G_MAX_LIGHTS = 8;
 
 	// Vulkan Rendering System
 	class VKRenderSystem : public ECS::System, public std::enable_shared_from_this<VKRenderSystem>

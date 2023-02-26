@@ -61,7 +61,6 @@ function(build_shader_commands shader_dir)
 
 endfunction(build_shader_commands)
 
-build_shader_commands("triangle")
 build_shader_commands("forward_shading")
 
 add_custom_target(

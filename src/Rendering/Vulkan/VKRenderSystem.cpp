@@ -24,6 +24,7 @@
 #include "Assets/TextureAsset.h"
 
 #include "Components/TransformComponent.h"
+#include "Components/Rendering/LightComponent.h"
 #include "Engine/SignalSubsystem.hpp"
 #include "Input/InputSubsystem.h"
 
@@ -396,12 +397,20 @@ namespace Puffin::Rendering::VK
 			m_frameRenderData[i].objectBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUObjectData) * G_MAX_OBJECTS,
 				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
+			m_frameRenderData[i].lightBuffer = Util::CreateBuffer(m_allocator, sizeof(GPULightData) * G_MAX_LIGHTS,
+				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+
+			m_frameRenderData[i].lightStaticBuffer = Util::CreateBuffer(m_allocator, sizeof(GPULightStaticData),
+				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+
 			// Material Buffers
 
 			// Object Buffers
 
 			m_deletionQueue.PushFunction([=]()
 			{
+				m_allocator.destroyBuffer(m_frameRenderData[i].lightStaticBuffer.buffer, m_frameRenderData[i].lightStaticBuffer.allocation);
+				m_allocator.destroyBuffer(m_frameRenderData[i].lightBuffer.buffer, m_frameRenderData[i].lightBuffer.allocation);
 				m_allocator.destroyBuffer(m_frameRenderData[i].objectBuffer.buffer, m_frameRenderData[i].objectBuffer.allocation);
 				m_allocator.destroyBuffer(m_frameRenderData[i].cameraBuffer.buffer, m_frameRenderData[i].cameraBuffer.allocation);
 			});
@@ -433,6 +442,8 @@ namespace Puffin::Rendering::VK
 
 			vk::DescriptorBufferInfo cameraBufferInfo = { m_frameRenderData[i].cameraBuffer.buffer, 0, sizeof(GPUCameraData) };
 			vk::DescriptorBufferInfo objectBufferInfo = { m_frameRenderData[i].objectBuffer.buffer, 0, sizeof(GPUObjectData) * G_MAX_OBJECTS };
+			vk::DescriptorBufferInfo lightBufferInfo = { m_frameRenderData[i].lightBuffer.buffer, 0, sizeof(GPULightData) * G_MAX_LIGHTS };
+			vk::DescriptorBufferInfo lightStaticBufferInfo = { m_frameRenderData[i].lightStaticBuffer.buffer, 0, sizeof(GPULightStaticData) };
 
 			std::vector<vk::DescriptorImageInfo> textureImageInfos;
 			BuildTextureDescriptorInfo(m_texData, textureImageInfos);
@@ -440,7 +451,9 @@ namespace Puffin::Rendering::VK
 			Util::DescriptorBuilder::Begin(m_staticRenderData.descriptorLayoutCache, m_staticRenderData.descriptorAllocator)
 				.BindBuffer(0, &cameraBufferInfo, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
 				.BindBuffer(1, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
-				.BindImages(2, textureImageInfos.size(), textureImageInfos.data(), 
+				.BindBuffer(2, &lightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindBuffer(3, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindImages(4, textureImageInfos.size(), textureImageInfos.data(), 
 					vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
 				.Build(m_frameRenderData[i].globalDescriptor, m_staticRenderData.globalSetLayout);
 
@@ -604,6 +617,13 @@ namespace Puffin::Rendering::VK
 		for (const auto& entity : camEntities)
 		{
 			UpdateCameraComponent(entity);
+		}
+
+		std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
+		ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
+		for (const auto& entity : lightEntities)
+		{
+			
 		}
 	}
 
@@ -873,7 +893,7 @@ namespace Puffin::Rendering::VK
 			BuildTextureDescriptorInfo(m_texData, textureImageInfos);
 
 			Util::DescriptorBuilder::Begin(m_staticRenderData.descriptorLayoutCache, m_staticRenderData.descriptorAllocator)
-				.UpdateImages(2, textureImageInfos.size(), textureImageInfos.data(),
+				.UpdateImages(4, textureImageInfos.size(), textureImageInfos.data(),
 					vk::DescriptorType::eCombinedImageSampler)
 				.Update(GetCurrentFrameData().globalDescriptor);
 
@@ -883,26 +903,26 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::PrepareSceneData()
 	{
-		// Prepare Camera Data
+		// Prepare camera data
 
-		GPUCameraData camData;
-		camData.proj = m_editorCamMats.proj;
-		camData.view = m_editorCamMats.view;
-		camData.viewProj = m_editorCamMats.viewProj;
+		GPUCameraData camUBO = {};
+		camUBO.proj = m_editorCamMats.proj;
+		camUBO.view = m_editorCamMats.view;
+		camUBO.viewProj = m_editorCamMats.viewProj;
 
-		void* data;
-		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().cameraBuffer.allocation, &data));
+		void* camData;
+		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().cameraBuffer.allocation, &camData));
 
-		memcpy(data, &camData, sizeof(GPUCameraData));
+		memcpy(camData, &camUBO, sizeof(GPUCameraData));
 
 		m_allocator.unmapMemory(GetCurrentFrameData().cameraBuffer.allocation);
 
-		// Prepare Object Data
+		// Prepare object data
 
 		void* objectData;
 		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().objectBuffer.allocation, &objectData));
 
-		GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+		auto* objectSSBO = static_cast<GPUObjectData*>(objectData);
 
 		int i = 0;
 
@@ -922,6 +942,54 @@ namespace Puffin::Rendering::VK
 		}
 
 		m_allocator.unmapMemory(GetCurrentFrameData().objectBuffer.allocation);
+
+		// Prepare light data
+
+		void* lightData;
+		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().lightBuffer.allocation, &lightData));
+
+		auto* lightSSBO = static_cast<GPULightData*>(lightData);
+
+		i = 0;
+
+		std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
+		ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
+		for (const auto& entity : lightEntities)
+		{
+			// Break out of loop of maximum number of lights has been reached
+			if (i >= G_MAX_LIGHTS)
+			{
+				break;
+			}
+
+			const auto& transform = entity->GetComponent<TransformComponent>();
+			const auto& light = entity->GetComponent<LightComponent>();
+
+			lightSSBO[i].position = static_cast<glm::vec3>(transform.position);
+			lightSSBO[i].direction = static_cast<glm::vec3>(light.direction);
+			lightSSBO[i].color = static_cast<glm::vec3>(light.color);
+			lightSSBO[i].ambientSpecular = glm::vec3(light.ambientIntensity, light.specularIntensity, light.specularExponent);
+			lightSSBO[i].attenuation = glm::vec3(light.constantAttenuation, light.linearAttenuation, light.quadraticAttenuation);
+			lightSSBO[i].cutoffAngle = glm::vec3(light.innerCutoffAngle, light.outerCutoffAngle, 0.0f);
+			lightSSBO[i].type = static_cast<int>(light.type);
+
+			i++;
+		}
+
+		m_allocator.unmapMemory(GetCurrentFrameData().lightBuffer.allocation);
+
+		// Prepare light static data
+
+		GPULightStaticData lightStaticUBO = {};
+		lightStaticUBO.numLights = i;
+		lightStaticUBO.viewPos = static_cast<glm::vec3>(m_editorCam.position);
+
+		void* lightStaticData;
+		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().lightStaticBuffer.allocation, &lightStaticData));
+
+		memcpy(lightStaticData, &lightStaticUBO, sizeof(GPULightStaticData));
+
+		m_allocator.unmapMemory(GetCurrentFrameData().lightStaticBuffer.allocation);
 	}
 
 	void VKRenderSystem::DrawObjects(vk::CommandBuffer cmd)

@@ -97,4 +97,27 @@ namespace Puffin::Rendering::VK
 		alignas(16) glm::mat4 invModel;
 		alignas(4) int texIndex;
 	};
+
+	struct GPULightData
+	{
+		alignas(4) glm::vec3 position;
+		alignas(4) int pad1;
+		alignas(4) glm::vec3 direction;
+		alignas(4) int pad2;
+		alignas(4) glm::vec3 color;
+		alignas(4) int pad3;
+		alignas(4) glm::vec3 ambientSpecular;
+		alignas(4) int pad4;
+		alignas(4) glm::vec3 attenuation;
+		alignas(4) int pad5;
+		alignas(4) glm::vec3 cutoffAngle;
+		alignas(4) int type; // Stores type of light
+	};
+
+	struct GPULightStaticData
+	{
+		alignas(4) glm::vec3 viewPos;
+		alignas(4) int numLights;
+	};
+
 }
