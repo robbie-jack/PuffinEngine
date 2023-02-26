@@ -970,7 +970,9 @@ namespace Puffin::Rendering::VK
 			lightSSBO[i].color = static_cast<glm::vec3>(light.color);
 			lightSSBO[i].ambientSpecular = glm::vec3(light.ambientIntensity, light.specularIntensity, light.specularExponent);
 			lightSSBO[i].attenuation = glm::vec3(light.constantAttenuation, light.linearAttenuation, light.quadraticAttenuation);
-			lightSSBO[i].cutoffAngle = glm::vec3(light.innerCutoffAngle, light.outerCutoffAngle, 0.0f);
+			lightSSBO[i].cutoffAngle = glm::vec3(
+				glm::cos(glm::radians(light.innerCutoffAngle)), 
+				glm::cos(glm::radians(light.outerCutoffAngle)), 0.0f);
 			lightSSBO[i].type = static_cast<int>(light.type);
 
 			i++;

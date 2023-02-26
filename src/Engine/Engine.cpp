@@ -529,7 +529,7 @@ namespace Puffin::Core
 		std::vector<std::shared_ptr<ECS::Entity>> entities;
 		entities.reserve(numEntities);
 
-		std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Point Light" };
+		std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Spot Light" };
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)
@@ -575,9 +575,9 @@ namespace Puffin::Core
 		//entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
 		entities[6]->AddComponent<Rendering::LightComponent>();
-		//entities[6]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
+		entities[6]->GetComponent<Rendering::LightComponent>().direction = Vector3f(-.5f, -.5f, 0.0f);
 		entities[6]->GetComponent<Rendering::LightComponent>().color = Vector3f(0.f, 0.f, 1.f);
-		entities[6]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::POINT;
+		entities[6]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::SPOT;
 
 		auto& script = entities[0]->AddAndGetComponent<Scripting::AngelScriptComponent>();
 		script.name = "ExampleScript";
