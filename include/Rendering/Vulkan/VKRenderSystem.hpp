@@ -184,6 +184,8 @@ namespace Puffin::Rendering::VK
 		void RecreateSwapchain();
 		void CleanSwapchain(SwapchainData& swapchainData);
 
+		void UpdateTextureDescriptors();
+
 		void PrepareSceneData();
 		void DrawObjects(vk::CommandBuffer cmd);
 

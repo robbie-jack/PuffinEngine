@@ -711,19 +711,6 @@ namespace Puffin::Rendering::VK
 				m_frameRenderData[i].textureDescriptorNeedsupdated = true;
 			}
 		}
-
-		if (m_isInitialized && GetCurrentFrameData().textureDescriptorNeedsupdated)
-		{
-			std::vector<vk::DescriptorImageInfo> textureImageInfos;
-			BuildTextureDescriptorInfo(m_texData, textureImageInfos);
-
-			Util::DescriptorBuilder::Begin(m_staticRenderData.descriptorLayoutCache, m_staticRenderData.descriptorAllocator)
-				.UpdateImages(2, textureImageInfos.size(), textureImageInfos.data(),
-					vk::DescriptorType::eCombinedImageSampler)
-				.Update(GetCurrentFrameData().globalDescriptor);
-
-			GetCurrentFrameData().textureDescriptorNeedsupdated = false;
-		}
 	}
 
 	void VKRenderSystem::Draw()
@@ -742,6 +729,7 @@ namespace Puffin::Rendering::VK
 		// Reset command buffer for recording new commands
 		cmd.reset();
 
+		UpdateTextureDescriptors();
 		PrepareSceneData();
 
 		// Begin command buffer execution
@@ -875,6 +863,22 @@ namespace Puffin::Rendering::VK
 		}
 
 		m_device.destroySwapchainKHR(swapchainData.swapchain);
+	}
+
+	void VKRenderSystem::UpdateTextureDescriptors()
+	{
+		if (m_isInitialized && GetCurrentFrameData().textureDescriptorNeedsupdated)
+		{
+			std::vector<vk::DescriptorImageInfo> textureImageInfos;
+			BuildTextureDescriptorInfo(m_texData, textureImageInfos);
+
+			Util::DescriptorBuilder::Begin(m_staticRenderData.descriptorLayoutCache, m_staticRenderData.descriptorAllocator)
+				.UpdateImages(2, textureImageInfos.size(), textureImageInfos.data(),
+					vk::DescriptorType::eCombinedImageSampler)
+				.Update(GetCurrentFrameData().globalDescriptor);
+
+			GetCurrentFrameData().textureDescriptorNeedsupdated = false;
+		}
 	}
 
 	void VKRenderSystem::PrepareSceneData()
