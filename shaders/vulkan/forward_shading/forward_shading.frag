@@ -89,7 +89,26 @@ vec3 CalcDirLight(LightData lightData, vec3 normal, vec3 viewDir)
 
 vec3 CalcPointLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
 {
-	return vec3(0.0);
+	vec3 lightDir = normalize(lightData.position - fragWorldPos);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+
+	// Diffuse Shading
+	float diff = clamp(dot(normal, lightDir), 0.0, 1.0);
+
+	// Specular Shading
+	vec3 reflectDir = reflect(-lightDir, normal);
+	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambientSpecular.z));
+
+	// Attenuation
+	float distance = length(lightData.position - fragWorldPos);
+	float attenuation = 1.0 / (lightData.attenuation.x + lightData.attenuation.y * distance + 
+		lightData.attenuation.z * (distance * distance));
+
+	vec3 diffuse = lightData.color * diff * attenuation;
+	vec3 ambient = lightData.color * lightData.ambientSpecular.x * attenuation;
+	vec3 specular = lightData.color * lightData.ambientSpecular.y * spec * attenuation;
+
+	return diffuse + ambient + specular;
 }
 
 vec3 CalcSpotLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)

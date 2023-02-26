@@ -525,11 +525,11 @@ namespace Puffin::Core
 
 		UUID soundId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath1)->ID();
 
-		const int numEntities = 6;
+		const int numEntities = 7;
 		std::vector<std::shared_ptr<ECS::Entity>> entities;
 		entities.reserve(numEntities);
 
-		std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Light", "Static Cube", "Plane"/*, "Light 2"*/ };
+		std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Point Light" };
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)
@@ -548,7 +548,7 @@ namespace Puffin::Core
 		entities[3]->GetComponent<TransformComponent>() = { Vector3f(-5.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
 		entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
 		entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(10.0f, 1.0f, 10.0f) };
-		//entities[6]->GetComponent<TransformComponent>() = { Vector3f(5.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
+		entities[6]->GetComponent<TransformComponent>() = { Vector3f(5.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
 
 		entities[0]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId1;
 		entities[0]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId1;
@@ -564,19 +564,20 @@ namespace Puffin::Core
 		entities[4]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 		entities[5]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		entities[5]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-		//entities[6]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
-		//entities[6]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
+		entities[6]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
+		entities[6]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 
 		// Setup Light Component
 		entities[3]->AddComponent<Rendering::LightComponent>();
 		entities[3]->GetComponent<Rendering::LightComponent>().direction = Vector3f(.5f, -0.5f, 0.0f);
-		entities[3]->GetComponent<Rendering::LightComponent>().color = Vector3f(1.f, 1.f, 1.f);
+		entities[3]->GetComponent<Rendering::LightComponent>().color = Vector3f(1.f, 0.f, 0.f);
 		entities[3]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::DIRECTIONAL;
 		//entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
-		//entities[6]->AddComponent<Rendering::LightComponent>();
+		entities[6]->AddComponent<Rendering::LightComponent>();
 		//entities[6]->GetComponent<Rendering::LightComponent>().direction = glm::vec3(-1.0f, -1.0f, 0.0f);
-		//entities[6]->GetComponent<Rendering::LightComponent>().color = glm::vec3(0.25f, 0.25f, 1.0f);
+		entities[6]->GetComponent<Rendering::LightComponent>().color = Vector3f(0.f, 0.f, 1.f);
+		entities[6]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::POINT;
 
 		auto& script = entities[0]->AddAndGetComponent<Scripting::AngelScriptComponent>();
 		script.name = "ExampleScript";
