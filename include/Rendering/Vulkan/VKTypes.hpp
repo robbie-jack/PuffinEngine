@@ -76,7 +76,9 @@ namespace Puffin::Rendering::VK
 	struct TextureData
 	{
 		UUID assetID;
+		int idx = 0;
 
+		vk::Sampler sampler;
 		Texture texture;
 	};
 

@@ -38,9 +38,8 @@ namespace Puffin::Rendering::VK
 
 		vk::DescriptorSetLayout globalSetLayout;
 		vk::DescriptorSetLayout materialSetLayout;
-		vk::DescriptorSetLayout instanceSetLayout;
 
-		vk::UniqueSampler textureSampler;
+		vk::Sampler textureSampler;
 	};
 
 	// Struct containing data that changes each frame
@@ -62,9 +61,6 @@ namespace Puffin::Rendering::VK
 		
 		// Material Data (Set for each unique material i.e textures)
 		vk::DescriptorSet materialDescriptor;
-
-		// Instance Data (Set for each instance)
-		vk::DescriptorSet instanceDescriptor;
 
 		bool swapchainNeedsUpdated = false;
 		bool textureDescriptorNeedsupdated = false;
@@ -198,6 +194,8 @@ namespace Puffin::Rendering::VK
 
 		bool LoadTexture(UUID texID, TextureData& texData);
 		void UnloadTexture(TextureData& texData) const;
+
+		void BuildTextureDescriptorInfo(PackedVector<TextureData>& texData, std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 
 		FrameRenderData& GetCurrentFrameData()
 		{

@@ -53,11 +53,11 @@ namespace Puffin::Rendering::VK
 		InitSwapchainFramebuffers(m_swapchainData);
 		InitSyncStructures();
 		InitBuffers();
+		InitSamplers();
 
 		ProcessComponents();
 		UpdateRenderData();
 
-		InitSamplers();
 		InitDescriptors();
 		InitPipelines();
 
@@ -164,12 +164,17 @@ namespace Puffin::Rendering::VK
 		vk::PhysicalDeviceFeatures physicalDeviceFeatures = {};
 		physicalDeviceFeatures.shaderSampledImageArrayDynamicIndexing = true;
 
+		vk::PhysicalDeviceVulkan12Features physicalDevice12Features = {};
+		physicalDevice12Features.descriptorIndexing = true;
+		physicalDevice12Features.runtimeDescriptorArray = true;
+
 		// Select GPU
 		vkb::PhysicalDeviceSelector selector { vkbInst };
 		vkb::PhysicalDevice physDevice = selector
 			.set_minimum_version(1, 3)
 			.set_surface(m_surface)
 			.set_required_features(physicalDeviceFeatures)
+			.set_required_features_12(physicalDevice12Features)
 			.select()
 			.value();
 
@@ -407,7 +412,12 @@ namespace Puffin::Rendering::VK
 	{
 		const vk::SamplerCreateInfo samplerInfo = {};
 
-		m_staticRenderData.textureSampler = m_device.createSamplerUnique(samplerInfo);
+		m_staticRenderData.textureSampler = m_device.createSampler(samplerInfo);
+
+		m_deletionQueue.PushFunction([=]()
+		{
+			m_device.destroySampler(m_staticRenderData.textureSampler, nullptr);
+		});
 	}
 
 	void VKRenderSystem::InitDescriptors()
@@ -424,32 +434,17 @@ namespace Puffin::Rendering::VK
 			vk::DescriptorBufferInfo cameraBufferInfo = { m_frameRenderData[i].cameraBuffer.buffer, 0, sizeof(GPUCameraData) };
 			vk::DescriptorBufferInfo objectBufferInfo = { m_frameRenderData[i].objectBuffer.buffer, 0, sizeof(GPUObjectData) * G_MAX_OBJECTS };
 
-			vk::DescriptorImageInfo samplerImageInfo = { m_staticRenderData.textureSampler.get(), {}, vk::ImageLayout::eShaderReadOnlyOptimal };
-
 			std::vector<vk::DescriptorImageInfo> textureImageInfos;
-			textureImageInfos.reserve(m_texData.Size());
-
-			for (auto texData : m_texData)
-			{
-				vk::DescriptorImageInfo textureImageInfo = { {}, texData.texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal };
-				textureImageInfos.push_back(textureImageInfo);
-			}
+			BuildTextureDescriptorInfo(m_texData, textureImageInfos);
 
 			Util::DescriptorBuilder::Begin(m_staticRenderData.descriptorLayoutCache, m_staticRenderData.descriptorAllocator)
 				.BindBuffer(0, &cameraBufferInfo, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
 				.BindBuffer(1, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
-				.BindImage(2, &samplerImageInfo, vk::DescriptorType::eSampler, vk::ShaderStageFlagBits::eFragment)
-				.BindImages(3, textureImageInfos.size(), textureImageInfos.data(), 
-					vk::DescriptorType::eSampledImage, vk::ShaderStageFlagBits::eFragment)
+				.BindImages(2, textureImageInfos.size(), textureImageInfos.data(), 
+					vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
 				.Build(m_frameRenderData[i].globalDescriptor, m_staticRenderData.globalSetLayout);
 
 			// Material Descriptors
-
-
-
-			// Instance Descriptors
-
-
 
 		}
 
@@ -720,17 +715,11 @@ namespace Puffin::Rendering::VK
 		if (m_isInitialized && GetCurrentFrameData().textureDescriptorNeedsupdated)
 		{
 			std::vector<vk::DescriptorImageInfo> textureImageInfos;
-			textureImageInfos.reserve(m_texData.Size());
-
-			for (auto texData : m_texData)
-			{
-				vk::DescriptorImageInfo textureImageInfo = { {}, texData.texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal };
-				textureImageInfos.push_back(textureImageInfo);
-			}
+			BuildTextureDescriptorInfo(m_texData, textureImageInfos);
 
 			Util::DescriptorBuilder::Begin(m_staticRenderData.descriptorLayoutCache, m_staticRenderData.descriptorAllocator)
-				.UpdateImages(3, textureImageInfos.size(), textureImageInfos.data(),
-					vk::DescriptorType::eSampledImage)
+				.UpdateImages(2, textureImageInfos.size(), textureImageInfos.data(),
+					vk::DescriptorType::eCombinedImageSampler)
 				.Update(GetCurrentFrameData().globalDescriptor);
 
 			GetCurrentFrameData().textureDescriptorNeedsupdated = false;
@@ -918,10 +907,11 @@ namespace Puffin::Rendering::VK
 			for (const auto entityID : snd)
 			{
 				const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
+				const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
 
 				objectSSBO[i].model = BuildModelTransform(transform.position, transform.rotation, transform.scale);
 				objectSSBO[i].invModel = glm::inverse(objectSSBO[i].model);
-
+				objectSSBO[i].texIndex = m_texData[mesh.textureAssetID].idx;
 
 				i++;
 			}
@@ -980,6 +970,7 @@ namespace Puffin::Rendering::VK
 		if (meshAsset && meshAsset->Load())
 		{
 			meshData.assetID = meshID;
+
 			meshData.numVertices = meshAsset->GetNumVertices();
 			meshData.numIndices = meshAsset->GetNumIndices();
 
@@ -1012,6 +1003,9 @@ namespace Puffin::Rendering::VK
 		if (texAsset && texAsset->Load())
 		{
 			texData.assetID = texID;
+
+			texData.sampler = m_staticRenderData.textureSampler;
+
 			texData.texture = Util::InitTexture(shared_from_this(), texAsset->GetPixelData(), 
 				texAsset->GetTextureWidth(), texAsset->GetTextureHeight(), 
 				texAsset->GetTexturePixelSize(), g_texFormatMap.at(texAsset->GetTextureFormat()));
@@ -1030,5 +1024,21 @@ namespace Puffin::Rendering::VK
 	{
 		m_device.destroyImageView(texData.texture.imageView);
 		m_allocator.destroyImage(texData.texture.image, texData.texture.allocation);
+	}
+
+	void VKRenderSystem::BuildTextureDescriptorInfo(PackedVector<TextureData>& texData, std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
+	{
+		textureImageInfos.clear();
+		textureImageInfos.reserve(m_texData.Size());
+
+		int idx = 0;
+		for (auto& texData : texData)
+		{
+			vk::DescriptorImageInfo textureImageInfo = { texData.sampler, texData.texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal };
+			textureImageInfos.push_back(textureImageInfo);
+
+			texData.idx = idx;
+			idx++;
+		}
 	}
 }

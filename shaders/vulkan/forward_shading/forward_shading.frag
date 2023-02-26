@@ -10,11 +10,10 @@ layout (location = 4) flat in int texIndex;
 
 layout (location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 3) uniform sampler samp;
-layout(set = 0, binding = 4) uniform texture2D textures[];
+layout(set = 0, binding = 2) uniform sampler2D textures[];
 
 void main()
 {
 	//outColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	outColor = texture(sampler2D(textures[texIndex], samp), fUV);
+	outColor = texture(textures[texIndex], fUV);
 }
