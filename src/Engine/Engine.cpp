@@ -570,7 +570,7 @@ namespace Puffin::Core
 		// Setup Light Component
 		entities[3]->AddComponent<Rendering::LightComponent>();
 		entities[3]->GetComponent<Rendering::LightComponent>().direction = Vector3f(.5f, -0.5f, 0.0f);
-		entities[3]->GetComponent<Rendering::LightComponent>().color = Vector3f(1.f, 0.f, 0.f);
+		entities[3]->GetComponent<Rendering::LightComponent>().color = Vector3f(1.f, 1.f, 1.f);
 		entities[3]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::DIRECTIONAL;
 		//entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 

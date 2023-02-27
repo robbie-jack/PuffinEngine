@@ -744,59 +744,17 @@ namespace Puffin::Rendering::VK
 		uint32_t swapchainImageIdx;
 		VK_CHECK(m_device.acquireNextImageKHR(m_swapchainData.swapchain, 1000000000, GetCurrentFrameData().presentSemaphore, nullptr, &swapchainImageIdx));
 
-		vk::CommandBuffer cmd = GetCurrentFrameData().mainCommandBuffer;
-
-		// Reset command buffer for recording new commands
-		cmd.reset();
-
+		// Prepare scene for rendering
 		UpdateTextureDescriptors();
 		PrepareSceneData();
 
-		// Begin command buffer execution
-		vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
-			nullptr, nullptr };
+		// Record command buffers
+		vk::CommandBuffer mainCmd = RecordMainCommandBuffer(swapchainImageIdx);
 
-		VK_CHECK(cmd.begin(&cmdBeginInfo));
+		// Submit all commands
+		std::vector<vk::CommandBuffer> commands = { mainCmd };
 
-		vk::ClearValue clearValue;
-		clearValue.color = { 0.0f, 0.7f, 0.9f, 1.0f };
-
-		vk::ClearValue depthClear;
-		depthClear.depthStencil.depth = 1.f;
-
-		std::array<vk::ClearValue, 2> clearValues = { clearValue, depthClear };
-
-		// Begin main renderpass
-		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_swapchainData.framebuffers[swapchainImageIdx],
-			vk::Rect2D{ {0, 0}, m_windowSize }, clearValues.size(), clearValues.data(), nullptr };
-
-		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
-
-		DrawObjects(cmd);
-
-		// End main renderpass
-		cmd.endRenderPass();
-
-		// Finish command buffer recording
-		cmd.end();
-
-		// Prepare submission to queue
-		vk::PipelineStageFlags waitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-		vk::SubmitInfo submit = 
-		{
-			1, & GetCurrentFrameData().presentSemaphore,
-			&waitStage, 1, &cmd,
-			1, & GetCurrentFrameData().renderSemaphore, nullptr
-		};
-
-		VK_CHECK(m_graphicsQueue.submit(1, &submit, GetCurrentFrameData().renderFence));
-
-		vk::PresentInfoKHR presentInfo =
-		{
-			1, &GetCurrentFrameData().renderSemaphore, 1, &m_swapchainData.swapchain, &swapchainImageIdx
-		};
-
-		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
+		SubmitCommands(swapchainImageIdx, commands);
 
 		m_frameNumber++;
 	}
@@ -994,6 +952,44 @@ namespace Puffin::Rendering::VK
 		m_allocator.unmapMemory(GetCurrentFrameData().lightStaticBuffer.allocation);
 	}
 
+	vk::CommandBuffer VKRenderSystem::RecordMainCommandBuffer(uint32_t swapchainIdx)
+	{
+		vk::CommandBuffer cmd = GetCurrentFrameData().mainCommandBuffer;
+
+		// Reset command buffer for recording new commands
+		cmd.reset();
+
+		// Begin command buffer execution
+		vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+			nullptr, nullptr };
+
+		VK_CHECK(cmd.begin(&cmdBeginInfo));
+
+		vk::ClearValue clearValue;
+		clearValue.color = { 0.0f, 0.7f, 0.9f, 1.0f };
+
+		vk::ClearValue depthClear;
+		depthClear.depthStencil.depth = 1.f;
+
+		std::array<vk::ClearValue, 2> clearValues = { clearValue, depthClear };
+
+		// Begin main renderpass
+		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_swapchainData.framebuffers[swapchainIdx],
+			vk::Rect2D{ {0, 0}, m_windowSize }, clearValues.size(), clearValues.data(), nullptr };
+
+		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
+
+		DrawObjects(cmd);
+
+		// End main renderpass
+		cmd.endRenderPass();
+
+		// Finish command buffer recording
+		cmd.end();
+
+		return cmd;
+	}
+
 	void VKRenderSystem::DrawObjects(vk::CommandBuffer cmd)
 	{
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_forwardPipeline.get());
@@ -1019,6 +1015,27 @@ namespace Puffin::Rendering::VK
 				i++;
 			}
 		}
+	}
+
+	void VKRenderSystem::SubmitCommands(uint32_t swapchainIdx, std::vector<vk::CommandBuffer>& commands)
+	{
+		// Prepare submission to queue
+		vk::PipelineStageFlags waitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+		vk::SubmitInfo submit =
+		{
+			1, &GetCurrentFrameData().presentSemaphore,
+			&waitStage, static_cast<uint32_t>(commands.size()), commands.data(),
+			1, &GetCurrentFrameData().renderSemaphore, nullptr
+		};
+
+		VK_CHECK(m_graphicsQueue.submit(1, &submit, GetCurrentFrameData().renderFence));
+
+		vk::PresentInfoKHR presentInfo =
+		{
+			1, &GetCurrentFrameData().renderSemaphore, 1, &m_swapchainData.swapchain, & swapchainIdx
+		};
+
+		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
 	}
 
 	glm::mat4 VKRenderSystem::BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)

@@ -190,7 +190,12 @@ namespace Puffin::Rendering::VK
 		void UpdateTextureDescriptors();
 
 		void PrepareSceneData();
+
+		vk::CommandBuffer RecordMainCommandBuffer(uint32_t swapchainIdx);
+
 		void DrawObjects(vk::CommandBuffer cmd);
+
+		void SubmitCommands(uint32_t swapchainIdx, std::vector<vk::CommandBuffer>& commands);
 
 		glm::mat4 BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale);
 
