@@ -53,6 +53,8 @@ namespace Puffin::Rendering::VK
 		vk::CommandPool commandPool;
 		vk::CommandBuffer mainCommandBuffer;
 
+		AllocatedBuffer indirectBuffer; // Buffer of indirect draw commands
+
 		// Global Data (Set for entire frame)
 		vk::DescriptorSet globalDescriptor;
 
@@ -177,22 +179,24 @@ namespace Puffin::Rendering::VK
 		void BuildForwardRendererPipeline();
 
 		void ProcessEvents();
-		void ProcessComponents();
-		void UpdateEditorCamera();
-		void UpdateRenderData();
-		void Draw();
 
+		void ProcessComponents();
 		void UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity);
+
+		void UpdateEditorCamera();
+
+		void UpdateRenderData();
+
+		void Draw();
 
 		void RecreateSwapchain();
 		void CleanSwapchain(SwapchainData& swapchainData);
-
 		void UpdateTextureDescriptors();
-
 		void PrepareSceneData();
 
-		vk::CommandBuffer RecordMainCommandBuffer(uint32_t swapchainIdx);
+		void BuildIndirectCommands();
 
+		vk::CommandBuffer RecordMainCommandBuffer(uint32_t swapchainIdx);
 		void DrawObjects(vk::CommandBuffer cmd);
 
 		void SubmitCommands(uint32_t swapchainIdx, std::vector<vk::CommandBuffer>& commands);

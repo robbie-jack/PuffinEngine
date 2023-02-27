@@ -38,6 +38,18 @@ namespace Puffin::Rendering::VK::Util
 		renderSystem->GetDevice().resetCommandPool(renderSystem->GetUploadContext().commandPool);
 	}
 
+	void CopyDataBetweenBuffers(std::shared_ptr<VKRenderSystem> renderer, vk::Buffer srcBuffer, vk::Buffer dstBuffer, uint32_t dataSize, uint32_t dstOffset = 0, uint32_t srcOffset = 0)
+	{
+		ImmediateSubmit(renderer, [=](vk::CommandBuffer cmd)
+		{
+			vk::BufferCopy copy;
+			copy.dstOffset = dstOffset;
+			copy.srcOffset = srcOffset;
+			copy.size = dataSize;
+			cmd.copyBuffer(srcBuffer, dstBuffer, 1, &copy);
+		});
+	}
+
 	AllocatedBuffer CreateBuffer(const vma::Allocator& allocator, size_t allocSize, vk::BufferUsageFlags usage,
 		vma::MemoryUsage memoryUsage, vma::AllocationCreateFlags allocFlags, vk::MemoryPropertyFlags requiredFlags)
 	{
@@ -74,14 +86,7 @@ namespace Puffin::Rendering::VK::Util
             vma::MemoryUsage::eAutoPreferDevice);
 
 		// Copy from CPU Memory to GPU Memory
-		ImmediateSubmit(renderer, [=](vk::CommandBuffer cmd)
-		{
-			vk::BufferCopy copy;
-			copy.dstOffset = 0;
-			copy.srcOffset = 0;
-			copy.size = verticesSize;
-			cmd.copyBuffer(stagingBuffer.buffer, vertexBuffer.buffer, 1, &copy);
-		});
+		CopyDataBetweenBuffers(renderer, stagingBuffer.buffer, vertexBuffer.buffer, verticesSize);
 
 		// Cleanup Staging Buffer Immediately, It is no longer needed
 		renderer->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
@@ -108,17 +113,10 @@ namespace Puffin::Rendering::VK::Util
 		// Allocate Index Buffer - Transfer indices into GPU memory
 		AllocatedBuffer indexBuffer = CreateBuffer(renderer->GetAllocator(), indicesSize,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAutoPreferDevice, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+			vma::MemoryUsage::eAutoPreferDevice);
 
 		// Copy from CPU memory to GPU memory
-		ImmediateSubmit(renderer, [=](vk::CommandBuffer cmd)
-		{
-			vk::BufferCopy copy;
-			copy.dstOffset = 0;
-			copy.srcOffset = 0;
-			copy.size = indicesSize;
-			cmd.copyBuffer(stagingBuffer.buffer, indexBuffer.buffer, 1, &copy);
-		});
+		CopyDataBetweenBuffers(renderer, stagingBuffer.buffer, indexBuffer.buffer, indicesSize);
 
 		// Cleanup staging buffer, it is no longer needed
 		renderer->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);

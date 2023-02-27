@@ -390,6 +390,11 @@ namespace Puffin::Rendering::VK
 	{
 		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
 		{
+			// Indirect Buffer
+			m_frameRenderData[i].indirectBuffer = Util::CreateBuffer(m_allocator, sizeof(vk::DrawIndexedIndirectCommand),
+				vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
+				vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+
 			// Global Buffers
 			m_frameRenderData[i].cameraBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUCameraData),
 				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
@@ -413,6 +418,7 @@ namespace Puffin::Rendering::VK
 				m_allocator.destroyBuffer(m_frameRenderData[i].lightBuffer.buffer, m_frameRenderData[i].lightBuffer.allocation);
 				m_allocator.destroyBuffer(m_frameRenderData[i].objectBuffer.buffer, m_frameRenderData[i].objectBuffer.allocation);
 				m_allocator.destroyBuffer(m_frameRenderData[i].cameraBuffer.buffer, m_frameRenderData[i].cameraBuffer.allocation);
+				m_allocator.destroyBuffer(m_frameRenderData[i].indirectBuffer.buffer, m_frameRenderData[i].indirectBuffer.allocation);
 			});
 		}
 	}
@@ -744,9 +750,10 @@ namespace Puffin::Rendering::VK
 		uint32_t swapchainImageIdx;
 		VK_CHECK(m_device.acquireNextImageKHR(m_swapchainData.swapchain, 1000000000, GetCurrentFrameData().presentSemaphore, nullptr, &swapchainImageIdx));
 
-		// Prepare scene for rendering
+		// Prepare textures, scene data & indirect commands for rendering
 		UpdateTextureDescriptors();
 		PrepareSceneData();
+		BuildIndirectCommands();
 
 		// Record command buffers
 		vk::CommandBuffer mainCmd = RecordMainCommandBuffer(swapchainImageIdx);
@@ -950,6 +957,11 @@ namespace Puffin::Rendering::VK
 		memcpy(lightStaticData, &lightStaticUBO, sizeof(GPULightStaticData));
 
 		m_allocator.unmapMemory(GetCurrentFrameData().lightStaticBuffer.allocation);
+	}
+
+	void VKRenderSystem::BuildIndirectCommands()
+	{
+
 	}
 
 	vk::CommandBuffer VKRenderSystem::RecordMainCommandBuffer(uint32_t swapchainIdx)
