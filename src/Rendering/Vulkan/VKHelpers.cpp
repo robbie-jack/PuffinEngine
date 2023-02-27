@@ -38,7 +38,8 @@ namespace Puffin::Rendering::VK::Util
 		renderSystem->GetDevice().resetCommandPool(renderSystem->GetUploadContext().commandPool);
 	}
 
-	void CopyDataBetweenBuffers(std::shared_ptr<VKRenderSystem> renderer, vk::Buffer srcBuffer, vk::Buffer dstBuffer, uint32_t dataSize, uint32_t dstOffset = 0, uint32_t srcOffset = 0)
+	void CopyDataBetweenBuffers(std::shared_ptr<VKRenderSystem> renderer, vk::Buffer srcBuffer, vk::Buffer dstBuffer, 
+		uint32_t dataSize, uint32_t srcOffset, uint32_t dstOffset)
 	{
 		ImmediateSubmit(renderer, [=](vk::CommandBuffer cmd)
 		{
@@ -64,32 +65,38 @@ namespace Puffin::Rendering::VK::Util
 		return buffer;
 	}
 
-	AllocatedBuffer InitVertexBuffer(std::shared_ptr<VKRenderSystem> renderer, const void* vertexData, const size_t numVertices, const size_t vertexSize)
+	void LoadCPUDataIntoGPUBuffer(std::shared_ptr<VKRenderSystem> renderer, vk::BufferUsageFlags usageFlags, vk::Buffer dstBuffer, uint32_t dataSize, 
+		const void* data, uint32_t srcOffset, uint32_t dstOffset)
 	{
-		// Copy Loaded Mesh data into mesh vertex buffer
-		uint32_t verticesSize = numVertices * vertexSize;
-
 		// Allocate Staging Buffer - Map Vertices in CPU Memory
-		AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), verticesSize,
-	         { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc }, 
-	         vma::MemoryUsage::eAutoPreferHost, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+		AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), dataSize,
+			{ usageFlags | vk::BufferUsageFlagBits::eTransferSrc },
+			vma::MemoryUsage::eAutoPreferHost, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
 		// Map vertex data to staging buffer
-		void* data;
-		VK_CHECK(renderer->GetAllocator().mapMemory(stagingBuffer.allocation, &data));
-		memcpy(data, vertexData, verticesSize);
+		void* mappedData;
+		VK_CHECK(renderer->GetAllocator().mapMemory(stagingBuffer.allocation, &mappedData));
+		memcpy(mappedData, data, dataSize);
 		renderer->GetAllocator().unmapMemory(stagingBuffer.allocation);
 
-		// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
-		AllocatedBuffer vertexBuffer = CreateBuffer(renderer->GetAllocator(), verticesSize,
-            { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc }, 
-            vma::MemoryUsage::eAutoPreferDevice);
-
 		// Copy from CPU Memory to GPU Memory
-		CopyDataBetweenBuffers(renderer, stagingBuffer.buffer, vertexBuffer.buffer, verticesSize);
+		CopyDataBetweenBuffers(renderer, stagingBuffer.buffer, dstBuffer, dataSize, srcOffset, dstOffset);
 
 		// Cleanup Staging Buffer Immediately, It is no longer needed
 		renderer->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+	}
+
+	AllocatedBuffer InitVertexBuffer(std::shared_ptr<VKRenderSystem> renderer, const void* vertexData, const size_t numVertices, const size_t vertexSize)
+	{
+		// Copy Loaded Mesh data into mesh vertex buffer
+		uint32_t vertexBufferSize = numVertices * vertexSize;
+
+		// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
+		AllocatedBuffer vertexBuffer = CreateBuffer(renderer->GetAllocator(), vertexBufferSize,
+            { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc }, 
+            vma::MemoryUsage::eAutoPreferDevice);
+
+		LoadCPUDataIntoGPUBuffer(renderer, vk::BufferUsageFlagBits::eVertexBuffer, vertexBuffer.buffer, vertexBufferSize, vertexData);
 
 		return vertexBuffer;
 	}
@@ -97,29 +104,14 @@ namespace Puffin::Rendering::VK::Util
 	AllocatedBuffer InitIndexBuffer(std::shared_ptr<VKRenderSystem> renderer, const void* indexData,
 		const size_t numIndices, const size_t indexSize)
 	{
-		uint32_t indicesSize = numIndices * indexSize;
-
-		// Allocate Staging Buffer - Map Indices in CPU Memory
-		AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), indicesSize, 
-			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc }, 
-			vma::MemoryUsage::eAutoPreferHost, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
-
-		// Map Index data to staging buffer
-		void* data;
-		VK_CHECK(renderer->GetAllocator().mapMemory(stagingBuffer.allocation, &data));
-		memcpy(data, indexData, indicesSize);
-		renderer->GetAllocator().unmapMemory(stagingBuffer.allocation);
+		uint32_t indexBufferSize = numIndices * indexSize;
 
 		// Allocate Index Buffer - Transfer indices into GPU memory
-		AllocatedBuffer indexBuffer = CreateBuffer(renderer->GetAllocator(), indicesSize,
+		AllocatedBuffer indexBuffer = CreateBuffer(renderer->GetAllocator(), indexBufferSize,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAutoPreferDevice);
 
-		// Copy from CPU memory to GPU memory
-		CopyDataBetweenBuffers(renderer, stagingBuffer.buffer, indexBuffer.buffer, indicesSize);
-
-		// Cleanup staging buffer, it is no longer needed
-		renderer->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+		LoadCPUDataIntoGPUBuffer(renderer, vk::BufferUsageFlagBits::eIndexBuffer, indexBuffer.buffer, indexBufferSize, indexData);
 
 		return indexBuffer;
 	}

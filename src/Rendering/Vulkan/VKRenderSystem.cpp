@@ -98,6 +98,8 @@ namespace Puffin::Rendering::VK
 
 		if (m_isInitialized)
 		{
+			m_staticRenderData.combinedMeshBuffer.Cleanup();
+
 			for (auto meshData : m_meshData)
 			{
 				UnloadMesh(meshData);
@@ -388,6 +390,8 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::InitBuffers()
 	{
+		m_staticRenderData.combinedMeshBuffer.Init(shared_from_this(), sizeof(VertexPNTV32));
+
 		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
 		{
 			// Indirect Buffer
@@ -714,6 +718,9 @@ namespace Puffin::Rendering::VK
 
 				m_meshData.Insert(fst, meshData);
 			}
+
+			const auto staticMesh = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(fst));
+			m_staticRenderData.combinedMeshBuffer.AddMesh(staticMesh);
 		}
 
 		bool textureDescriptorNeedsUpdated = false;

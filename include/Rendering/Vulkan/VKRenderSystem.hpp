@@ -21,6 +21,7 @@
 #include "ECS/Entity.h"
 #include "Components/Rendering/CameraComponent.h"
 #include "Input/InputEvent.h"
+#include "Rendering/Vulkan/VKCombinedMeshBuffer.hpp"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -40,6 +41,8 @@ namespace Puffin::Rendering::VK
 		vk::DescriptorSetLayout materialSetLayout;
 
 		vk::Sampler textureSampler;
+
+		CombinedMeshBuffer combinedMeshBuffer;
 	};
 
 	// Struct containing data that changes each frame

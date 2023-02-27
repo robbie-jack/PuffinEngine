@@ -13,6 +13,12 @@ namespace Puffin::Rendering::VK::Util
 {
 	void ImmediateSubmit(std::shared_ptr<VKRenderSystem> renderSystem, std::function<void(VkCommandBuffer cmd)>&& function);
 
+	void CopyDataBetweenBuffers(std::shared_ptr<VKRenderSystem> renderer, vk::Buffer srcBuffer, vk::Buffer dstBuffer, 
+		uint32_t dataSize, uint32_t srcOffset = 0, uint32_t dstOffset = 0);
+
+	void LoadCPUDataIntoGPUBuffer(std::shared_ptr<VKRenderSystem> renderer, vk::BufferUsageFlags usageFlags, vk::Buffer dstBuffer, uint32_t dataSize, 
+		const void* data, uint32_t srcOffset = 0, uint32_t dstOffset = 0);
+
 	AllocatedBuffer CreateBuffer(const vma::Allocator& allocator, size_t allocSize, vk::BufferUsageFlags usage, vma::MemoryUsage memoryUsage, vma::
 		AllocationCreateFlags allocFlags = {}, vk::MemoryPropertyFlags requiredFlags = {});
 
