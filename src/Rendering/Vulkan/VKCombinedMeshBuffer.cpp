@@ -91,7 +91,7 @@ namespace Puffin::Rendering::VK
 
 			// Copy index data
 			Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eVertexBuffer, m_indexBuffer.buffer, indexBufferSize,
-				staticMesh->GetVertices().data(), 0, internalMeshData.indexOffset * m_indexSize);
+				staticMesh->GetIndices().data(), 0, internalMeshData.indexOffset * m_indexSize);
 
 			m_internalMeshData.insert({staticMesh->ID(), internalMeshData});
 

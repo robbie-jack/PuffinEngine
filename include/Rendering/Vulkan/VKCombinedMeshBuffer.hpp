@@ -16,11 +16,22 @@ namespace Puffin::Rendering::VK
 	public:
 
 		void Init(std::shared_ptr<VKRenderSystem> renderer,  uint32_t vertexSize, 
-			uint32_t indexSize = sizeof(uint32_t), uint32_t numVertices = 100000, uint32_t numIndices = 100000);
+			uint32_t indexSize = sizeof(uint32_t), uint32_t numVertices = 5000000, uint32_t numIndices = 10000000);
 
 		void Cleanup();
 
 		bool AddMesh(std::shared_ptr<Assets::StaticMeshAsset> staticMesh);
+
+		bool HasMesh(std::shared_ptr<Assets::StaticMeshAsset> staticMesh)
+		{
+			return m_internalMeshData.count(staticMesh->ID()) == 1;
+		}
+
+		inline uint32_t MeshVertexOffset(UUID meshID) { return m_internalMeshData[meshID].vertexOffset; }
+		inline uint32_t MeshIndexOffset(UUID meshID) { return m_internalMeshData[meshID].indexOffset; }
+
+		inline uint32_t MeshVertexCount(UUID meshID) { return m_internalMeshData[meshID].vertexCount; }
+		inline uint32_t MeshIndexCount(UUID meshID) { return m_internalMeshData[meshID].indexCount; }
 
 		AllocatedBuffer& VertexBuffer() { return m_vertexBuffer; }
 		AllocatedBuffer& IndexBuffer() { return m_indexBuffer; }

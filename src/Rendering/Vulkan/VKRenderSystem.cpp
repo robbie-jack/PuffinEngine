@@ -166,6 +166,8 @@ namespace Puffin::Rendering::VK
 
 		vk::PhysicalDeviceFeatures physicalDeviceFeatures = {};
 		physicalDeviceFeatures.shaderSampledImageArrayDynamicIndexing = true;
+		physicalDeviceFeatures.drawIndirectFirstInstance = true;
+		physicalDeviceFeatures.multiDrawIndirect = true;
 
 		vk::PhysicalDeviceVulkan12Features physicalDevice12Features = {};
 		physicalDevice12Features.descriptorIndexing = true;
@@ -395,7 +397,7 @@ namespace Puffin::Rendering::VK
 		for (int i = 0; i < G_BUFFERED_FRAMES; i++)
 		{
 			// Indirect Buffer
-			m_frameRenderData[i].indirectBuffer = Util::CreateBuffer(m_allocator, sizeof(vk::DrawIndexedIndirectCommand),
+			m_frameRenderData[i].indirectBuffer = Util::CreateBuffer(m_allocator, sizeof(vk::DrawIndexedIndirectCommand) * G_MAX_OBJECTS,
 				vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
 				vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
@@ -709,7 +711,7 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::UpdateRenderData()
 	{
-		for (const auto [fst, snd] : m_meshDrawList)
+		for (const auto& [fst, snd] : m_meshDrawList)
 		{
 			if (!m_meshData.Contains(fst))
 			{
@@ -720,11 +722,14 @@ namespace Puffin::Rendering::VK
 			}
 
 			const auto staticMesh = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(fst));
-			m_staticRenderData.combinedMeshBuffer.AddMesh(staticMesh);
+			if (!m_staticRenderData.combinedMeshBuffer.HasMesh(staticMesh))
+			{
+				m_staticRenderData.combinedMeshBuffer.AddMesh(staticMesh);
+			}
 		}
 
 		bool textureDescriptorNeedsUpdated = false;
-		for (const auto [fst, snd] : m_texDrawList)
+		for (const auto& [fst, snd] : m_texDrawList)
 		{
 			if (!m_texData.Contains(fst))
 			{
@@ -753,6 +758,8 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_device.resetFences(1, &GetCurrentFrameData().renderFence));
 
 		RecreateSwapchain();
+
+		m_drawCalls = 0;
 
 		uint32_t swapchainImageIdx;
 		VK_CHECK(m_device.acquireNextImageKHR(m_swapchainData.swapchain, 1000000000, GetCurrentFrameData().presentSemaphore, nullptr, &swapchainImageIdx));
@@ -968,7 +975,34 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::BuildIndirectCommands()
 	{
+		AllocatedBuffer& indirectBuffer = GetCurrentFrameData().indirectBuffer;
 
+		void* indirectData;
+		VK_CHECK(m_allocator.mapMemory(indirectBuffer.allocation, &indirectData));
+
+		auto* indirectCmds = static_cast<vk::DrawIndexedIndirectCommand*>(indirectData);
+
+		int idx = 0;
+
+		for (const auto [fst, snd] : m_meshDrawList)
+		{
+			for (const auto entityID : snd)
+			{
+				const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
+
+				indirectCmds[idx].vertexOffset = m_staticRenderData.combinedMeshBuffer.MeshVertexOffset(mesh.meshAssetID);
+				indirectCmds[idx].firstIndex = m_staticRenderData.combinedMeshBuffer.MeshIndexOffset(mesh.meshAssetID);
+				indirectCmds[idx].indexCount = m_staticRenderData.combinedMeshBuffer.MeshIndexCount(mesh.meshAssetID);
+				indirectCmds[idx].firstInstance = idx;
+				indirectCmds[idx].instanceCount = 1;
+
+				idx++;
+			}
+		}
+
+		m_allocator.unmapMemory(indirectBuffer.allocation);
+
+		GetCurrentFrameData().drawCount = idx;
 	}
 
 	vk::CommandBuffer VKRenderSystem::RecordMainCommandBuffer(uint32_t swapchainIdx)
@@ -1021,19 +1055,20 @@ namespace Puffin::Rendering::VK
 
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forwardPipelineLayout.get(), 0, 1, &GetCurrentFrameData().globalDescriptor, 0, nullptr);
 
-		int i = 0;
-		for (const auto [fst, snd] : m_meshDrawList)
-		{
-			cmd.bindVertexBuffers(0, m_meshData[fst].vertexBuffer.buffer, { 0 });
-			cmd.bindIndexBuffer(m_meshData[fst].indexBuffer.buffer, 0, vk::IndexType::eUint32);
+		cmd.bindVertexBuffers(0, m_staticRenderData.combinedMeshBuffer.VertexBuffer().buffer, { 0 });
+		cmd.bindIndexBuffer(m_staticRenderData.combinedMeshBuffer.IndexBuffer().buffer, 0, vk::IndexType::eUint32);
 
-			for (const auto entityID : snd)
-			{
-				cmd.drawIndexed(m_meshData[fst].numIndices, 1, 0, 0, i);
+		vk::DeviceSize indirectOffset = 0;
+		uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
 
-				i++;
-			}
-		}
+		DrawIndexedIndirectCommand(cmd, GetCurrentFrameData().indirectBuffer.buffer, indirectOffset, GetCurrentFrameData().drawCount, drawStride);
+	}
+
+	void VKRenderSystem::DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset,
+		uint32_t drawCount, uint32_t stride)
+	{
+		cmd.drawIndexedIndirect(indirectBuffer, offset, GetCurrentFrameData().drawCount, stride);
+		m_drawCalls++;
 	}
 
 	void VKRenderSystem::SubmitCommands(uint32_t swapchainIdx, std::vector<vk::CommandBuffer>& commands)

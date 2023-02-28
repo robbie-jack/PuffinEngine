@@ -57,6 +57,7 @@ namespace Puffin::Rendering::VK
 		vk::CommandBuffer mainCommandBuffer;
 
 		AllocatedBuffer indirectBuffer; // Buffer of indirect draw commands
+		uint32_t drawCount = 0;
 
 		// Global Data (Set for entire frame)
 		vk::DescriptorSet globalDescriptor;
@@ -141,6 +142,7 @@ namespace Puffin::Rendering::VK
 		std::unordered_map<UUID, std::set<ECS::EntityID>> m_texDrawList;
 
 		uint32_t m_frameNumber;
+		uint32_t m_drawCalls = 0;
 
 		// Pipelines
 		vk::PipelineCache m_pipelineCache;
@@ -201,6 +203,8 @@ namespace Puffin::Rendering::VK
 
 		vk::CommandBuffer RecordMainCommandBuffer(uint32_t swapchainIdx);
 		void DrawObjects(vk::CommandBuffer cmd);
+
+		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset, uint32_t drawCount, uint32_t stride);
 
 		void SubmitCommands(uint32_t swapchainIdx, std::vector<vk::CommandBuffer>& commands);
 
