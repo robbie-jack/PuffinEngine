@@ -123,7 +123,7 @@ namespace Puffin::Core
 			}
 		}
 
-		PlayState GetPlayState() const { return playState; }
+		PlayState GetPlayState() const { return m_playState; }
 		inline std::shared_ptr<IO::SceneData> GetScene() { return m_sceneData; }
 
 		inline IO::ProjectSettings& GetProjectSettings() { return settings; }
@@ -174,7 +174,7 @@ namespace Puffin::Core
 
 		bool running = true;
 		bool m_shouldLimitFrameRate = true; // Whether framerate should be capped at m_frameRateMax
-		PlayState playState = PlayState::STOPPED;
+		PlayState m_playState = PlayState::STOPPED;
 
 		// Time Members
 		double m_lastTime, m_currentTime;

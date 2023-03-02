@@ -58,7 +58,7 @@ namespace Puffin::Physics
 			transform.position.y = m_bodies[entity->ID()]->GetPosition().y;
 			transform.rotation = Maths::Quat::FromEulerAngles(0.0, 0.0, -m_bodies[entity->ID()]->GetAngle());
 
-			// Update Interpolated Transform with Linear/Angular Velocity
+			// Update Velocity with Linear/Angular Velocity
 			velocity.linear.x = m_bodies[entity->ID()]->GetLinearVelocity().x;
 			velocity.linear.y = m_bodies[entity->ID()]->GetLinearVelocity().y;
 			velocity.angular.z = m_bodies[entity->ID()]->GetAngularVelocity();

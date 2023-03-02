@@ -23,9 +23,9 @@ namespace Puffin
 
 		Onager2DPhysicsSystem::Onager2DPhysicsSystem()
 		{
-			m_boxShapes.Reserve(100);
-			m_circleShapes.Reserve(100);
-			m_colliders.Reserve(200);
+			m_boxShapes.Reserve(200);
+			m_circleShapes.Reserve(200);
+			m_colliders.Reserve(400);
 
 			m_systemInfo.name = "Onager2DPhysicsSystem";
 			m_systemInfo.updateOrder = Core::UpdateOrder::FixedUpdate;
@@ -159,14 +159,20 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::CleanupCircle2D(std::shared_ptr<ECS::Entity> entity)
 		{
-			m_circleShapes.Erase(entity->ID());
-			m_colliders.Erase(entity->ID());
+			if (m_circleShapes.Contains(entity->ID()))
+				m_circleShapes.Erase(entity->ID());
+
+			if (m_colliders.Contains(entity->ID()))
+				m_colliders.Erase(entity->ID());
 		}
 
 		void Onager2DPhysicsSystem::CleanupBox2D(std::shared_ptr<ECS::Entity> entity)
 		{
-			m_boxShapes.Erase(entity->ID());
-			m_colliders.Erase(entity->ID());
+			if (m_boxShapes.Contains(entity->ID()))
+				m_boxShapes.Erase(entity->ID());
+
+			if (m_colliders.Contains(entity->ID()))
+				m_colliders.Erase(entity->ID());
 		}
 
 		void Onager2DPhysicsSystem::UpdateComponents()

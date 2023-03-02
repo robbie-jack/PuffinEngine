@@ -143,15 +143,15 @@ namespace Puffin::Core
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene();
-		//PhysicsScene();
+		PhysicsScene();
 		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
-		m_sceneData->LoadAndInit();
-		//m_sceneData->Save();
+		//m_sceneData->LoadAndInit();
+		m_sceneData->Save();
 
 		running = true;
-		playState = PlayState::STOPPED;
+		m_playState = PlayState::STOPPED;
 
 		// Initialize Subsystems
 		for (auto& [fst, snd] : m_subsystemsPriority)
@@ -242,8 +242,19 @@ namespace Puffin::Core
 			}
 		}
 
+		auto inputSubsystem = GetSubsystem<Input::InputSubsystem>();
+		if (inputSubsystem->GetAction("Play").state == Input::KeyState::PRESSED)
+		{
+			Play();
+		}
+
+		if (inputSubsystem->GetAction("Restart").state == Input::KeyState::PRESSED)
+		{
+			Restart();
+		}
+
 		// Call system start functions to prepare for gameplay
-		if (playState == PlayState::STARTED)
+		if (m_playState == PlayState::STARTED)
 		{
 			for (auto& system : m_systems)
 			{
@@ -254,24 +265,24 @@ namespace Puffin::Core
 			m_sceneData->UpdateData();
 
 			m_accumulatedTime = 0.0;
-			playState = PlayState::PLAYING;
+			m_playState = PlayState::PLAYING;
 		}
 
-		if (playState == PlayState::JUST_PAUSED)
+		if (m_playState == PlayState::JUST_PAUSED)
 		{
 			audioSubsystem->PauseAllSounds();
 
-			playState = PlayState::PAUSED;
+			m_playState = PlayState::PAUSED;
 		}
 
-		if (playState == PlayState::JUST_UNPAUSED)
+		if (m_playState == PlayState::JUST_UNPAUSED)
 		{
 			audioSubsystem->PlayAllSounds();
 
-			playState = PlayState::PLAYING;
+			m_playState = PlayState::PLAYING;
 		}
 
-		if (playState == PlayState::PLAYING)
+		if (m_playState == PlayState::PLAYING)
 		{
 			// Fixed Update
 			{
@@ -380,7 +391,7 @@ namespace Puffin::Core
 			m_stageExecutionTime[Core::UpdateOrder::Render] = stageEndTime - stageStartTime;
 		}
 
-		if (playState == PlayState::JUST_STOPPED)
+		if (m_playState == PlayState::JUST_STOPPED)
 		{
 			// Cleanup Systems and ECS
 			for (auto system : m_systems)
@@ -401,7 +412,7 @@ namespace Puffin::Core
 			audioSubsystem->StopAllSounds();
 
 			m_accumulatedTime = 0.0;
-			playState = PlayState::STOPPED;
+			m_playState = PlayState::STOPPED;
 		}
 
 		auto windowSubsystem = GetSubsystem<Window::WindowSubsystem>();
@@ -626,7 +637,12 @@ namespace Puffin::Core
 		lightEntity->SetName("Light");
 
 		lightEntity->AddComponent<TransformComponent>();
-		lightEntity->GetComponent<TransformComponent>() = TransformComponent{ Vector3f(-5.0f, 0.0f, 0.0f), Maths::Quat(.5f, -0.5f, 0.0f, 0.0f), Vector3f(1.0f)  };
+		lightEntity->GetComponent<TransformComponent>() =
+		{
+			Vector3f(-5.0f, 0.0f, 0.0f),
+			Maths::Quat(.5f, -0.5f, 0.0f),
+			Vector3f(1.0f)
+		};
 
 		auto& lightComp = lightEntity->AddAndGetComponent<Rendering::LightComponent>();
 		lightComp.type = Rendering::LightType::DIRECTIONAL;
@@ -647,9 +663,9 @@ namespace Puffin::Core
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(250.0f, 1.0f);
 
-		const Vector3f startPosition(-250.0f, 10.f, 0.f);
-		const Vector3f endPosition(250.f, 10.f, 0.f);
-		const int numBodies = 100;
+		const Vector3f startPosition(-25.0f, 10.f, 0.f);
+		const Vector3f endPosition(25.f, 10.f, 0.f);
+		const int numBodies = 10;
 		Vector3f positionOffset = endPosition - startPosition;
 		positionOffset.x /= numBodies;
 		for (int i = 0; i < numBodies; i++)
@@ -765,25 +781,25 @@ namespace Puffin::Core
 
 	void Engine::Play()
 	{
-		switch (playState)
+		switch (m_playState)
 		{
 		case PlayState::STOPPED:
-			playState = PlayState::STARTED;
+			m_playState = PlayState::STARTED;
 			break;
 		case PlayState::PLAYING:
-			playState = PlayState::JUST_PAUSED;
+			m_playState = PlayState::JUST_PAUSED;
 			break;
 		case PlayState::PAUSED:
-			playState = PlayState::JUST_UNPAUSED;
+			m_playState = PlayState::JUST_UNPAUSED;
 			break;
 		}
 	}
 
 	void Engine::Restart()
 	{
-		if (playState == PlayState::PLAYING || playState == PlayState::PAUSED || playState == PlayState::STOPPED)
+		if (m_playState == PlayState::PLAYING || m_playState == PlayState::PAUSED || m_playState == PlayState::STOPPED)
 		{
-			playState = PlayState::JUST_STOPPED;
+			m_playState = PlayState::JUST_STOPPED;
 		}
 	}
 
