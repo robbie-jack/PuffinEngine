@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Types/Vector.h>
+#include "Types/Vector.h"
+#include "Types/Quat.hpp"
 
 #include "nlohmann/json.hpp"
 
@@ -17,10 +18,10 @@ namespace Puffin
 		TransformComponent() = default;
 
 #ifdef PFN_USE_DOUBLE_PRECISION
-		TransformComponent(Vector3d InPosition, Vector3f InRotation, Vector3f InScale) :
+		TransformComponent(Vector3d InPosition, Maths::Quat InRotation, Vector3f InScale) :
 			position(InPosition), rotation(InRotation), scale(InScale) {}
 #else
-		TransformComponent(Vector3f InPosition, Vector3f InRotation, Vector3f InScale) :
+		TransformComponent(Vector3f InPosition, Maths::Quat InRotation, Vector3f InScale) :
 			position(InPosition), rotation(InRotation), scale(InScale) {}
 #endif
 
@@ -33,7 +34,9 @@ namespace Puffin
 #else
 		Vector3f position = Vector3f(0.0f);
 #endif
-		Vector3f rotation = Vector3f(0.0f);
+
+		Maths::Quat rotation = Maths::Quat(0.0f, 0.0f, -1.0f, 0.0);
+
 		Vector3f scale = Vector3f(1.0f);
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent, position, rotation, scale)

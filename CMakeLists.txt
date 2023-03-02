@@ -170,7 +170,7 @@ set(HEADERS
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h
 	${HEADER_DIR}/Types/PackedArray.h
-	${HEADER_DIR}/Types/Quat.h
+	${HEADER_DIR}/Types/Quat.hpp
 	${HEADER_DIR}/Types/RingBuffer.h
 	${HEADER_DIR}/Types/Simplex.h
 	${HEADER_DIR}/Types/UUID.h

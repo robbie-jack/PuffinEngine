@@ -27,6 +27,8 @@
 #include "Components/Rendering/LightComponent.h"
 #include "Engine/SignalSubsystem.hpp"
 #include "Input/InputSubsystem.h"
+#include "Rendering/BGFX/BGFXRenderSystem.hpp"
+#include "Rendering/BGFX/BGFXRenderSystem.hpp"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -905,14 +907,14 @@ namespace Puffin::Rendering::VK
 
 		int i = 0;
 
-		for (const auto [fst, snd] : m_meshDrawList)
+		for (const auto& [fst, snd] : m_meshDrawList)
 		{
 			for (const auto entityID : snd)
 			{
 				const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
 				const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
 
-				objectSSBO[i].model = BuildModelTransform(transform.position, transform.rotation, transform.scale);
+				objectSSBO[i].model = BuildModelTransform(transform.position, transform.rotation.EulerAnglesRad(), transform.scale);
 				objectSSBO[i].invModel = glm::inverse(objectSSBO[i].model);
 				objectSSBO[i].texIndex = m_texData[mesh.textureAssetID].idx;
 
@@ -945,7 +947,7 @@ namespace Puffin::Rendering::VK
 			const auto& light = entity->GetComponent<LightComponent>();
 
 			lightSSBO[i].position = static_cast<glm::vec3>(transform.position);
-			lightSSBO[i].direction = static_cast<glm::vec3>(light.direction);
+			lightSSBO[i].direction = static_cast<glm::vec3>(transform.rotation.GetXYZ());
 			lightSSBO[i].color = static_cast<glm::vec3>(light.color);
 			lightSSBO[i].ambientSpecular = glm::vec3(light.ambientIntensity, light.specularIntensity, light.specularExponent);
 			lightSSBO[i].attenuation = glm::vec3(light.constantAttenuation, light.linearAttenuation, light.quadraticAttenuation);
@@ -1092,15 +1094,15 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
 	}
 
-	glm::mat4 VKRenderSystem::BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)
+	glm::mat4 VKRenderSystem::BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale) const
 	{
 		// Set Translation
 		glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)position);
 
 		// Set Rotation
-		model_transform = glm::rotate(model_transform, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		model_transform = glm::rotate(model_transform, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		model_transform = glm::rotate(model_transform, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, -1.0f));
+		model_transform = glm::rotate(model_transform, rotation.z, glm::vec3(0.0f, 0.0f, -1.0f));
+		model_transform = glm::rotate(model_transform, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+		model_transform = glm::rotate(model_transform, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// Set Scale
 		model_transform = glm::scale(model_transform, (glm::vec3)scale);

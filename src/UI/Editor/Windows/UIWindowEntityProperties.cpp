@@ -324,11 +324,6 @@ namespace Puffin
 					// Edit Light Specular Exponent
 					dirty |= ImGui::DragInt("Specular Exponent", &light.specularExponent);
 
-					if (light.type == Rendering::LightType::DIRECTIONAL || light.type == Rendering::LightType::SPOT)
-					{
-						dirty |= ImGui::DragFloat3("Direction", (float*)&light.direction, 0.005f, -1.0f, 1.0f);
-					}
-
 					if (light.type == Rendering::LightType::POINT || light.type == Rendering::LightType::SPOT)
 					{
 						dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");

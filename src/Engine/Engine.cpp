@@ -148,6 +148,7 @@ namespace Puffin::Core
 
 		// Load Scene -- normal behaviour
 		//m_sceneData->LoadAndInit();
+		m_sceneData->Save();
 
 		running = true;
 		playState = PlayState::STOPPED;
@@ -542,13 +543,23 @@ namespace Puffin::Core
 		}
 
 		// Initialize Components with default values
-		entities[0]->GetComponent<TransformComponent>() = {Vector3f(2.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f)};
-		entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
-		entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
-		entities[3]->GetComponent<TransformComponent>() = { Vector3f(-5.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
-		entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f) };
-		entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(10.0f, 1.0f, 10.0f) };
-		entities[6]->GetComponent<TransformComponent>() = { Vector3f(5.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.25f) };
+		entities[0]->GetComponent<TransformComponent>() = { Vector3f(2.0f, 0.0f, 0.0f), Maths::Quat(), Vector3f(1.0f) };
+		entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), Maths::Quat(), Vector3f(1.0f) };
+		entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), Maths::Quat(), Vector3f(1.0f) };
+		entities[3]->GetComponent<TransformComponent>() =
+		{
+			Vector3f(-5.0f, 0.0f, 0.0f),
+			Maths::Quat(.5f, -.5f, 0.0f),
+			Vector3f(0.25f)
+		};
+		entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), Maths::Quat(), Vector3f(1.0f) };
+		entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), Maths::Quat(), Vector3f(10.0f, 1.0f, 10.0f) };
+		entities[6]->GetComponent<TransformComponent>() =
+		{
+			Vector3f(5.0f, 0.0f, 0.0f),
+			Maths::Quat(-.5f, -.5f, 0.0f),
+			Vector3f(0.25f)
+		};
 
 		entities[0]->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId1;
 		entities[0]->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId1;
@@ -569,13 +580,11 @@ namespace Puffin::Core
 
 		// Setup Light Component
 		entities[3]->AddComponent<Rendering::LightComponent>();
-		entities[3]->GetComponent<Rendering::LightComponent>().direction = Vector3f(.5f, -0.5f, 0.0f);
 		entities[3]->GetComponent<Rendering::LightComponent>().color = Vector3f(1.f, 1.f, 1.f);
 		entities[3]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::DIRECTIONAL;
 		//entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
 		entities[6]->AddComponent<Rendering::LightComponent>();
-		entities[6]->GetComponent<Rendering::LightComponent>().direction = Vector3f(-.5f, -.5f, 0.0f);
 		entities[6]->GetComponent<Rendering::LightComponent>().color = Vector3f(0.f, 0.f, 1.f);
 		entities[6]->GetComponent<Rendering::LightComponent>().type = Rendering::LightType::SPOT;
 
@@ -617,10 +626,10 @@ namespace Puffin::Core
 		lightEntity->SetName("Light");
 
 		lightEntity->AddComponent<TransformComponent>();
+		lightEntity->GetComponent<TransformComponent>() = TransformComponent{ Vector3f(-5.0f, 0.0f, 0.0f), Maths::Quat(.5f, -0.5f, 0.0f, 0.0f), Vector3f(1.0f)  };
 
 		auto& lightComp = lightEntity->AddAndGetComponent<Rendering::LightComponent>();
 		lightComp.type = Rendering::LightType::DIRECTIONAL;
-		lightComp.direction = glm::vec3(1.0f, -1.0f, 0.0f);
 		lightComp.color = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		// Create Floor Entity
@@ -633,7 +642,7 @@ namespace Puffin::Core
 		floorEntity->AddComponent<Physics::RigidbodyComponent2D>();
 		floorEntity->AddComponent<Physics::BoxComponent2D>();
 
-		floorEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f), Vector3f(0.0f), Vector3f(250.0f, 1.0f, 1.0f) };
+		floorEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f), Maths::Quat(), Vector3f(250.0f, 1.0f, 1.0f) };
 		floorEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(250.0f, 1.0f);
@@ -655,7 +664,7 @@ namespace Puffin::Core
 			entity->AddComponent<Physics::BoxComponent2D>();
 
 			Vector3f position = startPosition + (positionOffset * (float)i);
-			entity->GetComponent<TransformComponent>() = { position, Vector3f(0.0f), Vector3f(1.0f) };
+			entity->GetComponent<TransformComponent>() = { position, Maths::Quat(), Vector3f(1.0f) };
 			entity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
 			entity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 			entity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;

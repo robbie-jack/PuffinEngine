@@ -921,9 +921,9 @@ namespace Puffin::Rendering::BGFX
             lightPos[index][2] = transform.position.z;
             lightPos[index][3] = 0.0f;
 
-            lightDir[index][0] = light.direction.x;
-            lightDir[index][1] = light.direction.y;
-            lightDir[index][2] = light.direction.z;
+            lightDir[index][0] = transform.rotation.x;
+            lightDir[index][1] = transform.rotation.y;
+            lightDir[index][2] = transform.rotation.z;
             lightDir[index][3] = 0.0f;
 
             lightColor[index][0] = light.color.x;
@@ -962,10 +962,12 @@ namespace Puffin::Rendering::BGFX
         // Scale
         bx::mtxScale(model, transform.scale.x, transform.scale.y, transform.scale.z);
 
-        // Rotation 
-        bx::mtxRotateX(model, Maths::DegreesToRadians(transform.rotation.x));
-        bx::mtxRotateY(model, Maths::DegreesToRadians(transform.rotation.y));
-        bx::mtxRotateZ(model, Maths::DegreesToRadians(transform.rotation.z));
+        Vector3f euler = transform.rotation.EulerAnglesRad();
+
+        // Rotation
+        bx::mtxRotateZ(model, euler.z);
+        bx::mtxRotateX(model, euler.x);
+        bx::mtxRotateY(model, euler.y);
 
         // Translation
         bx::mtxTranslate(model, static_cast<float>(transform.position.x), static_cast<float>(transform.position.y), static_cast<float>(transform.position.z));
