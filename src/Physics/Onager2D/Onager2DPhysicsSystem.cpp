@@ -241,7 +241,7 @@ namespace Puffin
 				const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity);
 
 				collider->position = transform.position.GetXY();
-				collider->rotation = transform.rotation.z;
+				collider->rotation = transform.rotation.EulerAnglesDeg().z;
 			}
 
 			// Perform Collision2D Broadphase to check if two Colliders can collide
@@ -276,13 +276,17 @@ namespace Puffin
 				// Update Position
 				transform.position += rigidbody.linearVelocity * m_engine->GetTimeStep();
 
-				// Update Rotation
-				//transform.rotation.z += rigidbody.angularVelocity * m_engine->GetTimeStep();
+				Vector3f euler = transform.rotation.EulerAnglesDeg();
 
-				if (transform.rotation.z > 360.0f)
+				// Update Rotation
+				//euler.z += rigidbody.angularVelocity * m_engine->GetTimeStep();
+
+				if (euler.z > 360.0f)
 				{
-					transform.rotation.z = 0.0f;
+					euler.z = 0.0f;
 				}
+
+				transform.rotation = Maths::Quat::FromEulerAngles(euler.x, euler.y, euler.z);
 
 				velocity.linear.x = rigidbody.linearVelocity.x;
 				velocity.linear.y = rigidbody.linearVelocity.y;

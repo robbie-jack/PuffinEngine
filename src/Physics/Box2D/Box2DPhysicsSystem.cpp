@@ -56,7 +56,7 @@ namespace Puffin::Physics
 			// Update Transform from Rigidbody Position
 			transform.position.x = m_bodies[entity->ID()]->GetPosition().x;
 			transform.position.y = m_bodies[entity->ID()]->GetPosition().y;
-			//transform.rotation.z = Maths::RadiansToDegrees(-m_bodies[entity->ID()]->GetAngle());
+			transform.rotation = Maths::Quat::FromEulerAngles(0.0, 0.0, -m_bodies[entity->ID()]->GetAngle());
 
 			// Update Interpolated Transform with Linear/Angular Velocity
 			velocity.linear.x = m_bodies[entity->ID()]->GetLinearVelocity().x;
@@ -198,7 +198,7 @@ namespace Puffin::Physics
 			b2BodyDef bodyDef;
 			bodyDef.userData.pointer = static_cast<uintptr_t>(entity);
 			bodyDef.position.Set(transform.position.x, transform.position.y);
-			//bodyDef.angle = Maths::DegreesToRadians(-transform.rotation.z);
+			bodyDef.angle = -transform.rotation.EulerAnglesRad().z;
 
 			// Created Body from Physics World
 			m_bodies[entity] = m_physicsWorld->CreateBody(&bodyDef);
@@ -215,7 +215,7 @@ namespace Puffin::Physics
 			m_polygonShapes.Insert(entity, b2PolygonShape());
 		}
 
-		//m_polygonShapes[entity].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), Maths::DegreesToRadians(transform.rotation.z));
+		m_polygonShapes[entity].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), transform.rotation.EulerAnglesRad().z);
 
 		if (m_world->HasComponent<RigidbodyComponent2D>(entity))
 		{
