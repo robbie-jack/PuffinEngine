@@ -789,8 +789,8 @@ namespace Puffin::Rendering::VK
 		auto& camMats = entity->GetComponent<CameraMatComponent>();
 
 		// Calculate Right, Up and LookAt vectors
-		cam.right = cam.up.Cross(cam.direction).Normalised();
-		cam.lookat = transform.position + cam.direction;
+		cam.right = cam.up.Cross(transform.rotation.GetXYZ()).Normalised();
+		cam.lookat = transform.position + transform.rotation.GetXYZ();
 
 		cam.aspect = (float)m_windowSize.width / (float)m_windowSize.height;
 

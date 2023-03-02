@@ -25,17 +25,11 @@ namespace Puffin
 
 			Vector3f lookat;
 
-			Vector3f direction = Vector3f(0.0f, 0.0f, -1.0f);
+			
 			Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
 			Vector3f right = Vector3f(1.0f, 0.0f, 0.0f);
 
-			float yaw = -90.0f;
-			float pitch = 0.0f;
-			float speed = 5.0f;
-
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, zNear, zFar, aspect, fovY,
-				lookat, direction, up, right,
-				yaw, pitch, speed)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, zNear, zFar, aspect, fovY, up)
 		};
 
 		struct EditorCamera : public CameraComponent
@@ -45,6 +39,12 @@ namespace Puffin
 #else
 			Vector3f position;
 #endif
+
+			Vector3f direction = Vector3f(0.0f, 0.0f, -1.0f);
+
+			float yaw = -90.0f;
+			float pitch = 0.0f;
+			float speed = 5.0f;
 		};
 
 		namespace VK

@@ -735,8 +735,8 @@ namespace Puffin::Rendering::BGFX
         auto& camMats = entity->GetComponent<CameraMatComponent>();
 
         // Calculate Right, Up and LookAt vectors
-        cam.right = cam.up.Cross(cam.direction).Normalised();
-        cam.lookat = transform.position + cam.direction;
+        cam.right = cam.up.Cross(transform.rotation.GetXYZ()).Normalised();
+        cam.lookat = transform.position + transform.rotation.GetXYZ();
 
         bx::mtxLookAt(camMats.view, static_cast<bx::Vec3>(transform.position), static_cast<bx::Vec3>(cam.lookat), { 0, 1, 0 }, bx::Handedness::Right);
 
