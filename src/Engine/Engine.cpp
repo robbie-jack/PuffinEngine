@@ -142,13 +142,13 @@ namespace Puffin::Core
 		//ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		DefaultScene();
+		//DefaultScene();
 		//PhysicsScene();
 		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
-		//m_sceneData->LoadAndInit();
-		m_sceneData->Save();
+		m_sceneData->LoadAndInit();
+		//m_sceneData->Save();
 
 		running = true;
 		playState = PlayState::STOPPED;
