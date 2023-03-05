@@ -267,6 +267,7 @@ namespace Puffin::ECS
 
 		~ComponentArray()
 		{
+			m_componentArray.Clear();
 			m_flagSets.clear();
 			m_flagDefaults.clear();
 		}
@@ -296,6 +297,11 @@ namespace Puffin::ECS
 			assert(m_componentArray.Contains(entity) && "Removing non-existent component.");
 
 			m_componentArray.Erase(entity);
+
+			for (auto& [fst, snd] : m_flagSets)
+			{
+				snd.Erase(entity);
+			}
 		}
 
 		bool HasComponent(EntityID entity) override
