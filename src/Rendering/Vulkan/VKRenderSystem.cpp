@@ -24,11 +24,10 @@
 #include "Assets/TextureAsset.h"
 
 #include "Components/TransformComponent.h"
+#include "Components/Physics/VelocityComponent.hpp"
 #include "Components/Rendering/LightComponent.h"
 #include "Engine/SignalSubsystem.hpp"
 #include "Input/InputSubsystem.h"
-#include "Rendering/BGFX/BGFXRenderSystem.hpp"
-#include "Rendering/BGFX/BGFXRenderSystem.hpp"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -907,6 +906,9 @@ namespace Puffin::Rendering::VK
 
 		int i = 0;
 
+		// Calculate t value for rendering interpolated position
+		const double t = m_engine->GetAccumulatedTime() / m_engine->GetTimeStep();
+
 		for (const auto& [fst, snd] : m_meshDrawList)
 		{
 			for (const auto entityID : snd)
@@ -914,7 +916,30 @@ namespace Puffin::Rendering::VK
 				const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
 				const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
 
-				objectSSBO[i].model = BuildModelTransform(transform.position, transform.rotation.EulerAnglesRad(), transform.scale);
+#ifdef PFN_USE_DOUBLE_PRECISION
+				Vector3d position = { 0.0 };
+#else
+				Vector3f position = { 0.0f };
+#endif
+
+				if (m_world->HasComponent<Physics::VelocityComponent>(entityID))
+				{
+					Physics::VelocityComponent velocity = m_world->GetComponent<Physics::VelocityComponent>(entityID);
+
+#ifdef PFN_USE_DOUBLE_PRECISION
+					Vector3d predictedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
+#else
+					Vector3f predictedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
+#endif
+
+					position = Maths::Lerp(transform.position, predictedPosition, t);
+				}
+				else
+				{
+					position = transform.position;
+				}
+
+				objectSSBO[i].model = BuildModelTransform(position, transform.rotation.EulerAnglesRad(), transform.scale);
 				objectSSBO[i].invModel = glm::inverse(objectSSBO[i].model);
 				objectSSBO[i].texIndex = m_texData[mesh.textureAssetID].idx;
 
