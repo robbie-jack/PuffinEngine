@@ -120,4 +120,13 @@ namespace Puffin::Rendering::VK
 		alignas(4) int numLights;
 	};
 
+	constexpr uint32_t G_NUM_TEX_PER_MAT = 8;
+	constexpr uint32_t G_NUM_FLOAT_PER_MAT = 8;
+
+	struct GPUMaterialInstanceData
+	{
+		int texIndices[G_NUM_TEX_PER_MAT];
+		float data[G_NUM_FLOAT_PER_MAT];
+	};
+
 }

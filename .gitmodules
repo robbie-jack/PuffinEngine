@@ -32,3 +32,6 @@
 [submodule "deps/vkb"]
 	path = deps/vkb
 	url = https://github.com/charles-lunarg/vk-bootstrap
+[submodule "deps/tinygltf"]
+	path = deps/tinygltf
+	url = https://github.com/syoyo/tinygltf

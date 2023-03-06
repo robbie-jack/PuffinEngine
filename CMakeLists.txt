@@ -56,6 +56,7 @@ add_git_submodule("deps/implot")
 add_git_submodule("deps/lz4")
 add_git_submodule("deps/OpenSimplexNoise")
 add_git_submodule("deps/vma-hpp")
+add_git_submodule("deps/tinygltf")
 
 checkout_git_branch("deps/imgui" "docking")
 
@@ -87,6 +88,7 @@ set(HEADERS
 	${HEADER_DIR}/Assets/TextureAsset.h
 	${HEADER_DIR}/Assets/Importers/ModelImporter.h
 	${HEADER_DIR}/Assets/Importers/TextureImporter.h
+	${HEADER_DIR}/Assets/Importers/GLTFImporter.hpp
 	# Audio
 	${HEADER_DIR}/Audio/AudioSubsystem.h
 	# Components
@@ -148,20 +150,6 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKDescriptors.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VKCombinedMeshBuffer.hpp
-	
-	# ${HEADER_DIR}/Rendering/Vulkan/VulkanRenderSystem.h
-	# ${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
-	# ${HEADER_DIR}/Rendering/Vulkan/VKBaseRenderer.h
-	# ${HEADER_DIR}/Rendering/Vulkan/VKDeferredRender.h
-	# ${HEADER_DIR}/Rendering/Vulkan/VKForwardRenderer.h
-	# ${HEADER_DIR}/Rendering/Vulkan/DebugDraw.h
-	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDebug.h
-	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.h
-	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKHelper.h
-	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKInitializers.h
-	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKPipeline.h
-	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKTexture.h
-	# ${HEADER_DIR}/Rendering/Vulkan/Helpers/VKVertex.hpp
 	# Scripting
 	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScriptSystem.h
@@ -228,13 +216,6 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKHelpers.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKDescriptors.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKCombinedMeshBuffer.cpp
-	
-	# ${SOURCE_DIR}/Rendering/Vulkan/VulkanRenderSystem.cpp
-	# ${SOURCE_DIR}/Rendering/Vulkan/VkDeferredRender.cpp
-	# ${SOURCE_DIR}/Rendering/Vulkan/VKForwardRenderer.cpp
-	# ${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKDescriptors.cpp
-	# ${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKHelper.cpp
-	# ${SOURCE_DIR}/Rendering/Vulkan/Helpers/VKVertex.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
 	${SOURCE_DIR}/Scripting/NativeScriptSystem.cpp
@@ -385,6 +366,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/lz4/lib)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vkb/src)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/tinygltf)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include/compat/msvc)
