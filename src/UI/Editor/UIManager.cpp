@@ -7,10 +7,10 @@
 
 #include "SerializeScene.h"
 #include "Assets/AssetRegistry.h"
-#include "Assets/Importers/ModelImporter.h"
-#include "Assets/Importers/TextureImporter.h"
+#include "Assets/AssetImporters.hpp"
 
 #include <string>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -123,7 +123,7 @@ namespace Puffin::UI
 			// File Dialog - Import Texture
 			case ImportAssetUI::Texture:
 					
-				if (IO::ImportTexture(selectedPath))
+				if (IO::LoadAndImportTexture(selectedPath))
 				{
 					std::cout << "Import Successful" << std::endl;
 				}

@@ -33,7 +33,7 @@
 #include "Assets/TextureAsset.h"
 #include "Assets/SoundAsset.h"
 
-#include "Assets/Importers/ModelImporter.h"
+#include "Assets/AssetImporters.hpp"
 #include "Components/Physics/VelocityComponent.hpp"
 
 #include <chrono>
@@ -149,6 +149,8 @@ namespace Puffin::Core
 		// Load Scene -- normal behaviour
 		m_sceneData->LoadAndInit();
 		//m_sceneData->Save();
+
+		IO::LoadAndImportModel("C://Projects//PuffinProject//model_backups//DamagedHelmet//DamagedHelmet.gltf");
 
 		running = true;
 		m_playState = PlayState::STOPPED;
