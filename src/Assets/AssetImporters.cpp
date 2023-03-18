@@ -12,6 +12,7 @@
 #include "tiny_gltf.h"
 
 #include "Assets/TextureAsset.h"
+#include "Types/Vertex.hpp"
 
 #include <iostream>
 #include <string>
@@ -60,9 +61,54 @@ namespace Puffin::IO
 
 	bool ImportGLTFModel(const tinygltf::Model& model)
 	{
+		std::vector<Rendering::VertexPNTV32> vertices;
+		std::vector<uint32_t> indices;
+
 		for (const auto& mesh : model.meshes)
 		{
-			//mesh.
+			if (mesh.primitives.size() == 0)
+				continue;
+
+			vertices.clear();
+			indices.clear();
+
+			const auto& primitive = mesh.primitives[0];
+
+			size_t vertexCount = 0;
+
+			// Load Vertices
+			for (const auto& attribute : primitive.attributes)
+			{
+				if (vertexCount == 0)
+				{
+					vertexCount = model.accessors[attribute.second].count;
+
+					vertices.resize(vertexCount);
+				}
+
+				if (attribute.first == "POSITION")
+				{
+					
+
+					continue;
+				}
+
+				if (attribute.first == "NORMAL")
+				{
+					
+
+					continue;
+				}
+
+				if (attribute.first == "TEXCOORD_0")
+				{
+					
+
+					continue;
+				}
+			}
+
+			// Load Indices
 		}
 
 		return false;
