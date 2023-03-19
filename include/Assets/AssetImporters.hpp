@@ -7,6 +7,7 @@ namespace fs = std::filesystem;
 namespace tinygltf
 {
 	class Model;
+	class BufferView;
 }
 
 namespace Puffin::IO
@@ -15,13 +16,15 @@ namespace Puffin::IO
 	// Model Importers
 	//////////////////////
 
-	bool LoadAndImportModel(fs::path modelPath);
+	bool LoadAndImportModel(const fs::path& modelPath);
 
-	bool LoadGLTFModel(tinygltf::Model& model, fs::path modelPath);
+	bool LoadGLTFModel(tinygltf::Model& model, const fs::path& modelPath);
 
-	bool ImportGLTFModel(const tinygltf::Model& model);
+	bool ImportGLTFModel(const tinygltf::Model& model, const fs::path& parentPath);
 
-	bool LoadAndImportGLTFModel(fs::path modelPath);
+	bool LoadAndImportGLTFModel(const fs::path& modelPath);
+
+	bool LoadBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData);
 
 	//////////////////////
 	// Texture Importers
