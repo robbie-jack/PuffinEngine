@@ -188,6 +188,57 @@ namespace Puffin::IO
 				indices[i] = indexShort[i];
 			}
 
+			std::vector<Vector3f> tan;
+			tan.resize(vertexCount);
+
+			// Generate Tangents
+			for (int i = 0; i < indexCount; i += 3)
+			{
+				uint32_t i1 = indices[i];
+				uint32_t i2 = indices[i + 1];
+				uint32_t i3 = indices[i + 2];
+
+				const Vector3f& v1 = vertices[i1].pos;
+				const Vector3f& v2 = vertices[i2].pos;
+				const Vector3f& v3 = vertices[i3].pos;
+
+				const Vector2f& uv1 = vertices[i1].uv;
+				const Vector2f& uv2 = vertices[i2].uv;
+				const Vector2f& uv3 = vertices[i3].uv;
+
+				float x1 = v2.x - v1.x;
+				float x2 = v3.x - v1.x;
+				float y1 = v2.y - v1.y;
+				float y2 = v3.y - v1.y;
+				float z1 = v2.z - v1.z;
+				float z2 = v3.z - v1.z;
+
+				float s1 = uv2.x - uv1.x;
+				float s2 = uv3.x - uv1.x;
+				float t1 = uv2.y - uv1.y;
+				float t2 = uv3.y - uv1.y;
+
+				float r = 1.0F / (s1 * t2 - s2 * t1);
+
+				Vector3f sdir((t2* x1 - t1 * x2)* r, (t2* y1 - t1 * y2)* r,
+					(t2* z1 - t1 * z2)* r);
+
+				/*Vector3f tdir((s1* x2 - s2 * x1)* r, (s1* y2 - s2 * y1)* r,
+					(s1* z2 - s2 * z1)* r);*/
+
+				tan[i1] += sdir;
+				tan[i2] += sdir;
+				tan[i3] += sdir;
+			}
+
+			for (int i = 0; i < vertexCount; i++)
+			{
+				const Vector3f& n = vertices[i].normal;
+				const Vector3f& t = tan[i];
+
+				vertices[i].tangent = (t - n * n.Dot(t)).Normalised();
+			}
+
 			fs::path assetPath = modelPath.parent_path().stem() / mesh.name;
 			assetPath += ".pstaticmesh";
 
