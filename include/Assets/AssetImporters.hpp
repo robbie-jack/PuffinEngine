@@ -20,7 +20,7 @@ namespace Puffin::IO
 
 	bool LoadGLTFModel(tinygltf::Model& model, const fs::path& modelPath);
 
-	bool ImportGLTFModel(const tinygltf::Model& model, const fs::path& parentPath);
+	bool ImportGLTFModel(const tinygltf::Model& model, const fs::path& modelPath);
 
 	bool LoadAndImportGLTFModel(const fs::path& modelPath);
 

@@ -49,8 +49,16 @@ namespace Puffin::Assets
 
 	static bool SaveBinaryFile(const fs::path& path, const AssetData& data)
 	{
+		if (!fs::exists(path.parent_path()))
+		{
+			fs::create_directories(path.parent_path());
+		}
+
 		// Open File for Writing
 		std::ofstream outFile(path.c_str(), std::ios::binary | std::ios::out);
+
+		if (!outFile.is_open())
+			return false;
 
 		// Write Asset Type & Length
 		const uint32_t typeLength = data.type.size();

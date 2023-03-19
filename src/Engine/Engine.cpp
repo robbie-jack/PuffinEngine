@@ -150,8 +150,6 @@ namespace Puffin::Core
 		m_sceneData->LoadAndInit();
 		//m_sceneData->Save();
 
-		IO::LoadAndImportModel("C://Projects//PuffinProject//model_backups//DamagedHelmet//DamagedHelmet.gltf");
-
 		running = true;
 		m_playState = PlayState::STOPPED;
 

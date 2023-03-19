@@ -9,14 +9,15 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 // #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
 
+#include <iostream>
+#include <fstream>
+#include <string>
+
 #include "tiny_gltf.h"
 
 #include "Assets/TextureAsset.h"
 #include "Types/Vertex.hpp"
-
-#include <iostream>
-#include <fstream>
-#include <string>
+#include "Assets/MeshAsset.h"
 
 namespace Puffin::IO
 {
@@ -60,7 +61,7 @@ namespace Puffin::IO
 		return ret;
 	}
 
-	bool ImportGLTFModel(const tinygltf::Model& model, const fs::path& parentPath)
+	bool ImportGLTFModel(const tinygltf::Model& model, const fs::path& modelPath)
 	{
 		// Get buffer file paths
 		std::vector<fs::path> bufferPaths;
@@ -71,7 +72,7 @@ namespace Puffin::IO
 		{
 			if (buffer.uri.substr(0, 4) != "data")
 			{
-				bufferPaths[i] = parentPath.string() + "//" + buffer.uri;
+				bufferPaths[i] = modelPath.parent_path().string() + "//" + buffer.uri;
 			}
 
 			i++;
@@ -80,13 +81,11 @@ namespace Puffin::IO
 		std::vector<Rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
+		// Import each mesh in file
 		for (const auto& mesh : model.meshes)
 		{
 			if (mesh.primitives.size() == 0)
 				continue;
-
-			vertices.clear();
-			indices.clear();
 
 			const auto& primitive = mesh.primitives[0];
 
@@ -189,10 +188,37 @@ namespace Puffin::IO
 				indices[i] = indexShort[i];
 			}
 
-			bool test;
+			fs::path assetPath = modelPath.parent_path().stem() / mesh.name;
+			assetPath += ".pstaticmesh";
+
+			Assets::MeshInfo info;
+			info.compressionMode = Assets::CompressionMode::LZ4;
+			info.originalFile = modelPath.string();
+			info.vertexFormat = Rendering::VertexFormat::PNTV32;
+			info.numVertices = vertices.size();
+			info.numIndices = indices.size();
+			info.verticesSize = vertices.size() * sizeof(Rendering::VertexPNTV32);
+			info.indicesSize = indices.size() * sizeof(uint32_t);
+
+			auto asset = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(assetPath);
+
+			if (!asset->Save(info, vertices.data(), indices.data()))
+				return false;
+
+			vertices.clear();
+			indices.clear();
 		}
 
-		return false;
+		// Import Textures
+		for (const auto& image : model.images)
+		{
+			fs::path texturePath = modelPath.parent_path() / image.uri;
+
+			if (!LoadAndImportTexture(texturePath))
+				return false;
+		}
+
+		return true;
 	}
 
 	bool LoadAndImportGLTFModel(const fs::path& modelPath)
@@ -202,7 +228,7 @@ namespace Puffin::IO
 		if (!LoadGLTFModel(model, modelPath))
 			return false;
 
-		return ImportGLTFModel(model, modelPath.parent_path());
+		return ImportGLTFModel(model, modelPath);
 	}
 
 	bool LoadBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData)
@@ -245,7 +271,7 @@ namespace Puffin::IO
 		void* pixelPtr = pixels;
 
 		// Instantiate new Texture Asset to store loaded Pixel data
-		fs::path importPath = fs::path() / "textures" / texturePath.stem();
+		fs::path importPath = texturePath.parent_path().stem() / texturePath.stem();
 		importPath += ".ptexture";
 
 		Assets::TextureInfo info;
@@ -254,10 +280,10 @@ namespace Puffin::IO
 		info.textureFormat = Assets::TextureFormat::RGBA8;
 		info.textureHeight = (uint32_t)texHeight;
 		info.textureWidth = (uint32_t)texWidth;
-		info.originalSize = info.textureHeight * info.textureWidth * 4;
+		info.originalSize = info.textureHeight * info.textureWidth * texChannels;
 
 		auto asset = Assets::AssetRegistry::Get()->AddAsset<Assets::TextureAsset>(importPath);
-		bool ret = asset->Save(info, pixelPtr);
+		const bool ret = asset->Save(info, pixelPtr);
 
 		// Free Loaded Data, as pixels are now in staging buffer
 		stbi_image_free(pixels);

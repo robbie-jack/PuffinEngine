@@ -18,19 +18,19 @@ namespace Puffin::Assets
 	 * Asset Cache
 	 * Struct which Asset ID/Path, ID/Type pairs are stored in when saving/loading
 	 */
+	struct AssetCacheData
+	{
+		std::string path;
+		std::string type;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(AssetCacheData, path, type)
+	};
+
 	struct AssetCache
 	{
-		std::unordered_map<UUID, std::string> paths;
-		std::unordered_map<UUID, std::string> types;
+		std::unordered_map<UUID, AssetCacheData> data;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(AssetCache, paths, types)
-
-		template<class Archive>
-		void serialize(Archive& archive)
-		{
-			archive(paths);
-			archive(types);
-		}
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(AssetCache, data)
 	};
 
 	/* Asset Factory Interface

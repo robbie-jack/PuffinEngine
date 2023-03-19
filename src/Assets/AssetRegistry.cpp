@@ -37,13 +37,13 @@ namespace Puffin::Assets
 		// Fill AssetCache Struct
 		AssetCache assetCache;
 
-		for (const auto& pair : m_idToAssetMap)
+		for (const auto& [fst, snd] : m_idToAssetMap)
 		{
-			assetCache.paths[pair.first] = pair.second->RelativePath().string();
-			assetCache.types[pair.first] = pair.second->Type();
+			assetCache.data[fst].path = snd->RelativePath().string();
+			assetCache.data[fst].type = snd->Type();
 		}
 
-		json data = assetCache; 
+		json data = assetCache;
 
 		// Initialize Output File Stream and Cereal Binary Archive
 		const fs::path assetCachePath = m_projectRootPath / (m_projectName + ".passetcache");
@@ -67,16 +67,17 @@ namespace Puffin::Assets
 		AssetCache assetCache = data;
 
 		// Create Assets from factories based on their stored type
-		for (const auto& pair : assetCache.paths)
+		for (const auto& [fst, snd] : assetCache.data)
 		{
-			std::string type = assetCache.types[pair.first];
+			std::string path = snd.path;
+			std::string type = snd.type;
 			std::shared_ptr<Asset> asset;
 
 			for (const auto& factory : m_assetFactories)
 			{
 				if (factory->Type() == type)
 				{
-					asset = factory->AddAsset(pair.first, pair.second);
+					asset = factory->AddAsset(fst, path);
 					break;
 				}
 			}
