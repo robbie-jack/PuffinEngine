@@ -126,6 +126,9 @@ namespace Puffin::Rendering::VK
 		SwapchainData m_swapchainData;
 		SwapchainData m_oldSwapchainData;
 
+		OffscreenData m_offscreenData;
+		OffscreenData m_oldOffscreenData;
+
 		// Command Execution
 		vk::Queue m_graphicsQueue;
 		uint32_t m_graphicsQueueFamily;
@@ -171,10 +174,15 @@ namespace Puffin::Rendering::VK
 		bool m_windowResized = false;
 
 		void InitVulkan();
-		void InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain);
+
+		void InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain, const vk::Extent2D& swapchainExtent);
+		void InitSwapchainFramebuffers(SwapchainData& swapchainData);
+
+		void InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent, const int& offscreenImageCount);
+		void InitOffscreenFramebuffers(OffscreenData& offscreenData);
+
 		void InitCommands();
 		void InitDefaultRenderPass();
-		void InitSwapchainFramebuffers(SwapchainData& swapchainData);
 		void InitSyncStructures();
 		void InitBuffers();
 		void InitSamplers();
@@ -196,6 +204,10 @@ namespace Puffin::Rendering::VK
 
 		void RecreateSwapchain();
 		void CleanSwapchain(SwapchainData& swapchainData);
+
+		void RecreateOffscreen();
+		void CleanOffscreen(OffscreenData& offscreenData);
+
 		void UpdateTextureDescriptors();
 		void PrepareSceneData();
 

@@ -49,10 +49,16 @@ namespace Puffin::Rendering::VK
 		m_world->AddComponentDependencies<CameraComponent, CameraMatComponent>();
 
 		InitVulkan();
-		InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain);
+
+		InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
+		InitOffscreen(m_offscreenData, m_windowSize, m_swapchainData.images.size());
+
 		InitCommands();
 		InitDefaultRenderPass();
+
 		InitSwapchainFramebuffers(m_swapchainData);
+		InitOffscreenFramebuffers(m_offscreenData);
+
 		InitSyncStructures();
 		InitBuffers();
 		InitSamplers();
@@ -120,6 +126,13 @@ namespace Puffin::Rendering::VK
 			if (m_oldSwapchainData.needsCleaned)
 			{
 				CleanSwapchain(m_oldSwapchainData);
+			}
+
+			CleanOffscreen(m_offscreenData);
+
+			if (m_oldOffscreenData.needsCleaned)
+			{
+				CleanOffscreen(m_oldOffscreenData);
 			}
 
 			m_deletionQueue.Flush();
@@ -218,16 +231,18 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
-	void VKRenderSystem::InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain)
+	void VKRenderSystem::InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain, const vk::Extent2D& swapchainExtent)
 	{
 		vkb::SwapchainBuilder swapchainBuilder { m_physicalDevice, m_device, m_surface};
+
+		swapchainData.extent = swapchainExtent;
 
 		vkb::Swapchain vkbSwapchain = swapchainBuilder
 			.use_default_format_selection()
 			// Vsync present mode
 			.set_old_swapchain(oldSwapchain)
 			.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
-			.set_desired_extent(m_windowSize.width, m_windowSize.height)
+			.set_desired_extent(swapchainData.extent.width, swapchainData.extent.height)
 			.build()
 			.value();
 
@@ -254,6 +269,67 @@ namespace Puffin::Rendering::VK
 		vk::Extent3D depthExtent = { m_windowSize.width, m_windowSize.height, 1 };
 
 		swapchainData.depthImage = Util::InitDepthImage(shared_from_this(), depthExtent, vk::Format::eD32Sfloat);
+	}
+
+	void VKRenderSystem::InitSwapchainFramebuffers(SwapchainData& swapchainData)
+	{
+		vk::FramebufferCreateInfo fbInfo = { {}, m_renderPass, 1, nullptr, swapchainData.extent.width, swapchainData.extent.height, 1 };
+
+		// Grab number of images in swapchain
+		const uint32_t swapchainImageCount = swapchainData.images.size();
+		swapchainData.framebuffers.resize(swapchainImageCount);
+
+		for (int i = 0; i < swapchainImageCount; i++)
+		{
+			std::array<vk::ImageView, 2> attachments = { swapchainData.imageViews[i], swapchainData.depthImage.imageView };
+
+			fbInfo.pAttachments = attachments.data();
+			fbInfo.attachmentCount = attachments.size();
+
+			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &swapchainData.framebuffers[i]));
+		}
+	}
+
+	void VKRenderSystem::InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent, const int& offscreenImageCount)
+	{
+		offscreenData.extent = offscreenExtent;
+
+		const vk::Extent3D imageExtent = { offscreenData.extent.width, offscreenData.extent.height, 1 };
+
+		const vk::Format format = vk::Format::eR8G8B8A8Srgb;
+
+		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, imageExtent,
+			1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eLinear,
+			{ vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst } };
+
+		const vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+
+		const vk::ImageViewCreateInfo imageViewInfo = { {}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange };
+
+		offscreenData.allocImages.resize(offscreenImageCount);
+		for (int i = 0; i < offscreenImageCount; i++)
+		{
+			offscreenData.allocImages[i] = Util::CreateImage(shared_from_this(), imageInfo, imageViewInfo);
+		}
+
+		offscreenData.allocDepthImage = Util::InitDepthImage(shared_from_this(), imageExtent, vk::Format::eD32Sfloat);
+	}
+
+	void VKRenderSystem::InitOffscreenFramebuffers(OffscreenData& offscreenData)
+	{
+		vk::FramebufferCreateInfo fbInfo = { {}, m_renderPass, 1, nullptr, offscreenData.extent.width, offscreenData.extent.height, 1 };
+
+		offscreenData.framebuffers.resize(offscreenData.allocImages.size());
+
+		for (int i = 0; i < offscreenData.allocImages.size(); i++)
+		{
+			std::array<vk::ImageView, 2> attachments = { offscreenData.allocImages[i].imageView, offscreenData.allocDepthImage.imageView };
+
+			fbInfo.pAttachments = attachments.data();
+			fbInfo.attachmentCount = attachments.size();
+
+			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &offscreenData.framebuffers[i]));
+		}
 	}
 
 	void VKRenderSystem::InitCommands()
@@ -339,25 +415,6 @@ namespace Puffin::Rendering::VK
 		{
 			m_device.destroyRenderPass(m_renderPass);
 		});
-	}
-
-	void VKRenderSystem::InitSwapchainFramebuffers(SwapchainData& swapchainData)
-	{
-		vk::FramebufferCreateInfo fbInfo = { {}, m_renderPass, 1, nullptr, m_windowSize.width, m_windowSize.height, 1 };
-
-		// Grab number of images in swapchain
-		const uint32_t swapchainImageCount = swapchainData.images.size();
-		swapchainData.framebuffers.resize(swapchainImageCount);
-
-		for (int i = 0; i < swapchainImageCount; i++)
-		{
-			std::array<vk::ImageView, 2> attachments = { swapchainData.imageViews[i], swapchainData.depthImage.imageView };
-
-			fbInfo.pAttachments = attachments.data();
-			fbInfo.attachmentCount = attachments.size();
-
-			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &swapchainData.framebuffers[i]));
-		}
 	}
 
 	void VKRenderSystem::InitSyncStructures()
@@ -814,7 +871,7 @@ namespace Puffin::Rendering::VK
 
 			m_oldSwapchainData = m_swapchainData;
 
-			InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain);
+			InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
 			InitSwapchainFramebuffers(m_swapchainData);
 
 			m_oldSwapchainData.needsCleaned = true;
@@ -863,6 +920,28 @@ namespace Puffin::Rendering::VK
 		}
 
 		m_device.destroySwapchainKHR(swapchainData.swapchain);
+	}
+
+	void VKRenderSystem::RecreateOffscreen()
+	{
+
+	}
+
+	void VKRenderSystem::CleanOffscreen(OffscreenData& offscreenData)
+	{
+		for (int i = 0; i < offscreenData.framebuffers.size(); i++)
+		{
+			m_device.destroyFramebuffer(offscreenData.framebuffers[i]);
+		}
+
+		m_device.destroyImageView(offscreenData.allocDepthImage.imageView);
+		m_allocator.destroyImage(offscreenData.allocDepthImage.image, offscreenData.allocDepthImage.allocation);
+
+		for (int i = 0; i < offscreenData.allocImages.size(); i++)
+		{
+			m_device.destroyImageView(offscreenData.allocImages[i].imageView);
+			m_allocator.destroyImage(offscreenData.allocImages[i].image, offscreenData.allocImages[i].allocation);
+		}
 	}
 
 	void VKRenderSystem::UpdateTextureDescriptors()

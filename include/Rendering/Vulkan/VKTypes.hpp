@@ -52,12 +52,32 @@ namespace Puffin::Rendering::VK
 
 		vk::SwapchainKHR swapchain;
 
+		vk::Extent2D extent;
+
 		vk::Format imageFormat;
 		std::vector<vk::Image> images;
 		std::vector<vk::ImageView> imageViews;
 		std::vector<vk::Framebuffer> framebuffers;
 
 		AllocatedImage depthImage;
+
+		bool needsCleaned = false;
+	};
+
+	struct OffscreenData
+	{
+		void operator=(const OffscreenData& other)
+		{
+			allocImages = other.allocImages;
+			framebuffers = other.framebuffers;
+		}
+
+		vk::Extent2D extent;
+
+		std::vector<AllocatedImage> allocImages;
+		std::vector<vk::Framebuffer> framebuffers;
+
+		AllocatedImage allocDepthImage;
 
 		bool needsCleaned = false;
 	};
