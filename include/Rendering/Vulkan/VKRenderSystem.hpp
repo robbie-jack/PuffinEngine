@@ -49,7 +49,7 @@ namespace Puffin::Rendering::VK
 	struct FrameRenderData
 	{
 		// Synchronization
-		vk::Semaphore presentSemaphore, renderSemaphore;
+		vk::Semaphore renderSemaphore, copySemaphore, presentSemaphore;
 		vk::Fence renderFence;
 
 		// Command Execution
@@ -72,6 +72,7 @@ namespace Puffin::Rendering::VK
 		vk::DescriptorSet materialDescriptor;
 
 		bool swapchainNeedsUpdated = false;
+		bool offscreenNeedsUpdated = false;
 		bool textureDescriptorNeedsupdated = false;
 	};
 
@@ -172,7 +173,6 @@ namespace Puffin::Rendering::VK
 
 		// Indicated initialization completed without any failures
 		bool m_isInitialized = false;
-		bool m_windowResized = false;
 
 		void InitVulkan();
 
@@ -213,8 +213,8 @@ namespace Puffin::Rendering::VK
 
 		void BuildIndirectCommands();
 
-		vk::CommandBuffer RecordMainCommandBuffer(uint32_t swapchainIdx);
-		void DrawObjects(vk::CommandBuffer cmd);
+		vk::CommandBuffer RecordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent, vk::Framebuffer framebuffer);
+		void DrawObjects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
 		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset, uint32_t drawCount, uint32_t stride);
 
 		vk::CommandBuffer RecordCopyCommandBuffer(uint32_t swapchainIdx);
@@ -240,7 +240,8 @@ namespace Puffin::Rendering::VK
 		{
 			auto app = reinterpret_cast<VKRenderSystem*>(glfwGetWindowUserPointer(window));
 
-			app->m_windowResized = true;
+			app->m_swapchainData.resized = true;
+			app->m_offscreenData.resized = true;
 			app->m_windowSize.width = width;
 			app->m_windowSize.height = height;
 		}

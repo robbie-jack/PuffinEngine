@@ -44,6 +44,7 @@ namespace Puffin::Rendering::VK
 			imageViews = other.imageViews;
 
 			needsCleaned = other.needsCleaned;
+			resized = other.resized;
 		}
 
 		vk::SwapchainKHR swapchain;
@@ -55,6 +56,7 @@ namespace Puffin::Rendering::VK
 		std::vector<vk::ImageView> imageViews;
 
 		bool needsCleaned = false;
+		bool resized = false;
 	};
 
 	struct OffscreenData
@@ -70,6 +72,7 @@ namespace Puffin::Rendering::VK
 			allocDepthImage = other.allocDepthImage;
 
 			needsCleaned = other.needsCleaned;
+			resized = other.resized;
 		}
 
 		vk::Extent2D extent;
@@ -81,6 +84,7 @@ namespace Puffin::Rendering::VK
 		AllocatedImage allocDepthImage;
 
 		bool needsCleaned = false;
+		bool resized = false;
 	};
 
 	struct MeshData

@@ -404,15 +404,18 @@ namespace Puffin::Rendering::VK
 		{
 			VK_CHECK(m_device.createFence(&fenceCreateInfo, nullptr, &m_frameRenderData[i].renderFence));
 
-			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frameRenderData[i].presentSemaphore));
 			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frameRenderData[i].renderSemaphore));
+			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frameRenderData[i].copySemaphore));
+			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frameRenderData[i].presentSemaphore));
+			
 
 			m_deletionQueue.PushFunction([=]()
 			{
 				m_device.destroyFence(m_frameRenderData[i].renderFence);
 
-				m_device.destroySemaphore(m_frameRenderData[i].presentSemaphore);
 				m_device.destroySemaphore(m_frameRenderData[i].renderSemaphore);
+				m_device.destroySemaphore(m_frameRenderData[i].copySemaphore);
+				m_device.destroySemaphore(m_frameRenderData[i].presentSemaphore);
 			});
 		}
 
@@ -794,6 +797,7 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_device.resetFences(1, &GetCurrentFrameData().renderFence));
 
 		RecreateSwapchain();
+		RecreateOffscreen();
 
 		m_drawCalls = 0;
 
@@ -806,11 +810,10 @@ namespace Puffin::Rendering::VK
 		BuildIndirectCommands();
 
 		// Record command buffers
-		vk::CommandBuffer mainCmd = RecordMainCommandBuffer(swapchainImageIdx);
-		vk::CommandBuffer copyCmd = RecordCopyCommandBuffer(swapchainImageIdx);
+		vk::CommandBuffer mainCmd = RecordMainCommandBuffer(swapchainImageIdx, m_offscreenData.extent, m_offscreenData.framebuffers[swapchainImageIdx]);
 
 		// Submit all commands
-		std::vector<vk::CommandBuffer> commands = { mainCmd, copyCmd };
+		std::vector<vk::CommandBuffer> commands = { mainCmd };
 
 		SubmitCommands(swapchainImageIdx, commands);
 
@@ -841,7 +844,7 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::RecreateSwapchain()
 	{
 		// Recreate swapchain when window is resized
-		if (m_windowResized)
+		if (m_swapchainData.resized == true)
 		{
 			for (int i = 0; i < G_BUFFERED_FRAMES; i++)
 			{
@@ -849,12 +852,11 @@ namespace Puffin::Rendering::VK
 			}
 
 			m_oldSwapchainData = m_swapchainData;
+			m_oldSwapchainData.needsCleaned = true;
 
 			InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
 
-			m_oldSwapchainData.needsCleaned = true;
-
-			m_windowResized = false;
+			m_swapchainData.resized = false;
 		}
 
 		if (m_oldSwapchainData.needsCleaned == true)
@@ -894,7 +896,44 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::RecreateOffscreen()
 	{
+		if (m_offscreenData.resized == true)
+		{
+			for (int i = 0; i < G_BUFFERED_FRAMES; i++)
+			{
+				m_frameRenderData[i].offscreenNeedsUpdated = true;
+			}
 
+			m_oldOffscreenData = m_offscreenData;
+			m_oldOffscreenData.needsCleaned = true;
+
+			InitOffscreen(m_offscreenData, m_windowSize, m_swapchainData.images.size());
+
+			m_offscreenData.resized = false;
+		}
+
+		if (m_oldOffscreenData.needsCleaned == true)
+		{
+			if (GetCurrentFrameData().offscreenNeedsUpdated == true)
+			{
+				GetCurrentFrameData().offscreenNeedsUpdated = false;
+			}
+
+			int framesUsingNewSwapchain = 0;
+			for (int i = 0; i < G_BUFFERED_FRAMES; i++)
+			{
+				if (m_frameRenderData[i].offscreenNeedsUpdated == false)
+				{
+					framesUsingNewSwapchain++;
+				}
+			}
+
+			if (framesUsingNewSwapchain == G_BUFFERED_FRAMES)
+			{
+				CleanOffscreen(m_oldOffscreenData);
+
+				m_oldOffscreenData.needsCleaned = false;
+			}
+		}
 	}
 
 	void VKRenderSystem::CleanOffscreen(OffscreenData& offscreenData)
@@ -1081,7 +1120,7 @@ namespace Puffin::Rendering::VK
 		GetCurrentFrameData().drawCount = idx;
 	}
 
-	vk::CommandBuffer VKRenderSystem::RecordMainCommandBuffer(uint32_t swapchainIdx)
+	vk::CommandBuffer VKRenderSystem::RecordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent, vk::Framebuffer framebuffer)
 	{
 		vk::CommandBuffer cmd = GetCurrentFrameData().mainCommandBuffer;
 
@@ -1103,12 +1142,12 @@ namespace Puffin::Rendering::VK
 		std::array<vk::ClearValue, 2> clearValues = { clearValue, depthClear };
 
 		// Begin main renderpass
-		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_offscreenData.framebuffers[swapchainIdx],
-			vk::Rect2D{ {0, 0}, m_windowSize }, clearValues.size(), clearValues.data(), nullptr };
+		vk::RenderPassBeginInfo rpInfo = { m_renderPass, framebuffer,
+			vk::Rect2D{ {0, 0}, renderExtent }, clearValues.size(), clearValues.data(), nullptr };
 
 		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
 
-		DrawObjects(cmd);
+		DrawObjects(cmd, renderExtent);
 
 		// End main renderpass
 		cmd.endRenderPass();
@@ -1119,14 +1158,14 @@ namespace Puffin::Rendering::VK
 		return cmd;
 	}
 
-	void VKRenderSystem::DrawObjects(vk::CommandBuffer cmd)
+	void VKRenderSystem::DrawObjects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent)
 	{
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_forwardPipeline.get());
 
-		vk::Viewport viewport = { 0, 0, static_cast<float>(m_windowSize.width), static_cast<float>(m_windowSize.height), 0.1f, 1.0f };
+		vk::Viewport viewport = { 0, 0, static_cast<float>(renderExtent.width), static_cast<float>(renderExtent.height), 0.1f, 1.0f };
 		cmd.setViewport(0, 1, &viewport);
 
-		vk::Rect2D scissor = { { 0, 0 }, { m_windowSize.width, m_windowSize.height } };
+		vk::Rect2D scissor = { { 0, 0 }, { renderExtent.width, renderExtent.height } };
 		cmd.setScissor(0, 1, &scissor);
 
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forwardPipelineLayout.get(), 0, 1, &GetCurrentFrameData().globalDescriptor, 0, nullptr);
@@ -1231,18 +1270,32 @@ namespace Puffin::Rendering::VK
 	{
 		// Prepare submission to queue
 		vk::PipelineStageFlags waitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-		vk::SubmitInfo submit =
+		vk::SubmitInfo renderSubmit =
 		{
 			1, &GetCurrentFrameData().presentSemaphore,
 			&waitStage, static_cast<uint32_t>(commands.size()), commands.data(),
 			1, &GetCurrentFrameData().renderSemaphore, nullptr
 		};
 
-		VK_CHECK(m_graphicsQueue.submit(1, &submit, GetCurrentFrameData().renderFence));
+		vk::CommandBuffer copyCmd = RecordCopyCommandBuffer(swapchainIdx);
+
+		vk::SubmitInfo copySubmit =
+		{
+			1, &GetCurrentFrameData().renderSemaphore,
+			&waitStage, 1, &copyCmd,
+			1, &GetCurrentFrameData().copySemaphore, nullptr
+		};
+
+		std::vector submits =
+		{
+			renderSubmit, copySubmit
+		};
+
+		VK_CHECK(m_graphicsQueue.submit(submits.size(), submits.data(), GetCurrentFrameData().renderFence));
 
 		vk::PresentInfoKHR presentInfo =
 		{
-			1, &GetCurrentFrameData().renderSemaphore, 1, &m_swapchainData.swapchain, & swapchainIdx
+			1, &GetCurrentFrameData().copySemaphore, 1, &m_swapchainData.swapchain, & swapchainIdx
 		};
 
 		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
