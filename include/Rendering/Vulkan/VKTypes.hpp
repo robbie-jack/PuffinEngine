@@ -43,23 +43,16 @@ namespace Puffin::Rendering::VK
 			images = other.images;
 			imageViews = other.imageViews;
 
-			framebuffers = other.framebuffers;
-
-			depthImage = other.depthImage;
-
 			needsCleaned = other.needsCleaned;
 		}
 
 		vk::SwapchainKHR swapchain;
 
 		vk::Extent2D extent;
-
 		vk::Format imageFormat;
+
 		std::vector<vk::Image> images;
 		std::vector<vk::ImageView> imageViews;
-		std::vector<vk::Framebuffer> framebuffers;
-
-		AllocatedImage depthImage;
 
 		bool needsCleaned = false;
 	};
@@ -68,11 +61,19 @@ namespace Puffin::Rendering::VK
 	{
 		void operator=(const OffscreenData& other)
 		{
+			extent = other.extent;
+			imageFormat = other.imageFormat;
+
 			allocImages = other.allocImages;
 			framebuffers = other.framebuffers;
+
+			allocDepthImage = other.allocDepthImage;
+
+			needsCleaned = other.needsCleaned;
 		}
 
 		vk::Extent2D extent;
+		vk::Format imageFormat;
 
 		std::vector<AllocatedImage> allocImages;
 		std::vector<vk::Framebuffer> framebuffers;

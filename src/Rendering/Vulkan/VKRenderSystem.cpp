@@ -56,7 +56,6 @@ namespace Puffin::Rendering::VK
 		InitCommands();
 		InitDefaultRenderPass();
 
-		InitSwapchainFramebuffers(m_swapchainData);
 		InitOffscreenFramebuffers(m_offscreenData);
 
 		InitSyncStructures();
@@ -243,6 +242,7 @@ namespace Puffin::Rendering::VK
 			.set_old_swapchain(oldSwapchain)
 			.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
 			.set_desired_extent(swapchainData.extent.width, swapchainData.extent.height)
+			.set_image_usage_flags({ VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT })
 			.build()
 			.value();
 
@@ -264,30 +264,6 @@ namespace Puffin::Rendering::VK
 
 		images.clear();
 		imageViews.clear();
-
-		// Create Swapchain Depth Image
-		vk::Extent3D depthExtent = { m_windowSize.width, m_windowSize.height, 1 };
-
-		swapchainData.depthImage = Util::InitDepthImage(shared_from_this(), depthExtent, vk::Format::eD32Sfloat);
-	}
-
-	void VKRenderSystem::InitSwapchainFramebuffers(SwapchainData& swapchainData)
-	{
-		vk::FramebufferCreateInfo fbInfo = { {}, m_renderPass, 1, nullptr, swapchainData.extent.width, swapchainData.extent.height, 1 };
-
-		// Grab number of images in swapchain
-		const uint32_t swapchainImageCount = swapchainData.images.size();
-		swapchainData.framebuffers.resize(swapchainImageCount);
-
-		for (int i = 0; i < swapchainImageCount; i++)
-		{
-			std::array<vk::ImageView, 2> attachments = { swapchainData.imageViews[i], swapchainData.depthImage.imageView };
-
-			fbInfo.pAttachments = attachments.data();
-			fbInfo.attachmentCount = attachments.size();
-
-			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &swapchainData.framebuffers[i]));
-		}
 	}
 
 	void VKRenderSystem::InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent, const int& offscreenImageCount)
@@ -296,15 +272,16 @@ namespace Puffin::Rendering::VK
 
 		const vk::Extent3D imageExtent = { offscreenData.extent.width, offscreenData.extent.height, 1 };
 
-		const vk::Format format = vk::Format::eR8G8B8A8Srgb;
+		offscreenData.imageFormat = vk::Format::eR8G8B8A8Unorm;
 
-		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, imageExtent,
-			1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eLinear,
-			{ vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst } };
+		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, offscreenData.imageFormat, imageExtent,
+			1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
+			{ vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled | 
+				vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst } };
 
 		const vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
 
-		const vk::ImageViewCreateInfo imageViewInfo = { {}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange };
+		const vk::ImageViewCreateInfo imageViewInfo = { {}, {}, vk::ImageViewType::e2D, offscreenData.imageFormat, {}, subresourceRange };
 
 		offscreenData.allocImages.resize(offscreenImageCount);
 		for (int i = 0; i < offscreenImageCount; i++)
@@ -344,6 +321,7 @@ namespace Puffin::Rendering::VK
 
 			commandBufferInfo.commandPool = m_frameRenderData[i].commandPool;
 			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_frameRenderData[i].mainCommandBuffer));
+			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_frameRenderData[i].copyCommandBuffer));
 
 			m_deletionQueue.PushFunction([=]()
 			{
@@ -370,17 +348,17 @@ namespace Puffin::Rendering::VK
 
 		vk::AttachmentDescription colorAttachment = 
 		{
-			{}, m_swapchainData.imageFormat, vk::SampleCountFlagBits::e1,
+			{}, m_offscreenData.imageFormat, vk::SampleCountFlagBits::e1,
 			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 			vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal
 		};
 
 		vk::AttachmentReference colorAttachmentRef = { 0, vk::ImageLayout::eColorAttachmentOptimal };
 
 		vk::AttachmentDescription depthAttachment =
 		{
-			{}, m_swapchainData.depthImage.format, vk::SampleCountFlagBits::e1,
+			{}, m_offscreenData.allocDepthImage.format, vk::SampleCountFlagBits::e1,
 			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
 			vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal
@@ -829,9 +807,10 @@ namespace Puffin::Rendering::VK
 
 		// Record command buffers
 		vk::CommandBuffer mainCmd = RecordMainCommandBuffer(swapchainImageIdx);
+		vk::CommandBuffer copyCmd = RecordCopyCommandBuffer(swapchainImageIdx);
 
 		// Submit all commands
-		std::vector<vk::CommandBuffer> commands = { mainCmd };
+		std::vector<vk::CommandBuffer> commands = { mainCmd, copyCmd };
 
 		SubmitCommands(swapchainImageIdx, commands);
 
@@ -872,7 +851,6 @@ namespace Puffin::Rendering::VK
 			m_oldSwapchainData = m_swapchainData;
 
 			InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
-			InitSwapchainFramebuffers(m_swapchainData);
 
 			m_oldSwapchainData.needsCleaned = true;
 
@@ -906,14 +884,6 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::CleanSwapchain(SwapchainData& swapchainData)
 	{
-		for (int i = 0; i < swapchainData.framebuffers.size(); i++)
-		{
-			m_device.destroyFramebuffer(swapchainData.framebuffers[i]);
-		}
-
-		m_device.destroyImageView(swapchainData.depthImage.imageView);
-		m_allocator.destroyImage(swapchainData.depthImage.image, swapchainData.depthImage.allocation);
-
 		for (int i = 0; i < swapchainData.imageViews.size(); i++)
 		{
 			m_device.destroyImageView(swapchainData.imageViews[i]);
@@ -1133,7 +1103,7 @@ namespace Puffin::Rendering::VK
 		std::array<vk::ClearValue, 2> clearValues = { clearValue, depthClear };
 
 		// Begin main renderpass
-		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_swapchainData.framebuffers[swapchainIdx],
+		vk::RenderPassBeginInfo rpInfo = { m_renderPass, m_offscreenData.framebuffers[swapchainIdx],
 			vk::Rect2D{ {0, 0}, m_windowSize }, clearValues.size(), clearValues.data(), nullptr };
 
 		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
@@ -1175,6 +1145,86 @@ namespace Puffin::Rendering::VK
 	{
 		cmd.drawIndexedIndirect(indirectBuffer, offset, GetCurrentFrameData().drawCount, stride);
 		m_drawCalls++;
+	}
+
+	vk::CommandBuffer VKRenderSystem::RecordCopyCommandBuffer(uint32_t swapchainIdx)
+	{
+		vk::CommandBuffer cmd = GetCurrentFrameData().copyCommandBuffer;
+
+		// Reset command buffer for recording new commands
+		cmd.reset();		
+
+		// Begin command buffer execution
+		vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+			nullptr, nullptr };
+
+		VK_CHECK(cmd.begin(&cmdBeginInfo));
+
+		// Setup pipeline barriers for transitioning image layouts
+
+		vk::ImageSubresourceRange imageSubresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+
+		// Offscreen Transition
+		vk::ImageMemoryBarrier offscreenMemoryBarrier = { vk::AccessFlagBits::eNone, vk::AccessFlagBits::eTransferRead,
+			vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageLayout::eTransferSrcOptimal,{}, {},
+				m_offscreenData.allocImages[swapchainIdx].image, imageSubresourceRange };
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, 
+		{}, 0, nullptr, 0, nullptr, 
+		1, &offscreenMemoryBarrier);
+
+		// Swapchain Transition
+		vk::ImageMemoryBarrier swapchainMemoryBarrier = { vk::AccessFlagBits::eMemoryRead, vk::AccessFlagBits::eTransferWrite,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,{}, {},
+				m_swapchainData.images[swapchainIdx], imageSubresourceRange };
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+			{}, 0, nullptr, 0, nullptr,
+			1, & swapchainMemoryBarrier);
+
+		// Blit (Copy with auto format coversion (RGB to BGR)) offscreen to swapchain image
+		vk::Offset3D blitSize =
+		{
+			static_cast<int32_t>(m_offscreenData.extent.width),
+			static_cast<int32_t>(m_offscreenData.extent.height),
+			1
+		};
+
+		std::array<vk::Offset3D, 2> offsets = {};
+		offsets[1] = blitSize;
+
+		vk::ImageBlit imageBlitRegion =
+		{
+			{ vk::ImageAspectFlagBits::eColor, 0, 0, 1 }, offsets,
+			{ vk::ImageAspectFlagBits::eColor, 0, 0, 1 }, offsets
+		};
+
+		cmd.blitImage(m_offscreenData.allocImages[swapchainIdx].image, vk::ImageLayout::eTransferSrcOptimal,
+			m_swapchainData.images[swapchainIdx], vk::ImageLayout::eTransferDstOptimal, 1, &imageBlitRegion, vk::Filter::eNearest);
+
+		// Setup pipeline barriers for transitioning image layouts back to default
+
+		// Offscreen Transition
+		offscreenMemoryBarrier = { vk::AccessFlagBits::eTransferRead, vk::AccessFlagBits::eNone,
+			vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal,{}, {},
+				m_offscreenData.allocImages[swapchainIdx].image, imageSubresourceRange };
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+			{}, 0, nullptr, 0, nullptr,
+			1, &offscreenMemoryBarrier);
+
+		// Swapchain Transition
+		swapchainMemoryBarrier = { vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eMemoryRead,
+			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR,{}, {},
+				m_swapchainData.images[swapchainIdx], imageSubresourceRange };
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+			{}, 0, nullptr, 0, nullptr,
+			1, &swapchainMemoryBarrier);
+
+		cmd.end();
+
+		return cmd;
 	}
 
 	void VKRenderSystem::SubmitCommands(uint32_t swapchainIdx, std::vector<vk::CommandBuffer>& commands)

@@ -55,6 +55,7 @@ namespace Puffin::Rendering::VK
 		// Command Execution
 		vk::CommandPool commandPool;
 		vk::CommandBuffer mainCommandBuffer;
+		vk::CommandBuffer copyCommandBuffer; // Cmd buffer for copying/blitting from offscreen to swapchain
 
 		AllocatedBuffer indirectBuffer; // Buffer of indirect draw commands
 		uint32_t drawCount = 0;
@@ -176,9 +177,8 @@ namespace Puffin::Rendering::VK
 		void InitVulkan();
 
 		void InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain, const vk::Extent2D& swapchainExtent);
-		void InitSwapchainFramebuffers(SwapchainData& swapchainData);
-
 		void InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent, const int& offscreenImageCount);
+
 		void InitOffscreenFramebuffers(OffscreenData& offscreenData);
 
 		void InitCommands();
@@ -215,8 +215,9 @@ namespace Puffin::Rendering::VK
 
 		vk::CommandBuffer RecordMainCommandBuffer(uint32_t swapchainIdx);
 		void DrawObjects(vk::CommandBuffer cmd);
-
 		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset, uint32_t drawCount, uint32_t stride);
+
+		vk::CommandBuffer RecordCopyCommandBuffer(uint32_t swapchainIdx);
 
 		void SubmitCommands(uint32_t swapchainIdx, std::vector<vk::CommandBuffer>& commands);
 
