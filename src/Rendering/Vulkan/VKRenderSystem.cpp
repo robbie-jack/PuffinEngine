@@ -68,6 +68,8 @@ namespace Puffin::Rendering::VK
 		InitDescriptors();
 		InitPipelines();
 
+		InitImGui();
+
 		m_editorCam.position = { 0.0f, 0.0f, 15.0f };
 
 		// Connect Signals
@@ -559,6 +561,25 @@ namespace Puffin::Rendering::VK
 			m_forwardPipelineLayout = {};
 			m_forwardPipeline = {};
 		});
+	}
+
+	void VKRenderSystem::InitImGui()
+	{
+		// Create Descriptor Pool for ImGui
+		vk::DescriptorPoolSize poolSizes[] =
+		{
+			{ vk::DescriptorType::eSampler, 1000 },
+			{ vk::DescriptorType::eCombinedImageSampler, 1000 },
+			{ vk::DescriptorType::eSampledImage, 1000 },
+			{ vk::DescriptorType::eStorageImage, 1000 },
+			{ vk::DescriptorType::eUniformTexelBuffer, 1000 },
+			{ vk::DescriptorType::eStorageTexelBuffer, 1000 },
+			{ vk::DescriptorType::eUniformBuffer, 1000 },
+			{ vk::DescriptorType::eStorageBuffer, 1000 },
+			{ vk::DescriptorType::eUniformBufferDynamic, 1000 },
+			{ vk::DescriptorType::eStorageBufferDynamic, 1000 },
+			{ vk::DescriptorType::eInputAttachment, 1000 }
+		};
 	}
 
 	void VKRenderSystem::ProcessEvents()

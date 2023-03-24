@@ -191,6 +191,8 @@ namespace Puffin::Rendering::VK
 
 		void BuildForwardRendererPipeline();
 
+		void InitImGui();
+
 		void ProcessEvents();
 
 		void ProcessComponents();
