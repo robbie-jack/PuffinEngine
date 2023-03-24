@@ -907,6 +907,7 @@ namespace Puffin::Rendering::VK
 			m_oldOffscreenData.needsCleaned = true;
 
 			InitOffscreen(m_offscreenData, m_windowSize, m_swapchainData.images.size());
+			InitOffscreenFramebuffers(m_offscreenData);
 
 			m_offscreenData.resized = false;
 		}
