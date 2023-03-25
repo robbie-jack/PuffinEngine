@@ -136,6 +136,7 @@ namespace Puffin::Rendering::VK
 		uint32_t m_graphicsQueueFamily;
 
 		vk::RenderPass m_renderPass;
+		vk::RenderPass m_renderPassImGui;
 
 		StaticRenderData m_staticRenderData;
 		std::array<FrameRenderData, G_BUFFERED_FRAMES> m_frameRenderData;
@@ -182,7 +183,10 @@ namespace Puffin::Rendering::VK
 		void InitOffscreenFramebuffers(OffscreenData& offscreenData);
 
 		void InitCommands();
+
 		void InitDefaultRenderPass();
+		void InitImGuiRenderPass();
+
 		void InitSyncStructures();
 		void InitBuffers();
 		void InitSamplers();

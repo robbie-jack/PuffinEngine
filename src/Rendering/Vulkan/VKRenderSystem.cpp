@@ -15,6 +15,10 @@
 #include "VkBootstrap.h"
 #include "glm/glm.hpp"
 
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_vulkan.h"
+
 #include "Window/WindowSubsystem.hpp"
 #include "Engine/Engine.hpp"
 #include "Rendering/Vulkan/VKHelpers.hpp"
@@ -54,7 +58,9 @@ namespace Puffin::Rendering::VK
 		InitOffscreen(m_offscreenData, m_windowSize, m_swapchainData.images.size());
 
 		InitCommands();
+
 		InitDefaultRenderPass();
+		InitImGuiRenderPass();
 
 		InitOffscreenFramebuffers(m_offscreenData);
 
@@ -397,6 +403,44 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
+	void VKRenderSystem::InitImGuiRenderPass()
+	{
+		// Setup Attachments
+
+		vk::AttachmentDescription colorAttachment =
+		{
+			{}, m_swapchainData.imageFormat, vk::SampleCountFlagBits::e1,
+			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+			vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal
+		};
+
+		vk::AttachmentReference colorAttachmentRef = { 0, vk::ImageLayout::eColorAttachmentOptimal };
+
+		vk::SubpassDescription subpass = { {}, vk::PipelineBindPoint::eGraphics, 0, nullptr,
+			1, &colorAttachmentRef, {}, {} };
+
+		std::array<vk::AttachmentDescription, 1> attachments = { colorAttachment };
+
+		// Setup Dependencies
+		vk::SubpassDependency colorDependency = { VK_SUBPASS_EXTERNAL, 0, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits::eColorAttachmentOutput, {}, vk::AccessFlagBits::eColorAttachmentWrite };
+
+		std::array<vk::SubpassDependency, 1> dependencies = { colorDependency };
+
+		vk::RenderPassCreateInfo renderPassInfo = { {}, attachments.size(), attachments.data(), 1, &subpass,
+			dependencies.size(), dependencies.data() };
+
+		// Create Render Pass
+
+		VK_CHECK(m_device.createRenderPass(&renderPassInfo, nullptr, &m_renderPassImGui));
+
+		m_deletionQueue.PushFunction([=]()
+			{
+				m_device.destroyRenderPass(m_renderPassImGui);
+			});
+	}
+
 	void VKRenderSystem::InitSyncStructures()
 	{
 		vk::FenceCreateInfo fenceCreateInfo = { vk::FenceCreateFlagBits::eSignaled, nullptr };
@@ -580,6 +624,43 @@ namespace Puffin::Rendering::VK
 			{ vk::DescriptorType::eStorageBufferDynamic, 1000 },
 			{ vk::DescriptorType::eInputAttachment, 1000 }
 		};
+
+		vk::DescriptorPoolCreateInfo poolInfo = 
+		{
+			vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000, std::size(poolSizes), poolSizes
+		};
+
+		vk::DescriptorPool imguiPool;
+		VK_CHECK(m_device.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
+
+		// Initialize ImGui Context
+		ImGui::CreateContext();
+
+		// Initialize imgui for GLFW
+		GLFWwindow* glfwWindow = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+		ImGui_ImplGlfw_InitForVulkan(glfwWindow, false);
+
+		// Initialize imgui for Vulkan
+		ImGui_ImplVulkan_InitInfo initInfo = { m_instance, m_physicalDevice, m_device, m_graphicsQueueFamily,
+			m_graphicsQueue, m_pipelineCache, imguiPool,
+			0, 3, 3, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, nullptr };
+
+		ImGui_ImplVulkan_Init(&initInfo, m_renderPassImGui);
+
+		// Upload ImGui font textures
+		Util::ImmediateSubmit(shared_from_this(), [=](vk::CommandBuffer cmd)
+		{
+			ImGui_ImplVulkan_CreateFontsTexture(cmd);
+		});
+
+		// Clear font textures from cpu data
+		ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+		m_deletionQueue.PushFunction([=]()
+		{
+			m_device.destroyDescriptorPool(imguiPool, nullptr);
+			ImGui_ImplVulkan_Shutdown();
+		});
 	}
 
 	void VKRenderSystem::ProcessEvents()
