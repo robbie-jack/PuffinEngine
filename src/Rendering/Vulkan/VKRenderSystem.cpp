@@ -1,6 +1,7 @@
 #include "Rendering/Vulkan/VKRenderSystem.hpp"
 
 #define VMA_IMPLEMENTATION
+#define VMA_DEBUG_LOG
 
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
@@ -73,9 +74,14 @@ namespace Puffin::Rendering::VK
 		InitCommands();
 
 		InitDefaultRenderPass();
-		InitImGuiRenderPass();
 
-		InitSwapchainFramebuffers(m_swapchainData);
+		if (m_engine->ShouldRenderEditorUI())
+		{
+			InitImGuiRenderPass();
+
+			InitSwapchainFramebuffers(m_swapchainData);
+		}
+
 		InitOffscreenFramebuffers(m_offscreenData);
 
 		InitSyncStructures();
@@ -88,8 +94,11 @@ namespace Puffin::Rendering::VK
 		InitDescriptors();
 		InitPipelines();
 
-		InitImGui();
-		InitOffscreenImGuiTextures(m_offscreenData);
+		if (m_engine->ShouldRenderEditorUI())
+		{
+			InitImGui();
+			InitOffscreenImGuiTextures(m_offscreenData);
+		}
 
 		m_editorCam.position = { 0.0f, 0.0f, 15.0f };
 
@@ -471,9 +480,9 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_device.createRenderPass(&renderPassInfo, nullptr, &m_renderPassImGui));
 
 		m_deletionQueue.PushFunction([=]()
-			{
-				m_device.destroyRenderPass(m_renderPassImGui);
-			});
+		{
+			m_device.destroyRenderPass(m_renderPassImGui);
+		});
 	}
 
 	void VKRenderSystem::InitSyncStructures()
@@ -669,9 +678,6 @@ namespace Puffin::Rendering::VK
 		vk::DescriptorPool imguiPool;
 		VK_CHECK(m_device.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
 
-		// Initialize ImGui Context
-		ImGui::CreateContext();
-
 		// Initialize imgui for GLFW
 		GLFWwindow* glfwWindow = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, false);
@@ -679,7 +685,7 @@ namespace Puffin::Rendering::VK
 		// Initialize imgui for Vulkan
 		ImGui_ImplVulkan_InitInfo initInfo = { m_instance, m_physicalDevice, m_device, m_graphicsQueueFamily,
 			m_graphicsQueue, m_pipelineCache, imguiPool,
-			0, 3, 3, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, nullptr };
+			0, 3, 3, VK_SAMPLE_COUNT_1_BIT, nullptr };
 
 		ImGui_ImplVulkan_Init(&initInfo, m_renderPassImGui);
 
@@ -696,6 +702,7 @@ namespace Puffin::Rendering::VK
 		{
 			m_device.destroyDescriptorPool(imguiPool, nullptr);
 			ImGui_ImplVulkan_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
 		});
 	}
 
@@ -970,6 +977,8 @@ namespace Puffin::Rendering::VK
 
 		if (m_engine->ShouldRenderEditorUI())
 		{
+			//m_engine->GetUIManager()->DrawUI(m_engine->GetDeltaTime());
+
 			m_engine->GetUIManager()->GetWindowViewport()->Draw(m_offscreenData.viewportTextures[swapchainImageIdx]);
 
 			ImGui::Render();
@@ -1049,7 +1058,11 @@ namespace Puffin::Rendering::VK
 	{
 		for (int i = 0; i < swapchainData.imageViews.size(); i++)
 		{
-			m_device.destroyFramebuffer(swapchainData.framebuffers[i]);
+			if (m_engine->ShouldRenderEditorUI())
+			{
+				m_device.destroyFramebuffer(swapchainData.framebuffers[i]);
+			}
+
 			m_device.destroyImageView(swapchainData.imageViews[i]);
 		}
 
@@ -1082,7 +1095,11 @@ namespace Puffin::Rendering::VK
 
 			InitOffscreen(m_offscreenData, offscreenSize, m_swapchainData.images.size());
 			InitOffscreenFramebuffers(m_offscreenData);
-			InitOffscreenImGuiTextures(m_offscreenData);
+
+			if (m_engine->ShouldRenderEditorUI())
+			{
+				InitOffscreenImGuiTextures(m_offscreenData);
+			}
 
 			m_offscreenData.resized = false;
 		}
@@ -1119,7 +1136,10 @@ namespace Puffin::Rendering::VK
 
 		for (int i = 0; i < offscreenData.allocImages.size(); i++)
 		{
-			ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(offscreenData.viewportTextures[i]));
+			if (m_engine->ShouldRenderEditorUI())
+			{
+				ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(offscreenData.viewportTextures[i]));
+			}
 
 			m_device.destroyFramebuffer(offscreenData.framebuffers[i]);
 			m_device.destroyImageView(offscreenData.allocImages[i].imageView);

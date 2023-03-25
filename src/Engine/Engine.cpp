@@ -447,8 +447,11 @@ namespace Puffin::Core
 		m_subsystems.clear();
 
 		// Cleanup UI Manager
-		m_uiManager->Cleanup();
-		m_uiManager = nullptr;
+		if (m_shouldRenderEditorUI)
+		{
+			m_uiManager->Cleanup();
+			m_uiManager = nullptr;
+		}
 
 		// Clear Asset Registry
 		Assets::AssetRegistry::Clear();

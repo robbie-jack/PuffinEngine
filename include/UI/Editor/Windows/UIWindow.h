@@ -47,7 +47,6 @@ namespace Puffin
 
 			inline bool* GetShow() { return &show; }
 			inline std::string GetName() { return windowName; }
-			inline void SetTextureSampler(VkSampler sampler) { textureSampler = sampler; }
 
 		protected:
 
@@ -62,9 +61,6 @@ namespace Puffin
 			std::string windowName;
 
 			ImGuiWindowFlags flags;
-
-			// Vulkan Texture Sampler for Rendering Textures
-			VkSampler textureSampler;
 
 			std::shared_ptr<Core::Engine> m_engine;
 		};

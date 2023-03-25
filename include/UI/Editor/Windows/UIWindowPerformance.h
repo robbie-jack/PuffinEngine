@@ -52,8 +52,9 @@ namespace Puffin
 			void Draw(double dt) override;
 
 		private:
-			float fps;
-			float fps_timer, frametime;
+			double fps = 0.0f;
+			double fps_timer = 0.0f;
+			double frametime = 0.0f;
 			//Puffin::UI::ScrollingBuffer plotBuffer;
 
 			HardwareStats hardwareStats;

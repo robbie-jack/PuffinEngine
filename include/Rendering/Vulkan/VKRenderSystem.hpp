@@ -2,7 +2,6 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <glfw/glfw3.h>
-#include <glfw/glfw3native.h>
 
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
