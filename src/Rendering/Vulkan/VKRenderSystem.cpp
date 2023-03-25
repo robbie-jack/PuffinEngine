@@ -680,7 +680,7 @@ namespace Puffin::Rendering::VK
 
 		// Initialize imgui for GLFW
 		GLFWwindow* glfwWindow = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
-		ImGui_ImplGlfw_InitForVulkan(glfwWindow, false);
+		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
 		// Initialize imgui for Vulkan
 		ImGui_ImplVulkan_InitInfo initInfo = { m_instance, m_physicalDevice, m_device, m_graphicsQueueFamily,
