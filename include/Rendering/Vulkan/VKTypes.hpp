@@ -42,6 +42,7 @@ namespace Puffin::Rendering::VK
 			imageFormat = other.imageFormat;
 			images = other.images;
 			imageViews = other.imageViews;
+			framebuffers = other.framebuffers;
 
 			needsCleaned = other.needsCleaned;
 			resized = other.resized;
@@ -54,6 +55,7 @@ namespace Puffin::Rendering::VK
 
 		std::vector<vk::Image> images;
 		std::vector<vk::ImageView> imageViews;
+		std::vector<vk::Framebuffer> framebuffers;
 
 		bool needsCleaned = false;
 		bool resized = false;

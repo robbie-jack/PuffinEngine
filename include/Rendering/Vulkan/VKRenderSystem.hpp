@@ -49,13 +49,18 @@ namespace Puffin::Rendering::VK
 	struct FrameRenderData
 	{
 		// Synchronization
-		vk::Semaphore renderSemaphore, copySemaphore, presentSemaphore;
+		vk::Semaphore renderSemaphore;
+		vk::Semaphore copySemaphore;
+		vk::Semaphore imguiSemaphore;
+		vk::Semaphore presentSemaphore;
+
 		vk::Fence renderFence;
 
 		// Command Execution
 		vk::CommandPool commandPool;
 		vk::CommandBuffer mainCommandBuffer;
 		vk::CommandBuffer copyCommandBuffer; // Cmd buffer for copying/blitting from offscreen to swapchain
+		vk::CommandBuffer imguiCommandBuffer;
 
 		AllocatedBuffer indirectBuffer; // Buffer of indirect draw commands
 		uint32_t drawCount = 0;
@@ -174,12 +179,14 @@ namespace Puffin::Rendering::VK
 
 		// Indicated initialization completed without any failures
 		bool m_isInitialized = false;
+		bool m_shouldRenderImGui = false;
 
 		void InitVulkan();
 
 		void InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain, const vk::Extent2D& swapchainExtent);
 		void InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent, const int& offscreenImageCount);
 
+		void InitSwapchainFramebuffers(SwapchainData& swapchainData);
 		void InitOffscreenFramebuffers(OffscreenData& offscreenData);
 
 		void InitCommands();
@@ -224,8 +231,9 @@ namespace Puffin::Rendering::VK
 		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset, uint32_t drawCount, uint32_t stride);
 
 		vk::CommandBuffer RecordCopyCommandBuffer(uint32_t swapchainIdx);
+		vk::CommandBuffer RecordImGuiCommandBuffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent, vk::Framebuffer framebuffer);
 
-		void SubmitCommands(uint32_t swapchainIdx, std::vector<vk::CommandBuffer>& commands);
+		void RecordAndSubmitCommands(uint32_t swapchainIdx);
 
 		glm::mat4 BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale) const;
 
