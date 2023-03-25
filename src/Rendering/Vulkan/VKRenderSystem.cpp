@@ -55,7 +55,20 @@ namespace Puffin::Rendering::VK
 		InitVulkan();
 
 		InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
-		InitOffscreen(m_offscreenData, m_windowSize, m_swapchainData.images.size());
+
+		vk::Extent2D offscreenSize;
+		if (m_engine->ShouldRenderEditorUI())
+		{
+			const ImVec2 viewportSize = m_engine->GetUIManager()->GetWindowViewport()->GetViewportSize();
+			offscreenSize.width = viewportSize.x;
+			offscreenSize.height = viewportSize.y;
+		}
+		else
+		{
+			offscreenSize = m_windowSize;
+		}
+
+		InitOffscreen(m_offscreenData, offscreenSize, m_swapchainData.images.size());
 
 		InitCommands();
 
@@ -76,6 +89,7 @@ namespace Puffin::Rendering::VK
 		InitPipelines();
 
 		InitImGui();
+		InitOffscreenImGuiTextures(m_offscreenData);
 
 		m_editorCam.position = { 0.0f, 0.0f, 15.0f };
 
@@ -433,7 +447,7 @@ namespace Puffin::Rendering::VK
 			{}, m_swapchainData.imageFormat, vk::SampleCountFlagBits::e1,
 			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 			vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal
+			vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR
 		};
 
 		vk::AttachmentReference colorAttachmentRef = { 0, vk::ImageLayout::eColorAttachmentOptimal };
@@ -685,6 +699,17 @@ namespace Puffin::Rendering::VK
 		});
 	}
 
+	void VKRenderSystem::InitOffscreenImGuiTextures(OffscreenData& offscreenData)
+	{
+		offscreenData.viewportTextures.resize(offscreenData.allocImages.size());
+
+		for (int i = 0; i < offscreenData.allocImages.size(); i++)
+		{
+			offscreenData.viewportTextures[i] = static_cast<ImTextureID>(ImGui_ImplVulkan_AddTexture(m_staticRenderData.textureSampler,
+				offscreenData.allocImages[i].imageView, static_cast<VkImageLayout>(vk::ImageLayout::eShaderReadOnlyOptimal)));
+		}
+	}
+
 	void VKRenderSystem::ProcessEvents()
 	{
 		Input::InputEvent inputEvent;
@@ -920,6 +945,16 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_device.waitForFences(1, &GetCurrentFrameData().renderFence, true, 1000000000));
 		VK_CHECK(m_device.resetFences(1, &GetCurrentFrameData().renderFence));
 
+		if (m_engine->ShouldRenderEditorUI())
+		{
+			const ImVec2 viewportSize = m_engine->GetUIManager()->GetWindowViewport()->GetViewportSize();
+			if (viewportSize.x != m_offscreenData.extent.width ||
+				viewportSize.y != m_offscreenData.extent.height)
+			{
+				m_offscreenData.resized = true;
+			}
+		}
+
 		RecreateSwapchain();
 		RecreateOffscreen();
 
@@ -933,9 +968,9 @@ namespace Puffin::Rendering::VK
 		PrepareSceneData();
 		BuildIndirectCommands();
 
-		if (m_shouldRenderImGui)
+		if (m_engine->ShouldRenderEditorUI())
 		{
-			m_engine->GetUIManager()->GetWindowViewport();
+			m_engine->GetUIManager()->GetWindowViewport()->Draw(m_offscreenData.viewportTextures[swapchainImageIdx]);
 
 			ImGui::Render();
 		}
@@ -1033,8 +1068,21 @@ namespace Puffin::Rendering::VK
 			m_oldOffscreenData = m_offscreenData;
 			m_oldOffscreenData.needsCleaned = true;
 
-			InitOffscreen(m_offscreenData, m_windowSize, m_swapchainData.images.size());
+			vk::Extent2D offscreenSize;
+			if (m_engine->ShouldRenderEditorUI())
+			{
+				const ImVec2 viewportSize = m_engine->GetUIManager()->GetWindowViewport()->GetViewportSize();
+				offscreenSize.width = static_cast<uint32_t>(viewportSize.x);
+				offscreenSize.height = static_cast<uint32_t>(viewportSize.y);
+			}
+			else
+			{
+				offscreenSize = m_windowSize;
+			}
+
+			InitOffscreen(m_offscreenData, offscreenSize, m_swapchainData.images.size());
 			InitOffscreenFramebuffers(m_offscreenData);
+			InitOffscreenImGuiTextures(m_offscreenData);
 
 			m_offscreenData.resized = false;
 		}
@@ -1066,16 +1114,14 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::CleanOffscreen(OffscreenData& offscreenData)
 	{
-		for (int i = 0; i < offscreenData.framebuffers.size(); i++)
-		{
-			m_device.destroyFramebuffer(offscreenData.framebuffers[i]);
-		}
-
 		m_device.destroyImageView(offscreenData.allocDepthImage.imageView);
 		m_allocator.destroyImage(offscreenData.allocDepthImage.image, offscreenData.allocDepthImage.allocation);
 
 		for (int i = 0; i < offscreenData.allocImages.size(); i++)
 		{
+			ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(offscreenData.viewportTextures[i]));
+
+			m_device.destroyFramebuffer(offscreenData.framebuffers[i]);
 			m_device.destroyImageView(offscreenData.allocImages[i].imageView);
 			m_allocator.destroyImage(offscreenData.allocImages[i].image, offscreenData.allocImages[i].allocation);
 		}
@@ -1408,7 +1454,7 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(cmd.begin(&cmdBeginInfo));
 
 		vk::ClearValue clearValue;
-		clearValue.color = { 0.0f, 0.7f, 0.9f, 1.0f };
+		clearValue.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		std::array<vk::ClearValue, 1> clearValues = { clearValue };
 
@@ -1447,7 +1493,7 @@ namespace Puffin::Rendering::VK
 
 		std::vector submits = { renderSubmit };
 
-		if (m_shouldRenderImGui)
+		if (m_engine->ShouldRenderEditorUI())
 		{
 			vk::CommandBuffer imguiCmd = RecordImGuiCommandBuffer(swapchainIdx, m_swapchainData.extent, m_swapchainData.framebuffers[swapchainIdx]);
 
@@ -1476,9 +1522,20 @@ namespace Puffin::Rendering::VK
 
 		VK_CHECK(m_graphicsQueue.submit(submits.size(), submits.data(), GetCurrentFrameData().renderFence));
 
+		vk::Semaphore waitSemaphore;
+
+		if (m_engine->ShouldRenderEditorUI())
+		{
+			waitSemaphore = GetCurrentFrameData().imguiSemaphore;
+		}
+		else
+		{
+			waitSemaphore = GetCurrentFrameData().copySemaphore;
+		}
+
 		vk::PresentInfoKHR presentInfo =
 		{
-			1, &GetCurrentFrameData().copySemaphore, 1, &m_swapchainData.swapchain, & swapchainIdx
+			1, &waitSemaphore, 1, &m_swapchainData.swapchain, &swapchainIdx
 		};
 
 		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));

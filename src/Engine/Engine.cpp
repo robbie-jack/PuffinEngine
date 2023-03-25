@@ -342,8 +342,11 @@ namespace Puffin::Core
 		}
 
 		// UI
-		m_uiManager->Update();
-		m_uiManager->DrawUI(m_deltaTime);
+		if (m_shouldRenderEditorUI)
+		{
+			m_uiManager->Update();
+			m_uiManager->DrawUI(m_deltaTime);
+		}
 
 		// PreRender
 		{

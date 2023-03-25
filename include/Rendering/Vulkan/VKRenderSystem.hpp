@@ -179,7 +179,6 @@ namespace Puffin::Rendering::VK
 
 		// Indicated initialization completed without any failures
 		bool m_isInitialized = false;
-		bool m_shouldRenderImGui = false;
 
 		void InitVulkan();
 
@@ -203,6 +202,7 @@ namespace Puffin::Rendering::VK
 		void BuildForwardRendererPipeline();
 
 		void InitImGui();
+		void InitOffscreenImGuiTextures(OffscreenData& offscreenData);
 
 		void ProcessEvents();
 

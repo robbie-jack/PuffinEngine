@@ -4,9 +4,8 @@
 #include "vk_mem_alloc.hpp"
 
 #include "glm/glm.hpp"
+#include "imgui.h"
 #include "ECS/EntityID.h"
-
-#include <set>
 
 namespace Puffin::Rendering::VK
 {
@@ -70,6 +69,7 @@ namespace Puffin::Rendering::VK
 
 			allocImages = other.allocImages;
 			framebuffers = other.framebuffers;
+			viewportTextures = other.viewportTextures;
 
 			allocDepthImage = other.allocDepthImage;
 
@@ -82,6 +82,8 @@ namespace Puffin::Rendering::VK
 
 		std::vector<AllocatedImage> allocImages;
 		std::vector<vk::Framebuffer> framebuffers;
+
+		std::vector<ImTextureID> viewportTextures;
 
 		AllocatedImage allocDepthImage;
 

@@ -133,6 +133,8 @@ namespace Puffin::Core
 			return m_uiManager;
 		}
 
+		bool ShouldRenderEditorUI() const { return m_shouldRenderEditorUI; }
+
 		const double& GetTimeStep() const
 		{
 			return m_timeStepFixed;
@@ -174,6 +176,7 @@ namespace Puffin::Core
 
 		bool running = true;
 		bool m_shouldLimitFrameRate = true; // Whether framerate should be capped at m_frameRateMax
+		bool m_shouldRenderEditorUI = true; // Whether editor UI should be rendered
 		PlayState m_playState = PlayState::STOPPED;
 
 		// Time Members
