@@ -21,7 +21,7 @@ namespace Puffin::Window
 		m_primaryMonitor = glfwGetPrimaryMonitor();
 
 		// Create Primary Window
-		m_primaryWindow = glfwCreateWindow(1280, 720, "Puffin Engine", nullptr, nullptr);
+		m_primaryWindow = glfwCreateWindow(1920, 1080, "Puffin Engine", nullptr, nullptr);
 		if (m_primaryWindow == nullptr)
 		{
 			std::cout << "Failed to create GLFW window" << std::endl;

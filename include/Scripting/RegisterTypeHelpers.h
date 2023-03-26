@@ -117,10 +117,10 @@ namespace Puffin::Scripting
 		r = scriptEngine->RegisterObjectMethod("STransformComponent", "STransformComponent& opAssign(const STransformComponent &in)", asMETHODPR(STransformComponent, operator=, (const STransformComponent&), STransformComponent&), asCALL_THISCALL);
 
 		// Register ECS World Access Functions
-		r = scriptEngine->RegisterGlobalFunction("STransformComponent@ GetTransformComponent(uint)",
+		r = scriptEngine->RegisterGlobalFunction("STransformComponent@ GetTransformComponent(uint64)",
 			asMETHOD(ECS::World, GetComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);
 
-		r = scriptEngine->RegisterGlobalFunction("bool HasTransformComponent(uint)",
+		r = scriptEngine->RegisterGlobalFunction("bool HasTransformComponent(uint64)",
 			asMETHOD(ECS::World, HasComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);
 	}
 }

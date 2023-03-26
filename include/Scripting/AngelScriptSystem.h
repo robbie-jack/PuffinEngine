@@ -99,7 +99,7 @@ namespace Puffin
 			void PlaySoundEffect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
 			uint64_t PlaySoundEffect(const std::string& path, float volume = 1.0f, bool looping = false, bool restart = false);
 
-			int GetEntityID(); // Return the Entity ID for the attached script
+			uint64_t GetEntityID(); // Return the Entity ID for the attached script
 
 			// Script Callbacks
 			ScriptCallback BindCallback(uint32_t entity, asIScriptFunction* cb) const;

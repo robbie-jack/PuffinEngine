@@ -259,7 +259,7 @@ namespace Puffin::Scripting
 		// Define Global Methods for Scripts
 		r = m_scriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptSystem, GetDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 		r = m_scriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptSystem, GetFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("uint GetEntityID()", asMETHOD(AngelScriptSystem, GetEntityID), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = m_scriptEngine->RegisterGlobalFunction("uint64 GetEntityID()", asMETHOD(AngelScriptSystem, GetEntityID), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		r = m_scriptEngine->RegisterGlobalFunction("void PlaySoundEffect(uint64, float, bool, bool)", asMETHODPR(AngelScriptSystem, PlaySoundEffect, (uint64_t, float, bool, bool), void), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 		r = m_scriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSystem, PlaySoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
@@ -652,7 +652,7 @@ namespace Puffin::Scripting
 		return id;
 	}
 
-	int AngelScriptSystem::GetEntityID()
+	uint64_t AngelScriptSystem::GetEntityID()
 	{
 		return m_currentEntityID;
 	}

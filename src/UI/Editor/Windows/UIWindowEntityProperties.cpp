@@ -55,39 +55,40 @@ namespace Puffin
 					ImVec2 listBoxSize = ImGui::GetWindowSize();
 					listBoxSize.y -= 110.0f;
 
-					ImGui::ListBoxHeader("", listBoxSize); // Make ListBox fill Window
+					if (ImGui::BeginListBox("##EntityProperties", listBoxSize))
+					{
+						ImGuiTreeNodeFlags flags = 0;
+						//flags |= ImGuiTreeNodeFlags_Framed;
+						//flags |= ImGuiTreeNodeFlags_NoTreePushOnOpen;
+						flags |= ImGuiTreeNodeFlags_NoAutoOpenOnLog;
+						flags |= ImGuiTreeNodeFlags_OpenOnArrow;
+						flags |= ImGuiTreeNodeFlags_OpenOnDoubleClick;
+						flags |= ImGuiTreeNodeFlags_AllowItemOverlap;
+						flags |= ImGuiTreeNodeFlags_DefaultOpen;
+						flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					ImGuiTreeNodeFlags flags = 0;
-					//flags |= ImGuiTreeNodeFlags_Framed;
-					//flags |= ImGuiTreeNodeFlags_NoTreePushOnOpen;
-					flags |= ImGuiTreeNodeFlags_NoAutoOpenOnLog;
-					flags |= ImGuiTreeNodeFlags_OpenOnArrow;
-					flags |= ImGuiTreeNodeFlags_OpenOnDoubleClick;
-					flags |= ImGuiTreeNodeFlags_AllowItemOverlap;
-					flags |= ImGuiTreeNodeFlags_DefaultOpen;
-					flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+						sceneChanged = false;
 
-					sceneChanged = false;
+						// Display Component UI
+						DrawTransformUI(flags);
 
-					// Display Component UI
-					DrawTransformUI(flags);
+						DrawMeshUI(flags);
 
-					DrawMeshUI(flags);
+						DrawLightUI(flags);
+						DrawShadowcasterUI(flags);
 
-					DrawLightUI(flags);
-					DrawShadowcasterUI(flags);
+						DrawProceduralPlaneUI(flags);
 
-					DrawProceduralPlaneUI(flags);
+						DrawRigidbody2DUI(flags);
+						DrawCircle2DUI(flags);
+						DrawBox2DUI(flags);
 
-					DrawRigidbody2DUI(flags);
-					DrawCircle2DUI(flags);
-					DrawBox2DUI(flags);
+						DrawScriptUI(flags);
 
-					DrawScriptUI(flags);
+						positionChanged = false;
 
-					positionChanged = false;
-
-					ImGui::ListBoxFooter();
+						ImGui::EndListBox();
+					}
 
 					ImGui::Dummy(ImVec2(ImGui::GetWindowWidth() / 2 - 50.0f, 0.0f)); ImGui::SameLine();
 
@@ -310,6 +311,8 @@ namespace Puffin
 							if (is_selected)
 								ImGui::SetItemDefaultFocus();
 						}
+
+						ImGui::EndCombo();
 					}
 
 					// Edit Light Diffuse Color
