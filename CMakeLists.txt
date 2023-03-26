@@ -56,6 +56,7 @@ add_git_submodule("deps/implot")
 add_git_submodule("deps/lz4")
 add_git_submodule("deps/OpenSimplexNoise")
 add_git_submodule("deps/vma-hpp")
+add_git_submodule("deps/vkb")
 add_git_submodule("deps/tinygltf")
 
 checkout_git_branch("deps/imgui" "docking")
