@@ -18,7 +18,8 @@ namespace Puffin::Physics
 
 		virtual ~Broadphase() = default;
 
-		virtual void GenerateCollisionPairs(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs) = 0;
+		virtual void GenerateCollisionPairs(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs, bool
+		                                    collidersUpdated) = 0;
 
 		void SetWorld(std::shared_ptr<ECS::World> world)
 		{
@@ -65,7 +66,8 @@ namespace Puffin::Physics
 		NSquaredBroadphase() = default;
 		~NSquaredBroadphase() override = default;
 
-		void GenerateCollisionPairs(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs) override
+		void GenerateCollisionPairs(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs, bool
+		                            collidersUpdated) override
 		{
 			outCollisionPairs.clear();
 			outCollisionPairs.reserve(inColliders.Size() * inColliders.Size());

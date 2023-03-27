@@ -4,14 +4,11 @@
 #include "Physics/CollisionEvent.h"
 #include "Components/TransformComponent.h"
 #include "Components/Physics/VelocityComponent.hpp"
-
 #include "Types/ComponentFlags.h"
-
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
-
 #include "Engine/Engine.hpp"
-
 #include "ECS/Entity.h"
+#include "Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.hpp"
 
 namespace Puffin
 {
@@ -44,6 +41,7 @@ namespace Puffin
 			eventSubsystem->RegisterEvent<CollisionEndEvent>();
 
 			RegisterBroadphase<NSquaredBroadphase>();
+			RegisterBroadphase<SweepAndPruneBroadphase>();
 
 			SetBroadphase<NSquaredBroadphase>();
 		}
@@ -81,6 +79,8 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::Update()
 		{
+			m_collidersUpdated = false;
+
 			UpdateComponents();
 			Step();
 		}
@@ -126,12 +126,9 @@ namespace Puffin
 			m_circleShapes[entity->ID()].radius = circle.radius;
 			
 			// If there is no collider for this entity, create new one
-			if (!m_colliders.Contains(entity->ID()))
-			{
-				auto collider = std::make_shared<Collision2D::CircleCollider2D>(entity->ID(), &m_circleShapes[entity->ID()]);
+			auto collider = std::make_shared<Collision2D::CircleCollider2D>(entity->ID(), &m_circleShapes[entity->ID()]);
 
-				m_colliders.Insert(entity->ID(), collider);
-			}
+			InsertCollider(entity->ID(), collider);
 		}
 
 		void Onager2DPhysicsSystem::InitBox2D(std::shared_ptr<ECS::Entity> entity)
@@ -148,13 +145,9 @@ namespace Puffin
 			m_boxShapes[entity->ID()].halfExtent = box.halfExtent;
 			m_boxShapes[entity->ID()].UpdatePoints();
 
-			// If there is no collider for this entity, create new one
-			if (!m_colliders.Contains(entity->ID()))
-			{
-				auto collider = std::make_shared<Collision2D::BoxCollider2D>(entity->ID(), &m_boxShapes[entity->ID()]);
+			auto collider = std::make_shared<Collision2D::BoxCollider2D>(entity->ID(), &m_boxShapes[entity->ID()]);
 
-				m_colliders.Insert(entity->ID(), collider);
-			}
+			InsertCollider(entity->ID(), collider);
 		}
 
 		void Onager2DPhysicsSystem::CleanupCircle2D(std::shared_ptr<ECS::Entity> entity)
@@ -162,8 +155,7 @@ namespace Puffin
 			if (m_circleShapes.Contains(entity->ID()))
 				m_circleShapes.Erase(entity->ID());
 
-			if (m_colliders.Contains(entity->ID()))
-				m_colliders.Erase(entity->ID());
+			EraseCollider(entity->ID());
 		}
 
 		void Onager2DPhysicsSystem::CleanupBox2D(std::shared_ptr<ECS::Entity> entity)
@@ -171,8 +163,7 @@ namespace Puffin
 			if (m_boxShapes.Contains(entity->ID()))
 				m_boxShapes.Erase(entity->ID());
 
-			if (m_colliders.Contains(entity->ID()))
-				m_colliders.Erase(entity->ID());
+			EraseCollider(entity->ID());
 		}
 
 		void Onager2DPhysicsSystem::UpdateComponents()
@@ -233,6 +224,26 @@ namespace Puffin
 
 					entity->RemoveComponent<CircleComponent2D>();
 				}
+			}
+		}
+
+		void Onager2DPhysicsSystem::InsertCollider(ECS::EntityID id, std::shared_ptr<Collision2D::Collider2D> collider)
+		{
+			if (!m_colliders.Contains(id))
+			{
+				m_colliders.Insert(id, collider);
+
+				m_collidersUpdated = true;
+			}
+		}
+
+		void Onager2DPhysicsSystem::EraseCollider(ECS::EntityID id)
+		{
+			if (m_colliders.Contains(id))
+			{
+				m_colliders.Erase(id);
+
+				m_collidersUpdated = true;
 			}
 		}
 
@@ -315,7 +326,7 @@ namespace Puffin
 		{
 			// Perform Collision Broadphase to Generate Collision Pairs
 			if (m_activeBroadphase)
-				m_activeBroadphase->GenerateCollisionPairs(m_colliders, m_collisionPairs);
+				m_activeBroadphase->GenerateCollisionPairs(m_colliders, m_collisionPairs, m_collidersUpdated);
 		}
 
 		void Onager2DPhysicsSystem::CollisionDetection()

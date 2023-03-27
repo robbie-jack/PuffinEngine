@@ -48,8 +48,7 @@ namespace Puffin::Physics
 		{
 			const char* typeName = typeid(T).name();
 
-			if (m_broadphases.count(typeName) == 1)
-				return;
+			assert(m_broadphases.count(typeName) == 0 && "Attempting to register already registered broadphase");
 
 			std::shared_ptr<T> broadphase = std::make_shared<T>();
 			std::shared_ptr<Broadphase> broadphaseBase = std::static_pointer_cast<Broadphase>(broadphase);
@@ -63,8 +62,7 @@ namespace Puffin::Physics
 		{
 			const char* typeName = typeid(T).name();
 
-			if (m_broadphases.count(typeName) == 0)
-				return;
+			assert(m_broadphases.count(typeName) == 1 && "Attempting to set un-registered broadphase");
 
 			m_activeBroadphase = m_broadphases[typeName];
 		}
@@ -76,6 +74,8 @@ namespace Puffin::Physics
 		PackedVector<BoxShape2D> m_boxShapes;
 		PackedVector<CircleShape2D> m_circleShapes;
 		PackedVector<std::shared_ptr<Collision2D::Collider2D>> m_colliders;
+
+		bool m_collidersUpdated = false;
 
 		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
 		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided
@@ -92,6 +92,8 @@ namespace Puffin::Physics
 
 		// Perform Initialization/Updating/Deltion of Physics Related Components
 		void UpdateComponents();
+		void InsertCollider(ECS::EntityID id, std::shared_ptr<Collision2D::Collider2D> collider);
+		void EraseCollider(ECS::EntityID id);
 
 		/* Step Physics Simulation
 		 * dt - delta time value passed in by engine

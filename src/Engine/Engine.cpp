@@ -47,9 +47,6 @@
 
 namespace Puffin::Core
 {
-	const int WIDTH = 1280;
-	const int HEIGHT = 720;
-
 	void Engine::Init()
 	{
 		// Subsystems

@@ -130,7 +130,7 @@ set(HEADERS
 	${HEADER_DIR}/Physics/Onager2D/Colliders/BoxCollider2D.h
 	${HEADER_DIR}/Physics/Onager2D/Colliders/CircleCollider2D.h
 	${HEADER_DIR}/Physics/Onager2D/Broadphases/Broadphase2D.hpp
-	${HEADER_DIR}/Physics/Onager2D/Broadphases/PruneAndSweepBroadphase.h
+	${HEADER_DIR}/Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.hpp
 	${HEADER_DIR}/Physics/Box2D/Box2DPhysicsSystem.h
 	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
 	# Procedural
@@ -203,7 +203,7 @@ set(SOURCES
 	${SOURCE_DIR}/Physics/Onager2D/Colliders/BoxCollider2D.cpp
 	${SOURCE_DIR}/Physics/Onager2D/Colliders/CircleCollider2D.cpp
 	${SOURCE_DIR}/Physics/Onager2D/Colliders/PolygonCollider2D.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Broadphases/PruneAndSweepBroadphase.cpp
+	${SOURCE_DIR}/Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.cpp
 	${SOURCE_DIR}/Physics/Box2D/Box2DContactListener.cpp
 	${SOURCE_DIR}/Physics/Box2D/Box2DPhysicsSystem.cpp
 	# Procedural
