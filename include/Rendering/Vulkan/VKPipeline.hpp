@@ -171,6 +171,13 @@ namespace Puffin::Rendering::VK::Util
 
 		PipelineBuilder& DynamicState(vk::DynamicState value) { m_dynamicState.push_back(value); return *this; }
 
+		template<typename T>
+		PipelineBuilder& AddPNext(T* structure)
+		{
+			m_pNextChain.push_back(reinterpret_cast<VkBaseOutStructure*>(structure));
+			return *this;
+		}
+
 		vk::UniquePipeline CreateUnique(const vk::Device& device,
 			const vk::PipelineCache& pipelineCache,
 			const vk::PipelineLayout& pipelineLayout,
@@ -222,6 +229,17 @@ namespace Puffin::Rendering::VK::Util
 			pipelineInfo.subpass = m_subpass;
 			pipelineInfo.pTessellationState = &m_tessellationState;
 
+			// Setup chain of pNext structs
+			if (m_pNextChain.size() > 0)
+			{
+				for (size_t i = 0; i < m_pNextChain.size() - 1; i++)
+				{
+					m_pNextChain.at(i)->pNext = m_pNextChain.at(i + 1);
+				}
+
+				pipelineInfo.pNext = m_pNextChain.at(0);
+			}
+
 			auto [result, pipeline] = device.createGraphicsPipelineUnique(pipelineCache, pipelineInfo);
 			// TODO check result for vk::Result::ePipelineCompileRequiredEXT
 			return std::move(pipeline);
@@ -244,6 +262,7 @@ namespace Puffin::Rendering::VK::Util
 		std::vector<vk::VertexInputAttributeDescription> m_vertexAttributeDescriptions;
 		std::vector<vk::VertexInputBindingDescription> m_vertexBindingDescriptions;
 		std::vector<vk::DynamicState> m_dynamicState;
+		std::vector<VkBaseOutStructure*> m_pNextChain;
 		uint32_t m_subpass = 0;
 	};
 }

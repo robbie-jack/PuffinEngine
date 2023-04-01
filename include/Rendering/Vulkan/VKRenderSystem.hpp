@@ -139,7 +139,6 @@ namespace Puffin::Rendering::VK
 		vk::Queue m_graphicsQueue;
 		uint32_t m_graphicsQueueFamily;
 
-		vk::RenderPass m_renderPass;
 		vk::RenderPass m_renderPassImGui;
 
 		StaticRenderData m_staticRenderData;
@@ -185,11 +184,9 @@ namespace Puffin::Rendering::VK
 		void InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent, const int& offscreenImageCount);
 
 		void InitSwapchainFramebuffers(SwapchainData& swapchainData);
-		void InitOffscreenFramebuffers(OffscreenData& offscreenData);
 
 		void InitCommands();
 
-		void InitDefaultRenderPass();
 		void InitImGuiRenderPass();
 
 		void InitSyncStructures();
@@ -225,7 +222,8 @@ namespace Puffin::Rendering::VK
 
 		void BuildIndirectCommands();
 
-		vk::CommandBuffer RecordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent, vk::Framebuffer framebuffer);
+		vk::CommandBuffer RecordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent, const AllocatedImage&
+		                                          colorImage, const AllocatedImage& depthImage);
 		void DrawObjects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
 		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset, uint32_t drawCount, uint32_t stride);
 

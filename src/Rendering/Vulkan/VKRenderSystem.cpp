@@ -73,7 +73,7 @@ namespace Puffin::Rendering::VK
 
 		InitCommands();
 
-		InitDefaultRenderPass();
+		//InitDefaultRenderPass();
 
 		if (m_engine->ShouldRenderEditorUI())
 		{
@@ -81,8 +81,6 @@ namespace Puffin::Rendering::VK
 
 			InitSwapchainFramebuffers(m_swapchainData);
 		}
-
-		InitOffscreenFramebuffers(m_offscreenData);
 
 		InitSyncStructures();
 		InitBuffers();
@@ -218,6 +216,14 @@ namespace Puffin::Rendering::VK
 		physicalDevice12Features.descriptorIndexing = true;
 		physicalDevice12Features.runtimeDescriptorArray = true;
 
+		vkb::SystemInfo systemInfo = vkb::SystemInfo::get_system_info().value();
+
+		// Check for desired extension support
+		std::vector<const char*> device_extensions =
+		{
+			"VK_KHR_dynamic_rendering"
+		};
+
 		// Select GPU
 		vkb::PhysicalDeviceSelector selector { vkbInst };
 		vkb::PhysicalDevice physDevice = selector
@@ -225,6 +231,7 @@ namespace Puffin::Rendering::VK
 			.set_surface(m_surface)
 			.set_required_features(physicalDeviceFeatures)
 			.set_required_features_12(physicalDevice12Features)
+			.add_required_extensions(device_extensions)
 			.select()
 			.value();
 
@@ -232,9 +239,11 @@ namespace Puffin::Rendering::VK
 		vkb::DeviceBuilder deviceBuilder { physDevice };
 
 		vk::PhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeatures = { true };
+		vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeaturesKHR = { true };
 
 		vkb::Device vkbDevice = deviceBuilder
 			.add_pNext(&shaderDrawParametersFeatures)
+			.add_pNext(&dynamicRenderingFeaturesKHR)
 			.build()
 			.value();
 
@@ -343,23 +352,6 @@ namespace Puffin::Rendering::VK
 		}
 	}
 
-	void VKRenderSystem::InitOffscreenFramebuffers(OffscreenData& offscreenData)
-	{
-		vk::FramebufferCreateInfo fbInfo = { {}, m_renderPass, 1, nullptr, offscreenData.extent.width, offscreenData.extent.height, 1 };
-
-		offscreenData.framebuffers.resize(offscreenData.allocImages.size());
-
-		for (int i = 0; i < offscreenData.allocImages.size(); i++)
-		{
-			std::array<vk::ImageView, 2> attachments = { offscreenData.allocImages[i].imageView, offscreenData.allocDepthImage.imageView };
-
-			fbInfo.pAttachments = attachments.data();
-			fbInfo.attachmentCount = attachments.size();
-
-			VK_CHECK(m_device.createFramebuffer(&fbInfo, nullptr, &offscreenData.framebuffers[i]));
-		}
-	}
-
 	void VKRenderSystem::InitCommands()
 	{
 		vk::CommandPoolCreateInfo commandPoolInfo = { vk::CommandPoolCreateFlagBits::eResetCommandBuffer, m_graphicsQueueFamily };
@@ -391,59 +383,6 @@ namespace Puffin::Rendering::VK
 		m_deletionQueue.PushFunction([=]()
 		{
 			m_device.destroyCommandPool(m_uploadContext.commandPool);
-		});
-	}
-
-	void VKRenderSystem::InitDefaultRenderPass()
-	{
-		// Setup Attachments
-
-		vk::AttachmentDescription colorAttachment = 
-		{
-			{}, m_offscreenData.imageFormat, vk::SampleCountFlagBits::e1,
-			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-			vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal
-		};
-
-		vk::AttachmentReference colorAttachmentRef = { 0, vk::ImageLayout::eColorAttachmentOptimal };
-
-		vk::AttachmentDescription depthAttachment =
-		{
-			{}, m_offscreenData.allocDepthImage.format, vk::SampleCountFlagBits::e1,
-			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal
-		};
-
-		vk::AttachmentReference depthAttachRef = { 1, vk::ImageLayout::eDepthStencilAttachmentOptimal };
-
-		vk::SubpassDescription subpass = { {}, vk::PipelineBindPoint::eGraphics, 0, nullptr,
-			1, &colorAttachmentRef, {}, & depthAttachRef };
-
-		std::array<vk::AttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
-
-		// Setup Dependencies
-		vk::SubpassDependency colorDependency = { VK_SUBPASS_EXTERNAL, 0, vk::PipelineStageFlagBits::eColorAttachmentOutput,
-			vk::PipelineStageFlagBits::eColorAttachmentOutput, {}, vk::AccessFlagBits::eColorAttachmentWrite };
-
-		vk::SubpassDependency depthDependecy = { VK_SUBPASS_EXTERNAL, 0,
-			{ vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests },
-			{ vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests },
-			{}, vk::AccessFlagBits::eDepthStencilAttachmentWrite };
-
-		std::array<vk::SubpassDependency, 2> dependencies = { colorDependency, depthDependecy };
-
-		vk::RenderPassCreateInfo renderPassInfo = { {}, attachments.size(), attachments.data(), 1, &subpass,
-			dependencies.size(), dependencies.data() };
-
-		// Create Render Pass
-
-		VK_CHECK(m_device.createRenderPass(&renderPassInfo, nullptr, &m_renderPass));
-
-		m_deletionQueue.PushFunction([=]()
-		{
-			m_device.destroyRenderPass(m_renderPass);
 		});
 	}
 
@@ -628,6 +567,8 @@ namespace Puffin::Rendering::VK
 		vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
 			vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };
 
+		vk::PipelineRenderingCreateInfoKHR pipelineRenderInfo = { 0, m_offscreenData.imageFormat, m_offscreenData.allocDepthImage.format };
+
 		Util::PipelineBuilder pb{ m_windowSize.width, m_windowSize.height };
 		m_forwardPipeline = pb
 			// Define dynamic state which can change each frame (currently viewport and scissor size)
@@ -639,8 +580,10 @@ namespace Puffin::Rendering::VK
 			.DepthStencilState(depthStencilInfo)
 			// Define vertex binding/attributes
 			.VertexLayout(VertexPNTV32::GetLayoutVK())
+			// Add rendering info struct
+			.AddPNext(&pipelineRenderInfo)
 			// Create pipeline
-			.CreateUnique(m_device, m_pipelineCache, *m_forwardPipelineLayout, m_renderPass);
+			.CreateUnique(m_device, m_pipelineCache, *m_forwardPipelineLayout, nullptr);
 
 		m_device.destroyShaderModule(m_forwardVertMod.Module());
 		m_device.destroyShaderModule(m_forwardFragMod.Module());
@@ -1094,7 +1037,6 @@ namespace Puffin::Rendering::VK
 			}
 
 			InitOffscreen(m_offscreenData, offscreenSize, m_swapchainData.images.size());
-			InitOffscreenFramebuffers(m_offscreenData);
 
 			if (m_engine->ShouldRenderEditorUI())
 			{
@@ -1141,7 +1083,6 @@ namespace Puffin::Rendering::VK
 				ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(offscreenData.viewportTextures[i]));
 			}
 
-			m_device.destroyFramebuffer(offscreenData.framebuffers[i]);
 			m_device.destroyImageView(offscreenData.allocImages[i].imageView);
 			m_allocator.destroyImage(offscreenData.allocImages[i].image, offscreenData.allocImages[i].allocation);
 		}
@@ -1314,7 +1255,8 @@ namespace Puffin::Rendering::VK
 		GetCurrentFrameData().drawCount = idx;
 	}
 
-	vk::CommandBuffer VKRenderSystem::RecordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent, vk::Framebuffer framebuffer)
+	vk::CommandBuffer VKRenderSystem::RecordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent, const AllocatedImage&
+	                                                          colorImage, const AllocatedImage& depthImage)
 	{
 		vk::CommandBuffer cmd = GetCurrentFrameData().mainCommandBuffer;
 
@@ -1327,6 +1269,17 @@ namespace Puffin::Rendering::VK
 
 		VK_CHECK(cmd.begin(&cmdBeginInfo));
 
+		// Transition color image to color attachment optimal
+		vk::ImageSubresourceRange imageSubresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+
+		vk::ImageMemoryBarrier offscreenMemoryBarrierToColor = { vk::AccessFlagBits::eNone, vk::AccessFlagBits::eColorAttachmentWrite,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal,{}, {},
+				colorImage.image, imageSubresourceRange };
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			{}, 0, nullptr, 0, nullptr,
+			1, & offscreenMemoryBarrierToColor);
+
 		vk::ClearValue clearValue;
 		clearValue.color = { 0.0f, 0.7f, 0.9f, 1.0f };
 
@@ -1335,16 +1288,30 @@ namespace Puffin::Rendering::VK
 
 		std::array<vk::ClearValue, 2> clearValues = { clearValue, depthClear };
 
-		// Begin main renderpass
-		vk::RenderPassBeginInfo rpInfo = { m_renderPass, framebuffer,
-			vk::Rect2D{ {0, 0}, renderExtent }, clearValues.size(), clearValues.data(), nullptr };
+		// Begin Rendering
+		vk::RenderingAttachmentInfoKHR colorAttachInfo = { colorImage.imageView, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearValue };
 
-		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
+		vk::RenderingAttachmentInfoKHR depthAttachInfo = { depthImage.imageView, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depthClear };
+
+		vk::RenderingInfoKHR renderInfo = { {}, vk::Rect2D{ {0, 0}, renderExtent }, 1, {}, 1, &colorAttachInfo, &depthAttachInfo };
+
+		cmd.beginRendering(&renderInfo);
 
 		DrawObjects(cmd, renderExtent);
 
-		// End main renderpass
-		cmd.endRenderPass();
+		// End Rendering
+		cmd.endRendering();
+
+		// Transition layout to Shader Read Optimal
+		vk::ImageMemoryBarrier offscreenMemoryBarrierToShader = { vk::AccessFlagBits::eColorAttachmentWrite, vk::AccessFlagBits::eNone,
+			vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal,{}, {},
+				colorImage.image, imageSubresourceRange };
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe,
+			{}, 0, nullptr, 0, nullptr,
+			1, & offscreenMemoryBarrierToShader);
 
 		// Finish command buffer recording
 		cmd.end();
@@ -1497,7 +1464,7 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::RecordAndSubmitCommands(uint32_t swapchainIdx)
 	{
 		// Record command buffers
-		vk::CommandBuffer mainCmd = RecordMainCommandBuffer(swapchainIdx, m_offscreenData.extent, m_offscreenData.framebuffers[swapchainIdx]);
+		vk::CommandBuffer mainCmd = RecordMainCommandBuffer(swapchainIdx, m_offscreenData.extent, m_offscreenData.allocImages[swapchainIdx], m_offscreenData.allocDepthImage);
 
 		// Submit all commands
 		std::vector<vk::CommandBuffer> commands = { mainCmd };

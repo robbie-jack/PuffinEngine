@@ -63,7 +63,7 @@ checkout_git_branch("deps/imgui" "docking")
 
 # Define CMAKE Variables
 set(PROJECT_NAME PuffinEngine)
-set(VULKAN_SDK_PATH "C:/VulkanSDK/1.3.236.0")
+set(VULKAN_SDK_PATH "C:/VulkanSDK/1.3.243.0")
 
 # Set Project Name
 project (${PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)

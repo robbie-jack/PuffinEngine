@@ -68,7 +68,6 @@ namespace Puffin::Rendering::VK
 			imageFormat = other.imageFormat;
 
 			allocImages = other.allocImages;
-			framebuffers = other.framebuffers;
 			viewportTextures = other.viewportTextures;
 
 			allocDepthImage = other.allocDepthImage;
@@ -81,7 +80,6 @@ namespace Puffin::Rendering::VK
 		vk::Format imageFormat;
 
 		std::vector<AllocatedImage> allocImages;
-		std::vector<vk::Framebuffer> framebuffers;
 
 		std::vector<ImTextureID> viewportTextures;
 
