@@ -884,8 +884,9 @@ namespace Puffin::Rendering::VK
 		}
 
 		// Remove all marked meshes from combined buffer
-		if (meshesToBeRemoved.size() > 0)
+		if (!meshesToBeRemoved.empty())
 		{
+			// Currently disabled as RemoveMeshes call caused scene rendering to be messed up, will need investigated
 			//m_staticRenderData.combinedMeshBuffer.RemoveMeshes(meshesToBeRemoved);
 
 			// Remove marked meshes from draw list
