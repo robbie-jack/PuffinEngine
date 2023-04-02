@@ -71,7 +71,7 @@ namespace Puffin::Rendering::VK::Util
 		// Allocate Staging Buffer - Map Vertices in CPU Memory
 		AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), dataSize,
 			{ usageFlags | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAutoPreferHost, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+			vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
 		// Map vertex data to staging buffer
 		void* mappedData;
@@ -152,7 +152,7 @@ namespace Puffin::Rendering::VK::Util
 
 		// Allocate staging buffer on CPU for holding texture data to upload
 		const AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), imageSize, 
-			vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAutoPreferHost, 
+			vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAuto, 
 			vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
 		// Copy texture data to buffer

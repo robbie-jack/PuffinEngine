@@ -18,6 +18,12 @@ namespace Puffin::Rendering::VK
 
 	struct AllocatedBuffer
 	{
+		void operator=(const AllocatedBuffer& other)
+		{
+			buffer = other.buffer;
+			allocation = other.allocation;
+		}
+
 		vk::Buffer buffer;
 		vma::Allocation allocation;
 	};

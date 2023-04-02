@@ -15,8 +15,8 @@ namespace Puffin::Rendering::VK
 	{
 	public:
 
-		void Init(std::shared_ptr<VKRenderSystem> renderer,  uint32_t vertexSize, 
-			uint32_t indexSize = sizeof(uint32_t), uint32_t numVertices = 5000000, uint32_t numIndices = 10000000);
+		void Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize,
+		          uint32_t indexSize = sizeof(uint32_t), uint32_t numVertices = 500000, uint32_t numIndices = 1000000);
 
 		void Cleanup();
 
@@ -35,6 +35,8 @@ namespace Puffin::Rendering::VK
 
 		AllocatedBuffer& VertexBuffer() { return m_vertexBuffer; }
 		AllocatedBuffer& IndexBuffer() { return m_indexBuffer; }
+
+		inline void SetBufferResizeMult(float inMult) { m_bufferResizeMult = inMult; }
 
 	private:
 
@@ -60,5 +62,9 @@ namespace Puffin::Rendering::VK
 		// Total number of vertices/indices allocated in buffers
 		uint32_t m_allocatedVertexCount = 0, m_allocatedIndexCount = 0;
 
+		float m_bufferResizeMult = 1.5f;
+
+		bool GrowVertexBuffer(uint32_t minAllocationCount);
+		bool GrowIndexBuffer(uint32_t minAllocationCount);
 	};
 }

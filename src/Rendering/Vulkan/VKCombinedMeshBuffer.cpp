@@ -18,8 +18,8 @@
 
 namespace Puffin::Rendering::VK
 {
-	void CombinedMeshBuffer::Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, 
-		uint32_t indexSize, uint32_t numVertices, uint32_t numIndices)
+	void CombinedMeshBuffer::Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize,
+	                              uint32_t indexSize, uint32_t numVertices, uint32_t numIndices)
 	{
 		m_renderer = renderer;
 		m_vertexSize = vertexSize;
@@ -73,11 +73,17 @@ namespace Puffin::Rendering::VK
 
 			const uint32_t newVertexOffset = internalMeshData.vertexOffset + internalMeshData.vertexCount;
 			if (newVertexOffset >= m_allocatedVertexCount)
-				return false;
+			{
+				if (!GrowVertexBuffer(newVertexOffset))
+					return false;
+			}
 
 			const uint32_t newIndexOffset = internalMeshData.indexOffset + internalMeshData.indexCount;
 			if (newIndexOffset >= m_allocatedIndexCount)
-				return false;
+			{
+				if (!GrowIndexBuffer(newIndexOffset))
+					return false;
+			}
 
 			m_vertexOffset = newVertexOffset;
 			m_indexOffset = newIndexOffset;
@@ -90,7 +96,7 @@ namespace Puffin::Rendering::VK
 				staticMesh->GetVertices().data(), 0, internalMeshData.vertexOffset * m_vertexSize);
 
 			// Copy index data
-			Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eVertexBuffer, m_indexBuffer.buffer, indexBufferSize,
+			Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eIndexBuffer, m_indexBuffer.buffer, indexBufferSize,
 				staticMesh->GetIndices().data(), 0, internalMeshData.indexOffset * m_indexSize);
 
 			m_internalMeshData.insert({staticMesh->ID(), internalMeshData});
@@ -101,5 +107,61 @@ namespace Puffin::Rendering::VK
 		{
 			return false;
 		}
+	}
+
+	bool CombinedMeshBuffer::GrowVertexBuffer(uint32_t minAllocationCount)
+	{
+		// Allocate larger vertex buffer
+		const uint32_t newAllocationCount = minAllocationCount * m_bufferResizeMult;
+		const uint32_t newVertexBufferSize = newAllocationCount * m_vertexSize;
+
+		if (newAllocationCount <= m_allocatedVertexCount)
+		{
+			return false;
+		}
+
+		AllocatedBuffer oldVertexBuffer = m_vertexBuffer;
+		m_vertexBuffer = Util::CreateBuffer(m_renderer->GetAllocator(), newVertexBufferSize,
+			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
+			vma::MemoryUsage::eAutoPreferDevice);
+
+		// Copy data from old buffer to new buffer
+		const uint32_t oldVertexBufferSize = m_allocatedVertexCount * m_vertexSize;
+		Util::CopyDataBetweenBuffers(m_renderer, oldVertexBuffer.buffer, m_vertexBuffer.buffer, oldVertexBufferSize);
+
+		// Free old buffer
+		m_renderer->GetAllocator().destroyBuffer(oldVertexBuffer.buffer, oldVertexBuffer.allocation);
+
+		m_allocatedVertexCount = newAllocationCount;
+
+		return true;
+	}
+
+	bool CombinedMeshBuffer::GrowIndexBuffer(uint32_t minAllocationCount)
+	{
+		// Allocated larger index buffer
+		const uint32_t newAllocationCount = minAllocationCount * m_bufferResizeMult;
+		const uint32_t newIndexBufferSize = newAllocationCount * m_indexSize;
+
+		if (newAllocationCount <= m_allocatedIndexCount)
+		{
+			return false;
+		}
+
+		AllocatedBuffer oldIndexBuffer = m_indexBuffer;
+		m_indexBuffer = Util::CreateBuffer(m_renderer->GetAllocator(), newIndexBufferSize,
+			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
+			vma::MemoryUsage::eAutoPreferDevice);
+
+		// Copy data from old buffer to new buffer
+		const uint32_t oldIndexBufferSize = m_allocatedIndexCount * m_indexSize;
+		Util::CopyDataBetweenBuffers(m_renderer, oldIndexBuffer.buffer, m_indexBuffer.buffer, oldIndexBufferSize);
+
+		// Free old buffer
+		m_renderer->GetAllocator().destroyBuffer(oldIndexBuffer.buffer, oldIndexBuffer.allocation);
+
+		m_allocatedIndexCount = newAllocationCount;
+
+		return true;
 	}
 }
