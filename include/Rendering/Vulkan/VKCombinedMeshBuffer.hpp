@@ -5,6 +5,8 @@
 #include "Rendering/Vulkan/VKTypes.hpp"
 
 #include <unordered_map>
+#include <vector>
+#include <set>
 
 namespace Puffin::Rendering::VK
 {
@@ -22,10 +24,12 @@ namespace Puffin::Rendering::VK
 
 		bool AddMesh(std::shared_ptr<Assets::StaticMeshAsset> staticMesh);
 
-		bool HasMesh(std::shared_ptr<Assets::StaticMeshAsset> staticMesh)
+		bool HasMesh(UUID staticMeshID) const
 		{
-			return m_internalMeshData.count(staticMesh->ID()) == 1;
+			return m_internalMeshData.count(staticMeshID) == 1;
 		}
+
+		bool RemoveMeshes(const std::set<UUID>& staticMeshesToRemove);
 
 		inline uint32_t MeshVertexOffset(UUID meshID) { return m_internalMeshData[meshID].vertexOffset; }
 		inline uint32_t MeshIndexOffset(UUID meshID) { return m_internalMeshData[meshID].indexOffset; }
@@ -36,7 +40,9 @@ namespace Puffin::Rendering::VK
 		AllocatedBuffer& VertexBuffer() { return m_vertexBuffer; }
 		AllocatedBuffer& IndexBuffer() { return m_indexBuffer; }
 
-		inline void SetBufferResizeMult(float inMult) { m_bufferResizeMult = inMult; }
+		inline void SetBufferGrowMult(float inMult) { m_bufferGrowMult = inMult; }
+		inline void SetBufferShrinkMult(float inMult) { m_bufferShrinkMult = inMult; }
+		inline void SetBufferShrinkThreshold(float inThreshold) { m_bufferShrinkThreshold = inThreshold; }
 
 	private:
 
@@ -62,9 +68,11 @@ namespace Puffin::Rendering::VK
 		// Total number of vertices/indices allocated in buffers
 		uint32_t m_allocatedVertexCount = 0, m_allocatedIndexCount = 0;
 
-		float m_bufferResizeMult = 1.5f;
+		float m_bufferGrowMult = 1.5f; // How much more space than minimum count to allocate when buffer grows
+		float m_bufferShrinkMult = 1.2f; // How much more space than minimum count to allocate when buffer shrinks
+		float m_bufferShrinkThreshold = 0.5f; // How much of the buffer is use before it should be shrunk
 
-		bool GrowVertexBuffer(uint32_t minAllocationCount);
-		bool GrowIndexBuffer(uint32_t minAllocationCount);
+		bool UpdateVertexBuffer(uint32_t vertexCount);
+		bool UpdateIndexBuffer(uint32_t indexCount);
 	};
 }

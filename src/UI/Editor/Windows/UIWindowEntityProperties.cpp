@@ -222,8 +222,9 @@ namespace Puffin
 
 					if (ImGui::SmallButton("X##Mesh"))
 					{
-						sceneChanged = true;
 						ecsWorld->SetComponentFlag<Rendering::MeshComponent, FlagDeleted>(m_entity, true);
+
+						sceneChanged = true;
 					}
 
 					ImGui::Text("Model UUID: %d", mesh.meshAssetID);

@@ -125,7 +125,11 @@ namespace Puffin::Rendering::VK
 
 		Draw();
 
-		m_meshDrawList.clear();
+		// Clear all entity sets in mesh draw list
+		for (auto& [fst, snd] : m_meshDrawList)
+		{
+			snd.clear();
+		}
 	}
 
 	void VKRenderSystem::Cleanup()
@@ -135,13 +139,6 @@ namespace Puffin::Rendering::VK
 		if (m_isInitialized)
 		{
 			m_staticRenderData.combinedMeshBuffer.Cleanup();
-
-			for (auto meshData : m_meshData)
-			{
-				UnloadMesh(meshData);
-			}
-
-			m_meshData.Clear();
 
 			for (auto texData : m_texData)
 			{
@@ -747,19 +744,26 @@ namespace Puffin::Rendering::VK
 		{
 			const auto& mesh = entity->GetComponent<MeshComponent>();
 
-			if (m_meshDrawList.count(mesh.meshAssetID) == 0)
+			if (entity->GetComponentFlag<MeshComponent, FlagDeleted>())
 			{
-				m_meshDrawList.insert({mesh.meshAssetID, std::set<ECS::EntityID>()});
+				entity->RemoveComponent<MeshComponent>();
 			}
-
-			m_meshDrawList[mesh.meshAssetID].insert(entity->ID());
-
-			if (m_texDrawList.count(mesh.textureAssetID) == 0)
+			else
 			{
-				m_texDrawList.insert({mesh.textureAssetID, std::set<ECS::EntityID>()});
-			}
+				if (m_meshDrawList.count(mesh.meshAssetID) == 0)
+				{
+					m_meshDrawList.insert({ mesh.meshAssetID, std::set<ECS::EntityID>() });
+				}
 
-			m_texDrawList[mesh.textureAssetID].insert(entity->ID());
+				m_meshDrawList[mesh.meshAssetID].insert(entity->ID());
+
+				if (m_texDrawList.count(mesh.textureAssetID) == 0)
+				{
+					m_texDrawList.insert({ mesh.textureAssetID, std::set<ECS::EntityID>() });
+				}
+
+				m_texDrawList[mesh.textureAssetID].insert(entity->ID());
+			}
 		}
 
 		std::vector<std::shared_ptr<ECS::Entity>> camEntities;
@@ -849,21 +853,48 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::UpdateRenderData()
 	{
+		std::set<UUID> meshesToBeRemoved;
+
 		for (const auto& [fst, snd] : m_meshDrawList)
 		{
-			if (!m_meshData.Contains(fst))
-			{
-				MeshData meshData;
-				LoadMesh(fst, meshData);
-
-				m_meshData.Insert(fst, meshData);
-			}
-
 			const auto staticMesh = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(fst));
-			if (!m_staticRenderData.combinedMeshBuffer.HasMesh(staticMesh))
+			m_staticRenderData.combinedMeshBuffer.AddMesh(staticMesh);
+
+			// Check if mesh is still in use by any in-flight frames
+			if (!snd.empty())
 			{
-				m_staticRenderData.combinedMeshBuffer.AddMesh(staticMesh);
+				GetCurrentFrameData().renderedMeshes.insert(fst);
 			}
+			else
+			{
+				GetCurrentFrameData().renderedMeshes.erase(fst);
+
+				bool meshStillBeingRendered = false;
+				for (const auto& frameRenderData : m_frameRenderData)
+				{
+					if (frameRenderData.renderedMeshes.count(fst) == 1)
+						meshStillBeingRendered = true;
+				}
+
+				if (!meshStillBeingRendered)
+				{
+					meshesToBeRemoved.insert(fst);
+				}
+			}
+		}
+
+		// Remove all marked meshes from combined buffer
+		if (meshesToBeRemoved.size() > 0)
+		{
+			//m_staticRenderData.combinedMeshBuffer.RemoveMeshes(meshesToBeRemoved);
+
+			// Remove marked meshes from draw list
+			for (const auto& meshID : meshesToBeRemoved)
+			{
+				m_meshDrawList.erase(meshID);
+			}
+
+			meshesToBeRemoved.clear();
 		}
 
 		bool textureDescriptorNeedsUpdated = false;
@@ -1150,12 +1181,12 @@ namespace Puffin::Rendering::VK
 					Physics::VelocityComponent velocity = m_world->GetComponent<Physics::VelocityComponent>(entityID);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
-					Vector3d predictedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
+					Vector3d interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
 #else
-					Vector3f predictedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
+					Vector3f interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
 #endif
 
-					position = Maths::Lerp(transform.position, predictedPosition, t);
+					position = Maths::Lerp(transform.position, interpolatedPosition, t);
 				}
 				else
 				{

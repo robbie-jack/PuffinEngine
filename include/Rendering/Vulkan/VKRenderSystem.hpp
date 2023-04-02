@@ -75,6 +75,8 @@ namespace Puffin::Rendering::VK
 		// Material Data (Set for each unique material i.e textures)
 		vk::DescriptorSet materialDescriptor;
 
+		std::set<UUID> renderedMeshes; // Set of meshes last rendered using this data
+
 		bool swapchainNeedsUpdated = false;
 		bool offscreenNeedsUpdated = false;
 		bool textureDescriptorNeedsupdated = false;
@@ -144,7 +146,6 @@ namespace Puffin::Rendering::VK
 		StaticRenderData m_staticRenderData;
 		std::array<FrameRenderData, G_BUFFERED_FRAMES> m_frameRenderData;
 
-		PackedVector<MeshData> m_meshData;
 		std::unordered_map<UUID, std::set<ECS::EntityID>> m_meshDrawList;
 
 		PackedVector<TextureData> m_texData;
