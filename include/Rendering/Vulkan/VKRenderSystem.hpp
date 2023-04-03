@@ -16,11 +16,11 @@
 #include "VKTypes.hpp"
 #include "VKDescriptors.hpp"
 #include "VKPipeline.hpp"
+#include "VKUnifiedGeometryBuffer.hpp"
 #include "Assets/TextureAsset.h"
 #include "ECS/Entity.h"
 #include "Components/Rendering/CameraComponent.h"
 #include "Input/InputEvent.h"
-#include "Rendering/Vulkan/VKCombinedMeshBuffer.hpp"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -41,7 +41,7 @@ namespace Puffin::Rendering::VK
 
 		vk::Sampler textureSampler;
 
-		CombinedMeshBuffer combinedMeshBuffer;
+		UnifiedGeometryBuffer combinedMeshBuffer;
 	};
 
 	// Struct containing data that changes each frame
@@ -117,6 +117,8 @@ namespace Puffin::Rendering::VK
 
 		void OnInputEvent(const Input::InputEvent& inputEvent);
 
+		bool IsReBAREnabled() const { return m_isReBAREnabled; }
+
 	private:
 
 		// Initialization Members
@@ -176,8 +178,8 @@ namespace Puffin::Rendering::VK
 
 		RingBuffer<Input::InputEvent> m_inputEvents;
 
-		// Indicated initialization completed without any failures
-		bool m_isInitialized = false;
+		bool m_isInitialized = false; // Indicated initialization completed without any failures
+		bool m_isReBAREnabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
 
 		void InitVulkan();
 

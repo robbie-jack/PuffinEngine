@@ -191,6 +191,7 @@ namespace Puffin::Rendering::VK
 			.request_validation_layers(enableValidationLayers)
 			.require_api_version(1, 3, 0)
 			.use_default_debug_messenger()
+			.enable_extension("VK_KHR_get_physical_device_properties2")
 			.build();
 
 		vkb::Instance vkbInst = instRet.value();
@@ -218,7 +219,8 @@ namespace Puffin::Rendering::VK
 		// Check for desired extension support
 		std::vector<const char*> device_extensions =
 		{
-			"VK_KHR_dynamic_rendering"
+			"VK_EXT_memory_budget",
+			"VK_KHR_dynamic_rendering",
 		};
 
 		// Select GPU
@@ -256,6 +258,26 @@ namespace Puffin::Rendering::VK
 		allocatorInfo.instance = m_instance;
 
 		VK_CHECK(vma::createAllocator(&allocatorInfo, &m_allocator));
+
+		// Check memory types
+		const vk::PhysicalDeviceMemoryProperties* deviceMemProps = m_allocator.getMemoryProperties();
+
+		for (int i = 0; i < deviceMemProps->memoryTypeCount; i++)
+		{
+			const vk::MemoryType& memType = deviceMemProps->memoryTypes[i];
+			const vk::MemoryPropertyFlags& memPropFlags = memType.propertyFlags;
+
+			if (memPropFlags & (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eDeviceLocal))
+			{
+				vk::DeviceSize heapSize = deviceMemProps->memoryHeaps[memType.heapIndex].size;
+				vk::DeviceSize heapSizeMB = heapSize / 1024 / 1024;
+
+				if (heapSizeMB > 256)
+				{
+					m_isReBAREnabled = true;
+				}
+			}
+		}
 
 		m_deletionQueue.PushFunction([=]()
 		{

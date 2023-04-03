@@ -148,7 +148,7 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKHelpers.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VKDescriptors.hpp
 	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.hpp
-	${HEADER_DIR}/Rendering/Vulkan/VKCombinedMeshBuffer.hpp
+	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.hpp
 	# Scripting
 	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScriptSystem.h
@@ -215,7 +215,7 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKHelpers.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKDescriptors.cpp
-	${SOURCE_DIR}/Rendering/Vulkan/VKCombinedMeshBuffer.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
 	${SOURCE_DIR}/Scripting/NativeScriptSystem.cpp

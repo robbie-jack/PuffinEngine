@@ -13,12 +13,12 @@ namespace Puffin::Rendering::VK
 	class VKRenderSystem;
 
 	// Custom buffer to store vertex/index data for multiple meshes in a single large vertex/index buffer
-	class CombinedMeshBuffer
+	class UnifiedGeometryBuffer
 	{
 	public:
 
-		void Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize,
-		          uint32_t indexSize = sizeof(uint32_t), uint32_t numVertices = 500000, uint32_t numIndices = 1000000);
+		void Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, uint32_t indexSize = sizeof(uint32_t), 
+			vk::DeviceSize defaultVertexBufferSize = 1 * 1024 * 1024, vk::DeviceSize defaultIndexBufferSize = 1 * 1024 * 1024);
 
 		void Cleanup();
 
@@ -29,6 +29,7 @@ namespace Puffin::Rendering::VK
 			return m_internalMeshData.count(staticMeshID) == 1;
 		}
 
+		// CURRENTLY BROKEN, DO NOT USE!!!!!
 		bool RemoveMeshes(const std::set<UUID>& staticMeshesToRemove);
 
 		inline uint32_t MeshVertexOffset(UUID meshID) { return m_internalMeshData[meshID].vertexOffset; }
@@ -40,10 +41,6 @@ namespace Puffin::Rendering::VK
 		AllocatedBuffer& VertexBuffer() { return m_vertexBuffer; }
 		AllocatedBuffer& IndexBuffer() { return m_indexBuffer; }
 
-		inline void SetBufferGrowMult(float inMult) { m_bufferGrowMult = inMult; }
-		inline void SetBufferShrinkMult(float inMult) { m_bufferShrinkMult = inMult; }
-		inline void SetBufferShrinkThreshold(float inThreshold) { m_bufferShrinkThreshold = inThreshold; }
-
 	private:
 
 		std::shared_ptr<VKRenderSystem> m_renderer = nullptr;
@@ -52,6 +49,7 @@ namespace Puffin::Rendering::VK
 		{
 			uint32_t vertexOffset, vertexCount;
 			uint32_t indexOffset, indexCount;
+			bool isActive;
 		};
 
 		std::unordered_map<UUID, InternalMeshData> m_internalMeshData;
@@ -62,17 +60,26 @@ namespace Puffin::Rendering::VK
 		uint32_t m_vertexSize = 0; // Number of bytes for each vertex
 		uint32_t m_indexSize = 0; // Number of bytes for each index
 
-		// Number of vertices/indices currently in use
+		// Offset into buffers where vertices/indices have been added
 		uint32_t m_vertexOffset = 0, m_indexOffset = 0;
 
+		// Number of vertices/indices in use
+		uint32_t m_activeVertexCount = 0, m_activeIndexCount = 0;
+
 		// Total number of vertices/indices allocated in buffers
-		uint32_t m_allocatedVertexCount = 0, m_allocatedIndexCount = 0;
+		uint32_t m_maxVertexCount = 0, m_maxIndexCount = 0;
 
-		float m_bufferGrowMult = 1.5f; // How much more space than minimum count to allocate when buffer grows
-		float m_bufferShrinkMult = 1.2f; // How much more space than minimum count to allocate when buffer shrinks
-		float m_bufferShrinkThreshold = 0.5f; // How much of the buffer is use before it should be shrunk
+		vk::DeviceSize m_vertexBufferSize = 0, m_indexBufferSize = 0;
+		vk::DeviceSize m_vertexBufferSizeBlock = 64 * 1024 * 1024;
+		vk::DeviceSize m_indexBufferSizeBlock = 64 * 1024 * 1024;
 
-		bool UpdateVertexBuffer(uint32_t vertexCount);
-		bool UpdateIndexBuffer(uint32_t indexCount);
+		// How much of buffer is unused before it should be shrank
+		double m_shrinkUsageThreshold = 0.5f;
+
+		bool GrowVertexBuffer(uint32_t minVertexCount);
+		bool GrowIndexBuffer(uint32_t minIndexCount);
+
+		bool ShrinkVertexBuffer(uint32_t minVertexCount);
+		bool ShrinkIndexBuffer(uint32_t minVertexCount);
 	};
 }
