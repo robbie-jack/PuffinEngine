@@ -19,26 +19,30 @@
 
 namespace Puffin::Rendering::VK
 {
-	void UnifiedGeometryBuffer::Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, uint32_t indexSize, 
-		vk::DeviceSize defaultVertexBufferSize , vk::DeviceSize defaultIndexBufferSize)
+	void UnifiedGeometryBuffer::Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, uint32_t indexSize,
+	                                 vk::DeviceSize initialVertexBufferSize, vk::DeviceSize initialIndexBufferSize, vk::DeviceSize vertexBufferBlockSize, vk
+	                                 ::DeviceSize indexBufferBlockSize)
 	{
 		m_renderer = renderer;
 		m_vertexSize = vertexSize;
 		m_indexSize = indexSize;
 
-		m_vertexBufferSize = defaultVertexBufferSize;
-		m_indexBufferSize = defaultIndexBufferSize;
+		m_vertexBufferSize = initialVertexBufferSize;
+		m_indexBufferSize = initialIndexBufferSize;
+
+		m_vertexBufferBlockSize = vertexBufferBlockSize;
+		m_indexBufferBlockSize = indexBufferBlockSize;
 
 		m_maxVertexCount = std::floor(static_cast<double>(m_vertexBufferSize) / static_cast<double>(m_vertexSize));
 		m_maxIndexCount = std::floor(static_cast<double>(m_indexBufferSize) / static_cast<double>(m_indexSize));
 
 		m_vertexBuffer = Util::CreateBuffer(renderer->GetAllocator(), m_vertexBufferSize,
 			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAutoPreferDevice);
+			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
 
 		m_indexBuffer = Util::CreateBuffer(renderer->GetAllocator(), m_indexBufferSize,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAutoPreferDevice);
+			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
 	}
 
 	void UnifiedGeometryBuffer::Cleanup()
@@ -105,11 +109,11 @@ namespace Puffin::Rendering::VK
 				const uint32_t indexBufferSize = internalMeshData.indexCount * m_indexSize;
 
 				// Copy vertex data
-				Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eVertexBuffer, m_vertexBuffer.buffer, vertexBufferSize,
+				Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eVertexBuffer, m_vertexBuffer, vertexBufferSize,
 					staticMesh->GetVertices().data(), 0, internalMeshData.vertexOffset * m_vertexSize);
 
 				// Copy index data
-				Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eIndexBuffer, m_indexBuffer.buffer, indexBufferSize,
+				Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eIndexBuffer, m_indexBuffer, indexBufferSize,
 					staticMesh->GetIndices().data(), 0, internalMeshData.indexOffset * m_indexSize);
 
 				m_internalMeshData.insert({ staticMesh->ID(), internalMeshData });
@@ -169,7 +173,7 @@ namespace Puffin::Rendering::VK
 		vk::DeviceSize newVertexBufferSize = m_vertexBufferSize;
 		while (newVertexBufferSize < minVertexBufferSize)
 		{
-			newVertexBufferSize += m_vertexBufferSizeBlock;
+			newVertexBufferSize += m_vertexBufferBlockSize;
 		}
 
 		AllocatedBuffer oldVertexBuffer = m_vertexBuffer;
@@ -201,7 +205,7 @@ namespace Puffin::Rendering::VK
 		vk::DeviceSize newIndexBufferSize = m_indexBufferSize;
 		while (newIndexBufferSize < minIndexBufferSize)
 		{
-			newIndexBufferSize += m_indexBufferSizeBlock;
+			newIndexBufferSize += m_indexBufferBlockSize;
 		}
 
 		AllocatedBuffer oldIndexBuffer = m_indexBuffer;

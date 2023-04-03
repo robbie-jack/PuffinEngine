@@ -17,8 +17,9 @@ namespace Puffin::Rendering::VK
 	{
 	public:
 
-		void Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, uint32_t indexSize = sizeof(uint32_t), 
-			vk::DeviceSize defaultVertexBufferSize = 1 * 1024 * 1024, vk::DeviceSize defaultIndexBufferSize = 1 * 1024 * 1024);
+		void Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, uint32_t indexSize = sizeof(uint32_t),
+		          vk::DeviceSize initialVertexBufferSize = 1 * 1024 * 1024, vk::DeviceSize initialIndexBufferSize = 1 * 1024 * 1024, vk::
+		          DeviceSize vertexBufferBlockSize = 64 * 1024 * 1024, vk::DeviceSize indexBufferBlockSize = 16 * 1024 * 1024);
 
 		void Cleanup();
 
@@ -70,8 +71,8 @@ namespace Puffin::Rendering::VK
 		uint32_t m_maxVertexCount = 0, m_maxIndexCount = 0;
 
 		vk::DeviceSize m_vertexBufferSize = 0, m_indexBufferSize = 0;
-		vk::DeviceSize m_vertexBufferSizeBlock = 64 * 1024 * 1024;
-		vk::DeviceSize m_indexBufferSizeBlock = 64 * 1024 * 1024;
+		vk::DeviceSize m_vertexBufferBlockSize = 0;
+		vk::DeviceSize m_indexBufferBlockSize = 0;
 
 		// How much of buffer is unused before it should be shrank
 		double m_shrinkUsageThreshold = 0.5f;
