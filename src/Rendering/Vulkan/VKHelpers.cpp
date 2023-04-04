@@ -61,7 +61,7 @@ namespace Puffin::Rendering::VK::Util
 
 		AllocatedBuffer buffer;
 
-		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, nullptr));
+		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.allocInfo));
 
 		return buffer;
 	}
@@ -73,32 +73,22 @@ namespace Puffin::Rendering::VK::Util
 		// If rebar is enabled and buffer is in host visible memory, copy directly to buffer
 		if (renderer->IsReBAREnabled() && (memPropFlags & vk::MemoryPropertyFlagBits::eHostVisible))
 		{
-			// Map vertex data to dst buffer
-			void* mappedData;
-			VK_CHECK(renderer->GetAllocator().mapMemory(dstBuffer.allocation, &mappedData));
-
 			const auto* dataChar = static_cast<const char*>(data);
 
-			std::copy(dataChar, dataChar + dataSize, static_cast<char*>(mappedData) + dstOffset);
-			renderer->GetAllocator().unmapMemory(dstBuffer.allocation);
+			std::copy(dataChar, dataChar + dataSize, static_cast<char*>(dstBuffer.allocInfo.pMappedData) + dstOffset);
 		}
 		// If rebar is not enabled or buffer is not in host visible, copy data via staging buffer
 		else
 		{
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
 			AllocatedBuffer stagingBuffer = CreateBuffer(renderer->GetAllocator(), dataSize,
-				{ usageFlags | vk::BufferUsageFlagBits::eTransferSrc },
-				vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
-
-			// Map vertex data to staging buffer
-			void* mappedData;
-			VK_CHECK(renderer->GetAllocator().mapMemory(stagingBuffer.allocation, &mappedData));
+				{ usageFlags | vk::BufferUsageFlagBits::eTransferSrc }, vma::MemoryUsage::eAuto, 
+				{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
 
 			const auto* dataChar = static_cast<const char*>(data);
-			auto* mappedDataChar = static_cast<char*>(mappedData);
+			auto* mappedDataChar = static_cast<char*>(stagingBuffer.allocInfo.pMappedData);
 
 			std::copy(dataChar, dataChar + dataSize, mappedDataChar);
-			renderer->GetAllocator().unmapMemory(stagingBuffer.allocation);
 
 			// Copy from CPU Memory to GPU Memory
 			CopyDataBetweenBuffers(renderer, stagingBuffer.buffer, dstBuffer.buffer, dataSize, srcOffset, dstOffset);
@@ -146,7 +136,7 @@ namespace Puffin::Rendering::VK::Util
 		// Create Image
 		vma::AllocationCreateInfo imageAllocInfo = { {}, vma::MemoryUsage::eAutoPreferDevice, vk::MemoryPropertyFlagBits::eDeviceLocal };
 
-		VK_CHECK(renderer->GetAllocator().createImage(&imageInfo, &imageAllocInfo, &allocImage.image, &allocImage.allocation, nullptr));
+		VK_CHECK(renderer->GetAllocator().createImage(&imageInfo, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.allocInfo));
 
 		// Create Image View
 		imageViewInfo.image = allocImage.image;

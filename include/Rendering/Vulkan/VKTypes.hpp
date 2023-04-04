@@ -22,10 +22,12 @@ namespace Puffin::Rendering::VK
 		{
 			buffer = other.buffer;
 			allocation = other.allocation;
+			allocInfo = other.allocInfo;
 		}
 
 		vk::Buffer buffer;
 		vma::Allocation allocation;
+		vma::AllocationInfo allocInfo;
 	};
 
 	struct AllocatedImage
@@ -34,6 +36,7 @@ namespace Puffin::Rendering::VK
 		vk::ImageView imageView;
 		vk::Format format;
 		vma::Allocation allocation;
+		vma::AllocationInfo allocInfo;
 	};
 
 	typedef AllocatedImage Texture;

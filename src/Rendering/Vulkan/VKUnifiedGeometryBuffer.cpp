@@ -38,11 +38,14 @@ namespace Puffin::Rendering::VK
 
 		m_vertexBuffer = Util::CreateBuffer(renderer->GetAllocator(), m_vertexBufferSize,
 			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
+			vma::MemoryUsage::eAuto, 
+			{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead | 
+			vma::AllocationCreateFlagBits::eMapped });
 
 		m_indexBuffer = Util::CreateBuffer(renderer->GetAllocator(), m_indexBufferSize,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
+			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead | 
+			vma::AllocationCreateFlagBits::eMapped });
 	}
 
 	void UnifiedGeometryBuffer::Cleanup()

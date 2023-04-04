@@ -221,7 +221,10 @@ namespace Puffin::Rendering::VK
 		void CleanOffscreen(OffscreenData& offscreenData);
 
 		void UpdateTextureDescriptors();
+
 		void PrepareSceneData();
+		void PrepareObjectData();
+		void PrepareLightData();
 
 		void BuildIndirectCommands();
 

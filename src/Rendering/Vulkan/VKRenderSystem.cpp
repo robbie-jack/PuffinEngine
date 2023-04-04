@@ -491,16 +491,20 @@ namespace Puffin::Rendering::VK
 
 			// Global Buffers
 			m_frameRenderData[i].cameraBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUCameraData),
-				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
-
-			m_frameRenderData[i].objectBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUObjectData) * G_MAX_OBJECTS,
-				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto, 
+				{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
 
 			m_frameRenderData[i].lightBuffer = Util::CreateBuffer(m_allocator, sizeof(GPULightData) * G_MAX_LIGHTS,
-				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto, 
+				{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
 
 			m_frameRenderData[i].lightStaticBuffer = Util::CreateBuffer(m_allocator, sizeof(GPULightStaticData),
-				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+				vk::BufferUsageFlagBits::eUniformBuffer, vma::MemoryUsage::eAuto, 
+				{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
+
+			m_frameRenderData[i].objectBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUObjectData) * G_MAX_OBJECTS,
+				vk::BufferUsageFlagBits::eStorageBuffer, vma::MemoryUsage::eAuto,
+				{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
 
 			// Material Buffers
 
@@ -508,9 +512,9 @@ namespace Puffin::Rendering::VK
 
 			m_deletionQueue.PushFunction([=]()
 			{
+				m_allocator.destroyBuffer(m_frameRenderData[i].objectBuffer.buffer, m_frameRenderData[i].objectBuffer.allocation);
 				m_allocator.destroyBuffer(m_frameRenderData[i].lightStaticBuffer.buffer, m_frameRenderData[i].lightStaticBuffer.allocation);
 				m_allocator.destroyBuffer(m_frameRenderData[i].lightBuffer.buffer, m_frameRenderData[i].lightBuffer.allocation);
-				m_allocator.destroyBuffer(m_frameRenderData[i].objectBuffer.buffer, m_frameRenderData[i].objectBuffer.allocation);
 				m_allocator.destroyBuffer(m_frameRenderData[i].cameraBuffer.buffer, m_frameRenderData[i].cameraBuffer.allocation);
 				m_allocator.destroyBuffer(m_frameRenderData[i].indirectBuffer.buffer, m_frameRenderData[i].indirectBuffer.allocation);
 			});
@@ -1161,25 +1165,28 @@ namespace Puffin::Rendering::VK
 	void VKRenderSystem::PrepareSceneData()
 	{
 		// Prepare camera data
+		const AllocatedBuffer& cameraBuffer = GetCurrentFrameData().cameraBuffer;
 
 		GPUCameraData camUBO = {};
 		camUBO.proj = m_editorCamMats.proj;
 		camUBO.view = m_editorCamMats.view;
 		camUBO.viewProj = m_editorCamMats.viewProj;
 
-		void* camData;
-		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().cameraBuffer.allocation, &camData));
-
-		memcpy(camData, &camUBO, sizeof(GPUCameraData));
-
-		m_allocator.unmapMemory(GetCurrentFrameData().cameraBuffer.allocation);
+		memcpy(cameraBuffer.allocInfo.pMappedData, &camUBO, sizeof(GPUCameraData));
 
 		// Prepare object data
+		PrepareObjectData();
+
+		// Prepare light data
+		PrepareLightData();
+	}
+
+	void VKRenderSystem::PrepareObjectData()
+	{
+		const AllocatedBuffer& objectBuffer = GetCurrentFrameData().objectBuffer;
 
 		void* objectData;
-		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().objectBuffer.allocation, &objectData));
-
-		auto* objectSSBO = static_cast<GPUObjectData*>(objectData);
+		GPUObjectData* objectSSBO = static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData);
 
 		int i = 0;
 
@@ -1223,17 +1230,15 @@ namespace Puffin::Rendering::VK
 				i++;
 			}
 		}
+	}
 
-		m_allocator.unmapMemory(GetCurrentFrameData().objectBuffer.allocation);
+	void VKRenderSystem::PrepareLightData()
+	{
+		const AllocatedBuffer& lightBuffer = GetCurrentFrameData().lightBuffer;
 
-		// Prepare light data
+		auto* lightSSBO = static_cast<GPULightData*>(lightBuffer.allocInfo.pMappedData);
 
-		void* lightData;
-		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().lightBuffer.allocation, &lightData));
-
-		auto* lightSSBO = static_cast<GPULightData*>(lightData);
-
-		i = 0;
+		int i = 0;
 
 		std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
 		ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
@@ -1254,27 +1259,21 @@ namespace Puffin::Rendering::VK
 			lightSSBO[i].ambientSpecular = glm::vec3(light.ambientIntensity, light.specularIntensity, light.specularExponent);
 			lightSSBO[i].attenuation = glm::vec3(light.constantAttenuation, light.linearAttenuation, light.quadraticAttenuation);
 			lightSSBO[i].cutoffAngle = glm::vec3(
-				glm::cos(glm::radians(light.innerCutoffAngle)), 
+				glm::cos(glm::radians(light.innerCutoffAngle)),
 				glm::cos(glm::radians(light.outerCutoffAngle)), 0.0f);
 			lightSSBO[i].type = static_cast<int>(light.type);
 
 			i++;
 		}
 
-		m_allocator.unmapMemory(GetCurrentFrameData().lightBuffer.allocation);
-
 		// Prepare light static data
+		const AllocatedBuffer& lightStaticBuffer = GetCurrentFrameData().lightStaticBuffer;
 
 		GPULightStaticData lightStaticUBO = {};
 		lightStaticUBO.numLights = i;
 		lightStaticUBO.viewPos = static_cast<glm::vec3>(m_editorCam.position);
 
-		void* lightStaticData;
-		VK_CHECK(m_allocator.mapMemory(GetCurrentFrameData().lightStaticBuffer.allocation, &lightStaticData));
-
-		memcpy(lightStaticData, &lightStaticUBO, sizeof(GPULightStaticData));
-
-		m_allocator.unmapMemory(GetCurrentFrameData().lightStaticBuffer.allocation);
+		memcpy(lightStaticBuffer.allocInfo.pMappedData, &lightStaticUBO, sizeof(GPULightStaticData));
 	}
 
 	void VKRenderSystem::BuildIndirectCommands()
