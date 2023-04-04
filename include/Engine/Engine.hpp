@@ -4,6 +4,7 @@
 #include <SerializeScene.h>
 #include <ProjectSettings.h>
 #include "Engine/Subsystem.hpp"
+#include "Engine/Application.hpp"
 
 #include <vector>
 #include <filesystem>
@@ -53,6 +54,14 @@ namespace Puffin::Core
 		void Play();
 		void Restart();
 		void Exit();
+
+		template<typename AppT>
+		void RegisterApp()
+		{
+			assert(m_application == nullptr && "Registering multiple applications");
+
+			m_application = std::static_pointer_cast<Application>(std::make_shared<Application>());
+		}
 
 		// Subsystem Methods
 		template<typename SubsystemT>
@@ -189,6 +198,8 @@ namespace Puffin::Core
 		double m_accumulatedTime = 0.0; // Time passed since last physics tick
 		double m_timeStepFixed = 1.0 / m_physicsTicksPerFrame; // How often deterministic code like physics should occur (defaults to 60 times a second)
 		double m_timeStepLimit = 1 / 25.0; // Maximum amount of time each frame should take to complete
+
+		std::shared_ptr<Application> m_application = nullptr;
 
 		// System Members
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers

@@ -1,20 +1,26 @@
 #pragma once
 
-#include "Engine/Engine.hpp"
+#include <memory>
 
 namespace Puffin::Core
 {
+	class Engine;
+
 	// Entry Point for Puffin Engine Apps/Games
 	class Application
 	{
 	public:
 
-		Application(std::shared_ptr<Engine> engine) : m_engine(engine) {}
+		Application() = default;
 		virtual ~Application() = default;
 
 		virtual void Init() = 0;
+		virtual void Start() = 0;
 		virtual void Update() = 0;
+		virtual void Stop() = 0;
 		virtual void Destroy() = 0;
+
+		void SetEngine(std::shared_ptr<Engine> engine) { m_engine = engine; }
 
 	private:
 
