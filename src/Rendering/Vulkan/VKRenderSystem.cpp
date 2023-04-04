@@ -73,8 +73,6 @@ namespace Puffin::Rendering::VK
 
 		InitCommands();
 
-		//InitDefaultRenderPass();
-
 		if (m_engine->ShouldRenderEditorUI())
 		{
 			InitImGuiRenderPass();
@@ -1025,7 +1023,11 @@ namespace Puffin::Rendering::VK
 			m_oldSwapchainData.needsCleaned = true;
 
 			InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
-			InitSwapchainFramebuffers(m_swapchainData);
+
+			if (m_engine->ShouldRenderEditorUI())
+			{
+				InitSwapchainFramebuffers(m_swapchainData);
+			}
 
 			m_swapchainData.resized = false;
 		}
