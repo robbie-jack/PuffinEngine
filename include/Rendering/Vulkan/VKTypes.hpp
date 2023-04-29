@@ -130,7 +130,6 @@ namespace Puffin::Rendering::VK
 	struct GPUObjectData
 	{
 		alignas(16) glm::mat4 model;
-		alignas(16) glm::mat4 invModel;
 		alignas(4) int texIndex;
 	};
 
