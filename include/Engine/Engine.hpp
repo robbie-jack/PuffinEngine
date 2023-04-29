@@ -144,25 +144,15 @@ namespace Puffin::Core
 
 		bool ShouldRenderEditorUI() const { return m_shouldRenderEditorUI; }
 
-		const double& GetTimeStep() const
-		{
-			return m_timeStepFixed;
-		}
+		const double& GetTimeStep() const { return m_timeStepFixed; }
 
-		void SetTimeStep(const double timeStep)
-		{
-			m_timeStepFixed = timeStep;
-		}
+		void SetTimeStep(const double timeStep) { m_timeStepFixed = timeStep; }
 
-		const double& GetDeltaTime() const
-		{
-			return m_deltaTime;
-		}
+		const double& GetDeltaTime() const { return m_deltaTime; }
 
-		const double& GetAccumulatedTime() const
-		{
-			return m_accumulatedTime;
-		}
+		const double& GetAccumulatedTime() const { return m_accumulatedTime; }
+
+		const double& GetIdleTime() const { return m_idleTime; }
 
 		const double& GetStageExecutionTime(const Core::UpdateOrder& updateOrder)
 		{
@@ -205,6 +195,7 @@ namespace Puffin::Core
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers
 		std::unordered_multimap<Core::UpdateOrder, std::shared_ptr<ECS::System>> m_systemUpdateVectors; // Map from update order to system pointers
 
+		double m_idleTime = 0.0; // 
 		std::unordered_map<Core::UpdateOrder, double> m_stageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
 		std::unordered_map<Core::UpdateOrder, std::unordered_map<std::string, double>> m_systemExecutionTime; // Map of time it takes for each system to execute
 
