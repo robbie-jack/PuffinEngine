@@ -20,7 +20,5 @@ namespace Puffin::Physics
 
 		void SortCollidersByX(std::vector<std::shared_ptr<Collision2D::Collider2D>>& colliders);
 
-		bool IsAABBOverlapping(std::shared_ptr<Collision2D::Collider2D> a, std::shared_ptr<Collision2D::Collider2D> b);
-
 	};
 }

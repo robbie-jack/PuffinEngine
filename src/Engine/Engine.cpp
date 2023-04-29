@@ -140,11 +140,11 @@ namespace Puffin::Core
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene();
-		//PhysicsScene();
+		PhysicsScene();
 		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
-		m_sceneData->LoadAndInit();
+		//m_sceneData->LoadAndInit();
 		//m_sceneData->Save();
 
 		running = true;
@@ -673,9 +673,10 @@ namespace Puffin::Core
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(250.0f, 1.0f);
 
-		const Vector3f startPosition(-25.0f, 10.f, 0.f);
-		const Vector3f endPosition(25.f, 10.f, 0.f);
-		const int numBodies = 10;
+		const float xOffset = 400.0f;
+		const Vector3f startPosition(-xOffset, 10.f, 0.f);
+		const Vector3f endPosition(xOffset, 10.f, 0.f);
+		const int numBodies = 150;
 		Vector3f positionOffset = endPosition - startPosition;
 		positionOffset.x /= numBodies;
 		for (int i = 0; i < numBodies; i++)

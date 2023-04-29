@@ -45,7 +45,7 @@ namespace Puffin
 			RegisterBroadphase<SweepAndPruneBroadphase>();
 			RegisterBroadphase<SpatialHashBroadphase2D>();
 
-			SetBroadphase<SpatialHashBroadphase2D>();
+			SetBroadphase<SweepAndPruneBroadphase>();
 		}
 
 		void Onager2DPhysicsSystem::PreStart()
@@ -81,10 +81,10 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::Update()
 		{
-			m_collidersUpdated = false;
-
 			UpdateComponents();
 			Step();
+
+			m_collidersUpdated = false;
 		}
 
 		void Onager2DPhysicsSystem::Stop()

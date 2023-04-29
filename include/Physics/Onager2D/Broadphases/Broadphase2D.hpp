@@ -8,6 +8,8 @@
 
 #include <memory>
 
+#include "Physics/Onager2D/PhysicsHelpers2D.h"
+
 namespace Puffin::Physics
 {
 	typedef std::pair<const std::shared_ptr<Collision2D::Collider2D>, const std::shared_ptr<Collision2D::Collider2D>> CollisionPair;
@@ -79,7 +81,15 @@ namespace Puffin::Physics
 					auto collisionPair = std::make_pair(colliderA, colliderB);
 
 					if (FilterCollisionPair(collisionPair, outCollisionPairs) == true)
-						outCollisionPairs.push_back(collisionPair);
+					{
+						AABB a = colliderA->GetAABB();
+						AABB b = colliderB->GetAABB();
+
+						if (Collision2D::TestAABBVsAABB(a, b))
+						{
+							outCollisionPairs.emplace_back(collisionPair);
+						}
+					}
 				}
 			}
 		}
