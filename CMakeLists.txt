@@ -113,6 +113,7 @@ set(HEADERS
 	${HEADER_DIR}/Engine/Subsystem.hpp
 	${HEADER_DIR}/Engine/EventSubsystem.hpp
 	${HEADER_DIR}/Engine/SignalSubsystem.hpp
+	${HEADER_DIR}/Engine/JobSystem.hpp
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
 	${HEADER_DIR}/Input/InputSubsystem.h
@@ -194,6 +195,7 @@ set(SOURCES
 	# Engine
 	${SOURCE_DIR}/Engine/Engine.cpp
 	${SOURCE_DIR}/Engine/Application.cpp
+	${SOURCE_DIR}/Engine/JobSystem.cpp
 	# Input
 	${SOURCE_DIR}/Input/InputSubsystem.cpp
 	# Physics

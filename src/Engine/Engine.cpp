@@ -36,6 +36,8 @@
 #include "Assets/AssetImporters.hpp"
 #include "Components/Physics/VelocityComponent.hpp"
 
+#include "Engine/JobSystem.hpp"
+
 #include <chrono>
 #include <thread>
 
@@ -137,6 +139,8 @@ namespace Puffin::Core
 		//AddDefaultAssets();
 		Assets::AssetRegistry::Get()->LoadAssetCache();
 		//ReimportDefaultAssets();
+
+		Core::JobSystem::Get()->Start();
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene();
@@ -456,6 +460,17 @@ namespace Puffin::Core
 			m_uiManager->Cleanup();
 			m_uiManager = nullptr;
 		}
+
+		while (true)
+		{
+			if (JobSystem::Get()->Wait())
+			{
+				break;
+			}
+		}
+
+		JobSystem::Get()->Stop();
+		JobSystem::Clear();
 
 		// Clear Asset Registry
 		Assets::AssetRegistry::Clear();

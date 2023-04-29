@@ -5,7 +5,7 @@
 
 namespace Puffin::Assets
 {
-	AssetRegistry* AssetRegistry::s_instance = 0;
+	AssetRegistry* AssetRegistry::s_instance = nullptr;
 
 	void AssetRegistry::ProjectName(const std::string& projectName)
 	{

@@ -33,6 +33,7 @@
 #include "Components/Rendering/LightComponent.h"
 #include "Engine/SignalSubsystem.hpp"
 #include "Input/InputSubsystem.h"
+#include "Engine/JobSystem.hpp"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
