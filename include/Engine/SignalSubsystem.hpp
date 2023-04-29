@@ -12,45 +12,7 @@ namespace Puffin::Core
 {
 	class ISignalHandler
 	{
-	public:
-
-		//virtual ~ISignalHandler() = 0;
-
 	};
-
-	//template<typename SignalT>
-	//class SignalHandlerBase : public ISignalHandler
-	//{
-	//public:
-
-	//	~SignalHandlerBase() override = 0;
-
-	//	virtual void Signal(const SignalT& signal) = 0;
-
-	//};
-
-	//template<typename InstT, typename SignalT>
-	//class SignalHandler : public  SignalHandlerBase<SignalT>
-	//{
-	//public:
-	//	
-	//	typedef void (InstT::*MemberFunction)(const SignalT&);
-
-	//	SignalHandler(std::shared_ptr<InstT> instance, MemberFunction memberFunction) : m_instance(instance), m_memberFunction(memberFunction) {}
-	//	~SignalHandler() override = default;
-
-	//	void Signal(const SignalT& signal) override
-	//	{
-	//		//(m_instance->*m_memberFunction)(signal);
-	//	}
-
-	//private:
-
-	//	std::shared_ptr<InstT> m_instance = nullptr;
-
-	//	MemberFunction m_memberFunction;
-
-	//};
 
 	template<typename SignalT>
 	class SignalHandler : public ISignalHandler
