@@ -9,6 +9,7 @@
 #include "Engine/Engine.hpp"
 #include "ECS/Entity.h"
 #include "Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.hpp"
+#include "Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.hpp"
 
 namespace Puffin
 {
@@ -42,8 +43,9 @@ namespace Puffin
 
 			RegisterBroadphase<NSquaredBroadphase>();
 			RegisterBroadphase<SweepAndPruneBroadphase>();
+			RegisterBroadphase<SpatialHashBroadphase2D>();
 
-			SetBroadphase<NSquaredBroadphase>();
+			SetBroadphase<SpatialHashBroadphase2D>();
 		}
 
 		void Onager2DPhysicsSystem::PreStart()
