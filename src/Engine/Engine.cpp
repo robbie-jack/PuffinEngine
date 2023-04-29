@@ -676,7 +676,7 @@ namespace Puffin::Core
 		const float xOffset = 400.0f;
 		const Vector3f startPosition(-xOffset, 10.f, 0.f);
 		const Vector3f endPosition(xOffset, 10.f, 0.f);
-		const int numBodies = 150;
+		const int numBodies = 5000;
 		Vector3f positionOffset = endPosition - startPosition;
 		positionOffset.x /= numBodies;
 		for (int i = 0; i < numBodies; i++)

@@ -1226,7 +1226,6 @@ namespace Puffin::Rendering::VK
 				}
 
 				objectSSBO[i].model = BuildModelTransform(position, transform.rotation.EulerAnglesRad(), transform.scale);
-				objectSSBO[i].invModel = glm::inverse(objectSSBO[i].model);
 				objectSSBO[i].texIndex = m_texData[mesh.textureAssetID].idx;
 
 				i++;

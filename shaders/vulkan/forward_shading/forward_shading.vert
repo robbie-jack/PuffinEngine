@@ -21,7 +21,6 @@ layout(set = 0, binding = 0) uniform CameraBuffer
 struct ObjectData
 {
 	mat4 model;
-	mat4 invModel;
 	int texIndex;
 };
 
@@ -33,7 +32,7 @@ layout(std140, set = 0, binding = 1) readonly buffer ObjectBuffer
 void main()
 {
 	mat4 modelMatrix = objectBuffer.objects[gl_BaseInstance].model;
-	mat4 modelMatrixInv = objectBuffer.objects[gl_BaseInstance].invModel;
+	mat4 modelMatrixInv = inverse(modelMatrix);
 	mat4 viewProjMatrix = cameraData.viewProj;
 		
 	fWorldPos = modelMatrix * vec4(vPosition, 1.0f);
