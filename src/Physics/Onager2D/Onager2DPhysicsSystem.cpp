@@ -21,9 +21,9 @@ namespace Puffin
 
 		Onager2DPhysicsSystem::Onager2DPhysicsSystem()
 		{
-			m_boxShapes.Reserve(200);
-			m_circleShapes.Reserve(200);
-			m_colliders.Reserve(400);
+			m_boxShapes.Reserve(2000);
+			m_circleShapes.Reserve(2000);
+			m_colliders.Reserve(4000);
 
 			m_systemInfo.name = "Onager2DPhysicsSystem";
 			m_systemInfo.updateOrder = Core::UpdateOrder::FixedUpdate;

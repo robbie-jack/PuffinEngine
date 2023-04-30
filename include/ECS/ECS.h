@@ -229,6 +229,18 @@ namespace Puffin::ECS
 
 		const PackedVector<EntityID>& GetEntities(const Signature& signature)
 		{
+			// If no list with this signature exists, create one and fill it with entities
+			if (m_entityLists.find(signature) == m_entityLists.end())
+			{
+				for (const auto& entity : m_activeEntities)
+				{
+					if ((m_entitySignatures[entity] & signature) == signature)
+					{
+						m_entityLists[signature].Insert(entity, entity);
+					}
+				}
+			}
+
 			return m_entityLists[signature];
 		}
 

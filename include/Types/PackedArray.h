@@ -138,6 +138,11 @@ namespace Puffin
 		{
 			assert(m_idToIndexMap.find(id) == m_idToIndexMap.end() && "Value with that ID already exists");
 
+			if (m_vectorSize > m_vector.size())
+			{
+				m_vector.resize()
+			}
+
 			// Insert Value at end of array
 			size_t newIndex = m_vectorSize;
 			m_idToIndexMap[id] = newIndex;
@@ -190,6 +195,11 @@ namespace Puffin
 		void Reserve(size_t size)
 		{
 			m_vector.reserve(size);
+		}
+
+		void Resize(size_t size)
+		{
+			m_vector.resize(size);
 		}
 
 		size_t Size() const

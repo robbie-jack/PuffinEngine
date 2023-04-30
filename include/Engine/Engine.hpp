@@ -175,7 +175,7 @@ namespace Puffin::Core
 
 		bool running = true;
 		bool m_shouldLimitFrameRate = true; // Whether framerate should be capped at m_frameRateMax
-		bool m_shouldRenderEditorUI = false; // Whether editor UI should be rendered
+		bool m_shouldRenderEditorUI = true; // Whether editor UI should be rendered
 		PlayState m_playState = PlayState::STOPPED;
 
 		// Framerate Members
