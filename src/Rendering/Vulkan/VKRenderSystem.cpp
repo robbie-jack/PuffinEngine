@@ -1188,8 +1188,7 @@ namespace Puffin::Rendering::VK
 	{
 		const AllocatedBuffer& objectBuffer = GetCurrentFrameData().objectBuffer;
 
-		void* objectData;
-		GPUObjectData* objectSSBO = static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData);
+		std::array<GPUObjectData, G_MAX_OBJECTS> objectArray = {};
 
 		int i = 0;
 
@@ -1225,13 +1224,17 @@ namespace Puffin::Rendering::VK
 				{
 					position = transform.position;
 				}
-
-				objectSSBO[i].model = BuildModelTransform(position, transform.rotation.EulerAnglesRad(), transform.scale);
-				objectSSBO[i].texIndex = m_texData[mesh.textureAssetID].idx;
+				
+				BuildModelTransform(position, transform.rotation.EulerAnglesRad(), transform.scale, objectArray[i].model);
+				objectArray[i].texIndex = m_texData[mesh.textureAssetID].idx;
 
 				i++;
 			}
 		}
+
+		const auto* objectData = objectArray.data();
+
+		std::copy(objectData, objectData + objectArray.size(), static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData));
 	}
 
 	void VKRenderSystem::PrepareLightData()
@@ -1583,20 +1586,18 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_graphicsQueue.presentKHR(&presentInfo));
 	}
 
-	glm::mat4 VKRenderSystem::BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale) const
+	void VKRenderSystem::BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale, glm::mat4& outModel) const
 	{
 		// Set Translation
-		glm::mat4 model_transform = glm::translate(glm::mat4(1.0f), (glm::vec3)position);
+		outModel = glm::translate(glm::mat4(1.0f), (glm::vec3)position);
 
 		// Set Rotation
-		model_transform = glm::rotate(model_transform, rotation.z, glm::vec3(0.0f, 0.0f, -1.0f));
-		model_transform = glm::rotate(model_transform, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-		model_transform = glm::rotate(model_transform, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+		outModel = glm::rotate(outModel, rotation.z, glm::vec3(0.0f, 0.0f, -1.0f));
+		outModel = glm::rotate(outModel, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+		outModel = glm::rotate(outModel, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// Set Scale
-		model_transform = glm::scale(model_transform, (glm::vec3)scale);
-
-		return model_transform;
+		outModel = glm::scale(outModel, (glm::vec3)scale);
 	}
 
 	bool VKRenderSystem::LoadMesh(UUID meshID, MeshData& meshData)

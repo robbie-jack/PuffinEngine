@@ -179,7 +179,7 @@ namespace Puffin::Core
 		PlayState m_playState = PlayState::STOPPED;
 
 		// Framerate Members
-		uint16_t m_frameRateMax = 60; // Limit on how fast game runs
+		uint16_t m_frameRateMax = 0; // Limit on how fast game runs
 		uint16_t m_physicsTicksPerFrame = 60; // How many times physics code should run per frame
 
 		// Time Members

@@ -238,7 +238,7 @@ namespace Puffin::Rendering::VK
 
 		void RecordAndSubmitCommands(uint32_t swapchainIdx);
 
-		glm::mat4 BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale) const;
+		void BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale, glm::mat4& outModel) const;
 
 		bool LoadMesh(UUID meshID, MeshData& meshData);
 		void UnloadMesh(MeshData& meshData) const;

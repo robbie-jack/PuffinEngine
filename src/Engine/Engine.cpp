@@ -215,22 +215,26 @@ namespace Puffin::Core
 		m_lastTime = m_currentTime;
 		m_currentTime = glfwGetTime();
 		m_deltaTime = m_currentTime - m_lastTime;
-		const double deltaTimeMax = 1.0 / m_frameRateMax;
-
-		// Sleep until next frame should start
 		m_idleTime = 0.0;
-		auto idleStartTime = glfwGetTime();
 
-		while (m_deltaTime < deltaTimeMax)
+		if (m_frameRateMax > 0)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(0));
+			const double deltaTimeMax = 1.0 / m_frameRateMax;
 
-			m_currentTime = glfwGetTime();
-			m_deltaTime = m_currentTime - m_lastTime;
+			// Sleep until next frame should start
+			auto idleStartTime = glfwGetTime();
+
+			while (m_deltaTime < deltaTimeMax)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(0));
+
+				m_currentTime = glfwGetTime();
+				m_deltaTime = m_currentTime - m_lastTime;
+			}
+
+			auto idleEndTime = glfwGetTime();
+			m_idleTime = idleEndTime - idleStartTime;
 		}
-
-		auto idleEndTime = glfwGetTime();
-		m_idleTime = idleEndTime - idleStartTime;
 
 		// Make sure delta time never exceeds 1/30th of a second
 		if (m_deltaTime > m_timeStepLimit)

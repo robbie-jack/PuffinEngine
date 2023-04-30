@@ -396,6 +396,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE "/Zc:__cplusplus")
 # Multiprocessor (Multithreaded) Compilation Support
 target_compile_options(${PROJECT_NAME} PRIVATE /MP)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
+target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_SIMD_AVX2)
+
 # Platform defines (WIN32)
 if (WIN32)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_PLATFORM_WIN32)
@@ -409,6 +412,7 @@ endif()
 # Big Object Support (MSCV/Linux)
 if (MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+  target_compile_options(${PROJECT_NAME} PRIVATE /arch:AVX2)
 else ()
   target_compile_options(${PROJECT_NAME} PRIVATE -Wa,-mbig-obj)
 endif ()
