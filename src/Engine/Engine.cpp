@@ -1,7 +1,7 @@
 #include "Engine/Engine.hpp"
 
 #include "ECS/ECS.h"
-#include "ECS/Entity.h"
+#include "ECS/Entity.hpp"
 
 #include "Rendering/BGFX/BGFXRenderSystem.hpp"
 #include "Rendering/Vulkan/VKRenderSystem.hpp"
@@ -478,6 +478,8 @@ namespace Puffin::Core
 		/*JobSystem::Get()->Stop();
 		JobSystem::Clear();*/
 
+		ECS::EntityCache::Clear();
+
 		// Clear Asset Registry
 		Assets::AssetRegistry::Clear();
 	}
@@ -694,10 +696,10 @@ namespace Puffin::Core
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(250.0f, 1.0f);
 
-		const float xOffset = 10000.0f;
+		const float xOffset = 20000.0f;
 		const Vector3f startPosition(-xOffset, 10.f, 0.f);
 		const Vector3f endPosition(xOffset, 10.f, 0.f);
-		const int numBodies = 8000;
+		const int numBodies = 15000;
 		Vector3f positionOffset = endPosition - startPosition;
 		positionOffset.x /= numBodies;
 		for (int i = 0; i < numBodies; i++)

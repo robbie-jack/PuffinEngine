@@ -105,7 +105,7 @@ set(HEADERS
 	# ECS
 	${HEADER_DIR}/ECS/ComponentType.h
 	${HEADER_DIR}/ECS/ECS.h
-	${HEADER_DIR}/ECS/Entity.h
+	${HEADER_DIR}/ECS/Entity.hpp
 	${HEADER_DIR}/ECS/EntityID.h
 	${HEADER_DIR}/ECS/System.hpp
 	# Engine
@@ -194,6 +194,8 @@ set(SOURCES
 	${SOURCE_DIR}/Assets/AssetImporters.cpp
 	# Audio
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
+	# ECS
+	${SOURCE_DIR}/ECS/Entity.cpp
 	# Engine
 	${SOURCE_DIR}/Engine/Engine.cpp
 	${SOURCE_DIR}/Engine/Application.cpp

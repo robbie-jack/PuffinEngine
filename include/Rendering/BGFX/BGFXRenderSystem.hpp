@@ -7,7 +7,7 @@
 #include "Assets/TextureAsset.h"
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/CameraComponent.h"
-#include "ECS/Entity.h"
+#include "ECS/Entity.hpp"
 #include "Input/InputEvent.h"
 #include "Rendering/BGFX/BGFXTypes.hpp"
 #include "Rendering/BGFX/BGFXVertex.hpp"

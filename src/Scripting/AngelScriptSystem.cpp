@@ -8,7 +8,7 @@
 #include "Engine/Engine.hpp"
 #include "Engine/EventSubsystem.hpp"
 
-#include "ECS/Entity.h"
+#include "ECS/Entity.hpp"
 
 #include <iostream>  // cout
 #include <assert.h>  // assert()

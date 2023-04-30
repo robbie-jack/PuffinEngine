@@ -7,7 +7,7 @@
 #include "Types/ComponentFlags.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
 #include "Engine/Engine.hpp"
-#include "ECS/Entity.h"
+#include "ECS/Entity.hpp"
 #include "Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.hpp"
 #include "Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.hpp"
 

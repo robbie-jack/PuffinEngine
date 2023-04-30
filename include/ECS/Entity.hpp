@@ -137,19 +137,76 @@ namespace Puffin::ECS
 		EntityID m_id = INVALID_ENTITY;
 	};
 
+	class EntityCache
+	{
+		static EntityCache* s_instance;
+
+		EntityCache() = default;
+
+	public:
+
+		static EntityCache* Get()
+		{
+			if (!s_instance)
+				s_instance = new EntityCache();
+
+			return s_instance;
+		}
+
+		static void Clear()
+		{
+			delete s_instance;
+			s_instance = nullptr;
+		}
+
+		~EntityCache()
+		{
+			m_entities.clear();
+		}
+
+		std::shared_ptr<Entity> CreateEntity(std::shared_ptr<World> world)
+		{
+			auto entity = std::make_shared<Entity>(world, world->CreateEntity());
+
+			m_entities[entity->ID()] = entity;
+
+			return m_entities[entity->ID()];
+		}
+
+		std::shared_ptr<Entity> GetEntity(std::shared_ptr<ECS::World> world, EntityID id)
+		{
+			if (!world->EntityExists(id))
+			{
+				if (m_entities.count(id) == 1)
+				{
+					m_entities.erase(id);
+				}
+
+				return nullptr;
+			}
+
+			if (m_entities.count(id) == 0)
+			{
+				m_entities.emplace(id, std::make_shared<Entity>(world, id));
+			}
+
+			return m_entities[id];
+		}
+
+	private:
+
+		std::unordered_map<EntityID, std::shared_ptr<Entity>> m_entities;
+
+	};
+
 	static inline std::shared_ptr<Entity> CreateEntity(std::shared_ptr<World> world)
 	{
-		return std::make_shared<Entity>(world, world->CreateEntity());
+		return EntityCache::Get()->CreateEntity(world);
 	}
 
 	static inline std::shared_ptr<Entity> GetEntity(std::shared_ptr<World> world, EntityID id)
 	{
-		if (!world->EntityExists(id))
-		{
-			return nullptr;
-		}
-
-		return std::make_shared<Entity>(world, id);
+		return EntityCache::Get()->GetEntity(world, id);
 	}
 
 	template<typename... ComponentTypes>

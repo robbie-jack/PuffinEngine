@@ -1,7 +1,7 @@
 #include "Procedural/ProceduralMeshGenSystem.hpp"
 
 #include "Engine/Engine.hpp"
-#include "ECS/Entity.h"
+#include "ECS/Entity.hpp"
 
 #include "OpenSimplexNoise/OpenSimplexNoise.h"
 

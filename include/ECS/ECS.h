@@ -212,7 +212,7 @@ namespace Puffin::ECS
 
 			for (auto entityID : m_activeEntities)
 			{
-				Signature entitySignature = m_entitySignatures[entityID];
+				const Signature& entitySignature = m_entitySignatures[entityID];
 
 				if ((entitySignature & signature) == signature)
 				{

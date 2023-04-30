@@ -18,7 +18,7 @@
 #include "VKPipeline.hpp"
 #include "VKUnifiedGeometryBuffer.hpp"
 #include "Assets/TextureAsset.h"
-#include "ECS/Entity.h"
+#include "ECS/Entity.hpp"
 #include "Components/Rendering/CameraComponent.h"
 #include "Input/InputEvent.h"
 
@@ -89,7 +89,7 @@ namespace Puffin::Rendering::VK
 
 	constexpr uint32_t G_BUFFERED_FRAMES = 2;
 
-	constexpr uint32_t G_MAX_OBJECTS = 10000;
+	constexpr uint32_t G_MAX_OBJECTS = 20000;
 	constexpr uint32_t G_MAX_LIGHTS = 8;
 
 	// Vulkan Rendering System

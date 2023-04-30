@@ -2,7 +2,7 @@
 
 #include "Engine/Engine.hpp"
 #include "ECS/ECS.h"
-#include "ECS/Entity.h"
+#include "ECS/Entity.hpp"
 #include "MathHelpers.h"
 
 #include "Components/TransformComponent.h"
