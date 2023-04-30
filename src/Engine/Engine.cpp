@@ -22,6 +22,7 @@
 #include "Input/InputSubsystem.h"
 #include "Engine/SignalSubsystem.hpp"
 #include "Engine/EventSubsystem.hpp"
+#include "Engine/EnkiTSSubsystem.hpp"
 
 #include "SerializeScene.h"
 #include "UI/Editor/UIManager.h"
@@ -60,6 +61,7 @@ namespace Puffin::Core
 		auto signalSubsystem = RegisterSubsystem<Core::SignalSubsystem>();
 		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
 		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
+		auto enkitsSubsystem = RegisterSubsystem<Core::EnkiTSSubsystem>();
 		auto ecsWorld = RegisterSubsystem<ECS::World>();
 
 		m_uiManager = std::make_shared<UI::UIManager>(shared_from_this());

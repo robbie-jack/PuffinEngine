@@ -79,6 +79,7 @@ set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
 set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/vkb/src)
 set(ANGELSCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/angelscript)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimplexNoise)
+set(ENKITS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/enkits)
 
 set(HEADERS 
 	# Assets
@@ -113,6 +114,7 @@ set(HEADERS
 	${HEADER_DIR}/Engine/Subsystem.hpp
 	${HEADER_DIR}/Engine/EventSubsystem.hpp
 	${HEADER_DIR}/Engine/SignalSubsystem.hpp
+	${HEADER_DIR}/Engine/EnkiTSSubsystem.hpp
 	${HEADER_DIR}/Engine/JobSystem.hpp
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
@@ -266,6 +268,11 @@ set (ANGELSCRIPT_SOURCES
 	${ANGELSCRIPT_DIR}/scriptstdstring/scriptstdstring.cpp
 	${ANGELSCRIPT_DIR}/scriptstdstring/scriptstdstring_utils.cpp
 	)
+	
+set (ENKITS_SOURCES
+	${ENKITS_DIR}/src/TaskScheduler.h
+	${ENKITS_DIR}/src/TaskScheduler.cpp
+	)
 
 # Add Main as Executable
 add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
@@ -273,6 +280,8 @@ target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${ENKITS_SOURCES})
 
 message("")
 message("============================================================")
@@ -300,6 +309,7 @@ sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} Libraries/ImGui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} Libraries/OpenSimplexNoise)
 sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} Libraries/VKBootstrap)
 sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)
+sort_into_source_group(ENKITS_SOURCES ${ENKITS_DIR} Libraries/EnkiTS)
 
 message("")
 
@@ -375,6 +385,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/i
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include/compat/msvc)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bimg/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
 #target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/assimp/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)

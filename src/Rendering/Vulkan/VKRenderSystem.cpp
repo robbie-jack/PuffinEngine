@@ -33,7 +33,7 @@
 #include "Components/Rendering/LightComponent.h"
 #include "Engine/SignalSubsystem.hpp"
 #include "Input/InputSubsystem.h"
-#include "Engine/JobSystem.hpp"
+#include "Engine/EnkiTSSubsystem.hpp"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -1186,19 +1186,51 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::PrepareObjectData()
 	{
+		const auto enkiTSSubSystem = m_engine->GetSubsystem<Core::EnkiTSSubsystem>();
+
 		const AllocatedBuffer& objectBuffer = GetCurrentFrameData().objectBuffer;
 
-		std::array<GPUObjectData, G_MAX_OBJECTS> objectArray = {};
-
-		int i = 0;
+		std::vector<GPUObjectData> objects = {};
+		objects.reserve(G_MAX_OBJECTS);
 
 		// Calculate t value for rendering interpolated position
 		const double t = m_engine->GetAccumulatedTime() / m_engine->GetTimeStep();
+
+		std::vector<ECS::EntityID> entiies;
+		entiies.reserve(G_MAX_OBJECTS);
+
+		int numObjects = 0;
 
 		for (const auto& [fst, snd] : m_meshDrawList)
 		{
 			for (const auto entityID : snd)
 			{
+				entiies.emplace_back(entityID);
+
+				numObjects++;
+			}
+		}
+
+		objects.resize(numObjects);
+
+		const uint32_t numThreads = enkiTSSubSystem->GetTaskScheduler()->GetNumTaskThreads();
+
+		std::vector<std::vector<std::pair<GPUObjectData, uint32_t>>> threadObjects; // Temp object vectors for writing to by threads
+
+		threadObjects.resize(numThreads);
+		for (int idx = 0; idx < threadObjects.size(); idx++)
+		{
+			threadObjects[idx].reserve(500);
+		}
+
+		enki::TaskSet task(numObjects, [&](enki::TaskSetPartition range, uint32_t threadnum)
+		{
+			uint32_t numObjectsForThread = range.end - range.start;
+
+			for (uint32_t objectIdx = range.start; objectIdx < range.end; objectIdx++)
+			{
+				const ECS::EntityID& entityID = entiies[objectIdx];
+
 				const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
 				const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
 
@@ -1224,17 +1256,33 @@ namespace Puffin::Rendering::VK
 				{
 					position = transform.position;
 				}
-				
-				BuildModelTransform(position, transform.rotation.EulerAnglesRad(), transform.scale, objectArray[i].model);
-				objectArray[i].texIndex = m_texData[mesh.textureAssetID].idx;
 
-				i++;
+				GPUObjectData object;
+
+				BuildModelTransform(position, transform.rotation.EulerAnglesRad(), transform.scale, object.model);
+				object.texIndex = m_texData[mesh.textureAssetID].idx;
+
+				threadObjects[threadnum].emplace_back(object, objectIdx);
+			}
+		});
+
+		task.m_MinRange = 500; // Try and ensure each thread gets
+
+		enkiTSSubSystem->GetTaskScheduler()->AddTaskSetToPipe(&task);
+
+		enkiTSSubSystem->GetTaskScheduler()->WaitforTask(&task);
+
+		for (const auto& tempThreadObjects : threadObjects)
+		{
+			for (const auto& [fst, snd] : tempThreadObjects)
+			{
+				objects[snd] = fst;
 			}
 		}
 
-		const auto* objectData = objectArray.data();
+		const auto* objectData = objects.data();
 
-		std::copy(objectData, objectData + objectArray.size(), static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData));
+		std::copy(objectData, objectData + numObjects, static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData));
 	}
 
 	void VKRenderSystem::PrepareLightData()

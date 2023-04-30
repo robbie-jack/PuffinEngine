@@ -35,3 +35,6 @@
 [submodule "deps/tinygltf"]
 	path = deps/tinygltf
 	url = https://github.com/syoyo/tinygltf
+[submodule "deps/enkits"]
+	path = deps/enkits
+	url = https://github.com/dougbinks/enkiTS
