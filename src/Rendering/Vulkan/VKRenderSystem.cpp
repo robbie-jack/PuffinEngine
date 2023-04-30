@@ -486,7 +486,7 @@ namespace Puffin::Rendering::VK
 			// Indirect Buffer
 			m_frameRenderData[i].indirectBuffer = Util::CreateBuffer(m_allocator, sizeof(vk::DrawIndexedIndirectCommand) * G_MAX_OBJECTS,
 				vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
-				vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+				vma::MemoryUsage::eAuto, vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped);
 
 			// Global Buffers
 			m_frameRenderData[i].cameraBuffer = Util::CreateBuffer(m_allocator, sizeof(GPUCameraData),
@@ -1282,7 +1282,7 @@ namespace Puffin::Rendering::VK
 
 		const auto* objectData = objects.data();
 
-		std::copy(objectData, objectData + numObjects, static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData));
+		std::copy_n(objectData, numObjects, static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData));
 	}
 
 	void VKRenderSystem::PrepareLightData()
@@ -1333,10 +1333,8 @@ namespace Puffin::Rendering::VK
 	{
 		AllocatedBuffer& indirectBuffer = GetCurrentFrameData().indirectBuffer;
 
-		void* indirectData;
-		VK_CHECK(m_allocator.mapMemory(indirectBuffer.allocation, &indirectData));
-
-		auto* indirectCmds = static_cast<vk::DrawIndexedIndirectCommand*>(indirectData);
+		std::vector<vk::DrawIndexedIndirectCommand> indirectCmds = {};
+		indirectCmds.resize(G_MAX_OBJECTS);
 
 		int idx = 0;
 
@@ -1356,9 +1354,11 @@ namespace Puffin::Rendering::VK
 			}
 		}
 
-		m_allocator.unmapMemory(indirectBuffer.allocation);
-
 		GetCurrentFrameData().drawCount = idx;
+
+		const auto* indirectData = indirectCmds.data();
+
+		std::copy_n(indirectData, idx, static_cast<vk::DrawIndexedIndirectCommand*>(indirectBuffer.allocInfo.pMappedData));
 	}
 
 	vk::CommandBuffer VKRenderSystem::RecordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent, const AllocatedImage&

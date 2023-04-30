@@ -142,7 +142,7 @@ namespace Puffin::Core
 		Assets::AssetRegistry::Get()->LoadAssetCache();
 		//ReimportDefaultAssets();
 
-		Core::JobSystem::Get()->Start();
+		//Core::JobSystem::Get()->Start();
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene();
@@ -475,8 +475,8 @@ namespace Puffin::Core
 			}
 		}
 
-		JobSystem::Get()->Stop();
-		JobSystem::Clear();
+		/*JobSystem::Get()->Stop();
+		JobSystem::Clear();*/
 
 		// Clear Asset Registry
 		Assets::AssetRegistry::Clear();
@@ -694,10 +694,10 @@ namespace Puffin::Core
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(250.0f, 1.0f);
 
-		const float xOffset = 400.0f;
+		const float xOffset = 10000.0f;
 		const Vector3f startPosition(-xOffset, 10.f, 0.f);
 		const Vector3f endPosition(xOffset, 10.f, 0.f);
-		const int numBodies = 5000;
+		const int numBodies = 8000;
 		Vector3f positionOffset = endPosition - startPosition;
 		positionOffset.x /= numBodies;
 		for (int i = 0; i < numBodies; i++)
