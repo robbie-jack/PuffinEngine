@@ -7,7 +7,7 @@ namespace Puffin::Scripting
 {
 	void NativeScriptSystem::Start()
 	{
-		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		PackedVector<ECS::EntityPtr> scriptEntities;
 		ECS::GetEntities<TransformComponent, NativeScriptComponent>(m_world, scriptEntities);
 		for (const auto entity : scriptEntities)
 		{
@@ -22,7 +22,7 @@ namespace Puffin::Scripting
 
 	void NativeScriptSystem::Update()
 	{
-		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		PackedVector<ECS::EntityPtr> scriptEntities;
 		ECS::GetEntities<TransformComponent, NativeScriptComponent>(m_world, scriptEntities);
 		for (const auto entity : scriptEntities)
 		{
@@ -37,7 +37,7 @@ namespace Puffin::Scripting
 
 	void NativeScriptSystem::Stop()
 	{
-		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		PackedVector<ECS::EntityPtr> scriptEntities;
 		ECS::GetEntities<TransformComponent, NativeScriptComponent>(m_world, scriptEntities);
 		for (const auto entity : scriptEntities)
 		{

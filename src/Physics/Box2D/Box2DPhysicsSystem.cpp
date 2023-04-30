@@ -46,7 +46,7 @@ namespace Puffin::Physics
 		PublishCollisionEvents();
 
 		// Updated entity position/rotation from simulation
-		std::vector<std::shared_ptr<ECS::Entity>> rbEntities;
+		PackedVector<ECS::EntityPtr> rbEntities;
 		ECS::GetEntities<TransformComponent, VelocityComponent, RigidbodyComponent2D>(m_world, rbEntities);
 		for (const auto& entity : rbEntities)
 		{
@@ -68,7 +68,7 @@ namespace Puffin::Physics
 	void Box2DPhysicsSystem::Stop()
 	{
 		// Cleanup Rigidbody Components
-		std::vector<std::shared_ptr<ECS::Entity>> rbEntities;
+		PackedVector<ECS::EntityPtr> rbEntities;
 		ECS::GetEntities<TransformComponent, VelocityComponent, RigidbodyComponent2D>(m_world, rbEntities);
 		for (const auto& entity : rbEntities)
 		{
@@ -80,7 +80,7 @@ namespace Puffin::Physics
 		}
 
 		// Cleanup Box Components
-		std::vector<std::shared_ptr<ECS::Entity>> boxEntities;
+		PackedVector<ECS::EntityPtr> boxEntities;
 		ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntities);
 		for (const auto& entity : boxEntities)
 		{
@@ -88,7 +88,7 @@ namespace Puffin::Physics
 		}
 
 		// Cleanup Box Components
-		std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+		PackedVector<ECS::EntityPtr> circleEntities;
 		ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
 		for (const auto& entity : circleEntities)
 		{
@@ -122,7 +122,7 @@ namespace Puffin::Physics
 	void Box2DPhysicsSystem::UpdateComponents()
 	{
 		// Update Rigidbody
-		std::vector<std::shared_ptr<ECS::Entity>> rigidbodyEntities;
+		PackedVector<ECS::EntityPtr> rigidbodyEntities;
 		ECS::GetEntities<TransformComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
 		for (const auto& entity : rigidbodyEntities)
 		{
@@ -143,7 +143,7 @@ namespace Puffin::Physics
 		}
 				
 		// Update Box Components
-		std::vector<std::shared_ptr<ECS::Entity>> boxEntities;
+		PackedVector<ECS::EntityPtr> boxEntities;
 		ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntities);
 		for (const auto& entity : boxEntities)
 		{
@@ -165,7 +165,7 @@ namespace Puffin::Physics
 		}
 
 		// Update Circle Components
-		std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+		PackedVector<ECS::EntityPtr> circleEntities;
 		ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
 		for (const auto& entity : circleEntities)
 		{

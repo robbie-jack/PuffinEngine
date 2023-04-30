@@ -763,7 +763,7 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::ProcessComponents()
 	{
-		std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+		PackedVector<ECS::EntityPtr> meshEntities;
 		ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
 		for (const auto& entity : meshEntities)
 		{
@@ -791,14 +791,14 @@ namespace Puffin::Rendering::VK
 			}
 		}
 
-		std::vector<std::shared_ptr<ECS::Entity>> camEntities;
+		PackedVector<ECS::EntityPtr> camEntities;
 		ECS::GetEntities<TransformComponent, CameraComponent, CameraMatComponent>(m_world, camEntities);
 		for (const auto& entity : camEntities)
 		{
 			UpdateCameraComponent(entity);
 		}
 
-		std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
+		PackedVector<ECS::EntityPtr> lightEntities;
 		ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
 		for (const auto& entity : lightEntities)
 		{
@@ -1293,7 +1293,7 @@ namespace Puffin::Rendering::VK
 
 		int i = 0;
 
-		std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
+		PackedVector<ECS::EntityPtr> lightEntities;
 		ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
 		for (const auto& entity : lightEntities)
 		{

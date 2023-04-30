@@ -137,6 +137,8 @@ namespace Puffin::ECS
 		EntityID m_id = INVALID_ENTITY;
 	};
 
+	typedef std::shared_ptr<Entity> EntityPtr;
+
 	class EntityCache
 	{
 		static EntityCache* s_instance;
@@ -164,7 +166,7 @@ namespace Puffin::ECS
 			m_entities.clear();
 		}
 
-		std::shared_ptr<Entity> CreateEntity(std::shared_ptr<World> world)
+		std::shared_ptr<Entity>& CreateEntity(std::shared_ptr<World> world)
 		{
 			auto entity = std::make_shared<Entity>(world, world->CreateEntity());
 
@@ -193,35 +195,64 @@ namespace Puffin::ECS
 			return m_entities[id];
 		}
 
+		template<typename... ComponentTypes>
+		const PackedVector<std::shared_ptr<Entity>>& GetEntities(std::shared_ptr<World> world)
+		{
+			PackedVector<EntityID> entityIDs;
+
+			Signature signature = world->GetEntities<ComponentTypes ...>(entityIDs);
+
+			std::vector<EntityID> entitiesToRemove;
+
+			// Remove old entities
+			for (const auto& entity : m_entityVector[signature])
+			{
+				const auto& entitySignature = world->GetEntitySignature(entity->ID());
+
+				if ((entitySignature & signature) != signature)
+				{
+					entitiesToRemove.emplace_back(entity->ID());
+				}
+			}
+
+			for (const auto& entityID : entitiesToRemove)
+			{
+				m_entityVector[signature].Erase(entityID);
+			}
+
+			// Add any new entities
+			for (const auto entityID : entityIDs)
+			{
+				if (!m_entityVector[signature].Contains(entityID))
+				{
+					m_entityVector[signature].Insert(entityID, GetEntity(world, entityID));
+				}
+			}
+
+			return m_entityVector[signature];
+		}
+
 	private:
 
-		std::unordered_map<EntityID, std::shared_ptr<Entity>> m_entities;
+		std::unordered_map<EntityID, std::shared_ptr<Entity>> m_entities; // Cached Entities
+
+		std::unordered_map<Signature, PackedVector<std::shared_ptr<Entity>>> m_entityVector; // Cached Entity lists
 
 	};
 
-	static inline std::shared_ptr<Entity> CreateEntity(std::shared_ptr<World> world)
+	static std::shared_ptr<Entity> CreateEntity(std::shared_ptr<World> world)
 	{
 		return EntityCache::Get()->CreateEntity(world);
 	}
 
-	static inline std::shared_ptr<Entity> GetEntity(std::shared_ptr<World> world, EntityID id)
+	static std::shared_ptr<Entity> GetEntity(std::shared_ptr<World> world, EntityID id)
 	{
 		return EntityCache::Get()->GetEntity(world, id);
 	}
 
 	template<typename... ComponentTypes>
-	static inline void GetEntities(std::shared_ptr<World> world, std::vector<std::shared_ptr<Entity>>& outEntities)
+	static void GetEntities(std::shared_ptr<World> world, PackedVector<std::shared_ptr<Entity>>& entities)
 	{
-		std::vector<EntityID> entityIDs;
-
-		world->GetEntities<ComponentTypes ...>(entityIDs);
-
-		outEntities.clear();
-		outEntities.reserve(entityIDs.size());
-
-		for (const auto entityID : entityIDs)
-		{
-			outEntities.push_back(GetEntity(world, entityID));
-		}
+		entities = EntityCache::Get()->GetEntities<ComponentTypes ...>(world);
 	}
 }

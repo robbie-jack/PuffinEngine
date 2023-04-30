@@ -97,7 +97,7 @@ namespace Puffin::Scripting
 			m_scriptEngine->Release();
 		}
 
-		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		PackedVector<ECS::EntityPtr> scriptEntities;
 		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
 		for (const auto entity : scriptEntities)
 		{
@@ -112,7 +112,7 @@ namespace Puffin::Scripting
 	void AngelScriptSystem::Start()
 	{
 		// Execute Start Methods
-		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		PackedVector<ECS::EntityPtr> scriptEntities;
 		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
 		for (const auto entity : scriptEntities)
 		{
@@ -134,7 +134,7 @@ namespace Puffin::Scripting
 		ProcessEvents();
 		
 		// Initialize/Cleanup marked components
-		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		PackedVector<ECS::EntityPtr> scriptEntities;
 		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
 		for (const auto& entity : scriptEntities)
 		{
@@ -169,7 +169,7 @@ namespace Puffin::Scripting
 	void AngelScriptSystem::Stop()
 	{
 		// Execute Script Stop Methods
-		std::vector<std::shared_ptr<ECS::Entity>> scriptEntities;
+		PackedVector<ECS::EntityPtr> scriptEntities;
 		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
 		for (const auto& entity : scriptEntities)
 		{
@@ -224,9 +224,9 @@ namespace Puffin::Scripting
 			m_ctx->Release();
 		}
 
-		for (ECS::EntityID entity : entityMap["Script"])
+		for (const auto entity : scriptEntities)
 		{
-			auto& script = m_world->GetComponent<AngelScriptComponent>(entity);
+			auto& script = entity->GetComponent<AngelScriptComponent>();
 			CleanupScriptComponent(script);
 		}
 	}

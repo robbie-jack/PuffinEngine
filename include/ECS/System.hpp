@@ -51,8 +51,6 @@ namespace Puffin
 				m_engine = nullptr;
 			}
 
-			EntityMap entityMap;
-
 			// Virtual functions to be called by ECSWorld
 			virtual void Init() = 0;		// Called when engine starts
 			virtual void PreStart() = 0;	// Called prior to gameplay starting to do some pre-start initialization

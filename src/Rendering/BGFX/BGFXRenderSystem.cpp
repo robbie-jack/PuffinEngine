@@ -305,7 +305,7 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::InitComponents()
 	{
-        std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+        PackedVector<ECS::EntityPtr> meshEntities;
         ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
         for (const auto& entity : meshEntities)
         {
@@ -317,7 +317,7 @@ namespace Puffin::Rendering::BGFX
             }
         }
 
-        std::vector<std::shared_ptr<ECS::Entity>> cameraEntities;
+        PackedVector<ECS::EntityPtr> cameraEntities;
         ECS::GetEntities<TransformComponent, CameraComponent>(m_world, cameraEntities);
         for (const auto& entity : cameraEntities)
         {
@@ -332,7 +332,7 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::UpdateComponents()
 	{
-        std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+        PackedVector<ECS::EntityPtr> meshEntities;
         ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
         for (const auto& entity : meshEntities)
         {
@@ -352,7 +352,7 @@ namespace Puffin::Rendering::BGFX
             }
         }
 
-        std::vector<std::shared_ptr<ECS::Entity>> cameraEntities;
+        PackedVector<ECS::EntityPtr> cameraEntities;
         ECS::GetEntities<TransformComponent, CameraComponent>(m_world, cameraEntities);
         for (const auto& entity : cameraEntities)
         {
@@ -370,7 +370,7 @@ namespace Puffin::Rendering::BGFX
             }
         }
 
-        std::vector<std::shared_ptr<ECS::Entity>> lightEntities;
+        PackedVector<ECS::EntityPtr> lightEntities;
         ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
         for (const auto& entity : lightEntities)
         {
@@ -380,7 +380,7 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::CleanupComponents()
 	{
-        std::vector<std::shared_ptr<ECS::Entity>> meshEntities;
+        PackedVector<ECS::EntityPtr> meshEntities;
         ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
         for (const auto& entity : meshEntities)
         {
@@ -839,11 +839,13 @@ namespace Puffin::Rendering::BGFX
 
         int index = 0;
 
-        std::vector<std::shared_ptr<ECS::Entity>> lightEntities, lightEntitiesOrdered;
+        PackedVector<ECS::EntityPtr> lightEntities;
         ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
 
+        std::vector<ECS::EntityPtr> lightEntitiesOrdered;
+
         // Sort Lights into DIRECTIONAL, POINT, SPOT Order
-        lightEntitiesOrdered.reserve(lightEntities.size());
+        lightEntitiesOrdered.reserve(lightEntities.Size());
         
         for (const auto& entity : lightEntities)
         {

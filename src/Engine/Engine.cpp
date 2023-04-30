@@ -571,7 +571,7 @@ namespace Puffin::Core
 		UUID soundId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath1)->ID();
 
 		const int numEntities = 7;
-		std::vector<std::shared_ptr<ECS::Entity>> entities;
+		std::vector<ECS::EntityPtr> entities;
 		entities.reserve(numEntities);
 
 		std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Spot Light" };

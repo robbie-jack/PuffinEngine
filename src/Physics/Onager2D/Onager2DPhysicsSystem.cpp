@@ -50,7 +50,7 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::PreStart()
 		{
-			std::vector<std::shared_ptr<ECS::Entity>> boxEntites;
+			PackedVector<ECS::EntityPtr> boxEntites;
 			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
 			for (const auto& entity : boxEntites)
 			{
@@ -64,7 +64,7 @@ namespace Puffin
 				}
 			}
 
-			std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+			PackedVector<ECS::EntityPtr> circleEntities;
 			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
 			for (const auto& entity : circleEntities)
 			{
@@ -95,14 +95,14 @@ namespace Puffin
 			m_collisionPairs.clear();
 			m_collisionContacts.clear();
 
-			std::vector<std::shared_ptr<ECS::Entity>> boxEntites;
+			PackedVector<ECS::EntityPtr> boxEntites;
 			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
 			for (const auto& entity : boxEntites)
 			{
 				CleanupBox2D(entity);
 			}
 
-			std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+			PackedVector<ECS::EntityPtr> circleEntities;
 			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
 			for (const auto& entity : circleEntities)
 			{
@@ -170,7 +170,7 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::UpdateComponents()
 		{
-			std::vector<std::shared_ptr<ECS::Entity>> rigidbodyEntities;
+			PackedVector<ECS::EntityPtr> rigidbodyEntities;
 			ECS::GetEntities<TransformComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
 			for (const auto& entity : rigidbodyEntities)
 			{
@@ -180,7 +180,7 @@ namespace Puffin
 				}
 			}
 
-			std::vector<std::shared_ptr<ECS::Entity>> boxEntites;
+			PackedVector<ECS::EntityPtr> boxEntites;
 			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
 			for (const auto& entity : boxEntites)
 			{
@@ -204,7 +204,7 @@ namespace Puffin
 				}
 			}
 
-			std::vector<std::shared_ptr<ECS::Entity>> circleEntities;
+			PackedVector<ECS::EntityPtr> circleEntities;
 			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
 			for (const auto& entity : circleEntities)
 			{
@@ -278,7 +278,7 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::UpdateDynamics() const
 		{
-			std::vector<std::shared_ptr<ECS::Entity>> rigidbodyEntities;
+			PackedVector<ECS::EntityPtr> rigidbodyEntities;
 			ECS::GetEntities<TransformComponent, VelocityComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
 			for (const auto& entity : rigidbodyEntities)
 			{

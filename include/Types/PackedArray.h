@@ -80,14 +80,14 @@ namespace Puffin
 			return m_array.end();
 		}
 
-		const ValueT& operator[](const size_t id) const
+		const ValueT& operator[](const size_t& id) const
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
 
 			return m_array[m_idToIndexMap.at(id)];
 		}
 
-		ValueT& operator[](const size_t id)
+		ValueT& operator[](const size_t& id)
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
 
@@ -207,14 +207,14 @@ namespace Puffin
 			return m_vector.end();
 		}
 
-		const ValueT& operator[](size_t id) const
+		const ValueT& operator[](const size_t& id) const
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
 
 			return m_vector[m_idToIndexMap[id]];
 		}
 
-		ValueT& operator[](size_t id)
+		ValueT& operator[](const size_t& id)
 		{
 			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
 

@@ -145,12 +145,33 @@ namespace Puffin::ECS
 			return m_entityNames[entityID];
 		}
 
-		void SetSignature(EntityID entity, Signature signature)
+		void SetSignature(EntityID entity, const Signature& signature)
 		{
 			assert(m_activeEntities.count(entity) == 1 && "Entity doesn't exists");
 
 			// Update this entity's signature
 			m_entitySignatures[entity] = signature;
+
+			// Add to new entity list
+			if (m_entityLists.count(signature) == 0)
+			{
+				m_entityLists.emplace(signature, PackedVector<EntityID>());
+			}
+
+			for (auto& [fst, snd] : m_entityLists)
+			{
+				if ((signature & fst) == fst)
+				{
+					if (!snd.Contains(entity))
+					{
+						snd.Insert(entity, entity);
+					}
+				}
+				else if (snd.Contains(entity))
+				{
+					snd.Erase(entity);
+				}
+			}
 		}
 
 		const Signature& GetSignature(EntityID entityID)
@@ -206,23 +227,13 @@ namespace Puffin::ECS
 			return m_activeEntities;
 		}
 
-		void GetEntities(Signature signature, std::vector<EntityID>& outEntities) const
+		const PackedVector<EntityID>& GetEntities(const Signature& signature)
 		{
-			outEntities.clear();
-
-			for (auto entityID : m_activeEntities)
-			{
-				const Signature& entitySignature = m_entitySignatures[entityID];
-
-				if ((entitySignature & signature) == signature)
-				{
-					outEntities.push_back(entityID);
-				}
-			}
+			return m_entityLists[signature];
 		}
 
 		// Get count of active entities
-		const size_t& GetEntityCount() const
+		size_t GetEntityCount() const
 		{
 			return m_activeEntities.size();
 		}
@@ -233,6 +244,8 @@ namespace Puffin::ECS
 
 		PackedArray<std::string, MAX_ENTITIES> m_entityNames;
 		PackedArray<Signature, MAX_ENTITIES> m_entitySignatures;
+
+		std::unordered_map<Signature, PackedVector<EntityID>> m_entityLists;
 
 		// FlagType to be assigned to next registered flag
 		FlagType m_nextFlagType;
@@ -586,7 +599,6 @@ namespace Puffin::ECS
 
 		~SystemManager()
 		{
-			m_signatureMaps.clear();
 			m_systemsMap.clear();
 		}
 
@@ -596,9 +608,6 @@ namespace Puffin::ECS
 			const char* typeName = typeid(SystemT).name();
 
 			assert(m_systemsMap.find(typeName) == m_systemsMap.end() && "Registering system more than once.");
-
-			// Create New Signature Map for this System
-			m_signatureMaps.insert({ typeName, SignatureMap() });
 
 			// Create and return pointer to system
 			std::shared_ptr<SystemT> system = std::make_shared<SystemT>();
@@ -615,20 +624,6 @@ namespace Puffin::ECS
 		}
 
 		template<typename SystemT>
-		void SetSignature(std::string_view signatureName, Signature signature)
-		{
-			const char* typeName = typeid(SystemT).name();
-
-			assert(m_systemsMap.find(typeName) != m_systemsMap.end() && "System used before registered.");
-
-			// Insert New Signature for this System
-			m_signatureMaps.at(typeName).insert({ signatureName, signature });
-				
-			// Insert New Set for this System
-			m_systemsMap.at(typeName)->entityMap.insert({ signatureName, std::set<EntityID>() });
-		}
-
-		template<typename SystemT>
 		SystemT& GetSystem()
 		{
 			const char* typeName = typeid(SystemT).name();
@@ -638,57 +633,7 @@ namespace Puffin::ECS
 			return std::static_pointer_cast<SystemT>(m_systemsMap[typeName]);
 		}
 
-		void EntityDestroyed(EntityID entity)
-		{
-			// Erase destroyed entity from all system lists
-			// Entities is a set so no check needed
-			for (auto const& pair : m_systemsMap)
-			{
-				auto const& system = pair.second;
-
-				// Erase Entity for every set in System
-				for (auto const& map_pair : system->entityMap)
-				{
-					auto const& signatureName = map_pair.first;
-
-					system->entityMap.at(signatureName).erase(entity);
-				}
-			}
-		}
-
-		void EntitySignatureChanged(EntityID entity, Signature entitySignature)
-		{
-			// Notify each system that entity signature has changed
-			for (auto const& systemTypePairs : m_systemsMap)
-			{
-				auto const& type = systemTypePairs.first;
-				auto const& system = systemTypePairs.second;
-				auto const& systemSignatureMap = m_signatureMaps[type];
-
-				// Iterate over each signature of of the system
-				for (auto const& systemSignaturePairs : systemSignatureMap)
-				{
-					auto const& signatureName = systemSignaturePairs.first;
-					auto const& systemSignature = systemSignaturePairs.second;
-
-					// Entity signature matches system signature - insert into matching set
-					if ((entitySignature & systemSignature) == systemSignature)
-					{
-						system->entityMap.at(signatureName).insert(entity);
-					}
-					// Entity signature does not match system signature - erase from set
-					else
-					{
-						system->entityMap.at(signatureName).erase(entity);
-					}
-				}
-			}
-		}
-
 	private:
-
-		// Map from system type string pointer to signature
-		std::unordered_map<const char*, SignatureMap> m_signatureMaps;
 
 		// Map from system type string to system pointer
 		std::unordered_map<const char*, std::shared_ptr<System>> m_systemsMap;
@@ -768,13 +713,13 @@ namespace Puffin::ECS
 		}
 
 		template<typename... ComponentTypes>
-		void GetEntities(std::vector<EntityID>& outEntities) const
+		Signature GetEntities(PackedVector<EntityID>& outEntities) const
 		{
+			Signature signature;
+
 			if (sizeof...(ComponentTypes) != 0)
 			{
-				//Unpack component types into initializer list
 				ComponentType componentTypes[] = { GetComponentType<ComponentTypes>() ... };
-				Signature signature;
 
 				// Iterate over component types, setting bit for each in signature
 				for (int i = 0; i < sizeof...(ComponentTypes); i++)
@@ -782,9 +727,10 @@ namespace Puffin::ECS
 					signature.set(componentTypes[i]);
 				}
 
-				outEntities.clear();
-				m_entityManager->GetEntities(signature, outEntities);
+				outEntities = m_entityManager->GetEntities(signature);
 			}
+
+			return signature;
 		}
 
 		std::set<EntityID> GetActiveEntities() const
@@ -797,8 +743,6 @@ namespace Puffin::ECS
 			m_entityManager->DestroyEntity(entity);
 
 			m_componentManager->EntityDestroyed(entity);
-
-			m_systemManager->EntityDestroyed(entity);
 		}
 
 		bool EntityExists(EntityID entity) const
@@ -816,7 +760,7 @@ namespace Puffin::ECS
 			return m_entityManager->GetName(entity);
 		}
 
-		Signature GetEntitySignature(EntityID entity) const
+		const Signature& GetEntitySignature(EntityID entity) const
 		{
 			return m_entityManager->GetSignature(entity);
 		}
@@ -864,8 +808,6 @@ namespace Puffin::ECS
 			}
 
 			m_entityManager->SetSignature(entity, signature);
-
-			m_systemManager->EntitySignatureChanged(entity, signature);
 		}
 
 		template<typename ComponentT>
@@ -888,9 +830,8 @@ namespace Puffin::ECS
 
 			auto signature = m_entityManager->GetSignature(entity);
 			signature.set(m_componentManager->GetComponentType<ComponentT>(), false);
-			m_entityManager->SetSignature(entity, signature);
 
-			m_systemManager->EntitySignatureChanged(entity, signature);
+			m_entityManager->SetSignature(entity, signature);
 		}
 
 		template<typename ComponentT>
@@ -944,18 +885,6 @@ namespace Puffin::ECS
 		std::shared_ptr<SystemT> GetSystem()
 		{
 			return m_systemManager->GetSystem<SystemT>();
-		}
-
-		template<typename SystemT>
-		void SetSystemSignature(std::string_view signatureName, Signature signature) const
-		{
-			m_systemManager->SetSignature<SystemT>(signatureName, signature);
-
-			// Update System's local entity list with any new entities
-			for (EntityID entity : m_entityManager->GetActiveEntities())
-			{
-				m_systemManager->EntitySignatureChanged(entity, m_entityManager->GetSignature(entity));
-			}
 		}
 
 	private:

@@ -19,7 +19,7 @@ namespace Puffin::Procedural
 
 	void ProceduralMeshGenSystem::PreStart()
 	{
-		std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
+		PackedVector<ECS::EntityPtr> proceduralPlaneEntities;
 		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
 		for (const auto& entity : proceduralPlaneEntities)
 		{
@@ -31,7 +31,7 @@ namespace Puffin::Procedural
 			entity->SetComponentFlag<PlaneComponent, FlagDirty>(false);
 		}
 
-		std::vector<std::shared_ptr<ECS::Entity>> proceduralTerrainEntities;
+		PackedVector<ECS::EntityPtr> proceduralTerrainEntities;
 		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
 		for (const auto& entity : proceduralTerrainEntities)
 		{
@@ -44,7 +44,7 @@ namespace Puffin::Procedural
 			entity->SetComponentFlag<TerrainComponent, FlagDirty>(false);
 		}
 
-		std::vector<std::shared_ptr<ECS::Entity>> proceduralIcoSphereEntities;
+		PackedVector<ECS::EntityPtr> proceduralIcoSphereEntities;
 		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
 		for (const auto& entity : proceduralIcoSphereEntities)
 		{
@@ -59,7 +59,7 @@ namespace Puffin::Procedural
 
 	void ProceduralMeshGenSystem::Update()
 	{
-		std::vector<std::shared_ptr<ECS::Entity>> proceduralPlaneEntities;
+		PackedVector<ECS::EntityPtr> proceduralPlaneEntities;
 		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
 		for (const auto& entity : proceduralPlaneEntities)
 		{
@@ -81,7 +81,7 @@ namespace Puffin::Procedural
 			}
 		}
 
-		std::vector<std::shared_ptr<ECS::Entity>> proceduralTerrainEntities;
+		PackedVector<ECS::EntityPtr> proceduralTerrainEntities;
 		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
 		for (const auto& entity : proceduralTerrainEntities)
 		{
@@ -104,7 +104,7 @@ namespace Puffin::Procedural
 			}
 		}
 
-		std::vector<std::shared_ptr<ECS::Entity>> proceduralIcoSphereEntities;
+		PackedVector<ECS::EntityPtr> proceduralIcoSphereEntities;
 		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
 		for (const auto& entity : proceduralIcoSphereEntities)
 		{
