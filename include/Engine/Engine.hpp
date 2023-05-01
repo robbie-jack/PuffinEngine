@@ -219,17 +219,10 @@ namespace Puffin::Core
 
 		double GetStageExecutionTimeLastFrame(const Core::ExecutionStage& updateOrder)
 		{
-			double executionTime = 0.0;
-
-			for (const auto& stageExecutionTime : m_stageExecutionTimeLastFrame[updateOrder])
-			{
-				executionTime += stageExecutionTime;
-			}
-
-			return executionTime;
+			return m_stageExecutionTimeLastFrame[updateOrder];
 		}
 
-		const std::vector<std::pair<std::string, double>>& GetCallbackExecutionTimeForUpdateStageLastFrame(const Core::ExecutionStage& updateOrder)
+		const std::unordered_map<std::string, double>& GetCallbackExecutionTimeForUpdateStageLastFrame(const Core::ExecutionStage& updateOrder)
 		{
 			return m_callbackExecutionTimeLastFrame[updateOrder];
 		}
@@ -262,11 +255,11 @@ namespace Puffin::Core
 		std::unordered_map<const char*, std::shared_ptr<Core::Subsystem>> m_subsystems;
 		std::unordered_map<Core::ExecutionStage, std::vector<EngineCallbackHandler>> m_registeredCallbacks; // Map of callback functions registered for execution
 
-		std::unordered_map<Core::ExecutionStage, std::vector<double>> m_stageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
-		std::unordered_map<Core::ExecutionStage, std::vector<std::pair<std::string, double>>> m_callbackExecutionTime; // Map of time it takes for each system to execute
+		std::unordered_map<Core::ExecutionStage, double> m_stageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
+		std::unordered_map<Core::ExecutionStage, std::unordered_map<std::string, double>> m_callbackExecutionTime; // Map of time it takes for each system to execute
 
-		std::unordered_map<Core::ExecutionStage, std::vector<double>> m_stageExecutionTimeLastFrame;
-		std::unordered_map<Core::ExecutionStage, std::vector<std::pair<std::string, double>>> m_callbackExecutionTimeLastFrame;
+		std::unordered_map<Core::ExecutionStage, double> m_stageExecutionTimeLastFrame;
+		std::unordered_map<Core::ExecutionStage, std::unordered_map<std::string, double>> m_callbackExecutionTimeLastFrame;
 
 		IO::ProjectFile projectFile;
 
@@ -298,7 +291,12 @@ namespace Puffin::Core
 				{
 					endTime = glfwGetTime();
 
-					m_callbackExecutionTime[executionStage].emplace_back(callback.GetName(), endTime - startTime);
+					if (m_callbackExecutionTime[executionStage].count(callback.GetName()) == 0)
+					{
+						m_callbackExecutionTime[executionStage][callback.GetName()] = 0.0;
+					}
+
+					m_callbackExecutionTime[executionStage][callback.GetName()] += endTime - startTime;
 				}
 			}
 
@@ -306,7 +304,12 @@ namespace Puffin::Core
 			{
 				stageEndTime = glfwGetTime();
 
-				m_stageExecutionTime[executionStage].emplace_back(stageEndTime - stageStartTime);
+				if (m_stageExecutionTime.count(executionStage) == 0)
+				{
+					m_stageExecutionTime[executionStage] = 0.0;
+				}
+
+				m_stageExecutionTime[executionStage] += (stageEndTime - stageStartTime);
 			}
 		}
 

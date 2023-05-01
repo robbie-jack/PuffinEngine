@@ -376,13 +376,12 @@ namespace Puffin::ECS
 
 		ComponentManager()
 		{
-			m_nextComponentType = 0;
+			m_nextCompSigType = 0;
 			m_nextFlagType = 0;
 		}
 
 		~ComponentManager()
 		{
-			m_componentTypes.clear();
 			m_componentArrays.clear();
 			m_flagTypes.clear();
 		}
@@ -390,32 +389,31 @@ namespace Puffin::ECS
 		template<typename ComponentT>
 		void RegisterComponent()
 		{
-			const char* typeName = typeid(ComponentT).name();
+			const size_t typeHash = GetTypeHash<ComponentT>();
 
-			assert(m_componentTypes.find(typeName) == m_componentTypes.end() && "Registering component type more than once");
-
-			// Add new component type to component type map
-			m_componentTypes.insert({ typeName, m_nextComponentType });
+			assert(m_componentArrays.find(typeHash) == m_componentArrays.end() && "Registering component type more than once");
 
 			// Create ComponentT Array Pointers
 			std::shared_ptr<ComponentArray<ComponentT>> array = std::make_shared<ComponentArray<ComponentT>>();
 
 			// Cast ComponentArray pointer to IComponentArray and add to component arrays map
-			m_componentArrays.insert({ m_nextComponentType, std::static_pointer_cast<IComponentArray>(array) });
+			m_componentArrays.emplace(typeHash, std::static_pointer_cast<IComponentArray>(array));
+			m_componentTypeMap.emplace(typeHash, m_nextCompSigType);
 
-			// Increment next component type
-			m_nextComponentType++;
+			m_nextCompSigType++;
 		}
 
 		template<typename ComponentT>
-		ComponentType GetComponentType()
+		size_t GetTypeHash() const
 		{
-			const char* typeName = typeid(ComponentT).name();
+			const size_t typeHash = typeid(ComponentT).hash_code();
 
-			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
+			return typeHash;
+		}
 
-			// Return this components type - used for creating signatures
-			return m_componentTypes[typeName];
+		ComponentSigType GetComponentSigType(size_t typeHash)
+		{
+			return m_componentTypeMap[typeHash];
 		}
 
 		template<typename ComponentT>
@@ -424,7 +422,9 @@ namespace Puffin::ECS
 			// Add a component to array for this entity
 			GetComponentArray<ComponentT>()->AddComponent(entity);
 
-			for (auto& compType : m_requiredComponentTypes[GetComponentType<ComponentT>()])
+			size_t typeHash = GetTypeHash<ComponentT>();
+
+			for (auto& compType : m_requiredComponentTypes[typeHash])
 			{
 				const std::shared_ptr<IComponentArray> compArray = GetComponentArray(compType);
 
@@ -438,6 +438,10 @@ namespace Puffin::ECS
 		template<typename ComponentT>
 		ComponentT& GetComponent(EntityID entity)
 		{
+			const size_t typeHash = GetTypeHash<ComponentT>();
+
+			assert(m_componentArrays.find(typeHash) != m_componentArrays.end() && "ComponentType not registered before use");
+
 			// Get reference to component for this entity
 			return GetComponentArray<ComponentT>()->GetComponent(entity);
 		}
@@ -445,6 +449,10 @@ namespace Puffin::ECS
 		template<typename ComponentT>
 		void RemoveComponent(EntityID entity)
 		{
+			const size_t typeHash = GetTypeHash<ComponentT>();
+
+			assert(m_componentArrays.find(typeHash) != m_componentArrays.end() && "ComponentType not registered before use");
+
 			// Remove component from array for this entity
 			GetComponentArray<ComponentT>()->RemoveComponent(entity);
 		}
@@ -452,9 +460,9 @@ namespace Puffin::ECS
 		template<typename ComponentT>
 		bool HasComponent(EntityID entity)
 		{
-			const char* typeName = typeid(ComponentT).name();
+			const size_t typeHash = GetTypeHash<ComponentT>();
 
-			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentArrays.find(typeHash) != m_componentArrays.end() && "ComponentType not registered before use");
 
 			// Return true if array has component for this entity
 			return GetComponentArray<ComponentT>()->HasComponent(entity);
@@ -464,31 +472,29 @@ namespace Puffin::ECS
 		template<typename ComponentT, typename... RequiredTypes>
 		void AddComponentDependencies()
 		{
-			const char* typeName = typeid(ComponentT).name();
+			const size_t typeHash = GetTypeHash<ComponentT>();
 
-			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
-
-			const ComponentType componentType = m_componentTypes[typeName];
+			assert(m_componentArrays.find(typeHash) != m_componentArrays.end() && "ComponentType not registered before use");
 
 			if (sizeof...(RequiredTypes) != 0)
 			{
 				//Unpack component types into initializer list
-				ComponentType requiredTypes[] = { GetComponentType<RequiredTypes>() ... };
+				size_t requiredTypes[] = { GetTypeHash<RequiredTypes>() ... };
 
 				// Iterate over component types, setting bit for each in signature
 				for (int i = 0; i < sizeof...(RequiredTypes); i++)
 				{
-					m_requiredComponentTypes[componentType].insert(requiredTypes[i]);
+					size_t requiredTypeHash = requiredTypes[i];
+
+					m_requiredComponentTypes[GetTypeHash<ComponentT>()].insert(requiredTypes[i]);
 				}
 			}
 		}
 
 		template<typename ComponentT>
-		const std::set<ComponentType>& GetRequiredComponentTypes()
+		const std::set<size_t>& GetRequiredComponentTypes()
 		{
-			ComponentType type = GetComponentType<ComponentT>();
-
-			return m_requiredComponentTypes[type];
+			return m_requiredComponentTypes[GetTypeHash<ComponentT>()];
 		}
 
 		// Functions for Registering and Updating Component Flags
@@ -518,9 +524,9 @@ namespace Puffin::ECS
 		template<typename ComponentT, typename FlagT>
 		bool GetComponentFlag(EntityID entity)
 		{
-			const char* typeName = typeid(ComponentT).name();
+			const size_t typeHash = GetTypeHash<ComponentT>();
 
-			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentArrays.find(typeHash) != m_componentArrays.end() && "ComponentType not registered before use");
 
 			const char* flagTypeName = typeid(FlagT).name();
 
@@ -532,9 +538,9 @@ namespace Puffin::ECS
 		template<typename ComponentT, typename FlagT>
 		void SetComponentFlag(EntityID entity, bool flag)
 		{
-			const char* typeName = typeid(ComponentT).name();
+			const size_t typeHash = GetTypeHash<ComponentT>();
 
-			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
+			assert(m_componentArrays.find(typeHash) != m_componentArrays.end() && "ComponentType not registered before use");
 
 			const char* flagTypeName = typeid(FlagT).name();
 
@@ -557,16 +563,13 @@ namespace Puffin::ECS
 
 	private:
 
-		// ComponentType type to be assigned to next registered component
-		ComponentType m_nextComponentType;
-
-		// Map from type string pointer to component type
-		std::unordered_map<const char*, ComponentType> m_componentTypes;
-
 		// Map from type string pointer to component array
-		std::unordered_map<ComponentType, std::shared_ptr<IComponentArray>> m_componentArrays;
+		std::unordered_map<size_t, std::shared_ptr<IComponentArray>> m_componentArrays;
+		std::unordered_map<size_t, ComponentSigType> m_componentTypeMap;
 
-		std::unordered_map<ComponentType, std::set<ComponentType>> m_requiredComponentTypes; // Map of required components
+		std::unordered_map<size_t, std::set<size_t>> m_requiredComponentTypes; // Map of required components
+
+		ComponentSigType m_nextCompSigType;
 
 		// FlagType to be assigned to next registered flag
 		FlagType m_nextFlagType;
@@ -577,16 +580,14 @@ namespace Puffin::ECS
 		template<typename ComponentT>
 		std::shared_ptr<ComponentArray<ComponentT>> GetComponentArray()
 		{
-			const char* typeName = typeid(ComponentT).name();
+			const size_t typeHash = typeid(ComponentT).hash_code();
 
-			assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "ComponentType not registered before use");
-
-			return std::static_pointer_cast<ComponentArray<ComponentT>>(m_componentArrays[GetComponentType<ComponentT>()]);
+			return std::static_pointer_cast<ComponentArray<ComponentT>>(m_componentArrays[typeHash]);
 		}
 
-		std::shared_ptr<IComponentArray> GetComponentArray(ComponentType compType)
+		std::shared_ptr<IComponentArray> GetComponentArray(size_t typeHash)
 		{
-			return m_componentArrays[compType];
+			return m_componentArrays[typeHash];
 		}
 	};
 
@@ -719,12 +720,12 @@ namespace Puffin::ECS
 
 			if (sizeof...(ComponentTypes) != 0)
 			{
-				ComponentType componentTypes[] = { GetComponentType<ComponentTypes>() ... };
+				size_t componentTypes[] = { GetComponentTypeHash<ComponentTypes>() ... };
 
 				// Iterate over component types, setting bit for each in signature
 				for (int i = 0; i < sizeof...(ComponentTypes); i++)
 				{
-					signature.set(componentTypes[i]);
+					signature.set(GetComponentSigType(componentTypes[i]));
 				}
 
 				outEntities = m_entityManager->GetEntities(signature);
@@ -799,12 +800,12 @@ namespace Puffin::ECS
 			m_componentManager->AddComponent<ComponentT>(entity);
 
 			auto signature = m_entityManager->GetSignature(entity);
-			signature.set(m_componentManager->GetComponentType<ComponentT>(), true);
+			signature.set(GetComponentSigType(GetComponentTypeHash<ComponentT>()), true);
 
-			const std::set<ComponentType>& requiredTypes = m_componentManager->GetRequiredComponentTypes<ComponentT>();
+			const std::set<size_t>& requiredTypes = m_componentManager->GetRequiredComponentTypes<ComponentT>();
 			for (const auto& componentType : requiredTypes)
 			{
-				signature.set(componentType, true);
+				signature.set(GetComponentSigType(componentType), true);
 			}
 
 			m_entityManager->SetSignature(entity, signature);
@@ -829,15 +830,20 @@ namespace Puffin::ECS
 			m_componentManager->RemoveComponent<ComponentT>(entity);
 
 			auto signature = m_entityManager->GetSignature(entity);
-			signature.set(m_componentManager->GetComponentType<ComponentT>(), false);
+			signature.set(GetComponentTypeHash<ComponentT>(), false);
 
 			m_entityManager->SetSignature(entity, signature);
 		}
 
 		template<typename ComponentT>
-		ComponentType GetComponentType() const
+		size_t GetComponentTypeHash() const
 		{
-			return m_componentManager->GetComponentType<ComponentT>();
+			return m_componentManager->GetTypeHash<ComponentT>();
+		}
+
+		ComponentSigType GetComponentSigType(size_t typeHash) const
+		{
+			return m_componentManager->GetComponentSigType(typeHash);
 		}
 
 		template<typename ComponentT>

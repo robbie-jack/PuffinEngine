@@ -214,15 +214,11 @@ namespace Puffin
 
 		const ValueT& operator[](const size_t& id) const
 		{
-			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
-
 			return m_vector[m_idToIndexMap[id]];
 		}
 
 		ValueT& operator[](const size_t& id)
 		{
-			assert(m_idToIndexMap.find(id) != m_idToIndexMap.end() && "No value with that id has been added to map");
-
 			return m_vector[m_idToIndexMap[id]];
 		}
 

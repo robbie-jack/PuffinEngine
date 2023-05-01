@@ -194,7 +194,8 @@ namespace Puffin::Core
 			if (m_shouldTrackExecutionTime)
 			{
 				idleEndTime = glfwGetTime();
-				m_stageExecutionTime[ExecutionStage::Idle].emplace_back(idleEndTime - idleStartTime);
+
+				m_stageExecutionTime[ExecutionStage::Idle] = idleEndTime - idleStartTime;
 			}
 		}
 
@@ -553,10 +554,10 @@ namespace Puffin::Core
 		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
 		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(250.0f, 1.0f);
 
-		const float xOffset = 2000.0f;
+		const float xOffset = 1000.0f;
 		const Vector3f startPosition(-xOffset, 10.f, 0.f);
 		const Vector3f endPosition(xOffset, 10.f, 0.f);
-		const int numBodies = 1000;
+		const int numBodies = 500;
 		Vector3f positionOffset = endPosition - startPosition;
 		positionOffset.x /= numBodies;
 		for (int i = 0; i < numBodies; i++)
