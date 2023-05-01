@@ -14,15 +14,14 @@ namespace Puffin::Core
 
 		~EnkiTSSubsystem() override = default;
 
-		void Init() override
+		void SetupCallbacks() override;
+
+		void Init()
 		{
 			m_taskScheduler = std::make_shared<enki::TaskScheduler>();
 
 			m_taskScheduler->Initialize();
 		}
-
-		void Update() override {}
-		void Destroy() override {}
 
 		std::shared_ptr<enki::TaskScheduler> GetTaskScheduler() { return m_taskScheduler; }
 

@@ -101,7 +101,6 @@ namespace Puffin::Rendering::VK
 		VKRenderSystem()
 		{
 			m_systemInfo.name = "VKRenderSystem";
-			m_systemInfo.updateOrder = Core::ExecutionStage::Render;
 		}
 
 		void SetupCallbacks() override

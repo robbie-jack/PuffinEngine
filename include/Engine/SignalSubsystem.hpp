@@ -39,16 +39,13 @@ namespace Puffin::Core
 	{
 	public:
 
-		SignalSubsystem()
-		{
-			m_shouldUpdate = false;
-		}
+		SignalSubsystem() = default;
 
 		~SignalSubsystem() override = default;
 
-		void Init() override {}
-		void Update() override {}
-		void Destroy() override
+		void SetupCallbacks() override;
+
+		void Cleanup()
 		{
 			m_signalHandlers.clear();
 		}

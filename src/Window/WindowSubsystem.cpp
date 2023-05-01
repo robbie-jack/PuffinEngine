@@ -1,5 +1,7 @@
 #include "Window/WindowSubsystem.hpp"
 
+#include "Engine/Engine.hpp"
+
 #include <glfw/glfw3.h>
 
 #include <iostream>
@@ -10,6 +12,13 @@ namespace Puffin::Window
 	//==================================================
 	// Public Methods
 	//==================================================
+
+	void WindowSubsystem::SetupCallbacks()
+	{
+		m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "WindowSubsystem: Init", 40);
+		m_engine->RegisterCallback(Core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "WindowSubsystem: Update");
+		m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "WindowSubsystem: Cleanup", 150);
+	}
 
 	void WindowSubsystem::Init()
 	{
@@ -36,7 +45,7 @@ namespace Puffin::Window
 		
 	}
 
-	void WindowSubsystem::Destroy()
+	void WindowSubsystem::Cleanup()
 	{
 		glfwDestroyWindow(m_primaryWindow);
 

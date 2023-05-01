@@ -26,7 +26,6 @@ namespace Puffin
 			m_colliders.Reserve(4000);
 
 			m_systemInfo.name = "Onager2DPhysicsSystem";
-			m_systemInfo.updateOrder = Core::ExecutionStage::FixedUpdate;
 		}
 
 		//--------------------------------------------------

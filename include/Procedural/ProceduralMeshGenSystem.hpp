@@ -12,7 +12,11 @@ namespace Puffin::Procedural
 	{
 	public:
 
-		ProceduralMeshGenSystem();
+		ProceduralMeshGenSystem()
+		{
+			m_systemInfo.name = "ProceduralMeshGenSystem";
+		}
+
 		~ProceduralMeshGenSystem() override = default;
 
 		void SetupCallbacks() override

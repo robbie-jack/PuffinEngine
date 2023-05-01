@@ -118,22 +118,24 @@ namespace Puffin
 					ImGui::NewLine();
 
 					// Display Stage/System Frametime breakdown
-					ImGui::Text("Frametime Breakdown");
+					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Frametime Breakdown");
 					ImGui::NewLine();
 
 					for (const auto& [stage, name] : Core::G_EXECUTION_STAGE_ORDER)
 					{
 						auto stageFrametime = m_engine->GetStageExecutionTimeLastFrame(stage) * 1000.0;
-						ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
+						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
 
-						ImGui::Indent();
+						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Indent();
 						for (const auto& [name, time] : m_engine->GetCallbackExecutionTimeForUpdateStageLastFrame(stage))
 						{
 							double callbackFrametime = time * 1000.0;
-							ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
+							ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
 						}
-						ImGui::Unindent();
+						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Unindent();
 					}
+
+					ImGui::NewLine();
 				}
 
 				End();

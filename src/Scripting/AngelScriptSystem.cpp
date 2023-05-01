@@ -57,7 +57,6 @@ namespace Puffin::Scripting
 		int r = m_scriptEngine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); assert(r >= 0);
 
 		m_systemInfo.name = "AngelScriptSystem";
-		m_systemInfo.updateOrder = Core::ExecutionStage::Update;
 	}
 
 	AngelScriptSystem::~AngelScriptSystem()

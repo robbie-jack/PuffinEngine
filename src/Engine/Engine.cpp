@@ -54,14 +54,12 @@ namespace Puffin::Core
 	{
 		// Subsystems
 
-		// Insert with priority 0 so window subsystem is initialized first
-		auto windowSubsystem = RegisterSubsystem<Window::WindowSubsystem>(0);
-
-		auto eventSubsystem = RegisterSubsystem<Core::EventSubsystem>();
-		auto signalSubsystem = RegisterSubsystem<Core::SignalSubsystem>();
+		auto windowSubsystem = RegisterSubsystem<Window::WindowSubsystem>();
+		auto eventSubsystem = RegisterSubsystem<EventSubsystem>();
+		auto signalSubsystem = RegisterSubsystem<SignalSubsystem>();
+		auto enkitsSubsystem = RegisterSubsystem<EnkiTSSubsystem>();
 		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
 		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
-		auto enkitsSubsystem = RegisterSubsystem<Core::EnkiTSSubsystem>();
 		auto ecsWorld = RegisterSubsystem<ECS::World>();
 
 		m_uiManager = std::make_shared<UI::UIManager>(shared_from_this());
@@ -156,12 +154,6 @@ namespace Puffin::Core
 		running = true;
 		m_playState = PlayState::STOPPED;
 
-		// Initialize Subsystems
-		for (auto& [fst, snd] : m_subsystemsPriority)
-		{
-			m_subsystems[snd]->Init();
-		}
-
 		// Initialize Systems
 		{
 			ExecuteCallbacks(ExecutionStage::Init);
@@ -216,12 +208,8 @@ namespace Puffin::Core
 		auto audioSubsystem = GetSubsystem<Audio::AudioSubsystem>();
 
 		// Update all Subsystems
-		for (auto& [fst, snd] : m_subsystems)
 		{
-			if (snd->ShouldUpdate())
-			{
-				snd->Update();
-			}
+			ExecuteCallbacks(ExecutionStage::SubsystemUpdate, true);
 		}
 
 		auto inputSubsystem = GetSubsystem<Input::InputSubsystem>();
@@ -328,14 +316,6 @@ namespace Puffin::Core
 		ExecuteCallbacks(ExecutionStage::Cleanup);
 
 		m_systems.clear();
-
-		// Cleanup all subsystems
-		for (auto& [fst, snd] : m_subsystems)
-		{
-			snd->Destroy();
-			snd = nullptr;
-		}
-
 		m_subsystems.clear();
 
 		// Cleanup UI Manager

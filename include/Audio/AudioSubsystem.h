@@ -34,12 +34,14 @@ namespace Puffin::Audio
 	{
 	public:
 
-		AudioSubsystem() { m_shouldUpdate = true; }
+		AudioSubsystem() = default;
 		~AudioSubsystem() override = default;
 
-		void Init() override;
-		void Update() override;
-		void Destroy() override;
+		void SetupCallbacks() override;
+
+		void Init();
+		void Update();
+		void Cleanup();
 
 		// Play Sound, If this sound is already active, but paused, start playing it again
 		void PlaySoundEffect(UUID soundId, float volume = 1.0f, bool looping = false, bool restart = false);

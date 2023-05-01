@@ -5,23 +5,17 @@
 #include "ECS/System.hpp"
 #include "Engine/Subsystem.hpp"
 #include "Engine/EventSubsystem.hpp"
-
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"
 #include "Types/UUID.h"
 
 #include <cstdint>
 #include <bitset>
-#include <queue>
-#include <array>
 #include <cassert>
-#include <map>
 #include <unordered_map>
-#include <vector>
 #include <set>
 #include <memory>
 #include <typeinfo>
-#include <string_view>
 #include <bitset>
 
 namespace Puffin::ECS
@@ -657,8 +651,6 @@ namespace Puffin::ECS
 
 		World()
 		{
-			m_shouldUpdate = true;
-
 			// Create pointers to each manager
 			m_componentManager = std::make_unique<ComponentManager>();
 			m_entityManager = std::make_unique<EntityManager>();
@@ -669,9 +661,9 @@ namespace Puffin::ECS
 
 		~World() override = default;
 
-		void Init() override {}
+		void SetupCallbacks() override;
 
-		void Update() override
+		void Update()
 		{
 			// Remove all entities marked for deletion
 			for (auto entity : m_entityManager->GetActiveEntities())
@@ -683,7 +675,7 @@ namespace Puffin::ECS
 			}
 		}
 
-		void Destroy() override
+		void Cleanup()
 		{
 			for (auto entity : m_entityManager->GetActiveEntities())
 			{

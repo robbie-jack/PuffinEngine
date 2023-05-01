@@ -196,10 +196,14 @@ set(SOURCES
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
 	# ECS
 	${SOURCE_DIR}/ECS/Entity.cpp
+	${SOURCE_DIR}/ECS/ECS.cpp
 	# Engine
 	${SOURCE_DIR}/Engine/Engine.cpp
 	${SOURCE_DIR}/Engine/Application.cpp
 	${SOURCE_DIR}/Engine/JobSystem.cpp
+	${SOURCE_DIR}/Engine/SignalSubsystem.cpp
+	${SOURCE_DIR}/Engine/EnkiTSSubsystem.cpp
+	${SOURCE_DIR}/Engine/EventSubsystem.cpp
 	# Input
 	${SOURCE_DIR}/Input/InputSubsystem.cpp
 	# Physics

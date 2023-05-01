@@ -30,6 +30,29 @@ namespace Puffin
 
 namespace Puffin::Core
 {
+	// Various stages when methods can be executed during engine runtime
+	enum class ExecutionStage
+	{
+		Idle,				// Only used for calculating idle time when frame rate is limited, do not use with callback
+		Init,				// Occurs once on engine launch, use for one off system initialization
+		Setup,				// Occurs on engine launch and whenever gameplay is stopped
+		Start,				// Occurs whenever gameplay is started
+		SubsystemUpdate,	// Occurs every frame, regardless if game is currently playing/paused
+		FixedUpdate,		// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
+		Update,				// Update once a frame - Useful for non-determinstic gameplay code
+		Render,				// Update once a frame - Useful for code which relates to the rendering pipeline
+		Stop,				// Occurs when game play is stopped, use for resetting any gameplay data
+		Cleanup				// Occurs when engine exits, use for cleaning up all data
+	};
+
+	const std::vector<std::pair<ExecutionStage, const std::string>> G_EXECUTION_STAGE_ORDER =
+	{
+		{ ExecutionStage::Idle, "Idle" },
+		{ ExecutionStage::FixedUpdate, "FixedUpdate" },
+		{ ExecutionStage::Update, "Update" },
+		{ ExecutionStage::Render, "Render" },
+	};
+
 	enum class PlayState
 	{
 		STARTED,		// Game has just started, gameplay systems need to be initialized
@@ -97,19 +120,18 @@ namespace Puffin::Core
 
 		// Subsystem Methods
 		template<typename SubsystemT>
-		std::shared_ptr<SubsystemT> RegisterSubsystem(uint8_t priority = 100)
+		std::shared_ptr<SubsystemT> RegisterSubsystem()
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
 			assert(m_subsystems.find(typeName) == m_subsystems.end() && "Registering subsystem more than once");
 
-			// Insert into priority map
-			m_subsystemsPriority.insert(std::pair(priority, typeName));
-
 			// Create subsystem pointer
 			std::shared_ptr<SubsystemT> subsystem = std::make_shared<SubsystemT>();
 			std::shared_ptr<Subsystem> subsystemBase = std::static_pointer_cast<Subsystem>(subsystem);
 			subsystemBase->SetEngine(shared_from_this());
+
+			subsystemBase->SetupCallbacks();
 
 			// Cast subsystem to Subsystem parent and add to subsystems map
 			m_subsystems.insert({ typeName, subsystemBase });
@@ -235,8 +257,9 @@ namespace Puffin::Core
 
 		std::shared_ptr<Application> m_application = nullptr;
 
-		// System Members
+		// System/Subsystem Members
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers
+		std::unordered_map<const char*, std::shared_ptr<Core::Subsystem>> m_subsystems;
 		std::unordered_map<Core::ExecutionStage, std::vector<EngineCallbackHandler>> m_registeredCallbacks; // Map of callback functions registered for execution
 
 		std::unordered_map<Core::ExecutionStage, std::vector<double>> m_stageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
@@ -250,10 +273,6 @@ namespace Puffin::Core
 		IO::ProjectSettings settings;
 
 		std::shared_ptr<IO::SceneData> m_sceneData = nullptr;
-
-		// Subsystem Members
-		std::unordered_map<const char*, std::shared_ptr<Core::Subsystem>> m_subsystems;
-		std::multimap<uint8_t, const char*> m_subsystemsPriority;
 
 		// Execute callbacks for this execution stage
 		void ExecuteCallbacks(const Core::ExecutionStage& executionStage, bool shouldTrackExecutionTime = false)

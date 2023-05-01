@@ -12,7 +12,6 @@ namespace Puffin::Scripting
 		NativeScriptSystem()
 		{
 			m_systemInfo.name = "NativeScriptSystem";
-			m_systemInfo.updateOrder = Core::ExecutionStage::Update;
 		}
 
 		~NativeScriptSystem() override = default;

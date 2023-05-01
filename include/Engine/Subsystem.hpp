@@ -4,8 +4,6 @@
 
 namespace Puffin::Core
 {
-	typedef uint8_t SubsystemID;
-
 	class Engine;
 
 	// Subsystems manage essential low level functionality like Audio and Input
@@ -15,14 +13,7 @@ namespace Puffin::Core
 
 		virtual ~Subsystem() { m_engine = nullptr; }
 
-		bool ShouldUpdate() const
-		{
-			return m_shouldUpdate;
-		}
-
-		virtual void Init() = 0;
-		virtual void Update() = 0;
-		virtual void Destroy() = 0;
+		virtual void SetupCallbacks() = 0; // Called to setup this systems callbacks when it is registered
 
 		void SetEngine(std::shared_ptr<Engine> engine)
 		{
@@ -31,7 +22,6 @@ namespace Puffin::Core
 
 	protected:
 
-		bool m_shouldUpdate = false;
 		std::shared_ptr<Engine> m_engine = nullptr;
 
 	};

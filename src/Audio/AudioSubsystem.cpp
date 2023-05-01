@@ -2,6 +2,7 @@
 
 #include "Assets/AssetRegistry.h"
 #include "Assets/SoundAsset.h"
+#include "Engine/Engine.hpp"
 
 #include <memory>
 
@@ -9,6 +10,13 @@ using namespace irrklang;
 
 namespace Puffin::Audio
 {
+	void AudioSubsystem::SetupCallbacks()
+	{
+		m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "AudioSubsystem: Init", 50);
+		m_engine->RegisterCallback(Core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "AudioSubsystem: Update");
+		m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "AudioSubsystem: Cleanup", 150);
+	}
+
 	void AudioSubsystem::Init()
 	{
 
@@ -22,7 +30,7 @@ namespace Puffin::Audio
 		}
 	}
 
-	void AudioSubsystem::Destroy()
+	void AudioSubsystem::Cleanup()
 	{
 		StopAllSounds();
 

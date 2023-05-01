@@ -10,6 +10,13 @@ namespace Puffin
 {
 	namespace Input
 	{
+		void InputSubsystem::SetupCallbacks()
+		{
+			m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "InputSubsystem: Init", 50);
+			m_engine->RegisterCallback(Core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "InputSubsystem: Update");
+			m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "InputSubsystem: Cleanup", 150);
+		}
+
 		void InputSubsystem::Init()
 		{
 			m_window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
@@ -135,7 +142,7 @@ namespace Puffin
 			}
 		}
 
-		void InputSubsystem::Destroy()
+		void InputSubsystem::Cleanup()
 		{
 			m_world = nullptr;
 			m_window = nullptr;

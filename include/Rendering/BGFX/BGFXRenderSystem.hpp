@@ -113,7 +113,6 @@ namespace Puffin::Rendering::BGFX
 		BGFXRenderSystem()
 		{
 			m_systemInfo.name = "BGFXRenderSystem";
-			m_systemInfo.updateOrder = Core::ExecutionStage::Render;
 		}
 
 		~BGFXRenderSystem() override {}

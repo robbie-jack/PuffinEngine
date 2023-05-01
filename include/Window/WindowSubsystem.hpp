@@ -17,9 +17,11 @@ namespace Puffin::Window
 		WindowSubsystem() = default;
 		~WindowSubsystem() override = default;
 
-		void Init() override;
-		void Update() override;
-		void Destroy() override;
+		void SetupCallbacks() override;
+
+		void Init();
+		void Update();
+		void Cleanup();
 
 		GLFWwindow* GetPrimaryWindow() const
 		{

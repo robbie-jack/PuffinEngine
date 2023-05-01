@@ -32,36 +32,36 @@ namespace Puffin
 
 			InputSubsystem()
 			{
-				m_shouldUpdate = true;
-
 				nextID = 1;
-				last_x_pos = 640.0f;
-				last_y_pos = 360.0f;
-				sensitivity = 0.05f;
+				last_x_pos = 640.0;
+				last_y_pos = 360.0;
+				sensitivity = 0.05;
 				cursor_locked = false;
 				firstMouse = true;
 			}
 
 			~InputSubsystem() override = default;
 
-			void Init() override;
-			void Update() override;
-			void Destroy() override;
+			void SetupCallbacks() override;
+
+			void Init();
+			void Update();
+			void Cleanup();
 
 			void AddAction(std::string name, int key);
 			void AddAction(std::string name, std::vector<int> keys);
 			InputAction& GetAction(std::string name) const;
 
-			inline float GetMouseXOffset() { return (x_pos - last_x_pos) * sensitivity; };
-			inline float GetMouseYOffset() { return (y_pos - last_y_pos) * sensitivity; };
-			inline float& GetSensitivity() { return sensitivity; };
-			inline bool IsCursorLocked() { return cursor_locked; };
+			inline double GetMouseXOffset() { return (x_pos - last_x_pos) * sensitivity; }
+			inline double GetMouseYOffset() { return (y_pos - last_y_pos) * sensitivity; }
+			inline double& GetSensitivity() { return sensitivity; }
+			inline bool IsCursorLocked() { return cursor_locked; }
 
 		private:
 
 			double x_pos, y_pos, last_x_pos, last_y_pos;
 			bool cursor_locked;
-			float sensitivity;
+			double sensitivity;
 			bool firstMouse;
 
 			int nextID = 1;

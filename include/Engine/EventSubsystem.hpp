@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Subsystem.hpp"
-#include <Types/RingBuffer.h>
+#include "Types/RingBuffer.h"
 
 #include <vector>
 #include <unordered_map>
@@ -45,15 +45,15 @@ namespace Puffin
 			std::vector<std::shared_ptr<Puffin::RingBuffer<EventT>>> buffers;
 		};
 
-		class EventSubsystem : public Core::Subsystem
+		class EventSubsystem : public Subsystem
 		{
 		public:
 
 			~EventSubsystem() override = default;
 
-			void Init() override {}
-			void Update() override {}
-			void Destroy() override
+			void SetupCallbacks() override;
+
+			void Cleanup()
 			{
 				eventTypes.clear();
 				eventQueues.clear();
