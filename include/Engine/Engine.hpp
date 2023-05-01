@@ -5,6 +5,7 @@
 #include <ProjectSettings.h>
 #include "Engine/Subsystem.hpp"
 #include "Engine/Application.hpp"
+#include <glfw/glfw3.h>
 
 #include <vector>
 #include <filesystem>
@@ -38,6 +39,37 @@ namespace Puffin::Core
 		JUST_PAUSED,	// Game has just been paused
 		PAUSED,			// Game is paused, systems not being updated,
 		JUST_UNPAUSED	// Game has just been unpaused
+	};
+
+	// Handler class for executing functions in engine
+	class EngineCallbackHandler
+	{
+	public:
+
+		EngineCallbackHandler(const std::function<void()>& callback, const std::string& name, const uint8_t& priority) :
+			m_callback(callback), m_name(name), m_priority(priority) {}
+
+		void Execute() const
+		{
+			m_callback();
+		}
+
+		const std::string& GetName() const
+		{
+			return m_name;
+		}
+
+		bool operator<(const EngineCallbackHandler& other) const
+		{
+			return m_priority < other.m_priority;
+		}
+
+	private:
+
+		std::function<void()> m_callback;
+		std::string m_name;
+		uint8_t m_priority;
+
 	};
 
 	class Engine : public std::enable_shared_from_this<Engine>
@@ -106,13 +138,24 @@ namespace Puffin::Core
 				system = ecsWorld->RegisterSystem<SystemT>();
 				auto systemBase = std::static_pointer_cast<ECS::System>(system);
 
-				m_systems.push_back(systemBase);
-				m_systemUpdateVectors.insert(std::pair(systemBase->GetInfo().updateOrder, systemBase));
+				systemBase->SetWorld(ecsWorld);
+				systemBase->SetEngine(shared_from_this());
+				systemBase->SetupCallbacks();
 
-				m_systemExecutionTime[system->GetInfo().updateOrder][system->GetInfo().name] = 0.0;
+				m_systems.push_back(systemBase);
 			}
 
 			return system;
+		}
+
+		// Register a callback function to be executed during engine runtime
+		void RegisterCallback(ExecutionStage executionStage, const std::function<void()>& callback, const std::string& name = "", const int& priority = 100)
+		{
+			// Add function handler to vector
+			m_registeredCallbacks[executionStage].emplace_back(callback, name, priority);
+
+			// Sort vector by priority
+			std::sort(m_registeredCallbacks[executionStage].begin(), m_registeredCallbacks[executionStage].end());
 		}
 
 		/*
@@ -152,21 +195,21 @@ namespace Puffin::Core
 
 		const double& GetAccumulatedTime() const { return m_accumulatedTime; }
 
-		const double& GetIdleTime() const { return m_idleTime; }
-
-		const double& GetStageExecutionTime(const Core::UpdateOrder& updateOrder)
+		double GetStageExecutionTimeLastFrame(const Core::ExecutionStage& updateOrder)
 		{
-			return m_stageExecutionTime[updateOrder];
+			double executionTime = 0.0;
+
+			for (const auto& stageExecutionTime : m_stageExecutionTimeLastFrame[updateOrder])
+			{
+				executionTime += stageExecutionTime;
+			}
+
+			return executionTime;
 		}
 
-		const double& GetSystemExecutionTime(const Core::UpdateOrder& updateOrder, const std::string& systemName)
+		const std::vector<std::pair<std::string, double>>& GetCallbackExecutionTimeForUpdateStageLastFrame(const Core::ExecutionStage& updateOrder)
 		{
-			return m_systemExecutionTime[updateOrder][systemName];
-		}
-
-		const std::unordered_map<std::string, double>& GetSystemExecutionTimeForUpdateStage(const Core::UpdateOrder& updateOrder)
-		{
-			return m_systemExecutionTime[updateOrder];
+			return m_callbackExecutionTimeLastFrame[updateOrder];
 		}
 
 	private:
@@ -176,6 +219,7 @@ namespace Puffin::Core
 		bool running = true;
 		bool m_shouldLimitFrameRate = true; // Whether framerate should be capped at m_frameRateMax
 		bool m_shouldRenderEditorUI = true; // Whether editor UI should be rendered
+		bool m_shouldTrackExecutionTime = true; // Should track time to execute callback/stages
 		PlayState m_playState = PlayState::STOPPED;
 
 		// Framerate Members
@@ -193,11 +237,13 @@ namespace Puffin::Core
 
 		// System Members
 		std::vector<std::shared_ptr<ECS::System>> m_systems; // Vector of system pointers
-		std::unordered_multimap<Core::UpdateOrder, std::shared_ptr<ECS::System>> m_systemUpdateVectors; // Map from update order to system pointers
+		std::unordered_map<Core::ExecutionStage, std::vector<EngineCallbackHandler>> m_registeredCallbacks; // Map of callback functions registered for execution
 
-		double m_idleTime = 0.0; // 
-		std::unordered_map<Core::UpdateOrder, double> m_stageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
-		std::unordered_map<Core::UpdateOrder, std::unordered_map<std::string, double>> m_systemExecutionTime; // Map of time it takes for each system to execute
+		std::unordered_map<Core::ExecutionStage, std::vector<double>> m_stageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
+		std::unordered_map<Core::ExecutionStage, std::vector<std::pair<std::string, double>>> m_callbackExecutionTime; // Map of time it takes for each system to execute
+
+		std::unordered_map<Core::ExecutionStage, std::vector<double>> m_stageExecutionTimeLastFrame;
+		std::unordered_map<Core::ExecutionStage, std::vector<std::pair<std::string, double>>> m_callbackExecutionTimeLastFrame;
 
 		IO::ProjectFile projectFile;
 
@@ -208,6 +254,57 @@ namespace Puffin::Core
 		// Subsystem Members
 		std::unordered_map<const char*, std::shared_ptr<Core::Subsystem>> m_subsystems;
 		std::multimap<uint8_t, const char*> m_subsystemsPriority;
+
+		// Execute callbacks for this execution stage
+		void ExecuteCallbacks(const Core::ExecutionStage& executionStage, bool shouldTrackExecutionTime = false)
+		{
+			double startTime = 0.0, endTime = 0.0;
+			double stageStartTime = 0.0, stageEndTime = 0.0;
+
+			if (m_shouldTrackExecutionTime && shouldTrackExecutionTime)
+			{
+				stageStartTime = glfwGetTime();
+			}
+
+			for (const auto& callback : m_registeredCallbacks[executionStage])
+			{
+				if (m_shouldTrackExecutionTime && shouldTrackExecutionTime)
+				{
+					startTime = glfwGetTime();
+				}
+
+				callback.Execute();
+
+				if (m_shouldTrackExecutionTime && shouldTrackExecutionTime)
+				{
+					endTime = glfwGetTime();
+
+					m_callbackExecutionTime[executionStage].emplace_back(callback.GetName(), endTime - startTime);
+				}
+			}
+
+			if (m_shouldTrackExecutionTime && shouldTrackExecutionTime)
+			{
+				stageEndTime = glfwGetTime();
+
+				m_stageExecutionTime[executionStage].emplace_back(stageEndTime - stageStartTime);
+			}
+		}
+
+		void UpdateExecutionTime()
+		{
+			if (m_shouldTrackExecutionTime)
+			{
+				m_stageExecutionTimeLastFrame.clear();
+				m_callbackExecutionTimeLastFrame.clear();
+
+				m_stageExecutionTimeLastFrame = m_stageExecutionTime;
+				m_callbackExecutionTimeLastFrame = m_callbackExecutionTime;
+
+				m_stageExecutionTime.clear();
+				m_callbackExecutionTime.clear();
+			}
+		}
 
 		void AddDefaultAssets();
 		void ReimportDefaultAssets();

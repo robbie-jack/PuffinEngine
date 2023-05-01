@@ -57,7 +57,7 @@ namespace Puffin::Scripting
 		int r = m_scriptEngine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); assert(r >= 0);
 
 		m_systemInfo.name = "AngelScriptSystem";
-		m_systemInfo.updateOrder = Core::UpdateOrder::Update;
+		m_systemInfo.updateOrder = Core::ExecutionStage::Update;
 	}
 
 	AngelScriptSystem::~AngelScriptSystem()
@@ -87,7 +87,7 @@ namespace Puffin::Scripting
 		m_audioSubsystem = m_engine->GetSubsystem<Audio::AudioSubsystem>();
 	}
 
-	void AngelScriptSystem::PreStart()
+	void AngelScriptSystem::Setup()
 	{
 		// Create a context that will execute the script
 		m_ctx = m_scriptEngine->CreateContext();

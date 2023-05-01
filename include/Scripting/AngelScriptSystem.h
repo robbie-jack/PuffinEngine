@@ -16,6 +16,7 @@
 #include "Types/RingBuffer.h"
 
 #include "Audio/AudioSubsystem.h"
+#include "Engine/Engine.hpp"
 
 #include <unordered_map>
 #include <map>
@@ -42,12 +43,20 @@ namespace Puffin
 			AngelScriptSystem();
 			~AngelScriptSystem() override;
 
-			void Init() override;
-			void PreStart() override;
-			void Start() override;
-			void Update() override;
-			void Stop() override;
-			void Cleanup() override {}
+			void SetupCallbacks() override
+			{
+				m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "AngelScriptSystem: Init");
+				m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "AngelScriptSystem: Setup");
+				m_engine->RegisterCallback(Core::ExecutionStage::Start, [&]() { Start(); }, "AngelScriptSystem: Start");
+				m_engine->RegisterCallback(Core::ExecutionStage::Update, [&]() { Update(); }, "AngelScriptSystem: Update");
+				m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "AngelScriptSystem: Stop");
+			}
+
+			void Init();
+			void Setup();
+			void Start();
+			void Update();
+			void Stop();
 
 			// Hot-Reloads all scripts when called
 			void Reload() {}

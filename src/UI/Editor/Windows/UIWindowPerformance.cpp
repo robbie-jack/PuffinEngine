@@ -121,41 +121,19 @@ namespace Puffin
 					ImGui::Text("Frametime Breakdown");
 					ImGui::NewLine();
 
-					double fixedUpdateFrametime = m_engine->GetStageExecutionTime(Core::UpdateOrder::FixedUpdate) * 1000.0;
-					ImGui::Text("Fixed Update: %.1f ms", fixedUpdateFrametime);
-
-					ImGui::Indent();
-					for (auto& [fst, snd] : m_engine->GetSystemExecutionTimeForUpdateStage(Core::UpdateOrder::FixedUpdate))
+					for (const auto& [stage, name] : Core::G_EXECUTION_STAGE_ORDER)
 					{
-						double systemFrametime = snd * 1000.0;
-						ImGui::Text("%s: %.1f ms", fst.c_str(), systemFrametime);
+						auto stageFrametime = m_engine->GetStageExecutionTimeLastFrame(stage) * 1000.0;
+						ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
+
+						ImGui::Indent();
+						for (const auto& [name, time] : m_engine->GetCallbackExecutionTimeForUpdateStageLastFrame(stage))
+						{
+							double callbackFrametime = time * 1000.0;
+							ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
+						}
+						ImGui::Unindent();
 					}
-					ImGui::Unindent();
-
-					double updateFrametime = m_engine->GetStageExecutionTime(Core::UpdateOrder::Update) * 1000.0;
-					ImGui::Text("Update: %.1f ms", updateFrametime);
-
-					ImGui::Indent();
-					for (auto& [fst, snd] : m_engine->GetSystemExecutionTimeForUpdateStage(Core::UpdateOrder::Update))
-					{
-						double systemFrametime = snd * 1000.0;
-						ImGui::Text("%s: %.1f ms", fst.c_str(), systemFrametime);
-					}
-					ImGui::Unindent();
-
-					double renderFrametime = m_engine->GetStageExecutionTime(Core::UpdateOrder::Render) * 1000.0;
-					ImGui::Text("Render: %.1f ms", renderFrametime);
-
-					ImGui::Indent();
-					for (auto& [fst, snd] : m_engine->GetSystemExecutionTimeForUpdateStage(Core::UpdateOrder::Render))
-					{
-						double systemFrametime = snd * 1000.0;
-						ImGui::Text("%s: %.1f ms", fst.c_str(), systemFrametime);
-					}
-					ImGui::Unindent();
-
-					double idleFrametime = m_engine->GetIdleTime() * 1000.0;
-					ImGui::Text("Idle: %.1f ms", idleFrametime);
 				}
 
 				End();

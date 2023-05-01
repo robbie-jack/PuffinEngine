@@ -625,10 +625,6 @@ namespace Puffin::ECS
 			std::shared_ptr<SystemT> system = std::make_shared<SystemT>();
 			std::shared_ptr<System> systemBase = std::static_pointer_cast<System>(system);
 
-			// Set system world pointer
-			systemBase->SetWorld(world);
-			systemBase->SetEngine(engine);
-
 			// Add System to Vectors/Maps
 			m_systemsMap.insert({ typeName, systemBase });
 

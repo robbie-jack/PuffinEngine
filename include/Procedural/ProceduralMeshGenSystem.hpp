@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ECS/ECS.h"
+#include "Engine/Engine.hpp"
 
 #include "Types/Vector.h"
 #include "Types/Vertex.hpp"
@@ -14,12 +15,14 @@ namespace Puffin::Procedural
 		ProceduralMeshGenSystem();
 		~ProceduralMeshGenSystem() override = default;
 
-		void Init() override {}
-		void PreStart() override;
-		void Start() override {}
-		void Update() override;
-		void Stop() override {}
-		void Cleanup() override {}
+		void SetupCallbacks() override
+		{
+			m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "ProcMeshGenSystem: Setup");
+			m_engine->RegisterCallback(Core::ExecutionStage::Update, [&]() { Update(); }, "ProcMeshGenSystem: Update", 200);
+		}
+
+		void Setup();
+		void Update();
 
 	private:
 

@@ -13,21 +13,35 @@ namespace Puffin
 	{
 		class Engine;
 
-		// Enum for setting when a system's update function should be called
-		enum class UpdateOrder
+		// Various stages when methods can be executed during engine runtime
+		enum class ExecutionStage
 		{
-			None = 0,		// Do not perform updates for this system
+			Idle,			// Only used for calculating idle time when frame rate is limited, do not use with callback
+			Init,			// Occurs once on engine launch, use for one off system initialization
+			Setup,			// Occurs on engine launch and whenever gameplay is stopped
+			Start,			// Occurs whenever gameplay is started
 			FixedUpdate,	// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
 			Update,			// Update once a frame - Useful for non-determinstic gameplay code
+			EditorUI,		// Update once a frame - Used for updating editor UI prior to rendering
 			PreRender,		// Update once a frame - Use for code which should be ran before rendering
-			Render			// Update once a frame - Useful for code which relates to the rendering pipeline
+			Render,			// Update once a frame - Useful for code which relates to the rendering pipeline
+			Stop,			// Occurs when game play is stopped, use for resetting any gameplay data
+			Cleanup			// Occurs when engine exits, use for cleaning up all data
+		};
+
+		const std::vector<std::pair<ExecutionStage, const std::string>> G_EXECUTION_STAGE_ORDER =
+		{
+			{ ExecutionStage::Idle, "Idle" },
+			{ ExecutionStage::FixedUpdate, "FixedUpdate" },
+			{ ExecutionStage::Update, "Update" },
+			{ ExecutionStage::Render, "Render" },
 		};
 
 		// Info about the system
 		struct SystemInfo
 		{
 			std::string name;
-			UpdateOrder updateOrder = UpdateOrder::None;
+			ExecutionStage updateOrder;
 		};
 	}
 
@@ -52,12 +66,7 @@ namespace Puffin
 			}
 
 			// Virtual functions to be called by ECSWorld
-			virtual void Init() = 0;		// Called when engine starts
-			virtual void PreStart() = 0;	// Called prior to gameplay starting to do some pre-start initialization
-			virtual void Start() = 0;		// Called when gameplay starts
-			virtual void Update() = 0;		// Called each frame, depending on what update order is set
-			virtual void Stop() = 0;		// Called when gameplay ends
-			virtual void Cleanup() = 0;		// Called when engine exits
+			virtual void SetupCallbacks() = 0; // Called to setup this systems callbacks when it is registered
 			
 			// Get struct with info on system such as its update order
 			const Core::SystemInfo& GetInfo() { return m_systemInfo; } const

@@ -112,7 +112,7 @@ namespace Puffin::Rendering::VK
 		m_isInitialized = true;
 	}
 
-	void VKRenderSystem::Update()
+	void VKRenderSystem::Render()
 	{
 		ProcessEvents();
 

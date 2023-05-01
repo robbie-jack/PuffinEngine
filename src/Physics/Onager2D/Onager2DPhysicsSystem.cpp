@@ -26,7 +26,7 @@ namespace Puffin
 			m_colliders.Reserve(4000);
 
 			m_systemInfo.name = "Onager2DPhysicsSystem";
-			m_systemInfo.updateOrder = Core::UpdateOrder::FixedUpdate;
+			m_systemInfo.updateOrder = Core::ExecutionStage::FixedUpdate;
 		}
 
 		//--------------------------------------------------
@@ -48,7 +48,7 @@ namespace Puffin
 			SetBroadphase<SweepAndPruneBroadphase>();
 		}
 
-		void Onager2DPhysicsSystem::PreStart()
+		void Onager2DPhysicsSystem::Setup()
 		{
 			PackedVector<ECS::EntityPtr> boxEntites;
 			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
@@ -79,7 +79,7 @@ namespace Puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::Update()
+		void Onager2DPhysicsSystem::FixedUpdate()
 		{
 			UpdateComponents();
 			Step();

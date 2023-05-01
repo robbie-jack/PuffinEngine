@@ -164,47 +164,7 @@ namespace Puffin::Core
 
 		// Initialize Systems
 		{
-			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::FixedUpdate);
-			for (auto& it = itr.first; it != itr.second; ++it)
-			{
-				std::shared_ptr<ECS::System> system = it->second;
-
-				system->Init();
-				system->PreStart();
-			}
-		}
-
-		{
-			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Update);
-			for (auto& it = itr.first; it != itr.second; ++it)
-			{
-				std::shared_ptr<ECS::System> system = it->second;
-
-				system->Init();
-				system->PreStart();
-			}
-		}
-
-		{
-			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::PreRender);
-			for (auto& it = itr.first; it != itr.second; ++it)
-			{
-				std::shared_ptr<ECS::System> system = it->second;
-
-				system->Init();
-				system->PreStart();
-			}
-		}
-
-		{
-			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Render);
-			for (auto& it = itr.first; it != itr.second; ++it)
-			{
-				std::shared_ptr<ECS::System> system = it->second;
-
-				system->Init();
-				system->PreStart();
-			}
+			ExecuteCallbacks(ExecutionStage::Init);
 		}
 
 		m_lastTime = glfwGetTime(); // Time Count Started
@@ -217,14 +177,19 @@ namespace Puffin::Core
 		m_lastTime = m_currentTime;
 		m_currentTime = glfwGetTime();
 		m_deltaTime = m_currentTime - m_lastTime;
-		m_idleTime = 0.0;
+
+		UpdateExecutionTime();
 
 		if (m_frameRateMax > 0)
 		{
 			const double deltaTimeMax = 1.0 / m_frameRateMax;
+			double idleStartTime = 0.0, idleEndTime = 0.0;
 
-			// Sleep until next frame should start
-			auto idleStartTime = glfwGetTime();
+			if (m_shouldTrackExecutionTime)
+			{
+				// Sleep until next frame should start
+				idleStartTime = glfwGetTime();
+			}
 
 			while (m_deltaTime < deltaTimeMax)
 			{
@@ -234,8 +199,11 @@ namespace Puffin::Core
 				m_deltaTime = m_currentTime - m_lastTime;
 			}
 
-			auto idleEndTime = glfwGetTime();
-			m_idleTime = idleEndTime - idleStartTime;
+			if (m_shouldTrackExecutionTime)
+			{
+				idleEndTime = glfwGetTime();
+				m_stageExecutionTime[ExecutionStage::Idle].emplace_back(idleEndTime - idleStartTime);
+			}
 		}
 
 		// Make sure delta time never exceeds 1/30th of a second
@@ -270,10 +238,7 @@ namespace Puffin::Core
 		// Call system start functions to prepare for gameplay
 		if (m_playState == PlayState::STARTED)
 		{
-			for (auto& system : m_systems)
-			{
-				system->Start();
-			}
+			ExecuteCallbacks(ExecutionStage::Start);
 
 			// Get Snapshot of current scene data
 			m_sceneData->UpdateData();
@@ -303,55 +268,17 @@ namespace Puffin::Core
 				// Add onto accumulated time
 				m_accumulatedTime += m_deltaTime;
 
-				auto stageStartTime = glfwGetTime();
-
-				// Perform system updates until simulation is caught up
 				while (m_accumulatedTime >= m_timeStepFixed)
 				{
 					m_accumulatedTime -= m_timeStepFixed;
 
-					// FixedUpdate Systems
-					auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::FixedUpdate);
-					for (auto& it = itr.first; it != itr.second; ++it)
-					{
-						std::shared_ptr<ECS::System> system = it->second;
-
-						auto startTime = glfwGetTime();
-
-						system->Update();
-
-						auto endTime = glfwGetTime();
-
-						m_systemExecutionTime[Core::UpdateOrder::FixedUpdate][system->GetInfo().name] = endTime - startTime;
-					}
+					ExecuteCallbacks(ExecutionStage::FixedUpdate, true);
 				}
-
-				auto stageEndTime = glfwGetTime();
-
-				m_stageExecutionTime[Core::UpdateOrder::FixedUpdate] = stageEndTime - stageStartTime;
 			}
 
 			// Update
 			{
-				auto stageStartTime = glfwGetTime();
-
-				auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Update);
-				for (auto& it = itr.first; it != itr.second; ++it)
-				{
-					std::shared_ptr<ECS::System> system = it->second;
-
-					auto startTime = glfwGetTime();
-
-					system->Update();
-
-					auto endTime = glfwGetTime();
-
-					m_systemExecutionTime[Core::UpdateOrder::Update][system->GetInfo().name] = endTime - startTime;
-				}
-
-				auto stageEndTime = glfwGetTime();
-
-				m_stageExecutionTime[Core::UpdateOrder::Update] = stageEndTime - stageStartTime;
+				ExecuteCallbacks(ExecutionStage::Update, true);
 			}
 		}
 
@@ -362,69 +289,23 @@ namespace Puffin::Core
 			m_uiManager->DrawUI(m_deltaTime);
 		}
 
-		// PreRender
-		{
-			auto stageStartTime = glfwGetTime();
-
-			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::PreRender);
-			for (auto& it = itr.first; it != itr.second; ++it)
-			{
-				std::shared_ptr<ECS::System> system = it->second;
-
-				auto startTime = glfwGetTime();
-
-				system->Update();
-
-				auto endTime = glfwGetTime();
-
-				m_systemExecutionTime[Core::UpdateOrder::PreRender][system->GetInfo().name] = endTime - startTime;
-			}
-
-			auto stageEndTime = glfwGetTime();
-
-			m_stageExecutionTime[Core::UpdateOrder::Render] = stageEndTime - stageStartTime;
-		}
-
 		// Render
 		{
-			auto stageStartTime = glfwGetTime();
-
-			auto itr = m_systemUpdateVectors.equal_range(Core::UpdateOrder::Render);
-			for (auto& it = itr.first; it != itr.second; ++it)
-			{
-				std::shared_ptr<ECS::System> system = it->second;
-
-				auto startTime = glfwGetTime();
-
-				system->Update();
-
-				auto endTime = glfwGetTime();
-
-				m_systemExecutionTime[Core::UpdateOrder::Render][system->GetInfo().name] = endTime - startTime;
-			}
-
-			auto stageEndTime = glfwGetTime();
-
-			m_stageExecutionTime[Core::UpdateOrder::Render] = stageEndTime - stageStartTime;
+			ExecuteCallbacks(ExecutionStage::Render, true);
 		}
 
 		if (m_playState == PlayState::JUST_STOPPED)
 		{
 			// Cleanup Systems and ECS
-			for (auto system : m_systems)
-			{
-				system->Stop();
-			}
+			ExecuteCallbacks(ExecutionStage::Stop);
+
 			ecsWorld->Reset();
 
 			// Re-Initialize Systems and ECS
 			m_sceneData->Init();
 
 			// Perform Pre-Gameplay Initialization on Systems
-			for (auto system : m_systems)
-			{
-				system->PreStart();
-			}
+			ExecuteCallbacks(ExecutionStage::Setup);
 
 			audioSubsystem->StopAllSounds();
 
@@ -444,10 +325,7 @@ namespace Puffin::Core
 	void Engine::Destroy()
 	{
 		// Cleanup All Systems
-		for (auto system : m_systems)
-		{
-			system->Cleanup();
-		}
+		ExecuteCallbacks(ExecutionStage::Cleanup);
 
 		m_systems.clear();
 

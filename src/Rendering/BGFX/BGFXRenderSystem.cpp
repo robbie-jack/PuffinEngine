@@ -52,14 +52,14 @@ namespace Puffin::Rendering::BGFX
         m_world->AddComponentDependencies<CameraComponent, CameraMatComponent>();
 	}
 
-	void BGFXRenderSystem::PreStart()
+	void BGFXRenderSystem::Setup()
 	{
 		InitEditorCamera();
 
         InitComponents();
 	}
 
-	void BGFXRenderSystem::Update()
+	void BGFXRenderSystem::Render()
 	{
 		ProcessEvents();
 

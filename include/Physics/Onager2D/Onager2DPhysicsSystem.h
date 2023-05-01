@@ -2,6 +2,7 @@
 
 #include "ECS/Entity.hpp"
 #include <ECS/ECS.h>
+#include "Engine/Engine.hpp"
 #include <Types/Vector.h>
 
 #include <Physics/Onager2D/Shapes/BoxShape2D.h>
@@ -36,12 +37,18 @@ namespace Puffin::Physics
 		Onager2DPhysicsSystem();
 		~Onager2DPhysicsSystem() override {}
 
-		void Init() override;
-		void PreStart() override;
-		void Start() override {}
-		void Update() override;
-		void Stop() override;
-		void Cleanup() override {}
+		void SetupCallbacks() override
+		{
+			m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "Onager2DPhysicsSystem: Init");
+			m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "Onager2DPhysicsSystem: Setup");
+			m_engine->RegisterCallback(Core::ExecutionStage::FixedUpdate, [&]() { FixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
+			m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "Onager2DPhysicsSystem: Stop");
+		}
+
+		void Init();
+		void Setup();
+		void FixedUpdate();
+		void Stop();
 
 		template<typename T>
 		void RegisterBroadphase()

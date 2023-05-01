@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ECS/ECS.h"
+#include "Engine/Engine.hpp"
 
 namespace Puffin::Scripting
 {
@@ -11,17 +12,21 @@ namespace Puffin::Scripting
 		NativeScriptSystem()
 		{
 			m_systemInfo.name = "NativeScriptSystem";
-			m_systemInfo.updateOrder = Core::UpdateOrder::Update;
+			m_systemInfo.updateOrder = Core::ExecutionStage::Update;
 		}
 
 		~NativeScriptSystem() override = default;
 
-		void Init() override {}
-		void PreStart() override {}
-		void Start() override;
-		void Update() override;
-		void Stop() override;
-		void Cleanup() override {}
+		void SetupCallbacks() override
+		{
+			m_engine->RegisterCallback(Core::ExecutionStage::Start, [&]() { Start(); }, "NativeScriptSystem: Start");
+			m_engine->RegisterCallback(Core::ExecutionStage::Update, [&]() { Update(); }, "NativeScriptSystem: Update");
+			m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "NativeScriptSystem: Stop");
+		}
+
+		void Start();
+		void Update();
+		void Stop();
 
 	};
 }

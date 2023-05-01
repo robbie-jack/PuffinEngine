@@ -21,7 +21,7 @@ namespace Puffin::Physics
 		eventSubsystem->RegisterEvent<CollisionEndEvent>();
 	}
 
-	void Box2DPhysicsSystem::PreStart()
+	void Box2DPhysicsSystem::Setup()
 	{
 		// Create Physics World
 		m_physicsWorld = std::make_unique<b2World>(m_gravity);
@@ -34,7 +34,7 @@ namespace Puffin::Physics
 		UpdateComponents();
 	}
 
-	void Box2DPhysicsSystem::Update()
+	void Box2DPhysicsSystem::FixedUpdate()
 	{
 		// Initialize/Cleanup Components
 		UpdateComponents();

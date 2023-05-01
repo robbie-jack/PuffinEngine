@@ -20,6 +20,7 @@
 #include "Assets/TextureAsset.h"
 #include "ECS/Entity.hpp"
 #include "Components/Rendering/CameraComponent.h"
+#include "Engine/Engine.hpp"
 #include "Input/InputEvent.h"
 
 #ifdef NDEBUG
@@ -100,15 +101,19 @@ namespace Puffin::Rendering::VK
 		VKRenderSystem()
 		{
 			m_systemInfo.name = "VKRenderSystem";
-			m_systemInfo.updateOrder = Core::UpdateOrder::Render;
+			m_systemInfo.updateOrder = Core::ExecutionStage::Render;
 		}
 
-		void Init() override;
-		void PreStart() override {}
-		void Start() override {}
-		void Update() override;
-		void Stop() override {}
-		void Cleanup() override;
+		void SetupCallbacks() override
+		{
+			m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "VKRenderSystem: Init");
+			m_engine->RegisterCallback(Core::ExecutionStage::Render, [&]() { Render(); }, "VKRenderSystem: Render");
+			m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "VKRenderSystem: Cleanup");
+		}
+
+		void Init();
+		void Render();
+		void Cleanup();
 
 		const vma::Allocator& GetAllocator() const { return m_allocator ;}
 		const vk::Device& GetDevice() const { return m_device; }

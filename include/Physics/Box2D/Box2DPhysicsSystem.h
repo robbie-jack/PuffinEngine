@@ -5,6 +5,7 @@
 #include "ECS/ECS.h"
 #include "Types/PackedArray.h"
 #include "Box2DContactListener.h"
+#include "Engine/Engine.hpp"
 
 namespace Puffin::Physics
 {
@@ -15,17 +16,23 @@ namespace Puffin::Physics
 		Box2DPhysicsSystem()
 		{
 			m_systemInfo.name = "Box2DPhysicsSystem";
-			m_systemInfo.updateOrder = Core::UpdateOrder::FixedUpdate;
+			m_systemInfo.updateOrder = Core::ExecutionStage::FixedUpdate;
 		}
 
 		~Box2DPhysicsSystem() override = default;
 
-		void Init() override;
-		void PreStart() override;
-		void Start() override {}
-		void Update() override;
-		void Stop() override;
-		void Cleanup() override {}
+		void SetupCallbacks() override
+		{
+			m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "Box2DPhysicsSystem: Init");
+			m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "Box2DPhysicsSystem: Setup");
+			m_engine->RegisterCallback(Core::ExecutionStage::FixedUpdate, [&]() { FixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
+			m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "Box2DPhysicsSystem: Stop");
+		}
+
+		void Init();
+		void Setup();
+		void FixedUpdate();
+		void Stop();
 
 	private:
 

@@ -14,10 +14,10 @@ namespace Puffin::Procedural
 	ProceduralMeshGenSystem::ProceduralMeshGenSystem()
 	{
 		m_systemInfo.name = "ProceduralMeshGenSystem";
-		m_systemInfo.updateOrder = Core::UpdateOrder::PreRender;
+		m_systemInfo.updateOrder = Core::ExecutionStage::PreRender;
 	}
 
-	void ProceduralMeshGenSystem::PreStart()
+	void ProceduralMeshGenSystem::Setup()
 	{
 		PackedVector<ECS::EntityPtr> proceduralPlaneEntities;
 		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);

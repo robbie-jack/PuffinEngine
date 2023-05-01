@@ -113,17 +113,25 @@ namespace Puffin::Rendering::BGFX
 		BGFXRenderSystem()
 		{
 			m_systemInfo.name = "BGFXRenderSystem";
-			m_systemInfo.updateOrder = Core::UpdateOrder::Render;
+			m_systemInfo.updateOrder = Core::ExecutionStage::Render;
 		}
 
 		~BGFXRenderSystem() override {}
 
-		void Init() override;
-		void PreStart() override;
-		void Start() override {}
-		void Update() override;
-		void Stop() override;
-		void Cleanup() override;
+		void SetupCallbacks() override
+		{
+			m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "BGFXRenderSystem: Init");
+			m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "BGFXRenderSystem: Setup");
+			m_engine->RegisterCallback(Core::ExecutionStage::Render, [&]() { Render(); }, "BGFXRenderSystem: Render");
+			m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "BGFXRenderSystem: Stop");
+			m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "BGFXRenderSystem: Cleanup");
+		}
+
+		void Init();
+		void Setup();
+		void Render();
+		void Stop();
+		void Cleanup();
 
 		void OnInputEvent(const Input::InputEvent& inputEvent);
 
