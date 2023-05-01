@@ -274,7 +274,6 @@ namespace Puffin::Core
 		if (m_shouldRenderEditorUI)
 		{
 			m_uiManager->Update();
-			m_uiManager->DrawUI(m_deltaTime);
 		}
 
 		// Render

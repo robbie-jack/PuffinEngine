@@ -127,8 +127,8 @@ namespace Puffin::Core
 			assert(m_subsystems.find(typeName) == m_subsystems.end() && "Registering subsystem more than once");
 
 			// Create subsystem pointer
-			std::shared_ptr<SubsystemT> subsystem = std::make_shared<SubsystemT>();
-			std::shared_ptr<Subsystem> subsystemBase = std::static_pointer_cast<Subsystem>(subsystem);
+			auto subsystem = std::make_shared<SubsystemT>();
+			auto subsystemBase = std::static_pointer_cast<Subsystem>(subsystem);
 			subsystemBase->SetEngine(shared_from_this());
 
 			subsystemBase->SetupCallbacks();

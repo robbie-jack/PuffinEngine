@@ -5,6 +5,7 @@
 #include "TaskScheduler.h"
 
 #include <memory>
+#include <thread>
 
 namespace Puffin::Core
 {
@@ -20,7 +21,10 @@ namespace Puffin::Core
 		{
 			m_taskScheduler = std::make_shared<enki::TaskScheduler>();
 
-			m_taskScheduler->Initialize();
+			// Set max threads to physical - 2 (so there is some left over for other system work)
+			const uint32_t maxThreads = std::thread::hardware_concurrency() - 2;
+
+			m_taskScheduler->Initialize(maxThreads);
 		}
 
 		std::shared_ptr<enki::TaskScheduler> GetTaskScheduler() { return m_taskScheduler; }

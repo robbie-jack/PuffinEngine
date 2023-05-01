@@ -49,7 +49,6 @@ namespace Puffin
 
 			void Cleanup();
 
-			void DrawUI(double dt);
 			void Update();
 			void AddWindow(std::shared_ptr<UIWindow> window);
 
@@ -73,6 +72,8 @@ namespace Puffin
 			std::shared_ptr<UIContentBrowser> contentBrowser;
 
 			ImGui::FileBrowser fileDialog;
+
+			void DrawUI(double dt);
 
 			void ShowDockspace(bool* p_open);
 			void ShowMenuBar();

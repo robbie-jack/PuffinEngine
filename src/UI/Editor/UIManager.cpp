@@ -151,6 +151,8 @@ namespace Puffin::UI
 		{
 			m_engine->GetScene()->UpdateData();
 		}
+
+		DrawUI(m_engine->GetDeltaTime());
 	}
 
 	void UIManager::ShowDockspace(bool* p_open)
