@@ -34,3 +34,5 @@ LZ4 - LZ4 Compression - https://github.com/lz4/lz4
 Open Simplex Noise - C++ Noise Gen Library - https://github.com/deerel/OpenSimplexNoise
 
 Box2D - 2D Physics - https://box2d.org/
+
+enkiTS - Multithreaded Task Scheduler - https://github.com/dougbinks/enkiTS
