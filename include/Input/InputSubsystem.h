@@ -50,7 +50,7 @@ namespace Puffin
 
 			void AddAction(std::string name, int key);
 			void AddAction(std::string name, std::vector<int> keys);
-			InputAction& GetAction(std::string name) const;
+			InputAction GetAction(std::string name) const;
 
 			inline double GetMouseXOffset() { return (x_pos - last_x_pos) * sensitivity; }
 			inline double GetMouseYOffset() { return (y_pos - last_y_pos) * sensitivity; }

@@ -174,7 +174,7 @@ namespace Puffin
 			nextID++;
 		}
 
-		InputAction& Puffin::Input::InputSubsystem::GetAction(std::string name) const
+		InputAction Puffin::Input::InputSubsystem::GetAction(std::string name) const
 		{
 			for (auto action : m_actions)
 			{
