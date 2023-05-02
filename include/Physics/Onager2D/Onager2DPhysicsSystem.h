@@ -14,6 +14,9 @@
 
 #include <Components/Physics/RigidbodyComponent2D.h>
 #include <Components/Physics/ShapeComponents2D.h>
+#include "Components/Physics/VelocityComponent.hpp"
+
+#include "ECS/EnTTSubsystem.hpp"
 
 #include "Types/PackedArray.h"
 
@@ -21,6 +24,12 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+
+
+namespace Puffin
+{
+	struct SceneObjectComponent;
+}
 
 namespace Puffin::Physics
 {
@@ -43,6 +52,11 @@ namespace Puffin::Physics
 			m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "Onager2DPhysicsSystem: Setup");
 			m_engine->RegisterCallback(Core::ExecutionStage::FixedUpdate, [&]() { FixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
 			m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "Onager2DPhysicsSystem: Stop");
+
+			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+
+			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent>>();
+			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent>>();
 		}
 
 		void Init();
@@ -68,11 +82,13 @@ namespace Puffin::Physics
 		void SetBroadphase()
 		{
 			const char* typeName = typeid(T).name();
-
+//
 			assert(m_broadphases.count(typeName) == 1 && "Attempting to set un-registered broadphase");
 
 			m_activeBroadphase = m_broadphases[typeName];
 		}
+
+
 
 	private:
 
@@ -92,7 +108,7 @@ namespace Puffin::Physics
 		std::unordered_map<const char*, std::shared_ptr<Broadphase>> m_broadphases; // Map of registered broadphases
 
 		void InitCircle2D(std::shared_ptr<ECS::Entity> entity);
-		void InitBox2D(std::shared_ptr<ECS::Entity> entity);
+		void InitBox2D(const SceneObjectComponent& object, const BoxComponent2D& box);
 
 		void CleanupCircle2D(std::shared_ptr<ECS::Entity> entity);
 		void CleanupBox2D(std::shared_ptr<ECS::Entity> entity);

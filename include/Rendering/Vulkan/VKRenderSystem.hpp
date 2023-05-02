@@ -29,6 +29,11 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
+namespace Puffin
+{
+	struct TransformComponent;
+}
+
 namespace Puffin::Rendering::VK
 {
 	// Struct containing render data that is static between frames
@@ -172,7 +177,6 @@ namespace Puffin::Rendering::VK
 		DeletionQueue m_deletionQueue;
 
 		EditorCamera m_editorCam;
-		CameraMatComponent m_editorCamMats;
 		bool m_moveLeft = false;
 		bool m_moveRight = false;
 		bool m_moveForward = false;
@@ -210,7 +214,7 @@ namespace Puffin::Rendering::VK
 		void ProcessEvents();
 
 		void ProcessComponents();
-		void UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity);
+		void UpdateCameraComponent(const TransformComponent& transform, CameraComponent& camera);
 
 		void UpdateEditorCamera();
 

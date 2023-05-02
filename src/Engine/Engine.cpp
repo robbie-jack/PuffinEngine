@@ -2,7 +2,6 @@
 
 #include "ECS/ECS.h"
 #include "ECS/Entity.hpp"
-#include "ECS/ECSHelpers.hpp"
 
 #include "Rendering/BGFX/BGFXRenderSystem.hpp"
 #include "Rendering/Vulkan/VKRenderSystem.hpp"
@@ -78,44 +77,25 @@ namespace Puffin::Core
 		m_sceneData = std::make_shared<IO::SceneData>(ecsWorld, defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
-		//RegisterComponent<ECS::SceneObjectComponent>();
-		RegisterComponent<TransformComponent>();
+		m_sceneData->RegisterComponent<SceneObjectComponent>();
+		m_sceneData->RegisterComponent<TransformComponent>();
 
-		RegisterComponent<Rendering::MeshComponent>();
-		RegisterComponent<Rendering::LightComponent>();
-		RegisterComponent<Rendering::ShadowCasterComponent>();
-		RegisterComponent<Rendering::CameraComponent>();
+		m_sceneData->RegisterComponent<Rendering::MeshComponent>();
+		m_sceneData->RegisterComponent<Rendering::LightComponent>();
+		m_sceneData->RegisterComponent<Rendering::ShadowCasterComponent>();
+		m_sceneData->RegisterComponent<Rendering::CameraComponent>();
 
-		RegisterComponent<Physics::VelocityComponent>(false);
+		m_sceneData->RegisterComponent<Physics::RigidbodyComponent2D>();
+		m_sceneData->RegisterComponent<Physics::BoxComponent2D>();
+		m_sceneData->RegisterComponent<Physics::CircleComponent2D>();
 
-		RegisterComponent<Physics::RigidbodyComponent2D>();
-		RegisterComponent<Physics::BoxComponent2D>();
-		RegisterComponent<Physics::CircleComponent2D>();
+		m_sceneData->RegisterComponent<Scripting::AngelScriptComponent>();
+		m_sceneData->RegisterComponent<Scripting::NativeScriptComponent>();
 
-		RegisterComponent<Scripting::AngelScriptComponent>();
-		RegisterComponent<Scripting::NativeScriptComponent>();
-
-		RegisterComponent<Rendering::ProceduralMeshComponent>();
-		RegisterComponent<Procedural::PlaneComponent>();
-		RegisterComponent<Procedural::TerrainComponent>();
-		RegisterComponent<Procedural::IcoSphereComponent>();
-
-		ecsWorld->AddComponentDependencies<Rendering::MeshComponent, TransformComponent>();
-		ecsWorld->AddComponentDependencies<Rendering::LightComponent, TransformComponent>();
-		ecsWorld->AddComponentDependencies<Rendering::ShadowCasterComponent, Rendering::LightComponent>();
-
-		ecsWorld->AddComponentDependencies<Physics::RigidbodyComponent2D, TransformComponent>();
-		ecsWorld->AddComponentDependencies<Physics::RigidbodyComponent2D, Physics::VelocityComponent>();
-
-		ecsWorld->AddComponentDependencies<Procedural::PlaneComponent, Rendering::ProceduralMeshComponent>();
-		ecsWorld->AddComponentDependencies<Procedural::TerrainComponent, Rendering::ProceduralMeshComponent>();
-		ecsWorld->AddComponentDependencies<Procedural::IcoSphereComponent, Rendering::ProceduralMeshComponent>();
-
-		// Register Entity Flags
-
-		// Register Component Flags
-		ecsWorld->RegisterComponentFlag<FlagDirty>(true);
-		ecsWorld->RegisterComponentFlag<FlagDeleted>();
+		m_sceneData->RegisterComponent<Rendering::ProceduralMeshComponent>();
+		m_sceneData->RegisterComponent<Procedural::PlaneComponent>();
+		m_sceneData->RegisterComponent<Procedural::TerrainComponent>();
+		m_sceneData->RegisterComponent<Procedural::IcoSphereComponent>();
 
 		// Systems
 		//RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();

@@ -29,6 +29,10 @@ namespace Puffin
 			Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
 			Vector3f right = Vector3f(1.0f, 0.0f, 0.0f);
 
+			glm::mat4 view;
+			glm::mat4 proj;
+			glm::mat4 viewProj;
+
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, zNear, zFar, aspect, fovY, up)
 		};
 
@@ -46,16 +50,6 @@ namespace Puffin
 			float pitch = 0.0f;
 			float speed = 5.0f;
 		};
-
-		namespace VK
-		{
-			struct CameraMatComponent
-			{
-				glm::mat4 view;
-				glm::mat4 proj;
-				glm::mat4 viewProj;
-			};
-		}
 
 		namespace BGFX
 		{

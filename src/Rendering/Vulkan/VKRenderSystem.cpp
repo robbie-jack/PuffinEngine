@@ -52,10 +52,6 @@ namespace Puffin::Rendering::VK
 {
 	void VKRenderSystem::Init()
 	{
-		// Register Components
-		m_world->RegisterComponent<CameraMatComponent>();
-		m_world->AddComponentDependencies<CameraComponent, CameraMatComponent>();
-
 		InitVulkan();
 
 		InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
@@ -767,7 +763,7 @@ namespace Puffin::Rendering::VK
 	{
 		auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
 
-		auto meshView = registry->view<const ECS::SceneObjectComponent, const TransformComponent, const MeshComponent>();
+		auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
 
 		for (auto [entity, object, transform, mesh] : meshView.each())
 		{
@@ -775,19 +771,19 @@ namespace Puffin::Rendering::VK
 			m_texDrawList[mesh.textureAssetID].insert(object.uuid);
 		}
 
-		PackedVector<ECS::EntityPtr> camEntities;
-		ECS::GetEntities<TransformComponent, CameraComponent, CameraMatComponent>(m_world, camEntities);
-		for (const auto& entity : camEntities)
+		auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent, CameraComponent>();
+
+		for (auto [entity, object, transform, camera] : cameraView.each())
 		{
-			UpdateCameraComponent(entity);
+			UpdateCameraComponent(transform, camera);
 		}
 
-		PackedVector<ECS::EntityPtr> lightEntities;
-		ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
-		for (const auto& entity : lightEntities)
+		/*auto lightView = registry->view<const ECS::SceneObjectComponent, const TransformComponent, LightComponent>();
+		
+		for (auto [entity, object, transform, light] : lightView.each())
 		{
 			
-		}
+		}*/
 	}
 
 	void VKRenderSystem::UpdateEditorCamera()
@@ -851,13 +847,13 @@ namespace Puffin::Rendering::VK
 
 		m_editorCam.aspect = static_cast<float>(m_windowSize.width) / static_cast<float>(m_windowSize.height);
 
-		m_editorCamMats.view = glm::lookAt(static_cast<glm::vec3>(m_editorCam.position),
+		m_editorCam.view = glm::lookAt(static_cast<glm::vec3>(m_editorCam.position),
 			static_cast<glm::vec3>(m_editorCam.lookat), static_cast<glm::vec3>(m_editorCam.up));
 
-		m_editorCamMats.proj = glm::perspective(Maths::DegreesToRadians(m_editorCam.fovY), m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar);
-		m_editorCamMats.proj[1][1] *= -1;
+		m_editorCam.proj = glm::perspective(Maths::DegreesToRadians(m_editorCam.fovY), m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar);
+		m_editorCam.proj[1][1] *= -1;
 
-		m_editorCamMats.viewProj = m_editorCamMats.proj * m_editorCamMats.view;
+		m_editorCam.viewProj = m_editorCam.proj * m_editorCam.view;
 	}
 
 	void VKRenderSystem::UpdateRenderData()
@@ -973,25 +969,21 @@ namespace Puffin::Rendering::VK
 		m_frameNumber++;
 	}
 
-	void VKRenderSystem::UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity)
+	void VKRenderSystem::UpdateCameraComponent(const TransformComponent& transform, CameraComponent& camera)
 	{
-		auto& transform = entity->GetComponent<TransformComponent>();
-		auto& cam = entity->GetComponent<CameraComponent>();
-		auto& camMats = entity->GetComponent<CameraMatComponent>();
-
 		// Calculate Right, Up and LookAt vectors
-		cam.right = cam.up.Cross(transform.rotation.GetXYZ()).Normalised();
-		cam.lookat = transform.position + transform.rotation.GetXYZ();
+		camera.right = camera.up.Cross(transform.rotation.GetXYZ()).Normalised();
+		camera.lookat = transform.position + transform.rotation.GetXYZ();
 
-		cam.aspect = (float)m_windowSize.width / (float)m_windowSize.height;
+		camera.aspect = (float)m_windowSize.width / (float)m_windowSize.height;
 
-		camMats.view = glm::lookAt(static_cast<glm::vec3>(transform.position), 
-			static_cast<glm::vec3>(cam.lookat), static_cast<glm::vec3>(cam.up));
+		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
+			static_cast<glm::vec3>(camera.lookat), static_cast<glm::vec3>(camera.up));
 
-		camMats.proj = glm::perspective(Maths::DegreesToRadians(cam.fovY), cam.aspect, cam.zNear, cam.zFar);
-		camMats.proj[1][1] *= -1;
+		camera.proj = glm::perspective(Maths::DegreesToRadians(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
+		camera.proj[1][1] *= -1;
 
-		camMats.viewProj = camMats.proj * camMats.view;
+		camera.viewProj = camera.proj * camera.view;
 	}
 
 	void VKRenderSystem::RecreateSwapchain()
@@ -1155,9 +1147,9 @@ namespace Puffin::Rendering::VK
 		const AllocatedBuffer& cameraBuffer = GetCurrentFrameData().cameraBuffer;
 
 		GPUCameraData camUBO = {};
-		camUBO.proj = m_editorCamMats.proj;
-		camUBO.view = m_editorCamMats.view;
-		camUBO.viewProj = m_editorCamMats.viewProj;
+		camUBO.proj = m_editorCam.proj;
+		camUBO.view = m_editorCam.view;
+		camUBO.viewProj = m_editorCam.viewProj;
 
 		memcpy(cameraBuffer.allocInfo.pMappedData, &camUBO, sizeof(GPUCameraData));
 
@@ -1218,9 +1210,6 @@ namespace Puffin::Rendering::VK
 			{
 				auto entity = enttSubsystem->GetEntity(entities[objectIdx]);
 
-				//const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
-				//const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
-
 				const auto& transform = registry->get<TransformComponent>(entity);
 				const auto& mesh = registry->get<MeshComponent>(entity);
 
@@ -1230,10 +1219,8 @@ namespace Puffin::Rendering::VK
 				Vector3f position = { 0.0f };
 #endif
 
-				//if (m_world->HasComponent<Physics::VelocityComponent>(entityID))
 				if (registry->all_of<Physics::VelocityComponent>(entity))
 				{
-					//Physics::VelocityComponent velocity = m_world->GetComponent<Physics::VelocityComponent>(entityID);
 					const auto& velocity = registry->get<Physics::VelocityComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
@@ -1285,18 +1272,17 @@ namespace Puffin::Rendering::VK
 
 		int i = 0;
 
-		PackedVector<ECS::EntityPtr> lightEntities;
-		ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
-		for (const auto& entity : lightEntities)
+		auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+
+		auto lightView = registry->view<const SceneObjectComponent, const TransformComponent, const LightComponent>();
+
+		for (auto [entity, object, transform, light] : lightView.each()) 
 		{
 			// Break out of loop of maximum number of lights has been reached
 			if (i >= G_MAX_LIGHTS)
 			{
 				break;
 			}
-
-			const auto& transform = entity->GetComponent<TransformComponent>();
-			const auto& light = entity->GetComponent<LightComponent>();
 
 			lightSSBO[i].position = static_cast<glm::vec3>(transform.position);
 			lightSSBO[i].direction = static_cast<glm::vec3>(transform.rotation.GetXYZ());

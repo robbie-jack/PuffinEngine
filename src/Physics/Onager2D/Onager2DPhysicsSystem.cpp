@@ -1,6 +1,8 @@
 
 #include "Physics/Onager2D/Onager2DPhysicsSystem.h"
 
+#include <ECS/EnTTSubsystem.hpp>
+
 #include "Physics/CollisionEvent.h"
 #include "Components/TransformComponent.h"
 #include "Components/Physics/VelocityComponent.hpp"
@@ -49,18 +51,13 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::Setup()
 		{
-			PackedVector<ECS::EntityPtr> boxEntites;
-			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
-			for (const auto& entity : boxEntites)
+			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+
+			auto boxView = registry->view<const SceneObjectComponent, const TransformComponent, BoxComponent2D>();
+
+			for (auto [entity, object, transform, box] : boxView.each())
 			{
-				auto& box = entity->GetComponent<BoxComponent2D>();
-
-				if (entity->GetComponentFlag<BoxComponent2D, FlagDirty>())
-				{
-					InitBox2D(entity);
-
-					entity->SetComponentFlag<BoxComponent2D, FlagDirty>(false);
-				}
+				InitBox2D(object, box);
 			}
 
 			PackedVector<ECS::EntityPtr> circleEntities;
@@ -132,23 +129,21 @@ namespace Puffin
 			InsertCollider(entity->ID(), collider);
 		}
 
-		void Onager2DPhysicsSystem::InitBox2D(std::shared_ptr<ECS::Entity> entity)
+		void Onager2DPhysicsSystem::InitBox2D(const SceneObjectComponent& object, const BoxComponent2D& box)
 		{
-			auto& box = entity->GetComponent<BoxComponent2D>();
-
 			// If there is no shape for this entity in vector
-			if (!m_boxShapes.Contains(entity->ID()))
+			if (!m_boxShapes.Contains(object.uuid))
 			{
-				m_boxShapes.Emplace(entity->ID(), BoxShape2D());
+				m_boxShapes.Emplace(object.uuid, BoxShape2D());
 			}
 
-			m_boxShapes[entity->ID()].centreOfMass = box.centreOfMass;
-			m_boxShapes[entity->ID()].halfExtent = box.halfExtent;
-			m_boxShapes[entity->ID()].UpdatePoints();
+			m_boxShapes[object.uuid].centreOfMass = box.centreOfMass;
+			m_boxShapes[object.uuid].halfExtent = box.halfExtent;
+			m_boxShapes[object.uuid].UpdatePoints();
 
-			auto collider = std::make_shared<Collision2D::BoxCollider2D>(entity->ID(), &m_boxShapes[entity->ID()]);
+			auto collider = std::make_shared<Collision2D::BoxCollider2D>(object.uuid, &m_boxShapes[object.uuid]);
 
-			InsertCollider(entity->ID(), collider);
+			InsertCollider(object.uuid, collider);
 		}
 
 		void Onager2DPhysicsSystem::CleanupCircle2D(std::shared_ptr<ECS::Entity> entity)
@@ -189,7 +184,7 @@ namespace Puffin
 				// Initialize Boxes
 				if (entity->GetComponentFlag<BoxComponent2D, FlagDirty>())
 				{
-					InitBox2D(entity);
+					//InitBox2D(entity);
 
 					entity->SetComponentFlag<BoxComponent2D, FlagDirty>(false);
 				}

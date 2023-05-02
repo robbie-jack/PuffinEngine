@@ -5,11 +5,12 @@
 
 #include <string>
 
-namespace Puffin::ECS
+namespace Puffin
 {
 	// Stores data about scene objects such as uuid, name, etc...
 	struct SceneObjectComponent
 	{
+		SceneObjectComponent() = default;
 		SceneObjectComponent(std::string inName) : name(inName) {}
 
 		UUID uuid; // uint64_t which is used to uniquely identify entities
