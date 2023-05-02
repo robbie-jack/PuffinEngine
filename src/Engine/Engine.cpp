@@ -2,6 +2,7 @@
 
 #include "ECS/ECS.h"
 #include "ECS/Entity.hpp"
+#include "ECS/ECSHelpers.hpp"
 
 #include "Rendering/BGFX/BGFXRenderSystem.hpp"
 #include "Rendering/Vulkan/VKRenderSystem.hpp"
@@ -23,6 +24,7 @@
 #include "Engine/SignalSubsystem.hpp"
 #include "Engine/EventSubsystem.hpp"
 #include "Engine/EnkiTSSubsystem.hpp"
+#include "ECS/EnTTSubsystem.hpp"
 
 #include "SerializeScene.h"
 #include "UI/Editor/UIManager.h"
@@ -34,7 +36,6 @@
 #include "Assets/TextureAsset.h"
 #include "Assets/SoundAsset.h"
 
-#include "Assets/AssetImporters.hpp"
 #include "Components/Physics/VelocityComponent.hpp"
 
 #include "Engine/JobSystem.hpp"
@@ -61,6 +62,7 @@ namespace Puffin::Core
 		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
 		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
 		auto ecsWorld = RegisterSubsystem<ECS::World>();
+		auto enttSubsystem = RegisterSubsystem<ECS::EnTTSubsystem>();
 
 		m_uiManager = std::make_shared<UI::UIManager>(shared_from_this());
 
@@ -76,6 +78,7 @@ namespace Puffin::Core
 		m_sceneData = std::make_shared<IO::SceneData>(ecsWorld, defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
+		//RegisterComponent<ECS::SceneObjectComponent>();
 		RegisterComponent<TransformComponent>();
 
 		RegisterComponent<Rendering::MeshComponent>();
@@ -497,8 +500,6 @@ namespace Puffin::Core
 
 	void Engine::PhysicsScene()
 	{
-		auto ecsWorld = GetSubsystem<ECS::World>();
-
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
 
@@ -522,103 +523,68 @@ namespace Puffin::Core
 
 		UUID soundId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath1)->ID();
 
+		auto enttSubsystem = GetSubsystem<ECS::EnTTSubsystem>();
+		auto registry = enttSubsystem->Registry();
+
 		// Create Light Entity
-		const auto lightEntity = ECS::CreateEntity(ecsWorld);
-
-		lightEntity->SetName("Light");
-
-		lightEntity->AddComponent<TransformComponent>();
-		lightEntity->GetComponent<TransformComponent>() =
 		{
-			Vector3f(-5.0f, 0.0f, 0.0f),
-			Maths::Quat(.5f, -0.5f, 0.0f),
-			Vector3f(1.0f)
-		};
+			const auto lightEntity = enttSubsystem->CreateEntity("Light");
 
-		auto& lightComp = lightEntity->AddAndGetComponent<Rendering::LightComponent>();
-		lightComp.type = Rendering::LightType::DIRECTIONAL;
-		lightComp.color = glm::vec3(1.0f, 1.0f, 1.0f);
+			auto& transform = registry->emplace<TransformComponent>(lightEntity);
+			transform.position = Vector3f(-5.0f, 0.0f, 0.0f);
+			transform.rotation = Maths::Quat(.5f, -0.5f, 0.0f);
 
-		// Create Floor Entity
-		const auto floorEntity = ECS::CreateEntity(ecsWorld);
-
-		floorEntity->SetName("Floor");
-
-		floorEntity->AddComponent<TransformComponent>();
-		floorEntity->AddComponent<Rendering::MeshComponent>();
-		floorEntity->AddComponent<Physics::RigidbodyComponent2D>();
-		floorEntity->AddComponent<Physics::BoxComponent2D>();
-
-		floorEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f), Maths::Quat(), Vector3f(250.0f, 1.0f, 1.0f) };
-		floorEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
-		floorEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-		floorEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(250.0f, 1.0f);
-
-		const float xOffset = 1000.0f;
-		const Vector3f startPosition(-xOffset, 10.f, 0.f);
-		const Vector3f endPosition(xOffset, 10.f, 0.f);
-		const int numBodies = 500;
-		Vector3f positionOffset = endPosition - startPosition;
-		positionOffset.x /= numBodies;
-		for (int i = 0; i < numBodies; i++)
-		{
-			const auto entity = ECS::CreateEntity(ecsWorld);
-
-			entity->SetName("Box " + std::to_string(i + 1));
-			
-			entity->AddComponent<TransformComponent>();
-			entity->AddComponent<Rendering::MeshComponent>();
-			entity->AddComponent<Physics::RigidbodyComponent2D>();
-			entity->AddComponent<Physics::BoxComponent2D>();
-
-			Vector3f position = startPosition + (positionOffset * (float)i);
-			entity->GetComponent<TransformComponent>() = { position, Maths::Quat(), Vector3f(1.0f) };
-			entity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
-			entity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-			entity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
-			entity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 1.0f;
-			entity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
-			entity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
+			auto& light = registry->emplace<Rendering::LightComponent>(lightEntity);
+			light.type = Rendering::LightType::DIRECTIONAL;
+			light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 		}
 
-		//// Create Box Entity
-		//const auto boxEntity = ECS::CreateEntity(ecsWorld);
+		// Create Floor Entity
+		{
+			const auto floorEntity = enttSubsystem->CreateEntity("Floor");
 
-		//boxEntity->SetName("Box");
+			auto& transform = registry->emplace<TransformComponent>(floorEntity);
+			transform.scale = Vector3f(250.0f, 1.0f, 1.0f);
 
-		//boxEntity->AddComponent<TransformComponent>();
-		//boxEntity->AddComponent<Rendering::MeshComponent>();
-		//boxEntity->AddComponent<Physics::RigidbodyComponent2D>();
-		//boxEntity->AddComponent<Physics::BoxComponent2D>();
-		//boxEntity->AddComponent<Scripting::AngelScriptComponent>();
+			auto& mesh = registry->emplace<Rendering::MeshComponent>(floorEntity);
+			mesh.meshAssetID = meshId3;
+			mesh.textureAssetID = textureId2;
 
-		//boxEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 2.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
-		//boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
-		//boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-		//boxEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 0.5f;
-		//boxEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.5f;
-		//boxEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
-		//boxEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
-		//boxEntity->GetComponent<Scripting::AngelScriptComponent>().name = "PhysicsScript";
-		//boxEntity->GetComponent<Scripting::AngelScriptComponent>().dir = contentRootPath / "scripts\\Physics.pscript";
+			auto& box = registry->emplace<Physics::BoxComponent2D>(floorEntity);
+			box.halfExtent = Vector2f(250.0f, 1.0f);
+		}
 
-		//// Create Circle Entity
-		//const auto circleEntity = ECS::CreateEntity(ecsWorld);
+		// Create Box Entities
+		{
+			const float xOffset = 1000.0f;
+			const Vector3f startPosition(-xOffset, 10.f, 0.f);
+			const Vector3f endPosition(xOffset, 10.f, 0.f);
 
-		//circleEntity->SetName("Circle");
+			const int numBodies = 500;
+			Vector3f positionOffset = endPosition - startPosition;
+			positionOffset.x /= numBodies;
 
-		//circleEntity->AddComponent<TransformComponent>();
-		//circleEntity->AddComponent<Rendering::MeshComponent>();
-		//circleEntity->AddComponent<Physics::RigidbodyComponent2D>();
-		//circleEntity->AddComponent<Physics::BoxComponent2D>();
+			for (int i = 0; i < numBodies; i++)
+			{
+				const auto boxEntity = enttSubsystem->CreateEntity("Box " + i);
 
-		//circleEntity->GetComponent<TransformComponent>() = { Vector3f(0.0f, 10.0f, 0.0f), Vector3f(0.0f), Vector3f(1.0f) };
-		//circleEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = meshId3;
-		//circleEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = textureId2;
-		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().invMass = 1.0f;
-		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().elasticity = 0.75f;
-		//circleEntity->GetComponent<Physics::RigidbodyComponent2D>().bodyType = Physics::BodyType::Dynamic;
-		//circleEntity->GetComponent<Physics::BoxComponent2D>().halfExtent = Vector2f(1.0f, 1.0f);
+				Vector3f position = startPosition + (positionOffset * (float)i);
+
+				auto& transform = registry->emplace<TransformComponent>(boxEntity);
+				transform.position = position;
+
+				auto& mesh = registry->emplace<Rendering::MeshComponent>(boxEntity);
+				mesh.meshAssetID = meshId3;
+				mesh.textureAssetID = textureId2;
+
+				auto& box = registry->emplace<Physics::BoxComponent2D>(boxEntity);
+				box.halfExtent = Vector2f(1.0f);
+
+				auto& rb = registry->emplace<Physics::RigidbodyComponent2D>(boxEntity);
+				rb.invMass = 1.0f;
+				rb.bodyType = Physics::BodyType::Dynamic;
+			}
+		}
 	}
 
 	void Engine::ProceduralScene()

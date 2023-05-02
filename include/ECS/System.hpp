@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ECS/EntityID.h"
 #include "Engine/Subsystem.hpp"
 
+#include <string>
 #include <memory>
 
 namespace Puffin

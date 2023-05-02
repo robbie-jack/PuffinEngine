@@ -93,6 +93,7 @@ set(HEADERS
 	${HEADER_DIR}/Audio/AudioSubsystem.h
 	# Components
 	${HEADER_DIR}/Components/TransformComponent.h
+	${HEADER_DIR}/Components/SceneObjectComponent.hpp
 	${HEADER_DIR}/Components/Rendering/CameraComponent.h
 	${HEADER_DIR}/Components/Rendering/LightComponent.h
 	${HEADER_DIR}/Components/Rendering/MeshComponent.h
@@ -392,6 +393,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/inc
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include/compat/msvc)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bimg/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/entt/src)
 #target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/assimp/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)

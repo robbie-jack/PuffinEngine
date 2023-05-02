@@ -152,10 +152,10 @@ namespace Puffin::Rendering::VK
 		StaticRenderData m_staticRenderData;
 		std::array<FrameRenderData, G_BUFFERED_FRAMES> m_frameRenderData;
 
-		std::unordered_map<UUID, std::set<ECS::EntityID>> m_meshDrawList;
+		std::unordered_map<UUID, std::set<size_t>> m_meshDrawList;
 
 		PackedVector<TextureData> m_texData;
-		std::unordered_map<UUID, std::set<ECS::EntityID>> m_texDrawList;
+		std::unordered_map<UUID, std::set<size_t>> m_texDrawList;
 
 		uint32_t m_frameNumber;
 		uint32_t m_drawCalls = 0;

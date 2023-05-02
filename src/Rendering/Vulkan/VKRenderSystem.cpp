@@ -34,6 +34,8 @@
 #include "Engine/SignalSubsystem.hpp"
 #include "Input/InputSubsystem.h"
 #include "Engine/EnkiTSSubsystem.hpp"
+#include "Components/SceneObjectComponent.hpp"
+#include "ECS/EnTTSubsystem.hpp"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -763,32 +765,14 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::ProcessComponents()
 	{
-		PackedVector<ECS::EntityPtr> meshEntities;
-		ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
-		for (const auto& entity : meshEntities)
+		auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+
+		auto meshView = registry->view<const ECS::SceneObjectComponent, const TransformComponent, const MeshComponent>();
+
+		for (auto [entity, object, transform, mesh] : meshView.each())
 		{
-			const auto& mesh = entity->GetComponent<MeshComponent>();
-
-			if (entity->GetComponentFlag<MeshComponent, FlagDeleted>())
-			{
-				entity->RemoveComponent<MeshComponent>();
-			}
-			else
-			{
-				if (m_meshDrawList.count(mesh.meshAssetID) == 0)
-				{
-					m_meshDrawList.insert({ mesh.meshAssetID, std::set<ECS::EntityID>() });
-				}
-
-				m_meshDrawList[mesh.meshAssetID].insert(entity->ID());
-
-				if (m_texDrawList.count(mesh.textureAssetID) == 0)
-				{
-					m_texDrawList.insert({ mesh.textureAssetID, std::set<ECS::EntityID>() });
-				}
-
-				m_texDrawList[mesh.textureAssetID].insert(entity->ID());
-			}
+			m_meshDrawList[mesh.meshAssetID].insert(object.uuid);
+			m_texDrawList[mesh.textureAssetID].insert(object.uuid);
 		}
 
 		PackedVector<ECS::EntityPtr> camEntities;
@@ -1196,8 +1180,8 @@ namespace Puffin::Rendering::VK
 		// Calculate t value for rendering interpolated position
 		const double t = m_engine->GetAccumulatedTime() / m_engine->GetTimeStep();
 
-		std::vector<ECS::EntityID> entiies;
-		entiies.reserve(G_MAX_OBJECTS);
+		std::vector<UUID> entities;
+		entities.reserve(G_MAX_OBJECTS);
 
 		int numObjects = 0;
 
@@ -1205,7 +1189,7 @@ namespace Puffin::Rendering::VK
 		{
 			for (const auto entityID : snd)
 			{
-				entiies.emplace_back(entityID);
+				entities.emplace_back(entityID);
 
 				numObjects++;
 			}
@@ -1223,16 +1207,22 @@ namespace Puffin::Rendering::VK
 			threadObjects[idx].reserve(500);
 		}
 
+		auto enttSubsystem = m_engine->GetSubsystem<ECS::EnTTSubsystem>();
+		auto registry = enttSubsystem->Registry();
+
 		enki::TaskSet task(numObjects, [&](enki::TaskSetPartition range, uint32_t threadnum)
 		{
 			uint32_t numObjectsForThread = range.end - range.start;
 
 			for (uint32_t objectIdx = range.start; objectIdx < range.end; objectIdx++)
 			{
-				const ECS::EntityID& entityID = entiies[objectIdx];
+				auto entity = enttSubsystem->GetEntity(entities[objectIdx]);
 
-				const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
-				const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
+				//const auto& transform = m_world->GetComponent<TransformComponent>(entityID);
+				//const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
+
+				const auto& transform = registry->get<TransformComponent>(entity);
+				const auto& mesh = registry->get<MeshComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
 				Vector3d position = { 0.0 };
@@ -1240,9 +1230,11 @@ namespace Puffin::Rendering::VK
 				Vector3f position = { 0.0f };
 #endif
 
-				if (m_world->HasComponent<Physics::VelocityComponent>(entityID))
+				//if (m_world->HasComponent<Physics::VelocityComponent>(entityID))
+				if (registry->all_of<Physics::VelocityComponent>(entity))
 				{
-					Physics::VelocityComponent velocity = m_world->GetComponent<Physics::VelocityComponent>(entityID);
+					//Physics::VelocityComponent velocity = m_world->GetComponent<Physics::VelocityComponent>(entityID);
+					const auto& velocity = registry->get<Physics::VelocityComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
 					Vector3d interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
@@ -1338,11 +1330,16 @@ namespace Puffin::Rendering::VK
 
 		int idx = 0;
 
+		auto enttSubsystem = m_engine->GetSubsystem<ECS::EnTTSubsystem>();
+		auto registry = enttSubsystem->Registry();
+
 		for (const auto [fst, snd] : m_meshDrawList)
 		{
 			for (const auto entityID : snd)
 			{
-				const auto& mesh = m_world->GetComponent<MeshComponent>(entityID);
+				auto entity = enttSubsystem->GetEntity(entityID);
+
+				const auto& mesh = registry->get<MeshComponent>(entity);
 
 				indirectCmds[idx].vertexOffset = m_staticRenderData.combinedMeshBuffer.MeshVertexOffset(mesh.meshAssetID);
 				indirectCmds[idx].firstIndex = m_staticRenderData.combinedMeshBuffer.MeshIndexOffset(mesh.meshAssetID);
