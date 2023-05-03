@@ -172,7 +172,7 @@ namespace Puffin
 
 		bool Contains(size_t id) const
 		{
-			return m_idToIndexMap.count(id) == 1;
+			return m_idToIndexMap.find(id) != m_idToIndexMap.end();
 		}
 
 		void Clear()

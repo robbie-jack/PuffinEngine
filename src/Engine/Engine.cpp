@@ -213,7 +213,7 @@ namespace Puffin::Core
 			ExecuteCallbacks(ExecutionStage::Start);
 
 			// Get Snapshot of current scene data
-			m_sceneData->UpdateData();
+			//m_sceneData->UpdateData();
 
 			m_accumulatedTime = 0.0;
 			m_playState = PlayState::PLAYING;
@@ -273,7 +273,7 @@ namespace Puffin::Core
 			ecsWorld->Reset();
 
 			// Re-Initialize Systems and ECS
-			m_sceneData->Init();
+			//m_sceneData->Init();
 
 			// Perform Pre-Gameplay Initialization on Systems
 			ExecuteCallbacks(ExecutionStage::Setup);
@@ -531,16 +531,18 @@ namespace Puffin::Core
 			mesh.textureAssetID = textureId2;
 
 			auto& box = registry->emplace<Physics::BoxComponent2D>(floorEntity);
-			box.halfExtent = Vector2f(250.0f, 1.0f);
+			registry->patch<Physics::BoxComponent2D>(floorEntity, [](auto& box) { box.halfExtent = Vector2f(250.0f, 1.0f); });
+
+			auto& rb = registry->emplace<Physics::RigidbodyComponent2D>(floorEntity);
 		}
 
 		// Create Box Entities
 		{
-			const float xOffset = 1000.0f;
+			const float xOffset = 200.0f;
 			const Vector3f startPosition(-xOffset, 10.f, 0.f);
 			const Vector3f endPosition(xOffset, 10.f, 0.f);
 
-			const int numBodies = 500;
+			const int numBodies = 100;
 			Vector3f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;
 
@@ -558,7 +560,7 @@ namespace Puffin::Core
 				mesh.textureAssetID = textureId2;
 
 				auto& box = registry->emplace<Physics::BoxComponent2D>(boxEntity);
-				box.halfExtent = Vector2f(1.0f);
+				registry->patch<Physics::BoxComponent2D>(boxEntity, [](auto& box) { box.halfExtent = Vector2f(1.0f); });
 
 				auto& rb = registry->emplace<Physics::RigidbodyComponent2D>(boxEntity);
 				rb.invMass = 1.0f;

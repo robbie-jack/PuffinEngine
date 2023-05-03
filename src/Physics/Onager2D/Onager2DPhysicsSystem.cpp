@@ -49,209 +49,18 @@ namespace Puffin
 			SetBroadphase<SweepAndPruneBroadphase>();
 		}
 
-		void Onager2DPhysicsSystem::Setup()
-		{
-			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
-
-			auto boxView = registry->view<const SceneObjectComponent, const TransformComponent, BoxComponent2D>();
-
-			for (auto [entity, object, transform, box] : boxView.each())
-			{
-				InitBox2D(object, box);
-			}
-
-			PackedVector<ECS::EntityPtr> circleEntities;
-			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
-			for (const auto& entity : circleEntities)
-			{
-				auto& circle = entity->GetComponent<CircleComponent2D>();
-
-				if (entity->GetComponentFlag<CircleComponent2D, FlagDirty>())
-				{
-					InitCircle2D(entity);
-
-					entity->SetComponentFlag<CircleComponent2D, FlagDirty>(false);
-				}
-			}
-		}
-
 		void Onager2DPhysicsSystem::FixedUpdate()
-		{
-			UpdateComponents();
-			Step();
-
-			m_collidersUpdated = false;
-		}
-
-		void Onager2DPhysicsSystem::Stop()
-		{
-			m_boxShapes.Clear();
-			m_circleShapes.Clear();
-			m_colliders.Clear();
-			m_collisionPairs.clear();
-			m_collisionContacts.clear();
-
-			PackedVector<ECS::EntityPtr> boxEntites;
-			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
-			for (const auto& entity : boxEntites)
-			{
-				CleanupBox2D(entity);
-			}
-
-			PackedVector<ECS::EntityPtr> circleEntities;
-			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
-			for (const auto& entity : circleEntities)
-			{
-				CleanupCircle2D(entity);
-			}
-		}
-
-		//--------------------------------------------------
-		// Private Functions
-		//--------------------------------------------------
-
-		void Onager2DPhysicsSystem::InitCircle2D(std::shared_ptr<ECS::Entity> entity)
-		{
-			auto& circle = entity->GetComponent<CircleComponent2D>();
-
-			// If there is no shape for this entity in vector
-			if (!m_circleShapes.Contains(entity->ID()))
-			{
-				m_circleShapes.Emplace(entity->ID(), CircleShape2D());
-			}
-
-			m_circleShapes[entity->ID()].centreOfMass = circle.centreOfMass;
-			m_circleShapes[entity->ID()].radius = circle.radius;
-			
-			// If there is no collider for this entity, create new one
-			auto collider = std::make_shared<Collision2D::CircleCollider2D>(entity->ID(), &m_circleShapes[entity->ID()]);
-
-			InsertCollider(entity->ID(), collider);
-		}
-
-		void Onager2DPhysicsSystem::InitBox2D(const SceneObjectComponent& object, const BoxComponent2D& box)
-		{
-			// If there is no shape for this entity in vector
-			if (!m_boxShapes.Contains(object.uuid))
-			{
-				m_boxShapes.Emplace(object.uuid, BoxShape2D());
-			}
-
-			m_boxShapes[object.uuid].centreOfMass = box.centreOfMass;
-			m_boxShapes[object.uuid].halfExtent = box.halfExtent;
-			m_boxShapes[object.uuid].UpdatePoints();
-
-			auto collider = std::make_shared<Collision2D::BoxCollider2D>(object.uuid, &m_boxShapes[object.uuid]);
-
-			InsertCollider(object.uuid, collider);
-		}
-
-		void Onager2DPhysicsSystem::CleanupCircle2D(std::shared_ptr<ECS::Entity> entity)
-		{
-			if (m_circleShapes.Contains(entity->ID()))
-				m_circleShapes.Erase(entity->ID());
-
-			EraseCollider(entity->ID());
-		}
-
-		void Onager2DPhysicsSystem::CleanupBox2D(std::shared_ptr<ECS::Entity> entity)
-		{
-			if (m_boxShapes.Contains(entity->ID()))
-				m_boxShapes.Erase(entity->ID());
-
-			EraseCollider(entity->ID());
-		}
-
-		void Onager2DPhysicsSystem::UpdateComponents()
-		{
-			PackedVector<ECS::EntityPtr> rigidbodyEntities;
-			ECS::GetEntities<TransformComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
-			for (const auto& entity : rigidbodyEntities)
-			{
-				if (entity->GetComponentFlag<RigidbodyComponent2D, FlagDeleted>())
-				{
-					entity->RemoveComponent<RigidbodyComponent2D>();
-				}
-			}
-
-			PackedVector<ECS::EntityPtr> boxEntites;
-			ECS::GetEntities<TransformComponent, BoxComponent2D>(m_world, boxEntites);
-			for (const auto& entity : boxEntites)
-			{
-				auto& box = entity->GetComponent<BoxComponent2D>();
-				auto& transform = entity->GetComponent<TransformComponent>();
-
-				// Initialize Boxes
-				if (entity->GetComponentFlag<BoxComponent2D, FlagDirty>())
-				{
-					//InitBox2D(entity);
-
-					entity->SetComponentFlag<BoxComponent2D, FlagDirty>(false);
-				}
-
-				// Cleanup Boxes
-				if (entity->GetComponentFlag<BoxComponent2D, FlagDeleted>())
-				{
-					CleanupBox2D(entity);
-
-					entity->RemoveComponent<BoxComponent2D>();
-				}
-			}
-
-			PackedVector<ECS::EntityPtr> circleEntities;
-			ECS::GetEntities<TransformComponent, CircleComponent2D>(m_world, circleEntities);
-			for (const auto& entity : circleEntities)
-			{
-				auto& circle = entity->GetComponent<CircleComponent2D>();
-				auto& transform = entity->GetComponent<TransformComponent>();
-
-				// Initialize Circle
-				if (entity->GetComponentFlag<CircleComponent2D, FlagDirty>())
-				{
-					InitCircle2D(entity);
-
-					entity->SetComponentFlag<CircleComponent2D, FlagDirty>(false);
-				}
-
-				// Cleanup Circles
-				if (entity->GetComponentFlag<CircleComponent2D, FlagDeleted>())
-				{
-					CleanupCircle2D(entity);
-
-					entity->RemoveComponent<CircleComponent2D>();
-				}
-			}
-		}
-
-		void Onager2DPhysicsSystem::InsertCollider(ECS::EntityID id, std::shared_ptr<Collision2D::Collider2D> collider)
-		{
-			if (!m_colliders.Contains(id))
-			{
-				m_colliders.Insert(id, collider);
-
-				m_collidersUpdated = true;
-			}
-		}
-
-		void Onager2DPhysicsSystem::EraseCollider(ECS::EntityID id)
-		{
-			if (m_colliders.Contains(id))
-			{
-				m_colliders.Erase(id);
-
-				m_collidersUpdated = true;
-			}
-		}
-
-		void Onager2DPhysicsSystem::Step()
 		{
 			// Update Dynamic Objects
 			UpdateDynamics();
 
+			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+
 			// Copy component transform into collider
 			for (auto collider : m_colliders)
 			{
-				const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity);
+				//const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity);
+				const auto& transform = registry->get<const TransformComponent>(m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(collider->uuid));
 
 				collider->position = transform.position.GetXY();
 				collider->rotation = transform.rotation.EulerAnglesDeg().z;
@@ -268,31 +77,179 @@ namespace Puffin
 
 			// Generate Collision Events for this Tick
 			GenerateCollisionEvents();
+
+			m_collidersUpdated = false;
+		}
+
+		void Onager2DPhysicsSystem::Stop()
+		{
+			m_boxShapes.Clear();
+			m_circleShapes.Clear();
+			m_colliders.Clear();
+			m_collisionPairs.clear();
+			m_collisionContacts.clear();
+		}
+
+		void Onager2DPhysicsSystem::OnConstructBox2D(entt::registry& registry, entt::entity entity)
+		{
+			const auto& object = registry.get<const SceneObjectComponent>(entity);
+			const auto& box = registry.get<const BoxComponent2D>(entity);
+
+			InitBox2D(entity, object, box);
+		}
+
+		void Onager2DPhysicsSystem::OnDestroyBox2D(entt::registry& registry, entt::entity entity)
+		{
+			const auto& object = registry.get<const SceneObjectComponent>(entity);
+
+			CleanupBox2D(object);
+		}
+
+		void Onager2DPhysicsSystem::OnConstructCircle2D(entt::registry& registry, entt::entity entity)
+		{
+			const auto& object = registry.get<const SceneObjectComponent>(entity);
+			const auto& circle = registry.get<const CircleComponent2D>(entity);
+
+			InitCircle2D(entity, object, circle);
+		}
+
+		void Onager2DPhysicsSystem::OnDestroyCircle2D(entt::registry& registry, entt::entity entity)
+		{
+			const auto& object = registry.get<const SceneObjectComponent>(entity);
+
+			CleanupCircle2D(object);
+		}
+
+		void Onager2DPhysicsSystem::OnConstructRigidbody2D(entt::registry& registry, entt::entity entity)
+		{
+			const auto& object = registry.get<const SceneObjectComponent>(entity);
+
+			if (m_shapes.Contains(object.uuid))
+			{
+				auto collider = std::make_shared<Collision2D::BoxCollider2D>(object.uuid, &m_boxShapes[object.uuid]);
+
+				InsertCollider(object.uuid, collider);
+			}
+		}
+
+		void Onager2DPhysicsSystem::OnDestroyRigidbody2D(entt::registry& registry, entt::entity entity)
+		{
+			const auto& object = registry.get<const SceneObjectComponent>(entity);
+
+			EraseCollider(object.uuid);
+		}
+
+		//--------------------------------------------------
+		// Private Functions
+		//--------------------------------------------------
+
+		void Onager2DPhysicsSystem::InitCircle2D(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle)
+		{
+			// If there is no shape for this entity in vector
+			if (!m_circleShapes.Contains(object.uuid))
+			{
+				m_circleShapes.Emplace(object.uuid, CircleShape2D());
+			}
+
+			m_circleShapes[object.uuid].centreOfMass = circle.centreOfMass;
+			m_circleShapes[object.uuid].radius = circle.radius;
+
+			if (m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity))
+			{
+				// If there is no collider for this entity, create new one
+				auto collider = std::make_shared<Collision2D::CircleCollider2D>(object.uuid, &m_circleShapes[object.uuid]);
+
+				InsertCollider(object.uuid, collider);
+			}
+		}
+
+		void Onager2DPhysicsSystem::CleanupCircle2D(const SceneObjectComponent& object)
+		{
+			if (m_circleShapes.Contains(object.uuid))
+			{
+				m_circleShapes.Erase(object.uuid);
+				m_shapes.Erase(object.uuid);
+			}
+
+			EraseCollider(object.uuid);
+		}
+
+		void Onager2DPhysicsSystem::InitBox2D(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box)
+		{
+			// If there is no shape for this entity in vector
+			if (!m_boxShapes.Contains(object.uuid))
+			{
+				m_boxShapes.Emplace(object.uuid, BoxShape2D());
+			}
+
+			m_boxShapes[object.uuid].centreOfMass = box.centreOfMass;
+			m_boxShapes[object.uuid].halfExtent = box.halfExtent;
+			m_boxShapes[object.uuid].UpdatePoints();
+
+			if (!m_shapes.Contains(object.uuid))
+			{
+				m_shapes.Emplace(object.uuid, nullptr);
+
+				m_shapes[object.uuid] = &m_boxShapes[object.uuid];
+
+				if (m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity) && !m_colliders.Contains(object.uuid))
+				{
+					auto collider = std::make_shared<Collision2D::BoxCollider2D>(object.uuid, &m_boxShapes[object.uuid]);
+
+					InsertCollider(object.uuid, collider);
+				}
+			}
+		}
+
+		void Onager2DPhysicsSystem::CleanupBox2D(const SceneObjectComponent& object)
+		{
+			if (m_boxShapes.Contains(object.uuid))
+				m_boxShapes.Erase(object.uuid);
+
+			EraseCollider(object.uuid);
+		}
+
+		void Onager2DPhysicsSystem::InsertCollider(UUID id, std::shared_ptr<Collision2D::Collider2D> collider)
+		{
+			if (!m_colliders.Contains(id))
+			{
+				m_colliders.Insert(id, collider);
+
+				m_collidersUpdated = true;
+			}
+		}
+
+		void Onager2DPhysicsSystem::EraseCollider(UUID id)
+		{
+			if (m_colliders.Contains(id))
+			{
+				m_colliders.Erase(id);
+
+				m_collidersUpdated = true;
+			}
 		}
 
 		void Onager2DPhysicsSystem::UpdateDynamics() const
 		{
-			PackedVector<ECS::EntityPtr> rigidbodyEntities;
-			ECS::GetEntities<TransformComponent, VelocityComponent, RigidbodyComponent2D>(m_world, rigidbodyEntities);
-			for (const auto& entity : rigidbodyEntities)
-			{
-				auto& transform = entity->GetComponent<TransformComponent>();
-				auto& rigidbody = entity->GetComponent<RigidbodyComponent2D>();
-				auto& velocity = entity->GetComponent<VelocityComponent>();
+			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
 
+			auto rbView = registry->view<TransformComponent, RigidbodyComponent2D, VelocityComponent>();
+
+			for (auto [entity, transform, rb, velocity] : rbView.each())
+			{
 				// If a body has no mass, then it is kinematic/static and should not experience forces
-				if (rigidbody.invMass == 0.0f || rigidbody.bodyType != BodyType::Dynamic)
+				if (rb.invMass == 0.0f || rb.bodyType != BodyType::Dynamic)
 					continue;
 
-				CalculateImpulseByGravity(rigidbody);
+				CalculateImpulseByGravity(rb);
 
 				// Update Position
-				transform.position += rigidbody.linearVelocity * m_engine->GetTimeStep();
+				transform.position += rb.linearVelocity * m_engine->GetTimeStep();
 
 				Vector3f euler = transform.rotation.EulerAnglesDeg();
 
 				// Update Rotation
-				//euler.z += rigidbody.angularVelocity * m_engine->GetTimeStep();
+				//euler.z += rb.angularVelocity * m_engine->GetTimeStep();
 
 				if (euler.z > 360.0f)
 				{
@@ -301,9 +258,9 @@ namespace Puffin
 
 				transform.rotation = Maths::Quat::FromEulerAngles(euler.x, euler.y, euler.z);
 
-				velocity.linear.x = rigidbody.linearVelocity.x;
-				velocity.linear.y = rigidbody.linearVelocity.y;
-				velocity.angular.z = rigidbody.angularVelocity;
+				velocity.linear.x = rb.linearVelocity.x;
+				velocity.linear.y = rb.linearVelocity.y;
+				velocity.angular.z = rb.angularVelocity;
 			}
 		}
 
@@ -320,6 +277,9 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::CollisionBroadphase()
 		{
+			m_collisionPairs.clear();
+			m_collisionPairs.reserve(m_colliders.Size() * m_colliders.Size());
+
 			// Perform Collision Broadphase to Generate Collision Pairs
 			if (m_activeBroadphase)
 				m_activeBroadphase->GenerateCollisionPairs(m_colliders, m_collisionPairs, m_collidersUpdated);
@@ -343,15 +303,20 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::CollisionResponse() const
 		{
+			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+
 			for (const Collision2D::Contact& contact : m_collisionContacts)
 			{
-				auto& transformA = m_world->GetComponent<TransformComponent>(contact.a);
-				auto& transformB = m_world->GetComponent<TransformComponent>(contact.b);
+				auto entityA = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(contact.a);
+				auto entityB = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(contact.b);
 
-				if (m_world->HasComponent<RigidbodyComponent2D>(contact.a) && m_world->HasComponent<RigidbodyComponent2D>(contact.b))
+				auto& transformA = registry->get<TransformComponent>(entityA);
+				auto& transformB = registry->get<TransformComponent>(entityB);
+
+				if (registry->all_of<RigidbodyComponent2D>(entityA) && registry->all_of<RigidbodyComponent2D>(entityB))
 				{
-					auto& bodyA = m_world->GetComponent<RigidbodyComponent2D>(contact.a);
-					auto& bodyB = m_world->GetComponent<RigidbodyComponent2D>(contact.b);
+					auto& bodyA = registry->get<RigidbodyComponent2D>(entityA);
+					auto& bodyB = registry->get<RigidbodyComponent2D>(entityB);
 
 					const float elasticity = bodyA.elasticity * bodyB.elasticity;
 

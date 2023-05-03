@@ -1,22 +1,16 @@
 #pragma once
 
-#include "Collider2D.h"
-
-#include "Physics/Onager2D/Shapes/BoxShape2D.h"
-
 #include "PolygonCollider2D.h"
-
-#include <memory>
+#include "Physics/Onager2D/Shapes/BoxShape2D.h"
 
 namespace Puffin::Physics::Collision2D
 {
 	struct BoxCollider2D : public PolygonCollider2D
 	{
-		BoxCollider2D(ECS::EntityID entity, BoxShape2D* shape) : PolygonCollider2D(entity, shape) {}
+		BoxCollider2D(UUID uuid, BoxShape2D* shape) : PolygonCollider2D(uuid, shape) {}
 
 		~BoxCollider2D()
 		{
-			entity = ECS::INVALID_ENTITY;
 			shape = nullptr;
 		}
 

@@ -3,17 +3,14 @@
 #include "Physics/Onager2D/Colliders/Collider2D.h"
 #include "Physics/Onager2D/Shapes/CircleShape2D.h"
 
-#include <memory>
-
 namespace Puffin::Physics::Collision2D
 {
 	struct CircleCollider2D : public Collider2D
 	{
-		CircleCollider2D(ECS::EntityID entity, CircleShape2D* shape) : Collider2D(entity), shape(shape) {}
+		CircleCollider2D(UUID uuid, CircleShape2D* shape) : Collider2D(uuid), shape(shape) {}
 
 		~CircleCollider2D()
 		{
-			entity = ECS::INVALID_ENTITY;
 			shape = nullptr;
 		}
 

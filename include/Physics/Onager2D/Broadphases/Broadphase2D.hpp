@@ -3,12 +3,11 @@
 #include "ECS/ECS.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Physics/Onager2D/Colliders/Collider2D.h"
-
 #include "Types/PackedArray.h"
+#include "Physics/Onager2D/PhysicsHelpers2D.h"
+#include "ECS/EnTTSubsystem.hpp"
 
 #include <memory>
-
-#include "Physics/Onager2D/PhysicsHelpers2D.h"
 
 namespace Puffin::Physics
 {
@@ -28,17 +27,27 @@ namespace Puffin::Physics
 			m_world = world;
 		}
 
+		void SetECS(std::shared_ptr<ECS::EnTTSubsystem> ecs)
+		{
+			m_ecs = ecs;
+		}
+
 	protected:
 
 		bool FilterCollisionPair(const CollisionPair& pair, const std::vector<CollisionPair>& collisionPairs) const
 		{
 			// Don't perform collision check between collider and itself
-			if (pair.first->entity == pair.second->entity)
+			if (pair.first->uuid == pair.second->uuid)
+				return false;
+
+			auto registry = m_ecs->Registry();
+
+			if (!registry->valid(m_ecs->GetEntity(pair.first->uuid)) || !registry->valid(m_ecs->GetEntity(pair.second->uuid)))
 				return false;
 
 			// Don't perform collision check between colliders which both have infinite mass
-			const auto& rbA = m_world->GetComponent<RigidbodyComponent2D>(pair.first->entity);
-			const auto& rbB = m_world->GetComponent<RigidbodyComponent2D>(pair.second->entity);
+			const auto& rbA = registry->get<RigidbodyComponent2D>(m_ecs->GetEntity(pair.first->uuid));
+			const auto& rbB = registry->get<RigidbodyComponent2D>(m_ecs->GetEntity(pair.second->uuid));
 
 			if (rbA.invMass == 0.0f && rbB.invMass == 0.0f)
 				return false;
@@ -48,7 +57,7 @@ namespace Puffin::Physics
 
 			for (const CollisionPair& collisionPair : collisionPairs)
 			{
-				collisionPairAlreadyExists |= collisionPair.first->entity == pair.second->entity && collisionPair.second->entity == pair.first->entity;
+				collisionPairAlreadyExists |= collisionPair.first->uuid == pair.second->uuid && collisionPair.second->uuid == pair.first->uuid;
 			}
 
 			if (collisionPairAlreadyExists)
@@ -58,6 +67,7 @@ namespace Puffin::Physics
 		}
 
 		std::shared_ptr<ECS::World> m_world = nullptr;
+		std::shared_ptr<ECS::EnTTSubsystem> m_ecs = nullptr;
 
 	};
 

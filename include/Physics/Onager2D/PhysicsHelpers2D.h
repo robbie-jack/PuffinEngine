@@ -12,7 +12,6 @@
 #include "MathHelpers.h"
 
 #include <cmath>
-#include <memory>
 #include <limits>
 
 namespace Puffin::Physics
@@ -247,8 +246,8 @@ namespace Puffin::Physics
 			if (!GJK(boxA, boxB, points))
 				return false;
 
-			outContact.a = boxA->entity;
-			outContact.b = boxB->entity;
+			outContact.a = boxA->uuid;
+			outContact.b = boxB->uuid;
 
 			EPA(boxA, boxB, outContact, points);
 
@@ -272,8 +271,8 @@ namespace Puffin::Physics
 			if (ab.LengthSquared() > radiusABSq)
 				return false;
 
-			outContact.a = circleA->entity;
-			outContact.b = circleB->entity;
+			outContact.a = circleA->uuid;
+			outContact.b = circleB->uuid;
 
 			outContact.normal = ab.Normalised();
 
@@ -301,8 +300,8 @@ namespace Puffin::Physics
 			if (!GJK(circleA, boxB, points))
 				return false;
 
-			outContact.a = circleA->entity;
-			outContact.b = boxB->entity;
+			outContact.a = circleA->uuid;
+			outContact.b = boxB->uuid;
 
 			EPA(circleA, boxB, outContact, points);
 

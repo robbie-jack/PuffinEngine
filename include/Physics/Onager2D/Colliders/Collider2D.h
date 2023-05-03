@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Components/TransformComponent.h"
 #include "Physics/Onager2D/PhysicsTypes2D.h"
-#include "ECS/ECS.h"
+#include "Types/UUID.h"
 
 namespace Puffin::Physics::Collision2D
 {
@@ -11,7 +10,7 @@ namespace Puffin::Physics::Collision2D
 
 	struct Collider2D
 	{
-		Collider2D(ECS::EntityID inEntity) : entity(inEntity) {}
+		Collider2D(UUID inUUID) : uuid(inUUID) {}
 
 		virtual ~Collider2D() = default;
 
@@ -24,7 +23,7 @@ namespace Puffin::Physics::Collision2D
 		virtual bool TestCollision(const Collision2D::BoxCollider2D* collider, Collision2D::Contact& outContact) const = 0;
 		virtual bool TestCollision(const Collision2D::CircleCollider2D* collider, Collision2D::Contact& outContact) const = 0;
 
-		ECS::EntityID entity = ECS::INVALID_ENTITY;
+		UUID uuid;
 
 		Vector2f position;
 		float rotation;

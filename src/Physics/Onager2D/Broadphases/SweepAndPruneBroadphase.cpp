@@ -9,9 +9,6 @@ namespace Puffin::Physics
 		PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders,
 		std::vector<CollisionPair>& outCollisionPairs, bool collidersUpdated)
 	{
-		outCollisionPairs.clear();
-		outCollisionPairs.reserve(inColliders.Size() * inColliders.Size());
-
 		if (collidersUpdated)
 		{
 			m_sortedColliders.clear();

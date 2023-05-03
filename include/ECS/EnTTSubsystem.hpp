@@ -36,7 +36,9 @@ namespace Puffin::ECS
 
 		entt::entity GetEntity(UUID uuid)
 		{
-			return m_idToEntityMap[uuid];
+			entt::entity& entity = m_idToEntityMap[uuid];
+
+			return entity;
 		}
 
 		std::shared_ptr<entt::registry> Registry() { return m_registry; }
