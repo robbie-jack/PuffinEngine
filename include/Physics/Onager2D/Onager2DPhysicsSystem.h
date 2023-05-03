@@ -12,8 +12,8 @@
 #include "Physics/Onager2D/Colliders/Collider2D.h"
 #include "Physics/Onager2D/PhysicsTypes2D.h"
 
-#include <Components/Physics/RigidbodyComponent2D.h>
-#include <Components/Physics/ShapeComponents2D.h>
+#include "Components/Physics/RigidbodyComponent2D.h"
+#include "Components/Physics/ShapeComponents2D.h"
 #include "Components/Physics/VelocityComponent.hpp"
 
 #include "ECS/EnTTSubsystem.hpp"
@@ -54,22 +54,22 @@ namespace Puffin::Physics
 
 			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
 
-			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructRigidbody2D>(this);
-			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyRigidbody2D>(this);
+			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructRigidbody>(this);
+			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyRigidbody>(this);
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent>>();
 			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent>>();
 
-			registry->on_construct<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructBox2D>(this);
-			registry->on_update<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructBox2D>(this);
-			registry->on_destroy<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyBox2D>(this);
+			registry->on_construct<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructBox>(this);
+			registry->on_update<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructBox>(this);
+			registry->on_destroy<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyBox>(this);
 
-			registry->on_construct<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructCircle2D>(this);
-			registry->on_update<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructCircle2D>(this);
-			registry->on_destroy<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyCircle2D>(this);
+			registry->on_construct<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructCircle>(this);
+			registry->on_update<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructCircle>(this);
+			registry->on_destroy<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyCircle>(this);
 
-			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructRigidbody2D>(this);
-			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyRigidbody2D>(this);
+			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructRigidbody>(this);
+			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyRigidbody>(this);
 		}
 
 		void Init();
@@ -101,14 +101,14 @@ namespace Puffin::Physics
 			m_activeBroadphase = m_broadphases[typeName];
 		}
 
-		void OnConstructBox2D(entt::registry& registry, entt::entity entity);
-		void OnDestroyBox2D(entt::registry& registry, entt::entity entity);
+		void OnConstructBox(entt::registry& registry, entt::entity entity);
+		void OnDestroyBox(entt::registry& registry, entt::entity entity);
 
-		void OnConstructCircle2D(entt::registry& registry, entt::entity entity);
-		void OnDestroyCircle2D(entt::registry& registry, entt::entity entity);
+		void OnConstructCircle(entt::registry& registry, entt::entity entity);
+		void OnDestroyCircle(entt::registry& registry, entt::entity entity);
 
-		void OnConstructRigidbody2D(entt::registry& registry, entt::entity entity);
-		void OnDestroyRigidbody2D(entt::registry& registry, entt::entity entity);
+		void OnConstructRigidbody(entt::registry& registry, entt::entity entity);
+		void OnDestroyRigidbody(entt::registry& registry, entt::entity entity);
 
 	private:
 
@@ -129,11 +129,11 @@ namespace Puffin::Physics
 		std::unordered_map<const char*, std::shared_ptr<Broadphase>> m_broadphases; // Map of registered broadphases
 
 		// Init/Update/Delete of Physics Related Components
-		void InitCircle2D(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle);
-		void CleanupCircle2D(const SceneObjectComponent& object);
+		void InitCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle);
+		void CleanupCircle(const SceneObjectComponent& object);
 
-		void InitBox2D(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box);
-		void CleanupBox2D(const SceneObjectComponent& object);
+		void InitBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box);
+		void CleanupBox(const SceneObjectComponent& object);
 
 		void InsertCollider(UUID id, std::shared_ptr<Collision2D::Collider2D> collider);
 		void EraseCollider(UUID id);

@@ -323,19 +323,19 @@ namespace Puffin::Physics
 
 	static inline void ApplyLinearImpulse(RigidbodyComponent2D& body, const Vector2f& impulse)
 	{
-		if (body.invMass == 0.0f)
+		if (body.mass == 0.0f)
 			return;
 
 		// Apply Accumulated Impulse
-		body.linearVelocity += impulse * body.invMass;
+		body.linearVelocity += impulse * body.mass;
 	}
 
 	static inline void ApplyAngularImpulse(RigidbodyComponent2D& body, const float& impulse)
 	{
-		if (body.invMass == 0.0f)
+		if (body.mass == 0.0f)
 			return;
 
-		float impulseMultMass = impulse * body.invMass;
+		float impulseMultMass = impulse * body.mass;
 		float as = std::asin(impulseMultMass);
 
 		body.angularVelocity += as * (180 / 3.14);
@@ -355,7 +355,7 @@ namespace Puffin::Physics
 
 	static inline void ApplyImpulse(RigidbodyComponent2D& body, const Vector2f& impulsePoint, const Vector2f& impulse)
 	{
-		if (body.invMass == 0.0f)
+		if (body.mass == 0.0f)
 			return;
 
 		// impulsePoint is the world space location of the application of the impulse

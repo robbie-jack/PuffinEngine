@@ -49,7 +49,7 @@ namespace Puffin::Physics
 			const auto& rbA = registry->get<RigidbodyComponent2D>(m_ecs->GetEntity(pair.first->uuid));
 			const auto& rbB = registry->get<RigidbodyComponent2D>(m_ecs->GetEntity(pair.second->uuid));
 
-			if (rbA.invMass == 0.0f && rbB.invMass == 0.0f)
+			if (rbA.mass == 0.0f && rbB.mass == 0.0f)
 				return false;
 
 			// Don't perform collision check if this pair is already in list

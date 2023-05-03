@@ -90,37 +90,37 @@ namespace Puffin
 			m_collisionContacts.clear();
 		}
 
-		void Onager2DPhysicsSystem::OnConstructBox2D(entt::registry& registry, entt::entity entity)
+		void Onager2DPhysicsSystem::OnConstructBox(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 			const auto& box = registry.get<const BoxComponent2D>(entity);
 
-			InitBox2D(entity, object, box);
+			InitBox(entity, object, box);
 		}
 
-		void Onager2DPhysicsSystem::OnDestroyBox2D(entt::registry& registry, entt::entity entity)
+		void Onager2DPhysicsSystem::OnDestroyBox(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-			CleanupBox2D(object);
+			CleanupBox(object);
 		}
 
-		void Onager2DPhysicsSystem::OnConstructCircle2D(entt::registry& registry, entt::entity entity)
+		void Onager2DPhysicsSystem::OnConstructCircle(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 			const auto& circle = registry.get<const CircleComponent2D>(entity);
 
-			InitCircle2D(entity, object, circle);
+			InitCircle(entity, object, circle);
 		}
 
-		void Onager2DPhysicsSystem::OnDestroyCircle2D(entt::registry& registry, entt::entity entity)
+		void Onager2DPhysicsSystem::OnDestroyCircle(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-			CleanupCircle2D(object);
+			CleanupCircle(object);
 		}
 
-		void Onager2DPhysicsSystem::OnConstructRigidbody2D(entt::registry& registry, entt::entity entity)
+		void Onager2DPhysicsSystem::OnConstructRigidbody(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
@@ -132,7 +132,7 @@ namespace Puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::OnDestroyRigidbody2D(entt::registry& registry, entt::entity entity)
+		void Onager2DPhysicsSystem::OnDestroyRigidbody(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
@@ -143,7 +143,7 @@ namespace Puffin
 		// Private Functions
 		//--------------------------------------------------
 
-		void Onager2DPhysicsSystem::InitCircle2D(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle)
+		void Onager2DPhysicsSystem::InitCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle)
 		{
 			// If there is no shape for this entity in vector
 			if (!m_circleShapes.Contains(object.uuid))
@@ -163,7 +163,7 @@ namespace Puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::CleanupCircle2D(const SceneObjectComponent& object)
+		void Onager2DPhysicsSystem::CleanupCircle(const SceneObjectComponent& object)
 		{
 			if (m_circleShapes.Contains(object.uuid))
 			{
@@ -174,7 +174,7 @@ namespace Puffin
 			EraseCollider(object.uuid);
 		}
 
-		void Onager2DPhysicsSystem::InitBox2D(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box)
+		void Onager2DPhysicsSystem::InitBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box)
 		{
 			// If there is no shape for this entity in vector
 			if (!m_boxShapes.Contains(object.uuid))
@@ -201,7 +201,7 @@ namespace Puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::CleanupBox2D(const SceneObjectComponent& object)
+		void Onager2DPhysicsSystem::CleanupBox(const SceneObjectComponent& object)
 		{
 			if (m_boxShapes.Contains(object.uuid))
 				m_boxShapes.Erase(object.uuid);
@@ -238,7 +238,7 @@ namespace Puffin
 			for (auto [entity, transform, rb, velocity] : rbView.each())
 			{
 				// If a body has no mass, then it is kinematic/static and should not experience forces
-				if (rb.invMass == 0.0f || rb.bodyType != BodyType::Dynamic)
+				if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
 					continue;
 
 				CalculateImpulseByGravity(rb);
@@ -266,10 +266,10 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::CalculateImpulseByGravity(RigidbodyComponent2D& body) const
 		{
-			if (body.invMass == 0.0f)
+			if (body.mass == 0.0f)
 				return;
 
-			float mass = 1.0f / body.invMass;
+			float mass = 1.0f / body.mass;
 			Vector2 impulseGravity = m_gravity * mass * m_engine->GetTimeStep();
 			
 			ApplyLinearImpulse(body, impulseGravity);
@@ -327,7 +327,7 @@ namespace Puffin
 					/*if (nVab <= 0)
 						continue;*/
 
-					const float impulseJ = -(1.0f + elasticity) * nVab / (bodyA.invMass + bodyB.invMass);
+					const float impulseJ = -(1.0f + elasticity) * nVab / (bodyA.mass + bodyB.mass);
 					const Vector2 vectorImpulseJ = contact.normal * impulseJ;
 
 					// Apply Impulse to body A
@@ -340,8 +340,8 @@ namespace Puffin
 
 
 					// Move colliding bodies to just outside each other
-					const float tA = bodyA.invMass / (bodyA.invMass + bodyB.invMass);
-					const float tB = bodyB.invMass / (bodyA.invMass + bodyB.invMass);
+					const float tA = bodyA.mass / (bodyA.mass + bodyB.mass);
+					const float tB = bodyB.mass / (bodyA.mass + bodyB.mass);
 
 					const Vector2 ds = (contact.pointOnB - contact.pointOnA) * contact.normal.Abs();
 					transformA.position += ds * tA;

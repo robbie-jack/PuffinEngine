@@ -5,7 +5,7 @@
 
 #include "Rendering/BGFX/BGFXRenderSystem.hpp"
 #include "Rendering/Vulkan/VKRenderSystem.hpp"
-//#include "Physics/Box2D/Box2DPhysicsSystem.h"
+#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Physics/Onager2D/Onager2DPhysicsSystem.h"
 #include "Scripting/AngelScriptSystem.h"
 #include "Scripting/NativeScriptSystem.hpp"
@@ -100,8 +100,8 @@ namespace Puffin::Core
 		// Systems
 		//RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
 		RegisterSystem<Rendering::VK::VKRenderSystem>();
-		RegisterSystem<Physics::Onager2DPhysicsSystem>();
-		//RegisterSystem<Physics::Box2DPhysicsSystem>();
+		//RegisterSystem<Physics::Onager2DPhysicsSystem>();
+		RegisterSystem<Physics::Box2DPhysicsSystem>();
 		RegisterSystem<Scripting::AngelScriptSystem>();
 		RegisterSystem<Scripting::NativeScriptSystem>();
 		RegisterSystem<Procedural::ProceduralMeshGenSystem>();
@@ -140,6 +140,7 @@ namespace Puffin::Core
 		// Initialize Systems
 		{
 			ExecuteCallbacks(ExecutionStage::Init);
+			ExecuteCallbacks(ExecutionStage::Setup);
 		}
 
 		m_lastTime = glfwGetTime(); // Time Count Started
@@ -538,11 +539,11 @@ namespace Puffin::Core
 
 		// Create Box Entities
 		{
-			const float xOffset = 200.0f;
+			const float xOffset = 20.0f;
 			const Vector3f startPosition(-xOffset, 10.f, 0.f);
 			const Vector3f endPosition(xOffset, 10.f, 0.f);
 
-			const int numBodies = 100;
+			const int numBodies = 10;
 			Vector3f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;
 
@@ -563,7 +564,7 @@ namespace Puffin::Core
 				registry->patch<Physics::BoxComponent2D>(boxEntity, [](auto& box) { box.halfExtent = Vector2f(1.0f); });
 
 				auto& rb = registry->emplace<Physics::RigidbodyComponent2D>(boxEntity);
-				rb.invMass = 1.0f;
+				rb.mass = 1.0f;
 				rb.bodyType = Physics::BodyType::Dynamic;
 			}
 		}

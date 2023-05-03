@@ -500,7 +500,7 @@ namespace Puffin
 						ImGui::EndCombo();
 					}
 
-					dirty |= ImGui::DragFloat("Inverse Mass", &rb.invMass);
+					dirty |= ImGui::DragFloat("Mass", &rb.mass);
 					dirty |= ImGui::DragFloat("Elasticity", &rb.elasticity);
 					//dirty |= ImGui::Checkbox("Sleeping Allowed", &sleep);
 					//dirty |= ImGui::Checkbox("Bullet", &bullet);
