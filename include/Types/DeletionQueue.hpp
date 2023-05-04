@@ -3,7 +3,7 @@
 #include <deque>
 #include <functional>
 
-namespace Puffin
+namespace puffin
 {
 	struct DeletionQueue
 	{

@@ -4,7 +4,7 @@
 
 #include <vector>
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	struct PolygonShape2D : public Shape2D
 	{
@@ -16,9 +16,9 @@ namespace Puffin::Physics
 			points.clear();
 		}
 
-		AABB GetAABB(const Vector2f& position, const float& rotation) const = 0;
+		AABB getAABB(const Vector2f& position, const float& rotation) const = 0;
 
-		virtual void UpdatePoints() = 0;
+		virtual void updatePoints() = 0;
 
 		std::vector<Vector2f> points;
 	};

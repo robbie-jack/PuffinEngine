@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-namespace Puffin::Procedural
+namespace puffin::Procedural
 {
 	namespace Icosahedron
 	{

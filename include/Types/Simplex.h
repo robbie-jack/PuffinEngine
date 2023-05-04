@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	
 }

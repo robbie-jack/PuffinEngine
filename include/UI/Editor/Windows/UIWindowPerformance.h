@@ -5,7 +5,7 @@
 
 #include "UIWindow.h"
 
-namespace Puffin
+namespace puffin
 {
 	namespace UI
 	{

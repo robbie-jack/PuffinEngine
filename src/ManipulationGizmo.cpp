@@ -1,6 +1,6 @@
 #include <ManipulationGizmo.h>
 
-namespace Puffin
+namespace puffin
 {
 	GizmoMode gizmoMode = GizmoMode::Translation;
 }

@@ -19,7 +19,7 @@
 #include "Types/Vertex.hpp"
 #include "Assets/MeshAsset.h"
 
-namespace Puffin::IO
+namespace puffin::IO
 {
 	//////////////////////
 	// Model Importers

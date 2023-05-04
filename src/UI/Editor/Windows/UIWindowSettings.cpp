@@ -2,7 +2,7 @@
 
 #include "Engine/Engine.hpp"
 
-namespace Puffin
+namespace puffin
 {
 	namespace UI
 	{

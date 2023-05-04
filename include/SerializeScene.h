@@ -11,7 +11,7 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
-namespace Puffin::IO
+namespace puffin::IO
 {
 	// Interface for array to store scene data
 	class ISceneDataArray

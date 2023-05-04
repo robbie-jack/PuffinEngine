@@ -42,7 +42,7 @@ void PrintString_Generic(asIScriptGeneric* gen)
 	cout << *str << endl;
 }
 
-namespace Puffin::Scripting
+namespace puffin::Scripting
 {
 	AngelScriptSystem::AngelScriptSystem()
 	{
@@ -77,11 +77,11 @@ namespace Puffin::Scripting
 		m_inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
 		eventSubsystem->Subscribe<Input::InputEvent>(m_inputEvents);
 
-		m_collisionBeginEvents = std::make_shared<RingBuffer<Physics::CollisionBeginEvent>>();
-		eventSubsystem->Subscribe<Physics::CollisionBeginEvent>(m_collisionBeginEvents);
+		m_collisionBeginEvents = std::make_shared<RingBuffer<physics::CollisionBeginEvent>>();
+		eventSubsystem->Subscribe<physics::CollisionBeginEvent>(m_collisionBeginEvents);
 
-		m_collisionEndEvents = std::make_shared<RingBuffer<Physics::CollisionEndEvent>>();
-		eventSubsystem->Subscribe<Physics::CollisionEndEvent>(m_collisionEndEvents);
+		m_collisionEndEvents = std::make_shared<RingBuffer<physics::CollisionEndEvent>>();
+		eventSubsystem->Subscribe<physics::CollisionEndEvent>(m_collisionEndEvents);
 
 		m_audioSubsystem = m_engine->getSubsystem<Audio::AudioSubsystem>();
 	}
@@ -464,7 +464,7 @@ namespace Puffin::Scripting
 		Input::InputEvent inputEvent;
 		while (m_inputEvents->Pop(inputEvent))
 		{
-			if (m_onInputPressedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+			if (m_onInputPressedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::Input::KeyState::PRESSED)
 			{
 				for (const auto& pair : m_onInputPressedCallbacks[inputEvent.actionName])
 				{
@@ -474,7 +474,7 @@ namespace Puffin::Scripting
 				}
 			}
 
-			if (m_onInputReleasedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+			if (m_onInputReleasedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::Input::KeyState::RELEASED)
 			{
 				for (const auto& pair : m_onInputReleasedCallbacks[inputEvent.actionName])
 				{
@@ -486,7 +486,7 @@ namespace Puffin::Scripting
 		}
 
 		// Process Collision Begin Events
-		Physics::CollisionBeginEvent collisionBeginEvent;
+		physics::CollisionBeginEvent collisionBeginEvent;
 		while (m_collisionBeginEvents->Pop(collisionBeginEvent))
 		{
 			// Invoke collision EntityA callback if one exists
@@ -521,7 +521,7 @@ namespace Puffin::Scripting
 		}
 
 		// Process Collision End Events
-		Physics::CollisionEndEvent collisionEndEvent;
+		physics::CollisionEndEvent collisionEndEvent;
 		while (m_collisionEndEvents->Pop(collisionEndEvent))
 		{
 			// Invoke collision EntityA callback if one exists

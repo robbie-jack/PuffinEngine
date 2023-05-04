@@ -10,7 +10,7 @@
 
 #define PI 3.141592653589793238463
 
-namespace Puffin
+namespace puffin
 {
 	namespace Maths
 	{

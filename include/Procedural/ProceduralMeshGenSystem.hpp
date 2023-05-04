@@ -6,7 +6,7 @@
 #include "Types/Vector.h"
 #include "Types/Vertex.hpp"
 
-namespace Puffin::Procedural
+namespace puffin::Procedural
 {
 	class ProceduralMeshGenSystem : public ECS::System
 	{

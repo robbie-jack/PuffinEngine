@@ -10,7 +10,7 @@ namespace tinygltf
 	class BufferView;
 }
 
-namespace Puffin::IO
+namespace puffin::IO
 {
 	//////////////////////
 	// Model Importers

@@ -3,39 +3,39 @@
 
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
-	void SweepAndPruneBroadphase::GenerateCollisionPairs(
-		PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders,
+	void SweepAndPruneBroadphase::generateCollisionPairs(
+		PackedVector<std::shared_ptr<collision2D::Collider2D>>& inColliders,
 		std::vector<CollisionPair>& outCollisionPairs, bool collidersUpdated)
 	{
 		if (collidersUpdated)
 		{
-			m_sortedColliders.clear();
-			m_sortedColliders.reserve(inColliders.Size());
+			sortedColliders_.clear();
+			sortedColliders_.reserve(inColliders.Size());
 
 			for (const auto& collider : inColliders)
 			{
-				m_sortedColliders.push_back(collider);
+				sortedColliders_.push_back(collider);
 			}
 		}
 
-		SortCollidersByX(m_sortedColliders);
+		sortCollidersByX(sortedColliders_);
 
-		for (const auto& colliderA : m_sortedColliders)
+		for (const auto& colliderA : sortedColliders_)
 		{
-			for (const auto& colliderB : m_sortedColliders)
+			for (const auto& colliderB : sortedColliders_)
 			{
-				AABB a = colliderA->GetAABB();
-				AABB b = colliderB->GetAABB();
+				AABB a = colliderA->getAABB();
+				AABB b = colliderB->getAABB();
 
 				if (a.min.x < b.max.x)
 				{
 					auto collisionPair = std::make_pair(colliderA, colliderB);
 
-					if (FilterCollisionPair(collisionPair, outCollisionPairs) == true)
+					if (filterCollisionPair(collisionPair, outCollisionPairs) == true)
 					{
-						if (Collision2D::TestAABBVsAABB(a, b))
+						if (collision2D::testAabbVsAabb(a, b))
 						{
 							outCollisionPairs.emplace_back(collisionPair);
 						}
@@ -45,10 +45,10 @@ namespace Puffin::Physics
 		}
 	}
 
-	void SweepAndPruneBroadphase::SortCollidersByX(std::vector<std::shared_ptr<Collision2D::Collider2D>>& colliders)
+	void SweepAndPruneBroadphase::sortCollidersByX(std::vector<std::shared_ptr<collision2D::Collider2D>>& colliders)
 	{
 		std::sort(colliders.begin(), colliders.end(),
-			[=](std::shared_ptr<Collision2D::Collider2D> a, std::shared_ptr<Collision2D::Collider2D> b) -> bool
-			{ return a->GetAABB().min.x < b->GetAABB().min.x; });
+			[=](std::shared_ptr<collision2D::Collider2D> a, std::shared_ptr<collision2D::Collider2D> b) -> bool
+			{ return a->getAABB().min.x < b->getAABB().min.x; });
 	}
 }

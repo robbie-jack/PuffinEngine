@@ -4,7 +4,7 @@
 
 using json = nlohmann::json;
 
-namespace Puffin::Assets
+namespace puffin::Assets
 {
 	////////////////////////////////
 	// TextureAsset

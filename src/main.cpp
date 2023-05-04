@@ -5,7 +5,7 @@
 
 int main()
 {
-	const auto engine = std::make_shared<Puffin::Core::Engine>();
+	const auto engine = std::make_shared<puffin::Core::Engine>();
 
 	engine->init();
 

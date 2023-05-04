@@ -4,7 +4,7 @@
 #include <Components/Rendering/CameraComponent.h>
 #include <ProjectSettings.h>
 
-namespace Puffin
+namespace puffin
 {
 	class Engine;
 
@@ -19,11 +19,11 @@ namespace Puffin
 
 			void Draw(double dt) override;
 
-			inline void SetCamera(Puffin::Rendering::CameraComponent* camera) { m_camera = camera; }
+			inline void SetCamera(puffin::Rendering::CameraComponent* camera) { m_camera = camera; }
 
 		private:
 
-			Puffin::Rendering::CameraComponent* m_camera = nullptr;
+			puffin::Rendering::CameraComponent* m_camera = nullptr;
 
 		};
 	}

@@ -5,7 +5,7 @@
 
 #include "nlohmann/json.hpp"
 
-namespace Puffin
+namespace puffin
 {
 #ifdef PFN_USE_DOUBLE_PRECISION
 	constexpr bool G_USE_DOUBLE_PRECISION = true;

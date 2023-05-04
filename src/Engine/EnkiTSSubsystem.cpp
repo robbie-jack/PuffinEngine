@@ -2,7 +2,7 @@
 
 #include "Engine/Engine.hpp"
 
-namespace Puffin::Core
+namespace puffin::Core
 {
 	void EnkiTSSubsystem::SetupCallbacks()
 	{

@@ -5,8 +5,8 @@
 constexpr int P1 = 73856093;
 constexpr int P2 = 83492791;
 
-void Puffin::Physics::SpatialHashBroadphase2D::GenerateCollisionPairs(
-	PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
+void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
+	PackedVector<std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
 	bool collidersUpdated)
 {
 	outCollisionPairs.clear();
@@ -14,16 +14,16 @@ void Puffin::Physics::SpatialHashBroadphase2D::GenerateCollisionPairs(
 
 	if (collidersUpdated)
 	{
-		m_colliderSpatialMap.clear();
+		colliderSpatialMap_.clear();
 	}
 
-	UpdateSpatialMap(inColliders);
+	updateSpatialMap(inColliders);
 
 	// Generate Collision Pairs
 	outCollisionPairs.clear();
 	outCollisionPairs.reserve(inColliders.Size() * inColliders.Size());
 
-	for (const auto& [fst, snd] : m_colliderSpatialMap)
+	for (const auto& [fst, snd] : colliderSpatialMap_)
 	{
 		for (const auto& colliderA : snd)
 		{
@@ -31,9 +31,9 @@ void Puffin::Physics::SpatialHashBroadphase2D::GenerateCollisionPairs(
 			{
 				auto collisionPair = std::make_pair(colliderA, colliderB);
 
-				if (FilterCollisionPair(collisionPair, outCollisionPairs) == true)
+				if (filterCollisionPair(collisionPair, outCollisionPairs) == true)
 				{
-					if (Collision2D::TestAABBVsAABB(colliderA->GetAABB(), colliderB->GetAABB()))
+					if (collision2D::testAabbVsAabb(colliderA->getAABB(), colliderB->getAABB()))
 					{
 						outCollisionPairs.emplace_back(collisionPair);
 					}
@@ -43,20 +43,20 @@ void Puffin::Physics::SpatialHashBroadphase2D::GenerateCollisionPairs(
 	}
 }
 
-int Puffin::Physics::SpatialHashBroadphase2D::GenerateHash(double x, double y) const
+int puffin::physics::SpatialHashBroadphase2D::generateHash(double x, double y) const
 {
-	int ix = static_cast<int>(std::floor(x / m_gridSize));
-	int iy = static_cast<int>(std::floor(y / m_gridSize));
+	const int ix = static_cast<int>(std::floor(x / gridSize_));
+	const int iy = static_cast<int>(std::floor(y / gridSize_));
 
-	return (ix * P1 ^ iy * P2) % m_hashMapSize;
+	return (ix * P1 ^ iy * P2) % hashMapSize_;
 }
 
-void Puffin::Physics::SpatialHashBroadphase2D::UpdateSpatialMap(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& colliders)
+void puffin::physics::SpatialHashBroadphase2D::updateSpatialMap(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders)
 {
 	for (const auto& collider : colliders)
 	{
-		int hashID = GenerateHash(collider->position.x, collider->position.y);
+		int hashID = generateHash(collider->position.x, collider->position.y);
 
-		m_colliderSpatialMap[hashID].push_back(collider);
+		colliderSpatialMap_[hashID].push_back(collider);
 	}
 }

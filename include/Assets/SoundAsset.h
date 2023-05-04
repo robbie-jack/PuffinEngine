@@ -2,7 +2,7 @@
 
 #include "Asset.h"
 
-namespace Puffin::Assets
+namespace puffin::Assets
 {
 	static const std::string G_SOUND_TYPE = "Sound";
 	static constexpr uint32_t G_SOUND_VERSION = 1; // Latest version of Static Mesh Asset Format

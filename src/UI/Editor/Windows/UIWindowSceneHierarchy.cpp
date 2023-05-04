@@ -5,7 +5,7 @@
 #include "ECS/ECS.h"
 #include "ECS/Entity.hpp"
 
-namespace Puffin
+namespace puffin
 {
 	namespace UI
 	{

@@ -9,7 +9,7 @@
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
 
-namespace Puffin::Procedural
+namespace puffin::Procedural
 {
 	void ProceduralMeshGenSystem::Setup()
 	{

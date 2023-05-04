@@ -14,7 +14,7 @@
 
 namespace fs = std::filesystem;
 
-namespace Puffin::UI
+namespace puffin::UI
 {
 	UIManager::UIManager(std::shared_ptr<Core::Engine> engine)
 	{

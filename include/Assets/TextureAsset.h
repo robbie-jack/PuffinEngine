@@ -2,7 +2,7 @@
 
 #include "AssetRegistry.h"
 
-namespace Puffin::Assets
+namespace puffin::Assets
 {
 	static const std::string G_TEXTURE_TYPE = "Texture";
 	static constexpr uint32_t G_TEXTURE_VERSION = 1; // Latest version of Texture Asset Format

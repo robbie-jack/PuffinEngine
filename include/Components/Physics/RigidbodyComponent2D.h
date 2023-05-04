@@ -4,9 +4,9 @@
 
 #include "nlohmann/json.hpp"
 
-namespace Puffin
+namespace puffin
 {
-	namespace Physics
+	namespace physics
 	{
 		enum class BodyType
 		{

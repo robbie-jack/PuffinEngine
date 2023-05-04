@@ -29,12 +29,12 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-namespace Puffin
+namespace puffin
 {
 	struct TransformComponent;
 }
 
-namespace Puffin::Rendering::VK
+namespace puffin::Rendering::VK
 {
 	// Struct containing render data that is static between frames
 	struct StaticRenderData

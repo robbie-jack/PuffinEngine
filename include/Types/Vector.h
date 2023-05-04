@@ -11,7 +11,7 @@
 
 using json = nlohmann::json;
 
-namespace Puffin
+namespace puffin
 {
 	/*
 	====================
@@ -546,18 +546,18 @@ namespace Puffin
 
 namespace std
 {
-	template<> struct hash<Puffin::Vector2f>
+	template<> struct hash<puffin::Vector2f>
 	{
-		size_t operator()(Puffin::Vector2f const& vec) const
+		size_t operator()(puffin::Vector2f const& vec) const
 		{
 			return (hash<float>()(vec.x) ^
 				(hash<float>()(vec.y) << 1) >> 1);
 		}
 	};
 
-	template<> struct hash<Puffin::Vector3f>
+	template<> struct hash<puffin::Vector3f>
 	{
-		size_t operator()(Puffin::Vector3f const& vec) const
+		size_t operator()(puffin::Vector3f const& vec) const
 		{
 			return (hash<float>()(vec.x) ^
 				(hash<float>()(vec.y) << 1) ^
@@ -565,9 +565,9 @@ namespace std
 		}
 	};
 
-	template<> struct hash<Puffin::Vector3d>
+	template<> struct hash<puffin::Vector3d>
 	{
-		size_t operator()(Puffin::Vector3d const& vec) const
+		size_t operator()(puffin::Vector3d const& vec) const
 		{
 			return (hash<double>()(vec.x) ^
 				(hash<double>()(vec.y) << 1) ^

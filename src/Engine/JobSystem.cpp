@@ -1,6 +1,6 @@
 #include "Engine/JobSystem.hpp"
 
-namespace Puffin::Core
+namespace puffin::Core
 {
 	JobSystem* JobSystem::s_instance = nullptr;
 

@@ -9,7 +9,7 @@
 #include <typeindex>
 #include <memory>
 
-namespace Puffin
+namespace puffin
 {
 	namespace Core
 	{
@@ -42,7 +42,7 @@ namespace Puffin
 
 		private:
 
-			std::vector<std::shared_ptr<Puffin::RingBuffer<EventT>>> buffers;
+			std::vector<std::shared_ptr<puffin::RingBuffer<EventT>>> buffers;
 		};
 
 		class EventSubsystem : public Subsystem

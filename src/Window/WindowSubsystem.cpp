@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-namespace Puffin::Window
+namespace puffin::Window
 {
 	//==================================================
 	// Public Methods

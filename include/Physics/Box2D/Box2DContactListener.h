@@ -4,7 +4,7 @@
 #include "Physics/CollisionEvent.h"
 #include "Types/RingBuffer.h"
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	class Box2DContactListener : public b2ContactListener
 	{
@@ -13,8 +13,8 @@ namespace Puffin::Physics
 		Box2DContactListener() = default;
 		~Box2DContactListener() override
 		{
-			m_collisionBeginEvents.Flush();
-			m_collisionEndEvents.Flush();
+			collisionBeginEvents_.Flush();
+			collisionEndEvents_.Flush();
 		}
 
 		void BeginContact(b2Contact* contact) override;
@@ -22,15 +22,15 @@ namespace Puffin::Physics
 		void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;
 		void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override;
 
-		bool GetNextCollisionBeginEvent(CollisionBeginEvent& collisionBeginEvent);
-		bool GetNextCollisionEndEvent(CollisionEndEvent& collisionEndEvent);
+		bool getNextCollisionBeginEvent(CollisionBeginEvent& collisionBeginEvent);
+		bool getNextCollisionEndEvent(CollisionEndEvent& collisionEndEvent);
 
-		void ClearEvents();
+		void clearEvents();
 
 	private:
 
-		RingBuffer<CollisionBeginEvent> m_collisionBeginEvents;
-		RingBuffer<CollisionEndEvent> m_collisionEndEvents;
+		RingBuffer<CollisionBeginEvent> collisionBeginEvents_;
+		RingBuffer<CollisionEndEvent> collisionEndEvents_;
 
 	};
 }

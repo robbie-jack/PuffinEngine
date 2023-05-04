@@ -1,6 +1,6 @@
 #include "UI/Editor/Windows/UIWindow.h"
 
-namespace Puffin
+namespace puffin
 {
 	namespace UI
 	{

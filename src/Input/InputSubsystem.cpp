@@ -6,7 +6,7 @@
 #include "Engine/SignalSubsystem.hpp"
 #include "Window/WindowSubsystem.hpp"
 
-namespace Puffin
+namespace puffin
 {
 	namespace Input
 	{
@@ -51,7 +51,7 @@ namespace Puffin
 			}
 		}
 
-		void Puffin::Input::InputSubsystem::Update()
+		void puffin::Input::InputSubsystem::Update()
 		{
 			glfwPollEvents();
 
@@ -148,7 +148,7 @@ namespace Puffin
 			m_window = nullptr;
 		}
 
-		void Puffin::Input::InputSubsystem::AddAction(std::string name, int key)
+		void puffin::Input::InputSubsystem::AddAction(std::string name, int key)
 		{
 			InputAction new_action;
 			new_action.name = name;
@@ -161,7 +161,7 @@ namespace Puffin
 			nextID++;
 		}
 
-		void Puffin::Input::InputSubsystem::AddAction(std::string name, std::vector<int> keys)
+		void puffin::Input::InputSubsystem::AddAction(std::string name, std::vector<int> keys)
 		{
 			InputAction new_action;
 			new_action.name = name;
@@ -174,7 +174,7 @@ namespace Puffin
 			nextID++;
 		}
 
-		InputAction Puffin::Input::InputSubsystem::GetAction(std::string name) const
+		InputAction puffin::Input::InputSubsystem::GetAction(std::string name) const
 		{
 			for (auto action : m_actions)
 			{

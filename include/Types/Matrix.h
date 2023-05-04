@@ -7,7 +7,7 @@
 
 
 
-namespace Puffin
+namespace puffin
 {
 	namespace Maths
 	{

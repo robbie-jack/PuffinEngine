@@ -18,7 +18,7 @@
 #include <vector>
 #include <memory>
 
-namespace Puffin
+namespace puffin
 {
 	namespace ECS
 	{

@@ -4,14 +4,14 @@
 #include "Physics/Onager2D/PhysicsTypes2D.h"
 #include "Physics/Onager2D/Shapes/Shape2D.h"
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
-	ShapeType2D BoxShape2D::GetType() const
+	ShapeType2D BoxShape2D::getType() const
 	{
-		return ShapeType2D::Box;
+		return ShapeType2D::box;
 	}
 
-	AABB BoxShape2D::GetAABB(const Vector2f& position, const float& rotation) const
+	AABB BoxShape2D::getAABB(const Vector2f& position, const float& rotation) const
 	{
 		AABB aabb;
 		aabb.min = position - halfExtent;
@@ -19,7 +19,7 @@ namespace Puffin::Physics
 		return aabb;
 	}
 
-	void BoxShape2D::UpdatePoints()
+	void BoxShape2D::updatePoints()
 	{
 		points.clear();
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-namespace Puffin
+namespace puffin
 {
 	namespace ECS
 	{

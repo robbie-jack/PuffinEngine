@@ -4,12 +4,12 @@
 
 #include <Types/Vector.h>
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	enum class ShapeType2D : uint8_t
 	{
-		Box = 1,
-		Circle = 2
+		box = 1,
+		circle = 2
 	};
 
 	struct AABB;
@@ -23,9 +23,9 @@ namespace Puffin::Physics
 
 		virtual ~Shape2D() = default;
 
-		virtual ShapeType2D GetType() const = 0;
+		virtual ShapeType2D getType() const = 0;
 
-		virtual AABB GetAABB(const Vector2f& position, const float& rotation) const = 0;
+		virtual AABB getAABB(const Vector2f& position, const float& rotation) const = 0;
 
 		Vector2f centreOfMass; // Centre of mass for this shape
 	};

@@ -8,7 +8,7 @@
 #include "Components/Physics/ShapeComponents2D.h"
 #include "Components/Physics/VelocityComponent.hpp"
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	void Box2DPhysicsSystem::init()
 	{
@@ -189,18 +189,18 @@ namespace Puffin::Physics
 
 	void Box2DPhysicsSystem::publishCollisionEvents() const
 	{
-		auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
-		auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
+		const auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
+		const auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
 
 		CollisionBeginEvent collisionBeginEvent;
-		while (contactListener_->GetNextCollisionBeginEvent(collisionBeginEvent))
+		while (contactListener_->getNextCollisionBeginEvent(collisionBeginEvent))
 		{
 			eventSubsystem->Publish(collisionBeginEvent);
 			signalSubsystem->Signal(collisionBeginEvent);
 		}
 
 		CollisionEndEvent collisionEndEvent;
-		while (contactListener_->GetNextCollisionEndEvent(collisionEndEvent))
+		while (contactListener_->getNextCollisionEndEvent(collisionEndEvent))
 		{
 			eventSubsystem->Publish(collisionEndEvent);
 			signalSubsystem->Signal(collisionEndEvent);

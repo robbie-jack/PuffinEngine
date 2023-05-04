@@ -9,7 +9,7 @@
 
 #include "nlohmann/json.hpp"
 
-namespace Puffin
+namespace puffin
 {
 	namespace Rendering
 	{

@@ -7,7 +7,7 @@
 
 using json = nlohmann::json;
 
-namespace Puffin::Scripting
+namespace puffin::Scripting
 {
 	// Base class for custom native script's
 	class NativeScriptObject

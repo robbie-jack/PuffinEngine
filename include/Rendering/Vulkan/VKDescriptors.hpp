@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <memory>
 
-namespace Puffin::Rendering::VK::Util
+namespace puffin::Rendering::VK::Util
 {
 	class DescriptorAllocator
 	{

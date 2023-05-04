@@ -6,7 +6,7 @@
 #include "entt/entity/registry.hpp"
 #include "Components/SceneObjectComponent.hpp"
 
-namespace Puffin::ECS
+namespace puffin::ECS
 {
 	class EnTTSubsystem : public Core::Subsystem
 	{

@@ -1,7 +1,7 @@
 #include "Engine/SignalSubsystem.hpp"
 #include "Engine/Engine.hpp"
 
-namespace Puffin::Core
+namespace puffin::Core
 {
 	void SignalSubsystem::SetupCallbacks()
 	{

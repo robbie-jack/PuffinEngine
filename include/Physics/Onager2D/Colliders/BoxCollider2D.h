@@ -3,7 +3,7 @@
 #include "PolygonCollider2D.h"
 #include "Physics/Onager2D/Shapes/BoxShape2D.h"
 
-namespace Puffin::Physics::Collision2D
+namespace puffin::physics::collision2D
 {
 	struct BoxCollider2D : public PolygonCollider2D
 	{
@@ -14,8 +14,8 @@ namespace Puffin::Physics::Collision2D
 			shape = nullptr;
 		}
 
-		bool TestCollision(const Collision2D::Collider2D* collider, Collision2D::Contact& outContact) const override;
-		bool TestCollision(const Collision2D::BoxCollider2D*, Collision2D::Contact& outContact) const override;
-		bool TestCollision(const Collision2D::CircleCollider2D*, Collision2D::Contact& outContact) const override;
+		bool testCollision(const collision2D::Collider2D* collider, collision2D::Contact& contact) const override;
+		bool testCollision(const collision2D::BoxCollider2D* collider, collision2D::Contact& contact) const override;
+		bool testCollision(const collision2D::CircleCollider2D* collider, collision2D::Contact& contact) const override;
 	};
 }

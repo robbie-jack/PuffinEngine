@@ -4,7 +4,7 @@
 
 #include "nlohmann/json.hpp"
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	struct VelocityComponent
 	{

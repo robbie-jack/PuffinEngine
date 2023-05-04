@@ -6,7 +6,7 @@
 
 #include "nlohmann/json.hpp"
 
-namespace Puffin::Maths
+namespace puffin::Maths
 {
 	/*
 	====================

@@ -4,7 +4,7 @@
 
 #include "Physics/Onager2D/Shapes/PolygonShape2D.h"
 
-namespace Puffin::Physics::Collision2D
+namespace puffin::physics::collision2D
 {
 	struct PolygonCollider2D : public Collider2D
 	{
@@ -15,9 +15,9 @@ namespace Puffin::Physics::Collision2D
 			shape = nullptr;
 		}
 
-		AABB GetAABB() const override;
+		AABB getAABB() const override;
 
-		Vector2f FindFurthestPoint(Vector2f direction) const override;
+		Vector2f findFurthestPoint(Vector2f direction) const override;
 
 		PolygonShape2D* shape = nullptr;
 	};

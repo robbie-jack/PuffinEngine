@@ -12,7 +12,7 @@
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
-namespace Puffin::Assets
+namespace puffin::Assets
 {
 	/*
 	 * Asset Cache

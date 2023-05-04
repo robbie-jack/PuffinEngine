@@ -9,9 +9,9 @@
 
 #include <memory>
 
-namespace Puffin
+namespace puffin
 {
-	namespace Physics
+	namespace physics
 	{
 		struct ShapeComponent2D
 		{

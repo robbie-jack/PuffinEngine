@@ -9,7 +9,7 @@ namespace bgfx
 	struct VertexLayout;
 }
 
-namespace Puffin::Rendering
+namespace puffin::Rendering
 {
 	namespace VK::Util
 	{
@@ -143,25 +143,25 @@ namespace Puffin::Rendering
 
 namespace std
 {
-	template<> struct hash<Puffin::Rendering::VertexPNTV32>
+	template<> struct hash<puffin::Rendering::VertexPNTV32>
 	{
-		size_t operator()(Puffin::Rendering::VertexPNTV32 const& vertex) const
+		size_t operator()(puffin::Rendering::VertexPNTV32 const& vertex) const
 		{
-			return (hash<Puffin::Vector3f>()(vertex.pos) ^
-				(hash<Puffin::Vector3f>()(vertex.normal) << 1) ^
-				(hash<Puffin::Vector3f>()(vertex.tangent) << 1) ^
-				(hash<Puffin::Vector2f>()(vertex.uv) << 1) >> 1);
+			return (hash<puffin::Vector3f>()(vertex.pos) ^
+				(hash<puffin::Vector3f>()(vertex.normal) << 1) ^
+				(hash<puffin::Vector3f>()(vertex.tangent) << 1) ^
+				(hash<puffin::Vector2f>()(vertex.uv) << 1) >> 1);
 		}
 	};
 
-	template<> struct hash<Puffin::Rendering::VertexP64NTV32>
+	template<> struct hash<puffin::Rendering::VertexP64NTV32>
 	{
-		size_t operator()(Puffin::Rendering::VertexP64NTV32 const& vertex) const
+		size_t operator()(puffin::Rendering::VertexP64NTV32 const& vertex) const
 		{
-			return (hash<Puffin::Vector3d>()(vertex.pos) ^
-				(hash<Puffin::Vector3f>()(vertex.normal) << 1) ^
-				(hash<Puffin::Vector3f>()(vertex.tangent) << 1) ^
-				(hash<Puffin::Vector2f>()(vertex.uv) << 1) >> 1);
+			return (hash<puffin::Vector3d>()(vertex.pos) ^
+				(hash<puffin::Vector3f>()(vertex.normal) << 1) ^
+				(hash<puffin::Vector3f>()(vertex.tangent) << 1) ^
+				(hash<puffin::Vector2f>()(vertex.uv) << 1) >> 1);
 		}
 	};
 };

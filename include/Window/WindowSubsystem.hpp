@@ -8,7 +8,7 @@
 class GLFWwindow;
 class GLFWmonitor;
 
-namespace Puffin::Window
+namespace puffin::Window
 {
 	class WindowSubsystem : public Core::Subsystem
 	{

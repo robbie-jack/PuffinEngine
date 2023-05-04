@@ -48,7 +48,7 @@
 		}                                                           \
 	} while (0)
 
-namespace Puffin::Rendering::VK
+namespace puffin::Rendering::VK
 {
 	void VKRenderSystem::Init()
 	{
@@ -687,11 +687,11 @@ namespace Puffin::Rendering::VK
 		{
 			if (inputEvent.actionName == "CamMoveLeft")
 			{
-				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
 				{
 					m_moveLeft = true;
 				}
-				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
 				{
 					m_moveLeft = false;
 				}
@@ -699,11 +699,11 @@ namespace Puffin::Rendering::VK
 
 			if (inputEvent.actionName == "CamMoveRight")
 			{
-				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
 				{
 					m_moveRight = true;
 				}
-				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
 				{
 					m_moveRight = false;
 				}
@@ -711,11 +711,11 @@ namespace Puffin::Rendering::VK
 
 			if (inputEvent.actionName == "CamMoveForward")
 			{
-				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
 				{
 					m_moveForward = true;
 				}
-				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
 				{
 					m_moveForward = false;
 				}
@@ -723,11 +723,11 @@ namespace Puffin::Rendering::VK
 
 			if (inputEvent.actionName == "CamMoveBackward")
 			{
-				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
 				{
 					m_moveBackward = true;
 				}
-				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
 				{
 					m_moveBackward = false;
 				}
@@ -735,11 +735,11 @@ namespace Puffin::Rendering::VK
 
 			if (inputEvent.actionName == "CamMoveUp")
 			{
-				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
 				{
 					m_moveUp = true;
 				}
-				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
 				{
 					m_moveUp = false;
 				}
@@ -747,11 +747,11 @@ namespace Puffin::Rendering::VK
 
 			if (inputEvent.actionName == "CamMoveDown")
 			{
-				if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
 				{
 					m_moveDown = true;
 				}
-				else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
 				{
 					m_moveDown = false;
 				}
@@ -1219,9 +1219,9 @@ namespace Puffin::Rendering::VK
 				Vector3f position = { 0.0f };
 #endif
 
-				if (registry->all_of<Physics::VelocityComponent>(entity))
+				if (registry->all_of<physics::VelocityComponent>(entity))
 				{
-					const auto& velocity = registry->get<Physics::VelocityComponent>(entity);
+					const auto& velocity = registry->get<physics::VelocityComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
 					Vector3d interpolatedPosition = transform.position + velocity.linear * m_engine->timeStepFixed();

@@ -3,7 +3,7 @@
 
 #include <fstream>
 
-namespace Puffin::Assets
+namespace puffin::Assets
 {
 	AssetRegistry* AssetRegistry::s_instance = nullptr;
 

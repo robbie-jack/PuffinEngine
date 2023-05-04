@@ -5,7 +5,7 @@
 #include <math.h>
 #include <stdio.h> 
 
-namespace Puffin
+namespace puffin
 {
 	namespace UI
 	{

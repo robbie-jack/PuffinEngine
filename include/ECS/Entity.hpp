@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace Puffin::ECS
+namespace puffin::ECS
 {
 	class Entity
 	{

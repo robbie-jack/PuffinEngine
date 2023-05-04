@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace Puffin
+namespace puffin
 {
 	// Ring Buffer Interface
 

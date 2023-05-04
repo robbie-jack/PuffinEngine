@@ -4,7 +4,7 @@
 #include <Components\TransformComponent.h>
 #include "Engine/EventSubsystem.hpp"
 
-namespace Puffin
+namespace puffin
 {
 	enum class GizmoMode
 	{

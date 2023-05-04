@@ -16,7 +16,7 @@
 
 namespace fs = std::filesystem;
 
-namespace Puffin
+namespace puffin
 {
 	namespace Audio
 	{
@@ -29,7 +29,7 @@ namespace Puffin
 	}
 }
 
-namespace Puffin::Core
+namespace puffin::Core
 {
 	// Various stages when methods can be executed during engine runtime
 	enum class ExecutionStage

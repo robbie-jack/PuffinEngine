@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace Puffin
+namespace puffin
 {
 	namespace UI
 	{

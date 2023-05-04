@@ -26,15 +26,13 @@
 #include <memory>
 
 
-namespace Puffin
+namespace puffin
 {
 	struct SceneObjectComponent;
 }
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
-	const uint32_t MAX_SHAPES_PER_TYPE = 128; // Maximum number of shapes of each type
-
 	//////////////////////////////////////////////////
 	// Physics System 2D
 	//////////////////////////////////////////////////
@@ -48,110 +46,112 @@ namespace Puffin::Physics
 
 		void SetupCallbacks() override
 		{
-			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "Onager2DPhysicsSystem: Init");
-			m_engine->registerCallback(Core::ExecutionStage::fixedUpdate, [&]() { FixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
-			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { Stop(); }, "Onager2DPhysicsSystem: Stop");
+			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { init(); }, "Onager2DPhysicsSystem: Init");
+			m_engine->registerCallback(Core::ExecutionStage::fixedUpdate, [&]() { fixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
+			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { stop(); }, "Onager2DPhysicsSystem: Stop");
 
-			auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+			const auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
-			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructRigidbody>(this);
-			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyRigidbody>(this);
+			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::onConstructRigidbody>(this);
+			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::onDestroyRigidbody>(this);
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent>>();
 			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent>>();
 
-			registry->on_construct<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructBox>(this);
-			registry->on_update<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructBox>(this);
-			registry->on_destroy<BoxComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyBox>(this);
+			registry->on_construct<BoxComponent2D>().connect<&Onager2DPhysicsSystem::onConstructBox>(this);
+			registry->on_update<BoxComponent2D>().connect<&Onager2DPhysicsSystem::onConstructBox>(this);
+			registry->on_destroy<BoxComponent2D>().connect<&Onager2DPhysicsSystem::onDestroyBox>(this);
 
-			registry->on_construct<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructCircle>(this);
-			registry->on_update<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructCircle>(this);
-			registry->on_destroy<CircleComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyCircle>(this);
+			registry->on_construct<CircleComponent2D>().connect<&Onager2DPhysicsSystem::onConstructCircle>(this);
+			registry->on_update<CircleComponent2D>().connect<&Onager2DPhysicsSystem::onConstructCircle>(this);
+			registry->on_destroy<CircleComponent2D>().connect<&Onager2DPhysicsSystem::onDestroyCircle>(this);
 
-			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructRigidbody>(this);
-			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyRigidbody>(this);
+			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::onConstructRigidbody>(this);
+			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::onDestroyRigidbody>(this);
 		}
 
-		void Init();
-		void FixedUpdate();
-		void Stop();
+		void init();
+		void fixedUpdate();
+		void stop();
 
 		template<typename T>
-		void RegisterBroadphase()
+		void registerBroadphase()
 		{
 			const char* typeName = typeid(T).name();
 
-			assert(m_broadphases.count(typeName) == 0 && "Attempting to register already registered broadphase");
+			assert(broadphases_.find(typeName) == broadphases_.end() && "Attempting to register already registered broadphase");
 
 			std::shared_ptr<T> broadphase = std::make_shared<T>();
 			std::shared_ptr<Broadphase> broadphaseBase = std::static_pointer_cast<Broadphase>(broadphase);
 			broadphaseBase->SetWorld(m_world);
 			broadphaseBase->SetECS(m_engine->getSubsystem<ECS::EnTTSubsystem>());
 
-			m_broadphases.insert({typeName, broadphaseBase});
+			broadphases_.emplace(typeName, broadphaseBase);
 		}
 
 		template<typename T>
-		void SetBroadphase()
+		void setBroadphase()
 		{
 			const char* typeName = typeid(T).name();
 
-			assert(m_broadphases.count(typeName) == 1 && "Attempting to set un-registered broadphase");
+			assert(broadphases_.find(typeName) != broadphases_.end() && "Attempting to set un-registered broadphase");
 
-			m_activeBroadphase = m_broadphases[typeName];
+			activeBroadphase_ = broadphases_[typeName];
 		}
 
-		void OnConstructBox(entt::registry& registry, entt::entity entity);
-		void OnDestroyBox(entt::registry& registry, entt::entity entity);
+		void onConstructBox(entt::registry& registry, entt::entity entity);
+		void onDestroyBox(entt::registry& registry, entt::entity entity);
 
-		void OnConstructCircle(entt::registry& registry, entt::entity entity);
-		void OnDestroyCircle(entt::registry& registry, entt::entity entity);
+		void onConstructCircle(entt::registry& registry, entt::entity entity);
+		void onDestroyCircle(entt::registry& registry, entt::entity entity);
 
-		void OnConstructRigidbody(entt::registry& registry, entt::entity entity);
-		void OnDestroyRigidbody(entt::registry& registry, entt::entity entity);
+		void onConstructRigidbody(entt::registry& registry, entt::entity entity);
+		void onDestroyRigidbody(entt::registry& registry, entt::entity entity);
 
 	private:
 
-		Vector2f m_gravity = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
+		constexpr static size_t maxShapes = 10000;
 
-		PackedVector<Shape2D*> m_shapes;
-		PackedVector<BoxShape2D> m_boxShapes;
-		PackedVector<CircleShape2D> m_circleShapes;
-		PackedVector<std::shared_ptr<Collision2D::Collider2D>> m_colliders;
+		Vector2f gravity_ = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
-		bool m_collidersUpdated = false;
+		PackedVector<Shape2D*> shapes_;
+		PackedVector<BoxShape2D> boxShapes_;
+		PackedVector<CircleShape2D> circleShapes_;
+		PackedVector<std::shared_ptr<collision2D::Collider2D>> colliders_;
 
-		std::vector<CollisionPair> m_collisionPairs; // Pairs of entities which should be checked for collisions
-		std::vector<Collision2D::Contact> m_collisionContacts; // Pairs of entities which have collided
-		std::set<Collision2D::Contact> m_activeContacts; // Set for tracking active collisions
+		bool collidersUpdated_ = false;
 
-		std::shared_ptr<Broadphase> m_activeBroadphase = nullptr;
-		std::unordered_map<const char*, std::shared_ptr<Broadphase>> m_broadphases; // Map of registered broadphases
+		std::vector<CollisionPair> collisionPairs_; // Pairs of entities which should be checked for collisions
+		std::vector<collision2D::Contact> collisionContacts_; // Pairs of entities which have collided
+		std::set<collision2D::Contact> activeContacts_; // Set for tracking active collisions
+
+		std::shared_ptr<Broadphase> activeBroadphase_ = nullptr;
+		std::unordered_map<const char*, std::shared_ptr<Broadphase>> broadphases_; // Map of registered broadphases
 
 		// Init/Update/Delete of Physics Related Components
-		void InitCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle);
-		void CleanupCircle(const SceneObjectComponent& object);
+		void initCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle);
+		void cleanupCircle(const SceneObjectComponent& object);
 
-		void InitBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box);
-		void CleanupBox(const SceneObjectComponent& object);
+		void initBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box);
+		void cleanupBox(const SceneObjectComponent& object);
 
-		void InsertCollider(UUID id, std::shared_ptr<Collision2D::Collider2D> collider);
-		void EraseCollider(UUID id);
+		void insertCollider(UUID id, std::shared_ptr<collision2D::Collider2D> collider);
+		void eraseCollider(UUID id);
 
 		// Dynamics
-		void UpdateDynamics() const; // Perform velocity updates for all rigid bodies
-		void CalculateImpulseByGravity(RigidbodyComponent2D& body) const; // Calculate Impulse due to force of gravity
+		void updateDynamics() const; // Perform velocity updates for all rigid bodies
+		void calculateImpulseByGravity(RigidbodyComponent2D& body) const; // Calculate Impulse due to force of gravity
 
 		// Collision Broadphase
-		void CollisionBroadphase(); // Perform collision broadphase to decide which entities should collider together
+		void collisionBroadphase(); // Perform collision broadphase to decide which entities should collider together
 
 		// Collision Detection
-		void CollisionDetection();
+		void collisionDetection();
 
 		// Resolve collisions found during collision detection, applying the correct Impulse 
-		void CollisionResponse() const;
+		void collisionResponse() const;
 
-		void GenerateCollisionEvents();
+		void generateCollisionEvents();
 
 	};
 }

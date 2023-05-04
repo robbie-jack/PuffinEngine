@@ -21,7 +21,7 @@
 
 #include <vector>
 
-namespace Puffin::Rendering::BGFX
+namespace puffin::Rendering::BGFX
 {
 	void BGFXRenderSystem::Init()
 	{
@@ -231,11 +231,11 @@ namespace Puffin::Rendering::BGFX
 		{
             if (inputEvent.actionName == "CamMoveLeft")
             {
-                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
                 {
                     m_moveLeft = true;
                 }
-                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
                 {
                     m_moveLeft = false;
                 }
@@ -243,11 +243,11 @@ namespace Puffin::Rendering::BGFX
 
             if (inputEvent.actionName == "CamMoveRight")
             {
-                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
                 {
                     m_moveRight = true;
                 }
-                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
                 {
                     m_moveRight = false;
                 }
@@ -255,11 +255,11 @@ namespace Puffin::Rendering::BGFX
 
             if (inputEvent.actionName == "CamMoveForward")
             {
-                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
                 {
                     m_moveForward = true;
                 }
-                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
                 {
                     m_moveForward = false;
                 }
@@ -267,11 +267,11 @@ namespace Puffin::Rendering::BGFX
 
             if (inputEvent.actionName == "CamMoveBackward")
             {
-                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
                 {
                     m_moveBackward = true;
                 }
-                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
                 {
                     m_moveBackward = false;
                 }
@@ -279,11 +279,11 @@ namespace Puffin::Rendering::BGFX
 
             if (inputEvent.actionName == "CamMoveUp")
             {
-                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
                 {
                     m_moveUp = true;
                 }
-                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
                 {
                     m_moveUp = false;
                 }
@@ -291,11 +291,11 @@ namespace Puffin::Rendering::BGFX
 
             if (inputEvent.actionName == "CamMoveDown")
             {
-                if (inputEvent.actionState == Puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
                 {
                     m_moveDown = true;
                 }
-                else if (inputEvent.actionState == Puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
                 {
                     m_moveDown = false;
                 }

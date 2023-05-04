@@ -8,7 +8,7 @@
 
 using namespace irrklang;
 
-namespace Puffin::Audio
+namespace puffin::Audio
 {
 	void AudioSubsystem::SetupCallbacks()
 	{

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace Puffin::Assets
+namespace puffin::Assets
 {
 	static const std::string G_STATIC_MESH_TYPE = "StaticMesh";
 	static constexpr uint32_t G_STATIC_MESH_VERSION = 1; // Latest version of Static Mesh Asset Format

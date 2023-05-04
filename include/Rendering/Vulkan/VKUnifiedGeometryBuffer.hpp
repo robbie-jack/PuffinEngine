@@ -8,7 +8,7 @@
 #include <vector>
 #include <set>
 
-namespace Puffin::Rendering::VK
+namespace puffin::Rendering::VK
 {
 	class VKRenderSystem;
 

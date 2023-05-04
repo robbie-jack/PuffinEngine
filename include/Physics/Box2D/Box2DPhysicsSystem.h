@@ -11,7 +11,7 @@
 #include "box2d/box2d.h"
 #include "box2d/b2_world.h"
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	const inline std::unordered_map<BodyType, b2BodyType> gBodyType =
 	{
@@ -19,8 +19,6 @@ namespace Puffin::Physics
 		{ BodyType::Kinematic, b2_kinematicBody },
 		{ BodyType::Dynamic, b2_dynamicBody }
 	};
-
-	constexpr size_t gMaxShapes = 10000;
 
 	class Box2DPhysicsSystem : public ECS::System
 	{
@@ -76,6 +74,8 @@ namespace Puffin::Physics
 
 	private:
 
+		constexpr static size_t maxShapes_ = 10000;
+
 		b2Vec2 gravity_ = b2Vec2(0.0f, -9.81f);
 		int32 velocityIterations_ = 8;
 		int32 positionIterations_ = 3;
@@ -84,9 +84,9 @@ namespace Puffin::Physics
 		std::unique_ptr<Box2DContactListener> contactListener_ = nullptr;
 
 		PackedVector<b2Body*> bodies_; // Packed Vector of bodies use in physics simulation
-		PackedArray<b2Shape*, gMaxShapes> shapes_;
-		PackedArray<b2CircleShape, gMaxShapes> circleShapes_; // Packed Vector of circle shapes
-		PackedArray<b2PolygonShape, gMaxShapes> polygonShapes_; // Packed Vector of polygon shapes
+		PackedArray<b2Shape*, maxShapes_> shapes_;
+		PackedArray<b2CircleShape, maxShapes_> circleShapes_; // Packed Vector of circle shapes
+		PackedArray<b2PolygonShape, maxShapes_> polygonShapes_; // Packed Vector of polygon shapes
 		PackedVector<b2Fixture*> fixtures_; // Packed Vector of Fixtures that connect bodies and shapes
 
 		std::vector<UUID> circlesToInit_;

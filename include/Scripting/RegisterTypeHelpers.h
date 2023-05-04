@@ -7,9 +7,9 @@
 
 #include "Components/TransformComponent.h"
 
-typedef Puffin::TransformComponent STransformComponent;
+typedef puffin::TransformComponent STransformComponent;
 
-namespace Puffin::Scripting
+namespace puffin::Scripting
 {
 	/*
 	* Example Code for Constructor/Deconstructor

@@ -9,7 +9,7 @@
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
-namespace Puffin
+namespace puffin
 {
 	namespace IO
 	{

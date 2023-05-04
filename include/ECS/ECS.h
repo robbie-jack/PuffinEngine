@@ -18,7 +18,7 @@
 #include <typeinfo>
 #include <bitset>
 
-namespace Puffin::ECS
+namespace puffin::ECS
 {
 	typedef uint8_t FlagType;
 	constexpr FlagType MAX_FLAGS = 255;

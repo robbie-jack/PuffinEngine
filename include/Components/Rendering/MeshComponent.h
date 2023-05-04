@@ -8,7 +8,7 @@
 
 #include <vector>
 
-namespace Puffin::Rendering
+namespace puffin::Rendering
 {
 	struct MeshComponent
 	{

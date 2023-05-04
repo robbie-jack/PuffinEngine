@@ -1,6 +1,6 @@
 #include "ECS/Entity.hpp"
 
-namespace Puffin::ECS
+namespace puffin::ECS
 {
 	EntityCache* EntityCache::s_instance = nullptr;
 }

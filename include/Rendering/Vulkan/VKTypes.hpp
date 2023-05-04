@@ -7,7 +7,7 @@
 #include "imgui.h"
 #include "ECS/EntityID.h"
 
-namespace Puffin::Rendering::VK
+namespace puffin::Rendering::VK
 {
 	struct UploadContext
 	{

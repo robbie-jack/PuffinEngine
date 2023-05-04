@@ -2,7 +2,7 @@
 
 #include "UIWindow.h"
 
-namespace Puffin::UI
+namespace puffin::UI
 {
 	class UIContentBrowser : public UIWindow
 	{

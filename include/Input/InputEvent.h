@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Puffin::Input
+namespace puffin::Input
 {
 	enum class KeyState
 	{

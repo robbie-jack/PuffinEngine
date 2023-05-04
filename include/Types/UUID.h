@@ -4,7 +4,7 @@
 #include <random>
 #include "nlohmann/json.hpp"
 
-namespace Puffin
+namespace puffin
 {
 	static std::random_device RandomDevice;
 	static std::mt19937_64 RandEngine(RandomDevice());
@@ -40,9 +40,9 @@ namespace Puffin
 namespace std
 {
 	template<>
-	struct hash<Puffin::UUID>
+	struct hash<puffin::UUID>
 	{
-		std::size_t operator()(const Puffin::UUID& uuid) const
+		std::size_t operator()(const puffin::UUID& uuid) const
 		{
 			return hash<uint64_t>()((uint64_t)uuid);
 		}

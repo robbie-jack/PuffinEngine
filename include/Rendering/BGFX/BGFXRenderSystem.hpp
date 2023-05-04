@@ -21,16 +21,16 @@
 namespace std
 {
 	template<>
-	struct hash<std::pair<Puffin::UUID, Puffin::UUID>>
+	struct hash<std::pair<puffin::UUID, puffin::UUID>>
 	{
-		std::size_t operator()(const std::pair<Puffin::UUID, Puffin::UUID>& pair) const
+		std::size_t operator()(const std::pair<puffin::UUID, puffin::UUID>& pair) const
 		{
 			return hash<uint64_t>()((uint64_t)pair.first) ^ hash<uint64_t>()((uint64_t)pair.second);
 		}
 	};
 }
 
-namespace Puffin::Rendering::BGFX
+namespace puffin::Rendering::BGFX
 {
 	static VertexPC32 s_cubeVertices[] =
 	{

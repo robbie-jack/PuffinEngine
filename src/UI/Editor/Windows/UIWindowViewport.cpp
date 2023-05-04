@@ -6,7 +6,7 @@
 #include <ManipulationGizmo.h>
 #include <ECS/ECS.h>
 
-namespace Puffin
+namespace puffin
 {
 	namespace UI
 	{

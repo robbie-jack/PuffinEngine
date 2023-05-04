@@ -6,7 +6,7 @@
 
 namespace fs = std::filesystem;
 
-namespace Puffin::UI
+namespace puffin::UI
 {
 	void UIContentBrowser::Draw(double dt)
 	{

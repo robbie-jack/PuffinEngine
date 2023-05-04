@@ -44,7 +44,7 @@
 #include <unistd.h>
 #endif
 
-namespace Puffin::Core
+namespace puffin::Core
 {
 	void Engine::init()
 	{
@@ -81,9 +81,9 @@ namespace Puffin::Core
 		sceneData_->RegisterComponent<Rendering::ShadowCasterComponent>();
 		sceneData_->RegisterComponent<Rendering::CameraComponent>();
 
-		sceneData_->RegisterComponent<Physics::RigidbodyComponent2D>();
-		sceneData_->RegisterComponent<Physics::BoxComponent2D>();
-		sceneData_->RegisterComponent<Physics::CircleComponent2D>();
+		sceneData_->RegisterComponent<physics::RigidbodyComponent2D>();
+		sceneData_->RegisterComponent<physics::BoxComponent2D>();
+		sceneData_->RegisterComponent<physics::CircleComponent2D>();
 
 		sceneData_->RegisterComponent<Scripting::AngelScriptComponent>();
 		sceneData_->RegisterComponent<Scripting::NativeScriptComponent>();
@@ -94,10 +94,10 @@ namespace Puffin::Core
 		sceneData_->RegisterComponent<Procedural::IcoSphereComponent>();
 
 		// Systems
-		//RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
+		//registerSystem<Rendering::BGFX::BGFXRenderSystem>();
 		registerSystem<Rendering::VK::VKRenderSystem>();
-		//RegisterSystem<Physics::Onager2DPhysicsSystem>();
-		registerSystem<Physics::Box2DPhysicsSystem>();
+		registerSystem<physics::Onager2DPhysicsSystem>();
+		//registerSystem<Physics::Box2DPhysicsSystem>();
 		registerSystem<Scripting::AngelScriptSystem>();
 		registerSystem<Scripting::NativeScriptSystem>();
 		registerSystem<Procedural::ProceduralMeshGenSystem>();
@@ -527,10 +527,10 @@ namespace Puffin::Core
 			mesh.meshAssetID = meshId3;
 			mesh.textureAssetID = textureId2;
 
-			auto& box = registry->emplace<Physics::BoxComponent2D>(floorEntity);
-			registry->patch<Physics::BoxComponent2D>(floorEntity, [](auto& box) { box.halfExtent = Vector2f(250.0f, 1.0f); });
+			auto& box = registry->emplace<physics::BoxComponent2D>(floorEntity);
+			registry->patch<physics::BoxComponent2D>(floorEntity, [](auto& box) { box.halfExtent = Vector2f(250.0f, 1.0f); });
 
-			auto& rb = registry->emplace<Physics::RigidbodyComponent2D>(floorEntity);
+			auto& rb = registry->emplace<physics::RigidbodyComponent2D>(floorEntity);
 		}
 
 		// Create Box Entities
@@ -556,12 +556,12 @@ namespace Puffin::Core
 				mesh.meshAssetID = meshId3;
 				mesh.textureAssetID = textureId2;
 
-				auto& box = registry->emplace<Physics::BoxComponent2D>(boxEntity);
-				registry->patch<Physics::BoxComponent2D>(boxEntity, [](auto& box) { box.halfExtent = Vector2f(1.0f); });
+				auto& box = registry->emplace<physics::BoxComponent2D>(boxEntity);
+				registry->patch<physics::BoxComponent2D>(boxEntity, [](auto& box) { box.halfExtent = Vector2f(1.0f); });
 
-				auto& rb = registry->emplace<Physics::RigidbodyComponent2D>(boxEntity);
+				auto& rb = registry->emplace<physics::RigidbodyComponent2D>(boxEntity);
 				rb.mass = 1.0f;
-				rb.bodyType = Physics::BodyType::Dynamic;
+				rb.bodyType = physics::BodyType::Dynamic;
 			}
 		}
 	}

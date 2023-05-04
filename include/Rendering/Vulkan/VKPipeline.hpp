@@ -5,7 +5,7 @@
 
 #include "VKVertex.hpp"
 
-namespace Puffin::Rendering::VK::Util
+namespace puffin::Rendering::VK::Util
 {
 	class ShaderModule
 	{

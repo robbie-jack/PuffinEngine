@@ -8,7 +8,7 @@
 #include <typeindex>
 #include <functional>
 
-namespace Puffin::Core
+namespace puffin::Core
 {
 	class ISignalHandler
 	{

@@ -11,7 +11,7 @@
 #include <ECS/ECS.h>
 #include "Engine/Engine.hpp"
 
-namespace Puffin
+namespace puffin
 {
 	namespace ECS
 	{

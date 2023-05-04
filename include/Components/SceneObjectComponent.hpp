@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace Puffin
+namespace puffin
 {
 	// Stores data about scene objects such as uuid, name, etc...
 	struct SceneObjectComponent

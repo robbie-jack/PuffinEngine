@@ -11,7 +11,7 @@
 
 #include <memory>
 
-namespace Puffin
+namespace puffin
 {
     namespace UI
     {

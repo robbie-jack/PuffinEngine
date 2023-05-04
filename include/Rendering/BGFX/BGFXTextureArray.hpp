@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 
-namespace Puffin::Rendering::BGFX
+namespace puffin::Rendering::BGFX
 {
 	class TextureArray
 	{

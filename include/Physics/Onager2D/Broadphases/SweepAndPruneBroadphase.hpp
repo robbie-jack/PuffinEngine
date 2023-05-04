@@ -2,7 +2,7 @@
 
 #include "Broadphase2D.hpp"
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	class SweepAndPruneBroadphase : public Broadphase
 	{
@@ -11,14 +11,14 @@ namespace Puffin::Physics
 		SweepAndPruneBroadphase() = default;
 		~SweepAndPruneBroadphase() override = default;
 
-		void GenerateCollisionPairs(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders,
+		void generateCollisionPairs(PackedVector<std::shared_ptr<collision2D::Collider2D>>& inColliders,
 			std::vector<CollisionPair>& outCollisionPairs, bool collidersUpdated) override;
 
 	private:
 
-		std::vector<std::shared_ptr<Collision2D::Collider2D>> m_sortedColliders;
+		std::vector<std::shared_ptr<collision2D::Collider2D>> sortedColliders_;
 
-		void SortCollidersByX(std::vector<std::shared_ptr<Collision2D::Collider2D>>& colliders);
+		void sortCollidersByX(std::vector<std::shared_ptr<collision2D::Collider2D>>& colliders);
 
 	};
 }

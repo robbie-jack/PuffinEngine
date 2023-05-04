@@ -5,7 +5,7 @@
 #include <array>
 #include <unordered_map>
 
-namespace Puffin
+namespace puffin
 {
 	// Fixed and Dynamically Sized Arrays which ensure data is packed tightly to maximize cache utilization
 	

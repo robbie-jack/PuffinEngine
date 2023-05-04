@@ -2,7 +2,7 @@
 
 #include "ECS/ECS.h"
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	struct CollisionBeginEvent
 	{

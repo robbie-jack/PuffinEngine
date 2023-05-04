@@ -22,7 +22,7 @@
 #include <map>
 #include <memory>
 
-namespace Puffin
+namespace puffin
 {
 	namespace Scripting
 	{
@@ -72,8 +72,8 @@ namespace Puffin
 
 			// Event Buffers
 			std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents = nullptr;;
-			std::shared_ptr<RingBuffer<Physics::CollisionBeginEvent>> m_collisionBeginEvents = nullptr;
-			std::shared_ptr<RingBuffer<Physics::CollisionEndEvent>> m_collisionEndEvents = nullptr;
+			std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> m_collisionBeginEvents = nullptr;
+			std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> m_collisionEndEvents = nullptr;
 
 			// Maps of Input Callbacks
 			std::unordered_map<std::string, ScriptCallbackMap> m_onInputPressedCallbacks;

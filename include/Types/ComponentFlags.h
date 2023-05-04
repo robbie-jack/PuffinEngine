@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Puffin
+namespace puffin
 {
 	struct FlagDirty {};
 	struct FlagDeleted {};

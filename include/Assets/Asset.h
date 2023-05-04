@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-namespace Puffin::Assets
+namespace puffin::Assets
 {
 	struct AssetData
 	{

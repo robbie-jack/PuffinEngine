@@ -9,9 +9,9 @@
 
 #include <memory>
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
-	typedef std::pair<const std::shared_ptr<Collision2D::Collider2D>, const std::shared_ptr<Collision2D::Collider2D>> CollisionPair;
+	typedef std::pair<const std::shared_ptr<collision2D::Collider2D>, const std::shared_ptr<collision2D::Collider2D>> CollisionPair;
 
 	class Broadphase
 	{
@@ -19,35 +19,35 @@ namespace Puffin::Physics
 
 		virtual ~Broadphase() = default;
 
-		virtual void GenerateCollisionPairs(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs, bool
+		virtual void generateCollisionPairs(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
 		                                    collidersUpdated) = 0;
 
 		void SetWorld(std::shared_ptr<ECS::World> world)
 		{
-			m_world = world;
+			world_ = world;
 		}
 
 		void SetECS(std::shared_ptr<ECS::EnTTSubsystem> ecs)
 		{
-			m_ecs = ecs;
+			ecs_ = ecs;
 		}
 
 	protected:
 
-		bool FilterCollisionPair(const CollisionPair& pair, const std::vector<CollisionPair>& collisionPairs) const
+		bool filterCollisionPair(const CollisionPair& pair, const std::vector<CollisionPair>& collisionPairs) const
 		{
 			// Don't perform collision check between collider and itself
 			if (pair.first->uuid == pair.second->uuid)
 				return false;
 
-			auto registry = m_ecs->Registry();
+			const auto registry = ecs_->Registry();
 
-			if (!registry->valid(m_ecs->GetEntity(pair.first->uuid)) || !registry->valid(m_ecs->GetEntity(pair.second->uuid)))
+			if (!registry->valid(ecs_->GetEntity(pair.first->uuid)) || !registry->valid(ecs_->GetEntity(pair.second->uuid)))
 				return false;
 
 			// Don't perform collision check between colliders which both have infinite mass
-			const auto& rbA = registry->get<RigidbodyComponent2D>(m_ecs->GetEntity(pair.first->uuid));
-			const auto& rbB = registry->get<RigidbodyComponent2D>(m_ecs->GetEntity(pair.second->uuid));
+			const auto& rbA = registry->get<RigidbodyComponent2D>(ecs_->GetEntity(pair.first->uuid));
+			const auto& rbB = registry->get<RigidbodyComponent2D>(ecs_->GetEntity(pair.second->uuid));
 
 			if (rbA.mass == 0.0f && rbB.mass == 0.0f)
 				return false;
@@ -66,8 +66,8 @@ namespace Puffin::Physics
 			return true;
 		}
 
-		std::shared_ptr<ECS::World> m_world = nullptr;
-		std::shared_ptr<ECS::EnTTSubsystem> m_ecs = nullptr;
+		std::shared_ptr<ECS::World> world_ = nullptr;
+		std::shared_ptr<ECS::EnTTSubsystem> ecs_ = nullptr;
 
 	};
 
@@ -78,26 +78,26 @@ namespace Puffin::Physics
 		NSquaredBroadphase() = default;
 		~NSquaredBroadphase() override = default;
 
-		void GenerateCollisionPairs(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs, bool
+		void generateCollisionPairs(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
 		                            collidersUpdated) override
 		{
-			outCollisionPairs.clear();
-			outCollisionPairs.reserve(inColliders.Size() * inColliders.Size());
+			collisionPairs.clear();
+			collisionPairs.reserve(colliders.Size() * colliders.Size());
 
-			for (const auto colliderA : inColliders)
+			for (const auto colliderA : colliders)
 			{
-				for (const auto colliderB : inColliders)
+				for (const auto colliderB : colliders)
 				{
 					auto collisionPair = std::make_pair(colliderA, colliderB);
 
-					if (FilterCollisionPair(collisionPair, outCollisionPairs) == true)
+					if (filterCollisionPair(collisionPair, collisionPairs) == true)
 					{
-						AABB a = colliderA->GetAABB();
-						AABB b = colliderB->GetAABB();
+						AABB a = colliderA->getAABB();
+						AABB b = colliderB->getAABB();
 
-						if (Collision2D::TestAABBVsAABB(a, b))
+						if (collision2D::testAabbVsAabb(a, b))
 						{
-							outCollisionPairs.emplace_back(collisionPair);
+							collisionPairs.emplace_back(collisionPair);
 						}
 					}
 				}

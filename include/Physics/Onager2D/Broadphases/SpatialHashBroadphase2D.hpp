@@ -4,7 +4,7 @@
 
 #include <unordered_map>
 
-namespace Puffin::Physics
+namespace puffin::physics
 {
 	class SpatialHashBroadphase2D : public Broadphase
 	{
@@ -13,24 +13,24 @@ namespace Puffin::Physics
 		SpatialHashBroadphase2D() = default;
 		~SpatialHashBroadphase2D() override = default;
 
-		void GenerateCollisionPairs(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& inColliders,
+		void generateCollisionPairs(PackedVector<std::shared_ptr<collision2D::Collider2D>>& inColliders,
 			std::vector<CollisionPair>& outCollisionPairs, bool collidersUpdated) override;
 
 	private:
 
-		typedef std::vector<std::shared_ptr<Collision2D::Collider2D>> ColliderVector;
+		typedef std::vector<std::shared_ptr<collision2D::Collider2D>> ColliderVector;
 
-		std::unordered_map<int, ColliderVector> m_colliderSpatialMap;
+		std::unordered_map<int, ColliderVector> colliderSpatialMap_;
 
-		const int m_defaultGridSize = 1;
-		int m_gridSize = m_defaultGridSize;
+		const int defaultGridSize_ = 1;
+		int gridSize_ = defaultGridSize_;
 
-		const int m_defaultHashMapSize = 19;
-		int m_hashMapSize = m_defaultHashMapSize;
+		const int defaultHashMapSize_ = 19;
+		int hashMapSize_ = defaultHashMapSize_;
 
-		int GenerateHash(double x, double y) const;
+		int generateHash(double x, double y) const;
 
-		void UpdateSpatialMap(PackedVector<std::shared_ptr<Collision2D::Collider2D>>& colliders);
+		void updateSpatialMap(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders);
 
 	};
 }

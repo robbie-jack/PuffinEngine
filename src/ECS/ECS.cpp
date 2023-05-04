@@ -2,7 +2,7 @@
 
 #include "Engine/Engine.hpp"
 
-namespace Puffin::ECS
+namespace puffin::ECS
 {
 	void World::SetupCallbacks()
 	{

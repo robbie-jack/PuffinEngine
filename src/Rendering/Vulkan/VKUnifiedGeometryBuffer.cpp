@@ -17,7 +17,7 @@
 		}                                                           \
 	} while (0)
 
-namespace Puffin::Rendering::VK
+namespace puffin::Rendering::VK
 {
 	void UnifiedGeometryBuffer::Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, uint32_t indexSize,
 	                                 vk::DeviceSize initialVertexBufferSize, vk::DeviceSize initialIndexBufferSize, vk::DeviceSize vertexBufferBlockSize, vk

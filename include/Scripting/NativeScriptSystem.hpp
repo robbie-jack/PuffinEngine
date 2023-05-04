@@ -3,7 +3,7 @@
 #include "ECS/ECS.h"
 #include "Engine/Engine.hpp"
 
-namespace Puffin::Scripting
+namespace puffin::Scripting
 {
 	class NativeScriptSystem : public ECS::System
 	{

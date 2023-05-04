@@ -19,7 +19,7 @@
 #include <iostream>
 #include <string>
 
-namespace Puffin
+namespace puffin
 {
 	namespace UI
 	{
@@ -134,17 +134,17 @@ namespace Puffin
 							
 						if (ImGui::Selectable("Rigidbody"))
 						{
-							ecsWorld->AddComponent<Physics::RigidbodyComponent2D>(m_entity);
+							ecsWorld->AddComponent<physics::RigidbodyComponent2D>(m_entity);
 						}
 
 						if (ImGui::Selectable("Circle2D"))
 						{
-							ecsWorld->AddComponent<Physics::CircleComponent2D>(m_entity);
+							ecsWorld->AddComponent<physics::CircleComponent2D>(m_entity);
 						}
 
 						if (ImGui::Selectable("Box2D"))
 						{
-							ecsWorld->AddComponent<Physics::BoxComponent2D>(m_entity);
+							ecsWorld->AddComponent<physics::BoxComponent2D>(m_entity);
 						}
 
 						ImGui::EndPopup();
@@ -459,18 +459,18 @@ namespace Puffin
 		void UIWindowEntityProperties::DrawRigidbody2DUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Physics::RigidbodyComponent2D>(m_entity))
+			if (ecsWorld->HasComponent<physics::RigidbodyComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& rb = ecsWorld->GetComponent<Physics::RigidbodyComponent2D>(m_entity);
+					auto& rb = ecsWorld->GetComponent<physics::RigidbodyComponent2D>(m_entity);
 					bool dirty = false;
 
 					if (ImGui::SmallButton("X##Rigidbody"))
 					{
-						ecsWorld->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<physics::RigidbodyComponent2D, FlagDeleted>(m_entity, true);
 							
 						sceneChanged = true;
 					}
@@ -487,7 +487,7 @@ namespace Puffin
 							if (ImGui::Selectable(items[i], isSelected))
 							{
 								item_current_idx = i;
-								rb.bodyType = static_cast<Physics::BodyType>(item_current_idx);
+								rb.bodyType = static_cast<physics::BodyType>(item_current_idx);
 								dirty = true;
 							}
 
@@ -513,7 +513,7 @@ namespace Puffin
 					if(dirty)
 					{
 						sceneChanged = true;
-						ecsWorld->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
+						ecsWorld->SetComponentFlag<physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
 					}
 
 					ImGui::TreePop();
@@ -524,18 +524,18 @@ namespace Puffin
 		void UIWindowEntityProperties::DrawCircle2DUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Physics::CircleComponent2D>(m_entity))
+			if (ecsWorld->HasComponent<physics::CircleComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Circle Component 2D", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& circle = ecsWorld->GetComponent<Physics::CircleComponent2D>(m_entity);
+					auto& circle = ecsWorld->GetComponent<physics::CircleComponent2D>(m_entity);
 					bool dirty = false;
 
 					if (ImGui::SmallButton("X##Circle2D"))
 					{
-						ecsWorld->SetComponentFlag<Physics::CircleComponent2D, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<physics::CircleComponent2D, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
@@ -545,7 +545,7 @@ namespace Puffin
 					if (dirty)
 					{
 						sceneChanged = true;
-						ecsWorld->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
+						ecsWorld->SetComponentFlag<physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
 					}
 
 					ImGui::TreePop();
@@ -556,18 +556,18 @@ namespace Puffin
 		void UIWindowEntityProperties::DrawBox2DUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Physics::BoxComponent2D>(m_entity))
+			if (ecsWorld->HasComponent<physics::BoxComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Box Component 2D", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& box = ecsWorld->GetComponent<Physics::BoxComponent2D>(m_entity);
+					auto& box = ecsWorld->GetComponent<physics::BoxComponent2D>(m_entity);
 					bool dirty = false;
 
 					if (ImGui::SmallButton("X##Box2D"))
 					{
-						ecsWorld->SetComponentFlag< Physics::BoxComponent2D, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag< physics::BoxComponent2D, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
@@ -577,7 +577,7 @@ namespace Puffin
 					if (dirty)
 					{
 						sceneChanged = true;
-						ecsWorld->SetComponentFlag<Physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
+						ecsWorld->SetComponentFlag<physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
 					}
 
 					ImGui::TreePop();
