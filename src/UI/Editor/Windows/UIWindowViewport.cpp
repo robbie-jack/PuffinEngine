@@ -31,7 +31,7 @@ namespace Puffin
 		{
 			windowName = "Viewport";
 
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
 			if (show)
 			{
@@ -56,10 +56,10 @@ namespace Puffin
 					ImGui::Dummy(ImVec2((ImGui::GetWindowWidth() / 2) - 350.0f, 0.0f));
 					if (ImGui::Button(playButtonLabel.c_str()))
 					{
-						m_engine->Play();
+						m_engine->play();
 
-						Core::PlayState playState = m_engine->GetPlayState();
-						if (playState == Core::PlayState::PAUSED || playState == Core::PlayState::STOPPED)
+						Core::PlayState playState = m_engine->playState();
+						if (playState == Core::PlayState::paused || playState == Core::PlayState::stopped)
 						{
 							playButtonLabel = "Play";
 						}
@@ -71,7 +71,7 @@ namespace Puffin
 
 					if (ImGui::Button("Stop"))
 					{
-						m_engine->Restart();
+						m_engine->restart();
 						playButtonLabel = "Play";
 					}
 
@@ -96,7 +96,7 @@ namespace Puffin
 				{
 					TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(entity);
 					
-					DrawManipulationGizmo(m_engine->GetSubsystem<Core::EventSubsystem>(), transform);
+					DrawManipulationGizmo(m_engine->getSubsystem<Core::EventSubsystem>(), transform);
 				}
 
 				End();

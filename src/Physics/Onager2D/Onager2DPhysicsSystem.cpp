@@ -36,7 +36,7 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::Init()
 		{
-			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+			auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
 
 			// Register Events
 			eventSubsystem->RegisterEvent<CollisionBeginEvent>();
@@ -54,13 +54,13 @@ namespace Puffin
 			// Update Dynamic Objects
 			UpdateDynamics();
 
-			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+			auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 			// Copy component transform into collider
 			for (auto collider : m_colliders)
 			{
 				//const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity);
-				const auto& transform = registry->get<const TransformComponent>(m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(collider->uuid));
+				const auto& transform = registry->get<const TransformComponent>(m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(collider->uuid));
 
 				collider->position = transform.position.GetXY();
 				collider->rotation = transform.rotation.EulerAnglesDeg().z;
@@ -154,7 +154,7 @@ namespace Puffin
 			m_circleShapes[object.uuid].centreOfMass = circle.centreOfMass;
 			m_circleShapes[object.uuid].radius = circle.radius;
 
-			if (m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity))
+			if (m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity))
 			{
 				// If there is no collider for this entity, create new one
 				auto collider = std::make_shared<Collision2D::CircleCollider2D>(object.uuid, &m_circleShapes[object.uuid]);
@@ -192,7 +192,7 @@ namespace Puffin
 
 				m_shapes[object.uuid] = &m_boxShapes[object.uuid];
 
-				if (m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity) && !m_colliders.Contains(object.uuid))
+				if (m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity) && !m_colliders.Contains(object.uuid))
 				{
 					auto collider = std::make_shared<Collision2D::BoxCollider2D>(object.uuid, &m_boxShapes[object.uuid]);
 
@@ -231,7 +231,7 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::UpdateDynamics() const
 		{
-			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+			auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 			auto rbView = registry->view<TransformComponent, RigidbodyComponent2D, VelocityComponent>();
 
@@ -244,7 +244,7 @@ namespace Puffin
 				CalculateImpulseByGravity(rb);
 
 				// Update Position
-				transform.position += rb.linearVelocity * m_engine->GetTimeStep();
+				transform.position += rb.linearVelocity * m_engine->timeStepFixed();
 
 				Vector3f euler = transform.rotation.EulerAnglesDeg();
 
@@ -270,7 +270,7 @@ namespace Puffin
 				return;
 
 			float mass = 1.0f / body.mass;
-			Vector2 impulseGravity = m_gravity * mass * m_engine->GetTimeStep();
+			Vector2 impulseGravity = m_gravity * mass * m_engine->timeStepFixed();
 			
 			ApplyLinearImpulse(body, impulseGravity);
 		}
@@ -303,12 +303,12 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::CollisionResponse() const
 		{
-			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+			auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 			for (const Collision2D::Contact& contact : m_collisionContacts)
 			{
-				auto entityA = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(contact.a);
-				auto entityB = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(contact.b);
+				auto entityA = m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(contact.a);
+				auto entityB = m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(contact.b);
 
 				auto& transformA = registry->get<TransformComponent>(entityA);
 				auto& transformB = registry->get<TransformComponent>(entityB);
@@ -352,7 +352,7 @@ namespace Puffin
 
 		void Onager2DPhysicsSystem::GenerateCollisionEvents()
 		{
-			auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+			auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
 
 			std::set<Collision2D::Contact> existingContacts;
 

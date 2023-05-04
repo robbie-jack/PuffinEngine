@@ -119,11 +119,11 @@ namespace Puffin::Rendering::BGFX
 
 		void SetupCallbacks() override
 		{
-			m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "BGFXRenderSystem: Init");
-			m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "BGFXRenderSystem: Setup");
-			m_engine->RegisterCallback(Core::ExecutionStage::Render, [&]() { Render(); }, "BGFXRenderSystem: Render");
-			m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "BGFXRenderSystem: Stop");
-			m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "BGFXRenderSystem: Cleanup");
+			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "BGFXRenderSystem: Init");
+			m_engine->registerCallback(Core::ExecutionStage::setup, [&]() { Setup(); }, "BGFXRenderSystem: Setup");
+			m_engine->registerCallback(Core::ExecutionStage::render, [&]() { Render(); }, "BGFXRenderSystem: Render");
+			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { Stop(); }, "BGFXRenderSystem: Stop");
+			m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "BGFXRenderSystem: Cleanup");
 		}
 
 		void Init();

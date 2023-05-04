@@ -10,38 +10,38 @@
 
 namespace Puffin::Physics
 {
-	void Box2DPhysicsSystem::Init()
+	void Box2DPhysicsSystem::init()
 	{
-		auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+		auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
 
 		// Register Events
 		eventSubsystem->RegisterEvent<CollisionBeginEvent>();
 		eventSubsystem->RegisterEvent<CollisionEndEvent>();
 	}
 
-	void Box2DPhysicsSystem::Start()
+	void Box2DPhysicsSystem::start()
 	{
 		// Create Physics World
-		m_physicsWorld = std::make_unique<b2World>(m_gravity);
+		physicsWorld_ = std::make_unique<b2World>(gravity_);
 
 		//// Create Contact Listener and pass it to physics world
-		m_contactListener = std::make_unique<Box2DContactListener>();
-		m_physicsWorld->SetContactListener(m_contactListener.get());
+		contactListener_ = std::make_unique<Box2DContactListener>();
+		physicsWorld_->SetContactListener(contactListener_.get());
 
-		UpdateComponents();
+		updateComponents();
 	}
 
-	void Box2DPhysicsSystem::FixedUpdate()
+	void Box2DPhysicsSystem::fixedUpdate()
 	{
-		UpdateComponents();
+		updateComponents();
 
 		// Step Physics World
-		m_physicsWorld->Step(m_engine->GetTimeStep(), m_velocityIterations, m_positionIterations);
+		physicsWorld_->Step(m_engine->timeStepFixed(), velocityIterations_, positionIterations_);
 
 		// Publish Collision Events
-		PublishCollisionEvents();
+		publishCollisionEvents();
 
-		auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+		auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 		// Updated entity position/rotation from simulation
 		auto bodyView = registry->view<const SceneObjectComponent, TransformComponent, VelocityComponent, const RigidbodyComponent2D>();
@@ -51,273 +51,273 @@ namespace Puffin::Physics
 			const auto& id = object.uuid;
 
 			// Update Transform from Rigidbody Position
-			transform.position.x = m_bodies[id]->GetPosition().x;
-			transform.position.y = m_bodies[id]->GetPosition().y;
-			transform.rotation = Maths::Quat::FromEulerAngles(0.0, 0.0, -m_bodies[id]->GetAngle());
+			transform.position.x = bodies_[id]->GetPosition().x;
+			transform.position.y = bodies_[id]->GetPosition().y;
+			transform.rotation = Maths::Quat::FromEulerAngles(0.0, 0.0, -bodies_[id]->GetAngle());
 
 			// Update Velocity with Linear/Angular Velocity
-			velocity.linear.x = m_bodies[id]->GetLinearVelocity().x;
-			velocity.linear.y = m_bodies[id]->GetLinearVelocity().y;
-			velocity.angular.z = m_bodies[id]->GetAngularVelocity();
+			velocity.linear.x = bodies_[id]->GetLinearVelocity().x;
+			velocity.linear.y = bodies_[id]->GetLinearVelocity().y;
+			velocity.angular.z = bodies_[id]->GetAngularVelocity();
 		}
 	}
 
-	void Box2DPhysicsSystem::Stop()
+	void Box2DPhysicsSystem::stop()
 	{
-		m_circleShapes.Clear();
-		m_polygonShapes.Clear();
-		m_shapes.Clear();
-		m_bodies.Clear();
-		m_fixtures.Clear();
+		circleShapes_.Clear();
+		polygonShapes_.Clear();
+		shapes_.Clear();
+		bodies_.Clear();
+		fixtures_.Clear();
 
-		m_physicsWorld = nullptr;
-		m_contactListener = nullptr;
+		physicsWorld_ = nullptr;
+		contactListener_ = nullptr;
 	}
 
-	void Box2DPhysicsSystem::OnConstructBox(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::onConstructBox(entt::registry& registry, entt::entity entity)
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 		
-		m_boxesToInit.push_back(object.uuid);
+		boxesToInit_.push_back(object.uuid);
 	}
 
-	void Box2DPhysicsSystem::OnDestroyBox(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::onDestroyBox(entt::registry& registry, entt::entity entity)
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-		CleanupBoxComponent(object.uuid);
-		CleanupFixture(object.uuid);
+		cleanupBox(object.uuid);
+		cleanupFixture(object.uuid);
 	}
 
-	void Box2DPhysicsSystem::OnConstructCircle(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::onConstructCircle(entt::registry& registry, entt::entity entity)
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-		m_circlesToInit.push_back(object.uuid);
+		circlesToInit_.push_back(object.uuid);
 	}
 
-	void Box2DPhysicsSystem::OnDestroyCircle(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::onDestroyCircle(entt::registry& registry, entt::entity entity)
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-		CleanupCircleComponent(object.uuid);
-		CleanupFixture(object.uuid);
+		cleanupCircle(object.uuid);
+		cleanupFixture(object.uuid);
 	}
 
-	void Box2DPhysicsSystem::OnConstructRigidbody(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::onConstructRigidbody(entt::registry& registry, entt::entity entity)
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-		m_rigidbodiesToInit.push_back(object.uuid);
+		rigidbodiesToInit_.push_back(object.uuid);
 	}
 
-	void Box2DPhysicsSystem::OnDestroyRigidbody(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::onDestroyRigidbody(entt::registry& registry, entt::entity entity)
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-		CleanupRigidbodyComponent(object.uuid);
-		CleanupFixture(object.uuid);
+		cleanupRigidbody(object.uuid);
+		cleanupFixture(object.uuid);
 	}
 
-	void Box2DPhysicsSystem::UpdateComponents()
+	void Box2DPhysicsSystem::updateComponents()
 	{
-		auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+		auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 		// Update Circles
 		{
-			for (const auto& id : m_circlesToInit)
+			for (const auto& id : circlesToInit_)
 			{
-				entt::entity entity = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
+				entt::entity entity = m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
 				const auto& circle = registry->get<const CircleComponent2D>(entity);
 
-				InitCircleComponent(object.uuid, transform, circle);
+				initCircle(object.uuid, transform, circle);
 
 				if (registry->all_of<RigidbodyComponent2D>(entity))
 				{
 					const auto& rb = registry->get<const RigidbodyComponent2D>(entity);
 
-					InitFixture(object.uuid, rb);
+					initFixture(object.uuid, rb);
 				}
 			}
 
-			m_circlesToInit.clear();
+			circlesToInit_.clear();
 		}
 
 		// Update Boxes
 		{
-			for (const auto& id : m_boxesToInit)
+			for (const auto& id : boxesToInit_)
 			{
-				entt::entity entity = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
+				entt::entity entity = m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
 				const auto& box = registry->get<const BoxComponent2D>(entity);
 
-				InitBoxComponent(object.uuid, transform, box);
+				initBox(object.uuid, transform, box);
 
 				if (registry->all_of<RigidbodyComponent2D>(entity))
 				{
 					const auto& rb = registry->get<const RigidbodyComponent2D>(entity);
 
-					InitFixture(object.uuid, rb);
+					initFixture(object.uuid, rb);
 				}
 			}
 
-			m_boxesToInit.clear();
+			boxesToInit_.clear();
 		}
 
 		// Update Rigidbodies
 		{
-			for (const auto& id : m_rigidbodiesToInit)
+			for (const auto& id : rigidbodiesToInit_)
 			{
-				entt::entity entity = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
+				entt::entity entity = m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
 				const auto& rb = registry->get<const RigidbodyComponent2D>(entity);
 
-				InitRigidbodyComponent(object.uuid, transform, rb);
-				InitFixture(object.uuid, rb);
+				initRigidbody(object.uuid, transform, rb);
+				initFixture(object.uuid, rb);
 			}
 
-			m_rigidbodiesToInit.clear();
+			rigidbodiesToInit_.clear();
 		}
 	}
 
-	void Box2DPhysicsSystem::PublishCollisionEvents() const
+	void Box2DPhysicsSystem::publishCollisionEvents() const
 	{
-		auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
-		auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
+		auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
+		auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
 
 		CollisionBeginEvent collisionBeginEvent;
-		while (m_contactListener->GetNextCollisionBeginEvent(collisionBeginEvent))
+		while (contactListener_->GetNextCollisionBeginEvent(collisionBeginEvent))
 		{
 			eventSubsystem->Publish(collisionBeginEvent);
 			signalSubsystem->Signal(collisionBeginEvent);
 		}
 
 		CollisionEndEvent collisionEndEvent;
-		while (m_contactListener->GetNextCollisionEndEvent(collisionEndEvent))
+		while (contactListener_->GetNextCollisionEndEvent(collisionEndEvent))
 		{
 			eventSubsystem->Publish(collisionEndEvent);
 			signalSubsystem->Signal(collisionEndEvent);
 		}
 	}
 
-	void Box2DPhysicsSystem::InitRigidbodyComponent(UUID id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
+	void Box2DPhysicsSystem::initRigidbody(UUID id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
 	{
-		if (!m_bodies.Contains(id))
+		if (!bodies_.Contains(id))
 		{
 			b2BodyDef bodyDef;
 			bodyDef.userData.pointer = static_cast<uintptr_t>(id);
 			bodyDef.position.Set(transform.position.x, transform.position.y);
 			bodyDef.angle = -transform.rotation.EulerAnglesRad().z;
-			bodyDef.type = G_BODY_TYPE_MAP.at(rb.bodyType);
+			bodyDef.type = gBodyType.at(rb.bodyType);
 
 			// Created Body from Physics World
-			m_bodies.Emplace(id, m_physicsWorld->CreateBody(&bodyDef));
+			bodies_.Emplace(id, physicsWorld_->CreateBody(&bodyDef));
 
 			b2MassData massData = {};
 			massData.mass = rb.mass;
 
-			m_bodies[id]->SetMassData(&massData);
+			bodies_[id]->SetMassData(&massData);
 		}
 	}
 
-	void Box2DPhysicsSystem::InitBoxComponent(UUID id, const TransformComponent& transform, const BoxComponent2D& box)
+	void Box2DPhysicsSystem::initBox(UUID id, const TransformComponent& transform, const BoxComponent2D& box)
 	{
-		if (!m_polygonShapes.Contains(id))
+		if (!polygonShapes_.Contains(id))
 		{
-			m_polygonShapes.Insert(id, b2PolygonShape());
+			polygonShapes_.Insert(id, b2PolygonShape());
 		}
 
-		m_polygonShapes[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), transform.rotation.EulerAnglesRad().z);
+		polygonShapes_[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), transform.rotation.EulerAnglesRad().z);
 
-		if (!m_shapes.Contains(id))
+		if (!shapes_.Contains(id))
 		{
-			m_shapes.Insert(id, &m_polygonShapes[id]);
+			shapes_.Insert(id, &polygonShapes_[id]);
 		}
 	}
 
-	void Box2DPhysicsSystem::InitCircleComponent(UUID id, const TransformComponent& transform, const CircleComponent2D& circle)
+	void Box2DPhysicsSystem::initCircle(UUID id, const TransformComponent& transform, const CircleComponent2D& circle)
 	{
-		if (!m_circleShapes.Contains(id))
+		if (!circleShapes_.Contains(id))
 		{
-			m_circleShapes.Insert(id, b2CircleShape());
+			circleShapes_.Insert(id, b2CircleShape());
 		}
 
-		m_circleShapes[id].m_radius = circle.radius;
-		m_circleShapes[id].m_p.Set(transform.position.x, transform.position.y);
+		circleShapes_[id].m_radius = circle.radius;
+		circleShapes_[id].m_p.Set(transform.position.x, transform.position.y);
 
-		if (!m_shapes.Contains(id))
+		if (!shapes_.Contains(id))
 		{
-			m_shapes.Insert(id, &m_circleShapes[id]);
+			shapes_.Insert(id, &circleShapes_[id]);
 		}
 	}
 
-	void Box2DPhysicsSystem::InitFixture(UUID id, const RigidbodyComponent2D rb)
+	void Box2DPhysicsSystem::initFixture(UUID id, const RigidbodyComponent2D rb)
 	{
-		if (m_bodies.Contains(id) && m_shapes.Contains(id) && !m_fixtures.Contains(id))
+		if (bodies_.Contains(id) && shapes_.Contains(id) && !fixtures_.Contains(id))
 		{
 			b2FixtureDef fixtureDef;
-			fixtureDef.shape = m_shapes[id];
+			fixtureDef.shape = shapes_[id];
 			fixtureDef.restitution = rb.elasticity;
 
-			m_fixtures.Emplace(id, m_bodies[id]->CreateFixture(&fixtureDef));
+			fixtures_.Emplace(id, bodies_[id]->CreateFixture(&fixtureDef));
 		}
 	}
 
-	void Box2DPhysicsSystem::UpdateRigidbody(UUID id)
+	void Box2DPhysicsSystem::updateRigidbody(UUID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::UpdateBox(UUID id)
+	void Box2DPhysicsSystem::updateBox(UUID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::UpdateCircle(UUID id)
+	void Box2DPhysicsSystem::updateCircle(UUID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::CleanupRigidbodyComponent(UUID id)
+	void Box2DPhysicsSystem::cleanupRigidbody(UUID id)
 	{
-		if (m_bodies.Contains(id))
+		if (bodies_.Contains(id))
 		{
-			m_physicsWorld->DestroyBody(m_bodies[id]);
-			m_bodies[id] = nullptr;
-			m_bodies.Erase(id);
+			physicsWorld_->DestroyBody(bodies_[id]);
+			bodies_[id] = nullptr;
+			bodies_.Erase(id);
 		}
 	}
 
-	void Box2DPhysicsSystem::CleanupBoxComponent(UUID id)
+	void Box2DPhysicsSystem::cleanupBox(UUID id)
 	{
-		if (m_polygonShapes.Contains(id))
+		if (polygonShapes_.Contains(id))
 		{
-			m_polygonShapes.Erase(id);
+			polygonShapes_.Erase(id);
 		}
 	}
 
-	void Box2DPhysicsSystem::CleanupCircleComponent(UUID id)
+	void Box2DPhysicsSystem::cleanupCircle(UUID id)
 	{
-		if (m_circleShapes.Contains(id))
+		if (circleShapes_.Contains(id))
 		{
-			m_circleShapes.Erase(id);
+			circleShapes_.Erase(id);
 		}
 	}
 
-	void Box2DPhysicsSystem::CleanupFixture(UUID id)
+	void Box2DPhysicsSystem::cleanupFixture(UUID id)
 	{
-		if (m_fixtures.Contains(id))
+		if (fixtures_.Contains(id))
 		{
-			m_bodies[id]->DestroyFixture(m_fixtures[id]);
-			m_fixtures[id] = nullptr;
-			m_fixtures.Erase(id);
+			bodies_[id]->DestroyFixture(fixtures_[id]);
+			fixtures_[id] = nullptr;
+			fixtures_.Erase(id);
 		}
 	}
 }

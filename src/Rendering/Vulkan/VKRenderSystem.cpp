@@ -57,9 +57,9 @@ namespace Puffin::Rendering::VK
 		InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
 
 		vk::Extent2D offscreenSize;
-		if (m_engine->ShouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUi())
 		{
-			const ImVec2 viewportSize = m_engine->GetUIManager()->GetWindowViewport()->GetViewportSize();
+			const ImVec2 viewportSize = m_engine->uiManager()->GetWindowViewport()->GetViewportSize();
 			offscreenSize.width = viewportSize.x;
 			offscreenSize.height = viewportSize.y;
 		}
@@ -72,7 +72,7 @@ namespace Puffin::Rendering::VK
 
 		InitCommands();
 
-		if (m_engine->ShouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUi())
 		{
 			InitImGuiRenderPass();
 
@@ -89,7 +89,7 @@ namespace Puffin::Rendering::VK
 		InitDescriptors();
 		InitPipelines();
 
-		if (m_engine->ShouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUi())
 		{
 			InitImGui();
 			InitOffscreenImGuiTextures(m_offscreenData);
@@ -98,7 +98,7 @@ namespace Puffin::Rendering::VK
 		m_editorCam.position = { 0.0f, 0.0f, 15.0f };
 
 		// Connect Signals
-		const auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
+		const auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
 
 		signalSubsystem->Connect<Input::InputEvent>(
 			[&](const Input::InputEvent& inputEvent)
@@ -171,7 +171,7 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::InitVulkan()
 	{
-		GLFWwindow* glfwWindow = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+		GLFWwindow* glfwWindow = m_engine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 
 		glfwSetWindowUserPointer(glfwWindow, this);
 		glfwSetFramebufferSizeCallback(glfwWindow, FrameBufferResizeCallback);
@@ -642,7 +642,7 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_device.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
 
 		// Initialize imgui for GLFW
-		GLFWwindow* glfwWindow = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+		GLFWwindow* glfwWindow = m_engine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
 		// Initialize imgui for Vulkan
@@ -761,7 +761,7 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::ProcessComponents()
 	{
-		auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+		auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 		auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
 
@@ -788,39 +788,39 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::UpdateEditorCamera()
 	{
-		const auto inputSubsystem = m_engine->GetSubsystem<Input::InputSubsystem>();
+		const auto inputSubsystem = m_engine->getSubsystem<Input::InputSubsystem>();
 
 		if (inputSubsystem->IsCursorLocked())
 		{
 			// Camera Movement
 			if (m_moveLeft && !m_moveRight)
 			{
-				m_editorCam.position += m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
+				m_editorCam.position += m_editorCam.right * m_editorCam.speed * m_engine->deltaTime();
 			}
 
 			if (m_moveRight && !m_moveLeft)
 			{
-				m_editorCam.position -= m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
+				m_editorCam.position -= m_editorCam.right * m_editorCam.speed * m_engine->deltaTime();
 			}
 
 			if (m_moveForward && !m_moveBackward)
 			{
-				m_editorCam.position += m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
+				m_editorCam.position += m_editorCam.direction * m_editorCam.speed * m_engine->deltaTime();
 			}
 
 			if (m_moveBackward && !m_moveForward)
 			{
-				m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
+				m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * m_engine->deltaTime();
 			}
 
 			if (m_moveUp && !m_moveDown)
 			{
-				m_editorCam.position += m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
+				m_editorCam.position += m_editorCam.up * m_editorCam.speed * m_engine->deltaTime();
 			}
 
 			if (m_moveDown && !m_moveUp)
 			{
-				m_editorCam.position -= m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
+				m_editorCam.position -= m_editorCam.up * m_editorCam.speed * m_engine->deltaTime();
 			}
 
 			// Mouse Rotation
@@ -932,9 +932,9 @@ namespace Puffin::Rendering::VK
 		VK_CHECK(m_device.waitForFences(1, &GetCurrentFrameData().renderFence, true, 1000000000));
 		VK_CHECK(m_device.resetFences(1, &GetCurrentFrameData().renderFence));
 
-		if (m_engine->ShouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUi())
 		{
-			const ImVec2 viewportSize = m_engine->GetUIManager()->GetWindowViewport()->GetViewportSize();
+			const ImVec2 viewportSize = m_engine->uiManager()->GetWindowViewport()->GetViewportSize();
 			if (viewportSize.x != m_offscreenData.extent.width ||
 				viewportSize.y != m_offscreenData.extent.height)
 			{
@@ -955,11 +955,11 @@ namespace Puffin::Rendering::VK
 		PrepareSceneData();
 		BuildIndirectCommands();
 
-		if (m_engine->ShouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUi())
 		{
 			//m_engine->GetUIManager()->DrawUI(m_engine->GetDeltaTime());
 
-			m_engine->GetUIManager()->GetWindowViewport()->Draw(m_offscreenData.viewportTextures[swapchainImageIdx]);
+			m_engine->uiManager()->GetWindowViewport()->Draw(m_offscreenData.viewportTextures[swapchainImageIdx]);
 
 			ImGui::Render();
 		}
@@ -1001,7 +1001,7 @@ namespace Puffin::Rendering::VK
 
 			InitSwapchain(m_swapchainData, m_oldSwapchainData.swapchain, m_windowSize);
 
-			if (m_engine->ShouldRenderEditorUI())
+			if (m_engine->shouldRenderEditorUi())
 			{
 				InitSwapchainFramebuffers(m_swapchainData);
 			}
@@ -1038,7 +1038,7 @@ namespace Puffin::Rendering::VK
 	{
 		for (int i = 0; i < swapchainData.imageViews.size(); i++)
 		{
-			if (m_engine->ShouldRenderEditorUI())
+			if (m_engine->shouldRenderEditorUi())
 			{
 				m_device.destroyFramebuffer(swapchainData.framebuffers[i]);
 			}
@@ -1062,9 +1062,9 @@ namespace Puffin::Rendering::VK
 			m_oldOffscreenData.needsCleaned = true;
 
 			vk::Extent2D offscreenSize;
-			if (m_engine->ShouldRenderEditorUI())
+			if (m_engine->shouldRenderEditorUi())
 			{
-				const ImVec2 viewportSize = m_engine->GetUIManager()->GetWindowViewport()->GetViewportSize();
+				const ImVec2 viewportSize = m_engine->uiManager()->GetWindowViewport()->GetViewportSize();
 				offscreenSize.width = static_cast<uint32_t>(viewportSize.x);
 				offscreenSize.height = static_cast<uint32_t>(viewportSize.y);
 			}
@@ -1075,7 +1075,7 @@ namespace Puffin::Rendering::VK
 
 			InitOffscreen(m_offscreenData, offscreenSize, m_swapchainData.images.size());
 
-			if (m_engine->ShouldRenderEditorUI())
+			if (m_engine->shouldRenderEditorUi())
 			{
 				InitOffscreenImGuiTextures(m_offscreenData);
 			}
@@ -1115,7 +1115,7 @@ namespace Puffin::Rendering::VK
 
 		for (int i = 0; i < offscreenData.allocImages.size(); i++)
 		{
-			if (m_engine->ShouldRenderEditorUI())
+			if (m_engine->shouldRenderEditorUi())
 			{
 				ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(offscreenData.viewportTextures[i]));
 			}
@@ -1162,7 +1162,7 @@ namespace Puffin::Rendering::VK
 
 	void VKRenderSystem::PrepareObjectData()
 	{
-		const auto enkiTSSubSystem = m_engine->GetSubsystem<Core::EnkiTSSubsystem>();
+		const auto enkiTSSubSystem = m_engine->getSubsystem<Core::EnkiTSSubsystem>();
 
 		const AllocatedBuffer& objectBuffer = GetCurrentFrameData().objectBuffer;
 
@@ -1170,7 +1170,7 @@ namespace Puffin::Rendering::VK
 		objects.reserve(G_MAX_OBJECTS);
 
 		// Calculate t value for rendering interpolated position
-		const double t = m_engine->GetAccumulatedTime() / m_engine->GetTimeStep();
+		const double t = m_engine->accumulatedTime() / m_engine->timeStepFixed();
 
 		std::vector<UUID> entities;
 		entities.reserve(G_MAX_OBJECTS);
@@ -1199,7 +1199,7 @@ namespace Puffin::Rendering::VK
 			threadObjects[idx].reserve(500);
 		}
 
-		auto enttSubsystem = m_engine->GetSubsystem<ECS::EnTTSubsystem>();
+		auto enttSubsystem = m_engine->getSubsystem<ECS::EnTTSubsystem>();
 		auto registry = enttSubsystem->Registry();
 
 		enki::TaskSet task(numObjects, [&](enki::TaskSetPartition range, uint32_t threadnum)
@@ -1224,7 +1224,7 @@ namespace Puffin::Rendering::VK
 					const auto& velocity = registry->get<Physics::VelocityComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
-					Vector3d interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
+					Vector3d interpolatedPosition = transform.position + velocity.linear * m_engine->timeStepFixed();
 #else
 					Vector3f interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
 #endif
@@ -1272,7 +1272,7 @@ namespace Puffin::Rendering::VK
 
 		int i = 0;
 
-		auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+		auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 		auto lightView = registry->view<const SceneObjectComponent, const TransformComponent, const LightComponent>();
 
@@ -1316,7 +1316,7 @@ namespace Puffin::Rendering::VK
 
 		int idx = 0;
 
-		auto enttSubsystem = m_engine->GetSubsystem<ECS::EnTTSubsystem>();
+		auto enttSubsystem = m_engine->getSubsystem<ECS::EnTTSubsystem>();
 		auto registry = enttSubsystem->Registry();
 
 		for (const auto [fst, snd] : m_meshDrawList)
@@ -1569,7 +1569,7 @@ namespace Puffin::Rendering::VK
 
 		std::vector submits = { renderSubmit };
 
-		if (m_engine->ShouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUi())
 		{
 			vk::CommandBuffer imguiCmd = RecordImGuiCommandBuffer(swapchainIdx, m_swapchainData.extent, m_swapchainData.framebuffers[swapchainIdx]);
 
@@ -1600,7 +1600,7 @@ namespace Puffin::Rendering::VK
 
 		vk::Semaphore waitSemaphore;
 
-		if (m_engine->ShouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUi())
 		{
 			waitSemaphore = GetCurrentFrameData().imguiSemaphore;
 		}

@@ -110,9 +110,9 @@ namespace Puffin::Rendering::VK
 
 		void SetupCallbacks() override
 		{
-			m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "VKRenderSystem: Init");
-			m_engine->RegisterCallback(Core::ExecutionStage::Render, [&]() { Render(); }, "VKRenderSystem: Render");
-			m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "VKRenderSystem: Cleanup");
+			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "VKRenderSystem: Init");
+			m_engine->registerCallback(Core::ExecutionStage::render, [&]() { Render(); }, "VKRenderSystem: Render");
+			m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "VKRenderSystem: Cleanup");
 		}
 
 		void Init();

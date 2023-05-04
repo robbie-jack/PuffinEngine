@@ -45,11 +45,11 @@ namespace Puffin
 
 			void SetupCallbacks() override
 			{
-				m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "AngelScriptSystem: Init");
-				m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "AngelScriptSystem: Setup");
-				m_engine->RegisterCallback(Core::ExecutionStage::Start, [&]() { Start(); }, "AngelScriptSystem: Start");
-				m_engine->RegisterCallback(Core::ExecutionStage::Update, [&]() { Update(); }, "AngelScriptSystem: Update");
-				m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "AngelScriptSystem: Stop");
+				m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "AngelScriptSystem: Init");
+				m_engine->registerCallback(Core::ExecutionStage::setup, [&]() { Setup(); }, "AngelScriptSystem: Setup");
+				m_engine->registerCallback(Core::ExecutionStage::start, [&]() { Start(); }, "AngelScriptSystem: Start");
+				m_engine->registerCallback(Core::ExecutionStage::update, [&]() { Update(); }, "AngelScriptSystem: Update");
+				m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { Stop(); }, "AngelScriptSystem: Stop");
 			}
 
 			void Init();

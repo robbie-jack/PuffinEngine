@@ -5,6 +5,6 @@ namespace Puffin::Core
 {
 	void SignalSubsystem::SetupCallbacks()
 	{
-		m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "SignalSubsystem: Cleanup", 150);
+		m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "SignalSubsystem: Cleanup", 150);
 	}
 }

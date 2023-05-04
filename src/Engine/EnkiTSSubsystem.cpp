@@ -6,6 +6,6 @@ namespace Puffin::Core
 {
 	void EnkiTSSubsystem::SetupCallbacks()
 	{
-		m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "EnkiTSSubsystem: Init", 50);
+		m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "EnkiTSSubsystem: Init", 50);
 	}
 }

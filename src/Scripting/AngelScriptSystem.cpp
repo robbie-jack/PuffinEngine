@@ -71,7 +71,7 @@ namespace Puffin::Scripting
 		// Configure Engine and Setup Global Function Callbacks
 		ConfigureEngine();
 
-		auto eventSubsystem = m_engine->GetSubsystem<Core::EventSubsystem>();
+		auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
 
 		// Subscribe to events
 		m_inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
@@ -83,7 +83,7 @@ namespace Puffin::Scripting
 		m_collisionEndEvents = std::make_shared<RingBuffer<Physics::CollisionEndEvent>>();
 		eventSubsystem->Subscribe<Physics::CollisionEndEvent>(m_collisionEndEvents);
 
-		m_audioSubsystem = m_engine->GetSubsystem<Audio::AudioSubsystem>();
+		m_audioSubsystem = m_engine->getSubsystem<Audio::AudioSubsystem>();
 	}
 
 	void AngelScriptSystem::Setup()
@@ -623,12 +623,12 @@ namespace Puffin::Scripting
 
 	const double& AngelScriptSystem::GetDeltaTime() const
 	{
-		return m_engine->GetDeltaTime();
+		return m_engine->deltaTime();
 	}
 
 	const double& AngelScriptSystem::GetFixedTime() const
 	{
-		return m_engine->GetTimeStep();
+		return m_engine->timeStepFixed();
 	}
 
 	void AngelScriptSystem::PlaySoundEffect(uint64_t id, float volume, bool looping, bool restart)

@@ -12,9 +12,9 @@ namespace Puffin::Audio
 {
 	void AudioSubsystem::SetupCallbacks()
 	{
-		m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "AudioSubsystem: Init", 50);
-		m_engine->RegisterCallback(Core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "AudioSubsystem: Update");
-		m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "AudioSubsystem: Cleanup", 150);
+		m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "AudioSubsystem: Init", 50);
+		m_engine->registerCallback(Core::ExecutionStage::subsystemUpdate, [&]() { Update(); }, "AudioSubsystem: Update");
+		m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "AudioSubsystem: Cleanup", 150);
 	}
 
 	void AudioSubsystem::Init()

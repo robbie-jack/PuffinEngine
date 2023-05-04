@@ -121,13 +121,13 @@ namespace Puffin
 					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Frametime Breakdown");
 					ImGui::NewLine();
 
-					for (const auto& [stage, name] : Core::G_EXECUTION_STAGE_ORDER)
+					for (const auto& [stage, name] : Core::gExecutionStageOrder)
 					{
-						auto stageFrametime = m_engine->GetStageExecutionTimeLastFrame(stage) * 1000.0;
+						auto stageFrametime = m_engine->getStageExecutionTimeLastFrame(stage) * 1000.0;
 						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
 
 						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Indent();
-						for (const auto& [name, time] : m_engine->GetCallbackExecutionTimeForUpdateStageLastFrame(stage))
+						for (const auto& [name, time] : m_engine->getCallbackExecutionTimeForUpdateStageLastFrame(stage))
 						{
 							double callbackFrametime = time * 1000.0;
 							ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);

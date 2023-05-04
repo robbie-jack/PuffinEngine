@@ -48,11 +48,11 @@ namespace Puffin::Physics
 
 		void SetupCallbacks() override
 		{
-			m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "Onager2DPhysicsSystem: Init");
-			m_engine->RegisterCallback(Core::ExecutionStage::FixedUpdate, [&]() { FixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
-			m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "Onager2DPhysicsSystem: Stop");
+			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "Onager2DPhysicsSystem: Init");
+			m_engine->registerCallback(Core::ExecutionStage::fixedUpdate, [&]() { FixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
+			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { Stop(); }, "Onager2DPhysicsSystem: Stop");
 
-			auto registry = m_engine->GetSubsystem<ECS::EnTTSubsystem>()->Registry();
+			auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::OnDestroyRigidbody>(this);
@@ -86,7 +86,7 @@ namespace Puffin::Physics
 			std::shared_ptr<T> broadphase = std::make_shared<T>();
 			std::shared_ptr<Broadphase> broadphaseBase = std::static_pointer_cast<Broadphase>(broadphase);
 			broadphaseBase->SetWorld(m_world);
-			broadphaseBase->SetECS(m_engine->GetSubsystem<ECS::EnTTSubsystem>());
+			broadphaseBase->SetECS(m_engine->getSubsystem<ECS::EnTTSubsystem>());
 
 			m_broadphases.insert({typeName, broadphaseBase});
 		}

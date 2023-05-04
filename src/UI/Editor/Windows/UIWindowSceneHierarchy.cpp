@@ -27,7 +27,7 @@ namespace Puffin
 
 				ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() * .5f); ImGui::Text("ID");
 
-				const auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+				const auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
 				if (ImGui::BeginListBox("##EntityList", listBoxSize))
 				{

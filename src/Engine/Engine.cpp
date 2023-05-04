@@ -16,8 +16,6 @@
 #include "Components/Scripting/NativeScriptComponent.hpp"
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
 
-#include "Types/ComponentFlags.h"
-
 #include "Window/WindowSubsystem.hpp"
 #include "Input/InputSubsystem.h"
 #include "Engine/SignalSubsystem.hpp"
@@ -35,8 +33,6 @@
 #include "Assets/TextureAsset.h"
 #include "Assets/SoundAsset.h"
 
-#include "Components/Physics/VelocityComponent.hpp"
-
 #include "Engine/JobSystem.hpp"
 
 #include <chrono>
@@ -50,61 +46,61 @@
 
 namespace Puffin::Core
 {
-	void Engine::Init()
+	void Engine::init()
 	{
 		// Subsystems
 
-		auto windowSubsystem = RegisterSubsystem<Window::WindowSubsystem>();
-		auto eventSubsystem = RegisterSubsystem<EventSubsystem>();
-		auto signalSubsystem = RegisterSubsystem<SignalSubsystem>();
-		auto enkitsSubsystem = RegisterSubsystem<EnkiTSSubsystem>();
-		auto inputSubsystem = RegisterSubsystem<Input::InputSubsystem>();
-		auto audioSubsystem = RegisterSubsystem<Audio::AudioSubsystem>();
-		auto ecsWorld = RegisterSubsystem<ECS::World>();
-		auto enttSubsystem = RegisterSubsystem<ECS::EnTTSubsystem>();
+		auto windowSubsystem = registerSubsystem<Window::WindowSubsystem>();
+		auto eventSubsystem = registerSubsystem<EventSubsystem>();
+		auto signalSubsystem = registerSubsystem<SignalSubsystem>();
+		auto enkitsSubsystem = registerSubsystem<EnkiTSSubsystem>();
+		auto inputSubsystem = registerSubsystem<Input::InputSubsystem>();
+		auto audioSubsystem = registerSubsystem<Audio::AudioSubsystem>();
+		auto ecsWorld = registerSubsystem<ECS::World>();
+		auto enttSubsystem = registerSubsystem<ECS::EnTTSubsystem>();
 
-		m_uiManager = std::make_shared<UI::UIManager>(shared_from_this());
+		uiManager_ = std::make_shared<UI::UIManager>(shared_from_this());
 
 		// Load Project File
 		fs::path projectPath = fs::path("C:\\Projects\\PuffinProject\\Puffin.pproject");
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
-		IO::LoadProject(projectPath, projectFile);
+		IO::LoadProject(projectPath, projectFile_);
 
 		// Load Default Scene (if set)
-		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / projectFile.defaultScenePath;
-		m_sceneData = std::make_shared<IO::SceneData>(ecsWorld, defaultScenePath);
+		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / projectFile_.defaultScenePath;
+		sceneData_ = std::make_shared<IO::SceneData>(ecsWorld, defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
-		m_sceneData->RegisterComponent<SceneObjectComponent>();
-		m_sceneData->RegisterComponent<TransformComponent>();
+		sceneData_->RegisterComponent<SceneObjectComponent>();
+		sceneData_->RegisterComponent<TransformComponent>();
 
-		m_sceneData->RegisterComponent<Rendering::MeshComponent>();
-		m_sceneData->RegisterComponent<Rendering::LightComponent>();
-		m_sceneData->RegisterComponent<Rendering::ShadowCasterComponent>();
-		m_sceneData->RegisterComponent<Rendering::CameraComponent>();
+		sceneData_->RegisterComponent<Rendering::MeshComponent>();
+		sceneData_->RegisterComponent<Rendering::LightComponent>();
+		sceneData_->RegisterComponent<Rendering::ShadowCasterComponent>();
+		sceneData_->RegisterComponent<Rendering::CameraComponent>();
 
-		m_sceneData->RegisterComponent<Physics::RigidbodyComponent2D>();
-		m_sceneData->RegisterComponent<Physics::BoxComponent2D>();
-		m_sceneData->RegisterComponent<Physics::CircleComponent2D>();
+		sceneData_->RegisterComponent<Physics::RigidbodyComponent2D>();
+		sceneData_->RegisterComponent<Physics::BoxComponent2D>();
+		sceneData_->RegisterComponent<Physics::CircleComponent2D>();
 
-		m_sceneData->RegisterComponent<Scripting::AngelScriptComponent>();
-		m_sceneData->RegisterComponent<Scripting::NativeScriptComponent>();
+		sceneData_->RegisterComponent<Scripting::AngelScriptComponent>();
+		sceneData_->RegisterComponent<Scripting::NativeScriptComponent>();
 
-		m_sceneData->RegisterComponent<Rendering::ProceduralMeshComponent>();
-		m_sceneData->RegisterComponent<Procedural::PlaneComponent>();
-		m_sceneData->RegisterComponent<Procedural::TerrainComponent>();
-		m_sceneData->RegisterComponent<Procedural::IcoSphereComponent>();
+		sceneData_->RegisterComponent<Rendering::ProceduralMeshComponent>();
+		sceneData_->RegisterComponent<Procedural::PlaneComponent>();
+		sceneData_->RegisterComponent<Procedural::TerrainComponent>();
+		sceneData_->RegisterComponent<Procedural::IcoSphereComponent>();
 
 		// Systems
 		//RegisterSystem<Rendering::BGFX::BGFXRenderSystem>();
-		RegisterSystem<Rendering::VK::VKRenderSystem>();
+		registerSystem<Rendering::VK::VKRenderSystem>();
 		//RegisterSystem<Physics::Onager2DPhysicsSystem>();
-		RegisterSystem<Physics::Box2DPhysicsSystem>();
-		RegisterSystem<Scripting::AngelScriptSystem>();
-		RegisterSystem<Scripting::NativeScriptSystem>();
-		RegisterSystem<Procedural::ProceduralMeshGenSystem>();
+		registerSystem<Physics::Box2DPhysicsSystem>();
+		registerSystem<Scripting::AngelScriptSystem>();
+		registerSystem<Scripting::NativeScriptSystem>();
+		registerSystem<Procedural::ProceduralMeshGenSystem>();
 
 		// Register Assets
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::StaticMeshAsset>();
@@ -112,11 +108,11 @@ namespace Puffin::Core
 		Assets::AssetRegistry::Get()->RegisterAssetType<Assets::SoundAsset>();
 
 		// Load Asset Cache
-		Assets::AssetRegistry::Get()->ProjectName(projectFile.name);
+		Assets::AssetRegistry::Get()->ProjectName(projectFile_.name);
 		Assets::AssetRegistry::Get()->ProjectRoot(projectDirPath);
 
 		// Load Project Settings
-		IO::LoadSettings(projectDirPath.parent_path() / "Settings.json", settings);
+		IO::LoadSettings(projectDirPath.parent_path() / "Settings.json", settings_);
 
 		// Load/Initialize Assets
 		//AddDefaultAssets();
@@ -127,149 +123,149 @@ namespace Puffin::Core
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//DefaultScene();
-		PhysicsScene();
+		physicsScene();
 		//ProceduralScene();
 
 		// Load Scene -- normal behaviour
 		//m_sceneData->LoadAndInit();
 		//m_sceneData->Save();
 
-		running = true;
-		m_playState = PlayState::STOPPED;
+		running_ = true;
+		playState_ = PlayState::stopped;
 
 		// Initialize Systems
 		{
-			ExecuteCallbacks(ExecutionStage::Init);
-			ExecuteCallbacks(ExecutionStage::Setup);
+			executeCallbacks(ExecutionStage::init);
+			executeCallbacks(ExecutionStage::setup);
 		}
 
-		m_lastTime = glfwGetTime(); // Time Count Started
-		m_currentTime = m_lastTime;
+		lastTime_ = glfwGetTime(); // Time Count Started
+		currentTime_ = lastTime_;
 	}
 
-	bool Engine::Update()
+	bool Engine::update()
 	{
 		// Run Game Loop;
-		m_lastTime = m_currentTime;
-		m_currentTime = glfwGetTime();
-		m_deltaTime = m_currentTime - m_lastTime;
+		lastTime_ = currentTime_;
+		currentTime_ = glfwGetTime();
+		deltaTime_ = currentTime_ - lastTime_;
 
-		UpdateExecutionTime();
+		updateExecutionTime();
 
-		if (m_frameRateMax > 0)
+		if (frameRateMax_ > 0)
 		{
-			const double deltaTimeMax = 1.0 / m_frameRateMax;
+			const double deltaTimeMax = 1.0 / frameRateMax_;
 			double idleStartTime = 0.0, idleEndTime = 0.0;
 
-			if (m_shouldTrackExecutionTime)
+			if (shouldTrackExecutionTime_)
 			{
 				// Sleep until next frame should start
 				idleStartTime = glfwGetTime();
 			}
 
-			while (m_deltaTime < deltaTimeMax)
+			while (deltaTime_ < deltaTimeMax)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-				m_currentTime = glfwGetTime();
-				m_deltaTime = m_currentTime - m_lastTime;
+				currentTime_ = glfwGetTime();
+				deltaTime_ = currentTime_ - lastTime_;
 			}
 
-			if (m_shouldTrackExecutionTime)
+			if (shouldTrackExecutionTime_)
 			{
 				idleEndTime = glfwGetTime();
 
-				m_stageExecutionTime[ExecutionStage::Idle] = idleEndTime - idleStartTime;
+				stageExecutionTime_[ExecutionStage::idle] = idleEndTime - idleStartTime;
 			}
 		}
 
 		// Make sure delta time never exceeds 1/30th of a second
-		if (m_deltaTime > m_timeStepLimit)
+		if (deltaTime_ > timeStepLimit_)
 		{
-			m_deltaTime = m_timeStepLimit;
+			deltaTime_ = timeStepLimit_;
 		}
 
-		auto ecsWorld = GetSubsystem<ECS::World>();
-		auto audioSubsystem = GetSubsystem<Audio::AudioSubsystem>();
+		auto ecsWorld = getSubsystem<ECS::World>();
+		auto audioSubsystem = getSubsystem<Audio::AudioSubsystem>();
 
 		// Update all Subsystems
 		{
-			ExecuteCallbacks(ExecutionStage::SubsystemUpdate, true);
+			executeCallbacks(ExecutionStage::subsystemUpdate, true);
 		}
 
-		auto inputSubsystem = GetSubsystem<Input::InputSubsystem>();
+		auto inputSubsystem = getSubsystem<Input::InputSubsystem>();
 		if (inputSubsystem->GetAction("Play").state == Input::KeyState::PRESSED)
 		{
-			Play();
+			play();
 		}
 
 		if (inputSubsystem->GetAction("Restart").state == Input::KeyState::PRESSED)
 		{
-			Restart();
+			restart();
 		}
 
 		// Call system start functions to prepare for gameplay
-		if (m_playState == PlayState::STARTED)
+		if (playState_ == PlayState::started)
 		{
-			ExecuteCallbacks(ExecutionStage::Start);
+			executeCallbacks(ExecutionStage::start);
 
 			// Get Snapshot of current scene data
 			//m_sceneData->UpdateData();
 
-			m_accumulatedTime = 0.0;
-			m_playState = PlayState::PLAYING;
+			accumulatedTime_ = 0.0;
+			playState_ = PlayState::playing;
 		}
 
-		if (m_playState == PlayState::JUST_PAUSED)
+		if (playState_ == PlayState::justPaused)
 		{
 			audioSubsystem->PauseAllSounds();
 
-			m_playState = PlayState::PAUSED;
+			playState_ = PlayState::paused;
 		}
 
-		if (m_playState == PlayState::JUST_UNPAUSED)
+		if (playState_ == PlayState::justUnpaused)
 		{
 			audioSubsystem->PlayAllSounds();
 
-			m_playState = PlayState::PLAYING;
+			playState_ = PlayState::playing;
 		}
 
-		if (m_playState == PlayState::PLAYING)
+		if (playState_ == PlayState::playing)
 		{
 			// Fixed Update
 			{
 				// Add onto accumulated time
-				m_accumulatedTime += m_deltaTime;
+				accumulatedTime_ += deltaTime_;
 
-				while (m_accumulatedTime >= m_timeStepFixed)
+				while (accumulatedTime_ >= timeStepFixed_)
 				{
-					m_accumulatedTime -= m_timeStepFixed;
+					accumulatedTime_ -= timeStepFixed_;
 
-					ExecuteCallbacks(ExecutionStage::FixedUpdate, true);
+					executeCallbacks(ExecutionStage::fixedUpdate, true);
 				}
 			}
 
 			// Update
 			{
-				ExecuteCallbacks(ExecutionStage::Update, true);
+				executeCallbacks(ExecutionStage::update, true);
 			}
 		}
 
 		// UI
-		if (m_shouldRenderEditorUI)
+		if (shouldRenderEditorUi_)
 		{
-			m_uiManager->Update();
+			uiManager_->Update();
 		}
 
 		// Render
 		{
-			ExecuteCallbacks(ExecutionStage::Render, true);
+			executeCallbacks(ExecutionStage::render, true);
 		}
 
-		if (m_playState == PlayState::JUST_STOPPED)
+		if (playState_ == PlayState::justStopped)
 		{
 			// Cleanup Systems and ECS
-			ExecuteCallbacks(ExecutionStage::Stop);
+			executeCallbacks(ExecutionStage::stop);
 
 			ecsWorld->Reset();
 
@@ -277,36 +273,36 @@ namespace Puffin::Core
 			//m_sceneData->Init();
 
 			// Perform Pre-Gameplay Initialization on Systems
-			ExecuteCallbacks(ExecutionStage::Setup);
+			executeCallbacks(ExecutionStage::setup);
 
 			audioSubsystem->StopAllSounds();
 
-			m_accumulatedTime = 0.0;
-			m_playState = PlayState::STOPPED;
+			accumulatedTime_ = 0.0;
+			playState_ = PlayState::stopped;
 		}
 
-		auto windowSubsystem = GetSubsystem<Window::WindowSubsystem>();
+		auto windowSubsystem = getSubsystem<Window::WindowSubsystem>();
 		if (windowSubsystem->ShouldPrimaryWindowClose())
 		{
-			running = false;
+			running_ = false;
 		}
 
-		return running;
+		return running_;
 	}
 
-	void Engine::Destroy()
+	void Engine::destroy()
 	{
 		// Cleanup All Systems
-		ExecuteCallbacks(ExecutionStage::Cleanup);
+		executeCallbacks(ExecutionStage::cleanup);
 
-		m_systems.clear();
-		m_subsystems.clear();
+		systems_.clear();
+		subsystems_.clear();
 
 		// Cleanup UI Manager
-		if (m_shouldRenderEditorUI)
+		if (shouldRenderEditorUi_)
 		{
-			m_uiManager->Cleanup();
-			m_uiManager = nullptr;
+			uiManager_->Cleanup();
+			uiManager_ = nullptr;
 		}
 
 		while (true)
@@ -326,7 +322,7 @@ namespace Puffin::Core
 		Assets::AssetRegistry::Clear();
 	}
 
-	void Engine::AddDefaultAssets()
+	void Engine::addDefaultAssets()
 	{
 		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
 		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
@@ -349,7 +345,7 @@ namespace Puffin::Core
 		UUID soundId1 = Assets::AssetRegistry::Get()->AddAsset<Assets::SoundAsset>(soundPath1)->ID();
 	}
 
-	void Engine::ReimportDefaultAssets()
+	void Engine::reimportDefaultAssets()
 	{
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\chalet.obj");
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\cube.obj");
@@ -357,7 +353,7 @@ namespace Puffin::Core
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
 	}
 
-	void Engine::LoadAndResaveAssets()
+	void Engine::loadAndResaveAssets()
 	{
 		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
 		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
@@ -385,9 +381,9 @@ namespace Puffin::Core
 		meshAsset4->Save();
 	}
 
-	void Engine::DefaultScene()
+	void Engine::defaultScene()
 	{
-		auto ecsWorld = GetSubsystem<ECS::World>();
+		auto ecsWorld = getSubsystem<ECS::World>();
 
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
@@ -479,7 +475,7 @@ namespace Puffin::Core
 		script.dir = contentRootPath / "scripts\\Example.pscript";
 	}
 
-	void Engine::PhysicsScene()
+	void Engine::physicsScene()
 	{
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
@@ -504,7 +500,7 @@ namespace Puffin::Core
 
 		UUID soundId1 = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath1)->ID();
 
-		auto enttSubsystem = GetSubsystem<ECS::EnTTSubsystem>();
+		auto enttSubsystem = getSubsystem<ECS::EnTTSubsystem>();
 		auto registry = enttSubsystem->Registry();
 
 		// Create Light Entity
@@ -570,9 +566,9 @@ namespace Puffin::Core
 		}
 	}
 
-	void Engine::ProceduralScene()
+	void Engine::proceduralScene()
 	{
-		auto ecsWorld = GetSubsystem<ECS::World>();
+		auto ecsWorld = getSubsystem<ECS::World>();
 
 		// Initialize Assets
 		fs::path contentRootPath = Assets::AssetRegistry::Get()->ContentRoot();
@@ -620,32 +616,32 @@ namespace Puffin::Core
 		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;*/
 	}
 
-	void Engine::Play()
+	void Engine::play()
 	{
-		switch (m_playState)
+		switch (playState_)
 		{
-		case PlayState::STOPPED:
-			m_playState = PlayState::STARTED;
+		case PlayState::stopped:
+			playState_ = PlayState::started;
 			break;
-		case PlayState::PLAYING:
-			m_playState = PlayState::JUST_PAUSED;
+		case PlayState::playing:
+			playState_ = PlayState::justPaused;
 			break;
-		case PlayState::PAUSED:
-			m_playState = PlayState::JUST_UNPAUSED;
+		case PlayState::paused:
+			playState_ = PlayState::justUnpaused;
 			break;
 		}
 	}
 
-	void Engine::Restart()
+	void Engine::restart()
 	{
-		if (m_playState == PlayState::PLAYING || m_playState == PlayState::PAUSED || m_playState == PlayState::STOPPED)
+		if (playState_ == PlayState::playing || playState_ == PlayState::paused || playState_ == PlayState::stopped)
 		{
-			m_playState = PlayState::JUST_STOPPED;
+			playState_ = PlayState::justStopped;
 		}
 	}
 
-	void Engine::Exit()
+	void Engine::exit()
 	{
-		running = false;
+		running_ = false;
 	}
 }

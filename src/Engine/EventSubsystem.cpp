@@ -6,6 +6,6 @@ namespace Puffin::Core
 {
 	void EventSubsystem::SetupCallbacks()
 	{
-		m_engine->RegisterCallback(ExecutionStage::Cleanup, [&]() { Cleanup(); }, "EventSubsystem: Cleanup", 150);
+		m_engine->registerCallback(ExecutionStage::cleanup, [&]() { Cleanup(); }, "EventSubsystem: Cleanup", 150);
 	}
 }

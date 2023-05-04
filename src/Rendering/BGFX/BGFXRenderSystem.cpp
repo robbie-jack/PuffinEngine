@@ -38,7 +38,7 @@ namespace Puffin::Rendering::BGFX
         InitLightUniforms();
 
         // Connect Signals
-        const auto signalSubsystem = m_engine->GetSubsystem<Core::SignalSubsystem>();
+        const auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
 
         signalSubsystem->Connect<Input::InputEvent>(
 			[&](const Input::InputEvent& inputEvent)
@@ -90,7 +90,7 @@ namespace Puffin::Rendering::BGFX
 	void BGFXRenderSystem::InitBGFX()
 	{
         bgfx::PlatformData pd;
-        GLFWwindow* window = m_engine->GetSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+        GLFWwindow* window = m_engine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
@@ -662,39 +662,39 @@ namespace Puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::UpdateEditorCamera()
     {
-        const auto inputSubsystem = m_engine->GetSubsystem<Input::InputSubsystem>();
+        const auto inputSubsystem = m_engine->getSubsystem<Input::InputSubsystem>();
 
         if (inputSubsystem->IsCursorLocked())
         {
             // Camera Movement
             if (m_moveLeft && !m_moveRight)
             {
-                m_editorCam.position += m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
+                m_editorCam.position += m_editorCam.right * m_editorCam.speed * m_engine->deltaTime();
             }
 
             if (m_moveRight && !m_moveLeft)
             {
-                m_editorCam.position -= m_editorCam.right * m_editorCam.speed * m_engine->GetDeltaTime();
+                m_editorCam.position -= m_editorCam.right * m_editorCam.speed * m_engine->deltaTime();
             }
 
             if (m_moveForward && !m_moveBackward)
             {
-                m_editorCam.position += m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
+                m_editorCam.position += m_editorCam.direction * m_editorCam.speed * m_engine->deltaTime();
             }
 
             if (m_moveBackward && !m_moveForward)
             {
-                m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * m_engine->GetDeltaTime();
+                m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * m_engine->deltaTime();
             }
 
             if (m_moveUp && !m_moveDown)
             {
-                m_editorCam.position += m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
+                m_editorCam.position += m_editorCam.up * m_editorCam.speed * m_engine->deltaTime();
             }
 
             if (m_moveDown && !m_moveUp)
             {
-                m_editorCam.position -= m_editorCam.up * m_editorCam.speed * m_engine->GetDeltaTime();
+                m_editorCam.position -= m_editorCam.up * m_editorCam.speed * m_engine->deltaTime();
             }
 
             // Mouse Rotation

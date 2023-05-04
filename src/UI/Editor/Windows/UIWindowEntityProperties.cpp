@@ -27,7 +27,7 @@ namespace Puffin
 		{
 			windowName = "Entity Properties";
 
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
 			if (show)
 			{
@@ -161,7 +161,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawTransformUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
 			// Display Transform Component - If One Exists
 			if (ecsWorld->HasComponent<TransformComponent>(m_entity))
@@ -209,7 +209,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawMeshUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
 			// Display Mesh Component - If One Exists
 			if (ecsWorld->HasComponent<Rendering::MeshComponent>(m_entity))
@@ -273,7 +273,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawLightUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<Rendering::LightComponent>(m_entity))
 			{
 				auto& light = ecsWorld->GetComponent<Rendering::LightComponent>(m_entity);
@@ -362,7 +362,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawShadowcasterUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<Rendering::ShadowCasterComponent>(m_entity))
 			{
 				auto& shadowcaster = ecsWorld->GetComponent<Rendering::ShadowCasterComponent>(m_entity);
@@ -425,7 +425,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<Procedural::PlaneComponent>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Procedural Plane Component"), flags)
@@ -458,7 +458,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawRigidbody2DUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<Physics::RigidbodyComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Rigidbody Component", flags))
@@ -523,7 +523,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawCircle2DUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<Physics::CircleComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Circle Component 2D", flags))
@@ -555,7 +555,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawBox2DUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<Physics::BoxComponent2D>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Box Component 2D", flags))
@@ -587,7 +587,7 @@ namespace Puffin
 
 		void UIWindowEntityProperties::DrawScriptUI(ImGuiTreeNodeFlags flags)
 		{
-			auto ecsWorld = m_engine->GetSubsystem<ECS::World>();
+			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<Scripting::AngelScriptComponent>(m_entity))
 			{
 				Scripting::AngelScriptComponent& comp = ecsWorld->GetComponent<Scripting::AngelScriptComponent>(m_entity);

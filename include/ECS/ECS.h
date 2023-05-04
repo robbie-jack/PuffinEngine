@@ -882,7 +882,7 @@ namespace Puffin::ECS
 		////////////////////////////////
 
 		template<typename SystemT>
-		std::shared_ptr<SystemT> RegisterSystem()
+		std::shared_ptr<SystemT> registerSystem()
 		{
 			return m_systemManager->RegisterSystem<SystemT>(shared_from_this(), m_engine);
 		}

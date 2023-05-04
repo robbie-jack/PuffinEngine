@@ -21,8 +21,8 @@ namespace Puffin::Procedural
 
 		void SetupCallbacks() override
 		{
-			m_engine->RegisterCallback(Core::ExecutionStage::Setup, [&]() { Setup(); }, "ProcMeshGenSystem: Setup");
-			m_engine->RegisterCallback(Core::ExecutionStage::Update, [&]() { Update(); }, "ProcMeshGenSystem: Update", 200);
+			m_engine->registerCallback(Core::ExecutionStage::setup, [&]() { Setup(); }, "ProcMeshGenSystem: Setup");
+			m_engine->registerCallback(Core::ExecutionStage::update, [&]() { Update(); }, "ProcMeshGenSystem: Update", 200);
 		}
 
 		void Setup();

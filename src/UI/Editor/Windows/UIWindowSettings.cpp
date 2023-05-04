@@ -21,9 +21,9 @@ namespace Puffin
 
 				Begin(windowName);
 
-				IO::ProjectSettings& settings = m_engine->GetProjectSettings();
+				IO::ProjectSettings& settings = m_engine->settings();
 
-				auto input = m_engine->GetSubsystem<Input::InputSubsystem>();
+				auto input = m_engine->getSubsystem<Input::InputSubsystem>();
 
 				if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
 				{

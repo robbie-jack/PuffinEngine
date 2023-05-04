@@ -7,13 +7,13 @@ int main()
 {
 	const auto engine = std::make_shared<Puffin::Core::Engine>();
 
-	engine->Init();
+	engine->init();
 
 	try
 	{
 		while(true)
 		{
-			if (!engine->Update())
+			if (!engine->update())
 			{
 				break;
 			}
@@ -25,7 +25,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	engine->Destroy();
+	engine->destroy();
 
 	return EXIT_SUCCESS;
 }

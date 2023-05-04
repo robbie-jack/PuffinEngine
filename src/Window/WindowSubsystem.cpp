@@ -15,9 +15,9 @@ namespace Puffin::Window
 
 	void WindowSubsystem::SetupCallbacks()
 	{
-		m_engine->RegisterCallback(Core::ExecutionStage::Init, [&]() { Init(); }, "WindowSubsystem: Init", 40);
-		m_engine->RegisterCallback(Core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "WindowSubsystem: Update");
-		m_engine->RegisterCallback(Core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "WindowSubsystem: Cleanup", 150);
+		m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "WindowSubsystem: Init", 40);
+		m_engine->registerCallback(Core::ExecutionStage::subsystemUpdate, [&]() { Update(); }, "WindowSubsystem: Update");
+		m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "WindowSubsystem: Cleanup", 150);
 	}
 
 	void WindowSubsystem::Init()

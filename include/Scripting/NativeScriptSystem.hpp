@@ -18,9 +18,9 @@ namespace Puffin::Scripting
 
 		void SetupCallbacks() override
 		{
-			m_engine->RegisterCallback(Core::ExecutionStage::Start, [&]() { Start(); }, "NativeScriptSystem: Start");
-			m_engine->RegisterCallback(Core::ExecutionStage::Update, [&]() { Update(); }, "NativeScriptSystem: Update");
-			m_engine->RegisterCallback(Core::ExecutionStage::Stop, [&]() { Stop(); }, "NativeScriptSystem: Stop");
+			m_engine->registerCallback(Core::ExecutionStage::start, [&]() { Start(); }, "NativeScriptSystem: Start");
+			m_engine->registerCallback(Core::ExecutionStage::update, [&]() { Update(); }, "NativeScriptSystem: Update");
+			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { Stop(); }, "NativeScriptSystem: Stop");
 		}
 
 		void Start();

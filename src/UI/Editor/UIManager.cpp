@@ -93,11 +93,11 @@ namespace Puffin::UI
 			// File Dialog - Load Scene
 			if (loadScene)
 			{
-				m_engine->GetScene()->SetPath(selectedPath);
+				m_engine->sceneData()->SetPath(selectedPath);
 
-				m_engine->GetScene()->Load();
+				m_engine->sceneData()->Load();
 
-				m_engine->Restart();
+				m_engine->restart();
 
 				loadScene = false;
 			}
@@ -147,12 +147,12 @@ namespace Puffin::UI
 		}
 
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing
-		if (windowEntityProperties->HasSceneChanged() && m_engine->GetPlayState() == Core::PlayState::STOPPED)
+		if (windowEntityProperties->HasSceneChanged() && m_engine->playState() == Core::PlayState::stopped)
 		{
-			m_engine->GetScene()->UpdateData();
+			m_engine->sceneData()->UpdateData();
 		}
 
-		DrawUI(m_engine->GetDeltaTime());
+		DrawUI(m_engine->deltaTime());
 	}
 
 	void UIManager::ShowDockspace(bool* p_open)
@@ -215,7 +215,7 @@ namespace Puffin::UI
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			std::string str_name = m_engine->GetScene()->GetPath().string();
+			std::string str_name = m_engine->sceneData()->GetPath().string();
 			std::vector<char> name(256, '\0');
 			for (int i = 0; i < str_name.size(); i++)
 			{
@@ -226,12 +226,12 @@ namespace Puffin::UI
 			ImGui::Text("Enter Scene Name:");
 			if (ImGui::InputText("##Edit", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				m_engine->GetScene()->SetPath(std::string(&name[0]));
+				m_engine->sceneData()->SetPath(std::string(&name[0]));
 			}
 
 			if (ImGui::Button("Save"))
 			{
-				m_engine->GetScene()->Save();
+				m_engine->sceneData()->Save();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -271,7 +271,7 @@ namespace Puffin::UI
 				if (ImGui::MenuItem("Save Project"))
 				{
 					//IO::SaveProject(Assets::AssetRegistry::Get()->ProjectRoot() / Assets::AssetRegistry::Get()->ProjectName() + ".pproject", engine->)
-					IO::SaveSettings(Assets::AssetRegistry::Get()->ProjectRoot() / "settings.json", m_engine->GetProjectSettings());
+					IO::SaveSettings(Assets::AssetRegistry::Get()->ProjectRoot() / "settings.json", m_engine->settings());
 					Assets::AssetRegistry::Get()->SaveAssetCache();
 				}
 
@@ -296,7 +296,7 @@ namespace Puffin::UI
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					m_engine->GetScene()->Save();
+					m_engine->sceneData()->Save();
 				}
 
 				if (ImGui::MenuItem("Save Scene As"))
@@ -325,7 +325,7 @@ namespace Puffin::UI
 
 				if (ImGui::MenuItem("Quit", "Alt+F4"))
 				{
-					m_engine->Exit();
+					m_engine->exit();
 				}
 
 				ImGui::EndMenu();
