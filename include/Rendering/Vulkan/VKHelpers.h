@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VKTypes.hpp"
+#include "VKTypes.h"
 
 #include <functional>
 

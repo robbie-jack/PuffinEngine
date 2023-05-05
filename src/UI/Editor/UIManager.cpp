@@ -1,13 +1,10 @@
 #include "UI/Editor/UIManager.h"
 
-#include "Engine/Engine.hpp"
-
-#include <ECS/ECS.h>
-#include <ManipulationGizmo.h>
+#include "Engine\Engine.h"
 
 #include "SerializeScene.h"
 #include "Assets/AssetRegistry.h"
-#include "Assets/AssetImporters.hpp"
+#include "Assets\AssetImporters.h"
 
 #include <string>
 #include <iostream>

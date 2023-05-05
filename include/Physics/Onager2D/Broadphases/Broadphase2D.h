@@ -5,7 +5,7 @@
 #include "Physics/Onager2D/Colliders/Collider2D.h"
 #include "Types/PackedArray.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
-#include "ECS/EnTTSubsystem.hpp"
+#include "ECS/EnTTSubsystem.h"
 
 #include <memory>
 

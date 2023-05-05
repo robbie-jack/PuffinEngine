@@ -1,5 +1,5 @@
-#include "Engine/SignalSubsystem.hpp"
-#include "Engine/Engine.hpp"
+#include "Engine\SignalSubsystem.h"
+#include "Engine\Engine.h"
 
 namespace puffin::core
 {

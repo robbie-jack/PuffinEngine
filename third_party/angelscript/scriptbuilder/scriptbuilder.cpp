@@ -1113,9 +1113,9 @@ string GetAbsolutePath(const string &file)
 	while( (pos = str.find("/./", pos)) != string::npos )
 		str.erase(pos+1, 2);
 
-	// For each /../ remove the parent dir and the /../
+	// For each / remove the parent dir and the /
 	pos = 0;
-	while( (pos = str.find("/../")) != string::npos )
+	while( (pos = str.find("/")) != string::npos )
 	{
 		size_t pos2 = str.rfind("/", pos-1);
 		if( pos2 != string::npos )

@@ -2,7 +2,7 @@
 
 #include <Types/UUID.h>
 #include "Types/Vector.h"
-#include "Types/Vertex.hpp"
+#include "Types\Vertex.h"
 
 #include "nlohmann/json.hpp"
 

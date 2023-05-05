@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Types/Vector.h"
-#include "Types/Quat.hpp"
+#include "Types/Quat.h"
 
 #include "nlohmann/json.hpp"
 

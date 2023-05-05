@@ -88,39 +88,40 @@ set(HEADERS
 	${HEADER_DIR}/Assets/MeshAsset.h
 	${HEADER_DIR}/Assets/SoundAsset.h
 	${HEADER_DIR}/Assets/TextureAsset.h
-	${HEADER_DIR}/Assets/AssetImporters.hpp
+	${HEADER_DIR}/Assets/AssetImporters.h
 	# Audio
 	${HEADER_DIR}/Audio/AudioSubsystem.h
 	# Components
 	${HEADER_DIR}/Components/TransformComponent.h
-	${HEADER_DIR}/Components/SceneObjectComponent.hpp
+	${HEADER_DIR}/Components/SceneObjectComponent.h
 	${HEADER_DIR}/Components/Rendering/CameraComponent.h
 	${HEADER_DIR}/Components/Rendering/LightComponent.h
 	${HEADER_DIR}/Components/Rendering/MeshComponent.h
 	${HEADER_DIR}/Components/Physics/RigidbodyComponent2D.h
 	${HEADER_DIR}/Components/Physics/ShapeComponents2D.h
-	${HEADER_DIR}/Components/Physics/VelocityComponent.hpp
-	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.hpp
-	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.hpp
+	${HEADER_DIR}/Components/Physics/VelocityComponent.h
+	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.h
+	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.h
 	# ECS
 	${HEADER_DIR}/ECS/ComponentType.h
 	${HEADER_DIR}/ECS/ECS.h
-	${HEADER_DIR}/ECS/Entity.hpp
+	${HEADER_DIR}/ECS/Entity.h
 	${HEADER_DIR}/ECS/EntityID.h
-	${HEADER_DIR}/ECS/System.hpp
+	${HEADER_DIR}/ECS/System.h
+	${HEADER_DIR}/ECS/EnTTSubsystem.h
 	# Engine
-	${HEADER_DIR}/Engine/Engine.hpp
-	${HEADER_DIR}/Engine/Application.hpp
-	${HEADER_DIR}/Engine/Subsystem.hpp
-	${HEADER_DIR}/Engine/SignalSubsystem.hpp
-	${HEADER_DIR}/Engine/EnkiTSSubsystem.hpp
+	${HEADER_DIR}/Engine/Engine.h
+	${HEADER_DIR}/Engine/Application.h
+	${HEADER_DIR}/Engine/Subsystem.h
+	${HEADER_DIR}/Engine/SignalSubsystem.h
+	${HEADER_DIR}/Engine/EnkiTSSubsystem.h
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
 	${HEADER_DIR}/Input/InputSubsystem.h
 	# Physics
 	${HEADER_DIR}/Physics/CollisionEvent.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsTypes2D.h
-	${HEADER_DIR}/Physics/Onager2D/Onager2DPhysicsSystem.h
+	${HEADER_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsHelpers2D.h
 	${HEADER_DIR}/Physics/Onager2D/Shapes/Shape2D.h
 	${HEADER_DIR}/Physics/Onager2D/Shapes/PolygonShape2D.h
@@ -130,26 +131,26 @@ set(HEADERS
 	${HEADER_DIR}/Physics/Onager2D/Colliders/PolygonCollider2D.h
 	${HEADER_DIR}/Physics/Onager2D/Colliders/BoxCollider2D.h
 	${HEADER_DIR}/Physics/Onager2D/Colliders/CircleCollider2D.h
-	${HEADER_DIR}/Physics/Onager2D/Broadphases/Broadphase2D.hpp
-	${HEADER_DIR}/Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.hpp
-	${HEADER_DIR}/Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.hpp
+	${HEADER_DIR}/Physics/Onager2D/Broadphases/Broadphase2D.h
+	${HEADER_DIR}/Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.h
+	${HEADER_DIR}/Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.h
 	${HEADER_DIR}/Physics/Box2D/Box2DPhysicsSystem.h
 	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
 	# Procedural
-	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.hpp
+	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
 	# Rendering BGFX
-	${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.hpp
-	${HEADER_DIR}/Rendering/BGFX/BGFXVertex.hpp
-	${HEADER_DIR}/Rendering/BGFX/BGFXTypes.hpp
-	${HEADER_DIR}/Rendering/BGFX/BGFXTextureArray.hpp
+	${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.h
+	${HEADER_DIR}/Rendering/BGFX/BGFXVertex.h
+	${HEADER_DIR}/Rendering/BGFX/BGFXTypes.h
+	${HEADER_DIR}/Rendering/BGFX/BGFXTextureArray.h
 	# Rendering Vulkan
-	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.hpp
-	${HEADER_DIR}/Rendering/Vulkan/VKTypes.hpp
-	${HEADER_DIR}/Rendering/Vulkan/VKVertex.hpp
-	${HEADER_DIR}/Rendering/Vulkan/VKHelpers.hpp
-	${HEADER_DIR}/Rendering/Vulkan/VKDescriptors.hpp
-	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.hpp
-	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.hpp
+	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.h
+	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
+	${HEADER_DIR}/Rendering/Vulkan/VKVertex.h
+	${HEADER_DIR}/Rendering/Vulkan/VKHelpers.h
+	${HEADER_DIR}/Rendering/Vulkan/VKDescriptors.h
+	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.h
+	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.h
 	# Scripting
 	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScriptSystem.h
@@ -157,13 +158,13 @@ set(HEADERS
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h
 	${HEADER_DIR}/Types/PackedArray.h
-	${HEADER_DIR}/Types/Quat.hpp
+	${HEADER_DIR}/Types/Quat.h
 	${HEADER_DIR}/Types/RingBuffer.h
 	${HEADER_DIR}/Types/Simplex.h
 	${HEADER_DIR}/Types/UUID.h
 	${HEADER_DIR}/Types/Vector.h
-	${HEADER_DIR}/Types/Vertex.hpp
-	${HEADER_DIR}/Types/DeletionQueue.hpp
+	${HEADER_DIR}/Types/Vertex.h
+	${HEADER_DIR}/Types/DeletionQueue.h
 	# UI
 	${HEADER_DIR}/UI/Editor/UIManager.h
 	${HEADER_DIR}/UI/Editor/Windows/UIWindow.h
@@ -174,7 +175,7 @@ set(HEADERS
 	${HEADER_DIR}/UI/Editor/Windows/UIWindowSettings.h
 	${HEADER_DIR}/UI/Editor/Windows/UIWindowViewport.h
 	# Window
-	${HEADER_DIR}/Window/WindowSubsystem.hpp
+	${HEADER_DIR}/Window/WindowSubsystem.h
 	# Root
 	${HEADER_DIR}/ManipulationGizmo.h
 	${HEADER_DIR}/MathHelpers.h
@@ -201,7 +202,7 @@ set(SOURCES
 	# Input
 	${SOURCE_DIR}/Input/InputSubsystem.cpp
 	# Physics
-	${SOURCE_DIR}/Physics/Onager2D/Onager2DPhysicsSystem.cpp
+	${SOURCE_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.cpp
 	${SOURCE_DIR}/Physics/Onager2D/Shapes/CircleShape2D.cpp
 	${SOURCE_DIR}/Physics/Onager2D/Shapes/BoxShape2D.cpp
 	${SOURCE_DIR}/Physics/Onager2D/Shapes/CircleShape2D.cpp
@@ -381,7 +382,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vkb/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/tinygltf)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include/compat/msvc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/compat/msvc)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bimg/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/entt/src)

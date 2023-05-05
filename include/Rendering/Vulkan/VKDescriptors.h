@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rendering/Vulkan/VKTypes.hpp"
+#include "VKTypes.h"
 
 #include <unordered_map>
 #include <memory>

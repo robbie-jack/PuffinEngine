@@ -1,10 +1,10 @@
 #pragma once
 
 #include "ECS/ECS.h"
-#include "Engine/Engine.hpp"
+#include "Engine\Engine.h"
 
 #include "Types/Vector.h"
-#include "Types/Vertex.hpp"
+#include "Types\Vertex.h"
 
 namespace puffin::procedural
 {

@@ -1,9 +1,9 @@
-#include "Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.hpp"
+#include "Physics\Onager2D\Broadphases\SpatialHashBroadphase2D.h"
 
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
 
-constexpr int P1 = 73856093;
-constexpr int P2 = 83492791;
+constexpr int gP1 = 73856093;
+constexpr int gP2 = 83492791;
 
 void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
 	PackedVector<std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
@@ -48,7 +48,7 @@ int puffin::physics::SpatialHashBroadphase2D::generateHash(double x, double y) c
 	const int ix = static_cast<int>(std::floor(x / mGridSize));
 	const int iy = static_cast<int>(std::floor(y / mGridSize));
 
-	return (ix * P1 ^ iy * P2) % mHashMapSize;
+	return (ix * gP1 ^ iy * gP2) % mHashMapSize;
 }
 
 void puffin::physics::SpatialHashBroadphase2D::updateSpatialMap(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders)

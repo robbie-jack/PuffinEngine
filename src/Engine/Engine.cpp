@@ -1,24 +1,24 @@
-#include "Engine/Engine.hpp"
+#include "Engine/Engine.h"
 
 #include "ECS/ECS.h"
-#include "ECS/Entity.hpp"
+#include "ECS/Entity.h"
 
-#include "Rendering/BGFX/BGFXRenderSystem.hpp"
-#include "Rendering/Vulkan/VKRenderSystem.hpp"
+#include "Rendering/BGFX/BGFXRenderSystem.h"
+#include "Rendering/Vulkan/VKRenderSystem.h"
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
-#include "Physics/Onager2D/Onager2DPhysicsSystem.h"
+#include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
 #include "Scripting/AngelScriptSystem.h"
-#include "Procedural/ProceduralMeshGenSystem.hpp"
+#include "Procedural/ProceduralMeshGenSystem.h"
 
 #include "Components/TransformComponent.h"
-#include "Components/Scripting/AngelScriptComponent.hpp"
-#include "Components/Procedural/ProceduralMeshComponent.hpp"
+#include "Components/Scripting/AngelScriptComponent.h"
+#include "Components/Procedural/ProceduralMeshComponent.h"
 
-#include "Window/WindowSubsystem.hpp"
+#include "Window/WindowSubsystem.h"
 #include "Input/InputSubsystem.h"
-#include "Engine/SignalSubsystem.hpp"
-#include "Engine/EnkiTSSubsystem.hpp"
-#include "ECS/EnTTSubsystem.hpp"
+#include "Engine/SignalSubsystem.h"
+#include "Engine/EnkiTSSubsystem.h"
+#include "ECS/EnTTSubsystem.h"
 
 #include "SerializeScene.h"
 #include "UI/Editor/UIManager.h"
@@ -89,7 +89,7 @@ namespace puffin::core
 		// Systems
 		//registerSystem<Rendering::BGFX::BGFXRenderSystem>();
 		registerSystem<rendering::VKRenderSystem>();
-		registerSystem<physics::Onager2DPhysicsSystem>();
+		registerSystem<physics::OnagerPhysicsSystem2D>();
 		//registerSystem<Physics::Box2DPhysicsSystem>();
 		registerSystem<scripting::AngelScriptSystem>();
 		registerSystem<procedural::ProceduralMeshGenSystem>();

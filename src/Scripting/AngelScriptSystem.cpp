@@ -5,9 +5,9 @@
 
 #include "Assets/AssetRegistry.h"
 
-#include "Engine/Engine.hpp"
+#include "Engine\Engine.h"
 
-#include "ECS/Entity.hpp"
+#include "ECS\Entity.h"
 
 #include <iostream>  // cout
 #include <assert.h>  // assert()

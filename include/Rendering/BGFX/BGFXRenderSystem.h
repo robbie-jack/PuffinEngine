@@ -1,17 +1,17 @@
 #pragma once
 
-#include "ECS/System.hpp"
+#include "ECS\System.h"
 
-#include "BGFXTextureArray.hpp"
+#include "BGFXTextureArray.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/TextureAsset.h"
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/CameraComponent.h"
-#include "ECS/Entity.hpp"
+#include "ECS\Entity.h"
 #include "Input/InputEvent.h"
-#include "Rendering/BGFX/BGFXTypes.hpp"
-#include "Rendering/BGFX/BGFXVertex.hpp"
-#include "Types/DeletionQueue.hpp"
+#include "BGFXTypes.h"
+#include "BGFXVertex.h"
+#include "Types\DeletionQueue.h"
 #include "Types/PackedArray.h"
 #include "Types/RingBuffer.h"
 #include "UI/Editor/Windows/UIWindow.h"

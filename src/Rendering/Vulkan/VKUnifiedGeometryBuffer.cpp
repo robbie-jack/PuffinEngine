@@ -1,7 +1,7 @@
-#include "Rendering/Vulkan/VKUnifiedGeometryBuffer.hpp"
+#include "Rendering\Vulkan\VKUnifiedGeometryBuffer.h"
 
-#include "Rendering/Vulkan/VKRenderSystem.hpp"
-#include "Rendering/Vulkan/VKHelpers.hpp"
+#include "Rendering\Vulkan\VKRenderSystem.h"
+#include "Rendering\Vulkan\VKHelpers.h"
 
 #include <iostream>
 #include <numeric>

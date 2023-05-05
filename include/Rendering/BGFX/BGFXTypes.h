@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BGFXVertex.hpp"
+#include "BGFXVertex.h"
 
 #include "ECS/EntityID.h"
 #include "Types/UUID.h"

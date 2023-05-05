@@ -2,8 +2,8 @@
 
 #include "ECS/EntityID.h"
 #include "ECS/ComponentType.h"
-#include "ECS/System.hpp"
-#include "Engine/Subsystem.hpp"
+#include "System.h"
+#include "Engine\Subsystem.h"
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"
 #include "Types/UUID.h"

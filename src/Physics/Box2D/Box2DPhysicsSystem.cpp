@@ -1,12 +1,13 @@
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
 
-#include "Engine/Engine.hpp"
-#include "Engine/SignalSubsystem.hpp"
+#include "Engine\Engine.h"
+#include "Engine\SignalSubsystem.h"
 
+#include "Components/SceneObjectComponent.h"
 #include "Components/TransformComponent.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
-#include "Components/Physics/VelocityComponent.hpp"
+#include "Components/Physics/VelocityComponent.h"
 
 namespace puffin::physics
 {

@@ -1,10 +1,8 @@
 #pragma once
 
 #include "bgfx/bgfx.h"
-#include "Types/Vector.h"
-#include "Types/Vertex.hpp"
+#include "Types/Vertex.h"
 
-#include <glm/glm.hpp>
 #include <cstdint>
 
 namespace puffin::rendering

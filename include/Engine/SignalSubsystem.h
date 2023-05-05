@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Subsystem.hpp"
+#include "Subsystem.h"
 
 #include <vector>
 #include <unordered_map>
@@ -53,9 +53,7 @@ namespace puffin::core
 		template<typename SignalT>
 		void signal(const SignalT& signal)
 		{
-			const std::type_index typeIndex = typeid(SignalT);
-
-			if (mSignalHandlers.count(typeIndex) == 1)
+			if (const std::type_index typeIndex = typeid(SignalT); mSignalHandlers.count(typeIndex) == 1)
 			{
 				// Check if any signals of this type have been connected
 				for (int i = 0; i < mSignalHandlers[typeIndex].size(); i++)

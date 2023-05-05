@@ -1,16 +1,15 @@
 
-#include "Physics/Onager2D/Onager2DPhysicsSystem.h"
+#include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
 
-#include <ECS/EnTTSubsystem.hpp>
-
-#include "Physics/CollisionEvent.h"
 #include "Components/TransformComponent.h"
-#include "Components/Physics/VelocityComponent.hpp"
+#include "Components\Physics\VelocityComponent.h"
+#include "ECS/EnTTSubsystem.h"
+#include "Engine\Engine.h"
+#include "Engine\SignalSubsystem.h"
+#include "Physics/CollisionEvent.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
-#include "Engine/Engine.hpp"
-#include "Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.hpp"
-#include "Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.hpp"
-#include "Engine/SignalSubsystem.hpp"
+#include "Physics\Onager2D\Broadphases\SpatialHashBroadphase2D.h"
+#include "Physics\Onager2D\Broadphases\SweepAndPruneBroadphase.h"
 
 namespace puffin
 {
@@ -20,7 +19,7 @@ namespace puffin
 		// Constructor/Destructor
 		//--------------------------------------------------
 
-		Onager2DPhysicsSystem::Onager2DPhysicsSystem()
+		OnagerPhysicsSystem2D::OnagerPhysicsSystem2D()
 		{
 			mBoxShapes.Reserve(6000);
 			mCircleShapes.Reserve(2000);
@@ -33,7 +32,7 @@ namespace puffin
 		// Public Functions
 		//--------------------------------------------------
 
-		void Onager2DPhysicsSystem::init()
+		void OnagerPhysicsSystem2D::init()
 		{
 			registerBroadphase<NSquaredBroadphase>();
 			registerBroadphase<SweepAndPruneBroadphase>();
@@ -42,7 +41,7 @@ namespace puffin
 			setBroadphase<SweepAndPruneBroadphase>();
 		}
 
-		void Onager2DPhysicsSystem::fixedUpdate()
+		void OnagerPhysicsSystem2D::fixedUpdate()
 		{
 			// Update Dynamic Objects
 			updateDynamics();
@@ -74,7 +73,7 @@ namespace puffin
 			mCollidersUpdated = false;
 		}
 
-		void Onager2DPhysicsSystem::stop()
+		void OnagerPhysicsSystem2D::stop()
 		{
 			mBoxShapes.Clear();
 			mCircleShapes.Clear();
@@ -83,7 +82,7 @@ namespace puffin
 			mCollisionContacts.clear();
 		}
 
-		void Onager2DPhysicsSystem::onConstructBox(entt::registry& registry, entt::entity entity)
+		void OnagerPhysicsSystem2D::onConstructBox(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 			const auto& box = registry.get<const BoxComponent2D>(entity);
@@ -91,14 +90,14 @@ namespace puffin
 			initBox(entity, object, box);
 		}
 
-		void Onager2DPhysicsSystem::onDestroyBox(entt::registry& registry, entt::entity entity)
+		void OnagerPhysicsSystem2D::onDestroyBox(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
 			cleanupBox(object);
 		}
 
-		void Onager2DPhysicsSystem::onConstructCircle(entt::registry& registry, entt::entity entity)
+		void OnagerPhysicsSystem2D::onConstructCircle(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 			const auto& circle = registry.get<const CircleComponent2D>(entity);
@@ -106,14 +105,14 @@ namespace puffin
 			initCircle(entity, object, circle);
 		}
 
-		void Onager2DPhysicsSystem::onDestroyCircle(entt::registry& registry, entt::entity entity)
+		void OnagerPhysicsSystem2D::onDestroyCircle(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
 			cleanupCircle(object);
 		}
 
-		void Onager2DPhysicsSystem::onConstructRigidbody(entt::registry& registry, entt::entity entity)
+		void OnagerPhysicsSystem2D::onConstructRigidbody(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
@@ -125,7 +124,7 @@ namespace puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::onDestroyRigidbody(entt::registry& registry, entt::entity entity)
+		void OnagerPhysicsSystem2D::onDestroyRigidbody(entt::registry& registry, entt::entity entity)
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
@@ -136,7 +135,7 @@ namespace puffin
 		// Private Functions
 		//--------------------------------------------------
 
-		void Onager2DPhysicsSystem::initCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle)
+		void OnagerPhysicsSystem2D::initCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle)
 		{
 			// If there is no shape for this entity in vector
 			if (!mCircleShapes.Contains(object.uuid))
@@ -156,7 +155,7 @@ namespace puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::cleanupCircle(const SceneObjectComponent& object)
+		void OnagerPhysicsSystem2D::cleanupCircle(const SceneObjectComponent& object)
 		{
 			if (mCircleShapes.Contains(object.uuid))
 			{
@@ -167,7 +166,7 @@ namespace puffin
 			eraseCollider(object.uuid);
 		}
 
-		void Onager2DPhysicsSystem::initBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box)
+		void OnagerPhysicsSystem2D::initBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box)
 		{
 			// If there is no shape for this entity in vector
 			if (!mBoxShapes.Contains(object.uuid))
@@ -194,7 +193,7 @@ namespace puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::cleanupBox(const SceneObjectComponent& object)
+		void OnagerPhysicsSystem2D::cleanupBox(const SceneObjectComponent& object)
 		{
 			if (mBoxShapes.Contains(object.uuid))
 				mBoxShapes.Erase(object.uuid);
@@ -202,7 +201,7 @@ namespace puffin
 			eraseCollider(object.uuid);
 		}
 
-		void Onager2DPhysicsSystem::insertCollider(UUID id, std::shared_ptr<collision2D::Collider2D> collider)
+		void OnagerPhysicsSystem2D::insertCollider(UUID id, std::shared_ptr<collision2D::Collider2D> collider)
 		{
 			if (!mColliders.Contains(id))
 			{
@@ -212,7 +211,7 @@ namespace puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::eraseCollider(UUID id)
+		void OnagerPhysicsSystem2D::eraseCollider(UUID id)
 		{
 			if (mColliders.Contains(id))
 			{
@@ -222,7 +221,7 @@ namespace puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::updateDynamics() const
+		void OnagerPhysicsSystem2D::updateDynamics() const
 		{
 			const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
@@ -257,7 +256,7 @@ namespace puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::calculateImpulseByGravity(RigidbodyComponent2D& body) const
+		void OnagerPhysicsSystem2D::calculateImpulseByGravity(RigidbodyComponent2D& body) const
 		{
 			if (body.mass == 0.0f)
 				return;
@@ -268,7 +267,7 @@ namespace puffin
 			applyLinearImpulse(body, impulseGravity);
 		}
 
-		void Onager2DPhysicsSystem::collisionBroadphase()
+		void OnagerPhysicsSystem2D::collisionBroadphase()
 		{
 			mCollisionPairs.clear();
 			mCollisionPairs.reserve(mColliders.Size() * mColliders.Size());
@@ -278,7 +277,7 @@ namespace puffin
 				mActiveBroadphase->generateCollisionPairs(mColliders, mCollisionPairs, mCollidersUpdated);
 		}
 
-		void Onager2DPhysicsSystem::collisionDetection()
+		void OnagerPhysicsSystem2D::collisionDetection()
 		{
 			mCollisionContacts.clear();
 
@@ -294,7 +293,7 @@ namespace puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::collisionResponse() const
+		void OnagerPhysicsSystem2D::collisionResponse() const
 		{
 			const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
@@ -343,7 +342,7 @@ namespace puffin
 			}
 		}
 
-		void Onager2DPhysicsSystem::generateCollisionEvents()
+		void OnagerPhysicsSystem2D::generateCollisionEvents()
 		{
 			const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 

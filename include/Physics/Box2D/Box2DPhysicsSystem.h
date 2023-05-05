@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Engine/Engine.hpp"
-#include "ECS/EnTTSubsystem.hpp"
-#include "Types/PackedArray.h"
-#include "Physics/PhysicsConstants.h"
 #include "Box2DContactListener.h"
+#include "Components/Physics/VelocityComponent.h"
+#include "Engine/Engine.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
-#include "Components/Physics/VelocityComponent.hpp"
+#include "ECS/EnTTSubsystem.h"
+#include "Physics/PhysicsConstants.h"
+#include "Types/PackedArray.h"
 
-#include "box2d/box2d.h"
 #include "box2d/b2_world.h"
+#include "box2d/box2d.h"
 
 namespace puffin::physics
 {

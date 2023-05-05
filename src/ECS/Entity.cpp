@@ -1,4 +1,4 @@
-#include "ECS/Entity.hpp"
+#include "ECS\Entity.h"
 
 namespace puffin::ECS
 {

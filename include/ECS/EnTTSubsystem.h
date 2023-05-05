@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Engine/Subsystem.hpp"
+#include "Engine/Subsystem.h"
 
 #include "Types/UUID.h"
 #include "entt/entity/registry.hpp"
-#include "Components/SceneObjectComponent.hpp"
+#include "Components/SceneObjectComponent.h"
 
 namespace puffin::ECS
 {

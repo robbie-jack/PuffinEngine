@@ -1,10 +1,10 @@
-#include "Rendering/BGFX/BGFXRenderSystem.hpp"
+#include "Rendering\BGFX\BGFXRenderSystem.h"
 
 #include "bgfx/bgfx.h"
 #include "bx/math.h"
 
-#include "Engine/Engine.hpp"
-#include "Window/WindowSubsystem.hpp"
+#include "Engine\Engine.h"
+#include "Window\WindowSubsystem.h"
 
 #include "Assets/AssetRegistry.h"
 #include "GLFW/glfw3.h"
@@ -15,7 +15,7 @@
 #include "Components/Rendering/CameraComponent.h"
 #include "Components/Rendering/LightComponent.h"
 #include "MathHelpers.h"
-#include "Engine/SignalSubsystem.hpp"
+#include "Engine\SignalSubsystem.h"
 #include "Assets/TextureAsset.h"
 #include "Input/InputSubsystem.h"
 

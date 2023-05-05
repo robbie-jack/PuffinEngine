@@ -3,7 +3,7 @@
 #include "Components/TransformComponent.h"
 
 #include "ECS/ECS.h"
-#include "ECS/Entity.hpp"
+#include "ECS\Entity.h"
 
 namespace puffin
 {

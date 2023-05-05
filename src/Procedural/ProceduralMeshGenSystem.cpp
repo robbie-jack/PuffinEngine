@@ -1,13 +1,13 @@
-#include "Procedural/ProceduralMeshGenSystem.hpp"
+#include "Procedural\ProceduralMeshGenSystem.h"
 
-#include "Engine/Engine.hpp"
-#include "ECS/Entity.hpp"
+#include "Engine\Engine.h"
+#include "ECS\Entity.h"
 
 #include "OpenSimplexNoise/OpenSimplexNoise.h"
 
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/MeshComponent.h"
-#include "Components/Procedural/ProceduralMeshComponent.hpp"
+#include "Components\Procedural\ProceduralMeshComponent.h"
 
 namespace puffin::procedural
 {

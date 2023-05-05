@@ -1,23 +1,23 @@
 #pragma once
 
-#include "ECS/Entity.hpp"
+#include "ECS\Entity.h"
 #include <ECS/ECS.h>
-#include "Engine/Engine.hpp"
+#include "Engine\Engine.h"
 #include <Types/Vector.h>
 
 #include <Physics/Onager2D/Shapes/BoxShape2D.h>
 #include <Physics/Onager2D/Shapes/CircleShape2D.h>
 
-#include "Physics/Onager2D/Broadphases/Broadphase2D.hpp"
+#include "Broadphases\Broadphase2D.h"
 #include "Physics/Onager2D/Colliders/Collider2D.h"
 #include "Physics/Onager2D/PhysicsTypes2D.h"
 
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
-#include "Components/Physics/VelocityComponent.hpp"
+#include "Components\Physics\VelocityComponent.h"
 #include "Physics/PhysicsConstants.h"
 
-#include "ECS/EnTTSubsystem.hpp"
+#include "ECS/EnTTSubsystem.h"
 
 #include "Types/PackedArray.h"
 
@@ -38,12 +38,12 @@ namespace puffin::physics
 	// Physics System 2D
 	//////////////////////////////////////////////////
 
-	class Onager2DPhysicsSystem : public ECS::System
+	class OnagerPhysicsSystem2D : public ECS::System
 	{
 	public:
 
-		Onager2DPhysicsSystem();
-		~Onager2DPhysicsSystem() override {}
+		OnagerPhysicsSystem2D();
+		~OnagerPhysicsSystem2D() override {}
 
 		void setupCallbacks() override
 		{
@@ -53,22 +53,22 @@ namespace puffin::physics
 
 			const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
-			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::onConstructRigidbody>(this);
-			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::onDestroyRigidbody>(this);
+			registry->on_construct<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructRigidbody>(this);
+			registry->on_destroy<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyRigidbody>(this);
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent>>();
 			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent>>();
 
-			registry->on_construct<BoxComponent2D>().connect<&Onager2DPhysicsSystem::onConstructBox>(this);
-			registry->on_update<BoxComponent2D>().connect<&Onager2DPhysicsSystem::onConstructBox>(this);
-			registry->on_destroy<BoxComponent2D>().connect<&Onager2DPhysicsSystem::onDestroyBox>(this);
+			registry->on_construct<BoxComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructBox>(this);
+			registry->on_update<BoxComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructBox>(this);
+			registry->on_destroy<BoxComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyBox>(this);
 
-			registry->on_construct<CircleComponent2D>().connect<&Onager2DPhysicsSystem::onConstructCircle>(this);
-			registry->on_update<CircleComponent2D>().connect<&Onager2DPhysicsSystem::onConstructCircle>(this);
-			registry->on_destroy<CircleComponent2D>().connect<&Onager2DPhysicsSystem::onDestroyCircle>(this);
+			registry->on_construct<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructCircle>(this);
+			registry->on_update<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructCircle>(this);
+			registry->on_destroy<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyCircle>(this);
 
-			registry->on_construct<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::onConstructRigidbody>(this);
-			registry->on_destroy<RigidbodyComponent2D>().connect<&Onager2DPhysicsSystem::onDestroyRigidbody>(this);
+			registry->on_construct<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructRigidbody>(this);
+			registry->on_destroy<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyRigidbody>(this);
 		}
 
 		void init();

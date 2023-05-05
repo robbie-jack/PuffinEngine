@@ -1,12 +1,12 @@
 #include "UI/Editor/Windows/UIWindowEntityProperties.h"
 
-#include "Engine/Engine.hpp"
+#include "Engine\Engine.h"
 
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
-#include "Components/Scripting/AngelScriptComponent.hpp"
-#include "Components/Procedural/ProceduralMeshComponent.hpp"
+#include "Components\Scripting\AngelScriptComponent.h"
+#include "Components\Procedural\ProceduralMeshComponent.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
 

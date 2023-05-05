@@ -1,9 +1,9 @@
 #include <Input/InputSubsystem.h>
 #include <ECS/ECS.h>
 
-#include "Engine/Engine.hpp"
-#include "Engine/SignalSubsystem.hpp"
-#include "Window/WindowSubsystem.hpp"
+#include "Engine\Engine.h"
+#include "Engine\SignalSubsystem.h"
+#include "Window\WindowSubsystem.h"
 
 namespace puffin
 {

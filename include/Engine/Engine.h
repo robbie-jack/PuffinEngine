@@ -3,8 +3,8 @@
 #include <ECS/ECS.h>
 #include <SerializeScene.h>
 #include <ProjectSettings.h>
-#include "Engine/Subsystem.hpp"
-#include "Engine/Application.hpp"
+#include "Subsystem.h"
+#include "Application.h"
 
 #include <glfw/glfw3.h>
 

@@ -2,7 +2,7 @@
 
 #include "Assets/MeshAsset.h"
 
-#include "Rendering/Vulkan/VKTypes.hpp"
+#include "VKTypes.h"
 
 #include <unordered_map>
 #include <vector>

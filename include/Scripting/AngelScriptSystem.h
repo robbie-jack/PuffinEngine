@@ -8,7 +8,7 @@
 #include "angelscript/scriptbuilder/scriptbuilder.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h"
 
-#include "Components/Scripting/AngelScriptComponent.hpp"
+#include "..\Components\Scripting\AngelScriptComponent.h"
 
 #include "Input/InputEvent.h"
 #include "Physics/CollisionEvent.h"
@@ -16,7 +16,7 @@
 #include "Types/RingBuffer.h"
 
 #include "Audio/AudioSubsystem.h"
-#include "Engine/Engine.hpp"
+#include "..\Engine\Engine.h"
 
 #include <unordered_map>
 #include <map>
