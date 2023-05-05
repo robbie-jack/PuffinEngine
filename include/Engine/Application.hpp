@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace puffin::Core
+namespace puffin::core
 {
 	class Engine;
 

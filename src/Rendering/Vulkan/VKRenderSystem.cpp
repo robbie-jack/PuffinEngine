@@ -48,7 +48,7 @@
 		}                                                           \
 	} while (0)
 
-namespace puffin::Rendering::VK
+namespace puffin::rendering::VK
 {
 	void VKRenderSystem::Init()
 	{
@@ -98,7 +98,7 @@ namespace puffin::Rendering::VK
 		m_editorCam.position = { 0.0f, 0.0f, 15.0f };
 
 		// Connect Signals
-		const auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
+		const auto signalSubsystem = m_engine->getSubsystem<core::SignalSubsystem>();
 
 		signalSubsystem->Connect<Input::InputEvent>(
 			[&](const Input::InputEvent& inputEvent)
@@ -767,8 +767,8 @@ namespace puffin::Rendering::VK
 
 		for (auto [entity, object, transform, mesh] : meshView.each())
 		{
-			m_meshDrawList[mesh.meshAssetID].insert(object.uuid);
-			m_texDrawList[mesh.textureAssetID].insert(object.uuid);
+			m_meshDrawList[mesh.meshAssetId].insert(object.uuid);
+			m_texDrawList[mesh.textureAssetId].insert(object.uuid);
 		}
 
 		auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent, CameraComponent>();
@@ -843,12 +843,12 @@ namespace puffin::Rendering::VK
 
 		// Calculate Right, Up and LookAt vectors
 		m_editorCam.right = m_editorCam.up.Cross(m_editorCam.direction).Normalised();
-		m_editorCam.lookat = m_editorCam.position + m_editorCam.direction;
+		m_editorCam.lookAt = m_editorCam.position + m_editorCam.direction;
 
 		m_editorCam.aspect = static_cast<float>(m_windowSize.width) / static_cast<float>(m_windowSize.height);
 
 		m_editorCam.view = glm::lookAt(static_cast<glm::vec3>(m_editorCam.position),
-			static_cast<glm::vec3>(m_editorCam.lookat), static_cast<glm::vec3>(m_editorCam.up));
+			static_cast<glm::vec3>(m_editorCam.lookAt), static_cast<glm::vec3>(m_editorCam.up));
 
 		m_editorCam.proj = glm::perspective(Maths::DegreesToRadians(m_editorCam.fovY), m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar);
 		m_editorCam.proj[1][1] *= -1;
@@ -862,7 +862,7 @@ namespace puffin::Rendering::VK
 
 		for (const auto& [fst, snd] : m_meshDrawList)
 		{
-			const auto staticMesh = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(fst));
+			const auto staticMesh = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(fst));
 			m_staticRenderData.combinedMeshBuffer.AddMesh(staticMesh);
 
 			// Check if mesh is still in use by any in-flight frames
@@ -973,12 +973,12 @@ namespace puffin::Rendering::VK
 	{
 		// Calculate Right, Up and LookAt vectors
 		camera.right = camera.up.Cross(transform.rotation.GetXYZ()).Normalised();
-		camera.lookat = transform.position + transform.rotation.GetXYZ();
+		camera.lookAt = transform.position + transform.rotation.GetXYZ();
 
 		camera.aspect = (float)m_windowSize.width / (float)m_windowSize.height;
 
 		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
-			static_cast<glm::vec3>(camera.lookat), static_cast<glm::vec3>(camera.up));
+			static_cast<glm::vec3>(camera.lookAt), static_cast<glm::vec3>(camera.up));
 
 		camera.proj = glm::perspective(Maths::DegreesToRadians(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
 		camera.proj[1][1] *= -1;
@@ -1162,7 +1162,7 @@ namespace puffin::Rendering::VK
 
 	void VKRenderSystem::PrepareObjectData()
 	{
-		const auto enkiTSSubSystem = m_engine->getSubsystem<Core::EnkiTSSubsystem>();
+		const auto enkiTSSubSystem = m_engine->getSubsystem<core::EnkiTSSubsystem>();
 
 		const AllocatedBuffer& objectBuffer = GetCurrentFrameData().objectBuffer;
 
@@ -1239,7 +1239,7 @@ namespace puffin::Rendering::VK
 				GPUObjectData object;
 
 				BuildModelTransform(position, transform.rotation.EulerAnglesRad(), transform.scale, object.model);
-				object.texIndex = m_texData[mesh.textureAssetID].idx;
+				object.texIndex = m_texData[mesh.textureAssetId].idx;
 
 				threadObjects[threadnum].emplace_back(object, objectIdx);
 			}
@@ -1327,9 +1327,9 @@ namespace puffin::Rendering::VK
 
 				const auto& mesh = registry->get<MeshComponent>(entity);
 
-				indirectCmds[idx].vertexOffset = m_staticRenderData.combinedMeshBuffer.MeshVertexOffset(mesh.meshAssetID);
-				indirectCmds[idx].firstIndex = m_staticRenderData.combinedMeshBuffer.MeshIndexOffset(mesh.meshAssetID);
-				indirectCmds[idx].indexCount = m_staticRenderData.combinedMeshBuffer.MeshIndexCount(mesh.meshAssetID);
+				indirectCmds[idx].vertexOffset = m_staticRenderData.combinedMeshBuffer.MeshVertexOffset(mesh.meshAssetId);
+				indirectCmds[idx].firstIndex = m_staticRenderData.combinedMeshBuffer.MeshIndexOffset(mesh.meshAssetId);
+				indirectCmds[idx].indexCount = m_staticRenderData.combinedMeshBuffer.MeshIndexCount(mesh.meshAssetId);
 				indirectCmds[idx].firstInstance = idx;
 				indirectCmds[idx].instanceCount = 1;
 
@@ -1633,22 +1633,22 @@ namespace puffin::Rendering::VK
 
 	bool VKRenderSystem::LoadMesh(UUID meshID, MeshData& meshData)
 	{
-		const auto meshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
+		const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshID));
 
-		if (meshAsset && meshAsset->Load())
+		if (meshAsset && meshAsset->load())
 		{
 			meshData.assetID = meshID;
 
-			meshData.numVertices = meshAsset->GetNumVertices();
-			meshData.numIndices = meshAsset->GetNumIndices();
+			meshData.numVertices = meshAsset->numVertices();
+			meshData.numIndices = meshAsset->numIndices();
 
-			meshData.vertexBuffer = Util::InitVertexBuffer(shared_from_this(), meshAsset->GetVertices().data(),
-				meshAsset->GetNumVertices(), meshAsset->GetVertexSize());
+			meshData.vertexBuffer = Util::InitVertexBuffer(shared_from_this(), meshAsset->vertices().data(),
+				meshAsset->numVertices(), meshAsset->vertexSize());
 
-			meshData.indexBuffer = Util::InitIndexBuffer(shared_from_this(), meshAsset->GetIndices().data(),
-				meshAsset->GetNumIndices(), meshAsset->GetIndexSize());
+			meshData.indexBuffer = Util::InitIndexBuffer(shared_from_this(), meshAsset->indices().data(),
+				meshAsset->numIndices(), meshAsset->indexSize());
 
-			meshAsset->Unload();
+			meshAsset->unload();
 
 			return true;
 		}
@@ -1666,19 +1666,19 @@ namespace puffin::Rendering::VK
 
 	bool VKRenderSystem::LoadTexture(UUID texID, TextureData& texData)
 	{
-		const auto texAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(texID));
+		const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(assets::AssetRegistry::get()->getAsset(texID));
 
-		if (texAsset && texAsset->Load())
+		if (texAsset && texAsset->load())
 		{
 			texData.assetID = texID;
 
 			texData.sampler = m_staticRenderData.textureSampler;
 
-			texData.texture = Util::InitTexture(shared_from_this(), texAsset->GetPixelData(), 
-				texAsset->GetTextureWidth(), texAsset->GetTextureHeight(), 
-				texAsset->GetTexturePixelSize(), g_texFormatMap.at(texAsset->GetTextureFormat()));
+			texData.texture = Util::InitTexture(shared_from_this(), texAsset->pixelData(), 
+				texAsset->textureWidth(), texAsset->textureHeight(), 
+				texAsset->textureSizePerPixel(), g_texFormatMap.at(texAsset->textureFormat()));
 
-			texAsset->Unload();
+			texAsset->unload();
 
 			return true;
 		}

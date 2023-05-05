@@ -3,7 +3,7 @@
 #include "ECS/ECS.h"
 #include "Engine/Engine.hpp"
 
-namespace puffin::Scripting
+namespace puffin::scripting
 {
 	class NativeScriptSystem : public ECS::System
 	{
@@ -18,9 +18,9 @@ namespace puffin::Scripting
 
 		void SetupCallbacks() override
 		{
-			m_engine->registerCallback(Core::ExecutionStage::start, [&]() { Start(); }, "NativeScriptSystem: Start");
-			m_engine->registerCallback(Core::ExecutionStage::update, [&]() { Update(); }, "NativeScriptSystem: Update");
-			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { Stop(); }, "NativeScriptSystem: Stop");
+			m_engine->registerCallback(core::ExecutionStage::Start, [&]() { Start(); }, "NativeScriptSystem: Start");
+			m_engine->registerCallback(core::ExecutionStage::Update, [&]() { Update(); }, "NativeScriptSystem: Update");
+			m_engine->registerCallback(core::ExecutionStage::Stop, [&]() { Stop(); }, "NativeScriptSystem: Stop");
 		}
 
 		void Start();

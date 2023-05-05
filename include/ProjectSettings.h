@@ -11,7 +11,7 @@ namespace fs = std::filesystem;
 
 namespace puffin
 {
-	namespace IO
+	namespace io
 	{
 		// IO File Structs
 		struct ProjectFile

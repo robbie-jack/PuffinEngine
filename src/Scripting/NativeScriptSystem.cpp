@@ -3,7 +3,7 @@
 #include "Components/TransformComponent.h"
 #include "Components/Scripting/NativeScriptComponent.hpp"
 
-namespace puffin::Scripting
+namespace puffin::scripting
 {
 	void NativeScriptSystem::Start()
 	{

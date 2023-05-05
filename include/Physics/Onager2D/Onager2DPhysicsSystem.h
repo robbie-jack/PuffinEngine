@@ -46,9 +46,9 @@ namespace puffin::physics
 
 		void SetupCallbacks() override
 		{
-			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { init(); }, "Onager2DPhysicsSystem: Init");
-			m_engine->registerCallback(Core::ExecutionStage::fixedUpdate, [&]() { fixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
-			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { stop(); }, "Onager2DPhysicsSystem: Stop");
+			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "Onager2DPhysicsSystem: Init");
+			m_engine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
+			m_engine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "Onager2DPhysicsSystem: Stop");
 
 			const auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 

@@ -2,10 +2,10 @@
 
 #include "Engine/Engine.hpp"
 
-namespace puffin::Core
+namespace puffin::core
 {
 	void EnkiTSSubsystem::SetupCallbacks()
 	{
-		m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "EnkiTSSubsystem: Init", 50);
+		m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "EnkiTSSubsystem: Init", 50);
 	}
 }

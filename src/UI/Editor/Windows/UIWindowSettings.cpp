@@ -21,7 +21,7 @@ namespace puffin
 
 				Begin(windowName);
 
-				IO::ProjectSettings& settings = m_engine->settings();
+				io::ProjectSettings& settings = m_engine->settings();
 
 				auto input = m_engine->getSubsystem<Input::InputSubsystem>();
 

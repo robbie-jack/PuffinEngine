@@ -30,7 +30,7 @@ namespace std
 	};
 }
 
-namespace puffin::Rendering::BGFX
+namespace puffin::rendering
 {
 	static VertexPC32 s_cubeVertices[] =
 	{
@@ -60,15 +60,21 @@ namespace puffin::Rendering::BGFX
 		6, 3, 7,
 	};
 
-	const static std::unordered_map<Assets::TextureFormat, bgfx::TextureFormat::Enum> g_texFormatMap =
+	const static std::unordered_map<assets::TextureFormat, bgfx::TextureFormat::Enum> g_texFormatMap =
 	{
-		{ Assets::TextureFormat::RGBA8, bgfx::TextureFormat::RGBA8 }
+		{ assets::TextureFormat::RGBA8, bgfx::TextureFormat::RGBA8 }
 	};
 
 	constexpr uint16_t G_MAX_LIGHTS = 16;
 
 	typedef std::unordered_map<UUID, std::set<ECS::EntityID>> AssetSetMap; // Used for tracking which entities are using each loaded asset
 	typedef std::pair<UUID, UUID> MeshMatPair;
+
+	struct CameraMatComponent
+	{
+		float view[16];
+		float proj[16];
+	};
 
 	static bgfx::ShaderHandle LoadShader(const char* filename)
 	{
@@ -119,11 +125,11 @@ namespace puffin::Rendering::BGFX
 
 		void SetupCallbacks() override
 		{
-			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "BGFXRenderSystem: Init");
-			m_engine->registerCallback(Core::ExecutionStage::setup, [&]() { Setup(); }, "BGFXRenderSystem: Setup");
-			m_engine->registerCallback(Core::ExecutionStage::render, [&]() { Render(); }, "BGFXRenderSystem: Render");
-			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { Stop(); }, "BGFXRenderSystem: Stop");
-			m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "BGFXRenderSystem: Cleanup");
+			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "BGFXRenderSystem: Init");
+			m_engine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "BGFXRenderSystem: Setup");
+			m_engine->registerCallback(core::ExecutionStage::Render, [&]() { Render(); }, "BGFXRenderSystem: Render");
+			m_engine->registerCallback(core::ExecutionStage::Stop, [&]() { Stop(); }, "BGFXRenderSystem: Stop");
+			m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "BGFXRenderSystem: Cleanup");
 		}
 
 		void Init();

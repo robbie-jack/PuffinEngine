@@ -34,7 +34,7 @@ namespace puffin
 	struct TransformComponent;
 }
 
-namespace puffin::Rendering::VK
+namespace puffin::rendering::VK
 {
 	// Struct containing render data that is static between frames
 	struct StaticRenderData
@@ -88,9 +88,9 @@ namespace puffin::Rendering::VK
 		bool textureDescriptorNeedsupdated = false;
 	};
 
-	const static std::unordered_map<Assets::TextureFormat, vk::Format> g_texFormatMap =
+	const static std::unordered_map<assets::TextureFormat, vk::Format> g_texFormatMap =
 	{
-		{ Assets::TextureFormat::RGBA8, vk::Format::eR8G8B8A8Unorm }
+		{ assets::TextureFormat::RGBA8, vk::Format::eR8G8B8A8Unorm }
 	};
 
 	constexpr uint32_t G_BUFFERED_FRAMES = 2;
@@ -110,9 +110,9 @@ namespace puffin::Rendering::VK
 
 		void SetupCallbacks() override
 		{
-			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "VKRenderSystem: Init");
-			m_engine->registerCallback(Core::ExecutionStage::render, [&]() { Render(); }, "VKRenderSystem: Render");
-			m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "VKRenderSystem: Cleanup");
+			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "VKRenderSystem: Init");
+			m_engine->registerCallback(core::ExecutionStage::Render, [&]() { Render(); }, "VKRenderSystem: Render");
+			m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "VKRenderSystem: Cleanup");
 		}
 
 		void Init();

@@ -9,15 +9,15 @@
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
 
-namespace puffin::Procedural
+namespace puffin::procedural
 {
 	void ProceduralMeshGenSystem::Setup()
 	{
 		PackedVector<ECS::EntityPtr> proceduralPlaneEntities;
-		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
 		for (const auto& entity : proceduralPlaneEntities)
 		{
-			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
 			auto& plane = entity->GetComponent<PlaneComponent>();
 
 			GeneratePlaneVertices(plane.halfSize, plane.numQuads, mesh.vertices, mesh.indices);
@@ -26,10 +26,10 @@ namespace puffin::Procedural
 		}
 
 		PackedVector<ECS::EntityPtr> proceduralTerrainEntities;
-		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
 		for (const auto& entity : proceduralTerrainEntities)
 		{
-			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
 			auto& terrain = entity->GetComponent<TerrainComponent>();
 
 			GeneratePlaneVertices(terrain.halfSize, terrain.numQuads, mesh.vertices, mesh.indices);
@@ -39,10 +39,10 @@ namespace puffin::Procedural
 		}
 
 		PackedVector<ECS::EntityPtr> proceduralIcoSphereEntities;
-		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
 		for (const auto& entity : proceduralIcoSphereEntities)
 		{
-			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
 			auto& sphere = entity->GetComponent<IcoSphereComponent>();
 
 			GenerateIcoSphere(mesh.vertices, mesh.indices, sphere.subdivisions);
@@ -54,10 +54,10 @@ namespace puffin::Procedural
 	void ProceduralMeshGenSystem::Update()
 	{
 		PackedVector<ECS::EntityPtr> proceduralPlaneEntities;
-		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
 		for (const auto& entity : proceduralPlaneEntities)
 		{
-			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
 			auto& plane = entity->GetComponent<PlaneComponent>();
 
 			if (entity->GetComponentFlag<PlaneComponent, FlagDirty>())
@@ -65,21 +65,21 @@ namespace puffin::Procedural
 				GeneratePlaneVertices(plane.halfSize, plane.numQuads, mesh.vertices, mesh.indices);
 
 				entity->SetComponentFlag<PlaneComponent, FlagDirty>(false);
-				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDirty>(true);
+				entity->SetComponentFlag<rendering::ProceduralMeshComponent, FlagDirty>(true);
 			}
 
 			if (entity->GetComponentFlag<PlaneComponent, FlagDeleted>())
 			{
 				entity->RemoveComponent<PlaneComponent>();
-				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDeleted>(true);
+				entity->SetComponentFlag<rendering::ProceduralMeshComponent, FlagDeleted>(true);
 			}
 		}
 
 		PackedVector<ECS::EntityPtr> proceduralTerrainEntities;
-		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
 		for (const auto& entity : proceduralTerrainEntities)
 		{
-			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
 			auto& terrain = entity->GetComponent<TerrainComponent>();
 
 			if (entity->GetComponentFlag<TerrainComponent, FlagDirty>())
@@ -88,21 +88,21 @@ namespace puffin::Procedural
 				GenerateTerrain(mesh.vertices, terrain.seed, terrain.heightMultiplier, terrain.frequency, terrain.octaves, terrain.frequencyMult);
 
 				entity->SetComponentFlag<TerrainComponent, FlagDirty>(false);
-				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDirty>(true);
+				entity->SetComponentFlag<rendering::ProceduralMeshComponent, FlagDirty>(true);
 			}
 
 			if (entity->GetComponentFlag<TerrainComponent, FlagDeleted>())
 			{
 				entity->RemoveComponent<TerrainComponent>();
-				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDeleted>(true);
+				entity->SetComponentFlag<rendering::ProceduralMeshComponent, FlagDeleted>(true);
 			}
 		}
 
 		PackedVector<ECS::EntityPtr> proceduralIcoSphereEntities;
-		ECS::GetEntities<TransformComponent, Rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
 		for (const auto& entity : proceduralIcoSphereEntities)
 		{
-			auto& mesh = entity->GetComponent<Rendering::ProceduralMeshComponent>();
+			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
 			auto& sphere = entity->GetComponent<IcoSphereComponent>();
 
 			if (entity->GetComponentFlag<IcoSphereComponent, FlagDirty>())
@@ -110,19 +110,19 @@ namespace puffin::Procedural
 				GenerateIcoSphere(mesh.vertices, mesh.indices, sphere.subdivisions);
 
 				entity->SetComponentFlag<IcoSphereComponent, FlagDirty>(false);
-				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDirty>(true);
+				entity->SetComponentFlag<rendering::ProceduralMeshComponent, FlagDirty>(true);
 			}
 
 			if (entity->GetComponentFlag<IcoSphereComponent, FlagDeleted>())
 			{
 				entity->RemoveComponent<IcoSphereComponent>();
-				entity->SetComponentFlag<Rendering::ProceduralMeshComponent, FlagDeleted>(true);
+				entity->SetComponentFlag<rendering::ProceduralMeshComponent, FlagDeleted>(true);
 			}
 		}
 	}
 
 	void ProceduralMeshGenSystem::GeneratePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads,
-		std::vector<Rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices)
+		std::vector<rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices)
 	{
 		vertices.clear();
 		indices.clear();
@@ -149,7 +149,7 @@ namespace puffin::Procedural
 		{
 			for (int x = 0; x < numVerticesX; x++)
 			{
-				Rendering::VertexPNTV32& vertex = vertices[x + (y * numVerticesX)];
+				rendering::VertexPNTV32& vertex = vertices[x + (y * numVerticesX)];
 				vertex.pos = { ((float)x * quadSize.x) - halfSize.x, 0.0f, ((float)y * quadSize.y) - halfSize.y };
 				vertex.normal = { 0.0f, 1.0f, 0.0f };
 				vertex.tangent = { 1.0f, 0.0f, 0.0f};
@@ -184,7 +184,7 @@ namespace puffin::Procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::GenerateTerrain(std::vector<Rendering::VertexPNTV32>& vertices, const int64_t& seed,
+	void ProceduralMeshGenSystem::GenerateTerrain(std::vector<rendering::VertexPNTV32>& vertices, const int64_t& seed,
 	                                              const double& heightMultiplier, const double& startFrequency, const int& octaves,
 	                                              const double& frequencyMultiplier)
 	{
@@ -215,25 +215,25 @@ namespace puffin::Procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::GenerateIcoSphere(std::vector<Rendering::VertexPNTV32>& vertices,
+	void ProceduralMeshGenSystem::GenerateIcoSphere(std::vector<rendering::VertexPNTV32>& vertices,
 		std::vector<uint32_t>& indices, const int& subdivisions)
 	{
 		vertices.clear();
 		indices.clear();
 
 		std::vector<Vector3f> positions;
-		Icosahedron::VertexPositions(positions);
+		icosahedron::vertexPositions(positions);
 
 		vertices.resize(positions.size());
 		for (int i = 0; i < positions.size(); i++)
 		{
-			Rendering::VertexPNTV32& vertex = vertices[i];
+			rendering::VertexPNTV32& vertex = vertices[i];
 			vertex.pos = static_cast<glm::vec3>(positions[i]);
 			vertex.normal = static_cast<glm::vec3>(positions[i].Normalised());
 			vertex.tangent = { 0.0f, 0.0f, 0.0f };
 			vertex.uv = { 0.0f, 0.0f };
 		}
 
-		Icosahedron::Indices(indices);
+		icosahedron::indices(indices);
 	}
 }

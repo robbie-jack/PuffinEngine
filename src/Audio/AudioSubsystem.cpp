@@ -8,81 +8,81 @@
 
 using namespace irrklang;
 
-namespace puffin::Audio
+namespace puffin::audio
 {
 	void AudioSubsystem::SetupCallbacks()
 	{
-		m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "AudioSubsystem: Init", 50);
-		m_engine->registerCallback(Core::ExecutionStage::subsystemUpdate, [&]() { Update(); }, "AudioSubsystem: Update");
-		m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "AudioSubsystem: Cleanup", 150);
+		m_engine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "AudioSubsystem: Init", 50);
+		m_engine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "AudioSubsystem: Update");
+		m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "AudioSubsystem: Cleanup", 150);
 	}
 
-	void AudioSubsystem::Init()
+	void AudioSubsystem::init()
 	{
 
 	}
 
-	void AudioSubsystem::Update()
+	void AudioSubsystem::update()
 	{
-		if (m_soundEngine)
+		if (mSoundEngine)
 		{
-			ProcessSoundEvents();
+			processSoundEvents();
 		}
 	}
 
-	void AudioSubsystem::Cleanup()
+	void AudioSubsystem::cleanup()
 	{
-		StopAllSounds();
+		stopAllSounds();
 
-		if (m_soundEngine)
+		if (mSoundEngine)
 		{
-			m_soundEngine->drop();
-			m_soundEngine = nullptr;
+			mSoundEngine->drop();
+			mSoundEngine = nullptr;
 		}
 	}
 
-	void AudioSubsystem::PlaySoundEffect(UUID soundId, float volume, bool looping, bool restart)
+	void AudioSubsystem::playSoundEffect(UUID soundId, float volume, bool looping, bool restart)
 	{
 		SoundEvent soundEvent;
-		soundEvent.type = SoundEventType::PLAY;
+		soundEvent.type = SoundEventType::Play;
 		soundEvent.id = soundId;
 		soundEvent.volume = volume;
 		soundEvent.looping = looping;
 		soundEvent.restart = restart;
 
-		m_soundEventBuffer.Push(soundEvent);
+		mSoundEventBuffer.Push(soundEvent);
 	}
 
-	UUID AudioSubsystem::PlaySoundEffect(const std::string& soundPath, float volume, bool looping, bool restart)
+	UUID AudioSubsystem::playSoundEffect(const std::string& soundPath, float volume, bool looping, bool restart)
 	{
-		UUID soundId = Assets::AssetRegistry::Get()->GetAsset<Assets::SoundAsset>(soundPath)->ID();
+		UUID soundId = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath)->id();
 
-		PlaySoundEffect(soundId, volume, looping, restart);
+		playSoundEffect(soundId, volume, looping, restart);
 
 		return soundId;
 	}
 
-	void AudioSubsystem::StopSoundEffect(UUID soundId)
+	void AudioSubsystem::stopSoundEffect(UUID soundId)
 	{
 		SoundEvent soundEvent;
-		soundEvent.type = SoundEventType::STOP;
+		soundEvent.type = SoundEventType::Stop;
 		soundEvent.id = soundId;
 
-		m_soundEventBuffer.Push(soundEvent);
+		mSoundEventBuffer.Push(soundEvent);
 	}
 
-	void AudioSubsystem::PauseSoundEffect(UUID soundId)
+	void AudioSubsystem::pauseSoundEffect(UUID soundId)
 	{
 		SoundEvent soundEvent;
-		soundEvent.type = SoundEventType::PAUSE;
+		soundEvent.type = SoundEventType::Pause;
 		soundEvent.id = soundId;
 
-		m_soundEventBuffer.Push(soundEvent);
+		mSoundEventBuffer.Push(soundEvent);
 	}
 
-	void AudioSubsystem::PlayAllSounds(bool forcePlay)
+	void AudioSubsystem::playAllSounds(bool forcePlay)
 	{
-		for (const auto pair : m_activeSounds)
+		for (const auto pair : mActiveSounds)
 		{
 			if (forcePlay)
 			{
@@ -90,92 +90,92 @@ namespace puffin::Audio
 			}
 			else
 			{
-				pair.second->setIsPaused(m_activeSoundsWasPaused[pair.first]);
+				pair.second->setIsPaused(mActiveSoundsWasPaused[pair.first]);
 			}
 		}
 	}
 
-	void AudioSubsystem::PauseAllSounds()
+	void AudioSubsystem::pauseAllSounds()
 	{
-		for (const auto pair : m_activeSounds)
+		for (const auto pair : mActiveSounds)
 		{
-			m_activeSoundsWasPaused[pair.first] = pair.second->getIsPaused();
+			mActiveSoundsWasPaused[pair.first] = pair.second->getIsPaused();
 
 			pair.second->setIsPaused(true);
 		}
 	}
 
-	void AudioSubsystem::StopAllSounds()
+	void AudioSubsystem::stopAllSounds()
 	{
-		for (const auto pair : m_activeSounds)
+		for (const auto pair : mActiveSounds)
 		{
 			pair.second->stop();
 			pair.second->drop();
 		}
 
-		m_activeSounds.clear();
+		mActiveSounds.clear();
 	}
 
-	void AudioSubsystem::ProcessSoundEvents()
+	void AudioSubsystem::processSoundEvents()
 	{
 		SoundEvent soundEvent;
 
 		// Parse play sound buffer to play sounds
-		while (!m_soundEventBuffer.IsEmpty())
+		while (!mSoundEventBuffer.IsEmpty())
 		{
-			m_soundEventBuffer.Pop(soundEvent);
+			mSoundEventBuffer.Pop(soundEvent);
 
-			if (soundEvent.type == SoundEventType::PLAY)
+			if (soundEvent.type == SoundEventType::Play)
 			{
-				PlaySound(soundEvent);
+				playSound(soundEvent);
 			}
 
-			if (soundEvent.type == SoundEventType::MODIFY)
+			if (soundEvent.type == SoundEventType::Modify)
 			{
-				ModifySound(soundEvent);
+				modifySound(soundEvent);
 			}
 
-			if (soundEvent.type == SoundEventType::PAUSE)
+			if (soundEvent.type == SoundEventType::Pause)
 			{
-				PauseSound(soundEvent);
+				pauseSound(soundEvent);
 			}
 
-			if (soundEvent.type == SoundEventType::STOP)
+			if (soundEvent.type == SoundEventType::Stop)
 			{
-				StopSound(soundEvent);
+				stopSound(soundEvent);
 			}
 		}
 	}
 
-	void AudioSubsystem::PlaySound(SoundEvent soundEvent)
+	void AudioSubsystem::playSound(SoundEvent soundEvent)
 	{
 		// Unpause sound if it already exists, and the restart flag has not been set
-		if (m_activeSounds.count(soundEvent.id) && !soundEvent.restart)
+		if (mActiveSounds.count(soundEvent.id) && !soundEvent.restart)
 		{
-			m_activeSounds[soundEvent.id]->setIsPaused(false);
+			mActiveSounds[soundEvent.id]->setIsPaused(false);
 			return;
 		}
 
 		// If sound is not active, start playing it
-		const auto soundAsset = std::static_pointer_cast<Assets::SoundAsset>(Assets::AssetRegistry::Get()->GetAsset(soundEvent.id));
+		const auto soundAsset = std::static_pointer_cast<assets::SoundAsset>(assets::AssetRegistry::get()->getAsset(soundEvent.id));
 		if (soundAsset)
 		{
-			const std::string& soundPath = (Assets::AssetRegistry::Get()->ContentRoot() / soundAsset->RelativePath()).string();
+			const std::string& soundPath = (assets::AssetRegistry::get()->contentRoot() / soundAsset->relativePath()).string();
 		
-			ISound* sound = m_soundEngine->play2D(soundPath.c_str(), soundEvent.looping, false, true);
+			ISound* sound = mSoundEngine->play2D(soundPath.c_str(), soundEvent.looping, false, true);
 			if (sound)
 			{
-				m_activeSounds[soundEvent.id] = sound;
-				ModifySound(soundEvent);
+				mActiveSounds[soundEvent.id] = sound;
+				modifySound(soundEvent);
 			}
 		}
 	}
 
-	void AudioSubsystem::ModifySound(SoundEvent soundEvent)
+	void AudioSubsystem::modifySound(SoundEvent soundEvent)
 	{
-		if (m_activeSounds.count(soundEvent.id))
+		if (mActiveSounds.count(soundEvent.id))
 		{
-			ISound* sound = m_activeSounds[soundEvent.id];
+			ISound* sound = mActiveSounds[soundEvent.id];
 			if (sound)
 			{
 				sound->setVolume(soundEvent.volume);
@@ -183,21 +183,21 @@ namespace puffin::Audio
 		}
 	}
 
-	void AudioSubsystem::PauseSound(SoundEvent soundEvent)
+	void AudioSubsystem::pauseSound(SoundEvent soundEvent)
 	{
-		if (m_activeSounds.count(soundEvent.id))
+		if (mActiveSounds.count(soundEvent.id))
 		{
-			m_activeSounds[soundEvent.id]->setIsPaused(true);
+			mActiveSounds[soundEvent.id]->setIsPaused(true);
 		}
 	}
 
-	void AudioSubsystem::StopSound(SoundEvent soundEvent)
+	void AudioSubsystem::stopSound(SoundEvent soundEvent)
 	{
-		if (m_activeSounds.count(soundEvent.id))
+		if (mActiveSounds.count(soundEvent.id))
 		{
-			m_activeSounds[soundEvent.id]->stop();
-			m_activeSounds[soundEvent.id]->drop();
-			m_activeSounds.erase(soundEvent.id);
+			mActiveSounds[soundEvent.id]->stop();
+			mActiveSounds[soundEvent.id]->drop();
+			mActiveSounds.erase(soundEvent.id);
 		}
 	}
 }

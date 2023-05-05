@@ -1,11 +1,8 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "Types/Vector.h"
 
@@ -16,21 +13,21 @@
 
 namespace puffin
 {
-	namespace Rendering
+	namespace rendering
 	{
 		enum class LightType
 		{
-			POINT = 0,
-			SPOT = 1,
-			DIRECTIONAL = 2
+			Point = 0,
+			Spot = 1,
+			Directional = 2
 		};
 
-		const std::vector<std::string> LIGHT_TYPE_LABELS = { "Point", "Spot", "Directional" };
+		const std::vector<std::string> gLightTypeLabels = { "Point", "Spot", "Directional" };
 
 		NLOHMANN_JSON_SERIALIZE_ENUM(LightType, {
-			{ LightType::POINT, "Point"},
-			{ LightType::SPOT, "Spot"},
-			{ LightType::DIRECTIONAL, "Directional"}
+			{ LightType::Point, "Point"},
+			{ LightType::Spot, "Spot"},
+			{ LightType::Directional, "Directional"}
 		})
 
 		struct LightComponent
@@ -48,7 +45,7 @@ namespace puffin
 			float innerCutoffAngle = 30.0f;
 			float outerCutoffAngle = 45.0f;
 
-			LightType type = LightType::POINT;
+			LightType type = LightType::Point;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent, 
 				color, 
@@ -63,8 +60,8 @@ namespace puffin
 				type)
 		};
 
-		const std::vector<uint16_t> SHADOW_RESOLUTION_VALUES = { 512, 1024, 2048, 4096 };
-		const std::vector<std::string> SHADOW_RESOLUTION_LABELS = { "512", "1024", "2048", "4096" };
+		const std::vector<uint16_t> gShadowResolutionValues = { 512, 1024, 2048, 4096 };
+		const std::vector<std::string> gShadowResolutionLabels = { "512", "1024", "2048", "4096" };
 
 		// Component for lights that cast shadows
 		struct ShadowCasterComponent

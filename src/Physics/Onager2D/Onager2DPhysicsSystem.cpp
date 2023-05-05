@@ -36,7 +36,7 @@ namespace puffin
 
 		void Onager2DPhysicsSystem::init()
 		{
-			const auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
+			const auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
 
 			// Register Events
 			eventSubsystem->RegisterEvent<CollisionBeginEvent>();
@@ -352,7 +352,7 @@ namespace puffin
 
 		void Onager2DPhysicsSystem::generateCollisionEvents()
 		{
-			const auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
+			const auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
 
 			std::set<collision2D::Contact> existingContacts;
 

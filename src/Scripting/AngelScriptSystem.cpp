@@ -42,7 +42,7 @@ void PrintString_Generic(asIScriptGeneric* gen)
 	cout << *str << endl;
 }
 
-namespace puffin::Scripting
+namespace puffin::scripting
 {
 	AngelScriptSystem::AngelScriptSystem()
 	{
@@ -71,7 +71,7 @@ namespace puffin::Scripting
 		// Configure Engine and Setup Global Function Callbacks
 		ConfigureEngine();
 
-		auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
+		auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
 
 		// Subscribe to events
 		m_inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
@@ -83,7 +83,7 @@ namespace puffin::Scripting
 		m_collisionEndEvents = std::make_shared<RingBuffer<physics::CollisionEndEvent>>();
 		eventSubsystem->Subscribe<physics::CollisionEndEvent>(m_collisionEndEvents);
 
-		m_audioSubsystem = m_engine->getSubsystem<Audio::AudioSubsystem>();
+		m_audioSubsystem = m_engine->getSubsystem<audio::AudioSubsystem>();
 	}
 
 	void AngelScriptSystem::Setup()
@@ -320,7 +320,7 @@ namespace puffin::Scripting
 			cout << "Failed to start new module" << endl;
 		}
 
-		fs::path scriptPath = Assets::AssetRegistry::Get()->ContentRoot() / script.dir;
+		fs::path scriptPath = assets::AssetRegistry::get()->contentRoot() / script.dir;
 
 		r = builder.AddSectionFromFile(scriptPath.string().c_str());
 		if (r < 0)
@@ -635,7 +635,7 @@ namespace puffin::Scripting
 	{
 		if (m_audioSubsystem)
 		{
-			m_audioSubsystem->PlaySoundEffect(id, volume, looping, restart);
+			m_audioSubsystem->playSoundEffect(id, volume, looping, restart);
 		}
 	}
 
@@ -645,7 +645,7 @@ namespace puffin::Scripting
 
 		if (m_audioSubsystem)
 		{
-			id = m_audioSubsystem->PlaySoundEffect(path, volume, looping, restart);
+			id = m_audioSubsystem->playSoundEffect(path, volume, looping, restart);
 		}
 
 		return id;

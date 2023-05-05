@@ -10,25 +10,25 @@ namespace tinygltf
 	class BufferView;
 }
 
-namespace puffin::IO
+namespace puffin::io
 {
 	//////////////////////
 	// Model Importers
 	//////////////////////
 
-	bool LoadAndImportModel(const fs::path& modelPath);
+	bool loadAndImportModel(const fs::path& modelPath);
 
-	bool LoadGLTFModel(tinygltf::Model& model, const fs::path& modelPath);
+	bool loadGltfModel(tinygltf::Model& model, const fs::path& modelPath);
 
-	bool ImportGLTFModel(const tinygltf::Model& model, const fs::path& modelPath);
+	bool importGltfModel(const tinygltf::Model& model, const fs::path& modelPath);
 
-	bool LoadAndImportGLTFModel(const fs::path& modelPath);
+	bool loadAndImportGltfModel(const fs::path& modelPath);
 
-	bool LoadBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData);
+	bool loadBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData);
 
 	//////////////////////
 	// Texture Importers
 	//////////////////////
 
-	bool LoadAndImportTexture(fs::path texturePath);
+	bool loadAndImportTexture(fs::path texturePath);
 }

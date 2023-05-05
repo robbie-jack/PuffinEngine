@@ -8,7 +8,7 @@ namespace puffin::UI
 	{
 	public:
 			
-		UIContentBrowser(std::shared_ptr<Core::Engine> engine) : UIWindow(engine)
+		UIContentBrowser(std::shared_ptr<core::Engine> engine) : UIWindow(engine)
 		{
 			windowName = "Content Browser";
 		}

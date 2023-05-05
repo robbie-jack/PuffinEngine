@@ -8,37 +8,37 @@
 
 #include <vector>
 
-namespace puffin::Rendering
+namespace puffin::rendering
 {
 	struct MeshComponent
 	{
 		MeshComponent() {}
 		
-		MeshComponent(UUID InMeshID, UUID InTextureID) :
-			meshAssetID(InMeshID), textureAssetID(InTextureID)
+		MeshComponent(UUID meshId, UUID textureId) :
+			meshAssetId(meshId), textureAssetId(textureId)
 		{
 		}
 
 		// Mesh Data
-		UUID meshAssetID;
+		UUID meshAssetId;
 
 		// Texture
-		UUID textureAssetID;
+		UUID textureAssetId;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetID, textureAssetID)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetId, textureAssetId)
 	};
 
 	struct ProceduralMeshComponent
 	{
 		ProceduralMeshComponent() {}
 
-		std::vector<Rendering::VertexPNTV32> vertices;
+		std::vector<rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
-		ProceduralMeshComponent(UUID InTextureID) : textureAssetID(InTextureID) {}
+		explicit ProceduralMeshComponent(UUID textureId) : textureAssetId(textureId) {}
 
-		UUID textureAssetID;
+		UUID textureAssetId;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProceduralMeshComponent, textureAssetID)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProceduralMeshComponent, textureAssetId)
 	};
 }

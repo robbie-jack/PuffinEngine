@@ -18,7 +18,7 @@ namespace puffin
 		class World;
 	}
 
-	namespace Core
+	namespace core
 	{
 		class Engine;
 	}
@@ -29,7 +29,7 @@ namespace puffin
 		{
 		public:
 
-			UIWindow(std::shared_ptr<Core::Engine> engine) : m_engine(engine)
+			UIWindow(std::shared_ptr<core::Engine> engine) : m_engine(engine)
 			{
 				show = true;
 				firstTime = true;
@@ -62,7 +62,7 @@ namespace puffin
 
 			ImGuiWindowFlags flags;
 
-			std::shared_ptr<Core::Engine> m_engine;
+			std::shared_ptr<core::Engine> m_engine;
 		};
 	}
 }

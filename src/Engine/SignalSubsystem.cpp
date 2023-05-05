@@ -1,10 +1,10 @@
 #include "Engine/SignalSubsystem.hpp"
 #include "Engine/Engine.hpp"
 
-namespace puffin::Core
+namespace puffin::core
 {
 	void SignalSubsystem::SetupCallbacks()
 	{
-		m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "SignalSubsystem: Cleanup", 150);
+		m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "SignalSubsystem: Cleanup", 150);
 	}
 }

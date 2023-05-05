@@ -111,9 +111,9 @@ namespace puffin
 
 						if (ImGui::Selectable("Static Mesh"))
 						{
-							if (!ecsWorld->HasComponent<Rendering::MeshComponent>(m_entity))
+							if (!ecsWorld->HasComponent<rendering::MeshComponent>(m_entity))
 							{
-								ecsWorld->AddComponent<Rendering::MeshComponent>(m_entity);
+								ecsWorld->AddComponent<rendering::MeshComponent>(m_entity);
 								sceneChanged = true;
 							}
 						}
@@ -122,12 +122,12 @@ namespace puffin
 
 						if (ImGui::Selectable("Light"))
 						{
-							ecsWorld->AddComponent<Rendering::LightComponent>(m_entity);
+							ecsWorld->AddComponent<rendering::LightComponent>(m_entity);
 						}
 
 						if (ImGui::Selectable("Shadow Caster"))
 						{
-							ecsWorld->AddComponent<Rendering::ShadowCasterComponent>(m_entity);
+							ecsWorld->AddComponent<rendering::ShadowCasterComponent>(m_entity);
 						}
 
 						ImGui::Separator();
@@ -212,23 +212,23 @@ namespace puffin
 			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
 			// Display Mesh Component - If One Exists
-			if (ecsWorld->HasComponent<Rendering::MeshComponent>(m_entity))
+			if (ecsWorld->HasComponent<rendering::MeshComponent>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Mesh Component", flags))
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					Rendering::MeshComponent& mesh = ecsWorld->GetComponent<Rendering::MeshComponent>(m_entity);
+					rendering::MeshComponent& mesh = ecsWorld->GetComponent<rendering::MeshComponent>(m_entity);
 
 					if (ImGui::SmallButton("X##Mesh"))
 					{
-						ecsWorld->SetComponentFlag<Rendering::MeshComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<rendering::MeshComponent, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
 
-					ImGui::Text("Model UUID: %d", mesh.meshAssetID);
-					ImGui::Text("Texture UUID: %d", mesh.textureAssetID);
+					ImGui::Text("Model UUID: %d", mesh.meshAssetId);
+					ImGui::Text("Texture UUID: %d", mesh.textureAssetId);
 
 					// Change Model Path
 					/*ImGui::Text("Model Path:"); ImGui::SameLine();
@@ -274,9 +274,9 @@ namespace puffin
 		void UIWindowEntityProperties::DrawLightUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Rendering::LightComponent>(m_entity))
+			if (ecsWorld->HasComponent<rendering::LightComponent>(m_entity))
 			{
-				auto& light = ecsWorld->GetComponent<Rendering::LightComponent>(m_entity);
+				auto& light = ecsWorld->GetComponent<rendering::LightComponent>(m_entity);
 				bool dirty = false;
 
 				if (ImGui::TreeNodeEx("Light Component", flags))
@@ -285,7 +285,7 @@ namespace puffin
 
 					if (ImGui::SmallButton("X##Point Light"))
 					{
-						ecsWorld->SetComponentFlag<Rendering::LightComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<rendering::LightComponent, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
@@ -293,18 +293,18 @@ namespace puffin
 					int item_current_idx = static_cast<int>(light.type);
 
 					// Edit Light Type
-					const char* comboLabel = Rendering::LIGHT_TYPE_LABELS[item_current_idx].c_str();
+					const char* comboLabel = rendering::gLightTypeLabels[item_current_idx].c_str();
 					if (ImGui::BeginCombo("Type", comboLabel))
 					{
-						for (int i = 0; i < Rendering::LIGHT_TYPE_LABELS.size(); i++)
+						for (int i = 0; i < rendering::gLightTypeLabels.size(); i++)
 						{
 							const bool is_selected = (item_current_idx == i);
 
-							if (ImGui::Selectable(Rendering::LIGHT_TYPE_LABELS[i].c_str(), is_selected))
+							if (ImGui::Selectable(rendering::gLightTypeLabels[i].c_str(), is_selected))
 							{
 								item_current_idx = i;
 
-								light.type = static_cast<Rendering::LightType>(item_current_idx);
+								light.type = static_cast<rendering::LightType>(item_current_idx);
 
 								dirty = true;
 							}
@@ -328,14 +328,14 @@ namespace puffin
 					// Edit Light Specular Exponent
 					dirty |= ImGui::DragInt("Specular Exponent", &light.specularExponent);
 
-					if (light.type == Rendering::LightType::POINT || light.type == Rendering::LightType::SPOT)
+					if (light.type == rendering::LightType::Point || light.type == rendering::LightType::Spot)
 					{
 						dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
 
 						dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
 					}
 
-					if (light.type == Rendering::LightType::SPOT)
+					if (light.type == rendering::LightType::Spot)
 					{
 						dirty |= ImGui::DragFloat("Inner Cutoff Angle", &light.innerCutoffAngle, 0.25f, 0.0f, 45.0f);
 
@@ -355,7 +355,7 @@ namespace puffin
 				if (dirty)
 				{
 					sceneChanged = true;
-					ecsWorld->SetComponentFlag<Rendering::LightComponent, FlagDirty>(m_entity, true);
+					ecsWorld->SetComponentFlag<rendering::LightComponent, FlagDirty>(m_entity, true);
 				}
 			}
 		}
@@ -363,9 +363,9 @@ namespace puffin
 		void UIWindowEntityProperties::DrawShadowcasterUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Rendering::ShadowCasterComponent>(m_entity))
+			if (ecsWorld->HasComponent<rendering::ShadowCasterComponent>(m_entity))
 			{
-				auto& shadowcaster = ecsWorld->GetComponent<Rendering::ShadowCasterComponent>(m_entity);
+				auto& shadowcaster = ecsWorld->GetComponent<rendering::ShadowCasterComponent>(m_entity);
 				bool dirty = false;
 
 				if (ImGui::TreeNodeEx("Shadow Caster Component", flags))
@@ -374,33 +374,33 @@ namespace puffin
 
 					if (ImGui::SmallButton("X##Shadow Caster"))
 					{
-						ecsWorld->SetComponentFlag<Rendering::ShadowCasterComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<rendering::ShadowCasterComponent, FlagDeleted>(m_entity, true);
 						sceneChanged = true;
 					}
 
 					int item_current_idx = 0;
-					for (int i = 0; i < Rendering::SHADOW_RESOLUTION_VALUES.size(); i++)
+					for (int i = 0; i < rendering::gShadowResolutionValues.size(); i++)
 					{
-						if (Rendering::SHADOW_RESOLUTION_VALUES[i] == shadowcaster.shadowmapWidth)
+						if (rendering::gShadowResolutionValues[i] == shadowcaster.shadowmapWidth)
 						{
 							item_current_idx = i;
 							break;
 						}
 					}
 
-					const char* label = Rendering::SHADOW_RESOLUTION_LABELS[item_current_idx].c_str();
+					const char* label = rendering::gShadowResolutionLabels[item_current_idx].c_str();
 					if (ImGui::BeginCombo("Shadow Resolution", label))
 					{
-						for (int i = 0; i < Rendering::SHADOW_RESOLUTION_VALUES.size(); i++)
+						for (int i = 0; i < rendering::gShadowResolutionValues.size(); i++)
 						{
 							const bool is_selected = (item_current_idx == i);
 
-							if (ImGui::Selectable(Rendering::SHADOW_RESOLUTION_LABELS[i].c_str(), is_selected))
+							if (ImGui::Selectable(rendering::gShadowResolutionLabels[i].c_str(), is_selected))
 							{
 								item_current_idx = i;
 
-								shadowcaster.shadowmapWidth = Rendering::SHADOW_RESOLUTION_VALUES[item_current_idx];
-								shadowcaster.shadowmapHeight = Rendering::SHADOW_RESOLUTION_VALUES[item_current_idx];
+								shadowcaster.shadowmapWidth = rendering::gShadowResolutionValues[item_current_idx];
+								shadowcaster.shadowmapHeight = rendering::gShadowResolutionValues[item_current_idx];
 
 								dirty = true;
 							}
@@ -418,7 +418,7 @@ namespace puffin
 				if (dirty)
 				{
 					sceneChanged = true;
-					ecsWorld->SetComponentFlag<Rendering::ShadowCasterComponent, FlagDirty>(m_entity, true);
+					ecsWorld->SetComponentFlag<rendering::ShadowCasterComponent, FlagDirty>(m_entity, true);
 				}
 			}
 		}
@@ -426,18 +426,18 @@ namespace puffin
 		void UIWindowEntityProperties::DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Procedural::PlaneComponent>(m_entity))
+			if (ecsWorld->HasComponent<procedural::PlaneComponent>(m_entity))
 			{
 				if (ImGui::TreeNodeEx("Procedural Plane Component"), flags)
 				{
 					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-					auto& plane = ecsWorld->GetComponent<Procedural::PlaneComponent>(m_entity);
+					auto& plane = ecsWorld->GetComponent<procedural::PlaneComponent>(m_entity);
 					bool dirty = false;
 
 					if (ImGui::SmallButton("X##ProceduralPlane"))
 					{
-						ecsWorld->SetComponentFlag<Procedural::PlaneComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<procedural::PlaneComponent, FlagDeleted>(m_entity, true);
 
 						sceneChanged = true;
 					}
@@ -448,7 +448,7 @@ namespace puffin
 					if (dirty)
 					{
 						sceneChanged = true;
-						ecsWorld->SetComponentFlag<Procedural::PlaneComponent, FlagDirty>(m_entity, true);
+						ecsWorld->SetComponentFlag<procedural::PlaneComponent, FlagDirty>(m_entity, true);
 					}
 
 					ImGui::TreePop();
@@ -588,9 +588,9 @@ namespace puffin
 		void UIWindowEntityProperties::DrawScriptUI(ImGuiTreeNodeFlags flags)
 		{
 			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<Scripting::AngelScriptComponent>(m_entity))
+			if (ecsWorld->HasComponent<scripting::AngelScriptComponent>(m_entity))
 			{
-				Scripting::AngelScriptComponent& comp = ecsWorld->GetComponent<Scripting::AngelScriptComponent>(m_entity);
+				scripting::AngelScriptComponent& comp = ecsWorld->GetComponent<scripting::AngelScriptComponent>(m_entity);
 
 				if (ImGui::TreeNodeEx("Script Component", flags))
 				{
@@ -598,7 +598,7 @@ namespace puffin
 
 					if (ImGui::SmallButton("X##Script"))
 					{
-						ecsWorld->SetComponentFlag<Scripting::AngelScriptComponent, FlagDeleted>(m_entity, true);
+						ecsWorld->SetComponentFlag<scripting::AngelScriptComponent, FlagDeleted>(m_entity, true);
 						sceneChanged = true;
 					}
 

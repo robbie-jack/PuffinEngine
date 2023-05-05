@@ -15,7 +15,7 @@ namespace puffin
 
 	extern GizmoMode gizmoMode;
 
-	inline void DrawTranslationGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, Vector3f position)
+	inline void DrawTranslationGizmo(std::shared_ptr<core::EventSubsystem> eventSubsystem, Vector3f position)
 	{
 		float lineLength = 2.5f;
 
@@ -24,17 +24,17 @@ namespace puffin
 		//eventSubsystem->Publish<Debug::Line>(Debug::Line(position, position + Vector3f(lineLength, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f)));
 	}
 
-	inline void DrawRotationGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, Vector3f position)
+	inline void DrawRotationGizmo(std::shared_ptr<core::EventSubsystem> eventSubsystem, Vector3f position)
 	{
 
 	}
 
-	inline void DrawScaleGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, Vector3f position)
+	inline void DrawScaleGizmo(std::shared_ptr<core::EventSubsystem> eventSubsystem, Vector3f position)
 	{
 
 	}
 
-	inline void DrawManipulationGizmo(std::shared_ptr<Core::EventSubsystem> eventSubsystem, TransformComponent transform)
+	inline void DrawManipulationGizmo(std::shared_ptr<core::EventSubsystem> eventSubsystem, TransformComponent transform)
 	{
 		switch (gizmoMode)
 		{

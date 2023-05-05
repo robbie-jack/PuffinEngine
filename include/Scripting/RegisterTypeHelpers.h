@@ -9,7 +9,7 @@
 
 typedef puffin::TransformComponent STransformComponent;
 
-namespace puffin::Scripting
+namespace puffin::scripting
 {
 	/*
 	* Example Code for Constructor/Deconstructor

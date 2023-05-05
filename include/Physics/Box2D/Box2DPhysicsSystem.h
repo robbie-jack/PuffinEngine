@@ -33,10 +33,10 @@ namespace puffin::physics
 
 		void SetupCallbacks() override
 		{
-			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { init(); }, "Box2DPhysicsSystem: Init");
-			m_engine->registerCallback(Core::ExecutionStage::start, [&]() { start(); }, "Box2DPhysicsSystem: Start");
-			m_engine->registerCallback(Core::ExecutionStage::fixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
-			m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { stop(); }, "Box2DPhysicsSystem: Stop");
+			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "Box2DPhysicsSystem: Init");
+			m_engine->registerCallback(core::ExecutionStage::Start, [&]() { start(); }, "Box2DPhysicsSystem: Start");
+			m_engine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
+			m_engine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "Box2DPhysicsSystem: Stop");
 
 			auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 

@@ -4,12 +4,12 @@
 
 #include <functional>
 
-namespace puffin::Rendering::VK
+namespace puffin::rendering::VK
 {
 	class VKRenderSystem;
 }
 
-namespace puffin::Rendering::VK::Util
+namespace puffin::rendering::VK::Util
 {
 	void ImmediateSubmit(std::shared_ptr<VKRenderSystem> renderSystem, std::function<void(VkCommandBuffer cmd)>&& function);
 

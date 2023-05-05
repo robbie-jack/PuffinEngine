@@ -9,7 +9,7 @@ namespace bgfx
 	struct VertexLayout;
 }
 
-namespace puffin::Rendering
+namespace puffin::rendering
 {
 	namespace VK::Util
 	{
@@ -143,9 +143,9 @@ namespace puffin::Rendering
 
 namespace std
 {
-	template<> struct hash<puffin::Rendering::VertexPNTV32>
+	template<> struct hash<puffin::rendering::VertexPNTV32>
 	{
-		size_t operator()(puffin::Rendering::VertexPNTV32 const& vertex) const
+		size_t operator()(puffin::rendering::VertexPNTV32 const& vertex) const
 		{
 			return (hash<puffin::Vector3f>()(vertex.pos) ^
 				(hash<puffin::Vector3f>()(vertex.normal) << 1) ^
@@ -154,9 +154,9 @@ namespace std
 		}
 	};
 
-	template<> struct hash<puffin::Rendering::VertexP64NTV32>
+	template<> struct hash<puffin::rendering::VertexP64NTV32>
 	{
-		size_t operator()(puffin::Rendering::VertexP64NTV32 const& vertex) const
+		size_t operator()(puffin::rendering::VertexP64NTV32 const& vertex) const
 		{
 			return (hash<puffin::Vector3d>()(vertex.pos) ^
 				(hash<puffin::Vector3f>()(vertex.normal) << 1) ^

@@ -26,7 +26,7 @@ namespace puffin
 			KeyState state;
 		};
 
-		class InputSubsystem : public Core::Subsystem
+		class InputSubsystem : public core::Subsystem
 		{
 		public:
 

@@ -16,7 +16,7 @@ namespace puffin::UI
 
 			Begin(windowName);
 
-			fs::path contentPath = Assets::AssetRegistry::Get()->ContentRoot();
+			fs::path contentPath = assets::AssetRegistry::get()->contentRoot();
 			for (auto const& dir_entry : fs::directory_iterator(contentPath))
 			{
 				std::string pathName = dir_entry.path().string();

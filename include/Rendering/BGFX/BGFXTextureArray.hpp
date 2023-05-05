@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 
-namespace puffin::Rendering::BGFX
+namespace puffin::rendering
 {
 	class TextureArray
 	{
@@ -42,25 +42,25 @@ namespace puffin::Rendering::BGFX
 				return true;
 			}
 
-			const auto texAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(uuid));
+			const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(assets::AssetRegistry::get()->getAsset(uuid));
 
-			if (texAsset && texAsset->Load())
+			if (texAsset && texAsset->load())
 			{
 				// Copy texture data into memory
-				uint32_t texSize = texAsset->GetTextureSize();
+				uint32_t texSize = texAsset->textureSize();
 
 				const bgfx::Memory* mem = bgfx::alloc(texSize);
 
-				bx::memCopy(mem->data, texAsset->GetPixelData(), mem->size);
+				bx::memCopy(mem->data, texAsset->pixelData(), mem->size);
 
 				// Add texture to array
 				bgfx::updateTexture2D(m_handle, 0, m_numActiveTextures, 0, 0,
-										texAsset->GetTextureWidth(), texAsset->GetTextureHeight(), mem);
+										texAsset->textureWidth(), texAsset->textureHeight(), mem);
 
 				m_idtoLayersMap[uuid] = m_numActiveTextures;
 				m_numActiveTextures++;
 
-				texAsset->Unload();
+				texAsset->unload();
 
 				return true;
 			}

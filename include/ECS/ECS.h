@@ -610,7 +610,7 @@ namespace puffin::ECS
 		}
 
 		template<typename SystemT>
-		std::shared_ptr<SystemT> RegisterSystem(std::shared_ptr<World> world, std::shared_ptr<Core::Engine> engine)
+		std::shared_ptr<SystemT> RegisterSystem(std::shared_ptr<World> world, std::shared_ptr<core::Engine> engine)
 		{
 			const char* typeName = typeid(SystemT).name();
 
@@ -646,7 +646,7 @@ namespace puffin::ECS
 	// ECS World
 	//////////////////////////////////////////////////
 
-	class World : public Core::Subsystem, public std::enable_shared_from_this<World>
+	class World : public core::Subsystem, public std::enable_shared_from_this<World>
 	{
 	public:
 

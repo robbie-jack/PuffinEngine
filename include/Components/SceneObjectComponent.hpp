@@ -11,7 +11,7 @@ namespace puffin
 	struct SceneObjectComponent
 	{
 		SceneObjectComponent() = default;
-		SceneObjectComponent(std::string inName) : name(inName) {}
+		SceneObjectComponent(const std::string& name_) : name(name_) {}
 
 		UUID uuid; // uint64_t which is used to uniquely identify entities
 		std::string name; // Name of entity, used for displaying in UI

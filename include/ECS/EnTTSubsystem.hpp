@@ -8,7 +8,7 @@
 
 namespace puffin::ECS
 {
-	class EnTTSubsystem : public Core::Subsystem
+	class EnTTSubsystem : public core::Subsystem
 	{
 	public:
 

@@ -12,9 +12,9 @@ namespace puffin
 	{
 		void InputSubsystem::SetupCallbacks()
 		{
-			m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "InputSubsystem: Init", 50);
-			m_engine->registerCallback(Core::ExecutionStage::subsystemUpdate, [&]() { Update(); }, "InputSubsystem: Update");
-			m_engine->registerCallback(Core::ExecutionStage::cleanup, [&]() { Cleanup(); }, "InputSubsystem: Cleanup", 150);
+			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "InputSubsystem: Init", 50);
+			m_engine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "InputSubsystem: Update");
+			m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "InputSubsystem: Cleanup", 150);
 		}
 
 		void InputSubsystem::Init()
@@ -22,7 +22,7 @@ namespace puffin
 			m_window = m_engine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 			m_world = m_engine->getSubsystem<ECS::World>();
 
-			auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
+			auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
 
 			eventSubsystem->RegisterEvent<InputEvent>();
 
@@ -102,8 +102,8 @@ namespace puffin
 					// Notify subscribers that event changed
 					if (stateChanged == true)
 					{
-						auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
-						auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
+						auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
+						auto signalSubsystem = m_engine->getSubsystem<core::SignalSubsystem>();
 
 						eventSubsystem->Publish(InputEvent(action.name, action.state));
 						signalSubsystem->Signal(InputEvent(action.name, action.state));

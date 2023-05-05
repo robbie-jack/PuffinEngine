@@ -26,7 +26,7 @@ namespace puffin
 		typedef UUID EntityID;
 	}
 
-	namespace Core
+	namespace core
 	{
 		class Engine;
 	}
@@ -44,7 +44,7 @@ namespace puffin
 		{
 		public:
 
-			UIManager(std::shared_ptr<Core::Engine> engine);
+			UIManager(std::shared_ptr<core::Engine> engine);
 			~UIManager() {}
 
 			void Cleanup();
@@ -59,7 +59,7 @@ namespace puffin
 			bool saveScene, loadScene;
 			ImportAssetUI importAssetUI;
 
-			std::shared_ptr<Core::Engine> m_engine = nullptr;
+			std::shared_ptr<core::Engine> m_engine = nullptr;
 			ECS::EntityID m_entity;
 
 			std::vector<std::shared_ptr<UIWindow>> m_windows;

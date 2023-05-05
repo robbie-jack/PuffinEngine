@@ -19,21 +19,21 @@
 #include "Types/Vertex.hpp"
 #include "Assets/MeshAsset.h"
 
-namespace puffin::IO
+namespace puffin::io
 {
 	//////////////////////
 	// Model Importers
 	//////////////////////
 	
-	bool LoadAndImportModel(const fs::path& modelPath)
+	bool loadAndImportModel(const fs::path& modelPath)
 	{
 		if (modelPath.extension() == ".gltf")
-			return LoadAndImportGLTFModel(modelPath);
+			return loadAndImportGltfModel(modelPath);
 
 		return false;
 	}
 
-	bool LoadGLTFModel(tinygltf::Model& model, const fs::path& modelPath)
+	bool loadGltfModel(tinygltf::Model& model, const fs::path& modelPath)
 	{
 		tinygltf::TinyGLTF loader;
 		std::string err;
@@ -61,7 +61,7 @@ namespace puffin::IO
 		return ret;
 	}
 
-	bool ImportGLTFModel(const tinygltf::Model& model, const fs::path& modelPath)
+	bool importGltfModel(const tinygltf::Model& model, const fs::path& modelPath)
 	{
 		// Get buffer file paths
 		std::vector<fs::path> bufferPaths;
@@ -78,7 +78,7 @@ namespace puffin::IO
 			i++;
 		}
 
-		std::vector<Rendering::VertexPNTV32> vertices;
+		std::vector<rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
 		// Import each mesh in file
@@ -109,7 +109,7 @@ namespace puffin::IO
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						LoadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
+						loadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
 
 						vertexPos.resize(vertexCount);
 						memcpy(vertexPos.data(), binaryData.data(), vertexCount);
@@ -127,7 +127,7 @@ namespace puffin::IO
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						LoadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
+						loadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
 
 						vertexNormal.resize(vertexCount);
 						memcpy(vertexNormal.data(), binaryData.data(), vertexCount);
@@ -145,7 +145,7 @@ namespace puffin::IO
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						LoadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
+						loadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
 
 						vertexUV.resize(vertexCount);
 						memcpy(vertexUV.data(), binaryData.data(), vertexCount);
@@ -175,7 +175,7 @@ namespace puffin::IO
 				const auto& bufferView = model.bufferViews[accessor.bufferView];
 				indexCount = accessor.count;
 
-				LoadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
+				loadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
 
 				indexShort.resize(indexCount);
 				memcpy(indexShort.data(), binaryData.data(), indexCount);
@@ -242,18 +242,18 @@ namespace puffin::IO
 			fs::path assetPath = modelPath.parent_path().stem() / mesh.name;
 			assetPath += ".pstaticmesh";
 
-			Assets::MeshInfo info;
-			info.compressionMode = Assets::CompressionMode::LZ4;
+			assets::MeshInfo info;
+			info.compressionMode = assets::CompressionMode::lz4;
 			info.originalFile = modelPath.string();
-			info.vertexFormat = Rendering::VertexFormat::PNTV32;
+			info.vertexFormat = rendering::VertexFormat::PNTV32;
 			info.numVertices = vertices.size();
 			info.numIndices = indices.size();
-			info.verticesSize = vertices.size() * sizeof(Rendering::VertexPNTV32);
+			info.verticesSize = vertices.size() * sizeof(rendering::VertexPNTV32);
 			info.indicesSize = indices.size() * sizeof(uint32_t);
 
-			auto asset = Assets::AssetRegistry::Get()->AddAsset<Assets::StaticMeshAsset>(assetPath);
+			auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(assetPath);
 
-			if (!asset->Save(info, vertices.data(), indices.data()))
+			if (!asset->save(info, vertices.data(), indices.data()))
 				return false;
 
 			vertices.clear();
@@ -265,24 +265,24 @@ namespace puffin::IO
 		{
 			fs::path texturePath = modelPath.parent_path() / image.uri;
 
-			if (!LoadAndImportTexture(texturePath))
+			if (!loadAndImportTexture(texturePath))
 				return false;
 		}
 
 		return true;
 	}
 
-	bool LoadAndImportGLTFModel(const fs::path& modelPath)
+	bool loadAndImportGltfModel(const fs::path& modelPath)
 	{
 		tinygltf::Model model;
 
-		if (!LoadGLTFModel(model, modelPath))
+		if (!loadGltfModel(model, modelPath))
 			return false;
 
-		return ImportGLTFModel(model, modelPath);
+		return importGltfModel(model, modelPath);
 	}
 
-	bool LoadBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData)
+	bool loadBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData)
 	{
 		// Open File for Loading
 		std::ifstream binaryFile;
@@ -308,7 +308,7 @@ namespace puffin::IO
 	// Texture Importers
 	//////////////////////
 
-	bool LoadAndImportTexture(fs::path texturePath)
+	bool loadAndImportTexture(fs::path texturePath)
 	{
 		int texWidth, texHeight, texChannels;
 
@@ -325,16 +325,16 @@ namespace puffin::IO
 		fs::path importPath = texturePath.parent_path().stem() / texturePath.stem();
 		importPath += ".ptexture";
 
-		Assets::TextureInfo info;
-		info.compressionMode = Assets::CompressionMode::LZ4;
+		assets::TextureInfo info;
+		info.compressionMode = assets::CompressionMode::lz4;
 		info.originalFile = texturePath.string();
-		info.textureFormat = Assets::TextureFormat::RGBA8;
+		info.textureFormat = assets::TextureFormat::RGBA8;
 		info.textureHeight = (uint32_t)texHeight;
 		info.textureWidth = (uint32_t)texWidth;
 		info.originalSize = info.textureHeight * info.textureWidth * texChannels;
 
-		auto asset = Assets::AssetRegistry::Get()->AddAsset<Assets::TextureAsset>(importPath);
-		const bool ret = asset->Save(info, pixelPtr);
+		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(importPath);
+		const bool ret = asset->save(info, pixelPtr);
 
 		// Free Loaded Data, as pixels are now in staging buffer
 		stbi_image_free(pixels);

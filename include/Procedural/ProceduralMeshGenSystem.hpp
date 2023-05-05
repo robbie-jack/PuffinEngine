@@ -6,7 +6,7 @@
 #include "Types/Vector.h"
 #include "Types/Vertex.hpp"
 
-namespace puffin::Procedural
+namespace puffin::procedural
 {
 	class ProceduralMeshGenSystem : public ECS::System
 	{
@@ -21,8 +21,8 @@ namespace puffin::Procedural
 
 		void SetupCallbacks() override
 		{
-			m_engine->registerCallback(Core::ExecutionStage::setup, [&]() { Setup(); }, "ProcMeshGenSystem: Setup");
-			m_engine->registerCallback(Core::ExecutionStage::update, [&]() { Update(); }, "ProcMeshGenSystem: Update", 200);
+			m_engine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "ProcMeshGenSystem: Setup");
+			m_engine->registerCallback(core::ExecutionStage::Update, [&]() { Update(); }, "ProcMeshGenSystem: Update", 200);
 		}
 
 		void Setup();
@@ -32,12 +32,12 @@ namespace puffin::Procedural
 
 		// Generator list of vertices/indices for a flat plane
 		static void GeneratePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads,
-			std::vector<Rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices);
+			std::vector<rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices);
 
-		static void GenerateTerrain(std::vector<Rendering::VertexPNTV32>& vertices, const int64_t& seed, const double& heightMultiplier, const double&
+		static void GenerateTerrain(std::vector<rendering::VertexPNTV32>& vertices, const int64_t& seed, const double& heightMultiplier, const double&
 		                            startFrequency, const int& octaves, const double& frequencyMultiplier);
 
-		static void GenerateIcoSphere(std::vector<Rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices, const int& subdivisions);
+		static void GenerateIcoSphere(std::vector<rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices, const int& subdivisions);
 
 	};
 }

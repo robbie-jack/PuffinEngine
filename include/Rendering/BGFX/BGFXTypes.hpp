@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-namespace puffin::Rendering::BGFX
+namespace puffin::rendering
 {
 	struct MeshData
 	{

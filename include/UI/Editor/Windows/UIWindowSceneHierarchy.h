@@ -13,7 +13,7 @@ namespace puffin
 		{
 		public:
 
-			UIWindowSceneHierarchy(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
+			UIWindowSceneHierarchy(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowSceneHierarchy() override {}
 
 			void Draw(double dt) override;

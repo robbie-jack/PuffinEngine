@@ -2,10 +2,10 @@
 
 #include "Asset.h"
 
-namespace puffin::Assets
+namespace puffin::assets
 {
-	static const std::string G_SOUND_TYPE = "Sound";
-	static constexpr uint32_t G_SOUND_VERSION = 1; // Latest version of Static Mesh Asset Format
+	static const std::string gSoundType = "Sound";
+	static constexpr uint32_t gSoundVersion = 1; // Latest version of Static Mesh Asset Format
 
 	class SoundAsset : public Asset
 	{
@@ -17,17 +17,17 @@ namespace puffin::Assets
 
 		SoundAsset(const UUID id, const fs::path& path) : Asset(id, path) {}
 
-		const std::string& Type() const
+		const std::string& type() const override
 		{
-			return G_SOUND_TYPE;
+			return gSoundType;
 		}
 
-		const uint32_t& Version() const
+		const uint32_t& version() const override
 		{
-			return G_SOUND_VERSION;
+			return gSoundVersion;
 		}
 
-		void Unload() override {}
+		void unload() override {}
 	};
 
 }

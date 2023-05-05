@@ -102,7 +102,6 @@ set(HEADERS
 	${HEADER_DIR}/Components/Physics/VelocityComponent.hpp
 	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.hpp
 	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.hpp
-	${HEADER_DIR}/Components/Scripting/NativeScriptComponent.hpp
 	# ECS
 	${HEADER_DIR}/ECS/ComponentType.h
 	${HEADER_DIR}/ECS/ECS.h
@@ -156,7 +155,6 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.hpp
 	# Scripting
 	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
-	${HEADER_DIR}/Scripting/AngelScriptSystem.h
 	${HEADER_DIR}/Scripting/NativeScriptSystem.hpp
 	# Types
 	${HEADER_DIR}/Types/ComponentFlags.h
@@ -231,7 +229,6 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
-	${SOURCE_DIR}/Scripting/NativeScriptSystem.cpp
 	# UI
 	${SOURCE_DIR}/UI/Editor/UIManager.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp

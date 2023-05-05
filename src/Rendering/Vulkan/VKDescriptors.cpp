@@ -13,7 +13,7 @@
 		}                                                           \
 	} while (0)
 
-namespace puffin::Rendering::VK::Util
+namespace puffin::rendering::VK::Util
 {
 	vk::DescriptorPool CreatePool(vk::Device device, const DescriptorAllocator::PoolSizes& poolSizes, 
 		int count, vk::DescriptorPoolCreateFlags createFlags = {})

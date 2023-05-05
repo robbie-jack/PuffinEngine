@@ -6,27 +6,27 @@
 
 #include <cstdint>
 
-namespace puffin::Procedural
+namespace puffin::procedural
 {
-	namespace Icosahedron
+	namespace icosahedron
 	{
-		constexpr float X = .525731112119133606f;
-		constexpr float Z = .850650808352039932f;
-		constexpr float N = 0.f;
+		constexpr float gX = .525731112119133606f;
+		constexpr float gZ = .850650808352039932f;
+		constexpr float gN = 0.f;
 
-		static void VertexPositions(std::vector<Vector3f>& vertexPositions)
+		static void vertexPositions(std::vector<Vector3f>& vertexPositions)
 		{
 			vertexPositions.clear();
 
 			vertexPositions = 
 			{
-				{-X,N,Z}, {X,N,Z}, {-X,N,-Z}, {X,N,-Z},
-				{N,Z,X}, {N,Z,-X}, {N,-Z,X}, {N,-Z,-X},
-				{Z,X,N}, {-Z,X, N}, {Z,-X,N}, {-Z,-X, N}
+				{-gX,gN,gZ}, {gX,gN,gZ}, {-gX,gN,-gZ}, {gX,gN,-gZ},
+				{gN,gZ,gX}, {gN,gZ,-gX}, {gN,-gZ,gX}, {gN,-gZ,-gX},
+				{gZ,gX,gN}, {-gZ,gX, gN}, {gZ,-gX,gN}, {-gZ,-gX, gN}
 			};
 		}
 
-		static void Indices(std::vector<uint32_t>& indices)
+		static void indices(std::vector<uint32_t>& indices)
 		{
 			indices.clear();
 
@@ -61,11 +61,11 @@ namespace puffin::Procedural
 		double radius = 0.5;
 	};
 
-	struct UVSphereComponent : public SphereComponent
+	struct UvSphereComponent : public SphereComponent
 	{
 		Vector2i numSegments = { 10 };
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(UVSphereComponent, radius, numSegments)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(UvSphereComponent, radius, numSegments)
 	};
 
 	struct IcoSphereComponent : public SphereComponent

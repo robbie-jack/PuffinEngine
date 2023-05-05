@@ -4,7 +4,7 @@
 
 #include "Types/Vertex.hpp"
 
-namespace puffin::Rendering::VK::Util
+namespace puffin::rendering::VK::Util
 {
 	class VertexLayout
 	{
@@ -41,7 +41,7 @@ namespace puffin::Rendering::VK::Util
 	};
 }
 
-namespace puffin::Rendering
+namespace puffin::rendering
 {
 	inline VK::Util::VertexLayout VertexPC32::GetLayoutVK()
 	{

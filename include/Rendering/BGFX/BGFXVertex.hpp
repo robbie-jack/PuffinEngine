@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <cstdint>
 
-namespace puffin::Rendering
+namespace puffin::rendering
 {
 	inline bgfx::VertexLayout VertexPC32::GetLayout()
 	{

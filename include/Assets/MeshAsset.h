@@ -6,23 +6,23 @@
 
 #include <vector>
 
-namespace puffin::Assets
+namespace puffin::assets
 {
-	static const std::string G_STATIC_MESH_TYPE = "StaticMesh";
-	static constexpr uint32_t G_STATIC_MESH_VERSION = 1; // Latest version of Static Mesh Asset Format
+	static const std::string gStaticMeshType = "StaticMesh";
+	static constexpr uint32_t gStaticMeshVersion = 1; // Latest version of Static Mesh Asset Format
 
 	struct MeshInfo
 	{
 		CompressionMode compressionMode;
 		std::string originalFile;
-		Rendering::VertexFormat vertexFormat;
+		rendering::VertexFormat vertexFormat;
 		uint64_t numVertices;
 		uint64_t numIndices;
 		uint64_t verticesSize;
 		uint64_t indicesSize;
 	};
 
-	class StaticMeshAsset : public Asset
+	class StaticMeshAsset final : public Asset
 	{
 	public:
 
@@ -34,46 +34,46 @@ namespace puffin::Assets
 
 		~StaticMeshAsset() override = default;
 
-		const std::string& Type() const
+		[[nodiscard]] const std::string& type() const override
 		{
-			return G_STATIC_MESH_TYPE;
+			return gStaticMeshType;
 		}
 
-		const uint32_t& Version() const
+		[[nodiscard]] const uint32_t& version() const override
 		{
-			return G_STATIC_MESH_VERSION;
+			return gStaticMeshVersion;
 		}
 
-		bool Save();
+		bool save();
 
-		bool Save(const MeshInfo& info, const void* vertexData, const void* indexData);
+		bool save(const MeshInfo& info, const void* vertexData, const void* indexData);
 
-		bool Load();
+		bool load();
 
-		void Unload() override;
+		void unload() override;
 
-		const std::vector<char>& GetVertices() const { return m_vertices; }
+		[[nodiscard]] const std::vector<char>& vertices() const { return mVertices; }
 
-		const std::vector<uint32_t>& GetIndices() const { return m_indices; }
+		[[nodiscard]] const std::vector<uint32_t>& indices() const { return mIndices; }
 
-		Rendering::VertexFormat GetFormat() const { return m_vertexFormat; }
+		[[nodiscard]] rendering::VertexFormat vertexFormat() const { return mVertexFormat; }
 
-		uint32_t GetNumVertices() const { return m_numVertices; }
-		uint32_t GetNumIndices() const { return m_numIndices; }
+		[[nodiscard]] uint32_t numVertices() const { return mNumVertices; }
+		[[nodiscard]] uint32_t numIndices() const { return mNumIndices; }
 
-		uint32_t GetVertexSize() const { return Rendering::GetVertexSizeFromFormat(m_vertexFormat); }
-		uint32_t GetIndexSize() const { return sizeof(uint32_t); }
+		[[nodiscard]] uint32_t vertexSize() const { return rendering::GetVertexSizeFromFormat(mVertexFormat); }
+		[[nodiscard]] uint32_t indexSize() const { return sizeof(uint32_t); }
 
 	private:
 
-		std::vector<char> m_vertices;
-		std::vector<uint32_t> m_indices;
+		std::vector<char> mVertices;
+		std::vector<uint32_t> mIndices;
 
-		Rendering::VertexFormat m_vertexFormat;
-		uint32_t m_numVertices, m_numIndices;
+		rendering::VertexFormat mVertexFormat;
+		uint32_t mNumVertices, mNumIndices;
 
-		std::string m_originalFile;
+		std::string mOriginalFile;
 
-		MeshInfo ParseMeshInfo(const AssetData& data);
+		MeshInfo parseMeshInfo(const AssetData& data);
 	};
 }

@@ -21,7 +21,7 @@
 
 #include <vector>
 
-namespace puffin::Rendering::BGFX
+namespace puffin::rendering
 {
 	void BGFXRenderSystem::Init()
 	{
@@ -38,7 +38,7 @@ namespace puffin::Rendering::BGFX
         InitLightUniforms();
 
         // Connect Signals
-        const auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
+        const auto signalSubsystem = m_engine->getSubsystem<core::SignalSubsystem>();
 
         signalSubsystem->Connect<Input::InputEvent>(
 			[&](const Input::InputEvent& inputEvent)
@@ -473,7 +473,7 @@ namespace puffin::Rendering::BGFX
             {
                 auto& mesh = m_world->GetComponent<MeshComponent>(entity);
 
-                MeshMatPair pair(mesh.textureAssetID, meshData.assetID);
+                MeshMatPair pair(mesh.textureAssetId, meshData.assetID);
 
                 if (meshMatMap.count(pair) == 0)
                 {
@@ -563,37 +563,37 @@ namespace puffin::Rendering::BGFX
         auto& mesh = entity->GetComponent<MeshComponent>();
 
         // Init Mesh
-        if (!m_meshData.Contains(mesh.meshAssetID))
+        if (!m_meshData.Contains(mesh.meshAssetId))
         {
 			MeshData meshData;
 
-			LoadAndInitMesh(mesh.meshAssetID, meshData);
+			LoadAndInitMesh(mesh.meshAssetId, meshData);
 
-            m_meshData.Insert(mesh.meshAssetID, meshData);
-            m_meshSets.emplace(mesh.meshAssetID, std::set<ECS::EntityID>());
+            m_meshData.Insert(mesh.meshAssetId, meshData);
+            m_meshSets.emplace(mesh.meshAssetId, std::set<ECS::EntityID>());
         }
 
-        m_meshSets[mesh.meshAssetID].insert(entity->ID());
+        m_meshSets[mesh.meshAssetId].insert(entity->ID());
 
         // Init Textures
-        if (!m_texData.Contains(mesh.textureAssetID))
+        if (!m_texData.Contains(mesh.textureAssetId))
         {
 			TextureData texData;
 
-            LoadAndInitTexture(mesh.textureAssetID, texData);
+            LoadAndInitTexture(mesh.textureAssetId, texData);
 
-            m_texData.Insert(mesh.textureAssetID, texData);
-            m_texSets.emplace(mesh.textureAssetID, std::set<ECS::EntityID>());
+            m_texData.Insert(mesh.textureAssetId, texData);
+            m_texSets.emplace(mesh.textureAssetId, std::set<ECS::EntityID>());
         }
 
-        m_texSets[mesh.textureAssetID].insert(entity->ID());
+        m_texSets[mesh.textureAssetId].insert(entity->ID());
 
         // Init Materials (Currently using default mesh program, will add proper material system later)
-        if (!m_matData.Contains(mesh.textureAssetID))
+        if (!m_matData.Contains(mesh.textureAssetId))
         {
 	        MaterialData matData;
 
-            matData.assetID = mesh.textureAssetID;
+            matData.assetID = mesh.textureAssetId;
 
             if (m_useInstancing && m_supportsInstancing)
             {
@@ -604,13 +604,13 @@ namespace puffin::Rendering::BGFX
                 matData.programHandle = m_meshProgram;
             }
 
-            matData.texIDs.push_back(mesh.textureAssetID);
+            matData.texIDs.push_back(mesh.textureAssetId);
 
-            m_matData.Insert(mesh.textureAssetID, matData);
-            m_matSets.emplace(mesh.textureAssetID, std::set<ECS::EntityID>());
+            m_matData.Insert(mesh.textureAssetId, matData);
+            m_matSets.emplace(mesh.textureAssetId, std::set<ECS::EntityID>());
         }
 
-        m_matSets[mesh.textureAssetID].insert(entity->ID());
+        m_matSets[mesh.textureAssetId].insert(entity->ID());
 	}
 
 	void BGFXRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
@@ -618,35 +618,35 @@ namespace puffin::Rendering::BGFX
         auto& mesh = entity->GetComponent<MeshComponent>();
 
         // Cleanup Mesh Data
-        m_meshSets[mesh.meshAssetID].erase(entity->ID());
+        m_meshSets[mesh.meshAssetId].erase(entity->ID());
 
-        if (m_meshSets[mesh.meshAssetID].empty())
+        if (m_meshSets[mesh.meshAssetId].empty())
         {
-            bgfx::destroy(m_meshData[mesh.meshAssetID].vertexBufferHandle);
-            bgfx::destroy(m_meshData[mesh.meshAssetID].indexBufferHandle);
+            bgfx::destroy(m_meshData[mesh.meshAssetId].vertexBufferHandle);
+            bgfx::destroy(m_meshData[mesh.meshAssetId].indexBufferHandle);
 
-            m_meshData.Erase(mesh.meshAssetID);
-            m_meshSets.erase(mesh.meshAssetID);
+            m_meshData.Erase(mesh.meshAssetId);
+            m_meshSets.erase(mesh.meshAssetId);
         }
 
         // Cleanup Material Data
-        m_matSets[mesh.textureAssetID].erase(entity->ID());
+        m_matSets[mesh.textureAssetId].erase(entity->ID());
 
-        if (m_matSets[mesh.textureAssetID].empty())
+        if (m_matSets[mesh.textureAssetId].empty())
         {
-			m_matData.Erase(mesh.textureAssetID);
-            m_matSets.erase(mesh.textureAssetID);
+			m_matData.Erase(mesh.textureAssetId);
+            m_matSets.erase(mesh.textureAssetId);
         }
 
         // Cleanup Texture Data
-        m_texSets[mesh.textureAssetID].erase(entity->ID());
+        m_texSets[mesh.textureAssetId].erase(entity->ID());
 
-        if (m_texSets[mesh.textureAssetID].empty())
+        if (m_texSets[mesh.textureAssetId].empty())
         {
-			bgfx::destroy(m_texData[mesh.textureAssetID].handle);
+			bgfx::destroy(m_texData[mesh.textureAssetId].handle);
 
-            m_texData.Erase(mesh.textureAssetID);
-            m_texSets.erase(mesh.textureAssetID);
+            m_texData.Erase(mesh.textureAssetId);
+            m_texSets.erase(mesh.textureAssetId);
         }
 	}
 
@@ -654,9 +654,9 @@ namespace puffin::Rendering::BGFX
 	{
         m_editorCam.position = {0.0f, 0.0f, 15.0f};
         m_editorCam.aspect = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
-        m_editorCam.lookat = m_editorCam.position + m_editorCam.direction;
+        m_editorCam.lookAt = m_editorCam.position + m_editorCam.direction;
 
-        bx::mtxLookAt(m_editorCamMats.view, static_cast<bx::Vec3>(m_editorCam.position), static_cast<bx::Vec3>(m_editorCam.lookat), { 0, 1, 0 }, bx::Handedness::Right);
+        bx::mtxLookAt(m_editorCamMats.view, static_cast<bx::Vec3>(m_editorCam.position), static_cast<bx::Vec3>(m_editorCam.lookAt), { 0, 1, 0 }, bx::Handedness::Right);
         bx::mtxProj(m_editorCamMats.proj, m_editorCam.fovY, m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
 	}
 
@@ -717,14 +717,14 @@ namespace puffin::Rendering::BGFX
 
         // Calculate Right, Up and LookAt vectors
         m_editorCam.right = m_editorCam.up.Cross(m_editorCam.direction).Normalised();
-        m_editorCam.lookat = m_editorCam.position + m_editorCam.direction;
+        m_editorCam.lookAt = m_editorCam.position + m_editorCam.direction;
 
         if (m_windowResized)
         {
             m_editorCam.aspect = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
         }
 
-        bx::mtxLookAt(m_editorCamMats.view, static_cast<bx::Vec3>(m_editorCam.position), static_cast<bx::Vec3>(m_editorCam.lookat), {0, 1, 0}, bx::Handedness::Right);
+        bx::mtxLookAt(m_editorCamMats.view, static_cast<bx::Vec3>(m_editorCam.position), static_cast<bx::Vec3>(m_editorCam.lookAt), {0, 1, 0}, bx::Handedness::Right);
         bx::mtxProj(m_editorCamMats.proj, m_editorCam.fovY, m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
     }
 
@@ -736,9 +736,9 @@ namespace puffin::Rendering::BGFX
 
         // Calculate Right, Up and LookAt vectors
         cam.right = cam.up.Cross(transform.rotation.GetXYZ()).Normalised();
-        cam.lookat = transform.position + transform.rotation.GetXYZ();
+        cam.lookAt = transform.position + transform.rotation.GetXYZ();
 
-        bx::mtxLookAt(camMats.view, static_cast<bx::Vec3>(transform.position), static_cast<bx::Vec3>(cam.lookat), { 0, 1, 0 }, bx::Handedness::Right);
+        bx::mtxLookAt(camMats.view, static_cast<bx::Vec3>(transform.position), static_cast<bx::Vec3>(cam.lookAt), { 0, 1, 0 }, bx::Handedness::Right);
 
         // Recalculate camera perspective if fov has changed, store new fov in prevFov
         if (cam.fovY != cam.prevFovY)
@@ -751,18 +751,18 @@ namespace puffin::Rendering::BGFX
 
 	void BGFXRenderSystem::LoadAndInitMesh(UUID meshID, MeshData& meshData)
 	{
-        const auto meshAsset = std::static_pointer_cast<Assets::StaticMeshAsset>(Assets::AssetRegistry::Get()->GetAsset(meshID));
+        const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshID));
 
-        if (meshAsset && meshAsset->Load())
+        if (meshAsset && meshAsset->load())
         {
             meshData.assetID = meshID;
-            meshData.numVertices = meshAsset->GetNumVertices();
-            meshData.numIndices = meshAsset->GetNumIndices();
+            meshData.numVertices = meshAsset->numVertices();
+            meshData.numIndices = meshAsset->numIndices();
 
-            meshData.vertexBufferHandle = InitVertexBuffer(meshAsset->GetVertices().data(), meshData.numVertices, s_layoutVertexPNTV32);
-            meshData.indexBufferHandle = InitIndexBuffer(meshAsset->GetIndices().data(), meshData.numIndices, true);
+            meshData.vertexBufferHandle = InitVertexBuffer(meshAsset->vertices().data(), meshData.numVertices, s_layoutVertexPNTV32);
+            meshData.indexBufferHandle = InitIndexBuffer(meshAsset->indices().data(), meshData.numIndices, true);
 
-            meshAsset->Unload();
+            meshAsset->unload();
         }
 	}
 
@@ -808,22 +808,22 @@ namespace puffin::Rendering::BGFX
 
     void BGFXRenderSystem::LoadAndInitTexture(UUID texID, TextureData& texData)
     {
-        const auto texAsset = std::static_pointer_cast<Assets::TextureAsset>(Assets::AssetRegistry::Get()->GetAsset(texID));
+        const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(assets::AssetRegistry::get()->getAsset(texID));
 
-        if (texAsset && texAsset->Load())
+        if (texAsset && texAsset->load())
         {
             texData.assetID = texID;
 
-            uint32_t texSize = texAsset->GetTextureSize();
+            uint32_t texSize = texAsset->textureSize();
 
             const bgfx::Memory* mem = bgfx::alloc(texSize);
 
-            bx::memCopy(mem->data, texAsset->GetPixelData(), mem->size);
+            bx::memCopy(mem->data, texAsset->pixelData(), mem->size);
 
-            texData.handle = bgfx::createTexture2D(texAsset->GetTextureWidth(), texAsset->GetTextureHeight(),
-                false, 1, g_texFormatMap.at(texAsset->GetTextureFormat()), 0, mem);
+            texData.handle = bgfx::createTexture2D(texAsset->textureWidth(), texAsset->textureHeight(),
+                false, 1, g_texFormatMap.at(texAsset->textureFormat()), 0, mem);
 
-            texAsset->Unload();
+            texAsset->unload();
         }
     }
 
@@ -857,7 +857,7 @@ namespace puffin::Rendering::BGFX
 
             const auto& light = entity->GetComponent<LightComponent>();
 
-	        if (light.type == LightType::DIRECTIONAL)
+	        if (light.type == LightType::Directional)
 	        {
                 lightEntitiesOrdered.push_back(entity);
                 index++;
@@ -876,7 +876,7 @@ namespace puffin::Rendering::BGFX
 
             const auto& light = entity->GetComponent<LightComponent>();
 
-            if (light.type == LightType::POINT)
+            if (light.type == LightType::Point)
             {
                 lightEntitiesOrdered.push_back(entity);
                 index++;
@@ -895,7 +895,7 @@ namespace puffin::Rendering::BGFX
 
             const auto& light = entity->GetComponent<LightComponent>();
 
-            if (light.type == LightType::SPOT)
+            if (light.type == LightType::Spot)
             {
                 lightEntitiesOrdered.push_back(entity);
                 index++;

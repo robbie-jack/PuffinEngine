@@ -19,7 +19,7 @@ namespace puffin
         {
 		public:
 
-            UIWindowEntityProperties(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
+            UIWindowEntityProperties(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
             ~UIWindowEntityProperties() override {}
 
             void Draw(double dt) override;

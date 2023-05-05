@@ -7,7 +7,7 @@
 
 namespace puffin
 {
-	namespace Core
+	namespace core
 	{
 		class Engine;
 
@@ -26,7 +26,7 @@ namespace puffin
 
 		class World;
 
-		class System : public Core::Subsystem
+		class System : public core::Subsystem
 		{
 		public:
 
@@ -37,7 +37,7 @@ namespace puffin
 			}
 			
 			// Get struct with info on system such as its update order
-			const Core::SystemInfo& GetInfo() { return m_systemInfo; } const
+			const core::SystemInfo& GetInfo() { return m_systemInfo; } const
 
 			void SetWorld(std::shared_ptr<World> inWorld)
 			{
@@ -48,7 +48,7 @@ namespace puffin
 
 			std::shared_ptr<World> m_world = nullptr;
 
-			Core::SystemInfo m_systemInfo;
+			core::SystemInfo m_systemInfo;
 
 		private:
 

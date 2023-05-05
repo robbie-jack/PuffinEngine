@@ -16,7 +16,7 @@
 		}                                                           \
 	} while (0)
 
-namespace puffin::Rendering::VK::Util
+namespace puffin::rendering::VK::Util
 {
 	void ImmediateSubmit(std::shared_ptr<VKRenderSystem> renderSystem, std::function<void(VkCommandBuffer cmd)>&& function)
 	{

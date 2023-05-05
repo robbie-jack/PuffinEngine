@@ -58,8 +58,8 @@ namespace puffin
 					{
 						m_engine->play();
 
-						Core::PlayState playState = m_engine->playState();
-						if (playState == Core::PlayState::paused || playState == Core::PlayState::stopped)
+						core::PlayState playState = m_engine->playState();
+						if (playState == core::PlayState::Paused || playState == core::PlayState::Stopped)
 						{
 							playButtonLabel = "Play";
 						}
@@ -96,7 +96,7 @@ namespace puffin
 				{
 					TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(entity);
 					
-					DrawManipulationGizmo(m_engine->getSubsystem<Core::EventSubsystem>(), transform);
+					DrawManipulationGizmo(m_engine->getSubsystem<core::EventSubsystem>(), transform);
 				}
 
 				End();

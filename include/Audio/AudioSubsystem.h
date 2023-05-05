@@ -10,27 +10,27 @@
 #include <vector>
 #include <unordered_map>
 
-namespace puffin::Audio
+namespace puffin::audio
 {
 	enum class SoundEventType
 	{
-		NONE,
-		PLAY,
-		PAUSE,
-		STOP,
-		MODIFY
+		None,
+		Play,
+		Pause,
+		Stop,
+		Modify
 	};
 
 	struct SoundEvent
 	{
-		SoundEventType type = SoundEventType::NONE;
+		SoundEventType type = SoundEventType::None;
 		UUID id;
 		float volume = 1.0f;
 		bool looping = false;
 		bool restart = false;
 	};
 
-	class AudioSubsystem : public Core::Subsystem
+	class AudioSubsystem : public core::Subsystem
 	{
 	public:
 
@@ -39,35 +39,35 @@ namespace puffin::Audio
 
 		void SetupCallbacks() override;
 
-		void Init();
-		void Update();
-		void Cleanup();
+		void init();
+		void update();
+		void cleanup();
 
 		// Play Sound, If this sound is already active, but paused, start playing it again
-		void PlaySoundEffect(UUID soundId, float volume = 1.0f, bool looping = false, bool restart = false);
-		UUID PlaySoundEffect(const std::string& soundPath, float volume = 1.0f, bool looping = false, bool restart = false);
-		void StopSoundEffect(UUID soundId);
-		void PauseSoundEffect(UUID soundId);
+		void playSoundEffect(UUID soundId, float volume = 1.0f, bool looping = false, bool restart = false);
+		UUID playSoundEffect(const std::string& soundPath, float volume = 1.0f, bool looping = false, bool restart = false);
+		void stopSoundEffect(UUID soundId);
+		void pauseSoundEffect(UUID soundId);
 
-		void PlayAllSounds(bool forcePlay = false);
-		void PauseAllSounds();
-		void StopAllSounds();
+		void playAllSounds(bool forcePlay = false);
+		void pauseAllSounds();
+		void stopAllSounds();
 
 	private:
 
-		irrklang::ISoundEngine* m_soundEngine = nullptr;
+		irrklang::ISoundEngine* mSoundEngine = nullptr;
 
 		//std::vector<irrklang::ISoundSource*> soundSources; // Loaded Sound Sources
-		std::unordered_map<UUID, irrklang::ISound*> m_activeSounds; // Active Sound Effects
-		std::unordered_map<UUID, bool> m_activeSoundsWasPaused; // Store whether a sound was playing or not
+		std::unordered_map<UUID, irrklang::ISound*> mActiveSounds; // Active Sound Effects
+		std::unordered_map<UUID, bool> mActiveSoundsWasPaused; // Store whether a sound was playing or not
 
-		RingBuffer<SoundEvent> m_soundEventBuffer;
+		RingBuffer<SoundEvent> mSoundEventBuffer;
 
-		void ProcessSoundEvents();
+		void processSoundEvents();
 
-		void PlaySound(SoundEvent soundEvent);
-		void ModifySound(SoundEvent soundEvent);
-		void PauseSound(SoundEvent soundEvent);
-		void StopSound(SoundEvent soundEvent);
+		void playSound(SoundEvent soundEvent);
+		void modifySound(SoundEvent soundEvent);
+		void pauseSound(SoundEvent soundEvent);
+		void stopSound(SoundEvent soundEvent);
 	};
 }

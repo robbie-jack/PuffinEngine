@@ -5,7 +5,7 @@
 #include <queue>
 #include <thread>
 
-namespace puffin::Core
+namespace puffin::core
 {
 	class JobSystem
 	{

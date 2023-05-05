@@ -11,7 +11,7 @@
 
 namespace puffin
 {
-	namespace Rendering
+	namespace rendering
 	{
 		struct CameraComponent
 		{
@@ -23,15 +23,13 @@ namespace puffin
 			float fovY = 60.0f;
 			float prevFovY = 60.0f;
 
-			Vector3f lookat;
-
-			
+			Vector3f lookAt = Vector3f(0.0f);
 			Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
 			Vector3f right = Vector3f(1.0f, 0.0f, 0.0f);
 
-			glm::mat4 view;
-			glm::mat4 proj;
-			glm::mat4 viewProj;
+			glm::mat4 view = glm::mat4(0.0f);
+			glm::mat4 proj = glm::mat4(0.0f);
+			glm::mat4 viewProj = glm::mat4(0.0f);
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, zNear, zFar, aspect, fovY, up)
 		};
@@ -50,14 +48,5 @@ namespace puffin
 			float pitch = 0.0f;
 			float speed = 5.0f;
 		};
-
-		namespace BGFX
-		{
-			struct CameraMatComponent
-			{
-				float view[16];
-				float proj[16];
-			};
-		}
 	}
 }

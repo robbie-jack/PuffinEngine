@@ -14,16 +14,16 @@ namespace puffin
 		{
 		public:
 
-			UIWindowSettings(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
+			UIWindowSettings(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowSettings() override {}
 
 			void Draw(double dt) override;
 
-			inline void SetCamera(puffin::Rendering::CameraComponent* camera) { m_camera = camera; }
+			inline void SetCamera(puffin::rendering::CameraComponent* camera) { m_camera = camera; }
 
 		private:
 
-			puffin::Rendering::CameraComponent* m_camera = nullptr;
+			puffin::rendering::CameraComponent* m_camera = nullptr;
 
 		};
 	}

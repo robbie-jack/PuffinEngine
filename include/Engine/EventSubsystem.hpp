@@ -11,7 +11,7 @@
 
 namespace puffin
 {
-	namespace Core
+	namespace core
 	{
 		typedef uint8_t EventType;
 

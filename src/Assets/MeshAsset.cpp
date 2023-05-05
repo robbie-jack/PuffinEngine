@@ -4,7 +4,7 @@
 
 using json = nlohmann::json;
 
-namespace puffin::Assets
+namespace puffin::assets
 {
 	////////////////////////////////
 	// StaticMeshAsset
@@ -12,37 +12,37 @@ namespace puffin::Assets
 
 	// Public
 
-	bool StaticMeshAsset::Save()
+	bool StaticMeshAsset::save()
 	{
-		if (m_isLoaded)
+		if (mIsLoaded)
 		{
 			MeshInfo info;
-			info.vertexFormat = m_vertexFormat;
-			info.numVertices = m_numVertices;
-			info.numIndices = m_numIndices;
-			info.verticesSize = m_numVertices * GetVertexSize();
-			info.indicesSize = m_numIndices * GetIndexSize();
-			info.originalFile = m_originalFile;
+			info.vertexFormat = mVertexFormat;
+			info.numVertices = mNumVertices;
+			info.numIndices = mNumIndices;
+			info.verticesSize = mNumVertices * vertexSize();
+			info.indicesSize = mNumIndices * indexSize();
+			info.originalFile = mOriginalFile;
 
-			return Save(info, m_vertices.data(), m_indices.data());
+			return save(info, mVertices.data(), mIndices.data());
 		}
 
 		return false;
 	}
 
-	bool StaticMeshAsset::Save(const MeshInfo& info, const void* vertexData, const void* indexData)
+	bool StaticMeshAsset::save(const MeshInfo& info, const void* vertexData, const void* indexData)
 	{
-		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
+		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
 
 		// Create AssetData Struct
 		AssetData data;
-		data.type = G_STATIC_MESH_TYPE;
-		data.version = G_STATIC_MESH_VERSION;
+		data.type = gStaticMeshType;
+		data.version = gStaticMeshVersion;
 
 		// Fill Metadata from Info struct
 		json metadata;
 
-		metadata["vertex_format"] = Rendering::ParseVertexStringFromFormat(info.vertexFormat);
+		metadata["vertex_format"] = rendering::ParseVertexStringFromFormat(info.vertexFormat);
 		metadata["num_vertices"] = info.numVertices;
 		metadata["num_indices"] = info.numIndices;
 		metadata["vertex_buffer_size"] = info.verticesSize;
@@ -66,42 +66,42 @@ namespace puffin::Assets
 		memcpy(mergedBuffer.data() + info.verticesSize, indexData, info.indicesSize);
 
 		// Compress Data and store in binary blob
-		size_t compressStaging = LZ4_compressBound(static_cast<int>(fullSize));
+		const size_t compressStaging = LZ4_compressBound(static_cast<int>(fullSize));
 
 		data.binaryBlob.resize(compressStaging);
 
-		int compressedSize = LZ4_compress_default(mergedBuffer.data(), data.binaryBlob.data(), static_cast<int>(mergedBuffer.size()), static_cast<int>(compressStaging));
+		const int compressedSize = LZ4_compress_default(mergedBuffer.data(), data.binaryBlob.data(), static_cast<int>(mergedBuffer.size()), static_cast<int>(compressStaging));
 		data.binaryBlob.resize(compressedSize);
 
 		// Save Asset Data out to Binary File
-		return SaveBinaryFile(fullPath, data);
+		return saveBinaryFile(fullPath, data);
 	}
 
-	bool StaticMeshAsset::Load()
+	bool StaticMeshAsset::load()
 	{
 		// Check if file is already loaded
-		if (m_isLoaded)
+		if (mIsLoaded)
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
+		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
 		if (!fs::exists(fullPath))
 			return false;
 
 		// Load Binary/Metadata
 		AssetData data;
-		if (!LoadBinaryFile(fullPath, data))
+		if (!loadBinaryFile(fullPath, data))
 		{
 			return false;
 		}
 
 		// Parse Metadata from Json
-		MeshInfo info = ParseMeshInfo(data);
+		MeshInfo info = parseMeshInfo(data);
 
-		m_vertexFormat = info.vertexFormat;
-		m_numVertices = info.numVertices;
-		m_numIndices = info.numIndices;
-		m_originalFile = info.originalFile;
+		mVertexFormat = info.vertexFormat;
+		mNumVertices = info.numVertices;
+		mNumIndices = info.numIndices;
+		mOriginalFile = info.originalFile;
 
 		// Decompress Binary Data
 		std::vector<char> decompressedBuffer;
@@ -111,31 +111,31 @@ namespace puffin::Assets
 		static_cast<int>(data.binaryBlob.size()), static_cast<int>(decompressedBuffer.size()));
 
 		// Copy Vertex Buffer
-		m_vertices.resize(info.verticesSize);
-		memcpy(m_vertices.data(), decompressedBuffer.data(), info.verticesSize);
+		mVertices.resize(info.verticesSize);
+		memcpy(mVertices.data(), decompressedBuffer.data(), info.verticesSize);
 
 		// Copy Index Buffer
-		m_indices.resize(info.indicesSize);
-		memcpy(m_indices.data(), decompressedBuffer.data() + info.verticesSize, info.indicesSize);
+		mIndices.resize(info.indicesSize);
+		memcpy(mIndices.data(), decompressedBuffer.data() + info.verticesSize, info.indicesSize);
 
-		m_isLoaded = true;
+		mIsLoaded = true;
 		return true;
 	}
 
-	void StaticMeshAsset::Unload()
+	void StaticMeshAsset::unload()
 	{
-		m_vertices.clear();
-		m_vertices.shrink_to_fit();
+		mVertices.clear();
+		mVertices.shrink_to_fit();
 
-		m_indices.clear();
-		m_indices.shrink_to_fit();
+		mIndices.clear();
+		mIndices.shrink_to_fit();
 
-		m_isLoaded = false;
+		mIsLoaded = false;
 	}
 
 	// Private
 
-	MeshInfo StaticMeshAsset::ParseMeshInfo(const AssetData& data)
+	MeshInfo StaticMeshAsset::parseMeshInfo(const AssetData& data)
 	{
 		// Parse metadata into json
 		json metadata = json::parse(data.json);
@@ -148,11 +148,11 @@ namespace puffin::Assets
 		info.indicesSize = metadata["index_buffer_size"];
 		info.originalFile = metadata["original_file"];
 
-		std::string vertexFormat = metadata["vertex_format"];
-		info.vertexFormat = Rendering::ParseVertexFormatFromString(vertexFormat.c_str());
-		
-		std::string compressionMode = metadata["compression"];
-		info.compressionMode = ParseCompressionMode(compressionMode.c_str());
+		const std::string vertexFormat = metadata["vertex_format"];
+		info.vertexFormat = rendering::ParseVertexFormatFromString(vertexFormat.c_str());
+
+		const std::string compressionMode = metadata["compression"];
+		info.compressionMode = parseCompressionMode(compressionMode.c_str());
 
 		return info;
 	}

@@ -4,7 +4,7 @@
 
 using json = nlohmann::json;
 
-namespace puffin::Assets
+namespace puffin::assets
 {
 	////////////////////////////////
 	// TextureAsset
@@ -12,36 +12,35 @@ namespace puffin::Assets
 
 	// Public
 
-	bool TextureAsset::Save(TextureInfo& info, void* pixelData)
+	bool TextureAsset::save(TextureInfo& info, void* pixelData)
 	{
-		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
+		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
 
 		// Create AssetData Struct
 		AssetData data;
-		data.type = G_TEXTURE_TYPE;
-		data.version = G_TEXTURE_VERSION;
+		data.type = gTextureType;
+		data.version = gTextureVersion;
 
 		// Compress data into binary blob
-		char* pixels = (char*)pixelData;
+		const char* pixels = (char*)pixelData;
 
-		int compressStaging = LZ4_compressBound(static_cast<int>(info.originalSize));
+		const int compressStaging = LZ4_compressBound(static_cast<int>(info.originalSize));
 
 		data.binaryBlob.resize(compressStaging);
 
 		int compressedSize = LZ4_compress_default(pixels, data.binaryBlob.data(), info.originalSize, compressStaging);
 
-		float compressionRate = float(compressedSize) / float(info.originalSize);
-
 		// If compression rate is more than 80% of original, it's not worth compressing the image
-		if (compressionRate > 0.8)
+		if (const float compressionRate = static_cast<float>(compressedSize) / static_cast<float>(info.originalSize); compressionRate > 0.8)
 		{
 			compressedSize = info.originalSize;
 			data.binaryBlob.resize(compressedSize);
 
 			memcpy(data.binaryBlob.data(), pixels, compressedSize);
 		}
+
 		data.binaryBlob.resize(compressedSize);
-		info.compressedSize = (uint32_t)compressedSize;
+		info.compressedSize = static_cast<uint32_t>(compressedSize);
 
 		// Fill Metadata from Info struct
 		json metadata;
@@ -56,73 +55,73 @@ namespace puffin::Assets
 		// Pass metadata to asset data struct
 		data.json = metadata.dump();
 
-		return SaveBinaryFile(fullPath, data);
+		return saveBinaryFile(fullPath, data);
 	}
 
-	bool TextureAsset::Load()
+	bool TextureAsset::load()
 	{
 		// Check if file is already loaded
-		if (m_isLoaded)
+		if (mIsLoaded)
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::Get()->ContentRoot() / RelativePath();
+		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
 		if (!fs::exists(fullPath))
 			return false;
 		
 		// Load Binary/Metadata
 		AssetData data;
-		if (!LoadBinaryFile(fullPath, data))
+		if (!loadBinaryFile(fullPath, data))
 		{
 			return false;
 		}
 
 		// Parse Metadata from Json
-		TextureInfo info = ParseTextureInfo(data);
+		const TextureInfo info = parseTextureInfo(data);
 
 		// Decompress Binary Data
-		m_pixels.resize(info.originalSize);
+		mPixels.resize(info.originalSize);
 
-		LZ4_decompress_safe(data.binaryBlob.data(), m_pixels.data(), 
+		LZ4_decompress_safe(data.binaryBlob.data(), mPixels.data(), 
 		static_cast<int>(info.compressedSize), static_cast<int>(info.originalSize));
 
-		m_texHeight = info.textureHeight;
-		m_texWidth = info.textureWidth;
+		mTexHeight = info.textureHeight;
+		mTexWidth = info.textureWidth;
 
-		m_texFormat = info.textureFormat;
+		mTexFormat = info.textureFormat;
 
 		data.binaryBlob.clear();
 		data.json.clear();
 
-		m_isLoaded = true;
+		mIsLoaded = true;
 		return true;
 	}
 
-	void TextureAsset::Unload()
+	void TextureAsset::unload()
 	{
-		m_pixels.clear();
-		m_pixels.shrink_to_fit();
+		mPixels.clear();
+		mPixels.shrink_to_fit();
 
-		m_texWidth = 0;
-		m_texHeight = 0;
+		mTexWidth = 0;
+		mTexHeight = 0;
 
-		m_isLoaded = false;
+		mIsLoaded = false;
 	}
 
 	// Private
 
-	TextureInfo TextureAsset::ParseTextureInfo(const AssetData& data)
+	TextureInfo TextureAsset::parseTextureInfo(const AssetData& data) const
 	{
 		json metadata = json::parse(data.json);
 
 		// Fill Texture Info struct with metadata
 		TextureInfo info;
 
-		std::string compressionMode = metadata["compression"];
-		info.compressionMode = ParseCompressionMode(compressionMode.c_str());
+		const std::string compressionMode = metadata["compression"];
+		info.compressionMode = parseCompressionMode(compressionMode.c_str());
 
-		std::string textureFormat =  metadata["textureFormat"];
-		info.textureFormat = ParseTextureFormat(textureFormat.c_str());
+		const std::string textureFormat =  metadata["textureFormat"];
+		info.textureFormat = parseTextureFormat(textureFormat.c_str());
 
 		info.originalFile = metadata["original_file"];
 		info.textureHeight = metadata["textureHeight"];

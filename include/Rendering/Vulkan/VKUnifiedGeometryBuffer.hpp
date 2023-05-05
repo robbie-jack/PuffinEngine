@@ -8,7 +8,7 @@
 #include <vector>
 #include <set>
 
-namespace puffin::Rendering::VK
+namespace puffin::rendering::VK
 {
 	class VKRenderSystem;
 
@@ -23,7 +23,7 @@ namespace puffin::Rendering::VK
 
 		void Cleanup();
 
-		bool AddMesh(std::shared_ptr<Assets::StaticMeshAsset> staticMesh);
+		bool AddMesh(std::shared_ptr<assets::StaticMeshAsset> staticMesh);
 
 		bool HasMesh(UUID staticMeshID) const
 		{

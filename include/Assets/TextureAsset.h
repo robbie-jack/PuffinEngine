@@ -2,10 +2,10 @@
 
 #include "AssetRegistry.h"
 
-namespace puffin::Assets
+namespace puffin::assets
 {
-	static const std::string G_TEXTURE_TYPE = "Texture";
-	static constexpr uint32_t G_TEXTURE_VERSION = 1; // Latest version of Texture Asset Format
+	static const std::string gTextureType = "Texture";
+	static constexpr uint32_t gTextureVersion = 1; // Latest version of Texture Asset Format
 
 	enum class TextureFormat : uint32_t
 	{
@@ -14,12 +14,12 @@ namespace puffin::Assets
 	};
 
 	// Map of texture format to number of bytes per pixel
-	const static std::unordered_map<TextureFormat, uint32_t> g_texSizeMap =
+	const static std::unordered_map<TextureFormat, uint32_t> gTexSizeMap =
 	{
 		{ TextureFormat::RGBA8, 4 }
 	};
 
-	static TextureFormat ParseTextureFormat(const char* f)
+	static TextureFormat parseTextureFormat(const char* f)
 	{
 		if (strcmp(f, "RGBA8") == 0)
 		{
@@ -54,64 +54,64 @@ namespace puffin::Assets
 
 		~TextureAsset() override = default;
 
-		const std::string& Type() const
+		[[nodiscard]] const std::string& type() const override
 		{
-			return G_TEXTURE_TYPE;
+			return gTextureType;
 		}
 
-		const uint32_t& Version() const
+		[[nodiscard]] const uint32_t& version() const override
 		{
-			return G_TEXTURE_VERSION;
+			return gTextureVersion;
 		}
 
-		bool Save(TextureInfo& info, void* pixelData);
+		bool save(TextureInfo& info, void* pixelData);
 
-		bool Load();
+		bool load();
 
-		void Unload() override;
+		void unload() override;
 
-		const std::vector<char>& GetPixels() const
+		const std::vector<char>& pixels() const
 		{
-			return m_pixels;
+			return mPixels;
 		}
 
-		const void* GetPixelData() const
+		const void* pixelData() const
 		{
-			return m_pixels.data();
+			return mPixels.data();
 		}
 
-		[[nodiscard]] uint32_t GetTextureWidth() const
+		[[nodiscard]] uint32_t textureWidth() const
 		{
-			return m_texWidth;
+			return mTexWidth;
 		}
 
-		[[nodiscard]] uint32_t GetTextureHeight() const
+		[[nodiscard]] uint32_t textureHeight() const
 		{
-			return m_texHeight;
+			return mTexHeight;
 		}
 
-		[[nodiscard]] uint32_t GetTexturePixelSize() const
+		[[nodiscard]] uint32_t textureSizePerPixel() const
 		{
-			return g_texSizeMap.at(m_texFormat);
+			return gTexSizeMap.at(mTexFormat);
 		}
 
-		[[nodiscard]] TextureFormat GetTextureFormat() const
+		[[nodiscard]] TextureFormat textureFormat() const
 		{
-			return m_texFormat;
+			return mTexFormat;
 		}
 
-		[[nodiscard]] uint32_t GetTextureSize() const
+		[[nodiscard]] uint32_t textureSize() const
 		{
-			return m_texWidth * m_texHeight * g_texSizeMap.at(m_texFormat);
+			return mTexWidth * mTexHeight * gTexSizeMap.at(mTexFormat);
 		}
 
 	private:
 
-		std::vector<char> m_pixels;
-		uint32_t m_texWidth;
-		uint32_t m_texHeight;
-		TextureFormat m_texFormat;
+		std::vector<char> mPixels;
+		uint32_t mTexWidth;
+		uint32_t mTexHeight;
+		TextureFormat mTexFormat;
 
-		TextureInfo ParseTextureInfo(const AssetData& data);
+		TextureInfo parseTextureInfo(const AssetData& data) const;
 	};
 }

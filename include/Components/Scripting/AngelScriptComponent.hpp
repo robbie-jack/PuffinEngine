@@ -11,7 +11,7 @@
 
 namespace fs = std::filesystem;
 
-namespace puffin::Scripting
+namespace puffin::scripting
 {
 	struct SerializedScriptData
 	{

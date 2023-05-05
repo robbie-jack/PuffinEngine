@@ -18,7 +18,7 @@ namespace fs = std::filesystem;
 
 namespace puffin
 {
-	namespace Audio
+	namespace audio
 	{
 		class AudioSubsystem;
 	}
@@ -29,40 +29,40 @@ namespace puffin
 	}
 }
 
-namespace puffin::Core
+namespace puffin::core
 {
 	// Various stages when methods can be executed during engine runtime
 	enum class ExecutionStage
 	{
-		idle,				// Only used for calculating idle time when frame rate is limited, do not use with callback
-		init,				// Occurs once on engine launch, use for one off system initialization
-		setup,				// Occurs on engine launch and whenever gameplay is stopped
-		start,				// Occurs whenever gameplay is started
-		subsystemUpdate,	// Occurs every frame, regardless if game is currently playing/paused
-		fixedUpdate,		// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
-		update,				// Update once a frame - Useful for non-determinstic gameplay code
-		render,				// Update once a frame - Useful for code which relates to the rendering pipeline
-		stop,				// Occurs when game play is stopped, use for resetting any gameplay data
-		cleanup				// Occurs when engine exits, use for cleaning up all data
+		Idle,				// Only used for calculating idle time when frame rate is limited, do not use with callback
+		Init,				// Occurs once on engine launch, use for one off system initialization
+		Setup,				// Occurs on engine launch and whenever gameplay is stopped
+		Start,				// Occurs whenever gameplay is started
+		SubsystemUpdate,	// Occurs every frame, regardless if game is currently playing/paused
+		FixedUpdate,		// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
+		Update,				// Update once a frame - Useful for non-determinstic gameplay code
+		Render,				// Update once a frame - Useful for code which relates to the rendering pipeline
+		Stop,				// Occurs when game play is stopped, use for resetting any gameplay data
+		Cleanup				// Occurs when engine exits, use for cleaning up all data
 	};
 
 	const std::vector<std::pair<ExecutionStage, const std::string>> gExecutionStageOrder =
 	{
-		{ ExecutionStage::idle, "Idle" },
-		{ ExecutionStage::fixedUpdate, "FixedUpdate" },
-		{ ExecutionStage::update, "Update" },
-		{ ExecutionStage::render, "Render" },
+		{ ExecutionStage::Idle, "Idle" },
+		{ ExecutionStage::FixedUpdate, "FixedUpdate" },
+		{ ExecutionStage::Update, "Update" },
+		{ ExecutionStage::Render, "Render" },
 	};
 
 	enum class PlayState
 	{
-		started,		// Game has just started, gameplay systems need to be initialized
-		playing,		// Game is playing, all systems being updated
-		justStopped,	// Game has just been stopped, perform all system stop functions
-		stopped,		// Game is stopped, no physics or game code is begin run, all data is in default state
-		justPaused,	// Game has just been paused
-		paused,			// Game is paused, systems not being updated,
-		justUnpaused	// Game has just been unpaused
+		Started,		// Game has just started, gameplay systems need to be initialized
+		Playing,		// Game is playing, all systems being updated
+		JustStopped,	// Game has just been stopped, perform all system stop functions
+		Stopped,		// Game is stopped, no physics or game code is begin run, all data is in default state
+		JustPaused,	// Game has just been paused
+		Paused,			// Game is paused, systems not being updated,
+		JustUnpaused	// Game has just been unpaused
 	};
 
 	// Handler class for executing functions in engine
@@ -199,9 +199,9 @@ namespace puffin::Core
 		}
 
 		PlayState playState() const { return playState_; }
-		inline std::shared_ptr<IO::SceneData> sceneData() { return sceneData_; }
+		inline std::shared_ptr<io::SceneData> sceneData() { return sceneData_; }
 
-		inline IO::ProjectSettings& settings() { return settings_; }
+		inline io::ProjectSettings& settings() { return settings_; }
 
 		std::shared_ptr<UI::UIManager> uiManager() const
 		{
@@ -218,12 +218,12 @@ namespace puffin::Core
 
 		const double& accumulatedTime() const { return accumulatedTime_; }
 
-		double getStageExecutionTimeLastFrame(const Core::ExecutionStage& updateOrder)
+		double getStageExecutionTimeLastFrame(const core::ExecutionStage& updateOrder)
 		{
 			return stageExecutionTimeLastFrame_[updateOrder];
 		}
 
-		const std::unordered_map<std::string, double>& getCallbackExecutionTimeForUpdateStageLastFrame(const Core::ExecutionStage& updateOrder)
+		const std::unordered_map<std::string, double>& getCallbackExecutionTimeForUpdateStageLastFrame(const core::ExecutionStage& updateOrder)
 		{
 			return callbackExecutionTimeLastFrame_[updateOrder];
 		}
@@ -236,7 +236,7 @@ namespace puffin::Core
 		bool shouldLimitFrame_ = true; // Whether framerate should be capped at m_frameRateMax
 		bool shouldRenderEditorUi_ = true; // Whether editor UI should be rendered
 		bool shouldTrackExecutionTime_ = true; // Should track time to execute callback/stages
-		PlayState playState_ = PlayState::stopped;
+		PlayState playState_ = PlayState::Stopped;
 
 		// Framerate Members
 		uint16_t frameRateMax_ = 0; // Limit on how fast game runs
@@ -254,23 +254,23 @@ namespace puffin::Core
 
 		// System/Subsystem Members
 		std::vector<std::shared_ptr<ECS::System>> systems_; // Vector of system pointers
-		std::unordered_map<const char*, std::shared_ptr<Core::Subsystem>> subsystems_;
-		std::unordered_map<Core::ExecutionStage, std::vector<EngineCallbackHandler>> registeredCallbacks_; // Map of callback functions registered for execution
+		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> subsystems_;
+		std::unordered_map<core::ExecutionStage, std::vector<EngineCallbackHandler>> registeredCallbacks_; // Map of callback functions registered for execution
 
-		std::unordered_map<Core::ExecutionStage, double> stageExecutionTime_; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
-		std::unordered_map<Core::ExecutionStage, std::unordered_map<std::string, double>> callbackExecutionTime_; // Map of time it takes for each system to execute
+		std::unordered_map<core::ExecutionStage, double> stageExecutionTime_; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
+		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> callbackExecutionTime_; // Map of time it takes for each system to execute
 
-		std::unordered_map<Core::ExecutionStage, double> stageExecutionTimeLastFrame_;
-		std::unordered_map<Core::ExecutionStage, std::unordered_map<std::string, double>> callbackExecutionTimeLastFrame_;
+		std::unordered_map<core::ExecutionStage, double> stageExecutionTimeLastFrame_;
+		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> callbackExecutionTimeLastFrame_;
 
-		IO::ProjectFile projectFile_;
+		io::ProjectFile projectFile_;
 
-		IO::ProjectSettings settings_;
+		io::ProjectSettings settings_;
 
-		std::shared_ptr<IO::SceneData> sceneData_ = nullptr;
+		std::shared_ptr<io::SceneData> sceneData_ = nullptr;
 
 		// Execute callbacks for this execution stage
-		void executeCallbacks(const Core::ExecutionStage& executionStage, bool shouldTrackExecutionTime = false)
+		void executeCallbacks(const core::ExecutionStage& executionStage, bool shouldTrackExecutionTime = false)
 		{
 			double startTime = 0.0, endTime = 0.0;
 			double stageStartTime = 0.0, stageEndTime = 0.0;

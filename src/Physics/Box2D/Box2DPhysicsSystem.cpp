@@ -12,7 +12,7 @@ namespace puffin::physics
 {
 	void Box2DPhysicsSystem::init()
 	{
-		auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
+		auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
 
 		// Register Events
 		eventSubsystem->RegisterEvent<CollisionBeginEvent>();
@@ -189,8 +189,8 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::publishCollisionEvents() const
 	{
-		const auto eventSubsystem = m_engine->getSubsystem<Core::EventSubsystem>();
-		const auto signalSubsystem = m_engine->getSubsystem<Core::SignalSubsystem>();
+		const auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
+		const auto signalSubsystem = m_engine->getSubsystem<core::SignalSubsystem>();
 
 		CollisionBeginEvent collisionBeginEvent;
 		while (contactListener_->getNextCollisionBeginEvent(collisionBeginEvent))

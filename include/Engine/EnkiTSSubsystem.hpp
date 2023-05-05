@@ -7,7 +7,7 @@
 #include <memory>
 #include <thread>
 
-namespace puffin::Core
+namespace puffin::core
 {
 	class EnkiTSSubsystem : public Subsystem
 	{

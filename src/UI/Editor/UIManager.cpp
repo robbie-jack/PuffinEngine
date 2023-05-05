@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 
 namespace puffin::UI
 {
-	UIManager::UIManager(std::shared_ptr<Core::Engine> engine)
+	UIManager::UIManager(std::shared_ptr<core::Engine> engine)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -123,7 +123,7 @@ namespace puffin::UI
 			// File Dialog - Import Texture
 			case ImportAssetUI::Texture:
 					
-				if (IO::LoadAndImportTexture(selectedPath))
+				if (io::loadAndImportTexture(selectedPath))
 				{
 					std::cout << "Import Successful" << std::endl;
 				}
@@ -147,7 +147,7 @@ namespace puffin::UI
 		}
 
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing
-		if (windowEntityProperties->HasSceneChanged() && m_engine->playState() == Core::PlayState::stopped)
+		if (windowEntityProperties->HasSceneChanged() && m_engine->playState() == core::PlayState::Stopped)
 		{
 			m_engine->sceneData()->UpdateData();
 		}
@@ -271,8 +271,8 @@ namespace puffin::UI
 				if (ImGui::MenuItem("Save Project"))
 				{
 					//IO::SaveProject(Assets::AssetRegistry::Get()->ProjectRoot() / Assets::AssetRegistry::Get()->ProjectName() + ".pproject", engine->)
-					IO::SaveSettings(Assets::AssetRegistry::Get()->ProjectRoot() / "settings.json", m_engine->settings());
-					Assets::AssetRegistry::Get()->SaveAssetCache();
+					io::SaveSettings(assets::AssetRegistry::get()->setProjectRoot() / "settings.json", m_engine->settings());
+					assets::AssetRegistry::get()->saveAssetCache();
 				}
 
 				if (ImGui::MenuItem("Save Project As"))

@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-namespace puffin::Assets
+namespace puffin::assets
 {
 	struct AssetData
 	{
@@ -31,23 +31,23 @@ namespace puffin::Assets
 
 	enum class CompressionMode : uint8_t
 	{
-		None,
-		LZ4
+		none,
+		lz4
 	};
 
-	static CompressionMode ParseCompressionMode(const char* f)
+	static CompressionMode parseCompressionMode(const char* f)
 	{
 		if (strcmp(f, "LZ4") == 0)
 		{
-			return CompressionMode::LZ4;
+			return CompressionMode::lz4;
 		}
 		else
 		{
-			return CompressionMode::None;
+			return CompressionMode::none;
 		}
 	}
 
-	static bool SaveBinaryFile(const fs::path& path, const AssetData& data)
+	static bool saveBinaryFile(const fs::path& path, const AssetData& data)
 	{
 		if (!fs::exists(path.parent_path()))
 		{
@@ -88,7 +88,7 @@ namespace puffin::Assets
 		return true;
 	}
 
-	static bool LoadBinaryFile(const fs::path& path, AssetData& data)
+	static bool loadBinaryFile(const fs::path& path, AssetData& data)
 	{
 		// Open File for Loading
 		std::ifstream inFile;
@@ -135,38 +135,38 @@ namespace puffin::Assets
 	{
 	public:
 
-		Asset(const fs::path& path) : m_path(path) {}
-		Asset(const UUID uuid, const fs::path& path) : m_id(uuid), m_path(path) {}
+		Asset(const fs::path& path) : mPath(path) {}
+		Asset(const UUID uuid, const fs::path& path) : mId(uuid), mPath(path) {}
 
 		virtual ~Asset() = default;
 
-		UUID ID()
+		UUID id() const
 		{
-			return m_id;
+			return mId;
 		}
 
-		fs::path RelativePath()
+		fs::path relativePath()
 		{
-			return m_path;
+			return mPath;
 		}
 
-		void RelativePath(fs::path path)
+		void setRelativePath(const fs::path& path)
 		{
-			m_path = path;
+			mPath = path;
 		}
 
-		virtual const std::string& Type() const = 0;
-		virtual const uint32_t& Version() const = 0;
-		virtual void Unload() = 0;
+		virtual const std::string& type() const = 0;
+		virtual const uint32_t& version() const = 0;
+		virtual void unload() = 0;
 
 	protected:
 
-		bool m_isLoaded = false; // Is Asset Currently Loaded
+		bool mIsLoaded = false; // Is Asset Currently Loaded
 
 	private:
 
-		UUID m_id; // UUID of Asset
-		fs::path m_path; // Relative Asset Path
+		UUID mId; // UUID of Asset
+		fs::path mPath; // Relative Asset Path
 
 	};
 }

@@ -15,7 +15,7 @@ namespace puffin
 		{
 		public:
 
-			UIWindowViewport(std::shared_ptr<Core::Engine> engine) : UIWindow(engine) {}
+			UIWindowViewport(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowViewport() override {}
 
 			void DrawWithoutImage();

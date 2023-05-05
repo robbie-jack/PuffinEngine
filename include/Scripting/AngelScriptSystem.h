@@ -24,7 +24,7 @@
 
 namespace puffin
 {
-	namespace Scripting
+	namespace scripting
 	{
 		struct ScriptCallback
 		{
@@ -45,11 +45,11 @@ namespace puffin
 
 			void SetupCallbacks() override
 			{
-				m_engine->registerCallback(Core::ExecutionStage::init, [&]() { Init(); }, "AngelScriptSystem: Init");
-				m_engine->registerCallback(Core::ExecutionStage::setup, [&]() { Setup(); }, "AngelScriptSystem: Setup");
-				m_engine->registerCallback(Core::ExecutionStage::start, [&]() { Start(); }, "AngelScriptSystem: Start");
-				m_engine->registerCallback(Core::ExecutionStage::update, [&]() { Update(); }, "AngelScriptSystem: Update");
-				m_engine->registerCallback(Core::ExecutionStage::stop, [&]() { Stop(); }, "AngelScriptSystem: Stop");
+				m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "AngelScriptSystem: Init");
+				m_engine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "AngelScriptSystem: Setup");
+				m_engine->registerCallback(core::ExecutionStage::Start, [&]() { Start(); }, "AngelScriptSystem: Start");
+				m_engine->registerCallback(core::ExecutionStage::Update, [&]() { Update(); }, "AngelScriptSystem: Update");
+				m_engine->registerCallback(core::ExecutionStage::Stop, [&]() { Stop(); }, "AngelScriptSystem: Stop");
 			}
 
 			void Init();
@@ -66,7 +66,7 @@ namespace puffin
 			asIScriptEngine* m_scriptEngine = nullptr;
 			asIScriptContext* m_ctx = nullptr;
 
-			std::shared_ptr<Audio::AudioSubsystem> m_audioSubsystem;
+			std::shared_ptr<audio::AudioSubsystem> m_audioSubsystem;
 
 			ECS::EntityID m_currentEntityID = 0; // Entity ID for currently executing script
 
