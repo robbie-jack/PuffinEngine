@@ -36,3 +36,5 @@ Open Simplex Noise - C++ Noise Gen Library - https://github.com/deerel/OpenSimpl
 Box2D - 2D Physics - https://box2d.org/
 
 enkiTS - Multithreaded Task Scheduler - https://github.com/dougbinks/enkiTS
+
+EnTT - Entity Component System - https://github.com/skypjack/entt
