@@ -56,11 +56,11 @@ namespace puffin::core
 		mUiManager = std::make_shared<UI::UIManager>(shared_from_this());
 
 		// Load Project File
-		fs::path projectPath = fs::path("C:\\Projects\\PuffinProject\\Puffin.pproject");
+		fs::path projectPath = fs::path(R"(C:\Projects\PuffinProject\Puffin.pproject)");
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
-		io::LoadProject(projectPath, mProjectFile);
+		LoadProject(projectPath, mProjectFile);
 
 		// Load Default Scene (if set)
 		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / mProjectFile.defaultScenePath;
