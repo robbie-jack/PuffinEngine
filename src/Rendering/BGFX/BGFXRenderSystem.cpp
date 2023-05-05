@@ -38,9 +38,9 @@ namespace puffin::rendering
         InitLightUniforms();
 
         // Connect Signals
-        const auto signalSubsystem = m_engine->getSubsystem<core::SignalSubsystem>();
+        const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 
-        signalSubsystem->Connect<Input::InputEvent>(
+        signalSubsystem->connect<Input::InputEvent>(
 			[&](const Input::InputEvent& inputEvent)
 			{
 				shared_from_this()->OnInputEvent(inputEvent);
@@ -48,8 +48,8 @@ namespace puffin::rendering
         );
 
         // Register Components
-        m_world->RegisterComponent<CameraMatComponent>();
-        m_world->AddComponentDependencies<CameraComponent, CameraMatComponent>();
+        mWorld->RegisterComponent<CameraMatComponent>();
+        mWorld->AddComponentDependencies<CameraComponent, CameraMatComponent>();
 	}
 
 	void BGFXRenderSystem::Setup()
@@ -90,7 +90,7 @@ namespace puffin::rendering
 	void BGFXRenderSystem::InitBGFX()
 	{
         bgfx::PlatformData pd;
-        GLFWwindow* window = m_engine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+        GLFWwindow* window = mEngine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
@@ -306,7 +306,7 @@ namespace puffin::rendering
 	void BGFXRenderSystem::InitComponents()
 	{
         PackedVector<ECS::EntityPtr> meshEntities;
-        ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+        ECS::GetEntities<TransformComponent, MeshComponent>(mWorld, meshEntities);
         for (const auto& entity : meshEntities)
         {
             if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
@@ -318,7 +318,7 @@ namespace puffin::rendering
         }
 
         PackedVector<ECS::EntityPtr> cameraEntities;
-        ECS::GetEntities<TransformComponent, CameraComponent>(m_world, cameraEntities);
+        ECS::GetEntities<TransformComponent, CameraComponent>(mWorld, cameraEntities);
         for (const auto& entity : cameraEntities)
         {
             if (entity->GetComponentFlag<CameraComponent, FlagDirty>())
@@ -333,7 +333,7 @@ namespace puffin::rendering
 	void BGFXRenderSystem::UpdateComponents()
 	{
         PackedVector<ECS::EntityPtr> meshEntities;
-        ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+        ECS::GetEntities<TransformComponent, MeshComponent>(mWorld, meshEntities);
         for (const auto& entity : meshEntities)
         {
 			if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
@@ -353,7 +353,7 @@ namespace puffin::rendering
         }
 
         PackedVector<ECS::EntityPtr> cameraEntities;
-        ECS::GetEntities<TransformComponent, CameraComponent>(m_world, cameraEntities);
+        ECS::GetEntities<TransformComponent, CameraComponent>(mWorld, cameraEntities);
         for (const auto& entity : cameraEntities)
         {
             if (entity->GetComponentFlag<CameraComponent, FlagDirty>())
@@ -371,7 +371,7 @@ namespace puffin::rendering
         }
 
         PackedVector<ECS::EntityPtr> lightEntities;
-        ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
+        ECS::GetEntities<TransformComponent, LightComponent>(mWorld, lightEntities);
         for (const auto& entity : lightEntities)
         {
 	        
@@ -381,7 +381,7 @@ namespace puffin::rendering
 	void BGFXRenderSystem::CleanupComponents()
 	{
         PackedVector<ECS::EntityPtr> meshEntities;
-        ECS::GetEntities<TransformComponent, MeshComponent>(m_world, meshEntities);
+        ECS::GetEntities<TransformComponent, MeshComponent>(mWorld, meshEntities);
         for (const auto& entity : meshEntities)
         {
             CleanupMeshComponent(entity);
@@ -471,7 +471,7 @@ namespace puffin::rendering
 
             for (const ECS::EntityID& entity : meshEntities)
             {
-                auto& mesh = m_world->GetComponent<MeshComponent>(entity);
+                auto& mesh = mWorld->GetComponent<MeshComponent>(entity);
 
                 MeshMatPair pair(mesh.textureAssetId, meshData.assetID);
 
@@ -503,7 +503,7 @@ namespace puffin::rendering
 	{
         for (const auto& entity : meshDrawBatch.entities)
         {
-            const auto& transform = m_world->GetComponent<TransformComponent>(entity);
+            const auto& transform = mWorld->GetComponent<TransformComponent>(entity);
 
             // Setup Transform
             float model[16];
@@ -533,7 +533,7 @@ namespace puffin::rendering
         int idx = 0;
         for (const auto& entity : meshDrawBatch.entities)
         {
-            const auto& transform = m_world->GetComponent<TransformComponent>(entity);
+            const auto& transform = mWorld->GetComponent<TransformComponent>(entity);
 
             // Setup Transform
             float* mtx = (float*)data;
@@ -662,39 +662,39 @@ namespace puffin::rendering
 
 	void BGFXRenderSystem::UpdateEditorCamera()
     {
-        const auto inputSubsystem = m_engine->getSubsystem<Input::InputSubsystem>();
+        const auto inputSubsystem = mEngine->getSubsystem<Input::InputSubsystem>();
 
         if (inputSubsystem->IsCursorLocked())
         {
             // Camera Movement
             if (m_moveLeft && !m_moveRight)
             {
-                m_editorCam.position += m_editorCam.right * m_editorCam.speed * m_engine->deltaTime();
+                m_editorCam.position += m_editorCam.right * m_editorCam.speed * mEngine->deltaTime();
             }
 
             if (m_moveRight && !m_moveLeft)
             {
-                m_editorCam.position -= m_editorCam.right * m_editorCam.speed * m_engine->deltaTime();
+                m_editorCam.position -= m_editorCam.right * m_editorCam.speed * mEngine->deltaTime();
             }
 
             if (m_moveForward && !m_moveBackward)
             {
-                m_editorCam.position += m_editorCam.direction * m_editorCam.speed * m_engine->deltaTime();
+                m_editorCam.position += m_editorCam.direction * m_editorCam.speed * mEngine->deltaTime();
             }
 
             if (m_moveBackward && !m_moveForward)
             {
-                m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * m_engine->deltaTime();
+                m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * mEngine->deltaTime();
             }
 
             if (m_moveUp && !m_moveDown)
             {
-                m_editorCam.position += m_editorCam.up * m_editorCam.speed * m_engine->deltaTime();
+                m_editorCam.position += m_editorCam.up * m_editorCam.speed * mEngine->deltaTime();
             }
 
             if (m_moveDown && !m_moveUp)
             {
-                m_editorCam.position -= m_editorCam.up * m_editorCam.speed * m_engine->deltaTime();
+                m_editorCam.position -= m_editorCam.up * m_editorCam.speed * mEngine->deltaTime();
             }
 
             // Mouse Rotation
@@ -840,7 +840,7 @@ namespace puffin::rendering
         int index = 0;
 
         PackedVector<ECS::EntityPtr> lightEntities;
-        ECS::GetEntities<TransformComponent, LightComponent>(m_world, lightEntities);
+        ECS::GetEntities<TransformComponent, LightComponent>(mWorld, lightEntities);
 
         std::vector<ECS::EntityPtr> lightEntitiesOrdered;
 

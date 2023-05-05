@@ -6,7 +6,6 @@
 #include "Assets/AssetRegistry.h"
 
 #include "Engine/Engine.hpp"
-#include "Engine/EventSubsystem.hpp"
 
 #include "ECS/Entity.hpp"
 
@@ -56,7 +55,7 @@ namespace puffin::scripting
 		// Set message callback to receive information on errors in human readable form
 		int r = m_scriptEngine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); assert(r >= 0);
 
-		m_systemInfo.name = "AngelScriptSystem";
+		mSystemInfo.name = "AngelScriptSystem";
 	}
 
 	AngelScriptSystem::~AngelScriptSystem()
@@ -71,19 +70,7 @@ namespace puffin::scripting
 		// Configure Engine and Setup Global Function Callbacks
 		ConfigureEngine();
 
-		auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
-
-		// Subscribe to events
-		m_inputEvents = std::make_shared<RingBuffer<Input::InputEvent>>();
-		eventSubsystem->Subscribe<Input::InputEvent>(m_inputEvents);
-
-		m_collisionBeginEvents = std::make_shared<RingBuffer<physics::CollisionBeginEvent>>();
-		eventSubsystem->Subscribe<physics::CollisionBeginEvent>(m_collisionBeginEvents);
-
-		m_collisionEndEvents = std::make_shared<RingBuffer<physics::CollisionEndEvent>>();
-		eventSubsystem->Subscribe<physics::CollisionEndEvent>(m_collisionEndEvents);
-
-		m_audioSubsystem = m_engine->getSubsystem<audio::AudioSubsystem>();
+		m_audioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
 	}
 
 	void AngelScriptSystem::Setup()
@@ -97,7 +84,7 @@ namespace puffin::scripting
 		}
 
 		PackedVector<ECS::EntityPtr> scriptEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(mWorld, scriptEntities);
 		for (const auto entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
@@ -112,7 +99,7 @@ namespace puffin::scripting
 	{
 		// Execute Start Methods
 		PackedVector<ECS::EntityPtr> scriptEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(mWorld, scriptEntities);
 		for (const auto entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
@@ -134,7 +121,7 @@ namespace puffin::scripting
 		
 		// Initialize/Cleanup marked components
 		PackedVector<ECS::EntityPtr> scriptEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(mWorld, scriptEntities);
 		for (const auto& entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
@@ -169,7 +156,7 @@ namespace puffin::scripting
 	{
 		// Execute Script Stop Methods
 		PackedVector<ECS::EntityPtr> scriptEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(m_world, scriptEntities);
+		ECS::GetEntities<TransformComponent, AngelScriptComponent>(mWorld, scriptEntities);
 		for (const auto& entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
@@ -264,7 +251,7 @@ namespace puffin::scripting
 		r = m_scriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSystem, PlaySoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// Register Components and their constructors, functions and properties
-		RegisterTransformComponent(m_scriptEngine, m_world.get());
+		RegisterTransformComponent(m_scriptEngine, mWorld.get());
 
 		// Register Input Funcdefs and Bind/Release Callback Methods
 		r = m_scriptEngine->RegisterFuncdef("void OnInputPressedCallback()"); assert(r >= 0);
@@ -623,12 +610,12 @@ namespace puffin::scripting
 
 	const double& AngelScriptSystem::GetDeltaTime() const
 	{
-		return m_engine->deltaTime();
+		return mEngine->deltaTime();
 	}
 
 	const double& AngelScriptSystem::GetFixedTime() const
 	{
-		return m_engine->timeStepFixed();
+		return mEngine->timeStepFixed();
 	}
 
 	void AngelScriptSystem::PlaySoundEffect(uint64_t id, float volume, bool looping, bool restart)

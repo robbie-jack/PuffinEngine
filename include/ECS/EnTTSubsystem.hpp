@@ -15,7 +15,7 @@ namespace puffin::ECS
 		EnTTSubsystem() { m_registry = std::make_shared<entt::registry>(); }
 		~EnTTSubsystem() override = default;
 
-		void SetupCallbacks() override {}
+		void setupCallbacks() override {}
 
 		// Create a new entity with a default scene object component
 		entt::entity CreateEntity(std::string name)

@@ -32,23 +32,23 @@ namespace puffin
 
 			~System() override
 			{
-				m_world = nullptr;
-				m_engine = nullptr;
+				mWorld = nullptr;
+				mEngine = nullptr;
 			}
 			
 			// Get struct with info on system such as its update order
-			const core::SystemInfo& GetInfo() { return m_systemInfo; } const
+			const core::SystemInfo& getInfo() { return mSystemInfo; }
 
-			void SetWorld(std::shared_ptr<World> inWorld)
+			void setWorld(const std::shared_ptr<World>& world)
 			{
-				m_world = inWorld;
+				mWorld = world;
 			}
 
 		protected:
 
-			std::shared_ptr<World> m_world = nullptr;
+			std::shared_ptr<World> mWorld = nullptr;
 
-			core::SystemInfo m_systemInfo;
+			core::SystemInfo mSystemInfo;
 
 		private:
 

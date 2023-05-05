@@ -13,11 +13,11 @@ namespace puffin::Window
 	// Public Methods
 	//==================================================
 
-	void WindowSubsystem::SetupCallbacks()
+	void WindowSubsystem::setupCallbacks()
 	{
-		m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "WindowSubsystem: Init", 40);
-		m_engine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "WindowSubsystem: Update");
-		m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "WindowSubsystem: Cleanup", 150);
+		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "WindowSubsystem: Init", 40);
+		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "WindowSubsystem: Update");
+		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "WindowSubsystem: Cleanup", 150);
 	}
 
 	void WindowSubsystem::Init()

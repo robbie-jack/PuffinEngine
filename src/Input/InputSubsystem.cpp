@@ -2,7 +2,6 @@
 #include <ECS/ECS.h>
 
 #include "Engine/Engine.hpp"
-#include "Engine/EventSubsystem.hpp"
 #include "Engine/SignalSubsystem.hpp"
 #include "Window/WindowSubsystem.hpp"
 
@@ -10,21 +9,17 @@ namespace puffin
 {
 	namespace Input
 	{
-		void InputSubsystem::SetupCallbacks()
+		void InputSubsystem::setupCallbacks()
 		{
-			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "InputSubsystem: Init", 50);
-			m_engine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "InputSubsystem: Update");
-			m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "InputSubsystem: Cleanup", 150);
+			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "InputSubsystem: Init", 50);
+			mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "InputSubsystem: Update");
+			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "InputSubsystem: Cleanup", 150);
 		}
 
 		void InputSubsystem::Init()
 		{
-			m_window = m_engine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
-			m_world = m_engine->getSubsystem<ECS::World>();
-
-			auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
-
-			eventSubsystem->RegisterEvent<InputEvent>();
+			m_window = mEngine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+			m_world = mEngine->getSubsystem<ECS::World>();
 
 			// Setup Actions
 
@@ -102,11 +97,9 @@ namespace puffin
 					// Notify subscribers that event changed
 					if (stateChanged == true)
 					{
-						auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
-						auto signalSubsystem = m_engine->getSubsystem<core::SignalSubsystem>();
+						auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 
-						eventSubsystem->Publish(InputEvent(action.name, action.state));
-						signalSubsystem->Signal(InputEvent(action.name, action.state));
+						signalSubsystem->signal(InputEvent(action.name, action.state));
 
 						stateChanged = false;
 					}

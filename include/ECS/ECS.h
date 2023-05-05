@@ -4,7 +4,6 @@
 #include "ECS/ComponentType.h"
 #include "ECS/System.hpp"
 #include "Engine/Subsystem.hpp"
-#include "Engine/EventSubsystem.hpp"
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"
 #include "Types/UUID.h"
@@ -662,7 +661,7 @@ namespace puffin::ECS
 
 		~World() override = default;
 
-		void SetupCallbacks() override;
+		void setupCallbacks() override;
 
 		void Update()
 		{
@@ -884,7 +883,7 @@ namespace puffin::ECS
 		template<typename SystemT>
 		std::shared_ptr<SystemT> registerSystem()
 		{
-			return m_systemManager->RegisterSystem<SystemT>(shared_from_this(), m_engine);
+			return m_systemManager->RegisterSystem<SystemT>(shared_from_this(), mEngine);
 		}
 
 		template<typename SystemT>

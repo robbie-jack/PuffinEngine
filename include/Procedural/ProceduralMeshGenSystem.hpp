@@ -14,15 +14,15 @@ namespace puffin::procedural
 
 		ProceduralMeshGenSystem()
 		{
-			m_systemInfo.name = "ProceduralMeshGenSystem";
+			mSystemInfo.name = "ProceduralMeshGenSystem";
 		}
 
 		~ProceduralMeshGenSystem() override = default;
 
-		void SetupCallbacks() override
+		void setupCallbacks() override
 		{
-			m_engine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "ProcMeshGenSystem: Setup");
-			m_engine->registerCallback(core::ExecutionStage::Update, [&]() { Update(); }, "ProcMeshGenSystem: Update", 200);
+			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "ProcMeshGenSystem: Setup");
+			mEngine->registerCallback(core::ExecutionStage::Update, [&]() { Update(); }, "ProcMeshGenSystem: Update", 200);
 		}
 
 		void Setup();

@@ -12,13 +12,11 @@
 
 #include "Components/TransformComponent.h"
 #include "Components/Scripting/AngelScriptComponent.hpp"
-#include "Components/Scripting/NativeScriptComponent.hpp"
 #include "Components/Procedural/ProceduralMeshComponent.hpp"
 
 #include "Window/WindowSubsystem.hpp"
 #include "Input/InputSubsystem.h"
 #include "Engine/SignalSubsystem.hpp"
-#include "Engine/EventSubsystem.hpp"
 #include "Engine/EnkiTSSubsystem.hpp"
 #include "ECS/EnTTSubsystem.hpp"
 
@@ -31,8 +29,6 @@
 #include "Assets/MeshAsset.h"
 #include "Assets/TextureAsset.h"
 #include "Assets/SoundAsset.h"
-
-#include "Engine/JobSystem.hpp"
 
 #include <chrono>
 #include <thread>
@@ -50,7 +46,6 @@ namespace puffin::core
 		// Subsystems
 
 		auto windowSubsystem = registerSubsystem<Window::WindowSubsystem>();
-		auto eventSubsystem = registerSubsystem<EventSubsystem>();
 		auto signalSubsystem = registerSubsystem<SignalSubsystem>();
 		auto enkitsSubsystem = registerSubsystem<EnkiTSSubsystem>();
 		auto inputSubsystem = registerSubsystem<Input::InputSubsystem>();
@@ -58,38 +53,38 @@ namespace puffin::core
 		auto ecsWorld = registerSubsystem<ECS::World>();
 		auto enttSubsystem = registerSubsystem<ECS::EnTTSubsystem>();
 
-		uiManager_ = std::make_shared<UI::UIManager>(shared_from_this());
+		mUiManager = std::make_shared<UI::UIManager>(shared_from_this());
 
 		// Load Project File
 		fs::path projectPath = fs::path("C:\\Projects\\PuffinProject\\Puffin.pproject");
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
-		io::LoadProject(projectPath, projectFile_);
+		io::LoadProject(projectPath, mProjectFile);
 
 		// Load Default Scene (if set)
-		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / projectFile_.defaultScenePath;
-		sceneData_ = std::make_shared<io::SceneData>(ecsWorld, defaultScenePath);
+		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / mProjectFile.defaultScenePath;
+		mSceneData = std::make_shared<io::SceneData>(ecsWorld, defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
-		sceneData_->RegisterComponent<SceneObjectComponent>();
-		sceneData_->RegisterComponent<TransformComponent>();
+		mSceneData->RegisterComponent<SceneObjectComponent>();
+		mSceneData->RegisterComponent<TransformComponent>();
 
-		sceneData_->RegisterComponent<rendering::MeshComponent>();
-		sceneData_->RegisterComponent<rendering::LightComponent>();
-		sceneData_->RegisterComponent<rendering::ShadowCasterComponent>();
-		sceneData_->RegisterComponent<rendering::CameraComponent>();
+		mSceneData->RegisterComponent<rendering::MeshComponent>();
+		mSceneData->RegisterComponent<rendering::LightComponent>();
+		mSceneData->RegisterComponent<rendering::ShadowCasterComponent>();
+		mSceneData->RegisterComponent<rendering::CameraComponent>();
 
-		sceneData_->RegisterComponent<physics::RigidbodyComponent2D>();
-		sceneData_->RegisterComponent<physics::BoxComponent2D>();
-		sceneData_->RegisterComponent<physics::CircleComponent2D>();
+		mSceneData->RegisterComponent<physics::RigidbodyComponent2D>();
+		mSceneData->RegisterComponent<physics::BoxComponent2D>();
+		mSceneData->RegisterComponent<physics::CircleComponent2D>();
 
-		sceneData_->RegisterComponent<scripting::AngelScriptComponent>();
+		mSceneData->RegisterComponent<scripting::AngelScriptComponent>();
 
-		sceneData_->RegisterComponent<rendering::ProceduralMeshComponent>();
-		sceneData_->RegisterComponent<procedural::PlaneComponent>();
-		sceneData_->RegisterComponent<procedural::TerrainComponent>();
-		sceneData_->RegisterComponent<procedural::IcoSphereComponent>();
+		mSceneData->RegisterComponent<rendering::ProceduralMeshComponent>();
+		mSceneData->RegisterComponent<procedural::PlaneComponent>();
+		mSceneData->RegisterComponent<procedural::TerrainComponent>();
+		mSceneData->RegisterComponent<procedural::IcoSphereComponent>();
 
 		// Systems
 		//registerSystem<Rendering::BGFX::BGFXRenderSystem>();
@@ -105,18 +100,16 @@ namespace puffin::core
 		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
 
 		// Load Asset Cache
-		assets::AssetRegistry::get()->setProjectName(projectFile_.name);
+		assets::AssetRegistry::get()->setProjectName(mProjectFile.name);
 		assets::AssetRegistry::get()->setProjectRoot(projectDirPath);
 
 		// Load Project Settings
-		io::LoadSettings(projectDirPath.parent_path() / "Settings.json", settings_);
+		io::LoadSettings(projectDirPath.parent_path() / "Settings.json", mSettings);
 
 		// Load/Initialize Assets
 		//AddDefaultAssets();
 		assets::AssetRegistry::get()->loadAssetCache();
 		//ReimportDefaultAssets();
-
-		//core::JobSystem::Get()->Start();
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//refaultScene();
@@ -127,8 +120,8 @@ namespace puffin::core
 		//m_sceneData->LoadAndInit();
 		//m_sceneData->Save();
 
-		running_ = true;
-		playState_ = PlayState::Stopped;
+		mRunning = true;
+		mPlayState = PlayState::Stopped;
 
 		// Initialize Systems
 		{
@@ -136,50 +129,50 @@ namespace puffin::core
 			executeCallbacks(ExecutionStage::Setup);
 		}
 
-		lastTime_ = glfwGetTime(); // Time Count Started
-		currentTime_ = lastTime_;
+		mLastTime = glfwGetTime(); // Time Count Started
+		mCurrentTime = mLastTime;
 	}
 
 	bool Engine::update()
 	{
 		// Run Game Loop;
-		lastTime_ = currentTime_;
-		currentTime_ = glfwGetTime();
-		deltaTime_ = currentTime_ - lastTime_;
+		mLastTime = mCurrentTime;
+		mCurrentTime = glfwGetTime();
+		mDeltaTime = mCurrentTime - mLastTime;
 
 		updateExecutionTime();
 
-		if (frameRateMax_ > 0)
+		if (mFrameRateMax > 0)
 		{
-			const double deltaTimeMax = 1.0 / frameRateMax_;
-			double idleStartTime = 0.0, idleEndTime = 0.0;
+			const double deltaTimeMax = 1.0 / mFrameRateMax;
+			double idleStartTime = 0.0;
 
-			if (shouldTrackExecutionTime_)
+			if (mShouldTrackExecutionTime)
 			{
 				// Sleep until next frame should start
 				idleStartTime = glfwGetTime();
 			}
 
-			while (deltaTime_ < deltaTimeMax)
+			while (mDeltaTime < deltaTimeMax)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-				currentTime_ = glfwGetTime();
-				deltaTime_ = currentTime_ - lastTime_;
+				mCurrentTime = glfwGetTime();
+				mDeltaTime = mCurrentTime - mLastTime;
 			}
 
-			if (shouldTrackExecutionTime_)
+			if (mShouldTrackExecutionTime)
 			{
-				idleEndTime = glfwGetTime();
+				double idleEndTime = glfwGetTime();
 
-				stageExecutionTime_[ExecutionStage::Idle] = idleEndTime - idleStartTime;
+				mStageExecutionTime[ExecutionStage::Idle] = idleEndTime - idleStartTime;
 			}
 		}
 
 		// Make sure delta time never exceeds 1/30th of a second
-		if (deltaTime_ > timeStepLimit_)
+		if (mDeltaTime > mTimeStepLimit)
 		{
-			deltaTime_ = timeStepLimit_;
+			mDeltaTime = mTimeStepLimit;
 		}
 
 		auto ecsWorld = getSubsystem<ECS::World>();
@@ -202,41 +195,41 @@ namespace puffin::core
 		}
 
 		// Call system start functions to prepare for gameplay
-		if (playState_ == PlayState::Started)
+		if (mPlayState == PlayState::Started)
 		{
 			executeCallbacks(ExecutionStage::Start);
 
 			// Get Snapshot of current scene data
 			//m_sceneData->UpdateData();
 
-			accumulatedTime_ = 0.0;
-			playState_ = PlayState::Playing;
+			mAccumulatedTime = 0.0;
+			mPlayState = PlayState::Playing;
 		}
 
-		if (playState_ == PlayState::JustPaused)
+		if (mPlayState == PlayState::JustPaused)
 		{
 			audioSubsystem->pauseAllSounds();
 
-			playState_ = PlayState::Paused;
+			mPlayState = PlayState::Paused;
 		}
 
-		if (playState_ == PlayState::JustUnpaused)
+		if (mPlayState == PlayState::JustUnpaused)
 		{
 			audioSubsystem->playAllSounds();
 
-			playState_ = PlayState::Playing;
+			mPlayState = PlayState::Playing;
 		}
 
-		if (playState_ == PlayState::Playing)
+		if (mPlayState == PlayState::Playing)
 		{
 			// Fixed Update
 			{
 				// Add onto accumulated time
-				accumulatedTime_ += deltaTime_;
+				mAccumulatedTime += mDeltaTime;
 
-				while (accumulatedTime_ >= timeStepFixed_)
+				while (mAccumulatedTime >= mTimeStepFixed)
 				{
-					accumulatedTime_ -= timeStepFixed_;
+					mAccumulatedTime -= mTimeStepFixed;
 
 					executeCallbacks(ExecutionStage::FixedUpdate, true);
 				}
@@ -249,9 +242,9 @@ namespace puffin::core
 		}
 
 		// UI
-		if (shouldRenderEditorUi_)
+		if (mShouldRenderEditorUi)
 		{
-			uiManager_->Update();
+			mUiManager->Update();
 		}
 
 		// Render
@@ -259,7 +252,7 @@ namespace puffin::core
 			executeCallbacks(ExecutionStage::Render, true);
 		}
 
-		if (playState_ == PlayState::JustStopped)
+		if (mPlayState == PlayState::JustStopped)
 		{
 			// Cleanup Systems and ECS
 			executeCallbacks(ExecutionStage::Stop);
@@ -274,17 +267,17 @@ namespace puffin::core
 
 			audioSubsystem->stopAllSounds();
 
-			accumulatedTime_ = 0.0;
-			playState_ = PlayState::Stopped;
+			mAccumulatedTime = 0.0;
+			mPlayState = PlayState::Stopped;
 		}
 
 		auto windowSubsystem = getSubsystem<Window::WindowSubsystem>();
 		if (windowSubsystem->ShouldPrimaryWindowClose())
 		{
-			running_ = false;
+			mRunning = false;
 		}
 
-		return running_;
+		return mRunning;
 	}
 
 	void Engine::destroy()
@@ -292,26 +285,15 @@ namespace puffin::core
 		// Cleanup All Systems
 		executeCallbacks(ExecutionStage::Cleanup);
 
-		systems_.clear();
-		subsystems_.clear();
+		mSystems.clear();
+		mSubsystems.clear();
 
 		// Cleanup UI Manager
-		if (shouldRenderEditorUi_)
+		if (mShouldRenderEditorUi)
 		{
-			uiManager_->Cleanup();
-			uiManager_ = nullptr;
+			mUiManager->Cleanup();
+			mUiManager = nullptr;
 		}
-
-		while (true)
-		{
-			if (JobSystem::Get()->Wait())
-			{
-				break;
-			}
-		}
-
-		/*JobSystem::Get()->Stop();
-		JobSystem::Clear();*/
 
 		ECS::EntityCache::Clear();
 
@@ -615,30 +597,30 @@ namespace puffin::core
 
 	void Engine::play()
 	{
-		switch (playState_)
+		switch (mPlayState)
 		{
 		case PlayState::Stopped:
-			playState_ = PlayState::Started;
+			mPlayState = PlayState::Started;
 			break;
 		case PlayState::Playing:
-			playState_ = PlayState::JustPaused;
+			mPlayState = PlayState::JustPaused;
 			break;
 		case PlayState::Paused:
-			playState_ = PlayState::JustUnpaused;
+			mPlayState = PlayState::JustUnpaused;
 			break;
 		}
 	}
 
 	void Engine::restart()
 	{
-		if (playState_ == PlayState::Playing || playState_ == PlayState::Paused || playState_ == PlayState::Stopped)
+		if (mPlayState == PlayState::Playing || mPlayState == PlayState::Paused || mPlayState == PlayState::Stopped)
 		{
-			playState_ = PlayState::JustStopped;
+			mPlayState = PlayState::JustStopped;
 		}
 	}
 
 	void Engine::exit()
 	{
-		running_ = false;
+		mRunning = false;
 	}
 }

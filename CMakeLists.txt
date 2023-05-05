@@ -112,10 +112,8 @@ set(HEADERS
 	${HEADER_DIR}/Engine/Engine.hpp
 	${HEADER_DIR}/Engine/Application.hpp
 	${HEADER_DIR}/Engine/Subsystem.hpp
-	${HEADER_DIR}/Engine/EventSubsystem.hpp
 	${HEADER_DIR}/Engine/SignalSubsystem.hpp
 	${HEADER_DIR}/Engine/EnkiTSSubsystem.hpp
-	${HEADER_DIR}/Engine/JobSystem.hpp
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
 	${HEADER_DIR}/Input/InputSubsystem.h
@@ -155,7 +153,6 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.hpp
 	# Scripting
 	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
-	${HEADER_DIR}/Scripting/NativeScriptSystem.hpp
 	# Types
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h
@@ -199,10 +196,8 @@ set(SOURCES
 	# Engine
 	${SOURCE_DIR}/Engine/Engine.cpp
 	${SOURCE_DIR}/Engine/Application.cpp
-	${SOURCE_DIR}/Engine/JobSystem.cpp
 	${SOURCE_DIR}/Engine/SignalSubsystem.cpp
 	${SOURCE_DIR}/Engine/EnkiTSSubsystem.cpp
-	${SOURCE_DIR}/Engine/EventSubsystem.cpp
 	# Input
 	${SOURCE_DIR}/Input/InputSubsystem.cpp
 	# Physics

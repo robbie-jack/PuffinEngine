@@ -17,7 +17,7 @@ namespace puffin::Window
 		WindowSubsystem() = default;
 		~WindowSubsystem() override = default;
 
-		void SetupCallbacks() override;
+		void setupCallbacks() override;
 
 		void Init();
 		void Update();

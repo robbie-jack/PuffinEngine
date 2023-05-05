@@ -37,7 +37,7 @@ namespace puffin::audio
 		AudioSubsystem() = default;
 		~AudioSubsystem() override = default;
 
-		void SetupCallbacks() override;
+		void setupCallbacks() override;
 
 		void init();
 		void update();

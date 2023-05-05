@@ -14,7 +14,7 @@ namespace puffin::procedural
 	void ProceduralMeshGenSystem::Setup()
 	{
 		PackedVector<ECS::EntityPtr> proceduralPlaneEntities;
-		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, PlaneComponent>(mWorld, proceduralPlaneEntities);
 		for (const auto& entity : proceduralPlaneEntities)
 		{
 			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
@@ -26,7 +26,7 @@ namespace puffin::procedural
 		}
 
 		PackedVector<ECS::EntityPtr> proceduralTerrainEntities;
-		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, TerrainComponent>(mWorld, proceduralTerrainEntities);
 		for (const auto& entity : proceduralTerrainEntities)
 		{
 			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
@@ -39,7 +39,7 @@ namespace puffin::procedural
 		}
 
 		PackedVector<ECS::EntityPtr> proceduralIcoSphereEntities;
-		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, IcoSphereComponent>(mWorld, proceduralIcoSphereEntities);
 		for (const auto& entity : proceduralIcoSphereEntities)
 		{
 			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
@@ -54,7 +54,7 @@ namespace puffin::procedural
 	void ProceduralMeshGenSystem::Update()
 	{
 		PackedVector<ECS::EntityPtr> proceduralPlaneEntities;
-		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, PlaneComponent>(m_world, proceduralPlaneEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, PlaneComponent>(mWorld, proceduralPlaneEntities);
 		for (const auto& entity : proceduralPlaneEntities)
 		{
 			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
@@ -76,7 +76,7 @@ namespace puffin::procedural
 		}
 
 		PackedVector<ECS::EntityPtr> proceduralTerrainEntities;
-		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, TerrainComponent>(m_world, proceduralTerrainEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, TerrainComponent>(mWorld, proceduralTerrainEntities);
 		for (const auto& entity : proceduralTerrainEntities)
 		{
 			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();
@@ -99,7 +99,7 @@ namespace puffin::procedural
 		}
 
 		PackedVector<ECS::EntityPtr> proceduralIcoSphereEntities;
-		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, IcoSphereComponent>(m_world, proceduralIcoSphereEntities);
+		ECS::GetEntities<TransformComponent, rendering::ProceduralMeshComponent, IcoSphereComponent>(mWorld, proceduralIcoSphereEntities);
 		for (const auto& entity : proceduralIcoSphereEntities)
 		{
 			auto& mesh = entity->GetComponent<rendering::ProceduralMeshComponent>();

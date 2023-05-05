@@ -18,10 +18,10 @@
 #include "VKPipeline.hpp"
 #include "VKUnifiedGeometryBuffer.hpp"
 #include "Assets/TextureAsset.h"
-#include "ECS/Entity.hpp"
 #include "Components/Rendering/CameraComponent.h"
 #include "Engine/Engine.hpp"
 #include "Input/InputEvent.h"
+#include "Types/RingBuffer.h"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -105,14 +105,14 @@ namespace puffin::rendering::VK
 
 		VKRenderSystem()
 		{
-			m_systemInfo.name = "VKRenderSystem";
+			mSystemInfo.name = "VKRenderSystem";
 		}
 
-		void SetupCallbacks() override
+		void setupCallbacks() override
 		{
-			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "VKRenderSystem: Init");
-			m_engine->registerCallback(core::ExecutionStage::Render, [&]() { Render(); }, "VKRenderSystem: Render");
-			m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "VKRenderSystem: Cleanup");
+			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "VKRenderSystem: Init");
+			mEngine->registerCallback(core::ExecutionStage::Render, [&]() { Render(); }, "VKRenderSystem: Render");
+			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "VKRenderSystem: Cleanup");
 		}
 
 		void Init();

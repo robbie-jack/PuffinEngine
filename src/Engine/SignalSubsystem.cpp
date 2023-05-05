@@ -3,8 +3,8 @@
 
 namespace puffin::core
 {
-	void SignalSubsystem::SetupCallbacks()
+	void SignalSubsystem::setupCallbacks()
 	{
-		m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "SignalSubsystem: Cleanup", 150);
+		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "SignalSubsystem: Cleanup", 150);
 	}
 }

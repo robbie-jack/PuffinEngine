@@ -116,7 +116,7 @@ namespace puffin::core
 		{
 			assert(m_application == nullptr && "Registering multiple applications");
 
-			application_ = std::static_pointer_cast<Application>(std::make_shared<Application>());
+			mApplication = std::static_pointer_cast<Application>(std::make_shared<Application>());
 		}
 
 		// Subsystem Methods
@@ -125,17 +125,17 @@ namespace puffin::core
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
-			assert(subsystems_.find(typeName) == subsystems_.end() && "Registering subsystem more than once");
+			assert(mSubsystems.find(typeName) == mSubsystems.end() && "Registering subsystem more than once");
 
 			// Create subsystem pointer
 			auto subsystem = std::make_shared<SubsystemT>();
 			auto subsystemBase = std::static_pointer_cast<Subsystem>(subsystem);
-			subsystemBase->SetEngine(shared_from_this());
+			subsystemBase->setEngine(shared_from_this());
 
-			subsystemBase->SetupCallbacks();
+			subsystemBase->setupCallbacks();
 
 			// Cast subsystem to Subsystem parent and add to subsystems map
-			subsystems_.insert({ typeName, subsystemBase });
+			mSubsystems.insert({ typeName, subsystemBase });
 
 			return subsystem;
 		}
@@ -145,9 +145,9 @@ namespace puffin::core
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
-			assert(subsystems_.find(typeName) != subsystems_.end() && "Subsystem used before registering.");
+			assert(mSubsystems.find(typeName) != mSubsystems.end() && "Subsystem used before registering.");
 
-			return std::static_pointer_cast<SubsystemT>(subsystems_[typeName]);
+			return std::static_pointer_cast<SubsystemT>(mSubsystems[typeName]);
 		}
 
 		// Register System using Engine method because their update methods will not be called each frame otherwise
@@ -161,11 +161,11 @@ namespace puffin::core
 				system = ecsWorld->registerSystem<SystemT>();
 				auto systemBase = std::static_pointer_cast<ECS::System>(system);
 
-				systemBase->SetWorld(ecsWorld);
-				systemBase->SetEngine(shared_from_this());
-				systemBase->SetupCallbacks();
+				systemBase->setWorld(ecsWorld);
+				systemBase->setEngine(shared_from_this());
+				systemBase->setupCallbacks();
 
-				systems_.push_back(systemBase);
+				mSystems.push_back(systemBase);
 			}
 
 			return system;
@@ -175,10 +175,10 @@ namespace puffin::core
 		void registerCallback(ExecutionStage executionStage, const std::function<void()>& callback, const std::string& name = "", const int& priority = 100)
 		{
 			// Add function handler to vector
-			registeredCallbacks_[executionStage].emplace_back(callback, name, priority);
+			mRegisteredCallbacks[executionStage].emplace_back(callback, name, priority);
 
 			// Sort vector by priority
-			std::sort(registeredCallbacks_[executionStage].begin(), registeredCallbacks_[executionStage].end());
+			std::sort(mRegisteredCallbacks[executionStage].begin(), mRegisteredCallbacks[executionStage].end());
 		}
 
 		/*
@@ -187,146 +187,146 @@ namespace puffin::core
 		template<typename CompT>
 		void registerComponent(bool shouldSerialize = true)
 		{
-			if (auto ecsWorld = getSubsystem<ECS::World>())
+			if (const auto ecsWorld = getSubsystem<ECS::World>())
 			{
 				ecsWorld->RegisterComponent<CompT>();
 			}
 
-			if (sceneData_ != nullptr && shouldSerialize)
+			if (mSceneData != nullptr && shouldSerialize)
 			{
-				sceneData_->RegisterComponent<CompT>();
+				mSceneData->RegisterComponent<CompT>();
 			}
 		}
 
-		PlayState playState() const { return playState_; }
-		inline std::shared_ptr<io::SceneData> sceneData() { return sceneData_; }
+		PlayState playState() const { return mPlayState; }
+		inline std::shared_ptr<io::SceneData> sceneData() { return mSceneData; }
 
-		inline io::ProjectSettings& settings() { return settings_; }
+		inline io::ProjectSettings& settings() { return mSettings; }
 
 		std::shared_ptr<UI::UIManager> uiManager() const
 		{
-			return uiManager_;
+			return mUiManager;
 		}
 
-		bool shouldRenderEditorUi() const { return shouldRenderEditorUi_; }
+		bool shouldRenderEditorUi() const { return mShouldRenderEditorUi; }
 
-		const double& timeStepFixed() const { return timeStepFixed_; }
+		const double& timeStepFixed() const { return mTimeStepFixed; }
 
-		void setTimeStepFixed(const double timeStepFixed) { timeStepFixed_ = timeStepFixed; }
+		void setTimeStepFixed(const double timeStepFixed) { mTimeStepFixed = timeStepFixed; }
 
-		const double& deltaTime() const { return deltaTime_; }
+		const double& deltaTime() const { return mDeltaTime; }
 
-		const double& accumulatedTime() const { return accumulatedTime_; }
+		const double& accumulatedTime() const { return mAccumulatedTime; }
 
 		double getStageExecutionTimeLastFrame(const core::ExecutionStage& updateOrder)
 		{
-			return stageExecutionTimeLastFrame_[updateOrder];
+			return mStageExecutionTimeLastFrame[updateOrder];
 		}
 
 		const std::unordered_map<std::string, double>& getCallbackExecutionTimeForUpdateStageLastFrame(const core::ExecutionStage& updateOrder)
 		{
-			return callbackExecutionTimeLastFrame_[updateOrder];
+			return mCallbackExecutionTimeLastFrame[updateOrder];
 		}
 
 	private:
 
-		std::shared_ptr<UI::UIManager> uiManager_ = nullptr;
+		std::shared_ptr<UI::UIManager> mUiManager = nullptr;
 
-		bool running_ = true;
-		bool shouldLimitFrame_ = true; // Whether framerate should be capped at m_frameRateMax
-		bool shouldRenderEditorUi_ = true; // Whether editor UI should be rendered
-		bool shouldTrackExecutionTime_ = true; // Should track time to execute callback/stages
-		PlayState playState_ = PlayState::Stopped;
+		bool mRunning = true;
+		bool mShouldLimitFrame = true; // Whether framerate should be capped at m_frameRateMax
+		bool mShouldRenderEditorUi = true; // Whether editor UI should be rendered
+		bool mShouldTrackExecutionTime = true; // Should track time to execute callback/stages
+		PlayState mPlayState = PlayState::Stopped;
 
 		// Framerate Members
-		uint16_t frameRateMax_ = 0; // Limit on how fast game runs
-		uint16_t physicsTicksPerFrame_ = 60; // How many times physics code should run per frame
+		uint16_t mFrameRateMax = 0; // Limit on how fast game runs
+		uint16_t mPhysicsTicksPerFrame = 60; // How many times physics code should run per frame
 
 		// Time Members
-		double lastTime_ = 0.0;
-		double currentTime_ = 0.0;
-		double deltaTime_ = 0.0; // How long it took last frame to complete
-		double accumulatedTime_ = 0.0; // Time passed since last physics tick
-		double timeStepFixed_ = 1.0 / physicsTicksPerFrame_; // How often deterministic code like physics should occur (defaults to 60 times a second)
-		double timeStepLimit_ = 1 / 25.0; // Maximum amount of time each frame should take to complete
+		double mLastTime = 0.0;
+		double mCurrentTime = 0.0;
+		double mDeltaTime = 0.0; // How long it took last frame to complete
+		double mAccumulatedTime = 0.0; // Time passed since last physics tick
+		double mTimeStepFixed = 1.0 / mPhysicsTicksPerFrame; // How often deterministic code like physics should occur (defaults to 60 times a second)
+		double mTimeStepLimit = 1 / 25.0; // Maximum amount of time each frame should take to complete
 
-		std::shared_ptr<Application> application_ = nullptr;
+		std::shared_ptr<Application> mApplication = nullptr;
 
 		// System/Subsystem Members
-		std::vector<std::shared_ptr<ECS::System>> systems_; // Vector of system pointers
-		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> subsystems_;
-		std::unordered_map<core::ExecutionStage, std::vector<EngineCallbackHandler>> registeredCallbacks_; // Map of callback functions registered for execution
+		std::vector<std::shared_ptr<ECS::System>> mSystems; // Vector of system pointers
+		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> mSubsystems;
+		std::unordered_map<core::ExecutionStage, std::vector<EngineCallbackHandler>> mRegisteredCallbacks; // Map of callback functions registered for execution
 
-		std::unordered_map<core::ExecutionStage, double> stageExecutionTime_; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
-		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> callbackExecutionTime_; // Map of time it takes for each system to execute
+		std::unordered_map<core::ExecutionStage, double> mStageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
+		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> mCallbackExecutionTime; // Map of time it takes for each system to execute
 
-		std::unordered_map<core::ExecutionStage, double> stageExecutionTimeLastFrame_;
-		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> callbackExecutionTimeLastFrame_;
+		std::unordered_map<core::ExecutionStage, double> mStageExecutionTimeLastFrame;
+		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> mCallbackExecutionTimeLastFrame;
 
-		io::ProjectFile projectFile_;
+		io::ProjectFile mProjectFile;
 
-		io::ProjectSettings settings_;
+		io::ProjectSettings mSettings;
 
-		std::shared_ptr<io::SceneData> sceneData_ = nullptr;
+		std::shared_ptr<io::SceneData> mSceneData = nullptr;
 
 		// Execute callbacks for this execution stage
-		void executeCallbacks(const core::ExecutionStage& executionStage, bool shouldTrackExecutionTime = false)
+		void executeCallbacks(const core::ExecutionStage& executionStage, const bool shouldTrackExecutionTime = false)
 		{
 			double startTime = 0.0, endTime = 0.0;
-			double stageStartTime = 0.0, stageEndTime = 0.0;
+			double stageStartTime = 0.0;
 
-			if (shouldTrackExecutionTime_ && shouldTrackExecutionTime)
+			if (mShouldTrackExecutionTime && shouldTrackExecutionTime)
 			{
 				stageStartTime = glfwGetTime();
 			}
 
-			for (const auto& callback : registeredCallbacks_[executionStage])
+			for (const auto& callback : mRegisteredCallbacks[executionStage])
 			{
-				if (shouldTrackExecutionTime_ && shouldTrackExecutionTime)
+				if (mShouldTrackExecutionTime && shouldTrackExecutionTime)
 				{
 					startTime = glfwGetTime();
 				}
 
 				callback.execute();
 
-				if (shouldTrackExecutionTime_ && shouldTrackExecutionTime)
+				if (mShouldTrackExecutionTime && shouldTrackExecutionTime)
 				{
 					endTime = glfwGetTime();
 
-					if (callbackExecutionTime_[executionStage].count(callback.name()) == 0)
+					if (mCallbackExecutionTime[executionStage].count(callback.name()) == 0)
 					{
-						callbackExecutionTime_[executionStage][callback.name()] = 0.0;
+						mCallbackExecutionTime[executionStage][callback.name()] = 0.0;
 					}
 
-					callbackExecutionTime_[executionStage][callback.name()] += endTime - startTime;
+					mCallbackExecutionTime[executionStage][callback.name()] += endTime - startTime;
 				}
 			}
 
-			if (shouldTrackExecutionTime_ && shouldTrackExecutionTime)
+			if (mShouldTrackExecutionTime && shouldTrackExecutionTime)
 			{
-				stageEndTime = glfwGetTime();
+				const double stageEndTime = glfwGetTime();
 
-				if (stageExecutionTime_.count(executionStage) == 0)
+				if (mStageExecutionTime.count(executionStage) == 0)
 				{
-					stageExecutionTime_[executionStage] = 0.0;
+					mStageExecutionTime[executionStage] = 0.0;
 				}
 
-				stageExecutionTime_[executionStage] += (stageEndTime - stageStartTime);
+				mStageExecutionTime[executionStage] += (stageEndTime - stageStartTime);
 			}
 		}
 
 		void updateExecutionTime()
 		{
-			if (shouldTrackExecutionTime_)
+			if (mShouldTrackExecutionTime)
 			{
-				stageExecutionTimeLastFrame_.clear();
-				callbackExecutionTimeLastFrame_.clear();
+				mStageExecutionTimeLastFrame.clear();
+				mCallbackExecutionTimeLastFrame.clear();
 
-				stageExecutionTimeLastFrame_ = stageExecutionTime_;
-				callbackExecutionTimeLastFrame_ = callbackExecutionTime_;
+				mStageExecutionTimeLastFrame = mStageExecutionTime;
+				mCallbackExecutionTimeLastFrame = mCallbackExecutionTime;
 
-				stageExecutionTime_.clear();
-				callbackExecutionTime_.clear();
+				mStageExecutionTime.clear();
+				mCallbackExecutionTime.clear();
 			}
 		}
 

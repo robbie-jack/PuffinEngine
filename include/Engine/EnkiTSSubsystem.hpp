@@ -15,23 +15,23 @@ namespace puffin::core
 
 		~EnkiTSSubsystem() override = default;
 
-		void SetupCallbacks() override;
+		void setupCallbacks() override;
 
-		void Init()
+		void init()
 		{
-			m_taskScheduler = std::make_shared<enki::TaskScheduler>();
+			mTaskScheduler = std::make_shared<enki::TaskScheduler>();
 
 			// Set max threads to physical - 2 (so there is some left over for other system work)
 			const uint32_t maxThreads = std::thread::hardware_concurrency() - 2;
 
-			m_taskScheduler->Initialize(maxThreads);
+			mTaskScheduler->Initialize(maxThreads);
 		}
 
-		std::shared_ptr<enki::TaskScheduler> GetTaskScheduler() { return m_taskScheduler; }
+		std::shared_ptr<enki::TaskScheduler> getTaskScheduler() { return mTaskScheduler; }
 
 	private:
 
-		std::shared_ptr<enki::TaskScheduler> m_taskScheduler;
+		std::shared_ptr<enki::TaskScheduler> mTaskScheduler;
 
 	};
 }

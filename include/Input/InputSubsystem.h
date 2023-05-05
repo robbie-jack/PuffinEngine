@@ -42,7 +42,7 @@ namespace puffin
 
 			~InputSubsystem() override = default;
 
-			void SetupCallbacks() override;
+			void setupCallbacks() override;
 
 			void Init();
 			void Update();

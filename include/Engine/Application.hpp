@@ -14,17 +14,13 @@ namespace puffin::core
 		Application() = default;
 		virtual ~Application() = default;
 
-		virtual void Init() = 0;
-		virtual void Start() = 0;
-		virtual void Update() = 0;
-		virtual void Stop() = 0;
-		virtual void Destroy() = 0;
+		virtual void setupCallbacks() = 0; // Called to register application callbacks with engine
 
-		void SetEngine(std::shared_ptr<Engine> engine) { m_engine = engine; }
+		void setEngine(const std::shared_ptr<Engine>& engine) { mEngine = engine; }
 
 	private:
 
-		std::shared_ptr<Engine> m_engine = nullptr;
+		std::shared_ptr<Engine> mEngine = nullptr;
 
 	};
 }

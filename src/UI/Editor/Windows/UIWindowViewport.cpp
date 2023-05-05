@@ -96,7 +96,7 @@ namespace puffin
 				{
 					TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(entity);
 					
-					DrawManipulationGizmo(m_engine->getSubsystem<core::EventSubsystem>(), transform);
+					//DrawManipulationGizmo(m_engine->getSubsystem<core::EventSubsystem>(), transform);
 				}
 
 				End();

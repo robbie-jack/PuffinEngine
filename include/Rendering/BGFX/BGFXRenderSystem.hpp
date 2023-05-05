@@ -118,18 +118,18 @@ namespace puffin::rendering
 
 		BGFXRenderSystem()
 		{
-			m_systemInfo.name = "BGFXRenderSystem";
+			mSystemInfo.name = "BGFXRenderSystem";
 		}
 
 		~BGFXRenderSystem() override {}
 
-		void SetupCallbacks() override
+		void setupCallbacks() override
 		{
-			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "BGFXRenderSystem: Init");
-			m_engine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "BGFXRenderSystem: Setup");
-			m_engine->registerCallback(core::ExecutionStage::Render, [&]() { Render(); }, "BGFXRenderSystem: Render");
-			m_engine->registerCallback(core::ExecutionStage::Stop, [&]() { Stop(); }, "BGFXRenderSystem: Stop");
-			m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "BGFXRenderSystem: Cleanup");
+			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "BGFXRenderSystem: Init");
+			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "BGFXRenderSystem: Setup");
+			mEngine->registerCallback(core::ExecutionStage::Render, [&]() { Render(); }, "BGFXRenderSystem: Render");
+			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { Stop(); }, "BGFXRenderSystem: Stop");
+			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "BGFXRenderSystem: Cleanup");
 		}
 
 		void Init();

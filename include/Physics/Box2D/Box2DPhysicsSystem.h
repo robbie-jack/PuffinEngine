@@ -26,19 +26,18 @@ namespace puffin::physics
 
 		Box2DPhysicsSystem()
 		{
-			m_systemInfo.name = "Box2DPhysicsSystem";
+			mSystemInfo.name = "Box2DPhysicsSystem";
 		}
 
 		~Box2DPhysicsSystem() override = default;
 
-		void SetupCallbacks() override
+		void setupCallbacks() override
 		{
-			m_engine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "Box2DPhysicsSystem: Init");
-			m_engine->registerCallback(core::ExecutionStage::Start, [&]() { start(); }, "Box2DPhysicsSystem: Start");
-			m_engine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
-			m_engine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "Box2DPhysicsSystem: Stop");
+			mEngine->registerCallback(core::ExecutionStage::Start, [&]() { start(); }, "Box2DPhysicsSystem: Start");
+			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
+			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "Box2DPhysicsSystem: Stop");
 
-			auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+			auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onDestroyRigidbody>(this);
@@ -58,7 +57,6 @@ namespace puffin::physics
 			registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onDestroyRigidbody>(this);
 		}
 
-		void init();
 		void start();
 		void fixedUpdate();
 		void stop();

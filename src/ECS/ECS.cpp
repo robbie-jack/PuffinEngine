@@ -4,9 +4,9 @@
 
 namespace puffin::ECS
 {
-	void World::SetupCallbacks()
+	void World::setupCallbacks()
 	{
-		m_engine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "ECSWorld: Update");
-		m_engine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "ECSWorld: Cleanup", 150);
+		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "ECSWorld: Update");
+		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "ECSWorld: Cleanup", 150);
 	}
 }

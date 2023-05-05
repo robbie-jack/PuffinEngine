@@ -10,15 +10,6 @@
 
 namespace puffin::physics
 {
-	void Box2DPhysicsSystem::init()
-	{
-		auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
-
-		// Register Events
-		eventSubsystem->RegisterEvent<CollisionBeginEvent>();
-		eventSubsystem->RegisterEvent<CollisionEndEvent>();
-	}
-
 	void Box2DPhysicsSystem::start()
 	{
 		// Create Physics World
@@ -36,12 +27,12 @@ namespace puffin::physics
 		updateComponents();
 
 		// Step Physics World
-		physicsWorld_->Step(m_engine->timeStepFixed(), velocityIterations_, positionIterations_);
+		physicsWorld_->Step(mEngine->timeStepFixed(), velocityIterations_, positionIterations_);
 
 		// Publish Collision Events
 		publishCollisionEvents();
 
-		auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 		// Updated entity position/rotation from simulation
 		auto bodyView = registry->view<const SceneObjectComponent, TransformComponent, VelocityComponent, const RigidbodyComponent2D>();
@@ -121,13 +112,13 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::updateComponents()
 	{
-		auto registry = m_engine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 		// Update Circles
 		{
 			for (const auto& id : circlesToInit_)
 			{
-				entt::entity entity = m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
+				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
@@ -150,7 +141,7 @@ namespace puffin::physics
 		{
 			for (const auto& id : boxesToInit_)
 			{
-				entt::entity entity = m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
+				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
@@ -173,7 +164,7 @@ namespace puffin::physics
 		{
 			for (const auto& id : rigidbodiesToInit_)
 			{
-				entt::entity entity = m_engine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
+				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
@@ -189,21 +180,18 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::publishCollisionEvents() const
 	{
-		const auto eventSubsystem = m_engine->getSubsystem<core::EventSubsystem>();
-		const auto signalSubsystem = m_engine->getSubsystem<core::SignalSubsystem>();
+		const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 
 		CollisionBeginEvent collisionBeginEvent;
 		while (contactListener_->getNextCollisionBeginEvent(collisionBeginEvent))
 		{
-			eventSubsystem->Publish(collisionBeginEvent);
-			signalSubsystem->Signal(collisionBeginEvent);
+			signalSubsystem->signal(collisionBeginEvent);
 		}
 
 		CollisionEndEvent collisionEndEvent;
 		while (contactListener_->getNextCollisionEndEvent(collisionEndEvent))
 		{
-			eventSubsystem->Publish(collisionEndEvent);
-			signalSubsystem->Signal(collisionEndEvent);
+			signalSubsystem->signal(collisionEndEvent);
 		}
 	}
 
