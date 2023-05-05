@@ -5,7 +5,7 @@
 
 #include "VKVertex.hpp"
 
-namespace puffin::rendering::VK::Util
+namespace puffin::rendering::util
 {
 	class ShaderModule
 	{
@@ -24,7 +24,7 @@ namespace puffin::rendering::VK::Util
 
 			// find what the size of the file is by looking up the location of the cursor
 			// because the cursor is at the end, it gives the size directly in bytes
-			size_t fileSize = (size_t)file.tellg();
+			const size_t fileSize = (size_t)file.tellg();
 
 			// spirv expects the buffer to be on uint32, so make sure to reserve an int vector big enough for the entire file
 			std::vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
@@ -33,24 +33,24 @@ namespace puffin::rendering::VK::Util
 			file.seekg(0);
 
 			// load entire file into buffer
-			file.read((char*)buffer.data(), fileSize);
+			file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
 
 			file.close();
 
 			const vk::ShaderModuleCreateInfo createInfo = { {}, buffer.size() * sizeof(uint32_t), buffer.data() };
 
-			m_module = device.createShaderModuleUnique(createInfo, nullptr);
+			mModule = device.createShaderModuleUnique(createInfo, nullptr);
 
-			m_successful = true;
+			mSuccessful = true;
 		}
 
-		bool Successful() const { return m_successful; }
-		[[nodiscard]] vk::ShaderModule Module() const { return m_module.get(); }
+		bool successful() const { return mSuccessful; }
+		[[nodiscard]] vk::ShaderModule module() const { return mModule.get(); }
 
 	private:
 
-		vk::UniqueShaderModule m_module;
-		bool m_successful = false;
+		vk::UniqueShaderModule mModule;
+		bool mSuccessful = false;
 
 	};
 
@@ -58,25 +58,25 @@ namespace puffin::rendering::VK::Util
 	{
 	public:
 
-		static PipelineLayoutBuilder Begin() { return PipelineLayoutBuilder(); }
+		static PipelineLayoutBuilder begin() { return PipelineLayoutBuilder(); }
 
-		PipelineLayoutBuilder& DescriptorSetLayout(vk::DescriptorSetLayout layout)
+		PipelineLayoutBuilder& descriptorSetLayout(vk::DescriptorSetLayout layout)
 		{
-			m_setLayouts.push_back(layout);
+			mSetLayouts.push_back(layout);
 			return *this;
 		}
 
-		vk::UniquePipelineLayout CreateUnique(const vk::Device& device)
+		vk::UniquePipelineLayout createUnique(const vk::Device& device)
 		{
-			vk::PipelineLayoutCreateInfo layoutInfo = { {},
-				static_cast<uint32_t>(m_setLayouts.size()), m_setLayouts.data() };
+			const vk::PipelineLayoutCreateInfo layoutInfo = { {},
+				static_cast<uint32_t>(mSetLayouts.size()), mSetLayouts.data() };
 
 			return device.createPipelineLayoutUnique(layoutInfo);
 		}
 
 	private:
 
-		std::vector<vk::DescriptorSetLayout> m_setLayouts;
+		std::vector<vk::DescriptorSetLayout> mSetLayouts;
 
 	};
 
@@ -86,105 +86,105 @@ namespace puffin::rendering::VK::Util
 
 		PipelineBuilder(uint32_t width, uint32_t height)
 		{
-			Viewport(vk::Viewport{ 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f });
-			Scissor(vk::Rect2D{ {0, 0}, {width, height} });
+			viewport(vk::Viewport{ 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f });
+			scissor(vk::Rect2D{ {0, 0}, {width, height} });
 
-			Init();
+			init();
 		}
 
-		static PipelineBuilder Begin(uint32_t width, uint32_t height)
+		static PipelineBuilder begin(uint32_t width, uint32_t height)
 		{
 			return PipelineBuilder(width, height);
 		}
 
-		void Init()
+		void init()
 		{
-			m_inputAssemblyState.topology = vk::PrimitiveTopology::eTriangleList;
-			m_rasterizationState.lineWidth = 1.0f;
+			mInputAssemblyState.topology = vk::PrimitiveTopology::eTriangleList;
+			mRasterizationState.lineWidth = 1.0f;
 
 			// Set up depth test, but do not enable it.
-			m_depthStencilState.depthTestEnable = VK_FALSE;
-			m_depthStencilState.depthWriteEnable = VK_TRUE;
-			m_depthStencilState.depthCompareOp = vk::CompareOp::eLessOrEqual;
-			m_depthStencilState.depthBoundsTestEnable = VK_FALSE;
-			m_depthStencilState.back.failOp = vk::StencilOp::eKeep;
-			m_depthStencilState.back.passOp = vk::StencilOp::eKeep;
-			m_depthStencilState.back.compareOp = vk::CompareOp::eAlways;
-			m_depthStencilState.stencilTestEnable = VK_FALSE;
-			m_depthStencilState.front = m_depthStencilState.back;
+			mDepthStencilState.depthTestEnable = VK_FALSE;
+			mDepthStencilState.depthWriteEnable = VK_TRUE;
+			mDepthStencilState.depthCompareOp = vk::CompareOp::eLessOrEqual;
+			mDepthStencilState.depthBoundsTestEnable = VK_FALSE;
+			mDepthStencilState.back.failOp = vk::StencilOp::eKeep;
+			mDepthStencilState.back.passOp = vk::StencilOp::eKeep;
+			mDepthStencilState.back.compareOp = vk::CompareOp::eAlways;
+			mDepthStencilState.stencilTestEnable = VK_FALSE;
+			mDepthStencilState.front = mDepthStencilState.back;
 		}
 
-		PipelineBuilder& Viewport(const vk::Viewport& viewport)
+		PipelineBuilder& viewport(const vk::Viewport& viewport)
 		{
-			m_viewports.push_back(viewport);
+			mViewports.push_back(viewport);
 			return *this;
 		}
 
-		PipelineBuilder& Scissor(const vk::Rect2D& scissor)
+		PipelineBuilder& scissor(const vk::Rect2D& scissor)
 		{
-			m_scissors.push_back(scissor);
+			mScissors.push_back(scissor);
 			return *this;
 		}
 
-		PipelineBuilder& VertexLayout(const VertexLayout& vertexLayout)
+		PipelineBuilder& vertexLayout(const VertexLayout& vertexLayout)
 		{
-			m_vertexBindingDescriptions = vertexLayout.Bindings();
-			m_vertexAttributeDescriptions = vertexLayout.Attributes();
-
-			return *this;
-		}
-
-		PipelineBuilder& VertexBinding(uint32_t binding, uint32_t stride)
-		{
-			m_vertexBindingDescriptions.emplace_back(binding, stride);
+			mVertexBindingDescriptions = vertexLayout.bindings();
+			mVertexAttributeDescriptions = vertexLayout.attributes();
 
 			return *this;
 		}
 
-		PipelineBuilder& AttributeBinding(uint32_t location, uint32_t binding, vk::Format format, uint32_t offset)
+		PipelineBuilder& vertexBinding(uint32_t binding, uint32_t stride)
 		{
-			m_vertexAttributeDescriptions.emplace_back(location, binding, format, offset);
+			mVertexBindingDescriptions.emplace_back(binding, stride);
 
 			return *this;
 		}
 
-		PipelineBuilder& Shader(vk::ShaderStageFlagBits stage, const ShaderModule& shader,
-			const char* entryPoint = "main")
+		PipelineBuilder& attributeBinding(uint32_t location, uint32_t binding, vk::Format format, uint32_t offset)
 		{
-			vk::PipelineShaderStageCreateInfo info = { {}, stage, shader.Module(), entryPoint };
+			mVertexAttributeDescriptions.emplace_back(location, binding, format, offset);
 
-			m_modules.emplace_back(info);
 			return *this;
 		}
 
-		PipelineBuilder& Subpass(uint32_t subpass) { m_subpass = subpass; return *this; }
+		PipelineBuilder& shader(const vk::ShaderStageFlagBits stage, const ShaderModule& shader,
+		                        const char* entryPoint = "main")
+		{
+			vk::PipelineShaderStageCreateInfo info = { {}, stage, shader.module(), entryPoint };
+
+			mModules.emplace_back(info);
+			return *this;
+		}
+
+		PipelineBuilder& subpass(const uint32_t subpass) { mSubpass = subpass; return *this; }
 
 		// TODO Add Methods for setting up color blend attachments & color blend state
 
-		PipelineBuilder& InputAssemblyState(const vk::PipelineInputAssemblyStateCreateInfo& value) { m_inputAssemblyState = value; return *this; }
+		PipelineBuilder& inputAssemblyState(const vk::PipelineInputAssemblyStateCreateInfo& value) { mInputAssemblyState = value; return *this; }
 
-		PipelineBuilder& RasterizationState(const vk::PipelineRasterizationStateCreateInfo& value) { m_rasterizationState = value; return *this; }
+		PipelineBuilder& rasterizationState(const vk::PipelineRasterizationStateCreateInfo& value) { mRasterizationState = value; return *this; }
 
-		PipelineBuilder& MultisampleState(const vk::PipelineMultisampleStateCreateInfo& value) { m_multisampleState = value; return *this; }
+		PipelineBuilder& multisampleState(const vk::PipelineMultisampleStateCreateInfo& value) { mMultisampleState = value; return *this; }
 
-		PipelineBuilder& DepthStencilState(const vk::PipelineDepthStencilStateCreateInfo& value) { m_depthStencilState = value; return *this; }
+		PipelineBuilder& depthStencilState(const vk::PipelineDepthStencilStateCreateInfo& value) { mDepthStencilState = value; return *this; }
 
-		PipelineBuilder& DynamicState(vk::DynamicState value) { m_dynamicState.push_back(value); return *this; }
+		PipelineBuilder& dynamicState(const vk::DynamicState value) { mDynamicState.push_back(value); return *this; }
 
 		template<typename T>
-		PipelineBuilder& AddPNext(T* structure)
+		PipelineBuilder& addPNext(T* structure)
 		{
-			m_pNextChain.push_back(reinterpret_cast<VkBaseOutStructure*>(structure));
+			mPNextChain.push_back(reinterpret_cast<VkBaseOutStructure*>(structure));
 			return *this;
 		}
 
-		vk::UniquePipeline CreateUnique(const vk::Device& device,
+		vk::UniquePipeline createUnique(const vk::Device& device,
 			const vk::PipelineCache& pipelineCache,
 			const vk::PipelineLayout& pipelineLayout,
 			const vk::RenderPass& renderPass, bool defaultBlend = true)
 		{
 			// Add default colour blend attachment if necessary.
-			if (m_colorBlendAttachments.empty() && defaultBlend) {
+			if (mColorBlendAttachments.empty() && defaultBlend) {
 				vk::PipelineColorBlendAttachmentState blend{};
 				blend.blendEnable = 0;
 				blend.srcColorBlendFactor = vk::BlendFactor::eOne;
@@ -195,49 +195,49 @@ namespace puffin::rendering::VK::Util
 				blend.alphaBlendOp = vk::BlendOp::eAdd;
 				typedef vk::ColorComponentFlagBits ccbf;
 				blend.colorWriteMask = ccbf::eR | ccbf::eG | ccbf::eB | ccbf::eA;
-				m_colorBlendAttachments.push_back(blend);
+				mColorBlendAttachments.push_back(blend);
 			}
 
-			auto count = (uint32_t)m_colorBlendAttachments.size();
-			m_colorBlendState.attachmentCount = count;
-			m_colorBlendState.pAttachments = count ? m_colorBlendAttachments.data() : nullptr;
+			const auto count = static_cast<uint32_t>(mColorBlendAttachments.size());
+			mColorBlendState.attachmentCount = count;
+			mColorBlendState.pAttachments = count ? mColorBlendAttachments.data() : nullptr;
 
-			vk::PipelineViewportStateCreateInfo viewportState{
-				{}, (uint32_t)m_viewports.size(), m_viewports.data(), (uint32_t)m_scissors.size(), m_scissors.data() };
+			const vk::PipelineViewportStateCreateInfo viewportState{
+				{}, static_cast<uint32_t>(mViewports.size()), mViewports.data(), static_cast<uint32_t>(mScissors.size()), mScissors.data() };
 
 			vk::PipelineVertexInputStateCreateInfo vertexInputState;
-			vertexInputState.vertexAttributeDescriptionCount = (uint32_t)m_vertexAttributeDescriptions.size();
-			vertexInputState.pVertexAttributeDescriptions = m_vertexAttributeDescriptions.data();
-			vertexInputState.vertexBindingDescriptionCount = (uint32_t)m_vertexBindingDescriptions.size();
-			vertexInputState.pVertexBindingDescriptions = m_vertexBindingDescriptions.data();
+			vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(mVertexAttributeDescriptions.size());
+			vertexInputState.pVertexAttributeDescriptions = mVertexAttributeDescriptions.data();
+			vertexInputState.vertexBindingDescriptionCount = static_cast<uint32_t>(mVertexBindingDescriptions.size());
+			vertexInputState.pVertexBindingDescriptions = mVertexBindingDescriptions.data();
 
-			vk::PipelineDynamicStateCreateInfo dynState{ {}, (uint32_t)m_dynamicState.size(), m_dynamicState.data() };
+			const vk::PipelineDynamicStateCreateInfo dynState{ {}, static_cast<uint32_t>(mDynamicState.size()), mDynamicState.data() };
 
 			vk::GraphicsPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.pVertexInputState = &vertexInputState;
-			pipelineInfo.stageCount = (uint32_t)m_modules.size();
-			pipelineInfo.pStages = m_modules.data();
-			pipelineInfo.pInputAssemblyState = &m_inputAssemblyState;
+			pipelineInfo.stageCount = static_cast<uint32_t>(mModules.size());
+			pipelineInfo.pStages = mModules.data();
+			pipelineInfo.pInputAssemblyState = &mInputAssemblyState;
 			pipelineInfo.pViewportState = &viewportState;
-			pipelineInfo.pRasterizationState = &m_rasterizationState;
-			pipelineInfo.pMultisampleState = &m_multisampleState;
-			pipelineInfo.pColorBlendState = &m_colorBlendState;
-			pipelineInfo.pDepthStencilState = &m_depthStencilState;
+			pipelineInfo.pRasterizationState = &mRasterizationState;
+			pipelineInfo.pMultisampleState = &mMultisampleState;
+			pipelineInfo.pColorBlendState = &mColorBlendState;
+			pipelineInfo.pDepthStencilState = &mDepthStencilState;
 			pipelineInfo.layout = pipelineLayout;
 			pipelineInfo.renderPass = renderPass;
-			pipelineInfo.pDynamicState = m_dynamicState.empty() ? nullptr : &dynState;
-			pipelineInfo.subpass = m_subpass;
-			pipelineInfo.pTessellationState = &m_tessellationState;
+			pipelineInfo.pDynamicState = mDynamicState.empty() ? nullptr : &dynState;
+			pipelineInfo.subpass = mSubpass;
+			pipelineInfo.pTessellationState = &mTessellationState;
 
 			// Setup chain of pNext structs
-			if (m_pNextChain.size() > 0)
+			if (mPNextChain.size() > 0)
 			{
-				for (size_t i = 0; i < m_pNextChain.size() - 1; i++)
+				for (size_t i = 0; i < mPNextChain.size() - 1; i++)
 				{
-					m_pNextChain.at(i)->pNext = m_pNextChain.at(i + 1);
+					mPNextChain.at(i)->pNext = mPNextChain.at(i + 1);
 				}
 
-				pipelineInfo.pNext = m_pNextChain.at(0);
+				pipelineInfo.pNext = mPNextChain.at(0);
 			}
 
 			auto [result, pipeline] = device.createGraphicsPipelineUnique(pipelineCache, pipelineInfo);
@@ -247,22 +247,22 @@ namespace puffin::rendering::VK::Util
 
 	private:
 
-		std::vector<vk::Viewport> m_viewports;
-		std::vector<vk::Rect2D> m_scissors;
+		std::vector<vk::Viewport> mViewports;
+		std::vector<vk::Rect2D> mScissors;
 
-		vk::PipelineInputAssemblyStateCreateInfo m_inputAssemblyState;
-		vk::PipelineRasterizationStateCreateInfo m_rasterizationState;
-		vk::PipelineMultisampleStateCreateInfo m_multisampleState;
-		vk::PipelineDepthStencilStateCreateInfo m_depthStencilState;
-		vk::PipelineColorBlendStateCreateInfo m_colorBlendState;
-		vk::PipelineTessellationStateCreateInfo m_tessellationState;
-		std::vector<vk::PipelineColorBlendAttachmentState> m_colorBlendAttachments;
-		std::vector<vk::PipelineShaderStageCreateInfo> m_modules;
+		vk::PipelineInputAssemblyStateCreateInfo mInputAssemblyState;
+		vk::PipelineRasterizationStateCreateInfo mRasterizationState;
+		vk::PipelineMultisampleStateCreateInfo mMultisampleState;
+		vk::PipelineDepthStencilStateCreateInfo mDepthStencilState;
+		vk::PipelineColorBlendStateCreateInfo mColorBlendState;
+		vk::PipelineTessellationStateCreateInfo mTessellationState;
+		std::vector<vk::PipelineColorBlendAttachmentState> mColorBlendAttachments;
+		std::vector<vk::PipelineShaderStageCreateInfo> mModules;
 		//std::vector<std::unique_ptr<SpecData>> m_moduleSpecializations;
-		std::vector<vk::VertexInputAttributeDescription> m_vertexAttributeDescriptions;
-		std::vector<vk::VertexInputBindingDescription> m_vertexBindingDescriptions;
-		std::vector<vk::DynamicState> m_dynamicState;
-		std::vector<VkBaseOutStructure*> m_pNextChain;
-		uint32_t m_subpass = 0;
+		std::vector<vk::VertexInputAttributeDescription> mVertexAttributeDescriptions;
+		std::vector<vk::VertexInputBindingDescription> mVertexBindingDescriptions;
+		std::vector<vk::DynamicState> mDynamicState;
+		std::vector<VkBaseOutStructure*> mPNextChain;
+		uint32_t mSubpass = 0;
 	};
 }

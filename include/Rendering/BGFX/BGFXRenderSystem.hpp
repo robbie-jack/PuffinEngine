@@ -57,12 +57,12 @@ namespace puffin::rendering
 		6, 3, 7,
 	};
 
-	const static std::unordered_map<assets::TextureFormat, bgfx::TextureFormat::Enum> gTexFormatMap =
+	const static std::unordered_map<assets::TextureFormat, bgfx::TextureFormat::Enum> gTexFormatBGFX =
 	{
 		{ assets::TextureFormat::RGBA8, bgfx::TextureFormat::RGBA8 }
 	};
 
-	constexpr uint16_t gMaxLights = 16;
+	constexpr uint16_t gMaxLightsBGFX = 16;
 
 	using AssetSetMap = std::unordered_map<UUID, std::set<ECS::EntityID>>; // Used for tracking which entities are using each loaded asset
 	using MeshMatPair = std::pair<UUID, UUID>;
@@ -148,15 +148,15 @@ namespace puffin::rendering
 		bool mSupportsInstancing = false;
 
 		// Mesh Vars
-		MeshData mCubeMeshData;
+		MeshDataBGFX mCubeMeshData;
 		bgfx::ProgramHandle mCubeProgram;
 
 		bgfx::ProgramHandle mMeshProgram;
 		bgfx::ProgramHandle mMeshInstancedProgram;
 
-		PackedVector<MeshData> mMeshData;
-		PackedVector<TextureData> mTexData;
-		PackedVector<MaterialData> mMatData;
+		PackedVector<MeshDataBGFX> mMeshData;
+		PackedVector<TextureDataBGFX> mTexData;
+		PackedVector<MaterialDataBGFX> mMatData;
 
 		AssetSetMap mMeshSets;
 		AssetSetMap mTexSets;
@@ -215,11 +215,11 @@ namespace puffin::rendering
 		void updateEditorCamera();
 		void updateCameraComponent(const std::shared_ptr<ECS::Entity>& entity) const;
 
-		static inline void loadAndInitMesh(UUID meshId, MeshData& meshData);
+		static inline void loadAndInitMesh(UUID meshId, MeshDataBGFX& meshData);
 		static inline bgfx::VertexBufferHandle initVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
 		static inline bgfx::IndexBufferHandle initIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
 
-		static inline void loadAndInitTexture(UUID texId, TextureData& texData);
+		static inline void loadAndInitTexture(UUID texId, TextureDataBGFX& texData);
 
 		void setupLightUniformsForDraw() const;
 

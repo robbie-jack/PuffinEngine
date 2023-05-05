@@ -7,7 +7,7 @@
 #include "imgui.h"
 #include "ECS/EntityID.h"
 
-namespace puffin::rendering::VK
+namespace puffin::rendering
 {
 	struct UploadContext
 	{
@@ -39,7 +39,7 @@ namespace puffin::rendering::VK
 		vma::AllocationInfo allocInfo;
 	};
 
-	typedef AllocatedImage Texture;
+	using Texture = AllocatedImage;
 
 	struct SwapchainData
 	{
@@ -98,10 +98,13 @@ namespace puffin::rendering::VK
 		bool resized = false;
 	};
 
-	struct MeshData
+	struct AssetDataVK
 	{
-		UUID assetID;
+		UUID assetId;
+	};
 
+	struct MeshDataVK : AssetDataVK
+	{
 		AllocatedBuffer vertexBuffer;
 		AllocatedBuffer indexBuffer;
 
@@ -109,9 +112,8 @@ namespace puffin::rendering::VK
 		uint32_t numIndices;
 	};
 
-	struct TextureData
+	struct TextureDataVK : AssetDataVK
 	{
-		UUID assetID;
 		int idx = 0;
 
 		vk::Sampler sampler;
@@ -155,13 +157,13 @@ namespace puffin::rendering::VK
 		alignas(4) int numLights;
 	};
 
-	constexpr uint32_t G_NUM_TEX_PER_MAT = 8;
-	constexpr uint32_t G_NUM_FLOAT_PER_MAT = 8;
+	constexpr uint32_t gNumTexPerMat = 8;
+	constexpr uint32_t gNumFloatPerMat = 8;
 
 	struct GPUMaterialInstanceData
 	{
-		int texIndices[G_NUM_TEX_PER_MAT];
-		float data[G_NUM_FLOAT_PER_MAT];
+		int texIndices[gNumTexPerMat];
+		float data[gNumFloatPerMat];
 	};
 
 }

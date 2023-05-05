@@ -4,79 +4,79 @@
 
 #include "Types/Vertex.hpp"
 
-namespace puffin::rendering::VK::Util
+namespace puffin::rendering::util
 {
 	class VertexLayout
 	{
 	public:
 
-		static VertexLayout Begin()
+		static VertexLayout begin()
 		{
 			VertexLayout layout;
 			return layout;
 		}
 
-		VertexLayout& BindInput(uint32_t binding, uint32_t stride)
+		VertexLayout& bindInput(uint32_t binding, uint32_t stride)
 		{
-			m_bindingDescriptions.emplace_back(binding, stride);
+			mBindingDescriptions.emplace_back(binding, stride);
 
 			return *this;
 		}
 
-		VertexLayout& BindAttribute(uint32_t location, uint32_t binding, vk::Format format, uint32_t offset)
+		VertexLayout& bindAttribute(uint32_t location, uint32_t binding, vk::Format format, uint32_t offset)
 		{
-			m_attributeDescriptions.emplace_back(location, binding, format, offset);
+			mAttributeDescriptions.emplace_back(location, binding, format, offset);
 
 			return *this;
 		}
 
-		[[nodiscard]] std::vector<vk::VertexInputBindingDescription> Bindings() const { return m_bindingDescriptions; }
-		[[nodiscard]] std::vector <vk::VertexInputAttributeDescription> Attributes() const { return m_attributeDescriptions; }
+		[[nodiscard]] std::vector<vk::VertexInputBindingDescription> bindings() const { return mBindingDescriptions; }
+		[[nodiscard]] std::vector <vk::VertexInputAttributeDescription> attributes() const { return mAttributeDescriptions; }
 
 	private:
 
-		std::vector<vk::VertexInputBindingDescription> m_bindingDescriptions;
-		std::vector<vk::VertexInputAttributeDescription> m_attributeDescriptions;
+		std::vector<vk::VertexInputBindingDescription> mBindingDescriptions;
+		std::vector<vk::VertexInputAttributeDescription> mAttributeDescriptions;
 
 	};
 }
 
 namespace puffin::rendering
 {
-	inline VK::Util::VertexLayout VertexPC32::getLayoutVK()
+	inline util::VertexLayout VertexPC32::getLayoutVK()
 	{
-		return VK::Util::VertexLayout::Begin()
-			.BindInput(0, sizeof(VertexPC32))
-			.BindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, pos))
-			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color));
+		return util::VertexLayout::begin()
+			.bindInput(0, sizeof(VertexPC32))
+			.bindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, pos))
+			.bindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color));
 	}
 
-	inline VK::Util::VertexLayout VertexPNC32::getLayoutVK()
+	inline util::VertexLayout VertexPNC32::getLayoutVK()
 	{
-		return VK::Util::VertexLayout::Begin()
-			.BindInput(0, sizeof(VertexPNC32))
-			.BindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, pos))
-			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, normal))
-			.BindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, color));
+		return util::VertexLayout::begin()
+			.bindInput(0, sizeof(VertexPNC32))
+			.bindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, pos))
+			.bindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, normal))
+			.bindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, color));
 	}
 
-	inline VK::Util::VertexLayout VertexPNTV32::getLayoutVK()
+	inline util::VertexLayout VertexPNTV32::getLayoutVK()
 	{
-		return VK::Util::VertexLayout::Begin()
-			.BindInput(0, sizeof(VertexPNTV32))
-			.BindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, pos))
-			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, normal))
-			.BindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, tangent))
-			.BindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv));
+		return util::VertexLayout::begin()
+			.bindInput(0, sizeof(VertexPNTV32))
+			.bindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, pos))
+			.bindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, normal))
+			.bindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, tangent))
+			.bindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv));
 	}
 
-	inline VK::Util::VertexLayout VertexP64NTV32::getLayoutVK()
+	inline util::VertexLayout VertexP64NTV32::getLayoutVK()
 	{
-		return VK::Util::VertexLayout::Begin()
-			.BindInput(0, sizeof(VertexP64NTV32))
-			.BindAttribute(0, 0, vk::Format::eR64G64B64Sfloat, offsetof(VertexP64NTV32, pos))
-			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexP64NTV32, normal))
-			.BindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexP64NTV32, tangent))
-			.BindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexP64NTV32, uv));
+		return util::VertexLayout::begin()
+			.bindInput(0, sizeof(VertexP64NTV32))
+			.bindAttribute(0, 0, vk::Format::eR64G64B64Sfloat, offsetof(VertexP64NTV32, pos))
+			.bindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexP64NTV32, normal))
+			.bindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexP64NTV32, tangent))
+			.bindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexP64NTV32, uv));
 	}
 }

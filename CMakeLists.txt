@@ -152,6 +152,7 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.hpp
 	# Scripting
 	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
+	${HEADER_DIR}/Scripting/AngelScriptSystem.h
 	# Types
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h

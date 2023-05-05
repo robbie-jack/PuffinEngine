@@ -29,9 +29,9 @@ namespace puffin
 		struct ScriptCallback
 		{
 			ECS::EntityID entity;
-			asIScriptFunction* func = 0;
-			void* object = 0;
-			asITypeInfo* objectType = 0;
+			asIScriptFunction* func = nullptr;
+			void* object = nullptr;
+			asITypeInfo* objectType = nullptr;
 		};
 
 		typedef std::map<ECS::EntityID, ScriptCallback> ScriptCallbackMap;

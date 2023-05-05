@@ -8,7 +8,7 @@
 #include <vector>
 #include <set>
 
-namespace puffin::rendering::VK
+namespace puffin::rendering
 {
 	class VKRenderSystem;
 
@@ -17,34 +17,34 @@ namespace puffin::rendering::VK
 	{
 	public:
 
-		void Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, uint32_t indexSize = sizeof(uint32_t),
+		void init(const std::shared_ptr<VKRenderSystem>& renderer, uint32_t vertexSize, uint32_t indexSize = sizeof(uint32_t),
 		          vk::DeviceSize initialVertexBufferSize = 1 * 1024 * 1024, vk::DeviceSize initialIndexBufferSize = 1 * 1024 * 1024, vk::
 		          DeviceSize vertexBufferBlockSize = 64 * 1024 * 1024, vk::DeviceSize indexBufferBlockSize = 16 * 1024 * 1024);
 
-		void Cleanup();
+		void cleanup();
 
-		bool AddMesh(std::shared_ptr<assets::StaticMeshAsset> staticMesh);
+		bool addMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh);
 
-		bool HasMesh(UUID staticMeshID) const
+		[[nodiscard]] bool hasMesh(const UUID staticMeshId) const
 		{
-			return m_internalMeshData.count(staticMeshID) == 1;
+			return mInternalMeshData.count(staticMeshId) == 1;
 		}
 
 		// CURRENTLY BROKEN, DO NOT USE!!!!!
-		bool RemoveMeshes(const std::set<UUID>& staticMeshesToRemove);
+		bool removeMeshes(const std::set<UUID>& staticMeshesToRemove);
 
-		inline uint32_t MeshVertexOffset(UUID meshID) { return m_internalMeshData[meshID].vertexOffset; }
-		inline uint32_t MeshIndexOffset(UUID meshID) { return m_internalMeshData[meshID].indexOffset; }
+		uint32_t meshVertexOffset(const UUID meshId) { return mInternalMeshData[meshId].vertexOffset; }
+		uint32_t meshIndexOffset(const UUID meshId) { return mInternalMeshData[meshId].indexOffset; }
 
-		inline uint32_t MeshVertexCount(UUID meshID) { return m_internalMeshData[meshID].vertexCount; }
-		inline uint32_t MeshIndexCount(UUID meshID) { return m_internalMeshData[meshID].indexCount; }
+		uint32_t meshVertexCount(const UUID meshId) { return mInternalMeshData[meshId].vertexCount; }
+		uint32_t meshIndexCount(const UUID meshId) { return mInternalMeshData[meshId].indexCount; }
 
-		AllocatedBuffer& VertexBuffer() { return m_vertexBuffer; }
-		AllocatedBuffer& IndexBuffer() { return m_indexBuffer; }
+		AllocatedBuffer& vertexBuffer() { return mVertexBuffer; }
+		AllocatedBuffer& indexBuffer() { return mIndexBuffer; }
 
 	private:
 
-		std::shared_ptr<VKRenderSystem> m_renderer = nullptr;
+		std::shared_ptr<VKRenderSystem> mRenderer = nullptr;
 
 		struct InternalMeshData
 		{
@@ -53,34 +53,34 @@ namespace puffin::rendering::VK
 			bool isActive;
 		};
 
-		std::unordered_map<UUID, InternalMeshData> m_internalMeshData;
+		std::unordered_map<UUID, InternalMeshData> mInternalMeshData;
 
-		AllocatedBuffer m_vertexBuffer;
-		AllocatedBuffer m_indexBuffer;
+		AllocatedBuffer mVertexBuffer;
+		AllocatedBuffer mIndexBuffer;
 
-		uint32_t m_vertexSize = 0; // Number of bytes for each vertex
-		uint32_t m_indexSize = 0; // Number of bytes for each index
+		uint32_t mVertexSize = 0; // Number of bytes for each vertex
+		uint32_t mIndexSize = 0; // Number of bytes for each index
 
 		// Offset into buffers where vertices/indices have been added
-		uint32_t m_vertexOffset = 0, m_indexOffset = 0;
+		uint32_t mVertexOffset = 0, mIndexOffset = 0;
 
 		// Number of vertices/indices in use
-		uint32_t m_activeVertexCount = 0, m_activeIndexCount = 0;
+		uint32_t mActiveVertexCount = 0, mActiveIndexCount = 0;
 
 		// Total number of vertices/indices allocated in buffers
-		uint32_t m_maxVertexCount = 0, m_maxIndexCount = 0;
+		uint32_t mMaxVertexCount = 0, mMaxIndexCount = 0;
 
-		vk::DeviceSize m_vertexBufferSize = 0, m_indexBufferSize = 0;
-		vk::DeviceSize m_vertexBufferBlockSize = 0;
-		vk::DeviceSize m_indexBufferBlockSize = 0;
+		vk::DeviceSize mVertexBufferSize = 0, mIndexBufferSize = 0;
+		vk::DeviceSize mVertexBufferBlockSize = 0;
+		vk::DeviceSize mIndexBufferBlockSize = 0;
 
 		// How much of buffer is unused before it should be shrank
-		double m_shrinkUsageThreshold = 0.5f;
+		double mShrinkUsageThreshold = 0.5;
 
-		bool GrowVertexBuffer(uint32_t minVertexCount);
-		bool GrowIndexBuffer(uint32_t minIndexCount);
+		bool growVertexBuffer(uint32_t minVertexCount);
+		bool growIndexBuffer(uint32_t minIndexCount);
 
-		bool ShrinkVertexBuffer(uint32_t minVertexCount);
-		bool ShrinkIndexBuffer(uint32_t minVertexCount);
+		bool shrinkVertexBuffer(uint32_t minVertexCount);
+		bool shrinkIndexBuffer(uint32_t minVertexCount);
 	};
 }

@@ -88,7 +88,7 @@ namespace puffin::core
 
 		// Systems
 		//registerSystem<Rendering::BGFX::BGFXRenderSystem>();
-		registerSystem<rendering::VK::VKRenderSystem>();
+		registerSystem<rendering::VKRenderSystem>();
 		registerSystem<physics::Onager2DPhysicsSystem>();
 		//registerSystem<Physics::Box2DPhysicsSystem>();
 		registerSystem<scripting::AngelScriptSystem>();

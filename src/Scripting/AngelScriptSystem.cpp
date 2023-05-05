@@ -448,99 +448,99 @@ namespace puffin::scripting
 	void AngelScriptSystem::ProcessEvents()
 	{
 		// Process Input Events
-		input::InputEvent inputEvent;
-		while (m_inputEvents->Pop(inputEvent))
-		{
-			if (m_onInputPressedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::Pressed)
-			{
-				for (const auto& pair : m_onInputPressedCallbacks[inputEvent.actionName])
-				{
-					const ScriptCallback& callback = pair.second;
+		//input::InputEvent inputEvent;
+		//while (m_inputEvents->Pop(inputEvent))
+		//{
+		//	if (m_onInputPressedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::Pressed)
+		//	{
+		//		for (const auto& pair : m_onInputPressedCallbacks[inputEvent.actionName])
+		//		{
+		//			const ScriptCallback& callback = pair.second;
 
-					PrepareAndExecuteScriptMethod(callback.object, callback.func);
-				}
-			}
+		//			PrepareAndExecuteScriptMethod(callback.object, callback.func);
+		//		}
+		//	}
 
-			if (m_onInputReleasedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::Released)
-			{
-				for (const auto& pair : m_onInputReleasedCallbacks[inputEvent.actionName])
-				{
-					const ScriptCallback& callback = pair.second;
+		//	if (m_onInputReleasedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::Released)
+		//	{
+		//		for (const auto& pair : m_onInputReleasedCallbacks[inputEvent.actionName])
+		//		{
+		//			const ScriptCallback& callback = pair.second;
 
-					PrepareAndExecuteScriptMethod(callback.object, callback.func);
-				}
-			}
-		}
+		//			PrepareAndExecuteScriptMethod(callback.object, callback.func);
+		//		}
+		//	}
+		//}
 
-		// Process Collision Begin Events
-		physics::CollisionBeginEvent collisionBeginEvent;
-		while (m_collisionBeginEvents->Pop(collisionBeginEvent))
-		{
-			// Invoke collision EntityA callback if one exists
-			if (m_onCollisionBeginCallbacks.count(collisionBeginEvent.entityA) == 1)
-			{
-				const ScriptCallback& callbackA = m_onCollisionBeginCallbacks[collisionBeginEvent.entityA];
+		//// Process Collision Begin Events
+		//physics::CollisionBeginEvent collisionBeginEvent;
+		//while (m_collisionBeginEvents->Pop(collisionBeginEvent))
+		//{
+		//	// Invoke collision EntityA callback if one exists
+		//	if (m_onCollisionBeginCallbacks.count(collisionBeginEvent.entityA) == 1)
+		//	{
+		//		const ScriptCallback& callbackA = m_onCollisionBeginCallbacks[collisionBeginEvent.entityA];
 
-				// Prepare callback
-				PrepareScriptMethod(callbackA.object, callbackA.func);
+		//		// Prepare callback
+		//		PrepareScriptMethod(callbackA.object, callbackA.func);
 
-				// Bind entityB parameter
-				m_ctx->SetArgDWord(0, collisionBeginEvent.entityB);
+		//		// Bind entityB parameter
+		//		m_ctx->SetArgDWord(0, collisionBeginEvent.entityB);
 
-				// Execute callback
-				ExecuteScriptMethod(callbackA.object, callbackA.func);
-			}
+		//		// Execute callback
+		//		ExecuteScriptMethod(callbackA.object, callbackA.func);
+		//	}
 
-			// Invoke collision EntityB callback if one exists
-			if (m_onCollisionBeginCallbacks.count(collisionBeginEvent.entityB) == 1)
-			{
-				const ScriptCallback& callbackB = m_onCollisionBeginCallbacks[collisionBeginEvent.entityB];
+		//	// Invoke collision EntityB callback if one exists
+		//	if (m_onCollisionBeginCallbacks.count(collisionBeginEvent.entityB) == 1)
+		//	{
+		//		const ScriptCallback& callbackB = m_onCollisionBeginCallbacks[collisionBeginEvent.entityB];
 
-				// Prepare callback
-				PrepareScriptMethod(callbackB.object, callbackB.func);
+		//		// Prepare callback
+		//		PrepareScriptMethod(callbackB.object, callbackB.func);
 
-				// Bind entityA parameter
-				m_ctx->SetArgDWord(0, collisionBeginEvent.entityA);
+		//		// Bind entityA parameter
+		//		m_ctx->SetArgDWord(0, collisionBeginEvent.entityA);
 
-				// Execute callback
-				ExecuteScriptMethod(callbackB.object, callbackB.func);
-			}
-		}
+		//		// Execute callback
+		//		ExecuteScriptMethod(callbackB.object, callbackB.func);
+		//	}
+		//}
 
-		// Process Collision End Events
-		physics::CollisionEndEvent collisionEndEvent;
-		while (m_collisionEndEvents->Pop(collisionEndEvent))
-		{
-			// Invoke collision EntityA callback if one exists
-			if (m_onCollisionEndCallbacks.count(collisionEndEvent.entityA) == 1)
-			{
-				const ScriptCallback& callbackA = m_onCollisionEndCallbacks[collisionEndEvent.entityA];
+		//// Process Collision End Events
+		//physics::CollisionEndEvent collisionEndEvent;
+		//while (m_collisionEndEvents->Pop(collisionEndEvent))
+		//{
+		//	// Invoke collision EntityA callback if one exists
+		//	if (m_onCollisionEndCallbacks.count(collisionEndEvent.entityA) == 1)
+		//	{
+		//		const ScriptCallback& callbackA = m_onCollisionEndCallbacks[collisionEndEvent.entityA];
 
-				// Prepare callback
-				PrepareScriptMethod(callbackA.object, callbackA.func);
+		//		// Prepare callback
+		//		PrepareScriptMethod(callbackA.object, callbackA.func);
 
-				// Bind entityB parameter
-				m_ctx->SetArgDWord(0, collisionEndEvent.entityB);
+		//		// Bind entityB parameter
+		//		m_ctx->SetArgDWord(0, collisionEndEvent.entityB);
 
-				// Execute callback
-				ExecuteScriptMethod(callbackA.object, callbackA.func);
-			}
+		//		// Execute callback
+		//		ExecuteScriptMethod(callbackA.object, callbackA.func);
+		//	}
 
-			// Invoke collision EntityB callback if one exists
-			if (m_onCollisionEndCallbacks.count(collisionEndEvent.entityB) == 1)
-			{
-				const ScriptCallback& callbackB = m_onCollisionEndCallbacks[collisionEndEvent.entityB];
+		//	// Invoke collision EntityB callback if one exists
+		//	if (m_onCollisionEndCallbacks.count(collisionEndEvent.entityB) == 1)
+		//	{
+		//		const ScriptCallback& callbackB = m_onCollisionEndCallbacks[collisionEndEvent.entityB];
 
-				// Prepare callback
-				PrepareScriptMethod(callbackB.object, callbackB.func);
+		//		// Prepare callback
+		//		PrepareScriptMethod(callbackB.object, callbackB.func);
 
-				// Bind entityA parameter
-				m_ctx->SetArgDWord(0, collisionEndEvent.entityA);
+		//		// Bind entityA parameter
+		//		m_ctx->SetArgDWord(0, collisionEndEvent.entityA);
 
-				// Execute callback
-				ExecuteScriptMethod(callbackB.object, callbackB.func);
-			}
-		}
+		//		// Execute callback
+		//		ExecuteScriptMethod(callbackB.object, callbackB.func);
+		//	}
+		//}
 	}
 
 	bool AngelScriptSystem::PrepareScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)

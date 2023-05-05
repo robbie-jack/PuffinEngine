@@ -24,9 +24,9 @@
 #include "Types/RingBuffer.h"
 
 #ifdef NDEBUG
-const bool enableValidationLayers = false;
+constexpr bool gEnableValidationLayers = false;
 #else
-const bool enableValidationLayers = true;
+constexpr bool gEnableValidationLayers = true;
 #endif
 
 namespace puffin
@@ -34,13 +34,13 @@ namespace puffin
 	struct TransformComponent;
 }
 
-namespace puffin::rendering::VK
+namespace puffin::rendering
 {
 	// Struct containing render data that is static between frames
 	struct StaticRenderData
 	{
-		std::shared_ptr<Util::DescriptorAllocator> descriptorAllocator = nullptr;
-		std::shared_ptr<Util::DescriptorLayoutCache> descriptorLayoutCache = nullptr;
+		std::shared_ptr<util::DescriptorAllocator> descriptorAllocator = nullptr;
+		std::shared_ptr<util::DescriptorLayoutCache> descriptorLayoutCache = nullptr;
 
 		vk::DescriptorSetLayout globalSetLayout;
 		vk::DescriptorSetLayout materialSetLayout;
@@ -85,21 +85,20 @@ namespace puffin::rendering::VK
 
 		bool swapchainNeedsUpdated = false;
 		bool offscreenNeedsUpdated = false;
-		bool textureDescriptorNeedsupdated = false;
+		bool textureDescriptorNeedsUpdated = false;
 	};
 
-	const static std::unordered_map<assets::TextureFormat, vk::Format> g_texFormatMap =
+	const static std::unordered_map<assets::TextureFormat, vk::Format> gTexFormatVK =
 	{
 		{ assets::TextureFormat::RGBA8, vk::Format::eR8G8B8A8Unorm }
 	};
 
-	constexpr uint32_t G_BUFFERED_FRAMES = 2;
-
-	constexpr uint32_t G_MAX_OBJECTS = 20000;
-	constexpr uint32_t G_MAX_LIGHTS = 8;
+	constexpr uint32_t gBufferedFrames = 2;
+	constexpr uint32_t gMaxObjects = 20000;
+	constexpr uint32_t gMaxLightsVK = 8;
 
 	// Vulkan Rendering System
-	class VKRenderSystem : public ECS::System, public std::enable_shared_from_this<VKRenderSystem>
+	class VKRenderSystem final : public ECS::System, public std::enable_shared_from_this<VKRenderSystem>
 	{
 	public:
 
@@ -110,165 +109,173 @@ namespace puffin::rendering::VK
 
 		void setupCallbacks() override
 		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "VKRenderSystem: Init");
-			mEngine->registerCallback(core::ExecutionStage::Render, [&]() { Render(); }, "VKRenderSystem: Render");
-			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "VKRenderSystem: Cleanup");
+			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init");
+			mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
+			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "VKRenderSystem: Cleanup");
 		}
 
-		void Init();
-		void Render();
-		void Cleanup();
+		void init();
+		void render();
+		void cleanup();
 
-		const vma::Allocator& GetAllocator() const { return m_allocator ;}
-		const vk::Device& GetDevice() const { return m_device; }
-		const UploadContext& GetUploadContext() const { return m_uploadContext; }
-		const vk::Queue& GetGraphicsQueue() const { return m_graphicsQueue; }
+		const vma::Allocator& allocator() const { return mAllocator ;}
+		const vk::Device& device() const { return mDevice; }
+		const UploadContext& uploadContext() const { return mUploadContext; }
+		const vk::Queue& graphicsQueue() const { return mGraphicsQueue; }
 
-		void OnInputEvent(const input::InputEvent& inputEvent);
+		void onInputEvent(const input::InputEvent& inputEvent);
 
-		bool IsReBAREnabled() const { return m_isReBAREnabled; }
+		bool isReBarEnabled() const { return mIsReBarEnabled; }
 
 	private:
 
 		// Initialization Members
-		vk::Device m_device;
-		vk::Instance m_instance;
-		vk::PhysicalDevice m_physicalDevice;
-		vk::SurfaceKHR m_surface;
-		vk::DebugUtilsMessengerEXT m_debugMessenger;
+		vk::Device mDevice;
+		vk::Instance mInstance;
+		vk::PhysicalDevice mPhysicalDevice;
+		vk::SurfaceKHR mSurface;
+		vk::DebugUtilsMessengerEXT mDebugMessenger;
 
-		vk::Extent2D m_windowSize;
+		vk::Extent2D mWindowSize;
 
-		vma::Allocator m_allocator;
+		vma::Allocator mAllocator;
 
 		// Swapchain
-		SwapchainData m_swapchainData;
-		SwapchainData m_oldSwapchainData;
+		SwapchainData mSwapchainData;
+		SwapchainData mOldSwapchainData;
 
-		OffscreenData m_offscreenData;
-		OffscreenData m_oldOffscreenData;
+		OffscreenData mOffscreenData;
+		OffscreenData mOldOffscreenData;
 
 		// Command Execution
-		vk::Queue m_graphicsQueue;
-		uint32_t m_graphicsQueueFamily;
+		vk::Queue mGraphicsQueue;
+		uint32_t mGraphicsQueueFamily;
 
-		vk::RenderPass m_renderPassImGui;
+		vk::RenderPass mRenderPassImGui;
 
-		StaticRenderData m_staticRenderData;
-		std::array<FrameRenderData, G_BUFFERED_FRAMES> m_frameRenderData;
+		StaticRenderData mStaticRenderData;
+		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
 
-		std::unordered_map<UUID, std::set<size_t>> m_meshDrawList;
+		std::unordered_map<UUID, std::set<size_t>> mMeshDrawList;
 
-		PackedVector<TextureData> m_texData;
-		std::unordered_map<UUID, std::set<size_t>> m_texDrawList;
+		PackedVector<TextureDataVK> mTexData;
+		std::unordered_map<UUID, std::set<size_t>> mTexDrawList;
 
-		uint32_t m_frameNumber;
-		uint32_t m_drawCalls = 0;
+		uint32_t mFrameNumber;
+		uint32_t mDrawCalls = 0;
 
 		// Pipelines
-		vk::PipelineCache m_pipelineCache;
+		vk::PipelineCache mPipelineCache;
 
-		Util::ShaderModule m_forwardVertMod, m_forwardFragMod;
-		vk::UniquePipelineLayout m_forwardPipelineLayout;
-		vk::UniquePipeline m_forwardPipeline;
+		util::ShaderModule mForwardVertMod;
+		util::ShaderModule mForwardFragMod;
+		vk::UniquePipelineLayout mForwardPipelineLayout;
+		vk::UniquePipeline mForwardPipeline;
 
-		UploadContext m_uploadContext;
+		UploadContext mUploadContext;
 
-		DeletionQueue m_deletionQueue;
+		DeletionQueue mDeletionQueue;
 
-		EditorCamera m_editorCam;
-		bool m_moveLeft = false;
-		bool m_moveRight = false;
-		bool m_moveForward = false;
-		bool m_moveBackward = false;
-		bool m_moveUp = false;
-		bool m_moveDown = false;
+		EditorCamera mEditorCam;
+		bool mMoveLeft = false;
+		bool mMoveRight = false;
+		bool mMoveForward = false;
+		bool mMoveBackward = false;
+		bool mMoveUp = false;
+		bool mMoveDown = false;
 
-		RingBuffer<input::InputEvent> m_inputEvents;
+		RingBuffer<input::InputEvent> mInputEvents;
 
-		bool m_isInitialized = false; // Indicated initialization completed without any failures
-		bool m_isReBAREnabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
+		bool mIsInitialized = false; // Indicated initialization completed without any failures
+		bool mIsReBarEnabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
 
-		void InitVulkan();
+		void initVulkan();
 
-		void InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain, const vk::Extent2D& swapchainExtent);
-		void InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent, const int& offscreenImageCount);
+		void initSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain,
+		                   const vk::Extent2D& swapchainExtent);
+		void initOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent,
+		                   const int& offscreenImageCount);
 
-		void InitSwapchainFramebuffers(SwapchainData& swapchainData);
+		void initSwapchainFramebuffers(SwapchainData& swapchainData);
 
-		void InitCommands();
+		void initCommands();
 
-		void InitImGuiRenderPass();
+		void initImGuiRenderPass();
 
-		void InitSyncStructures();
-		void InitBuffers();
-		void InitSamplers();
-		void InitDescriptors();
-		void InitPipelines();
+		void initSyncStructures();
+		void initBuffers();
+		void initSamplers();
+		void initDescriptors();
+		void initPipelines();
 
-		void BuildForwardRendererPipeline();
+		void buildForwardRendererPipeline();
 
-		void InitImGui();
-		void InitOffscreenImGuiTextures(OffscreenData& offscreenData);
+		void initImGui();
+		void initOffscreenImGuiTextures(OffscreenData& offscreenData);
 
-		void ProcessEvents();
+		void processEvents();
 
-		void ProcessComponents();
-		void UpdateCameraComponent(const TransformComponent& transform, CameraComponent& camera);
+		void processComponents();
+		void updateCameraComponent(const TransformComponent& transform, CameraComponent& camera);
 
-		void UpdateEditorCamera();
+		void updateEditorCamera();
 
-		void UpdateRenderData();
+		void updateRenderData();
 
-		void Draw();
+		void draw();
 
-		void RecreateSwapchain();
-		void CleanSwapchain(SwapchainData& swapchainData);
+		void recreateSwapchain();
+		void cleanSwapchain(SwapchainData& swapchainData);
 
-		void RecreateOffscreen();
-		void CleanOffscreen(OffscreenData& offscreenData);
+		void recreateOffscreen();
+		void cleanOffscreen(OffscreenData& offscreenData);
 
-		void UpdateTextureDescriptors();
+		void updateTextureDescriptors();
 
-		void PrepareSceneData();
-		void PrepareObjectData();
-		void PrepareLightData();
+		void prepareSceneData();
+		void prepareObjectData();
+		void prepareLightData();
 
-		void BuildIndirectCommands();
+		void buildIndirectCommands();
 
-		vk::CommandBuffer RecordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent, const AllocatedImage&
+		vk::CommandBuffer recordMainCommandBuffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent,
+		                                          const AllocatedImage&
 		                                          colorImage, const AllocatedImage& depthImage);
-		void DrawObjects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
-		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset, uint32_t drawCount, uint32_t stride);
+		void drawObjects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
+		void drawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset,
+		                                uint32_t drawCount, uint32_t stride);
 
-		vk::CommandBuffer RecordCopyCommandBuffer(uint32_t swapchainIdx);
-		vk::CommandBuffer RecordImGuiCommandBuffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent, vk::Framebuffer framebuffer);
+		vk::CommandBuffer recordCopyCommandBuffer(uint32_t swapchainIdx);
+		vk::CommandBuffer recordImGuiCommandBuffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent,
+		                                           vk::Framebuffer framebuffer);
 
-		void RecordAndSubmitCommands(uint32_t swapchainIdx);
+		void recordAndSubmitCommands(uint32_t swapchainIdx);
 
-		void BuildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale, glm::mat4& outModel) const;
+		void buildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale,
+		                         glm::mat4& outModel) const;
 
-		bool LoadMesh(UUID meshID, MeshData& meshData);
-		void UnloadMesh(MeshData& meshData) const;
+		bool loadMesh(UUID meshId, MeshDataVK& meshData);
+		void unloadMesh(MeshDataVK& meshData) const;
 
-		bool LoadTexture(UUID texID, TextureData& texData);
-		void UnloadTexture(TextureData& texData) const;
+		bool loadTexture(UUID texId, TextureDataVK& texData);
+		void unloadTexture(TextureDataVK& texData) const;
 
-		void BuildTextureDescriptorInfo(PackedVector<TextureData>& texData, std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
+		void buildTextureDescriptorInfo(PackedVector<TextureDataVK>& texData,
+		                                std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 
-		FrameRenderData& GetCurrentFrameData()
+		FrameRenderData& getCurrentFrameData()
 		{
-			return m_frameRenderData[m_frameNumber % G_BUFFERED_FRAMES];
+			return mFrameRenderData[mFrameNumber % gBufferedFrames];
 		}
 
-		static inline void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
+		static void frameBufferResizeCallback(GLFWwindow* window, const int width, const int height)
 		{
-			auto app = reinterpret_cast<VKRenderSystem*>(glfwGetWindowUserPointer(window));
+			const auto system = static_cast<VKRenderSystem*>(glfwGetWindowUserPointer(window));
 
-			app->m_swapchainData.resized = true;
-			app->m_offscreenData.resized = true;
-			app->m_windowSize.width = width;
-			app->m_windowSize.height = height;
+			system->mSwapchainData.resized = true;
+			system->mOffscreenData.resized = true;
+			system->mWindowSize.width = width;
+			system->mWindowSize.height = height;
 		}
 	};
 }

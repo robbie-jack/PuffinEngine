@@ -17,61 +17,61 @@
 		}                                                           \
 	} while (0)
 
-namespace puffin::rendering::VK
+namespace puffin::rendering
 {
-	void UnifiedGeometryBuffer::Init(std::shared_ptr<VKRenderSystem> renderer, uint32_t vertexSize, uint32_t indexSize,
-	                                 vk::DeviceSize initialVertexBufferSize, vk::DeviceSize initialIndexBufferSize, vk::DeviceSize vertexBufferBlockSize, vk
+	void UnifiedGeometryBuffer::init(const std::shared_ptr<VKRenderSystem>& renderer, const uint32_t vertexSize, const uint32_t indexSize,
+	                                 const vk::DeviceSize initialVertexBufferSize, const vk::DeviceSize initialIndexBufferSize, const vk::DeviceSize vertexBufferBlockSize, const vk
 	                                 ::DeviceSize indexBufferBlockSize)
 	{
-		m_renderer = renderer;
-		m_vertexSize = vertexSize;
-		m_indexSize = indexSize;
+		mRenderer = renderer;
+		mVertexSize = vertexSize;
+		mIndexSize = indexSize;
 
-		m_vertexBufferSize = initialVertexBufferSize;
-		m_indexBufferSize = initialIndexBufferSize;
+		mVertexBufferSize = initialVertexBufferSize;
+		mIndexBufferSize = initialIndexBufferSize;
 
-		m_vertexBufferBlockSize = vertexBufferBlockSize;
-		m_indexBufferBlockSize = indexBufferBlockSize;
+		mVertexBufferBlockSize = vertexBufferBlockSize;
+		mIndexBufferBlockSize = indexBufferBlockSize;
 
-		m_maxVertexCount = std::floor(static_cast<double>(m_vertexBufferSize) / static_cast<double>(m_vertexSize));
-		m_maxIndexCount = std::floor(static_cast<double>(m_indexBufferSize) / static_cast<double>(m_indexSize));
+		mMaxVertexCount = std::floor(static_cast<double>(mVertexBufferSize) / static_cast<double>(mVertexSize));
+		mMaxIndexCount = std::floor(static_cast<double>(mIndexBufferSize) / static_cast<double>(mIndexSize));
 
-		m_vertexBuffer = Util::CreateBuffer(renderer->GetAllocator(), m_vertexBufferSize,
+		mVertexBuffer = util::createBuffer(renderer->allocator(), mVertexBufferSize,
 			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAuto, 
 			{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead | 
 			vma::AllocationCreateFlagBits::eMapped });
 
-		m_indexBuffer = Util::CreateBuffer(renderer->GetAllocator(), m_indexBufferSize,
+		mIndexBuffer = util::createBuffer(renderer->allocator(), mIndexBufferSize,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead | 
 			vma::AllocationCreateFlagBits::eMapped });
 	}
 
-	void UnifiedGeometryBuffer::Cleanup()
+	void UnifiedGeometryBuffer::cleanup()
 	{
-		m_vertexSize = 0;
-		m_indexSize = 0;
-		m_maxVertexCount = 0;
-		m_maxIndexCount = 0;
-		m_vertexOffset = 0;
-		m_indexOffset = 0;
-		m_internalMeshData.clear();
+		mVertexSize = 0;
+		mIndexSize = 0;
+		mMaxVertexCount = 0;
+		mMaxIndexCount = 0;
+		mVertexOffset = 0;
+		mIndexOffset = 0;
+		mInternalMeshData.clear();
 
-		m_renderer->GetAllocator().destroyBuffer(m_vertexBuffer.buffer, m_vertexBuffer.allocation);
-		m_renderer->GetAllocator().destroyBuffer(m_indexBuffer.buffer, m_indexBuffer.allocation);
+		mRenderer->allocator().destroyBuffer(mVertexBuffer.buffer, mVertexBuffer.allocation);
+		mRenderer->allocator().destroyBuffer(mIndexBuffer.buffer, mIndexBuffer.allocation);
 	}
 
-	bool UnifiedGeometryBuffer::AddMesh(std::shared_ptr<assets::StaticMeshAsset> staticMesh)
+	bool UnifiedGeometryBuffer::addMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh)
 	{
-		if (m_internalMeshData.count(staticMesh->id()) == 1)
+		if (mInternalMeshData.count(staticMesh->id()) == 1)
 		{
-			if (!m_internalMeshData[staticMesh->id()].isActive)
+			if (!mInternalMeshData[staticMesh->id()].isActive)
 			{
-				m_internalMeshData[staticMesh->id()].isActive = true;
+				mInternalMeshData[staticMesh->id()].isActive = true;
 
-				m_activeVertexCount += m_internalMeshData[staticMesh->id()].vertexCount;
-				m_activeIndexCount += m_internalMeshData[staticMesh->id()].indexCount;
+				mActiveVertexCount += mInternalMeshData[staticMesh->id()].vertexCount;
+				mActiveIndexCount += mInternalMeshData[staticMesh->id()].indexCount;
 			}
 
 			return true;
@@ -80,49 +80,49 @@ namespace puffin::rendering::VK
 		{
 			if (staticMesh && staticMesh->load())
 			{
-				if (m_vertexSize != staticMesh->vertexSize() || m_indexSize != staticMesh->indexSize())
+				if (mVertexSize != staticMesh->vertexSize() || mIndexSize != staticMesh->indexSize())
 					return false;
 
 				// Init mesh offset data
 				InternalMeshData internalMeshData;
-				internalMeshData.vertexOffset = m_vertexOffset;
-				internalMeshData.indexOffset = m_indexOffset;
+				internalMeshData.vertexOffset = mVertexOffset;
+				internalMeshData.indexOffset = mIndexOffset;
 				internalMeshData.vertexCount = staticMesh->numVertices();
 				internalMeshData.indexCount = staticMesh->numIndices();
 				internalMeshData.isActive = true;
 
 				const uint32_t newVertexOffset = internalMeshData.vertexOffset + internalMeshData.vertexCount;
-				if (newVertexOffset >= m_maxVertexCount)
+				if (newVertexOffset >= mMaxVertexCount)
 				{
-					if (!GrowVertexBuffer(newVertexOffset))
+					if (!growVertexBuffer(newVertexOffset))
 						return false;
 				}
 
 				const uint32_t newIndexOffset = internalMeshData.indexOffset + internalMeshData.indexCount;
-				if (newIndexOffset >= m_maxIndexCount)
+				if (newIndexOffset >= mMaxIndexCount)
 				{
-					if (!GrowIndexBuffer(newIndexOffset))
+					if (!growIndexBuffer(newIndexOffset))
 						return false;
 				}
 
-				m_vertexOffset = newVertexOffset;
-				m_indexOffset = newIndexOffset;
+				mVertexOffset = newVertexOffset;
+				mIndexOffset = newIndexOffset;
 
-				const uint32_t vertexBufferSize = internalMeshData.vertexCount * m_vertexSize;
-				const uint32_t indexBufferSize = internalMeshData.indexCount * m_indexSize;
+				const uint32_t vertexBufferSize = internalMeshData.vertexCount * mVertexSize;
+				const uint32_t indexBufferSize = internalMeshData.indexCount * mIndexSize;
 
 				// Copy vertex data
-				Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eVertexBuffer, m_vertexBuffer, vertexBufferSize,
-					staticMesh->vertices().data(), 0, internalMeshData.vertexOffset * m_vertexSize);
+				util::loadCpuDataIntoGPUBuffer(mRenderer, vk::BufferUsageFlagBits::eVertexBuffer, mVertexBuffer, vertexBufferSize,
+					staticMesh->vertices().data(), 0, internalMeshData.vertexOffset * mVertexSize);
 
 				// Copy index data
-				Util::LoadCPUDataIntoGPUBuffer(m_renderer, vk::BufferUsageFlagBits::eIndexBuffer, m_indexBuffer, indexBufferSize,
-					staticMesh->indices().data(), 0, internalMeshData.indexOffset * m_indexSize);
+				util::loadCpuDataIntoGPUBuffer(mRenderer, vk::BufferUsageFlagBits::eIndexBuffer, mIndexBuffer, indexBufferSize,
+					staticMesh->indices().data(), 0, internalMeshData.indexOffset * mIndexSize);
 
-				m_internalMeshData.insert({ staticMesh->id(), internalMeshData });
+				mInternalMeshData.insert({ staticMesh->id(), internalMeshData });
 
-				m_activeVertexCount += internalMeshData.vertexCount;
-				m_activeIndexCount += internalMeshData.indexCount;
+				mActiveVertexCount += internalMeshData.vertexCount;
+				mActiveIndexCount += internalMeshData.indexCount;
 
 				return true;
 			}
@@ -133,111 +133,111 @@ namespace puffin::rendering::VK
 		}
 	}
 
-	bool UnifiedGeometryBuffer::RemoveMeshes(const std::set<UUID>& staticMeshesToRemove)
+	bool UnifiedGeometryBuffer::removeMeshes(const std::set<UUID>& staticMeshesToRemove)
 	{
-		if (staticMeshesToRemove.size() == 0)
+		if (staticMeshesToRemove.empty())
 			return true;
 
-		for (const auto& meshID : staticMeshesToRemove)
+		for (const auto& meshId : staticMeshesToRemove)
 		{
-			if (m_internalMeshData[meshID].isActive)
+			if (mInternalMeshData[meshId].isActive)
 			{
-				m_internalMeshData[meshID].isActive = false;
+				mInternalMeshData[meshId].isActive = false;
 
-				m_activeVertexCount -= m_internalMeshData[meshID].vertexCount;
-				m_activeIndexCount -= m_internalMeshData[meshID].vertexCount;
+				mActiveVertexCount -= mInternalMeshData[meshId].vertexCount;
+				mActiveIndexCount -= mInternalMeshData[meshId].vertexCount;
 			}
 		}
 
 		// Shrink vertex buffer when half of allocated vertices are inactive
-		const double activeVerticesRatio = m_activeVertexCount / m_vertexOffset;
-		if (activeVerticesRatio <= m_shrinkUsageThreshold)
+		const double activeVerticesRatio = mActiveVertexCount / mVertexOffset;
+		if (activeVerticesRatio <= mShrinkUsageThreshold)
 		{
-			ShrinkVertexBuffer(m_activeVertexCount);
+			shrinkVertexBuffer(mActiveVertexCount);
 		}
 
 		// Shrink index buffer when half of allocated vertices are inactive
-		const double activeIndicesRatio = m_activeIndexCount / m_indexOffset;
-		if (activeIndicesRatio <= m_shrinkUsageThreshold)
+		const double activeIndicesRatio = mActiveIndexCount / mIndexOffset;
+		if (activeIndicesRatio <= mShrinkUsageThreshold)
 		{
-			ShrinkIndexBuffer(m_activeIndexCount);
+			shrinkIndexBuffer(mActiveIndexCount);
 		}
 
 		return true;
 	}
 
-	bool UnifiedGeometryBuffer::GrowVertexBuffer(uint32_t minVertexCount)
+	bool UnifiedGeometryBuffer::growVertexBuffer(const uint32_t minVertexCount)
 	{
 		// Allocate larger vertex buffer
-		const vk::DeviceSize minVertexBufferSize = minVertexCount * m_vertexSize;
+		const vk::DeviceSize minVertexBufferSize = minVertexCount * mVertexSize;
 
 		// Find new buffer size which can fit all vertices
 
-		vk::DeviceSize newVertexBufferSize = m_vertexBufferSize;
+		vk::DeviceSize newVertexBufferSize = mVertexBufferSize;
 		while (newVertexBufferSize < minVertexBufferSize)
 		{
-			newVertexBufferSize += m_vertexBufferBlockSize;
+			newVertexBufferSize += mVertexBufferBlockSize;
 		}
 
-		AllocatedBuffer oldVertexBuffer = m_vertexBuffer;
-		m_vertexBuffer = Util::CreateBuffer(m_renderer->GetAllocator(), newVertexBufferSize,
+		const AllocatedBuffer oldVertexBuffer = mVertexBuffer;
+		mVertexBuffer = util::createBuffer(mRenderer->allocator(), newVertexBufferSize,
 			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAutoPreferDevice);
 
 		// Copy data from old buffer to new buffer
-		const vk::DeviceSize oldVertexBufferSize = m_vertexOffset * m_vertexSize;
-		Util::CopyDataBetweenBuffers(m_renderer, oldVertexBuffer.buffer, m_vertexBuffer.buffer, oldVertexBufferSize);
+		const vk::DeviceSize oldVertexBufferSize = mVertexOffset * mVertexSize;
+		util::copyDataBetweenBuffers(mRenderer, oldVertexBuffer.buffer, mVertexBuffer.buffer, oldVertexBufferSize);
 
 		// Free old buffer
-		m_renderer->GetAllocator().destroyBuffer(oldVertexBuffer.buffer, oldVertexBuffer.allocation);
+		mRenderer->allocator().destroyBuffer(oldVertexBuffer.buffer, oldVertexBuffer.allocation);
 
-		m_vertexBufferSize = newVertexBufferSize;
+		mVertexBufferSize = newVertexBufferSize;
 
-		m_maxVertexCount = std::floor(static_cast<double>(m_vertexBufferSize) / static_cast<double>(m_vertexSize));;
+		mMaxVertexCount = std::floor(static_cast<double>(mVertexBufferSize) / static_cast<double>(mVertexSize));;
 
 		return true;
 	}
 
-	bool UnifiedGeometryBuffer::GrowIndexBuffer(uint32_t minIndexCount)
+	bool UnifiedGeometryBuffer::growIndexBuffer(const uint32_t minIndexCount)
 	{
 		// Allocate larger index buffer
-		const uint32_t minIndexBufferSize = minIndexCount * m_indexSize;
+		const uint32_t minIndexBufferSize = minIndexCount * mIndexSize;
 
 		// Find new buffer size which can fit all indices
 
-		vk::DeviceSize newIndexBufferSize = m_indexBufferSize;
+		vk::DeviceSize newIndexBufferSize = mIndexBufferSize;
 		while (newIndexBufferSize < minIndexBufferSize)
 		{
-			newIndexBufferSize += m_indexBufferBlockSize;
+			newIndexBufferSize += mIndexBufferBlockSize;
 		}
 
-		AllocatedBuffer oldIndexBuffer = m_indexBuffer;
-		m_indexBuffer = Util::CreateBuffer(m_renderer->GetAllocator(), newIndexBufferSize,
+		const AllocatedBuffer oldIndexBuffer = mIndexBuffer;
+		mIndexBuffer = util::createBuffer(mRenderer->allocator(), newIndexBufferSize,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAutoPreferDevice);
 
 		// Copy data from old buffer to new buffer
-		const vk::DeviceSize oldIndexBufferSize = m_indexOffset * m_indexSize;
-		Util::CopyDataBetweenBuffers(m_renderer, oldIndexBuffer.buffer, m_indexBuffer.buffer, oldIndexBufferSize);
+		const vk::DeviceSize oldIndexBufferSize = mIndexOffset * mIndexSize;
+		util::copyDataBetweenBuffers(mRenderer, oldIndexBuffer.buffer, mIndexBuffer.buffer, oldIndexBufferSize);
 
 		// Free old buffer
-		m_renderer->GetAllocator().destroyBuffer(oldIndexBuffer.buffer, oldIndexBuffer.allocation);
+		mRenderer->allocator().destroyBuffer(oldIndexBuffer.buffer, oldIndexBuffer.allocation);
 
-		m_indexBufferSize = newIndexBufferSize;
+		mIndexBufferSize = newIndexBufferSize;
 
-		m_maxIndexCount = std::floor(static_cast<double>(m_indexBufferSize) / static_cast<double>(m_indexSize));
+		mMaxIndexCount = std::floor(static_cast<double>(mIndexBufferSize) / static_cast<double>(mIndexSize));
 
 		return true;
 	}
 
-	bool UnifiedGeometryBuffer::ShrinkVertexBuffer(uint32_t minVertexCount)
+	bool UnifiedGeometryBuffer::shrinkVertexBuffer(uint32_t minVertexCount)
 	{
 
 
 		return true;
 	}
 
-	bool UnifiedGeometryBuffer::ShrinkIndexBuffer(uint32_t minVertexCount)
+	bool UnifiedGeometryBuffer::shrinkIndexBuffer(uint32_t minVertexCount)
 	{
 		return true;
 	}

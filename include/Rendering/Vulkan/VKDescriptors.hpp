@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <memory>
 
-namespace puffin::rendering::VK::Util
+namespace puffin::rendering::util
 {
 	class DescriptorAllocator
 	{
@@ -29,28 +29,28 @@ namespace puffin::rendering::VK::Util
 			};
 		};
 
-		DescriptorAllocator(vk::Device device) : m_device(device) {}
+		DescriptorAllocator(const vk::Device device) : mDevice(device) {}
 		~DescriptorAllocator();
 
-		void ResetPools();
-		bool Allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout);
+		void resetPools();
+		bool allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout);
 
-		void Cleanup();
+		void cleanup() const;
 
-		const vk::Device& Device() { return m_device; }
+		const vk::Device& device() const { return mDevice; }
 
 	private:
 
-		vk::Device m_device;
+		vk::Device mDevice;
 
-		vk::DescriptorPool m_currentPool;
+		vk::DescriptorPool mCurrentPool;
 
-		PoolSizes descriptorSizes;
+		PoolSizes mDescriptorSizes;
 
-		std::vector<vk::DescriptorPool> m_usedPools;
-		std::vector<vk::DescriptorPool> m_freePools;
+		std::vector<vk::DescriptorPool> mUsedPools;
+		std::vector<vk::DescriptorPool> mFreePools;
 
-		vk::DescriptorPool GrabPool();
+		vk::DescriptorPool grabPool();
 
 	};
 
@@ -58,12 +58,12 @@ namespace puffin::rendering::VK::Util
 	{
 	public:
 
-		DescriptorLayoutCache(vk::Device device) : m_device(device) {}
+		DescriptorLayoutCache(const vk::Device device) : mDevice(device) {}
 		~DescriptorLayoutCache();
 
-		void Cleanup();
+		void cleanup() const;
 
-		vk::DescriptorSetLayout CreateDescriptorLayout(vk::DescriptorSetLayoutCreateInfo* info);
+		vk::DescriptorSetLayout createDescriptorLayout(const vk::DescriptorSetLayoutCreateInfo* info);
 
 		struct DescriptorLayoutInfo
 		{
@@ -71,7 +71,7 @@ namespace puffin::rendering::VK::Util
 
 			bool operator==(const DescriptorLayoutInfo& other) const;
 
-			size_t hash() const;
+			[[nodiscard]] size_t hash() const;
 		};
 
 	private:
@@ -84,9 +84,9 @@ namespace puffin::rendering::VK::Util
 			}
 		};
 
-		std::unordered_map<DescriptorLayoutInfo, vk::DescriptorSetLayout, DescriptorLayoutHash> m_layoutCache;
+		std::unordered_map<DescriptorLayoutInfo, vk::DescriptorSetLayout, DescriptorLayoutHash> mLayoutCache;
 
-		vk::Device m_device;
+		vk::Device mDevice;
 
 	};
 
@@ -94,34 +94,36 @@ namespace puffin::rendering::VK::Util
 	{
 	public:
 
-		DescriptorBuilder(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<DescriptorAllocator> allocator) : m_cache(layoutCache), m_alloc(allocator) {}
+		DescriptorBuilder(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator) : mCache(layoutCache), mAlloc(allocator) {}
 
-		static DescriptorBuilder Begin(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<DescriptorAllocator> allocator);
+		static DescriptorBuilder begin(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator);
 
-		DescriptorBuilder& BindBuffer(uint32_t binding, vk::DescriptorBufferInfo* bufferInfo, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
+		DescriptorBuilder& bindBuffer(uint32_t binding, const vk::DescriptorBufferInfo* bufferInfo, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
 
-		DescriptorBuilder& BindImage(uint32_t binding, vk::DescriptorImageInfo* imageInfo, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
+		DescriptorBuilder& bindImage(const uint32_t binding, const vk::DescriptorImageInfo* imageInfo, const vk::DescriptorType type, const vk::
+		                             ShaderStageFlags stageFlags);
 
-		DescriptorBuilder& BindImages(uint32_t binding, uint32_t imageCount, vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
+		DescriptorBuilder& bindImages(const uint32_t binding, const uint32_t imageCount, const vk::DescriptorImageInfo* imageInfos, const vk::DescriptorType
+		                              type, const vk::ShaderStageFlags stageFlags);
 
-		bool Build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
+		bool build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
 
 		// Used for writing to descriptor set which is already built
-		DescriptorBuilder& UpdateImage(uint32_t binding, vk::DescriptorImageInfo* imageInfo,
+		DescriptorBuilder& updateImage(uint32_t binding, const vk::DescriptorImageInfo* imageInfo,
 			vk::DescriptorType type);
 
-		DescriptorBuilder& UpdateImages(uint32_t binding, uint32_t imageCount,
+		DescriptorBuilder& updateImages(uint32_t binding, uint32_t imageCount,
 			const vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type);
 
-		bool Update(vk::DescriptorSet& set);
+		bool update(const vk::DescriptorSet& set);
 
 	private:
 
-		std::vector<vk::WriteDescriptorSet> m_writes;
-		std::vector<vk::DescriptorSetLayoutBinding> m_bindings;
+		std::vector<vk::WriteDescriptorSet> mWrites;
+		std::vector<vk::DescriptorSetLayoutBinding> mBindings;
 
-		std::shared_ptr<DescriptorLayoutCache> m_cache;
-		std::shared_ptr<DescriptorAllocator> m_alloc;
+		std::shared_ptr<DescriptorLayoutCache> mCache;
+		std::shared_ptr<DescriptorAllocator> mAlloc;
 
 	};
 }

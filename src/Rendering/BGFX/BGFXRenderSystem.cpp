@@ -205,11 +205,11 @@ namespace puffin::rendering
 
 	void BGFXRenderSystem::initLightUniforms()
 	{
-        mLightUniformHandles.position = bgfx::createUniform("u_lightPos", bgfx::UniformType::Vec4, gMaxLights);
-        mLightUniformHandles.direction = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4, gMaxLights);
-        mLightUniformHandles.color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4, gMaxLights);
-        mLightUniformHandles.ambientSpecular = bgfx::createUniform("u_lightAmbientSpecular", bgfx::UniformType::Vec4, gMaxLights);
-        mLightUniformHandles.attenuation = bgfx::createUniform("u_lightAttenuation", bgfx::UniformType::Vec4, gMaxLights);
+        mLightUniformHandles.position = bgfx::createUniform("u_lightPos", bgfx::UniformType::Vec4, gMaxLightsBGFX);
+        mLightUniformHandles.direction = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4, gMaxLightsBGFX);
+        mLightUniformHandles.color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4, gMaxLightsBGFX);
+        mLightUniformHandles.ambientSpecular = bgfx::createUniform("u_lightAmbientSpecular", bgfx::UniformType::Vec4, gMaxLightsBGFX);
+        mLightUniformHandles.attenuation = bgfx::createUniform("u_lightAttenuation", bgfx::UniformType::Vec4, gMaxLightsBGFX);
 
         mLightUniformHandles.index = bgfx::createUniform("u_lightIndex", bgfx::UniformType::Vec4, 1);
 
@@ -565,7 +565,7 @@ namespace puffin::rendering
         // Init Mesh
         if (!mMeshData.Contains(mesh.meshAssetId))
         {
-			MeshData meshData;
+			MeshDataBGFX meshData;
 
 			loadAndInitMesh(mesh.meshAssetId, meshData);
 
@@ -578,7 +578,7 @@ namespace puffin::rendering
         // Init Textures
         if (!mTexData.Contains(mesh.textureAssetId))
         {
-			TextureData texData;
+			TextureDataBGFX texData;
 
             loadAndInitTexture(mesh.textureAssetId, texData);
 
@@ -591,7 +591,7 @@ namespace puffin::rendering
         // Init Materials (Currently using default mesh program, will add proper material system later)
         if (!mMatData.Contains(mesh.textureAssetId))
         {
-	        MaterialData matData;
+	        MaterialDataBGFX matData;
 
             matData.assetId = mesh.textureAssetId;
 
@@ -747,7 +747,7 @@ namespace puffin::rendering
         }
 	}
 
-	void BGFXRenderSystem::loadAndInitMesh(const UUID meshId, MeshData& meshData)
+	void BGFXRenderSystem::loadAndInitMesh(const UUID meshId, MeshDataBGFX& meshData)
 	{
         const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshId));
 
@@ -804,7 +804,7 @@ namespace puffin::rendering
         return bgfx::createIndexBuffer(mem, indexFlags);
 	}
 
-    void BGFXRenderSystem::loadAndInitTexture(UUID texId, TextureData& texData)
+    void BGFXRenderSystem::loadAndInitTexture(UUID texId, TextureDataBGFX& texData)
     {
         const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(assets::AssetRegistry::get()->getAsset(texId));
 
@@ -819,7 +819,7 @@ namespace puffin::rendering
             bx::memCopy(mem->data, texAsset->pixelData(), mem->size);
 
             texData.handle = bgfx::createTexture2D(texAsset->textureWidth(), texAsset->textureHeight(),
-                false, 1, gTexFormatMap.at(texAsset->textureFormat()), 0, mem);
+                false, 1, gTexFormatBGFX.at(texAsset->textureFormat()), 0, mem);
 
             texAsset->unload();
         }
@@ -828,11 +828,11 @@ namespace puffin::rendering
     void BGFXRenderSystem::setupLightUniformsForDraw() const
     {
 		// Setup Light Data
-        float lightPos[gMaxLights][4];
-        float lightDir[gMaxLights][4];
-        float lightColor[gMaxLights][4];
-        float lightAmbientSpec[gMaxLights][4];
-        float lightAttenuation[gMaxLights][4];
+        float lightPos[gMaxLightsBGFX][4];
+        float lightDir[gMaxLightsBGFX][4];
+        float lightColor[gMaxLightsBGFX][4];
+        float lightAmbientSpec[gMaxLightsBGFX][4];
+        float lightAttenuation[gMaxLightsBGFX][4];
         float lightIndex[4];
 
         int index = 0;
@@ -848,7 +848,7 @@ namespace puffin::rendering
         for (const auto& entity : lightEntities)
         {
             // Break out of loop when number of lights exceeds max
-            if (index >= gMaxLights)
+            if (index >= gMaxLightsBGFX)
             {
                 break;
             }
@@ -867,7 +867,7 @@ namespace puffin::rendering
         for (const auto& entity : lightEntities)
         {
             // Break out of loop when number of lights exceeds max
-            if (index >= gMaxLights)
+            if (index >= gMaxLightsBGFX)
             {
                 break;
             }
@@ -886,7 +886,7 @@ namespace puffin::rendering
         for (const auto& entity : lightEntities)
         {
             // Break out of loop when number of lights exceeds max
-            if (index >= gMaxLights)
+            if (index >= gMaxLightsBGFX)
             {
                 break;
             }
@@ -908,7 +908,7 @@ namespace puffin::rendering
         for (const auto& entity : lightEntitiesOrdered)
         {
             // Break out of loop when number of lights exceeds max
-			if (index >= gMaxLights)
+			if (index >= gMaxLightsBGFX)
 			{
 				break;
 			}
@@ -946,11 +946,11 @@ namespace puffin::rendering
 
         // Set Light Uniforms
         
-		bgfx::setUniform(mLightUniformHandles.position, lightPos, gMaxLights);
-        bgfx::setUniform(mLightUniformHandles.direction, lightDir, gMaxLights);
-        bgfx::setUniform(mLightUniformHandles.color, lightColor, gMaxLights);
-        bgfx::setUniform(mLightUniformHandles.ambientSpecular, lightAmbientSpec, gMaxLights);
-        bgfx::setUniform(mLightUniformHandles.attenuation, lightAttenuation, gMaxLights);
+		bgfx::setUniform(mLightUniformHandles.position, lightPos, gMaxLightsBGFX);
+        bgfx::setUniform(mLightUniformHandles.direction, lightDir, gMaxLightsBGFX);
+        bgfx::setUniform(mLightUniformHandles.color, lightColor, gMaxLightsBGFX);
+        bgfx::setUniform(mLightUniformHandles.ambientSpecular, lightAmbientSpec, gMaxLightsBGFX);
+        bgfx::setUniform(mLightUniformHandles.attenuation, lightAttenuation, gMaxLightsBGFX);
         bgfx::setUniform(mLightUniformHandles.index, lightIndex, 1);
     }
 

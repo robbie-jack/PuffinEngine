@@ -11,7 +11,7 @@ namespace bgfx
 
 namespace puffin::rendering
 {
-	namespace VK::Util
+	namespace util
 	{
 		class VertexLayout;
 	}
@@ -37,7 +37,7 @@ namespace puffin::rendering
 
 		static bgfx::VertexLayout getLayout();
 
-		static VK::Util::VertexLayout getLayoutVK();
+		static util::VertexLayout getLayoutVK();
 	};
 
 	struct VertexPNC32
@@ -53,7 +53,7 @@ namespace puffin::rendering
 
 		static bgfx::VertexLayout getLayout();
 
-		static VK::Util::VertexLayout getLayoutVK();
+		static util::VertexLayout getLayoutVK();
 	};
 
 	struct VertexPNTV32
@@ -73,7 +73,7 @@ namespace puffin::rendering
 
 		static bgfx::VertexLayout getLayout();
 
-		static VK::Util::VertexLayout getLayoutVK();
+		static util::VertexLayout getLayoutVK();
 	};
 
 	struct VertexP64NTV32
@@ -93,7 +93,7 @@ namespace puffin::rendering
 
 		static bgfx::VertexLayout getLayout();
 
-		static VK::Util::VertexLayout getLayoutVK();
+		static util::VertexLayout getLayoutVK();
 	};
 
 	static VertexFormat parseVertexFormatFromString(const char* f)
