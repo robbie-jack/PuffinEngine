@@ -20,15 +20,15 @@ namespace puffin::physics
 
 		typedef std::vector<std::shared_ptr<collision2D::Collider2D>> ColliderVector;
 
-		std::unordered_map<int, ColliderVector> colliderSpatialMap_;
+		std::unordered_map<int, ColliderVector> mColliderSpatialMap;
 
-		const int defaultGridSize_ = 1;
-		int gridSize_ = defaultGridSize_;
+		const int mDefaultGridSize = 1;
+		int mGridSize = mDefaultGridSize;
 
-		const int defaultHashMapSize_ = 19;
-		int hashMapSize_ = defaultHashMapSize_;
+		const int mDefaultHashMapSize = 19;
+		int mHashMapSize = mDefaultHashMapSize;
 
-		int generateHash(double x, double y) const;
+		[[nodiscard]] int generateHash(double x, double y) const;
 
 		void updateSpatialMap(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders);
 

@@ -13,8 +13,8 @@ namespace puffin::physics
 		Box2DContactListener() = default;
 		~Box2DContactListener() override
 		{
-			collisionBeginEvents_.Flush();
-			collisionEndEvents_.Flush();
+			mCollisionBeginEvents.Flush();
+			mCollisionEndEvents.Flush();
 		}
 
 		void BeginContact(b2Contact* contact) override;
@@ -29,8 +29,8 @@ namespace puffin::physics
 
 	private:
 
-		RingBuffer<CollisionBeginEvent> collisionBeginEvents_;
-		RingBuffer<CollisionEndEvent> collisionEndEvents_;
+		RingBuffer<CollisionBeginEvent> mCollisionBeginEvents;
+		RingBuffer<CollisionEndEvent> mCollisionEndEvents;
 
 	};
 }

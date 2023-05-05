@@ -23,27 +23,27 @@
 
 namespace puffin::rendering
 {
-	void BGFXRenderSystem::Init()
+	void BGFXRenderSystem::init()
 	{
-        InitBGFX();
+        initBGFX();
 
-        InitStaticCubeData();
+        initStaticCubeData();
 
-        InitMeshProgram();
+        initMeshProgram();
 
-        InitTexSamplers();
+        initTexSamplers();
 
-        InitCamUniforms();
+        initCamUniforms();
 
-        InitLightUniforms();
+        initLightUniforms();
 
         // Connect Signals
         const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 
-        signalSubsystem->connect<Input::InputEvent>(
-			[&](const Input::InputEvent& inputEvent)
+        signalSubsystem->connect<input::InputEvent>(
+			[&](const input::InputEvent& inputEvent)
 			{
-				shared_from_this()->OnInputEvent(inputEvent);
+				shared_from_this()->onInputEvent(inputEvent);
 			}
         );
 
@@ -52,48 +52,48 @@ namespace puffin::rendering
         mWorld->AddComponentDependencies<CameraComponent, CameraMatComponent>();
 	}
 
-	void BGFXRenderSystem::Setup()
+	void BGFXRenderSystem::setup()
 	{
-		InitEditorCamera();
+		initEditorCamera();
 
-        InitComponents();
+        initComponents();
 	}
 
-	void BGFXRenderSystem::Render()
+	void BGFXRenderSystem::render()
 	{
-		ProcessEvents();
+		processEvents();
 
-        UpdateEditorCamera();
+        updateEditorCamera();
 
-		UpdateComponents();
+		updateComponents();
 
-        Draw();
+        draw();
 	}
 
-	void BGFXRenderSystem::Stop()
+	void BGFXRenderSystem::stop()
 	{
-		CleanupComponents();
+		cleanupComponents();
 	}
 
-	void BGFXRenderSystem::Cleanup()
+	void BGFXRenderSystem::cleanup()
 	{
-        m_deletionQueue.Flush();
+        mDeletionQueue.Flush();
 
 		bgfx::shutdown();
 	}
 
-	void BGFXRenderSystem::OnInputEvent(const Input::InputEvent& inputEvent)
+	void BGFXRenderSystem::onInputEvent(const input::InputEvent& inputEvent)
 	{
-        m_inputEvents.Push(inputEvent);
+        mInputEvents.Push(inputEvent);
 	}
 
-	void BGFXRenderSystem::InitBGFX()
+	void BGFXRenderSystem::initBGFX()
 	{
         bgfx::PlatformData pd;
         GLFWwindow* window = mEngine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 
         glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
+        glfwSetFramebufferSizeCallback(window, frameBufferResizeCallback);
 
 #if PFN_PLATFORM_WIN32
 
@@ -115,10 +115,10 @@ namespace puffin::rendering
         // Set Renderer API to Vulkan
         bgfxInit.type = bgfx::RendererType::Vulkan;
 
-        glfwGetWindowSize(window, &m_windowWidth, &m_windowHeight);
+        glfwGetWindowSize(window, &mWindowWidth, &mWindowHeight);
 
-        bgfxInit.resolution.width = static_cast<uint32_t>(m_windowWidth);
-        bgfxInit.resolution.height = static_cast<uint32_t>(m_windowHeight);
+        bgfxInit.resolution.width = static_cast<uint32_t>(mWindowWidth);
+        bgfxInit.resolution.height = static_cast<uint32_t>(mWindowHeight);
         bgfxInit.resolution.reset = BGFX_RESET_VSYNC;
         bgfxInit.platformData = pd;
         bgfx::init(bgfxInit);
@@ -126,184 +126,184 @@ namespace puffin::rendering
         bgfx::setDebug(BGFX_DEBUG_NONE);
 
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00B5E2FF, 1.0f, 0);
-        bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
+        bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(mWindowWidth), static_cast<uint16_t>(mWindowHeight));
 
         // Check supported features
         const bgfx::Caps* caps = bgfx::getCaps();
 
-        m_supportsInstancing = 0 != (BGFX_CAPS_INSTANCING & caps->supported);
+        mSupportsInstancing = 0 != (BGFX_CAPS_INSTANCING & caps->supported);
 	}
 
-	void BGFXRenderSystem::InitStaticCubeData()
+	void BGFXRenderSystem::initStaticCubeData()
 	{
         // Create Static Vertex Buffer
-        m_cubeMeshData.vertexBufferHandle = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), s_layoutVertexPC32);
+        mCubeMeshData.vertexBufferHandle = bgfx::createVertexBuffer(bgfx::makeRef(gCubeVertices, sizeof(gCubeVertices)), gLayoutVertexPC32);
 
         // Create Static Index Buffer
-        m_cubeMeshData.indexBufferHandle = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
+        mCubeMeshData.indexBufferHandle = bgfx::createIndexBuffer(bgfx::makeRef(gCubeTriList, sizeof(gCubeTriList)));
 
-        bgfx::ShaderHandle cubeVSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\vs_cubes.bin");
-        bgfx::ShaderHandle cubeFSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\fs_cubes.bin");
-        m_cubeProgram = bgfx::createProgram(cubeVSH, cubeFSH, true);
+        const bgfx::ShaderHandle cubeVsh = loadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\vs_cubes.bin");
+        const bgfx::ShaderHandle cubeFsh = loadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\fs_cubes.bin");
+        mCubeProgram = bgfx::createProgram(cubeVsh, cubeFsh, true);
 
-        m_deletionQueue.PushFunction([=]()
+        mDeletionQueue.PushFunction([=]()
         {
-        	bgfx::destroy(m_cubeMeshData.indexBufferHandle);
-			bgfx::destroy(m_cubeMeshData.vertexBufferHandle);
+        	bgfx::destroy(mCubeMeshData.indexBufferHandle);
+			bgfx::destroy(mCubeMeshData.vertexBufferHandle);
 
-			bgfx::destroy(m_cubeProgram);
+			bgfx::destroy(mCubeProgram);
         });
 	}
 
-	void BGFXRenderSystem::InitMeshProgram()
+	void BGFXRenderSystem::initMeshProgram()
 	{
-        bgfx::ShaderHandle meshVSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\vs_forward_shading.bin");
-        bgfx::ShaderHandle meshFSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\fs_forward_shading.bin");
+		const bgfx::ShaderHandle meshVsh = loadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\vs_forward_shading.bin");
+		const bgfx::ShaderHandle meshFsh = loadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\fs_forward_shading.bin");
 
-        m_meshProgram = bgfx::createProgram(meshVSH, meshFSH, true);
+        mMeshProgram = bgfx::createProgram(meshVsh, meshFsh, true);
 
-        m_deletionQueue.PushFunction([=]()
+        mDeletionQueue.PushFunction([=]()
         {
-        	bgfx::destroy(m_meshProgram);
+        	bgfx::destroy(mMeshProgram);
         });
 	}
 
-	void BGFXRenderSystem::InitMeshInstancedProgram()
+	void BGFXRenderSystem::initMeshInstancedProgram()
 	{
-        bgfx::ShaderHandle meshVSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\vs_forward_shading_instanced.bin");
-        bgfx::ShaderHandle meshFSH = LoadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\fs_forward_shading_instanced.bin");
+		const bgfx::ShaderHandle meshVsh = loadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\vs_forward_shading_instanced.bin");
+		const bgfx::ShaderHandle meshFsh = loadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\forward_shading\\fs_forward_shading_instanced.bin");
 
-        m_meshInstancedProgram = bgfx::createProgram(meshVSH, meshFSH, true);
+        mMeshInstancedProgram = bgfx::createProgram(meshVsh, meshFsh, true);
 
-        m_deletionQueue.PushFunction([=]()
+        mDeletionQueue.PushFunction([=]()
             {
-                bgfx::destroy(m_meshInstancedProgram);
+                bgfx::destroy(mMeshInstancedProgram);
             });
 	}
 
-	void BGFXRenderSystem::InitTexSamplers()
+	void BGFXRenderSystem::initTexSamplers()
 	{
-        m_texAlbedoSampler = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-        m_texNormalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
+        mTexAlbedoSampler = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+        mTexNormalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 
-        m_deletionQueue.PushFunction([=]()
+        mDeletionQueue.PushFunction([=]()
         {
-        	bgfx::destroy(m_texAlbedoSampler);
-			bgfx::destroy(m_texNormalSampler);
+        	bgfx::destroy(mTexAlbedoSampler);
+			bgfx::destroy(mTexNormalSampler);
         });
 	}
 
-	void BGFXRenderSystem::InitCamUniforms()
+	void BGFXRenderSystem::initCamUniforms()
 	{
-		m_camPosHandle = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4, 1);
+		mCamPosHandle = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4, 1);
 
-        m_deletionQueue.PushFunction([=]()
+        mDeletionQueue.PushFunction([=]()
         {
-        	bgfx::destroy(m_camPosHandle);
+        	bgfx::destroy(mCamPosHandle);
         });
 	}
 
-	void BGFXRenderSystem::InitLightUniforms()
+	void BGFXRenderSystem::initLightUniforms()
 	{
-        m_lightUniformHandles.position = bgfx::createUniform("u_lightPos", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-        m_lightUniformHandles.direction = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-        m_lightUniformHandles.color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-        m_lightUniformHandles.ambientSpecular = bgfx::createUniform("u_lightAmbientSpecular", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
-        m_lightUniformHandles.attenuation = bgfx::createUniform("u_lightAttenuation", bgfx::UniformType::Vec4, G_MAX_LIGHTS);
+        mLightUniformHandles.position = bgfx::createUniform("u_lightPos", bgfx::UniformType::Vec4, gMaxLights);
+        mLightUniformHandles.direction = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4, gMaxLights);
+        mLightUniformHandles.color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4, gMaxLights);
+        mLightUniformHandles.ambientSpecular = bgfx::createUniform("u_lightAmbientSpecular", bgfx::UniformType::Vec4, gMaxLights);
+        mLightUniformHandles.attenuation = bgfx::createUniform("u_lightAttenuation", bgfx::UniformType::Vec4, gMaxLights);
 
-        m_lightUniformHandles.index = bgfx::createUniform("u_lightIndex", bgfx::UniformType::Vec4, 1);
+        mLightUniformHandles.index = bgfx::createUniform("u_lightIndex", bgfx::UniformType::Vec4, 1);
 
-        m_deletionQueue.PushFunction([=]()
+        mDeletionQueue.PushFunction([=]()
         {
-            bgfx::destroy(m_lightUniformHandles.position);
-	        bgfx::destroy(m_lightUniformHandles.direction);
-	        bgfx::destroy(m_lightUniformHandles.color);
-	        bgfx::destroy(m_lightUniformHandles.ambientSpecular);
-            bgfx::destroy(m_lightUniformHandles.attenuation);
-            bgfx::destroy(m_lightUniformHandles.index);
+            bgfx::destroy(mLightUniformHandles.position);
+	        bgfx::destroy(mLightUniformHandles.direction);
+	        bgfx::destroy(mLightUniformHandles.color);
+	        bgfx::destroy(mLightUniformHandles.ambientSpecular);
+            bgfx::destroy(mLightUniformHandles.attenuation);
+            bgfx::destroy(mLightUniformHandles.index);
         });
 	}
 
-	void BGFXRenderSystem::ProcessEvents()
+	void BGFXRenderSystem::processEvents()
 	{
-        Input::InputEvent inputEvent;
-		while(m_inputEvents.Pop(inputEvent))
+        input::InputEvent inputEvent;
+		while(mInputEvents.Pop(inputEvent))
 		{
             if (inputEvent.actionName == "CamMoveLeft")
             {
-                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::input::KeyState::Pressed)
                 {
-                    m_moveLeft = true;
+                    mMoveLeft = true;
                 }
-                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::input::KeyState::Released)
                 {
-                    m_moveLeft = false;
+                    mMoveLeft = false;
                 }
             }
 
             if (inputEvent.actionName == "CamMoveRight")
             {
-                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::input::KeyState::Pressed)
                 {
-                    m_moveRight = true;
+                    mMoveRight = true;
                 }
-                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::input::KeyState::Released)
                 {
-                    m_moveRight = false;
+                    mMoveRight = false;
                 }
             }
 
             if (inputEvent.actionName == "CamMoveForward")
             {
-                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::input::KeyState::Pressed)
                 {
-                    m_moveForward = true;
+                    mMoveForward = true;
                 }
-                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::input::KeyState::Released)
                 {
-                    m_moveForward = false;
+                    mMoveForward = false;
                 }
             }
 
             if (inputEvent.actionName == "CamMoveBackward")
             {
-                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::input::KeyState::Pressed)
                 {
-                    m_moveBackward = true;
+                    mMoveBackward = true;
                 }
-                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::input::KeyState::Released)
                 {
-                    m_moveBackward = false;
+                    mMoveBackward = false;
                 }
             }
 
             if (inputEvent.actionName == "CamMoveUp")
             {
-                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::input::KeyState::Pressed)
                 {
-                    m_moveUp = true;
+                    mMoveUp = true;
                 }
-                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::input::KeyState::Released)
                 {
-                    m_moveUp = false;
+                    mMoveUp = false;
                 }
             }
 
             if (inputEvent.actionName == "CamMoveDown")
             {
-                if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+                if (inputEvent.actionState == puffin::input::KeyState::Pressed)
                 {
-                    m_moveDown = true;
+                    mMoveDown = true;
                 }
-                else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+                else if (inputEvent.actionState == puffin::input::KeyState::Released)
                 {
-                    m_moveDown = false;
+                    mMoveDown = false;
                 }
             }
 		}
 	}
 
-	void BGFXRenderSystem::InitComponents()
+	void BGFXRenderSystem::initComponents()
 	{
         PackedVector<ECS::EntityPtr> meshEntities;
         ECS::GetEntities<TransformComponent, MeshComponent>(mWorld, meshEntities);
@@ -311,7 +311,7 @@ namespace puffin::rendering
         {
             if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
             {
-                InitMeshComponent(entity);
+                initMeshComponent(entity);
 
                 entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
             }
@@ -323,14 +323,14 @@ namespace puffin::rendering
         {
             if (entity->GetComponentFlag<CameraComponent, FlagDirty>())
             {
-				UpdateCameraComponent(entity);
+				updateCameraComponent(entity);
 
                 entity->SetComponentFlag<CameraComponent, FlagDirty>(false);
             }
         }
 	}
 
-	void BGFXRenderSystem::UpdateComponents()
+	void BGFXRenderSystem::updateComponents()
 	{
         PackedVector<ECS::EntityPtr> meshEntities;
         ECS::GetEntities<TransformComponent, MeshComponent>(mWorld, meshEntities);
@@ -338,15 +338,15 @@ namespace puffin::rendering
         {
 			if (entity->GetComponentFlag<MeshComponent, FlagDirty>())
 			{
-                CleanupMeshComponent(entity);
-				InitMeshComponent(entity);
+                cleanupMeshComponent(entity);
+				initMeshComponent(entity);
 
                 entity->SetComponentFlag<MeshComponent, FlagDirty>(false);
 			}
 
             if (entity->GetComponentFlag<MeshComponent, FlagDeleted>())
             {
-				CleanupMeshComponent(entity);
+				cleanupMeshComponent(entity);
 
                 entity->RemoveComponent<MeshComponent>();
             }
@@ -358,7 +358,7 @@ namespace puffin::rendering
         {
             if (entity->GetComponentFlag<CameraComponent, FlagDirty>())
             {
-                UpdateCameraComponent(entity);
+                updateCameraComponent(entity);
 
                 entity->SetComponentFlag<CameraComponent, FlagDirty>(false);
             }
@@ -378,49 +378,49 @@ namespace puffin::rendering
         }
 	}
 
-	void BGFXRenderSystem::CleanupComponents()
+	void BGFXRenderSystem::cleanupComponents()
 	{
         PackedVector<ECS::EntityPtr> meshEntities;
         ECS::GetEntities<TransformComponent, MeshComponent>(mWorld, meshEntities);
         for (const auto& entity : meshEntities)
         {
-            CleanupMeshComponent(entity);
+            cleanupMeshComponent(entity);
         }
 	}
 
-	void BGFXRenderSystem::Draw()
+	void BGFXRenderSystem::draw()
 	{
         // Resize view and back-buffer
-        if (m_windowResized)
+        if (mWindowResized)
         {
-            bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
-            bgfx::reset(static_cast<uint16_t>(m_windowWidth), static_cast<uint16_t>(m_windowHeight));
+            bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(mWindowWidth), static_cast<uint16_t>(mWindowHeight));
+            bgfx::reset(static_cast<uint16_t>(mWindowWidth), static_cast<uint16_t>(mWindowHeight));
 
-            m_windowResized = false;
+            mWindowResized = false;
         }
 
         // Dummy draw call to make sure view 0 is cleared
         bgfx::touch(0);
 
-        DrawScene();
+        drawScene();
 
         // Advance to next frame
         bgfx::frame();
 
-        m_frameCounter++;
+        mFrameCounter++;
 	}
 
-	void BGFXRenderSystem::DrawScene()
+	void BGFXRenderSystem::drawScene()
 	{
         // Set Camera Matrices
-        bgfx::setViewTransform(0, m_editorCamMats.view, m_editorCamMats.proj);
+        bgfx::setViewTransform(0, mEditorCamMats.view, mEditorCamMats.proj);
 
         // Set Light Uniforms
-        SetupLightUniformsForDraw();
+        setupLightUniformsForDraw();
 
         // Generate Mesh Batches (Batches of entities which share same mesh and material) for this frame
         std::vector<MeshDrawBatch> batches;
-        BuildBatches(batches);
+        buildBatches(batches);
 
         // Render each batch
         for (const auto& drawBatch : batches)
@@ -433,20 +433,20 @@ namespace puffin::rendering
             int tidx = 0;
             for (const auto& id : drawBatch.matData.texIDs)
             {
-                bgfx::setTexture(tidx, m_texAlbedoSampler, m_texData[id].handle);
+                bgfx::setTexture(tidx, mTexAlbedoSampler, mTexData[id].handle);
 
                 tidx++;
             }
 
             // Render using instanced rendering if supported/enableded, and there is more than one entity in batch
-            if (m_useInstancing && m_supportsInstancing && drawBatch.entities.size() > 1)
+            if (mUseInstancing && mSupportsInstancing && drawBatch.entities.size() > 1)
             {
-	            DrawMeshBatchInstanced(drawBatch);
+	            drawMeshBatchInstanced(drawBatch);
             }
             // Else use normal rendering path
             else
             {
-	            DrawMeshBatch(drawBatch);
+	            drawMeshBatch(drawBatch);
             }
 
             // Discard Vertex/Index/Buffers/Textures after rendering all entities in batch
@@ -456,24 +456,24 @@ namespace puffin::rendering
         bgfx::discard(BGFX_DISCARD_ALL);
 	}
 
-	void BGFXRenderSystem::BuildBatches(std::vector<MeshDrawBatch>& batches)
+	void BGFXRenderSystem::buildBatches(std::vector<MeshDrawBatch>& batches)
 	{
 		batches.clear();
 
-        batches.reserve(m_meshData.Size() * m_matData.Size());
+        batches.reserve(mMeshData.Size() * mMatData.Size());
 
         std::unordered_map<MeshMatPair, std::set<ECS::EntityID>> meshMatMap;
 
         // Generate set of entities for each unique mesh/material pair
-        for (const auto& meshData : m_meshData)
+        for (const auto& meshData : mMeshData)
         {
-	        const std::set<ECS::EntityID>& meshEntities = m_meshSets[meshData.assetID];
+	        const std::set<ECS::EntityID>& meshEntities = mMeshSets[meshData.assetId];
 
             for (const ECS::EntityID& entity : meshEntities)
             {
                 auto& mesh = mWorld->GetComponent<MeshComponent>(entity);
 
-                MeshMatPair pair(mesh.textureAssetId, meshData.assetID);
+                MeshMatPair pair(mesh.textureAssetId, meshData.assetId);
 
                 if (meshMatMap.count(pair) == 0)
                 {
@@ -491,15 +491,15 @@ namespace puffin::rendering
             UUID meshID = fst.second;
 
 	        MeshDrawBatch batch;
-            batch.meshData = m_meshData[meshID];
-            batch.matData = m_matData[matID];
+            batch.meshData = mMeshData[meshID];
+            batch.matData = mMatData[matID];
             batch.entities = snd;
 
             batches.push_back(batch);
         }
 	}
 
-	void BGFXRenderSystem::DrawMeshBatch(const MeshDrawBatch& meshDrawBatch)
+	void BGFXRenderSystem::drawMeshBatch(const MeshDrawBatch& meshDrawBatch) const
 	{
         for (const auto& entity : meshDrawBatch.entities)
         {
@@ -508,7 +508,7 @@ namespace puffin::rendering
             // Setup Transform
             float model[16];
 
-            BuildModelTransform(transform, model);
+            buildModelTransform(transform, model);
 
             bgfx::setTransform(model);
 
@@ -517,10 +517,10 @@ namespace puffin::rendering
         }
 	}
 
-	void BGFXRenderSystem::DrawMeshBatchInstanced(const MeshDrawBatch& meshDrawBatch)
+	void BGFXRenderSystem::drawMeshBatchInstanced(const MeshDrawBatch& meshDrawBatch)
 	{
         // Setup stride for instanced rendering
-        const uint16_t instanceStride = 80; // 64 Bytes for 4x4 matrix, 16 Bytes for Instance Index
+        constexpr uint16_t instanceStride = 80; // 64 Bytes for 4x4 matrix, 16 Bytes for Instance Index
 
         const uint32_t numEntities = meshDrawBatch.entities.size();
         const uint32_t numInstances = bgfx::getAvailInstanceDataBuffer(numEntities, instanceStride);
@@ -536,11 +536,11 @@ namespace puffin::rendering
             const auto& transform = mWorld->GetComponent<TransformComponent>(entity);
 
             // Setup Transform
-            float* mtx = (float*)data;
+            auto mtx = reinterpret_cast<float*>(data);
 
-            BuildModelTransform(transform, mtx);
+            buildModelTransform(transform, mtx);
 
-            float* index = (float*)&data[64];
+            auto* index = reinterpret_cast<float*>(&data[64]);
             index[0] = static_cast<float>(idx);
             index[1] = 0.0f;
             index[2] = 0.0f;
@@ -558,179 +558,177 @@ namespace puffin::rendering
         bgfx::submit(0, meshDrawBatch.matData.programHandle, 0, BGFX_DISCARD_TRANSFORM | BGFX_DISCARD_STATE | BGFX_DISCARD_INSTANCE_DATA);
     }
 
-	void BGFXRenderSystem::InitMeshComponent(std::shared_ptr<ECS::Entity> entity)
+	void BGFXRenderSystem::initMeshComponent(std::shared_ptr<ECS::Entity> entity)
 	{
         auto& mesh = entity->GetComponent<MeshComponent>();
 
         // Init Mesh
-        if (!m_meshData.Contains(mesh.meshAssetId))
+        if (!mMeshData.Contains(mesh.meshAssetId))
         {
 			MeshData meshData;
 
-			LoadAndInitMesh(mesh.meshAssetId, meshData);
+			loadAndInitMesh(mesh.meshAssetId, meshData);
 
-            m_meshData.Insert(mesh.meshAssetId, meshData);
-            m_meshSets.emplace(mesh.meshAssetId, std::set<ECS::EntityID>());
+            mMeshData.Insert(mesh.meshAssetId, meshData);
+            mMeshSets.emplace(mesh.meshAssetId, std::set<ECS::EntityID>());
         }
 
-        m_meshSets[mesh.meshAssetId].insert(entity->ID());
+        mMeshSets[mesh.meshAssetId].insert(entity->ID());
 
         // Init Textures
-        if (!m_texData.Contains(mesh.textureAssetId))
+        if (!mTexData.Contains(mesh.textureAssetId))
         {
 			TextureData texData;
 
-            LoadAndInitTexture(mesh.textureAssetId, texData);
+            loadAndInitTexture(mesh.textureAssetId, texData);
 
-            m_texData.Insert(mesh.textureAssetId, texData);
-            m_texSets.emplace(mesh.textureAssetId, std::set<ECS::EntityID>());
+            mTexData.Insert(mesh.textureAssetId, texData);
+            mTexSets.emplace(mesh.textureAssetId, std::set<ECS::EntityID>());
         }
 
-        m_texSets[mesh.textureAssetId].insert(entity->ID());
+        mTexSets[mesh.textureAssetId].insert(entity->ID());
 
         // Init Materials (Currently using default mesh program, will add proper material system later)
-        if (!m_matData.Contains(mesh.textureAssetId))
+        if (!mMatData.Contains(mesh.textureAssetId))
         {
 	        MaterialData matData;
 
-            matData.assetID = mesh.textureAssetId;
+            matData.assetId = mesh.textureAssetId;
 
-            if (m_useInstancing && m_supportsInstancing)
+            if (mUseInstancing && mSupportsInstancing)
             {
-                matData.programHandle = m_meshInstancedProgram;
+                matData.programHandle = mMeshInstancedProgram;
             }
             else
             {
-                matData.programHandle = m_meshProgram;
+                matData.programHandle = mMeshProgram;
             }
 
             matData.texIDs.push_back(mesh.textureAssetId);
 
-            m_matData.Insert(mesh.textureAssetId, matData);
-            m_matSets.emplace(mesh.textureAssetId, std::set<ECS::EntityID>());
+            mMatData.Insert(mesh.textureAssetId, matData);
+            mMatSets.emplace(mesh.textureAssetId, std::set<ECS::EntityID>());
         }
 
-        m_matSets[mesh.textureAssetId].insert(entity->ID());
+        mMatSets[mesh.textureAssetId].insert(entity->ID());
 	}
 
-	void BGFXRenderSystem::CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
+	void BGFXRenderSystem::cleanupMeshComponent(std::shared_ptr<ECS::Entity> entity)
 	{
-        auto& mesh = entity->GetComponent<MeshComponent>();
+		const auto& mesh = entity->GetComponent<MeshComponent>();
 
         // Cleanup Mesh Data
-        m_meshSets[mesh.meshAssetId].erase(entity->ID());
+        mMeshSets[mesh.meshAssetId].erase(entity->ID());
 
-        if (m_meshSets[mesh.meshAssetId].empty())
+        if (mMeshSets[mesh.meshAssetId].empty())
         {
-            bgfx::destroy(m_meshData[mesh.meshAssetId].vertexBufferHandle);
-            bgfx::destroy(m_meshData[mesh.meshAssetId].indexBufferHandle);
+            bgfx::destroy(mMeshData[mesh.meshAssetId].vertexBufferHandle);
+            bgfx::destroy(mMeshData[mesh.meshAssetId].indexBufferHandle);
 
-            m_meshData.Erase(mesh.meshAssetId);
-            m_meshSets.erase(mesh.meshAssetId);
+            mMeshData.Erase(mesh.meshAssetId);
+            mMeshSets.erase(mesh.meshAssetId);
         }
 
         // Cleanup Material Data
-        m_matSets[mesh.textureAssetId].erase(entity->ID());
+        mMatSets[mesh.textureAssetId].erase(entity->ID());
 
-        if (m_matSets[mesh.textureAssetId].empty())
+        if (mMatSets[mesh.textureAssetId].empty())
         {
-			m_matData.Erase(mesh.textureAssetId);
-            m_matSets.erase(mesh.textureAssetId);
+			mMatData.Erase(mesh.textureAssetId);
+            mMatSets.erase(mesh.textureAssetId);
         }
 
         // Cleanup Texture Data
-        m_texSets[mesh.textureAssetId].erase(entity->ID());
+        mTexSets[mesh.textureAssetId].erase(entity->ID());
 
-        if (m_texSets[mesh.textureAssetId].empty())
+        if (mTexSets[mesh.textureAssetId].empty())
         {
-			bgfx::destroy(m_texData[mesh.textureAssetId].handle);
+			bgfx::destroy(mTexData[mesh.textureAssetId].handle);
 
-            m_texData.Erase(mesh.textureAssetId);
-            m_texSets.erase(mesh.textureAssetId);
+            mTexData.Erase(mesh.textureAssetId);
+            mTexSets.erase(mesh.textureAssetId);
         }
 	}
 
-	void BGFXRenderSystem::InitEditorCamera()
+	void BGFXRenderSystem::initEditorCamera()
 	{
-        m_editorCam.position = {0.0f, 0.0f, 15.0f};
-        m_editorCam.aspect = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
-        m_editorCam.lookAt = m_editorCam.position + m_editorCam.direction;
+        mEditorCam.position = {0.0f, 0.0f, 15.0f};
+        mEditorCam.aspect = static_cast<float>(mWindowWidth) / static_cast<float>(mWindowHeight);
+        mEditorCam.lookAt = mEditorCam.position + mEditorCam.direction;
 
-        bx::mtxLookAt(m_editorCamMats.view, static_cast<bx::Vec3>(m_editorCam.position), static_cast<bx::Vec3>(m_editorCam.lookAt), { 0, 1, 0 }, bx::Handedness::Right);
-        bx::mtxProj(m_editorCamMats.proj, m_editorCam.fovY, m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
+        bx::mtxLookAt(mEditorCamMats.view, static_cast<bx::Vec3>(mEditorCam.position), static_cast<bx::Vec3>(mEditorCam.lookAt), { 0, 1, 0 }, bx::Handedness::Right);
+        bx::mtxProj(mEditorCamMats.proj, mEditorCam.fovY, mEditorCam.aspect, mEditorCam.zNear, mEditorCam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
 	}
 
-	void BGFXRenderSystem::UpdateEditorCamera()
+	void BGFXRenderSystem::updateEditorCamera()
     {
-        const auto inputSubsystem = mEngine->getSubsystem<Input::InputSubsystem>();
-
-        if (inputSubsystem->IsCursorLocked())
+	    if (const auto inputSubsystem = mEngine->getSubsystem<input::InputSubsystem>(); inputSubsystem->isCursorLocked())
         {
             // Camera Movement
-            if (m_moveLeft && !m_moveRight)
+            if (mMoveLeft && !mMoveRight)
             {
-                m_editorCam.position += m_editorCam.right * m_editorCam.speed * mEngine->deltaTime();
+                mEditorCam.position += mEditorCam.right * mEditorCam.speed * mEngine->deltaTime();
             }
 
-            if (m_moveRight && !m_moveLeft)
+            if (mMoveRight && !mMoveLeft)
             {
-                m_editorCam.position -= m_editorCam.right * m_editorCam.speed * mEngine->deltaTime();
+                mEditorCam.position -= mEditorCam.right * mEditorCam.speed * mEngine->deltaTime();
             }
 
-            if (m_moveForward && !m_moveBackward)
+            if (mMoveForward && !mMoveBackward)
             {
-                m_editorCam.position += m_editorCam.direction * m_editorCam.speed * mEngine->deltaTime();
+                mEditorCam.position += mEditorCam.direction * mEditorCam.speed * mEngine->deltaTime();
             }
 
-            if (m_moveBackward && !m_moveForward)
+            if (mMoveBackward && !mMoveForward)
             {
-                m_editorCam.position -= m_editorCam.direction * m_editorCam.speed * mEngine->deltaTime();
+                mEditorCam.position -= mEditorCam.direction * mEditorCam.speed * mEngine->deltaTime();
             }
 
-            if (m_moveUp && !m_moveDown)
+            if (mMoveUp && !mMoveDown)
             {
-                m_editorCam.position += m_editorCam.up * m_editorCam.speed * mEngine->deltaTime();
+                mEditorCam.position += mEditorCam.up * mEditorCam.speed * mEngine->deltaTime();
             }
 
-            if (m_moveDown && !m_moveUp)
+            if (mMoveDown && !mMoveUp)
             {
-                m_editorCam.position -= m_editorCam.up * m_editorCam.speed * mEngine->deltaTime();
+                mEditorCam.position -= mEditorCam.up * mEditorCam.speed * mEngine->deltaTime();
             }
 
             // Mouse Rotation
-            m_editorCam.yaw += inputSubsystem->GetMouseXOffset();
-            m_editorCam.pitch -= inputSubsystem->GetMouseYOffset();
+            mEditorCam.yaw += inputSubsystem->getMouseXOffset();
+            mEditorCam.pitch -= inputSubsystem->getMouseYOffset();
 
-            if (m_editorCam.pitch > 89.0f)
-                m_editorCam.pitch = 89.0f;
+            if (mEditorCam.pitch > 89.0f)
+                mEditorCam.pitch = 89.0f;
 
-            if (m_editorCam.pitch < -89.0f)
-                m_editorCam.pitch = -89.0f;
+            if (mEditorCam.pitch < -89.0f)
+                mEditorCam.pitch = -89.0f;
 
             // Calculate Direction vector from yaw and pitch of camera
-            m_editorCam.direction.x = cos(Maths::DegreesToRadians(m_editorCam.yaw)) * cos(Maths::DegreesToRadians(m_editorCam.pitch));
-            m_editorCam.direction.y = sin(Maths::DegreesToRadians(m_editorCam.pitch));
-            m_editorCam.direction.z = sin(Maths::DegreesToRadians(m_editorCam.yaw)) * cos(Maths::DegreesToRadians(m_editorCam.pitch));
+            mEditorCam.direction.x = cos(Maths::DegreesToRadians(mEditorCam.yaw)) * cos(Maths::DegreesToRadians(mEditorCam.pitch));
+            mEditorCam.direction.y = sin(Maths::DegreesToRadians(mEditorCam.pitch));
+            mEditorCam.direction.z = sin(Maths::DegreesToRadians(mEditorCam.yaw)) * cos(Maths::DegreesToRadians(mEditorCam.pitch));
 
-            m_editorCam.direction.Normalise();
+            mEditorCam.direction.Normalise();
         }
 
         // Calculate Right, Up and LookAt vectors
-        m_editorCam.right = m_editorCam.up.Cross(m_editorCam.direction).Normalised();
-        m_editorCam.lookAt = m_editorCam.position + m_editorCam.direction;
+        mEditorCam.right = mEditorCam.up.Cross(mEditorCam.direction).Normalised();
+        mEditorCam.lookAt = mEditorCam.position + mEditorCam.direction;
 
-        if (m_windowResized)
+        if (mWindowResized)
         {
-            m_editorCam.aspect = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
+            mEditorCam.aspect = static_cast<float>(mWindowWidth) / static_cast<float>(mWindowHeight);
         }
 
-        bx::mtxLookAt(m_editorCamMats.view, static_cast<bx::Vec3>(m_editorCam.position), static_cast<bx::Vec3>(m_editorCam.lookAt), {0, 1, 0}, bx::Handedness::Right);
-        bx::mtxProj(m_editorCamMats.proj, m_editorCam.fovY, m_editorCam.aspect, m_editorCam.zNear, m_editorCam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
+        bx::mtxLookAt(mEditorCamMats.view, static_cast<bx::Vec3>(mEditorCam.position), static_cast<bx::Vec3>(mEditorCam.lookAt), {0, 1, 0}, bx::Handedness::Right);
+        bx::mtxProj(mEditorCamMats.proj, mEditorCam.fovY, mEditorCam.aspect, mEditorCam.zNear, mEditorCam.zFar, bgfx::getCaps()->homogeneousDepth, bx::Handedness::Right);
     }
 
-	void BGFXRenderSystem::UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity)
+	void BGFXRenderSystem::updateCameraComponent(const std::shared_ptr<ECS::Entity>& entity) const
 	{
-        auto& transform = entity->GetComponent<TransformComponent>();
+		const auto& transform = entity->GetComponent<TransformComponent>();
         auto& cam = entity->GetComponent<CameraComponent>();
         auto& camMats = entity->GetComponent<CameraMatComponent>();
 
@@ -749,24 +747,24 @@ namespace puffin::rendering
         }
 	}
 
-	void BGFXRenderSystem::LoadAndInitMesh(UUID meshID, MeshData& meshData)
+	void BGFXRenderSystem::loadAndInitMesh(const UUID meshId, MeshData& meshData)
 	{
-        const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshID));
+        const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshId));
 
         if (meshAsset && meshAsset->load())
         {
-            meshData.assetID = meshID;
+            meshData.assetId = meshId;
             meshData.numVertices = meshAsset->numVertices();
             meshData.numIndices = meshAsset->numIndices();
 
-            meshData.vertexBufferHandle = InitVertexBuffer(meshAsset->vertices().data(), meshData.numVertices, s_layoutVertexPNTV32);
-            meshData.indexBufferHandle = InitIndexBuffer(meshAsset->indices().data(), meshData.numIndices, true);
+            meshData.vertexBufferHandle = initVertexBuffer(meshAsset->vertices().data(), meshData.numVertices, gLayoutVertexPNTV32);
+            meshData.indexBufferHandle = initIndexBuffer(meshAsset->indices().data(), meshData.numIndices, true);
 
             meshAsset->unload();
         }
 	}
 
-	bgfx::VertexBufferHandle BGFXRenderSystem::InitVertexBuffer(const void* vertices, const uint32_t& numVertices,
+	bgfx::VertexBufferHandle BGFXRenderSystem::initVertexBuffer(const void* vertices, const uint32_t& numVertices,
 		const bgfx::VertexLayout& layout)
 	{
 		// Allocate memory for vertex buffer
@@ -779,8 +777,8 @@ namespace puffin::rendering
         return bgfx::createVertexBuffer(mem, layout);
 	}
 
-	bgfx::IndexBufferHandle BGFXRenderSystem::InitIndexBuffer(const void* indices, const uint32_t numIndices,
-		bool use32BitIndices)
+	bgfx::IndexBufferHandle BGFXRenderSystem::initIndexBuffer(const void* indices, const uint32_t numIndices,
+	                                                          const bool use32BitIndices)
 	{
         // Set indices size and flags based on whether 16 or 32 bit indices are used
 		uint16_t indicesSize;
@@ -806,35 +804,35 @@ namespace puffin::rendering
         return bgfx::createIndexBuffer(mem, indexFlags);
 	}
 
-    void BGFXRenderSystem::LoadAndInitTexture(UUID texID, TextureData& texData)
+    void BGFXRenderSystem::loadAndInitTexture(UUID texId, TextureData& texData)
     {
-        const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(assets::AssetRegistry::get()->getAsset(texID));
+        const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(assets::AssetRegistry::get()->getAsset(texId));
 
         if (texAsset && texAsset->load())
         {
-            texData.assetID = texID;
+            texData.assetId = texId;
 
-            uint32_t texSize = texAsset->textureSize();
+            const uint32_t texSize = texAsset->textureSize();
 
             const bgfx::Memory* mem = bgfx::alloc(texSize);
 
             bx::memCopy(mem->data, texAsset->pixelData(), mem->size);
 
             texData.handle = bgfx::createTexture2D(texAsset->textureWidth(), texAsset->textureHeight(),
-                false, 1, g_texFormatMap.at(texAsset->textureFormat()), 0, mem);
+                false, 1, gTexFormatMap.at(texAsset->textureFormat()), 0, mem);
 
             texAsset->unload();
         }
     }
 
-    void BGFXRenderSystem::SetupLightUniformsForDraw() const
+    void BGFXRenderSystem::setupLightUniformsForDraw() const
     {
 		// Setup Light Data
-        float lightPos[G_MAX_LIGHTS][4];
-        float lightDir[G_MAX_LIGHTS][4];
-        float lightColor[G_MAX_LIGHTS][4];
-        float lightAmbientSpec[G_MAX_LIGHTS][4];
-        float lightAttenuation[G_MAX_LIGHTS][4];
+        float lightPos[gMaxLights][4];
+        float lightDir[gMaxLights][4];
+        float lightColor[gMaxLights][4];
+        float lightAmbientSpec[gMaxLights][4];
+        float lightAttenuation[gMaxLights][4];
         float lightIndex[4];
 
         int index = 0;
@@ -850,7 +848,7 @@ namespace puffin::rendering
         for (const auto& entity : lightEntities)
         {
             // Break out of loop when number of lights exceeds max
-            if (index >= G_MAX_LIGHTS)
+            if (index >= gMaxLights)
             {
                 break;
             }
@@ -869,7 +867,7 @@ namespace puffin::rendering
         for (const auto& entity : lightEntities)
         {
             // Break out of loop when number of lights exceeds max
-            if (index >= G_MAX_LIGHTS)
+            if (index >= gMaxLights)
             {
                 break;
             }
@@ -888,7 +886,7 @@ namespace puffin::rendering
         for (const auto& entity : lightEntities)
         {
             // Break out of loop when number of lights exceeds max
-            if (index >= G_MAX_LIGHTS)
+            if (index >= gMaxLights)
             {
                 break;
             }
@@ -910,7 +908,7 @@ namespace puffin::rendering
         for (const auto& entity : lightEntitiesOrdered)
         {
             // Break out of loop when number of lights exceeds max
-			if (index >= G_MAX_LIGHTS)
+			if (index >= gMaxLights)
 			{
 				break;
 			}
@@ -948,15 +946,15 @@ namespace puffin::rendering
 
         // Set Light Uniforms
         
-		bgfx::setUniform(m_lightUniformHandles.position, lightPos, G_MAX_LIGHTS);
-        bgfx::setUniform(m_lightUniformHandles.direction, lightDir, G_MAX_LIGHTS);
-        bgfx::setUniform(m_lightUniformHandles.color, lightColor, G_MAX_LIGHTS);
-        bgfx::setUniform(m_lightUniformHandles.ambientSpecular, lightAmbientSpec, G_MAX_LIGHTS);
-        bgfx::setUniform(m_lightUniformHandles.attenuation, lightAttenuation, G_MAX_LIGHTS);
-        bgfx::setUniform(m_lightUniformHandles.index, lightIndex, 1);
+		bgfx::setUniform(mLightUniformHandles.position, lightPos, gMaxLights);
+        bgfx::setUniform(mLightUniformHandles.direction, lightDir, gMaxLights);
+        bgfx::setUniform(mLightUniformHandles.color, lightColor, gMaxLights);
+        bgfx::setUniform(mLightUniformHandles.ambientSpecular, lightAmbientSpec, gMaxLights);
+        bgfx::setUniform(mLightUniformHandles.attenuation, lightAttenuation, gMaxLights);
+        bgfx::setUniform(mLightUniformHandles.index, lightIndex, 1);
     }
 
-    void BGFXRenderSystem::BuildModelTransform(const TransformComponent& transform, float* model)
+    void BGFXRenderSystem::buildModelTransform(const TransformComponent& transform, float* model)
 	{
         // Identity
 		bx::mtxIdentity(model);

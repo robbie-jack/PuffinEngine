@@ -16,7 +16,7 @@ namespace puffin::physics
 
 	private:
 
-		std::vector<std::shared_ptr<collision2D::Collider2D>> sortedColliders_;
+		std::vector<std::shared_ptr<collision2D::Collider2D>> mSortedColliders;
 
 		void sortCollidersByX(std::vector<std::shared_ptr<collision2D::Collider2D>>& colliders);
 

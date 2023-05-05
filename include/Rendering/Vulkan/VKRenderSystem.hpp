@@ -124,7 +124,7 @@ namespace puffin::rendering::VK
 		const UploadContext& GetUploadContext() const { return m_uploadContext; }
 		const vk::Queue& GetGraphicsQueue() const { return m_graphicsQueue; }
 
-		void OnInputEvent(const Input::InputEvent& inputEvent);
+		void OnInputEvent(const input::InputEvent& inputEvent);
 
 		bool IsReBAREnabled() const { return m_isReBAREnabled; }
 
@@ -184,7 +184,7 @@ namespace puffin::rendering::VK
 		bool m_moveUp = false;
 		bool m_moveDown = false;
 
-		RingBuffer<Input::InputEvent> m_inputEvents;
+		RingBuffer<input::InputEvent> m_inputEvents;
 
 		bool m_isInitialized = false; // Indicated initialization completed without any failures
 		bool m_isReBAREnabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)

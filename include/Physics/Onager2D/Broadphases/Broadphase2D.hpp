@@ -22,14 +22,14 @@ namespace puffin::physics
 		virtual void generateCollisionPairs(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
 		                                    collidersUpdated) = 0;
 
-		void SetWorld(std::shared_ptr<ECS::World> world)
+		void setWorld(const std::shared_ptr<ECS::World>& world)
 		{
-			world_ = world;
+			mWorld = world;
 		}
 
-		void SetECS(std::shared_ptr<ECS::EnTTSubsystem> ecs)
+		void setECS(const std::shared_ptr<ECS::EnTTSubsystem>& ecs)
 		{
-			ecs_ = ecs;
+			mEcs = ecs;
 		}
 
 	protected:
@@ -40,14 +40,14 @@ namespace puffin::physics
 			if (pair.first->uuid == pair.second->uuid)
 				return false;
 
-			const auto registry = ecs_->Registry();
+			const auto registry = mEcs->Registry();
 
-			if (!registry->valid(ecs_->GetEntity(pair.first->uuid)) || !registry->valid(ecs_->GetEntity(pair.second->uuid)))
+			if (!registry->valid(mEcs->GetEntity(pair.first->uuid)) || !registry->valid(mEcs->GetEntity(pair.second->uuid)))
 				return false;
 
 			// Don't perform collision check between colliders which both have infinite mass
-			const auto& rbA = registry->get<RigidbodyComponent2D>(ecs_->GetEntity(pair.first->uuid));
-			const auto& rbB = registry->get<RigidbodyComponent2D>(ecs_->GetEntity(pair.second->uuid));
+			const auto& rbA = registry->get<RigidbodyComponent2D>(mEcs->GetEntity(pair.first->uuid));
+			const auto& rbB = registry->get<RigidbodyComponent2D>(mEcs->GetEntity(pair.second->uuid));
 
 			if (rbA.mass == 0.0f && rbB.mass == 0.0f)
 				return false;
@@ -66,8 +66,8 @@ namespace puffin::physics
 			return true;
 		}
 
-		std::shared_ptr<ECS::World> world_ = nullptr;
-		std::shared_ptr<ECS::EnTTSubsystem> ecs_ = nullptr;
+		std::shared_ptr<ECS::World> mWorld = nullptr;
+		std::shared_ptr<ECS::EnTTSubsystem> mEcs = nullptr;
 
 	};
 

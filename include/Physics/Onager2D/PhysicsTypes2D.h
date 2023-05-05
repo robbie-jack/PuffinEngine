@@ -50,36 +50,36 @@ namespace puffin::physics
 		{
 		public:
 
-			Simplex2D() : m_size(0) {}
+			Simplex2D() : mSize(0) {}
 
 			Simplex2D& operator=(std::initializer_list<Vector2f> list)
 			{
 				for (auto v = list.begin(); v != list.end(); v++)
 				{
-					m_points[std::distance(list.begin(), v)] = *v;
+					mPoints[std::distance(list.begin(), v)] = *v;
 				}
 
-				m_size = list.size();
+				mSize = list.size();
 
 				return *this;
 			}
 
 			void pushFront(Vector2f point)
 			{
-				m_points = { point, m_points[0], m_points[1] };
-				m_size = std::min(m_size + 1, 3u);
+				mPoints = { point, mPoints[0], mPoints[1] };
+				mSize = std::min(mSize + 1, 3u);
 			}
 
-			Vector2f operator[](uint32_t i) const { return m_points[i]; }
-			[[nodiscard]] uint32_t size() const { return m_size; }
+			Vector2f operator[](uint32_t i) const { return mPoints[i]; }
+			[[nodiscard]] uint32_t size() const { return mSize; }
 
-			[[nodiscard]] auto begin() const { return m_points.begin(); }
-			[[nodiscard]] auto end() const { return m_points.end() - (3 - m_size); }
+			[[nodiscard]] auto begin() const { return mPoints.begin(); }
+			[[nodiscard]] auto end() const { return mPoints.end() - (3 - mSize); }
 
 		private:
 
-			std::array<Vector2f, 3> m_points;
-			uint32_t m_size;
+			std::array<Vector2f, 3> mPoints;
+			uint32_t mSize;
 
 		};
 
@@ -96,32 +96,32 @@ namespace puffin::physics
 
 			Polygon2D()
 			{
-				points_.reserve(32);
+				mPoints.reserve(32);
 			};
 
 			Polygon2D(const Simplex2D& simplex)
 			{
 				for (auto point : simplex)
 				{
-					points_.push_back(point);
+					mPoints.push_back(point);
 				}
 			}
 
 			void insert(int index, Vector2f point)
 			{
-				points_.insert(points_.begin() + index, point);
+				mPoints.insert(mPoints.begin() + index, point);
 			}
 
-			Vector2f operator[](uint32_t i) { return points_[i]; }
-			Vector2f operator[](uint32_t i) const { return points_[i]; }
-			uint32_t size() const { return points_.size(); }
+			Vector2f operator[](uint32_t i) { return mPoints[i]; }
+			Vector2f operator[](uint32_t i) const { return mPoints[i]; }
+			uint32_t size() const { return mPoints.size(); }
 
-			[[nodiscard]] auto begin() const { return points_.begin(); }
-			[[nodiscard]] auto end() const { return points_.end(); }
+			[[nodiscard]] auto begin() const { return mPoints.begin(); }
+			[[nodiscard]] auto end() const { return mPoints.end(); }
 
 		private:
 
-			std::vector<Vector2f> points_;
+			std::vector<Vector2f> mPoints;
 		};
 	}
 }

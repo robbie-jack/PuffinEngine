@@ -15,6 +15,7 @@
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
 #include "Components/Physics/VelocityComponent.hpp"
+#include "Physics/PhysicsConstants.h"
 
 #include "ECS/EnTTSubsystem.hpp"
 
@@ -79,14 +80,14 @@ namespace puffin::physics
 		{
 			const char* typeName = typeid(T).name();
 
-			assert(broadphases_.find(typeName) == broadphases_.end() && "Attempting to register already registered broadphase");
+			assert(mBroadphases.find(typeName) == mBroadphases.end() && "Attempting to register already registered broadphase");
 
 			std::shared_ptr<T> broadphase = std::make_shared<T>();
 			std::shared_ptr<Broadphase> broadphaseBase = std::static_pointer_cast<Broadphase>(broadphase);
-			broadphaseBase->SetWorld(mWorld);
-			broadphaseBase->SetECS(mEngine->getSubsystem<ECS::EnTTSubsystem>());
+			broadphaseBase->setWorld(mWorld);
+			broadphaseBase->setECS(mEngine->getSubsystem<ECS::EnTTSubsystem>());
 
-			broadphases_.emplace(typeName, broadphaseBase);
+			mBroadphases.emplace(typeName, broadphaseBase);
 		}
 
 		template<typename T>
@@ -94,9 +95,9 @@ namespace puffin::physics
 		{
 			const char* typeName = typeid(T).name();
 
-			assert(broadphases_.find(typeName) != broadphases_.end() && "Attempting to set un-registered broadphase");
+			assert(mBroadphases.find(typeName) != mBroadphases.end() && "Attempting to set un-registered broadphase");
 
-			activeBroadphase_ = broadphases_[typeName];
+			mActiveBroadphase = mBroadphases[typeName];
 		}
 
 		void onConstructBox(entt::registry& registry, entt::entity entity);
@@ -110,23 +111,21 @@ namespace puffin::physics
 
 	private:
 
-		constexpr static size_t maxShapes = 10000;
+		Vector2f mGravity = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
-		Vector2f gravity_ = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
+		PackedVector<Shape2D*> mShapes;
+		PackedVector<BoxShape2D> mBoxShapes;
+		PackedVector<CircleShape2D> mCircleShapes;
+		PackedVector<std::shared_ptr<collision2D::Collider2D>> mColliders;
 
-		PackedVector<Shape2D*> shapes_;
-		PackedVector<BoxShape2D> boxShapes_;
-		PackedVector<CircleShape2D> circleShapes_;
-		PackedVector<std::shared_ptr<collision2D::Collider2D>> colliders_;
+		bool mCollidersUpdated = false;
 
-		bool collidersUpdated_ = false;
+		std::vector<CollisionPair> mCollisionPairs; // Pairs of entities which should be checked for collisions
+		std::vector<collision2D::Contact> mCollisionContacts; // Pairs of entities which have collided
+		std::set<collision2D::Contact> mActiveContacts; // Set for tracking active collisions
 
-		std::vector<CollisionPair> collisionPairs_; // Pairs of entities which should be checked for collisions
-		std::vector<collision2D::Contact> collisionContacts_; // Pairs of entities which have collided
-		std::set<collision2D::Contact> activeContacts_; // Set for tracking active collisions
-
-		std::shared_ptr<Broadphase> activeBroadphase_ = nullptr;
-		std::unordered_map<const char*, std::shared_ptr<Broadphase>> broadphases_; // Map of registered broadphases
+		std::shared_ptr<Broadphase> mActiveBroadphase = nullptr;
+		std::unordered_map<const char*, std::shared_ptr<Broadphase>> mBroadphases; // Map of registered broadphases
 
 		// Init/Update/Delete of Physics Related Components
 		void initCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle);

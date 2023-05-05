@@ -23,11 +23,11 @@ namespace puffin
 
 				io::ProjectSettings& settings = m_engine->settings();
 
-				auto input = m_engine->getSubsystem<Input::InputSubsystem>();
+				auto input = m_engine->getSubsystem<input::InputSubsystem>();
 
 				if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
 				{
-					input->GetSensitivity() = settings.mouseSensitivity;
+					input->sensitivity() = settings.mouseSensitivity;
 				}
 
 				if (ImGui::SliderFloat("Field of View", &settings.cameraFov, 30.0f, 120.0f, "%f"))

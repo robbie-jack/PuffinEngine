@@ -2,20 +2,20 @@
 
 #include <string>
 
-namespace puffin::Input
+namespace puffin::input
 {
 	enum class KeyState
 	{
-		PRESSED = 0,
-		HELD = 1,
-		RELEASED = 2,
-		UP = 3
+		Pressed = 0,
+		Held = 1,
+		Released = 2,
+		Up = 3
 	};
 
 	struct InputEvent
 	{
-		InputEvent() : actionName{ "" }, actionState{ KeyState::UP } {}
-		InputEvent(std::string name, KeyState state) : actionName{ name }, actionState{ state } {}
+		InputEvent() : actionState(KeyState::Up) {}
+		InputEvent(std::string name, KeyState state) : actionName(std::move(name)), actionState(state) {}
 
 		std::string actionName;
 		KeyState actionState;

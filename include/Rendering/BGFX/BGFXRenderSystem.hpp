@@ -18,21 +18,18 @@
 
 #include <memory>
 
-namespace std
+template<>
+struct std::hash<std::pair<puffin::UUID, puffin::UUID>>
 {
-	template<>
-	struct hash<std::pair<puffin::UUID, puffin::UUID>>
+	std::size_t operator()(const std::pair<puffin::UUID, puffin::UUID>& pair) const noexcept
 	{
-		std::size_t operator()(const std::pair<puffin::UUID, puffin::UUID>& pair) const
-		{
-			return hash<uint64_t>()((uint64_t)pair.first) ^ hash<uint64_t>()((uint64_t)pair.second);
-		}
-	};
-}
+		return hash<uint64_t>()(pair.first) ^ hash<uint64_t>()(pair.second);
+	}
+};
 
 namespace puffin::rendering
 {
-	static VertexPC32 s_cubeVertices[] =
+	static const VertexPC32 gCubeVertices[] =
 	{
 		{{-1.0f,  1.0f,  1.0f}, 0xff000000 },
 		{ {1.0f,  1.0f,  1.0f}, 0xff0000ff },
@@ -44,7 +41,7 @@ namespace puffin::rendering
 		{ {1.0f, -1.0f, -1.0f}, 0xffffffff },
 	};
 
-	static const uint16_t s_cubeTriList[] =
+	static const uint16_t gCubeTriList[] =
 	{
 		0, 1, 2, // 0
 		1, 3, 2,
@@ -60,15 +57,15 @@ namespace puffin::rendering
 		6, 3, 7,
 	};
 
-	const static std::unordered_map<assets::TextureFormat, bgfx::TextureFormat::Enum> g_texFormatMap =
+	const static std::unordered_map<assets::TextureFormat, bgfx::TextureFormat::Enum> gTexFormatMap =
 	{
 		{ assets::TextureFormat::RGBA8, bgfx::TextureFormat::RGBA8 }
 	};
 
-	constexpr uint16_t G_MAX_LIGHTS = 16;
+	constexpr uint16_t gMaxLights = 16;
 
-	typedef std::unordered_map<UUID, std::set<ECS::EntityID>> AssetSetMap; // Used for tracking which entities are using each loaded asset
-	typedef std::pair<UUID, UUID> MeshMatPair;
+	using AssetSetMap = std::unordered_map<UUID, std::set<ECS::EntityID>>; // Used for tracking which entities are using each loaded asset
+	using MeshMatPair = std::pair<UUID, UUID>;
 
 	struct CameraMatComponent
 	{
@@ -76,7 +73,7 @@ namespace puffin::rendering
 		float proj[16];
 	};
 
-	static bgfx::ShaderHandle LoadShader(const char* filename)
+	static bgfx::ShaderHandle loadShader(const char* filename)
 	{
 		/*const char* shaderPath = "???";
 
@@ -125,48 +122,49 @@ namespace puffin::rendering
 
 		void setupCallbacks() override
 		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "BGFXRenderSystem: Init");
-			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "BGFXRenderSystem: Setup");
-			mEngine->registerCallback(core::ExecutionStage::Render, [&]() { Render(); }, "BGFXRenderSystem: Render");
-			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { Stop(); }, "BGFXRenderSystem: Stop");
-			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "BGFXRenderSystem: Cleanup");
+			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "BGFXRenderSystem: Init");
+			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "BGFXRenderSystem: Setup");
+			mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "BGFXRenderSystem: Render");
+			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "BGFXRenderSystem: Stop");
+			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "BGFXRenderSystem: Cleanup");
 		}
 
-		void Init();
-		void Setup();
-		void Render();
-		void Stop();
-		void Cleanup();
+		void init();
+		void setup();
+		void render();
+		void stop();
+		void cleanup();
 
-		void OnInputEvent(const Input::InputEvent& inputEvent);
+		void onInputEvent(const input::InputEvent& inputEvent);
 
 	private:
 
-		uint32_t m_frameCounter = 0;
-		int m_windowWidth, m_windowHeight;
-		bool m_windowResized = false;
+		uint32_t mFrameCounter = 0;
+		int mWindowWidth;
+		int mWindowHeight;
+		bool mWindowResized = false;
 
-		bool m_useInstancing = false;
-		bool m_supportsInstancing = false;
+		bool mUseInstancing = false;
+		bool mSupportsInstancing = false;
 
 		// Mesh Vars
-		MeshData m_cubeMeshData;
-		bgfx::ProgramHandle m_cubeProgram;
+		MeshData mCubeMeshData;
+		bgfx::ProgramHandle mCubeProgram;
 
-		bgfx::ProgramHandle m_meshProgram;
-		bgfx::ProgramHandle m_meshInstancedProgram;
+		bgfx::ProgramHandle mMeshProgram;
+		bgfx::ProgramHandle mMeshInstancedProgram;
 
-		PackedVector<MeshData> m_meshData;
-		PackedVector<TextureData> m_texData;
-		PackedVector<MaterialData> m_matData;
+		PackedVector<MeshData> mMeshData;
+		PackedVector<TextureData> mTexData;
+		PackedVector<MaterialData> mMatData;
 
-		AssetSetMap m_meshSets;
-		AssetSetMap m_texSets;
-		AssetSetMap m_matSets;
+		AssetSetMap mMeshSets;
+		AssetSetMap mTexSets;
+		AssetSetMap mMatSets;
 
 		// Texture Vars
-		bgfx::UniformHandle m_texAlbedoSampler;
-		bgfx::UniformHandle m_texNormalSampler;
+		bgfx::UniformHandle mTexAlbedoSampler;
+		bgfx::UniformHandle mTexNormalSampler;
 
 		//PackedVector<TextureData> m_texAlbedoHandles;
 		//PackedVector<TextureData> m_texNormalHandles;
@@ -174,66 +172,66 @@ namespace puffin::rendering
 		//TextureArray m_texAlbedoArray;
 
 		// Light Vars
-		LightUniformHandles m_lightUniformHandles;
+		LightUniformHandles mLightUniformHandles;
 
-		EditorCamera m_editorCam;
-		CameraMatComponent m_editorCamMats;
-		bool m_moveLeft = false;
-		bool m_moveRight = false;
-		bool m_moveForward = false;
-		bool m_moveBackward = false;
-		bool m_moveUp = false;
-		bool m_moveDown = false;
-		bgfx::UniformHandle m_camPosHandle;
+		EditorCamera mEditorCam;
+		CameraMatComponent mEditorCamMats;
+		bool mMoveLeft = false;
+		bool mMoveRight = false;
+		bool mMoveForward = false;
+		bool mMoveBackward = false;
+		bool mMoveUp = false;
+		bool mMoveDown = false;
+		bgfx::UniformHandle mCamPosHandle;
 
-		RingBuffer<Input::InputEvent> m_inputEvents;
+		RingBuffer<input::InputEvent> mInputEvents;
 
-		DeletionQueue m_deletionQueue;
+		DeletionQueue mDeletionQueue;
 
-		void InitBGFX();
-		void InitStaticCubeData();
-		void InitMeshProgram();
-		void InitMeshInstancedProgram();
-		void InitTexSamplers();
-		void InitCamUniforms();
-		void InitLightUniforms();
+		void initBGFX();
+		void initStaticCubeData();
+		void initMeshProgram();
+		void initMeshInstancedProgram();
+		void initTexSamplers();
+		void initCamUniforms();
+		void initLightUniforms();
 
-		void ProcessEvents();
+		void processEvents();
 
-		void InitComponents();
-		void UpdateComponents();
-		void CleanupComponents();
+		void initComponents();
+		void updateComponents();
+		void cleanupComponents();
 
-		void Draw();
-		void DrawScene();
-		void BuildBatches(std::vector<MeshDrawBatch>& batches);
-		void DrawMeshBatch(const MeshDrawBatch& meshDrawBatch);
-		void DrawMeshBatchInstanced(const MeshDrawBatch& meshDrawBatch);
+		void draw();
+		void drawScene();
+		void buildBatches(std::vector<MeshDrawBatch>& batches);
+		void drawMeshBatch(const MeshDrawBatch& meshDrawBatch) const;
+		void drawMeshBatchInstanced(const MeshDrawBatch& meshDrawBatch);
 
-		void InitMeshComponent(std::shared_ptr<ECS::Entity> entity);
-		void CleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
+		void initMeshComponent(std::shared_ptr<ECS::Entity> entity);
+		void cleanupMeshComponent(std::shared_ptr<ECS::Entity> entity);
 
-		void InitEditorCamera();
-		void UpdateEditorCamera();
-		void UpdateCameraComponent(std::shared_ptr<ECS::Entity> entity);
+		void initEditorCamera();
+		void updateEditorCamera();
+		void updateCameraComponent(const std::shared_ptr<ECS::Entity>& entity) const;
 
-		static inline void LoadAndInitMesh(UUID meshID, MeshData& meshData);
-		static inline bgfx::VertexBufferHandle InitVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
-		static inline bgfx::IndexBufferHandle InitIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
+		static inline void loadAndInitMesh(UUID meshId, MeshData& meshData);
+		static inline bgfx::VertexBufferHandle initVertexBuffer(const void* vertices, const uint32_t& numVertices, const bgfx::VertexLayout& layout);
+		static inline bgfx::IndexBufferHandle initIndexBuffer(const void* indices, const uint32_t numIndices, bool use32BitIndices = false);
 
-		static inline void LoadAndInitTexture(UUID texID, TextureData& texData);
+		static inline void loadAndInitTexture(UUID texId, TextureData& texData);
 
-		void SetupLightUniformsForDraw() const;
+		void setupLightUniformsForDraw() const;
 
-		static void BuildModelTransform(const TransformComponent& transform, float* model);
+		static void buildModelTransform(const TransformComponent& transform, float* model);
 
-		static inline void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
+		static void frameBufferResizeCallback(GLFWwindow* window, const int width, const int height)
 		{
-			auto app = reinterpret_cast<BGFXRenderSystem*>(glfwGetWindowUserPointer(window));
+			auto system = reinterpret_cast<BGFXRenderSystem*>(glfwGetWindowUserPointer(window));
 
-			app->m_windowResized = true;
-			app->m_windowWidth = width;
-			app->m_windowHeight = height;
+			system->mWindowResized = true;
+			system->mWindowWidth = width;
+			system->mWindowHeight = height;
 		}
 	};
 }

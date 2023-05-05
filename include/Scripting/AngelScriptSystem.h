@@ -71,7 +71,7 @@ namespace puffin
 			ECS::EntityID m_currentEntityID = 0; // Entity ID for currently executing script
 
 			// Event Buffers
-			std::shared_ptr<RingBuffer<Input::InputEvent>> m_inputEvents = nullptr;;
+			std::shared_ptr<RingBuffer<input::InputEvent>> m_inputEvents = nullptr;;
 			std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> m_collisionBeginEvents = nullptr;
 			std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> m_collisionEndEvents = nullptr;
 

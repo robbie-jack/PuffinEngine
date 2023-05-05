@@ -35,9 +35,9 @@ namespace puffin::rendering
 			return pos == other.pos && color == other.color;
 		}
 
-		static bgfx::VertexLayout GetLayout();
+		static bgfx::VertexLayout getLayout();
 
-		static VK::Util::VertexLayout GetLayoutVK();
+		static VK::Util::VertexLayout getLayoutVK();
 	};
 
 	struct VertexPNC32
@@ -51,9 +51,9 @@ namespace puffin::rendering
 			return pos == other.pos && normal == other.normal && color == other.color;
 		}
 
-		static bgfx::VertexLayout GetLayout();
+		static bgfx::VertexLayout getLayout();
 
-		static VK::Util::VertexLayout GetLayoutVK();
+		static VK::Util::VertexLayout getLayoutVK();
 	};
 
 	struct VertexPNTV32
@@ -71,9 +71,9 @@ namespace puffin::rendering
 				&& uv == other.uv;
 		}
 
-		static bgfx::VertexLayout GetLayout();
+		static bgfx::VertexLayout getLayout();
 
-		static VK::Util::VertexLayout GetLayoutVK();
+		static VK::Util::VertexLayout getLayoutVK();
 	};
 
 	struct VertexP64NTV32
@@ -91,12 +91,12 @@ namespace puffin::rendering
 				&& uv == other.uv;
 		}
 
-		static bgfx::VertexLayout GetLayout();
+		static bgfx::VertexLayout getLayout();
 
-		static VK::Util::VertexLayout GetLayoutVK();
+		static VK::Util::VertexLayout getLayoutVK();
 	};
 
-	static VertexFormat ParseVertexFormatFromString(const char* f)
+	static VertexFormat parseVertexFormatFromString(const char* f)
 	{
 		if (strcmp(f, "PNTV32") == 0)
 		{
@@ -112,7 +112,7 @@ namespace puffin::rendering
 		}
 	}
 
-	static const char* ParseVertexStringFromFormat(VertexFormat format)
+	static const char* parseVertexStringFromFormat(const VertexFormat format)
 	{
 		if (format == VertexFormat::PNTV32)
 		{
@@ -126,7 +126,7 @@ namespace puffin::rendering
 		return "Invalid Format";
 	}
 
-	static uint32_t GetVertexSizeFromFormat(VertexFormat format)
+	static uint32_t parseVertexSizeFromFormat(const VertexFormat format)
 	{
 		if (format == VertexFormat::PNTV32)
 		{
@@ -145,7 +145,7 @@ namespace std
 {
 	template<> struct hash<puffin::rendering::VertexPNTV32>
 	{
-		size_t operator()(puffin::rendering::VertexPNTV32 const& vertex) const
+		size_t operator()(puffin::rendering::VertexPNTV32 const& vertex) const noexcept
 		{
 			return (hash<puffin::Vector3f>()(vertex.pos) ^
 				(hash<puffin::Vector3f>()(vertex.normal) << 1) ^
@@ -156,7 +156,7 @@ namespace std
 
 	template<> struct hash<puffin::rendering::VertexP64NTV32>
 	{
-		size_t operator()(puffin::rendering::VertexP64NTV32 const& vertex) const
+		size_t operator()(puffin::rendering::VertexP64NTV32 const& vertex) const noexcept
 		{
 			return (hash<puffin::Vector3d>()(vertex.pos) ^
 				(hash<puffin::Vector3f>()(vertex.normal) << 1) ^

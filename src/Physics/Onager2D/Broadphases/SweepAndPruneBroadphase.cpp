@@ -11,20 +11,20 @@ namespace puffin::physics
 	{
 		if (collidersUpdated)
 		{
-			sortedColliders_.clear();
-			sortedColliders_.reserve(inColliders.Size());
+			mSortedColliders.clear();
+			mSortedColliders.reserve(inColliders.Size());
 
 			for (const auto& collider : inColliders)
 			{
-				sortedColliders_.push_back(collider);
+				mSortedColliders.push_back(collider);
 			}
 		}
 
-		sortCollidersByX(sortedColliders_);
+		sortCollidersByX(mSortedColliders);
 
-		for (const auto& colliderA : sortedColliders_)
+		for (const auto& colliderA : mSortedColliders)
 		{
-			for (const auto& colliderB : sortedColliders_)
+			for (const auto& colliderB : mSortedColliders)
 			{
 				AABB a = colliderA->getAABB();
 				AABB b = colliderB->getAABB();

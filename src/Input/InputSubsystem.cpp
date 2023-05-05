@@ -7,46 +7,45 @@
 
 namespace puffin
 {
-	namespace Input
+	namespace input
 	{
 		void InputSubsystem::setupCallbacks()
 		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "InputSubsystem: Init", 50);
-			mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "InputSubsystem: Update");
-			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "InputSubsystem: Cleanup", 150);
+			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "InputSubsystem: Init", 50);
+			mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "InputSubsystem: Update");
+			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "InputSubsystem: Cleanup", 150);
 		}
 
-		void InputSubsystem::Init()
+		void InputSubsystem::init()
 		{
-			m_window = mEngine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
-			m_world = mEngine->getSubsystem<ECS::World>();
+			mWindow = mEngine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
 
 			// Setup Actions
 
 			// Camera Actions
-			AddAction("CamMoveForward", GLFW_KEY_W);
-			AddAction("CamMoveBackward", GLFW_KEY_S);
-			AddAction("CamMoveLeft", GLFW_KEY_A);
-			AddAction("CamMoveRight", GLFW_KEY_D);
-			AddAction("CamMoveUp", GLFW_KEY_E);
-			AddAction("CamMoveDown", GLFW_KEY_Q);
-			AddAction("CursorSwitch", GLFW_KEY_F1);
-			AddAction("Spacebar", GLFW_KEY_SPACE);
-			AddAction("Play", GLFW_KEY_P);
-			AddAction("Restart", GLFW_KEY_O);
+			addAction("CamMoveForward", GLFW_KEY_W);
+			addAction("CamMoveBackward", GLFW_KEY_S);
+			addAction("CamMoveLeft", GLFW_KEY_A);
+			addAction("CamMoveRight", GLFW_KEY_D);
+			addAction("CamMoveUp", GLFW_KEY_E);
+			addAction("CamMoveDown", GLFW_KEY_Q);
+			addAction("CursorSwitch", GLFW_KEY_F1);
+			addAction("Spacebar", GLFW_KEY_SPACE);
+			addAction("Play", GLFW_KEY_P);
+			addAction("Restart", GLFW_KEY_O);
 
 			// Setup Mouse Cursor
-			if (cursor_locked == true)
+			if (mCursorLocked == true)
 			{
-				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			}
 			else
 			{
-				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
 		}
 
-		void puffin::Input::InputSubsystem::Update()
+		void puffin::input::InputSubsystem::update()
 		{
 			glfwPollEvents();
 
@@ -55,41 +54,41 @@ namespace puffin
 			bool stateChanged = false;
 
 			// Loop through current actions and update action states
-			for (auto& action : m_actions)
+			for (auto& action : mActions)
 			{
 				stateChanged = false;
 
 				// Loop over each key in this action
 				for (auto key : action.keys)
 				{
-					int state = glfwGetKey(m_window, key);
+					int state = glfwGetKey(mWindow, key);
 
 					if (state == GLFW_PRESS)
 					{
-						if (!stateChanged && action.state == KeyState::UP)
+						if (!stateChanged && action.state == KeyState::Up)
 						{
-							action.state = KeyState::PRESSED;
+							action.state = KeyState::Pressed;
 							stateChanged = true;
 						}
 
-						if (!stateChanged && action.state == KeyState::PRESSED)
+						if (!stateChanged && action.state == KeyState::Pressed)
 						{
-							action.state = KeyState::HELD;
+							action.state = KeyState::Held;
 							stateChanged = true;
 						}
 					}
 
 					if (state == GLFW_RELEASE)
 					{
-						if (!stateChanged && action.state == KeyState::HELD)
+						if (!stateChanged && action.state == KeyState::Held)
 						{
-							action.state = KeyState::RELEASED;
+							action.state = KeyState::Released;
 							stateChanged = true;
 						}
 
-						if (!stateChanged && action.state == KeyState::RELEASED)
+						if (!stateChanged && action.state == KeyState::Released)
 						{
-							action.state = KeyState::UP;
+							action.state = KeyState::Up;
 							stateChanged = true;
 						}
 					}
@@ -107,69 +106,68 @@ namespace puffin
 			}
 
 			// Update Mouse
-			if (GetAction("CursorSwitch").state == KeyState::PRESSED)
+			if (getAction("CursorSwitch").state == KeyState::Pressed)
 			{
-				if (cursor_locked == true)
+				if (mCursorLocked == true)
 				{
-					glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 				}
 				else
 				{
-					glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 				}
 
-				cursor_locked = !cursor_locked;
+				mCursorLocked = !mCursorLocked;
 			}
 
 			// Update Current and Last Mouse Positions
-			last_x_pos = x_pos;
-			last_y_pos = y_pos;
-			glfwGetCursorPos(m_window, &x_pos, &y_pos);
+			mLastXPos = mXPos;
+			mLastYPos = mYPos;
+			glfwGetCursorPos(mWindow, &mXPos, &mYPos);
 
 			// Prevent Camera Jumping when window first starts
-			if (firstMouse)
+			if (mFirstMouse)
 			{
-				last_x_pos = x_pos;
-				last_y_pos = y_pos;
-				firstMouse = false;
+				mLastXPos = mXPos;
+				mLastYPos = mYPos;
+				mFirstMouse = false;
 			}
 		}
 
-		void InputSubsystem::Cleanup()
+		void InputSubsystem::cleanup()
 		{
-			m_world = nullptr;
-			m_window = nullptr;
+			mWindow = nullptr;
 		}
 
-		void puffin::Input::InputSubsystem::AddAction(std::string name, int key)
+		void puffin::input::InputSubsystem::addAction(std::string name, int key)
 		{
 			InputAction new_action;
 			new_action.name = name;
-			new_action.id = nextID;
+			new_action.id = mNextId;
 			new_action.keys.push_back(key);
-			new_action.state = KeyState::UP;
+			new_action.state = KeyState::Up;
 
-			m_actions.push_back(new_action);
+			mActions.push_back(new_action);
 
-			nextID++;
+			mNextId++;
 		}
 
-		void puffin::Input::InputSubsystem::AddAction(std::string name, std::vector<int> keys)
+		void puffin::input::InputSubsystem::addAction(std::string name, std::vector<int> keys)
 		{
 			InputAction new_action;
 			new_action.name = name;
-			new_action.id = nextID;
+			new_action.id = mNextId;
 			new_action.keys = keys;
-			new_action.state = KeyState::UP;
+			new_action.state = KeyState::Up;
 
-			m_actions.push_back(new_action);
+			mActions.push_back(new_action);
 
-			nextID++;
+			mNextId++;
 		}
 
-		InputAction puffin::Input::InputSubsystem::GetAction(std::string name) const
+		InputAction puffin::input::InputSubsystem::getAction(std::string name) const
 		{
-			for (auto action : m_actions)
+			for (auto action : mActions)
 			{
 				if (action.name == name)
 				{

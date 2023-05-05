@@ -100,8 +100,8 @@ namespace puffin::rendering::VK
 		// Connect Signals
 		const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 
-		signalSubsystem->connect<Input::InputEvent>(
-			[&](const Input::InputEvent& inputEvent)
+		signalSubsystem->connect<input::InputEvent>(
+			[&](const input::InputEvent& inputEvent)
 			{
 				shared_from_this()->OnInputEvent(inputEvent);
 			}
@@ -164,7 +164,7 @@ namespace puffin::rendering::VK
 		}
 	}
 
-	void VKRenderSystem::OnInputEvent(const Input::InputEvent& inputEvent)
+	void VKRenderSystem::OnInputEvent(const input::InputEvent& inputEvent)
 	{
 		m_inputEvents.Push(inputEvent);
 	}
@@ -599,7 +599,7 @@ namespace puffin::rendering::VK
 			.Shader(vk::ShaderStageFlagBits::eFragment, m_forwardFragMod)
 			.DepthStencilState(depthStencilInfo)
 			// Define vertex binding/attributes
-			.VertexLayout(VertexPNTV32::GetLayoutVK())
+			.VertexLayout(VertexPNTV32::getLayoutVK())
 			// Add rendering info struct
 			.AddPNext(&pipelineRenderInfo)
 			// Create pipeline
@@ -682,16 +682,16 @@ namespace puffin::rendering::VK
 
 	void VKRenderSystem::ProcessEvents()
 	{
-		Input::InputEvent inputEvent;
+		input::InputEvent inputEvent;
 		while (m_inputEvents.Pop(inputEvent))
 		{
 			if (inputEvent.actionName == "CamMoveLeft")
 			{
-				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
 				{
 					m_moveLeft = true;
 				}
-				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::input::KeyState::Released)
 				{
 					m_moveLeft = false;
 				}
@@ -699,11 +699,11 @@ namespace puffin::rendering::VK
 
 			if (inputEvent.actionName == "CamMoveRight")
 			{
-				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
 				{
 					m_moveRight = true;
 				}
-				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::input::KeyState::Released)
 				{
 					m_moveRight = false;
 				}
@@ -711,11 +711,11 @@ namespace puffin::rendering::VK
 
 			if (inputEvent.actionName == "CamMoveForward")
 			{
-				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
 				{
 					m_moveForward = true;
 				}
-				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::input::KeyState::Released)
 				{
 					m_moveForward = false;
 				}
@@ -723,11 +723,11 @@ namespace puffin::rendering::VK
 
 			if (inputEvent.actionName == "CamMoveBackward")
 			{
-				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
 				{
 					m_moveBackward = true;
 				}
-				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::input::KeyState::Released)
 				{
 					m_moveBackward = false;
 				}
@@ -735,11 +735,11 @@ namespace puffin::rendering::VK
 
 			if (inputEvent.actionName == "CamMoveUp")
 			{
-				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
 				{
 					m_moveUp = true;
 				}
-				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::input::KeyState::Released)
 				{
 					m_moveUp = false;
 				}
@@ -747,11 +747,11 @@ namespace puffin::rendering::VK
 
 			if (inputEvent.actionName == "CamMoveDown")
 			{
-				if (inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
 				{
 					m_moveDown = true;
 				}
-				else if (inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+				else if (inputEvent.actionState == puffin::input::KeyState::Released)
 				{
 					m_moveDown = false;
 				}
@@ -788,9 +788,9 @@ namespace puffin::rendering::VK
 
 	void VKRenderSystem::UpdateEditorCamera()
 	{
-		const auto inputSubsystem = mEngine->getSubsystem<Input::InputSubsystem>();
+		const auto inputSubsystem = mEngine->getSubsystem<input::InputSubsystem>();
 
-		if (inputSubsystem->IsCursorLocked())
+		if (inputSubsystem->isCursorLocked())
 		{
 			// Camera Movement
 			if (m_moveLeft && !m_moveRight)
@@ -824,8 +824,8 @@ namespace puffin::rendering::VK
 			}
 
 			// Mouse Rotation
-			m_editorCam.yaw += inputSubsystem->GetMouseXOffset();
-			m_editorCam.pitch -= inputSubsystem->GetMouseYOffset();
+			m_editorCam.yaw += inputSubsystem->getMouseXOffset();
+			m_editorCam.pitch -= inputSubsystem->getMouseYOffset();
 
 			if (m_editorCam.pitch > 89.0f)
 				m_editorCam.pitch = 89.0f;

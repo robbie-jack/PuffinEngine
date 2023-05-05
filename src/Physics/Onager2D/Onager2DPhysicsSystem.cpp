@@ -22,9 +22,9 @@ namespace puffin
 
 		Onager2DPhysicsSystem::Onager2DPhysicsSystem()
 		{
-			boxShapes_.Reserve(6000);
-			circleShapes_.Reserve(2000);
-			colliders_.Reserve(6000);
+			mBoxShapes.Reserve(6000);
+			mCircleShapes.Reserve(2000);
+			mColliders.Reserve(6000);
 
 			mSystemInfo.name = "Onager2DPhysicsSystem";
 		}
@@ -50,7 +50,7 @@ namespace puffin
 			const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 			// Copy component transform into collider
-			for (const auto collider : colliders_)
+			for (const auto collider : mColliders)
 			{
 				//const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity);
 				const auto& transform = registry->get<const TransformComponent>(mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(collider->uuid));
@@ -71,16 +71,16 @@ namespace puffin
 			// Generate Collision Events for this Tick
 			generateCollisionEvents();
 
-			collidersUpdated_ = false;
+			mCollidersUpdated = false;
 		}
 
 		void Onager2DPhysicsSystem::stop()
 		{
-			boxShapes_.Clear();
-			circleShapes_.Clear();
-			colliders_.Clear();
-			collisionPairs_.clear();
-			collisionContacts_.clear();
+			mBoxShapes.Clear();
+			mCircleShapes.Clear();
+			mColliders.Clear();
+			mCollisionPairs.clear();
+			mCollisionContacts.clear();
 		}
 
 		void Onager2DPhysicsSystem::onConstructBox(entt::registry& registry, entt::entity entity)
@@ -117,9 +117,9 @@ namespace puffin
 		{
 			const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-			if (shapes_.Contains(object.uuid))
+			if (mShapes.Contains(object.uuid))
 			{
-				const auto collider = std::make_shared<collision2D::BoxCollider2D>(object.uuid, &boxShapes_[object.uuid]);
+				const auto collider = std::make_shared<collision2D::BoxCollider2D>(object.uuid, &mBoxShapes[object.uuid]);
 
 				insertCollider(object.uuid, collider);
 			}
@@ -139,18 +139,18 @@ namespace puffin
 		void Onager2DPhysicsSystem::initCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle)
 		{
 			// If there is no shape for this entity in vector
-			if (!circleShapes_.Contains(object.uuid))
+			if (!mCircleShapes.Contains(object.uuid))
 			{
-				circleShapes_.Emplace(object.uuid, CircleShape2D());
+				mCircleShapes.Emplace(object.uuid, CircleShape2D());
 			}
 
-			circleShapes_[object.uuid].centreOfMass = circle.centreOfMass;
-			circleShapes_[object.uuid].radius = circle.radius;
+			mCircleShapes[object.uuid].centreOfMass = circle.centreOfMass;
+			mCircleShapes[object.uuid].radius = circle.radius;
 
 			if (mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity))
 			{
 				// If there is no collider for this entity, create new one
-				const auto collider = std::make_shared<collision2D::CircleCollider2D>(object.uuid, &circleShapes_[object.uuid]);
+				const auto collider = std::make_shared<collision2D::CircleCollider2D>(object.uuid, &mCircleShapes[object.uuid]);
 
 				insertCollider(object.uuid, collider);
 			}
@@ -158,10 +158,10 @@ namespace puffin
 
 		void Onager2DPhysicsSystem::cleanupCircle(const SceneObjectComponent& object)
 		{
-			if (circleShapes_.Contains(object.uuid))
+			if (mCircleShapes.Contains(object.uuid))
 			{
-				circleShapes_.Erase(object.uuid);
-				shapes_.Erase(object.uuid);
+				mCircleShapes.Erase(object.uuid);
+				mShapes.Erase(object.uuid);
 			}
 
 			eraseCollider(object.uuid);
@@ -170,24 +170,24 @@ namespace puffin
 		void Onager2DPhysicsSystem::initBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box)
 		{
 			// If there is no shape for this entity in vector
-			if (!boxShapes_.Contains(object.uuid))
+			if (!mBoxShapes.Contains(object.uuid))
 			{
-				boxShapes_.Emplace(object.uuid, BoxShape2D());
+				mBoxShapes.Emplace(object.uuid, BoxShape2D());
 			}
 
-			boxShapes_[object.uuid].centreOfMass = box.centreOfMass;
-			boxShapes_[object.uuid].halfExtent = box.halfExtent;
-			boxShapes_[object.uuid].updatePoints();
+			mBoxShapes[object.uuid].centreOfMass = box.centreOfMass;
+			mBoxShapes[object.uuid].halfExtent = box.halfExtent;
+			mBoxShapes[object.uuid].updatePoints();
 
-			if (!shapes_.Contains(object.uuid))
+			if (!mShapes.Contains(object.uuid))
 			{
-				shapes_.Emplace(object.uuid, nullptr);
+				mShapes.Emplace(object.uuid, nullptr);
 
-				shapes_[object.uuid] = &boxShapes_[object.uuid];
+				mShapes[object.uuid] = &mBoxShapes[object.uuid];
 
-				if (mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity) && !colliders_.Contains(object.uuid))
+				if (mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry()->all_of<RigidbodyComponent2D>(entity) && !mColliders.Contains(object.uuid))
 				{
-					const auto collider = std::make_shared<collision2D::BoxCollider2D>(object.uuid, &boxShapes_[object.uuid]);
+					const auto collider = std::make_shared<collision2D::BoxCollider2D>(object.uuid, &mBoxShapes[object.uuid]);
 
 					insertCollider(object.uuid, collider);
 				}
@@ -196,29 +196,29 @@ namespace puffin
 
 		void Onager2DPhysicsSystem::cleanupBox(const SceneObjectComponent& object)
 		{
-			if (boxShapes_.Contains(object.uuid))
-				boxShapes_.Erase(object.uuid);
+			if (mBoxShapes.Contains(object.uuid))
+				mBoxShapes.Erase(object.uuid);
 
 			eraseCollider(object.uuid);
 		}
 
 		void Onager2DPhysicsSystem::insertCollider(UUID id, std::shared_ptr<collision2D::Collider2D> collider)
 		{
-			if (!colliders_.Contains(id))
+			if (!mColliders.Contains(id))
 			{
-				colliders_.Insert(id, collider);
+				mColliders.Insert(id, collider);
 
-				collidersUpdated_ = true;
+				mCollidersUpdated = true;
 			}
 		}
 
 		void Onager2DPhysicsSystem::eraseCollider(UUID id)
 		{
-			if (colliders_.Contains(id))
+			if (mColliders.Contains(id))
 			{
-				colliders_.Erase(id);
+				mColliders.Erase(id);
 
-				collidersUpdated_ = true;
+				mCollidersUpdated = true;
 			}
 		}
 
@@ -263,33 +263,33 @@ namespace puffin
 				return;
 
 			const float mass = 1.0f / body.mass;
-			const Vector2 impulseGravity = gravity_ * mass * mEngine->timeStepFixed();
+			const Vector2 impulseGravity = mGravity * mass * mEngine->timeStepFixed();
 			
 			applyLinearImpulse(body, impulseGravity);
 		}
 
 		void Onager2DPhysicsSystem::collisionBroadphase()
 		{
-			collisionPairs_.clear();
-			collisionPairs_.reserve(colliders_.Size() * colliders_.Size());
+			mCollisionPairs.clear();
+			mCollisionPairs.reserve(mColliders.Size() * mColliders.Size());
 
 			// Perform Collision Broadphase to Generate Collision Pairs
-			if (activeBroadphase_)
-				activeBroadphase_->generateCollisionPairs(colliders_, collisionPairs_, collidersUpdated_);
+			if (mActiveBroadphase)
+				mActiveBroadphase->generateCollisionPairs(mColliders, mCollisionPairs, mCollidersUpdated);
 		}
 
 		void Onager2DPhysicsSystem::collisionDetection()
 		{
-			collisionContacts_.clear();
+			mCollisionContacts.clear();
 
-			for (const CollisionPair& collisionPair : collisionPairs_)
+			for (const CollisionPair& collisionPair : mCollisionPairs)
 			{
 				collision2D::Contact contact;
 
 				// Put collision detection here
 				if (collisionPair.first->testCollision(collisionPair.second.get(), contact))
 				{
-					collisionContacts_.emplace_back(contact);
+					mCollisionContacts.emplace_back(contact);
 				}
 			}
 		}
@@ -298,7 +298,7 @@ namespace puffin
 		{
 			const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
-			for (const collision2D::Contact& contact : collisionContacts_)
+			for (const collision2D::Contact& contact : mCollisionContacts)
 			{
 				const auto entityA = mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(contact.a);
 				const auto entityB = mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(contact.b);
@@ -350,12 +350,12 @@ namespace puffin
 			std::set<collision2D::Contact> existingContacts;
 
 			// Iterate over contacts for this tick
-			for (const collision2D::Contact& contact : collisionContacts_)
+			for (const collision2D::Contact& contact : mCollisionContacts)
 			{
 				// Publish Begin Collision Event when a contact was not in active contacts set
-				if (activeContacts_.count(contact) == 0)
+				if (mActiveContacts.count(contact) == 0)
 				{
-					activeContacts_.insert(contact);
+					mActiveContacts.insert(contact);
 
 					signalSubsystem->signal<CollisionBeginEvent>({ contact.a, contact.b });
 				}
@@ -380,7 +380,7 @@ namespace puffin
 			// Remove inactive contacts from active set and publish End Collision Event
 			for (const collision2D::Contact& contact : collisionsToRemove)
 			{
-				activeContacts_.erase(contact);
+				mActiveContacts.erase(contact);
 
 				signalSubsystem->signal<CollisionEndEvent>({ contact.a, contact.b });
 			}

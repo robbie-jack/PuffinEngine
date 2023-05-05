@@ -61,7 +61,7 @@ namespace puffin::assets
 		[[nodiscard]] uint32_t numVertices() const { return mNumVertices; }
 		[[nodiscard]] uint32_t numIndices() const { return mNumIndices; }
 
-		[[nodiscard]] uint32_t vertexSize() const { return rendering::GetVertexSizeFromFormat(mVertexFormat); }
+		[[nodiscard]] uint32_t vertexSize() const { return rendering::parseVertexSizeFromFormat(mVertexFormat); }
 		[[nodiscard]] uint32_t indexSize() const { return sizeof(uint32_t); }
 
 	private:

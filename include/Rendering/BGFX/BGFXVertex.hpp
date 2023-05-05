@@ -9,7 +9,7 @@
 
 namespace puffin::rendering
 {
-	inline bgfx::VertexLayout VertexPC32::GetLayout()
+	inline bgfx::VertexLayout VertexPC32::getLayout()
 	{
 		bgfx::VertexLayout layout;
 
@@ -22,7 +22,21 @@ namespace puffin::rendering
 		return layout;
 	}
 
-	inline bgfx::VertexLayout VertexPNTV32::GetLayout()
+	inline bgfx::VertexLayout VertexPNC32::getLayout()
+	{
+		bgfx::VertexLayout layout;
+
+		layout
+			.begin()
+			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+			.end();
+
+		return layout;
+	}
+
+	inline bgfx::VertexLayout VertexPNTV32::getLayout()
 	{
 		bgfx::VertexLayout layout;
 
@@ -37,7 +51,7 @@ namespace puffin::rendering
 		return layout;
 	}
 
-	inline bgfx::VertexLayout VertexP64NTV32::GetLayout()
+	inline bgfx::VertexLayout VertexP64NTV32::getLayout()
 	{
 		bgfx::VertexLayout layout;
 
@@ -52,12 +66,12 @@ namespace puffin::rendering
 		return layout;
 	}
 
-	static bgfx::VertexLayout s_layoutVertexPC32 = VertexPC32::GetLayout();
-	static bgfx::VertexLayout s_layoutVertexPNTV32 = VertexPNTV32::GetLayout();
+	const static bgfx::VertexLayout gLayoutVertexPC32 = VertexPC32::getLayout();
+	const static bgfx::VertexLayout gLayoutVertexPNTV32 = VertexPNTV32::getLayout();
 
-	typedef std::vector<VertexPC32> VertexPC32Buffer;
-	typedef std::vector<VertexPC32> VertexPNTV32Buffer;
-	typedef std::vector<VertexP64NTV32> VertexP64NTV32Buffer;
+	using VertexPC32Buffer = std::vector<VertexPC32>;
+	using VertexPNTV32Buffer = std::vector<VertexPC32>;
+	using VertexP64NTV32Buffer = std::vector<VertexP64NTV32>;
 
 	typedef std::vector<uint32_t> VertexBufferIndices;
 }

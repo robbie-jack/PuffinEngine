@@ -13,11 +13,11 @@ namespace puffin::physics
 	void Box2DPhysicsSystem::start()
 	{
 		// Create Physics World
-		physicsWorld_ = std::make_unique<b2World>(gravity_);
+		mPhysicsWorld = std::make_unique<b2World>(mGravity);
 
 		//// Create Contact Listener and pass it to physics world
-		contactListener_ = std::make_unique<Box2DContactListener>();
-		physicsWorld_->SetContactListener(contactListener_.get());
+		mContactListener = std::make_unique<Box2DContactListener>();
+		mPhysicsWorld->SetContactListener(mContactListener.get());
 
 		updateComponents();
 	}
@@ -27,49 +27,49 @@ namespace puffin::physics
 		updateComponents();
 
 		// Step Physics World
-		physicsWorld_->Step(mEngine->timeStepFixed(), velocityIterations_, positionIterations_);
+		mPhysicsWorld->Step(mEngine->timeStepFixed(), mVelocityIterations, mPositionIterations);
 
 		// Publish Collision Events
 		publishCollisionEvents();
 
-		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 		// Updated entity position/rotation from simulation
-		auto bodyView = registry->view<const SceneObjectComponent, TransformComponent, VelocityComponent, const RigidbodyComponent2D>();
+		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent, VelocityComponent, const RigidbodyComponent2D>();
 
 		for (auto [entity, object, transform, velocity, rb] : bodyView.each())
 		{
 			const auto& id = object.uuid;
 
 			// Update Transform from Rigidbody Position
-			transform.position.x = bodies_[id]->GetPosition().x;
-			transform.position.y = bodies_[id]->GetPosition().y;
-			transform.rotation = Maths::Quat::FromEulerAngles(0.0, 0.0, -bodies_[id]->GetAngle());
+			transform.position.x = mBodies[id]->GetPosition().x;
+			transform.position.y = mBodies[id]->GetPosition().y;
+			transform.rotation = Maths::Quat::FromEulerAngles(0.0, 0.0, -mBodies[id]->GetAngle());
 
 			// Update Velocity with Linear/Angular Velocity
-			velocity.linear.x = bodies_[id]->GetLinearVelocity().x;
-			velocity.linear.y = bodies_[id]->GetLinearVelocity().y;
-			velocity.angular.z = bodies_[id]->GetAngularVelocity();
+			velocity.linear.x = mBodies[id]->GetLinearVelocity().x;
+			velocity.linear.y = mBodies[id]->GetLinearVelocity().y;
+			velocity.angular.z = mBodies[id]->GetAngularVelocity();
 		}
 	}
 
 	void Box2DPhysicsSystem::stop()
 	{
-		circleShapes_.Clear();
-		polygonShapes_.Clear();
-		shapes_.Clear();
-		bodies_.Clear();
-		fixtures_.Clear();
+		mCircleShapes.Clear();
+		mPolygonShapes.Clear();
+		mShapes.Clear();
+		mBodies.Clear();
+		mFixtures.Clear();
 
-		physicsWorld_ = nullptr;
-		contactListener_ = nullptr;
+		mPhysicsWorld = nullptr;
+		mContactListener = nullptr;
 	}
 
 	void Box2DPhysicsSystem::onConstructBox(entt::registry& registry, entt::entity entity)
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 		
-		boxesToInit_.push_back(object.uuid);
+		mBoxesToInit.push_back(object.uuid);
 	}
 
 	void Box2DPhysicsSystem::onDestroyBox(entt::registry& registry, entt::entity entity)
@@ -84,7 +84,7 @@ namespace puffin::physics
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-		circlesToInit_.push_back(object.uuid);
+		mCirclesToInit.push_back(object.uuid);
 	}
 
 	void Box2DPhysicsSystem::onDestroyCircle(entt::registry& registry, entt::entity entity)
@@ -99,7 +99,7 @@ namespace puffin::physics
 	{
 		const auto& object = registry.get<const SceneObjectComponent>(entity);
 
-		rigidbodiesToInit_.push_back(object.uuid);
+		mRigidbodiesToInit.push_back(object.uuid);
 	}
 
 	void Box2DPhysicsSystem::onDestroyRigidbody(entt::registry& registry, entt::entity entity)
@@ -112,11 +112,11 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::updateComponents()
 	{
-		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
 		// Update Circles
 		{
-			for (const auto& id : circlesToInit_)
+			for (const auto& id : mCirclesToInit)
 			{
 				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
@@ -134,12 +134,12 @@ namespace puffin::physics
 				}
 			}
 
-			circlesToInit_.clear();
+			mCirclesToInit.clear();
 		}
 
 		// Update Boxes
 		{
-			for (const auto& id : boxesToInit_)
+			for (const auto& id : mBoxesToInit)
 			{
 				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
@@ -157,12 +157,12 @@ namespace puffin::physics
 				}
 			}
 
-			boxesToInit_.clear();
+			mBoxesToInit.clear();
 		}
 
 		// Update Rigidbodies
 		{
-			for (const auto& id : rigidbodiesToInit_)
+			for (const auto& id : mRigidbodiesToInit)
 			{
 				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->GetEntity(id);
 
@@ -174,7 +174,7 @@ namespace puffin::physics
 				initFixture(object.uuid, rb);
 			}
 
-			rigidbodiesToInit_.clear();
+			mRigidbodiesToInit.clear();
 		}
 	}
 
@@ -183,13 +183,13 @@ namespace puffin::physics
 		const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 
 		CollisionBeginEvent collisionBeginEvent;
-		while (contactListener_->getNextCollisionBeginEvent(collisionBeginEvent))
+		while (mContactListener->getNextCollisionBeginEvent(collisionBeginEvent))
 		{
 			signalSubsystem->signal(collisionBeginEvent);
 		}
 
 		CollisionEndEvent collisionEndEvent;
-		while (contactListener_->getNextCollisionEndEvent(collisionEndEvent))
+		while (mContactListener->getNextCollisionEndEvent(collisionEndEvent))
 		{
 			signalSubsystem->signal(collisionEndEvent);
 		}
@@ -197,7 +197,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::initRigidbody(UUID id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
 	{
-		if (!bodies_.Contains(id))
+		if (!mBodies.Contains(id))
 		{
 			b2BodyDef bodyDef;
 			bodyDef.userData.pointer = static_cast<uintptr_t>(id);
@@ -206,55 +206,55 @@ namespace puffin::physics
 			bodyDef.type = gBodyType.at(rb.bodyType);
 
 			// Created Body from Physics World
-			bodies_.Emplace(id, physicsWorld_->CreateBody(&bodyDef));
+			mBodies.Emplace(id, mPhysicsWorld->CreateBody(&bodyDef));
 
 			b2MassData massData = {};
 			massData.mass = rb.mass;
 
-			bodies_[id]->SetMassData(&massData);
+			mBodies[id]->SetMassData(&massData);
 		}
 	}
 
 	void Box2DPhysicsSystem::initBox(UUID id, const TransformComponent& transform, const BoxComponent2D& box)
 	{
-		if (!polygonShapes_.Contains(id))
+		if (!mPolygonShapes.Contains(id))
 		{
-			polygonShapes_.Insert(id, b2PolygonShape());
+			mPolygonShapes.Insert(id, b2PolygonShape());
 		}
 
-		polygonShapes_[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), transform.rotation.EulerAnglesRad().z);
+		mPolygonShapes[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), transform.rotation.EulerAnglesRad().z);
 
-		if (!shapes_.Contains(id))
+		if (!mShapes.Contains(id))
 		{
-			shapes_.Insert(id, &polygonShapes_[id]);
+			mShapes.Insert(id, &mPolygonShapes[id]);
 		}
 	}
 
 	void Box2DPhysicsSystem::initCircle(UUID id, const TransformComponent& transform, const CircleComponent2D& circle)
 	{
-		if (!circleShapes_.Contains(id))
+		if (!mCircleShapes.Contains(id))
 		{
-			circleShapes_.Insert(id, b2CircleShape());
+			mCircleShapes.Insert(id, b2CircleShape());
 		}
 
-		circleShapes_[id].m_radius = circle.radius;
-		circleShapes_[id].m_p.Set(transform.position.x, transform.position.y);
+		mCircleShapes[id].m_radius = circle.radius;
+		mCircleShapes[id].m_p.Set(transform.position.x, transform.position.y);
 
-		if (!shapes_.Contains(id))
+		if (!mShapes.Contains(id))
 		{
-			shapes_.Insert(id, &circleShapes_[id]);
+			mShapes.Insert(id, &mCircleShapes[id]);
 		}
 	}
 
 	void Box2DPhysicsSystem::initFixture(UUID id, const RigidbodyComponent2D rb)
 	{
-		if (bodies_.Contains(id) && shapes_.Contains(id) && !fixtures_.Contains(id))
+		if (mBodies.Contains(id) && mShapes.Contains(id) && !mFixtures.Contains(id))
 		{
 			b2FixtureDef fixtureDef;
-			fixtureDef.shape = shapes_[id];
+			fixtureDef.shape = mShapes[id];
 			fixtureDef.restitution = rb.elasticity;
 
-			fixtures_.Emplace(id, bodies_[id]->CreateFixture(&fixtureDef));
+			mFixtures.Emplace(id, mBodies[id]->CreateFixture(&fixtureDef));
 		}
 	}
 
@@ -275,37 +275,37 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::cleanupRigidbody(UUID id)
 	{
-		if (bodies_.Contains(id))
+		if (mBodies.Contains(id))
 		{
-			physicsWorld_->DestroyBody(bodies_[id]);
-			bodies_[id] = nullptr;
-			bodies_.Erase(id);
+			mPhysicsWorld->DestroyBody(mBodies[id]);
+			mBodies[id] = nullptr;
+			mBodies.Erase(id);
 		}
 	}
 
 	void Box2DPhysicsSystem::cleanupBox(UUID id)
 	{
-		if (polygonShapes_.Contains(id))
+		if (mPolygonShapes.Contains(id))
 		{
-			polygonShapes_.Erase(id);
+			mPolygonShapes.Erase(id);
 		}
 	}
 
 	void Box2DPhysicsSystem::cleanupCircle(UUID id)
 	{
-		if (circleShapes_.Contains(id))
+		if (mCircleShapes.Contains(id))
 		{
-			circleShapes_.Erase(id);
+			mCircleShapes.Erase(id);
 		}
 	}
 
 	void Box2DPhysicsSystem::cleanupFixture(UUID id)
 	{
-		if (fixtures_.Contains(id))
+		if (mFixtures.Contains(id))
 		{
-			bodies_[id]->DestroyFixture(fixtures_[id]);
-			fixtures_[id] = nullptr;
-			fixtures_.Erase(id);
+			mBodies[id]->DestroyFixture(mFixtures[id]);
+			mFixtures[id] = nullptr;
+			mFixtures.Erase(id);
 		}
 	}
 }

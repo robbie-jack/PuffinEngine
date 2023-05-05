@@ -448,10 +448,10 @@ namespace puffin::scripting
 	void AngelScriptSystem::ProcessEvents()
 	{
 		// Process Input Events
-		Input::InputEvent inputEvent;
+		input::InputEvent inputEvent;
 		while (m_inputEvents->Pop(inputEvent))
 		{
-			if (m_onInputPressedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::Input::KeyState::PRESSED)
+			if (m_onInputPressedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::Pressed)
 			{
 				for (const auto& pair : m_onInputPressedCallbacks[inputEvent.actionName])
 				{
@@ -461,7 +461,7 @@ namespace puffin::scripting
 				}
 			}
 
-			if (m_onInputReleasedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::Input::KeyState::RELEASED)
+			if (m_onInputReleasedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::Released)
 			{
 				for (const auto& pair : m_onInputReleasedCallbacks[inputEvent.actionName])
 				{

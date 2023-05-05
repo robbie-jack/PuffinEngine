@@ -10,7 +10,7 @@ namespace puffin::physics
 		collisionBeginEvent.entityA = static_cast<ECS::EntityID>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
 		collisionBeginEvent.entityB = static_cast<ECS::EntityID>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 
-		collisionBeginEvents_.Push(collisionBeginEvent);
+		mCollisionBeginEvents.Push(collisionBeginEvent);
 	}
 
 	void Box2DContactListener::EndContact(b2Contact* contact)
@@ -19,7 +19,7 @@ namespace puffin::physics
 		collisionEndEvent.entityA = static_cast<ECS::EntityID>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
 		collisionEndEvent.entityB = static_cast<ECS::EntityID>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 
-		collisionEndEvents_.Push(collisionEndEvent);
+		mCollisionEndEvents.Push(collisionEndEvent);
 	}
 
 	void Box2DContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
@@ -34,17 +34,17 @@ namespace puffin::physics
 
 	bool Box2DContactListener::getNextCollisionBeginEvent(CollisionBeginEvent& collisionBeginEvent)
 	{
-		return collisionBeginEvents_.Pop(collisionBeginEvent);
+		return mCollisionBeginEvents.Pop(collisionBeginEvent);
 	}
 
 	bool Box2DContactListener::getNextCollisionEndEvent(CollisionEndEvent& collisionEndEvent)
 	{
-		return collisionEndEvents_.Pop(collisionEndEvent);
+		return mCollisionEndEvents.Pop(collisionEndEvent);
 	}
 
 	void Box2DContactListener::clearEvents()
 	{
-		collisionBeginEvents_.Flush();
-		collisionEndEvents_.Flush();
+		mCollisionBeginEvents.Flush();
+		mCollisionEndEvents.Flush();
 	}
 }

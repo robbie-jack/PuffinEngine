@@ -10,10 +10,13 @@
 
 namespace puffin::rendering
 {
-	struct MeshData
+	struct AssetData
 	{
-		UUID assetID; // ID of mesh asset
+		UUID assetId; // ID of asset
+	};
 
+	struct MeshData : AssetData
+	{
 		bgfx::VertexBufferHandle vertexBufferHandle;
 		bgfx::IndexBufferHandle indexBufferHandle;
 
@@ -21,17 +24,13 @@ namespace puffin::rendering
 		uint32_t numIndices; // Number of Indices in Mesh
 	};
 
-	struct TextureData
+	struct TextureData : AssetData
 	{
-		UUID assetID; // ID of texture asset
-
 		bgfx::TextureHandle handle;
 	};
 
-	struct MaterialData
+	struct MaterialData : AssetData
 	{
-		UUID assetID; // ID of material asset
-
 		bgfx::ProgramHandle programHandle;
 		std::vector<UUID> texIDs;
 	};

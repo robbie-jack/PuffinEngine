@@ -3,6 +3,7 @@
 #include "Engine/Engine.hpp"
 #include "ECS/EnTTSubsystem.hpp"
 #include "Types/PackedArray.h"
+#include "Physics/PhysicsConstants.h"
 #include "Box2DContactListener.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
@@ -72,24 +73,22 @@ namespace puffin::physics
 
 	private:
 
-		constexpr static size_t maxShapes_ = 10000;
+		b2Vec2 mGravity = b2Vec2(0.0f, -9.81f);
+		int32 mVelocityIterations = 8;
+		int32 mPositionIterations = 3;
 
-		b2Vec2 gravity_ = b2Vec2(0.0f, -9.81f);
-		int32 velocityIterations_ = 8;
-		int32 positionIterations_ = 3;
+		std::unique_ptr<b2World> mPhysicsWorld = nullptr;
+		std::unique_ptr<Box2DContactListener> mContactListener = nullptr;
 
-		std::unique_ptr<b2World> physicsWorld_ = nullptr;
-		std::unique_ptr<Box2DContactListener> contactListener_ = nullptr;
+		PackedVector<b2Body*> mBodies; // Packed Vector of bodies use in physics simulation
+		PackedArray<b2Shape*, gMaxShapes> mShapes;
+		PackedArray<b2CircleShape, gMaxShapes> mCircleShapes; // Packed Vector of circle shapes
+		PackedArray<b2PolygonShape, gMaxShapes> mPolygonShapes; // Packed Vector of polygon shapes
+		PackedVector<b2Fixture*> mFixtures; // Packed Vector of Fixtures that connect bodies and shapes
 
-		PackedVector<b2Body*> bodies_; // Packed Vector of bodies use in physics simulation
-		PackedArray<b2Shape*, maxShapes_> shapes_;
-		PackedArray<b2CircleShape, maxShapes_> circleShapes_; // Packed Vector of circle shapes
-		PackedArray<b2PolygonShape, maxShapes_> polygonShapes_; // Packed Vector of polygon shapes
-		PackedVector<b2Fixture*> fixtures_; // Packed Vector of Fixtures that connect bodies and shapes
-
-		std::vector<UUID> circlesToInit_;
-		std::vector<UUID> boxesToInit_;
-		std::vector<UUID> rigidbodiesToInit_;
+		std::vector<UUID> mCirclesToInit;
+		std::vector<UUID> mBoxesToInit;
+		std::vector<UUID> mRigidbodiesToInit;
 
 		void updateComponents();
 		void publishCollisionEvents() const;

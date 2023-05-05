@@ -16,12 +16,12 @@ namespace puffin
 		class World;
 	}
 
-	namespace Input
+	namespace input
 	{
 		struct InputAction
 		{
 			std::string name;
-			int id;
+			int id = 0;
 			std::vector<int> keys;
 			KeyState state;
 		};
@@ -32,43 +32,41 @@ namespace puffin
 
 			InputSubsystem()
 			{
-				nextID = 1;
-				last_x_pos = 640.0;
-				last_y_pos = 360.0;
-				sensitivity = 0.05;
-				cursor_locked = false;
-				firstMouse = true;
+				mNextId = 1;
+				mLastXPos = 640.0;
+				mLastYPos = 360.0;
+				mSensitivity = 0.05;
+				mCursorLocked = false;
+				mFirstMouse = true;
 			}
 
 			~InputSubsystem() override = default;
 
 			void setupCallbacks() override;
 
-			void Init();
-			void Update();
-			void Cleanup();
+			void init();
+			void update();
+			void cleanup();
 
-			void AddAction(std::string name, int key);
-			void AddAction(std::string name, std::vector<int> keys);
-			InputAction GetAction(std::string name) const;
+			void addAction(std::string name, int key);
+			void addAction(std::string name, std::vector<int> keys);
+			[[nodiscard]] InputAction getAction(std::string name) const;
 
-			inline double GetMouseXOffset() { return (x_pos - last_x_pos) * sensitivity; }
-			inline double GetMouseYOffset() { return (y_pos - last_y_pos) * sensitivity; }
-			inline double& GetSensitivity() { return sensitivity; }
-			inline bool IsCursorLocked() { return cursor_locked; }
+			double getMouseXOffset() const { return (mXPos - mLastXPos) * mSensitivity; }
+			double getMouseYOffset() const { return (mYPos - mLastYPos) * mSensitivity; }
+			double& sensitivity() { return mSensitivity; }
+			bool isCursorLocked() const { return mCursorLocked; }
 
 		private:
 
-			double x_pos, y_pos, last_x_pos, last_y_pos;
-			bool cursor_locked;
-			double sensitivity;
-			bool firstMouse;
+			double mXPos, mYPos, mLastXPos, mLastYPos;
+			bool mCursorLocked;
+			double mSensitivity;
+			bool mFirstMouse;
 
-			int nextID = 1;
-			std::vector<InputAction> m_actions;
-			GLFWwindow* m_window;
-
-			std::shared_ptr<ECS::World> m_world;
+			int mNextId = 1;
+			std::vector<InputAction> mActions;
+			GLFWwindow* mWindow;
 		};
 	}
 }

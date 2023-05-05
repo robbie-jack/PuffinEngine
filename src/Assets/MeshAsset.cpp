@@ -42,7 +42,7 @@ namespace puffin::assets
 		// Fill Metadata from Info struct
 		json metadata;
 
-		metadata["vertex_format"] = rendering::ParseVertexStringFromFormat(info.vertexFormat);
+		metadata["vertex_format"] = rendering::parseVertexStringFromFormat(info.vertexFormat);
 		metadata["num_vertices"] = info.numVertices;
 		metadata["num_indices"] = info.numIndices;
 		metadata["vertex_buffer_size"] = info.verticesSize;
@@ -149,7 +149,7 @@ namespace puffin::assets
 		info.originalFile = metadata["original_file"];
 
 		const std::string vertexFormat = metadata["vertex_format"];
-		info.vertexFormat = rendering::ParseVertexFormatFromString(vertexFormat.c_str());
+		info.vertexFormat = rendering::parseVertexFormatFromString(vertexFormat.c_str());
 
 		const std::string compressionMode = metadata["compression"];
 		info.compressionMode = parseCompressionMode(compressionMode.c_str());

@@ -43,7 +43,7 @@ namespace puffin::rendering::VK::Util
 
 namespace puffin::rendering
 {
-	inline VK::Util::VertexLayout VertexPC32::GetLayoutVK()
+	inline VK::Util::VertexLayout VertexPC32::getLayoutVK()
 	{
 		return VK::Util::VertexLayout::Begin()
 			.BindInput(0, sizeof(VertexPC32))
@@ -51,7 +51,7 @@ namespace puffin::rendering
 			.BindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPC32, color));
 	}
 
-	inline VK::Util::VertexLayout VertexPNC32::GetLayoutVK()
+	inline VK::Util::VertexLayout VertexPNC32::getLayoutVK()
 	{
 		return VK::Util::VertexLayout::Begin()
 			.BindInput(0, sizeof(VertexPNC32))
@@ -60,7 +60,7 @@ namespace puffin::rendering
 			.BindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNC32, color));
 	}
 
-	inline VK::Util::VertexLayout VertexPNTV32::GetLayoutVK()
+	inline VK::Util::VertexLayout VertexPNTV32::getLayoutVK()
 	{
 		return VK::Util::VertexLayout::Begin()
 			.BindInput(0, sizeof(VertexPNTV32))
@@ -70,7 +70,7 @@ namespace puffin::rendering
 			.BindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv));
 	}
 
-	inline VK::Util::VertexLayout VertexP64NTV32::GetLayoutVK()
+	inline VK::Util::VertexLayout VertexP64NTV32::getLayoutVK()
 	{
 		return VK::Util::VertexLayout::Begin()
 			.BindInput(0, sizeof(VertexP64NTV32))

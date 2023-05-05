@@ -19,46 +19,44 @@ namespace puffin::rendering
 
 		~TextureArray()
 		{
-			bgfx::destroy(m_handle);
-			m_numTextures = 0;
+			bgfx::destroy(mHandle);
+			mNumTextures = 0;
 		}
 
-		void Init(uint16_t texWidth = 2048, uint16_t texHeight = 2048, uint16_t numTextures = 16, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8)
+		void init(uint16_t texWidth = 2048, uint16_t texHeight = 2048, uint16_t numTextures = 16, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8)
 		{
-			m_numTextures = numTextures;
-			m_format = format;
+			mNumTextures = numTextures;
+			mFormat = format;
 
-			m_texWidth = texWidth;
-			m_texHeight = texHeight;
+			mTexWidth = texWidth;
+			mTexHeight = texHeight;
 
-			m_handle = bgfx::createTexture2D(m_texWidth, m_texHeight,
-				false, m_numTextures, m_format, 0, nullptr);
+			mHandle = bgfx::createTexture2D(mTexWidth, mTexHeight,
+				false, mNumTextures, mFormat, 0, nullptr);
 		}
 
-		bool AddTexture(UUID uuid)
+		bool addTexture(const UUID uuid)
 		{
-			if (m_idtoLayersMap.count(uuid) == 1)
+			if (mIdToLayers.count(uuid) == 1)
 			{
 				return true;
 			}
 
-			const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(assets::AssetRegistry::get()->getAsset(uuid));
-
-			if (texAsset && texAsset->load())
+			if (const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(assets::AssetRegistry::get()->getAsset(uuid)); texAsset && texAsset->load())
 			{
 				// Copy texture data into memory
-				uint32_t texSize = texAsset->textureSize();
+				const uint32_t texSize = texAsset->textureSize();
 
 				const bgfx::Memory* mem = bgfx::alloc(texSize);
 
 				bx::memCopy(mem->data, texAsset->pixelData(), mem->size);
 
 				// Add texture to array
-				bgfx::updateTexture2D(m_handle, 0, m_numActiveTextures, 0, 0,
+				bgfx::updateTexture2D(mHandle, 0, mNumActiveTextures, 0, 0,
 										texAsset->textureWidth(), texAsset->textureHeight(), mem);
 
-				m_idtoLayersMap[uuid] = m_numActiveTextures;
-				m_numActiveTextures++;
+				mIdToLayers[uuid] = mNumActiveTextures;
+				mNumActiveTextures++;
 
 				texAsset->unload();
 
@@ -68,20 +66,20 @@ namespace puffin::rendering
 			return false;
 		}
 
-		[[nodiscard]] uint16_t GetTextureIndex(UUID uuid) const { return m_idtoLayersMap.at(uuid); }
+		[[nodiscard]] uint16_t getTextureIndex(const UUID uuid) const { return mIdToLayers.at(uuid); }
 
-		[[nodiscard]] bgfx::TextureHandle Handle() const { return m_handle; }
+		[[nodiscard]] bgfx::TextureHandle handle() const { return mHandle; }
 
 	private:
 
-		bgfx::TextureHandle m_handle = {};
-		bgfx::TextureFormat::Enum m_format;
-		uint16_t m_texWidth = 0, m_texHeight = 0;
+		bgfx::TextureHandle mHandle = {};
+		bgfx::TextureFormat::Enum mFormat;
+		uint16_t mTexWidth = 0, mTexHeight = 0;
 
-		uint16_t m_numTextures = 0; // Number of textures in array
-		uint16_t m_numActiveTextures = 0; // Number of textures in array currently in use
+		uint16_t mNumTextures = 0; // Number of textures in array
+		uint16_t mNumActiveTextures = 0; // Number of textures in array currently in use
 
-		std::unordered_map<UUID, uint16_t> m_idtoLayersMap;
+		std::unordered_map<UUID, uint16_t> mIdToLayers;
 
 
 

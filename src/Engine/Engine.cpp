@@ -48,7 +48,7 @@ namespace puffin::core
 		auto windowSubsystem = registerSubsystem<Window::WindowSubsystem>();
 		auto signalSubsystem = registerSubsystem<SignalSubsystem>();
 		auto enkitsSubsystem = registerSubsystem<EnkiTSSubsystem>();
-		auto inputSubsystem = registerSubsystem<Input::InputSubsystem>();
+		auto inputSubsystem = registerSubsystem<input::InputSubsystem>();
 		auto audioSubsystem = registerSubsystem<audio::AudioSubsystem>();
 		auto ecsWorld = registerSubsystem<ECS::World>();
 		auto enttSubsystem = registerSubsystem<ECS::EnTTSubsystem>();
@@ -183,13 +183,13 @@ namespace puffin::core
 			executeCallbacks(ExecutionStage::SubsystemUpdate, true);
 		}
 
-		auto inputSubsystem = getSubsystem<Input::InputSubsystem>();
-		if (inputSubsystem->GetAction("Play").state == Input::KeyState::PRESSED)
+		auto inputSubsystem = getSubsystem<input::InputSubsystem>();
+		if (inputSubsystem->getAction("Play").state == input::KeyState::Pressed)
 		{
 			play();
 		}
 
-		if (inputSubsystem->GetAction("Restart").state == Input::KeyState::PRESSED)
+		if (inputSubsystem->getAction("Restart").state == input::KeyState::Pressed)
 		{
 			restart();
 		}
