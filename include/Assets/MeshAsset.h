@@ -30,7 +30,7 @@ namespace puffin::assets
 
 		StaticMeshAsset(const fs::path& path) : Asset(path) {}
 
-		StaticMeshAsset(const PuffinId id, const fs::path& path) : Asset(id, path) {}
+		StaticMeshAsset(const PuffinID id, const fs::path& path) : Asset(id, path) {}
 
 		~StaticMeshAsset() override = default;
 

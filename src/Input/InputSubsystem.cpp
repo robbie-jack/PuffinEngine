@@ -17,7 +17,7 @@ namespace puffin
 
 		void InputSubsystem::init()
 		{
-			mWindow = mEngine->getSubsystem<Window::WindowSubsystem>()->primaryWindow();
+			mWindow = mEngine->getSubsystem<window::WindowSubsystem>()->primaryWindow();
 
 			// Setup Actions
 

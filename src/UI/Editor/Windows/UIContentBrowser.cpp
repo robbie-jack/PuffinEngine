@@ -6,24 +6,24 @@
 
 namespace fs = std::filesystem;
 
-namespace puffin::UI
+namespace puffin::ui
 {
-	void UIContentBrowser::Draw(double dt)
+	void UIContentBrowser::draw(double dt)
 	{
-		if (show)
+		if (mShow)
 		{
 			ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-			Begin(windowName);
+			begin(mWindowName);
 
-			fs::path contentPath = assets::AssetRegistry::get()->contentRoot();
-			for (auto const& dir_entry : fs::directory_iterator(contentPath))
+			const fs::path contentPath = assets::AssetRegistry::get()->contentRoot();
+			for (auto const& dirEntry : fs::directory_iterator(contentPath))
 			{
-				std::string pathName = dir_entry.path().string();
+				std::string pathName = dirEntry.path().string();
 				ImGui::Text(pathName.c_str());
 			}
 
-			End();
+			end();
 		}
 	}
 }

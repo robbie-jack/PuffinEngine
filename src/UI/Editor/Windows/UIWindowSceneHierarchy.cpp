@@ -1,22 +1,24 @@
 #include "UI/Editor/Windows/UIWindowSceneHierarchy.h"
 
+#include "entt/entity/registry.hpp"
 #include "Components/TransformComponent.h"
+#include "ECS/EnTTSubsystem.h"
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
-		void UIWindowSceneHierarchy::Draw(double dt)
+		void UIWindowSceneHierarchy::draw(double dt)
 		{
-			windowName = "Scene Hierarchy";
+			mWindowName = "Scene Hierarchy";
 
-			if (show)
+			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				entityChanged = false;
+				mEntityChanged = false;
 
-				Begin(windowName);
+				begin(mWindowName);
 
 				//List All Entities and their ID/Name
 				ImVec2 listBoxSize = ImGui::GetWindowSize();
@@ -25,53 +27,52 @@ namespace puffin
 				ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() * .5f); ImGui::Text("ID");
 
 				//const auto ecsWorld = m_engine->getSubsystem<ECS::World>();
+				const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+				const auto registry = enttSubsystem->registry();
 
 				if (ImGui::BeginListBox("##EntityList", listBoxSize))
 				{
-					if (false)
-					{
-						ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow
-							| ImGuiTreeNodeFlags_OpenOnDoubleClick
-							| ImGuiTreeNodeFlags_SpanAvailWidth;
+					ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow
+						| ImGuiTreeNodeFlags_OpenOnDoubleClick
+						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-						//for (ECS::EntityID entity : ecsWorld->GetActiveEntities())
-						//{
-						//	ImGuiTreeNodeFlags tree_flags = base_flags;
-						//	bool has_child = false;
+					//for (ECS::EntityID entity : ecsWorld->GetActiveEntities())
+					//{
+					//	ImGuiTreeNodeFlags tree_flags = base_flags;
+					//	bool has_child = false;
 
-						//	// Simple test to show leaf and branch nodes
-						//	/*if (entity == 1 || entity == 2)
-						//		has_child = true;*/
+					//	// Simple test to show leaf and branch nodes
+					//	/*if (entity == 1 || entity == 2)
+					//		has_child = true;*/
 
-						//	// Set Selected Flag if entity equals selectedEntity
-						//	if (selectedEntity == entity)
-						//		tree_flags |= ImGuiTreeNodeFlags_Selected;
+					//	// Set Selected Flag if entity equals selectedEntity
+					//	if (selectedEntity == entity)
+					//		tree_flags |= ImGuiTreeNodeFlags_Selected;
 
-						//	// Display Entity as Leaf node if it doesn't have any children
-						//	if (!has_child)
-						//		tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+					//	// Display Entity as Leaf node if it doesn't have any children
+					//	if (!has_child)
+					//		tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-						//	bool node_open = ImGui::TreeNodeEx(ecsWorld->GetEntityName(entity).c_str(), tree_flags);
+					//	bool node_open = ImGui::TreeNodeEx(ecsWorld->GetEntityName(entity).c_str(), tree_flags);
 
-						//	// Set Selected Entity when node is clicked
-						//	if (ImGui::IsItemClicked())
-						//	{
-						//		selectedEntity = entity;
-						//		entityChanged = true;
-						//	}
+					//	// Set Selected Entity when node is clicked
+					//	if (ImGui::IsItemClicked())
+					//	{
+					//		selectedEntity = entity;
+					//		entityChanged = true;
+					//	}
 
-						//	// Display Entity ID on same line as name
-						//	ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
-						//	ImGui::Text(std::to_string(entity).c_str());
+					//	// Display Entity ID on same line as name
+					//	ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
+					//	ImGui::Text(std::to_string(entity).c_str());
 
-						//	if (has_child && node_open)
-						//	{
-						//		ImGui::Text("No Child Entities");
-						//		ImGui::TreePop();
-						//	}
+					//	if (has_child && node_open)
+					//	{
+					//		ImGui::Text("No Child Entities");
+					//		ImGui::TreePop();
+					//	}
 
-						//}
-					}
+					//}
 
 					ImGui::EndListBox();
 				}
@@ -87,28 +88,32 @@ namespace puffin
 
 				if (ImGui::Button("Destroy Entity"))
 				{
-					//ecsWorld->SetEntityFlag<FlagDeleted>(selectedEntity, true);
+					if (mSelectedEntity != gInvalidID)
+					{
+						registry->destroy(enttSubsystem->getEntity(mSelectedEntity));
 
-					//selectedEntity = ECS::INVALID_ENTITY;
-					entityChanged = true;
+						mSelectedEntity = gInvalidID;
+
+						mEntityChanged = true;
+					}
 				}
 
 				if (ImGui::BeginPopup("Create Entity"))
 				{
 					if (ImGui::Selectable("Empty"))
 					{
-						/*const auto entity = ECS::CreateEntity(ecsWorld);
+						const auto entity = enttSubsystem->createEntity("Entity");
+						const auto object = registry->get<SceneObjectComponent>(entity);
 
-						entity->AddComponent<TransformComponent>();
+						mSelectedEntity = object.id;
 
-						selectedEntity = entity->ID();
-						entityChanged = true;*/
+						mEntityChanged = true;
 					}
 
 					ImGui::EndPopup();
 				}
 
-				End();
+				end();
 			}
 		}
 	}

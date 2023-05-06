@@ -1,19 +1,28 @@
-#include "UI/Editor/UIManager.h"
+#include "UI/Editor/UISubsystem.h"
 
 #include "Core/Engine.h"
 
 #include "SerializeScene.h"
 #include "Assets/AssetRegistry.h"
-#include "Assets\AssetImporters.h"
+#include "Assets/AssetImporters.h"
 
 #include <string>
 #include <iostream>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_vulkan.h>
 
 namespace fs = std::filesystem;
 
-namespace puffin::UI
+namespace puffin::ui
 {
-	UIManager::UIManager(std::shared_ptr<core::Engine> engine)
+	void UISubsystem::setupCallbacks()
+	{
+		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init", 50);
+		mEngine->registerCallback(core::ExecutionStage::Update, [&]() { render(); }, "VKRenderSystem: Render");
+		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "VKRenderSystem: Cleanup");
+	}
+
+	void UISubsystem::init()
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -23,83 +32,49 @@ namespace puffin::UI
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-		SetStyle();
+		setStyle();
 
-		saveScene = false;
-		loadScene = false;
-		importAssetUI = ImportAssetUI::None;
+		mSaveScene = false;
+		mLoadScene = false;
+		mImportAssetUI = ImportAssetUI::None;
 
-		m_engine = engine;
+		mWindowSceneHierarchy = std::make_shared<UIWindowSceneHierarchy>(mEngine);
+		mWindowViewport = std::make_shared<UIWindowViewport>(mEngine);
+		mWindowSettings = std::make_shared<UIWindowSettings>(mEngine);
+		mWindowEntityProperties = std::make_shared<UIWindowEntityProperties>(mEngine);
+		mWindowPerformance = std::make_shared<UIWindowPerformance>(mEngine);
+		mContentBrowser = std::make_shared<UIContentBrowser>(mEngine);
 
-		windowSceneHierarchy =	std::make_shared<UIWindowSceneHierarchy>(m_engine);
-		windowViewport = std::make_shared<UIWindowViewport>(m_engine);
-		windowSettings = std::make_shared<UIWindowSettings>(m_engine);
-		windowEntityProperties = std::make_shared<UIWindowEntityProperties>(m_engine);
-		windowPerformance = std::make_shared<UIWindowPerformance>(m_engine);
-		contentBrowser = std::make_shared<UIContentBrowser>(m_engine);
+		mWindowEntityProperties->SetFileBrowser(&mFileDialog);
 
-		windowEntityProperties->SetFileBrowser(&fileDialog);
-
-		AddWindow(windowSceneHierarchy);
-		AddWindow(windowSettings);
-		AddWindow(windowEntityProperties);
-		AddWindow(windowPerformance);
-		AddWindow(contentBrowser);
-	}
-
-	void UIManager::Cleanup()
-	{
-		ImGui::DestroyContext();
-		//ImPlot::DestroyContext();
-	}
-
-	void UIManager::DrawUI(double dt)
-	{
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-		bool* p_open = NULL;
-
-		// Show Dockspace with Menu Bar for Editor Windows
-		ShowDockspace(p_open);
-
-		//ImGui::ShowDemoWindow(p_open);
-		//ImPlot::ShowDemoWindow(p_open);
-
-		// Draw UI Windows
-		if (m_windows.size() > 0)
-		{
-			for (int i = 0; i < m_windows.size(); i++)
-			{
-				m_windows[i]->Draw(dt);
-			}
-		}
-
-		fileDialog.Display();
+		addWindow(mWindowSceneHierarchy);
+		addWindow(mWindowSettings);
+		addWindow(mWindowEntityProperties);
+		addWindow(mWindowPerformance);
+		addWindow(mContentBrowser);
 	}
 
 	// Any functionality which would cause errors/crashes from within 
 	// VulkanRenderer DrawFrame() should be placed here instead
-	void UIManager::Update()
+	void UISubsystem::render()
 	{
-		if (fileDialog.HasSelected())
+		if (mFileDialog.HasSelected())
 		{
-			const fs::path selectedPath = fileDialog.GetSelected();
+			const fs::path selectedPath = mFileDialog.GetSelected();
 
 			// File Dialog - Load Scene
-			if (loadScene)
+			if (mLoadScene)
 			{
-				m_engine->sceneData()->SetPath(selectedPath);
+				mEngine->sceneData()->SetPath(selectedPath);
 
-				m_engine->sceneData()->Load();
+				mEngine->sceneData()->Load();
 
-				m_engine->restart();
+				mEngine->restart();
 
-				loadScene = false;
+				mLoadScene = false;
 			}
 
-			switch (importAssetUI)
+			switch (mImportAssetUI)
 			{
 			// File Dialog - Import Mesh
 			case ImportAssetUI::Mesh:
@@ -113,7 +88,7 @@ namespace puffin::UI
 					std::cout << "Import Failed" << std::endl;
 				}*/
 
-				importAssetUI = ImportAssetUI::None;
+				mImportAssetUI = ImportAssetUI::None;
 
 				break;
 
@@ -129,30 +104,60 @@ namespace puffin::UI
 					std::cout << "Import Failed" << std::endl;
 				}
 
-				importAssetUI = ImportAssetUI::None;
+				mImportAssetUI = ImportAssetUI::None;
 
 				break;
 			}
 		}
 
 		// Update Selected Entity
-		if (windowSceneHierarchy->HasEntityChanged())
+		if (mWindowSceneHierarchy->entityChanged())
 		{
-			m_entity = windowSceneHierarchy->GetEntity();
-			//windowEntityProperties->SetEntity(m_entity);
-			//windowViewport->SetEntity(m_entity);
+			mEntity = mWindowSceneHierarchy->selectedEntity();
+
+			for (const auto& window : mWindows)
+			{
+				window->setSelectedEntity(mEntity);
+			}
 		}
 
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing
-		if (windowEntityProperties->HasSceneChanged() && m_engine->playState() == core::PlayState::Stopped)
+		if (mWindowEntityProperties->HasSceneChanged() && mEngine->playState() == core::PlayState::Stopped)
 		{
-			m_engine->sceneData()->UpdateData();
+			mEngine->sceneData()->UpdateData();
 		}
 
-		DrawUI(m_engine->deltaTime());
+		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		bool* p_open = NULL;
+
+		// Show Dockspace with Menu Bar for Editor Windows
+		showDockspace(p_open);
+
+		//ImGui::ShowDemoWindow(p_open);
+		//ImPlot::ShowDemoWindow(p_open);
+
+		// Draw UI Windows
+		if (!mWindows.empty())
+		{
+			for (const auto& window : mWindows)
+			{
+				window->draw(mEngine->deltaTime());
+			}
+		}
+
+		mFileDialog.Display();
 	}
 
-	void UIManager::ShowDockspace(bool* p_open)
+	void UISubsystem::cleanup()
+	{
+		ImGui::DestroyContext();
+		//ImPlot::DestroyContext();
+	}
+
+	void UISubsystem::showDockspace(bool* p_open)
 	{
 		static bool opt_fullscreen_persistant = true;
 		bool opt_fullscreen = opt_fullscreen_persistant;
@@ -198,11 +203,11 @@ namespace puffin::UI
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
-		ShowMenuBar();
+		showMenuBar();
 
-		if (saveScene)
+		if (mSaveScene)
 		{
-			saveScene = false;
+			mSaveScene = false;
 			ImGui::OpenPopup("Save Scene");
 		}
 
@@ -212,7 +217,7 @@ namespace puffin::UI
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			std::string str_name = m_engine->sceneData()->GetPath().string();
+			std::string str_name = mEngine->sceneData()->GetPath().string();
 			std::vector<char> name(256, '\0');
 			for (int i = 0; i < str_name.size(); i++)
 			{
@@ -223,12 +228,12 @@ namespace puffin::UI
 			ImGui::Text("Enter Scene Name:");
 			if (ImGui::InputText("##Edit", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				m_engine->sceneData()->SetPath(std::string(&name[0]));
+				mEngine->sceneData()->SetPath(std::string(&name[0]));
 			}
 
 			if (ImGui::Button("Save"))
 			{
-				m_engine->sceneData()->Save();
+				mEngine->sceneData()->Save();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -245,7 +250,7 @@ namespace puffin::UI
 		ImGui::End();
 	}
 
-	void UIManager::ShowMenuBar()
+	void UISubsystem::showMenuBar()
 	{
 		if (ImGui::BeginMenuBar())
 		{
@@ -268,7 +273,7 @@ namespace puffin::UI
 				if (ImGui::MenuItem("Save Project"))
 				{
 					//IO::SaveProject(Assets::AssetRegistry::Get()->ProjectRoot() / Assets::AssetRegistry::Get()->ProjectName() + ".pproject", engine->)
-					io::SaveSettings(assets::AssetRegistry::get()->setProjectRoot() / "settings.json", m_engine->settings());
+					io::SaveSettings(assets::AssetRegistry::get()->setProjectRoot() / "settings.json", mEngine->settings());
 					assets::AssetRegistry::get()->saveAssetCache();
 				}
 
@@ -287,18 +292,18 @@ namespace puffin::UI
 
 				if (ImGui::MenuItem("Load Scene"))
 				{
-					fileDialog.Open();
-					loadScene = true;
+					mFileDialog.Open();
+					mLoadScene = true;
 				}
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					m_engine->sceneData()->Save();
+					mEngine->sceneData()->Save();
 				}
 
 				if (ImGui::MenuItem("Save Scene As"))
 				{
-					saveScene = true;
+					mSaveScene = true;
 				}
 
 				ImGui::Text("---Other---");
@@ -307,14 +312,14 @@ namespace puffin::UI
 				{
 					if (ImGui::MenuItem("Mesh"))
 					{
-						fileDialog.Open();
-						importAssetUI = ImportAssetUI::Mesh;
+						mFileDialog.Open();
+						mImportAssetUI = ImportAssetUI::Mesh;
 					}
 
 					if (ImGui::MenuItem("Texture"))
 					{
-						fileDialog.Open();
-						importAssetUI = ImportAssetUI::Texture;
+						mFileDialog.Open();
+						mImportAssetUI = ImportAssetUI::Texture;
 					}
 
 					ImGui::EndMenu();
@@ -322,7 +327,7 @@ namespace puffin::UI
 
 				if (ImGui::MenuItem("Quit", "Alt+F4"))
 				{
-					m_engine->exit();
+					mEngine->exit();
 				}
 
 				ImGui::EndMenu();
@@ -331,12 +336,12 @@ namespace puffin::UI
 			// List all windows
 			if (ImGui::BeginMenu("Windows"))
 			{
-				if (m_windows.size() > 0)
+				if (mWindows.size() > 0)
 				{
-					for (int i = 0; i < m_windows.size(); i++)
+					for (int i = 0; i < mWindows.size(); i++)
 					{
 						// Show/Hide window if clicked
-						ImGui::MenuItem(m_windows[i]->GetName().c_str(), NULL, m_windows[i]->GetShow());
+						ImGui::MenuItem(mWindows[i]->name().c_str(), NULL, mWindows[i]->show());
 					}
 				}
 
@@ -347,7 +352,7 @@ namespace puffin::UI
 		}
 	}
 
-	void UIManager::SetStyle()
+	void UISubsystem::setStyle()
 	{
 		ImGuiStyle* style = &ImGui::GetStyle();
 		ImVec4* colors = style->Colors;
@@ -416,8 +421,8 @@ namespace puffin::UI
 		style->WindowPadding = { 0.0f, 0.0f };
 	}
 
-	void UIManager::AddWindow(std::shared_ptr<UIWindow> window)
+	void UISubsystem::addWindow(const std::shared_ptr<UIWindow>& window)
 	{
-		m_windows.push_back(window);
+		mWindows.push_back(window);
 	}
 }

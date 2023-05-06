@@ -161,7 +161,7 @@ set(HEADERS
 	${HEADER_DIR}/Types/Vertex.h
 	${HEADER_DIR}/Types/DeletionQueue.h
 	# UI
-	${HEADER_DIR}/UI/Editor/UIManager.h
+	${HEADER_DIR}/UI/Editor/UISubsystem.h
 	${HEADER_DIR}/UI/Editor/Windows/UIWindow.h
 	${HEADER_DIR}/UI/Editor/Windows/UIContentBrowser.h
 	${HEADER_DIR}/UI/Editor/Windows/UIWindowEntityProperties.h
@@ -219,7 +219,7 @@ set(SOURCES
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
 	# UI
-	${SOURCE_DIR}/UI/Editor/UIManager.cpp
+	${SOURCE_DIR}/UI/Editor/UISubsystem.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIContentBrowser.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindowEntityProperties.cpp

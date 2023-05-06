@@ -2,19 +2,19 @@
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
-		void UIWindow::Show()
+		void UIWindow::setShow()
 		{
-			show = !show;
+			mShow = !mShow;
 		}
 
-		bool UIWindow::Begin(std::string name)
+		bool UIWindow::begin(const std::string name)
 		{
-			return ImGui::Begin(name.c_str(), &show, flags);
+			return ImGui::Begin(name.c_str(), &mShow, mFlags);
 		}
 
-		void UIWindow::End()
+		void UIWindow::end()
 		{
 			ImGui::End();
 		}

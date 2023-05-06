@@ -7,7 +7,7 @@
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
 		class UIWindowViewport : public UIWindow
 		{
@@ -16,21 +16,19 @@ namespace puffin
 			UIWindowViewport(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowViewport() override {}
 
-			void DrawWithoutImage();
-			void Draw(ImTextureID textureID);
-			void Draw(double dt) override {}
+			void drawWithoutImage();
+			void draw(ImTextureID textureID);
+			void draw(double dt) override {}
 
-			inline ImVec2 GetViewportSize() { return viewportSize; }
+			[[nodiscard]] ImVec2 viewportSize() const { return mViewportSize; }
 
 			//inline void SetEntity(ECS::EntityID entity_) { entity = entity_; }
 
 		private:
 
-			PuffinId entity;
+			ImVec2 mViewportSize = ImVec2(640.0f, 480.0f);
 
-			ImVec2 viewportSize = ImVec2(640.0f, 480.0f);
-
-			std::string playButtonLabel = "Play";
+			std::string mPlayButtonLabel = "Play";
 		};
 	}
 }

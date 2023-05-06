@@ -7,17 +7,17 @@
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
-		void UIWindowPerformance::Draw(double dt)
+		void UIWindowPerformance::draw(double dt)
 		{
-			windowName = "Performance";
+			mWindowName = "Performance";
 
-			if (show)
+			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				Begin(windowName);
+				begin(mWindowName);
 
 				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 				if (ImGui::CollapsingHeader("System Info"))
@@ -123,11 +123,11 @@ namespace puffin
 
 					for (const auto& [stage, name] : core::gExecutionStageOrder)
 					{
-						auto stageFrametime = m_engine->getStageExecutionTimeLastFrame(stage) * 1000.0;
+						auto stageFrametime = mEngine->getStageExecutionTimeLastFrame(stage) * 1000.0;
 						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
 
 						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Indent();
-						for (const auto& [name, time] : m_engine->getCallbackExecutionTimeForUpdateStageLastFrame(stage))
+						for (const auto& [name, time] : mEngine->getCallbackExecutionTimeForUpdateStageLastFrame(stage))
 						{
 							double callbackFrametime = time * 1000.0;
 							ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
@@ -138,7 +138,7 @@ namespace puffin
 					ImGui::NewLine();
 				}
 
-				End();
+				end();
 			}
 		}
 	}

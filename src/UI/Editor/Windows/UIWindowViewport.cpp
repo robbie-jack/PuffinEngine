@@ -7,71 +7,68 @@
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
-		void UIWindowViewport::DrawWithoutImage()
+		void UIWindowViewport::drawWithoutImage()
 		{
-			windowName = "Viewport";
+			mWindowName = "Viewport";
 
-			if (show)
+			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				Begin(windowName);
+				begin(mWindowName);
 
-				viewportSize = ImGui::GetWindowSize();
-				viewportSize.y -= 20.0f;
+				mViewportSize = ImGui::GetWindowSize();
+				mViewportSize.y -= 20.0f;
 
-				End();
+				end();
 			}
 		}
 
-		void UIWindowViewport::Draw(ImTextureID textureID)
+		void UIWindowViewport::draw(const ImTextureID textureID)
 		{
-			windowName = "Viewport";
+			mWindowName = "Viewport";
 
-			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-
-			if (show)
+			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				flags = ImGuiWindowFlags_MenuBar;
+				mFlags = ImGuiWindowFlags_MenuBar;
 
-				Begin(windowName);
+				begin(mWindowName);
 
 				if (ImGui::BeginMenuBar())
 				{
-					static int mode = (int)gizmoMode;
+					static int mode = static_cast<int>(gizmoMode);
 
 					// Manipulation Gizmo Mode
 					ImGui::RadioButton("Translation", &mode, 0);
 					ImGui::RadioButton("Rotation", &mode, 1);
 					ImGui::RadioButton("Scale", &mode, 2);
 
-					gizmoMode = (GizmoMode)mode;
+					gizmoMode = static_cast<GizmoMode>(mode);
 
 					// Play/Pause/Stop Buttons
 					ImGui::Dummy(ImVec2((ImGui::GetWindowWidth() / 2) - 350.0f, 0.0f));
-					if (ImGui::Button(playButtonLabel.c_str()))
+					if (ImGui::Button(mPlayButtonLabel.c_str()))
 					{
-						m_engine->play();
+						mEngine->play();
 
-						core::PlayState playState = m_engine->playState();
-						if (playState == core::PlayState::Paused || playState == core::PlayState::Stopped)
+						if (const core::PlayState playState = mEngine->playState(); playState == core::PlayState::Paused || playState == core::PlayState::Stopped)
 						{
-							playButtonLabel = "Play";
+							mPlayButtonLabel = "Play";
 						}
 						else
 						{
-							playButtonLabel = "Pause";
+							mPlayButtonLabel = "Pause";
 						}
 					}
 
 					if (ImGui::Button("Stop"))
 					{
-						m_engine->restart();
-						playButtonLabel = "Play";
+						mEngine->restart();
+						mPlayButtonLabel = "Play";
 					}
 
 					ImGui::Dummy(ImVec2(100.0f, 0.0f));
@@ -85,20 +82,20 @@ namespace puffin
 					ImGui::EndMenuBar();
 				}
 				
-				viewportSize = ImGui::GetWindowSize();
-				viewportSize.y -= 40.0f;
+				mViewportSize = ImGui::GetWindowSize();
+				mViewportSize.y -= 40.0f;
 
 				// Display Scene View Texture
-				ImGui::Image(textureID, viewportSize);
+				ImGui::Image(textureID, mViewportSize);
 
-				if (false)
+				if (mSelectedEntity != gInvalidID)
 				{
 					//TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(entity);
 					
 					//DrawManipulationGizmo(m_engine->getSubsystem<core::EventSubsystem>(), transform);
 				}
 
-				End();
+				end();
 			}
 		}
 	}

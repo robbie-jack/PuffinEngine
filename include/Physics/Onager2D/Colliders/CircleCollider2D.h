@@ -7,7 +7,7 @@ namespace puffin::physics::collision2D
 {
 	struct CircleCollider2D : public Collider2D
 	{
-		CircleCollider2D(PuffinId uuid, CircleShape2D* shape) : Collider2D(uuid), shape(shape) {}
+		CircleCollider2D(PuffinID uuid, CircleShape2D* shape) : Collider2D(uuid), shape(shape) {}
 
 		~CircleCollider2D() override
 		{

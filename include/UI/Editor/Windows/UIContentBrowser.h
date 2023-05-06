@@ -2,18 +2,18 @@
 
 #include "UIWindow.h"
 
-namespace puffin::UI
+namespace puffin::ui
 {
 	class UIContentBrowser : public UIWindow
 	{
 	public:
 			
-		UIContentBrowser(std::shared_ptr<core::Engine> engine) : UIWindow(engine)
+		UIContentBrowser(const std::shared_ptr<core::Engine>& engine) : UIWindow(engine)
 		{
-			windowName = "Content Browser";
+			mWindowName = "Content Browser";
 		}
 		~UIContentBrowser() override {}
 
-		void Draw(double dt) override;
+		void draw(double dt) override;
 	};
 }

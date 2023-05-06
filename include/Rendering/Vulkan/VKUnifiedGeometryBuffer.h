@@ -25,19 +25,19 @@ namespace puffin::rendering
 
 		bool addMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh);
 
-		[[nodiscard]] bool hasMesh(const PuffinId staticMeshId) const
+		[[nodiscard]] bool hasMesh(const PuffinID staticMeshId) const
 		{
 			return mInternalMeshData.count(staticMeshId) == 1;
 		}
 
 		// CURRENTLY BROKEN, DO NOT USE!!!!!
-		bool removeMeshes(const std::set<PuffinId>& staticMeshesToRemove);
+		bool removeMeshes(const std::set<PuffinID>& staticMeshesToRemove);
 
-		uint32_t meshVertexOffset(const PuffinId meshId) { return mInternalMeshData[meshId].vertexOffset; }
-		uint32_t meshIndexOffset(const PuffinId meshId) { return mInternalMeshData[meshId].indexOffset; }
+		uint32_t meshVertexOffset(const PuffinID meshId) { return mInternalMeshData[meshId].vertexOffset; }
+		uint32_t meshIndexOffset(const PuffinID meshId) { return mInternalMeshData[meshId].indexOffset; }
 
-		uint32_t meshVertexCount(const PuffinId meshId) { return mInternalMeshData[meshId].vertexCount; }
-		uint32_t meshIndexCount(const PuffinId meshId) { return mInternalMeshData[meshId].indexCount; }
+		uint32_t meshVertexCount(const PuffinID meshId) { return mInternalMeshData[meshId].vertexCount; }
+		uint32_t meshIndexCount(const PuffinID meshId) { return mInternalMeshData[meshId].indexCount; }
 
 		AllocatedBuffer& vertexBuffer() { return mVertexBuffer; }
 		AllocatedBuffer& indexBuffer() { return mIndexBuffer; }
@@ -53,7 +53,7 @@ namespace puffin::rendering
 			bool isActive;
 		};
 
-		std::unordered_map<PuffinId, InternalMeshData> mInternalMeshData;
+		std::unordered_map<PuffinID, InternalMeshData> mInternalMeshData;
 
 		AllocatedBuffer mVertexBuffer;
 		AllocatedBuffer mIndexBuffer;

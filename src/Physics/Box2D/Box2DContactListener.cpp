@@ -7,8 +7,8 @@ namespace puffin::physics
 	void Box2DContactListener::BeginContact(b2Contact* contact)
 	{
 		CollisionBeginEvent collisionBeginEvent;
-		collisionBeginEvent.entityA = static_cast<PuffinId>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
-		collisionBeginEvent.entityB = static_cast<PuffinId>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
+		collisionBeginEvent.entityA = static_cast<PuffinID>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
+		collisionBeginEvent.entityB = static_cast<PuffinID>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 
 		mCollisionBeginEvents.push(collisionBeginEvent);
 	}
@@ -16,8 +16,8 @@ namespace puffin::physics
 	void Box2DContactListener::EndContact(b2Contact* contact)
 	{
 		CollisionEndEvent collisionEndEvent;
-		collisionEndEvent.entityA = static_cast<PuffinId>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
-		collisionEndEvent.entityB = static_cast<PuffinId>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
+		collisionEndEvent.entityA = static_cast<PuffinID>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
+		collisionEndEvent.entityB = static_cast<PuffinID>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 
 		mCollisionEndEvents.push(collisionEndEvent);
 	}

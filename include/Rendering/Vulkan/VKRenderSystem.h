@@ -81,7 +81,7 @@ namespace puffin::rendering
 		// Material Data (Set for each unique material i.e textures)
 		vk::DescriptorSet materialDescriptor;
 
-		std::set<PuffinId> renderedMeshes; // Set of meshes last rendered using this data
+		std::set<PuffinID> renderedMeshes; // Set of meshes last rendered using this data
 
 		bool swapchainNeedsUpdated = false;
 		bool offscreenNeedsUpdated = false;
@@ -156,10 +156,10 @@ namespace puffin::rendering
 		StaticRenderData mStaticRenderData;
 		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
 
-		std::unordered_map<PuffinId, std::set<size_t>> mMeshDrawList;
+		std::unordered_map<PuffinID, std::set<size_t>> mMeshDrawList;
 
 		PackedVector<TextureDataVK> mTexData;
-		std::unordered_map<PuffinId, std::set<size_t>> mTexDrawList;
+		std::unordered_map<PuffinID, std::set<size_t>> mTexDrawList;
 
 		uint32_t mFrameNumber;
 		uint32_t mDrawCalls = 0;
@@ -254,10 +254,10 @@ namespace puffin::rendering
 		void buildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale,
 		                         glm::mat4& outModel) const;
 
-		bool loadMesh(PuffinId meshId, MeshDataVK& meshData);
+		bool loadMesh(PuffinID meshId, MeshDataVK& meshData);
 		void unloadMesh(MeshDataVK& meshData) const;
 
-		bool loadTexture(PuffinId texId, TextureDataVK& texData);
+		bool loadTexture(PuffinID texId, TextureDataVK& texData);
 		void unloadTexture(TextureDataVK& texData) const;
 
 		void buildTextureDescriptorInfo(PackedVector<TextureDataVK>& texData,

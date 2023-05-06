@@ -6,23 +6,23 @@
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
 		class UIWindowSceneHierarchy : public UIWindow
 		{
 		public:
 
-			UIWindowSceneHierarchy(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
+			UIWindowSceneHierarchy(const std::shared_ptr<core::Engine>& engine) : UIWindow(engine) {}
 			~UIWindowSceneHierarchy() override {}
 
-			void Draw(double dt) override;
+			void draw(double dt) override;
 
-			bool HasEntityChanged() { return entityChanged; }
-			PuffinId GetEntity() { return selectedEntity; }
+			[[nodiscard]] bool entityChanged() const { return mEntityChanged; }
 
 		private:
-			PuffinId selectedEntity;
-			bool entityChanged = false;
+			
+			bool mEntityChanged = false;
+
 		};
 	}
 }

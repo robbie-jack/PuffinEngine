@@ -38,7 +38,7 @@ namespace puffin::physics
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
 			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "Box2DPhysicsSystem: Stop");
 
-			auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+			auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onDestroyRigidbody>(this);
@@ -86,25 +86,25 @@ namespace puffin::physics
 		PackedArray<b2PolygonShape, gMaxShapes> mPolygonShapes; // Packed Vector of polygon shapes
 		PackedVector<b2Fixture*> mFixtures; // Packed Vector of Fixtures that connect bodies and shapes
 
-		std::vector<PuffinId> mCirclesToInit;
-		std::vector<PuffinId> mBoxesToInit;
-		std::vector<PuffinId> mRigidbodiesToInit;
+		std::vector<PuffinID> mCirclesToInit;
+		std::vector<PuffinID> mBoxesToInit;
+		std::vector<PuffinID> mRigidbodiesToInit;
 
 		void updateComponents();
 		void publishCollisionEvents() const;
 
-		void initRigidbody(PuffinId id, const TransformComponent& transform, const RigidbodyComponent2D& rb);
-		void initBox(PuffinId id, const TransformComponent& transform, const BoxComponent2D& box);
-		void initCircle(PuffinId id, const TransformComponent& transform, const CircleComponent2D& circle);
-		void initFixture(PuffinId id, const RigidbodyComponent2D rb);
+		void initRigidbody(PuffinID id, const TransformComponent& transform, const RigidbodyComponent2D& rb);
+		void initBox(PuffinID id, const TransformComponent& transform, const BoxComponent2D& box);
+		void initCircle(PuffinID id, const TransformComponent& transform, const CircleComponent2D& circle);
+		void initFixture(PuffinID id, const RigidbodyComponent2D rb);
 
-		void updateRigidbody(PuffinId id);
-		void updateBox(PuffinId id);
-		void updateCircle(PuffinId id);
+		void updateRigidbody(PuffinID id);
+		void updateBox(PuffinID id);
+		void updateCircle(PuffinID id);
 
-		void cleanupRigidbody(PuffinId id);
-		void cleanupBox(PuffinId id);
-		void cleanupCircle(PuffinId id);
-		void cleanupFixture(PuffinId id);
+		void cleanupRigidbody(PuffinID id);
+		void cleanupBox(PuffinID id);
+		void cleanupCircle(PuffinID id);
+		void cleanupFixture(PuffinID id);
 	};
 }

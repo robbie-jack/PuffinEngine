@@ -11,7 +11,7 @@
 
 namespace puffin
 {
-	namespace ECS
+	namespace ecs
 	{
 		class World;
 	}

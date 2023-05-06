@@ -4,26 +4,26 @@
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
-		void UIWindowSettings::Draw(double dt)
+		void UIWindowSettings::draw(double dt)
 		{
-			if (firstTime)
+			if (mFirstTime)
 			{
-				windowName = "Settings";
+				mWindowName = "Settings";
 
-				firstTime = false;
+				mFirstTime = false;
 			}
 
-			if (show)
+			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				Begin(windowName);
+				begin(mWindowName);
 
-				io::ProjectSettings& settings = m_engine->settings();
+				io::ProjectSettings& settings = mEngine->settings();
 
-				auto input = m_engine->getSubsystem<input::InputSubsystem>();
+				auto input = mEngine->getSubsystem<input::InputSubsystem>();
 
 				if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
 				{
@@ -35,7 +35,7 @@ namespace puffin
 					m_camera->fovY = settings.cameraFov;
 				}
 
-				End();
+				end();
 			}
 		}
 	}

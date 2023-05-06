@@ -13,7 +13,7 @@
 
 namespace puffin
 {
-    namespace UI
+    namespace ui
     {
         class UIWindowEntityProperties : public UIWindow
         {
@@ -22,7 +22,7 @@ namespace puffin
             UIWindowEntityProperties(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
             ~UIWindowEntityProperties() override {}
 
-            void Draw(double dt) override;
+            void draw(double dt) override;
 
             //inline void SetEntity(ECS::EntityID entity_) { m_entity = entity_; };
             inline void SetFileBrowser(ImGui::FileBrowser* fileDialog_) { fileDialog = fileDialog_; };

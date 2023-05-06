@@ -22,9 +22,9 @@ namespace puffin
 		class AudioSubsystem;
 	}
 
-	namespace UI
+	namespace ui
 	{
-		class UIManager;
+		class UISubsystem;
 	}
 }
 
@@ -180,12 +180,12 @@ namespace puffin::core
 
 		inline io::ProjectSettings& settings() { return mSettings; }
 
-		std::shared_ptr<UI::UIManager> uiManager() const
+		std::shared_ptr<ui::UISubsystem> uiManager() const
 		{
 			return mUiManager;
 		}
 
-		bool shouldRenderEditorUi() const { return mShouldRenderEditorUi; }
+		bool shouldRenderEditorUi() const { return mShouldRenderEditorUI; }
 
 		const double& timeStepFixed() const { return mTimeStepFixed; }
 
@@ -207,11 +207,11 @@ namespace puffin::core
 
 	private:
 
-		std::shared_ptr<UI::UIManager> mUiManager = nullptr;
+		std::shared_ptr<ui::UISubsystem> mUiManager = nullptr;
 
 		bool mRunning = true;
 		bool mShouldLimitFrame = true; // Whether framerate should be capped at m_frameRateMax
-		bool mShouldRenderEditorUi = false; // Whether editor UI should be rendered
+		bool mShouldRenderEditorUI = true; // Whether editor UI should be rendered
 		bool mShouldTrackExecutionTime = true; // Should track time to execute callback/stages
 		PlayState mPlayState = PlayState::Stopped;
 

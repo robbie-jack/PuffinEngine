@@ -100,7 +100,7 @@ namespace puffin::rendering
 
 	struct AssetDataVK
 	{
-		puffin::PuffinId assetId;
+		puffin::PuffinID assetId;
 	};
 
 	struct MeshDataVK : AssetDataVK

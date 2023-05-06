@@ -33,7 +33,7 @@ namespace puffin::physics
 		// Publish Collision Events
 		publishCollisionEvents();
 
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		// Updated entity position/rotation from simulation
 		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent, VelocityComponent, const RigidbodyComponent2D>();
@@ -113,13 +113,13 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::updateComponents()
 	{
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		// Update Circles
 		{
 			for (const auto& id : mCirclesToInit)
 			{
-				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
@@ -142,7 +142,7 @@ namespace puffin::physics
 		{
 			for (const auto& id : mBoxesToInit)
 			{
-				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
@@ -165,7 +165,7 @@ namespace puffin::physics
 		{
 			for (const auto& id : mRigidbodiesToInit)
 			{
-				entt::entity entity = mEngine->getSubsystem<ECS::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent>(entity);
@@ -196,7 +196,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initRigidbody(PuffinId id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
+	void Box2DPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
 	{
 		if (!mBodies.contains(id))
 		{
@@ -216,7 +216,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initBox(PuffinId id, const TransformComponent& transform, const BoxComponent2D& box)
+	void Box2DPhysicsSystem::initBox(PuffinID id, const TransformComponent& transform, const BoxComponent2D& box)
 	{
 		if (!mPolygonShapes.contains(id))
 		{
@@ -231,7 +231,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initCircle(PuffinId id, const TransformComponent& transform, const CircleComponent2D& circle)
+	void Box2DPhysicsSystem::initCircle(PuffinID id, const TransformComponent& transform, const CircleComponent2D& circle)
 	{
 		if (!mCircleShapes.contains(id))
 		{
@@ -247,7 +247,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initFixture(PuffinId id, const RigidbodyComponent2D rb)
+	void Box2DPhysicsSystem::initFixture(PuffinID id, const RigidbodyComponent2D rb)
 	{
 		if (mBodies.contains(id) && mShapes.contains(id) && !mFixtures.contains(id))
 		{
@@ -259,22 +259,22 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::updateRigidbody(PuffinId id)
+	void Box2DPhysicsSystem::updateRigidbody(PuffinID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::updateBox(PuffinId id)
+	void Box2DPhysicsSystem::updateBox(PuffinID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::updateCircle(PuffinId id)
+	void Box2DPhysicsSystem::updateCircle(PuffinID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::cleanupRigidbody(PuffinId id)
+	void Box2DPhysicsSystem::cleanupRigidbody(PuffinID id)
 	{
 		if (mBodies.contains(id))
 		{
@@ -284,7 +284,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::cleanupBox(PuffinId id)
+	void Box2DPhysicsSystem::cleanupBox(PuffinID id)
 	{
 		if (mPolygonShapes.contains(id))
 		{
@@ -292,7 +292,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::cleanupCircle(PuffinId id)
+	void Box2DPhysicsSystem::cleanupCircle(PuffinID id)
 	{
 		if (mCircleShapes.contains(id))
 		{
@@ -300,7 +300,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::cleanupFixture(PuffinId id)
+	void Box2DPhysicsSystem::cleanupFixture(PuffinID id)
 	{
 		if (mFixtures.contains(id))
 		{

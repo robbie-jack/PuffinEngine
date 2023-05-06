@@ -21,7 +21,7 @@ namespace puffin::physics
 		virtual void generateCollisionPairs(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
 		                                    collidersUpdated) = 0;
 
-		void setECS(const std::shared_ptr<ECS::EnTTSubsystem>& ecs)
+		void setECS(const std::shared_ptr<ecs::EnTTSubsystem>& ecs)
 		{
 			mEcs = ecs;
 		}
@@ -60,7 +60,7 @@ namespace puffin::physics
 			return true;
 		}
 
-		std::shared_ptr<ECS::EnTTSubsystem> mEcs = nullptr;
+		std::shared_ptr<ecs::EnTTSubsystem> mEcs = nullptr;
 
 	};
 

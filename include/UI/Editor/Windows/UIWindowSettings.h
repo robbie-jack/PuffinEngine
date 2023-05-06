@@ -8,7 +8,7 @@ namespace puffin
 {
 	class Engine;
 
-	namespace UI
+	namespace ui
 	{
 		class UIWindowSettings : public UIWindow
 		{
@@ -17,9 +17,7 @@ namespace puffin
 			UIWindowSettings(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowSettings() override {}
 
-			void Draw(double dt) override;
-
-			inline void SetCamera(puffin::rendering::CameraComponent* camera) { m_camera = camera; }
+			void draw(double dt) override;
 
 		private:
 

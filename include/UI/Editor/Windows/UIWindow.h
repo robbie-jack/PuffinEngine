@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "Types/UUID.h"
+
 namespace puffin
 {
 	namespace core
@@ -15,46 +17,51 @@ namespace puffin
 		class Engine;
 	}
 
-	namespace UI
+	namespace ui
 	{
 		class UIWindow
 		{
 		public:
 
-			UIWindow(std::shared_ptr<core::Engine> engine) : m_engine(engine)
+			UIWindow(const std::shared_ptr<core::Engine>& engine) : mEngine(engine)
 			{
-				show = true;
-				firstTime = true;
-				flags = ImGuiWindowFlags_None;
+				mShow = true;
+				mFirstTime = true;
+				mFlags = ImGuiWindowFlags_None;
 			}
 
 			virtual ~UIWindow()
 			{
-				m_engine = nullptr;
+				mEngine = nullptr;
 			}
 
-			virtual void Draw(double dt) = 0;
+			virtual void draw(double dt) = 0;
 
-			void Show();
+			PuffinID selectedEntity() const { return mSelectedEntity; }
+			void setSelectedEntity(const PuffinID selectedEntity) { mSelectedEntity = selectedEntity; }
 
-			inline bool* GetShow() { return &show; }
-			inline std::string GetName() { return windowName; }
+			void setShow();
+
+			bool* show() { return &mShow; }
+			std::string name() { return mWindowName; }
 
 		protected:
 
-			virtual bool Begin(std::string name);
-			void End();
+			PuffinID mSelectedEntity;
 
 			// Boolean for if window is currently visible
-			bool show;
-			bool firstTime; // Flag to check if this is first time draw function was run
+			bool mShow;
+			bool mFirstTime; // Flag to check if this is first time draw function was run
 
 			// Name of window
-			std::string windowName;
+			std::string mWindowName;
 
-			ImGuiWindowFlags flags;
+			ImGuiWindowFlags mFlags;
 
-			std::shared_ptr<core::Engine> m_engine;
+			std::shared_ptr<core::Engine> mEngine;
+
+			virtual bool begin(std::string name);
+			static void end();
 		};
 	}
 }

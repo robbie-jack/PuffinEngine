@@ -7,7 +7,7 @@
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
 		//// utility structure for realtime plot
 		//struct ScrollingBuffer {
@@ -49,7 +49,7 @@ namespace puffin
 			UIWindowPerformance(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowPerformance() override {}
 
-			void Draw(double dt) override;
+			void draw(double dt) override;
 
 		private:
 			double fps = 0.0f;

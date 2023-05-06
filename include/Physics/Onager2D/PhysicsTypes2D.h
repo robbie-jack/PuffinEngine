@@ -39,7 +39,7 @@ namespace puffin::physics
 				return (a < other.a && b < other.b) || (a < other.b && b < other.a);
 			}
 
-			PuffinId a, b; // Entities which collided
+			PuffinID a, b; // Entities which collided
 
 			Vector2f pointOnA, pointOnB;
 			Vector2f normal;

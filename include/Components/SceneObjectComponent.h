@@ -11,9 +11,9 @@ namespace puffin
 	struct SceneObjectComponent
 	{
 		SceneObjectComponent() = default;
-		SceneObjectComponent(const PuffinId& id_, const std::string& name_) : id(id_), name(name_) {}
+		SceneObjectComponent(const PuffinID& id_, const std::string& name_) : id(id_), name(name_) {}
 
-		PuffinId id; // uint64_t which is used to uniquely identify entities
+		PuffinID id; // uint64_t which is used to uniquely identify entities
 		std::string name; // Name of entity, used for displaying in UI
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(SceneObjectComponent, id, name)

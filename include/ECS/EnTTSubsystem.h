@@ -6,7 +6,7 @@
 #include "entt/entity/registry.hpp"
 #include "Components/SceneObjectComponent.h"
 
-namespace puffin::ECS
+namespace puffin::ecs
 {
 	class EnTTSubsystem : public core::Subsystem
 	{
@@ -22,19 +22,19 @@ namespace puffin::ECS
 		{
 			auto entity = mRegistry->create();
 
-			auto& sceneObject = mRegistry->emplace<SceneObjectComponent>(entity, generateId(), name);
+			auto& sceneObject = mRegistry->emplace<SceneObjectComponent>(entity, generateID(), name);
 
 			mIdToEntityMap.emplace(sceneObject.id, entity);
 
 			return entity;
 		}
 
-		bool valid(const PuffinId uuid)
+		bool valid(const PuffinID uuid)
 		{
 			return mIdToEntityMap.find(uuid) != mIdToEntityMap.end();
 		}
 
-		entt::entity getEntity(const PuffinId uuid)
+		entt::entity getEntity(const PuffinID uuid)
 		{
 			const entt::entity& entity = mIdToEntityMap[uuid];
 
@@ -47,7 +47,7 @@ namespace puffin::ECS
 
 		std::shared_ptr<entt::registry> mRegistry = nullptr;
 
-		std::unordered_map<PuffinId, entt::entity> mIdToEntityMap;
+		std::unordered_map<PuffinID, entt::entity> mIdToEntityMap;
 
 	};
 }

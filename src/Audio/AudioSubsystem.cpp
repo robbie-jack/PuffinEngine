@@ -41,7 +41,7 @@ namespace puffin::audio
 		}
 	}
 
-	void AudioSubsystem::playSoundEffect(puffin::PuffinId soundId, float volume, bool looping, bool restart)
+	void AudioSubsystem::playSoundEffect(puffin::PuffinID soundId, float volume, bool looping, bool restart)
 	{
 		SoundEvent soundEvent;
 		soundEvent.type = SoundEventType::Play;
@@ -53,16 +53,16 @@ namespace puffin::audio
 		mSoundEventBuffer.push(soundEvent);
 	}
 
-	PuffinId AudioSubsystem::playSoundEffect(const std::string& soundPath, float volume, bool looping, bool restart)
+	PuffinID AudioSubsystem::playSoundEffect(const std::string& soundPath, float volume, bool looping, bool restart)
 	{
-		const PuffinId soundId = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath)->id();
+		const PuffinID soundId = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath)->id();
 
 		playSoundEffect(soundId, volume, looping, restart);
 
 		return soundId;
 	}
 
-	void AudioSubsystem::stopSoundEffect(PuffinId soundId)
+	void AudioSubsystem::stopSoundEffect(PuffinID soundId)
 	{
 		SoundEvent soundEvent;
 		soundEvent.type = SoundEventType::Stop;
@@ -71,7 +71,7 @@ namespace puffin::audio
 		mSoundEventBuffer.push(soundEvent);
 	}
 
-	void AudioSubsystem::pauseSoundEffect(PuffinId soundId)
+	void AudioSubsystem::pauseSoundEffect(PuffinID soundId)
 	{
 		SoundEvent soundEvent;
 		soundEvent.type = SoundEventType::Pause;

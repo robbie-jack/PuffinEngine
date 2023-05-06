@@ -36,7 +36,7 @@ namespace puffin::procedural
 			//mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "ProcMeshGenSystem: Setup");
 			//mEngine->registerCallback(core::ExecutionStage::Update, [&]() { update(); }, "ProcMeshGenSystem: Update", 200);
 
-			const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 			/*registry->on_construct<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
 			registry->on_update<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();

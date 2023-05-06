@@ -35,7 +35,7 @@
 #include "Components/Rendering/MeshComponent.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
-#include "UI/Editor/UIManager.h"
+#include "UI/Editor/UISubsystem.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -59,7 +59,7 @@ namespace puffin::rendering
 		vk::Extent2D offscreenSize;
 		if (mEngine->shouldRenderEditorUi())
 		{
-			const ImVec2 viewportSize = mEngine->uiManager()->GetWindowViewport()->GetViewportSize();
+			const ImVec2 viewportSize = mEngine->uiManager()->windowViewport()->viewportSize();
 			offscreenSize.width = viewportSize.x;
 			offscreenSize.height = viewportSize.y;
 		}
@@ -171,7 +171,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::initVulkan()
 	{
-		GLFWwindow* glfwWindow = mEngine->getSubsystem<Window::WindowSubsystem>()->primaryWindow();
+		GLFWwindow* glfwWindow = mEngine->getSubsystem<window::WindowSubsystem>()->primaryWindow();
 
 		glfwSetWindowUserPointer(glfwWindow, this);
 		glfwSetFramebufferSizeCallback(glfwWindow, frameBufferResizeCallback);
@@ -703,7 +703,7 @@ namespace puffin::rendering
 		VK_CHECK(mDevice.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
 
 		// Initialize imgui for GLFW
-		GLFWwindow* glfwWindow = mEngine->getSubsystem<Window::WindowSubsystem>()->primaryWindow();
+		GLFWwindow* glfwWindow = mEngine->getSubsystem<window::WindowSubsystem>()->primaryWindow();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
 		// Initialize imgui for Vulkan
@@ -826,7 +826,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::processComponents()
 	{
-		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+		auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
 
@@ -926,7 +926,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::updateRenderData()
 	{
-		std::set<PuffinId> meshesToBeRemoved;
+		std::set<PuffinID> meshesToBeRemoved;
 
 		for (const auto& [fst, snd] : mMeshDrawList)
 		{
@@ -1003,7 +1003,7 @@ namespace puffin::rendering
 
 		if (mEngine->shouldRenderEditorUi())
 		{
-			const ImVec2 viewportSize = mEngine->uiManager()->GetWindowViewport()->GetViewportSize();
+			const ImVec2 viewportSize = mEngine->uiManager()->windowViewport()->viewportSize();
 			if (viewportSize.x != mOffscreenData.extent.width ||
 				viewportSize.y != mOffscreenData.extent.height)
 			{
@@ -1030,7 +1030,7 @@ namespace puffin::rendering
 		{
 			//m_engine->GetUIManager()->DrawUI(m_engine->GetDeltaTime());
 
-			mEngine->uiManager()->GetWindowViewport()->Draw(mOffscreenData.viewportTextures[swapchainImageIdx]);
+			mEngine->uiManager()->windowViewport()->draw(mOffscreenData.viewportTextures[swapchainImageIdx]);
 
 			ImGui::Render();
 		}
@@ -1135,7 +1135,7 @@ namespace puffin::rendering
 			vk::Extent2D offscreenSize;
 			if (mEngine->shouldRenderEditorUi())
 			{
-				const ImVec2 viewportSize = mEngine->uiManager()->GetWindowViewport()->GetViewportSize();
+				const ImVec2 viewportSize = mEngine->uiManager()->windowViewport()->viewportSize();
 				offscreenSize.width = static_cast<uint32_t>(viewportSize.x);
 				offscreenSize.height = static_cast<uint32_t>(viewportSize.y);
 			}
@@ -1244,7 +1244,7 @@ namespace puffin::rendering
 		// Calculate t value for rendering interpolated position
 		const double t = mEngine->accumulatedTime() / mEngine->timeStepFixed();
 
-		std::vector<PuffinId> entities;
+		std::vector<PuffinID> entities;
 		entities.reserve(gMaxObjects);
 
 		int numObjects = 0;
@@ -1272,7 +1272,7 @@ namespace puffin::rendering
 			threadObjects[idx].reserve(500);
 		}
 
-		auto enttSubsystem = mEngine->getSubsystem<ECS::EnTTSubsystem>();
+		auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->registry();
 
 		enki::TaskSet task(numObjects, [&](enki::TaskSetPartition range, uint32_t threadnum)
@@ -1345,7 +1345,7 @@ namespace puffin::rendering
 
 		int i = 0;
 
-		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+		auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		auto lightView = registry->view<const SceneObjectComponent, const TransformComponent, const LightComponent>();
 
@@ -1391,7 +1391,7 @@ namespace puffin::rendering
 
 		int idx = 0;
 
-		auto enttSubsystem = mEngine->getSubsystem<ECS::EnTTSubsystem>();
+		auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->registry();
 
 		for (const auto [fst, snd] : mMeshDrawList)
@@ -1746,7 +1746,7 @@ namespace puffin::rendering
 		outModel = glm::scale(outModel, (glm::vec3)scale);
 	}
 
-	bool VKRenderSystem::loadMesh(PuffinId meshId, MeshDataVK& meshData)
+	bool VKRenderSystem::loadMesh(PuffinID meshId, MeshDataVK& meshData)
 	{
 		if (const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(
 			assets::AssetRegistry::get()->getAsset(meshId)); meshAsset && meshAsset->load())
@@ -1778,7 +1778,7 @@ namespace puffin::rendering
 		mAllocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
 	}
 
-	bool VKRenderSystem::loadTexture(PuffinId texId, TextureDataVK& texData)
+	bool VKRenderSystem::loadTexture(PuffinID texId, TextureDataVK& texData)
 	{
 		if (const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(
 			assets::AssetRegistry::get()->getAsset(texId)); texAsset && texAsset->load())

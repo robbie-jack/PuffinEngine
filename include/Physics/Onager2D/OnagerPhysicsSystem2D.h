@@ -45,7 +45,7 @@ namespace puffin::physics
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
 			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "Onager2DPhysicsSystem: Stop");
 
-			const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyRigidbody>(this);
@@ -78,7 +78,7 @@ namespace puffin::physics
 
 			std::shared_ptr<T> broadphase = std::make_shared<T>();
 			std::shared_ptr<Broadphase> broadphaseBase = std::static_pointer_cast<Broadphase>(broadphase);
-			broadphaseBase->setECS(mEngine->getSubsystem<ECS::EnTTSubsystem>());
+			broadphaseBase->setECS(mEngine->getSubsystem<ecs::EnTTSubsystem>());
 
 			mBroadphases.emplace(typeName, broadphaseBase);
 		}
@@ -127,8 +127,8 @@ namespace puffin::physics
 		void initBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box);
 		void cleanupBox(const SceneObjectComponent& object);
 
-		void insertCollider(PuffinId id, std::shared_ptr<collision2D::Collider2D> collider);
-		void eraseCollider(PuffinId id);
+		void insertCollider(PuffinID id, std::shared_ptr<collision2D::Collider2D> collider);
+		void eraseCollider(PuffinID id);
 
 		// Dynamics
 		void updateDynamics() const; // Perform velocity updates for all rigid bodies

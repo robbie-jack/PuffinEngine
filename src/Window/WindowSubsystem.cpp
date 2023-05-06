@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-namespace puffin::Window
+namespace puffin::window
 {
 	//==================================================
 	// Public Methods
@@ -58,7 +58,7 @@ namespace puffin::Window
 		return glfwWindowShouldClose(mPrimaryWindow);
 	}
 
-	PuffinId WindowSubsystem::createNewWindow(const int& width, const int& height)
+	PuffinID WindowSubsystem::createNewWindow(const int& width, const int& height)
 	{
 		// Create new window and store it in windows map
 		GLFWwindow* window = glfwCreateWindow(width, height, "Puffin Engine", nullptr, nullptr);
@@ -69,7 +69,7 @@ namespace puffin::Window
 			return {};
 		}
 
-		PuffinId id;
+		PuffinID id;
 
 		mWindows.insert({ id, window });
 
@@ -77,7 +77,7 @@ namespace puffin::Window
 		return id;
 	}
 
-	GLFWwindow* WindowSubsystem::getWindow(const PuffinId& uuid)
+	GLFWwindow* WindowSubsystem::getWindow(const PuffinID& uuid)
 	{
 		// Return window if there is oen with that handle
 		if (mWindows.count(uuid) == 1)
@@ -89,7 +89,7 @@ namespace puffin::Window
 		return nullptr;
 	}
 
-	void WindowSubsystem::destroyWindow(const PuffinId& uuid)
+	void WindowSubsystem::destroyWindow(const PuffinID& uuid)
 	{
 		glfwDestroyWindow(mWindows[uuid]);
 		mWindows.erase(uuid);

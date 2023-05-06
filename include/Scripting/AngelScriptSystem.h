@@ -19,111 +19,108 @@
 #include <memory>
 #include <unordered_map>
 
-namespace puffin
+namespace puffin::scripting
 {
-	namespace scripting
+	struct ScriptCallback
 	{
-		struct ScriptCallback
+		PuffinID entity;
+		asIScriptFunction* func = nullptr;
+		void* object = nullptr;
+		asITypeInfo* objectType = nullptr;
+	};
+
+	typedef std::map<PuffinID, ScriptCallback> ScriptCallbackMap;
+
+	class AngelScriptSystem : public core::System
+	{
+	public:
+
+		AngelScriptSystem();
+		~AngelScriptSystem() override;
+
+		void setupCallbacks() override
 		{
-			PuffinId entity;
-			asIScriptFunction* func = nullptr;
-			void* object = nullptr;
-			asITypeInfo* objectType = nullptr;
-		};
+			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "AngelScriptSystem: Init");
+			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "AngelScriptSystem: Setup");
+			mEngine->registerCallback(core::ExecutionStage::Start, [&]() { start(); }, "AngelScriptSystem: Start");
+			mEngine->registerCallback(core::ExecutionStage::Update, [&]() { update(); }, "AngelScriptSystem: Update");
+			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "AngelScriptSystem: Stop");
+		}
 
-		typedef std::map<PuffinId, ScriptCallback> ScriptCallbackMap;
+		void init();
+		void setup();
+		void start();
+		void update();
+		void stop();
 
-		class AngelScriptSystem : public core::System
-		{
-		public:
+		// Hot-Reloads all scripts when called
+		//void reload() {}
 
-			AngelScriptSystem();
-			~AngelScriptSystem() override;
+	private:
 
-			void setupCallbacks() override
-			{
-				mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "AngelScriptSystem: Init");
-				mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { Setup(); }, "AngelScriptSystem: Setup");
-				mEngine->registerCallback(core::ExecutionStage::Start, [&]() { Start(); }, "AngelScriptSystem: Start");
-				mEngine->registerCallback(core::ExecutionStage::Update, [&]() { Update(); }, "AngelScriptSystem: Update");
-				mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { Stop(); }, "AngelScriptSystem: Stop");
-			}
+		asIScriptEngine* mScriptEngine = nullptr;
+		asIScriptContext* mCtx = nullptr;
 
-			void Init();
-			void Setup();
-			void Start();
-			void Update();
-			void Stop();
+		std::shared_ptr<audio::AudioSubsystem> mAudioSubsystem;
 
-			// Hot-Reloads all scripts when called
-			void Reload() {}
+		PuffinID mCurrentEntityID; // Entity ID for currently executing script
 
-		private:
+		// Event Buffers
+		std::shared_ptr<RingBuffer<input::InputEvent>> mInputEvents = nullptr;;
+		std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> mCollisionBeginEvents = nullptr;
+		std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> mCollisionEndEvents = nullptr;
 
-			asIScriptEngine* m_scriptEngine = nullptr;
-			asIScriptContext* m_ctx = nullptr;
+		// Maps of Input Callbacks
+		std::unordered_map<std::string, ScriptCallbackMap> mOnInputPressedCallbacks;
+		std::unordered_map<std::string, ScriptCallbackMap> mOnInputReleasedCallbacks;
 
-			std::shared_ptr<audio::AudioSubsystem> m_audioSubsystem;
+		// Collision Callbacks
+		ScriptCallbackMap mOnCollisionBeginCallbacks;
+		ScriptCallbackMap mOnCollisionEndCallbacks;
 
-			PuffinId m_currentEntityID; // Entity ID for currently executing script
+		bool mFirstInitialize = true;
 
-			// Event Buffers
-			std::shared_ptr<RingBuffer<input::InputEvent>> m_inputEvents = nullptr;;
-			std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> m_collisionBeginEvents = nullptr;
-			std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> m_collisionEndEvents = nullptr;
+		void configureEngine();
 
-			// Maps of Input Callbacks
-			std::unordered_map<std::string, ScriptCallbackMap> m_onInputPressedCallbacks;
-			std::unordered_map<std::string, ScriptCallbackMap> m_onInputReleasedCallbacks;
+		void initializeScript(PuffinID entity, AngelScriptComponent& script);
+		void compileScript(AngelScriptComponent& script);
+		void updateScriptMethods(AngelScriptComponent& script);
+		void instantiateScriptObj(PuffinID entity, AngelScriptComponent& script);
 
-			// Collision Callbacks
-			ScriptCallbackMap m_onCollisionBeginCallbacks;
-			ScriptCallbackMap m_onCollisionEndCallbacks;
+		void cleanupScriptComponent(AngelScriptComponent& script);
 
-			bool m_firstInitialize = true;
+		void processEvents();
 
-			void ConfigureEngine();
+		asIScriptFunction* getScriptMethod(const AngelScriptComponent& script, const char* funcName);
+		bool prepareScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
+		bool executeScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
+		bool prepareAndExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
 
-			void InitializeScript(PuffinId entity, AngelScriptComponent& script);
-			void CompileScript(AngelScriptComponent& script);
-			void UpdateScriptMethods(AngelScriptComponent& script);
-			void InstantiateScriptObj(PuffinId entity, AngelScriptComponent& script);
+		// Global Script Functions
+		[[nodiscard]] const double& getDeltaTime() const;
+		[[nodiscard]] const double& getFixedTime() const;
 
-			void CleanupScriptComponent(AngelScriptComponent& script);
+		void playSoundEffect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
+		uint64_t playSoundEffect(const std::string& path, float volume = 1.0f, bool looping = false, bool restart = false);
 
-			void ProcessEvents();
+		uint64_t getEntityID(); // Return the Entity ID for the attached script
 
-			asIScriptFunction* GetScriptMethod(const AngelScriptComponent& script, const char* funcName);
-			bool PrepareScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
-			bool ExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
-			bool PrepareAndExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
+		// Script Callbacks
+		ScriptCallback bindCallback(uint32_t entity, asIScriptFunction* cb) const;
+		void releaseCallback(ScriptCallback& scriptCallback) const;
 
-			// Global Script Functions
-			const double& GetDeltaTime() const;
-			const double& GetFixedTime() const;
+		// Input Functions
+		void bindOnInputPressed(uint32_t entity, const std::string& actionName, asIScriptFunction* cb);
+		void bindOnInputReleased(uint32_t entity, const std::string& actionName, asIScriptFunction *cb);
 
-			void PlaySoundEffect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
-			uint64_t PlaySoundEffect(const std::string& path, float volume = 1.0f, bool looping = false, bool restart = false);
+		void releaseOnInputPressed(uint32_t entity, const std::string& actionName);
+		void releaseOnInputReleased(uint32_t entity, const std::string& actionName);
 
-			uint64_t GetEntityID(); // Return the Entity ID for the attached script
+		// Collision Functions
+		void bindOnCollisionBegin(uint32_t entity, asIScriptFunction* cb);
+		void bindOnCollisionEnd(uint32_t entity, asIScriptFunction* cb);
 
-			// Script Callbacks
-			ScriptCallback BindCallback(uint32_t entity, asIScriptFunction* cb) const;
-			void ReleaseCallback(ScriptCallback& scriptCallback) const;
-
-			// Input Functions
-			void BindOnInputPressed(uint32_t entity, const std::string& actionName, asIScriptFunction* cb);
-			void BindOnInputReleased(uint32_t entity, const std::string& actionName, asIScriptFunction *cb);
-
-			void ReleaseOnInputPressed(uint32_t entity, const std::string& actionName);
-			void ReleaseOnInputReleased(uint32_t entity, const std::string& actionName);
-
-			// Collision Functions
-			void BindOnCollisionBegin(uint32_t entity, asIScriptFunction* cb);
-			void BindOnCollisionEnd(uint32_t entity, asIScriptFunction* cb);
-
-			void ReleaseOnCollisionBegin(uint32_t entity);
-			void ReleaseOnCollisionEnd(uint32_t entity);
-		};
-	}
+		void releaseOnCollisionBegin(uint32_t entity);
+		void releaseOnCollisionEnd(uint32_t entity);
+	};
 }

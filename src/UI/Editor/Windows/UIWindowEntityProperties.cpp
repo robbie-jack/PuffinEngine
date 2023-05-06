@@ -15,19 +15,19 @@
 
 namespace puffin
 {
-	namespace UI
+	namespace ui
 	{
-		void UIWindowEntityProperties::Draw(double dt)
+		void UIWindowEntityProperties::draw(double dt)
 		{
-			windowName = "Entity Properties";
+			mWindowName = "Entity Properties";
 
 			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
-			if (show)
+			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				Begin(windowName);
+				begin(mWindowName);
 
 				if (false)
 				{
@@ -149,7 +149,7 @@ namespace puffin
 					ImGui::Text(" No Entity Selected");
 				}
 
-				End();
+				end();
 			}
 		}
 

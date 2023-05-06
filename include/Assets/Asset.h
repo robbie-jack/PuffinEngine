@@ -135,12 +135,12 @@ namespace puffin::assets
 	{
 	public:
 
-		Asset(const fs::path& path) : mId(generateId()), mPath(path) {}
-		Asset(const PuffinId uuid, const fs::path& path) : mId(uuid), mPath(path) {}
+		Asset(const fs::path& path) : mId(generateID()), mPath(path) {}
+		Asset(const PuffinID uuid, const fs::path& path) : mId(uuid), mPath(path) {}
 
 		virtual ~Asset() = default;
 
-		PuffinId id() const
+		PuffinID id() const
 		{
 			return mId;
 		}
@@ -165,7 +165,7 @@ namespace puffin::assets
 
 	private:
 
-		PuffinId mId = gInvalidId; // UUID of Asset
+		PuffinID mId = gInvalidID; // UUID of Asset
 		fs::path mPath; // Relative Asset Path
 
 	};

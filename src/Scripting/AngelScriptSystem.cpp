@@ -16,7 +16,7 @@
 
 using namespace std;
 
-void MessageCallback(const asSMessageInfo* msg, void* param)
+void messageCallback(const asSMessageInfo* msg, void* param)
 {
 	const char* type = "ERR ";
 	if (msg->type == asMSGTYPE_WARNING)
@@ -28,15 +28,15 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 }
 
 // Function implementation with native calling convention
-void PrintString(string& str)
+void printString(const string& str)
 {
 	cout << str << endl;
 }
 
 // Function implementation with generic script interface
-void PrintString_Generic(asIScriptGeneric* gen)
+void printStringGeneric(asIScriptGeneric* gen)
 {
-	string* str = (string*)gen->GetArgAddress(0);
+	const auto str = static_cast<string*>(gen->GetArgAddress(0));
 	cout << *str << endl;
 }
 
@@ -45,14 +45,14 @@ namespace puffin::scripting
 	AngelScriptSystem::AngelScriptSystem()
 	{
 		// Create Script Engine
-		m_scriptEngine = asCreateScriptEngine();
-		if (m_scriptEngine == 0)
+		mScriptEngine = asCreateScriptEngine();
+		if (mScriptEngine == nullptr)
 		{
 			cout << "Failed to create script engine." << endl;
 		}
 
 		// Set message callback to receive information on errors in human readable form
-		int r = m_scriptEngine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); assert(r >= 0);
+		const int r = mScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL); assert(r >= 0 && "Failed to set message callback for angelscript");
 
 		mSystemInfo.name = "AngelScriptSystem";
 	}
@@ -60,42 +60,42 @@ namespace puffin::scripting
 	AngelScriptSystem::~AngelScriptSystem()
 	{
 		// Shut down the engine
-		m_scriptEngine->ShutDownAndRelease();
-		m_scriptEngine = nullptr;
+		mScriptEngine->ShutDownAndRelease();
+		mScriptEngine = nullptr;
 	}
 
-	void AngelScriptSystem::Init()
+	void AngelScriptSystem::init()
 	{
 		// Configure Engine and Setup Global Function Callbacks
-		ConfigureEngine();
+		configureEngine();
 
-		m_audioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
+		mAudioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
 	}
 
-	void AngelScriptSystem::Setup()
+	void AngelScriptSystem::setup()
 	{
 		// Create a context that will execute the script
-		m_ctx = m_scriptEngine->CreateContext();
-		if (m_ctx == 0)
+		mCtx = mScriptEngine->CreateContext();
+		if (mCtx == 0)
 		{
 			cout << "Failed to create the context." << endl;
-			m_scriptEngine->Release();
+			mScriptEngine->Release();
 		}
 
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
 
 		for (auto [entity, object, transform, script] : scriptView.each())
 		{
-			InitializeScript(object.id, script);
+			initializeScript(object.id, script);
 		}
 	}
 
-	void AngelScriptSystem::Start()
+	void AngelScriptSystem::start()
 	{
 		// Execute Start Methods
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
 
@@ -103,27 +103,27 @@ namespace puffin::scripting
 		{
 			ExportEditablePropertiesToScriptData(script, script.serializedData);
 
-			m_currentEntityID = object.id;
+			mCurrentEntityID = object.id;
 
-			asIScriptFunction* startFunc = GetScriptMethod(script, "Start");
-			PrepareAndExecuteScriptMethod(script.obj, startFunc);
+			asIScriptFunction* startFunc = getScriptMethod(script, "Start");
+			prepareAndExecuteScriptMethod(script.obj, startFunc);
 			startFunc->Release();
 		}
 	}
 
-	void AngelScriptSystem::Update()
+	void AngelScriptSystem::update()
 	{
 		// Process Input Events
-		ProcessEvents();
+		processEvents();
 		
 		// Initialize/Cleanup marked components
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
 
 		for (auto [entity, object, transform, script] : scriptView.each())
 		{
-			m_currentEntityID = object.id;
+			mCurrentEntityID = object.id;
 
 			//// Script needs initialized
 			//if (entity->GetComponentFlag<AngelScriptComponent, FlagDirty>())
@@ -149,62 +149,62 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptSystem::Stop()
+	void AngelScriptSystem::stop()
 	{
 		// Execute Script Stop Methods
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
 
 		for (auto [entity, object, transform, script] : scriptView.each())
 		{
-			m_currentEntityID = object.id;
+			mCurrentEntityID = object.id;
 
-			PrepareAndExecuteScriptMethod(script.obj, script.stopFunc);
+			prepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 		}
 
 		// Release Input Pressed Callbacks
-		for (auto& pair1 : m_onInputPressedCallbacks)
+		for (auto& pair1 : mOnInputPressedCallbacks)
 		{
 			for (auto& pair2 : pair1.second)
 			{
-				ReleaseCallback(pair2.second);
+				releaseCallback(pair2.second);
 			}
 		}
 
-		m_onInputPressedCallbacks.clear();
+		mOnInputPressedCallbacks.clear();
 
 		// Release Input Released Callbacks
-		for (auto& pair1 : m_onInputReleasedCallbacks)
+		for (auto& pair1 : mOnInputReleasedCallbacks)
 		{
 			for (auto& pair2 : pair1.second)
 			{
-				ReleaseCallback(pair2.second);
+				releaseCallback(pair2.second);
 			}
 		}
 
-		m_onInputPressedCallbacks.clear();
+		mOnInputPressedCallbacks.clear();
 
 		// Release collision begin callbacks
-		for (auto& pair : m_onCollisionBeginCallbacks)
+		for (auto& pair : mOnCollisionBeginCallbacks)
 		{
-			ReleaseCallback(pair.second);
+			releaseCallback(pair.second);
 		}
 
-		m_onCollisionBeginCallbacks.clear();
+		mOnCollisionBeginCallbacks.clear();
 
 		// Release collision end callbacks
-		for (auto& pair : m_onCollisionEndCallbacks)
+		for (auto& pair : mOnCollisionEndCallbacks)
 		{
-			ReleaseCallback(pair.second);
+			releaseCallback(pair.second);
 		}
 
-		m_onCollisionEndCallbacks.clear();
+		mOnCollisionEndCallbacks.clear();
 
 		// We must release the contexts when no longer using them
-		if (m_ctx)
+		if (mCtx)
 		{
-			m_ctx->Release();
+			mCtx->Release();
 		}
 
 		/*for (const auto entity : scriptEntities)
@@ -214,14 +214,14 @@ namespace puffin::scripting
 		}*/
 	}
 
-	void AngelScriptSystem::ConfigureEngine()
+	void AngelScriptSystem::configureEngine()
 	{
 		int r;
 
 		// Register the script string type
 		// Look at the implementation for this function for more information  
 		// on how to register a custom string type, and other object types.
-		RegisterStdString(m_scriptEngine);
+		RegisterStdString(mScriptEngine);
 
 		if (!strstr(asGetLibraryOptions(), "AS_MAX_PORTABILITY"))
 		{
@@ -231,42 +231,42 @@ namespace puffin::scripting
 			// with a lot of if's. If an error occurs in release mode it will
 			// be caught when a script is being built, so it is not necessary
 			// to do the verification here as well.
-			r = m_scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString), asCALL_CDECL); assert(r >= 0);
+			r = mScriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(printString), asCALL_CDECL); assert(r >= 0);
 		}
 		else
 		{
 			// Notice how the registration is almost identical to the above. 
-			r = m_scriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString_Generic), asCALL_GENERIC); assert(r >= 0);
+			r = mScriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(printStringGeneric), asCALL_GENERIC); assert(r >= 0);
 		}
 
 		// Define Global Methods for Scripts
-		r = m_scriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptSystem, GetDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptSystem, GetFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("uint64 GetEntityID()", asMETHOD(AngelScriptSystem, GetEntityID), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptSystem, getDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptSystem, getFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("uint64 GetEntityID()", asMETHOD(AngelScriptSystem, getEntityID), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
-		r = m_scriptEngine->RegisterGlobalFunction("void PlaySoundEffect(uint64, float, bool, bool)", asMETHODPR(AngelScriptSystem, PlaySoundEffect, (uint64_t, float, bool, bool), void), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSystem, PlaySoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void PlaySoundEffect(uint64, float, bool, bool)", asMETHODPR(AngelScriptSystem, playSoundEffect, (uint64_t, float, bool, bool), void), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSystem, playSoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// Register Components and their constructors, functions and properties
-		RegisterTransformComponent(m_scriptEngine);
+		RegisterTransformComponent(mScriptEngine);
 
 		// Register Input Funcdefs and Bind/Release Callback Methods
-		r = m_scriptEngine->RegisterFuncdef("void OnInputPressedCallback()"); assert(r >= 0);
-		r = m_scriptEngine->RegisterFuncdef("void OnInputReleasedCallback()"); assert(r >= 0);
+		r = mScriptEngine->RegisterFuncdef("void OnInputPressedCallback()"); assert(r >= 0);
+		r = mScriptEngine->RegisterFuncdef("void OnInputReleasedCallback()"); assert(r >= 0);
 		
-		r = m_scriptEngine->RegisterGlobalFunction("void BindOnInputPressed(uint, const string &in, OnInputPressedCallback @cb)", asMETHOD(AngelScriptSystem, BindOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("void BindOnInputReleased(uint, const string &in, OnInputReleasedCallback @cb)", asMETHOD(AngelScriptSystem, BindOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("void ReleaseOnInputPressed(uint, const string &in)", asMETHOD(AngelScriptSystem, ReleaseOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("void ReleaseOnInputReleased(uint, const string &in)", asMETHOD(AngelScriptSystem, ReleaseOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void BindOnInputPressed(uint, const string &in, OnInputPressedCallback @cb)", asMETHOD(AngelScriptSystem, bindOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void BindOnInputReleased(uint, const string &in, OnInputReleasedCallback @cb)", asMETHOD(AngelScriptSystem, bindOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnInputPressed(uint, const string &in)", asMETHOD(AngelScriptSystem, releaseOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnInputReleased(uint, const string &in)", asMETHOD(AngelScriptSystem, releaseOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// Register Collision Funcdefs and Bind/Release Callback Methods
-		r = m_scriptEngine->RegisterFuncdef("void OnCollisionBeginCallback(uint)"); assert(r >= 0);
-		r = m_scriptEngine->RegisterFuncdef("void OnCollisionEndCallback(uint)"); assert(r >= 0);
+		r = mScriptEngine->RegisterFuncdef("void OnCollisionBeginCallback(uint)"); assert(r >= 0);
+		r = mScriptEngine->RegisterFuncdef("void OnCollisionEndCallback(uint)"); assert(r >= 0);
 
-		r = m_scriptEngine->RegisterGlobalFunction("void BindOnCollisionBegin(uint, OnCollisionBeginCallback @cb)", asMETHOD(AngelScriptSystem, BindOnCollisionBegin), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("void BindOnCollisionEnd(uint, OnCollisionEndCallback @cb)", asMETHOD(AngelScriptSystem, BindOnCollisionEnd), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("void ReleaseOnCollisionBegin(uint)", asMETHOD(AngelScriptSystem, ReleaseOnCollisionBegin), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_scriptEngine->RegisterGlobalFunction("void ReleaseOnCollisionEnd(uint)", asMETHOD(AngelScriptSystem, ReleaseOnCollisionEnd), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void BindOnCollisionBegin(uint, OnCollisionBeginCallback @cb)", asMETHOD(AngelScriptSystem, bindOnCollisionBegin), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void BindOnCollisionEnd(uint, OnCollisionEndCallback @cb)", asMETHOD(AngelScriptSystem, bindOnCollisionEnd), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnCollisionBegin(uint)", asMETHOD(AngelScriptSystem, releaseOnCollisionBegin), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnCollisionEnd(uint)", asMETHOD(AngelScriptSystem, releaseOnCollisionEnd), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// It is possible to register the functions, properties, and types in 
 		// configuration groups as well. When compiling the scripts it then
@@ -276,15 +276,15 @@ namespace puffin::scripting
 		// without having to recompile all the scripts.
 	}
 
-	void AngelScriptSystem::InitializeScript(PuffinId entity, AngelScriptComponent& script)
+	void AngelScriptSystem::initializeScript(PuffinID entity, AngelScriptComponent& script)
 	{
-		CompileScript(script);
-		UpdateScriptMethods(script);
-		InstantiateScriptObj(entity, script);
+		compileScript(script);
+		updateScriptMethods(script);
+		instantiateScriptObj(entity, script);
 		ImportEditableProperties(script, script.serializedData);
 	}
 
-	void AngelScriptSystem::CompileScript(AngelScriptComponent& script)
+	void AngelScriptSystem::compileScript(AngelScriptComponent& script)
 	{
 		// Compile the script into a module
 		int r;
@@ -298,7 +298,7 @@ namespace puffin::scripting
 		// be written to the message stream that we set right after creating the 
 		// script engine. If there are no errors, and no warnings, nothing will
 		// be written to the stream.
-		r = builder.StartNewModule(m_scriptEngine, script.name.c_str());
+		r = builder.StartNewModule(mScriptEngine, script.name.c_str());
 		if (r < 0)
 		{
 			cout << "Failed to start new module" << endl;
@@ -319,7 +319,7 @@ namespace puffin::scripting
 		else
 		{
 			// Get the object type from the compiled module
-			asIScriptModule* mod = m_scriptEngine->GetModule(script.name.c_str());
+			asIScriptModule* mod = mScriptEngine->GetModule(script.name.c_str());
 
 			asITypeInfo* typeToInstantiate = nullptr;
 
@@ -384,17 +384,17 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptSystem::UpdateScriptMethods(AngelScriptComponent& script)
+	void AngelScriptSystem::updateScriptMethods(AngelScriptComponent& script)
 	{
 		if (script.type != 0)
 		{
-			script.startFunc = GetScriptMethod(script, "Start");
-			script.updateFunc = GetScriptMethod(script, "Update");
-			script.stopFunc = GetScriptMethod(script, "Stop");
+			script.startFunc = getScriptMethod(script, "Start");
+			script.updateFunc = getScriptMethod(script, "Update");
+			script.stopFunc = getScriptMethod(script, "Stop");
 		}
 	}
 
-	void AngelScriptSystem::InstantiateScriptObj(PuffinId entity, AngelScriptComponent& script)
+	void AngelScriptSystem::instantiateScriptObj(PuffinID entity, AngelScriptComponent& script)
 	{
 		if (script.type != 0 && script.type->GetFactoryCount() > 0)
 		{
@@ -402,18 +402,18 @@ namespace puffin::scripting
 			asIScriptFunction* factory = script.type->GetFactoryByIndex(0);
 
 			// Prepare context to call factory function
-			m_ctx->Prepare(factory);
+			mCtx->Prepare(factory);
 
 			// Execute Call
-			m_ctx->Execute();
+			mCtx->Execute();
 
 			// Get created object if nullptr, and increase its reference count by one
-			script.obj = *(asIScriptObject**)m_ctx->GetAddressOfReturnValue();
+			script.obj = *(asIScriptObject**)mCtx->GetAddressOfReturnValue();
 			script.obj->AddRef();
 		}
 	}
 
-	asIScriptFunction* AngelScriptSystem::GetScriptMethod(const AngelScriptComponent& script, const char* funcName)
+	asIScriptFunction* AngelScriptSystem::getScriptMethod(const AngelScriptComponent& script, const char* funcName)
 	{
 		asIScriptFunction* scriptFunc = script.type->GetMethodByName(funcName);
 
@@ -429,7 +429,7 @@ namespace puffin::scripting
 		return scriptFunc;
 	}
 
-	void AngelScriptSystem::CleanupScriptComponent(AngelScriptComponent& script)
+	void AngelScriptSystem::cleanupScriptComponent(AngelScriptComponent& script)
 	{
 		script.type->Release();
 
@@ -442,7 +442,7 @@ namespace puffin::scripting
 		script.visibleProperties.clear();
 	}
 
-	void AngelScriptSystem::ProcessEvents()
+	void AngelScriptSystem::processEvents()
 	{
 		// Process Input Events
 		//input::InputEvent inputEvent;
@@ -540,15 +540,15 @@ namespace puffin::scripting
 		//}
 	}
 
-	bool AngelScriptSystem::PrepareScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)
+	bool AngelScriptSystem::prepareScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)
 	{
 		if (scriptObj != 0 && scriptFunc != 0)
 		{
 			// Prepare Function for execution
-			m_ctx->Prepare(scriptFunc);
+			mCtx->Prepare(scriptFunc);
 
 			// Set Object pointer
-			m_ctx->SetObject(scriptObj);
+			mCtx->SetObject(scriptObj);
 
 			return true;
 		}
@@ -557,12 +557,12 @@ namespace puffin::scripting
 		return false;
 	}
 
-	bool AngelScriptSystem::ExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)
+	bool AngelScriptSystem::executeScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)
 	{
 		if (scriptObj != 0 && scriptFunc != 0)
 		{
 			// Execute the function
-			int r = m_ctx->Execute();
+			int r = mCtx->Execute();
 			if (r != asEXECUTION_FINISHED)
 			{
 				// The execution didn't finish as we had planned. Determine why.
@@ -573,12 +573,12 @@ namespace puffin::scripting
 					cout << "The script ended with an exception." << endl;
 
 					// Write some information about the script exception
-					asIScriptFunction* func = m_ctx->GetExceptionFunction();
+					asIScriptFunction* func = mCtx->GetExceptionFunction();
 					cout << "func: " << func->GetDeclaration() << endl;
 					cout << "modl: " << func->GetModuleName() << endl;
 					//cout << "sect: " << func->GetScriptSectionName() << endl;
-					cout << "line: " << m_ctx->GetExceptionLineNumber() << endl;
-					cout << "desc: " << m_ctx->GetExceptionString() << endl;
+					cout << "line: " << mCtx->GetExceptionLineNumber() << endl;
+					cout << "desc: " << mCtx->GetExceptionString() << endl;
 				}
 				else
 					cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
@@ -593,11 +593,11 @@ namespace puffin::scripting
 		return false;
 	}
 
-	bool AngelScriptSystem::PrepareAndExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)
+	bool AngelScriptSystem::prepareAndExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)
 	{
-		if (PrepareScriptMethod(scriptObj, scriptFunc))
+		if (prepareScriptMethod(scriptObj, scriptFunc))
 		{
-			return ExecuteScriptMethod(scriptObj, scriptFunc);
+			return executeScriptMethod(scriptObj, scriptFunc);
 		}
 
 		return false;
@@ -605,42 +605,42 @@ namespace puffin::scripting
 
 	// Global Script Functions
 
-	const double& AngelScriptSystem::GetDeltaTime() const
+	const double& AngelScriptSystem::getDeltaTime() const
 	{
 		return mEngine->deltaTime();
 	}
 
-	const double& AngelScriptSystem::GetFixedTime() const
+	const double& AngelScriptSystem::getFixedTime() const
 	{
 		return mEngine->timeStepFixed();
 	}
 
-	void AngelScriptSystem::PlaySoundEffect(uint64_t id, float volume, bool looping, bool restart)
+	void AngelScriptSystem::playSoundEffect(uint64_t id, float volume, bool looping, bool restart)
 	{
-		if (m_audioSubsystem)
+		if (mAudioSubsystem)
 		{
-			m_audioSubsystem->playSoundEffect(id, volume, looping, restart);
+			mAudioSubsystem->playSoundEffect(id, volume, looping, restart);
 		}
 	}
 
-	uint64_t AngelScriptSystem::PlaySoundEffect(const std::string& path, float volume, bool looping, bool restart)
+	uint64_t AngelScriptSystem::playSoundEffect(const std::string& path, float volume, bool looping, bool restart)
 	{
 		uint64_t id = 0;
 
-		if (m_audioSubsystem)
+		if (mAudioSubsystem)
 		{
-			id = m_audioSubsystem->playSoundEffect(path, volume, looping, restart);
+			id = mAudioSubsystem->playSoundEffect(path, volume, looping, restart);
 		}
 
 		return id;
 	}
 
-	uint64_t AngelScriptSystem::GetEntityID()
+	uint64_t AngelScriptSystem::getEntityID()
 	{
-		return m_currentEntityID;
+		return mCurrentEntityID;
 	}
 
-	ScriptCallback AngelScriptSystem::BindCallback(uint32_t entity, asIScriptFunction* cb) const
+	ScriptCallback AngelScriptSystem::bindCallback(uint32_t entity, asIScriptFunction* cb) const
 	{
 		ScriptCallback scriptCallback;
 		//scriptCallback.entity = entity;
@@ -653,7 +653,7 @@ namespace puffin::scripting
 			scriptCallback.func = cb->GetDelegateFunction();
 
 			// Increment Refs
-			m_scriptEngine->AddRefScriptObject(scriptCallback.object, scriptCallback.objectType);
+			mScriptEngine->AddRefScriptObject(scriptCallback.object, scriptCallback.objectType);
 			scriptCallback.func->AddRef();
 
 			// Release Delegate
@@ -668,13 +668,13 @@ namespace puffin::scripting
 		return scriptCallback;
 	}
 
-	void AngelScriptSystem::ReleaseCallback(ScriptCallback& scriptCallback) const
+	void AngelScriptSystem::releaseCallback(ScriptCallback& scriptCallback) const
 	{
 		if (scriptCallback.func)
 			scriptCallback.func->Release();
 
 		if (scriptCallback.object)
-			m_scriptEngine->ReleaseScriptObject(scriptCallback.object, scriptCallback.objectType);
+			mScriptEngine->ReleaseScriptObject(scriptCallback.object, scriptCallback.objectType);
 
 		scriptCallback.func = nullptr;
 		scriptCallback.object = nullptr;
@@ -683,71 +683,71 @@ namespace puffin::scripting
 
 	// Input Callbacks
 
-	void AngelScriptSystem::BindOnInputPressed(uint32_t entity, const std::string& actionName, asIScriptFunction* cb)
+	void AngelScriptSystem::bindOnInputPressed(uint32_t entity, const std::string& actionName, asIScriptFunction* cb)
 	{
 		// Release existing callback function, if one exists
-		ReleaseOnInputPressed(entity, actionName);
+		releaseOnInputPressed(entity, actionName);
 
-		//m_onInputPressedCallbacks[actionName][entity] = BindCallback(entity, cb);
+		mOnInputPressedCallbacks[actionName][entity] = bindCallback(entity, cb);
 	}
 
-	void AngelScriptSystem::BindOnInputReleased(uint32_t entity, const std::string& actionName, asIScriptFunction* cb)
+	void AngelScriptSystem::bindOnInputReleased(uint32_t entity, const std::string& actionName, asIScriptFunction* cb)
 	{
 		// Release existing callback function, if one exists
-		ReleaseOnInputReleased(entity, actionName);
+		releaseOnInputReleased(entity, actionName);
 
-		//m_onInputReleasedCallbacks[actionName][entity] = BindCallback(entity, cb);
+		mOnInputPressedCallbacks[actionName][entity] = bindCallback(entity, cb);
 	}
 
-	void AngelScriptSystem::ReleaseOnInputPressed(uint32_t entity, const std::string& actionName)
+	void AngelScriptSystem::releaseOnInputPressed(uint32_t entity, const std::string& actionName)
 	{
-		/*if (m_onInputPressedCallbacks[actionName].count(entity))
+		if (mOnInputPressedCallbacks[actionName].count(entity))
 		{
-			ReleaseCallback(m_onInputPressedCallbacks[actionName][entity]);
-			m_onInputPressedCallbacks[actionName].erase(entity);
-		}*/
+			releaseCallback(mOnInputPressedCallbacks[actionName][entity]);
+			mOnInputPressedCallbacks[actionName].erase(entity);
+		}
 	}
 
-	void AngelScriptSystem::ReleaseOnInputReleased(uint32_t entity, const std::string& actionName)
+	void AngelScriptSystem::releaseOnInputReleased(uint32_t entity, const std::string& actionName)
 	{
-		/*if (m_onInputReleasedCallbacks[actionName].count(entity))
+		if (mOnInputPressedCallbacks[actionName].count(entity))
 		{
-			ReleaseCallback(m_onInputReleasedCallbacks[actionName][entity]);
-			m_onInputReleasedCallbacks[actionName].erase(entity);
-		}*/
+			releaseCallback(mOnInputPressedCallbacks[actionName][entity]);
+			mOnInputPressedCallbacks[actionName].erase(entity);
+		}
 	}
 
 	// Collision Callbacks
 
-	void AngelScriptSystem::BindOnCollisionBegin(uint32_t entity, asIScriptFunction* cb)
+	void AngelScriptSystem::bindOnCollisionBegin(uint32_t entity, asIScriptFunction* cb)
 	{
-		ReleaseOnCollisionBegin(entity);
+		releaseOnCollisionBegin(entity);
 
-		//m_onCollisionBeginCallbacks[entity] = BindCallback(entity, cb);
+		mOnCollisionBeginCallbacks[entity] = bindCallback(entity, cb);
 	}
 
-	void AngelScriptSystem::BindOnCollisionEnd(uint32_t entity, asIScriptFunction* cb)
+	void AngelScriptSystem::bindOnCollisionEnd(uint32_t entity, asIScriptFunction* cb)
 	{
-		ReleaseOnCollisionEnd(entity);
+		releaseOnCollisionEnd(entity);
 
-		//m_onCollisionEndCallbacks[entity] = BindCallback(entity, cb);
+		mOnCollisionEndCallbacks[entity] = bindCallback(entity, cb);
 	}
 
-	void AngelScriptSystem::ReleaseOnCollisionBegin(uint32_t entity)
+	void AngelScriptSystem::releaseOnCollisionBegin(uint32_t entity)
 	{
-		/*if (m_onCollisionBeginCallbacks.count(entity) == 1)
+		if (mOnCollisionBeginCallbacks.count(entity) == 1)
 		{
-			ReleaseCallback(m_onCollisionBeginCallbacks[entity]);
-			m_onCollisionBeginCallbacks.erase(entity);
-		}*/
+			releaseCallback(mOnCollisionBeginCallbacks[entity]);
+			mOnCollisionBeginCallbacks.erase(entity);
+		}
 	}
 
-	void AngelScriptSystem::ReleaseOnCollisionEnd(uint32_t entity)
+	void AngelScriptSystem::releaseOnCollisionEnd(uint32_t entity)
 	{
-		/*if (m_onCollisionEndCallbacks.count(entity) == 1)
+		if (mOnCollisionEndCallbacks.count(entity) == 1)
 		{
-			ReleaseCallback(m_onCollisionEndCallbacks[entity]);
-			m_onCollisionEndCallbacks.erase(entity);
-		}*/
+			releaseCallback(mOnCollisionEndCallbacks[entity]);
+			mOnCollisionEndCallbacks.erase(entity);
+		}
 	}
 }

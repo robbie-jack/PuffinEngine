@@ -8,7 +8,7 @@
 class GLFWwindow;
 class GLFWmonitor;
 
-namespace puffin::Window
+namespace puffin::window
 {
 	class WindowSubsystem : public core::Subsystem
 	{
@@ -35,19 +35,19 @@ namespace puffin::Window
 		}
 
 		// Create new window and return PuffinId handle to it
-		PuffinId createNewWindow(const int& width, const int& height);
+		PuffinID createNewWindow(const int& width, const int& height);
 
 		// Retrieve window using PuffinId handle
-		GLFWwindow* getWindow(const PuffinId& uuid);
+		GLFWwindow* getWindow(const PuffinID& uuid);
 
-		void destroyWindow(const PuffinId& uuid);
+		void destroyWindow(const PuffinID& uuid);
 
 	private:
 
 		GLFWmonitor* mPrimaryMonitor = nullptr;
 		GLFWwindow* mPrimaryWindow = nullptr;
 
-		std::unordered_map<PuffinId, GLFWwindow*> mWindows;
+		std::unordered_map<PuffinID, GLFWwindow*> mWindows;
 
 		
 	};
