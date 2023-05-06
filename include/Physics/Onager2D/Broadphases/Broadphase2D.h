@@ -82,7 +82,7 @@ namespace puffin::physics
 		                            collidersUpdated) override
 		{
 			collisionPairs.clear();
-			collisionPairs.reserve(colliders.Size() * colliders.Size());
+			collisionPairs.reserve(colliders.size() * colliders.size());
 
 			for (const auto colliderA : colliders)
 			{

@@ -12,12 +12,12 @@ namespace puffin::physics::collision2D
 
 	Vector2f PolygonCollider2D::findFurthestPoint(Vector2f direction) const
 	{
-		Vector2f maxPoint = Maths::RotatePointAroundOrigin(shape->points[0], rotation);
+		Vector2f maxPoint = maths::RotatePointAroundOrigin(shape->points[0], rotation);
 		float maxDistance = direction.Dot(maxPoint);
 
 		for (int i = 1; i < shape->points.size(); i++)
 		{
-			Vector2f point = Maths::RotatePointAroundOrigin(shape->points[i], rotation);
+			Vector2f point = maths::RotatePointAroundOrigin(shape->points[i], rotation);
 
 			const float distance = direction.Dot(point);
 

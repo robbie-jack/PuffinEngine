@@ -18,7 +18,7 @@ namespace puffin
 		TransformComponent() = default;
 
 #ifdef PFN_USE_DOUBLE_PRECISION
-		TransformComponent(Vector3d InPosition, Maths::Quat InRotation, Vector3f InScale) :
+		TransformComponent(Vector3d InPosition, maths::Quat InRotation, Vector3f InScale) :
 			position(InPosition), rotation(InRotation), scale(InScale) {}
 #else
 		TransformComponent(Vector3f InPosition, Maths::Quat InRotation, Vector3f InScale) :
@@ -35,7 +35,7 @@ namespace puffin
 		Vector3f position = Vector3f(0.0f);
 #endif
 
-		Maths::Quat rotation = Maths::Quat(0.0f, 0.0f, -1.0f, 0.0);
+		maths::Quat rotation = maths::Quat(0.0f, 0.0f, -1.0f, 0.0);
 
 		Vector3f scale = Vector3f(1.0f);
 

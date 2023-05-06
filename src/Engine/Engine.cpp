@@ -56,7 +56,7 @@ namespace puffin::core
 		mUiManager = std::make_shared<UI::UIManager>(shared_from_this());
 
 		// Load Project File
-		fs::path projectPath = fs::path(R"(C:\Projects\PuffinProject\Puffin.pproject)");
+		const auto projectPath = fs::path(R"(C:\Projects\PuffinProject\Puffin.pproject)");
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
@@ -112,7 +112,7 @@ namespace puffin::core
 		//ReimportDefaultAssets();
 
 		// Create Default Scene in code -- used when scene serialization is changed
-		//refaultScene();
+		//defaultScene();
 		physicsScene();
 		//proceduralScene();
 
@@ -404,21 +404,21 @@ namespace puffin::core
 		}
 
 		// Initialize Components with default values
-		entities[0]->GetComponent<TransformComponent>() = { Vector3f(2.0f, 0.0f, 0.0f), Maths::Quat(), Vector3f(1.0f) };
-		entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), Maths::Quat(), Vector3f(1.0f) };
-		entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), Maths::Quat(), Vector3f(1.0f) };
+		entities[0]->GetComponent<TransformComponent>() = { Vector3f(2.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
+		entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
+		entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
 		entities[3]->GetComponent<TransformComponent>() =
 		{
 			Vector3f(-5.0f, 0.0f, 0.0f),
-			Maths::Quat(.5f, -.5f, 0.0f),
+			maths::Quat(.5f, -.5f, 0.0f),
 			Vector3f(0.25f)
 		};
-		entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), Maths::Quat(), Vector3f(1.0f) };
-		entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), Maths::Quat(), Vector3f(10.0f, 1.0f, 10.0f) };
+		entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
+		entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), maths::Quat(), Vector3f(10.0f, 1.0f, 10.0f) };
 		entities[6]->GetComponent<TransformComponent>() =
 		{
 			Vector3f(5.0f, 0.0f, 0.0f),
-			Maths::Quat(-.5f, -.5f, 0.0f),
+			maths::Quat(-.5f, -.5f, 0.0f),
 			Vector3f(0.25f)
 		};
 
@@ -488,7 +488,7 @@ namespace puffin::core
 
 			auto& transform = registry->emplace<TransformComponent>(lightEntity);
 			transform.position = Vector3f(-5.0f, 0.0f, 0.0f);
-			transform.rotation = Maths::Quat(.5f, -0.5f, 0.0f);
+			transform.rotation = maths::Quat(.5f, -0.5f, 0.0f);
 
 			auto& light = registry->emplace<rendering::LightComponent>(lightEntity);
 			light.type = rendering::LightType::Directional;

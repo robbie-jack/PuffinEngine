@@ -142,7 +142,7 @@ namespace puffin::rendering
 				unloadTexture(texData);
 			}
 
-			mTexData.Clear();
+			mTexData.clear();
 
 			cleanSwapchain(mSwapchainData);
 
@@ -158,7 +158,7 @@ namespace puffin::rendering
 				cleanOffscreen(mOldOffscreenData);
 			}
 
-			mDeletionQueue.Flush();
+			mDeletionQueue.flush();
 
 			mIsInitialized = false;
 		}
@@ -166,7 +166,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::onInputEvent(const input::InputEvent& inputEvent)
 	{
-		mInputEvents.Push(inputEvent);
+		mInputEvents.push(inputEvent);
 	}
 
 	void VKRenderSystem::initVulkan()
@@ -276,7 +276,7 @@ namespace puffin::rendering
 			}
 		}
 
-		mDeletionQueue.PushFunction([=]()
+		mDeletionQueue.pushFunction([=]()
 		{
 			mAllocator.destroy();
 
@@ -397,7 +397,7 @@ namespace puffin::rendering
 			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mFrameRenderData[i].copyCommandBuffer));
 			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mFrameRenderData[i].imguiCommandBuffer));
 
-			mDeletionQueue.PushFunction([=]()
+			mDeletionQueue.pushFunction([=]()
 			{
 				mDevice.destroyCommandPool(mFrameRenderData[i].commandPool);
 			});
@@ -410,7 +410,7 @@ namespace puffin::rendering
 		commandBufferInfo = {mUploadContext.commandPool, vk::CommandBufferLevel::ePrimary, 1};
 		VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mUploadContext.commandBuffer));
 
-		mDeletionQueue.PushFunction([=]()
+		mDeletionQueue.pushFunction([=]()
 		{
 			mDevice.destroyCommandPool(mUploadContext.commandPool);
 		});
@@ -454,7 +454,7 @@ namespace puffin::rendering
 
 		VK_CHECK(mDevice.createRenderPass(&renderPassInfo, nullptr, &mRenderPassImGui));
 
-		mDeletionQueue.PushFunction([=]()
+		mDeletionQueue.pushFunction([=]()
 		{
 			mDevice.destroyRenderPass(mRenderPassImGui);
 		});
@@ -474,7 +474,7 @@ namespace puffin::rendering
 			VK_CHECK(mDevice.createSemaphore(&semaphoreCreateInfo, nullptr, &mFrameRenderData[i].imguiSemaphore));
 			VK_CHECK(mDevice.createSemaphore(&semaphoreCreateInfo, nullptr, &mFrameRenderData[i].presentSemaphore));
 
-			mDeletionQueue.PushFunction([=]()
+			mDeletionQueue.pushFunction([=]()
 			{
 				mDevice.destroyFence(mFrameRenderData[i].renderFence);
 
@@ -489,7 +489,7 @@ namespace puffin::rendering
 		fenceCreateInfo = vk::FenceCreateInfo{{}, nullptr};
 		VK_CHECK(mDevice.createFence(&fenceCreateInfo, nullptr, &mUploadContext.uploadFence));
 
-		mDeletionQueue.PushFunction([=]()
+		mDeletionQueue.pushFunction([=]()
 		{
 			mDevice.destroyFence(mUploadContext.uploadFence);
 		});
@@ -546,7 +546,7 @@ namespace puffin::rendering
 
 			// Object Buffers
 
-			mDeletionQueue.PushFunction([=]()
+			mDeletionQueue.pushFunction([=]()
 			{
 				mAllocator.destroyBuffer(mFrameRenderData[i].objectBuffer.buffer,
 				                         mFrameRenderData[i].objectBuffer.allocation);
@@ -568,7 +568,7 @@ namespace puffin::rendering
 
 		mStaticRenderData.textureSampler = mDevice.createSampler(samplerInfo);
 
-		mDeletionQueue.PushFunction([=]()
+		mDeletionQueue.pushFunction([=]()
 		{
 			mDevice.destroySampler(mStaticRenderData.textureSampler, nullptr);
 		});
@@ -615,7 +615,7 @@ namespace puffin::rendering
 			// Material Descriptors
 		}
 
-		mDeletionQueue.PushFunction([=]()
+		mDeletionQueue.pushFunction([=]()
 		{
 			mStaticRenderData.descriptorLayoutCache = nullptr;
 			mStaticRenderData.descriptorAllocator = nullptr;
@@ -669,7 +669,7 @@ namespace puffin::rendering
 		mDevice.destroyShaderModule(mForwardVertMod.module());
 		mDevice.destroyShaderModule(mForwardFragMod.module());
 
-		mDeletionQueue.PushFunction([=]()
+		mDeletionQueue.pushFunction([=]()
 		{
 			mForwardPipelineLayout = {};
 			mForwardPipeline = {};
@@ -724,7 +724,7 @@ namespace puffin::rendering
 		// Clear font textures from cpu data
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-		mDeletionQueue.PushFunction([=]()
+		mDeletionQueue.pushFunction([=]()
 		{
 			mDevice.destroyDescriptorPool(imguiPool, nullptr);
 			ImGui_ImplVulkan_Shutdown();
@@ -748,7 +748,7 @@ namespace puffin::rendering
 	void VKRenderSystem::processEvents()
 	{
 		input::InputEvent inputEvent;
-		while (mInputEvents.Pop(inputEvent))
+		while (mInputEvents.pop(inputEvent))
 		{
 			if (inputEvent.actionName == "CamMoveLeft")
 			{
@@ -899,11 +899,11 @@ namespace puffin::rendering
 				mEditorCam.pitch = -89.0f;
 
 			// Calculate Direction vector from yaw and pitch of camera
-			mEditorCam.direction.x = cos(Maths::DegreesToRadians(mEditorCam.yaw)) * cos(
-				Maths::DegreesToRadians(mEditorCam.pitch));
-			mEditorCam.direction.y = sin(Maths::DegreesToRadians(mEditorCam.pitch));
-			mEditorCam.direction.z = sin(Maths::DegreesToRadians(mEditorCam.yaw)) * cos(
-				Maths::DegreesToRadians(mEditorCam.pitch));
+			mEditorCam.direction.x = cos(maths::DegreesToRadians(mEditorCam.yaw)) * cos(
+				maths::DegreesToRadians(mEditorCam.pitch));
+			mEditorCam.direction.y = sin(maths::DegreesToRadians(mEditorCam.pitch));
+			mEditorCam.direction.z = sin(maths::DegreesToRadians(mEditorCam.yaw)) * cos(
+				maths::DegreesToRadians(mEditorCam.pitch));
 
 			mEditorCam.direction.Normalise();
 		}
@@ -917,7 +917,7 @@ namespace puffin::rendering
 		mEditorCam.view = glm::lookAt(static_cast<glm::vec3>(mEditorCam.position),
 		                              static_cast<glm::vec3>(mEditorCam.lookAt), static_cast<glm::vec3>(mEditorCam.up));
 
-		mEditorCam.proj = glm::perspective(Maths::DegreesToRadians(mEditorCam.fovY), mEditorCam.aspect,
+		mEditorCam.proj = glm::perspective(maths::DegreesToRadians(mEditorCam.fovY), mEditorCam.aspect,
 		                                   mEditorCam.zNear, mEditorCam.zFar);
 		mEditorCam.proj[1][1] *= -1;
 
@@ -975,12 +975,12 @@ namespace puffin::rendering
 		bool textureDescriptorNeedsUpdated = false;
 		for (const auto& [fst, snd] : mTexDrawList)
 		{
-			if (!mTexData.Contains(fst))
+			if (!mTexData.contains(fst))
 			{
 				TextureDataVK texData;
 				loadTexture(fst, texData);
 
-				mTexData.Insert(fst, texData);
+				mTexData.insert(fst, texData);
 
 				textureDescriptorNeedsUpdated = true;
 			}
@@ -1043,15 +1043,15 @@ namespace puffin::rendering
 	void VKRenderSystem::updateCameraComponent(const TransformComponent& transform, CameraComponent& camera)
 	{
 		// Calculate Right, Up and LookAt vectors
-		camera.right = camera.up.Cross(transform.rotation.GetXYZ()).Normalised();
-		camera.lookAt = transform.position + transform.rotation.GetXYZ();
+		camera.right = camera.up.Cross(transform.rotation.xyz()).Normalised();
+		camera.lookAt = transform.position + transform.rotation.xyz();
 
 		camera.aspect = (float)mWindowSize.width / (float)mWindowSize.height;
 
 		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
 		                          static_cast<glm::vec3>(camera.lookAt), static_cast<glm::vec3>(camera.up));
 
-		camera.proj = glm::perspective(Maths::DegreesToRadians(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
+		camera.proj = glm::perspective(maths::DegreesToRadians(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
 		camera.proj[1][1] *= -1;
 
 		camera.viewProj = camera.proj * camera.view;
@@ -1302,7 +1302,7 @@ namespace puffin::rendering
 					Vector3f interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
 #endif
 
-					position = Maths::Lerp(transform.position, interpolatedPosition, t);
+					position = maths::Lerp(transform.position, interpolatedPosition, t);
 				}
 				else
 				{
@@ -1311,7 +1311,7 @@ namespace puffin::rendering
 
 				GPUObjectData object;
 
-				buildModelTransform(position, transform.rotation.EulerAnglesRad(), transform.scale, object.model);
+				buildModelTransform(position, transform.rotation.eulerAnglesRad(), transform.scale, object.model);
 				object.texIndex = mTexData[mesh.textureAssetId].idx;
 
 				threadObjects[threadnum].emplace_back(object, objectIdx);
@@ -1358,7 +1358,7 @@ namespace puffin::rendering
 			}
 
 			lightSSBO[i].position = static_cast<glm::vec3>(transform.position);
-			lightSSBO[i].direction = static_cast<glm::vec3>(transform.rotation.GetXYZ());
+			lightSSBO[i].direction = static_cast<glm::vec3>(transform.rotation.xyz());
 			lightSSBO[i].color = static_cast<glm::vec3>(light.color);
 			lightSSBO[i].ambientSpecular = glm::vec3(light.ambientIntensity, light.specularIntensity,
 			                                         light.specularExponent);
@@ -1816,7 +1816,7 @@ namespace puffin::rendering
 	                                                std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
 	{
 		textureImageInfos.clear();
-		textureImageInfos.reserve(mTexData.Size());
+		textureImageInfos.reserve(mTexData.size());
 
 		int idx = 0;
 		for (auto& texData : texData)

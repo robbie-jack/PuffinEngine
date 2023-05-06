@@ -1,15 +1,10 @@
 #pragma once
 
-#ifndef MATRIX_H
-#define MATRIX_H
-
 #include <Types/Vector.h>
-
-
 
 namespace puffin
 {
-	namespace Maths
+	namespace maths
 	{
 		/*
 		====================
@@ -60,12 +55,12 @@ namespace puffin
 				return *this;
 			}
 
-			float Determinant() const
+			float determinant() const
 			{
 				return rows[0].x * rows[1].y - rows[0].y * rows[1].x;
 			}
 
-			void Zero()
+			void zero()
 			{
 				rows[0].Zero();
 				rows[1].Zero();
@@ -177,21 +172,21 @@ namespace puffin
 				return *this;
 			}
 
-			void Zero()
+			void zero()
 			{
 				rows[0].Zero();
 				rows[1].Zero();
 				rows[2].Zero();
 			}
 
-			void Identity()
+			void identity()
 			{
 				rows[0] = Vector3(1.0f, 0.0f, 0.0f);
 				rows[1] = Vector3(0.0f, 1.0f, 0.0f);
 				rows[2] = Vector3(0.0f, 0.0f, 1.0f);
 			}
 
-			float Determinant() const
+			[[nodiscard]] float determinant() const
 			{
 				const float i = rows[0][0] * (rows[1][1] * rows[2][2] - rows[1][2] * rows[2][1]);
 				const float j = rows[0][1] * (rows[1][0] * rows[2][2] - rows[1][2] * rows[2][0]);
@@ -199,7 +194,7 @@ namespace puffin
 				return (i - j + k);
 			}
 
-			Mat3 Transpose() const
+			[[nodiscard]] Mat3 transpose() const
 			{
 				Mat3 tranpose;
 				for (int i = 0; i < 3; i++)
@@ -212,24 +207,24 @@ namespace puffin
 				return tranpose;
 			}
 
-			Mat3 Inverse() const
+			[[nodiscard]] Mat3 inverse() const
 			{
 				Mat3 inv; 
 				for (int i = 0; i < 3; i++)
 				{
 					for (int j = 0; j < 3; j++)
 					{
-						inv.rows[j][i] = Cofactor(i, j);
+						inv.rows[j][i] = cofactor(i, j);
 					}
 				}
 
-				float det = Determinant();
-				float invDet = 1.0f / det;
+				const float det = determinant();
+				const float invDet = 1.0f / det;
 				inv *= invDet;
 				return inv;
 			}
 
-			Mat2 Minor(const int i, const int j) const
+			[[nodiscard]] Mat2 minor(const int i, const int j) const
 			{
 				Mat2 minor;
 
@@ -256,11 +251,11 @@ namespace puffin
 				return minor;
 			}
 
-			float Cofactor(const int i, const int j) const
+			[[nodiscard]] float cofactor(const int i, const int j) const
 			{
-				const Mat2 minor = Minor(i, j);
-				const float C = float(pow(-1, i + 1 + j + 1)) * minor.Determinant();
-				return C;
+				const Mat2 minorMat = minor(i, j);
+				const float cofactor = static_cast<float>(pow(-1, i + 1 + j + 1)) * minorMat.determinant();
+				return cofactor;
 			}
 
 			Vector3f rows[3];
@@ -275,5 +270,3 @@ namespace puffin
 
 	}
 }
-
-#endif //MATRIX_H

@@ -77,14 +77,14 @@ namespace puffin::rendering
 
 	void BGFXRenderSystem::cleanup()
 	{
-        mDeletionQueue.Flush();
+        mDeletionQueue.flush();
 
 		bgfx::shutdown();
 	}
 
 	void BGFXRenderSystem::onInputEvent(const input::InputEvent& inputEvent)
 	{
-        mInputEvents.Push(inputEvent);
+        mInputEvents.push(inputEvent);
 	}
 
 	void BGFXRenderSystem::initBGFX()
@@ -146,7 +146,7 @@ namespace puffin::rendering
         const bgfx::ShaderHandle cubeFsh = loadShader("C:\\Projects\\PuffinEngine\\bin\\bgfx\\spirv\\fs_cubes.bin");
         mCubeProgram = bgfx::createProgram(cubeVsh, cubeFsh, true);
 
-        mDeletionQueue.PushFunction([=]()
+        mDeletionQueue.pushFunction([=]()
         {
         	bgfx::destroy(mCubeMeshData.indexBufferHandle);
 			bgfx::destroy(mCubeMeshData.vertexBufferHandle);
@@ -162,7 +162,7 @@ namespace puffin::rendering
 
         mMeshProgram = bgfx::createProgram(meshVsh, meshFsh, true);
 
-        mDeletionQueue.PushFunction([=]()
+        mDeletionQueue.pushFunction([=]()
         {
         	bgfx::destroy(mMeshProgram);
         });
@@ -175,7 +175,7 @@ namespace puffin::rendering
 
         mMeshInstancedProgram = bgfx::createProgram(meshVsh, meshFsh, true);
 
-        mDeletionQueue.PushFunction([=]()
+        mDeletionQueue.pushFunction([=]()
             {
                 bgfx::destroy(mMeshInstancedProgram);
             });
@@ -186,7 +186,7 @@ namespace puffin::rendering
         mTexAlbedoSampler = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
         mTexNormalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 
-        mDeletionQueue.PushFunction([=]()
+        mDeletionQueue.pushFunction([=]()
         {
         	bgfx::destroy(mTexAlbedoSampler);
 			bgfx::destroy(mTexNormalSampler);
@@ -197,7 +197,7 @@ namespace puffin::rendering
 	{
 		mCamPosHandle = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4, 1);
 
-        mDeletionQueue.PushFunction([=]()
+        mDeletionQueue.pushFunction([=]()
         {
         	bgfx::destroy(mCamPosHandle);
         });
@@ -213,7 +213,7 @@ namespace puffin::rendering
 
         mLightUniformHandles.index = bgfx::createUniform("u_lightIndex", bgfx::UniformType::Vec4, 1);
 
-        mDeletionQueue.PushFunction([=]()
+        mDeletionQueue.pushFunction([=]()
         {
             bgfx::destroy(mLightUniformHandles.position);
 	        bgfx::destroy(mLightUniformHandles.direction);
@@ -227,7 +227,7 @@ namespace puffin::rendering
 	void BGFXRenderSystem::processEvents()
 	{
         input::InputEvent inputEvent;
-		while(mInputEvents.Pop(inputEvent))
+		while(mInputEvents.pop(inputEvent))
 		{
             if (inputEvent.actionName == "CamMoveLeft")
             {
@@ -460,7 +460,7 @@ namespace puffin::rendering
 	{
 		batches.clear();
 
-        batches.reserve(mMeshData.Size() * mMatData.Size());
+        batches.reserve(mMeshData.size() * mMatData.size());
 
         std::unordered_map<MeshMatPair, std::set<ECS::EntityID>> meshMatMap;
 
@@ -563,33 +563,33 @@ namespace puffin::rendering
         auto& mesh = entity->GetComponent<MeshComponent>();
 
         // Init Mesh
-        if (!mMeshData.Contains(mesh.meshAssetId))
+        if (!mMeshData.contains(mesh.meshAssetId))
         {
 			MeshDataBGFX meshData;
 
 			loadAndInitMesh(mesh.meshAssetId, meshData);
 
-            mMeshData.Insert(mesh.meshAssetId, meshData);
+            mMeshData.insert(mesh.meshAssetId, meshData);
             mMeshSets.emplace(mesh.meshAssetId, std::set<ECS::EntityID>());
         }
 
         mMeshSets[mesh.meshAssetId].insert(entity->ID());
 
         // Init Textures
-        if (!mTexData.Contains(mesh.textureAssetId))
+        if (!mTexData.contains(mesh.textureAssetId))
         {
 			TextureDataBGFX texData;
 
             loadAndInitTexture(mesh.textureAssetId, texData);
 
-            mTexData.Insert(mesh.textureAssetId, texData);
+            mTexData.insert(mesh.textureAssetId, texData);
             mTexSets.emplace(mesh.textureAssetId, std::set<ECS::EntityID>());
         }
 
         mTexSets[mesh.textureAssetId].insert(entity->ID());
 
         // Init Materials (Currently using default mesh program, will add proper material system later)
-        if (!mMatData.Contains(mesh.textureAssetId))
+        if (!mMatData.contains(mesh.textureAssetId))
         {
 	        MaterialDataBGFX matData;
 
@@ -606,7 +606,7 @@ namespace puffin::rendering
 
             matData.texIDs.push_back(mesh.textureAssetId);
 
-            mMatData.Insert(mesh.textureAssetId, matData);
+            mMatData.insert(mesh.textureAssetId, matData);
             mMatSets.emplace(mesh.textureAssetId, std::set<ECS::EntityID>());
         }
 
@@ -625,7 +625,7 @@ namespace puffin::rendering
             bgfx::destroy(mMeshData[mesh.meshAssetId].vertexBufferHandle);
             bgfx::destroy(mMeshData[mesh.meshAssetId].indexBufferHandle);
 
-            mMeshData.Erase(mesh.meshAssetId);
+            mMeshData.erase(mesh.meshAssetId);
             mMeshSets.erase(mesh.meshAssetId);
         }
 
@@ -634,7 +634,7 @@ namespace puffin::rendering
 
         if (mMatSets[mesh.textureAssetId].empty())
         {
-			mMatData.Erase(mesh.textureAssetId);
+			mMatData.erase(mesh.textureAssetId);
             mMatSets.erase(mesh.textureAssetId);
         }
 
@@ -645,7 +645,7 @@ namespace puffin::rendering
         {
 			bgfx::destroy(mTexData[mesh.textureAssetId].handle);
 
-            mTexData.Erase(mesh.textureAssetId);
+            mTexData.erase(mesh.textureAssetId);
             mTexSets.erase(mesh.textureAssetId);
         }
 	}
@@ -706,9 +706,9 @@ namespace puffin::rendering
                 mEditorCam.pitch = -89.0f;
 
             // Calculate Direction vector from yaw and pitch of camera
-            mEditorCam.direction.x = cos(Maths::DegreesToRadians(mEditorCam.yaw)) * cos(Maths::DegreesToRadians(mEditorCam.pitch));
-            mEditorCam.direction.y = sin(Maths::DegreesToRadians(mEditorCam.pitch));
-            mEditorCam.direction.z = sin(Maths::DegreesToRadians(mEditorCam.yaw)) * cos(Maths::DegreesToRadians(mEditorCam.pitch));
+            mEditorCam.direction.x = cos(maths::DegreesToRadians(mEditorCam.yaw)) * cos(maths::DegreesToRadians(mEditorCam.pitch));
+            mEditorCam.direction.y = sin(maths::DegreesToRadians(mEditorCam.pitch));
+            mEditorCam.direction.z = sin(maths::DegreesToRadians(mEditorCam.yaw)) * cos(maths::DegreesToRadians(mEditorCam.pitch));
 
             mEditorCam.direction.Normalise();
         }
@@ -733,8 +733,8 @@ namespace puffin::rendering
         auto& camMats = entity->GetComponent<CameraMatComponent>();
 
         // Calculate Right, Up and LookAt vectors
-        cam.right = cam.up.Cross(transform.rotation.GetXYZ()).Normalised();
-        cam.lookAt = transform.position + transform.rotation.GetXYZ();
+        cam.right = cam.up.Cross(transform.rotation.xyz()).Normalised();
+        cam.lookAt = transform.position + transform.rotation.xyz();
 
         bx::mtxLookAt(camMats.view, static_cast<bx::Vec3>(transform.position), static_cast<bx::Vec3>(cam.lookAt), { 0, 1, 0 }, bx::Handedness::Right);
 
@@ -843,7 +843,7 @@ namespace puffin::rendering
         std::vector<ECS::EntityPtr> lightEntitiesOrdered;
 
         // Sort Lights into DIRECTIONAL, POINT, SPOT Order
-        lightEntitiesOrdered.reserve(lightEntities.Size());
+        lightEntitiesOrdered.reserve(lightEntities.size());
         
         for (const auto& entity : lightEntities)
         {
@@ -962,7 +962,7 @@ namespace puffin::rendering
         // Scale
         bx::mtxScale(model, transform.scale.x, transform.scale.y, transform.scale.z);
 
-        Vector3f euler = transform.rotation.EulerAnglesRad();
+        Vector3f euler = transform.rotation.eulerAnglesRad();
 
         // Rotation
         bx::mtxRotateZ(model, euler.z);

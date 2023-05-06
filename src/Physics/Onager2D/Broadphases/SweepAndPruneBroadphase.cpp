@@ -12,7 +12,7 @@ namespace puffin::physics
 		if (collidersUpdated)
 		{
 			mSortedColliders.clear();
-			mSortedColliders.reserve(inColliders.Size());
+			mSortedColliders.reserve(inColliders.size());
 
 			for (const auto& collider : inColliders)
 			{

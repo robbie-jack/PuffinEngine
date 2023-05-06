@@ -10,7 +10,7 @@ void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
 	bool collidersUpdated)
 {
 	outCollisionPairs.clear();
-	outCollisionPairs.reserve(inColliders.Size() * inColliders.Size());
+	outCollisionPairs.reserve(inColliders.size() * inColliders.size());
 
 	if (collidersUpdated)
 	{
@@ -21,7 +21,7 @@ void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
 
 	// Generate Collision Pairs
 	outCollisionPairs.clear();
-	outCollisionPairs.reserve(inColliders.Size() * inColliders.Size());
+	outCollisionPairs.reserve(inColliders.size() * inColliders.size());
 
 	for (const auto& [fst, snd] : mColliderSpatialMap)
 	{

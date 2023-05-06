@@ -1,13 +1,13 @@
 #pragma once
 
-#include "ECS/ECS.h"
+#include "Types/UUID.h"
 
 namespace puffin::physics
 {
 	struct CollisionBeginEvent
 	{
-		ECS::EntityID entityA;
-		ECS::EntityID entityB;
+		UUID entityA;
+		UUID entityB;
 
 		bool operator<(const CollisionBeginEvent& other) const
 		{
@@ -18,8 +18,8 @@ namespace puffin::physics
 
 	struct CollisionEndEvent
 	{
-		ECS::EntityID entityA;
-		ECS::EntityID entityB;
+		UUID entityA;
+		UUID entityB;
 
 		bool operator<(const CollisionEndEvent& other) const
 		{

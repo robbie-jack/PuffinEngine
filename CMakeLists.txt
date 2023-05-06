@@ -160,7 +160,6 @@ set(HEADERS
 	${HEADER_DIR}/Types/PackedArray.h
 	${HEADER_DIR}/Types/Quat.h
 	${HEADER_DIR}/Types/RingBuffer.h
-	${HEADER_DIR}/Types/Simplex.h
 	${HEADER_DIR}/Types/UUID.h
 	${HEADER_DIR}/Types/Vector.h
 	${HEADER_DIR}/Types/Vertex.h

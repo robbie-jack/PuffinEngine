@@ -5,7 +5,7 @@
 
 namespace puffin::ECS
 {
-	typedef UUID EntityID;
+	using EntityID = UUID;
 	constexpr size_t MAX_ENTITIES = 50000;
 
 	static const size_t INVALID_ENTITY = 0;

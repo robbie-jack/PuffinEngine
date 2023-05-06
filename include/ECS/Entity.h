@@ -217,15 +217,15 @@ namespace puffin::ECS
 
 			for (const auto& entityID : entitiesToRemove)
 			{
-				m_entityVector[signature].Erase(entityID);
+				m_entityVector[signature].erase(entityID);
 			}
 
 			// Add any new entities
 			for (const auto entityID : entityIDs)
 			{
-				if (!m_entityVector[signature].Contains(entityID))
+				if (!m_entityVector[signature].contains(entityID))
 				{
-					m_entityVector[signature].Insert(entityID, GetEntity(world, entityID));
+					m_entityVector[signature].insert(entityID, GetEntity(world, entityID));
 				}
 			}
 

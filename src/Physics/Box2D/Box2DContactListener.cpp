@@ -7,19 +7,19 @@ namespace puffin::physics
 	void Box2DContactListener::BeginContact(b2Contact* contact)
 	{
 		CollisionBeginEvent collisionBeginEvent;
-		collisionBeginEvent.entityA = static_cast<ECS::EntityID>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
-		collisionBeginEvent.entityB = static_cast<ECS::EntityID>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
+		collisionBeginEvent.entityA = static_cast<UUID>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
+		collisionBeginEvent.entityB = static_cast<UUID>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 
-		mCollisionBeginEvents.Push(collisionBeginEvent);
+		mCollisionBeginEvents.push(collisionBeginEvent);
 	}
 
 	void Box2DContactListener::EndContact(b2Contact* contact)
 	{
 		CollisionEndEvent collisionEndEvent;
-		collisionEndEvent.entityA = static_cast<ECS::EntityID>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
-		collisionEndEvent.entityB = static_cast<ECS::EntityID>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
+		collisionEndEvent.entityA = static_cast<UUID>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
+		collisionEndEvent.entityB = static_cast<UUID>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 
-		mCollisionEndEvents.Push(collisionEndEvent);
+		mCollisionEndEvents.push(collisionEndEvent);
 	}
 
 	void Box2DContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
@@ -34,17 +34,17 @@ namespace puffin::physics
 
 	bool Box2DContactListener::getNextCollisionBeginEvent(CollisionBeginEvent& collisionBeginEvent)
 	{
-		return mCollisionBeginEvents.Pop(collisionBeginEvent);
+		return mCollisionBeginEvents.pop(collisionBeginEvent);
 	}
 
 	bool Box2DContactListener::getNextCollisionEndEvent(CollisionEndEvent& collisionEndEvent)
 	{
-		return mCollisionEndEvents.Pop(collisionEndEvent);
+		return mCollisionEndEvents.pop(collisionEndEvent);
 	}
 
 	void Box2DContactListener::clearEvents()
 	{
-		mCollisionBeginEvents.Flush();
-		mCollisionEndEvents.Flush();
+		mCollisionBeginEvents.flush();
+		mCollisionEndEvents.flush();
 	}
 }

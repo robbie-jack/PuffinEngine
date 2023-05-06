@@ -53,8 +53,8 @@ namespace puffin::ECS
 			for (const auto& entityID : entities)
 			{
 				m_activeEntities.insert(entityID);
-				m_entitySignatures.Insert(entityID, Signature());
-				m_entityNames.Insert(entityID, "Entity");
+				m_entitySignatures.insert(entityID, Signature());
+				m_entityNames.insert(entityID, "Entity");
 
 				// Set all flags back to default
 				for (auto& [fst, snd] : m_flagSets)
@@ -69,8 +69,8 @@ namespace puffin::ECS
 		void Cleanup()
 		{
 			m_activeEntities.clear();
-			m_entityNames.Clear();
-			m_entitySignatures.Clear();
+			m_entityNames.clear();
+			m_entitySignatures.clear();
 
 			bInitialized = false;
 		}
@@ -83,13 +83,13 @@ namespace puffin::ECS
 			const EntityID entityID;
 
 			m_activeEntities.insert(entityID);
-			m_entitySignatures.Insert(entityID, Signature());
-			m_entityNames.Insert(entityID, "Entity");
+			m_entitySignatures.insert(entityID, Signature());
+			m_entityNames.insert(entityID, "Entity");
 
 			// Set all flags back to default
 			for (auto& [fst, snd] : m_flagSets)
 			{
-				snd.Insert(entityID);
+				snd.insert(entityID);
 				snd[entityID] = m_flagDefaults[fst];
 			}
 
@@ -101,14 +101,14 @@ namespace puffin::ECS
 			assert(m_activeEntities.count(entityID) == 1 && "Entity doesn't exists");
 
 			// Reset signature for this entity
-			m_entitySignatures.Erase(entityID);
-			m_entityNames.Erase(entityID);
+			m_entitySignatures.erase(entityID);
+			m_entityNames.erase(entityID);
 
 			m_activeEntities.erase(entityID);
 
 			for (auto& [fst, snd] : m_flagSets)
 			{
-				snd.Erase(entityID);
+				snd.erase(entityID);
 			}
 		}
 
@@ -155,14 +155,14 @@ namespace puffin::ECS
 			{
 				if ((signature & fst) == fst)
 				{
-					if (!snd.Contains(entity))
+					if (!snd.contains(entity))
 					{
-						snd.Insert(entity, entity);
+						snd.insert(entity, entity);
 					}
 				}
-				else if (snd.Contains(entity))
+				else if (snd.contains(entity))
 				{
-					snd.Erase(entity);
+					snd.erase(entity);
 				}
 			}
 		}
@@ -229,7 +229,7 @@ namespace puffin::ECS
 				{
 					if ((m_entitySignatures[entity] & signature) == signature)
 					{
-						m_entityLists[signature].Insert(entity, entity);
+						m_entityLists[signature].insert(entity, entity);
 					}
 				}
 			}
@@ -285,46 +285,46 @@ namespace puffin::ECS
 
 		~ComponentArray()
 		{
-			m_componentArray.Clear();
+			m_componentArray.clear();
 			m_flagSets.clear();
 			m_flagDefaults.clear();
 		}
 
 		void AddComponent(EntityID entity) override
 		{
-			assert(!m_componentArray.Contains(entity) && "Entity already has a component of this type");
+			assert(!m_componentArray.contains(entity) && "Entity already has a component of this type");
 
-			m_componentArray.Insert(entity, ComponentT());
+			m_componentArray.insert(entity, ComponentT());
 
 			// Set all flags back to default
 			for (auto& [fst, snd] : m_flagSets)
 			{
-				snd.Insert(entity, m_flagDefaults[fst]);
+				snd.insert(entity, m_flagDefaults[fst]);
 			}
 		}
 
 		ComponentT& GetComponent(EntityID entity)
 		{
-			assert(m_componentArray.Contains(entity) && "Retrieving non-existent component.");
+			assert(m_componentArray.contains(entity) && "Retrieving non-existent component.");
 
 			return m_componentArray[entity];
 		}
 
 		void RemoveComponent(EntityID entity)
 		{
-			assert(m_componentArray.Contains(entity) && "Removing non-existent component.");
+			assert(m_componentArray.contains(entity) && "Removing non-existent component.");
 
-			m_componentArray.Erase(entity);
+			m_componentArray.erase(entity);
 
 			for (auto& [fst, snd] : m_flagSets)
 			{
-				snd.Erase(entity);
+				snd.erase(entity);
 			}
 		}
 
 		bool HasComponent(EntityID entity) override
 		{
-			return m_componentArray.Contains(entity);
+			return m_componentArray.contains(entity);
 		}
 
 		void RegisterComponentFlag(FlagType flagType, bool flagDefault) override
@@ -335,21 +335,21 @@ namespace puffin::ECS
 
 		bool GetComponentFlag(FlagType flagType, EntityID entity)
 		{
-			assert(m_componentArray.Contains(entity) && "Accessing non-existent component.");
+			assert(m_componentArray.contains(entity) && "Accessing non-existent component.");
 
 			return m_flagSets[flagType][entity];
 		}
 
 		void SetComponentFlag(FlagType flagType, EntityID entity, bool flag)
 		{
-			assert(m_componentArray.Contains(entity) && "Accessing non-existent component.");
+			assert(m_componentArray.contains(entity) && "Accessing non-existent component.");
 
 			m_flagSets[flagType][entity] = flag;
 		}
 
 		void EntityDestroyed(EntityID entity) override
 		{
-			if (m_componentArray.Contains(entity))
+			if (m_componentArray.contains(entity))
 			{
 				// Remove entities component if it existed
 				RemoveComponent(entity);

@@ -50,7 +50,7 @@ namespace puffin::audio
 		soundEvent.looping = looping;
 		soundEvent.restart = restart;
 
-		mSoundEventBuffer.Push(soundEvent);
+		mSoundEventBuffer.push(soundEvent);
 	}
 
 	UUID AudioSubsystem::playSoundEffect(const std::string& soundPath, float volume, bool looping, bool restart)
@@ -68,7 +68,7 @@ namespace puffin::audio
 		soundEvent.type = SoundEventType::Stop;
 		soundEvent.id = soundId;
 
-		mSoundEventBuffer.Push(soundEvent);
+		mSoundEventBuffer.push(soundEvent);
 	}
 
 	void AudioSubsystem::pauseSoundEffect(UUID soundId)
@@ -77,7 +77,7 @@ namespace puffin::audio
 		soundEvent.type = SoundEventType::Pause;
 		soundEvent.id = soundId;
 
-		mSoundEventBuffer.Push(soundEvent);
+		mSoundEventBuffer.push(soundEvent);
 	}
 
 	void AudioSubsystem::playAllSounds(bool forcePlay)
@@ -121,9 +121,9 @@ namespace puffin::audio
 		SoundEvent soundEvent;
 
 		// Parse play sound buffer to play sounds
-		while (!mSoundEventBuffer.IsEmpty())
+		while (!mSoundEventBuffer.isEmpty())
 		{
-			mSoundEventBuffer.Pop(soundEvent);
+			mSoundEventBuffer.pop(soundEvent);
 
 			if (soundEvent.type == SoundEventType::Play)
 			{

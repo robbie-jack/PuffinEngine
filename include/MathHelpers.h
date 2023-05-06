@@ -12,7 +12,7 @@
 
 namespace puffin
 {
-	namespace Maths
+	namespace maths
 	{
 		template<typename T>
 		static inline T Clamp(const T& Value, const T& Min, const T& Max)

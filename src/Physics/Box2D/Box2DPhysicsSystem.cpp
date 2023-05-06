@@ -45,7 +45,7 @@ namespace puffin::physics
 			// Update Transform from Rigidbody Position
 			transform.position.x = mBodies[id]->GetPosition().x;
 			transform.position.y = mBodies[id]->GetPosition().y;
-			transform.rotation = Maths::Quat::FromEulerAngles(0.0, 0.0, -mBodies[id]->GetAngle());
+			transform.rotation = maths::Quat::fromEulerAngles(0.0, 0.0, -mBodies[id]->GetAngle());
 
 			// Update Velocity with Linear/Angular Velocity
 			velocity.linear.x = mBodies[id]->GetLinearVelocity().x;
@@ -56,11 +56,11 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::stop()
 	{
-		mCircleShapes.Clear();
-		mPolygonShapes.Clear();
-		mShapes.Clear();
-		mBodies.Clear();
-		mFixtures.Clear();
+		mCircleShapes.clear();
+		mPolygonShapes.clear();
+		mShapes.clear();
+		mBodies.clear();
+		mFixtures.clear();
 
 		mPhysicsWorld = nullptr;
 		mContactListener = nullptr;
@@ -198,16 +198,16 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::initRigidbody(UUID id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
 	{
-		if (!mBodies.Contains(id))
+		if (!mBodies.contains(id))
 		{
 			b2BodyDef bodyDef;
 			bodyDef.userData.pointer = static_cast<uintptr_t>(id);
 			bodyDef.position.Set(transform.position.x, transform.position.y);
-			bodyDef.angle = -transform.rotation.EulerAnglesRad().z;
+			bodyDef.angle = -transform.rotation.eulerAnglesRad().z;
 			bodyDef.type = gBodyType.at(rb.bodyType);
 
 			// Created Body from Physics World
-			mBodies.Emplace(id, mPhysicsWorld->CreateBody(&bodyDef));
+			mBodies.emplace(id, mPhysicsWorld->CreateBody(&bodyDef));
 
 			b2MassData massData = {};
 			massData.mass = rb.mass;
@@ -218,44 +218,44 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::initBox(UUID id, const TransformComponent& transform, const BoxComponent2D& box)
 	{
-		if (!mPolygonShapes.Contains(id))
+		if (!mPolygonShapes.contains(id))
 		{
-			mPolygonShapes.Insert(id, b2PolygonShape());
+			mPolygonShapes.insert(id, b2PolygonShape());
 		}
 
-		mPolygonShapes[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), transform.rotation.EulerAnglesRad().z);
+		mPolygonShapes[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.GetXY(), transform.rotation.eulerAnglesRad().z);
 
-		if (!mShapes.Contains(id))
+		if (!mShapes.contains(id))
 		{
-			mShapes.Insert(id, &mPolygonShapes[id]);
+			mShapes.insert(id, &mPolygonShapes[id]);
 		}
 	}
 
 	void Box2DPhysicsSystem::initCircle(UUID id, const TransformComponent& transform, const CircleComponent2D& circle)
 	{
-		if (!mCircleShapes.Contains(id))
+		if (!mCircleShapes.contains(id))
 		{
-			mCircleShapes.Insert(id, b2CircleShape());
+			mCircleShapes.insert(id, b2CircleShape());
 		}
 
 		mCircleShapes[id].m_radius = circle.radius;
 		mCircleShapes[id].m_p.Set(transform.position.x, transform.position.y);
 
-		if (!mShapes.Contains(id))
+		if (!mShapes.contains(id))
 		{
-			mShapes.Insert(id, &mCircleShapes[id]);
+			mShapes.insert(id, &mCircleShapes[id]);
 		}
 	}
 
 	void Box2DPhysicsSystem::initFixture(UUID id, const RigidbodyComponent2D rb)
 	{
-		if (mBodies.Contains(id) && mShapes.Contains(id) && !mFixtures.Contains(id))
+		if (mBodies.contains(id) && mShapes.contains(id) && !mFixtures.contains(id))
 		{
 			b2FixtureDef fixtureDef;
 			fixtureDef.shape = mShapes[id];
 			fixtureDef.restitution = rb.elasticity;
 
-			mFixtures.Emplace(id, mBodies[id]->CreateFixture(&fixtureDef));
+			mFixtures.emplace(id, mBodies[id]->CreateFixture(&fixtureDef));
 		}
 	}
 
@@ -276,37 +276,37 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::cleanupRigidbody(UUID id)
 	{
-		if (mBodies.Contains(id))
+		if (mBodies.contains(id))
 		{
 			mPhysicsWorld->DestroyBody(mBodies[id]);
 			mBodies[id] = nullptr;
-			mBodies.Erase(id);
+			mBodies.erase(id);
 		}
 	}
 
 	void Box2DPhysicsSystem::cleanupBox(UUID id)
 	{
-		if (mPolygonShapes.Contains(id))
+		if (mPolygonShapes.contains(id))
 		{
-			mPolygonShapes.Erase(id);
+			mPolygonShapes.erase(id);
 		}
 	}
 
 	void Box2DPhysicsSystem::cleanupCircle(UUID id)
 	{
-		if (mCircleShapes.Contains(id))
+		if (mCircleShapes.contains(id))
 		{
-			mCircleShapes.Erase(id);
+			mCircleShapes.erase(id);
 		}
 	}
 
 	void Box2DPhysicsSystem::cleanupFixture(UUID id)
 	{
-		if (mFixtures.Contains(id))
+		if (mFixtures.contains(id))
 		{
 			mBodies[id]->DestroyFixture(mFixtures[id]);
 			mFixtures[id] = nullptr;
-			mFixtures.Erase(id);
+			mFixtures.erase(id);
 		}
 	}
 }
