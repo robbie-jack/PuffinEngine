@@ -105,12 +105,12 @@ set(HEADERS
 	# ECS
 	${HEADER_DIR}/ECS/EnTTSubsystem.h
 	# Engine
-	${HEADER_DIR}/Engine/Engine.h
-	${HEADER_DIR}/Engine/Application.h
-	${HEADER_DIR}/Engine/Subsystem.h
-	${HEADER_DIR}/Engine/SignalSubsystem.h
-	${HEADER_DIR}/Engine/EnkiTSSubsystem.h
-	${HEADER_DIR}/Engine/System.h
+	${HEADER_DIR}/Core/Engine.h
+	${HEADER_DIR}/Core/Application.h
+	${HEADER_DIR}/Core/Subsystem.h
+	${HEADER_DIR}/Core/SignalSubsystem.h
+	${HEADER_DIR}/Core/EnkiTSSubsystem.h
+	${HEADER_DIR}/Core/System.h
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
 	${HEADER_DIR}/Input/InputSubsystem.h
@@ -189,10 +189,10 @@ set(SOURCES
 	# ECS
 	
 	# Engine
-	${SOURCE_DIR}/Engine/Engine.cpp
-	${SOURCE_DIR}/Engine/Application.cpp
-	${SOURCE_DIR}/Engine/SignalSubsystem.cpp
-	${SOURCE_DIR}/Engine/EnkiTSSubsystem.cpp
+	${SOURCE_DIR}/Core/Engine.cpp
+	${SOURCE_DIR}/Core/Application.cpp
+	${SOURCE_DIR}/Core/SignalSubsystem.cpp
+	${SOURCE_DIR}/Core/EnkiTSSubsystem.cpp
 	# Input
 	${SOURCE_DIR}/Input/InputSubsystem.cpp
 	# Physics

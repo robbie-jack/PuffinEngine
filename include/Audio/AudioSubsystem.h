@@ -2,7 +2,7 @@
 
 #include "irrKlang\irrKlang.h"
 
-#include "Engine\Subsystem.h"
+#include "Core/Subsystem.h"
 
 #include "Types/UUID.h"
 #include "Types/RingBuffer.h"

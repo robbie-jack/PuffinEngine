@@ -6,10 +6,10 @@
 #include "angelscript/scriptbuilder/scriptbuilder.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h"
 
-#include "Engine/System.h"
+#include "Core/System.h"
 #include "Audio/AudioSubsystem.h"
 #include "Components/Scripting/AngelScriptComponent.h"
-#include "Engine/Engine.h"
+#include "Core/Engine.h"
 #include "Input/InputEvent.h"
 #include "Physics/CollisionEvent.h"
 #include "Types/RingBuffer.h"

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "ECS/EnTTSubsystem.h"
-#include "Engine/Engine.h"
+#include "Core/Engine.h"
 #include "entt/entity/registry.hpp"
 #include "Types/Vector.h"
-#include "Engine/System.h"
+#include "Core/System.h"
 
 namespace puffin
 {

@@ -1,7 +1,7 @@
 #include "Input/InputSubsystem.h"
 
-#include "Engine/Engine.h"
-#include "Engine/SignalSubsystem.h"
+#include "Core/Engine.h"
+#include "Core/SignalSubsystem.h"
 #include "Window/WindowSubsystem.h"
 
 namespace puffin

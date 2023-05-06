@@ -1,6 +1,6 @@
 #include "UI/Editor/Windows/UIWindowEntityProperties.h"
 
-#include "Engine\Engine.h"
+#include "Core/Engine.h"
 
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/MeshComponent.h"

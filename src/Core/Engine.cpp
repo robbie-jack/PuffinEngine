@@ -1,4 +1,4 @@
-#include "Engine/Engine.h"
+#include "Core/Engine.h"
 
 //#include "Rendering/BGFX/BGFXRenderSystem.h"
 #include "Rendering/Vulkan/VKRenderSystem.h"
@@ -13,8 +13,8 @@
 
 #include "Window/WindowSubsystem.h"
 #include "Input/InputSubsystem.h"
-#include "Engine/SignalSubsystem.h"
-#include "Engine/EnkiTSSubsystem.h"
+#include "Core/SignalSubsystem.h"
+#include "Core/EnkiTSSubsystem.h"
 #include "ECS/EnTTSubsystem.h"
 
 #include "SerializeScene.h"

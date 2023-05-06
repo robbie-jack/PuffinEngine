@@ -2,7 +2,7 @@
 
 #include "Assets/AssetRegistry.h"
 #include "ECS/EnTTSubsystem.h"
-#include "Engine/Engine.h"
+#include "Core/Engine.h"
 #include "Scripting/RegisterTypeHelpers.h"
 #include "Components/SceneObjectComponent.h"
 
