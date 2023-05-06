@@ -10,18 +10,18 @@
 
 #include "vk_mem_alloc.hpp"
 
-#include "ECS\System.h"
-#include "Types\DeletionQueue.h"
-#include "Types\Vertex.h"
-#include "VKTypes.h"
 #include "VKDescriptors.h"
 #include "VKPipeline.h"
+#include "VKTypes.h"
 #include "VKUnifiedGeometryBuffer.h"
 #include "Assets/TextureAsset.h"
 #include "Components/Rendering/CameraComponent.h"
-#include "Engine\Engine.h"
+#include "Engine/Engine.h"
+#include "Engine/System.h"
 #include "Input/InputEvent.h"
+#include "Types/DeletionQueue.h"
 #include "Types/RingBuffer.h"
+#include "Types/PackedArray.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
@@ -81,7 +81,7 @@ namespace puffin::rendering
 		// Material Data (Set for each unique material i.e textures)
 		vk::DescriptorSet materialDescriptor;
 
-		std::set<UUID> renderedMeshes; // Set of meshes last rendered using this data
+		std::set<PuffinId> renderedMeshes; // Set of meshes last rendered using this data
 
 		bool swapchainNeedsUpdated = false;
 		bool offscreenNeedsUpdated = false;
@@ -98,7 +98,7 @@ namespace puffin::rendering
 	constexpr uint32_t gMaxLightsVK = 8;
 
 	// Vulkan Rendering System
-	class VKRenderSystem final : public ECS::System, public std::enable_shared_from_this<VKRenderSystem>
+	class VKRenderSystem final : public core::System, public std::enable_shared_from_this<VKRenderSystem>
 	{
 	public:
 
@@ -156,10 +156,10 @@ namespace puffin::rendering
 		StaticRenderData mStaticRenderData;
 		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
 
-		std::unordered_map<UUID, std::set<size_t>> mMeshDrawList;
+		std::unordered_map<PuffinId, std::set<size_t>> mMeshDrawList;
 
 		PackedVector<TextureDataVK> mTexData;
-		std::unordered_map<UUID, std::set<size_t>> mTexDrawList;
+		std::unordered_map<PuffinId, std::set<size_t>> mTexDrawList;
 
 		uint32_t mFrameNumber;
 		uint32_t mDrawCalls = 0;
@@ -254,10 +254,10 @@ namespace puffin::rendering
 		void buildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale,
 		                         glm::mat4& outModel) const;
 
-		bool loadMesh(UUID meshId, MeshDataVK& meshData);
+		bool loadMesh(PuffinId meshId, MeshDataVK& meshData);
 		void unloadMesh(MeshDataVK& meshData) const;
 
-		bool loadTexture(UUID texId, TextureDataVK& texData);
+		bool loadTexture(PuffinId texId, TextureDataVK& texData);
 		void unloadTexture(TextureDataVK& texData) const;
 
 		void buildTextureDescriptorInfo(PackedVector<TextureDataVK>& texData,

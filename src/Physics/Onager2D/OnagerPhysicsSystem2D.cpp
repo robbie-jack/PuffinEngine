@@ -201,7 +201,7 @@ namespace puffin
 			eraseCollider(object.uuid);
 		}
 
-		void OnagerPhysicsSystem2D::insertCollider(UUID id, std::shared_ptr<collision2D::Collider2D> collider)
+		void OnagerPhysicsSystem2D::insertCollider(PuffinId id, std::shared_ptr<collision2D::Collider2D> collider)
 		{
 			if (!mColliders.contains(id))
 			{
@@ -211,7 +211,7 @@ namespace puffin
 			}
 		}
 
-		void OnagerPhysicsSystem2D::eraseCollider(UUID id)
+		void OnagerPhysicsSystem2D::eraseCollider(PuffinId id)
 		{
 			if (mColliders.contains(id))
 			{

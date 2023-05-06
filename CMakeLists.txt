@@ -103,11 +103,6 @@ set(HEADERS
 	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.h
 	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.h
 	# ECS
-	${HEADER_DIR}/ECS/ComponentType.h
-	${HEADER_DIR}/ECS/ECS.h
-	${HEADER_DIR}/ECS/Entity.h
-	${HEADER_DIR}/ECS/EntityID.h
-	${HEADER_DIR}/ECS/System.h
 	${HEADER_DIR}/ECS/EnTTSubsystem.h
 	# Engine
 	${HEADER_DIR}/Engine/Engine.h
@@ -115,6 +110,7 @@ set(HEADERS
 	${HEADER_DIR}/Engine/Subsystem.h
 	${HEADER_DIR}/Engine/SignalSubsystem.h
 	${HEADER_DIR}/Engine/EnkiTSSubsystem.h
+	${HEADER_DIR}/Engine/System.h
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
 	${HEADER_DIR}/Input/InputSubsystem.h
@@ -139,10 +135,10 @@ set(HEADERS
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
 	# Rendering BGFX
-	${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.h
-	${HEADER_DIR}/Rendering/BGFX/BGFXVertex.h
-	${HEADER_DIR}/Rendering/BGFX/BGFXTypes.h
-	${HEADER_DIR}/Rendering/BGFX/BGFXTextureArray.h
+	#${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.h
+	#${HEADER_DIR}/Rendering/BGFX/BGFXVertex.h
+	#${HEADER_DIR}/Rendering/BGFX/BGFXTypes.h
+	#${HEADER_DIR}/Rendering/BGFX/BGFXTextureArray.h
 	# Rendering Vulkan
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
@@ -191,8 +187,7 @@ set(SOURCES
 	# Audio
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
 	# ECS
-	${SOURCE_DIR}/ECS/Entity.cpp
-	${SOURCE_DIR}/ECS/ECS.cpp
+	
 	# Engine
 	${SOURCE_DIR}/Engine/Engine.cpp
 	${SOURCE_DIR}/Engine/Application.cpp
@@ -215,7 +210,7 @@ set(SOURCES
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
 	# Rendering BGFX
-	${SOURCE_DIR}/Rendering/BGFX/BGFXRenderSystem.cpp
+	#${SOURCE_DIR}/Rendering/BGFX/BGFXRenderSystem.cpp
 	# Rendering Vulkan
 	${SOURCE_DIR}/Rendering/Vulkan/VKRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKHelpers.cpp
@@ -330,18 +325,18 @@ target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3.lib)
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d.lib)
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static.lib)
 
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bgfx.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bimg.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bx.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/astc-encoder.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/edtaa3.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/etc1.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/etc2.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/iqa.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/nvtt.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/pvrtc.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/squish.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/tinyexr.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bgfx.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bimg.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bx.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/astc-encoder.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/edtaa3.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/etc1.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/etc2.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/iqa.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/nvtt.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/pvrtc.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/squish.lib)
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/tinyexr.lib)
 
 # Define Release Libs
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d.lib)
@@ -350,18 +345,18 @@ target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3.li
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static.lib)
 
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bgfx.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bimg.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bx.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/astc-encoder.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/edtaa3.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/etc1.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/etc2.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/iqa.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/nvtt.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/pvrtc.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/squish.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/tinyexr.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bgfx.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bimg.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bx.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/astc-encoder.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/edtaa3.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/etc1.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/etc2.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/iqa.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/nvtt.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/pvrtc.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/squish.lib)
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/tinyexr.lib)
 
 set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
@@ -379,10 +374,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/VulkanMem
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vkb/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/tinygltf)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/compat/msvc)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bimg/include)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/compat/msvc)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/compat/mingw)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bimg/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/entt/src)
 #target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/assimp/include)

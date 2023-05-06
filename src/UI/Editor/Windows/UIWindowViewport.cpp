@@ -4,7 +4,6 @@
 
 #include <Components\TransformComponent.h>
 #include <ManipulationGizmo.h>
-#include <ECS/ECS.h>
 
 namespace puffin
 {
@@ -31,7 +30,7 @@ namespace puffin
 		{
 			windowName = "Viewport";
 
-			auto ecsWorld = m_engine->getSubsystem<ECS::World>();
+			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
 			if (show)
 			{
@@ -92,9 +91,9 @@ namespace puffin
 				// Display Scene View Texture
 				ImGui::Image(textureID, viewportSize);
 
-				if (entity != ECS::INVALID_ENTITY)
+				if (false)
 				{
-					TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(entity);
+					//TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(entity);
 					
 					//DrawManipulationGizmo(m_engine->getSubsystem<core::EventSubsystem>(), transform);
 				}

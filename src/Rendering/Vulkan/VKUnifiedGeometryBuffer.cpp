@@ -133,7 +133,7 @@ namespace puffin::rendering
 		}
 	}
 
-	bool UnifiedGeometryBuffer::removeMeshes(const std::set<UUID>& staticMeshesToRemove)
+	bool UnifiedGeometryBuffer::removeMeshes(const std::set<PuffinId>& staticMeshesToRemove)
 	{
 		if (staticMeshesToRemove.empty())
 			return true;

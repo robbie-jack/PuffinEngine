@@ -1,18 +1,17 @@
 #pragma once
 
-#include <ECS/ECS.h>
-#include <SerializeScene.h>
-#include <ProjectSettings.h>
-#include "Subsystem.h"
 #include "Application.h"
+#include "ProjectSettings.h"
+#include "SerializeScene.h"
+#include "Subsystem.h"
+#include "System.h"
 
 #include <glfw/glfw3.h>
 
-#include <vector>
 #include <filesystem>
 #include <memory>
 #include <unordered_map>
-#include <map>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -156,17 +155,17 @@ namespace puffin::core
 		{
 			std::shared_ptr<SystemT> system = nullptr;
 
-			if (auto ecsWorld = getSubsystem<ECS::World>())
+			/*if (auto ecsWorld = getSubsystem<ECS::World>())
 			{
 				system = ecsWorld->registerSystem<SystemT>();
-				auto systemBase = std::static_pointer_cast<ECS::System>(system);
+				auto systemBase = std::static_pointer_cast<core::System>(system);
 
 				systemBase->setWorld(ecsWorld);
 				systemBase->setEngine(shared_from_this());
 				systemBase->setupCallbacks();
 
 				mSystems.push_back(systemBase);
-			}
+			}*/
 
 			return system;
 		}
@@ -187,11 +186,6 @@ namespace puffin::core
 		template<typename CompT>
 		void registerComponent(bool shouldSerialize = true)
 		{
-			if (const auto ecsWorld = getSubsystem<ECS::World>())
-			{
-				ecsWorld->RegisterComponent<CompT>();
-			}
-
 			if (mSceneData != nullptr && shouldSerialize)
 			{
 				mSceneData->RegisterComponent<CompT>();
@@ -253,7 +247,7 @@ namespace puffin::core
 		std::shared_ptr<Application> mApplication = nullptr;
 
 		// System/Subsystem Members
-		std::vector<std::shared_ptr<ECS::System>> mSystems; // Vector of system pointers
+		std::vector<std::shared_ptr<core::System>> mSystems; // Vector of system pointers
 		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> mSubsystems;
 		std::unordered_map<core::ExecutionStage, std::vector<EngineCallbackHandler>> mRegisteredCallbacks; // Map of callback functions registered for execution
 

@@ -6,8 +6,8 @@ namespace puffin::physics
 {
 	struct CollisionBeginEvent
 	{
-		UUID entityA;
-		UUID entityB;
+		PuffinId entityA;
+		PuffinId entityB;
 
 		bool operator<(const CollisionBeginEvent& other) const
 		{
@@ -18,8 +18,8 @@ namespace puffin::physics
 
 	struct CollisionEndEvent
 	{
-		UUID entityA;
-		UUID entityB;
+		PuffinId entityA;
+		PuffinId entityB;
 
 		bool operator<(const CollisionEndEvent& other) const
 		{

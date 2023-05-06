@@ -1,14 +1,26 @@
 #pragma once
 
-#include "ECS/ECS.h"
-#include "Engine\Engine.h"
-
+#include "ECS/EnTTSubsystem.h"
+#include "Engine/Engine.h"
+#include "entt/entity/registry.hpp"
 #include "Types/Vector.h"
-#include "Types\Vertex.h"
+#include "Engine/System.h"
+
+namespace puffin
+{
+	namespace rendering
+	{
+		struct ProceduralMeshComponent;
+	}
+}
 
 namespace puffin::procedural
 {
-	class ProceduralMeshGenSystem : public ECS::System
+	struct IcoSphereComponent;
+	struct TerrainComponent;
+	struct PlaneComponent;
+
+	class ProceduralMeshGenSystem : public core::System
 	{
 	public:
 
@@ -21,23 +33,36 @@ namespace puffin::procedural
 
 		void setupCallbacks() override
 		{
-			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "ProcMeshGenSystem: Setup");
-			mEngine->registerCallback(core::ExecutionStage::Update, [&]() { update(); }, "ProcMeshGenSystem: Update", 200);
+			//mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "ProcMeshGenSystem: Setup");
+			//mEngine->registerCallback(core::ExecutionStage::Update, [&]() { update(); }, "ProcMeshGenSystem: Update", 200);
+
+			const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+
+			/*registry->on_construct<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
+			registry->on_update<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
+
+			registry->on_construct<TerrainComponent>().connect<&ProceduralMeshGenSystem::onConstructTerrain>();
+			registry->on_update<TerrainComponent>().connect<&ProceduralMeshGenSystem::onConstructTerrain>();
+
+			registry->on_construct<IcoSphereComponent>().connect<&ProceduralMeshGenSystem::onConstructIcoSphere>();
+			registry->on_update<IcoSphereComponent>().connect<&ProceduralMeshGenSystem::onConstructIcoSphere>();*/
 		}
 
-		void setup() const;
-		void update() const;
+		//void setup() const;
+		//void update() const;
+
+		static void onConstructPlane(entt::registry& registry, entt::entity entity);
+		static void onConstructTerrain(entt::registry& registry, entt::entity entity);
+		static void onConstructIcoSphere(entt::registry& registry, entt::entity entity);
 
 	private:
 
 		// Generator list of vertices/indices for a flat plane
-		static void generatePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads,
-			std::vector<rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices);
+		static void generatePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads, rendering::ProceduralMeshComponent& mesh);
 
-		static void generateTerrain(std::vector<rendering::VertexPNTV32>& vertices, const int64_t& seed, const double& heightMultiplier, const double&
-		                            startFrequency, const int& octaves, const double& frequencyMultiplier);
+		static void generateTerrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent& mesh);
 
-		static void generateIcoSphere(std::vector<rendering::VertexPNTV32>& vertices, std::vector<uint32_t>& indices, const int& subdivisions);
+		static void generateIcoSphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent& mesh);
 
 	};
 }

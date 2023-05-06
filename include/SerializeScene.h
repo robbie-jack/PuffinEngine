@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ECS/ECS.h"
 #include "nlohmann/json.hpp"
 
 #include <set>
@@ -32,23 +31,23 @@ namespace puffin::io
 	{
 	public:
 
-		SceneDataArray(std::shared_ptr<ECS::World> inWorld) : m_world(inWorld) {}
+		SceneDataArray() {}
 		~SceneDataArray() override = default;
 
 		void InitSceneData() override
 		{
-			for (auto& pair : m_componentMap)
+			/*for (auto& pair : m_componentMap)
 			{
 				CompT& comp = m_world->AddAndGetComponent<CompT>(pair.first);
 				comp = pair.second;
-			}
+			}*/
 		}
 
 		void UpdateData() override
 		{
 			Clear();
 
-			const std::set<ECS::EntityID> entities = m_world->GetActiveEntities();
+			/*const std::set<ECS::EntityID> entities = m_world->GetActiveEntities();
 
 			for (auto entity : entities)
 			{
@@ -57,17 +56,18 @@ namespace puffin::io
 					auto& comp = m_world->GetComponent<CompT>(entity);
 					m_componentMap.insert({ entity, comp });
 				}
-			}
+			}*/
 		}
 
 		void Clear() override
 		{
-			m_componentMap.clear();
+			//m_componentMap.clear();
 		}
 
 		int Size() override
 		{
-			return m_componentMap.size();
+			//return m_componentMap.size();
+			return 0;
 		}
 
 		json SaveToJson() const override
@@ -75,12 +75,12 @@ namespace puffin::io
 			json data;
 
 			int i = 0;
-			for (auto& [fst, snd] : m_componentMap)
+			/*for (auto& [fst, snd] : m_componentMap)
 			{
 				data[i] = { fst, snd };
 
 				i++;
-			}
+			}*/
 
 			return data;
 		}
@@ -94,51 +94,50 @@ namespace puffin::io
 
 			for (int i = 0; i < size; i++)
 			{
-				ECS::EntityID entity = data[componentType].at(i).at(0);
+				//ECS::EntityID entity = data[componentType].at(i).at(0);
 
-				m_componentMap[entity] = data[componentType].at(i).at(1);
+				//m_componentMap[entity] = data[componentType].at(i).at(1);
 			}
 		}
 
 	private:
 
-		std::shared_ptr<ECS::World> m_world; // Pointer to ECS World
-		std::map<ECS::EntityID, CompT> m_componentMap; // Map of entity id to component
+		//std::map<PuffinId, CompT> m_componentMap; // Map of entity id to component
 
 	};
 
-	struct EntityData
+	/*struct EntityData
 	{
-		ECS::EntityID id;
+		PuffinId id;
 		std::string name;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(EntityData, id, name)
-	};
+	};*/
 
 	// Stores Loaded Scene Data
 	class SceneData
 	{
 	public:
 
-		SceneData(std::shared_ptr<ECS::World> inWorld, fs::path inPath) : m_world(inWorld), m_scenePath(inPath) {}
+		SceneData(fs::path inPath) : m_scenePath(inPath) {}
 
 		// Initialize ECS with loaded data
 		void Init()
 		{
 			// Initialize ECS World with Entities
-			std::set<ECS::EntityID> entities;
+			/*std::set<ECS::EntityID> entities;
 			for (auto& entityData : m_entityData)
 			{
 				entities.insert(entityData.id);
-			}
+			}*/
 
-			m_world->InitEntitySystem(entities);
+			//m_world->InitEntitySystem(entities);
 
 			// Set Entity Names
-			for (auto& entityData : m_entityData)
-			{
-				m_world->SetEntityName(entityData.id, entityData.name);
-			}
+			//for (auto& entityData : m_entityData)
+			//{
+			//	//m_world->SetEntityName(entityData.id, entityData.name);
+			//}
 
 			// Init Each Component Type
 			for (auto& pair : m_sceneDataArrays)
@@ -151,7 +150,7 @@ namespace puffin::io
 		{
 			Clear();
 
-			std::set<ECS::EntityID> entities = m_world->GetActiveEntities();
+			/*std::set<ECS::EntityID> entities = m_world->GetActiveEntities();
 
 			for (ECS::EntityID entity : entities)
 			{
@@ -160,7 +159,7 @@ namespace puffin::io
 				data.name = m_world->GetEntityName(entity);
 
 				m_entityData.push_back(data);
-			}
+			}*/
 
 			for (auto& [fst, snd] : m_sceneDataArrays)
 			{
@@ -170,7 +169,7 @@ namespace puffin::io
 
 		void Clear()
 		{
-			m_entityData.clear();
+			//m_entityData.clear();
 
 			for (auto& pair : m_sceneDataArrays)
 			{
@@ -186,7 +185,7 @@ namespace puffin::io
 			assert(m_sceneDataArrays.find(typeName) == m_sceneDataArrays.end() && "Registering component type more than once");
 
 			// Create
-			std::shared_ptr<SceneDataArray<CompT>> sceneDataArray = std::make_shared<SceneDataArray<CompT>>(m_world);
+			std::shared_ptr<SceneDataArray<CompT>> sceneDataArray = std::make_shared<SceneDataArray<CompT>>();
 
 			m_sceneDataArrays.insert({ typeName, std::static_pointer_cast<ISceneDataArray>(sceneDataArray) });
 		}
@@ -199,7 +198,7 @@ namespace puffin::io
 			// Initialize Output File Stream and Cereal Binary Archive
 			
 			json data;
-			data["Entities"] = m_entityData;
+			//data["Entities"] = m_entityData;
 
 			for (auto& [fst, snd] : m_sceneDataArrays)
 			{
@@ -228,7 +227,7 @@ namespace puffin::io
 
 			is.close();
 
-			m_entityData = data["Entities"];
+			//m_entityData = data["Entities"];
 
 			for (auto& [fst, snd] : m_sceneDataArrays)
 			{
@@ -254,10 +253,9 @@ namespace puffin::io
 
 	private:
 
-		std::shared_ptr<ECS::World> m_world; // Pointer to ECS World
 		fs::path m_scenePath;
 
-		std::vector<EntityData> m_entityData;
+		//std::vector<EntityData> m_entityData;
 		std::unordered_map<std::string, std::shared_ptr<ISceneDataArray>> m_sceneDataArrays; // Map of scene data arrays
 
 	};

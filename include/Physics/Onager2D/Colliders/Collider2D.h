@@ -10,7 +10,7 @@ namespace puffin::physics::collision2D
 
 	struct Collider2D
 	{
-		Collider2D(UUID inUUID) : uuid(inUUID), rotation(0.0f) {}
+		Collider2D(PuffinId inUUID) : uuid(inUUID), rotation(0.0f) {}
 
 		virtual ~Collider2D() = default;
 
@@ -23,7 +23,7 @@ namespace puffin::physics::collision2D
 		virtual bool testCollision(const collision2D::BoxCollider2D* collider, collision2D::Contact& outContact) const = 0;
 		virtual bool testCollision(const collision2D::CircleCollider2D* collider, collision2D::Contact& outContact) const = 0;
 
-		UUID uuid;
+		PuffinId uuid;
 
 		Vector2f position;
 		float rotation;

@@ -1,26 +1,23 @@
 #pragma once
 
-#include "ECS/ECS.h"
-
 // AngelScript Includes
 #define ANGELSCRIPT_DLL_LIBRARY_IMPORT
 #include "angelscript/angelscript.h"
 #include "angelscript/scriptbuilder/scriptbuilder.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h"
 
-#include "..\Components\Scripting\AngelScriptComponent.h"
-
+#include "Engine/System.h"
+#include "Audio/AudioSubsystem.h"
+#include "Components/Scripting/AngelScriptComponent.h"
+#include "Engine/Engine.h"
 #include "Input/InputEvent.h"
 #include "Physics/CollisionEvent.h"
-
 #include "Types/RingBuffer.h"
+#include "Types/UUID.h"
 
-#include "Audio/AudioSubsystem.h"
-#include "..\Engine\Engine.h"
-
-#include <unordered_map>
 #include <map>
 #include <memory>
+#include <unordered_map>
 
 namespace puffin
 {
@@ -28,15 +25,15 @@ namespace puffin
 	{
 		struct ScriptCallback
 		{
-			ECS::EntityID entity;
+			PuffinId entity;
 			asIScriptFunction* func = nullptr;
 			void* object = nullptr;
 			asITypeInfo* objectType = nullptr;
 		};
 
-		typedef std::map<ECS::EntityID, ScriptCallback> ScriptCallbackMap;
+		typedef std::map<PuffinId, ScriptCallback> ScriptCallbackMap;
 
-		class AngelScriptSystem : public ECS::System
+		class AngelScriptSystem : public core::System
 		{
 		public:
 
@@ -68,7 +65,7 @@ namespace puffin
 
 			std::shared_ptr<audio::AudioSubsystem> m_audioSubsystem;
 
-			ECS::EntityID m_currentEntityID = 0; // Entity ID for currently executing script
+			PuffinId m_currentEntityID; // Entity ID for currently executing script
 
 			// Event Buffers
 			std::shared_ptr<RingBuffer<input::InputEvent>> m_inputEvents = nullptr;;
@@ -87,10 +84,10 @@ namespace puffin
 
 			void ConfigureEngine();
 
-			void InitializeScript(ECS::EntityID entity, AngelScriptComponent& script);
+			void InitializeScript(PuffinId entity, AngelScriptComponent& script);
 			void CompileScript(AngelScriptComponent& script);
 			void UpdateScriptMethods(AngelScriptComponent& script);
-			void InstantiateScriptObj(ECS::EntityID entity, AngelScriptComponent& script);
+			void InstantiateScriptObj(PuffinId entity, AngelScriptComponent& script);
 
 			void CleanupScriptComponent(AngelScriptComponent& script);
 

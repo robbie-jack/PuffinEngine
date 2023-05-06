@@ -21,7 +21,7 @@ namespace puffin::physics
 		{ BodyType::Dynamic, b2_dynamicBody }
 	};
 
-	class Box2DPhysicsSystem : public ECS::System
+	class Box2DPhysicsSystem : public core::System
 	{
 	public:
 
@@ -86,25 +86,25 @@ namespace puffin::physics
 		PackedArray<b2PolygonShape, gMaxShapes> mPolygonShapes; // Packed Vector of polygon shapes
 		PackedVector<b2Fixture*> mFixtures; // Packed Vector of Fixtures that connect bodies and shapes
 
-		std::vector<UUID> mCirclesToInit;
-		std::vector<UUID> mBoxesToInit;
-		std::vector<UUID> mRigidbodiesToInit;
+		std::vector<PuffinId> mCirclesToInit;
+		std::vector<PuffinId> mBoxesToInit;
+		std::vector<PuffinId> mRigidbodiesToInit;
 
 		void updateComponents();
 		void publishCollisionEvents() const;
 
-		void initRigidbody(UUID id, const TransformComponent& transform, const RigidbodyComponent2D& rb);
-		void initBox(UUID id, const TransformComponent& transform, const BoxComponent2D& box);
-		void initCircle(UUID id, const TransformComponent& transform, const CircleComponent2D& circle);
-		void initFixture(UUID id, const RigidbodyComponent2D rb);
+		void initRigidbody(PuffinId id, const TransformComponent& transform, const RigidbodyComponent2D& rb);
+		void initBox(PuffinId id, const TransformComponent& transform, const BoxComponent2D& box);
+		void initCircle(PuffinId id, const TransformComponent& transform, const CircleComponent2D& circle);
+		void initFixture(PuffinId id, const RigidbodyComponent2D rb);
 
-		void updateRigidbody(UUID id);
-		void updateBox(UUID id);
-		void updateCircle(UUID id);
+		void updateRigidbody(PuffinId id);
+		void updateBox(PuffinId id);
+		void updateCircle(PuffinId id);
 
-		void cleanupRigidbody(UUID id);
-		void cleanupBox(UUID id);
-		void cleanupCircle(UUID id);
-		void cleanupFixture(UUID id);
+		void cleanupRigidbody(PuffinId id);
+		void cleanupBox(PuffinId id);
+		void cleanupCircle(PuffinId id);
+		void cleanupFixture(PuffinId id);
 	};
 }

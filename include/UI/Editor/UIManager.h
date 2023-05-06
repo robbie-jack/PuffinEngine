@@ -23,7 +23,6 @@ namespace puffin
 	namespace ECS
 	{
 		class World;
-		typedef UUID EntityID;
 	}
 
 	namespace core
@@ -60,7 +59,7 @@ namespace puffin
 			ImportAssetUI importAssetUI;
 
 			std::shared_ptr<core::Engine> m_engine = nullptr;
-			ECS::EntityID m_entity;
+			PuffinId m_entity;
 
 			std::vector<std::shared_ptr<UIWindow>> m_windows;
 

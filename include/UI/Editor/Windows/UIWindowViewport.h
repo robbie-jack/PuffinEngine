@@ -1,9 +1,7 @@
 #pragma once
 
-#ifndef UI_WINDOW_VIEWPORT_H
-#define UI_WINDOW_VIEWPORT_H
-
 #include "UIWindow.h"
+#include "Types/UUID.h"
 
 #include <string>
 
@@ -24,11 +22,11 @@ namespace puffin
 
 			inline ImVec2 GetViewportSize() { return viewportSize; }
 
-			inline void SetEntity(ECS::EntityID entity_) { entity = entity_; }
+			//inline void SetEntity(ECS::EntityID entity_) { entity = entity_; }
 
 		private:
 
-			ECS::EntityID entity = ECS::INVALID_ENTITY;
+			PuffinId entity;
 
 			ImVec2 viewportSize = ImVec2(640.0f, 480.0f);
 
@@ -36,5 +34,3 @@ namespace puffin
 		};
 	}
 }
-
-#endif // UI_WINDOW_VIEWPORT_H

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "ECS/ECS.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
+#include "ECS/EnTTSubsystem.h"
+#include "Physics/Onager2D/PhysicsHelpers2D.h"
 #include "Physics/Onager2D/Colliders/Collider2D.h"
 #include "Types/PackedArray.h"
-#include "Physics/Onager2D/PhysicsHelpers2D.h"
-#include "ECS/EnTTSubsystem.h"
 
 #include <memory>
 
@@ -21,11 +20,6 @@ namespace puffin::physics
 
 		virtual void generateCollisionPairs(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
 		                                    collidersUpdated) = 0;
-
-		void setWorld(const std::shared_ptr<ECS::World>& world)
-		{
-			mWorld = world;
-		}
 
 		void setECS(const std::shared_ptr<ECS::EnTTSubsystem>& ecs)
 		{
@@ -66,7 +60,6 @@ namespace puffin::physics
 			return true;
 		}
 
-		std::shared_ptr<ECS::World> mWorld = nullptr;
 		std::shared_ptr<ECS::EnTTSubsystem> mEcs = nullptr;
 
 	};

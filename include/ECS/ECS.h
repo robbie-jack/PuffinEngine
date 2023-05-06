@@ -1,9 +1,7 @@
 #pragma once
 
-#include "ECS/EntityID.h"
-#include "ECS/ComponentType.h"
-#include "System.h"
-#include "Engine\Subsystem.h"
+#include "Engine/System.h"
+#include "Engine/Subsystem.h"
 #include "Types/PackedArray.h"
 #include "Types/ComponentFlags.h"
 #include "Types/UUID.h"

@@ -5,7 +5,7 @@
 
 #include "glm/glm.hpp"
 #include "imgui.h"
-#include "ECS/EntityID.h"
+#include "Types/UUID.h"
 
 namespace puffin::rendering
 {
@@ -100,7 +100,7 @@ namespace puffin::rendering
 
 	struct AssetDataVK
 	{
-		UUID assetId;
+		puffin::PuffinId assetId;
 	};
 
 	struct MeshDataVK : AssetDataVK

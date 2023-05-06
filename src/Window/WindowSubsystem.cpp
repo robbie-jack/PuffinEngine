@@ -64,7 +64,7 @@ namespace puffin::Window
 		return glfwWindowShouldClose(m_primaryWindow);
 	}
 
-	UUID WindowSubsystem::CreateNewWindow(const int& width, const int& height)
+	PuffinId WindowSubsystem::CreateNewWindow(const int& width, const int& height)
 	{
 		// Create new window and store it in windows map
 		GLFWwindow* window = glfwCreateWindow(width, height, "Puffin Engine", nullptr, nullptr);
@@ -72,10 +72,10 @@ namespace puffin::Window
 		{
 			std::cout << "Failed to create GLFW window" << std::endl;
 			glfwTerminate();
-			return 0;
+			return {};
 		}
 
-		UUID id;
+		PuffinId id;
 
 		m_windows.insert({ id, window });
 
@@ -83,7 +83,7 @@ namespace puffin::Window
 		return id;
 	}
 
-	GLFWwindow* WindowSubsystem::GetWindow(const UUID& uuid)
+	GLFWwindow* WindowSubsystem::GetWindow(const PuffinId& uuid)
 	{
 		// Return window if there is oen with that handle
 		if (m_windows.count(uuid) == 1)
@@ -95,7 +95,7 @@ namespace puffin::Window
 		return nullptr;
 	}
 
-	void WindowSubsystem::DestroyWindow(const UUID& uuid)
+	void WindowSubsystem::DestroyWindow(const PuffinId& uuid)
 	{
 		glfwDestroyWindow(m_windows[uuid]);
 		m_windows.erase(uuid);

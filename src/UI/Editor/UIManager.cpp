@@ -139,8 +139,8 @@ namespace puffin::UI
 		if (windowSceneHierarchy->HasEntityChanged())
 		{
 			m_entity = windowSceneHierarchy->GetEntity();
-			windowEntityProperties->SetEntity(m_entity);
-			windowViewport->SetEntity(m_entity);
+			//windowEntityProperties->SetEntity(m_entity);
+			//windowViewport->SetEntity(m_entity);
 		}
 
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing

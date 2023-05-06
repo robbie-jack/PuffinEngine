@@ -2,7 +2,6 @@
 
 #include "BGFXVertex.h"
 
-#include "ECS/EntityID.h"
 #include "Types/UUID.h"
 
 #include <set>
@@ -40,7 +39,7 @@ namespace puffin::rendering
 		MeshDataBGFX meshData;
 		MaterialDataBGFX matData;
 
-		std::set<ECS::EntityID> entities; // Set of Entities using this mesh/shader combo
+		std::set<UUID> entities; // Set of Entities using this mesh/shader combo
 	};
 
 	struct LightUniformHandles

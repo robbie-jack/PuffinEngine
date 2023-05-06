@@ -1,19 +1,18 @@
 #include "Scripting/AngelScriptSystem.h"
 
-#include "Scripting/RegisterTypeHelpers.h"
-#include "Types/ComponentFlags.h"
-
 #include "Assets/AssetRegistry.h"
+#include "ECS/EnTTSubsystem.h"
+#include "Engine/Engine.h"
+#include "Scripting/RegisterTypeHelpers.h"
+#include "Components/SceneObjectComponent.h"
 
-#include "Engine\Engine.h"
+#include "entt/entity/registry.hpp"
 
-#include "ECS\Entity.h"
-
-#include <iostream>  // cout
 #include <assert.h>  // assert()
+#include <iostream>  // cout
 #include <string.h>
-#include <windows.h> // timeGetTime()
 #include <vector>
+#include <windows.h> // timeGetTime()
 
 using namespace std;
 
@@ -83,30 +82,28 @@ namespace puffin::scripting
 			m_scriptEngine->Release();
 		}
 
-		PackedVector<ECS::EntityPtr> scriptEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(mWorld, scriptEntities);
-		for (const auto entity : scriptEntities)
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+
+		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
+
+		for (auto [entity, object, transform, script] : scriptView.each())
 		{
-			auto& script = entity->GetComponent<AngelScriptComponent>();
-
-			InitializeScript(entity->ID(), script);
-
-			entity->SetComponentFlag<AngelScriptComponent, FlagDirty>(false);
+			InitializeScript(object.uuid, script);
 		}
 	}
 
 	void AngelScriptSystem::Start()
 	{
 		// Execute Start Methods
-		PackedVector<ECS::EntityPtr> scriptEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(mWorld, scriptEntities);
-		for (const auto entity : scriptEntities)
-		{
-			auto& script = entity->GetComponent<AngelScriptComponent>();
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
+		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
+
+		for (auto [entity, object, transform, script] : scriptView.each())
+		{
 			ExportEditablePropertiesToScriptData(script, script.serializedData);
 
-			m_currentEntityID = entity->ID();
+			m_currentEntityID = object.uuid;
 
 			asIScriptFunction* startFunc = GetScriptMethod(script, "Start");
 			PrepareAndExecuteScriptMethod(script.obj, startFunc);
@@ -120,48 +117,48 @@ namespace puffin::scripting
 		ProcessEvents();
 		
 		// Initialize/Cleanup marked components
-		PackedVector<ECS::EntityPtr> scriptEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(mWorld, scriptEntities);
-		for (const auto& entity : scriptEntities)
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+
+		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
+
+		for (auto [entity, object, transform, script] : scriptView.each())
 		{
-			auto& script = entity->GetComponent<AngelScriptComponent>();
+			m_currentEntityID = object.uuid;
 
-			m_currentEntityID = entity->ID();
+			//// Script needs initialized
+			//if (entity->GetComponentFlag<AngelScriptComponent, FlagDirty>())
+			//{
+			//	InitializeScript(entity->ID(), script);
 
-			// Script needs initialized
-			if (entity->GetComponentFlag<AngelScriptComponent, FlagDirty>())
-			{
-				InitializeScript(entity->ID(), script);
+			//	PrepareAndExecuteScriptMethod(script.obj, script.startFunc);
 
-				PrepareAndExecuteScriptMethod(script.obj, script.startFunc);
+			//	entity->SetComponentFlag<AngelScriptComponent, FlagDirty>(false);
+			//}
 
-				entity->SetComponentFlag<AngelScriptComponent, FlagDirty>(false);
-			}
+			//// Script needs cleaned up
+			//if (entity->GetComponentFlag<AngelScriptComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
+			//{
+			//	PrepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 
-			// Script needs cleaned up
-			if (entity->GetComponentFlag<AngelScriptComponent, FlagDeleted>() || entity->GetFlag<FlagDeleted>())
-			{
-				PrepareAndExecuteScriptMethod(script.obj, script.stopFunc);
-
-				CleanupScriptComponent(script);
-				entity->RemoveComponent<AngelScriptComponent>();
-			}
+			//	CleanupScriptComponent(script);
+			//	entity->RemoveComponent<AngelScriptComponent>();
+			//}
 
 			// Execute Update function if one was found for script
-			PrepareAndExecuteScriptMethod(script.obj, script.updateFunc);
+			//PrepareAndExecuteScriptMethod(script.obj, script.updateFunc);
 		}
 	}
 
 	void AngelScriptSystem::Stop()
 	{
 		// Execute Script Stop Methods
-		PackedVector<ECS::EntityPtr> scriptEntities;
-		ECS::GetEntities<TransformComponent, AngelScriptComponent>(mWorld, scriptEntities);
-		for (const auto& entity : scriptEntities)
-		{
-			auto& script = entity->GetComponent<AngelScriptComponent>();
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
 
-			m_currentEntityID = entity->ID();
+		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
+
+		for (auto [entity, object, transform, script] : scriptView.each())
+		{
+			m_currentEntityID = object.uuid;
 
 			PrepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 		}
@@ -210,11 +207,11 @@ namespace puffin::scripting
 			m_ctx->Release();
 		}
 
-		for (const auto entity : scriptEntities)
+		/*for (const auto entity : scriptEntities)
 		{
 			auto& script = entity->GetComponent<AngelScriptComponent>();
 			CleanupScriptComponent(script);
-		}
+		}*/
 	}
 
 	void AngelScriptSystem::ConfigureEngine()
@@ -251,7 +248,7 @@ namespace puffin::scripting
 		r = m_scriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSystem, PlaySoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// Register Components and their constructors, functions and properties
-		RegisterTransformComponent(m_scriptEngine, mWorld.get());
+		RegisterTransformComponent(m_scriptEngine);
 
 		// Register Input Funcdefs and Bind/Release Callback Methods
 		r = m_scriptEngine->RegisterFuncdef("void OnInputPressedCallback()"); assert(r >= 0);
@@ -279,7 +276,7 @@ namespace puffin::scripting
 		// without having to recompile all the scripts.
 	}
 
-	void AngelScriptSystem::InitializeScript(ECS::EntityID entity, AngelScriptComponent& script)
+	void AngelScriptSystem::InitializeScript(PuffinId entity, AngelScriptComponent& script)
 	{
 		CompileScript(script);
 		UpdateScriptMethods(script);
@@ -397,7 +394,7 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptSystem::InstantiateScriptObj(ECS::EntityID entity, AngelScriptComponent& script)
+	void AngelScriptSystem::InstantiateScriptObj(PuffinId entity, AngelScriptComponent& script)
 	{
 		if (script.type != 0 && script.type->GetFactoryCount() > 0)
 		{
@@ -646,7 +643,7 @@ namespace puffin::scripting
 	ScriptCallback AngelScriptSystem::BindCallback(uint32_t entity, asIScriptFunction* cb) const
 	{
 		ScriptCallback scriptCallback;
-		scriptCallback.entity = entity;
+		//scriptCallback.entity = entity;
 
 		if (cb && cb->GetFuncType() == asFUNC_DELEGATE)
 		{
@@ -691,7 +688,7 @@ namespace puffin::scripting
 		// Release existing callback function, if one exists
 		ReleaseOnInputPressed(entity, actionName);
 
-		m_onInputPressedCallbacks[actionName][entity] = BindCallback(entity, cb);
+		//m_onInputPressedCallbacks[actionName][entity] = BindCallback(entity, cb);
 	}
 
 	void AngelScriptSystem::BindOnInputReleased(uint32_t entity, const std::string& actionName, asIScriptFunction* cb)
@@ -699,25 +696,25 @@ namespace puffin::scripting
 		// Release existing callback function, if one exists
 		ReleaseOnInputReleased(entity, actionName);
 
-		m_onInputReleasedCallbacks[actionName][entity] = BindCallback(entity, cb);
+		//m_onInputReleasedCallbacks[actionName][entity] = BindCallback(entity, cb);
 	}
 
 	void AngelScriptSystem::ReleaseOnInputPressed(uint32_t entity, const std::string& actionName)
 	{
-		if (m_onInputPressedCallbacks[actionName].count(entity))
+		/*if (m_onInputPressedCallbacks[actionName].count(entity))
 		{
 			ReleaseCallback(m_onInputPressedCallbacks[actionName][entity]);
 			m_onInputPressedCallbacks[actionName].erase(entity);
-		}
+		}*/
 	}
 
 	void AngelScriptSystem::ReleaseOnInputReleased(uint32_t entity, const std::string& actionName)
 	{
-		if (m_onInputReleasedCallbacks[actionName].count(entity))
+		/*if (m_onInputReleasedCallbacks[actionName].count(entity))
 		{
 			ReleaseCallback(m_onInputReleasedCallbacks[actionName][entity]);
 			m_onInputReleasedCallbacks[actionName].erase(entity);
-		}
+		}*/
 	}
 
 	// Collision Callbacks
@@ -726,31 +723,31 @@ namespace puffin::scripting
 	{
 		ReleaseOnCollisionBegin(entity);
 
-		m_onCollisionBeginCallbacks[entity] = BindCallback(entity, cb);
+		//m_onCollisionBeginCallbacks[entity] = BindCallback(entity, cb);
 	}
 
 	void AngelScriptSystem::BindOnCollisionEnd(uint32_t entity, asIScriptFunction* cb)
 	{
 		ReleaseOnCollisionEnd(entity);
 
-		m_onCollisionEndCallbacks[entity] = BindCallback(entity, cb);
+		//m_onCollisionEndCallbacks[entity] = BindCallback(entity, cb);
 	}
 
 	void AngelScriptSystem::ReleaseOnCollisionBegin(uint32_t entity)
 	{
-		if (m_onCollisionBeginCallbacks.count(entity) == 1)
+		/*if (m_onCollisionBeginCallbacks.count(entity) == 1)
 		{
 			ReleaseCallback(m_onCollisionBeginCallbacks[entity]);
 			m_onCollisionBeginCallbacks.erase(entity);
-		}
+		}*/
 	}
 
 	void AngelScriptSystem::ReleaseOnCollisionEnd(uint32_t entity)
 	{
-		if (m_onCollisionEndCallbacks.count(entity) == 1)
+		/*if (m_onCollisionEndCallbacks.count(entity) == 1)
 		{
 			ReleaseCallback(m_onCollisionEndCallbacks[entity]);
 			m_onCollisionEndCallbacks.erase(entity);
-		}
+		}*/
 	}
 }

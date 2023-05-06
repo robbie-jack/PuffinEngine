@@ -42,6 +42,8 @@ namespace puffin::procedural
 
 	struct PlaneComponent
 	{
+		PlaneComponent() = default;
+
 		Vector2f halfSize = { 10.f }; // Half size of plane
 		Vector2i numQuads = { 10 }; // Number of quads that make up planes surface
 
@@ -50,6 +52,8 @@ namespace puffin::procedural
 
 	struct CubeComponent
 	{
+		CubeComponent() = default;
+
 		Vector3f halfSize = { 10.f }; // Half size of plane
 		Vector3i numQuads = { 10 }; // Number of quads that make up planes surface
 
@@ -58,11 +62,15 @@ namespace puffin::procedural
 
 	struct SphereComponent
 	{
+		SphereComponent() = default;
+
 		double radius = 0.5;
 	};
 
 	struct UvSphereComponent : public SphereComponent
 	{
+		UvSphereComponent() = default;
+
 		Vector2i numSegments = { 10 };
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(UvSphereComponent, radius, numSegments)
@@ -70,6 +78,8 @@ namespace puffin::procedural
 
 	struct IcoSphereComponent : public SphereComponent
 	{
+		IcoSphereComponent() = default;
+
 		int subdivisions = 10;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(IcoSphereComponent, radius, subdivisions)
@@ -77,6 +87,8 @@ namespace puffin::procedural
 
 	struct TerrainComponent : public PlaneComponent
 	{
+		TerrainComponent() = default;
+
 		int64_t seed = 983758376;
 		double heightMultiplier = 10.0;
 		double frequency = 10.0;

@@ -1,30 +1,24 @@
 #pragma once
 
-#include "ECS\Entity.h"
-#include <ECS/ECS.h>
-#include "Engine\Engine.h"
-#include <Types/Vector.h>
-
-#include <Physics/Onager2D/Shapes/BoxShape2D.h>
-#include <Physics/Onager2D/Shapes/CircleShape2D.h>
-
-#include "Broadphases\Broadphase2D.h"
-#include "Physics/Onager2D/Colliders/Collider2D.h"
-#include "Physics/Onager2D/PhysicsTypes2D.h"
-
+#include "Broadphases/Broadphase2D.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
-#include "Components\Physics\VelocityComponent.h"
-#include "Physics/PhysicsConstants.h"
-
+#include "Components/Physics/VelocityComponent.h"
 #include "ECS/EnTTSubsystem.h"
-
+#include "Engine/Engine.h"
+#include "Engine/System.h"
+#include "Physics/PhysicsConstants.h"
+#include "Physics/Onager2D/PhysicsTypes2D.h"
+#include "Physics/Onager2D/Colliders/Collider2D.h"
+#include "Physics/Onager2D/Shapes/BoxShape2D.h"
+#include "Physics/Onager2D/Shapes/CircleShape2D.h"
 #include "Types/PackedArray.h"
+#include "Types/Vector.h"
 
+#include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-#include <unordered_map>
-#include <memory>
 
 
 namespace puffin
@@ -38,7 +32,7 @@ namespace puffin::physics
 	// Physics System 2D
 	//////////////////////////////////////////////////
 
-	class OnagerPhysicsSystem2D : public ECS::System
+	class OnagerPhysicsSystem2D : public core::System
 	{
 	public:
 
@@ -84,7 +78,6 @@ namespace puffin::physics
 
 			std::shared_ptr<T> broadphase = std::make_shared<T>();
 			std::shared_ptr<Broadphase> broadphaseBase = std::static_pointer_cast<Broadphase>(broadphase);
-			broadphaseBase->setWorld(mWorld);
 			broadphaseBase->setECS(mEngine->getSubsystem<ECS::EnTTSubsystem>());
 
 			mBroadphases.emplace(typeName, broadphaseBase);
@@ -134,8 +127,8 @@ namespace puffin::physics
 		void initBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box);
 		void cleanupBox(const SceneObjectComponent& object);
 
-		void insertCollider(UUID id, std::shared_ptr<collision2D::Collider2D> collider);
-		void eraseCollider(UUID id);
+		void insertCollider(PuffinId id, std::shared_ptr<collision2D::Collider2D> collider);
+		void eraseCollider(PuffinId id);
 
 		// Dynamics
 		void updateDynamics() const; // Perform velocity updates for all rigid bodies

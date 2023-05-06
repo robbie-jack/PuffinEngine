@@ -24,14 +24,14 @@ namespace puffin
 
             void Draw(double dt) override;
 
-            inline void SetEntity(ECS::EntityID entity_) { m_entity = entity_; };
+            //inline void SetEntity(ECS::EntityID entity_) { m_entity = entity_; };
             inline void SetFileBrowser(ImGui::FileBrowser* fileDialog_) { fileDialog = fileDialog_; };
 
             inline bool HasSceneChanged() { return sceneChanged; };
 
         private:
 
-            ECS::EntityID m_entity = 0;
+            //ECS::EntityID m_entity = 0;
             ImGui::FileBrowser* fileDialog = nullptr;
 
             void DrawTransformUI(ImGuiTreeNodeFlags flags);

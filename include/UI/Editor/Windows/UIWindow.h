@@ -1,23 +1,15 @@
 #pragma once
 
-#ifndef UI_WINDOW_H
-#define UI_WINDOW_H
-
-#include <string>
 #include <vulkan/vulkan.h>
 #include <imgui.h>
 
-#include <Input\InputSubsystem.h>
-#include <ECS/ECS.h>
-#include "Engine\Engine.h"
+#include "Input/InputSubsystem.h"
+#include "Engine/Engine.h"
+
+#include <string>
 
 namespace puffin
 {
-	namespace ECS
-	{
-		class World;
-	}
-
 	namespace core
 	{
 		class Engine;
@@ -66,5 +58,3 @@ namespace puffin
 		};
 	}
 }
-
-#endif // UI_WINDOW_H

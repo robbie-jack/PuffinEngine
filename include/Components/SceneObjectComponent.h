@@ -13,7 +13,7 @@ namespace puffin
 		SceneObjectComponent() = default;
 		SceneObjectComponent(const std::string& name_) : name(name_) {}
 
-		UUID uuid; // uint64_t which is used to uniquely identify entities
+		PuffinId uuid; // uint64_t which is used to uniquely identify entities
 		std::string name; // Name of entity, used for displaying in UI
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(SceneObjectComponent, uuid, name)

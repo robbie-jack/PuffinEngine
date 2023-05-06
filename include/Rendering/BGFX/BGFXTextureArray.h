@@ -49,7 +49,7 @@ namespace puffin::rendering
 
 				const bgfx::Memory* mem = bgfx::alloc(texSize);
 
-				bx::memCopy(mem->data, texAsset->pixelData(), mem->size);
+				//bx::memCopy(mem->data, texAsset->pixelData(), mem->size);
 
 				// Add texture to array
 				bgfx::updateTexture2D(mHandle, 0, mNumActiveTextures, 0, 0,

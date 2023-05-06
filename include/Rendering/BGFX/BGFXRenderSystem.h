@@ -1,17 +1,15 @@
 #pragma once
 
-#include "ECS\System.h"
-
 #include "BGFXTextureArray.h"
+#include "BGFXTypes.h"
+#include "BGFXVertex.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/TextureAsset.h"
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/CameraComponent.h"
-#include "ECS\Entity.h"
+#include "Engine/System.h"
 #include "Input/InputEvent.h"
-#include "BGFXTypes.h"
-#include "BGFXVertex.h"
-#include "Types\DeletionQueue.h"
+#include "Types/DeletionQueue.h"
 #include "Types/PackedArray.h"
 #include "Types/RingBuffer.h"
 #include "UI/Editor/Windows/UIWindow.h"
@@ -64,7 +62,7 @@ namespace puffin::rendering
 
 	constexpr uint16_t gMaxLightsBGFX = 16;
 
-	using AssetSetMap = std::unordered_map<UUID, std::set<ECS::EntityID>>; // Used for tracking which entities are using each loaded asset
+	using AssetSetMap = std::unordered_map<UUID, std::set<UUID>>; // Used for tracking which entities are using each loaded asset
 	using MeshMatPair = std::pair<UUID, UUID>;
 
 	struct CameraMatComponent
@@ -109,7 +107,7 @@ namespace puffin::rendering
 		return bgfx::createShader(mem);
 	}
 
-	class BGFXRenderSystem : public ECS::System, public std::enable_shared_from_this<BGFXRenderSystem>
+	class BGFXRenderSystem : public core::System, public std::enable_shared_from_this<BGFXRenderSystem>
 	{
 	public:
 

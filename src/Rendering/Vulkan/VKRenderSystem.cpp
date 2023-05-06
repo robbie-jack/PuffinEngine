@@ -926,7 +926,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::updateRenderData()
 	{
-		std::set<UUID> meshesToBeRemoved;
+		std::set<PuffinId> meshesToBeRemoved;
 
 		for (const auto& [fst, snd] : mMeshDrawList)
 		{
@@ -1244,7 +1244,7 @@ namespace puffin::rendering
 		// Calculate t value for rendering interpolated position
 		const double t = mEngine->accumulatedTime() / mEngine->timeStepFixed();
 
-		std::vector<UUID> entities;
+		std::vector<PuffinId> entities;
 		entities.reserve(gMaxObjects);
 
 		int numObjects = 0;
@@ -1746,7 +1746,7 @@ namespace puffin::rendering
 		outModel = glm::scale(outModel, (glm::vec3)scale);
 	}
 
-	bool VKRenderSystem::loadMesh(UUID meshId, MeshDataVK& meshData)
+	bool VKRenderSystem::loadMesh(puffin::PuffinId meshId, MeshDataVK& meshData)
 	{
 		const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(
 			assets::AssetRegistry::get()->getAsset(meshId));
@@ -1780,7 +1780,7 @@ namespace puffin::rendering
 		mAllocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
 	}
 
-	bool VKRenderSystem::loadTexture(UUID texId, TextureDataVK& texData)
+	bool VKRenderSystem::loadTexture(puffin::PuffinId texId, TextureDataVK& texData)
 	{
 		const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(
 			assets::AssetRegistry::get()->getAsset(texId));

@@ -3,8 +3,6 @@
 #define ANGELSCRIPT_DLL_LIBRARY_IMPORT
 #include "angelscript/angelscript.h"
 
-#include "ECS/ECS.h"
-
 #include "Components/TransformComponent.h"
 
 typedef puffin::TransformComponent STransformComponent;
@@ -91,7 +89,7 @@ namespace puffin::scripting
 		return new STransformComponent();
 	}
 
-	static void RegisterTransformComponent(asIScriptEngine* scriptEngine, ECS::World* world)
+	static void RegisterTransformComponent(asIScriptEngine* scriptEngine)
 	{
 		int r;
 
@@ -117,11 +115,11 @@ namespace puffin::scripting
 		r = scriptEngine->RegisterObjectMethod("STransformComponent", "STransformComponent& opAssign(const STransformComponent &in)", asMETHODPR(STransformComponent, operator=, (const STransformComponent&), STransformComponent&), asCALL_THISCALL);
 
 		// Register ECS World Access Functions
-		r = scriptEngine->RegisterGlobalFunction("STransformComponent@ GetTransformComponent(uint64)",
-			asMETHOD(ECS::World, GetComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);
+		/*r = scriptEngine->RegisterGlobalFunction("STransformComponent@ GetTransformComponent(uint64)",
+			asMETHOD(ECS::World, GetComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);*/
 
-		r = scriptEngine->RegisterGlobalFunction("bool HasTransformComponent(uint64)",
-			asMETHOD(ECS::World, HasComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);
+		/*r = scriptEngine->RegisterGlobalFunction("bool HasTransformComponent(uint64)",
+			asMETHOD(ECS::World, HasComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);*/
 	}
 }
 

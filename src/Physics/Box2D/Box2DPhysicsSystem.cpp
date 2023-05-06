@@ -196,7 +196,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initRigidbody(UUID id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
+	void Box2DPhysicsSystem::initRigidbody(PuffinId id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
 	{
 		if (!mBodies.contains(id))
 		{
@@ -216,7 +216,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initBox(UUID id, const TransformComponent& transform, const BoxComponent2D& box)
+	void Box2DPhysicsSystem::initBox(PuffinId id, const TransformComponent& transform, const BoxComponent2D& box)
 	{
 		if (!mPolygonShapes.contains(id))
 		{
@@ -231,7 +231,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initCircle(UUID id, const TransformComponent& transform, const CircleComponent2D& circle)
+	void Box2DPhysicsSystem::initCircle(PuffinId id, const TransformComponent& transform, const CircleComponent2D& circle)
 	{
 		if (!mCircleShapes.contains(id))
 		{
@@ -247,7 +247,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initFixture(UUID id, const RigidbodyComponent2D rb)
+	void Box2DPhysicsSystem::initFixture(PuffinId id, const RigidbodyComponent2D rb)
 	{
 		if (mBodies.contains(id) && mShapes.contains(id) && !mFixtures.contains(id))
 		{
@@ -259,22 +259,22 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::updateRigidbody(UUID id)
+	void Box2DPhysicsSystem::updateRigidbody(PuffinId id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::updateBox(UUID id)
+	void Box2DPhysicsSystem::updateBox(PuffinId id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::updateCircle(UUID id)
+	void Box2DPhysicsSystem::updateCircle(PuffinId id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::cleanupRigidbody(UUID id)
+	void Box2DPhysicsSystem::cleanupRigidbody(PuffinId id)
 	{
 		if (mBodies.contains(id))
 		{
@@ -284,7 +284,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::cleanupBox(UUID id)
+	void Box2DPhysicsSystem::cleanupBox(PuffinId id)
 	{
 		if (mPolygonShapes.contains(id))
 		{
@@ -292,7 +292,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::cleanupCircle(UUID id)
+	void Box2DPhysicsSystem::cleanupCircle(PuffinId id)
 	{
 		if (mCircleShapes.contains(id))
 		{
@@ -300,7 +300,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::cleanupFixture(UUID id)
+	void Box2DPhysicsSystem::cleanupFixture(PuffinId id)
 	{
 		if (mFixtures.contains(id))
 		{

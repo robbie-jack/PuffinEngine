@@ -2,8 +2,7 @@
 
 #include "UIWindow.h"
 #include "UIWindowEntityProperties.h"
-
-#include "ECS/ECS.h"
+#include "Types/UUID.h"
 
 namespace puffin
 {
@@ -18,11 +17,11 @@ namespace puffin
 
 			void Draw(double dt) override;
 
-			inline bool HasEntityChanged() { return entityChanged; };
-			inline ECS::EntityID GetEntity() { return selectedEntity; };
+			bool HasEntityChanged() { return entityChanged; }
+			PuffinId GetEntity() { return selectedEntity; }
 
 		private:
-			ECS::EntityID selectedEntity = ECS::INVALID_ENTITY;
+			PuffinId selectedEntity;
 			bool entityChanged = false;
 		};
 	}

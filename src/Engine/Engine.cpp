@@ -1,11 +1,8 @@
 #include "Engine/Engine.h"
 
-#include "ECS/ECS.h"
-#include "ECS/Entity.h"
-
-#include "Rendering/BGFX/BGFXRenderSystem.h"
+//#include "Rendering/BGFX/BGFXRenderSystem.h"
 #include "Rendering/Vulkan/VKRenderSystem.h"
-#include "Physics/Box2D/Box2DPhysicsSystem.h"
+//#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
 #include "Scripting/AngelScriptSystem.h"
 #include "Procedural/ProceduralMeshGenSystem.h"
@@ -50,7 +47,6 @@ namespace puffin::core
 		auto enkitsSubsystem = registerSubsystem<EnkiTSSubsystem>();
 		auto inputSubsystem = registerSubsystem<input::InputSubsystem>();
 		auto audioSubsystem = registerSubsystem<audio::AudioSubsystem>();
-		auto ecsWorld = registerSubsystem<ECS::World>();
 		auto enttSubsystem = registerSubsystem<ECS::EnTTSubsystem>();
 
 		mUiManager = std::make_shared<UI::UIManager>(shared_from_this());
@@ -64,7 +60,7 @@ namespace puffin::core
 
 		// Load Default Scene (if set)
 		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / mProjectFile.defaultScenePath;
-		mSceneData = std::make_shared<io::SceneData>(ecsWorld, defaultScenePath);
+		//mSceneData = std::make_shared<io::SceneData>(ecsWorld, defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
 		mSceneData->RegisterComponent<SceneObjectComponent>();
@@ -175,7 +171,6 @@ namespace puffin::core
 			mDeltaTime = mTimeStepLimit;
 		}
 
-		auto ecsWorld = getSubsystem<ECS::World>();
 		auto audioSubsystem = getSubsystem<audio::AudioSubsystem>();
 
 		// Update all Subsystems
@@ -257,8 +252,6 @@ namespace puffin::core
 			// Cleanup Systems and ECS
 			executeCallbacks(ExecutionStage::Stop);
 
-			ecsWorld->Reset();
-
 			// Re-Initialize Systems and ECS
 			//m_sceneData->Init();
 
@@ -295,8 +288,6 @@ namespace puffin::core
 			mUiManager = nullptr;
 		}
 
-		ECS::EntityCache::Clear();
-
 		// Clear Asset Registry
 		assets::AssetRegistry::clear();
 	}
@@ -308,20 +299,20 @@ namespace puffin::core
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath1)->id();
-		UUID meshId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		UUID meshId3 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath3)->id();
-		UUID meshId4 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath4)->id();
+		PuffinId meshId1 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath1)->id();
+		PuffinId meshId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath2)->id();
+		PuffinId meshId3 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath3)->id();
+		PuffinId meshId4 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		UUID textureId1 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		UUID textureId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		PuffinId textureId1 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(texturePath1)->id();
+		PuffinId textureId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(texturePath2)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		UUID soundId1 = assets::AssetRegistry::get()->addAsset<assets::SoundAsset>(soundPath1)->id();
+		PuffinId soundId1 = assets::AssetRegistry::get()->addAsset<assets::SoundAsset>(soundPath1)->id();
 	}
 
 	void Engine::reimportDefaultAssets()
@@ -339,10 +330,10 @@ namespace puffin::core
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath1)->id();
-		UUID meshId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		UUID meshId3 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath3)->id();
-		UUID meshId4 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath4)->id();
+		PuffinId meshId1 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath1)->id();
+		PuffinId meshId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath2)->id();
+		PuffinId meshId3 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath3)->id();
+		PuffinId meshId4 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
 		const auto meshAsset1 = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshId1));
 		const auto meshAsset2 = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshId2));
@@ -362,96 +353,94 @@ namespace puffin::core
 
 	void Engine::defaultScene()
 	{
-		auto ecsWorld = getSubsystem<ECS::World>();
+		//// Initialize Assets
+		//fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
 
-		// Initialize Assets
-		fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
+		//const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		//const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
+		//const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
+		//const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
-		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
-		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
-		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
+		//PuffinId meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
+		//PuffinId meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
+		//PuffinId meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
+		//PuffinId meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
-		UUID meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
-		UUID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		UUID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
-		UUID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
+		//const fs::path& texturePath1 = "textures\\chalet.ptexture";
+		//const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		const fs::path& texturePath1 = "textures\\chalet.ptexture";
-		const fs::path& texturePath2 = "textures\\cube.ptexture";
+		//PuffinId textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
+		//PuffinId textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
 
-		UUID textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		UUID textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		//const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		const fs::path& soundPath1 = "sounds\\Select 1.wav";
+		//PuffinId soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		UUID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
+		//const int numEntities = 7;
+		//std::vector<ECS::EntityPtr> entities;
+		//entities.reserve(numEntities);
 
-		const int numEntities = 7;
-		std::vector<ECS::EntityPtr> entities;
-		entities.reserve(numEntities);
+		//std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Spot Light" };
 
-		std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Spot Light" };
+		//// Add Default Scene Components to ECS
+		//for (int i = 0; i < numEntities; i++)
+		//{
+		//	const auto entity = ECS::CreateEntity(ecsWorld);
+		//	entity->SetName(names[i]);
+		//	entity->AddComponent<TransformComponent>();
+		//	entity->AddComponent<rendering::MeshComponent>();
+		//	entities.push_back(entity);
+		//}
 
-		// Add Default Scene Components to ECS
-		for (int i = 0; i < numEntities; i++)
-		{
-			const auto entity = ECS::CreateEntity(ecsWorld);
-			entity->SetName(names[i]);
-			entity->AddComponent<TransformComponent>();
-			entity->AddComponent<rendering::MeshComponent>();
-			entities.push_back(entity);
-		}
+		//// Initialize Components with default values
+		//entities[0]->GetComponent<TransformComponent>() = { Vector3f(2.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
+		//entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
+		//entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
+		//entities[3]->GetComponent<TransformComponent>() =
+		//{
+		//	Vector3f(-5.0f, 0.0f, 0.0f),
+		//	maths::Quat(.5f, -.5f, 0.0f),
+		//	Vector3f(0.25f)
+		//};
+		//entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
+		//entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), maths::Quat(), Vector3f(10.0f, 1.0f, 10.0f) };
+		//entities[6]->GetComponent<TransformComponent>() =
+		//{
+		//	Vector3f(5.0f, 0.0f, 0.0f),
+		//	maths::Quat(-.5f, -.5f, 0.0f),
+		//	Vector3f(0.25f)
+		//};
 
-		// Initialize Components with default values
-		entities[0]->GetComponent<TransformComponent>() = { Vector3f(2.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
-		entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
-		entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
-		entities[3]->GetComponent<TransformComponent>() =
-		{
-			Vector3f(-5.0f, 0.0f, 0.0f),
-			maths::Quat(.5f, -.5f, 0.0f),
-			Vector3f(0.25f)
-		};
-		entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
-		entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), maths::Quat(), Vector3f(10.0f, 1.0f, 10.0f) };
-		entities[6]->GetComponent<TransformComponent>() =
-		{
-			Vector3f(5.0f, 0.0f, 0.0f),
-			maths::Quat(-.5f, -.5f, 0.0f),
-			Vector3f(0.25f)
-		};
+		//entities[0]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId1;
+		//entities[0]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId1;
 
-		entities[0]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId1;
-		entities[0]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId1;
+		//entities[1]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId2;
+		//entities[1]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
 
-		entities[1]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId2;
-		entities[1]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
+		//entities[2]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
+		//entities[2]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
+		//entities[3]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
+		//entities[3]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
+		//entities[4]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
+		//entities[4]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
+		//entities[5]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
+		//entities[5]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
+		//entities[6]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
+		//entities[6]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
 
-		entities[2]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		entities[2]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
-		entities[3]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		entities[3]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
-		entities[4]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		entities[4]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
-		entities[5]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		entities[5]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
-		entities[6]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		entities[6]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
+		//// Setup Light Component
+		//entities[3]->AddComponent<rendering::LightComponent>();
+		//entities[3]->GetComponent<rendering::LightComponent>().color = Vector3f(1.f, 1.f, 1.f);
+		//entities[3]->GetComponent<rendering::LightComponent>().type = rendering::LightType::Directional;
+		////entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
 
-		// Setup Light Component
-		entities[3]->AddComponent<rendering::LightComponent>();
-		entities[3]->GetComponent<rendering::LightComponent>().color = Vector3f(1.f, 1.f, 1.f);
-		entities[3]->GetComponent<rendering::LightComponent>().type = rendering::LightType::Directional;
-		//entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
+		//entities[6]->AddComponent<rendering::LightComponent>();
+		//entities[6]->GetComponent<rendering::LightComponent>().color = Vector3f(0.f, 0.f, 1.f);
+		//entities[6]->GetComponent<rendering::LightComponent>().type = rendering::LightType::Spot;
 
-		entities[6]->AddComponent<rendering::LightComponent>();
-		entities[6]->GetComponent<rendering::LightComponent>().color = Vector3f(0.f, 0.f, 1.f);
-		entities[6]->GetComponent<rendering::LightComponent>().type = rendering::LightType::Spot;
-
-		auto& script = entities[0]->AddAndGetComponent<scripting::AngelScriptComponent>();
-		script.name = "ExampleScript";
-		script.dir = contentRootPath / "scripts\\Example.pscript";
+		//auto& script = entities[0]->AddAndGetComponent<scripting::AngelScriptComponent>();
+		//script.name = "ExampleScript";
+		//script.dir = contentRootPath / "scripts\\Example.pscript";
 	}
 
 	void Engine::physicsScene()
@@ -464,20 +453,20 @@ namespace puffin::core
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		UUID meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
-		UUID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		UUID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
-		UUID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
+		PuffinId meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
+		PuffinId meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
+		PuffinId meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
+		PuffinId meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		UUID textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		UUID textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		PuffinId textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
+		PuffinId textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		UUID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
+		PuffinId soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
 		auto enttSubsystem = getSubsystem<ECS::EnTTSubsystem>();
 		auto registry = enttSubsystem->Registry();
@@ -547,45 +536,45 @@ namespace puffin::core
 
 	void Engine::proceduralScene()
 	{
-		auto ecsWorld = getSubsystem<ECS::World>();
+		//auto ecsWorld = getSubsystem<ECS::World>();
 
-		// Initialize Assets
-		fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
+		//// Initialize Assets
+		//fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
 
-		const fs::path& cubeMeshPath = "meshes\\cube.pstaticmesh";
+		//const fs::path& cubeMeshPath = "meshes\\cube.pstaticmesh";
 
-		UUID cubeMeshId = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(cubeMeshPath)->id();
+		//PuffinId cubeMeshId = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(cubeMeshPath)->id();
 
-		const fs::path& cubeTexturePath = "textures\\cube.ptexture";
+		//const fs::path& cubeTexturePath = "textures\\cube.ptexture";
 
-		UUID cubeTextureId = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(cubeTexturePath)->id();
+		//PuffinId cubeTextureId = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(cubeTexturePath)->id();
 
-		const auto lightEntity = ECS::CreateEntity(ecsWorld);
-		lightEntity->SetName("Light");
-		lightEntity->AddComponent<TransformComponent>();
-		lightEntity->GetComponent<TransformComponent>().position = { 0.0, 10.0, 0.0 };
-		lightEntity->GetComponent<TransformComponent>().scale = { 0.25f };
-		lightEntity->AddComponent<rendering::LightComponent>();
-		lightEntity->GetComponent<rendering::LightComponent>().type = rendering::LightType::Directional;
-		lightEntity->AddComponent<rendering::MeshComponent>();
-		lightEntity->GetComponent<rendering::MeshComponent>().meshAssetId = cubeMeshId;
-		lightEntity->GetComponent<rendering::MeshComponent>().textureAssetId = cubeTextureId;
-		//lightEntity->AddComponent<Rendering::ShadowCasterComponent>();
+		//const auto lightEntity = ECS::CreateEntity(ecsWorld);
+		//lightEntity->SetName("Light");
+		//lightEntity->AddComponent<TransformComponent>();
+		//lightEntity->GetComponent<TransformComponent>().position = { 0.0, 10.0, 0.0 };
+		//lightEntity->GetComponent<TransformComponent>().scale = { 0.25f };
+		//lightEntity->AddComponent<rendering::LightComponent>();
+		//lightEntity->GetComponent<rendering::LightComponent>().type = rendering::LightType::Directional;
+		//lightEntity->AddComponent<rendering::MeshComponent>();
+		//lightEntity->GetComponent<rendering::MeshComponent>().meshAssetId = cubeMeshId;
+		//lightEntity->GetComponent<rendering::MeshComponent>().textureAssetId = cubeTextureId;
+		////lightEntity->AddComponent<Rendering::ShadowCasterComponent>();
 
-		const auto planeEntity = ECS::CreateEntity(ecsWorld);
-		planeEntity->SetName("Terrain");
-		planeEntity->AddAndGetComponent<TransformComponent>().position = { 0.0, -10.0f, 0.0 };
-		planeEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubeTextureId;
-		planeEntity->AddComponent<procedural::TerrainComponent>();
-		planeEntity->GetComponent<procedural::TerrainComponent>().halfSize = { 50 };
-		planeEntity->GetComponent<procedural::TerrainComponent>().numQuads = { 50 };
-		planeEntity->GetComponent<procedural::TerrainComponent>().heightMultiplier = 10;
+		//const auto planeEntity = ECS::CreateEntity(ecsWorld);
+		//planeEntity->SetName("Terrain");
+		//planeEntity->AddAndGetComponent<TransformComponent>().position = { 0.0, -10.0f, 0.0 };
+		//planeEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubeTextureId;
+		//planeEntity->AddComponent<procedural::TerrainComponent>();
+		//planeEntity->GetComponent<procedural::TerrainComponent>().halfSize = { 50 };
+		//planeEntity->GetComponent<procedural::TerrainComponent>().numQuads = { 50 };
+		//planeEntity->GetComponent<procedural::TerrainComponent>().heightMultiplier = 10;
 
-		const auto sphereEntity = ECS::CreateEntity(ecsWorld);
-		sphereEntity->SetName("Sphere");
-		sphereEntity->AddAndGetComponent<TransformComponent>().position = { 0.0, 5.0, 0.0 };
-		sphereEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubeTextureId;
-		sphereEntity->AddComponent<procedural::IcoSphereComponent>();
+		//const auto sphereEntity = ECS::CreateEntity(ecsWorld);
+		//sphereEntity->SetName("Sphere");
+		//sphereEntity->AddAndGetComponent<TransformComponent>().position = { 0.0, 5.0, 0.0 };
+		//sphereEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubeTextureId;
+		//sphereEntity->AddComponent<procedural::IcoSphereComponent>();
 
 		/*const auto boxEntity = ECS::CreateEntity(ecsWorld);
 		boxEntity->SetName("Box");

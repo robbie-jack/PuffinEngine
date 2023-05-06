@@ -29,12 +29,12 @@ namespace puffin::ECS
 			return entity;
 		}
 
-		bool IsValid(UUID uuid)
+		bool IsValid(PuffinId uuid)
 		{
 			return m_idToEntityMap.find(uuid) != m_idToEntityMap.end();
 		}
 
-		entt::entity GetEntity(UUID uuid)
+		entt::entity GetEntity(PuffinId uuid)
 		{
 			entt::entity& entity = m_idToEntityMap[uuid];
 
@@ -47,7 +47,7 @@ namespace puffin::ECS
 
 		std::shared_ptr<entt::registry> m_registry = nullptr;
 
-		std::unordered_map<UUID, entt::entity> m_idToEntityMap;
+		std::unordered_map<PuffinId, entt::entity> m_idToEntityMap;
 
 	};
 }

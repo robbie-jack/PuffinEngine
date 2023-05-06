@@ -28,7 +28,7 @@ namespace puffin::assets
 
 	struct AssetCache
 	{
-		std::unordered_map<UUID, AssetCacheData> data;
+		std::unordered_map<PuffinId, AssetCacheData> data;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(AssetCache, data)
 	};
@@ -41,7 +41,7 @@ namespace puffin::assets
 	public:
 		virtual ~IAssetFactory() = default;
 		virtual std::string type() = 0;
-		virtual std::shared_ptr<Asset> addAsset(UUID id, fs::path path) = 0;
+		virtual std::shared_ptr<Asset> addAsset(PuffinId id, fs::path path) = 0;
 	};
 
 	/*
@@ -66,7 +66,7 @@ namespace puffin::assets
 			return mAssetTypeString;
 		}
 
-		std::shared_ptr<Asset> addAsset(UUID id, fs::path path) override
+		std::shared_ptr<Asset> addAsset(PuffinId id, fs::path path) override
 		{
 			return std::make_shared<AssetType>(id, path);
 		}
@@ -127,13 +127,13 @@ namespace puffin::assets
 		void loadAssetCache();
 
 		// Get Asset from Registry
-		std::shared_ptr<Asset> getAsset(const UUID& uuid);
+		std::shared_ptr<Asset> getAsset(const PuffinId& uuid);
 
 		std::shared_ptr<Asset> getAsset(const fs::path& path);
 
 		// Get Typed Asset from Registry
 		template<typename AssetType>
-		std::shared_ptr<AssetType> getAsset(const UUID& uuid)
+		std::shared_ptr<AssetType> getAsset(const PuffinId& uuid)
 		{
 			return std::static_pointer_cast<AssetType>(getAsset(uuid));
 		}
@@ -177,8 +177,8 @@ namespace puffin::assets
 		fs::path mProjectRootPath;
 
 		// Map of ID's to Asset, generated at runtime
-		std::unordered_map<UUID, std::shared_ptr<Asset>> mIdToAssetMap;
-		std::unordered_map<std::string, UUID> mPathToIdMap;
+		std::unordered_map<PuffinId, std::shared_ptr<Asset>> mIdToAssetMap;
+		std::unordered_map<std::string, PuffinId> mPathToIdMap;
 
 		// Asset Factories for creating assets at runtime
 		std::vector<std::shared_ptr<IAssetFactory>> mAssetFactories;

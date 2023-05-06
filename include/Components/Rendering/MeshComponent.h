@@ -14,16 +14,16 @@ namespace puffin::rendering
 	{
 		MeshComponent() {}
 		
-		MeshComponent(UUID meshId, UUID textureId) :
+		MeshComponent(PuffinId meshId, PuffinId textureId) :
 			meshAssetId(meshId), textureAssetId(textureId)
 		{
 		}
 
 		// Mesh Data
-		UUID meshAssetId;
+		PuffinId meshAssetId;
 
 		// Texture
-		UUID textureAssetId;
+		PuffinId textureAssetId;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetId, textureAssetId)
 	};
@@ -35,9 +35,9 @@ namespace puffin::rendering
 		std::vector<rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
-		explicit ProceduralMeshComponent(UUID textureId) : textureAssetId(textureId) {}
+		explicit ProceduralMeshComponent(PuffinId textureId) : textureAssetId(textureId) {}
 
-		UUID textureAssetId;
+		PuffinId textureAssetId;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProceduralMeshComponent, textureAssetId)
 	};
