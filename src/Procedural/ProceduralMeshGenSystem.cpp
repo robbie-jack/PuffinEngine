@@ -139,7 +139,7 @@ namespace puffin::procedural
 		{
 			rendering::VertexPNTV32& vertex = mesh.vertices[i];
 			vertex.pos = static_cast<glm::vec3>(positions[i]);
-			vertex.normal = static_cast<glm::vec3>(positions[i].Normalised());
+			vertex.normal = static_cast<glm::vec3>(positions[i].normalized());
 			vertex.tangent = { 0.0f, 0.0f, 0.0f };
 			vertex.uv = { 0.0f, 0.0f };
 		}

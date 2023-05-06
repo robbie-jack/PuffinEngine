@@ -30,13 +30,13 @@ namespace puffin::physics
 
 		static inline bool sameDirection(const Vector2f& direction1, const Vector2f& direction2)
 		{
-			return direction1.Dot(direction2) >= 0.0f;
+			return direction1.dot(direction2) >= 0.0f;
 		}
 
 		static inline Vector2f getPerpendicularDirection(const Vector2f& ab, const Vector2f& direction)
 		{
-			const Vector2f abClockwise = ab.PerpendicularClockwise();
-			const Vector2f abCounterClockwise = ab.PerpendicularCounterClockwise();
+			const Vector2f abClockwise = ab.perpendicularClockwise();
+			const Vector2f abCounterClockwise = ab.perpendicularCounterClockwise();
 
 			if (sameDirection(abClockwise, direction))
 				return abClockwise;
@@ -122,7 +122,7 @@ namespace puffin::physics
 		// GJK Algorithm to see if any two shapes with minkowski support function collide
 		static inline bool gjk(const Collider2D* colliderA, const Collider2D* colliderB, Simplex2D& points)
 		{
-			Vector2f direction = (colliderB->position - colliderA->position).Normalised();
+			Vector2f direction = (colliderB->position - colliderA->position).normalized();
 			const Vector2f supportPoint = findSupport(colliderA, colliderB, direction);
 
 			points.pushFront(supportPoint);
@@ -172,10 +172,10 @@ namespace puffin::physics
 				Vector2f ao = -a;
 
 				// Get Vector from edge towards origin
-				Vector2f normal = ab.PerpendicularClockwise().Normalised();
+				Vector2f normal = ab.perpendicularClockwise().normalized();
 
 				// Calculate distance from origin to egde
-				float distance = normal.Dot(a);
+				float distance = normal.dot(a);
 
 				// Check distance against other disances
 				if (distance < 0)
@@ -212,7 +212,7 @@ namespace puffin::physics
 
 				// Check distance from origin to edge against
 				// distance point is along edge normal
-				const float distance = edge.normal.Dot(point);
+				const float distance = edge.normal.dot(point);
 				const float tolerance = 0.001f;
 
 				const float diff = std::abs(distance - edge.distance);
@@ -269,13 +269,13 @@ namespace puffin::physics
 			const float radiusAB = circleA->shape->radius + circleB->shape->radius;
 			const float radiusABSq = radiusAB * radiusAB;
 
-			if (ab.LengthSquared() > radiusABSq)
+			if (ab.lengthSquared() > radiusABSq)
 				return false;
 
 			outContact.a = circleA->uuid;
 			outContact.b = circleB->uuid;
 
-			outContact.normal = ab.Normalised();
+			outContact.normal = ab.normalized();
 
 			// GJK Circle Collision Test
 			/*Simplex2D points;

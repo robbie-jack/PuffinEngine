@@ -12,7 +12,7 @@ namespace puffin::physics::collision2D
 
 	Vector2f CircleCollider2D::findFurthestPoint(Vector2f direction) const
 	{
-		return position + direction.Normalised() * shape->radius;
+		return position + direction.normalized() * shape->radius;
 	}
 
 	bool CircleCollider2D::testCollision(const collision2D::Collider2D* collider, collision2D::Contact& contact) const

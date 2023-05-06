@@ -18,8 +18,8 @@ namespace puffin::physics
 
 		~BoxShape2D() override
 		{
-			centreOfMass.Zero();
-			halfExtent.Zero();
+			centreOfMass.zero();
+			halfExtent.zero();
 			points.clear();
 		}
 

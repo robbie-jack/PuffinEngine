@@ -28,7 +28,7 @@ namespace puffin::maths
 			w = cosf(halfAngleRadians);
 
 			const float halfSine = sinf(halfAngleRadians);
-			const Vector3f nNormal = n.Normalised();
+			const Vector3f nNormal = n.normalized();
 			x = nNormal.x * halfSine;
 			y = nNormal.y * halfSine;
 			z = nNormal.z * halfSine;

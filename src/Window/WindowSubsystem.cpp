@@ -15,56 +15,50 @@ namespace puffin::Window
 
 	void WindowSubsystem::setupCallbacks()
 	{
-		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { Init(); }, "WindowSubsystem: Init", 40);
-		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { Update(); }, "WindowSubsystem: Update");
-		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { Cleanup(); }, "WindowSubsystem: Cleanup", 150);
+		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "WindowSubsystem: Init", 40);
+		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "WindowSubsystem: Cleanup", 150);
 	}
 
-	void WindowSubsystem::Init()
+	void WindowSubsystem::init()
 	{
 		glfwInit();
 		
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		m_primaryMonitor = glfwGetPrimaryMonitor();
+		mPrimaryMonitor = glfwGetPrimaryMonitor();
 
 		// Create Primary Window
-		m_primaryWindow = glfwCreateWindow(1920, 1080, "Puffin Engine", nullptr, nullptr);
-		if (m_primaryWindow == nullptr)
+		mPrimaryWindow = glfwCreateWindow(1920, 1080, "Puffin Engine", nullptr, nullptr);
+		if (mPrimaryWindow == nullptr)
 		{
 			std::cout << "Failed to create GLFW window" << std::endl;
 			glfwTerminate();
 		}
 
-		glfwMakeContextCurrent(m_primaryWindow);
+		glfwMakeContextCurrent(mPrimaryWindow);
 	}
 
-	void WindowSubsystem::Update()
+	void WindowSubsystem::cleanup()
 	{
-		
-	}
+		glfwDestroyWindow(mPrimaryWindow);
 
-	void WindowSubsystem::Cleanup()
-	{
-		glfwDestroyWindow(m_primaryWindow);
-
-		for (auto& [fst, snd] : m_windows)
+		for (auto& [fst, snd] : mWindows)
 		{
 			glfwDestroyWindow(snd);
 		}
 
-		m_windows.clear();
+		mWindows.clear();
 
 		glfwTerminate();
 	}
 
-	bool WindowSubsystem::ShouldPrimaryWindowClose() const
+	bool WindowSubsystem::shouldPrimaryWindowClose() const
 	{
-		return glfwWindowShouldClose(m_primaryWindow);
+		return glfwWindowShouldClose(mPrimaryWindow);
 	}
 
-	PuffinId WindowSubsystem::CreateNewWindow(const int& width, const int& height)
+	PuffinId WindowSubsystem::createNewWindow(const int& width, const int& height)
 	{
 		// Create new window and store it in windows map
 		GLFWwindow* window = glfwCreateWindow(width, height, "Puffin Engine", nullptr, nullptr);
@@ -77,28 +71,28 @@ namespace puffin::Window
 
 		PuffinId id;
 
-		m_windows.insert({ id, window });
+		mWindows.insert({ id, window });
 
 		// Return id handle to window
 		return id;
 	}
 
-	GLFWwindow* WindowSubsystem::GetWindow(const PuffinId& uuid)
+	GLFWwindow* WindowSubsystem::getWindow(const PuffinId& uuid)
 	{
 		// Return window if there is oen with that handle
-		if (m_windows.count(uuid) == 1)
+		if (mWindows.count(uuid) == 1)
 		{
-			return m_windows[uuid];
+			return mWindows[uuid];
 		}
 
 		// Else return nullptr
 		return nullptr;
 	}
 
-	void WindowSubsystem::DestroyWindow(const PuffinId& uuid)
+	void WindowSubsystem::destroyWindow(const PuffinId& uuid)
 	{
-		glfwDestroyWindow(m_windows[uuid]);
-		m_windows.erase(uuid);
+		glfwDestroyWindow(mWindows[uuid]);
+		mWindows.erase(uuid);
 	}
 
 	//==================================================

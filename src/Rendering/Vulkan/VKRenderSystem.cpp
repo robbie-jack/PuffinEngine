@@ -171,7 +171,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::initVulkan()
 	{
-		GLFWwindow* glfwWindow = mEngine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+		GLFWwindow* glfwWindow = mEngine->getSubsystem<Window::WindowSubsystem>()->primaryWindow();
 
 		glfwSetWindowUserPointer(glfwWindow, this);
 		glfwSetFramebufferSizeCallback(glfwWindow, frameBufferResizeCallback);
@@ -703,7 +703,7 @@ namespace puffin::rendering
 		VK_CHECK(mDevice.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
 
 		// Initialize imgui for GLFW
-		GLFWwindow* glfwWindow = mEngine->getSubsystem<Window::WindowSubsystem>()->GetPrimaryWindow();
+		GLFWwindow* glfwWindow = mEngine->getSubsystem<Window::WindowSubsystem>()->primaryWindow();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
 		// Initialize imgui for Vulkan
@@ -826,14 +826,14 @@ namespace puffin::rendering
 
 	void VKRenderSystem::processComponents()
 	{
-		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
 
 		auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
 
 		for (auto [entity, object, transform, mesh] : meshView.each())
 		{
-			mMeshDrawList[mesh.meshAssetId].insert(object.uuid);
-			mTexDrawList[mesh.textureAssetId].insert(object.uuid);
+			mMeshDrawList[mesh.meshAssetId].insert(object.id);
+			mTexDrawList[mesh.textureAssetId].insert(object.id);
 		}
 
 		auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent, CameraComponent>();
@@ -905,11 +905,11 @@ namespace puffin::rendering
 			mEditorCam.direction.z = sin(maths::DegreesToRadians(mEditorCam.yaw)) * cos(
 				maths::DegreesToRadians(mEditorCam.pitch));
 
-			mEditorCam.direction.Normalise();
+			mEditorCam.direction.normalize();
 		}
 
 		// Calculate Right, Up and LookAt vectors
-		mEditorCam.right = mEditorCam.up.Cross(mEditorCam.direction).Normalised();
+		mEditorCam.right = mEditorCam.up.cross(mEditorCam.direction).normalized();
 		mEditorCam.lookAt = mEditorCam.position + mEditorCam.direction;
 
 		mEditorCam.aspect = static_cast<float>(mWindowSize.width) / static_cast<float>(mWindowSize.height);
@@ -1043,7 +1043,7 @@ namespace puffin::rendering
 	void VKRenderSystem::updateCameraComponent(const TransformComponent& transform, CameraComponent& camera)
 	{
 		// Calculate Right, Up and LookAt vectors
-		camera.right = camera.up.Cross(transform.rotation.xyz()).Normalised();
+		camera.right = camera.up.cross(transform.rotation.xyz()).normalized();
 		camera.lookAt = transform.position + transform.rotation.xyz();
 
 		camera.aspect = (float)mWindowSize.width / (float)mWindowSize.height;
@@ -1273,7 +1273,7 @@ namespace puffin::rendering
 		}
 
 		auto enttSubsystem = mEngine->getSubsystem<ECS::EnTTSubsystem>();
-		auto registry = enttSubsystem->Registry();
+		auto registry = enttSubsystem->registry();
 
 		enki::TaskSet task(numObjects, [&](enki::TaskSetPartition range, uint32_t threadnum)
 		{
@@ -1281,7 +1281,7 @@ namespace puffin::rendering
 
 			for (uint32_t objectIdx = range.start; objectIdx < range.end; objectIdx++)
 			{
-				auto entity = enttSubsystem->GetEntity(entities[objectIdx]);
+				auto entity = enttSubsystem->getEntity(entities[objectIdx]);
 
 				const auto& transform = registry->get<TransformComponent>(entity);
 				const auto& mesh = registry->get<MeshComponent>(entity);
@@ -1345,7 +1345,7 @@ namespace puffin::rendering
 
 		int i = 0;
 
-		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
 
 		auto lightView = registry->view<const SceneObjectComponent, const TransformComponent, const LightComponent>();
 
@@ -1392,13 +1392,13 @@ namespace puffin::rendering
 		int idx = 0;
 
 		auto enttSubsystem = mEngine->getSubsystem<ECS::EnTTSubsystem>();
-		auto registry = enttSubsystem->Registry();
+		auto registry = enttSubsystem->registry();
 
 		for (const auto [fst, snd] : mMeshDrawList)
 		{
 			for (const auto entityID : snd)
 			{
-				auto entity = enttSubsystem->GetEntity(entityID);
+				auto entity = enttSubsystem->getEntity(entityID);
 
 				const auto& mesh = registry->get<MeshComponent>(entity);
 
@@ -1746,12 +1746,10 @@ namespace puffin::rendering
 		outModel = glm::scale(outModel, (glm::vec3)scale);
 	}
 
-	bool VKRenderSystem::loadMesh(puffin::PuffinId meshId, MeshDataVK& meshData)
+	bool VKRenderSystem::loadMesh(PuffinId meshId, MeshDataVK& meshData)
 	{
-		const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(
-			assets::AssetRegistry::get()->getAsset(meshId));
-
-		if (meshAsset && meshAsset->load())
+		if (const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(
+			assets::AssetRegistry::get()->getAsset(meshId)); meshAsset && meshAsset->load())
 		{
 			meshData.assetId = meshId;
 
@@ -1780,12 +1778,10 @@ namespace puffin::rendering
 		mAllocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
 	}
 
-	bool VKRenderSystem::loadTexture(puffin::PuffinId texId, TextureDataVK& texData)
+	bool VKRenderSystem::loadTexture(PuffinId texId, TextureDataVK& texData)
 	{
-		const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(
-			assets::AssetRegistry::get()->getAsset(texId));
-
-		if (texAsset && texAsset->load())
+		if (const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(
+			assets::AssetRegistry::get()->getAsset(texId)); texAsset && texAsset->load())
 		{
 			texData.assetId = texId;
 

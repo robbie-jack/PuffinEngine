@@ -19,36 +19,35 @@ namespace puffin::Window
 
 		void setupCallbacks() override;
 
-		void Init();
-		void Update();
-		void Cleanup();
+		void init();
+		void cleanup();
 
-		GLFWwindow* GetPrimaryWindow() const
+		GLFWwindow* primaryWindow() const
 		{
-			return m_primaryWindow;
+			return mPrimaryWindow;
 		}
 
-		bool ShouldPrimaryWindowClose() const;
+		[[nodiscard]] bool shouldPrimaryWindowClose() const;
 
-		GLFWmonitor* GetPrimaryMonitor() const
+		GLFWmonitor* primaryMonitor() const
 		{
-			return m_primaryMonitor;
+			return mPrimaryMonitor;
 		}
 
 		// Create new window and return PuffinId handle to it
-		PuffinId CreateNewWindow(const int& width, const int& height);
+		PuffinId createNewWindow(const int& width, const int& height);
 
 		// Retrieve window using PuffinId handle
-		GLFWwindow* GetWindow(const PuffinId& uuid);
+		GLFWwindow* getWindow(const PuffinId& uuid);
 
-		void DestroyWindow(const PuffinId& uuid);
+		void destroyWindow(const PuffinId& uuid);
 
 	private:
 
-		GLFWmonitor* m_primaryMonitor = nullptr;
-		GLFWwindow* m_primaryWindow = nullptr;
+		GLFWmonitor* mPrimaryMonitor = nullptr;
+		GLFWwindow* mPrimaryWindow = nullptr;
 
-		std::unordered_map<PuffinId, GLFWwindow*> m_windows;
+		std::unordered_map<PuffinId, GLFWwindow*> mWindows;
 
 		
 	};

@@ -135,7 +135,7 @@ namespace puffin::assets
 
 	// Private
 
-	MeshInfo StaticMeshAsset::parseMeshInfo(const AssetData& data)
+	MeshInfo StaticMeshAsset::parseMeshInfo(const AssetData& data) const
 	{
 		// Parse metadata into json
 		json metadata = json::parse(data.json);

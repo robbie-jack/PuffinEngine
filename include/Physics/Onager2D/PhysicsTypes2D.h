@@ -22,9 +22,9 @@ namespace puffin::physics
 				a = 0;
 				b = 0;
 
-				pointOnA.Zero();
-				pointOnB.Zero();
-				normal.Zero();
+				pointOnA.zero();
+				pointOnB.zero();
+				normal.zero();
 
 				seperation = 0.0f;
 			}

@@ -63,24 +63,24 @@ namespace puffin::core
 		//mSceneData = std::make_shared<io::SceneData>(ecsWorld, defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
-		mSceneData->RegisterComponent<SceneObjectComponent>();
-		mSceneData->RegisterComponent<TransformComponent>();
+		//mSceneData->RegisterComponent<SceneObjectComponent>();
+		//mSceneData->RegisterComponent<TransformComponent>();
 
-		mSceneData->RegisterComponent<rendering::MeshComponent>();
-		mSceneData->RegisterComponent<rendering::LightComponent>();
-		mSceneData->RegisterComponent<rendering::ShadowCasterComponent>();
-		mSceneData->RegisterComponent<rendering::CameraComponent>();
+		//mSceneData->RegisterComponent<rendering::MeshComponent>();
+		//mSceneData->RegisterComponent<rendering::LightComponent>();
+		//mSceneData->RegisterComponent<rendering::ShadowCasterComponent>();
+		//mSceneData->RegisterComponent<rendering::CameraComponent>();
 
-		mSceneData->RegisterComponent<physics::RigidbodyComponent2D>();
-		mSceneData->RegisterComponent<physics::BoxComponent2D>();
-		mSceneData->RegisterComponent<physics::CircleComponent2D>();
+		//mSceneData->RegisterComponent<physics::RigidbodyComponent2D>();
+		//mSceneData->RegisterComponent<physics::BoxComponent2D>();
+		//mSceneData->RegisterComponent<physics::CircleComponent2D>();
 
-		mSceneData->RegisterComponent<scripting::AngelScriptComponent>();
+		//mSceneData->RegisterComponent<scripting::AngelScriptComponent>();
 
-		mSceneData->RegisterComponent<rendering::ProceduralMeshComponent>();
-		mSceneData->RegisterComponent<procedural::PlaneComponent>();
-		mSceneData->RegisterComponent<procedural::TerrainComponent>();
-		mSceneData->RegisterComponent<procedural::IcoSphereComponent>();
+		//mSceneData->RegisterComponent<rendering::ProceduralMeshComponent>();
+		//mSceneData->RegisterComponent<procedural::PlaneComponent>();
+		//mSceneData->RegisterComponent<procedural::TerrainComponent>();
+		//mSceneData->RegisterComponent<procedural::IcoSphereComponent>();
 
 		// Systems
 		//registerSystem<Rendering::BGFX::BGFXRenderSystem>();
@@ -103,7 +103,8 @@ namespace puffin::core
 		io::LoadSettings(projectDirPath.parent_path() / "Settings.json", mSettings);
 
 		// Load/Initialize Assets
-		//AddDefaultAssets();
+		//addDefaultAssets();
+		//assets::AssetRegistry::get()->saveAssetCache();
 		assets::AssetRegistry::get()->loadAssetCache();
 		//ReimportDefaultAssets();
 
@@ -159,7 +160,7 @@ namespace puffin::core
 
 			if (mShouldTrackExecutionTime)
 			{
-				double idleEndTime = glfwGetTime();
+				const double idleEndTime = glfwGetTime();
 
 				mStageExecutionTime[ExecutionStage::Idle] = idleEndTime - idleStartTime;
 			}
@@ -171,14 +172,14 @@ namespace puffin::core
 			mDeltaTime = mTimeStepLimit;
 		}
 
-		auto audioSubsystem = getSubsystem<audio::AudioSubsystem>();
+		const auto audioSubsystem = getSubsystem<audio::AudioSubsystem>();
 
 		// Update all Subsystems
 		{
 			executeCallbacks(ExecutionStage::SubsystemUpdate, true);
 		}
 
-		auto inputSubsystem = getSubsystem<input::InputSubsystem>();
+		const auto inputSubsystem = getSubsystem<input::InputSubsystem>();
 		if (inputSubsystem->getAction("Play").state == input::KeyState::Pressed)
 		{
 			play();
@@ -264,8 +265,7 @@ namespace puffin::core
 			mPlayState = PlayState::Stopped;
 		}
 
-		auto windowSubsystem = getSubsystem<Window::WindowSubsystem>();
-		if (windowSubsystem->ShouldPrimaryWindowClose())
+		if (const auto windowSubsystem = getSubsystem<Window::WindowSubsystem>(); windowSubsystem->shouldPrimaryWindowClose())
 		{
 			mRunning = false;
 		}
@@ -307,8 +307,8 @@ namespace puffin::core
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		PuffinId textureId1 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		PuffinId textureId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		PuffinId textureId1 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath1)->id();
+		PuffinId textureId2 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath2)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
@@ -469,11 +469,11 @@ namespace puffin::core
 		PuffinId soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
 		auto enttSubsystem = getSubsystem<ECS::EnTTSubsystem>();
-		auto registry = enttSubsystem->Registry();
+		auto registry = enttSubsystem->registry();
 
 		// Create Light Entity
 		{
-			const auto lightEntity = enttSubsystem->CreateEntity("Light");
+			const auto lightEntity = enttSubsystem->createEntity("Light");
 
 			auto& transform = registry->emplace<TransformComponent>(lightEntity);
 			transform.position = Vector3f(-5.0f, 0.0f, 0.0f);
@@ -486,7 +486,7 @@ namespace puffin::core
 
 		// Create Floor Entity
 		{
-			const auto floorEntity = enttSubsystem->CreateEntity("Floor");
+			const auto floorEntity = enttSubsystem->createEntity("Floor");
 
 			auto& transform = registry->emplace<TransformComponent>(floorEntity);
 			transform.scale = Vector3f(250.0f, 1.0f, 1.0f);
@@ -513,7 +513,7 @@ namespace puffin::core
 
 			for (int i = 0; i < numBodies; i++)
 			{
-				const auto boxEntity = enttSubsystem->CreateEntity("Box " + i);
+				const auto boxEntity = enttSubsystem->createEntity("Box " + i);
 
 				Vector3f position = startPosition + (positionOffset * (float)i);
 

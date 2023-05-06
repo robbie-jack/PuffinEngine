@@ -236,7 +236,7 @@ namespace puffin::io
 				const Vector3f& n = vertices[i].normal;
 				const Vector3f& t = tan[i];
 
-				vertices[i].tangent = (t - n * n.Dot(t)).Normalised();
+				vertices[i].tangent = (t - n * n.dot(t)).normalized();
 			}
 
 			fs::path assetPath = modelPath.parent_path().stem() / mesh.name;

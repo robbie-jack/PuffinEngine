@@ -70,28 +70,28 @@ namespace puffin::core
 	public:
 
 		EngineCallbackHandler(const std::function<void()>& callback, const std::string& name, const uint8_t& priority) :
-			callback_(callback), name_(name), priority_(priority) {}
+			mCallback(callback), mName(name), mPriority(priority) {}
 
 		void execute() const
 		{
-			callback_();
+			mCallback();
 		}
 
 		const std::string& name() const
 		{
-			return name_;
+			return mName;
 		}
 
 		bool operator<(const EngineCallbackHandler& other) const
 		{
-			return priority_ < other.priority_;
+			return mPriority < other.mPriority;
 		}
 
 	private:
 
-		std::function<void()> callback_;
-		std::string name_;
-		uint8_t priority_;
+		std::function<void()> mCallback;
+		std::string mName;
+		uint8_t mPriority;
 
 	};
 
@@ -113,7 +113,7 @@ namespace puffin::core
 		template<typename AppT>
 		void registerApp()
 		{
-			assert(m_application == nullptr && "Registering multiple applications");
+			assert(mApplication == nullptr && "Registering multiple applications");
 
 			mApplication = std::static_pointer_cast<Application>(std::make_shared<Application>());
 		}
@@ -153,19 +153,14 @@ namespace puffin::core
 		template<typename SystemT>
 		std::shared_ptr<SystemT> registerSystem()
 		{
-			std::shared_ptr<SystemT> system = nullptr;
+			std::shared_ptr<SystemT> system = std::make_shared<SystemT>();
 
-			/*if (auto ecsWorld = getSubsystem<ECS::World>())
-			{
-				system = ecsWorld->registerSystem<SystemT>();
-				auto systemBase = std::static_pointer_cast<core::System>(system);
+			auto systemBase = std::static_pointer_cast<core::System>(system);
 
-				systemBase->setWorld(ecsWorld);
-				systemBase->setEngine(shared_from_this());
-				systemBase->setupCallbacks();
+			systemBase->setEngine(shared_from_this());
+			systemBase->setupCallbacks();
 
-				mSystems.push_back(systemBase);
-			}*/
+			mSystems.push_back(systemBase);
 
 			return system;
 		}
@@ -178,18 +173,6 @@ namespace puffin::core
 
 			// Sort vector by priority
 			std::sort(mRegisteredCallbacks[executionStage].begin(), mRegisteredCallbacks[executionStage].end());
-		}
-
-		/*
-		 * shouldSerialize - Should this component be serialized to scene data
-		 */
-		template<typename CompT>
-		void registerComponent(bool shouldSerialize = true)
-		{
-			if (mSceneData != nullptr && shouldSerialize)
-			{
-				mSceneData->RegisterComponent<CompT>();
-			}
 		}
 
 		PlayState playState() const { return mPlayState; }
@@ -228,7 +211,7 @@ namespace puffin::core
 
 		bool mRunning = true;
 		bool mShouldLimitFrame = true; // Whether framerate should be capped at m_frameRateMax
-		bool mShouldRenderEditorUi = true; // Whether editor UI should be rendered
+		bool mShouldRenderEditorUi = false; // Whether editor UI should be rendered
 		bool mShouldTrackExecutionTime = true; // Should track time to execute callback/stages
 		PlayState mPlayState = PlayState::Stopped;
 

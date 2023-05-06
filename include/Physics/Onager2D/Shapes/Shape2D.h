@@ -18,7 +18,7 @@ namespace puffin::physics
 	{
 		Shape2D()
 		{
-			centreOfMass.Zero();
+			centreOfMass.zero();
 		}
 
 		virtual ~Shape2D() = default;

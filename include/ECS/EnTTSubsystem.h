@@ -12,42 +12,42 @@ namespace puffin::ECS
 	{
 	public:
 
-		EnTTSubsystem() { m_registry = std::make_shared<entt::registry>(); }
+		EnTTSubsystem() { mRegistry = std::make_shared<entt::registry>(); }
 		~EnTTSubsystem() override = default;
 
 		void setupCallbacks() override {}
 
 		// Create a new entity with a default scene object component
-		entt::entity CreateEntity(std::string name)
+		entt::entity createEntity(const std::string& name)
 		{
-			auto entity = m_registry->create();
+			auto entity = mRegistry->create();
 
-			auto& sceneObject = m_registry->emplace<SceneObjectComponent>(entity, name);
+			auto& sceneObject = mRegistry->emplace<SceneObjectComponent>(entity, generateId(), name);
 
-			m_idToEntityMap.emplace(sceneObject.uuid, entity);
+			mIdToEntityMap.emplace(sceneObject.id, entity);
 
 			return entity;
 		}
 
-		bool IsValid(PuffinId uuid)
+		bool valid(const PuffinId uuid)
 		{
-			return m_idToEntityMap.find(uuid) != m_idToEntityMap.end();
+			return mIdToEntityMap.find(uuid) != mIdToEntityMap.end();
 		}
 
-		entt::entity GetEntity(PuffinId uuid)
+		entt::entity getEntity(const PuffinId uuid)
 		{
-			entt::entity& entity = m_idToEntityMap[uuid];
+			const entt::entity& entity = mIdToEntityMap[uuid];
 
 			return entity;
 		}
 
-		std::shared_ptr<entt::registry> Registry() { return m_registry; }
+		std::shared_ptr<entt::registry> registry() { return mRegistry; }
 
 	private:
 
-		std::shared_ptr<entt::registry> m_registry = nullptr;
+		std::shared_ptr<entt::registry> mRegistry = nullptr;
 
-		std::unordered_map<PuffinId, entt::entity> m_idToEntityMap;
+		std::unordered_map<PuffinId, entt::entity> mIdToEntityMap;
 
 	};
 }

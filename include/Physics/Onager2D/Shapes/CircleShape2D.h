@@ -14,7 +14,7 @@ namespace puffin::physics
 		~CircleShape2D() override 
 		{
 			radius = 0.0f;
-			centreOfMass.Zero();
+			centreOfMass.zero();
 		}
 
 		ShapeType2D getType() const override;

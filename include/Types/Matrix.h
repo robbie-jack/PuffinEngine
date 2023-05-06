@@ -62,8 +62,8 @@ namespace puffin
 
 			void zero()
 			{
-				rows[0].Zero();
-				rows[1].Zero();
+				rows[0].zero();
+				rows[1].zero();
 			}
 
 			Vector2f rows[2];
@@ -111,17 +111,17 @@ namespace puffin
 			Vector2f operator* (const Vector2f& vec) const
 			{
 				Vector2f tmp;
-				tmp[0] = rows[0].Dot(vec);
-				tmp[1] = rows[1].Dot(vec);
+				tmp[0] = rows[0].dot(vec);
+				tmp[1] = rows[1].dot(vec);
 				return tmp;
 			}
 
 			Vector3f operator* (const Vector3f& vec) const
 			{
 				Vector3f tmp;
-				tmp[0] = rows[0].Dot(vec);
-				tmp[1] = rows[1].Dot(vec);
-				tmp[2] = rows[2].Dot(vec);
+				tmp[0] = rows[0].dot(vec);
+				tmp[1] = rows[1].dot(vec);
+				tmp[2] = rows[2].dot(vec);
 				return tmp;
 			}
 
@@ -174,9 +174,9 @@ namespace puffin
 
 			void zero()
 			{
-				rows[0].Zero();
-				rows[1].Zero();
-				rows[2].Zero();
+				rows[0].zero();
+				rows[1].zero();
+				rows[2].zero();
 			}
 
 			void identity()

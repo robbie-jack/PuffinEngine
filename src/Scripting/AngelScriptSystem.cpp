@@ -82,20 +82,20 @@ namespace puffin::scripting
 			m_scriptEngine->Release();
 		}
 
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
 
 		for (auto [entity, object, transform, script] : scriptView.each())
 		{
-			InitializeScript(object.uuid, script);
+			InitializeScript(object.id, script);
 		}
 	}
 
 	void AngelScriptSystem::Start()
 	{
 		// Execute Start Methods
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
 
@@ -103,7 +103,7 @@ namespace puffin::scripting
 		{
 			ExportEditablePropertiesToScriptData(script, script.serializedData);
 
-			m_currentEntityID = object.uuid;
+			m_currentEntityID = object.id;
 
 			asIScriptFunction* startFunc = GetScriptMethod(script, "Start");
 			PrepareAndExecuteScriptMethod(script.obj, startFunc);
@@ -117,13 +117,13 @@ namespace puffin::scripting
 		ProcessEvents();
 		
 		// Initialize/Cleanup marked components
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
 
 		for (auto [entity, object, transform, script] : scriptView.each())
 		{
-			m_currentEntityID = object.uuid;
+			m_currentEntityID = object.id;
 
 			//// Script needs initialized
 			//if (entity->GetComponentFlag<AngelScriptComponent, FlagDirty>())
@@ -152,13 +152,13 @@ namespace puffin::scripting
 	void AngelScriptSystem::Stop()
 	{
 		// Execute Script Stop Methods
-		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->Registry();
+		const auto registry = mEngine->getSubsystem<ECS::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
 
 		for (auto [entity, object, transform, script] : scriptView.each())
 		{
-			m_currentEntityID = object.uuid;
+			m_currentEntityID = object.id;
 
 			PrepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 		}

@@ -190,37 +190,37 @@ namespace puffin
 		}
 
 		// Functions
-		T Dot(const Vector2<T>& vec) const
+		T dot(const Vector2<T>& vec) const
 		{
 			return (x * vec.x) + (y * vec.y);
 		}
 
-		T Cross(const Vector2<T>& vec) const
+		T cross(const Vector2<T>& vec) const
 		{
 			return x * vec.y - y * vec.x;
 		}
 
-		Vector2<T> PerpendicularClockwise() const
+		Vector2<T> perpendicularClockwise() const
 		{
 			return Vector2<T>(y, -x);
 		}
 
-		Vector2<T> PerpendicularCounterClockwise() const
+		Vector2<T> perpendicularCounterClockwise() const
 		{
 			return Vector2<T>(-y, x);
 		}
 
-		T LengthSquared() const
+		T lengthSquared() const
 		{
 			return x * x + y * y;
 		}
 
-		T Length() const
+		T length() const
 		{
-			return sqrtf(LengthSquared());
+			return sqrtf(lengthSquared());
 		}
 
-		T DistanceToSquared(const Vector2& vec)
+		T distanceToSquared(const Vector2& vec)
 		{
 			T deltaX = x - vec.x;
 			T deltaY = y - vec.y;
@@ -228,39 +228,39 @@ namespace puffin
 			return (deltaX * deltaX) + (deltaY * deltaY);
 		}
 
-		T DistanceTo(const Vector2& vec)
+		T distanceTo(const Vector2& vec)
 		{
 			return sqrtf(DistanceTo(vec));
 		}
 
-		void Normalise()
+		void normalize()
 		{
-			T length = Length();
+			T lengthT = length();
 
-			x /= length;
-			y /= length;
+			x /= lengthT;
+			y /= lengthT;
 		}
 
-		Vector2 Normalised() const
+		Vector2 normalized() const
 		{
 			Vector2 vector = *this;
-			T length = Length();
+			T lengthT = length();
 
-			vector.x /= length;
-			vector.y /= length;
+			vector.x /= lengthT;
+			vector.y /= lengthT;
 
 			return vector;
 		}
 
-		void Zero()
+		void zero()
 		{
 			x = 0.0f;
 			y = 0.0f;
 		}
 
-		Vector2 Abs() const
+		[[nodiscard]] Vector2 abs() const
 		{
-			return Vector2(abs(x), abs(y));
+			return Vector2(std::abs(x), std::abs(y));
 		}
 
 		// Json
@@ -276,7 +276,7 @@ namespace puffin
 	Vector 3
 	====================
 	*/
-	template<typename T>
+	template <typename T>
 	struct Vector3
 	{
 		T x, y, z;
@@ -326,7 +326,7 @@ namespace puffin
 		}
 
 		// Operator Overrides
-		bool operator== (const Vector3<T>& vec) const
+		bool operator==(const Vector3<T>& vec) const
 		{
 			return x == vec.x && y == vec.y && z == vec.z;
 		}
@@ -461,14 +461,14 @@ namespace puffin
 		}
 
 		// Operator[]
-		T operator[] (const int idx) const
+		T operator[](const int idx) const
 		{
 			assert(idx >= 0 && idx < 3);
 
 			return (&x)[idx];
 		}
 
-		T& operator[] (const int idx)
+		T& operator[](const int idx)
 		{
 			assert(idx >= 0 && idx < 3);
 
@@ -476,13 +476,13 @@ namespace puffin
 		}
 
 		// Functions
-		T Dot(const Vector3& vec) const
+		T dot(const Vector3& vec) const
 		{
 			T temp = (x * vec.x) + (y * vec.y) + (z * vec.z);
 			return temp;
 		}
 
-		Vector3 Cross(const Vector3& vec)
+		Vector3 cross(const Vector3& vec)
 		{
 			Vector3 cross;
 			cross.x = y * vec.z - z * vec.y;
@@ -491,45 +491,45 @@ namespace puffin
 			return cross;
 		}
 
-		T LengthSquared() const
+		T lengthSquared() const
 		{
 			return x * x + y * y + z * z;
 		}
 
-		T Length() const
+		T length() const
 		{
-			return sqrtf(LengthSquared());
+			return sqrtf(lengthSquared());
 		}
 
-		void Normalise()
+		void normalize()
 		{
-			T length = Length();
+			T lengthT = length();
 
-			x /= length;
-			y /= length;
-			z /= length;
+			x /= lengthT;
+			y /= lengthT;
+			z /= lengthT;
 		}
 
-		Vector3 Normalised() const
+		[[nodiscard]] Vector3 normalized() const
 		{
 			Vector3 vector = *this;
-			T length = Length();
+			T lengthT = length();
 
-			vector.x /= length;
-			vector.y /= length;
-			vector.z /= length;
+			vector.x /= lengthT;
+			vector.y /= lengthT;
+			vector.z /= lengthT;
 
 			return vector;
 		}
 
-		void Zero()
+		void zero()
 		{
 			x = 0.0f;
 			y = 0.0f;
 			z = 0.0f;
 		}
 
-		Vector2<T> GetXY() const
+		Vector2<T> xy() const
 		{
 			return Vector2<T>(x, y);
 		}
@@ -539,25 +539,27 @@ namespace puffin
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector3, x, y, z)
 	};
 
-	typedef Vector3<float> Vector3f;
-	typedef Vector3<double> Vector3d;
-	typedef Vector3<int> Vector3i;
+	using Vector3f = Vector3<float>;
+	using Vector3d = Vector3<double>;
+	using Vector3i = Vector3<int>;
 }
 
 namespace std
 {
-	template<> struct hash<puffin::Vector2f>
+	template <>
+	struct hash<puffin::Vector2f>
 	{
-		size_t operator()(puffin::Vector2f const& vec) const
+		size_t operator()(const puffin::Vector2f& vec) const noexcept
 		{
 			return (hash<float>()(vec.x) ^
 				(hash<float>()(vec.y) << 1) >> 1);
 		}
 	};
 
-	template<> struct hash<puffin::Vector3f>
+	template <>
+	struct hash<puffin::Vector3f>
 	{
-		size_t operator()(puffin::Vector3f const& vec) const
+		size_t operator()(const puffin::Vector3f& vec) const noexcept
 		{
 			return (hash<float>()(vec.x) ^
 				(hash<float>()(vec.y) << 1) ^
@@ -565,9 +567,10 @@ namespace std
 		}
 	};
 
-	template<> struct hash<puffin::Vector3d>
+	template <>
+	struct hash<puffin::Vector3d>
 	{
-		size_t operator()(puffin::Vector3d const& vec) const
+		size_t operator()(const puffin::Vector3d& vec) const noexcept
 		{
 			return (hash<double>()(vec.x) ^
 				(hash<double>()(vec.y) << 1) ^
