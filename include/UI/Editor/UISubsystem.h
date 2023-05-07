@@ -42,7 +42,7 @@ namespace puffin
 
 			void init();
 			void render();
-			void cleanup();
+			void cleanup() const;
 
 			void addWindow(const std::shared_ptr<UIWindow>& window);
 
@@ -50,6 +50,7 @@ namespace puffin
 			std::shared_ptr<UIWindowSettings> windowSettings() { return mWindowSettings; }
 
 		private:
+
 			bool mSaveScene = false;
 			bool mLoadScene = false;
 			ImportAssetUI mImportAssetUI;
@@ -70,7 +71,7 @@ namespace puffin
 
 			ImGui::FileBrowser mFileDialog;
 
-			void showDockspace(bool* p_open);
+			void showDockspace(bool* open);
 			void showMenuBar();
 			void setStyle();
 		};

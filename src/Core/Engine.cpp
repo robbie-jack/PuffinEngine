@@ -30,6 +30,8 @@
 #include <chrono>
 #include <thread>
 
+#include "Components/Rendering/LightComponent.h"
+
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -237,11 +239,6 @@ namespace puffin::core
 		}
 
 		// UI
-		if (mShouldRenderEditorUI)
-		{
-			mUiManager->render();
-		}
-
 		// Render
 		{
 			executeCallbacks(ExecutionStage::Render, true);
@@ -279,13 +276,6 @@ namespace puffin::core
 
 		mSystems.clear();
 		mSubsystems.clear();
-
-		// Cleanup UI Manager
-		if (mShouldRenderEditorUI)
-		{
-			mUiManager->cleanup();
-			mUiManager = nullptr;
-		}
 
 		// Clear Asset Registry
 		assets::AssetRegistry::clear();
@@ -452,23 +442,23 @@ namespace puffin::core
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		PuffinID meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
-		PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
-		PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
+		const PuffinID meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
+		const PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
+		const PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
+		const PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
+		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
 		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
-		auto registry = enttSubsystem->registry();
+		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->registry();
 
 		// Create Light Entity
 		{
@@ -502,19 +492,20 @@ namespace puffin::core
 
 		// Create Box Entities
 		{
-			const float xOffset = 20.0f;
+			constexpr float xOffset = 20.0f;
 			const Vector3f startPosition(-xOffset, 10.f, 0.f);
 			const Vector3f endPosition(xOffset, 10.f, 0.f);
 
-			const int numBodies = 10;
+			constexpr int numBodies = 10;
 			Vector3f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;
 
 			for (int i = 0; i < numBodies; i++)
 			{
-				const auto boxEntity = enttSubsystem->createEntity("Box " + i);
+				const std::string name = "Box";
+				const auto boxEntity = enttSubsystem->createEntity(name);
 
-				Vector3f position = startPosition + (positionOffset * (float)i);
+				const Vector3f position = startPosition + (positionOffset * static_cast<float>(i));
 
 				auto& transform = registry->emplace<TransformComponent>(boxEntity);
 				transform.position = position;

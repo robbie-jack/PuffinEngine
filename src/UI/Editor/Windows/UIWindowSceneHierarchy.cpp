@@ -26,53 +26,55 @@ namespace puffin
 
 				ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() * .5f); ImGui::Text("ID");
 
-				//const auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 				const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
 				const auto registry = enttSubsystem->registry();
 
 				if (ImGui::BeginListBox("##EntityList", listBoxSize))
 				{
-					ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow
+					constexpr ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					//for (ECS::EntityID entity : ecsWorld->GetActiveEntities())
-					//{
-					//	ImGuiTreeNodeFlags tree_flags = base_flags;
-					//	bool has_child = false;
+					const auto entityView = registry->view<const SceneObjectComponent>();
 
-					//	// Simple test to show leaf and branch nodes
-					//	/*if (entity == 1 || entity == 2)
-					//		has_child = true;*/
+					for (auto [entity, object] : entityView.each())
+					{
+						ImGuiTreeNodeFlags treeFlags = baseFlags;
+						constexpr bool hasChild = false;
 
-					//	// Set Selected Flag if entity equals selectedEntity
-					//	if (selectedEntity == entity)
-					//		tree_flags |= ImGuiTreeNodeFlags_Selected;
+						// Simple test to show leaf and branch nodes
+						/*if (entity == 1 || entity == 2)
+							has_child = true;*/
 
-					//	// Display Entity as Leaf node if it doesn't have any children
-					//	if (!has_child)
-					//		tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+						// Set Selected Flag if entity equals selectedEntity
+						if (mSelectedEntity == object.id)
+							treeFlags |= ImGuiTreeNodeFlags_Selected;
 
-					//	bool node_open = ImGui::TreeNodeEx(ecsWorld->GetEntityName(entity).c_str(), tree_flags);
+						// Display Entity as Leaf node if it doesn't have any children
+						if constexpr (!hasChild)
+							treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-					//	// Set Selected Entity when node is clicked
-					//	if (ImGui::IsItemClicked())
-					//	{
-					//		selectedEntity = entity;
-					//		entityChanged = true;
-					//	}
+						bool nodeOpen = false;
 
-					//	// Display Entity ID on same line as name
-					//	ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
-					//	ImGui::Text(std::to_string(entity).c_str());
+						nodeOpen = ImGui::TreeNodeEx(object.name.empty() ? "Empty" : object.name.c_str(), treeFlags);
 
-					//	if (has_child && node_open)
-					//	{
-					//		ImGui::Text("No Child Entities");
-					//		ImGui::TreePop();
-					//	}
+						// Set Selected Entity when node is clicked
+						if (ImGui::IsItemClicked())
+						{
+							mSelectedEntity = object.id;
+							mEntityChanged = true;
+						}
 
-					//}
+						// Display Entity ID on same line as name
+						ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
+						ImGui::Text(std::to_string(object.id).c_str());
+
+						if constexpr (hasChild && nodeOpen)
+						{
+							ImGui::Text("No Child Entities");
+							ImGui::TreePop();
+						}
+					}
 
 					ImGui::EndListBox();
 				}

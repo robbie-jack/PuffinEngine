@@ -1,14 +1,12 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <imgui.h>
 
 #include "Input/InputSubsystem.h"
 #include "Core/Engine.h"
+#include "Types/UUID.h"
 
 #include <string>
-
-#include "Types/UUID.h"
 
 namespace puffin
 {

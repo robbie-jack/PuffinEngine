@@ -57,9 +57,9 @@ namespace puffin::rendering
 		initSwapchain(mSwapchainData, mOldSwapchainData.swapchain, mWindowSize);
 
 		vk::Extent2D offscreenSize;
-		if (mEngine->shouldRenderEditorUi())
+		if (mEngine->shouldRenderEditorUI())
 		{
-			const ImVec2 viewportSize = mEngine->uiManager()->windowViewport()->viewportSize();
+			const ImVec2 viewportSize = mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->viewportSize();
 			offscreenSize.width = viewportSize.x;
 			offscreenSize.height = viewportSize.y;
 		}
@@ -72,7 +72,7 @@ namespace puffin::rendering
 
 		initCommands();
 
-		if (mEngine->shouldRenderEditorUi())
+		if (mEngine->shouldRenderEditorUI())
 		{
 			initImGuiRenderPass();
 
@@ -89,7 +89,7 @@ namespace puffin::rendering
 		initDescriptors();
 		initPipelines();
 
-		if (mEngine->shouldRenderEditorUi())
+		if (mEngine->shouldRenderEditorUI())
 		{
 			initImGui();
 			initOffscreenImGuiTextures(mOffscreenData);
@@ -826,9 +826,9 @@ namespace puffin::rendering
 
 	void VKRenderSystem::processComponents()
 	{
-		auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-		auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
+		const auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
 
 		for (auto [entity, object, transform, mesh] : meshView.each())
 		{
@@ -836,7 +836,7 @@ namespace puffin::rendering
 			mTexDrawList[mesh.textureAssetId].insert(object.id);
 		}
 
-		auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent, CameraComponent>();
+		const auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent, CameraComponent>();
 
 		for (auto [entity, object, transform, camera] : cameraView.each())
 		{
@@ -1001,9 +1001,9 @@ namespace puffin::rendering
 		VK_CHECK(mDevice.waitForFences(1, &getCurrentFrameData().renderFence, true, 1000000000));
 		VK_CHECK(mDevice.resetFences(1, &getCurrentFrameData().renderFence));
 
-		if (mEngine->shouldRenderEditorUi())
+		if (mEngine->shouldRenderEditorUI())
 		{
-			const ImVec2 viewportSize = mEngine->uiManager()->windowViewport()->viewportSize();
+			const ImVec2 viewportSize = mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->viewportSize();
 			if (viewportSize.x != mOffscreenData.extent.width ||
 				viewportSize.y != mOffscreenData.extent.height)
 			{
@@ -1026,11 +1026,9 @@ namespace puffin::rendering
 		prepareSceneData();
 		buildIndirectCommands();
 
-		if (mEngine->shouldRenderEditorUi())
+		if (mEngine->shouldRenderEditorUI())
 		{
-			//m_engine->GetUIManager()->DrawUI(m_engine->GetDeltaTime());
-
-			mEngine->uiManager()->windowViewport()->draw(mOffscreenData.viewportTextures[swapchainImageIdx]);
+			mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->draw(mOffscreenData.viewportTextures[swapchainImageIdx]);
 
 			ImGui::Render();
 		}
@@ -1072,7 +1070,7 @@ namespace puffin::rendering
 
 			initSwapchain(mSwapchainData, mOldSwapchainData.swapchain, mWindowSize);
 
-			if (mEngine->shouldRenderEditorUi())
+			if (mEngine->shouldRenderEditorUI())
 			{
 				initSwapchainFramebuffers(mSwapchainData);
 			}
@@ -1109,7 +1107,7 @@ namespace puffin::rendering
 	{
 		for (int i = 0; i < swapchainData.imageViews.size(); i++)
 		{
-			if (mEngine->shouldRenderEditorUi())
+			if (mEngine->shouldRenderEditorUI())
 			{
 				mDevice.destroyFramebuffer(swapchainData.framebuffers[i]);
 			}
@@ -1133,9 +1131,9 @@ namespace puffin::rendering
 			mOldOffscreenData.needsCleaned = true;
 
 			vk::Extent2D offscreenSize;
-			if (mEngine->shouldRenderEditorUi())
+			if (mEngine->shouldRenderEditorUI())
 			{
-				const ImVec2 viewportSize = mEngine->uiManager()->windowViewport()->viewportSize();
+				const ImVec2 viewportSize = mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->viewportSize();
 				offscreenSize.width = static_cast<uint32_t>(viewportSize.x);
 				offscreenSize.height = static_cast<uint32_t>(viewportSize.y);
 			}
@@ -1146,7 +1144,7 @@ namespace puffin::rendering
 
 			initOffscreen(mOffscreenData, offscreenSize, mSwapchainData.images.size());
 
-			if (mEngine->shouldRenderEditorUi())
+			if (mEngine->shouldRenderEditorUI())
 			{
 				initOffscreenImGuiTextures(mOffscreenData);
 			}
@@ -1186,7 +1184,7 @@ namespace puffin::rendering
 
 		for (int i = 0; i < offscreenData.allocImages.size(); i++)
 		{
-			if (mEngine->shouldRenderEditorUi())
+			if (mEngine->shouldRenderEditorUI())
 			{
 				ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(offscreenData.viewportTextures[i]));
 			}
@@ -1682,7 +1680,7 @@ namespace puffin::rendering
 
 		std::vector submits = {renderSubmit};
 
-		if (mEngine->shouldRenderEditorUi())
+		if (mEngine->shouldRenderEditorUI())
 		{
 			vk::CommandBuffer imguiCmd = recordImGuiCommandBuffer(swapchainIdx, mSwapchainData.extent,
 			                                                      mSwapchainData.framebuffers[swapchainIdx]);
@@ -1714,7 +1712,7 @@ namespace puffin::rendering
 
 		vk::Semaphore waitSemaphore;
 
-		if (mEngine->shouldRenderEditorUi())
+		if (mEngine->shouldRenderEditorUI())
 		{
 			waitSemaphore = getCurrentFrameData().imguiSemaphore;
 		}

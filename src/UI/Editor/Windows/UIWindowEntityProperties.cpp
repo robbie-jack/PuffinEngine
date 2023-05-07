@@ -1,15 +1,15 @@
 #include "UI/Editor/Windows/UIWindowEntityProperties.h"
 
-#include "Core/Engine.h"
-
 #include "Components/TransformComponent.h"
-#include "Components/Rendering/MeshComponent.h"
-#include "Components/Rendering/LightComponent.h"
-#include "Components\Scripting\AngelScriptComponent.h"
-#include "Components\Procedural\ProceduralMeshComponent.h"
 #include "Components/Physics/RigidbodyComponent2D.h"
 #include "Components/Physics/ShapeComponents2D.h"
-#include <misc/cpp/imgui_stdlib.h>
+#include "Components/Procedural/ProceduralMeshComponent.h"
+#include "Components/Rendering/LightComponent.h"
+#include "Components/Rendering/MeshComponent.h"
+#include "Components/Scripting/AngelScriptComponent.h"
+#include "Core/Engine.h"
+#include "ECS/EnTTSubsystem.h"
+#include "misc/cpp/imgui_stdlib.h"
 
 #include <string>
 
@@ -23,24 +23,29 @@ namespace puffin
 
 			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 
+			mEnTTSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+			const auto registry = mEnTTSubsystem->registry();
+
 			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
 				begin(mWindowName);
 
-				if (false)
+				if (mSelectedEntity != gInvalidID && mEnTTSubsystem->valid(mSelectedEntity))
 				{
 					ImGui::Dummy(ImVec2(0.0f, 5.0f));
 					ImGui::Text(""); ImGui::SameLine(0.0f);
 
+					const auto entity = mEnTTSubsystem->getEntity(mSelectedEntity);
+					auto object = registry->get<SceneObjectComponent>(entity);
+
 					// Edit Entity Name
-					/*std::string name = ecsWorld->GetEntityName(m_entity);
-					std::string* namePtr = &name;
-					if (ImGui::InputText("##Name", namePtr, ImGuiInputTextFlags_EnterReturnsTrue))
+					std::string name = object.name;
+					if (std::string* namePtr = &name; ImGui::InputText("##name", namePtr, ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						ecsWorld->SetEntityName(m_entity, *namePtr);
-					}*/
+						object.name = *namePtr;
+					}
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::Text(" List of Components Here");
@@ -61,25 +66,40 @@ namespace puffin
 						flags |= ImGuiTreeNodeFlags_DefaultOpen;
 						flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
-						sceneChanged = false;
+						mSceneChanged = false;
 
 						// Display Component UI
-						DrawTransformUI(flags);
 
-						DrawMeshUI(flags);
+						if (registry->any_of<TransformComponent>(entity))
+						{
+							auto transform = registry->get<TransformComponent>(entity);
 
-						DrawLightUI(flags);
-						DrawShadowcasterUI(flags);
+							drawTransformUI(flags, entity, transform);
+						}
 
-						DrawProceduralPlaneUI(flags);
+						if (registry->any_of<rendering::MeshComponent>(entity))
+						{
+							auto mesh = registry->get<rendering::MeshComponent>(entity);
 
-						DrawRigidbody2DUI(flags);
-						DrawCircle2DUI(flags);
-						DrawBox2DUI(flags);
+							drawMeshUI(flags, entity, mesh);
+						}
 
-						DrawScriptUI(flags);
+						if (registry->any_of<rendering::LightComponent>(entity))
+						{
+							auto light = registry->get<rendering::LightComponent>(entity);
 
-						positionChanged = false;
+							drawLightUI(flags, entity, light);
+						}
+
+						//drawShadowcasterUI(flags);
+
+						//drawProceduralPlaneUI(flags);
+
+						//drawRigidbody2DUI(flags);
+						//drawCircle2DUI(flags);
+						//drawBox2DUI(flags);
+
+						//drawScriptUI(flags);
 
 						ImGui::EndListBox();
 					}
@@ -153,208 +173,229 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::DrawTransformUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawTransformUI(const ImGuiTreeNodeFlags flags, const entt::entity entity, TransformComponent& transform)
 		{
-			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
+			const auto registry = mEnTTSubsystem->registry();
 
-			//// Display Transform Component - If One Exists
-			//if (ecsWorld->HasComponent<TransformComponent>(m_entity))
-			//{
-			//	TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(m_entity);
+			if (ImGui::TreeNodeEx("Transform Component", flags))
+			{
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-			//	if (ImGui::TreeNodeEx("Transform Component", flags))
-			//	{
-			//		ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+				if (ImGui::SmallButton("X##Transform"))
+				{
+					mEnTTSubsystem->registry()->remove<TransformComponent>(entity);
+					
+					mSceneChanged = true;
+				}
 
-			//		if (ImGui::SmallButton("X##Transform"))
-			//		{
-			//			ecsWorld->RemoveComponent<TransformComponent>(m_entity);
-			//			sceneChanged = true;
-			//		}
+				{
+#ifdef PFN_USE_DOUBLE_PRECISION
 
-			//		#ifdef PFN_USE_DOUBLE_PRECISION
-			//			if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &transform.position, 3, 0.1f))
-			//			{
-			//				positionChanged = true;
-			//				sceneChanged = true;
-			//			}
-			//		#else
-			//			if (ImGui::DragFloat3("Position", (float*)&transform.position, 0.1f))
-			//			{
-			//				positionChanged = true;
-			//				sceneChanged = true;
-			//			}
-			//		#endif
+					Vector3d position = transform.position;
 
-			//		if (ImGui::DragFloat3("Rotation", (float*)&transform.rotation, 0.1f))
-			//		{
-			//			sceneChanged = true;
-			//		}
+					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &position, 3, 0.1f))
+					{
+						registry->patch<TransformComponent>(entity, [&position](auto& transform) { transform.position = position; });
 
-			//		if (ImGui::DragFloat3("Scale", (float*)&transform.scale, 0.1f))
-			//		{
-			//			sceneChanged = true;
-			//		}
+						mSceneChanged = true;
+					}
 
-			//		ImGui::TreePop();
-			//	}
-			//}
+#else
+
+					Vector3f position = transform.position;
+
+					if (ImGui::DragFloat3("Position", reinterpret_cast<float*>(&position), 0.1f))
+					{
+						registry->patch<TransformComponent>(entity, [&position](auto& transform) { transform.position = position; });
+
+						mSceneChanged = true;
+					}
+
+#endif
+				}
+
+				{
+					Vector3f angles = transform.rotation.eulerAnglesDeg();
+
+					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&angles), 0.01f))
+					{
+						registry->patch<TransformComponent>(entity, [&angles](auto& transform)
+						{
+							transform.rotation = maths::Quat::fromEulerAngles(angles.x, angles.y, angles.z);
+						});
+
+						mSceneChanged = true;
+					}
+				}
+
+				{
+					Vector3f scale = transform.scale;
+
+					if (ImGui::DragFloat3("Scale", reinterpret_cast<float*>(&transform.scale), 0.1f))
+					{
+						registry->patch<TransformComponent>(entity, [&scale](auto& transform) { transform.scale = scale; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				ImGui::TreePop();
+			}
 		}
 
-		void UIWindowEntityProperties::DrawMeshUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawMeshUI(const ImGuiTreeNodeFlags flags, const entt::entity entity, rendering::MeshComponent& mesh)
 		{
-			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
+			const auto registry = mEnTTSubsystem->registry();
 
-			//// Display Mesh Component - If One Exists
-			//if (ecsWorld->HasComponent<rendering::MeshComponent>(m_entity))
-			//{
-			//	if (ImGui::TreeNodeEx("Mesh Component", flags))
-			//	{
-			//		ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+			if (ImGui::TreeNodeEx("Mesh Component", flags))
+			{
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-			//		rendering::MeshComponent& mesh = ecsWorld->GetComponent<rendering::MeshComponent>(m_entity);
+				if (ImGui::SmallButton("X##Mesh"))
+				{
+					mEnTTSubsystem->registry()->remove<rendering::MeshComponent>(entity);
 
-			//		if (ImGui::SmallButton("X##Mesh"))
-			//		{
-			//			ecsWorld->SetComponentFlag<rendering::MeshComponent, FlagDeleted>(m_entity, true);
+					mSceneChanged = true;
+				}
 
-			//			sceneChanged = true;
-			//		}
+				ImGui::Text("Model UUID: %llu", mesh.meshAssetId);
+				ImGui::Text("Texture UUID: %llu", mesh.textureAssetId);
 
-			//		ImGui::Text("Model UUID: %d", mesh.meshAssetId);
-			//		ImGui::Text("Texture UUID: %d", mesh.textureAssetId);
+				// Change Model Path
+				/*ImGui::Text("Model Path:"); ImGui::SameLine();
+				if (ImGui::Selectable((const char*)mesh.model_path.c_str(), false))
+				{
+					fileDialog->Open();
+					modelSelected = true;
+				}
 
-			//		// Change Model Path
-			//		/*ImGui::Text("Model Path:"); ImGui::SameLine();
-			//		if (ImGui::Selectable((const char*)mesh.model_path.c_str(), false))
-			//		{
-			//			fileDialog->Open();
-			//			modelSelected = true;
-			//		}
+				if (fileDialog->HasSelected() && modelSelected)
+				{
+					mesh.model_path = fileDialog->GetSelected().string();
+					world->SetComponentInitialized<Rendering::MeshComponent>(entity, false);
 
-			//		if (fileDialog->HasSelected() && modelSelected)
-			//		{
-			//			mesh.model_path = fileDialog->GetSelected().string();
-			//			world->SetComponentInitialized<Rendering::MeshComponent>(entity, false);
+					modelSelected = false;
+					mSceneChanged = true;
+					fileDialog->ClearSelected();
+				}*/
 
-			//			modelSelected = false;
-			//			sceneChanged = true;
-			//			fileDialog->ClearSelected();
-			//		}*/
+				// Change Texture Path
+				/*ImGui::Text("Texture Path:"); ImGui::SameLine();
+				if (ImGui::Selectable((const char*)mesh.texture_path.c_str(), false))
+				{
+					fileDialog->Open();
+					textureSelected = true;
+				}
 
-			//		// Change Texture Path
-			//		/*ImGui::Text("Texture Path:"); ImGui::SameLine();
-			//		if (ImGui::Selectable((const char*)mesh.texture_path.c_str(), false))
-			//		{
-			//			fileDialog->Open();
-			//			textureSelected = true;
-			//		}
+				if (fileDialog->HasSelected() && textureSelected)
+				{
+					mesh.texture_path = fileDialog->GetSelected().string();
+					world->SetComponentInitialized<Rendering::MeshComponent>(entity, false);
 
-			//		if (fileDialog->HasSelected() && textureSelected)
-			//		{
-			//			mesh.texture_path = fileDialog->GetSelected().string();
-			//			world->SetComponentInitialized<Rendering::MeshComponent>(entity, false);
+					textureSelected = false;
+					sceneChanged = true;
+					fileDialog->ClearSelected();
+				}*/
 
-			//			textureSelected = false;
-			//			sceneChanged = true;
-			//			fileDialog->ClearSelected();
-			//		}*/
-
-			//		ImGui::TreePop();
-			//	}
-			//}
+				ImGui::TreePop();
+			}
 		}
 
-		void UIWindowEntityProperties::DrawLightUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light)
 		{
-			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			//if (ecsWorld->HasComponent<rendering::LightComponent>(m_entity))
-			//{
-			//	auto& light = ecsWorld->GetComponent<rendering::LightComponent>(m_entity);
-			//	bool dirty = false;
+			const auto registry = mEnTTSubsystem->registry();
 
-			//	if (ImGui::TreeNodeEx("Light Component", flags))
-			//	{
-			//		ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+			bool dirty = false;
 
-			//		if (ImGui::SmallButton("X##Point Light"))
-			//		{
-			//			ecsWorld->SetComponentFlag<rendering::LightComponent, FlagDeleted>(m_entity, true);
+			if (ImGui::TreeNodeEx("Light Component", flags))
+			{
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-			//			sceneChanged = true;
-			//		}
+				if (ImGui::SmallButton("X##Point Light"))
+				{
+					mEnTTSubsystem->registry()->remove<rendering::LightComponent>(entity);
 
-			//		int item_current_idx = static_cast<int>(light.type);
+					mSceneChanged = true;
+				}
 
-			//		// Edit Light Type
-			//		const char* comboLabel = rendering::gLightTypeLabels[item_current_idx].c_str();
-			//		if (ImGui::BeginCombo("Type", comboLabel))
-			//		{
-			//			for (int i = 0; i < rendering::gLightTypeLabels.size(); i++)
-			//			{
-			//				const bool is_selected = (item_current_idx == i);
+				int item_current_idx = static_cast<int>(light.type);
 
-			//				if (ImGui::Selectable(rendering::gLightTypeLabels[i].c_str(), is_selected))
-			//				{
-			//					item_current_idx = i;
+				// Edit Light Type
+				if (const char* comboLabel = rendering::gLightTypeLabels[item_current_idx].c_str(); ImGui::BeginCombo("Type", comboLabel))
+				{
+					for (int i = 0; i < rendering::gLightTypeLabels.size(); i++)
+					{
+						const bool isSelected = (item_current_idx == i);
 
-			//					light.type = static_cast<rendering::LightType>(item_current_idx);
+						if (ImGui::Selectable(rendering::gLightTypeLabels[i].c_str(), isSelected))
+						{
+							item_current_idx = i;
 
-			//					dirty = true;
-			//				}
+							light.type = static_cast<rendering::LightType>(item_current_idx);
 
-			//				if (is_selected)
-			//					ImGui::SetItemDefaultFocus();
-			//			}
+							dirty = true;
+						}
 
-			//			ImGui::EndCombo();
-			//		}
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
 
-			//		// Edit Light Diffuse Color
-			//		dirty |= ImGui::ColorEdit3("Diffuse", (float*)&light.color);
+					ImGui::EndCombo();
+				}
 
-			//		// Edit Light Ambient Intensity
-			//		dirty |= ImGui::DragFloat("Ambient Intensity", &light.ambientIntensity);
+				// Edit Light Diffuse Color
+				{
+					Vector3f color = light.color;
 
-			//		// Edit Light Specular Intensity
-			//		dirty |= ImGui::DragFloat("Specular Intensity", &light.specularIntensity);
+					if (ImGui::ColorEdit3("Diffuse", reinterpret_cast<float*>(&color)))
+					{
+						registry->patch<rendering::LightComponent>(entity, [&color](auto& light) { light.color = color; });
 
-			//		// Edit Light Specular Exponent
-			//		dirty |= ImGui::DragInt("Specular Exponent", &light.specularExponent);
+						mSceneChanged = true;
+					}
+				}
 
-			//		if (light.type == rendering::LightType::Point || light.type == rendering::LightType::Spot)
-			//		{
-			//			dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
+				// Edit Light Ambient Intensity
+				{
+					dirty |= ImGui::DragFloat("Ambient Intensity", &light.ambientIntensity);
+				}
 
-			//			dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
-			//		}
+				// Edit Light Specular Intensity
+				{
+					dirty |= ImGui::DragFloat("Specular Intensity", &light.specularIntensity);
+				}
 
-			//		if (light.type == rendering::LightType::Spot)
-			//		{
-			//			dirty |= ImGui::DragFloat("Inner Cutoff Angle", &light.innerCutoffAngle, 0.25f, 0.0f, 45.0f);
+				// Edit Light Specular Exponent
+				{
+					dirty |= ImGui::DragInt("Specular Exponent", &light.specularExponent);
+				}
 
-			//			// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
-			//			dirty |= ImGui::DragFloat("Outer Cutoff Angle", &light.outerCutoffAngle, 0.25f, light.innerCutoffAngle, 45.0f);
+				if (light.type == rendering::LightType::Point || light.type == rendering::LightType::Spot)
+				{
+					dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
 
-			//			// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
-			//			if (light.outerCutoffAngle < light.innerCutoffAngle)
-			//			{
-			//				light.outerCutoffAngle = light.innerCutoffAngle;
-			//			}
-			//		}
+					dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
+				}
 
-			//		ImGui::TreePop();
-			//	}
+				if (light.type == rendering::LightType::Spot)
+				{
+					dirty |= ImGui::DragFloat("Inner Cutoff Angle", &light.innerCutoffAngle, 0.25f, 0.0f, 45.0f);
 
-			//	if (dirty)
-			//	{
-			//		sceneChanged = true;
-			//		ecsWorld->SetComponentFlag<rendering::LightComponent, FlagDirty>(m_entity, true);
-			//	}
-			//}
+					// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
+					dirty |= ImGui::DragFloat("Outer Cutoff Angle", &light.outerCutoffAngle, 0.25f, light.innerCutoffAngle, 45.0f);
+
+					// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
+					if (light.outerCutoffAngle < light.innerCutoffAngle)
+					{
+						light.outerCutoffAngle = light.innerCutoffAngle;
+					}
+				}
+
+				ImGui::TreePop();
+			}
 		}
 
-		void UIWindowEntityProperties::DrawShadowcasterUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawShadowcasterUI(ImGuiTreeNodeFlags flags)
 		{
 			/*auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<rendering::ShadowCasterComponent>(m_entity))
@@ -417,7 +458,7 @@ namespace puffin
 			}*/
 		}
 
-		void UIWindowEntityProperties::DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawProceduralPlaneUI(ImGuiTreeNodeFlags flags)
 		{
 			/*auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<procedural::PlaneComponent>(m_entity))
@@ -450,7 +491,7 @@ namespace puffin
 			}*/
 		}
 
-		void UIWindowEntityProperties::DrawRigidbody2DUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawRigidbody2DUI(ImGuiTreeNodeFlags flags)
 		{
 			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			//if (ecsWorld->HasComponent<physics::RigidbodyComponent2D>(m_entity))
@@ -515,7 +556,7 @@ namespace puffin
 			//}
 		}
 
-		void UIWindowEntityProperties::DrawCircle2DUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawCircle2DUI(ImGuiTreeNodeFlags flags)
 		{
 			/*auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<physics::CircleComponent2D>(m_entity))
@@ -547,7 +588,7 @@ namespace puffin
 			}*/
 		}
 
-		void UIWindowEntityProperties::DrawBox2DUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawBox2DUI(ImGuiTreeNodeFlags flags)
 		{
 			/*auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			if (ecsWorld->HasComponent<physics::BoxComponent2D>(m_entity))
@@ -579,7 +620,7 @@ namespace puffin
 			}*/
 		}
 
-		void UIWindowEntityProperties::DrawScriptUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawScriptUI(ImGuiTreeNodeFlags flags)
 		{
 			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
 			//if (ecsWorld->HasComponent<scripting::AngelScriptComponent>(m_entity))
