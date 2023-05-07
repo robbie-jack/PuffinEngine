@@ -38,8 +38,8 @@ namespace puffin
 		struct HardwareStats
 		{
 			std::string cpuName, gpuName;
-			int logicalCores, physicalCores, vramTotal, ramTotal;
-			float vramUsage, ramUsage;
+			int logicalCores{}, physicalCores{}, vramTotal{}, ramTotal{};
+			float vramUsage{}, ramUsage{};
 		};
 
 		class UIWindowPerformance : public UIWindow
@@ -52,9 +52,11 @@ namespace puffin
 			void draw(double dt) override;
 
 		private:
-			double fps = 0.0f;
-			double fps_timer = 0.0f;
-			double frametime = 0.0f;
+
+			double mFps = 0.0;
+			double mFpsTimer = 0.0;
+			double mFrametime = 0.0;
+
 			//Puffin::UI::ScrollingBuffer plotBuffer;
 
 			HardwareStats hardwareStats;

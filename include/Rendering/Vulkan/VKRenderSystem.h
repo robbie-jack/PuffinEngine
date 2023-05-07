@@ -137,6 +137,7 @@ namespace puffin::rendering
 		vk::DebugUtilsMessengerEXT mDebugMessenger;
 
 		vk::Extent2D mWindowSize;
+		vk::Extent2D mRenderExtent;
 
 		vma::Allocator mAllocator;
 
@@ -216,7 +217,7 @@ namespace puffin::rendering
 		void processEvents();
 
 		void processComponents();
-		void updateCameraComponent(const TransformComponent& transform, CameraComponent& camera);
+		void updateCameraComponent(const TransformComponent& transform, CameraComponent& camera) const;
 
 		void updateEditorCamera();
 
@@ -229,6 +230,8 @@ namespace puffin::rendering
 
 		void recreateOffscreen();
 		void cleanOffscreen(OffscreenData& offscreenData);
+
+		void updateCameras();
 
 		void updateTextureDescriptors();
 

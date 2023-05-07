@@ -72,34 +72,66 @@ namespace puffin
 
 						if (registry->any_of<TransformComponent>(entity))
 						{
-							auto transform = registry->get<TransformComponent>(entity);
+							auto& transform = registry->get<TransformComponent>(entity);
 
 							drawTransformUI(flags, entity, transform);
 						}
 
 						if (registry->any_of<rendering::MeshComponent>(entity))
 						{
-							auto mesh = registry->get<rendering::MeshComponent>(entity);
+							auto& mesh = registry->get<rendering::MeshComponent>(entity);
 
 							drawMeshUI(flags, entity, mesh);
 						}
 
 						if (registry->any_of<rendering::LightComponent>(entity))
 						{
-							auto light = registry->get<rendering::LightComponent>(entity);
+							auto& light = registry->get<rendering::LightComponent>(entity);
 
 							drawLightUI(flags, entity, light);
 						}
 
-						//drawShadowcasterUI(flags);
+						if (registry->any_of<rendering::ShadowCasterComponent>(entity))
+						{
+							auto& shadowcaster = registry->get<rendering::ShadowCasterComponent>(entity);
 
-						//drawProceduralPlaneUI(flags);
+							drawShadowcasterUI(flags, entity, shadowcaster);
+						}
 
-						//drawRigidbody2DUI(flags);
-						//drawCircle2DUI(flags);
-						//drawBox2DUI(flags);
+						if (registry->any_of<procedural::PlaneComponent>(entity))
+						{
+							auto& plane = registry->get<procedural::PlaneComponent>(entity);
 
-						//drawScriptUI(flags);
+							drawProceduralPlaneUI(flags, entity, plane);
+						}
+
+						if (registry->any_of<physics::RigidbodyComponent2D>(entity))
+						{
+							auto& rigidbody = registry->get<physics::RigidbodyComponent2D>(entity);
+
+							drawRigidbody2DUI(flags, entity, rigidbody);
+						}
+
+						if (registry->any_of<physics::CircleComponent2D>(entity))
+						{
+							auto& circle = registry->get<physics::CircleComponent2D>(entity);
+
+							drawCircle2DUI(flags, entity, circle);
+						}
+
+						if (registry->any_of<physics::BoxComponent2D>(entity))
+						{
+							auto& box = registry->get<physics::BoxComponent2D>(entity);
+
+							drawBox2DUI(flags, entity, box);
+						}
+
+						if (registry->any_of<scripting::AngelScriptComponent>(entity))
+						{
+							auto& script = registry->get<scripting::AngelScriptComponent>(entity);
+
+							drawScriptUI(flags, entity, script);
+						}
 
 						ImGui::EndListBox();
 					}
@@ -305,8 +337,6 @@ namespace puffin
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
-			bool dirty = false;
-
 			if (ImGui::TreeNodeEx("Light Component", flags))
 			{
 				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
@@ -318,22 +348,26 @@ namespace puffin
 					mSceneChanged = true;
 				}
 
-				int item_current_idx = static_cast<int>(light.type);
+				int itemCurrentIdx = static_cast<int>(light.type);
 
 				// Edit Light Type
-				if (const char* comboLabel = rendering::gLightTypeLabels[item_current_idx].c_str(); ImGui::BeginCombo("Type", comboLabel))
+				if (const char* comboLabel = rendering::gLightTypeLabels[itemCurrentIdx].c_str(); ImGui::BeginCombo("Type", comboLabel))
 				{
 					for (int i = 0; i < rendering::gLightTypeLabels.size(); i++)
 					{
-						const bool isSelected = (item_current_idx == i);
+						const bool isSelected = (itemCurrentIdx == i);
 
 						if (ImGui::Selectable(rendering::gLightTypeLabels[i].c_str(), isSelected))
 						{
-							item_current_idx = i;
+							itemCurrentIdx = i;
 
-							light.type = static_cast<rendering::LightType>(item_current_idx);
+							const auto lightType = static_cast<rendering::LightType>(itemCurrentIdx);
+							registry->patch<rendering::LightComponent>(entity, [&lightType](auto& light)
+							{
+								light.type = lightType;
+							});
 
-							dirty = true;
+							mSceneChanged = true;
 						}
 
 						if (isSelected)
@@ -357,37 +391,96 @@ namespace puffin
 
 				// Edit Light Ambient Intensity
 				{
-					dirty |= ImGui::DragFloat("Ambient Intensity", &light.ambientIntensity);
+					float ambientIntensity = light.ambientIntensity;
+
+					if (ImGui::DragFloat("Ambient Intensity", &ambientIntensity))
+					{
+						registry->patch<rendering::LightComponent>(entity, [&ambientIntensity](auto& light) { light.ambientIntensity = ambientIntensity; });
+
+						mSceneChanged = true;
+					}
 				}
 
 				// Edit Light Specular Intensity
 				{
-					dirty |= ImGui::DragFloat("Specular Intensity", &light.specularIntensity);
+					float specularIntensity = light.specularIntensity;
+
+					if (ImGui::DragFloat("Specular Intensity", &specularIntensity))
+					{
+						registry->patch<rendering::LightComponent>(entity, [&specularIntensity](auto& light) { light.specularIntensity = specularIntensity; });
+
+						mSceneChanged = true;
+					}
 				}
 
 				// Edit Light Specular Exponent
 				{
-					dirty |= ImGui::DragInt("Specular Exponent", &light.specularExponent);
+					int specularExponent = light.specularExponent;
+
+					if (ImGui::DragInt("Specular Exponent", &specularExponent))
+					{
+						registry->patch<rendering::LightComponent>(entity, [&specularExponent](auto& light) { light.specularExponent = specularExponent; });
+
+						mSceneChanged = true;
+					}
 				}
 
 				if (light.type == rendering::LightType::Point || light.type == rendering::LightType::Spot)
 				{
-					dirty |= ImGui::DragFloat("Linear Attenuation", &light.linearAttenuation, .01f, .01f, 1.f, "%.4f");
+					{
+						float linearAttenuation = light.linearAttenuation;
 
-					dirty |= ImGui::DragFloat("Quadratic Attenuation", &light.quadraticAttenuation, .01f, .01f, 2.f, "%.6f");
+						if (ImGui::DragFloat("Linear Attenuation", &linearAttenuation, .01f, .01f, 1.f, "%.4f"))
+						{
+							registry->patch<rendering::LightComponent>(entity, [&linearAttenuation](auto& light) { light.linearAttenuation = linearAttenuation; });
+
+							mSceneChanged = true;
+						}
+					}
+
+					{
+						float quadraticAttenuation = light.quadraticAttenuation;
+
+						if (ImGui::DragFloat("Quadratic Attenuation", &quadraticAttenuation, .01f, .01f, 2.f, "%.6f"))
+						{
+							registry->patch<rendering::LightComponent>(entity, [&quadraticAttenuation](auto& light) { light.quadraticAttenuation = quadraticAttenuation; });
+
+							mSceneChanged = true;
+						}
+					}
 				}
 
 				if (light.type == rendering::LightType::Spot)
 				{
-					dirty |= ImGui::DragFloat("Inner Cutoff Angle", &light.innerCutoffAngle, 0.25f, 0.0f, 45.0f);
+					{
+						float innerCutoffAngle = light.innerCutoffAngle;
+
+						if (ImGui::DragFloat("Inner Cutoff Angle", &innerCutoffAngle, 0.25f, 0.0f, 45.0f))
+						{
+							registry->patch<rendering::LightComponent>(entity, [&innerCutoffAngle](auto& light) { light.innerCutoffAngle = innerCutoffAngle; });
+
+							mSceneChanged = true;
+						}
+					}
 
 					// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
-					dirty |= ImGui::DragFloat("Outer Cutoff Angle", &light.outerCutoffAngle, 0.25f, light.innerCutoffAngle, 45.0f);
-
-					// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
-					if (light.outerCutoffAngle < light.innerCutoffAngle)
 					{
-						light.outerCutoffAngle = light.innerCutoffAngle;
+						float outerCutoffAngle = light.outerCutoffAngle;
+
+						if (ImGui::DragFloat("Outer Cutoff Angle", &outerCutoffAngle, 0.25f, light.outerCutoffAngle, 45.0f))
+						{
+							registry->patch<rendering::LightComponent>(entity, [&outerCutoffAngle](auto& light) { light.outerCutoffAngle = outerCutoffAngle; });
+
+							mSceneChanged = true;
+						}
+
+						// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
+						if (light.outerCutoffAngle < light.innerCutoffAngle)
+						{
+							light.outerCutoffAngle = light.innerCutoffAngle;
+
+							mSceneChanged = true;
+						}
 					}
 				}
 
@@ -395,349 +488,383 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawShadowcasterUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawShadowcasterUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadowcaster)
 		{
-			/*auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<rendering::ShadowCasterComponent>(m_entity))
+			const auto registry = mEnTTSubsystem->registry();
+
+			if (ImGui::TreeNodeEx("Shadow Caster Component", flags))
 			{
-				auto& shadowcaster = ecsWorld->GetComponent<rendering::ShadowCasterComponent>(m_entity);
-				bool dirty = false;
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-				if (ImGui::TreeNodeEx("Shadow Caster Component", flags))
+				if (ImGui::SmallButton("X##Shadow Caster"))
 				{
-					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+					mEnTTSubsystem->registry()->remove<rendering::ShadowCasterComponent>(entity);
 
-					if (ImGui::SmallButton("X##Shadow Caster"))
+					mSceneChanged = true;
+				}
+
+				int itemCurrentIdx = 0;
+				for (int i = 0; i < rendering::gShadowResolutionValues.size(); i++)
+				{
+					if (rendering::gShadowResolutionValues[i] == shadowcaster.width)
 					{
-						ecsWorld->SetComponentFlag<rendering::ShadowCasterComponent, FlagDeleted>(m_entity, true);
-						sceneChanged = true;
+						itemCurrentIdx = i;
+						break;
 					}
+				}
 
-					int item_current_idx = 0;
+				if (const char* label = rendering::gShadowResolutionLabels[itemCurrentIdx].c_str(); ImGui::BeginCombo("Shadow Resolution", label))
+				{
 					for (int i = 0; i < rendering::gShadowResolutionValues.size(); i++)
 					{
-						if (rendering::gShadowResolutionValues[i] == shadowcaster.shadowmapWidth)
-						{
-							item_current_idx = i;
-							break;
-						}
-					}
+						const bool isSelected = (itemCurrentIdx == i);
 
-					const char* label = rendering::gShadowResolutionLabels[item_current_idx].c_str();
-					if (ImGui::BeginCombo("Shadow Resolution", label))
-					{
-						for (int i = 0; i < rendering::gShadowResolutionValues.size(); i++)
+						if (ImGui::Selectable(rendering::gShadowResolutionLabels[i].c_str(), isSelected))
 						{
-							const bool is_selected = (item_current_idx == i);
+							itemCurrentIdx = i;
 
-							if (ImGui::Selectable(rendering::gShadowResolutionLabels[i].c_str(), is_selected))
+							uint16_t width = rendering::gShadowResolutionValues[itemCurrentIdx];
+							uint16_t height = width;
+							
+							registry->patch<rendering::ShadowCasterComponent>(entity, [&width, &height](auto& shadowcaster)
 							{
-								item_current_idx = i;
+								shadowcaster.width = width;
+								shadowcaster.height = height;
+							});
 
-								shadowcaster.shadowmapWidth = rendering::gShadowResolutionValues[item_current_idx];
-								shadowcaster.shadowmapHeight = rendering::gShadowResolutionValues[item_current_idx];
-
-								dirty = true;
-							}
-
-							if (is_selected)
-								ImGui::SetItemDefaultFocus();
+							mSceneChanged = true;
 						}
 
-						ImGui::EndCombo();
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
 					}
 
-					ImGui::TreePop();
+					ImGui::EndCombo();
 				}
 
-				if (dirty)
-				{
-					sceneChanged = true;
-					ecsWorld->SetComponentFlag<rendering::ShadowCasterComponent, FlagDirty>(m_entity, true);
-				}
-			}*/
+				ImGui::TreePop();
+			}
 		}
 
-		void UIWindowEntityProperties::drawProceduralPlaneUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawProceduralPlaneUI(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane)
 		{
-			/*auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<procedural::PlaneComponent>(m_entity))
+			const auto registry = mEnTTSubsystem->registry();
+
+			if (ImGui::TreeNodeEx("Procedural Plane Component", flags))
 			{
-				if (ImGui::TreeNodeEx("Procedural Plane Component"), flags)
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+				if (ImGui::SmallButton("X##ProceduralPlane"))
 				{
-					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+					mEnTTSubsystem->registry()->remove<procedural::PlaneComponent>(entity);
 
-					auto& plane = ecsWorld->GetComponent<procedural::PlaneComponent>(m_entity);
-					bool dirty = false;
-
-					if (ImGui::SmallButton("X##ProceduralPlane"))
-					{
-						ecsWorld->SetComponentFlag<procedural::PlaneComponent, FlagDeleted>(m_entity, true);
-
-						sceneChanged = true;
-					}
-
-					dirty |= ImGui::DragFloat2("Half Size", (float*)&plane.halfSize, 0.1f);
-					dirty |= ImGui::DragInt2("Num Quads", (int*)&plane.numQuads);
-
-					if (dirty)
-					{
-						sceneChanged = true;
-						ecsWorld->SetComponentFlag<procedural::PlaneComponent, FlagDirty>(m_entity, true);
-					}
-
-					ImGui::TreePop();
+					mSceneChanged = true;
 				}
-			}*/
+
+				{
+					Vector2f halfSize = plane.halfSize;
+
+					if (ImGui::DragFloat2("Half Size", reinterpret_cast<float*>(&halfSize), 0.1f))
+					{
+						registry->patch<procedural::PlaneComponent>(entity, [&halfSize](auto& plane) { plane.halfSize = halfSize; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				{
+					Vector2i numQuads = plane.numQuads;
+
+					if (ImGui::DragInt2("Num Quads", reinterpret_cast<int*>(&numQuads)))
+					{
+						registry->patch<procedural::PlaneComponent>(entity, [&numQuads](auto& plane) { plane.numQuads = numQuads; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				ImGui::TreePop();
+			}
 		}
 
-		void UIWindowEntityProperties::drawRigidbody2DUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawRigidbody2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody)
 		{
-			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			//if (ecsWorld->HasComponent<physics::RigidbodyComponent2D>(m_entity))
-			//{
-			//	if (ImGui::TreeNodeEx("Rigidbody Component", flags))
-			//	{
-			//		ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+			const auto registry = mEnTTSubsystem->registry();
 
-			//		auto& rb = ecsWorld->GetComponent<physics::RigidbodyComponent2D>(m_entity);
-			//		bool dirty = false;
-
-			//		if (ImGui::SmallButton("X##Rigidbody"))
-			//		{
-			//			ecsWorld->SetComponentFlag<physics::RigidbodyComponent2D, FlagDeleted>(m_entity, true);
-			//				
-			//			sceneChanged = true;
-			//		}
-
-			//		// Combo box for Body Type Selection
-			//		const char* items[] = { "Static", "Kinematic", "Dynamic" };
-			//		int item_current_idx = static_cast<int>(rb.bodyType);
-			//		const char* label = items[item_current_idx];
-			//		if (ImGui::BeginCombo("Body Type", label))
-			//		{
-			//			for (int i = 0; i < IM_ARRAYSIZE(items); i++)
-			//			{
-			//				const bool isSelected = (item_current_idx == i);
-			//				if (ImGui::Selectable(items[i], isSelected))
-			//				{
-			//					item_current_idx = i;
-			//					rb.bodyType = static_cast<physics::BodyType>(item_current_idx);
-			//					dirty = true;
-			//				}
-
-			//				if (isSelected)
-			//				{
-			//					ImGui::SetItemDefaultFocus();
-			//				}
-			//			}
-
-			//			ImGui::EndCombo();
-			//		}
-
-			//		dirty |= ImGui::DragFloat("Mass", &rb.mass);
-			//		dirty |= ImGui::DragFloat("Elasticity", &rb.elasticity);
-			//		//dirty |= ImGui::Checkbox("Sleeping Allowed", &sleep);
-			//		//dirty |= ImGui::Checkbox("Bullet", &bullet);
-			//		//dirty |= ImGui::Checkbox("Awake", &awake);
-			//		//dirty |= ImGui::Checkbox("Rotation Fixed", &fixedRotation);
-			//		//dirty |= ImGui::DragFloat("Angular Damping", &angularDamping);
-			//		//dirty |= ImGui::DragFloat("Linear Damping", &linearDamping);
-			//		//dirty |= ImGui::DragFloat("Gravity Scale", &gravityScale);
-
-			//		if(dirty)
-			//		{
-			//			sceneChanged = true;
-			//			ecsWorld->SetComponentFlag<physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
-			//		}
-
-			//		ImGui::TreePop();
-			//	}
-			//}
-		}
-
-		void UIWindowEntityProperties::drawCircle2DUI(ImGuiTreeNodeFlags flags)
-		{
-			/*auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<physics::CircleComponent2D>(m_entity))
+			if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 			{
-				if (ImGui::TreeNodeEx("Circle Component 2D", flags))
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+				if (ImGui::SmallButton("X##Rigidbody"))
 				{
-					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
-
-					auto& circle = ecsWorld->GetComponent<physics::CircleComponent2D>(m_entity);
-					bool dirty = false;
-
-					if (ImGui::SmallButton("X##Circle2D"))
-					{
-						ecsWorld->SetComponentFlag<physics::CircleComponent2D, FlagDeleted>(m_entity, true);
-
-						sceneChanged = true;
-					}
-
-					dirty |= ImGui::DragFloat("Radius", &circle.radius);
-
-					if (dirty)
-					{
-						sceneChanged = true;
-						ecsWorld->SetComponentFlag<physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
-					}
-
-					ImGui::TreePop();
+					mEnTTSubsystem->registry()->remove<physics::RigidbodyComponent2D>(entity);
+						
+					mSceneChanged = true;
 				}
-			}*/
+
+				// Combo box for Body Type Selection
+				const char* items[] = { "Static", "Kinematic", "Dynamic" };
+				int itemCurrentIdx = static_cast<int>(rigidbody.bodyType);
+
+				if (const char* label = items[itemCurrentIdx]; ImGui::BeginCombo("Body Type", label))
+				{
+					for (int i = 0; i < IM_ARRAYSIZE(items); i++)
+					{
+						const bool isSelected = (itemCurrentIdx == i);
+						if (ImGui::Selectable(items[i], isSelected))
+						{
+							itemCurrentIdx = i;
+
+							const auto bodyType = static_cast<physics::BodyType>(itemCurrentIdx);
+
+							registry->patch<physics::RigidbodyComponent2D>(entity, [&bodyType](auto& rigidbody)
+							{
+								rigidbody.bodyType = bodyType;
+							});
+
+							mSceneChanged = true;
+						}
+
+						if (isSelected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+
+					ImGui::EndCombo();
+				}
+
+				{
+					float mass = rigidbody.mass;
+
+					if (ImGui::DragFloat("Mass", &mass))
+					{
+						registry->patch<physics::RigidbodyComponent2D>(entity, [&mass](auto& rigidbody) { rigidbody.mass = mass; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				{
+					float elasticity = rigidbody.elasticity;
+
+					if (ImGui::DragFloat("Elasticity", &elasticity))
+					{
+						registry->patch<physics::RigidbodyComponent2D>(entity, [&elasticity](auto& rigidbody) { rigidbody.elasticity = elasticity; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				//ImGui::Checkbox("Sleeping Allowed", &sleep);
+				//ImGui::Checkbox("Bullet", &bullet);
+				//ImGui::Checkbox("Awake", &awake);
+				//ImGui::Checkbox("Rotation Fixed", &fixedRotation);
+				//ImGui::DragFloat("Angular Damping", &angularDamping);
+				//ImGui::DragFloat("Linear Damping", &linearDamping);
+				//ImGui::DragFloat("Gravity Scale", &gravityScale);
+
+				ImGui::TreePop();
+			}
 		}
 
-		void UIWindowEntityProperties::drawBox2DUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawCircle2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle)
 		{
-			/*auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			if (ecsWorld->HasComponent<physics::BoxComponent2D>(m_entity))
+			const auto registry = mEnTTSubsystem->registry();
+
+			if (ImGui::TreeNodeEx("Circle Component 2D", flags))
 			{
-				if (ImGui::TreeNodeEx("Box Component 2D", flags))
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+				if (ImGui::SmallButton("X##Circle2D"))
 				{
-					ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+					mEnTTSubsystem->registry()->remove<physics::CircleComponent2D>(entity);
 
-					auto& box = ecsWorld->GetComponent<physics::BoxComponent2D>(m_entity);
-					bool dirty = false;
-
-					if (ImGui::SmallButton("X##Box2D"))
-					{
-						ecsWorld->SetComponentFlag< physics::BoxComponent2D, FlagDeleted>(m_entity, true);
-
-						sceneChanged = true;
-					}
-
-					dirty |= ImGui::DragFloat2("Half Extent", reinterpret_cast<float*>(&box.halfExtent), 0.1f, 0.0f);
-
-					if (dirty)
-					{
-						sceneChanged = true;
-						ecsWorld->SetComponentFlag<physics::RigidbodyComponent2D, FlagDirty>(m_entity, true);
-					}
-
-					ImGui::TreePop();
+					mSceneChanged = true;
 				}
-			}*/
+
+				{
+					Vector2f centreOfMass = circle.centreOfMass;
+
+					if (ImGui::DragFloat2("Centre of Mass", reinterpret_cast<float*>(&centreOfMass)))
+					{
+						registry->patch<physics::CircleComponent2D>(entity, [&centreOfMass](auto& circle) { circle.centreOfMass = centreOfMass; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				{
+					float radius = circle.radius;
+
+					if (ImGui::DragFloat("Radius", &radius))
+					{
+						registry->patch<physics::CircleComponent2D>(entity, [&radius](auto& circle) { circle.radius = radius; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				ImGui::TreePop();
+			}
 		}
 
-		void UIWindowEntityProperties::drawScriptUI(ImGuiTreeNodeFlags flags)
+		void UIWindowEntityProperties::drawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box)
 		{
-			//auto ecsWorld = m_engine->getSubsystem<ECS::World>();
-			//if (ecsWorld->HasComponent<scripting::AngelScriptComponent>(m_entity))
-			//{
-			//	scripting::AngelScriptComponent& comp = ecsWorld->GetComponent<scripting::AngelScriptComponent>(m_entity);
+			const auto registry = mEnTTSubsystem->registry();
 
-			//	if (ImGui::TreeNodeEx("Script Component", flags))
-			//	{
-			//		ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+			if (ImGui::TreeNodeEx("Box Component 2D", flags))
+			{
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-			//		if (ImGui::SmallButton("X##Script"))
-			//		{
-			//			ecsWorld->SetComponentFlag<scripting::AngelScriptComponent, FlagDeleted>(m_entity, true);
-			//			sceneChanged = true;
-			//		}
+				if (ImGui::SmallButton("X##Box2D"))
+				{
+					mEnTTSubsystem->registry()->remove<physics::BoxComponent2D>(entity);					
 
-			//		ImGui::InputText("Script Name", &comp.name);
+					mSceneChanged = true;
+				}
 
-			//		ImGui::Text("File Path:"); ImGui::SameLine(0.0f);
-			//		if (ImGui::Selectable(comp.dir.string().c_str(), false))
-			//		{
-			//			//fileDialog->Open();
-			//			//modelSelected = true;
-			//		}
+				{
+					Vector2f centreOfMass = box.centreOfMass;
 
-			//		if (comp.obj != 0)
-			//		{
-			//			ImGui::Separator();
-			//			ImGui::Text("Editable Properties");
+					if (ImGui::DragFloat2("Centre of Mass", reinterpret_cast<float*>(&centreOfMass)))
+					{
+						registry->patch<physics::BoxComponent2D>(entity, [&centreOfMass](auto& box) { box.centreOfMass = centreOfMass; });
 
-			//			// Display Variables in scripts marked as editable
-			//			for (const int& index : comp.editableProperties)
-			//			{
-			//				// Get Property Name/Type
-			//				const char* propertyName = comp.obj->GetPropertyName(index);
-			//				int propertyType = comp.obj->GetPropertyTypeId(index);
+						mSceneChanged = true;
+					}
+				}
 
-			//				// Display property with correct UI based on its type
-			//				if (propertyType == asTYPEID_BOOL)
-			//				{
-			//					bool* boolProperty = (bool*)comp.obj->GetAddressOfProperty(index);
+				{
+					Vector2f halfExtent = box.halfExtent;
 
-			//					ImGui::Checkbox(propertyName, boolProperty);
-			//				}
-			//				else if (propertyType == asTYPEID_INT32)
-			//				{
-			//					int* intProperty = (int*)comp.obj->GetAddressOfProperty(index);
+					if (ImGui::DragFloat2("Half Extent", reinterpret_cast<float*>(&halfExtent), 0.1f, 0.0f))
+					{
+						registry->patch<physics::BoxComponent2D>(entity, [&halfExtent](auto& box) { box.halfExtent = halfExtent; });
 
-			//					ImGui::InputInt(propertyName, intProperty);
-			//				}
-			//				else if (propertyType == asTYPEID_FLOAT)
-			//				{
-			//					float* floatProperty = (float*)comp.obj->GetAddressOfProperty(index);
+						mSceneChanged = true;
+					}
+				}
 
-			//					ImGui::InputFloat(propertyName, floatProperty);
-			//				}
-			//				else if (propertyType == asTYPEID_DOUBLE)
-			//				{
-			//					double* doubleProperty = (double*)comp.obj->GetAddressOfProperty(index);
+				ImGui::TreePop();
+			}
+		}
 
-			//					ImGui::InputDouble(propertyName, doubleProperty);
-			//				}
-			//				else
-			//				{
-			//					std::string* stringProperty = (std::string*)comp.obj->GetAddressOfProperty(index);
+		void UIWindowEntityProperties::drawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script)
+		{
+			const auto registry = mEnTTSubsystem->registry();
 
-			//					ImGui::InputText(propertyName, stringProperty);
-			//				}
-			//			}
+			if (ImGui::TreeNodeEx("Script Component", flags))
+			{
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 
-			//			ImGui::Separator();
-			//			ImGui::Text("Visible Properties");
+				if (ImGui::SmallButton("X##Script"))
+				{
+					mEnTTSubsystem->registry()->remove<scripting::AngelScriptComponent>(entity);
+					
+					mSceneChanged = true;
+				}
 
-			//			// Display Variables in scripts marked as visible
-			//			for (const int& index : comp.visibleProperties)
-			//			{
-			//				// Get Property Name/Type
-			//				const char* propertyName = comp.obj->GetPropertyName(index);
-			//				int propertyType = comp.obj->GetPropertyTypeId(index);
+				ImGui::InputText("Script Name", &script.name);
 
-			//				std::string propertyText = propertyName;
+				ImGui::Text("File Path:"); ImGui::SameLine(0.0f);
+				if (ImGui::Selectable(script.dir.string().c_str(), false))
+				{
+					//fileDialog->Open();
+					//modelSelected = true;
+				}
 
-			//				// Display property with correct UI based on its type
-			//				if (propertyType == asTYPEID_INT32)
-			//				{
-			//					int intProperty = *(int*)comp.obj->GetAddressOfProperty(index);
-			//					propertyText += ": %d";
+				if (script.obj != 0)
+				{
+					ImGui::Separator();
+					ImGui::Text("Editable Properties");
 
-			//					ImGui::Text(propertyText.c_str(), intProperty);
-			//				}
-			//				else if (propertyType == asTYPEID_FLOAT)
-			//				{
-			//					float floatProperty = *(float*)comp.obj->GetAddressOfProperty(index);
-			//					propertyText += ": %.20f";
+					// Display Variables in scripts marked as editable
+					for (const int& index : script.editableProperties)
+					{
+						// Get Property Name/Type
+						const char* propertyName = script.obj->GetPropertyName(index);
+						const int propertyType = script.obj->GetPropertyTypeId(index);
 
-			//					ImGui::Text(propertyText.c_str(), floatProperty);
-			//				}
-			//				else if (propertyType == asTYPEID_DOUBLE)
-			//				{
-			//					double doubleProperty = *(double*)comp.obj->GetAddressOfProperty(index);
-			//					propertyText += ": %.20f";
+						// Display property with correct UI based on its type
+						if (propertyType == asTYPEID_BOOL)
+						{
+							auto boolProperty = static_cast<bool*>(script.obj->GetAddressOfProperty(index));
 
-			//					ImGui::Text(propertyText.c_str(), doubleProperty);
-			//				}
-			//				else
-			//				{
-			//					std::string stringProperty = *(std::string*)comp.obj->GetAddressOfProperty(index);
-			//					propertyText += ": %s";
+							ImGui::Checkbox(propertyName, boolProperty);
+						}
+						else if (propertyType == asTYPEID_INT32)
+						{
+							auto intProperty = static_cast<int*>(script.obj->GetAddressOfProperty(index));
 
-			//					ImGui::Text(propertyText.c_str(), stringProperty.c_str());
-			//				}
-			//			}
-			//		}
+							ImGui::InputInt(propertyName, intProperty);
+						}
+						else if (propertyType == asTYPEID_FLOAT)
+						{
+							auto* floatProperty = static_cast<float*>(script.obj->GetAddressOfProperty(index));
 
-			//		ImGui::TreePop();
-			//	}
-			//}
+							ImGui::InputFloat(propertyName, floatProperty);
+						}
+						else if (propertyType == asTYPEID_DOUBLE)
+						{
+							auto* doubleProperty = static_cast<double*>(script.obj->GetAddressOfProperty(index));
+
+							ImGui::InputDouble(propertyName, doubleProperty);
+						}
+						else
+						{
+							auto* stringProperty = static_cast<std::string*>(script.obj->GetAddressOfProperty(index));
+
+							ImGui::InputText(propertyName, stringProperty);
+						}
+					}
+
+					ImGui::Separator();
+					ImGui::Text("Visible Properties");
+
+					// Display Variables in scripts marked as visible
+					for (const int& index : script.visibleProperties)
+					{
+						// Get Property Name/Type
+						const char* propertyName = script.obj->GetPropertyName(index);
+						const int propertyType = script.obj->GetPropertyTypeId(index);
+
+						std::string propertyText = propertyName;
+
+						// Display property with correct UI based on its type
+						if (propertyType == asTYPEID_INT32)
+						{
+							const int intProperty = *static_cast<int*>(script.obj->GetAddressOfProperty(index));
+							propertyText += ": %d";
+
+							ImGui::Text(propertyText.c_str(), intProperty);
+						}
+						else if (propertyType == asTYPEID_FLOAT)
+						{
+							const float floatProperty = *static_cast<float*>(script.obj->GetAddressOfProperty(index));
+							propertyText += ": %.20f";
+
+							ImGui::Text(propertyText.c_str(), floatProperty);
+						}
+						else if (propertyType == asTYPEID_DOUBLE)
+						{
+							const double doubleProperty = *static_cast<double*>(script.obj->GetAddressOfProperty(index));
+							propertyText += ": %.20f";
+
+							ImGui::Text(propertyText.c_str(), doubleProperty);
+						}
+						else
+						{
+							std::string stringProperty = *static_cast<std::string*>(script.obj->GetAddressOfProperty(index));
+							propertyText += ": %s";
+
+							ImGui::Text(propertyText.c_str(), stringProperty.c_str());
+						}
+					}
+				}
+
+				ImGui::TreePop();
+			}
 		}
 	}
 }

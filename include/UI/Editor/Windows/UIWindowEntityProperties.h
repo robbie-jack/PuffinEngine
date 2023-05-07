@@ -9,10 +9,28 @@
 
 namespace puffin
 {
+	namespace scripting
+	{
+		struct AngelScriptComponent;
+	}
+
 	namespace rendering
 	{
 		struct LightComponent;
 		struct MeshComponent;
+		struct ShadowCasterComponent;
+	}
+
+	namespace procedural
+	{
+		struct PlaneComponent;
+	}
+
+	namespace physics
+	{
+		struct BoxComponent2D;
+		struct CircleComponent2D;
+		struct RigidbodyComponent2D;
 	}
 
 	struct TransformComponent;
@@ -48,16 +66,15 @@ namespace puffin::ui
 		void drawTransformUI(ImGuiTreeNodeFlags flags, entt::entity entity, TransformComponent& transform);
 
 		void drawMeshUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::MeshComponent& mesh);
-
 		void drawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light);
-		void drawShadowcasterUI(ImGuiTreeNodeFlags flags);
+		void drawShadowcasterUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadowcaster);
 
-		void drawProceduralPlaneUI(ImGuiTreeNodeFlags flags);
+		void drawProceduralPlaneUI(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane);
 
-		void drawRigidbody2DUI(ImGuiTreeNodeFlags flags);
-		void drawCircle2DUI(ImGuiTreeNodeFlags flags);
-		void drawBox2DUI(ImGuiTreeNodeFlags flags);
+		void drawRigidbody2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody);
+		void drawCircle2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle);
+		void drawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box);
 
-		void drawScriptUI(ImGuiTreeNodeFlags flags);
+		void drawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script);
 	};
 }

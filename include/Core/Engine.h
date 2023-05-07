@@ -206,7 +206,7 @@ namespace puffin::core
 		bool mShouldLimitFrame = true; // Whether framerate should be capped at m_frameRateMax
 		bool mShouldTrackExecutionTime = true; // Should track time to execute callback/stages
 
-		bool mShouldRenderEditorUI = true; // Whether editor UI should be rendered
+		bool mShouldRenderEditorUI = false; // Whether editor UI should be rendered
 
 		PlayState mPlayState = PlayState::Stopped;
 

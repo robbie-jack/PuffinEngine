@@ -44,95 +44,124 @@ namespace puffin
 				if (ImGui::CollapsingHeader("Performance Metrics"))
 				{
 					// Display FPS
-					fps_timer += dt;
+					mFpsTimer += dt;
 
-					const int num_values = 120;
-					static int value_offset = 0;
+					constexpr int numValues = 120;
+					static int valueOffset = 0;
 
-					static float framerate_values[num_values] = {};
-					static float framerate_min = 10000.0f;
-					static float framerate_max = 0.0f;
+					static float framerateValues[numValues] = {};
+					static float framerateMin = 10000.0f;
+					static float framerateMax = 0.0f;
 
-					static float frametime_values[num_values] = {};
-					static float frametime_min = 1000.0f;
-					static float frametime_max = 0.0f;
+					static float frametimeValues[numValues] = {};
+					static float frametimeMin = 1000.0f;
+					static float frametimeMax = 0.0f;
 
-					const float refresh_time = 1 / 60.0f;
-					if (fps_timer >= refresh_time)
+					if (constexpr float refreshTime = 1 / 60.0f; mFpsTimer >= refreshTime)
 					{
-						fps = 1 / dt;
-						frametime = dt * 1000;
-						fps_timer = 0.0f;
+						mFps = 1 / dt;
+						mFrametime = dt * 1000;
+						mFpsTimer = 0.0;
 
-						if (fps > framerate_max)
-							framerate_max = fps;
+						if (mFps > framerateMax)
+							framerateMax = mFps;
 
-						if (fps < framerate_min)
-							framerate_min = fps;
+						if (mFps < framerateMin)
+							framerateMin = mFps;
 
-						if (frametime > frametime_max)
-							frametime_max = frametime;
+						if (mFrametime > frametimeMax)
+							frametimeMax = mFrametime;
 
-						if (frametime < frametime_min)
-							frametime_min = frametime;
+						if (mFrametime < frametimeMin)
+							frametimeMin = mFrametime;
 
-						framerate_values[value_offset] = fps;
-						frametime_values[value_offset] = frametime;
-						value_offset = (value_offset + 1) % num_values;
+						framerateValues[valueOffset] = mFps;
+						frametimeValues[valueOffset] = mFrametime;
+						valueOffset = (valueOffset + 1) % numValues;
 					}
 
 					// Display Framerate
-					float framerate_average = 0.0f;
-					for (int n = 0; n < num_values; n++)
+					float framerateAverage = 0.0f;
+					for (const float framerateValue : framerateValues)
 					{
-						framerate_average += framerate_values[n];
+						framerateAverage += framerateValue;
 					}
-					framerate_average /= (float)num_values;
+					framerateAverage /= static_cast<float>(numValues);
 
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine();
-					ImGui::PlotLines("Framerate", framerate_values, num_values, value_offset, (const char*)0, 0.0f, 144.0f, ImVec2(0.0f, 80.0f));
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::PlotLines("Framerate", framerateValues, numValues, valueOffset, nullptr, 0.0f, 144.0f,
+					                 ImVec2(0.0f, 80.0f));
 
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Current: %.1f", fps);
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Average: %.1f", framerate_average);
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Minimum: %.1f", framerate_min);
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Maximum: %.1f", framerate_max);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Current: %.1f", mFps);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Average: %.1f", framerateAverage);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Minimum: %.1f", framerateMin);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Maximum: %.1f", framerateMax);
 
 					ImGui::NewLine();
 
 					// Display Frametime
-					float frametime_average = 0.0f;
-					for (int n = 0; n < num_values; n++)
+					float frametimeAverage = 0.0f;
+					for (const float frametimeValue : frametimeValues)
 					{
-						frametime_average += frametime_values[n];
+						frametimeAverage += frametimeValue;
 					}
-					frametime_average /= (float)num_values;
+					frametimeAverage /= static_cast<float>(numValues);
 
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine();
-					ImGui::PlotLines("Frametime", frametime_values, num_values, value_offset, (const char*)0, 0.0f, 100.0f, ImVec2(0.0f, 80.0f));
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::PlotLines("Frametime", frametimeValues, numValues, valueOffset, nullptr, 0.0f, 100.0f,
+					                 ImVec2(0.0f, 80.0f));
 
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Current: %.1f", frametime);
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Average: %.1f", frametime_average);
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Minimum: %.1f", frametime_min);
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Maximum: %.1f", frametime_max);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Current: %.1f", mFrametime);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Average: %.1f", frametimeAverage);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Minimum: %.1f", frametimeMin);
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Maximum: %.1f", frametimeMax);
 
 					ImGui::NewLine();
 
 					// Display Stage/System Frametime breakdown
-					ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("Frametime Breakdown");
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Frametime Breakdown");
 					ImGui::NewLine();
 
 					for (const auto& [stage, name] : core::gExecutionStageOrder)
 					{
-						auto stageFrametime = mEngine->getStageExecutionTimeLastFrame(stage) * 1000.0;
-						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
+						const auto stageFrametime = mEngine->getStageExecutionTimeLastFrame(stage) * 1000.0;
+						ImGui::Dummy(ImVec2(0.0f, 10.0f));
+						ImGui::SameLine();
+						ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
 
-						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Indent();
+						ImGui::Dummy(ImVec2(0.0f, 10.0f));
+						ImGui::SameLine();
+						ImGui::Indent();
 						for (const auto& [name, time] : mEngine->getCallbackExecutionTimeForUpdateStageLastFrame(stage))
 						{
-							double callbackFrametime = time * 1000.0;
-							ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
+							const double callbackFrametime = time * 1000.0;
+							ImGui::Dummy(ImVec2(0.0f, 10.0f));
+							ImGui::SameLine();
+							ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
 						}
-						ImGui::Dummy(ImVec2(0.0f, 10.0f)); ImGui::SameLine(); ImGui::Unindent();
+						ImGui::Dummy(ImVec2(0.0f, 10.0f));
+						ImGui::SameLine();
+						ImGui::Unindent();
 					}
 
 					ImGui::NewLine();

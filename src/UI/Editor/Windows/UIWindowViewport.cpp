@@ -81,9 +81,8 @@ namespace puffin
 
 					ImGui::EndMenuBar();
 				}
-				
-				mViewportSize = ImGui::GetWindowSize();
-				mViewportSize.y -= 40.0f;
+
+				mViewportSize = ImGui::GetContentRegionAvail();
 
 				// Display Scene View Texture
 				ImGui::Image(textureID, mViewportSize);

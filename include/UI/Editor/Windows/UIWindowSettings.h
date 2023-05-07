@@ -21,7 +21,7 @@ namespace puffin
 
 		private:
 
-			puffin::rendering::CameraComponent* m_camera = nullptr;
+			puffin::rendering::CameraComponent* mCamera = nullptr;
 
 		};
 	}

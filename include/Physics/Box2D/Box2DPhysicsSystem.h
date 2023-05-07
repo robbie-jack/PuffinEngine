@@ -1,19 +1,25 @@
 #pragma once
 
 #include "Box2DContactListener.h"
-#include "Components/Physics/VelocityComponent.h"
 #include "Core/Engine.h"
-#include "Components/Physics/RigidbodyComponent2D.h"
-#include "Components/Physics/ShapeComponents2D.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Physics/PhysicsConstants.h"
 #include "Types/PackedArray.h"
+#include "Components/Physics/RigidbodyComponent2D.h"
 
 #include "box2d/b2_world.h"
 #include "box2d/box2d.h"
+#include "Components/Physics/ShapeComponents2D.h"
+#include "Components/Physics/VelocityComponent.h"
+
+namespace puffin
+{
+	struct TransformComponent;
+}
 
 namespace puffin::physics
 {
+
 	const inline std::unordered_map<BodyType, b2BodyType> gBodyType =
 	{
 		{ BodyType::Static, b2_staticBody },

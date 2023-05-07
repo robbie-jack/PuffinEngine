@@ -56,19 +56,18 @@ namespace puffin::rendering
 
 		initSwapchain(mSwapchainData, mOldSwapchainData.swapchain, mWindowSize);
 
-		vk::Extent2D offscreenSize;
 		if (mEngine->shouldRenderEditorUI())
 		{
 			const ImVec2 viewportSize = mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->viewportSize();
-			offscreenSize.width = viewportSize.x;
-			offscreenSize.height = viewportSize.y;
+			mRenderExtent.width = viewportSize.x;
+			mRenderExtent.height = viewportSize.y;
 		}
 		else
 		{
-			offscreenSize = mWindowSize;
+			mRenderExtent = mWindowSize;
 		}
 
-		initOffscreen(mOffscreenData, offscreenSize, mSwapchainData.images.size());
+		initOffscreen(mOffscreenData, mRenderExtent, mSwapchainData.images.size());
 
 		initCommands();
 
@@ -115,8 +114,6 @@ namespace puffin::rendering
 		processEvents();
 
 		processComponents();
-
-		updateEditorCamera();
 
 		updateRenderData();
 
@@ -836,13 +833,6 @@ namespace puffin::rendering
 			mTexDrawList[mesh.textureAssetId].insert(object.id);
 		}
 
-		const auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent, CameraComponent>();
-
-		for (auto [entity, object, transform, camera] : cameraView.each())
-		{
-			updateCameraComponent(transform, camera);
-		}
-
 		/*auto lightView = registry->view<const ECS::SceneObjectComponent, const TransformComponent, LightComponent>();
 		
 		for (auto [entity, object, transform, light] : lightView.each())
@@ -912,7 +902,7 @@ namespace puffin::rendering
 		mEditorCam.right = mEditorCam.up.cross(mEditorCam.direction).normalized();
 		mEditorCam.lookAt = mEditorCam.position + mEditorCam.direction;
 
-		mEditorCam.aspect = static_cast<float>(mWindowSize.width) / static_cast<float>(mWindowSize.height);
+		mEditorCam.aspect = static_cast<float>(mRenderExtent.width) / static_cast<float>(mRenderExtent.height);
 
 		mEditorCam.view = glm::lookAt(static_cast<glm::vec3>(mEditorCam.position),
 		                              static_cast<glm::vec3>(mEditorCam.lookAt), static_cast<glm::vec3>(mEditorCam.up));
@@ -1004,27 +994,30 @@ namespace puffin::rendering
 		if (mEngine->shouldRenderEditorUI())
 		{
 			const ImVec2 viewportSize = mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->viewportSize();
+
+			mRenderExtent.width = static_cast<uint32_t>(viewportSize.x);
+			mRenderExtent.height = static_cast<uint32_t>(viewportSize.y);
+
 			if (viewportSize.x != mOffscreenData.extent.width ||
 				viewportSize.y != mOffscreenData.extent.height)
 			{
 				mOffscreenData.resized = true;
 			}
 		}
+		else
+		{
+			mRenderExtent = mWindowSize;
+		}
+
+		updateCameras();
 
 		recreateSwapchain();
 		recreateOffscreen();
-
-		mDrawCalls = 0;
 
 		uint32_t swapchainImageIdx;
 		VK_CHECK(
 			mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 1000000000, getCurrentFrameData().presentSemaphore,
 				nullptr, &swapchainImageIdx));
-
-		// Prepare textures, scene data & indirect commands for rendering
-		updateTextureDescriptors();
-		prepareSceneData();
-		buildIndirectCommands();
 
 		if (mEngine->shouldRenderEditorUI())
 		{
@@ -1033,18 +1026,25 @@ namespace puffin::rendering
 			ImGui::Render();
 		}
 
+		mDrawCalls = 0;
+
+		// Prepare textures, scene data & indirect commands for rendering
+		updateTextureDescriptors();
+		prepareSceneData();
+		buildIndirectCommands();
+
 		recordAndSubmitCommands(swapchainImageIdx);
 
 		mFrameNumber++;
 	}
 
-	void VKRenderSystem::updateCameraComponent(const TransformComponent& transform, CameraComponent& camera)
+	void VKRenderSystem::updateCameraComponent(const TransformComponent& transform, CameraComponent& camera) const
 	{
 		// Calculate Right, Up and LookAt vectors
 		camera.right = camera.up.cross(transform.rotation.xyz()).normalized();
 		camera.lookAt = transform.position + transform.rotation.xyz();
 
-		camera.aspect = (float)mWindowSize.width / (float)mWindowSize.height;
+		camera.aspect = static_cast<float>(mRenderExtent.width) / static_cast<float>(mRenderExtent.height);
 
 		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
 		                          static_cast<glm::vec3>(camera.lookAt), static_cast<glm::vec3>(camera.up));
@@ -1130,19 +1130,7 @@ namespace puffin::rendering
 			mOldOffscreenData = mOffscreenData;
 			mOldOffscreenData.needsCleaned = true;
 
-			vk::Extent2D offscreenSize;
-			if (mEngine->shouldRenderEditorUI())
-			{
-				const ImVec2 viewportSize = mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->viewportSize();
-				offscreenSize.width = static_cast<uint32_t>(viewportSize.x);
-				offscreenSize.height = static_cast<uint32_t>(viewportSize.y);
-			}
-			else
-			{
-				offscreenSize = mWindowSize;
-			}
-
-			initOffscreen(mOffscreenData, offscreenSize, mSwapchainData.images.size());
+			initOffscreen(mOffscreenData, mRenderExtent, mSwapchainData.images.size());
 
 			if (mEngine->shouldRenderEditorUI())
 			{
@@ -1191,6 +1179,19 @@ namespace puffin::rendering
 
 			mDevice.destroyImageView(offscreenData.allocImages[i].imageView);
 			mAllocator.destroyImage(offscreenData.allocImages[i].image, offscreenData.allocImages[i].allocation);
+		}
+	}
+
+	void VKRenderSystem::updateCameras()
+	{
+		updateEditorCamera();
+
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent, CameraComponent>();
+
+		for (auto [entity, object, transform, camera] : cameraView.each())
+		{
+			updateCameraComponent(transform, camera);
 		}
 	}
 

@@ -60,17 +60,19 @@ namespace puffin
 				type)
 		};
 
-		const std::vector<uint16_t> gShadowResolutionValues = { 512, 1024, 2048, 4096 };
-		const std::vector<std::string> gShadowResolutionLabels = { "512", "1024", "2048", "4096" };
+		const std::vector<uint16_t> gShadowResolutionValues = { 512, 1024, 2048, 4096, 8192, 16384 };
+		const std::vector<std::string> gShadowResolutionLabels = { "512", "1024", "2048", "4096", "8192", "16384" };
 
 		// Component for lights that cast shadows
 		struct ShadowCasterComponent
 		{
-			uint16_t shadowmapWidth = 2048;
-			uint16_t shadowmapHeight = 2048;
+			ShadowCasterComponent() = default;
+
+			uint16_t width = 2048;
+			uint16_t height = 2048;
 			glm::mat4 lightSpaceView;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, shadowmapWidth, shadowmapHeight)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, width, height)
 		};
 	}
 }
