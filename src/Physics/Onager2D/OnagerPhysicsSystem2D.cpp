@@ -55,7 +55,7 @@ namespace puffin
 				const auto& transform = registry->get<const TransformComponent>(mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(collider->uuid));
 
 				collider->position = transform.position.xy();
-				collider->rotation = transform.rotation.eulerAnglesDeg().z;
+				//collider->rotation = maths::RadiansToDegrees(transform.orientation.toEulerAngles().z);
 			}
 
 			// Perform Collision2D Broadphase to check if two Colliders can collide
@@ -238,7 +238,7 @@ namespace puffin
 				// Update Position
 				transform.position += rb.linearVelocity * mEngine->timeStepFixed();
 
-				Vector3f euler = transform.rotation.eulerAnglesDeg();
+				Vector3f euler = maths::RadiansToDegrees(transform.orientation.toEulerAngles());
 
 				// Update Rotation
 				//euler.z += rb.angularVelocity * m_engine->GetTimeStep();
@@ -248,7 +248,7 @@ namespace puffin
 					euler.z = 0.0f;
 				}
 
-				transform.rotation = maths::Quat::fromEulerAngles(euler.x, euler.y, euler.z);
+				transform.orientation = maths::Quat::fromEulerAngles(euler.x, euler.y, euler.z);
 
 				velocity.linear.x = rb.linearVelocity.x;
 				velocity.linear.y = rb.linearVelocity.y;

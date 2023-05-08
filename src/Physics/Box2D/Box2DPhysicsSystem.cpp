@@ -45,7 +45,7 @@ namespace puffin::physics
 			// Update Transform from Rigidbody Position
 			transform.position.x = mBodies[id]->GetPosition().x;
 			transform.position.y = mBodies[id]->GetPosition().y;
-			transform.rotation = maths::Quat::fromEulerAngles(0.0, 0.0, -mBodies[id]->GetAngle());
+			transform.orientation = maths::Quat::fromEulerAngles(0.0, 0.0, -mBodies[id]->GetAngle());
 
 			// Update Velocity with Linear/Angular Velocity
 			velocity.linear.x = mBodies[id]->GetLinearVelocity().x;
@@ -203,7 +203,7 @@ namespace puffin::physics
 			b2BodyDef bodyDef;
 			bodyDef.userData.pointer = static_cast<uintptr_t>(id);
 			bodyDef.position.Set(transform.position.x, transform.position.y);
-			bodyDef.angle = -transform.rotation.eulerAnglesRad().z;
+			bodyDef.angle = -transform.orientation.toEulerAngles().z;
 			bodyDef.type = gBodyType.at(rb.bodyType);
 
 			// Created Body from Physics World
@@ -223,7 +223,7 @@ namespace puffin::physics
 			mPolygonShapes.insert(id, b2PolygonShape());
 		}
 
-		mPolygonShapes[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.xy(), transform.rotation.eulerAnglesRad().z);
+		mPolygonShapes[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.xy(), transform.orientation.toEulerAngles().z);
 
 		if (!mShapes.contains(id))
 		{

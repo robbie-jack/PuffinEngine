@@ -31,6 +31,11 @@ constexpr bool gEnableValidationLayers = true;
 
 namespace puffin
 {
+	namespace maths
+	{
+		struct Mat3;
+	}
+
 	struct TransformComponent;
 }
 
@@ -254,8 +259,8 @@ namespace puffin::rendering
 
 		void recordAndSubmitCommands(uint32_t swapchainIdx);
 
-		void buildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale,
-		                         glm::mat4& outModel) const;
+		static void buildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale,
+		                                glm::mat4& model);
 
 		bool loadMesh(PuffinID meshId, MeshDataVK& meshData);
 		void unloadMesh(MeshDataVK& meshData) const;

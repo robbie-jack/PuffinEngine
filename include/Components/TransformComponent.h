@@ -19,7 +19,7 @@ namespace puffin
 
 #ifdef PFN_USE_DOUBLE_PRECISION
 		TransformComponent(Vector3d InPosition, maths::Quat InRotation, Vector3f InScale) :
-			position(InPosition), rotation(InRotation), scale(InScale) {}
+			position(InPosition), orientation(InRotation), scale(InScale) {}
 #else
 		TransformComponent(Vector3f InPosition, Maths::Quat InRotation, Vector3f InScale) :
 			position(InPosition), rotation(InRotation), scale(InScale) {}
@@ -35,10 +35,10 @@ namespace puffin
 		Vector3f position = Vector3f(0.0f);
 #endif
 
-		maths::Quat rotation = maths::Quat(0.0f, 0.0f, -1.0f, 0.0);
+		maths::Quat orientation = maths::Quat(0.0f, 0.0f, 1.0f, 0.0);
 
 		Vector3f scale = Vector3f(1.0f);
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent, position, rotation, scale)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent, position, orientation, scale)
 	};
 }

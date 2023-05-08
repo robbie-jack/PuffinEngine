@@ -466,7 +466,7 @@ namespace puffin::core
 
 			auto& transform = registry->emplace<TransformComponent>(lightEntity);
 			transform.position = Vector3f(-5.0f, 0.0f, 0.0f);
-			transform.rotation = maths::Quat(.5f, -0.5f, 0.0f);
+			transform.orientation = maths::Quat(.5f, -0.5f, 0.0f);
 
 			auto& light = registry->emplace<rendering::LightComponent>(lightEntity);
 			light.type = rendering::LightType::Directional;

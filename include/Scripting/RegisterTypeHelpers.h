@@ -108,7 +108,7 @@ namespace puffin::scripting
 		r = scriptEngine->RegisterObjectProperty("STransformComponent", "Vector3f position", asOFFSET(TransformComponent, position)); assert(r >= 0);
 #endif
 
-		r = scriptEngine->RegisterObjectProperty("STransformComponent", "Vector3f rotation", asOFFSET(TransformComponent, rotation)); assert(r >= 0);
+		r = scriptEngine->RegisterObjectProperty("STransformComponent", "Vector3f rotation", asOFFSET(TransformComponent, orientation)); assert(r >= 0);
 		r = scriptEngine->RegisterObjectProperty("STransformComponent", "Vector3f scale", asOFFSET(TransformComponent, scale)); assert(r >= 0);
 
 		// Register Operator Overloads

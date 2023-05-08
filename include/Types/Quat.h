@@ -74,7 +74,7 @@ namespace puffin::maths
 
 		void normalize()
 		{
-			if (const float invMag = 1.0f / getMagnitude(); invMag * 0.0f == invMag * 0.0f)
+			if (const float invMag = 1.0f / magnitude(); invMag * 0.0f == invMag * 0.0f)
 			{
 				x = x * invMag;
 				y = y * invMag;
@@ -85,7 +85,7 @@ namespace puffin::maths
 
 		void invert()
 		{
-			*this *= 1.0f / magnitudeSquared();
+			*this *= 1.0f / magnitudeSq();
 			x = -x;
 			y = -y;
 			z = -z;
@@ -98,14 +98,14 @@ namespace puffin::maths
 			return val;
 		}
 
-		float magnitudeSquared() const
+		float magnitudeSq() const
 		{
 			return x * x + y * y + z * z + w * w;
 		}
 
-		float getMagnitude() const
+		float magnitude() const
 		{
-			return sqrtf(magnitudeSquared());
+			return sqrtf(magnitudeSq());
 		}
 
 		Vector3f rotatePoint(const Vector3f& vec) const
@@ -161,59 +161,50 @@ namespace puffin::maths
 		static Quat fromEulerAngles(double pitch, double yaw, double roll)
 		{
 			const double cr = cos(roll * 0.5);
-			const double sr = sin(roll * 0.5);
 			const double cp = cos(pitch * 0.5);
-			const double sp = sin(pitch * 0.5);
 			const double cy = cos(yaw * 0.5);
+			
+			const double sr = sin(roll * 0.5);
+			const double sp = sin(pitch * 0.5);
 			const double sy = sin(yaw * 0.5);
+
+			const double cpcy = cp * cy;
+			const double spsy = sp * sy;
 
 			Quat q;
 
-			q.w = cr * cp * cy + sr * sp * sy;
-			q.x = sr * cp * cy - cr * sp * sy;
+			q.w = cr * cpcy + sr * spsy;
+			q.x = sr * cpcy - cr * spsy;
 			q.y = cr * sp * cy + sr * cp * sy;
 			q.z = cr * cp * sy - sr * sp * cy;
 
 			return q;
 		}
 
-		// Generate euler angles, Pitch (X), Yaw (Y), Roll (Z) from quaternion in radians
-		[[nodiscard]] Vector3f eulerAnglesRad() const
+		Vector3f toEulerAngles() const
 		{
 			Vector3f angles;
 
-			// roll (z-axis rotation)
+			// roll (x-axis rotation)
 			const double sinrCosp = 2 * (w * x + y * z);
 			double cosrCosp = 1 - 2 * (x * x + y * y);
-			angles.z = std::atan2(sinrCosp, cosrCosp);
+			angles.x = std::atan2(sinrCosp, cosrCosp);
 
-			// pitch (x-axis rotation)
+			// pitch (y-axis rotation)
 			const double sinp = std::sqrt(1 + 2 * (w * y - x * z));
 			const double cosp = std::sqrt(1 - 2 * (w * y - x * z));
-			angles.x = 2 * std::atan2(sinp, cosp) - PI / 2;
+			angles.y = 2 * std::atan2(sinp, cosp) - PI / 2;
 
-			// yaw (y-axis rotation)
+			// yaw (z-axis rotation)
 			const double sinyCosp = 2 * (w * z + x * y);
 			const double cosyCosp = 1 - 2 * (y * y + z * z);
-			angles.y = std::atan2(sinyCosp, cosyCosp);
+			angles.z = std::atan2(sinyCosp, cosyCosp);
 
 			return angles;
 		}
 
-		// Generate euler angles, Pitch (X), Yaw (Y), Roll (Z) from quaternion in degrees
-		[[nodiscard]] Vector3f eulerAnglesDeg() const
-		{
-			Vector3f angles = eulerAnglesRad();
+		float x, y, z, w;
 
-			angles.x = maths::RadiansToDegrees(angles.x);
-			angles.y = maths::RadiansToDegrees(angles.x);
-			angles.z = maths::RadiansToDegrees(angles.x);
-
-			return angles;
-		}
-
-		float w, x, y, z;
-
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Quat, w, x, y, z)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Quat, x, y, z, w)
 	};
 }

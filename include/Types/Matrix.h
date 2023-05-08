@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Types/Vector.h>
+#include "glm/matrix.hpp"
 
 namespace puffin
 {
@@ -106,6 +107,17 @@ namespace puffin
 				rows[1] = mat.rows[1];
 				rows[2] = mat.rows[2];
 				return *this;
+			}
+
+			explicit operator glm::mat3() const
+			{
+				glm::mat3 mat;
+
+				mat[0] = static_cast<glm::vec3>(rows[0]);
+				mat[1] = static_cast<glm::vec3>(rows[1]);
+				mat[2] = static_cast<glm::vec3>(rows[2]);
+
+				return mat;
 			}
 
 			Vector2f operator* (const Vector2f& vec) const

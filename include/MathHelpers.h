@@ -35,6 +35,17 @@ namespace puffin
 			return radians * (180.0f / PI);
 		}
 
+		static inline Vector3f RadiansToDegrees(Vector3f vecR)
+		{
+			Vector3f vecD;
+
+			vecD.x = RadiansToDegrees(vecR.x);
+			vecD.y = RadiansToDegrees(vecR.y);
+			vecD.z = RadiansToDegrees(vecR.z);
+
+			return vecD;
+		}
+
 		static inline double DegreesToRadians(double degrees)
 		{
 			return degrees * (PI / 180.0f);

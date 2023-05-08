@@ -247,13 +247,36 @@ namespace puffin
 				}
 
 				{
-					Vector3f angles = transform.rotation.eulerAnglesDeg();
+					maths::Quat orientation = transform.orientation;
+					orientation.w = maths::RadiansToDegrees(orientation.w);
 
-					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&angles), 0.01f))
+					if (ImGui::DragFloat3("Axis", reinterpret_cast<float*>(&orientation), 0.01f, -1.f, 1.f))
 					{
-						registry->patch<TransformComponent>(entity, [&angles](auto& transform)
+						registry->patch<TransformComponent>(entity, [&orientation](auto& transform)
 						{
-							transform.rotation = maths::Quat::fromEulerAngles(angles.x, angles.y, angles.z);
+							orientation.w = maths::DegreesToRadians(orientation.w);
+							transform.orientation = orientation;
+						});
+
+						mSceneChanged = true;
+					}
+
+					if (ImGui::DragFloat("Angle", &orientation.w))
+					{
+						if (orientation.w > 180.0f)
+						{
+							orientation.w = -180.0f;
+						}
+
+						if (orientation.w < -180.0f)
+						{
+							orientation.w = 180.0f;
+						}
+
+						registry->patch<TransformComponent>(entity, [&orientation](auto& transform)
+						{
+							orientation.w = maths::DegreesToRadians(orientation.w);
+							transform.orientation = orientation;
 						});
 
 						mSceneChanged = true;
