@@ -104,12 +104,13 @@ set(HEADERS
 	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.h
 	# ECS
 	${HEADER_DIR}/ECS/EnTTSubsystem.h
-	# Engine
+	# Core
 	${HEADER_DIR}/Core/Engine.h
 	${HEADER_DIR}/Core/Application.h
 	${HEADER_DIR}/Core/Subsystem.h
 	${HEADER_DIR}/Core/SignalSubsystem.h
 	${HEADER_DIR}/Core/EnkiTSSubsystem.h
+	${HEADER_DIR}/Core/SceneSubsystem.h
 	${HEADER_DIR}/Core/System.h
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
@@ -175,7 +176,6 @@ set(HEADERS
 	${HEADER_DIR}/ManipulationGizmo.h
 	${HEADER_DIR}/MathHelpers.h
 	${HEADER_DIR}/ProjectSettings.h
-	${HEADER_DIR}/SerializeScene.h
 	)
 
 set(SOURCES 

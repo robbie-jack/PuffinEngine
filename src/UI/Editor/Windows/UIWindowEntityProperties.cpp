@@ -248,13 +248,13 @@ namespace puffin
 
 				{
 					maths::Quat orientation = transform.orientation;
-					orientation.w = maths::RadiansToDegrees(orientation.w);
+					orientation.w = maths::radToDeg(orientation.w);
 
 					if (ImGui::DragFloat3("Axis", reinterpret_cast<float*>(&orientation), 0.01f, -1.f, 1.f))
 					{
 						registry->patch<TransformComponent>(entity, [&orientation](auto& transform)
 						{
-							orientation.w = maths::DegreesToRadians(orientation.w);
+							orientation.w = maths::degToRad(orientation.w);
 							transform.orientation = orientation;
 						});
 
@@ -275,7 +275,7 @@ namespace puffin
 
 						registry->patch<TransformComponent>(entity, [&orientation](auto& transform)
 						{
-							orientation.w = maths::DegreesToRadians(orientation.w);
+							orientation.w = maths::degToRad(orientation.w);
 							transform.orientation = orientation;
 						});
 

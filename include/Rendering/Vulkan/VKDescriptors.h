@@ -106,6 +106,9 @@ namespace puffin::rendering::util
 		DescriptorBuilder& bindImages(const uint32_t binding, const uint32_t imageCount, const vk::DescriptorImageInfo* imageInfos, const vk::DescriptorType
 		                              type, const vk::ShaderStageFlags stageFlags);
 
+		DescriptorBuilder& bindImagesWithoutWrite(const uint32_t binding, const uint32_t imageCount, const vk::DescriptorType
+										type, const vk::ShaderStageFlags stageFlags);
+
 		bool build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
 
 		// Used for writing to descriptor set which is already built

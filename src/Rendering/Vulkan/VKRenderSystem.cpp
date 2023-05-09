@@ -36,7 +36,6 @@
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
 #include "UI/Editor/UISubsystem.h"
-#include "Types/Matrix.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -83,9 +82,6 @@ namespace puffin::rendering
 		initBuffers();
 		initSamplers();
 
-		processComponents();
-		updateRenderData();
-
 		initDescriptors();
 		initPipelines();
 
@@ -108,6 +104,13 @@ namespace puffin::rendering
 		);
 
 		mIsInitialized = true;
+	}
+
+	void VKRenderSystem::setup()
+	{
+		processComponents();
+		updateRenderData();
+		updateDescriptors();
 	}
 
 	void VKRenderSystem::render()
@@ -596,8 +599,7 @@ namespace puffin::rendering
 				mFrameRenderData[i].lightStaticBuffer.buffer, 0, sizeof(GPULightStaticData)
 			};
 
-			std::vector<vk::DescriptorImageInfo> textureImageInfos;
-			buildTextureDescriptorInfo(mTexData, textureImageInfos);
+			
 
 			util::DescriptorBuilder::begin(mStaticRenderData.descriptorLayoutCache,
 			                               mStaticRenderData.descriptorAllocator)
@@ -606,8 +608,7 @@ namespace puffin::rendering
 				.bindBuffer(2, &lightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.bindBuffer(3, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer,
 				            vk::ShaderStageFlagBits::eFragment)
-				.bindImages(4, textureImageInfos.size(), textureImageInfos.data(),
-				            vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
+				.bindImagesWithoutWrite(4, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
 				.build(mFrameRenderData[i].globalDescriptor, mStaticRenderData.globalSetLayout);
 
 			// Material Descriptors
@@ -890,11 +891,11 @@ namespace puffin::rendering
 				mEditorCam.pitch = -89.0f;
 
 			// Calculate Direction vector from yaw and pitch of camera
-			mEditorCam.direction.x = cos(maths::DegreesToRadians(mEditorCam.yaw)) * cos(
-				maths::DegreesToRadians(mEditorCam.pitch));
-			mEditorCam.direction.y = sin(maths::DegreesToRadians(mEditorCam.pitch));
-			mEditorCam.direction.z = sin(maths::DegreesToRadians(mEditorCam.yaw)) * cos(
-				maths::DegreesToRadians(mEditorCam.pitch));
+			mEditorCam.direction.x = cos(maths::degToRad(mEditorCam.yaw)) * cos(
+				maths::degToRad(mEditorCam.pitch));
+			mEditorCam.direction.y = sin(maths::degToRad(mEditorCam.pitch));
+			mEditorCam.direction.z = sin(maths::degToRad(mEditorCam.yaw)) * cos(
+				maths::degToRad(mEditorCam.pitch));
 
 			mEditorCam.direction.normalize();
 		}
@@ -908,7 +909,7 @@ namespace puffin::rendering
 		mEditorCam.view = glm::lookAt(static_cast<glm::vec3>(mEditorCam.position),
 		                              static_cast<glm::vec3>(mEditorCam.lookAt), static_cast<glm::vec3>(mEditorCam.up));
 
-		mEditorCam.proj = glm::perspective(maths::DegreesToRadians(mEditorCam.fovY), mEditorCam.aspect,
+		mEditorCam.proj = glm::perspective(maths::degToRad(mEditorCam.fovY), mEditorCam.aspect,
 		                                   mEditorCam.zNear, mEditorCam.zFar);
 		mEditorCam.proj[1][1] *= -1;
 
@@ -986,6 +987,20 @@ namespace puffin::rendering
 		}
 	}
 
+	void VKRenderSystem::updateDescriptors()
+	{
+		for (int i = 0; i < gBufferedFrames; i++)
+		{
+			std::vector<vk::DescriptorImageInfo> textureImageInfos;
+			buildTextureDescriptorInfo(mTexData, textureImageInfos);
+
+			util::DescriptorBuilder::begin(mStaticRenderData.descriptorLayoutCache,
+				mStaticRenderData.descriptorAllocator)
+				.updateImages(4, textureImageInfos.size(), textureImageInfos.data(), vk::DescriptorType::eCombinedImageSampler)
+				.update(mFrameRenderData[i].globalDescriptor);
+		}
+	}
+
 	void VKRenderSystem::draw()
 	{
 		// Wait until GPU has finished rendering last frame. Timeout of 1 second
@@ -1050,7 +1065,7 @@ namespace puffin::rendering
 		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
 		                          static_cast<glm::vec3>(camera.lookAt), static_cast<glm::vec3>(camera.up));
 
-		camera.proj = glm::perspective(maths::DegreesToRadians(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
+		camera.proj = glm::perspective(maths::degToRad(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
 		camera.proj[1][1] *= -1;
 
 		camera.viewProj = camera.proj * camera.view;
@@ -1302,7 +1317,7 @@ namespace puffin::rendering
 					Vector3f interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
 #endif
 
-					position = maths::Lerp(transform.position, interpolatedPosition, t);
+					position = maths::lerp(transform.position, interpolatedPosition, t);
 				}
 				else
 				{
@@ -1736,9 +1751,9 @@ namespace puffin::rendering
 	{
 		const auto scaleM = glm::scale(glm::mat4(1.0f), static_cast<glm::vec3>(scale));
 
-		const auto rotateMz = glm::rotate(glm::mat4(1.0f), rotation.z + maths::DegreesToRadians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		const auto rotateMx = glm::rotate(glm::mat4(1.0f), rotation.x + maths::DegreesToRadians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		const auto rotateMy = glm::rotate(glm::mat4(1.0f), rotation.y + maths::DegreesToRadians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		const auto rotateMz = glm::rotate(glm::mat4(1.0f), rotation.z + maths::degToRad(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		const auto rotateMx = glm::rotate(glm::mat4(1.0f), rotation.x + maths::degToRad(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		const auto rotateMy = glm::rotate(glm::mat4(1.0f), rotation.y + maths::degToRad(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		const auto translateM = glm::translate(glm::mat4(1.0f), static_cast<glm::vec3>(position));
 

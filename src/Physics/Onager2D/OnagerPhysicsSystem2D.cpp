@@ -2,14 +2,14 @@
 #include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
 
 #include "Components/TransformComponent.h"
-#include "Components\Physics\VelocityComponent.h"
-#include "ECS/EnTTSubsystem.h"
+#include "Components/Physics/VelocityComponent.h"
 #include "Core/Engine.h"
 #include "Core/SignalSubsystem.h"
+#include "ECS/EnTTSubsystem.h"
 #include "Physics/CollisionEvent.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
-#include "Physics\Onager2D\Broadphases\SpatialHashBroadphase2D.h"
-#include "Physics\Onager2D\Broadphases\SweepAndPruneBroadphase.h"
+#include "Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.h"
+#include "Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.h"
 
 namespace puffin
 {
@@ -75,9 +75,12 @@ namespace puffin
 
 		void OnagerPhysicsSystem2D::stop()
 		{
-			mBoxShapes.clear();
-			mCircleShapes.clear();
-			mColliders.clear();
+			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+
+			registry->clear<BoxComponent2D>();
+			registry->clear<CircleComponent2D>();
+			registry->clear<RigidbodyComponent2D>();
+
 			mCollisionPairs.clear();
 			mCollisionContacts.clear();
 		}
@@ -238,7 +241,7 @@ namespace puffin
 				// Update Position
 				transform.position += rb.linearVelocity * mEngine->timeStepFixed();
 
-				Vector3f euler = maths::RadiansToDegrees(transform.orientation.toEulerAngles());
+				Vector3f euler = maths::radToDeg(transform.orientation.toEulerAngles());
 
 				// Update Rotation
 				//euler.z += rb.angularVelocity * m_engine->GetTimeStep();

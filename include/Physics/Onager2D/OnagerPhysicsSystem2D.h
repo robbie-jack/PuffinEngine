@@ -16,6 +16,7 @@
 #include "Types/Vector.h"
 
 #include <memory>
+#include <set>
 #include <unordered_map>
 #include <utility>
 #include <vector>

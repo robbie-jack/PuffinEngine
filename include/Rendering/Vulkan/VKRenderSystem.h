@@ -115,11 +115,13 @@ namespace puffin::rendering
 		void setupCallbacks() override
 		{
 			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init");
+			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "VKRenderSystem: Setup");
 			mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
 			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "VKRenderSystem: Cleanup");
 		}
 
 		void init();
+		void setup();
 		void render();
 		void cleanup();
 
@@ -227,6 +229,8 @@ namespace puffin::rendering
 		void updateEditorCamera();
 
 		void updateRenderData();
+
+		void updateDescriptors();
 
 		void draw();
 

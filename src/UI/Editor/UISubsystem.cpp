@@ -2,7 +2,7 @@
 
 #include "Core/Engine.h"
 
-#include "SerializeScene.h"
+#include "Core/SceneSubsystem.h"
 #include "Assets/AssetRegistry.h"
 #include "Assets/AssetImporters.h"
 
@@ -63,57 +63,61 @@ namespace puffin::ui
 	{
 		if (mEngine->shouldRenderEditorUI())
 		{
-			//if (mFileDialog.HasSelected())
-			//{
-			//	const fs::path selectedPath = mFileDialog.GetSelected();
+			if (mFileDialog.HasSelected())
+			{
+				const fs::path selectedPath = mFileDialog.GetSelected();
 
-			//	// File Dialog - Load Scene
-			//	if (mLoadScene)
-			//	{
-			//		mEngine->sceneData()->SetPath(selectedPath);
+				// File Dialog - Load Scene
+				if (mLoadScene)
+				{
+					const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
 
-			//		mEngine->sceneData()->Load();
+					sceneData->setPath(selectedPath);
 
-			//		mEngine->restart();
+					sceneData->load();
 
-			//		mLoadScene = false;
-			//	}
+					mEngine->restart();
 
-			//	switch (mImportAssetUI)
-			//	{
-			//	// File Dialog - Import Mesh
-			//	case ImportAssetUI::Mesh:
+					mLoadScene = false;
+				}
 
-			//		/*if (IO::ImportMesh(selectedPath))
-			//		{
-			//			std::cout << "Import Successful" << std::endl;
-			//		}
-			//		else
-			//		{
-			//			std::cout << "Import Failed" << std::endl;
-			//		}*/
+				switch (mImportAssetUI)
+				{
+				// File Dialog - Import Mesh
+				case ImportAssetUI::Mesh:
 
-			//		mImportAssetUI = ImportAssetUI::None;
+					/*if (IO::ImportMesh(selectedPath))
+					{
+						std::cout << "Import Successful" << std::endl;
+					}
+					else
+					{
+						std::cout << "Import Failed" << std::endl;
+					}*/
 
-			//		break;
+					mImportAssetUI = ImportAssetUI::None;
 
-			//	// File Dialog - Import Texture
-			//	case ImportAssetUI::Texture:
-			//			
-			//		if (io::loadAndImportTexture(selectedPath))
-			//		{
-			//			std::cout << "Import Successful" << std::endl;
-			//		}
-			//		else
-			//		{
-			//			std::cout << "Import Failed" << std::endl;
-			//		}
+					break;
 
-			//		mImportAssetUI = ImportAssetUI::None;
+				// File Dialog - Import Texture
+				case ImportAssetUI::Texture:
+						
+					if (io::loadAndImportTexture(selectedPath))
+					{
+						std::cout << "Import Successful" << std::endl;
+					}
+					else
+					{
+						std::cout << "Import Failed" << std::endl;
+					}
 
-			//		break;
-			//	}
-			//}
+					mImportAssetUI = ImportAssetUI::None;
+
+					break;
+
+				default: ;
+				}
+			}
 
 			// Update Selected Entity
 			if (mWindowSceneHierarchy->entityChanged())
@@ -129,7 +133,8 @@ namespace puffin::ui
 			// Update Scene Data if any changes were made to an entity, and game is not currently playing
 			if (mWindowEntityProperties->sceneChanged() && mEngine->playState() == core::PlayState::Stopped)
 			{
-				//mEngine->sceneData()->UpdateData();
+				const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
+				sceneData->updateData(mEngine->getSubsystem<ecs::EnTTSubsystem>());
 			}
 
 			ImGui_ImplVulkan_NewFrame();
@@ -226,7 +231,9 @@ namespace puffin::ui
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			std::string str_name = mEngine->sceneData()->GetPath().string();
+			const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
+
+			std::string str_name = sceneData->path().string();
 			std::vector<char> name(256, '\0');
 			for (int i = 0; i < str_name.size(); i++)
 			{
@@ -237,12 +244,12 @@ namespace puffin::ui
 			ImGui::Text("Enter Scene Name:");
 			if (ImGui::InputText("##Edit", &name[0], name.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				mEngine->sceneData()->SetPath(std::string(&name[0]));
+				sceneData->setPath(std::string(&name[0]));
 			}
 
 			if (ImGui::Button("Save"))
 			{
-				mEngine->sceneData()->Save();
+				sceneData->save(mEngine->getSubsystem<ecs::EnTTSubsystem>());
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -307,7 +314,8 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					mEngine->sceneData()->Save();
+					const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
+					sceneData->save(mEngine->getSubsystem<ecs::EnTTSubsystem>());
 				}
 
 				if (ImGui::MenuItem("Save Scene As"))

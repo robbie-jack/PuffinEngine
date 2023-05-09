@@ -274,6 +274,14 @@ namespace puffin::rendering::util
 		return *this;
 	}
 
+	DescriptorBuilder& DescriptorBuilder::bindImagesWithoutWrite(const uint32_t binding, const uint32_t imageCount,
+		const vk::DescriptorType type, const vk::ShaderStageFlags stageFlags)
+	{
+		mBindings.emplace_back(binding, type, imageCount, stageFlags);
+
+		return *this;
+	}
+
 	bool DescriptorBuilder::build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout)
 	{
 		const vk::DescriptorSetLayoutCreateInfo layoutInfo = { {}, static_cast<uint32_t>(mBindings.size()), mBindings.data() };

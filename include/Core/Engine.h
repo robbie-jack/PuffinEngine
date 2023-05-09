@@ -2,7 +2,6 @@
 
 #include "Application.h"
 #include "ProjectSettings.h"
-#include "SerializeScene.h"
 #include "Subsystem.h"
 #include "System.h"
 
@@ -176,9 +175,8 @@ namespace puffin::core
 		}
 
 		PlayState playState() const { return mPlayState; }
-		inline std::shared_ptr<io::SceneData> sceneData() { return mSceneData; }
 
-		inline io::ProjectSettings& settings() { return mSettings; }
+		io::ProjectSettings& settings() { return mSettings; }
 
 		bool shouldRenderEditorUI() const { return mShouldRenderEditorUI; }
 
@@ -237,8 +235,6 @@ namespace puffin::core
 		io::ProjectFile mProjectFile;
 
 		io::ProjectSettings mSettings;
-
-		std::shared_ptr<io::SceneData> mSceneData = nullptr;
 
 		// Execute callbacks for this execution stage
 		void executeCallbacks(const core::ExecutionStage& executionStage, const bool shouldTrackExecutionTime = false)

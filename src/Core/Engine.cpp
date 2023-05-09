@@ -1,36 +1,30 @@
 #include "Core/Engine.h"
 
-//#include "Rendering/BGFX/BGFXRenderSystem.h"
-#include "Rendering/Vulkan/VKRenderSystem.h"
-//#include "Physics/Box2D/Box2DPhysicsSystem.h"
-#include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
-#include "Scripting/AngelScriptSystem.h"
-#include "Procedural/ProceduralMeshGenSystem.h"
-
-#include "Components/TransformComponent.h"
-#include "Components/Scripting/AngelScriptComponent.h"
-#include "Components/Procedural/ProceduralMeshComponent.h"
-
-#include "Window/WindowSubsystem.h"
-#include "Input/InputSubsystem.h"
-#include "Core/SignalSubsystem.h"
-#include "Core/EnkiTSSubsystem.h"
-#include "ECS/EnTTSubsystem.h"
-
-#include "SerializeScene.h"
-#include "UI/Editor/UISubsystem.h"
-
-#include "Audio/AudioSubsystem.h"
-
-#include "Assets/AssetRegistry.h"
-#include "Assets/MeshAsset.h"
-#include "Assets/TextureAsset.h"
-#include "Assets/SoundAsset.h"
-
 #include <chrono>
 #include <thread>
 
+//#include "Rendering/BGFX/BGFXRenderSystem.h"
+//#include "Physics/Box2D/Box2DPhysicsSystem.h"
+#include "Assets/AssetRegistry.h"
+#include "Assets/MeshAsset.h"
+#include "Assets/SoundAsset.h"
+#include "Assets/TextureAsset.h"
+#include "Audio/AudioSubsystem.h"
+#include "Components/TransformComponent.h"
+#include "Components/Procedural/ProceduralMeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
+#include "Components/Scripting/AngelScriptComponent.h"
+#include "Core/EnkiTSSubsystem.h"
+#include "Core/SceneSubsystem.h"
+#include "Core/SignalSubsystem.h"
+#include "ECS/EnTTSubsystem.h"
+#include "Input/InputSubsystem.h"
+#include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
+#include "Procedural/ProceduralMeshGenSystem.h"
+#include "Rendering/Vulkan/VKRenderSystem.h"
+#include "Scripting/AngelScriptSystem.h"
+#include "UI/Editor/UISubsystem.h"
+#include "Window/WindowSubsystem.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -51,6 +45,7 @@ namespace puffin::core
 		auto audioSubsystem = registerSubsystem<audio::AudioSubsystem>();
 		auto enttSubsystem = registerSubsystem<ecs::EnTTSubsystem>();
 		auto uiSubsystem = registerSubsystem<ui::UISubsystem>();
+		auto sceneSubsystem = registerSubsystem<io::SceneSubsystem>();
 
 		// Load Project File
 		const auto projectPath = fs::path(R"(C:\Projects\PuffinProject\Puffin.pproject)");
@@ -61,27 +56,24 @@ namespace puffin::core
 
 		// Load Default Scene (if set)
 		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / mProjectFile.defaultScenePath;
-		//mSceneData = std::make_shared<io::SceneData>(ecsWorld, defaultScenePath);
+
+		auto sceneData = sceneSubsystem->createScene(defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
-		//mSceneData->RegisterComponent<SceneObjectComponent>();
-		//mSceneData->RegisterComponent<TransformComponent>();
-
-		//mSceneData->RegisterComponent<rendering::MeshComponent>();
-		//mSceneData->RegisterComponent<rendering::LightComponent>();
-		//mSceneData->RegisterComponent<rendering::ShadowCasterComponent>();
-		//mSceneData->RegisterComponent<rendering::CameraComponent>();
-
-		//mSceneData->RegisterComponent<physics::RigidbodyComponent2D>();
-		//mSceneData->RegisterComponent<physics::BoxComponent2D>();
-		//mSceneData->RegisterComponent<physics::CircleComponent2D>();
-
-		//mSceneData->RegisterComponent<scripting::AngelScriptComponent>();
-
-		//mSceneData->RegisterComponent<rendering::ProceduralMeshComponent>();
-		//mSceneData->RegisterComponent<procedural::PlaneComponent>();
-		//mSceneData->RegisterComponent<procedural::TerrainComponent>();
-		//mSceneData->RegisterComponent<procedural::IcoSphereComponent>();
+		sceneData->registerComponent<SceneObjectComponent>();
+		sceneData->registerComponent<TransformComponent>();
+		sceneData->registerComponent<rendering::MeshComponent>();
+		sceneData->registerComponent<rendering::LightComponent>();
+		sceneData->registerComponent<rendering::ShadowCasterComponent>();
+		sceneData->registerComponent<rendering::CameraComponent>();
+		sceneData->registerComponent<physics::RigidbodyComponent2D>();
+		sceneData->registerComponent<physics::BoxComponent2D>();
+		sceneData->registerComponent<physics::CircleComponent2D>();
+		sceneData->registerComponent<scripting::AngelScriptComponent>();
+		sceneData->registerComponent<rendering::ProceduralMeshComponent>();
+		sceneData->registerComponent<procedural::PlaneComponent>();
+		sceneData->registerComponent<procedural::TerrainComponent>();
+		sceneData->registerComponent<procedural::IcoSphereComponent>();
 
 		// Systems
 		//registerSystem<Rendering::BGFX::BGFXRenderSystem>();
@@ -111,12 +103,13 @@ namespace puffin::core
 
 		// Create Default Scene in code -- used when scene serialization is changed
 		//defaultScene();
-		physicsScene();
+		//physicsScene();
 		//proceduralScene();
 
 		// Load Scene -- normal behaviour
-		//m_sceneData->LoadAndInit();
-		//m_sceneData->Save();
+		//sceneData->loadAndInit(enttSubsystem);
+		//sceneData->load();
+		//sceneData->save(enttSubsystem);
 
 		mRunning = true;
 		mPlayState = PlayState::Stopped;
@@ -196,9 +189,6 @@ namespace puffin::core
 		{
 			executeCallbacks(ExecutionStage::Start);
 
-			// Get Snapshot of current scene data
-			//m_sceneData->UpdateData();
-
 			mAccumulatedTime = 0.0;
 			mPlayState = PlayState::Playing;
 		}
@@ -238,7 +228,6 @@ namespace puffin::core
 			}
 		}
 
-		// UI
 		// Render
 		{
 			executeCallbacks(ExecutionStage::Render, true);
@@ -248,9 +237,6 @@ namespace puffin::core
 		{
 			// Cleanup Systems and ECS
 			executeCallbacks(ExecutionStage::Stop);
-
-			// Re-Initialize Systems and ECS
-			//m_sceneData->Init();
 
 			// Perform Pre-Gameplay Initialization on Systems
 			executeCallbacks(ExecutionStage::Setup);

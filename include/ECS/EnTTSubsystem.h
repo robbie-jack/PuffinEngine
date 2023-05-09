@@ -5,6 +5,7 @@
 #include "Types/UUID.h"
 #include "entt/entity/registry.hpp"
 #include "Components/SceneObjectComponent.h"
+#include "Core/Engine.h"
 
 namespace puffin::ecs
 {
@@ -15,7 +16,20 @@ namespace puffin::ecs
 		EnTTSubsystem() { mRegistry = std::make_shared<entt::registry>(); }
 		~EnTTSubsystem() override = default;
 
-		void setupCallbacks() override {}
+		void setupCallbacks() override
+		{
+			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "EnTTSubsystem: Stop", 255);
+		}
+
+		void stop()
+		{
+			const auto view = mRegistry->view<const SceneObjectComponent>();
+
+			mRegistry->destroy(view.begin(), view.end());
+			mRegistry->clear();
+
+			mIdToEntity.clear();
+		}
 
 		// Create a new entity with a default scene object component
 		entt::entity createEntity(const std::string& name)
@@ -24,19 +38,31 @@ namespace puffin::ecs
 
 			auto& sceneObject = mRegistry->emplace<SceneObjectComponent>(entity, generateID(), name);
 
-			mIdToEntityMap.emplace(sceneObject.id, entity);
+			mIdToEntity.emplace(sceneObject.id, entity);
 
 			return entity;
 		}
 
-		bool valid(const PuffinID uuid)
+		// Add an entity using an existing id
+		entt::entity addEntity(const PuffinID id)
 		{
-			return mIdToEntityMap.find(uuid) != mIdToEntityMap.end();
+			const auto entity = mRegistry->create();
+
+			auto& sceneObject = mRegistry->emplace<SceneObjectComponent>(entity, id);
+
+			mIdToEntity.emplace(sceneObject.id, entity);
+
+			return entity;
 		}
 
-		entt::entity getEntity(const PuffinID uuid)
+		bool valid(const PuffinID id)
 		{
-			const entt::entity& entity = mIdToEntityMap[uuid];
+			return mIdToEntity.find(id) != mIdToEntity.end();
+		}
+
+		entt::entity getEntity(const PuffinID id)
+		{
+			const entt::entity& entity = mIdToEntity[id];
 
 			return entity;
 		}
@@ -47,7 +73,7 @@ namespace puffin::ecs
 
 		std::shared_ptr<entt::registry> mRegistry = nullptr;
 
-		std::unordered_map<PuffinID, entt::entity> mIdToEntityMap;
+		std::unordered_map<PuffinID, entt::entity> mIdToEntity;
 
 	};
 }

@@ -25,6 +25,8 @@ namespace puffin
 			position(InPosition), rotation(InRotation), scale(InScale) {}
 #endif
 
+		TransformComponent(const TransformComponent& t) : position(t.position), orientation(t.orientation), scale(t.scale) {}
+
 		~TransformComponent() = default;
 
 		TransformComponent& operator=(const TransformComponent& rhs) = default;
