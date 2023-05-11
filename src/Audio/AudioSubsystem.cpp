@@ -14,7 +14,7 @@ namespace puffin::audio
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "AudioSubsystem: Init", 50);
 		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "AudioSubsystem: Update");
-		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "AudioSubsystem: Cleanup", 150);
+		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "AudioSubsystem: Shutdown", 150);
 	}
 
 	void AudioSubsystem::init()
@@ -30,7 +30,7 @@ namespace puffin::audio
 		}
 	}
 
-	void AudioSubsystem::cleanup()
+	void AudioSubsystem::shutdown()
 	{
 		stopAllSounds();
 

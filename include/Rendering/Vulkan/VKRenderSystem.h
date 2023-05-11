@@ -115,9 +115,8 @@ namespace puffin::rendering
 		void setupCallbacks() override;
 
 		void init();
-		void setup();
 		void render();
-		void cleanup();
+		void shutdown();
 
 		const vma::Allocator& allocator() const { return mAllocator ;}
 		const vk::Device& device() const { return mDevice; }

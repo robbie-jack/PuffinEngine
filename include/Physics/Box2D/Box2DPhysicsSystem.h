@@ -40,9 +40,9 @@ namespace puffin::physics
 
 		void setupCallbacks() override
 		{
-			mEngine->registerCallback(core::ExecutionStage::Start, [&]() { start(); }, "Box2DPhysicsSystem: Start");
+			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&]() { beginPlay(); }, "Box2DPhysicsSystem: BeginPlay");
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
-			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "Box2DPhysicsSystem: Stop");
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Box2DPhysicsSystem: endPlay");
 
 			auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
@@ -64,9 +64,9 @@ namespace puffin::physics
 			registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onDestroyRigidbody>(this);
 		}
 
-		void start();
+		void beginPlay();
 		void fixedUpdate();
-		void stop();
+		void endPlay();
 
 		void onConstructBox(entt::registry& registry, entt::entity entity);
 		void onDestroyBox(entt::registry& registry, entt::entity entity);

@@ -45,7 +45,7 @@ namespace puffin::core
 
 		void setupCallbacks() override;
 
-		void cleanup()
+		void shutdown()
 		{
 			mSignalHandlers.clear();
 		}

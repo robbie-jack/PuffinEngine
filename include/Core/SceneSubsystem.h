@@ -28,9 +28,9 @@ namespace puffin::io
 		virtual void init(const std::shared_ptr<ecs::EnTTSubsystem>& enttSubsystem) = 0;
 		virtual void update(const std::shared_ptr<ecs::EnTTSubsystem>& enttSubsystem) = 0;
 		virtual void clear() = 0;
-		virtual int size() = 0;
+		virtual size_t size() = 0;
 		virtual json saveToJson() const = 0;
-		virtual void loadFromJson(const json& data) = 0;
+		virtual void loadFromJson(const json& componentData) = 0;
 	};
 
 	template<typename CompT>
@@ -82,7 +82,7 @@ namespace puffin::io
 			mComponents.clear();
 		}
 
-		int size() override
+		size_t size() override
 		{
 			return mComponents.size();
 		}
@@ -102,13 +102,13 @@ namespace puffin::io
 			return data;
 		}
 
-		void loadFromJson(const json& data) override
+		void loadFromJson(const json& componentData) override
 		{
-			for (int i = 0; i < data.size(); i++)
+			for (const auto& data : componentData)
 			{
-				PuffinID id = data.at(i).at(0);
+				PuffinID id = data.at(0);
 
-				mComponents[id] = data.at(i).at(1);
+				mComponents[id] = data.at(1);
 			}
 		}
 
@@ -191,10 +191,8 @@ namespace puffin::io
 		}
 
 		// Save Entities/Components to json scene file
-		void save(const std::shared_ptr<ecs::EnTTSubsystem>& enttSubsystem)
+		void save()
 		{
-			updateData(enttSubsystem);
-
 			// Write scene data to json file
 			
 			json data;
@@ -214,9 +212,9 @@ namespace puffin::io
 		}
 
 		// Load  Entities/Components from Binary Scene File
-		void load()
+		void load(const bool forceLoad = false)
 		{
-			if (mHasData)
+			if (mHasData && !forceLoad)
 				return;
 
 			if (!fs::exists(mPath))
@@ -278,11 +276,12 @@ namespace puffin::io
 
 		void setupCallbacks() override
 		{
-			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "SceneSubsystem: Setup", 0);
-			mEngine->registerCallback(core::ExecutionStage::Start, [&]() { start(); }, "SceneSubsystem: Start", 0);
+			mEngine->registerCallback(core::ExecutionStage::Init, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 250);
+			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "SceneSubsystem: BeginPlay", 0);
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 250);
 		}
 
-		void setup() const
+		void loadAndInit() const
 		{
 			const auto subsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
 
@@ -290,7 +289,7 @@ namespace puffin::io
 			mSceneData->init(subsystem);
 		}
 
-		void start() const
+		void beginPlay() const
 		{
 			const auto subsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
 

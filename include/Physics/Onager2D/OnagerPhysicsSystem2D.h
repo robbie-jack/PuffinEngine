@@ -44,7 +44,7 @@ namespace puffin::physics
 		{
 			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "Onager2DPhysicsSystem: Init");
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
-			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "Onager2DPhysicsSystem: Stop");
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Onager2DPhysicsSystem: EndPlay");
 
 			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
@@ -68,7 +68,7 @@ namespace puffin::physics
 
 		void init();
 		void fixedUpdate();
-		void stop();
+		void endPlay();
 
 		template<typename T>
 		void registerBroadphase()

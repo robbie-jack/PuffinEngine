@@ -20,7 +20,7 @@ namespace puffin::window
 		void setupCallbacks() override;
 
 		void init();
-		void cleanup();
+		void shutdown();
 
 		GLFWwindow* primaryWindow() const
 		{

@@ -24,6 +24,8 @@ namespace puffin::physics
 	{
 		BoxComponent2D() = default;
 
+		BoxComponent2D(const Vector2f& halfExtent_) : halfExtent(halfExtent_) {}
+
 		Vector2f halfExtent = { 0.5f };
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(BoxComponent2D, centreOfMass, halfExtent)

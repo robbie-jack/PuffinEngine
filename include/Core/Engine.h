@@ -34,14 +34,13 @@ namespace puffin::core
 	{
 		Idle,				// Only used for calculating idle time when frame rate is limited, do not use with callback
 		Init,				// Occurs once on engine launch, use for one off system initialization
-		Setup,				// Occurs on engine launch and whenever gameplay is stopped
-		Start,				// Occurs whenever gameplay is started
+		BeginPlay,			// Occurs whenever gameplay is started
 		SubsystemUpdate,	// Occurs every frame, regardless if game is currently playing/paused
 		FixedUpdate,		// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
 		Update,				// Update once a frame - Useful for non-determinstic gameplay code
 		Render,				// Update once a frame - Useful for code which relates to the rendering pipeline
-		Stop,				// Occurs when game play is stopped, use for resetting any gameplay data
-		Cleanup				// Occurs when engine exits, use for cleaning up all data
+		EndPlay,			// Occurs when game play is stopped, use for resetting any gameplay data
+		Shutdown			// Occurs when engine exits, use for cleaning up all data
 	};
 
 	const std::vector<std::pair<ExecutionStage, const std::string>> gExecutionStageOrder =
@@ -58,7 +57,7 @@ namespace puffin::core
 		Playing,		// Game is playing, all systems being updated
 		JustStopped,	// Game has just been stopped, perform all system stop functions
 		Stopped,		// Game is stopped, no physics or game code is begin run, all data is in default state
-		JustPaused,	// Game has just been paused
+		JustPaused,		// Game has just been paused
 		Paused,			// Game is paused, systems not being updated,
 		JustUnpaused	// Game has just been unpaused
 	};

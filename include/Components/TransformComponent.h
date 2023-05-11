@@ -18,9 +18,13 @@ namespace puffin
 		TransformComponent() = default;
 
 #ifdef PFN_USE_DOUBLE_PRECISION
+		TransformComponent(const Vector3d& position_) : position(position_) {}
+
 		TransformComponent(const Vector3d& position_, const maths::Quat& orientation_, const Vector3f& scale_) :
 			position(position_), orientation(orientation_), scale(scale_) {}
 #else
+		TransformComponent(const Vector3f& position_) : position(position_) {}
+
 		TransformComponent(const Vector3f& position_, const maths::Quat& orientation_, const Vector3f& scale_) :
 			position(position_), orientation(orientation_), scale(scale_) {}
 #endif

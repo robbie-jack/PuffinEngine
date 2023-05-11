@@ -101,15 +101,17 @@ namespace puffin::core
 		assets::AssetRegistry::get()->loadAssetCache();
 		//ReimportDefaultAssets();
 
-		// Create Default Scene in code -- used when scene serialization is changed
-		//defaultScene();
-		//physicsScene();
-		//proceduralScene();
+		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
+		{
+			// Create Default Scene in code -- used when scene serialization is changed
+			//defaultScene();
+			physicsScene();
+			//proceduralScene();
 
-		// Load Scene -- normal behaviour
-		//sceneData->loadAndInit(enttSubsystem);
-		//sceneData->load();
-		//sceneData->save(enttSubsystem);
+			sceneData->updateData(enttSubsystem);
+			sceneData->save();
+			sceneData->clear();
+		}
 
 		mRunning = true;
 		mPlayState = PlayState::Stopped;
@@ -117,7 +119,6 @@ namespace puffin::core
 		// Initialize Systems
 		{
 			executeCallbacks(ExecutionStage::Init);
-			executeCallbacks(ExecutionStage::Setup);
 		}
 
 		mLastTime = glfwGetTime(); // Time Count Started
@@ -187,7 +188,7 @@ namespace puffin::core
 		// Call system start functions to prepare for gameplay
 		if (mPlayState == PlayState::Started)
 		{
-			executeCallbacks(ExecutionStage::Start);
+			executeCallbacks(ExecutionStage::BeginPlay);
 
 			mAccumulatedTime = 0.0;
 			mPlayState = PlayState::Playing;
@@ -236,10 +237,7 @@ namespace puffin::core
 		if (mPlayState == PlayState::JustStopped)
 		{
 			// Cleanup Systems and ECS
-			executeCallbacks(ExecutionStage::Stop);
-
-			// Perform Pre-Gameplay Initialization on Systems
-			executeCallbacks(ExecutionStage::Setup);
+			executeCallbacks(ExecutionStage::EndPlay);
 
 			audioSubsystem->stopAllSounds();
 
@@ -258,7 +256,7 @@ namespace puffin::core
 	void Engine::destroy()
 	{
 		// Cleanup All Systems
-		executeCallbacks(ExecutionStage::Cleanup);
+		executeCallbacks(ExecutionStage::Shutdown);
 
 		mSystems.clear();
 		mSubsystems.clear();
@@ -466,23 +464,20 @@ namespace puffin::core
 			auto& transform = registry->emplace<TransformComponent>(floorEntity);
 			transform.scale = Vector3f(250.0f, 1.0f, 1.0f);
 
-			auto& mesh = registry->emplace<rendering::MeshComponent>(floorEntity);
-			mesh.meshAssetId = meshId3;
-			mesh.textureAssetId = textureId2;
+			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, textureId2);
 
-			auto& box = registry->emplace<physics::BoxComponent2D>(floorEntity);
-			registry->patch<physics::BoxComponent2D>(floorEntity, [](auto& box) { box.halfExtent = Vector2f(250.0f, 1.0f); });
+			registry->emplace<physics::BoxComponent2D>(floorEntity, Vector2f(250.0f, 1.0f));
 
-			auto& rb = registry->emplace<physics::RigidbodyComponent2D>(floorEntity);
+			registry->emplace<physics::RigidbodyComponent2D>(floorEntity);
 		}
 
 		// Create Box Entities
 		{
-			constexpr float xOffset = 20.0f;
+			constexpr float xOffset = 200.0f;
 			const Vector3f startPosition(-xOffset, 10.f, 0.f);
 			const Vector3f endPosition(xOffset, 10.f, 0.f);
 
-			constexpr int numBodies = 10;
+			constexpr int numBodies = 100;
 			Vector3f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;
 
@@ -493,19 +488,13 @@ namespace puffin::core
 
 				const Vector3f position = startPosition + (positionOffset * static_cast<float>(i));
 
-				auto& transform = registry->emplace<TransformComponent>(boxEntity);
-				transform.position = position;
+				registry->emplace<TransformComponent>(boxEntity, position);
 
-				auto& mesh = registry->emplace<rendering::MeshComponent>(boxEntity);
-				mesh.meshAssetId = meshId3;
-				mesh.textureAssetId = textureId2;
+				registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, textureId2);
 
-				auto& box = registry->emplace<physics::BoxComponent2D>(boxEntity);
-				registry->patch<physics::BoxComponent2D>(boxEntity, [](auto& box) { box.halfExtent = Vector2f(1.0f); });
+				registry->emplace<physics::BoxComponent2D>(boxEntity, Vector2f(1.0f));
 
-				auto& rb = registry->emplace<physics::RigidbodyComponent2D>(boxEntity);
-				rb.mass = 1.0f;
-				rb.bodyType = physics::BodyType::Dynamic;
+				registry->emplace<physics::RigidbodyComponent2D>(boxEntity, physics::BodyType::Dynamic, 1.0f);
 			}
 		}
 	}

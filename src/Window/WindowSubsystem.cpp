@@ -16,7 +16,7 @@ namespace puffin::window
 	void WindowSubsystem::setupCallbacks()
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "WindowSubsystem: Init", 40);
-		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "WindowSubsystem: Cleanup", 150);
+		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "WindowSubsystem: Shutdown", 150);
 	}
 
 	void WindowSubsystem::init()
@@ -39,7 +39,7 @@ namespace puffin::window
 		glfwMakeContextCurrent(mPrimaryWindow);
 	}
 
-	void WindowSubsystem::cleanup()
+	void WindowSubsystem::shutdown()
 	{
 		glfwDestroyWindow(mPrimaryWindow);
 

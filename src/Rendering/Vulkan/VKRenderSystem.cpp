@@ -53,9 +53,8 @@ namespace puffin::rendering
 	void VKRenderSystem::setupCallbacks()
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init");
-		mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "VKRenderSystem: Setup");
 		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
-		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "VKRenderSystem: Cleanup");
+		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "VKRenderSystem: Cleanup");
 
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
@@ -127,15 +126,6 @@ namespace puffin::rendering
 		mUpdateRenderables = true;
 	}
 
-	void VKRenderSystem::setup()
-	{
-		processComponents();
-
-		updateRenderData();
-
-		updateDescriptors();
-	}
-
 	void VKRenderSystem::render()
 	{
 		processEvents();
@@ -144,10 +134,12 @@ namespace puffin::rendering
 
 		updateRenderData();
 
+		updateDescriptors();
+
 		draw();
 	}
 
-	void VKRenderSystem::cleanup()
+	void VKRenderSystem::shutdown()
 	{
 		mDevice.waitIdle();
 

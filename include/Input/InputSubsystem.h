@@ -46,7 +46,7 @@ namespace puffin
 
 			void init();
 			void update();
-			void cleanup();
+			void shutdown();
 
 			void addAction(std::string name, int key);
 			void addAction(std::string name, std::vector<int> keys);

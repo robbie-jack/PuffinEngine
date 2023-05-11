@@ -57,6 +57,7 @@ namespace puffin::scripting
 
 		// Script Functions
 		asIScriptFunction* startFunc;
+		asIScriptFunction* fixedUpdateFunc;
 		asIScriptFunction* updateFunc;
 		asIScriptFunction* stopFunc;
 

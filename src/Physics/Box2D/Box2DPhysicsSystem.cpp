@@ -11,7 +11,7 @@
 
 namespace puffin::physics
 {
-	void Box2DPhysicsSystem::start()
+	void Box2DPhysicsSystem::beginPlay()
 	{
 		// Create Physics World
 		mPhysicsWorld = std::make_unique<b2World>(mGravity);
@@ -54,7 +54,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::stop()
+	void Box2DPhysicsSystem::endPlay()
 	{
 		mCircleShapes.clear();
 		mPolygonShapes.clear();

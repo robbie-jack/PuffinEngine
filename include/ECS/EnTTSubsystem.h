@@ -18,10 +18,10 @@ namespace puffin::ecs
 
 		void setupCallbacks() override
 		{
-			mEngine->registerCallback(core::ExecutionStage::Stop, [&]() { stop(); }, "EnTTSubsystem: Stop", 255);
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "EnTTSubsystem: EndPlay", 200);
 		}
 
-		void stop()
+		void endPlay()
 		{
 			const auto view = mRegistry->view<const SceneObjectComponent>();
 

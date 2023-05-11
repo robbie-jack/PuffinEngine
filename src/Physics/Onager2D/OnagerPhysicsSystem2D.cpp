@@ -73,7 +73,7 @@ namespace puffin
 			mCollidersUpdated = false;
 		}
 
-		void OnagerPhysicsSystem2D::stop()
+		void OnagerPhysicsSystem2D::endPlay()
 		{
 			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 

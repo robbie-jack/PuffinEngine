@@ -19,7 +19,7 @@ namespace puffin::ui
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "UISubsystem: Init", 50);
 		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);
-		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "UISubsystem: Cleanup");
+		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Cleanup");
 	}
 
 	void UISubsystem::init()
@@ -249,7 +249,11 @@ namespace puffin::ui
 
 			if (ImGui::Button("Save"))
 			{
-				sceneData->save(mEngine->getSubsystem<ecs::EnTTSubsystem>());
+				const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+
+				sceneData->updateData(enttSubsystem);
+				sceneData->save();
+
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -315,7 +319,11 @@ namespace puffin::ui
 				if (ImGui::MenuItem("Save Scene"))
 				{
 					const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
-					sceneData->save(mEngine->getSubsystem<ecs::EnTTSubsystem>());
+
+					const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+
+					sceneData->updateData(enttSubsystem);
+					sceneData->save();
 				}
 
 				if (ImGui::MenuItem("Save Scene As"))

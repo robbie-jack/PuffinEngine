@@ -12,7 +12,7 @@ namespace puffin
 		{
 			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "InputSubsystem: Init", 50);
 			mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "InputSubsystem: Update");
-			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "InputSubsystem: Cleanup", 150);
+			mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "InputSubsystem: Shutdown", 150);
 		}
 
 		void InputSubsystem::init()
@@ -133,7 +133,7 @@ namespace puffin
 			}
 		}
 
-		void InputSubsystem::cleanup()
+		void InputSubsystem::shutdown()
 		{
 			mWindow = nullptr;
 		}

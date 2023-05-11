@@ -116,7 +116,7 @@ namespace puffin::scripting
 
 		// Register ECS World Access Functions
 		/*r = scriptEngine->RegisterGlobalFunction("STransformComponent@ GetTransformComponent(uint64)",
-			asMETHOD(ECS::World, GetComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);*/
+			asMETHOD(entt::registry, get<TransformComponent>), asCALL_THISCALL_ASGLOBAL, registry); assert(r >= 0);*/
 
 		/*r = scriptEngine->RegisterGlobalFunction("bool HasTransformComponent(uint64)",
 			asMETHOD(ECS::World, HasComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);*/

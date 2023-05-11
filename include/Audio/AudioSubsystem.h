@@ -41,7 +41,7 @@ namespace puffin::audio
 
 		void init();
 		void update();
-		void cleanup();
+		void shutdown();
 
 		// Play Sound, If this sound is already active, but paused, start playing it again
 		void playSoundEffect(PuffinID soundId, float volume = 1.0f, bool looping = false, bool restart = false);

@@ -24,6 +24,10 @@ namespace puffin
 
 		struct RigidbodyComponent2D
 		{
+			RigidbodyComponent2D() = default;
+
+			RigidbodyComponent2D(const BodyType bodyType_, const float mass_) : bodyType(bodyType_), mass(mass_) {}
+
 			Vector2f linearVelocity = Vector2f(0.0f);
 			float angularVelocity = 0.0f;
 
