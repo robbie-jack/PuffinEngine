@@ -12,9 +12,9 @@ namespace puffin::rendering
 {
 	struct MeshComponent
 	{
-		MeshComponent() {}
+		MeshComponent() = default;
 		
-		MeshComponent(PuffinID meshId, PuffinID textureId) :
+		MeshComponent(const PuffinID meshId, const PuffinID textureId) :
 			meshAssetId(meshId), textureAssetId(textureId)
 		{
 		}

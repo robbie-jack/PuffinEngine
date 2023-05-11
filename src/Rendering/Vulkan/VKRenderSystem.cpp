@@ -50,6 +50,22 @@
 
 namespace puffin::rendering
 {
+	void VKRenderSystem::setupCallbacks()
+	{
+		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init");
+		mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "VKRenderSystem: Setup");
+		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
+		mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "VKRenderSystem: Cleanup");
+
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+
+		registry->on_construct<MeshComponent>().connect<&VKRenderSystem::onConstructMesh>(this);
+		registry->on_update<MeshComponent>().connect<&VKRenderSystem::onUpdateMesh>(this);
+
+		registry->on_construct<TransformComponent>().connect<&VKRenderSystem::onUpdateTransform>(this);
+		registry->on_update<TransformComponent>().connect<&VKRenderSystem::onUpdateTransform>(this);
+	}
+
 	void VKRenderSystem::init()
 	{
 		initVulkan();
@@ -103,13 +119,20 @@ namespace puffin::rendering
 			}
 		);
 
+		mRenderables.reserve(gMaxObjects);
+		mObjectData.reserve(gMaxObjects);
+
 		mIsInitialized = true;
+
+		mUpdateRenderables = true;
 	}
 
 	void VKRenderSystem::setup()
 	{
 		processComponents();
+
 		updateRenderData();
+
 		updateDescriptors();
 	}
 
@@ -122,12 +145,6 @@ namespace puffin::rendering
 		updateRenderData();
 
 		draw();
-
-		// Clear all entity sets in mesh draw list
-		for (auto& [fst, snd] : mMeshDrawList)
-		{
-			snd.clear();
-		}
 	}
 
 	void VKRenderSystem::cleanup()
@@ -168,6 +185,43 @@ namespace puffin::rendering
 	void VKRenderSystem::onInputEvent(const input::InputEvent& inputEvent)
 	{
 		mInputEvents.push(inputEvent);
+	}
+
+	void VKRenderSystem::onConstructMesh(entt::registry& registry, entt::entity entity)
+	{
+		const auto mesh = registry.get<MeshComponent>(entity);
+
+		mMeshesToLoad.insert(mesh.meshAssetId);
+		mTexturesToLoad.insert(mesh.textureAssetId);
+
+		if (registry.any_of<TransformComponent>(entity))
+		{
+			const auto object = registry.get<SceneObjectComponent>(entity);
+
+			mObjectsToRefresh.insert(object.id);
+
+			mUpdateRenderables = true;
+		}
+	}
+
+	void VKRenderSystem::onUpdateMesh(entt::registry& registry, entt::entity entity)
+	{
+		const auto mesh = registry.get<MeshComponent>(entity);
+
+		mMeshesToLoad.insert(mesh.meshAssetId);
+		mTexturesToLoad.insert(mesh.textureAssetId);
+	}
+
+	void VKRenderSystem::onUpdateTransform(entt::registry& registry, entt::entity entity)
+	{
+		if (registry.any_of<MeshComponent>(entity))
+		{
+			const auto object = registry.get<SceneObjectComponent>(entity);
+
+			mObjectsToRefresh.insert(object.id);
+
+			mUpdateRenderables = true;
+		}
 	}
 
 	void VKRenderSystem::initVulkan()
@@ -827,12 +881,30 @@ namespace puffin::rendering
 	{
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
-
-		for (auto [entity, object, transform, mesh] : meshView.each())
+		if (mUpdateRenderables)
 		{
-			mMeshDrawList[mesh.meshAssetId].insert(object.id);
-			mTexDrawList[mesh.textureAssetId].insert(object.id);
+			const auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
+
+			mRenderables.clear();
+
+			for (auto [entity, object, transform, mesh] : meshView.each())
+			{
+				mRenderables.emplace_back(object.id, mesh.meshAssetId);
+
+				if (!mObjectData.contains(object.id))
+				{
+					mObjectData.insert(object.id, GPUObjectData());
+				}
+			}
+
+			std::sort(mRenderables.begin(), mRenderables.end());
+
+			for (auto& frameData : mFrameRenderData)
+			{
+				frameData.copyObjectDataToGPU = true;
+			}
+
+			mUpdateRenderables = false;
 		}
 
 		/*auto lightView = registry->view<const ECS::SceneObjectComponent, const TransformComponent, LightComponent>();
@@ -918,65 +990,31 @@ namespace puffin::rendering
 
 	void VKRenderSystem::updateRenderData()
 	{
-		std::set<PuffinID> meshesToBeRemoved;
-
-		for (const auto& [fst, snd] : mMeshDrawList)
+		for (const auto meshID : mMeshesToLoad)
 		{
-			const auto staticMesh = std::static_pointer_cast<assets::StaticMeshAsset>(
-				assets::AssetRegistry::get()->getAsset(fst));
-			mStaticRenderData.combinedMeshBuffer.addMesh(staticMesh);
-
-			// Check if mesh is still in use by any in-flight frames
-			if (!snd.empty())
+			if (const auto staticMesh = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshID)))
 			{
-				getCurrentFrameData().renderedMeshes.insert(fst);
-			}
-			else
-			{
-				getCurrentFrameData().renderedMeshes.erase(fst);
-
-				bool meshStillBeingRendered = false;
-				for (const auto& frameRenderData : mFrameRenderData)
-				{
-					if (frameRenderData.renderedMeshes.count(fst) == 1)
-						meshStillBeingRendered = true;
-				}
-
-				if (!meshStillBeingRendered)
-				{
-					meshesToBeRemoved.insert(fst);
-				}
+				mStaticRenderData.combinedMeshBuffer.addMesh(staticMesh);
 			}
 		}
 
-		// Remove all marked meshes from combined buffer
-		if (!meshesToBeRemoved.empty())
-		{
-			// Currently disabled as RemoveMeshes call caused scene rendering to be messed up, will need investigated
-			//m_staticRenderData.combinedMeshBuffer.RemoveMeshes(meshesToBeRemoved);
-
-			// Remove marked meshes from draw list
-			for (const auto& meshID : meshesToBeRemoved)
-			{
-				mMeshDrawList.erase(meshID);
-			}
-
-			meshesToBeRemoved.clear();
-		}
+		mMeshesToLoad.clear();
 
 		bool textureDescriptorNeedsUpdated = false;
-		for (const auto& [fst, snd] : mTexDrawList)
+		for (const auto texID : mTexturesToLoad)
 		{
-			if (!mTexData.contains(fst))
+			if (!mTexData.contains(texID))
 			{
 				TextureDataVK texData;
-				loadTexture(fst, texData);
+				loadTexture(texID, texData);
 
-				mTexData.insert(fst, texData);
+				mTexData.insert(texID, texData);
 
 				textureDescriptorNeedsUpdated = true;
 			}
 		}
+
+		mTexturesToLoad.clear();
 
 		if (textureDescriptorNeedsUpdated)
 		{
@@ -1249,107 +1287,117 @@ namespace puffin::rendering
 
 	void VKRenderSystem::prepareObjectData()
 	{
-		const auto enkiTSSubSystem = mEngine->getSubsystem<core::EnkiTSSubsystem>();
-
-		const AllocatedBuffer& objectBuffer = getCurrentFrameData().objectBuffer;
-
-		std::vector<GPUObjectData> objects = {};
-		objects.reserve(gMaxObjects);
-
-		// Calculate t value for rendering interpolated position
-		const double t = mEngine->accumulatedTime() / mEngine->timeStepFixed();
-
-		std::vector<PuffinID> entities;
-		entities.reserve(gMaxObjects);
-
-		int numObjects = 0;
-
-		for (const auto& [fst, snd] : mMeshDrawList)
+		if (!mObjectsToRefresh.empty())
 		{
-			for (const auto entityID : snd)
-			{
-				entities.emplace_back(entityID);
+			const auto enkiTSSubSystem = mEngine->getSubsystem<core::EnkiTSSubsystem>();
 
-				numObjects++;
+			// Calculate t value for rendering interpolated position
+			const double t = mEngine->accumulatedTime() / mEngine->timeStepFixed();
+
+			std::vector<PuffinID> objectsToRefresh;
+			objectsToRefresh.reserve(mObjectsToRefresh.size());
+
+			for (const auto id : mObjectsToRefresh)
+			{
+				objectsToRefresh.push_back(id);
 			}
-		}
 
-		objects.resize(numObjects);
+			const auto numObjectsToRefresh = objectsToRefresh.size();
 
-		const uint32_t numThreads = enkiTSSubSystem->getTaskScheduler()->GetNumTaskThreads();
+			const uint32_t numThreads = enkiTSSubSystem->getTaskScheduler()->GetNumTaskThreads();
 
-		std::vector<std::vector<std::pair<GPUObjectData, uint32_t>>> threadObjects;
-		// Temp object vectors for writing to by threads
+			// Temp object vectors for writing to by threads
+			std::vector<std::vector<std::pair<PuffinID, GPUObjectData>>> threadObjects;
 
-		threadObjects.resize(numThreads);
-		for (int idx = 0; idx < threadObjects.size(); idx++)
-		{
-			threadObjects[idx].reserve(500);
-		}
-
-		auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
-		auto registry = enttSubsystem->registry();
-
-		enki::TaskSet task(numObjects, [&](enki::TaskSetPartition range, uint32_t threadnum)
-		{
-			uint32_t numObjectsForThread = range.end - range.start;
-
-			for (uint32_t objectIdx = range.start; objectIdx < range.end; objectIdx++)
+			threadObjects.resize(numThreads);
+			for (auto& threadObject : threadObjects)
 			{
-				auto entity = enttSubsystem->getEntity(entities[objectIdx]);
+				threadObject.reserve(500);
+			}
 
-				const auto& transform = registry->get<TransformComponent>(entity);
-				const auto& mesh = registry->get<MeshComponent>(entity);
+			const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+			const auto registry = enttSubsystem->registry();
+
+			enki::TaskSet task(numObjectsToRefresh, [&](enki::TaskSetPartition range, uint32_t threadnum)
+			{
+				for (uint32_t objectIdx = range.start; objectIdx < range.end; objectIdx++)
+				{
+					const auto entityID = objectsToRefresh[objectIdx];
+					const auto entity = enttSubsystem->getEntity(entityID);
+
+					const auto& transform = registry->get<TransformComponent>(entity);
+					const auto& mesh = registry->get<MeshComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
-				Vector3d position = {0.0};
+					Vector3d position = { 0.0 };
 #else
-				Vector3f position = { 0.0f };
+					Vector3f position = { 0.0f };
 #endif
 
-				if (registry->all_of<physics::VelocityComponent>(entity))
-				{
-					const auto& velocity = registry->get<physics::VelocityComponent>(entity);
+					if (registry->all_of<physics::VelocityComponent>(entity))
+					{
+						const auto& velocity = registry->get<physics::VelocityComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
-					Vector3d interpolatedPosition = transform.position + velocity.linear * mEngine->timeStepFixed();
+						Vector3d interpolatedPosition = transform.position + velocity.linear * mEngine->timeStepFixed();
 #else
-					Vector3f interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
+						Vector3f interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
 #endif
 
-					position = maths::lerp(transform.position, interpolatedPosition, t);
+						position = maths::lerp(transform.position, interpolatedPosition, t);
+					}
+					else
+					{
+						position = transform.position;
+					}
+
+					GPUObjectData object;
+
+					buildModelTransform(position, transform.orientation.toEulerAngles(), transform.scale, object.model);
+					object.texIndex = mTexData[mesh.textureAssetId].idx;
+
+					threadObjects[threadnum].emplace_back(entityID, object);
 				}
-				else
-				{
-					position = transform.position;
-				}
+			});
 
-				GPUObjectData object;
+			task.m_MinRange = 500; // Try and ensure each thread gets a minimum of transforms matrices to calculate
 
-				buildModelTransform(position, transform.orientation.toEulerAngles(), transform.scale, object.model);
-				object.texIndex = mTexData[mesh.textureAssetId].idx;
+			enkiTSSubSystem->getTaskScheduler()->AddTaskSetToPipe(&task);
 
-				threadObjects[threadnum].emplace_back(object, objectIdx);
-			}
-		});
+			enkiTSSubSystem->getTaskScheduler()->WaitforTask(&task);
 
-		task.m_MinRange = 500; // Try and ensure each thread gets
-
-		enkiTSSubSystem->getTaskScheduler()->AddTaskSetToPipe(&task);
-
-		enkiTSSubSystem->getTaskScheduler()->WaitforTask(&task);
-
-		for (const auto& tempThreadObjects : threadObjects)
-		{
-			for (const auto& [fst, snd] : tempThreadObjects)
+			for (const auto& tempThreadObjects : threadObjects)
 			{
-				objects[snd] = fst;
+				for (const auto& [idx, object] : tempThreadObjects)
+				{
+					if (mObjectData.contains(idx))
+					{
+						mObjectData[idx] = object;
+					}
+				}
 			}
+
+			mObjectsToRefresh.clear();
 		}
 
-		const auto* objectData = objects.data();
+		if (getCurrentFrameData().copyObjectDataToGPU)
+		{
+			std::vector<GPUObjectData> objects = {};
+			objects.reserve(gMaxObjects);
 
-		std::copy_n(objectData, numObjects, static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData));
+			for (const auto& renderable : mRenderables)
+			{
+				objects.emplace_back(mObjectData[renderable.entityID]);
+			}
+
+			const auto* objectData = objects.data();
+
+			const AllocatedBuffer& objectBuffer = getCurrentFrameData().objectBuffer;
+
+			std::copy_n(objectData, objects.size(), static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData));
+
+			getCurrentFrameData().copyObjectDataToGPU = false;
+		}
 	}
 
 	void VKRenderSystem::prepareLightData()
@@ -1406,26 +1454,15 @@ namespace puffin::rendering
 
 		int idx = 0;
 
-		auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
-		auto registry = enttSubsystem->registry();
-
-		for (const auto [fst, snd] : mMeshDrawList)
+		for (const auto& [entityID, meshID] : mRenderables)
 		{
-			for (const auto entityID : snd)
-			{
-				auto entity = enttSubsystem->getEntity(entityID);
+			indirectCmds[idx].vertexOffset = mStaticRenderData.combinedMeshBuffer.meshVertexOffset(meshID);
+			indirectCmds[idx].firstIndex = mStaticRenderData.combinedMeshBuffer.meshIndexOffset(meshID);
+			indirectCmds[idx].indexCount = mStaticRenderData.combinedMeshBuffer.meshIndexCount(meshID);
+			indirectCmds[idx].firstInstance = idx;
+			indirectCmds[idx].instanceCount = 1;
 
-				const auto& mesh = registry->get<MeshComponent>(entity);
-
-				indirectCmds[idx].vertexOffset = mStaticRenderData.combinedMeshBuffer.
-				                                                   meshVertexOffset(mesh.meshAssetId);
-				indirectCmds[idx].firstIndex = mStaticRenderData.combinedMeshBuffer.meshIndexOffset(mesh.meshAssetId);
-				indirectCmds[idx].indexCount = mStaticRenderData.combinedMeshBuffer.meshIndexCount(mesh.meshAssetId);
-				indirectCmds[idx].firstInstance = idx;
-				indirectCmds[idx].instanceCount = 1;
-
-				idx++;
-			}
+			idx++;
 		}
 
 		getCurrentFrameData().drawCount = idx;

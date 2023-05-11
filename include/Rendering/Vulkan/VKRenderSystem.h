@@ -15,29 +15,28 @@
 #include "VKTypes.h"
 #include "VKUnifiedGeometryBuffer.h"
 #include "Assets/TextureAsset.h"
-#include "Components/Rendering/CameraComponent.h"
 #include "Core/Engine.h"
 #include "Core/System.h"
+#include "ECS/EnTTSubsystem.h"
 #include "Input/InputEvent.h"
 #include "Types/DeletionQueue.h"
 #include "Types/RingBuffer.h"
 #include "Types/PackedArray.h"
 
+#include <unordered_set>
+
+#include "Components/Rendering/CameraComponent.h"
+
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
 #else
-constexpr bool gEnableValidationLayers = true;
-#endif
-
 namespace puffin
 {
-	namespace maths
-	{
-		struct Mat3;
-	}
-
 	struct TransformComponent;
 }
+
+constexpr bool gEnableValidationLayers = true;
+#endif
 
 namespace puffin::rendering
 {
@@ -86,11 +85,12 @@ namespace puffin::rendering
 		// Material Data (Set for each unique material i.e textures)
 		vk::DescriptorSet materialDescriptor;
 
-		std::set<PuffinID> renderedMeshes; // Set of meshes last rendered using this data
+		std::unordered_set<PuffinID> renderedMeshes; // Set of meshes last rendered using this data
 
 		bool swapchainNeedsUpdated = false;
 		bool offscreenNeedsUpdated = false;
 		bool textureDescriptorNeedsUpdated = false;
+		bool copyObjectDataToGPU = false;
 	};
 
 	const static std::unordered_map<assets::TextureFormat, vk::Format> gTexFormatVK =
@@ -112,13 +112,7 @@ namespace puffin::rendering
 			mSystemInfo.name = "VKRenderSystem";
 		}
 
-		void setupCallbacks() override
-		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init");
-			mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "VKRenderSystem: Setup");
-			mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
-			mEngine->registerCallback(core::ExecutionStage::Cleanup, [&]() { cleanup(); }, "VKRenderSystem: Cleanup");
-		}
+		void setupCallbacks() override;
 
 		void init();
 		void setup();
@@ -129,10 +123,13 @@ namespace puffin::rendering
 		const vk::Device& device() const { return mDevice; }
 		const UploadContext& uploadContext() const { return mUploadContext; }
 		const vk::Queue& graphicsQueue() const { return mGraphicsQueue; }
+		bool isReBarEnabled() const { return mIsReBarEnabled; }
 
 		void onInputEvent(const input::InputEvent& inputEvent);
 
-		bool isReBarEnabled() const { return mIsReBarEnabled; }
+		void onConstructMesh(entt::registry& registry, entt::entity entity);
+		void onUpdateMesh(entt::registry& registry, entt::entity entity);
+		void onUpdateTransform(entt::registry& registry, entt::entity entity);
 
 	private:
 
@@ -164,10 +161,17 @@ namespace puffin::rendering
 		StaticRenderData mStaticRenderData;
 		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
 
-		std::unordered_map<PuffinID, std::set<size_t>> mMeshDrawList;
-
 		PackedVector<TextureDataVK> mTexData;
-		std::unordered_map<PuffinID, std::set<size_t>> mTexDrawList;
+
+		std::unordered_set<PuffinID> mMeshesToLoad; // Meshes that need to be loaded
+		std::unordered_set<PuffinID> mTexturesToLoad; // Meshes that need to be loaded
+		std::unordered_set<PuffinID> mMaterialsToLoad; // Meshes that need to be loaded
+
+		std::vector<MeshRenderable> mRenderables; // Renderables data
+		bool mUpdateRenderables = false;
+
+		PackedVector<GPUObjectData> mObjectData; // Data for rendering each object in scene
+		std::unordered_set<PuffinID> mObjectsToRefresh; // Objects which need their mesh data refreshed
 
 		uint32_t mFrameNumber;
 		uint32_t mDrawCalls = 0;

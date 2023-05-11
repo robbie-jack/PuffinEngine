@@ -239,7 +239,10 @@ namespace puffin
 				calculateImpulseByGravity(rb);
 
 				// Update Position
-				transform.position += rb.linearVelocity * mEngine->timeStepFixed();
+				registry->patch<TransformComponent>(entity, [&](auto& transform)
+				{
+					transform.position += rb.linearVelocity * mEngine->timeStepFixed();
+				});
 
 				Vector3f euler = maths::radToDeg(transform.orientation.toEulerAngles());
 
@@ -251,7 +254,7 @@ namespace puffin
 					euler.z = 0.0f;
 				}
 
-				transform.orientation = maths::Quat::fromEulerAngles(euler.x, euler.y, euler.z);
+				//transform.orientation = maths::Quat::fromEulerAngles(euler.x, euler.y, euler.z);
 
 				velocity.linear.x = rb.linearVelocity.x;
 				velocity.linear.y = rb.linearVelocity.y;
@@ -339,8 +342,16 @@ namespace puffin
 					const float tB = bodyB.mass / (bodyA.mass + bodyB.mass);
 
 					const Vector2 ds = (contact.pointOnB - contact.pointOnA) * contact.normal.abs();
-					transformA.position += ds * tA;
-					transformB.position -= ds * tB;
+
+					registry->patch<TransformComponent>(entityA, [&](auto& transform)
+					{
+						transform.position += ds * tA;
+					});
+
+					registry->patch<TransformComponent>(entityB, [&](auto& transform)
+					{
+						transform.position -= ds * tB;
+					});
 				}
 			}
 		}

@@ -100,7 +100,7 @@ namespace puffin::rendering
 
 	struct AssetDataVK
 	{
-		puffin::PuffinID assetId;
+		PuffinID assetId;
 	};
 
 	struct MeshDataVK : AssetDataVK
@@ -120,6 +120,19 @@ namespace puffin::rendering
 		Texture texture;
 	};
 
+	struct MeshRenderable
+	{
+		MeshRenderable(const PuffinID entityID_, const PuffinID meshID_) : entityID(entityID_), meshID(meshID_) {}
+
+		PuffinID entityID;
+		PuffinID meshID;
+
+		bool operator<(const MeshRenderable& other) const
+		{
+			return meshID < other.meshID && entityID < other.entityID;
+		}
+	};
+
 	// GPU Data Structs
 
 	struct GPUCameraData
@@ -133,6 +146,9 @@ namespace puffin::rendering
 	{
 		alignas(16) glm::mat4 model;
 		alignas(4) int texIndex;
+		alignas(4) int pad1;
+		alignas(4) int pad2;
+		alignas(4) int pad3;
 	};
 
 	struct GPULightData
