@@ -457,8 +457,9 @@ namespace puffin::core
 			light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 		}
 
-		constexpr int numBodies = 2000;
+		constexpr int numBodies = 10000;
 		constexpr float xOffset = numBodies * 2.0f;
+		constexpr std::array<float, 4> yOffsets = { 20.0f, 40.0f, 60.0f, 80.0f };
 
 		// Create Floor Entity
 		{
@@ -476,8 +477,8 @@ namespace puffin::core
 
 		// Create Box Entities
 		{
-			const Vector3f startPosition(-xOffset, 10.f, 0.f);
-			const Vector3f endPosition(xOffset, 10.f, 0.f);
+			const Vector3f startPosition(-xOffset, 0.f, 0.f);
+			const Vector3f endPosition(xOffset, 0.f, 0.f);
 
 			Vector3f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;
@@ -487,7 +488,10 @@ namespace puffin::core
 				const std::string name = "Box";
 				const auto boxEntity = enttSubsystem->createEntity(name);
 
-				const Vector3f position = startPosition + (positionOffset * static_cast<float>(i));
+				Vector3f position = startPosition + (positionOffset * static_cast<float>(i));
+
+				const int yIdx = i % yOffsets.size();
+				position.y = yOffsets[yIdx];
 
 				registry->emplace<TransformComponent>(boxEntity, position);
 

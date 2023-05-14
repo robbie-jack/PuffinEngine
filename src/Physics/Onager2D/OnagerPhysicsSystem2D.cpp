@@ -4,6 +4,7 @@
 #include "Components/TransformComponent.h"
 #include "Components/Physics/VelocityComponent.h"
 #include "Core/Engine.h"
+#include "Core/EnkiTSSubsystem.h"
 #include "Core/SignalSubsystem.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Physics/CollisionEvent.h"
@@ -228,38 +229,156 @@ namespace puffin
 		{
 			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-			const auto rbView = registry->view<TransformComponent, RigidbodyComponent2D, VelocityComponent>();
+			const auto enkiTSSubSystem = mEngine->getSubsystem<core::EnkiTSSubsystem>();
 
-			for (auto [entity, transform, rb, velocity] : rbView.each())
+			const uint32_t numThreads = enkiTSSubSystem->getTaskScheduler()->GetNumTaskThreads();
+
+			const auto rbView = registry->view<RigidbodyComponent2D>();
+			const auto tView = registry->view<TransformComponent>();
+			const auto vView = registry->view<VelocityComponent>();
+
+			// Apply gravity to rigibodies as impulse
+
+			const int numRigidbodiesPerThread = std::ceil(rbView.size() / numThreads);
+
+			enki::TaskSet gravityTask(rbView.size(), [&](enki::TaskSetPartition range, uint32_t threadnum)
 			{
-				// If a body has no mass, then it is kinematic/static and should not experience forces
-				if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
-					continue;
-
-				calculateImpulseByGravity(rb);
-
-				// Update Position
-				registry->patch<TransformComponent>(entity, [&](auto& transform)
+				for (uint32_t idx = range.start; idx < range.end; idx++)
 				{
+					const auto entity = rbView[idx];
+
+					if (!registry->all_of<TransformComponent, VelocityComponent>(entity))
+						continue;
+
+					auto& rb = rbView.get<RigidbodyComponent2D>(entity);
+
+					// If a body has no mass, then it is kinematic/static and should not experience forces
+					if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
+						continue;
+
+					calculateImpulseByGravity(rb);
+				}
+			});
+
+			enkiTSSubSystem->getTaskScheduler()->AddTaskSetToPipe(&gravityTask);
+			enkiTSSubSystem->getTaskScheduler()->WaitforTask(&gravityTask);
+
+			// Apply velocity to transform
+
+			std::vector<std::vector<entt::entity>> updatedEntities;
+			updatedEntities.resize(numThreads);
+
+			for (auto& entities : updatedEntities)
+			{
+				entities.reserve(std::max(10, numRigidbodiesPerThread));
+			}
+
+			enki::TaskSet transformTask(tView.size(), [&](enki::TaskSetPartition range, uint32_t threadnum)
+			{
+				for (uint32_t idx = range.start; idx < range.end; idx++)
+				{
+					const auto entity = rbView[idx];
+
+					if (!registry->all_of<RigidbodyComponent2D, VelocityComponent>(entity))
+						continue;
+
+					auto& transform = tView.get<TransformComponent>(entity);
+					const auto& rb = registry->get<RigidbodyComponent2D>(entity);
+
+					// If a body has no mass, then it is kinematic/static and should not experience forces
+					if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
+						continue;
+
+					// Update Position
 					transform.position += rb.linearVelocity * mEngine->timeStepFixed();
-				});
 
-				Vector3f euler = maths::radToDeg(transform.orientation.toEulerAngles());
+					//Vector3f euler = maths::radToDeg(transform.orientation.toEulerAngles());
 
-				// Update Rotation
-				//euler.z += rb.angularVelocity * m_engine->GetTimeStep();
+					// Update Rotation
+					//euler.z += rb.angularVelocity * m_engine->GetTimeStep();
 
-				if (euler.z > 360.0f)
+					//if (euler.z > 360.0f)
+					//{
+						//euler.z = 0.0f;
+					//}
+
+					//transform.orientation = maths::Quat::fromEulerAngles(euler.x, euler.y, euler.z);
+
+					updatedEntities[threadnum].emplace_back(entity);
+				}
+			});
+
+			enkiTSSubSystem->getTaskScheduler()->AddTaskSetToPipe(&transformTask);
+			enkiTSSubSystem->getTaskScheduler()->WaitforTask(&transformTask);
+
+			for (auto& entities : updatedEntities)
+			{
+				for (const auto& entity : entities)
 				{
-					euler.z = 0.0f;
+					registry->patch<TransformComponent>(entity, [](auto& transform) {});
 				}
 
-				//transform.orientation = maths::Quat::fromEulerAngles(euler.x, euler.y, euler.z);
-
-				velocity.linear.x = rb.linearVelocity.x;
-				velocity.linear.y = rb.linearVelocity.y;
-				velocity.angular.z = rb.angularVelocity;
+				entities.clear();
 			}
+
+			// Update velocity component
+
+			enki::TaskSet velocityTask(vView.size(), [&](enki::TaskSetPartition range, uint32_t threadnum)
+			{
+				for (uint32_t idx = range.start; idx < range.end; idx++)
+				{
+					const auto entity = rbView[idx];
+
+					if (!registry->all_of<RigidbodyComponent2D, TransformComponent>(entity))
+						continue;
+
+					auto& velocity = vView.get<VelocityComponent>(entity);
+					const auto& rb = registry->get<RigidbodyComponent2D>(entity);
+
+					// If a body has no mass, then it is kinematic/static and should not experience forces
+					if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
+						continue;
+
+					velocity.linear.x = rb.linearVelocity.x;
+					velocity.linear.y = rb.linearVelocity.y;
+					velocity.angular.z = rb.angularVelocity;
+				}
+			});
+
+			enkiTSSubSystem->getTaskScheduler()->AddTaskSetToPipe(&velocityTask);
+			enkiTSSubSystem->getTaskScheduler()->WaitforTask(&velocityTask);
+
+			//const auto trvView = registry->view<TransformComponent, RigidbodyComponent2D, VelocityComponent>();
+			//for (auto [entity, transform, rb, velocity] : trvView.each())
+			//{
+			//	// If a body has no mass, then it is kinematic/static and should not experience forces
+			//	if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
+			//		continue;
+
+			//	//calculateImpulseByGravity(rb);
+
+			//	//// Update Position
+			//	//registry->patch<TransformComponent>(entity, [&](auto& transform)
+			//	//{
+			//	//	transform.position += rb.linearVelocity * mEngine->timeStepFixed();
+			//	//});
+
+			//	//Vector3f euler = maths::radToDeg(transform.orientation.toEulerAngles());
+
+			//	//// Update Rotation
+			//	////euler.z += rb.angularVelocity * m_engine->GetTimeStep();
+
+			//	//if (euler.z > 360.0f)
+			//	//{
+			//	//	euler.z = 0.0f;
+			//	//}
+
+			//	////transform.orientation = maths::Quat::fromEulerAngles(euler.x, euler.y, euler.z);
+
+			//	/*velocity.linear.x = rb.linearVelocity.x;
+			//	velocity.linear.y = rb.linearVelocity.y;
+			//	velocity.angular.z = rb.angularVelocity;*/
+			//}
 		}
 
 		void OnagerPhysicsSystem2D::calculateImpulseByGravity(RigidbodyComponent2D& body) const

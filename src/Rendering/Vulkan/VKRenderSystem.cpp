@@ -1304,7 +1304,7 @@ namespace puffin::rendering
 			threadObjects.resize(numThreads);
 			for (auto& threadObject : threadObjects)
 			{
-				threadObject.reserve(500);
+				threadObject.reserve(std::ceil(gMaxObjects / numThreads));
 			}
 
 			const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();

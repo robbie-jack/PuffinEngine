@@ -7,7 +7,7 @@
 
 namespace puffin::physics
 {
-	using SpatialKey = int64_t;
+	using SpatialKey = int32_t;
 
 	class SpatialHashBroadphase2D : public Broadphase
 	{
@@ -23,10 +23,10 @@ namespace puffin::physics
 
 		std::unordered_map<SpatialKey, std::unordered_set<PuffinID>> mColliderSpatialMap;
 
-		const double mCellSize = 4.0;
-		const double mCellOffsetSize = 2.0;
+		const double mCellSize = 10.0;
+		const double mCellOffsetSize = 1.0;
 
-		[[nodiscard]] SpatialKey hash(double x, double y) const;
+		[[nodiscard]] SpatialKey hash(const double& x, const double& y) const;
 
 		void getHashIDsForCollider(const std::shared_ptr<collision2D::Collider2D>& collider, std::unordered_set<SpatialKey>& hashIDs) const;
 

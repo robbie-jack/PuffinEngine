@@ -27,9 +27,7 @@ void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
 			{
 				const auto& colliderB = inColliders[colliderID];
 
-				auto collisionPair = std::make_pair(colliderA, colliderB);
-
-				if (filterCollisionPair(collisionPair, outCollisionPairs) == true)
+				if (auto collisionPair = std::make_pair(colliderA, colliderB); filterCollisionPair(collisionPair, outCollisionPairs) == true)
 				{
 					if (collision2D::testAabbVsAabb(colliderA->getAABB(), colliderB->getAABB()))
 					{
@@ -41,7 +39,7 @@ void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
 	}
 }
 
-puffin::physics::SpatialKey puffin::physics::SpatialHashBroadphase2D::hash(const double x, const double y) const
+puffin::physics::SpatialKey puffin::physics::SpatialHashBroadphase2D::hash(const double& x, const double& y) const
 {
 	const auto ix = static_cast<SpatialKey>(std::floor(x / mCellSize));
 	const auto iy = static_cast<SpatialKey>(std::floor(y / mCellSize));
