@@ -23,6 +23,11 @@ namespace puffin::physics::collision2D
 		virtual bool testCollision(const collision2D::BoxCollider2D* collider, collision2D::Contact& outContact) const = 0;
 		virtual bool testCollision(const collision2D::CircleCollider2D* collider, collision2D::Contact& outContact) const = 0;
 
+		bool operator= (const Collider2D& other) const
+		{
+			return uuid == other.uuid;
+		}
+
 		PuffinID uuid;
 
 		Vector2f position;

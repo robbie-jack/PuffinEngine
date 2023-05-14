@@ -47,15 +47,14 @@ namespace puffin::physics
 				return false;
 
 			// Don't perform collision check if this pair is already in list
-			bool collisionPairAlreadyExists = false;
-
 			for (const CollisionPair& collisionPair : collisionPairs)
 			{
-				collisionPairAlreadyExists |= collisionPair.first->uuid == pair.second->uuid && collisionPair.second->uuid == pair.first->uuid;
-			}
+				if (pair.first == collisionPair.first && pair.second == collisionPair.second)
+					return false;
 
-			if (collisionPairAlreadyExists)
-				return false;
+				if (pair.second == collisionPair.first && pair.first == collisionPair.second)
+					return false;
+			}
 
 			return true;
 		}

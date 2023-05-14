@@ -22,21 +22,20 @@
 #include "Types/DeletionQueue.h"
 #include "Types/RingBuffer.h"
 #include "Types/PackedArray.h"
+#include "Components/Rendering/CameraComponent.h"
 
 #include <unordered_set>
-
-#include "Components/Rendering/CameraComponent.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
 #else
+constexpr bool gEnableValidationLayers = true;
+#endif
+
 namespace puffin
 {
 	struct TransformComponent;
 }
-
-constexpr bool gEnableValidationLayers = true;
-#endif
 
 namespace puffin::rendering
 {

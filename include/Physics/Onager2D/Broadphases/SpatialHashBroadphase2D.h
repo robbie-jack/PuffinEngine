@@ -3,9 +3,12 @@
 #include "Broadphase2D.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 namespace puffin::physics
 {
+	using SpatialKey = int64_t;
+
 	class SpatialHashBroadphase2D : public Broadphase
 	{
 	public:
@@ -18,17 +21,14 @@ namespace puffin::physics
 
 	private:
 
-		typedef std::vector<std::shared_ptr<collision2D::Collider2D>> ColliderVector;
+		std::unordered_map<SpatialKey, std::unordered_set<PuffinID>> mColliderSpatialMap;
 
-		std::unordered_map<int, ColliderVector> mColliderSpatialMap;
+		const double mCellSize = 4.0;
+		const double mCellOffsetSize = 2.0;
 
-		const int mDefaultGridSize = 1;
-		int mGridSize = mDefaultGridSize;
+		[[nodiscard]] SpatialKey hash(double x, double y) const;
 
-		const int mDefaultHashMapSize = 19;
-		int mHashMapSize = mDefaultHashMapSize;
-
-		[[nodiscard]] int generateHash(double x, double y) const;
+		void getHashIDsForCollider(const std::shared_ptr<collision2D::Collider2D>& collider, std::unordered_set<SpatialKey>& hashIDs) const;
 
 		void updateSpatialMap(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders);
 

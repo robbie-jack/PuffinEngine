@@ -101,7 +101,7 @@ namespace puffin::core
 		assets::AssetRegistry::get()->loadAssetCache();
 		//ReimportDefaultAssets();
 
-		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
+		if (constexpr bool setupDefaultScene = true; setupDefaultScene)
 		{
 			// Create Default Scene in code -- used when scene serialization is changed
 			//defaultScene();
@@ -457,27 +457,28 @@ namespace puffin::core
 			light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 		}
 
+		constexpr int numBodies = 2000;
+		constexpr float xOffset = numBodies * 2.0f;
+
 		// Create Floor Entity
 		{
 			const auto floorEntity = enttSubsystem->createEntity("Floor");
 
 			auto& transform = registry->emplace<TransformComponent>(floorEntity);
-			transform.scale = Vector3f(250.0f, 1.0f, 1.0f);
+			transform.scale = Vector3f(xOffset, 1.0f, 1.0f);
 
 			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, textureId2);
 
-			registry->emplace<physics::BoxComponent2D>(floorEntity, Vector2f(250.0f, 1.0f));
+			registry->emplace<physics::BoxComponent2D>(floorEntity, Vector2f(xOffset, 1.0f));
 
 			registry->emplace<physics::RigidbodyComponent2D>(floorEntity);
 		}
 
 		// Create Box Entities
 		{
-			constexpr float xOffset = 200.0f;
 			const Vector3f startPosition(-xOffset, 10.f, 0.f);
 			const Vector3f endPosition(xOffset, 10.f, 0.f);
 
-			constexpr int numBodies = 100;
 			Vector3f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;
 

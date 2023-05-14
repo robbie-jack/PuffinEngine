@@ -21,9 +21,9 @@ namespace puffin
 
 		OnagerPhysicsSystem2D::OnagerPhysicsSystem2D()
 		{
-			mBoxShapes.reserve(6000);
-			mCircleShapes.reserve(2000);
-			mColliders.reserve(6000);
+			mBoxShapes.reserve(20000);
+			mCircleShapes.reserve(20000);
+			mColliders.reserve(40000);
 
 			mSystemInfo.name = "Onager2DPhysicsSystem";
 		}
@@ -38,7 +38,7 @@ namespace puffin
 			registerBroadphase<SweepAndPruneBroadphase>();
 			registerBroadphase<SpatialHashBroadphase2D>();
 
-			setBroadphase<SweepAndPruneBroadphase>();
+			setBroadphase<SpatialHashBroadphase2D>();
 		}
 
 		void OnagerPhysicsSystem2D::fixedUpdate()
