@@ -71,13 +71,7 @@ namespace puffin::scripting
 
 		mAudioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
 
-		mCtx = mScriptEngine->CreateContext();
-
-		if (mCtx == nullptr)
-		{
-			cout << "Failed to create the context." << endl;
-			mScriptEngine->Release();
-		}
+		initContextAndScripts();
 	}
 
 	void AngelScriptSystem::beginPlay()
@@ -85,12 +79,10 @@ namespace puffin::scripting
 		// Execute Start Methods
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
+		const auto scriptView = registry->view<const SceneObjectComponent, const AngelScriptComponent>();
 
-		for (auto [entity, object, transform, script] : scriptView.each())
+		for (auto [entity, object, script] : scriptView.each())
 		{
-			ExportEditablePropertiesToScriptData(script, script.serializedData);
-
 			mCurrentEntityID = object.id;
 
 			prepareAndExecuteScriptMethod(script.obj, script.startFunc);
@@ -190,23 +182,14 @@ namespace puffin::scripting
 			mCtx->Release();
 		}
 
-		// Create a context that will execute the script
-		mCtx = mScriptEngine->CreateContext();
-		if (mCtx == 0)
-		{
-			cout << "Failed to create the context." << endl;
-			mScriptEngine->Release();
-		}
+		initContextAndScripts();
 	}
 
 	void AngelScriptSystem::onConstructScript(entt::registry& registry, entt::entity entity)
 	{
 		const auto object = registry.get<SceneObjectComponent>(entity);
-		auto script = registry.get<AngelScriptComponent>(entity);
 
-		initializeScript(object.id, script);
-
-		prepareAndExecuteScriptMethod(script.obj, script.startFunc);
+		mScriptsToInit.emplace(entity);
 	}
 
 	void AngelScriptSystem::onDestroyScript(entt::registry& registry, entt::entity entity)
@@ -278,6 +261,28 @@ namespace puffin::scripting
 		// script. If necessary a configuration group can also be removed from
 		// the engine, so that the engine configuration could be changed 
 		// without having to recompile all the scripts.
+	}
+
+	void AngelScriptSystem::initContextAndScripts()
+	{
+		mCtx = mScriptEngine->CreateContext();
+
+		if (mCtx == nullptr)
+		{
+			cout << "Failed to create the context." << endl;
+			mScriptEngine->Release();
+		}
+
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+
+		const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
+
+		for (auto [entity, object, script] : scriptView.each())
+		{
+			initializeScript(object.id, script);
+
+			ExportEditablePropertiesToScriptData(script, script.serializedData);
+		}
 	}
 
 	void AngelScriptSystem::initializeScript(PuffinID entity, AngelScriptComponent& script)

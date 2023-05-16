@@ -55,7 +55,8 @@ namespace puffin
 					{
 						mEngine->play();
 
-						if (const core::PlayState playState = mEngine->playState(); playState == core::PlayState::Paused || playState == core::PlayState::Stopped)
+						const core::PlayState playState = mEngine->playState();
+						if (playState == core::PlayState::JustPaused || playState == core::PlayState::JustStopped)
 						{
 							mPlayButtonLabel = "Play";
 						}

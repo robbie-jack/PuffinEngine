@@ -18,6 +18,7 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "ECS/EnTTSubsystem.h"
 
@@ -51,6 +52,7 @@ namespace puffin::scripting
 			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
+			registry->on_update<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
 			registry->on_destroy<AngelScriptComponent>().connect<&AngelScriptSystem::onDestroyScript>(this);
 		}
 
@@ -88,9 +90,11 @@ namespace puffin::scripting
 		ScriptCallbackMap mOnCollisionBeginCallbacks;
 		ScriptCallbackMap mOnCollisionEndCallbacks;
 
-		bool mFirstInitialize = true;
+		std::unordered_set<entt::entity> mScriptsToInit;
 
 		void configureEngine();
+
+		void initContextAndScripts();
 
 		void initializeScript(PuffinID entity, AngelScriptComponent& script);
 		void compileScript(AngelScriptComponent& script) const;

@@ -237,6 +237,11 @@ namespace puffin
 			const auto tView = registry->view<TransformComponent>();
 			const auto vView = registry->view<VelocityComponent>();
 
+			if (rbView.empty())
+			{
+				return;
+			}
+
 			// Apply gravity to rigibodies as impulse
 
 			const int numRigidbodiesPerThread = std::ceil(rbView.size() / numThreads);
@@ -394,6 +399,11 @@ namespace puffin
 
 		void OnagerPhysicsSystem2D::collisionBroadphase()
 		{
+			if (mColliders.size() == 0)
+			{
+				return;
+			}
+
 			mCollisionPairs.clear();
 			mCollisionPairs.reserve(mColliders.size() * mColliders.size());
 
