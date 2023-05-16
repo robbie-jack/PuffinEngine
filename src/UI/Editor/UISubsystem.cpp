@@ -19,7 +19,7 @@ namespace puffin::ui
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "UISubsystem: Init", 50);
 		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);
-		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Cleanup");
+		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Shutdown", 200);
 	}
 
 	void UISubsystem::init()

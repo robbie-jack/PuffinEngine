@@ -54,7 +54,7 @@ namespace puffin::rendering
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init");
 		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
-		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "VKRenderSystem: Cleanup");
+		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "VKRenderSystem: Shutdown");
 
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
@@ -133,8 +133,6 @@ namespace puffin::rendering
 		processComponents();
 
 		updateRenderData();
-
-		//updateDescriptors();
 
 		draw();
 	}
@@ -647,7 +645,10 @@ namespace puffin::rendering
 				mFrameRenderData[i].lightStaticBuffer.buffer, 0, sizeof(GPULightStaticData)
 			};
 
-			constexpr vk::DescriptorBindingFlags descriptorBindingFlags = { vk::DescriptorBindingFlagBits::ePartiallyBound };
+			uint32_t variableDescCounts = { 128 };
+
+			constexpr vk::DescriptorBindingFlags descriptorBindingFlags = { vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount };
+			vk::DescriptorSetVariableDescriptorCountAllocateInfo descriptorSetVariableDescriptorCountAllocateInfo = { 1, &variableDescCounts };
 
 			util::DescriptorBuilder::begin(mStaticRenderData.descriptorLayoutCache,
 			                               mStaticRenderData.descriptorAllocator)
@@ -657,6 +658,7 @@ namespace puffin::rendering
 				.bindBuffer(3, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer,
 				            vk::ShaderStageFlagBits::eFragment)
 				.bindImagesWithoutWrite(4, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
+				.addPNext(&descriptorSetVariableDescriptorCountAllocateInfo)
 				.build(mFrameRenderData[i].globalDescriptor, mStaticRenderData.globalSetLayout);
 
 			// Material Descriptors
@@ -1016,20 +1018,6 @@ namespace puffin::rendering
 			{
 				mFrameRenderData[i].textureDescriptorNeedsUpdated = true;
 			}
-		}
-	}
-
-	void VKRenderSystem::updateDescriptors()
-	{
-		for (int i = 0; i < gBufferedFrames; i++)
-		{
-			std::vector<vk::DescriptorImageInfo> textureImageInfos;
-			buildTextureDescriptorInfo(mTexData, textureImageInfos);
-
-			util::DescriptorBuilder::begin(mStaticRenderData.descriptorLayoutCache,
-				mStaticRenderData.descriptorAllocator)
-				.updateImages(4, textureImageInfos.size(), textureImageInfos.data(), vk::DescriptorType::eCombinedImageSampler)
-				.update(mFrameRenderData[i].globalDescriptor);
 		}
 	}
 

@@ -232,8 +232,6 @@ namespace puffin::rendering
 
 		void updateRenderData();
 
-		void updateDescriptors();
-
 		void draw();
 
 		void recreateSwapchain();

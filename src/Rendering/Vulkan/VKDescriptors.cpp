@@ -52,7 +52,7 @@ namespace puffin::rendering::util
 		mCurrentPool = nullptr;
 	}
 
-	bool DescriptorAllocator::allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout)
+	bool DescriptorAllocator::allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout, const vk::BaseOutStructure* pNext)
 	{
 		if (!mCurrentPool)
 		{
@@ -60,7 +60,7 @@ namespace puffin::rendering::util
 			mUsedPools.push_back(mCurrentPool);
 		}
 
-		const vk::DescriptorSetAllocateInfo allocInfo = { mCurrentPool, 1, &layout };
+		const vk::DescriptorSetAllocateInfo allocInfo = { mCurrentPool, 1, &layout, pNext };
 
 		vk::Result allocResult = mDevice.allocateDescriptorSets(&allocInfo, set);
 		bool needReallocate = false;
@@ -294,8 +294,21 @@ namespace puffin::rendering::util
 
 		layout = mCache->createDescriptorLayout(&layoutInfo);
 
+		const vk::BaseOutStructure* pNext = nullptr;
+
+		// Setup chain of pNext structs
+		if (mPNextChain.size() > 0)
+		{
+			for (size_t i = 0; i < mPNextChain.size() - 1; i++)
+			{
+				mPNextChain.at(i)->pNext = mPNextChain.at(i + 1);
+			}
+
+			pNext = mPNextChain.at(0);
+		}
+
 		// Allocate Descriptor
-		if (const bool success = mAlloc->allocate(&set, layout); !success) { return false; }
+		if (const bool success = mAlloc->allocate(&set, layout, pNext); !success) { return false; }
 
 		// Write Descriptor
 		for (auto& w : mWrites)

@@ -33,7 +33,7 @@ namespace puffin::rendering::util
 		~DescriptorAllocator();
 
 		void resetPools();
-		bool allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout);
+		bool allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout, const vk::BaseOutStructure* pNext = nullptr );
 
 		void cleanup() const;
 
@@ -120,11 +120,19 @@ namespace puffin::rendering::util
 
 		bool update(const vk::DescriptorSet& set);
 
+		template<typename T>
+		DescriptorBuilder& addPNext(T* structure)
+		{
+			mPNextChain.push_back(reinterpret_cast<vk::BaseOutStructure*>(structure));
+			return *this;
+		}
+
 	private:
 
 		std::vector<vk::WriteDescriptorSet> mWrites;
 		std::vector<vk::DescriptorSetLayoutBinding> mBindings;
 		std::vector<vk::DescriptorBindingFlags> mBindingFlags;
+		std::vector<vk::BaseOutStructure*> mPNextChain;
 
 		std::shared_ptr<DescriptorLayoutCache> mCache;
 		std::shared_ptr<DescriptorAllocator> mAlloc;

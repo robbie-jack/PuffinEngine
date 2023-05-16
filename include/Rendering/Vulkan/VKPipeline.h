@@ -174,7 +174,7 @@ namespace puffin::rendering::util
 		template<typename T>
 		PipelineBuilder& addPNext(T* structure)
 		{
-			mPNextChain.push_back(reinterpret_cast<VkBaseOutStructure*>(structure));
+			mPNextChain.push_back(reinterpret_cast<vk::BaseOutStructure*>(structure));
 			return *this;
 		}
 
@@ -262,7 +262,7 @@ namespace puffin::rendering::util
 		std::vector<vk::VertexInputAttributeDescription> mVertexAttributeDescriptions;
 		std::vector<vk::VertexInputBindingDescription> mVertexBindingDescriptions;
 		std::vector<vk::DynamicState> mDynamicState;
-		std::vector<VkBaseOutStructure*> mPNextChain;
+		std::vector<vk::BaseOutStructure*> mPNextChain;
 		uint32_t mSubpass = 0;
 	};
 }
