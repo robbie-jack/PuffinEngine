@@ -146,9 +146,9 @@ namespace puffin::rendering
 	{
 		alignas(16) glm::mat4 model;
 		alignas(4) int texIndex;
-		alignas(4) int pad1;
-		alignas(4) int pad2;
-		alignas(4) int pad3;
+		/*alignas(4) int pad1 = 0;
+		alignas(4) int pad2 = 0;
+		alignas(4) int pad3 = 0;*/
 	};
 
 	struct GPULightData

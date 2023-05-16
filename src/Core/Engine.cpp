@@ -101,7 +101,7 @@ namespace puffin::core
 		assets::AssetRegistry::get()->loadAssetCache();
 		//ReimportDefaultAssets();
 
-		if (constexpr bool setupDefaultScene = true; setupDefaultScene)
+		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
 		{
 			// Create Default Scene in code -- used when scene serialization is changed
 			defaultScene();

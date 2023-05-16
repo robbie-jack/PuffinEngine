@@ -134,7 +134,7 @@ namespace puffin::rendering
 
 		updateRenderData();
 
-		updateDescriptors();
+		//updateDescriptors();
 
 		draw();
 	}
@@ -257,6 +257,8 @@ namespace puffin::rendering
 		vk::PhysicalDeviceVulkan12Features physicalDevice12Features = {};
 		physicalDevice12Features.descriptorIndexing = true;
 		physicalDevice12Features.runtimeDescriptorArray = true;
+		physicalDevice12Features.descriptorBindingVariableDescriptorCount = true;
+		physicalDevice12Features.descriptorBindingPartiallyBound = true;
 
 		vkb::SystemInfo systemInfo = vkb::SystemInfo::get_system_info().value();
 
@@ -286,7 +288,7 @@ namespace puffin::rendering
 
 		vkb::Device vkbDevice = deviceBuilder
 		                        .add_pNext(&shaderDrawParametersFeatures)
-		                        .add_pNext(&dynamicRenderingFeaturesKHR)
+								.add_pNext(&dynamicRenderingFeaturesKHR)
 		                        .build()
 		                        .value();
 
@@ -645,7 +647,7 @@ namespace puffin::rendering
 				mFrameRenderData[i].lightStaticBuffer.buffer, 0, sizeof(GPULightStaticData)
 			};
 
-			
+			constexpr vk::DescriptorBindingFlags descriptorBindingFlags = { vk::DescriptorBindingFlagBits::ePartiallyBound };
 
 			util::DescriptorBuilder::begin(mStaticRenderData.descriptorLayoutCache,
 			                               mStaticRenderData.descriptorAllocator)
@@ -654,7 +656,7 @@ namespace puffin::rendering
 				.bindBuffer(2, &lightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.bindBuffer(3, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer,
 				            vk::ShaderStageFlagBits::eFragment)
-				.bindImagesWithoutWrite(4, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
+				.bindImagesWithoutWrite(4, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
 				.build(mFrameRenderData[i].globalDescriptor, mStaticRenderData.globalSetLayout);
 
 			// Material Descriptors
@@ -1008,7 +1010,7 @@ namespace puffin::rendering
 
 		mTexturesToLoad.clear();
 
-		if (textureDescriptorNeedsUpdated)
+		if (textureDescriptorNeedsUpdated == true)
 		{
 			for (int i = 0; i < gBufferedFrames; i++)
 			{

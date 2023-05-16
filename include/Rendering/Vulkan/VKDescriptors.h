@@ -107,7 +107,7 @@ namespace puffin::rendering::util
 		                              type, const vk::ShaderStageFlags stageFlags);
 
 		DescriptorBuilder& bindImagesWithoutWrite(const uint32_t binding, const uint32_t imageCount, const vk::DescriptorType
-										type, const vk::ShaderStageFlags stageFlags);
+										type, const vk::ShaderStageFlags stageFlags, vk::DescriptorBindingFlags bindingFlags = {});
 
 		bool build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
 
@@ -124,6 +124,7 @@ namespace puffin::rendering::util
 
 		std::vector<vk::WriteDescriptorSet> mWrites;
 		std::vector<vk::DescriptorSetLayoutBinding> mBindings;
+		std::vector<vk::DescriptorBindingFlags> mBindingFlags;
 
 		std::shared_ptr<DescriptorLayoutCache> mCache;
 		std::shared_ptr<DescriptorAllocator> mAlloc;

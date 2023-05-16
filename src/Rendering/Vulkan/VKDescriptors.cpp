@@ -252,6 +252,7 @@ namespace puffin::rendering::util
 	{
 		mBindings.emplace_back(binding, type, 1, stageFlags);
 		mWrites.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, 1, type, nullptr, bufferInfo });
+		mBindingFlags.emplace_back();
 
 		return *this;
 	}
@@ -261,6 +262,7 @@ namespace puffin::rendering::util
 	{
 		mBindings.emplace_back(binding, type, 1, stageFlags );
 		mWrites.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, 1, type, imageInfo, nullptr });
+		mBindingFlags.emplace_back();
 
 		return *this;
 	}
@@ -270,21 +272,25 @@ namespace puffin::rendering::util
 	{
 		mBindings.emplace_back(binding, type, imageCount, stageFlags);
 		mWrites.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, imageCount, type, imageInfos, nullptr });
+		mBindingFlags.emplace_back();
 
 		return *this;
 	}
 
 	DescriptorBuilder& DescriptorBuilder::bindImagesWithoutWrite(const uint32_t binding, const uint32_t imageCount,
-		const vk::DescriptorType type, const vk::ShaderStageFlags stageFlags)
+		const vk::DescriptorType type, const vk::ShaderStageFlags stageFlags, vk::DescriptorBindingFlags bindingFlags)
 	{
 		mBindings.emplace_back(binding, type, imageCount, stageFlags);
+		mBindingFlags.emplace_back(bindingFlags);
 
 		return *this;
 	}
 
 	bool DescriptorBuilder::build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout)
 	{
-		const vk::DescriptorSetLayoutCreateInfo layoutInfo = { {}, static_cast<uint32_t>(mBindings.size()), mBindings.data() };
+		vk::DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = { static_cast<uint32_t>(mBindingFlags.size()), mBindingFlags.data() };
+
+		const vk::DescriptorSetLayoutCreateInfo layoutInfo = { {}, static_cast<uint32_t>(mBindings.size()), mBindings.data(), &bindingFlagsCreateInfo };
 
 		layout = mCache->createDescriptorLayout(&layoutInfo);
 
