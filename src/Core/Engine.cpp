@@ -104,8 +104,8 @@ namespace puffin::core
 		if (constexpr bool setupDefaultScene = true; setupDefaultScene)
 		{
 			// Create Default Scene in code -- used when scene serialization is changed
-			//defaultScene();
-			physicsScene();
+			defaultScene();
+			//physicsScene();
 			//proceduralScene();
 
 			sceneData->updateData(enttSubsystem);
@@ -326,94 +326,99 @@ namespace puffin::core
 
 	void Engine::defaultScene()
 	{
-		//// Initialize Assets
-		//fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
+		// Initialize Assets
+		fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
 
-		//const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
-		//const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
-		//const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
-		//const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
+		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		//PuffinId meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
-		//PuffinId meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		//PuffinId meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
-		//PuffinId meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
+		const PuffinID meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
+		const PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
+		const PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
+		const PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
-		//const fs::path& texturePath1 = "textures\\chalet.ptexture";
-		//const fs::path& texturePath2 = "textures\\cube.ptexture";
+		const fs::path& texturePath1 = "textures\\chalet.ptexture";
+		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		//PuffinId textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		//PuffinId textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
+		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
 
-		//const fs::path& soundPath1 = "sounds\\Select 1.wav";
+		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		//PuffinId soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
+		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		//const int numEntities = 7;
-		//std::vector<ECS::EntityPtr> entities;
-		//entities.reserve(numEntities);
+		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->registry();
 
-		//std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Spot Light" };
+		constexpr int numEntities = 7;
+		std::vector<entt::entity> entities;
+		entities.reserve(numEntities);
 
-		//// Add Default Scene Components to ECS
-		//for (int i = 0; i < numEntities; i++)
-		//{
-		//	const auto entity = ECS::CreateEntity(ecsWorld);
-		//	entity->SetName(names[i]);
-		//	entity->AddComponent<TransformComponent>();
-		//	entity->AddComponent<rendering::MeshComponent>();
-		//	entities.push_back(entity);
-		//}
+		const std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Spot Light" };
+		const Vector3d positions[numEntities] =
+		{
+			Vector3d(2.0, 0.0, 0.0),
+			Vector3d(-1.0, 0.0, 0.0),
+			Vector3d(0.0),
+			Vector3d(-5.0, 0.0, 0.0),
+			Vector3d(-1.75, -5.0, 0.0),
+			Vector3d(0.0, -10.0, 0.0),
+			Vector3d(5.0, 0.0, 0.0)
+		};
 
-		//// Initialize Components with default values
-		//entities[0]->GetComponent<TransformComponent>() = { Vector3f(2.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
-		//entities[1]->GetComponent<TransformComponent>() = { Vector3f(-1.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
-		//entities[2]->GetComponent<TransformComponent>() = { Vector3f(0.0f, 0.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
-		//entities[3]->GetComponent<TransformComponent>() =
-		//{
-		//	Vector3f(-5.0f, 0.0f, 0.0f),
-		//	maths::Quat(.5f, -.5f, 0.0f),
-		//	Vector3f(0.25f)
-		//};
-		//entities[4]->GetComponent<TransformComponent>() = { Vector3f(-1.75f, -5.0f, 0.0f), maths::Quat(), Vector3f(1.0f) };
-		//entities[5]->GetComponent<TransformComponent>() = { Vector3f(0.0f, -10.0f, 0.0f), maths::Quat(), Vector3f(10.0f, 1.0f, 10.0f) };
-		//entities[6]->GetComponent<TransformComponent>() =
-		//{
-		//	Vector3f(5.0f, 0.0f, 0.0f),
-		//	maths::Quat(-.5f, -.5f, 0.0f),
-		//	Vector3f(0.25f)
-		//};
+		const maths::Quat orientations[numEntities] =
+		{
+			maths::Quat(),
+			maths::Quat(),
+			maths::Quat(),
+			maths::Quat(.5f, -.5f, 0.0f),
+			maths::Quat(),
+			maths::Quat(),
+			maths::Quat(-.5f, -.5f, 0.0f)
+		};
 
-		//entities[0]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId1;
-		//entities[0]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId1;
+		const Vector3f scales[numEntities] =
+		{
+			Vector3f(1.0f),
+			Vector3f(1.0f),
+			Vector3f(1.0f),
+			Vector3f(.25f),
+			Vector3f(1.0f),
+			Vector3f(10.0f, 1.0f, 10.0f),
+			Vector3f(0.25f)
+		};
 
-		//entities[1]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId2;
-		//entities[1]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
+		const PuffinID meshIDs[numEntities] = { meshId1, meshId2, meshId3, meshId3, meshId3, meshId3, meshId3 };
+		const PuffinID textureIDs[numEntities] = { textureId1, textureId2, textureId2, textureId2, textureId2, textureId2, textureId2 };
 
-		//entities[2]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		//entities[2]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
-		//entities[3]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		//entities[3]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
-		//entities[4]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		//entities[4]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
-		//entities[5]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		//entities[5]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
-		//entities[6]->GetComponent<rendering::MeshComponent>().meshAssetId = meshId3;
-		//entities[6]->GetComponent<rendering::MeshComponent>().textureAssetId = textureId2;
+		// Add Default Scene Components to ECS
+		for (int i = 0; i < numEntities; i++)
+		{
+			const auto entity = enttSubsystem->createEntity(names[i]);
 
-		//// Setup Light Component
-		//entities[3]->AddComponent<rendering::LightComponent>();
-		//entities[3]->GetComponent<rendering::LightComponent>().color = Vector3f(1.f, 1.f, 1.f);
-		//entities[3]->GetComponent<rendering::LightComponent>().type = rendering::LightType::Directional;
-		////entities[3]->AddComponent<Rendering::ShadowCasterComponent>();
+			registry->emplace<TransformComponent>(entity, positions[i], orientations[i], scales[i]);
+			registry->emplace<rendering::MeshComponent>(entity, meshIDs[i], textureIDs[i]);
 
-		//entities[6]->AddComponent<rendering::LightComponent>();
-		//entities[6]->GetComponent<rendering::LightComponent>().color = Vector3f(0.f, 0.f, 1.f);
-		//entities[6]->GetComponent<rendering::LightComponent>().type = rendering::LightType::Spot;
+			entities.push_back(entity);
+		}
 
-		//auto& script = entities[0]->AddAndGetComponent<scripting::AngelScriptComponent>();
-		//script.name = "ExampleScript";
-		//script.dir = contentRootPath / "scripts\\Example.pscript";
+		// Setup Light Component
+
+		auto& light1 = registry->emplace<rendering::LightComponent>(entities[3]);
+		light1.color = Vector3f(1.f, 1.f, 1.f);
+		light1.type = rendering::LightType::Directional;
+
+		//registry->emplace<rendering::ShadowCasterComponent>(entities[3]);
+
+		auto& light2 = registry->emplace<rendering::LightComponent>(entities[3]);
+		light2.color = Vector3f(0.f, 0.f, 1.f);
+		light2.type = rendering::LightType::Spot;
+
+		auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
+		script.name = "ExampleScript";
+		script.dir = contentRootPath / "scripts\\Example.pscript";
 	}
 
 	void Engine::physicsScene()
@@ -457,7 +462,7 @@ namespace puffin::core
 			light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 		}
 
-		constexpr int numBodies = 10000;
+		constexpr int numBodies = 1000;
 		constexpr float xOffset = numBodies * 2.0f;
 		constexpr std::array<float, 4> yOffsets = { 20.0f, 40.0f, 60.0f, 80.0f };
 
