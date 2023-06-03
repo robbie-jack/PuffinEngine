@@ -12,13 +12,12 @@ layout (location = 0) out vec4 outColor;
 
 struct LightData
 {
-	vec3 position;
-	vec3 direction;
-	vec3 color;
-	vec3 ambientSpecular;
-	vec3 attenuation;
-	vec3 cutoffAngle;
-	int type;
+	vec4 positionAndType;
+	vec4 direction;
+	vec4 color;
+	vec4 ambientSpecular;
+	vec4 attenuation;
+	vec4 cutoffAngle;
 };
 
 layout(std140, set = 0, binding = 2) readonly buffer LightBuffer
@@ -26,10 +25,9 @@ layout(std140, set = 0, binding = 2) readonly buffer LightBuffer
 	LightData lights[];
 } lightBuffer;
 
-layout(set = 0, binding = 3) uniform LightStaticBuffer
+layout(std140, set = 0, binding = 3) uniform LightStaticBuffer
 {
-	vec3 viewPos;
-	int numLights;
+	vec4 viewPosAndNumLights;
 } lightStatic;
 
 layout(set = 0, binding = 4) uniform sampler2D textures[];
@@ -42,15 +40,18 @@ void main()
 {
 	vec4 albedo = texture(textures[texIndex], fUV);
 
-	vec3 viewDir = normalize(lightStatic.viewPos - fWorldPos.rgb);
+	vec3 viewDir = normalize(lightStatic.viewPosAndNumLights.rgb - fWorldPos.rgb);
 	
 	vec3 result = vec3(0.0);
-
-	for (int i = 0; i < lightStatic.numLights; i++)
+	
+	int numLights = int(lightStatic.viewPosAndNumLights.w);
+	
+	for (int i = 0; i < numLights; i++)
 	{
 		LightData lightData = lightBuffer.lights[i];
 
-		switch (lightData.type)
+		int lightType = int(lightData.positionAndType.w);
+		switch (lightType)
 		{
 			case 0:
 				result += CalcPointLight(lightData, fNormal, viewDir, fWorldPos.rgb);
@@ -69,7 +70,7 @@ void main()
 
 vec3 CalcDirLight(LightData lightData, vec3 normal, vec3 viewDir)
 {
-	vec3 lightDir = normalize(-lightData.direction);
+	vec3 lightDir = normalize(-lightData.direction.rgb);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	
 	// Diffuse Shading
@@ -80,16 +81,16 @@ vec3 CalcDirLight(LightData lightData, vec3 normal, vec3 viewDir)
 	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambientSpecular.z));
 	
 	// Combine
-	vec3 diffuse = lightData.color * diff;
-	vec3 ambient = lightData.color * lightData.ambientSpecular.x;
-	vec3 specular = lightData.color * lightData.ambientSpecular.y * spec;
+	vec3 diffuse = lightData.color.rgb * diff;
+	vec3 ambient = lightData.color.rgb * lightData.ambientSpecular.x;
+	vec3 specular = lightData.color.rgb * lightData.ambientSpecular.y * spec;
 
 	return diffuse + ambient + specular;
 }
 
 vec3 CalcPointLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
 {
-	vec3 lightDir = normalize(lightData.position - fragWorldPos);
+	vec3 lightDir = normalize(lightData.positionAndType.rgb - fragWorldPos);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 
 	// Diffuse Shading
@@ -100,21 +101,21 @@ vec3 CalcPointLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWor
 	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambientSpecular.z));
 
 	// Attenuation
-	float distance = length(lightData.position - fragWorldPos);
+	float distance = length(lightData.positionAndType.rgb - fragWorldPos);
 	float attenuation = 1.0 / (lightData.attenuation.x + lightData.attenuation.y * distance + 
 		lightData.attenuation.z * (distance * distance));
 
-	vec3 diffuse = lightData.color * diff * attenuation;
-	vec3 ambient = lightData.color * lightData.ambientSpecular.x * attenuation;
-	vec3 specular = lightData.color * lightData.ambientSpecular.y * spec * attenuation;
+	vec3 diffuse = lightData.color.rgb * diff * attenuation;
+	vec3 ambient = lightData.color.rgb * lightData.ambientSpecular.x * attenuation;
+	vec3 specular = lightData.color.rgb * lightData.ambientSpecular.y * spec * attenuation;
 
 	return diffuse + ambient + specular;
 }
 
 vec3 CalcSpotLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
 {
-	vec3 lightDir = normalize(-lightData.direction);
-	vec3 fragToLight = lightData.position - fragWorldPos;
+	vec3 lightDir = normalize(-lightData.direction.rgb);
+	vec3 fragToLight = lightData.positionAndType.rgb - fragWorldPos;
 
 	vec3 fragToLightDir = normalize(fragToLight);
 	vec3 halfwayDir = normalize(fragToLightDir + viewDir);
@@ -127,18 +128,18 @@ vec3 CalcSpotLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorl
 	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambientSpecular.z));
 
 	// Attenuation
-	float distance = length(lightData.position - fragWorldPos);
+	float distance = length(lightData.positionAndType.rgb - fragWorldPos);
 	float attenuation = 1.0 / (lightData.attenuation.x + lightData.attenuation.y * distance + 
 		lightData.attenuation.z * (distance * distance));
 
 	// Light Cutoff
-	float theta = dot(fragToLightDir, normalize(-lightData.direction));
+	float theta = dot(fragToLightDir, normalize(-lightData.direction.rgb));
 	float epsilon = lightData.cutoffAngle.x - lightData.cutoffAngle.y;
 	float intensity = clamp((theta - lightData.cutoffAngle.y) / epsilon, 0.0, 1.0);
 
-	vec3 diffuse = lightData.color * diff * attenuation * intensity;
-	vec3 ambient = lightData.color * lightData.ambientSpecular.x * attenuation;
-	vec3 specular = lightData.color * lightData.ambientSpecular.y * spec * attenuation * intensity;
+	vec3 diffuse = lightData.color.rgb * diff * attenuation * intensity;
+	vec3 ambient = lightData.color.rgb * lightData.ambientSpecular.x * attenuation;
+	vec3 specular = lightData.color.rgb * lightData.ambientSpecular.y * spec * attenuation * intensity;
 
 	return diffuse + ambient + specular;
 }

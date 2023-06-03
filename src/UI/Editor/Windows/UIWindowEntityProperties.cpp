@@ -416,7 +416,7 @@ namespace puffin
 				{
 					float ambientIntensity = light.ambientIntensity;
 
-					if (ImGui::DragFloat("Ambient Intensity", &ambientIntensity))
+					if (ImGui::DragFloat("Ambient Intensity", &ambientIntensity, 0.001f, 0.0f, 1.0f))
 					{
 						registry->patch<rendering::LightComponent>(entity, [&ambientIntensity](auto& light) { light.ambientIntensity = ambientIntensity; });
 
@@ -428,7 +428,7 @@ namespace puffin
 				{
 					float specularIntensity = light.specularIntensity;
 
-					if (ImGui::DragFloat("Specular Intensity", &specularIntensity))
+					if (ImGui::DragFloat("Specular Intensity", &specularIntensity, 0.001f, 0.0f, 1.0f))
 					{
 						registry->patch<rendering::LightComponent>(entity, [&specularIntensity](auto& light) { light.specularIntensity = specularIntensity; });
 
@@ -440,7 +440,7 @@ namespace puffin
 				{
 					int specularExponent = light.specularExponent;
 
-					if (ImGui::DragInt("Specular Exponent", &specularExponent))
+					if (ImGui::DragInt("Specular Exponent", &specularExponent, 0.1f, 1, 128))
 					{
 						registry->patch<rendering::LightComponent>(entity, [&specularExponent](auto& light) { light.specularExponent = specularExponent; });
 

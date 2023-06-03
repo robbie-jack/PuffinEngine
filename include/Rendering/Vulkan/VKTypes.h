@@ -146,40 +146,30 @@ namespace puffin::rendering
 	{
 		alignas(16) glm::mat4 model;
 		alignas(4) int texIndex;
-		/*alignas(4) int pad1 = 0;
-		alignas(4) int pad2 = 0;
-		alignas(4) int pad3 = 0;*/
 	};
 
 	struct GPULightData
 	{
-		alignas(4) glm::vec3 position;
-		alignas(4) int pad1;
-		alignas(4) glm::vec3 direction;
-		alignas(4) int pad2;
-		alignas(4) glm::vec3 color;
-		alignas(4) int pad3;
-		alignas(4) glm::vec3 ambientSpecular;
-		alignas(4) int pad4;
-		alignas(4) glm::vec3 attenuation;
-		alignas(4) int pad5;
-		alignas(4) glm::vec3 cutoffAngle;
-		alignas(4) int type; // Stores type of light
+		alignas(16) glm::vec4 positionAndType;
+		alignas(16) glm::vec4 direction;
+		alignas(16) glm::vec4 color;
+		alignas(16) glm::vec4 ambientSpecular;
+		alignas(16) glm::vec4 attenuation;
+		alignas(16) glm::vec4 cutoffAngle;
 	};
 
 	struct GPULightStaticData
 	{
-		alignas(4) glm::vec3 viewPos;
-		alignas(4) int numLights;
+		alignas(16) glm::vec4 viewPosAndNumLights;
 	};
 
-	constexpr uint32_t gNumTexPerMat = 8;
-	constexpr uint32_t gNumFloatPerMat = 8;
+	constexpr uint16_t gNumTexturesPerMat = 8;
+	constexpr uint16_t gNumFloatsPerMat = 8;
 
 	struct GPUMaterialInstanceData
 	{
-		int texIndices[gNumTexPerMat];
-		float data[gNumFloatPerMat];
+		int texIndices[gNumTexturesPerMat];
+		float data[gNumFloatsPerMat];
 	};
 
 }

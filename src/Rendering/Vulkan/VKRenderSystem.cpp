@@ -1394,7 +1394,17 @@ namespace puffin::rendering
 
 		std::vector<GPULightData> lights;
 
-		uint32_t i = 0;
+		sizeof(GPULightStaticData);
+		alignof(GPULightStaticData);
+
+		sizeof(glm::mat4);
+
+		sizeof(GPUObjectData);
+		alignof(GPUObjectData);
+
+		sizeof(GPUCameraData);
+
+		int i = 0;
 
 		for (auto [entity, object, transform, light] : lightView.each())
 		{
@@ -1406,17 +1416,35 @@ namespace puffin::rendering
 
 			lights.emplace_back();
 
-			lights[i].position = static_cast<glm::vec3>(transform.position);
-			lights[i].direction = static_cast<glm::vec3>(transform.orientation.xyz());
-			lights[i].color = static_cast<glm::vec3>(light.color);
-			lights[i].ambientSpecular = glm::vec3(light.ambientIntensity, light.specularIntensity,
-			                                         light.specularExponent);
-			lights[i].attenuation = glm::vec3(light.constantAttenuation, light.linearAttenuation,
-			                                     light.quadraticAttenuation);
-			lights[i].cutoffAngle = glm::vec3(
-				glm::cos(glm::radians(light.innerCutoffAngle)),
-				glm::cos(glm::radians(light.outerCutoffAngle)), 0.0f);
-			lights[i].type = static_cast<int>(light.type);
+			lights[i].positionAndType.x = transform.position.x;
+			lights[i].positionAndType.y = transform.position.y;
+			lights[i].positionAndType.z = transform.position.z;
+			lights[i].positionAndType.w = static_cast<int>(light.type);
+
+			lights[i].direction.x = transform.orientation.x;
+			lights[i].direction.y = transform.orientation.y;
+			lights[i].direction.z = transform.orientation.z;
+			lights[i].direction.w = 0.0f;
+
+			lights[i].color.x = light.color.x;
+			lights[i].color.y = light.color.y;
+			lights[i].color.z = light.color.z;
+			lights[i].color.w = 0.0f;
+
+			lights[i].ambientSpecular.x = light.ambientIntensity;
+			lights[i].ambientSpecular.y = light.specularIntensity;
+			lights[i].ambientSpecular.z = light.specularExponent;
+			lights[i].ambientSpecular.w = 0.0f;
+
+			lights[i].attenuation.x = light.constantAttenuation;
+			lights[i].attenuation.y = light.linearAttenuation;
+			lights[i].attenuation.z = light.quadraticAttenuation;
+			lights[i].attenuation.w = 0.0f;
+
+			lights[i].cutoffAngle.x = glm::cos(glm::radians(light.innerCutoffAngle));
+			lights[i].cutoffAngle.y = glm::cos(glm::radians(light.outerCutoffAngle));
+			lights[i].cutoffAngle.z = 0.0f;
+			lights[i].cutoffAngle.w = 0.0f;
 
 			i++;
 		}
@@ -1430,10 +1458,13 @@ namespace puffin::rendering
 		const AllocatedBuffer& lightStaticBuffer = getCurrentFrameData().lightStaticBuffer;
 
 		GPULightStaticData lightStaticUBO;
-		lightStaticUBO.numLights = i;
-		lightStaticUBO.viewPos = static_cast<glm::vec3>(mEditorCam.position);
+		lightStaticUBO.viewPosAndNumLights.x = mEditorCam.position.x;
+		lightStaticUBO.viewPosAndNumLights.y = mEditorCam.position.y;
+		lightStaticUBO.viewPosAndNumLights.z = mEditorCam.position.z;
+		lightStaticUBO.viewPosAndNumLights.w = i;
 
-		memcpy(lightStaticBuffer.allocInfo.pMappedData, &lightStaticUBO, sizeof(GPULightStaticData));
+		//memcpy(lightStaticBuffer.allocInfo.pMappedData, &lightStaticUBO, sizeof(GPULightStaticData));
+		std::copy_n(&lightStaticUBO, 1, static_cast<GPULightStaticData*>(lightStaticBuffer.allocInfo.pMappedData));
 	}
 
 	void VKRenderSystem::buildIndirectCommands()

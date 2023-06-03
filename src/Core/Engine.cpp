@@ -413,7 +413,7 @@ namespace puffin::core
 		//registry->emplace<rendering::ShadowCasterComponent>(entities[3]);
 
 		auto& light2 = registry->emplace<rendering::LightComponent>(entities[6]);
-		light2.color = Vector3f(0.f, 0.f, 1.f);
+		light2.color = Vector3f(1.f, 1.f, 1.f);
 		light2.type = rendering::LightType::Spot;
 
 		/*auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
