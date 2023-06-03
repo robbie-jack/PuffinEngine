@@ -231,7 +231,7 @@ namespace puffin::rendering
 
 		auto instRet = instBuilder.set_app_name("Puffin Engine")
 		                          .request_validation_layers(gEnableValidationLayers)
-		                          .require_api_version(1, 3, 0)
+		                          .require_api_version(1, 3, 25)
 		                          .use_default_debug_messenger()
 		                          .enable_extension("VK_KHR_get_physical_device_properties2")
 		                          .build();
@@ -1384,15 +1384,17 @@ namespace puffin::rendering
 
 	void VKRenderSystem::prepareLightData()
 	{
+		// Prepare dynamic light data
+
 		const AllocatedBuffer& lightBuffer = getCurrentFrameData().lightBuffer;
 
-		auto* lightSSBO = static_cast<GPULightData*>(lightBuffer.allocInfo.pMappedData);
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-		int i = 0;
+		const auto lightView = registry->view<const SceneObjectComponent, const TransformComponent, const LightComponent>();
 
-		auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		std::vector<GPULightData> lights;
 
-		auto lightView = registry->view<const SceneObjectComponent, const TransformComponent, const LightComponent>();
+		uint32_t i = 0;
 
 		for (auto [entity, object, transform, light] : lightView.each())
 		{
@@ -1402,25 +1404,32 @@ namespace puffin::rendering
 				break;
 			}
 
-			lightSSBO[i].position = static_cast<glm::vec3>(transform.position);
-			lightSSBO[i].direction = static_cast<glm::vec3>(transform.orientation.xyz());
-			lightSSBO[i].color = static_cast<glm::vec3>(light.color);
-			lightSSBO[i].ambientSpecular = glm::vec3(light.ambientIntensity, light.specularIntensity,
+			lights.emplace_back();
+
+			lights[i].position = static_cast<glm::vec3>(transform.position);
+			lights[i].direction = static_cast<glm::vec3>(transform.orientation.xyz());
+			lights[i].color = static_cast<glm::vec3>(light.color);
+			lights[i].ambientSpecular = glm::vec3(light.ambientIntensity, light.specularIntensity,
 			                                         light.specularExponent);
-			lightSSBO[i].attenuation = glm::vec3(light.constantAttenuation, light.linearAttenuation,
+			lights[i].attenuation = glm::vec3(light.constantAttenuation, light.linearAttenuation,
 			                                     light.quadraticAttenuation);
-			lightSSBO[i].cutoffAngle = glm::vec3(
+			lights[i].cutoffAngle = glm::vec3(
 				glm::cos(glm::radians(light.innerCutoffAngle)),
 				glm::cos(glm::radians(light.outerCutoffAngle)), 0.0f);
-			lightSSBO[i].type = static_cast<int>(light.type);
+			lights[i].type = static_cast<int>(light.type);
 
 			i++;
 		}
 
+		// Copy light data to buffer
+		const auto* lightData = lights.data();		
+
+		std::copy_n(lightData, lights.size(), static_cast<GPULightData*>(lightBuffer.allocInfo.pMappedData));
+
 		// Prepare light static data
 		const AllocatedBuffer& lightStaticBuffer = getCurrentFrameData().lightStaticBuffer;
 
-		GPULightStaticData lightStaticUBO = {};
+		GPULightStaticData lightStaticUBO;
 		lightStaticUBO.numLights = i;
 		lightStaticUBO.viewPos = static_cast<glm::vec3>(mEditorCam.position);
 
@@ -1429,7 +1438,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::buildIndirectCommands()
 	{
-		AllocatedBuffer& indirectBuffer = getCurrentFrameData().indirectBuffer;
+		const AllocatedBuffer& indirectBuffer = getCurrentFrameData().indirectBuffer;
 
 		std::vector<vk::DrawIndexedIndirectCommand> indirectCmds = {};
 		indirectCmds.resize(gMaxObjects);
