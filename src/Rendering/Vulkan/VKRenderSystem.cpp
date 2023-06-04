@@ -1076,9 +1076,10 @@ namespace puffin::rendering
 
 	void VKRenderSystem::updateCameraComponent(const TransformComponent& transform, CameraComponent& camera) const
 	{
-		// Calculate Right, Up and LookAt vectors
-		camera.right = camera.up.cross(transform.orientation.xyz()).normalized();
-		camera.lookAt = transform.position + transform.orientation.xyz();
+		// Calculate lookAt, right and up vectors
+		camera.lookAt = static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, -1.0f);
+		camera.right = static_cast<glm::quat>(transform.orientation) * glm::vec3(1.0f, 0.0f, 0.0f);
+		camera.up = Vector3f(0.0f, 1.0f, 0.0f);
 
 		camera.aspect = static_cast<float>(mRenderExtent.width) / static_cast<float>(mRenderExtent.height);
 
@@ -1335,7 +1336,7 @@ namespace puffin::rendering
 
 					GPUObjectData object;
 
-					buildModelTransform(position, transform.orientation.toEulerAngles(), transform.scale, object.model);
+					buildModelTransform(position, transform.orientation, transform.scale, object.model);
 					object.texIndex = mTexData[mesh.textureAssetId].idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
@@ -1421,9 +1422,9 @@ namespace puffin::rendering
 			lights[i].positionAndType.z = transform.position.z;
 			lights[i].positionAndType.w = static_cast<int>(light.type);
 
-			lights[i].direction.x = transform.orientation.x;
-			lights[i].direction.y = transform.orientation.y;
-			lights[i].direction.z = transform.orientation.z;
+			lights[i].direction.x = light.direction.x;
+			lights[i].direction.y = light.direction.y;
+			lights[i].direction.z = light.direction.z;
 			lights[i].direction.w = 0.0f;
 
 			lights[i].color.x = light.color.x;
@@ -1805,18 +1806,16 @@ namespace puffin::rendering
 		VK_CHECK(mGraphicsQueue.presentKHR(&presentInfo));
 	}
 
-	void VKRenderSystem::buildModelTransform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale,
+	void VKRenderSystem::buildModelTransform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
 	                                         glm::mat4& model)
 	{
 		const auto scaleM = glm::scale(glm::mat4(1.0f), static_cast<glm::vec3>(scale));
 
-		const auto rotateMz = glm::rotate(glm::mat4(1.0f), rotation.z + maths::degToRad(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		const auto rotateMx = glm::rotate(glm::mat4(1.0f), rotation.x + maths::degToRad(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		const auto rotateMy = glm::rotate(glm::mat4(1.0f), rotation.y + maths::degToRad(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		const auto orientM = glm::mat4_cast(static_cast<glm::quat>(orientation));
 
 		const auto translateM = glm::translate(glm::mat4(1.0f), static_cast<glm::vec3>(position));
 
-		model = translateM * rotateMy * rotateMx * rotateMz * scaleM;
+		model = translateM * orientM * scaleM;
 	}
 
 	bool VKRenderSystem::loadMesh(PuffinID meshId, MeshDataVK& meshData)

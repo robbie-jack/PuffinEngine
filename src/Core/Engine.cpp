@@ -365,18 +365,18 @@ namespace puffin::core
 			Vector3d(-5.0, 0.0, 0.0),
 			Vector3d(-1.75, -5.0, 0.0),
 			Vector3d(0.0, -10.0, 0.0),
-			Vector3d(5.0, 0.0, 0.0)
+			Vector3d(10.0, 5.0, 0.0)
 		};
 
 		const maths::Quat orientations[numEntities] =
 		{
-			maths::Quat(),
-			maths::Quat(),
-			maths::Quat(),
-			maths::Quat(.5f, -.5f, 0.0f),
-			maths::Quat(),
-			maths::Quat(),
-			maths::Quat(-.5f, -.5f, 0.0f)
+			maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
+			maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
+			maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
+			maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
+			maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
+			maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
+			maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
 		};
 
 		const Vector3f scales[numEntities] =
@@ -406,15 +406,18 @@ namespace puffin::core
 
 		// Setup Light Component
 
-		auto& light1 = registry->emplace<rendering::LightComponent>(entities[3]);
-		light1.color = Vector3f(1.f, 1.f, 1.f);
-		light1.type = rendering::LightType::Directional;
+		auto& dirLight = registry->emplace<rendering::LightComponent>(entities[3]);
+		dirLight.color = Vector3f(0.f, 0.f, 0.f);
+		dirLight.type = rendering::LightType::Directional;
+		dirLight.ambientIntensity = 0.f;
 
 		//registry->emplace<rendering::ShadowCasterComponent>(entities[3]);
 
-		auto& light2 = registry->emplace<rendering::LightComponent>(entities[6]);
-		light2.color = Vector3f(1.f, 1.f, 1.f);
-		light2.type = rendering::LightType::Spot;
+		auto& spotLight = registry->emplace<rendering::LightComponent>(entities[6]);
+		spotLight.color = Vector3f(1.f, 0.f, 0.f);
+		spotLight.type = rendering::LightType::Spot;
+		spotLight.direction = Vector3f(-0.5f, -0.5f, 0.0f);
+		spotLight.ambientIntensity = 0.f;
 
 		/*auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		script.name = "ExampleScript";
@@ -455,7 +458,7 @@ namespace puffin::core
 
 			auto& transform = registry->emplace<TransformComponent>(lightEntity);
 			transform.position = Vector3f(-5.0f, 0.0f, 0.0f);
-			transform.orientation = maths::Quat(.5f, -0.5f, 0.0f);
+			transform.orientation = glm::angleAxis(0.0f, glm::vec3(.5f, -0.5f, 0.0f));
 
 			auto& light = registry->emplace<rendering::LightComponent>(lightEntity);
 			light.type = rendering::LightType::Directional;

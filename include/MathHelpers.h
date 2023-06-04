@@ -40,6 +40,17 @@ namespace puffin::maths
 		return radians * (180.0 / PI);
 	}
 
+	static Vector3f degToRad(const Vector3f& vecD)
+	{
+		Vector3f vecR;
+
+		vecR.x = degToRad(vecD.x);
+		vecR.y = degToRad(vecD.y);
+		vecR.z = degToRad(vecD.z);
+
+		return vecR;
+	}
+
 	static Vector3f radToDeg(const Vector3f& vecR)
 	{
 		Vector3f vecD;

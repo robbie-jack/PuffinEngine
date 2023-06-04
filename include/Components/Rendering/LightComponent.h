@@ -33,6 +33,7 @@ namespace puffin
 		struct LightComponent
 		{
 			Vector3f color = {1.f, 1.f, 1.f};
+			Vector3f direction = { 0.5f, -0.5f, 0.0f };
 
 			float ambientIntensity = .05f; // Intensity multiplier applied to ambient/indirect color
 			float specularIntensity = 1.f; // Intensity multiplier applied to specular highlights
@@ -48,7 +49,8 @@ namespace puffin
 			LightType type = LightType::Point;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent, 
-				color, 
+				color,
+				direction,
 				ambientIntensity,
 				specularIntensity, 
 				specularExponent, 

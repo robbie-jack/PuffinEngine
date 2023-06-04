@@ -41,7 +41,7 @@ namespace puffin
 		Vector3f position = Vector3f(0.0f);
 #endif
 
-		maths::Quat orientation = maths::Quat(0.0f, 0.0f, 1.0f, 0.0);
+		maths::Quat orientation = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
 
 		Vector3f scale = Vector3f(1.0f);
 

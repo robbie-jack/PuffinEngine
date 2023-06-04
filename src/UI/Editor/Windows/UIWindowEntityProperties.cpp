@@ -10,6 +10,7 @@
 #include "Core/Engine.h"
 #include "ECS/EnTTSubsystem.h"
 #include "misc/cpp/imgui_stdlib.h"
+#include "MathHelpers.h"
 
 #include <string>
 
@@ -247,36 +248,21 @@ namespace puffin
 				}
 
 				{
-					maths::Quat orientation = transform.orientation;
-					orientation.w = maths::radToDeg(orientation.w);
+					Vector3f anglesDeg = maths::radToDeg(eulerAngles(static_cast<glm::quat>(transform.orientation)));
 
-					if (ImGui::DragFloat3("Axis", reinterpret_cast<float*>(&orientation), 0.01f, -1.f, 1.f))
+					if (ImGui::DragFloat3("Orientation", reinterpret_cast<float*>(&anglesDeg), 0.2f, -180.f, 180.f, "%.3f"))
 					{
-						registry->patch<TransformComponent>(entity, [&orientation](auto& transform)
-						{
-							orientation.w = maths::degToRad(orientation.w);
-							transform.orientation = orientation;
-						});
+						Vector3f anglesRad = maths::degToRad(anglesDeg);
 
-						mSceneChanged = true;
-					}
-
-					if (ImGui::DragFloat("Angle", &orientation.w))
-					{
-						if (orientation.w > 180.0f)
+						registry->patch<TransformComponent>(entity, [&anglesRad](auto& transform)
 						{
-							orientation.w = -180.0f;
-						}
+							//transform.orientation = glm::quat(static_cast<glm::vec3>(anglesRad));
 
-						if (orientation.w < -180.0f)
-						{
-							orientation.w = 180.0f;
-						}
+							glm::quat quatX(angleAxis(anglesRad.x, glm::vec3(1.f, 0.f, 0.f)));
+							glm::quat quatY(angleAxis(anglesRad.y, glm::vec3(0.f, 1.f, 0.f)));
+							glm::quat quatZ(angleAxis(anglesRad.z, glm::vec3(0.f, 0.f, 1.f)));
 
-						registry->patch<TransformComponent>(entity, [&orientation](auto& transform)
-						{
-							orientation.w = maths::degToRad(orientation.w);
-							transform.orientation = orientation;
+							transform.orientation = quatY * quatX * quatZ;
 						});
 
 						mSceneChanged = true;
@@ -409,6 +395,23 @@ namespace puffin
 						registry->patch<rendering::LightComponent>(entity, [&color](auto& light) { light.color = color; });
 
 						mSceneChanged = true;
+					}
+				}
+
+				// Edit light direction
+				if (light.type == rendering::LightType::Directional || light.type == rendering::LightType::Spot)
+				{
+					{
+						Vector3f direction = light.direction;
+
+						if (ImGui::DragFloat3("Direction", reinterpret_cast<float*>(&direction), 0.01f, -1.0f, 1.0f))
+						{
+							direction.normalize();
+
+							registry->patch<rendering::LightComponent>(entity, [&direction](auto& light) { light.direction = direction; });
+
+							mSceneChanged = true;
+						}
 					}
 				}
 
