@@ -5,6 +5,8 @@ In Progress:
 
 Finished Re-Implementing a basic 3D Renderer in Vulkan using GPU Driven Rendering techniques. Now working on Implementing a basic material system and getting Puffin ready to be used for game projects.
 
+Assets & Shaders used while developing Puffin are located here: https://github.com/robbie-jack/PuffinProject
+
 Libraries/APIs:
 
 bgfx - Rendering API - https://github.com/bkaradzic/bgfx
