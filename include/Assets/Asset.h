@@ -31,19 +31,19 @@ namespace puffin::assets
 
 	enum class CompressionMode : uint8_t
 	{
-		none,
-		lz4
+		None,
+		LZ4
 	};
 
 	static CompressionMode parseCompressionMode(const char* f)
 	{
 		if (strcmp(f, "LZ4") == 0)
 		{
-			return CompressionMode::lz4;
+			return CompressionMode::LZ4;
 		}
 		else
 		{
-			return CompressionMode::none;
+			return CompressionMode::None;
 		}
 	}
 

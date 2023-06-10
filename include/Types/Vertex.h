@@ -102,14 +102,13 @@ namespace puffin::rendering
 		{
 			return VertexFormat::PNTV32;
 		}
-		else if (strcmp(f, "P64NTV32") == 0)
+
+		if (strcmp(f, "P64NTV32") == 0)
 		{
 			return VertexFormat::P64NTV32;
 		}
-		else
-		{
-			return VertexFormat::Unknown;
-		}
+
+		return VertexFormat::Unknown;
 	}
 
 	static const char* parseVertexStringFromFormat(const VertexFormat format)

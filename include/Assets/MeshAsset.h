@@ -74,6 +74,6 @@ namespace puffin::assets
 
 		std::string mOriginalFile;
 
-		MeshInfo parseMeshInfo(const AssetData& data) const;
+		[[nodiscard]] MeshInfo parseMeshInfo(const AssetData& data) const;
 	};
 }

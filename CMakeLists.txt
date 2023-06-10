@@ -91,6 +91,7 @@ set(HEADERS
 	${HEADER_DIR}/Assets/SoundAsset.h
 	${HEADER_DIR}/Assets/TextureAsset.h
 	${HEADER_DIR}/Assets/AssetImporters.h
+	${HEADER_DIR}/Assets/ShaderAssets.h
 	# Audio
 	${HEADER_DIR}/Audio/AudioSubsystem.h
 	# Components
@@ -185,6 +186,7 @@ set(SOURCES
 	${SOURCE_DIR}/Assets/AssetRegistry.cpp
 	${SOURCE_DIR}/Assets/MeshAsset.cpp
 	${SOURCE_DIR}/Assets/TextureAsset.cpp
+	${SOURCE_DIR}/Assets/ShaderAssets.cpp
 	${SOURCE_DIR}/Assets/AssetImporters.cpp
 	# Audio
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp

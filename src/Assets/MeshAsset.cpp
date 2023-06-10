@@ -42,7 +42,7 @@ namespace puffin::assets
 		// Fill Metadata from Info struct
 		json metadata;
 
-		metadata["vertex_format"] = rendering::parseVertexStringFromFormat(info.vertexFormat);
+		metadata["vertex_format"] = parseVertexStringFromFormat(info.vertexFormat);
 		metadata["num_vertices"] = info.numVertices;
 		metadata["num_indices"] = info.numIndices;
 		metadata["vertex_buffer_size"] = info.verticesSize;

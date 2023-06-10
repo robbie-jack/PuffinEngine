@@ -243,7 +243,7 @@ namespace puffin::io
 			assetPath += ".pstaticmesh";
 
 			assets::MeshInfo info;
-			info.compressionMode = assets::CompressionMode::lz4;
+			info.compressionMode = assets::CompressionMode::LZ4;
 			info.originalFile = modelPath.string();
 			info.vertexFormat = rendering::VertexFormat::PNTV32;
 			info.numVertices = vertices.size();
@@ -326,7 +326,7 @@ namespace puffin::io
 		importPath += ".ptexture";
 
 		assets::TextureInfo info;
-		info.compressionMode = assets::CompressionMode::lz4;
+		info.compressionMode = assets::CompressionMode::LZ4;
 		info.originalFile = texturePath.string();
 		info.textureFormat = assets::TextureFormat::RGBA8;
 		info.textureHeight = (uint32_t)texHeight;
