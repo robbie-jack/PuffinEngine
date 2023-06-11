@@ -8,8 +8,8 @@ namespace fs = std::filesystem;
 
 namespace puffin::assets
 {
-	static const std::string gShaderAssetType = "StaticMesh";
-	static constexpr uint32_t gShaderAssetVersion = 1; // Latest version of Static Mesh Asset Format
+	static const std::string gShaderAssetType = "Shader";
+	static constexpr uint32_t gShaderAssetVersion = 1; // Latest version of Shader Asset Format
 
 	enum class ShaderType : uint8_t
 	{

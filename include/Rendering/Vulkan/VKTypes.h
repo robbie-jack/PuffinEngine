@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include "vk_mem_alloc.hpp"
+#include "Rendering/MaterialGlobals.h"
 
 #include "glm/glm.hpp"
 #include "imgui.h"
@@ -162,9 +163,6 @@ namespace puffin::rendering
 	{
 		alignas(16) glm::vec4 viewPosAndNumLights;
 	};
-
-	constexpr uint16_t gNumTexturesPerMat = 8;
-	constexpr uint16_t gNumFloatsPerMat = 8;
 
 	struct GPUMaterialInstanceData
 	{

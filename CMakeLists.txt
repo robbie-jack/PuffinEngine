@@ -90,8 +90,9 @@ set(HEADERS
 	${HEADER_DIR}/Assets/MeshAsset.h
 	${HEADER_DIR}/Assets/SoundAsset.h
 	${HEADER_DIR}/Assets/TextureAsset.h
+	${HEADER_DIR}/Assets/ShaderAsset.h
+	${HEADER_DIR}/Assets/MaterialAsset.h
 	${HEADER_DIR}/Assets/AssetImporters.h
-	${HEADER_DIR}/Assets/ShaderAssets.h
 	# Audio
 	${HEADER_DIR}/Audio/AudioSubsystem.h
 	# Components
@@ -138,6 +139,8 @@ set(HEADERS
 	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
+	# Rendering
+	${HEADER_DIR}/Rendering/MaterialGlobals.h
 	# Rendering BGFX
 	#${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.h
 	#${HEADER_DIR}/Rendering/BGFX/BGFXVertex.h
@@ -186,7 +189,8 @@ set(SOURCES
 	${SOURCE_DIR}/Assets/AssetRegistry.cpp
 	${SOURCE_DIR}/Assets/MeshAsset.cpp
 	${SOURCE_DIR}/Assets/TextureAsset.cpp
-	${SOURCE_DIR}/Assets/ShaderAssets.cpp
+	${SOURCE_DIR}/Assets/ShaderAsset.cpp
+	${SOURCE_DIR}/Assets/MaterialAsset.cpp
 	${SOURCE_DIR}/Assets/AssetImporters.cpp
 	# Audio
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp

@@ -8,6 +8,7 @@
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/ShaderAsset.h"
+#include "Assets/MaterialAsset.h"
 #include "Assets/SoundAsset.h"
 #include "Assets/TextureAsset.h"
 #include "Audio/AudioSubsystem.h"
@@ -88,6 +89,9 @@ namespace puffin::core
 		assets::AssetRegistry::get()->registerAssetType<assets::StaticMeshAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::TextureAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::ShaderAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::MaterialInstanceAsset>();
 
 		// Load Asset Cache
 		assets::AssetRegistry::get()->setProjectName(mProjectFile.name);
@@ -97,8 +101,8 @@ namespace puffin::core
 		io::LoadSettings(projectDirPath.parent_path() / "Settings.json", mSettings);
 
 		// Load/Initialize Assets
-		//addDefaultAssets();
 		assets::AssetRegistry::get()->loadAssetCache();
+		//addDefaultAssets();
 		//assets::AssetRegistry::get()->saveAssetCache();
 		//ReimportDefaultAssets();
 
@@ -291,10 +295,10 @@ namespace puffin::core
 		const fs::path shaderPath1 = "shaders\\forward_shading\\forward_shading_vert.pshader";
 		const fs::path shaderPath2 = "shaders\\forward_shading\\forward_shading_frag.pshader";
 
-		const auto shaderAsset1 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath1);
-		const auto shaderAsset2 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath2);
+		const auto shaderAssetID1 = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(shaderPath1)->id();
+		const auto shaderAssetID2 = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(shaderPath2)->id();
 
-		shaderAsset1->setType(assets::ShaderType::Vertex);
+		/*shaderAsset1->setType(assets::ShaderType::Vertex);
 		shaderAsset1->setShaderPath(fs::path("C:\\Projects\\PuffinEngine\\shaders\\vulkan\\forward_shading\\forward_shading.vert"));
 		shaderAsset1->setBinaryPath(fs::path("C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_vs.spv"));
 		shaderAsset1->loadCodeFromBinary();
@@ -304,7 +308,16 @@ namespace puffin::core
 		shaderAsset2->setShaderPath(fs::path("C:\\Projects\\PuffinEngine\\shaders\\vulkan\\forward_shading\\forward_shading.frag"));
 		shaderAsset2->setBinaryPath(fs::path("C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_fs.spv"));
 		shaderAsset2->loadCodeFromBinary();
-		shaderAsset2->save();
+		shaderAsset2->save();*/
+
+		const fs::path materialPath = "shaders\\forward_shading\\forward_shading.pmaterial";
+
+		const auto materialAsset = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath);
+
+		materialAsset->setVertexShaderID(shaderAssetID1);
+		materialAsset->setFragmentShaderID(shaderAssetID2);
+
+		materialAsset->save();
 	}
 
 	void Engine::reimportDefaultAssets()
