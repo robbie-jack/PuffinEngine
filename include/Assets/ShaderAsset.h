@@ -41,6 +41,8 @@ namespace puffin::assets
 		case ShaderType::Vertex: return "Vertex";
 		case ShaderType::Fragment: return "Fragment";
 		}
+
+		return "Unknown";
 	}
 
 	class ShaderAsset : public Asset

@@ -1,6 +1,6 @@
-#include "Rendering\Vulkan\VKHelpers.h"
+#include "Rendering/Vulkan/VKHelpers.h"
 
-#include "Rendering\Vulkan\VKRenderSystem.h"
+#include "Rendering/Vulkan/VKRenderSystem.h"
 
 #include <iostream>
 #include <algorithm>

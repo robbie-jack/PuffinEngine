@@ -2,7 +2,7 @@
 
 #include "AssetRegistry.h"
 #include <Components/Rendering/MeshComponent.h>
-#include "Types\Vertex.h"
+#include "Types/Vertex.h"
 
 #include <vector>
 
