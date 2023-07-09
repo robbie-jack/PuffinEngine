@@ -14,18 +14,15 @@ namespace puffin::rendering
 	{
 		MeshComponent() = default;
 		
-		MeshComponent(const PuffinID meshId, const PuffinID textureId) :
-			meshAssetId(meshId), textureAssetId(textureId)
+		MeshComponent(const PuffinID meshId, const PuffinID matId) :
+			meshAssetId(meshId), matAssetID(matId)
 		{
 		}
 
-		// Mesh Data
 		PuffinID meshAssetId;
+		PuffinID matAssetID;
 
-		// Texture
-		PuffinID textureAssetId;
-
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetId, textureAssetId)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetId, matAssetID)
 	};
 
 	struct ProceduralMeshComponent

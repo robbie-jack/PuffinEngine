@@ -30,6 +30,7 @@
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/TextureAsset.h"
+#include "Assets/MaterialAsset.h"
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Rendering/MeshComponent.h"
@@ -119,7 +120,7 @@ namespace puffin::rendering
 		);
 
 		mRenderables.reserve(gMaxObjects);
-		mObjectData.reserve(gMaxObjects);
+		mCachedObjectData.reserve(gMaxObjects);
 
 		mIsInitialized = true;
 
@@ -182,7 +183,7 @@ namespace puffin::rendering
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
-		mTexturesToLoad.insert(mesh.textureAssetId);
+		mMaterialsToLoad.insert(mesh.matAssetID);
 
 		if (registry.any_of<TransformComponent>(entity))
 		{
@@ -199,7 +200,7 @@ namespace puffin::rendering
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
-		mTexturesToLoad.insert(mesh.textureAssetId);
+		mMaterialsToLoad.insert(mesh.matAssetID);
 	}
 
 	void VKRenderSystem::onUpdateTransform(entt::registry& registry, entt::entity entity)
@@ -589,12 +590,22 @@ namespace puffin::rendering
 				                                                      | vma::AllocationCreateFlagBits::eMapped
 			                                                      });
 
+			mFrameRenderData[i].materialBuffer = util::createBuffer(mAllocator, sizeof(GPUMaterialInstanceData) * gMaxMaterials,
+																	vk::BufferUsageFlagBits::eStorageBuffer,
+																	vma::MemoryUsage::eAuto,
+																	{
+																		vma::AllocationCreateFlagBits::eHostAccessSequentialWrite
+																		   | vma::AllocationCreateFlagBits::eMapped
+																	});
+
 			// Material Buffers
 
 			// Object Buffers
 
 			mDeletionQueue.pushFunction([=]()
 			{
+				mAllocator.destroyBuffer(mFrameRenderData[i].materialBuffer.buffer,
+										 mFrameRenderData[i].materialBuffer.allocation);
 				mAllocator.destroyBuffer(mFrameRenderData[i].objectBuffer.buffer,
 				                         mFrameRenderData[i].objectBuffer.allocation);
 				mAllocator.destroyBuffer(mFrameRenderData[i].lightStaticBuffer.buffer,
@@ -644,6 +655,9 @@ namespace puffin::rendering
 			vk::DescriptorBufferInfo lightStaticBufferInfo = {
 				mFrameRenderData[i].lightStaticBuffer.buffer, 0, sizeof(GPULightStaticData)
 			};
+			vk::DescriptorBufferInfo materialBufferInfo = {
+				mFrameRenderData[i].materialBuffer.buffer, 0, sizeof(GPUMaterialInstanceData) * gMaxMaterials
+			};
 
 			uint32_t variableDescCounts = { 128 };
 
@@ -655,9 +669,9 @@ namespace puffin::rendering
 				.bindBuffer(0, &cameraBufferInfo, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
 				.bindBuffer(1, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
 				.bindBuffer(2, &lightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.bindBuffer(3, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer,
-				            vk::ShaderStageFlagBits::eFragment)
-				.bindImagesWithoutWrite(4, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
+				.bindBuffer(3, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer,vk::ShaderStageFlagBits::eFragment)
+				.bindBuffer(4, &materialBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.bindImagesWithoutWrite(5, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
 				.addPNext(&descriptorSetVariableDescriptorCountAllocateInfo)
 				.build(mFrameRenderData[i].globalDescriptor, mStaticRenderData.globalSetLayout);
 
@@ -885,11 +899,11 @@ namespace puffin::rendering
 
 			for (auto [entity, object, transform, mesh] : meshView.each())
 			{
-				mRenderables.emplace_back(object.id, mesh.meshAssetId);
+				mRenderables.emplace_back(object.id, mesh.meshAssetId, mesh.matAssetID);
 
-				if (!mObjectData.contains(object.id))
+				if (!mCachedObjectData.contains(object.id))
 				{
-					mObjectData.insert(object.id, GPUObjectData());
+					mCachedObjectData.insert(object.id, GPUObjectData());
 				}
 			}
 
@@ -986,6 +1000,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::updateRenderData()
 	{
+		// Load Meshes
 		for (const auto meshID : mMeshesToLoad)
 		{
 			if (const auto staticMesh = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshID)))
@@ -996,10 +1011,39 @@ namespace puffin::rendering
 
 		mMeshesToLoad.clear();
 
+		// Load Materials
+
+		bool materialDataNeedsUploaded = false;
+		for (const auto matID : mMaterialsToLoad)
+		{
+			if (!mMatData.contains(matID))
+			{
+				MaterialDataVK matData;
+
+				loadMaterial(matID, matData);
+
+				mMatData.insert(matID, matData);
+
+				materialDataNeedsUploaded = true;
+			}
+		}
+
+		mMaterialsToLoad.clear();
+
+		if (materialDataNeedsUploaded == true)
+		{
+			for (int i = 0; i < gBufferedFrames; i++)
+			{
+				mFrameRenderData[i].copyMaterialDataToGPU = true;
+			}
+		}
+
+		// Load Textures
+
 		bool textureDescriptorNeedsUpdated = false;
 		for (const auto texID : mTexturesToLoad)
 		{
-			if (!mTexData.contains(texID))
+			if (texID != gInvalidID && !mTexData.contains(texID))
 			{
 				TextureDataVK texData;
 				loadTexture(texID, texData);
@@ -1261,11 +1305,19 @@ namespace puffin::rendering
 
 		memcpy(cameraBuffer.allocInfo.pMappedData, &camUBO, sizeof(GPUCameraData));
 
+		// Prepare material data
+		prepareMaterialData();
+
 		// Prepare object data
 		prepareObjectData();
 
 		// Prepare light data
 		prepareLightData();
+	}
+
+	void VKRenderSystem::prepareMaterialData()
+	{
+		
 	}
 
 	void VKRenderSystem::prepareObjectData()
@@ -1337,7 +1389,7 @@ namespace puffin::rendering
 					GPUObjectData object;
 
 					buildModelTransform(position, transform.orientation, transform.scale, object.model);
-					object.texIndex = mTexData[mesh.textureAssetId].idx;
+					object.matIdx = mMatData[mesh.matAssetID].idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
 				}
@@ -1353,9 +1405,9 @@ namespace puffin::rendering
 			{
 				for (const auto& [idx, object] : tempThreadObjects)
 				{
-					if (mObjectData.contains(idx))
+					if (mCachedObjectData.contains(idx))
 					{
-						mObjectData[idx] = object;
+						mCachedObjectData[idx] = object;
 					}
 				}
 			}
@@ -1370,7 +1422,7 @@ namespace puffin::rendering
 
 			for (const auto& renderable : mRenderables)
 			{
-				objects.emplace_back(mObjectData[renderable.entityID]);
+				objects.emplace_back(mCachedObjectData[renderable.entityID]);
 			}
 
 			const auto* objectData = objects.data();
@@ -1477,7 +1529,7 @@ namespace puffin::rendering
 
 		int idx = 0;
 
-		for (const auto& [entityID, meshID] : mRenderables)
+		for (const auto& [entityID, meshID, matID] : mRenderables)
 		{
 			indirectCmds[idx].vertexOffset = mStaticRenderData.combinedMeshBuffer.meshVertexOffset(meshID);
 			indirectCmds[idx].firstIndex = mStaticRenderData.combinedMeshBuffer.meshIndexOffset(meshID);
@@ -1880,14 +1932,101 @@ namespace puffin::rendering
 		mAllocator.destroyImage(texData.texture.image, texData.texture.allocation);
 	}
 
-	void VKRenderSystem::buildTextureDescriptorInfo(PackedVector<TextureDataVK>& texData,
+	bool VKRenderSystem::loadMaterial(PuffinID matID, MaterialDataVK& matData)
+	{
+		if (const auto matAsset = std::static_pointer_cast<assets::MaterialAsset>(
+			assets::AssetRegistry::get()->getAsset(matID)); matAsset && matAsset->load())
+		{
+			matData.assetId = matID;
+
+			GPUMaterialInstanceData matInstData;
+
+			if (matAsset->getBaseMaterialID() != gInvalidID)
+			{
+				if (const auto matAssetBase = std::static_pointer_cast<assets::MaterialAsset>(
+					assets::AssetRegistry::get()->getAsset(matAsset->getBaseMaterialID())); matAssetBase && matAssetBase->load())
+				{
+					const auto& texIDs = matAsset->getTexIDs();
+					const auto& texIDsBase = matAssetBase->getTexIDs();
+					const auto& texIDsOverride = matAsset->getTexIDOverride();
+
+					for (int i = 0; i < gNumTexturesPerMat; ++i)
+					{
+						if (texIDsOverride[i])
+						{
+							matData.texIDs[i] = texIDs[i];
+						}
+						else
+						{
+							matData.texIDs[i] = texIDsBase[i];
+						}						
+					}
+
+					for (int& texIdx : matInstData.texIndices)
+					{
+						texIdx = 0;
+					}
+
+					const auto& data = matAsset->getData();
+					const auto& dataBase = matAssetBase->getData();
+					const auto& dataOverride = matAsset->getDataOverride();
+
+					for (int i = 0; i < gNumFloatsPerMat; ++i)
+					{
+						if (dataOverride[i])
+						{
+							matInstData.data[i] = data[i];
+						}
+						else
+						{
+							matInstData.data[i] = dataBase[i];
+						}
+					}
+				}
+			}
+			else
+			{
+				int i = 0;
+				for (const auto& idx : matAsset->getTexIDs())
+				{
+					matInstData.texIndices[i] = idx;
+
+					++i;
+				}
+
+				i = 0;
+				for (const auto& data : matAsset->getData())
+				{
+					matInstData.data[i] = data;
+
+					++i;
+				}
+			}
+
+			mCachedMaterialData.emplace(matID, matInstData);
+
+			for (const auto& texID : matData.texIDs)
+			{
+				if (texID != gInvalidID)
+				{
+					mTexturesToLoad.insert(texID);
+				}
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void VKRenderSystem::buildTextureDescriptorInfo(PackedVector<TextureDataVK>& textureData,
 	                                                std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
 	{
 		textureImageInfos.clear();
-		textureImageInfos.reserve(mTexData.size());
+		textureImageInfos.reserve(textureData.size());
 
 		int idx = 0;
-		for (auto& texData : texData)
+		for (auto& texData : textureData)
 		{
 			vk::DescriptorImageInfo textureImageInfo = {
 				texData.sampler, texData.texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal

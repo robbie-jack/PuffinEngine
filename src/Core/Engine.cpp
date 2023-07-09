@@ -91,7 +91,6 @@ namespace puffin::core
 		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::ShaderAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::MaterialInstanceAsset>();
 
 		// Load Asset Cache
 		assets::AssetRegistry::get()->setProjectName(mProjectFile.name);

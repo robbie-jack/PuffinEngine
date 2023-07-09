@@ -123,15 +123,24 @@ namespace puffin::rendering
 
 	struct MeshRenderable
 	{
-		MeshRenderable(const PuffinID entityID_, const PuffinID meshID_) : entityID(entityID_), meshID(meshID_) {}
+		MeshRenderable(const PuffinID entityID_, const PuffinID meshID_, const PuffinID matID_) :
+			entityID(entityID_), meshID(meshID_), matID(matID_) {}
 
 		PuffinID entityID;
 		PuffinID meshID;
+		PuffinID matID;
 
 		bool operator<(const MeshRenderable& other) const
 		{
-			return meshID < other.meshID && entityID < other.entityID;
+			return matID < other.matID && meshID < other.meshID && entityID < other.entityID;
 		}
+	};
+
+	struct MaterialDataVK : AssetDataVK
+	{
+		int idx = 0;
+
+		std::array<PuffinID, gNumTexturesPerMat> texIDs;
 	};
 
 	// GPU Data Structs
@@ -146,7 +155,7 @@ namespace puffin::rendering
 	struct GPUObjectData
 	{
 		alignas(16) glm::mat4 model;
-		alignas(4) int texIndex;
+		alignas(4) int matIdx;
 	};
 
 	struct GPULightData

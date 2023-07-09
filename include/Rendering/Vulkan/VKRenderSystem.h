@@ -85,9 +85,9 @@ namespace puffin::rendering
 		AllocatedBuffer objectBuffer;
 		AllocatedBuffer lightBuffer;
 		AllocatedBuffer lightStaticBuffer;
+		AllocatedBuffer materialBuffer;
 		
 		// Material Data (Set for each unique material i.e textures)
-		vk::DescriptorSet materialDescriptor;
 
 		std::unordered_set<PuffinID> renderedMeshes; // Set of meshes last rendered using this data
 
@@ -95,6 +95,7 @@ namespace puffin::rendering
 		bool offscreenNeedsUpdated = false;
 		bool textureDescriptorNeedsUpdated = false;
 		bool copyObjectDataToGPU = false;
+		bool copyMaterialDataToGPU = false;
 	};
 
 	const static std::unordered_map<assets::TextureFormat, vk::Format> gTexFormatVK =
@@ -104,6 +105,7 @@ namespace puffin::rendering
 
 	constexpr uint32_t gBufferedFrames = 2;
 	constexpr uint32_t gMaxObjects = 20000;
+	constexpr uint32_t gMaxMaterials = 128;
 	constexpr uint32_t gMaxLightsVK = 8;
 
 	// Vulkan Rendering System
@@ -165,16 +167,19 @@ namespace puffin::rendering
 		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
 
 		PackedVector<TextureDataVK> mTexData;
+		PackedVector<MaterialDataVK> mMatData;
 
 		std::unordered_set<PuffinID> mMeshesToLoad; // Meshes that need to be loaded
-		std::unordered_set<PuffinID> mTexturesToLoad; // Meshes that need to be loaded
-		std::unordered_set<PuffinID> mMaterialsToLoad; // Meshes that need to be loaded
+		std::unordered_set<PuffinID> mTexturesToLoad; // Textures that need to be loaded
+		std::unordered_set<PuffinID> mMaterialsToLoad; // Materials that need to be loaded
 
 		std::vector<MeshRenderable> mRenderables; // Renderables data
 		bool mUpdateRenderables = false;
 
-		PackedVector<GPUObjectData> mObjectData; // Data for rendering each object in scene
+		PackedVector<GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
 		std::unordered_set<PuffinID> mObjectsToRefresh; // Objects which need their mesh data refreshed
+
+		PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for eahc unique material/instance
 
 		uint32_t mFrameNumber;
 		uint32_t mDrawCalls = 0;
@@ -250,6 +255,7 @@ namespace puffin::rendering
 		void updateTextureDescriptors();
 
 		void prepareSceneData();
+		void prepareMaterialData();
 		void prepareObjectData();
 		void prepareLightData();
 
@@ -277,7 +283,9 @@ namespace puffin::rendering
 		bool loadTexture(PuffinID texId, TextureDataVK& texData);
 		void unloadTexture(TextureDataVK& texData) const;
 
-		void buildTextureDescriptorInfo(PackedVector<TextureDataVK>& texData,
+		bool loadMaterial(PuffinID matID, MaterialDataVK& matData);
+
+		void buildTextureDescriptorInfo(PackedVector<TextureDataVK>& textureData,
 		                                std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 
 		FrameRenderData& getCurrentFrameData()
