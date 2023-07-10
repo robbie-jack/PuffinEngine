@@ -9,7 +9,7 @@ layout (location = 0) out vec4 fWorldPos;
 layout (location = 1) out vec3 fNormal;
 layout (location = 2) out vec3 fTangent;
 layout (location = 3) out vec2 fUV;
-layout (location = 4) flat out int texIndex;
+layout (location = 4) flat out int matIndex;
 
 layout(set = 0, binding = 0) uniform CameraBuffer
 {
@@ -21,7 +21,7 @@ layout(set = 0, binding = 0) uniform CameraBuffer
 struct ObjectData
 {
 	mat4 model;
-	int texIndex;
+	int matIndex;
 };
 
 layout(std140, set = 0, binding = 1) readonly buffer ObjectBuffer
@@ -44,7 +44,7 @@ void main()
 	//fNormal = (viewProjMatrix * vec4(vNormal, 1.0)).rgb;
 	//fTangent = (viewProjMatrix * vec4(vTangent, 1.0)).rgb;
 	
-	texIndex = objectBuffer.objects[gl_BaseInstance].texIndex;
+	matIndex = objectBuffer.objects[gl_BaseInstance].matIndex;
 
 	gl_Position = viewProjMatrix * fWorldPos;
 }

@@ -1287,7 +1287,7 @@ namespace puffin::rendering
 
 			util::DescriptorBuilder::begin(mStaticRenderData.descriptorLayoutCache,
 			                               mStaticRenderData.descriptorAllocator)
-				.updateImages(4, textureImageInfos.size(), textureImageInfos.data(),
+				.updateImages(5, textureImageInfos.size(), textureImageInfos.data(),
 				              vk::DescriptorType::eCombinedImageSampler)
 				.update(getCurrentFrameData().globalDescriptor);
 
@@ -1324,7 +1324,8 @@ namespace puffin::rendering
 			std::vector<GPUMaterialInstanceData> materialData;
 			materialData.reserve(mMatData.size());
 
-			for (const auto& matData : mMatData)
+			int idx = 0;
+			for (auto& matData : mMatData)
 			{
 				// Update cached material data
 				for (int i = 0; i < gNumTexturesPerMat; ++i)
@@ -1333,6 +1334,10 @@ namespace puffin::rendering
 				}
 
 				materialData.push_back(mCachedMaterialData[matData.assetId]);
+
+				matData.idx = idx;
+
+				idx++;
 			}
 
 			util::copyCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().materialBuffer, 
@@ -1920,10 +1925,8 @@ namespace puffin::rendering
 
 			return true;
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	void VKRenderSystem::unloadTexture(TextureDataVK& texData) const
@@ -1989,7 +1992,8 @@ namespace puffin::rendering
 				int i = 0;
 				for (const auto& idx : matAsset->getTexIDs())
 				{
-					matInstData.texIndices[i] = idx;
+					matData.texIDs[i] = idx;
+					matInstData.texIndices[i] = 0;
 
 					++i;
 				}

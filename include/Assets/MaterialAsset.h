@@ -71,7 +71,7 @@ namespace puffin::assets
         std::array<float, rendering::gNumFloatsPerMat> mData = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
         // Array's defined whether material data is overwritten or not
-        std::array<bool, rendering::gNumTexturesPerMat> mTexIDOverride;
-        std::array<bool, rendering::gNumFloatsPerMat> mDataOverride;
+        std::array<bool, rendering::gNumTexturesPerMat> mTexIDOverride = { false, false, false, false, false, false, false, false };
+        std::array<bool, rendering::gNumFloatsPerMat> mDataOverride = { false, false, false, false, false, false, false, false };
     };
 }

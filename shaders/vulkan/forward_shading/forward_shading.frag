@@ -6,7 +6,7 @@ layout (location = 0) in vec4 fWorldPos;
 layout (location = 1) in vec3 fNormal;
 layout (location = 2) in vec3 fTangent;
 layout (location = 3) in vec2 fUV;
-layout (location = 4) flat in int texIndex;
+layout (location = 4) flat in int matIndex;
 
 layout (location = 0) out vec4 outColor;
 
@@ -30,7 +30,21 @@ layout(std140, set = 0, binding = 3) uniform LightStaticBuffer
 	vec4 viewPosAndNumLights;
 } lightStatic;
 
-layout(set = 0, binding = 4) uniform sampler2D textures[];
+const int maxTexturesPerMaterial = 8;
+const int maxFloatsPerMaterial = 8;
+
+struct MaterialData
+{
+	int texIndices[maxTexturesPerMaterial];
+	float data[maxFloatsPerMaterial];
+};
+
+layout(set = 0, binding = 4) readonly buffer MaterialBuffer
+{
+	MaterialData materials[];
+} materialBuffer;
+
+layout(set = 0, binding = 5) uniform sampler2D textures[];
 
 vec3 CalcDirLight(LightData lightData, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos);
@@ -38,7 +52,10 @@ vec3 CalcSpotLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorl
 
 void main()
 {
-	vec4 albedo = texture(textures[texIndex], fUV);
+	MaterialData matData = materialBuffer.materials[matIndex];
+	int albedoIdx = matData.texIndices[0];
+
+	vec4 albedo = texture(textures[albedoIdx], fUV);
 
 	vec3 viewDir = normalize(lightStatic.viewPosAndNumLights.rgb - fWorldPos.rgb);
 	

@@ -22,7 +22,7 @@ namespace puffin::assets
 
 		metadata["vertex_shader"] = mVertexShaderID;
 		metadata["fragment_shader"] = mVertexShaderID;
-		metadata["textures_ids"] = mTexIDs;
+		metadata["texture_ids"] = mTexIDs;
 		metadata["material_data"] = mData;
 		metadata["base_material"] = mBaseMaterial;
 		metadata["texture_id_override"] = mTexIDOverride;

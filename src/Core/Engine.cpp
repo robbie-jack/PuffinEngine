@@ -271,7 +271,7 @@ namespace puffin::core
 
 	void Engine::addDefaultAssets()
 	{
-		/*const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
 		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
@@ -289,7 +289,7 @@ namespace puffin::core
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		PuffinID soundId1 = assets::AssetRegistry::get()->addAsset<assets::SoundAsset>(soundPath1)->id();*/
+		PuffinID soundId1 = assets::AssetRegistry::get()->addAsset<assets::SoundAsset>(soundPath1)->id();
 
 		const fs::path shaderPath1 = "shaders\\forward_shading\\forward_shading_vert.pshader";
 		const fs::path shaderPath2 = "shaders\\forward_shading\\forward_shading_frag.pshader";
@@ -309,14 +309,25 @@ namespace puffin::core
 		shaderAsset2->loadCodeFromBinary();
 		shaderAsset2->save();*/
 
-		const fs::path materialPath = "shaders\\forward_shading\\forward_shading.pmaterial";
+		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
+		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
 
-		const auto materialAsset = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath);
+		const auto materialAsset1 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath1);
+		const auto materialAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath2);
 
-		materialAsset->setVertexShaderID(shaderAssetID1);
-		materialAsset->setFragmentShaderID(shaderAssetID2);
+		materialAsset1->setVertexShaderID(shaderAssetID1);
+		materialAsset1->setFragmentShaderID(shaderAssetID2);
+		materialAsset1->getTexIDs()[0] = textureId1;
 
-		materialAsset->save();
+		materialAsset1->save();
+
+		materialAsset2->setVertexShaderID(shaderAssetID1);
+		materialAsset2->setFragmentShaderID(shaderAssetID2);
+		materialAsset2->setBaseMaterialID(materialAsset1->id());
+		materialAsset2->getTexIDs()[0] = textureId2;
+		materialAsset2->getTexIDOverride()[0] = true;
+
+		materialAsset2->save();
 	}
 
 	void Engine::reimportDefaultAssets()
@@ -380,6 +391,12 @@ namespace puffin::core
 
 		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
+		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
+		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+
+		PuffinID materialId1 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath1)->id();
+		PuffinID materialId2 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath2)->id();
+
 		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->registry();
 
@@ -422,7 +439,7 @@ namespace puffin::core
 		};
 
 		const PuffinID meshIDs[numEntities] = { meshId1, meshId2, meshId3, meshId3, meshId3, meshId3, meshId3 };
-		const PuffinID textureIDs[numEntities] = { textureId1, textureId2, textureId2, textureId2, textureId2, textureId2, textureId2 };
+		const PuffinID materialIDs[numEntities] = { materialId2, materialId1, materialId1, materialId1, materialId1, materialId1, materialId1 };
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)
@@ -430,7 +447,7 @@ namespace puffin::core
 			const auto entity = enttSubsystem->createEntity(names[i]);
 
 			registry->emplace<TransformComponent>(entity, positions[i], orientations[i], scales[i]);
-			registry->emplace<rendering::MeshComponent>(entity, meshIDs[i], textureIDs[i]);
+			registry->emplace<rendering::MeshComponent>(entity, meshIDs[i], materialIDs[i]);
 
 			entities.push_back(entity);
 		}
