@@ -106,6 +106,7 @@ namespace puffin::rendering
 	constexpr uint32_t gBufferedFrames = 2;
 	constexpr uint32_t gMaxObjects = 20000;
 	constexpr uint32_t gMaxMaterials = 128;
+	constexpr uint32_t gMaxUniqueMaterials = 32;
 	constexpr uint32_t gMaxLightsVK = 8;
 
 	// Vulkan Rendering System
@@ -166,12 +167,13 @@ namespace puffin::rendering
 		StaticRenderData mStaticRenderData;
 		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
 
-		PackedVector<TextureDataVK> mTexData;
-		PackedVector<MaterialDataVK> mMatData;
-
 		std::unordered_set<PuffinID> mMeshesToLoad; // Meshes that need to be loaded
 		std::unordered_set<PuffinID> mTexturesToLoad; // Textures that need to be loaded
 		std::unordered_set<PuffinID> mMaterialsToLoad; // Materials that need to be loaded
+
+		PackedVector<TextureDataVK> mTexData;
+		PackedVector<MaterialDataVK> mMatData;
+		PackedVector<MaterialVK> mMats;
 
 		std::vector<MeshRenderable> mRenderables; // Renderables data
 		bool mUpdateRenderables = false;
@@ -284,6 +286,7 @@ namespace puffin::rendering
 		void unloadTexture(TextureDataVK& texData) const;
 
 		bool loadMaterial(PuffinID matID, MaterialDataVK& matData);
+		void initMaterialPipeline(PuffinID matID);
 
 		void buildTextureDescriptorInfo(PackedVector<TextureDataVK>& textureData,
 		                                std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;

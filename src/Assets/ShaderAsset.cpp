@@ -17,13 +17,15 @@ namespace puffin::assets
 		json metadata;
 
 		metadata["shader_type"] = parseShaderStringFromType(mShaderType);
-		metadata["shader_path"] = mShaderPath.string();
-		metadata["binary_path"] = mBinaryPath.string();
+		metadata["shader_path"] = mShaderPath;
+		metadata["binary_path"] = mBinaryPath;
 
 		data.json = metadata.dump();
 
+		const size_t binarySize = mCode.size() * sizeof(uint32_t);
+
 		// Copy code to binary blob
-		data.binaryBlob.resize(mCode.size());
+		data.binaryBlob.resize(binarySize);
 
 		std::copy_n(mCode.data(), mCode.size(), data.binaryBlob.data());
 
@@ -53,13 +55,15 @@ namespace puffin::assets
 		const std::string shaderType = metadata["shader_type"];
 		mShaderType = parseShaderTypeFromString(shaderType.c_str());
 
-		const std::string shaderPath = metadata["shader_path"];
+		const std::string& shaderPath = metadata["shader_path"];
 		mShaderPath = fs::path(shaderPath);
 
-		const std::string binaryPath = metadata["binary_path"];
+		const std::string& binaryPath = metadata["binary_path"];
 		mBinaryPath = fs::path(binaryPath);
 
-		mCode.resize(data.binaryBlob.size());
+		const size_t codeSize = data.binaryBlob.size() / sizeof(uint32_t);
+
+		mCode.resize(codeSize);
 
 		std::copy_n(data.binaryBlob.data(), data.binaryBlob.size(), mCode.data());
 
@@ -77,7 +81,7 @@ namespace puffin::assets
 
 	void ShaderAsset::loadCodeFromBinary()
 	{
-		std::ifstream file(mBinaryPath.string(), std::ios::ate | std::ios::binary);
+		std::ifstream file(mBinaryPath, std::ios::ate | std::ios::binary);
 
 		if (!file.is_open())
 		{
@@ -88,13 +92,13 @@ namespace puffin::assets
 		// because the cursor is at the end, it gives the size directly in bytes
 		const size_t fileSize = file.tellg();
 
-		mCode.resize(fileSize);
+		mCode.resize(fileSize / sizeof(uint32_t));
 
 		// put file cursor at beginning
 		file.seekg(0);
 
 		// load entire file into buffer
-		file.read(mCode.data(), fileSize);
+		file.read(reinterpret_cast<char*>(mCode.data()), fileSize);
 
 		file.close();
 	}

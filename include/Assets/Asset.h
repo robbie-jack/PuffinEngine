@@ -159,6 +159,8 @@ namespace puffin::assets
 		virtual const uint32_t& version() const = 0;
 		virtual void unload() = 0;
 
+		virtual bool isLoaded() { return mIsLoaded; }
+
 	protected:
 
 		bool mIsLoaded = false; // Is Asset Currently Loaded

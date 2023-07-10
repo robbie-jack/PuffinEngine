@@ -21,7 +21,7 @@ namespace puffin::assets
 		json metadata;
 
 		metadata["vertex_shader"] = mVertexShaderID;
-		metadata["fragment_shader"] = mVertexShaderID;
+		metadata["fragment_shader"] = mFragmentShaderID;
 		metadata["texture_ids"] = mTexIDs;
 		metadata["material_data"] = mData;
 		metadata["base_material"] = mBaseMaterial;
@@ -56,7 +56,7 @@ namespace puffin::assets
 		const json metadata = json::parse(data.json);
 
 		mVertexShaderID = metadata["vertex_shader"];
-		mVertexShaderID = metadata["fragment_shader"];
+		mFragmentShaderID = metadata["fragment_shader"];
 		mTexIDs = metadata["texture_ids"];
 		mData = metadata["material_data"];
 		mBaseMaterial = metadata["base_material"];

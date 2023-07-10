@@ -131,6 +131,18 @@ namespace puffin
 			mVectorSize++;
 		}
 
+		void insert(const size_t id)
+		{
+			assert(mIdToIndex.find(id) == mIdToIndex.end() && "Value with that ID already exists");
+
+			// Insert Value at end of array
+			const size_t newIndex = mVectorSize;
+			mIdToIndex[id] = newIndex;
+			mIndexToId[newIndex] = id;
+
+			mVectorSize++;
+		}
+
 		void emplace(const size_t id, const ValueT& value)
 		{
 			assert(mIdToIndex.find(id) == mIdToIndex.end() && "Value with that ID already exists");

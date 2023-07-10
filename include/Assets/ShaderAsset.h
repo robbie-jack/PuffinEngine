@@ -77,16 +77,18 @@ namespace puffin::assets
 
 		void setShaderPath(const fs::path& shaderPath) { mShaderPath = shaderPath; }
 
+		const fs::path& binaryPath() { return mBinaryPath; }
+
 		void setBinaryPath(const fs::path& binaryPath) { mBinaryPath = binaryPath; }
 
-		[[nodiscard]] const std::vector<char>& code() const { return mCode; }
+		[[nodiscard]] const std::vector<uint32_t>& code() const { return mCode; }
 
 	private:
 
 		ShaderType mShaderType = ShaderType::Unknown; // Shader Type
 		fs::path mShaderPath; // Path to original HLSL/GLSL shader
 		fs::path mBinaryPath; // Path that compiled shader binary was exported from
-		std::vector<char> mCode; // Compile shader code
+		std::vector<uint32_t> mCode; // Compile shader code
 
 	};
 

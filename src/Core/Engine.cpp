@@ -294,20 +294,20 @@ namespace puffin::core
 		const fs::path shaderPath1 = "shaders\\forward_shading\\forward_shading_vert.pshader";
 		const fs::path shaderPath2 = "shaders\\forward_shading\\forward_shading_frag.pshader";
 
-		const auto shaderAssetID1 = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(shaderPath1)->id();
-		const auto shaderAssetID2 = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(shaderPath2)->id();
+		const auto shaderAsset1 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath1);
+		const auto shaderAsset2 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath2);
 
-		/*shaderAsset1->setType(assets::ShaderType::Vertex);
-		shaderAsset1->setShaderPath(fs::path("C:\\Projects\\PuffinEngine\\shaders\\vulkan\\forward_shading\\forward_shading.vert"));
-		shaderAsset1->setBinaryPath(fs::path("C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_vs.spv"));
+		shaderAsset1->setType(assets::ShaderType::Vertex);
+		shaderAsset1->setShaderPath("C:\\Projects\\PuffinEngine\\shaders\\vulkan\\forward_shading\\forward_shading.vert");
+		shaderAsset1->setBinaryPath("C:/Projects/PuffinEngine/bin/vulkan/forward_shading/forward_shading_vs.spv");
 		shaderAsset1->loadCodeFromBinary();
 		shaderAsset1->save();
 
 		shaderAsset2->setType(assets::ShaderType::Fragment);
-		shaderAsset2->setShaderPath(fs::path("C:\\Projects\\PuffinEngine\\shaders\\vulkan\\forward_shading\\forward_shading.frag"));
-		shaderAsset2->setBinaryPath(fs::path("C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_fs.spv"));
+		shaderAsset2->setShaderPath("C:\\Projects\\PuffinEngine\\shaders\\vulkan\\forward_shading\\forward_shading.frag");
+		shaderAsset2->setBinaryPath("C:/Projects/PuffinEngine/bin/vulkan/forward_shading/forward_shading_fs.spv");
 		shaderAsset2->loadCodeFromBinary();
-		shaderAsset2->save();*/
+		shaderAsset2->save();
 
 		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
 		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
@@ -315,19 +315,19 @@ namespace puffin::core
 		const auto materialAsset1 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath1);
 		const auto materialAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath2);
 
-		materialAsset1->setVertexShaderID(shaderAssetID1);
-		materialAsset1->setFragmentShaderID(shaderAssetID2);
+		/*materialAsset1->setVertexShaderID(shaderAsset1->id());
+		materialAsset1->setFragmentShaderID(shaderAsset2->id());
 		materialAsset1->getTexIDs()[0] = textureId1;
 
 		materialAsset1->save();
 
-		materialAsset2->setVertexShaderID(shaderAssetID1);
-		materialAsset2->setFragmentShaderID(shaderAssetID2);
+		materialAsset2->setVertexShaderID(shaderAsset1->id());
+		materialAsset2->setFragmentShaderID(shaderAsset2->id());
 		materialAsset2->setBaseMaterialID(materialAsset1->id());
 		materialAsset2->getTexIDs()[0] = textureId2;
 		materialAsset2->getTexIDOverride()[0] = true;
 
-		materialAsset2->save();
+		materialAsset2->save();*/
 	}
 
 	void Engine::reimportDefaultAssets()

@@ -44,6 +44,15 @@ namespace puffin::rendering::util
 			mSuccessful = true;
 		}
 
+		ShaderModule(const vk::Device& device, const std::vector<uint32_t>& code)
+		{
+			const vk::ShaderModuleCreateInfo createInfo = { {}, code.size() * sizeof(uint32_t), code.data() };
+
+			mModule = device.createShaderModuleUnique(createInfo, nullptr);
+
+			mSuccessful = true;
+		}
+
 		bool successful() const { return mSuccessful; }
 		[[nodiscard]] vk::ShaderModule module() const { return mModule.get(); }
 

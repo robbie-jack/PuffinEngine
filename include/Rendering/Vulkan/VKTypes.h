@@ -128,9 +128,19 @@ namespace puffin::rendering
 
 	struct MaterialDataVK : AssetDataVK
 	{
+		PuffinID baseMaterialID;
+
 		int idx = 0;
 
 		std::array<PuffinID, gNumTexturesPerMat> texIDs;
+	};
+
+	struct MaterialVK
+	{
+		PuffinID baseMaterialID = gInvalidID;
+
+		vk::UniquePipeline pipeline = {};
+		vk::UniquePipelineLayout pipelineLayout = {};
 	};
 
 	struct MeshRenderable

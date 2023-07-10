@@ -31,6 +31,7 @@
 #include "Assets/MeshAsset.h"
 #include "Assets/TextureAsset.h"
 #include "Assets/MaterialAsset.h"
+#include "Assets/ShaderAsset.h"
 #include "Components/TransformComponent.h"
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Rendering/MeshComponent.h"
@@ -106,6 +107,8 @@ namespace puffin::rendering
 			initImGui();
 			initOffscreenImGuiTextures(mOffscreenData);
 		}
+
+		mMats.resize(gMaxUniqueMaterials);
 
 		mEditorCam.position = {0.0f, 0.0f, 15.0f};
 
@@ -1937,8 +1940,12 @@ namespace puffin::rendering
 
 	bool VKRenderSystem::loadMaterial(PuffinID matID, MaterialDataVK& matData)
 	{
-		if (const auto matAsset = std::static_pointer_cast<assets::MaterialAsset>(
-			assets::AssetRegistry::get()->getAsset(matID)); matAsset && matAsset->load())
+		const auto matAsset = std::static_pointer_cast<assets::MaterialAsset>(
+			assets::AssetRegistry::get()->getAsset(matID));
+
+		std::shared_ptr<assets::MaterialAsset> matAssetBase = nullptr;
+
+		if (matAsset && matAsset->load())
 		{
 			matData.assetId = matID;
 
@@ -1946,8 +1953,12 @@ namespace puffin::rendering
 
 			if (matAsset->getBaseMaterialID() != gInvalidID)
 			{
-				if (const auto matAssetBase = std::static_pointer_cast<assets::MaterialAsset>(
-					assets::AssetRegistry::get()->getAsset(matAsset->getBaseMaterialID())); matAssetBase && matAssetBase->load())
+				matData.baseMaterialID = matAsset->getBaseMaterialID();
+
+				matAssetBase = std::static_pointer_cast<assets::MaterialAsset>(
+					assets::AssetRegistry::get()->getAsset(matData.baseMaterialID));
+
+				if (matAssetBase && matAssetBase->load())
 				{
 					const auto& texIDs = matAsset->getTexIDs();
 					const auto& texIDsBase = matAssetBase->getTexIDs();
@@ -1989,6 +2000,8 @@ namespace puffin::rendering
 			}
 			else
 			{
+				matData.baseMaterialID = matID;
+
 				int i = 0;
 				for (const auto& idx : matAsset->getTexIDs())
 				{
@@ -2017,10 +2030,85 @@ namespace puffin::rendering
 				}
 			}
 
+			//initMaterialPipeline(matData.baseMaterialID);
+
+			matAsset->unload();
+
+			if (matAssetBase)
+			{
+				matAssetBase->unload();
+			}
+
 			return true;
 		}
 
 		return false;
+	}
+
+	void VKRenderSystem::initMaterialPipeline(PuffinID matID)
+	{
+		if (!mMatData.contains(matID))
+		{
+			const auto matAsset = std::static_pointer_cast<assets::MaterialAsset>(
+				assets::AssetRegistry::get()->getAsset(matID));
+			
+			if (matAsset && matAsset->load())
+			{
+				const auto vertShaderAsset = std::static_pointer_cast<assets::ShaderAsset>(
+					assets::AssetRegistry::get()->getAsset(matAsset->getVertexShaderID()));
+
+				const auto fragShaderAsset = std::static_pointer_cast<assets::ShaderAsset>(
+					assets::AssetRegistry::get()->getAsset(matAsset->getFragmentShaderID()));
+
+				if (vertShaderAsset && vertShaderAsset->load() && fragShaderAsset && fragShaderAsset->load())
+				{
+					const auto vertMod = util::ShaderModule{ mDevice, vertShaderAsset->code() };
+					const auto fragMod = util::ShaderModule{ mDevice, fragShaderAsset->code() };
+
+					mMats.insert(matID);
+
+					MaterialVK& mat = mMats[matID];
+					mat.baseMaterialID = matID;
+
+					util::PipelineLayoutBuilder plb{};
+					mat.pipelineLayout = plb
+						.descriptorSetLayout(mStaticRenderData.globalSetLayout)
+						.createUnique(mDevice);
+
+					vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
+						vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };
+
+					vk::PipelineRenderingCreateInfoKHR pipelineRenderInfo = {
+						0, mOffscreenData.imageFormat, mOffscreenData.allocDepthImage.format
+					};
+
+					util::PipelineBuilder pb{ mWindowSize.width, mWindowSize.height };
+					mat.pipeline = pb
+						// Define dynamic state which can change each frame (currently viewport and scissor size)
+						.dynamicState(vk::DynamicState::eViewport)
+						.dynamicState(vk::DynamicState::eScissor)
+						// Define vertex/fragment shaders
+						.shader(vk::ShaderStageFlagBits::eVertex, vertMod)
+						.shader(vk::ShaderStageFlagBits::eFragment, fragMod)
+						.depthStencilState(depthStencilInfo)
+						// Define vertex binding/attributes
+						.vertexLayout(VertexPNTV32::getLayoutVK())
+						// Add rendering info struct
+						.addPNext(&pipelineRenderInfo)
+						// Create pipeline
+						.createUnique(mDevice, mPipelineCache, *mat.pipelineLayout, nullptr);
+
+					mDevice.destroyShaderModule(vertMod.module());
+					mDevice.destroyShaderModule(fragMod.module());
+
+					mDeletionQueue.pushFunction([&]()
+					{
+						mat.pipeline = {};
+						mat.pipelineLayout = {};
+					});
+				}
+			}
+		}
 	}
 
 	void VKRenderSystem::buildTextureDescriptorInfo(PackedVector<TextureDataVK>& textureData,
