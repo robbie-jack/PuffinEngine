@@ -112,11 +112,11 @@ namespace puffin::rendering
 				const uint32_t indexBufferSize = internalMeshData.indexCount * mIndexSize;
 
 				// Copy vertex data
-				util::loadCPUDataIntoGPUBuffer(mRenderer, mVertexBuffer, vertexBufferSize, staticMesh->vertices().data(),
+				util::copyCPUDataIntoGPUBuffer(mRenderer, mVertexBuffer, vertexBufferSize, staticMesh->vertices().data(),
 				                               0, internalMeshData.vertexOffset * mVertexSize);
 
 				// Copy index data
-				util::loadCPUDataIntoGPUBuffer(mRenderer, mIndexBuffer, indexBufferSize, staticMesh->indices().data(),
+				util::copyCPUDataIntoGPUBuffer(mRenderer, mIndexBuffer, indexBufferSize, staticMesh->indices().data(),
 				                               0, internalMeshData.indexOffset * mIndexSize);
 
 				mInternalMeshData.insert({ staticMesh->id(), internalMeshData });

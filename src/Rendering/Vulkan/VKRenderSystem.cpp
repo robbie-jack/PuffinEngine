@@ -1335,7 +1335,7 @@ namespace puffin::rendering
 				materialData.push_back(mCachedMaterialData[matData.assetId]);
 			}
 
-			util::loadCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().materialBuffer, 
+			util::copyCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().materialBuffer, 
 				materialData.size() * sizeof(GPUMaterialInstanceData), materialData.data());
 
 			getCurrentFrameData().copyMaterialDataToGPU = false;
@@ -1447,7 +1447,7 @@ namespace puffin::rendering
 				objects.emplace_back(mCachedObjectData[renderable.entityID]);
 			}
 
-			util::loadCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().objectBuffer,
+			util::copyCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().objectBuffer,
 				objects.size() * sizeof(GPUObjectData), objects.data());
 
 			getCurrentFrameData().copyObjectDataToGPU = false;
@@ -1457,24 +1457,11 @@ namespace puffin::rendering
 	void VKRenderSystem::prepareLightData()
 	{
 		// Prepare dynamic light data
-
-		const AllocatedBuffer& lightBuffer = getCurrentFrameData().lightBuffer;
-
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto lightView = registry->view<const SceneObjectComponent, const TransformComponent, const LightComponent>();
 
 		std::vector<GPULightData> lights;
-
-		sizeof(GPULightStaticData);
-		alignof(GPULightStaticData);
-
-		sizeof(glm::mat4);
-
-		sizeof(GPUObjectData);
-		alignof(GPUObjectData);
-
-		sizeof(GPUCameraData);
 
 		int i = 0;
 
@@ -1522,27 +1509,23 @@ namespace puffin::rendering
 		}
 
 		// Copy light data to buffer
-		const auto* lightData = lights.data();		
-
-		std::copy_n(lightData, lights.size(), static_cast<GPULightData*>(lightBuffer.allocInfo.pMappedData));
+		util::copyCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().lightBuffer,
+			lights.size() * sizeof(GPULightData), lights.data());
 
 		// Prepare light static data
-		const AllocatedBuffer& lightStaticBuffer = getCurrentFrameData().lightStaticBuffer;
-
 		GPULightStaticData lightStaticUBO;
 		lightStaticUBO.viewPosAndNumLights.x = mEditorCam.position.x;
 		lightStaticUBO.viewPosAndNumLights.y = mEditorCam.position.y;
 		lightStaticUBO.viewPosAndNumLights.z = mEditorCam.position.z;
 		lightStaticUBO.viewPosAndNumLights.w = i;
 
-		//memcpy(lightStaticBuffer.allocInfo.pMappedData, &lightStaticUBO, sizeof(GPULightStaticData));
-		std::copy_n(&lightStaticUBO, 1, static_cast<GPULightStaticData*>(lightStaticBuffer.allocInfo.pMappedData));
+		// Copy light static data to buffer
+		util::copyCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().lightStaticBuffer,
+			sizeof(GPULightStaticData), &lightStaticUBO);
 	}
 
 	void VKRenderSystem::buildIndirectCommands()
 	{
-		const AllocatedBuffer& indirectBuffer = getCurrentFrameData().indirectBuffer;
-
 		std::vector<vk::DrawIndexedIndirectCommand> indirectCmds = {};
 		indirectCmds.resize(gMaxObjects);
 
@@ -1561,10 +1544,8 @@ namespace puffin::rendering
 
 		getCurrentFrameData().drawCount = idx;
 
-		const auto* indirectData = indirectCmds.data();
-
-		std::copy_n(indirectData, idx,
-		            static_cast<vk::DrawIndexedIndirectCommand*>(indirectBuffer.allocInfo.pMappedData));
+		util::copyCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().indirectBuffer,
+			indirectCmds.size() * sizeof(vk::DrawIndexedIndirectCommand), indirectCmds.data());
 	}
 
 	vk::CommandBuffer VKRenderSystem::recordMainCommandBuffer(const uint32_t& swapchainIdx,

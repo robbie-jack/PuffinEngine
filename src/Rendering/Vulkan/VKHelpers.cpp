@@ -68,7 +68,7 @@ namespace puffin::rendering::util
 		return buffer;
 	}
 
-	void loadCPUDataIntoGPUBuffer(const std::shared_ptr<VKRenderSystem>& renderer, const AllocatedBuffer& dstBuffer, const uint32_t dataSize,
+	void copyCPUDataIntoGPUBuffer(const std::shared_ptr<VKRenderSystem>& renderer, const AllocatedBuffer& dstBuffer, const uint32_t dataSize,
 	                              const void* data, const uint32_t srcOffset, const uint32_t dstOffset)
 	{
 		// If rebar is enabled and buffer is in host visible memory, copy directly to buffer
@@ -110,7 +110,7 @@ namespace puffin::rendering::util
             { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc }, 
 			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
 
-		loadCPUDataIntoGPUBuffer(renderer, vertexBuffer, vertexBufferSize, vertexData);
+		copyCPUDataIntoGPUBuffer(renderer, vertexBuffer, vertexBufferSize, vertexData);
 
 		return vertexBuffer;
 	}
@@ -125,7 +125,7 @@ namespace puffin::rendering::util
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
 
-		loadCPUDataIntoGPUBuffer(renderer, indexBuffer, indexBufferSize, indexData);
+		copyCPUDataIntoGPUBuffer(renderer, indexBuffer, indexBufferSize, indexData);
 
 		return indexBuffer;
 	}
