@@ -1032,6 +1032,8 @@ namespace puffin::rendering
 
 		if (materialDataNeedsUploaded == true)
 		{
+			mMatData.sortBubble();
+
 			for (int i = 0; i < gBufferedFrames; i++)
 			{
 				mFrameRenderData[i].copyMaterialDataToGPU = true;
@@ -1317,7 +1319,27 @@ namespace puffin::rendering
 
 	void VKRenderSystem::prepareMaterialData()
 	{
-		
+		if (getCurrentFrameData().copyMaterialDataToGPU)
+		{
+			std::vector<GPUMaterialInstanceData> materialData;
+			materialData.reserve(mMatData.size());
+
+			for (const auto& matData : mMatData)
+			{
+				// Update cached material data
+				for (int i = 0; i < gNumTexturesPerMat; ++i)
+				{
+					mCachedMaterialData[matData.assetId].texIndices[i] = mTexData[matData.texIDs[i]].idx;
+				}
+
+				materialData.push_back(mCachedMaterialData[matData.assetId]);
+			}
+
+			util::loadCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().materialBuffer, 
+				materialData.size() * sizeof(GPUMaterialInstanceData), materialData.data());
+
+			getCurrentFrameData().copyMaterialDataToGPU = false;
+		}
 	}
 
 	void VKRenderSystem::prepareObjectData()
@@ -1425,11 +1447,8 @@ namespace puffin::rendering
 				objects.emplace_back(mCachedObjectData[renderable.entityID]);
 			}
 
-			const auto* objectData = objects.data();
-
-			const AllocatedBuffer& objectBuffer = getCurrentFrameData().objectBuffer;
-
-			std::copy_n(objectData, objects.size(), static_cast<GPUObjectData*>(objectBuffer.allocInfo.pMappedData));
+			util::loadCPUDataIntoGPUBuffer(shared_from_this(), getCurrentFrameData().objectBuffer,
+				objects.size() * sizeof(GPUObjectData), objects.data());
 
 			getCurrentFrameData().copyObjectDataToGPU = false;
 		}

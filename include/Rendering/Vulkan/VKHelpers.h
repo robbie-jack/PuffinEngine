@@ -16,7 +16,7 @@ namespace puffin::rendering::util
 	void copyDataBetweenBuffers(const std::shared_ptr<VKRenderSystem>& renderer, vk::Buffer srcBuffer, vk::Buffer dstBuffer, 
 	                            uint32_t dataSize, uint32_t srcOffset = 0, uint32_t dstOffset = 0);
 
-	void loadCpuDataIntoGPUBuffer(const std::shared_ptr<VKRenderSystem>& renderer, vk::BufferUsageFlags usageFlags, const AllocatedBuffer& dstBuffer, uint32_t dataSize, 
+	void loadCPUDataIntoGPUBuffer(const std::shared_ptr<VKRenderSystem>& renderer, const AllocatedBuffer& dstBuffer, uint32_t dataSize,
 	                              const void* data, uint32_t srcOffset = 0, uint32_t dstOffset = 0);
 
 	AllocatedBuffer createBuffer(const vma::Allocator& allocator, size_t allocSize, vk::BufferUsageFlags usage, vma::MemoryUsage memoryUsage, vma::

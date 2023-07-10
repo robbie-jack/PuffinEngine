@@ -219,6 +219,29 @@ namespace puffin
 			return mVector[mIdToIndex[id]];
 		}
 
+		ValueT* data() { return mVector.data(); }
+
+		// Sort internal array using bubble sort (slow for large data sets)
+		void sortBubble()
+		{
+			for (size_t i = 0; i < mVectorSize - 1; ++i)
+			{
+				bool swapped = false;
+
+				for (size_t j = 0; j < mVectorSize - i - 1; ++j)
+				{
+					if (mVector[j + 1].operator<(mVector[j]))
+					{
+						swap(j, j + 1);
+						swapped = true;
+					}
+				}
+
+				if (!swapped)
+					break;
+			}
+		}
+
 	private:
 		
 		std::vector<ValueT> mVector; // Packed vector of types
@@ -226,6 +249,25 @@ namespace puffin
 
 		std::unordered_map<size_t, size_t> mIdToIndex; // Map from id to index
 		std::unordered_map<size_t, size_t> mIndexToId; // Map from index to id
+
+		void swap(size_t idxA, size_t idxB)
+		{
+			// Swap values
+			ValueT valueA = mVector[idxA];
+
+			mVector[idxA] = mVector[idxB];
+			mVector[idxB] = valueA;
+
+			// Update id map to match swapped values
+			const size_t idOfValueA = mIndexToId[idxA];
+
+			mIndexToId[idxA] = mIndexToId[idxB];
+			mIndexToId[idxB] = idOfValueA;
+
+			// Update index map to match swapped values
+			mIdToIndex[mIndexToId[idxA]] = idxB;
+			mIdToIndex[mIndexToId[idxB]] = idxA;
+		}
 	};
 
 	// Custom bitset that ensures in use bits are packed together

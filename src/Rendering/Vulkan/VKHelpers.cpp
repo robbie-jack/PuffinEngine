@@ -68,7 +68,7 @@ namespace puffin::rendering::util
 		return buffer;
 	}
 
-	void loadCpuDataIntoGPUBuffer(const std::shared_ptr<VKRenderSystem>& renderer, const vk::BufferUsageFlags usageFlags, const AllocatedBuffer& dstBuffer, const uint32_t dataSize, 
+	void loadCPUDataIntoGPUBuffer(const std::shared_ptr<VKRenderSystem>& renderer, const AllocatedBuffer& dstBuffer, const uint32_t dataSize,
 	                              const void* data, const uint32_t srcOffset, const uint32_t dstOffset)
 	{
 		// If rebar is enabled and buffer is in host visible memory, copy directly to buffer
@@ -84,7 +84,7 @@ namespace puffin::rendering::util
 		{
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
 			const AllocatedBuffer stagingBuffer = createBuffer(renderer->allocator(), dataSize,
-			                                                   { usageFlags | vk::BufferUsageFlagBits::eTransferSrc }, vma::MemoryUsage::eAuto, 
+			                                                   vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAuto, 
 			                                                   { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
 
 			const auto* dataChar = static_cast<const char*>(data);
@@ -110,7 +110,7 @@ namespace puffin::rendering::util
             { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc }, 
 			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
 
-		loadCpuDataIntoGPUBuffer(renderer, vk::BufferUsageFlagBits::eVertexBuffer, vertexBuffer, vertexBufferSize, vertexData);
+		loadCPUDataIntoGPUBuffer(renderer, vertexBuffer, vertexBufferSize, vertexData);
 
 		return vertexBuffer;
 	}
@@ -125,7 +125,7 @@ namespace puffin::rendering::util
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
 
-		loadCpuDataIntoGPUBuffer(renderer, vk::BufferUsageFlagBits::eIndexBuffer, indexBuffer, indexBufferSize, indexData);
+		loadCPUDataIntoGPUBuffer(renderer, indexBuffer, indexBufferSize, indexData);
 
 		return indexBuffer;
 	}
