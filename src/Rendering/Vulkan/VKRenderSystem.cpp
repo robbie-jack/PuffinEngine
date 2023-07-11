@@ -1333,7 +1333,10 @@ namespace puffin::rendering
 				// Update cached material data
 				for (int i = 0; i < gNumTexturesPerMat; ++i)
 				{
-					mCachedMaterialData[matData.assetId].texIndices[i] = mTexData[matData.texIDs[i]].idx;
+					if (matData.texIDs[i] != 0)
+					{
+						mCachedMaterialData[matData.assetId].texIndices[i] = mTexData[matData.texIDs[i]].idx;
+					}
 				}
 
 				materialData.push_back(mCachedMaterialData[matData.assetId]);

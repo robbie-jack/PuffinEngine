@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24.2)
+cmake_minimum_required(VERSION 3.22.1)
 
 # Download CPM.cmake
 set(CPM_DOWNLOAD_VERSION 0.36.0)
