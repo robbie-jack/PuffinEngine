@@ -29,11 +29,11 @@ namespace puffin
 					hardwareStats.vramTotal = 8192;
 					hardwareStats.ramTotal = 16384;
 
-					ImGui::Text(" CPU: %s", hardwareStats.cpuName);
+					ImGui::Text(" CPU: %s", hardwareStats.cpuName.c_str());
 					ImGui::Text(" Physical Cores: %d", hardwareStats.physicalCores);
 					ImGui::Text(" Logical Cores: %d", hardwareStats.logicalCores);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
-					ImGui::Text(" GPU: %s", hardwareStats.gpuName);
+					ImGui::Text(" GPU: %s", hardwareStats.gpuName.c_str());
 					ImGui::Text(" VRAM: %.1f GB", hardwareStats.vramTotal / 1024.0f);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::Text(" System Memory: %.1f GB", hardwareStats.ramTotal / 1024.0f);
