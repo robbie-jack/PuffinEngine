@@ -230,6 +230,7 @@ namespace puffin
 		ValueT& operator[](const size_t& id)
 		{
 			return mVector[mIdToIndex.at(id)];
+<<<<<<< HEAD
 		}
 
 		ValueT* data() { return mVector.data(); }
@@ -253,6 +254,8 @@ namespace puffin
 				if (!swapped)
 					break;
 			}
+=======
+>>>>>>> vulkan-renderer
 		}
 
 	private:
