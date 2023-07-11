@@ -5,7 +5,7 @@
 #include "Subsystem.h"
 #include "System.h"
 
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include <filesystem>
 #include <memory>

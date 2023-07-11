@@ -223,12 +223,13 @@ namespace puffin
 
 		const ValueT& operator[](const size_t& id) const
 		{
-			return mVector[mIdToIndex[id]];
+
+			return mVector[mIdToIndex.at(id)];
 		}
 
 		ValueT& operator[](const size_t& id)
 		{
-			return mVector[mIdToIndex[id]];
+			return mVector[mIdToIndex.at(id)];
 		}
 
 		ValueT* data() { return mVector.data(); }

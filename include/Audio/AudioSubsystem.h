@@ -1,6 +1,6 @@
 #pragma once
 
-#include "irrKlang\irrKlang.h"
+#include "irrKlang/irrKlang.h"
 
 #include "Core/Subsystem.h"
 

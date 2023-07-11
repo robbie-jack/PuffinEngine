@@ -1,8 +1,8 @@
-#include "Window\WindowSubsystem.h"
+#include "Window/WindowSubsystem.h"
 
 #include "Core/Engine.h"
 
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include <iostream>
 

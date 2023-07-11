@@ -1,4 +1,4 @@
-#include "Assets\AssetImporters.h"
+#include "Assets/AssetImporters.h"
 
 #define TINYGLTF_IMPLEMENTATION
 
@@ -16,7 +16,7 @@
 #include "tiny_gltf.h"
 
 #include "Assets/TextureAsset.h"
-#include "Types\Vertex.h"
+#include "Types/Vertex.h"
 #include "Assets/MeshAsset.h"
 
 namespace puffin::io

@@ -776,7 +776,7 @@ namespace puffin::rendering
 		ImGui_ImplVulkan_InitInfo initInfo = {
 			mInstance, mPhysicalDevice, mDevice, mGraphicsQueueFamily,
 			mGraphicsQueue, mPipelineCache, imguiPool,
-			0, 3, 3, VK_SAMPLE_COUNT_1_BIT, nullptr
+			0, 3, 3, VK_SAMPLE_COUNT_1_BIT, false
 		};
 
 		ImGui_ImplVulkan_Init(&initInfo, mRenderPassImGui);

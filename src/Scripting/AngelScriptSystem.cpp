@@ -12,7 +12,6 @@
 #include <iostream>  // cout
 #include <string.h>
 #include <vector>
-#include <windows.h> // timeGetTime()
 
 using namespace std;
 

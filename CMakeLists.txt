@@ -260,7 +260,7 @@ set (OPENSIMPLEX_SOURCES
 	)
 	
 set (VKBOOTSTRAP_SOURCES
-	${VKBOOTSTRAP_DIR}/vkbootstrap.cpp
+	${VKBOOTSTRAP_DIR}/VkBootstrap.cpp
 	)
 	
 set (ANGELSCRIPT_SOURCES
@@ -318,12 +318,12 @@ message("")
 find_package(Vulkan REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
 
-target_link_libraries(${PROJECT_NAME} $ENV{VULKAN_SDK}/Lib/vulkan-1.lib)
+target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
-target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrklang/irrKlang.lib)
+target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang.lib)
 
 # Define Debug Libs
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d.lib)
@@ -401,13 +401,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 # Defines to get bx compilation working
-target_compile_definitions(${PROJECT_NAME} PRIVATE BX_CONFIG_DEBUG)
-
-# Enabled updated __cplusplus macro (needed for bx compilation)
-target_compile_options(${PROJECT_NAME} PRIVATE "/Zc:__cplusplus")
-
-# Multiprocessor (Multithreaded) Compilation Support
-target_compile_options(${PROJECT_NAME} PRIVATE /MP)
+#target_compile_definitions(${PROJECT_NAME} PRIVATE BX_CONFIG_DEBUG)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_SIMD_AVX2)
@@ -423,10 +417,14 @@ else()
 	target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_EXPOSE_NATIVE_X11)
 endif()
 
-# Big Object Support (MSCV/Linux)
 if (MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
-  target_compile_options(${PROJECT_NAME} PRIVATE /arch:AVX2)
+	# Big Object Support (MSCV/Linux)
+	target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+	target_compile_options(${PROJECT_NAME} PRIVATE /arch:AVX2)
+	# Multiprocessor (Multithreaded) Compilation Support
+	target_compile_options(${PROJECT_NAME} PRIVATE /MP)
+	# Enabled updated __cplusplus macro (needed for bx compilation)
+	target_compile_options(${PROJECT_NAME} PRIVATE "/Zc:__cplusplus")
 else ()
-  target_compile_options(${PROJECT_NAME} PRIVATE -Wa,-mbig-obj)
+	#target_compile_options(${PROJECT_NAME} PRIVATE -Wa, -mbig-obj)
 endif ()
