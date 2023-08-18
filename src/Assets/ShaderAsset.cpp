@@ -58,6 +58,9 @@ namespace puffin::assets
 		const std::string& shaderPath = metadata["shader_path"];
 		mShaderPath = fs::path(shaderPath);
 
+		// TODO - Why does constructing a path object from binary_path cause a crash?
+		// Is there a weird character in here?
+
 		const std::string& binaryPath = metadata["binary_path"];
 		mBinaryPath = fs::path(binaryPath);
 

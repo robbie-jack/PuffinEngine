@@ -269,6 +269,9 @@ namespace puffin::rendering
 		                                          const AllocatedImage&
 		                                          colorImage, const AllocatedImage& depthImage);
 		void drawObjects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
+		void setDrawParameters(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
+		void bindBuffersAndDescriptors(vk::CommandBuffer cmd);
+		void drawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch);
 		void drawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset,
 		                                uint32_t drawCount, uint32_t stride);
 

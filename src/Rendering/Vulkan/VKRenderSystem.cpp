@@ -1673,27 +1673,47 @@ namespace puffin::rendering
 
 	void VKRenderSystem::drawObjects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent)
 	{
-		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mForwardPipeline.get());
+		setDrawParameters(cmd, renderExtent);
 
+		bindBuffersAndDescriptors(cmd);
+
+		// Make a indirect draw call for each material
+		for (const auto& drawBatch : mDrawBatches)
+		{
+			drawMeshBatch(cmd, drawBatch);
+		}
+	}
+
+	void VKRenderSystem::setDrawParameters(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent)
+	{
 		vk::Viewport viewport = {
 			0, 0, static_cast<float>(renderExtent.width), static_cast<float>(renderExtent.height), 0.1f, 1.0f
 		};
 		cmd.setViewport(0, 1, &viewport);
 
-		vk::Rect2D scissor = {{0, 0}, {renderExtent.width, renderExtent.height}};
+		vk::Rect2D scissor = { {0, 0}, {renderExtent.width, renderExtent.height} };
 		cmd.setScissor(0, 1, &scissor);
+	}
 
+	void VKRenderSystem::bindBuffersAndDescriptors(vk::CommandBuffer cmd)
+	{
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mForwardPipelineLayout.get(), 0, 1,
-		                       &getCurrentFrameData().globalDescriptor, 0, nullptr);
+			&getCurrentFrameData().globalDescriptor, 0, nullptr);
 
-		cmd.bindVertexBuffers(0, mStaticRenderData.combinedMeshBuffer.vertexBuffer().buffer, {0});
+		cmd.bindVertexBuffers(0, mStaticRenderData.combinedMeshBuffer.vertexBuffer().buffer, { 0 });
 		cmd.bindIndexBuffer(mStaticRenderData.combinedMeshBuffer.indexBuffer().buffer, 0, vk::IndexType::eUint32);
+	}
 
-		vk::DeviceSize indirectOffset = 0;
+	void VKRenderSystem::drawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
+	{
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mForwardPipeline.get());
+		//cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMats[meshDrawBatch.matID].pipeline.get());
+
+		vk::DeviceSize indirectOffset = meshDrawBatch.meshIndex;
 		uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
 
 		drawIndexedIndirectCommand(cmd, getCurrentFrameData().indirectBuffer.buffer, indirectOffset,
-		                           getCurrentFrameData().drawCount, drawStride);
+			meshDrawBatch.meshCount, drawStride);
 	}
 
 	void VKRenderSystem::drawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer,
@@ -2067,6 +2087,8 @@ namespace puffin::rendering
 					mTexturesToLoad.insert(texID);
 				}
 			}
+
+			// TODO - Figure out why this is crashing
 
 			//initMaterialPipeline(matData.baseMaterialID);
 
