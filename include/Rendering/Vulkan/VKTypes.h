@@ -158,6 +158,22 @@ namespace puffin::rendering
 		}
 	};
 
+	// Struct for rendering a batch of meshes which share a material
+	struct MeshDrawBatch
+	{
+		MeshDrawBatch(const PuffinID matID_ = gInvalidID, const uint32_t meshCount_ = 0, const uint32_t meshIndex_ = 0) :
+			matID(matID_), meshCount(meshCount_), meshIndex(meshIndex_) {}
+
+		PuffinID matID; // Id of this material
+		uint32_t meshCount; // Number of meshes to be drawn with this material
+		uint32_t meshIndex; // Starting index in build commands buffer for this material type
+
+		bool operator<(const MeshDrawBatch& other) const
+		{
+			return matID < other.matID;
+		}
+	};
+
 	// GPU Data Structs
 
 	struct GPUCameraData

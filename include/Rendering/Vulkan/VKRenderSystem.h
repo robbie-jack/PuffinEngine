@@ -178,10 +178,12 @@ namespace puffin::rendering
 		std::vector<MeshRenderable> mRenderables; // Renderables data
 		bool mUpdateRenderables = false;
 
+		std::vector<MeshDrawBatch> mDrawBatches;
+
 		PackedVector<GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
 		std::unordered_set<PuffinID> mObjectsToRefresh; // Objects which need their mesh data refreshed
 
-		PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for eahc unique material/instance
+		PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
 		uint32_t mFrameNumber;
 		uint32_t mDrawCalls = 0;

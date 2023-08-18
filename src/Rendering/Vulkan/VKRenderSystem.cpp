@@ -1540,18 +1540,53 @@ namespace puffin::rendering
 		std::vector<vk::DrawIndexedIndirectCommand> indirectCmds = {};
 		indirectCmds.resize(gMaxObjects);
 
+		mDrawBatches.clear();
+		mDrawBatches.reserve(mMatData.size());
+
 		int idx = 0;
+		int count = 0;
+		bool firstInBatch = true; // First mesh in batch
+
+		MeshDrawBatch drawBatch;
+		drawBatch.matID = mRenderables[0].matID;
 
 		for (const auto& [entityID, meshID, matID] : mRenderables)
 		{
+			// Build draw command for this renderable
 			indirectCmds[idx].vertexOffset = mStaticRenderData.combinedMeshBuffer.meshVertexOffset(meshID);
 			indirectCmds[idx].firstIndex = mStaticRenderData.combinedMeshBuffer.meshIndexOffset(meshID);
 			indirectCmds[idx].indexCount = mStaticRenderData.combinedMeshBuffer.meshIndexCount(meshID);
 			indirectCmds[idx].firstInstance = idx;
 			indirectCmds[idx].instanceCount = 1;
 
+			// Push current draw batch struct to vector when material changes
+			if (drawBatch.matID != matID)
+			{
+				drawBatch.meshCount = count;
+
+				mDrawBatches.push_back(drawBatch);
+
+				firstInBatch = true;
+			}
+
+			// Fill out draw batch for current
+			if (firstInBatch)
+			{
+				drawBatch.matID = matID;
+				drawBatch.meshIndex = idx;
+
+				count = 0;
+
+				firstInBatch = false;
+			}
+
 			idx++;
+			count++;
 		}
+
+		// Push final draw batch struct to vector at end of loop
+		drawBatch.meshCount = count;
+		mDrawBatches.push_back(drawBatch);
 
 		getCurrentFrameData().drawCount = idx;
 
