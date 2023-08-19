@@ -100,6 +100,9 @@ namespace puffin::rendering
 
 	const static std::unordered_map<assets::TextureFormat, vk::Format> gTexFormatVK =
 	{
+		{ assets::TextureFormat::R8, vk::Format::eR8Unorm },
+		{ assets::TextureFormat::RG8, vk::Format::eR8G8Unorm },
+		{ assets::TextureFormat::RGB8, vk::Format::eR8G8B8Unorm },
 		{ assets::TextureFormat::RGBA8, vk::Format::eR8G8B8A8Unorm }
 	};
 

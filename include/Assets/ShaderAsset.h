@@ -67,9 +67,9 @@ namespace puffin::assets
 			return gShaderAssetVersion;
 		}
 
-		bool save();
+		bool save() override;
 
-		bool load();
+		bool load() override;
 
 		void unload() override;
 

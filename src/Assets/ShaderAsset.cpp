@@ -10,7 +10,7 @@ namespace puffin::assets
 
 		// Create AssetData Struct
 		AssetData data;
-		data.type = gShaderAssetType;
+		data.type = AssetType::Shader;
 		data.version = gShaderAssetVersion;
 
 		// Fill Metadata from Info struct
@@ -22,12 +22,12 @@ namespace puffin::assets
 
 		data.json = metadata.dump();
 
-		const size_t binarySize = mCode.size() * sizeof(uint32_t);
+		//const size_t binarySize = mCode.size() * sizeof(uint32_t);
 
 		// Copy code to binary blob
-		data.binaryBlob.resize(binarySize);
+		//data.binaryBlob.resize(binarySize);
 
-		std::copy_n(mCode.data(), mCode.size(), data.binaryBlob.data());
+		//std::copy_n(mCode.data(), mCode.size(), data.binaryBlob.data());
 
 		return saveBinaryFile(fullPath, data);
 	}
@@ -55,20 +55,19 @@ namespace puffin::assets
 		const std::string shaderType = metadata["shader_type"];
 		mShaderType = parseShaderTypeFromString(shaderType.c_str());
 
-		const std::string& shaderPath = metadata["shader_path"];
-		mShaderPath = fs::path(shaderPath);
+		const std::string shaderPath = metadata["shader_path"];
+		mShaderPath = shaderPath;
 
-		// TODO - Why does constructing a path object from binary_path cause a crash?
-		// Is there a weird character in here?
+		const std::string binaryPath = metadata["binary_path"];
+		mBinaryPath = binaryPath;
 
-		const std::string& binaryPath = metadata["binary_path"];
-		mBinaryPath = fs::path(binaryPath);
+		//const size_t codeSize = data.binaryBlob.size() / sizeof(uint32_t);
 
-		const size_t codeSize = data.binaryBlob.size() / sizeof(uint32_t);
+		//mCode.resize(codeSize);
 
-		mCode.resize(codeSize);
+		//std::copy_n(data.binaryBlob.data(), data.binaryBlob.size(), mCode.data());
 
-		std::copy_n(data.binaryBlob.data(), data.binaryBlob.size(), mCode.data());
+		loadCodeFromBinary();
 
 		mIsLoaded = true;
 		return true;

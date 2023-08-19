@@ -11,19 +11,37 @@ namespace fs = std::filesystem;
 
 namespace puffin::assets
 {
+	// Enum for asset type. Be careful about changing values as they are stored within the asset files
+	enum class AssetType : uint32_t
+	{
+		None = 0,
+		StaticMesh = 10,
+		SkeletalMesh = 20,
+		Texture = 30,
+		Shader = 40,
+		Material = 50,
+		Sound = 60,
+	};
+
 	struct AssetData
 	{
 		AssetData()
 		{
-			type = "";
+			type = AssetType::None;
 			version = 0;
 			json = "";
 			binaryBlob.clear();
 		}
 
-		~AssetData() {}
+		~AssetData()
+		{
+			type = AssetType::None;
+			version = 0;
+			json.clear();
+			binaryBlob.clear();
+		}
 
-		std::string_view type;
+		AssetType type;
 		uint32_t version;
 		std::string json;
 		std::vector<char> binaryBlob;
@@ -31,7 +49,7 @@ namespace puffin::assets
 
 	enum class CompressionMode : uint8_t
 	{
-		None,
+		None = 0,
 		LZ4
 	};
 
@@ -60,10 +78,8 @@ namespace puffin::assets
 		if (!outFile.is_open())
 			return false;
 
-		// Write Asset Type & Length
-		const uint32_t typeLength = data.type.size();
-		outFile.write(reinterpret_cast<const char*>(&typeLength), sizeof(uint32_t));
-		outFile.write(reinterpret_cast<const char*>(&data.type), typeLength);
+		// Write Asset Type
+		outFile.write(reinterpret_cast<const char*>(&data.type), sizeof(uint32_t));
 
 		// Write Asset Version
 		outFile.write(reinterpret_cast<const char*>(&data.version), sizeof(uint32_t));
@@ -101,10 +117,8 @@ namespace puffin::assets
 		// Start reading from beginning
 		inFile.seekg(0);
 
-		// Read Asset Type & Length
-		uint32_t typeLength;
-		inFile.read(reinterpret_cast<char*>(&typeLength), sizeof(uint32_t));
-		inFile.read(reinterpret_cast<char*>(&data.type), typeLength);
+		// Read Asset Type
+		inFile.read(reinterpret_cast<char*>(&data.type), sizeof(uint32_t));
 
 		// Read Asset Version
 		inFile.read(reinterpret_cast<char*>(&data.version), sizeof(uint32_t));
@@ -157,6 +171,8 @@ namespace puffin::assets
 
 		virtual const std::string& type() const = 0;
 		virtual const uint32_t& version() const = 0;
+		virtual bool save() = 0;
+		virtual bool load() = 0;
 		virtual void unload() = 0;
 
 		virtual bool isLoaded() { return mIsLoaded; }

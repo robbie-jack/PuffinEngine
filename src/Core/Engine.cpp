@@ -103,6 +103,7 @@ namespace puffin::core
 		assets::AssetRegistry::get()->loadAssetCache();
 		//addDefaultAssets();
 		//assets::AssetRegistry::get()->saveAssetCache();
+		//loadAndResaveAssets();
 		//ReimportDefaultAssets();
 
 		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
@@ -298,15 +299,16 @@ namespace puffin::core
 		const auto shaderAsset2 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath2);
 
 		shaderAsset1->setType(assets::ShaderType::Vertex);
-		shaderAsset1->setShaderPath("C:\\Projects\\PuffinEngine\\shaders\\vulkan\\forward_shading\\forward_shading.vert");
-		shaderAsset1->setBinaryPath("C:/Projects/PuffinEngine/bin/vulkan/forward_shading/forward_shading_vs.spv");
-		shaderAsset1->loadCodeFromBinary();
+
+		shaderAsset1->setShaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.vert)"));
+		shaderAsset1->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_vs.spv)"));
+		//shaderAsset1->loadCodeFromBinary();
 		shaderAsset1->save();
 
 		shaderAsset2->setType(assets::ShaderType::Fragment);
-		shaderAsset2->setShaderPath("C:\\Projects\\PuffinEngine\\shaders\\vulkan\\forward_shading\\forward_shading.frag");
-		shaderAsset2->setBinaryPath("C:/Projects/PuffinEngine/bin/vulkan/forward_shading/forward_shading_fs.spv");
-		shaderAsset2->loadCodeFromBinary();
+		shaderAsset2->setShaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.frag)"));
+		shaderAsset2->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_fs.spv)"));
+		//shaderAsset2->loadCodeFromBinary();
 		shaderAsset2->save();
 
 		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
@@ -345,25 +347,36 @@ namespace puffin::core
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		PuffinID meshId1 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath1)->id();
-		PuffinID meshId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		PuffinID meshId3 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath3)->id();
-		PuffinID meshId4 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath4)->id();
+		std::vector meshPaths = { meshPath1, meshPath2, meshPath3, meshPath4 };
 
-		const auto meshAsset1 = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshId1));
-		const auto meshAsset2 = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshId2));
-		const auto meshAsset3 = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshId3));
-		const auto meshAsset4 = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshId4));
+		const fs::path& texturePath1 = "textures\\chalet.ptexture";
+		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		meshAsset1->load();
-		meshAsset2->load();
-		meshAsset3->load();
-		meshAsset4->load();
+		std::vector texturePaths = { texturePath1, texturePath2 };
 
-		meshAsset1->save();
-		meshAsset2->save();
-		meshAsset3->save();
-		meshAsset4->save();
+		const fs::path& soundPath1 = "sounds\\Select 1.wav";
+
+		const fs::path shaderPath1 = "shaders\\forward_shading\\forward_shading_vert.pshader";
+		const fs::path shaderPath2 = "shaders\\forward_shading\\forward_shading_frag.pshader";
+
+		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
+		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+
+		std::vector paths =
+		{
+			meshPath1, meshPath2, meshPath3, meshPath4,
+			texturePath1, texturePath2,
+			shaderPath1, shaderPath2,
+			materialPath1, materialPath2
+		};
+
+		for (const auto path : paths)
+		{
+			const auto asset = assets::AssetRegistry::get()->getAsset(path);
+			asset->load();
+			asset->save();
+			asset->unload();
+		}
 	}
 
 	void Engine::defaultScene()

@@ -27,6 +27,10 @@ namespace puffin::assets
 			return gSoundVersion;
 		}
 
+		bool save() override { return true; }
+
+		bool load() override { return true; }
+
 		void unload() override {}
 	};
 

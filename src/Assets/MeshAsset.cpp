@@ -36,7 +36,7 @@ namespace puffin::assets
 
 		// Create AssetData Struct
 		AssetData data;
-		data.type = gStaticMeshType;
+		data.type = AssetType::StaticMesh;
 		data.version = gStaticMeshVersion;
 
 		// Fill Metadata from Info struct

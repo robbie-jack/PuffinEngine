@@ -8,7 +8,7 @@
 
 namespace puffin::assets
 {
-	static const std::string gStaticMeshType = "StaticMesh";
+	static const std::string gStaticMeshTypeString = "StaticMesh";
 	static constexpr uint32_t gStaticMeshVersion = 1; // Latest version of Static Mesh Asset Format
 
 	struct MeshInfo
@@ -36,7 +36,7 @@ namespace puffin::assets
 
 		[[nodiscard]] const std::string& type() const override
 		{
-			return gStaticMeshType;
+			return gStaticMeshTypeString;
 		}
 
 		[[nodiscard]] const uint32_t& version() const override
@@ -44,11 +44,11 @@ namespace puffin::assets
 			return gStaticMeshVersion;
 		}
 
-		bool save();
+		bool save() override;
 
 		bool save(const MeshInfo& info, const void* vertexData, const void* indexData);
 
-		bool load();
+		bool load() override;
 
 		void unload() override;
 

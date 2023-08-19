@@ -134,9 +134,9 @@ namespace puffin::rendering
 	{
 		processEvents();
 
-		processComponents();
-
 		updateRenderData();
+
+		processComponents();
 
 		draw();
 	}
@@ -696,10 +696,10 @@ namespace puffin::rendering
 	void VKRenderSystem::buildForwardRendererPipeline()
 	{
 		mForwardVertMod = util::ShaderModule{
-			mDevice, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_vs.spv"
+			mDevice, R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_vs.spv)"
 		};
 		mForwardFragMod = util::ShaderModule{
-			mDevice, "C:\\Projects\\PuffinEngine\\bin\\vulkan\\forward_shading\\forward_shading_fs.spv"
+			mDevice, R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_fs.spv)"
 		};
 
 		util::PipelineLayoutBuilder plb{};
@@ -902,7 +902,9 @@ namespace puffin::rendering
 
 			for (auto [entity, object, transform, mesh] : meshView.each())
 			{
-				mRenderables.emplace_back(object.id, mesh.meshAssetId, mesh.matAssetID);
+				const auto& matData = mMatData[mesh.matAssetID];
+
+				mRenderables.emplace_back(object.id, mesh.meshAssetId, matData.baseMaterialID);
 
 				if (!mCachedObjectData.contains(object.id))
 				{
@@ -919,13 +921,6 @@ namespace puffin::rendering
 
 			mUpdateRenderables = false;
 		}
-
-		/*auto lightView = registry->view<const ECS::SceneObjectComponent, const TransformComponent, LightComponent>();
-		
-		for (auto [entity, object, transform, light] : lightView.each())
-		{
-			
-		}*/
 	}
 
 	void VKRenderSystem::updateEditorCamera()
@@ -1706,10 +1701,9 @@ namespace puffin::rendering
 
 	void VKRenderSystem::drawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
 	{
-		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mForwardPipeline.get());
-		//cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMats[meshDrawBatch.matID].pipeline.get());
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMats[meshDrawBatch.matID].pipeline.get());
 
-		vk::DeviceSize indirectOffset = meshDrawBatch.meshIndex;
+		vk::DeviceSize indirectOffset = meshDrawBatch.meshIndex * sizeof(vk::DrawIndexedIndirectCommand);
 		uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
 
 		drawIndexedIndirectCommand(cmd, getCurrentFrameData().indirectBuffer.buffer, indirectOffset,
@@ -2088,9 +2082,7 @@ namespace puffin::rendering
 				}
 			}
 
-			// TODO - Figure out why this is crashing
-
-			//initMaterialPipeline(matData.baseMaterialID);
+			initMaterialPipeline(matData.baseMaterialID);
 
 			matAsset->unload();
 
@@ -2158,8 +2150,8 @@ namespace puffin::rendering
 						// Create pipeline
 						.createUnique(mDevice, mPipelineCache, *mat.pipelineLayout, nullptr);
 
-					mDevice.destroyShaderModule(vertMod.module());
-					mDevice.destroyShaderModule(fragMod.module());
+					//mDevice.destroyShaderModule(vertMod.module());
+					//mDevice.destroyShaderModule(fragMod.module());
 
 					mDeletionQueue.pushFunction([&]()
 					{

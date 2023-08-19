@@ -38,9 +38,9 @@ namespace puffin::assets
             return gMaterialAssetVersion;
         }
 
-        bool save();
+        bool save() override;
 
-        bool load();
+        bool load() override;
 
         void unload() override {}
 

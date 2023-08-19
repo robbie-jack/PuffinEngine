@@ -128,7 +128,7 @@ namespace puffin::rendering
 
 	struct MaterialDataVK : AssetDataVK
 	{
-		PuffinID baseMaterialID;
+		PuffinID baseMaterialID = gInvalidID;
 
 		int idx = 0;
 

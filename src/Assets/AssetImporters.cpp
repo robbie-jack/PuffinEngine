@@ -329,8 +329,9 @@ namespace puffin::io
 		info.compressionMode = assets::CompressionMode::LZ4;
 		info.originalFile = texturePath.string();
 		info.textureFormat = assets::TextureFormat::RGBA8;
-		info.textureHeight = (uint32_t)texHeight;
-		info.textureWidth = (uint32_t)texWidth;
+		info.textureHeight = static_cast<uint32_t>(texHeight);
+		info.textureWidth = static_cast<uint32_t>(texWidth);
+		info.textureChannels = static_cast<uint8_t>(texChannels);
 		info.originalSize = info.textureHeight * info.textureWidth * texChannels;
 
 		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(importPath);

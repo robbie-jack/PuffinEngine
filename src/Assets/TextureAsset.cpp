@@ -12,17 +12,34 @@ namespace puffin::assets
 
 	// Public
 
+	bool TextureAsset::save()
+	{
+		if (mIsLoaded)
+		{
+			TextureInfo info;
+			info.textureWidth = mTexWidth;
+			info.textureHeight = mTexHeight;
+			info.textureChannels = mTexChannels;
+			info.originalSize = info.textureHeight * info.textureWidth * mTexChannels;
+			info.originalFile = mOriginalFile;
+
+			return save(info, mPixels.data());
+		}
+
+		return false;
+	}
+
 	bool TextureAsset::save(TextureInfo& info, void* pixelData)
 	{
 		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
 
 		// Create AssetData Struct
 		AssetData data;
-		data.type = gTextureType;
+		data.type = AssetType::Texture;
 		data.version = gTextureVersion;
 
 		// Compress data into binary blob
-		const char* pixels = (char*)pixelData;
+		const char* pixels = static_cast<char*>(pixelData);
 
 		const int compressStaging = LZ4_compressBound(static_cast<int>(info.originalSize));
 
@@ -44,11 +61,12 @@ namespace puffin::assets
 
 		// Fill Metadata from Info struct
 		json metadata;
-		metadata["textureFormat"] = "RGBA8";
+		metadata["textureFormat"] = parseTextureStringFromFormat(gTexChannelsToFormat.at(info.textureChannels));
 		metadata["compression"] = "LZ4";
 		metadata["original_file"] = info.originalFile;
 		metadata["textureHeight"] = info.textureHeight;
 		metadata["textureWidth"] = info.textureWidth;
+		metadata["textureChannels"] = info.textureChannels;
 		metadata["compressedSize"] = info.compressedSize;
 		metadata["originalSize"] = info.originalSize;
 
@@ -87,6 +105,7 @@ namespace puffin::assets
 
 		mTexHeight = info.textureHeight;
 		mTexWidth = info.textureWidth;
+		mTexChannels = info.textureChannels;
 
 		mTexFormat = info.textureFormat;
 
@@ -126,6 +145,7 @@ namespace puffin::assets
 		info.originalFile = metadata["original_file"];
 		info.textureHeight = metadata["textureHeight"];
 		info.textureWidth = metadata["textureWidth"];
+		//info.textureWidth = metadata["textureChannels"];
 		info.compressedSize = metadata["compressedSize"];
 		info.originalSize = metadata["originalSize"];
 
