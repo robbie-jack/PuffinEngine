@@ -109,8 +109,8 @@ namespace puffin::core
 		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
 		{
 			// Create Default Scene in code -- used when scene serialization is changed
-			defaultScene();
-			//physicsScene();
+			//defaultScene();
+			physicsScene();
 			//proceduralScene();
 
 			sceneData->updateData(enttSubsystem);
@@ -500,11 +500,11 @@ namespace puffin::core
 		const PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
 		const PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
-		const fs::path& texturePath1 = "textures\\chalet.ptexture";
-		const fs::path& texturePath2 = "textures\\cube.ptexture";
+		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
+		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
 
-		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		PuffinID materialId1 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath1)->id();
+		PuffinID materialId2 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath2)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
@@ -537,7 +537,7 @@ namespace puffin::core
 			auto& transform = registry->emplace<TransformComponent>(floorEntity);
 			transform.scale = Vector3f(xOffset, 1.0f, 1.0f);
 
-			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, textureId2);
+			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, materialId2);
 
 			registry->emplace<physics::BoxComponent2D>(floorEntity, Vector2f(xOffset, 1.0f));
 
@@ -557,14 +557,14 @@ namespace puffin::core
 				const std::string name = "Box";
 				const auto boxEntity = enttSubsystem->createEntity(name);
 
-				Vector3f position = startPosition + (positionOffset * static_cast<float>(i));
+				Vector3f position = startPosition + positionOffset * static_cast<float>(i);
 
 				const int yIdx = i % yOffsets.size();
 				position.y = yOffsets[yIdx];
 
 				registry->emplace<TransformComponent>(boxEntity, position);
 
-				registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, textureId2);
+				registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, materialId2);
 
 				registry->emplace<physics::BoxComponent2D>(boxEntity, Vector2f(1.0f));
 

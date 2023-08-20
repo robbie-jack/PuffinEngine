@@ -21,6 +21,11 @@ endif()
 
 include(${CPM_DOWNLOAD_LOCATION})
 
+include(FetchContent)
+
+# The configurations we support
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo")
+
 # Define Add Submodule Function
 function(add_git_submodule dir)
 
@@ -137,6 +142,7 @@ set(HEADERS
 	${HEADER_DIR}/Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.h
 	${HEADER_DIR}/Physics/Box2D/Box2DPhysicsSystem.h
 	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
+	${HEADER_DIR}/Physics/Jolt/JoltPhysicsSystem.h
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
 	# Rendering
@@ -215,6 +221,7 @@ set(SOURCES
 	${SOURCE_DIR}/Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.cpp
 	${SOURCE_DIR}/Physics/Box2D/Box2DContactListener.cpp
 	${SOURCE_DIR}/Physics/Box2D/Box2DPhysicsSystem.cpp
+	${SOURCE_DIR}/Physics/Jolt/JoltPhysicsSystem.cpp
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
 	# Rendering BGFX
@@ -318,8 +325,18 @@ message("")
 find_package(Vulkan REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
 
+# Include Jolt
+FetchContent_Declare(
+        JoltPhysics
+        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
+        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
+		SOURCE_SUBDIR "Build"
+)
+FetchContent_MakeAvailable(JoltPhysics)
+
 target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
+target_link_libraries(${PROJECT_NAME} Jolt)
 
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
@@ -389,6 +406,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/tinygltf)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/entt/src)
 #target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/assimp/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${JoltPhysics_SOURCE_DIR}/..)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
@@ -428,3 +446,38 @@ if (MSVC)
 else ()
 	#target_compile_options(${PROJECT_NAME} PRIVATE -Wa, -mbig-obj)
 endif ()
+
+# Jolt Config
+
+# When turning this option on, the library will be compiled using doubles for positions. This allows for much bigger worlds.
+set(DOUBLE_PRECISION PFN_USE_DOUBLE_PRECISION)
+
+# When turning this option on, the library will be compiled with debug symbols
+set(GENERATE_DEBUG_SYMBOLS ON)
+
+# When turning this option on, the library will be compiled in such a way to attempt to keep the simulation deterministic across platforms
+set(CROSS_PLATFORM_DETERMINISTIC OFF)
+
+# When turning this option on, the library will be compiled with interprocedural optimizations enabled, also known as link-time optimizations or link-time code generation.
+# Note that if you turn this on you need to use SET_INTERPROCEDURAL_OPTIMIZATION() or set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON) to enable LTO specificly for your own project as well.
+# If you don't do this you may get an error: /usr/bin/ld: libJolt.a: error adding symbols: file format not recognized
+set(INTERPROCEDURAL_OPTIMIZATION ON)
+
+# When turning this on, in Debug and Release mode, the library will emit extra code to ensure that the 4th component of a 3-vector is kept the same as the 3rd component 
+# and will enable floating point exceptions during simulation to detect divisions by zero. 
+# Note that this currently only works using MSVC. Clang turns Float2 into a SIMD vector sometimes causing floating point exceptions (the option is ignored).
+set(FLOATING_POINT_EXCEPTIONS_ENABLED OFF)
+
+# Number of bits to use in ObjectLayer. Can be 16 or 32.
+set(OBJECT_LAYER_BITS 16)
+
+# Select X86 processor features to use, by default the library compiles with AVX2, if everything is off it will be SSE2 compatible.
+set(USE_SSE4_1 ON)
+set(USE_SSE4_2 ON)
+set(USE_AVX ON)
+set(USE_AVX2 ON)
+set(USE_AVX512 OFF)
+set(USE_LZCNT ON)
+set(USE_TZCNT ON)
+set(USE_F16C ON)
+set(USE_FMADD ON)
