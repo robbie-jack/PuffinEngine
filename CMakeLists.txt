@@ -126,6 +126,7 @@ set(HEADERS
 	${HEADER_DIR}/Input/InputSubsystem.h
 	# Physics
 	${HEADER_DIR}/Physics/CollisionEvent.h
+	${HEADER_DIR}/Physics/PhysicsConstants.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsTypes2D.h
 	${HEADER_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsHelpers2D.h
@@ -143,6 +144,7 @@ set(HEADERS
 	${HEADER_DIR}/Physics/Box2D/Box2DPhysicsSystem.h
 	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
 	${HEADER_DIR}/Physics/Jolt/JoltPhysicsSystem.h
+	${HEADER_DIR}/Physics/Jolt/JoltPhysicsTypes.h
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
 	# Rendering

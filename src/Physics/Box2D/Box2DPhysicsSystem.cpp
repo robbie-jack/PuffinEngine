@@ -45,7 +45,7 @@ namespace puffin::physics
 			// Update Transform from Rigidbody Position
 			transform.position.x = mBodies[id]->GetPosition().x;
 			transform.position.y = mBodies[id]->GetPosition().y;
-			transform.orientation = glm::angleAxis(-mBodies[id]->GetAngle(), glm::vec3(0.0f, 0.0f, 1.0f));
+			transform.orientation = angleAxis(-mBodies[id]->GetAngle(), glm::vec3(0.0f, 0.0f, 1.0f));
 
 			// Update Velocity with Linear/Angular Velocity
 			velocity.linear.x = mBodies[id]->GetLinearVelocity().x;

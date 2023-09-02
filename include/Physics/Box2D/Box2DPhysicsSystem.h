@@ -42,7 +42,7 @@ namespace puffin::physics
 		{
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&]() { beginPlay(); }, "Box2DPhysicsSystem: BeginPlay");
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
-			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Box2DPhysicsSystem: endPlay");
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Box2DPhysicsSystem: EndPlay");
 
 			auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
@@ -86,7 +86,7 @@ namespace puffin::physics
 		std::unique_ptr<b2World> mPhysicsWorld = nullptr;
 		std::unique_ptr<Box2DContactListener> mContactListener = nullptr;
 
-		PackedVector<b2Body*> mBodies; // Packed Vector of bodies use in physics simulation
+		PackedVector<b2Body*> mBodies; // Packed Vector of bodies used in physics simulation
 		PackedArray<b2Shape*, gMaxShapes> mShapes;
 		PackedArray<b2CircleShape, gMaxShapes> mCircleShapes; // Packed Vector of circle shapes
 		PackedArray<b2PolygonShape, gMaxShapes> mPolygonShapes; // Packed Vector of polygon shapes
