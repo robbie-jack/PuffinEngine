@@ -1,6 +1,7 @@
 #include "Assets/TextureAsset.h"
 #include "nlohmann/json.hpp"
 #include "lz4.h"
+#include "lz4hc.h"
 
 using json = nlohmann::json;
 
@@ -20,7 +21,7 @@ namespace puffin::assets
 			info.textureWidth = mTexWidth;
 			info.textureHeight = mTexHeight;
 			info.textureChannels = mTexChannels;
-			info.originalSize = info.textureHeight * info.textureWidth * mTexChannels;
+			info.originalSize = info.textureHeight * info.textureWidth * info.textureChannels;
 			info.originalFile = mOriginalFile;
 
 			return save(info, mPixels.data());
@@ -41,11 +42,15 @@ namespace puffin::assets
 		// Compress data into binary blob
 		const char* pixels = static_cast<char*>(pixelData);
 
-		const int compressStaging = LZ4_compressBound(static_cast<int>(info.originalSize));
+		const size_t compressStaging = LZ4_compressBound(static_cast<int>(info.originalSize));
 
 		data.binaryBlob.resize(compressStaging);
 
-		int compressedSize = LZ4_compress_default(pixels, data.binaryBlob.data(), info.originalSize, compressStaging);
+		// Compress using default LZ4 mode
+		//int compressedSize = LZ4_compress_default(pixels, data.binaryBlob.data(), info.originalSize, compressStaging);
+
+		// Compress using HC LZ4 mode (higher compression ratio, takes longer to compress, doesn't effect decompression time)
+		int compressedSize = LZ4_compress_HC(pixels, data.binaryBlob.data(), info.originalSize, compressStaging, LZ4HC_CLEVEL_DEFAULT);
 
 		// If compression rate is more than 80% of original, it's not worth compressing the image
 		if (const float compressionRate = static_cast<float>(compressedSize) / static_cast<float>(info.originalSize); compressionRate > 0.8)
@@ -145,7 +150,7 @@ namespace puffin::assets
 		info.originalFile = metadata["original_file"];
 		info.textureHeight = metadata["textureHeight"];
 		info.textureWidth = metadata["textureWidth"];
-		//info.textureWidth = metadata["textureChannels"];
+		info.textureChannels = metadata["textureChannels"];
 		info.compressedSize = metadata["compressedSize"];
 		info.originalSize = metadata["originalSize"];
 

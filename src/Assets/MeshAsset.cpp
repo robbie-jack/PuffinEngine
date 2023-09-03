@@ -1,6 +1,7 @@
 #include "Assets/MeshAsset.h"
 #include "nlohmann/json.hpp"
 #include "lz4.h"
+#include "lz4hc.h"
 
 using json = nlohmann::json;
 
@@ -70,7 +71,12 @@ namespace puffin::assets
 
 		data.binaryBlob.resize(compressStaging);
 
-		const int compressedSize = LZ4_compress_default(mergedBuffer.data(), data.binaryBlob.data(), static_cast<int>(mergedBuffer.size()), static_cast<int>(compressStaging));
+		// Compress using default LZ4 mode
+		//const int compressedSize = LZ4_compress_default(mergedBuffer.data(), data.binaryBlob.data(), static_cast<int>(mergedBuffer.size()), static_cast<int>(compressStaging));
+
+		// Compress using HC LZ4 mode (higher compression ratio, takes longer to compress, doesn't effect decompression time)
+		const int compressedSize = LZ4_compress_HC(mergedBuffer.data(), data.binaryBlob.data(), static_cast<int>(mergedBuffer.size()), static_cast<int>(compressStaging), LZ4HC_CLEVEL_DEFAULT);
+
 		data.binaryBlob.resize(compressedSize);
 
 		// Save Asset Data out to Binary File

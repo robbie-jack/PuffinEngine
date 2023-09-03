@@ -312,7 +312,7 @@ namespace puffin::io
 	{
 		int texWidth, texHeight, texChannels;
 
-		stbi_uc* pixels = stbi_load(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		stbi_uc* pixels = stbi_load(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels, STBI_default);
 
 		if (!pixels) {
 			std::cout << "Failed to load texture file " << texturePath.string() << std::endl;
@@ -322,19 +322,19 @@ namespace puffin::io
 		void* pixelPtr = pixels;
 
 		// Instantiate new Texture Asset to store loaded Pixel data
-		fs::path importPath = texturePath.parent_path().stem() / texturePath.stem();
-		importPath += ".ptexture";
+		fs::path assetPath = "textures" / texturePath.stem();
+		assetPath += ".ptexture";
 
 		assets::TextureInfo info;
 		info.compressionMode = assets::CompressionMode::LZ4;
 		info.originalFile = texturePath.string();
-		info.textureFormat = assets::TextureFormat::RGBA8;
 		info.textureHeight = static_cast<uint32_t>(texHeight);
 		info.textureWidth = static_cast<uint32_t>(texWidth);
 		info.textureChannels = static_cast<uint8_t>(texChannels);
-		info.originalSize = info.textureHeight * info.textureWidth * texChannels;
+		info.textureFormat = assets::gTexChannelsToFormat.at(info.textureChannels);
+		info.originalSize = info.textureHeight * info.textureWidth * info.textureChannels;
 
-		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(importPath);
+		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(assetPath);
 		const bool ret = asset->save(info, pixelPtr);
 
 		// Free Loaded Data, as pixels are now in staging buffer
