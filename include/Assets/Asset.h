@@ -53,16 +53,31 @@ namespace puffin::assets
 		LZ4
 	};
 
+	struct AssetInfo
+	{
+		CompressionMode compressionMode;
+		std::string originalFile;
+	};
+
+	const static std::unordered_map<CompressionMode, const char*> gCompressionModeToString =
+	{
+		{ CompressionMode::None, "None" },
+		{ CompressionMode::LZ4, "LZ4" }
+	};
+
 	static CompressionMode parseCompressionMode(const char* f)
 	{
 		if (strcmp(f, "LZ4") == 0)
 		{
 			return CompressionMode::LZ4;
 		}
-		else
-		{
-			return CompressionMode::None;
-		}
+
+		return CompressionMode::None;
+	}
+
+	static const char* parseCompressionStringFromMode(CompressionMode mode)
+	{
+		return gCompressionModeToString.at(mode);
 	}
 
 	static bool saveBinaryFile(const fs::path& path, const AssetData& data)

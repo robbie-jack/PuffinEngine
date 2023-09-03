@@ -18,11 +18,13 @@ namespace puffin::assets
 		if (mIsLoaded)
 		{
 			TextureInfo info;
+			info.originalFile = mOriginalFile;
+			info.compressionMode = mCompressionMode;
+			info.textureFormat = mTexFormat;
 			info.textureWidth = mTexWidth;
 			info.textureHeight = mTexHeight;
 			info.textureChannels = mTexChannels;
 			info.originalSize = info.textureHeight * info.textureWidth * info.textureChannels;
-			info.originalFile = mOriginalFile;
 
 			return save(info, mPixels.data());
 		}
@@ -56,26 +58,27 @@ namespace puffin::assets
 		int compressedSize = LZ4_compress_HC(pixels, data.binaryBlob.data(), info.originalSize, compressStaging, LZ4HC_CLEVEL_DEFAULT);
 
 		// If compression rate is more than 80% of original, it's not worth compressing the image
-		if (const float compressionRate = static_cast<float>(compressedSize) / static_cast<float>(info.originalSize); compressionRate > 0.8)
+		if (const double compressionRate = static_cast<float>(compressedSize) / static_cast<float>(info.originalSize); compressionRate > 0.8 || compressedSize == 0)
 		{
-			compressedSize = info.originalSize;
-			data.binaryBlob.resize(compressedSize);
+			data.binaryBlob.resize(info.originalSize);
 
-			memcpy(data.binaryBlob.data(), pixels, compressedSize);
+			memcpy(data.binaryBlob.data(), pixels, info.originalSize);
+
+			info.compressionMode = CompressionMode::None;
 		}
-
-		data.binaryBlob.resize(compressedSize);
-		info.compressedSize = static_cast<uint32_t>(compressedSize);
+		else
+		{
+			data.binaryBlob.resize(compressedSize);
+		}
 
 		// Fill Metadata from Info struct
 		json metadata;
-		//metadata["textureFormat"] = parseTextureStringFromFormat(gTexChannelsToFormat.at(info.textureChannels));
-		metadata["compression"] = "LZ4";
+		metadata["compression"] = parseCompressionStringFromMode(info.compressionMode);
+		metadata["textureFormat"] = parseTextureStringFromFormat(info.textureFormat);
 		metadata["original_file"] = info.originalFile;
 		metadata["textureHeight"] = info.textureHeight;
 		metadata["textureWidth"] = info.textureWidth;
 		metadata["textureChannels"] = info.textureChannels;
-		metadata["compressedSize"] = info.compressedSize;
 		metadata["originalSize"] = info.originalSize;
 
 		// Pass metadata to asset data struct
@@ -108,9 +111,18 @@ namespace puffin::assets
 		// Decompress Binary Data
 		mPixels.resize(info.originalSize);
 
-		LZ4_decompress_safe(data.binaryBlob.data(), mPixels.data(), 
-		static_cast<int>(info.compressedSize), static_cast<int>(info.originalSize));
+		if (info.compressionMode == CompressionMode::LZ4)
+		{
+			LZ4_decompress_safe(data.binaryBlob.data(), mPixels.data(),
+				static_cast<int>(data.binaryBlob.size()), static_cast<int>(info.originalSize));
+		}
+		else
+		{
+			std::copy_n(data.binaryBlob.data(), static_cast<int>(info.originalSize), mPixels.data());
+		}
 
+		mOriginalFile = info.originalFile;
+		mCompressionMode = info.compressionMode;
 		mTexHeight = info.textureHeight;
 		mTexWidth = info.textureWidth;
 		mTexChannels = info.textureChannels;
@@ -154,7 +166,6 @@ namespace puffin::assets
 		info.textureHeight = metadata["textureHeight"];
 		info.textureWidth = metadata["textureWidth"];
 		info.textureChannels = metadata["textureChannels"];
-		info.compressedSize = metadata["compressedSize"];
 		info.originalSize = metadata["originalSize"];
 
 		return info;

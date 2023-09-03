@@ -346,6 +346,8 @@ namespace puffin::core
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
 
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)");
 		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)");
 		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)");
 		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)");
@@ -374,8 +376,8 @@ namespace puffin::core
 
 		std::vector paths =
 		{
-			/*meshPath1, meshPath2, meshPath3, meshPath4,*/
-			texturePath1/*, texturePath2, texturePath3, texturePath4, texturePath5,
+			meshPath1, meshPath2, meshPath3, meshPath4,
+			texturePath1, texturePath2, texturePath3, texturePath4, texturePath5/*,
 			shaderPath1, shaderPath2,
 			materialPath1, materialPath2*/
 		};

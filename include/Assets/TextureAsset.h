@@ -99,15 +99,12 @@ namespace puffin::assets
 		return gTexFormatToString.at(format);
 	}
 
-	struct TextureInfo
+	struct TextureInfo : AssetInfo
 	{
-		CompressionMode compressionMode;
-		std::string originalFile;
 		TextureFormat textureFormat;
 		uint32_t textureHeight;
 		uint32_t textureWidth;
 		uint8_t textureChannels;
-		uint32_t compressedSize;
 		uint32_t originalSize;
 	};
 
@@ -186,6 +183,7 @@ namespace puffin::assets
 		TextureFormat mTexFormat;
 
 		std::string mOriginalFile;
+		CompressionMode mCompressionMode;
 
 		TextureInfo parseTextureInfo(const AssetData& data) const;
 	};

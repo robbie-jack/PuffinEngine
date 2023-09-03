@@ -308,7 +308,7 @@ namespace puffin::io
 	// Texture Importers
 	//////////////////////
 
-	bool loadAndImportTexture(fs::path texturePath, bool useBCFormat)
+	bool loadAndImportTexture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat)
 	{
 		int texWidth, texHeight, texChannels;
 
@@ -341,7 +341,7 @@ namespace puffin::io
 		void* pixelPtr = pixels;
 
 		// Instantiate new Texture Asset to store loaded Pixel data
-		fs::path assetPath = "textures" / texturePath.stem();
+		fs::path assetPath = assetSubdirectory / texturePath.stem();
 		assetPath += ".ptexture";
 
 		assets::TextureInfo info;
