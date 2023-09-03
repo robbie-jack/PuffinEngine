@@ -30,6 +30,6 @@ namespace puffin::io
 	//////////////////////
 	// Texture Importers
 	//////////////////////
-
+	
 	bool loadAndImportTexture(fs::path texturePath, fs::path assetSubdirectory = "textures", bool useBCFormat = true);
 }

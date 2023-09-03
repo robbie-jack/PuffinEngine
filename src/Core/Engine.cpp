@@ -347,10 +347,10 @@ namespace puffin::core
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
 
 		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)");
 	}
 
 	void Engine::loadAndResaveAssets()

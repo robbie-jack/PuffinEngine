@@ -44,9 +44,6 @@ namespace puffin::assets
 		// Compress data into binary blob
 		const char* pixels = static_cast<char*>(pixelData);
 
-		// Covert pixel data to appropriate bc format
-
-
 		const size_t compressStaging = LZ4_compressBound(static_cast<int>(info.originalSize));
 
 		data.binaryBlob.resize(compressStaging);

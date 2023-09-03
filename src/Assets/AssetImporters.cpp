@@ -14,6 +14,7 @@
 #include <string>
 
 #include "tiny_gltf.h"
+#include "compressonator/compressonator.h"
 
 #include "Assets/TextureAsset.h"
 #include "Types/Vertex.h"
@@ -265,7 +266,7 @@ namespace puffin::io
 		{
 			fs::path texturePath = modelPath.parent_path() / image.uri;
 
-			if (!loadAndImportTexture(texturePath))
+			if (!loadAndImportTexture(texturePath, ""))
 				return false;
 		}
 
@@ -307,6 +308,59 @@ namespace puffin::io
 	//////////////////////
 	// Texture Importers
 	//////////////////////
+
+	const static std::unordered_map<assets::TextureFormat, CMP_FORMAT> gTexPuffinToCMPFormat =
+	{
+		{ assets::TextureFormat::R8, CMP_FORMAT_R_8 },
+		{ assets::TextureFormat::RG8, CMP_FORMAT_RG_8 },
+		{ assets::TextureFormat::RGB8, CMP_FORMAT_RGB_888 },
+		{ assets::TextureFormat::RGBA8, CMP_FORMAT_RGBA_8888 },
+		{ assets::TextureFormat::BC4, CMP_FORMAT_BC4 },
+		{ assets::TextureFormat::BC5, CMP_FORMAT_BC5 },
+		{ assets::TextureFormat::BC6H, CMP_FORMAT_BC6H },
+		{ assets::TextureFormat::BC7, CMP_FORMAT_BC7 }
+	};
+
+	bool convertTextureToBC(uint32_t width, uint32_t height, void* srcData, assets::TextureFormat srcFormat, uint32_t srcSize, std::vector<char>& dstData, assets::TextureFormat dstFormat, uint32_t& dstSize)
+	{
+		// Setup source texture
+		CMP_Texture srcTexture;
+		srcTexture.dwWidth = width;
+		srcTexture.dwHeight = height;
+		srcTexture.dwPitch = 0;
+		srcTexture.dwSize = sizeof(srcTexture);
+		srcTexture.format = gTexPuffinToCMPFormat.at(srcFormat);
+		srcTexture.dwDataSize = srcSize;
+		srcTexture.pData = static_cast<CMP_BYTE*>(srcData);
+
+		// Setup destination
+		CMP_Texture dstTexture;
+		dstTexture.dwWidth = width;
+		dstTexture.dwHeight = height;
+		dstTexture.dwPitch = 0;
+		dstTexture.dwSize = sizeof(srcTexture);
+		dstTexture.format = gTexPuffinToCMPFormat.at(dstFormat);
+
+		dstSize = CMP_CalculateBufferSize(&dstTexture);
+		dstData.resize(dstSize);
+
+		dstTexture.dwDataSize = dstSize;
+		dstTexture.pData = reinterpret_cast<CMP_BYTE*>(dstData.data());
+
+		// Setup compression options
+		CMP_CompressOptions options = { 0 };
+		options.dwSize = sizeof(options);
+
+		// Compress texture
+		CMP_ERROR cmp_status;
+		cmp_status = CMP_ConvertTexture(&srcTexture, &dstTexture, &options, nullptr);
+		if (cmp_status != CMP_OK)
+		{
+			return false;
+		}
+
+		return true;
+	}
 
 	bool loadAndImportTexture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat)
 	{
@@ -352,18 +406,34 @@ namespace puffin::io
 		info.textureChannels = static_cast<uint8_t>(desiredChannels);
 		info.originalSize = info.textureHeight * info.textureWidth * info.textureChannels;
 
-		// Decide which texture format to use
+		const assets::TextureFormat rgbFormat = assets::gTexChannelsToRGBAFormat.at(info.textureChannels);
+		const assets::TextureFormat bcFormat = assets::gTexChannelsToBCFormat.at(info.textureChannels);
+
+		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(assetPath);
+
+		bool ret;
+
+		// Save asset
 		if (useBCFormat)
 		{
-			info.textureFormat = assets::gTexChannelsToBCFormat.at(info.textureChannels);
+			std::vector<char> compressedPixels;
+
+			if (!convertTextureToBC(info.textureWidth, info.textureHeight, pixelPtr, rgbFormat, info.originalSize, compressedPixels, bcFormat, info.originalSize))
+			{
+				std::cout << "Failed to convert texture to bc format " << texturePath.string() << std::endl;
+				return false;
+			}
+
+			info.textureFormat = bcFormat;
+			ret = asset->save(info, compressedPixels.data());
+
+			compressedPixels.clear();
 		}
 		else
 		{
-			info.textureFormat = assets::gTexChannelsToRGBAFormat.at(info.textureChannels);
+			info.textureFormat = rgbFormat;
+			ret = asset->save(info, pixelPtr);
 		}
-
-		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(assetPath);
-		const bool ret = asset->save(info, pixelPtr);
 
 		// Free Loaded Data, as pixels are now in staging buffer
 		stbi_image_free(pixels);
