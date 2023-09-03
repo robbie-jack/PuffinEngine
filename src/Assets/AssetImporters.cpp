@@ -308,11 +308,30 @@ namespace puffin::io
 	// Texture Importers
 	//////////////////////
 
-	bool loadAndImportTexture(fs::path texturePath)
+	bool loadAndImportTexture(fs::path texturePath, bool useBCFormat)
 	{
 		int texWidth, texHeight, texChannels;
 
-		stbi_uc* pixels = stbi_load(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels, STBI_default);
+		// Load info about texture without loading full file
+		if (const int ok = stbi_info(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels); ok == 0)
+		{
+			std::cout << "Failed to load texture file " << texturePath.string() << std::endl;
+			return false;
+		}
+
+		// Figure out how many channels loaded pixel data should have (rgb data gets an extra channel since it's stored the same as rgba data)
+		int desiredChannels;
+		if (texChannels == 3)
+		{
+			desiredChannels = 4;
+		}
+		else
+		{
+			desiredChannels = texChannels;
+		}
+
+		// Load pixel data
+		stbi_uc* pixels = stbi_load(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels, desiredChannels);
 
 		if (!pixels) {
 			std::cout << "Failed to load texture file " << texturePath.string() << std::endl;
@@ -330,9 +349,18 @@ namespace puffin::io
 		info.originalFile = texturePath.string();
 		info.textureHeight = static_cast<uint32_t>(texHeight);
 		info.textureWidth = static_cast<uint32_t>(texWidth);
-		info.textureChannels = static_cast<uint8_t>(texChannels);
-		info.textureFormat = assets::gTexChannelsToFormat.at(info.textureChannels);
+		info.textureChannels = static_cast<uint8_t>(desiredChannels);
 		info.originalSize = info.textureHeight * info.textureWidth * info.textureChannels;
+
+		// Decide which texture format to use
+		if (useBCFormat)
+		{
+			info.textureFormat = assets::gTexChannelsToBCFormat.at(info.textureChannels);
+		}
+		else
+		{
+			info.textureFormat = assets::gTexChannelsToRGBAFormat.at(info.textureChannels);
+		}
 
 		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(assetPath);
 		const bool ret = asset->save(info, pixelPtr);

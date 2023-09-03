@@ -13,32 +13,40 @@ namespace puffin::assets
 		R8 = 1,
 		RG8 = 2,
 		RGB8 = 3,
-		RGBA8 = 4
+		RGBA8 = 4,
+		BC4 = 5,
+		BC5 = 6,
+		BC6H = 7,
+		BC7 = 8
 	};
 
 	// Map of texture format to number of channels per pixel
-	const static std::unordered_map<TextureFormat, uint8_t> gTexFormatToChannels =
-	{
-		{ TextureFormat::R8, 1 },
-		{ TextureFormat::RG8, 2 },
-		{ TextureFormat::RGB8, 3 },
-		{ TextureFormat::RGBA8, 4 }
-	};
-
 	const static std::unordered_map<TextureFormat, const char*> gTexFormatToString =
 	{
 		{ TextureFormat::R8, "R8" },
 		{ TextureFormat::RG8, "RG8" },
 		{ TextureFormat::RGB8, "RGB8" },
-		{ TextureFormat::RGBA8, "RGBA8" }
+		{ TextureFormat::RGBA8, "RGBA8" },
+		{ TextureFormat::BC4, "BC4" },
+		{ TextureFormat::BC5, "BC5" },
+		{ TextureFormat::BC6H, "BC6H" },
+		{ TextureFormat::BC7, "BC7" }
 	};
 
-	const static std::unordered_map<uint8_t, TextureFormat> gTexChannelsToFormat =
+	const static std::unordered_map<uint8_t, TextureFormat> gTexChannelsToRGBAFormat =
 	{
 		{ 1, TextureFormat::R8 },
 		{ 2, TextureFormat::RG8 },
 		{ 3, TextureFormat::RGB8 },
 		{ 4, TextureFormat::RGBA8 }
+	};
+
+	const static std::unordered_map<uint8_t, TextureFormat> gTexChannelsToBCFormat =
+	{
+		{ 1, TextureFormat::BC4 },
+		{ 2, TextureFormat::BC5 },
+		{ 3, TextureFormat::BC7 },
+		{ 4, TextureFormat::BC7 }
 	};
 
 	static TextureFormat parseTextureFormat(const char* f)
@@ -61,6 +69,26 @@ namespace puffin::assets
 		if (strcmp(f, "RGB8") == 0)
 		{
 			return TextureFormat::RGB8;
+		}
+
+		if (strcmp(f, "BC4") == 0)
+		{
+			return TextureFormat::BC4;
+		}
+
+		if (strcmp(f, "BC5") == 0)
+		{
+			return TextureFormat::BC5;
+		}
+
+		if (strcmp(f, "BC6H") == 0)
+		{
+			return TextureFormat::BC6H;
+		}
+
+		if (strcmp(f, "BC7") == 0)
+		{
+			return TextureFormat::BC7;
 		}
 
 		return TextureFormat::Unknown;
@@ -138,19 +166,14 @@ namespace puffin::assets
 			return mTexChannels;
 		}
 
-		[[nodiscard]] uint32_t textureSizePerPixel() const
-		{
-			return gTexFormatToChannels.at(mTexFormat);
-		}
-
 		[[nodiscard]] TextureFormat textureFormat() const
 		{
 			return mTexFormat;
 		}
 
-		[[nodiscard]] uint32_t textureSize() const
+		[[nodiscard]] uint64_t textureSize() const
 		{
-			return mTexWidth * mTexHeight * gTexFormatToChannels.at(mTexFormat);
+			return mTexSize;
 		}
 
 	private:
@@ -159,6 +182,7 @@ namespace puffin::assets
 		uint32_t mTexWidth = 0;
 		uint32_t mTexHeight = 0;
 		uint8_t mTexChannels = 0;
+		uint64_t mTexSize = 0;
 		TextureFormat mTexFormat;
 
 		std::string mOriginalFile;

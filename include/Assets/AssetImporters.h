@@ -31,5 +31,5 @@ namespace puffin::io
 	// Texture Importers
 	//////////////////////
 
-	bool loadAndImportTexture(fs::path texturePath);
+	bool loadAndImportTexture(fs::path texturePath, bool useBCFormat = true);
 }

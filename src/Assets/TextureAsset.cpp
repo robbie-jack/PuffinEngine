@@ -42,6 +42,9 @@ namespace puffin::assets
 		// Compress data into binary blob
 		const char* pixels = static_cast<char*>(pixelData);
 
+		// Covert pixel data to appropriate bc format
+
+
 		const size_t compressStaging = LZ4_compressBound(static_cast<int>(info.originalSize));
 
 		data.binaryBlob.resize(compressStaging);
@@ -66,7 +69,7 @@ namespace puffin::assets
 
 		// Fill Metadata from Info struct
 		json metadata;
-		metadata["textureFormat"] = parseTextureStringFromFormat(gTexChannelsToFormat.at(info.textureChannels));
+		//metadata["textureFormat"] = parseTextureStringFromFormat(gTexChannelsToFormat.at(info.textureChannels));
 		metadata["compression"] = "LZ4";
 		metadata["original_file"] = info.originalFile;
 		metadata["textureHeight"] = info.textureHeight;
@@ -111,8 +114,8 @@ namespace puffin::assets
 		mTexHeight = info.textureHeight;
 		mTexWidth = info.textureWidth;
 		mTexChannels = info.textureChannels;
-
 		mTexFormat = info.textureFormat;
+		mTexSize = info.originalSize;
 
 		data.binaryBlob.clear();
 		data.json.clear();

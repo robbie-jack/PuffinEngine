@@ -1973,7 +1973,7 @@ namespace puffin::rendering
 
 			texData.texture = util::initTexture(shared_from_this(), texAsset->pixelData(),
 			                                    texAsset->textureWidth(), texAsset->textureHeight(),
-			                                    texAsset->textureSizePerPixel(),
+			                                    texAsset->textureSize(),
 			                                    gTexFormatVK.at(texAsset->textureFormat()));
 
 			texAsset->unload();
