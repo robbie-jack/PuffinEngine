@@ -27,6 +27,7 @@
 #include "Scripting/AngelScriptSystem.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
+#include "Assets/AssetImporters.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -102,9 +103,9 @@ namespace puffin::core
 		// Load/Initialize Assets
 		assets::AssetRegistry::get()->loadAssetCache();
 		//addDefaultAssets();
+		//reimportDefaultAssets();
 		//assets::AssetRegistry::get()->saveAssetCache();
 		//loadAndResaveAssets();
-		//ReimportDefaultAssets();
 
 		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
 		{
@@ -282,11 +283,17 @@ namespace puffin::core
 		PuffinID meshId3 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath3)->id();
 		PuffinID meshId4 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
-		const fs::path& texturePath1 = "textures\\chalet.ptexture";
-		const fs::path& texturePath2 = "textures\\cube.ptexture";
+		const fs::path& texturePath1 = "textures\\cube.ptexture";
+		const fs::path& texturePath2 = "textures\\chalet.ptexture";
+		const fs::path& texturePath3 = "textures\\space_engineer.ptexture";
+		const fs::path& texturePath4 = "textures\\texture.ptexture";
+		const fs::path& texturePath5 = "textures\\xsprite.ptexture";
 
 		PuffinID textureId1 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath1)->id();
 		PuffinID textureId2 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath2)->id();
+		PuffinID textureId3 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath3)->id();
+		PuffinID textureId4 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath4)->id();
+		PuffinID textureId5 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath5)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
@@ -298,18 +305,18 @@ namespace puffin::core
 		const auto shaderAsset1 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath1);
 		const auto shaderAsset2 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath2);
 
-		shaderAsset1->setType(assets::ShaderType::Vertex);
+		//shaderAsset1->setType(assets::ShaderType::Vertex);
 
-		shaderAsset1->setShaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.vert)"));
-		shaderAsset1->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_vs.spv)"));
+		//shaderAsset1->setShaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.vert)"));
+		//shaderAsset1->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_vs.spv)"));
 		//shaderAsset1->loadCodeFromBinary();
-		shaderAsset1->save();
+		//shaderAsset1->save();
 
-		shaderAsset2->setType(assets::ShaderType::Fragment);
-		shaderAsset2->setShaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.frag)"));
-		shaderAsset2->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_fs.spv)"));
+		//shaderAsset2->setType(assets::ShaderType::Fragment);
+		//shaderAsset2->setShaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.frag)"));
+		//shaderAsset2->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_fs.spv)"));
 		//shaderAsset2->loadCodeFromBinary();
-		shaderAsset2->save();
+		//shaderAsset2->save();
 
 		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
 		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
@@ -338,6 +345,14 @@ namespace puffin::core
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\cube.obj");
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
+
+		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
+
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)", "textures");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)", "textures");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)", "textures");
 	}
 
 	void Engine::loadAndResaveAssets()
@@ -347,12 +362,11 @@ namespace puffin::core
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		std::vector meshPaths = { meshPath1, meshPath2, meshPath3, meshPath4 };
-
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
-
-		std::vector texturePaths = { texturePath1, texturePath2 };
+		const fs::path& texturePath3 = "textures\\space_engineer.ptexture";
+		const fs::path& texturePath4 = "textures\\texture.ptexture";
+		const fs::path& texturePath5 = "textures\\xsprite.ptexture";
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
@@ -365,17 +379,19 @@ namespace puffin::core
 		std::vector paths =
 		{
 			meshPath1, meshPath2, meshPath3, meshPath4,
-			texturePath1, texturePath2,
+			texturePath1, texturePath2, texturePath3, texturePath4, texturePath5/*,
 			shaderPath1, shaderPath2,
-			materialPath1, materialPath2
+			materialPath1, materialPath2*/
 		};
 
 		for (const auto path : paths)
 		{
-			const auto asset = assets::AssetRegistry::get()->getAsset(path);
-			asset->load();
-			asset->save();
-			asset->unload();
+			if (const auto asset = assets::AssetRegistry::get()->getAsset(path); asset != nullptr)
+			{
+				asset->load();
+				asset->save();
+				asset->unload();
+			}
 		}
 	}
 
@@ -452,7 +468,7 @@ namespace puffin::core
 		};
 
 		const PuffinID meshIDs[numEntities] = { meshId1, meshId2, meshId3, meshId3, meshId3, meshId3, meshId3 };
-		const PuffinID materialIDs[numEntities] = { materialId2, materialId1, materialId1, materialId1, materialId1, materialId1, materialId1 };
+		const PuffinID materialIDs[numEntities] = { materialId1, materialId1, materialId1, materialId1, materialId1, materialId1, materialId1 };
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)
@@ -475,7 +491,7 @@ namespace puffin::core
 		//registry->emplace<rendering::ShadowCasterComponent>(entities[3]);
 
 		auto& spotLight = registry->emplace<rendering::LightComponent>(entities[6]);
-		spotLight.color = Vector3f(1.f, 0.f, 0.f);
+		spotLight.color = Vector3f(1.f, 1.f, 1.f);
 		spotLight.type = rendering::LightType::Spot;
 		spotLight.direction = Vector3f(-0.5f, -0.5f, 0.0f);
 		spotLight.ambientIntensity = 0.f;

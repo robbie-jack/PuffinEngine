@@ -11,10 +11,8 @@ namespace puffin::assets
 	static const std::string gStaticMeshTypeString = "StaticMesh";
 	static constexpr uint32_t gStaticMeshVersion = 1; // Latest version of Static Mesh Asset Format
 
-	struct MeshInfo
+	struct MeshInfo : AssetInfo
 	{
-		CompressionMode compressionMode;
-		std::string originalFile;
 		rendering::VertexFormat vertexFormat;
 		uint64_t numVertices;
 		uint64_t numIndices;
@@ -46,7 +44,7 @@ namespace puffin::assets
 
 		bool save() override;
 
-		bool save(const MeshInfo& info, const void* vertexData, const void* indexData);
+		bool save(MeshInfo& info, const void* vertexData, const void* indexData);
 
 		bool load() override;
 
@@ -73,6 +71,7 @@ namespace puffin::assets
 		uint32_t mNumVertices, mNumIndices;
 
 		std::string mOriginalFile;
+		CompressionMode mCompressionMode;
 
 		[[nodiscard]] MeshInfo parseMeshInfo(const AssetData& data) const;
 	};

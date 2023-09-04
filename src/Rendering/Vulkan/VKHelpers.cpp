@@ -160,19 +160,18 @@ namespace puffin::rendering::util
 		return createImage(renderer, imageInfo, imageViewInfo);
 	}
 
-	AllocatedImage initTexture(const std::shared_ptr<VKRenderSystem>& renderer, const void* pixelData, const uint32_t width, const uint32_t height, const uint32_t pixelSize, const vk::Format format)
+	AllocatedImage initTexture(const std::shared_ptr<VKRenderSystem>& renderer, const void* pixelData, const uint32_t width, const uint32_t height, vk
+	                           ::DeviceSize size, const vk::Format format)
 	{
-		const vk::DeviceSize imageSize = height * width * pixelSize;
-
 		// Allocate staging buffer on CPU for holding texture data to upload
-		const AllocatedBuffer stagingBuffer = createBuffer(renderer->allocator(), imageSize, 
+		const AllocatedBuffer stagingBuffer = createBuffer(renderer->allocator(), size,
 			vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAuto, 
 			vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
 		// Copy texture data to buffer
 		void* data;
 		VK_CHECK(renderer->allocator().mapMemory(stagingBuffer.allocation, &data));
-		memcpy(data, pixelData, imageSize);
+		memcpy(data, pixelData, size);
 		renderer->allocator().unmapMemory(stagingBuffer.allocation);
 
 		// Allocate and create texture in GPU memory

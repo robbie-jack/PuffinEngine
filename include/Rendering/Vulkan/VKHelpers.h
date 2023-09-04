@@ -30,5 +30,6 @@ namespace puffin::rendering::util
 
 	AllocatedImage initDepthImage(const std::shared_ptr<VKRenderSystem>& renderer, vk::Extent3D extent, vk::Format format);
 
-	AllocatedImage initTexture(const std::shared_ptr<VKRenderSystem>& renderer, const void* pixelData, uint32_t width, uint32_t height, uint32_t pixelSize, vk::Format format);
+	AllocatedImage initTexture(const std::shared_ptr<VKRenderSystem>& renderer, const void* pixelData, uint32_t width, uint32_t height, vk::DeviceSize
+	                           size, vk::Format format);
 }

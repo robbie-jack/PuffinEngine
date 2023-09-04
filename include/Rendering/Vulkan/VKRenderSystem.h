@@ -103,7 +103,10 @@ namespace puffin::rendering
 		{ assets::TextureFormat::R8, vk::Format::eR8Unorm },
 		{ assets::TextureFormat::RG8, vk::Format::eR8G8Unorm },
 		{ assets::TextureFormat::RGB8, vk::Format::eR8G8B8Unorm },
-		{ assets::TextureFormat::RGBA8, vk::Format::eR8G8B8A8Unorm }
+		{ assets::TextureFormat::RGBA8, vk::Format::eR8G8B8A8Unorm },
+		{ assets::TextureFormat::BC4, vk::Format::eBc4UnormBlock },
+		{ assets::TextureFormat::BC5, vk::Format::eBc5UnormBlock },
+		{ assets::TextureFormat::BC7, vk::Format::eBc7UnormBlock }
 	};
 
 	constexpr uint32_t gBufferedFrames = 2;
