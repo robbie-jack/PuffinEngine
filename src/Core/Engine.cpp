@@ -283,8 +283,8 @@ namespace puffin::core
 		PuffinID meshId3 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath3)->id();
 		PuffinID meshId4 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
-		const fs::path& texturePath1 = "textures\\chalet.ptexture";
-		const fs::path& texturePath2 = "textures\\cube.ptexture";
+		const fs::path& texturePath1 = "textures\\cube.ptexture";
+		const fs::path& texturePath2 = "textures\\chalet.ptexture";
 		const fs::path& texturePath3 = "textures\\space_engineer.ptexture";
 		const fs::path& texturePath4 = "textures\\texture.ptexture";
 		const fs::path& texturePath5 = "textures\\xsprite.ptexture";
@@ -346,11 +346,13 @@ namespace puffin::core
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
 
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)");
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)");
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)");
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)");
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)");
+		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
+
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)", "textures");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)", "textures");
+		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)", "textures");
 	}
 
 	void Engine::loadAndResaveAssets()
@@ -466,7 +468,7 @@ namespace puffin::core
 		};
 
 		const PuffinID meshIDs[numEntities] = { meshId1, meshId2, meshId3, meshId3, meshId3, meshId3, meshId3 };
-		const PuffinID materialIDs[numEntities] = { materialId2, materialId1, materialId1, materialId1, materialId1, materialId1, materialId1 };
+		const PuffinID materialIDs[numEntities] = { materialId1, materialId1, materialId1, materialId1, materialId1, materialId1, materialId1 };
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)
@@ -489,7 +491,7 @@ namespace puffin::core
 		//registry->emplace<rendering::ShadowCasterComponent>(entities[3]);
 
 		auto& spotLight = registry->emplace<rendering::LightComponent>(entities[6]);
-		spotLight.color = Vector3f(1.f, 0.f, 0.f);
+		spotLight.color = Vector3f(1.f, 1.f, 1.f);
 		spotLight.type = rendering::LightType::Spot;
 		spotLight.direction = Vector3f(-0.5f, -0.5f, 0.0f);
 		spotLight.ambientIntensity = 0.f;

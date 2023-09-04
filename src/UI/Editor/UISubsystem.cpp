@@ -86,14 +86,14 @@ namespace puffin::ui
 				// File Dialog - Import Mesh
 				case ImportAssetUI::Mesh:
 
-					/*if (IO::ImportMesh(selectedPath))
+					if (io::loadAndImportModel(selectedPath, selectedPath.parent_path().stem()))
 					{
 						std::cout << "Import Successful" << std::endl;
 					}
 					else
 					{
 						std::cout << "Import Failed" << std::endl;
-					}*/
+					}
 
 					mImportAssetUI = ImportAssetUI::None;
 
@@ -102,7 +102,7 @@ namespace puffin::ui
 				// File Dialog - Import Texture
 				case ImportAssetUI::Texture:
 						
-					if (io::loadAndImportTexture(selectedPath))
+					if (io::loadAndImportTexture(selectedPath, selectedPath.parent_path().stem()))
 					{
 						std::cout << "Import Successful" << std::endl;
 					}

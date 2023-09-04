@@ -9,12 +9,15 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 // #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
 
+#define TINYOBJLOADER_IMPLEMENTATION
+
 #include <iostream>
 #include <fstream>
 #include <string>
 
 #include "tiny_gltf.h"
 #include "compressonator/compressonator.h"
+#include "tinyobjloader/tiny_obj_loader.h"
 
 #include "Assets/TextureAsset.h"
 #include "Types/Vertex.h"
@@ -22,19 +25,205 @@
 
 namespace puffin::io
 {
+	void generateTangents(std::vector<rendering::VertexPNTV32> vertices, std::vector<uint32_t> indices)
+	{
+		std::vector<Vector3f> tan;
+		tan.resize(vertices.size());
+
+		// Generate Tangents
+		for (int i = 0; i < indices.size(); i += 3)
+		{
+			uint32_t i1 = indices[i];
+			uint32_t i2 = indices[i + 1];
+			uint32_t i3 = indices[i + 2];
+
+			const Vector3f& v1 = vertices[i1].pos;
+			const Vector3f& v2 = vertices[i2].pos;
+			const Vector3f& v3 = vertices[i3].pos;
+
+			const Vector2f& uv1 = vertices[i1].uv;
+			const Vector2f& uv2 = vertices[i2].uv;
+			const Vector2f& uv3 = vertices[i3].uv;
+
+			float x1 = v2.x - v1.x;
+			float x2 = v3.x - v1.x;
+			float y1 = v2.y - v1.y;
+			float y2 = v3.y - v1.y;
+			float z1 = v2.z - v1.z;
+			float z2 = v3.z - v1.z;
+
+			float s1 = uv2.x - uv1.x;
+			float s2 = uv3.x - uv1.x;
+			float t1 = uv2.y - uv1.y;
+			float t2 = uv3.y - uv1.y;
+
+			float r = 1.0F / (s1 * t2 - s2 * t1);
+
+			Vector3f sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+				(t2 * z1 - t1 * z2) * r);
+
+			/*Vector3f tdir((s1* x2 - s2 * x1)* r, (s1* y2 - s2 * y1)* r,
+				(s1* z2 - s2 * z1)* r);*/
+
+			tan[i1] += sdir;
+			tan[i2] += sdir;
+			tan[i3] += sdir;
+		}
+
+		for (int i = 0; i < vertices.size(); i++)
+		{
+			const Vector3f& n = vertices[i].normal;
+			const Vector3f& t = tan[i];
+
+			vertices[i].tangent = (t - n * n.dot(t)).normalized();
+		}
+	}
+
 	//////////////////////
 	// Model Importers
 	//////////////////////
 	
-	bool loadAndImportModel(const fs::path& modelPath)
+	bool loadAndImportModel(const fs::path& modelPath, fs::path assetSubdirectory)
 	{
 		if (modelPath.extension() == ".gltf")
-			return loadAndImportGltfModel(modelPath);
+			return loadAndImportGLTFModel(modelPath, assetSubdirectory);
+
+		if (modelPath.extension() == ".obj")
+			return loadAndImportOBJModel(modelPath, assetSubdirectory);
+
+		std::cout << "Failed to load mesh, unsupported format" << std::endl;
 
 		return false;
 	}
 
-	bool loadGltfModel(tinygltf::Model& model, const fs::path& modelPath)
+	// OBJ
+
+	bool loadAndImportOBJModel(const fs::path& modelPath, fs::path assetSubdirectory)
+	{
+		// Load obj data into reader object
+		tinyobj::ObjReaderConfig config;
+		config.triangulate = true; // Triangulate meshes so all polygons only have three vertices
+		config.vertex_color = false;
+
+		tinyobj::ObjReader reader;
+
+		if (!reader.ParseFromFile(modelPath.string(), config))
+		{
+			std::cout << "Failed to load OBJ: " << modelPath << std::endl;
+
+			if (!reader.Error().empty())
+			{
+				std::cout << "TinyObjReader: " << reader.Error() << std::endl;
+			}
+
+			return false;
+		}
+
+		if (!reader.Warning().empty())
+		{
+			std::cout << "TinyObjReader: " << reader.Warning() << std::endl;
+		}
+
+		// Parse obj data into puffin vertex/index format
+		auto& attrib = reader.GetAttrib();
+		auto& shapes = reader.GetShapes();
+		//auto& materials = reader.GetMaterials();
+
+		std::vector<rendering::VertexPNTV32> vertices;
+		std::vector<uint32_t> indices;
+
+		std::unordered_map<rendering::VertexPNTV32, uint32_t> vertexIndices;
+
+		// Loop over shapes
+		for (size_t s = 0; s < shapes.size(); s++)
+		{
+			vertices.reserve(shapes[s].mesh.indices.size());
+			indices.reserve(shapes[s].mesh.indices.size());
+
+			rendering::VertexPNTV32 vertex;
+
+			// Loop over faces (polygon) to get indices
+			size_t indexOffset = 0;
+			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+			{
+				auto fv = static_cast<size_t>(shapes[s].mesh.num_face_vertices[f]);
+
+				// Loop over vertices in face
+				for (size_t v = 0; v < fv; v++)
+				{
+					vertex = {};
+
+					// Store index into attrib vertices vector
+					tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
+
+					vertex.pos.x = attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 0];
+					vertex.pos.y = attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 1];
+					vertex.pos.z = attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 2];
+
+					// Check if 'normal_index' is zero or positive. negative = no normal data
+					if (idx.normal_index >= 0)
+					{
+						vertex.normal.x = attrib.normals[3 * static_cast<size_t>(idx.normal_index) + 0];
+						vertex.normal.y = attrib.normals[3 * static_cast<size_t>(idx.normal_index) + 1];
+						vertex.normal.z = attrib.normals[3 * static_cast<size_t>(idx.normal_index) + 2];
+					}
+
+					// Check if `texcoord_index` is zero or positive. negative = no texcoord data
+					if (idx.texcoord_index >= 0)
+					{
+						vertex.uv.x = attrib.texcoords[2 * static_cast<size_t>(idx.texcoord_index) + 0];
+						vertex.uv.y = attrib.texcoords[2 * static_cast<size_t>(idx.texcoord_index) + 1];
+					}
+
+					// Add vertex to vertices vector if it does not already exist, else just add a new index to indices vector
+					if (auto it = vertexIndices.find(vertex); it != vertexIndices.end())
+					{
+						indices.push_back(it->second);
+					}
+					else
+					{
+						uint32_t newIndex = vertices.size();
+
+						vertices.push_back(vertex);
+						indices.push_back(newIndex);
+						vertexIndices[vertex] = newIndex;
+					}
+				}
+
+				indexOffset += fv;
+			}
+
+			generateTangents(vertices, indices);
+
+			// Fill out MeshInfo struct
+			fs::path assetPath = assetSubdirectory / shapes[s].name;
+			assetPath += ".pstaticmesh";
+
+			assets::MeshInfo info;
+			info.compressionMode = assets::CompressionMode::LZ4;
+			info.originalFile = modelPath.string();
+			info.vertexFormat = rendering::VertexFormat::PNTV32;
+			info.numVertices = vertices.size();
+			info.numIndices = indices.size();
+			info.verticesSize = vertices.size() * sizeof(rendering::VertexPNTV32);
+			info.indicesSize = indices.size() * sizeof(uint32_t);
+
+			// Create & save asset
+			auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(assetPath);
+
+			if (!asset->save(info, vertices.data(), indices.data()))
+				return false;
+
+			vertices.clear();
+			indices.clear();
+		}
+
+		return true;
+	}
+
+	// GLTF
+
+	bool loadGLTFModel(const fs::path& modelPath, tinygltf::Model& model)
 	{
 		tinygltf::TinyGLTF loader;
 		std::string err;
@@ -62,7 +251,7 @@ namespace puffin::io
 		return ret;
 	}
 
-	bool importGltfModel(const tinygltf::Model& model, const fs::path& modelPath)
+	bool importGLTFModel(const fs::path& modelPath, const tinygltf::Model& model, fs::path assetSubdirectory)
 	{
 		// Get buffer file paths
 		std::vector<fs::path> bufferPaths;
@@ -85,7 +274,7 @@ namespace puffin::io
 		// Import each mesh in file
 		for (const auto& mesh : model.meshes)
 		{
-			if (mesh.primitives.size() == 0)
+			if (mesh.primitives.empty())
 				continue;
 
 			const auto& primitive = mesh.primitives[0];
@@ -110,7 +299,7 @@ namespace puffin::io
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						loadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
+						loadGLTFBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
 
 						vertexPos.resize(vertexCount);
 						memcpy(vertexPos.data(), binaryData.data(), vertexCount);
@@ -128,7 +317,7 @@ namespace puffin::io
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						loadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
+						loadGLTFBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
 
 						vertexNormal.resize(vertexCount);
 						memcpy(vertexNormal.data(), binaryData.data(), vertexCount);
@@ -146,13 +335,11 @@ namespace puffin::io
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						loadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
+						loadGLTFBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
 
 						vertexUV.resize(vertexCount);
 						memcpy(vertexUV.data(), binaryData.data(), vertexCount);
 					}
-
-					continue;
 				}
 			}
 
@@ -176,7 +363,7 @@ namespace puffin::io
 				const auto& bufferView = model.bufferViews[accessor.bufferView];
 				indexCount = accessor.count;
 
-				loadBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
+				loadGLTFBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
 
 				indexShort.resize(indexCount);
 				memcpy(indexShort.data(), binaryData.data(), indexCount);
@@ -189,58 +376,7 @@ namespace puffin::io
 				indices[i] = indexShort[i];
 			}
 
-			std::vector<Vector3f> tan;
-			tan.resize(vertexCount);
-
-			// Generate Tangents
-			for (int i = 0; i < indexCount; i += 3)
-			{
-				uint32_t i1 = indices[i];
-				uint32_t i2 = indices[i + 1];
-				uint32_t i3 = indices[i + 2];
-
-				const Vector3f& v1 = vertices[i1].pos;
-				const Vector3f& v2 = vertices[i2].pos;
-				const Vector3f& v3 = vertices[i3].pos;
-
-				const Vector2f& uv1 = vertices[i1].uv;
-				const Vector2f& uv2 = vertices[i2].uv;
-				const Vector2f& uv3 = vertices[i3].uv;
-
-				float x1 = v2.x - v1.x;
-				float x2 = v3.x - v1.x;
-				float y1 = v2.y - v1.y;
-				float y2 = v3.y - v1.y;
-				float z1 = v2.z - v1.z;
-				float z2 = v3.z - v1.z;
-
-				float s1 = uv2.x - uv1.x;
-				float s2 = uv3.x - uv1.x;
-				float t1 = uv2.y - uv1.y;
-				float t2 = uv3.y - uv1.y;
-
-				float r = 1.0F / (s1 * t2 - s2 * t1);
-
-				Vector3f sdir((t2* x1 - t1 * x2)* r, (t2* y1 - t1 * y2)* r,
-					(t2* z1 - t1 * z2)* r);
-
-				/*Vector3f tdir((s1* x2 - s2 * x1)* r, (s1* y2 - s2 * y1)* r,
-					(s1* z2 - s2 * z1)* r);*/
-
-				tan[i1] += sdir;
-				tan[i2] += sdir;
-				tan[i3] += sdir;
-			}
-
-			for (int i = 0; i < vertexCount; i++)
-			{
-				const Vector3f& n = vertices[i].normal;
-				const Vector3f& t = tan[i];
-
-				vertices[i].tangent = (t - n * n.dot(t)).normalized();
-			}
-
-			fs::path assetPath = modelPath.parent_path().stem() / mesh.name;
+			fs::path assetPath = assetSubdirectory / mesh.name;
 			assetPath += ".pstaticmesh";
 
 			assets::MeshInfo info;
@@ -266,24 +402,24 @@ namespace puffin::io
 		{
 			fs::path texturePath = modelPath.parent_path() / image.uri;
 
-			if (!loadAndImportTexture(texturePath, ""))
+			if (!loadAndImportTexture(texturePath, assetSubdirectory))
 				return false;
 		}
 
 		return true;
 	}
 
-	bool loadAndImportGltfModel(const fs::path& modelPath)
+	bool loadAndImportGLTFModel(const fs::path& modelPath, fs::path assetSubdirectory)
 	{
 		tinygltf::Model model;
 
-		if (!loadGltfModel(model, modelPath))
+		if (!loadGLTFModel(modelPath, model))
 			return false;
 
-		return importGltfModel(model, modelPath);
+		return importGLTFModel(modelPath, model, assetSubdirectory);
 	}
 
-	bool loadBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData)
+	bool loadGLTFBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData)
 	{
 		// Open File for Loading
 		std::ifstream binaryFile;
