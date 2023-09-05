@@ -463,7 +463,7 @@ namespace puffin::core
 			Vector3f(1.0f),
 			Vector3f(.25f),
 			Vector3f(1.0f),
-			Vector3f(10.0f, 1.0f, 10.0f),
+			Vector3f(50.0f, 1.0f, 50.0f),
 			Vector3f(0.25f)
 		};
 
@@ -488,13 +488,15 @@ namespace puffin::core
 		dirLight.type = rendering::LightType::Directional;
 		dirLight.ambientIntensity = 0.f;
 
-		//registry->emplace<rendering::ShadowCasterComponent>(entities[3]);
-
 		auto& spotLight = registry->emplace<rendering::LightComponent>(entities[6]);
 		spotLight.color = Vector3f(1.f, 1.f, 1.f);
 		spotLight.type = rendering::LightType::Spot;
 		spotLight.direction = Vector3f(-0.5f, -0.5f, 0.0f);
 		spotLight.ambientIntensity = 0.f;
+
+		auto& shadow = registry->emplace<rendering::ShadowCasterComponent>(entities[6]);
+		shadow.width = 4096;
+		shadow.height = 4096;
 
 		/*auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		script.name = "ExampleScript";
