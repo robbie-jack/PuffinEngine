@@ -55,12 +55,22 @@ namespace puffin::core
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
+		/*mProjectFile.name = "Puffin";
+		mProjectFile.defaultScenePath = "scenes\\default.pscene";
+		SaveProject(projectPath, mProjectFile);*/
+
 		LoadProject(projectPath, mProjectFile);
 
-		// Load Default Scene (if set)
-		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / mProjectFile.defaultScenePath;
+		// Setup asset registry
+		assets::AssetRegistry::get()->init(mProjectFile, projectPath);
+		assets::AssetRegistry::get()->registerAssetType<assets::StaticMeshAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::TextureAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::ShaderAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
 
-		auto sceneData = sceneSubsystem->createScene(defaultScenePath);
+		// Load Default Scene (if set)
+		auto sceneData = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / mProjectFile.defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
 		sceneData->registerComponent<SceneObjectComponent>();
@@ -85,17 +95,6 @@ namespace puffin::core
 		//registerSystem<Physics::Box2DPhysicsSystem>();
 		registerSystem<scripting::AngelScriptSystem>();
 		registerSystem<procedural::ProceduralMeshGenSystem>();
-
-		// Register Assets
-		assets::AssetRegistry::get()->registerAssetType<assets::StaticMeshAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::TextureAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::ShaderAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
-
-		// Load Asset Cache
-		assets::AssetRegistry::get()->setProjectName(mProjectFile.name);
-		assets::AssetRegistry::get()->setProjectRoot(projectDirPath);
 
 		// Load Project Settings
 		io::LoadSettings(projectDirPath.parent_path() / "Settings.json", mSettings);

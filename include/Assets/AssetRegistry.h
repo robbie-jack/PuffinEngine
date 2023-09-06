@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Asset.h"
+#include "ProjectSettings.h"
+#include "nlohmann/json.hpp"
 
 #include <string>
 #include <memory>
 #include <unordered_map>
 #include <filesystem>
-
-#include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -114,11 +114,14 @@ namespace puffin::assets
 			mAssetFactories.clear();
 		}
 
+
+		void init(const io::ProjectFile& projectFile, const fs::path& projectPath);
+
 		void setProjectName(const std::string& projectName);
 		std::string projectName();
 
 		void setProjectRoot(fs::path projectRootPath);
-		fs::path setProjectRoot();
+		fs::path projectRoot();
 
 		fs::path contentRoot() const;
 
@@ -175,6 +178,8 @@ namespace puffin::assets
 
 		std::string mProjectName;
 		fs::path mProjectRootPath;
+
+		std::vector<fs::path> mContentDirectories = {};
 
 		// Map of ID's to Asset, generated at runtime
 		std::unordered_map<PuffinID, std::shared_ptr<Asset>> mIdToAssetMap;

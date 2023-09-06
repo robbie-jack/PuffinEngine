@@ -18,8 +18,9 @@ namespace puffin
 		{
 			std::string name;
 			std::string defaultScenePath;
+			std::vector<std::string> additionalContentDirectories = {};
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, defaultScenePath)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, defaultScenePath, additionalContentDirectories)
 		};
 
 		struct ProjectSettings

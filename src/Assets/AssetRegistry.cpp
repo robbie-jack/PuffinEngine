@@ -7,6 +7,20 @@ namespace puffin::assets
 {
 	AssetRegistry* AssetRegistry::sInstance = nullptr;
 
+	void AssetRegistry::init(const io::ProjectFile& projectFile, const fs::path& projectPath)
+	{
+		mProjectName = projectFile.name;
+		mProjectRootPath = projectPath;
+		mProjectRootPath.remove_filename();
+
+		mContentDirectories.push_back(mProjectRootPath / "content");
+
+		for (auto& dir : projectFile.additionalContentDirectories)
+		{
+			mContentDirectories.emplace_back(dir);
+		}
+	}
+
 	void AssetRegistry::setProjectName(const std::string& projectName)
 	{
 		mProjectName = projectName;
@@ -22,14 +36,14 @@ namespace puffin::assets
 		mProjectRootPath = projectRootPath;
 	}
 
-	fs::path AssetRegistry::setProjectRoot()
+	fs::path AssetRegistry::projectRoot()
 	{
 		return mProjectRootPath;
 	}
 
 	fs::path AssetRegistry::contentRoot() const
 	{
-		return mProjectRootPath / "content";
+		return mContentDirectories[0];
 	}
 
 	void AssetRegistry::saveAssetCache() const

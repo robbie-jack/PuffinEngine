@@ -61,12 +61,6 @@ namespace puffin::assets
 		const std::string binaryPath = metadata["binary_path"];
 		mBinaryPath = binaryPath;
 
-		//const size_t codeSize = data.binaryBlob.size() / sizeof(uint32_t);
-
-		//mCode.resize(codeSize);
-
-		//std::copy_n(data.binaryBlob.data(), data.binaryBlob.size(), mCode.data());
-
 		loadCodeFromBinary();
 
 		mIsLoaded = true;
