@@ -1,7 +1,8 @@
 build_shaders.py is a helper script for compiling glsl shaders for vulkan
 
-To use it, pass the directory containing the files you want to compile after -s, an output directy after -o and optionally a -r argumentif you want to recursively compile shaders in subfolders
+To use it, pass either the file you want to compile or the directory containing the files you want to compile after -s, an output directory after -o and optionally a -r argument if you want to recursively compile shaders in subfolders
 
 Example:
 
-build_shaders.py -s C:\Projects\PuffinEngine\shaders\vulkan -o C:\Projects\PuffinEngine\bin\vulkan -r
+python build_shaders.py -s C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.frag -o C:\Projects\PuffinEngine\bin\vulkan\forward_shading
+python build_shaders.py -s C:\Projects\PuffinEngine\shaders\vulkan -o C:\Projects\PuffinEngine\bin\vulkan -r

@@ -22,13 +22,6 @@ namespace puffin::assets
 
 		data.json = metadata.dump();
 
-		//const size_t binarySize = mCode.size() * sizeof(uint32_t);
-
-		// Copy code to binary blob
-		//data.binaryBlob.resize(binarySize);
-
-		//std::copy_n(mCode.data(), mCode.size(), data.binaryBlob.data());
-
 		return saveBinaryFile(fullPath, data);
 	}
 
