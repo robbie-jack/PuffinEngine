@@ -345,13 +345,13 @@ namespace puffin::core
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
 
-		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
+		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
 
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)", "textures");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)", "textures");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)", "textures");
+		/*io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)", "textures");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)", "textures");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)", "textures");*/
 	}
 
 	void Engine::loadAndResaveAssets()
@@ -369,18 +369,18 @@ namespace puffin::core
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		const fs::path shaderPath1 = "shaders\\forward_shading\\forward_shading_vert.pshader";
-		const fs::path shaderPath2 = "shaders\\forward_shading\\forward_shading_frag.pshader";
+		const fs::path shaderPath1 = "materials\\forward_shading\\forward_shading_vert.pshader";
+		const fs::path shaderPath2 = "materials\\forward_shading\\forward_shading_frag.pshader";
 
-		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+		const fs::path materialPath1 = "materials\\forward_shading\\forward_shading_default.pmaterial";
+		const fs::path materialPath2 = "materials\\forward_shading\\forward_shading_chalet.pmaterial";
 
 		std::vector paths =
 		{
-			meshPath1, meshPath2, meshPath3, meshPath4,
-			texturePath1, texturePath2, texturePath3, texturePath4, texturePath5/*,
+			/*meshPath1, meshPath2, meshPath3, meshPath4,*/
+			/*texturePath1, texturePath2, texturePath3, texturePath4, texturePath5,*/
 			shaderPath1, shaderPath2,
-			materialPath1, materialPath2*/
+			materialPath1, materialPath2
 		};
 
 		for (const auto path : paths)

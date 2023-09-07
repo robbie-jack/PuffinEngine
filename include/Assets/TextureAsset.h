@@ -20,6 +20,19 @@ namespace puffin::assets
 		BC7 = 8
 	};
 
+	NLOHMANN_JSON_SERIALIZE_ENUM(TextureFormat,
+	{
+		{ TextureFormat::Unknown, "Unknown"},
+		{ TextureFormat::R8, "R8" },
+		{ TextureFormat::RG8, "RG8" },
+		{ TextureFormat::RGB8, "RGB8" },
+		{ TextureFormat::RGBA8, "RGBA8" },
+		{ TextureFormat::BC4, "BC4" },
+		{ TextureFormat::BC5, "BC5" },
+		{ TextureFormat::BC6H, "BC6H" },
+		{ TextureFormat::BC7, "BC7" }
+	});
+
 	// Map of texture format to number of channels per pixel
 	const static std::unordered_map<TextureFormat, const char*> gTexFormatToString =
 	{
@@ -185,6 +198,6 @@ namespace puffin::assets
 		std::string mOriginalFile;
 		CompressionMode mCompressionMode;
 
-		TextureInfo parseTextureInfo(const AssetData& data) const;
+		static TextureInfo parseTextureInfo(const AssetData& data);
 	};
 }

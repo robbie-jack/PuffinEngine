@@ -73,6 +73,6 @@ namespace puffin::assets
 		std::string mOriginalFile;
 		CompressionMode mCompressionMode;
 
-		[[nodiscard]] MeshInfo parseMeshInfo(const AssetData& data) const;
+		[[nodiscard]] static MeshInfo parseMeshInfo(const AssetData& data);
 	};
 }

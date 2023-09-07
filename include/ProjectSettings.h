@@ -45,7 +45,7 @@ namespace puffin
 
 		static void LoadProject(fs::path file_path, ProjectFile& file)
 		{
-			if (!fs::exists(file_path))
+			if (!exists(file_path))
 				return;
 
 			std::ifstream is(file_path.string());

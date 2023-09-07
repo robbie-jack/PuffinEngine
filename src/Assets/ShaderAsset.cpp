@@ -14,15 +14,11 @@ namespace puffin::assets
 		data.version = gShaderAssetVersion;
 
 		// Fill Metadata from Info struct
-		json metadata;
+		data.json["shader_type"] = parseShaderStringFromType(mShaderType);
+		data.json["shader_path"] = mShaderPath;
+		data.json["binary_path"] = mBinaryPath;
 
-		metadata["shader_type"] = parseShaderStringFromType(mShaderType);
-		metadata["shader_path"] = mShaderPath;
-		metadata["binary_path"] = mBinaryPath;
-
-		data.json = metadata.dump();
-
-		return saveBinaryFile(fullPath, data);
+		return saveJsonFile(fullPath, data);
 	}
 
 	bool ShaderAsset::load()
@@ -38,20 +34,18 @@ namespace puffin::assets
 
 		// Load Binary/Metadata
 		AssetData data;
-		if (!loadBinaryFile(fullPath, data))
+		if (!loadJsonFile(fullPath, data))
 		{
 			return false;
 		}
 
-		json metadata = json::parse(data.json);
-
-		const std::string shaderType = metadata["shader_type"];
+		const std::string shaderType = data.json["shader_type"];
 		mShaderType = parseShaderTypeFromString(shaderType.c_str());
 
-		const std::string shaderPath = metadata["shader_path"];
+		const std::string shaderPath = data.json["shader_path"];
 		mShaderPath = shaderPath;
 
-		const std::string binaryPath = metadata["binary_path"];
+		const std::string binaryPath = data.json["binary_path"];
 		mBinaryPath = binaryPath;
 
 		loadCodeFromBinary();
