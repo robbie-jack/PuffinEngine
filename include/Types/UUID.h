@@ -10,7 +10,7 @@ namespace puffin
 	static std::mt19937_64 randEngine(randomDevice());
 	static std::uniform_int_distribution<uint64_t> uniformDistribution;
 
-	using PuffinID = uint64_t;
+    using PuffinID = uint_least64_t;
 	constexpr static PuffinID gInvalidID = 0;
 
 	static PuffinID generateID()

@@ -27,7 +27,6 @@
 #include "Scripting/AngelScriptSystem.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
-#include "Assets/AssetImporters.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -642,18 +641,20 @@ namespace puffin::core
 
 	void Engine::play()
 	{
-		switch (mPlayState)
-		{
-		case PlayState::Stopped:
-			mPlayState = PlayState::Started;
-			break;
-		case PlayState::Playing:
-			mPlayState = PlayState::JustPaused;
-			break;
-		case PlayState::Paused:
-			mPlayState = PlayState::JustUnpaused;
-			break;
-		}
+        if (mPlayState == PlayState::Stopped)
+        {
+            mPlayState = PlayState::Started;
+            return;
+        }
+        else if (mPlayState == PlayState::Playing)
+        {
+            mPlayState = PlayState::JustPaused;
+            return;
+        }
+        else if (mPlayState == PlayState::Paused)
+        {
+            mPlayState = PlayState::JustUnpaused;
+        }
 	}
 
 	void Engine::restart()

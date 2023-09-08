@@ -351,9 +351,9 @@ namespace puffin::rendering
 		                              .set_old_swapchain(oldSwapchain)
 		                              .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
 		                              .set_desired_extent(swapchainData.extent.width, swapchainData.extent.height)
-		                              .set_image_usage_flags({
+                .set_image_usage_flags(
 			                              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT
-		                              })
+                    )
 		                              .build()
 		                              .value();
 
