@@ -20,12 +20,6 @@
 [submodule "deps/lz4"]
 	path = deps/lz4
 	url = https://github.com/lz4/lz4
-[submodule "deps/assimp"]
-	path = deps/assimp
-	url = https://github.com/assimp/assimp
-[submodule "deps/bgfx.cmake"]
-	path = deps/bgfx.cmake
-	url = https://github.com/bkaradzic/bgfx.cmake
 [submodule "deps/vma-hpp"]
 	path = deps/vma-hpp
 	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp
