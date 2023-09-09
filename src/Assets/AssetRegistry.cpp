@@ -13,6 +13,8 @@ namespace puffin::assets
 		mProjectRootPath = projectPath;
 		mProjectRootPath.remove_filename();
 
+		mEngineRootPath = findEngineRoot(fs::current_path());
+
 		mContentDirectories.push_back(mProjectRootPath / "content");
 
 		for (auto& dir : projectFile.additionalContentDirectories)
@@ -44,6 +46,11 @@ namespace puffin::assets
 	fs::path AssetRegistry::contentRoot() const
 	{
 		return mContentDirectories[0];
+	}
+
+	fs::path AssetRegistry::engineRoot() const
+	{
+		return mEngineRootPath;
 	}
 
 	void AssetRegistry::saveAssetCache() const
@@ -124,5 +131,32 @@ namespace puffin::assets
 		
 		// No asset with that path has been registered, return nullptr
 		return nullptr;
+	}
+
+	fs::path AssetRegistry::findEngineRoot(const fs::path& currentPath)
+	{
+		bool cmakeListsInDir = false;
+		fs::path localPath = currentPath;
+
+		while (!cmakeListsInDir)
+		{
+			for (const auto& entry : fs::directory_iterator(localPath))
+			{
+				const auto& entryPath = entry.path();
+
+				if (strcmp(entryPath.filename().string().c_str(), "CMakeLists.txt") == 0)
+				{
+					cmakeListsInDir = true;
+					break;
+				}
+			}
+
+			if (!cmakeListsInDir)
+			{
+				localPath = localPath.parent_path();
+			}
+		}
+
+		return localPath;
 	}
 }

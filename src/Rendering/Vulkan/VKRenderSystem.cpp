@@ -696,10 +696,11 @@ namespace puffin::rendering
 	void VKRenderSystem::buildForwardRendererPipeline()
 	{
 		mForwardVertMod = util::ShaderModule{
-			mDevice, R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_vs.spv)"
+			mDevice, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_vs.spv").string()
 		};
+
 		mForwardFragMod = util::ShaderModule{
-			mDevice, R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_fs.spv)"
+			mDevice, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_fs.spv").string()
 		};
 
 		util::PipelineLayoutBuilder plb{};

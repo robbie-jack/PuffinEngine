@@ -125,6 +125,8 @@ namespace puffin::assets
 
 		fs::path contentRoot() const;
 
+		fs::path engineRoot() const;
+
 		// Asset Cache Saving/Loading
 		void saveAssetCache() const;
 		void loadAssetCache();
@@ -174,10 +176,13 @@ namespace puffin::assets
 			mAssetFactories.push_back(factory);
 		}
 
+		static fs::path findEngineRoot(const fs::path& currentPath);
+
 	private:
 
 		std::string mProjectName;
 		fs::path mProjectRootPath;
+		fs::path mEngineRootPath;
 
 		std::vector<fs::path> mContentDirectories = {};
 
