@@ -186,7 +186,7 @@ namespace puffin::rendering
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
-		mMaterialsToLoad.insert(mesh.matAssetID);
+		mMaterialsInstancesToLoad.insert(mesh.matAssetID);
 
 		if (registry.any_of<TransformComponent>(entity))
 		{
@@ -203,7 +203,7 @@ namespace puffin::rendering
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
-		mMaterialsToLoad.insert(mesh.matAssetID);
+		mMaterialsInstancesToLoad.insert(mesh.matAssetID);
 	}
 
 	void VKRenderSystem::onUpdateTransform(entt::registry& registry, entt::entity entity)
@@ -1010,34 +1010,43 @@ namespace puffin::rendering
 
 		mMeshesToLoad.clear();
 
-		// Load Materials
+		// Load Materials Instances
 
 		bool materialDataNeedsUploaded = false;
-		for (const auto matID : mMaterialsToLoad)
+		for (const auto matInstID : mMaterialsInstancesToLoad)
 		{
-			if (!mMatData.contains(matID))
+			if (!mMatData.contains(matInstID))
 			{
 				MaterialDataVK matData;
 
-				loadMaterial(matID, matData);
+				loadMaterialInstance(matInstID, matData);
 
-				mMatData.insert(matID, matData);
+				mMatData.insert(matInstID, matData);
 
 				materialDataNeedsUploaded = true;
 			}
 		}
 
-		mMaterialsToLoad.clear();
+		mMaterialsInstancesToLoad.clear();
 
 		if (materialDataNeedsUploaded == true)
 		{
 			mMatData.sortBubble();
 
-			for (int i = 0; i < gBufferedFrames; i++)
+			for (uint32_t i = 0; i < gBufferedFrames; i++)
 			{
 				mFrameRenderData[i].copyMaterialDataToGPU = true;
 			}
 		}
+
+		// Load Materials
+
+		for (const auto matID : mMaterialsToLoad)
+		{
+			initMaterialPipeline(matID);
+		}
+
+		mMaterialsToLoad.clear();
 
 		// Load Textures
 
@@ -1991,86 +2000,33 @@ namespace puffin::rendering
 		mAllocator.destroyImage(texData.texture.image, texData.texture.allocation);
 	}
 
-	bool VKRenderSystem::loadMaterial(PuffinID matID, MaterialDataVK& matData)
+	bool VKRenderSystem::loadMaterialInstance(PuffinID matID, MaterialDataVK& matData)
 	{
-		const auto matAsset = std::static_pointer_cast<assets::MaterialAsset>(
+		const auto matAsset = std::static_pointer_cast<assets::MaterialInstanceAsset>(
 			assets::AssetRegistry::get()->getAsset(matID));
-
-		std::shared_ptr<assets::MaterialAsset> matAssetBase = nullptr;
 
 		if (matAsset && matAsset->load())
 		{
 			matData.assetId = matID;
+			matData.baseMaterialID = matAsset->getBaseMaterialID();
 
 			GPUMaterialInstanceData matInstData;
 
-			if (matAsset->getBaseMaterialID() != gInvalidID)
+			int i = 0;
+			for (const auto& idx : matAsset->getTexIDs())
 			{
-				matData.baseMaterialID = matAsset->getBaseMaterialID();
+				matData.texIDs[i] = idx;
+				matInstData.texIndices[i] = 0;
 
-				matAssetBase = std::static_pointer_cast<assets::MaterialAsset>(
-					assets::AssetRegistry::get()->getAsset(matData.baseMaterialID));
-
-				if (matAssetBase && matAssetBase->load())
-				{
-					const auto& texIDs = matAsset->getTexIDs();
-					const auto& texIDsBase = matAssetBase->getTexIDs();
-					const auto& texIDsOverride = matAsset->getTexIDOverride();
-
-					for (int i = 0; i < gNumTexturesPerMat; ++i)
-					{
-						if (texIDsOverride[i])
-						{
-							matData.texIDs[i] = texIDs[i];
-						}
-						else
-						{
-							matData.texIDs[i] = texIDsBase[i];
-						}						
-					}
-
-					for (int& texIdx : matInstData.texIndices)
-					{
-						texIdx = 0;
-					}
-
-					const auto& data = matAsset->getData();
-					const auto& dataBase = matAssetBase->getData();
-					const auto& dataOverride = matAsset->getDataOverride();
-
-					for (int i = 0; i < gNumFloatsPerMat; ++i)
-					{
-						if (dataOverride[i])
-						{
-							matInstData.data[i] = data[i];
-						}
-						else
-						{
-							matInstData.data[i] = dataBase[i];
-						}
-					}
-				}
+				++i;
 			}
-			else
+
+			i = 0;
+			for (const auto& data : matAsset->getData())
 			{
-				matData.baseMaterialID = matID;
+				matInstData.data[i] = data;
 
-				int i = 0;
-				for (const auto& idx : matAsset->getTexIDs())
-				{
-					matData.texIDs[i] = idx;
-					matInstData.texIndices[i] = 0;
-
-					++i;
-				}
-
-				i = 0;
-				for (const auto& data : matAsset->getData())
-				{
-					matInstData.data[i] = data;
-
-					++i;
-				}
+				++i;
 			}
 
 			mCachedMaterialData.emplace(matID, matInstData);
@@ -2083,14 +2039,12 @@ namespace puffin::rendering
 				}
 			}
 
-			initMaterialPipeline(matData.baseMaterialID);
+			if (matData.baseMaterialID != gInvalidID)
+			{
+				mMaterialsToLoad.insert(matData.baseMaterialID);
+			}
 
 			matAsset->unload();
-
-			if (matAssetBase)
-			{
-				matAssetBase->unload();
-			}
 
 			return true;
 		}
@@ -2121,7 +2075,7 @@ namespace puffin::rendering
 					mMats.insert(matID);
 
 					MaterialVK& mat = mMats[matID];
-					mat.baseMaterialID = matID;
+					mat.matID = matID;
 
 					util::PipelineLayoutBuilder plb{};
 					mat.pipelineLayout = plb

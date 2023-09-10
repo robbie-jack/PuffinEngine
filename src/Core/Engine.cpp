@@ -67,6 +67,7 @@ namespace puffin::core
 		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::ShaderAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::MaterialInstanceAsset>();
 
 		// Load Default Scene (if set)
 		auto sceneData = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / mProjectFile.defaultScenePath);
@@ -297,8 +298,8 @@ namespace puffin::core
 
 		PuffinID soundId1 = assets::AssetRegistry::get()->addAsset<assets::SoundAsset>(soundPath1)->id();
 
-		const fs::path shaderPath1 = "shaders\\forward_shading\\forward_shading_vert.pshader";
-		const fs::path shaderPath2 = "shaders\\forward_shading\\forward_shading_frag.pshader";
+		const fs::path shaderPath1 = "materials\\forward_shading\\forward_shading_vert.pshader";
+		const fs::path shaderPath2 = "materials\\forward_shading\\forward_shading_frag.pshader";
 
 		const auto shaderAsset1 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath1);
 		const auto shaderAsset2 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath2);
@@ -316,25 +317,37 @@ namespace puffin::core
 		//shaderAsset2->loadCodeFromBinary();
 		//shaderAsset2->save();
 
-		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+		const fs::path materialPath1 = "materials\\forward_shading\\forward_shading_default.pmaterial";
+		const fs::path materialPath2 = "materials\\forward_shading\\forward_shading_chalet.pmaterial";
 
 		const auto materialAsset1 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath1);
-		const auto materialAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath2);
+		//const auto materialAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath2);
 
-		/*materialAsset1->setVertexShaderID(shaderAsset1->id());
+		materialAsset1->setVertexShaderID(shaderAsset1->id());
 		materialAsset1->setFragmentShaderID(shaderAsset2->id());
-		materialAsset1->getTexIDs()[0] = textureId1;
 
 		materialAsset1->save();
 
-		materialAsset2->setVertexShaderID(shaderAsset1->id());
+		/*materialAsset2->setVertexShaderID(shaderAsset1->id());
 		materialAsset2->setFragmentShaderID(shaderAsset2->id());
-		materialAsset2->setBaseMaterialID(materialAsset1->id());
-		materialAsset2->getTexIDs()[0] = textureId2;
-		materialAsset2->getTexIDOverride()[0] = true;
 
 		materialAsset2->save();*/
+
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
+
+		const auto materialInstAsset1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1);
+		const auto materialInstAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2);
+
+		materialInstAsset1->setBaseMaterialID(materialAsset1->id());
+		materialInstAsset1->getTexIDs()[0] = textureId1;
+
+		materialInstAsset1->save();
+
+		materialInstAsset2->setBaseMaterialID(materialAsset1->id());
+		materialInstAsset2->getTexIDs()[0] = textureId2;
+
+		materialInstAsset2->save();
 	}
 
 	void Engine::reimportDefaultAssets()

@@ -44,6 +44,7 @@ namespace puffin::assets
 		{
 			type = AssetType::None;
 			version = 0;
+			id = gInvalidID;
 			binaryBlob.clear();
 		}
 
@@ -51,12 +52,14 @@ namespace puffin::assets
 		{
 			type = AssetType::None;
 			version = 0;
+			id = gInvalidID;
 			json.clear();
 			binaryBlob.clear();
 		}
 
 		AssetType type;
 		uint32_t version;
+		PuffinID id;
 		json json;
 		std::vector<char> binaryBlob;
 	};
@@ -192,6 +195,7 @@ namespace puffin::assets
 
 		data["type"] = assetData.type;
 		data["version"] = assetData.version;
+		data["id"] = assetData.id;
 		data["data"] = assetData.json;
 
 		os << std::setw(4) << data << std::endl;
@@ -213,6 +217,7 @@ namespace puffin::assets
 
 		assetData.type = data["type"];
 		assetData.version = data["version"];
+		assetData.id = data["id"];
 		assetData.json = data["data"];
 
 		is.close();

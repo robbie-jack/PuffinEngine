@@ -137,7 +137,7 @@ namespace puffin::rendering
 
 	struct MaterialVK
 	{
-		PuffinID baseMaterialID = gInvalidID;
+		PuffinID matID = gInvalidID;
 
 		vk::UniquePipeline pipeline = {};
 		vk::UniquePipelineLayout pipelineLayout = {};

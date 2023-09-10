@@ -176,6 +176,7 @@ namespace puffin::rendering
 		std::unordered_set<PuffinID> mMeshesToLoad; // Meshes that need to be loaded
 		std::unordered_set<PuffinID> mTexturesToLoad; // Textures that need to be loaded
 		std::unordered_set<PuffinID> mMaterialsToLoad; // Materials that need to be loaded
+		std::unordered_set<PuffinID> mMaterialsInstancesToLoad; // Materials Instances that need to be loaded
 
 		PackedVector<TextureDataVK> mTexData;
 		PackedVector<MaterialDataVK> mMatData;
@@ -296,7 +297,7 @@ namespace puffin::rendering
 		bool loadTexture(PuffinID texId, TextureDataVK& texData);
 		void unloadTexture(TextureDataVK& texData) const;
 
-		bool loadMaterial(PuffinID matID, MaterialDataVK& matData);
+		bool loadMaterialInstance(PuffinID matID, MaterialDataVK& matData);
 		void initMaterialPipeline(PuffinID matID);
 
 		void buildTextureDescriptorInfo(PackedVector<TextureDataVK>& textureData,

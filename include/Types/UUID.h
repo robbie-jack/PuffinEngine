@@ -1,8 +1,6 @@
 #pragma once
 
-//#include <xhash>
 #include <random>
-#include "nlohmann/json.hpp"
 
 namespace puffin
 {
@@ -15,6 +13,14 @@ namespace puffin
 
 	static PuffinID generateID()
 	{
-		return uniformDistribution(randEngine);
+		PuffinID id = gInvalidID;
+
+		// Ensure that generated id will never equal invalid id (though this is extremely unlikely)
+		while (id == gInvalidID)
+		{
+			id = uniformDistribution(randEngine);
+		}
+
+		return id;
 	}
 }
