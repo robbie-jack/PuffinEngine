@@ -285,7 +285,7 @@ namespace puffin::core
 		const fs::path& texturePath1 = "textures\\cube.ptexture";
 		const fs::path& texturePath2 = "textures\\chalet.ptexture";
 		const fs::path& texturePath3 = "textures\\space_engineer.ptexture";
-		const fs::path& texturePath4 = "textures\\texture.ptexture";
+		const fs::path& texturePath4 = "textures\\statue.ptexture";
 		const fs::path& texturePath5 = "textures\\xsprite.ptexture";
 
 		PuffinID textureId1 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath1)->id();
@@ -317,34 +317,16 @@ namespace puffin::core
 		//shaderAsset2->loadCodeFromBinary();
 		//shaderAsset2->save();
 
-		const fs::path materialPath1 = "materials\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "materials\\forward_shading\\forward_shading_chalet.pmaterial";
-
-		const auto materialAsset1 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath1);
-		//const auto materialAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath2);
-
-		materialAsset1->setVertexShaderID(shaderAsset1->id());
-		materialAsset1->setFragmentShaderID(shaderAsset2->id());
-
-		materialAsset1->save();
-
-		/*materialAsset2->setVertexShaderID(shaderAsset1->id());
-		materialAsset2->setFragmentShaderID(shaderAsset2->id());
-
-		materialAsset2->save();*/
-
 		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
 		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
 
 		const auto materialInstAsset1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1);
 		const auto materialInstAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2);
 
-		materialInstAsset1->setBaseMaterialID(materialAsset1->id());
 		materialInstAsset1->getTexIDs()[0] = textureId1;
 
 		materialInstAsset1->save();
 
-		materialInstAsset2->setBaseMaterialID(materialAsset1->id());
 		materialInstAsset2->getTexIDs()[0] = textureId2;
 
 		materialInstAsset2->save();
@@ -376,7 +358,7 @@ namespace puffin::core
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 		const fs::path& texturePath3 = "textures\\space_engineer.ptexture";
-		const fs::path& texturePath4 = "textures\\texture.ptexture";
+		const fs::path& texturePath4 = "textures\\statue.ptexture";
 		const fs::path& texturePath5 = "textures\\xsprite.ptexture";
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
@@ -384,15 +366,15 @@ namespace puffin::core
 		const fs::path shaderPath1 = "materials\\forward_shading\\forward_shading_vert.pshader";
 		const fs::path shaderPath2 = "materials\\forward_shading\\forward_shading_frag.pshader";
 
-		const fs::path materialPath1 = "materials\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "materials\\forward_shading\\forward_shading_chalet.pmaterial";
+		const fs::path materialInstPath1 = "materials\\forward_shading\\forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = "materials\\forward_shading\\forward_shading_chalet.pmaterialinst";
 
 		std::vector paths =
 		{
 			/*meshPath1, meshPath2, meshPath3, meshPath4,*/
 			/*texturePath1, texturePath2, texturePath3, texturePath4, texturePath5,*/
 			shaderPath1, shaderPath2,
-			materialPath1, materialPath2
+			materialInstPath1, materialInstPath2
 		};
 
 		for (const auto path : paths)
@@ -424,18 +406,18 @@ namespace puffin::core
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath1)->id();
+		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath2)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
 		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
 
-		PuffinID materialId1 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath1)->id();
-		PuffinID materialId2 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath2)->id();
+		PuffinID materialInstId1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
+		PuffinID materialInstId2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
 
 		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->registry();
@@ -479,7 +461,7 @@ namespace puffin::core
 		};
 
 		const PuffinID meshIDs[numEntities] = { meshId1, meshId2, meshId3, meshId3, meshId3, meshId3, meshId3 };
-		const PuffinID materialIDs[numEntities] = { materialId1, materialId1, materialId1, materialId1, materialId1, materialId1, materialId1 };
+		const PuffinID materialIDs[numEntities] = { materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1 };
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)

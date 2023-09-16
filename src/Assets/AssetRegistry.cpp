@@ -128,7 +128,7 @@ namespace puffin::assets
 		{
 			return getAsset(mPathToIdMap[path.string()]);
 		}
-		
+
 		// No asset with that path has been registered, return nullptr
 		return nullptr;
 	}

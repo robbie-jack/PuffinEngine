@@ -136,17 +136,49 @@ namespace puffin::assets
 
 		std::shared_ptr<Asset> getAsset(const fs::path& path);
 
-		// Get Typed Asset from Registry
+		// Get Typed Asset from Registry (prefer these over the non typed get asset as these ones do proper type checking)
 		template<typename AssetType>
 		std::shared_ptr<AssetType> getAsset(const PuffinID& uuid)
 		{
-			return std::static_pointer_cast<AssetType>(getAsset(uuid));
+			const auto asset = getAsset(uuid);
+
+			if (!asset)
+			{
+				return nullptr;
+			}
+
+			std::string type;
+
+			getAssetType<AssetType>(type);
+
+			if (asset->type() != type)
+			{
+				return nullptr;
+			}
+
+			return std::static_pointer_cast<AssetType>(asset);
 		}
 
 		template<typename AssetType>
 		std::shared_ptr<AssetType> getAsset(const fs::path& path)
 		{
-			return std::static_pointer_cast<AssetType>(getAsset(path));
+			const auto asset = getAsset(path);
+
+			if (!asset)
+			{
+				return nullptr;
+			}
+
+			std::string type;
+
+			getAssetType<AssetType>(type);
+
+			if (asset->type() != type)
+			{
+				return nullptr;
+			}
+
+			return std::static_pointer_cast<AssetType>(asset);
 		}
 
 		// Register new Asset to Registry
@@ -174,6 +206,16 @@ namespace puffin::assets
 			std::shared_ptr<AssetFactory<AssetType>> factory = std::make_shared<AssetFactory<AssetType>>();
 
 			mAssetFactories.push_back(factory);
+		}
+
+		template<typename AssetType>
+		static void getAssetType(std::string& type)
+		{
+			const Asset* tempAsset = new AssetType();
+			type = tempAsset->type();
+
+			delete tempAsset;
+			tempAsset = nullptr;
 		}
 
 		static fs::path findEngineRoot(const fs::path& currentPath);

@@ -52,6 +52,10 @@ namespace puffin::assets
 		return true;
 	}
 
+	////////////////////////////////
+	// Material Instance Asset
+	////////////////////////////////
+
 	bool MaterialInstanceAsset::save()
 	{
 		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();

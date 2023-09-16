@@ -1002,7 +1002,7 @@ namespace puffin::rendering
 		// Load Meshes
 		for (const auto meshID : mMeshesToLoad)
 		{
-			if (const auto staticMesh = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshID)))
+			if (const auto staticMesh = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshID))
 			{
 				mStaticRenderData.combinedMeshBuffer.addMesh(staticMesh);
 			}
@@ -1711,7 +1711,15 @@ namespace puffin::rendering
 
 	void VKRenderSystem::drawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
 	{
-		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMats[meshDrawBatch.matID].pipeline.get());
+		// Use loaded material if id iis valid, otherwise use default material
+		if (meshDrawBatch.matID != gInvalidID)
+		{
+			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMats[meshDrawBatch.matID].pipeline.get());
+		}
+		else
+		{
+			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mForwardPipeline.get());
+		}
 
 		vk::DeviceSize indirectOffset = meshDrawBatch.meshIndex * sizeof(vk::DrawIndexedIndirectCommand);
 		uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
@@ -1942,8 +1950,7 @@ namespace puffin::rendering
 
 	bool VKRenderSystem::loadMesh(PuffinID meshId, MeshDataVK& meshData)
 	{
-		if (const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(
-			assets::AssetRegistry::get()->getAsset(meshId)); meshAsset && meshAsset->load())
+		if (const auto meshAsset = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshId); meshAsset && meshAsset->load())
 		{
 			meshData.assetId = meshId;
 
@@ -1974,8 +1981,7 @@ namespace puffin::rendering
 
 	bool VKRenderSystem::loadTexture(PuffinID texId, TextureDataVK& texData)
 	{
-		if (const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(
-			assets::AssetRegistry::get()->getAsset(texId)); texAsset && texAsset->load())
+		if (const auto texAsset = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texId); texAsset && texAsset->load())
 		{
 			texData.assetId = texId;
 
@@ -2002,8 +2008,7 @@ namespace puffin::rendering
 
 	bool VKRenderSystem::loadMaterialInstance(PuffinID matID, MaterialDataVK& matData)
 	{
-		const auto matAsset = std::static_pointer_cast<assets::MaterialInstanceAsset>(
-			assets::AssetRegistry::get()->getAsset(matID));
+		const auto matAsset = assets::AssetRegistry::get()->getAsset<assets::MaterialInstanceAsset>(matID);
 
 		if (matAsset && matAsset->load())
 		{
@@ -2056,16 +2061,12 @@ namespace puffin::rendering
 	{
 		if (!mMatData.contains(matID))
 		{
-			const auto matAsset = std::static_pointer_cast<assets::MaterialAsset>(
-				assets::AssetRegistry::get()->getAsset(matID));
+			const auto matAsset = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(matID);
 			
 			if (matAsset && matAsset->load())
 			{
-				const auto vertShaderAsset = std::static_pointer_cast<assets::ShaderAsset>(
-					assets::AssetRegistry::get()->getAsset(matAsset->getVertexShaderID()));
-
-				const auto fragShaderAsset = std::static_pointer_cast<assets::ShaderAsset>(
-					assets::AssetRegistry::get()->getAsset(matAsset->getFragmentShaderID()));
+				const auto vertShaderAsset = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(matAsset->getVertexShaderID());
+				const auto fragShaderAsset = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(matAsset->getFragmentShaderID());
 
 				if (vertShaderAsset && vertShaderAsset->load() && fragShaderAsset && fragShaderAsset->load())
 				{

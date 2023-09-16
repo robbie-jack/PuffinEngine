@@ -157,7 +157,7 @@ namespace puffin::audio
 		}
 
 		// If sound is not active, start playing it
-		const auto soundAsset = std::static_pointer_cast<assets::SoundAsset>(assets::AssetRegistry::get()->getAsset(soundEvent.id));
+		const auto soundAsset = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundEvent.id);
 		if (soundAsset)
 		{
 			const std::string& soundPath = (assets::AssetRegistry::get()->contentRoot() / soundAsset->relativePath()).string();
