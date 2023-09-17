@@ -115,7 +115,7 @@ namespace puffin::rendering
 
 		mMats.resize(gMaxUniqueMaterials);
 
-		mEditorCam.position = {0.0f, 0.0f, 15.0f};
+		mEditorCam.position = {0.0f, 0.0f, 50.0f};
 
 		// Connect Signals
 		const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();

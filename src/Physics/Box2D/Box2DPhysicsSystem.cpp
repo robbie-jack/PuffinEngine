@@ -1,10 +1,11 @@
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
 
+#include "MathHelpers.h"
 #include "Core/Engine.h"
 #include "Core/SignalSubsystem.h"
 
 #include "Components/SceneObjectComponent.h"
-#include "Components/TransformComponent3D.h"
+#include "Components/TransformComponent2D.h"
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
 #include "Components/Physics/2D/VelocityComponent2D.h"
@@ -36,20 +37,26 @@ namespace puffin::physics
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		// Updated entity position/rotation from simulation
-		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent3D, VelocityComponent2D, const RigidbodyComponent2D>();
+		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent2D, VelocityComponent2D, const RigidbodyComponent2D>();
 
 		for (auto [entity, object, transform, velocity, rb] : bodyView.each())
 		{
 			const auto& id = object.id;
 
 			// Update Transform from Rigidbody Position
-			transform.position.x = mBodies[id]->GetPosition().x;
-			transform.position.y = mBodies[id]->GetPosition().y;
-			transform.orientation = angleAxis(-mBodies[id]->GetAngle(), glm::vec3(0.0f, 0.0f, 1.0f));
+			registry->patch<TransformComponent2D>(entity, [&](auto& transform)
+			{
+				transform.position.x = mBodies[id]->GetPosition().x;
+				transform.position.y = mBodies[id]->GetPosition().y;
+				transform.rotation = maths::radToDeg(-mBodies[id]->GetAngle());
+			});
 
-			// Update Velocity with Linear/Angular Velocity
-			velocity.linear.x = mBodies[id]->GetLinearVelocity().x;
-			velocity.linear.y = mBodies[id]->GetLinearVelocity().y;
+			// Update Velocity with Linear/Angular Velocity#
+			registry->patch<VelocityComponent2D>(entity, [&](auto& velocity)
+			{
+				velocity.linear.x = mBodies[id]->GetLinearVelocity().x;
+				velocity.linear.y = mBodies[id]->GetLinearVelocity().y;
+			});
 		}
 	}
 
@@ -121,7 +128,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent3D>(entity);
+				const auto& transform = registry->get<const TransformComponent2D>(entity);
 				const auto& circle = registry->get<const CircleComponent2D>(entity);
 
 				initCircle(object.id, transform, circle);
@@ -144,7 +151,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent3D>(entity);
+				const auto& transform = registry->get<const TransformComponent2D>(entity);
 				const auto& box = registry->get<const BoxComponent2D>(entity);
 
 				initBox(object.id, transform, box);
@@ -167,7 +174,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent3D>(entity);
+				const auto& transform = registry->get<const TransformComponent2D>(entity);
 				const auto& rb = registry->get<const RigidbodyComponent2D>(entity);
 
 				initRigidbody(object.id, transform, rb);
@@ -195,14 +202,14 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent2D& rb)
+	void Box2DPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent2D& transform, const RigidbodyComponent2D& rb)
 	{
 		if (!mBodies.contains(id))
 		{
 			b2BodyDef bodyDef;
-			bodyDef.userData.pointer = static_cast<uintptr_t>(id);
+			bodyDef.userData.pointer = id;
 			bodyDef.position.Set(transform.position.x, transform.position.y);
-			bodyDef.angle = -glm::roll(static_cast<glm::quat>(transform.orientation));
+			bodyDef.angle = -maths::degToRad(transform.rotation);
 			bodyDef.type = gBodyType.at(rb.bodyType);
 
 			// Created Body from Physics World
@@ -215,14 +222,14 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initBox(PuffinID id, const TransformComponent3D& transform, const BoxComponent2D& box)
+	void Box2DPhysicsSystem::initBox(PuffinID id, const TransformComponent2D& transform, const BoxComponent2D& box)
 	{
 		if (!mPolygonShapes.contains(id))
 		{
 			mPolygonShapes.insert(id, b2PolygonShape());
 		}
 
-		mPolygonShapes[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, transform.position.xy(), glm::roll(static_cast<glm::quat>(transform.orientation)));
+		mPolygonShapes[id].SetAsBox(box.halfExtent.x, box.halfExtent.y, box.centreOfMass, 0.0f);
 
 		if (!mShapes.contains(id))
 		{
@@ -230,7 +237,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initCircle(PuffinID id, const TransformComponent3D& transform, const CircleComponent2D& circle)
+	void Box2DPhysicsSystem::initCircle(PuffinID id, const TransformComponent2D& transform, const CircleComponent2D& circle)
 	{
 		if (!mCircleShapes.contains(id))
 		{
@@ -253,6 +260,8 @@ namespace puffin::physics
 			b2FixtureDef fixtureDef;
 			fixtureDef.shape = mShapes[id];
 			fixtureDef.restitution = rb.elasticity;
+			fixtureDef.density = 1.0f;
+			fixtureDef.friction = 0.3f;
 
 			mFixtures.emplace(id, mBodies[id]->CreateFixture(&fixtureDef));
 		}

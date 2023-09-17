@@ -33,6 +33,7 @@ namespace puffin
 		struct RigidbodyComponent2D;
 	}
 
+	struct TransformComponent2D;
 	struct TransformComponent3D;
 }
 
@@ -63,7 +64,8 @@ namespace puffin::ui
 
 		std::shared_ptr<ecs::EnTTSubsystem> mEnTTSubsystem = nullptr;
 
-		void drawTransformUI(ImGuiTreeNodeFlags flags, entt::entity entity, TransformComponent3D& transform);
+		void drawTransformUI2D(ImGuiTreeNodeFlags flags, entt::entity entity, TransformComponent2D& transform);
+		void drawTransformUI3D(ImGuiTreeNodeFlags flags, entt::entity entity, TransformComponent3D& transform);
 
 		void drawMeshUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::MeshComponent& mesh);
 		void drawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light);

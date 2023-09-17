@@ -3,7 +3,6 @@
 #include <chrono>
 #include <thread>
 
-//#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/ShaderAsset.h"
@@ -22,10 +21,11 @@
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
 #include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
+#include "Physics/Box2D/Box2DPhysicsSystem.h"
+#include "Physics/Jolt/JoltPhysicsSystem.h"
 #include "Procedural/ProceduralMeshGenSystem.h"
 #include "Rendering/Vulkan/VKRenderSystem.h"
 //#include "Scripting/AngelScriptSystem.h"
-#include "Physics/Jolt/JoltPhysicsSystem.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
 
@@ -93,8 +93,8 @@ namespace puffin::core
 		// Systems
 		registerSystem<rendering::VKRenderSystem>();
 		//registerSystem<physics::OnagerPhysicsSystem2D>();
-		//registerSystem<Physics::Box2DPhysicsSystem>();
-		registerSystem<physics::JoltPhysicsSystem>();
+		registerSystem<physics::Box2DPhysicsSystem>();
+		//registerSystem<physics::JoltPhysicsSystem>();
 		//registerSystem<scripting::AngelScriptSystem>();
 		registerSystem<procedural::ProceduralMeshGenSystem>();
 
@@ -540,28 +540,30 @@ namespace puffin::core
 			light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 		}
 
-		constexpr int numBodies = 1000;
-		constexpr float xOffset = numBodies * 2.0f;
-		constexpr std::array<float, 4> yOffsets = { 20.0f, 40.0f, 60.0f, 80.0f };
+		std::vector yOffsets = { 25.0f, 50.0f, 75.0f, 100.0f };
+
+		constexpr float floorWidth = 12000.0f;
 
 		// Create Floor Entity
 		{
 			const auto floorEntity = enttSubsystem->createEntity("Floor");
 
-			auto& transform = registry->emplace<TransformComponent2D>(floorEntity);
-			transform.scale = Vector2f(xOffset, 1.0f);
+			auto& transform = registry->emplace<TransformComponent2D>(floorEntity, Vector2f(0.0f), 0.0, Vector2f(floorWidth, 1.0f));
 
 			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, materialInstId1);
 
-			registry->emplace<physics::BoxComponent2D>(floorEntity, Vector2f(xOffset, 1.0f));
+			registry->emplace<physics::BoxComponent2D>(floorEntity, Vector2f(floorWidth, 1.0f));
 
 			registry->emplace<physics::RigidbodyComponent2D>(floorEntity);
 		}
 
 		// Create Box Entities
 		{
-			const Vector2f startPosition(-xOffset, 0.f);
-			const Vector2f endPosition(xOffset, 0.f);
+			constexpr int numBodies = 10000;
+			constexpr float xStartPosition = floorWidth - 10.0f;
+
+			const Vector2f startPosition(-xStartPosition, 0.f);
+			const Vector2f endPosition(xStartPosition, 0.f);
 
 			Vector2f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;

@@ -1,5 +1,6 @@
 #include "UI/Editor/Windows/UIWindowEntityProperties.h"
 
+#include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
@@ -71,11 +72,18 @@ namespace puffin
 
 						// Display Component UI
 
+						if (registry->any_of<TransformComponent2D>(entity))
+						{
+							auto& transform = registry->get<TransformComponent2D>(entity);
+
+							drawTransformUI2D(flags, entity, transform);
+						}
+
 						if (registry->any_of<TransformComponent3D>(entity))
 						{
 							auto& transform = registry->get<TransformComponent3D>(entity);
 
-							drawTransformUI(flags, entity, transform);
+							drawTransformUI3D(flags, entity, transform);
 						}
 
 						if (registry->any_of<rendering::MeshComponent>(entity))
@@ -206,11 +214,78 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawTransformUI(const ImGuiTreeNodeFlags flags, const entt::entity entity, TransformComponent3D& transform)
+		void UIWindowEntityProperties::drawTransformUI2D(const ImGuiTreeNodeFlags flags, const entt::entity entity, TransformComponent2D& transform)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
-			if (ImGui::TreeNodeEx("Transform Component", flags))
+			if (ImGui::TreeNodeEx("Transform Component 2D", flags))
+			{
+				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
+
+				if (ImGui::SmallButton("X##Transform"))
+				{
+					mEnTTSubsystem->registry()->remove<TransformComponent2D>(entity);
+
+					mSceneChanged = true;
+				}
+
+				{
+#ifdef PFN_USE_DOUBLE_PRECISION
+
+					Vector2d position = transform.position;
+
+					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &position, 2, 0.1f))
+					{
+						registry->patch<TransformComponent2D>(entity, [&position](auto& transform) { transform.position = position; });
+
+						mSceneChanged = true;
+					}
+
+#else
+
+					Vector2f position = transform.position;
+
+					if (ImGui::DragFloat2("Position", reinterpret_cast<float*>(&position), 0.1f))
+					{
+						registry->patch<TransformComponent2D>(entity, [&position](auto& transform) { transform.position = position; });
+
+						mSceneChanged = true;
+					}
+
+#endif
+				}
+
+				{
+					float rotation = transform.rotation;
+
+					if (ImGui::DragFloat("Rotation", &rotation, 0.1f, -180.0f, 180.0f))
+					{
+						registry->patch<TransformComponent2D>(entity, [&rotation](auto& transform) { transform.rotation = rotation; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				{
+					Vector2f scale = transform.scale;
+
+					if (ImGui::DragFloat2("Scale", reinterpret_cast<float*>(&transform.scale), 0.1f))
+					{
+						registry->patch<TransformComponent2D>(entity, [&scale](auto& transform) { transform.scale = scale; });
+
+						mSceneChanged = true;
+					}
+				}
+
+				ImGui::TreePop();
+			}
+		}
+
+		void UIWindowEntityProperties::drawTransformUI3D(const ImGuiTreeNodeFlags flags, const entt::entity entity, TransformComponent3D& transform)
+		{
+			const auto registry = mEnTTSubsystem->registry();
+
+			if (ImGui::TreeNodeEx("Transform Component 3D", flags))
 			{
 				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
 

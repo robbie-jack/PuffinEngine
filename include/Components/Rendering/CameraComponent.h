@@ -46,7 +46,7 @@ namespace puffin
 
 			float yaw = -90.0f;
 			float pitch = 0.0f;
-			float speed = 5.0f;
+			float speed = 25.0f;
 		};
 	}
 }

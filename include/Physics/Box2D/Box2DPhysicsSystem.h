@@ -5,12 +5,13 @@
 #include "ECS/EnTTSubsystem.h"
 #include "Physics/PhysicsConstants.h"
 #include "Types/PackedArray.h"
+#include "Components/TransformComponent2D.h"
+#include "Components/Physics/2D/ShapeComponents2D.h"
+#include "Components/Physics/2D/VelocityComponent2D.h"
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 
 #include "box2d/b2_world.h"
 #include "box2d/box2d.h"
-#include "Components/Physics/2D/ShapeComponents2D.h"
-#include "Components/Physics/2D/VelocityComponent2D.h"
 
 namespace puffin
 {
@@ -96,9 +97,9 @@ namespace puffin::physics
 		void updateComponents();
 		void publishCollisionEvents() const;
 
-		void initRigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent2D& rb);
-		void initBox(PuffinID id, const TransformComponent3D& transform, const BoxComponent2D& box);
-		void initCircle(PuffinID id, const TransformComponent3D& transform, const CircleComponent2D& circle);
+		void initRigidbody(PuffinID id, const TransformComponent2D& transform, const RigidbodyComponent2D& rb);
+		void initBox(PuffinID id, const TransformComponent2D& transform, const BoxComponent2D& box);
+		void initCircle(PuffinID id, const TransformComponent2D& transform, const CircleComponent2D& circle);
 		void initFixture(PuffinID id, const RigidbodyComponent2D rb);
 
 		void updateRigidbody(PuffinID id);
