@@ -1,12 +1,22 @@
 #pragma once
 
+#ifdef PFN_USE_DOUBLE_PRECISION
+#define JPH_DOUBLE_PRECISION 1
+#endif
+
+#define JPH_FLOATING_POINT_EXCEPTIONS_ENABLED 1;
+#define JPH_PROFILE_ENABLED 1;
+#define JPH_DEBUG_RENDERER 1;
+
 #include "Physics/Jolt/JoltPhysicsTypes.h"
 
 #include "Jolt/Jolt.h"
+#include "Jolt/Core/TempAllocator.h"
+#include "Jolt/Core/JobSystemThreadPool.h"
 
 #include "Core/Engine.h"
 #include "Core/System.h"
-#include <Jolt/Physics/PhysicsSystem.h>
+#include "Jolt/Physics/PhysicsSystem.h"
 
 // TODO - Implement JoltPhysicsSystem class
 
@@ -41,6 +51,8 @@ namespace puffin::physics
 		const JPH::uint mMaxContactConstraints = 10240;
 
 		std::unique_ptr<JPH::PhysicsSystem> mPhysicsSystem;
+		std::unique_ptr<JPH::TempAllocatorImpl> mTempAllocator;
+		std::unique_ptr<JPH::JobSystemThreadPool> mJobSystem;
 
 		JoltBPLayerInterfaceImpl mBPLayerInterfaceImpl;
 		JoltObjectLayerPairFilterImpl mObjectVsObjectLayerFilter;
