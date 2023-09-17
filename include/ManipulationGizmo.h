@@ -1,7 +1,7 @@
 #pragma once
 
 //#include <Rendering/Vulkan/DebugDraw.h>
-#include <Components/TransformComponent.h>
+#include <Components/TransformComponent3D.h>
 
 namespace puffin
 {
@@ -33,7 +33,7 @@ namespace puffin
 
 	//}
 
-	//inline void DrawManipulationGizmo(std::shared_ptr<core::EventSubsystem> eventSubsystem, TransformComponent transform)
+	//inline void DrawManipulationGizmo(std::shared_ptr<core::EventSubsystem> eventSubsystem, TransformComponent3D transform)
 	//{
 	//	switch (gizmoMode)
 	//	{

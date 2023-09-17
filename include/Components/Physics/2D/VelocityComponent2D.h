@@ -11,7 +11,7 @@ namespace puffin::physics
 #ifdef PFN_USE_DOUBLE_PRECISION
 		Vector2d linear = Vector2d(0.0);
 #else
-		Vector3f linear = Vector3f(0.0f);
+		Vector2f linear = Vector2f(0.0f);
 #endif
 
 		float angular = 0.0f;

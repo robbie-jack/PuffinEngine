@@ -11,7 +11,8 @@
 #include "Assets/SoundAsset.h"
 #include "Assets/TextureAsset.h"
 #include "Audio/AudioSubsystem.h"
-#include "Components/TransformComponent.h"
+#include "Components/TransformComponent2D.h"
+#include "Components/TransformComponent3D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
 //#include "Components/Scripting/AngelScriptComponent.h"
@@ -74,7 +75,8 @@ namespace puffin::core
 
 		// Register Components to ECS World and Scene Data Class
 		sceneData->registerComponent<SceneObjectComponent>();
-		sceneData->registerComponent<TransformComponent>();
+		sceneData->registerComponent<TransformComponent2D>();
+		sceneData->registerComponent<TransformComponent3D>();
 		sceneData->registerComponent<rendering::MeshComponent>();
 		sceneData->registerComponent<rendering::LightComponent>();
 		sceneData->registerComponent<rendering::ShadowCasterComponent>();
@@ -110,7 +112,8 @@ namespace puffin::core
 		{
 			// Create Default Scene in code -- used when scene serialization is changed
 			//defaultScene();
-			physicsScene();
+			physicsScene2D();
+			//physicsScene3D();
 			//proceduralScene();
 
 			sceneData->updateData(enttSubsystem);
@@ -468,7 +471,7 @@ namespace puffin::core
 		{
 			const auto entity = enttSubsystem->createEntity(names[i]);
 
-			registry->emplace<TransformComponent>(entity, positions[i], orientations[i], scales[i]);
+			registry->emplace<TransformComponent3D>(entity, positions[i], orientations[i], scales[i]);
 			registry->emplace<rendering::MeshComponent>(entity, meshIDs[i], materialIDs[i]);
 
 			entities.push_back(entity);
@@ -496,7 +499,7 @@ namespace puffin::core
 		script.dir = contentRootPath / "scripts\\Example.pscript";*/
 	}
 
-	void Engine::physicsScene()
+	void Engine::physicsScene2D()
 	{
 		// Initialize Assets
 		fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
@@ -528,9 +531,9 @@ namespace puffin::core
 		{
 			const auto lightEntity = enttSubsystem->createEntity("Light");
 
-			auto& transform = registry->emplace<TransformComponent>(lightEntity);
+			auto& transform = registry->emplace<TransformComponent3D>(lightEntity);
 			transform.position = Vector3f(-5.0f, 0.0f, 0.0f);
-			transform.orientation = glm::angleAxis(0.0f, glm::vec3(.5f, -0.5f, 0.0f));
+			transform.orientation = angleAxis(0.0f, glm::vec3(.5f, -0.5f, 0.0f));
 
 			auto& light = registry->emplace<rendering::LightComponent>(lightEntity);
 			light.type = rendering::LightType::Directional;
@@ -545,8 +548,8 @@ namespace puffin::core
 		{
 			const auto floorEntity = enttSubsystem->createEntity("Floor");
 
-			auto& transform = registry->emplace<TransformComponent>(floorEntity);
-			transform.scale = Vector3f(xOffset, 1.0f, 1.0f);
+			auto& transform = registry->emplace<TransformComponent2D>(floorEntity);
+			transform.scale = Vector2f(xOffset, 1.0f);
 
 			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, materialInstId1);
 
@@ -557,8 +560,96 @@ namespace puffin::core
 
 		// Create Box Entities
 		{
-			const Vector3f startPosition(-xOffset, 0.f, 0.f);
-			const Vector3f endPosition(xOffset, 0.f, 0.f);
+			const Vector2f startPosition(-xOffset, 0.f);
+			const Vector2f endPosition(xOffset, 0.f);
+
+			Vector2f positionOffset = endPosition - startPosition;
+			positionOffset.x /= numBodies;
+
+			for (int i = 0; i < numBodies; i++)
+			{
+				const std::string name = "Box";
+				const auto boxEntity = enttSubsystem->createEntity(name);
+
+				Vector2f position = startPosition + positionOffset * static_cast<float>(i);
+
+				const int yIdx = i % yOffsets.size();
+				position.y = yOffsets[yIdx];
+
+				registry->emplace<TransformComponent2D>(boxEntity, position);
+
+				registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, materialInstId1);
+
+				registry->emplace<physics::BoxComponent2D>(boxEntity, Vector2f(1.0f));
+
+				registry->emplace<physics::RigidbodyComponent2D>(boxEntity, physics::BodyType::Dynamic, 1.0f);
+			}
+		}
+	}
+
+	void Engine::physicsScene3D()
+	{
+		// Initialize Assets
+		fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
+
+		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
+
+		const PuffinID meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
+		const PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
+		const PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
+		const PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
+
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
+
+		PuffinID materialInstId1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
+		PuffinID materialInstId2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
+
+		const fs::path& soundPath1 = "sounds\\Select 1.wav";
+
+		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
+
+		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->registry();
+
+		// Create Light Entity
+		{
+			const auto lightEntity = enttSubsystem->createEntity("Light");
+
+			auto& transform = registry->emplace<TransformComponent3D>(lightEntity);
+			transform.position = Vector3f(-5.0f, 0.0f, 0.0f);
+			transform.orientation = angleAxis(0.0f, glm::vec3(.5f, -0.5f, 0.0f));
+
+			auto& light = registry->emplace<rendering::LightComponent>(lightEntity);
+			light.type = rendering::LightType::Directional;
+			light.color = glm::vec3(1.0f, 1.0f, 1.0f);
+		}
+
+		constexpr int numBodies = 1000;
+		constexpr float offset = numBodies * 2.0f;
+		constexpr std::array<float, 4> yOffsets = { 20.0f, 40.0f, 60.0f, 80.0f };
+
+		// Create Floor Entity
+		{
+			const auto floorEntity = enttSubsystem->createEntity("Floor");
+
+			auto& transform = registry->emplace<TransformComponent3D>(floorEntity);
+			transform.scale = Vector3f(offset, 1.0f, offset);
+
+			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, materialInstId1);
+
+			registry->emplace<physics::BoxComponent3D>(floorEntity, Vector3f(offset, 1.0f, offset));
+
+			registry->emplace<physics::RigidbodyComponent2D>(floorEntity);
+		}
+
+		// Create Box Entities
+		{
+			const Vector3f startPosition(-offset, 0.f, offset);
+			const Vector3f endPosition(offset, 0.f, offset);
 
 			Vector3f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;
@@ -574,11 +665,11 @@ namespace puffin::core
 				const int yIdx = i % yOffsets.size();
 				position.y = yOffsets[yIdx];
 
-				registry->emplace<TransformComponent>(boxEntity, position);
+				registry->emplace<TransformComponent3D>(boxEntity, position);
 
 				registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, materialInstId1);
 
-				registry->emplace<physics::BoxComponent2D>(boxEntity, Vector2f(1.0f));
+				registry->emplace<physics::BoxComponent3D>(boxEntity, Vector3f(1.0f));
 
 				registry->emplace<physics::RigidbodyComponent2D>(boxEntity, physics::BodyType::Dynamic, 1.0f);
 			}
@@ -602,9 +693,9 @@ namespace puffin::core
 
 		//const auto lightEntity = ECS::CreateEntity(ecsWorld);
 		//lightEntity->SetName("Light");
-		//lightEntity->AddComponent<TransformComponent>();
-		//lightEntity->GetComponent<TransformComponent>().position = { 0.0, 10.0, 0.0 };
-		//lightEntity->GetComponent<TransformComponent>().scale = { 0.25f };
+		//lightEntity->AddComponent<TransformComponent3D>();
+		//lightEntity->GetComponent<TransformComponent3D>().position = { 0.0, 10.0, 0.0 };
+		//lightEntity->GetComponent<TransformComponent3D>().scale = { 0.25f };
 		//lightEntity->AddComponent<rendering::LightComponent>();
 		//lightEntity->GetComponent<rendering::LightComponent>().type = rendering::LightType::Directional;
 		//lightEntity->AddComponent<rendering::MeshComponent>();
@@ -614,7 +705,7 @@ namespace puffin::core
 
 		//const auto planeEntity = ECS::CreateEntity(ecsWorld);
 		//planeEntity->SetName("Terrain");
-		//planeEntity->AddAndGetComponent<TransformComponent>().position = { 0.0, -10.0f, 0.0 };
+		//planeEntity->AddAndGetComponent<TransformComponent3D>().position = { 0.0, -10.0f, 0.0 };
 		//planeEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubeTextureId;
 		//planeEntity->AddComponent<procedural::TerrainComponent>();
 		//planeEntity->GetComponent<procedural::TerrainComponent>().halfSize = { 50 };
@@ -623,13 +714,13 @@ namespace puffin::core
 
 		//const auto sphereEntity = ECS::CreateEntity(ecsWorld);
 		//sphereEntity->SetName("Sphere");
-		//sphereEntity->AddAndGetComponent<TransformComponent>().position = { 0.0, 5.0, 0.0 };
+		//sphereEntity->AddAndGetComponent<TransformComponent3D>().position = { 0.0, 5.0, 0.0 };
 		//sphereEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubeTextureId;
 		//sphereEntity->AddComponent<procedural::IcoSphereComponent>();
 
 		/*const auto boxEntity = ECS::CreateEntity(ecsWorld);
 		boxEntity->SetName("Box");
-		boxEntity->AddComponent<TransformComponent>();
+		boxEntity->AddComponent<TransformComponent3D>();
 		boxEntity->AddComponent<Rendering::MeshComponent>();
 		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = cubeMeshId;
 		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;*/

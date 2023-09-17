@@ -2,7 +2,7 @@
 
 #include "Core/Engine.h"
 
-#include <Components/TransformComponent.h>
+#include <Components/TransformComponent3D.h>
 #include <ManipulationGizmo.h>
 
 namespace puffin
@@ -90,7 +90,7 @@ namespace puffin
 
 				if (mSelectedEntity != gInvalidID)
 				{
-					//TransformComponent& transform = ecsWorld->GetComponent<TransformComponent>(entity);
+					//TransformComponent3D& transform = ecsWorld->GetComponent<TransformComponent3D>(entity);
 					
 					//DrawManipulationGizmo(m_engine->getSubsystem<core::EventSubsystem>(), transform);
 				}

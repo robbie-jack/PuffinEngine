@@ -1,6 +1,6 @@
 #include "Procedural/ProceduralMeshGenSystem.h"
 
-#include "Components/TransformComponent.h"
+#include "Components/TransformComponent3D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "OpenSimplexNoise/OpenSimplexNoise.h"

@@ -18,7 +18,7 @@
 #include "Core/Engine.h"
 #include "Core/System.h"
 #include "ECS/EnTTSubsystem.h"
-#include "Components/TransformComponent.h"
+#include "Components/TransformComponent3D.h"
 #include "Components/Physics/3D/RigidbodyComponent3D.h"
 #include "Components/Physics/3D/ShapeComponents3D.h"
 #include "Components/Physics/3D/VelocityComponent3D.h"
@@ -99,8 +99,8 @@ namespace puffin::physics
 
 		void updateComponents();
 
-		void initBox(PuffinID id, const TransformComponent& transform, const BoxComponent3D& box);
-		void initSphere(PuffinID id, const TransformComponent& transform, const SphereComponent3D& circle);
-		void initRigidbody(PuffinID id, const TransformComponent& transform, const RigidbodyComponent3D& rb);
+		void initBox(PuffinID id, const TransformComponent3D& transform, const BoxComponent3D& box);
+		void initSphere(PuffinID id, const TransformComponent3D& transform, const SphereComponent3D& circle);
+		void initRigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
 	};
 }

@@ -100,11 +100,13 @@ set(HEADERS
 	# Audio
 	${HEADER_DIR}/Audio/AudioSubsystem.h
 	# Components
-	${HEADER_DIR}/Components/TransformComponent.h
 	${HEADER_DIR}/Components/SceneObjectComponent.h
+	${HEADER_DIR}/Components/TransformComponent2D.h
+	${HEADER_DIR}/Components/TransformComponent3D.h
 	${HEADER_DIR}/Components/Rendering/CameraComponent.h
 	${HEADER_DIR}/Components/Rendering/LightComponent.h
 	${HEADER_DIR}/Components/Rendering/MeshComponent.h
+	${HEADER_DIR}/Components/Physics/2D/VelocityComponent2D.h
 	${HEADER_DIR}/Components/Physics/2D/RigidbodyComponent2D.h
 	${HEADER_DIR}/Components/Physics/2D/ShapeComponents2D.h
 	${HEADER_DIR}/Components/Physics/3D/VelocityComponent3D.h
@@ -358,7 +360,6 @@ target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/compressonator/Compre
 if (PFN_USE_DOUBLE_PRECISION)
 	target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
 	target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
-	message("Using double precision")
 else ()
 	target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt${LIB_SUFFIX})
 	target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt${LIB_SUFFIX})

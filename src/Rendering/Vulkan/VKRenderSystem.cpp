@@ -22,7 +22,6 @@
 
 #include "Core/Engine.h"
 #include "Rendering/Vulkan/VKHelpers.h"
-#include "Components/Physics/VelocityComponent.h"
 #include "Window/WindowSubsystem.h"
 #include "Components/SceneObjectComponent.h"
 #include "Core/EnkiTSSubsystem.h"
@@ -32,7 +31,10 @@
 #include "Assets/TextureAsset.h"
 #include "Assets/MaterialAsset.h"
 #include "Assets/ShaderAsset.h"
-#include "Components/TransformComponent.h"
+#include "Components/TransformComponent2D.h"
+#include "Components/TransformComponent3D.h"
+#include <Components/Physics/2D/VelocityComponent2D.h>
+#include "Components/Physics/3D/VelocityComponent3D.h"
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "ECS/EnTTSubsystem.h"
@@ -63,8 +65,11 @@ namespace puffin::rendering
 		registry->on_construct<MeshComponent>().connect<&VKRenderSystem::onConstructMesh>(this);
 		registry->on_update<MeshComponent>().connect<&VKRenderSystem::onUpdateMesh>(this);
 
-		registry->on_construct<TransformComponent>().connect<&VKRenderSystem::onUpdateTransform>(this);
-		registry->on_update<TransformComponent>().connect<&VKRenderSystem::onUpdateTransform>(this);
+		registry->on_construct<TransformComponent2D>().connect<&VKRenderSystem::onUpdateTransform>(this);
+		registry->on_update<TransformComponent2D>().connect<&VKRenderSystem::onUpdateTransform>(this);
+
+		registry->on_construct<TransformComponent3D>().connect<&VKRenderSystem::onUpdateTransform>(this);
+		registry->on_update<TransformComponent3D>().connect<&VKRenderSystem::onUpdateTransform>(this);
 	}
 
 	void VKRenderSystem::init()
@@ -188,7 +193,7 @@ namespace puffin::rendering
 		mMeshesToLoad.insert(mesh.meshAssetId);
 		mMaterialsInstancesToLoad.insert(mesh.matAssetID);
 
-		if (registry.any_of<TransformComponent>(entity))
+		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity))
 		{
 			const auto object = registry.get<SceneObjectComponent>(entity);
 
@@ -897,11 +902,26 @@ namespace puffin::rendering
 
 		if (mUpdateRenderables)
 		{
-			const auto meshView = registry->view<const SceneObjectComponent, const TransformComponent, const MeshComponent>();
+			const auto meshView2D = registry->view<const SceneObjectComponent, const TransformComponent2D, const MeshComponent>();
+			const auto meshView3D = registry->view<const SceneObjectComponent, const TransformComponent3D, const MeshComponent>();
 
 			mRenderables.clear();
 
-			for (auto [entity, object, transform, mesh] : meshView.each())
+			// Iterate 2D objects
+			for (auto [entity, object, transform, mesh] : meshView2D.each())
+			{
+				const auto& matData = mMatData[mesh.matAssetID];
+
+				mRenderables.emplace_back(object.id, mesh.meshAssetId, matData.baseMaterialID);
+
+				if (!mCachedObjectData.contains(object.id))
+				{
+					mCachedObjectData.insert(object.id, GPUObjectData());
+				}
+			}
+
+			// Iterate 3D objects
+			for (auto [entity, object, transform, mesh] : meshView3D.each())
 			{
 				const auto& matData = mMatData[mesh.matAssetID];
 
@@ -1128,7 +1148,7 @@ namespace puffin::rendering
 		mFrameNumber++;
 	}
 
-	void VKRenderSystem::updateCameraComponent(const TransformComponent& transform, CameraComponent& camera) const
+	void VKRenderSystem::updateCameraComponent(const TransformComponent3D& transform, CameraComponent& camera) const
 	{
 		// Calculate lookAt, right and up vectors
 		camera.lookAt = static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, -1.0f);
@@ -1278,7 +1298,7 @@ namespace puffin::rendering
 		updateEditorCamera();
 
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
-		const auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent, CameraComponent>();
+		const auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent3D, CameraComponent>();
 
 		for (auto [entity, object, transform, camera] : cameraView.each())
 		{
@@ -1398,7 +1418,29 @@ namespace puffin::rendering
 					const auto entityID = objectsToRefresh[objectIdx];
 					const auto entity = enttSubsystem->getEntity(entityID);
 
-					const auto& transform = registry->get<TransformComponent>(entity);
+					TransformComponent3D& tempTransform = TransformComponent3D();
+
+					// Convert 2D transform to 3D for rendering
+					if (registry->any_of<TransformComponent2D>(entity))
+					{
+						const auto& transform = registry->get<TransformComponent2D>(entity);
+
+						tempTransform.position.x = transform.position.x;
+						tempTransform.position.y = transform.position.y;
+						tempTransform.position.z = 0.0;
+
+						tempTransform.orientation = angleAxis(glm::radians(transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+
+						tempTransform.scale.x = transform.scale.x;
+						tempTransform.scale.y = transform.scale.y;
+						tempTransform.scale.z = 1.0f;
+					}
+					else
+					{
+						tempTransform = registry->get<TransformComponent3D>(entity);
+					}
+
+					
 					const auto& mesh = registry->get<MeshComponent>(entity);
 
 #ifdef PFN_USE_DOUBLE_PRECISION
@@ -1407,26 +1449,39 @@ namespace puffin::rendering
 					Vector3f position = { 0.0f };
 #endif
 
-					if (registry->all_of<physics::VelocityComponent>(entity))
+					if (registry->any_of<physics::VelocityComponent2D, physics::VelocityComponent3D>(entity))
 					{
-						const auto& velocity = registry->get<physics::VelocityComponent>(entity);
+						physics::VelocityComponent3D& velocity = physics::VelocityComponent3D();
+
+						if (registry->any_of<physics::VelocityComponent2D>(entity))
+						{
+							const auto& velocity2D = registry->get<physics::VelocityComponent2D>(entity);
+
+							velocity.linear.x = velocity2D.linear.x;
+							velocity.linear.y = velocity2D.linear.y;
+							velocity.angular.z = velocity2D.angular;
+						}
+						else
+						{
+							velocity = registry->get<physics::VelocityComponent3D>(entity);
+						}
 
 #ifdef PFN_USE_DOUBLE_PRECISION
-						Vector3d interpolatedPosition = transform.position + velocity.linear * mEngine->timeStepFixed();
+						Vector3d interpolatedPosition = tempTransform.position + velocity.linear * mEngine->timeStepFixed();
 #else
 						Vector3f interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
 #endif
 
-						position = maths::lerp(transform.position, interpolatedPosition, t);
+						position = maths::lerp(tempTransform.position, interpolatedPosition, t);
 					}
 					else
 					{
-						position = transform.position;
+						position = tempTransform.position;
 					}
 
 					GPUObjectData object;
 
-					buildModelTransform(position, transform.orientation, transform.scale, object.model);
+					buildModelTransform(position, tempTransform.orientation, tempTransform.scale, object.model);
 					object.matIdx = mMatData[mesh.matAssetID].idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
@@ -1475,7 +1530,7 @@ namespace puffin::rendering
 		// Prepare dynamic light data
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto lightView = registry->view<const SceneObjectComponent, const TransformComponent, const LightComponent>();
+		const auto lightView = registry->view<const SceneObjectComponent, const TransformComponent3D, const LightComponent>();
 
 		std::vector<GPULightData> lights;
 

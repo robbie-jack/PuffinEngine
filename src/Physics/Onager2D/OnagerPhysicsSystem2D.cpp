@@ -1,7 +1,7 @@
 
 #include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
 
-#include "Components/TransformComponent.h"
+#include "Components/TransformComponent3D.h"
 #include "Components/Physics/2D/VelocityComponent2D.h"
 #include "Core/Engine.h"
 #include "Core/EnkiTSSubsystem.h"
@@ -52,8 +52,8 @@ namespace puffin
 			// Copy component transform into collider
 			for (const auto collider : mColliders)
 			{
-				//const auto& transform = m_world->GetComponent<TransformComponent>(collider->entity);
-				const auto& transform = registry->get<const TransformComponent>(mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(collider->uuid));
+				//const auto& transform = m_world->GetComponent<TransformComponent3D>(collider->entity);
+				const auto& transform = registry->get<const TransformComponent3D>(mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(collider->uuid));
 
 				collider->position = transform.position.xy();
 				//collider->rotation = maths::RadiansToDegrees(transform.orientation.toEulerAngles().z);
@@ -234,7 +234,7 @@ namespace puffin
 			const uint32_t numThreads = enkiTSSubSystem->getTaskScheduler()->GetNumTaskThreads();
 
 			const auto rbView = registry->view<RigidbodyComponent2D>();
-			const auto tView = registry->view<TransformComponent>();
+			const auto tView = registry->view<TransformComponent3D>();
 			const auto vView = registry->view<VelocityComponent2D>();
 
 			if (rbView.empty())
@@ -252,7 +252,7 @@ namespace puffin
 				{
 					const auto entity = rbView[idx];
 
-					if (!registry->all_of<TransformComponent, VelocityComponent2D>(entity))
+					if (!registry->all_of<TransformComponent3D, VelocityComponent2D>(entity))
 						continue;
 
 					auto& rb = rbView.get<RigidbodyComponent2D>(entity);
@@ -287,7 +287,7 @@ namespace puffin
 					if (!registry->all_of<RigidbodyComponent2D, VelocityComponent2D>(entity))
 						continue;
 
-					auto& transform = tView.get<TransformComponent>(entity);
+					auto& transform = tView.get<TransformComponent3D>(entity);
 					const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 
 					// If a body has no mass, then it is kinematic/static and should not experience forces
@@ -320,7 +320,7 @@ namespace puffin
 			{
 				for (const auto& entity : entities)
 				{
-					registry->patch<TransformComponent>(entity, [](auto& transform) {});
+					registry->patch<TransformComponent3D>(entity, [](auto& transform) {});
 				}
 
 				entities.clear();
@@ -334,7 +334,7 @@ namespace puffin
 				{
 					const auto entity = rbView[idx];
 
-					if (!registry->all_of<RigidbodyComponent2D, TransformComponent>(entity))
+					if (!registry->all_of<RigidbodyComponent2D, TransformComponent3D>(entity))
 						continue;
 
 					auto& velocity = vView.get<VelocityComponent2D>(entity);
@@ -353,7 +353,7 @@ namespace puffin
 			enkiTSSubSystem->getTaskScheduler()->AddTaskSetToPipe(&velocityTask);
 			enkiTSSubSystem->getTaskScheduler()->WaitforTask(&velocityTask);
 
-			//const auto trvView = registry->view<TransformComponent, RigidbodyComponent2D, VelocityComponent2D>();
+			//const auto trvView = registry->view<TransformComponent3D, RigidbodyComponent2D, VelocityComponent2D>();
 			//for (auto [entity, transform, rb, velocity] : trvView.each())
 			//{
 			//	// If a body has no mass, then it is kinematic/static and should not experience forces
@@ -363,7 +363,7 @@ namespace puffin
 			//	//calculateImpulseByGravity(rb);
 
 			//	//// Update Position
-			//	//registry->patch<TransformComponent>(entity, [&](auto& transform)
+			//	//registry->patch<TransformComponent3D>(entity, [&](auto& transform)
 			//	//{
 			//	//	transform.position += rb.linearVelocity * mEngine->timeStepFixed();
 			//	//});
@@ -437,8 +437,8 @@ namespace puffin
 				const auto entityA = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(contact.a);
 				const auto entityB = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(contact.b);
 
-				auto& transformA = registry->get<TransformComponent>(entityA);
-				auto& transformB = registry->get<TransformComponent>(entityB);
+				auto& transformA = registry->get<TransformComponent3D>(entityA);
+				auto& transformB = registry->get<TransformComponent3D>(entityB);
 
 				if (registry->all_of<RigidbodyComponent2D>(entityA) && registry->all_of<RigidbodyComponent2D>(entityB))
 				{
@@ -472,12 +472,12 @@ namespace puffin
 
 					const Vector2 ds = (contact.pointOnB - contact.pointOnA) * contact.normal.abs();
 
-					registry->patch<TransformComponent>(entityA, [&](auto& transform)
+					registry->patch<TransformComponent3D>(entityA, [&](auto& transform)
 					{
 						transform.position += ds * tA;
 					});
 
-					registry->patch<TransformComponent>(entityB, [&](auto& transform)
+					registry->patch<TransformComponent3D>(entityB, [&](auto& transform)
 					{
 						transform.position -= ds * tB;
 					});

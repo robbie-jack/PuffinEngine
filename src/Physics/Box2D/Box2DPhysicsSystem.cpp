@@ -4,7 +4,7 @@
 #include "Core/SignalSubsystem.h"
 
 #include "Components/SceneObjectComponent.h"
-#include "Components/TransformComponent.h"
+#include "Components/TransformComponent3D.h"
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
 #include "Components/Physics/2D/VelocityComponent2D.h"
@@ -36,7 +36,7 @@ namespace puffin::physics
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		// Updated entity position/rotation from simulation
-		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent, VelocityComponent2D, const RigidbodyComponent2D>();
+		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent3D, VelocityComponent2D, const RigidbodyComponent2D>();
 
 		for (auto [entity, object, transform, velocity, rb] : bodyView.each())
 		{
@@ -121,7 +121,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent>(entity);
+				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& circle = registry->get<const CircleComponent2D>(entity);
 
 				initCircle(object.id, transform, circle);
@@ -144,7 +144,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent>(entity);
+				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& box = registry->get<const BoxComponent2D>(entity);
 
 				initBox(object.id, transform, box);
@@ -167,7 +167,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent>(entity);
+				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& rb = registry->get<const RigidbodyComponent2D>(entity);
 
 				initRigidbody(object.id, transform, rb);
@@ -195,7 +195,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent& transform, const RigidbodyComponent2D& rb)
+	void Box2DPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent2D& rb)
 	{
 		if (!mBodies.contains(id))
 		{
@@ -215,7 +215,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initBox(PuffinID id, const TransformComponent& transform, const BoxComponent2D& box)
+	void Box2DPhysicsSystem::initBox(PuffinID id, const TransformComponent3D& transform, const BoxComponent2D& box)
 	{
 		if (!mPolygonShapes.contains(id))
 		{
@@ -230,7 +230,7 @@ namespace puffin::physics
 		}
 	}
 
-	void Box2DPhysicsSystem::initCircle(PuffinID id, const TransformComponent& transform, const CircleComponent2D& circle)
+	void Box2DPhysicsSystem::initCircle(PuffinID id, const TransformComponent3D& transform, const CircleComponent2D& circle)
 	{
 		if (!mCircleShapes.contains(id))
 		{

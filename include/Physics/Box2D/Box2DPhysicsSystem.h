@@ -14,7 +14,7 @@
 
 namespace puffin
 {
-	struct TransformComponent;
+	struct TransformComponent3D;
 }
 
 namespace puffin::physics
@@ -96,9 +96,9 @@ namespace puffin::physics
 		void updateComponents();
 		void publishCollisionEvents() const;
 
-		void initRigidbody(PuffinID id, const TransformComponent& transform, const RigidbodyComponent2D& rb);
-		void initBox(PuffinID id, const TransformComponent& transform, const BoxComponent2D& box);
-		void initCircle(PuffinID id, const TransformComponent& transform, const CircleComponent2D& circle);
+		void initRigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent2D& rb);
+		void initBox(PuffinID id, const TransformComponent3D& transform, const BoxComponent2D& box);
+		void initCircle(PuffinID id, const TransformComponent3D& transform, const CircleComponent2D& circle);
 		void initFixture(PuffinID id, const RigidbodyComponent2D rb);
 
 		void updateRigidbody(PuffinID id);

@@ -301,7 +301,8 @@ namespace puffin::core
 		void loadAndResaveAssets();
 
 		void defaultScene();
-		void physicsScene();
+		void physicsScene2D();
+		void physicsScene3D();
 		void proceduralScene();
 
 	};

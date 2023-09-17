@@ -1,7 +1,7 @@
 #include "UI/Editor/Windows/UIWindowSceneHierarchy.h"
 
 #include "entt/entity/registry.hpp"
-#include "Components/TransformComponent.h"
+#include "Components/TransformComponent3D.h"
 #include "ECS/EnTTSubsystem.h"
 
 namespace puffin

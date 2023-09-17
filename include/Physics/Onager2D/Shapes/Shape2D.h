@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Components/TransformComponent.h>
+#include <Components/TransformComponent3D.h>
 
 #include <Types/Vector.h>
 

@@ -99,7 +99,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent>(entity);
+				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& sphere = registry->get<const SphereComponent3D>(entity);
 
 				initSphere(object.id, transform, sphere);
@@ -115,7 +115,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent>(entity);
+				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& box = registry->get<const BoxComponent3D>(entity);
 
 				initBox(object.id, transform, box);
@@ -131,7 +131,7 @@ namespace puffin::physics
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
-				const auto& transform = registry->get<const TransformComponent>(entity);
+				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& rb = registry->get<const RigidbodyComponent3D>(entity);
 
 				if (mShapeRefs.contains(id))
@@ -144,7 +144,7 @@ namespace puffin::physics
 		}
 	}
 
-	void JoltPhysicsSystem::initBox(PuffinID id, const TransformComponent& transform, const BoxComponent3D& box)
+	void JoltPhysicsSystem::initBox(PuffinID id, const TransformComponent3D& transform, const BoxComponent3D& box)
 	{
 		if (mInternalPhysicsSystem)
 		{
@@ -154,7 +154,7 @@ namespace puffin::physics
 		}
 	}
 
-	void JoltPhysicsSystem::initSphere(PuffinID id, const TransformComponent& transform,
+	void JoltPhysicsSystem::initSphere(PuffinID id, const TransformComponent3D& transform,
 		const SphereComponent3D& circle)
 	{
 		if (mInternalPhysicsSystem)
@@ -163,7 +163,7 @@ namespace puffin::physics
 		}
 	}
 
-	void JoltPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent& transform,
+	void JoltPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent3D& transform,
 		const RigidbodyComponent3D& rb)
 	{
 

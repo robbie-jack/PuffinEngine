@@ -39,7 +39,7 @@ namespace puffin
 		struct Quat;
 	}
 
-	struct TransformComponent;
+	struct TransformComponent3D;
 }
 
 namespace puffin::rendering
@@ -247,7 +247,7 @@ namespace puffin::rendering
 		void processEvents();
 
 		void processComponents();
-		void updateCameraComponent(const TransformComponent& transform, CameraComponent& camera) const;
+		void updateCameraComponent(const TransformComponent3D& transform, CameraComponent& camera) const;
 
 		void updateEditorCamera();
 

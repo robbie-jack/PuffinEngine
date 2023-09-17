@@ -1,8 +1,8 @@
 #include "UI/Editor/Windows/UIWindowEntityProperties.h"
 
-#include "Components/TransformComponent.h"
-#include "Components/Physics/RigidbodyComponent2D.h"
-#include "Components/Physics/ShapeComponents2D.h"
+#include "Components/TransformComponent3D.h"
+#include "Components/Physics/2D/RigidbodyComponent2D.h"
+#include "Components/Physics/2D/ShapeComponents2D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Rendering/MeshComponent.h"
@@ -71,9 +71,9 @@ namespace puffin
 
 						// Display Component UI
 
-						if (registry->any_of<TransformComponent>(entity))
+						if (registry->any_of<TransformComponent3D>(entity))
 						{
-							auto& transform = registry->get<TransformComponent>(entity);
+							auto& transform = registry->get<TransformComponent3D>(entity);
 
 							drawTransformUI(flags, entity, transform);
 						}
@@ -149,9 +149,9 @@ namespace puffin
 					{
 						if (ImGui::Selectable("Transform"))
 						{
-							if (!ecsWorld->HasComponent<TransformComponent>(m_entity))
+							if (!ecsWorld->HasComponent<TransformComponent3D>(m_entity))
 							{
-								ecsWorld->AddComponent<TransformComponent>(m_entity);
+								ecsWorld->AddComponent<TransformComponent3D>(m_entity);
 								sceneChanged = true;
 							}
 						}
@@ -206,7 +206,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawTransformUI(const ImGuiTreeNodeFlags flags, const entt::entity entity, TransformComponent& transform)
+		void UIWindowEntityProperties::drawTransformUI(const ImGuiTreeNodeFlags flags, const entt::entity entity, TransformComponent3D& transform)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -216,7 +216,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Transform"))
 				{
-					mEnTTSubsystem->registry()->remove<TransformComponent>(entity);
+					mEnTTSubsystem->registry()->remove<TransformComponent3D>(entity);
 					
 					mSceneChanged = true;
 				}
@@ -228,7 +228,7 @@ namespace puffin
 
 					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &position, 3, 0.1f))
 					{
-						registry->patch<TransformComponent>(entity, [&position](auto& transform) { transform.position = position; });
+						registry->patch<TransformComponent3D>(entity, [&position](auto& transform) { transform.position = position; });
 
 						mSceneChanged = true;
 					}
@@ -239,7 +239,7 @@ namespace puffin
 
 					if (ImGui::DragFloat3("Position", reinterpret_cast<float*>(&position), 0.1f))
 					{
-						registry->patch<TransformComponent>(entity, [&position](auto& transform) { transform.position = position; });
+						registry->patch<TransformComponent3D>(entity, [&position](auto& transform) { transform.position = position; });
 
 						mSceneChanged = true;
 					}
@@ -254,7 +254,7 @@ namespace puffin
 					{
 						Vector3f anglesRad = maths::degToRad(anglesDeg);
 
-						registry->patch<TransformComponent>(entity, [&anglesRad](auto& transform)
+						registry->patch<TransformComponent3D>(entity, [&anglesRad](auto& transform)
 						{
 							//transform.orientation = glm::quat(static_cast<glm::vec3>(anglesRad));
 
@@ -274,7 +274,7 @@ namespace puffin
 
 					if (ImGui::DragFloat3("Scale", reinterpret_cast<float*>(&transform.scale), 0.1f))
 					{
-						registry->patch<TransformComponent>(entity, [&scale](auto& transform) { transform.scale = scale; });
+						registry->patch<TransformComponent3D>(entity, [&scale](auto& transform) { transform.scale = scale; });
 
 						mSceneChanged = true;
 					}
