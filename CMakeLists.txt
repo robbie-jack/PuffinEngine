@@ -377,11 +377,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vkb/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/tinygltf)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/entt/src)
-<<<<<<< HEAD
-#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/assimp/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${JoltPhysics_SOURCE_DIR}/..)
-=======
->>>>>>> main
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
