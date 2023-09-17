@@ -132,12 +132,12 @@ namespace puffin::rendering
 
 		int idx = 0;
 
-		std::array<PuffinID, gNumTexturesPerMat> texIDs;
+		std::array<PuffinID, gNumTexturesPerMat> texIDs = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	};
 
 	struct MaterialVK
 	{
-		PuffinID baseMaterialID = gInvalidID;
+		PuffinID matID = gInvalidID;
 
 		vk::UniquePipeline pipeline = {};
 		vk::UniquePipelineLayout pipelineLayout = {};

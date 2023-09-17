@@ -186,7 +186,7 @@ namespace puffin::rendering
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
-		mMaterialsToLoad.insert(mesh.matAssetID);
+		mMaterialsInstancesToLoad.insert(mesh.matAssetID);
 
 		if (registry.any_of<TransformComponent>(entity))
 		{
@@ -203,7 +203,7 @@ namespace puffin::rendering
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
-		mMaterialsToLoad.insert(mesh.matAssetID);
+		mMaterialsInstancesToLoad.insert(mesh.matAssetID);
 	}
 
 	void VKRenderSystem::onUpdateTransform(entt::registry& registry, entt::entity entity)
@@ -351,9 +351,9 @@ namespace puffin::rendering
 		                              .set_old_swapchain(oldSwapchain)
 		                              .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
 		                              .set_desired_extent(swapchainData.extent.width, swapchainData.extent.height)
-		                              .set_image_usage_flags({
+                .set_image_usage_flags(
 			                              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT
-		                              })
+                    )
 		                              .build()
 		                              .value();
 
@@ -696,10 +696,11 @@ namespace puffin::rendering
 	void VKRenderSystem::buildForwardRendererPipeline()
 	{
 		mForwardVertMod = util::ShaderModule{
-			mDevice, R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_vs.spv)"
+			mDevice, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_vs.spv").string()
 		};
+
 		mForwardFragMod = util::ShaderModule{
-			mDevice, R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_fs.spv)"
+			mDevice, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_fs.spv").string()
 		};
 
 		util::PipelineLayoutBuilder plb{};
@@ -1001,7 +1002,7 @@ namespace puffin::rendering
 		// Load Meshes
 		for (const auto meshID : mMeshesToLoad)
 		{
-			if (const auto staticMesh = std::static_pointer_cast<assets::StaticMeshAsset>(assets::AssetRegistry::get()->getAsset(meshID)))
+			if (const auto staticMesh = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshID))
 			{
 				mStaticRenderData.combinedMeshBuffer.addMesh(staticMesh);
 			}
@@ -1009,34 +1010,43 @@ namespace puffin::rendering
 
 		mMeshesToLoad.clear();
 
-		// Load Materials
+		// Load Materials Instances
 
 		bool materialDataNeedsUploaded = false;
-		for (const auto matID : mMaterialsToLoad)
+		for (const auto matInstID : mMaterialsInstancesToLoad)
 		{
-			if (!mMatData.contains(matID))
+			if (!mMatData.contains(matInstID))
 			{
 				MaterialDataVK matData;
 
-				loadMaterial(matID, matData);
+				loadMaterialInstance(matInstID, matData);
 
-				mMatData.insert(matID, matData);
+				mMatData.insert(matInstID, matData);
 
 				materialDataNeedsUploaded = true;
 			}
 		}
 
-		mMaterialsToLoad.clear();
+		mMaterialsInstancesToLoad.clear();
 
 		if (materialDataNeedsUploaded == true)
 		{
 			mMatData.sortBubble();
 
-			for (int i = 0; i < gBufferedFrames; i++)
+			for (uint32_t i = 0; i < gBufferedFrames; i++)
 			{
 				mFrameRenderData[i].copyMaterialDataToGPU = true;
 			}
 		}
+
+		// Load Materials
+
+		for (const auto matID : mMaterialsToLoad)
+		{
+			initMaterialPipeline(matID);
+		}
+
+		mMaterialsToLoad.clear();
 
 		// Load Textures
 
@@ -1701,7 +1711,15 @@ namespace puffin::rendering
 
 	void VKRenderSystem::drawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
 	{
-		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMats[meshDrawBatch.matID].pipeline.get());
+		// Use loaded material if id iis valid, otherwise use default material
+		if (meshDrawBatch.matID != gInvalidID)
+		{
+			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMats[meshDrawBatch.matID].pipeline.get());
+		}
+		else
+		{
+			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mForwardPipeline.get());
+		}
 
 		vk::DeviceSize indirectOffset = meshDrawBatch.meshIndex * sizeof(vk::DrawIndexedIndirectCommand);
 		uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
@@ -1932,8 +1950,7 @@ namespace puffin::rendering
 
 	bool VKRenderSystem::loadMesh(PuffinID meshId, MeshDataVK& meshData)
 	{
-		if (const auto meshAsset = std::static_pointer_cast<assets::StaticMeshAsset>(
-			assets::AssetRegistry::get()->getAsset(meshId)); meshAsset && meshAsset->load())
+		if (const auto meshAsset = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshId); meshAsset && meshAsset->load())
 		{
 			meshData.assetId = meshId;
 
@@ -1964,8 +1981,7 @@ namespace puffin::rendering
 
 	bool VKRenderSystem::loadTexture(PuffinID texId, TextureDataVK& texData)
 	{
-		if (const auto texAsset = std::static_pointer_cast<assets::TextureAsset>(
-			assets::AssetRegistry::get()->getAsset(texId)); texAsset && texAsset->load())
+		if (const auto texAsset = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texId); texAsset && texAsset->load())
 		{
 			texData.assetId = texId;
 
@@ -1990,86 +2006,32 @@ namespace puffin::rendering
 		mAllocator.destroyImage(texData.texture.image, texData.texture.allocation);
 	}
 
-	bool VKRenderSystem::loadMaterial(PuffinID matID, MaterialDataVK& matData)
+	bool VKRenderSystem::loadMaterialInstance(PuffinID matID, MaterialDataVK& matData)
 	{
-		const auto matAsset = std::static_pointer_cast<assets::MaterialAsset>(
-			assets::AssetRegistry::get()->getAsset(matID));
-
-		std::shared_ptr<assets::MaterialAsset> matAssetBase = nullptr;
+		const auto matAsset = assets::AssetRegistry::get()->getAsset<assets::MaterialInstanceAsset>(matID);
 
 		if (matAsset && matAsset->load())
 		{
 			matData.assetId = matID;
+			matData.baseMaterialID = matAsset->getBaseMaterialID();
 
 			GPUMaterialInstanceData matInstData;
 
-			if (matAsset->getBaseMaterialID() != gInvalidID)
+			int i = 0;
+			for (const auto& idx : matAsset->getTexIDs())
 			{
-				matData.baseMaterialID = matAsset->getBaseMaterialID();
+				matData.texIDs[i] = idx;
+				matInstData.texIndices[i] = 0;
 
-				matAssetBase = std::static_pointer_cast<assets::MaterialAsset>(
-					assets::AssetRegistry::get()->getAsset(matData.baseMaterialID));
-
-				if (matAssetBase && matAssetBase->load())
-				{
-					const auto& texIDs = matAsset->getTexIDs();
-					const auto& texIDsBase = matAssetBase->getTexIDs();
-					const auto& texIDsOverride = matAsset->getTexIDOverride();
-
-					for (int i = 0; i < gNumTexturesPerMat; ++i)
-					{
-						if (texIDsOverride[i])
-						{
-							matData.texIDs[i] = texIDs[i];
-						}
-						else
-						{
-							matData.texIDs[i] = texIDsBase[i];
-						}						
-					}
-
-					for (int& texIdx : matInstData.texIndices)
-					{
-						texIdx = 0;
-					}
-
-					const auto& data = matAsset->getData();
-					const auto& dataBase = matAssetBase->getData();
-					const auto& dataOverride = matAsset->getDataOverride();
-
-					for (int i = 0; i < gNumFloatsPerMat; ++i)
-					{
-						if (dataOverride[i])
-						{
-							matInstData.data[i] = data[i];
-						}
-						else
-						{
-							matInstData.data[i] = dataBase[i];
-						}
-					}
-				}
+				++i;
 			}
-			else
+
+			i = 0;
+			for (const auto& data : matAsset->getData())
 			{
-				matData.baseMaterialID = matID;
+				matInstData.data[i] = data;
 
-				int i = 0;
-				for (const auto& idx : matAsset->getTexIDs())
-				{
-					matData.texIDs[i] = idx;
-					matInstData.texIndices[i] = 0;
-
-					++i;
-				}
-
-				i = 0;
-				for (const auto& data : matAsset->getData())
-				{
-					matInstData.data[i] = data;
-
-					++i;
-				}
+				++i;
 			}
 
 			mCachedMaterialData.emplace(matID, matInstData);
@@ -2082,14 +2044,12 @@ namespace puffin::rendering
 				}
 			}
 
-			initMaterialPipeline(matData.baseMaterialID);
+			if (matData.baseMaterialID != gInvalidID)
+			{
+				mMaterialsToLoad.insert(matData.baseMaterialID);
+			}
 
 			matAsset->unload();
-
-			if (matAssetBase)
-			{
-				matAssetBase->unload();
-			}
 
 			return true;
 		}
@@ -2101,16 +2061,12 @@ namespace puffin::rendering
 	{
 		if (!mMatData.contains(matID))
 		{
-			const auto matAsset = std::static_pointer_cast<assets::MaterialAsset>(
-				assets::AssetRegistry::get()->getAsset(matID));
+			const auto matAsset = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(matID);
 			
 			if (matAsset && matAsset->load())
 			{
-				const auto vertShaderAsset = std::static_pointer_cast<assets::ShaderAsset>(
-					assets::AssetRegistry::get()->getAsset(matAsset->getVertexShaderID()));
-
-				const auto fragShaderAsset = std::static_pointer_cast<assets::ShaderAsset>(
-					assets::AssetRegistry::get()->getAsset(matAsset->getFragmentShaderID()));
+				const auto vertShaderAsset = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(matAsset->getVertexShaderID());
+				const auto fragShaderAsset = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(matAsset->getFragmentShaderID());
 
 				if (vertShaderAsset && vertShaderAsset->load() && fragShaderAsset && fragShaderAsset->load())
 				{
@@ -2120,7 +2076,7 @@ namespace puffin::rendering
 					mMats.insert(matID);
 
 					MaterialVK& mat = mMats[matID];
-					mat.baseMaterialID = matID;
+					mat.matID = matID;
 
 					util::PipelineLayoutBuilder plb{};
 					mat.pipelineLayout = plb

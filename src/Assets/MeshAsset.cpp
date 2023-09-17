@@ -1,5 +1,5 @@
 #include "Assets/MeshAsset.h"
-#include "nlohmann/json.hpp"
+#include "Types/Vertex.h"
 #include "lz4.h"
 #include "lz4hc.h"
 
@@ -79,19 +79,13 @@ namespace puffin::assets
 			data.binaryBlob.resize(compressedSize);
 		}
 
-		// Fill Metadata from Info struct
-		json metadata;
-
-		metadata["vertex_format"] = parseVertexStringFromFormat(info.vertexFormat);
-		metadata["compression"] = parseCompressionStringFromMode(info.compressionMode);
-		metadata["num_vertices"] = info.numVertices;
-		metadata["num_indices"] = info.numIndices;
-		metadata["vertex_buffer_size"] = info.verticesSize;
-		metadata["index_buffer_size"] = info.indicesSize;
-		metadata["original_file"] = info.originalFile;
-
-		// Pass metadata to asset data struct
-		data.json = metadata.dump();
+		data.json["vertex_format"] = info.vertexFormat;
+		data.json["compression"] = info.compressionMode;
+		data.json["num_vertices"] = info.numVertices;
+		data.json["num_indices"] = info.numIndices;
+		data.json["vertex_buffer_size"] = info.verticesSize;
+		data.json["index_buffer_size"] = info.indicesSize;
+		data.json["original_file"] = info.originalFile;
 
 		// Save Asset Data out to Binary File
 		return saveBinaryFile(fullPath, data);
@@ -165,24 +159,17 @@ namespace puffin::assets
 
 	// Private
 
-	MeshInfo StaticMeshAsset::parseMeshInfo(const AssetData& data) const
+	MeshInfo StaticMeshAsset::parseMeshInfo(const AssetData& data)
 	{
-		// Parse metadata into json
-		json metadata = json::parse(data.json);
-
 		// Fill Mesh Info struct with metadata
 		MeshInfo info;
-		info.numVertices = metadata["num_vertices"];
-		info.numIndices = metadata["num_indices"];
-		info.verticesSize = metadata["vertex_buffer_size"];
-		info.indicesSize = metadata["index_buffer_size"];
-		info.originalFile = metadata["original_file"];
-
-		const std::string vertexFormat = metadata["vertex_format"];
-		info.vertexFormat = rendering::parseVertexFormatFromString(vertexFormat.c_str());
-
-		const std::string compressionMode = metadata["compression"];
-		info.compressionMode = parseCompressionMode(compressionMode.c_str());
+		info.numVertices = data.json["num_vertices"];
+		info.numIndices = data.json["num_indices"];
+		info.verticesSize = data.json["vertex_buffer_size"];
+		info.indicesSize = data.json["index_buffer_size"];
+		info.originalFile = data.json["original_file"];
+		info.vertexFormat = data.json["vertex_format"];
+		info.compressionMode = data.json["compression"];
 
 		return info;
 	}

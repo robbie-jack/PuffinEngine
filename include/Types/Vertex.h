@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types/Vector.h"
+#include "nlohmann/json.hpp"
 
 #include <vector>
 
@@ -24,6 +25,15 @@ namespace puffin::rendering
 		PNTV32,
 		P64NTV32
 	};
+
+	NLOHMANN_JSON_SERIALIZE_ENUM(VertexFormat,
+	{
+		{ VertexFormat::Unknown, "Unknown" },
+		{ VertexFormat::PC32, "PC32" },
+		{ VertexFormat::PNC32, "PNC32" },
+		{ VertexFormat::PNTV32, "PNTV32" },
+		{ VertexFormat::P64NTV32, "P64NTV32" }
+	});
 
 	struct VertexPC32
 	{

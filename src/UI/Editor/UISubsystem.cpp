@@ -292,8 +292,7 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Project"))
 				{
-					//IO::SaveProject(Assets::AssetRegistry::Get()->ProjectRoot() / Assets::AssetRegistry::Get()->ProjectName() + ".pproject", engine->)
-					io::SaveSettings(assets::AssetRegistry::get()->setProjectRoot() / "settings.json", mEngine->settings());
+					io::SaveSettings(assets::AssetRegistry::get()->projectRoot() / "settings.json", mEngine->settings());
 					assets::AssetRegistry::get()->saveAssetCache();
 				}
 

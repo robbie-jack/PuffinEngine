@@ -27,7 +27,6 @@
 #include "Scripting/AngelScriptSystem.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
-#include "Assets/AssetImporters.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -55,12 +54,23 @@ namespace puffin::core
 		fs::path projectDirPath = projectPath;
 		projectDirPath.remove_filename();
 
+		/*mProjectFile.name = "Puffin";
+		mProjectFile.defaultScenePath = "scenes\\default.pscene";
+		SaveProject(projectPath, mProjectFile);*/
+
 		LoadProject(projectPath, mProjectFile);
 
-		// Load Default Scene (if set)
-		fs::path defaultScenePath = projectDirPath.parent_path() / "content" / mProjectFile.defaultScenePath;
+		// Setup asset registry
+		assets::AssetRegistry::get()->init(mProjectFile, projectPath);
+		assets::AssetRegistry::get()->registerAssetType<assets::StaticMeshAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::TextureAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::ShaderAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
+		assets::AssetRegistry::get()->registerAssetType<assets::MaterialInstanceAsset>();
 
-		auto sceneData = sceneSubsystem->createScene(defaultScenePath);
+		// Load Default Scene (if set)
+		auto sceneData = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / mProjectFile.defaultScenePath);
 
 		// Register Components to ECS World and Scene Data Class
 		sceneData->registerComponent<SceneObjectComponent>();
@@ -85,17 +95,6 @@ namespace puffin::core
 		//registerSystem<Physics::Box2DPhysicsSystem>();
 		registerSystem<scripting::AngelScriptSystem>();
 		registerSystem<procedural::ProceduralMeshGenSystem>();
-
-		// Register Assets
-		assets::AssetRegistry::get()->registerAssetType<assets::StaticMeshAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::TextureAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::ShaderAsset>();
-		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
-
-		// Load Asset Cache
-		assets::AssetRegistry::get()->setProjectName(mProjectFile.name);
-		assets::AssetRegistry::get()->setProjectRoot(projectDirPath);
 
 		// Load Project Settings
 		io::LoadSettings(projectDirPath.parent_path() / "Settings.json", mSettings);
@@ -286,7 +285,7 @@ namespace puffin::core
 		const fs::path& texturePath1 = "textures\\cube.ptexture";
 		const fs::path& texturePath2 = "textures\\chalet.ptexture";
 		const fs::path& texturePath3 = "textures\\space_engineer.ptexture";
-		const fs::path& texturePath4 = "textures\\texture.ptexture";
+		const fs::path& texturePath4 = "textures\\statue.ptexture";
 		const fs::path& texturePath5 = "textures\\xsprite.ptexture";
 
 		PuffinID textureId1 = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(texturePath1)->id();
@@ -299,8 +298,8 @@ namespace puffin::core
 
 		PuffinID soundId1 = assets::AssetRegistry::get()->addAsset<assets::SoundAsset>(soundPath1)->id();
 
-		const fs::path shaderPath1 = "shaders\\forward_shading\\forward_shading_vert.pshader";
-		const fs::path shaderPath2 = "shaders\\forward_shading\\forward_shading_frag.pshader";
+		const fs::path shaderPath1 = "materials\\forward_shading\\forward_shading_vert.pshader";
+		const fs::path shaderPath2 = "materials\\forward_shading\\forward_shading_frag.pshader";
 
 		const auto shaderAsset1 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath1);
 		const auto shaderAsset2 = assets::AssetRegistry::get()->addAsset<assets::ShaderAsset>(shaderPath2);
@@ -318,25 +317,19 @@ namespace puffin::core
 		//shaderAsset2->loadCodeFromBinary();
 		//shaderAsset2->save();
 
-		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
 
-		const auto materialAsset1 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath1);
-		const auto materialAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialAsset>(materialPath2);
+		const auto materialInstAsset1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1);
+		const auto materialInstAsset2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2);
 
-		/*materialAsset1->setVertexShaderID(shaderAsset1->id());
-		materialAsset1->setFragmentShaderID(shaderAsset2->id());
-		materialAsset1->getTexIDs()[0] = textureId1;
+		materialInstAsset1->getTexIDs()[0] = textureId1;
 
-		materialAsset1->save();
+		materialInstAsset1->save();
 
-		materialAsset2->setVertexShaderID(shaderAsset1->id());
-		materialAsset2->setFragmentShaderID(shaderAsset2->id());
-		materialAsset2->setBaseMaterialID(materialAsset1->id());
-		materialAsset2->getTexIDs()[0] = textureId2;
-		materialAsset2->getTexIDOverride()[0] = true;
+		materialInstAsset2->getTexIDs()[0] = textureId2;
 
-		materialAsset2->save();*/
+		materialInstAsset2->save();
 	}
 
 	void Engine::reimportDefaultAssets()
@@ -346,13 +339,13 @@ namespace puffin::core
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
 		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
 
-		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
+		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
 
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)", "textures");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)", "textures");
-		//io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)", "textures");
+		/*io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)", "textures");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)", "textures");
+		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)", "textures");*/
 	}
 
 	void Engine::loadAndResaveAssets()
@@ -365,23 +358,23 @@ namespace puffin::core
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 		const fs::path& texturePath3 = "textures\\space_engineer.ptexture";
-		const fs::path& texturePath4 = "textures\\texture.ptexture";
+		const fs::path& texturePath4 = "textures\\statue.ptexture";
 		const fs::path& texturePath5 = "textures\\xsprite.ptexture";
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		const fs::path shaderPath1 = "shaders\\forward_shading\\forward_shading_vert.pshader";
-		const fs::path shaderPath2 = "shaders\\forward_shading\\forward_shading_frag.pshader";
+		const fs::path shaderPath1 = "materials\\forward_shading\\forward_shading_vert.pshader";
+		const fs::path shaderPath2 = "materials\\forward_shading\\forward_shading_frag.pshader";
 
-		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+		const fs::path materialInstPath1 = "materials\\forward_shading\\forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = "materials\\forward_shading\\forward_shading_chalet.pmaterialinst";
 
 		std::vector paths =
 		{
-			meshPath1, meshPath2, meshPath3, meshPath4,
-			texturePath1, texturePath2, texturePath3, texturePath4, texturePath5/*,
+			/*meshPath1, meshPath2, meshPath3, meshPath4,*/
+			/*texturePath1, texturePath2, texturePath3, texturePath4, texturePath5,*/
 			shaderPath1, shaderPath2,
-			materialPath1, materialPath2*/
+			materialInstPath1, materialInstPath2
 		};
 
 		for (const auto path : paths)
@@ -413,18 +406,18 @@ namespace puffin::core
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath1)->id();
-		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(texturePath2)->id();
+		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath1)->id();
+		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath2)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
 		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
 
-		PuffinID materialId1 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath1)->id();
-		PuffinID materialId2 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath2)->id();
+		PuffinID materialInstId1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
+		PuffinID materialInstId2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
 
 		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->registry();
@@ -463,12 +456,12 @@ namespace puffin::core
 			Vector3f(1.0f),
 			Vector3f(.25f),
 			Vector3f(1.0f),
-			Vector3f(10.0f, 1.0f, 10.0f),
+			Vector3f(50.0f, 1.0f, 50.0f),
 			Vector3f(0.25f)
 		};
 
 		const PuffinID meshIDs[numEntities] = { meshId1, meshId2, meshId3, meshId3, meshId3, meshId3, meshId3 };
-		const PuffinID materialIDs[numEntities] = { materialId1, materialId1, materialId1, materialId1, materialId1, materialId1, materialId1 };
+		const PuffinID materialIDs[numEntities] = { materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1 };
 
 		// Add Default Scene Components to ECS
 		for (int i = 0; i < numEntities; i++)
@@ -488,13 +481,15 @@ namespace puffin::core
 		dirLight.type = rendering::LightType::Directional;
 		dirLight.ambientIntensity = 0.f;
 
-		//registry->emplace<rendering::ShadowCasterComponent>(entities[3]);
-
 		auto& spotLight = registry->emplace<rendering::LightComponent>(entities[6]);
 		spotLight.color = Vector3f(1.f, 1.f, 1.f);
 		spotLight.type = rendering::LightType::Spot;
 		spotLight.direction = Vector3f(-0.5f, -0.5f, 0.0f);
 		spotLight.ambientIntensity = 0.f;
+
+		auto& shadow = registry->emplace<rendering::ShadowCasterComponent>(entities[6]);
+		shadow.width = 4096;
+		shadow.height = 4096;
 
 		/*auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		script.name = "ExampleScript";
@@ -641,18 +636,20 @@ namespace puffin::core
 
 	void Engine::play()
 	{
-		switch (mPlayState)
-		{
-		case PlayState::Stopped:
-			mPlayState = PlayState::Started;
-			break;
-		case PlayState::Playing:
-			mPlayState = PlayState::JustPaused;
-			break;
-		case PlayState::Paused:
-			mPlayState = PlayState::JustUnpaused;
-			break;
-		}
+        if (mPlayState == PlayState::Stopped)
+        {
+            mPlayState = PlayState::Started;
+            return;
+        }
+        else if (mPlayState == PlayState::Playing)
+        {
+            mPlayState = PlayState::JustPaused;
+            return;
+        }
+        else if (mPlayState == PlayState::Paused)
+        {
+            mPlayState = PlayState::JustUnpaused;
+        }
 	}
 
 	void Engine::restart()

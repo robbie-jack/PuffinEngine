@@ -16,23 +16,15 @@ namespace puffin::assets
 		AssetData data;
 		data.type = AssetType::Material;
 		data.version = gMaterialAssetVersion;
+		data.id = id();
 
 		// Fill Metadata from Info struct
-		json metadata;
-
-		metadata["vertex_shader"] = mVertexShaderID;
-		metadata["fragment_shader"] = mFragmentShaderID;
-		metadata["texture_ids"] = mTexIDs;
-		metadata["material_data"] = mData;
-		metadata["base_material"] = mBaseMaterial;
-		metadata["texture_id_override"] = mTexIDOverride;
-		metadata["data_override"] = mDataOverride;
-
-		data.json = metadata.dump();
+		data.json["vertex_shader"] = mVertexShaderID;
+		data.json["fragment_shader"] = mFragmentShaderID;
 
 		data.binaryBlob.resize(0);
 
-		return saveBinaryFile(fullPath, data);
+		return saveJsonFile(fullPath, data);
 	}
 
 	bool MaterialAsset::load()
@@ -48,20 +40,63 @@ namespace puffin::assets
 
 		// Load Binary/Metadata
 		AssetData data;
-		if (!loadBinaryFile(fullPath, data))
+		if (!loadJsonFile(fullPath, data))
 		{
 			return false;
 		}
 
-		const json metadata = json::parse(data.json);
+		mVertexShaderID = data.json["vertex_shader"];
+		mFragmentShaderID = data.json["fragment_shader"];
 
-		mVertexShaderID = metadata["vertex_shader"];
-		mFragmentShaderID = metadata["fragment_shader"];
-		mTexIDs = metadata["texture_ids"];
-		mData = metadata["material_data"];
-		mBaseMaterial = metadata["base_material"];
-		mTexIDOverride = metadata["texture_id_override"];
-		mDataOverride = metadata["data_override"];
+		mIsLoaded = true;
+		return true;
+	}
+
+	////////////////////////////////
+	// Material Instance Asset
+	////////////////////////////////
+
+	bool MaterialInstanceAsset::save()
+	{
+		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
+
+		// Create AssetData Struct
+		AssetData data;
+		data.type = AssetType::Material;
+		data.version = gMaterialAssetVersion;
+		data.id = id();
+
+		// Fill Metadata from Info struct
+		data.json["texture_ids"] = mTexIDs;
+		data.json["material_data"] = mData;
+		data.json["base_material"] = mBaseMaterial;
+
+		data.binaryBlob.resize(0);
+
+		return saveJsonFile(fullPath, data);
+	}
+
+	bool MaterialInstanceAsset::load()
+	{
+		// Check if file is already loaded
+		if (mIsLoaded)
+			return true;
+
+		// Check if file exists
+		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
+		if (!fs::exists(fullPath))
+			return false;
+
+		// Load Binary/Metadata
+		AssetData data;
+		if (!loadJsonFile(fullPath, data))
+		{
+			return false;
+		}
+
+		mTexIDs = data.json["texture_ids"];
+		mData = data.json["material_data"];
+		mBaseMaterial = data.json["base_material"];
 
 		mIsLoaded = true;
 		return true;

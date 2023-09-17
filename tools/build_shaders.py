@@ -9,6 +9,8 @@ valid_extensions = { ".frag": "_fs.spv", ".vert": "_vs.spv" }
 
 def build_shader(shader_path, output_path):
 
+    print("Compiling shader " + shader_path)
+
     subprocess.call([glsl_validator, "-V", shader_path, "-o", output_path])
 
     print("Shader binary output to " + output_path)
@@ -62,4 +64,16 @@ parser.add_argument("-r", "--recurse", action="store_true")
 
 args = parser.parse_args()
 
-build_shaders(args.shader_path, args.output_path, args.recurse)
+file_path, file_extension = os.path.splitext(args.shader_path)
+
+if file_extension:
+
+    file_name = os.path.basename(file_path)
+
+    output_path = args.output_path + "\\" + file_name + valid_extensions.get(file_extension)
+    
+    build_shader(args.shader_path, output_path)
+    
+else:
+
+    build_shaders(args.shader_path, args.output_path, args.recurse)

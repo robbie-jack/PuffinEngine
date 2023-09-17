@@ -52,8 +52,6 @@ execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${branch}
 endfunction(checkout_git_branch)
 
 # Init/Update Submodules
-add_git_submodule("deps/assimp")
-add_git_submodule("deps/bgfx.cmake")
 add_git_submodule("deps/box2d")
 add_git_submodule("deps/enkits")
 add_git_submodule("deps/entt")
@@ -149,11 +147,6 @@ set(HEADERS
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
 	# Rendering
 	${HEADER_DIR}/Rendering/MaterialGlobals.h
-	# Rendering BGFX
-	#${HEADER_DIR}/Rendering/BGFX/BGFXRenderSystem.h
-	#${HEADER_DIR}/Rendering/BGFX/BGFXVertex.h
-	#${HEADER_DIR}/Rendering/BGFX/BGFXTypes.h
-	#${HEADER_DIR}/Rendering/BGFX/BGFXTextureArray.h
 	# Rendering Vulkan
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
@@ -226,8 +219,6 @@ set(SOURCES
 	${SOURCE_DIR}/Physics/Jolt/JoltPhysicsSystem.cpp
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
-	# Rendering BGFX
-	#${SOURCE_DIR}/Rendering/BGFX/BGFXRenderSystem.cpp
 	# Rendering Vulkan
 	${SOURCE_DIR}/Rendering/Vulkan/VKRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKHelpers.cpp
@@ -323,6 +314,8 @@ sort_into_source_group(ENKITS_SOURCES ${ENKITS_DIR} Libraries/EnkiTS)
 
 message("")
 
+set(PLATFORM ${CMAKE_HOST_SYSTEM_NAME})
+
 # Get & Build Required Libraries
 find_package(Vulkan REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
@@ -340,51 +333,31 @@ target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 target_link_libraries(${PROJECT_NAME} Jolt)
 
-set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+if (WIN32)
+	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/win64)
+	set(LIB_SUFFIX .lib)
+	set(DLL_SUFFIX .dll)
+elseif (LINUX)
+	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/linux)
+	set(LIB_SUFFIX .a)
+	set(DLL_SUFFIX .so)
+endif()
 
-target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang.lib)
+target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang${LIB_SUFFIX})
 
 # Define Debug Libs
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/assimp/Debug/assimp-vc143-mtd.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static.lib)
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd.lib)
-
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bgfx.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bimg.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/bx.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/astc-encoder.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/edtaa3.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/etc1.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/etc2.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/iqa.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/nvtt.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/pvrtc.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/squish.lib)
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/bgfx/Debug/tinyexr.lib)
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
 
 # Define Release Libs
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/assimp/Release/assimp-vc143-mt.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static.lib)
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT.lib)
-
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bgfx.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bimg.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/bx.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/astc-encoder.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/edtaa3.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/etc1.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/etc2.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/iqa.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/nvtt.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/pvrtc.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/squish.lib)
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/bgfx/Release/tinyexr.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
 
 set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
@@ -402,15 +375,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/VulkanMem
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vkb/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/tinygltf)
-#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bgfx/include)
-#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/compat/msvc)
-#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/compat/mingw)
-#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bx/include)
-#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/bgfx.cmake/bimg/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/entt/src)
+<<<<<<< HEAD
 #target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/assimp/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${JoltPhysics_SOURCE_DIR}/..)
+=======
+>>>>>>> main
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
@@ -422,9 +393,6 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY
 	
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
-# Defines to get bx compilation working
-#target_compile_definitions(${PROJECT_NAME} PRIVATE BX_CONFIG_DEBUG)
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_SIMD_AVX2)
 
@@ -434,7 +402,7 @@ if (WIN32)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_EXPOSE_NATIVE_WIN32)
-else()
+elseif (LINUX)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_PLATFORM_LINUX)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_EXPOSE_NATIVE_X11)
 endif()
@@ -445,7 +413,7 @@ if (MSVC)
 	target_compile_options(${PROJECT_NAME} PRIVATE /arch:AVX2)
 	# Multiprocessor (Multithreaded) Compilation Support
 	target_compile_options(${PROJECT_NAME} PRIVATE /MP)
-	# Enabled updated __cplusplus macro (needed for bx compilation)
+	# Enabled updated __cplusplus macro
 	target_compile_options(${PROJECT_NAME} PRIVATE "/Zc:__cplusplus")
 else ()
 	#target_compile_options(${PROJECT_NAME} PRIVATE -Wa, -mbig-obj)

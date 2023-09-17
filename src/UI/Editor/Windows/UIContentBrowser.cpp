@@ -20,7 +20,7 @@ namespace puffin::ui
 			for (auto const& dirEntry : fs::directory_iterator(contentPath))
 			{
 				std::string pathName = dirEntry.path().string();
-				ImGui::Text(pathName.c_str());
+                ImGui::Text("%s", pathName.c_str());
 			}
 
 			end();

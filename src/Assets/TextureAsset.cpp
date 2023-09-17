@@ -69,17 +69,13 @@ namespace puffin::assets
 		}
 
 		// Fill Metadata from Info struct
-		json metadata;
-		metadata["compression"] = parseCompressionStringFromMode(info.compressionMode);
-		metadata["textureFormat"] = parseTextureStringFromFormat(info.textureFormat);
-		metadata["original_file"] = info.originalFile;
-		metadata["textureHeight"] = info.textureHeight;
-		metadata["textureWidth"] = info.textureWidth;
-		metadata["textureChannels"] = info.textureChannels;
-		metadata["originalSize"] = info.originalSize;
-
-		// Pass metadata to asset data struct
-		data.json = metadata.dump();
+		data.json["compression"] = info.compressionMode;
+		data.json["textureFormat"] = info.textureFormat;
+		data.json["original_file"] = info.originalFile;
+		data.json["textureHeight"] = info.textureHeight;
+		data.json["textureWidth"] = info.textureWidth;
+		data.json["textureChannels"] = info.textureChannels;
+		data.json["originalSize"] = info.originalSize;
 
 		return saveBinaryFile(fullPath, data);
 	}
@@ -146,24 +142,18 @@ namespace puffin::assets
 
 	// Private
 
-	TextureInfo TextureAsset::parseTextureInfo(const AssetData& data) const
+	TextureInfo TextureAsset::parseTextureInfo(const AssetData& data)
 	{
-		json metadata = json::parse(data.json);
-
 		// Fill Texture Info struct with metadata
 		TextureInfo info;
 
-		const std::string compressionMode = metadata["compression"];
-		info.compressionMode = parseCompressionMode(compressionMode.c_str());
-
-		const std::string textureFormat =  metadata["textureFormat"];
-		info.textureFormat = parseTextureFormat(textureFormat.c_str());
-
-		info.originalFile = metadata["original_file"];
-		info.textureHeight = metadata["textureHeight"];
-		info.textureWidth = metadata["textureWidth"];
-		info.textureChannels = metadata["textureChannels"];
-		info.originalSize = metadata["originalSize"];
+		info.compressionMode = data.json["compression"];
+		info.textureFormat = data.json["textureFormat"];
+		info.originalFile = data.json["original_file"];
+		info.textureHeight = data.json["textureHeight"];
+		info.textureWidth = data.json["textureWidth"];
+		info.textureChannels = data.json["textureChannels"];
+		info.originalSize = data.json["originalSize"];
 
 		return info;
 	}

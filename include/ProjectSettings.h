@@ -18,8 +18,9 @@ namespace puffin
 		{
 			std::string name;
 			std::string defaultScenePath;
+			std::vector<std::string> additionalContentDirectories = {};
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, defaultScenePath)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, defaultScenePath, additionalContentDirectories)
 		};
 
 		struct ProjectSettings
@@ -44,7 +45,7 @@ namespace puffin
 
 		static void LoadProject(fs::path file_path, ProjectFile& file)
 		{
-			if (!fs::exists(file_path))
+			if (!exists(file_path))
 				return;
 
 			std::ifstream is(file_path.string());

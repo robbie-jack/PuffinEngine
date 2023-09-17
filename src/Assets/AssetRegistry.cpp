@@ -7,6 +7,22 @@ namespace puffin::assets
 {
 	AssetRegistry* AssetRegistry::sInstance = nullptr;
 
+	void AssetRegistry::init(const io::ProjectFile& projectFile, const fs::path& projectPath)
+	{
+		mProjectName = projectFile.name;
+		mProjectRootPath = projectPath;
+		mProjectRootPath.remove_filename();
+
+		mEngineRootPath = findEngineRoot(fs::current_path());
+
+		mContentDirectories.push_back(mProjectRootPath / "content");
+
+		for (auto& dir : projectFile.additionalContentDirectories)
+		{
+			mContentDirectories.emplace_back(dir);
+		}
+	}
+
 	void AssetRegistry::setProjectName(const std::string& projectName)
 	{
 		mProjectName = projectName;
@@ -22,14 +38,19 @@ namespace puffin::assets
 		mProjectRootPath = projectRootPath;
 	}
 
-	fs::path AssetRegistry::setProjectRoot()
+	fs::path AssetRegistry::projectRoot()
 	{
 		return mProjectRootPath;
 	}
 
 	fs::path AssetRegistry::contentRoot() const
 	{
-		return mProjectRootPath / "content";
+		return mContentDirectories[0];
+	}
+
+	fs::path AssetRegistry::engineRoot() const
+	{
+		return mEngineRootPath;
 	}
 
 	void AssetRegistry::saveAssetCache() const
@@ -107,8 +128,35 @@ namespace puffin::assets
 		{
 			return getAsset(mPathToIdMap[path.string()]);
 		}
-		
+
 		// No asset with that path has been registered, return nullptr
 		return nullptr;
+	}
+
+	fs::path AssetRegistry::findEngineRoot(const fs::path& currentPath)
+	{
+		bool cmakeListsInDir = false;
+		fs::path localPath = currentPath;
+
+		while (!cmakeListsInDir)
+		{
+			for (const auto& entry : fs::directory_iterator(localPath))
+			{
+				const auto& entryPath = entry.path();
+
+				if (strcmp(entryPath.filename().string().c_str(), "CMakeLists.txt") == 0)
+				{
+					cmakeListsInDir = true;
+					break;
+				}
+			}
+
+			if (!cmakeListsInDir)
+			{
+				localPath = localPath.parent_path();
+			}
+		}
+
+		return localPath;
 	}
 }
