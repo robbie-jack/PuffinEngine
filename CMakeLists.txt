@@ -64,6 +64,7 @@ add_git_submodule("deps/OpenSimplexNoise")
 add_git_submodule("deps/tinygltf")
 add_git_submodule("deps/vkb")
 add_git_submodule("deps/vma-hpp")
+add_git_submodule("deps/jolt")
 
 checkout_git_branch("deps/imgui" "docking")
 
@@ -156,8 +157,8 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.h
 	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.h
 	# Scripting
-	${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
-	${HEADER_DIR}/Scripting/AngelScriptSystem.h
+	#${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
+	#${HEADER_DIR}/Scripting/AngelScriptSystem.h
 	# Types
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h
@@ -225,7 +226,7 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKDescriptors.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	# Scripting
-	${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
+	#${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
 	# UI
 	${SOURCE_DIR}/UI/Editor/UISubsystem.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp
@@ -280,8 +281,7 @@ add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
+#target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${ENKITS_SOURCES})
 
 message("")
@@ -309,7 +309,7 @@ sort_into_source_group(SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} Libraries/ImGui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} Libraries/OpenSimplexNoise)
 sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} Libraries/VKBootstrap)
-sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)
+#sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)
 sort_into_source_group(ENKITS_SOURCES ${ENKITS_DIR} Libraries/EnkiTS)
 
 message("")
@@ -320,18 +320,8 @@ set(PLATFORM ${CMAKE_HOST_SYSTEM_NAME})
 find_package(Vulkan REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
 
-# Include Jolt
-FetchContent_Declare(
-        JoltPhysics
-        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
-        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
-		SOURCE_SUBDIR "Build"
-)
-FetchContent_MakeAvailable(JoltPhysics)
-
 target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
-target_link_libraries(${PROJECT_NAME} Jolt)
 
 if (WIN32)
 	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/win64)
@@ -348,23 +338,25 @@ target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang${LIB_SUFFIX})
 # Define Debug Libs
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
+#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt${LIB_SUFFIX})
 
 # Define Release Libs
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
+#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt${LIB_SUFFIX})
 
 set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 target_include_directories(${PROJECT_NAME} PRIVATE third_party)
-target_include_directories(${PROJECT_NAME} PRIVATE third_party/angelscript)
+#target_include_directories(${PROJECT_NAME} PRIVATE third_party/angelscript)
 target_include_directories(${PROJECT_NAME} PRIVATE $ENV{VULKAN_SDK}/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/box2d/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/OpenSimplexNoise)
@@ -377,7 +369,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vkb/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/tinygltf)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/entt/src)
-target_include_directories(${PROJECT_NAME} PRIVATE ${JoltPhysics_SOURCE_DIR}/..)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/jolt)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 

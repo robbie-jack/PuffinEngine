@@ -35,3 +35,6 @@
 [submodule "deps/entt"]
 	path = deps/entt
 	url = https://github.com/skypjack/entt
+[submodule "deps/jolt"]
+	path = deps/jolt
+	url = https://github.com/jrouwe/JoltPhysics

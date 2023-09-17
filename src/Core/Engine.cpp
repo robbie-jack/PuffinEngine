@@ -3,7 +3,6 @@
 #include <chrono>
 #include <thread>
 
-//#include "Rendering/BGFX/BGFXRenderSystem.h"
 //#include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Assets/AssetRegistry.h"
 #include "Assets/MeshAsset.h"
@@ -15,7 +14,7 @@
 #include "Components/TransformComponent.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
-#include "Components/Scripting/AngelScriptComponent.h"
+//#include "Components/Scripting/AngelScriptComponent.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SceneSubsystem.h"
 #include "Core/SignalSubsystem.h"
@@ -24,7 +23,8 @@
 #include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
 #include "Procedural/ProceduralMeshGenSystem.h"
 #include "Rendering/Vulkan/VKRenderSystem.h"
-#include "Scripting/AngelScriptSystem.h"
+//#include "Scripting/AngelScriptSystem.h"
+#include "Physics/Jolt/JoltPhysicsSystem.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
 
@@ -82,18 +82,18 @@ namespace puffin::core
 		sceneData->registerComponent<physics::RigidbodyComponent2D>();
 		sceneData->registerComponent<physics::BoxComponent2D>();
 		sceneData->registerComponent<physics::CircleComponent2D>();
-		sceneData->registerComponent<scripting::AngelScriptComponent>();
+		//sceneData->registerComponent<scripting::AngelScriptComponent>();
 		sceneData->registerComponent<rendering::ProceduralMeshComponent>();
 		sceneData->registerComponent<procedural::PlaneComponent>();
 		sceneData->registerComponent<procedural::TerrainComponent>();
 		sceneData->registerComponent<procedural::IcoSphereComponent>();
 
 		// Systems
-		//registerSystem<Rendering::BGFX::BGFXRenderSystem>();
 		registerSystem<rendering::VKRenderSystem>();
-		registerSystem<physics::OnagerPhysicsSystem2D>();
+		//registerSystem<physics::OnagerPhysicsSystem2D>();
 		//registerSystem<Physics::Box2DPhysicsSystem>();
-		registerSystem<scripting::AngelScriptSystem>();
+		registerSystem<physics::JoltPhysicsSystem>();
+		//registerSystem<scripting::AngelScriptSystem>();
 		registerSystem<procedural::ProceduralMeshGenSystem>();
 
 		// Load Project Settings
@@ -511,11 +511,11 @@ namespace puffin::core
 		const PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
 		const PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
-		const fs::path materialPath1 = "shaders\\forward_shading\\forward_shading_default.pmaterial";
-		const fs::path materialPath2 = "shaders\\forward_shading\\forward_shading_chalet.pmaterial";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
 
-		PuffinID materialId1 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath1)->id();
-		PuffinID materialId2 = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(materialPath2)->id();
+		PuffinID materialInstId1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
+		PuffinID materialInstId2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
@@ -548,7 +548,7 @@ namespace puffin::core
 			auto& transform = registry->emplace<TransformComponent>(floorEntity);
 			transform.scale = Vector3f(xOffset, 1.0f, 1.0f);
 
-			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, materialId2);
+			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, materialInstId1);
 
 			registry->emplace<physics::BoxComponent2D>(floorEntity, Vector2f(xOffset, 1.0f));
 
@@ -575,7 +575,7 @@ namespace puffin::core
 
 				registry->emplace<TransformComponent>(boxEntity, position);
 
-				registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, materialId2);
+				registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, materialInstId1);
 
 				registry->emplace<physics::BoxComponent2D>(boxEntity, Vector2f(1.0f));
 

@@ -18,7 +18,8 @@ namespace puffin::physics
 		// Register all Jolt physics types
 		JPH::RegisterTypes();
 
-		mPhysicsSystem.Init(gMaxShapes, mNumBodyMutexes, mMaxBodyPairs, mMaxContactConstraints,
+		mPhysicsSystem = std::make_unique<JPH::PhysicsSystem>();
+		mPhysicsSystem->Init(gMaxShapes, mNumBodyMutexes, mMaxBodyPairs, mMaxContactConstraints,
 			mBPLayerInterfaceImpl, mObjectVsBroadphaseLayerFilter, mObjectVsObjectLayerFilter);
 	}
 

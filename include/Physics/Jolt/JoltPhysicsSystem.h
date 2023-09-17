@@ -40,7 +40,7 @@ namespace puffin::physics
 		const JPH::uint mMaxBodyPairs = 65536;
 		const JPH::uint mMaxContactConstraints = 10240;
 
-		JPH::PhysicsSystem mPhysicsSystem;
+		std::unique_ptr<JPH::PhysicsSystem> mPhysicsSystem;
 
 		JoltBPLayerInterfaceImpl mBPLayerInterfaceImpl;
 		JoltObjectLayerPairFilterImpl mObjectVsObjectLayerFilter;
