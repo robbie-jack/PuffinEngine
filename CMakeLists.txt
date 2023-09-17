@@ -105,9 +105,11 @@ set(HEADERS
 	${HEADER_DIR}/Components/Rendering/CameraComponent.h
 	${HEADER_DIR}/Components/Rendering/LightComponent.h
 	${HEADER_DIR}/Components/Rendering/MeshComponent.h
-	${HEADER_DIR}/Components/Physics/RigidbodyComponent2D.h
-	${HEADER_DIR}/Components/Physics/ShapeComponents2D.h
-	${HEADER_DIR}/Components/Physics/VelocityComponent.h
+	${HEADER_DIR}/Components/Physics/2D/RigidbodyComponent2D.h
+	${HEADER_DIR}/Components/Physics/2D/ShapeComponents2D.h
+	${HEADER_DIR}/Components/Physics/3D/VelocityComponent3D.h
+	${HEADER_DIR}/Components/Physics/3D/RigidbodyComponent3D.h
+	${HEADER_DIR}/Components/Physics/3D/ShapeComponents3D.h
 	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.h
 	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.h
 	# ECS
@@ -126,6 +128,7 @@ set(HEADERS
 	# Physics
 	${HEADER_DIR}/Physics/CollisionEvent.h
 	${HEADER_DIR}/Physics/PhysicsConstants.h
+	${HEADER_DIR}/Physics/BodyType.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsTypes2D.h
 	${HEADER_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsHelpers2D.h

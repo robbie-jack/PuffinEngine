@@ -562,6 +562,7 @@ namespace puffin::core
 
 			Vector3f positionOffset = endPosition - startPosition;
 			positionOffset.x /= numBodies;
+			positionOffset.z /= numBodies;
 
 			for (int i = 0; i < numBodies; i++)
 			{

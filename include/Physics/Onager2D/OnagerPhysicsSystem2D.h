@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Broadphases/Broadphase2D.h"
-#include "Components/Physics/RigidbodyComponent2D.h"
-#include "Components/Physics/ShapeComponents2D.h"
-#include "Components/Physics/VelocityComponent.h"
+#include "Components/Physics/2D/RigidbodyComponent2D.h"
+#include "Components/Physics/2D/ShapeComponents2D.h"
+#include "Components/Physics/2D/VelocityComponent2D.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Core/Engine.h"
 #include "Core/System.h"
@@ -51,8 +51,8 @@ namespace puffin::physics
 			registry->on_construct<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyRigidbody>(this);
 
-			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent>>();
-			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent>>();
+			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent2D>>();
+			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent2D>>();
 
 			registry->on_construct<BoxComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructBox>(this);
 			registry->on_update<BoxComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructBox>(this);
@@ -61,9 +61,6 @@ namespace puffin::physics
 			registry->on_construct<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructCircle>(this);
 			registry->on_update<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructCircle>(this);
 			registry->on_destroy<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyCircle>(this);
-
-			registry->on_construct<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructRigidbody>(this);
-			registry->on_destroy<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyRigidbody>(this);
 		}
 
 		void init();

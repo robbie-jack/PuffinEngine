@@ -5,12 +5,12 @@
 #include "ECS/EnTTSubsystem.h"
 #include "Physics/PhysicsConstants.h"
 #include "Types/PackedArray.h"
-#include "Components/Physics/RigidbodyComponent2D.h"
+#include "Components/Physics/2D/RigidbodyComponent2D.h"
 
 #include "box2d/b2_world.h"
 #include "box2d/box2d.h"
-#include "Components/Physics/ShapeComponents2D.h"
-#include "Components/Physics/VelocityComponent.h"
+#include "Components/Physics/2D/ShapeComponents2D.h"
+#include "Components/Physics/2D/VelocityComponent2D.h"
 
 namespace puffin
 {
@@ -49,8 +49,8 @@ namespace puffin::physics
 			registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onDestroyRigidbody>(this);
 
-			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent>>();
-			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent>>();
+			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent2D>>();
+			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent2D>>();
 
 			registry->on_construct<BoxComponent2D>().connect<&Box2DPhysicsSystem::onConstructBox>(this);
 			//registry->on_update<BoxComponent2D>().connect<&Box2DPhysicsSystem::OnConstructBox>(this);
@@ -59,9 +59,6 @@ namespace puffin::physics
 			registry->on_construct<CircleComponent2D>().connect<&Box2DPhysicsSystem::onConstructCircle>(this);
 			//registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSystem::OnConstructCircle>(this);
 			registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSystem::onDestroyCircle>(this);
-
-			registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onConstructRigidbody>(this);
-			registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onDestroyRigidbody>(this);
 		}
 
 		void beginPlay();

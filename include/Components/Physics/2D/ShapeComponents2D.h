@@ -11,16 +11,18 @@ namespace puffin::physics
 		Vector2f centreOfMass = Vector2f(0.0f);
 	};
 
-	struct CircleComponent2D : public ShapeComponent2D
+	struct CircleComponent2D : ShapeComponent2D
 	{
 		CircleComponent2D() = default;
+
+		CircleComponent2D(const float& radius_) : radius(radius_) {}
 
 		float radius = 0.5f;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(CircleComponent2D, centreOfMass, radius)
 	};
 
-	struct BoxComponent2D : public ShapeComponent2D
+	struct BoxComponent2D : ShapeComponent2D
 	{
 		BoxComponent2D() = default;
 

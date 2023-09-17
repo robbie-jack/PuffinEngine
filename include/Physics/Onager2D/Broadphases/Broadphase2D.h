@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components/Physics/RigidbodyComponent2D.h"
+#include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
 #include "Physics/Onager2D/Colliders/Collider2D.h"

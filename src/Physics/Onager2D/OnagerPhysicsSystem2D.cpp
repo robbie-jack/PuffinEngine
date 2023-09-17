@@ -2,7 +2,7 @@
 #include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
 
 #include "Components/TransformComponent.h"
-#include "Components/Physics/VelocityComponent.h"
+#include "Components/Physics/2D/VelocityComponent2D.h"
 #include "Core/Engine.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SignalSubsystem.h"
@@ -235,7 +235,7 @@ namespace puffin
 
 			const auto rbView = registry->view<RigidbodyComponent2D>();
 			const auto tView = registry->view<TransformComponent>();
-			const auto vView = registry->view<VelocityComponent>();
+			const auto vView = registry->view<VelocityComponent2D>();
 
 			if (rbView.empty())
 			{
@@ -252,7 +252,7 @@ namespace puffin
 				{
 					const auto entity = rbView[idx];
 
-					if (!registry->all_of<TransformComponent, VelocityComponent>(entity))
+					if (!registry->all_of<TransformComponent, VelocityComponent2D>(entity))
 						continue;
 
 					auto& rb = rbView.get<RigidbodyComponent2D>(entity);
@@ -284,7 +284,7 @@ namespace puffin
 				{
 					const auto entity = rbView[idx];
 
-					if (!registry->all_of<RigidbodyComponent2D, VelocityComponent>(entity))
+					if (!registry->all_of<RigidbodyComponent2D, VelocityComponent2D>(entity))
 						continue;
 
 					auto& transform = tView.get<TransformComponent>(entity);
@@ -337,7 +337,7 @@ namespace puffin
 					if (!registry->all_of<RigidbodyComponent2D, TransformComponent>(entity))
 						continue;
 
-					auto& velocity = vView.get<VelocityComponent>(entity);
+					auto& velocity = vView.get<VelocityComponent2D>(entity);
 					const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 
 					// If a body has no mass, then it is kinematic/static and should not experience forces
@@ -346,14 +346,14 @@ namespace puffin
 
 					velocity.linear.x = rb.linearVelocity.x;
 					velocity.linear.y = rb.linearVelocity.y;
-					velocity.angular.z = rb.angularVelocity;
+					velocity.angular = rb.angularVelocity;
 				}
 			});
 
 			enkiTSSubSystem->getTaskScheduler()->AddTaskSetToPipe(&velocityTask);
 			enkiTSSubSystem->getTaskScheduler()->WaitforTask(&velocityTask);
 
-			//const auto trvView = registry->view<TransformComponent, RigidbodyComponent2D, VelocityComponent>();
+			//const auto trvView = registry->view<TransformComponent, RigidbodyComponent2D, VelocityComponent2D>();
 			//for (auto [entity, transform, rb, velocity] : trvView.each())
 			//{
 			//	// If a body has no mass, then it is kinematic/static and should not experience forces

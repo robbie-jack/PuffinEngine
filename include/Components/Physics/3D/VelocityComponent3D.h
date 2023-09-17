@@ -6,7 +6,7 @@
 
 namespace puffin::physics
 {
-	struct VelocityComponent
+	struct VelocityComponent3D
 	{
 #ifdef PFN_USE_DOUBLE_PRECISION
 		Vector3d linear = Vector3d(0.0);
@@ -16,6 +16,6 @@ namespace puffin::physics
 
 		Vector3f angular = Vector3(0.0f);
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(VelocityComponent, linear, angular)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(VelocityComponent3D, linear, angular)
 	};
 }

@@ -6,8 +6,8 @@
 #include "Physics/Onager2D/Colliders/BoxCollider2D.h"
 #include "Physics/Onager2D/Colliders/CircleCollider2D.h"
 
-#include "Components/Physics/RigidbodyComponent2D.h"
-#include "Components/Physics/ShapeComponents2D.h"
+#include "Components/Physics/2D/RigidbodyComponent2D.h"
+#include "Components/Physics/2D/ShapeComponents2D.h"
 
 #include "MathHelpers.h"
 

@@ -5,9 +5,9 @@
 
 #include "Components/SceneObjectComponent.h"
 #include "Components/TransformComponent.h"
-#include "Components/Physics/RigidbodyComponent2D.h"
-#include "Components/Physics/ShapeComponents2D.h"
-#include "Components/Physics/VelocityComponent.h"
+#include "Components/Physics/2D/RigidbodyComponent2D.h"
+#include "Components/Physics/2D/ShapeComponents2D.h"
+#include "Components/Physics/2D/VelocityComponent2D.h"
 
 namespace puffin::physics
 {
@@ -36,7 +36,7 @@ namespace puffin::physics
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 		// Updated entity position/rotation from simulation
-		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent, VelocityComponent, const RigidbodyComponent2D>();
+		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent, VelocityComponent2D, const RigidbodyComponent2D>();
 
 		for (auto [entity, object, transform, velocity, rb] : bodyView.each())
 		{
@@ -50,7 +50,6 @@ namespace puffin::physics
 			// Update Velocity with Linear/Angular Velocity
 			velocity.linear.x = mBodies[id]->GetLinearVelocity().x;
 			velocity.linear.y = mBodies[id]->GetLinearVelocity().y;
-			velocity.angular.z = mBodies[id]->GetAngularVelocity();
 		}
 	}
 
