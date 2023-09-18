@@ -1,5 +1,7 @@
 #include "Physics/Jolt/JoltPhysicsSystem.h"
 
+#include <iostream>
+
 #include "Physics/PhysicsConstants.h"
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -40,6 +42,12 @@ namespace puffin::physics
 
 	void JoltPhysicsSystem::endPlay()
 	{
+		mShapeRefs.clear();
+
+		mBodiesToInit.clear();
+		mBoxesToInit.clear();
+		mSpheresToInit.clear();
+
 		mInternalPhysicsSystem = nullptr;
 		mJobSystem = nullptr;
 		mTempAllocator = nullptr;
@@ -148,9 +156,17 @@ namespace puffin::physics
 	{
 		if (mInternalPhysicsSystem)
 		{
-			JPH::BodyInterface& bodyInterface = mInternalPhysicsSystem->GetBodyInterface();
+			JPH::BoxShapeSettings boxShapeSettings(JPH::Vec3(box.halfExtent.x, box.halfExtent.y, box.halfExtent.z));
 
-			//JPH::BoxShapeSettings boxShapeSettings();
+			JPH::ShapeSettings::ShapeResult result = boxShapeSettings.Create();
+
+			if (result.HasError())
+			{
+				std::cout << "Failed to create box shape, id: " << id << " error: " << result.GetError() << std::endl;
+				return;
+			}
+
+			mShapeRefs[id] = result.Get();
 		}
 	}
 
@@ -166,6 +182,11 @@ namespace puffin::physics
 	void JoltPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent3D& transform,
 		const RigidbodyComponent3D& rb)
 	{
+		if (mInternalPhysicsSystem)
+		{
+			JPH::BodyInterface& bodyInterface = mInternalPhysicsSystem->GetBodyInterface();
 
+
+		}
 	}
 }
