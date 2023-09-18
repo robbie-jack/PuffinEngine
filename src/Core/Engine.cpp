@@ -93,8 +93,8 @@ namespace puffin::core
 		// Systems
 		registerSystem<rendering::VKRenderSystem>();
 		//registerSystem<physics::OnagerPhysicsSystem2D>();
-		registerSystem<physics::Box2DPhysicsSystem>();
-		//registerSystem<physics::JoltPhysicsSystem>();
+		//registerSystem<physics::Box2DPhysicsSystem>();
+		registerSystem<physics::JoltPhysicsSystem>();
 		//registerSystem<scripting::AngelScriptSystem>();
 		registerSystem<procedural::ProceduralMeshGenSystem>();
 
@@ -112,8 +112,8 @@ namespace puffin::core
 		{
 			// Create Default Scene in code -- used when scene serialization is changed
 			//defaultScene();
-			physicsScene2D();
-			//physicsScene3D();
+			//physicsScene2D();
+			physicsScene3D();
 			//proceduralScene();
 
 			sceneData->updateData(enttSubsystem);
@@ -630,50 +630,73 @@ namespace puffin::core
 			light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 		}
 
-		constexpr int numBodies = 1000;
-		constexpr float offset = numBodies * 2.0f;
-		constexpr std::array<float, 4> yOffsets = { 20.0f, 40.0f, 60.0f, 80.0f };
+		constexpr float floorWidth = 2000.0f;
+
+		std::vector<float> yOffsets;
+		for (int i = 0; i < 10; ++i)
+		{
+			yOffsets.push_back(i * 10.0f);
+		}
 
 		// Create Floor Entity
 		{
 			const auto floorEntity = enttSubsystem->createEntity("Floor");
 
-			auto& transform = registry->emplace<TransformComponent3D>(floorEntity);
-			transform.scale = Vector3f(offset, 1.0f, offset);
+			auto& transform = registry->emplace<TransformComponent3D>(floorEntity, Vector3d(0.0f), glm::angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0f)), Vector3f(floorWidth, 1.0f, floorWidth));
 
 			registry->emplace<rendering::MeshComponent>(floorEntity, meshId3, materialInstId1);
 
-			registry->emplace<physics::BoxComponent3D>(floorEntity, Vector3f(offset, 1.0f, offset));
+			registry->emplace<physics::BoxComponent3D>(floorEntity, Vector3f(floorWidth, 1.0f, floorWidth));
 
-			registry->emplace<physics::RigidbodyComponent2D>(floorEntity);
+			registry->emplace<physics::RigidbodyComponent3D>(floorEntity);
 		}
 
 		// Create Box Entities
 		{
-			const Vector3f startPosition(-offset, 0.f, offset);
-			const Vector3f endPosition(offset, 0.f, offset);
+			constexpr int numBodiesX = 50;
+			constexpr int numBodiesZ = 50;
+			constexpr int numBodies = numBodiesX * numBodiesZ;
+
+			constexpr float xStartPosition = floorWidth - 10.0f;
+			constexpr float zStartPosition = floorWidth - 10.0f;
+
+			const Vector3d startPosition(-xStartPosition, 0.f, -zStartPosition);
+			const Vector3d endPosition(xStartPosition, 0.f, zStartPosition);
 
 			Vector3f positionOffset = endPosition - startPosition;
-			positionOffset.x /= numBodies;
-			positionOffset.z /= numBodies;
+			positionOffset.x /= numBodiesX;
+			positionOffset.z /= numBodiesZ;
+
+			int i = 0;
+			for (int x = 0; x < numBodiesX; x++)
+			{
+				for (int z = 0; z < numBodiesZ; z++)
+				{
+					const std::string name = "Box";
+					const auto boxEntity = enttSubsystem->createEntity(name);
+
+					Vector3f position = startPosition;
+					position.x += positionOffset.x * static_cast<float>(x);
+					position.z += positionOffset.z * static_cast<float>(z);
+
+					const int yIdx = i % yOffsets.size();
+					position.y = yOffsets[yIdx];
+
+					registry->emplace<TransformComponent3D>(boxEntity, position);
+
+					registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, materialInstId1);
+
+					registry->emplace<physics::BoxComponent3D>(boxEntity, Vector3f(1.0f));
+
+					registry->emplace<physics::RigidbodyComponent3D>(boxEntity, physics::BodyType::Dynamic, 1.0f);
+
+					i++;
+				}
+			}
 
 			for (int i = 0; i < numBodies; i++)
 			{
-				const std::string name = "Box";
-				const auto boxEntity = enttSubsystem->createEntity(name);
-
-				Vector3f position = startPosition + positionOffset * static_cast<float>(i);
-
-				const int yIdx = i % yOffsets.size();
-				position.y = yOffsets[yIdx];
-
-				registry->emplace<TransformComponent3D>(boxEntity, position);
-
-				registry->emplace<rendering::MeshComponent>(boxEntity, meshId3, materialInstId1);
-
-				registry->emplace<physics::BoxComponent3D>(boxEntity, Vector3f(1.0f));
-
-				registry->emplace<physics::RigidbodyComponent2D>(boxEntity, physics::BodyType::Dynamic, 1.0f);
+				
 			}
 		}
 	}
