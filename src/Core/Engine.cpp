@@ -84,6 +84,9 @@ namespace puffin::core
 		sceneData->registerComponent<physics::RigidbodyComponent2D>();
 		sceneData->registerComponent<physics::BoxComponent2D>();
 		sceneData->registerComponent<physics::CircleComponent2D>();
+		sceneData->registerComponent<physics::RigidbodyComponent3D>();
+		sceneData->registerComponent<physics::BoxComponent3D>();
+		sceneData->registerComponent<physics::SphereComponent3D>();
 		//sceneData->registerComponent<scripting::AngelScriptComponent>();
 		sceneData->registerComponent<rendering::ProceduralMeshComponent>();
 		sceneData->registerComponent<procedural::PlaneComponent>();
@@ -635,7 +638,7 @@ namespace puffin::core
 		std::vector<float> yOffsets;
 		for (int i = 0; i < 10; ++i)
 		{
-			yOffsets.push_back(i * 10.0f);
+			yOffsets.push_back(i * 10.0f + 10.0f);
 		}
 
 		// Create Floor Entity
@@ -653,8 +656,8 @@ namespace puffin::core
 
 		// Create Box Entities
 		{
-			constexpr int numBodiesX = 50;
-			constexpr int numBodiesZ = 50;
+			constexpr int numBodiesX = 100;
+			constexpr int numBodiesZ = 100;
 			constexpr int numBodies = numBodiesX * numBodiesZ;
 
 			constexpr float xStartPosition = floorWidth - 10.0f;
@@ -692,11 +695,6 @@ namespace puffin::core
 
 					i++;
 				}
-			}
-
-			for (int i = 0; i < numBodies; i++)
-			{
-				
 			}
 		}
 	}

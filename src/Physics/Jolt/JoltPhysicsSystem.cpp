@@ -8,6 +8,8 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
 
 namespace puffin::physics
 {
@@ -30,6 +32,10 @@ namespace puffin::physics
 		mInternalPhysicsSystem->Init(gMaxShapes, mNumBodyMutexes, mMaxBodyPairs, mMaxContactConstraints,
 			mBPLayerInterfaceImpl, mObjectVsBroadphaseLayerFilter, mObjectVsObjectLayerFilter);
 
+		mInternalPhysicsSystem->SetGravity(mGravity);
+
+		updateTimeStep();
+
 		updateComponents();
 	}
 
@@ -37,13 +43,42 @@ namespace puffin::physics
 	{
 		updateComponents();
 
-		mInternalPhysicsSystem->Update(mEngine->deltaTime(), 1, mTempAllocator.get(), mJobSystem.get());
+		mInternalPhysicsSystem->Update(mFixedTimeStep, mCollisionSteps, mTempAllocator.get(), mJobSystem.get());
+
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+
+		// Updated entity position/rotation from simulation
+		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent3D, VelocityComponent3D, const RigidbodyComponent3D>();
+
+		for (auto [entity, object, transform, velocity, rb] : bodyView.each())
+		{
+			const auto& id = object.id;
+
+			// Update Transform from Rigidbody Position
+			registry->patch<TransformComponent3D>(entity, [&](auto& transform)
+			{
+				transform.position.x = mBodies[id]->GetCenterOfMassPosition().GetX();
+				transform.position.y = mBodies[id]->GetCenterOfMassPosition().GetY();
+				transform.position.z = mBodies[id]->GetCenterOfMassPosition().GetZ();
+				//transform.rotation = maths::radToDeg(-mBodies[id]->GetAngle());
+			});
+
+			// Update Velocity with Linear/Angular Velocity#
+			registry->patch<VelocityComponent3D>(entity, [&](auto& velocity)
+			{
+				velocity.linear.x = mBodies[id]->GetLinearVelocity().GetX();
+				velocity.linear.y = mBodies[id]->GetLinearVelocity().GetY();
+				velocity.linear.z = mBodies[id]->GetLinearVelocity().GetZ();
+			});
+		}
 	}
 
 	void JoltPhysicsSystem::endPlay()
 	{
+		mBodies.clear();
 		mShapeRefs.clear();
 
+		mBodiesToAdd.clear();
 		mBodiesToInit.clear();
 		mBoxesToInit.clear();
 		mSpheresToInit.clear();
@@ -134,6 +169,7 @@ namespace puffin::physics
 
 		// Update Rigidbodies
 		{
+			// Create Bodies
 			for (const auto& id : mBodiesToInit)
 			{
 				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
@@ -149,6 +185,25 @@ namespace puffin::physics
 			}
 
 			mBodiesToInit.clear();
+
+			// Add bodies to physics system
+			if (!mBodiesToAdd.empty())
+			{
+				std::vector<JPH::BodyID> bodyIDs;
+				bodyIDs.reserve(mBodiesToAdd.size());
+
+				for (const auto& id : mBodiesToAdd)
+				{
+					bodyIDs.emplace_back(mBodies[id]->GetID());
+				}
+
+				mBodiesToAdd.clear();
+
+				JPH::BodyInterface& bodyInterface = mInternalPhysicsSystem->GetBodyInterface();
+
+				const JPH::BodyInterface::AddState addState = bodyInterface.AddBodiesPrepare(bodyIDs.data(), bodyIDs.size());
+				bodyInterface.AddBodiesFinalize(bodyIDs.data(), bodyIDs.size(), addState, JPH::EActivation::Activate);
+			}
 		}
 	}
 
@@ -166,7 +221,7 @@ namespace puffin::physics
 				return;
 			}
 
-			mShapeRefs[id] = result.Get();
+			mShapeRefs.insert(id, result.Get());
 		}
 	}
 
@@ -175,18 +230,46 @@ namespace puffin::physics
 	{
 		if (mInternalPhysicsSystem)
 		{
-
+			// TODO - Implement Sphere Creation
 		}
 	}
 
 	void JoltPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent3D& transform,
 		const RigidbodyComponent3D& rb)
 	{
-		if (mInternalPhysicsSystem)
+		if (mInternalPhysicsSystem && mShapeRefs.contains(id))
 		{
 			JPH::BodyInterface& bodyInterface = mInternalPhysicsSystem->GetBodyInterface();
 
+			const JPH::EMotionType motionType = gJoltBodyType.at(rb.bodyType);
 
+			JPH::ObjectLayer objectLayer = {};
+
+			if (motionType == JPH::EMotionType::Static)
+			{
+				objectLayer = JoltLayers::NON_MOVING;
+			}
+			else
+			{
+				objectLayer = JoltLayers::MOVING;
+			}
+
+			JPH::BodyCreationSettings bodySettings(mShapeRefs[id], JPH::RVec3(transform.position.x, transform.position.y, transform.position.z),
+				JPH::QuatArg::sIdentity(), motionType, objectLayer);
+
+			bodySettings.mRestitution = rb.elasticity;
+
+			JPH::MassProperties massProperties = bodySettings.GetMassProperties();
+			massProperties.ScaleToMass(rb.mass);
+
+			bodySettings.mMassPropertiesOverride = massProperties;
+			bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
+
+			bodySettings.mFriction = 0.0f;
+
+			mBodies.insert(id, bodyInterface.CreateBody(bodySettings));
+
+			mBodiesToAdd.push_back(id);
 		}
 	}
 }

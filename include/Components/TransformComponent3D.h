@@ -7,7 +7,7 @@
 
 namespace puffin
 {
-//#ifdef PFN_USE_DOUBLE_PRECISION
+//#ifdef PFN_DOUBLE_PRECISION
 //	constexpr bool gUseDoublePrecision = true;
 //#else
 //	constexpr bool gUseDoublePrecision = false;
@@ -17,7 +17,7 @@ namespace puffin
 	{
 		TransformComponent3D() = default;
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 		TransformComponent3D(const Vector3d& position_) : position(position_) {}
 
 		TransformComponent3D(const Vector3d& position_, const maths::Quat& orientation_, const Vector3f& scale_) :
@@ -35,7 +35,7 @@ namespace puffin
 
 		TransformComponent3D& operator=(const TransformComponent3D& rhs) = default;
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 		Vector3d position = Vector3d(0.0);
 #else
 		Vector3f position = Vector3f(0.0f);

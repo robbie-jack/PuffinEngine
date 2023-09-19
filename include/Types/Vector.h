@@ -3,7 +3,6 @@
 #include "box2d/box2d.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
-//#include "bx/math.h"
 
 #include "nlohmann/json.hpp"
 
@@ -311,13 +310,6 @@ namespace puffin
 			z = vec.z;
 		}
 
-		/*Vector3(const bx::Vec3& vec)
-		{
-			x = vec.x;
-			y = vec.y;
-			z = vec.z;
-		}*/
-
 		Vector3(const Vector2<T>& vec)
 		{
 			x = vec.x;
@@ -337,17 +329,6 @@ namespace puffin
 			const glm::vec3 vec = {x, y, z};
 			return vec;
 		}
-
-		/*explicit operator bx::Vec3() const
-		{
-			const bx::Vec3 vec = 
-			{
-				static_cast<float>(x),
-				static_cast<float>(y),
-				static_cast<float>(z)
-			};
-			return vec;
-		}*/
 
 		operator Vector3<float>() const
 		{

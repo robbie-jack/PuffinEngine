@@ -1443,7 +1443,7 @@ namespace puffin::rendering
 					
 					const auto& mesh = registry->get<MeshComponent>(entity);
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 					Vector3d position = { 0.0 };
 #else
 					Vector3f position = { 0.0f };
@@ -1466,10 +1466,10 @@ namespace puffin::rendering
 							velocity = registry->get<physics::VelocityComponent3D>(entity);
 						}
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 						Vector3d interpolatedPosition = tempTransform.position + velocity.linear * mEngine->timeStepFixed();
 #else
-						Vector3f interpolatedPosition = transform.position + velocity.linear * m_engine->GetTimeStep();
+						Vector3f interpolatedPosition = tempTransform.position + velocity.linear * mEngine->timeStepFixed();
 #endif
 
 						position = maths::lerp(tempTransform.position, interpolatedPosition, t);

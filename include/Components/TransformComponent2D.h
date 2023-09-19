@@ -10,7 +10,7 @@ namespace puffin
 	{
 		TransformComponent2D() = default;
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 		TransformComponent2D(const Vector2d& position_) : position(position_) {}
 
 		TransformComponent2D(const Vector2d& position_, const float& rotation_, const Vector2f& scale_) :
@@ -28,7 +28,7 @@ namespace puffin
 
 		TransformComponent2D& operator=(const TransformComponent2D& rhs) = default;
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 		Vector2d position = Vector2d(0.0);
 #else
 		Vector2f position = Vector2f(0.0f);

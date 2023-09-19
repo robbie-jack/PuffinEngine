@@ -79,6 +79,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
+# Options
+option(DOUBLE_PRECISION "Enable Double Precision Support" OFF)
+
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
@@ -321,9 +324,6 @@ message("")
 
 set(PLATFORM ${CMAKE_HOST_SYSTEM_NAME})
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_USE_DOUBLE_PRECISION)
-option(PFN_USE_DOUBLE_PRECISION "Enable Double Precision Support" ON)
-
 # Get & Build Required Libraries
 find_package(Vulkan REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
@@ -357,7 +357,7 @@ target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${L
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
 
-if (PFN_USE_DOUBLE_PRECISION)
+if (DOUBLE_PRECISION)
 	target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
 	target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
 else ()
@@ -391,6 +391,10 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+
+if (DOUBLE_PRECISION)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_DOUBLE_PRECISION)
+endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_SIMD_AVX2)
