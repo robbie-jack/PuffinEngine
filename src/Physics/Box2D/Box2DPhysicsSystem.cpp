@@ -1,5 +1,7 @@
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
 
+#if PFN_BOX2D_PHYSICS
+
 #include "MathHelpers.h"
 #include "Core/Engine.h"
 #include "Core/SignalSubsystem.h"
@@ -318,3 +320,5 @@ namespace puffin::physics
 		}
 	}
 }
+
+#endif // PFN_BOX2D_PHYSICS

@@ -1,5 +1,7 @@
 #include "Physics/Jolt/JoltPhysicsSystem.h"
 
+#if PFN_JOLT_PHYSICS
+
 #include <iostream>
 
 #include "Physics/PhysicsConstants.h"
@@ -273,3 +275,5 @@ namespace puffin::physics
 		}
 	}
 }
+
+#endif // PFN_JOLT_PHYSICS

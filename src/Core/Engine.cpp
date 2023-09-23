@@ -20,11 +20,9 @@
 #include "Core/SignalSubsystem.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
-#include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
-#include "Physics/Box2D/Box2DPhysicsSystem.h"
-#include "Physics/Jolt/JoltPhysicsSystem.h"
 #include "Procedural/ProceduralMeshGenSystem.h"
 #include "Rendering/Vulkan/VKRenderSystem.h"
+#include "Physics/PhysicsCore.h"
 //#include "Scripting/AngelScriptSystem.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
@@ -81,24 +79,22 @@ namespace puffin::core
 		sceneData->registerComponent<rendering::LightComponent>();
 		sceneData->registerComponent<rendering::ShadowCasterComponent>();
 		sceneData->registerComponent<rendering::CameraComponent>();
-		sceneData->registerComponent<physics::RigidbodyComponent2D>();
-		sceneData->registerComponent<physics::BoxComponent2D>();
-		sceneData->registerComponent<physics::CircleComponent2D>();
-		sceneData->registerComponent<physics::RigidbodyComponent3D>();
-		sceneData->registerComponent<physics::BoxComponent3D>();
-		sceneData->registerComponent<physics::SphereComponent3D>();
+		
 		//sceneData->registerComponent<scripting::AngelScriptComponent>();
 		sceneData->registerComponent<rendering::ProceduralMeshComponent>();
 		sceneData->registerComponent<procedural::PlaneComponent>();
 		sceneData->registerComponent<procedural::TerrainComponent>();
 		sceneData->registerComponent<procedural::IcoSphereComponent>();
 
+		physics::registerComponents(sceneData);
+
 		// Systems
 		registerSystem<rendering::VKRenderSystem>();
-		//registerSystem<physics::OnagerPhysicsSystem2D>();
-		//registerSystem<physics::Box2DPhysicsSystem>();
-		registerSystem<physics::JoltPhysicsSystem>();
+
+		physics::registerPhysicsSystems(shared_from_this());
+
 		//registerSystem<scripting::AngelScriptSystem>();
+
 		registerSystem<procedural::ProceduralMeshGenSystem>();
 
 		// Load Project Settings

@@ -9,8 +9,6 @@ Assets & Shaders used while developing Puffin are located here: https://github.c
 
 Libraries/APIs:
 
-bgfx - Rendering API - https://github.com/bkaradzic/bgfx
-
 Vulkan - Low Level Rendering API - https://www.vulkan.org/
 
 Vulkan-Hpp - C++ Vulkan Headers - https://github.com/KhronosGroup/Vulkan-Hpp
@@ -23,7 +21,11 @@ GLFW - Window Creation/Management - https://www.glfw.org/
 
 ImGui - Editor UI - https://github.com/ocornut/imgui
 
-Assimp - Model Importer https://www.assimp.org/
+tinyobjloader - OBJ Loader - https://github.com/tinyobjloader/tinyobjloader
+
+tiny glTF - GLTF Loader - https://github.com/syoyo/tinygltf
+
+STB - Image Loader - https://github.com/nothings/stb
 
 AngelScript - Scripting - https://www.angelcode.com/angelscript/
 
@@ -33,9 +35,13 @@ nlohmann/json - Json Parsing - https://github.com/nlohmann/json
 
 LZ4 - LZ4 Compression - https://github.com/lz4/lz4
 
+Compressonator - Texture and 3D Model Compression - https://github.com/GPUOpen-Tools/compressonator
+
 Open Simplex Noise - C++ Noise Gen Library - https://github.com/deerel/OpenSimplexNoise
 
 Box2D - 2D Physics - https://box2d.org/
+
+Jolt - 3D Physics - https://github.com/jrouwe/JoltPhysics
 
 enkiTS - Multithreaded Task Scheduler - https://github.com/dougbinks/enkiTS
 

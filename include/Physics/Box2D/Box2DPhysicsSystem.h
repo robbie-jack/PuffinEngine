@@ -1,5 +1,7 @@
 #pragma once
 
+#if PFN_BOX2D_PHYSICS
+
 #include "Box2DContactListener.h"
 #include "Core/Engine.h"
 #include "ECS/EnTTSubsystem.h"
@@ -112,3 +114,5 @@ namespace puffin::physics
 		void cleanupFixture(PuffinID id);
 	};
 }
+
+#endif // PFN_BOX2D_PHYSICS

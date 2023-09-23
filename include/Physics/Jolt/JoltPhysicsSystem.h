@@ -1,5 +1,7 @@
 #pragma once
 
+#if PFN_JOLT_PHYSICS
+
 #ifdef PFN_DOUBLE_PRECISION
 #define JPH_DOUBLE_PRECISION 1
 #endif
@@ -18,6 +20,8 @@
 #include "Core/Engine.h"
 #include "Core/System.h"
 #include "ECS/EnTTSubsystem.h"
+#include "Types/PackedArray.h"
+#include "Physics/PhysicsConstants.h"
 #include "Components/TransformComponent3D.h"
 #include "Components/Physics/3D/RigidbodyComponent3D.h"
 #include "Components/Physics/3D/ShapeComponents3D.h"
@@ -123,3 +127,5 @@ namespace puffin::physics
 		void initRigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
 	};
 }
+
+#endif // PFN_JOLT_PHYSICS

@@ -1,6 +1,8 @@
 
 #include "Physics/Onager2D/OnagerPhysicsSystem2D.h"
 
+#if PFN_ONAGER2D_PHYSICS
+
 #include "Components/TransformComponent2D.h"
 #include "Components/Physics/2D/VelocityComponent2D.h"
 #include "Core/Engine.h"
@@ -484,3 +486,5 @@ namespace puffin
 		}
 	}
 }
+
+#endif // PFN_ONAGER2D_PHYSICS

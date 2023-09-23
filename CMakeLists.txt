@@ -80,7 +80,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 # Options
-option(DOUBLE_PRECISION "Enable Double Precision Support" OFF)
+option(DOUBLE_PRECISION_SUPPORT "Enable Double Precision Support" OFF)
+option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" OFF)
+option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" ON)
+option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
 
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -134,6 +137,7 @@ set(HEADERS
 	${HEADER_DIR}/Physics/CollisionEvent.h
 	${HEADER_DIR}/Physics/PhysicsConstants.h
 	${HEADER_DIR}/Physics/BodyType.h
+	${HEADER_DIR}/Physics/PhysicsCore.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsTypes2D.h
 	${HEADER_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsHelpers2D.h
@@ -344,26 +348,31 @@ endif()
 target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang${LIB_SUFFIX})
 
 # Define Debug Libs
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
 #target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
 
 # Define Release Libs
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
 #target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
 
-if (DOUBLE_PRECISION)
-	target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
-	target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
-else ()
-	target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt${LIB_SUFFIX})
-	target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt${LIB_SUFFIX})
-endif ()
+if (BOX2D_PHYSICS_SUPPORT)
+	target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d${LIB_SUFFIX})
+	target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
+endif()
+
+if (JOLT_PHYSICS_SUPPORT)
+	if (DOUBLE_PRECISION_SUPPORT)
+		target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
+		target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
+	else ()
+		target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt${LIB_SUFFIX})
+		target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt${LIB_SUFFIX})
+	endif ()
+endif()
 
 set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
@@ -392,8 +401,21 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY
 	
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
-if (DOUBLE_PRECISION)
+# Add definitions for supported functionality
+if (DOUBLE_PRECISION_SUPPORT)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_DOUBLE_PRECISION)
+endif()
+
+if (BOX2D_PHYSICS_SUPPORT)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_BOX2D_PHYSICS)
+endif()
+
+if (JOLT_PHYSICS_SUPPORT)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_JOLT_PHYSICS)
+endif()
+
+if (ONAGER2D_PHYSICS_SUPPORT)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_ONAGER2D_PHYSICS)
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)

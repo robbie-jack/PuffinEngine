@@ -1,5 +1,7 @@
 #pragma once
 
+#if PFN_ONAGER2D_PHYSICS
+
 #include "Broadphases/Broadphase2D.h"
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
@@ -145,3 +147,5 @@ namespace puffin::physics
 
 	};
 }
+
+#endif // PFN_ONAGER2D_PHYSICS
