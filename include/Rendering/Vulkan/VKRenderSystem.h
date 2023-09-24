@@ -137,8 +137,6 @@ namespace puffin::rendering
 		const vk::Queue& graphicsQueue() const { return mGraphicsQueue; }
 		bool isReBarEnabled() const { return mIsReBarEnabled; }
 
-		void onInputEvent(const input::InputEvent& inputEvent);
-
 		void onConstructMesh(entt::registry& registry, entt::entity entity);
 		void onUpdateMesh(entt::registry& registry, entt::entity entity);
 		void onUpdateTransform(entt::registry& registry, entt::entity entity);
@@ -208,14 +206,6 @@ namespace puffin::rendering
 		DeletionQueue mDeletionQueue;
 
 		EditorCamera mEditorCam;
-		bool mMoveLeft = false;
-		bool mMoveRight = false;
-		bool mMoveForward = false;
-		bool mMoveBackward = false;
-		bool mMoveUp = false;
-		bool mMoveDown = false;
-
-		RingBuffer<input::InputEvent> mInputEvents;
 
 		bool mIsInitialized = false; // Indicated initialization completed without any failures
 		bool mIsReBarEnabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
@@ -243,8 +233,6 @@ namespace puffin::rendering
 
 		void initImGui();
 		void initOffscreenImGuiTextures(OffscreenData& offscreenData);
-
-		void processEvents();
 
 		void processComponents();
 		void updateCameraComponent(const TransformComponent3D& transform, CameraComponent& camera) const;

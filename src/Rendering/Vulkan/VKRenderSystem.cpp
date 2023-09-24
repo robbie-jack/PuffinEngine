@@ -117,16 +117,6 @@ namespace puffin::rendering
 
 		mEditorCam.position = {0.0f, 0.0f, 50.0f};
 
-		// Connect Signals
-		const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
-
-		signalSubsystem->connect<input::InputEvent>(
-			[&](const input::InputEvent& inputEvent)
-			{
-				shared_from_this()->onInputEvent(inputEvent);
-			}
-		);
-
 		mRenderables.reserve(gMaxObjects);
 		mCachedObjectData.reserve(gMaxObjects);
 
@@ -137,8 +127,6 @@ namespace puffin::rendering
 
 	void VKRenderSystem::render()
 	{
-		processEvents();
-
 		updateRenderData();
 
 		processComponents();
@@ -179,11 +167,6 @@ namespace puffin::rendering
 
 			mIsInitialized = false;
 		}
-	}
-
-	void VKRenderSystem::onInputEvent(const input::InputEvent& inputEvent)
-	{
-		mInputEvents.push(inputEvent);
 	}
 
 	void VKRenderSystem::onConstructMesh(entt::registry& registry, entt::entity entity)
@@ -817,85 +800,6 @@ namespace puffin::rendering
 		}
 	}
 
-	void VKRenderSystem::processEvents()
-	{
-		input::InputEvent inputEvent;
-		while (mInputEvents.pop(inputEvent))
-		{
-			if (inputEvent.actionName == "CamMoveLeft")
-			{
-				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
-				{
-					mMoveLeft = true;
-				}
-				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
-				{
-					mMoveLeft = false;
-				}
-			}
-
-			if (inputEvent.actionName == "CamMoveRight")
-			{
-				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
-				{
-					mMoveRight = true;
-				}
-				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
-				{
-					mMoveRight = false;
-				}
-			}
-
-			if (inputEvent.actionName == "CamMoveForward")
-			{
-				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
-				{
-					mMoveForward = true;
-				}
-				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
-				{
-					mMoveForward = false;
-				}
-			}
-
-			if (inputEvent.actionName == "CamMoveBackward")
-			{
-				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
-				{
-					mMoveBackward = true;
-				}
-				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
-				{
-					mMoveBackward = false;
-				}
-			}
-
-			if (inputEvent.actionName == "CamMoveUp")
-			{
-				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
-				{
-					mMoveUp = true;
-				}
-				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
-				{
-					mMoveUp = false;
-				}
-			}
-
-			if (inputEvent.actionName == "CamMoveDown")
-			{
-				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
-				{
-					mMoveDown = true;
-				}
-				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
-				{
-					mMoveDown = false;
-				}
-			}
-		}
-	}
-
 	void VKRenderSystem::processComponents()
 	{
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
@@ -951,32 +855,32 @@ namespace puffin::rendering
 		if (inputSubsystem->isCursorLocked())
 		{
 			// Camera Movement
-			if (mMoveLeft && !mMoveRight)
+			if (inputSubsystem->pressed("CamMoveLeft") && !inputSubsystem->pressed("CamMoveRight"))
 			{
 				mEditorCam.position += mEditorCam.right * mEditorCam.speed * mEngine->deltaTime();
 			}
 
-			if (mMoveRight && !mMoveLeft)
+			if (inputSubsystem->pressed("CamMoveRight") && !inputSubsystem->pressed("CamMoveLeft"))
 			{
 				mEditorCam.position -= mEditorCam.right * mEditorCam.speed * mEngine->deltaTime();
 			}
 
-			if (mMoveForward && !mMoveBackward)
+			if (inputSubsystem->pressed("CamMoveForward") && !inputSubsystem->pressed("CamMoveBackward"))
 			{
 				mEditorCam.position += mEditorCam.direction * mEditorCam.speed * mEngine->deltaTime();
 			}
 
-			if (mMoveBackward && !mMoveForward)
+			if (inputSubsystem->pressed("CamMoveBackward") && !inputSubsystem->pressed("CamMoveForward"))
 			{
 				mEditorCam.position -= mEditorCam.direction * mEditorCam.speed * mEngine->deltaTime();
 			}
 
-			if (mMoveUp && !mMoveDown)
+			if (inputSubsystem->pressed("CamMoveUp") && !inputSubsystem->pressed("CamMoveDown"))
 			{
 				mEditorCam.position += mEditorCam.up * mEditorCam.speed * mEngine->deltaTime();
 			}
 
-			if (mMoveDown && !mMoveUp)
+			if (inputSubsystem->pressed("CamMoveDown") && !inputSubsystem->pressed("CamMoveUp"))
 			{
 				mEditorCam.position -= mEditorCam.up * mEditorCam.speed * mEngine->deltaTime();
 			}

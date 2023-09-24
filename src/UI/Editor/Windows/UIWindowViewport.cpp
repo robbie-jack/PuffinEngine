@@ -54,16 +54,16 @@ namespace puffin
 					if (ImGui::Button(mPlayButtonLabel.c_str()))
 					{
 						mEngine->play();
+					}
 
-						const core::PlayState playState = mEngine->playState();
-						if (playState == core::PlayState::JustPaused || playState == core::PlayState::JustStopped)
-						{
-							mPlayButtonLabel = "Play";
-						}
-						else
-						{
-							mPlayButtonLabel = "Pause";
-						}
+					const core::PlayState playState = mEngine->playState();
+					if (playState == core::PlayState::Playing)
+					{
+						mPlayButtonLabel = "Pause";
+					}
+					else
+					{
+						mPlayButtonLabel = "Play";
 					}
 
 					if (ImGui::Button("Stop"))

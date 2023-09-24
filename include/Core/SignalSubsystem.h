@@ -2,38 +2,85 @@
 
 #include "Subsystem.h"
 
-#include <vector>
+#include "Types/PackedArray.h"
+
 #include <unordered_map>
 #include <memory>
-#include <typeindex>
 #include <functional>
+#include <string>
 
 namespace puffin::core
 {
-	class ISignalHandler
-	{
-	};
-
-	template<typename SignalT>
-	class SignalHandler : public ISignalHandler
+	template<typename... Params>
+	class Slot
 	{
 	public:
 
-		SignalHandler(const std::function<void(const SignalT&)>& func) : m_func(func) {}
-		~SignalHandler() = default;
+		Slot(const std::function<void(const Params&...)>& callback) : mCallback(callback) {}
+		~Slot() = default;
 
-		void signal(const SignalT& signal)
+		void execute(Params... args) const
 		{
-			m_func(signal);
+			mCallback(args...);
 		}
 
 	private:
 
-		std::function<void(const SignalT&)> m_func;
+		std::function<void(const Params&...)> mCallback;
 
 	};
 
-	typedef std::vector<std::shared_ptr<ISignalHandler>> SignalHandlerVector;
+	class ISignal
+	{
+	public:
+
+		virtual ~ISignal() = default;
+		virtual const std::string& name() = 0;
+
+	};
+
+	template<typename... Params>
+	class Signal final : public ISignal
+	{
+	public:
+
+		Signal(const std::string& name) : mName(name) {}
+		~Signal() override = default;
+
+		size_t connect(const std::function<void(const Params&...)>& callback)
+		{
+			size_t slotID = mNextSlotID;
+			mNextSlotID++;
+
+			mSlots.emplace(slotID, Slot<Params...>(callback));
+
+			return slotID;
+		}
+
+		void disconnect(const size_t& slotID)
+		{
+			mSlots.erase(slotID);
+		}
+
+		void emit(Params... params)
+		{
+			for (const Slot<Params...>& slot : mSlots)
+			{
+				slot.execute(params...);
+			}
+		}
+
+		const std::string& name() override { return mName; }
+
+	private:
+
+		std::string mName;
+		size_t mNextSlotID = 1;
+		PackedVector<Slot<Params...>> mSlots;
+
+	};
+
+	typedef std::shared_ptr<ISignal> ISignalPtr;
 
 	class SignalSubsystem : public Subsystem
 	{
@@ -47,54 +94,75 @@ namespace puffin::core
 
 		void shutdown()
 		{
-			mSignalHandlers.clear();
+			mSignals.clear();
 		}
 
-		template<typename SignalT>
-		void signal(const SignalT& signal)
+		template<typename... Params>
+		std::shared_ptr<Signal<Params...>> createSignal(const std::string& name)
 		{
-			if (const std::type_index typeIndex = typeid(SignalT); mSignalHandlers.count(typeIndex) == 1)
-			{
-				const auto& signals = mSignalHandlers[typeIndex];
+			mSignals.emplace(name, std::make_shared<Signal<Params...>>(name));
 
-				// Check if any signals of this type have been connected
-				for (int i = 0; i < signals.size(); i++)
-				{
-					getSignalHandler<SignalT>(i)->signal(signal);
-				}
-			}
+			return std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
 		}
 
-		template<typename SignalT>
-		void connect(const std::function<void(const SignalT&)>& func)
+		template<typename... Params>
+		void addSignal(std::shared_ptr<Signal<Params...>> signal)
 		{
-			const std::type_index typeIndex = typeid(SignalT);
-
-			// Create signal vector if one does not yet exist
-			if (mSignalHandlers.count(typeIndex) == 0)
-			{
-				mSignalHandlers.emplace(typeIndex, SignalHandlerVector());
-			}
-
-			// Create new signal handler
-			mSignalHandlers[typeIndex].push_back(std::make_shared<SignalHandler<SignalT>>(func));
+			mSignals.emplace(signal->name(), signal);
 		}
 
-	private:
-
-		std::unordered_map<std::type_index, SignalHandlerVector> mSignalHandlers;
-
-		template<typename SignalT>
-		std::shared_ptr<SignalHandler<SignalT>> getSignalHandler(const size_t index)
+		template<typename... Params>
+		std::shared_ptr<Signal<Params...>> getSignal(const std::string& name)
 		{
-			const std::type_index typeIndex = typeid(SignalT);
-
-			if (mSignalHandlers.count(typeIndex) == 0 || mSignalHandlers[typeIndex].empty())
+			if (mSignals.count(name) == 0)
 			{
 				return nullptr;
 			}
 
-			return std::static_pointer_cast<SignalHandler<SignalT>>(mSignalHandlers[typeIndex][index]);
+			return mSignals.at(name);
 		}
+
+		template<typename... Params>
+		size_t connect(const std::string& name, const std::function<void(const Params&...)>& callback)
+		{
+			if (mSignals.count(name) == 0)
+			{
+				return 0;
+			}
+
+			auto& signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			return signal->connect(callback);
+		}
+
+		template<typename... Params>
+		void disconnect(const std::string& name, const size_t& slotID)
+		{
+			if (mSignals.count(name) == 0)
+			{
+				return;
+			}
+
+			auto& signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			signal->disconnenct(slotID);
+		}
+
+		template<typename... Params>
+		bool emit(const std::string& name, Params... params)
+		{
+			if (mSignals.count(name) == 0)
+			{
+				return false;
+			}
+
+			auto& signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			signal->emit(params...);
+
+			return true;
+		}
+
+	private:
+
+		std::unordered_map<std::string, ISignalPtr> mSignals;
+
 	};
 }

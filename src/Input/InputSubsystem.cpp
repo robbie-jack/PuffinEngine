@@ -97,7 +97,7 @@ namespace puffin
 					{
 						auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 
-						signalSubsystem->signal(InputEvent(action.name, action.state));
+						//signalSubsystem->signal("Spacebar", InputEvent(action.name, action.state));
 
 						stateChanged = false;
 					}
@@ -172,22 +172,22 @@ namespace puffin
 			return InputAction();
 		}
 
-		bool InputSubsystem::isJustPressed(const std::string& name) const
+		bool InputSubsystem::justPressed(const std::string& name) const
 		{
 			return mActions.at(name).state == KeyState::JustPressed ? true : false;
 		}
 
-		bool InputSubsystem::isPressed(const std::string& name) const
+		bool InputSubsystem::pressed(const std::string& name) const
 		{
 			return mActions.at(name).state == KeyState::Pressed ? true : false;
 		}
 
-		bool InputSubsystem::isJustReleased(const std::string& name) const
+		bool InputSubsystem::justReleased(const std::string& name) const
 		{
 			return mActions.at(name).state == KeyState::JustReleased ? true : false;
 		}
 
-		bool InputSubsystem::isReleased(const std::string& name) const
+		bool InputSubsystem::released(const std::string& name) const
 		{
 			return mActions.at(name).state == KeyState::Released ? true : false;
 		}
