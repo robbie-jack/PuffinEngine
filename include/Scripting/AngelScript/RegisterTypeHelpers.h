@@ -1,6 +1,5 @@
 #pragma once
 
-//#define ANGELSCRIPT_DLL_LIBRARY_IMPORT
 #include "angelscript/angelscript.h"
 
 #include "Components/TransformComponent2D.h"
@@ -83,47 +82,40 @@ namespace puffin::scripting
 	/*
 	* TransformComponent
 	*/
-//	static void DeconstructTransformComponent(TransformComponent* thisPointer)
-//	{
-//		((TransformComponent*)thisPointer)->~TransformComponent();
-//	}
-//
-//	static STransformComponent* TransformComponentFactory()
-//	{
-//		return new STransformComponent();
-//	}
-//
-//	static void RegisterTransformComponent(asIScriptEngine* scriptEngine)
-//	{
-//		int r;
-//
-//		// Register Required Types
-//		RegisterVector3f(scriptEngine);
-//		RegisterVector3d(scriptEngine);
-//
-//		// Register Class Constructor/Deconstructor
-//		r = scriptEngine->RegisterObjectType("STransformComponent", sizeof(STransformComponent), asOBJ_REF | asOBJ_NOCOUNT); assert(r >= 0);
-//		r = scriptEngine->RegisterObjectBehaviour("STransformComponent", asBEHAVE_FACTORY, "STransformComponent@ f()", asFUNCTION(TransformComponentFactory), asCALL_CDECL); assert(r >= 0);
-//
-//		// Register Class Properties
-//#ifdef PFN_USE_DOUBLE_PRECISION
-//		r = scriptEngine->RegisterObjectProperty("STransformComponent", "Vector3d position", asOFFSET(TransformComponent, position)); assert(r >= 0);
-//#else
-//		r = scriptEngine->RegisterObjectProperty("STransformComponent", "Vector3f position", asOFFSET(TransformComponent, position)); assert(r >= 0);
-//#endif
-//
-//		r = scriptEngine->RegisterObjectProperty("STransformComponent", "Vector3f rotation", asOFFSET(TransformComponent, orientation)); assert(r >= 0);
-//		r = scriptEngine->RegisterObjectProperty("STransformComponent", "Vector3f scale", asOFFSET(TransformComponent, scale)); assert(r >= 0);
-//
-//		// Register Operator Overloads
-//		r = scriptEngine->RegisterObjectMethod("STransformComponent", "STransformComponent& opAssign(const STransformComponent &in)", asMETHODPR(STransformComponent, operator=, (const STransformComponent&), STransformComponent&), asCALL_THISCALL);
-//
-//		// Register ECS World Access Functions
-//		/*r = scriptEngine->RegisterGlobalFunction("STransformComponent@ GetTransformComponent(uint64)",
-//			asMETHOD(entt::registry, get<TransformComponent>), asCALL_THISCALL_ASGLOBAL, registry); assert(r >= 0);*/
-//
-//		/*r = scriptEngine->RegisterGlobalFunction("bool HasTransformComponent(uint64)",
-//			asMETHOD(ECS::World, HasComponent<TransformComponent>), asCALL_THISCALL_ASGLOBAL, world); assert(r >= 0);*/
-//	}
+	static void DeconstructTransformComponent(TransformComponent3D* thisPointer)
+	{
+		((TransformComponent3D*)thisPointer)->~TransformComponent3D();
+	}
+
+	static TransformComponent3D* TransformComponentFactory()
+	{
+		return new TransformComponent3D();
+	}
+
+	static void RegisterTransformComponent(asIScriptEngine* scriptEngine)
+	{
+		int r;
+
+		// Register Required Types
+		RegisterVector3f(scriptEngine);
+		RegisterVector3d(scriptEngine);
+
+		// Register Class Constructor/Deconstructor
+		r = scriptEngine->RegisterObjectType("TransformComponent3D", sizeof(TransformComponent3D), asOBJ_REF | asOBJ_NOCOUNT); assert(r >= 0);
+		r = scriptEngine->RegisterObjectBehaviour("TransformComponent3D", asBEHAVE_FACTORY, "TransformComponent3D@ f()", asFUNCTION(TransformComponentFactory), asCALL_CDECL); assert(r >= 0);
+
+		// Register Class Properties
+#ifdef PFN_USE_DOUBLE_PRECISION
+		r = scriptEngine->RegisterObjectProperty("TransformComponent3D", "Vector3d position", asOFFSET(TransformComponent3D, position)); assert(r >= 0);
+#else
+		r = scriptEngine->RegisterObjectProperty("TransformComponent3D", "Vector3f position", asOFFSET(TransformComponent3D, position)); assert(r >= 0);
+#endif
+
+		//r = scriptEngine->RegisterObjectProperty("TransformComponent3D", "Vector3f rotation", asOFFSET(TransformComponent3D, orientation)); assert(r >= 0);
+		r = scriptEngine->RegisterObjectProperty("TransformComponent3D", "Vector3f scale", asOFFSET(TransformComponent3D, scale)); assert(r >= 0);
+
+		// Register Operator Overloads
+		r = scriptEngine->RegisterObjectMethod("TransformComponent3D", "TransformComponent3D& opAssign(const TransformComponent3D &in)", asMETHODPR(TransformComponent3D, operator=, (const TransformComponent3D&), TransformComponent3D&), asCALL_THISCALL);
+	}
 }
 

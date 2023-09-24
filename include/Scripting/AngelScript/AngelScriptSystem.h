@@ -13,6 +13,7 @@
 #include "Physics/CollisionEvent.h"
 #include "Types/RingBuffer.h"
 #include "Types/UUID.h"
+#include "Scripting/AngelScript/AngelScriptEngineInterface.h"
 
 #include <map>
 #include <memory>
@@ -23,17 +24,7 @@
 
 namespace puffin::scripting
 {
-	struct ScriptCallback
-	{
-		PuffinID entity;
-		asIScriptFunction* func = nullptr;
-		void* object = nullptr;
-		asITypeInfo* objectType = nullptr;
-	};
-
-	typedef std::map<PuffinID, ScriptCallback> ScriptCallbackMap;
-
-	class AngelScriptSystem : public core::System
+	class AngelScriptSystem : public core::System, public std::enable_shared_from_this<AngelScriptSystem>
 	{
 	public:
 
@@ -72,6 +63,7 @@ namespace puffin::scripting
 		asIScriptEngine* mScriptEngine = nullptr;
 		asIScriptContext* mCtx = nullptr;
 
+		std::unique_ptr<AngelScriptEngineInterface> mEngineInterface;
 		std::shared_ptr<audio::AudioSubsystem> mAudioSubsystem;
 
 		PuffinID mCurrentEntityID; // Entity ID for currently executing script
@@ -127,13 +119,6 @@ namespace puffin::scripting
 		// Script Callbacks
 		ScriptCallback bindCallback(PuffinID entity, asIScriptFunction* cb) const;
 		void releaseCallback(ScriptCallback& scriptCallback) const;
-
-		// Input Functions
-		void bindOnInputPressed(PuffinID entity, const std::string& actionName, asIScriptFunction* cb);
-		void bindOnInputReleased(PuffinID entity, const std::string& actionName, asIScriptFunction *cb);
-
-		void releaseOnInputPressed(PuffinID entity, const std::string& actionName);
-		void releaseOnInputReleased(PuffinID entity, const std::string& actionName);
 
 		// Collision Functions
 		void bindOnCollisionBegin(PuffinID entity, asIScriptFunction* cb);

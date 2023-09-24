@@ -171,6 +171,7 @@ set(HEADERS
 	# Scripting
 	${HEADER_DIR}/Scripting/AngelScript/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScript/AngelScriptSystem.h
+	${HEADER_DIR}/Scripting/AngelScript/AngelScriptEngineInterface.h
 	# Types
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h
@@ -239,6 +240,7 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptSystem.cpp
+	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptEngineInterface.cpp
 	# UI
 	${SOURCE_DIR}/UI/Editor/UISubsystem.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp

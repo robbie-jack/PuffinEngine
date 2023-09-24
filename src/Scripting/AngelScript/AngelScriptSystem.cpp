@@ -58,6 +58,8 @@ namespace puffin::scripting
 
 	AngelScriptSystem::~AngelScriptSystem()
 	{
+		mEngineInterface = nullptr;
+
 		// Shut down the engine
 		mScriptEngine->ShutDownAndRelease();
 		mScriptEngine = nullptr;
@@ -67,6 +69,8 @@ namespace puffin::scripting
 	{
 		// Configure Engine and Setup Global Function Callbacks
 		configureEngine();
+
+		mEngineInterface = std::make_unique<AngelScriptEngineInterface>(mEngine, shared_from_this(), mScriptEngine);
 
 		mAudioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
 
@@ -107,13 +111,13 @@ namespace puffin::scripting
 		// Initialize new scripts
 		initScripts();
 
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
-
 		// Run new scripts start method
 		startScripts();
 		
 		// Run all scripts update method
 		{
+			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+
 			const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
 
 			for (auto [entity, object, script] : scriptView.each())
@@ -233,24 +237,13 @@ namespace puffin::scripting
 		}
 
 		// Define Global Methods for Scripts
-		r = mScriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptSystem, getDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = mScriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptSystem, getFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 		r = mScriptEngine->RegisterGlobalFunction("uint64 GetEntityID()", asMETHOD(AngelScriptSystem, getEntityID), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		r = mScriptEngine->RegisterGlobalFunction("void PlaySoundEffect(uint64, float, bool, bool)", asMETHODPR(AngelScriptSystem, playSoundEffect, (uint64_t, float, bool, bool), void), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 		r = mScriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSystem, playSoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// Register Components and their constructors, functions and properties
-		//RegisterTransformComponent(mScriptEngine);
-
-		// Register Input Funcdefs and Bind/Release Callback Methods
-		r = mScriptEngine->RegisterFuncdef("void OnInputPressedCallback()"); assert(r >= 0);
-		r = mScriptEngine->RegisterFuncdef("void OnInputReleasedCallback()"); assert(r >= 0);
-		
-		r = mScriptEngine->RegisterGlobalFunction("void BindOnInputPressed(uint64, const string &in, OnInputPressedCallback @cb)", asMETHOD(AngelScriptSystem, bindOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = mScriptEngine->RegisterGlobalFunction("void BindOnInputReleased(uint64, const string &in, OnInputReleasedCallback @cb)", asMETHOD(AngelScriptSystem, bindOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnInputPressed(uint64, const string &in)", asMETHOD(AngelScriptSystem, releaseOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnInputReleased(uint64, const string &in)", asMETHOD(AngelScriptSystem, releaseOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		RegisterTransformComponent(mScriptEngine);
 
 		// Register Collision Funcdefs and Bind/Release Callback Methods
 		r = mScriptEngine->RegisterFuncdef("void OnCollisionBeginCallback(uint64)"); assert(r >= 0);
@@ -749,42 +742,6 @@ namespace puffin::scripting
 		scriptCallback.func = nullptr;
 		scriptCallback.object = nullptr;
 		scriptCallback.objectType = nullptr;
-	}
-
-	// Input Callbacks
-
-	void AngelScriptSystem::bindOnInputPressed(PuffinID entity, const std::string& actionName, asIScriptFunction* cb)
-	{
-		// Release existing callback function, if one exists
-		releaseOnInputPressed(entity, actionName);
-
-		mOnInputPressedCallbacks[actionName][entity] = bindCallback(entity, cb);
-	}
-
-	void AngelScriptSystem::bindOnInputReleased(PuffinID entity, const std::string& actionName, asIScriptFunction* cb)
-	{
-		// Release existing callback function, if one exists
-		releaseOnInputReleased(entity, actionName);
-
-		mOnInputPressedCallbacks[actionName][entity] = bindCallback(entity, cb);
-	}
-
-	void AngelScriptSystem::releaseOnInputPressed(PuffinID entity, const std::string& actionName)
-	{
-		if (mOnInputPressedCallbacks[actionName].count(entity))
-		{
-			releaseCallback(mOnInputPressedCallbacks[actionName][entity]);
-			mOnInputPressedCallbacks[actionName].erase(entity);
-		}
-	}
-
-	void AngelScriptSystem::releaseOnInputReleased(PuffinID entity, const std::string& actionName)
-	{
-		if (mOnInputPressedCallbacks[actionName].count(entity))
-		{
-			releaseCallback(mOnInputPressedCallbacks[actionName][entity]);
-			mOnInputPressedCallbacks[actionName].erase(entity);
-		}
 	}
 
 	// Collision Callbacks
