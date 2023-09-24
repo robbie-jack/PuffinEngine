@@ -824,11 +824,11 @@ namespace puffin::rendering
 		{
 			if (inputEvent.actionName == "CamMoveLeft")
 			{
-				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
+				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
 				{
 					mMoveLeft = true;
 				}
-				else if (inputEvent.actionState == puffin::input::KeyState::Released)
+				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
 				{
 					mMoveLeft = false;
 				}
@@ -836,11 +836,11 @@ namespace puffin::rendering
 
 			if (inputEvent.actionName == "CamMoveRight")
 			{
-				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
+				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
 				{
 					mMoveRight = true;
 				}
-				else if (inputEvent.actionState == puffin::input::KeyState::Released)
+				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
 				{
 					mMoveRight = false;
 				}
@@ -848,11 +848,11 @@ namespace puffin::rendering
 
 			if (inputEvent.actionName == "CamMoveForward")
 			{
-				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
+				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
 				{
 					mMoveForward = true;
 				}
-				else if (inputEvent.actionState == puffin::input::KeyState::Released)
+				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
 				{
 					mMoveForward = false;
 				}
@@ -860,11 +860,11 @@ namespace puffin::rendering
 
 			if (inputEvent.actionName == "CamMoveBackward")
 			{
-				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
+				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
 				{
 					mMoveBackward = true;
 				}
-				else if (inputEvent.actionState == puffin::input::KeyState::Released)
+				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
 				{
 					mMoveBackward = false;
 				}
@@ -872,11 +872,11 @@ namespace puffin::rendering
 
 			if (inputEvent.actionName == "CamMoveUp")
 			{
-				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
+				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
 				{
 					mMoveUp = true;
 				}
-				else if (inputEvent.actionState == puffin::input::KeyState::Released)
+				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
 				{
 					mMoveUp = false;
 				}
@@ -884,11 +884,11 @@ namespace puffin::rendering
 
 			if (inputEvent.actionName == "CamMoveDown")
 			{
-				if (inputEvent.actionState == puffin::input::KeyState::Pressed)
+				if (inputEvent.actionState == puffin::input::KeyState::JustPressed)
 				{
 					mMoveDown = true;
 				}
-				else if (inputEvent.actionState == puffin::input::KeyState::Released)
+				else if (inputEvent.actionState == puffin::input::KeyState::JustReleased)
 				{
 					mMoveDown = false;
 				}

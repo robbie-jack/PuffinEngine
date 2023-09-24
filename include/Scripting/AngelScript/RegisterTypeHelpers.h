@@ -61,7 +61,7 @@ namespace puffin::scripting
 
 	static void DeconstructVector3d(void* memory)
 	{
-		((Vector3d*)memory)->~Vector3d();
+		static_cast<Vector3d*>(memory)->~Vector3d();
 	}
 
 	static void RegisterVector3d(asIScriptEngine* scriptEngine)
@@ -84,7 +84,7 @@ namespace puffin::scripting
 	*/
 	static void DeconstructTransformComponent(TransformComponent3D* thisPointer)
 	{
-		((TransformComponent3D*)thisPointer)->~TransformComponent3D();
+		thisPointer->~TransformComponent3D();
 	}
 
 	static TransformComponent3D* TransformComponentFactory()
@@ -116,6 +116,13 @@ namespace puffin::scripting
 
 		// Register Operator Overloads
 		r = scriptEngine->RegisterObjectMethod("TransformComponent3D", "TransformComponent3D& opAssign(const TransformComponent3D &in)", asMETHODPR(TransformComponent3D, operator=, (const TransformComponent3D&), TransformComponent3D&), asCALL_THISCALL);
+	}
+
+	static void registerInputEvent(asIScriptEngine* scriptEngine)
+	{
+		int r = 0;
+
+		r = scriptEngine->RegisterObjectType("InputEvent", sizeof(input::InputEvent), asOBJ_REF | asOBJ_NOCOUNT); assert(r >= 0);
 	}
 }
 

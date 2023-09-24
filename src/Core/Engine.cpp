@@ -182,12 +182,12 @@ namespace puffin::core
 		}
 
 		const auto inputSubsystem = getSubsystem<input::InputSubsystem>();
-		if (inputSubsystem->getAction("Play").state == input::KeyState::Pressed)
+		if (inputSubsystem->getAction("Play").state == input::KeyState::JustPressed)
 		{
 			play();
 		}
 
-		if (inputSubsystem->getAction("Restart").state == input::KeyState::Pressed)
+		if (inputSubsystem->getAction("Restart").state == input::KeyState::JustPressed)
 		{
 			restart();
 		}

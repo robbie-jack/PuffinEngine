@@ -146,7 +146,7 @@ namespace puffin::scripting
 			destroyScript(script);
 		}
 
-		// Release Input Pressed Callbacks
+		// Release Input JustPressed Callbacks
 		for (auto& [string, callbacks] : mOnInputPressedCallbacks)
 		{
 			for (auto& [id, callback] : callbacks)
@@ -157,7 +157,7 @@ namespace puffin::scripting
 
 		mOnInputPressedCallbacks.clear();
 
-		// Release Input Released Callbacks
+		// Release Input JustReleased Callbacks
 		for (auto& [string, callbacks] : mOnInputReleasedCallbacks)
 		{
 			for (auto& [id, callback] : callbacks)
@@ -509,7 +509,7 @@ namespace puffin::scripting
 		//input::InputEvent inputEvent;
 		//while (m_inputEvents->Pop(inputEvent))
 		//{
-		//	if (m_onInputPressedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::Pressed)
+		//	if (m_onInputPressedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::JustPressed)
 		//	{
 		//		for (const auto& pair : m_onInputPressedCallbacks[inputEvent.actionName])
 		//		{
@@ -519,7 +519,7 @@ namespace puffin::scripting
 		//		}
 		//	}
 
-		//	if (m_onInputReleasedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::Released)
+		//	if (m_onInputReleasedCallbacks.count(inputEvent.actionName) && inputEvent.actionState == puffin::input::KeyState::JustReleased)
 		//	{
 		//		for (const auto& pair : m_onInputReleasedCallbacks[inputEvent.actionName])
 		//		{

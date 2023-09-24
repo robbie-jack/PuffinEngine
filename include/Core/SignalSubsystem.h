@@ -55,8 +55,10 @@ namespace puffin::core
 		{
 			if (const std::type_index typeIndex = typeid(SignalT); mSignalHandlers.count(typeIndex) == 1)
 			{
+				const auto& signals = mSignalHandlers[typeIndex];
+
 				// Check if any signals of this type have been connected
-				for (int i = 0; i < mSignalHandlers[typeIndex].size(); i++)
+				for (int i = 0; i < signals.size(); i++)
 				{
 					getSignalHandler<SignalT>(i)->signal(signal);
 				}

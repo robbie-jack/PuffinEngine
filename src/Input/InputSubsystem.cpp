@@ -44,7 +44,7 @@ namespace puffin
 			}
 		}
 
-		void puffin::input::InputSubsystem::update()
+		void InputSubsystem::update()
 		{
 			glfwPollEvents();
 
@@ -53,7 +53,7 @@ namespace puffin
 			bool stateChanged = false;
 
 			// Loop through current actions and update action states
-			for (auto& action : mActions)
+			for (auto& [key, action] : mActions)
 			{
 				stateChanged = false;
 
@@ -64,30 +64,30 @@ namespace puffin
 
 					if (state == GLFW_PRESS)
 					{
-						if (!stateChanged && action.state == KeyState::Up)
+						if (!stateChanged && action.state == KeyState::Released)
 						{
-							action.state = KeyState::Pressed;
+							action.state = KeyState::JustPressed;
 							stateChanged = true;
 						}
 
-						if (!stateChanged && action.state == KeyState::Pressed)
+						if (!stateChanged && action.state == KeyState::JustPressed)
 						{
-							action.state = KeyState::Held;
+							action.state = KeyState::Pressed;
 							stateChanged = true;
 						}
 					}
 
 					if (state == GLFW_RELEASE)
 					{
-						if (!stateChanged && action.state == KeyState::Held)
+						if (!stateChanged && action.state == KeyState::Pressed)
 						{
-							action.state = KeyState::Released;
+							action.state = KeyState::JustReleased;
 							stateChanged = true;
 						}
 
-						if (!stateChanged && action.state == KeyState::Released)
+						if (!stateChanged && action.state == KeyState::JustReleased)
 						{
-							action.state = KeyState::Up;
+							action.state = KeyState::Released;
 							stateChanged = true;
 						}
 					}
@@ -105,7 +105,7 @@ namespace puffin
 			}
 
 			// Update Mouse
-			if (getAction("CursorSwitch").state == KeyState::Pressed)
+			if (getAction("CursorSwitch").state == KeyState::JustPressed)
 			{
 				if (mCursorLocked == true)
 				{
@@ -138,43 +138,58 @@ namespace puffin
 			mWindow = nullptr;
 		}
 
-		void puffin::input::InputSubsystem::addAction(std::string name, int key)
+		void InputSubsystem::addAction(std::string name, int key)
 		{
 			InputAction new_action;
 			new_action.name = name;
 			new_action.id = mNextId;
 			new_action.keys.push_back(key);
-			new_action.state = KeyState::Up;
+			new_action.state = KeyState::Released;
 
-			mActions.push_back(new_action);
+			mActions.emplace(name, new_action);
 
 			mNextId++;
 		}
 
-		void puffin::input::InputSubsystem::addAction(std::string name, std::vector<int> keys)
+		void InputSubsystem::addAction(std::string name, std::vector<int> keys)
 		{
 			InputAction new_action;
 			new_action.name = name;
 			new_action.id = mNextId;
 			new_action.keys = keys;
-			new_action.state = KeyState::Up;
+			new_action.state = KeyState::Released;
 
-			mActions.push_back(new_action);
+			mActions.emplace(name, new_action);
 
 			mNextId++;
 		}
 
-		InputAction puffin::input::InputSubsystem::getAction(std::string name) const
+		InputAction InputSubsystem::getAction(std::string name) const
 		{
-			for (auto action : mActions)
-			{
-				if (action.name == name)
-				{
-					return action;
-				}
-			}
+			if (mActions.find(name) != mActions.end())
+				return mActions.at(name);
 
 			return InputAction();
+		}
+
+		bool InputSubsystem::isJustPressed(const std::string& name) const
+		{
+			return mActions.at(name).state == KeyState::JustPressed ? true : false;
+		}
+
+		bool InputSubsystem::isPressed(const std::string& name) const
+		{
+			return mActions.at(name).state == KeyState::Pressed ? true : false;
+		}
+
+		bool InputSubsystem::isJustReleased(const std::string& name) const
+		{
+			return mActions.at(name).state == KeyState::JustReleased ? true : false;
+		}
+
+		bool InputSubsystem::isReleased(const std::string& name) const
+		{
+			return mActions.at(name).state == KeyState::Released ? true : false;
 		}
 	}
 }

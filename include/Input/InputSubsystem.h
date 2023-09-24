@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 namespace puffin
 {
@@ -52,6 +53,11 @@ namespace puffin
 			void addAction(std::string name, std::vector<int> keys);
 			[[nodiscard]] InputAction getAction(std::string name) const;
 
+			bool isJustPressed(const std::string& name) const;
+			bool isPressed(const std::string& name) const;
+			bool isJustReleased(const std::string& name) const;
+			bool isReleased(const std::string& name) const;
+
 			double getMouseXOffset() const { return (mXPos - mLastXPos) * mSensitivity; }
 			double getMouseYOffset() const { return (mYPos - mLastYPos) * mSensitivity; }
 			double& sensitivity() { return mSensitivity; }
@@ -65,7 +71,7 @@ namespace puffin
 			bool mFirstMouse;
 
 			int mNextId = 1;
-			std::vector<InputAction> mActions;
+			std::unordered_map<std::string, InputAction> mActions;
 			GLFWwindow* mWindow;
 		};
 	}
