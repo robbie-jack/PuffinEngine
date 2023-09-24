@@ -14,7 +14,7 @@
 #include "Components/TransformComponent3D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
-//#include "Components/Scripting/AngelScriptComponent.h"
+#include "Components/Scripting/AngelScriptComponent.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SceneSubsystem.h"
 #include "Core/SignalSubsystem.h"
@@ -23,7 +23,7 @@
 #include "Procedural/ProceduralMeshGenSystem.h"
 #include "Rendering/Vulkan/VKRenderSystem.h"
 #include "Physics/PhysicsCore.h"
-//#include "Scripting/AngelScriptSystem.h"
+#include "Scripting/AngelScript/AngelScriptSystem.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
 
@@ -80,7 +80,7 @@ namespace puffin::core
 		sceneData->registerComponent<rendering::ShadowCasterComponent>();
 		sceneData->registerComponent<rendering::CameraComponent>();
 		
-		//sceneData->registerComponent<scripting::AngelScriptComponent>();
+		sceneData->registerComponent<scripting::AngelScriptComponent>();
 		sceneData->registerComponent<rendering::ProceduralMeshComponent>();
 		sceneData->registerComponent<procedural::PlaneComponent>();
 		sceneData->registerComponent<procedural::TerrainComponent>();
@@ -93,7 +93,7 @@ namespace puffin::core
 
 		physics::registerPhysicsSystems(shared_from_this());
 
-		//registerSystem<scripting::AngelScriptSystem>();
+		registerSystem<scripting::AngelScriptSystem>();
 
 		registerSystem<procedural::ProceduralMeshGenSystem>();
 
@@ -110,9 +110,9 @@ namespace puffin::core
 		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
 		{
 			// Create Default Scene in code -- used when scene serialization is changed
-			//defaultScene();
+			defaultScene();
 			//physicsScene2D();
-			physicsScene3D();
+			//physicsScene3D();
 			//proceduralScene();
 
 			sceneData->updateData(enttSubsystem);
@@ -493,9 +493,9 @@ namespace puffin::core
 		shadow.width = 4096;
 		shadow.height = 4096;
 
-		/*auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
+		auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		script.name = "ExampleScript";
-		script.dir = contentRootPath / "scripts\\Example.pscript";*/
+		script.dir = contentRootPath / "scripts\\Example.pscript";
 	}
 
 	void Engine::physicsScene2D()

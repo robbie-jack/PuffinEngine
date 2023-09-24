@@ -1,7 +1,6 @@
 #pragma once
 
 // AngelScript Includes
-#define ANGELSCRIPT_DLL_LIBRARY_IMPORT
 #include "angelscript/angelscript.h"
 #include "angelscript/scriptbuilder/scriptbuilder.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h"
@@ -43,16 +42,16 @@ namespace puffin::scripting
 
 		void setupCallbacks() override
 		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "AngelScriptSystem: Init");
-			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&]() { beginPlay(); }, "AngelScriptSystem: BeginPlay");
-			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "AngelScriptSystem: FixedUpdate");
-			mEngine->registerCallback(core::ExecutionStage::Update, [&]() { update(); }, "AngelScriptSystem: Update");
-			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "AngelScriptSystem: EndPlay");
+			mEngine->registerCallback(core::ExecutionStage::Init, [&] { init(); }, "AngelScriptSystem: Init", 250);
+			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "AngelScriptSystem: BeginPlay");
+			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "AngelScriptSystem: FixedUpdate");
+			mEngine->registerCallback(core::ExecutionStage::Update, [&] { update(); }, "AngelScriptSystem: Update");
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "AngelScriptSystem: EndPlay");
 
 			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
-			registry->on_update<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
+			//registry->on_update<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
 			registry->on_destroy<AngelScriptComponent>().connect<&AngelScriptSystem::onDestroyScript>(this);
 		}
 
@@ -90,11 +89,16 @@ namespace puffin::scripting
 		ScriptCallbackMap mOnCollisionBeginCallbacks;
 		ScriptCallbackMap mOnCollisionEndCallbacks;
 
-		std::unordered_set<entt::entity> mScriptsToInit;
+		std::unordered_set<PuffinID> mScriptsToInit;
+		std::unordered_set<PuffinID> mScriptsToStart;
+		std::unordered_set<PuffinID> mScriptsToStop;
 
 		void configureEngine();
 
-		void initContextAndScripts();
+		void initContext();
+		void initScripts();
+		void startScripts();
+		void stopScripts();
 
 		void initializeScript(PuffinID entity, AngelScriptComponent& script);
 		void compileScript(AngelScriptComponent& script) const;

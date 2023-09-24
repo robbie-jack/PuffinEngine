@@ -276,9 +276,9 @@ namespace puffin::io
 
 		void setupCallbacks() override
 		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 250);
+			mEngine->registerCallback(core::ExecutionStage::Init, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "SceneSubsystem: BeginPlay", 0);
-			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 250);
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
 		}
 
 		void loadAndInit() const

@@ -1,9 +1,9 @@
-#include "Scripting/AngelScriptSystem.h"
+#include "Scripting/AngelScript/AngelScriptSystem.h"
 
 #include "Assets/AssetRegistry.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Core/Engine.h"
-#include "Scripting/RegisterTypeHelpers.h"
+#include "Scripting/AngelScript/RegisterTypeHelpers.h"
 #include "Components/SceneObjectComponent.h"
 
 #include "entt/entity/registry.hpp"
@@ -70,22 +70,14 @@ namespace puffin::scripting
 
 		mAudioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
 
-		initContextAndScripts();
+		initContext();
+		initScripts();
 	}
 
 	void AngelScriptSystem::beginPlay()
 	{
 		// Execute Start Methods
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
-
-		const auto scriptView = registry->view<const SceneObjectComponent, const AngelScriptComponent>();
-
-		for (auto [entity, object, script] : scriptView.each())
-		{
-			mCurrentEntityID = object.id;
-
-			prepareAndExecuteScriptMethod(script.obj, script.startFunc);
-		}
+		startScripts();
 	}
 
 	void AngelScriptSystem::fixedUpdate()
@@ -108,18 +100,29 @@ namespace puffin::scripting
 	{
 		// Process Input Events
 		processEvents();
-		
-		// Initialize/Cleanup marked components
+
+		// Destroy old scripts
+		stopScripts();
+
+		// Initialize new scripts
+		initScripts();
+
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
-
-		for (auto [entity, object, script] : scriptView.each())
+		// Run new scripts start method
+		startScripts();
+		
+		// Run all scripts update method
 		{
-			mCurrentEntityID = object.id;
+			const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
 
-			// Execute Update function if one was found for script
-			prepareAndExecuteScriptMethod(script.obj, script.updateFunc);
+			for (auto [entity, object, script] : scriptView.each())
+			{
+				mCurrentEntityID = object.id;
+
+				// Execute Update function if one was found for script
+				prepareAndExecuteScriptMethod(script.obj, script.updateFunc);
+			}
 		}
 	}
 
@@ -128,13 +131,15 @@ namespace puffin::scripting
 		// Execute Script Stop Methods
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto scriptView = registry->view<const SceneObjectComponent, const TransformComponent, AngelScriptComponent>();
+		const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
 
-		for (auto [entity, object, transform, script] : scriptView.each())
+		for (auto [entity, object, script] : scriptView.each())
 		{
 			mCurrentEntityID = object.id;
 
 			prepareAndExecuteScriptMethod(script.obj, script.stopFunc);
+
+			destroyScript(script);
 		}
 
 		// Release Input Pressed Callbacks
@@ -181,23 +186,25 @@ namespace puffin::scripting
 			mCtx->Release();
 		}
 
-		initContextAndScripts();
+		initContext();
+		initScripts();
 	}
 
 	void AngelScriptSystem::onConstructScript(entt::registry& registry, entt::entity entity)
 	{
-		const auto object = registry.get<SceneObjectComponent>(entity);
+		const auto& object = registry.get<SceneObjectComponent>(entity);
 
-		mScriptsToInit.emplace(entity);
+		mScriptsToInit.emplace(object.id);
 	}
 
 	void AngelScriptSystem::onDestroyScript(entt::registry& registry, entt::entity entity)
 	{
-		auto script = registry.get<AngelScriptComponent>(entity);
+		if (registry.any_of<SceneObjectComponent>(entity))
+		{
+			const auto& object = registry.get<SceneObjectComponent>(entity);
 
-		prepareAndExecuteScriptMethod(script.obj, script.stopFunc);
-
-		destroyScript(script);
+			mScriptsToStop.emplace(object.id);
+		}
 	}
 
 	void AngelScriptSystem::configureEngine()
@@ -234,7 +241,7 @@ namespace puffin::scripting
 		r = mScriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSystem, playSoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// Register Components and their constructors, functions and properties
-		RegisterTransformComponent(mScriptEngine);
+		//RegisterTransformComponent(mScriptEngine);
 
 		// Register Input Funcdefs and Bind/Release Callback Methods
 		r = mScriptEngine->RegisterFuncdef("void OnInputPressedCallback()"); assert(r >= 0);
@@ -262,7 +269,7 @@ namespace puffin::scripting
 		// without having to recompile all the scripts.
 	}
 
-	void AngelScriptSystem::initContextAndScripts()
+	void AngelScriptSystem::initContext()
 	{
 		mCtx = mScriptEngine->CreateContext();
 
@@ -271,18 +278,66 @@ namespace puffin::scripting
 			cout << "Failed to create the context." << endl;
 			mScriptEngine->Release();
 		}
+	}
 
+	void AngelScriptSystem::initScripts()
+	{
 		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
-
-		for (auto [entity, object, script] : scriptView.each())
+		for (const auto id : mScriptsToInit)
 		{
-			initializeScript(object.id, script);
+			entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+
+			auto& script = registry->get<AngelScriptComponent>(entity);
+
+			initializeScript(id, script);
 
 			ExportEditablePropertiesToScriptData(script, script.serializedData);
+
+			mScriptsToStart.emplace(id);
 		}
+
+		mScriptsToInit.clear();
 	}
+
+	void AngelScriptSystem::startScripts()
+	{
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+
+		for (const auto id : mScriptsToStart)
+		{
+			entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+
+			const auto& script = registry->get<AngelScriptComponent>(entity);
+
+			mCurrentEntityID = id;
+
+			prepareAndExecuteScriptMethod(script.obj, script.startFunc);
+		}
+
+		mScriptsToStart.clear();
+	}
+
+	void AngelScriptSystem::stopScripts()
+	{
+		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+
+		for (const auto id : mScriptsToStop)
+		{
+			entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+
+			auto& script = registry->get<AngelScriptComponent>(entity);
+
+			mCurrentEntityID = id;
+
+			prepareAndExecuteScriptMethod(script.obj, script.stopFunc);
+
+			destroyScript(script);
+		}
+
+		mScriptsToStop.clear();
+	}
+
 
 	void AngelScriptSystem::initializeScript(PuffinID entity, AngelScriptComponent& script)
 	{
@@ -441,10 +496,12 @@ namespace puffin::scripting
 	void AngelScriptSystem::destroyScript(AngelScriptComponent& script)
 	{
 		script.type->Release();
+		script.type = nullptr;
 
 		if (script.obj != nullptr)
 		{
 			script.obj->Release();
+			script.obj = nullptr;
 		}
 
 		script.editableProperties.clear();
@@ -453,6 +510,8 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::processEvents()
 	{
+		// TODO - Update input handling to work with signal subsystem
+
 		// Process Input Events
 		//input::InputEvent inputEvent;
 		//while (m_inputEvents->Pop(inputEvent))
@@ -616,12 +675,14 @@ namespace puffin::scripting
 
 	const double& AngelScriptSystem::getDeltaTime() const
 	{
-		return mEngine->deltaTime();
+		const double deltaTime = mEngine->deltaTime();
+		return deltaTime;
 	}
 
 	const double& AngelScriptSystem::getFixedTime() const
 	{
-		return mEngine->timeStepFixed();
+		const double fixedDeltaTime = mEngine->timeStepFixed();
+		return fixedDeltaTime;
 	}
 
 	void AngelScriptSystem::playSoundEffect(uint64_t id, float volume, bool looping, bool restart)

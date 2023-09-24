@@ -169,8 +169,8 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.h
 	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.h
 	# Scripting
-	#${HEADER_DIR}/Scripting/RegisterTypeHelpers.h
-	#${HEADER_DIR}/Scripting/AngelScriptSystem.h
+	${HEADER_DIR}/Scripting/AngelScript/RegisterTypeHelpers.h
+	${HEADER_DIR}/Scripting/AngelScript/AngelScriptSystem.h
 	# Types
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h
@@ -238,7 +238,7 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKDescriptors.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	# Scripting
-	#${SOURCE_DIR}/Scripting/AngelScriptSystem.cpp
+	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptSystem.cpp
 	# UI
 	${SOURCE_DIR}/UI/Editor/UISubsystem.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp
@@ -293,7 +293,7 @@ add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
-#target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${ENKITS_SOURCES})
 
 message("")
@@ -321,7 +321,7 @@ sort_into_source_group(SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} Libraries/ImGui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} Libraries/OpenSimplexNoise)
 sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} Libraries/VKBootstrap)
-#sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)
+sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} Libraries/AngelScript)
 sort_into_source_group(ENKITS_SOURCES ${ENKITS_DIR} Libraries/EnkiTS)
 
 message("")
@@ -349,13 +349,13 @@ target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang${LIB_SUFFIX})
 
 # Define Debug Libs
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
-#target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
 
 # Define Release Libs
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
-#target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
+target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
 
@@ -379,7 +379,7 @@ set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 # Add include paths
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 target_include_directories(${PROJECT_NAME} PRIVATE third_party)
-#target_include_directories(${PROJECT_NAME} PRIVATE third_party/angelscript)
+target_include_directories(${PROJECT_NAME} PRIVATE third_party/angelscript)
 target_include_directories(${PROJECT_NAME} PRIVATE $ENV{VULKAN_SDK}/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/box2d/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/OpenSimplexNoise)
