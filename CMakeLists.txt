@@ -168,6 +168,7 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKDescriptors.h
 	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.h
 	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.h
+	${HEADER_DIR}/Rendering/Vulkan/VKMaterialRegistry.h
 	# Scripting
 	${HEADER_DIR}/Scripting/AngelScript/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScript/AngelScriptSystem.h
@@ -238,6 +239,7 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKHelpers.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKDescriptors.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
+	${SOURCE_DIR}/Rendering/Vulkan/VKMaterialRegistry.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptSystem.cpp
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptEngineInterface.cpp

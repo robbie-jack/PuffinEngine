@@ -113,8 +113,6 @@ namespace puffin::rendering
 			initOffscreenImGuiTextures(mOffscreenData);
 		}
 
-		mMats.resize(gMaxUniqueMaterials);
-
 		mEditorCam.position = {0.0f, 0.0f, 50.0f};
 
 		mRenderables.reserve(gMaxObjects);
@@ -123,6 +121,8 @@ namespace puffin::rendering
 		mIsInitialized = true;
 
 		mUpdateRenderables = true;
+
+		mMaterialRegistry.init(shared_from_this());
 	}
 
 	void VKRenderSystem::render()
@@ -174,7 +174,7 @@ namespace puffin::rendering
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
-		mMaterialsInstancesToLoad.insert(mesh.matAssetID);
+		mMaterialRegistry.registerMaterialInstance(mesh.matAssetID);
 
 		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity))
 		{
@@ -191,7 +191,7 @@ namespace puffin::rendering
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
-		mMaterialsInstancesToLoad.insert(mesh.matAssetID);
+		mMaterialRegistry.registerMaterialInstance(mesh.matAssetID);
 	}
 
 	void VKRenderSystem::onUpdateTransform(entt::registry& registry, entt::entity entity)
@@ -204,6 +204,11 @@ namespace puffin::rendering
 
 			mUpdateRenderables = true;
 		}
+	}
+
+	void VKRenderSystem::registerTexture(PuffinID texID)
+	{
+		mTexturesToLoad.insert(texID);
 	}
 
 	void VKRenderSystem::initVulkan()
@@ -814,7 +819,7 @@ namespace puffin::rendering
 			// Iterate 2D objects
 			for (auto [entity, object, transform, mesh] : meshView2D.each())
 			{
-				const auto& matData = mMatData[mesh.matAssetID];
+				const auto& matData = mMaterialRegistry.getMaterialData(mesh.matAssetID);
 
 				mRenderables.emplace_back(object.id, mesh.meshAssetId, matData.baseMaterialID);
 
@@ -827,7 +832,7 @@ namespace puffin::rendering
 			// Iterate 3D objects
 			for (auto [entity, object, transform, mesh] : meshView3D.each())
 			{
-				const auto& matData = mMatData[mesh.matAssetID];
+				const auto& matData = mMaterialRegistry.getMaterialData(mesh.matAssetID);
 
 				mRenderables.emplace_back(object.id, mesh.meshAssetId, matData.baseMaterialID);
 
@@ -934,43 +939,16 @@ namespace puffin::rendering
 
 		mMeshesToLoad.clear();
 
-		// Load Materials Instances
+		// Load Materials
+		mMaterialRegistry.update();
 
-		bool materialDataNeedsUploaded = false;
-		for (const auto matInstID : mMaterialsInstancesToLoad)
+		if (mMaterialRegistry.materialDataNeedsUploaded())
 		{
-			if (!mMatData.contains(matInstID))
-			{
-				MaterialDataVK matData;
-
-				loadMaterialInstance(matInstID, matData);
-
-				mMatData.insert(matInstID, matData);
-
-				materialDataNeedsUploaded = true;
-			}
-		}
-
-		mMaterialsInstancesToLoad.clear();
-
-		if (materialDataNeedsUploaded == true)
-		{
-			mMatData.sortBubble();
-
 			for (uint32_t i = 0; i < gBufferedFrames; i++)
 			{
 				mFrameRenderData[i].copyMaterialDataToGPU = true;
 			}
 		}
-
-		// Load Materials
-
-		for (const auto matID : mMaterialsToLoad)
-		{
-			initMaterialPipeline(matID);
-		}
-
-		mMaterialsToLoad.clear();
 
 		// Load Textures
 
@@ -1254,21 +1232,21 @@ namespace puffin::rendering
 		if (getCurrentFrameData().copyMaterialDataToGPU)
 		{
 			std::vector<GPUMaterialInstanceData> materialData;
-			materialData.reserve(mMatData.size());
+			materialData.reserve(mMaterialRegistry.materialData().size());
 
 			int idx = 0;
-			for (auto& matData : mMatData)
+			for (auto& matData : mMaterialRegistry.materialData())
 			{
 				// Update cached material data
 				for (int i = 0; i < gNumTexturesPerMat; ++i)
 				{
 					if (matData.texIDs[i] != 0)
 					{
-						mCachedMaterialData[matData.assetId].texIndices[i] = mTexData[matData.texIDs[i]].idx;
+						mMaterialRegistry.getCachedMaterialData(matData.assetId).texIndices[i] = mTexData[matData.texIDs[i]].idx;
 					}
 				}
 
-				materialData.push_back(mCachedMaterialData[matData.assetId]);
+				materialData.push_back(mMaterialRegistry.getCachedMaterialData(matData.assetId));
 
 				matData.idx = idx;
 
@@ -1386,7 +1364,7 @@ namespace puffin::rendering
 					GPUObjectData object;
 
 					buildModelTransform(position, tempTransform.orientation, tempTransform.scale, object.model);
-					object.matIdx = mMatData[mesh.matAssetID].idx;
+					object.matIdx = mMaterialRegistry.getMaterialData(mesh.matAssetID).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
 				}
@@ -1505,7 +1483,7 @@ namespace puffin::rendering
 		indirectCmds.resize(gMaxObjects);
 
 		mDrawBatches.clear();
-		mDrawBatches.reserve(mMatData.size());
+		mDrawBatches.reserve(mMaterialRegistry.materialData().size());
 
 		int idx = 0;
 		int count = 0;
@@ -1673,7 +1651,7 @@ namespace puffin::rendering
 		// Use loaded material if id iis valid, otherwise use default material
 		if (meshDrawBatch.matID != gInvalidID)
 		{
-			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMats[meshDrawBatch.matID].pipeline.get());
+			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMaterialRegistry.getMaterial(meshDrawBatch.matID).pipeline.get());
 		}
 		else
 		{
@@ -1963,119 +1941,6 @@ namespace puffin::rendering
 	{
 		mDevice.destroyImageView(texData.texture.imageView);
 		mAllocator.destroyImage(texData.texture.image, texData.texture.allocation);
-	}
-
-	bool VKRenderSystem::loadMaterialInstance(PuffinID matID, MaterialDataVK& matData)
-	{
-		const auto matAsset = assets::AssetRegistry::get()->getAsset<assets::MaterialInstanceAsset>(matID);
-
-		if (matAsset && matAsset->load())
-		{
-			matData.assetId = matID;
-			matData.baseMaterialID = matAsset->getBaseMaterialID();
-
-			GPUMaterialInstanceData matInstData;
-
-			int i = 0;
-			for (const auto& idx : matAsset->getTexIDs())
-			{
-				matData.texIDs[i] = idx;
-				matInstData.texIndices[i] = 0;
-
-				++i;
-			}
-
-			i = 0;
-			for (const auto& data : matAsset->getData())
-			{
-				matInstData.data[i] = data;
-
-				++i;
-			}
-
-			mCachedMaterialData.emplace(matID, matInstData);
-
-			for (const auto& texID : matData.texIDs)
-			{
-				if (texID != gInvalidID)
-				{
-					mTexturesToLoad.insert(texID);
-				}
-			}
-
-			if (matData.baseMaterialID != gInvalidID)
-			{
-				mMaterialsToLoad.insert(matData.baseMaterialID);
-			}
-
-			matAsset->unload();
-
-			return true;
-		}
-
-		return false;
-	}
-
-	void VKRenderSystem::initMaterialPipeline(PuffinID matID)
-	{
-		if (!mMatData.contains(matID))
-		{
-			const auto matAsset = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(matID);
-			
-			if (matAsset && matAsset->load())
-			{
-				const auto vertShaderAsset = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(matAsset->getVertexShaderID());
-				const auto fragShaderAsset = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(matAsset->getFragmentShaderID());
-
-				if (vertShaderAsset && vertShaderAsset->load() && fragShaderAsset && fragShaderAsset->load())
-				{
-					const auto vertMod = util::ShaderModule{ mDevice, vertShaderAsset->code() };
-					const auto fragMod = util::ShaderModule{ mDevice, fragShaderAsset->code() };
-
-					mMats.insert(matID);
-
-					MaterialVK& mat = mMats[matID];
-					mat.matID = matID;
-
-					util::PipelineLayoutBuilder plb{};
-					mat.pipelineLayout = plb
-						.descriptorSetLayout(mStaticRenderData.globalSetLayout)
-						.createUnique(mDevice);
-
-					vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
-						vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };
-
-					vk::PipelineRenderingCreateInfoKHR pipelineRenderInfo = {
-						0, mOffscreenData.imageFormat, mOffscreenData.allocDepthImage.format
-					};
-
-					util::PipelineBuilder pb{ mWindowSize.width, mWindowSize.height };
-					mat.pipeline = pb
-						// Define dynamic state which can change each frame (currently viewport and scissor size)
-						.dynamicState(vk::DynamicState::eViewport)
-						.dynamicState(vk::DynamicState::eScissor)
-						// Define vertex/fragment shaders
-						.shader(vk::ShaderStageFlagBits::eVertex, vertMod)
-						.shader(vk::ShaderStageFlagBits::eFragment, fragMod)
-						.depthStencilState(depthStencilInfo)
-						// Define vertex binding/attributes
-						.vertexLayout(VertexPNTV32::getLayoutVK())
-						// Add rendering info struct
-						.addPNext(&pipelineRenderInfo)
-						// Create pipeline
-						.createUnique(mDevice, mPipelineCache, *mat.pipelineLayout, nullptr);
-
-					//mDevice.destroyShaderModule(vertMod.module());
-					//mDevice.destroyShaderModule(fragMod.module());
-
-					mDeletionQueue.pushFunction([&]()
-					{
-						mat.pipeline = {};
-						mat.pipelineLayout = {};
-					});
-				}
-			}
-		}
 	}
 
 	void VKRenderSystem::buildTextureDescriptorInfo(PackedVector<TextureDataVK>& textureData,

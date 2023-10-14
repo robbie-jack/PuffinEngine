@@ -14,6 +14,7 @@
 #include "VKPipeline.h"
 #include "VKTypes.h"
 #include "VKUnifiedGeometryBuffer.h"
+#include "VKMaterialRegistry.h"
 #include "Assets/TextureAsset.h"
 #include "Core/Engine.h"
 #include "Core/System.h"
@@ -135,11 +136,18 @@ namespace puffin::rendering
 		const vk::Device& device() const { return mDevice; }
 		const UploadContext& uploadContext() const { return mUploadContext; }
 		const vk::Queue& graphicsQueue() const { return mGraphicsQueue; }
+		const StaticRenderData& staticRenderData() const { return mStaticRenderData; }
+		const vk::PipelineCache& pipelineCache() const { return mPipelineCache; }
+		const OffscreenData& offscreenData() const { return mOffscreenData; }
+		const vk::Extent2D& windowSize() const { return mWindowSize; }
+		DeletionQueue& deletionQueue() { return mDeletionQueue; }
 		bool isReBarEnabled() const { return mIsReBarEnabled; }
 
 		void onConstructMesh(entt::registry& registry, entt::entity entity);
 		void onUpdateMesh(entt::registry& registry, entt::entity entity);
 		void onUpdateTransform(entt::registry& registry, entt::entity entity);
+
+		void registerTexture(PuffinID texID);
 
 	private:
 
@@ -171,14 +179,12 @@ namespace puffin::rendering
 		StaticRenderData mStaticRenderData;
 		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
 
+		VKMaterialRegistry mMaterialRegistry;
+
 		std::unordered_set<PuffinID> mMeshesToLoad; // Meshes that need to be loaded
 		std::unordered_set<PuffinID> mTexturesToLoad; // Textures that need to be loaded
-		std::unordered_set<PuffinID> mMaterialsToLoad; // Materials that need to be loaded
-		std::unordered_set<PuffinID> mMaterialsInstancesToLoad; // Materials Instances that need to be loaded
 
 		PackedVector<TextureDataVK> mTexData;
-		PackedVector<MaterialDataVK> mMatData;
-		PackedVector<MaterialVK> mMats;
 
 		std::vector<MeshRenderable> mRenderables; // Renderables data
 		bool mUpdateRenderables = false;
@@ -188,7 +194,7 @@ namespace puffin::rendering
 		PackedVector<GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
 		std::unordered_set<PuffinID> mObjectsToRefresh; // Objects which need their mesh data refreshed
 
-		PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
+		//PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
 		uint32_t mFrameNumber;
 		uint32_t mDrawCalls = 0;
@@ -284,9 +290,6 @@ namespace puffin::rendering
 
 		bool loadTexture(PuffinID texId, TextureDataVK& texData);
 		void unloadTexture(TextureDataVK& texData) const;
-
-		bool loadMaterialInstance(PuffinID matID, MaterialDataVK& matData);
-		void initMaterialPipeline(PuffinID matID);
 
 		void buildTextureDescriptorInfo(PackedVector<TextureDataVK>& textureData,
 		                                std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
