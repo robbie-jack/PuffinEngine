@@ -503,7 +503,7 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::processEvents()
 	{
-		// TODO - Update input handling to work with signal subsystem
+		// PUFFIN_TODO - Update input handling to work with signal subsystem
 
 		// Process Input Events
 		//input::InputEvent inputEvent;

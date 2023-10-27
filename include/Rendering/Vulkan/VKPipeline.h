@@ -168,7 +168,7 @@ namespace puffin::rendering::util
 
 		PipelineBuilder& subpass(const uint32_t subpass) { mSubpass = subpass; return *this; }
 
-		// TODO Add Methods for setting up color blend attachments & color blend state
+		// PUFFIN_TODO Add Methods for setting up color blend attachments & color blend state
 
 		PipelineBuilder& inputAssemblyState(const vk::PipelineInputAssemblyStateCreateInfo& value) { mInputAssemblyState = value; return *this; }
 
@@ -250,7 +250,7 @@ namespace puffin::rendering::util
 			}
 
 			auto [result, pipeline] = device.createGraphicsPipelineUnique(pipelineCache, pipelineInfo);
-			// TODO check result for vk::Result::ePipelineCompileRequiredEXT
+			// PUFFIN_TODO check result for vk::Result::ePipelineCompileRequiredEXT
 			return std::move(pipeline);
 		}
 

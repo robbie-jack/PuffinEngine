@@ -18,7 +18,7 @@ namespace puffin::rendering
 	{
 		mMaterialsInstancesToLoad.insert(id);
 
-		// TODO - Load Material Instance Assets Asynchronously
+		// PUFFIN_TODO - Load Material Instance Assets Asynchronously
 	}
 
 	void VKMaterialRegistry::update()

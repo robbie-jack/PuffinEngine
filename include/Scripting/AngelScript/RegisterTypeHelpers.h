@@ -77,8 +77,6 @@ namespace puffin::scripting
 		r = scriptEngine->RegisterObjectProperty("Vector3d", "double z", asOFFSET(Vector3d, z)); assert(r >= 0);
 	}
 
-	// TODO - Re-enable Transform Registration
-
 	/*
 	* TransformComponent
 	*/
