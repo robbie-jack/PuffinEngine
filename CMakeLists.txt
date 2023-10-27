@@ -169,6 +169,8 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKPipeline.h
 	${HEADER_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.h
 	${HEADER_DIR}/Rendering/Vulkan/VKMaterialRegistry.h
+	${HEADER_DIR}/Rendering/Vulkan/VKRenderGraph.h
+	${HEADER_DIR}/Rendering/Vulkan/VKResourceManager.h
 	# Scripting
 	${HEADER_DIR}/Scripting/AngelScript/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScript/AngelScriptSystem.h
