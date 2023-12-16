@@ -70,6 +70,7 @@ namespace puffin
 			std::shared_ptr<UIContentBrowser> mContentBrowser;
 
 			ImGui::FileBrowser mFileDialog;
+			std::string mImGuiIniFilename;
 
 			void showDockspace(bool* open);
 			void showMenuBar();

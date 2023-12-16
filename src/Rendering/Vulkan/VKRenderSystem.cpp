@@ -778,11 +778,11 @@ namespace puffin::rendering
 		// Upload ImGui font textures
 		util::immediateSubmit(shared_from_this(), [=](vk::CommandBuffer cmd)
 		{
-			ImGui_ImplVulkan_CreateFontsTexture(cmd);
+			ImGui_ImplVulkan_CreateFontsTexture();
 		});
 
 		// Clear font textures from cpu data
-		ImGui_ImplVulkan_DestroyFontUploadObjects();
+		//ImGui_ImplVulkan_DestroyFontUploadObjects();
 
 		mDeletionQueue.pushFunction([=]()
 		{

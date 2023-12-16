@@ -71,6 +71,15 @@ checkout_git_branch("deps/imgui" "docking")
 # Define CMAKE Variables
 set(PROJECT_NAME PuffinEngine)
 
+# Set Executable Output Directories
+if (WIN32)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/win64/debug)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/win64/release)
+elseif (LINUX)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/linux/debug)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/linux/release)
+endif()
+
 # Set Project Name
 project (${PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
 

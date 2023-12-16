@@ -34,6 +34,9 @@ namespace puffin::ui
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 			//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+			mImGuiIniFilename = (assets::AssetRegistry::get()->engineRoot() / "config" / "imgui.ini").string();
+			io.IniFilename = mImGuiIniFilename.c_str();
+
 			setStyle();
 
 			mSaveScene = false;
