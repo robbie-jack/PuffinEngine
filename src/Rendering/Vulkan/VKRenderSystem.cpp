@@ -54,7 +54,7 @@
 
 namespace puffin::rendering
 {
-	void VKRenderSystem::setupCallbacks()
+	void VKRenderSystem::setup()
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init");
 		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");

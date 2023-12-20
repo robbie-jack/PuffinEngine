@@ -114,6 +114,7 @@ set(HEADERS
 	${HEADER_DIR}/Assets/AssetImporters.h
 	# Audio
 	${HEADER_DIR}/Audio/AudioSubsystem.h
+	${HEADER_DIR}/Audio/MiniAudioSubsystem.h
 	# Components
 	${HEADER_DIR}/Components/SceneObjectComponent.h
 	${HEADER_DIR}/Components/TransformComponent2D.h
@@ -221,6 +222,7 @@ set(SOURCES
 	${SOURCE_DIR}/Assets/AssetImporters.cpp
 	# Audio
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
+	${SOURCE_DIR}/Audio/MiniAudioSubsystem.cpp
 	# ECS
 	
 	# Engine
@@ -360,7 +362,7 @@ elseif (LINUX)
 	set(DLL_SUFFIX .so)
 endif()
 
-target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang${LIB_SUFFIX})
+#target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang${LIB_SUFFIX})
 
 # Define Debug Libs
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})

@@ -31,7 +31,7 @@ namespace puffin::procedural
 
 		~ProceduralMeshGenSystem() override = default;
 
-		void setupCallbacks() override
+		void setup() override
 		{
 			//mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "ProcMeshGenSystem: Setup");
 			//mEngine->registerCallback(core::ExecutionStage::Update, [&]() { update(); }, "ProcMeshGenSystem: Update", 200);

@@ -8,7 +8,7 @@ namespace puffin
 {
 	namespace input
 	{
-		void InputSubsystem::setupCallbacks()
+		void InputSubsystem::setup()
 		{
 			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "InputSubsystem: Init", 50);
 			mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "InputSubsystem: Update");

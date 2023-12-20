@@ -90,7 +90,7 @@ namespace puffin::core
 
 		~SignalSubsystem() override = default;
 
-		void setupCallbacks() override;
+		void setup() override;
 
 		void shutdown()
 		{

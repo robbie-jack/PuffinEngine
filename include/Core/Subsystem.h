@@ -13,7 +13,7 @@ namespace puffin::core
 
 		virtual ~Subsystem() { mEngine = nullptr; }
 
-		virtual void setupCallbacks() = 0; // Called to setup this systems callbacks when it is registered
+		virtual void setup() = 0; // Called to setup subsystem, for setting callbacks or registering other subsystems
 
 		void setEngine(const std::shared_ptr<Engine>& engine)
 		{

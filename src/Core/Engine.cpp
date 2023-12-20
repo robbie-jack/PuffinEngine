@@ -9,7 +9,7 @@
 #include "Assets/MaterialAsset.h"
 #include "Assets/SoundAsset.h"
 #include "Assets/TextureAsset.h"
-#include "Audio/AudioSubsystem.h"
+//#include "Audio/AudioSubsystem.h"
 #include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
@@ -43,7 +43,7 @@ namespace puffin::core
 		auto signalSubsystem = registerSubsystem<SignalSubsystem>();
 		auto enkitsSubsystem = registerSubsystem<EnkiTSSubsystem>();
 		auto inputSubsystem = registerSubsystem<input::InputSubsystem>();
-		auto audioSubsystem = registerSubsystem<audio::AudioSubsystem>();
+		//auto audioSubsystem = registerSubsystem<audio::AudioSubsystem>();
 		auto enttSubsystem = registerSubsystem<ecs::EnTTSubsystem>();
 		auto uiSubsystem = registerSubsystem<ui::UISubsystem>();
 		auto sceneSubsystem = registerSubsystem<io::SceneSubsystem>();
@@ -174,7 +174,7 @@ namespace puffin::core
 			mDeltaTime = mTimeStepLimit;
 		}
 
-		const auto audioSubsystem = getSubsystem<audio::AudioSubsystem>();
+		//const auto audioSubsystem = getSubsystem<audio::AudioSubsystem>();
 
 		// Update all Subsystems
 		{
@@ -203,14 +203,14 @@ namespace puffin::core
 
 		if (mPlayState == PlayState::JustPaused)
 		{
-			audioSubsystem->pauseAllSounds();
+			//audioSubsystem->pauseAllSounds();
 
 			mPlayState = PlayState::Paused;
 		}
 
 		if (mPlayState == PlayState::JustUnpaused)
 		{
-			audioSubsystem->playAllSounds();
+			//audioSubsystem->playAllSounds();
 
 			mPlayState = PlayState::Playing;
 		}
@@ -246,7 +246,7 @@ namespace puffin::core
 			// Cleanup Systems and ECS
 			executeCallbacks(ExecutionStage::EndPlay);
 
-			audioSubsystem->stopAllSounds();
+			//audioSubsystem->stopAllSounds();
 
 			mAccumulatedTime = 0.0;
 			mPlayState = PlayState::Stopped;

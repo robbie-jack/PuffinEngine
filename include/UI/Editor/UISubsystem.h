@@ -38,7 +38,7 @@ namespace puffin
 			UISubsystem() {}
 			~UISubsystem() override {}
 
-			void setupCallbacks() override;
+			void setup() override;
 
 			void init();
 			void render();

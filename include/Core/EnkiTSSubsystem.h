@@ -15,7 +15,7 @@ namespace puffin::core
 
 		~EnkiTSSubsystem() override = default;
 
-		void setupCallbacks() override;
+		void setup() override;
 
 		void init()
 		{

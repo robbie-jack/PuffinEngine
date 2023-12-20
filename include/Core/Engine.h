@@ -16,10 +16,10 @@ namespace fs = std::filesystem;
 
 namespace puffin
 {
-	namespace audio
+	/*namespace audio
 	{
 		class AudioSubsystem;
-	}
+	}*/
 
 	namespace ui
 	{
@@ -129,7 +129,7 @@ namespace puffin::core
 			auto subsystemBase = std::static_pointer_cast<Subsystem>(subsystem);
 			subsystemBase->setEngine(shared_from_this());
 
-			subsystemBase->setupCallbacks();
+			subsystemBase->setup();
 
 			// Cast subsystem to Subsystem parent and add to subsystems map
 			mSubsystems.insert({ typeName, subsystemBase });
@@ -156,7 +156,7 @@ namespace puffin::core
 			auto systemBase = std::static_pointer_cast<core::System>(system);
 
 			systemBase->setEngine(shared_from_this());
-			systemBase->setupCallbacks();
+			systemBase->setup();
 
 			mSystems.push_back(systemBase);
 

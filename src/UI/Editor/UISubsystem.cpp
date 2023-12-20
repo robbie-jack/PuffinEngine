@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 namespace puffin::ui
 {
-	void UISubsystem::setupCallbacks()
+	void UISubsystem::setup()
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "UISubsystem: Init", 50);
 		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);

@@ -10,7 +10,7 @@ using namespace irrklang;
 
 namespace puffin::audio
 {
-	void AudioSubsystem::setupCallbacks()
+	void AudioSubsystem::setup()
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "AudioSubsystem: Init", 50);
 		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "AudioSubsystem: Update");

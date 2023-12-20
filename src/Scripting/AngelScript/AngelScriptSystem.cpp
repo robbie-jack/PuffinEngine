@@ -72,7 +72,7 @@ namespace puffin::scripting
 
 		mEngineInterface = std::make_unique<AngelScriptEngineInterface>(mEngine, shared_from_this(), mScriptEngine);
 
-		mAudioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
+		//mAudioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
 
 		initContext();
 		initScripts();

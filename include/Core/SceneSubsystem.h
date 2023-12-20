@@ -274,7 +274,7 @@ namespace puffin::io
 		SceneSubsystem() = default;
 		~SceneSubsystem() override = default;
 
-		void setupCallbacks() override
+		void setup() override
 		{
 			mEngine->registerCallback(core::ExecutionStage::Init, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "SceneSubsystem: BeginPlay", 0);

@@ -41,7 +41,7 @@ namespace puffin::physics
 
 		~Box2DPhysicsSystem() override = default;
 
-		void setupCallbacks() override
+		void setup() override
 		{
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&]() { beginPlay(); }, "Box2DPhysicsSystem: BeginPlay");
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");

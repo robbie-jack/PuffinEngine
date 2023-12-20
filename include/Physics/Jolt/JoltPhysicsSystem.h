@@ -50,7 +50,7 @@ namespace puffin::physics
 
 		~JoltPhysicsSystem() override = default;
 
-		void setupCallbacks() override
+		void setup() override
 		{
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");

@@ -126,7 +126,7 @@ namespace puffin::rendering
 			mSystemInfo.name = "VKRenderSystem";
 		}
 
-		void setupCallbacks() override;
+		void setup() override;
 
 		void init();
 		void render();

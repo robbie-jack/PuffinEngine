@@ -13,7 +13,7 @@ namespace puffin::window
 	// Public Methods
 	//==================================================
 
-	void WindowSubsystem::setupCallbacks()
+	void WindowSubsystem::setup()
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "WindowSubsystem: Init", 40);
 		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "WindowSubsystem: Shutdown", 150);

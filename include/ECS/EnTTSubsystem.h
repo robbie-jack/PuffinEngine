@@ -16,7 +16,7 @@ namespace puffin::ecs
 		EnTTSubsystem() { mRegistry = std::make_shared<entt::registry>(); }
 		~EnTTSubsystem() override = default;
 
-		void setupCallbacks() override
+		void setup() override
 		{
 			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "EnTTSubsystem: EndPlay", 200);
 		}

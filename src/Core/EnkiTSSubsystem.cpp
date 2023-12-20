@@ -4,7 +4,7 @@
 
 namespace puffin::core
 {
-	void EnkiTSSubsystem::setupCallbacks()
+	void EnkiTSSubsystem::setup()
 	{
 		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "EnkiTSSubsystem: Init", 50);
 	}

@@ -31,7 +31,7 @@ namespace puffin::scripting
 		AngelScriptSystem();
 		~AngelScriptSystem() override;
 
-		void setupCallbacks() override
+		void setup() override
 		{
 			mEngine->registerCallback(core::ExecutionStage::Init, [&] { init(); }, "AngelScriptSystem: Init", 250);
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "AngelScriptSystem: BeginPlay");

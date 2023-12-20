@@ -30,6 +30,18 @@ namespace puffin::audio
 		bool restart = false;
 	};
 
+	class IAudioSubsystem : public core::Subsystem
+	{
+	public:
+
+		virtual ~IAudioSubsystem() { mEngine = nullptr; }
+
+	protected:
+
+
+
+	};
+
 	class AudioSubsystem : public core::Subsystem
 	{
 	public:
@@ -37,7 +49,7 @@ namespace puffin::audio
 		AudioSubsystem() = default;
 		~AudioSubsystem() override = default;
 
-		void setupCallbacks() override;
+		void setup() override;
 
 		void init();
 		void update();
