@@ -6,9 +6,9 @@
 
 #include "Types/UUID.h"
 #include "Types/RingBuffer.h"
+#include "Types/PackedArray.h"
 
-#include <vector>
-#include <unordered_map>
+#include <set>
 
 namespace puffin::audio
 {
@@ -33,25 +33,32 @@ namespace puffin::audio
 	// Instance of a sound effect, there can be any number of instances of a particular sound
 	struct SoundInstance
 	{
-		PuffinID instanceID;
-		PuffinID assetID;
+		PuffinID instanceID = gInvalidID;
+		PuffinID assetID = gInvalidID;
 		bool playing = false; // Whether this instance is currently playing
 		bool looping = false; // Whether this instance should loop
 		bool discard = true; // Whether to discard this instance once it has finished playing, will be ignored if looping is set to true
 		float volume = 1.0f; // Volume of this instance
 	};
 
-	class IAudioSubsystem : public core::Subsystem
+	class AudioSubsystemProvider : public core::Subsystem
 	{
 	public:
 
-		~IAudioSubsystem() override { mEngine = nullptr; }
+		~AudioSubsystemProvider() override { mEngine = nullptr; }
 
-		
+		PuffinID createSoundInstance(PuffinID soundAssetID);
+
+		void destroySoundInstance(PuffinID soundInstanceID);
 
 	protected:
 
+		PackedVector<SoundInstance> mSoundInstances;
+		PackedVector<std::set<PuffinID>> mSoundInstanceIDs;
 
+		virtual void createSoundInstanceInternal(PuffinID soundAssetID, PuffinID soundInstanceID) = 0;
+
+		virtual void destroySoundInstanceInternal(PuffinID soundInstanceID) = 0;
 
 	};
 
@@ -68,30 +75,9 @@ namespace puffin::audio
 		void update();
 		void shutdown();
 
-		void playSoundEffect(PuffinID soundId, float volume = 1.0f, bool looping = false, bool restart = false);
-		PuffinID playSoundEffect(const std::string& soundPath, float volume = 1.0f, bool looping = false, bool restart = false);
-		void stopSoundEffect(PuffinID soundId);
-		void pauseSoundEffect(PuffinID soundId);
-
-		void playAllSounds(bool forcePlay = false);
-		void pauseAllSounds();
-		void stopAllSounds();
-
 	private:
 
-		irrklang::ISoundEngine* mSoundEngine = nullptr;
+		std::shared_ptr<AudioSubsystemProvider> mAudioSubsystemProvider = nullptr; // Susbsystem which provides audio core implementation
 
-		//std::vector<irrklang::ISoundSource*> soundSources; // Loaded Sound Sources
-		std::unordered_map<PuffinID, irrklang::ISound*> mActiveSounds; // Active Sound Effects
-		std::unordered_map<PuffinID, bool> mActiveSoundsWasPaused; // Store whether a sound was playing or not
-
-		RingBuffer<SoundEvent> mSoundEventBuffer;
-
-		void processSoundEvents();
-
-		void playSound(SoundEvent soundEvent);
-		void modifySound(SoundEvent soundEvent);
-		void pauseSound(SoundEvent soundEvent);
-		void stopSound(SoundEvent soundEvent);
 	};
 }

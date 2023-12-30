@@ -43,7 +43,7 @@ namespace puffin::core
 		auto signalSubsystem = registerSubsystem<SignalSubsystem>();
 		auto enkitsSubsystem = registerSubsystem<EnkiTSSubsystem>();
 		auto inputSubsystem = registerSubsystem<input::InputSubsystem>();
-		//auto audioSubsystem = registerSubsystem<audio::AudioSubsystem>();
+		auto audioSubsystem = registerSubsystem<audio::AudioSubsystem>();
 		auto enttSubsystem = registerSubsystem<ecs::EnTTSubsystem>();
 		auto uiSubsystem = registerSubsystem<ui::UISubsystem>();
 		auto sceneSubsystem = registerSubsystem<io::SceneSubsystem>();

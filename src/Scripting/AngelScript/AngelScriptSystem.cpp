@@ -682,7 +682,7 @@ namespace puffin::scripting
 	{
 		if (mAudioSubsystem)
 		{
-			mAudioSubsystem->playSoundEffect(id, volume, looping, restart);
+			//mAudioSubsystem->playSoundEffect(id, volume, looping, restart);
 		}
 	}
 
@@ -692,7 +692,7 @@ namespace puffin::scripting
 
 		if (mAudioSubsystem)
 		{
-			id = mAudioSubsystem->playSoundEffect(path, volume, looping, restart);
+			//id = mAudioSubsystem->playSoundEffect(path, volume, looping, restart);
 		}
 
 		return id;

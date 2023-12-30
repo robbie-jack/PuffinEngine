@@ -1,11 +1,12 @@
 ﻿#pragma once
 
-#include "Core/Subsystem.h"
 #include "Audio/AudioSubsystem.h"
+
+class ma_engine;
 
 namespace puffin::audio
 {
-	class MiniAudioSubsystem : public IAudioSubsystem
+	class MiniAudioSubsystem : public AudioSubsystemProvider
 	{
 	public:
 
@@ -17,5 +18,16 @@ namespace puffin::audio
 		void init();
 		void update();
 		void shutdown();
+
+	protected:
+
+		void createSoundInstanceInternal(PuffinID soundAssetID, PuffinID soundInstanceID) override;
+
+		void destroySoundInstanceInternal(PuffinID soundInstanceID) override;
+
+	private:
+
+		ma_engine* mSoundEngine = nullptr;
+
 	};
 }
