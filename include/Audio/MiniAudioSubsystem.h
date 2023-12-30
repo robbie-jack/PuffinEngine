@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include "Core/Subsystem.h"
+#include "Audio/AudioSubsystem.h"
 
 namespace puffin::audio
 {
-	class MiniAudioSubsystem : public core::Subsystem
+	class MiniAudioSubsystem : public IAudioSubsystem
 	{
 	public:
 
@@ -16,6 +17,5 @@ namespace puffin::audio
 		void init();
 		void update();
 		void shutdown();
-
 	};
 }

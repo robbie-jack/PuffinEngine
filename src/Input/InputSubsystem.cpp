@@ -53,7 +53,7 @@ namespace puffin
 			bool stateChanged = false;
 
 			// Loop through current actions and update action states
-			for (auto& [key, action] : mActions)
+			for (auto& [name, action] : mActions)
 			{
 				stateChanged = false;
 
@@ -97,7 +97,7 @@ namespace puffin
 					{
 						auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
 
-						//signalSubsystem->signal("Spacebar", InputEvent(action.name, action.state));
+						signalSubsystem->emit<InputEvent>(name, InputEvent(action.name, action.state));
 
 						stateChanged = false;
 					}

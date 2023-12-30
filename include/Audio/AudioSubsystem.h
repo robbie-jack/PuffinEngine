@@ -30,11 +30,24 @@ namespace puffin::audio
 		bool restart = false;
 	};
 
+	// Instance of a sound effect, there can be any number of instances of a particular sound
+	struct SoundInstance
+	{
+		PuffinID instanceID;
+		PuffinID assetID;
+		bool playing = false; // Whether this instance is currently playing
+		bool looping = false; // Whether this instance should loop
+		bool discard = true; // Whether to discard this instance once it has finished playing, will be ignored if looping is set to true
+		float volume = 1.0f; // Volume of this instance
+	};
+
 	class IAudioSubsystem : public core::Subsystem
 	{
 	public:
 
-		virtual ~IAudioSubsystem() { mEngine = nullptr; }
+		~IAudioSubsystem() override { mEngine = nullptr; }
+
+		
 
 	protected:
 
@@ -55,7 +68,6 @@ namespace puffin::audio
 		void update();
 		void shutdown();
 
-		// Play Sound, If this sound is already active, but paused, start playing it again
 		void playSoundEffect(PuffinID soundId, float volume = 1.0f, bool looping = false, bool restart = false);
 		PuffinID playSoundEffect(const std::string& soundPath, float volume = 1.0f, bool looping = false, bool restart = false);
 		void stopSoundEffect(PuffinID soundId);
