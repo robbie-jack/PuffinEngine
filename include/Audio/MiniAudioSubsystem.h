@@ -2,7 +2,7 @@
 
 #include "Audio/AudioSubsystem.h"
 
-class ma_engine;
+#include "miniaudio/miniaudio.h"
 
 namespace puffin::audio
 {
@@ -21,13 +21,18 @@ namespace puffin::audio
 
 	protected:
 
-		void createSoundInstanceInternal(PuffinID soundAssetID, PuffinID soundInstanceID) override;
+		void playSound(PuffinID soundAssetID) override;
 
-		void destroySoundInstanceInternal(PuffinID soundInstanceID) override;
+		bool createSoundInstance(PuffinID soundAssetID, PuffinID soundInstanceID) override;
+		void destroySoundInstance(PuffinID soundInstanceID) override;
+
+		bool startSoundInstance(PuffinID soundInstanceID, bool restart) override;
+		bool stopSoundInstance(PuffinID soundInstanceID) override;
 
 	private:
 
 		ma_engine* mSoundEngine = nullptr;
 
+		PackedVector<ma_sound> mSounds;
 	};
 }
