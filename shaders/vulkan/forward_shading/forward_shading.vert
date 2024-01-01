@@ -47,7 +47,7 @@ void main()
 {
 	Vertex v = PushConstants.vertexBuffer.vertices[gl_VertexIndex];
 	
-	mat4 modelMatrix = objectBuffer.objects[gl_BaseInstance].model;
+	mat4 modelMatrix = objectBuffer.objects[gl_InstanceIndex].model;
 	mat4 modelMatrixInv = inverse(modelMatrix);
 	mat4 viewProjMatrix = cameraData.viewProj;
 		
@@ -60,7 +60,7 @@ void main()
 	//fNormal = (viewProjMatrix * vec4(v.normal, 1.0)).rgb;
 	//fTangent = (viewProjMatrix * vec4(v.tangent, 1.0)).rgb;
 	
-	matIndex = objectBuffer.objects[gl_BaseInstance].matIndex;
+	matIndex = objectBuffer.objects[gl_InstanceIndex].matIndex;
 
 	gl_Position = viewProjMatrix * fWorldPos;
 }

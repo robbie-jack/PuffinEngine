@@ -161,12 +161,12 @@ namespace puffin::rendering
 	// Struct for rendering a batch of meshes which share a material
 	struct MeshDrawBatch
 	{
-		MeshDrawBatch(const PuffinID matID_ = gInvalidID, const uint32_t meshCount_ = 0, const uint32_t meshIndex_ = 0) :
-			matID(matID_), meshCount(meshCount_), meshIndex(meshIndex_) {}
+		MeshDrawBatch(const PuffinID matID_ = gInvalidID, const uint32_t cmdCount_ = 0, const uint32_t meshIndex_ = 0) :
+			matID(matID_), cmdCount(cmdCount_), cmdIndex(meshIndex_) {}
 
 		PuffinID matID; // Id of this material
-		uint32_t meshCount; // Number of meshes to be drawn with this material
-		uint32_t meshIndex; // Starting index in build commands buffer for this material type
+		uint32_t cmdCount = 0; // Number of commands to be drawn with this batch
+		uint32_t cmdIndex = 0; // Starting index in indirect commands buffer for this batch
 
 		bool operator<(const MeshDrawBatch& other) const
 		{
