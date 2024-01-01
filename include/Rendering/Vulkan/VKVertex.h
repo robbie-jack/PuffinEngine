@@ -67,7 +67,7 @@ namespace puffin::rendering
 			.bindAttribute(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, pos))
 			.bindAttribute(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, normal))
 			.bindAttribute(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(VertexPNTV32, tangent))
-			.bindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv));
+			/*.bindAttribute(3, 0, vk::Format::eR32G32Sfloat, offsetof(VertexPNTV32, uv))*/;
 	}
 
 	inline util::VertexLayout VertexP64NTV32::getLayoutVK()

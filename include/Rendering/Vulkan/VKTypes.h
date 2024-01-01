@@ -176,6 +176,11 @@ namespace puffin::rendering
 
 	// GPU Data Structs
 
+	struct GPUDrawPushConstant
+	{
+		alignas(16) vk::DeviceAddress vertexBufferAddress;
+	};
+
 	struct GPUCameraData
 	{
 		alignas(16) glm::mat4 view;

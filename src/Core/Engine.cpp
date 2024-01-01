@@ -9,7 +9,8 @@
 #include "Assets/MaterialAsset.h"
 #include "Assets/SoundAsset.h"
 #include "Assets/TextureAsset.h"
-//#include "Audio/AudioSubsystem.h"
+#include "Audio/AudioSubsystem.h"
+#include "Assets/AssetImporters.h"
 #include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
@@ -336,12 +337,10 @@ namespace puffin::core
 
 	void Engine::reimportDefaultAssets()
 	{
-		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\chalet.obj");
-		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\cube.obj");
-		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\space_engineer.obj");
-		//IO::ImportMesh("C:\\Projects\\PuffinProject\\model_backups\\Sphere.dae");
-
-		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
+		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\cube.obj)", "meshes");
+		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\space_engineer.obj)", "meshes");
+		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\Sphere.dae)", "meshes");
+		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
 
 		/*io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
 		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
@@ -373,8 +372,8 @@ namespace puffin::core
 
 		std::vector paths =
 		{
-			/*meshPath1, meshPath2, meshPath3, meshPath4,*/
-			/*texturePath1, texturePath2, texturePath3, texturePath4, texturePath5,*/
+			meshPath1, meshPath2, meshPath3, meshPath4,
+			texturePath1, texturePath2, texturePath3, texturePath4, texturePath5,
 			shaderPath1, shaderPath2,
 			materialInstPath1, materialInstPath2
 		};
@@ -462,7 +461,7 @@ namespace puffin::core
 			Vector3f(0.25f)
 		};
 
-		const PuffinID meshIDs[numEntities] = { meshId1, meshId2, meshId3, meshId3, meshId3, meshId3, meshId3 };
+		const PuffinID meshIDs[numEntities] = { meshId1, meshId3, meshId3, meshId3, meshId3, meshId3, meshId3 };
 		const PuffinID materialIDs[numEntities] = { materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1 };
 
 		// Add Default Scene Components to ECS

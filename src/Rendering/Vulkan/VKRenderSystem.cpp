@@ -254,6 +254,10 @@ namespace puffin::rendering
 		physicalDevice12Features.runtimeDescriptorArray = true;
 		physicalDevice12Features.descriptorBindingVariableDescriptorCount = true;
 		physicalDevice12Features.descriptorBindingPartiallyBound = true;
+		physicalDevice12Features.bufferDeviceAddress = true;
+
+		vk::PhysicalDeviceVulkan13Features physicalDevice13Features = {};
+		physicalDevice13Features.dynamicRendering = true;
 
 		vkb::SystemInfo systemInfo = vkb::SystemInfo::get_system_info().value();
 
@@ -261,29 +265,27 @@ namespace puffin::rendering
 		std::vector<const char*> device_extensions =
 		{
 			"VK_EXT_memory_budget",
-			"VK_KHR_dynamic_rendering",
 		};
 
 		// Select GPU
 		vkb::PhysicalDeviceSelector selector{vkbInst};
 		vkb::PhysicalDevice physDevice = selector
-		                                 .set_minimum_version(1, 3)
-		                                 .set_surface(mSurface)
-		                                 .set_required_features(physicalDeviceFeatures)
-		                                 .set_required_features_12(physicalDevice12Features)
-		                                 .add_required_extensions(device_extensions)
-		                                 .select()
-		                                 .value();
+		.set_minimum_version(1, 3)
+		.set_surface(mSurface)
+		.set_required_features(physicalDeviceFeatures)
+		.set_required_features_12(physicalDevice12Features)
+		.set_required_features_13(physicalDevice13Features)
+		.add_required_extensions(device_extensions)
+		.select()
+		.value();
 
 		// Create Vulkan Device
 		vkb::DeviceBuilder deviceBuilder{physDevice};
 
 		vk::PhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeatures = {true};
-		vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeaturesKHR = {true};
 
 		vkb::Device vkbDevice = deviceBuilder
 		                        .add_pNext(&shaderDrawParametersFeatures)
-								.add_pNext(&dynamicRenderingFeaturesKHR)
 		                        .build()
 		                        .value();
 
@@ -295,7 +297,7 @@ namespace puffin::rendering
 		mGraphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
 
 		// Init memory allocator
-		vma::AllocatorCreateInfo allocatorInfo = {{}, mPhysicalDevice, mDevice};
+		vma::AllocatorCreateInfo allocatorInfo = {vma::AllocatorCreateFlagBits::eBufferDeviceAddress, mPhysicalDevice, mDevice};
 		allocatorInfo.instance = mInstance;
 
 		VK_CHECK(vma::createAllocator(&allocatorInfo, &mAllocator));
@@ -696,10 +698,13 @@ namespace puffin::rendering
 			mDevice, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_fs.spv").string()
 		};
 
+		vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant) };
+
 		util::PipelineLayoutBuilder plb{};
 		mForwardPipelineLayout = plb
-		                         .descriptorSetLayout(mStaticRenderData.globalSetLayout)
-		                         .createUnique(mDevice);
+		.descriptorSetLayout(mStaticRenderData.globalSetLayout)
+		.pushConstantRange(range)
+		.createUnique(mDevice);
 
 		vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = {
 			{}, true, true,
@@ -719,8 +724,6 @@ namespace puffin::rendering
 		                   .shader(vk::ShaderStageFlagBits::eVertex, mForwardVertMod)
 		                   .shader(vk::ShaderStageFlagBits::eFragment, mForwardFragMod)
 		                   .depthStencilState(depthStencilInfo)
-		                   // Define vertex binding/attributes
-		                   .vertexLayout(VertexPNTV32::getLayoutVK())
 		                   // Add rendering info struct
 		                   .addPNext(&pipelineRenderInfo)
 		                   // Create pipeline
@@ -1642,13 +1645,17 @@ namespace puffin::rendering
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mForwardPipelineLayout.get(), 0, 1,
 			&getCurrentFrameData().globalDescriptor, 0, nullptr);
 
-		cmd.bindVertexBuffers(0, mStaticRenderData.combinedMeshBuffer.vertexBuffer().buffer, { 0 });
+		GPUDrawPushConstant pushConstant;
+		pushConstant.vertexBufferAddress = mStaticRenderData.combinedMeshBuffer.vertexBufferAddress();
+
+		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant), &pushConstant);
+
 		cmd.bindIndexBuffer(mStaticRenderData.combinedMeshBuffer.indexBuffer().buffer, 0, vk::IndexType::eUint32);
 	}
 
 	void VKRenderSystem::drawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
 	{
-		// Use loaded material if id iis valid, otherwise use default material
+		// Use loaded material if id is valid, otherwise use default material
 		if (meshDrawBatch.matID != gInvalidID)
 		{
 			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mMaterialRegistry.getMaterial(meshDrawBatch.matID).pipeline.get());

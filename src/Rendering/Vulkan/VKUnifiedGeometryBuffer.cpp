@@ -27,25 +27,15 @@ namespace puffin::rendering
 		mVertexSize = vertexSize;
 		mIndexSize = indexSize;
 
-		mVertexBufferSize = initialVertexBufferSize;
-		mIndexBufferSize = initialIndexBufferSize;
-
 		mVertexBufferBlockSize = vertexBufferBlockSize;
 		mIndexBufferBlockSize = indexBufferBlockSize;
 
-		mMaxVertexCount = std::floor(static_cast<double>(mVertexBufferSize) / static_cast<double>(mVertexSize));
-		mMaxIndexCount = std::floor(static_cast<double>(mIndexBufferSize) / static_cast<double>(mIndexSize));
+		mVertexBuffer = createVertexBuffer(initialVertexBufferSize);
 
-		mVertexBuffer = util::createBuffer(renderer->allocator(), mVertexBufferSize,
-			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAuto, 
-			{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead | 
-			vma::AllocationCreateFlagBits::eMapped });
+		const vk::BufferDeviceAddressInfo deviceAddressInfo = { mVertexBuffer.buffer };
+		mVertexBufferAddress = mRenderer->device().getBufferAddress(deviceAddressInfo);
 
-		mIndexBuffer = util::createBuffer(renderer->allocator(), mIndexBufferSize,
-			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead | 
-			vma::AllocationCreateFlagBits::eMapped });
+		mIndexBuffer = createIndexBuffer(initialIndexBufferSize);
 	}
 
 	void UnifiedGeometryBuffer::cleanup()
@@ -180,20 +170,20 @@ namespace puffin::rendering
 		}
 
 		const AllocatedBuffer oldVertexBuffer = mVertexBuffer;
-		mVertexBuffer = util::createBuffer(mRenderer->allocator(), newVertexBufferSize,
-			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAutoPreferDevice);
+		mVertexBuffer = createVertexBuffer(newVertexBufferSize);
+
+		const vk::BufferDeviceAddressInfo deviceAddressInfo = { mVertexBuffer.buffer };
+		mVertexBufferAddress = mRenderer->device().getBufferAddress(deviceAddressInfo);
 
 		// Copy data from old buffer to new buffer
-		const vk::DeviceSize oldVertexBufferSize = mVertexOffset * mVertexSize;
-		util::copyDataBetweenBuffers(mRenderer, oldVertexBuffer.buffer, mVertexBuffer.buffer, oldVertexBufferSize);
+		if (mVertexOffset > 0)
+		{
+			const vk::DeviceSize copySize = mVertexOffset * mVertexSize;
+			util::copyDataBetweenBuffers(mRenderer, oldVertexBuffer.buffer, mVertexBuffer.buffer, copySize);
+		}
 
 		// Free old buffer
 		mRenderer->allocator().destroyBuffer(oldVertexBuffer.buffer, oldVertexBuffer.allocation);
-
-		mVertexBufferSize = newVertexBufferSize;
-
-		mMaxVertexCount = std::floor(static_cast<double>(mVertexBufferSize) / static_cast<double>(mVertexSize));;
 
 		return true;
 	}
@@ -212,33 +202,51 @@ namespace puffin::rendering
 		}
 
 		const AllocatedBuffer oldIndexBuffer = mIndexBuffer;
-		mIndexBuffer = util::createBuffer(mRenderer->allocator(), newIndexBufferSize,
-			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAutoPreferDevice);
+		mIndexBuffer = createIndexBuffer(newIndexBufferSize);
 
 		// Copy data from old buffer to new buffer
-		const vk::DeviceSize oldIndexBufferSize = mIndexOffset * mIndexSize;
-		util::copyDataBetweenBuffers(mRenderer, oldIndexBuffer.buffer, mIndexBuffer.buffer, oldIndexBufferSize);
+		if (mIndexOffset > 0)
+		{
+			const vk::DeviceSize copySize = mIndexOffset * mIndexSize;
+			util::copyDataBetweenBuffers(mRenderer, oldIndexBuffer.buffer, mIndexBuffer.buffer, copySize);
+		}
 
 		// Free old buffer
 		mRenderer->allocator().destroyBuffer(oldIndexBuffer.buffer, oldIndexBuffer.allocation);
-
-		mIndexBufferSize = newIndexBufferSize;
-
-		mMaxIndexCount = std::floor(static_cast<double>(mIndexBufferSize) / static_cast<double>(mIndexSize));
 
 		return true;
 	}
 
 	bool UnifiedGeometryBuffer::shrinkVertexBuffer(uint32_t minVertexCount)
 	{
-
-
 		return true;
 	}
 
 	bool UnifiedGeometryBuffer::shrinkIndexBuffer(uint32_t minVertexCount)
 	{
 		return true;
+	}
+
+	AllocatedBuffer UnifiedGeometryBuffer::createVertexBuffer(vk::DeviceSize bufferSize)
+	{
+		mVertexBufferSize = bufferSize;
+		mMaxVertexCount = std::floor(static_cast<double>(mVertexBufferSize) / static_cast<double>(mVertexSize));
+
+		return util::createBuffer(mRenderer->allocator(), mVertexBufferSize,
+			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eShaderDeviceAddress },
+			vma::MemoryUsage::eAutoPreferDevice,
+			{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
+			vma::AllocationCreateFlagBits::eMapped });
+	}
+
+	AllocatedBuffer UnifiedGeometryBuffer::createIndexBuffer(vk::DeviceSize bufferSize)
+	{
+		mIndexBufferSize = bufferSize;
+		mMaxIndexCount = std::floor(static_cast<double>(mIndexBufferSize) / static_cast<double>(mIndexSize));
+
+		return util::createBuffer(mRenderer->allocator(), mIndexBufferSize,
+			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
+			vma::MemoryUsage::eAutoPreferDevice, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
+			vma::AllocationCreateFlagBits::eMapped });
 	}
 }

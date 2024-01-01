@@ -5,11 +5,6 @@
 
 #include <vector>
 
-namespace bgfx
-{
-	struct VertexLayout;
-}
-
 namespace puffin::rendering
 {
 	namespace util
@@ -45,8 +40,6 @@ namespace puffin::rendering
 			return pos == other.pos && color == other.color;
 		}
 
-		static bgfx::VertexLayout getLayout();
-
 		static util::VertexLayout getLayoutVK();
 	};
 
@@ -61,27 +54,26 @@ namespace puffin::rendering
 			return pos == other.pos && normal == other.normal && color == other.color;
 		}
 
-		static bgfx::VertexLayout getLayout();
-
 		static util::VertexLayout getLayoutVK();
 	};
 
 	struct VertexPNTV32
 	{
 		Vector3f pos = { 0.0f, 0.0f, 0.0f };
+		float uvX;
 		Vector3f normal = { 0.0f, 0.0f, 0.0f };
+		float uvY;
 		Vector3f tangent = { 0.0f, 0.0f, 0.0f };
-		Vector2f uv = { 0.0f, 0.0f};
+		float pad0;
 
 		bool operator==(const VertexPNTV32& other) const
 		{
 			return pos == other.pos
 				&& normal == other.normal
 				&& tangent == other.tangent
-				&& uv == other.uv;
+				&& uvX == other.uvX
+				&& uvY == other.uvY;
 		}
-
-		static bgfx::VertexLayout getLayout();
 
 		static util::VertexLayout getLayoutVK();
 	};
@@ -100,8 +92,6 @@ namespace puffin::rendering
 				&& tangent == other.tangent
 				&& uv == other.uv;
 		}
-
-		static bgfx::VertexLayout getLayout();
 
 		static util::VertexLayout getLayoutVK();
 	};
@@ -159,7 +149,8 @@ namespace std
 			return (hash<puffin::Vector3f>()(vertex.pos) ^
 				(hash<puffin::Vector3f>()(vertex.normal) << 1) ^
 				(hash<puffin::Vector3f>()(vertex.tangent) << 1) ^
-				(hash<puffin::Vector2f>()(vertex.uv) << 1) >> 1);
+				(hash<puffin::Vector2f>()(vertex.uvX) << 1) ^
+				(hash<puffin::Vector2f>()(vertex.uvY) << 1) >> 1);
 		}
 	};
 

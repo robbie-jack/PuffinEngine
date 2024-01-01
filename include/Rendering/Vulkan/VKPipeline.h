@@ -75,10 +75,17 @@ namespace puffin::rendering::util
 			return *this;
 		}
 
+		PipelineLayoutBuilder& pushConstantRange(vk::PushConstantRange range)
+		{
+			mPushRanges.push_back(range);
+			return *this;
+		}
+
 		vk::UniquePipelineLayout createUnique(const vk::Device& device)
 		{
 			const vk::PipelineLayoutCreateInfo layoutInfo = { {},
-				static_cast<uint32_t>(mSetLayouts.size()), mSetLayouts.data() };
+				static_cast<uint32_t>(mSetLayouts.size()), mSetLayouts.data(),
+				static_cast<uint32_t>(mPushRanges.size()), mPushRanges.data() };
 
 			return device.createPipelineLayoutUnique(layoutInfo);
 		}
@@ -86,6 +93,7 @@ namespace puffin::rendering::util
 	private:
 
 		std::vector<vk::DescriptorSetLayout> mSetLayouts;
+		std::vector<vk::PushConstantRange> mPushRanges;
 
 	};
 

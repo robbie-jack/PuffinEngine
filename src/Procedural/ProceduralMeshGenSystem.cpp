@@ -63,7 +63,8 @@ namespace puffin::procedural
 				vertex.pos = { ((float)x * quadSize.x) - halfSize.x, 0.0f, ((float)y * quadSize.y) - halfSize.y };
 				vertex.normal = { 0.0f, 1.0f, 0.0f };
 				vertex.tangent = { 1.0f, 0.0f, 0.0f};
-				vertex.uv = { (float)x * uvOffset.x, (float)y * uvOffset.y};
+				vertex.uvX = (float)x * uvOffset.x;
+				vertex.uvY = (float)y * uvOffset.y;
 			}
 		}
 
@@ -108,7 +109,7 @@ namespace puffin::procedural
 		{
 			for (int n = 0; n < noiseValues.size(); n++)
 			{
-				const double noiseVal = noise.eval(mesh.vertices[n].uv.x * frequency, mesh.vertices[n].uv.y * frequency);
+				const double noiseVal = noise.eval(mesh.vertices[n].uvX * frequency, mesh.vertices[n].uvY * frequency);
 				noiseValues[n] += ((noiseVal + 1.0) / 2.0) * amplitude;
 			}
 
@@ -138,7 +139,8 @@ namespace puffin::procedural
 			vertex.pos = static_cast<glm::vec3>(positions[i]);
 			vertex.normal = static_cast<glm::vec3>(positions[i].normalized());
 			vertex.tangent = { 0.0f, 0.0f, 0.0f };
-			vertex.uv = { 0.0f, 0.0f };
+			vertex.uvX = 0.0f;
+			vertex.uvY = 0.0f;
 		}
 
 		icosahedron::indices(mesh.indices);

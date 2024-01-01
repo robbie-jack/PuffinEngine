@@ -18,7 +18,7 @@ namespace puffin::rendering
 	public:
 
 		void init(const std::shared_ptr<VKRenderSystem>& renderer, uint32_t vertexSize, uint32_t indexSize = sizeof(uint32_t),
-		          vk::DeviceSize initialVertexBufferSize = 1 * 1024 * 1024, vk::DeviceSize initialIndexBufferSize = 1 * 1024 * 1024, vk::
+		          vk::DeviceSize initialVertexBufferSize = 64 * 1024 * 1024, vk::DeviceSize initialIndexBufferSize = 16 * 1024 * 1024, vk::
 		          DeviceSize vertexBufferBlockSize = 64 * 1024 * 1024, vk::DeviceSize indexBufferBlockSize = 16 * 1024 * 1024);
 
 		void cleanup();
@@ -40,6 +40,7 @@ namespace puffin::rendering
 		uint32_t meshIndexCount(const PuffinID meshId) { return mInternalMeshData[meshId].indexCount; }
 
 		AllocatedBuffer& vertexBuffer() { return mVertexBuffer; }
+		vk::DeviceAddress vertexBufferAddress() { return mVertexBufferAddress; }
 		AllocatedBuffer& indexBuffer() { return mIndexBuffer; }
 
 	private:
@@ -56,6 +57,7 @@ namespace puffin::rendering
 		std::unordered_map<PuffinID, InternalMeshData> mInternalMeshData;
 
 		AllocatedBuffer mVertexBuffer;
+		vk::DeviceAddress mVertexBufferAddress = {};
 		AllocatedBuffer mIndexBuffer;
 
 		uint32_t mVertexSize = 0; // Number of bytes for each vertex
@@ -82,5 +84,8 @@ namespace puffin::rendering
 
 		bool shrinkVertexBuffer(uint32_t minVertexCount);
 		bool shrinkIndexBuffer(uint32_t minVertexCount);
+
+		AllocatedBuffer createVertexBuffer(vk::DeviceSize bufferSize);
+		AllocatedBuffer createIndexBuffer(vk::DeviceSize bufferSize);
 	};
 }

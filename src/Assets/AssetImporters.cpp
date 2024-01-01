@@ -41,9 +41,9 @@ namespace puffin::io
 			const Vector3f& v2 = vertices[i2].pos;
 			const Vector3f& v3 = vertices[i3].pos;
 
-			const Vector2f& uv1 = vertices[i1].uv;
-			const Vector2f& uv2 = vertices[i2].uv;
-			const Vector2f& uv3 = vertices[i3].uv;
+			const Vector2f& uv1 = { vertices[i1].uvX, vertices[i1].uvY };
+			const Vector2f& uv2 = { vertices[i2].uvX, vertices[i2].uvY };
+			const Vector2f& uv3 = { vertices[i3].uvX, vertices[i3].uvY };
 
 			float x1 = v2.x - v1.x;
 			float x2 = v3.x - v1.x;
@@ -171,8 +171,8 @@ namespace puffin::io
 					// Check if `texcoord_index` is zero or positive. negative = no texcoord data
 					if (idx.texcoord_index >= 0)
 					{
-						vertex.uv.x = attrib.texcoords[2 * static_cast<size_t>(idx.texcoord_index) + 0];
-						vertex.uv.y = attrib.texcoords[2 * static_cast<size_t>(idx.texcoord_index) + 1];
+						vertex.uvX = attrib.texcoords[2 * static_cast<size_t>(idx.texcoord_index) + 0];
+						vertex.uvY = attrib.texcoords[2 * static_cast<size_t>(idx.texcoord_index) + 1];
 					}
 
 					// Add vertex to vertices vector if it does not already exist, else just add a new index to indices vector
@@ -349,7 +349,9 @@ namespace puffin::io
 			{
 				vertices[i].pos = vertexPos[i];
 				vertices[i].normal = vertexNormal[i];
-				vertices[i].uv = vertexUV[i];
+				//vertices[i].uv = vertexUV[i];
+				vertices[i].uvX = vertexUV[i].x;
+				vertices[i].uvY = vertexUV[i].y;
 			}
 
 			// Load Indices

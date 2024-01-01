@@ -125,12 +125,15 @@ namespace puffin::rendering
 
 					mMats.insert(matID);
 
+					vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant) };
+
 					MaterialVK& mat = mMats[matID];
 					mat.matID = matID;
 
 					util::PipelineLayoutBuilder plb{};
 					mat.pipelineLayout = plb
 						.descriptorSetLayout(mRenderSystem->staticRenderData().globalSetLayout)
+						.pushConstantRange(range)
 						.createUnique(mRenderSystem->device());
 
 					vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = { {}, true, true,
@@ -149,8 +152,6 @@ namespace puffin::rendering
 						.shader(vk::ShaderStageFlagBits::eVertex, vertMod)
 						.shader(vk::ShaderStageFlagBits::eFragment, fragMod)
 						.depthStencilState(depthStencilInfo)
-						// Define vertex binding/attributes
-						.vertexLayout(VertexPNTV32::getLayoutVK())
 						// Add rendering info struct
 						.addPNext(&pipelineRenderInfo)
 						// Create pipeline
