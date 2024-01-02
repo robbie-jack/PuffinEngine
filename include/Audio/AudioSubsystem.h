@@ -85,7 +85,6 @@ namespace puffin::audio
 		const std::set<PuffinID>& getAllInstanceIDsForSound(PuffinID soundAssetID);
 		SoundInstance& getSoundInstance(PuffinID soundInstanceID); // Get sound instance struct
 
-
 	private:
 
 		friend AudioSubsystemProvider;

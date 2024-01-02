@@ -362,8 +362,6 @@ elseif (LINUX)
 	set(DLL_SUFFIX .so)
 endif()
 
-#target_link_libraries(${PROJECT_NAME} ${LIB_DIR}/irrKlang/irrKlang${LIB_SUFFIX})
-
 # Define Debug Libs
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
 target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})

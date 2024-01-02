@@ -47,7 +47,7 @@ namespace puffin::audio
 
 	void AudioSubsystem::playSound(PuffinID soundAssetID)
 	{
-
+		mAudioSubsystemProvider->playSound(soundAssetID);
 	}
 
 	PuffinID AudioSubsystem::createSoundInstance(PuffinID soundAssetID)
@@ -79,10 +79,12 @@ namespace puffin::audio
 
 	void AudioSubsystem::startSoundInstance(PuffinID soundInstanceID, bool restart)
 	{
+		mAudioSubsystemProvider->startSoundInstance(soundInstanceID, restart);
 	}
 
 	void AudioSubsystem::stopSoundInstance(PuffinID soundInstanceID)
 	{
+		mAudioSubsystemProvider->stopSoundInstance(soundInstanceID);
 	}
 
 	PuffinID AudioSubsystem::createAndStartSoundInstance(PuffinID soundAssetID)

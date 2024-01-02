@@ -175,7 +175,7 @@ namespace puffin::core
 			mDeltaTime = mTimeStepLimit;
 		}
 
-		//const auto audioSubsystem = getSubsystem<audio::AudioSubsystem>();
+		const auto audioSubsystem = getSubsystem<audio::AudioSubsystem>();
 
 		// Update all Subsystems
 		{
@@ -749,16 +749,14 @@ namespace puffin::core
         if (mPlayState == PlayState::Stopped)
         {
             mPlayState = PlayState::Started;
-            return;
         }
-        else if (mPlayState == PlayState::Playing)
+		else if (mPlayState == PlayState::Playing)
         {
-            mPlayState = PlayState::JustPaused;
-            return;
+	        mPlayState = PlayState::JustPaused;
         }
         else if (mPlayState == PlayState::Paused)
         {
-            mPlayState = PlayState::JustUnpaused;
+	        mPlayState = PlayState::JustUnpaused;
         }
 	}
 
