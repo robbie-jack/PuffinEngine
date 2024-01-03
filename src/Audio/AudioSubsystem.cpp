@@ -7,8 +7,6 @@
 
 #include <memory>
 
-using namespace irrklang;
-
 namespace puffin::audio
 {
 	////////////////////////////////

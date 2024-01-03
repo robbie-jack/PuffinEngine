@@ -1,7 +1,5 @@
 #pragma once
 
-#include "irrKlang/irrKlang.h"
-
 #include "Core/Subsystem.h"
 
 #include "Types/UUID.h"
