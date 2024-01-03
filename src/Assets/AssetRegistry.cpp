@@ -140,13 +140,14 @@ namespace puffin::assets
 
 		while (!cmakeListsInDir)
 		{
-			for (const auto& entry : fs::directory_iterator(localPath))
+			for (const auto& entry : fs::recursive_directory_iterator(localPath))
 			{
 				const auto& entryPath = entry.path();
 
-				if (strcmp(entryPath.filename().string().c_str(), "CMakeLists.txt") == 0)
+				if (strcmp(entryPath.filename().string().c_str(), "PuffinEngine.txt") == 0)
 				{
 					cmakeListsInDir = true;
+					localPath = entryPath.parent_path();
 					break;
 				}
 			}
