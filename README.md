@@ -3,7 +3,7 @@ Puffin is a 3D Game Engine built with Vulkan which serves as a foundation for di
 
 In Progress:
 
-Finished Re-Implementing a basic 3D Renderer in Vulkan using GPU Driven Rendering techniques. Now working on Implementing a basic material system and getting Puffin ready to be used for game projects.
+Finished basic material system and am now working on starting a basic game project using Puffin
 
 Assets & Shaders used while developing Puffin are located here: https://github.com/robbie-jack/PuffinProject
 
@@ -29,7 +29,7 @@ STB - Image Loader - https://github.com/nothings/stb
 
 AngelScript - Scripting - https://www.angelcode.com/angelscript/
 
-irrKlang - Audio - https://www.ambiera.com/irrklang/
+MiniAudio - Audio - https://miniaud.io/
 
 nlohmann/json - Json Parsing - https://github.com/nlohmann/json
 
