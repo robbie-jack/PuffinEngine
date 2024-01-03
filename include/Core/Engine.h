@@ -100,7 +100,7 @@ namespace puffin::core
 		Engine() = default;
 		~Engine() = default;
 
-		void init();
+		void init(const fs::path& projectPath);
 		bool update();
 		void destroy();
 

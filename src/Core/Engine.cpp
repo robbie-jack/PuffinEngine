@@ -36,10 +36,9 @@
 
 namespace puffin::core
 {
-	void Engine::init()
+	void Engine::init(const fs::path& projectPath)
 	{
 		// Subsystems
-
 		auto windowSubsystem = registerSubsystem<window::WindowSubsystem>();
 		auto signalSubsystem = registerSubsystem<SignalSubsystem>();
 		auto enkitsSubsystem = registerSubsystem<EnkiTSSubsystem>();
@@ -50,14 +49,6 @@ namespace puffin::core
 		auto sceneSubsystem = registerSubsystem<io::SceneSubsystem>();
 
 		// Load Project File
-		const auto projectPath = fs::path(R"(C:\Projects\PuffinProject\Puffin.pproject)");
-		fs::path projectDirPath = projectPath;
-		projectDirPath.remove_filename();
-
-		/*mProjectFile.name = "Puffin";
-		mProjectFile.defaultScenePath = "scenes\\default.pscene";
-		SaveProject(projectPath, mProjectFile);*/
-
 		LoadProject(projectPath, mProjectFile);
 
 		// Setup asset registry
@@ -99,7 +90,7 @@ namespace puffin::core
 		registerSystem<procedural::ProceduralMeshGenSystem>();
 
 		// Load Project Settings
-		io::LoadSettings(projectDirPath.parent_path() / "Settings.json", mSettings);
+		LoadSettings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", mSettings);
 
 		// Load/Initialize Assets
 		assets::AssetRegistry::get()->loadAssetCache();

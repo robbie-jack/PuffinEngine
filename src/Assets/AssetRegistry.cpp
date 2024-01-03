@@ -79,6 +79,12 @@ namespace puffin::assets
 	{
 		// Initialize Input File Stream and Cereal Binary Archive
 		const fs::path assetCachePath = mProjectRootPath / (mProjectName + ".passetcache");
+
+		if (!exists(assetCachePath))
+		{
+			saveAssetCache();
+		}
+
 		std::ifstream is(assetCachePath);
 
 		json data;

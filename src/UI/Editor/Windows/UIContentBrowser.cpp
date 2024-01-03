@@ -17,10 +17,14 @@ namespace puffin::ui
 			begin(mWindowName);
 
 			const fs::path contentPath = assets::AssetRegistry::get()->contentRoot();
-			for (auto const& dirEntry : fs::directory_iterator(contentPath))
+
+			if (exists(contentPath))
 			{
-				std::string pathName = dirEntry.path().string();
-                ImGui::Text("%s", pathName.c_str());
+				for (auto const& dirEntry : fs::directory_iterator(contentPath))
+				{
+					std::string pathName = dirEntry.path().string();
+					ImGui::Text("%s", pathName.c_str());
+				}
 			}
 
 			end();
