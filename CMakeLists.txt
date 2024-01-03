@@ -71,28 +71,34 @@ checkout_git_branch("deps/imgui" "docking")
 # Define CMAKE Variables
 set(PROJECT_NAME PuffinEngine)
 
-# Set Executable Output Directories
+# Set Executable/Library/Archive Output Directories
 if (WIN32)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/win64/debug)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/win64/release)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/win64/debug)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/win64/release)
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/win64/debug)
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/win64/release)
 elseif (LINUX)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/linux/debug)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/linux/release)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/linux/debug)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/linux/release)
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/linux/debug)
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/linux/release)
 endif()
 
-# Set Project Name
-project (${PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
-
-# Set C++ Language Standard to C++ 17
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON)
-
 # Options
+option(BUILD_ENGINE_AS_STANDALONE "Build PuffinEngine as a standalone executable" OFF)
 option(DOUBLE_PRECISION_SUPPORT "Enable Double Precision Support" OFF)
 option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" OFF)
 option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" ON)
 option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
+
+if (BUILD_ENGINE_AS_STANDALONE)
+	# Set Project Name
+	project (${PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
+endif()
 
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -267,8 +273,7 @@ set(SOURCES
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindowViewport.cpp
 	# Window
 	${SOURCE_DIR}/Window/WindowSubsystem.cpp
-	# Root
-	${SOURCE_DIR}/main.cpp 
+	# Root 
 	${SOURCE_DIR}/ManipulationGizmo.cpp
 	)
 	
@@ -305,8 +310,18 @@ set (ENKITS_SOURCES
 	${ENKITS_DIR}/src/TaskScheduler.cpp
 	)
 
-# Add Main as Executable
-add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+# Add Main as Executable/Library
+if (BUILD_ENGINE_AS_STANDALONE)
+	add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} ${SOURCE_DIR}/main.cpp )
+else()
+	add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+endif()
+
+# Set C++ Language Standard to C++ 17
+set_target_properties(${PROJECT_NAME} PROPERTIES CMAKE_CXX_STANDARD 17)
+set_target_properties(${PROJECT_NAME} PROPERTIES CMAKE_CXX_STANDARD_REQUIRED ON)
+set_target_properties(${PROJECT_NAME} PROPERTIES CMAKE_CXX_EXTENSIONS ON)
+
 target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
