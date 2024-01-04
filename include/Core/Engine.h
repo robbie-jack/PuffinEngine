@@ -113,7 +113,9 @@ namespace puffin::core
 		{
 			assert(mApplication == nullptr && "Registering multiple applications");
 
-			mApplication = std::static_pointer_cast<Application>(std::make_shared<Application>());
+			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>());
+			mApplication->setEngine(shared_from_this());
+			mApplication->setup();
 		}
 
 		// Subsystem Methods
