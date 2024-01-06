@@ -35,6 +35,33 @@ namespace puffin
 		// Public Functions
 		//--------------------------------------------------
 
+		void OnagerPhysicsSystem2D::setup()
+		{
+			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "Onager2DPhysicsSystem: Init");
+			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Onager2DPhysicsSystem: EndPlay");
+
+			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+
+			registry->on_construct<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructRigidbody>(this);
+			registry->on_destroy<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyRigidbody>(this);
+
+			registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent2D>>();
+			registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent2D>>();
+
+			registry->on_construct<BoxComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructBox>(this);
+			registry->on_update<BoxComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructBox>(this);
+			registry->on_destroy<BoxComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyBox>(this);
+
+			registry->on_construct<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructCircle>(this);
+			registry->on_update<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructCircle>(this);
+			registry->on_destroy<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyCircle>(this);
+
+			const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
+			signalSubsystem->createSignal<CollisionBeginEvent>("CollisionBegin");
+			signalSubsystem->createSignal<CollisionEndEvent>("CollisionEnd");
+		}
+
 		void OnagerPhysicsSystem2D::init()
 		{
 			registerBroadphase<NSquaredBroadphase>();
@@ -456,7 +483,7 @@ namespace puffin
 				{
 					mActiveContacts.insert(contact);
 
-					signalSubsystem->signal<CollisionBeginEvent>({ contact.a, contact.b });
+					signalSubsystem->emit<CollisionBeginEvent>("CollisionBegin", { contact.a, contact.b });
 				}
 				else
 				{
@@ -481,7 +508,7 @@ namespace puffin
 			{
 				mActiveContacts.erase(contact);
 
-				signalSubsystem->signal<CollisionEndEvent>({ contact.a, contact.b });
+				signalSubsystem->emit<CollisionEndEvent>("CollisionEnd", { contact.a, contact.b });
 			}
 		}
 	}

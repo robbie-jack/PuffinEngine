@@ -1,6 +1,9 @@
 #pragma once
 
+#if PFN_BOX2D_PHYSICS
 #include "box2d/box2d.h"
+#endif
+
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 
@@ -49,7 +52,12 @@ namespace puffin
 		}
 
 		// Operator Overrides
-		bool operator== (const Vector2<T>& vec)
+		bool operator== (const Vector2<float>& vec) const
+		{
+			return x == vec.x && y == vec.y;
+		}
+
+		bool operator== (const Vector2<double>& vec) const
 		{
 			return x == vec.x && y == vec.y;
 		}
@@ -63,6 +71,7 @@ namespace puffin
 			return vec;
 		}
 
+#if PFN_BOX2D_PHYSICS
 		operator b2Vec2() const
 		{
 			b2Vec2 vec;
@@ -70,6 +79,7 @@ namespace puffin
 			vec.y = y;
 			return vec;
 		}
+#endif
 
 		operator Vector2<float>() const
 		{

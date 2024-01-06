@@ -3,28 +3,28 @@
 #include <chrono>
 #include <thread>
 
+#include "Assets/AssetImporters.h"
 #include "Assets/AssetRegistry.h"
+#include "Assets/MaterialAsset.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/ShaderAsset.h"
-#include "Assets/MaterialAsset.h"
 #include "Assets/SoundAsset.h"
 #include "Assets/TextureAsset.h"
 #include "Audio/AudioSubsystem.h"
-#include "Assets/AssetImporters.h"
-#include "Components/TransformComponent2D.h"
-#include "Components/TransformComponent3D.h"
+#include "Components/Physics/2D/RigidbodyComponent2D.h"
+#include "Components/Physics/2D/ShapeComponents2D.h"
+#include "Components/Physics/3D/RigidbodyComponent3D.h"
+#include "Components/Physics/3D/ShapeComponents3D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Scripting/AngelScriptComponent.h"
+#include "Components/TransformComponent2D.h"
+#include "Components/TransformComponent3D.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SceneSubsystem.h"
 #include "Core/SignalSubsystem.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
-#include "Procedural/ProceduralMeshGenSystem.h"
-#include "Rendering/Vulkan/VKRenderSystem.h"
-#include "Physics/PhysicsCore.h"
-#include "Scripting/AngelScript/AngelScriptSystem.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
 
@@ -36,7 +36,7 @@
 
 namespace puffin::core
 {
-	void Engine::init(const fs::path& projectPath)
+	void Engine::setup(const fs::path& projectPath)
 	{
 		// Subsystems
 		auto windowSubsystem = registerSubsystem<window::WindowSubsystem>();
@@ -60,10 +60,10 @@ namespace puffin::core
 		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::MaterialInstanceAsset>();
 
-		// Load Default Scene (if set)
+		// Create Default Scene (if set)
 		auto sceneData = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / mProjectFile.defaultScenePath);
 
-		// Register Components to ECS World and Scene Data Class
+		// Register Components to Scene Data Class
 		sceneData->registerComponent<SceneObjectComponent>();
 		sceneData->registerComponent<TransformComponent2D>();
 		sceneData->registerComponent<TransformComponent3D>();
@@ -71,23 +71,17 @@ namespace puffin::core
 		sceneData->registerComponent<rendering::LightComponent>();
 		sceneData->registerComponent<rendering::ShadowCasterComponent>();
 		sceneData->registerComponent<rendering::CameraComponent>();
-		
 		sceneData->registerComponent<scripting::AngelScriptComponent>();
 		sceneData->registerComponent<rendering::ProceduralMeshComponent>();
 		sceneData->registerComponent<procedural::PlaneComponent>();
 		sceneData->registerComponent<procedural::TerrainComponent>();
 		sceneData->registerComponent<procedural::IcoSphereComponent>();
-
-		physics::registerComponents(sceneData);
-
-		// Systems
-		registerSystem<rendering::VKRenderSystem>();
-
-		physics::registerPhysicsSystems(shared_from_this());
-
-		registerSystem<scripting::AngelScriptSystem>();
-
-		registerSystem<procedural::ProceduralMeshGenSystem>();
+		sceneData->registerComponent<physics::RigidbodyComponent2D>();
+		sceneData->registerComponent<physics::BoxComponent2D>();
+		sceneData->registerComponent<physics::CircleComponent2D>();
+		sceneData->registerComponent<physics::RigidbodyComponent3D>();
+		sceneData->registerComponent<physics::BoxComponent3D>();
+		sceneData->registerComponent<physics::SphereComponent3D>();
 
 		// Load Project Settings
 		LoadSettings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", mSettings);
@@ -111,7 +105,10 @@ namespace puffin::core
 			sceneData->save();
 			sceneData->clear();
 		}
+	}
 
+	void Engine::init()
+	{
 		mRunning = true;
 		mPlayState = PlayState::Stopped;
 

@@ -7,6 +7,8 @@
 #include "Components/SceneObjectComponent.h"
 
 #include "entt/entity/registry.hpp"
+#include "angelscript/scriptbuilder/scriptbuilder.h"
+#include "angelscript/scriptstdstring/scriptstdstring.h"
 
 #include <assert.h>  // assert()
 #include <iostream>  // cout

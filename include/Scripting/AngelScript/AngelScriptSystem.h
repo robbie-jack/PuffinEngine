@@ -2,8 +2,6 @@
 
 // AngelScript Includes
 #include "angelscript/angelscript.h"
-#include "angelscript/scriptbuilder/scriptbuilder.h"
-#include "angelscript/scriptstdstring/scriptstdstring.h"
 
 #include "Core/System.h"
 #include "Audio/AudioSubsystem.h"

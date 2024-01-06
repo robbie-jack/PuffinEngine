@@ -1,12 +1,10 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
-#include <vulkan/vulkan.hpp>
+#include "vulkan/vulkan.hpp"
+#include "GLFW/glfw3.h"
 
 #include "vk_mem_alloc.hpp"
 

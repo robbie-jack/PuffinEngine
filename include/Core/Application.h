@@ -18,7 +18,7 @@ namespace puffin::core
 
 		void setEngine(const std::shared_ptr<Engine>& engine) { mEngine = engine; }
 
-	private:
+	protected:
 
 		std::shared_ptr<Engine> mEngine = nullptr;
 

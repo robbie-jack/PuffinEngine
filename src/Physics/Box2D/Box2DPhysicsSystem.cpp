@@ -194,13 +194,13 @@ namespace puffin::physics
 		CollisionBeginEvent collisionBeginEvent;
 		while (mContactListener->getNextCollisionBeginEvent(collisionBeginEvent))
 		{
-			signalSubsystem->signal(collisionBeginEvent);
+			//signalSubsystem->signal(collisionBeginEvent);
 		}
 
 		CollisionEndEvent collisionEndEvent;
 		while (mContactListener->getNextCollisionEndEvent(collisionEndEvent))
 		{
-			signalSubsystem->signal(collisionEndEvent);
+			//signalSubsystem->signal(collisionEndEvent);
 		}
 	}
 

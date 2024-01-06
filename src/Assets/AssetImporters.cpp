@@ -381,6 +381,8 @@ namespace puffin::io
 			if (!asset->save(info, vertices.data(), indices.data()))
 				return false;
 
+			assets::AssetRegistry::get()->saveAssetCache();
+
 			vertices.clear();
 			indices.clear();
 		}
@@ -536,6 +538,8 @@ namespace puffin::io
 			info.textureFormat = rgbFormat;
 			ret = asset->save(info, pixelPtr);
 		}
+
+		assets::AssetRegistry::get()->saveAssetCache();
 
 		// Free Loaded Data, as pixels are now in staging buffer
 		stbi_image_free(pixels);

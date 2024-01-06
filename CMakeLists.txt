@@ -130,7 +130,6 @@ set(HEADERS
 	${HEADER_DIR}/Physics/CollisionEvent.h
 	${HEADER_DIR}/Physics/PhysicsConstants.h
 	${HEADER_DIR}/Physics/BodyType.h
-	${HEADER_DIR}/Physics/PhysicsCore.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsTypes2D.h
 	${HEADER_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsHelpers2D.h
@@ -369,23 +368,22 @@ endif()
 set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
-target_include_directories(${PROJECT_NAME} PRIVATE include)
-target_include_directories(${PROJECT_NAME} PRIVATE third_party)
-target_include_directories(${PROJECT_NAME} PRIVATE third_party/angelscript)
-target_include_directories(${PROJECT_NAME} PRIVATE $ENV{VULKAN_SDK}/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/box2d/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/OpenSimplexNoise)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/imgui)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/imgui-filebrowser)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/lz4/lib)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include)
-#target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/Vulkan-Hpp/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vma-hpp/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/vkb/src)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/tinygltf)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/enkits/src)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/entt/src)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DEPS_DIR}/jolt)
+target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PUBLIC third_party)
+target_include_directories(${PROJECT_NAME} PUBLIC third_party/angelscript)
+target_include_directories(${PROJECT_NAME} PUBLIC $ENV{VULKAN_SDK}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/OpenSimplexNoise)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/imgui)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/imgui-filebrowser)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/lz4/lib)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/vkb/src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/tinygltf)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/entt/src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/jolt)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
@@ -396,44 +394,44 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT $
 
 # Add definitions for supported functionality
 if (DOUBLE_PRECISION_SUPPORT)
-	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_DOUBLE_PRECISION)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_DOUBLE_PRECISION)
 endif()
 
 if (BOX2D_PHYSICS_SUPPORT)
-	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_BOX2D_PHYSICS)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_BOX2D_PHYSICS)
 endif()
 
 if (JOLT_PHYSICS_SUPPORT)
-	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_JOLT_PHYSICS)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_JOLT_PHYSICS)
 endif()
 
 if (ONAGER2D_PHYSICS_SUPPORT)
-	target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_ONAGER2D_PHYSICS)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_ONAGER2D_PHYSICS)
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
-target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_FORCE_SIMD_AVX2)
-target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX)
+target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
+target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_SIMD_AVX2)
+target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 
-# Platform defines (WIN32)
+# Platform defines
 if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_PLATFORM_WIN32)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_EXPOSE_NATIVE_WIN32)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_PLATFORM_WIN32)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
 elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PFN_PLATFORM_LINUX)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_XLIB_KHR)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_EXPOSE_NATIVE_X11)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_PLATFORM_LINUX)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
 endif()
 
 if (MSVC)
 	# Big Object Support (MSCV/Linux)
-	target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
-	target_compile_options(${PROJECT_NAME} PRIVATE /arch:AVX2)
+	target_compile_options(${PROJECT_NAME} PUBLIC /bigobj)
+	target_compile_options(${PROJECT_NAME} PUBLIC /arch:AVX2)
 	# Multiprocessor (Multithreaded) Compilation Support
-	target_compile_options(${PROJECT_NAME} PRIVATE /MP)
+	target_compile_options(${PROJECT_NAME} PUBLIC /MP)
 	# Enabled updated __cplusplus macro
-	target_compile_options(${PROJECT_NAME} PRIVATE "/Zc:__cplusplus")
+	target_compile_options(${PROJECT_NAME} PUBLIC "/Zc:__cplusplus")
 else ()
-	#target_compile_options(${PROJECT_NAME} PRIVATE -Wa, -mbig-obj)
+	#target_compile_options(${PROJECT_NAME} PUBLIC -Wa, -mbig-obj)
 endif ()
