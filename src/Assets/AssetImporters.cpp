@@ -85,7 +85,7 @@ namespace puffin::io
 	
 	bool loadAndImportModel(const fs::path& modelPath, fs::path assetSubdirectory)
 	{
-		if (modelPath.extension() == ".gltf")
+		if (modelPath.extension() == ".gltf" || modelPath.extension() == ".glb")
 			return loadAndImportGLTFModel(modelPath, assetSubdirectory);
 
 		if (modelPath.extension() == ".obj")
@@ -231,7 +231,15 @@ namespace puffin::io
 
 		std::cout << "Loading glTF: " << modelPath << std::endl;
 
-		bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, modelPath.string());
+		bool ret = false;
+		if (modelPath.extension() == ".gltf")
+		{
+			ret = loader.LoadASCIIFromFile(&model, &err, &warn, modelPath.string());
+		}
+		else if (modelPath.extension() == ".glb")
+		{
+			ret = loader.LoadBinaryFromFile(&model, &err, &warn, modelPath.string());
+		}
 
 		if (!warn.empty())
 		{
@@ -253,21 +261,6 @@ namespace puffin::io
 
 	bool importGLTFModel(const fs::path& modelPath, const tinygltf::Model& model, fs::path assetSubdirectory)
 	{
-		// Get buffer file paths
-		std::vector<fs::path> bufferPaths;
-		bufferPaths.resize(model.buffers.size());
-
-		int i = 0;
-		for (const auto& buffer : model.buffers)
-		{
-			if (buffer.uri.substr(0, 4) != "data")
-			{
-				bufferPaths[i] = modelPath.parent_path().string() + "//" + buffer.uri;
-			}
-
-			i++;
-		}
-
 		std::vector<rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
@@ -280,8 +273,6 @@ namespace puffin::io
 			const auto& primitive = mesh.primitives[0];
 
 			size_t vertexCount = 0;
-
-			std::vector<char> binaryData;
 
 			std::vector<Vector3f> vertexPos;
 			std::vector<Vector3f> vertexNormal;
@@ -299,10 +290,9 @@ namespace puffin::io
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						loadGLTFBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
-
 						vertexPos.resize(vertexCount);
-						memcpy(vertexPos.data(), binaryData.data(), vertexCount);
+
+						std::copy_n(model.buffers[bufferView.buffer].data.data() + bufferView.byteOffset, bufferView.byteLength, vertexPos.data());
 					}
 
 					continue;
@@ -317,10 +307,9 @@ namespace puffin::io
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						loadGLTFBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
-
 						vertexNormal.resize(vertexCount);
-						memcpy(vertexNormal.data(), binaryData.data(), vertexCount);
+
+						std::copy_n(model.buffers[bufferView.buffer].data.data() + bufferView.byteOffset, bufferView.byteLength, vertexNormal.data());
 					}
 
 					continue;
@@ -335,10 +324,9 @@ namespace puffin::io
 						const auto& bufferView = model.bufferViews[accessor.bufferView];
 						vertexCount = accessor.count;
 
-						loadGLTFBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
-
 						vertexUV.resize(vertexCount);
-						memcpy(vertexUV.data(), binaryData.data(), vertexCount);
+
+						std::copy_n(model.buffers[bufferView.buffer].data.data() + bufferView.byteOffset, bufferView.byteLength, vertexUV.data());
 					}
 				}
 			}
@@ -349,7 +337,6 @@ namespace puffin::io
 			{
 				vertices[i].pos = vertexPos[i];
 				vertices[i].normal = vertexNormal[i];
-				//vertices[i].uv = vertexUV[i];
 				vertices[i].uvX = vertexUV[i].x;
 				vertices[i].uvY = vertexUV[i].y;
 			}
@@ -365,10 +352,9 @@ namespace puffin::io
 				const auto& bufferView = model.bufferViews[accessor.bufferView];
 				indexCount = accessor.count;
 
-				loadGLTFBinaryData(bufferPaths[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength, binaryData);
-
 				indexShort.resize(indexCount);
-				memcpy(indexShort.data(), binaryData.data(), indexCount);
+
+				std::copy_n(model.buffers[bufferView.buffer].data.data() + bufferView.byteOffset, bufferView.byteLength, indexShort.data());
 			}
 
 			// Copy indices into vector
@@ -419,28 +405,6 @@ namespace puffin::io
 			return false;
 
 		return importGLTFModel(modelPath, model, assetSubdirectory);
-	}
-
-	bool loadGLTFBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData)
-	{
-		// Open File for Loading
-		std::ifstream binaryFile;
-		binaryFile.open(binaryPath.c_str(), std::ios::binary);
-
-		// Return false if file does not exist
-		if (!binaryFile.is_open())
-			return false;
-
-		// Seek to start of binary blob
-		binaryFile.seekg(byteOffset);
-
-		// Load binary data
-		binaryData.resize(byteLength);
-		binaryFile.read(binaryData.data(), byteLength);
-
-		binaryFile.close();
-
-		return true;
 	}
 
 	//////////////////////

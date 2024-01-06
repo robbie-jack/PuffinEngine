@@ -31,8 +31,6 @@ namespace puffin::io
 
 	bool loadAndImportGLTFModel(const fs::path& modelPath, fs::path assetSubdirectory);
 
-	bool loadGLTFBinaryData(const fs::path& binaryPath, const int& byteOffset, const int& byteLength, std::vector<char>& binaryData);
-
 	//////////////////////
 	// Texture Importers
 	//////////////////////
