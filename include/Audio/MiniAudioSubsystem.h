@@ -10,12 +10,10 @@ namespace puffin::audio
 	{
 	public:
 
-		MiniAudioSubsystem() = default;
-		~MiniAudioSubsystem() override = default;
+		MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~MiniAudioSubsystem() override { mEngine = nullptr; }
 
-		void setup() override;
-
-		void init();
+		void startup();
 		void update();
 		void shutdown();
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Subsystem.h"
+#include "System.h"
 
 #include "TaskScheduler.h"
 
@@ -9,23 +9,14 @@
 
 namespace puffin::core
 {
-	class EnkiTSSubsystem : public Subsystem
+	class EnkiTSSubsystem : public System
 	{
 	public:
 
-		~EnkiTSSubsystem() override = default;
+		EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
+		~EnkiTSSubsystem() override { mEngine = nullptr; }
 
-		void setup() override;
-
-		void init()
-		{
-			mTaskScheduler = std::make_shared<enki::TaskScheduler>();
-
-			// Set max threads to physical - 2 (so there is some left over for other system work)
-			const uint32_t maxThreads = std::thread::hardware_concurrency() - 2;
-
-			mTaskScheduler->Initialize(maxThreads);
-		}
+		void startup();
 
 		std::shared_ptr<enki::TaskScheduler> getTaskScheduler() { return mTaskScheduler; }
 

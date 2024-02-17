@@ -12,14 +12,14 @@
 
 namespace puffin::audio
 {
-	void MiniAudioSubsystem::setup()
+	MiniAudioSubsystem::MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine) : AudioSubsystemProvider(engine)
 	{
-		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "MiniAudioSubsystem: Init", 60);
+		mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "MiniAudioSubsystem: Startup", 60);
 		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "MiniAudioSubsystem: Update");
 		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "MiniAudioSubsystem: Shutdown", 140);
 	}
 
-	void MiniAudioSubsystem::init()
+	void MiniAudioSubsystem::startup()
 	{
 		mSoundEngine = new ma_engine();
 

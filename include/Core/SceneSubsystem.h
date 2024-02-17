@@ -3,7 +3,7 @@
 #include "nlohmann/json.hpp"
 #include "entt/entity/registry.hpp"
 
-#include "Core/Subsystem.h"
+#include "Core/System.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Components/SceneObjectComponent.h"
 #include "Types/UUID.h"
@@ -267,23 +267,22 @@ namespace puffin::io
 
 	};
 
-	class SceneSubsystem : public core::Subsystem
+	class SceneSubsystem : public core::System
 	{
 	public:
 
-		SceneSubsystem() = default;
-		~SceneSubsystem() override = default;
-
-		void setup() override
+		SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
+			mEngine->registerCallback(core::ExecutionStage::Startup, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "SceneSubsystem: BeginPlay", 0);
 			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
 		}
 
+		~SceneSubsystem() override { mEngine = nullptr; }
+
 		void loadAndInit() const
 		{
-			const auto subsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+			const auto subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 
 			mSceneData->load();
 			mSceneData->init(subsystem);
@@ -291,7 +290,7 @@ namespace puffin::io
 
 		void beginPlay() const
 		{
-			const auto subsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+			const auto subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 
 			mSceneData->updateData(subsystem);
 		}

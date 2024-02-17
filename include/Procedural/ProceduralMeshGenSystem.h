@@ -24,19 +24,9 @@ namespace puffin::procedural
 	{
 	public:
 
-		ProceduralMeshGenSystem()
+		ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			mSystemInfo.name = "ProceduralMeshGenSystem";
-		}
-
-		~ProceduralMeshGenSystem() override = default;
-
-		void setup() override
-		{
-			//mEngine->registerCallback(core::ExecutionStage::Setup, [&]() { setup(); }, "ProcMeshGenSystem: Setup");
-			//mEngine->registerCallback(core::ExecutionStage::Update, [&]() { update(); }, "ProcMeshGenSystem: Update", 200);
-
-			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			/*registry->on_construct<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
 			registry->on_update<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
@@ -48,8 +38,8 @@ namespace puffin::procedural
 			registry->on_update<IcoSphereComponent>().connect<&ProceduralMeshGenSystem::onConstructIcoSphere>();*/
 		}
 
-		//void setup() const;
-		//void update() const;
+		~ProceduralMeshGenSystem() override { mEngine = nullptr; }
+
 
 		static void onConstructPlane(entt::registry& registry, entt::entity entity);
 		static void onConstructTerrain(entt::registry& registry, entt::entity entity);

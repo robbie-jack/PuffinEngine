@@ -8,16 +8,23 @@ namespace puffin
 {
 	namespace input
 	{
-		void InputSubsystem::setup()
+		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "InputSubsystem: Init", 50);
+			mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "InputSubsystem: Startup", 50);
 			mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "InputSubsystem: Update");
 			mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "InputSubsystem: Shutdown", 150);
+
+			mNextId = 1;
+			mLastXPos = 640.0;
+			mLastYPos = 360.0;
+			mSensitivity = 0.05;
+			mCursorLocked = false;
+			mFirstMouse = true;
 		}
 
-		void InputSubsystem::init()
+		void InputSubsystem::startup()
 		{
-			mWindow = mEngine->getSubsystem<window::WindowSubsystem>()->primaryWindow();
+			mWindow = mEngine->getSystem<window::WindowSubsystem>()->primaryWindow();
 
 			// Setup Actions
 
@@ -95,7 +102,7 @@ namespace puffin
 					// Notify subscribers that event changed
 					if (stateChanged == true)
 					{
-						auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
+						auto signalSubsystem = mEngine->getSystem<core::SignalSubsystem>();
 
 						signalSubsystem->emit<InputEvent>(name, InputEvent(action.name, action.state));
 

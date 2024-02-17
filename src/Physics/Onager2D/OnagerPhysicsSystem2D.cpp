@@ -22,26 +22,13 @@ namespace puffin
 		// Constructor/Destructor
 		//--------------------------------------------------
 
-		OnagerPhysicsSystem2D::OnagerPhysicsSystem2D()
+		OnagerPhysicsSystem2D::OnagerPhysicsSystem2D(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			mBoxShapes.reserve(20000);
-			mCircleShapes.reserve(20000);
-			mColliders.reserve(40000);
-
-			mSystemInfo.name = "Onager2DPhysicsSystem";
-		}
-
-		//--------------------------------------------------
-		// Public Functions
-		//--------------------------------------------------
-
-		void OnagerPhysicsSystem2D::setup()
-		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "Onager2DPhysicsSystem: Init");
+			mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "Onager2DPhysicsSystem: Startup");
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
 			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Onager2DPhysicsSystem: EndPlay");
 
-			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyRigidbody>(this);
@@ -57,12 +44,20 @@ namespace puffin
 			registry->on_update<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructCircle>(this);
 			registry->on_destroy<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyCircle>(this);
 
-			const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
+			const auto signalSubsystem = mEngine->getSystem<core::SignalSubsystem>();
 			signalSubsystem->createSignal<CollisionBeginEvent>("CollisionBegin");
 			signalSubsystem->createSignal<CollisionEndEvent>("CollisionEnd");
+
+			mBoxShapes.reserve(20000);
+			mCircleShapes.reserve(20000);
+			mColliders.reserve(40000);
 		}
 
-		void OnagerPhysicsSystem2D::init()
+		//--------------------------------------------------
+		// Public Functions
+		//--------------------------------------------------
+
+		void OnagerPhysicsSystem2D::startup()
 		{
 			registerBroadphase<NSquaredBroadphase>();
 			registerBroadphase<SweepAndPruneBroadphase>();
@@ -76,12 +71,12 @@ namespace puffin
 			// Update Dynamic Objects
 			updateDynamics();
 
-			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			// Copy component transform into collider
 			for (const auto collider : mColliders)
 			{
-				const auto& transform = registry->get<const TransformComponent2D>(mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(collider->uuid));
+				const auto& transform = registry->get<const TransformComponent2D>(mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(collider->uuid));
 
 				collider->position = transform.position;
 				//collider->rotation = maths::RadiansToDegrees(transform.orientation.toEulerAngles().z);
@@ -104,7 +99,7 @@ namespace puffin
 
 		void OnagerPhysicsSystem2D::endPlay()
 		{
-			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->clear<BoxComponent2D>();
 			registry->clear<CircleComponent2D>();
@@ -178,7 +173,7 @@ namespace puffin
 			mCircleShapes[object.id].centreOfMass = circle.centreOfMass;
 			mCircleShapes[object.id].radius = circle.radius;
 
-			if (mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry()->all_of<RigidbodyComponent2D>(entity))
+			if (mEngine->getSystem<ecs::EnTTSubsystem>()->registry()->all_of<RigidbodyComponent2D>(entity))
 			{
 				// If there is no collider for this entity, create new one
 				const auto collider = std::make_shared<collision2D::CircleCollider2D>(object.id, &mCircleShapes[object.id]);
@@ -216,7 +211,7 @@ namespace puffin
 
 				mShapes[object.id] = &mBoxShapes[object.id];
 
-				if (mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry()->all_of<RigidbodyComponent2D>(entity) && !mColliders.contains(object.id))
+				if (mEngine->getSystem<ecs::EnTTSubsystem>()->registry()->all_of<RigidbodyComponent2D>(entity) && !mColliders.contains(object.id))
 				{
 					const auto collider = std::make_shared<collision2D::BoxCollider2D>(object.id, &mBoxShapes[object.id]);
 
@@ -255,9 +250,9 @@ namespace puffin
 
 		void OnagerPhysicsSystem2D::updateDynamics() const
 		{
-			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-			const auto enkiTSSubSystem = mEngine->getSubsystem<core::EnkiTSSubsystem>();
+			const auto enkiTSSubSystem = mEngine->getSystem<core::EnkiTSSubsystem>();
 
 			const uint32_t numThreads = enkiTSSubSystem->getTaskScheduler()->GetNumTaskThreads();
 
@@ -417,12 +412,12 @@ namespace puffin
 
 		void OnagerPhysicsSystem2D::collisionResponse() const
 		{
-			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			for (const collision2D::Contact& contact : mCollisionContacts)
 			{
-				const auto entityA = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(contact.a);
-				const auto entityB = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(contact.b);
+				const auto entityA = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(contact.a);
+				const auto entityB = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(contact.b);
 
 				if (registry->all_of<RigidbodyComponent2D>(entityA) && registry->all_of<RigidbodyComponent2D>(entityB))
 				{
@@ -471,7 +466,7 @@ namespace puffin
 
 		void OnagerPhysicsSystem2D::generateCollisionEvents()
 		{
-			const auto signalSubsystem = mEngine->getSubsystem<core::SignalSubsystem>();
+			const auto signalSubsystem = mEngine->getSystem<core::SignalSubsystem>();
 
 			std::set<collision2D::Contact> existingContacts;
 

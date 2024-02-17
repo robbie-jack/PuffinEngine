@@ -1,39 +1,26 @@
 #pragma once
 
-#include "Core/Subsystem.h"
-
-#include <string>
+#include <memory>
 
 namespace puffin::core
 {
-	class Engine;
-
-	// Info about the system
-	struct SystemInfo
-	{
-		std::string name;
-	};
-
 	//////////////////////////////////////////////////
 	// System
 	//////////////////////////////////////////////////
 
-	class World;
+	class Engine;
 
-	class System : public core::Subsystem
+	class System
 	{
 	public:
 
-		~System() override
-		{
-			mEngine = nullptr;
-		}
+		System(const std::shared_ptr<Engine>& engine) { mEngine = engine; }
 
-		// Get struct with info on system such as its update order
-		const core::SystemInfo& getInfo() { return mSystemInfo; }
+		virtual ~System() { mEngine = nullptr; }
 
 	protected:
 
-		core::SystemInfo mSystemInfo;
+		std::shared_ptr<Engine> mEngine = nullptr;
+
 	};
 }

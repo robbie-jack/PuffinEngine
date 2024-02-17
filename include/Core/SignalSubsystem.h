@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Subsystem.h"
+#include "System.h"
 
 #include "Types/PackedArray.h"
 
@@ -82,18 +82,15 @@ namespace puffin::core
 
 	typedef std::shared_ptr<ISignal> ISignalPtr;
 
-	class SignalSubsystem : public Subsystem
+	class SignalSubsystem : public System
 	{
 	public:
 
-		SignalSubsystem() = default;
+		SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine) {}
 
-		~SignalSubsystem() override = default;
-
-		void setup() override;
-
-		void shutdown()
+		~SignalSubsystem() override
 		{
+			mEngine = nullptr;
 			mSignals.clear();
 		}
 

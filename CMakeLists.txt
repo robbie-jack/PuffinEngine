@@ -118,7 +118,6 @@ set(HEADERS
 	# Core
 	${HEADER_DIR}/Core/Engine.h
 	${HEADER_DIR}/Core/Application.h
-	${HEADER_DIR}/Core/Subsystem.h
 	${HEADER_DIR}/Core/SignalSubsystem.h
 	${HEADER_DIR}/Core/EnkiTSSubsystem.h
 	${HEADER_DIR}/Core/SceneSubsystem.h

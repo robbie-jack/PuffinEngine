@@ -43,8 +43,20 @@ void printStringGeneric(asIScriptGeneric* gen)
 
 namespace puffin::scripting
 {
-	AngelScriptSystem::AngelScriptSystem()
+	AngelScriptSystem::AngelScriptSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
+		mEngine->registerCallback(core::ExecutionStage::Startup, [&] { startup(); }, "AngelScriptSystem: Startup", 250);
+		mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "AngelScriptSystem: BeginPlay");
+		mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "AngelScriptSystem: FixedUpdate");
+		mEngine->registerCallback(core::ExecutionStage::Update, [&] { update(); }, "AngelScriptSystem: Update");
+		mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "AngelScriptSystem: EndPlay");
+
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+
+		registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
+		//registry->on_update<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
+		registry->on_destroy<AngelScriptComponent>().connect<&AngelScriptSystem::onDestroyScript>(this);
+
 		// Create Script Engine
 		mScriptEngine = asCreateScriptEngine();
 		if (mScriptEngine == nullptr)
@@ -54,8 +66,6 @@ namespace puffin::scripting
 
 		// Set message callback to receive information on errors in human readable form
 		const int r = mScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL); assert(r >= 0 && "Failed to set message callback for angelscript");
-
-		mSystemInfo.name = "AngelScriptSystem";
 	}
 
 	AngelScriptSystem::~AngelScriptSystem()
@@ -65,16 +75,18 @@ namespace puffin::scripting
 		// Shut down the engine
 		mScriptEngine->ShutDownAndRelease();
 		mScriptEngine = nullptr;
+
+		mEngine = nullptr;
 	}
 
-	void AngelScriptSystem::init()
+	void AngelScriptSystem::startup()
 	{
 		// Configure Engine and Setup Global Function Callbacks
 		configureEngine();
 
 		mEngineInterface = std::make_unique<AngelScriptEngineInterface>(mEngine, shared_from_this(), mScriptEngine);
 
-		//mAudioSubsystem = mEngine->getSubsystem<audio::AudioSubsystem>();
+		//mAudioSubsystem = mEngine->getSystem<audio::AudioSubsystem>();
 
 		initContext();
 		initScripts();
@@ -89,7 +101,7 @@ namespace puffin::scripting
 	void AngelScriptSystem::fixedUpdate()
 	{
 		// Initialize/Cleanup marked components
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
 
@@ -118,7 +130,7 @@ namespace puffin::scripting
 		
 		// Run all scripts update method
 		{
-			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
 
@@ -135,7 +147,7 @@ namespace puffin::scripting
 	void AngelScriptSystem::endPlay()
 	{
 		// Execute Script Stop Methods
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
 
@@ -277,11 +289,11 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::initScripts()
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		for (const auto id : mScriptsToInit)
 		{
-			entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -297,11 +309,11 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::startScripts()
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		for (const auto id : mScriptsToStart)
 		{
-			entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 			const auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -315,11 +327,11 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::stopScripts()
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		for (const auto id : mScriptsToStop)
 		{
-			entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 

@@ -26,7 +26,7 @@ namespace puffin
 
 				ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() * .5f); ImGui::Text("ID");
 
-				const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+				const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 				const auto registry = enttSubsystem->registry();
 
 				if (ImGui::BeginListBox("##EntityList", listBoxSize))

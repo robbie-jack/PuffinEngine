@@ -2,7 +2,6 @@
 
 #include "Application.h"
 #include "ProjectSettings.h"
-#include "Subsystem.h"
 #include "System.h"
 
 #include <GLFW/glfw3.h>
@@ -33,14 +32,14 @@ namespace puffin::core
 	enum class ExecutionStage
 	{
 		Idle,				// Only used for calculating idle time when frame rate is limited, do not use with callback
-		Init,				// Occurs once on engine launch, use for one off system initialization
+		Startup,			// Occurs once on engine launch, use for one off system initialization outside of constructor
 		BeginPlay,			// Occurs whenever gameplay is started
 		SubsystemUpdate,	// Occurs every frame, regardless if game is currently playing/paused
 		FixedUpdate,		// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
 		Update,				// Update once a frame - Useful for non-determinstic gameplay code
 		Render,				// Update once a frame - Useful for code which relates to the rendering pipeline
 		EndPlay,			// Occurs when game play is stopped, use for resetting any gameplay data
-		Shutdown			// Occurs when engine exits, use for cleaning up all data
+		Shutdown			// Occurs when engine exits, use for cleaning up all data outside of destructor
 	};
 
 	const std::vector<std::pair<ExecutionStage, const std::string>> gExecutionStageOrder =
@@ -101,9 +100,10 @@ namespace puffin::core
 		~Engine() = default;
 
 		void setup(const fs::path& projectPath);
-		void init();
+
+		void startup();
 		bool update();
-		void destroy();
+		void shutdown();
 
 		void play();
 		void restart();
@@ -114,56 +114,35 @@ namespace puffin::core
 		{
 			assert(mApplication == nullptr && "Registering multiple applications");
 
-			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>());
-			mApplication->setEngine(shared_from_this());
-			mApplication->setup();
+			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>(shared_from_this()));
 		}
 
-		// Subsystem Methods
+		// System/Subsystem Methods
 		template<typename SubsystemT>
-		std::shared_ptr<SubsystemT> registerSubsystem()
+		std::shared_ptr<SubsystemT> registerSystem()
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
-			assert(mSubsystems.find(typeName) == mSubsystems.end() && "Registering subsystem more than once");
+			assert(mSystems.find(typeName) == mSystems.end() && "Registering system more than once");
 
 			// Create subsystem pointer
-			auto subsystem = std::make_shared<SubsystemT>();
-			auto subsystemBase = std::static_pointer_cast<Subsystem>(subsystem);
-			subsystemBase->setEngine(shared_from_this());
-
-			subsystemBase->setup();
+			auto subsystem = std::make_shared<SubsystemT>(shared_from_this());
+			auto subsystemBase = std::static_pointer_cast<System>(subsystem);
 
 			// Cast subsystem to Subsystem parent and add to subsystems map
-			mSubsystems.insert({ typeName, subsystemBase });
+			mSystems.insert({ typeName, subsystemBase });
 
 			return subsystem;
 		}
 
 		template<typename SubsystemT>
-		std::shared_ptr<SubsystemT> getSubsystem()
+		std::shared_ptr<SubsystemT> getSystem()
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
-			assert(mSubsystems.find(typeName) != mSubsystems.end() && "Subsystem used before registering.");
+			assert(mSystems.find(typeName) != mSystems.end() && "System used before registering.");
 
-			return std::static_pointer_cast<SubsystemT>(mSubsystems[typeName]);
-		}
-
-		// Register System using Engine method because their update methods will not be called each frame otherwise
-		template<typename SystemT>
-		std::shared_ptr<SystemT> registerSystem()
-		{
-			std::shared_ptr<SystemT> system = std::make_shared<SystemT>();
-
-			auto systemBase = std::static_pointer_cast<core::System>(system);
-
-			systemBase->setEngine(shared_from_this());
-			systemBase->setup();
-
-			mSystems.push_back(systemBase);
-
-			return system;
+			return std::static_pointer_cast<SubsystemT>(mSystems[typeName]);
 		}
 
 		// Register a callback function to be executed during engine runtime
@@ -224,8 +203,7 @@ namespace puffin::core
 		std::shared_ptr<Application> mApplication = nullptr;
 
 		// System/Subsystem Members
-		std::vector<std::shared_ptr<core::System>> mSystems; // Vector of system pointers
-		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> mSubsystems;
+		std::unordered_map<const char*, std::shared_ptr<core::System>> mSystems;
 		std::unordered_map<core::ExecutionStage, std::vector<EngineCallbackHandler>> mRegisteredCallbacks; // Map of callback functions registered for execution
 
 		std::unordered_map<core::ExecutionStage, double> mStageExecutionTime; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)

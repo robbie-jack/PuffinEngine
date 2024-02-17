@@ -3,7 +3,7 @@
 #include "imgui.h"
 #include "imfilebrowser.h"
 
-#include "Core/Subsystem.h"
+#include "Core/System.h"
 #include "UI/Editor/Windows/UIWindow.h"
 #include "UI/Editor/Windows/UIWindowSceneHierarchy.h"
 #include "UI/Editor/Windows/UIWindowViewport.h"
@@ -31,16 +31,14 @@ namespace puffin
 			Texture
 		};
 
-		class UISubsystem final : public core::Subsystem
+		class UISubsystem : public core::System
 		{
 		public:
 
-			UISubsystem() {}
-			~UISubsystem() override {}
+			UISubsystem(const std::shared_ptr<core::Engine>& engine);
+			~UISubsystem() override { mEngine = nullptr; }
 
-			void setup() override;
-
-			void init();
+			void startup();
 			void render();
 			void cleanup() const;
 

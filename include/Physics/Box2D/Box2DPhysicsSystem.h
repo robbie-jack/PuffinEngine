@@ -18,6 +18,11 @@
 namespace puffin
 {
 	struct TransformComponent3D;
+
+	namespace core
+	{
+		class Engine;
+	}
 }
 
 namespace puffin::physics
@@ -34,20 +39,13 @@ namespace puffin::physics
 	{
 	public:
 
-		Box2DPhysicsSystem()
-		{
-			mSystemInfo.name = "Box2DPhysicsSystem";
-		}
-
-		~Box2DPhysicsSystem() override = default;
-
-		void setup() override
+		Box2DPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&]() { beginPlay(); }, "Box2DPhysicsSystem: BeginPlay");
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
 			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Box2DPhysicsSystem: EndPlay");
 
-			auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onDestroyRigidbody>(this);
@@ -63,6 +61,8 @@ namespace puffin::physics
 			//registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSystem::OnConstructCircle>(this);
 			registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSystem::onDestroyCircle>(this);
 		}
+
+		~Box2DPhysicsSystem() override { mEngine = nullptr; }
 
 		void beginPlay();
 		void fixedUpdate();

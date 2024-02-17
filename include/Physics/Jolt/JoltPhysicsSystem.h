@@ -42,22 +42,13 @@ namespace puffin::physics
 	{
 	public:
 
-		JoltPhysicsSystem()
-		{
-			mSystemInfo.name = "JoltPhysicsSystem";
-
-			mShapeRefs.reserve(gMaxShapes);
-		}
-
-		~JoltPhysicsSystem() override = default;
-
-		void setup() override
+		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
 			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");
 			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "JoltPhysicsSystem: EndPlay");
 
-			auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+			auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::onDestroyRigidbody>(this);
@@ -72,7 +63,11 @@ namespace puffin::physics
 			registry->on_construct<SphereComponent3D>().connect<&JoltPhysicsSystem::onConstructSphere>(this);
 			//registry->on_update<SphereComponent3D>().connect<&JoltPhysicsSystem::onConstructSphere>(this);
 			registry->on_destroy<SphereComponent3D>().connect<&JoltPhysicsSystem::onDestroySphere>(this);
+
+			mShapeRefs.reserve(gMaxShapes);
 		}
+
+		~JoltPhysicsSystem() override { mEngine = nullptr; }
 
 		void beginPlay();
 		void fixedUpdate();

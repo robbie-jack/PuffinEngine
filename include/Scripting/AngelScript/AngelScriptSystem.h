@@ -26,25 +26,10 @@ namespace puffin::scripting
 	{
 	public:
 
-		AngelScriptSystem();
+		AngelScriptSystem(const std::shared_ptr<core::Engine>& engine);
 		~AngelScriptSystem() override;
 
-		void setup() override
-		{
-			mEngine->registerCallback(core::ExecutionStage::Init, [&] { init(); }, "AngelScriptSystem: Init", 250);
-			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "AngelScriptSystem: BeginPlay");
-			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "AngelScriptSystem: FixedUpdate");
-			mEngine->registerCallback(core::ExecutionStage::Update, [&] { update(); }, "AngelScriptSystem: Update");
-			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "AngelScriptSystem: EndPlay");
-
-			const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
-
-			registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
-			//registry->on_update<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
-			registry->on_destroy<AngelScriptComponent>().connect<&AngelScriptSystem::onDestroyScript>(this);
-		}
-
-		void init();
+		void startup();
 		void beginPlay();
 		void fixedUpdate();
 		void update();

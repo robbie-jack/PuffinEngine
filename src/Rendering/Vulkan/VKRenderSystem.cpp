@@ -54,13 +54,13 @@
 
 namespace puffin::rendering
 {
-	void VKRenderSystem::setup()
+	VKRenderSystem::VKRenderSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "VKRenderSystem: Init");
+		mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "VKRenderSystem: Startup");
 		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
 		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "VKRenderSystem: Shutdown");
 
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		registry->on_construct<MeshComponent>().connect<&VKRenderSystem::onConstructMesh>(this);
 		registry->on_update<MeshComponent>().connect<&VKRenderSystem::onUpdateMesh>(this);
@@ -72,7 +72,7 @@ namespace puffin::rendering
 		registry->on_update<TransformComponent3D>().connect<&VKRenderSystem::onUpdateTransform>(this);
 	}
 
-	void VKRenderSystem::init()
+	void VKRenderSystem::startup()
 	{
 		initVulkan();
 
@@ -80,7 +80,7 @@ namespace puffin::rendering
 
 		if (mEngine->shouldRenderEditorUI())
 		{
-			const ImVec2 viewportSize = mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->viewportSize();
+			const ImVec2 viewportSize = mEngine->getSystem<ui::UISubsystem>()->windowViewport()->viewportSize();
 			mRenderExtent.width = viewportSize.x;
 			mRenderExtent.height = viewportSize.y;
 		}
@@ -213,7 +213,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::initVulkan()
 	{
-		GLFWwindow* glfwWindow = mEngine->getSubsystem<window::WindowSubsystem>()->primaryWindow();
+		GLFWwindow* glfwWindow = mEngine->getSystem<window::WindowSubsystem>()->primaryWindow();
 
 		glfwSetWindowUserPointer(glfwWindow, this);
 		glfwSetFramebufferSizeCallback(glfwWindow, frameBufferResizeCallback);
@@ -766,7 +766,7 @@ namespace puffin::rendering
 		VK_CHECK(mDevice.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
 
 		// Initialize imgui for GLFW
-		GLFWwindow* glfwWindow = mEngine->getSubsystem<window::WindowSubsystem>()->primaryWindow();
+		GLFWwindow* glfwWindow = mEngine->getSystem<window::WindowSubsystem>()->primaryWindow();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
 		// Initialize imgui for Vulkan
@@ -810,7 +810,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::processComponents()
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		if (mUpdateRenderables)
 		{
@@ -858,7 +858,7 @@ namespace puffin::rendering
 
 	void VKRenderSystem::updateEditorCamera()
 	{
-		const auto inputSubsystem = mEngine->getSubsystem<input::InputSubsystem>();
+		const auto inputSubsystem = mEngine->getSystem<input::InputSubsystem>();
 
 		if (inputSubsystem->isCursorLocked())
 		{
@@ -988,7 +988,7 @@ namespace puffin::rendering
 
 		if (mEngine->shouldRenderEditorUI())
 		{
-			const ImVec2 viewportSize = mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->viewportSize();
+			const ImVec2 viewportSize = mEngine->getSystem<ui::UISubsystem>()->windowViewport()->viewportSize();
 
 			mRenderExtent.width = static_cast<uint32_t>(viewportSize.x);
 			mRenderExtent.height = static_cast<uint32_t>(viewportSize.y);
@@ -1016,7 +1016,7 @@ namespace puffin::rendering
 
 		if (mEngine->shouldRenderEditorUI())
 		{
-			mEngine->getSubsystem<ui::UISubsystem>()->windowViewport()->draw(mOffscreenData.viewportTextures[swapchainImageIdx]);
+			mEngine->getSystem<ui::UISubsystem>()->windowViewport()->draw(mOffscreenData.viewportTextures[swapchainImageIdx]);
 
 			ImGui::Render();
 		}
@@ -1182,7 +1182,7 @@ namespace puffin::rendering
 	{
 		updateEditorCamera();
 
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 		const auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent3D, CameraComponent>();
 
 		for (auto [entity, object, transform, camera] : cameraView.each())
@@ -1267,7 +1267,7 @@ namespace puffin::rendering
 	{
 		if (!mObjectsToRefresh.empty())
 		{
-			const auto enkiTSSubSystem = mEngine->getSubsystem<core::EnkiTSSubsystem>();
+			const auto enkiTSSubSystem = mEngine->getSystem<core::EnkiTSSubsystem>();
 
 			// Calculate t value for rendering interpolated position
 			const double t = mEngine->accumulatedTime() / mEngine->timeStepFixed();
@@ -1293,7 +1293,7 @@ namespace puffin::rendering
 				threadObject.reserve(std::ceil(gMaxObjects / numThreads));
 			}
 
-			const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+			const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 			const auto registry = enttSubsystem->registry();
 
 			enki::TaskSet task(numObjectsToRefresh, [&](enki::TaskSetPartition range, uint32_t threadnum)
@@ -1413,7 +1413,7 @@ namespace puffin::rendering
 	void VKRenderSystem::prepareLightData()
 	{
 		// Prepare dynamic light data
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto lightView = registry->view<const SceneObjectComponent, const TransformComponent3D, const LightComponent>();
 

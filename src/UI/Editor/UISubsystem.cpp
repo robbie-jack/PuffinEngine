@@ -15,14 +15,14 @@ namespace fs = std::filesystem;
 
 namespace puffin::ui
 {
-	void UISubsystem::setup()
+	UISubsystem::UISubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		mEngine->registerCallback(core::ExecutionStage::Init, [&]() { init(); }, "UISubsystem: Init", 50);
+		mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "UISubsystem: Startup", 50);
 		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);
 		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Shutdown", 200);
 	}
 
-	void UISubsystem::init()
+	void UISubsystem::startup()
 	{
 		if (mEngine->shouldRenderEditorUI())
 		{
@@ -73,7 +73,7 @@ namespace puffin::ui
 				// File Dialog - Load Scene
 				if (mLoadScene)
 				{
-					const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
+					const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
 
 					sceneData->setPath(selectedPath);
 
@@ -136,8 +136,8 @@ namespace puffin::ui
 			// Update Scene Data if any changes were made to an entity, and game is not currently playing
 			if (mWindowEntityProperties->sceneChanged() && mEngine->playState() == core::PlayState::Stopped)
 			{
-				const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
-				sceneData->updateData(mEngine->getSubsystem<ecs::EnTTSubsystem>());
+				const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
+				sceneData->updateData(mEngine->getSystem<ecs::EnTTSubsystem>());
 			}
 
 			ImGui_ImplVulkan_NewFrame();
@@ -234,7 +234,7 @@ namespace puffin::ui
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
+			const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
 
 			std::string str_name = sceneData->path().string();
 			std::vector<char> name(256, '\0');
@@ -252,7 +252,7 @@ namespace puffin::ui
 
 			if (ImGui::Button("Save"))
 			{
-				const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+				const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 
 				sceneData->updateData(enttSubsystem);
 				sceneData->save();
@@ -320,9 +320,9 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					const auto sceneData = mEngine->getSubsystem<io::SceneSubsystem>()->sceneData();
+					const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
 
-					const auto enttSubsystem = mEngine->getSubsystem<ecs::EnTTSubsystem>();
+					const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 
 					sceneData->updateData(enttSubsystem);
 					sceneData->save();

@@ -47,7 +47,7 @@ namespace puffin::physics
 
 		mInternalPhysicsSystem->Update(mFixedTimeStep, mCollisionSteps, mTempAllocator.get(), mJobSystem.get());
 
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		// Updated entity position/rotation from simulation
 		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent3D, VelocityComponent3D, const RigidbodyComponent3D>();
@@ -135,13 +135,13 @@ namespace puffin::physics
 
 	void JoltPhysicsSystem::updateComponents()
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		// Update Spheres
 		{
 			for (const auto& id : mSpheresToInit)
 			{
-				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
@@ -157,7 +157,7 @@ namespace puffin::physics
 		{
 			for (const auto& id : mBoxesToInit)
 			{
-				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
@@ -174,7 +174,7 @@ namespace puffin::physics
 			// Create Bodies
 			for (const auto& id : mBodiesToInit)
 			{
-				entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);

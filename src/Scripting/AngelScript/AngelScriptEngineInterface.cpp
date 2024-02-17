@@ -62,9 +62,9 @@ namespace puffin::scripting
 
 	TransformComponent3D& AngelScriptEngineInterface::getTransformComponent3D(PuffinID id) const
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 		registry->patch<TransformComponent3D>(entity, [&](auto& transform){});
 
@@ -73,9 +73,9 @@ namespace puffin::scripting
 
 	bool AngelScriptEngineInterface::hasTransformComponent3D(PuffinID id) const
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 		if (registry->any_of<TransformComponent3D>(entity))
 		{
@@ -88,9 +88,9 @@ namespace puffin::scripting
 	template <typename T>
 	T& AngelScriptEngineInterface::getComponent(PuffinID id) const
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 		registry->patch<T>(entity, [&](auto& transform) {});
 
@@ -100,9 +100,9 @@ namespace puffin::scripting
 	template <typename T>
 	bool AngelScriptEngineInterface::hasComponent(PuffinID id) const
 	{
-		const auto registry = mEngine->getSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSubsystem<ecs::EnTTSubsystem>()->getEntity(id);
+		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
 
 		if (registry->any_of<T>(entity))
 		{

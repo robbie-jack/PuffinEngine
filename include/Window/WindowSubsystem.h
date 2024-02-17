@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Subsystem.h"
+#include "Core/System.h"
 #include "Types/UUID.h"
 
 #include <unordered_map>
@@ -8,47 +8,53 @@
 class GLFWwindow;
 class GLFWmonitor;
 
-namespace puffin::window
+namespace puffin
 {
-	class WindowSubsystem : public core::Subsystem
+	namespace core
 	{
-	public:
+		class Engine;
+	}
 
-		WindowSubsystem() = default;
-		~WindowSubsystem() override = default;
-
-		void setup() override;
-
-		void init();
-		void shutdown();
-
-		GLFWwindow* primaryWindow() const
+	namespace window
+	{
+		class WindowSubsystem : public core::System
 		{
-			return mPrimaryWindow;
-		}
+		public:
 
-		[[nodiscard]] bool shouldPrimaryWindowClose() const;
+			WindowSubsystem(const std::shared_ptr<core::Engine>& engine);
+			~WindowSubsystem() override { mEngine = nullptr; }
 
-		GLFWmonitor* primaryMonitor() const
-		{
-			return mPrimaryMonitor;
-		}
+			void startup();
+			void shutdown();
 
-		// Create new window and return PuffinId handle to it
-		PuffinID createNewWindow(const int& width, const int& height);
+			GLFWwindow* primaryWindow() const
+			{
+				return mPrimaryWindow;
+			}
 
-		// Retrieve window using PuffinId handle
-		GLFWwindow* getWindow(const PuffinID& uuid);
+			[[nodiscard]] bool shouldPrimaryWindowClose() const;
 
-		void destroyWindow(const PuffinID& uuid);
+			GLFWmonitor* primaryMonitor() const
+			{
+				return mPrimaryMonitor;
+			}
 
-	private:
+			// Create new window and return PuffinId handle to it
+			PuffinID createNewWindow(const int& width, const int& height);
 
-		GLFWmonitor* mPrimaryMonitor = nullptr;
-		GLFWwindow* mPrimaryWindow = nullptr;
+			// Retrieve window using PuffinId handle
+			GLFWwindow* getWindow(const PuffinID& uuid);
 
-		std::unordered_map<PuffinID, GLFWwindow*> mWindows;
+			void destroyWindow(const PuffinID& uuid);
 
-		
-	};
+		private:
+
+			GLFWmonitor* mPrimaryMonitor = nullptr;
+			GLFWwindow* mPrimaryWindow = nullptr;
+
+			std::unordered_map<PuffinID, GLFWwindow*> mWindows;
+
+
+		};
+	}
 }

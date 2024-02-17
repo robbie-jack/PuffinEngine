@@ -119,14 +119,10 @@ namespace puffin::rendering
 	{
 	public:
 
-		VKRenderSystem()
-		{
-			mSystemInfo.name = "VKRenderSystem";
-		}
+		VKRenderSystem(const std::shared_ptr<core::Engine>& engine);
+		~VKRenderSystem() override { mEngine = nullptr; }
 
-		void setup() override;
-
-		void init();
+		void startup();
 		void render();
 		void shutdown();
 

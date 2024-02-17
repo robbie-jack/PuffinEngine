@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Subsystem.h"
+#include "Core/System.h"
 
 #include "Types/UUID.h"
 #include "Types/RingBuffer.h"
@@ -38,9 +38,11 @@ namespace puffin::audio
 		float volume = 1.0f; // Volume of this instance
 	};
 
-	class AudioSubsystemProvider : public core::Subsystem
+	class AudioSubsystemProvider : public core::System
 	{
 	public:
+
+		AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine) : System(engine) {}
 
 		~AudioSubsystemProvider() override { mEngine = nullptr; }
 
@@ -57,16 +59,14 @@ namespace puffin::audio
 		virtual bool stopSoundInstance(PuffinID soundInstanceID) = 0;
 	};
 
-	class AudioSubsystem : public core::Subsystem
+	class AudioSubsystem : public core::System
 	{
 	public:
 
-		AudioSubsystem() = default;
-		~AudioSubsystem() override = default;
+		AudioSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~AudioSubsystem() override { mEngine = nullptr; }
 
-		void setup() override;
-
-		void init();
+		void startup();
 		void update();
 		void shutdown();
 
@@ -90,7 +90,7 @@ namespace puffin::audio
 		PackedVector<SoundInstance> mSoundInstances;
 		PackedVector<std::set<PuffinID>> mSoundInstanceIDs;
 
-		std::shared_ptr<AudioSubsystemProvider> mAudioSubsystemProvider = nullptr; // Susbsystem which provides audio core implementation
+		std::shared_ptr<AudioSubsystemProvider> mAudioSubsystemProvider = nullptr; // Subsystem which provides audio core implementation
 
 	};
 }

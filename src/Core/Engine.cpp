@@ -39,14 +39,14 @@ namespace puffin::core
 	void Engine::setup(const fs::path& projectPath)
 	{
 		// Subsystems
-		auto windowSubsystem = registerSubsystem<window::WindowSubsystem>();
-		auto signalSubsystem = registerSubsystem<SignalSubsystem>();
-		auto enkitsSubsystem = registerSubsystem<EnkiTSSubsystem>();
-		auto inputSubsystem = registerSubsystem<input::InputSubsystem>();
-		auto audioSubsystem = registerSubsystem<audio::AudioSubsystem>();
-		auto enttSubsystem = registerSubsystem<ecs::EnTTSubsystem>();
-		auto uiSubsystem = registerSubsystem<ui::UISubsystem>();
-		auto sceneSubsystem = registerSubsystem<io::SceneSubsystem>();
+		auto windowSubsystem = registerSystem<window::WindowSubsystem>();
+		auto signalSubsystem = registerSystem<SignalSubsystem>();
+		auto enkitsSubsystem = registerSystem<EnkiTSSubsystem>();
+		auto inputSubsystem = registerSystem<input::InputSubsystem>();
+		auto audioSubsystem = registerSystem<audio::AudioSubsystem>();
+		auto enttSubsystem = registerSystem<ecs::EnTTSubsystem>();
+		auto uiSubsystem = registerSystem<ui::UISubsystem>();
+		auto sceneSubsystem = registerSystem<io::SceneSubsystem>();
 
 		// Load Project File
 		LoadProject(projectPath, mProjectFile);
@@ -107,14 +107,14 @@ namespace puffin::core
 		}
 	}
 
-	void Engine::init()
+	void Engine::startup()
 	{
 		mRunning = true;
 		mPlayState = PlayState::Stopped;
 
 		// Initialize Systems
 		{
-			executeCallbacks(ExecutionStage::Init);
+			executeCallbacks(ExecutionStage::Startup);
 		}
 
 		mLastTime = glfwGetTime(); // Time Count Started
@@ -163,14 +163,14 @@ namespace puffin::core
 			mDeltaTime = mTimeStepLimit;
 		}
 
-		const auto audioSubsystem = getSubsystem<audio::AudioSubsystem>();
+		const auto audioSubsystem = getSystem<audio::AudioSubsystem>();
 
 		// Update all Subsystems
 		{
 			executeCallbacks(ExecutionStage::SubsystemUpdate, true);
 		}
 
-		const auto inputSubsystem = getSubsystem<input::InputSubsystem>();
+		const auto inputSubsystem = getSystem<input::InputSubsystem>();
 		if (inputSubsystem->justPressed("Play"))
 		{
 			play();
@@ -241,7 +241,7 @@ namespace puffin::core
 			mPlayState = PlayState::Stopped;
 		}
 
-		if (const auto windowSubsystem = getSubsystem<window::WindowSubsystem>(); windowSubsystem->shouldPrimaryWindowClose())
+		if (const auto windowSubsystem = getSystem<window::WindowSubsystem>(); windowSubsystem->shouldPrimaryWindowClose())
 		{
 			mRunning = false;
 		}
@@ -249,13 +249,12 @@ namespace puffin::core
 		return mRunning;
 	}
 
-	void Engine::destroy()
+	void Engine::shutdown()
 	{
 		// Cleanup All Systems
 		executeCallbacks(ExecutionStage::Shutdown);
 
 		mSystems.clear();
-		mSubsystems.clear();
 
 		// Clear Asset Registry
 		assets::AssetRegistry::clear();
@@ -408,7 +407,7 @@ namespace puffin::core
 		PuffinID materialInstId1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
 		PuffinID materialInstId2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
 
-		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = getSystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->registry();
 
 		constexpr int numEntities = 7;
@@ -510,7 +509,7 @@ namespace puffin::core
 
 		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = getSystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->registry();
 
 		// Create Light Entity
@@ -600,7 +599,7 @@ namespace puffin::core
 
 		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		const auto enttSubsystem = getSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = getSystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->registry();
 
 		// Create Light Entity
@@ -684,7 +683,7 @@ namespace puffin::core
 
 	void Engine::proceduralScene()
 	{
-		//auto ecsWorld = getSubsystem<ECS::World>();
+		//auto ecsWorld = getSystem<ECS::World>();
 
 		//// Initialize Assets
 		//fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();

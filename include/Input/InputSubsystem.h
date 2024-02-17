@@ -2,7 +2,7 @@
 
 #include "GLFW/glfw3.h"
 
-#include "Core/Subsystem.h"
+#include "Core/System.h"
 #include "InputEvent.h"
 
 #include <vector>
@@ -11,9 +11,9 @@
 
 namespace puffin
 {
-	namespace ecs
+	namespace core
 	{
-		class World;
+		class Engine;
 	}
 
 	namespace input
@@ -26,25 +26,15 @@ namespace puffin
 			KeyState state;
 		};
 
-		class InputSubsystem : public core::Subsystem
+		class InputSubsystem : public core::System
 		{
 		public:
 
-			InputSubsystem()
-			{
-				mNextId = 1;
-				mLastXPos = 640.0;
-				mLastYPos = 360.0;
-				mSensitivity = 0.05;
-				mCursorLocked = false;
-				mFirstMouse = true;
-			}
+			InputSubsystem(const std::shared_ptr<core::Engine>& engine);
 
-			~InputSubsystem() override = default;
+			~InputSubsystem() override { mEngine = nullptr; }
 
-			void setup() override;
-
-			void init();
+			void startup();
 			void update();
 			void shutdown();
 

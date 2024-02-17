@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Subsystem.h"
+#include "Core/System.h"
 
 #include "Types/UUID.h"
 #include "entt/entity/registry.hpp"
@@ -9,17 +9,18 @@
 
 namespace puffin::ecs
 {
-	class EnTTSubsystem : public core::Subsystem
+	class EnTTSubsystem : public core::System
 	{
 	public:
 
-		EnTTSubsystem() { mRegistry = std::make_shared<entt::registry>(); }
-		~EnTTSubsystem() override = default;
-
-		void setup() override
+		EnTTSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
 			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "EnTTSubsystem: EndPlay", 200);
+
+			mRegistry = std::make_shared<entt::registry>();
 		}
+
+		~EnTTSubsystem() override { mEngine = nullptr; }
 
 		void endPlay()
 		{
