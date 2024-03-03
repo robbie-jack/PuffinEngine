@@ -2,7 +2,6 @@
 
 #include "UIWindow.h"
 #include "UIWindowEntityProperties.h"
-#include "Types/UUID.h"
 
 namespace puffin
 {
@@ -22,6 +21,8 @@ namespace puffin
 		private:
 			
 			bool mEntityChanged = false;
+
+			std::shared_ptr<ecs::EnTTSubsystem> mEnTTSubsystem = nullptr;
 
 		};
 	}

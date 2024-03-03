@@ -1,7 +1,9 @@
 #include "UI/Editor/Windows/UIWindowSceneHierarchy.h"
 
 #include "entt/entity/registry.hpp"
+#include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
+#include "Components/Rendering/MeshComponent.h"
 #include "ECS/EnTTSubsystem.h"
 
 namespace puffin
@@ -11,6 +13,11 @@ namespace puffin
 		void UIWindowSceneHierarchy::draw(double dt)
 		{
 			mWindowName = "Scene Hierarchy";
+
+			if (!mEnTTSubsystem)
+			{
+				mEnTTSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
+			}
 
 			if (mShow)
 			{
@@ -26,8 +33,7 @@ namespace puffin
 
 				ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() * .5f); ImGui::Text("ID");
 
-				const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
-				const auto registry = enttSubsystem->registry();
+				const auto registry = mEnTTSubsystem->registry();
 
 				if (ImGui::BeginListBox("##EntityList", listBoxSize))
 				{
@@ -92,7 +98,7 @@ namespace puffin
 				{
 					if (mSelectedEntity != gInvalidID)
 					{
-						registry->destroy(enttSubsystem->getEntity(mSelectedEntity));
+						mEnTTSubsystem->destroyEntity(mSelectedEntity);
 
 						mSelectedEntity = gInvalidID;
 
@@ -102,14 +108,47 @@ namespace puffin
 
 				if (ImGui::BeginPopup("Create Entity"))
 				{
-					if (ImGui::Selectable("Empty"))
+					if (ImGui::Selectable("Default"))
 					{
-						const auto entity = enttSubsystem->createEntity("Entity");
+						const auto entity = mEnTTSubsystem->createEntity("Entity");
+
 						const auto object = registry->get<SceneObjectComponent>(entity);
-
 						mSelectedEntity = object.id;
-
 						mEntityChanged = true;
+					}
+
+					if (ImGui::BeginMenu("2D"))
+					{
+						if (ImGui::Selectable("Mesh"))
+						{
+							const auto entity = mEnTTSubsystem->createEntity("Mesh");
+
+							registry->emplace<TransformComponent2D>(entity);
+							registry->emplace<rendering::MeshComponent>(entity);
+
+							const auto object = registry->get<SceneObjectComponent>(entity);
+							mSelectedEntity = object.id;
+							mEntityChanged = true;
+						}
+
+						ImGui::EndMenu();
+					}
+
+					if (ImGui::BeginMenu("3D"))
+					{
+						if (ImGui::Selectable("Mesh"))
+						{
+							const auto entity = mEnTTSubsystem->createEntity("Mesh");
+
+							//registry->emplace<TransformComponent3D>(entity);
+							//registry->emplace<rendering::MeshComponent>(entity);
+
+							const auto object = registry->get<SceneObjectComponent>(entity);
+							mSelectedEntity = object.id;
+							mEntityChanged = true;
+						}
+
+						ImGui::EndMenu();
 					}
 
 					ImGui::EndPopup();

@@ -137,9 +137,10 @@ namespace puffin::rendering
 		DeletionQueue& deletionQueue() { return mDeletionQueue; }
 		bool isReBarEnabled() const { return mIsReBarEnabled; }
 
-		void onConstructMesh(entt::registry& registry, entt::entity entity);
 		void onUpdateMesh(entt::registry& registry, entt::entity entity);
 		void onUpdateTransform(entt::registry& registry, entt::entity entity);
+
+		void addRenderable(entt::registry& registry, entt::entity entity);
 
 		void registerTexture(PuffinID texID);
 

@@ -23,9 +23,11 @@ namespace puffin
 		{
 			mWindowName = "Entity Properties";
 
-			//auto ecsWorld = m_engine->getSystem<ECS::World>();
+			if (!mEnTTSubsystem)
+			{
+				mEnTTSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
+			}
 
-			mEnTTSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 			const auto registry = mEnTTSubsystem->registry();
 
 			if (mShow)

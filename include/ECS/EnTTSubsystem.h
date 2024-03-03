@@ -56,6 +56,13 @@ namespace puffin::ecs
 			return entity;
 		}
 
+		void destroyEntity(const PuffinID id)
+		{
+			mRegistry->destroy(mIdToEntity[id]);
+
+			mIdToEntity.erase(id);
+		}
+
 		bool valid(const PuffinID id)
 		{
 			return mIdToEntity.find(id) != mIdToEntity.end();

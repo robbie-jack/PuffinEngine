@@ -62,7 +62,7 @@ namespace puffin::rendering
 
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		registry->on_construct<MeshComponent>().connect<&VKRenderSystem::onConstructMesh>(this);
+		registry->on_construct<MeshComponent>().connect<&VKRenderSystem::onUpdateMesh>(this);
 		registry->on_update<MeshComponent>().connect<&VKRenderSystem::onUpdateMesh>(this);
 
 		registry->on_construct<TransformComponent2D>().connect<&VKRenderSystem::onUpdateTransform>(this);
@@ -169,36 +169,32 @@ namespace puffin::rendering
 		}
 	}
 
-	void VKRenderSystem::onConstructMesh(entt::registry& registry, entt::entity entity)
-	{
-		const auto mesh = registry.get<MeshComponent>(entity);
-
-		mMeshesToLoad.insert(mesh.meshAssetId);
-		mMaterialRegistry.registerMaterialInstance(mesh.matAssetID);
-
-		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity))
-		{
-			const auto object = registry.get<SceneObjectComponent>(entity);
-
-			mObjectsToRefresh.insert(object.id);
-
-			mUpdateRenderables = true;
-		}
-	}
-
 	void VKRenderSystem::onUpdateMesh(entt::registry& registry, entt::entity entity)
 	{
 		const auto mesh = registry.get<MeshComponent>(entity);
 
 		mMeshesToLoad.insert(mesh.meshAssetId);
 		mMaterialRegistry.registerMaterialInstance(mesh.matAssetID);
+
+		addRenderable(registry, entity);
 	}
 
 	void VKRenderSystem::onUpdateTransform(entt::registry& registry, entt::entity entity)
 	{
-		if (registry.any_of<MeshComponent>(entity))
+		addRenderable(registry, entity);
+	}
+
+	void VKRenderSystem::addRenderable(entt::registry& registry, entt::entity entity)
+	{
+		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<MeshComponent>(entity))
 		{
 			const auto object = registry.get<SceneObjectComponent>(entity);
+			const auto mesh = registry.get<MeshComponent>(entity);
+
+			if (mesh.meshAssetId == gInvalidID || mesh.matAssetID == gInvalidID)
+			{
+				return;
+			}
 
 			mObjectsToRefresh.insert(object.id);
 
@@ -822,6 +818,11 @@ namespace puffin::rendering
 			// Iterate 2D objects
 			for (auto [entity, object, transform, mesh] : meshView2D.each())
 			{
+				if (mesh.matAssetID == gInvalidID || mesh.meshAssetId == gInvalidID)
+				{
+					continue;
+				}
+
 				const auto& matData = mMaterialRegistry.getMaterialData(mesh.matAssetID);
 
 				mRenderables.emplace_back(object.id, mesh.meshAssetId, matData.baseMaterialID);
@@ -835,6 +836,11 @@ namespace puffin::rendering
 			// Iterate 3D objects
 			for (auto [entity, object, transform, mesh] : meshView3D.each())
 			{
+				if (mesh.matAssetID == gInvalidID || mesh.meshAssetId == gInvalidID)
+				{
+					continue;
+				}
+
 				const auto& matData = mMaterialRegistry.getMaterialData(mesh.matAssetID);
 
 				mRenderables.emplace_back(object.id, mesh.meshAssetId, matData.baseMaterialID);

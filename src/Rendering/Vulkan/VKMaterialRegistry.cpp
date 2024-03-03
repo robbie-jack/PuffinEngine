@@ -16,7 +16,10 @@ namespace puffin::rendering
 
 	void VKMaterialRegistry::registerMaterialInstance(const PuffinID& id)
 	{
-		mMaterialsInstancesToLoad.insert(id);
+		if (id != gInvalidID)
+		{
+			mMaterialsInstancesToLoad.insert(id);
+		}
 
 		// PUFFIN_TODO - Load Material Instance Assets Asynchronously
 	}
@@ -28,7 +31,7 @@ namespace puffin::rendering
 		// Load Material Instances
 		for (const auto matInstID : mMaterialsInstancesToLoad)
 		{
-			if (!mMatData.contains(matInstID))
+			if (matInstID != gInvalidID && !mMatData.contains(matInstID))
 			{
 				MaterialDataVK matData;
 

@@ -204,6 +204,11 @@ namespace puffin::io
 					data[fst] = snd->saveToJson();
 			}
 
+			if (!fs::exists(mPath.parent_path()))
+			{
+				fs::create_directories(mPath.parent_path());
+			}
+
 			std::ofstream os(mPath, std::ios::out);
 
 			os << std::setw(4) << data << std::endl;
