@@ -1,5 +1,7 @@
 #include "Assets/AssetImporters.h"
 
+#define TINYGLTF_USE_CPP14
+
 #define TINYGLTF_IMPLEMENTATION
 
 #ifndef STB_IMAGE_IMPLEMENTATION
@@ -197,6 +199,7 @@ namespace puffin::io
 
 			// Fill out MeshInfo struct
 			fs::path assetPath = assetSubdirectory / shapes[s].name;
+
 			assetPath += ".pstaticmesh";
 
 			assets::MeshInfo info;
@@ -213,6 +216,8 @@ namespace puffin::io
 
 			if (!asset->save(info, vertices.data(), indices.data()))
 				return false;
+
+			assets::AssetRegistry::get()->saveAssetCache();
 
 			vertices.clear();
 			indices.clear();
@@ -272,11 +277,15 @@ namespace puffin::io
 
 			const auto& primitive = mesh.primitives[0];
 
-			size_t vertexCount = 0;
+			size_t vertexCount = 50000;
 
 			std::vector<Vector3f> vertexPos;
 			std::vector<Vector3f> vertexNormal;
 			std::vector<Vector2f> vertexUV;
+
+			vertexPos.reserve(vertexCount);
+			vertexNormal.reserve(vertexCount);
+			vertexUV.reserve(vertexCount);
 
 			// Load Vertices
 			for (const auto& attribute : primitive.attributes)
@@ -292,7 +301,13 @@ namespace puffin::io
 
 						vertexPos.resize(vertexCount);
 
-						std::copy_n(model.buffers[bufferView.buffer].data.data() + bufferView.byteOffset, bufferView.byteLength, vertexPos.data());
+						size_t byteOffset = bufferView.byteOffset;
+						for (int i = 0; i < vertexPos.size(); i++)
+						{
+							std::copy_n(model.buffers[bufferView.buffer].data.data() + byteOffset, 12, &vertexPos[i]);
+						}
+
+						byteOffset += bufferView.byteStride;
 					}
 
 					continue;
@@ -309,7 +324,13 @@ namespace puffin::io
 
 						vertexNormal.resize(vertexCount);
 
-						std::copy_n(model.buffers[bufferView.buffer].data.data() + bufferView.byteOffset, bufferView.byteLength, vertexNormal.data());
+						size_t byteOffset = bufferView.byteOffset;
+						for (int i = 0; i < vertexNormal.size(); i++)
+						{
+							std::copy_n(model.buffers[bufferView.buffer].data.data() + byteOffset, 12, &vertexNormal[i]);
+						}
+
+						byteOffset += bufferView.byteStride;
 					}
 
 					continue;
@@ -326,7 +347,13 @@ namespace puffin::io
 
 						vertexUV.resize(vertexCount);
 
-						std::copy_n(model.buffers[bufferView.buffer].data.data() + bufferView.byteOffset, bufferView.byteLength, vertexUV.data());
+						size_t byteOffset = bufferView.byteOffset;
+						for (int i = 0; i < vertexUV.size(); i++)
+						{
+							std::copy_n(model.buffers[bufferView.buffer].data.data() + byteOffset, 12, &vertexUV[i]);
+						}
+
+						byteOffset += bufferView.byteStride;
 					}
 				}
 			}
@@ -365,6 +392,7 @@ namespace puffin::io
 			}
 
 			fs::path assetPath = assetSubdirectory / mesh.name;
+
 			assetPath += ".pstaticmesh";
 
 			assets::MeshInfo info;
