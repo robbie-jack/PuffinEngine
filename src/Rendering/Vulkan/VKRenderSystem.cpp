@@ -113,7 +113,7 @@ namespace puffin::rendering
 			initOffscreenImGuiTextures(mOffscreenData);
 		}
 
-		mEditorCam.position = {0.0f, 0.0f, 50.0f};
+		mEditorCam.position = {0.0f, 0.0f, 10.0f};
 
 		mRenderables.reserve(gMaxObjects);
 		mCachedObjectData.reserve(gMaxObjects);

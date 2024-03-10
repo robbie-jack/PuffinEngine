@@ -198,9 +198,7 @@ namespace puffin::io
 			generateTangents(vertices, indices);
 
 			// Fill out MeshInfo struct
-			fs::path assetPath = assetSubdirectory / shapes[s].name;
-
-			assetPath += ".pstaticmesh";
+			fs::path assetPath = assetSubdirectory / (modelPath.stem().string() + "_" + shapes[s].name + ".pstaticmesh");
 
 			assets::MeshInfo info;
 			info.compressionMode = assets::CompressionMode::LZ4;
@@ -269,6 +267,12 @@ namespace puffin::io
 		std::vector<rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
+		const size_t reserveVertexCount = 50000;
+		const size_t reserveIndexCount = reserveVertexCount * 2;
+
+		vertices.reserve(reserveVertexCount);
+		indices.reserve(reserveIndexCount);
+
 		// Import each mesh in file
 		for (const auto& mesh : model.meshes)
 		{
@@ -277,15 +281,15 @@ namespace puffin::io
 
 			const auto& primitive = mesh.primitives[0];
 
-			size_t vertexCount = 50000;
-
 			std::vector<Vector3f> vertexPos;
 			std::vector<Vector3f> vertexNormal;
 			std::vector<Vector2f> vertexUV;
 
-			vertexPos.reserve(vertexCount);
-			vertexNormal.reserve(vertexCount);
-			vertexUV.reserve(vertexCount);
+			vertexPos.reserve(reserveVertexCount);
+			vertexNormal.reserve(reserveVertexCount);
+			vertexUV.reserve(reserveVertexCount);
+
+			size_t vertexCount = 0;
 
 			// Load Vertices
 			for (const auto& attribute : primitive.attributes)
@@ -362,17 +366,27 @@ namespace puffin::io
 			vertices.resize(vertexCount);
 			for (int i = 0; i < vertexCount; i++)
 			{
-				vertices[i].pos = vertexPos[i];
-				vertices[i].normal = vertexNormal[i];
-				vertices[i].uvX = vertexUV[i].x;
-				vertices[i].uvY = vertexUV[i].y;
+				if (!vertexPos.empty())
+					vertices[i].pos = vertexPos[i];
+
+				if (!vertexNormal.empty())
+					vertices[i].normal = vertexNormal[i];
+
+				if (!vertexUV.empty())
+				{
+					vertices[i].uvX = vertexUV[i].x;
+					vertices[i].uvY = vertexUV[i].y;
+				}
 			}
 
 			// Load Indices
 			const auto& accessor = model.accessors[primitive.indices];
 
-			size_t indexCount = 0;
 			std::vector<unsigned short> indexShort;
+
+			indexShort.reserve(reserveIndexCount);
+
+			size_t indexCount = 0;
 
 			if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT && accessor.type == TINYGLTF_TYPE_SCALAR)
 			{
@@ -385,15 +399,16 @@ namespace puffin::io
 			}
 
 			// Copy indices into vector
-			indices.resize(indexCount);
-			for (int i = 0; i < indexCount; i++)
+			if (!indexShort.empty())
 			{
-				indices[i] = indexShort[i];
+				indices.resize(indexCount);
+				for (int i = 0; i < indexCount; i++)
+				{
+					indices[i] = indexShort[i];
+				}
 			}
 
-			fs::path assetPath = assetSubdirectory / mesh.name;
-
-			assetPath += ".pstaticmesh";
+			fs::path assetPath = assetSubdirectory / (modelPath.stem().string() + "_" + mesh.name + ".pstaticmesh");
 
 			assets::MeshInfo info;
 			info.compressionMode = assets::CompressionMode::LZ4;
@@ -416,13 +431,13 @@ namespace puffin::io
 		}
 
 		// Import Textures
-		for (const auto& image : model.images)
+		/*for (const auto& image : model.images)
 		{
 			fs::path texturePath = modelPath.parent_path() / image.uri;
 
 			if (!loadAndImportTexture(texturePath, assetSubdirectory))
 				return false;
-		}
+		}*/
 
 		return true;
 	}
@@ -527,8 +542,7 @@ namespace puffin::io
 		void* pixelPtr = pixels;
 
 		// Instantiate new Texture Asset to store loaded Pixel data
-		fs::path assetPath = assetSubdirectory / texturePath.stem();
-		assetPath += ".ptexture";
+		fs::path assetPath = assetSubdirectory / (texturePath.stem().string() + ".ptexture");
 
 		assets::TextureInfo info;
 		info.compressionMode = assets::CompressionMode::LZ4;

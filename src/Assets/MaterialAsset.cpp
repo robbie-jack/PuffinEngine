@@ -62,8 +62,8 @@ namespace puffin::assets
 
 		// Create AssetData Struct
 		AssetData data;
-		data.type = AssetType::Material;
-		data.version = gMaterialAssetVersion;
+		data.type = AssetType::MaterialInstance;
+		data.version = gMaterialInstAssetVersion;
 		data.id = id();
 
 		// Fill Metadata from Info struct
