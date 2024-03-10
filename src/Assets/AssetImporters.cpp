@@ -81,6 +81,32 @@ namespace puffin::io
 		}
 	}
 
+	void copyGLTFBufferData(const tinygltf::BufferView& bufferView, const tinygltf::Buffer& buffer, const size_t& expectedStride, void* dst)
+	{
+		const size_t byteOffset = bufferView.byteOffset;
+		const size_t byteLength = bufferView.byteLength;
+		const size_t byteStride = bufferView.byteStride;
+
+		const auto dstChar = static_cast<char*>(dst);
+
+		// Data is packed together, copy with a single command
+		if (byteStride == 0 || byteStride == expectedStride)
+		{
+			memcpy(dstChar, buffer.data.data() + byteOffset, byteLength);
+		}
+		// Byte data is interleaved, copy each attribute individually
+		else
+		{
+			int i = 0;
+			for (size_t offset = byteOffset; offset < byteOffset + byteLength; offset += byteStride)
+			{
+				memcpy(dstChar + (i * byteStride), buffer.data.data() + offset, expectedStride);
+
+				i++;
+			}
+		}
+	}
+
 	//////////////////////
 	// Model Importers
 	//////////////////////
@@ -283,9 +309,11 @@ namespace puffin::io
 
 			std::vector<Vector3f> vertexPos;
 			std::vector<Vector3f> vertexNormal;
+			std::vector<Vector3f> vertexTangent;
 			std::vector<Vector2f> vertexUV;
 
 			vertexPos.reserve(reserveVertexCount);
+			vertexNormal.reserve(reserveVertexCount);
 			vertexNormal.reserve(reserveVertexCount);
 			vertexUV.reserve(reserveVertexCount);
 
@@ -305,13 +333,7 @@ namespace puffin::io
 
 						vertexPos.resize(vertexCount);
 
-						size_t byteOffset = bufferView.byteOffset;
-						for (int i = 0; i < vertexPos.size(); i++)
-						{
-							std::copy_n(model.buffers[bufferView.buffer].data.data() + byteOffset, 12, &vertexPos[i]);
-						}
-
-						byteOffset += bufferView.byteStride;
+						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexPos.data());
 					}
 
 					continue;
@@ -328,13 +350,24 @@ namespace puffin::io
 
 						vertexNormal.resize(vertexCount);
 
-						size_t byteOffset = bufferView.byteOffset;
-						for (int i = 0; i < vertexNormal.size(); i++)
-						{
-							std::copy_n(model.buffers[bufferView.buffer].data.data() + byteOffset, 12, &vertexNormal[i]);
-						}
+						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexNormal.data());
+					}
 
-						byteOffset += bufferView.byteStride;
+					continue;
+				}
+
+				if (attribute.first == "TANGENT")
+				{
+					const auto& accessor = model.accessors[attribute.second];
+
+					if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC3)
+					{
+						const auto& bufferView = model.bufferViews[accessor.bufferView];
+						vertexCount = accessor.count;
+
+						vertexTangent.resize(vertexCount);
+
+						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexTangent.data());
 					}
 
 					continue;
@@ -351,13 +384,7 @@ namespace puffin::io
 
 						vertexUV.resize(vertexCount);
 
-						size_t byteOffset = bufferView.byteOffset;
-						for (int i = 0; i < vertexUV.size(); i++)
-						{
-							std::copy_n(model.buffers[bufferView.buffer].data.data() + byteOffset, 12, &vertexUV[i]);
-						}
-
-						byteOffset += bufferView.byteStride;
+						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 8, vertexUV.data());
 					}
 				}
 			}
@@ -371,6 +398,9 @@ namespace puffin::io
 
 				if (!vertexNormal.empty())
 					vertices[i].normal = vertexNormal[i];
+
+				if (!vertexTangent.empty())
+					vertices[i].tangent = vertexTangent[i];
 
 				if (!vertexUV.empty())
 				{
@@ -395,7 +425,7 @@ namespace puffin::io
 
 				indexShort.resize(indexCount);
 
-				std::copy_n(model.buffers[bufferView.buffer].data.data() + bufferView.byteOffset, bufferView.byteLength, indexShort.data());
+				copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 2, indexShort.data());
 			}
 
 			// Copy indices into vector
@@ -407,6 +437,16 @@ namespace puffin::io
 					indices[i] = indexShort[i];
 				}
 			}
+
+			// Generate tangents if none were loaded from file
+			if (vertexTangent.empty())
+				generateTangents(vertices, indices);
+
+			vertexPos.clear();
+			vertexNormal.clear();
+			vertexTangent.clear();
+			vertexUV.clear();
+			indexShort.clear();
 
 			fs::path assetPath = assetSubdirectory / (modelPath.stem().string() + "_" + mesh.name + ".pstaticmesh");
 
