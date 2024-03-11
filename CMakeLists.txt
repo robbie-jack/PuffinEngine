@@ -100,6 +100,7 @@ set(HEADERS
 	${HEADER_DIR}/Audio/MiniAudioSubsystem.h
 	# Components
 	${HEADER_DIR}/Components/SceneObjectComponent.h
+	${HEADER_DIR}/Components/SceneHierarchyComponent.h
 	${HEADER_DIR}/Components/TransformComponent2D.h
 	${HEADER_DIR}/Components/TransformComponent3D.h
 	${HEADER_DIR}/Components/Rendering/CameraComponent.h
