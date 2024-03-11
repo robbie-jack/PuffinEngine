@@ -80,7 +80,7 @@ namespace puffin::assets
 		return saveBinaryFile(fullPath, data);
 	}
 
-	bool TextureAsset::load()
+	bool TextureAsset::load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)
@@ -93,13 +93,16 @@ namespace puffin::assets
 		
 		// Load Binary/Metadata
 		AssetData data;
-		if (!loadBinaryFile(fullPath, data))
+		if (!loadBinaryFile(fullPath, data, loadHeaderOnly))
 		{
 			return false;
 		}
 
 		// Parse Metadata from Json
 		const TextureInfo info = parseTextureInfo(data);
+
+		if (loadHeaderOnly)
+			return true;
 
 		// Decompress Binary Data
 		mPixels.resize(info.originalSize);

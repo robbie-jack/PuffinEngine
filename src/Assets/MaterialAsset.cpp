@@ -27,7 +27,7 @@ namespace puffin::assets
 		return saveJsonFile(fullPath, data);
 	}
 
-	bool MaterialAsset::load()
+	bool MaterialAsset::load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)
@@ -76,7 +76,7 @@ namespace puffin::assets
 		return saveJsonFile(fullPath, data);
 	}
 
-	bool MaterialInstanceAsset::load()
+	bool MaterialInstanceAsset::load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)

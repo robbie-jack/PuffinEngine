@@ -33,11 +33,25 @@ namespace puffin::rendering
 		// CURRENTLY BROKEN, DO NOT USE!!!!!
 		bool removeMeshes(const std::set<PuffinID>& staticMeshesToRemove);
 
-		uint32_t meshVertexOffset(const PuffinID meshId) { return mInternalMeshData[meshId].vertexOffset; }
-		uint32_t meshIndexOffset(const PuffinID meshId) { return mInternalMeshData[meshId].indexOffset; }
+		uint32_t meshVertexOffset(const PuffinID meshId, uint8_t subMeshIdx = 0)
+		{
+			return mInternalMeshData[meshId].subMeshData[subMeshIdx].vertexOffset;
+		}
 
-		uint32_t meshVertexCount(const PuffinID meshId) { return mInternalMeshData[meshId].vertexCount; }
-		uint32_t meshIndexCount(const PuffinID meshId) { return mInternalMeshData[meshId].indexCount; }
+		uint32_t meshIndexOffset(const PuffinID meshId, uint8_t subMeshIdx = 0)
+		{
+			return mInternalMeshData[meshId].subMeshData[subMeshIdx].indexOffset;
+		}
+
+		uint32_t meshVertexCount(const PuffinID meshId, uint8_t subMeshIdx = 0)
+		{
+			return mInternalMeshData[meshId].subMeshData[subMeshIdx].vertexCount;
+		}
+
+		uint32_t meshIndexCount(const PuffinID meshId, uint8_t subMeshIdx = 0)
+		{
+			return mInternalMeshData[meshId].subMeshData[subMeshIdx].indexCount;
+		}
 
 		AllocatedBuffer& vertexBuffer() { return mVertexBuffer; }
 		vk::DeviceAddress vertexBufferAddress() { return mVertexBufferAddress; }
@@ -47,10 +61,16 @@ namespace puffin::rendering
 
 		std::shared_ptr<VKRenderSystem> mRenderer = nullptr;
 
-		struct InternalMeshData
+		struct InternalSubMeshData
 		{
 			uint32_t vertexOffset, vertexCount;
 			uint32_t indexOffset, indexCount;
+		};
+
+		struct InternalMeshData
+		{
+			std::vector<InternalSubMeshData> subMeshData;
+
 			bool isActive;
 		};
 

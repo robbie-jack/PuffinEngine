@@ -145,16 +145,20 @@ namespace puffin::rendering
 
 	struct MeshRenderable
 	{
-		MeshRenderable(const PuffinID entityID_, const PuffinID meshID_, const PuffinID matID_) :
-			entityID(entityID_), meshID(meshID_), matID(matID_) {}
+		MeshRenderable(const PuffinID entityID_, const PuffinID meshID_, const PuffinID matID_, const uint8_t subMeshIdx_ = 0) :
+			entityID(entityID_), meshID(meshID_), matID(matID_), subMeshIdx(subMeshIdx_) {}
 
 		PuffinID entityID;
 		PuffinID meshID;
 		PuffinID matID;
+		uint8_t subMeshIdx = 0;
 
 		bool operator<(const MeshRenderable& other) const
 		{
-			return matID < other.matID && meshID < other.meshID && entityID < other.entityID;
+			return matID < other.matID
+			&& meshID < other.meshID
+			&& subMeshIdx < other.subMeshIdx
+			&& entityID < other.entityID;
 		}
 	};
 

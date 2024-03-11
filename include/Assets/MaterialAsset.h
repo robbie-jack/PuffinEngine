@@ -43,7 +43,7 @@ namespace puffin::assets
 
         bool save() override;
 
-        bool load() override;
+        bool load(bool loadHeaderOnly = false) override;
 
         void unload() override {}
 
@@ -83,7 +83,7 @@ namespace puffin::assets
 
         bool save() override;
 
-        bool load() override;
+        bool load(bool loadHeaderOnly = false) override;
 
         void unload() override {}
 

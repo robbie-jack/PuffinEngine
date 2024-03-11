@@ -147,7 +147,7 @@ namespace puffin::assets
 
 		bool save(TextureInfo& info, void* pixelData);
 
-		bool load() override;
+		bool load(bool loadHeaderOnly = false) override;
 
 		void unload() override;
 

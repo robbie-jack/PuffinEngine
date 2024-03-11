@@ -143,7 +143,7 @@ namespace puffin::assets
 		return true;
 	}
 
-	static bool loadBinaryFile(const fs::path& path, AssetData& assetData)
+	static bool loadBinaryFile(const fs::path& path, AssetData& assetData, const bool& loadHeaderOnly = false)
 	{
 		// Open File for Loading
 		std::ifstream inFile;
@@ -176,6 +176,14 @@ namespace puffin::assets
 		inFile.read(jsonString.data(), jsonLength);
 
 		assetData.json = json::parse(jsonString);
+
+		// Load only header data, skip binary blob
+		if (loadHeaderOnly)
+		{
+			inFile.close();
+
+			return true;
+		}
 
 		// Read Binary Blob
 		assetData.binaryBlob.resize(blobLength);
@@ -252,7 +260,7 @@ namespace puffin::assets
 		virtual const std::string& type() const = 0;
 		virtual const uint32_t& version() const = 0;
 		virtual bool save() = 0;
-		virtual bool load() = 0;
+		virtual bool load(bool loadHeaderOnly = false) = 0;
 		virtual void unload() = 0;
 
 		virtual bool isLoaded() { return mIsLoaded; }

@@ -376,7 +376,7 @@ namespace puffin
 					mSceneChanged = true;
 				}
 
-				ImGui::Text("Model UUID: %llu", mesh.meshAssetId);
+				ImGui::Text("Model UUID: %llu", mesh.meshAssetID);
 				ImGui::Text("Material UUID: %llu", mesh.matAssetID);
 
 				// Change Model Path

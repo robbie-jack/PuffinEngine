@@ -704,7 +704,7 @@ namespace puffin::core
 		//lightEntity->AddComponent<rendering::LightComponent>();
 		//lightEntity->GetComponent<rendering::LightComponent>().type = rendering::LightType::Directional;
 		//lightEntity->AddComponent<rendering::MeshComponent>();
-		//lightEntity->GetComponent<rendering::MeshComponent>().meshAssetId = cubeMeshId;
+		//lightEntity->GetComponent<rendering::MeshComponent>().meshAssetID = cubeMeshId;
 		//lightEntity->GetComponent<rendering::MeshComponent>().textureAssetId = cubeTextureId;
 		////lightEntity->AddComponent<Rendering::ShadowCasterComponent>();
 

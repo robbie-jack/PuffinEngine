@@ -21,7 +21,7 @@ namespace puffin::assets
 		return saveJsonFile(fullPath, data);
 	}
 
-	bool ShaderAsset::load()
+	bool ShaderAsset::load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)
@@ -47,6 +47,9 @@ namespace puffin::assets
 
 		const std::string binaryPath = data.json["binary_path"];
 		mBinaryPath = binaryPath;
+
+		if (loadHeaderOnly)
+			return true;
 
 		loadCodeFromBinary();
 

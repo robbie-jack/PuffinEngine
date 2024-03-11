@@ -60,67 +60,77 @@ namespace puffin::rendering
 			{
 				mInternalMeshData[staticMesh->id()].isActive = true;
 
-				mActiveVertexCount += mInternalMeshData[staticMesh->id()].vertexCount;
-				mActiveIndexCount += mInternalMeshData[staticMesh->id()].indexCount;
+				for (const auto& subMeshData : mInternalMeshData[staticMesh->id()].subMeshData)
+				{
+					mActiveVertexCount += subMeshData.vertexCount;
+					mActiveIndexCount += subMeshData.indexCount;
+				}
 			}
 
 			return true;
 		}
-		else
+
+		if (staticMesh && staticMesh->load())
 		{
-			if (staticMesh && staticMesh->load())
-			{
-				if (mVertexSize != staticMesh->vertexSize() || mIndexSize != staticMesh->indexSize())
-					return false;
-
-				// Init mesh offset data
-				InternalMeshData internalMeshData;
-				internalMeshData.vertexOffset = mVertexOffset;
-				internalMeshData.indexOffset = mIndexOffset;
-				internalMeshData.vertexCount = staticMesh->numVertices();
-				internalMeshData.indexCount = staticMesh->numIndices();
-				internalMeshData.isActive = true;
-
-				const uint32_t newVertexOffset = internalMeshData.vertexOffset + internalMeshData.vertexCount;
-				if (newVertexOffset >= mMaxVertexCount)
-				{
-					if (!growVertexBuffer(newVertexOffset))
-						return false;
-				}
-
-				const uint32_t newIndexOffset = internalMeshData.indexOffset + internalMeshData.indexCount;
-				if (newIndexOffset >= mMaxIndexCount)
-				{
-					if (!growIndexBuffer(newIndexOffset))
-						return false;
-				}
-
-				mVertexOffset = newVertexOffset;
-				mIndexOffset = newIndexOffset;
-
-				const uint32_t vertexBufferSize = internalMeshData.vertexCount * mVertexSize;
-				const uint32_t indexBufferSize = internalMeshData.indexCount * mIndexSize;
-
-				// Copy vertex data
-				util::copyCPUDataIntoGPUBuffer(mRenderer, mVertexBuffer, vertexBufferSize, staticMesh->vertices().data(),
-				                               0, internalMeshData.vertexOffset * mVertexSize);
-
-				// Copy index data
-				util::copyCPUDataIntoGPUBuffer(mRenderer, mIndexBuffer, indexBufferSize, staticMesh->indices().data(),
-				                               0, internalMeshData.indexOffset * mIndexSize);
-
-				mInternalMeshData.insert({ staticMesh->id(), internalMeshData });
-
-				mActiveVertexCount += internalMeshData.vertexCount;
-				mActiveIndexCount += internalMeshData.indexCount;
-
-				return true;
-			}
-			else
-			{
+			if (mVertexSize != staticMesh->vertexSize() || mIndexSize != staticMesh->indexSize())
 				return false;
+
+			// Init mesh offset data
+			InternalMeshData internalMeshData;
+			/*internalMeshData.vertexOffset = mVertexOffset;
+			internalMeshData.indexOffset = mIndexOffset;
+			internalMeshData.vertexCount = staticMesh->vertexCountTotal();
+			internalMeshData.indexCount = staticMesh->indexCountTotal();*/
+			internalMeshData.isActive = true;
+
+			const uint32_t newVertexOffset = mVertexOffset + staticMesh->vertexCountTotal();
+			if (newVertexOffset >= mMaxVertexCount)
+			{
+				if (!growVertexBuffer(newVertexOffset))
+					return false;
 			}
+
+			const uint32_t newIndexOffset = mIndexOffset + staticMesh->indexCountTotal();
+			if (newIndexOffset >= mMaxIndexCount)
+			{
+				if (!growIndexBuffer(newIndexOffset))
+					return false;
+			}
+
+			const uint32_t vertexBufferSize = staticMesh->vertexCountTotal() * mVertexSize;
+			const uint32_t indexBufferSize = staticMesh->indexCountTotal() * mIndexSize;
+
+			// Copy vertex data
+			util::copyCPUDataIntoGPUBuffer(mRenderer, mVertexBuffer, vertexBufferSize, staticMesh->vertices().data(),
+			                               0, mVertexOffset * mVertexSize);
+
+			// Copy index data
+			util::copyCPUDataIntoGPUBuffer(mRenderer, mIndexBuffer, indexBufferSize, staticMesh->indices().data(),
+			                               0, mIndexOffset * mIndexSize);
+
+			mActiveVertexCount += staticMesh->vertexCountTotal();
+			mActiveIndexCount += staticMesh->indexCountTotal();
+
+			for (const auto& subMeshInfo : staticMesh->subMeshInfo())
+			{
+				InternalSubMeshData subMeshData;
+				subMeshData.vertexOffset = mVertexOffset + subMeshInfo.vertexOffset;
+				subMeshData.indexOffset = mVertexOffset + subMeshInfo.vertexOffset;
+				subMeshData.vertexCount = subMeshInfo.vertexCount;
+				subMeshData.indexCount = subMeshInfo.indexCount;
+
+				internalMeshData.subMeshData.push_back(subMeshData);
+			}
+
+			mInternalMeshData.insert({ staticMesh->id(), internalMeshData });
+
+			mVertexOffset = newVertexOffset;
+			mIndexOffset = newIndexOffset;
+
+			return true;
 		}
+
+		return false;
 	}
 
 	bool UnifiedGeometryBuffer::removeMeshes(const std::set<PuffinID>& staticMeshesToRemove)
@@ -128,14 +138,17 @@ namespace puffin::rendering
 		if (staticMeshesToRemove.empty())
 			return true;
 
-		for (const auto& meshId : staticMeshesToRemove)
+		for (const auto& meshID : staticMeshesToRemove)
 		{
-			if (mInternalMeshData[meshId].isActive)
+			if (mInternalMeshData[meshID].isActive)
 			{
-				mInternalMeshData[meshId].isActive = false;
+				mInternalMeshData[meshID].isActive = false;
 
-				mActiveVertexCount -= mInternalMeshData[meshId].vertexCount;
-				mActiveIndexCount -= mInternalMeshData[meshId].vertexCount;
+				for (const auto& subMeshData : mInternalMeshData[meshID].subMeshData)
+				{
+					mActiveVertexCount -= subMeshData.vertexCount;
+					mActiveIndexCount -= subMeshData.indexCount;
+				}
 			}
 		}
 

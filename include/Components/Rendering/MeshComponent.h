@@ -14,15 +14,16 @@ namespace puffin::rendering
 	{
 		MeshComponent() = default;
 		
-		MeshComponent(const PuffinID meshId, const PuffinID matId) :
-			meshAssetId(meshId), matAssetID(matId)
+		MeshComponent(const PuffinID meshId, const PuffinID matId, const uint8_t Idx = 0) :
+			meshAssetID(meshId), matAssetID(matId), subMeshIdx(Idx)
 		{
 		}
 
-		PuffinID meshAssetId;
-		PuffinID matAssetID;
+		PuffinID meshAssetID = gInvalidID;
+		PuffinID matAssetID = gInvalidID;
+		uint8_t subMeshIdx = 0; // Index of sub mesh to render for the set model, always 0 for models with no sub-mesh
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetId, matAssetID)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, meshAssetID, matAssetID, subMeshIdx)
 	};
 
 	struct ProceduralMeshComponent

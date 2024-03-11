@@ -160,21 +160,34 @@ namespace puffin::io
 		std::vector<rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
-		std::unordered_map<rendering::VertexPNTV32, uint32_t> vertexIndices;
+		std::vector<assets::SubMeshInfo> subMeshInfos;
+		subMeshInfos.reserve(shapes.size());
+
+		size_t indexCountTotal = 0;
+		for (const auto& shape : shapes)
+		{
+			indexCountTotal += shape.mesh.indices.size();
+		}
+
+		vertices.reserve(indexCountTotal);
+		indices.reserve(indexCountTotal);
 
 		// Loop over shapes
-		for (size_t s = 0; s < shapes.size(); s++)
+		int s = 0;
+		for (const auto& shape : shapes)
 		{
-			vertices.reserve(shapes[s].mesh.indices.size());
-			indices.reserve(shapes[s].mesh.indices.size());
-
 			rendering::VertexPNTV32 vertex;
 
+			assets::SubMeshInfo subMeshInfo;
+			subMeshInfo.vertexOffset = vertices.size();
+			subMeshInfo.indexOffset = indices.size();
+
+			std::unordered_map<rendering::VertexPNTV32, uint32_t> vertexIndices;
+
 			// Loop over faces (polygon) to get indices
-			size_t indexOffset = 0;
-			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+			for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++)
 			{
-				auto fv = static_cast<size_t>(shapes[s].mesh.num_face_vertices[f]);
+				auto fv = static_cast<size_t>(shape.mesh.num_face_vertices[f]);
 
 				// Loop over vertices in face
 				for (size_t v = 0; v < fv; v++)
@@ -182,7 +195,7 @@ namespace puffin::io
 					vertex = {};
 
 					// Store index into attrib vertices vector
-					tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
+					tinyobj::index_t idx = shape.mesh.indices[subMeshInfo.indexCount + v];
 
 					vertex.pos.x = attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 0];
 					vertex.pos.y = attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 1];
@@ -210,42 +223,57 @@ namespace puffin::io
 					}
 					else
 					{
-						uint32_t newIndex = vertices.size();
-
 						vertices.push_back(vertex);
-						indices.push_back(newIndex);
-						vertexIndices[vertex] = newIndex;
+						indices.push_back(subMeshInfo.vertexCount);
+						vertexIndices[vertex] = subMeshInfo.vertexCount;
+
+						subMeshInfo.vertexCount++;
 					}
 				}
 
-				indexOffset += fv;
+				subMeshInfo.indexCount += fv;
 			}
 
-			generateTangents(vertices, indices);
+			// Fill out SubMeshInfo struct
+			subMeshInfo.vertexByteSize = subMeshInfo.vertexCount * sizeof(rendering::VertexPNTV32);
+			subMeshInfo.indexByteSize = subMeshInfo.indexCount * sizeof(uint32_t);
+			subMeshInfo.subMeshIdx = s;
 
-			// Fill out MeshInfo struct
-			fs::path assetPath = assetSubdirectory / (modelPath.stem().string() + "_" + shapes[s].name + ".pstaticmesh");
+			subMeshInfos.push_back(subMeshInfo);
 
-			assets::MeshInfo info;
-			info.compressionMode = assets::CompressionMode::LZ4;
-			info.originalFile = modelPath.string();
-			info.vertexFormat = rendering::VertexFormat::PNTV32;
-			info.numVertices = vertices.size();
-			info.numIndices = indices.size();
-			info.verticesSize = vertices.size() * sizeof(rendering::VertexPNTV32);
-			info.indicesSize = indices.size() * sizeof(uint32_t);
+			vertexIndices.clear();
 
-			// Create & save asset
-			auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(assetPath);
-
-			if (!asset->save(info, vertices.data(), indices.data()))
-				return false;
-
-			assets::AssetRegistry::get()->saveAssetCache();
-
-			vertices.clear();
-			indices.clear();
+			s++;
 		}
+
+		generateTangents(vertices, indices);
+
+		// Create & save asset
+		assets::MeshAssetInfo meshAssetInfo;
+		meshAssetInfo.compressionMode = assets::CompressionMode::LZ4;
+		meshAssetInfo.originalFile = modelPath.string();
+		meshAssetInfo.vertexFormat = rendering::VertexFormat::PNTV32;
+		meshAssetInfo.subMeshCount = subMeshInfos.size();
+
+		for (auto& subMeshInfo : subMeshInfos)
+		{
+			meshAssetInfo.vertexCountTotal += subMeshInfo.vertexCount;
+			meshAssetInfo.indexCountTotal += subMeshInfo.indexCount;
+			meshAssetInfo.vertexByteSizeTotal += subMeshInfo.vertexByteSize;
+			meshAssetInfo.indexByteSizeTotal += subMeshInfo.indexByteSize;
+		}
+
+		fs::path assetPath = assetSubdirectory / (modelPath.stem().string() + ".pstaticmesh");
+
+		auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(assetPath);
+
+		if (!asset->save(meshAssetInfo, subMeshInfos, vertices.data(), indices.data()))
+			return false;
+
+		assets::AssetRegistry::get()->saveAssetCache();
+
+		vertices.clear();
+		indices.clear();
 
 		return true;
 	}
@@ -290,178 +318,217 @@ namespace puffin::io
 
 	bool importGLTFModel(const fs::path& modelPath, const tinygltf::Model& model, fs::path assetSubdirectory)
 	{
-		std::vector<rendering::VertexPNTV32> vertices;
-		std::vector<uint32_t> indices;
-
-		const size_t reserveVertexCount = 50000;
-		const size_t reserveIndexCount = reserveVertexCount * 2;
-
-		vertices.reserve(reserveVertexCount);
-		indices.reserve(reserveIndexCount);
-
 		// Import each mesh in file
 		for (const auto& mesh : model.meshes)
 		{
 			if (mesh.primitives.empty())
 				continue;
 
-			const auto& primitive = mesh.primitives[0];
+			std::vector<assets::SubMeshInfo> subMeshInfos;
+			subMeshInfos.reserve(mesh.primitives.size());
 
-			std::vector<Vector3f> vertexPos;
-			std::vector<Vector3f> vertexNormal;
-			std::vector<Vector3f> vertexTangent;
-			std::vector<Vector2f> vertexUV;
-
-			vertexPos.reserve(reserveVertexCount);
-			vertexNormal.reserve(reserveVertexCount);
-			vertexNormal.reserve(reserveVertexCount);
-			vertexUV.reserve(reserveVertexCount);
-
-			size_t vertexCount = 0;
-
-			// Load Vertices
-			for (const auto& attribute : primitive.attributes)
+			size_t indexCountTotal = 0;
+			for (const auto& primitive : mesh.primitives)
 			{
-				if (attribute.first == "POSITION")
-				{
-					const auto& accessor = model.accessors[attribute.second];
+				const auto& indexAccessor = model.accessors[primitive.indices];
 
-					if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC3)
-					{
-						const auto& bufferView = model.bufferViews[accessor.bufferView];
-						vertexCount = accessor.count;
-
-						vertexPos.resize(vertexCount);
-
-						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexPos.data());
-					}
-
-					continue;
-				}
-
-				if (attribute.first == "NORMAL")
-				{
-					const auto& accessor = model.accessors[attribute.second];
-
-					if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC3)
-					{
-						const auto& bufferView = model.bufferViews[accessor.bufferView];
-						vertexCount = accessor.count;
-
-						vertexNormal.resize(vertexCount);
-
-						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexNormal.data());
-					}
-
-					continue;
-				}
-
-				if (attribute.first == "TANGENT")
-				{
-					const auto& accessor = model.accessors[attribute.second];
-
-					if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC3)
-					{
-						const auto& bufferView = model.bufferViews[accessor.bufferView];
-						vertexCount = accessor.count;
-
-						vertexTangent.resize(vertexCount);
-
-						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexTangent.data());
-					}
-
-					continue;
-				}
-
-				if (attribute.first == "TEXCOORD_0")
-				{
-					const auto& accessor = model.accessors[attribute.second];
-
-					if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC2)
-					{
-						const auto& bufferView = model.bufferViews[accessor.bufferView];
-						vertexCount = accessor.count;
-
-						vertexUV.resize(vertexCount);
-
-						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 8, vertexUV.data());
-					}
-				}
+				indexCountTotal += indexAccessor.count;
 			}
 
-			// Copy data into vertices vector
-			vertices.resize(vertexCount);
-			for (int i = 0; i < vertexCount; i++)
+			std::vector<rendering::VertexPNTV32> vertices;
+			std::vector<uint32_t> indices;
+
+			vertices.reserve(indexCountTotal);
+			indices.reserve(indexCountTotal);
+
+			int p = 0;
+			for (const auto& primitive : mesh.primitives)
 			{
-				if (!vertexPos.empty())
-					vertices[i].pos = vertexPos[i];
+				assets::SubMeshInfo subMeshInfo;
+				subMeshInfo.vertexOffset = vertices.size();
+				subMeshInfo.indexOffset = indices.size();
 
-				if (!vertexNormal.empty())
-					vertices[i].normal = vertexNormal[i];
+				std::vector<uint32_t> pIndices;
 
-				if (!vertexTangent.empty())
-					vertices[i].tangent = vertexTangent[i];
-
-				if (!vertexUV.empty())
+				// Load Indices
 				{
-					vertices[i].uvX = vertexUV[i].x;
-					vertices[i].uvY = vertexUV[i].y;
+					const auto& indexAccessor = model.accessors[primitive.indices];
+
+					std::vector<unsigned short> indexShort;
+
+					if (indexAccessor.componentType == TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT && indexAccessor.type == TINYGLTF_TYPE_SCALAR)
+					{
+						const auto& bufferView = model.bufferViews[indexAccessor.bufferView];
+						subMeshInfo.indexCount = indexAccessor.count;
+
+						indexShort.resize(indexAccessor.count);
+
+						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 2, indexShort.data());
+					}
+
+					// Copy indices into vector
+					for (const auto& index : indexShort)
+					{
+						pIndices.push_back(index);
+					}
 				}
-			}
 
-			// Load Indices
-			const auto& accessor = model.accessors[primitive.indices];
+				std::vector<rendering::VertexPNTV32> pVertices;
+				std::vector<Vector3f> vertexPos;
+				std::vector<Vector3f> vertexNormal;
+				std::vector<Vector3f> vertexTangent;
+				std::vector<Vector2f> vertexUV;
 
-			std::vector<unsigned short> indexShort;
+				pVertices.reserve(subMeshInfo.indexCount);
+				vertexPos.reserve(subMeshInfo.indexCount);
+				vertexNormal.reserve(subMeshInfo.indexCount);
+				vertexNormal.reserve(subMeshInfo.indexCount);
+				vertexUV.reserve(subMeshInfo.indexCount);
 
-			indexShort.reserve(reserveIndexCount);
-
-			size_t indexCount = 0;
-
-			if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT && accessor.type == TINYGLTF_TYPE_SCALAR)
-			{
-				const auto& bufferView = model.bufferViews[accessor.bufferView];
-				indexCount = accessor.count;
-
-				indexShort.resize(indexCount);
-
-				copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 2, indexShort.data());
-			}
-
-			// Copy indices into vector
-			if (!indexShort.empty())
-			{
-				indices.resize(indexCount);
-				for (int i = 0; i < indexCount; i++)
+				// Load Vertices
+				for (const auto& attribute : primitive.attributes)
 				{
-					indices[i] = indexShort[i];
+					if (attribute.first == "POSITION")
+					{
+						const auto& accessor = model.accessors[attribute.second];
+
+						if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC3)
+						{
+							const auto& bufferView = model.bufferViews[accessor.bufferView];
+							subMeshInfo.vertexCount = accessor.count;
+
+							vertexPos.resize(subMeshInfo.vertexCount);
+
+							copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexPos.data());
+						}
+
+						continue;
+					}
+
+					if (attribute.first == "NORMAL")
+					{
+						const auto& accessor = model.accessors[attribute.second];
+
+						if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC3)
+						{
+							const auto& bufferView = model.bufferViews[accessor.bufferView];
+							subMeshInfo.vertexCount = accessor.count;
+
+							vertexNormal.resize(subMeshInfo.vertexCount);
+
+							copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexNormal.data());
+						}
+
+						continue;
+					}
+
+					if (attribute.first == "TANGENT")
+					{
+						const auto& accessor = model.accessors[attribute.second];
+
+						if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC4)
+						{
+							const auto& bufferView = model.bufferViews[accessor.bufferView];
+							subMeshInfo.vertexCount = accessor.count;
+
+							vertexTangent.resize(subMeshInfo.vertexCount);
+
+							copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexTangent.data());
+						}
+
+						continue;
+					}
+
+					if (attribute.first == "TEXCOORD_0")
+					{
+						const auto& accessor = model.accessors[attribute.second];
+
+						if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC2)
+						{
+							const auto& bufferView = model.bufferViews[accessor.bufferView];
+							subMeshInfo.vertexCount = accessor.count;
+
+							vertexUV.resize(subMeshInfo.vertexCount);
+
+							copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 8, vertexUV.data());
+						}
+					}
 				}
+
+				// Copy data into vertices vector
+				for (int i = 0; i < subMeshInfo.vertexCount; i++)
+				{
+					rendering::VertexPNTV32 vertex;
+
+					if (!vertexPos.empty())
+						vertex.pos = vertexPos[i];
+
+					if (!vertexNormal.empty())
+						vertex.normal = vertexNormal[i];
+
+					if (!vertexTangent.empty())
+						vertex.tangent = vertexTangent[i];
+
+					if (!vertexUV.empty())
+					{
+						vertex.uvX = vertexUV[i].x;
+						vertex.uvY = vertexUV[i].y;
+					}
+
+					pVertices.push_back(vertex);
+				}
+
+				vertexPos.clear();
+				vertexNormal.clear();
+				vertexTangent.clear();
+				vertexUV.clear();
+
+				// Generate tangents if none were loaded from file
+				if (vertexTangent.size() < pVertices.size())
+					generateTangents(pVertices, pIndices);
+
+				subMeshInfo.vertexByteSize = pVertices.size() * sizeof(rendering::VertexPNTV32);
+				subMeshInfo.indexByteSize = pIndices.size() * sizeof(uint32_t);
+				subMeshInfo.subMeshIdx = p;
+
+				subMeshInfos.push_back(subMeshInfo);
+
+				// Copy primitive vertices/indices to main vectors and clear
+				for (const auto& v : pVertices)
+				{
+					vertices.push_back(v);
+				}
+
+				for (const auto& i : pIndices)
+				{
+					indices.push_back(i);
+				}
+
+				pVertices.clear();
+				pIndices.clear();
+
+				p++;
 			}
 
-			// Generate tangents if none were loaded from file
-			if (vertexTangent.empty())
-				generateTangents(vertices, indices);
+			assets::MeshAssetInfo meshAssetInfo;
+			meshAssetInfo.compressionMode = assets::CompressionMode::LZ4;
+			meshAssetInfo.originalFile = modelPath.string();
+			meshAssetInfo.vertexFormat = rendering::VertexFormat::PNTV32;
+			meshAssetInfo.subMeshCount = subMeshInfos.size();
 
-			vertexPos.clear();
-			vertexNormal.clear();
-			vertexTangent.clear();
-			vertexUV.clear();
-			indexShort.clear();
+			for (auto& subMeshInfo : subMeshInfos)
+			{
+				meshAssetInfo.vertexCountTotal += subMeshInfo.vertexCount;
+				meshAssetInfo.indexCountTotal += subMeshInfo.indexCount;
+				meshAssetInfo.vertexByteSizeTotal += subMeshInfo.vertexByteSize;
+				meshAssetInfo.indexByteSizeTotal += subMeshInfo.indexByteSize;
+			}
 
 			fs::path assetPath = assetSubdirectory / (modelPath.stem().string() + "_" + mesh.name + ".pstaticmesh");
 
-			assets::MeshInfo info;
-			info.compressionMode = assets::CompressionMode::LZ4;
-			info.originalFile = modelPath.string();
-			info.vertexFormat = rendering::VertexFormat::PNTV32;
-			info.numVertices = vertices.size();
-			info.numIndices = indices.size();
-			info.verticesSize = vertices.size() * sizeof(rendering::VertexPNTV32);
-			info.indicesSize = indices.size() * sizeof(uint32_t);
-
 			auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(assetPath);
 
-			if (!asset->save(info, vertices.data(), indices.data()))
+			if (!asset->save(meshAssetInfo, subMeshInfos, vertices.data(), indices.data()))
 				return false;
 
 			assets::AssetRegistry::get()->saveAssetCache();

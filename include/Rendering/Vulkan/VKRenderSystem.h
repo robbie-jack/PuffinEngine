@@ -139,6 +139,7 @@ namespace puffin::rendering
 
 		void onUpdateMesh(entt::registry& registry, entt::entity entity);
 		void onUpdateTransform(entt::registry& registry, entt::entity entity);
+		void onDestroyMeshOrTransform(entt::registry& registry, entt::entity entity);
 
 		void addRenderable(entt::registry& registry, entt::entity entity);
 
@@ -280,8 +281,8 @@ namespace puffin::rendering
 		static void buildModelTransform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
 		                                glm::mat4& model);
 
-		bool loadMesh(PuffinID meshId, MeshDataVK& meshData);
-		void unloadMesh(MeshDataVK& meshData) const;
+		//bool loadMesh(PuffinID meshId, MeshDataVK& meshData);
+		//void unloadMesh(MeshDataVK& meshData) const;
 
 		bool loadTexture(PuffinID texId, TextureDataVK& texData);
 		void unloadTexture(TextureDataVK& texData) const;

@@ -64,12 +64,15 @@ namespace puffin::rendering
 
 		registry->on_construct<MeshComponent>().connect<&VKRenderSystem::onUpdateMesh>(this);
 		registry->on_update<MeshComponent>().connect<&VKRenderSystem::onUpdateMesh>(this);
+		registry->on_destroy<MeshComponent>().connect<&VKRenderSystem::onDestroyMeshOrTransform>(this);
 
 		registry->on_construct<TransformComponent2D>().connect<&VKRenderSystem::onUpdateTransform>(this);
 		registry->on_update<TransformComponent2D>().connect<&VKRenderSystem::onUpdateTransform>(this);
+		registry->on_destroy<TransformComponent2D>().connect<&VKRenderSystem::onDestroyMeshOrTransform>(this);
 
 		registry->on_construct<TransformComponent3D>().connect<&VKRenderSystem::onUpdateTransform>(this);
 		registry->on_update<TransformComponent3D>().connect<&VKRenderSystem::onUpdateTransform>(this);
+		registry->on_destroy<TransformComponent3D>().connect<&VKRenderSystem::onDestroyMeshOrTransform>(this);
 	}
 
 	void VKRenderSystem::startup()
@@ -173,7 +176,7 @@ namespace puffin::rendering
 	{
 		const auto mesh = registry.get<MeshComponent>(entity);
 
-		mMeshesToLoad.insert(mesh.meshAssetId);
+		mMeshesToLoad.insert(mesh.meshAssetID);
 		mMaterialRegistry.registerMaterialInstance(mesh.matAssetID);
 
 		addRenderable(registry, entity);
@@ -184,6 +187,11 @@ namespace puffin::rendering
 		addRenderable(registry, entity);
 	}
 
+	void VKRenderSystem::onDestroyMeshOrTransform(entt::registry& registry, entt::entity entity)
+	{
+		mUpdateRenderables = true;
+	}
+
 	void VKRenderSystem::addRenderable(entt::registry& registry, entt::entity entity)
 	{
 		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<MeshComponent>(entity))
@@ -191,7 +199,7 @@ namespace puffin::rendering
 			const auto object = registry.get<SceneObjectComponent>(entity);
 			const auto mesh = registry.get<MeshComponent>(entity);
 
-			if (mesh.meshAssetId == gInvalidID || mesh.matAssetID == gInvalidID)
+			if (mesh.meshAssetID == gInvalidID || mesh.matAssetID == gInvalidID)
 			{
 				return;
 			}
@@ -818,14 +826,14 @@ namespace puffin::rendering
 			// Iterate 2D objects
 			for (auto [entity, object, transform, mesh] : meshView2D.each())
 			{
-				if (mesh.matAssetID == gInvalidID || mesh.meshAssetId == gInvalidID)
+				if (mesh.matAssetID == gInvalidID || mesh.meshAssetID == gInvalidID)
 				{
 					continue;
 				}
 
 				const auto& matData = mMaterialRegistry.getMaterialData(mesh.matAssetID);
 
-				mRenderables.emplace_back(object.id, mesh.meshAssetId, matData.baseMaterialID);
+				mRenderables.emplace_back(object.id, mesh.meshAssetID, matData.baseMaterialID, mesh.subMeshIdx);
 
 				if (!mCachedObjectData.contains(object.id))
 				{
@@ -836,14 +844,14 @@ namespace puffin::rendering
 			// Iterate 3D objects
 			for (auto [entity, object, transform, mesh] : meshView3D.each())
 			{
-				if (mesh.matAssetID == gInvalidID || mesh.meshAssetId == gInvalidID)
+				if (mesh.matAssetID == gInvalidID || mesh.meshAssetID == gInvalidID)
 				{
 					continue;
 				}
 
 				const auto& matData = mMaterialRegistry.getMaterialData(mesh.matAssetID);
 
-				mRenderables.emplace_back(object.id, mesh.meshAssetId, matData.baseMaterialID);
+				mRenderables.emplace_back(object.id, mesh.meshAssetID, matData.baseMaterialID, mesh.subMeshIdx);
 
 				if (!mCachedObjectData.contains(object.id))
 				{
@@ -1490,7 +1498,6 @@ namespace puffin::rendering
 	{
 		if (!mRenderables.empty())
 		{
-
 			std::vector<vk::DrawIndexedIndirectCommand> indirectCmds = {};
 			indirectCmds.resize(gMaxObjects);
 
@@ -1503,20 +1510,21 @@ namespace puffin::rendering
 			int instanceIdx = 0;
 			int instanceCount = 0;
 			PuffinID currentMeshID = mRenderables[0].meshID;
+			uint8_t currentSubMeshIdx = mRenderables[0].subMeshIdx;
 
 			MeshDrawBatch drawBatch;
 			drawBatch.matID = mRenderables[0].matID;
 			drawBatch.cmdIndex = 0;
 
-			indirectCmds[cmdIdx].vertexOffset = mStaticRenderData.combinedMeshBuffer.meshVertexOffset(currentMeshID);
-			indirectCmds[cmdIdx].firstIndex = mStaticRenderData.combinedMeshBuffer.meshIndexOffset(currentMeshID);
-			indirectCmds[cmdIdx].indexCount = mStaticRenderData.combinedMeshBuffer.meshIndexCount(currentMeshID);
+			indirectCmds[cmdIdx].vertexOffset = mStaticRenderData.combinedMeshBuffer.meshVertexOffset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].firstIndex = mStaticRenderData.combinedMeshBuffer.meshIndexOffset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].indexCount = mStaticRenderData.combinedMeshBuffer.meshIndexCount(currentMeshID, currentSubMeshIdx);
 			indirectCmds[cmdIdx].firstInstance = 0;
 
 			constexpr int maxInstancesPerCommand = gMaxObjects;
 			constexpr int maxCommandsPerBatch = gMaxObjects;
 
-			for (const auto& [entityID, meshID, matID] : mRenderables)
+			for (const auto& [entityID, meshID, matID, subMeshIdx] : mRenderables)
 			{
 				// Push current draw batch struct to vector when material changes or max commands per batch is exceeded
 				if (drawBatch.matID != matID || cmdCount >= maxCommandsPerBatch)
@@ -1533,9 +1541,10 @@ namespace puffin::rendering
 				}
 
 				// Start a new command when a new mesh is encountered, when a new batch is started or when maxInstancesPerCommand is exceeded
-				if (currentMeshID != meshID || newBatch || instanceCount >= maxInstancesPerCommand)
+				if (currentMeshID != meshID || currentSubMeshIdx != subMeshIdx || newBatch || instanceCount >= maxInstancesPerCommand)
 				{
 					currentMeshID = meshID;
+					currentSubMeshIdx = subMeshIdx;
 
 					indirectCmds[cmdIdx].instanceCount = instanceCount;
 					instanceCount = 0;
@@ -1543,9 +1552,9 @@ namespace puffin::rendering
 					cmdIdx++;
 					cmdCount++;
 
-					indirectCmds[cmdIdx].vertexOffset = mStaticRenderData.combinedMeshBuffer.meshVertexOffset(currentMeshID);
-					indirectCmds[cmdIdx].firstIndex = mStaticRenderData.combinedMeshBuffer.meshIndexOffset(currentMeshID);
-					indirectCmds[cmdIdx].indexCount = mStaticRenderData.combinedMeshBuffer.meshIndexCount(currentMeshID);
+					indirectCmds[cmdIdx].vertexOffset = mStaticRenderData.combinedMeshBuffer.meshVertexOffset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].firstIndex = mStaticRenderData.combinedMeshBuffer.meshIndexOffset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].indexCount = mStaticRenderData.combinedMeshBuffer.meshIndexCount(currentMeshID, currentSubMeshIdx);
 					indirectCmds[cmdIdx].firstInstance = instanceIdx;
 
 					newBatch = false;
@@ -1923,7 +1932,7 @@ namespace puffin::rendering
 		model = translateM * orientM * scaleM;
 	}
 
-	bool VKRenderSystem::loadMesh(PuffinID meshId, MeshDataVK& meshData)
+	/*bool VKRenderSystem::loadMesh(PuffinID meshId, MeshDataVK& meshData)
 	{
 		if (const auto meshAsset = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshId); meshAsset && meshAsset->load())
 		{
@@ -1946,13 +1955,13 @@ namespace puffin::rendering
 		{
 			return false;
 		}
-	}
+	}*/
 
-	void VKRenderSystem::unloadMesh(MeshDataVK& meshData) const
+	/*void VKRenderSystem::unloadMesh(MeshDataVK& meshData) const
 	{
 		mAllocator.destroyBuffer(meshData.vertexBuffer.buffer, meshData.vertexBuffer.allocation);
 		mAllocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
-	}
+	}*/
 
 	bool VKRenderSystem::loadTexture(PuffinID texId, TextureDataVK& texData)
 	{

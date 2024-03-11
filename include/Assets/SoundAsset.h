@@ -29,7 +29,7 @@ namespace puffin::assets
 
 		bool save() override { return true; }
 
-		bool load() override { return true; }
+		bool load(bool loadHeaderOnly = false) override { return true; }
 
 		void unload() override {}
 	};
