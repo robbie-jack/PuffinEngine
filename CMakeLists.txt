@@ -115,6 +115,7 @@ set(HEADERS
 	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.h
 	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.h
 	# ECS
+	${HEADER_DIR}/ECS/ECSSubsystem.h
 	${HEADER_DIR}/ECS/EnTTSubsystem.h
 	# Core
 	${HEADER_DIR}/Core/Engine.h
@@ -206,7 +207,7 @@ set(SOURCES
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
 	${SOURCE_DIR}/Audio/MiniAudioSubsystem.cpp
 	# ECS
-	
+	${SOURCE_DIR}/ECS/ECSSubsystem.cpp
 	# Engine
 	${SOURCE_DIR}/Core/Engine.cpp
 	${SOURCE_DIR}/Core/Application.cpp
