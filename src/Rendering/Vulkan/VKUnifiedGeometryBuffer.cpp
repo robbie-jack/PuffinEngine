@@ -115,7 +115,7 @@ namespace puffin::rendering
 			{
 				InternalSubMeshData subMeshData;
 				subMeshData.vertexOffset = mVertexOffset + subMeshInfo.vertexOffset;
-				subMeshData.indexOffset = mVertexOffset + subMeshInfo.indexOffset;
+				subMeshData.indexOffset = mIndexOffset + subMeshInfo.indexOffset;
 				subMeshData.vertexCount = subMeshInfo.vertexCount;
 				subMeshData.indexCount = subMeshInfo.indexCount;
 
