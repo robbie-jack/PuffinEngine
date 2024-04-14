@@ -159,6 +159,11 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKMaterialRegistry.h
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderGraph.h
 	${HEADER_DIR}/Rendering/Vulkan/VKResourceManager.h
+	# Scene
+	${HEADER_DIR}/scene/node.h
+	${HEADER_DIR}/scene/scene_graph.h
+	${HEADER_DIR}/scene/transform_node_2d.h
+	${HEADER_DIR}/scene/transform_node_3d.h
 	# Scripting
 	${HEADER_DIR}/Scripting/AngelScript/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScript/AngelScriptSystem.h
