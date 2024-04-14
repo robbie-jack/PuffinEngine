@@ -92,19 +92,6 @@ namespace puffin::core
 		//reimportDefaultAssets();
 		//assets::AssetRegistry::get()->saveAssetCache();
 		//loadAndResaveAssets();
-
-		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
-		{
-			// Create Default Scene in code -- used when scene serialization is changed
-			defaultScene();
-			//physicsScene2D();
-			//physicsScene3D();
-			//proceduralScene();
-
-			sceneData->updateData(enttSubsystem);
-			sceneData->save();
-			sceneData->clear();
-		}
 	}
 
 	void Engine::startup()
@@ -119,6 +106,19 @@ namespace puffin::core
 
 		mLastTime = glfwGetTime(); // Time Count Started
 		mCurrentTime = mLastTime;
+
+		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
+		{
+			// Create Default Scene in code -- used when scene serialization is changed
+			defaultScene();
+			//physicsScene2D();
+			//physicsScene3D();
+			//proceduralScene();
+
+			//sceneData->updateData(enttSubsystem);
+			//sceneData->save();
+			//sceneData->clear();
+		}
 	}
 
 	bool Engine::update()
