@@ -96,13 +96,6 @@ namespace puffin::rendering
 
 		initCommands();
 
-		if (mEngine->shouldRenderEditorUI())
-		{
-			initImGuiRenderPass();
-
-			initSwapchainFramebuffers(mSwapchainData);
-		}
-
 		initSyncStructures();
 		initBuffers();
 		initSamplers();
@@ -409,27 +402,6 @@ namespace puffin::rendering
 		offscreenData.allocDepthImage = util::initDepthImage(shared_from_this(), imageExtent, vk::Format::eD32Sfloat);
 	}
 
-	void VKRenderSystem::initSwapchainFramebuffers(SwapchainData& swapchainData)
-	{
-		vk::FramebufferCreateInfo fbInfo = {
-			{}, mRenderPassImGui, 1, nullptr, swapchainData.extent.width, swapchainData.extent.height, 1
-		};
-
-		// Grab number of images in swapchain
-		const uint32_t swapchainImageCount = swapchainData.images.size();
-		swapchainData.framebuffers.resize(swapchainImageCount);
-
-		for (int i = 0; i < swapchainImageCount; i++)
-		{
-			std::array<vk::ImageView, 1> attachments = {swapchainData.imageViews[i]};
-
-			fbInfo.pAttachments = attachments.data();
-			fbInfo.attachmentCount = attachments.size();
-
-			VK_CHECK(mDevice.createFramebuffer(&fbInfo, nullptr, &swapchainData.framebuffers[i]));
-		}
-	}
-
 	void VKRenderSystem::initCommands()
 	{
 		vk::CommandPoolCreateInfo commandPoolInfo = {
@@ -463,50 +435,6 @@ namespace puffin::rendering
 		mDeletionQueue.pushFunction([=]()
 		{
 			mDevice.destroyCommandPool(mUploadContext.commandPool);
-		});
-	}
-
-	void VKRenderSystem::initImGuiRenderPass()
-	{
-		// Setup Attachments
-
-		vk::AttachmentDescription colorAttachment =
-		{
-			{}, mSwapchainData.imageFormat, vk::SampleCountFlagBits::e1,
-			vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-			vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR
-		};
-
-		vk::AttachmentReference colorAttachmentRef = {0, vk::ImageLayout::eColorAttachmentOptimal};
-
-		vk::SubpassDescription subpass = {
-			{}, vk::PipelineBindPoint::eGraphics, 0, nullptr,
-			1, &colorAttachmentRef, {}, {}
-		};
-
-		std::array<vk::AttachmentDescription, 1> attachments = {colorAttachment};
-
-		// Setup Dependencies
-		vk::SubpassDependency colorDependency = {
-			VK_SUBPASS_EXTERNAL, 0, vk::PipelineStageFlagBits::eColorAttachmentOutput,
-			vk::PipelineStageFlagBits::eColorAttachmentOutput, {}, vk::AccessFlagBits::eColorAttachmentWrite
-		};
-
-		std::array<vk::SubpassDependency, 1> dependencies = {colorDependency};
-
-		vk::RenderPassCreateInfo renderPassInfo = {
-			{}, attachments.size(), attachments.data(), 1, &subpass,
-			dependencies.size(), dependencies.data()
-		};
-
-		// Create Render Pass
-
-		VK_CHECK(mDevice.createRenderPass(&renderPassInfo, nullptr, &mRenderPassImGui));
-
-		mDeletionQueue.pushFunction([=]()
-		{
-			mDevice.destroyRenderPass(mRenderPassImGui);
 		});
 	}
 
@@ -773,14 +701,22 @@ namespace puffin::rendering
 		GLFWwindow* glfwWindow = mEngine->getSystem<window::WindowSubsystem>()->primaryWindow();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
+		std::array<VkFormat,1 > formats = { static_cast<VkFormat>(mSwapchainData.imageFormat) };
+
+		VkPipelineRenderingCreateInfoKHR pipelineRenderInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+			nullptr, 0, 1,
+			formats.data(), VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED
+		};
+
 		// Initialize imgui for Vulkan
 		ImGui_ImplVulkan_InitInfo initInfo = {
 			mInstance, mPhysicalDevice, mDevice, mGraphicsQueueFamily,
-			mGraphicsQueue, mPipelineCache, imguiPool,
-			0, 3, 3, VK_SAMPLE_COUNT_1_BIT, false
+			mGraphicsQueue, imguiPool, nullptr, static_cast<uint32_t>(mSwapchainData.images.size()),
+			static_cast<uint32_t>(mSwapchainData.images.size()), VK_SAMPLE_COUNT_1_BIT, mPipelineCache,
+			0, true, pipelineRenderInfo
 		};
 
-		ImGui_ImplVulkan_Init(&initInfo, mRenderPassImGui);
+		ImGui_ImplVulkan_Init(&initInfo);
 
 		// Upload ImGui font textures
 		util::immediateSubmit(shared_from_this(), [=](vk::CommandBuffer cmd)
@@ -1080,11 +1016,6 @@ namespace puffin::rendering
 
 			initSwapchain(mSwapchainData, mOldSwapchainData.swapchain, mWindowSize);
 
-			if (mEngine->shouldRenderEditorUI())
-			{
-				initSwapchainFramebuffers(mSwapchainData);
-			}
-
 			mSwapchainData.resized = false;
 		}
 
@@ -1117,11 +1048,6 @@ namespace puffin::rendering
 	{
 		for (int i = 0; i < swapchainData.imageViews.size(); i++)
 		{
-			if (mEngine->shouldRenderEditorUI())
-			{
-				mDevice.destroyFramebuffer(swapchainData.framebuffers[i]);
-			}
-
 			mDevice.destroyImageView(swapchainData.imageViews[i]);
 		}
 
@@ -1811,8 +1737,7 @@ namespace puffin::rendering
 		return cmd;
 	}
 
-	vk::CommandBuffer VKRenderSystem::recordImGuiCommandBuffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent,
-	                                                           vk::Framebuffer framebuffer)
+	vk::CommandBuffer VKRenderSystem::recordImGuiCommandBuffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent)
 	{
 		vk::CommandBuffer cmd = getCurrentFrameData().imguiCommandBuffer;
 
@@ -1827,23 +1752,49 @@ namespace puffin::rendering
 
 		VK_CHECK(cmd.begin(&cmdBeginInfo));
 
+		// Transition color image to color attachment optimal
+		vk::ImageSubresourceRange imageSubresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+
+		vk::ImageMemoryBarrier offscreenMemoryBarrierToColor = {
+			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eColorAttachmentWrite,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, {},
+			mSwapchainData.images[swapchainIdx], imageSubresourceRange
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			{}, 0, nullptr, 0, nullptr,
+			1, &offscreenMemoryBarrierToColor);
+
 		vk::ClearValue clearValue;
 		clearValue.color = {1.0f, 1.0f, 1.0f, 1.0f};
 
-		std::array<vk::ClearValue, 1> clearValues = {clearValue};
-
-		// Begin main renderpass
-		vk::RenderPassBeginInfo rpInfo = {
-			mRenderPassImGui, framebuffer,
-			vk::Rect2D{{0, 0}, renderExtent}, clearValues.size(), clearValues.data(), nullptr
+		// Begin rendering
+		vk::RenderingAttachmentInfoKHR colorAttachInfo = {
+			mSwapchainData.imageViews[swapchainIdx], vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearValue
 		};
 
-		cmd.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
+		vk::RenderingInfoKHR renderInfo = {
+			{}, vk::Rect2D{{0, 0}, renderExtent}, 1, {}, 1, &colorAttachInfo
+		};
+
+		cmd.beginRendering(&renderInfo);
 
 		// Record Imgui Draw Data and draw functions into command buffer
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
-		cmd.endRenderPass();
+		cmd.endRendering();
+
+		// Transition layout for presenting to swapchain
+		vk::ImageMemoryBarrier offscreenMemoryBarrierToShader = {
+			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eNone,
+			vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, {}, {},
+			mSwapchainData.images[swapchainIdx], imageSubresourceRange
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe,
+			{}, 0, nullptr, 0, nullptr,
+			1, &offscreenMemoryBarrierToShader);
 
 		cmd.end();
 
@@ -1873,8 +1824,7 @@ namespace puffin::rendering
 
 		if (mEngine->shouldRenderEditorUI())
 		{
-			vk::CommandBuffer imguiCmd = recordImGuiCommandBuffer(swapchainIdx, mSwapchainData.extent,
-			                                                      mSwapchainData.framebuffers[swapchainIdx]);
+			vk::CommandBuffer imguiCmd = recordImGuiCommandBuffer(swapchainIdx, mSwapchainData.extent);
 
 			vk::SubmitInfo imguiSubmit =
 			{

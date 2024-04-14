@@ -51,7 +51,6 @@ namespace puffin::rendering
 			imageFormat = other.imageFormat;
 			images = other.images;
 			imageViews = other.imageViews;
-			framebuffers = other.framebuffers;
 
 			needsCleaned = other.needsCleaned;
 			resized = other.resized;
@@ -64,7 +63,6 @@ namespace puffin::rendering
 
 		std::vector<vk::Image> images;
 		std::vector<vk::ImageView> imageViews;
-		std::vector<vk::Framebuffer> framebuffers;
 
 		bool needsCleaned = false;
 		bool resized = false;

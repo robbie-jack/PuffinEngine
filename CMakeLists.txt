@@ -46,7 +46,8 @@ add_git_submodule("deps/jolt")
 checkout_git_branch("deps/imgui" "docking")
 
 # Define CMAKE Variables
-set(PROJECT_NAME PuffinEngine)
+set(PUFFIN_LIBRARY_NAME PuffinEngine)
+set(PUFFIN_PROJECT_NAME PuffinProject)
 
 # Set Executable/Library/Archive Output Directories
 if (WIN32)
@@ -66,16 +67,10 @@ elseif (LINUX)
 endif()
 
 # Options
-option(BUILD_ENGINE_AS_STANDALONE "Build PuffinEngine as a standalone executable" OFF)
 option(DOUBLE_PRECISION_SUPPORT "Enable Double Precision Support" OFF)
 option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" OFF)
 option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" ON)
 option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
-
-if (BUILD_ENGINE_AS_STANDALONE)
-	# Set Project Name
-	project (${PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
-endif()
 
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -287,23 +282,21 @@ set (ENKITS_SOURCES
 	${ENKITS_DIR}/src/TaskScheduler.cpp
 	)
 
-# Add Main as Executable/Library
-if (BUILD_ENGINE_AS_STANDALONE)
-	add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} ${SOURCE_DIR}/main.cpp )
-else()
-	add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
-endif()
+add_library(${PUFFIN_LIBRARY_NAME} ${HEADERS} ${SOURCES})
+
+project (${PUFFIN_PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
+add_executable(${PUFFIN_PROJECT_NAME} ${SOURCE_DIR}/main.cpp )
 
 # Set C++ Language Standard to C++ 17
-set_target_properties(${PROJECT_NAME} PROPERTIES CMAKE_CXX_STANDARD 17)
-set_target_properties(${PROJECT_NAME} PROPERTIES CMAKE_CXX_STANDARD_REQUIRED ON)
-set_target_properties(${PROJECT_NAME} PROPERTIES CMAKE_CXX_EXTENSIONS ON)
+set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_STANDARD 17)
+set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_STANDARD_REQUIRED ON)
+set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_EXTENSIONS ON)
 
-target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
-target_sources(${PROJECT_NAME} PRIVATE ${ENKITS_SOURCES})
+target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${IMGUI_SOURCES})
+target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
+target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
+target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
+target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${ENKITS_SOURCES})
 
 message("")
 message("============================================================")
@@ -326,8 +319,8 @@ set(PLATFORM ${CMAKE_HOST_SYSTEM_NAME})
 find_package(Vulkan REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
 
-target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
+target_link_libraries(${PUFFIN_LIBRARY_NAME} ${Vulkan_LIBRARIES})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} nlohmann_json::nlohmann_json)
 
 if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/win64)
@@ -340,99 +333,113 @@ elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 # Define Debug Libs
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
-target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
 
 # Define Release Libs
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
-target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
+target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
 
 if (BOX2D_PHYSICS_SUPPORT)
-	target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/box2d/Debug/box2d${LIB_SUFFIX})
-	target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/box2d/Debug/box2d${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
 endif()
 
 if (JOLT_PHYSICS_SUPPORT)
 	if (DOUBLE_PRECISION_SUPPORT)
-		target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
-		target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
+		target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
+		target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
 	else ()
-		target_link_libraries(${PROJECT_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt${LIB_SUFFIX})
-		target_link_libraries(${PROJECT_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt${LIB_SUFFIX})
+		target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt${LIB_SUFFIX})
+		target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt${LIB_SUFFIX})
 	endif ()
 endif()
 
 set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
-target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_include_directories(${PROJECT_NAME} PUBLIC third_party)
-target_include_directories(${PROJECT_NAME} PUBLIC third_party/angelscript)
-target_include_directories(${PROJECT_NAME} PUBLIC $ENV{VULKAN_SDK}/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/OpenSimplexNoise)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/imgui)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/imgui-filebrowser)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/lz4/lib)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/vkb/src)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/tinygltf)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/entt/src)
-target_include_directories(${PROJECT_NAME} PUBLIC ${DEPS_DIR}/jolt)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC third_party)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC third_party/angelscript)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/include)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/OpenSimplexNoise)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/imgui)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/imgui-filebrowser)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/lz4/lib)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/include)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vkb/src)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/tinygltf)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/entt/src)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/jolt)
 
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_link_libraries(${PUFFIN_PROJECT_NAME} ${PUFFIN_LIBRARY_NAME})
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY 
+target_compile_features(${PUFFIN_LIBRARY_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PUFFIN_PROJECT_NAME} PRIVATE cxx_std_17)
+
+set_property(TARGET ${PUFFIN_LIBRARY_NAME} PROPERTY 
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+set_property(TARGET ${PUFFIN_PROJECT_NAME} PROPERTY 
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PUFFIN_PROJECT_NAME})
 
 # Add definitions for supported functionality
 if (DOUBLE_PRECISION_SUPPORT)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_DOUBLE_PRECISION)
+	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_DOUBLE_PRECISION)
 endif()
 
 if (BOX2D_PHYSICS_SUPPORT)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_BOX2D_PHYSICS)
+	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_BOX2D_PHYSICS)
 endif()
 
 if (JOLT_PHYSICS_SUPPORT)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_JOLT_PHYSICS)
+	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_JOLT_PHYSICS)
 endif()
 
 if (ONAGER2D_PHYSICS_SUPPORT)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_ONAGER2D_PHYSICS)
+	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_ONAGER2D_PHYSICS)
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
-target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_SIMD_AVX2)
-target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
+target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
+target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_SIMD_AVX2)
+target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC NOMINMAX)
 
 # Platform defines
 if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_PLATFORM_WIN32)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
+    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_WIN32)
+    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
 elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC PFN_PLATFORM_LINUX)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
+    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_LINUX)
+    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
+    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
 endif()
 
 if (MSVC)
 	# Big Object Support (MSCV/Linux)
-	target_compile_options(${PROJECT_NAME} PUBLIC /bigobj)
-	target_compile_options(${PROJECT_NAME} PUBLIC /arch:AVX2)
+	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC /bigobj)
+	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC /arch:AVX2)
 	# Multiprocessor (Multithreaded) Compilation Support
-	target_compile_options(${PROJECT_NAME} PUBLIC /MP)
+	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC /MP)
 	# Enabled updated __cplusplus macro
-	target_compile_options(${PROJECT_NAME} PUBLIC "/Zc:__cplusplus")
+	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC "/Zc:__cplusplus")
+
+	# Big Object Support (MSCV/Linux)
+	target_compile_options(${PUFFIN_PROJECT_NAME} PUBLIC /bigobj)
+	target_compile_options(${PUFFIN_PROJECT_NAME} PUBLIC /arch:AVX2)
+	# Multiprocessor (Multithreaded) Compilation Support
+	target_compile_options(${PUFFIN_PROJECT_NAME} PUBLIC /MP)
+	# Enabled updated __cplusplus macro
+	target_compile_options(${PUFFIN_PROJECT_NAME} PUBLIC "/Zc:__cplusplus")
 else ()
-	#target_compile_options(${PROJECT_NAME} PUBLIC -Wa, -mbig-obj)
+	#target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC -Wa, -mbig-obj)
 endif ()

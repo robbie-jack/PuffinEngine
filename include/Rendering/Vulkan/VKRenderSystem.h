@@ -170,8 +170,6 @@ namespace puffin::rendering
 		vk::Queue mGraphicsQueue;
 		uint32_t mGraphicsQueueFamily;
 
-		vk::RenderPass mRenderPassImGui;
-
 		StaticRenderData mStaticRenderData;
 		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
 
@@ -219,12 +217,7 @@ namespace puffin::rendering
 		void initOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent,
 		                   const int& offscreenImageCount);
 
-		void initSwapchainFramebuffers(SwapchainData& swapchainData);
-
 		void initCommands();
-
-		void initImGuiRenderPass();
-
 		void initSyncStructures();
 		void initBuffers();
 		void initSamplers();
@@ -273,8 +266,7 @@ namespace puffin::rendering
 		                                uint32_t drawCount, uint32_t stride);
 
 		vk::CommandBuffer recordCopyCommandBuffer(uint32_t swapchainIdx);
-		vk::CommandBuffer recordImGuiCommandBuffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent,
-		                                           vk::Framebuffer framebuffer);
+		vk::CommandBuffer recordImGuiCommandBuffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent);
 
 		void recordAndSubmitCommands(uint32_t swapchainIdx);
 

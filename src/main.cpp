@@ -1,12 +1,21 @@
-#include "Core/Engine.h"
-
 #include <iostream>
+
+#include "Core/Engine.h"
+#include "Rendering/Vulkan/VKRenderSystem.h"
+#include "Physics/Jolt/JoltPhysicsSystem.h"
+#include "Scripting/AngelScript/AngelScriptSystem.h"
 
 int main()
 {
 	const auto engine = std::make_shared<puffin::core::Engine>();
 
-	engine->init();
+	engine->setup(R"(C:\Projects\PuffinProject\Puffin.pproject)");
+
+	engine->registerSystem<puffin::rendering::VKRenderSystem>();
+	engine->registerSystem<puffin::physics::JoltPhysicsSystem>();
+	engine->registerSystem<puffin::scripting::AngelScriptSystem>();
+
+	engine->startup();
 
 	try
 	{
@@ -24,7 +33,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	engine->destroy();
+	engine->shutdown();
 
 	return EXIT_SUCCESS;
 }
