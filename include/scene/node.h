@@ -43,7 +43,8 @@ namespace puffin::scene
 	protected:
 
 		PuffinID m_entity_id = gInvalidID;
-		std::list<PuffinID> m_child_entities;
+		PuffinID m_first_child_id = gInvalidID;
+		PuffinID m_next_sibling_id = gInvalidID;
 
 		core::Engine* m_engine = nullptr;
 		std::shared_ptr<ecs::EnTTSubsystem> m_entt_subsystem = nullptr;
