@@ -18,7 +18,7 @@ namespace puffin::scene
 		void create() override;
 		void update(double delta_time) override;
 		void physics_update(double delta_time) override;
-		void shutdown() override;
+		void destroy() override;
 
 		TransformComponent2D& get_transform();
 

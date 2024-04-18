@@ -38,7 +38,9 @@ namespace puffin::scene
 		virtual void create() = 0;
 		virtual void update(double delta_time) = 0;
 		virtual void physics_update(double delta_time) = 0;
-		virtual void shutdown() = 0;
+		virtual void destroy() = 0;
+
+		PuffinID id() const { return m_entity_id; }
 
 	protected:
 

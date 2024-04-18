@@ -25,7 +25,7 @@ namespace puffin::scene
 
 	}
 
-	void TransformNode3D::shutdown()
+	void TransformNode3D::destroy()
 	{
 
 	}

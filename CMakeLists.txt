@@ -205,8 +205,6 @@ set(SOURCES
 	# Audio
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
 	${SOURCE_DIR}/Audio/MiniAudioSubsystem.cpp
-	# ECS
-	${SOURCE_DIR}/ECS/ECSSubsystem.cpp
 	# Engine
 	${SOURCE_DIR}/Core/Engine.cpp
 	${SOURCE_DIR}/Core/Application.cpp
@@ -235,6 +233,9 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKDescriptors.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKMaterialRegistry.cpp
+	# Scene
+	${SOURCE_DIR}/scene/transform_node_2d.cpp
+	${SOURCE_DIR}/scene/transform_node_3d.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptSystem.cpp
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptEngineInterface.cpp

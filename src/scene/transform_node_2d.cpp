@@ -26,7 +26,7 @@ namespace puffin::scene
 
 	}
 
-	void TransformNode2D::shutdown()
+	void TransformNode2D::destroy()
 	{
 		auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
 
