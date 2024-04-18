@@ -2,17 +2,20 @@
 
 #include "Components/TransformComponent3D.h"
 #include "ECS/EnTTSubsystem.h"
+#include "scene/transform_node_2d.h"
 
 namespace puffin::scene
 {
-	void TransformNode3D::create()
+	TransformNode3D::TransformNode3D(const PuffinID& id) : Node(id)
 	{
-		auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
+		m_name = "TransformNode3D";
 
-		const auto entity = entt_entity();
+		add_component<TransformComponent3D>();
+	}
 
-		entt_subsystem->registry()->get<SceneObjectComponent>(entity).name = "TransformNode2D";
-		auto& transform = entt_subsystem->registry()->emplace<TransformComponent3D>(entity);
+	void TransformNode3D::begin_play()
+	{
+
 	}
 
 	void TransformNode3D::update(double delta_time)
@@ -25,17 +28,13 @@ namespace puffin::scene
 
 	}
 
-	void TransformNode3D::destroy()
+	void TransformNode3D::end_play()
 	{
 
 	}
 
 	TransformComponent3D& TransformNode3D::get_transform()
 	{
-		auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
-
-		const auto entity = entt_entity();
-
-		return entt_subsystem->registry()->get<TransformComponent3D>(entity);
+		return get_component<TransformComponent3D>();
 	}
 }

@@ -234,6 +234,8 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKMaterialRegistry.cpp
 	# Scene
+	${SOURCE_DIR}/scene/node.cpp
+	${SOURCE_DIR}/scene/scene_graph.cpp
 	${SOURCE_DIR}/scene/transform_node_2d.cpp
 	${SOURCE_DIR}/scene/transform_node_3d.cpp
 	# Scripting

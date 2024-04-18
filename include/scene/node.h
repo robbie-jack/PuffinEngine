@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "ECS/EnTTSubsystem.h"
 #include "Types/UUID.h"
@@ -12,49 +13,87 @@ namespace puffin::core
 
 namespace puffin::scene
 {
+	class SceneGraph;
+
 	class Node
 	{
 	public:
 
-		Node() : m_entity_id(generateID()) {}
-		explicit Node(const PuffinID& id) : m_entity_id(id)
+		Node(const PuffinID& id = gInvalidID) : m_node_id(id)
 		{
-			if (m_entity_id == gInvalidID)
-				m_entity_id = generateID();
+			if (m_node_id == gInvalidID)
+				m_node_id = generateID();
+
+			m_name = "Node";
 		}
 
 		virtual ~Node() = 0;
 
-		void init(core::Engine* engine)
+		void setup(const std::shared_ptr<core::Engine>& engine);
+
+		virtual void begin_play() {}
+		virtual void update(double delta_time) {}
+		virtual void physics_update(double delta_time) {}
+		virtual void end_play() {}
+
+		[[nodiscard]] PuffinID id() const { return m_node_id; }
+		[[nodiscard]] const std::string& name() const { return m_name; }
+		[[nodiscard]] bool should_update() const { return m_should_update; }
+
+		template<typename T>
+		T& get_component()
 		{
-			m_engine = engine;
-			m_entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
-
-			auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
-
-			entt_subsystem->addEntity(m_entity_id);
+			return m_entt_subsystem->registry()->get<T>(m_entity);
 		}
 
-		virtual void create() = 0;
-		virtual void update(double delta_time) = 0;
-		virtual void physics_update(double delta_time) = 0;
-		virtual void destroy() = 0;
+		template<typename T>
+		bool has_component() const
+		{
+			return m_entt_subsystem->registry()->any_of<T>(m_entity);
+		}
 
-		PuffinID id() const { return m_entity_id; }
+		template<typename T>
+		T& add_component()
+		{
+			return m_entt_subsystem->registry()->get_or_emplace<T>(m_entity);
+		}
+
+		template<typename T>
+		void remove_component() const
+		{
+			m_entt_subsystem->registry()->remove<T>(m_entity);
+		}
+
+		void queue_destroy() const;
+		Node* get_parent() const;
+		void reparent(const PuffinID& id);
+		void get_children(std::vector<Node*>& children) const;
+		Node* get_child(PuffinID id) const;
+
+		template<typename T>
+		T& add_child();
+
+		void remove_child(PuffinID id);
+
+		// Remove a child id, for internal use only, use remove_child instead
+		void remove_child_id(PuffinID id)
+		{
+			m_child_ids.remove(id);
+		}
 
 	protected:
 
-		PuffinID m_entity_id = gInvalidID;
-		PuffinID m_first_child_id = gInvalidID;
-		PuffinID m_next_sibling_id = gInvalidID;
+		bool m_should_update = false;
+		PuffinID m_node_id = gInvalidID;
+		entt::entity m_entity;
 
-		core::Engine* m_engine = nullptr;
+		PuffinID m_parent_id = gInvalidID;
+		std::list<PuffinID> m_child_ids;
+		std::string m_name;
+
+		std::shared_ptr<core::Engine> m_engine = nullptr;
+		std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
 		std::shared_ptr<ecs::EnTTSubsystem> m_entt_subsystem = nullptr;
-
-		entt::entity entt_entity()
-		{
-			return m_entt_subsystem->getEntity(m_entity_id);
-		}
 
 	};
 }

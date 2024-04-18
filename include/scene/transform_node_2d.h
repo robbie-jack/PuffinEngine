@@ -13,12 +13,13 @@ namespace puffin::scene
 	{
 	public:
 
-		TransformNode2D() = default;
+		explicit TransformNode2D(const PuffinID& id = gInvalidID);
+		~TransformNode2D() override = default;
 
-		void create() override;
+		void begin_play() override;
 		void update(double delta_time) override;
 		void physics_update(double delta_time) override;
-		void destroy() override;
+		void end_play() override;
 
 		TransformComponent2D& get_transform();
 

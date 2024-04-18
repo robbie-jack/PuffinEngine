@@ -6,14 +6,16 @@
 
 namespace puffin::scene
 {
-	void TransformNode2D::create()
+	TransformNode2D::TransformNode2D(const PuffinID& id) : Node(id)
 	{
-		auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
+		m_name = "TransformNode2D";
 
-		const auto entity = entt_entity();
+		add_component<TransformComponent2D>();
+	}
 
-		entt_subsystem->registry()->get<SceneObjectComponent>(entity).name = "TransformNode2D";
-		auto& transform = entt_subsystem->registry()->emplace<TransformComponent2D>(entity);
+	void TransformNode2D::begin_play()
+	{
+		Node::begin_play();
 	}
 
 	void TransformNode2D::update(double delta_time)
@@ -26,19 +28,13 @@ namespace puffin::scene
 
 	}
 
-	void TransformNode2D::destroy()
+	void TransformNode2D::end_play()
 	{
-		auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
 
-		entt_subsystem->destroyEntity(m_entity_id);
 	}
 
 	TransformComponent2D& TransformNode2D::get_transform()
 	{
-		auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
-
-		const auto entity = entt_entity();
-
-		return entt_subsystem->registry()->get<TransformComponent2D>(entity);
+		return get_component<TransformComponent2D>();
 	}
 }

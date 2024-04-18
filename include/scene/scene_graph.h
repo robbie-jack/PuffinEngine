@@ -3,8 +3,9 @@
 #include <cassert>
 #include <unordered_map>
 #include <memory>
+#include <set>
 
-#include "node.h"
+#include "scene/node.h"
 #include "Core/System.h"
 #include "Types/UUID.h"
 #include "Types/PackedArray.h"
@@ -27,8 +28,6 @@ namespace puffin::scene
 
 		virtual ~INodeFactory() = default;
 
-		virtual void create(const PuffinID& id = gInvalidID) = 0;
-
 	protected:
 
 	};
@@ -41,7 +40,7 @@ namespace puffin::scene
 		NodeFactory() {}
 		~NodeFactory() override = default;
 
-		T create(const PuffinID& id = gInvalidID) override
+		static T create(const PuffinID& id = gInvalidID)
 		{
 			return T(id);
 		}
@@ -90,6 +89,21 @@ namespace puffin::scene
 			return m_vector[id];
 		}
 
+		T& get(PuffinID id)
+		{
+			return m_vector.at(id);
+		}
+
+		void remove(PuffinID id)
+		{
+			m_vector.erase(id);
+		}
+
+		bool valid(PuffinID id)
+		{
+			return m_vector.contains(id);
+		}
+
 	private:
 
 		PackedVector<T> m_vector;
@@ -104,14 +118,13 @@ namespace puffin::scene
 		SceneGraph(const std::shared_ptr<core::Engine>& engine);
 
 		template<typename T>
-		void register_node()
+		void register_node_type()
 		{
 			const char* type_name = typeid(T).name();
 
-			assert(m_node_arrays.find(type_name) == m_node_arrays.end() && "SceneGraph::register_node() - Registering node type more than once");
+			assert(m_node_arrays.find(type_name) == m_node_arrays.end() && "SceneGraph::register_node_type() - Registering node type more than once");
 
-			auto array = std::make_unique<NodeArray<T>>();
-			m_node_arrays.emplace({ type_name, std::static_pointer_cast<INodeArray>(array) });
+			m_node_arrays.insert({ type_name, static_cast<INodeArray*>(new NodeArray<T>()) });
 		}
 
 		template<typename T>
@@ -121,7 +134,17 @@ namespace puffin::scene
 
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node() - Node type not registered before use");
 
-			return get_array<T>()->add();
+			T& node = get_array<T>()->add();
+
+			Node* node_ptr = static_cast<Node*>(*node);
+			node_ptr->setup(mEngine);
+
+			m_id_to_nodes.insert({ node_ptr->id(), node_ptr });
+			m_nodes_unsorted.push_back(node_ptr);
+
+			m_scene_graph_updated = true;
+
+			return node;
 		}
 
 		template<typename T>
@@ -131,23 +154,58 @@ namespace puffin::scene
 
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node(PuffinID) - Node type not registered before use");
 
-			return get_array<T>()->add(id);
+			T& node = get_array<T>()->add(id);
+
+			Node* node_ptr = static_cast<Node*>(*node);
+			node_ptr->setup(mEngine);
+
+			m_id_to_nodes.insert({ node_ptr->id(), node_ptr });
+			m_nodes_unsorted.push_back(node_ptr);
+
+			m_scene_graph_updated = true;
+
+			return node;
+		}
+
+		[[nodiscard]] Node* get_node(const PuffinID& id) const
+		{
+			if (m_id_to_nodes.count(id) != 0)
+				return m_id_to_nodes.at(id);
+
+			return nullptr;
+		}
+
+		// Queue a node for destruction, will also destroy all child nodes
+		void queue_destroy_node(const PuffinID& id)
+		{
+			m_nodes_to_destroy.insert(id);
 		}
 
 		void register_default_nodes();
+		void begin_play();
+		void update();
+		void physics_update();
+		void end_play();
 
 	private:
 
-		std::unordered_map<std::string, std::unique_ptr<INodeArray>> m_node_arrays;
+		std::unordered_map<PuffinID, Node*> m_id_to_nodes;
+		std::vector<Node*> m_nodes_unsorted;
+		std::vector<Node*> m_nodes_sorted;
+		std::set<PuffinID> m_nodes_to_destroy;
+
+		bool m_scene_graph_updated = false;
+
+		std::unordered_map<std::string, INodeArray*> m_node_arrays;
 
 		template<typename T>
-		std::unique_ptr<NodeArray<T>> get_array()
+		NodeArray<T>* get_array()
 		{
 			const char* type_name = typeid(T).name();
 
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::get_array() - Node type not registered before use");
 
-			return std::static_pointer_cast<NodeArray<T>>(m_node_arrays.at(type_name));
+			return m_node_arrays.at(type_name);
 		}
 
 	};
