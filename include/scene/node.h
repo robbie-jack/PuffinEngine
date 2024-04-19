@@ -29,7 +29,7 @@ namespace puffin::scene
 
 		explicit Node(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID);
 
-		virtual ~Node() = 0;
+		virtual ~Node() = default;
 
 		virtual void begin_play() {}
 		virtual void update(const double delta_time) {}

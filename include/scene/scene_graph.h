@@ -79,7 +79,7 @@ namespace puffin::scene
 
 			m_vector.insert(id, m_factory.create(engine, id));
 
-			return &m_vector[id];
+			return m_vector[id];
 		}
 
 		T& add(const std::shared_ptr<core::Engine>& engine, PuffinID id)
@@ -141,7 +141,7 @@ namespace puffin::scene
 
 			T& node = get_array<T>()->add(mEngine);
 
-			Node* node_ptr = static_cast<Node*>(*node);
+			Node* node_ptr = static_cast<Node*>(&node);
 
 			m_id_to_nodes.insert({ node_ptr->id(), node_ptr });
 			m_nodes_unsorted.push_back(node_ptr);
@@ -160,7 +160,7 @@ namespace puffin::scene
 
 			T& node = get_array<T>()->add(mEngine, id);
 
-			Node* node_ptr = static_cast<Node*>(*node);
+			Node* node_ptr = static_cast<Node*>(&node);
 
 			m_id_to_nodes.insert({ node_ptr->id(), node_ptr });
 			m_nodes_unsorted.push_back(node_ptr);
@@ -208,7 +208,7 @@ namespace puffin::scene
 
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::get_array() - Node type not registered before use");
 
-			return m_node_arrays.at(type_name);
+			return static_cast<NodeArray<T>*>(m_node_arrays.at(type_name));
 		}
 
 	};

@@ -25,6 +25,8 @@
 #include "Core/SignalSubsystem.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
+#include "Rendering/light_node_3d.h"
+#include "Rendering/mesh_node.h"
 #include "scene/scene_graph.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
@@ -48,6 +50,7 @@ namespace puffin::core
 		auto enttSubsystem = registerSystem<ecs::EnTTSubsystem>();
 		auto uiSubsystem = registerSystem<ui::UISubsystem>();
 		auto sceneSubsystem = registerSystem<io::SceneSubsystem>();
+		auto scene_graph = registerSystem<scene::SceneGraph>();
 
 		// Load Project File
 		LoadProject(projectPath, mProjectFile);
@@ -410,7 +413,43 @@ namespace puffin::core
 
 		const auto scene_graph = getSystem<scene::SceneGraph>();
 
-		
+		auto house_node = scene_graph->add_node<rendering::MeshNode>();
+		house_node.set_name("House");
+		house_node.position() = { 2.0f, 0.0, 0.0 };
+		house_node.mesh_asset_id() = meshId1;
+		house_node.mat_asset_id() = materialInstId1;
+
+		auto sphere = scene_graph->add_node<rendering::MeshNode>();
+		sphere.set_name("Sphere");
+		sphere.position() = { -1.0f, -0.0f, 0.0f };
+
+		auto cube_1 = scene_graph->add_node<rendering::MeshNode>();
+		cube_1.set_name("Cube_1");
+		cube_1.position() = { 0.0f };
+
+		auto cube_2 = scene_graph->add_node<rendering::MeshNode>();
+		cube_2.set_name("Cube_2");
+		cube_2.position() = { -1.75f, -5.0f, 0.0f };
+
+		auto plane = scene_graph->add_node<rendering::MeshNode>();
+		plane.set_name("Plane");
+		plane.position() = { 0.0f, -10.0f, 0.0f };
+		plane.scale() = { 50.0f, 1.0f, 50.0f };
+
+		auto dir_light = scene_graph->add_node<rendering::LightNode3D>();
+		dir_light.set_name("Directional Light");
+		dir_light.position() = { -5.0f, 0.0f, 0.0f };
+		dir_light.scale() = { 0.25f };
+		dir_light.light_type() = rendering::LightType::Directional;
+		dir_light.ambient_intensity() = 0.f;
+
+		auto spot_light = scene_graph->add_node<rendering::LightNode3D>();
+		spot_light.set_name("Spot Light");
+		spot_light.position() = { 10.0f, 5.0f, 0.0f };
+		spot_light.scale() = { 0.25f };
+		spot_light.light_type() = rendering::LightType::Spot;
+		spot_light.direction() = { -0.5f, -0.5f, 0.5f };
+		spot_light.ambient_intensity() = 0.f;
 
 		//const auto enttSubsystem = getSystem<ecs::EnTTSubsystem>();
 		//const auto registry = enttSubsystem->registry();

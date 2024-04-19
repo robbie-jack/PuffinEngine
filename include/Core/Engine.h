@@ -123,7 +123,7 @@ namespace puffin::core
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
-			assert(mSystems.find(typeName) == mSystems.end() && "Registering system more than once");
+			assert(mSystems.find(typeName) == mSystems.end() && "Engine::registerSystem() - Registering system more than once");
 
 			// Create subsystem pointer
 			auto subsystem = std::make_shared<SubsystemT>(shared_from_this());
@@ -140,7 +140,7 @@ namespace puffin::core
 		{
 			const char* typeName = typeid(SubsystemT).name();
 
-			assert(mSystems.find(typeName) != mSystems.end() && "System used before registering.");
+			assert(mSystems.find(typeName) != mSystems.end() && "Engine::getSystem() - System used before registering.");
 
 			return std::static_pointer_cast<SubsystemT>(mSystems[typeName]);
 		}
