@@ -47,7 +47,7 @@ namespace puffin::io
 
 			for (const auto& [id, comp] : mComponents)
 			{
-				const auto entity = enttSubsystem->getEntity(id);
+				const auto entity = enttSubsystem->get_entity(id);
 
 				if (registry->any_of<CompT>(entity))
 				{
@@ -132,7 +132,7 @@ namespace puffin::io
 			// Add entities to registry/subsystem
 			for (const auto& id : mIDs)
 			{
-				enttSubsystem->addEntity(id);
+				enttSubsystem->add_entity(id);
 			}
 
 			// Init components

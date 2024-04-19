@@ -141,7 +141,7 @@ namespace puffin::physics
 		{
 			for (const auto& id : mSpheresToInit)
 			{
-				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
@@ -157,7 +157,7 @@ namespace puffin::physics
 		{
 			for (const auto& id : mBoxesToInit)
 			{
-				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
@@ -174,7 +174,7 @@ namespace puffin::physics
 			// Create Bodies
 			for (const auto& id : mBodiesToInit)
 			{
-				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);

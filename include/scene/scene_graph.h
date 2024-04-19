@@ -40,9 +40,9 @@ namespace puffin::scene
 		NodeFactory() {}
 		~NodeFactory() override = default;
 
-		static T create(const PuffinID& id = gInvalidID)
+		static T create(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID)
 		{
-			return T(id);
+			return T(engine, id);
 		}
 
 	private:
@@ -73,18 +73,18 @@ namespace puffin::scene
 		NodeArray() = default;
 		~NodeArray() override = default;
 
-		T& add()
+		T& add(const std::shared_ptr<core::Engine>& engine)
 		{
 			PuffinID id = generateID();
 
-			m_vector.insert(id, m_factory.create(id));
+			m_vector.insert(id, m_factory.create(engine, id));
 
 			return &m_vector[id];
 		}
 
-		T& add(PuffinID id)
+		T& add(const std::shared_ptr<core::Engine>& engine, PuffinID id)
 		{
-			m_vector.insert(id, m_factory.create(id));
+			m_vector.insert(id, m_factory.create(engine, id));
 
 			return m_vector[id];
 		}
@@ -134,10 +134,9 @@ namespace puffin::scene
 
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node() - Node type not registered before use");
 
-			T& node = get_array<T>()->add();
+			T& node = get_array<T>()->add(mEngine);
 
 			Node* node_ptr = static_cast<Node*>(*node);
-			node_ptr->setup(mEngine);
 
 			m_id_to_nodes.insert({ node_ptr->id(), node_ptr });
 			m_nodes_unsorted.push_back(node_ptr);
@@ -154,10 +153,9 @@ namespace puffin::scene
 
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node(PuffinID) - Node type not registered before use");
 
-			T& node = get_array<T>()->add(id);
+			T& node = get_array<T>()->add(mEngine, id);
 
 			Node* node_ptr = static_cast<Node*>(*node);
-			node_ptr->setup(mEngine);
 
 			m_id_to_nodes.insert({ node_ptr->id(), node_ptr });
 			m_nodes_unsorted.push_back(node_ptr);

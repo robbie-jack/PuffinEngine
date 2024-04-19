@@ -6,7 +6,7 @@
 
 namespace puffin::scene
 {
-	TransformNode3D::TransformNode3D(const PuffinID& id) : Node(id)
+	TransformNode3D::TransformNode3D(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : Node(engine, id)
 	{
 		m_name = "TransformNode3D";
 

@@ -64,7 +64,7 @@ namespace puffin::scripting
 	{
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 		registry->patch<TransformComponent3D>(entity, [&](auto& transform){});
 
@@ -75,7 +75,7 @@ namespace puffin::scripting
 	{
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 		if (registry->any_of<TransformComponent3D>(entity))
 		{
@@ -90,7 +90,7 @@ namespace puffin::scripting
 	{
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 		registry->patch<T>(entity, [&](auto& transform) {});
 
@@ -102,7 +102,7 @@ namespace puffin::scripting
 	{
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 		if (registry->any_of<T>(entity))
 		{

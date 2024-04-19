@@ -1241,7 +1241,7 @@ namespace puffin::rendering
 				for (uint32_t objectIdx = range.start; objectIdx < range.end; objectIdx++)
 				{
 					const auto entityID = objectsToRefresh[objectIdx];
-					const auto entity = enttSubsystem->getEntity(entityID);
+					const auto entity = enttSubsystem->get_entity(entityID);
 
 					TransformComponent3D& tempTransform = TransformComponent3D();
 

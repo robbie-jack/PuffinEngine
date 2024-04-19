@@ -13,7 +13,7 @@ namespace puffin::scene
 	{
 	public:
 
-		explicit  TransformNode3D(const PuffinID& id = gInvalidID);
+		explicit TransformNode3D(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID);
 		~TransformNode3D() override = default;
 
 		void begin_play() override;

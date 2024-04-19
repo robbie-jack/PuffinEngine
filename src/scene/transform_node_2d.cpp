@@ -4,9 +4,14 @@
 #include "ECS/EnTTSubsystem.h"
 #include "Components/TransformComponent2D.h"
 
+namespace puffin::core
+{
+	class Engine;
+}
+
 namespace puffin::scene
 {
-	TransformNode2D::TransformNode2D(const PuffinID& id) : Node(id)
+	TransformNode2D::TransformNode2D(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : Node(engine, id)
 	{
 		m_name = "TransformNode2D";
 

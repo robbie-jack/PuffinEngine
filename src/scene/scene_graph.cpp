@@ -2,6 +2,7 @@
 
 #include "scene/transform_node_2d.h"
 #include "scene/transform_node_3d.h"
+#include "Core/Engine.h"
 
 namespace puffin::scene
 {

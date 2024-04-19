@@ -2,9 +2,17 @@
 
 #include <list>
 #include <memory>
+#include <entt/entity/registry.hpp>
 
-#include "ECS/EnTTSubsystem.h"
 #include "Types/UUID.h"
+
+namespace puffin
+{
+	namespace ecs
+	{
+		class EnTTSubsystem;
+	}
+}
 
 namespace puffin::core
 {
@@ -19,17 +27,9 @@ namespace puffin::scene
 	{
 	public:
 
-		Node(const PuffinID& id = gInvalidID) : m_node_id(id)
-		{
-			if (m_node_id == gInvalidID)
-				m_node_id = generateID();
-
-			m_name = "Node";
-		}
+		explicit Node(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID);
 
 		virtual ~Node() = 0;
-
-		void setup(const std::shared_ptr<core::Engine>& engine);
 
 		virtual void begin_play() {}
 		virtual void update(double delta_time) {}
@@ -43,25 +43,25 @@ namespace puffin::scene
 		template<typename T>
 		T& get_component()
 		{
-			return m_entt_subsystem->registry()->get<T>(m_entity);
+			return m_registry->get<T>(m_entity);
 		}
 
 		template<typename T>
 		bool has_component() const
 		{
-			return m_entt_subsystem->registry()->any_of<T>(m_entity);
+			return m_registry->any_of<T>(m_entity);
 		}
 
 		template<typename T>
 		T& add_component()
 		{
-			return m_entt_subsystem->registry()->get_or_emplace<T>(m_entity);
+			return m_registry->get_or_emplace<T>(m_entity);
 		}
 
 		template<typename T>
 		void remove_component() const
 		{
-			m_entt_subsystem->registry()->remove<T>(m_entity);
+			m_registry->remove<T>(m_entity);
 		}
 
 		void queue_destroy() const;
@@ -94,6 +94,7 @@ namespace puffin::scene
 		std::shared_ptr<core::Engine> m_engine = nullptr;
 		std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
 		std::shared_ptr<ecs::EnTTSubsystem> m_entt_subsystem = nullptr;
+		std::shared_ptr<entt::registry> m_registry = nullptr;
 
 	};
 }

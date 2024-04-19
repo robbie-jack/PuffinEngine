@@ -41,7 +41,7 @@ namespace puffin
 					ImGui::Dummy(ImVec2(0.0f, 5.0f));
 					ImGui::Text(""); ImGui::SameLine(0.0f);
 
-					const auto entity = mEnTTSubsystem->getEntity(mSelectedEntity);
+					const auto entity = mEnTTSubsystem->get_entity(mSelectedEntity);
 					auto object = registry->get<SceneObjectComponent>(entity);
 
 					// Edit Entity Name

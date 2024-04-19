@@ -293,7 +293,7 @@ namespace puffin::scripting
 
 		for (const auto id : mScriptsToInit)
 		{
-			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -313,7 +313,7 @@ namespace puffin::scripting
 
 		for (const auto id : mScriptsToStart)
 		{
-			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 			const auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -331,7 +331,7 @@ namespace puffin::scripting
 
 		for (const auto id : mScriptsToStop)
 		{
-			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(id);
+			entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 

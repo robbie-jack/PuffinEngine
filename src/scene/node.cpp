@@ -1,16 +1,18 @@
 #include "scene/node.h"
 
 #include "scene/scene_graph.h"
+#include "Core/Engine.h"
+#include "ECS/EnTTSubsystem.h"
 
 namespace puffin::scene
 {
-	void Node::setup(const std::shared_ptr<core::Engine>& engine)
+	Node::Node(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : m_engine(engine), m_node_id(id)
 	{
-		m_engine = engine;
 		m_scene_graph = m_engine->getSystem<SceneGraph>();
 		m_entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
+		m_registry = m_entt_subsystem->registry();
 
-		m_entity = m_entt_subsystem->registry()->create();
+		m_entity = m_entt_subsystem->add_entity(m_node_id);
 	}
 
 	void Node::queue_destroy() const
