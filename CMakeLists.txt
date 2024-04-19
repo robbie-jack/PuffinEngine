@@ -146,7 +146,9 @@ set(HEADERS
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
 	# Rendering
+	${HEADER_DIR}/Rendering/light_node_3d.h
 	${HEADER_DIR}/Rendering/MaterialGlobals.h
+	${HEADER_DIR}/Rendering/mesh_node.h
 	# Rendering Vulkan
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
@@ -227,6 +229,9 @@ set(SOURCES
 	${SOURCE_DIR}/Physics/Jolt/JoltPhysicsSystem.cpp
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
+	# Rendering
+	${SOURCE_DIR}/Rendering/light_node_3d.cpp
+	${SOURCE_DIR}/Rendering/mesh_node.cpp
 	# Rendering Vulkan
 	${SOURCE_DIR}/Rendering/Vulkan/VKRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKHelpers.cpp

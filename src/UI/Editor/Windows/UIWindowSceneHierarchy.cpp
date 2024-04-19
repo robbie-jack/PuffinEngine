@@ -89,21 +89,21 @@ namespace puffin
 
 				if (ImGui::Button("Create Entity"))
 				{
-					ImGui::OpenPopup("Create Entity");
+					//ImGui::OpenPopup("Create Entity");
 				}
 
 				ImGui::SameLine();
 
 				if (ImGui::Button("Destroy Entity"))
 				{
-					if (mSelectedEntity != gInvalidID)
+					/*if (mSelectedEntity != gInvalidID)
 					{
 						mEnTTSubsystem->remove_entity(mSelectedEntity);
 
 						mSelectedEntity = gInvalidID;
 
 						mEntityChanged = true;
-					}
+					}*/
 				}
 
 				//if (ImGui::BeginPopup("Create Entity"))

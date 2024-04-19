@@ -23,12 +23,12 @@ namespace puffin::scene
 		Node::begin_play();
 	}
 
-	void TransformNode2D::update(double delta_time)
+	void TransformNode2D::update(const double delta_time)
 	{
 
 	}
 
-	void TransformNode2D::physics_update(double delta_time)
+	void TransformNode2D::physics_update(const double delta_time)
 	{
 
 	}

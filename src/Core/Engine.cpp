@@ -25,6 +25,7 @@
 #include "Core/SignalSubsystem.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
+#include "scene/scene_graph.h"
 #include "UI/Editor/UISubsystem.h"
 #include "Window/WindowSubsystem.h"
 
@@ -378,34 +379,38 @@ namespace puffin::core
 
 	void Engine::defaultScene()
 	{
-		//// Initialize Assets
-		//fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
+		// Initialize Assets
+		fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
 
-		//const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
-		//const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
-		//const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
-		//const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
+		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
+		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
+		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
+		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		//const PuffinID meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
-		//const PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		//const PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
-		//const PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
+		const PuffinID meshId1 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath1)->id();
+		const PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
+		const PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
+		const PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
-		//const fs::path& texturePath1 = "textures\\chalet.ptexture";
-		//const fs::path& texturePath2 = "textures\\cube.ptexture";
+		const fs::path& texturePath1 = "textures\\chalet.ptexture";
+		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		//const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath1)->id();
-		//const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath2)->id();
+		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath1)->id();
+		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath2)->id();
 
-		//const fs::path& soundPath1 = "sounds\\Select 1.wav";
+		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		//PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
+		PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		//const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
-		//const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
 
-		//PuffinID materialInstId1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
-		//PuffinID materialInstId2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
+		PuffinID materialInstId1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
+		PuffinID materialInstId2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
+
+		const auto scene_graph = getSystem<scene::SceneGraph>();
+
+		
 
 		//const auto enttSubsystem = getSystem<ecs::EnTTSubsystem>();
 		//const auto registry = enttSubsystem->registry();

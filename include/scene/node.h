@@ -32,13 +32,16 @@ namespace puffin::scene
 		virtual ~Node() = 0;
 
 		virtual void begin_play() {}
-		virtual void update(double delta_time) {}
-		virtual void physics_update(double delta_time) {}
+		virtual void update(const double delta_time) {}
+		virtual void physics_update(const double delta_time) {}
 		virtual void end_play() {}
 
 		[[nodiscard]] PuffinID id() const { return m_node_id; }
+
 		[[nodiscard]] const std::string& name() const { return m_name; }
-		[[nodiscard]] bool should_update() const { return m_should_update; }
+		void set_name(const std::string& name) { m_name = name; }
+
+		[[nodiscard]] virtual bool should_update() const { return false; }
 
 		template<typename T>
 		T& get_component()
@@ -65,10 +68,10 @@ namespace puffin::scene
 		}
 
 		void queue_destroy() const;
-		Node* get_parent() const;
+		[[nodiscard]] Node* get_parent() const;
 		void reparent(const PuffinID& id);
 		void get_children(std::vector<Node*>& children) const;
-		Node* get_child(PuffinID id) const;
+		[[nodiscard]] Node* get_child(PuffinID id) const;
 
 		template<typename T>
 		T& add_child();

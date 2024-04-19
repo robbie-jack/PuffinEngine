@@ -1,6 +1,8 @@
 #pragma once
 
 #include "scene/node.h"
+#include "Types/Quat.h"
+#include "Types/Vector.h"
 
 namespace puffin
 {
@@ -17,11 +19,14 @@ namespace puffin::scene
 		~TransformNode3D() override = default;
 
 		void begin_play() override;
-		void update(double delta_time) override;
-		void physics_update(double delta_time) override;
+		void update(const double delta_time) override;
+		void physics_update(const double delta_time) override;
 		void end_play() override;
 
 		TransformComponent3D& get_transform();
+		Vector3f& position();
+		maths::Quat& orientation();
+		Vector3f& scale();
 
 	protected:
 

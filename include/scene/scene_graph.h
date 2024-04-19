@@ -132,6 +132,11 @@ namespace puffin::scene
 		{
 			const char* type_name = typeid(T).name();
 
+			if (m_node_arrays.find(type_name) == m_node_arrays.end())
+			{
+				register_node_type<T>();
+			}
+
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node() - Node type not registered before use");
 
 			T& node = get_array<T>()->add(mEngine);
