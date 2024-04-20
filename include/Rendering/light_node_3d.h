@@ -17,21 +17,38 @@ namespace puffin::rendering
 		void physics_update(const double delta_time) override;
 		void end_play() override;
 
-		Vector3f& color();
-		Vector3f& direction();
+		[[nodiscard]] const Vector3f& color() const;
+		void set_color(const Vector3f& color) const;
 
-		float& ambient_intensity();
-		float& specular_intensity();
-		int& specular_exponent();
+		[[nodiscard]] const Vector3f& direction() const;
+		void set_direction(const Vector3f& direction) const;
 
-		float& constant_attenuation();
-		float& linear_attenuation();
-		float& quadratic_attenuation();
+		[[nodiscard]] const float& ambient_intensity() const;
+		void set_ambient_intensity(const float& ambient_intensity) const;
 
-		float& inner_cutoff_angle();
-		float& outer_cutoff_angle();
+		[[nodiscard]] const float& specular_intensity() const;
+		void set_specular_intensity(const float& specular_intensity) const;
 
-		LightType& light_type();
+		[[nodiscard]] const int& specular_exponent() const;
+		void set_specular_exponent(const int& specular_exponent) const;
+
+		[[nodiscard]] const float& constant_attenuation() const;
+		void set_constant_attenuation(const float& constant_attenuation) const;
+
+		[[nodiscard]] const float& linear_attenuation() const;
+		void set_linear_attenuation(const float& linear_attenuation) const;
+
+		[[nodiscard]] const float& quadratic_attenuation() const;
+		void set_quadratic_attenuation(const float& quadratic_attenuation) const;
+
+		[[nodiscard]] const float& inner_cutoff_angle() const;
+		void set_inner_cutoff_angle(const float& inner_cutoff_angle) const;
+
+		[[nodiscard]] const float& outer_cutoff_angle() const;
+		void set_outer_cutoff_angle(const float& outer_cutoff_angle) const;
+
+		[[nodiscard]] const LightType& light_type() const;
+		void set_light_type(const LightType& light_type) const;
 
 	private:
 

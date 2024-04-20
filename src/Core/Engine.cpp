@@ -446,18 +446,17 @@ namespace puffin::core
 
 		auto dir_light = scene_graph->add_node<rendering::LightNode3D>();
 		dir_light.set_name("Directional Light");
-		dir_light.set_position({ -5.0f, 0.0f, 0.0f });
-		dir_light.set_scale({ 0.25f });
-		dir_light.light_type() = rendering::LightType::Directional;
-		dir_light.ambient_intensity() = 0.f;
+		dir_light.set_position({ 0.0f, 10.0f, 0.0f });
+		dir_light.set_color({ .01f });
+		dir_light.set_light_type(rendering::LightType::Directional);
+		dir_light.set_ambient_intensity(0.f);
 
 		auto spot_light = scene_graph->add_node<rendering::LightNode3D>();
 		spot_light.set_name("Spot Light");
 		spot_light.set_position({ 10.0f, 5.0f, 0.0f });
-		spot_light.set_scale({ 0.25f });
-		spot_light.light_type() = rendering::LightType::Spot;
-		spot_light.direction() = { -0.5f, -0.5f, 0.5f };
-		spot_light.ambient_intensity() = 0.f;
+		spot_light.set_light_type(rendering::LightType::Spot);
+		spot_light.set_direction({ -0.5f, -0.5f, 0.f });
+		spot_light.set_ambient_intensity(0.f);
 
 		//const auto enttSubsystem = getSystem<ecs::EnTTSubsystem>();
 		//const auto registry = enttSubsystem->registry();

@@ -30,58 +30,113 @@ namespace puffin::rendering
 		TransformNode3D::end_play();
 	}
 
-	Vector3f& LightNode3D::color()
+	const Vector3f& LightNode3D::color() const
 	{
 		return get_component<LightComponent>().color;
 	}
 
-	Vector3f& LightNode3D::direction()
+	void LightNode3D::set_color(const Vector3f& color) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&color](auto& light) { light.color = color; });
+	}
+
+	const Vector3f& LightNode3D::direction() const
 	{
 		return get_component<LightComponent>().direction;
 	}
 
-	float& LightNode3D::ambient_intensity()
+	void LightNode3D::set_direction(const Vector3f& direction) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&direction](auto& light) { light.direction = direction; });
+	}
+
+	const float& LightNode3D::ambient_intensity() const
 	{
 		return get_component<LightComponent>().ambientIntensity;
 	}
 
-	float& LightNode3D::specular_intensity()
+	void LightNode3D::set_ambient_intensity(const float& ambient_intensity) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&ambient_intensity](auto& light) { light.ambientIntensity = ambient_intensity; });
+	}
+
+	const float& LightNode3D::specular_intensity() const
 	{
 		return get_component<LightComponent>().specularIntensity;
 	}
 
-	int& LightNode3D::specular_exponent()
+	void LightNode3D::set_specular_intensity(const float& specular_intensity) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&specular_intensity](auto& light) { light.specularIntensity = specular_intensity; });
+	}
+
+	const int& LightNode3D::specular_exponent() const
 	{
 		return get_component<LightComponent>().specularExponent;
 	}
 
-	float& LightNode3D::constant_attenuation()
+	void LightNode3D::set_specular_exponent(const int& specular_exponent) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&specular_exponent](auto& light) { light.specularExponent = specular_exponent; });
+	}
+
+	const float& LightNode3D::constant_attenuation() const
 	{
 		return get_component<LightComponent>().constantAttenuation;
 	}
 
-	float& LightNode3D::linear_attenuation()
+	void LightNode3D::set_constant_attenuation(const float& constant_attenuation) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&constant_attenuation](auto& light) { light.constantAttenuation = constant_attenuation; });
+	}
+
+	const float& LightNode3D::linear_attenuation() const
 	{
 		return get_component<LightComponent>().linearAttenuation;
 	}
 
-	float& LightNode3D::quadratic_attenuation()
+	void LightNode3D::set_linear_attenuation(const float& linear_attenuation) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&linear_attenuation](auto& light) { light.linearAttenuation = linear_attenuation; });
+	}
+
+	const float& LightNode3D::quadratic_attenuation() const
 	{
 		return get_component<LightComponent>().quadraticAttenuation;
 	}
 
-	float& LightNode3D::inner_cutoff_angle()
+	void LightNode3D::set_quadratic_attenuation(const float& quadratic_attenuation) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&quadratic_attenuation](auto& light) { light.quadraticAttenuation = quadratic_attenuation; });
+	}
+
+	const float& LightNode3D::inner_cutoff_angle() const
 	{
 		return get_component<LightComponent>().innerCutoffAngle;
 	}
 
-	float& LightNode3D::outer_cutoff_angle()
+	void LightNode3D::set_inner_cutoff_angle(const float& inner_cutoff_angle) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&inner_cutoff_angle](auto& light) { light.innerCutoffAngle = inner_cutoff_angle; });
+	}
+
+	const float& LightNode3D::outer_cutoff_angle() const
 	{
 		return get_component<LightComponent>().outerCutoffAngle;
 	}
 
-	LightType& LightNode3D::light_type()
+	void LightNode3D::set_outer_cutoff_angle(const float& outer_cutoff_angle) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&outer_cutoff_angle](auto& light) { light.outerCutoffAngle = outer_cutoff_angle; });
+	}
+
+	const LightType& LightNode3D::light_type() const
 	{
 		return get_component<LightComponent>().type;
+	}
+
+	void LightNode3D::set_light_type(const LightType& light_type) const
+	{
+		m_registry->patch<LightComponent>(m_entity, [&light_type](auto& light) { light.type = light_type; });
 	}
 }
