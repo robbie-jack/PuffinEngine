@@ -38,7 +38,7 @@ namespace puffin::scene
 		return get_component<TransformComponent3D>();
 	}
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 	const Vector3d& TransformNode3D::position() const
 	{
 		return get_transform().position;

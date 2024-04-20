@@ -24,7 +24,7 @@ namespace puffin::scene
 
 		const TransformComponent2D& get_transform() const;
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 		[[nodiscard]] const Vector2d& position() const;
 		void set_position(const Vector2d& position) const;
 #else

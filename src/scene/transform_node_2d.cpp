@@ -43,7 +43,7 @@ namespace puffin::scene
 		return get_component<TransformComponent2D>();
 	}
 
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 	const Vector2d& TransformNode2D::position() const
 	{
 		return get_transform().position;
@@ -51,7 +51,7 @@ namespace puffin::scene
 
 	void TransformNode2D::set_position(const Vector2d& position) const
 	{
-		m_registry->patch<TransformNode2D>(m_entity, [&position](auto& transform) { transform.position = position; });
+		m_registry->patch<TransformComponent2D>(m_entity, [&position](auto& transform) { transform.position = position; });
 	}
 #else
 	const Vector2f& TransformNode2D::position() const
