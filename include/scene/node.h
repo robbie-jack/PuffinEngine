@@ -78,12 +78,25 @@ namespace puffin::scene
 		[[nodiscard]] Node* get_parent() const;
 		void reparent(const PuffinID& id);
 		void get_children(std::vector<Node*>& children) const;
+		void get_child_ids(std::vector<PuffinID>& child_ids) const;
 		[[nodiscard]] Node* get_child(PuffinID id) const;
 
 		template<typename T>
 		T& add_child();
 
 		void remove_child(PuffinID id);
+
+		// Set parent id, for internal use only, use reparent instead
+		void set_parent_id(PuffinID id)
+		{
+			m_parent_id = id;
+		}
+
+		// Add a child id, for internal use only, use add_child instead
+		void add_child_id(PuffinID id)
+		{
+			m_child_ids.push_back(id);
+		}
 
 		// Remove a child id, for internal use only, use remove_child instead
 		void remove_child_id(PuffinID id)

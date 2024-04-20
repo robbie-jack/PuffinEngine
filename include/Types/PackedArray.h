@@ -188,7 +188,12 @@ namespace puffin
 			return mIdToIndex.find(id) != mIdToIndex.end();
 		}
 
-		ValueT& at(const size_t id) const
+		ValueT& at(const size_t id)
+		{
+			return mVector.at(mIdToIndex.at(id));
+		}
+
+		const ValueT& at(const size_t id) const
 		{
 			return mVector.at(mIdToIndex.at(id));
 		}

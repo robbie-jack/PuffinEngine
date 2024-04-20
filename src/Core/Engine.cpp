@@ -174,7 +174,7 @@ namespace puffin::core
 			executeCallbacks(ExecutionStage::SubsystemUpdate, true);
 		}
 
-		const auto inputSubsystem = getSystem<input::InputSubsystem>();
+		/*const auto inputSubsystem = getSystem<input::InputSubsystem>();
 		if (inputSubsystem->justPressed("Play"))
 		{
 			play();
@@ -183,7 +183,7 @@ namespace puffin::core
 		if (inputSubsystem->justPressed("Restart"))
 		{
 			restart();
-		}
+		}*/
 
 		// Call system start functions to prepare for gameplay
 		if (mPlayState == PlayState::Started)

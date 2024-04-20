@@ -1,17 +1,18 @@
 #include "UI/Editor/Windows/UIWindowEntityProperties.h"
 
-#include "Components/TransformComponent2D.h"
-#include "Components/TransformComponent3D.h"
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Scripting/AngelScriptComponent.h"
+#include "Components/TransformComponent2D.h"
+#include "Components/TransformComponent3D.h"
 #include "Core/Engine.h"
 #include "ECS/EnTTSubsystem.h"
-#include "misc/cpp/imgui_stdlib.h"
 #include "MathHelpers.h"
+#include "misc/cpp/imgui_stdlib.h"
+#include "scene/scene_graph.h"
 
 #include <string>
 
@@ -24,9 +25,10 @@ namespace puffin
 			mWindowName = "Entity Properties";
 
 			if (!mEnTTSubsystem)
-			{
 				mEnTTSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
-			}
+
+			if (!m_scene_graph)
+				m_scene_graph = mEngine->getSystem<scene::SceneGraph>();
 
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -42,13 +44,13 @@ namespace puffin
 					ImGui::Text(""); ImGui::SameLine(0.0f);
 
 					const auto entity = mEnTTSubsystem->get_entity(mSelectedEntity);
-					auto object = registry->get<SceneObjectComponent>(entity);
+					auto node = m_scene_graph->get_node_ptr(mSelectedEntity);
 
 					// Edit Entity Name
-					std::string name = object.name;
+					std::string name = node->name();
 					if (std::string* namePtr = &name; ImGui::InputText("##name", namePtr, ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						object.name = *namePtr;
+						node->set_name(*namePtr);
 					}
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));

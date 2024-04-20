@@ -9,6 +9,11 @@
 
 namespace puffin
 {
+	namespace scene
+	{
+		class SceneGraph;
+	}
+
 	namespace scripting
 	{
 		struct AngelScriptComponent;
@@ -63,6 +68,7 @@ namespace puffin::ui
 		bool mSceneChanged = false;
 
 		std::shared_ptr<ecs::EnTTSubsystem> mEnTTSubsystem = nullptr;
+		std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
 
 		void drawTransformUI2D(ImGuiTreeNodeFlags flags, entt::entity entity, TransformComponent2D& transform);
 		void drawTransformUI3D(ImGuiTreeNodeFlags flags, entt::entity entity, TransformComponent3D& transform);

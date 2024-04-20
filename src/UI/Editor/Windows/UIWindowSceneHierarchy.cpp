@@ -1,10 +1,6 @@
 #include "UI/Editor/Windows/UIWindowSceneHierarchy.h"
 
-#include "entt/entity/registry.hpp"
-#include "Components/TransformComponent2D.h"
-#include "Components/TransformComponent3D.h"
-#include "Components/Rendering/MeshComponent.h"
-#include "ECS/EnTTSubsystem.h"
+#include "scene/scene_graph.h"
 
 namespace puffin
 {
@@ -14,10 +10,8 @@ namespace puffin
 		{
 			mWindowName = "Scene Hierarchy";
 
-			if (!mEnTTSubsystem)
-			{
-				mEnTTSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
-			}
+			if (!m_scene_graph)
+				m_scene_graph = mEngine->getSystem<scene::SceneGraph>();
 
 			if (mShow)
 			{
@@ -33,53 +27,56 @@ namespace puffin
 
 				ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() * .5f); ImGui::Text("ID");
 
-				const auto registry = mEnTTSubsystem->registry();
-
 				if (ImGui::BeginListBox("##EntityList", listBoxSize))
 				{
 					constexpr ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					const auto entityView = registry->view<const SceneObjectComponent>();
+					//const auto entityView = registry->view<const SceneObjectComponent>();
 
-					for (auto [entity, object] : entityView.each())
+					//for (auto [entity, object] : entityView.each())
+					//{
+					//	ImGuiTreeNodeFlags treeFlags = baseFlags;
+					//	constexpr bool hasChild = false;
+
+					//	// Simple test to show leaf and branch nodes
+					//	/*if (entity == 1 || entity == 2)
+					//		has_child = true;*/
+
+					//	// Set Selected Flag if entity equals selectedEntity
+					//	if (mSelectedEntity == object.id)
+					//		treeFlags |= ImGuiTreeNodeFlags_Selected;
+
+					//	// Display Entity as Leaf node if it doesn't have any children
+					//	if constexpr (!hasChild)
+					//		treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+					//	bool nodeOpen = false;
+
+					//	nodeOpen = ImGui::TreeNodeEx(object.name.empty() ? "Empty" : object.name.c_str(), treeFlags);
+
+					//	// Set Selected Entity when node is clicked
+					//	if (ImGui::IsItemClicked())
+					//	{
+					//		mSelectedEntity = object.id;
+					//		mEntityChanged = true;
+					//	}
+
+					//	// Display Entity ID on same line as name
+					//	ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
+					//	ImGui::Text(std::to_string(object.id).c_str());
+
+					//	if constexpr (hasChild && nodeOpen)
+					//	{
+					//		ImGui::Text("No Child Entities");
+					//		ImGui::TreePop();
+					//	}
+					//}
+
+					for (auto id : m_scene_graph->get_root_node_ids())
 					{
-						ImGuiTreeNodeFlags treeFlags = baseFlags;
-						constexpr bool hasChild = false;
-
-						// Simple test to show leaf and branch nodes
-						/*if (entity == 1 || entity == 2)
-							has_child = true;*/
-
-						// Set Selected Flag if entity equals selectedEntity
-						if (mSelectedEntity == object.id)
-							treeFlags |= ImGuiTreeNodeFlags_Selected;
-
-						// Display Entity as Leaf node if it doesn't have any children
-						if constexpr (!hasChild)
-							treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-
-						bool nodeOpen = false;
-
-						nodeOpen = ImGui::TreeNodeEx(object.name.empty() ? "Empty" : object.name.c_str(), treeFlags);
-
-						// Set Selected Entity when node is clicked
-						if (ImGui::IsItemClicked())
-						{
-							mSelectedEntity = object.id;
-							mEntityChanged = true;
-						}
-
-						// Display Entity ID on same line as name
-						ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
-						ImGui::Text(std::to_string(object.id).c_str());
-
-						if constexpr (hasChild && nodeOpen)
-						{
-							ImGui::Text("No Child Entities");
-							ImGui::TreePop();
-						}
+						draw_node_ui(id, baseFlags);
 					}
 
 					ImGui::EndListBox();
@@ -155,6 +152,52 @@ namespace puffin
 				//}
 
 				end();
+			}
+		}
+
+		void UIWindowSceneHierarchy::draw_node_ui(PuffinID id, const ImGuiTreeNodeFlags& base_flags)
+		{
+			ImGuiTreeNodeFlags tree_flags = base_flags;
+
+			auto node = m_scene_graph->get_node_ptr(id);
+
+			bool has_child = false;
+
+			std::vector<PuffinID> child_ids;
+			node->get_child_ids(child_ids);
+
+			if (!child_ids.empty())
+				has_child = true;
+
+				// Set Selected Flag if entity equals selectedEntity
+			if (mSelectedEntity == id)
+				tree_flags |= ImGuiTreeNodeFlags_Selected;
+
+			// Display Entity as Leaf node if it doesn't have any children
+			if (!has_child)
+				tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+			const bool nodeOpen = ImGui::TreeNodeEx(node->name().empty() ? "Empty" : node->name().c_str(), tree_flags);
+
+			// Set Selected Entity when node is clicked
+			if (ImGui::IsItemClicked())
+			{
+				mSelectedEntity = id;
+				mEntityChanged = true;
+			}
+
+			// Display Entity ID on same line as name
+			ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
+			ImGui::Text(std::to_string(id).c_str());
+
+			if (has_child && nodeOpen)
+			{
+				for (auto id : child_ids)
+				{
+					draw_node_ui(id, base_flags);
+				}
+
+				ImGui::TreePop();
 			}
 		}
 	}

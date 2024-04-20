@@ -24,7 +24,7 @@ namespace puffin::scene
 	{
 	public:
 
-		INodeFactory() {}
+		INodeFactory() = default;
 
 		virtual ~INodeFactory() = default;
 
@@ -37,17 +37,13 @@ namespace puffin::scene
 	{
 	public:
 
-		NodeFactory() {}
+		NodeFactory() = default;
 		~NodeFactory() override = default;
 
 		static T create(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID)
 		{
 			return T(engine, id);
 		}
-
-	private:
-
-
 
 	};
 
@@ -59,9 +55,7 @@ namespace puffin::scene
 
 		virtual ~INodeArray() = default;
 
-	protected:
-
-
+		virtual Node* get_ptr(PuffinID id) = 0;
 
 	};
 
@@ -73,17 +67,11 @@ namespace puffin::scene
 		NodeArray() = default;
 		~NodeArray() override = default;
 
-		T& add(const std::shared_ptr<core::Engine>& engine)
+		T& add(const std::shared_ptr<core::Engine>& engine, PuffinID id = gInvalidID)
 		{
-			PuffinID id = generateID();
+			if (id == gInvalidID)
+				id = generateID();
 
-			m_vector.insert(id, m_factory.create(engine, id));
-
-			return m_vector[id];
-		}
-
-		T& add(const std::shared_ptr<core::Engine>& engine, PuffinID id)
-		{
 			m_vector.insert(id, m_factory.create(engine, id));
 
 			return m_vector[id];
@@ -92,6 +80,14 @@ namespace puffin::scene
 		T& get(PuffinID id)
 		{
 			return m_vector.at(id);
+		}
+
+		Node* get_ptr(PuffinID id) override
+		{
+			if (valid(id))
+				return static_cast<Node*>(&m_vector.at(id));
+
+			return nullptr;
 		}
 
 		void remove(PuffinID id)
@@ -130,52 +126,36 @@ namespace puffin::scene
 		template<typename T>
 		T& add_node()
 		{
-			const char* type_name = typeid(T).name();
-
-			if (m_node_arrays.find(type_name) == m_node_arrays.end())
-			{
-				register_node_type<T>();
-			}
-
-			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node() - Node type not registered before use");
-
-			T& node = get_array<T>()->add(mEngine);
-
-			Node* node_ptr = static_cast<Node*>(&node);
-
-			m_id_to_nodes.insert({ node_ptr->id(), node_ptr });
-			m_nodes_unsorted.push_back(node_ptr);
-
-			m_scene_graph_updated = true;
-
-			return node;
+			return add_node_internal<T>();
 		}
 
 		template<typename T>
 		T& add_node(PuffinID id)
 		{
-			const char* type_name = typeid(T).name();
-
-			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node(PuffinID) - Node type not registered before use");
-
-			T& node = get_array<T>()->add(mEngine, id);
-
-			Node* node_ptr = static_cast<Node*>(&node);
-
-			m_id_to_nodes.insert({ node_ptr->id(), node_ptr });
-			m_nodes_unsorted.push_back(node_ptr);
-
-			m_scene_graph_updated = true;
-
-			return node;
+			return add_node_internal<T>(id);
 		}
 
-		[[nodiscard]] Node* get_node(const PuffinID& id) const
+		template<typename T>
+		T& add_child_node(PuffinID parent_id)
 		{
-			if (m_id_to_nodes.count(id) != 0)
-				return m_id_to_nodes.at(id);
+			return add_node_internal<T>(gInvalidID, parent_id);
+		}
 
-			return nullptr;
+		template<typename T>
+		T& add_child_node(PuffinID id, PuffinID parent_id)
+		{
+			return add_node_internal<T>(id, parent_id);
+		}
+
+		template<typename T>
+		T& get_node(PuffinID id)
+		{
+			return get_array<T>()->get(id);
+		}
+
+		[[nodiscard]] Node* get_node_ptr(const PuffinID& id)
+		{
+			return get_array(m_id_to_type.at(id))->get_ptr(id);
 		}
 
 		// Queue a node for destruction, will also destroy all child nodes
@@ -184,22 +164,74 @@ namespace puffin::scene
 			m_nodes_to_destroy.insert(id);
 		}
 
-		void register_default_nodes();
-		void begin_play();
+		std::vector<PuffinID> get_root_node_ids() { return m_root_node_ids; }
+
+		void subsystem_update();
 		void update();
 		void physics_update();
 		void end_play();
 
+		void register_default_nodes();
+
 	private:
 
-		std::unordered_map<PuffinID, Node*> m_id_to_nodes;
-		std::vector<Node*> m_nodes_unsorted;
-		std::vector<Node*> m_nodes_sorted;
+		std::unordered_map<PuffinID, const char*> m_id_to_type;
+		std::vector<PuffinID> m_node_ids; // Vector of node id's, sorted by order methods are executed in
+		std::vector<PuffinID> m_root_node_ids; // Vector of nodes at root of scene graph
 		std::set<PuffinID> m_nodes_to_destroy;
 
 		bool m_scene_graph_updated = false;
 
 		std::unordered_map<std::string, INodeArray*> m_node_arrays;
+
+		void update_scene_graph();
+		void update_global_transforms();
+
+		template<typename T>
+		T& add_node_internal(PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
+		{
+			const char* type_name = typeid(T).name();
+
+			if (m_node_arrays.find(type_name) == m_node_arrays.end())
+			{
+				register_node_type<T>();
+			}
+
+			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node_internal(PuffinID, PuffinID) - Node type not registered before use");
+
+			Node* node_ptr;
+
+			if (id == gInvalidID)
+			{
+				T& node = get_array<T>()->add(mEngine);
+				node_ptr = static_cast<Node*>(&node);
+
+				id = node_ptr->id();
+			}
+			else
+			{
+				T& node = get_array<T>()->add(mEngine, id);
+				node_ptr = static_cast<Node*>(&node);
+			}
+
+			if (parent_id != gInvalidID)
+			{
+				node_ptr->set_parent_id(parent_id);
+
+				Node* parent_node_ptr = get_node_ptr(parent_id);
+				parent_node_ptr->add_child_id(id);
+			}
+			else
+			{
+				m_root_node_ids.push_back(id);
+			}
+
+			m_id_to_type.insert({ id, type_name });
+
+			m_scene_graph_updated = true;
+
+			return get_array<T>()->get(id);
+		}
 
 		template<typename T>
 		NodeArray<T>* get_array()
@@ -209,6 +241,13 @@ namespace puffin::scene
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::get_array() - Node type not registered before use");
 
 			return static_cast<NodeArray<T>*>(m_node_arrays.at(type_name));
+		}
+
+		INodeArray* get_array(const char* type_name)
+		{
+			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::get_array(const char*) - Node type not registered before use");
+
+			return m_node_arrays.at(type_name);
 		}
 
 	};

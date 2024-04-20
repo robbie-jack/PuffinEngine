@@ -23,7 +23,7 @@ namespace puffin::scene
 	Node* Node::get_parent() const
 	{
 		if (m_parent_id != gInvalidID)
-			return m_scene_graph->get_node(m_parent_id);
+			return m_scene_graph->get_node_ptr(m_parent_id);
 
 		return nullptr;
 	}
@@ -37,7 +37,7 @@ namespace puffin::scene
 				parent->remove_child_id(m_node_id);
 		}
 
-		m_parent_id = id;
+		set_parent_id(id);
 	}
 
 	void Node::get_children(std::vector<Node*>& children) const
@@ -46,18 +46,28 @@ namespace puffin::scene
 
 		for (auto id : m_child_ids)
 		{
-			children.push_back(m_scene_graph->get_node(id));
+			children.push_back(m_scene_graph->get_node_ptr(id));
+		}
+	}
+
+	void Node::get_child_ids(std::vector<PuffinID>& child_ids) const
+	{
+		child_ids.reserve(m_child_ids.size());
+
+		for (auto id : m_child_ids)
+		{
+			child_ids.push_back(id);
 		}
 	}
 
 	Node* Node::get_child(PuffinID id) const
 	{
-		return m_scene_graph->get_node(id);
+		return m_scene_graph->get_node_ptr(id);
 	}
 
 	void Node::remove_child(PuffinID id)
 	{
-		Node* node = m_scene_graph->get_node(id);
+		Node* node = m_scene_graph->get_node_ptr(id);
 		node->queue_destroy();
 
 		remove_child_id(id);

@@ -5,6 +5,14 @@
 
 namespace puffin
 {
+	namespace scene
+	{
+		class SceneGraph;
+	}
+}
+
+namespace puffin
+{
 	namespace ui
 	{
 		class UIWindowSceneHierarchy : public UIWindow
@@ -22,7 +30,9 @@ namespace puffin
 			
 			bool mEntityChanged = false;
 
-			std::shared_ptr<ecs::EnTTSubsystem> mEnTTSubsystem = nullptr;
+			std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
+
+			void draw_node_ui(PuffinID id, const ImGuiTreeNodeFlags& base_flags);
 
 		};
 	}
