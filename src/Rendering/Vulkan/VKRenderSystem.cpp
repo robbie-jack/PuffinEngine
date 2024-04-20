@@ -23,7 +23,6 @@
 #include "Core/Engine.h"
 #include "Rendering/Vulkan/VKHelpers.h"
 #include "Window/WindowSubsystem.h"
-#include "Components/SceneObjectComponent.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SignalSubsystem.h"
 #include "Assets/AssetRegistry.h"
@@ -39,6 +38,7 @@
 #include "Components/Rendering/MeshComponent.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
+#include "scene/scene_graph.h"
 #include "UI/Editor/UISubsystem.h"
 
 #define VK_CHECK(x)                                                 \
@@ -169,6 +169,11 @@ namespace puffin::rendering
 	{
 		const auto mesh = registry.get<MeshComponent>(entity);
 
+		if (mesh.meshAssetID == gInvalidID || mesh.matAssetID == gInvalidID)
+		{
+			return;
+		}
+
 		mMeshesToLoad.insert(mesh.meshAssetID);
 		mMaterialRegistry.registerMaterialInstance(mesh.matAssetID);
 
@@ -189,7 +194,7 @@ namespace puffin::rendering
 	{
 		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<MeshComponent>(entity))
 		{
-			const auto object = registry.get<SceneObjectComponent>(entity);
+			const auto node_id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 			const auto mesh = registry.get<MeshComponent>(entity);
 
 			if (mesh.meshAssetID == gInvalidID || mesh.matAssetID == gInvalidID)
@@ -197,7 +202,7 @@ namespace puffin::rendering
 				return;
 			}
 
-			mObjectsToRefresh.insert(object.id);
+			mObjectsToRefresh.insert(node_id);
 
 			mUpdateRenderables = true;
 		}
@@ -754,14 +759,16 @@ namespace puffin::rendering
 
 		if (mUpdateRenderables)
 		{
-			const auto meshView2D = registry->view<const SceneObjectComponent, const TransformComponent2D, const MeshComponent>();
-			const auto meshView3D = registry->view<const SceneObjectComponent, const TransformComponent3D, const MeshComponent>();
+			const auto meshView2D = registry->view<const TransformComponent2D, const MeshComponent>();
+			const auto meshView3D = registry->view<const TransformComponent3D, const MeshComponent>();
 
 			mRenderables.clear();
 
 			// Iterate 2D objects
-			for (auto [entity, object, transform, mesh] : meshView2D.each())
+			for (auto [entity, transform, mesh] : meshView2D.each())
 			{
+				const auto node_id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+
 				if (mesh.matAssetID == gInvalidID || mesh.meshAssetID == gInvalidID)
 				{
 					continue;
@@ -769,17 +776,19 @@ namespace puffin::rendering
 
 				const auto& matData = mMaterialRegistry.getMaterialData(mesh.matAssetID);
 
-				mRenderables.emplace_back(object.id, mesh.meshAssetID, matData.baseMaterialID, mesh.subMeshIdx);
+				mRenderables.emplace_back(node_id, mesh.meshAssetID, matData.baseMaterialID, mesh.subMeshIdx);
 
-				if (!mCachedObjectData.contains(object.id))
+				if (!mCachedObjectData.contains(node_id))
 				{
-					mCachedObjectData.insert(object.id, GPUObjectData());
+					mCachedObjectData.insert(node_id, GPUObjectData());
 				}
 			}
 
 			// Iterate 3D objects
-			for (auto [entity, object, transform, mesh] : meshView3D.each())
+			for (auto [entity, transform, mesh] : meshView3D.each())
 			{
+				const auto node_id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+
 				if (mesh.matAssetID == gInvalidID || mesh.meshAssetID == gInvalidID)
 				{
 					continue;
@@ -787,11 +796,11 @@ namespace puffin::rendering
 
 				const auto& matData = mMaterialRegistry.getMaterialData(mesh.matAssetID);
 
-				mRenderables.emplace_back(object.id, mesh.meshAssetID, matData.baseMaterialID, mesh.subMeshIdx);
+				mRenderables.emplace_back(node_id, mesh.meshAssetID, matData.baseMaterialID, mesh.subMeshIdx);
 
-				if (!mCachedObjectData.contains(object.id))
+				if (!mCachedObjectData.contains(node_id))
 				{
-					mCachedObjectData.insert(object.id, GPUObjectData());
+					mCachedObjectData.insert(node_id, GPUObjectData());
 				}
 			}
 
@@ -1123,9 +1132,9 @@ namespace puffin::rendering
 		updateEditorCamera();
 
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
-		const auto cameraView = registry->view<const SceneObjectComponent, const TransformComponent3D, CameraComponent>();
+		const auto cameraView = registry->view<const TransformComponent3D, CameraComponent>();
 
-		for (auto [entity, object, transform, camera] : cameraView.each())
+		for (auto [entity, transform, camera] : cameraView.each())
 		{
 			updateCameraComponent(transform, camera);
 		}
@@ -1355,13 +1364,13 @@ namespace puffin::rendering
 		// Prepare dynamic light data
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto lightView = registry->view<const SceneObjectComponent, const TransformComponent3D, const LightComponent>();
+		const auto lightView = registry->view<const TransformComponent3D, const LightComponent>();
 
 		std::vector<GPULightData> lights;
 
 		int i = 0;
 
-		for (auto [entity, object, transform, light] : lightView.each())
+		for (auto [entity, transform, light] : lightView.each())
 		{
 			// Break out of loop of maximum number of lights has been reached
 			if (i >= gMaxLightsVK)

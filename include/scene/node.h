@@ -37,6 +37,7 @@ namespace puffin::scene
 		virtual void end_play() {}
 
 		[[nodiscard]] PuffinID id() const { return m_node_id; }
+		[[nodiscard]] entt::entity entity() const { return m_entity; }
 
 		[[nodiscard]] const std::string& name() const { return m_name; }
 		void set_name(const std::string& name) { m_name = name; }
@@ -45,6 +46,12 @@ namespace puffin::scene
 
 		template<typename T>
 		T& get_component()
+		{
+			return m_registry->get<T>(m_entity);
+		}
+
+		template<typename T>
+		const T& get_component() const
 		{
 			return m_registry->get<T>(m_entity);
 		}

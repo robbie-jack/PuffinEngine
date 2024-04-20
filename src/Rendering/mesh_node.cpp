@@ -30,18 +30,33 @@ namespace puffin::rendering
 		TransformNode3D::end_play();
 	}
 
-	PuffinID& MeshNode::mesh_asset_id()
+	PuffinID MeshNode::mesh_asset_id()
 	{
 		return get_component<MeshComponent>().meshAssetID;
 	}
 
-	PuffinID& MeshNode::mat_asset_id()
+	void MeshNode::set_mesh_asset_id(PuffinID mesh_asset_id) const
+	{
+		m_registry->patch<MeshComponent>(m_entity, [&mesh_asset_id](auto& mesh) { mesh.meshAssetID = mesh_asset_id; });
+	}
+
+	PuffinID MeshNode::mat_asset_id()
 	{
 		return get_component<MeshComponent>().matAssetID;
+	}
+
+	void MeshNode::set_mat_asset_id(PuffinID mat_asset_id) const
+	{
+		m_registry->patch<MeshComponent>(m_entity, [&mat_asset_id](auto& mesh) { mesh.matAssetID = mat_asset_id; });
 	}
 
 	uint8_t MeshNode::sub_mesh_idx()
 	{
 		return get_component<MeshComponent>().subMeshIdx;
+	}
+
+	void MeshNode::set_sub_mesh_idx(uint8_t sub_mesh_idx) const
+	{
+		m_registry->patch<MeshComponent>(m_entity, [&sub_mesh_idx](auto& mesh) { mesh.subMeshIdx = sub_mesh_idx; });
 	}
 }

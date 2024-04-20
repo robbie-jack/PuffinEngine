@@ -35,9 +35,13 @@ namespace puffin::ecs
 		// Add an entity using an existing id
 		entt::entity add_entity(const PuffinID id)
 		{
+			if (valid(id))
+				return m_id_to_entity.at(id);
+
 			const auto entity = m_registry->create();
 
 			m_id_to_entity.emplace(id, entity);
+			m_entity_to_id.emplace(entity, id);
 
 			return entity;
 		}
@@ -54,11 +58,19 @@ namespace puffin::ecs
 			return m_id_to_entity.find(id) != m_id_to_entity.end();
 		}
 
-		entt::entity get_entity(const PuffinID id)
+		[[nodiscard]] entt::entity get_entity(const PuffinID& id) const
 		{
-			const entt::entity& entity = m_id_to_entity[id];
+			const entt::entity& entity = m_id_to_entity.at(id);
 
 			return entity;
+		}
+
+		[[nodiscard]] PuffinID get_id(const entt::entity& entity) const
+		{
+			if (m_entity_to_id.count(entity) != 0)
+				return m_entity_to_id.at(entity);
+
+			return gInvalidID;
 		}
 
 		std::shared_ptr<entt::registry> registry() { return m_registry; }
@@ -68,6 +80,7 @@ namespace puffin::ecs
 		std::shared_ptr<entt::registry> m_registry = nullptr;
 
 		std::unordered_map<PuffinID, entt::entity> m_id_to_entity;
+		std::unordered_map<entt::entity, PuffinID> m_entity_to_id;
 
 	};
 }

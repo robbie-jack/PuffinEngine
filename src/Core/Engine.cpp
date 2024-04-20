@@ -111,7 +111,7 @@ namespace puffin::core
 		mLastTime = glfwGetTime(); // Time Count Started
 		mCurrentTime = mLastTime;
 
-		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
+		if (constexpr bool setupDefaultScene = true; setupDefaultScene)
 		{
 			// Create Default Scene in code -- used when scene serialization is changed
 			defaultScene();
@@ -415,38 +415,46 @@ namespace puffin::core
 
 		auto house_node = scene_graph->add_node<rendering::MeshNode>();
 		house_node.set_name("House");
-		house_node.position() = { 2.0f, 0.0, 0.0 };
-		house_node.mesh_asset_id() = meshId1;
-		house_node.mat_asset_id() = materialInstId1;
+		house_node.set_position({ 2.0f, 0.0f, 0.0f });
+		house_node.set_mesh_asset_id(meshId1);
+		house_node.set_mat_asset_id(materialInstId1);
 
-		auto sphere = scene_graph->add_node<rendering::MeshNode>();
+		/*auto sphere = scene_graph->add_node<rendering::MeshNode>();
 		sphere.set_name("Sphere");
-		sphere.position() = { -1.0f, -0.0f, 0.0f };
+		sphere.set_position({ -1.0f, -0.0f, 0.0f });
+		sphere.set_mesh_asset_id(meshId2);
+		sphere.set_mat_asset_id(materialInstId1);*/
 
 		auto cube_1 = scene_graph->add_node<rendering::MeshNode>();
 		cube_1.set_name("Cube_1");
-		cube_1.position() = { 0.0f };
+		cube_1.set_position({ 0.0f });
+		cube_1.set_mesh_asset_id(meshId3);
+		cube_1.set_mat_asset_id(materialInstId1);
 
 		auto cube_2 = scene_graph->add_node<rendering::MeshNode>();
 		cube_2.set_name("Cube_2");
-		cube_2.position() = { -1.75f, -5.0f, 0.0f };
+		cube_2.set_position({ -1.75f, -5.0f, 0.0f });
+		cube_2.set_mesh_asset_id(meshId3);
+		cube_2.set_mat_asset_id(materialInstId1);
 
 		auto plane = scene_graph->add_node<rendering::MeshNode>();
 		plane.set_name("Plane");
-		plane.position() = { 0.0f, -10.0f, 0.0f };
-		plane.scale() = { 50.0f, 1.0f, 50.0f };
+		plane.set_position({ 0.0f, -10.0f, 0.0f });
+		plane.set_scale({ 50.0f, 1.0f, 50.0f });
+		plane.set_mesh_asset_id(meshId3);
+		plane.set_mat_asset_id(materialInstId1);
 
 		auto dir_light = scene_graph->add_node<rendering::LightNode3D>();
 		dir_light.set_name("Directional Light");
-		dir_light.position() = { -5.0f, 0.0f, 0.0f };
-		dir_light.scale() = { 0.25f };
+		dir_light.set_position({ -5.0f, 0.0f, 0.0f });
+		dir_light.set_scale({ 0.25f });
 		dir_light.light_type() = rendering::LightType::Directional;
 		dir_light.ambient_intensity() = 0.f;
 
 		auto spot_light = scene_graph->add_node<rendering::LightNode3D>();
 		spot_light.set_name("Spot Light");
-		spot_light.position() = { 10.0f, 5.0f, 0.0f };
-		spot_light.scale() = { 0.25f };
+		spot_light.set_position({ 10.0f, 5.0f, 0.0f });
+		spot_light.set_scale({ 0.25f });
 		spot_light.light_type() = rendering::LightType::Spot;
 		spot_light.direction() = { -0.5f, -0.5f, 0.5f };
 		spot_light.ambient_intensity() = 0.f;

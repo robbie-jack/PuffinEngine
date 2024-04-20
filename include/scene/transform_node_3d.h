@@ -23,10 +23,21 @@ namespace puffin::scene
 		void physics_update(const double delta_time) override;
 		void end_play() override;
 
-		TransformComponent3D& get_transform();
-		Vector3f& position();
-		maths::Quat& orientation();
-		Vector3f& scale();
+		[[nodiscard]] const TransformComponent3D& get_transform() const;
+
+#ifdef PFN_USE_DOUBLE_PRECISION
+		[[nodiscard]] const Vector3d& position() const;
+		void set_position(const Vector3d& position) const;
+#else
+		[[nodiscard]] const Vector3f& position() const;
+		void set_position(const Vector3f& position) const;
+#endif
+
+		[[nodiscard]] const maths::Quat& orientation() const;
+		void set_orientation(const maths::Quat& orientation) const;
+
+		[[nodiscard]] const Vector3f& scale() const;
+		void set_scale(const Vector3f& scale) const;
 
 	protected:
 

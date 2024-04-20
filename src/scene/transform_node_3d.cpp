@@ -33,23 +33,50 @@ namespace puffin::scene
 		Node::end_play();
 	}
 
-	TransformComponent3D& TransformNode3D::get_transform()
+	const TransformComponent3D& TransformNode3D::get_transform() const
 	{
 		return get_component<TransformComponent3D>();
 	}
 
-	Vector3f& TransformNode3D::position()
+#ifdef PFN_USE_DOUBLE_PRECISION
+	const Vector3d& TransformNode3D::position() const
 	{
 		return get_transform().position;
 	}
 
-	maths::Quat& TransformNode3D::orientation()
+	void TransformNode3D::set_position(const Vector3d& position) const
+	{
+		m_registry->patch<TransformComponent3D>(m_entity, [&position](auto& transform) { transform.position = position; });
+	}
+#else
+	const Vector3f& TransformNode3D::position() const
+	{
+		return get_transform().position;
+	}
+
+	void TransformNode3D::set_position(const Vector3f& position) const
+	{
+		m_registry->patch<TransformComponent3D>(m_entity, [&position](auto& transform) { transform.position = position; });
+	}
+#endif
+
+	const maths::Quat& TransformNode3D::orientation() const
 	{
 		return get_transform().orientation;
 	}
 
-	Vector3f& TransformNode3D::scale()
+	void TransformNode3D::set_orientation(const maths::Quat& orientation) const
+	{
+		m_registry->patch<TransformComponent3D>(m_entity, [&orientation](auto& transform) { transform.orientation = orientation; });
+	}
+
+	const Vector3f& TransformNode3D::scale() const
 	{
 		return get_transform().scale;
+	}
+
+	void TransformNode3D::set_scale(const Vector3f& scale) const
+	{
+		m_registry->patch<TransformComponent3D>(m_entity, [&scale](auto& transform) { transform.scale = scale; });
 	}
 }
