@@ -68,7 +68,6 @@ namespace puffin::core
 		auto sceneData = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / mProjectFile.defaultScenePath);
 
 		// Register Components to Scene Data Class
-		sceneData->registerComponent<SceneObjectComponent>();
 		sceneData->registerComponent<TransformComponent2D>();
 		sceneData->registerComponent<TransformComponent3D>();
 		sceneData->registerComponent<rendering::MeshComponent>();

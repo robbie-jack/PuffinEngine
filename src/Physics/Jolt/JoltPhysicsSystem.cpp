@@ -50,11 +50,11 @@ namespace puffin::physics
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		// Updated entity position/rotation from simulation
-		const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent3D, VelocityComponent3D, const RigidbodyComponent3D>();
+		const auto bodyView = registry->view<TransformComponent3D, VelocityComponent3D, const RigidbodyComponent3D>();
 
-		for (auto [entity, object, transform, velocity, rb] : bodyView.each())
+		for (auto [entity, transform, velocity, rb] : bodyView.each())
 		{
-			const auto& id = object.id;
+			const auto& id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
 			// Update Transform from Rigidbody Position
 			registry->patch<TransformComponent3D>(entity, [&](auto& transform)
@@ -99,9 +99,9 @@ namespace puffin::physics
 
 	void JoltPhysicsSystem::onConstructBox(entt::registry& registry, entt::entity entity)
 	{
-		const auto& object = registry.get<const SceneObjectComponent>(entity);
+		const auto id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
-		mBoxesToInit.push_back(object.id);
+		mBoxesToInit.push_back(id);
 	}
 
 	void JoltPhysicsSystem::onDestroyBox(entt::registry& registry, entt::entity entity)
@@ -111,9 +111,9 @@ namespace puffin::physics
 
 	void JoltPhysicsSystem::onConstructSphere(entt::registry& registry, entt::entity entity)
 	{
-		const auto& object = registry.get<const SceneObjectComponent>(entity);
+		const auto id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
-		mSpheresToInit.push_back(object.id);
+		mSpheresToInit.push_back(id);
 	}
 
 	void JoltPhysicsSystem::onDestroySphere(entt::registry& registry, entt::entity entity)
@@ -123,9 +123,9 @@ namespace puffin::physics
 
 	void JoltPhysicsSystem::onConstructRigidbody(entt::registry& registry, entt::entity entity)
 	{
-		const auto& object = registry.get<const SceneObjectComponent>(entity);
+		const auto id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
-		mBodiesToInit.push_back(object.id);
+		mBodiesToInit.push_back(id);
 	}
 
 	void JoltPhysicsSystem::onDestroyRigidbody(entt::registry& registry, entt::entity entity)
@@ -143,11 +143,10 @@ namespace puffin::physics
 			{
 				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
-				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& sphere = registry->get<const SphereComponent3D>(entity);
 
-				initSphere(object.id, transform, sphere);
+				initSphere(id, transform, sphere);
 			}
 
 			mSpheresToInit.clear();
@@ -159,11 +158,10 @@ namespace puffin::physics
 			{
 				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
-				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& box = registry->get<const BoxComponent3D>(entity);
 
-				initBox(object.id, transform, box);
+				initBox(id, transform, box);
 			}
 
 			mBoxesToInit.clear();
@@ -176,13 +174,12 @@ namespace puffin::physics
 			{
 				entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
 
-				const auto& object = registry->get<const SceneObjectComponent>(entity);
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& rb = registry->get<const RigidbodyComponent3D>(entity);
 
 				if (mShapeRefs.contains(id))
 				{
-					initRigidbody(object.id, transform, rb);
+					initRigidbody(id, transform, rb);
 				}
 			}
 

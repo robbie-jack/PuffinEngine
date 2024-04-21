@@ -4,7 +4,6 @@
 #include "ECS/EnTTSubsystem.h"
 #include "Core/Engine.h"
 #include "Scripting/AngelScript/RegisterTypeHelpers.h"
-#include "Components/SceneObjectComponent.h"
 
 #include "entt/entity/registry.hpp"
 #include "angelscript/scriptbuilder/scriptbuilder.h"
@@ -103,11 +102,11 @@ namespace puffin::scripting
 		// Initialize/Cleanup marked components
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
+		const auto scriptView = registry->view<AngelScriptComponent>();
 
-		for (auto [entity, object, script] : scriptView.each())
+		for (auto [entity, script] : scriptView.each())
 		{
-			mCurrentEntityID = object.id;
+			mCurrentEntityID = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
 			// Execute Update function if one was found for script
 			prepareAndExecuteScriptMethod(script.obj, script.fixedUpdateFunc);
@@ -132,11 +131,11 @@ namespace puffin::scripting
 		{
 			const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-			const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
+			const auto scriptView = registry->view<AngelScriptComponent>();
 
-			for (auto [entity, object, script] : scriptView.each())
+			for (auto [entity, script] : scriptView.each())
 			{
-				mCurrentEntityID = object.id;
+				mCurrentEntityID = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
 				// Execute Update function if one was found for script
 				prepareAndExecuteScriptMethod(script.obj, script.updateFunc);
@@ -149,11 +148,11 @@ namespace puffin::scripting
 		// Execute Script Stop Methods
 		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
-		const auto scriptView = registry->view<const SceneObjectComponent, AngelScriptComponent>();
+		const auto scriptView = registry->view<AngelScriptComponent>();
 
-		for (auto [entity, object, script] : scriptView.each())
+		for (auto [entity, script] : scriptView.each())
 		{
-			mCurrentEntityID = object.id;
+			mCurrentEntityID = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
 			prepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 
@@ -210,19 +209,16 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::onConstructScript(entt::registry& registry, entt::entity entity)
 	{
-		const auto& object = registry.get<SceneObjectComponent>(entity);
+		const auto& id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
-		mScriptsToInit.emplace(object.id);
+		mScriptsToInit.emplace(id);
 	}
 
 	void AngelScriptSystem::onDestroyScript(entt::registry& registry, entt::entity entity)
 	{
-		if (registry.any_of<SceneObjectComponent>(entity))
-		{
-			const auto& object = registry.get<SceneObjectComponent>(entity);
+		const auto& id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
-			mScriptsToStop.emplace(object.id);
-		}
+		mScriptsToStop.emplace(id);
 	}
 
 	void AngelScriptSystem::configureEngine()

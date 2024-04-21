@@ -5,7 +5,6 @@
 
 #include "Core/System.h"
 #include "ECS/EnTTSubsystem.h"
-#include "Components/SceneObjectComponent.h"
 #include "Types/UUID.h"
 
 #include <fstream>
@@ -66,15 +65,15 @@ namespace puffin::io
 
 			const auto registry = enttSubsystem->registry();
 
-			const auto view = registry->view<const SceneObjectComponent>();
-
-			for (auto [entity, object] : view.each())
+			registry->each([&](auto entity)
 			{
+				const auto& id = enttSubsystem->get_id(entity);
+
 				if (registry->any_of<CompT>(entity))
 				{
-					mComponents.emplace(object.id, registry->get<CompT>(entity));
+					mComponents.emplace(id, registry->get<CompT>(entity));
 				}
-			}
+			});
 		}
 
 		void clear() override
@@ -148,14 +147,12 @@ namespace puffin::io
 
 			const auto registry = enttSubsystem->registry();
 
-			const auto view = registry->view<const SceneObjectComponent>();
-
-			mIDs.reserve(view.size());
-
-			for (auto [entity, object] : view.each())
+			registry->each([&](auto entity)
 			{
-				mIDs.push_back(object.id);
-			}
+				const auto& id = enttSubsystem->get_id(entity);
+
+				mIDs.push_back(id);
+			});
 
 			for (auto& [type, compArray] : mComponentData)
 			{

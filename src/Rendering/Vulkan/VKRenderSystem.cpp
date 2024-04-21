@@ -194,7 +194,7 @@ namespace puffin::rendering
 	{
 		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<MeshComponent>(entity))
 		{
-			const auto node_id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+			const auto id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 			const auto mesh = registry.get<MeshComponent>(entity);
 
 			if (mesh.meshAssetID == gInvalidID || mesh.matAssetID == gInvalidID)
@@ -202,7 +202,7 @@ namespace puffin::rendering
 				return;
 			}
 
-			mObjectsToRefresh.insert(node_id);
+			mObjectsToRefresh.insert(id);
 
 			mUpdateRenderables = true;
 		}

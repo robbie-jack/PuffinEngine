@@ -5,7 +5,6 @@
 #include "Types/UUID.h"
 #include "Core/Engine.h"
 #include "entt/entity/registry.hpp"
-#include "Components/SceneObjectComponent.h"
 
 namespace puffin::ecs
 {
@@ -24,9 +23,6 @@ namespace puffin::ecs
 
 		void endPlay()
 		{
-			const auto view = m_registry->view<const SceneObjectComponent>();
-
-			m_registry->destroy(view.begin(), view.end());
 			m_registry->clear();
 
 			m_id_to_entity.clear();
