@@ -15,6 +15,26 @@ namespace puffin::scene
 		m_entity = m_entt_subsystem->add_entity(m_node_id);
 	}
 
+	const TransformComponent2D& Node::global_transform_2d() const
+	{
+		if (has_transform_2d())
+		{
+			return m_scene_graph->get_global_transform_2d(m_node_id);
+		}
+
+		return TransformComponent2D();
+	}
+
+	const TransformComponent3D& Node::global_transform_3d() const
+	{
+		if (has_transform_3d())
+		{
+			return m_scene_graph->get_global_transform_3d(m_node_id);
+		}
+
+		return TransformComponent3D();
+	}
+
 	void Node::queue_destroy() const
 	{
 		m_scene_graph->queue_destroy_node(m_node_id);
@@ -76,7 +96,7 @@ namespace puffin::scene
 	template <typename T>
 	T& Node::add_child()
 	{
-		T& child = m_scene_graph->add_node<T>();
+		T& child = m_scene_graph->add_node<T>(gInvalidID, m_node_id);
 		auto* node_ptr = static_cast<Node*>(*child);
 
 		m_child_ids.push_back(node_ptr->id());

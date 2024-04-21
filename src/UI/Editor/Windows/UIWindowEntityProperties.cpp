@@ -75,19 +75,14 @@ namespace puffin
 						mSceneChanged = false;
 
 						// Display Component UI
-
-						if (registry->any_of<TransformComponent2D>(entity))
+						if (node->has_transform_2d())
 						{
-							auto& transform = registry->get<TransformComponent2D>(entity);
-
-							drawTransformUI2D(flags, entity, transform);
+							draw_transform_ui_2d_node(flags, node);
 						}
 
-						if (registry->any_of<TransformComponent3D>(entity))
+						if (node->has_transform_3d())
 						{
-							auto& transform = registry->get<TransformComponent3D>(entity);
-
-							drawTransformUI3D(flags, entity, transform);
+							draw_transform_ui_3d_node(flags, node);
 						}
 
 						if (registry->any_of<rendering::MeshComponent>(entity))
@@ -218,29 +213,20 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawTransformUI2D(const ImGuiTreeNodeFlags flags, const entt::entity entity, TransformComponent2D& transform)
+		void UIWindowEntityProperties::draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, scene::Node* node)
 		{
-			const auto registry = mEnTTSubsystem->registry();
-
-			if (ImGui::TreeNodeEx("Transform Component 2D", flags))
+			if (ImGui::TreeNodeEx("Transform", flags))
 			{
-				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
-
-				if (ImGui::SmallButton("X##Transform"))
-				{
-					mEnTTSubsystem->registry()->remove<TransformComponent2D>(entity);
-
-					mSceneChanged = true;
-				}
+				const TransformComponent2D& transform = node->transform_2d();
 
 				{
-#ifdef PFN_USE_DOUBLE_PRECISION
+#ifdef PFN_DOUBLE_PRECISION
 
 					Vector2d position = transform.position;
 
 					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &position, 2, 0.1f))
 					{
-						registry->patch<TransformComponent2D>(entity, [&position](auto& transform) { transform.position = position; });
+						node->transform_2d().position = position;
 
 						mSceneChanged = true;
 					}
@@ -251,7 +237,7 @@ namespace puffin
 
 					if (ImGui::DragFloat2("Position", reinterpret_cast<float*>(&position), 0.1f))
 					{
-						registry->patch<TransformComponent2D>(entity, [&position](auto& transform) { transform.position = position; });
+						node->transform_2d().position = position;
 
 						mSceneChanged = true;
 					}
@@ -264,7 +250,7 @@ namespace puffin
 
 					if (ImGui::DragFloat("Rotation", &rotation, 0.1f, -180.0f, 180.0f))
 					{
-						registry->patch<TransformComponent2D>(entity, [&rotation](auto& transform) { transform.rotation = rotation; });
+						node->transform_2d().rotation = rotation;
 
 						mSceneChanged = true;
 					}
@@ -273,9 +259,9 @@ namespace puffin
 				{
 					Vector2f scale = transform.scale;
 
-					if (ImGui::DragFloat2("Scale", reinterpret_cast<float*>(&transform.scale), 0.1f))
+					if (ImGui::DragFloat2("Scale", reinterpret_cast<float*>(&scale), 0.1f))
 					{
-						registry->patch<TransformComponent2D>(entity, [&scale](auto& transform) { transform.scale = scale; });
+						node->transform_2d().scale = scale;
 
 						mSceneChanged = true;
 					}
@@ -285,20 +271,11 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawTransformUI3D(const ImGuiTreeNodeFlags flags, const entt::entity entity, TransformComponent3D& transform)
+		void UIWindowEntityProperties::draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, scene::Node* node)
 		{
-			const auto registry = mEnTTSubsystem->registry();
-
-			if (ImGui::TreeNodeEx("Transform Component 3D", flags))
+			if (ImGui::TreeNodeEx("Transform", flags))
 			{
-				ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
-
-				if (ImGui::SmallButton("X##Transform"))
-				{
-					mEnTTSubsystem->registry()->remove<TransformComponent3D>(entity);
-					
-					mSceneChanged = true;
-				}
+				const TransformComponent3D& transform = node->transform_3d();
 
 				{
 #ifdef PFN_USE_DOUBLE_PRECISION
@@ -307,7 +284,7 @@ namespace puffin
 
 					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &position, 3, 0.1f))
 					{
-						registry->patch<TransformComponent3D>(entity, [&position](auto& transform) { transform.position = position; });
+						node->transform_3d().position = position;
 
 						mSceneChanged = true;
 					}
@@ -318,7 +295,7 @@ namespace puffin
 
 					if (ImGui::DragFloat3("Position", reinterpret_cast<float*>(&position), 0.1f))
 					{
-						registry->patch<TransformComponent3D>(entity, [&position](auto& transform) { transform.position = position; });
+						node->transform_3d().position = position;
 
 						mSceneChanged = true;
 					}
@@ -331,18 +308,13 @@ namespace puffin
 
 					if (ImGui::DragFloat3("Orientation", reinterpret_cast<float*>(&anglesDeg), 0.2f, -180.f, 180.f, "%.3f"))
 					{
-						Vector3f anglesRad = maths::degToRad(anglesDeg);
+						const Vector3f angles_rad = maths::degToRad(anglesDeg);
 
-						registry->patch<TransformComponent3D>(entity, [&anglesRad](auto& transform)
-						{
-							//transform.orientation = glm::quat(static_cast<glm::vec3>(anglesRad));
+						const glm::quat quat_x(angleAxis(angles_rad.x, glm::vec3(1.f, 0.f, 0.f)));
+						const glm::quat quat_y(angleAxis(angles_rad.y, glm::vec3(0.f, 1.f, 0.f)));
+						const glm::quat quat_z(angleAxis(angles_rad.z, glm::vec3(0.f, 0.f, 1.f)));
 
-							glm::quat quatX(angleAxis(anglesRad.x, glm::vec3(1.f, 0.f, 0.f)));
-							glm::quat quatY(angleAxis(anglesRad.y, glm::vec3(0.f, 1.f, 0.f)));
-							glm::quat quatZ(angleAxis(anglesRad.z, glm::vec3(0.f, 0.f, 1.f)));
-
-							transform.orientation = quatY * quatX * quatZ;
-						});
+						node->transform_3d().orientation = quat_y * quat_x * quat_z;
 
 						mSceneChanged = true;
 					}
@@ -351,9 +323,9 @@ namespace puffin
 				{
 					Vector3f scale = transform.scale;
 
-					if (ImGui::DragFloat3("Scale", reinterpret_cast<float*>(&transform.scale), 0.1f))
+					if (ImGui::DragFloat3("Scale", reinterpret_cast<float*>(&scale), 0.1f))
 					{
-						registry->patch<TransformComponent3D>(entity, [&scale](auto& transform) { transform.scale = scale; });
+						node->transform_3d().scale = scale;
 
 						mSceneChanged = true;
 					}

@@ -167,6 +167,12 @@ namespace puffin
 			y *= inFloat;
 		}
 
+		void operator*= (const Vector2& vec)
+		{
+			x *= vec.x;
+			y *= vec.y;
+		}
+
 		// Operator/
 		Vector2 operator/ (const T& inFloat) const
 		{
@@ -448,6 +454,14 @@ namespace puffin
 			x *= rhs;
 			y *= rhs;
 			z *= rhs;
+			return *this;
+		}
+
+		const Vector3& operator*=(const Vector3& vec)
+		{
+			x *= vec.x;
+			y *= vec.y;
+			z *= vec.z;
 			return *this;
 		}
 

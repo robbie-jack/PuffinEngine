@@ -4,7 +4,15 @@
 #include <memory>
 #include <entt/entity/registry.hpp>
 
+#include "Components/TransformComponent2D.h"
+#include "Components/TransformComponent3D.h"
 #include "Types/UUID.h"
+
+namespace puffin
+{
+	struct TransformComponent2D;
+	struct TransformComponent3D;
+}
 
 namespace puffin
 {
@@ -36,13 +44,26 @@ namespace puffin::scene
 		virtual void physics_update(const double delta_time) {}
 		virtual void end_play() {}
 
+		virtual bool has_transform_2d() const { return false; }
+		virtual bool has_transform_3d() const { return false; }
+
+		const TransformComponent2D& global_transform_2d() const;
+		virtual const TransformComponent2D& transform_2d() const { return TransformComponent2D(); }
+		virtual TransformComponent2D& transform_2d() { return TransformComponent2D(); }
+
+		const TransformComponent3D& global_transform_3d() const;
+		virtual const TransformComponent3D& transform_3d() const { return TransformComponent3D(); }
+		virtual TransformComponent3D& transform_3d() { return TransformComponent3D(); }
+
 		[[nodiscard]] PuffinID id() const { return m_node_id; }
 		[[nodiscard]] entt::entity entity() const { return m_entity; }
 
 		[[nodiscard]] const std::string& name() const { return m_name; }
 		void set_name(const std::string& name) { m_name = name; }
 
-		[[nodiscard]] virtual bool should_update() const { return false; }
+		[[nodiscard]] bool should_update() const { return m_should_update; }
+		[[nodiscard]] bool transform_changed() const { return m_transform_changed; }
+		void set_transform_changed(const bool transform_changed) { m_transform_changed = transform_changed; }
 
 		template<typename T>
 		T& get_component()
@@ -86,6 +107,8 @@ namespace puffin::scene
 
 		void remove_child(PuffinID id);
 
+		PuffinID parent_id() const { return m_parent_id; }
+
 		// Set parent id, for internal use only, use reparent instead
 		void set_parent_id(PuffinID id)
 		{
@@ -107,6 +130,8 @@ namespace puffin::scene
 	protected:
 
 		bool m_should_update = false;
+		bool m_transform_changed = true;
+
 		PuffinID m_node_id = gInvalidID;
 		entt::entity m_entity;
 

@@ -33,20 +33,49 @@ namespace puffin::scene
 		Node::end_play();
 	}
 
-	const TransformComponent3D& TransformNode3D::get_transform() const
+	bool TransformNode3D::has_transform_3d() const
 	{
+		return true;
+	}
+
+	const TransformComponent3D& TransformNode3D::transform_3d() const
+	{
+		return transform();
+	}
+
+	TransformComponent3D& TransformNode3D::transform_3d()
+	{
+		return transform();
+	}
+
+	const TransformComponent3D& TransformNode3D::transform() const
+	{
+		return get_component<TransformComponent3D>();
+	}
+
+	TransformComponent3D& TransformNode3D::transform()
+	{
+		m_transform_changed = true;
+
 		return get_component<TransformComponent3D>();
 	}
 
 #ifdef PFN_DOUBLE_PRECISION
 	const Vector3d& TransformNode3D::position() const
 	{
-		return get_transform().position;
+		return transform().position;
 	}
 
-	void TransformNode3D::set_position(const Vector3d& position) const
+	Vector3d& TransformNode3D::position()
+	{
+		return transform().position;
+	}
+
+	void TransformNode3D::set_position(const Vector3d& position)
 	{
 		m_registry->patch<TransformComponent3D>(m_entity, [&position](auto& transform) { transform.position = position; });
+
+		m_transform_changed = true;
 	}
 #else
 	const Vector3f& TransformNode3D::position() const
@@ -54,29 +83,50 @@ namespace puffin::scene
 		return get_transform().position;
 	}
 
-	void TransformNode3D::set_position(const Vector3f& position) const
+	Vector3f& TransformNode3D::position()
+	{
+		return transform().position;
+	}
+
+	void TransformNode3D::set_position(const Vector3f& position)
 	{
 		m_registry->patch<TransformComponent3D>(m_entity, [&position](auto& transform) { transform.position = position; });
+
+		m_transform_changed = true;
 	}
 #endif
 
 	const maths::Quat& TransformNode3D::orientation() const
 	{
-		return get_transform().orientation;
+		return transform().orientation;
 	}
 
-	void TransformNode3D::set_orientation(const maths::Quat& orientation) const
+	maths::Quat& TransformNode3D::orientation()
+	{
+		return transform().orientation;
+	}
+
+	void TransformNode3D::set_orientation(const maths::Quat& orientation)
 	{
 		m_registry->patch<TransformComponent3D>(m_entity, [&orientation](auto& transform) { transform.orientation = orientation; });
+
+		m_transform_changed = true;
 	}
 
 	const Vector3f& TransformNode3D::scale() const
 	{
-		return get_transform().scale;
+		return transform().scale;
 	}
 
-	void TransformNode3D::set_scale(const Vector3f& scale) const
+	Vector3f& TransformNode3D::scale()
+	{
+		return transform().scale;
+	}
+
+	void TransformNode3D::set_scale(const Vector3f& scale)
 	{
 		m_registry->patch<TransformComponent3D>(m_entity, [&scale](auto& transform) { transform.scale = scale; });
+
+		m_transform_changed = true;
 	}
 }

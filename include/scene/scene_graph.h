@@ -158,6 +158,16 @@ namespace puffin::scene
 			return get_array(m_id_to_type.at(id))->get_ptr(id);
 		}
 
+		[[nodiscard]] const TransformComponent2D& get_global_transform_2d(const PuffinID& id)
+		{
+			return m_global_transform_2ds.at(id);
+		}
+
+		[[nodiscard]] const TransformComponent3D& get_global_transform_3d(const PuffinID& id)
+		{
+			return m_global_transform_3ds.at(id);
+		}
+
 		// Queue a node for destruction, will also destroy all child nodes
 		void queue_destroy_node(const PuffinID& id)
 		{
@@ -180,12 +190,19 @@ namespace puffin::scene
 		std::vector<PuffinID> m_root_node_ids; // Vector of nodes at root of scene graph
 		std::set<PuffinID> m_nodes_to_destroy;
 
+		PackedVector<TransformComponent2D> m_global_transform_2ds;
+		PackedVector<TransformComponent3D> m_global_transform_3ds;
+
 		bool m_scene_graph_updated = false;
 
 		std::unordered_map<std::string, INodeArray*> m_node_arrays;
 
 		void update_scene_graph();
+		void add_id_and_child_ids(PuffinID id, std::vector<PuffinID>& node_ids);
+
 		void update_global_transforms();
+		void apply_local_to_global_transform_2d(PuffinID id, TransformComponent2D& global_transform);
+		void apply_local_to_global_transform_3d(PuffinID id, TransformComponent3D& global_transform);
 
 		template<typename T>
 		T& add_node_internal(PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
@@ -227,6 +244,16 @@ namespace puffin::scene
 			}
 
 			m_id_to_type.insert({ id, type_name });
+
+			if (node_ptr->has_transform_2d())
+			{
+				m_global_transform_2ds.insert(id, TransformComponent2D());
+			}
+
+			if (node_ptr->has_transform_3d())
+			{
+				m_global_transform_3ds.insert(id, TransformComponent3D());
+			}
 
 			m_scene_graph_updated = true;
 

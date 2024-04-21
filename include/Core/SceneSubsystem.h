@@ -280,7 +280,7 @@ namespace puffin::io
 		{
 			//mEngine->registerCallback(core::ExecutionStage::Startup, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "SceneSubsystem: BeginPlay", 0);
-			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
+			//mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
 		}
 
 		~SceneSubsystem() override { mEngine = nullptr; }

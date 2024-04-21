@@ -451,6 +451,11 @@ namespace puffin::core
 		dir_light.set_light_type(rendering::LightType::Directional);
 		dir_light.set_ambient_intensity(0.f);
 
+		auto dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light.id());
+		dir_light_mesh.set_scale({ 0.25f });
+		dir_light_mesh.set_mesh_asset_id(meshId3);
+		dir_light_mesh.set_mat_asset_id(materialInstId1);
+
 		auto spot_light = scene_graph->add_node<rendering::LightNode3D>();
 		spot_light.set_name("Spot Light");
 		spot_light.set_position({ 10.0f, 5.0f, 0.0f });

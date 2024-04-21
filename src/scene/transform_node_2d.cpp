@@ -38,20 +38,49 @@ namespace puffin::scene
 
 	}
 
-	const TransformComponent2D& TransformNode2D::get_transform() const
+	bool TransformNode2D::has_transform_2d() const
 	{
+		return true;
+	}
+
+	const TransformComponent2D& TransformNode2D::transform_2d() const
+	{
+		return transform();
+	}
+
+	TransformComponent2D& TransformNode2D::transform_2d()
+	{
+		return transform();
+	}
+
+	const TransformComponent2D& TransformNode2D::transform() const
+	{
+		return get_component<TransformComponent2D>();
+	}
+
+	TransformComponent2D& TransformNode2D::transform()
+	{
+		m_transform_changed = true;
+
 		return get_component<TransformComponent2D>();
 	}
 
 #ifdef PFN_DOUBLE_PRECISION
 	const Vector2d& TransformNode2D::position() const
 	{
-		return get_transform().position;
+		return transform().position;
 	}
 
-	void TransformNode2D::set_position(const Vector2d& position) const
+	Vector2d& TransformNode2D::position()
+	{
+		return transform().position;
+	}
+
+	void TransformNode2D::set_position(const Vector2d& position)
 	{
 		m_registry->patch<TransformComponent2D>(m_entity, [&position](auto& transform) { transform.position = position; });
+
+		m_transform_changed = true;
 	}
 #else
 	const Vector2f& TransformNode2D::position() const
@@ -59,29 +88,50 @@ namespace puffin::scene
 		return get_transform().position;
 	}
 
-	void TransformNode2D::set_position(const Vector2f& position) const
+	Vector2f& TransformNode2D::position()
+	{
+		return transform().position;
+	}
+
+	void TransformNode2D::set_position(const Vector2f& position)
 	{
 		m_registry->patch<TransformComponent2D>(m_entity, [&position](auto& transform) { transform.position = position; });
+
+		m_transform_changed = true;
 	}
 #endif
 
 	const float& TransformNode2D::rotation() const
 	{
-		return get_transform().rotation;
+		return transform().rotation;
 	}
 
-	void TransformNode2D::set_rotation(const float& rotation) const
+	float& TransformNode2D::rotation()
+	{
+		return transform().rotation;
+	}
+
+	void TransformNode2D::set_rotation(const float& rotation)
 	{
 		m_registry->patch<TransformComponent2D>(m_entity, [&rotation](auto& transform) { transform.rotation = rotation; });
+
+		m_transform_changed = true;
 	}
 
 	const Vector2f& TransformNode2D::scale() const
 	{
-		return get_transform().scale;
+		return transform().scale;
 	}
 
-	void TransformNode2D::set_scale(const Vector2f& scale) const
+	Vector2f& TransformNode2D::scale()
+	{
+		return transform().scale;
+	}
+
+	void TransformNode2D::set_scale(const Vector2f& scale)
 	{
 		m_registry->patch<TransformComponent2D>(m_entity, [&scale](auto& transform) { transform.scale = scale; });
+
+		m_transform_changed = true;
 	}
 }

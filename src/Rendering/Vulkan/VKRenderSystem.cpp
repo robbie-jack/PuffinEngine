@@ -1243,6 +1243,7 @@ namespace puffin::rendering
 			}
 
 			const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
+			const auto scene_graph = mEngine->getSystem<scene::SceneGraph>();
 			const auto registry = enttSubsystem->registry();
 
 			enki::TaskSet task(numObjectsToRefresh, [&](enki::TaskSetPartition range, uint32_t threadnum)
@@ -1251,13 +1252,19 @@ namespace puffin::rendering
 				{
 					const auto entityID = objectsToRefresh[objectIdx];
 					const auto entity = enttSubsystem->get_entity(entityID);
+					const auto node = scene_graph->get_node_ptr(entityID);
 
 					TransformComponent3D& tempTransform = TransformComponent3D();
 
 					// Convert 2D transform to 3D for rendering
 					if (registry->any_of<TransformComponent2D>(entity))
 					{
-						const auto& transform = registry->get<TransformComponent2D>(entity);
+						auto& transform = TransformComponent2D();
+
+						if (node)
+							transform = node->global_transform_2d();
+						else
+							transform = registry->get<TransformComponent2D>(entity);
 
 						tempTransform.position.x = transform.position.x;
 						tempTransform.position.y = transform.position.y;
@@ -1271,7 +1278,14 @@ namespace puffin::rendering
 					}
 					else
 					{
-						tempTransform = registry->get<TransformComponent3D>(entity);
+						if (node)
+						{
+							tempTransform = node->global_transform_3d();
+						}
+						else
+						{
+							tempTransform = registry->get<TransformComponent3D>(entity);
+						}
 					}
 
 					

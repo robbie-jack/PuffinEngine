@@ -22,21 +22,30 @@ namespace puffin::scene
 		void physics_update(const double delta_time) override;
 		void end_play() override;
 
-		const TransformComponent2D& get_transform() const;
+		bool has_transform_2d() const override;
+		const TransformComponent2D& transform_2d() const override;
+		TransformComponent2D& transform_2d() override;
+
+		const TransformComponent2D& transform() const;
+		TransformComponent2D& transform();
 
 #ifdef PFN_DOUBLE_PRECISION
 		[[nodiscard]] const Vector2d& position() const;
-		void set_position(const Vector2d& position) const;
+		[[nodiscard]] Vector2d& position();
+		void set_position(const Vector2d& position);
 #else
 		[[nodiscard]] const Vector2f& position() const;
-		void set_position(const Vector2f& position) const;
+		[[nodiscard]] Vector2f& position();
+		void set_position(const Vector2f& position);
 #endif
 
 		[[nodiscard]] const float& rotation() const;
-		void set_rotation(const float& rotation) const;
+		[[nodiscard]] float& rotation();
+		void set_rotation(const float& rotation);
 
 		[[nodiscard]] const Vector2f& scale() const;
-		void set_scale(const Vector2f& scale) const;
+		[[nodiscard]] Vector2f& scale();
+		void set_scale(const Vector2f& scale);
 
 	protected:
 
