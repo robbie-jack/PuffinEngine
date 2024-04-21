@@ -92,15 +92,4 @@ namespace puffin::scene
 
 		remove_child_id(id);
 	}
-
-	template <typename T>
-	T& Node::add_child()
-	{
-		T& child = m_scene_graph->add_node<T>(gInvalidID, m_node_id);
-		auto* node_ptr = static_cast<Node*>(*child);
-
-		m_child_ids.push_back(node_ptr->id());
-
-		return child;
-	}
 }

@@ -59,6 +59,7 @@ namespace puffin::scene
 		[[nodiscard]] entt::entity entity() const { return m_entity; }
 
 		[[nodiscard]] const std::string& name() const { return m_name; }
+		[[nodiscard]] std::string& name() { return m_name; }
 		void set_name(const std::string& name) { m_name = name; }
 
 		[[nodiscard]] bool should_update() const { return m_should_update; }
@@ -101,9 +102,6 @@ namespace puffin::scene
 		void get_children(std::vector<Node*>& children) const;
 		void get_child_ids(std::vector<PuffinID>& child_ids) const;
 		[[nodiscard]] Node* get_child(PuffinID id) const;
-
-		template<typename T>
-		T& add_child();
 
 		void remove_child(PuffinID id);
 

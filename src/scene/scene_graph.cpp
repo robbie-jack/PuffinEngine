@@ -81,13 +81,6 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraph::register_default_nodes()
-	{
-		register_node_type<Node>();
-		register_node_type<TransformNode2D>();
-		register_node_type<TransformNode3D>();
-	}
-
 	void SceneGraph::update_global_transforms()
 	{
 		auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();

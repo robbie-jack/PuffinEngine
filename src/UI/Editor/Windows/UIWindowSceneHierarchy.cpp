@@ -25,54 +25,13 @@ namespace puffin
 				ImVec2 listBoxSize = ImGui::GetWindowSize();
 				listBoxSize.y -= 75.0f;
 
-				ImGui::Text("Entities"); ImGui::SameLine(ImGui::GetWindowWidth() * .5f); ImGui::Text("ID");
+				ImGui::Text("Nodes"); ImGui::SameLine(ImGui::GetWindowWidth() * .5f); ImGui::Text("ID");
 
-				if (ImGui::BeginListBox("##EntityList", listBoxSize))
+				if (ImGui::BeginListBox("##NodeList", listBoxSize))
 				{
 					constexpr ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
-
-					//const auto entityView = registry->view<const SceneObjectComponent>();
-
-					//for (auto [entity, object] : entityView.each())
-					//{
-					//	ImGuiTreeNodeFlags treeFlags = baseFlags;
-					//	constexpr bool hasChild = false;
-
-					//	// Simple test to show leaf and branch nodes
-					//	/*if (entity == 1 || entity == 2)
-					//		has_child = true;*/
-
-					//	// Set Selected Flag if entity equals selectedEntity
-					//	if (mSelectedEntity == object.id)
-					//		treeFlags |= ImGuiTreeNodeFlags_Selected;
-
-					//	// Display Entity as Leaf node if it doesn't have any children
-					//	if constexpr (!hasChild)
-					//		treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-
-					//	bool nodeOpen = false;
-
-					//	nodeOpen = ImGui::TreeNodeEx(object.name.empty() ? "Empty" : object.name.c_str(), treeFlags);
-
-					//	// Set Selected Entity when node is clicked
-					//	if (ImGui::IsItemClicked())
-					//	{
-					//		mSelectedEntity = object.id;
-					//		mEntityChanged = true;
-					//	}
-
-					//	// Display Entity ID on same line as name
-					//	ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
-					//	ImGui::Text(std::to_string(object.id).c_str());
-
-					//	if constexpr (hasChild && nodeOpen)
-					//	{
-					//		ImGui::Text("No Child Entities");
-					//		ImGui::TreePop();
-					//	}
-					//}
 
 					for (auto id : m_scene_graph->get_root_node_ids())
 					{

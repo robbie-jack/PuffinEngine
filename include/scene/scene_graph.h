@@ -114,16 +114,6 @@ namespace puffin::scene
 		SceneGraph(const std::shared_ptr<core::Engine>& engine);
 
 		template<typename T>
-		void register_node_type()
-		{
-			const char* type_name = typeid(T).name();
-
-			assert(m_node_arrays.find(type_name) == m_node_arrays.end() && "SceneGraph::register_node_type() - Registering node type more than once");
-
-			m_node_arrays.insert({ type_name, static_cast<INodeArray*>(new NodeArray<T>()) });
-		}
-
-		template<typename T>
 		T& add_node()
 		{
 			return add_node_internal<T>();
@@ -181,8 +171,6 @@ namespace puffin::scene
 		void physics_update();
 		void end_play();
 
-		void register_default_nodes();
-
 	private:
 
 		std::unordered_map<PuffinID, const char*> m_id_to_type;
@@ -211,7 +199,7 @@ namespace puffin::scene
 
 			if (m_node_arrays.find(type_name) == m_node_arrays.end())
 			{
-				register_node_type<T>();
+				add_node_array<T>();
 			}
 
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node_internal(PuffinID, PuffinID) - Node type not registered before use");
@@ -268,6 +256,16 @@ namespace puffin::scene
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::get_array() - Node type not registered before use");
 
 			return static_cast<NodeArray<T>*>(m_node_arrays.at(type_name));
+		}
+
+		template<typename T>
+		void add_node_array()
+		{
+			const char* type_name = typeid(T).name();
+
+			assert(m_node_arrays.find(type_name) == m_node_arrays.end() && "SceneGraph::add_node_array() - Registering node type more than once");
+
+			m_node_arrays.insert({ type_name, static_cast<INodeArray*>(new NodeArray<T>()) });
 		}
 
 		INodeArray* get_array(const char* type_name)

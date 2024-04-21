@@ -413,7 +413,7 @@ namespace puffin::core
 
 		const auto scene_graph = getSystem<scene::SceneGraph>();
 
-		auto house_node = scene_graph->add_node<rendering::MeshNode>();
+		auto& house_node = scene_graph->add_node<rendering::MeshNode>();
 		house_node.set_name("House");
 		house_node.set_position({ 2.0f, 0.0f, 0.0f });
 		house_node.set_mesh_asset_id(meshId1);
@@ -425,111 +425,48 @@ namespace puffin::core
 		sphere.set_mesh_asset_id(meshId2);
 		sphere.set_mat_asset_id(materialInstId1);*/
 
-		auto cube_1 = scene_graph->add_node<rendering::MeshNode>();
-		cube_1.set_name("Cube_1");
+		auto& cube_1 = scene_graph->add_node<rendering::MeshNode>();
+		cube_1.name() = "Cube_1";
 		cube_1.set_position({ 0.0f });
 		cube_1.set_mesh_asset_id(meshId3);
 		cube_1.set_mat_asset_id(materialInstId1);
 
-		auto cube_2 = scene_graph->add_node<rendering::MeshNode>();
+		auto& cube_2 = scene_graph->add_node<rendering::MeshNode>();
 		cube_2.set_name("Cube_2");
 		cube_2.set_position({ -1.75f, -5.0f, 0.0f });
 		cube_2.set_mesh_asset_id(meshId3);
 		cube_2.set_mat_asset_id(materialInstId1);
 
-		auto plane = scene_graph->add_node<rendering::MeshNode>();
+		auto& plane = scene_graph->add_node<rendering::MeshNode>();
 		plane.set_name("Plane");
 		plane.set_position({ 0.0f, -10.0f, 0.0f });
 		plane.set_scale({ 50.0f, 1.0f, 50.0f });
 		plane.set_mesh_asset_id(meshId3);
 		plane.set_mat_asset_id(materialInstId1);
 
-		auto dir_light = scene_graph->add_node<rendering::LightNode3D>();
+		auto& dir_light = scene_graph->add_node<rendering::LightNode3D>();
 		dir_light.set_name("Directional Light");
 		dir_light.set_position({ 0.0f, 10.0f, 0.0f });
 		dir_light.set_color({ .01f });
 		dir_light.set_light_type(rendering::LightType::Directional);
 		dir_light.set_ambient_intensity(0.f);
 
-		auto dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light.id());
+		auto& dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light.id());
 		dir_light_mesh.set_scale({ 0.25f });
 		dir_light_mesh.set_mesh_asset_id(meshId3);
 		dir_light_mesh.set_mat_asset_id(materialInstId1);
 
-		auto spot_light = scene_graph->add_node<rendering::LightNode3D>();
+		auto& spot_light = scene_graph->add_node<rendering::LightNode3D>();
 		spot_light.set_name("Spot Light");
 		spot_light.set_position({ 10.0f, 5.0f, 0.0f });
 		spot_light.set_light_type(rendering::LightType::Spot);
 		spot_light.set_direction({ -0.5f, -0.5f, 0.f });
 		spot_light.set_ambient_intensity(0.f);
 
-		//const auto enttSubsystem = getSystem<ecs::EnTTSubsystem>();
-		//const auto registry = enttSubsystem->registry();
-
-		//constexpr int numEntities = 7;
-		//std::vector<entt::entity> entities;
-		//entities.reserve(numEntities);
-
-		//const std::string names[numEntities] = { "House", "Sphere", "Falling Cube", "Dir Light", "Static Cube", "Plane", "Spot Light" };
-		//const Vector3d positions[numEntities] =
-		//{
-		//	Vector3d(2.0, 0.0, 0.0),
-		//	Vector3d(-1.0, 0.0, 0.0),
-		//	Vector3d(0.0),
-		//	Vector3d(-5.0, 0.0, 0.0),
-		//	Vector3d(-1.75, -5.0, 0.0),
-		//	Vector3d(0.0, -10.0, 0.0),
-		//	Vector3d(10.0, 5.0, 0.0)
-		//};
-
-		//const maths::Quat orientations[numEntities] =
-		//{
-		//	maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
-		//	maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
-		//	maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
-		//	maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
-		//	maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
-		//	maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
-		//	maths::Quat(angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0))),
-		//};
-
-		//const Vector3f scales[numEntities] =
-		//{
-		//	Vector3f(1.0f),
-		//	Vector3f(1.0f),
-		//	Vector3f(1.0f),
-		//	Vector3f(.25f),
-		//	Vector3f(1.0f),
-		//	Vector3f(50.0f, 1.0f, 50.0f),
-		//	Vector3f(0.25f)
-		//};
-
-		//const PuffinID meshIDs[numEntities] = { meshId1, meshId3, meshId3, meshId3, meshId3, meshId3, meshId3 };
-		//const PuffinID materialIDs[numEntities] = { materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1, materialInstId1 };
-
-		//// Add Default Scene Components to ECS
-		//for (int i = 0; i < numEntities; i++)
-		//{
-		//	const auto entity = enttSubsystem->createEntity(names[i]);
-
-		//	registry->emplace<TransformComponent3D>(entity, positions[i], orientations[i], scales[i]);
-		//	registry->emplace<rendering::MeshComponent>(entity, meshIDs[i], materialIDs[i]);
-
-		//	entities.push_back(entity);
-		//}
-
-		//// Setup Light Component
-
-		//auto& dirLight = registry->emplace<rendering::LightComponent>(entities[3]);
-		//dirLight.color = Vector3f(0.f, 0.f, 0.f);
-		//dirLight.type = rendering::LightType::Directional;
-		//dirLight.ambientIntensity = 0.f;
-
-		//auto& spotLight = registry->emplace<rendering::LightComponent>(entities[6]);
-		//spotLight.color = Vector3f(1.f, 1.f, 1.f);
-		//spotLight.type = rendering::LightType::Spot;
-		//spotLight.direction = Vector3f(-0.5f, -0.5f, 0.0f);
-		//spotLight.ambientIntensity = 0.f;
+		auto& spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light.id());
+		spot_light_mesh.set_scale({ 0.25f });
+		spot_light_mesh.set_mesh_asset_id(meshId3);
+		spot_light_mesh.set_mat_asset_id(materialInstId1);
 
 		//auto& shadow = registry->emplace<rendering::ShadowCasterComponent>(entities[6]);
 		//shadow.width = 4096;
