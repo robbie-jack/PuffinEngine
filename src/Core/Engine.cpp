@@ -52,6 +52,8 @@ namespace puffin::core
 		auto sceneSubsystem = registerSystem<io::SceneSubsystem>();
 		auto scene_graph = registerSystem<scene::SceneGraph>();
 
+		scene_graph->register_default_node_types();
+
 		// Load Project File
 		LoadProject(projectPath, mProjectFile);
 

@@ -8,6 +8,8 @@
 #include "Components/TransformComponent3D.h"
 #include "Types/UUID.h"
 
+#include "nlohmann/json.hpp"
+
 namespace puffin
 {
 	struct TransformComponent2D;
@@ -54,6 +56,9 @@ namespace puffin::scene
 		const TransformComponent3D& global_transform_3d() const;
 		virtual const TransformComponent3D& transform_3d() const { return TransformComponent3D(); }
 		virtual TransformComponent3D& transform_3d() { return TransformComponent3D(); }
+
+		virtual void serialize(json& json) const;
+		virtual void deserialize(const json& json);
 
 		[[nodiscard]] PuffinID id() const { return m_node_id; }
 		[[nodiscard]] entt::entity entity() const { return m_entity; }
@@ -141,6 +146,5 @@ namespace puffin::scene
 		std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
 		std::shared_ptr<ecs::EnTTSubsystem> m_entt_subsystem = nullptr;
 		std::shared_ptr<entt::registry> m_registry = nullptr;
-
 	};
 }

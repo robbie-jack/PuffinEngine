@@ -35,6 +35,16 @@ namespace puffin::scene
 		return TransformComponent3D();
 	}
 
+	void Node::serialize(json& json) const
+	{
+		
+	}
+
+	void Node::deserialize(const json& json)
+	{
+		
+	}
+
 	void Node::queue_destroy() const
 	{
 		m_scene_graph->queue_destroy_node(m_node_id);

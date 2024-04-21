@@ -4,6 +4,8 @@
 #include "scene/transform_node_3d.h"
 #include "Core/Engine.h"
 #include "ECS/EnTTSubsystem.h"
+#include "Rendering/light_node_3d.h"
+#include "Rendering/mesh_node.h"
 
 namespace puffin::scene
 {
@@ -49,6 +51,15 @@ namespace puffin::scene
 			if (const auto node = get_node_ptr(id); node)
 				node->end_play();
 		}
+	}
+
+	void SceneGraph::register_default_node_types()
+	{
+		register_node_type<Node>();
+		register_node_type<TransformNode2D>();
+		register_node_type<TransformNode3D>();
+		register_node_type<rendering::MeshNode>();
+		register_node_type<rendering::LightNode3D>();
 	}
 
 	void SceneGraph::update_scene_graph()

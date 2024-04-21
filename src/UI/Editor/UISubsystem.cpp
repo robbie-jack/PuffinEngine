@@ -137,7 +137,7 @@ namespace puffin::ui
 			if (mWindowEntityProperties->sceneChanged() && mEngine->playState() == core::PlayState::Stopped)
 			{
 				const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
-				sceneData->updateData(mEngine->getSystem<ecs::EnTTSubsystem>());
+				sceneData->updateData(mEngine->getSystem<ecs::EnTTSubsystem>(), mEngine->getSystem<scene::SceneGraph>());
 			}
 
 			ImGui_ImplVulkan_NewFrame();
@@ -252,9 +252,10 @@ namespace puffin::ui
 
 			if (ImGui::Button("Save"))
 			{
-				const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
+				const auto entt_subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
+				const auto scene_graph = mEngine->getSystem<scene::SceneGraph>();
 
-				sceneData->updateData(enttSubsystem);
+				sceneData->updateData(entt_subsystem, scene_graph);
 				sceneData->save();
 
 				ImGui::CloseCurrentPopup();
@@ -322,9 +323,10 @@ namespace puffin::ui
 				{
 					const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
 
-					const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
+					const auto entt_subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
+					const auto scene_graph = mEngine->getSystem<scene::SceneGraph>();
 
-					sceneData->updateData(enttSubsystem);
+					sceneData->updateData(entt_subsystem, scene_graph);
 					sceneData->save();
 				}
 
