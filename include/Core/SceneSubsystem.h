@@ -125,7 +125,7 @@ namespace puffin::io
 	public:
 
 		SceneData() = default;
-		SceneData(const fs::path& path) : m_path(path) {};
+		SceneData(const fs::path& path) : m_path(path) {}
 
 		// Initialize ECS & SceneGraph with loaded data
 		void init(const std::shared_ptr<ecs::EnTTSubsystem>& entt_subsystem, const std::shared_ptr<scene::SceneGraph>& scene_graph)
@@ -163,7 +163,7 @@ namespace puffin::io
 			}
 		}
 
-		void updateData(const std::shared_ptr<ecs::EnTTSubsystem>& entt_subsystem, const std::shared_ptr<scene::SceneGraph>& scene_graph)
+		void update_data(const std::shared_ptr<ecs::EnTTSubsystem>& entt_subsystem, const std::shared_ptr<scene::SceneGraph>& scene_graph)
 		{
 			clear();
 
@@ -181,7 +181,12 @@ namespace puffin::io
 				compArray->update(entt_subsystem);
 			}
 
+			for (auto id : scene_graph->get_root_node_ids())
+			{
+				m_root_node_ids.push_back(id);
 
+				add_node_id_and_child_ids(scene_graph, id);
+			}
 
 			m_has_data = true;
 		}
@@ -195,11 +200,18 @@ namespace puffin::io
 				compArray->clear();
 			}
 
+			m_node_ids.clear();
+			m_node_id_to_type.clear();
+			m_node_id_to_json.clear();
+
+			m_root_node_ids.clear();
+			m_child_node_ids.clear();
+
 			m_has_data = false;
 		}
 
 		template<typename CompT>
-		void registerComponent()
+		void register_component()
 		{
 			const char* typeName = typeid(CompT).name();
 
@@ -217,13 +229,19 @@ namespace puffin::io
 			// Write scene data to json file
 			
 			json data;
-			data["IDs"] = m_entity_ids;
+			data["entity_ids"] = m_entity_ids;
 
-			for (auto& [fst, snd] : m_component_data)
+			for (auto& [type, comp_array] : m_component_data)
 			{
-				if (snd->size() > 0)
-					data[fst] = snd->save_to_json();
+				if (comp_array->size() > 0)
+					data[type] = comp_array->save_to_json();
 			}
+
+			data["root_node_ids"] = m_root_node_ids;
+			data["node_ids"] = m_node_ids;
+			data["node_id_to_type"] = m_node_id_to_type;
+			data["node_id_to_json"] = m_node_id_to_json;
+			data["child_node_ids"] = m_child_node_ids;
 
 			if (!fs::exists(m_path.parent_path()))
 			{
@@ -254,26 +272,32 @@ namespace puffin::io
 
 			is.close();
 
-			m_entity_ids = data.at("IDs").get<std::vector<PuffinID>>();
+			m_entity_ids = data.at("entity_ids").get<std::vector<PuffinID>>();
 
-			for (auto& [type, compArray] : m_component_data)
+			for (auto& [type, comp_array] : m_component_data)
 			{
 				if (data.contains(type))
 				{
-					compArray->load_from_json(data.at(type));
+					comp_array->load_from_json(data.at(type));
 				}
 			}
+
+			m_root_node_ids = data.at("root_node_ids").get<std::vector<PuffinID>>();
+			m_node_ids = data.at("node_ids").get<std::vector<PuffinID>>();
+			m_node_id_to_type = data.at("node_id_to_type").get<std::unordered_map<PuffinID, std::string>>();
+			m_node_id_to_json = data.at("node_id_to_json").get<std::unordered_map<PuffinID, json>>();
+			m_child_node_ids = data.at("child_node_ids").get<std::unordered_map<PuffinID, std::vector<PuffinID>>>();
 
 			m_has_data = true;
 		}
 
-		void loadAndInit(const std::shared_ptr<ecs::EnTTSubsystem>& entt_subsystem, const std::shared_ptr<scene::SceneGraph>& scene_graph)
+		void load_and_init(const std::shared_ptr<ecs::EnTTSubsystem>& entt_subsystem, const std::shared_ptr<scene::SceneGraph>& scene_graph)
 		{
 			load();
 			init(entt_subsystem, scene_graph);
 		}
 
-		void setPath(const fs::path& path)
+		void set_path(const fs::path& path)
 		{
 			m_path = path;
 		}
@@ -291,12 +315,35 @@ namespace puffin::io
 		std::vector<PuffinID> m_entity_ids;
 		std::unordered_map<std::string, std::shared_ptr<IComponentDataArray>> m_component_data; // Map of component data arrays
 
+		std::vector<PuffinID> m_root_node_ids;
+
 		std::vector<PuffinID> m_node_ids;
 		std::unordered_map<PuffinID, std::string> m_node_id_to_type;
 		std::unordered_map<PuffinID, json> m_node_id_to_json;
-
-		std::vector<PuffinID> m_root_node_ids;
 		std::unordered_map<PuffinID, std::vector<PuffinID>> m_child_node_ids;
+
+		void add_node_id_and_child_ids(const std::shared_ptr<scene::SceneGraph>& scene_graph, PuffinID id)
+		{
+			auto node = scene_graph->get_node_ptr(id);
+
+			json json;
+			node->serialize(json);
+
+			std::vector<PuffinID> child_ids;
+			node->get_child_ids(child_ids);
+
+			m_node_ids.push_back(id);
+			m_node_id_to_type.insert({ id, scene_graph->get_node_type_name(id) });
+			m_node_id_to_json.insert({ id, json });
+
+			if (!child_ids.empty())
+				m_child_node_ids.insert({ id, child_ids });
+
+			for (auto child_id : child_ids)
+			{
+				add_node_id_and_child_ids(scene_graph, child_id);
+			}
+		}
 
 	};
 
@@ -306,14 +353,14 @@ namespace puffin::io
 
 		SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			//mEngine->registerCallback(core::ExecutionStage::Startup, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
+			mEngine->registerCallback(core::ExecutionStage::Startup, [&] { load_and_init(); }, "SceneSubsystem: LoadAndInit", 200);
 			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "SceneSubsystem: BeginPlay", 0);
-			//mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { loadAndInit(); }, "SceneSubsystem: LoadAndInit", 200);
+			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { load_and_init(); }, "SceneSubsystem: LoadAndInit", 200);
 		}
 
 		~SceneSubsystem() override { mEngine = nullptr; }
 
-		void loadAndInit() const
+		void load_and_init() const
 		{
 			const auto entt_subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 			const auto scene_graph = mEngine->getSystem<scene::SceneGraph>();
@@ -327,7 +374,7 @@ namespace puffin::io
 			const auto entt_subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
 			const auto scene_graph = mEngine->getSystem<scene::SceneGraph>();
 
-			m_scene_data->updateData(entt_subsystem, scene_graph);
+			m_scene_data->update_data(entt_subsystem, scene_graph);
 		}
 
 		std::shared_ptr<SceneData> createScene(const fs::path& path)

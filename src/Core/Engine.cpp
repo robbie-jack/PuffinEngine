@@ -70,23 +70,23 @@ namespace puffin::core
 		auto sceneData = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / mProjectFile.defaultScenePath);
 
 		// Register Components to Scene Data Class
-		sceneData->registerComponent<TransformComponent2D>();
-		sceneData->registerComponent<TransformComponent3D>();
-		sceneData->registerComponent<rendering::MeshComponent>();
-		sceneData->registerComponent<rendering::LightComponent>();
-		sceneData->registerComponent<rendering::ShadowCasterComponent>();
-		sceneData->registerComponent<rendering::CameraComponent>();
-		sceneData->registerComponent<scripting::AngelScriptComponent>();
-		sceneData->registerComponent<rendering::ProceduralMeshComponent>();
-		sceneData->registerComponent<procedural::PlaneComponent>();
-		sceneData->registerComponent<procedural::TerrainComponent>();
-		sceneData->registerComponent<procedural::IcoSphereComponent>();
-		sceneData->registerComponent<physics::RigidbodyComponent2D>();
-		sceneData->registerComponent<physics::BoxComponent2D>();
-		sceneData->registerComponent<physics::CircleComponent2D>();
-		sceneData->registerComponent<physics::RigidbodyComponent3D>();
-		sceneData->registerComponent<physics::BoxComponent3D>();
-		sceneData->registerComponent<physics::SphereComponent3D>();
+		sceneData->register_component<TransformComponent2D>();
+		sceneData->register_component<TransformComponent3D>();
+		sceneData->register_component<rendering::MeshComponent>();
+		sceneData->register_component<rendering::LightComponent>();
+		sceneData->register_component<rendering::ShadowCasterComponent>();
+		sceneData->register_component<rendering::CameraComponent>();
+		sceneData->register_component<scripting::AngelScriptComponent>();
+		sceneData->register_component<rendering::ProceduralMeshComponent>();
+		sceneData->register_component<procedural::PlaneComponent>();
+		sceneData->register_component<procedural::TerrainComponent>();
+		sceneData->register_component<procedural::IcoSphereComponent>();
+		sceneData->register_component<physics::RigidbodyComponent2D>();
+		sceneData->register_component<physics::BoxComponent2D>();
+		sceneData->register_component<physics::CircleComponent2D>();
+		sceneData->register_component<physics::RigidbodyComponent3D>();
+		sceneData->register_component<physics::BoxComponent3D>();
+		sceneData->register_component<physics::SphereComponent3D>();
 
 		// Load Project Settings
 		LoadSettings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", mSettings);
@@ -112,17 +112,22 @@ namespace puffin::core
 		mLastTime = glfwGetTime(); // Time Count Started
 		mCurrentTime = mLastTime;
 
-		if (constexpr bool setupDefaultScene = true; setupDefaultScene)
+		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
 		{
+			auto entt_subsystem = getSystem<ecs::EnTTSubsystem>();
+			auto scene_graph = getSystem<scene::SceneGraph>();
+			auto scene_subsystem = getSystem<io::SceneSubsystem>();
+			auto sceneData = scene_subsystem->sceneData();
+
 			// Create Default Scene in code -- used when scene serialization is changed
 			defaultScene();
 			//physicsScene2D();
 			//physicsScene3D();
 			//proceduralScene();
 
-			//sceneData->updateData(enttSubsystem);
-			//sceneData->save();
-			//sceneData->clear();
+			sceneData->update_data(entt_subsystem, scene_graph);
+			sceneData->save();
+			sceneData->clear();
 		}
 	}
 

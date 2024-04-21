@@ -59,6 +59,12 @@ namespace puffin::scene
 
 		virtual Node* get_ptr(PuffinID id) = 0;
 
+		virtual void remove(PuffinID id) = 0;
+
+		virtual bool valid(PuffinID id) = 0;
+
+		virtual void clear() = 0;
+
 	};
 
 	template<typename T>
@@ -97,14 +103,19 @@ namespace puffin::scene
 			return nullptr;
 		}
 
-		void remove(PuffinID id)
+		void remove(PuffinID id) override
 		{
 			m_vector.erase(id);
 		}
 
-		bool valid(PuffinID id)
+		bool valid(PuffinID id) override
 		{
 			return m_vector.contains(id);
+		}
+
+		void clear() override
+		{
+			m_vector.clear();
 		}
 
 	private:
@@ -172,7 +183,12 @@ namespace puffin::scene
 
 		[[nodiscard]] Node* get_node_ptr(const PuffinID& id)
 		{
-			return get_array(m_id_to_type.at(id))->get_ptr(id);
+			return get_array(m_id_to_type.at(id).c_str())->get_ptr(id);
+		}
+
+		[[nodiscard]] const std::string& get_node_type_name(const PuffinID& id) const
+		{
+			return m_id_to_type.at(id);
 		}
 
 		[[nodiscard]] const TransformComponent2D& get_global_transform_2d(const PuffinID& id)
@@ -202,7 +218,7 @@ namespace puffin::scene
 
 	private:
 
-		std::unordered_map<PuffinID, const char*> m_id_to_type;
+		std::unordered_map<PuffinID, std::string> m_id_to_type;
 		std::vector<PuffinID> m_node_ids; // Vector of node id's, sorted by order methods are executed in
 		std::vector<PuffinID> m_root_node_ids; // Vector of nodes at root of scene graph
 		std::set<PuffinID> m_nodes_to_destroy;
@@ -215,6 +231,7 @@ namespace puffin::scene
 		std::unordered_map<std::string, INodeArray*> m_node_arrays;
 
 		void update_scene_graph();
+		void destroy_node(PuffinID id);
 		void add_id_and_child_ids(PuffinID id, std::vector<PuffinID>& node_ids);
 
 		void update_global_transforms();

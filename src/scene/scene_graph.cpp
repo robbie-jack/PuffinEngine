@@ -51,6 +51,19 @@ namespace puffin::scene
 			if (const auto node = get_node_ptr(id); node)
 				node->end_play();
 		}
+
+		m_node_ids.clear();
+		m_id_to_type.clear();
+		m_root_node_ids.clear();
+		m_nodes_to_destroy.clear();
+
+		m_global_transform_2ds.clear();
+		m_global_transform_3ds.clear();
+
+		for (auto [type, array]  : m_node_arrays)
+		{
+			array->clear();
+		}
 	}
 
 	void SceneGraph::register_default_node_types()
@@ -64,6 +77,23 @@ namespace puffin::scene
 
 	void SceneGraph::update_scene_graph()
 	{
+		if (!m_nodes_to_destroy.empty())
+		{
+			for (auto id : m_nodes_to_destroy)
+			{
+				destroy_node(id);
+			}
+
+			for (auto it = m_root_node_ids.end(); it != m_root_node_ids.begin(); --it)
+			{
+				if (m_nodes_to_destroy.count(*it) > 0)
+					m_root_node_ids.erase(it);
+			}
+
+			m_nodes_to_destroy.clear();
+			m_scene_graph_updated = true;
+		}
+
 		if (m_scene_graph_updated)
 		{
 			m_node_ids.clear();
@@ -75,6 +105,26 @@ namespace puffin::scene
 
 			m_scene_graph_updated = false;
 		}
+	}
+
+	void SceneGraph::destroy_node(PuffinID id)
+	{
+		std::vector<PuffinID> child_ids;
+
+		if (const auto node = get_node_ptr(id); node)
+		{
+			node->end_play();
+		}
+
+		get_array(m_id_to_type.at(id).c_str())->remove(id);
+
+		m_id_to_type.erase(id);
+
+		if (m_global_transform_2ds.contains(id))
+			m_global_transform_2ds.erase(id);
+
+		if (m_global_transform_3ds.contains(id))
+			m_global_transform_3ds.erase(id);
 	}
 
 	void SceneGraph::add_id_and_child_ids(PuffinID id, std::vector<PuffinID>& node_ids)

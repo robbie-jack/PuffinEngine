@@ -37,12 +37,12 @@ namespace puffin::scene
 
 	void Node::serialize(json& json) const
 	{
-		
+		json["name"] = m_name;
 	}
 
 	void Node::deserialize(const json& json)
 	{
-		
+		m_name = json.at("name");
 	}
 
 	void Node::queue_destroy() const
