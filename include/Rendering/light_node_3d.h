@@ -6,7 +6,7 @@ namespace puffin::rendering
 {
 	enum class LightType;
 
-	class LightNode3D : public scene::TransformNode3D
+	class LightNode3D : public TransformNode3D
 	{
 	public:
 

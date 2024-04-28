@@ -9,7 +9,7 @@ namespace puffin
 	struct TransformComponent3D;
 }
 
-namespace puffin::scene
+namespace puffin
 {
 	class TransformNode3D : public Node
 	{

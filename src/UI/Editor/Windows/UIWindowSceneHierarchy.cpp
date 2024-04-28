@@ -1,6 +1,7 @@
 #include "UI/Editor/Windows/UIWindowSceneHierarchy.h"
 
 #include "scene/scene_graph.h"
+#include "scene/node.h"
 
 namespace puffin
 {
@@ -136,7 +137,7 @@ namespace puffin
 			if (!has_child)
 				tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-			const bool nodeOpen = ImGui::TreeNodeEx(node->name().empty() ? "Empty" : node->name().c_str(), tree_flags);
+			const bool node_open = ImGui::TreeNodeEx(node->name().empty() ? "Empty" : node->name().c_str(), tree_flags);
 
 			// Set Selected Entity when node is clicked
 			if (ImGui::IsItemClicked())
@@ -149,7 +150,7 @@ namespace puffin
 			ImGui::SameLine(ImGui::GetWindowWidth() * .5f);
 			ImGui::Text(std::to_string(id).c_str());
 
-			if (has_child && nodeOpen)
+			if (has_child && node_open)
 			{
 				for (auto id : child_ids)
 				{

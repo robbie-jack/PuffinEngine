@@ -4,7 +4,7 @@
 #include "ECS/EnTTSubsystem.h"
 #include "scene/transform_node_2d.h"
 
-namespace puffin::scene
+namespace puffin
 {
 	TransformNode3D::TransformNode3D(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : Node(engine, id)
 	{

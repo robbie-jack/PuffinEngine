@@ -9,9 +9,10 @@
 
 namespace puffin
 {
+	class Node;
+
 	namespace scene
 	{
-		class Node;
 		class SceneGraph;
 	}
 
@@ -71,8 +72,8 @@ namespace puffin::ui
 		std::shared_ptr<ecs::EnTTSubsystem> mEnTTSubsystem = nullptr;
 		std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
 
-		void draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, scene::Node* node);
-		void draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, scene::Node* node);
+		void draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, Node* node);
+		void draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, Node* node);
 
 		void drawMeshUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::MeshComponent& mesh);
 		void drawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light);

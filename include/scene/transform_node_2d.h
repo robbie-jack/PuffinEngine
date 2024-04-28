@@ -8,7 +8,7 @@ namespace puffin
 	struct TransformComponent2D;
 }
 
-namespace puffin::scene
+namespace puffin
 {
 	class TransformNode2D : public Node
 	{

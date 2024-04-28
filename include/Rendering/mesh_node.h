@@ -4,7 +4,7 @@
 
 namespace puffin::rendering
 {
-	class MeshNode : public scene::TransformNode3D
+	class MeshNode : public TransformNode3D
 	{
 	public:
 

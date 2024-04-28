@@ -13,6 +13,7 @@
 #include "MathHelpers.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "scene/scene_graph.h"
+#include "scene/node.h"
 
 #include <string>
 
@@ -213,7 +214,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, scene::Node* node)
+		void UIWindowEntityProperties::draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, Node* node)
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
@@ -271,7 +272,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, scene::Node* node)
+		void UIWindowEntityProperties::draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, Node* node)
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{

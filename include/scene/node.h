@@ -12,26 +12,23 @@
 
 namespace puffin
 {
-	struct TransformComponent2D;
-	struct TransformComponent3D;
-}
+	namespace scene
+	{
+		class SceneGraph;
+	}
 
-namespace puffin
-{
+	namespace core
+	{
+		class Engine;
+	}
+
 	namespace ecs
 	{
 		class EnTTSubsystem;
 	}
-}
 
-namespace puffin::core
-{
-	class Engine;
-}
-
-namespace puffin::scene
-{
-	class SceneGraph;
+	struct TransformComponent2D;
+	struct TransformComponent3D;
 
 	class Node
 	{
