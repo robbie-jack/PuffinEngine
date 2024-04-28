@@ -1,4 +1,9 @@
 #pragma once
+#include "Physics/BodyType.h"
+#include "puffin/components/transform_component_3d.h"
+#include "puffin/components/physics/3d/rigidbody_component_3d.h"
+#include "puffin/components/physics/3d/shape_components_3d.h"
+#include "puffin/components/physics/3d/velocity_component_3d.h"
 
 #if PFN_JOLT_PHYSICS
 
@@ -19,10 +24,6 @@
 #include "Jolt/Physics/Body/MotionType.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 
-#include "Components/Physics/3D/RigidbodyComponent3D.h"
-#include "Components/Physics/3D/ShapeComponents3D.h"
-#include "Components/Physics/3D/VelocityComponent3D.h"
-#include "Components/TransformComponent3D.h"
 #include "puffin/core/engine.h"
 #include "puffin/core/system.h"
 #include "Physics/Box2D/Box2DPhysicsSystem.h"

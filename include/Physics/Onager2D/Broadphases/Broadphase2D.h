@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
 #include "Physics/Onager2D/Colliders/Collider2D.h"
 #include "puffin/types/packed_array.h"
 
 #include <memory>
 
+#include "puffin/components/physics/2d/rigidbody_component_2d.h"
 #include "puffin/ecs/entt_subsystem.h"
 
 namespace puffin::physics

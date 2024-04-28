@@ -10,7 +10,6 @@
 #include "angelscript/angelscript.h"
 
 #include "puffin/core/system.h"
-#include "Components/Scripting/AngelScriptComponent.h"
 #include "puffin/core/engine.h"
 #include "puffin/input/input_event.h""
 #include "Physics/CollisionEvent.h"

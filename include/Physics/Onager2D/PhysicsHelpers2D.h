@@ -6,13 +6,12 @@
 #include "Physics/Onager2D/Colliders/BoxCollider2D.h"
 #include "Physics/Onager2D/Colliders/CircleCollider2D.h"
 
-#include "Components/Physics/2D/RigidbodyComponent2D.h"
-#include "Components/Physics/2D/ShapeComponents2D.h"
-
 #include "puffin/math_helpers.h"
 
 #include <cmath>
 #include <limits>
+
+#include "puffin/components/physics/2d/rigidbody_component_2d.h"
 
 namespace puffin::physics
 {

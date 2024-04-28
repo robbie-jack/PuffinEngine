@@ -98,19 +98,19 @@ set(HEADERS
 	${HEADER_DIR}/puffin/audio/audio_subsystem.h
 	${HEADER_DIR}/puffin/audio/mini_audio_subsystem.h
 	# Components
-	${HEADER_DIR}/Components/TransformComponent2D.h
-	${HEADER_DIR}/Components/TransformComponent3D.h
-	${HEADER_DIR}/Components/Rendering/CameraComponent.h
-	${HEADER_DIR}/Components/Rendering/LightComponent.h
-	${HEADER_DIR}/Components/Rendering/MeshComponent.h
-	${HEADER_DIR}/Components/Physics/2D/VelocityComponent2D.h
-	${HEADER_DIR}/Components/Physics/2D/RigidbodyComponent2D.h
-	${HEADER_DIR}/Components/Physics/2D/ShapeComponents2D.h
-	${HEADER_DIR}/Components/Physics/3D/VelocityComponent3D.h
-	${HEADER_DIR}/Components/Physics/3D/RigidbodyComponent3D.h
-	${HEADER_DIR}/Components/Physics/3D/ShapeComponents3D.h
-	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.h
-	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.h
+	${HEADER_DIR}/puffin/components/transform_component_2d.h
+	${HEADER_DIR}/puffin/components/transform_component_3d.h
+	${HEADER_DIR}/puffin/components/physics/2d/rigidbody_component_2d.h
+	${HEADER_DIR}/puffin/components/physics/2d/shape_components_2d.h
+	${HEADER_DIR}/puffin/components/physics/2d/velocity_component_2d.h
+	${HEADER_DIR}/puffin/components/physics/3d/rigidbody_component_3d.h
+	${HEADER_DIR}/puffin/components/physics/3d/shape_components_3d.h
+	${HEADER_DIR}/puffin/components/physics/3d/velocity_component_3d.h
+	${HEADER_DIR}/puffin/components/procedural/procedural_mesh_component.h
+	${HEADER_DIR}/puffin/components/rendering/camera_component.h
+	${HEADER_DIR}/puffin/components/rendering/light_component.h
+	${HEADER_DIR}/puffin/components/rendering/mesh_component.h
+	${HEADER_DIR}/puffin/components/scripting/angelscript_component.h
 	# ECS
 	${HEADER_DIR}/puffin/ecs/entt_subsystem.h
 	# Core

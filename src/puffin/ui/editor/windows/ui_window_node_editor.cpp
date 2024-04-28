@@ -1,21 +1,28 @@
 #include "puffin/ui/editor/windows/ui_window_node_editor.h"
 
-#include "Components/Physics/2D/RigidbodyComponent2D.h"
-#include "Components/Physics/2D/ShapeComponents2D.h"
-#include "Components/Procedural/ProceduralMeshComponent.h"
-#include "Components/Rendering/LightComponent.h"
-#include "Components/Rendering/MeshComponent.h"
-#include "Components/Scripting/AngelScriptComponent.h"
-#include "Components/TransformComponent2D.h"
-#include "Components/TransformComponent3D.h"
 #include "puffin/core/engine.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/math_helpers.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "puffin/scene/scene_graph.h"
 #include "puffin/nodes/node.h"
+#include "puffin/components/transform_component_2d.h"
+#include "puffin/components/transform_component_3d.h"
+#include "puffin/components/rendering/mesh_component.h"
+#include "puffin/components/rendering/light_component.h"
+#include "puffin/components/rendering/camera_component.h"
+#include "puffin/components/physics/2d/rigidbody_component_2d.h"
+#include "puffin/components/physics/2d/shape_components_2d.h"
+#include "puffin/components/physics/2d/velocity_component_2d.h"
+#include "puffin/components/physics/3d/rigidbody_component_3d.h"
+#include "puffin/components/physics/3d/shape_components_3d.h"
+#include "puffin/components/physics/3d/velocity_component_3d.h"
+#include "puffin/components/scripting/angelscript_component.h"
+#include "puffin/components/procedural/procedural_mesh_component.h"
 
 #include <string>
+
+#include "Physics/BodyType.h"
 
 namespace puffin
 {

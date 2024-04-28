@@ -11,7 +11,6 @@
 
 #include "vk_mem_alloc.hpp"
 
-#include "Components/Rendering/CameraComponent.h"
 #include "puffin/core/engine.h"
 #include "puffin/core/system.h"
 #include "puffin/ecs/entt_subsystem.h"
@@ -25,6 +24,7 @@
 #include "VKPipeline.h"
 #include "VKTypes.h"
 #include "VKUnifiedGeometryBuffer.h"
+#include "puffin/components/rendering/camera_component.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;

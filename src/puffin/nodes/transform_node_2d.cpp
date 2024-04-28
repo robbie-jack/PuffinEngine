@@ -2,7 +2,7 @@
 
 #include "puffin/core/engine.h"
 #include "puffin/ecs/entt_subsystem.h"
-#include "Components/TransformComponent2D.h"
+#include "puffin/components/transform_component_2d.h"
 
 namespace puffin::core
 {

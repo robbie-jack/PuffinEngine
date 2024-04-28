@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "Components/Scripting/AngelScriptComponent.h"
+#include "puffin/components/scripting/angelscript_component.h"
 #include "puffin/types/uuid.h"
 
 class asIScriptEngine;

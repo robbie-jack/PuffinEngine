@@ -1,5 +1,6 @@
 #include "puffin/nodes/rendering/light_node_3d.h"
-#include "Components/Rendering/LightComponent.h"
+
+#include "puffin/components/rendering/light_component.h"
 
 namespace puffin::rendering
 {
