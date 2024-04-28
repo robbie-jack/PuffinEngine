@@ -2,7 +2,7 @@
 
 #include "puffin/core/engine.h"
 #include "Rendering/Vulkan/VKRenderSystem.h"
-#include "Physics/Jolt/JoltPhysicsSystem.h"
+#include "puffin/physics/jolt/jolt_physics_system.h"
 #include "puffin/scripting/angelscript/angelscript_system.h"
 
 int main()

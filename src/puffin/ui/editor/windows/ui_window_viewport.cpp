@@ -2,7 +2,7 @@
 
 #include "imgui.h"
 #include "puffin/core/engine.h"
-#include "Components/TransformComponent3D.h"
+#include "puffin/components/transform_component_2d.h"
 #include "puffin/manipulation_gizmo.h"
 
 namespace puffin

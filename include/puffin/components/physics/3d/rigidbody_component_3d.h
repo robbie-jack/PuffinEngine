@@ -1,7 +1,7 @@
 #pragma once
 
-#include "puffin/types/Vector.h"
-#include "Physics/BodyType.h"
+#include "puffin/types/vector.h"
+#include "puffin/physics/body_type.h"
 
 namespace puffin::physics
 {

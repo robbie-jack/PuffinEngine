@@ -1,5 +1,7 @@
 #include "puffin/ui/editor/windows/ui_window_node_editor.h"
 
+#include <string>
+
 #include "puffin/core/engine.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/math_helpers.h"
@@ -19,10 +21,6 @@
 #include "puffin/components/physics/3d/velocity_component_3d.h"
 #include "puffin/components/scripting/angelscript_component.h"
 #include "puffin/components/procedural/procedural_mesh_component.h"
-
-#include <string>
-
-#include "Physics/BodyType.h"
 
 namespace puffin
 {

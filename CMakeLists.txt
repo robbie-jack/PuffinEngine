@@ -131,27 +131,27 @@ set(HEADERS
 	${HEADER_DIR}/puffin/nodes/rendering/light_node_3d.h
 	${HEADER_DIR}/puffin/nodes/rendering/mesh_node.h
 	# Physics
-	${HEADER_DIR}/Physics/BodyType.h
-	${HEADER_DIR}/Physics/CollisionEvent.h
-	${HEADER_DIR}/Physics/PhysicsConstants.h
-	${HEADER_DIR}/Physics/Onager2D/PhysicsTypes2D.h
-	${HEADER_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.h
-	${HEADER_DIR}/Physics/Onager2D/PhysicsHelpers2D.h
-	${HEADER_DIR}/Physics/Onager2D/Shapes/Shape2D.h
-	${HEADER_DIR}/Physics/Onager2D/Shapes/PolygonShape2D.h
-	${HEADER_DIR}/Physics/Onager2D/Shapes/CircleShape2D.h
-	${HEADER_DIR}/Physics/Onager2D/Shapes/BoxShape2D.h
-	${HEADER_DIR}/Physics/Onager2D/Colliders/Collider2D.h
-	${HEADER_DIR}/Physics/Onager2D/Colliders/PolygonCollider2D.h
-	${HEADER_DIR}/Physics/Onager2D/Colliders/BoxCollider2D.h
-	${HEADER_DIR}/Physics/Onager2D/Colliders/CircleCollider2D.h
-	${HEADER_DIR}/Physics/Onager2D/Broadphases/Broadphase2D.h
-	${HEADER_DIR}/Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.h
-	${HEADER_DIR}/Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.h
-	${HEADER_DIR}/Physics/Box2D/Box2DPhysicsSystem.h
-	${HEADER_DIR}/Physics/Box2D/Box2DContactListener.h
-	${HEADER_DIR}/Physics/Jolt/JoltPhysicsSystem.h
-	${HEADER_DIR}/Physics/Jolt/JoltPhysicsTypes.h
+	${HEADER_DIR}/puffin/physics/body_type.h
+	${HEADER_DIR}/puffin/physics/collision_event.h
+	${HEADER_DIR}/puffin/physics/physics_constants.h
+	${HEADER_DIR}/puffin/physics/onager2d/onager_physics_system_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/physics_helpers_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/physics_types_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/broadphases/broadphase_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.h
+	${HEADER_DIR}/puffin/physics/onager2d/broadphases/spatial_hash_broadphase_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/colliders/collider_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/colliders/polygon_collider_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/colliders/box_collider_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/colliders/circle_collider_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/shapes/shape_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/shapes/polygon_shape_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/shapes/circle_shape_2d.h
+	${HEADER_DIR}/puffin/physics/onager2d/shapes/box_shape_2d.h
+	${HEADER_DIR}/puffin/physics/box2d/box2d_contact_listener.h
+	${HEADER_DIR}/puffin/physics/box2d/box2d_physics_system.h
+	${HEADER_DIR}/puffin/physics/jolt/jolt_physics_system.h
+	${HEADER_DIR}/puffin/physics/jolt/jolt_physics_types.h
 	# Procedural
 	${HEADER_DIR}/puffin/procedural/procedural_mesh_gen_system.h
 	# Rendering
@@ -223,18 +223,17 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/nodes/rendering/light_node_3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/mesh_node.cpp
 	# Physics
-	${SOURCE_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Shapes/CircleShape2D.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Shapes/BoxShape2D.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Shapes/CircleShape2D.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Colliders/BoxCollider2D.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Colliders/CircleCollider2D.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Colliders/PolygonCollider2D.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.cpp
-	${SOURCE_DIR}/Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.cpp
-	${SOURCE_DIR}/Physics/Box2D/Box2DContactListener.cpp
-	${SOURCE_DIR}/Physics/Box2D/Box2DPhysicsSystem.cpp
-	${SOURCE_DIR}/Physics/Jolt/JoltPhysicsSystem.cpp
+	${SOURCE_DIR}/puffin/physics/onager2d/onager_physics_system_2d.cpp
+	${SOURCE_DIR}/puffin/physics/onager2d/shapes/circle_shape_2d.cpp
+	${SOURCE_DIR}/puffin/physics/onager2d/shapes/box_shape_2d.cpp
+	${SOURCE_DIR}/puffin/physics/onager2d/colliders/box_collider_2d.cpp
+	${SOURCE_DIR}/puffin/physics/onager2d/colliders/circle_collider_2d.cpp
+	${SOURCE_DIR}/puffin/physics/onager2d/colliders/polygon_collider_2d.cpp
+	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.cpp
+	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/spatial_hash_broadphase_2d.cpp
+	${SOURCE_DIR}/puffin/physics/box2d/box2d_contact_listener.cpp
+	${SOURCE_DIR}/puffin/physics/box2d/box2d_physics_system.cpp
+	${SOURCE_DIR}/puffin/physics/jolt/jolt_physics_system.cpp
 	# Procedural
 	${SOURCE_DIR}/puffin/procedural/procedural_mesh_gen_system.cpp
 	# Rendering

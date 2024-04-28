@@ -11,13 +11,13 @@
 
 #include "puffin/core/system.h"
 #include "puffin/core/engine.h"
-#include "puffin/input/input_event.h""
-#include "Physics/CollisionEvent.h"
+#include "puffin/input/input_event.h"
 #include "puffin/types/ring_buffer.h"
 #include "puffin/types/uuid.h"
 
 #include "angelscript_engine_interface.h"
 #include "puffin/audio/audio_subsystem.h"
+#include "puffin/physics/collision_event.h"
 
 namespace puffin::scripting
 {
