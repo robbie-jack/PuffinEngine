@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset.h"
+#include "puffin/assets/asset.h"
 
 #include "Types/UUID.h"
 #include "Rendering/MaterialGlobals.h"

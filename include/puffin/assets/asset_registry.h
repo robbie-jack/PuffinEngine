@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Asset.h"
-#include "ProjectSettings.h"
+#include "puffin/assets/asset.h"
+#include "puffin/project_settings.h"
 #include "nlohmann/json.hpp"
 
 #include <string>

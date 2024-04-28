@@ -1,10 +1,9 @@
 #pragma once
 
-#include "AssetRegistry.h"
-#include <Components/Rendering/MeshComponent.h>
-#include "Types/Vertex.h"
-
 #include <vector>
+
+#include "asset.h"
+#include "Types/Vertex.h"
 
 namespace puffin::assets
 {

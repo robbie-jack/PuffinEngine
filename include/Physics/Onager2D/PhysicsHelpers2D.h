@@ -9,7 +9,7 @@
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
 
-#include "MathHelpers.h"
+#include "puffin/math_helpers.h"
 
 #include <cmath>
 #include <limits>

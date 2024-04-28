@@ -1,15 +1,15 @@
 #include "UI/Editor/UISubsystem.h"
 
-#include "Core/Engine.h"
-
-#include "Core/SceneSubsystem.h"
-#include "Assets/AssetRegistry.h"
-#include "Assets/AssetImporters.h"
-
 #include <string>
 #include <iostream>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_vulkan.h>
+
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_vulkan.h"
+
+#include "Core/Engine.h"
+#include "Core/SceneSubsystem.h"
+#include "puffin/assets/asset_importers.h"
+#include "puffin/assets/asset_registry.h"
 
 namespace fs = std::filesystem;
 

@@ -1,6 +1,6 @@
-#include "Assets/ShaderAsset.h"
+#include "puffin/assets/shader_asset.h"
 
-#include "Assets/AssetRegistry.h"
+#include "puffin/assets/asset_registry.h"
 
 namespace puffin::assets
 {

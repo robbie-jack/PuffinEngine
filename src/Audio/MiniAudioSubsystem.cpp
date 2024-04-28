@@ -4,11 +4,11 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio/miniaudio.h"
 
-#include "Core/Engine.h"
-#include "Assets/AssetRegistry.h"
-#include "Assets/SoundAsset.h"
-
 #include <iostream>
+
+#include "Core/Engine.h"
+#include "puffin/assets/asset_registry.h"
+#include "puffin/assets/sound_asset.h"
 
 namespace puffin::audio
 {

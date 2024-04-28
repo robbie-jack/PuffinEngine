@@ -1,5 +1,4 @@
-#include "Assets/AssetRegistry.h"
-#include "Assets/MeshAsset.h"
+#include "puffin/assets/asset_registry.h"
 
 #include <fstream>
 

@@ -1,8 +1,8 @@
 #include "UI/Editor/Windows/UIContentBrowser.h"
 
-#include "Assets/AssetRegistry.h"
-
 #include <filesystem>
+
+#include "puffin/assets/asset_registry.h"
 
 namespace fs = std::filesystem;
 

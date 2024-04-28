@@ -3,13 +3,13 @@
 #include <chrono>
 #include <thread>
 
-#include "Assets/AssetImporters.h"
-#include "Assets/AssetRegistry.h"
-#include "Assets/MaterialAsset.h"
-#include "Assets/MeshAsset.h"
-#include "Assets/ShaderAsset.h"
-#include "Assets/SoundAsset.h"
-#include "Assets/TextureAsset.h"
+#include "puffin/assets/asset_importers.h"
+#include "puffin/assets/asset_registry.h"
+#include "puffin/assets/material_asset.h"
+#include "puffin/assets/mesh_asset.h"
+#include "puffin/assets/shader_asset.h"
+#include "puffin/assets/sound_asset.h"
+#include "puffin/assets/texture_asset.h"
 #include "Audio/AudioSubsystem.h"
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
@@ -20,6 +20,7 @@
 #include "Components/Scripting/AngelScriptComponent.h"
 #include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
+#include "Components/Rendering/MeshComponent.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SceneSubsystem.h"
 #include "Core/SignalSubsystem.h"

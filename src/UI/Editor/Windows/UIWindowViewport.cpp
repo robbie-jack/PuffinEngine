@@ -2,8 +2,8 @@
 
 #include "Core/Engine.h"
 
-#include <Components/TransformComponent3D.h>
-#include <ManipulationGizmo.h>
+#include "Components/TransformComponent3D.h"
+#include "puffin/manipulation_gizmo.h"
 
 namespace puffin
 {

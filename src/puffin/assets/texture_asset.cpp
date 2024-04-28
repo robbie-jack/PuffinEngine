@@ -1,7 +1,9 @@
-#include "Assets/TextureAsset.h"
+#include "puffin/assets/texture_asset.h"
+
 #include "nlohmann/json.hpp"
 #include "lz4.h"
 #include "lz4hc.h"
+#include "puffin/assets/asset_registry.h"
 
 using json = nlohmann::json;
 

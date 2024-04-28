@@ -1,7 +1,8 @@
-#include "Assets/MeshAsset.h"
-#include "Types/Vertex.h"
+#include "puffin/assets/mesh_asset.h"
+
 #include "lz4.h"
 #include "lz4hc.h"
+#include "puffin/assets/asset_registry.h"
 
 using json = nlohmann::json;
 

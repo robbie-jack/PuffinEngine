@@ -1,29 +1,30 @@
 #pragma once
 
+#include <unordered_set>
+
+#include "vulkan/vulkan.hpp"
+
+#include "GLFW/glfw3.h"
+
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
-#include "vulkan/vulkan.hpp"
-#include "GLFW/glfw3.h"
-
 #include "vk_mem_alloc.hpp"
 
-#include "VKDescriptors.h"
-#include "VKPipeline.h"
-#include "VKTypes.h"
-#include "VKUnifiedGeometryBuffer.h"
-#include "VKMaterialRegistry.h"
-#include "Assets/TextureAsset.h"
+#include "Components/Rendering/CameraComponent.h"
 #include "Core/Engine.h"
 #include "Core/System.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputEvent.h"
+#include "puffin/assets/texture_asset.h"
 #include "Types/DeletionQueue.h"
-#include "Types/RingBuffer.h"
 #include "Types/PackedArray.h"
-#include "Components/Rendering/CameraComponent.h"
-
-#include <unordered_set>
+#include "Types/RingBuffer.h"
+#include "VKDescriptors.h"
+#include "VKMaterialRegistry.h"
+#include "VKPipeline.h"
+#include "VKTypes.h"
+#include "VKUnifiedGeometryBuffer.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "AssetRegistry.h"
+#include <string>
+#include <unordered_map>
+
+#include "puffin/assets/asset.h"
 
 namespace puffin::assets
 {

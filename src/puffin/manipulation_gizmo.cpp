@@ -1,4 +1,4 @@
-#include <ManipulationGizmo.h>
+#include "puffin/manipulation_gizmo.h"
 
 namespace puffin
 {

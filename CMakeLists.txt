@@ -80,16 +80,20 @@ set(ANGELSCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/angelscript)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimplexNoise)
 set(ENKITS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/enkits)
 
-set(HEADERS 
+set(HEADERS
+	# Root
+	${HEADER_DIR}/puffin/manipulation_gizmo.h
+	${HEADER_DIR}/puffin/math_helpers.h
+	${HEADER_DIR}/puffin/project_settings.h
 	# Assets
-	${HEADER_DIR}/Assets/Asset.h
-	${HEADER_DIR}/Assets/AssetRegistry.h
-	${HEADER_DIR}/Assets/MeshAsset.h
-	${HEADER_DIR}/Assets/SoundAsset.h
-	${HEADER_DIR}/Assets/TextureAsset.h
-	${HEADER_DIR}/Assets/ShaderAsset.h
-	${HEADER_DIR}/Assets/MaterialAsset.h
-	${HEADER_DIR}/Assets/AssetImporters.h
+	${HEADER_DIR}/puffin/assets/asset.h
+	${HEADER_DIR}/puffin/assets/asset_importers.h
+	${HEADER_DIR}/puffin/assets/asset_registry.h
+	${HEADER_DIR}/puffin/assets/material_asset.h
+	${HEADER_DIR}/puffin/assets/mesh_asset.h
+	${HEADER_DIR}/puffin/assets/shader_asset.h
+	${HEADER_DIR}/puffin/assets/sound_asset.h
+	${HEADER_DIR}/puffin/assets/texture_asset.h
 	# Audio
 	${HEADER_DIR}/Audio/AudioSubsystem.h
 	${HEADER_DIR}/Audio/MiniAudioSubsystem.h
@@ -191,20 +195,18 @@ set(HEADERS
 	${HEADER_DIR}/UI/Editor/Windows/UIWindowViewport.h
 	# Window
 	${HEADER_DIR}/Window/WindowSubsystem.h
-	# Root
-	${HEADER_DIR}/ManipulationGizmo.h
-	${HEADER_DIR}/MathHelpers.h
-	${HEADER_DIR}/ProjectSettings.h
 	)
 
 set(SOURCES 
+	# Root 
+	${SOURCE_DIR}/puffin/manipulation_gizmo.cpp
 	# Assets
-	${SOURCE_DIR}/Assets/AssetRegistry.cpp
-	${SOURCE_DIR}/Assets/MeshAsset.cpp
-	${SOURCE_DIR}/Assets/TextureAsset.cpp
-	${SOURCE_DIR}/Assets/ShaderAsset.cpp
-	${SOURCE_DIR}/Assets/MaterialAsset.cpp
-	${SOURCE_DIR}/Assets/AssetImporters.cpp
+	${SOURCE_DIR}/puffin/assets/asset_importers.cpp
+	${SOURCE_DIR}/puffin/assets/asset_registry.cpp
+	${SOURCE_DIR}/puffin/assets/material_asset.cpp
+	${SOURCE_DIR}/puffin/assets/mesh_asset.cpp
+	${SOURCE_DIR}/puffin/assets/shader_asset.cpp
+	${SOURCE_DIR}/puffin/assets/texture_asset.cpp
 	# Audio
 	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
 	${SOURCE_DIR}/Audio/MiniAudioSubsystem.cpp
@@ -260,8 +262,6 @@ set(SOURCES
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindowViewport.cpp
 	# Window
 	${SOURCE_DIR}/Window/WindowSubsystem.cpp
-	# Root 
-	${SOURCE_DIR}/ManipulationGizmo.cpp
 	)
 	
 set (IMGUI_SOURCES

@@ -10,7 +10,7 @@
 #include "Components/TransformComponent3D.h"
 #include "Core/Engine.h"
 #include "ECS/EnTTSubsystem.h"
-#include "MathHelpers.h"
+#include "puffin/math_helpers.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "scene/scene_graph.h"
 #include "nodes/node.h"

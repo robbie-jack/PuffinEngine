@@ -1,6 +1,6 @@
-#include "Assets/MaterialAsset.h"
+#include "puffin/assets/material_asset.h"
 
-#include "Assets/AssetRegistry.h"
+#include "puffin/assets/asset_registry.h"
 
 namespace puffin::assets
 {

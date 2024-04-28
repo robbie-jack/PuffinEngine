@@ -1,8 +1,7 @@
 #pragma once
 
 #include "UIWindow.h"
-#include <Components/Rendering/CameraComponent.h>
-#include <ProjectSettings.h>
+#include "Components/Rendering/CameraComponent.h"
 
 namespace puffin
 {

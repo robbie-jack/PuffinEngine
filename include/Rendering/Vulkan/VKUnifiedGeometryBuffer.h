@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Assets/MeshAsset.h"
-
-#include "VKTypes.h"
-
 #include <unordered_map>
 #include <vector>
 #include <set>
+
+#include "VKTypes.h"
+#include "puffin/assets/mesh_asset.h"
 
 namespace puffin::rendering
 {

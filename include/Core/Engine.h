@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Application.h"
-#include "ProjectSettings.h"
+#include "puffin/project_settings.h"
 #include "System.h"
 
 #include <GLFW/glfw3.h>

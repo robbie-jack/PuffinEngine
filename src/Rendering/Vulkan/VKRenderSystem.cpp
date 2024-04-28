@@ -10,7 +10,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#include "MathHelpers.h"
+#include "puffin/math_helpers.h"
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
@@ -25,11 +25,6 @@
 #include "Window/WindowSubsystem.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SignalSubsystem.h"
-#include "Assets/AssetRegistry.h"
-#include "Assets/MeshAsset.h"
-#include "Assets/TextureAsset.h"
-#include "Assets/MaterialAsset.h"
-#include "Assets/ShaderAsset.h"
 #include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
 #include <Components/Physics/2D/VelocityComponent2D.h>
@@ -38,6 +33,7 @@
 #include "Components/Rendering/MeshComponent.h"
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
+#include "puffin/assets/asset_registry.h"
 #include "scene/scene_graph.h"
 #include "UI/Editor/UISubsystem.h"
 

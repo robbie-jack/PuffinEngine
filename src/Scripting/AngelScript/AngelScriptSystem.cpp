@@ -1,18 +1,17 @@
 #include "Scripting/AngelScript/AngelScriptSystem.h"
 
-#include "Assets/AssetRegistry.h"
-#include "ECS/EnTTSubsystem.h"
-#include "Core/Engine.h"
-#include "Scripting/AngelScript/RegisterTypeHelpers.h"
-
-#include "entt/entity/registry.hpp"
-#include "angelscript/scriptbuilder/scriptbuilder.h"
-#include "angelscript/scriptstdstring/scriptstdstring.h"
-
 #include <assert.h>  // assert()
 #include <iostream>  // cout
 #include <string.h>
 #include <vector>
+
+#include "Core/Engine.h"
+#include "ECS/EnTTSubsystem.h"
+#include "puffin/assets/asset_registry.h"
+#include "Scripting/AngelScript/RegisterTypeHelpers.h"
+#include "angelscript/scriptbuilder/scriptbuilder.h"
+#include "angelscript/scriptstdstring/scriptstdstring.h"
+#include "entt/entity/registry.hpp"
 
 using namespace std;
 
