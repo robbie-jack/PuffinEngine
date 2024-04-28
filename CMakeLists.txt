@@ -171,9 +171,9 @@ set(HEADERS
 	# Scene
 	${HEADER_DIR}/puffin/scene/scene_graph.h
 	# Scripting
-	${HEADER_DIR}/Scripting/AngelScript/RegisterTypeHelpers.h
-	${HEADER_DIR}/Scripting/AngelScript/AngelScriptSystem.h
-	${HEADER_DIR}/Scripting/AngelScript/AngelScriptEngineInterface.h
+	${HEADER_DIR}/puffin/scripting/angelscript/angelscript_engine_interface.h
+	${HEADER_DIR}/puffin/scripting/angelscript/angelscript_system.h
+	${HEADER_DIR}/puffin/scripting/angelscript/register_type_helpers.h
 	# Types
 	${HEADER_DIR}/Types/ComponentFlags.h
 	${HEADER_DIR}/Types/Matrix.h
@@ -249,8 +249,8 @@ set(SOURCES
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scene_graph.cpp
 	# Scripting
-	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptSystem.cpp
-	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptEngineInterface.cpp
+	${SOURCE_DIR}/puffin/scripting/angelscript/angelscript_system.cpp
+	${SOURCE_DIR}/puffin/scripting/angelscript/angelscript_engine_interface.cpp
 	# UI
 	${SOURCE_DIR}/UI/Editor/UISubsystem.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp

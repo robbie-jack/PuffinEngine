@@ -1,8 +1,8 @@
-#include "Scripting/AngelScript/AngelScriptEngineInterface.h"
+#include "puffin/scripting/angelscript/angelscript_engine_interface.h"
 
 #include "Core/Engine.h"
 #include "Components/TransformComponent3D.h"
-#include "Scripting/AngelScript/AngelScriptSystem.h"
+#include "puffin/scripting/angelscript/angelscript_system.h"
 #include "angelscript/angelscript.h"
 #include "puffin/ecs/entt_subsystem.h"
 

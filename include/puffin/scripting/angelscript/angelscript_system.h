@@ -1,5 +1,11 @@
 #pragma once
 
+#include <map>
+#include <memory>
+#include <unordered_map>
+#include <unordered_set>
+#include <entt/entity/registry.hpp>
+
 // AngelScript Includes
 #include "angelscript/angelscript.h"
 
@@ -10,14 +16,8 @@
 #include "Physics/CollisionEvent.h"
 #include "Types/RingBuffer.h"
 #include "Types/UUID.h"
-#include "Scripting/AngelScript/AngelScriptEngineInterface.h"
 
-#include <map>
-#include <memory>
-#include <unordered_map>
-#include <unordered_set>
-#include <entt/entity/registry.hpp>
-
+#include "angelscript_engine_interface.h"
 #include "puffin/audio/audio_subsystem.h"
 
 namespace puffin::scripting
