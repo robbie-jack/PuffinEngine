@@ -6,7 +6,7 @@
 #include "Core/System.h"
 #include "Components/Scripting/AngelScriptComponent.h"
 #include "Core/Engine.h"
-#include "Input/InputEvent.h"
+#include "puffin/input/input_event.h""
 #include "Physics/CollisionEvent.h"
 #include "Types/RingBuffer.h"
 #include "Types/UUID.h"

@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-#include "Input/InputSubsystem.h"
+#include "puffin/input/input_subsystem.h"
 #include "Core/Engine.h"
 #include "Types/UUID.h"
 

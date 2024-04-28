@@ -121,8 +121,8 @@ set(HEADERS
 	${HEADER_DIR}/Core/SceneSubsystem.h
 	${HEADER_DIR}/Core/System.h
 	# Input
-	${HEADER_DIR}/Input/InputEvent.h
-	${HEADER_DIR}/Input/InputSubsystem.h
+	${HEADER_DIR}/puffin/input/input_event.h
+	${HEADER_DIR}/puffin/input/input_subsystem.h
 	# Nodes
 	${HEADER_DIR}/nodes/node.h
 	${HEADER_DIR}/nodes/transform_node_2d.h
@@ -216,7 +216,7 @@ set(SOURCES
 	${SOURCE_DIR}/Core/SignalSubsystem.cpp
 	${SOURCE_DIR}/Core/EnkiTSSubsystem.cpp
 	# Input
-	${SOURCE_DIR}/Input/InputSubsystem.cpp
+	${SOURCE_DIR}/puffin/input/input_subsystem.cpp
 	# Nodes
 	${SOURCE_DIR}/nodes/node.cpp
 	${SOURCE_DIR}/nodes/transform_node_2d.cpp

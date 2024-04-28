@@ -15,7 +15,7 @@
 #include "Core/Engine.h"
 #include "Core/System.h"
 #include "puffin/ecs/entt_subsystem.h"
-#include "Input/InputEvent.h"
+#include "puffin/input/input_event.h""
 #include "puffin/assets/texture_asset.h"
 #include "Types/DeletionQueue.h"
 #include "Types/PackedArray.h"

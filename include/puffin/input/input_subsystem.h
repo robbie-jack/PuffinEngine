@@ -3,7 +3,7 @@
 #include "GLFW/glfw3.h"
 
 #include "Core/System.h"
-#include "InputEvent.h"
+#include "puffin/input/input_event.h"
 
 #include <vector>
 #include <string>

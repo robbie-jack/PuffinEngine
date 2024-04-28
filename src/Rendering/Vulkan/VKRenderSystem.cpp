@@ -31,7 +31,7 @@
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Rendering/MeshComponent.h"
 #include "puffin/ecs/entt_subsystem.h"
-#include "Input/InputSubsystem.h"
+#include "puffin/input/input_subsystem.h"
 #include "puffin/assets/asset_registry.h"
 #include "puffin/window/window_subsystem.h"
 #include "puffin/scene/scene_graph.h"
