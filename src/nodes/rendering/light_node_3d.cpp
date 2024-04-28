@@ -1,4 +1,4 @@
-#include "Rendering/light_node_3d.h"
+#include "nodes/rendering/light_node_3d.h"
 #include "Components/Rendering/LightComponent.h"
 
 namespace puffin::rendering

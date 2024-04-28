@@ -119,10 +119,18 @@ set(HEADERS
 	# Input
 	${HEADER_DIR}/Input/InputEvent.h
 	${HEADER_DIR}/Input/InputSubsystem.h
+	# Nodes
+	${HEADER_DIR}/nodes/node.h
+	${HEADER_DIR}/nodes/transform_node_2d.h
+	${HEADER_DIR}/nodes/transform_node_3d.h
+	${HEADER_DIR}/nodes/node.h
+	${HEADER_DIR}/nodes/physics/rigidbody_node_3d.h
+	${HEADER_DIR}/nodes/rendering/light_node_3d.h
+	${HEADER_DIR}/nodes/rendering/mesh_node.h
 	# Physics
+	${HEADER_DIR}/Physics/BodyType.h
 	${HEADER_DIR}/Physics/CollisionEvent.h
 	${HEADER_DIR}/Physics/PhysicsConstants.h
-	${HEADER_DIR}/Physics/BodyType.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsTypes2D.h
 	${HEADER_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.h
 	${HEADER_DIR}/Physics/Onager2D/PhysicsHelpers2D.h
@@ -144,9 +152,7 @@ set(HEADERS
 	# Procedural
 	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
 	# Rendering
-	${HEADER_DIR}/Rendering/light_node_3d.h
 	${HEADER_DIR}/Rendering/MaterialGlobals.h
-	${HEADER_DIR}/Rendering/mesh_node.h
 	# Rendering Vulkan
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderSystem.h
 	${HEADER_DIR}/Rendering/Vulkan/VKTypes.h
@@ -159,10 +165,7 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderGraph.h
 	${HEADER_DIR}/Rendering/Vulkan/VKResourceManager.h
 	# Scene
-	${HEADER_DIR}/scene/node.h
 	${HEADER_DIR}/scene/scene_graph.h
-	${HEADER_DIR}/scene/transform_node_2d.h
-	${HEADER_DIR}/scene/transform_node_3d.h
 	# Scripting
 	${HEADER_DIR}/Scripting/AngelScript/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScript/AngelScriptSystem.h
@@ -212,6 +215,13 @@ set(SOURCES
 	${SOURCE_DIR}/Core/EnkiTSSubsystem.cpp
 	# Input
 	${SOURCE_DIR}/Input/InputSubsystem.cpp
+	# Nodes
+	${SOURCE_DIR}/nodes/node.cpp
+	${SOURCE_DIR}/nodes/transform_node_2d.cpp
+	${SOURCE_DIR}/nodes/transform_node_3d.cpp
+	${SOURCE_DIR}/nodes/physics/rigidbody_node_3d.cpp
+	${SOURCE_DIR}/nodes/rendering/light_node_3d.cpp
+	${SOURCE_DIR}/nodes/rendering/mesh_node.cpp
 	# Physics
 	${SOURCE_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.cpp
 	${SOURCE_DIR}/Physics/Onager2D/Shapes/CircleShape2D.cpp
@@ -228,8 +238,6 @@ set(SOURCES
 	# Procedural
 	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
 	# Rendering
-	${SOURCE_DIR}/Rendering/light_node_3d.cpp
-	${SOURCE_DIR}/Rendering/mesh_node.cpp
 	# Rendering Vulkan
 	${SOURCE_DIR}/Rendering/Vulkan/VKRenderSystem.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKHelpers.cpp
@@ -237,10 +245,7 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKMaterialRegistry.cpp
 	# Scene
-	${SOURCE_DIR}/scene/node.cpp
 	${SOURCE_DIR}/scene/scene_graph.cpp
-	${SOURCE_DIR}/scene/transform_node_2d.cpp
-	${SOURCE_DIR}/scene/transform_node_3d.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptSystem.cpp
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptEngineInterface.cpp

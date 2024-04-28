@@ -13,7 +13,7 @@
 #include "MathHelpers.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "scene/scene_graph.h"
-#include "scene/node.h"
+#include "nodes/node.h"
 
 #include <string>
 

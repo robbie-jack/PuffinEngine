@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scene/transform_node_3d.h"
+#include "nodes/transform_node_3d.h"
 
 namespace puffin::rendering
 {

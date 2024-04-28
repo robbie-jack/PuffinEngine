@@ -1,11 +1,11 @@
 #include "scene/scene_graph.h"
 
-#include "scene/transform_node_2d.h"
-#include "scene/transform_node_3d.h"
 #include "Core/Engine.h"
 #include "ECS/EnTTSubsystem.h"
-#include "Rendering/light_node_3d.h"
-#include "Rendering/mesh_node.h"
+#include "nodes/transform_node_2d.h"
+#include "nodes/transform_node_3d.h"
+#include "nodes/rendering/light_node_3d.h"
+#include "nodes/rendering/mesh_node.h"
 
 namespace puffin::scene
 {

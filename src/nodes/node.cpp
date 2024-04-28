@@ -1,4 +1,4 @@
-#include "scene/node.h"
+#include "nodes/node.h"
 
 #include "scene/scene_graph.h"
 #include "Core/Engine.h"
