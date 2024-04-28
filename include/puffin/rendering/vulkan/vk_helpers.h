@@ -1,8 +1,9 @@
 #pragma once
 
-#include "VKTypes.h"
-
 #include <functional>
+#include <memory>
+
+#include "puffin/rendering/vulkan/vk_types.h"
 
 namespace puffin::rendering
 {

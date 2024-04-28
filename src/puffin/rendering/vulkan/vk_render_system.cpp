@@ -1,10 +1,12 @@
-#include "Rendering/Vulkan/VKRenderSystem.h"
+#include "puffin/rendering/vulkan/vk_render_system.h"
 
 #define VMA_IMPLEMENTATION
 #define VMA_DEBUG_LOG
 
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
+
+#include "puffin/rendering/vulkan/vk_render_system.h"
 
 #include <iostream>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -21,7 +23,7 @@
 #include "backends/imgui_impl_vulkan.h"
 
 #include "puffin/core/engine.h"
-#include "Rendering/Vulkan/VKHelpers.h"
+#include "puffin/rendering/vulkan/vk_helpers.h"
 #include "puffin/core/enkits_subsystem.h"
 #include "puffin/core/signal_subsystem.h"
 #include "puffin/components/transform_component_2d.h"
@@ -33,6 +35,7 @@
 #include "puffin/components/physics/3d/velocity_component_3d.h"
 #include "puffin/components/rendering/light_component.h"
 #include "puffin/components/rendering/mesh_component.h"
+#include "puffin/rendering/material_globals.h"
 #include "puffin/window/window_subsystem.h"
 #include "puffin/scene/scene_graph.h"
 #include "puffin/ui/editor/ui_subsystem.h"

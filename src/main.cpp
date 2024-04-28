@@ -1,8 +1,8 @@
 #include <iostream>
 
 #include "puffin/core/engine.h"
-#include "Rendering/Vulkan/VKRenderSystem.h"
 #include "puffin/physics/jolt/jolt_physics_system.h"
+#include "puffin/rendering/vulkan/vk_render_system.h"
 #include "puffin/scripting/angelscript/angelscript_system.h"
 
 int main()

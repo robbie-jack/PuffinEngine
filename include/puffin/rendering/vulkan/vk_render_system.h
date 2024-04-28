@@ -14,17 +14,15 @@
 #include "puffin/core/engine.h"
 #include "puffin/core/system.h"
 #include "puffin/ecs/entt_subsystem.h"
-#include "puffin/input/input_event.h""
 #include "puffin/assets/texture_asset.h"
 #include "puffin/types/deletion_queue.h"
 #include "puffin/types/packed_array.h"
-#include "puffin/types/ring_buffer.h"
-#include "VKDescriptors.h"
-#include "VKMaterialRegistry.h"
-#include "VKPipeline.h"
-#include "VKTypes.h"
-#include "VKUnifiedGeometryBuffer.h"
+#include "puffin/rendering/vulkan/vk_descriptors.h"
 #include "puffin/components/rendering/camera_component.h"
+#include "puffin/rendering/vulkan/vk_unified_geometry_buffer.h"
+#include "puffin/rendering/material_globals.h"
+#include "puffin/rendering/vulkan/vk_material_registry.h"
+#include "puffin/rendering/vulkan/vk_pipeline.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;

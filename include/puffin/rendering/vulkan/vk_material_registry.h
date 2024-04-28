@@ -1,7 +1,7 @@
 #pragma once
 
 #include "puffin/types/uuid.h"
-#include "VKTypes.h"
+#include "puffin/rendering/vulkan/vk_types.h"
 #include "puffin/types/packed_array.h"
 
 #include <unordered_set>

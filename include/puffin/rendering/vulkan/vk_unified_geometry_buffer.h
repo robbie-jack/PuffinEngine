@@ -4,7 +4,7 @@
 #include <vector>
 #include <set>
 
-#include "VKTypes.h"
+#include "puffin/rendering/vulkan/vk_types.h"
 #include "puffin/assets/mesh_asset.h"
 
 namespace puffin::rendering

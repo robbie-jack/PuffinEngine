@@ -3,7 +3,7 @@
 #include "puffin/assets/asset.h"
 
 #include "puffin/types/uuid.h"
-#include "Rendering/MaterialGlobals.h"
+#include "puffin/rendering/material_globals.h"
 #include "nlohmann/json.hpp"
 
 #include <bitset>

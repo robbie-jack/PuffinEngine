@@ -1,4 +1,4 @@
-#include "Rendering/Vulkan/VKDescriptors.h"
+#include "puffin/rendering/vulkan/vk_descriptors.h"
 
 #include <iostream>
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "VKTypes.h"
-
 #include <unordered_map>
 #include <memory>
+
+#include "puffin/rendering/vulkan/vk_types.h"
 
 namespace puffin::rendering::util
 {

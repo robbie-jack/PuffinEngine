@@ -1,9 +1,10 @@
-#include "Rendering/Vulkan/VKMaterialRegistry.h"
+#include "puffin/rendering/vulkan/vk_material_registry.h"
 
 #include "puffin/assets/asset_registry.h"
 #include "puffin/assets/material_asset.h"
 #include "puffin/assets/shader_asset.h"
-#include "Rendering/Vulkan/VKRenderSystem.h"
+#include "puffin/rendering/vulkan/vk_pipeline.h"
+#include "puffin/rendering/vulkan/vk_render_system.h"
 
 namespace puffin::rendering
 {

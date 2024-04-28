@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "puffin/types/Vertex.h"
+#include "puffin/types/vertex.h"
 
 namespace puffin::rendering::util
 {

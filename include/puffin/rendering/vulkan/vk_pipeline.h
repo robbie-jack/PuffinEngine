@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vulkan/vulkan.hpp>
 
-#include "VKVertex.h"
+#include "puffin/rendering/vulkan/vk_vertex.h"
 
 namespace puffin::rendering::util
 {
