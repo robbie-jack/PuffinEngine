@@ -10,7 +10,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "scene/scene_graph.h"
+#include "puffin/scene/scene_graph.h"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;

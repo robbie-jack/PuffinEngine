@@ -169,7 +169,7 @@ set(HEADERS
 	${HEADER_DIR}/Rendering/Vulkan/VKRenderGraph.h
 	${HEADER_DIR}/Rendering/Vulkan/VKResourceManager.h
 	# Scene
-	${HEADER_DIR}/scene/scene_graph.h
+	${HEADER_DIR}/puffin/scene/scene_graph.h
 	# Scripting
 	${HEADER_DIR}/Scripting/AngelScript/RegisterTypeHelpers.h
 	${HEADER_DIR}/Scripting/AngelScript/AngelScriptSystem.h
@@ -247,7 +247,7 @@ set(SOURCES
 	${SOURCE_DIR}/Rendering/Vulkan/VKUnifiedGeometryBuffer.cpp
 	${SOURCE_DIR}/Rendering/Vulkan/VKMaterialRegistry.cpp
 	# Scene
-	${SOURCE_DIR}/scene/scene_graph.cpp
+	${SOURCE_DIR}/puffin/scene/scene_graph.cpp
 	# Scripting
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptSystem.cpp
 	${SOURCE_DIR}/Scripting/AngelScript/AngelScriptEngineInterface.cpp

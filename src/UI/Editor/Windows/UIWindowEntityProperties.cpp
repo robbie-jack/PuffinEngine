@@ -12,7 +12,7 @@
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/math_helpers.h"
 #include "misc/cpp/imgui_stdlib.h"
-#include "scene/scene_graph.h"
+#include "puffin/scene/scene_graph.h"
 #include "nodes/node.h"
 
 #include <string>

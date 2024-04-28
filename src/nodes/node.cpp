@@ -1,6 +1,6 @@
 #include "nodes/node.h"
 
-#include "scene/scene_graph.h"
+#include "puffin/scene/scene_graph.h"
 #include "Core/Engine.h"
 #include "puffin/ecs/entt_subsystem.h"
 

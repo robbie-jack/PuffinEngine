@@ -34,7 +34,7 @@
 #include "Input/InputSubsystem.h"
 #include "puffin/assets/asset_registry.h"
 #include "puffin/window/window_subsystem.h"
-#include "scene/scene_graph.h"
+#include "puffin/scene/scene_graph.h"
 #include "UI/Editor/UISubsystem.h"
 
 #define VK_CHECK(x)                                                 \
