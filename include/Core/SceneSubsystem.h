@@ -4,7 +4,7 @@
 #include "entt/entity/registry.hpp"
 
 #include "Core/System.h"
-#include "ECS/EnTTSubsystem.h"
+#include "puffin/ecs/entt_subsystem.h"
 #include "Types/UUID.h"
 
 #include <fstream>

@@ -30,7 +30,7 @@
 #include "Components/Physics/3D/VelocityComponent3D.h"
 #include "Components/Rendering/LightComponent.h"
 #include "Components/Rendering/MeshComponent.h"
-#include "ECS/EnTTSubsystem.h"
+#include "puffin/ecs/entt_subsystem.h"
 #include "Input/InputSubsystem.h"
 #include "puffin/assets/asset_registry.h"
 #include "puffin/window/window_subsystem.h"

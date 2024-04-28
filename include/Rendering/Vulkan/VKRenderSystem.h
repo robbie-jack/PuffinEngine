@@ -14,7 +14,7 @@
 #include "Components/Rendering/CameraComponent.h"
 #include "Core/Engine.h"
 #include "Core/System.h"
-#include "ECS/EnTTSubsystem.h"
+#include "puffin/ecs/entt_subsystem.h"
 #include "Input/InputEvent.h"
 #include "puffin/assets/texture_asset.h"
 #include "Types/DeletionQueue.h"

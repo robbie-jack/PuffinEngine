@@ -1,7 +1,7 @@
 #include "scene/scene_graph.h"
 
 #include "Core/Engine.h"
-#include "ECS/EnTTSubsystem.h"
+#include "puffin/ecs/entt_subsystem.h"
 #include "nodes/transform_node_2d.h"
 #include "nodes/transform_node_3d.h"
 #include "nodes/rendering/light_node_3d.h"

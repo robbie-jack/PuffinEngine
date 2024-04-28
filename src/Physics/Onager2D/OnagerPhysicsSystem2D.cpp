@@ -8,7 +8,7 @@
 #include "Core/Engine.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SignalSubsystem.h"
-#include "ECS/EnTTSubsystem.h"
+#include "puffin/ecs/entt_subsystem.h"
 #include "Physics/CollisionEvent.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
 #include "Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.h"

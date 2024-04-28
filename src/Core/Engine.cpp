@@ -23,7 +23,6 @@
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SceneSubsystem.h"
 #include "Core/SignalSubsystem.h"
-#include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
 #include "nodes/physics/rigidbody_node_3d.h"
 #include "nodes/rendering/light_node_3d.h"

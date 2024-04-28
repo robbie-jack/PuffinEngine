@@ -112,7 +112,7 @@ set(HEADERS
 	${HEADER_DIR}/Components/Procedural/ProceduralMeshComponent.h
 	${HEADER_DIR}/Components/Scripting/AngelScriptComponent.h
 	# ECS
-	${HEADER_DIR}/ECS/EnTTSubsystem.h
+	${HEADER_DIR}/puffin/ecs/entt_subsystem.h
 	# Core
 	${HEADER_DIR}/Core/Engine.h
 	${HEADER_DIR}/Core/Application.h

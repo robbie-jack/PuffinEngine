@@ -1,7 +1,7 @@
 #include "nodes/transform_node_2d.h"
 
 #include "Core/Engine.h"
-#include "ECS/EnTTSubsystem.h"
+#include "puffin/ecs/entt_subsystem.h"
 #include "Components/TransformComponent2D.h"
 
 namespace puffin::core

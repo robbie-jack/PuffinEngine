@@ -4,7 +4,7 @@
 #include "Components/TransformComponent3D.h"
 #include "Scripting/AngelScript/AngelScriptSystem.h"
 #include "angelscript/angelscript.h"
-#include "ECS/EnTTSubsystem.h"
+#include "puffin/ecs/entt_subsystem.h"
 
 namespace puffin::scripting
 {

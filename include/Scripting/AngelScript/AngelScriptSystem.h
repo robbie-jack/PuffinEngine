@@ -16,8 +16,8 @@
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
+#include <entt/entity/registry.hpp>
 
-#include "ECS/EnTTSubsystem.h"
 #include "puffin/audio/audio_subsystem.h"
 
 namespace puffin::scripting

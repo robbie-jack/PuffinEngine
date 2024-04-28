@@ -2,7 +2,7 @@
 
 #include "scene/scene_graph.h"
 #include "Core/Engine.h"
-#include "ECS/EnTTSubsystem.h"
+#include "puffin/ecs/entt_subsystem.h"
 
 namespace puffin
 {
