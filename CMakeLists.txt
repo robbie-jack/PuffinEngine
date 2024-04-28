@@ -114,12 +114,12 @@ set(HEADERS
 	# ECS
 	${HEADER_DIR}/puffin/ecs/entt_subsystem.h
 	# Core
-	${HEADER_DIR}/Core/Engine.h
-	${HEADER_DIR}/Core/Application.h
-	${HEADER_DIR}/Core/SignalSubsystem.h
-	${HEADER_DIR}/Core/EnkiTSSubsystem.h
-	${HEADER_DIR}/Core/SceneSubsystem.h
-	${HEADER_DIR}/Core/System.h
+	${HEADER_DIR}/puffin/core/application.h
+	${HEADER_DIR}/puffin/core/engine.h
+	${HEADER_DIR}/puffin/core/enkits_subsystem.h
+	${HEADER_DIR}/puffin/core/scene_subsystem.h
+	${HEADER_DIR}/puffin/core/signal_subsystem.h
+	${HEADER_DIR}/puffin/core/system.h
 	# Input
 	${HEADER_DIR}/puffin/input/input_event.h
 	${HEADER_DIR}/puffin/input/input_subsystem.h
@@ -210,10 +210,9 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/audio/audio_subsystem.cpp
 	${SOURCE_DIR}/puffin/audio/mini_audio_subsystem.cpp
 	# Engine
-	${SOURCE_DIR}/Core/Engine.cpp
-	${SOURCE_DIR}/Core/Application.cpp
-	${SOURCE_DIR}/Core/SignalSubsystem.cpp
-	${SOURCE_DIR}/Core/EnkiTSSubsystem.cpp
+	${SOURCE_DIR}/puffin/core/application.cpp
+	${SOURCE_DIR}/puffin/core/engine.cpp
+	${SOURCE_DIR}/puffin/core/enkits_subsystem.cpp
 	# Input
 	${SOURCE_DIR}/puffin/input/input_subsystem.cpp
 	# Nodes

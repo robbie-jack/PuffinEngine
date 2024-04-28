@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "puffin/assets/asset_registry.h"
 #include "puffin/assets/sound_asset.h"
 #include "puffin/audio/audio_subsystem.h"

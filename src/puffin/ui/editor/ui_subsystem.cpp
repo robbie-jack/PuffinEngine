@@ -6,8 +6,8 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 
-#include "Core/Engine.h"
-#include "Core/SceneSubsystem.h"
+#include "puffin/core/engine.h"
+#include "puffin/core/scene_subsystem.h"
 #include "puffin/assets/asset_importers.h"
 #include "puffin/assets/asset_registry.h"
 #include "puffin/ui/editor/windows/ui_window.h"

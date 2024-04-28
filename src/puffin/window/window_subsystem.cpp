@@ -4,7 +4,7 @@
 
 #include "GLFW/glfw3.h"
 
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 
 
 namespace puffin::window

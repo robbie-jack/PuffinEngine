@@ -5,9 +5,9 @@
 
 #include "Components/TransformComponent2D.h"
 #include "Components/Physics/2D/VelocityComponent2D.h"
-#include "Core/Engine.h"
-#include "Core/EnkiTSSubsystem.h"
-#include "Core/SignalSubsystem.h"
+#include "puffin/core/engine.h"
+#include "puffin/core/EnkiTSSubsystem.h"
+#include "puffin/core/SignalSubsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "Physics/CollisionEvent.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"

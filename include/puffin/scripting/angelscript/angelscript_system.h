@@ -9,9 +9,9 @@
 // AngelScript Includes
 #include "angelscript/angelscript.h"
 
-#include "Core/System.h"
+#include "puffin/core/system.h"
 #include "Components/Scripting/AngelScriptComponent.h"
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "puffin/input/input_event.h""
 #include "Physics/CollisionEvent.h"
 #include "puffin/types/ring_buffer.h"

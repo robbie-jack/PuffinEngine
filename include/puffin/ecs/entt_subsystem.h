@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core/System.h"
+#include "puffin/core/system.h"
 
 #include "puffin/types/uuid.h"
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "entt/entity/registry.hpp"
 
 namespace puffin::ecs

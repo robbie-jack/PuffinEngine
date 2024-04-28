@@ -12,8 +12,8 @@
 #include "vk_mem_alloc.hpp"
 
 #include "Components/Rendering/CameraComponent.h"
-#include "Core/Engine.h"
-#include "Core/System.h"
+#include "puffin/core/engine.h"
+#include "puffin/core/system.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/input/input_event.h""
 #include "puffin/assets/texture_asset.h"

@@ -3,7 +3,7 @@
 #if PFN_BOX2D_PHYSICS
 
 #include "Box2DContactListener.h"
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "Physics/PhysicsConstants.h"
 #include "puffin/types/packed_array.h"

@@ -3,7 +3,7 @@
 #include "imgui.h"
 #include "imfilebrowser.h"
 
-#include "Core/System.h"
+#include "puffin/core/system.h"
 
 #include <vector>
 #include <memory>

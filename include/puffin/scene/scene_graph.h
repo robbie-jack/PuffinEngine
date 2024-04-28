@@ -6,7 +6,7 @@
 #include <set>
 
 #include "puffin/nodes/node.h"
-#include "Core/System.h"
+#include "puffin/core/system.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/packed_array.h"
 

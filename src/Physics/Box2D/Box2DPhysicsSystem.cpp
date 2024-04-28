@@ -3,8 +3,8 @@
 #if PFN_BOX2D_PHYSICS
 
 #include "MathHelpers.h"
-#include "Core/Engine.h"
-#include "Core/SignalSubsystem.h"
+#include "puffin/core/engine.h"
+#include "puffin/core/SignalSubsystem.h"
 
 #include "Components/SceneObjectComponent.h"
 #include "Components/TransformComponent2D.h"

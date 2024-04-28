@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core/System.h"
-#include "puffin/types/uuid.h"
-
 #include <unordered_map>
+
+#include "puffin/types/uuid.h"
+#include "puffin/core/system.h"
 
 class GLFWwindow;
 class GLFWmonitor;

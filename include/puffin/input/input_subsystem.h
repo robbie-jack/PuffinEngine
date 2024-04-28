@@ -2,12 +2,12 @@
 
 #include "GLFW/glfw3.h"
 
-#include "Core/System.h"
-#include "puffin/input/input_event.h"
-
 #include <vector>
 #include <string>
 #include <unordered_map>
+
+#include "puffin/core/system.h"
+#include "puffin/input/input_event.h"
 
 namespace puffin
 {

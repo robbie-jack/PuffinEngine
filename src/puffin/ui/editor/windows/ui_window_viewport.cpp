@@ -1,7 +1,7 @@
 #include "puffin/ui/editor/windows/ui_window_viewport.h"
 
 #include "imgui.h"
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "Components/TransformComponent3D.h"
 #include "puffin/manipulation_gizmo.h"
 

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "puffin/audio/mini_audio_subsystem.h"
 
 namespace puffin::audio

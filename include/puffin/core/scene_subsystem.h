@@ -3,14 +3,13 @@
 #include "nlohmann/json.hpp"
 #include "entt/entity/registry.hpp"
 
-#include "Core/System.h"
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/types/uuid.h"
-
 #include <fstream>
 #include <filesystem>
 
 #include "puffin/scene/scene_graph.h"
+#include "puffin/core/system.h"
+#include "puffin/ecs/entt_subsystem.h"
+#include "puffin/types/uuid.h"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <vector>
 
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "puffin/assets/asset_registry.h"
 #include "angelscript/scriptbuilder/scriptbuilder.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h"

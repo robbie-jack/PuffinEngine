@@ -8,7 +8,7 @@
 #include "Components/Scripting/AngelScriptComponent.h"
 #include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/math_helpers.h"
 #include "misc/cpp/imgui_stdlib.h"

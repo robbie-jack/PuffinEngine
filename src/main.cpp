@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "Rendering/Vulkan/VKRenderSystem.h"
 #include "Physics/Jolt/JoltPhysicsSystem.h"
 #include "puffin/scripting/angelscript/angelscript_system.h"

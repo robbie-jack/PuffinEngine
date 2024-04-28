@@ -1,6 +1,6 @@
-#include "Core/EnkiTSSubsystem.h"
+#include "puffin/core/enkits_subsystem.h"
 
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 
 namespace puffin::core
 {

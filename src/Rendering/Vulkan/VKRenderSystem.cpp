@@ -20,10 +20,10 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "Rendering/Vulkan/VKHelpers.h"
-#include "Core/EnkiTSSubsystem.h"
-#include "Core/SignalSubsystem.h"
+#include "puffin/core/enkits_subsystem.h"
+#include "puffin/core/signal_subsystem.h"
 #include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
 #include <Components/Physics/2D/VelocityComponent2D.h>
@@ -35,7 +35,8 @@
 #include "puffin/assets/asset_registry.h"
 #include "puffin/window/window_subsystem.h"
 #include "puffin/scene/scene_graph.h"
-#include "UI/Editor/UISubsystem.h"
+#include "puffin/ui/editor/ui_subsystem.h"
+#include "puffin/ui/editor/windows/ui_window_viewport.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \

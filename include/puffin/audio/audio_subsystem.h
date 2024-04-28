@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Core/System.h"
+#include <set>
 
+#include "puffin/core/system.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/ring_buffer.h"
 #include "puffin/types/packed_array.h"
-
-#include <set>
 
 namespace puffin::audio
 {

@@ -1,6 +1,6 @@
 #include "puffin/scripting/angelscript/angelscript_engine_interface.h"
 
-#include "Core/Engine.h"
+#include "puffin/core/engine.h"
 #include "Components/TransformComponent3D.h"
 #include "puffin/scripting/angelscript/angelscript_system.h"
 #include "angelscript/angelscript.h"

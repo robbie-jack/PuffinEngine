@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System.h"
+#include "puffin/core/system.h"
 
 #include "TaskScheduler.h"
 
