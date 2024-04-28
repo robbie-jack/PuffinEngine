@@ -1,9 +1,10 @@
-#include "UI/Editor/Windows/UIWindowPerformance.h"
+#include "puffin/ui/editor/windows/ui_window_performance.h"
 
 #include <thread>
-
 #include <math.h>
 #include <stdio.h> 
+
+#include "imgui.h"
 
 namespace puffin
 {

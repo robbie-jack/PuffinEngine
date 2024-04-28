@@ -1,4 +1,4 @@
-#include "UI/Editor/Windows/UIContentBrowser.h"
+#include "puffin/ui/editor/windows/ui_content_browser.h"
 
 #include <filesystem>
 

@@ -4,16 +4,11 @@
 #include "imfilebrowser.h"
 
 #include "Core/System.h"
-#include "UI/Editor/Windows/UIWindow.h"
-#include "UI/Editor/Windows/UIWindowSceneHierarchy.h"
-#include "UI/Editor/Windows/UIWindowViewport.h"
-#include "UI/Editor/Windows/UIWindowSettings.h"
-#include "UI/Editor/Windows/UIWindowEntityProperties.h"
-#include "UI/Editor/Windows/UIWindowPerformance.h"
-#include "UI/Editor/Windows/UIContentBrowser.h"
 
 #include <vector>
 #include <memory>
+
+#include "puffin/types/uuid.h"
 
 namespace puffin
 {
@@ -24,6 +19,14 @@ namespace puffin
 
 	namespace ui
 	{
+		class UIContentBrowser;
+		class UIWindowPerformance;
+		class UIWindowNodeEditor;
+		class UIWindowSceneHierarchy;
+		class UIWindowSettings;
+		class UIWindowViewport;
+		class UIWindow;
+
 		enum class ImportAssetUI
 		{
 			None,
@@ -63,7 +66,7 @@ namespace puffin
 			std::shared_ptr<UIWindowSceneHierarchy> mWindowSceneHierarchy;
 			
 			
-			std::shared_ptr<UIWindowEntityProperties> mWindowEntityProperties;
+			std::shared_ptr<UIWindowNodeEditor> mWindowEntityProperties;
 			std::shared_ptr<UIWindowPerformance> mWindowPerformance;
 			std::shared_ptr<UIContentBrowser> mContentBrowser;
 

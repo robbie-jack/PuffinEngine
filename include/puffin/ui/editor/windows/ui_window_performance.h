@@ -3,7 +3,9 @@
 #ifndef UI_WINDOW_PERFORMANCE_H
 #define UI_WINDOW_PERFORMANCE_H
 
-#include "UIWindow.h"
+#include <string>
+
+#include "ui_window.h"
 
 namespace puffin
 {

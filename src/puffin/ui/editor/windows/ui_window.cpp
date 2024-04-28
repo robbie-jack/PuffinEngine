@@ -1,4 +1,4 @@
-#include "UI/Editor/Windows/UIWindow.h"
+#include "puffin/ui/editor/windows/ui_window.h"
 
 namespace puffin
 {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "UIWindow.h"
-#include "puffin/types/uuid.h"
-
 #include <string>
+
+#include "puffin/ui/editor/windows/ui_window.h"
+#include "puffin/types/uuid.h"
 
 namespace puffin
 {

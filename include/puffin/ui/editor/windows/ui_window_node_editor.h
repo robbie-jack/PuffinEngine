@@ -2,10 +2,13 @@
 
 #include <memory>
 
-#include "UIWindow.h"
-
-#include "imfilebrowser.h"
+#include "puffin/ui/editor/windows/ui_window.h"
 #include "puffin/ecs/entt_subsystem.h"
+
+namespace ImGui
+{
+	class FileBrowser;
+}
 
 namespace puffin
 {
@@ -46,12 +49,12 @@ namespace puffin
 
 namespace puffin::ui
 {
-	class UIWindowEntityProperties : public UIWindow
+	class UIWindowNodeEditor : public UIWindow
 	{
 	public:
 
-		UIWindowEntityProperties(const std::shared_ptr<core::Engine>& engine) : UIWindow(engine) {}
-		~UIWindowEntityProperties() override {}
+		UIWindowNodeEditor(const std::shared_ptr<core::Engine>& engine) : UIWindow(engine) {}
+		~UIWindowNodeEditor() override {}
 
 		void draw(double dt) override;
 

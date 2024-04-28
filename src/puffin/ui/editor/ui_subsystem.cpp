@@ -1,4 +1,4 @@
-#include "UI/Editor/UISubsystem.h"
+#include "puffin/ui/editor/ui_subsystem.h"
 
 #include <string>
 #include <iostream>
@@ -10,6 +10,13 @@
 #include "Core/SceneSubsystem.h"
 #include "puffin/assets/asset_importers.h"
 #include "puffin/assets/asset_registry.h"
+#include "puffin/ui/editor/windows/ui_window.h"
+#include "puffin/ui/editor/windows/ui_content_browser.h"
+#include "puffin/ui/editor/windows/ui_window_node_editor.h"
+#include "puffin/ui/editor/windows/ui_window_performance.h"
+#include "puffin/ui/editor/windows/ui_window_scene_hierarchy.h"
+#include "puffin/ui/editor/windows/ui_window_settings.h"
+#include "puffin/ui/editor/windows/ui_window_viewport.h"
 
 namespace fs = std::filesystem;
 
@@ -46,7 +53,7 @@ namespace puffin::ui
 			mWindowSceneHierarchy = std::make_shared<UIWindowSceneHierarchy>(mEngine);
 			mWindowViewport = std::make_shared<UIWindowViewport>(mEngine);
 			mWindowSettings = std::make_shared<UIWindowSettings>(mEngine);
-			mWindowEntityProperties = std::make_shared<UIWindowEntityProperties>(mEngine);
+			mWindowEntityProperties = std::make_shared<UIWindowNodeEditor>(mEngine);
 			mWindowPerformance = std::make_shared<UIWindowPerformance>(mEngine);
 			mContentBrowser = std::make_shared<UIContentBrowser>(mEngine);
 

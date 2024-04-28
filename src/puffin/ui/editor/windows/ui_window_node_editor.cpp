@@ -1,4 +1,4 @@
-#include "UI/Editor/Windows/UIWindowEntityProperties.h"
+#include "puffin/ui/editor/windows/ui_window_node_editor.h"
 
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
@@ -21,7 +21,7 @@ namespace puffin
 {
 	namespace ui
 	{
-		void UIWindowEntityProperties::draw(double dt)
+		void UIWindowNodeEditor::draw(double dt)
 		{
 			mWindowName = "Entity Properties";
 
@@ -214,7 +214,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, Node* node)
+		void UIWindowNodeEditor::draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, Node* node)
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
@@ -272,7 +272,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, Node* node)
+		void UIWindowNodeEditor::draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, Node* node)
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
@@ -336,7 +336,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawMeshUI(const ImGuiTreeNodeFlags flags, const entt::entity entity, rendering::MeshComponent& mesh)
+		void UIWindowNodeEditor::drawMeshUI(const ImGuiTreeNodeFlags flags, const entt::entity entity, rendering::MeshComponent& mesh)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -394,7 +394,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light)
+		void UIWindowNodeEditor::drawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -566,7 +566,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawShadowcasterUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadowcaster)
+		void UIWindowNodeEditor::drawShadowcasterUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadowcaster)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -624,7 +624,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawProceduralPlaneUI(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane)
+		void UIWindowNodeEditor::drawProceduralPlaneUI(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -665,7 +665,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawRigidbody2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody)
+		void UIWindowNodeEditor::drawRigidbody2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -746,7 +746,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawCircle2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle)
+		void UIWindowNodeEditor::drawCircle2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -787,7 +787,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box)
+		void UIWindowNodeEditor::drawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 
@@ -828,7 +828,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowEntityProperties::drawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script)
+		void UIWindowNodeEditor::drawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script)
 		{
 			const auto registry = mEnTTSubsystem->registry();
 

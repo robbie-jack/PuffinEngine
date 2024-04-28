@@ -1,4 +1,4 @@
-#include "UI/Editor/Windows/UIWindowSettings.h"
+#include "puffin/ui/editor/windows/ui_window_settings.h"
 
 #include "Core/Engine.h"
 

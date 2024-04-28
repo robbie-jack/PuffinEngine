@@ -184,14 +184,14 @@ set(HEADERS
 	${HEADER_DIR}/puffin/types/vector.h
 	${HEADER_DIR}/puffin/types/vertex.h
 	# UI
-	${HEADER_DIR}/UI/Editor/UISubsystem.h
-	${HEADER_DIR}/UI/Editor/Windows/UIWindow.h
-	${HEADER_DIR}/UI/Editor/Windows/UIContentBrowser.h
-	${HEADER_DIR}/UI/Editor/Windows/UIWindowEntityProperties.h
-	${HEADER_DIR}/UI/Editor/Windows/UIWindowPerformance.h
-	${HEADER_DIR}/UI/Editor/Windows/UIWindowSceneHierarchy.h
-	${HEADER_DIR}/UI/Editor/Windows/UIWindowSettings.h
-	${HEADER_DIR}/UI/Editor/Windows/UIWindowViewport.h
+	${HEADER_DIR}/puffin/ui/editor/ui_subsystem.h
+	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window.h
+	${HEADER_DIR}/puffin/ui/editor/Windows/ui_content_browser.h
+	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_node_editor.h
+	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_performance.h
+	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_scene_hierarchy.h
+	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_settings.h
+	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_viewport.h
 	# Window
 	${HEADER_DIR}/puffin/window/window_subsystem.h
 	)
@@ -251,14 +251,14 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/scripting/angelscript/angelscript_system.cpp
 	${SOURCE_DIR}/puffin/scripting/angelscript/angelscript_engine_interface.cpp
 	# UI
-	${SOURCE_DIR}/UI/Editor/UISubsystem.cpp
-	${SOURCE_DIR}/UI/Editor/Windows/UIWindow.cpp
-	${SOURCE_DIR}/UI/Editor/Windows/UIContentBrowser.cpp
-	${SOURCE_DIR}/UI/Editor/Windows/UIWindowEntityProperties.cpp
-	${SOURCE_DIR}/UI/Editor/Windows/UIWindowPerformance.cpp
-	${SOURCE_DIR}/UI/Editor/Windows/UIWindowSceneHierarchy.cpp
-	${SOURCE_DIR}/UI/Editor/Windows/UIWindowSettings.cpp
-	${SOURCE_DIR}/UI/Editor/Windows/UIWindowViewport.cpp
+	${SOURCE_DIR}/puffin/ui/editor/ui_subsystem.cpp
+	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window.cpp
+	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_content_browser.cpp
+	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_node_editor.cpp
+	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_performance.cpp
+	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_scene_hierarchy.cpp
+	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_settings.cpp
+	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_viewport.cpp
 	# Window
 	${SOURCE_DIR}/puffin/window/window_subsystem.cpp
 	)
