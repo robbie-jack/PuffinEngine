@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Types/Vector.h"
-#include "Types/UUID.h"
+#include "puffin/types/Vector.h"
+#include "puffin/types/uuid.h"
 
 #include <vector>
 

@@ -7,8 +7,8 @@
 
 #include "puffin/nodes/node.h"
 #include "Core/System.h"
-#include "Types/UUID.h"
-#include "Types/PackedArray.h"
+#include "puffin/types/uuid.h"
+#include "puffin/types/packed_array.h"
 
 namespace puffin
 {

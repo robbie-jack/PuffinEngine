@@ -4,7 +4,7 @@
 
 #include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
-#include "Types/Vector.h"
+#include "puffin/types/Vector.h"
 
 //typedef puffin::TransformComponent STransformComponent;
 

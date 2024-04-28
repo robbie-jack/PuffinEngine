@@ -1,8 +1,6 @@
 #pragma once
 
-#include <Components/TransformComponent3D.h>
-
-#include <Types/Vector.h>
+#include "puffin/types/vector.h"
 
 namespace puffin::physics
 {

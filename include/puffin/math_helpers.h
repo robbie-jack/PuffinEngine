@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Types/Vector.h>
-
 #include <algorithm>
 #include <cmath>
+
+#include "puffin/types/vector.h"
 
 #define PI 3.141592653589793238463
 

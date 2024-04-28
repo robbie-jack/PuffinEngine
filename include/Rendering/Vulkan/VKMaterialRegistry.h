@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 #include "VKTypes.h"
-#include "Types/PackedArray.h"
+#include "puffin/types/packed_array.h"
 
 #include <unordered_set>
 

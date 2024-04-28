@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/System.h"
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 
 #include <unordered_map>
 

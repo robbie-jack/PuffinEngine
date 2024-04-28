@@ -2,7 +2,7 @@
 
 #include "puffin/assets/asset.h"
 
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 #include "Rendering/MaterialGlobals.h"
 #include "nlohmann/json.hpp"
 

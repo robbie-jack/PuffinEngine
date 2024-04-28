@@ -14,8 +14,8 @@
 #include "Physics/Onager2D/Colliders/Collider2D.h"
 #include "Physics/Onager2D/Shapes/BoxShape2D.h"
 #include "Physics/Onager2D/Shapes/CircleShape2D.h"
-#include "Types/PackedArray.h"
-#include "Types/Vector.h"
+#include "puffin/types/packed_array.h"
+#include "puffin/types/Vector.h"
 
 #include <memory>
 #include <set>

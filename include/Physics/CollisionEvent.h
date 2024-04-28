@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 
 namespace puffin::physics
 {

@@ -2,9 +2,9 @@
 
 #include "Core/System.h"
 
-#include "Types/UUID.h"
-#include "Types/RingBuffer.h"
-#include "Types/PackedArray.h"
+#include "puffin/types/uuid.h"
+#include "puffin/types/ring_buffer.h"
+#include "puffin/types/packed_array.h"
 
 #include <set>
 

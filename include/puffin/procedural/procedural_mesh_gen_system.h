@@ -2,7 +2,7 @@
 
 #include "Core/Engine.h"
 #include "entt/entity/registry.hpp"
-#include "Types/Vector.h"
+#include "puffin/types/Vector.h"
 #include "Core/System.h"
 #include "puffin/ecs/entt_subsystem.h"
 

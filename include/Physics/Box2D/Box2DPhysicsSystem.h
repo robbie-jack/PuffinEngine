@@ -6,7 +6,7 @@
 #include "Core/Engine.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "Physics/PhysicsConstants.h"
-#include "Types/PackedArray.h"
+#include "puffin/types/packed_array.h"
 #include "Components/TransformComponent2D.h"
 #include "Components/Physics/2D/ShapeComponents2D.h"
 #include "Components/Physics/2D/VelocityComponent2D.h"

@@ -2,7 +2,7 @@
 
 #include "Core/System.h"
 
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 #include "Core/Engine.h"
 #include "entt/entity/registry.hpp"
 

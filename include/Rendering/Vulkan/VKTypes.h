@@ -1,12 +1,13 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+#include "vulkan/vulkan.hpp"
+
 #include "vk_mem_alloc.hpp"
-#include "Rendering/MaterialGlobals.h"
 
 #include "glm/glm.hpp"
 #include "imgui.h"
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
+#include "Rendering/MaterialGlobals.h"
 
 namespace puffin::rendering
 {

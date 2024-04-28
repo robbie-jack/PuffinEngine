@@ -3,7 +3,7 @@
 #include "Components/Physics/2D/RigidbodyComponent2D.h"
 #include "Physics/Onager2D/PhysicsHelpers2D.h"
 #include "Physics/Onager2D/Colliders/Collider2D.h"
-#include "Types/PackedArray.h"
+#include "puffin/types/packed_array.h"
 
 #include <memory>
 

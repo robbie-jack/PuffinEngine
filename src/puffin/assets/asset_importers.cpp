@@ -25,7 +25,7 @@
 #include "puffin/assets/asset_registry.h"
 #include "puffin/assets/texture_asset.h"
 #include "puffin/assets/mesh_asset.h"
-#include "Types/Vertex.h"
+#include "puffin/types/Vertex.h"
 
 namespace puffin::io
 {

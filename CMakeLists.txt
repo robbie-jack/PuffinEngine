@@ -174,15 +174,15 @@ set(HEADERS
 	${HEADER_DIR}/puffin/scripting/angelscript/angelscript_system.h
 	${HEADER_DIR}/puffin/scripting/angelscript/register_type_helpers.h
 	# Types
-	${HEADER_DIR}/Types/ComponentFlags.h
-	${HEADER_DIR}/Types/Matrix.h
-	${HEADER_DIR}/Types/PackedArray.h
-	${HEADER_DIR}/Types/Quat.h
-	${HEADER_DIR}/Types/RingBuffer.h
-	${HEADER_DIR}/Types/UUID.h
-	${HEADER_DIR}/Types/Vector.h
-	${HEADER_DIR}/Types/Vertex.h
-	${HEADER_DIR}/Types/DeletionQueue.h
+	${HEADER_DIR}/puffin/types/component_flags.h
+	${HEADER_DIR}/puffin/types/deletion_queue.h
+	${HEADER_DIR}/puffin/types/matrix.h
+	${HEADER_DIR}/puffin/types/packed_array.h
+	${HEADER_DIR}/puffin/types/quat.h
+	${HEADER_DIR}/puffin/types/ring_buffer.h
+	${HEADER_DIR}/puffin/types/uuid.h
+	${HEADER_DIR}/puffin/types/vector.h
+	${HEADER_DIR}/puffin/types/vertex.h
 	# UI
 	${HEADER_DIR}/UI/Editor/UISubsystem.h
 	${HEADER_DIR}/UI/Editor/Windows/UIWindow.h

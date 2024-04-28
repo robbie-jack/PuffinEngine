@@ -5,7 +5,7 @@
 
 #include "Core/System.h"
 #include "puffin/ecs/entt_subsystem.h"
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 
 #include <fstream>
 #include <filesystem>

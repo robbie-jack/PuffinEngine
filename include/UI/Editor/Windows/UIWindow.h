@@ -4,7 +4,7 @@
 
 #include "puffin/input/input_subsystem.h"
 #include "Core/Engine.h"
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 
 #include <string>
 

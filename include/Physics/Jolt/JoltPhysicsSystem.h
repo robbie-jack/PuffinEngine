@@ -28,7 +28,7 @@
 #include "Physics/Box2D/Box2DPhysicsSystem.h"
 #include "Physics/PhysicsConstants.h"
 #include "puffin/ecs/entt_subsystem.h"
-#include "Types/PackedArray.h"
+#include "puffin/types/packed_array.h"
 
 namespace puffin::physics
 {

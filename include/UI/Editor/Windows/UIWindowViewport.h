@@ -1,7 +1,7 @@
 #pragma once
 
 #include "UIWindow.h"
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 
 #include <string>
 

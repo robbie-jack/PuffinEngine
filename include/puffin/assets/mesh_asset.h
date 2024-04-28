@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "asset.h"
-#include "Types/Vertex.h"
+#include "puffin/types/Vertex.h"
 
 namespace puffin::assets
 {

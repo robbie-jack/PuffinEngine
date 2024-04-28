@@ -2,7 +2,7 @@
 
 #include "System.h"
 
-#include "Types/PackedArray.h"
+#include "puffin/types/packed_array.h"
 
 #include <unordered_map>
 #include <memory>

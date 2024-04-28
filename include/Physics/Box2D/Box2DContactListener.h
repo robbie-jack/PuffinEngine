@@ -2,7 +2,7 @@
 
 #include "box2d/b2_world_callbacks.h"
 #include "Physics/CollisionEvent.h"
-#include "Types/RingBuffer.h"
+#include "puffin/types/ring_buffer.h"
 
 namespace puffin::physics
 {

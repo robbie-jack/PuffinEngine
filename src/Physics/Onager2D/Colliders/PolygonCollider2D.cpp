@@ -1,7 +1,7 @@
 
 #include "Physics/Onager2D/Colliders/PolygonCollider2D.h"
 #include "Physics/Onager2D/PhysicsTypes2D.h"
-#include "MathHelpers.h"
+#include "puffin/math_helpers.h"
 
 namespace puffin::physics::collision2D
 {

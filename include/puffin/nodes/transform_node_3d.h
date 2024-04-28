@@ -1,8 +1,8 @@
 #pragma once
 
 #include "puffin/nodes/node.h"
-#include "Types/Quat.h"
-#include "Types/Vector.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Vector.h"
 
 namespace puffin
 {

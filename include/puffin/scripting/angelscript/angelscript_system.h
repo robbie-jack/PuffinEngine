@@ -14,8 +14,8 @@
 #include "Core/Engine.h"
 #include "puffin/input/input_event.h""
 #include "Physics/CollisionEvent.h"
-#include "Types/RingBuffer.h"
-#include "Types/UUID.h"
+#include "puffin/types/ring_buffer.h"
+#include "puffin/types/uuid.h"
 
 #include "angelscript_engine_interface.h"
 #include "puffin/audio/audio_subsystem.h"

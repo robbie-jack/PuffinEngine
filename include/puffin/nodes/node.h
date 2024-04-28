@@ -6,7 +6,7 @@
 
 #include "Components/TransformComponent2D.h"
 #include "Components/TransformComponent3D.h"
-#include "Types/UUID.h"
+#include "puffin/types/uuid.h"
 
 #include "nlohmann/json.hpp"
 
