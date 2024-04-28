@@ -1,7 +1,8 @@
-﻿
-#include "Audio/MiniAudioSubsystem.h"
+﻿#include "puffin/audio/mini_audio_subsystem.h"
 
 #define MINIAUDIO_IMPLEMENTATION
+#include "puffin/audio/mini_audio_subsystem.h"
+
 #include "miniaudio/miniaudio.h"
 
 #include <iostream>
@@ -9,10 +10,11 @@
 #include "Core/Engine.h"
 #include "puffin/assets/asset_registry.h"
 #include "puffin/assets/sound_asset.h"
+#include "puffin/audio/audio_subsystem.h"
 
 namespace puffin::audio
 {
-	MiniAudioSubsystem::MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine) : AudioSubsystemProvider(engine)
+	MiniAudioSubsystem::MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine) : audio::AudioSubsystemProvider(engine)
 	{
 		mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "MiniAudioSubsystem: Startup", 60);
 		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "MiniAudioSubsystem: Update");

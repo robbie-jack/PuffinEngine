@@ -95,8 +95,8 @@ set(HEADERS
 	${HEADER_DIR}/puffin/assets/sound_asset.h
 	${HEADER_DIR}/puffin/assets/texture_asset.h
 	# Audio
-	${HEADER_DIR}/Audio/AudioSubsystem.h
-	${HEADER_DIR}/Audio/MiniAudioSubsystem.h
+	${HEADER_DIR}/puffin/audio/audio_subsystem.h
+	${HEADER_DIR}/puffin/audio/mini_audio_subsystem.h
 	# Components
 	${HEADER_DIR}/Components/TransformComponent2D.h
 	${HEADER_DIR}/Components/TransformComponent3D.h
@@ -208,8 +208,8 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/assets/shader_asset.cpp
 	${SOURCE_DIR}/puffin/assets/texture_asset.cpp
 	# Audio
-	${SOURCE_DIR}/Audio/AudioSubsystem.cpp
-	${SOURCE_DIR}/Audio/MiniAudioSubsystem.cpp
+	${SOURCE_DIR}/puffin/audio/audio_subsystem.cpp
+	${SOURCE_DIR}/puffin/audio/mini_audio_subsystem.cpp
 	# Engine
 	${SOURCE_DIR}/Core/Engine.cpp
 	${SOURCE_DIR}/Core/Application.cpp

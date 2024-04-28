@@ -1,9 +1,9 @@
-#include "Audio/AudioSubsystem.h"
-
-#include "Core/Engine.h"
-#include "Audio/MiniAudioSubsystem.h"
+#include "puffin/audio/audio_subsystem.h"
 
 #include <memory>
+
+#include "Core/Engine.h"
+#include "puffin/audio/mini_audio_subsystem.h"
 
 namespace puffin::audio
 {

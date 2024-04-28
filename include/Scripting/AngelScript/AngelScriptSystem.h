@@ -4,7 +4,6 @@
 #include "angelscript/angelscript.h"
 
 #include "Core/System.h"
-#include "Audio/AudioSubsystem.h"
 #include "Components/Scripting/AngelScriptComponent.h"
 #include "Core/Engine.h"
 #include "Input/InputEvent.h"
@@ -19,6 +18,7 @@
 #include <unordered_set>
 
 #include "ECS/EnTTSubsystem.h"
+#include "puffin/audio/audio_subsystem.h"
 
 namespace puffin::scripting
 {
