@@ -2,10 +2,10 @@
 
 #include "Core/Engine.h"
 #include "puffin/ecs/entt_subsystem.h"
-#include "nodes/transform_node_2d.h"
-#include "nodes/transform_node_3d.h"
-#include "nodes/rendering/light_node_3d.h"
-#include "nodes/rendering/mesh_node.h"
+#include "puffin/nodes/transform_node_2d.h"
+#include "puffin/nodes/transform_node_3d.h"
+#include "puffin/nodes/rendering/light_node_3d.h"
+#include "puffin/nodes/rendering/mesh_node.h"
 
 namespace puffin::scene
 {

@@ -13,7 +13,7 @@
 #include "puffin/math_helpers.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "puffin/scene/scene_graph.h"
-#include "nodes/node.h"
+#include "puffin/nodes/node.h"
 
 #include <string>
 

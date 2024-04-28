@@ -1,7 +1,7 @@
 #include "UI/Editor/Windows/UIWindowSceneHierarchy.h"
 
 #include "puffin/scene/scene_graph.h"
-#include "nodes/node.h"
+#include "puffin/nodes/node.h"
 
 namespace puffin
 {

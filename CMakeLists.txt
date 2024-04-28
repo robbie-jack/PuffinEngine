@@ -124,13 +124,12 @@ set(HEADERS
 	${HEADER_DIR}/puffin/input/input_event.h
 	${HEADER_DIR}/puffin/input/input_subsystem.h
 	# Nodes
-	${HEADER_DIR}/nodes/node.h
-	${HEADER_DIR}/nodes/transform_node_2d.h
-	${HEADER_DIR}/nodes/transform_node_3d.h
-	${HEADER_DIR}/nodes/node.h
-	${HEADER_DIR}/nodes/physics/rigidbody_node_3d.h
-	${HEADER_DIR}/nodes/rendering/light_node_3d.h
-	${HEADER_DIR}/nodes/rendering/mesh_node.h
+	${HEADER_DIR}/puffin/nodes/node.h
+	${HEADER_DIR}/puffin/nodes/transform_node_2d.h
+	${HEADER_DIR}/puffin/nodes/transform_node_3d.h
+	${HEADER_DIR}/puffin/nodes/physics/rigidbody_node_3d.h
+	${HEADER_DIR}/puffin/nodes/rendering/light_node_3d.h
+	${HEADER_DIR}/puffin/nodes/rendering/mesh_node.h
 	# Physics
 	${HEADER_DIR}/Physics/BodyType.h
 	${HEADER_DIR}/Physics/CollisionEvent.h
@@ -218,12 +217,12 @@ set(SOURCES
 	# Input
 	${SOURCE_DIR}/puffin/input/input_subsystem.cpp
 	# Nodes
-	${SOURCE_DIR}/nodes/node.cpp
-	${SOURCE_DIR}/nodes/transform_node_2d.cpp
-	${SOURCE_DIR}/nodes/transform_node_3d.cpp
-	${SOURCE_DIR}/nodes/physics/rigidbody_node_3d.cpp
-	${SOURCE_DIR}/nodes/rendering/light_node_3d.cpp
-	${SOURCE_DIR}/nodes/rendering/mesh_node.cpp
+	${SOURCE_DIR}/puffin/nodes/node.cpp
+	${SOURCE_DIR}/puffin/nodes/transform_node_2d.cpp
+	${SOURCE_DIR}/puffin/nodes/transform_node_3d.cpp
+	${SOURCE_DIR}/puffin/nodes/physics/rigidbody_node_3d.cpp
+	${SOURCE_DIR}/puffin/nodes/rendering/light_node_3d.cpp
+	${SOURCE_DIR}/puffin/nodes/rendering/mesh_node.cpp
 	# Physics
 	${SOURCE_DIR}/Physics/Onager2D/OnagerPhysicsSystem2D.cpp
 	${SOURCE_DIR}/Physics/Onager2D/Shapes/CircleShape2D.cpp

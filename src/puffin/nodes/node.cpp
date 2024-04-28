@@ -1,4 +1,4 @@
-#include "nodes/node.h"
+#include "puffin/nodes/node.h"
 
 #include "puffin/scene/scene_graph.h"
 #include "Core/Engine.h"

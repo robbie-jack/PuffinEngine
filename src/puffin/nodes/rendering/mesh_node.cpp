@@ -1,4 +1,4 @@
-#include "nodes/rendering/mesh_node.h"
+#include "puffin/nodes/rendering/mesh_node.h"
 #include "Components/Rendering/MeshComponent.h"
 
 namespace puffin::rendering

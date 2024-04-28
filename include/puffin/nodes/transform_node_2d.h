@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nodes/node.h"
+#include "puffin/nodes/node.h"
 #include "Types/Vector.h"
 
 namespace puffin

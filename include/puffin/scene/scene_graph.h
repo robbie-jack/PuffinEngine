@@ -5,7 +5,7 @@
 #include <memory>
 #include <set>
 
-#include "nodes/node.h"
+#include "puffin/nodes/node.h"
 #include "Core/System.h"
 #include "Types/UUID.h"
 #include "Types/PackedArray.h"

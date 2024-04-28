@@ -1,4 +1,4 @@
-#include "nodes/transform_node_3d.h"
+#include "puffin/nodes/transform_node_3d.h"
 
 #include "Components/TransformComponent3D.h"
 #include "puffin/ecs/entt_subsystem.h"

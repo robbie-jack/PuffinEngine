@@ -1,4 +1,4 @@
-#include "nodes/physics/rigidbody_node_3d.h"
+#include "puffin/nodes/physics/rigidbody_node_3d.h"
 
 #include "Components/Physics/3D/RigidbodyComponent3D.h"
 

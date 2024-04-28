@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nodes/transform_node_3d.h"
+#include "puffin/nodes/transform_node_3d.h"
 
 namespace puffin::physics
 {
