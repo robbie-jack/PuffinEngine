@@ -1,4 +1,4 @@
-#include "Procedural/ProceduralMeshGenSystem.h"
+#include "puffin/procedural/procedural_mesh_gen_system.h"
 
 #include "Components/TransformComponent3D.h"
 #include "Components/Procedural/ProceduralMeshComponent.h"

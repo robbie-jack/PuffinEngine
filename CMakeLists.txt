@@ -154,7 +154,7 @@ set(HEADERS
 	${HEADER_DIR}/Physics/Jolt/JoltPhysicsSystem.h
 	${HEADER_DIR}/Physics/Jolt/JoltPhysicsTypes.h
 	# Procedural
-	${HEADER_DIR}/Procedural/ProceduralMeshGenSystem.h
+	${HEADER_DIR}/puffin/procedural/procedural_mesh_gen_system.h
 	# Rendering
 	${HEADER_DIR}/Rendering/MaterialGlobals.h
 	# Rendering Vulkan
@@ -238,7 +238,7 @@ set(SOURCES
 	${SOURCE_DIR}/Physics/Box2D/Box2DPhysicsSystem.cpp
 	${SOURCE_DIR}/Physics/Jolt/JoltPhysicsSystem.cpp
 	# Procedural
-	${SOURCE_DIR}/Procedural/ProceduralMeshGenSystem.cpp
+	${SOURCE_DIR}/puffin/procedural/procedural_mesh_gen_system.cpp
 	# Rendering
 	# Rendering Vulkan
 	${SOURCE_DIR}/Rendering/Vulkan/VKRenderSystem.cpp
