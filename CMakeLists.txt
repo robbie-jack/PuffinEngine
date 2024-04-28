@@ -194,7 +194,7 @@ set(HEADERS
 	${HEADER_DIR}/UI/Editor/Windows/UIWindowSettings.h
 	${HEADER_DIR}/UI/Editor/Windows/UIWindowViewport.h
 	# Window
-	${HEADER_DIR}/Window/WindowSubsystem.h
+	${HEADER_DIR}/puffin/window/window_subsystem.h
 	)
 
 set(SOURCES 
@@ -261,7 +261,7 @@ set(SOURCES
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindowSettings.cpp
 	${SOURCE_DIR}/UI/Editor/Windows/UIWindowViewport.cpp
 	# Window
-	${SOURCE_DIR}/Window/WindowSubsystem.cpp
+	${SOURCE_DIR}/puffin/window/window_subsystem.cpp
 	)
 	
 set (IMGUI_SOURCES

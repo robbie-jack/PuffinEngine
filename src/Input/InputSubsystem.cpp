@@ -2,7 +2,7 @@
 
 #include "Core/Engine.h"
 #include "Core/SignalSubsystem.h"
-#include "Window/WindowSubsystem.h"
+#include "puffin/window/window_subsystem.h"
 
 namespace puffin
 {

@@ -22,7 +22,6 @@
 
 #include "Core/Engine.h"
 #include "Rendering/Vulkan/VKHelpers.h"
-#include "Window/WindowSubsystem.h"
 #include "Core/EnkiTSSubsystem.h"
 #include "Core/SignalSubsystem.h"
 #include "Components/TransformComponent2D.h"
@@ -34,6 +33,7 @@
 #include "ECS/EnTTSubsystem.h"
 #include "Input/InputSubsystem.h"
 #include "puffin/assets/asset_registry.h"
+#include "puffin/window/window_subsystem.h"
 #include "scene/scene_graph.h"
 #include "UI/Editor/UISubsystem.h"
 

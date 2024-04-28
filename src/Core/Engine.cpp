@@ -29,9 +29,9 @@
 #include "nodes/rendering/light_node_3d.h"
 #include "nodes/rendering/mesh_node.h"
 #include "puffin/audio/audio_subsystem.h"
+#include "puffin/window/window_subsystem.h"
 #include "scene/scene_graph.h"
 #include "UI/Editor/UISubsystem.h"
-#include "Window/WindowSubsystem.h"
 
 #ifdef _WIN32
 #include <Windows.h>

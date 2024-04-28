@@ -1,10 +1,10 @@
-#include "Window/WindowSubsystem.h"
-
-#include "Core/Engine.h"
-
-#include <GLFW/glfw3.h>
+#include "puffin/window/window_subsystem.h"
 
 #include <iostream>
+
+#include "GLFW/glfw3.h"
+
+#include "Core/Engine.h"
 
 
 namespace puffin::window
