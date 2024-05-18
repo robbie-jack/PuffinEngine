@@ -11,7 +11,7 @@ int main()
 
 	engine->setup(R"(C:\Projects\PuffinProject\Puffin.pproject)");
 
-	engine->registerSystem<puffin::rendering::VKRenderSystem>();
+	engine->registerSystem<puffin::rendering::RenderSystemVK>();
 	engine->registerSystem<puffin::physics::JoltPhysicsSystem>();
 	engine->registerSystem<puffin::scripting::AngelScriptSystem>();
 

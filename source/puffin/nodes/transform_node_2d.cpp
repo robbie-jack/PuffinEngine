@@ -85,7 +85,7 @@ namespace puffin
 #else
 	const Vector2f& TransformNode2D::position() const
 	{
-		return get_transform().position;
+		return transform().position;
 	}
 
 	Vector2f& TransformNode2D::position()

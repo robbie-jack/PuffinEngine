@@ -16,7 +16,7 @@
 
 namespace puffin::rendering
 {
-	void UnifiedGeometryBuffer::init(const std::shared_ptr<VKRenderSystem>& renderer, const uint32_t vertexSize, const uint32_t indexSize,
+	void UnifiedGeometryBuffer::init(const std::shared_ptr<RenderSystemVK>& renderer, const uint32_t vertexSize, const uint32_t indexSize,
 	                                 const vk::DeviceSize initialVertexBufferSize, const vk::DeviceSize initialIndexBufferSize, const vk::DeviceSize vertexBufferBlockSize, const vk
 	                                 ::DeviceSize indexBufferBlockSize)
 	{

@@ -18,10 +18,10 @@
 
 namespace puffin::rendering::util
 {
-	void immediateSubmit(const std::shared_ptr<VKRenderSystem>& renderSystem,
+	void immediateSubmit(const std::shared_ptr<RenderSystemVK>& renderSystem,
 	                     std::function<void(VkCommandBuffer cmd)>&& function)
 	{
-		vk::CommandBuffer cmd = renderSystem->uploadContext().commandBuffer;
+		vk::CommandBuffer cmd = renderSystem->upload_context().commandBuffer;
 
 		const vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
 		VK_CHECK(cmd.begin(&cmdBeginInfo));
@@ -32,15 +32,15 @@ namespace puffin::rendering::util
 
 		const vk::SubmitInfo submit = { {}, {}, {}, 1, &cmd };
 
-		VK_CHECK(renderSystem->graphicsQueue().submit(1, &submit, renderSystem->uploadContext().uploadFence));
+		VK_CHECK(renderSystem->graphics_queue().submit(1, &submit, renderSystem->upload_context().uploadFence));
 
-		VK_CHECK(renderSystem->device().waitForFences(1, &renderSystem->uploadContext().uploadFence, true, 9999999999));
-		VK_CHECK(renderSystem->device().resetFences(1, &renderSystem->uploadContext().uploadFence));
+		VK_CHECK(renderSystem->device().waitForFences(1, &renderSystem->upload_context().uploadFence, true, 9999999999));
+		VK_CHECK(renderSystem->device().resetFences(1, &renderSystem->upload_context().uploadFence));
 
-		renderSystem->device().resetCommandPool(renderSystem->uploadContext().commandPool);
+		renderSystem->device().resetCommandPool(renderSystem->upload_context().commandPool);
 	}
 
-	void copyDataBetweenBuffers(const std::shared_ptr<VKRenderSystem>& renderer, const vk::Buffer srcBuffer,
+	void copyDataBetweenBuffers(const std::shared_ptr<RenderSystemVK>& renderer, const vk::Buffer srcBuffer,
 	                            const vk::Buffer dstBuffer,
 	                            const uint32_t dataSize, const uint32_t srcOffset, const uint32_t dstOffset)
 	{
@@ -68,11 +68,11 @@ namespace puffin::rendering::util
 		return buffer;
 	}
 
-	void copyCPUDataIntoGPUBuffer(const std::shared_ptr<VKRenderSystem>& renderer, const AllocatedBuffer& dstBuffer, const uint32_t dataSize,
+	void copyCPUDataIntoGPUBuffer(const std::shared_ptr<RenderSystemVK>& renderer, const AllocatedBuffer& dstBuffer, const uint32_t dataSize,
 	                              const void* data, const uint32_t srcOffset, const uint32_t dstOffset)
 	{
 		// If rebar is enabled and buffer is in host visible memory, copy directly to buffer
-		if (const vk::MemoryPropertyFlags memPropFlags = renderer->allocator().getAllocationMemoryProperties(dstBuffer.allocation); renderer->isReBarEnabled() 
+		if (const vk::MemoryPropertyFlags memPropFlags = renderer->allocator().getAllocationMemoryProperties(dstBuffer.allocation); renderer->rebar_enabled() 
 			&& (memPropFlags & vk::MemoryPropertyFlagBits::eHostVisible))
 		{
 			const auto* dataChar = static_cast<const char*>(data);
@@ -100,7 +100,7 @@ namespace puffin::rendering::util
 		}
 	}
 
-	AllocatedBuffer initVertexBuffer(const std::shared_ptr<VKRenderSystem>& renderer, const void* vertexData, const size_t numVertices, const size_t vertexSize)
+	AllocatedBuffer initVertexBuffer(const std::shared_ptr<RenderSystemVK>& renderer, const void* vertexData, const size_t numVertices, const size_t vertexSize)
 	{
 		// Copy Loaded Mesh data into mesh vertex buffer
 		const uint32_t vertexBufferSize = numVertices * vertexSize;
@@ -115,7 +115,7 @@ namespace puffin::rendering::util
 		return vertexBuffer;
 	}
 
-	AllocatedBuffer initIndexBuffer(const std::shared_ptr<VKRenderSystem>& renderer, const void* indexData,
+	AllocatedBuffer initIndexBuffer(const std::shared_ptr<RenderSystemVK>& renderer, const void* indexData,
 	                                const size_t numIndices, const size_t indexSize)
 	{
 		const uint32_t indexBufferSize = numIndices * indexSize;
@@ -130,7 +130,7 @@ namespace puffin::rendering::util
 		return indexBuffer;
 	}
 
-	AllocatedImage createImage(const std::shared_ptr<VKRenderSystem>& renderer, const vk::ImageCreateInfo& imageInfo, vk::ImageViewCreateInfo imageViewInfo)
+	AllocatedImage createImage(const std::shared_ptr<RenderSystemVK>& renderer, const vk::ImageCreateInfo& imageInfo, vk::ImageViewCreateInfo imageViewInfo)
 	{
 		AllocatedImage allocImage;
 		allocImage.format = imageInfo.format;
@@ -148,7 +148,7 @@ namespace puffin::rendering::util
 		return allocImage;
 	}
 
-	AllocatedImage initDepthImage(const std::shared_ptr<VKRenderSystem>& renderer, const vk::Extent3D extent, const vk::Format format)
+	AllocatedImage initDepthImage(const std::shared_ptr<RenderSystemVK>& renderer, const vk::Extent3D extent, const vk::Format format)
 	{
 		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
 			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment };
@@ -160,7 +160,7 @@ namespace puffin::rendering::util
 		return createImage(renderer, imageInfo, imageViewInfo);
 	}
 
-	AllocatedImage initTexture(const std::shared_ptr<VKRenderSystem>& renderer, const void* pixelData, const uint32_t width, const uint32_t height, vk
+	AllocatedImage initTexture(const std::shared_ptr<RenderSystemVK>& renderer, const void* pixelData, const uint32_t width, const uint32_t height, vk
 	                           ::DeviceSize size, const vk::Format format)
 	{
 		// Allocate staging buffer on CPU for holding texture data to upload

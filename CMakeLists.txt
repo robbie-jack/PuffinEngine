@@ -47,7 +47,7 @@ checkout_git_branch("deps/imgui" "docking")
 
 # Define CMAKE Variables
 set(PUFFIN_LIBRARY_NAME PuffinEngine)
-set(PUFFIN_PROJECT_NAME PuffinProject)
+set(PUFFIN_APP_NAME PuffinApp)
 
 # Set Executable/Library/Archive Output Directories
 if (WIN32)
@@ -296,8 +296,8 @@ set (ENKITS_SOURCES
 
 add_library(${PUFFIN_LIBRARY_NAME} ${HEADERS} ${SOURCES})
 
-project (${PUFFIN_PROJECT_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
-add_executable(${PUFFIN_PROJECT_NAME} ${SOURCE_DIR}/main.cpp )
+project (${PUFFIN_APP_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
+add_executable(${PUFFIN_APP_NAME} ${SOURCE_DIR}/main.cpp )
 
 # Set C++ Language Standard to C++ 17
 set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_STANDARD 17)
@@ -390,18 +390,18 @@ target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/entt/src)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/jolt)
 
-target_link_libraries(${PUFFIN_PROJECT_NAME} ${PUFFIN_LIBRARY_NAME})
+target_link_libraries(${PUFFIN_APP_NAME} ${PUFFIN_LIBRARY_NAME})
 
 target_compile_features(${PUFFIN_LIBRARY_NAME} PRIVATE cxx_std_17)
-target_compile_features(${PUFFIN_PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PUFFIN_APP_NAME} PRIVATE cxx_std_17)
 
 set_property(TARGET ${PUFFIN_LIBRARY_NAME} PROPERTY 
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set_property(TARGET ${PUFFIN_PROJECT_NAME} PROPERTY 
+set_property(TARGET ${PUFFIN_APP_NAME} PROPERTY 
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PUFFIN_PROJECT_NAME})
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PUFFIN_APP_NAME})
 
 # Add definitions for supported functionality
 if (DOUBLE_PRECISION_SUPPORT)
@@ -445,12 +445,12 @@ if (MSVC)
 	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC "/Zc:__cplusplus")
 
 	# Big Object Support (MSCV/Linux)
-	target_compile_options(${PUFFIN_PROJECT_NAME} PUBLIC /bigobj)
-	target_compile_options(${PUFFIN_PROJECT_NAME} PUBLIC /arch:AVX2)
+	target_compile_options(${PUFFIN_APP_NAME} PUBLIC /bigobj)
+	target_compile_options(${PUFFIN_APP_NAME} PUBLIC /arch:AVX2)
 	# Multiprocessor (Multithreaded) Compilation Support
-	target_compile_options(${PUFFIN_PROJECT_NAME} PUBLIC /MP)
+	target_compile_options(${PUFFIN_APP_NAME} PUBLIC /MP)
 	# Enabled updated __cplusplus macro
-	target_compile_options(${PUFFIN_PROJECT_NAME} PUBLIC "/Zc:__cplusplus")
+	target_compile_options(${PUFFIN_APP_NAME} PUBLIC "/Zc:__cplusplus")
 else ()
 	#target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC -Wa, -mbig-obj)
 endif ()

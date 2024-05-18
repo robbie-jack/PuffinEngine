@@ -8,11 +8,11 @@
 
 namespace puffin::rendering
 {
-	void VKMaterialRegistry::init(const std::shared_ptr<VKRenderSystem>& renderSystem)
+	void VKMaterialRegistry::init(const std::shared_ptr<RenderSystemVK>& renderSystem)
 	{
 		mRenderSystem = renderSystem;
 
-		mMats.resize(gMaxUniqueMaterials);
+		mMats.resize(g_max_unique_materials);
 	}
 
 	void VKMaterialRegistry::registerMaterialInstance(const PuffinID& id)
@@ -94,7 +94,7 @@ namespace puffin::rendering
 			{
 				if (texID != gInvalidID)
 				{
-					mRenderSystem->registerTexture(texID);
+					mRenderSystem->register_texture(texID);
 				}
 			}
 
@@ -136,7 +136,7 @@ namespace puffin::rendering
 
 					util::PipelineLayoutBuilder plb{};
 					mat.pipelineLayout = plb
-						.descriptorSetLayout(mRenderSystem->staticRenderData().globalSetLayout)
+						.descriptorSetLayout(mRenderSystem->static_render_data().global_set_layout)
 						.pushConstantRange(range)
 						.createUnique(mRenderSystem->device());
 
@@ -144,10 +144,10 @@ namespace puffin::rendering
 						vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };
 
 					vk::PipelineRenderingCreateInfoKHR pipelineRenderInfo = {
-						0, mRenderSystem->offscreenData().imageFormat, mRenderSystem->offscreenData().allocDepthImage.format
+						0, mRenderSystem->offscreen_data().imageFormat, mRenderSystem->offscreen_data().allocDepthImage.format
 					};
 
-					util::PipelineBuilder pb{ mRenderSystem->windowSize().width, mRenderSystem->windowSize().height };
+					util::PipelineBuilder pb{ mRenderSystem->window_size().width, mRenderSystem->window_size().height };
 					mat.pipeline = pb
 						// Define dynamic state which can change each frame (currently viewport and scissor size)
 						.dynamicState(vk::DynamicState::eViewport)
@@ -159,12 +159,12 @@ namespace puffin::rendering
 						// Add rendering info struct
 						.addPNext(&pipelineRenderInfo)
 						// Create pipeline
-						.createUnique(mRenderSystem->device(), mRenderSystem->pipelineCache(), *mat.pipelineLayout, nullptr);
+						.createUnique(mRenderSystem->device(), mRenderSystem->pipeline_cache(), *mat.pipelineLayout, nullptr);
 
 					//mDevice.destroyShaderModule(vertMod.module());
 					//mDevice.destroyShaderModule(fragMod.module());
 
-					mRenderSystem->deletionQueue().pushFunction([&]()
+					mRenderSystem->deletion_queue().pushFunction([&]()
 					{
 						mat.pipeline = {};
 						mat.pipelineLayout = {};

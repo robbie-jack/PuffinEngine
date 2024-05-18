@@ -79,7 +79,7 @@ namespace puffin
 #else
 	const Vector3f& TransformNode3D::position() const
 	{
-		return get_transform().position;
+		return transform().position;
 	}
 
 	Vector3f& TransformNode3D::position()

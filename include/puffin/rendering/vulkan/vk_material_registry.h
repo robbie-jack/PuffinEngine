@@ -8,7 +8,7 @@
 
 namespace puffin::rendering
 {
-	class VKRenderSystem;
+	class RenderSystemVK;
 
 	class VKMaterialRegistry
 	{
@@ -17,7 +17,7 @@ namespace puffin::rendering
 		VKMaterialRegistry() = default;
 		~VKMaterialRegistry() = default;
 
-		void init(const std::shared_ptr<VKRenderSystem>& renderSystem);
+		void init(const std::shared_ptr<RenderSystemVK>& renderSystem);
 
 		void registerMaterialInstance(const PuffinID& id);
 
@@ -34,7 +34,7 @@ namespace puffin::rendering
 
 	private:
 
-		std::shared_ptr<VKRenderSystem> mRenderSystem = nullptr;
+		std::shared_ptr<RenderSystemVK> mRenderSystem = nullptr;
 
 		std::unordered_set<PuffinID> mMaterialsToLoad; // Materials that need to be loaded
 		std::unordered_set<PuffinID> mMaterialsInstancesToLoad; // Materials Instances that need to be loaded

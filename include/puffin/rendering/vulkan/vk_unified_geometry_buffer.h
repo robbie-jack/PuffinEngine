@@ -9,14 +9,14 @@
 
 namespace puffin::rendering
 {
-	class VKRenderSystem;
+	class RenderSystemVK;
 
 	// Custom buffer to store vertex/index data for multiple meshes in a single large vertex/index buffer
 	class UnifiedGeometryBuffer
 	{
 	public:
 
-		void init(const std::shared_ptr<VKRenderSystem>& renderer, uint32_t vertexSize, uint32_t indexSize = sizeof(uint32_t),
+		void init(const std::shared_ptr<RenderSystemVK>& renderer, uint32_t vertexSize, uint32_t indexSize = sizeof(uint32_t),
 		          vk::DeviceSize initialVertexBufferSize = 64 * 1024 * 1024, vk::DeviceSize initialIndexBufferSize = 16 * 1024 * 1024, vk::
 		          DeviceSize vertexBufferBlockSize = 64 * 1024 * 1024, vk::DeviceSize indexBufferBlockSize = 16 * 1024 * 1024);
 
@@ -58,7 +58,7 @@ namespace puffin::rendering
 
 	private:
 
-		std::shared_ptr<VKRenderSystem> mRenderer = nullptr;
+		std::shared_ptr<RenderSystemVK> mRenderer = nullptr;
 
 		struct InternalSubMeshData
 		{
