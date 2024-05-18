@@ -127,11 +127,22 @@ namespace puffin::rendering
 
 	static uint32_t parseVertexSizeFromFormat(const VertexFormat format)
 	{
+		if (format == VertexFormat::PC32)
+		{
+			return sizeof(VertexPC32);
+		}
+
+		if (format == VertexFormat::PNC32)
+		{
+			return sizeof(VertexPNC32);
+		}
+
 		if (format == VertexFormat::PNTV32)
 		{
 			return sizeof(VertexPNTV32);
 		}
-		else if (format == VertexFormat::P64NTV32)
+
+		if (format == VertexFormat::P64NTV32)
 		{
 			return sizeof(VertexP64NTV32);
 		}

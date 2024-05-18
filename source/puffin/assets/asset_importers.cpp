@@ -29,7 +29,7 @@
 
 namespace puffin::io
 {
-	void generateTangents(std::vector<rendering::VertexPNTV32> vertices, std::vector<uint32_t> indices)
+	void generate_tangents(std::vector<rendering::VertexPNTV32> vertices, std::vector<uint32_t> indices)
 	{
 		std::vector<Vector3f> tan;
 		tan.resize(vertices.size());
@@ -83,26 +83,26 @@ namespace puffin::io
 		}
 	}
 
-	void copyGLTFBufferData(const tinygltf::BufferView& bufferView, const tinygltf::Buffer& buffer, const size_t& expectedStride, void* dst)
+	void copy_gltf_buffer_data(const tinygltf::BufferView& bufferView, const tinygltf::Buffer& buffer, const size_t& expectedStride, void* dst)
 	{
-		const size_t byteOffset = bufferView.byteOffset;
-		const size_t byteLength = bufferView.byteLength;
-		const size_t byteStride = bufferView.byteStride;
+		const size_t byte_offset = bufferView.byteOffset;
+		const size_t byte_length = bufferView.byteLength;
+		const size_t byte_stride = bufferView.byteStride;
 
-		const auto dstChar = static_cast<char*>(dst);
+		const auto dst_char = static_cast<char*>(dst);
 
 		// Data is packed together, copy with a single command
-		if (byteStride == 0 || byteStride == expectedStride)
+		if (byte_stride == 0 || byte_stride == expectedStride)
 		{
-			memcpy(dstChar, buffer.data.data() + byteOffset, byteLength);
+			memcpy(dst_char, buffer.data.data() + byte_offset, byte_length);
 		}
 		// Byte data is interleaved, copy each attribute individually
 		else
 		{
 			int i = 0;
-			for (size_t offset = byteOffset; offset < byteOffset + byteLength; offset += byteStride)
+			for (size_t offset = byte_offset; offset < byte_offset + byte_length; offset += byte_stride)
 			{
-				memcpy(dstChar + (i * byteStride), buffer.data.data() + offset, expectedStride);
+				memcpy(dst_char + (i * byte_stride), buffer.data.data() + offset, expectedStride);
 
 				i++;
 			}
@@ -113,13 +113,13 @@ namespace puffin::io
 	// Model Importers
 	//////////////////////
 	
-	bool loadAndImportModel(const fs::path& modelPath, fs::path assetSubdirectory)
+	bool load_and_import_model(const fs::path& modelPath, fs::path assetSubdirectory)
 	{
 		if (modelPath.extension() == ".gltf" || modelPath.extension() == ".glb")
-			return loadAndImportGLTFModel(modelPath, assetSubdirectory);
+			return load_and_import_gltf_model(modelPath, assetSubdirectory);
 
 		if (modelPath.extension() == ".obj")
-			return loadAndImportOBJModel(modelPath, assetSubdirectory);
+			return load_and_import_obj_model(modelPath, assetSubdirectory);
 
 		std::cout << "Failed to load mesh, unsupported format" << std::endl;
 
@@ -128,7 +128,7 @@ namespace puffin::io
 
 	// OBJ
 
-	bool loadAndImportOBJModel(const fs::path& modelPath, fs::path assetSubdirectory)
+	bool load_and_import_obj_model(const fs::path& modelPath, fs::path assetSubdirectory)
 	{
 		// Load obj data into reader object
 		tinyobj::ObjReaderConfig config;
@@ -162,17 +162,18 @@ namespace puffin::io
 		std::vector<rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
-		std::vector<assets::SubMeshInfo> subMeshInfos;
-		subMeshInfos.reserve(shapes.size());
+		assets::MeshAssetInfo mesh_asset_info;
 
-		size_t indexCountTotal = 0;
+		mesh_asset_info.sub_mesh_infos.reserve(shapes.size());
+
+		size_t index_count_total = 0;
 		for (const auto& shape : shapes)
 		{
-			indexCountTotal += shape.mesh.indices.size();
+			index_count_total += shape.mesh.indices.size();
 		}
 
-		vertices.reserve(indexCountTotal);
-		indices.reserve(indexCountTotal);
+		vertices.reserve(index_count_total);
+		indices.reserve(index_count_total);
 
 		// Loop over shapes
 		int s = 0;
@@ -180,11 +181,11 @@ namespace puffin::io
 		{
 			rendering::VertexPNTV32 vertex;
 
-			assets::SubMeshInfo subMeshInfo;
-			subMeshInfo.vertexOffset = vertices.size();
-			subMeshInfo.indexOffset = indices.size();
+			assets::SubMeshInfo sub_mesh_info;
+			sub_mesh_info.vertex_offset = vertices.size();
+			sub_mesh_info.index_offset = indices.size();
 
-			std::unordered_map<rendering::VertexPNTV32, uint32_t> vertexIndices;
+			std::unordered_map<rendering::VertexPNTV32, uint32_t> vertex_indices;
 
 			// Loop over faces (polygon) to get indices
 			for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++)
@@ -197,7 +198,7 @@ namespace puffin::io
 					vertex = {};
 
 					// Store index into attrib vertices vector
-					tinyobj::index_t idx = shape.mesh.indices[subMeshInfo.indexCount + v];
+					tinyobj::index_t idx = shape.mesh.indices[sub_mesh_info.index_count + v];
 
 					vertex.pos.x = attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 0];
 					vertex.pos.y = attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 1];
@@ -219,57 +220,55 @@ namespace puffin::io
 					}
 
 					// Add vertex to vertices vector if it does not already exist, else just add a new index to indices vector
-					if (auto it = vertexIndices.find(vertex); it != vertexIndices.end())
+					if (auto it = vertex_indices.find(vertex); it != vertex_indices.end())
 					{
 						indices.push_back(it->second);
 					}
 					else
 					{
 						vertices.push_back(vertex);
-						indices.push_back(subMeshInfo.vertexCount);
-						vertexIndices[vertex] = subMeshInfo.vertexCount;
+						indices.push_back(sub_mesh_info.vertex_count);
+						vertex_indices[vertex] = sub_mesh_info.vertex_count;
 
-						subMeshInfo.vertexCount++;
+						sub_mesh_info.vertex_count++;
 					}
 				}
 
-				subMeshInfo.indexCount += fv;
+				sub_mesh_info.index_count += fv;
 			}
 
 			// Fill out SubMeshInfo struct
-			subMeshInfo.vertexByteSize = subMeshInfo.vertexCount * sizeof(rendering::VertexPNTV32);
-			subMeshInfo.indexByteSize = subMeshInfo.indexCount * sizeof(uint32_t);
-			subMeshInfo.subMeshIdx = s;
+			sub_mesh_info.vertex_byte_size_total = sub_mesh_info.vertex_count * sizeof(rendering::VertexPNTV32);
+			sub_mesh_info.index_byte_size_total = sub_mesh_info.index_count * sizeof(uint32_t);
+			sub_mesh_info.sub_mesh_idx = s;
 
-			subMeshInfos.push_back(subMeshInfo);
+			mesh_asset_info.sub_mesh_infos.push_back(sub_mesh_info);
 
-			vertexIndices.clear();
+			vertex_indices.clear();
 
 			s++;
 		}
 
-		generateTangents(vertices, indices);
+		generate_tangents(vertices, indices);
 
 		// Create & save asset
-		assets::MeshAssetInfo meshAssetInfo;
-		meshAssetInfo.compressionMode = assets::CompressionMode::LZ4;
-		meshAssetInfo.originalFile = modelPath.string();
-		meshAssetInfo.vertexFormat = rendering::VertexFormat::PNTV32;
-		meshAssetInfo.subMeshCount = subMeshInfos.size();
+		mesh_asset_info.compressionMode = assets::CompressionMode::LZ4;
+		mesh_asset_info.originalFile = modelPath.string();
+		mesh_asset_info.vertex_format = rendering::VertexFormat::PNTV32;
 
-		for (auto& subMeshInfo : subMeshInfos)
+		for (auto& sub_mesh_info : mesh_asset_info.sub_mesh_infos)
 		{
-			meshAssetInfo.vertexCountTotal += subMeshInfo.vertexCount;
-			meshAssetInfo.indexCountTotal += subMeshInfo.indexCount;
-			meshAssetInfo.vertexByteSizeTotal += subMeshInfo.vertexByteSize;
-			meshAssetInfo.indexByteSizeTotal += subMeshInfo.indexByteSize;
+			mesh_asset_info.vertex_count_total += sub_mesh_info.vertex_count;
+			mesh_asset_info.index_count_total += sub_mesh_info.index_count;
+			mesh_asset_info.vertex_byte_size_total += sub_mesh_info.vertex_byte_size_total;
+			mesh_asset_info.index_byte_size_total += sub_mesh_info.index_byte_size_total;
 		}
 
-		fs::path assetPath = assetSubdirectory / (modelPath.stem().string() + ".pstaticmesh");
+		fs::path asset_path = assetSubdirectory / (modelPath.stem().string() + ".pstaticmesh");
 
-		auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(assetPath);
+		auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(asset_path);
 
-		if (!asset->save(meshAssetInfo, subMeshInfos, vertices.data(), indices.data()))
+		if (!asset->save(mesh_asset_info, vertices.data(), indices.data()))
 			return false;
 
 		assets::AssetRegistry::get()->saveAssetCache();
@@ -282,7 +281,7 @@ namespace puffin::io
 
 	// GLTF
 
-	bool loadGLTFModel(const fs::path& modelPath, tinygltf::Model& model)
+	bool load_gltf_model(const fs::path& modelPath, tinygltf::Model& model)
 	{
 		tinygltf::TinyGLTF loader;
 		std::string err;
@@ -318,7 +317,7 @@ namespace puffin::io
 		return ret;
 	}
 
-	bool importGLTFModel(const fs::path& modelPath, const tinygltf::Model& model, fs::path assetSubdirectory)
+	bool import_gltf_model(const fs::path& modelPath, const tinygltf::Model& model, fs::path assetSubdirectory)
 	{
 		// Import each mesh in file
 		for (const auto& mesh : model.meshes)
@@ -326,31 +325,31 @@ namespace puffin::io
 			if (mesh.primitives.empty())
 				continue;
 
-			std::vector<assets::SubMeshInfo> subMeshInfos;
-			subMeshInfos.reserve(mesh.primitives.size());
+			assets::MeshAssetInfo mesh_asset_info;
+			mesh_asset_info.sub_mesh_infos.reserve(mesh.primitives.size());
 
-			size_t indexCountTotal = 0;
+			size_t index_count_total = 0;
 			for (const auto& primitive : mesh.primitives)
 			{
 				const auto& indexAccessor = model.accessors[primitive.indices];
 
-				indexCountTotal += indexAccessor.count;
+				index_count_total += indexAccessor.count;
 			}
 
 			std::vector<rendering::VertexPNTV32> vertices;
 			std::vector<uint32_t> indices;
 
-			vertices.reserve(indexCountTotal);
-			indices.reserve(indexCountTotal);
+			vertices.reserve(index_count_total);
+			indices.reserve(index_count_total);
 
 			int p = 0;
 			for (const auto& primitive : mesh.primitives)
 			{
-				assets::SubMeshInfo subMeshInfo;
-				subMeshInfo.vertexOffset = vertices.size();
-				subMeshInfo.indexOffset = indices.size();
+				assets::SubMeshInfo sub_mesh_info;
+				sub_mesh_info.vertex_offset = vertices.size();
+				sub_mesh_info.index_offset = indices.size();
 
-				std::vector<uint32_t> pIndices;
+				std::vector<uint32_t> p_indices;
 
 				// Load Indices
 				{
@@ -361,31 +360,31 @@ namespace puffin::io
 					if (indexAccessor.componentType == TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT && indexAccessor.type == TINYGLTF_TYPE_SCALAR)
 					{
 						const auto& bufferView = model.bufferViews[indexAccessor.bufferView];
-						subMeshInfo.indexCount = indexAccessor.count;
+						sub_mesh_info.index_count = indexAccessor.count;
 
 						indexShort.resize(indexAccessor.count);
 
-						copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 2, indexShort.data());
+						copy_gltf_buffer_data(bufferView, model.buffers[bufferView.buffer], 2, indexShort.data());
 					}
 
 					// Copy indices into vector
 					for (const auto& index : indexShort)
 					{
-						pIndices.push_back(index);
+						p_indices.push_back(index);
 					}
 				}
 
-				std::vector<rendering::VertexPNTV32> pVertices;
-				std::vector<Vector3f> vertexPos;
-				std::vector<Vector3f> vertexNormal;
-				std::vector<Vector3f> vertexTangent;
-				std::vector<Vector2f> vertexUV;
+				std::vector<rendering::VertexPNTV32> p_vertices;
+				std::vector<Vector3f> vertex_pos;
+				std::vector<Vector3f> vertex_normal;
+				std::vector<Vector3f> vertex_tangent;
+				std::vector<Vector2f> vertex_uv;
 
-				pVertices.reserve(subMeshInfo.indexCount);
-				vertexPos.reserve(subMeshInfo.indexCount);
-				vertexNormal.reserve(subMeshInfo.indexCount);
-				vertexNormal.reserve(subMeshInfo.indexCount);
-				vertexUV.reserve(subMeshInfo.indexCount);
+				p_vertices.reserve(sub_mesh_info.index_count);
+				vertex_pos.reserve(sub_mesh_info.index_count);
+				vertex_normal.reserve(sub_mesh_info.index_count);
+				vertex_normal.reserve(sub_mesh_info.index_count);
+				vertex_uv.reserve(sub_mesh_info.index_count);
 
 				// Load Vertices
 				for (const auto& attribute : primitive.attributes)
@@ -396,12 +395,12 @@ namespace puffin::io
 
 						if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC3)
 						{
-							const auto& bufferView = model.bufferViews[accessor.bufferView];
-							subMeshInfo.vertexCount = accessor.count;
+							const auto& buffer_view = model.bufferViews[accessor.bufferView];
+							sub_mesh_info.vertex_count = accessor.count;
 
-							vertexPos.resize(subMeshInfo.vertexCount);
+							vertex_pos.resize(sub_mesh_info.vertex_count);
 
-							copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexPos.data());
+							copy_gltf_buffer_data(buffer_view, model.buffers[buffer_view.buffer], 12, vertex_pos.data());
 						}
 
 						continue;
@@ -413,12 +412,12 @@ namespace puffin::io
 
 						if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC3)
 						{
-							const auto& bufferView = model.bufferViews[accessor.bufferView];
-							subMeshInfo.vertexCount = accessor.count;
+							const auto& buffer_view = model.bufferViews[accessor.bufferView];
+							sub_mesh_info.vertex_count = accessor.count;
 
-							vertexNormal.resize(subMeshInfo.vertexCount);
+							vertex_normal.resize(sub_mesh_info.vertex_count);
 
-							copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexNormal.data());
+							copy_gltf_buffer_data(buffer_view, model.buffers[buffer_view.buffer], 12, vertex_normal.data());
 						}
 
 						continue;
@@ -430,12 +429,12 @@ namespace puffin::io
 
 						if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC4)
 						{
-							const auto& bufferView = model.bufferViews[accessor.bufferView];
-							subMeshInfo.vertexCount = accessor.count;
+							const auto& buffer_view = model.bufferViews[accessor.bufferView];
+							sub_mesh_info.vertex_count = accessor.count;
 
-							vertexTangent.resize(subMeshInfo.vertexCount);
+							vertex_tangent.resize(sub_mesh_info.vertex_count);
 
-							copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 12, vertexTangent.data());
+							copy_gltf_buffer_data(buffer_view, model.buffers[buffer_view.buffer], 12, vertex_tangent.data());
 						}
 
 						continue;
@@ -447,90 +446,88 @@ namespace puffin::io
 
 						if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_FLOAT && accessor.type == TINYGLTF_TYPE_VEC2)
 						{
-							const auto& bufferView = model.bufferViews[accessor.bufferView];
-							subMeshInfo.vertexCount = accessor.count;
+							const auto& buffer_view = model.bufferViews[accessor.bufferView];
+							sub_mesh_info.vertex_count = accessor.count;
 
-							vertexUV.resize(subMeshInfo.vertexCount);
+							vertex_uv.resize(sub_mesh_info.vertex_count);
 
-							copyGLTFBufferData(bufferView, model.buffers[bufferView.buffer], 8, vertexUV.data());
+							copy_gltf_buffer_data(buffer_view, model.buffers[buffer_view.buffer], 8, vertex_uv.data());
 						}
 					}
 				}
 
 				// Copy data into vertices vector
-				for (int i = 0; i < subMeshInfo.vertexCount; i++)
+				for (int i = 0; i < sub_mesh_info.vertex_count; i++)
 				{
 					rendering::VertexPNTV32 vertex;
 
-					if (!vertexPos.empty())
-						vertex.pos = vertexPos[i];
+					if (!vertex_pos.empty())
+						vertex.pos = vertex_pos[i];
 
-					if (!vertexNormal.empty())
-						vertex.normal = vertexNormal[i];
+					if (!vertex_normal.empty())
+						vertex.normal = vertex_normal[i];
 
-					if (!vertexTangent.empty())
-						vertex.tangent = vertexTangent[i];
+					if (!vertex_tangent.empty())
+						vertex.tangent = vertex_tangent[i];
 
-					if (!vertexUV.empty())
+					if (!vertex_uv.empty())
 					{
-						vertex.uvX = vertexUV[i].x;
-						vertex.uvY = vertexUV[i].y;
+						vertex.uvX = vertex_uv[i].x;
+						vertex.uvY = vertex_uv[i].y;
 					}
 
-					pVertices.push_back(vertex);
+					p_vertices.push_back(vertex);
 				}
 
-				vertexPos.clear();
-				vertexNormal.clear();
-				vertexTangent.clear();
-				vertexUV.clear();
+				vertex_pos.clear();
+				vertex_normal.clear();
+				vertex_tangent.clear();
+				vertex_uv.clear();
 
 				// Generate tangents if none were loaded from file
-				if (vertexTangent.size() < pVertices.size())
-					generateTangents(pVertices, pIndices);
+				if (vertex_tangent.size() < p_vertices.size())
+					generate_tangents(p_vertices, p_indices);
 
-				subMeshInfo.vertexByteSize = pVertices.size() * sizeof(rendering::VertexPNTV32);
-				subMeshInfo.indexByteSize = pIndices.size() * sizeof(uint32_t);
-				subMeshInfo.subMeshIdx = p;
+				sub_mesh_info.vertex_byte_size_total = p_vertices.size() * sizeof(rendering::VertexPNTV32);
+				sub_mesh_info.index_byte_size_total = p_indices.size() * sizeof(uint32_t);
+				sub_mesh_info.sub_mesh_idx = p;
 
-				subMeshInfos.push_back(subMeshInfo);
+				mesh_asset_info.sub_mesh_infos.push_back(sub_mesh_info);
 
 				// Copy primitive vertices/indices to main vectors and clear
-				for (const auto& v : pVertices)
+				for (const auto& v : p_vertices)
 				{
 					vertices.push_back(v);
 				}
 
-				for (const auto& i : pIndices)
+				for (const auto& i : p_indices)
 				{
 					indices.push_back(i);
 				}
 
-				pVertices.clear();
-				pIndices.clear();
+				p_vertices.clear();
+				p_indices.clear();
 
 				p++;
 			}
 
-			assets::MeshAssetInfo meshAssetInfo;
-			meshAssetInfo.compressionMode = assets::CompressionMode::LZ4;
-			meshAssetInfo.originalFile = modelPath.string();
-			meshAssetInfo.vertexFormat = rendering::VertexFormat::PNTV32;
-			meshAssetInfo.subMeshCount = subMeshInfos.size();
+			mesh_asset_info.compressionMode = assets::CompressionMode::LZ4;
+			mesh_asset_info.originalFile = modelPath.string();
+			mesh_asset_info.vertex_format = rendering::VertexFormat::PNTV32;
 
-			for (auto& subMeshInfo : subMeshInfos)
+			for (auto& sub_mesh_info : mesh_asset_info.sub_mesh_infos)
 			{
-				meshAssetInfo.vertexCountTotal += subMeshInfo.vertexCount;
-				meshAssetInfo.indexCountTotal += subMeshInfo.indexCount;
-				meshAssetInfo.vertexByteSizeTotal += subMeshInfo.vertexByteSize;
-				meshAssetInfo.indexByteSizeTotal += subMeshInfo.indexByteSize;
+				mesh_asset_info.vertex_count_total += sub_mesh_info.vertex_count;
+				mesh_asset_info.index_count_total += sub_mesh_info.index_count;
+				mesh_asset_info.vertex_byte_size_total += sub_mesh_info.vertex_byte_size_total;
+				mesh_asset_info.index_byte_size_total += sub_mesh_info.index_byte_size_total;
 			}
 
-			fs::path assetPath = assetSubdirectory / (modelPath.stem().string() + "_" + mesh.name + ".pstaticmesh");
+			fs::path asset_path = assetSubdirectory / (modelPath.stem().string() + "_" + mesh.name + ".pstaticmesh");
 
-			auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(assetPath);
+			auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(asset_path);
 
-			if (!asset->save(meshAssetInfo, subMeshInfos, vertices.data(), indices.data()))
+			if (!asset->save(mesh_asset_info, vertices.data(), indices.data()))
 				return false;
 
 			assets::AssetRegistry::get()->saveAssetCache();
@@ -551,14 +548,14 @@ namespace puffin::io
 		return true;
 	}
 
-	bool loadAndImportGLTFModel(const fs::path& modelPath, fs::path assetSubdirectory)
+	bool load_and_import_gltf_model(const fs::path& modelPath, fs::path assetSubdirectory)
 	{
 		tinygltf::Model model;
 
-		if (!loadGLTFModel(modelPath, model))
+		if (!load_gltf_model(modelPath, model))
 			return false;
 
-		return importGLTFModel(modelPath, model, assetSubdirectory);
+		return import_gltf_model(modelPath, model, assetSubdirectory);
 	}
 
 	//////////////////////
@@ -580,28 +577,28 @@ namespace puffin::io
 	bool convertTextureToBC(uint32_t width, uint32_t height, void* srcData, assets::TextureFormat srcFormat, uint32_t srcSize, std::vector<char>& dstData, assets::TextureFormat dstFormat, uint32_t& dstSize)
 	{
 		// Setup source texture
-		CMP_Texture srcTexture;
-		srcTexture.dwWidth = width;
-		srcTexture.dwHeight = height;
-		srcTexture.dwPitch = 0;
-		srcTexture.dwSize = sizeof(srcTexture);
-		srcTexture.format = gTexPuffinToCMPFormat.at(srcFormat);
-		srcTexture.dwDataSize = srcSize;
-		srcTexture.pData = static_cast<CMP_BYTE*>(srcData);
+		CMP_Texture src_texture;
+		src_texture.dwWidth = width;
+		src_texture.dwHeight = height;
+		src_texture.dwPitch = 0;
+		src_texture.dwSize = sizeof(src_texture);
+		src_texture.format = gTexPuffinToCMPFormat.at(srcFormat);
+		src_texture.dwDataSize = srcSize;
+		src_texture.pData = static_cast<CMP_BYTE*>(srcData);
 
 		// Setup destination
-		CMP_Texture dstTexture;
-		dstTexture.dwWidth = width;
-		dstTexture.dwHeight = height;
-		dstTexture.dwPitch = 0;
-		dstTexture.dwSize = sizeof(srcTexture);
-		dstTexture.format = gTexPuffinToCMPFormat.at(dstFormat);
+		CMP_Texture dst_texture;
+		dst_texture.dwWidth = width;
+		dst_texture.dwHeight = height;
+		dst_texture.dwPitch = 0;
+		dst_texture.dwSize = sizeof(src_texture);
+		dst_texture.format = gTexPuffinToCMPFormat.at(dstFormat);
 
-		dstSize = CMP_CalculateBufferSize(&dstTexture);
+		dstSize = CMP_CalculateBufferSize(&dst_texture);
 		dstData.resize(dstSize);
 
-		dstTexture.dwDataSize = dstSize;
-		dstTexture.pData = reinterpret_cast<CMP_BYTE*>(dstData.data());
+		dst_texture.dwDataSize = dstSize;
+		dst_texture.pData = reinterpret_cast<CMP_BYTE*>(dstData.data());
 
 		// Setup compression options
 		CMP_CompressOptions options = { 0 };
@@ -609,7 +606,7 @@ namespace puffin::io
 
 		// Compress texture
 		CMP_ERROR cmp_status;
-		cmp_status = CMP_ConvertTexture(&srcTexture, &dstTexture, &options, nullptr);
+		cmp_status = CMP_ConvertTexture(&src_texture, &dst_texture, &options, nullptr);
 		if (cmp_status != CMP_OK)
 		{
 			return false;
@@ -618,37 +615,37 @@ namespace puffin::io
 		return true;
 	}
 
-	bool loadAndImportTexture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat)
+	bool load_and_import_texture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat)
 	{
-		int texWidth, texHeight, texChannels;
+		int tex_width, tex_height, tex_channels;
 
 		// Load info about texture without loading full file
-		if (const int ok = stbi_info(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels); ok == 0)
+		if (const int ok = stbi_info(texturePath.string().c_str(), &tex_width, &tex_height, &tex_channels); ok == 0)
 		{
 			std::cout << "Failed to load texture file " << texturePath.string() << std::endl;
 			return false;
 		}
 
 		// Figure out how many channels loaded pixel data should have (rgb data gets an extra channel since it's stored the same as rgba data)
-		int desiredChannels;
-		if (texChannels == 3)
+		int desired_channels;
+		if (tex_channels == 3)
 		{
-			desiredChannels = 4;
+			desired_channels = 4;
 		}
 		else
 		{
-			desiredChannels = texChannels;
+			desired_channels = tex_channels;
 		}
 
 		// Load pixel data
-		stbi_uc* pixels = stbi_load(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels, desiredChannels);
+		stbi_uc* pixels = stbi_load(texturePath.string().c_str(), &tex_width, &tex_height, &tex_channels, desired_channels);
 
 		if (!pixels) {
 			std::cout << "Failed to load texture file " << texturePath.string() << std::endl;
 			return false;
 		}
 
-		void* pixelPtr = pixels;
+		void* pixel_ptr = pixels;
 
 		// Instantiate new Texture Asset to store loaded Pixel data
 		fs::path assetPath = assetSubdirectory / (texturePath.stem().string() + ".ptexture");
@@ -656,13 +653,13 @@ namespace puffin::io
 		assets::TextureInfo info;
 		info.compressionMode = assets::CompressionMode::LZ4;
 		info.originalFile = texturePath.string();
-		info.textureHeight = static_cast<uint32_t>(texHeight);
-		info.textureWidth = static_cast<uint32_t>(texWidth);
-		info.textureChannels = static_cast<uint8_t>(desiredChannels);
+		info.textureHeight = static_cast<uint32_t>(tex_height);
+		info.textureWidth = static_cast<uint32_t>(tex_width);
+		info.textureChannels = static_cast<uint8_t>(desired_channels);
 		info.originalSize = info.textureHeight * info.textureWidth * info.textureChannels;
 
-		const assets::TextureFormat rgbFormat = assets::gTexChannelsToRGBAFormat.at(info.textureChannels);
-		const assets::TextureFormat bcFormat = assets::gTexChannelsToBCFormat.at(info.textureChannels);
+		const assets::TextureFormat rgb_format = assets::gTexChannelsToRGBAFormat.at(info.textureChannels);
+		const assets::TextureFormat bc_format = assets::gTexChannelsToBCFormat.at(info.textureChannels);
 
 		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(assetPath);
 
@@ -671,29 +668,29 @@ namespace puffin::io
 		// Save asset
 		if (useBCFormat)
 		{
-			std::vector<char> compressedPixels;
+			std::vector<char> compressed_pixels;
 
-			if (!convertTextureToBC(info.textureWidth, info.textureHeight, pixelPtr, rgbFormat, info.originalSize, compressedPixels, bcFormat, info.originalSize))
+			if (!convertTextureToBC(info.textureWidth, info.textureHeight, pixel_ptr, rgb_format, info.originalSize, compressed_pixels, bc_format, info.originalSize))
 			{
 				std::cout << "Failed to convert texture to bc format " << texturePath.string() << std::endl;
 				return false;
 			}
 
-			info.textureFormat = bcFormat;
-			ret = asset->save(info, compressedPixels.data());
+			info.textureFormat = bc_format;
+			ret = asset->save(info, compressed_pixels.data());
 
-			compressedPixels.clear();
+			compressed_pixels.clear();
 		}
 		else
 		{
-			info.textureFormat = rgbFormat;
-			ret = asset->save(info, pixelPtr);
+			info.textureFormat = rgb_format;
+			ret = asset->save(info, pixel_ptr);
 		}
-
-		assets::AssetRegistry::get()->saveAssetCache();
 
 		// Free Loaded Data, as pixels are now in staging buffer
 		stbi_image_free(pixels);
+
+		assets::AssetRegistry::get()->saveAssetCache();
 
 		return ret;
 	}

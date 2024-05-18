@@ -16,245 +16,175 @@
 
 namespace puffin::rendering
 {
-	void UnifiedGeometryBuffer::init(const std::shared_ptr<RenderSystemVK>& renderer, const uint32_t vertexSize, const uint32_t indexSize,
-	                                 const vk::DeviceSize initialVertexBufferSize, const vk::DeviceSize initialIndexBufferSize, const vk::DeviceSize vertexBufferBlockSize, const vk
-	                                 ::DeviceSize indexBufferBlockSize)
+	UnifiedGeometryBuffer::UnifiedGeometryBuffer(const std::shared_ptr<RenderSystemVK>& render_system,
+		uint64_t vertex_page_size, uint64_t vertex_initial_page_count, uint64_t index_page_size,
+		uint64_t index_initial_page_count) :
+		m_render_system(render_system), m_vertex_page_size(vertex_page_size), m_vertex_initial_page_count(vertex_initial_page_count),
+		m_index_page_size(index_page_size), m_index_initial_page_count(index_initial_page_count)
 	{
-		mRenderer = renderer;
-		mVertexSize = vertexSize;
-		mIndexSize = indexSize;
+		add_internal_vertex_buffer(VertexFormat::PNTV32);
 
-		mVertexBufferBlockSize = vertexBufferBlockSize;
-		mIndexBufferBlockSize = indexBufferBlockSize;
-
-		mVertexBuffer = createVertexBuffer(initialVertexBufferSize);
-
-		const vk::BufferDeviceAddressInfo deviceAddressInfo = { mVertexBuffer.buffer };
-		mVertexBufferAddress = mRenderer->device().getBufferAddress(deviceAddressInfo);
-
-		mIndexBuffer = createIndexBuffer(initialIndexBufferSize);
+		resize_index_buffer(m_index_buffer_data, m_index_initial_page_count);
 	}
 
-	void UnifiedGeometryBuffer::cleanup()
+	UnifiedGeometryBuffer::~UnifiedGeometryBuffer()
 	{
-		mVertexSize = 0;
-		mIndexSize = 0;
-		mMaxVertexCount = 0;
-		mMaxIndexCount = 0;
-		mVertexOffset = 0;
-		mIndexOffset = 0;
-		mInternalMeshData.clear();
+		m_vertex_page_size = 0;
+		m_index_page_size = 0;
+		m_index_initial_page_count = 0;
 
-		mRenderer->allocator().destroyBuffer(mVertexBuffer.buffer, mVertexBuffer.allocation);
-		mRenderer->allocator().destroyBuffer(mIndexBuffer.buffer, mIndexBuffer.allocation);
-	}
-
-	bool UnifiedGeometryBuffer::addMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh)
-	{
-		if (mInternalMeshData.count(staticMesh->id()) == 1)
+		for (auto& [vertex_format, vertex_buffer_data] : m_vertex_buffer_data)
 		{
-			if (!mInternalMeshData[staticMesh->id()].isActive)
-			{
-				mInternalMeshData[staticMesh->id()].isActive = true;
-
-				for (const auto& subMeshData : mInternalMeshData[staticMesh->id()].subMeshData)
-				{
-					mActiveVertexCount += subMeshData.vertexCount;
-					mActiveIndexCount += subMeshData.indexCount;
-				}
-			}
-
-			return true;
+			m_render_system->allocator().destroyBuffer(vertex_buffer_data.alloc_buffer.buffer, vertex_buffer_data.alloc_buffer.allocation);
 		}
 
-		if (staticMesh && staticMesh->load())
+		m_vertex_buffer_data.clear();
+
+		m_render_system->allocator().destroyBuffer(m_index_buffer_data.alloc_buffer.buffer, m_index_buffer_data.alloc_buffer.allocation);
+
+		m_render_system = nullptr;
+
+		m_index_buffer_data = {};
+	}
+
+	void UnifiedGeometryBuffer::add_static_mesh(const std::shared_ptr<assets::StaticMeshAsset>& static_mesh)
+	{
+		if (static_mesh && static_mesh->load())
 		{
-			if (mVertexSize != staticMesh->vertexSize() || mIndexSize != staticMesh->indexSize())
-				return false;
-
-			// Init mesh offset data
-			InternalMeshData internalMeshData;
-			/*internalMeshData.vertexOffset = mVertexOffset;
-			internalMeshData.indexOffset = mIndexOffset;
-			internalMeshData.vertexCount = staticMesh->vertexCountTotal();
-			internalMeshData.indexCount = staticMesh->indexCountTotal();*/
-			internalMeshData.isActive = true;
-
-			const uint32_t newVertexOffset = mVertexOffset + staticMesh->vertexCountTotal();
-			if (newVertexOffset >= mMaxVertexCount)
+			if (m_internal_mesh_data.find(static_mesh->id()) == m_internal_mesh_data.end())
 			{
-				if (!growVertexBuffer(newVertexOffset))
-					return false;
+				m_internal_mesh_data.emplace(static_mesh->id(), InternalMeshData());
 			}
 
-			const uint32_t newIndexOffset = mIndexOffset + staticMesh->indexCountTotal();
-			if (newIndexOffset >= mMaxIndexCount)
+			if (m_vertex_buffer_data.find(static_mesh->vertex_format()) == m_vertex_buffer_data.end())
 			{
-				if (!growIndexBuffer(newIndexOffset))
-					return false;
+				add_internal_vertex_buffer(static_mesh->vertex_format());
 			}
 
-			const uint32_t vertexBufferSize = staticMesh->vertexCountTotal() * mVertexSize;
-			const uint32_t indexBufferSize = staticMesh->indexCountTotal() * mIndexSize;
+			InternalVertexBufferData& internal_vertex_buffer_data = m_vertex_buffer_data[static_mesh->vertex_format()];
+
+			auto& internal_mesh_data = m_internal_mesh_data.at(static_mesh->id());
+			internal_mesh_data.active = true;
+
+			const uint64_t new_vertex_byte_offset = internal_vertex_buffer_data.byte_offset + static_mesh->vertex_byte_size_total();
+			if (new_vertex_byte_offset >= internal_vertex_buffer_data.byte_size_total)
+			{
+				grow_vertex_buffer(internal_vertex_buffer_data, new_vertex_byte_offset);
+			}
+
+			const uint64_t new_index_byte_offset = m_index_buffer_data.byte_offset + static_mesh->index_byte_size_total();
+			if (new_index_byte_offset >= m_index_buffer_data.byte_size_total)
+			{
+				grow_index_buffer(m_index_buffer_data, new_index_byte_offset);
+			}
 
 			// Copy vertex data
-			util::copyCPUDataIntoGPUBuffer(mRenderer, mVertexBuffer, vertexBufferSize, staticMesh->vertices().data(),
-			                               0, mVertexOffset * mVertexSize);
+			util::copy_cpu_data_into_gpu_buffer(m_render_system, internal_vertex_buffer_data.alloc_buffer, static_mesh->vertex_byte_size_total(),
+				static_mesh->vertices().data(), 0, internal_vertex_buffer_data.byte_offset);
 
 			// Copy index data
-			util::copyCPUDataIntoGPUBuffer(mRenderer, mIndexBuffer, indexBufferSize, staticMesh->indices().data(),
-			                               0, mIndexOffset * mIndexSize);
+			util::copy_cpu_data_into_gpu_buffer(m_render_system, m_index_buffer_data.alloc_buffer, static_mesh->index_byte_size_total(),
+				static_mesh->indices().data(), 0, m_index_buffer_data.byte_offset);
 
-			mActiveVertexCount += staticMesh->vertexCountTotal();
-			mActiveIndexCount += staticMesh->indexCountTotal();
-
-			for (const auto& subMeshInfo : staticMesh->subMeshInfo())
+			for (const auto& sub_mesh_info : static_mesh->sub_mesh_info())
 			{
-				InternalSubMeshData subMeshData;
-				subMeshData.vertexOffset = mVertexOffset + subMeshInfo.vertexOffset;
-				subMeshData.indexOffset = mIndexOffset + subMeshInfo.indexOffset;
-				subMeshData.vertexCount = subMeshInfo.vertexCount;
-				subMeshData.indexCount = subMeshInfo.indexCount;
+				InternalSubMeshData sub_mesh_data = {};
+				sub_mesh_data.vertex_offset = internal_vertex_buffer_data.byte_offset + sub_mesh_info.vertex_offset;
+				sub_mesh_data.index_offset = m_index_buffer_data.byte_offset + sub_mesh_info.index_offset;
+				sub_mesh_data.vertex_count = sub_mesh_info.vertex_count;
+				sub_mesh_data.index_count = sub_mesh_info.index_count;
 
-				internalMeshData.subMeshData.push_back(subMeshData);
+				internal_mesh_data.sub_mesh_data.push_back(sub_mesh_data);
 			}
 
-			mInternalMeshData.insert({ staticMesh->id(), internalMeshData });
-
-			mVertexOffset = newVertexOffset;
-			mIndexOffset = newIndexOffset;
-
-			return true;
+			internal_vertex_buffer_data.byte_offset = new_vertex_byte_offset;
+			m_index_buffer_data.byte_offset = new_index_byte_offset;
 		}
-
-		return false;
 	}
 
-	bool UnifiedGeometryBuffer::removeMeshes(const std::set<PuffinID>& staticMeshesToRemove)
+	void UnifiedGeometryBuffer::add_internal_vertex_buffer(VertexFormat format)
 	{
-		if (staticMeshesToRemove.empty())
-			return true;
+		m_vertex_buffer_data.emplace(format, InternalVertexBufferData(format));
 
-		for (const auto& meshID : staticMeshesToRemove)
-		{
-			if (mInternalMeshData[meshID].isActive)
-			{
-				mInternalMeshData[meshID].isActive = false;
+		m_vertex_buffer_data[format].byte_size = parseVertexSizeFromFormat(format);
 
-				for (const auto& subMeshData : mInternalMeshData[meshID].subMeshData)
-				{
-					mActiveVertexCount -= subMeshData.vertexCount;
-					mActiveIndexCount -= subMeshData.indexCount;
-				}
-			}
-		}
-
-		// Shrink vertex buffer when half of allocated vertices are inactive
-		const double activeVerticesRatio = mActiveVertexCount / mVertexOffset;
-		if (activeVerticesRatio <= mShrinkUsageThreshold)
-		{
-			shrinkVertexBuffer(mActiveVertexCount);
-		}
-
-		// Shrink index buffer when half of allocated vertices are inactive
-		const double activeIndicesRatio = mActiveIndexCount / mIndexOffset;
-		if (activeIndicesRatio <= mShrinkUsageThreshold)
-		{
-			shrinkIndexBuffer(mActiveIndexCount);
-		}
-
-		return true;
+		resize_vertex_buffer(m_vertex_buffer_data[format], m_vertex_initial_page_count);
 	}
 
-	bool UnifiedGeometryBuffer::growVertexBuffer(const uint32_t minVertexCount)
+	void UnifiedGeometryBuffer::grow_vertex_buffer(InternalVertexBufferData& vertex_buffer_data,
+	                                               vk::DeviceSize min_size)
 	{
-		// Allocate larger vertex buffer
-		const vk::DeviceSize minVertexBufferSize = minVertexCount * mVertexSize;
-
-		// Find new buffer size which can fit all vertices
-
-		vk::DeviceSize newVertexBufferSize = mVertexBufferSize;
-		while (newVertexBufferSize < minVertexBufferSize)
+		if (min_size > vertex_buffer_data.byte_size_total)
 		{
-			newVertexBufferSize += mVertexBufferBlockSize;
+			const int min_page_count = std::ceil(min_size / m_vertex_page_size);
+
+			resize_vertex_buffer(vertex_buffer_data, min_page_count);
 		}
-
-		const AllocatedBuffer oldVertexBuffer = mVertexBuffer;
-		mVertexBuffer = createVertexBuffer(newVertexBufferSize);
-
-		const vk::BufferDeviceAddressInfo deviceAddressInfo = { mVertexBuffer.buffer };
-		mVertexBufferAddress = mRenderer->device().getBufferAddress(deviceAddressInfo);
-
-		// Copy data from old buffer to new buffer
-		if (mVertexOffset > 0)
-		{
-			const vk::DeviceSize copySize = mVertexOffset * mVertexSize;
-			util::copyDataBetweenBuffers(mRenderer, oldVertexBuffer.buffer, mVertexBuffer.buffer, copySize);
-		}
-
-		// Free old buffer
-		mRenderer->allocator().destroyBuffer(oldVertexBuffer.buffer, oldVertexBuffer.allocation);
-
-		return true;
 	}
 
-	bool UnifiedGeometryBuffer::growIndexBuffer(const uint32_t minIndexCount)
+	void UnifiedGeometryBuffer::grow_index_buffer(InternalIndexBufferData& index_buffer_data,
+	                                              vk::DeviceSize min_size)
 	{
-		// Allocate larger index buffer
-		const uint32_t minIndexBufferSize = minIndexCount * mIndexSize;
-
-		// Find new buffer size which can fit all indices
-
-		vk::DeviceSize newIndexBufferSize = mIndexBufferSize;
-		while (newIndexBufferSize < minIndexBufferSize)
+		if (min_size > index_buffer_data.byte_size_total)
 		{
-			newIndexBufferSize += mIndexBufferBlockSize;
+			const int min_page_count = std::ceil(min_size / m_index_page_size);
+
+			resize_index_buffer(index_buffer_data, min_page_count);
+		}
+	}
+
+	void UnifiedGeometryBuffer::resize_vertex_buffer(InternalVertexBufferData& vertex_buffer_data,
+		size_t new_page_count)
+	{
+		const uint64_t new_buffer_size = m_vertex_page_size * new_page_count;
+
+		AllocatedBuffer new_buffer = allocate_vertex_buffer(new_buffer_size);
+
+		if (vertex_buffer_data.byte_size_total > 0 && vertex_buffer_data.byte_offset > 0)
+		{
+			util::copy_data_between_buffers(m_render_system, vertex_buffer_data.alloc_buffer.buffer,
+				new_buffer.buffer, vertex_buffer_data.byte_offset);
+
+			m_render_system->allocator().destroyBuffer(vertex_buffer_data.alloc_buffer.buffer, vertex_buffer_data.alloc_buffer.allocation);
 		}
 
-		const AllocatedBuffer oldIndexBuffer = mIndexBuffer;
-		mIndexBuffer = createIndexBuffer(newIndexBufferSize);
+		vertex_buffer_data.alloc_buffer = new_buffer;
+		vertex_buffer_data.buffer_address = m_render_system->device().getBufferAddress(vk::BufferDeviceAddressInfo{ vertex_buffer_data.alloc_buffer.buffer });
+		vertex_buffer_data.page_count = new_page_count;
+		vertex_buffer_data.byte_size_total = new_buffer_size;
+	}
 
-		// Copy data from old buffer to new buffer
-		if (mIndexOffset > 0)
+	void UnifiedGeometryBuffer::resize_index_buffer(InternalIndexBufferData& index_buffer_data, size_t new_page_count)
+	{
+		const uint64_t new_buffer_size = m_index_page_size * new_page_count;
+
+		AllocatedBuffer new_buffer = allocate_index_buffer(new_buffer_size);
+
+		if (index_buffer_data.byte_size_total > 0 && index_buffer_data.byte_offset > 0)
 		{
-			const vk::DeviceSize copySize = mIndexOffset * mIndexSize;
-			util::copyDataBetweenBuffers(mRenderer, oldIndexBuffer.buffer, mIndexBuffer.buffer, copySize);
+			util::copy_data_between_buffers(m_render_system, index_buffer_data.alloc_buffer.buffer,
+				new_buffer.buffer, index_buffer_data.byte_offset);
+
+			m_render_system->allocator().destroyBuffer(index_buffer_data.alloc_buffer.buffer, index_buffer_data.alloc_buffer.allocation);
 		}
 
-		// Free old buffer
-		mRenderer->allocator().destroyBuffer(oldIndexBuffer.buffer, oldIndexBuffer.allocation);
-
-		return true;
+		index_buffer_data.alloc_buffer = new_buffer;
+		index_buffer_data.page_count = new_page_count;
+		index_buffer_data.byte_size_total = new_buffer_size;
 	}
 
-	bool UnifiedGeometryBuffer::shrinkVertexBuffer(uint32_t minVertexCount)
+	AllocatedBuffer UnifiedGeometryBuffer::allocate_vertex_buffer(vk::DeviceSize buffer_size)
 	{
-		return true;
-	}
-
-	bool UnifiedGeometryBuffer::shrinkIndexBuffer(uint32_t minVertexCount)
-	{
-		return true;
-	}
-
-	AllocatedBuffer UnifiedGeometryBuffer::createVertexBuffer(vk::DeviceSize bufferSize)
-	{
-		mVertexBufferSize = bufferSize;
-		mMaxVertexCount = std::floor(static_cast<double>(mVertexBufferSize) / static_cast<double>(mVertexSize));
-
-		return util::createBuffer(mRenderer->allocator(), mVertexBufferSize,
+		return util::create_buffer(m_render_system->allocator(), buffer_size,
 			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eShaderDeviceAddress },
 			vma::MemoryUsage::eAutoPreferDevice,
 			{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
 			vma::AllocationCreateFlagBits::eMapped });
 	}
 
-	AllocatedBuffer UnifiedGeometryBuffer::createIndexBuffer(vk::DeviceSize bufferSize)
+	AllocatedBuffer UnifiedGeometryBuffer::allocate_index_buffer(vk::DeviceSize buffer_size)
 	{
-		mIndexBufferSize = bufferSize;
-		mMaxIndexCount = std::floor(static_cast<double>(mIndexBufferSize) / static_cast<double>(mIndexSize));
-
-		return util::createBuffer(mRenderer->allocator(), mIndexBufferSize,
+		return util::create_buffer(m_render_system->allocator(), buffer_size,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAutoPreferDevice, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
 			vma::AllocationCreateFlagBits::eMapped });

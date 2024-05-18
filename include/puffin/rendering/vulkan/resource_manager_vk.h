@@ -5,54 +5,34 @@
 #include <string>
 #include <unordered_set>
 
+namespace puffin
+{
+	namespace assets
+	{
+		class StaticMeshAsset;
+	}
+}
+
 namespace puffin::rendering
 {
-	class VKRenderResource
+	class RenderSystemVK;
+	class UnifiedGeometryBuffer;
+
+	class ResourceManagerVK
 	{
 	public:
 
-		enum class Type
-		{
-			Buffer,
-			Image
-		};
+		explicit ResourceManagerVK(const std::shared_ptr<RenderSystemVK>& render_system);
+		~ResourceManagerVK() = default;
 
-		void addWriteNode(PuffinID id)
-		{
-			mWriteNodes.insert(id);
-		}
+		void add_static_mesh(const std::shared_ptr<assets::StaticMeshAsset>& static_mesh);
 
-		void addReadNode(PuffinID id)
-		{
-			mReadNodes.insert(id);
-		}
+		UnifiedGeometryBuffer* geometry_buffer() const { return m_unified_geometry_buffer; }
 
 	private:
 
-		Type mType = Type::Buffer;
-
-		std::unordered_set<PuffinID> mWriteNodes;
-		std::unordered_set<PuffinID> mReadNodes;
-
-	};
-
-	class VKResourceManager
-	{
-	public:
-
-		VKResourceManager() = default;
-		~VKResourceManager() = default;
-
-		// PUFFIN_TODO - Implement Methods
-
-		PuffinID createImage(const std::string& name)
-		{
-			return PuffinID();
-		}
-
-	private:
-
-
+		std::shared_ptr<RenderSystemVK> m_render_system = nullptr;
+		UnifiedGeometryBuffer* m_unified_geometry_buffer = nullptr;
 
 	};
 }

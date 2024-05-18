@@ -334,16 +334,16 @@ namespace puffin::core
 
 	void Engine::reimportDefaultAssets()
 	{
-		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\cube.obj)", "meshes");
-		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\space_engineer.obj)", "meshes");
+		io::load_and_import_model(R"(C:\Projects\PuffinProject\model_backups\cube.obj)", "meshes");
+		io::load_and_import_model(R"(C:\Projects\PuffinProject\model_backups\space_engineer.obj)", "meshes");
 		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\Sphere.dae)", "meshes");
-		io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
+		io::load_and_import_model(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");
 
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)", "textures");
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)", "textures");
-		io::loadAndImportTexture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)", "textures");
+		io::load_and_import_texture(R"(C:\Projects\PuffinProject\texture_backups\chalet.jpg)", "textures");
+		io::load_and_import_texture(R"(C:\Projects\PuffinProject\texture_backups\cube.png)", "textures");
+		io::load_and_import_texture(R"(C:\Projects\PuffinProject\texture_backups\space_engineer.jpg)", "textures");
+		io::load_and_import_texture(R"(C:\Projects\PuffinProject\texture_backups\statue.jpg)", "textures");
+		io::load_and_import_texture(R"(C:\Projects\PuffinProject\texture_backups\xsprite.png)", "textures");
 	}
 
 	void Engine::loadAndResaveAssets()

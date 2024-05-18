@@ -38,6 +38,7 @@
 #include "puffin/scene/scene_graph.h"
 #include "puffin/ui/editor/ui_subsystem.h"
 #include "puffin/ui/editor/windows/ui_window_viewport.h"
+#include "puffin/rendering/vulkan/resource_manager_vk.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -116,6 +117,7 @@ namespace puffin::rendering
 
 		m_update_renderables = true;
 
+		m_resource_manager = new ResourceManagerVK(shared_from_this());
 		m_material_registry.init(shared_from_this());
 	}
 
@@ -134,14 +136,15 @@ namespace puffin::rendering
 
 		if (m_initialized)
 		{
-			m_global_render_data.unified_geometry_buffer.cleanup();
-
 			for (auto texData : m_tex_data)
 			{
 				unload_texture(texData);
 			}
 
 			m_tex_data.clear();
+
+			delete m_resource_manager;
+			m_resource_manager = nullptr;
 
 			clean_swapchain(m_swapchain_data);
 
@@ -399,10 +402,10 @@ namespace puffin::rendering
 		offscreenData.allocImages.resize(offscreenImageCount);
 		for (int i = 0; i < offscreenImageCount; i++)
 		{
-			offscreenData.allocImages[i] = util::createImage(shared_from_this(), imageInfo, imageViewInfo);
+			offscreenData.allocImages[i] = util::create_image(shared_from_this(), imageInfo, imageViewInfo);
 		}
 
-		offscreenData.allocDepthImage = util::initDepthImage(shared_from_this(), imageExtent, vk::Format::eD32Sfloat);
+		offscreenData.allocDepthImage = util::init_depth_image(shared_from_this(), imageExtent, vk::Format::eD32Sfloat);
 	}
 
 	void RenderSystemVK::init_commands()
@@ -478,12 +481,10 @@ namespace puffin::rendering
 
 	void RenderSystemVK::init_buffers()
 	{
-		m_global_render_data.unified_geometry_buffer.init(shared_from_this(), sizeof(VertexPNTV32));
-
 		for (int i = 0; i < g_buffered_frames; i++)
 		{
 			// Indirect Buffer
-			m_frame_render_data[i].indirect_buffer = util::createBuffer(
+			m_frame_render_data[i].indirect_buffer = util::create_buffer(
 				m_allocator, sizeof(vk::DrawIndexedIndirectCommand) * g_max_objects,
 				vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer |
 				vk::BufferUsageFlagBits::eTransferDst,
@@ -491,7 +492,7 @@ namespace puffin::rendering
 				vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped);
 
 			// Global Buffers
-			m_frame_render_data[i].camera_buffer = util::createBuffer(m_allocator, sizeof(GPUCameraData),
+			m_frame_render_data[i].camera_buffer = util::create_buffer(m_allocator, sizeof(GPUCameraData),
 			                                                      vk::BufferUsageFlagBits::eUniformBuffer,
 			                                                      vma::MemoryUsage::eAuto,
 			                                                      {
@@ -499,7 +500,7 @@ namespace puffin::rendering
 				                                                      | vma::AllocationCreateFlagBits::eMapped
 			                                                      });
 
-			m_frame_render_data[i].light_buffer = util::createBuffer(m_allocator, sizeof(GPULightData) * g_max_lights_vk,
+			m_frame_render_data[i].light_buffer = util::create_buffer(m_allocator, sizeof(GPULightData) * g_max_lights_vk,
 			                                                     vk::BufferUsageFlagBits::eStorageBuffer,
 			                                                     vma::MemoryUsage::eAuto,
 			                                                     {
@@ -507,7 +508,7 @@ namespace puffin::rendering
 				                                                     | vma::AllocationCreateFlagBits::eMapped
 			                                                     });
 
-			m_frame_render_data[i].light_static_buffer = util::createBuffer(m_allocator, sizeof(GPULightStaticData),
+			m_frame_render_data[i].light_static_buffer = util::create_buffer(m_allocator, sizeof(GPULightStaticData),
 			                                                           vk::BufferUsageFlagBits::eUniformBuffer,
 			                                                           vma::MemoryUsage::eAuto,
 			                                                           {
@@ -515,7 +516,7 @@ namespace puffin::rendering
 				                                                           | vma::AllocationCreateFlagBits::eMapped
 			                                                           });
 
-			m_frame_render_data[i].object_buffer = util::createBuffer(m_allocator, sizeof(GPUObjectData) * g_max_objects,
+			m_frame_render_data[i].object_buffer = util::create_buffer(m_allocator, sizeof(GPUObjectData) * g_max_objects,
 			                                                      vk::BufferUsageFlagBits::eStorageBuffer,
 			                                                      vma::MemoryUsage::eAuto,
 			                                                      {
@@ -523,7 +524,7 @@ namespace puffin::rendering
 				                                                      | vma::AllocationCreateFlagBits::eMapped
 			                                                      });
 
-			m_frame_render_data[i].material_buffer = util::createBuffer(m_allocator, sizeof(GPUMaterialInstanceData) * g_max_materials,
+			m_frame_render_data[i].material_buffer = util::create_buffer(m_allocator, sizeof(GPUMaterialInstanceData) * g_max_materials,
 																	vk::BufferUsageFlagBits::eStorageBuffer,
 																	vma::MemoryUsage::eAuto,
 																	{
@@ -722,7 +723,7 @@ namespace puffin::rendering
 		ImGui_ImplVulkan_Init(&initInfo);
 
 		// Upload ImGui font textures
-		util::immediateSubmit(shared_from_this(), [=](vk::CommandBuffer cmd)
+		util::immediate_submit(shared_from_this(), [=](vk::CommandBuffer cmd)
 		{
 			ImGui_ImplVulkan_CreateFontsTexture();
 		});
@@ -893,7 +894,7 @@ namespace puffin::rendering
 		{
 			if (const auto staticMesh = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshID))
 			{
-				m_global_render_data.unified_geometry_buffer.addMesh(staticMesh);
+				m_resource_manager->add_static_mesh(staticMesh);
 			}
 		}
 
@@ -1203,8 +1204,8 @@ namespace puffin::rendering
 				idx++;
 			}
 
-			util::copyCPUDataIntoGPUBuffer(shared_from_this(), current_frame_data().material_buffer, 
-				materialData.size() * sizeof(GPUMaterialInstanceData), materialData.data());
+			util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().material_buffer, 
+			                                    materialData.size() * sizeof(GPUMaterialInstanceData), materialData.data());
 
 			current_frame_data().copy_material_data_to_gpu = false;
 		}
@@ -1364,8 +1365,8 @@ namespace puffin::rendering
 				objects.emplace_back(m_cached_object_data[renderable.entityID]);
 			}
 
-			util::copyCPUDataIntoGPUBuffer(shared_from_this(), current_frame_data().object_buffer,
-				objects.size() * sizeof(GPUObjectData), objects.data());
+			util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().object_buffer,
+			                                    objects.size() * sizeof(GPUObjectData), objects.data());
 
 			current_frame_data().copy_object_data_to_gpu = false;
 		}
@@ -1426,8 +1427,8 @@ namespace puffin::rendering
 		}
 
 		// Copy light data to buffer
-		util::copyCPUDataIntoGPUBuffer(shared_from_this(), current_frame_data().light_buffer,
-			lights.size() * sizeof(GPULightData), lights.data());
+		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().light_buffer,
+		                                    lights.size() * sizeof(GPULightData), lights.data());
 
 		// Prepare light static data
 		GPULightStaticData lightStaticUBO;
@@ -1437,8 +1438,8 @@ namespace puffin::rendering
 		lightStaticUBO.viewPosAndNumLights.w = i;
 
 		// Copy light static data to buffer
-		util::copyCPUDataIntoGPUBuffer(shared_from_this(), current_frame_data().light_static_buffer,
-			sizeof(GPULightStaticData), &lightStaticUBO);
+		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().light_static_buffer,
+		                                    sizeof(GPULightStaticData), &lightStaticUBO);
 	}
 
 	void RenderSystemVK::build_indirect_commands()
@@ -1463,9 +1464,9 @@ namespace puffin::rendering
 			drawBatch.matID = m_renderables[0].matID;
 			drawBatch.cmdIndex = 0;
 
-			indirectCmds[cmdIdx].vertexOffset = m_global_render_data.unified_geometry_buffer.meshVertexOffset(currentMeshID, currentSubMeshIdx);
-			indirectCmds[cmdIdx].firstIndex = m_global_render_data.unified_geometry_buffer.meshIndexOffset(currentMeshID, currentSubMeshIdx);
-			indirectCmds[cmdIdx].indexCount = m_global_render_data.unified_geometry_buffer.meshIndexCount(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].vertexOffset = m_resource_manager->geometry_buffer()->mesh_vertex_offset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].firstIndex = m_resource_manager->geometry_buffer()->mesh_index_offset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].indexCount = m_resource_manager->geometry_buffer()->mesh_index_count(currentMeshID, currentSubMeshIdx);
 			indirectCmds[cmdIdx].firstInstance = 0;
 
 			constexpr int maxInstancesPerCommand = g_max_objects;
@@ -1499,9 +1500,9 @@ namespace puffin::rendering
 					cmdIdx++;
 					cmdCount++;
 
-					indirectCmds[cmdIdx].vertexOffset = m_global_render_data.unified_geometry_buffer.meshVertexOffset(currentMeshID, currentSubMeshIdx);
-					indirectCmds[cmdIdx].firstIndex = m_global_render_data.unified_geometry_buffer.meshIndexOffset(currentMeshID, currentSubMeshIdx);
-					indirectCmds[cmdIdx].indexCount = m_global_render_data.unified_geometry_buffer.meshIndexCount(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].vertexOffset = m_resource_manager->geometry_buffer()->mesh_vertex_offset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].firstIndex = m_resource_manager->geometry_buffer()->mesh_index_offset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].indexCount = m_resource_manager->geometry_buffer()->mesh_index_count(currentMeshID, currentSubMeshIdx);
 					indirectCmds[cmdIdx].firstInstance = instanceIdx;
 
 					newBatch = false;
@@ -1521,8 +1522,8 @@ namespace puffin::rendering
 			// Push final draw batch struct to vector at end of loop
 			m_draw_batches.push_back(drawBatch);
 
-			util::copyCPUDataIntoGPUBuffer(shared_from_this(), current_frame_data().indirect_buffer,
-				indirectCmds.size() * sizeof(vk::DrawIndexedIndirectCommand), indirectCmds.data());
+			util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().indirect_buffer,
+			                                    indirectCmds.size() * sizeof(vk::DrawIndexedIndirectCommand), indirectCmds.data());
 		}
 	}
 
@@ -1633,11 +1634,11 @@ namespace puffin::rendering
 			&current_frame_data().global_descriptor, 0, nullptr);
 
 		GPUDrawPushConstant pushConstant;
-		pushConstant.vertexBufferAddress = m_global_render_data.unified_geometry_buffer.vertexBufferAddress();
+		pushConstant.vertexBufferAddress = m_resource_manager->geometry_buffer()->vertex_buffer_address();
 
 		cmd.pushConstants(m_forward_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant), &pushConstant);
 
-		cmd.bindIndexBuffer(m_global_render_data.unified_geometry_buffer.indexBuffer().buffer, 0, vk::IndexType::eUint32);
+		cmd.bindIndexBuffer(m_resource_manager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
 	}
 
 	void RenderSystemVK::draw_mesh_batch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
@@ -1942,10 +1943,10 @@ namespace puffin::rendering
 
 			texData.sampler = m_global_render_data.texture_sampler;
 
-			texData.texture = util::initTexture(shared_from_this(), texAsset->pixelData(),
-			                                    texAsset->textureWidth(), texAsset->textureHeight(),
-			                                    texAsset->textureSize(),
-			                                    g_tex_format_vk.at(texAsset->textureFormat()));
+			texData.texture = util::init_texture(shared_from_this(), texAsset->pixelData(),
+			                                     texAsset->textureWidth(), texAsset->textureHeight(),
+			                                     texAsset->textureSize(),
+			                                     g_tex_format_vk.at(texAsset->textureFormat()));
 
 			texAsset->unload();
 

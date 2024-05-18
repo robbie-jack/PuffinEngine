@@ -42,6 +42,8 @@ namespace puffin
 
 namespace puffin::rendering
 {
+	class ResourceManagerVK;
+
 	// Struct containing render data that is static between frames
 	struct GlobalRenderData
 	{
@@ -52,8 +54,6 @@ namespace puffin::rendering
 		vk::DescriptorSetLayout material_set_layout;
 
 		vk::Sampler texture_sampler;
-
-		UnifiedGeometryBuffer unified_geometry_buffer;
 	};
 
 	// Struct containing data that changes each frame
@@ -172,6 +172,7 @@ namespace puffin::rendering
 		GlobalRenderData m_global_render_data;
 		std::array<FrameRenderData, g_buffered_frames> m_frame_render_data;
 
+		ResourceManagerVK* m_resource_manager = nullptr;
 		VKMaterialRegistry m_material_registry;
 
 		std::unordered_set<PuffinID> m_meshes_to_load; // Meshes that need to be loaded

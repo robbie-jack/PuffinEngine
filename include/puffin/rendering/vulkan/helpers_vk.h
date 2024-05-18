@@ -12,25 +12,25 @@ namespace puffin::rendering
 
 namespace puffin::rendering::util
 {
-	void immediateSubmit(const std::shared_ptr<RenderSystemVK>& renderSystem, std::function<void(VkCommandBuffer cmd)>&& function);
+	void immediate_submit(const std::shared_ptr<RenderSystemVK>& render_system, std::function<void(VkCommandBuffer cmd)>&& function);
 
-	void copyDataBetweenBuffers(const std::shared_ptr<RenderSystemVK>& renderer, vk::Buffer srcBuffer, vk::Buffer dstBuffer, 
-	                            uint32_t dataSize, uint32_t srcOffset = 0, uint32_t dstOffset = 0);
+	void copy_data_between_buffers(const std::shared_ptr<RenderSystemVK>& render_system, vk::Buffer src_buffer, vk::Buffer dst_buffer,
+	                               uint32_t data_size, uint32_t src_offset = 0, uint32_t dst_offset = 0);
 
-	void copyCPUDataIntoGPUBuffer(const std::shared_ptr<RenderSystemVK>& renderer, const AllocatedBuffer& dstBuffer, uint32_t dataSize,
-	                              const void* data, uint32_t srcOffset = 0, uint32_t dstOffset = 0);
+	void copy_cpu_data_into_gpu_buffer(const std::shared_ptr<RenderSystemVK>& render_system, const AllocatedBuffer& dst_buffer, uint32_t data_size,
+	                                   const void* data, uint32_t src_offset = 0, uint32_t dst_offset = 0);
 
-	AllocatedBuffer createBuffer(const vma::Allocator& allocator, size_t allocSize, vk::BufferUsageFlags usage, vma::MemoryUsage memoryUsage, vma::
-		AllocationCreateFlags allocFlags = {}, vk::MemoryPropertyFlags requiredFlags = {});
+	AllocatedBuffer create_buffer(const vma::Allocator& allocator, size_t alloc_size, vk::BufferUsageFlags usage, vma::MemoryUsage memory_usage, vma::
+		AllocationCreateFlags alloc_flags = {}, vk::MemoryPropertyFlags required_flags = {});
 
-	AllocatedBuffer initVertexBuffer(const std::shared_ptr<RenderSystemVK>& renderer, const void* vertexData, const size_t numVertices, const size_t vertexSize);
+	AllocatedBuffer init_vertex_buffer(const std::shared_ptr<RenderSystemVK>& render_system, const void* vertex_data, const size_t num_vertices, const size_t vertex_size);
 
-	AllocatedBuffer initIndexBuffer(const std::shared_ptr<RenderSystemVK>& renderer, const void* indexData, const size_t numIndices, const size_t indexSize);
+	AllocatedBuffer init_index_buffer(const std::shared_ptr<RenderSystemVK>& render_system, const void* index_data, const size_t num_indices, const size_t index_size);
 
-	AllocatedImage createImage(const std::shared_ptr<RenderSystemVK>& renderer, const vk::ImageCreateInfo& imageInfo, vk::ImageViewCreateInfo imageViewInfo);
+	AllocatedImage create_image(const std::shared_ptr<RenderSystemVK>& render_system, const vk::ImageCreateInfo& image_info, vk::ImageViewCreateInfo image_view_info);
 
-	AllocatedImage initDepthImage(const std::shared_ptr<RenderSystemVK>& renderer, vk::Extent3D extent, vk::Format format);
+	AllocatedImage init_depth_image(const std::shared_ptr<RenderSystemVK>& render_system, vk::Extent3D extent, vk::Format format);
 
-	AllocatedImage initTexture(const std::shared_ptr<RenderSystemVK>& renderer, const void* pixelData, uint32_t width, uint32_t height, vk::DeviceSize
-	                           size, vk::Format format);
+	AllocatedImage init_texture(const std::shared_ptr<RenderSystemVK>& render_system, const void* pixel_data, uint32_t width, uint32_t height, vk::DeviceSize
+	                            size, vk::Format format);
 }
