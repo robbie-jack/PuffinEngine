@@ -6,9 +6,9 @@ Puffin is a 3D Game Engine built in C++ which serves as a foundation for differe
 Assets & Shaders used while developing Puffin are located here: https://github.com/robbie-jack/PuffinProject
 
 ## Entity Component System & Scene Graph
-Puffin is built around the use of Entity Component System (ECS) as a core design principle. This allows for writing performant, cache-optimzied code,
+Puffin is built around the use of Entity Component System (ECS) as a core design principle. This allows for writing performant, cache-optimized code,
 and makes it easier to share data between Puffin's various systems. Puffin also features a basic hierarchical scene graph built on top of the ecs,
-structures around the concept of nodes. Nodes are comparable to Objects in commercial Game Engines such as Unity and Unreal, and are directly inspired by
+structured around the concept of nodes. Nodes are comparable to Objects in commercial Game Engines such as Unity and Unreal, and are directly inspired by
 Godot's Nodes. This allows for a more traditional Object Oriented Design (OOD) where appropriate. Neither Nodes or ECS are intended to be the primary way to use
 Puffin, and both approaches have advantages and disadvantages.
 
