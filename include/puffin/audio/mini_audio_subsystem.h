@@ -31,6 +31,6 @@ namespace puffin::audio
 
 		ma_engine* mSoundEngine = nullptr;
 
-		PackedVector<ma_sound> mSounds;
+		PackedVector<PuffinID, ma_sound> mSounds;
 	};
 }

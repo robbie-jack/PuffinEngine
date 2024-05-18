@@ -1,12 +1,12 @@
 
 #include "puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.h"
 
-#include "puffin/types/packed_array.h"
+#include "puffin/types/packed_vector.h"
 
 namespace puffin::physics
 {
 	void SweepAndPruneBroadphase::generateCollisionPairs(
-		PackedVector<std::shared_ptr<collision2D::Collider2D>>& inColliders,
+		PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& inColliders,
 		std::vector<CollisionPair>& outCollisionPairs, bool collidersUpdated)
 	{
 		if (collidersUpdated)

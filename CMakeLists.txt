@@ -178,6 +178,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/types/deletion_queue.h
 	${HEADER_DIR}/puffin/types/matrix.h
 	${HEADER_DIR}/puffin/types/packed_array.h
+	${HEADER_DIR}/puffin/types/packed_vector.h
 	${HEADER_DIR}/puffin/types/quat.h
 	${HEADER_DIR}/puffin/types/ring_buffer.h
 	${HEADER_DIR}/puffin/types/uuid.h

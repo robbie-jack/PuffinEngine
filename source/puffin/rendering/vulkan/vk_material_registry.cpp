@@ -11,8 +11,6 @@ namespace puffin::rendering
 	void VKMaterialRegistry::init(const std::shared_ptr<RenderSystemVK>& renderSystem)
 	{
 		mRenderSystem = renderSystem;
-
-		mMats.resize(g_max_unique_materials);
 	}
 
 	void VKMaterialRegistry::registerMaterialInstance(const PuffinID& id)
@@ -34,11 +32,9 @@ namespace puffin::rendering
 		{
 			if (matInstID != gInvalidID && !mMatData.contains(matInstID))
 			{
-				MaterialDataVK matData;
+				mMatData.emplace(matInstID, MaterialDataVK());
 
-				loadMaterialInstance(matInstID, matData);
-
-				mMatData.insert(matInstID, matData);
+				loadMaterialInstance(matInstID, mMatData.at(matInstID));
 
 				mMaterialDataNeedsUploaded = true;
 			}
@@ -48,7 +44,7 @@ namespace puffin::rendering
 
 		if (mMaterialDataNeedsUploaded)
 		{
-			mMatData.sortBubble();
+			mMatData.sort();
 		}
 
 		// Load Materials
@@ -127,7 +123,7 @@ namespace puffin::rendering
 					const auto vertMod = util::ShaderModule{ mRenderSystem->device(), vertShaderAsset->code() };
 					const auto fragMod = util::ShaderModule{ mRenderSystem->device(), fragShaderAsset->code() };
 
-					mMats.insert(matID);
+					mMats.emplace(matID, MaterialVK());
 
 					vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant) };
 

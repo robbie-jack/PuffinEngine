@@ -780,7 +780,7 @@ namespace puffin::rendering
 
 				if (!m_cached_object_data.contains(node_id))
 				{
-					m_cached_object_data.insert(node_id, GPUObjectData());
+					m_cached_object_data.emplace(node_id, GPUObjectData());
 				}
 			}
 
@@ -800,7 +800,7 @@ namespace puffin::rendering
 
 				if (!m_cached_object_data.contains(node_id))
 				{
-					m_cached_object_data.insert(node_id, GPUObjectData());
+					m_cached_object_data.emplace(node_id, GPUObjectData());
 				}
 			}
 
@@ -922,7 +922,7 @@ namespace puffin::rendering
 				TextureDataVK texData;
 				load_texture(texID, texData);
 
-				m_tex_data.insert(texID, texData);
+				m_tex_data.emplace(texID, texData);
 
 				textureDescriptorNeedsUpdated = true;
 			}
@@ -1963,8 +1963,8 @@ namespace puffin::rendering
 		m_allocator.destroyImage(texData.texture.image, texData.texture.allocation);
 	}
 
-	void RenderSystemVK::build_texture_descriptor_info(PackedVector<TextureDataVK>& textureData,
-	                                                std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
+	void RenderSystemVK::build_texture_descriptor_info(PackedVector<PuffinID, TextureDataVK>& textureData,
+	                                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
 	{
 		textureImageInfos.clear();
 		textureImageInfos.reserve(textureData.size());

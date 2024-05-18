@@ -219,7 +219,7 @@ namespace puffin::physics
 				return;
 			}
 
-			mShapeRefs.insert(id, result.Get());
+			mShapeRefs.emplace(id, result.Get());
 		}
 	}
 
@@ -265,7 +265,7 @@ namespace puffin::physics
 
 			bodySettings.mFriction = 0.0f;
 
-			mBodies.insert(id, bodyInterface.CreateBody(bodySettings));
+			mBodies.emplace(id, bodyInterface.CreateBody(bodySettings));
 
 			mBodiesToAdd.push_back(id);
 		}

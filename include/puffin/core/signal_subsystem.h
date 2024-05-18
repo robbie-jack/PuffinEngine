@@ -1,13 +1,12 @@
 #pragma once
 
-#include "System.h"
-
-#include "puffin/types/packed_array.h"
-
 #include <unordered_map>
 #include <memory>
 #include <functional>
 #include <string>
+
+#include "puffin/core/system.h"
+#include "puffin/types/packed_vector.h"
 
 namespace puffin::core
 {
@@ -76,7 +75,7 @@ namespace puffin::core
 
 		std::string mName;
 		size_t mNextSlotID = 1;
-		PackedVector<Slot<Params...>> mSlots;
+		PackedVector<size_t, Slot<Params...>> mSlots;
 
 	};
 

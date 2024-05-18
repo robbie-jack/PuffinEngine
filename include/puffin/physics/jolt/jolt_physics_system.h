@@ -19,16 +19,16 @@
 #include "Jolt/Physics/Body/MotionType.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 
-#include "puffin/core/engine.h"
-#include "puffin/core/system.h"
-#include "puffin/physics/physics_constants.h"
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/types/packed_array.h"
-#include "puffin/components/transform_component_3d.h"
 #include "puffin/components/physics/3d/rigidbody_component_3d.h"
 #include "puffin/components/physics/3d/shape_components_3d.h"
 #include "puffin/components/physics/3d/velocity_component_3d.h"
+#include "puffin/components/transform_component_3d.h"
+#include "puffin/core/engine.h"
+#include "puffin/core/system.h"
+#include "puffin/ecs/entt_subsystem.h"
 #include "puffin/physics/body_type.h"
+#include "puffin/physics/physics_constants.h"
+#include "puffin/types/packed_vector.h"
 
 namespace puffin::physics
 {
@@ -108,8 +108,8 @@ namespace puffin::physics
 		JoltObjectLayerPairFilterImpl mObjectVsObjectLayerFilter;
 		JoltObjectVsBroadPhaseLayerFilterImpl mObjectVsBroadphaseLayerFilter;
 
-		PackedVector<JPH::ShapeRefC> mShapeRefs;
-		PackedVector<JPH::Body*> mBodies;
+		PackedVector<PuffinID, JPH::ShapeRefC> mShapeRefs;
+		PackedVector<PuffinID, JPH::Body*> mBodies;
 
 		std::vector<PuffinID> mBoxesToInit;
 		std::vector<PuffinID> mSpheresToInit;

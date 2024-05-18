@@ -9,6 +9,7 @@
 #include "puffin/core/system.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/packed_array.h"
+#include "puffin/types/packed_vector.h"
 
 namespace puffin
 {
@@ -80,7 +81,7 @@ namespace puffin::scene
 			if (id == gInvalidID)
 				id = generateID();
 
-			m_vector.insert(id, m_factory.create(engine, id));
+			m_vector.emplace(id, m_factory.create(engine, id));
 
 			return m_vector[id];
 		}
@@ -120,7 +121,7 @@ namespace puffin::scene
 
 	private:
 
-		PackedVector<T> m_vector;
+		PackedVector<PuffinID, T> m_vector;
 		NodeFactory<T> m_factory;
 
 	};
@@ -223,8 +224,8 @@ namespace puffin::scene
 		std::vector<PuffinID> m_root_node_ids; // Vector of nodes at root of scene graph
 		std::set<PuffinID> m_nodes_to_destroy;
 
-		PackedVector<TransformComponent2D> m_global_transform_2ds;
-		PackedVector<TransformComponent3D> m_global_transform_3ds;
+		PackedVector<PuffinID, TransformComponent2D> m_global_transform_2ds;
+		PackedVector<PuffinID, TransformComponent3D> m_global_transform_3ds;
 
 		bool m_scene_graph_updated = false;
 
@@ -256,12 +257,12 @@ namespace puffin::scene
 
 			if (node->has_transform_2d())
 			{
-				m_global_transform_2ds.insert(id, TransformComponent2D());
+				m_global_transform_2ds.emplace(id, TransformComponent2D());
 			}
 
 			if (node->has_transform_3d())
 			{
-				m_global_transform_3ds.insert(id, TransformComponent3D());
+				m_global_transform_3ds.emplace(id, TransformComponent3D());
 			}
 
 			m_scene_graph_updated = true;

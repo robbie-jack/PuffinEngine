@@ -5,10 +5,10 @@
 #include "puffin/physics/onager2d/physics_helpers_2d.h"
 #include "puffin/physics/onager2d/broadphases/broadphase_2d.h"
 #include "puffin/physics/onager2d/colliders/collider_2d.h"
-#include "puffin/types/packed_array.h"
+#include "puffin/types/packed_vector.h"
 
 void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
-	PackedVector<std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
+	PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
 	bool collidersUpdated)
 {
 	outCollisionPairs.clear();
@@ -72,7 +72,7 @@ void puffin::physics::SpatialHashBroadphase2D::getHashIDsForCollider(
 	}
 }
 
-void puffin::physics::SpatialHashBroadphase2D::updateSpatialMap(PackedVector<std::shared_ptr<collision2D::Collider2D>>& colliders)
+void puffin::physics::SpatialHashBroadphase2D::updateSpatialMap(PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& colliders)
 {
 	mColliderSpatialMap.clear();
 

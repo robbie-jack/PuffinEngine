@@ -4,8 +4,7 @@
 
 #include "puffin/core/system.h"
 #include "puffin/types/uuid.h"
-#include "puffin/types/ring_buffer.h"
-#include "puffin/types/packed_array.h"
+#include "puffin/types/packed_vector.h"
 
 namespace puffin::audio
 {
@@ -86,8 +85,8 @@ namespace puffin::audio
 
 		friend AudioSubsystemProvider;
 
-		PackedVector<SoundInstance> mSoundInstances;
-		PackedVector<std::set<PuffinID>> mSoundInstanceIDs;
+		PackedVector<PuffinID, SoundInstance> mSoundInstances;
+		PackedVector<PuffinID, std::set<PuffinID>> mSoundInstanceIDs;
 
 		std::shared_ptr<AudioSubsystemProvider> mAudioSubsystemProvider = nullptr; // Subsystem which provides audio core implementation
 

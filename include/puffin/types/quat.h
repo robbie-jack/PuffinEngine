@@ -23,7 +23,7 @@ namespace puffin::maths
 
 		explicit operator glm::quat() const
 		{
-			return {w, x, y, z};
+			return { w, x, y, z };
 		}
 
 		Quat operator*=(const Quat& q)

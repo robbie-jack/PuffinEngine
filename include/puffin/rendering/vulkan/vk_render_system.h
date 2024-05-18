@@ -177,14 +177,14 @@ namespace puffin::rendering
 		std::unordered_set<PuffinID> m_meshes_to_load; // Meshes that need to be loaded
 		std::unordered_set<PuffinID> m_textures_to_load; // Textures that need to be loaded
 
-		PackedVector<TextureDataVK> m_tex_data;
+		PackedVector<PuffinID, TextureDataVK> m_tex_data;
 
 		std::vector<MeshRenderable> m_renderables; // Renderables data
 		bool m_update_renderables = false;
 
 		std::vector<MeshDrawBatch> m_draw_batches;
 
-		PackedVector<GPUObjectData> m_cached_object_data; // Cached data for rendering each object in scene
+		PackedVector<PuffinID, GPUObjectData> m_cached_object_data; // Cached data for rendering each object in scene
 		std::unordered_set<PuffinID> m_objects_to_refresh; // Objects which need their mesh data refreshed
 
 		//PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
@@ -278,8 +278,8 @@ namespace puffin::rendering
 		bool load_texture(PuffinID texId, TextureDataVK& texData);
 		void unload_texture(TextureDataVK& texData) const;
 
-		void build_texture_descriptor_info(PackedVector<TextureDataVK>& textureData,
-		                                std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
+		void build_texture_descriptor_info(PackedVector<PuffinID, TextureDataVK>& textureData,
+		                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 
 		FrameRenderData& current_frame_data()
 		{
