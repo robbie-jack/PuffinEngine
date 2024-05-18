@@ -3,7 +3,7 @@
 #include <unordered_set>
 
 #include "puffin/types/uuid.h"
-#include "puffin/rendering/vulkan/vk_types.h"
+#include "puffin/rendering/vulkan/types_vk.h"
 #include "puffin/types/packed_vector.h"
 
 namespace puffin::rendering

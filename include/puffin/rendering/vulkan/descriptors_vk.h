@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "puffin/rendering/vulkan/vk_types.h"
+#include "puffin/rendering/vulkan/types_vk.h"
 
 namespace puffin::rendering::util
 {

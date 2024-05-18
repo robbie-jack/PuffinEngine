@@ -157,16 +157,16 @@ set(HEADERS
 	# Rendering
 	${HEADER_DIR}/puffin/rendering/material_globals.h
 	# Rendering Vulkan
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_descriptors.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_helpers.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_material_registry.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_pipeline.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_render_graph.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_render_system.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_resource_manager.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_types.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_unified_geometry_buffer.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vk_vertex.h
+	${HEADER_DIR}/puffin/rendering/vulkan/descriptors_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/helpers_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/material_registry_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/pipeline_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/render_graph_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/render_system_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/resource_manager_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/types_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/unified_geometry_buffer_vk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/vertex_vk.h
 	# Scene
 	${HEADER_DIR}/puffin/scene/scene_graph.h
 	# Scripting
@@ -239,11 +239,11 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/procedural/procedural_mesh_gen_system.cpp
 	# Rendering
 	# Rendering Vulkan
-	${SOURCE_DIR}/puffin/rendering/vulkan/vk_descriptors.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/vk_helpers.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/vk_material_registry.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/vk_render_system.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/vk_unified_geometry_buffer.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/descriptors_vk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/helpers_vk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/material_registry_vk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/render_system_vk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/unified_geometry_buffer_vk.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scene_graph.cpp
 	# Scripting

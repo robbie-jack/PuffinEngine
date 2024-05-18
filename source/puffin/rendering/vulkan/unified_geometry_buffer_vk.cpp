@@ -1,7 +1,7 @@
-#include "puffin/rendering/vulkan/vk_unified_geometry_buffer.h"
+#include "puffin/rendering/vulkan/unified_geometry_buffer_vk.h"
 
-#include "puffin/rendering/vulkan/vk_helpers.h"
-#include "puffin/rendering/vulkan/vk_render_system.h"
+#include "puffin/rendering/vulkan/helpers_vk.h"
+#include "puffin/rendering/vulkan/render_system_vk.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \

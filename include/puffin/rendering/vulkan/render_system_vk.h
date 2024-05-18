@@ -17,12 +17,12 @@
 #include "puffin/assets/texture_asset.h"
 #include "puffin/types/deletion_queue.h"
 #include "puffin/types/packed_array.h"
-#include "puffin/rendering/vulkan/vk_descriptors.h"
+#include "puffin/rendering/vulkan/descriptors_vk.h"
 #include "puffin/components/rendering/camera_component.h"
-#include "puffin/rendering/vulkan/vk_unified_geometry_buffer.h"
+#include "puffin/rendering/vulkan/unified_geometry_buffer_vk.h"
 #include "puffin/rendering/material_globals.h"
-#include "puffin/rendering/vulkan/vk_material_registry.h"
-#include "puffin/rendering/vulkan/vk_pipeline.h"
+#include "puffin/rendering/vulkan/material_registry_vk.h"
+#include "puffin/rendering/vulkan/pipeline_vk.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
