@@ -71,6 +71,7 @@ namespace puffin::rendering
 			uint64_t byte_size = 0; // Size of an individual vertex in bytes
 			uint64_t byte_size_total = 0; // Total size of buffer in bytes
 			uint64_t byte_offset = 0; // Offset into buffer in bytes currently in use
+			uint64_t offset = 0; // 
 		};
 
 		struct InternalIndexBufferData
@@ -80,6 +81,7 @@ namespace puffin::rendering
 			uint64_t byte_size = 0;
 			uint64_t byte_size_total = 0;
 			uint64_t byte_offset = 0;
+			uint64_t offset = 0;
 		};
 
 		struct InternalSubMeshData

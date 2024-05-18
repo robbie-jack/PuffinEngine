@@ -89,8 +89,8 @@ namespace puffin::rendering
 			for (const auto& sub_mesh_info : static_mesh->sub_mesh_info())
 			{
 				InternalSubMeshData sub_mesh_data = {};
-				sub_mesh_data.vertex_offset = internal_vertex_buffer_data.byte_offset + sub_mesh_info.vertex_offset;
-				sub_mesh_data.index_offset = m_index_buffer_data.byte_offset + sub_mesh_info.index_offset;
+				sub_mesh_data.vertex_offset = internal_vertex_buffer_data.offset + sub_mesh_info.vertex_offset;
+				sub_mesh_data.index_offset = m_index_buffer_data.offset + sub_mesh_info.index_offset;
 				sub_mesh_data.vertex_count = sub_mesh_info.vertex_count;
 				sub_mesh_data.index_count = sub_mesh_info.index_count;
 
@@ -98,7 +98,10 @@ namespace puffin::rendering
 			}
 
 			internal_vertex_buffer_data.byte_offset = new_vertex_byte_offset;
+			internal_vertex_buffer_data.offset += static_mesh->vertex_count_total();
+
 			m_index_buffer_data.byte_offset = new_index_byte_offset;
+			m_index_buffer_data.offset += static_mesh->index_count_total();
 		}
 	}
 
