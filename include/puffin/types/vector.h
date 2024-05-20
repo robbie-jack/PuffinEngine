@@ -71,7 +71,7 @@ namespace puffin
 			return vec;
 		}
 
-#if PFN_BOX2D_PHYSICS
+#ifdef PFN_BOX2D_PHYSICS
 		operator b2Vec2() const
 		{
 			b2Vec2 vec;

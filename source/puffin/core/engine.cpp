@@ -55,7 +55,7 @@ namespace puffin::core
 		scene_graph->register_default_node_types();
 
 		// Load Project File
-		LoadProject(projectPath, mProjectFile);
+		load_project(projectPath, mProjectFile);
 
 		// Setup asset registry
 		assets::AssetRegistry::get()->init(mProjectFile, projectPath);
@@ -67,7 +67,7 @@ namespace puffin::core
 		assets::AssetRegistry::get()->registerAssetType<assets::MaterialInstanceAsset>();
 
 		// Create Default Scene (if set)
-		auto sceneData = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / mProjectFile.defaultScenePath);
+		auto sceneData = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / mProjectFile.default_scene_path);
 
 		// Register Components to Scene Data Class
 		sceneData->register_component<TransformComponent2D>();
@@ -89,7 +89,7 @@ namespace puffin::core
 		sceneData->register_component<physics::SphereComponent3D>();
 
 		// Load Project Settings
-		LoadSettings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", mSettings);
+		load_settings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", mSettings);
 
 		// Load/Initialize Assets
 		assets::AssetRegistry::get()->loadAssetCache();

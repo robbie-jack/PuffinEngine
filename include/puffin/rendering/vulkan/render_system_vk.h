@@ -60,6 +60,7 @@ namespace puffin::rendering
 	struct FrameRenderData
 	{
 		// Synchronization
+		vk::Semaphore shadow_semaphore;
 		vk::Semaphore render_semaphore;
 		vk::Semaphore copy_semaphore;
 		vk::Semaphore imgui_semaphore;
@@ -69,6 +70,7 @@ namespace puffin::rendering
 
 		// Command Execution
 		vk::CommandPool command_pool;
+		vk::CommandBuffer shadow_command_buffer;
 		vk::CommandBuffer main_command_buffer;
 		vk::CommandBuffer copy_command_buffer; // Cmd buffer for copying/blitting from offscreen to swapchain
 		vk::CommandBuffer imgui_command_buffer;
@@ -209,6 +211,7 @@ namespace puffin::rendering
 
 		bool m_initialized = false; // Indicates initialization completed without any failures
 		bool m_rebar_enabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
+		bool m_render_shadows = false; // Render shadows if enabled
 
 		void init_vulkan();
 
@@ -255,9 +258,12 @@ namespace puffin::rendering
 
 		void build_indirect_commands();
 
-		vk::CommandBuffer record_main_command_buffer(const uint32_t& swapchainIdx, const vk::Extent2D& renderExtent,
-		                                          const AllocatedImage&
-		                                          colorImage, const AllocatedImage& depthImage);
+		vk::CommandBuffer& record_shadow_command_buffer(uint32_t swapchain_idx);
+		void draw_shadowmap(vk::CommandBuffer cmd, const AllocatedImage& depth_image, const vk::Extent2D& shadow_extent);
+
+		vk::CommandBuffer& record_main_command_buffer(const uint32_t& swapchain_idx, const vk::Extent2D& render_extent,
+		                                              const AllocatedImage&
+		                                              color_image, const AllocatedImage& depth_image);
 		void draw_objects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
 		void set_draw_parameters(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
 		void bind_buffers_and_descriptors(vk::CommandBuffer cmd);
@@ -265,8 +271,8 @@ namespace puffin::rendering
 		void draw_indexed_indirect_command(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset,
 		                                uint32_t drawCount, uint32_t stride);
 
-		vk::CommandBuffer record_copy_command_buffer(uint32_t swapchainIdx);
-		vk::CommandBuffer record_imgui_command_buffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent);
+		vk::CommandBuffer& record_copy_command_buffer(uint32_t swapchainIdx);
+		vk::CommandBuffer& record_imgui_command_buffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent);
 
 		void record_and_submit_commands(uint32_t swapchainIdx);
 

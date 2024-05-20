@@ -25,14 +25,14 @@ namespace puffin
 
 				const auto input = mEngine->getSystem<input::InputSubsystem>();
 
-				if (ImGui::SliderFloat("Sensitivity", &settings.mouseSensitivity, 0.01f, 0.1f))
+				if (ImGui::SliderFloat("Sensitivity", &settings.mouse_sensitivity, 0.01f, 0.1f))
 				{
-					input->sensitivity() = settings.mouseSensitivity;
+					input->sensitivity() = settings.mouse_sensitivity;
 				}
 
-				if (ImGui::SliderFloat("Field of View", &settings.cameraFov, 30.0f, 120.0f, "%f"))
+				if (ImGui::SliderFloat("Field of View", &settings.camera_fov, 30.0f, 120.0f, "%f"))
 				{
-					mCamera->fovY = settings.cameraFov;
+					mCamera->fovY = settings.camera_fov;
 				}
 
 				end();

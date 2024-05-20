@@ -421,6 +421,7 @@ namespace puffin::rendering
 			VK_CHECK(m_device.createCommandPool(&commandPoolInfo, nullptr, &m_frame_render_data[i].command_pool));
 
 			commandBufferInfo.commandPool = m_frame_render_data[i].command_pool;
+			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_frame_render_data[i].shadow_command_buffer));
 			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_frame_render_data[i].main_command_buffer));
 			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_frame_render_data[i].copy_command_buffer));
 			VK_CHECK(m_device.allocateCommandBuffers(&commandBufferInfo, &m_frame_render_data[i].imgui_command_buffer));
@@ -1527,76 +1528,142 @@ namespace puffin::rendering
 		}
 	}
 
-	vk::CommandBuffer RenderSystemVK::record_main_command_buffer(const uint32_t& swapchainIdx,
-	                                                          const vk::Extent2D& renderExtent, const AllocatedImage&
-	                                                          colorImage, const AllocatedImage& depthImage)
+	vk::CommandBuffer& RenderSystemVK::record_shadow_command_buffer(uint32_t swapchain_idx)
 	{
-		vk::CommandBuffer cmd = current_frame_data().main_command_buffer;
+		auto& cmd = current_frame_data().shadow_command_buffer;
+
+		cmd.reset();
 
 		// Reset command buffer for recording new commands
 		cmd.reset();
 
 		// Begin command buffer execution
-		vk::CommandBufferBeginInfo cmdBeginInfo = {
+		vk::CommandBufferBeginInfo cmd_begin_info = {
 			vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
 			nullptr, nullptr
 		};
 
-		VK_CHECK(cmd.begin(&cmdBeginInfo));
+		VK_CHECK(cmd.begin(&cmd_begin_info));
+
+		
+
+		cmd.end();
+
+		return cmd;
+	}
+
+	void RenderSystemVK::draw_shadowmap(vk::CommandBuffer cmd, const AllocatedImage& depth_image, const vk::Extent2D& shadow_extent)
+	{
+		// Transition color image to color attachment optimal
+		vk::ImageSubresourceRange image_subresource_range = { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 };
+
+		vk::ImageMemoryBarrier offscreen_memory_barrier_to_depth = {
+			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthAttachmentOptimal, {}, {},
+			depth_image.image, image_subresource_range
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			{}, 0, nullptr, 0, nullptr,
+			1, & offscreen_memory_barrier_to_depth);
+
+		vk::ClearValue depth_clear;
+		depth_clear.depthStencil.depth = 1.f;
+
+		vk::RenderingAttachmentInfoKHR depth_attach_info = {
+			depth_image.imageView, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depth_clear
+		};
+
+		vk::RenderingInfoKHR render_info = {
+			{}, vk::Rect2D{{0, 0}, shadow_extent}, 1, {}, 0, {}, &depth_attach_info
+		};
+
+		cmd.beginRendering(&render_info);
+
+		cmd.endRendering();
+
+		// Transition layout to Shader Read Optimal
+		vk::ImageMemoryBarrier offscreen_memory_barrier_to_shader = {
+			vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::AccessFlagBits::eNone,
+			vk::ImageLayout::eDepthAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, {}, {},
+			depth_image.image, image_subresource_range
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe,
+			{}, 0, nullptr, 0, nullptr,
+			1, &offscreen_memory_barrier_to_shader);
+	}
+
+	vk::CommandBuffer& RenderSystemVK::record_main_command_buffer(const uint32_t& swapchain_idx,
+	                                                              const vk::Extent2D& render_extent,
+	                                                              const AllocatedImage&
+	                                                              color_image, const AllocatedImage& depth_image)
+	{
+		auto& cmd = current_frame_data().main_command_buffer;
+
+		// Reset command buffer for recording new commands
+		cmd.reset();
+
+		// Begin command buffer execution
+		vk::CommandBufferBeginInfo cmd_begin_info = {
+			vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+			nullptr, nullptr
+		};
+
+		VK_CHECK(cmd.begin(&cmd_begin_info));
 
 		// Transition color image to color attachment optimal
-		vk::ImageSubresourceRange imageSubresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+		vk::ImageSubresourceRange image_subresource_range = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
 
-		vk::ImageMemoryBarrier offscreenMemoryBarrierToColor = {
+		vk::ImageMemoryBarrier offscreen_memory_barrier_to_color = {
 			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eColorAttachmentWrite,
 			vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, {},
-			colorImage.image, imageSubresourceRange
+			color_image.image, image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput,
 		                    {}, 0, nullptr, 0, nullptr,
-		                    1, &offscreenMemoryBarrierToColor);
+		                    1, &offscreen_memory_barrier_to_color);
 
-		vk::ClearValue clearValue;
-		clearValue.color = {0.0f, 0.7f, 0.9f, 1.0f};
+		vk::ClearValue color_clear;
+		color_clear.color = {0.0f, 0.7f, 0.9f, 1.0f};
 
-		vk::ClearValue depthClear;
-		depthClear.depthStencil.depth = 1.f;
-
-		std::array<vk::ClearValue, 2> clearValues = {clearValue, depthClear};
+		vk::ClearValue depth_clear;
+		depth_clear.depthStencil.depth = 1.f;
 
 		// Begin Rendering
-		vk::RenderingAttachmentInfoKHR colorAttachInfo = {
-			colorImage.imageView, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
-			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearValue
+		vk::RenderingAttachmentInfoKHR color_attach_info = {
+			color_image.imageView, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, color_clear
 		};
 
-		vk::RenderingAttachmentInfoKHR depthAttachInfo = {
-			depthImage.imageView, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
-			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depthClear
+		vk::RenderingAttachmentInfoKHR depth_attach_info = {
+			depth_image.imageView, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depth_clear
 		};
 
-		vk::RenderingInfoKHR renderInfo = {
-			{}, vk::Rect2D{{0, 0}, renderExtent}, 1, {}, 1, &colorAttachInfo, &depthAttachInfo
+		vk::RenderingInfoKHR render_info = {
+			{}, vk::Rect2D{{0, 0}, render_extent}, 1, {}, 1, &color_attach_info, &depth_attach_info
 		};
 
-		cmd.beginRendering(&renderInfo);
+		cmd.beginRendering(&render_info);
 
-		draw_objects(cmd, renderExtent);
+		draw_objects(cmd, render_extent);
 
 		// End Rendering
 		cmd.endRendering();
 
 		// Transition layout to Shader Read Optimal
-		vk::ImageMemoryBarrier offscreenMemoryBarrierToShader = {
+		vk::ImageMemoryBarrier offscreen_memory_barrier_to_shader = {
 			vk::AccessFlagBits::eColorAttachmentWrite, vk::AccessFlagBits::eNone,
 			vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, {}, {},
-			colorImage.image, imageSubresourceRange
+			color_image.image, image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe,
 		                    {}, 0, nullptr, 0, nullptr,
-		                    1, &offscreenMemoryBarrierToShader);
+		                    1, &offscreen_memory_barrier_to_shader);
 
 		// Finish command buffer recording
 		cmd.end();
@@ -1611,9 +1678,9 @@ namespace puffin::rendering
 		bind_buffers_and_descriptors(cmd);
 
 		// Make a indirect draw call for each material
-		for (const auto& drawBatch : m_draw_batches)
+		for (const auto& draw_batch : m_draw_batches)
 		{
-			draw_mesh_batch(cmd, drawBatch);
+			draw_mesh_batch(cmd, draw_batch);
 		}
 	}
 
@@ -1633,10 +1700,10 @@ namespace puffin::rendering
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forward_pipeline_layout.get(), 0, 1,
 			&current_frame_data().global_descriptor, 0, nullptr);
 
-		GPUDrawPushConstant pushConstant;
-		pushConstant.vertexBufferAddress = m_resource_manager->geometry_buffer()->vertex_buffer_address();
+		GPUDrawPushConstant push_constant;
+		push_constant.vertexBufferAddress = m_resource_manager->geometry_buffer()->vertex_buffer_address();
 
-		cmd.pushConstants(m_forward_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant), &pushConstant);
+		cmd.pushConstants(m_forward_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant), &push_constant);
 
 		cmd.bindIndexBuffer(m_resource_manager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
 	}
@@ -1653,11 +1720,11 @@ namespace puffin::rendering
 			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_forward_pipeline.get());
 		}
 
-		vk::DeviceSize indirectOffset = meshDrawBatch.cmdIndex * sizeof(vk::DrawIndexedIndirectCommand);
-		uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
+		vk::DeviceSize indirect_offset = meshDrawBatch.cmdIndex * sizeof(vk::DrawIndexedIndirectCommand);
+		uint32_t draw_stride = sizeof(vk::DrawIndexedIndirectCommand);
 
-		draw_indexed_indirect_command(cmd, current_frame_data().indirect_buffer.buffer, indirectOffset,
-			meshDrawBatch.cmdCount, drawStride);
+		draw_indexed_indirect_command(cmd, current_frame_data().indirect_buffer.buffer, indirect_offset,
+			meshDrawBatch.cmdCount, draw_stride);
 	}
 
 	void RenderSystemVK::draw_indexed_indirect_command(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer,
@@ -1668,49 +1735,49 @@ namespace puffin::rendering
 		m_draw_calls++;
 	}
 
-	vk::CommandBuffer RenderSystemVK::record_copy_command_buffer(uint32_t swapchainIdx)
+	vk::CommandBuffer& RenderSystemVK::record_copy_command_buffer(uint32_t swapchainIdx)
 	{
-		vk::CommandBuffer cmd = current_frame_data().copy_command_buffer;
+		auto& cmd = current_frame_data().copy_command_buffer;
 
 		// Reset command buffer for recording new commands
 		cmd.reset();
 
 		// Begin command buffer execution
-		vk::CommandBufferBeginInfo cmdBeginInfo = {
+		vk::CommandBufferBeginInfo cmd_begin_info = {
 			vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
 			nullptr, nullptr
 		};
 
-		VK_CHECK(cmd.begin(&cmdBeginInfo));
+		VK_CHECK(cmd.begin(&cmd_begin_info));
 
 		// Setup pipeline barriers for transitioning image layouts
 
-		vk::ImageSubresourceRange imageSubresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+		vk::ImageSubresourceRange image_subresource_range = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
 
 		// Offscreen Transition
-		vk::ImageMemoryBarrier offscreenMemoryBarrier = {
+		vk::ImageMemoryBarrier offscreen_memory_barrier = {
 			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eTransferRead,
 			vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageLayout::eTransferSrcOptimal, {}, {},
-			m_offscreen_data.allocImages[swapchainIdx].image, imageSubresourceRange
+			m_offscreen_data.allocImages[swapchainIdx].image, image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
 		                    {}, 0, nullptr, 0, nullptr,
-		                    1, &offscreenMemoryBarrier);
+		                    1, &offscreen_memory_barrier);
 
 		// Swapchain Transition
-		vk::ImageMemoryBarrier swapchainMemoryBarrier = {
+		vk::ImageMemoryBarrier swapchain_memory_barrier = {
 			vk::AccessFlagBits::eMemoryRead, vk::AccessFlagBits::eTransferWrite,
 			vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, {}, {},
-			m_swapchain_data.images[swapchainIdx], imageSubresourceRange
+			m_swapchain_data.images[swapchainIdx], image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
 		                    {}, 0, nullptr, 0, nullptr,
-		                    1, &swapchainMemoryBarrier);
+		                    1, &swapchain_memory_barrier);
 
 		// Blit (Copy with auto format coversion (RGB to BGR)) offscreen to swapchain image
-		vk::Offset3D blitSize =
+		vk::Offset3D blit_size =
 		{
 			static_cast<int32_t>(m_offscreen_data.extent.width),
 			static_cast<int32_t>(m_offscreen_data.extent.height),
@@ -1718,89 +1785,90 @@ namespace puffin::rendering
 		};
 
 		std::array<vk::Offset3D, 2> offsets = {};
-		offsets[1] = blitSize;
+		offsets[1] = blit_size;
 
-		vk::ImageBlit imageBlitRegion =
+		vk::ImageBlit image_blit_region =
 		{
 			{vk::ImageAspectFlagBits::eColor, 0, 0, 1}, offsets,
 			{vk::ImageAspectFlagBits::eColor, 0, 0, 1}, offsets
 		};
 
 		cmd.blitImage(m_offscreen_data.allocImages[swapchainIdx].image, vk::ImageLayout::eTransferSrcOptimal,
-		              m_swapchain_data.images[swapchainIdx], vk::ImageLayout::eTransferDstOptimal, 1, &imageBlitRegion,
+		              m_swapchain_data.images[swapchainIdx], vk::ImageLayout::eTransferDstOptimal, 1, &image_blit_region,
 		              vk::Filter::eNearest);
 
 		// Setup pipeline barriers for transitioning image layouts back to default
 
 		// Offscreen Transition
-		offscreenMemoryBarrier = {
+		offscreen_memory_barrier = {
 			vk::AccessFlagBits::eTransferRead, vk::AccessFlagBits::eNone,
 			vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, {}, {},
-			m_offscreen_data.allocImages[swapchainIdx].image, imageSubresourceRange
+			m_offscreen_data.allocImages[swapchainIdx].image, image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
 		                    {}, 0, nullptr, 0, nullptr,
-		                    1, &offscreenMemoryBarrier);
+		                    1, &offscreen_memory_barrier);
 
 		// Swapchain Transition
-		swapchainMemoryBarrier = {
+		swapchain_memory_barrier = {
 			vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eMemoryRead,
 			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR, {}, {},
-			m_swapchain_data.images[swapchainIdx], imageSubresourceRange
+			m_swapchain_data.images[swapchainIdx], image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
 		                    {}, 0, nullptr, 0, nullptr,
-		                    1, &swapchainMemoryBarrier);
+		                    1, &swapchain_memory_barrier);
 
 		cmd.end();
 
 		return cmd;
 	}
 
-	vk::CommandBuffer RenderSystemVK::record_imgui_command_buffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent)
+	vk::CommandBuffer& RenderSystemVK::record_imgui_command_buffer(uint32_t swapchainIdx,
+	                                                               const vk::Extent2D& renderExtent)
 	{
-		vk::CommandBuffer cmd = current_frame_data().imgui_command_buffer;
+		auto& cmd = current_frame_data().imgui_command_buffer;
 
 		// Reset command buffer for recording new commands
 		cmd.reset();
 
 		// Begin command buffer execution
-		vk::CommandBufferBeginInfo cmdBeginInfo = {
+		vk::CommandBufferBeginInfo cmd_begin_info = {
 			vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
 			nullptr, nullptr
 		};
 
-		VK_CHECK(cmd.begin(&cmdBeginInfo));
+		VK_CHECK(cmd.begin(&cmd_begin_info));
 
 		// Transition color image to color attachment optimal
-		vk::ImageSubresourceRange imageSubresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+		vk::ImageSubresourceRange image_subresource_range = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
 
-		vk::ImageMemoryBarrier offscreenMemoryBarrierToColor = {
+		vk::ImageMemoryBarrier offscreen_memory_barrier_to_color = {
 			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eColorAttachmentWrite,
 			vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, {},
-			m_swapchain_data.images[swapchainIdx], imageSubresourceRange
+			m_swapchain_data.images[swapchainIdx], image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput,
 			{}, 0, nullptr, 0, nullptr,
-			1, &offscreenMemoryBarrierToColor);
+			1, &offscreen_memory_barrier_to_color);
 
-		vk::ClearValue clearValue;
-		clearValue.color = {1.0f, 1.0f, 1.0f, 1.0f};
+		vk::ClearValue clear_value;
+		clear_value.color = {1.0f, 1.0f, 1.0f, 1.0f};
 
 		// Begin rendering
-		vk::RenderingAttachmentInfoKHR colorAttachInfo = {
+		vk::RenderingAttachmentInfoKHR color_attach_info = {
 			m_swapchain_data.imageViews[swapchainIdx], vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
-			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearValue
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clear_value
 		};
 
-		vk::RenderingInfoKHR renderInfo = {
-			{}, vk::Rect2D{{0, 0}, renderExtent}, 1, {}, 1, &colorAttachInfo
+		vk::RenderingInfoKHR render_info = {
+			{}, vk::Rect2D{{0, 0}, renderExtent}, 1, {}, 1, &color_attach_info
 		};
 
-		cmd.beginRendering(&renderInfo);
+		cmd.beginRendering(&render_info);
 
 		// Record Imgui Draw Data and draw functions into command buffer
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
@@ -1808,15 +1876,15 @@ namespace puffin::rendering
 		cmd.endRendering();
 
 		// Transition layout for presenting to swapchain
-		vk::ImageMemoryBarrier offscreenMemoryBarrierToShader = {
+		vk::ImageMemoryBarrier offscreen_memory_barrier_to_shader = {
 			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eNone,
 			vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, {}, {},
-			m_swapchain_data.images[swapchainIdx], imageSubresourceRange
+			m_swapchain_data.images[swapchainIdx], image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe,
 			{}, 0, nullptr, 0, nullptr,
-			1, &offscreenMemoryBarrierToShader);
+			1, &offscreen_memory_barrier_to_shader);
 
 		cmd.end();
 
@@ -1825,71 +1893,105 @@ namespace puffin::rendering
 
 	void RenderSystemVK::record_and_submit_commands(uint32_t swapchainIdx)
 	{
-		// Record command buffers
-		vk::CommandBuffer mainCmd = record_main_command_buffer(swapchainIdx, m_offscreen_data.extent,
-		                                                    m_offscreen_data.allocImages[swapchainIdx],
-		                                                    m_offscreen_data.allocDepthImage);
+		std::vector<vk::SubmitInfo> submits;
 
-		// Submit all commands
-		std::vector<vk::CommandBuffer> commands = {mainCmd};
+		vk::PipelineStageFlags wait_stage = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
-		// Prepare submission to queue
-		vk::PipelineStageFlags waitStage = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-		vk::SubmitInfo renderSubmit =
+		// Prepare shadow rendering command submit
+		if (m_render_shadows)
 		{
-			1, &current_frame_data().present_semaphore,
-			&waitStage, static_cast<uint32_t>(commands.size()), commands.data(),
-			1, &current_frame_data().render_semaphore, nullptr
-		};
+			auto& shadow_cmd = record_shadow_command_buffer(swapchainIdx);
 
-		std::vector submits = {renderSubmit};
+			std::vector<vk::CommandBuffer*> shadow_commands = { &shadow_cmd };
 
-		if (mEngine->shouldRenderEditorUI())
-		{
-			vk::CommandBuffer imguiCmd = record_imgui_command_buffer(swapchainIdx, m_swapchain_data.extent);
+			std::vector<vk::Semaphore*> shadow_wait_semaphores = { &current_frame_data().present_semaphore };
+			std::vector<vk::Semaphore*> shadow_signal_semaphores = { &current_frame_data().shadow_semaphore };
 
-			vk::SubmitInfo imguiSubmit =
+			vk::SubmitInfo shadow_submit =
 			{
-				1, &current_frame_data().render_semaphore,
-				&waitStage, 1, &imguiCmd,
-				1, &current_frame_data().imgui_semaphore, nullptr
+				static_cast<uint32_t>(shadow_wait_semaphores.size()), *shadow_wait_semaphores.data(),
+				&wait_stage, static_cast<uint32_t>(shadow_commands.size()), *shadow_commands.data(),
+				static_cast<uint32_t>(shadow_signal_semaphores.size()), *shadow_signal_semaphores.data(), nullptr
 			};
 
-			submits.push_back(imguiSubmit);
+			submits.push_back(shadow_submit);
 		}
-		else
-		{
-			vk::CommandBuffer copyCmd = record_copy_command_buffer(swapchainIdx);
 
-			vk::SubmitInfo copySubmit =
+		// Prepare main render command submit
+		{
+			auto& main_cmd = record_main_command_buffer(swapchainIdx, m_offscreen_data.extent,
+			                                                        m_offscreen_data.allocImages[swapchainIdx],
+			                                                        m_offscreen_data.allocDepthImage);
+
+			std::vector<vk::CommandBuffer*> render_commands = { &main_cmd };
+
+			std::vector<vk::Semaphore*> render_wait_semaphores = { &current_frame_data().present_semaphore };
+
+			if (m_render_shadows)
 			{
-				1, &current_frame_data().render_semaphore,
-				&waitStage, 1, &copyCmd,
-				1, &current_frame_data().copy_semaphore, nullptr
+				render_wait_semaphores.push_back(&current_frame_data().shadow_semaphore);
+			}
+
+			std::vector<vk::Semaphore*> render_signal_semaphores = { &current_frame_data().render_semaphore };
+
+			vk::SubmitInfo render_submit =
+			{
+				static_cast<uint32_t>(render_wait_semaphores.size()), *render_wait_semaphores.data(),
+				&wait_stage, static_cast<uint32_t>(render_commands.size()), *render_commands.data(),
+				static_cast<uint32_t>(render_signal_semaphores.size()), *render_signal_semaphores.data(), nullptr
 			};
 
-			submits.push_back(copySubmit);
+			submits.push_back(render_submit);
+		}
+
+		{
+			if (mEngine->shouldRenderEditorUI())
+			{
+				auto& imgui_cmd = record_imgui_command_buffer(swapchainIdx, m_swapchain_data.extent);
+
+				vk::SubmitInfo imgui_submit =
+				{
+					1, &current_frame_data().render_semaphore,
+					&wait_stage, 1, &imgui_cmd,
+					1, &current_frame_data().imgui_semaphore, nullptr
+				};
+
+				submits.push_back(imgui_submit);
+			}
+			else
+			{
+				auto& copy_cmd = record_copy_command_buffer(swapchainIdx);
+
+				vk::SubmitInfo copy_submit =
+				{
+					1, &current_frame_data().render_semaphore,
+					&wait_stage, 1, &copy_cmd,
+					1, &current_frame_data().copy_semaphore, nullptr
+				};
+
+				submits.push_back(copy_submit);
+			}
 		}
 
 		VK_CHECK(m_graphics_queue.submit(submits.size(), submits.data(), current_frame_data().render_fence));
 
-		vk::Semaphore waitSemaphore;
+		vk::Semaphore wait_semaphore;
 
 		if (mEngine->shouldRenderEditorUI())
 		{
-			waitSemaphore = current_frame_data().imgui_semaphore;
+			wait_semaphore = current_frame_data().imgui_semaphore;
 		}
 		else
 		{
-			waitSemaphore = current_frame_data().copy_semaphore;
+			wait_semaphore = current_frame_data().copy_semaphore;
 		}
 
-		vk::PresentInfoKHR presentInfo =
+		vk::PresentInfoKHR present_info =
 		{
-			1, &waitSemaphore, 1, &m_swapchain_data.swapchain, &swapchainIdx
+			1, &wait_semaphore, 1, &m_swapchain_data.swapchain, &swapchainIdx
 		};
 
-		VK_CHECK(m_graphics_queue.presentKHR(&presentInfo));
+		VK_CHECK(m_graphics_queue.presentKHR(&present_info));
 	}
 
 	void RenderSystemVK::build_model_transform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,

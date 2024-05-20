@@ -17,22 +17,22 @@ namespace puffin
 		struct ProjectFile
 		{
 			std::string name;
-			std::string defaultScenePath;
-			std::vector<std::string> additionalContentDirectories = {};
+			std::string default_scene_path;
+			std::vector<std::string> additional_content_directories = {};
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, defaultScenePath, additionalContentDirectories)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, default_scene_path, additional_content_directories)
 		};
 
 		struct ProjectSettings
 		{
-			float mouseSensitivity = 0.05f;
-			float cameraFov = 60.f;
+			float mouse_sensitivity = 0.05f;
+			float camera_fov = 60.f;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectSettings, mouseSensitivity, cameraFov)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectSettings, mouse_sensitivity, camera_fov)
 		};
 
 		// IO Static Functions
-		static void SaveProject(fs::path file_path, const ProjectFile& file)
+		static void save_project(fs::path file_path, const ProjectFile& file)
 		{
 			const json data = file;
 
@@ -43,7 +43,7 @@ namespace puffin
 			os.close();
 		}
 
-		static void LoadProject(fs::path file_path, ProjectFile& file)
+		static void load_project(fs::path file_path, ProjectFile& file)
 		{
 			if (!exists(file_path))
 				return;
@@ -58,7 +58,7 @@ namespace puffin
 			file = data;
 		}
 		
-		static void SaveSettings(fs::path file_path, const ProjectSettings& settings)
+		static void save_settings(fs::path file_path, const ProjectSettings& settings)
 		{
 			const json data = settings;
 
@@ -69,7 +69,7 @@ namespace puffin
 			os.close();
 		}
 
-		static void LoadSettings(fs::path file_path, ProjectSettings& settings)
+		static void load_settings(fs::path file_path, ProjectSettings& settings)
 		{
 			if (!fs::exists(file_path))
 				return;

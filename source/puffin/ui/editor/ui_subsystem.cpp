@@ -303,7 +303,7 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Project"))
 				{
-					io::SaveSettings(assets::AssetRegistry::get()->projectRoot() / "settings.json", mEngine->settings());
+					io::save_settings(assets::AssetRegistry::get()->projectRoot() / "settings.json", mEngine->settings());
 					assets::AssetRegistry::get()->saveAssetCache();
 				}
 
