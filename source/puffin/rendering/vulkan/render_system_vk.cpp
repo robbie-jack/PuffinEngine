@@ -72,6 +72,9 @@ namespace puffin::rendering
 		registry->on_construct<TransformComponent3D>().connect<&RenderSystemVK::on_update_transform>(this);
 		registry->on_update<TransformComponent3D>().connect<&RenderSystemVK::on_update_transform>(this);
 		registry->on_destroy<TransformComponent3D>().connect<&RenderSystemVK::on_destroy_mesh_or_transform>(this);
+
+		registry->on_construct<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
+		registry->on_update<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
 	}
 
 	void RenderSystemVK::startup()
@@ -207,6 +210,16 @@ namespace puffin::rendering
 
 			m_update_renderables = true;
 		}
+	}
+
+	void RenderSystemVK::on_update_shadow_caster(entt::registry& registry, entt::entity entity)
+	{
+
+	}
+
+	void RenderSystemVK::on_destroy_shadow_caster(entt::registry& registry, entt::entity entity)
+	{
+
 	}
 
 	void RenderSystemVK::register_texture(PuffinID texID)
@@ -815,79 +828,6 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::update_editor_camera()
-	{
-		const auto inputSubsystem = mEngine->getSystem<input::InputSubsystem>();
-
-		if (inputSubsystem->isCursorLocked())
-		{
-			// Camera Movement
-			if (inputSubsystem->pressed("CamMoveLeft") && !inputSubsystem->pressed("CamMoveRight"))
-			{
-				m_editor_cam.position += m_editor_cam.right * m_editor_cam.speed * mEngine->deltaTime();
-			}
-
-			if (inputSubsystem->pressed("CamMoveRight") && !inputSubsystem->pressed("CamMoveLeft"))
-			{
-				m_editor_cam.position -= m_editor_cam.right * m_editor_cam.speed * mEngine->deltaTime();
-			}
-
-			if (inputSubsystem->pressed("CamMoveForward") && !inputSubsystem->pressed("CamMoveBackward"))
-			{
-				m_editor_cam.position += m_editor_cam.direction * m_editor_cam.speed * mEngine->deltaTime();
-			}
-
-			if (inputSubsystem->pressed("CamMoveBackward") && !inputSubsystem->pressed("CamMoveForward"))
-			{
-				m_editor_cam.position -= m_editor_cam.direction * m_editor_cam.speed * mEngine->deltaTime();
-			}
-
-			if (inputSubsystem->pressed("CamMoveUp") && !inputSubsystem->pressed("CamMoveDown"))
-			{
-				m_editor_cam.position += m_editor_cam.up * m_editor_cam.speed * mEngine->deltaTime();
-			}
-
-			if (inputSubsystem->pressed("CamMoveDown") && !inputSubsystem->pressed("CamMoveUp"))
-			{
-				m_editor_cam.position -= m_editor_cam.up * m_editor_cam.speed * mEngine->deltaTime();
-			}
-
-			// Mouse Rotation
-			m_editor_cam.yaw += inputSubsystem->getMouseXOffset();
-			m_editor_cam.pitch -= inputSubsystem->getMouseYOffset();
-
-			if (m_editor_cam.pitch > 89.0f)
-				m_editor_cam.pitch = 89.0f;
-
-			if (m_editor_cam.pitch < -89.0f)
-				m_editor_cam.pitch = -89.0f;
-
-			// Calculate Direction vector from yaw and pitch of camera
-			m_editor_cam.direction.x = cos(maths::degToRad(m_editor_cam.yaw)) * cos(
-				maths::degToRad(m_editor_cam.pitch));
-			m_editor_cam.direction.y = sin(maths::degToRad(m_editor_cam.pitch));
-			m_editor_cam.direction.z = sin(maths::degToRad(m_editor_cam.yaw)) * cos(
-				maths::degToRad(m_editor_cam.pitch));
-
-			m_editor_cam.direction.normalize();
-		}
-
-		// Calculate Right, Up and LookAt vectors
-		m_editor_cam.right = m_editor_cam.up.cross(m_editor_cam.direction).normalized();
-		m_editor_cam.look_at = m_editor_cam.position + m_editor_cam.direction;
-
-		m_editor_cam.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
-
-		m_editor_cam.view = glm::lookAt(static_cast<glm::vec3>(m_editor_cam.position),
-		                              static_cast<glm::vec3>(m_editor_cam.look_at), static_cast<glm::vec3>(m_editor_cam.up));
-
-		m_editor_cam.proj = glm::perspective(maths::degToRad(m_editor_cam.fov_y), m_editor_cam.aspect,
-		                                   m_editor_cam.z_near, m_editor_cam.z_far);
-		m_editor_cam.proj[1][1] *= -1;
-
-		m_editor_cam.view_proj = m_editor_cam.proj * m_editor_cam.view;
-	}
-
 	void RenderSystemVK::update_render_data()
 	{
 		// Load Meshes
@@ -990,24 +930,6 @@ namespace puffin::rendering
 		record_and_submit_commands(swapchainImageIdx);
 
 		m_frame_number++;
-	}
-
-	void RenderSystemVK::update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const
-	{
-		// Calculate lookAt, right and up vectors
-		camera.look_at = static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, -1.0f);
-		camera.right = static_cast<glm::quat>(transform.orientation) * glm::vec3(1.0f, 0.0f, 0.0f);
-		camera.up = Vector3f(0.0f, 1.0f, 0.0f);
-
-		camera.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
-
-		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
-		                          static_cast<glm::vec3>(camera.look_at), static_cast<glm::vec3>(camera.up));
-
-		camera.proj = glm::perspective(maths::degToRad(camera.fov_y), camera.aspect, camera.z_near, camera.z_far);
-		camera.proj[1][1] *= -1;
-
-		camera.view_proj = camera.proj * camera.view;
 	}
 
 	void RenderSystemVK::recreate_swapchain()
@@ -1138,6 +1060,97 @@ namespace puffin::rendering
 		{
 			update_camera_component(transform, camera);
 		}
+	}
+
+	void RenderSystemVK::update_editor_camera()
+	{
+		const auto inputSubsystem = mEngine->getSystem<input::InputSubsystem>();
+
+		if (inputSubsystem->isCursorLocked())
+		{
+			// Camera Movement
+			if (inputSubsystem->pressed("CamMoveLeft") && !inputSubsystem->pressed("CamMoveRight"))
+			{
+				m_editor_cam.position += m_editor_cam.right * m_editor_cam.speed * mEngine->deltaTime();
+			}
+
+			if (inputSubsystem->pressed("CamMoveRight") && !inputSubsystem->pressed("CamMoveLeft"))
+			{
+				m_editor_cam.position -= m_editor_cam.right * m_editor_cam.speed * mEngine->deltaTime();
+			}
+
+			if (inputSubsystem->pressed("CamMoveForward") && !inputSubsystem->pressed("CamMoveBackward"))
+			{
+				m_editor_cam.position += m_editor_cam.direction * m_editor_cam.speed * mEngine->deltaTime();
+			}
+
+			if (inputSubsystem->pressed("CamMoveBackward") && !inputSubsystem->pressed("CamMoveForward"))
+			{
+				m_editor_cam.position -= m_editor_cam.direction * m_editor_cam.speed * mEngine->deltaTime();
+			}
+
+			if (inputSubsystem->pressed("CamMoveUp") && !inputSubsystem->pressed("CamMoveDown"))
+			{
+				m_editor_cam.position += m_editor_cam.up * m_editor_cam.speed * mEngine->deltaTime();
+			}
+
+			if (inputSubsystem->pressed("CamMoveDown") && !inputSubsystem->pressed("CamMoveUp"))
+			{
+				m_editor_cam.position -= m_editor_cam.up * m_editor_cam.speed * mEngine->deltaTime();
+			}
+
+			// Mouse Rotation
+			m_editor_cam.yaw += inputSubsystem->getMouseXOffset();
+			m_editor_cam.pitch -= inputSubsystem->getMouseYOffset();
+
+			if (m_editor_cam.pitch > 89.0f)
+				m_editor_cam.pitch = 89.0f;
+
+			if (m_editor_cam.pitch < -89.0f)
+				m_editor_cam.pitch = -89.0f;
+
+			// Calculate Direction vector from yaw and pitch of camera
+			m_editor_cam.direction.x = cos(maths::degToRad(m_editor_cam.yaw)) * cos(
+				maths::degToRad(m_editor_cam.pitch));
+			m_editor_cam.direction.y = sin(maths::degToRad(m_editor_cam.pitch));
+			m_editor_cam.direction.z = sin(maths::degToRad(m_editor_cam.yaw)) * cos(
+				maths::degToRad(m_editor_cam.pitch));
+
+			m_editor_cam.direction.normalize();
+		}
+
+		// Calculate Right, Up and LookAt vectors
+		m_editor_cam.right = m_editor_cam.up.cross(m_editor_cam.direction).normalized();
+		m_editor_cam.look_at = m_editor_cam.position + m_editor_cam.direction;
+
+		m_editor_cam.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
+
+		m_editor_cam.view = glm::lookAt(static_cast<glm::vec3>(m_editor_cam.position),
+			static_cast<glm::vec3>(m_editor_cam.look_at), static_cast<glm::vec3>(m_editor_cam.up));
+
+		m_editor_cam.proj = glm::perspective(maths::degToRad(m_editor_cam.fov_y), m_editor_cam.aspect,
+			m_editor_cam.z_near, m_editor_cam.z_far);
+		m_editor_cam.proj[1][1] *= -1;
+
+		m_editor_cam.view_proj = m_editor_cam.proj * m_editor_cam.view;
+	}
+
+	void RenderSystemVK::update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const
+	{
+		// Calculate lookAt, right and up vectors
+		camera.look_at = static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, -1.0f);
+		camera.right = static_cast<glm::quat>(transform.orientation) * glm::vec3(1.0f, 0.0f, 0.0f);
+		camera.up = Vector3f(0.0f, 1.0f, 0.0f);
+
+		camera.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
+
+		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
+			static_cast<glm::vec3>(camera.look_at), static_cast<glm::vec3>(camera.up));
+
+		camera.proj = glm::perspective(maths::degToRad(camera.fov_y), camera.aspect, camera.z_near, camera.z_far);
+		camera.proj[1][1] *= -1;
+
+		camera.view_proj = camera.proj * camera.view;
 	}
 
 	void RenderSystemVK::update_texture_descriptors()

@@ -144,6 +144,9 @@ namespace puffin::rendering
 
 		void add_renderable(entt::registry& registry, entt::entity entity);
 
+		void on_update_shadow_caster(entt::registry& registry, entt::entity entity);
+		void on_destroy_shadow_caster(entt::registry& registry, entt::entity entity);
+
 		void register_texture(PuffinID texID);
 
 	private:
@@ -233,9 +236,6 @@ namespace puffin::rendering
 		void init_offscreen_imgui_textures(OffscreenData& offscreenData);
 
 		void process_components();
-		void update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const;
-
-		void update_editor_camera();
 
 		void update_render_data();
 
@@ -248,6 +248,8 @@ namespace puffin::rendering
 		void clean_offscreen(OffscreenData& offscreenData);
 
 		void update_cameras();
+		void update_editor_camera();
+		void update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const;
 
 		void update_texture_descriptors();
 
