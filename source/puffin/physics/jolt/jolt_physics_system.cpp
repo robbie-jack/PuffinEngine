@@ -209,7 +209,7 @@ namespace puffin::physics
 	{
 		if (mInternalPhysicsSystem)
 		{
-			JPH::BoxShapeSettings boxShapeSettings(JPH::Vec3(box.halfExtent.x, box.halfExtent.y, box.halfExtent.z));
+			JPH::BoxShapeSettings boxShapeSettings(JPH::Vec3(box.half_extent.x, box.half_extent.y, box.half_extent.z));
 
 			JPH::ShapeSettings::ShapeResult result = boxShapeSettings.Create();
 
@@ -239,7 +239,7 @@ namespace puffin::physics
 		{
 			JPH::BodyInterface& bodyInterface = mInternalPhysicsSystem->GetBodyInterface();
 
-			const JPH::EMotionType motionType = gJoltBodyType.at(rb.bodyType);
+			const JPH::EMotionType motionType = gJoltBodyType.at(rb.body_type);
 
 			JPH::ObjectLayer objectLayer = {};
 

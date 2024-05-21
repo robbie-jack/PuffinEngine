@@ -170,13 +170,13 @@ namespace puffin::rendering
 	{
 		const auto mesh = registry.get<MeshComponent>(entity);
 
-		if (mesh.meshAssetID == gInvalidID || mesh.matAssetID == gInvalidID)
+		if (mesh.mesh_asset_id == gInvalidID || mesh.mat_asset_id == gInvalidID)
 		{
 			return;
 		}
 
-		m_meshes_to_load.insert(mesh.meshAssetID);
-		m_material_registry.registerMaterialInstance(mesh.matAssetID);
+		m_meshes_to_load.insert(mesh.mesh_asset_id);
+		m_material_registry.registerMaterialInstance(mesh.mat_asset_id);
 
 		add_renderable(registry, entity);
 	}
@@ -198,7 +198,7 @@ namespace puffin::rendering
 			const auto id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 			const auto mesh = registry.get<MeshComponent>(entity);
 
-			if (mesh.meshAssetID == gInvalidID || mesh.matAssetID == gInvalidID)
+			if (mesh.mesh_asset_id == gInvalidID || mesh.mat_asset_id == gInvalidID)
 			{
 				return;
 			}
@@ -769,14 +769,14 @@ namespace puffin::rendering
 			{
 				const auto node_id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
-				if (mesh.matAssetID == gInvalidID || mesh.meshAssetID == gInvalidID)
+				if (mesh.mat_asset_id == gInvalidID || mesh.mesh_asset_id == gInvalidID)
 				{
 					continue;
 				}
 
-				const auto& matData = m_material_registry.getMaterialData(mesh.matAssetID);
+				const auto& matData = m_material_registry.getMaterialData(mesh.mat_asset_id);
 
-				m_renderables.emplace_back(node_id, mesh.meshAssetID, matData.baseMaterialID, mesh.subMeshIdx);
+				m_renderables.emplace_back(node_id, mesh.mesh_asset_id, matData.baseMaterialID, mesh.sub_mesh_idx);
 
 				if (!m_cached_object_data.contains(node_id))
 				{
@@ -789,14 +789,14 @@ namespace puffin::rendering
 			{
 				const auto node_id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
-				if (mesh.matAssetID == gInvalidID || mesh.meshAssetID == gInvalidID)
+				if (mesh.mat_asset_id == gInvalidID || mesh.mesh_asset_id == gInvalidID)
 				{
 					continue;
 				}
 
-				const auto& matData = m_material_registry.getMaterialData(mesh.matAssetID);
+				const auto& matData = m_material_registry.getMaterialData(mesh.mat_asset_id);
 
-				m_renderables.emplace_back(node_id, mesh.meshAssetID, matData.baseMaterialID, mesh.subMeshIdx);
+				m_renderables.emplace_back(node_id, mesh.mesh_asset_id, matData.baseMaterialID, mesh.sub_mesh_idx);
 
 				if (!m_cached_object_data.contains(node_id))
 				{
@@ -874,18 +874,18 @@ namespace puffin::rendering
 
 		// Calculate Right, Up and LookAt vectors
 		m_editor_cam.right = m_editor_cam.up.cross(m_editor_cam.direction).normalized();
-		m_editor_cam.lookAt = m_editor_cam.position + m_editor_cam.direction;
+		m_editor_cam.look_at = m_editor_cam.position + m_editor_cam.direction;
 
 		m_editor_cam.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
 
 		m_editor_cam.view = glm::lookAt(static_cast<glm::vec3>(m_editor_cam.position),
-		                              static_cast<glm::vec3>(m_editor_cam.lookAt), static_cast<glm::vec3>(m_editor_cam.up));
+		                              static_cast<glm::vec3>(m_editor_cam.look_at), static_cast<glm::vec3>(m_editor_cam.up));
 
-		m_editor_cam.proj = glm::perspective(maths::degToRad(m_editor_cam.fovY), m_editor_cam.aspect,
-		                                   m_editor_cam.zNear, m_editor_cam.zFar);
+		m_editor_cam.proj = glm::perspective(maths::degToRad(m_editor_cam.fov_y), m_editor_cam.aspect,
+		                                   m_editor_cam.z_near, m_editor_cam.z_far);
 		m_editor_cam.proj[1][1] *= -1;
 
-		m_editor_cam.viewProj = m_editor_cam.proj * m_editor_cam.view;
+		m_editor_cam.view_proj = m_editor_cam.proj * m_editor_cam.view;
 	}
 
 	void RenderSystemVK::update_render_data()
@@ -995,19 +995,19 @@ namespace puffin::rendering
 	void RenderSystemVK::update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const
 	{
 		// Calculate lookAt, right and up vectors
-		camera.lookAt = static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, -1.0f);
+		camera.look_at = static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, -1.0f);
 		camera.right = static_cast<glm::quat>(transform.orientation) * glm::vec3(1.0f, 0.0f, 0.0f);
 		camera.up = Vector3f(0.0f, 1.0f, 0.0f);
 
 		camera.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
 
 		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
-		                          static_cast<glm::vec3>(camera.lookAt), static_cast<glm::vec3>(camera.up));
+		                          static_cast<glm::vec3>(camera.look_at), static_cast<glm::vec3>(camera.up));
 
-		camera.proj = glm::perspective(maths::degToRad(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
+		camera.proj = glm::perspective(maths::degToRad(camera.fov_y), camera.aspect, camera.z_near, camera.z_far);
 		camera.proj[1][1] *= -1;
 
-		camera.viewProj = camera.proj * camera.view;
+		camera.view_proj = camera.proj * camera.view;
 	}
 
 	void RenderSystemVK::recreate_swapchain()
@@ -1165,7 +1165,7 @@ namespace puffin::rendering
 		GPUCameraData camUBO = {};
 		camUBO.proj = m_editor_cam.proj;
 		camUBO.view = m_editor_cam.view;
-		camUBO.viewProj = m_editor_cam.viewProj;
+		camUBO.viewProj = m_editor_cam.view_proj;
 
 		memcpy(cameraBuffer.allocInfo.pMappedData, &camUBO, sizeof(GPUCameraData));
 
@@ -1330,7 +1330,7 @@ namespace puffin::rendering
 					GPUObjectData object;
 
 					build_model_transform(position, tempTransform.orientation, tempTransform.scale, object.model);
-					object.matIdx = m_material_registry.getMaterialData(mesh.matAssetID).idx;
+					object.matIdx = m_material_registry.getMaterialData(mesh.mat_asset_id).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
 				}
@@ -1409,18 +1409,18 @@ namespace puffin::rendering
 			lights[i].color.z = light.color.z;
 			lights[i].color.w = 0.0f;
 
-			lights[i].ambientSpecular.x = light.ambientIntensity;
-			lights[i].ambientSpecular.y = light.specularIntensity;
-			lights[i].ambientSpecular.z = light.specularExponent;
+			lights[i].ambientSpecular.x = light.ambient_intensity;
+			lights[i].ambientSpecular.y = light.specular_intensity;
+			lights[i].ambientSpecular.z = light.specular_exponent;
 			lights[i].ambientSpecular.w = 0.0f;
 
-			lights[i].attenuation.x = light.constantAttenuation;
-			lights[i].attenuation.y = light.linearAttenuation;
-			lights[i].attenuation.z = light.quadraticAttenuation;
+			lights[i].attenuation.x = light.constant_attenuation;
+			lights[i].attenuation.y = light.linear_attenuation;
+			lights[i].attenuation.z = light.quadratic_attenuation;
 			lights[i].attenuation.w = 0.0f;
 
-			lights[i].cutoffAngle.x = glm::cos(glm::radians(light.innerCutoffAngle));
-			lights[i].cutoffAngle.y = glm::cos(glm::radians(light.outerCutoffAngle));
+			lights[i].cutoffAngle.x = glm::cos(glm::radians(light.inner_cutoff_angle));
+			lights[i].cutoffAngle.y = glm::cos(glm::radians(light.outer_cutoff_angle));
 			lights[i].cutoffAngle.z = 0.0f;
 			lights[i].cutoffAngle.w = 0.0f;
 

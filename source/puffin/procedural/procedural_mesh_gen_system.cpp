@@ -12,7 +12,7 @@ namespace puffin::procedural
 		const auto& plane = registry.get<const PlaneComponent>(entity);
 		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent>(entity);
 
-		generatePlaneVertices(plane.halfSize, plane.numQuads, mesh);
+		generatePlaneVertices(plane.half_size, plane.num_quads, mesh);
 	}
 
 	void ProceduralMeshGenSystem::onConstructTerrain(entt::registry& registry, entt::entity entity)
@@ -20,7 +20,7 @@ namespace puffin::procedural
 		const auto& terrain = registry.get<const TerrainComponent>(entity);
 		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent>(entity);
 
-		generatePlaneVertices(terrain.halfSize, terrain.numQuads, mesh);
+		generatePlaneVertices(terrain.half_size, terrain.num_quads, mesh);
 		generateTerrain(terrain, mesh);
 	}
 
@@ -113,14 +113,14 @@ namespace puffin::procedural
 				noiseValues[n] += ((noiseVal + 1.0) / 2.0) * amplitude;
 			}
 
-			frequency *= terrain.frequencyMult;
+			frequency *= terrain.frequency_mult;
 			amplitudeSum += amplitude;
-			amplitude /= terrain.frequencyMult;
+			amplitude /= terrain.frequency_mult;
 		}
 
 		for (int v = 0; v < noiseValues.size(); v++)
 		{
-			mesh.vertices[v].pos.y = (noiseValues[v] / amplitudeSum) * terrain.heightMultiplier;
+			mesh.vertices[v].pos.y = (noiseValues[v] / amplitudeSum) * terrain.height_multiplier;
 		}
 	}
 

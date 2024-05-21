@@ -10,9 +10,9 @@ namespace puffin::procedural
 {
 	namespace icosahedron
 	{
-		constexpr float gX = .525731112119133606f;
-		constexpr float gZ = .850650808352039932f;
-		constexpr float gN = 0.f;
+		constexpr float g_x = .525731112119133606f;
+		constexpr float g_z = .850650808352039932f;
+		constexpr float g_n = 0.f;
 
 		static void vertexPositions(std::vector<Vector3f>& vertexPositions)
 		{
@@ -20,9 +20,9 @@ namespace puffin::procedural
 
 			vertexPositions = 
 			{
-				{-gX,gN,gZ}, {gX,gN,gZ}, {-gX,gN,-gZ}, {gX,gN,-gZ},
-				{gN,gZ,gX}, {gN,gZ,-gX}, {gN,-gZ,gX}, {gN,-gZ,-gX},
-				{gZ,gX,gN}, {-gZ,gX, gN}, {gZ,-gX,gN}, {-gZ,-gX, gN}
+				{-g_x,g_n,g_z}, {g_x,g_n,g_z}, {-g_x,g_n,-g_z}, {g_x,g_n,-g_z},
+				{g_n,g_z,g_x}, {g_n,g_z,-g_x}, {g_n,-g_z,g_x}, {g_n,-g_z,-g_x},
+				{g_z,g_x,g_n}, {-g_z,g_x, g_n}, {g_z,-g_x,g_n}, {-g_z,-g_x, g_n}
 			};
 		}
 
@@ -44,20 +44,20 @@ namespace puffin::procedural
 	{
 		PlaneComponent() = default;
 
-		Vector2f halfSize = { 10.f }; // Half size of plane
-		Vector2i numQuads = { 10 }; // Number of quads that make up planes surface
+		Vector2f half_size = { 10.f }; // Half size of plane
+		Vector2i num_quads = { 10 }; // Number of quads that make up planes surface
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(PlaneComponent, halfSize, numQuads)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(PlaneComponent, half_size, num_quads)
 	};
 
 	struct CubeComponent
 	{
 		CubeComponent() = default;
 
-		Vector3f halfSize = { 10.f }; // Half size of plane
-		Vector3i numQuads = { 10 }; // Number of quads that make up planes surface
+		Vector3f half_size = { 10.f }; // Half size of plane
+		Vector3i num_quads = { 10 }; // Number of quads that make up planes surface
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(CubeComponent, halfSize, numQuads)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(CubeComponent, half_size, num_quads)
 	};
 
 	struct SphereComponent
@@ -71,9 +71,9 @@ namespace puffin::procedural
 	{
 		UvSphereComponent() = default;
 
-		Vector2i numSegments = { 10 };
+		Vector2i num_segments = { 10 };
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(UvSphereComponent, radius, numSegments)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(UvSphereComponent, radius, num_segments)
 	};
 
 	struct IcoSphereComponent : public SphereComponent
@@ -90,11 +90,11 @@ namespace puffin::procedural
 		TerrainComponent() = default;
 
 		int64_t seed = 983758376;
-		double heightMultiplier = 10.0;
+		double height_multiplier = 10.0;
 		double frequency = 10.0;
 		int octaves = 4;
-		double frequencyMult = 2.0;
+		double frequency_mult = 2.0;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TerrainComponent, halfSize, numQuads)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TerrainComponent, half_size, num_quads)
 	};
 }

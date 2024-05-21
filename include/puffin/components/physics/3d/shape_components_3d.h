@@ -8,7 +8,7 @@ namespace puffin::physics
 {
 	struct ShapeComponent3D
 	{
-		Vector3f centreOfMass = Vector3f(0.0f);
+		Vector3f centre_of_mass = Vector3f(0.0f);
 	};
 
 	struct SphereComponent3D : ShapeComponent3D
@@ -19,17 +19,17 @@ namespace puffin::physics
 
 		float radius = 0.5f;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(SphereComponent3D, centreOfMass, radius)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(SphereComponent3D, centre_of_mass, radius)
 	};
 
 	struct BoxComponent3D : ShapeComponent3D
 	{
 		BoxComponent3D() = default;
 
-		BoxComponent3D(const Vector3f& halfExtent_) : halfExtent(halfExtent_) {}
+		BoxComponent3D(const Vector3f& halfExtent_) : half_extent(halfExtent_) {}
 
-		Vector3f halfExtent = { 0.5f };
+		Vector3f half_extent = { 0.5f };
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(BoxComponent3D, centreOfMass, halfExtent)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(BoxComponent3D, centre_of_mass, half_extent)
 	};
 }

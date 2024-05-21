@@ -33,31 +33,31 @@ namespace puffin::rendering
 
 	PuffinID MeshNode::mesh_asset_id()
 	{
-		return get_component<MeshComponent>().meshAssetID;
+		return get_component<MeshComponent>().mesh_asset_id;
 	}
 
 	void MeshNode::set_mesh_asset_id(PuffinID mesh_asset_id) const
 	{
-		m_registry->patch<MeshComponent>(m_entity, [&mesh_asset_id](auto& mesh) { mesh.meshAssetID = mesh_asset_id; });
+		m_registry->patch<MeshComponent>(m_entity, [&mesh_asset_id](auto& mesh) { mesh.mesh_asset_id = mesh_asset_id; });
 	}
 
 	PuffinID MeshNode::mat_asset_id()
 	{
-		return get_component<MeshComponent>().matAssetID;
+		return get_component<MeshComponent>().mat_asset_id;
 	}
 
 	void MeshNode::set_mat_asset_id(PuffinID mat_asset_id) const
 	{
-		m_registry->patch<MeshComponent>(m_entity, [&mat_asset_id](auto& mesh) { mesh.matAssetID = mat_asset_id; });
+		m_registry->patch<MeshComponent>(m_entity, [&mat_asset_id](auto& mesh) { mesh.mat_asset_id = mat_asset_id; });
 	}
 
 	uint8_t MeshNode::sub_mesh_idx()
 	{
-		return get_component<MeshComponent>().subMeshIdx;
+		return get_component<MeshComponent>().sub_mesh_idx;
 	}
 
 	void MeshNode::set_sub_mesh_idx(uint8_t sub_mesh_idx) const
 	{
-		m_registry->patch<MeshComponent>(m_entity, [&sub_mesh_idx](auto& mesh) { mesh.subMeshIdx = sub_mesh_idx; });
+		m_registry->patch<MeshComponent>(m_entity, [&sub_mesh_idx](auto& mesh) { mesh.sub_mesh_idx = sub_mesh_idx; });
 	}
 }

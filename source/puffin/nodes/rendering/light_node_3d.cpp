@@ -53,82 +53,82 @@ namespace puffin::rendering
 
 	const float& LightNode3D::ambient_intensity() const
 	{
-		return get_component<LightComponent>().ambientIntensity;
+		return get_component<LightComponent>().ambient_intensity;
 	}
 
 	void LightNode3D::set_ambient_intensity(const float& ambient_intensity) const
 	{
-		m_registry->patch<LightComponent>(m_entity, [&ambient_intensity](auto& light) { light.ambientIntensity = ambient_intensity; });
+		m_registry->patch<LightComponent>(m_entity, [&ambient_intensity](auto& light) { light.ambient_intensity = ambient_intensity; });
 	}
 
 	const float& LightNode3D::specular_intensity() const
 	{
-		return get_component<LightComponent>().specularIntensity;
+		return get_component<LightComponent>().specular_intensity;
 	}
 
 	void LightNode3D::set_specular_intensity(const float& specular_intensity) const
 	{
-		m_registry->patch<LightComponent>(m_entity, [&specular_intensity](auto& light) { light.specularIntensity = specular_intensity; });
+		m_registry->patch<LightComponent>(m_entity, [&specular_intensity](auto& light) { light.specular_intensity = specular_intensity; });
 	}
 
 	const int& LightNode3D::specular_exponent() const
 	{
-		return get_component<LightComponent>().specularExponent;
+		return get_component<LightComponent>().specular_exponent;
 	}
 
 	void LightNode3D::set_specular_exponent(const int& specular_exponent) const
 	{
-		m_registry->patch<LightComponent>(m_entity, [&specular_exponent](auto& light) { light.specularExponent = specular_exponent; });
+		m_registry->patch<LightComponent>(m_entity, [&specular_exponent](auto& light) { light.specular_exponent = specular_exponent; });
 	}
 
 	const float& LightNode3D::constant_attenuation() const
 	{
-		return get_component<LightComponent>().constantAttenuation;
+		return get_component<LightComponent>().constant_attenuation;
 	}
 
 	void LightNode3D::set_constant_attenuation(const float& constant_attenuation) const
 	{
-		m_registry->patch<LightComponent>(m_entity, [&constant_attenuation](auto& light) { light.constantAttenuation = constant_attenuation; });
+		m_registry->patch<LightComponent>(m_entity, [&constant_attenuation](auto& light) { light.constant_attenuation = constant_attenuation; });
 	}
 
 	const float& LightNode3D::linear_attenuation() const
 	{
-		return get_component<LightComponent>().linearAttenuation;
+		return get_component<LightComponent>().linear_attenuation;
 	}
 
 	void LightNode3D::set_linear_attenuation(const float& linear_attenuation) const
 	{
-		m_registry->patch<LightComponent>(m_entity, [&linear_attenuation](auto& light) { light.linearAttenuation = linear_attenuation; });
+		m_registry->patch<LightComponent>(m_entity, [&linear_attenuation](auto& light) { light.linear_attenuation = linear_attenuation; });
 	}
 
 	const float& LightNode3D::quadratic_attenuation() const
 	{
-		return get_component<LightComponent>().quadraticAttenuation;
+		return get_component<LightComponent>().quadratic_attenuation;
 	}
 
 	void LightNode3D::set_quadratic_attenuation(const float& quadratic_attenuation) const
 	{
-		m_registry->patch<LightComponent>(m_entity, [&quadratic_attenuation](auto& light) { light.quadraticAttenuation = quadratic_attenuation; });
+		m_registry->patch<LightComponent>(m_entity, [&quadratic_attenuation](auto& light) { light.quadratic_attenuation = quadratic_attenuation; });
 	}
 
 	const float& LightNode3D::inner_cutoff_angle() const
 	{
-		return get_component<LightComponent>().innerCutoffAngle;
+		return get_component<LightComponent>().inner_cutoff_angle;
 	}
 
 	void LightNode3D::set_inner_cutoff_angle(const float& inner_cutoff_angle) const
 	{
-		m_registry->patch<LightComponent>(m_entity, [&inner_cutoff_angle](auto& light) { light.innerCutoffAngle = inner_cutoff_angle; });
+		m_registry->patch<LightComponent>(m_entity, [&inner_cutoff_angle](auto& light) { light.inner_cutoff_angle = inner_cutoff_angle; });
 	}
 
 	const float& LightNode3D::outer_cutoff_angle() const
 	{
-		return get_component<LightComponent>().outerCutoffAngle;
+		return get_component<LightComponent>().outer_cutoff_angle;
 	}
 
 	void LightNode3D::set_outer_cutoff_angle(const float& outer_cutoff_angle) const
 	{
-		m_registry->patch<LightComponent>(m_entity, [&outer_cutoff_angle](auto& light) { light.outerCutoffAngle = outer_cutoff_angle; });
+		m_registry->patch<LightComponent>(m_entity, [&outer_cutoff_angle](auto& light) { light.outer_cutoff_angle = outer_cutoff_angle; });
 	}
 
 	const LightType& LightNode3D::light_type() const

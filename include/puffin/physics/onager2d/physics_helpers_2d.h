@@ -324,7 +324,7 @@ namespace puffin::physics
 			return;
 
 		// Apply Accumulated Impulse
-		body.linearVelocity += impulse * body.mass;
+		body.linear_velocity += impulse * body.mass;
 	}
 
 	static void applyAngularImpulse(RigidbodyComponent2D& body, const float& impulse)
@@ -335,18 +335,18 @@ namespace puffin::physics
 		const float impulseMultMass = impulse * body.mass;
 		const float as = std::asin(impulseMultMass);
 
-		body.angularVelocity += as * (180 / 3.14);
+		body.angular_velocity += as * (180 / 3.14);
 
 		constexpr float maxAngularSpeed = 30.0f;
 
 		// Cap angular speed at 30 deg/s
-		if (body.angularVelocity > 0.0)
+		if (body.angular_velocity > 0.0)
 		{
-			body.angularVelocity = std::min(body.angularVelocity, maxAngularSpeed);
+			body.angular_velocity = std::min(body.angular_velocity, maxAngularSpeed);
 		}
-		else if (body.angularVelocity < 0.0)
+		else if (body.angular_velocity < 0.0)
 		{
-			body.angularVelocity = std::max(body.angularVelocity, -maxAngularSpeed);
+			body.angular_velocity = std::max(body.angular_velocity, -maxAngularSpeed);
 		}
 	}
 
