@@ -22,7 +22,7 @@
 	url = https://github.com/lz4/lz4
 [submodule "deps/vma-hpp"]
 	path = deps/vma-hpp
-	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp
+	url = https://github.com/robbie-jack/VulkanMemoryAllocator-Hpp
 [submodule "deps/vkb"]
 	path = deps/vkb
 	url = https://github.com/charles-lunarg/vk-bootstrap
