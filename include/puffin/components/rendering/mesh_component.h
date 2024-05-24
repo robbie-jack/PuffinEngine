@@ -1,8 +1,8 @@
 #pragma once
 
 #include "puffin/types/uuid.h"
-#include "puffin/types/Vector.h"
-#include "puffin/types/Vertex.h"
+#include "puffin/types/vector.h"
+#include "puffin/types/vertex.h"
 
 #include "nlohmann/json.hpp"
 

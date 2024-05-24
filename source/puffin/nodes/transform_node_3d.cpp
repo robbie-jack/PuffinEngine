@@ -37,14 +37,14 @@ namespace puffin
 		return true;
 	}
 
-	const TransformComponent3D& TransformNode3D::transform_3d() const
+	const TransformComponent3D* TransformNode3D::transform_3d() const
 	{
-		return transform();
+		return &transform();
 	}
 
-	TransformComponent3D& TransformNode3D::transform_3d()
+	TransformComponent3D* TransformNode3D::transform_3d()
 	{
-		return transform();
+		return &transform();
 	}
 
 	const TransformComponent3D& TransformNode3D::transform() const

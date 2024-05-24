@@ -186,13 +186,13 @@ set(HEADERS
 	${HEADER_DIR}/puffin/types/vertex.h
 	# UI
 	${HEADER_DIR}/puffin/ui/editor/ui_subsystem.h
-	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window.h
-	${HEADER_DIR}/puffin/ui/editor/Windows/ui_content_browser.h
-	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_node_editor.h
-	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_performance.h
-	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_scene_hierarchy.h
-	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_settings.h
-	${HEADER_DIR}/puffin/ui/editor/Windows/ui_window_viewport.h
+	${HEADER_DIR}/puffin/ui/editor/windows/ui_window.h
+	${HEADER_DIR}/puffin/ui/editor/windows/ui_content_browser.h
+	${HEADER_DIR}/puffin/ui/editor/windows/ui_window_node_editor.h
+	${HEADER_DIR}/puffin/ui/editor/windows/ui_window_performance.h
+	${HEADER_DIR}/puffin/ui/editor/windows/ui_window_scene_hierarchy.h
+	${HEADER_DIR}/puffin/ui/editor/windows/ui_window_settings.h
+	${HEADER_DIR}/puffin/ui/editor/windows/ui_window_viewport.h
 	# Window
 	${HEADER_DIR}/puffin/window/window_subsystem.h
 	)
@@ -251,13 +251,13 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/scripting/angelscript/angelscript_engine_interface.cpp
 	# UI
 	${SOURCE_DIR}/puffin/ui/editor/ui_subsystem.cpp
-	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window.cpp
-	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_content_browser.cpp
-	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_node_editor.cpp
-	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_performance.cpp
-	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_scene_hierarchy.cpp
-	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_settings.cpp
-	${SOURCE_DIR}/puffin/ui/editor/Windows/ui_window_viewport.cpp
+	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window.cpp
+	${SOURCE_DIR}/puffin/ui/editor/windows/ui_content_browser.cpp
+	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window_node_editor.cpp
+	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window_performance.cpp
+	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window_scene_hierarchy.cpp
+	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window_settings.cpp
+	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window_viewport.cpp
 	# Window
 	${SOURCE_DIR}/puffin/window/window_subsystem.cpp
 	)
@@ -345,14 +345,23 @@ elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	set(DLL_SUFFIX .so)
 endif()
 
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
+elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+	find_package(glfw3 3.4 REQUIRED)
+
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} glfw)
+endif()
+
 # Define Debug Libs
-target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+
 target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
 target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
 
 # Define Release Libs
-target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
+
 target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
 target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})

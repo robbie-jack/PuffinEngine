@@ -1,7 +1,7 @@
 #pragma once
 
-#include "puffin/types/Vector.h"
-#include "puffin/types/Quat.h"
+#include "puffin/types/vector.h"
+#include "puffin/types/quat.h"
 
 #include "nlohmann/json.hpp"
 

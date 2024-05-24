@@ -19,8 +19,8 @@ namespace puffin::assets
 		data.id = id();
 
 		// Fill Metadata from Info struct
-		data.json["vertex_shader"] = mVertexShaderID;
-		data.json["fragment_shader"] = mFragmentShaderID;
+		data.json_data["vertex_shader"] = mVertexShaderID;
+		data.json_data["fragment_shader"] = mFragmentShaderID;
 
 		data.binaryBlob.resize(0);
 
@@ -45,8 +45,8 @@ namespace puffin::assets
 			return false;
 		}
 
-		mVertexShaderID = data.json["vertex_shader"];
-		mFragmentShaderID = data.json["fragment_shader"];
+		mVertexShaderID = data.json_data["vertex_shader"];
+		mFragmentShaderID = data.json_data["fragment_shader"];
 
 		mIsLoaded = true;
 		return true;
@@ -67,9 +67,9 @@ namespace puffin::assets
 		data.id = id();
 
 		// Fill Metadata from Info struct
-		data.json["texture_ids"] = mTexIDs;
-		data.json["material_data"] = mData;
-		data.json["base_material"] = mBaseMaterial;
+		data.json_data["texture_ids"] = mTexIDs;
+		data.json_data["material_data"] = mData;
+		data.json_data["base_material"] = mBaseMaterial;
 
 		data.binaryBlob.resize(0);
 
@@ -94,9 +94,9 @@ namespace puffin::assets
 			return false;
 		}
 
-		mTexIDs = data.json["texture_ids"];
-		mData = data.json["material_data"];
-		mBaseMaterial = data.json["base_material"];
+		mTexIDs = data.json_data["texture_ids"];
+		mData = data.json_data["material_data"];
+		mBaseMaterial = data.json_data["base_material"];
 
 		mIsLoaded = true;
 		return true;

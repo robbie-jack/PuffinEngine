@@ -15,24 +15,24 @@ namespace puffin
 		m_entity = m_entt_subsystem->add_entity(m_node_id);
 	}
 
-	const TransformComponent2D& Node::global_transform_2d() const
+	const TransformComponent2D* Node::global_transform_2d() const
 	{
 		if (has_transform_2d())
 		{
 			return m_scene_graph->get_global_transform_2d(m_node_id);
 		}
 
-		return TransformComponent2D();
+		return nullptr;
 	}
 
-	const TransformComponent3D& Node::global_transform_3d() const
+	const TransformComponent3D* Node::global_transform_3d() const
 	{
 		if (has_transform_3d())
 		{
 			return m_scene_graph->get_global_transform_3d(m_node_id);
 		}
 
-		return TransformComponent3D();
+		return nullptr;
 	}
 
 	void Node::serialize(json& json) const

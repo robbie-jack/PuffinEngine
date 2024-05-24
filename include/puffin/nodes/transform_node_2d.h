@@ -1,7 +1,7 @@
 #pragma once
 
 #include "puffin/nodes/node.h"
-#include "puffin/types/Vector.h"
+#include "puffin/types/vector.h"
 
 namespace puffin
 {
@@ -23,8 +23,8 @@ namespace puffin
 		void end_play() override;
 
 		bool has_transform_2d() const override;
-		const TransformComponent2D& transform_2d() const override;
-		TransformComponent2D& transform_2d() override;
+		const TransformComponent2D* transform_2d() const override;
+		TransformComponent2D* transform_2d() override;
 
 		const TransformComponent2D& transform() const;
 		TransformComponent2D& transform();

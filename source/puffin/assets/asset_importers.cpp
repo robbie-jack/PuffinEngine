@@ -1,5 +1,4 @@
 #include "puffin/assets/asset_importers.h"
-
 #define TINYGLTF_USE_CPP14
 
 #define TINYGLTF_IMPLEMENTATION
@@ -25,7 +24,7 @@
 #include "puffin/assets/asset_registry.h"
 #include "puffin/assets/texture_asset.h"
 #include "puffin/assets/mesh_asset.h"
-#include "puffin/types/Vertex.h"
+#include "puffin/types/vertex.h"
 
 namespace puffin::io
 {

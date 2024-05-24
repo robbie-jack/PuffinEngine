@@ -1,8 +1,8 @@
 #pragma once
 
 #include "puffin/nodes/node.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Vector.h"
+#include "puffin/types/quat.h"
+#include "puffin/types/vector.h"
 
 namespace puffin
 {
@@ -24,8 +24,8 @@ namespace puffin
 		void end_play() override;
 
 		bool has_transform_3d() const override;
-		const TransformComponent3D& transform_3d() const override;
-		TransformComponent3D& transform_3d() override;
+		const TransformComponent3D* transform_3d() const override;
+		TransformComponent3D* transform_3d() override;
 
 		[[nodiscard]] const TransformComponent3D& transform() const;
 		[[nodiscard]] TransformComponent3D& transform();

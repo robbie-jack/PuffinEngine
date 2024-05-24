@@ -53,14 +53,14 @@ namespace puffin::assets
 			type = AssetType::None;
 			version = 0;
 			id = gInvalidID;
-			json.clear();
+			json_data.clear();
 			binaryBlob.clear();
 		}
 
 		AssetType type;
 		uint32_t version;
 		PuffinID id;
-		json json;
+		json json_data;
 		std::vector<char> binaryBlob;
 	};
 
@@ -123,7 +123,7 @@ namespace puffin::assets
 		outFile.write(reinterpret_cast<const char*>(&assetData.version), sizeof(uint32_t));
 
 		// Write Json Length
-		const std::string jsonString = assetData.json.dump();
+		const std::string jsonString = assetData.json_data.dump();
 		const uint32_t jsonLength = jsonString.size();
 		outFile.write(reinterpret_cast<const char*>(&jsonLength), sizeof(uint32_t));
 
@@ -175,7 +175,7 @@ namespace puffin::assets
 		jsonString.resize(jsonLength);
 		inFile.read(jsonString.data(), jsonLength);
 
-		assetData.json = json::parse(jsonString);
+		assetData.json_data = json::parse(jsonString);
 
 		// Load only header data, skip binary blob
 		if (loadHeaderOnly)
@@ -204,7 +204,7 @@ namespace puffin::assets
 		data["type"] = assetData.type;
 		data["version"] = assetData.version;
 		data["id"] = assetData.id;
-		data["data"] = assetData.json;
+		data["data"] = assetData.json_data;
 
 		os << std::setw(4) << data << std::endl;
 
@@ -226,7 +226,7 @@ namespace puffin::assets
 		assetData.type = data["type"];
 		assetData.version = data["version"];
 		assetData.id = data["id"];
-		assetData.json = data["data"];
+		assetData.json_data = data["data"];
 
 		is.close();
 

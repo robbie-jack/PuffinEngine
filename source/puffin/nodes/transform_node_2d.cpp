@@ -43,14 +43,14 @@ namespace puffin
 		return true;
 	}
 
-	const TransformComponent2D& TransformNode2D::transform_2d() const
+	const TransformComponent2D* TransformNode2D::transform_2d() const
 	{
-		return transform();
+		return &transform();
 	}
 
-	TransformComponent2D& TransformNode2D::transform_2d()
+	TransformComponent2D* TransformNode2D::transform_2d()
 	{
-		return transform();
+		return &transform();
 	}
 
 	const TransformComponent2D& TransformNode2D::transform() const

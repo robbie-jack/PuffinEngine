@@ -89,14 +89,14 @@ namespace puffin::assets
 			infoJson["subMeshIdx"] = info.sub_mesh_idx;
 		}
 
-		assetData.json["originalFile"] = mesh_asset_info.originalFile;
-		assetData.json["compressionMode"] = mesh_asset_info.compressionMode;
-		assetData.json["vertexFormat"] = mesh_asset_info.vertex_format;
-		assetData.json["vertexCountTotal"] = mesh_asset_info.vertex_count_total;
-		assetData.json["indexCountTotal"] = mesh_asset_info.index_count_total;
-		assetData.json["vertexByteSizeTotal"] = mesh_asset_info.vertex_byte_size_total;
-		assetData.json["indexByteSizeTotal"] = mesh_asset_info.index_byte_size_total;
-		assetData.json["subMeshInfo"] = meshInfoJson;
+		assetData.json_data["originalFile"] = mesh_asset_info.originalFile;
+		assetData.json_data["compressionMode"] = mesh_asset_info.compressionMode;
+		assetData.json_data["vertexFormat"] = mesh_asset_info.vertex_format;
+		assetData.json_data["vertexCountTotal"] = mesh_asset_info.vertex_count_total;
+		assetData.json_data["indexCountTotal"] = mesh_asset_info.index_count_total;
+		assetData.json_data["vertexByteSizeTotal"] = mesh_asset_info.vertex_byte_size_total;
+		assetData.json_data["indexByteSizeTotal"] = mesh_asset_info.index_byte_size_total;
+		assetData.json_data["subMeshInfo"] = meshInfoJson;
 
 		// Save Asset Data out to Binary File
 		return saveBinaryFile(fullPath, assetData);
@@ -174,19 +174,19 @@ namespace puffin::assets
 	{
 		// Fill Asset Info & Mesh Info structs with metadata
 
-		out_mesh_asset_info.originalFile = data.json["originalFile"];
-		out_mesh_asset_info.compressionMode = data.json["compressionMode"];
-		out_mesh_asset_info.vertex_format = data.json["vertexFormat"];
-		out_mesh_asset_info.vertex_count_total = data.json["vertexCountTotal"];
-		out_mesh_asset_info.index_count_total = data.json["indexCountTotal"];
-		out_mesh_asset_info.vertex_byte_size_total = data.json["vertexByteSizeTotal"];
-		out_mesh_asset_info.index_byte_size_total = data.json["indexByteSizeTotal"];
+		out_mesh_asset_info.originalFile = data.json_data["originalFile"];
+		out_mesh_asset_info.compressionMode = data.json_data["compressionMode"];
+		out_mesh_asset_info.vertex_format = data.json_data["vertexFormat"];
+		out_mesh_asset_info.vertex_count_total = data.json_data["vertexCountTotal"];
+		out_mesh_asset_info.index_count_total = data.json_data["indexCountTotal"];
+		out_mesh_asset_info.vertex_byte_size_total = data.json_data["vertexByteSizeTotal"];
+		out_mesh_asset_info.index_byte_size_total = data.json_data["indexByteSizeTotal"];
 
-		out_mesh_asset_info.sub_mesh_infos.resize(data.json["subMeshInfo"].size());
+		out_mesh_asset_info.sub_mesh_infos.resize(data.json_data["subMeshInfo"].size());
 
-		for (int i = 0; i < data.json["subMeshInfo"].size(); ++i)
+		for (int i = 0; i < data.json_data["subMeshInfo"].size(); ++i)
 		{
-			auto& sub_mesh_json = data.json["subMeshInfo"][i];
+			auto& sub_mesh_json = data.json_data["subMeshInfo"][i];
 			auto& sub_mesh_info = out_mesh_asset_info.sub_mesh_infos[i];
 
 			sub_mesh_info.vertex_offset = sub_mesh_json["vertexOffset"];

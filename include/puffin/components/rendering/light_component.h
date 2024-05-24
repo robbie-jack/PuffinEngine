@@ -4,7 +4,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-#include "puffin/types/Vector.h"
+#include "puffin/types/vector.h"
 
 #include <vector>
 #include <string>

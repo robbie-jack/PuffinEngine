@@ -71,13 +71,13 @@ namespace puffin::assets
 		}
 
 		// Fill Metadata from Info struct
-		data.json["compression"] = info.compressionMode;
-		data.json["textureFormat"] = info.textureFormat;
-		data.json["original_file"] = info.originalFile;
-		data.json["textureHeight"] = info.textureHeight;
-		data.json["textureWidth"] = info.textureWidth;
-		data.json["textureChannels"] = info.textureChannels;
-		data.json["originalSize"] = info.originalSize;
+		data.json_data["compression"] = info.compressionMode;
+		data.json_data["textureFormat"] = info.textureFormat;
+		data.json_data["original_file"] = info.originalFile;
+		data.json_data["textureHeight"] = info.textureHeight;
+		data.json_data["textureWidth"] = info.textureWidth;
+		data.json_data["textureChannels"] = info.textureChannels;
+		data.json_data["originalSize"] = info.originalSize;
 
 		return saveBinaryFile(fullPath, data);
 	}
@@ -128,7 +128,7 @@ namespace puffin::assets
 		mTexSize = info.originalSize;
 
 		data.binaryBlob.clear();
-		data.json.clear();
+		data.json_data.clear();
 
 		mIsLoaded = true;
 		return true;
@@ -152,13 +152,13 @@ namespace puffin::assets
 		// Fill Texture Info struct with metadata
 		TextureInfo info;
 
-		info.compressionMode = data.json["compression"];
-		info.textureFormat = data.json["textureFormat"];
-		info.originalFile = data.json["original_file"];
-		info.textureHeight = data.json["textureHeight"];
-		info.textureWidth = data.json["textureWidth"];
-		info.textureChannels = data.json["textureChannels"];
-		info.originalSize = data.json["originalSize"];
+		info.compressionMode = data.json_data["compression"];
+		info.textureFormat = data.json_data["textureFormat"];
+		info.originalFile = data.json_data["original_file"];
+		info.textureHeight = data.json_data["textureHeight"];
+		info.textureWidth = data.json_data["textureWidth"];
+		info.textureChannels = data.json_data["textureChannels"];
+		info.originalSize = data.json_data["originalSize"];
 
 		return info;
 	}

@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "puffin/types/Vector.h"
+#include "puffin/types/vector.h"
 
 #include "nlohmann/json.hpp"
 

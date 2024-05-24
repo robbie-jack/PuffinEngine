@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Application.h"
+#include "puffin/core/application.h"
 #include "puffin/project_settings.h"
-#include "System.h"
+#include "puffin/core/system.h"
 
 #include <GLFW/glfw3.h>
 

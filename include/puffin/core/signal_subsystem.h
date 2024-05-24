@@ -126,7 +126,7 @@ namespace puffin::core
 				return 0;
 			}
 
-			auto& signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			auto signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
 			return signal->connect(callback);
 		}
 
@@ -138,7 +138,7 @@ namespace puffin::core
 				return;
 			}
 
-			auto& signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			auto signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
 			signal->disconnenct(slotID);
 		}
 
@@ -150,7 +150,7 @@ namespace puffin::core
 				return false;
 			}
 
-			auto& signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			auto signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
 			signal->emit(params...);
 
 			return true;

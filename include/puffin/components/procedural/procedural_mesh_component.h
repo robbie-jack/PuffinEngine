@@ -2,7 +2,7 @@
 
 #include "nlohmann/json.hpp"
 
-#include "puffin/types/Vector.h"
+#include "puffin/types/vector.h"
 
 #include <cstdint>
 

@@ -2,7 +2,7 @@
 
 #include "polygon_shape_2d.h"
 #include "shape_2d.h"
-#include "puffin/types/Vector.h"
+#include "puffin/types/vector.h"
 
 namespace puffin::physics
 {
