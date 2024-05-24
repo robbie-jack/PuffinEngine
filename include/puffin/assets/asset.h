@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include <string_view>
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -44,7 +43,7 @@ namespace puffin::assets
 		{
 			type = AssetType::None;
 			version = 0;
-			id = gInvalidID;
+			id = puffin::gInvalidID;
 			binaryBlob.clear();
 		}
 
@@ -52,14 +51,14 @@ namespace puffin::assets
 		{
 			type = AssetType::None;
 			version = 0;
-			id = gInvalidID;
+			id = puffin::gInvalidID;
 			json_data.clear();
 			binaryBlob.clear();
 		}
 
 		AssetType type;
 		uint32_t version;
-		PuffinID id;
+		puffin::PuffinID id;
 		json json_data;
 		std::vector<char> binaryBlob;
 	};
@@ -237,12 +236,12 @@ namespace puffin::assets
 	{
 	public:
 
-		Asset(const fs::path& path) : mId(generateID()), mPath(path) {}
-		Asset(const PuffinID uuid, const fs::path& path) : mId(uuid), mPath(path) {}
+		Asset(const fs::path& path) : mId(puffin::generateID()), mPath(path) {}
+		Asset(const puffin::PuffinID uuid, const fs::path& path) : mId(uuid), mPath(path) {}
 
 		virtual ~Asset() = default;
 
-		PuffinID id() const
+		puffin::PuffinID id() const
 		{
 			return mId;
 		}
@@ -271,7 +270,7 @@ namespace puffin::assets
 
 	private:
 
-		PuffinID mId = gInvalidID; // UUID of Asset
+		puffin::PuffinID mId = puffin::gInvalidID; // UUID of Asset
 		fs::path mPath; // Relative Asset Path
 
 	};

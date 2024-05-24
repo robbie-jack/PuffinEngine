@@ -2,25 +2,19 @@
 
 #if PFN_ONAGER2D_PHYSICS
 
-#include "Broadphases/Broadphase2D.h"
-#include "Components/Physics/2D/RigidbodyComponent2D.h"
-#include "Components/Physics/2D/ShapeComponents2D.h"
-#include "Components/Physics/2D/VelocityComponent2D.h"
+#include "puffin/physics/onager2d/broadphases/broadphase_2d.h"
+#include "puffin/components/physics/2d/rigidbody_component_2d.h"
+#include "puffin/components/physics/2d/shape_components_2d.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/core/engine.h"
 #include "puffin/core/system.h"
-#include "Physics/PhysicsConstants.h"
-#include "Physics/Onager2D/PhysicsTypes2D.h"
-#include "Physics/Onager2D/Colliders/Collider2D.h"
-#include "Physics/Onager2D/Shapes/BoxShape2D.h"
-#include "Physics/Onager2D/Shapes/CircleShape2D.h"
-#include "puffin/types/packed_array.h"
-#include "puffin/types/Vector.h"
+#include "puffin/physics/onager2d/physics_types_2d.h"
+#include "puffin/physics/onager2d/colliders/collider_2d.h"
+#include "puffin/types/vector.h"
 
 #include <memory>
 #include <set>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 
@@ -83,10 +77,10 @@ namespace puffin::physics
 
 		Vector2f mGravity = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
-		PackedVector<Shape2D*> mShapes;
-		PackedVector<BoxShape2D> mBoxShapes;
-		PackedVector<CircleShape2D> mCircleShapes;
-		PackedVector<std::shared_ptr<collision2D::Collider2D>> mColliders;
+        PackedVector<puffin::PuffinID, Shape2D*> mShapes;
+        PackedVector<puffin::PuffinID, BoxShape2D> mBoxShapes;
+        PackedVector<puffin::PuffinID, CircleShape2D> mCircleShapes;
+        PackedVector<puffin::PuffinID, std::shared_ptr<collision2D::Collider2D>> mColliders;
 
 		bool mCollidersUpdated = false;
 

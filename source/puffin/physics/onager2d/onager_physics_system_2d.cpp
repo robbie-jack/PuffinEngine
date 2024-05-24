@@ -3,16 +3,16 @@
 
 #if PFN_ONAGER2D_PHYSICS
 
-#include "Components/TransformComponent2D.h"
-#include "Components/Physics/2D/VelocityComponent2D.h"
+#include "puffin/components/transform_component_2d.h"
+#include "puffin/components/physics/2d/velocity_component_2d.h"
 #include "puffin/core/engine.h"
-#include "puffin/core/EnkiTSSubsystem.h"
-#include "puffin/core/SignalSubsystem.h"
+#include "puffin/core/enkits_subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
-#include "Physics/CollisionEvent.h"
-#include "Physics/Onager2D/PhysicsHelpers2D.h"
-#include "Physics/Onager2D/Broadphases/SpatialHashBroadphase2D.h"
-#include "Physics/Onager2D/Broadphases/SweepAndPruneBroadphase.h"
+#include "puffin/physics/collision_event.h"
+#include "puffin/physics/onager2d/physics_helpers_2d.h"
+#include "puffin/physics/onager2d/broadphases/spatial_hash_broadphase_2d.h"
+#include "puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.h"
+#include "puffin/core/signal_subsystem.h"
 
 namespace puffin
 {
@@ -76,7 +76,7 @@ namespace puffin
 			// Copy component transform into collider
 			for (const auto collider : mColliders)
 			{
-				const auto& transform = registry->get<const TransformComponent2D>(mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(collider->uuid));
+                const auto& transform = registry->get<const TransformComponent2D>(mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(collider->uuid));
 
 				collider->position = transform.position;
 				//collider->rotation = maths::RadiansToDegrees(transform.orientation.toEulerAngles().z);

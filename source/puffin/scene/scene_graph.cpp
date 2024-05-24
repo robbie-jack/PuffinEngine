@@ -164,8 +164,8 @@ namespace puffin::scene
 
 				if (node->has_transform_2d())
 				{
-					TransformComponent2D& global_transform = m_global_transform_2ds.at(id);
-					global_transform.position = { 0.f };
+                    auto& global_transform = m_global_transform_2ds.at(id);
+                    global_transform.position = { 0.f };
 					global_transform.rotation = 0.0f;
 					global_transform.scale = { 1.0f };
 
@@ -194,7 +194,7 @@ namespace puffin::scene
 
 				if (node->has_transform_3d())
 				{
-					TransformComponent3D& global_transform = m_global_transform_3ds.at(id);
+                    auto& global_transform = m_global_transform_3ds.at(id);
 					global_transform.position = { 0.f };
 					global_transform.orientation = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
 					global_transform.scale = { 1.f };
@@ -231,15 +231,15 @@ namespace puffin::scene
 	{
 		if (const auto node = get_node_ptr(id); node && node->has_transform_2d())
 		{
-			const auto& local_transform = node->transform_2d();
+            const auto& local_transform = node->transform_2d();
 
-			global_transform.position += local_transform.position;
-			global_transform.rotation += local_transform.rotation;
+            global_transform.position += local_transform->position;
+            global_transform.rotation += local_transform->rotation;
 
 			if (global_transform.rotation > 360.0f)
 				global_transform.rotation -= 360.0f;
 
-			global_transform.scale *= local_transform.scale;
+            global_transform.scale *= local_transform->scale;
 		}
 	}
 
@@ -249,11 +249,11 @@ namespace puffin::scene
 		{
 			const auto& local_transform = node->transform_3d();
 
-			global_transform.position += local_transform.position;
+            global_transform.position += local_transform->position;
 
-			global_transform.orientation = local_transform.orientation * global_transform.orientation;
+            global_transform.orientation = local_transform->orientation * global_transform.orientation;
 
-			global_transform.scale *= local_transform.scale;
+            global_transform.scale *= local_transform->scale;
 		}
 	}
 }

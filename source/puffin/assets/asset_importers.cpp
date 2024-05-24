@@ -17,7 +17,11 @@
 #include <string>
 
 #include "tiny_gltf.h"
+
+#ifdef PFN_PLATFORM_WIN32
 #include "compressonator/compressonator.h"
+#endif
+
 #include "tinyobjloader/tiny_obj_loader.h"
 
 #include "puffin/assets/asset.h"
@@ -561,6 +565,7 @@ namespace puffin::io
 	// Texture Importers
 	//////////////////////
 
+#ifdef PFN_PLATFORM_WIN32
 	const static std::unordered_map<assets::TextureFormat, CMP_FORMAT> gTexPuffinToCMPFormat =
 	{
 		{ assets::TextureFormat::R8, CMP_FORMAT_R_8 },
@@ -613,6 +618,7 @@ namespace puffin::io
 
 		return true;
 	}
+#endif
 
 	bool load_and_import_texture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat)
 	{
@@ -665,6 +671,7 @@ namespace puffin::io
 		bool ret;
 
 		// Save asset
+#ifdef PFN_PLATFORM_WIN32
 		if (useBCFormat)
 		{
 			std::vector<char> compressed_pixels;
@@ -681,6 +688,7 @@ namespace puffin::io
 			compressed_pixels.clear();
 		}
 		else
+#endif
 		{
 			info.textureFormat = rgb_format;
 			ret = asset->save(info, pixel_ptr);

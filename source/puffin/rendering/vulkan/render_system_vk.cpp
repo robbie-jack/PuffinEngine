@@ -1267,17 +1267,17 @@ namespace puffin::rendering
 					const auto entity = enttSubsystem->get_entity(entityID);
 					const auto node = scene_graph->get_node_ptr(entityID);
 
-					TransformComponent3D& tempTransform = TransformComponent3D();
+                    TransformComponent3D tempTransform;
 
 					// Convert 2D transform to 3D for rendering
 					if (registry->any_of<TransformComponent2D>(entity))
 					{
-						auto& transform = TransformComponent2D();
+                        TransformComponent2D* transform;
 
 						if (node)
 							transform = node->global_transform_2d();
 						else
-							transform = registry->get<TransformComponent2D>(entity);
+                            transform = &registry->get<TransformComponent2D>(entity);
 
 						tempTransform.position.x = transform.position.x;
 						tempTransform.position.y = transform.position.y;

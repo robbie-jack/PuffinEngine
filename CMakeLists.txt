@@ -328,6 +328,15 @@ message("")
 
 set(PLATFORM ${CMAKE_HOST_SYSTEM_NAME})
 
+set(PLATFORM_WINDOWS FALSE)
+set(PLATFORM_LINUX FALSE)
+
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    set(PLATFORM_WINDOWS TRUE)
+elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    set(PLATFORM_LINUX TRUE)
+endif()
+
 # Get & Build Required Libraries
 find_package(Vulkan REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
@@ -335,43 +344,44 @@ CPMAddPackage("gh:nlohmann/json@3.11.2")
 target_link_libraries(${PUFFIN_LIBRARY_NAME} ${Vulkan_LIBRARIES})
 target_link_libraries(${PUFFIN_LIBRARY_NAME} nlohmann_json::nlohmann_json)
 
-if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+if (PLATFORM_WINDOWS)
 	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/win64)
 	set(LIB_SUFFIX .lib)
 	set(DLL_SUFFIX .dll)
-elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+elseif (PLATFORM_LINUX)
 	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/linux)
 	set(LIB_SUFFIX .a)
 	set(DLL_SUFFIX .so)
 endif()
 
-if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+if (PLATFORM_WINDOWS)
+
+        # Define Debug Libs
+        target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
+        target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
+        target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
+
+        # Define Release Libs
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
-elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
+        target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
+        target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
+
+elseif (PLATFORM_LINUX)
 	find_package(glfw3 3.4 REQUIRED)
 
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} glfw)
+        target_link_libraries(${PUFFIN_LIBRARY_NAME} usr/local/lib/libangelscript${LIB_SUFFIX})
+        target_link_libraries(${PUFFIN_LIBRARY_NAME} usr/local/lib/lz4${LIB_SUFFIX})
 endif()
 
-# Define Debug Libs
-
-target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
-target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
-target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
-
-# Define Release Libs
-
-target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
-target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
-target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
-
-if (BOX2D_PHYSICS_SUPPORT)
+if (PLATFORM_WINDOWS AND BOX2D_PHYSICS_SUPPORT)
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/box2d/Debug/box2d${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
 endif()
 
-if (JOLT_PHYSICS_SUPPORT)
+if (PLATFORM_LINUX AND JOLT_PHYSICS_SUPPORT)
 	if (DOUBLE_PRECISION_SUPPORT)
 		target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
 		target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
@@ -418,11 +428,11 @@ if (DOUBLE_PRECISION_SUPPORT)
 	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_DOUBLE_PRECISION)
 endif()
 
-if (BOX2D_PHYSICS_SUPPORT)
+if (PLATFORM_WINDOWS AND BOX2D_PHYSICS_SUPPORT)
 	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_BOX2D_PHYSICS)
 endif()
 
-if (JOLT_PHYSICS_SUPPORT)
+if (PLATFORM_WINDOWS AND JOLT_PHYSICS_SUPPORT)
 	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_JOLT_PHYSICS)
 endif()
 
@@ -435,11 +445,11 @@ target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_SIMD_AVX2)
 target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC NOMINMAX)
 
 # Platform defines
-if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+if (PLATFORM_WINDOWS)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_WIN32)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
-elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+elseif (PLATFORM_LINUX)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_LINUX)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
