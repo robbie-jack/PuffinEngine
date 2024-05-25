@@ -48,7 +48,7 @@ namespace puffin::core
 		auto inputSubsystem = registerSystem<input::InputSubsystem>();
 		auto audioSubsystem = registerSystem<audio::AudioSubsystem>();
 		auto enttSubsystem = registerSystem<ecs::EnTTSubsystem>();
-		auto uiSubsystem = registerSystem<ui::UISubsystem>();
+        auto uiSubsystem = registerSystem<puffin::ui::UISubsystem>();
 		auto sceneSubsystem = registerSystem<io::SceneSubsystem>();
 		auto scene_graph = registerSystem<scene::SceneGraph>();
 

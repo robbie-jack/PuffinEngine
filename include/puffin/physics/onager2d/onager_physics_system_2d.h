@@ -11,6 +11,7 @@
 #include "puffin/physics/onager2d/physics_types_2d.h"
 #include "puffin/physics/onager2d/colliders/collider_2d.h"
 #include "puffin/types/vector.h"
+#include "puffin/types/uuid.h"
 
 #include <memory>
 #include <set>
@@ -92,14 +93,14 @@ namespace puffin::physics
 		std::unordered_map<const char*, std::shared_ptr<Broadphase>> mBroadphases; // Map of registered broadphases
 
 		// Init/Update/Delete of Physics Related Components
-		void initCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle);
-		void cleanupCircle(const SceneObjectComponent& object);
+        void initCircle(const entt::entity& entity, const puffin::PuffinID& id, const CircleComponent2D& circle);
+        void cleanupCircle(const puffin::PuffinID& id);
 
-		void initBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box);
-		void cleanupBox(const SceneObjectComponent& object);
+        void initBox(const entt::entity& entity, const puffin::PuffinID& id, const BoxComponent2D& box);
+        void cleanupBox(const puffin::PuffinID& id);
 
-		void insertCollider(PuffinID id, std::shared_ptr<collision2D::Collider2D> collider);
-		void eraseCollider(PuffinID id);
+        void insertCollider(const puffin::PuffinID& id, std::shared_ptr<collision2D::Collider2D> collider);
+        void eraseCollider(const puffin::PuffinID& id);
 
 		// Dynamics
 		void updateDynamics() const; // Perform velocity updates for all rigid bodies

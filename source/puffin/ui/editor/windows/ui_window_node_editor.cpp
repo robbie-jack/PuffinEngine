@@ -199,27 +199,27 @@ namespace puffin
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
-				const TransformComponent2D& transform = node->transform_2d();
+                const auto transform = node->transform_2d();
 
 				{
 #ifdef PFN_DOUBLE_PRECISION
 
-					Vector2d position = transform.position;
+                    Vector2d position = transform->position;
 
 					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &position, 2, 0.1f))
 					{
-						node->transform_2d().position = position;
+                        node->transform_2d()->position = position;
 
 						mSceneChanged = true;
 					}
 
 #else
 
-					Vector2f position = transform.position;
+                    Vector2f position = transform->position;
 
 					if (ImGui::DragFloat2("Position", reinterpret_cast<float*>(&position), 0.1f))
 					{
-						node->transform_2d().position = position;
+                        node->transform_2d()->position = position;
 
 						m_scene_changed = true;
 					}
@@ -228,22 +228,22 @@ namespace puffin
 				}
 
 				{
-					float rotation = transform.rotation;
+                    float rotation = transform->rotation;
 
 					if (ImGui::DragFloat("Rotation", &rotation, 0.1f, -180.0f, 180.0f))
 					{
-						node->transform_2d().rotation = rotation;
+                        node->transform_2d()->rotation = rotation;
 
 						m_scene_changed = true;
 					}
 				}
 
 				{
-					Vector2f scale = transform.scale;
+                    Vector2f scale = transform->scale;
 
 					if (ImGui::DragFloat2("Scale", reinterpret_cast<float*>(&scale), 0.1f))
 					{
-						node->transform_2d().scale = scale;
+                        node->transform_2d()->scale = scale;
 
 						m_scene_changed = true;
 					}
@@ -257,7 +257,7 @@ namespace puffin
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
-				const TransformComponent3D& transform = node->transform_3d();
+                const auto transform = node->transform_3d();
 
 				{
 #ifdef PFN_USE_DOUBLE_PRECISION
@@ -273,11 +273,11 @@ namespace puffin
 
 #else
 
-					Vector3f position = transform.position;
+                    Vector3f position = transform->position;
 
 					if (ImGui::DragFloat3("Position", reinterpret_cast<float*>(&position), 0.1f))
 					{
-						node->transform_3d().position = position;
+                        node->transform_3d()->position = position;
 
 						m_scene_changed = true;
 					}
@@ -286,7 +286,7 @@ namespace puffin
 				}
 
 				{
-					Vector3f anglesDeg = maths::radToDeg(eulerAngles(static_cast<glm::quat>(transform.orientation)));
+                    Vector3f anglesDeg = maths::radToDeg(eulerAngles(static_cast<glm::quat>(transform->orientation)));
 
 					if (ImGui::DragFloat3("Orientation", reinterpret_cast<float*>(&anglesDeg), 0.2f, -180.f, 180.f, "%.3f"))
 					{
@@ -296,18 +296,18 @@ namespace puffin
 						const glm::quat quat_y(angleAxis(angles_rad.y, glm::vec3(0.f, 1.f, 0.f)));
 						const glm::quat quat_z(angleAxis(angles_rad.z, glm::vec3(0.f, 0.f, 1.f)));
 
-						node->transform_3d().orientation = quat_y * quat_x * quat_z;
+                        node->transform_3d()->orientation = quat_y * quat_x * quat_z;
 
 						m_scene_changed = true;
 					}
 				}
 
 				{
-					Vector3f scale = transform.scale;
+                    Vector3f scale = transform->scale;
 
 					if (ImGui::DragFloat3("Scale", reinterpret_cast<float*>(&scale), 0.1f))
 					{
-						node->transform_3d().scale = scale;
+                        node->transform_3d()->scale = scale;
 
 						m_scene_changed = true;
 					}
@@ -332,8 +332,8 @@ namespace puffin
 					m_scene_changed = true;
 				}
 
-				ImGui::Text("Model UUID: %llu", mesh.mesh_asset_id);
-				ImGui::Text("Material UUID: %llu", mesh.mat_asset_id);
+                ImGui::Text("Model UUID: %lu", mesh.mesh_asset_id);
+                ImGui::Text("Material UUID: %lu", mesh.mat_asset_id);
 
 				// Change Model Path
 				/*ImGui::Text("Model Path:"); ImGui::SameLine();

@@ -13,8 +13,8 @@ namespace puffin::physics
 	AABB BoxShape2D::getAABB(const Vector2f& position, const float& rotation) const
 	{
 		AABB aabb;
-		aabb.min = position - halfExtent;
-		aabb.max = position + halfExtent;
+        aabb.min = position - half_extent;
+        aabb.max = position + half_extent;
 		return aabb;
 	}
 
@@ -22,9 +22,9 @@ namespace puffin::physics
 	{
 		points.clear();
 
-		points.emplace_back(-halfExtent.x, -halfExtent.y);
-		points.emplace_back(-halfExtent.x, halfExtent.y);
-		points.emplace_back(halfExtent.x, halfExtent.y);
-		points.emplace_back(halfExtent.x, -halfExtent.y);
+        points.emplace_back(-half_extent.x, -half_extent.y);
+        points.emplace_back(-half_extent.x, half_extent.y);
+        points.emplace_back(half_extent.x, half_extent.y);
+        points.emplace_back(half_extent.x, -half_extent.y);
 	}
 }

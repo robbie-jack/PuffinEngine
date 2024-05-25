@@ -13,6 +13,7 @@
 #include "puffin/physics/onager2d/broadphases/spatial_hash_broadphase_2d.h"
 #include "puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.h"
 #include "puffin/core/signal_subsystem.h"
+#include "puffin/scene/scene_graph.h"
 
 namespace puffin
 {
@@ -111,134 +112,140 @@ namespace puffin
 
 		void OnagerPhysicsSystem2D::onConstructBox(entt::registry& registry, entt::entity entity)
 		{
-			const auto& object = registry.get<const SceneObjectComponent>(entity);
+            const auto ecs_system = mEngine->getSystem<ecs::EnTTSubsystem>();
+            const auto id = ecs_system->get_id(entity);
 			const auto& box = registry.get<const BoxComponent2D>(entity);
 
-			initBox(entity, object, box);
+            initBox(entity, id, box);
 		}
 
 		void OnagerPhysicsSystem2D::onDestroyBox(entt::registry& registry, entt::entity entity)
 		{
-			const auto& object = registry.get<const SceneObjectComponent>(entity);
+            const auto ecs_system = mEngine->getSystem<ecs::EnTTSubsystem>();
+            const auto id = ecs_system->get_id(entity);
 
-			cleanupBox(object);
+            cleanupBox(id);
 		}
 
 		void OnagerPhysicsSystem2D::onConstructCircle(entt::registry& registry, entt::entity entity)
 		{
-			const auto& object = registry.get<const SceneObjectComponent>(entity);
+            const auto ecs_system = mEngine->getSystem<ecs::EnTTSubsystem>();
+            const auto id = ecs_system->get_id(entity);
 			const auto& circle = registry.get<const CircleComponent2D>(entity);
 
-			initCircle(entity, object, circle);
+            initCircle(entity, id, circle);
 		}
 
 		void OnagerPhysicsSystem2D::onDestroyCircle(entt::registry& registry, entt::entity entity)
 		{
-			const auto& object = registry.get<const SceneObjectComponent>(entity);
+            const auto ecs_system = mEngine->getSystem<ecs::EnTTSubsystem>();
+            const auto id = ecs_system->get_id(entity);
 
-			cleanupCircle(object);
+            cleanupCircle(id);
 		}
 
 		void OnagerPhysicsSystem2D::onConstructRigidbody(entt::registry& registry, entt::entity entity)
 		{
-			const auto& object = registry.get<const SceneObjectComponent>(entity);
+            const auto ecs_system = mEngine->getSystem<ecs::EnTTSubsystem>();
+            const auto id = ecs_system->get_id(entity);
 
-			if (mShapes.contains(object.id))
+            if (mShapes.contains(id))
 			{
-				const auto collider = std::make_shared<collision2D::BoxCollider2D>(object.id, &mBoxShapes[object.id]);
+                const auto collider = std::make_shared<collision2D::BoxCollider2D>(id, &mBoxShapes[id]);
 
-				insertCollider(object.id, collider);
+                insertCollider(id, collider);
 			}
 		}
 
 		void OnagerPhysicsSystem2D::onDestroyRigidbody(entt::registry& registry, entt::entity entity)
 		{
-			const auto& object = registry.get<const SceneObjectComponent>(entity);
+            const auto ecs_system = mEngine->getSystem<ecs::EnTTSubsystem>();
+            const auto id = ecs_system->get_id(entity);
 
-			eraseCollider(object.id);
+            eraseCollider(id);
 		}
 
 		//--------------------------------------------------
 		// Private Functions
 		//--------------------------------------------------
 
-		void OnagerPhysicsSystem2D::initCircle(const entt::entity& entity, const SceneObjectComponent& object, const CircleComponent2D& circle)
+        void OnagerPhysicsSystem2D::initCircle(const entt::entity& entity, const puffin::PuffinID& id, const CircleComponent2D& circle)
 		{
 			// If there is no shape for this entity in vector
-			if (!mCircleShapes.contains(object.id))
+            if (!mCircleShapes.contains(id))
 			{
-				mCircleShapes.emplace(object.id, CircleShape2D());
+                mCircleShapes.emplace(id, CircleShape2D());
 			}
 
-			mCircleShapes[object.id].centreOfMass = circle.centreOfMass;
-			mCircleShapes[object.id].radius = circle.radius;
+            mCircleShapes[id].centre_of_mass = circle.centre_of_mass;
+            mCircleShapes[id].radius = circle.radius;
 
 			if (mEngine->getSystem<ecs::EnTTSubsystem>()->registry()->all_of<RigidbodyComponent2D>(entity))
 			{
 				// If there is no collider for this entity, create new one
-				const auto collider = std::make_shared<collision2D::CircleCollider2D>(object.id, &mCircleShapes[object.id]);
+                const auto collider = std::make_shared<collision2D::CircleCollider2D>(id, &mCircleShapes[id]);
 
-				insertCollider(object.id, collider);
+                insertCollider(id, collider);
 			}
 		}
 
-		void OnagerPhysicsSystem2D::cleanupCircle(const SceneObjectComponent& object)
+        void OnagerPhysicsSystem2D::cleanupCircle(const puffin::PuffinID& id)
 		{
-			if (mCircleShapes.contains(object.id))
+            if (mCircleShapes.contains(id))
 			{
-				mCircleShapes.erase(object.id);
-				mShapes.erase(object.id);
+                mCircleShapes.erase(id);
+                mShapes.erase(id);
 			}
 
-			eraseCollider(object.id);
+            eraseCollider(id);
 		}
 
-		void OnagerPhysicsSystem2D::initBox(const entt::entity& entity, const SceneObjectComponent& object, const BoxComponent2D& box)
+        void OnagerPhysicsSystem2D::initBox(const entt::entity& entity, const puffin::PuffinID& id, const BoxComponent2D& box)
 		{
 			// If there is no shape for this entity in vector
-			if (!mBoxShapes.contains(object.id))
+            if (!mBoxShapes.contains(id))
 			{
-				mBoxShapes.emplace(object.id, BoxShape2D());
+                mBoxShapes.emplace(id, BoxShape2D());
 			}
 
-			mBoxShapes[object.id].centreOfMass = box.centreOfMass;
-			mBoxShapes[object.id].halfExtent = box.halfExtent;
-			mBoxShapes[object.id].updatePoints();
+            mBoxShapes[id].centre_of_mass = box.centre_of_mass;
+            mBoxShapes[id].half_extent = box.half_extent;
+            mBoxShapes[id].updatePoints();
 
-			if (!mShapes.contains(object.id))
+            if (!mShapes.contains(id))
 			{
-				mShapes.emplace(object.id, nullptr);
+                mShapes.emplace(id, nullptr);
 
-				mShapes[object.id] = &mBoxShapes[object.id];
+                mShapes[id] = &mBoxShapes[id];
 
-				if (mEngine->getSystem<ecs::EnTTSubsystem>()->registry()->all_of<RigidbodyComponent2D>(entity) && !mColliders.contains(object.id))
+                if (mEngine->getSystem<ecs::EnTTSubsystem>()->registry()->all_of<RigidbodyComponent2D>(entity) && !mColliders.contains(id))
 				{
-					const auto collider = std::make_shared<collision2D::BoxCollider2D>(object.id, &mBoxShapes[object.id]);
+                    const auto collider = std::make_shared<collision2D::BoxCollider2D>(id, &mBoxShapes[id]);
 
-					insertCollider(object.id, collider);
+                    insertCollider(id, collider);
 				}
 			}
 		}
 
-		void OnagerPhysicsSystem2D::cleanupBox(const SceneObjectComponent& object)
+        void OnagerPhysicsSystem2D::cleanupBox(const puffin::PuffinID& id)
 		{
-			if (mBoxShapes.contains(object.id))
-				mBoxShapes.erase(object.id);
+            if (mBoxShapes.contains(id))
+                mBoxShapes.erase(id);
 
-			eraseCollider(object.id);
+            eraseCollider(id);
 		}
 
-		void OnagerPhysicsSystem2D::insertCollider(PuffinID id, std::shared_ptr<collision2D::Collider2D> collider)
+        void OnagerPhysicsSystem2D::insertCollider(const puffin::PuffinID& id, std::shared_ptr<collision2D::Collider2D> collider)
 		{
 			if (!mColliders.contains(id))
 			{
-				mColliders.insert(id, collider);
+                mColliders.emplace(id, collider);
 
 				mCollidersUpdated = true;
 			}
 		}
 
-		void OnagerPhysicsSystem2D::eraseCollider(PuffinID id)
+        void OnagerPhysicsSystem2D::eraseCollider(const puffin::PuffinID& id)
 		{
 			if (mColliders.contains(id))
 			{
@@ -281,7 +288,7 @@ namespace puffin
 					auto& rb = rbView.get<RigidbodyComponent2D>(entity);
 
 					// If a body has no mass, then it is kinematic/static and should not experience forces
-					if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
+                    if (rb.mass == 0.0f || rb.body_type != BodyType::Dynamic)
 						continue;
 
 					calculateImpulseByGravity(rb);
@@ -314,14 +321,14 @@ namespace puffin
 					const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 
 					// If a body has no mass, then it is kinematic/static and should not experience forces
-					if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
+                    if (rb.mass == 0.0f || rb.body_type != BodyType::Dynamic)
 						continue;
 
 					// Update Position
-					transform.position += rb.linearVelocity * mEngine->timeStepFixed();
+                    transform.position += rb.linear_velocity * mEngine->timeStepFixed();
 
 					// Update Rotation
-					transform.rotation += rb.angularVelocity * mEngine->timeStepFixed();
+                    transform.rotation += rb.angular_velocity * mEngine->timeStepFixed();
 
 					updatedEntities[threadnum].emplace_back(entity);
 				}
@@ -355,12 +362,12 @@ namespace puffin
 					const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 
 					// If a body has no mass, then it is kinematic/static and should not experience forces
-					if (rb.mass == 0.0f || rb.bodyType != BodyType::Dynamic)
+                    if (rb.mass == 0.0f || rb.body_type != BodyType::Dynamic)
 						continue;
 
-					velocity.linear.x = rb.linearVelocity.x;
-					velocity.linear.y = rb.linearVelocity.y;
-					velocity.angular = rb.angularVelocity;
+                    velocity.linear.x = rb.linear_velocity.x;
+                    velocity.linear.y = rb.linear_velocity.y;
+                    velocity.angular = rb.angular_velocity;
 				}
 			});
 
@@ -416,8 +423,8 @@ namespace puffin
 
 			for (const collision2D::Contact& contact : mCollisionContacts)
 			{
-				const auto entityA = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(contact.a);
-				const auto entityB = mEngine->getSystem<ecs::EnTTSubsystem>()->getEntity(contact.b);
+                const auto entityA = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(contact.a);
+                const auto entityB = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(contact.b);
 
 				if (registry->all_of<RigidbodyComponent2D>(entityA) && registry->all_of<RigidbodyComponent2D>(entityB))
 				{
@@ -427,7 +434,7 @@ namespace puffin
 					const float elasticity = bodyA.elasticity * bodyB.elasticity;
 
 					// Calculate Collision Impulse
-					const Vector2 vab = bodyA.linearVelocity - bodyB.linearVelocity;
+                    const Vector2 vab = bodyA.linear_velocity - bodyB.linear_velocity;
 					const float nVab = vab.dot(contact.normal);
 
 					/*if (nVab <= 0)

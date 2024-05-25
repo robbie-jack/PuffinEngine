@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <cstdint>
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -13,28 +14,28 @@ namespace fs = std::filesystem;
 namespace puffin::assets
 {
 	// Enum for asset type. Be careful about changing values as they are stored within the asset files
-	enum class AssetType : uint32_t
+    enum class AssetType : std::uint8_t
 	{
-		None = 0,
-		StaticMesh = 10,
-		SkeletalMesh = 20,
-		Texture = 30,
-		Shader = 40,
-		Material = 50,
-		MaterialInstance = 55,
-		Sound = 60,
+        None = 0,
+        StaticMesh = 10,
+        SkeletalMesh = 20,
+        Texture = 30,
+        Shader = 40,
+        Material = 50,
+        MaterialInstance = 55,
+        Sound = 60,
 	};
 
-	NLOHMANN_JSON_SERIALIZE_ENUM(AssetType,
+    NLOHMANN_JSON_SERIALIZE_ENUM(puffin::assets::AssetType,
 	{
-		{AssetType::None, "None"},
-		{AssetType::StaticMesh, "StaticMesh"},
-		{AssetType::SkeletalMesh, "SkeletalMesh"},
-		{AssetType::Texture, "Texture"},
-		{AssetType::Shader, "Shader"},
-		{AssetType::Material, "Material"},
-		{AssetType::MaterialInstance, "MaterialInstance"},
-		{AssetType::Sound, "Sound"}
+        {puffin::assets::AssetType::None, "None"},
+        {puffin::assets::AssetType::StaticMesh, "StaticMesh"},
+        {puffin::assets::AssetType::SkeletalMesh, "SkeletalMesh"},
+        {puffin::assets::AssetType::Texture, "Texture"},
+        {puffin::assets::AssetType::Shader, "Shader"},
+        {puffin::assets::AssetType::Material, "Material"},
+        {puffin::assets::AssetType::MaterialInstance, "MaterialInstance"},
+        {puffin::assets::AssetType::Sound, "Sound"}
 	});
 
 	struct AssetData

@@ -16,7 +16,7 @@ namespace puffin::physics
 	{
 		Shape2D()
 		{
-			centreOfMass.zero();
+            centre_of_mass.zero();
 		}
 
 		virtual ~Shape2D() = default;
@@ -25,6 +25,6 @@ namespace puffin::physics
 
 		virtual AABB getAABB(const Vector2f& position, const float& rotation) const = 0;
 
-		Vector2f centreOfMass; // Centre of mass for this shape
+        Vector2f centre_of_mass; // Centre of mass for this shape
 	};
 }

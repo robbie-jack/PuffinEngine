@@ -12,14 +12,14 @@ namespace puffin::physics
 
 		BoxShape2D()
 		{
-			halfExtent = Vector2f(1.0f, 1.0f);
+            half_extent = Vector2f(1.0f, 1.0f);
 			points.reserve(4);
 		}
 
 		~BoxShape2D() override
 		{
-			centreOfMass.zero();
-			halfExtent.zero();
+            centre_of_mass.zero();
+            half_extent.zero();
 			points.clear();
 		}
 
@@ -30,7 +30,7 @@ namespace puffin::physics
 		// Regenerate points based on half bound
 		void updatePoints() override;
 
-		Vector2f halfExtent;
+        Vector2f half_extent;
 	};
 }
 

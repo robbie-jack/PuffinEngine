@@ -248,8 +248,8 @@ namespace puffin::physics
 
 			epa(boxA, boxB, outContact, points);
 
-			outContact.pointOnA = boxA->position + outContact.normal * dynamic_cast<BoxShape2D*>(boxA->shape)->halfExtent;
-			outContact.pointOnB = boxB->position - outContact.normal * dynamic_cast<BoxShape2D*>(boxB->shape)->halfExtent;
+            outContact.pointOnA = boxA->position + outContact.normal * dynamic_cast<BoxShape2D*>(boxA->shape)->half_extent;
+            outContact.pointOnB = boxB->position - outContact.normal * dynamic_cast<BoxShape2D*>(boxB->shape)->half_extent;
 
 			// No separating axis found, shapes must be colliding
 			return true;
@@ -303,7 +303,7 @@ namespace puffin::physics
 			epa(circleA, boxB, outContact, points);
 
 			outContact.pointOnA = circleA->position + outContact.normal * circleA->shape->radius;
-			outContact.pointOnB = boxB->position - outContact.normal * dynamic_cast<BoxShape2D*>(boxB->shape)->halfExtent;
+            outContact.pointOnB = boxB->position - outContact.normal * dynamic_cast<BoxShape2D*>(boxB->shape)->half_extent;
 
 			return true;
 		}
