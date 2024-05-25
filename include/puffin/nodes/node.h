@@ -46,10 +46,12 @@ namespace puffin
 		virtual bool has_transform_2d() const { return false; }
 		virtual bool has_transform_3d() const { return false; }
 
+        TransformComponent2D* global_transform_2d();
 		const TransformComponent2D* global_transform_2d() const;
 		virtual const TransformComponent2D* transform_2d() const { return nullptr; }
 		virtual TransformComponent2D* transform_2d() { return nullptr; }
 
+        TransformComponent3D* global_transform_3d();
 		const TransformComponent3D* global_transform_3d() const;
 		virtual const TransformComponent3D* transform_3d() const { return nullptr; }
 		virtual TransformComponent3D* transform_3d() { return nullptr; }

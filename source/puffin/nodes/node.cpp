@@ -15,6 +15,16 @@ namespace puffin
 		m_entity = m_entt_subsystem->add_entity(m_node_id);
 	}
 
+    TransformComponent2D* Node::global_transform_2d()
+    {
+        if (has_transform_2d())
+        {
+            return m_scene_graph->get_global_transform_2d(m_node_id);
+        }
+
+        return nullptr;
+    }
+
 	const TransformComponent2D* Node::global_transform_2d() const
 	{
 		if (has_transform_2d())

@@ -192,12 +192,12 @@ namespace puffin::scene
 			return m_id_to_type.at(id);
 		}
 
-		[[nodiscard]] const TransformComponent2D* get_global_transform_2d(const PuffinID& id)
+        [[nodiscard]] TransformComponent2D* get_global_transform_2d(const PuffinID& id)
 		{
 			return &m_global_transform_2ds.at(id);
 		}
 
-		[[nodiscard]] const TransformComponent3D* get_global_transform_3d(const PuffinID& id)
+        [[nodiscard]] TransformComponent3D* get_global_transform_3d(const PuffinID& id)
 		{
 			return &m_global_transform_3ds.at(id);
 		}

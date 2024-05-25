@@ -1,12 +1,13 @@
 #include "puffin/rendering/vulkan/render_system_vk.h"
 
+#include <iostream>
+
 #define VMA_IMPLEMENTATION
 #define VMA_DEBUG_LOG
 
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
-#include <iostream>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
@@ -14,7 +15,6 @@
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
-#include "glm/glm.hpp"
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
@@ -23,7 +23,6 @@
 #include "puffin/core/engine.h"
 #include "puffin/rendering/vulkan/helpers_vk.h"
 #include "puffin/core/enkits_subsystem.h"
-#include "puffin/core/signal_subsystem.h"
 #include "puffin/components/transform_component_2d.h"
 #include "puffin/components/transform_component_3d.h"
 #include "puffin/ecs/entt_subsystem.h"
@@ -37,7 +36,6 @@
 #include "puffin/window/window_subsystem.h"
 #include "puffin/scene/scene_graph.h"
 #include "puffin/ui/editor/ui_subsystem.h"
-#include "puffin/ui/editor/windows/ui_window_viewport.h"
 #include "puffin/rendering/vulkan/resource_manager_vk.h"
 
 #define VK_CHECK(x)                                                 \
@@ -1279,21 +1277,21 @@ namespace puffin::rendering
 						else
                             transform = &registry->get<TransformComponent2D>(entity);
 
-						tempTransform.position.x = transform.position.x;
-						tempTransform.position.y = transform.position.y;
+                        tempTransform.position.x = transform->position.x;
+                        tempTransform.position.y = transform->position.y;
 						tempTransform.position.z = 0.0;
 
-						tempTransform.orientation = angleAxis(glm::radians(transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+                        tempTransform.orientation = angleAxis(glm::radians(transform->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
-						tempTransform.scale.x = transform.scale.x;
-						tempTransform.scale.y = transform.scale.y;
+                        tempTransform.scale.x = transform->scale.x;
+                        tempTransform.scale.y = transform->scale.y;
 						tempTransform.scale.z = 1.0f;
 					}
 					else
 					{
 						if (node)
 						{
-							tempTransform = node->global_transform_3d();
+                            tempTransform = *node->global_transform_3d();
 						}
 						else
 						{
@@ -1312,7 +1310,7 @@ namespace puffin::rendering
 
 					if (registry->any_of<physics::VelocityComponent2D, physics::VelocityComponent3D>(entity))
 					{
-						physics::VelocityComponent3D& velocity = physics::VelocityComponent3D();
+                        physics::VelocityComponent3D velocity = physics::VelocityComponent3D();
 
 						if (registry->any_of<physics::VelocityComponent2D>(entity))
 						{

@@ -18,7 +18,7 @@ namespace puffin
 	}
 
 	namespace ui
-	{
+    {
 		class UIContentBrowser;
 		class UIWindowPerformance;
 		class UIWindowNodeEditor;
