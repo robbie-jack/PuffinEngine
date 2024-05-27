@@ -11,10 +11,10 @@ namespace puffin::scene
 {
 	SceneGraph::SceneGraph(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&] { subsystem_update(); }, "SceneGraph: subsystem_update");
-		mEngine->registerCallback(core::ExecutionStage::Update, [&] { update(); }, "SceneGraph: update");
-		mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { physics_update(); }, "SceneGraph: physics_update");
-		mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { end_play(); }, "SceneGraph: end_play");
+		m_engine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&] { subsystem_update(); }, "SceneGraph: subsystem_update");
+		m_engine->registerCallback(core::ExecutionStage::Update, [&] { update(); }, "SceneGraph: update");
+		m_engine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { physics_update(); }, "SceneGraph: physics_update");
+		m_engine->registerCallback(core::ExecutionStage::EndPlay, [&] { end_play(); }, "SceneGraph: end_play");
 
 		m_scene_graph_updated = true;
 	}
@@ -31,7 +31,7 @@ namespace puffin::scene
 		for (auto& id : m_node_ids)
 		{
 			if (const auto node = get_node_ptr(id); node &&  node->should_update())
-				node->update(mEngine->deltaTime());
+				node->update(m_engine->deltaTime());
 		}
 	}
 
@@ -40,7 +40,7 @@ namespace puffin::scene
 		for (auto& id : m_node_ids)
 		{
 			if (const auto node = get_node_ptr(id); node && node->should_update())
-				node->physics_update(mEngine->timeStepFixed());
+				node->physics_update(m_engine->timeStepFixed());
 		}
 	}
 
@@ -144,7 +144,7 @@ namespace puffin::scene
 
 	void SceneGraph::update_global_transforms()
 	{
-		auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		// Update global transforms
 		for (auto& id : m_node_ids)

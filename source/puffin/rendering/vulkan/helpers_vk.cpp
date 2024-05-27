@@ -63,7 +63,7 @@ namespace puffin::rendering::util
 
 		AllocatedBuffer buffer;
 
-		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.allocInfo));
+		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.alloc_info));
 
 		return buffer;
 	}
@@ -77,7 +77,7 @@ namespace puffin::rendering::util
 		{
 			const auto* dataChar = static_cast<const char*>(data);
 
-			std::copy_n(dataChar, data_size, static_cast<char*>(dst_buffer.allocInfo.pMappedData) + dst_offset);
+			std::copy_n(dataChar, data_size, static_cast<char*>(dst_buffer.alloc_info.pMappedData) + dst_offset);
 		}
 		// If rebar is not enabled or buffer is not in host visible, copy data via staging buffer
 		else
@@ -88,7 +88,7 @@ namespace puffin::rendering::util
 			                                                   { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
 
 			const auto* dataChar = static_cast<const char*>(data);
-			auto* mappedDataChar = static_cast<char*>(stagingBuffer.allocInfo.pMappedData);
+			auto* mappedDataChar = static_cast<char*>(stagingBuffer.alloc_info.pMappedData);
 
 			std::copy_n(dataChar, data_size, mappedDataChar);
 
@@ -138,17 +138,30 @@ namespace puffin::rendering::util
 		// Create Image
 		constexpr vma::AllocationCreateInfo imageAllocInfo = { {}, vma::MemoryUsage::eAutoPreferDevice, vk::MemoryPropertyFlagBits::eDeviceLocal };
 
-		VK_CHECK(render_system->allocator().createImage(&image_info, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.allocInfo));
+		VK_CHECK(render_system->allocator().createImage(&image_info, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.alloc_info));
 
 		// Create Image View
 		image_view_info.image = allocImage.image;
 
-		VK_CHECK(render_system->device().createImageView(&image_view_info, nullptr, &allocImage.imageView));
+		VK_CHECK(render_system->device().createImageView(&image_view_info, nullptr, &allocImage.image_view));
 
 		return allocImage;
 	}
 
-	AllocatedImage init_depth_image(const std::shared_ptr<RenderSystemVK>& render_system, const vk::Extent3D extent, const vk::Format format)
+	AllocatedImage create_color_image(const std::shared_ptr<RenderSystemVK>& render_system, vk::Extent3D extent,
+		vk::Format format)
+	{
+		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
+			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment };
+
+		constexpr vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+
+		const vk::ImageViewCreateInfo imageViewInfo({}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange);
+
+		return create_image(render_system, imageInfo, imageViewInfo);
+	}
+
+	AllocatedImage create_depth_image(const std::shared_ptr<RenderSystemVK>& render_system, const vk::Extent3D extent, const vk::Format format)
 	{
 		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
 			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment };

@@ -140,7 +140,7 @@ namespace puffin::rendering
 						vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f };
 
 					vk::PipelineRenderingCreateInfoKHR pipelineRenderInfo = {
-						0, mRenderSystem->offscreen_data().imageFormat, mRenderSystem->offscreen_data().allocDepthImage.format
+						0, mRenderSystem->offscreen_data().image_format, mRenderSystem->offscreen_data().alloc_depth_image.format
 					};
 
 					util::PipelineBuilder pb{ mRenderSystem->window_size().width, mRenderSystem->window_size().height };

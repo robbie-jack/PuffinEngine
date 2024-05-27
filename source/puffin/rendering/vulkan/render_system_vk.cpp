@@ -38,6 +38,7 @@
 #include "puffin/ui/editor/ui_subsystem.h"
 #include "puffin/rendering/vulkan/resource_manager_vk.h"
 #include "puffin/ui/editor/windows/ui_window_viewport.h"
+#include "puffin/rendering/render_globals.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -54,11 +55,11 @@ namespace puffin::rendering
 {
 	RenderSystemVK::RenderSystemVK(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "VKRenderSystem: Startup");
-		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
-		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "VKRenderSystem: Shutdown");
+		m_engine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "VKRenderSystem: Startup");
+		m_engine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: Render");
+		m_engine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "VKRenderSystem: Shutdown");
 
-		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		registry->on_construct<MeshComponent>().connect<&RenderSystemVK::on_update_mesh>(this);
 		registry->on_update<MeshComponent>().connect<&RenderSystemVK::on_update_mesh>(this);
@@ -82,9 +83,9 @@ namespace puffin::rendering
 
 		init_swapchain(m_swapchain_data, m_swapchain_data_old.swapchain, m_window_size);
 
-		if (mEngine->shouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUI())
 		{
-			const ImVec2 viewportSize = mEngine->getSystem<ui::UISubsystem>()->windowViewport()->viewportSize();
+			const ImVec2 viewportSize = m_engine->getSystem<ui::UISubsystem>()->windowViewport()->viewportSize();
 			m_render_extent.width = viewportSize.x;
 			m_render_extent.height = viewportSize.y;
 		}
@@ -104,7 +105,7 @@ namespace puffin::rendering
 		init_descriptors();
 		init_pipelines();
 
-		if (mEngine->shouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUI())
 		{
 			init_imgui();
 			init_offscreen_imgui_textures(m_offscreen_data);
@@ -150,14 +151,14 @@ namespace puffin::rendering
 
 			clean_swapchain(m_swapchain_data);
 
-			if (m_swapchain_data_old.needsCleaned)
+			if (m_swapchain_data_old.needs_cleaned)
 			{
 				clean_swapchain(m_swapchain_data_old);
 			}
 
 			clean_offscreen(m_offscreen_data);
 
-			if (m_offscreen_data_old.needsCleaned)
+			if (m_offscreen_data_old.needs_cleaned)
 			{
 				clean_offscreen(m_offscreen_data_old);
 			}
@@ -197,7 +198,7 @@ namespace puffin::rendering
 	{
 		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<MeshComponent>(entity))
 		{
-			const auto id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+			const auto id = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 			const auto mesh = registry.get<MeshComponent>(entity);
 
 			if (mesh.mesh_asset_id == gInvalidID || mesh.mat_asset_id == gInvalidID)
@@ -213,12 +214,24 @@ namespace puffin::rendering
 
 	void RenderSystemVK::on_update_shadow_caster(entt::registry& registry, entt::entity entity)
 	{
+		const auto id = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+		const auto& shadow = registry.get<ShadowCasterComponent>(entity);
 
+		ImageDesc image_desc;
+		image_desc.image_type = ImageType::Depth;
+		image_desc.format = vk::Format::eD32Sfloat;
+		image_desc.width = shadow.width;
+		image_desc.height = shadow.height;
+		image_desc.depth = 1;
+
+		m_shadow_update_events.push({ id, image_desc, m_frames_in_flight_count });
 	}
 
 	void RenderSystemVK::on_destroy_shadow_caster(entt::registry& registry, entt::entity entity)
 	{
+		const auto id = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
+		m_shadow_destroy_events.push({ id, m_frames_in_flight_count });
 	}
 
 	void RenderSystemVK::register_texture(PuffinID texID)
@@ -228,7 +241,7 @@ namespace puffin::rendering
 
 	void RenderSystemVK::init_vulkan()
 	{
-		GLFWwindow* glfwWindow = mEngine->getSystem<window::WindowSubsystem>()->primaryWindow();
+		GLFWwindow* glfwWindow = m_engine->getSystem<window::WindowSubsystem>()->primaryWindow();
 
 		glfwSetWindowUserPointer(glfwWindow, this);
 		glfwSetFramebufferSizeCallback(glfwWindow, frame_buffer_resize_callback);
@@ -368,19 +381,19 @@ namespace puffin::rendering
 		                              .value();
 
 		swapchainData.swapchain = vkbSwapchain.swapchain;
-		swapchainData.imageFormat = static_cast<vk::Format>(vkbSwapchain.image_format);
+		swapchainData.image_format = static_cast<vk::Format>(vkbSwapchain.image_format);
 
 		// Grab Images
 		std::vector<VkImage> images = vkbSwapchain.get_images().value();
 		std::vector<VkImageView> imageViews = vkbSwapchain.get_image_views().value();
 
 		swapchainData.images.resize(images.size());
-		swapchainData.imageViews.resize(imageViews.size());
+		swapchainData.image_views.resize(imageViews.size());
 
 		for (int i = 0; i < images.size(); i++)
 		{
 			swapchainData.images[i] = static_cast<vk::Image>(images[i]);
-			swapchainData.imageViews[i] = static_cast<vk::ImageView>(imageViews[i]);
+			swapchainData.image_views[i] = static_cast<vk::ImageView>(imageViews[i]);
 		}
 
 		images.clear();
@@ -394,10 +407,10 @@ namespace puffin::rendering
 
 		const vk::Extent3D imageExtent = {offscreenData.extent.width, offscreenData.extent.height, 1};
 
-		offscreenData.imageFormat = vk::Format::eR8G8B8A8Unorm;
+		offscreenData.image_format = vk::Format::eR8G8B8A8Unorm;
 
 		const vk::ImageCreateInfo imageInfo = {
-			{}, vk::ImageType::e2D, offscreenData.imageFormat, imageExtent,
+			{}, vk::ImageType::e2D, offscreenData.image_format, imageExtent,
 			1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
 			{
 				vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled |
@@ -408,16 +421,16 @@ namespace puffin::rendering
 		const vk::ImageSubresourceRange subresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
 
 		const vk::ImageViewCreateInfo imageViewInfo = {
-			{}, {}, vk::ImageViewType::e2D, offscreenData.imageFormat, {}, subresourceRange
+			{}, {}, vk::ImageViewType::e2D, offscreenData.image_format, {}, subresourceRange
 		};
 
-		offscreenData.allocImages.resize(offscreenImageCount);
+		offscreenData.alloc_images.resize(offscreenImageCount);
 		for (int i = 0; i < offscreenImageCount; i++)
 		{
-			offscreenData.allocImages[i] = util::create_image(shared_from_this(), imageInfo, imageViewInfo);
+			offscreenData.alloc_images[i] = util::create_image(shared_from_this(), imageInfo, imageViewInfo);
 		}
 
-		offscreenData.allocDepthImage = util::init_depth_image(shared_from_this(), imageExtent, vk::Format::eD32Sfloat);
+		offscreenData.alloc_depth_image = util::create_depth_image(shared_from_this(), imageExtent, vk::Format::eD32Sfloat);
 	}
 
 	void RenderSystemVK::init_commands()
@@ -515,7 +528,7 @@ namespace puffin::rendering
 				                                                      | vma::AllocationCreateFlagBits::eMapped
 			                                                      });
 
-			m_frame_render_data[i].light_buffer = util::create_buffer(m_allocator, sizeof(GPULightData) * g_max_lights_vk,
+			m_frame_render_data[i].light_buffer = util::create_buffer(m_allocator, sizeof(GPULightData) * g_max_lights,
 			                                                     vk::BufferUsageFlagBits::eStorageBuffer,
 			                                                     vma::MemoryUsage::eAuto,
 			                                                     {
@@ -599,7 +612,7 @@ namespace puffin::rendering
 				m_frame_render_data[i].object_buffer.buffer, 0, sizeof(GPUObjectData) * g_max_objects
 			};
 			vk::DescriptorBufferInfo lightBufferInfo = {
-				m_frame_render_data[i].light_buffer.buffer, 0, sizeof(GPULightData) * g_max_lights_vk
+				m_frame_render_data[i].light_buffer.buffer, 0, sizeof(GPULightData) * g_max_lights
 			};
 			vk::DescriptorBufferInfo lightStaticBufferInfo = {
 				m_frame_render_data[i].light_static_buffer.buffer, 0, sizeof(GPULightStaticData)
@@ -663,7 +676,7 @@ namespace puffin::rendering
 		};
 
 		vk::PipelineRenderingCreateInfoKHR pipelineRenderInfo = {
-			0, m_offscreen_data.imageFormat, m_offscreen_data.allocDepthImage.format
+			0, m_offscreen_data.image_format, m_offscreen_data.alloc_depth_image.format
 		};
 
 		util::PipelineBuilder pb{m_window_size.width, m_window_size.height};
@@ -717,10 +730,10 @@ namespace puffin::rendering
 		VK_CHECK(m_device.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
 
 		// Initialize imgui for GLFW
-		GLFWwindow* glfwWindow = mEngine->getSystem<window::WindowSubsystem>()->primaryWindow();
+		GLFWwindow* glfwWindow = m_engine->getSystem<window::WindowSubsystem>()->primaryWindow();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
-		std::array<VkFormat,1 > formats = { static_cast<VkFormat>(m_swapchain_data.imageFormat) };
+		std::array<VkFormat,1 > formats = { static_cast<VkFormat>(m_swapchain_data.image_format) };
 
 		VkPipelineRenderingCreateInfoKHR pipelineRenderInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
 			nullptr, 0, 1,
@@ -756,20 +769,20 @@ namespace puffin::rendering
 
 	void RenderSystemVK::init_offscreen_imgui_textures(OffscreenData& offscreenData)
 	{
-		offscreenData.viewportTextures.resize(offscreenData.allocImages.size());
+		offscreenData.viewport_textures.resize(offscreenData.alloc_images.size());
 
-		for (int i = 0; i < offscreenData.allocImages.size(); i++)
+		for (int i = 0; i < offscreenData.alloc_images.size(); i++)
 		{
-			offscreenData.viewportTextures[i] = static_cast<ImTextureID>(ImGui_ImplVulkan_AddTexture(
+			offscreenData.viewport_textures[i] = static_cast<ImTextureID>(ImGui_ImplVulkan_AddTexture(
 				m_global_render_data.texture_sampler,
-				offscreenData.allocImages[i].imageView,
+				offscreenData.alloc_images[i].image_view,
 				static_cast<VkImageLayout>(vk::ImageLayout::eShaderReadOnlyOptimal)));
 		}
 	}
 
 	void RenderSystemVK::process_components()
 	{
-		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		if (m_update_renderables)
 		{
@@ -781,7 +794,7 @@ namespace puffin::rendering
 			// Iterate 2D objects
 			for (auto [entity, transform, mesh] : meshView2D.each())
 			{
-				const auto node_id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+				const auto node_id = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
 				if (mesh.mat_asset_id == gInvalidID || mesh.mesh_asset_id == gInvalidID)
 				{
@@ -801,7 +814,7 @@ namespace puffin::rendering
 			// Iterate 3D objects
 			for (auto [entity, transform, mesh] : meshView3D.each())
 			{
-				const auto node_id = mEngine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+				const auto node_id = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
 
 				if (mesh.mat_asset_id == gInvalidID || mesh.mesh_asset_id == gInvalidID)
 				{
@@ -878,6 +891,70 @@ namespace puffin::rendering
 				m_frame_render_data[i].texture_descriptor_needs_updated = true;
 			}
 		}
+
+		// Update shadows
+		{
+			std::vector<ShadowUpdateEvent> m_shadow_update_events_still_in_use;
+			while (!m_shadow_update_events.empty())
+			{
+				ShadowUpdateEvent event {};
+				m_shadow_update_events.pop(event);
+
+				if (m_resource_manager->image_exists(event.id))
+				{
+					m_resource_manager->update_image(event.id, event.image_desc, current_frame_idx());
+
+					event.frame_count++;
+
+					if (event.frame_count < m_frames_in_flight_count)
+					{
+						m_shadow_update_events_still_in_use.push_back(event);
+					}
+				}
+				else
+				{
+					m_resource_manager->add_images(event.id, event.image_desc, m_frames_in_flight_count);
+				}
+			}
+
+			for (const auto& event : m_shadow_update_events_still_in_use)
+			{
+				m_shadow_update_events.push(event);
+			}
+
+			m_shadow_update_events_still_in_use.clear();
+		}
+
+		// Destroy shadows
+		{
+			std::vector<ShadowDestroyEvent> m_shadow_destroy_events_still_in_use;
+			while (!m_shadow_destroy_events.empty())
+			{
+				ShadowDestroyEvent event {};
+				m_shadow_destroy_events.pop(event);
+
+				if (m_resource_manager->image_exists(event.id))
+				{
+					event.frame_count++;
+
+					if (event.frame_count < m_frames_in_flight_count)
+					{
+						m_shadow_destroy_events_still_in_use.push_back(event);
+					}
+					else
+					{
+						m_resource_manager->destroy_images(event.id);
+					}
+				}
+			}
+
+			for (const auto& event : m_shadow_destroy_events_still_in_use)
+			{
+				m_shadow_destroy_events.push(event);
+			}
+
+			m_shadow_destroy_events_still_in_use.clear();
+		}
 	}
 
 	void RenderSystemVK::draw()
@@ -886,9 +963,9 @@ namespace puffin::rendering
 		VK_CHECK(m_device.waitForFences(1, &current_frame_data().render_fence, true, 1000000000));
 		VK_CHECK(m_device.resetFences(1, &current_frame_data().render_fence));
 
-		if (mEngine->shouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUI())
 		{
-			const ImVec2 viewportSize = mEngine->getSystem<ui::UISubsystem>()->windowViewport()->viewportSize();
+			const ImVec2 viewportSize = m_engine->getSystem<ui::UISubsystem>()->windowViewport()->viewportSize();
 
 			m_render_extent.width = static_cast<uint32_t>(viewportSize.x);
 			m_render_extent.height = static_cast<uint32_t>(viewportSize.y);
@@ -914,9 +991,9 @@ namespace puffin::rendering
 			m_device.acquireNextImageKHR(m_swapchain_data.swapchain, 1000000000, current_frame_data().present_semaphore,
 				nullptr, &swapchainImageIdx));
 
-		if (mEngine->shouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUI())
 		{
-			mEngine->getSystem<ui::UISubsystem>()->windowViewport()->draw(m_offscreen_data.viewportTextures[swapchainImageIdx]);
+			m_engine->getSystem<ui::UISubsystem>()->windowViewport()->draw(m_offscreen_data.viewport_textures[swapchainImageIdx]);
 
 			ImGui::Render();
 		}
@@ -930,7 +1007,7 @@ namespace puffin::rendering
 
 		record_and_submit_commands(swapchainImageIdx);
 
-		m_frame_number++;
+		m_frame_count++;
 	}
 
 	void RenderSystemVK::recreate_swapchain()
@@ -944,14 +1021,14 @@ namespace puffin::rendering
 			}
 
 			m_swapchain_data_old = m_swapchain_data;
-			m_swapchain_data_old.needsCleaned = true;
+			m_swapchain_data_old.needs_cleaned = true;
 
 			init_swapchain(m_swapchain_data, m_swapchain_data_old.swapchain, m_window_size);
 
 			m_swapchain_data.resized = false;
 		}
 
-		if (m_swapchain_data_old.needsCleaned == true)
+		if (m_swapchain_data_old.needs_cleaned == true)
 		{
 			if (current_frame_data().swapchain_needs_updated == true)
 			{
@@ -971,16 +1048,16 @@ namespace puffin::rendering
 			{
 				clean_swapchain(m_swapchain_data_old);
 
-				m_swapchain_data_old.needsCleaned = false;
+				m_swapchain_data_old.needs_cleaned = false;
 			}
 		}
 	}
 
 	void RenderSystemVK::clean_swapchain(SwapchainData& swapchainData)
 	{
-		for (int i = 0; i < swapchainData.imageViews.size(); i++)
+		for (int i = 0; i < swapchainData.image_views.size(); i++)
 		{
-			m_device.destroyImageView(swapchainData.imageViews[i]);
+			m_device.destroyImageView(swapchainData.image_views[i]);
 		}
 
 		m_device.destroySwapchainKHR(swapchainData.swapchain);
@@ -996,11 +1073,11 @@ namespace puffin::rendering
 			}
 
 			m_offscreen_data_old = m_offscreen_data;
-			m_offscreen_data_old.needsCleaned = true;
+			m_offscreen_data_old.needs_cleaned = true;
 
 			init_offscreen(m_offscreen_data, m_render_extent, m_swapchain_data.images.size());
 
-			if (mEngine->shouldRenderEditorUI())
+			if (m_engine->shouldRenderEditorUI())
 			{
 				init_offscreen_imgui_textures(m_offscreen_data);
 			}
@@ -1008,7 +1085,7 @@ namespace puffin::rendering
 			m_offscreen_data.resized = false;
 		}
 
-		if (m_offscreen_data_old.needsCleaned == true)
+		if (m_offscreen_data_old.needs_cleaned == true)
 		{
 			if (current_frame_data().offscreen_needs_updated == true)
 			{
@@ -1028,25 +1105,25 @@ namespace puffin::rendering
 			{
 				clean_offscreen(m_offscreen_data_old);
 
-				m_offscreen_data_old.needsCleaned = false;
+				m_offscreen_data_old.needs_cleaned = false;
 			}
 		}
 	}
 
 	void RenderSystemVK::clean_offscreen(OffscreenData& offscreenData)
 	{
-		m_device.destroyImageView(offscreenData.allocDepthImage.imageView);
-		m_allocator.destroyImage(offscreenData.allocDepthImage.image, offscreenData.allocDepthImage.allocation);
+		m_device.destroyImageView(offscreenData.alloc_depth_image.image_view);
+		m_allocator.destroyImage(offscreenData.alloc_depth_image.image, offscreenData.alloc_depth_image.allocation);
 
-		for (int i = 0; i < offscreenData.allocImages.size(); i++)
+		for (int i = 0; i < offscreenData.alloc_images.size(); i++)
 		{
-			if (mEngine->shouldRenderEditorUI())
+			if (m_engine->shouldRenderEditorUI())
 			{
-				ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(offscreenData.viewportTextures[i]));
+				ImGui_ImplVulkan_RemoveTexture(static_cast<VkDescriptorSet>(offscreenData.viewport_textures[i]));
 			}
 
-			m_device.destroyImageView(offscreenData.allocImages[i].imageView);
-			m_allocator.destroyImage(offscreenData.allocImages[i].image, offscreenData.allocImages[i].allocation);
+			m_device.destroyImageView(offscreenData.alloc_images[i].image_view);
+			m_allocator.destroyImage(offscreenData.alloc_images[i].image, offscreenData.alloc_images[i].allocation);
 		}
 	}
 
@@ -1054,7 +1131,7 @@ namespace puffin::rendering
 	{
 		update_editor_camera();
 
-		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
 		const auto cameraView = registry->view<const TransformComponent3D, CameraComponent>();
 
 		for (auto [entity, transform, camera] : cameraView.each())
@@ -1065,39 +1142,39 @@ namespace puffin::rendering
 
 	void RenderSystemVK::update_editor_camera()
 	{
-		const auto inputSubsystem = mEngine->getSystem<input::InputSubsystem>();
+		const auto inputSubsystem = m_engine->getSystem<input::InputSubsystem>();
 
 		if (inputSubsystem->isCursorLocked())
 		{
 			// Camera Movement
 			if (inputSubsystem->pressed("CamMoveLeft") && !inputSubsystem->pressed("CamMoveRight"))
 			{
-				m_editor_cam.position += m_editor_cam.right * m_editor_cam.speed * mEngine->deltaTime();
+				m_editor_cam.position += m_editor_cam.right * m_editor_cam.speed * m_engine->deltaTime();
 			}
 
 			if (inputSubsystem->pressed("CamMoveRight") && !inputSubsystem->pressed("CamMoveLeft"))
 			{
-				m_editor_cam.position -= m_editor_cam.right * m_editor_cam.speed * mEngine->deltaTime();
+				m_editor_cam.position -= m_editor_cam.right * m_editor_cam.speed * m_engine->deltaTime();
 			}
 
 			if (inputSubsystem->pressed("CamMoveForward") && !inputSubsystem->pressed("CamMoveBackward"))
 			{
-				m_editor_cam.position += m_editor_cam.direction * m_editor_cam.speed * mEngine->deltaTime();
+				m_editor_cam.position += m_editor_cam.direction * m_editor_cam.speed * m_engine->deltaTime();
 			}
 
 			if (inputSubsystem->pressed("CamMoveBackward") && !inputSubsystem->pressed("CamMoveForward"))
 			{
-				m_editor_cam.position -= m_editor_cam.direction * m_editor_cam.speed * mEngine->deltaTime();
+				m_editor_cam.position -= m_editor_cam.direction * m_editor_cam.speed * m_engine->deltaTime();
 			}
 
 			if (inputSubsystem->pressed("CamMoveUp") && !inputSubsystem->pressed("CamMoveDown"))
 			{
-				m_editor_cam.position += m_editor_cam.up * m_editor_cam.speed * mEngine->deltaTime();
+				m_editor_cam.position += m_editor_cam.up * m_editor_cam.speed * m_engine->deltaTime();
 			}
 
 			if (inputSubsystem->pressed("CamMoveDown") && !inputSubsystem->pressed("CamMoveUp"))
 			{
-				m_editor_cam.position -= m_editor_cam.up * m_editor_cam.speed * mEngine->deltaTime();
+				m_editor_cam.position -= m_editor_cam.up * m_editor_cam.speed * m_engine->deltaTime();
 			}
 
 			// Mouse Rotation
@@ -1181,7 +1258,7 @@ namespace puffin::rendering
 		camUBO.view = m_editor_cam.view;
 		camUBO.viewProj = m_editor_cam.view_proj;
 
-		memcpy(cameraBuffer.allocInfo.pMappedData, &camUBO, sizeof(GPUCameraData));
+		memcpy(cameraBuffer.alloc_info.pMappedData, &camUBO, sizeof(GPUCameraData));
 
 		// Prepare material data
 		prepare_material_data();
@@ -1230,10 +1307,10 @@ namespace puffin::rendering
 	{
 		if (!m_objects_to_refresh.empty())
 		{
-			const auto enkiTSSubSystem = mEngine->getSystem<core::EnkiTSSubsystem>();
+			const auto enkiTSSubSystem = m_engine->getSystem<core::EnkiTSSubsystem>();
 
 			// Calculate t value for rendering interpolated position
-			const double t = mEngine->accumulatedTime() / mEngine->timeStepFixed();
+			const double t = m_engine->accumulatedTime() / m_engine->timeStepFixed();
 
 			std::vector<PuffinID> objectsToRefresh;
 			objectsToRefresh.reserve(m_objects_to_refresh.size());
@@ -1256,8 +1333,8 @@ namespace puffin::rendering
 				threadObject.reserve(std::ceil(g_max_objects / numThreads));
 			}
 
-			const auto enttSubsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
-			const auto scene_graph = mEngine->getSystem<scene::SceneGraph>();
+			const auto enttSubsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
+			const auto scene_graph = m_engine->getSystem<scene::SceneGraph>();
 			const auto registry = enttSubsystem->registry();
 
 			enki::TaskSet task(numObjectsToRefresh, [&](enki::TaskSetPartition range, uint32_t threadnum)
@@ -1331,7 +1408,7 @@ namespace puffin::rendering
 #ifdef PFN_DOUBLE_PRECISION
 						Vector3d interpolatedPosition = tempTransform.position + velocity.linear * mEngine->timeStepFixed();
 #else
-						Vector3f interpolatedPosition = tempTransform.position + velocity.linear * mEngine->timeStepFixed();
+						Vector3f interpolatedPosition = tempTransform.position + velocity.linear * m_engine->timeStepFixed();
 #endif
 
 						position = maths::lerp(tempTransform.position, interpolatedPosition, t);
@@ -1390,7 +1467,7 @@ namespace puffin::rendering
 	void RenderSystemVK::prepare_light_data()
 	{
 		// Prepare dynamic light data
-		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 		const auto lightView = registry->view<const TransformComponent3D, const LightComponent>();
 
@@ -1401,7 +1478,7 @@ namespace puffin::rendering
 		for (auto [entity, transform, light] : lightView.each())
 		{
 			// Break out of loop of maximum number of lights has been reached
-			if (i >= g_max_lights_vk)
+			if (i >= g_max_lights)
 			{
 				break;
 			}
@@ -1585,7 +1662,7 @@ namespace puffin::rendering
 		depth_clear.depthStencil.depth = 1.f;
 
 		vk::RenderingAttachmentInfoKHR depth_attach_info = {
-			depth_image.imageView, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			depth_image.image_view, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
 			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depth_clear
 		};
 
@@ -1648,12 +1725,12 @@ namespace puffin::rendering
 
 		// Begin Rendering
 		vk::RenderingAttachmentInfoKHR color_attach_info = {
-			color_image.imageView, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			color_image.image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
 			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, color_clear
 		};
 
 		vk::RenderingAttachmentInfoKHR depth_attach_info = {
-			depth_image.imageView, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			depth_image.image_view, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
 			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depth_clear
 		};
 
@@ -1772,7 +1849,7 @@ namespace puffin::rendering
 		vk::ImageMemoryBarrier offscreen_memory_barrier = {
 			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eTransferRead,
 			vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageLayout::eTransferSrcOptimal, {}, {},
-			m_offscreen_data.allocImages[swapchainIdx].image, image_subresource_range
+			m_offscreen_data.alloc_images[swapchainIdx].image, image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
@@ -1807,7 +1884,7 @@ namespace puffin::rendering
 			{vk::ImageAspectFlagBits::eColor, 0, 0, 1}, offsets
 		};
 
-		cmd.blitImage(m_offscreen_data.allocImages[swapchainIdx].image, vk::ImageLayout::eTransferSrcOptimal,
+		cmd.blitImage(m_offscreen_data.alloc_images[swapchainIdx].image, vk::ImageLayout::eTransferSrcOptimal,
 		              m_swapchain_data.images[swapchainIdx], vk::ImageLayout::eTransferDstOptimal, 1, &image_blit_region,
 		              vk::Filter::eNearest);
 
@@ -1817,7 +1894,7 @@ namespace puffin::rendering
 		offscreen_memory_barrier = {
 			vk::AccessFlagBits::eTransferRead, vk::AccessFlagBits::eNone,
 			vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, {}, {},
-			m_offscreen_data.allocImages[swapchainIdx].image, image_subresource_range
+			m_offscreen_data.alloc_images[swapchainIdx].image, image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
@@ -1874,7 +1951,7 @@ namespace puffin::rendering
 
 		// Begin rendering
 		vk::RenderingAttachmentInfoKHR color_attach_info = {
-			m_swapchain_data.imageViews[swapchainIdx], vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			m_swapchain_data.image_views[swapchainIdx], vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
 			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clear_value
 		};
 
@@ -1935,8 +2012,8 @@ namespace puffin::rendering
 		std::vector<vk::Semaphore*> render_signal_semaphores = { &current_frame_data().render_semaphore };
 		{
 			render_commands.push_back(&record_main_command_buffer(swapchainIdx, m_offscreen_data.extent,
-				m_offscreen_data.allocImages[swapchainIdx],
-				m_offscreen_data.allocDepthImage));
+				m_offscreen_data.alloc_images[swapchainIdx],
+				m_offscreen_data.alloc_depth_image));
 
 			if (m_render_shadows)
 			{
@@ -1962,7 +2039,7 @@ namespace puffin::rendering
 		{
 			vk::PipelineStageFlags wait_stage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
-			if (mEngine->shouldRenderEditorUI())
+			if (m_engine->shouldRenderEditorUI())
 			{
 				auto& imgui_cmd = record_imgui_command_buffer(swapchainIdx, m_swapchain_data.extent);
 
@@ -1994,7 +2071,7 @@ namespace puffin::rendering
 
 		vk::Semaphore wait_semaphore;
 
-		if (mEngine->shouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUI())
 		{
 			wait_semaphore = current_frame_data().imgui_semaphore;
 		}
@@ -2077,7 +2154,7 @@ namespace puffin::rendering
 
 	void RenderSystemVK::unload_texture(TextureDataVK& texData) const
 	{
-		m_device.destroyImageView(texData.texture.imageView);
+		m_device.destroyImageView(texData.texture.image_view);
 		m_allocator.destroyImage(texData.texture.image, texData.texture.allocation);
 	}
 
@@ -2091,7 +2168,7 @@ namespace puffin::rendering
 		for (auto& texData : textureData)
 		{
 			vk::DescriptorImageInfo textureImageInfo = {
-				texData.sampler, texData.texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal
+				texData.sampler, texData.texture.image_view, vk::ImageLayout::eShaderReadOnlyOptimal
 			};
 			textureImageInfos.push_back(textureImageInfo);
 

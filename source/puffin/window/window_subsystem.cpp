@@ -15,8 +15,8 @@ namespace puffin::window
 
 	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "WindowSubsystem: Startup", 40);
-		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "WindowSubsystem: Shutdown", 150);
+		m_engine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "WindowSubsystem: Startup", 40);
+		m_engine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "WindowSubsystem: Shutdown", 150);
 	}
 
 	void WindowSubsystem::startup()

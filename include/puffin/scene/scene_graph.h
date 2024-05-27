@@ -284,14 +284,14 @@ namespace puffin::scene
 
 			if (id == gInvalidID)
 			{
-				T& node = get_array<T>()->add(mEngine);
+				T& node = get_array<T>()->add(m_engine);
 				node_ptr = static_cast<Node*>(&node);
 
 				id = node_ptr->id();
 			}
 			else
 			{
-				T& node = get_array<T>()->add(mEngine, id);
+				T& node = get_array<T>()->add(m_engine, id);
 				node_ptr = static_cast<Node*>(&node);
 			}
 
@@ -308,13 +308,13 @@ namespace puffin::scene
 
 			if (id == gInvalidID)
 			{
-				node_ptr = get_array(type_name)->add_ptr(mEngine);
+				node_ptr = get_array(type_name)->add_ptr(m_engine);
 
 				id = node_ptr->id();
 			}
 			else
 			{
-				node_ptr = get_array(type_name)->add_ptr(mEngine, id);
+				node_ptr = get_array(type_name)->add_ptr(m_engine, id);
 			}
 
 			add_node_internal_common(node_ptr, type_name, id, parent_id);

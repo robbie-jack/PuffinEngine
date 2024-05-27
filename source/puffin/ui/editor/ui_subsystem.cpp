@@ -24,14 +24,14 @@ namespace puffin::ui
 {
 	UISubsystem::UISubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "UISubsystem: Startup", 50);
-		mEngine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);
-		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Shutdown", 200);
+		m_engine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "UISubsystem: Startup", 50);
+		m_engine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);
+		m_engine->registerCallback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Shutdown", 200);
 	}
 
 	void UISubsystem::startup()
 	{
-		if (mEngine->shouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUI())
 		{
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
@@ -50,12 +50,12 @@ namespace puffin::ui
 			mLoadScene = false;
 			mImportAssetUI = ImportAssetUI::None;
 
-			mWindowSceneHierarchy = std::make_shared<UIWindowSceneHierarchy>(mEngine);
-			mWindowViewport = std::make_shared<UIWindowViewport>(mEngine);
-			mWindowSettings = std::make_shared<UIWindowSettings>(mEngine);
-			mWindowEntityProperties = std::make_shared<UIWindowNodeEditor>(mEngine);
-			mWindowPerformance = std::make_shared<UIWindowPerformance>(mEngine);
-			mContentBrowser = std::make_shared<UIContentBrowser>(mEngine);
+			mWindowSceneHierarchy = std::make_shared<UIWindowSceneHierarchy>(m_engine);
+			mWindowViewport = std::make_shared<UIWindowViewport>(m_engine);
+			mWindowSettings = std::make_shared<UIWindowSettings>(m_engine);
+			mWindowEntityProperties = std::make_shared<UIWindowNodeEditor>(m_engine);
+			mWindowPerformance = std::make_shared<UIWindowPerformance>(m_engine);
+			mContentBrowser = std::make_shared<UIContentBrowser>(m_engine);
 
 			mWindowEntityProperties->set_file_browser(&mFileDialog);
 
@@ -71,7 +71,7 @@ namespace puffin::ui
 	// VulkanRenderer DrawFrame() should be placed here instead
 	void UISubsystem::render()
 	{
-		if (mEngine->shouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUI())
 		{
 			if (mFileDialog.HasSelected())
 			{
@@ -80,13 +80,13 @@ namespace puffin::ui
 				// File Dialog - Load Scene
 				if (mLoadScene)
 				{
-					const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
+					const auto sceneData = m_engine->getSystem<io::SceneSubsystem>()->sceneData();
 
 					sceneData->set_path(selectedPath);
 
 					sceneData->load();
 
-					mEngine->restart();
+					m_engine->restart();
 
 					mLoadScene = false;
 				}
@@ -141,10 +141,10 @@ namespace puffin::ui
 			}
 
 			// Update Scene Data if any changes were made to an entity, and game is not currently playing
-			if (mWindowEntityProperties->scene_changed() && mEngine->playState() == core::PlayState::Stopped)
+			if (mWindowEntityProperties->scene_changed() && m_engine->playState() == core::PlayState::Stopped)
 			{
-				const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
-				sceneData->update_data(mEngine->getSystem<ecs::EnTTSubsystem>(), mEngine->getSystem<scene::SceneGraph>());
+				const auto sceneData = m_engine->getSystem<io::SceneSubsystem>()->sceneData();
+				sceneData->update_data(m_engine->getSystem<ecs::EnTTSubsystem>(), m_engine->getSystem<scene::SceneGraph>());
 			}
 
 			ImGui_ImplVulkan_NewFrame();
@@ -164,7 +164,7 @@ namespace puffin::ui
 			{
 				for (const auto& window : mWindows)
 				{
-					window->draw(mEngine->deltaTime());
+					window->draw(m_engine->deltaTime());
 				}
 			}
 
@@ -174,7 +174,7 @@ namespace puffin::ui
 
 	void UISubsystem::cleanup() const
 	{
-		if (mEngine->shouldRenderEditorUI())
+		if (m_engine->shouldRenderEditorUI())
 		{
 			ImGui::DestroyContext();
 			//ImPlot::DestroyContext();
@@ -241,7 +241,7 @@ namespace puffin::ui
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
+			const auto sceneData = m_engine->getSystem<io::SceneSubsystem>()->sceneData();
 
 			std::string str_name = sceneData->path().string();
 			std::vector<char> name(256, '\0');
@@ -259,8 +259,8 @@ namespace puffin::ui
 
 			if (ImGui::Button("Save"))
 			{
-				const auto entt_subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
-				const auto scene_graph = mEngine->getSystem<scene::SceneGraph>();
+				const auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
+				const auto scene_graph = m_engine->getSystem<scene::SceneGraph>();
 
 				sceneData->update_data(entt_subsystem, scene_graph);
 				sceneData->save();
@@ -303,7 +303,7 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Project"))
 				{
-					io::save_settings(assets::AssetRegistry::get()->projectRoot() / "settings.json", mEngine->settings());
+					io::save_settings(assets::AssetRegistry::get()->projectRoot() / "settings.json", m_engine->settings());
 					assets::AssetRegistry::get()->saveAssetCache();
 				}
 
@@ -328,10 +328,10 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					const auto sceneData = mEngine->getSystem<io::SceneSubsystem>()->sceneData();
+					const auto sceneData = m_engine->getSystem<io::SceneSubsystem>()->sceneData();
 
-					const auto entt_subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
-					const auto scene_graph = mEngine->getSystem<scene::SceneGraph>();
+					const auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
+					const auto scene_graph = m_engine->getSystem<scene::SceneGraph>();
 
 					sceneData->update_data(entt_subsystem, scene_graph);
 					sceneData->save();
@@ -363,7 +363,7 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Quit", "Alt+F4"))
 				{
-					mEngine->exit();
+					m_engine->exit();
 				}
 
 				ImGui::EndMenu();

@@ -45,11 +45,11 @@ namespace puffin::physics
 
 		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
-			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");
-			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "JoltPhysicsSystem: EndPlay");
+			m_engine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
+			m_engine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");
+			m_engine->registerCallback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "JoltPhysicsSystem: EndPlay");
 
-			auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+			auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::onDestroyRigidbody>(this);
@@ -68,7 +68,7 @@ namespace puffin::physics
 			mShapeRefs.reserve(gMaxShapes);
 		}
 
-		~JoltPhysicsSystem() override { mEngine = nullptr; }
+		~JoltPhysicsSystem() override { m_engine = nullptr; }
 
 		void beginPlay();
 		void fixedUpdate();
@@ -85,7 +85,7 @@ namespace puffin::physics
 
 		void updateTimeStep()
 		{
-			mFixedTimeStep = mEngine->timeStepFixed();
+			mFixedTimeStep = m_engine->timeStepFixed();
 			mCollisionSteps = static_cast<int>(std::ceil(mFixedTimeStep / mIdealTimeStep));
 		}
 

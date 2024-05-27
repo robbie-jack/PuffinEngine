@@ -21,8 +21,11 @@
 #include "puffin/components/rendering/camera_component.h"
 #include "puffin/rendering/vulkan/unified_geometry_buffer_vk.h"
 #include "puffin/rendering/material_globals.h"
+#include "puffin/rendering/render_globals.h"
 #include "puffin/rendering/vulkan/material_registry_vk.h"
 #include "puffin/rendering/vulkan/pipeline_vk.h"
+#include "puffin/types/ring_buffer.h"
+#include "puffin/rendering/vulkan/types_vk.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
@@ -109,19 +112,13 @@ namespace puffin::rendering
 		{ assets::TextureFormat::BC7, vk::Format::eBc7UnormBlock }
 	};
 
-	constexpr uint32_t g_buffered_frames = 2;
-	constexpr uint32_t g_max_objects = 20000;
-	constexpr uint32_t g_max_materials = 128;
-	constexpr uint32_t g_max_unique_materials = 32;
-	constexpr uint32_t g_max_lights_vk = 8;
-
 	// Vulkan Rendering System
 	class RenderSystemVK final : public core::System, public std::enable_shared_from_this<RenderSystemVK>
 	{
 	public:
 
 		RenderSystemVK(const std::shared_ptr<core::Engine>& engine);
-		~RenderSystemVK() override { mEngine = nullptr; }
+		~RenderSystemVK() override { m_engine = nullptr; }
 
 		void startup();
 		void render();
@@ -149,7 +146,23 @@ namespace puffin::rendering
 
 		void register_texture(PuffinID texID);
 
+		[[nodiscard]] uint8_t current_frame_idx() const { return m_frame_count % m_frames_in_flight_count; }
+		[[nodiscard]] uint8_t frames_in_flight_count() const { return m_frames_in_flight_count; }
+
 	private:
+
+		struct ShadowUpdateEvent
+		{
+			PuffinID id;
+			ImageDesc image_desc;
+			uint8_t frame_count;
+		};
+
+		struct ShadowDestroyEvent
+		{
+			PuffinID id;
+			uint8_t frame_count;
+		};
 
 		// Initialization Members
 		vk::Device m_device;
@@ -183,6 +196,9 @@ namespace puffin::rendering
 		std::unordered_set<PuffinID> m_meshes_to_load; // Meshes that need to be loaded
 		std::unordered_set<PuffinID> m_textures_to_load; // Textures that need to be loaded
 
+		RingBuffer<ShadowUpdateEvent> m_shadow_update_events;
+		RingBuffer<ShadowDestroyEvent> m_shadow_destroy_events;
+
 		PackedVector<PuffinID, TextureDataVK> m_tex_data;
 
 		std::vector<MeshRenderable> m_renderables; // Renderables data
@@ -195,7 +211,8 @@ namespace puffin::rendering
 
 		//PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
-		uint32_t m_frame_number;
+		uint8_t m_frames_in_flight_count = g_buffered_frames;
+		uint32_t m_frame_count;
 		uint32_t m_draw_calls = 0;
 
 		// Pipelines
@@ -292,7 +309,7 @@ namespace puffin::rendering
 
 		FrameRenderData& current_frame_data()
 		{
-			return m_frame_render_data[m_frame_number % g_buffered_frames];
+			return m_frame_render_data[m_frame_count % g_buffered_frames];
 		}
 
 		static void frame_buffer_resize_callback(GLFWwindow* window, const int width, const int height)

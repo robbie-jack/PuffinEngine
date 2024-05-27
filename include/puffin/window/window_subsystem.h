@@ -22,7 +22,7 @@ namespace puffin
 		public:
 
 			WindowSubsystem(const std::shared_ptr<core::Engine>& engine);
-			~WindowSubsystem() override { mEngine = nullptr; }
+			~WindowSubsystem() override { m_engine = nullptr; }
 
 			void startup();
 			void shutdown();

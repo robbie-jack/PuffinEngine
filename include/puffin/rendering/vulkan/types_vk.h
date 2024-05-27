@@ -24,24 +24,39 @@ namespace puffin::rendering
 		{
 			buffer = other.buffer;
 			allocation = other.allocation;
-			allocInfo = other.allocInfo;
+			alloc_info = other.alloc_info;
 		}
 
 		vk::Buffer buffer;
 		vma::Allocation allocation;
-		vma::AllocationInfo allocInfo;
+		vma::AllocationInfo alloc_info;
 	};
 
 	struct AllocatedImage
 	{
 		vk::Image image;
-		vk::ImageView imageView;
+		vk::ImageView image_view;
 		vk::Format format;
 		vma::Allocation allocation;
-		vma::AllocationInfo allocInfo;
+		vma::AllocationInfo alloc_info;
 	};
 
 	using Texture = AllocatedImage;
+
+	enum class ImageType
+	{
+		Color,
+		Depth
+	};
+
+	struct ImageDesc
+	{
+		ImageType image_type = ImageType::Color;
+		vk::Format format = vk::Format::eUndefined;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		uint32_t depth = 0;
+	};
 
 	struct SwapchainData
 	{
@@ -49,23 +64,23 @@ namespace puffin::rendering
 		{
 			swapchain = other.swapchain;
 
-			imageFormat = other.imageFormat;
+			image_format = other.image_format;
 			images = other.images;
-			imageViews = other.imageViews;
+			image_views = other.image_views;
 
-			needsCleaned = other.needsCleaned;
+			needs_cleaned = other.needs_cleaned;
 			resized = other.resized;
 		}
 
 		vk::SwapchainKHR swapchain;
 
 		vk::Extent2D extent;
-		vk::Format imageFormat;
+		vk::Format image_format;
 
 		std::vector<vk::Image> images;
-		std::vector<vk::ImageView> imageViews;
+		std::vector<vk::ImageView> image_views;
 
-		bool needsCleaned = false;
+		bool needs_cleaned = false;
 		bool resized = false;
 	};
 
@@ -74,27 +89,27 @@ namespace puffin::rendering
 		void operator=(const OffscreenData& other)
 		{
 			extent = other.extent;
-			imageFormat = other.imageFormat;
+			image_format = other.image_format;
 
-			allocImages = other.allocImages;
-			viewportTextures = other.viewportTextures;
+			alloc_images = other.alloc_images;
+			viewport_textures = other.viewport_textures;
 
-			allocDepthImage = other.allocDepthImage;
+			alloc_depth_image = other.alloc_depth_image;
 
-			needsCleaned = other.needsCleaned;
+			needs_cleaned = other.needs_cleaned;
 			resized = other.resized;
 		}
 
 		vk::Extent2D extent;
-		vk::Format imageFormat;
+		vk::Format image_format;
 
-		std::vector<AllocatedImage> allocImages;
+		std::vector<AllocatedImage> alloc_images;
 
-		std::vector<ImTextureID> viewportTextures;
+		std::vector<ImTextureID> viewport_textures;
 
-		AllocatedImage allocDepthImage;
+		AllocatedImage alloc_depth_image;
 
-		bool needsCleaned = false;
+		bool needs_cleaned = false;
 		bool resized = false;
 	};
 

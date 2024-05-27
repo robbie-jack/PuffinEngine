@@ -16,9 +16,9 @@ namespace puffin::audio
 {
 	MiniAudioSubsystem::MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine) : audio::AudioSubsystemProvider(engine)
 	{
-		mEngine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "MiniAudioSubsystem: Startup", 60);
-		mEngine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "MiniAudioSubsystem: Update");
-		mEngine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "MiniAudioSubsystem: Shutdown", 140);
+		m_engine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "MiniAudioSubsystem: Startup", 60);
+		m_engine->registerCallback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "MiniAudioSubsystem: Update");
+		m_engine->registerCallback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "MiniAudioSubsystem: Shutdown", 140);
 	}
 
 	void MiniAudioSubsystem::startup()

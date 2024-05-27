@@ -42,7 +42,7 @@ namespace puffin::audio
 
 		AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine) : System(engine) {}
 
-		~AudioSubsystemProvider() override { mEngine = nullptr; }
+		~AudioSubsystemProvider() override { m_engine = nullptr; }
 
 	protected:
 
@@ -62,7 +62,7 @@ namespace puffin::audio
 	public:
 
 		AudioSubsystem(const std::shared_ptr<core::Engine>& engine);
-		~AudioSubsystem() override { mEngine = nullptr; }
+		~AudioSubsystem() override { m_engine = nullptr; }
 
 		void startup();
 		void update();

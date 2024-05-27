@@ -39,7 +39,7 @@ namespace puffin
 		public:
 
 			UISubsystem(const std::shared_ptr<core::Engine>& engine);
-			~UISubsystem() override { mEngine = nullptr; }
+			~UISubsystem() override { m_engine = nullptr; }
 
 			void startup();
 			void render();

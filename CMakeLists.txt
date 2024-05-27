@@ -156,6 +156,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/procedural/procedural_mesh_gen_system.h
 	# Rendering
 	${HEADER_DIR}/puffin/rendering/material_globals.h
+	${HEADER_DIR}/puffin/rendering/render_globals.h
 	# Rendering Vulkan
 	${HEADER_DIR}/puffin/rendering/vulkan/descriptors_vk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/helpers_vk.h

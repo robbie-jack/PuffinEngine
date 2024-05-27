@@ -29,7 +29,8 @@ namespace puffin::rendering::util
 
 	AllocatedImage create_image(const std::shared_ptr<RenderSystemVK>& render_system, const vk::ImageCreateInfo& image_info, vk::ImageViewCreateInfo image_view_info);
 
-	AllocatedImage init_depth_image(const std::shared_ptr<RenderSystemVK>& render_system, vk::Extent3D extent, vk::Format format);
+	AllocatedImage create_color_image(const std::shared_ptr<RenderSystemVK>& render_system, vk::Extent3D extent, vk::Format format);
+	AllocatedImage create_depth_image(const std::shared_ptr<RenderSystemVK>& render_system, vk::Extent3D extent, vk::Format format);
 
 	AllocatedImage init_texture(const std::shared_ptr<RenderSystemVK>& render_system, const void* pixel_data, uint32_t width, uint32_t height, vk::DeviceSize
 	                            size, vk::Format format);

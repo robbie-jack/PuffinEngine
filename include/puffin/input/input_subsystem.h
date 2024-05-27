@@ -32,7 +32,7 @@ namespace puffin
 
 			InputSubsystem(const std::shared_ptr<core::Engine>& engine);
 
-			~InputSubsystem() override { mEngine = nullptr; }
+			~InputSubsystem() override { m_engine = nullptr; }
 
 			void startup();
 			void update();

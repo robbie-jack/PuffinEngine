@@ -14,7 +14,7 @@ namespace puffin::core
 	public:
 
 		EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
-		~EnkiTSSubsystem() override { mEngine = nullptr; }
+		~EnkiTSSubsystem() override { m_engine = nullptr; }
 
 		void startup();
 
