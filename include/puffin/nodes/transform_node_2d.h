@@ -26,9 +26,6 @@ namespace puffin
 		const TransformComponent2D* transform_2d() const override;
 		TransformComponent2D* transform_2d() override;
 
-		const TransformComponent2D& transform() const;
-		TransformComponent2D& transform();
-
 #ifdef PFN_DOUBLE_PRECISION
 		[[nodiscard]] const Vector2d& position() const;
 		[[nodiscard]] Vector2d& position();

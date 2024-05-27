@@ -35,6 +35,16 @@ namespace puffin
 		return nullptr;
 	}
 
+	TransformComponent3D* Node::global_transform_3d()
+	{
+		if (has_transform_3d())
+		{
+			return m_scene_graph->get_global_transform_3d(m_node_id);
+		}
+
+		return nullptr;
+	}
+
 	const TransformComponent3D* Node::global_transform_3d() const
 	{
 		if (has_transform_3d())

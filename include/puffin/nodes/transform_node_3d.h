@@ -27,9 +27,6 @@ namespace puffin
 		const TransformComponent3D* transform_3d() const override;
 		TransformComponent3D* transform_3d() override;
 
-		[[nodiscard]] const TransformComponent3D& transform() const;
-		[[nodiscard]] TransformComponent3D& transform();
-
 #ifdef PFN_DOUBLE_PRECISION
 		[[nodiscard]] const Vector3d& position() const;
 		[[nodiscard]] Vector3d& position();

@@ -45,35 +45,25 @@ namespace puffin
 
 	const TransformComponent2D* TransformNode2D::transform_2d() const
 	{
-		return &transform();
+		return &get_component<TransformComponent2D>();
 	}
 
 	TransformComponent2D* TransformNode2D::transform_2d()
 	{
-		return &transform();
-	}
-
-	const TransformComponent2D& TransformNode2D::transform() const
-	{
-		return get_component<TransformComponent2D>();
-	}
-
-	TransformComponent2D& TransformNode2D::transform()
-	{
 		m_transform_changed = true;
 
-		return get_component<TransformComponent2D>();
+		return &get_component<TransformComponent2D>();
 	}
 
 #ifdef PFN_DOUBLE_PRECISION
 	const Vector2d& TransformNode2D::position() const
 	{
-		return transform().position;
+		return  transform_2d()->position;
 	}
 
 	Vector2d& TransformNode2D::position()
 	{
-		return transform().position;
+		return transform_2d()->position;
 	}
 
 	void TransformNode2D::set_position(const Vector2d& position)
@@ -85,12 +75,12 @@ namespace puffin
 #else
 	const Vector2f& TransformNode2D::position() const
 	{
-		return transform().position;
+		return transform_2d()->position;
 	}
 
 	Vector2f& TransformNode2D::position()
 	{
-		return transform().position;
+		return transform_2d()->position;
 	}
 
 	void TransformNode2D::set_position(const Vector2f& position)
@@ -103,12 +93,12 @@ namespace puffin
 
 	const float& TransformNode2D::rotation() const
 	{
-		return transform().rotation;
+		return transform_2d()->rotation;
 	}
 
 	float& TransformNode2D::rotation()
 	{
-		return transform().rotation;
+		return transform_2d()->rotation;
 	}
 
 	void TransformNode2D::set_rotation(const float& rotation)
@@ -120,12 +110,12 @@ namespace puffin
 
 	const Vector2f& TransformNode2D::scale() const
 	{
-		return transform().scale;
+		return transform_2d()->scale;
 	}
 
 	Vector2f& TransformNode2D::scale()
 	{
-		return transform().scale;
+		return transform_2d()->scale;
 	}
 
 	void TransformNode2D::set_scale(const Vector2f& scale)

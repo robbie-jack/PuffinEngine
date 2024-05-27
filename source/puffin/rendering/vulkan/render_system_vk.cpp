@@ -37,6 +37,7 @@
 #include "puffin/scene/scene_graph.h"
 #include "puffin/ui/editor/ui_subsystem.h"
 #include "puffin/rendering/vulkan/resource_manager_vk.h"
+#include "puffin/ui/editor/windows/ui_window_viewport.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \

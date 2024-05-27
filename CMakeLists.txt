@@ -242,7 +242,9 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptors_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/helpers_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/material_registry_vk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/render_manager_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/render_system_vk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/resource_manager_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/unified_geometry_buffer_vk.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scene_graph.cpp
@@ -356,24 +358,26 @@ endif()
 
 if (PLATFORM_WINDOWS)
 
-        # Define Debug Libs
-        target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+	# Define Debug Libs
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
-        target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
-        target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
 
-        # Define Release Libs
+	# Define Release Libs
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
-        target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
-        target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
 
 elseif (PLATFORM_LINUX)
+
 	find_package(glfw3 3.4 REQUIRED)
 
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} glfw)
-        target_link_libraries(${PUFFIN_LIBRARY_NAME} usr/local/lib/libangelscript${LIB_SUFFIX})
-        target_link_libraries(${PUFFIN_LIBRARY_NAME} usr/local/lib/lz4${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} usr/local/lib/libangelscript${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} usr/local/lib/lz4${LIB_SUFFIX})
+
 endif()
 
 if (PLATFORM_WINDOWS AND BOX2D_PHYSICS_SUPPORT)
@@ -397,12 +401,12 @@ set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include/angelscript)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/include)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/include/vma)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/OpenSimplexNoise)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/imgui)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/imgui-filebrowser)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/lz4/lib)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/include)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vkb/src)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/tinygltf)

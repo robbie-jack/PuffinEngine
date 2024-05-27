@@ -39,35 +39,25 @@ namespace puffin
 
 	const TransformComponent3D* TransformNode3D::transform_3d() const
 	{
-		return &transform();
+		return &get_component<TransformComponent3D>();
 	}
 
 	TransformComponent3D* TransformNode3D::transform_3d()
 	{
-		return &transform();
-	}
-
-	const TransformComponent3D& TransformNode3D::transform() const
-	{
-		return get_component<TransformComponent3D>();
-	}
-
-	TransformComponent3D& TransformNode3D::transform()
-	{
 		m_transform_changed = true;
 
-		return get_component<TransformComponent3D>();
+		return &get_component<TransformComponent3D>();
 	}
 
 #ifdef PFN_DOUBLE_PRECISION
 	const Vector3d& TransformNode3D::position() const
 	{
-		return transform().position;
+		return transform_3d()->position;
 	}
 
 	Vector3d& TransformNode3D::position()
 	{
-		return transform().position;
+		return transform_3d()->position;
 	}
 
 	void TransformNode3D::set_position(const Vector3d& position)
@@ -79,12 +69,12 @@ namespace puffin
 #else
 	const Vector3f& TransformNode3D::position() const
 	{
-		return transform().position;
+		return transform_3d()->position;
 	}
 
 	Vector3f& TransformNode3D::position()
 	{
-		return transform().position;
+		return transform_3d()->position;
 	}
 
 	void TransformNode3D::set_position(const Vector3f& position)
@@ -97,12 +87,12 @@ namespace puffin
 
 	const maths::Quat& TransformNode3D::orientation() const
 	{
-		return transform().orientation;
+		return transform_3d()->orientation;
 	}
 
 	maths::Quat& TransformNode3D::orientation()
 	{
-		return transform().orientation;
+		return transform_3d()->orientation;
 	}
 
 	void TransformNode3D::set_orientation(const maths::Quat& orientation)
@@ -114,12 +104,12 @@ namespace puffin
 
 	const Vector3f& TransformNode3D::scale() const
 	{
-		return transform().scale;
+		return transform_3d()->scale;
 	}
 
 	Vector3f& TransformNode3D::scale()
 	{
-		return transform().scale;
+		return transform_3d()->scale;
 	}
 
 	void TransformNode3D::set_scale(const Vector3f& scale)
