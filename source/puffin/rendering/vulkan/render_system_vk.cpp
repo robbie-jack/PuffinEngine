@@ -650,6 +650,7 @@ namespace puffin::rendering
 	void RenderSystemVK::init_pipelines()
 	{
 		build_forward_renderer_pipeline();
+		build_shadow_pipeline();
 	}
 
 	void RenderSystemVK::build_forward_renderer_pipeline()
@@ -700,6 +701,59 @@ namespace puffin::rendering
 		{
 			m_forward_pipeline_layout = {};
 			m_forward_pipeline = {};
+		});
+	}
+
+	void RenderSystemVK::build_shadow_pipeline()
+	{
+		m_shadow_vert_mod = util::ShaderModule{
+			m_device, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "shadowmaps" / "shadowmap_vs.spv").string()
+		};
+
+		m_shadow_frag_mod = util::ShaderModule{
+			m_device, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "shadowmaps" / "shadowmap_fs.spv").string()
+		};
+
+		vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant) };
+
+		util::PipelineLayoutBuilder plb{};
+		m_shadow_pipeline_layout = plb
+			.descriptorSetLayout(m_global_render_data.global_set_layout)
+			.pushConstantRange(range)
+			.createUnique(m_device);
+
+		const vk::PipelineDepthStencilStateCreateInfo depth_stencil_info = {
+			{}, true, true,
+			vk::CompareOp::eLessOrEqual, false, false, {}, {}, 0.0f, 1.0f
+		};
+
+		//std::array<vk::Format, 1> color_formats = { vk::Format::eUndefined };
+
+		vk::PipelineRenderingCreateInfoKHR pipeline_render_info = {
+			0, {}, vk::Format::eD32Sfloat
+		};
+
+		util::PipelineBuilder pb{ 1024, 1024 };
+		m_shadow_pipeline = pb
+			// Define dynamic state which can change each frame (currently viewport and scissor size)
+			.dynamicState(vk::DynamicState::eViewport)
+			.dynamicState(vk::DynamicState::eScissor)
+			// Define vertex/fragment shaders
+			.shader(vk::ShaderStageFlagBits::eVertex, m_shadow_vert_mod)
+			.shader(vk::ShaderStageFlagBits::eFragment, m_shadow_frag_mod)
+			.depthStencilState(depth_stencil_info)
+			// Add rendering info struct
+			.addPNext(&pipeline_render_info)
+			// Create pipeline
+			.createUnique(m_device, m_pipeline_cache, *m_shadow_pipeline_layout, nullptr);
+
+		m_device.destroyShaderModule(m_shadow_frag_mod.module());
+		m_device.destroyShaderModule(m_shadow_vert_mod.module());
+
+		m_deletion_queue.pushFunction([=]()
+		{
+			m_shadow_pipeline_layout = {};
+			m_shadow_pipeline = {};
 		});
 	}
 
@@ -1260,14 +1314,10 @@ namespace puffin::rendering
 
 		memcpy(cameraBuffer.alloc_info.pMappedData, &camUBO, sizeof(GPUCameraData));
 
-		// Prepare material data
 		prepare_material_data();
-
-		// Prepare object data
 		prepare_object_data();
-
-		// Prepare light data
 		prepare_light_data();
+		prepare_shadow_data();
 	}
 
 	void RenderSystemVK::prepare_material_data()
@@ -1534,6 +1584,39 @@ namespace puffin::rendering
 		                                    sizeof(GPULightStaticData), &lightStaticUBO);
 	}
 
+	void RenderSystemVK::prepare_shadow_data()
+	{
+		// Prepare dynamic light data
+		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+
+		const auto shadow_view = registry->view<const TransformComponent3D, const LightComponent, ShadowCasterComponent>();
+
+		m_shadows_to_draw.clear();
+
+		for (auto [entity, transform, light, shadow] : shadow_view.each())
+		{
+			if (light.type == LightType::Spot)
+			{
+				float near_plane = 0.01f;
+				float far_plane = 100.0f;
+
+				glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle), 1.0f, near_plane, far_plane);
+				light_projection[1][1] *= -1;
+
+				glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + light.direction), glm::vec3(0, 1, 0));
+
+				shadow.light_space_view = light_projection * light_view;
+
+				m_shadows_to_draw.push_back(m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity));
+			}
+			else
+			{
+				shadow.light_space_view = glm::identity<glm::mat4>();
+			}
+
+		}
+	}
+
 	void RenderSystemVK::build_indirect_commands()
 	{
 		if (!m_renderables.empty())
@@ -1623,8 +1706,6 @@ namespace puffin::rendering
 	{
 		auto& cmd = current_frame_data().shadow_command_buffer;
 
-		cmd.reset();
-
 		// Reset command buffer for recording new commands
 		cmd.reset();
 
@@ -1636,7 +1717,26 @@ namespace puffin::rendering
 
 		VK_CHECK(cmd.begin(&cmd_begin_info));
 
-		
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_shadow_pipeline.get());
+
+		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_shadow_pipeline_layout.get(), 0, 1,
+			&current_frame_data().global_descriptor, 0, nullptr);
+
+		cmd.bindIndexBuffer(m_resource_manager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
+
+		for (auto id : m_shadows_to_draw)
+		{
+			const auto& entity = m_engine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
+			const auto& shadow = m_engine->getSystem<ecs::EnTTSubsystem>()->registry()->get<ShadowCasterComponent>(entity);
+
+			GPUShadowPushConstant push_constant;
+			push_constant.vertex_buffer_address = m_resource_manager->geometry_buffer()->vertex_buffer_address();
+			push_constant.light_space_view = shadow.light_space_view;
+
+			cmd.pushConstants(m_shadow_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant), &push_constant);
+
+			draw_shadowmap(cmd, m_resource_manager->get_image(id, current_frame_idx()), { shadow.width, shadow.height });
+		}
 
 		cmd.end();
 
@@ -1654,7 +1754,7 @@ namespace puffin::rendering
 			depth_image.image, image_subresource_range
 		};
 
-		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eLateFragmentTests,
 			{}, 0, nullptr, 0, nullptr,
 			1, & offscreen_memory_barrier_to_depth);
 
@@ -1662,7 +1762,7 @@ namespace puffin::rendering
 		depth_clear.depthStencil.depth = 1.f;
 
 		vk::RenderingAttachmentInfoKHR depth_attach_info = {
-			depth_image.image_view, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			depth_image.image_view, vk::ImageLayout::eDepthAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
 			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depth_clear
 		};
 
@@ -1671,6 +1771,14 @@ namespace puffin::rendering
 		};
 
 		cmd.beginRendering(&render_info);
+
+		set_draw_parameters(cmd, shadow_extent);
+
+		// Make a indirect draw call for each material
+		for (const auto& draw_batch : m_draw_batches)
+		{
+			draw_mesh_batch(cmd, draw_batch);
+		}
 
 		cmd.endRendering();
 
@@ -1681,7 +1789,7 @@ namespace puffin::rendering
 			depth_image.image, image_subresource_range
 		};
 
-		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe,
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eLateFragmentTests, vk::PipelineStageFlagBits::eBottomOfPipe,
 			{}, 0, nullptr, 0, nullptr,
 			1, &offscreen_memory_barrier_to_shader);
 	}
@@ -1771,6 +1879,16 @@ namespace puffin::rendering
 		// Make a indirect draw call for each material
 		for (const auto& draw_batch : m_draw_batches)
 		{
+			// Use loaded material if id is valid, otherwise use default material
+			if (draw_batch.matID != gInvalidID)
+			{
+				cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_material_registry.getMaterial(draw_batch.matID).pipeline.get());
+			}
+			else
+			{
+				cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_forward_pipeline.get());
+			}
+
 			draw_mesh_batch(cmd, draw_batch);
 		}
 	}
@@ -1801,16 +1919,6 @@ namespace puffin::rendering
 
 	void RenderSystemVK::draw_mesh_batch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
 	{
-		// Use loaded material if id is valid, otherwise use default material
-		if (meshDrawBatch.matID != gInvalidID)
-		{
-			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_material_registry.getMaterial(meshDrawBatch.matID).pipeline.get());
-		}
-		else
-		{
-			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_forward_pipeline.get());
-		}
-
 		vk::DeviceSize indirect_offset = meshDrawBatch.cmdIndex * sizeof(vk::DrawIndexedIndirectCommand);
 		uint32_t draw_stride = sizeof(vk::DrawIndexedIndirectCommand);
 

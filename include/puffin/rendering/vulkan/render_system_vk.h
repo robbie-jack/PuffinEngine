@@ -196,9 +196,6 @@ namespace puffin::rendering
 		std::unordered_set<PuffinID> m_meshes_to_load; // Meshes that need to be loaded
 		std::unordered_set<PuffinID> m_textures_to_load; // Textures that need to be loaded
 
-		RingBuffer<ShadowUpdateEvent> m_shadow_update_events;
-		RingBuffer<ShadowDestroyEvent> m_shadow_destroy_events;
-
 		PackedVector<PuffinID, TextureDataVK> m_tex_data;
 
 		std::vector<MeshRenderable> m_renderables; // Renderables data
@@ -211,6 +208,10 @@ namespace puffin::rendering
 
 		//PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
+		RingBuffer<ShadowUpdateEvent> m_shadow_update_events;
+		RingBuffer<ShadowDestroyEvent> m_shadow_destroy_events;
+		std::vector<PuffinID> m_shadows_to_draw;
+
 		uint8_t m_frames_in_flight_count = g_buffered_frames;
 		uint32_t m_frame_count;
 		uint32_t m_draw_calls = 0;
@@ -222,6 +223,11 @@ namespace puffin::rendering
 		util::ShaderModule m_forward_frag_mod;
 		vk::UniquePipelineLayout m_forward_pipeline_layout;
 		vk::UniquePipeline m_forward_pipeline;
+
+		util::ShaderModule m_shadow_vert_mod;
+		util::ShaderModule m_shadow_frag_mod;
+		vk::UniquePipelineLayout m_shadow_pipeline_layout;
+		vk::UniquePipeline m_shadow_pipeline;
 
 		UploadContext m_upload_context;
 
@@ -248,6 +254,7 @@ namespace puffin::rendering
 		void init_pipelines();
 
 		void build_forward_renderer_pipeline();
+		void build_shadow_pipeline();
 
 		void init_imgui();
 		void init_offscreen_imgui_textures(OffscreenData& offscreenData);
@@ -274,6 +281,7 @@ namespace puffin::rendering
 		void prepare_material_data();
 		void prepare_object_data();
 		void prepare_light_data();
+		void prepare_shadow_data();
 
 		void build_indirect_commands();
 

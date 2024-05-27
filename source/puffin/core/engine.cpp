@@ -457,10 +457,10 @@ namespace puffin::core
 		dir_light.set_light_type(rendering::LightType::Directional);
 		dir_light.set_ambient_intensity(0.f);
 
-		auto& dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light.id());
+		/*auto& dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light.id());
 		dir_light_mesh.set_scale({ 0.25f });
 		dir_light_mesh.set_mesh_asset_id(meshId3);
-		dir_light_mesh.set_mat_asset_id(materialInstId1);
+		dir_light_mesh.set_mat_asset_id(materialInstId1);*/
 
 		auto& spot_light = scene_graph->add_node<rendering::LightNode3D>();
 		spot_light.set_name("Spot Light");
@@ -470,10 +470,10 @@ namespace puffin::core
 		spot_light.set_ambient_intensity(0.f);
 		spot_light.add_component<rendering::ShadowCasterComponent>();
 
-		auto& spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light.id());
+		/*auto& spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light.id());
 		spot_light_mesh.set_scale({ 0.25f });
 		spot_light_mesh.set_mesh_asset_id(meshId3);
-		spot_light_mesh.set_mat_asset_id(materialInstId1);
+		spot_light_mesh.set_mat_asset_id(materialInstId1);*/
 
 		//auto& shadow = registry->emplace<rendering::ShadowCasterComponent>(entities[6]);
 		//shadow.width = 4096;

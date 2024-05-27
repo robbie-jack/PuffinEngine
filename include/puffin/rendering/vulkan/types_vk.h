@@ -199,6 +199,12 @@ namespace puffin::rendering
 		alignas(16) vk::DeviceAddress vertexBufferAddress;
 	};
 
+	struct GPUShadowPushConstant
+	{
+		alignas(16) vk::DeviceAddress vertex_buffer_address;
+		alignas(16) glm::mat4 light_space_view;
+	};
+
 	struct GPUCameraData
 	{
 		alignas(16) glm::mat4 view;

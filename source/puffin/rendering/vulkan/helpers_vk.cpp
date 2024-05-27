@@ -152,7 +152,7 @@ namespace puffin::rendering::util
 		vk::Format format)
 	{
 		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
-			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment };
+			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, {vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment } };
 
 		constexpr vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
 
@@ -164,7 +164,7 @@ namespace puffin::rendering::util
 	AllocatedImage create_depth_image(const std::shared_ptr<RenderSystemVK>& render_system, const vk::Extent3D extent, const vk::Format format)
 	{
 		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
-			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment };
+			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, { vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eDepthStencilAttachment } };
 
 		constexpr vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 };
 
