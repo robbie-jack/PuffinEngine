@@ -470,6 +470,7 @@ namespace puffin::rendering
 			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frame_render_data[i].copy_semaphore));
 			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frame_render_data[i].imgui_semaphore));
 			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frame_render_data[i].present_semaphore));
+			VK_CHECK(m_device.createSemaphore(&semaphoreCreateInfo, nullptr, &m_frame_render_data[i].shadow_semaphore));
 
 			m_deletion_queue.pushFunction([=]()
 			{
@@ -479,6 +480,7 @@ namespace puffin::rendering
 				m_device.destroySemaphore(m_frame_render_data[i].copy_semaphore);
 				m_device.destroySemaphore(m_frame_render_data[i].imgui_semaphore);
 				m_device.destroySemaphore(m_frame_render_data[i].present_semaphore);
+				m_device.destroySemaphore(m_frame_render_data[i].shadow_semaphore);
 			});
 		}
 
@@ -1907,22 +1909,19 @@ namespace puffin::rendering
 	{
 		std::vector<vk::SubmitInfo> submits;
 
-		vk::PipelineStageFlags wait_stage = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-
 		// Prepare shadow rendering command submit
+		std::vector<vk::CommandBuffer*> shadow_commands = {};
+		std::vector<vk::Semaphore*> shadow_wait_semaphores = { &current_frame_data().present_semaphore };
+		std::vector<vk::Semaphore*> shadow_signal_semaphores = { &current_frame_data().shadow_semaphore };
+		vk::PipelineStageFlags shadow_wait_stage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 		if (m_render_shadows)
 		{
-			auto& shadow_cmd = record_shadow_command_buffer(swapchainIdx);
-
-			std::vector<vk::CommandBuffer*> shadow_commands = { &shadow_cmd };
-
-			std::vector<vk::Semaphore*> shadow_wait_semaphores = { &current_frame_data().present_semaphore };
-			std::vector<vk::Semaphore*> shadow_signal_semaphores = { &current_frame_data().shadow_semaphore };
+			shadow_commands.push_back(&record_shadow_command_buffer(swapchainIdx));
 
 			vk::SubmitInfo shadow_submit =
 			{
 				static_cast<uint32_t>(shadow_wait_semaphores.size()), *shadow_wait_semaphores.data(),
-				&wait_stage, static_cast<uint32_t>(shadow_commands.size()), *shadow_commands.data(),
+				& shadow_wait_stage, static_cast<uint32_t>(shadow_commands.size()), *shadow_commands.data(),
 				static_cast<uint32_t>(shadow_signal_semaphores.size()), *shadow_signal_semaphores.data(), nullptr
 			};
 
@@ -1930,26 +1929,30 @@ namespace puffin::rendering
 		}
 
 		// Prepare main render command submit
+		std::vector<vk::CommandBuffer*> render_commands = { };
+		std::vector<vk::Semaphore*> render_wait_semaphores = { };
+		std::vector<vk::PipelineStageFlags> render_wait_stages = { };
+		std::vector<vk::Semaphore*> render_signal_semaphores = { &current_frame_data().render_semaphore };
 		{
-			auto& main_cmd = record_main_command_buffer(swapchainIdx, m_offscreen_data.extent,
-			                                                        m_offscreen_data.allocImages[swapchainIdx],
-			                                                        m_offscreen_data.allocDepthImage);
-
-			std::vector<vk::CommandBuffer*> render_commands = { &main_cmd };
-
-			std::vector<vk::Semaphore*> render_wait_semaphores = { &current_frame_data().present_semaphore };
+			render_commands.push_back(&record_main_command_buffer(swapchainIdx, m_offscreen_data.extent,
+				m_offscreen_data.allocImages[swapchainIdx],
+				m_offscreen_data.allocDepthImage));
 
 			if (m_render_shadows)
 			{
 				render_wait_semaphores.push_back(&current_frame_data().shadow_semaphore);
+				render_wait_stages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);
 			}
-
-			std::vector<vk::Semaphore*> render_signal_semaphores = { &current_frame_data().render_semaphore };
+			else
+			{
+				render_wait_semaphores.push_back(&current_frame_data().present_semaphore);
+				render_wait_stages.emplace_back(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+			}
 
 			vk::SubmitInfo render_submit =
 			{
 				static_cast<uint32_t>(render_wait_semaphores.size()), *render_wait_semaphores.data(),
-				&wait_stage, static_cast<uint32_t>(render_commands.size()), *render_commands.data(),
+				render_wait_stages.data(), static_cast<uint32_t>(render_commands.size()), *render_commands.data(),
 				static_cast<uint32_t>(render_signal_semaphores.size()), *render_signal_semaphores.data(), nullptr
 			};
 
@@ -1957,6 +1960,8 @@ namespace puffin::rendering
 		}
 
 		{
+			vk::PipelineStageFlags wait_stage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+
 			if (mEngine->shouldRenderEditorUI())
 			{
 				auto& imgui_cmd = record_imgui_command_buffer(swapchainIdx, m_swapchain_data.extent);
