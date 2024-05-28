@@ -621,11 +621,17 @@ namespace puffin::rendering
 		{
 			// Global Descriptors
 
-			vk::DescriptorBufferInfo cameraBufferInfo = {
-				m_frame_render_data[i].camera_buffer.buffer, 0, sizeof(GPUCameraData)
-			};
 			vk::DescriptorBufferInfo objectBufferInfo = {
 				m_frame_render_data[i].object_buffer.buffer, 0, sizeof(GPUObjectData) * g_max_objects
+			};
+
+			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
+				m_global_render_data.descriptor_allocator)
+				.bindBuffer(0, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
+				.build(m_frame_render_data[i].object_descriptor, m_global_render_data.object_set_layout);
+
+			vk::DescriptorBufferInfo cameraBufferInfo = {
+				m_frame_render_data[i].camera_buffer.buffer, 0, sizeof(GPUCameraData)
 			};
 			vk::DescriptorBufferInfo lightBufferInfo = {
 				m_frame_render_data[i].light_buffer.buffer, 0, sizeof(GPULightData) * g_max_lights
@@ -645,11 +651,10 @@ namespace puffin::rendering
 			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
 			                               m_global_render_data.descriptor_allocator)
 				.bindBuffer(0, &cameraBufferInfo, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
-				.bindBuffer(1, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
-				.bindBuffer(2, &lightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.bindBuffer(3, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer,vk::ShaderStageFlagBits::eFragment)
-				.bindBuffer(4, &materialBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.bindImagesWithoutWrite(5, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
+				.bindBuffer(1, &lightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.bindBuffer(2, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer,vk::ShaderStageFlagBits::eFragment)
+				.bindBuffer(3, &materialBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.bindImagesWithoutWrite(4, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
 				.addPNext(&descriptorSetVariableDescriptorCountAllocateInfo)
 				.build(m_frame_render_data[i].global_descriptor, m_global_render_data.global_set_layout);
 
@@ -683,6 +688,7 @@ namespace puffin::rendering
 
 		util::PipelineLayoutBuilder plb{};
 		m_forward_pipeline_layout = plb
+		.descriptorSetLayout(m_global_render_data.object_set_layout)
 		.descriptorSetLayout(m_global_render_data.global_set_layout)
 		.pushConstantRange(range)
 		.createUnique(m_device);
@@ -734,7 +740,7 @@ namespace puffin::rendering
 
 		util::PipelineLayoutBuilder plb{};
 		m_shadow_pipeline_layout = plb
-			.descriptorSetLayout(m_global_render_data.global_set_layout)
+			.descriptorSetLayout(m_global_render_data.object_set_layout)
 			.pushConstantRange(range)
 			.createUnique(m_device);
 
@@ -1308,7 +1314,7 @@ namespace puffin::rendering
 
 			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
 			                               m_global_render_data.descriptor_allocator)
-				.updateImages(5, textureImageInfos.size(), textureImageInfos.data(),
+				.updateImages(4, textureImageInfos.size(), textureImageInfos.data(),
 				              vk::DescriptorType::eCombinedImageSampler)
 				.update(current_frame_data().global_descriptor);
 
@@ -1734,7 +1740,7 @@ namespace puffin::rendering
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_shadow_pipeline.get());
 
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_shadow_pipeline_layout.get(), 0, 1,
-			&current_frame_data().global_descriptor, 0, nullptr);
+			&current_frame_data().object_descriptor, 0, nullptr);
 
 		cmd.bindIndexBuffer(m_resource_manager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
 
@@ -1920,8 +1926,12 @@ namespace puffin::rendering
 
 	void RenderSystemVK::bind_buffers_and_descriptors(vk::CommandBuffer cmd)
 	{
-		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forward_pipeline_layout.get(), 0, 1,
-			&current_frame_data().global_descriptor, 0, nullptr);
+		std::vector<vk::DescriptorSet> descriptors;
+		descriptors.push_back(current_frame_data().object_descriptor);
+		descriptors.push_back(current_frame_data().global_descriptor);
+
+		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forward_pipeline_layout.get(), 0, descriptors.size(),
+			descriptors.data(), 0, nullptr);
 
 		GPUDrawPushConstant push_constant;
 		push_constant.vertexBufferAddress = m_resource_manager->geometry_buffer()->vertex_buffer_address();

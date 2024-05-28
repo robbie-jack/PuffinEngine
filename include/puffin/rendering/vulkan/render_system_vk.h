@@ -53,6 +53,7 @@ namespace puffin::rendering
 		std::shared_ptr<util::DescriptorAllocator> descriptor_allocator = nullptr;
 		std::shared_ptr<util::DescriptorLayoutCache> descriptor_layout_cache = nullptr;
 
+		vk::DescriptorSetLayout object_set_layout;
 		vk::DescriptorSetLayout global_set_layout;
 		vk::DescriptorSetLayout material_set_layout;
 
@@ -83,6 +84,7 @@ namespace puffin::rendering
 		uint32_t draw_count = 0;
 
 		// Global Data (Set for entire frame)
+		vk::DescriptorSet object_descriptor;
 		vk::DescriptorSet global_descriptor;
 
 		AllocatedBuffer camera_buffer;

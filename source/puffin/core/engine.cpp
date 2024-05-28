@@ -123,8 +123,7 @@ namespace puffin::core
 				//proceduralScene();
 
 				scene_data->update_data(entt_subsystem, scene_graph);
-				scene_data->save();
-				scene_data->clear();
+				//scene_data->save();
 			}
 			else
 			{

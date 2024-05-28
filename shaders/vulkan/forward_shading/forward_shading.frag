@@ -20,12 +20,12 @@ struct LightData
 	vec4 cutoffAngle;
 };
 
-layout(std140, set = 0, binding = 2) readonly buffer LightBuffer
+layout(std140, set = 1, binding = 1) readonly buffer LightBuffer
 {
 	LightData lights[];
 } lightBuffer;
 
-layout(std140, set = 0, binding = 3) uniform LightStaticBuffer
+layout(std140, set = 1, binding = 2) uniform LightStaticBuffer
 {
 	vec4 viewPosAndNumLights;
 } lightStatic;
@@ -39,12 +39,12 @@ struct MaterialData
 	float data[maxFloatsPerMaterial];
 };
 
-layout(set = 0, binding = 4) readonly buffer MaterialBuffer
+layout(set = 1, binding = 3) readonly buffer MaterialBuffer
 {
 	MaterialData materials[];
 } materialBuffer;
 
-layout(set = 0, binding = 5) uniform sampler2D textures[];
+layout(set = 1, binding = 4) uniform sampler2D textures[];
 
 vec3 CalcDirLight(LightData lightData, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos);

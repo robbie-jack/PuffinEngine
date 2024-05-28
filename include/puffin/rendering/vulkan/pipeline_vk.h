@@ -84,7 +84,7 @@ namespace puffin::rendering::util
 		vk::UniquePipelineLayout createUnique(const vk::Device& device)
 		{
 			const vk::PipelineLayoutCreateInfo layoutInfo = { {},
-				static_cast<uint32_t>(mSetLayouts.size()), mSetLayouts.data(),
+				static_cast<uint32_t>(mSetLayouts.size()), mSetLayouts.data(),	
 				static_cast<uint32_t>(mPushRanges.size()), mPushRanges.data() };
 
 			return device.createPipelineLayoutUnique(layoutInfo);

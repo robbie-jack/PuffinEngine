@@ -7,23 +7,23 @@ layout (location = 2) out vec3 fTangent;
 layout (location = 3) out vec2 fUV;
 layout (location = 4) flat out int matIndex;
 
-layout(set = 0, binding = 0) uniform CameraBuffer
-{
-	mat4 view;
-	mat4 proj;
-	mat4 viewProj;
-} cameraData;
-
 struct ObjectData
 {
 	mat4 model;
 	int matIndex;
 };
 
-layout(std140, set = 0, binding = 1) readonly buffer ObjectBuffer
+layout(std140, set = 0, binding = 0) readonly buffer ObjectBuffer
 {
 	ObjectData objects[];
 } objectBuffer;
+
+layout(set = 1, binding = 0) uniform CameraBuffer
+{
+	mat4 view;
+	mat4 proj;
+	mat4 viewProj;
+} cameraData;
 
 struct Vertex
 {
