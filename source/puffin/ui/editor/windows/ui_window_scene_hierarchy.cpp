@@ -12,7 +12,7 @@ namespace puffin
 			mWindowName = "Scene Hierarchy";
 
 			if (!m_scene_graph)
-				m_scene_graph = mEngine->getSystem<scene::SceneGraph>();
+				m_scene_graph = mEngine->get_system<scene::SceneGraph>();
 
 			if (mShow)
 			{

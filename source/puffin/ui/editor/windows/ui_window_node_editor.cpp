@@ -43,10 +43,10 @@ namespace puffin
 			mWindowName = "Entity Properties";
 
 			if (!m_entt_subsystem)
-				m_entt_subsystem = mEngine->getSystem<ecs::EnTTSubsystem>();
+				m_entt_subsystem = mEngine->get_system<ecs::EnTTSubsystem>();
 
 			if (!m_scene_graph)
-				m_scene_graph = mEngine->getSystem<scene::SceneGraph>();
+				m_scene_graph = mEngine->get_system<scene::SceneGraph>();
 
 			const auto registry = m_entt_subsystem->registry();
 

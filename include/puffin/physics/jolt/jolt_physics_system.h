@@ -45,11 +45,11 @@ namespace puffin::physics
 
 		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			m_engine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
-			m_engine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");
-			m_engine->registerCallback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "JoltPhysicsSystem: EndPlay");
+			m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
+			m_engine->register_callback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");
+			m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "JoltPhysicsSystem: EndPlay");
 
-			auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+			auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::onConstructRigidbody>(this);
 			registry->on_destroy<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::onDestroyRigidbody>(this);
@@ -85,7 +85,7 @@ namespace puffin::physics
 
 		void updateTimeStep()
 		{
-			mFixedTimeStep = m_engine->timeStepFixed();
+			mFixedTimeStep = m_engine->time_step_fixed();
 			mCollisionSteps = static_cast<int>(std::ceil(mFixedTimeStep / mIdealTimeStep));
 		}
 

@@ -24,14 +24,14 @@ namespace puffin::ui
 {
 	UISubsystem::UISubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		m_engine->registerCallback(core::ExecutionStage::Startup, [&]() { startup(); }, "UISubsystem: Startup", 50);
-		m_engine->registerCallback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);
-		m_engine->registerCallback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Shutdown", 200);
+		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "UISubsystem: Startup", 50);
+		m_engine->register_callback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);
+		m_engine->register_callback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Shutdown", 200);
 	}
 
 	void UISubsystem::startup()
 	{
-		if (m_engine->shouldRenderEditorUI())
+		if (m_engine->should_render_editor_ui())
 		{
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
@@ -71,7 +71,7 @@ namespace puffin::ui
 	// VulkanRenderer DrawFrame() should be placed here instead
 	void UISubsystem::render()
 	{
-		if (m_engine->shouldRenderEditorUI())
+		if (m_engine->should_render_editor_ui())
 		{
 			if (mFileDialog.HasSelected())
 			{
@@ -80,7 +80,7 @@ namespace puffin::ui
 				// File Dialog - Load Scene
 				if (mLoadScene)
 				{
-					const auto sceneData = m_engine->getSystem<io::SceneSubsystem>()->sceneData();
+					const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->sceneData();
 
 					sceneData->set_path(selectedPath);
 
@@ -141,10 +141,10 @@ namespace puffin::ui
 			}
 
 			// Update Scene Data if any changes were made to an entity, and game is not currently playing
-			if (mWindowEntityProperties->scene_changed() && m_engine->playState() == core::PlayState::Stopped)
+			if (mWindowEntityProperties->scene_changed() && m_engine->play_state() == core::PlayState::Stopped)
 			{
-				const auto sceneData = m_engine->getSystem<io::SceneSubsystem>()->sceneData();
-				sceneData->update_data(m_engine->getSystem<ecs::EnTTSubsystem>(), m_engine->getSystem<scene::SceneGraph>());
+				const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->sceneData();
+				sceneData->update_data(m_engine->get_system<ecs::EnTTSubsystem>(), m_engine->get_system<scene::SceneGraph>());
 			}
 
 			ImGui_ImplVulkan_NewFrame();
@@ -164,7 +164,7 @@ namespace puffin::ui
 			{
 				for (const auto& window : mWindows)
 				{
-					window->draw(m_engine->deltaTime());
+					window->draw(m_engine->delta_time());
 				}
 			}
 
@@ -174,7 +174,7 @@ namespace puffin::ui
 
 	void UISubsystem::cleanup() const
 	{
-		if (m_engine->shouldRenderEditorUI())
+		if (m_engine->should_render_editor_ui())
 		{
 			ImGui::DestroyContext();
 			//ImPlot::DestroyContext();
@@ -241,7 +241,7 @@ namespace puffin::ui
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			const auto sceneData = m_engine->getSystem<io::SceneSubsystem>()->sceneData();
+			const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->sceneData();
 
 			std::string str_name = sceneData->path().string();
 			std::vector<char> name(256, '\0');
@@ -259,8 +259,8 @@ namespace puffin::ui
 
 			if (ImGui::Button("Save"))
 			{
-				const auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
-				const auto scene_graph = m_engine->getSystem<scene::SceneGraph>();
+				const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+				const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
 
 				sceneData->update_data(entt_subsystem, scene_graph);
 				sceneData->save();
@@ -328,10 +328,10 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					const auto sceneData = m_engine->getSystem<io::SceneSubsystem>()->sceneData();
+					const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->sceneData();
 
-					const auto entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
-					const auto scene_graph = m_engine->getSystem<scene::SceneGraph>();
+					const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+					const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
 
 					sceneData->update_data(entt_subsystem, scene_graph);
 					sceneData->save();

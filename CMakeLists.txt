@@ -386,7 +386,7 @@ if (PLATFORM_WINDOWS AND BOX2D_PHYSICS_SUPPORT)
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
 endif()
 
-if (PLATFORM_LINUX AND JOLT_PHYSICS_SUPPORT)
+if (PLATFORM_WINDOWS AND JOLT_PHYSICS_SUPPORT)
 	if (DOUBLE_PRECISION_SUPPORT)
 		target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
 		target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})

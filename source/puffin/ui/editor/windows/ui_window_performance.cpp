@@ -145,7 +145,7 @@ namespace puffin
 
 					for (const auto& [stage, name] : core::gExecutionStageOrder)
 					{
-						const auto stageFrametime = mEngine->getStageExecutionTimeLastFrame(stage) * 1000.0;
+						const auto stageFrametime = mEngine->get_stage_execution_time_last_frame(stage) * 1000.0;
 						ImGui::Dummy(ImVec2(0.0f, 10.0f));
 						ImGui::SameLine();
 						ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);

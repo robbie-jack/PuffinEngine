@@ -52,21 +52,21 @@ namespace puffin::scripting
 
 	const double& AngelScriptEngineInterface::getDeltaTime()
 	{
-		mDeltaTime = mEngine->deltaTime();
+		mDeltaTime = mEngine->delta_time();
 		return mDeltaTime;
 	}
 
 	const double& AngelScriptEngineInterface::getFixedTime()
 	{
-		mFixedTime = mEngine->timeStepFixed();
+		mFixedTime = mEngine->time_step_fixed();
 		return mFixedTime;
 	}
 
 	TransformComponent3D& AngelScriptEngineInterface::getTransformComponent3D(PuffinID id) const
 	{
-		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->get_system<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
+		entt::entity entity = mEngine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
 
 		registry->patch<TransformComponent3D>(entity, [&](auto& transform){});
 
@@ -75,9 +75,9 @@ namespace puffin::scripting
 
 	bool AngelScriptEngineInterface::hasTransformComponent3D(PuffinID id) const
 	{
-		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->get_system<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
+		entt::entity entity = mEngine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
 
 		if (registry->any_of<TransformComponent3D>(entity))
 		{
@@ -90,9 +90,9 @@ namespace puffin::scripting
 	template <typename T>
 	T& AngelScriptEngineInterface::getComponent(PuffinID id) const
 	{
-		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->get_system<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
+		entt::entity entity = mEngine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
 
 		registry->patch<T>(entity, [&](auto& transform) {});
 
@@ -102,9 +102,9 @@ namespace puffin::scripting
 	template <typename T>
 	bool AngelScriptEngineInterface::hasComponent(PuffinID id) const
 	{
-		const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = mEngine->get_system<ecs::EnTTSubsystem>()->registry();
 
-		entt::entity entity = mEngine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
+		entt::entity entity = mEngine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
 
 		if (registry->any_of<T>(entity))
 		{

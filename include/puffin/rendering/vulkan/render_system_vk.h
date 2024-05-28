@@ -70,6 +70,7 @@ namespace puffin::rendering
 		vk::Semaphore present_semaphore;
 
 		vk::Fence render_fence;
+		vk::Fence present_fence;
 
 		// Command Execution
 		vk::CommandPool command_pool;
@@ -121,6 +122,7 @@ namespace puffin::rendering
 		~RenderSystemVK() override { m_engine = nullptr; }
 
 		void startup();
+		void wait_for_last_presentation_and_sample_time();
 		void render();
 		void shutdown();
 
@@ -212,6 +214,7 @@ namespace puffin::rendering
 		RingBuffer<ShadowDestroyEvent> m_shadow_destroy_events;
 		std::vector<PuffinID> m_shadows_to_draw;
 
+		uint32_t m_current_swapchain_idx = 0;
 		uint8_t m_frames_in_flight_count = g_buffered_frames;
 		uint32_t m_frame_count;
 		uint32_t m_draw_calls = 0;

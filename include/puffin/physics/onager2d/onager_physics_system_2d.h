@@ -35,7 +35,7 @@ namespace puffin::physics
 	public:
 
 		OnagerPhysicsSystem2D(const std::shared_ptr<core::Engine>& engine);
-		~OnagerPhysicsSystem2D() override { mEngine = nullptr; }
+		~OnagerPhysicsSystem2D() override { m_engine = nullptr; }
 
 		void startup();
 		void fixedUpdate();
@@ -50,7 +50,7 @@ namespace puffin::physics
 
 			std::shared_ptr<T> broadphase = std::make_shared<T>();
 			std::shared_ptr<Broadphase> broadphaseBase = std::static_pointer_cast<Broadphase>(broadphase);
-			broadphaseBase->setECS(mEngine->getSystem<ecs::EnTTSubsystem>());
+			broadphaseBase->setECS(m_engine->get_system<ecs::EnTTSubsystem>());
 
 			mBroadphases.emplace(typeName, broadphaseBase);
 		}

@@ -22,7 +22,7 @@
             "softMemoryLimit": 0,
             "verifyBufferAccess": false
         },
-        "queuedFrameCap": 100,
+        "queuedFrameCap": 10,
         "workingDir": "C:/Projects/PuffinEngine/build"
     }
 }

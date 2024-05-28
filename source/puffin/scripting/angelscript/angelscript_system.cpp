@@ -44,13 +44,13 @@ namespace puffin::scripting
 {
 	AngelScriptSystem::AngelScriptSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		m_engine->registerCallback(core::ExecutionStage::Startup, [&] { startup(); }, "AngelScriptSystem: Startup", 250);
-		m_engine->registerCallback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "AngelScriptSystem: BeginPlay");
-		m_engine->registerCallback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "AngelScriptSystem: FixedUpdate");
-		m_engine->registerCallback(core::ExecutionStage::Update, [&] { update(); }, "AngelScriptSystem: Update");
-		m_engine->registerCallback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "AngelScriptSystem: EndPlay");
+		m_engine->register_callback(core::ExecutionStage::Startup, [&] { startup(); }, "AngelScriptSystem: Startup", 250);
+		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "AngelScriptSystem: BeginPlay");
+		m_engine->register_callback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "AngelScriptSystem: FixedUpdate");
+		m_engine->register_callback(core::ExecutionStage::Update, [&] { update(); }, "AngelScriptSystem: Update");
+		m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "AngelScriptSystem: EndPlay");
 
-		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 		registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
 		//registry->on_update<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
@@ -100,13 +100,13 @@ namespace puffin::scripting
 	void AngelScriptSystem::fixedUpdate()
 	{
 		// Initialize/Cleanup marked components
-		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<AngelScriptComponent>();
 
 		for (auto [entity, script] : scriptView.each())
 		{
-			mCurrentEntityID = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+			mCurrentEntityID = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
 			// Execute Update function if one was found for script
 			prepareAndExecuteScriptMethod(script.obj, script.fixedUpdateFunc);
@@ -129,13 +129,13 @@ namespace puffin::scripting
 		
 		// Run all scripts update method
 		{
-			const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+			const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 			const auto scriptView = registry->view<AngelScriptComponent>();
 
 			for (auto [entity, script] : scriptView.each())
 			{
-				mCurrentEntityID = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+				mCurrentEntityID = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
 				// Execute Update function if one was found for script
 				prepareAndExecuteScriptMethod(script.obj, script.updateFunc);
@@ -146,13 +146,13 @@ namespace puffin::scripting
 	void AngelScriptSystem::endPlay()
 	{
 		// Execute Script Stop Methods
-		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 		const auto scriptView = registry->view<AngelScriptComponent>();
 
 		for (auto [entity, script] : scriptView.each())
 		{
-			mCurrentEntityID = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+			mCurrentEntityID = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
 			prepareAndExecuteScriptMethod(script.obj, script.stopFunc);
 
@@ -209,14 +209,14 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::onConstructScript(entt::registry& registry, entt::entity entity)
 	{
-		const auto& id = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+		const auto& id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
 		mScriptsToInit.emplace(id);
 	}
 
 	void AngelScriptSystem::onDestroyScript(entt::registry& registry, entt::entity entity)
 	{
-		const auto& id = m_engine->getSystem<ecs::EnTTSubsystem>()->get_id(entity);
+		const auto& id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
 		mScriptsToStop.emplace(id);
 	}
@@ -285,11 +285,11 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::initScripts()
 	{
-		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 		for (const auto id : mScriptsToInit)
 		{
-			entt::entity entity = m_engine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
+			entt::entity entity = m_engine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -305,11 +305,11 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::startScripts()
 	{
-		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 		for (const auto id : mScriptsToStart)
 		{
-			entt::entity entity = m_engine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
+			entt::entity entity = m_engine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
 
 			const auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -323,11 +323,11 @@ namespace puffin::scripting
 
 	void AngelScriptSystem::stopScripts()
 	{
-		const auto registry = m_engine->getSystem<ecs::EnTTSubsystem>()->registry();
+		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 		for (const auto id : mScriptsToStop)
 		{
-			entt::entity entity = m_engine->getSystem<ecs::EnTTSubsystem>()->get_entity(id);
+			entt::entity entity = m_engine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -678,13 +678,13 @@ namespace puffin::scripting
 
 	const double& AngelScriptSystem::getDeltaTime() const
 	{
-		const double deltaTime = m_engine->deltaTime();
+		const double deltaTime = m_engine->delta_time();
 		return deltaTime;
 	}
 
 	const double& AngelScriptSystem::getFixedTime() const
 	{
-		const double fixedDeltaTime = m_engine->timeStepFixed();
+		const double fixedDeltaTime = m_engine->time_step_fixed();
 		return fixedDeltaTime;
 	}
 

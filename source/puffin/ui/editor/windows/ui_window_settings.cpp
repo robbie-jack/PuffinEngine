@@ -23,7 +23,7 @@ namespace puffin
 
 				io::ProjectSettings& settings = mEngine->settings();
 
-				const auto input = mEngine->getSystem<input::InputSubsystem>();
+				const auto input = mEngine->get_system<input::InputSubsystem>();
 
 				if (ImGui::SliderFloat("Sensitivity", &settings.mouse_sensitivity, 0.01f, 0.1f))
 				{

@@ -8,8 +8,8 @@ namespace puffin
 {
 	Node::Node(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : m_engine(engine), m_node_id(id)
 	{
-		m_scene_graph = m_engine->getSystem<scene::SceneGraph>();
-		m_entt_subsystem = m_engine->getSystem<ecs::EnTTSubsystem>();
+		m_scene_graph = m_engine->get_system<scene::SceneGraph>();
+		m_entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 		m_registry = m_entt_subsystem->registry();
 
 		m_entity = m_entt_subsystem->add_entity(m_node_id);

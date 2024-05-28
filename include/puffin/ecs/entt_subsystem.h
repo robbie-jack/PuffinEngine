@@ -14,7 +14,7 @@ namespace puffin::ecs
 
 		EnTTSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			m_engine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "EnTTSubsystem: EndPlay", 200);
+			m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "EnTTSubsystem: EndPlay", 200);
 
 			m_registry = std::make_shared<entt::registry>();
 		}

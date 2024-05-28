@@ -2,11 +2,11 @@
 
 #include "puffin/core/engine.h"
 
-#ifdef JOLT_PHYSICS_SUPPORT
+#ifdef PFN_JOLT_PHYSICS
 #include "puffin/physics/jolt/jolt_physics_system.h"
 #endif
 
-#ifdef ONAGER2D_PHYSICS_SUPPORT
+#ifdef PFN_ONAGER2D_PHYSICS
 #include "puffin/physics/onager2d/onager_physics_system_2d.h"
 #endif
 
@@ -19,17 +19,17 @@ int main()
 
 	engine->setup(R"(C:\Projects\PuffinProject\Puffin.pproject)");
 
-	engine->registerSystem<puffin::rendering::RenderSystemVK>();
+	engine->register_system<puffin::rendering::RenderSystemVK>();
 
-#ifdef JOLT_PHYSICS_SUPPORT
-	engine->registerSystem<puffin::physics::JoltPhysicsSystem>();
+#ifdef PFN_JOLT_PHYSICS
+	engine->register_system<puffin::physics::JoltPhysicsSystem>();
 #endif
 
-#ifdef ONAGER2D_PHYSICS_SUPPORT
-    engine->registerSystem<puffin::physics::OnagerPhysicsSystem2D>();
+#ifdef PFN_ONAGER2D_PHYSICS
+    engine->register_system<puffin::physics::OnagerPhysicsSystem2D>();
 #endif
 
-	engine->registerSystem<puffin::scripting::AngelScriptSystem>();
+	engine->register_system<puffin::scripting::AngelScriptSystem>();
 
 	engine->startup();
 
