@@ -21,9 +21,9 @@ namespace puffin::rendering
 		TransformNode3D::update(delta_time);
 	}
 
-	void LightNode3D::physics_update(const double delta_time)
+	void LightNode3D::update_fixed(const double delta_time)
 	{
-		TransformNode3D::physics_update(delta_time);
+		TransformNode3D::update_fixed(delta_time);
 	}
 
 	void LightNode3D::end_play()

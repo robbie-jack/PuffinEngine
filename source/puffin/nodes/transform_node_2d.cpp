@@ -28,7 +28,7 @@ namespace puffin
 
 	}
 
-	void TransformNode2D::physics_update(const double delta_time)
+	void TransformNode2D::update_fixed(const double delta_time)
 	{
 
 	}

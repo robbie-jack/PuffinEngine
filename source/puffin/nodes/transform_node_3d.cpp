@@ -22,9 +22,9 @@ namespace puffin
 		Node::update(delta_time);
 	}
 
-	void TransformNode3D::physics_update(const double delta_time)
+	void TransformNode3D::update_fixed(const double delta_time)
 	{
-		Node::physics_update(delta_time);
+		Node::update_fixed(delta_time);
 	}
 
 	void TransformNode3D::end_play()

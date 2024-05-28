@@ -128,12 +128,12 @@ namespace puffin::rendering
 
 	void RenderSystemVK::wait_for_last_presentation_and_sample_time()
 	{
-		VK_CHECK(m_device.acquireNextImageKHR(m_swapchain_data.swapchain, 1000000000, current_frame_data().present_semaphore,
-				current_frame_data().present_fence, &m_current_swapchain_idx));
-
 		// Wait until GPU has finished presenting last frame. Timeout of 1 second
 		VK_CHECK(m_device.waitForFences(1, &current_frame_data().present_fence, true, 1000000000));
 		VK_CHECK(m_device.resetFences(1, &current_frame_data().present_fence));
+
+		VK_CHECK(m_device.acquireNextImageKHR(m_swapchain_data.swapchain, 1000000000, current_frame_data().present_semaphore,
+				current_frame_data().present_fence, &m_current_swapchain_idx));
 
 		m_engine->update_delta_time(glfwGetTime());
 	}

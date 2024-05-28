@@ -6,7 +6,7 @@ namespace puffin::core
 {
 	EnkiTSSubsystem::EnkiTSSubsystem(const std::shared_ptr<Engine>& engine) : System(engine)
 	{
-		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "EnkiTSSubsystem: Startup", 50);
+		m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "EnkiTSSubsystem: startup", 50);
 	}
 
 	void EnkiTSSubsystem::startup()

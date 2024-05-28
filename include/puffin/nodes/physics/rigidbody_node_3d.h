@@ -13,7 +13,7 @@ namespace puffin::physics
 
 		void begin_play() override;
 		void update(const double delta_time) override;
-		void physics_update(const double delta_time) override;
+		void update_fixed(const double delta_time) override;
 		void end_play() override;
 
 	};

@@ -97,24 +97,6 @@ namespace puffin::core
 		//reimportDefaultAssets();
 		//assets::AssetRegistry::get()->saveAssetCache();
 		//loadAndResaveAssets();
-
-		if (constexpr bool setupDefaultScene = false; setupDefaultScene)
-		{
-			auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
-			auto scene_graph = get_system<scene::SceneGraph>();
-			auto scene_subsystem = get_system<io::SceneSubsystem>();
-			//auto sceneData = scene_subsystem->sceneData();
-
-			// Create Default Scene in code -- used when scene serialization is changed
-			default_scene();
-			//physicsScene2D();
-			//physicsScene3D();
-			//proceduralScene();
-
-			scene_data->update_data(entt_subsystem, scene_graph);
-			scene_data->save();
-			scene_data->clear();
-		}
 	}
 
 	void Engine::startup()
@@ -122,10 +104,35 @@ namespace puffin::core
 		m_running = true;
 		m_play_state = PlayState::Stopped;
 
-		// Initialize Systems
+		execute_callbacks(ExecutionStage::StartupSubsystem);
+
 		{
-			execute_callbacks(ExecutionStage::Startup);
+			auto scene_data = get_system<io::SceneSubsystem>()->sceneData();
+
+			if (constexpr bool setupDefaultScene = false; setupDefaultScene)
+			{
+				auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
+				auto scene_graph = get_system<scene::SceneGraph>();
+				auto scene_subsystem = get_system<io::SceneSubsystem>();
+				//auto sceneData = scene_subsystem->sceneData();
+
+				// Create Default Scene in code -- used when scene serialization is changed
+				default_scene();
+				//physicsScene2D();
+				//physicsScene3D();
+				//proceduralScene();
+
+				scene_data->update_data(entt_subsystem, scene_graph);
+				scene_data->save();
+				scene_data->clear();
+			}
+			else
+			{
+				scene_data->load();
+			}
 		}
+
+		execute_callbacks(ExecutionStage::Startup);
 
 		m_last_time = glfwGetTime(); // Time Count Started
 		m_current_time = m_last_time;
@@ -137,9 +144,9 @@ namespace puffin::core
 		
 		update_execution_time();
 
-		{
-			execute_callbacks(ExecutionStage::WaitForLastPresentationAndSample, false);
-		}
+		execute_callbacks(ExecutionStage::UpdateInput, false);
+
+		execute_callbacks(ExecutionStage::WaitForLastPresentationAndSample, false);
 
 		// Make sure delta time never exceeds 1/30th of a second
 		if (m_delta_time > m_time_step_limit)
@@ -150,9 +157,7 @@ namespace puffin::core
 		const auto audioSubsystem = get_system<audio::AudioSubsystem>();
 
 		// Update all Subsystems
-		{
-			execute_callbacks(ExecutionStage::SubsystemUpdate, true);
-		}
+		execute_callbacks(ExecutionStage::UpdateSubsystem, true);
 
 		/*const auto inputSubsystem = getSystem<input::InputSubsystem>();
 		if (inputSubsystem->justPressed("Play"))
@@ -199,14 +204,12 @@ namespace puffin::core
 				{
 					m_accumulated_time -= m_time_step_fixed;
 
-					execute_callbacks(ExecutionStage::FixedUpdate, true);
+					execute_callbacks(ExecutionStage::UpdateFixed, true);
 				}
 			}
 
 			// Update
-			{
-				execute_callbacks(ExecutionStage::Update, true);
-			}
+			execute_callbacks(ExecutionStage::Update, true);
 		}
 
 		// Render
@@ -237,6 +240,7 @@ namespace puffin::core
 	{
 		// Cleanup All Systems
 		execute_callbacks(ExecutionStage::Shutdown);
+		execute_callbacks(ExecutionStage::ShutdownSubsystem);
 
 		m_systems.clear();
 

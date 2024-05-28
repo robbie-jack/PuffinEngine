@@ -46,7 +46,7 @@ namespace puffin::scripting
 	{
 		m_engine->register_callback(core::ExecutionStage::Startup, [&] { startup(); }, "AngelScriptSystem: Startup", 250);
 		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "AngelScriptSystem: BeginPlay");
-		m_engine->register_callback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "AngelScriptSystem: FixedUpdate");
+		m_engine->register_callback(core::ExecutionStage::UpdateFixed, [&] { fixedUpdate(); }, "AngelScriptSystem: FixedUpdate");
 		m_engine->register_callback(core::ExecutionStage::Update, [&] { update(); }, "AngelScriptSystem: Update");
 		m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "AngelScriptSystem: EndPlay");
 

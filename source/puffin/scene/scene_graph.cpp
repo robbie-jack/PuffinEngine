@@ -11,9 +11,9 @@ namespace puffin::scene
 {
 	SceneGraph::SceneGraph(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		m_engine->register_callback(core::ExecutionStage::SubsystemUpdate, [&] { subsystem_update(); }, "SceneGraph: subsystem_update");
+		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&] { subsystem_update(); }, "SceneGraph: subsystem_update");
 		m_engine->register_callback(core::ExecutionStage::Update, [&] { update(); }, "SceneGraph: update");
-		m_engine->register_callback(core::ExecutionStage::FixedUpdate, [&] { physics_update(); }, "SceneGraph: physics_update");
+		m_engine->register_callback(core::ExecutionStage::UpdateFixed, [&] { update_fixed(); }, "SceneGraph: update_fixed");
 		m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { end_play(); }, "SceneGraph: end_play");
 
 		m_scene_graph_updated = true;
@@ -35,12 +35,12 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraph::physics_update()
+	void SceneGraph::update_fixed()
 	{
 		for (auto& id : m_node_ids)
 		{
 			if (const auto node = get_node_ptr(id); node && node->should_update())
-				node->physics_update(m_engine->time_step_fixed());
+				node->update_fixed(m_engine->time_step_fixed());
 		}
 	}
 

@@ -10,9 +10,9 @@ namespace puffin
 	{
 		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "InputSubsystem: Startup", 50);
-			m_engine->register_callback(core::ExecutionStage::SubsystemUpdate, [&]() { update(); }, "InputSubsystem: Update");
-			m_engine->register_callback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "InputSubsystem: Shutdown", 150);
+			m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "InputSubsystem: startup", 50);
+			m_engine->register_callback(core::ExecutionStage::UpdateInput, [&]() { update(); }, "InputSubsystem: update");
+			m_engine->register_callback(core::ExecutionStage::ShutdownSubsystem, [&]() { shutdown(); }, "InputSubsystem: shutdown", 150);
 
 			mNextId = 1;
 			mLastXPos = 640.0;
@@ -53,6 +53,11 @@ namespace puffin
 
 		void InputSubsystem::update()
 		{
+			if (!mWindow)
+			{
+				mWindow = m_engine->get_system<window::WindowSubsystem>()->primaryWindow();
+			}
+
 			glfwPollEvents();
 
 			// Update Actions

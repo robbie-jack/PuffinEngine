@@ -352,23 +352,33 @@ namespace puffin::io
 
 		SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			m_engine->register_callback(core::ExecutionStage::Startup, [&] { load_and_init(); }, "SceneSubsystem: LoadAndInit", 200);
-			m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "SceneSubsystem: BeginPlay", 0);
-			m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { load_and_init(); }, "SceneSubsystem: LoadAndInit", 200);
+			m_engine->register_callback(core::ExecutionStage::Startup, [&] { init(); }, "SceneSubsystem: init", 200);
+			m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { begin_play(); }, "SceneSubsystem: begin_play", 0);
+			m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { load_and_init(); }, "SceneSubsystem: load_and_init", 200);
 		}
 
 		~SceneSubsystem() override { m_engine = nullptr; }
 
-		void load_and_init() const
+		void load() const
+		{
+			m_scene_data->load();
+		}
+
+		void init() const
 		{
 			const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 			const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
 
-			m_scene_data->load();
 			m_scene_data->init(entt_subsystem, scene_graph);
 		}
 
-		void beginPlay() const
+		void load_and_init() const
+		{
+			load();
+			init();
+		}
+
+		void begin_play() const
 		{
 			const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 			const auto scene_graph = m_engine->get_system<scene::SceneGraph>();

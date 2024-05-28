@@ -24,9 +24,9 @@ namespace puffin::ui
 {
 	UISubsystem::UISubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "UISubsystem: Startup", 50);
-		m_engine->register_callback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: Render", 50);
-		m_engine->register_callback(core::ExecutionStage::Shutdown, [&]() { cleanup(); }, "UISubsystem: Shutdown", 200);
+		m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "UISubsystem: startup", 50);
+		m_engine->register_callback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: render", 50);
+		m_engine->register_callback(core::ExecutionStage::ShutdownSubsystem, [&]() { cleanup(); }, "UISubsystem: cleanup", 200);
 	}
 
 	void UISubsystem::startup()

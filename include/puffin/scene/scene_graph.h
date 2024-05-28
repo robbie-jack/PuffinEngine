@@ -212,7 +212,7 @@ namespace puffin::scene
 
 		void subsystem_update();
 		void update();
-		void physics_update();
+		void update_fixed();
 		void end_play();
 
 		void register_default_node_types();

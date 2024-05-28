@@ -46,7 +46,7 @@ namespace puffin::physics
 		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
 			m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
-			m_engine->register_callback(core::ExecutionStage::FixedUpdate, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");
+			m_engine->register_callback(core::ExecutionStage::UpdateFixed, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");
 			m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "JoltPhysicsSystem: EndPlay");
 
 			auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();

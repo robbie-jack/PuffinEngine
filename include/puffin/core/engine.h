@@ -32,21 +32,30 @@ namespace puffin::core
 	enum class ExecutionStage
 	{
 		Idle,								// Only used for calculating idle time when frame rate is limited, do not use with callback
+
+		StartupSubsystem,					// Occurs once on engine launch, use for one off subsystem initialization outside of constructor
 		Startup,							// Occurs once on engine launch, use for one off system initialization outside of constructor
+
 		BeginPlay,							// Occurs whenever gameplay is started
+
+		UpdateInput,						// Occurs every frame, used for sampling input
 		WaitForLastPresentationAndSample,	// Occurs every frame, should only be registered by the active render system to get presentation time
-		SubsystemUpdate,					// Occurs every frame, regardless if game is currently playing/paused
-		FixedUpdate,						// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
+		UpdateSubsystem,					// Occurs every frame, regardless if game is currently playing/paused
+		UpdateFixed,						// Updates happen at a fixed rate, and can occur multiple times in a single frame - Useful for physics or code which should be deterministic
 		Update,								// Update once a frame - Useful for non-determinstic gameplay code
+
 		Render,								// Update once a frame - Useful for code which relates to the rendering pipeline
+
 		EndPlay,							// Occurs when game play is stopped, use for resetting any gameplay data
-		Shutdown							// Occurs when engine exits, use for cleaning up all data outside of destructor
+
+		Shutdown,							// Occurs when engine exits, use for cleaning up all system data outside of destructor
+		ShutdownSubsystem					// Occurs when engine exits, use for cleaning up all subsystem data outside of destructor
 	};
 
 	const std::vector<std::pair<ExecutionStage, const std::string>> gExecutionStageOrder =
 	{
 		{ ExecutionStage::Idle, "Idle" },
-		{ ExecutionStage::FixedUpdate, "FixedUpdate" },
+		{ ExecutionStage::UpdateFixed, "UpdateFixed" },
 		{ ExecutionStage::Update, "Update" },
 		{ ExecutionStage::Render, "Render" },
 	};

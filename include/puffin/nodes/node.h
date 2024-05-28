@@ -40,7 +40,7 @@ namespace puffin
 
 		virtual void begin_play() {}
 		virtual void update(const double delta_time) {}
-		virtual void physics_update(const double delta_time) {}
+		virtual void update_fixed(const double delta_time) {}
 		virtual void end_play() {}
 
 		virtual bool has_transform_2d() const { return false; }
