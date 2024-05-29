@@ -194,48 +194,49 @@ namespace puffin::rendering
 
 	// GPU Data Structs
 
-	struct GPUDrawPushConstant
-	{
-		alignas(16) vk::DeviceAddress vertexBufferAddress;
-	};
-
 	struct GPUShadowPushConstant
 	{
 		alignas(16) vk::DeviceAddress vertex_buffer_address;
 		alignas(16) glm::mat4 light_space_view;
 	};
 
+	struct GPUVertexShaderPushConstant
+	{
+		alignas(16) vk::DeviceAddress vertex_buffer_address;
+	};
+
 	struct GPUCameraData
 	{
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
-		alignas(16) glm::mat4 viewProj;
+		alignas(16) glm::mat4 view_proj;
 	};
 
 	struct GPUObjectData
 	{
 		alignas(16) glm::mat4 model;
-		alignas(4) int matIdx;
+		alignas(4) int mat_idx;
 	};
 
 	struct GPULightData
 	{
-		alignas(16) glm::vec4 positionAndType;
+		alignas(16) glm::vec4 position_and_type;
 		alignas(16) glm::vec4 direction;
 		alignas(16) glm::vec4 color;
-		alignas(16) glm::vec4 ambientSpecular;
+		alignas(16) glm::vec4 ambient_specular;
 		alignas(16) glm::vec4 attenuation;
-		alignas(16) glm::vec4 cutoffAngle;
+		alignas(16) glm::vec4 cutoff_angle_and_shadow_index;
+		alignas(16) glm::mat4 light_space_view;
 	};
 
 	struct GPULightStaticData
 	{
-		alignas(16) glm::vec4 viewPosAndNumLights;
+		alignas(16) glm::vec4 view_pos_and_light_count;
 	};
 
 	struct GPUMaterialInstanceData
 	{
-		int texIndices[gNumTexturesPerMat];
+		int tex_indices[gNumTexturesPerMat];
 		float data[gNumFloatsPerMat];
 	};
 

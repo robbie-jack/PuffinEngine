@@ -621,41 +621,44 @@ namespace puffin::rendering
 		{
 			// Global Descriptors
 
-			vk::DescriptorBufferInfo objectBufferInfo = {
+			vk::DescriptorBufferInfo object_buffer_info = {
 				m_frame_render_data[i].object_buffer.buffer, 0, sizeof(GPUObjectData) * g_max_objects
 			};
 
 			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
 				m_global_render_data.descriptor_allocator)
-				.bindBuffer(0, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
+				.bindBuffer(0, &object_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
 				.build(m_frame_render_data[i].object_descriptor, m_global_render_data.object_set_layout);
 
-			vk::DescriptorBufferInfo cameraBufferInfo = {
+			vk::DescriptorBufferInfo camera_buffer_info = {
 				m_frame_render_data[i].camera_buffer.buffer, 0, sizeof(GPUCameraData)
 			};
-			vk::DescriptorBufferInfo lightBufferInfo = {
+			vk::DescriptorBufferInfo light_buffer_info = {
 				m_frame_render_data[i].light_buffer.buffer, 0, sizeof(GPULightData) * g_max_lights
 			};
-			vk::DescriptorBufferInfo lightStaticBufferInfo = {
+			vk::DescriptorBufferInfo light_static_buffer_info = {
 				m_frame_render_data[i].light_static_buffer.buffer, 0, sizeof(GPULightStaticData)
 			};
-			vk::DescriptorBufferInfo materialBufferInfo = {
+			vk::DescriptorBufferInfo material_buffer_info = {
 				m_frame_render_data[i].material_buffer.buffer, 0, sizeof(GPUMaterialInstanceData) * g_max_materials
 			};
 
-			uint32_t variableDescCounts = { 128 };
+			const uint32_t num_images = 128;
+			std::vector<uint32_t> variable_desc_counts = { num_images, /*g_max_lights*/ };
 
-			constexpr vk::DescriptorBindingFlags descriptorBindingFlags = { vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount };
-			vk::DescriptorSetVariableDescriptorCountAllocateInfo descriptorSetVariableDescriptorCountAllocateInfo = { 1, &variableDescCounts };
+			constexpr vk::DescriptorBindingFlags descriptor_binding_flags = { vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount };
+			vk::DescriptorSetVariableDescriptorCountAllocateInfo descriptor_set_variable_descriptor_count_allocate_info = 
+				{ static_cast<uint32_t>(variable_desc_counts.size()), variable_desc_counts.data() };
 
 			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
 			                               m_global_render_data.descriptor_allocator)
-				.bindBuffer(0, &cameraBufferInfo, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
-				.bindBuffer(1, &lightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.bindBuffer(2, &lightStaticBufferInfo, vk::DescriptorType::eUniformBuffer,vk::ShaderStageFlagBits::eFragment)
-				.bindBuffer(3, &materialBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.bindImagesWithoutWrite(4, 128, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
-				.addPNext(&descriptorSetVariableDescriptorCountAllocateInfo)
+				.bindBuffer(0, &camera_buffer_info, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
+				.bindBuffer(1, &light_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.bindBuffer(2, &light_static_buffer_info, vk::DescriptorType::eUniformBuffer,vk::ShaderStageFlagBits::eFragment)
+				.bindBuffer(3, &material_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.bindImagesWithoutWrite(4, num_images, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptor_binding_flags)
+				//.bindImagesWithoutWrite(5, g_max_lights, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptor_binding_flags)
+				.addPNext(&descriptor_set_variable_descriptor_count_allocate_info)
 				.build(m_frame_render_data[i].global_descriptor, m_global_render_data.global_set_layout);
 
 			// Material Descriptors
@@ -684,7 +687,7 @@ namespace puffin::rendering
 			m_device, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_fs.spv").string()
 		};
 
-		vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant) };
+		vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant) };
 
 		util::PipelineLayoutBuilder plb{};
 		m_forward_pipeline_layout = plb
@@ -919,55 +922,60 @@ namespace puffin::rendering
 	void RenderSystemVK::update_render_data()
 	{
 		// Load Meshes
-		for (const auto meshID : m_meshes_to_load)
 		{
-			if (const auto staticMesh = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshID))
+			for (const auto mesh_id : m_meshes_to_load)
 			{
-				m_resource_manager->add_static_mesh(staticMesh);
+				if (const auto static_mesh = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(mesh_id))
+				{
+					m_resource_manager->add_static_mesh(static_mesh);
+				}
 			}
-		}
 
-		m_meshes_to_load.clear();
+			m_meshes_to_load.clear();
 
-		// Load Materials
-		m_material_registry.update();
+			// Load Materials
+			m_material_registry.update();
 
-		if (m_material_registry.materialDataNeedsUploaded())
-		{
-			for (uint32_t i = 0; i < g_buffered_frames; i++)
+			if (m_material_registry.materialDataNeedsUploaded())
 			{
-				m_frame_render_data[i].copy_material_data_to_gpu = true;
+				for (uint32_t i = 0; i < g_buffered_frames; i++)
+				{
+					m_frame_render_data[i].copy_material_data_to_gpu = true;
+				}
 			}
 		}
 
 		// Load Textures
-
-		bool textureDescriptorNeedsUpdated = false;
-		for (const auto texID : m_textures_to_load)
 		{
-			if (texID != gInvalidID && !m_tex_data.contains(texID))
+			bool texture_descriptor_needs_updated = false;
+			for (const auto tex_id : m_textures_to_load)
 			{
-				TextureDataVK texData;
-				load_texture(texID, texData);
+				if (tex_id != gInvalidID && !m_tex_data.contains(tex_id))
+				{
+					TextureDataVK tex_data;
+					load_texture(tex_id, tex_data);
 
-				m_tex_data.emplace(texID, texData);
+					m_tex_data.emplace(tex_id, tex_data);
 
-				textureDescriptorNeedsUpdated = true;
+					texture_descriptor_needs_updated = true;
+				}
 			}
-		}
 
-		m_textures_to_load.clear();
+			m_textures_to_load.clear();
 
-		if (textureDescriptorNeedsUpdated == true)
-		{
-			for (int i = 0; i < g_buffered_frames; i++)
+			if (texture_descriptor_needs_updated == true)
 			{
-				m_frame_render_data[i].texture_descriptor_needs_updated = true;
+				for (int i = 0; i < g_buffered_frames; i++)
+				{
+					m_frame_render_data[i].texture_descriptor_needs_updated = true;
+				}
 			}
 		}
 
 		// Update shadows
 		{
+			bool shadow_descriptor_needs_updated = false;
+
 			std::vector<ShadowUpdateEvent> m_shadow_update_events_still_in_use;
 			while (!m_shadow_update_events.empty())
 			{
@@ -989,6 +997,8 @@ namespace puffin::rendering
 				{
 					m_resource_manager->add_images(event.id, event.image_desc, m_frames_in_flight_count);
 				}
+
+				shadow_descriptor_needs_updated |= true;
 			}
 
 			for (const auto& event : m_shadow_update_events_still_in_use)
@@ -997,6 +1007,14 @@ namespace puffin::rendering
 			}
 
 			m_shadow_update_events_still_in_use.clear();
+
+			if (shadow_descriptor_needs_updated == true)
+			{
+				for (int i = 0; i < g_buffered_frames; i++)
+				{
+					m_frame_render_data[i].shadow_descriptor_needs_updated = true;
+				}
+			}
 		}
 
 		// Destroy shadows
@@ -1309,16 +1327,27 @@ namespace puffin::rendering
 	{
 		if (m_initialized && current_frame_data().texture_descriptor_needs_updated)
 		{
-			std::vector<vk::DescriptorImageInfo> textureImageInfos;
-			build_texture_descriptor_info(m_tex_data, textureImageInfos);
+			std::vector<vk::DescriptorImageInfo> texture_image_infos;
+			build_texture_descriptor_info(m_tex_data, texture_image_infos);
 
 			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
 			                               m_global_render_data.descriptor_allocator)
-				.updateImages(4, textureImageInfos.size(), textureImageInfos.data(),
+				.updateImages(4, texture_image_infos.size(), texture_image_infos.data(),
 				              vk::DescriptorType::eCombinedImageSampler)
 				.update(current_frame_data().global_descriptor);
 
 			current_frame_data().texture_descriptor_needs_updated = false;
+		}
+	}
+
+	void RenderSystemVK::update_shadow_descriptors()
+	{
+		if (m_initialized && current_frame_data().shadow_descriptor_needs_updated)
+		{
+			std::vector<vk::DescriptorImageInfo> shadow_image_infos;
+			build_shadow_descriptor_info(shadow_image_infos);
+
+			current_frame_data().shadow_descriptor_needs_updated = false;
 		}
 	}
 
@@ -1330,7 +1359,7 @@ namespace puffin::rendering
 		GPUCameraData camUBO = {};
 		camUBO.proj = m_editor_cam.proj;
 		camUBO.view = m_editor_cam.view;
-		camUBO.viewProj = m_editor_cam.view_proj;
+		camUBO.view_proj = m_editor_cam.view_proj;
 
 		memcpy(cameraBuffer.alloc_info.pMappedData, &camUBO, sizeof(GPUCameraData));
 
@@ -1355,7 +1384,7 @@ namespace puffin::rendering
 				{
 					if (matData.texIDs[i] != 0)
 					{
-						m_material_registry.getCachedMaterialData(matData.assetId).texIndices[i] = m_tex_data[matData.texIDs[i]].idx;
+						m_material_registry.getCachedMaterialData(matData.assetId).tex_indices[i] = m_tex_data[matData.texIDs[i]].idx;
 					}
 				}
 
@@ -1491,7 +1520,7 @@ namespace puffin::rendering
 					GPUObjectData object;
 
 					build_model_transform(position, tempTransform.orientation, tempTransform.scale, object.model);
-					object.matIdx = m_material_registry.getMaterialData(mesh.mat_asset_id).idx;
+					object.mat_idx = m_material_registry.getMaterialData(mesh.mat_asset_id).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
 				}
@@ -1555,10 +1584,10 @@ namespace puffin::rendering
 
 			lights.emplace_back();
 
-			lights[i].positionAndType.x = transform.position.x;
-			lights[i].positionAndType.y = transform.position.y;
-			lights[i].positionAndType.z = transform.position.z;
-			lights[i].positionAndType.w = static_cast<int>(light.type);
+			lights[i].position_and_type.x = transform.position.x;
+			lights[i].position_and_type.y = transform.position.y;
+			lights[i].position_and_type.z = transform.position.z;
+			lights[i].position_and_type.w = static_cast<int>(light.type);
 
 			lights[i].direction.x = light.direction.x;
 			lights[i].direction.y = light.direction.y;
@@ -1570,20 +1599,20 @@ namespace puffin::rendering
 			lights[i].color.z = light.color.z;
 			lights[i].color.w = 0.0f;
 
-			lights[i].ambientSpecular.x = light.ambient_intensity;
-			lights[i].ambientSpecular.y = light.specular_intensity;
-			lights[i].ambientSpecular.z = light.specular_exponent;
-			lights[i].ambientSpecular.w = 0.0f;
+			lights[i].ambient_specular.x = light.ambient_intensity;
+			lights[i].ambient_specular.y = light.specular_intensity;
+			lights[i].ambient_specular.z = light.specular_exponent;
+			lights[i].ambient_specular.w = 0.0f;
 
 			lights[i].attenuation.x = light.constant_attenuation;
 			lights[i].attenuation.y = light.linear_attenuation;
 			lights[i].attenuation.z = light.quadratic_attenuation;
 			lights[i].attenuation.w = 0.0f;
 
-			lights[i].cutoffAngle.x = glm::cos(glm::radians(light.inner_cutoff_angle));
-			lights[i].cutoffAngle.y = glm::cos(glm::radians(light.outer_cutoff_angle));
-			lights[i].cutoffAngle.z = 0.0f;
-			lights[i].cutoffAngle.w = 0.0f;
+			lights[i].cutoff_angle_and_shadow_index.x = glm::cos(glm::radians(light.inner_cutoff_angle));
+			lights[i].cutoff_angle_and_shadow_index.y = glm::cos(glm::radians(light.outer_cutoff_angle));
+			lights[i].cutoff_angle_and_shadow_index.z = -1.0f;
+			lights[i].cutoff_angle_and_shadow_index.w = 0.0f;
 
 			i++;
 		}
@@ -1594,10 +1623,10 @@ namespace puffin::rendering
 
 		// Prepare light static data
 		GPULightStaticData lightStaticUBO;
-		lightStaticUBO.viewPosAndNumLights.x = m_editor_cam.position.x;
-		lightStaticUBO.viewPosAndNumLights.y = m_editor_cam.position.y;
-		lightStaticUBO.viewPosAndNumLights.z = m_editor_cam.position.z;
-		lightStaticUBO.viewPosAndNumLights.w = i;
+		lightStaticUBO.view_pos_and_light_count.x = m_editor_cam.position.x;
+		lightStaticUBO.view_pos_and_light_count.y = m_editor_cam.position.y;
+		lightStaticUBO.view_pos_and_light_count.z = m_editor_cam.position.z;
+		lightStaticUBO.view_pos_and_light_count.w = i;
 
 		// Copy light static data to buffer
 		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().light_static_buffer,
@@ -1933,10 +1962,10 @@ namespace puffin::rendering
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forward_pipeline_layout.get(), 0, descriptors.size(),
 			descriptors.data(), 0, nullptr);
 
-		GPUDrawPushConstant push_constant;
-		push_constant.vertexBufferAddress = m_resource_manager->geometry_buffer()->vertex_buffer_address();
+		GPUVertexShaderPushConstant push_constant;
+		push_constant.vertex_buffer_address = m_resource_manager->geometry_buffer()->vertex_buffer_address();
 
-		cmd.pushConstants(m_forward_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant), &push_constant);
+		cmd.pushConstants(m_forward_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &push_constant);
 
 		cmd.bindIndexBuffer(m_resource_manager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
 	}
@@ -2306,6 +2335,30 @@ namespace puffin::rendering
 
 			texData.idx = idx;
 			idx++;
+		}
+	}
+
+	void RenderSystemVK::build_shadow_descriptor_info(std::vector<vk::DescriptorImageInfo>& shadow_image_infos)
+	{
+		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+		const auto shadow_view = registry->view<const TransformComponent3D, const LightComponent, ShadowCasterComponent>();
+
+		shadow_image_infos.clear();
+		shadow_image_infos.reserve(shadow_view.size_hint());
+
+		int idx = 0;
+		for (auto [entity, transform, light, shadow] : shadow_view.each())
+		{
+			auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
+
+			auto& alloc_image = m_resource_manager->get_image(id, m_current_swapchain_idx);
+
+			vk::DescriptorImageInfo shadow_image_info = { m_global_render_data.texture_sampler, alloc_image.image_view,
+				vk::ImageLayout::eShaderReadOnlyOptimal };
+
+			shadow_image_infos.push_back(shadow_image_info);
+
+			++idx;
 		}
 	}
 }

@@ -71,7 +71,7 @@ namespace puffin::rendering
 			for (const auto& idx : matAsset->getTexIDs())
 			{
 				matData.texIDs[i] = idx;
-				matInstData.texIndices[i] = 0;
+				matInstData.tex_indices[i] = 0;
 
 				++i;
 			}
@@ -125,7 +125,7 @@ namespace puffin::rendering
 
 					mMats.emplace(matID, MaterialVK());
 
-					vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUDrawPushConstant) };
+					vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant) };
 
 					MaterialVK& mat = mMats[matID];
 					mat.matID = matID;

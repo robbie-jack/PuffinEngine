@@ -12,12 +12,13 @@ layout (location = 0) out vec4 outColor;
 
 struct LightData
 {
-	vec4 positionAndType;
+	vec4 position_and_type;
 	vec4 direction;
 	vec4 color;
-	vec4 ambientSpecular;
+	vec4 ambient_specular;
 	vec4 attenuation;
-	vec4 cutoffAngle;
+	vec4 cuttoff_angle_and_shadow_index;
+	mat4 light_space_view;
 };
 
 layout(std140, set = 1, binding = 1) readonly buffer LightBuffer
@@ -27,7 +28,7 @@ layout(std140, set = 1, binding = 1) readonly buffer LightBuffer
 
 layout(std140, set = 1, binding = 2) uniform LightStaticBuffer
 {
-	vec4 viewPosAndNumLights;
+	vec4 view_pos_and_light_count;
 } lightStatic;
 
 const int maxTexturesPerMaterial = 8;
@@ -45,10 +46,12 @@ layout(set = 1, binding = 3) readonly buffer MaterialBuffer
 } materialBuffer;
 
 layout(set = 1, binding = 4) uniform sampler2D textures[];
+//layout(set = 1, binding = 5) uniform sampler2D shadowmaps[];
 
-vec3 CalcDirLight(LightData lightData, vec3 normal, vec3 viewDir);
-vec3 CalcPointLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos);
-vec3 CalcSpotLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos);
+float shadow_calculation(LightData data);
+vec3 dir_light_calculation(LightData lightData, vec3 normal, vec3 viewDir);
+vec3 point_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos);
+vec3 spot_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos);
 
 void main()
 {
@@ -57,27 +60,27 @@ void main()
 
 	vec4 albedo = texture(textures[albedoIdx], fUV);
 
-	vec3 viewDir = normalize(lightStatic.viewPosAndNumLights.rgb - fWorldPos.rgb);
+	vec3 viewDir = normalize(lightStatic.view_pos_and_light_count.rgb - fWorldPos.rgb);
 	
 	vec3 result = vec3(0.0);
 	
-	int numLights = int(lightStatic.viewPosAndNumLights.w);
+	int light_count = int(lightStatic.view_pos_and_light_count.w);
 	
-	for (int i = 0; i < numLights; i++)
+	for (int i = 0; i < light_count; i++)
 	{
 		LightData lightData = lightBuffer.lights[i];
 
-		int lightType = int(lightData.positionAndType.w);
+		int lightType = int(lightData.position_and_type.w);
 		switch (lightType)
 		{
 			case 0:
-				result += CalcPointLight(lightData, fNormal, viewDir, fWorldPos.rgb);
+				result += point_light_calculation(lightData, fNormal, viewDir, fWorldPos.rgb);
 				break;
 			case 1:
-				result += CalcSpotLight(lightData, fNormal, viewDir, fWorldPos.rgb);
+				result += spot_light_calculation(lightData, fNormal, viewDir, fWorldPos.rgb);
 				break;
 			case 2:
-				result += CalcDirLight(lightData, fNormal, viewDir);
+				result += dir_light_calculation(lightData, fNormal, viewDir);
 				break;
 		}
 	}
@@ -85,7 +88,12 @@ void main()
 	outColor = vec4(albedo.rgb * result, 1.0);
 }
 
-vec3 CalcDirLight(LightData lightData, vec3 normal, vec3 viewDir)
+float shadow_calculation(LightData data, vec3 fragWorldPos)
+{
+	return 1.0;
+}
+
+vec3 dir_light_calculation(LightData lightData, vec3 normal, vec3 viewDir)
 {
 	vec3 lightDir = normalize(-lightData.direction.rgb);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
@@ -95,19 +103,19 @@ vec3 CalcDirLight(LightData lightData, vec3 normal, vec3 viewDir)
 	
 	// Specular Shading
 	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambientSpecular.z));
+	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
 	
 	// Combine
 	vec3 diffuse = lightData.color.rgb * diff;
-	vec3 ambient = lightData.color.rgb * lightData.ambientSpecular.x;
-	vec3 specular = lightData.color.rgb * lightData.ambientSpecular.y * spec;
+	vec3 ambient = lightData.color.rgb * lightData.ambient_specular.x;
+	vec3 specular = lightData.color.rgb * lightData.ambient_specular.y * spec;
 
 	return diffuse + ambient + specular;
 }
 
-vec3 CalcPointLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
+vec3 point_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
 {
-	vec3 lightDir = normalize(lightData.positionAndType.rgb - fragWorldPos);
+	vec3 lightDir = normalize(lightData.position_and_type.rgb - fragWorldPos);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 
 	// Diffuse Shading
@@ -115,24 +123,24 @@ vec3 CalcPointLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWor
 
 	// Specular Shading
 	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambientSpecular.z));
+	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
 
 	// Attenuation
-	float distance = length(lightData.positionAndType.rgb - fragWorldPos);
+	float distance = length(lightData.position_and_type.rgb - fragWorldPos);
 	float attenuation = 1.0 / (lightData.attenuation.x + lightData.attenuation.y * distance + 
 		lightData.attenuation.z * (distance * distance));
 
 	vec3 diffuse = lightData.color.rgb * diff * attenuation;
-	vec3 ambient = lightData.color.rgb * lightData.ambientSpecular.x * attenuation;
-	vec3 specular = lightData.color.rgb * lightData.ambientSpecular.y * spec * attenuation;
+	vec3 ambient = lightData.color.rgb * lightData.ambient_specular.x * attenuation;
+	vec3 specular = lightData.color.rgb * lightData.ambient_specular.y * spec * attenuation;
 
 	return diffuse + ambient + specular;
 }
 
-vec3 CalcSpotLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
+vec3 spot_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
 {
 	vec3 lightDir = normalize(-lightData.direction.rgb);
-	vec3 fragToLight = lightData.positionAndType.rgb - fragWorldPos;
+	vec3 fragToLight = lightData.position_and_type.rgb - fragWorldPos;
 
 	vec3 fragToLightDir = normalize(fragToLight);
 	vec3 halfwayDir = normalize(fragToLightDir + viewDir);
@@ -142,21 +150,29 @@ vec3 CalcSpotLight(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorl
 
 	// Specular Shading
 	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambientSpecular.z));
+	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
 
 	// Attenuation
-	float distance = length(lightData.positionAndType.rgb - fragWorldPos);
+	float distance = length(lightData.position_and_type.rgb - fragWorldPos);
 	float attenuation = 1.0 / (lightData.attenuation.x + lightData.attenuation.y * distance + 
 		lightData.attenuation.z * (distance * distance));
 
 	// Light Cutoff
 	float theta = dot(fragToLightDir, normalize(-lightData.direction.rgb));
-	float epsilon = lightData.cutoffAngle.x - lightData.cutoffAngle.y;
-	float intensity = clamp((theta - lightData.cutoffAngle.y) / epsilon, 0.0, 1.0);
+	float epsilon = lightData.cuttoff_angle_and_shadow_index.x - lightData.cuttoff_angle_and_shadow_index.y;
+	float intensity = clamp((theta - lightData.cuttoff_angle_and_shadow_index.y) / epsilon, 0.0, 1.0);
 
 	vec3 diffuse = lightData.color.rgb * diff * attenuation * intensity;
-	vec3 ambient = lightData.color.rgb * lightData.ambientSpecular.x * attenuation;
-	vec3 specular = lightData.color.rgb * lightData.ambientSpecular.y * spec * attenuation * intensity;
+	vec3 ambient = lightData.color.rgb * lightData.ambient_specular.x * attenuation;
+	vec3 specular = lightData.color.rgb * lightData.ambient_specular.y * spec * attenuation * intensity;
 
-	return diffuse + ambient + specular;
+	float shadow = 0.0;
+	
+	if (lightData.cuttoff_angle_and_shadow_index.z >= 0.0)
+	{
+		shadow = shadow_calculation(lightData, fragWorldPos);
+	}
+
+	//return diffuse + ambient + specular;
+	return (ambient + (1.0 - shadow) * (diffuse + specular));
 }

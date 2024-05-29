@@ -100,6 +100,7 @@ namespace puffin::rendering
 		bool swapchain_needs_updated = false;
 		bool offscreen_needs_updated = false;
 		bool texture_descriptor_needs_updated = false;
+		bool shadow_descriptor_needs_updated = false;
 		bool copy_object_data_to_gpu = false;
 		bool copy_material_data_to_gpu = false;
 	};
@@ -281,6 +282,7 @@ namespace puffin::rendering
 		void update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const;
 
 		void update_texture_descriptors();
+		void update_shadow_descriptors();
 
 		void prepare_scene_data();
 		void prepare_material_data();
@@ -319,6 +321,7 @@ namespace puffin::rendering
 
 		void build_texture_descriptor_info(PackedVector<PuffinID, TextureDataVK>& textureData,
 		                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
+		void build_shadow_descriptor_info(std::vector<vk::DescriptorImageInfo>& shadow_image_infos);
 
 		FrameRenderData& current_frame_data()
 		{
