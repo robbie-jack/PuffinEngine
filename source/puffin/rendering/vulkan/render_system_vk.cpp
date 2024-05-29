@@ -290,6 +290,7 @@ namespace puffin::rendering
 		physicalDeviceFeatures.shaderSampledImageArrayDynamicIndexing = true;
 		physicalDeviceFeatures.drawIndirectFirstInstance = true;
 		physicalDeviceFeatures.multiDrawIndirect = true;
+		physicalDeviceFeatures.samplerAnisotropy = true;
 
 		vk::PhysicalDeviceVulkan12Features physicalDevice12Features = {};
 		physicalDevice12Features.descriptorIndexing = true;
