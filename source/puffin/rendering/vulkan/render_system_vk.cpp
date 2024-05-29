@@ -600,13 +600,24 @@ namespace puffin::rendering
 
 	void RenderSystemVK::init_samplers()
 	{
-		const vk::SamplerCreateInfo samplerInfo = {};
+		vk::SamplerCreateInfo texture_sampler_info = {};
+		texture_sampler_info.anisotropyEnable = true;
+		texture_sampler_info.maxAnisotropy = 16.0f;
 
-		m_global_render_data.texture_sampler = m_device.createSampler(samplerInfo);
+		m_global_render_data.texture_sampler = m_device.createSampler(texture_sampler_info);
+
+		vk::SamplerCreateInfo shadowmap_sampler_info = {};
+		shadowmap_sampler_info.borderColor = vk::BorderColor::eFloatOpaqueWhite;
+		shadowmap_sampler_info.addressModeU = vk::SamplerAddressMode::eClampToBorder;
+		shadowmap_sampler_info.addressModeV = vk::SamplerAddressMode::eClampToBorder;
+		shadowmap_sampler_info.addressModeW = vk::SamplerAddressMode::eClampToBorder;
+
+		m_global_render_data.shadowmap_sampler = m_device.createSampler(shadowmap_sampler_info);
 
 		m_deletion_queue.pushFunction([=]()
 		{
 			m_device.destroySampler(m_global_render_data.texture_sampler, nullptr);
+			m_device.destroySampler(m_global_render_data.shadowmap_sampler, nullptr);
 		});
 	}
 
@@ -2386,7 +2397,7 @@ namespace puffin::rendering
 
 			auto& alloc_image = m_resource_manager->get_image(id, m_current_swapchain_idx);
 
-			vk::DescriptorImageInfo shadow_image_info = { m_global_render_data.texture_sampler, alloc_image.image_view,
+			vk::DescriptorImageInfo shadow_image_info = { m_global_render_data.shadowmap_sampler, alloc_image.image_view,
 				vk::ImageLayout::eShaderReadOnlyOptimal };
 
 			shadow_image_infos.push_back(shadow_image_info);

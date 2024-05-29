@@ -60,6 +60,7 @@ namespace puffin::rendering
 		vk::DescriptorSetLayout material_set_layout;
 
 		vk::Sampler texture_sampler;
+		vk::Sampler shadowmap_sampler;
 	};
 
 	// Struct containing data that changes each frame
