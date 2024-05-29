@@ -45,13 +45,13 @@ layout(set = 1, binding = 3) readonly buffer MaterialBuffer
 	MaterialData materials[];
 } materialBuffer;
 
-layout(set = 1, binding = 4) uniform sampler2D textures[];
-//layout(set = 1, binding = 5) uniform sampler2D shadowmaps[];
+layout(set = 2, binding = 0) uniform sampler2D textures[];
+layout(set = 3, binding = 0) uniform sampler2D shadowmaps[];
 
-float shadow_calculation(LightData data);
-vec3 dir_light_calculation(LightData lightData, vec3 normal, vec3 viewDir);
-vec3 point_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos);
-vec3 spot_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos);
+float shadow_calculation(LightData data, vec3 lightDir, vec3 fragNormal, vec4 fragWorldPos);
+vec3 dir_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
+vec3 point_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
+vec3 spot_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
 
 void main()
 {
@@ -74,13 +74,13 @@ void main()
 		switch (lightType)
 		{
 			case 0:
-				result += point_light_calculation(lightData, fNormal, viewDir, fWorldPos.rgb);
+				result += point_light_calculation(lightData, fNormal, viewDir, fWorldPos);
 				break;
 			case 1:
-				result += spot_light_calculation(lightData, fNormal, viewDir, fWorldPos.rgb);
+				result += spot_light_calculation(lightData, fNormal, viewDir, fWorldPos);
 				break;
 			case 2:
-				result += dir_light_calculation(lightData, fNormal, viewDir);
+				result += dir_light_calculation(lightData, fNormal, viewDir, fWorldPos);
 				break;
 		}
 	}
@@ -88,22 +88,36 @@ void main()
 	outColor = vec4(albedo.rgb * result, 1.0);
 }
 
-float shadow_calculation(LightData data, vec3 fragWorldPos)
+float shadow_calculation(LightData data, vec3 lightDir, vec3 fragNormal, vec4 fragWorldPos)
 {
-	return 1.0;
+	vec4 fragLightSpacePos = data.light_space_view * fragWorldPos;
+	vec3 projCoords = fragLightSpacePos.xyz / fragLightSpacePos.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	
+	float closestDepth = texture(shadowmaps[int(data.cuttoff_angle_and_shadow_index.z)], projCoords.xy).r;
+	
+	float currentdepth = projCoords.z;
+	
+	float bias = max(0.5 * (1.0 - dot(fragNormal, lightDir)), 0.05);
+	float shadow = currentdepth - bias > closestDepth ? 1.0 : 0.0;
+	
+	if (projCoords.z > 1.0)
+		shadow = 0.0;
+
+	return shadow;
 }
 
-vec3 dir_light_calculation(LightData lightData, vec3 normal, vec3 viewDir)
+vec3 dir_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos)
 {
 	vec3 lightDir = normalize(-lightData.direction.rgb);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	
 	// Diffuse Shading
-	float diff = clamp(dot(normal, lightDir), 0.0, 1.0);
+	float diff = clamp(dot(fragNormal, lightDir), 0.0, 1.0);
 	
 	// Specular Shading
-	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
+	vec3 reflectDir = reflect(-lightDir, fragNormal);
+	float spec = pow(clamp(dot(fragNormal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
 	
 	// Combine
 	vec3 diffuse = lightData.color.rgb * diff;
@@ -113,20 +127,20 @@ vec3 dir_light_calculation(LightData lightData, vec3 normal, vec3 viewDir)
 	return diffuse + ambient + specular;
 }
 
-vec3 point_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
+vec3 point_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos)
 {
-	vec3 lightDir = normalize(lightData.position_and_type.rgb - fragWorldPos);
+	vec3 lightDir = normalize(lightData.position_and_type.rgb - fragWorldPos.rgb);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 
 	// Diffuse Shading
-	float diff = clamp(dot(normal, lightDir), 0.0, 1.0);
+	float diff = clamp(dot(fragNormal, lightDir), 0.0, 1.0);
 
 	// Specular Shading
-	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
+	vec3 reflectDir = reflect(-lightDir, fragNormal);
+	float spec = pow(clamp(dot(fragNormal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
 
 	// Attenuation
-	float distance = length(lightData.position_and_type.rgb - fragWorldPos);
+	float distance = length(lightData.position_and_type.rgb - fragWorldPos.rgb);
 	float attenuation = 1.0 / (lightData.attenuation.x + lightData.attenuation.y * distance + 
 		lightData.attenuation.z * (distance * distance));
 
@@ -137,23 +151,23 @@ vec3 point_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec
 	return diffuse + ambient + specular;
 }
 
-vec3 spot_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3 fragWorldPos)
+vec3 spot_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos)
 {
 	vec3 lightDir = normalize(-lightData.direction.rgb);
-	vec3 fragToLight = lightData.position_and_type.rgb - fragWorldPos;
+	vec3 fragToLight = lightData.position_and_type.rgb - fragWorldPos.rgb;
 
 	vec3 fragToLightDir = normalize(fragToLight);
 	vec3 halfwayDir = normalize(fragToLightDir + viewDir);
 
 	// Diffuse Shading
-	float diff = clamp(dot(normal, fragToLightDir), 0.0, 1.0);
+	float diff = clamp(dot(fragNormal, fragToLightDir), 0.0, 1.0);
 
 	// Specular Shading
-	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(clamp(dot(normal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
+	vec3 reflectDir = reflect(-lightDir, fragNormal);
+	float spec = pow(clamp(dot(fragNormal, halfwayDir), 0.0, 1.0), int(lightData.ambient_specular.z));
 
 	// Attenuation
-	float distance = length(lightData.position_and_type.rgb - fragWorldPos);
+	float distance = length(lightData.position_and_type.rgb - fragWorldPos.rgb);
 	float attenuation = 1.0 / (lightData.attenuation.x + lightData.attenuation.y * distance + 
 		lightData.attenuation.z * (distance * distance));
 
@@ -170,9 +184,9 @@ vec3 spot_light_calculation(LightData lightData, vec3 normal, vec3 viewDir, vec3
 	
 	if (lightData.cuttoff_angle_and_shadow_index.z >= 0.0)
 	{
-		shadow = shadow_calculation(lightData, fragWorldPos);
+		shadow = shadow_calculation(lightData, lightDir, fragNormal, fragWorldPos);
 	}
 
 	//return diffuse + ambient + specular;
-	return (ambient + (1.0 - shadow) * (diffuse + specular));
+	return ((1.0 - shadow) * (diffuse + specular)) + ambient;
 }

@@ -514,8 +514,11 @@ namespace puffin
 					{
 						float inner_cutoff_angle = light.inner_cutoff_angle;
 
-						if (ImGui::DragFloat("Inner Cutoff Angle", &inner_cutoff_angle, 0.25f, 0.0f, 45.0f))
+						if (ImGui::DragFloat("Inner Cutoff Angle", &inner_cutoff_angle, 0.25f, 0.0f))
 						{
+							if (inner_cutoff_angle > 90.0f)
+								inner_cutoff_angle = 90.0f;
+
 							registry->patch<rendering::LightComponent>(entity, [&inner_cutoff_angle](auto& light) { light.inner_cutoff_angle = inner_cutoff_angle; });
 
 							m_scene_changed = true;
@@ -526,8 +529,11 @@ namespace puffin
 					{
 						float outer_cutoff_angle = light.outer_cutoff_angle;
 
-						if (ImGui::DragFloat("Outer Cutoff Angle", &outer_cutoff_angle, 0.25f, light.outer_cutoff_angle, 45.0f))
+						if (ImGui::DragFloat("Outer Cutoff Angle", &outer_cutoff_angle, 0.25f, light.outer_cutoff_angle))
 						{
+							if (outer_cutoff_angle > 90.0f)
+								outer_cutoff_angle = 90.0f;
+
 							registry->patch<rendering::LightComponent>(entity, [&outer_cutoff_angle](auto& light) { light.outer_cutoff_angle = outer_cutoff_angle; });
 
 							m_scene_changed = true;

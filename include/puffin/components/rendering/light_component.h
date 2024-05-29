@@ -73,6 +73,7 @@ namespace puffin
 			uint16_t width = 2048;
 			uint16_t height = 2048;
 			glm::mat4 light_space_view;
+			int shadow_idx = -1;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, width, height)
 		};

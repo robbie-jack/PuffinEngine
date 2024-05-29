@@ -104,7 +104,7 @@ namespace puffin::rendering
 		init_buffers();
 		init_samplers();
 
-		init_descriptors();
+		build_descriptors();
 		init_pipelines();
 
 		if (m_engine->should_render_editor_ui())
@@ -610,7 +610,7 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::init_descriptors()
+	void RenderSystemVK::build_descriptors()
 	{
 		// Descriptor Allocator/Cache
 
@@ -643,25 +643,35 @@ namespace puffin::rendering
 				m_frame_render_data[i].material_buffer.buffer, 0, sizeof(GPUMaterialInstanceData) * g_max_materials
 			};
 
-			const uint32_t num_images = 128;
-			std::vector<uint32_t> variable_desc_counts = { num_images, /*g_max_lights*/ };
-
-			constexpr vk::DescriptorBindingFlags descriptor_binding_flags = { vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount };
-			vk::DescriptorSetVariableDescriptorCountAllocateInfo descriptor_set_variable_descriptor_count_allocate_info = 
-				{ static_cast<uint32_t>(variable_desc_counts.size()), variable_desc_counts.data() };
-
 			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
-			                               m_global_render_data.descriptor_allocator)
+				m_global_render_data.descriptor_allocator)
 				.bindBuffer(0, &camera_buffer_info, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
 				.bindBuffer(1, &light_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.bindBuffer(2, &light_static_buffer_info, vk::DescriptorType::eUniformBuffer,vk::ShaderStageFlagBits::eFragment)
 				.bindBuffer(3, &material_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.bindImagesWithoutWrite(4, num_images, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptor_binding_flags)
 				//.bindImagesWithoutWrite(5, g_max_lights, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptor_binding_flags)
-				.addPNext(&descriptor_set_variable_descriptor_count_allocate_info)
 				.build(m_frame_render_data[i].global_descriptor, m_global_render_data.global_set_layout);
 
-			// Material Descriptors
+			const uint32_t num_images = 128;
+			uint32_t variable_desc_counts = num_images;
+
+			constexpr vk::DescriptorBindingFlags descriptor_binding_flags = { vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount };
+			vk::DescriptorSetVariableDescriptorCountAllocateInfo variable_descriptor_count_alloc_info =
+			{ 1, &variable_desc_counts };
+
+			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
+				m_global_render_data.descriptor_allocator)
+				.bindImagesWithoutWrite(0, num_images, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptor_binding_flags)
+				.addPNext(&variable_descriptor_count_alloc_info)
+				.build(m_frame_render_data[i].texture_descriptor, m_global_render_data.texture_set_layout);
+
+			variable_desc_counts = g_max_lights;
+
+			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
+				m_global_render_data.descriptor_allocator)
+				.bindImagesWithoutWrite(0, g_max_lights, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptor_binding_flags)
+				.addPNext(&variable_descriptor_count_alloc_info)
+				.build(m_frame_render_data[i].shadowmap_descriptor, m_global_render_data.shadowmap_set_layout);
 		}
 
 		m_deletion_queue.pushFunction([=]()
@@ -693,6 +703,8 @@ namespace puffin::rendering
 		m_forward_pipeline_layout = plb
 		.descriptorSetLayout(m_global_render_data.object_set_layout)
 		.descriptorSetLayout(m_global_render_data.global_set_layout)
+		.descriptorSetLayout(m_global_render_data.texture_set_layout)
+		.descriptorSetLayout(m_global_render_data.shadowmap_set_layout)
 		.pushConstantRange(range)
 		.createUnique(m_device);
 
@@ -1094,6 +1106,7 @@ namespace puffin::rendering
 
 		// Prepare textures, scene data & indirect commands for rendering
 		update_texture_descriptors();
+		update_shadow_descriptors();
 		prepare_scene_data();
 		build_indirect_commands();
 
@@ -1332,9 +1345,9 @@ namespace puffin::rendering
 
 			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
 			                               m_global_render_data.descriptor_allocator)
-				.updateImages(4, texture_image_infos.size(), texture_image_infos.data(),
+				.updateImages(0, texture_image_infos.size(), texture_image_infos.data(),
 				              vk::DescriptorType::eCombinedImageSampler)
-				.update(current_frame_data().global_descriptor);
+				.update(current_frame_data().texture_descriptor);
 
 			current_frame_data().texture_descriptor_needs_updated = false;
 		}
@@ -1346,6 +1359,12 @@ namespace puffin::rendering
 		{
 			std::vector<vk::DescriptorImageInfo> shadow_image_infos;
 			build_shadow_descriptor_info(shadow_image_infos);
+
+			util::DescriptorBuilder::begin(m_global_render_data.descriptor_layout_cache,
+				m_global_render_data.descriptor_allocator)
+				.updateImages(0, shadow_image_infos.size(), shadow_image_infos.data(),
+					vk::DescriptorType::eCombinedImageSampler)
+				.update(current_frame_data().shadowmap_descriptor);
 
 			current_frame_data().shadow_descriptor_needs_updated = false;
 		}
@@ -1614,6 +1633,17 @@ namespace puffin::rendering
 			lights[i].cutoff_angle_and_shadow_index.z = -1.0f;
 			lights[i].cutoff_angle_and_shadow_index.w = 0.0f;
 
+			if (registry->any_of<ShadowCasterComponent>(entity))
+			{
+				auto& shadow = registry->get<ShadowCasterComponent>(entity);
+
+				if (light.type == LightType::Spot)
+				{
+					lights[i].cutoff_angle_and_shadow_index.z = shadow.shadow_idx;
+					lights[i].light_space_view = shadow.light_space_view;
+				}
+			}
+
 			i++;
 		}
 
@@ -1646,10 +1676,11 @@ namespace puffin::rendering
 		{
 			if (light.type == LightType::Spot)
 			{
-				float near_plane = 0.01f;
-				float far_plane = 100.0f;
+				float near_plane = 1.f;
+				float far_plane = 100.f;
+				float aspect = float(shadow.width) / float(shadow.height);
 
-				glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle), 1.0f, near_plane, far_plane);
+				glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle * 2), aspect, near_plane, far_plane);
 				light_projection[1][1] *= -1;
 
 				glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + light.direction), glm::vec3(0, 1, 0));
@@ -1958,6 +1989,8 @@ namespace puffin::rendering
 		std::vector<vk::DescriptorSet> descriptors;
 		descriptors.push_back(current_frame_data().object_descriptor);
 		descriptors.push_back(current_frame_data().global_descriptor);
+		descriptors.push_back(current_frame_data().texture_descriptor);
+		descriptors.push_back(current_frame_data().shadowmap_descriptor);
 
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forward_pipeline_layout.get(), 0, descriptors.size(),
 			descriptors.data(), 0, nullptr);
@@ -2358,6 +2391,7 @@ namespace puffin::rendering
 
 			shadow_image_infos.push_back(shadow_image_info);
 
+			shadow.shadow_idx = idx;
 			++idx;
 		}
 	}

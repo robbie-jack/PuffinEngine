@@ -55,6 +55,8 @@ namespace puffin::rendering
 
 		vk::DescriptorSetLayout object_set_layout;
 		vk::DescriptorSetLayout global_set_layout;
+		vk::DescriptorSetLayout texture_set_layout;
+		vk::DescriptorSetLayout shadowmap_set_layout;
 		vk::DescriptorSetLayout material_set_layout;
 
 		vk::Sampler texture_sampler;
@@ -86,6 +88,8 @@ namespace puffin::rendering
 		// Global Data (Set for entire frame)
 		vk::DescriptorSet object_descriptor;
 		vk::DescriptorSet global_descriptor;
+		vk::DescriptorSet texture_descriptor;
+		vk::DescriptorSet shadowmap_descriptor;
 
 		AllocatedBuffer camera_buffer;
 		AllocatedBuffer object_buffer;
@@ -256,7 +260,7 @@ namespace puffin::rendering
 		void init_sync_structures();
 		void init_buffers();
 		void init_samplers();
-		void init_descriptors();
+		void build_descriptors();
 		void init_pipelines();
 
 		void build_forward_renderer_pipeline();
