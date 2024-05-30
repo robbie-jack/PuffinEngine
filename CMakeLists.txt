@@ -177,6 +177,7 @@ set(HEADERS
 	# Types
 	${HEADER_DIR}/puffin/types/component_flags.h
 	${HEADER_DIR}/puffin/types/deletion_queue.h
+	${HEADER_DIR}/puffin/types/euler_angles.h
 	${HEADER_DIR}/puffin/types/matrix.h
 	${HEADER_DIR}/puffin/types/packed_array.h
 	${HEADER_DIR}/puffin/types/packed_vector.h
@@ -243,7 +244,6 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptors_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/helpers_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/material_registry_vk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/render_manager_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/render_system_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/resource_manager_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/unified_geometry_buffer_vk.cpp

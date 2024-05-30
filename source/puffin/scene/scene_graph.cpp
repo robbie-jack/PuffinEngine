@@ -23,7 +23,7 @@ namespace puffin::scene
 	{
 		update_scene_graph();
 
-		update_global_transforms();
+		update_transforms();
 	}
 
 	void SceneGraph::update()
@@ -142,13 +142,46 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraph::update_global_transforms()
+	void SceneGraph::update_transforms()
 	{
 		auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 		// Update global transforms
 		for (auto& id : m_node_ids)
 		{
+			//if (const auto node = get_node_ptr(id); node && node->has_transform_3d())
+			//{
+			//	auto node_3d = dynamic_cast<TransformNode3D*>(node);
+
+			//	// Update quaternion from euler angles
+			//	if (node_3d->euler_angles_changed())
+			//	{
+			//		maths::EulerAngles euler_angles_old;
+			//		euler_angles_old.pitch = maths::rad_to_deg(glm::pitch(glm::quat(node_3d->orientation())));
+			//		euler_angles_old.yaw = maths::rad_to_deg(glm::yaw(glm::quat(node_3d->orientation())));
+			//		euler_angles_old.roll = maths::rad_to_deg(glm::roll(glm::quat(node_3d->orientation())));
+
+			//		const auto diff_angles_rad = deg_to_rad(node_3d->euler_angles() - euler_angles_old);
+
+			//		const auto quat = maths::Quat(glm::quat(glm::vec3(diff_angles_rad.pitch, diff_angles_rad.yaw, diff_angles_rad.roll)));
+
+			//		node_3d->orientation() = quat * node_3d->orientation();
+
+			//		node_3d->set_euler_angles_changed(false);
+			//		node_3d->set_orientation_changed(false);
+			//		node_3d->set_transform_changed(true);
+			//	}
+
+			//	// Update euler angles from quaternion
+			//	if (node_3d->orientation_changed())
+			//	{
+
+
+			//		node_3d->set_orientation_changed(false);
+			//		node_3d->set_transform_changed(true);
+			//	}
+			//}
+
 			if (const auto node = get_node_ptr(id); node && node->transform_changed())
 			{
 				// Make sure children also have the global transform updated
@@ -197,6 +230,7 @@ namespace puffin::scene
                     auto& global_transform = m_global_transform_3ds.at(id);
 					global_transform.position = { 0.f };
 					global_transform.orientation = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
+					global_transform.euler_angles = { 0.0f, 0.0f, 0.0f };
 					global_transform.scale = { 1.f };
 
 					auto parent_id = node->parent_id();
@@ -252,6 +286,8 @@ namespace puffin::scene
             global_transform.position += local_transform->position;
 
             global_transform.orientation = local_transform->orientation * global_transform.orientation;
+
+			global_transform.euler_angles += local_transform->euler_angles;
 
             global_transform.scale *= local_transform->scale;
 		}

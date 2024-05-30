@@ -45,7 +45,47 @@ namespace puffin::maths
 			return *this;
 		}
 
+		Quat operator*=(const glm::quat& q)
+		{
+			float w1 = w;
+			float x1 = x;
+			float y1 = y;
+			float z1 = z;
+
+			float w2 = q.w;
+			float x2 = q.x;
+			float y2 = q.y;
+			float z2 = q.z;
+
+			w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
+			x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
+			y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2;
+			z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2;
+			return *this;
+		}
+
 		Quat operator*(const Quat& q) const
+		{
+			Quat quat;
+
+			float w1 = w;
+			float x1 = x;
+			float y1 = y;
+			float z1 = z;
+
+			float w2 = q.w;
+			float x2 = q.x;
+			float y2 = q.y;
+			float z2 = q.z;
+
+			quat.w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
+			quat.x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
+			quat.y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2;
+			quat.z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2;
+			return quat;
+		}
+
+		Quat operator*(const glm::quat& q) const
 		{
 			Quat quat;
 

@@ -21,6 +21,7 @@
 #include "puffin/components/physics/3d/velocity_component_3d.h"
 #include "puffin/components/scripting/angelscript_component.h"
 #include "puffin/components/procedural/procedural_mesh_component.h"
+#include "puffin/nodes/transform_node_3d.h"
 
 namespace puffin
 {
@@ -257,6 +258,7 @@ namespace puffin
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
+				auto node_3d = static_cast<TransformNode3D*>(node);
                 const auto transform = node->transform_3d();
 
 				{
@@ -286,17 +288,50 @@ namespace puffin
 				}
 
 				{
-                    Vector3f anglesDeg = maths::radToDeg(eulerAngles(static_cast<glm::quat>(transform->orientation)));
+					float min_angle = -360.0f;
+					float max_angle = 360.0f;
 
-					if (ImGui::DragFloat3("Orientation", reinterpret_cast<float*>(&anglesDeg), 0.2f, -180.f, 180.f, "%.3f"))
+					auto euler_angles = transform->euler_angles;
+
+					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&euler_angles), 0.2f, min_angle, max_angle, "%.3f"))
 					{
-						const Vector3f angles_rad = maths::degToRad(anglesDeg);
+						if (euler_angles.pitch > max_angle)
+						{
+							euler_angles.pitch -= max_angle;
+						}
 
-						const glm::quat quat_x(angleAxis(angles_rad.x, glm::vec3(1.f, 0.f, 0.f)));
-						const glm::quat quat_y(angleAxis(angles_rad.y, glm::vec3(0.f, 1.f, 0.f)));
-						const glm::quat quat_z(angleAxis(angles_rad.z, glm::vec3(0.f, 0.f, 1.f)));
+						if (euler_angles.pitch < min_angle)
+						{
+							euler_angles.pitch += max_angle;
+						}
 
-                        node->transform_3d()->orientation = quat_y * quat_x * quat_z;
+						if (euler_angles.yaw > max_angle)
+						{
+							euler_angles.yaw -= max_angle;
+						}
+
+						if (euler_angles.yaw < min_angle)
+						{
+							euler_angles.yaw += max_angle;
+						}
+
+						if (euler_angles.roll > max_angle)
+						{
+							euler_angles.roll -= max_angle;
+						}
+
+						if (euler_angles.roll < min_angle)
+						{
+							euler_angles.roll += max_angle;
+						}
+
+						const auto diff_angles_rad = deg_to_rad(transform->euler_angles - euler_angles);
+
+						const auto quat = maths::Quat(glm::quat(glm::vec3(diff_angles_rad.pitch, diff_angles_rad.yaw, diff_angles_rad.roll)));
+
+						node->transform_3d()->orientation = quat * node->transform_3d()->orientation;
+
+						node_3d->euler_angles() = euler_angles;
 
 						m_scene_changed = true;
 					}
@@ -439,7 +474,7 @@ namespace puffin
 
 						if (ImGui::DragFloat3("Direction", reinterpret_cast<float*>(&direction), 0.01f, -1.0f, 1.0f))
 						{
-							direction.normalize();
+							normalize(direction);
 
 							registry->patch<rendering::LightComponent>(entity, [&direction](auto& light) { light.direction = direction; });
 

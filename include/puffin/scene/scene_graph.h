@@ -235,7 +235,7 @@ namespace puffin::scene
 		void destroy_node(PuffinID id);
 		void add_id_and_child_ids(PuffinID id, std::vector<PuffinID>& node_ids);
 
-		void update_global_transforms();
+		void update_transforms();
 		void apply_local_to_global_transform_2d(PuffinID id, TransformComponent2D& global_transform);
 		void apply_local_to_global_transform_3d(PuffinID id, TransformComponent3D& global_transform);
 

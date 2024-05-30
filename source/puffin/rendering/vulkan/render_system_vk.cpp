@@ -1305,17 +1305,17 @@ namespace puffin::rendering
 				m_editor_cam.pitch = -89.0f;
 
 			// Calculate Direction vector from yaw and pitch of camera
-			m_editor_cam.direction.x = cos(maths::degToRad(m_editor_cam.yaw)) * cos(
-				maths::degToRad(m_editor_cam.pitch));
-			m_editor_cam.direction.y = sin(maths::degToRad(m_editor_cam.pitch));
-			m_editor_cam.direction.z = sin(maths::degToRad(m_editor_cam.yaw)) * cos(
-				maths::degToRad(m_editor_cam.pitch));
+			m_editor_cam.direction.x = cos(maths::deg_to_rad(m_editor_cam.yaw)) * cos(
+				maths::deg_to_rad(m_editor_cam.pitch));
+			m_editor_cam.direction.y = sin(maths::deg_to_rad(m_editor_cam.pitch));
+			m_editor_cam.direction.z = sin(maths::deg_to_rad(m_editor_cam.yaw)) * cos(
+				maths::deg_to_rad(m_editor_cam.pitch));
 
-			m_editor_cam.direction.normalize();
+			normalize(m_editor_cam.direction);
 		}
 
 		// Calculate Right, Up and LookAt vectors
-		m_editor_cam.right = m_editor_cam.up.cross(m_editor_cam.direction).normalized();
+		m_editor_cam.right = normalize(cross(m_editor_cam.up, m_editor_cam.direction));
 		m_editor_cam.look_at = m_editor_cam.position + m_editor_cam.direction;
 
 		m_editor_cam.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
@@ -1323,7 +1323,7 @@ namespace puffin::rendering
 		m_editor_cam.view = glm::lookAt(static_cast<glm::vec3>(m_editor_cam.position),
 			static_cast<glm::vec3>(m_editor_cam.look_at), static_cast<glm::vec3>(m_editor_cam.up));
 
-		m_editor_cam.proj = glm::perspective(maths::degToRad(m_editor_cam.fov_y), m_editor_cam.aspect,
+		m_editor_cam.proj = glm::perspective(maths::deg_to_rad(m_editor_cam.fov_y), m_editor_cam.aspect,
 			m_editor_cam.z_near, m_editor_cam.z_far);
 		m_editor_cam.proj[1][1] *= -1;
 
@@ -1342,7 +1342,7 @@ namespace puffin::rendering
 		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
 			static_cast<glm::vec3>(camera.look_at), static_cast<glm::vec3>(camera.up));
 
-		camera.proj = glm::perspective(maths::degToRad(camera.fov_y), camera.aspect, camera.z_near, camera.z_far);
+		camera.proj = glm::perspective(maths::deg_to_rad(camera.fov_y), camera.aspect, camera.z_near, camera.z_far);
 		camera.proj[1][1] *= -1;
 
 		camera.view_proj = camera.proj * camera.view;
@@ -1620,9 +1620,14 @@ namespace puffin::rendering
 			lights[i].position_and_type.z = transform.position.z;
 			lights[i].position_and_type.w = static_cast<int>(light.type);
 
+			Vector3f direction = glm::normalize(static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, 1.0f));
+
 			lights[i].direction.x = light.direction.x;
 			lights[i].direction.y = light.direction.y;
 			lights[i].direction.z = light.direction.z;
+			/*lights[i].direction.x = direction.x;
+			lights[i].direction.y = direction.y;
+			lights[i].direction.z = direction.z;*/
 			lights[i].direction.w = 0.0f;
 
 			lights[i].color.x = light.color.x;

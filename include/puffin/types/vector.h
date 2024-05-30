@@ -342,8 +342,12 @@ namespace puffin
 		// Operator Conversion
 		explicit operator glm::vec3() const
 		{
-			const glm::vec3 vec = {x, y, z};
-			return vec;
+			return glm::vec3(x, y, z);
+		}
+
+		explicit operator glm::dvec3() const
+		{
+			return glm::dvec3(x, y, z);
 		}
 
 		operator Vector3<float>() const
@@ -465,66 +469,46 @@ namespace puffin
 			return *this;
 		}
 
+		// Operator/=
+		Vector3& operator/=(const T& rhs)
+		{
+			x /= rhs;
+			y /= rhs;
+			z /= rhs;
+			return *this;
+		}
+
 		// Operator[]
 		T operator[](const int idx) const
 		{
 			assert(idx >= 0 && idx < 3);
 
-			return (&x)[idx];
+			if (idx == 0)
+				return x;
+
+			if (idx == 1)
+				return y;
+
+			if (idx == 2)
+				return z;
+
+			return 0.0;
 		}
 
 		T& operator[](const int idx)
 		{
 			assert(idx >= 0 && idx < 3);
 
-			return (&x)[idx];
-		}
+			if (idx == 0)
+				return x;
 
-		// Functions
-		T dot(const Vector3& vec) const
-		{
-			T temp = (x * vec.x) + (y * vec.y) + (z * vec.z);
-			return temp;
-		}
+			if (idx == 1)
+				return y;
 
-		Vector3 cross(const Vector3& vec)
-		{
-			Vector3 cross;
-			cross.x = y * vec.z - z * vec.y;
-			cross.y = x * vec.z - z * vec.x;
-			cross.z = x * vec.y - y * vec.x;
-			return cross;
-		}
+			if (idx == 2)
+				return z;
 
-		T lengthSquared() const
-		{
-			return x * x + y * y + z * z;
-		}
-
-		T length() const
-		{
-			return sqrtf(lengthSquared());
-		}
-
-		void normalize()
-		{
-			T lengthT = length();
-
-			x /= lengthT;
-			y /= lengthT;
-			z /= lengthT;
-		}
-
-		[[nodiscard]] Vector3 normalized() const
-		{
-			Vector3 vector = *this;
-			T lengthT = length();
-
-			vector.x /= lengthT;
-			vector.y /= lengthT;
-			vector.z /= lengthT;
-
-			return vector;
+			return 0.0;
 		}
 
 		void zero()
@@ -547,6 +531,76 @@ namespace puffin
 	using Vector3f = Vector3<float>;
 	using Vector3d = Vector3<double>;
 	using Vector3i = Vector3<int>;
+
+	inline float dot(const Vector3f& a, const Vector3f& b)
+	{
+		return a.x * b.x + a.y * b.y + a.z * b.z;
+	}
+
+	inline double dot(const Vector3d& a, const Vector3d& b)
+	{
+		return a.x * b.x + a.y * b.y + a.z * b.z;
+	}
+
+	inline Vector3f cross(const Vector3f& a, const Vector3f& b)
+	{
+		Vector3f cross;
+		cross.x = a.y * b.z - a.z * b.y;
+		cross.y = a.x * b.z - a.z * b.x;
+		cross.z = a.x * b.y - a.y * b.x;
+		return cross;
+	}
+
+	inline Vector3d cross(const Vector3d& a, const Vector3d& b)
+	{
+		Vector3d cross;
+		cross.x = a.y * b.z - a.z * b.y;
+		cross.y = a.x * b.z - a.z * b.x;
+		cross.z = a.x * b.y - a.y * b.x;
+		return cross;
+	}
+
+	inline float length_squared(const Vector3f& v)
+	{
+		return v.x * v.x + v.y * v.y + v.z * v.z;
+	}
+
+	inline float length(const Vector3f& v)
+	{
+		return sqrtf(length_squared(v));
+	}
+
+	inline double length_squared(const Vector3d& v)
+	{
+		return v.x * v.x + v.y * v.y + v.z * v.z;
+	}
+
+	inline double length(const Vector3d& v)
+	{
+		return sqrt(length_squared(v));
+	}
+
+	inline Vector3f normalize(const Vector3f& v)
+	{
+		Vector3f vec = v;
+		const float l = length(v);
+
+		vec /= l;
+
+		return vec;
+	}
+
+	inline Vector3d normalize(const Vector3d& v)
+	{
+		Vector3d vec = v;
+		const double l = length(v);
+
+		vec.x /= l;
+		vec.y /= l;
+		vec.z /= l;
+
+		return vec;
+	}
 }
 
 namespace std
