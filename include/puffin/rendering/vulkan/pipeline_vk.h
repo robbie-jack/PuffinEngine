@@ -118,6 +118,7 @@ namespace puffin::rendering::util
 		{
 			mInputAssemblyState.topology = vk::PrimitiveTopology::eTriangleList;
 			mRasterizationState.lineWidth = 1.0f;
+			mRasterizationState.setCullMode(vk::CullModeFlagBits::eBack);
 
 			// Set up depth test, but do not enable it.
 			mDepthStencilState.depthTestEnable = VK_FALSE;

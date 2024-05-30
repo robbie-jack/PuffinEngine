@@ -94,12 +94,25 @@ float shadow_calculation(LightData data, vec3 lightDir, vec3 fragNormal, vec4 fr
 	vec3 projCoords = fragLightSpacePos.xyz / fragLightSpacePos.w;
 	projCoords = projCoords * 0.5 + 0.5;
 	
-	float closestDepth = texture(shadowmaps[int(data.cuttoff_angle_and_shadow_index.z)], projCoords.xy).r;
+	//float closestDepth = texture(shadowmaps[int(data.cuttoff_angle_and_shadow_index.z)], projCoords.xy).r;
 	
 	float currentdepth = projCoords.z;
 	
 	float bias = max(0.5 * (1.0 - dot(fragNormal, lightDir)), 0.05);
-	float shadow = currentdepth - bias > closestDepth ? 1.0 : 0.0;
+	//float shadow = currentdepth - bias > closestDepth ? 1.0 : 0.0;
+	float shadow = 0.0;
+	
+	vec2 texelSize = 1.0 / textureSize(shadowmaps[int(data.cuttoff_angle_and_shadow_index.z)], 0);
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(shadowmaps[int(data.cuttoff_angle_and_shadow_index.z)], projCoords.xy + vec2(x, y) * texelSize).r;
+			shadow += currentdepth - bias > pcfDepth ? 1.0 : 0.0;
+		}
+	}
+	
+	shadow /= 9.0;
 	
 	if (projCoords.z > 1.0)
 		shadow = 0.0;

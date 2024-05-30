@@ -238,14 +238,14 @@ namespace puffin::rendering
 		image_desc.height = shadow.height;
 		image_desc.depth = 1;
 
-		m_shadow_update_events.push({ id, image_desc, m_frames_in_flight_count });
+		m_shadow_update_events.push({ id, image_desc });
 	}
 
 	void RenderSystemVK::on_destroy_shadow_caster(entt::registry& registry, entt::entity entity)
 	{
 		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
-		m_shadow_destroy_events.push({ id, m_frames_in_flight_count });
+		m_shadow_destroy_events.push({ id });
 	}
 
 	void RenderSystemVK::register_texture(PuffinID texID)
@@ -2396,7 +2396,7 @@ namespace puffin::rendering
 		{
 			auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
-			auto& alloc_image = m_resource_manager->get_image(id, m_current_swapchain_idx);
+			auto& alloc_image = m_resource_manager->get_image(id, current_frame_idx());
 
 			vk::DescriptorImageInfo shadow_image_info = { m_global_render_data.shadowmap_sampler, alloc_image.image_view,
 				vk::ImageLayout::eShaderReadOnlyOptimal };

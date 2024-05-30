@@ -165,13 +165,13 @@ namespace puffin::rendering
 		{
 			PuffinID id;
 			ImageDesc image_desc;
-			uint8_t frame_count;
+			uint8_t frame_count = 0;
 		};
 
 		struct ShadowDestroyEvent
 		{
 			PuffinID id;
-			uint8_t frame_count;
+			uint8_t frame_count = 0;
 		};
 
 		// Initialization Members

@@ -109,7 +109,7 @@ namespace puffin::core
 		{
 			auto scene_data = get_system<io::SceneSubsystem>()->sceneData();
 
-			if (constexpr bool setupDefaultScene = true; setupDefaultScene)
+			if (constexpr bool setupDefaultScene = false; setupDefaultScene)
 			{
 				auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
 				auto scene_graph = get_system<scene::SceneGraph>();
@@ -123,7 +123,7 @@ namespace puffin::core
 				//proceduralScene();
 
 				scene_data->update_data(entt_subsystem, scene_graph);
-				//scene_data->save();
+				scene_data->save();
 			}
 			else
 			{
@@ -394,6 +394,7 @@ namespace puffin::core
 		PuffinID materialInstId1 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
 		PuffinID materialInstId2 = assets::AssetRegistry::get()->addAsset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
 
+		auto registry = get_system<ecs::EnTTSubsystem>()->registry();
 		const auto scene_graph = get_system<scene::SceneGraph>();
 
 		auto& house_node = scene_graph->add_node<rendering::MeshNode>();
@@ -446,6 +447,7 @@ namespace puffin::core
 		spot_light.set_direction({ -0.5f, -0.5f, 0.f });
 		spot_light.set_ambient_intensity(0.f);
 		spot_light.add_component<rendering::ShadowCasterComponent>();
+		registry->patch<rendering::ShadowCasterComponent>(spot_light.entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
 
 		auto& spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light.id());
 		spot_light_mesh.set_scale({ 0.25f });
@@ -459,6 +461,7 @@ namespace puffin::core
 		spot_light_2.set_direction({ 0.5f, -0.5f, 0.f });
 		spot_light_2.set_ambient_intensity(0.f);
 		spot_light_2.add_component<rendering::ShadowCasterComponent>();
+		registry->patch<rendering::ShadowCasterComponent>(spot_light_2.entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
 
 		auto& spot_light_mesh_2 = scene_graph->add_child_node<rendering::MeshNode>(spot_light_2.id());
 		spot_light_mesh_2.set_scale({ 0.25f });
