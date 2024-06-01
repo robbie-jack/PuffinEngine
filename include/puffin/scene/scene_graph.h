@@ -176,14 +176,25 @@ namespace puffin::scene
 			return add_node_internal(type_name, id, parent_id);
 		}
 
+		bool is_valid_node(PuffinID id)
+		{
+			return m_id_to_type.find(id) != m_id_to_type.end();
+		}
+
 		template<typename T>
 		T* get_node(PuffinID id)
 		{
+			if (!is_valid_node(id))
+				return nullptr;
+
 			return get_array<T>()->get(id);
 		}
 
 		[[nodiscard]] Node* get_node_ptr(const PuffinID& id)
 		{
+			if (!is_valid_node(id))
+				return nullptr;
+
 			return get_array(m_id_to_type.at(id).c_str())->get_ptr(id);
 		}
 

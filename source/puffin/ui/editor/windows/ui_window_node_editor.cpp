@@ -288,13 +288,9 @@ namespace puffin
 				}
 
 				{
-					auto euler_angles = transform->orientation_euler_angles;
-
-					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&euler_angles), 0.2f, 0, 0, "%.3f"))
+					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&transform->orientation_euler_angles), 0.2f, 0, 0, "%.3f"))
 					{
-						update_transform_orientation(*transform, euler_angles);
-
-						node->set_transform_changed(true);
+						node->transform_3d()->orientation_quat = maths::euler_to_quat(transform->orientation_euler_angles) * angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
 
 						m_scene_changed = true;
 					}

@@ -449,7 +449,8 @@ namespace puffin::core
 		spot_light->add_component<rendering::ShadowCasterComponent>();
 		registry->patch<rendering::ShadowCasterComponent>(spot_light->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
 
-		update_transform_orientation(*spot_light->transform_3d(), { -45.0f, -90.0f, 0.0f });
+		spot_light->transform_3d()->orientation_euler_angles = { -45.0f, -90.0f, 0.0f };
+		spot_light->transform_3d()->orientation_quat = maths::euler_to_quat({ spot_light->transform_3d()->orientation_euler_angles }) * angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
 
 		auto spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light->id());
 		spot_light_mesh->set_scale({ 0.25f });
@@ -465,7 +466,8 @@ namespace puffin::core
 		spot_light_2->add_component<rendering::ShadowCasterComponent>();
 		registry->patch<rendering::ShadowCasterComponent>(spot_light_2->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
 
-		update_transform_orientation(*spot_light_2->transform_3d(), { 45.0f, 90.0f, 0.0f });
+		spot_light_2->transform_3d()->orientation_euler_angles = { 45.0f, 90.0f, 0.0f };
+		spot_light_2->transform_3d()->orientation_quat = maths::euler_to_quat({ spot_light_2->transform_3d()->orientation_euler_angles }) * angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
 
 		auto spot_light_mesh_2 = scene_graph->add_child_node<rendering::MeshNode>(spot_light_2->id());
 		spot_light_mesh_2->set_scale({ 0.25f });
