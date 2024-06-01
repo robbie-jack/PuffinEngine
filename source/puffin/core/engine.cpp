@@ -397,11 +397,11 @@ namespace puffin::core
 		auto registry = get_system<ecs::EnTTSubsystem>()->registry();
 		const auto scene_graph = get_system<scene::SceneGraph>();
 
-		auto& house_node = scene_graph->add_node<rendering::MeshNode>();
-		house_node.set_name("House");
-		house_node.set_position({ 2.0f, 0.0f, 0.0f });
-		house_node.set_mesh_asset_id(meshId1);
-		house_node.set_mat_asset_id(materialInstId1);
+		auto house_node = scene_graph->add_node<rendering::MeshNode>();
+		house_node->set_name("House");
+		house_node->set_position({ 2.0f, 0.0f, 0.0f });
+		house_node->set_mesh_asset_id(meshId1);
+		house_node->set_mat_asset_id(materialInstId1);
 
 		/*auto sphere = scene_graph->add_node<rendering::MeshNode>();
 		sphere.set_name("Sphere");
@@ -409,68 +409,68 @@ namespace puffin::core
 		sphere.set_mesh_asset_id(meshId2);
 		sphere.set_mat_asset_id(materialInstId1);*/
 
-		auto& cube_1 = scene_graph->add_node<rendering::MeshNode>();
-		cube_1.name() = "Cube_1";
-		cube_1.set_position({ 0.0f });
-		cube_1.set_mesh_asset_id(meshId3);
-		cube_1.set_mat_asset_id(materialInstId1);
+		auto cube_1 = scene_graph->add_node<rendering::MeshNode>();
+		cube_1->name() = "Cube_1";
+		cube_1->set_position({ 0.0f });
+		cube_1->set_mesh_asset_id(meshId3);
+		cube_1->set_mat_asset_id(materialInstId1);
 
-		auto& cube_2 = scene_graph->add_node<rendering::MeshNode>();
-		cube_2.set_name("Cube_2");
-		cube_2.set_position({ -1.75f, -5.0f, 0.0f });
-		cube_2.set_mesh_asset_id(meshId3);
-		cube_2.set_mat_asset_id(materialInstId1);
+		auto cube_2 = scene_graph->add_node<rendering::MeshNode>();
+		cube_2->set_name("Cube_2");
+		cube_2->set_position({ -1.75f, -5.0f, 0.0f });
+		cube_2->set_mesh_asset_id(meshId3);
+		cube_2->set_mat_asset_id(materialInstId1);
 
-		auto& plane = scene_graph->add_node<rendering::MeshNode>();
-		plane.set_name("Plane");
-		plane.set_position({ 0.0f, -10.0f, 0.0f });
-		plane.set_scale({ 50.0f, 1.0f, 50.0f });
-		plane.set_mesh_asset_id(meshId3);
-		plane.set_mat_asset_id(materialInstId1);
+		auto plane = scene_graph->add_node<rendering::MeshNode>();
+		plane->set_name("Plane");
+		plane->set_position({ 0.0f, -10.0f, 0.0f });
+		plane->set_scale({ 50.0f, 1.0f, 50.0f });
+		plane->set_mesh_asset_id(meshId3);
+		plane->set_mat_asset_id(materialInstId1);
 
-		auto& dir_light = scene_graph->add_node<rendering::LightNode3D>();
-		dir_light.set_name("Directional Light");
-		dir_light.set_position({ 0.0f, 10.0f, 0.0f });
-		dir_light.set_color({ .01f });
-		dir_light.set_light_type(rendering::LightType::Directional);
-		dir_light.set_ambient_intensity(0.f);
+		auto dir_light = scene_graph->add_node<rendering::LightNode3D>();
+		dir_light->set_name("Directional Light");
+		dir_light->set_position({ 0.0f, 10.0f, 0.0f });
+		dir_light->set_color({ .01f });
+		dir_light->set_light_type(rendering::LightType::Directional);
+		dir_light->set_ambient_intensity(0.f);
 
-		auto& dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light.id());
-		dir_light_mesh.set_scale({ 0.25f });
-		dir_light_mesh.set_mesh_asset_id(meshId3);
-		dir_light_mesh.set_mat_asset_id(materialInstId1);
+		auto dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light->id());
+		dir_light_mesh->set_scale({ 0.25f });
+		dir_light_mesh->set_mesh_asset_id(meshId3);
+		dir_light_mesh->set_mat_asset_id(materialInstId1);
 
-		auto& spot_light = scene_graph->add_node<rendering::LightNode3D>();
-		spot_light.set_name("Spot Light");
-		spot_light.set_position({ 10.0f, 5.0f, 0.0f });
-		spot_light.set_light_type(rendering::LightType::Spot);
-		spot_light.set_direction({ -0.5f, -0.5f, 0.f });
-		spot_light.set_ambient_intensity(0.f);
-		spot_light.add_component<rendering::ShadowCasterComponent>();
-		registry->patch<rendering::ShadowCasterComponent>(spot_light.entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
+		auto spot_light = scene_graph->add_node<rendering::LightNode3D>();
+		spot_light->set_name("Spot Light");
+		spot_light->set_position({ 10.0f, 5.0f, 0.0f });
+		spot_light->set_light_type(rendering::LightType::Spot);
+		spot_light->set_direction({ -0.5f, -0.5f, 0.f });
+		spot_light->set_ambient_intensity(0.f);
+		spot_light->add_component<rendering::ShadowCasterComponent>();
+		registry->patch<rendering::ShadowCasterComponent>(spot_light->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
 
-		auto& spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light.id());
-		spot_light_mesh.set_scale({ 0.25f });
-		spot_light_mesh.set_mesh_asset_id(meshId3);
-		spot_light_mesh.set_mat_asset_id(materialInstId1);
+		update_transform_orientation(*spot_light->transform_3d(), { -45.0f, -90.0f, 0.0f });
 
-		auto& spot_light_2 = scene_graph->add_node<rendering::LightNode3D>();
-		spot_light_2.set_name("Spot Light 2");
-		spot_light_2.set_position({ -10.0f, 5.0f, 0.0f });
-		spot_light_2.set_light_type(rendering::LightType::Spot);
-		spot_light_2.set_direction({ 0.5f, -0.5f, 0.f });
-		spot_light_2.set_ambient_intensity(0.f);
-		spot_light_2.add_component<rendering::ShadowCasterComponent>();
-		registry->patch<rendering::ShadowCasterComponent>(spot_light_2.entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
+		auto spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light->id());
+		spot_light_mesh->set_scale({ 0.25f });
+		spot_light_mesh->set_mesh_asset_id(meshId3);
+		spot_light_mesh->set_mat_asset_id(materialInstId1);
 
-		auto& spot_light_mesh_2 = scene_graph->add_child_node<rendering::MeshNode>(spot_light_2.id());
-		spot_light_mesh_2.set_scale({ 0.25f });
-		spot_light_mesh_2.set_mesh_asset_id(meshId3);
-		spot_light_mesh_2.set_mat_asset_id(materialInstId1);
+		auto spot_light_2 = scene_graph->add_node<rendering::LightNode3D>();
+		spot_light_2->set_name("Spot Light 2");
+		spot_light_2->set_position({ -10.0f, 5.0f, 0.0f });
+		spot_light_2->set_light_type(rendering::LightType::Spot);
+		spot_light_2->set_direction({ 0.5f, -0.5f, 0.f });
+		spot_light_2->set_ambient_intensity(0.f);
+		spot_light_2->add_component<rendering::ShadowCasterComponent>();
+		registry->patch<rendering::ShadowCasterComponent>(spot_light_2->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
 
-		//auto& shadow = registry->emplace<rendering::ShadowCasterComponent>(entities[6]);
-		//shadow.width = 4096;
-		//shadow.height = 4096;
+		update_transform_orientation(*spot_light_2->transform_3d(), { 45.0f, 90.0f, 0.0f });
+
+		auto spot_light_mesh_2 = scene_graph->add_child_node<rendering::MeshNode>(spot_light_2->id());
+		spot_light_mesh_2->set_scale({ 0.25f });
+		spot_light_mesh_2->set_mesh_asset_id(meshId3);
+		spot_light_mesh_2->set_mat_asset_id(materialInstId1);
 
 		//auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		//script.name = "ExampleScript";
@@ -512,10 +512,10 @@ namespace puffin::core
 
 		// Light node
 
-		auto& light = scene_graph->add_node<rendering::LightNode3D>();
-		light.position().y = 50.0f;
-		light.set_light_type(rendering::LightType::Directional);
-		light.set_ambient_intensity(0.01f);
+		auto light = scene_graph->add_node<rendering::LightNode3D>();
+		light->position().y = 50.0f;
+		light->set_light_type(rendering::LightType::Directional);
+		light->set_ambient_intensity(0.01f);
 
 		constexpr float floor_width = 2000.0f;
 
@@ -538,7 +538,7 @@ namespace puffin::core
 		//	registry->emplace<physics::RigidbodyComponent3D>(floorEntity);
 		//}
 
-		auto& floor_body = scene_graph->add_node<physics::RigidbodyNode3D>();
+		auto floor_body = scene_graph->add_node<physics::RigidbodyNode3D>();
 
 		//// Create Box Entities
 		//{

@@ -66,15 +66,14 @@ namespace puffin::io
 
 			const auto registry = entt_subsystem->registry();
 
-			registry->each([&](auto entity)
+			const auto view = registry->view<const CompT>();
+
+			for (auto& [ entity, comp ] : view.each())
 			{
 				const auto& id = entt_subsystem->get_id(entity);
 
-				if (registry->any_of<CompT>(entity))
-				{
-					m_components.emplace(id, registry->get<CompT>(entity));
-				}
-			});
+				m_components.emplace(id, comp);
+			}
 		}
 
 		void clear() override

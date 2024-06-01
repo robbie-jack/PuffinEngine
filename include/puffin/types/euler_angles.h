@@ -9,7 +9,9 @@ namespace puffin::maths
 	struct EulerAngles
 	{
 		EulerAngles() : pitch(0.0f), yaw(0.0f), roll(0.0f) {}
-		EulerAngles(float pitch, float yaw, float roll) : pitch(pitch), yaw(yaw), roll(roll) {}
+		EulerAngles(const float& pitch, const float& yaw, const float& roll) : pitch(pitch), yaw(yaw), roll(roll) {}
+		EulerAngles(const glm::vec3& vec) : pitch(vec.x), yaw(vec.y), roll(vec.z) {}
+		EulerAngles(const Vector3f& vec) : pitch(vec.x), yaw(vec.y), roll(vec.z) {}
 
 		EulerAngles operator+(const EulerAngles& other) const
 		{
@@ -45,8 +47,27 @@ namespace puffin::maths
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(EulerAngles, pitch, yaw, roll)
 	};
 
-	static EulerAngles deg_to_rad(EulerAngles euler_angles)
+	inline EulerAngles deg_to_rad(const EulerAngles& euler)
 	{
-		return EulerAngles(deg_to_rad(euler_angles.pitch), deg_to_rad(euler_angles.yaw), deg_to_rad(euler_angles.roll));
+		return { deg_to_rad(euler.pitch), deg_to_rad(euler.yaw), deg_to_rad(euler.roll) };
+	}
+
+	inline EulerAngles rad_to_deg(const EulerAngles& euler)
+	{
+		return { rad_to_deg(euler.pitch), rad_to_deg(euler.yaw), rad_to_deg(euler.roll) };
+	}
+
+	// Convert from euler in degrees to quaternion in radians
+	inline maths::Quat euler_to_quat(const maths::EulerAngles& euler)
+	{
+		const auto euler_rad = maths::deg_to_rad(euler);
+
+		return { glm::quat(glm::vec3(euler_rad.pitch, euler_rad.yaw, euler_rad.roll)) };
+	}
+
+	// Convert from euler in degrees to quaternion in radians
+	inline maths::EulerAngles quat_to_euler(const maths::Quat& quat)
+	{
+		return maths::rad_to_deg(maths::EulerAngles(glm::eulerAngles(glm::quat(quat))));
 	}
 }

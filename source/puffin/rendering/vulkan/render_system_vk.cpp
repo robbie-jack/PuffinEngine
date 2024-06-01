@@ -1333,8 +1333,8 @@ namespace puffin::rendering
 	void RenderSystemVK::update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const
 	{
 		// Calculate lookAt, right and up vectors
-		camera.look_at = static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, -1.0f);
-		camera.right = static_cast<glm::quat>(transform.orientation) * glm::vec3(1.0f, 0.0f, 0.0f);
+		camera.look_at = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.0f, 0.0f, -1.0f);
+		camera.right = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(1.0f, 0.0f, 0.0f);
 		camera.up = Vector3f(0.0f, 1.0f, 0.0f);
 
 		camera.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
@@ -1491,7 +1491,7 @@ namespace puffin::rendering
                         tempTransform.position.y = transform->position.y;
 						tempTransform.position.z = 0.0;
 
-                        tempTransform.orientation = angleAxis(glm::radians(transform->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+                        tempTransform.orientation_quat = angleAxis(glm::radians(transform->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
                         tempTransform.scale.x = transform->scale.x;
                         tempTransform.scale.y = transform->scale.y;
@@ -1550,7 +1550,7 @@ namespace puffin::rendering
 
 					GPUObjectData object;
 
-					build_model_transform(position, tempTransform.orientation, tempTransform.scale, object.model);
+					build_model_transform(position, tempTransform.orientation_quat, tempTransform.scale, object.model);
 					object.mat_idx = m_material_registry.getMaterialData(mesh.mat_asset_id).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
@@ -1620,7 +1620,7 @@ namespace puffin::rendering
 			lights[i].position_and_type.z = transform.position.z;
 			lights[i].position_and_type.w = static_cast<int>(light.type);
 
-			Vector3f direction = glm::normalize(static_cast<glm::quat>(transform.orientation) * glm::vec3(0.0f, 0.0f, 1.0f));
+			Vector3f direction = glm::normalize(static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.0f, 0.0f, 1.0f));
 
 			lights[i].direction.x = light.direction.x;
 			lights[i].direction.y = light.direction.y;

@@ -259,7 +259,7 @@ namespace puffin
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
 				auto node_3d = static_cast<TransformNode3D*>(node);
-                const auto transform = node->transform_3d();
+                auto transform = node->transform_3d();
 
 				{
 #ifdef PFN_USE_DOUBLE_PRECISION
@@ -288,50 +288,13 @@ namespace puffin
 				}
 
 				{
-					float min_angle = -360.0f;
-					float max_angle = 360.0f;
+					auto euler_angles = transform->orientation_euler_angles;
 
-					auto euler_angles = transform->euler_angles;
-
-					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&euler_angles), 0.2f, min_angle, max_angle, "%.3f"))
+					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&euler_angles), 0.2f, 0, 0, "%.3f"))
 					{
-						if (euler_angles.pitch > max_angle)
-						{
-							euler_angles.pitch -= max_angle;
-						}
+						update_transform_orientation(*transform, euler_angles);
 
-						if (euler_angles.pitch < min_angle)
-						{
-							euler_angles.pitch += max_angle;
-						}
-
-						if (euler_angles.yaw > max_angle)
-						{
-							euler_angles.yaw -= max_angle;
-						}
-
-						if (euler_angles.yaw < min_angle)
-						{
-							euler_angles.yaw += max_angle;
-						}
-
-						if (euler_angles.roll > max_angle)
-						{
-							euler_angles.roll -= max_angle;
-						}
-
-						if (euler_angles.roll < min_angle)
-						{
-							euler_angles.roll += max_angle;
-						}
-
-						const auto diff_angles_rad = deg_to_rad(transform->euler_angles - euler_angles);
-
-						const auto quat = maths::Quat(glm::quat(glm::vec3(diff_angles_rad.pitch, diff_angles_rad.yaw, diff_angles_rad.roll)));
-
-						node->transform_3d()->orientation = quat * node->transform_3d()->orientation;
-
-						node_3d->euler_angles() = euler_angles;
+						node->set_transform_changed(true);
 
 						m_scene_changed = true;
 					}

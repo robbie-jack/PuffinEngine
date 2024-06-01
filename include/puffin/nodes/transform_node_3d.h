@@ -28,12 +28,6 @@ namespace puffin
 		const TransformComponent3D* transform_3d() const override;
 		TransformComponent3D* transform_3d() override;
 
-		bool orientation_changed() { return m_orientation_changed; }
-		void set_orientation_changed(bool orientation_changed) { m_orientation_changed = orientation_changed; }
-
-		bool euler_angles_changed() { return m_euler_angles_changed; }
-		void set_euler_angles_changed(bool euler_angles_changed) { m_euler_angles_changed = euler_angles_changed; }
-
 #ifdef PFN_DOUBLE_PRECISION
 		[[nodiscard]] const Vector3d& position() const;
 		[[nodiscard]] Vector3d& position();
@@ -57,9 +51,6 @@ namespace puffin
 		void set_scale(const Vector3f& scale);
 
 	protected:
-
-		bool m_orientation_changed = false;
-		bool m_euler_angles_changed = false;
 
 	};
 }

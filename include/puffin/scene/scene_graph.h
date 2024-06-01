@@ -76,30 +76,30 @@ namespace puffin::scene
 		NodeArray() = default;
 		~NodeArray() override = default;
 
-		T& add(const std::shared_ptr<core::Engine>& engine, PuffinID id = gInvalidID)
+		T* add(const std::shared_ptr<core::Engine>& engine, PuffinID id = gInvalidID)
 		{
 			if (id == gInvalidID)
 				id = generateID();
 
 			m_vector.emplace(id, m_factory.create(engine, id));
 
-			return m_vector[id];
+			return &m_vector[id];
 		}
 
 		Node* add_ptr(const std::shared_ptr<core::Engine>& engine, PuffinID id = gInvalidID) override
 		{
-			return static_cast<Node*>(&add(engine, id));
+			return static_cast<Node*>(add(engine, id));
 		}
 
-		T& get(PuffinID id)
+		T* get(PuffinID id)
 		{
-			return m_vector.at(id);
+			return &m_vector.at(id);
 		}
 
 		Node* get_ptr(PuffinID id) override
 		{
 			if (valid(id))
-				return static_cast<Node*>(&get(id));
+				return static_cast<Node*>(get(id));
 
 			return nullptr;
 		}
@@ -143,13 +143,13 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		T& add_node()
+		T* add_node()
 		{
 			return add_node_internal<T>();
 		}
 
 		template<typename T>
-		T& add_node(PuffinID id)
+		T* add_node(PuffinID id)
 		{
 			return add_node_internal<T>(id);
 		}
@@ -160,13 +160,13 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		T& add_child_node(PuffinID parent_id)
+		T* add_child_node(PuffinID parent_id)
 		{
 			return add_node_internal<T>(gInvalidID, parent_id);
 		}
 
 		template<typename T>
-		T& add_child_node(PuffinID id, PuffinID parent_id)
+		T* add_child_node(PuffinID id, PuffinID parent_id)
 		{
 			return add_node_internal<T>(id, parent_id);
 		}
@@ -177,7 +177,7 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		T& get_node(PuffinID id)
+		T* get_node(PuffinID id)
 		{
 			return get_array<T>()->get(id);
 		}
@@ -239,7 +239,7 @@ namespace puffin::scene
 		void apply_local_to_global_transform_2d(PuffinID id, TransformComponent2D& global_transform);
 		void apply_local_to_global_transform_3d(PuffinID id, TransformComponent3D& global_transform);
 
-		void add_node_internal_common(Node* node, const char* type_name, PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
+		void add_node_internal_base(Node* node, const char* type_name, PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
 		{
 			if (parent_id != gInvalidID)
 			{
@@ -269,8 +269,13 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		T& add_node_internal(PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
+		T* add_node_internal(PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
 		{
+			if (m_id_to_type.find(id) != m_id_to_type.end())
+			{
+				return get_array<T>()->get(id);
+			}
+
 			const char* type_name = typeid(T).name();
 
 			if (m_node_arrays.find(type_name) == m_node_arrays.end())
@@ -284,24 +289,29 @@ namespace puffin::scene
 
 			if (id == gInvalidID)
 			{
-				T& node = get_array<T>()->add(m_engine);
-				node_ptr = static_cast<Node*>(&node);
+				T* node = get_array<T>()->add(m_engine);
+				node_ptr = static_cast<Node*>(node);
 
 				id = node_ptr->id();
 			}
 			else
 			{
-				T& node = get_array<T>()->add(m_engine, id);
-				node_ptr = static_cast<Node*>(&node);
+				T* node = get_array<T>()->add(m_engine, id);
+				node_ptr = static_cast<Node*>(node);
 			}
 
-			add_node_internal_common(node_ptr, type_name, id, parent_id);
+			add_node_internal_base(node_ptr, type_name, id, parent_id);
 
 			return get_array<T>()->get(id);
 		}
 
 		Node* add_node_internal(const char* type_name, PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
 		{
+			if (m_id_to_type.find(id) != m_id_to_type.end())
+			{
+				return get_array(type_name)->get_ptr(id);
+			}
+
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node_internal(const char*, PuffinID, PuffinID) - Node type not registered before use");
 
 			Node* node_ptr;
@@ -317,7 +327,7 @@ namespace puffin::scene
 				node_ptr = get_array(type_name)->add_ptr(m_engine, id);
 			}
 
-			add_node_internal_common(node_ptr, type_name, id, parent_id);
+			add_node_internal_base(node_ptr, type_name, id, parent_id);
 
 			return node_ptr;
 		}
