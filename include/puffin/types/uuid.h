@@ -12,7 +12,7 @@ namespace puffin
     using PuffinID = uint_least64_t;
 	constexpr static PuffinID gInvalidID = 0;
 
-	static PuffinID generateID()
+	static PuffinID generate_id()
 	{
 		PuffinID id = gInvalidID;
 

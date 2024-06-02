@@ -48,7 +48,7 @@ namespace puffin::audio
 
 	PuffinID AudioSubsystem::createSoundInstance(PuffinID soundAssetID)
 	{
-		const PuffinID soundInstanceID = generateID();
+		const PuffinID soundInstanceID = generate_id();
 
 		if (!mAudioSubsystemProvider->createSoundInstance(soundAssetID, soundInstanceID))
 		{

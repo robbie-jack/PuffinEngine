@@ -72,7 +72,10 @@ namespace puffin::io
 			{
 				const auto& id = entt_subsystem->get_id(entity);
 
-				m_components.emplace(id, comp);
+				if (entt_subsystem->should_be_serialized(id))
+				{
+					m_components.emplace(id, comp);
+				}
 			}
 		}
 

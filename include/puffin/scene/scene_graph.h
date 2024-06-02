@@ -79,7 +79,7 @@ namespace puffin::scene
 		T* add(const std::shared_ptr<core::Engine>& engine, PuffinID id = gInvalidID)
 		{
 			if (id == gInvalidID)
-				id = generateID();
+				id = generate_id();
 
 			m_vector.emplace(id, m_factory.create(engine, id));
 

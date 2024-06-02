@@ -34,18 +34,5 @@ namespace puffin
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, z_near, z_far, aspect, fov_y, up)
 		};
-
-		struct EditorCamera : public CameraComponent
-		{
-#ifdef PFN_USE_DOUBLE_PRECISION
-			Vector3d position;
-#else
-			Vector3f position;
-#endif
-
-			maths::EulerAngles euler_angles = { 0.0f, -90.0f, 0.0f };
-
-			float speed = 25.0f;
-		};
 	}
 }

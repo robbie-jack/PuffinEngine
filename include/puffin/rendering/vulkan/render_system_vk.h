@@ -244,7 +244,9 @@ namespace puffin::rendering
 
 		DeletionQueue m_deletion_queue;
 
-		EditorCamera m_editor_cam;
+		//EditorCamera m_editor_cam;
+		PuffinID m_editor_cam_id;
+		float m_editor_cam_speed;
 
 		bool m_initialized = false; // Indicates initialization completed without any failures
 		bool m_rebar_enabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
@@ -269,6 +271,8 @@ namespace puffin::rendering
 
 		void init_imgui();
 		void init_offscreen_imgui_textures(OffscreenData& offscreenData);
+
+		void init_editor_camera();
 
 		void process_components();
 

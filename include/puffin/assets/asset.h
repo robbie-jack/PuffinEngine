@@ -237,7 +237,7 @@ namespace puffin::assets
 	{
 	public:
 
-		Asset(const fs::path& path) : mId(puffin::generateID()), mPath(path) {}
+		Asset(const fs::path& path) : mId(puffin::generate_id()), mPath(path) {}
 		Asset(const puffin::PuffinID uuid, const fs::path& path) : mId(uuid), mPath(path) {}
 
 		virtual ~Asset() = default;
