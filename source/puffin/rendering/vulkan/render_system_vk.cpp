@@ -1709,13 +1709,13 @@ namespace puffin::rendering
 				float far_plane = 100.f;
 				float aspect = float(shadow.width) / float(shadow.height);
 
-				glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle * 2), aspect, near_plane, far_plane);
-				light_projection[1][1] *= -1;
-
 				Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
 				direction = normalize(direction);
 
 				glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + direction), glm::vec3(0, 1, 0));
+
+				glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle * 2), aspect, near_plane, far_plane);
+				light_projection[1][1] *= -1;
 
 				shadow.light_space_view = light_projection * light_view;
 
@@ -1727,9 +1727,32 @@ namespace puffin::rendering
 				auto& camera_transform = registry->get<TransformComponent3D>(editor_cam_entity);
 				auto& camera = registry->get<CameraComponent>(editor_cam_entity);
 
-				
+				// Calculate camera view frustum vertices
+				std::vector<glm::vec4> camera_frustum_vertices;
+				util::calculate_camera_frustum(camera.view, camera.proj, camera_frustum_vertices);
 
-				glm::mat4 light_projection = glm::ortho(0.0f, 0.0f, 0.0f, 0.0f, 1.f, 100.f);
+				// Average vertices to get centre of view frustum
+				Vector3f centre;
+				for (const auto& v : camera_frustum_vertices)
+				{
+					centre += glm::vec3(v);
+				}
+				centre /= camera_frustum_vertices.size();
+
+				// Calculate direction from orientation
+				Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
+				direction = normalize(direction);
+
+				// Calculate light view
+				glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(centre - direction), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
+
+				// Calculate light projection - ortho
+				glm::mat4 light_projection = util::calculate_ortho_projection_around_camera_frustum(camera_frustum_vertices, light_view, 1.0f);
+				light_projection[1][1] *= -1;
+
+				shadow.light_space_view = light_projection * light_view;
+
+				m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
 			}
 			else
 			{

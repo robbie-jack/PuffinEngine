@@ -109,7 +109,7 @@ namespace puffin::core
 		{
 			auto scene_data = get_system<io::SceneSubsystem>()->sceneData();
 
-			if (constexpr bool setup_default_scene = true; setup_default_scene)
+			if (constexpr bool setup_default_scene = false; setup_default_scene)
 			{
 				auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
 				auto scene_graph = get_system<scene::SceneGraph>();

@@ -136,6 +136,13 @@ vec3 dir_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, v
 	vec3 diffuse = lightData.color.rgb * diff;
 	vec3 ambient = lightData.color.rgb * lightData.ambient_specular.x;
 	vec3 specular = lightData.color.rgb * lightData.ambient_specular.y * spec;
+	
+	float shadow = 0.0;
+	
+	if (lightData.cuttoff_angle_and_shadow_index.z >= 0.0)
+	{
+		shadow = shadow_calculation(lightData, lightDir, fragNormal, fragWorldPos);
+	}
 
 	return diffuse + ambient + specular;
 }

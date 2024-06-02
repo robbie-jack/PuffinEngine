@@ -19,7 +19,7 @@ namespace puffin
 			CameraComponent() {}
 
 			float z_near = 0.01f;
-			float z_far = 10000.0f;
+			float z_far = 100.0f;
 			float aspect = 0.0f;
 			float fov_y = 60.0f;
 			float prev_fov_y = 60.0f;

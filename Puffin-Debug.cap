@@ -7,7 +7,7 @@
         ],
         "executable": "C:\\Projects\\PuffinEngine\\bin\\win64\\debug\\PuffinApp.exe",
         "inject": false,
-        "numQueuedFrames": 1,
+        "numQueuedFrames": 0,
         "options": {
             "allowFullscreen": true,
             "allowVSync": true,
@@ -22,7 +22,7 @@
             "softMemoryLimit": 0,
             "verifyBufferAccess": false
         },
-        "queuedFrameCap": 10,
+        "queuedFrameCap": 0,
         "workingDir": "C:/Projects/PuffinEngine/build"
     }
 }
