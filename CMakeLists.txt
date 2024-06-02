@@ -157,6 +157,7 @@ set(HEADERS
 	# Rendering
 	${HEADER_DIR}/puffin/rendering/material_globals.h
 	${HEADER_DIR}/puffin/rendering/render_globals.h
+	${HEADER_DIR}/puffin/rendering/render_helpers.h
 	# Rendering Vulkan
 	${HEADER_DIR}/puffin/rendering/vulkan/descriptors_vk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/helpers_vk.h
@@ -175,6 +176,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/scripting/angelscript/angelscript_system.h
 	${HEADER_DIR}/puffin/scripting/angelscript/register_type_helpers.h
 	# Types
+	${HEADER_DIR}/puffin/types/aabb.h
 	${HEADER_DIR}/puffin/types/component_flags.h
 	${HEADER_DIR}/puffin/types/deletion_queue.h
 	${HEADER_DIR}/puffin/types/euler_angles.h
@@ -240,6 +242,7 @@ set(SOURCES
 	# Procedural
 	${SOURCE_DIR}/puffin/procedural/procedural_mesh_gen_system.cpp
 	# Rendering
+	${SOURCE_DIR}/puffin/rendering/render_helpers.cpp
 	# Rendering Vulkan
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptors_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/helpers_vk.cpp

@@ -109,7 +109,7 @@ namespace puffin::core
 		{
 			auto scene_data = get_system<io::SceneSubsystem>()->sceneData();
 
-			if (constexpr bool setupDefaultScene = true; setupDefaultScene)
+			if (constexpr bool setup_default_scene = true; setup_default_scene)
 			{
 				auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
 				auto scene_graph = get_system<scene::SceneGraph>();
@@ -435,6 +435,8 @@ namespace puffin::core
 		dir_light->set_ambient_intensity(.0f);
 		dir_light->set_light_type(rendering::LightType::Directional);
 		dir_light->set_ambient_intensity(0.f);
+		dir_light->add_component<rendering::ShadowCasterComponent>();
+		registry->patch<rendering::ShadowCasterComponent>(dir_light->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
 
 		update_transform_orientation(*dir_light->transform_3d(), { 0.0f, -90.0f, 0.0f });
 

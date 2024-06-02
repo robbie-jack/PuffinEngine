@@ -39,6 +39,7 @@
 #include "puffin/rendering/vulkan/resource_manager_vk.h"
 #include "puffin/ui/editor/windows/ui_window_viewport.h"
 #include "puffin/rendering/render_globals.h"
+#include "puffin/rendering/render_helpers.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -1404,8 +1405,8 @@ namespace puffin::rendering
 
 		prepare_material_data();
 		prepare_object_data();
-		prepare_light_data();
 		prepare_shadow_data();
+		prepare_light_data();
 	}
 
 	void RenderSystemVK::prepare_material_data()
@@ -1661,7 +1662,7 @@ namespace puffin::rendering
 			{
 				auto& shadow = registry->get<ShadowCasterComponent>(entity);
 
-				if (light.type == LightType::Spot)
+				if (light.type != LightType::Point)
 				{
 					lights[i].cutoff_angle_and_shadow_index.z = shadow.shadow_idx;
 					lights[i].light_space_view = shadow.light_space_view;
@@ -1693,7 +1694,8 @@ namespace puffin::rendering
 	void RenderSystemVK::prepare_shadow_data()
 	{
 		// Prepare dynamic light data
-		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+		auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+		const auto registry = entt_subsystem->registry();
 
 		const auto shadow_view = registry->view<const TransformComponent3D, const LightComponent, ShadowCasterComponent>();
 
@@ -1717,7 +1719,17 @@ namespace puffin::rendering
 
 				shadow.light_space_view = light_projection * light_view;
 
-				m_shadows_to_draw.push_back(m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity));
+				m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
+			}
+			else if (light.type == LightType::Directional)
+			{
+				auto editor_cam_entity = entt_subsystem->get_entity(m_editor_cam_id);
+				auto& camera_transform = registry->get<TransformComponent3D>(editor_cam_entity);
+				auto& camera = registry->get<CameraComponent>(editor_cam_entity);
+
+				
+
+				glm::mat4 light_projection = glm::ortho(0.0f, 0.0f, 0.0f, 0.0f, 1.f, 100.f);
 			}
 			else
 			{

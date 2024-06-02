@@ -20,7 +20,7 @@ namespace puffin::physics
 
 		ShapeType2D getType() const override;
 
-		AABB getAABB(const Vector2f& position, const float& rotation) const override;
+		AABB_2D getAABB(const Vector2f& position, const float& rotation) const override;
 
 		float radius;
 	};

@@ -84,8 +84,8 @@ namespace puffin::physics
 
 					if (filterCollisionPair(collisionPair, collisionPairs) == true)
 					{
-						AABB a = colliderA->getAABB();
-						AABB b = colliderB->getAABB();
+						AABB_2D a = colliderA->getAABB();
+						AABB_2D b = colliderB->getAABB();
 
 						if (collision2D::testAabbVsAabb(a, b))
 						{

@@ -2,6 +2,7 @@
 
 #include "puffin/physics/onager2d/shapes/shape_2d.h"
 #include "puffin/physics/onager2d/physics_types_2d.h"
+#include "puffin/types/aabb.h"
 
 namespace puffin::physics
 {
@@ -10,9 +11,9 @@ namespace puffin::physics
 		return ShapeType2D::box;
 	}
 
-	AABB BoxShape2D::getAABB(const Vector2f& position, const float& rotation) const
+	AABB_2D BoxShape2D::getAABB(const Vector2f& position, const float& rotation) const
 	{
-		AABB aabb;
+		AABB_2D aabb;
         aabb.min = position - half_extent;
         aabb.max = position + half_extent;
 		return aabb;

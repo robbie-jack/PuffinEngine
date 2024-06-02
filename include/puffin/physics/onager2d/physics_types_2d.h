@@ -2,17 +2,12 @@
 
 #include "puffin/types/vector.h"
 #include "puffin/types/uuid.h"
+#include "puffin/types/aabb.h"
 
 #include <vector>
 
 namespace puffin::physics
 {
-	struct AABB
-	{
-		Vector2f min;
-		Vector2f max;
-	};
-
 	namespace collision2D
 	{
 		struct Contact
