@@ -43,11 +43,18 @@ namespace puffin
 		Vector3f position = Vector3f(0.0f);
 #endif
 
-		maths::Quat orientation_quat = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0)); // Orientation of transform, expressed as quaternion in radians
+		maths::Quat orientation_quat = glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f }); // Orientation of transform, expressed as quaternion in radians
 		maths::EulerAngles orientation_euler_angles = { 0.0, 0.0, 0.0 }; // Orientation of transform, expressed as euler angles in degrees
 
 		Vector3f scale = Vector3f(1.0f);
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent3D, position, orientation_quat, orientation_euler_angles, scale)
 	};
+
+	// Update transform orientation with a new euler angles and recalculates quaternion
+	inline void update_transform_orientation(TransformComponent3D& transform, const maths::EulerAngles& euler_angles_new)
+	{
+		transform.orientation_euler_angles = euler_angles_new;
+		transform.orientation_quat = maths::euler_to_quat({ -transform.orientation_euler_angles }) * glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f });
+	}
 }

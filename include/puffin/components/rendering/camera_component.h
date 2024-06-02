@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "puffin/types/vector.h"
+#include "puffin/types/euler_angles.h"
 
 #include "nlohmann/json.hpp"
 
@@ -23,7 +24,7 @@ namespace puffin
 			float fov_y = 60.0f;
 			float prev_fov_y = 60.0f;
 
-			Vector3f look_at = Vector3f(0.0f);
+			Vector3f direction = { 0.0f, 0.0f, -1.0f };
 			Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
 			Vector3f right = Vector3f(1.0f, 0.0f, 0.0f);
 
@@ -42,10 +43,8 @@ namespace puffin
 			Vector3f position;
 #endif
 
-			Vector3f direction = Vector3f(0.0f, 0.0f, -1.0f);
+			maths::EulerAngles euler_angles = { 0.0f, -90.0f, 0.0f };
 
-			float yaw = -90.0f;
-			float pitch = 0.0f;
 			float speed = 25.0f;
 		};
 	}

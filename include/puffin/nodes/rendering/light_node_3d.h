@@ -20,9 +20,6 @@ namespace puffin::rendering
 		[[nodiscard]] const Vector3f& color() const;
 		void set_color(const Vector3f& color) const;
 
-		[[nodiscard]] const Vector3f& direction() const;
-		void set_direction(const Vector3f& direction) const;
-
 		[[nodiscard]] const float& ambient_intensity() const;
 		void set_ambient_intensity(const float& ambient_intensity) const;
 

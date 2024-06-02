@@ -42,6 +42,11 @@ namespace puffin::maths
 			return euler;
 		}
 
+		EulerAngles operator-() const
+		{
+			return { -pitch, -yaw, -roll };
+		}
+
 		float pitch, yaw, roll;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(EulerAngles, pitch, yaw, roll)

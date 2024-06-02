@@ -109,7 +109,7 @@ namespace puffin::core
 		{
 			auto scene_data = get_system<io::SceneSubsystem>()->sceneData();
 
-			if (constexpr bool setupDefaultScene = false; setupDefaultScene)
+			if (constexpr bool setupDefaultScene = true; setupDefaultScene)
 			{
 				auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
 				auto scene_graph = get_system<scene::SceneGraph>();
@@ -431,9 +431,12 @@ namespace puffin::core
 		auto dir_light = scene_graph->add_node<rendering::LightNode3D>();
 		dir_light->set_name("Directional Light");
 		dir_light->set_position({ 0.0f, 10.0f, 0.0f });
-		dir_light->set_color({ .01f });
+		dir_light->set_color({ .05f });
+		dir_light->set_ambient_intensity(.0f);
 		dir_light->set_light_type(rendering::LightType::Directional);
 		dir_light->set_ambient_intensity(0.f);
+
+		update_transform_orientation(*dir_light->transform_3d(), { 0.0f, -90.0f, 0.0f });
 
 		auto dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light->id());
 		dir_light_mesh->set_scale({ 0.25f });
@@ -442,15 +445,12 @@ namespace puffin::core
 
 		auto spot_light = scene_graph->add_node<rendering::LightNode3D>();
 		spot_light->set_name("Spot Light");
-		spot_light->set_position({ 10.0f, 5.0f, 0.0f });
+		spot_light->set_position({ -10.0f, 5.0f, 0.0f });
 		spot_light->set_light_type(rendering::LightType::Spot);
-		spot_light->set_direction({ -0.5f, -0.5f, 0.f });
+		spot_light->set_color({ 0.5f, 0.5f, 1.0f });
 		spot_light->set_ambient_intensity(0.f);
 		spot_light->add_component<rendering::ShadowCasterComponent>();
 		registry->patch<rendering::ShadowCasterComponent>(spot_light->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
-
-		spot_light->transform_3d()->orientation_euler_angles = { -45.0f, -90.0f, 0.0f };
-		spot_light->transform_3d()->orientation_quat = maths::euler_to_quat({ spot_light->transform_3d()->orientation_euler_angles }) * angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
 
 		auto spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light->id());
 		spot_light_mesh->set_scale({ 0.25f });
@@ -459,15 +459,14 @@ namespace puffin::core
 
 		auto spot_light_2 = scene_graph->add_node<rendering::LightNode3D>();
 		spot_light_2->set_name("Spot Light 2");
-		spot_light_2->set_position({ -10.0f, 5.0f, 0.0f });
+		spot_light_2->set_position({ 10.0f, 5.0f, 0.0f });
 		spot_light_2->set_light_type(rendering::LightType::Spot);
-		spot_light_2->set_direction({ 0.5f, -0.5f, 0.f });
+		spot_light_2->set_color({ 1.0f, 0.5f, 0.5f });
 		spot_light_2->set_ambient_intensity(0.f);
 		spot_light_2->add_component<rendering::ShadowCasterComponent>();
 		registry->patch<rendering::ShadowCasterComponent>(spot_light_2->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
 
-		spot_light_2->transform_3d()->orientation_euler_angles = { 45.0f, 90.0f, 0.0f };
-		spot_light_2->transform_3d()->orientation_quat = maths::euler_to_quat({ spot_light_2->transform_3d()->orientation_euler_angles }) * angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
+		update_transform_orientation(*spot_light_2->transform_3d(), { 0.0f, 180.0f, 0.0f });
 
 		auto spot_light_mesh_2 = scene_graph->add_child_node<rendering::MeshNode>(spot_light_2->id());
 		spot_light_mesh_2->set_scale({ 0.25f });

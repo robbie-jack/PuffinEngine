@@ -41,16 +41,6 @@ namespace puffin::rendering
 		m_registry->patch<LightComponent>(m_entity, [&color](auto& light) { light.color = color; });
 	}
 
-	const Vector3f& LightNode3D::direction() const
-	{
-		return get_component<LightComponent>().direction;
-	}
-
-	void LightNode3D::set_direction(const Vector3f& direction) const
-	{
-		m_registry->patch<LightComponent>(m_entity, [&direction](auto& light) { light.direction = direction; });
-	}
-
 	const float& LightNode3D::ambient_intensity() const
 	{
 		return get_component<LightComponent>().ambient_intensity;

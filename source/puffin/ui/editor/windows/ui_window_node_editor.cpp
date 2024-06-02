@@ -288,9 +288,11 @@ namespace puffin
 				}
 
 				{
-					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&transform->orientation_euler_angles), 0.2f, 0, 0, "%.3f"))
+					auto euler_angles = transform->orientation_euler_angles;
+
+					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&euler_angles), 0.2f, 0, 0, "%.3f"))
 					{
-						node->transform_3d()->orientation_quat = maths::euler_to_quat(transform->orientation_euler_angles) * angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
+						update_transform_orientation(*node->transform_3d(), euler_angles);
 
 						m_scene_changed = true;
 					}
@@ -422,23 +424,6 @@ namespace puffin
 						registry->patch<rendering::LightComponent>(entity, [&color](auto& light) { light.color = color; });
 
 						m_scene_changed = true;
-					}
-				}
-
-				// Edit light direction
-				if (light.type == rendering::LightType::Directional || light.type == rendering::LightType::Spot)
-				{
-					{
-						Vector3f direction = light.direction;
-
-						if (ImGui::DragFloat3("Direction", reinterpret_cast<float*>(&direction), 0.01f, -1.0f, 1.0f))
-						{
-							normalize(direction);
-
-							registry->patch<rendering::LightComponent>(entity, [&direction](auto& light) { light.direction = direction; });
-
-							m_scene_changed = true;
-						}
 					}
 				}
 
