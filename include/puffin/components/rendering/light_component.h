@@ -10,6 +10,7 @@
 #include <string>
 
 #include "nlohmann/json.hpp"
+#include "puffin/types/aabb.h"
 
 namespace puffin
 {
@@ -70,10 +71,17 @@ namespace puffin
 
 			uint16_t width = 2048;
 			uint16_t height = 2048;
-			glm::mat4 light_space_view;
+			float bias_min = 0.05f;
+			float bias_max = 0.5f;
+			float bounds_mult = 2.0f;
+
+			glm::mat4 light_view = glm::identity<glm::mat4>();
+			glm::mat4 light_view_proj = glm::identity<glm::mat4>();
 			int shadow_idx = -1;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, width, height)
+			AABB_3D bounds_aabb;
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, width, height, bias_min, bias_max, bounds_mult)
 		};
 	}
 }

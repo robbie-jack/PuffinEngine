@@ -532,7 +532,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadowcaster)
+		void UIWindowNodeEditor::draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadow)
 		{
 			const auto registry = m_entt_subsystem->registry();
 
@@ -547,43 +547,87 @@ namespace puffin
 					m_scene_changed = true;
 				}
 
-				int itemCurrentIdx = 0;
-				for (int i = 0; i < rendering::g_shadow_resolution_values.size(); i++)
 				{
-					if (rendering::g_shadow_resolution_values[i] == shadowcaster.width)
+					int item_current_idx = 0;
+					for (int i = 0; i < rendering::g_shadow_resolution_values.size(); i++)
 					{
-						itemCurrentIdx = i;
-						break;
+						if (rendering::g_shadow_resolution_values[i] == shadow.width)
+						{
+							item_current_idx = i;
+							break;
+						}
+					}
+
+					if (const char* label = rendering::g_shadow_resolution_labels[item_current_idx].c_str(); ImGui::BeginCombo("Shadow Resolution", label))
+					{
+						for (int i = 0; i < rendering::g_shadow_resolution_values.size(); i++)
+						{
+							const bool selected = (item_current_idx == i);
+
+							if (ImGui::Selectable(rendering::g_shadow_resolution_labels[i].c_str(), selected))
+							{
+								item_current_idx = i;
+
+								uint16_t width = rendering::g_shadow_resolution_values[item_current_idx];
+								uint16_t height = width;
+
+								registry->patch<rendering::ShadowCasterComponent>(entity, [&width, &height](auto& shadow)
+								{
+									shadow.width = width;
+									shadow.height = height;
+								});
+
+								m_scene_changed = true;
+							}
+
+							if (selected)
+								ImGui::SetItemDefaultFocus();
+						}
+
+						ImGui::EndCombo();
 					}
 				}
 
-				if (const char* label = rendering::g_shadow_resolution_labels[itemCurrentIdx].c_str(); ImGui::BeginCombo("Shadow Resolution", label))
 				{
-					for (int i = 0; i < rendering::g_shadow_resolution_values.size(); i++)
+					float bias_min = shadow.bias_min;
+
+					if (ImGui::DragFloat("Bias Min", &bias_min, 0.001f))
 					{
-						const bool isSelected = (itemCurrentIdx == i);
-
-						if (ImGui::Selectable(rendering::g_shadow_resolution_labels[i].c_str(), isSelected))
+						registry->patch<rendering::ShadowCasterComponent>(entity, [&bias_min](auto& shadow)
 						{
-							itemCurrentIdx = i;
+							shadow.bias_min = bias_min;
+						});
 
-							uint16_t width = rendering::g_shadow_resolution_values[itemCurrentIdx];
-							uint16_t height = width;
-							
-							registry->patch<rendering::ShadowCasterComponent>(entity, [&width, &height](auto& shadowcaster)
-							{
-								shadowcaster.width = width;
-								shadowcaster.height = height;
-							});
-
-							m_scene_changed = true;
-						}
-
-						if (isSelected)
-							ImGui::SetItemDefaultFocus();
+						m_scene_changed = true;
 					}
+				}
 
-					ImGui::EndCombo();
+				{
+					float bias_max = shadow.bias_max;
+
+					if (ImGui::DragFloat("Bias Max", &bias_max, 0.001f))
+					{
+						registry->patch<rendering::ShadowCasterComponent>(entity, [&bias_max](auto& shadow)
+						{
+							shadow.bias_max = bias_max;
+						});
+
+						m_scene_changed = true;
+					}
+				}
+
+				{
+					float bounds_mult = shadow.bounds_mult;
+
+					if (ImGui::DragFloat("Bounds Multiplier", &bounds_mult, 0.1f))
+					{
+						registry->patch<rendering::ShadowCasterComponent>(entity, [&bounds_mult](auto& shadow)
+						{
+							shadow.bounds_mult = bounds_mult;
+						});
+
+						m_scene_changed = true;
+					}
 				}
 
 				ImGui::TreePop();

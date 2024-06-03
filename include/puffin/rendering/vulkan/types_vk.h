@@ -220,12 +220,16 @@ namespace puffin::rendering
 
 	struct GPULightData
 	{
-		alignas(16) glm::vec4 position_and_type;
-		alignas(16) glm::vec4 direction;
-		alignas(16) glm::vec4 color;
-		alignas(16) glm::vec4 ambient_specular;
-		alignas(16) glm::vec4 attenuation;
-		alignas(16) glm::vec4 cutoff_angle_and_shadow_index;
+		// Light Data
+		alignas(4) glm::vec4 position_and_type;
+		alignas(4) glm::vec4 direction;
+		alignas(4) glm::vec4 color;
+		alignas(4) glm::vec4 ambient_specular;
+		alignas(4) glm::vec4 attenuation;
+		alignas(4) glm::vec4 cutoff_angle_and_shadow_index;
+
+		// Shadow Data
+		alignas(4) glm::vec4 shadow_bias;
 		alignas(16) glm::mat4 light_space_view;
 	};
 

@@ -1611,6 +1611,7 @@ namespace puffin::rendering
 
 		const auto light_view = registry->view<const TransformComponent3D, const LightComponent>();
 
+		sizeof(GPULightData);
 		std::vector<GPULightData> lights;
 
 		int i = 0;
@@ -1665,7 +1666,9 @@ namespace puffin::rendering
 				if (light.type != LightType::Point)
 				{
 					lights[i].cutoff_angle_and_shadow_index.z = shadow.shadow_idx;
-					lights[i].light_space_view = shadow.light_space_view;
+					lights[i].light_space_view = shadow.light_view_proj;
+					lights[i].shadow_bias.x = shadow.bias_min;
+					lights[i].shadow_bias.y = shadow.bias_max;
 				}
 			}
 
@@ -1717,7 +1720,7 @@ namespace puffin::rendering
 				glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle * 2), aspect, near_plane, far_plane);
 				light_projection[1][1] *= -1;
 
-				shadow.light_space_view = light_projection * light_view;
+				shadow.light_view_proj = light_projection * light_view;
 
 				m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
 			}
@@ -1729,34 +1732,57 @@ namespace puffin::rendering
 
 				// Calculate camera view frustum vertices
 				std::vector<glm::vec4> camera_frustum_vertices;
-				util::calculate_camera_frustum(camera_frustum_vertices, camera.view, camera.proj, 10.0);
+				util::calculate_camera_frustum(camera_frustum_vertices, camera.view, camera.proj);
 
-				// Average vertices to get centre of view frustum
-				Vector3f centre;
+				// Transform to light view space
+				std::vector<glm::vec4> cam_light_view_vertices;
 				for (const auto& v : camera_frustum_vertices)
 				{
-					centre += glm::vec3(v);
+					cam_light_view_vertices.push_back(shadow.light_view * v);
 				}
-				centre /= camera_frustum_vertices.size();
 
-				// Calculate direction from orientation
-				Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
-				direction = normalize(direction);
+				// Calculate cam frustum aabb in light space
+				const auto cam_light_view_aabb = util::calculate_aabb_from_vertices(cam_light_view_vertices);
 
-				// Calculate light view
-				glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(centre - direction), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
+				// Recalculate shadow bounds if cam aabb is not fully enclosed by shadow bounds aabb
+				if (!util::check_aabb_is_enclosed(cam_light_view_aabb, shadow.bounds_aabb))
+				{
+					// Average vertices to get centre of view frustum
+					Vector3f centre;
+					for (const auto& v : camera_frustum_vertices)
+					{
+						centre += glm::vec3(v);
+					}
+					centre /= camera_frustum_vertices.size();
 
-				// Calculate light projection - ortho
-				glm::mat4 light_projection = util::calculate_ortho_projection_around_camera_frustum(camera_frustum_vertices, light_view, 1.0f);
-				light_projection[1][1] *= -1;
+					// Calculate direction from orientation
+					Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
+					direction = normalize(direction);
 
-				shadow.light_space_view = light_projection * light_view;
+					// Calculate light view
+					shadow.light_view = glm::lookAt(static_cast<glm::vec3>(centre - direction), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
+
+					// Calculate light projection - ortho
+					cam_light_view_vertices.clear();
+					for (const auto& v : camera_frustum_vertices)
+					{
+						cam_light_view_vertices.push_back(shadow.light_view * v);
+					}
+
+					shadow.bounds_aabb = util::calculate_aabb_from_vertices(cam_light_view_vertices, shadow.bounds_mult);
+
+					glm::mat4 light_projection = glm::ortho(shadow.bounds_aabb.min.x, shadow.bounds_aabb.max.x, 
+						shadow.bounds_aabb.min.y, shadow.bounds_aabb.max.y, shadow.bounds_aabb.min.z, shadow.bounds_aabb.max.z);
+					light_projection[1][1] *= -1;
+
+					shadow.light_view_proj = light_projection * shadow.light_view;
+				}
 
 				m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
 			}
 			else
 			{
-				shadow.light_space_view = glm::identity<glm::mat4>();
+				shadow.light_view_proj = glm::identity<glm::mat4>();
 			}
 
 		}
@@ -1876,7 +1902,7 @@ namespace puffin::rendering
 
 			GPUShadowPushConstant push_constant;
 			push_constant.vertex_buffer_address = m_resource_manager->geometry_buffer()->vertex_buffer_address();
-			push_constant.light_space_view = shadow.light_space_view;
+			push_constant.light_space_view = shadow.light_view_proj;
 
 			cmd.pushConstants(m_shadow_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant), &push_constant);
 

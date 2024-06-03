@@ -132,7 +132,7 @@ namespace puffin::ui
 
 		void draw_mesh_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::MeshComponent& mesh);
 		void draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light);
-		void draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadowcaster);
+		void draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadow);
 
 		void draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane);
 

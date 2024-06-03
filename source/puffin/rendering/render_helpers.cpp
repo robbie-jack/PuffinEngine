@@ -2,6 +2,22 @@
 
 #include "puffin/types/aabb.h"
 #include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
+#include "puffin/types/Quat.h"
 
 namespace puffin::rendering::util
 {
@@ -18,7 +34,7 @@ namespace puffin::rendering::util
 		glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f)
 	};
 
-	void calculate_camera_frustum(std::vector<glm::vec4>& camera_frustum_vertices_out, const glm::mat4& cam_view, const glm::mat4& cam_proj, float bounds_multiplier)
+	void calculate_camera_frustum(std::vector<glm::vec4>& camera_frustum_vertices_out, const glm::mat4& cam_view, const glm::mat4& cam_proj)
 	{
 		glm::mat4 cam_view_proj_inv = glm::inverse(cam_proj * cam_view);
 
@@ -26,13 +42,13 @@ namespace puffin::rendering::util
 
 		for (const auto& vertex_ndc : g_cube_ndc)
 		{
-			glm::vec4 vertex_world = cam_view_proj_inv * (vertex_ndc * bounds_multiplier);
+			glm::vec4 vertex_world = cam_view_proj_inv * vertex_ndc;
 			vertex_world /= vertex_world.w;
 			camera_frustum_vertices_out.push_back(vertex_world);
 		}
 	}
 
-	glm::mat4 calculate_ortho_projection_around_camera_frustum(const std::vector<glm::vec4>& camera_frustum_vertices, const glm::mat4& light_view, const float z_mult)
+	AABB_3D calculate_aabb_from_vertices(const std::vector<glm::vec4>& vertices, const float& bounds_mult)
 	{
 		AABB_3D aabb;
 
@@ -43,36 +59,83 @@ namespace puffin::rendering::util
 		aabb.min.z = std::numeric_limits<float>::max();
 		aabb.max.z = std::numeric_limits<float>::lowest();
 
-		for (const auto& v : camera_frustum_vertices)
+		for (const auto& v : vertices)
 		{
-			const auto trf = light_view * v;
-
-			aabb.min.x = std::min(aabb.min.x, trf.x);
-			aabb.max.x = std::max(aabb.max.x, trf.x);
-			aabb.min.y = std::min(aabb.min.y, trf.y);
-			aabb.max.y = std::max(aabb.max.y, trf.y);
-			aabb.min.z = std::min(aabb.min.z, trf.z);
-			aabb.max.z = std::max(aabb.max.z, trf.z);
+			aabb.min.x = std::min(aabb.min.x, v.x);
+			aabb.max.x = std::max(aabb.max.x, v.x);
+			aabb.min.y = std::min(aabb.min.y, v.y);
+			aabb.max.y = std::max(aabb.max.y, v.y);
+			aabb.min.z = std::min(aabb.min.z, v.z);
+			aabb.max.z = std::max(aabb.max.z, v.z);
 		}
 
+		// Multiple min x by bounds
+		if (aabb.min.x < 0)
+		{
+			aabb.min.x *= bounds_mult;
+		}
+		else
+		{
+			aabb.min.x /= bounds_mult;
+		}
+
+		// Multiple max x by bounds
+		if (aabb.max.x > 0)
+		{
+			aabb.max.x *= bounds_mult;
+		}
+		else
+		{
+			aabb.max.x /= bounds_mult;
+		}
+
+		// Multiple min y by bounds
+		if (aabb.min.y < 0)
+		{
+			aabb.min.y *= bounds_mult;
+		}
+		else
+		{
+			aabb.min.y /= bounds_mult;
+		}
+
+		// Multiple max y by bounds
+		if (aabb.max.y > 0)
+		{
+			aabb.max.y *= bounds_mult;
+		}
+		else
+		{
+			aabb.max.y /= bounds_mult;
+		}
+
+		// Multiple min z by bounds
 		if (aabb.min.z < 0)
 		{
-			aabb.min.z *= z_mult;
+			aabb.min.z *= bounds_mult;
 		}
 		else
 		{
-			aabb.min.z /= z_mult;
+			aabb.min.z /= bounds_mult;
 		}
 
+		// Multiple max z by bounds
 		if (aabb.max.z > 0)
 		{
-			aabb.max.z *= z_mult;
+			aabb.max.z *= bounds_mult;
 		}
 		else
 		{
-			aabb.max.z /= z_mult;
+			aabb.max.z /= bounds_mult;
 		}
 
-		return glm::ortho(aabb.min.x, aabb.max.x, aabb.min.y, aabb.max.y, aabb.min.z, aabb.max.z);
+		return aabb;
+	}
+
+	bool check_aabb_is_enclosed(const AABB_3D& inner_aabb, const AABB_3D& outer_aabb)
+	{
+		return outer_aabb.min.x < inner_aabb.min.x && outer_aabb.max.x > inner_aabb.max.x &&
+			outer_aabb.min.y < inner_aabb.min.y && outer_aabb.max.y > inner_aabb.max.y &&
+			outer_aabb.min.z < inner_aabb.min.z && outer_aabb.max.z > inner_aabb.max.z;
 	}
 }
