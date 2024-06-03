@@ -18,7 +18,7 @@ namespace puffin::rendering::util
 		glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f)
 	};
 
-	void calculate_camera_frustum(const glm::mat4& cam_view, const glm::mat4& cam_proj, std::vector<glm::vec4>& camera_frustum_vertices_out)
+	void calculate_camera_frustum(std::vector<glm::vec4>& camera_frustum_vertices_out, const glm::mat4& cam_view, const glm::mat4& cam_proj, float bounds_multiplier)
 	{
 		glm::mat4 cam_view_proj_inv = glm::inverse(cam_proj * cam_view);
 
@@ -26,7 +26,7 @@ namespace puffin::rendering::util
 
 		for (const auto& vertex_ndc : g_cube_ndc)
 		{
-			glm::vec4 vertex_world = cam_view_proj_inv * vertex_ndc;
+			glm::vec4 vertex_world = cam_view_proj_inv * (vertex_ndc * bounds_multiplier);
 			vertex_world /= vertex_world.w;
 			camera_frustum_vertices_out.push_back(vertex_world);
 		}

@@ -1729,7 +1729,7 @@ namespace puffin::rendering
 
 				// Calculate camera view frustum vertices
 				std::vector<glm::vec4> camera_frustum_vertices;
-				util::calculate_camera_frustum(camera.view, camera.proj, camera_frustum_vertices);
+				util::calculate_camera_frustum(camera_frustum_vertices, camera.view, camera.proj, 10.0);
 
 				// Average vertices to get centre of view frustum
 				Vector3f centre;

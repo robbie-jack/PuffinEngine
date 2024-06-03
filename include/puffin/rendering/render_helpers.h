@@ -10,7 +10,7 @@
 namespace puffin::rendering::util
 {
 	// Calculate camera frustum vertices in world space
-	void calculate_camera_frustum(const glm::mat4& cam_view, const glm::mat4& cam_proj, std::vector<glm::vec4>& camera_frustum_vertices_out);
+	void calculate_camera_frustum(std::vector<glm::vec4>& camera_frustum_vertices_out, const glm::mat4& cam_view, const glm::mat4& cam_proj, float bounds_multiplier = 1.0);
 
 	// Calculate ortho projection matrix around a camera view frustum (world space)
 	glm::mat4 calculate_ortho_projection_around_camera_frustum(const std::vector<glm::vec4>& camera_frustum_vertices, const glm::mat4& light_view, const float z_mult = 10.0f);
