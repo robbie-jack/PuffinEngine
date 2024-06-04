@@ -205,6 +205,11 @@ namespace puffin::rendering
 		alignas(16) vk::DeviceAddress vertex_buffer_address;
 	};
 
+	struct GPUFragShaderPushConstant
+	{
+		alignas(16) glm::vec4 view_pos_and_light_count;
+	};
+
 	struct GPUCameraData
 	{
 		alignas(16) glm::mat4 view;
@@ -220,22 +225,18 @@ namespace puffin::rendering
 
 	struct GPULightData
 	{
-		// Light Data
 		alignas(4) glm::vec4 position_and_type;
 		alignas(4) glm::vec4 direction;
 		alignas(4) glm::vec4 color;
 		alignas(4) glm::vec4 ambient_specular;
 		alignas(4) glm::vec4 attenuation;
 		alignas(4) glm::vec4 cutoff_angle_and_shadow_index;
-
-		// Shadow Data
-		alignas(4) glm::vec4 shadow_bias;
-		alignas(16) glm::mat4 light_space_view;
 	};
 
-	struct GPULightStaticData
+	struct GPUShadowData
 	{
-		alignas(16) glm::vec4 view_pos_and_light_count;
+		alignas(4) glm::vec4 shadow_bias;
+		alignas(16) glm::mat4 light_space_view;
 	};
 
 	struct GPUMaterialInstanceData

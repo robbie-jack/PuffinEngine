@@ -554,8 +554,8 @@ namespace puffin::rendering
 				                                                     | vma::AllocationCreateFlagBits::eMapped
 			                                                     });
 
-			m_frame_render_data[i].light_static_buffer = util::create_buffer(m_allocator, sizeof(GPULightStaticData),
-			                                                           vk::BufferUsageFlagBits::eUniformBuffer,
+			m_frame_render_data[i].shadow_buffer = util::create_buffer(m_allocator, sizeof(GPUShadowData) * g_max_lights,
+			                                                           vk::BufferUsageFlagBits::eStorageBuffer,
 			                                                           vma::MemoryUsage::eAuto,
 			                                                           {
 				                                                           vma::AllocationCreateFlagBits::eHostAccessSequentialWrite
@@ -588,8 +588,8 @@ namespace puffin::rendering
 										 m_frame_render_data[i].material_buffer.allocation);
 				m_allocator.destroyBuffer(m_frame_render_data[i].object_buffer.buffer,
 				                         m_frame_render_data[i].object_buffer.allocation);
-				m_allocator.destroyBuffer(m_frame_render_data[i].light_static_buffer.buffer,
-				                         m_frame_render_data[i].light_static_buffer.allocation);
+				m_allocator.destroyBuffer(m_frame_render_data[i].shadow_buffer.buffer,
+				                         m_frame_render_data[i].shadow_buffer.allocation);
 				m_allocator.destroyBuffer(m_frame_render_data[i].light_buffer.buffer,
 				                         m_frame_render_data[i].light_buffer.allocation);
 				m_allocator.destroyBuffer(m_frame_render_data[i].camera_buffer.buffer,
@@ -649,8 +649,8 @@ namespace puffin::rendering
 			vk::DescriptorBufferInfo light_buffer_info = {
 				m_frame_render_data[i].light_buffer.buffer, 0, sizeof(GPULightData) * g_max_lights
 			};
-			vk::DescriptorBufferInfo light_static_buffer_info = {
-				m_frame_render_data[i].light_static_buffer.buffer, 0, sizeof(GPULightStaticData)
+			vk::DescriptorBufferInfo shadow_buffer_info = {
+				m_frame_render_data[i].shadow_buffer.buffer, 0, sizeof(GPUShadowData) * g_max_lights
 			};
 			vk::DescriptorBufferInfo material_buffer_info = {
 				m_frame_render_data[i].material_buffer.buffer, 0, sizeof(GPUMaterialInstanceData) * g_max_materials
@@ -660,9 +660,8 @@ namespace puffin::rendering
 				m_global_render_data.descriptor_allocator)
 				.bindBuffer(0, &camera_buffer_info, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
 				.bindBuffer(1, &light_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.bindBuffer(2, &light_static_buffer_info, vk::DescriptorType::eUniformBuffer,vk::ShaderStageFlagBits::eFragment)
+				.bindBuffer(2, &shadow_buffer_info, vk::DescriptorType::eStorageBuffer,vk::ShaderStageFlagBits::eFragment)
 				.bindBuffer(3, &material_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				//.bindImagesWithoutWrite(5, g_max_lights, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptor_binding_flags)
 				.build(m_frame_render_data[i].global_descriptor, m_global_render_data.global_set_layout);
 
 			const uint32_t num_images = 128;
@@ -710,7 +709,8 @@ namespace puffin::rendering
 			m_device, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_fs.spv").string()
 		};
 
-		vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant) };
+		vk::PushConstantRange vert_range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant) };
+		vk::PushConstantRange frag_range = { vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUFragShaderPushConstant) };
 
 		util::PipelineLayoutBuilder plb{};
 		m_forward_pipeline_layout = plb
@@ -718,7 +718,8 @@ namespace puffin::rendering
 		.descriptorSetLayout(m_global_render_data.global_set_layout)
 		.descriptorSetLayout(m_global_render_data.texture_set_layout)
 		.descriptorSetLayout(m_global_render_data.shadowmap_set_layout)
-		.pushConstantRange(range)
+		.pushConstantRange(vert_range)
+		.pushConstantRange(frag_range)
 		.createUnique(m_device);
 
 		vk::PipelineDepthStencilStateCreateInfo depthStencilInfo = {
@@ -780,6 +781,7 @@ namespace puffin::rendering
 		vk::PipelineRenderingCreateInfoKHR pipeline_render_info = {
 			0, {}, vk::Format::eD32Sfloat
 		};
+
 
 		util::PipelineBuilder pb{ 1024, 1024 };
 		m_shadow_pipeline = pb
@@ -1611,7 +1613,6 @@ namespace puffin::rendering
 
 		const auto light_view = registry->view<const TransformComponent3D, const LightComponent>();
 
-		sizeof(GPULightData);
 		std::vector<GPULightData> lights;
 
 		int i = 0;
@@ -1666,9 +1667,6 @@ namespace puffin::rendering
 				if (light.type != LightType::Point)
 				{
 					lights[i].cutoff_angle_and_shadow_index.z = shadow.shadow_idx;
-					lights[i].light_space_view = shadow.light_view_proj;
-					lights[i].shadow_bias.x = shadow.bias_min;
-					lights[i].shadow_bias.y = shadow.bias_max;
 				}
 			}
 
@@ -1683,15 +1681,10 @@ namespace puffin::rendering
 		auto& transform = registry->get<TransformComponent3D>(entity);
 
 		// Prepare light static data
-		GPULightStaticData lightStaticUBO;
-		lightStaticUBO.view_pos_and_light_count.x = transform.position.x;
-		lightStaticUBO.view_pos_and_light_count.y = transform.position.y;
-		lightStaticUBO.view_pos_and_light_count.z = transform.position.z;
-		lightStaticUBO.view_pos_and_light_count.w = i;
-
-		// Copy light static data to buffer
-		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().light_static_buffer,
-		                                    sizeof(GPULightStaticData), &lightStaticUBO);
+		current_frame_data().push_constant_frag.view_pos_and_light_count.x = transform.position.x;
+		current_frame_data().push_constant_frag.view_pos_and_light_count.y = transform.position.y;
+		current_frame_data().push_constant_frag.view_pos_and_light_count.z = transform.position.z;
+		current_frame_data().push_constant_frag.view_pos_and_light_count.w = i;
 	}
 
 	void RenderSystemVK::prepare_shadow_data()
@@ -1704,88 +1697,111 @@ namespace puffin::rendering
 
 		m_shadows_to_draw.clear();
 
+		std::vector<GPUShadowData> shadows;
+
+		int i = 0;
+
 		for (auto [entity, transform, light, shadow] : shadow_view.each())
 		{
-			if (light.type == LightType::Spot)
+			// Break out of loop of maximum number of lights has been reached
+			if (i >= g_max_lights)
 			{
-				float near_plane = 1.f;
-				float far_plane = 100.f;
-				float aspect = float(shadow.width) / float(shadow.height);
-
-				Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
-				direction = normalize(direction);
-
-				glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + direction), glm::vec3(0, 1, 0));
-
-				glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle * 2), aspect, near_plane, far_plane);
-				light_projection[1][1] *= -1;
-
-				shadow.light_view_proj = light_projection * light_view;
-
-				m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
+				break;
 			}
-			else if (light.type == LightType::Directional)
+
+			if (light.type == LightType::Spot || light.type == LightType::Directional)
 			{
-				auto editor_cam_entity = entt_subsystem->get_entity(m_editor_cam_id);
-				auto& camera_transform = registry->get<TransformComponent3D>(editor_cam_entity);
-				auto& camera = registry->get<CameraComponent>(editor_cam_entity);
+				shadows.emplace_back();
 
-				// Calculate camera view frustum vertices
-				std::vector<glm::vec4> camera_frustum_vertices;
-				util::calculate_camera_frustum(camera_frustum_vertices, camera.view, camera.proj);
-
-				// Transform to light view space
-				std::vector<glm::vec4> cam_light_view_vertices;
-				for (const auto& v : camera_frustum_vertices)
+				if (light.type == LightType::Spot)
 				{
-					cam_light_view_vertices.push_back(shadow.light_view * v);
-				}
+					float near_plane = 1.f;
+					float far_plane = 100.f;
+					float aspect = float(shadow.width) / float(shadow.height);
 
-				// Calculate cam frustum aabb in light space
-				const auto cam_light_view_aabb = util::calculate_aabb_from_vertices(cam_light_view_vertices);
-
-				// Recalculate shadow bounds if cam aabb is not fully enclosed by shadow bounds aabb
-				if (!util::check_aabb_is_enclosed(cam_light_view_aabb, shadow.bounds_aabb))
-				{
-					// Average vertices to get centre of view frustum
-					Vector3f centre;
-					for (const auto& v : camera_frustum_vertices)
-					{
-						centre += glm::vec3(v);
-					}
-					centre /= camera_frustum_vertices.size();
-
-					// Calculate direction from orientation
 					Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
 					direction = normalize(direction);
 
-					// Calculate light view
-					shadow.light_view = glm::lookAt(static_cast<glm::vec3>(centre - direction), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
+					glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + direction), glm::vec3(0, 1, 0));
 
-					// Calculate light projection - ortho
-					cam_light_view_vertices.clear();
+					glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle * 2), aspect, near_plane, far_plane);
+					light_projection[1][1] *= -1;
+
+					shadow.light_view_proj = light_projection * light_view;
+
+					shadows[i].light_space_view = shadow.light_view_proj;
+					shadows[i].shadow_bias.x = shadow.bias_min;
+					shadows[i].shadow_bias.y = shadow.bias_max;
+
+					m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
+				}
+				else if (light.type == LightType::Directional)
+				{
+					auto editor_cam_entity = entt_subsystem->get_entity(m_editor_cam_id);
+					auto& camera = registry->get<CameraComponent>(editor_cam_entity);
+
+					// Calculate camera view frustum vertices
+					std::vector<glm::vec4> camera_frustum_vertices;
+					util::calculate_camera_frustum(camera_frustum_vertices, camera.view, camera.proj);
+
+					// Transform to light view space
+					std::vector<glm::vec4> cam_light_view_vertices;
 					for (const auto& v : camera_frustum_vertices)
 					{
 						cam_light_view_vertices.push_back(shadow.light_view * v);
 					}
 
-					shadow.bounds_aabb = util::calculate_aabb_from_vertices(cam_light_view_vertices, shadow.bounds_mult);
+					// Calculate cam frustum aabb in light space
+					const auto cam_light_view_aabb = util::calculate_aabb_from_vertices(cam_light_view_vertices);
 
-					glm::mat4 light_projection = glm::ortho(shadow.bounds_aabb.min.x, shadow.bounds_aabb.max.x, 
-						shadow.bounds_aabb.min.y, shadow.bounds_aabb.max.y, shadow.bounds_aabb.min.z, shadow.bounds_aabb.max.z);
-					light_projection[1][1] *= -1;
+					// Recalculate shadow bounds if cam aabb is not fully enclosed by shadow bounds aabb
+					if (!util::check_aabb_is_enclosed(cam_light_view_aabb, shadow.bounds_aabb))
+					{
+						// Average vertices to get centre of view frustum
+						Vector3f centre;
+						for (const auto& v : camera_frustum_vertices)
+						{
+							centre += glm::vec3(v);
+						}
+						centre /= camera_frustum_vertices.size();
 
-					shadow.light_view_proj = light_projection * shadow.light_view;
+						// Calculate direction from orientation
+						Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
+						direction = normalize(direction);
+
+						// Calculate light view
+						shadow.light_view = glm::lookAt(static_cast<glm::vec3>(centre - direction), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
+
+						// Calculate light projection - ortho
+						cam_light_view_vertices.clear();
+						for (const auto& v : camera_frustum_vertices)
+						{
+							cam_light_view_vertices.push_back(shadow.light_view * v);
+						}
+
+						shadow.bounds_aabb = util::calculate_aabb_from_vertices(cam_light_view_vertices, shadow.bounds_mult);
+
+						glm::mat4 light_projection = glm::ortho(shadow.bounds_aabb.min.x, shadow.bounds_aabb.max.x,
+							shadow.bounds_aabb.min.y, shadow.bounds_aabb.max.y, shadow.bounds_aabb.min.z, shadow.bounds_aabb.max.z);
+						light_projection[1][1] *= -1;
+
+						shadow.light_view_proj = light_projection * shadow.light_view;
+					}
+
+					shadows[i].light_space_view = shadow.light_view_proj;
+					shadows[i].shadow_bias.x = shadow.bias_min;
+					shadows[i].shadow_bias.y = shadow.bias_max;
+
+					m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
 				}
 
-				m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
+				++i;
 			}
-			else
-			{
-				shadow.light_view_proj = glm::identity<glm::mat4>();
-			}
-
 		}
+
+		// Copy light data to buffer
+		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().shadow_buffer,
+			shadows.size() * sizeof(GPUShadowData), shadows.data());
 	}
 
 	void RenderSystemVK::build_indirect_commands()
@@ -2086,11 +2102,13 @@ namespace puffin::rendering
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_forward_pipeline_layout.get(), 0, descriptors.size(),
 			descriptors.data(), 0, nullptr);
 
-		GPUVertexShaderPushConstant push_constant;
-		push_constant.vertex_buffer_address = m_resource_manager->geometry_buffer()->vertex_buffer_address();
+		
+		GPUVertexShaderPushConstant push_constant_vert;
+		push_constant_vert.vertex_buffer_address = m_resource_manager->geometry_buffer()->vertex_buffer_address();
 
-		cmd.pushConstants(m_forward_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &push_constant);
-
+		cmd.pushConstants(m_forward_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &push_constant_vert);
+		cmd.pushConstants(m_forward_pipeline_layout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUVertexShaderPushConstant), &current_frame_data().push_constant_frag);
+		
 		cmd.bindIndexBuffer(m_resource_manager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
 	}
 

@@ -95,8 +95,10 @@ namespace puffin::rendering
 		AllocatedBuffer camera_buffer;
 		AllocatedBuffer object_buffer;
 		AllocatedBuffer light_buffer;
-		AllocatedBuffer light_static_buffer;
+		AllocatedBuffer shadow_buffer;
 		AllocatedBuffer material_buffer;
+
+		GPUFragShaderPushConstant push_constant_frag;
 
 		// Material Data (Set for each unique material i.e textures)
 

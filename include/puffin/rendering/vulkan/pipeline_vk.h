@@ -167,9 +167,9 @@ namespace puffin::rendering::util
 		}
 
 		PipelineBuilder& shader(const vk::ShaderStageFlagBits stage, const ShaderModule& shader,
-		                        const char* entryPoint = "main")
+		                        const char* entry_point = "main", const vk::SpecializationInfo* specialization_info = nullptr)
 		{
-			vk::PipelineShaderStageCreateInfo info = { {}, stage, shader.module(), entryPoint };
+			vk::PipelineShaderStageCreateInfo info = { {}, stage, shader.module(), entry_point, specialization_info };
 
 			mModules.emplace_back(info);
 			return *this;

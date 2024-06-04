@@ -18,9 +18,6 @@ struct LightData
 	vec4 ambient_specular;
 	vec4 attenuation;
 	vec4 cuttoff_angle_and_shadow_index;
-	
-	vec4 shadow_bias;
-	mat4 light_space_view;
 };
 
 layout(std140, set = 1, binding = 1) readonly buffer LightBuffer
@@ -28,10 +25,16 @@ layout(std140, set = 1, binding = 1) readonly buffer LightBuffer
 	LightData lights[];
 } lightBuffer;
 
-layout(std140, set = 1, binding = 2) uniform LightStaticBuffer
+struct ShadowData
 {
-	vec4 view_pos_and_light_count;
-} lightStatic;
+	vec4 shadow_bias;
+	mat4 light_space_view;
+};
+
+layout(std140, set = 1, binding = 2) readonly buffer ShadowBuffer
+{
+	ShadowData shadows[];
+} shadow_buffer;
 
 const int maxTexturesPerMaterial = 8;
 const int maxFloatsPerMaterial = 8;
@@ -50,7 +53,12 @@ layout(set = 1, binding = 3) readonly buffer MaterialBuffer
 layout(set = 2, binding = 0) uniform sampler2D textures[];
 layout(set = 3, binding = 0) uniform sampler2D shadowmaps[];
 
-float shadow_calculation(LightData data, vec3 lightDir, vec3 fragNormal, vec4 fragWorldPos);
+layout( push_constant ) uniform constants
+{	
+	layout(offset = 16) vec4 view_pos_and_light_count;
+} push_constants;
+
+float shadow_calculation(LightData light_data, ShadowData shadow_data, vec3 lightDir, vec3 fragNormal, vec4 fragWorldPos);
 vec3 dir_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
 vec3 point_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
 vec3 spot_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
@@ -62,11 +70,11 @@ void main()
 
 	vec4 albedo = texture(textures[albedoIdx], fUV);
 
-	vec3 viewDir = normalize(lightStatic.view_pos_and_light_count.rgb - fWorldPos.rgb);
+	vec3 viewDir = normalize(push_constants.view_pos_and_light_count.rgb - fWorldPos.rgb);
 	
 	vec3 result = vec3(0.0);
 	
-	int light_count = int(lightStatic.view_pos_and_light_count.w);
+	int light_count = int(push_constants.view_pos_and_light_count.w);
 	
 	for (int i = 0; i < light_count; i++)
 	{
@@ -90,24 +98,25 @@ void main()
 	outColor = vec4(albedo.rgb * result, 1.0);
 }
 
-float shadow_calculation(LightData data, vec3 lightDir, vec3 fragNormal, vec4 fragWorldPos)
+float shadow_calculation(LightData light_data, ShadowData shadow_data, vec3 lightDir, vec3 fragNormal, vec4 fragWorldPos)
 {
-	vec4 fragLightSpacePos = data.light_space_view * fragWorldPos;
+	int shadow_index = int(light_data.cuttoff_angle_and_shadow_index.z);
+	vec4 fragLightSpacePos = shadow_data.light_space_view * fragWorldPos;
 	vec3 projCoords = fragLightSpacePos.xyz / fragLightSpacePos.w;
 	projCoords = projCoords * 0.5 + 0.5;
 	
 	float currentdepth = projCoords.z;
 	
-	float bias = max(data.shadow_bias.y * (1.0 - dot(fragNormal, lightDir)), data.shadow_bias.x);
+	float bias = max(shadow_data.shadow_bias.y * (1.0 - dot(fragNormal, lightDir)), shadow_data.shadow_bias.x);
 	
 	float shadow = 0.0;
 	
-	vec2 texelSize = 1.0 / textureSize(shadowmaps[int(data.cuttoff_angle_and_shadow_index.z)], 0);
+	vec2 texelSize = 1.0 / textureSize(shadowmaps[int(shadow_index)], 0);
 	for (int x = -1; x <= 1; ++x)
 	{
 		for (int y = -1; y <= 1; ++y)
 		{
-			float pcfDepth = texture(shadowmaps[int(data.cuttoff_angle_and_shadow_index.z)], projCoords.xy + vec2(x, y) * texelSize).r;
+			float pcfDepth = texture(shadowmaps[int(shadow_index)], projCoords.xy + vec2(x, y) * texelSize).r;
 			shadow += currentdepth - bias > pcfDepth ? 1.0 : 0.0;
 		}
 	}
@@ -139,9 +148,10 @@ vec3 dir_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, v
 	
 	float shadow = 0.0;
 	
-	if (lightData.cuttoff_angle_and_shadow_index.z >= 0.0)
+	int shadow_index = int(lightData.cuttoff_angle_and_shadow_index.z);
+	if (shadow_index >= 0)
 	{
-		shadow = shadow_calculation(lightData, lightDir, fragNormal, fragWorldPos);
+		shadow = shadow_calculation(lightData, shadow_buffer.shadows[shadow_index], lightDir, fragNormal, fragWorldPos);
 	}
 
 	//return diffuse + ambient + specular;
@@ -203,9 +213,10 @@ vec3 spot_light_calculation(LightData lightData, vec3 fragNormal, vec3 viewDir, 
 
 	float shadow = 0.0;
 	
-	if (lightData.cuttoff_angle_and_shadow_index.z >= 0.0)
+	int shadow_index = int(lightData.cuttoff_angle_and_shadow_index.z);
+	if (shadow_index >= 0)
 	{
-		shadow = shadow_calculation(lightData, lightDir, fragNormal, fragWorldPos);
+		shadow = shadow_calculation(lightData, shadow_buffer.shadows[shadow_index], lightDir, fragNormal, fragWorldPos);
 	}
 
 	//return diffuse + ambient + specular;
