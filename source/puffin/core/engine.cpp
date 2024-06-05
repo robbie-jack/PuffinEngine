@@ -109,7 +109,11 @@ namespace puffin::core
 		{
 			auto scene_data = get_system<io::SceneSubsystem>()->sceneData();
 
-			if (constexpr bool setup_default_scene = false; setup_default_scene)
+			if (m_load_scene_on_launch)
+			{
+				scene_data->load();
+			}
+			else if (m_load_engine_default_scene)
 			{
 				auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
 				auto scene_graph = get_system<scene::SceneGraph>();
@@ -124,10 +128,6 @@ namespace puffin::core
 
 				scene_data->update_data(entt_subsystem, scene_graph);
 				scene_data->save();
-			}
-			else
-			{
-				scene_data->load();
 			}
 		}
 

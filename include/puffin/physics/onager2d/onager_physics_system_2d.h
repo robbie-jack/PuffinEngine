@@ -38,7 +38,7 @@ namespace puffin::physics
 		~OnagerPhysicsSystem2D() override { m_engine = nullptr; }
 
 		void startup();
-		void fixedUpdate();
+		void update_fixed();
 		void endPlay();
 
 		template<typename T>

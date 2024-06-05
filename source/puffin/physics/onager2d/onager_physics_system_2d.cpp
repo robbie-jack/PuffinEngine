@@ -26,7 +26,7 @@ namespace puffin
 		OnagerPhysicsSystem2D::OnagerPhysicsSystem2D(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
 			m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "Onager2DPhysicsSystem: Startup");
-			m_engine->register_callback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Onager2DPhysicsSystem: FixedUpdate");
+			m_engine->register_callback(core::ExecutionStage::UpdateFixed, [&]() { update_fixed(); }, "Onager2DPhysicsSystem: UpdateFixed");
 			m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Onager2DPhysicsSystem: EndPlay");
 
 			const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
@@ -67,7 +67,7 @@ namespace puffin
 			setBroadphase<SpatialHashBroadphase2D>();
 		}
 
-		void OnagerPhysicsSystem2D::fixedUpdate()
+		void OnagerPhysicsSystem2D::update_fixed()
 		{
 			// Update Dynamic Objects
 			updateDynamics();
