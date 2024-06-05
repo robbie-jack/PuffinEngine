@@ -10,6 +10,8 @@
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "puffin/math_helpers.h"
 #include "VkBootstrap.h"
@@ -1407,8 +1409,8 @@ namespace puffin::rendering
 
 		prepare_material_data();
 		prepare_object_data();
-		prepare_shadow_data();
 		prepare_light_data();
+		prepare_shadow_data();
 	}
 
 	void RenderSystemVK::prepare_material_data()
@@ -1611,7 +1613,7 @@ namespace puffin::rendering
 		auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
-		const auto light_view = registry->view<const TransformComponent3D, const LightComponent>();
+		const auto light_view = registry->view<const TransformComponent3D, LightComponent>();
 
 		std::vector<GPULightData> lights;
 
@@ -1632,12 +1634,19 @@ namespace puffin::rendering
 			lights[i].position_and_type.z = transform.position.z;
 			lights[i].position_and_type.w = static_cast<int>(light.type);
 
-			Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
-			direction = normalize(direction);
+			glm::vec4 dir = { 0.5f, -0.5f, 0.0f, 1.0f };
 
-			lights[i].direction.x = direction.x;
-			lights[i].direction.y = direction.y;
-			lights[i].direction.z = direction.z;
+			dir = glm::rotateZ(dir, maths::deg_to_rad(transform.orientation_euler_angles.roll));
+			dir = glm::rotateX(dir, maths::deg_to_rad(transform.orientation_euler_angles.pitch));
+			dir = glm::rotateY(dir, maths::deg_to_rad(transform.orientation_euler_angles.yaw));
+
+			dir = glm::normalize(dir);
+
+			light.direction = { dir.x, dir.y, dir.z };
+
+			lights[i].direction.x = light.direction.x;
+			lights[i].direction.y = light.direction.y;
+			lights[i].direction.z = light.direction.z;
 			lights[i].direction.w = 0.0f;
 
 			lights[i].color.x = light.color.x;
@@ -1719,10 +1728,7 @@ namespace puffin::rendering
 					float far_plane = 100.f;
 					float aspect = float(shadow.width) / float(shadow.height);
 
-					Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
-					direction = normalize(direction);
-
-					glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + direction), glm::vec3(0, 1, 0));
+					glm::mat4 light_view = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + light.direction), glm::vec3(0, 1, 0));
 
 					glm::mat4 light_projection = glm::perspective(glm::radians(light.outer_cutoff_angle * 2), aspect, near_plane, far_plane);
 					light_projection[1][1] *= -1;
@@ -1765,12 +1771,8 @@ namespace puffin::rendering
 						}
 						centre /= camera_frustum_vertices.size();
 
-						// Calculate direction from orientation
-						Vector3f direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.5f, -0.5f, 0.0f);
-						direction = normalize(direction);
-
 						// Calculate light view
-						shadow.light_view = glm::lookAt(static_cast<glm::vec3>(centre - direction), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
+						shadow.light_view = glm::lookAt(static_cast<glm::vec3>(centre - light.direction), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
 
 						// Calculate light projection - ortho
 						cam_light_view_vertices.clear();
@@ -2396,7 +2398,7 @@ namespace puffin::rendering
 	{
 		const auto scaleM = glm::scale(glm::mat4(1.0f), static_cast<glm::vec3>(scale));
 
-		const auto orientM = glm::mat4_cast(static_cast<glm::quat>(orientation));
+		const auto orientM = glm::toMat4(static_cast<glm::quat>(orientation));
 
 		const auto translateM = glm::translate(glm::mat4(1.0f), static_cast<glm::vec3>(position));
 

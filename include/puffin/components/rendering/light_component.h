@@ -34,6 +34,7 @@ namespace puffin
 		struct LightComponent
 		{
 			Vector3f color = {1.f, 1.f, 1.f};
+			Vector3f direction = { 1.0f, 0.0f, 0.0f };
 
 			float ambient_intensity = .05f; // Intensity multiplier applied to ambient/indirect color
 			float specular_intensity = 1.f; // Intensity multiplier applied to specular highlights
