@@ -128,6 +128,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/nodes/transform_node_2d.h
 	${HEADER_DIR}/puffin/nodes/transform_node_3d.h
 	${HEADER_DIR}/puffin/nodes/physics/rigidbody_node_3d.h
+	${HEADER_DIR}/puffin/nodes/rendering/camera_node_3d.h
 	${HEADER_DIR}/puffin/nodes/rendering/light_node_3d.h
 	${HEADER_DIR}/puffin/nodes/rendering/mesh_node.h
 	# Physics
@@ -225,6 +226,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/nodes/transform_node_2d.cpp
 	${SOURCE_DIR}/puffin/nodes/transform_node_3d.cpp
 	${SOURCE_DIR}/puffin/nodes/physics/rigidbody_node_3d.cpp
+	${SOURCE_DIR}/puffin/nodes/rendering/camera_node_3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/light_node_3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/mesh_node.cpp
 	# Physics

@@ -4,6 +4,7 @@
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/nodes/transform_node_2d.h"
 #include "puffin/nodes/transform_node_3d.h"
+#include "puffin/nodes/rendering/camera_node_3d.h"
 #include "puffin/nodes/rendering/light_node_3d.h"
 #include "puffin/nodes/rendering/mesh_node.h"
 
@@ -73,6 +74,7 @@ namespace puffin::scene
 		register_node_type<TransformNode3D>();
 		register_node_type<rendering::MeshNode>();
 		register_node_type<rendering::LightNode3D>();
+		register_node_type<rendering::CameraNode3D>();
 	}
 
 	void SceneGraph::update_scene_graph()

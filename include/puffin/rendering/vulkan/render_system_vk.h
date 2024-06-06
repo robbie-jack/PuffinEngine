@@ -132,8 +132,10 @@ namespace puffin::rendering
 		~RenderSystemVK() override { m_engine = nullptr; }
 
 		void startup();
+		void begin_play();
 		void wait_for_last_presentation_and_sample_time();
 		void render();
+		void end_play();
 		void shutdown();
 
 		const vma::Allocator& allocator() const { return m_allocator ;}
@@ -155,6 +157,8 @@ namespace puffin::rendering
 
 		void on_update_shadow_caster(entt::registry& registry, entt::entity entity);
 		void on_destroy_shadow_caster(entt::registry& registry, entt::entity entity);
+
+		void on_update_camera(entt::registry& registry, entt::entity entity);
 
 		void register_texture(PuffinID texID);
 
@@ -246,7 +250,8 @@ namespace puffin::rendering
 
 		DeletionQueue m_deletion_queue;
 
-		//EditorCamera m_editor_cam;
+		PuffinID m_active_cam_id;
+		std::unordered_map<PuffinID, bool> m_cached_cam_active_state;
 		PuffinID m_editor_cam_id;
 		float m_editor_cam_speed;
 
@@ -290,7 +295,7 @@ namespace puffin::rendering
 
 		void update_cameras();
 		void update_editor_camera();
-		void update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const;
+		void update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera) const;
 
 		void update_texture_descriptors();
 		void update_shadow_descriptors();

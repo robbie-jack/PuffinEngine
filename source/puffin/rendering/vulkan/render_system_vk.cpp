@@ -59,9 +59,11 @@ namespace puffin::rendering
 	RenderSystemVK::RenderSystemVK(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
 		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "VKRenderSystem: startup");
+		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&]() { begin_play(); }, "VKRenderSystem: begin_play");
 		m_engine->register_callback(core::ExecutionStage::WaitForLastPresentationAndSample, 
 			[&]() { wait_for_last_presentation_and_sample_time(); }, "VKRenderSystem: wait_for_last_presentation_and_sample_time");
 		m_engine->register_callback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: render");
+		m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "VKRenderSystem: end_play");
 		m_engine->register_callback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "VKRenderSystem: shutdown");
 
 		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
@@ -80,6 +82,9 @@ namespace puffin::rendering
 
 		registry->on_construct<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
 		registry->on_update<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
+		registry->on_destroy<ShadowCasterComponent>().connect<&RenderSystemVK::on_destroy_shadow_caster>(this);
+
+		registry->on_update<CameraComponent3D>().connect<&RenderSystemVK::on_update_camera>(this);
 	}
 
 	void RenderSystemVK::startup()
@@ -129,6 +134,24 @@ namespace puffin::rendering
 		m_material_registry.init(shared_from_this());
 	}
 
+	void RenderSystemVK::begin_play()
+	{
+		const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
+		const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+		const auto registry = entt_subsystem->registry();
+		const auto camera_view = registry->view<const TransformComponent3D, const CameraComponent3D>();
+
+		for (auto [entity, transform, camera] : camera_view.each())
+		{
+			if (camera.active)
+			{
+				m_active_cam_id = entt_subsystem->get_id(entity);
+
+				break;
+			}
+		}
+	}
+
 	void RenderSystemVK::wait_for_last_presentation_and_sample_time()
 	{
 		// Wait until GPU has finished presenting last frame. Timeout of 1 second
@@ -148,6 +171,11 @@ namespace puffin::rendering
 		process_components();
 
 		draw();
+	}
+
+	void RenderSystemVK::end_play()
+	{
+		m_active_cam_id = m_editor_cam_id;
 	}
 
 	void RenderSystemVK::shutdown()
@@ -249,6 +277,24 @@ namespace puffin::rendering
 		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
 		m_shadow_destroy_events.push({ id });
+	}
+
+	void RenderSystemVK::on_update_camera(entt::registry& registry, entt::entity entity)
+	{
+		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
+		const auto& camera = registry.get<CameraComponent3D>(entity);
+
+		if (m_cached_cam_active_state.at(id) != camera.active)
+		{
+			if (camera.active)
+			{
+				
+			}
+			else
+			{
+				
+			}
+		}
 	}
 
 	void RenderSystemVK::register_texture(PuffinID texID)
@@ -893,13 +939,14 @@ namespace puffin::rendering
 		auto registry = entt_subsystem->registry();
 
 		m_editor_cam_id = generate_id();
+		m_active_cam_id = m_editor_cam_id;
 
 		auto entity = entt_subsystem->add_entity(m_editor_cam_id, false);
 
 		auto& transform = registry->emplace<TransformComponent3D>(entity);
 		transform.position = { 0.0f, 0.0f, 10.0f };
 
-		auto& camera = registry->emplace<CameraComponent>(entity);
+		auto& camera = registry->emplace<CameraComponent3D>(entity);
 
 		m_editor_cam_speed = 25.0f;
 	}
@@ -1272,7 +1319,7 @@ namespace puffin::rendering
 		update_editor_camera();
 
 		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
-		const auto camera_view = registry->view<const TransformComponent3D, CameraComponent>();
+		const auto camera_view = registry->view<const TransformComponent3D, CameraComponent3D>();
 
 		for (auto [entity, transform, camera] : camera_view.each())
 		{
@@ -1288,37 +1335,37 @@ namespace puffin::rendering
 
 		auto entity = entt_subsystem->get_entity(m_editor_cam_id);
 		auto& transform = registry->get<TransformComponent3D>(entity);
-		auto& camera = registry->get<CameraComponent>(entity);
+		auto& camera = registry->get<CameraComponent3D>(entity);
 
-		if (inputSubsystem->isCursorLocked())
+		if (inputSubsystem->isCursorLocked() && m_active_cam_id == m_editor_cam_id)
 		{
 			// Camera Movement
-			if (inputSubsystem->pressed("CamMoveRight") && !inputSubsystem->pressed("CamMoveLeft"))
+			if (inputSubsystem->pressed("EditorCamMoveRight") && !inputSubsystem->pressed("EditorCamMoveLeft"))
 			{
 				transform.position += camera.right * m_editor_cam_speed * m_engine->delta_time();
 			}
 
-			if (inputSubsystem->pressed("CamMoveLeft") && !inputSubsystem->pressed("CamMoveRight"))
+			if (inputSubsystem->pressed("EditorCamMoveLeft") && !inputSubsystem->pressed("EditorCamMoveRight"))
 			{
 				transform.position -= camera.right * m_editor_cam_speed * m_engine->delta_time();
 			}
 
-			if (inputSubsystem->pressed("CamMoveForward") && !inputSubsystem->pressed("CamMoveBackward"))
+			if (inputSubsystem->pressed("EditorCamMoveForward") && !inputSubsystem->pressed("EditorCamMoveBackward"))
 			{
 				transform.position += camera.direction * m_editor_cam_speed * m_engine->delta_time();
 			}
 
-			if (inputSubsystem->pressed("CamMoveBackward") && !inputSubsystem->pressed("CamMoveForward"))
+			if (inputSubsystem->pressed("EditorCamMoveBackward") && !inputSubsystem->pressed("EditorCamMoveForward"))
 			{
 				transform.position -= camera.direction * m_editor_cam_speed * m_engine->delta_time();
 			}
 
-			if (inputSubsystem->pressed("CamMoveUp") && !inputSubsystem->pressed("CamMoveDown"))
+			if (inputSubsystem->pressed("EditorCamMoveUp") && !inputSubsystem->pressed("EditorCamMoveDown"))
 			{
 				transform.position += camera.up * m_editor_cam_speed * m_engine->delta_time();
 			}
 
-			if (inputSubsystem->pressed("CamMoveDown") && !inputSubsystem->pressed("CamMoveUp"))
+			if (inputSubsystem->pressed("EditorCamMoveDown") && !inputSubsystem->pressed("EditorCamMoveUp"))
 			{
 				transform.position -= camera.up * m_editor_cam_speed * m_engine->delta_time();
 			}
@@ -1337,7 +1384,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::update_camera_component(const TransformComponent3D& transform, CameraComponent& camera) const
+	void RenderSystemVK::update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera) const
 	{
 		// Calculate direction & right vectors
 		camera.direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.0f, 0.0f, -1.0f);
@@ -1397,8 +1444,8 @@ namespace puffin::rendering
 		auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 		auto registry = entt_subsystem->registry();
 
-		auto entity = entt_subsystem->get_entity(m_editor_cam_id);
-		auto& camera = registry->get<CameraComponent>(entity);
+		auto entity = entt_subsystem->get_entity(m_active_cam_id);
+		auto& camera = registry->get<CameraComponent3D>(entity);
 
 		GPUCameraData camUBO = {};
 		camUBO.proj = camera.proj;
@@ -1686,7 +1733,7 @@ namespace puffin::rendering
 		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().light_buffer,
 		                                    lights.size() * sizeof(GPULightData), lights.data());
 
-		auto entity = entt_subsystem->get_entity(m_editor_cam_id);
+		auto entity = entt_subsystem->get_entity(m_active_cam_id);
 		auto& transform = registry->get<TransformComponent3D>(entity);
 
 		// Prepare light static data
@@ -1743,8 +1790,8 @@ namespace puffin::rendering
 				}
 				else if (light.type == LightType::Directional)
 				{
-					auto editor_cam_entity = entt_subsystem->get_entity(m_editor_cam_id);
-					auto& camera = registry->get<CameraComponent>(editor_cam_entity);
+					auto editor_cam_entity = entt_subsystem->get_entity(m_active_cam_id);
+					auto& camera = registry->get<CameraComponent3D>(editor_cam_entity);
 
 					// Calculate camera view frustum vertices
 					std::vector<glm::vec4> camera_frustum_vertices;

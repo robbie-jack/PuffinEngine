@@ -29,14 +29,14 @@ namespace puffin
 			// Setup Actions
 
 			// Camera Actions
-			addAction("CamMoveForward", GLFW_KEY_W);
-			addAction("CamMoveBackward", GLFW_KEY_S);
-			addAction("CamMoveLeft", GLFW_KEY_A);
-			addAction("CamMoveRight", GLFW_KEY_D);
-			addAction("CamMoveUp", GLFW_KEY_E);
-			addAction("CamMoveDown", GLFW_KEY_Q);
-			addAction("CursorSwitch", GLFW_KEY_F1);
-			addAction("Spacebar", GLFW_KEY_SPACE);
+			addAction("EditorCamMoveForward", GLFW_KEY_W);
+			addAction("EditorCamMoveBackward", GLFW_KEY_S);
+			addAction("EditorCamMoveLeft", GLFW_KEY_A);
+			addAction("EditorCamMoveRight", GLFW_KEY_D);
+			addAction("EditorCamMoveUp", GLFW_KEY_E);
+			addAction("EditorCamMoveDown", GLFW_KEY_Q);
+			addAction("EditorCursorSwitch", GLFW_KEY_F1);
+			//addAction("Spacebar", GLFW_KEY_SPACE);
 			//addAction("Play", GLFW_KEY_P);
 			//addAction("Restart", GLFW_KEY_O);
 
@@ -117,7 +117,7 @@ namespace puffin
 			}
 
 			// Update Mouse
-			if (getAction("CursorSwitch").state == KeyState::JustPressed)
+			if (getAction("EditorCursorSwitch").state == KeyState::JustPressed)
 			{
 				if (mCursorLocked == true)
 				{

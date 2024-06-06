@@ -14,9 +14,11 @@ namespace puffin
 {
 	namespace rendering
 	{
-		struct CameraComponent
+		struct CameraComponent3D
 		{
-			CameraComponent() {}
+			CameraComponent3D() {}
+
+			bool active = false;
 
 			float z_near = 0.01f;
 			float z_far = 200.0f;
@@ -32,7 +34,7 @@ namespace puffin
 			glm::mat4 proj = glm::mat4(0.0f);
 			glm::mat4 view_proj = glm::mat4(0.0f);
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, z_near, z_far, aspect, fov_y, up)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent3D, z_near, z_far, aspect, fov_y, up)
 		};
 	}
 }

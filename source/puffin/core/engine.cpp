@@ -75,7 +75,7 @@ namespace puffin::core
 		scene_data->register_component<rendering::MeshComponent>();
 		scene_data->register_component<rendering::LightComponent>();
 		scene_data->register_component<rendering::ShadowCasterComponent>();
-		scene_data->register_component<rendering::CameraComponent>();
+		scene_data->register_component<rendering::CameraComponent3D>();
 		scene_data->register_component<scripting::AngelScriptComponent>();
 		scene_data->register_component<rendering::ProceduralMeshComponent>();
 		scene_data->register_component<procedural::PlaneComponent>();
