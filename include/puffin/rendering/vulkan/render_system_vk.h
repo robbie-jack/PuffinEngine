@@ -132,10 +132,8 @@ namespace puffin::rendering
 		~RenderSystemVK() override { m_engine = nullptr; }
 
 		void startup();
-		void begin_play();
 		void wait_for_last_presentation_and_sample_time();
 		void render();
-		void end_play();
 		void shutdown();
 
 		const vma::Allocator& allocator() const { return m_allocator ;}
@@ -146,6 +144,7 @@ namespace puffin::rendering
 		const vk::PipelineCache& pipeline_cache() const { return m_pipeline_cache; }
 		const OffscreenData& offscreen_data() const { return m_offscreen_data; }
 		const vk::Extent2D& window_size() const { return m_window_size; }
+		const vk::Extent2D& render_extent() const { return m_render_extent; }
 		DeletionQueue& deletion_queue() { return m_deletion_queue; }
 		bool rebar_enabled() const { return m_rebar_enabled; }
 
@@ -157,8 +156,6 @@ namespace puffin::rendering
 
 		void on_update_shadow_caster(entt::registry& registry, entt::entity entity);
 		void on_destroy_shadow_caster(entt::registry& registry, entt::entity entity);
-
-		void on_update_camera(entt::registry& registry, entt::entity entity);
 
 		void register_texture(PuffinID texID);
 
@@ -250,11 +247,6 @@ namespace puffin::rendering
 
 		DeletionQueue m_deletion_queue;
 
-		PuffinID m_active_cam_id;
-		std::unordered_map<PuffinID, bool> m_cached_cam_active_state;
-		PuffinID m_editor_cam_id;
-		float m_editor_cam_speed;
-
 		bool m_initialized = false; // Indicates initialization completed without any failures
 		bool m_rebar_enabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
 		bool m_render_shadows = true; // Render shadows if enabled
@@ -279,8 +271,6 @@ namespace puffin::rendering
 		void init_imgui();
 		void init_offscreen_imgui_textures(OffscreenData& offscreenData);
 
-		void init_editor_camera();
-
 		void process_components();
 
 		void update_render_data();
@@ -292,10 +282,6 @@ namespace puffin::rendering
 
 		void recreate_offscreen();
 		void clean_offscreen(OffscreenData& offscreenData);
-
-		void update_cameras();
-		void update_editor_camera();
-		void update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera) const;
 
 		void update_texture_descriptors();
 		void update_shadow_descriptors();

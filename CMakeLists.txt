@@ -156,6 +156,7 @@ set(HEADERS
 	# Procedural
 	${HEADER_DIR}/puffin/procedural/procedural_mesh_gen_system.h
 	# Rendering
+	${HEADER_DIR}/puffin/rendering/camera_subsystem.h
 	${HEADER_DIR}/puffin/rendering/material_globals.h
 	${HEADER_DIR}/puffin/rendering/render_globals.h
 	${HEADER_DIR}/puffin/rendering/render_helpers.h
@@ -244,6 +245,7 @@ set(SOURCES
 	# Procedural
 	${SOURCE_DIR}/puffin/procedural/procedural_mesh_gen_system.cpp
 	# Rendering
+	${SOURCE_DIR}/puffin/rendering/camera_subsystem.cpp
 	${SOURCE_DIR}/puffin/rendering/render_helpers.cpp
 	# Rendering Vulkan
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptors_vk.cpp

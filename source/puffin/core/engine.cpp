@@ -27,6 +27,7 @@
 #include "puffin/nodes/physics/rigidbody_node_3d.h"
 #include "puffin/nodes/rendering/light_node_3d.h"
 #include "puffin/nodes/rendering/mesh_node.h"
+#include "puffin/rendering/camera_subsystem.h"
 #include "puffin/scene/scene_graph.h"
 #include "puffin/ui/editor/ui_subsystem.h"
 #include "puffin/window/window_subsystem.h"
@@ -51,6 +52,7 @@ namespace puffin::core
         auto uiSubsystem = register_system<puffin::ui::UISubsystem>();
 		auto sceneSubsystem = register_system<io::SceneSubsystem>();
 		auto scene_graph = register_system<scene::SceneGraph>();
+		auto cam_system = register_system<rendering::CameraSubystem>();
 
 		scene_graph->register_default_node_types();
 

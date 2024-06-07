@@ -34,6 +34,7 @@
 #include "puffin/components/physics/3d/velocity_component_3d.h"
 #include "puffin/components/rendering/light_component.h"
 #include "puffin/components/rendering/mesh_component.h"
+#include "puffin/rendering/camera_subsystem.h"
 #include "puffin/rendering/material_globals.h"
 #include "puffin/window/window_subsystem.h"
 #include "puffin/scene/scene_graph.h"
@@ -59,11 +60,9 @@ namespace puffin::rendering
 	RenderSystemVK::RenderSystemVK(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
 		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "VKRenderSystem: startup");
-		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&]() { begin_play(); }, "VKRenderSystem: begin_play");
 		m_engine->register_callback(core::ExecutionStage::WaitForLastPresentationAndSample, 
 			[&]() { wait_for_last_presentation_and_sample_time(); }, "VKRenderSystem: wait_for_last_presentation_and_sample_time");
 		m_engine->register_callback(core::ExecutionStage::Render, [&]() { render(); }, "VKRenderSystem: render");
-		m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "VKRenderSystem: end_play");
 		m_engine->register_callback(core::ExecutionStage::Shutdown, [&]() { shutdown(); }, "VKRenderSystem: shutdown");
 
 		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
@@ -83,8 +82,6 @@ namespace puffin::rendering
 		registry->on_construct<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
 		registry->on_update<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
 		registry->on_destroy<ShadowCasterComponent>().connect<&RenderSystemVK::on_destroy_shadow_caster>(this);
-
-		registry->on_update<CameraComponent3D>().connect<&RenderSystemVK::on_update_camera>(this);
 	}
 
 	void RenderSystemVK::startup()
@@ -95,9 +92,9 @@ namespace puffin::rendering
 
 		if (m_engine->should_render_editor_ui())
 		{
-			const ImVec2 viewportSize = m_engine->get_system<ui::UISubsystem>()->windowViewport()->viewportSize();
-			m_render_extent.width = viewportSize.x;
-			m_render_extent.height = viewportSize.y;
+			const ImVec2 viewport_size = m_engine->get_system<ui::UISubsystem>()->windowViewport()->viewportSize();
+			m_render_extent.width = viewport_size.x;
+			m_render_extent.height = viewport_size.y;
 		}
 		else
 		{
@@ -121,8 +118,6 @@ namespace puffin::rendering
 			init_offscreen_imgui_textures(m_offscreen_data);
 		}
 
-		init_editor_camera();
-
 		m_renderables.reserve(g_max_objects);
 		m_cached_object_data.reserve(g_max_objects);
 
@@ -132,24 +127,6 @@ namespace puffin::rendering
 
 		m_resource_manager = new ResourceManagerVK(shared_from_this());
 		m_material_registry.init(shared_from_this());
-	}
-
-	void RenderSystemVK::begin_play()
-	{
-		const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
-		const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
-		const auto camera_view = registry->view<const TransformComponent3D, const CameraComponent3D>();
-
-		for (auto [entity, transform, camera] : camera_view.each())
-		{
-			if (camera.active)
-			{
-				m_active_cam_id = entt_subsystem->get_id(entity);
-
-				break;
-			}
-		}
 	}
 
 	void RenderSystemVK::wait_for_last_presentation_and_sample_time()
@@ -171,11 +148,6 @@ namespace puffin::rendering
 		process_components();
 
 		draw();
-	}
-
-	void RenderSystemVK::end_play()
-	{
-		m_active_cam_id = m_editor_cam_id;
 	}
 
 	void RenderSystemVK::shutdown()
@@ -277,24 +249,6 @@ namespace puffin::rendering
 		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 
 		m_shadow_destroy_events.push({ id });
-	}
-
-	void RenderSystemVK::on_update_camera(entt::registry& registry, entt::entity entity)
-	{
-		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
-		const auto& camera = registry.get<CameraComponent3D>(entity);
-
-		if (m_cached_cam_active_state.at(id) != camera.active)
-		{
-			if (camera.active)
-			{
-				
-			}
-			else
-			{
-				
-			}
-		}
 	}
 
 	void RenderSystemVK::register_texture(PuffinID texID)
@@ -932,24 +886,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::init_editor_camera()
-	{
-		// Crate editor cam 
-		auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
-		auto registry = entt_subsystem->registry();
-
-		m_editor_cam_id = generate_id();
-		m_active_cam_id = m_editor_cam_id;
-
-		auto entity = entt_subsystem->add_entity(m_editor_cam_id, false);
-
-		auto& transform = registry->emplace<TransformComponent3D>(entity);
-		transform.position = { 0.0f, 0.0f, 10.0f };
-
-		auto& camera = registry->emplace<CameraComponent3D>(entity);
-
-		m_editor_cam_speed = 25.0f;
-	}
+	
 
 	void RenderSystemVK::process_components()
 	{
@@ -1167,8 +1104,6 @@ namespace puffin::rendering
 			m_render_extent = m_window_size;
 		}
 
-		update_cameras();
-
 		recreate_swapchain();
 		recreate_offscreen();
 
@@ -1314,94 +1249,6 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::update_cameras()
-	{
-		update_editor_camera();
-
-		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
-		const auto camera_view = registry->view<const TransformComponent3D, CameraComponent3D>();
-
-		for (auto [entity, transform, camera] : camera_view.each())
-		{
-			update_camera_component(transform, camera);
-		}
-	}
-
-	void RenderSystemVK::update_editor_camera()
-	{
-		const auto inputSubsystem = m_engine->get_system<input::InputSubsystem>();
-		auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
-		auto registry = entt_subsystem->registry();
-
-		auto entity = entt_subsystem->get_entity(m_editor_cam_id);
-		auto& transform = registry->get<TransformComponent3D>(entity);
-		auto& camera = registry->get<CameraComponent3D>(entity);
-
-		if (inputSubsystem->isCursorLocked() && m_active_cam_id == m_editor_cam_id)
-		{
-			// Camera Movement
-			if (inputSubsystem->pressed("EditorCamMoveRight") && !inputSubsystem->pressed("EditorCamMoveLeft"))
-			{
-				transform.position += camera.right * m_editor_cam_speed * m_engine->delta_time();
-			}
-
-			if (inputSubsystem->pressed("EditorCamMoveLeft") && !inputSubsystem->pressed("EditorCamMoveRight"))
-			{
-				transform.position -= camera.right * m_editor_cam_speed * m_engine->delta_time();
-			}
-
-			if (inputSubsystem->pressed("EditorCamMoveForward") && !inputSubsystem->pressed("EditorCamMoveBackward"))
-			{
-				transform.position += camera.direction * m_editor_cam_speed * m_engine->delta_time();
-			}
-
-			if (inputSubsystem->pressed("EditorCamMoveBackward") && !inputSubsystem->pressed("EditorCamMoveForward"))
-			{
-				transform.position -= camera.direction * m_editor_cam_speed * m_engine->delta_time();
-			}
-
-			if (inputSubsystem->pressed("EditorCamMoveUp") && !inputSubsystem->pressed("EditorCamMoveDown"))
-			{
-				transform.position += camera.up * m_editor_cam_speed * m_engine->delta_time();
-			}
-
-			if (inputSubsystem->pressed("EditorCamMoveDown") && !inputSubsystem->pressed("EditorCamMoveUp"))
-			{
-				transform.position -= camera.up * m_editor_cam_speed * m_engine->delta_time();
-			}
-
-			// Mouse Rotation
-			transform.orientation_euler_angles.yaw += inputSubsystem->getMouseXOffset();
-			transform.orientation_euler_angles.pitch += inputSubsystem->getMouseYOffset();
-
-			if (transform.orientation_euler_angles.pitch > 89.0f)
-				transform.orientation_euler_angles.pitch = 89.0f;
-
-			if (transform.orientation_euler_angles.pitch < -89.0f)
-				transform.orientation_euler_angles.pitch = -89.0f;
-
-			update_transform_orientation(transform, transform.orientation_euler_angles);
-		}
-	}
-
-	void RenderSystemVK::update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera) const
-	{
-		// Calculate direction & right vectors
-		camera.direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.0f, 0.0f, -1.0f);
-		camera.right = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(1.0f, 0.0f, 0.0f);
-
-		camera.aspect = static_cast<float>(m_render_extent.width) / static_cast<float>(m_render_extent.height);
-
-		// Update view & projection matrices from updated direction and right vectors
-		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
-			static_cast<glm::vec3>(transform.position + camera.direction), static_cast<glm::vec3>(camera.up));
-
-		camera.proj = glm::perspective(maths::deg_to_rad(camera.fov_y), camera.aspect, camera.z_near, camera.z_far);
-		camera.proj[1][1] *= -1; // Flips y-axis to match vulkan's coordinates system
-
-		camera.view_proj = camera.proj * camera.view;
-	}
-
 	void RenderSystemVK::update_texture_descriptors()
 	{
 		if (m_initialized && current_frame_data().texture_descriptor_needs_updated)
@@ -1441,10 +1288,11 @@ namespace puffin::rendering
 		// Prepare camera data
 		const AllocatedBuffer& cameraBuffer = current_frame_data().camera_buffer;
 
+		auto cam_system = m_engine->get_system<CameraSubystem>();
 		auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 		auto registry = entt_subsystem->registry();
 
-		auto entity = entt_subsystem->get_entity(m_active_cam_id);
+		auto entity = entt_subsystem->get_entity(cam_system->active_cam_id());
 		auto& camera = registry->get<CameraComponent3D>(entity);
 
 		GPUCameraData camUBO = {};
@@ -1733,7 +1581,8 @@ namespace puffin::rendering
 		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().light_buffer,
 		                                    lights.size() * sizeof(GPULightData), lights.data());
 
-		auto entity = entt_subsystem->get_entity(m_active_cam_id);
+		auto cam_system = m_engine->get_system<CameraSubystem>();
+		auto entity = entt_subsystem->get_entity(cam_system->active_cam_id());
 		auto& transform = registry->get<TransformComponent3D>(entity);
 
 		// Prepare light static data
@@ -1790,8 +1639,9 @@ namespace puffin::rendering
 				}
 				else if (light.type == LightType::Directional)
 				{
-					auto editor_cam_entity = entt_subsystem->get_entity(m_active_cam_id);
-					auto& camera = registry->get<CameraComponent3D>(editor_cam_entity);
+					auto cam_system = m_engine->get_system<CameraSubystem>();
+					auto active_cam_entity = entt_subsystem->get_entity(cam_system->active_cam_id());
+					auto& camera = registry->get<CameraComponent3D>(active_cam_entity);
 
 					// Calculate camera view frustum vertices
 					std::vector<glm::vec4> camera_frustum_vertices;
