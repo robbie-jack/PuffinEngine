@@ -1,23 +1,7 @@
 #include "puffin/rendering/render_helpers.h"
 
 #include "puffin/types/aabb.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
+#include "puffin/types/quat.h"
 
 namespace puffin::rendering::util
 {

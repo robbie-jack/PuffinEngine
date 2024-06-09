@@ -64,7 +64,7 @@ namespace puffin::assets
 
 			memcpy(assetData.binaryBlob.data(), mergedBuffer.data(), compressedSize);
 
-			mesh_asset_info.compressionMode = CompressionMode::None;
+			mesh_asset_info.compressionMode = CompressionMode::Uncompressed;
 		}
 		else
 		{

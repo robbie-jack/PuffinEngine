@@ -48,7 +48,7 @@ namespace puffin::ui
 
 			mSaveScene = false;
 			mLoadScene = false;
-			mImportAssetUI = ImportAssetUI::None;
+			mImportAssetUI = ImportAssetUI::Default;
 
 			mWindowSceneHierarchy = std::make_shared<UIWindowSceneHierarchy>(m_engine);
 			mWindowViewport = std::make_shared<UIWindowViewport>(m_engine);
@@ -105,7 +105,7 @@ namespace puffin::ui
 						std::cout << "Import Failed" << std::endl;
 					}
 
-					mImportAssetUI = ImportAssetUI::None;
+					mImportAssetUI = ImportAssetUI::Default;
 
 					break;
 
@@ -121,7 +121,7 @@ namespace puffin::ui
 						std::cout << "Import Failed" << std::endl;
 					}
 
-					mImportAssetUI = ImportAssetUI::None;
+					mImportAssetUI = ImportAssetUI::Default;
 
 					break;
 

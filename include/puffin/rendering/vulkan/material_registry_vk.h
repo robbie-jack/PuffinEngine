@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_set>
+#include <memory>
 
 #include "puffin/types/uuid.h"
 #include "puffin/rendering/vulkan/types_vk.h"

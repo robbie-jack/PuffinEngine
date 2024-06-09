@@ -38,9 +38,29 @@
 #include <unistd.h>
 #endif
 
+namespace puffin
+{
+    void add_default_engine_arguments(argparse::ArgumentParser &parser)
+    {
+        parser.add_argument("-p", "-project", "-project_path")
+                .help("Specify the path of the project file")
+                .required();
+
+        parser.add_argument("--load_scene_on_launch")
+                .help("Specify whether project default scene should be loaded on launch")
+                .default_value(false)
+                .implicit_value(true);
+
+        parser.add_argument("--load_default_scene")
+                .help("Specify whether the engine default scene should be loaded on launch")
+                .default_value(false)
+                .implicit_value(true);
+    }
+}
+
 namespace puffin::core
 {
-	void Engine::setup(const fs::path& projectPath)
+	void Engine::setup(const argparse::ArgumentParser &parser)
 	{
 		// Subsystems
 		auto windowSubsystem = register_system<window::WindowSubsystem>();
@@ -56,11 +76,13 @@ namespace puffin::core
 
 		scene_graph->register_default_node_types();
 
+        fs::path project_path = fs::path(parser.get<std::string>("-project_path"));
+
 		// Load Project File
-		load_project(projectPath, m_project_file);
+		load_project(project_path, m_project_file);
 
 		// Setup asset registry
-		assets::AssetRegistry::get()->init(m_project_file, projectPath);
+		assets::AssetRegistry::get()->init(m_project_file, project_path);
 		assets::AssetRegistry::get()->registerAssetType<assets::StaticMeshAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::TextureAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::SoundAsset>();
@@ -94,11 +116,14 @@ namespace puffin::core
 		load_settings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", m_settings);
 
 		// Load/Initialize Assets
-		assets::AssetRegistry::get()->loadAssetCache();
-		//addDefaultAssets();
-		//reimportDefaultAssets();
-		//assets::AssetRegistry::get()->saveAssetCache();
+		//assets::AssetRegistry::get()->loadAssetCache();
+		//add_default_assets();
+		reimport_default_assets();
+		assets::AssetRegistry::get()->saveAssetCache();
 		//loadAndResaveAssets();
+
+        m_load_scene_on_launch = parser.get<bool>("--load_scene_on_launch");
+        m_load_engine_default_scene = parser.get<bool>("--load_default_scene");
 	}
 
 	void Engine::startup()
@@ -313,7 +338,7 @@ namespace puffin::core
 
 	void Engine::reimport_default_assets()
 	{
-		io::load_and_import_model(R"(C:\Projects\PuffinProject\model_backups\cube.obj)", "meshes");
+		io::load_and_import_model( assets::AssetRegistry::get()->contentRoot() / "model_backups/cube.obj", "meshes");
 		io::load_and_import_model(R"(C:\Projects\PuffinProject\model_backups\space_engineer.obj)", "meshes");
 		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\Sphere.dae)", "meshes");
 		io::load_and_import_model(R"(C:\Projects\PuffinProject\model_backups\chalet.obj)", "meshes");

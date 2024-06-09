@@ -3,6 +3,7 @@
 #include "puffin/core/application.h"
 #include "puffin/project_settings.h"
 #include "puffin/core/system.h"
+#include "argparse/argparse.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -15,6 +16,8 @@ namespace fs = std::filesystem;
 
 namespace puffin
 {
+    void add_default_engine_arguments(argparse::ArgumentParser &parser);
+
 	/*namespace audio
 	{
 		class AudioSubsystem;
@@ -109,7 +112,7 @@ namespace puffin::core
 		Engine() = default;
 		~Engine() = default;
 
-		void setup(const fs::path& projectPath);
+		void setup(const argparse::ArgumentParser &parser);
 
 		void startup();
 		bool update();

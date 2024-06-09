@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "puffin/core/engine.h"
+#include "argparse/argparse.hpp"
 
 #ifdef PFN_JOLT_PHYSICS
 #include "puffin/physics/jolt/jolt_physics_system.h"
@@ -13,11 +14,26 @@
 #include "puffin/scripting/angelscript/angelscript_system.h"
 #include "puffin/rendering/vulkan/render_system_vk.h"
 
-int main()
+int main(int argc, char* argv[])
 {
+    argparse::ArgumentParser parser("puffin app");
+
+    puffin::add_default_engine_arguments(parser);
+
+    try
+    {
+        parser.parse_args(argc, argv);
+    }
+    catch (const std::exception& err)
+    {
+        std::cerr << err.what() << std::endl;
+        std::cerr << parser;
+        std::exit(1);
+    }
+
 	const auto engine = std::make_shared<puffin::core::Engine>();
 
-	engine->setup(R"(C:\Projects\PuffinProject\Puffin.pproject)");
+	engine->setup(parser);
 
 	engine->register_system<puffin::rendering::RenderSystemVK>();
 

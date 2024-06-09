@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "puffin/rendering/vulkan/types_vk.h"
 #include "puffin/types/packed_vector.h"
 #include "puffin/types/uuid.h"

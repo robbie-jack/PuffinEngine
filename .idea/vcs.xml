@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/OpenSimplexNoise" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/box2d" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/enkits" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/entt" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/imgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/imgui-filebrowser" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/implot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/jolt" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/json" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/lz4" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/tinygltf" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vkb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vma-hpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vma-hpp/Vulkan-Hpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vma-hpp/Vulkan-Hpp/Vulkan-Headers" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vma-hpp/Vulkan-Hpp/glfw" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vma-hpp/Vulkan-Hpp/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vma-hpp/Vulkan-Hpp/glslang" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vma-hpp/Vulkan-Hpp/tinyxml2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/deps/vma-hpp/VulkanMemoryAllocator" vcs="Git" />
+  </component>
+</project>

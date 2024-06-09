@@ -1,10 +1,11 @@
 #pragma once
 
-#include "nlohmann/json.hpp"
-#include "entt/entity/registry.hpp"
-
 #include <fstream>
 #include <filesystem>
+#include <utility>
+
+#include "nlohmann/json.hpp"
+#include "entt/entity/registry.hpp"
 
 #include "puffin/scene/scene_graph.h"
 #include "puffin/core/system.h"
@@ -16,9 +17,7 @@ using json = nlohmann::json;
 
 namespace puffin::io
 {
-	using SceneComponentType = uint16_t;
-
-	// Interface for array to store scene data
+    // Interface for array to store scene data
 	class IComponentDataArray
 	{
 	public:
@@ -29,7 +28,7 @@ namespace puffin::io
 		virtual void update(const std::shared_ptr<ecs::EnTTSubsystem>& enttSubsystem) = 0;
 		virtual void clear() = 0;
 		virtual size_t size() = 0;
-		virtual json save_to_json() const = 0;
+		[[nodiscard]] virtual json save_to_json() const = 0;
 		virtual void load_from_json(const json& componentData) = 0;
 	};
 
@@ -38,7 +37,7 @@ namespace puffin::io
 	{
 	public:
 
-		ComponentDataArray() {}
+		ComponentDataArray() = default;
 		~ComponentDataArray() override = default;
 
 		void init(const std::shared_ptr<ecs::EnTTSubsystem>& entt_subsystem) override
@@ -66,9 +65,7 @@ namespace puffin::io
 
 			const auto registry = entt_subsystem->registry();
 
-			const auto view = registry->view<const CompT>();
-
-			for (auto& [ entity, comp ] : view.each())
+			for (const auto& [ entity, comp ] : registry->view<const CompT>().each())
 			{
 				const auto& id = entt_subsystem->get_id(entity);
 
@@ -126,7 +123,7 @@ namespace puffin::io
 	public:
 
 		SceneData() = default;
-		SceneData(const fs::path& path) : m_path(path) {}
+		explicit SceneData(fs::path  path) : m_path(std::move(path)) {}
 
 		// Initialize ECS & SceneGraph with loaded data
 		void init(const std::shared_ptr<ecs::EnTTSubsystem>& entt_subsystem, const std::shared_ptr<scene::SceneGraph>& scene_graph)
@@ -352,7 +349,7 @@ namespace puffin::io
 	{
 	public:
 
-		SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+		explicit SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
 			m_engine->register_callback(core::ExecutionStage::Startup, [&] { init(); }, "SceneSubsystem: init", 200);
 			m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { begin_play(); }, "SceneSubsystem: begin_play", 0);

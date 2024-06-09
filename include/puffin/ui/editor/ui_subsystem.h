@@ -29,7 +29,7 @@ namespace puffin
 
 		enum class ImportAssetUI
 		{
-			None,
+			Default,
 			Mesh,
 			Texture
 		};

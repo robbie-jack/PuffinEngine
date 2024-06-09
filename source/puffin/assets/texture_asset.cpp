@@ -63,7 +63,7 @@ namespace puffin::assets
 
 			memcpy(data.binaryBlob.data(), pixels, info.originalSize);
 
-			info.compressionMode = CompressionMode::None;
+			info.compressionMode = CompressionMode::Uncompressed;
 		}
 		else
 		{

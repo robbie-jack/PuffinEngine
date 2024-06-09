@@ -7,9 +7,9 @@
 #include "puffin/components/rendering/camera_component.h"
 #include "puffin/components/transform_component_3d.h"
 #include "puffin/types/aabb.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
-#include "puffin/types/Quat.h"
+#include "puffin/types/quat.h"
+#include "puffin/types/quat.h"
+#include "puffin/types/quat.h"
 
 namespace puffin::rendering::util
 {

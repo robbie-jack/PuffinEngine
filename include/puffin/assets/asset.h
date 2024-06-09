@@ -16,7 +16,7 @@ namespace puffin::assets
 	// Enum for asset type. Be careful about changing values as they are stored within the asset files
     enum class AssetType : std::uint8_t
 	{
-        None = 0,
+        Invalid = 0,
         StaticMesh = 10,
         SkeletalMesh = 20,
         Texture = 30,
@@ -28,7 +28,7 @@ namespace puffin::assets
 
     NLOHMANN_JSON_SERIALIZE_ENUM(puffin::assets::AssetType,
 	{
-        {puffin::assets::AssetType::None, "None"},
+        {puffin::assets::AssetType::Invalid, "None"},
         {puffin::assets::AssetType::StaticMesh, "StaticMesh"},
         {puffin::assets::AssetType::SkeletalMesh, "SkeletalMesh"},
         {puffin::assets::AssetType::Texture, "Texture"},
@@ -42,7 +42,7 @@ namespace puffin::assets
 	{
 		AssetData()
 		{
-			type = AssetType::None;
+			type = AssetType::Invalid;
 			version = 0;
 			id = puffin::gInvalidID;
 			binaryBlob.clear();
@@ -50,7 +50,7 @@ namespace puffin::assets
 
 		~AssetData()
 		{
-			type = AssetType::None;
+			type = AssetType::Invalid;
 			version = 0;
 			id = puffin::gInvalidID;
 			json_data.clear();
@@ -66,13 +66,13 @@ namespace puffin::assets
 
 	enum class CompressionMode : uint8_t
 	{
-		None = 0,
+		Uncompressed = 0,
 		LZ4
 	};
 
 	NLOHMANN_JSON_SERIALIZE_ENUM(CompressionMode,
 	{
-		{ CompressionMode::None, "None" },
+		{ CompressionMode::Uncompressed, "Uncompressed" },
 		{ CompressionMode::LZ4, "LZ4" }
 	});
 
@@ -84,7 +84,7 @@ namespace puffin::assets
 
 	const static std::unordered_map<CompressionMode, const char*> gCompressionModeToString =
 	{
-		{ CompressionMode::None, "None" },
+		{ CompressionMode::Uncompressed, "Uncompressed" },
 		{ CompressionMode::LZ4, "LZ4" }
 	};
 
@@ -95,7 +95,7 @@ namespace puffin::assets
 			return CompressionMode::LZ4;
 		}
 
-		return CompressionMode::None;
+		return CompressionMode::Uncompressed;
 	}
 
 	static const char* parseCompressionStringFromMode(CompressionMode mode)
