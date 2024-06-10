@@ -7,6 +7,7 @@
 #include "nlohmann/json.hpp"
 #include "entt/entity/registry.hpp"
 
+#include "puffin/assets/asset_registry.h"
 #include "puffin/scene/scene_graph.h"
 #include "puffin/core/system.h"
 #include "puffin/ecs/entt_subsystem.h"
@@ -345,6 +346,31 @@ namespace puffin::io
 
 	};
 
+    class ISceneComponentRegister
+    {
+    public:
+
+        virtual ~ISceneComponentRegister() = default;
+
+        virtual void register_component_with_scene(std::shared_ptr<SceneData> scene_data) = 0;
+
+    };
+
+    template<typename T>
+    class SceneComponentRegister : public ISceneComponentRegister
+    {
+    public:
+
+        SceneComponentRegister() = default;
+        ~SceneComponentRegister() override = default;
+
+        void register_component_with_scene(std::shared_ptr<SceneData> scene_data) override
+        {
+            scene_data->register_component<T>();
+        }
+
+    };
+
 	class SceneSubsystem : public core::System
 	{
 	public:
@@ -358,9 +384,22 @@ namespace puffin::io
 
 		~SceneSubsystem() override { m_engine = nullptr; }
 
+        template<typename T>
+        void register_component()
+        {
+            const char* type_name = typeid(T).name();
+
+            assert(m_component_registers.find(type_name) == m_component_registers.end() && "Registering component type more than once");
+
+            // Create
+            auto scene_comp_register = std::make_shared<SceneComponentRegister<T>>();
+
+            m_component_registers.insert({type_name, std::static_pointer_cast<ISceneComponentRegister>(scene_comp_register) });
+        }
+
 		void load() const
 		{
-			m_scene_data->load();
+			m_current_scene_data->load();
 		}
 
 		void init() const
@@ -368,7 +407,7 @@ namespace puffin::io
 			const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 			const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
 
-			m_scene_data->init(entt_subsystem, scene_graph);
+			m_current_scene_data->init(entt_subsystem, scene_graph);
 		}
 
 		void load_and_init() const
@@ -382,21 +421,35 @@ namespace puffin::io
 			const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 			const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
 
-			m_scene_data->update_data(entt_subsystem, scene_graph);
+			m_current_scene_data->update_data(entt_subsystem, scene_graph);
 		}
 
 		std::shared_ptr<SceneData> create_scene(const fs::path& path)
 		{
-			m_scene_data = std::make_shared<SceneData>(path);
+            auto scene_path = assets::AssetRegistry::get()->contentRoot() / path;
 
-			return m_scene_data;
+            if (m_scenes.find(scene_path) == m_scenes.end())
+            {
+                m_scenes.emplace(scene_path, std::make_shared<SceneData>(scene_path));
+
+                for (auto& [type_name, scene_comp_register] : m_component_registers)
+                {
+                    scene_comp_register->register_component_with_scene(m_scenes.at(scene_path));
+                }
+            }
+
+            m_current_scene_data = m_scenes.at(scene_path);
+
+			return m_current_scene_data;
 		}
 
-		std::shared_ptr<SceneData> scene_data() { return m_scene_data; }
+		std::shared_ptr<SceneData> scene_data() { return m_current_scene_data; }
 
 	private:
 
-		std::shared_ptr<SceneData> m_scene_data = nullptr;
+		std::shared_ptr<SceneData> m_current_scene_data = nullptr;
+        std::unordered_map<fs::path, std::shared_ptr<SceneData>> m_scenes;
+        std::unordered_map<std::string, std::shared_ptr<ISceneComponentRegister>> m_component_registers;
 
 	};
 }

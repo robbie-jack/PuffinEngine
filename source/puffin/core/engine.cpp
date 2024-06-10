@@ -69,7 +69,7 @@ namespace puffin::core
 		auto audioSubsystem = register_system<audio::AudioSubsystem>();
 		auto enttSubsystem = register_system<ecs::EnTTSubsystem>();
         auto uiSubsystem = register_system<puffin::ui::UISubsystem>();
-		auto sceneSubsystem = register_system<io::SceneSubsystem>();
+		auto scene_subsystem = register_system<io::SceneSubsystem>();
 		auto scene_graph = register_system<scene::SceneGraph>();
 		auto cam_system = register_system<rendering::CameraSubystem>();
 
@@ -96,27 +96,27 @@ namespace puffin::core
             m_load_scene_on_launch = true;
         }
 
-		auto scene_data = sceneSubsystem->create_scene(
-                assets::AssetRegistry::get()->contentRoot() / scene_string);
+		// Register components to scene subsystem
+        scene_subsystem->register_component<TransformComponent2D>();
+        scene_subsystem->register_component<TransformComponent3D>();
+        scene_subsystem->register_component<rendering::MeshComponent>();
+        scene_subsystem->register_component<rendering::LightComponent>();
+        scene_subsystem->register_component<rendering::ShadowCasterComponent>();
+        scene_subsystem->register_component<rendering::CameraComponent3D>();
+        scene_subsystem->register_component<scripting::AngelScriptComponent>();
+        scene_subsystem->register_component<rendering::ProceduralMeshComponent>();
+        scene_subsystem->register_component<procedural::PlaneComponent>();
+        scene_subsystem->register_component<procedural::TerrainComponent>();
+        scene_subsystem->register_component<procedural::IcoSphereComponent>();
+        scene_subsystem->register_component<physics::RigidbodyComponent2D>();
+        scene_subsystem->register_component<physics::BoxComponent2D>();
+        scene_subsystem->register_component<physics::CircleComponent2D>();
+        scene_subsystem->register_component<physics::RigidbodyComponent3D>();
+        scene_subsystem->register_component<physics::BoxComponent3D>();
+        scene_subsystem->register_component<physics::SphereComponent3D>();
 
-		// Register Components to Scene Data Class
-		scene_data->register_component<TransformComponent2D>();
-		scene_data->register_component<TransformComponent3D>();
-		scene_data->register_component<rendering::MeshComponent>();
-		scene_data->register_component<rendering::LightComponent>();
-		scene_data->register_component<rendering::ShadowCasterComponent>();
-		scene_data->register_component<rendering::CameraComponent3D>();
-		scene_data->register_component<scripting::AngelScriptComponent>();
-		scene_data->register_component<rendering::ProceduralMeshComponent>();
-		scene_data->register_component<procedural::PlaneComponent>();
-		scene_data->register_component<procedural::TerrainComponent>();
-		scene_data->register_component<procedural::IcoSphereComponent>();
-		scene_data->register_component<physics::RigidbodyComponent2D>();
-		scene_data->register_component<physics::BoxComponent2D>();
-		scene_data->register_component<physics::CircleComponent2D>();
-		scene_data->register_component<physics::RigidbodyComponent3D>();
-		scene_data->register_component<physics::BoxComponent3D>();
-		scene_data->register_component<physics::SphereComponent3D>();
+        auto scene_data = scene_subsystem->create_scene(
+                assets::AssetRegistry::get()->contentRoot() / scene_string);
 
 		// Load Project Settings
 		load_settings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", m_settings);
