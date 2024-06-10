@@ -46,13 +46,12 @@ namespace puffin
                 .help("Specify the path of the project file")
                 .required();
 
-        parser.add_argument("--load_scene_on_launch")
-                .help("Specify whether project default scene should be loaded on launch")
-                .default_value(false)
-                .implicit_value(true);
+        parser.add_argument("-s", "-scene")
+            .help("Specify the scene file to load on launch")
+            .default_value("");
 
-        parser.add_argument("--load_default_scene")
-                .help("Specify whether the engine default scene should be loaded on launch")
+        parser.add_argument("--setup_engine_default_scene")
+                .help("Specify whether the engine default scene should be initialized on launch")
                 .default_value(false)
                 .implicit_value(true);
     }
@@ -90,8 +89,15 @@ namespace puffin::core
 		assets::AssetRegistry::get()->registerAssetType<assets::MaterialAsset>();
 		assets::AssetRegistry::get()->registerAssetType<assets::MaterialInstanceAsset>();
 
-		// Create Default Scene (if set)
-		auto scene_data = sceneSubsystem->createScene(assets::AssetRegistry::get()->contentRoot() / m_project_file.default_scene_path);
+		// Load default scene
+        auto scene_string = parser.get<std::string>("-scene");
+        if (!scene_string.empty())
+        {
+            m_load_scene_on_launch = true;
+        }
+
+		auto scene_data = sceneSubsystem->create_scene(
+                assets::AssetRegistry::get()->contentRoot() / scene_string);
 
 		// Register Components to Scene Data Class
 		scene_data->register_component<TransformComponent2D>();
@@ -122,8 +128,7 @@ namespace puffin::core
 		//assets::AssetRegistry::get()->saveAssetCache();
 		//loadAndResaveAssets();
 
-        m_load_scene_on_launch = parser.get<bool>("--load_scene_on_launch");
-        m_load_engine_default_scene = parser.get<bool>("--load_default_scene");
+        m_setup_engine_default_scene = parser.get<bool>("--setup_engine_default_scene");
 	}
 
 	void Engine::startup()
@@ -134,18 +139,18 @@ namespace puffin::core
 		execute_callbacks(ExecutionStage::StartupSubsystem);
 
 		{
-			auto scene_data = get_system<io::SceneSubsystem>()->sceneData();
+			auto scene_data = get_system<io::SceneSubsystem>()->scene_data();
 
 			if (m_load_scene_on_launch)
 			{
 				scene_data->load();
 			}
-			else if (m_load_engine_default_scene)
+			else if (m_setup_engine_default_scene)
 			{
 				auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
 				auto scene_graph = get_system<scene::SceneGraph>();
 				auto scene_subsystem = get_system<io::SceneSubsystem>();
-				//auto sceneData = scene_subsystem->sceneData();
+				//auto sceneData = scene_subsystem->scene_data();
 
 				// Create Default Scene in code -- used when scene serialization is changed
 				default_scene();

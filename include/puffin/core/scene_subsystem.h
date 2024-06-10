@@ -385,14 +385,14 @@ namespace puffin::io
 			m_scene_data->update_data(entt_subsystem, scene_graph);
 		}
 
-		std::shared_ptr<SceneData> createScene(const fs::path& path)
+		std::shared_ptr<SceneData> create_scene(const fs::path& path)
 		{
 			m_scene_data = std::make_shared<SceneData>(path);
 
 			return m_scene_data;
 		}
 
-		std::shared_ptr<SceneData> sceneData() { return m_scene_data; }
+		std::shared_ptr<SceneData> scene_data() { return m_scene_data; }
 
 	private:
 

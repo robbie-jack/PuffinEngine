@@ -43,7 +43,7 @@ add_git_submodule("deps/vkb")
 add_git_submodule("deps/vma-hpp")
 add_git_submodule("deps/jolt")
 
-checkout_git_branch("deps/imgui" "docking")
+#checkout_git_branch("deps/imgui" "docking")
 
 # Define CMAKE Variables
 set(PUFFIN_LIBRARY_NAME PuffinEngine)

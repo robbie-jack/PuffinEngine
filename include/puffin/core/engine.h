@@ -185,7 +185,7 @@ namespace puffin::core
 		void update_delta_time(double sampled_time);
 
 		void set_load_scene_on_launch(const bool load_scene_on_launch) { m_load_scene_on_launch = load_scene_on_launch; }
-		void set_load_engine_default_scene(const bool load_engine_default_scene) { m_load_engine_default_scene = load_engine_default_scene; }
+		void set_load_engine_default_scene(const bool load_engine_default_scene) { m_setup_engine_default_scene = load_engine_default_scene; }
 
 		double get_stage_execution_time_last_frame(const core::ExecutionStage& updateOrder)
 		{
@@ -201,7 +201,7 @@ namespace puffin::core
 
 		bool m_running = true;
 		bool m_load_scene_on_launch = false;
-		bool m_load_engine_default_scene = false;
+		bool m_setup_engine_default_scene = false;
 		bool m_should_limit_framerate = true; // Whether framerate should be capped at m_frameRateMax
 		bool m_should_track_execution_time = true; // Should track time to execute callback/stages
 		bool m_should_render_editor_ui = true; // Whether editor UI should be rendered

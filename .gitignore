@@ -245,6 +245,7 @@ UpgradeLog*.htm
 FakesAssemblies/
 
 .vs/
+.idea/
 
 # Don't ignore 3d models in obj format
 !data/models/*.obj

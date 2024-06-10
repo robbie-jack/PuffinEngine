@@ -80,7 +80,7 @@ namespace puffin::ui
 				// File Dialog - Load Scene
 				if (mLoadScene)
 				{
-					const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->sceneData();
+					const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->scene_data();
 
 					sceneData->set_path(selectedPath);
 
@@ -143,7 +143,7 @@ namespace puffin::ui
 			// Update Scene Data if any changes were made to an entity, and game is not currently playing
 			if (mWindowEntityProperties->scene_changed() && m_engine->play_state() == core::PlayState::Stopped)
 			{
-				const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->sceneData();
+				const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->scene_data();
 				sceneData->update_data(m_engine->get_system<ecs::EnTTSubsystem>(), m_engine->get_system<scene::SceneGraph>());
 			}
 
@@ -241,7 +241,7 @@ namespace puffin::ui
 		// Save Scene Modal Window
 		if (ImGui::BeginPopupModal("Save Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->sceneData();
+			const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->scene_data();
 
 			std::string str_name = sceneData->path().string();
 			std::vector<char> name(256, '\0');
@@ -328,7 +328,7 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
-					const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->sceneData();
+					const auto sceneData = m_engine->get_system<io::SceneSubsystem>()->scene_data();
 
 					const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
 					const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
