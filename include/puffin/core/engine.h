@@ -300,6 +300,7 @@ namespace puffin::core
 		void add_default_assets();
 		void reimport_default_assets();
 		void load_and_resave_assets();
+        void default_settings();
 
 		void default_scene();
 		void physics_scene_3d();

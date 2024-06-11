@@ -85,72 +85,72 @@ namespace puffin::core
 	{
 	public:
 
-		SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine) {}
+		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine) {}
 
 		~SignalSubsystem() override
 		{
 			m_engine = nullptr;
-			mSignals.clear();
+			m_signals.clear();
 		}
 
 		template<typename... Params>
-		std::shared_ptr<Signal<Params...>> createSignal(const std::string& name)
+		std::shared_ptr<Signal<Params...>> create_signal(const std::string& name)
 		{
-			mSignals.emplace(name, std::make_shared<Signal<Params...>>(name));
+			m_signals.emplace(name, std::make_shared<Signal<Params...>>(name));
 
-			return std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			return std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
 		}
 
 		template<typename... Params>
-		void addSignal(std::shared_ptr<Signal<Params...>> signal)
+		void add_signal(std::shared_ptr<Signal<Params...>> signal)
 		{
-			mSignals.emplace(signal->name(), signal);
+			m_signals.emplace(signal->name(), signal);
 		}
 
 		template<typename... Params>
-		std::shared_ptr<Signal<Params...>> getSignal(const std::string& name)
+		std::shared_ptr<Signal<Params...>> get_signal(const std::string& name)
 		{
-			if (mSignals.count(name) == 0)
+			if (m_signals.count(name) == 0)
 			{
 				return nullptr;
 			}
 
-			return mSignals.at(name);
+			return std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
 		}
 
 		template<typename... Params>
 		size_t connect(const std::string& name, const std::function<void(const Params&...)>& callback)
 		{
-			if (mSignals.count(name) == 0)
+			if (m_signals.count(name) == 0)
 			{
 				return 0;
 			}
 
-			auto signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			auto signal = std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
 			return signal->connect(callback);
 		}
 
 		template<typename... Params>
 		void disconnect(const std::string& name, const size_t& slotID)
 		{
-			if (mSignals.count(name) == 0)
+			if (m_signals.count(name) == 0)
 			{
 				return;
 			}
 
-			auto signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			auto signal = std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
 			signal->disconnenct(slotID);
 		}
 
 		template<typename... Params>
 		bool emit(const std::string& name, Params... params)
 		{
-			if (mSignals.count(name) == 0)
+			if (m_signals.count(name) == 0)
 			{
 				return false;
 			}
 
-			auto signal = std::static_pointer_cast<Signal<Params...>>(mSignals.at(name));
+			auto signal = std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
 			signal->emit(params...);
 
 			return true;
@@ -158,7 +158,7 @@ namespace puffin::core
 
 	private:
 
-		std::unordered_map<std::string, ISignalPtr> mSignals;
+		std::unordered_map<std::string, ISignalPtr> m_signals;
 
 	};
 }

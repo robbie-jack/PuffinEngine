@@ -118,6 +118,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/core/engine.h
 	${HEADER_DIR}/puffin/core/enkits_subsystem.h
 	${HEADER_DIR}/puffin/core/scene_subsystem.h
+	${HEADER_DIR}/puffin/core/settings_manager.h
 	${HEADER_DIR}/puffin/core/signal_subsystem.h
 	${HEADER_DIR}/puffin/core/system.h
 	# Input

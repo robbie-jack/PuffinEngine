@@ -31,6 +31,7 @@
 #include "puffin/scene/scene_graph.h"
 #include "puffin/ui/editor/ui_subsystem.h"
 #include "puffin/window/window_subsystem.h"
+#include "puffin/core/settings_manager.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -43,17 +44,22 @@ namespace puffin
     void add_default_engine_arguments(argparse::ArgumentParser &parser)
     {
         parser.add_argument("-p", "-project", "-project_path")
-                .help("Specify the path of the project file")
-                .required();
+            .help("Specify the path of the project file")
+            .required();
 
         parser.add_argument("-s", "-scene")
             .help("Specify the scene file to load on launch")
             .default_value("");
 
         parser.add_argument("--setup_engine_default_scene")
-                .help("Specify whether the engine default scene should be initialized on launch")
-                .default_value(false)
-                .implicit_value(true);
+            .help("Specify whether the engine default scene should be initialized on launch")
+            .default_value(false)
+            .implicit_value(true);
+
+        parser.add_argument("--setup_default_settings")
+            .help("Specify whether to setup settings file with engine default settings")
+            .default_value(false)
+            .implicit_value(true);
     }
 }
 
@@ -62,16 +68,16 @@ namespace puffin::core
 	void Engine::setup(const argparse::ArgumentParser &parser)
 	{
 		// Subsystems
-		auto windowSubsystem = register_system<window::WindowSubsystem>();
-		auto signalSubsystem = register_system<SignalSubsystem>();
-		auto enkitsSubsystem = register_system<EnkiTSSubsystem>();
-		auto inputSubsystem = register_system<input::InputSubsystem>();
-		auto audioSubsystem = register_system<audio::AudioSubsystem>();
-		auto enttSubsystem = register_system<ecs::EnTTSubsystem>();
-        auto uiSubsystem = register_system<puffin::ui::UISubsystem>();
+		auto window_subsystem = register_system<window::WindowSubsystem>();
+		auto signal_subsystem = register_system<SignalSubsystem>();
+		auto enkits_subsystem = register_system<EnkiTSSubsystem>();
+		auto input_subsystem = register_system<input::InputSubsystem>();
+		auto audio_subsystem = register_system<audio::AudioSubsystem>();
+		auto entt_subsystem = register_system<ecs::EnTTSubsystem>();
+        auto ui_subsystem = register_system<puffin::ui::UISubsystem>();
 		auto scene_subsystem = register_system<io::SceneSubsystem>();
 		auto scene_graph = register_system<scene::SceneGraph>();
-		auto cam_system = register_system<rendering::CameraSubystem>();
+		auto cam_subsystem = register_system<rendering::CameraSubystem>();
 
 		scene_graph->register_default_node_types();
 
@@ -119,6 +125,21 @@ namespace puffin::core
                 assets::AssetRegistry::get()->contentRoot() / scene_string);
 
 		// Load Project Settings
+        auto settings_manager = SettingsManager::get();
+        settings_manager->set_signal_subsystem(signal_subsystem);
+
+        if (parser.get<bool>("--setup_default_settings"))
+        {
+            default_settings();
+            settings_manager->save(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
+        }
+        else
+        {
+            settings_manager->load(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
+        }
+
+
+
 		load_settings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", m_settings);
 
 		// Load/Initialize Assets
@@ -733,4 +754,12 @@ namespace puffin::core
 			}
 		}
 	}
+
+    void Engine::default_settings()
+    {
+        auto settings_manager = SettingsManager::get();
+
+        settings_manager->set("editor_camera_fov", 60.0f);
+        settings_manager->set("mouse_sensitivity", 0.05f);
+    }
 }
