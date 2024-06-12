@@ -20,10 +20,11 @@ namespace puffin::rendering
 
 		void startup();
 		void begin_play();
-		void update();
+		void update_subsystem();
 		void end_play();
 
 		void on_update_camera(entt::registry& registry, entt::entity entity);
+        void on_destroy_camera(entt::registry& registry, entt::entity entity);
 
         void on_update_editor_camera_fov(const float& editor_camera_fov);
 
@@ -31,12 +32,15 @@ namespace puffin::rendering
 
 	private:
 
-		PuffinID m_active_cam_id = gInvalidID;
+        PuffinID m_active_cam_id = gInvalidID;
+        PuffinID m_active_play_cam_id = gInvalidID;
 		std::unordered_map<PuffinID, bool> m_cached_cam_active_state;
 		PuffinID m_editor_cam_id = gInvalidID;
 		float m_editor_cam_speed = 10.0f;
 
 		void init_editor_camera();
+
+        void update_active_play_camera();
 
 		void update_cameras();
 		void update_editor_camera();

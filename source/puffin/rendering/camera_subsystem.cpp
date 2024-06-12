@@ -14,12 +14,14 @@ namespace puffin::rendering
 	{
 		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "CameraSystem: startup");
 		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&]() { begin_play(); }, "CameraSystem: begin_play");
-		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&]() { update(); }, "CameraSystem: update");
+		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&]() { update_subsystem(); }, "CameraSystem: update");
 		m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "CameraSystem: end_play", 210);
 
 		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
-		registry->on_update<CameraComponent3D>().connect<&CameraSubystem::on_update_camera>(this);
+        registry->on_construct<CameraComponent3D>().connect<&CameraSubystem::on_update_camera>(this);
+        registry->on_update<CameraComponent3D>().connect<&CameraSubystem::on_update_camera>(this);
+        registry->on_destroy<CameraComponent3D>().connect<&CameraSubystem::on_destroy_camera>(this);
 
         auto signal_subsystem = m_engine->get_system<core::SignalSubsystem>();
         auto editor_camera_fov_signal = signal_subsystem->get_signal<float>("editor_camera_fov");
@@ -41,29 +43,19 @@ namespace puffin::rendering
 
 	void CameraSubystem::begin_play()
 	{
-		const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
-		const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
-		const auto camera_view = registry->view<const TransformComponent3D, const CameraComponent3D>();
+        update_active_play_camera();
 
-		for (auto [entity, transform, camera] : camera_view.each())
-		{
-			if (camera.active)
-			{
-				m_active_cam_id = entt_subsystem->get_id(entity);
-
-				break;
-			}
-		}
+        m_active_cam_id = m_active_play_cam_id;
 	}
 
-	void CameraSubystem::update()
+	void CameraSubystem::update_subsystem()
 	{
 		update_cameras();
 	}
 
 	void CameraSubystem::end_play()
 	{
+        m_active_play_cam_id = gInvalidID;
 		m_active_cam_id = gInvalidID;
         m_editor_cam_id = gInvalidID;
 
@@ -75,18 +67,37 @@ namespace puffin::rendering
 		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
 		const auto& camera = registry.get<CameraComponent3D>(entity);
 
+        if (m_cached_cam_active_state.find(id) == m_cached_cam_active_state.end())
+        {
+            m_cached_cam_active_state.emplace(id, camera.active);
+        }
+
 		if (m_cached_cam_active_state.at(id) != camera.active)
 		{
 			if (camera.active)
 			{
-
+                m_active_play_cam_id = id;
 			}
 			else
 			{
-
+                m_active_play_cam_id = gInvalidID;
 			}
+
+            m_cached_cam_active_state.at(id) = camera.active;
 		}
 	}
+
+    void CameraSubystem::on_destroy_camera(entt::registry &registry, entt::entity entity)
+    {
+        const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
+
+        if (m_active_play_cam_id == id)
+        {
+            m_active_play_cam_id = gInvalidID;
+        }
+
+        m_cached_cam_active_state.erase(id);
+    }
 
     void CameraSubystem::on_update_editor_camera_fov(const float &editor_camera_fov)
     {
@@ -121,10 +132,20 @@ namespace puffin::rendering
 
 	void CameraSubystem::update_cameras()
 	{
+        if (m_active_play_cam_id == gInvalidID)
+        {
+            update_active_play_camera();
+        }
+
+        if (m_engine->play_state() == core::PlayState::Playing && m_active_cam_id != m_active_play_cam_id)
+        {
+            m_active_cam_id = m_active_play_cam_id;
+        }
+
 		update_editor_camera();
 
-		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
-		const auto camera_view = registry->view<const TransformComponent3D, CameraComponent3D>();
+        const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+        const auto camera_view = registry->view<const TransformComponent3D, CameraComponent3D>();
 
 		for (auto [entity, transform, camera] : camera_view.each())
 		{
@@ -134,7 +155,7 @@ namespace puffin::rendering
 
 	void CameraSubystem::update_editor_camera()
 	{
-        if (m_editor_cam_id != gInvalidID)
+        if (m_editor_cam_id != gInvalidID && m_editor_cam_id == m_active_cam_id)
         {
             const auto input_subsystem = m_engine->get_system<input::InputSubsystem>();
             auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
@@ -207,4 +228,22 @@ namespace puffin::rendering
 
 		camera.view_proj = camera.proj * camera.view;
 	}
+
+    void CameraSubystem::update_active_play_camera()
+    {
+        const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
+        const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+        const auto registry = entt_subsystem->registry();
+        const auto camera_view = registry->view<const TransformComponent3D, const CameraComponent3D>();
+
+        for (auto [entity, transform, camera] : camera_view.each())
+        {
+            if (camera.active)
+            {
+                m_active_play_cam_id = entt_subsystem->get_id(entity);
+
+                break;
+            }
+        }
+    }
 }
