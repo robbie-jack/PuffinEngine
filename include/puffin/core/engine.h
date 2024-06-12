@@ -170,8 +170,6 @@ namespace puffin::core
 
 		PlayState play_state() const { return m_play_state; }
 
-		io::ProjectSettings& settings() { return m_settings; }
-
 		bool should_render_editor_ui() const { return m_should_render_editor_ui; }
 
 		const double& time_step_fixed() const { return m_time_step_fixed; }
@@ -233,8 +231,6 @@ namespace puffin::core
 		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> m_callback_execution_time_last_frame;
 
 		io::ProjectFile m_project_file;
-
-		io::ProjectSettings m_settings;
 
 		// Execute callbacks for this execution stage
 		void execute_callbacks(const core::ExecutionStage& execution_stage, const bool should_track_execution_time = false)

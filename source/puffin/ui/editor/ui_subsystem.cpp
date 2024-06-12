@@ -17,6 +17,7 @@
 #include "puffin/ui/editor/windows/ui_window_scene_hierarchy.h"
 #include "puffin/ui/editor/windows/ui_window_settings.h"
 #include "puffin/ui/editor/windows/ui_window_viewport.h"
+#include "puffin/core/settings_manager.h"
 
 namespace fs = std::filesystem;
 
@@ -303,7 +304,9 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Project"))
 				{
-					io::save_settings(assets::AssetRegistry::get()->projectRoot() / "settings.json", m_engine->settings());
+                    auto settings_manager = m_engine->get_system<core::SettingsManager>();
+                    settings_manager->save(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
+
 					assets::AssetRegistry::get()->saveAssetCache();
 				}
 

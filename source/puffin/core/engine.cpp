@@ -138,8 +138,6 @@ namespace puffin::core
             settings_manager->load(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
         }
 
-		load_settings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", m_settings);
-
 		// Load/Initialize Assets
 		assets::AssetRegistry::get()->loadAssetCache();
 		//add_default_assets();
