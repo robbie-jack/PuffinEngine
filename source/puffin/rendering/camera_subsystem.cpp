@@ -15,7 +15,7 @@ namespace puffin::rendering
 		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "CameraSystem: startup");
 		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&]() { begin_play(); }, "CameraSystem: begin_play");
 		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&]() { update(); }, "CameraSystem: update");
-		m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "CameraSystem: end_play");
+		m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "CameraSystem: end_play", 210);
 
 		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
@@ -64,7 +64,10 @@ namespace puffin::rendering
 
 	void CameraSubystem::end_play()
 	{
-		m_active_cam_id = m_editor_cam_id;
+		m_active_cam_id = gInvalidID;
+        m_editor_cam_id = gInvalidID;
+
+        init_editor_camera();
 	}
 
 	void CameraSubystem::on_update_camera(entt::registry& registry, entt::entity entity)
@@ -131,59 +134,57 @@ namespace puffin::rendering
 
 	void CameraSubystem::update_editor_camera()
 	{
-		const auto input_subsystem = m_engine->get_system<input::InputSubsystem>();
-		auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
-		auto registry = entt_subsystem->registry();
+        if (m_editor_cam_id != gInvalidID)
+        {
+            const auto input_subsystem = m_engine->get_system<input::InputSubsystem>();
+            auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+            auto registry = entt_subsystem->registry();
 
-		auto entity = entt_subsystem->get_entity(m_editor_cam_id);
-		auto& transform = registry->get<TransformComponent3D>(entity);
-		auto& camera = registry->get<CameraComponent3D>(entity);
+            auto entity = entt_subsystem->get_entity(m_editor_cam_id);
+            auto &transform = registry->get<TransformComponent3D>(entity);
+            auto &camera = registry->get<CameraComponent3D>(entity);
 
-		if (input_subsystem->isCursorLocked() && m_active_cam_id == m_editor_cam_id)
-		{
-			// Camera Movement
-			if (input_subsystem->pressed("EditorCamMoveRight") && !input_subsystem->pressed("EditorCamMoveLeft"))
-			{
-				transform.position += camera.right * m_editor_cam_speed * m_engine->delta_time();
-			}
+            if (input_subsystem->isCursorLocked() && m_active_cam_id == m_editor_cam_id) {
+                // Camera Movement
+                if (input_subsystem->pressed("EditorCamMoveRight") && !input_subsystem->pressed("EditorCamMoveLeft")) {
+                    transform.position += camera.right * m_editor_cam_speed * m_engine->delta_time();
+                }
 
-			if (input_subsystem->pressed("EditorCamMoveLeft") && !input_subsystem->pressed("EditorCamMoveRight"))
-			{
-				transform.position -= camera.right * m_editor_cam_speed * m_engine->delta_time();
-			}
+                if (input_subsystem->pressed("EditorCamMoveLeft") && !input_subsystem->pressed("EditorCamMoveRight")) {
+                    transform.position -= camera.right * m_editor_cam_speed * m_engine->delta_time();
+                }
 
-			if (input_subsystem->pressed("EditorCamMoveForward") && !input_subsystem->pressed("EditorCamMoveBackward"))
-			{
-				transform.position += camera.direction * m_editor_cam_speed * m_engine->delta_time();
-			}
+                if (input_subsystem->pressed("EditorCamMoveForward") &&
+                    !input_subsystem->pressed("EditorCamMoveBackward")) {
+                    transform.position += camera.direction * m_editor_cam_speed * m_engine->delta_time();
+                }
 
-			if (input_subsystem->pressed("EditorCamMoveBackward") && !input_subsystem->pressed("EditorCamMoveForward"))
-			{
-				transform.position -= camera.direction * m_editor_cam_speed * m_engine->delta_time();
-			}
+                if (input_subsystem->pressed("EditorCamMoveBackward") &&
+                    !input_subsystem->pressed("EditorCamMoveForward")) {
+                    transform.position -= camera.direction * m_editor_cam_speed * m_engine->delta_time();
+                }
 
-			if (input_subsystem->pressed("EditorCamMoveUp") && !input_subsystem->pressed("EditorCamMoveDown"))
-			{
-				transform.position += camera.up * m_editor_cam_speed * m_engine->delta_time();
-			}
+                if (input_subsystem->pressed("EditorCamMoveUp") && !input_subsystem->pressed("EditorCamMoveDown")) {
+                    transform.position += camera.up * m_editor_cam_speed * m_engine->delta_time();
+                }
 
-			if (input_subsystem->pressed("EditorCamMoveDown") && !input_subsystem->pressed("EditorCamMoveUp"))
-			{
-				transform.position -= camera.up * m_editor_cam_speed * m_engine->delta_time();
-			}
+                if (input_subsystem->pressed("EditorCamMoveDown") && !input_subsystem->pressed("EditorCamMoveUp")) {
+                    transform.position -= camera.up * m_editor_cam_speed * m_engine->delta_time();
+                }
 
-			// Mouse Rotation
-			transform.orientation_euler_angles.yaw += input_subsystem->getMouseXOffset();
-			transform.orientation_euler_angles.pitch += input_subsystem->getMouseYOffset();
+                // Mouse Rotation
+                transform.orientation_euler_angles.yaw += input_subsystem->getMouseXOffset();
+                transform.orientation_euler_angles.pitch += input_subsystem->getMouseYOffset();
 
-			if (transform.orientation_euler_angles.pitch > 89.0f)
-				transform.orientation_euler_angles.pitch = 89.0f;
+                if (transform.orientation_euler_angles.pitch > 89.0f)
+                    transform.orientation_euler_angles.pitch = 89.0f;
 
-			if (transform.orientation_euler_angles.pitch < -89.0f)
-				transform.orientation_euler_angles.pitch = -89.0f;
+                if (transform.orientation_euler_angles.pitch < -89.0f)
+                    transform.orientation_euler_angles.pitch = -89.0f;
 
-			update_transform_orientation(transform, transform.orientation_euler_angles);
-		}
+                update_transform_orientation(transform, transform.orientation_euler_angles);
+            }
+        }
 	}
 
 	void CameraSubystem::update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera)
