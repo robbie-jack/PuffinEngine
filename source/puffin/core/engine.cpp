@@ -51,12 +51,12 @@ namespace puffin
             .help("Specify the scene file to load on launch")
             .default_value("");
 
-        parser.add_argument("--setup_engine_default_scene")
+        parser.add_argument("--setup-engine-default-scene")
             .help("Specify whether the engine default scene should be initialized on launch")
             .default_value(false)
             .implicit_value(true);
 
-        parser.add_argument("--setup_default_settings")
+        parser.add_argument("--setup-default-settings")
             .help("Specify whether to setup settings file with engine default settings")
             .default_value(false)
             .implicit_value(true);
@@ -70,6 +70,7 @@ namespace puffin::core
 		// Subsystems
 		auto window_subsystem = register_system<window::WindowSubsystem>();
 		auto signal_subsystem = register_system<SignalSubsystem>();
+        auto settings_manager = register_system<SettingsManager>();
 		auto enkits_subsystem = register_system<EnkiTSSubsystem>();
 		auto input_subsystem = register_system<input::InputSubsystem>();
 		auto audio_subsystem = register_system<audio::AudioSubsystem>();
@@ -125,10 +126,9 @@ namespace puffin::core
                 assets::AssetRegistry::get()->contentRoot() / scene_string);
 
 		// Load Project Settings
-        auto settings_manager = SettingsManager::get();
         settings_manager->set_signal_subsystem(signal_subsystem);
 
-        if (parser.get<bool>("--setup_default_settings"))
+        if (parser.get<bool>("--setup-default-settings"))
         {
             default_settings();
             settings_manager->save(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
@@ -137,8 +137,6 @@ namespace puffin::core
         {
             settings_manager->load(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
         }
-
-
 
 		load_settings(assets::AssetRegistry::get()->projectRoot() / "config" / "Settings.json", m_settings);
 
@@ -149,7 +147,7 @@ namespace puffin::core
 		//assets::AssetRegistry::get()->saveAssetCache();
 		//loadAndResaveAssets();
 
-        m_setup_engine_default_scene = parser.get<bool>("--setup_engine_default_scene");
+        m_setup_engine_default_scene = parser.get<bool>("--setup-engine-default-scene");
 	}
 
 	void Engine::startup()
@@ -757,7 +755,7 @@ namespace puffin::core
 
     void Engine::default_settings()
     {
-        auto settings_manager = SettingsManager::get();
+        auto settings_manager = get_system<SettingsManager>();
 
         settings_manager->set("editor_camera_fov", 60.0f);
         settings_manager->set("mouse_sensitivity", 0.05f);

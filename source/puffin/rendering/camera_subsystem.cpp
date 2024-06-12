@@ -6,6 +6,7 @@
 #include "puffin/input/input_subsystem.h"
 #include "puffin/rendering/vulkan/render_system_vk.h"
 #include "puffin/scene/scene_graph.h"
+#include "puffin/core/signal_subsystem.h"
 
 namespace puffin::rendering
 {
@@ -19,6 +20,18 @@ namespace puffin::rendering
 		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 		registry->on_update<CameraComponent3D>().connect<&CameraSubystem::on_update_camera>(this);
+
+        auto signal_subsystem = m_engine->get_system<core::SignalSubsystem>();
+        auto editor_camera_fov_signal = signal_subsystem->get_signal<float>("editor_camera_fov");
+        if (!editor_camera_fov_signal)
+        {
+            editor_camera_fov_signal = signal_subsystem->create_signal<float>("editor_camera_fov");
+        }
+
+        editor_camera_fov_signal->connect(std::function([&](const float& editor_cam_fov)
+        {
+            on_update_editor_camera_fov(editor_cam_fov);
+        }));
 	}
 
 	void CameraSubystem::startup()
@@ -71,6 +84,18 @@ namespace puffin::rendering
 			}
 		}
 	}
+
+    void CameraSubystem::on_update_editor_camera_fov(const float &editor_camera_fov)
+    {
+        auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+        auto registry = entt_subsystem->registry();
+
+        auto entity = entt_subsystem->get_entity(m_editor_cam_id);
+        auto& camera = registry->get<CameraComponent3D>(entity);
+
+        camera.prev_fov_y = camera.fov_y;
+        camera.fov_y = editor_camera_fov;
+    }
 
 	void CameraSubystem::init_editor_camera()
 	{

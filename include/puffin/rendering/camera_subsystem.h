@@ -25,6 +25,8 @@ namespace puffin::rendering
 
 		void on_update_camera(entt::registry& registry, entt::entity entity);
 
+        void on_update_editor_camera_fov(const float& editor_camera_fov);
+
 		PuffinID active_cam_id() const { return m_active_cam_id; }
 
 	private:

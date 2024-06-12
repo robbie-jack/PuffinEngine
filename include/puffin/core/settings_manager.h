@@ -5,35 +5,20 @@
 #include <memory>
 
 #include "nlohmann/json.hpp"
+#include "puffin/core/system.h"
 #include "puffin/core/signal_subsystem.h"
 
 namespace fs = std::filesystem;
 
-namespace puffin
+namespace puffin::core
 {
-    class SettingsManager
+class SettingsManager : public System
     {
-        static SettingsManager* s_instance;
-
-        SettingsManager() = default;
-
     public:
 
-        static SettingsManager* get()
-        {
-            if (!SettingsManager::s_instance)
-                SettingsManager::s_instance = new SettingsManager();
+        explicit SettingsManager(const std::shared_ptr<core::Engine>& engine) : System(engine) {};
 
-            return SettingsManager::s_instance;
-        }
-
-        static void clear()
-        {
-            delete SettingsManager::s_instance;
-            SettingsManager::s_instance = nullptr;
-        }
-
-        ~SettingsManager() = default;
+        ~SettingsManager() override = default;
 
         void set_signal_subsystem(const std::shared_ptr<core::SignalSubsystem>& signal_subsystem)
         {
@@ -72,6 +57,9 @@ namespace puffin
 
         void save(const fs::path& path)
         {
+            if (exists(path.parent_path()))
+                create_directory(path.parent_path());
+
             std::ofstream os(path.string());
 
             os << std::setw(4) << m_json << std::endl;

@@ -160,6 +160,9 @@ namespace puffin
 
 			mActions.emplace(name, new_action);
 
+            auto signal_subsystem = m_engine->get_system<core::SignalSubsystem>();
+            signal_subsystem->create_signal<InputEvent>(name);
+
 			mNextId++;
 		}
 
@@ -172,6 +175,9 @@ namespace puffin
 			new_action.state = KeyState::Released;
 
 			mActions.emplace(name, new_action);
+
+            auto signal_subsystem = m_engine->get_system<core::SignalSubsystem>();
+            signal_subsystem->create_signal<InputEvent>(name);
 
 			mNextId++;
 		}
