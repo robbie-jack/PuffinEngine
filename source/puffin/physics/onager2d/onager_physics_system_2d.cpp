@@ -46,8 +46,8 @@ namespace puffin
 			registry->on_destroy<CircleComponent2D>().connect<&OnagerPhysicsSystem2D::onDestroyCircle>(this);
 
 			const auto signalSubsystem = m_engine->get_system<core::SignalSubsystem>();
-			signalSubsystem->createSignal<CollisionBeginEvent>("CollisionBegin");
-			signalSubsystem->createSignal<CollisionEndEvent>("CollisionEnd");
+			signalSubsystem->create_signal<CollisionBeginEvent>("CollisionBegin");
+			signalSubsystem->create_signal<CollisionEndEvent>("CollisionEnd");
 
 			mBoxShapes.reserve(20000);
 			mCircleShapes.reserve(20000);
