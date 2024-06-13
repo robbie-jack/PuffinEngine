@@ -236,8 +236,14 @@ namespace puffin::rendering
 	struct GPUShadowData
 	{
 		alignas(4) glm::vec4 shadow_bias;
-		alignas(16) glm::mat4 light_space_view;
+        alignas(4) int cascade_count;
 	};
+
+    struct GPUShadowCascadeData
+    {
+        alignas(16) glm::mat4 light_space_view;
+        alignas(4) float cascade_plane_distance = 0.0f;
+    };
 
 	struct GPUMaterialInstanceData
 	{

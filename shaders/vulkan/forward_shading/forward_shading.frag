@@ -28,13 +28,24 @@ layout(std140, set = 1, binding = 1) readonly buffer LightBuffer
 struct ShadowData
 {
 	vec4 shadow_bias;
-	mat4 light_space_view;
+	int cascade_count;
 };
 
 layout(std140, set = 1, binding = 2) readonly buffer ShadowBuffer
 {
 	ShadowData shadows[];
 } shadow_buffer;
+
+struct ShadowCascadeData
+{
+	mat4 light_space_view;
+	float cascade_plane_distance;
+};
+
+layout(std140, set = 1, binding = 3) readonly buffer ShadowCascadeBuffer
+{
+	ShadowCascadeData cascades[];
+} shadow_cascade_buffer;
 
 const int maxTexturesPerMaterial = 8;
 const int maxFloatsPerMaterial = 8;
@@ -45,7 +56,7 @@ struct MaterialData
 	float data[maxFloatsPerMaterial];
 };
 
-layout(set = 1, binding = 3) readonly buffer MaterialBuffer
+layout(set = 1, binding = 4) readonly buffer MaterialBuffer
 {
 	MaterialData materials[];
 } materialBuffer;

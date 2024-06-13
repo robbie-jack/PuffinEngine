@@ -65,6 +65,12 @@ namespace puffin
 		const std::vector<uint16_t> g_shadow_resolution_values = { 512, 1024, 2048, 4096, 8192, 16384 };
 		const std::vector<std::string> g_shadow_resolution_labels = { "512", "1024", "2048", "4096", "8192", "16384" };
 
+        struct ShadowCascade
+        {
+            glm::mat4 light_view = glm::identity<glm::mat4>();
+            glm::mat4 light_view_proj = glm::identity<glm::mat4>();
+        };
+
 		// Component for lights that cast shadows
 		struct ShadowCasterComponent
 		{

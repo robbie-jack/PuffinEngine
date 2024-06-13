@@ -564,6 +564,14 @@ namespace puffin::rendering
 				                                                           | vma::AllocationCreateFlagBits::eMapped
 			                                                           });
 
+            m_frame_render_data[i].shadow_cascade_buffer = util::create_buffer(m_allocator, sizeof(GPUShadowCascadeData) * g_max_lights * g_max_shadow_cascades_per_light,
+                                                                       vk::BufferUsageFlagBits::eStorageBuffer,
+                                                                       vma::MemoryUsage::eAuto,
+                                                                       {
+                                                                               vma::AllocationCreateFlagBits::eHostAccessSequentialWrite
+                                                                               | vma::AllocationCreateFlagBits::eMapped
+                                                                       });
+
 			m_frame_render_data[i].object_buffer = util::create_buffer(m_allocator, sizeof(GPUObjectData) * g_max_objects,
 			                                                      vk::BufferUsageFlagBits::eStorageBuffer,
 			                                                      vma::MemoryUsage::eAuto,
@@ -592,6 +600,8 @@ namespace puffin::rendering
 				                         m_frame_render_data[i].object_buffer.allocation);
 				m_allocator.destroyBuffer(m_frame_render_data[i].shadow_buffer.buffer,
 				                         m_frame_render_data[i].shadow_buffer.allocation);
+                m_allocator.destroyBuffer(m_frame_render_data[i].shadow_cascade_buffer.buffer,
+                                          m_frame_render_data[i].shadow_cascade_buffer.allocation);
 				m_allocator.destroyBuffer(m_frame_render_data[i].light_buffer.buffer,
 				                         m_frame_render_data[i].light_buffer.allocation);
 				m_allocator.destroyBuffer(m_frame_render_data[i].camera_buffer.buffer,
@@ -654,6 +664,9 @@ namespace puffin::rendering
 			vk::DescriptorBufferInfo shadow_buffer_info = {
 				m_frame_render_data[i].shadow_buffer.buffer, 0, sizeof(GPUShadowData) * g_max_lights
 			};
+            vk::DescriptorBufferInfo shadow_cascade_buffer_info = {
+                    m_frame_render_data[i].shadow_cascade_buffer.buffer, 0, sizeof(GPUShadowCascadeData) * g_max_lights * g_max_shadow_cascades_per_light
+            };
 			vk::DescriptorBufferInfo material_buffer_info = {
 				m_frame_render_data[i].material_buffer.buffer, 0, sizeof(GPUMaterialInstanceData) * g_max_materials
 			};
@@ -663,7 +676,8 @@ namespace puffin::rendering
 				.bindBuffer(0, &camera_buffer_info, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
 				.bindBuffer(1, &light_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.bindBuffer(2, &shadow_buffer_info, vk::DescriptorType::eStorageBuffer,vk::ShaderStageFlagBits::eFragment)
-				.bindBuffer(3, &material_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.bindBuffer(3, &shadow_cascade_buffer_info, vk::DescriptorType::eStorageBuffer,vk::ShaderStageFlagBits::eFragment)
+				.bindBuffer(4, &material_buffer_info, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.build(m_frame_render_data[i].global_descriptor, m_global_render_data.global_set_layout);
 
 			const uint32_t num_images = 128;

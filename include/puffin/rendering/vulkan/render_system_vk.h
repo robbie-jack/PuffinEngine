@@ -95,7 +95,8 @@ namespace puffin::rendering
 		AllocatedBuffer camera_buffer;
 		AllocatedBuffer object_buffer;
 		AllocatedBuffer light_buffer;
-		AllocatedBuffer shadow_buffer;
+        AllocatedBuffer shadow_buffer;
+        AllocatedBuffer shadow_cascade_buffer;
 		AllocatedBuffer material_buffer;
 
 		GPUFragShaderPushConstant push_constant_frag;
