@@ -112,7 +112,8 @@ void main()
 float shadow_calculation(LightData light_data, ShadowData shadow_data, vec3 lightDir, vec3 fragNormal, vec4 fragWorldPos)
 {
 	int shadow_index = int(light_data.cuttoff_angle_and_shadow_index.z);
-	vec4 fragLightSpacePos = shadow_data.light_space_view * fragWorldPos;
+	ShadowCascadeData shadow_cascade = shadow_cascade_buffer.cascades[shadow_index];
+	vec4 fragLightSpacePos = shadow_cascade.light_space_view * fragWorldPos;
 	vec3 projCoords = fragLightSpacePos.xyz / fragLightSpacePos.w;
 	projCoords = projCoords * 0.5 + 0.5;
 	

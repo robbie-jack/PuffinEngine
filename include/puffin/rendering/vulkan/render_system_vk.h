@@ -168,6 +168,7 @@ namespace puffin::rendering
 		struct ShadowUpdateEvent
 		{
 			PuffinID id;
+            entt::entity entity;
 			ImageDesc image_desc;
 			uint8_t frame_count = 0;
 		};

@@ -4,7 +4,8 @@ import subprocess
 from pathlib import Path
 from glob import glob
 
-glsl_validator = os.environ.get("VULKAN_SDK") + "\\Bin\\glslangValidator.exe"
+# glsl_validator = os.environ.get("VULKAN_SDK") + "/Bin/glslangValidator.exe"
+glsl_validator = "/usr/bin/glslangValidator"
 valid_extensions = { ".frag": "_fs.spv", ".vert": "_vs.spv" }
 
 def build_shader(shader_path, output_path):

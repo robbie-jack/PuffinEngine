@@ -241,7 +241,7 @@ namespace puffin::rendering
 		image_desc.height = shadow.height;
 		image_desc.depth = 1;
 
-		m_shadow_update_events.push({ id, image_desc });
+		m_shadow_update_events.push({ id, entity, image_desc });
 	}
 
 	void RenderSystemVK::on_destroy_shadow_caster(entt::registry& registry, entt::entity entity)
@@ -1027,9 +1027,17 @@ namespace puffin::rendering
 				ShadowUpdateEvent event {};
 				m_shadow_update_events.pop(event);
 
+                auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+                auto registry = entt_subsystem->registry();
+                auto shadow = registry->get<ShadowCasterComponent>(event.entity);
+
 				if (m_resource_manager->image_exists(event.id))
 				{
-					m_resource_manager->update_image(event.id, event.image_desc, current_frame_idx());
+                    const int first_image_index = current_frame_idx() * shadow.cascade_count;
+                    for (int i = 0; i < shadow.cascade_count; ++i)
+                    {
+                        m_resource_manager->update_image(event.id, event.image_desc, first_image_index + i);
+                    }
 
 					event.frame_count++;
 
@@ -1040,7 +1048,7 @@ namespace puffin::rendering
 				}
 				else
 				{
-					m_resource_manager->add_images(event.id, event.image_desc, m_frames_in_flight_count);
+					m_resource_manager->add_images(event.id, event.image_desc, m_frames_in_flight_count * shadow.cascade_count);
 				}
 
 				shadow_descriptor_needs_updated |= true;
@@ -1617,8 +1625,13 @@ namespace puffin::rendering
 		m_shadows_to_draw.clear();
 
 		std::vector<GPUShadowData> shadows;
+        std::vector<GPUShadowCascadeData> shadow_cascades;
+
+        shadows.reserve(g_max_lights);
+        shadow_cascades.reserve(g_max_lights * g_max_shadow_cascades_per_light);
 
 		int i = 0;
+        int c = 0;
 
 		for (auto [entity, transform, light, shadow] : shadow_view.each())
 		{
@@ -1645,9 +1658,14 @@ namespace puffin::rendering
 
 					shadow.light_view_proj = light_projection * light_view;
 
-					shadows[i].light_space_view = shadow.light_view_proj;
 					shadows[i].shadow_bias.x = shadow.bias_min;
 					shadows[i].shadow_bias.y = shadow.bias_max;
+
+                    shadow_cascades.emplace_back();
+                    shadow_cascades[c].light_space_view = shadow.light_view_proj;
+                    shadow_cascades[c].cascade_plane_distance = 100.0f;
+
+                    ++c;
 
 					m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
 				}
@@ -1701,9 +1719,14 @@ namespace puffin::rendering
 						shadow.light_view_proj = light_projection * shadow.light_view;
 					}
 
-					shadows[i].light_space_view = shadow.light_view_proj;
 					shadows[i].shadow_bias.x = shadow.bias_min;
 					shadows[i].shadow_bias.y = shadow.bias_max;
+
+                    shadow_cascades.emplace_back();
+                    shadow_cascades[c].light_space_view = shadow.light_view_proj;
+                    shadow_cascades[c].cascade_plane_distance = shadow.bounds_aabb.max.x;
+
+                    ++c;
 
 					m_shadows_to_draw.push_back(entt_subsystem->get_id(entity));
 				}
@@ -1715,6 +1738,9 @@ namespace puffin::rendering
 		// Copy light data to buffer
 		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().shadow_buffer,
 			shadows.size() * sizeof(GPUShadowData), shadows.data());
+
+        util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().shadow_cascade_buffer,
+            shadow_cascades.size() * sizeof(GPUShadowCascadeData), shadow_cascades.data());
 	}
 
 	void RenderSystemVK::build_indirect_commands()

@@ -158,26 +158,26 @@ namespace puffin::core
 		{
 			auto scene_data = get_system<io::SceneSubsystem>()->scene_data();
 
-			if (m_load_scene_on_launch)
-			{
-				scene_data->load();
-			}
-			else if (m_setup_engine_default_scene)
-			{
-				auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
-				auto scene_graph = get_system<scene::SceneGraph>();
-				auto scene_subsystem = get_system<io::SceneSubsystem>();
-				//auto sceneData = scene_subsystem->scene_data();
+            if (m_setup_engine_default_scene)
+            {
+                auto entt_subsystem = get_system<ecs::EnTTSubsystem>();
+                auto scene_graph = get_system<scene::SceneGraph>();
+                auto scene_subsystem = get_system<io::SceneSubsystem>();
+                //auto sceneData = scene_subsystem->scene_data();
 
-				// Create Default Scene in code -- used when scene serialization is changed
-				default_scene();
-				//physicsScene2D();
-				//physicsScene3D();
-				//proceduralScene();
+                // Create Default Scene in code -- used when scene serialization is changed
+                default_scene();
+                //physicsScene2D();
+                //physicsScene3D();
+                //proceduralScene();
 
-				scene_data->update_data(entt_subsystem, scene_graph);
-				scene_data->save();
-			}
+                scene_data->update_data(entt_subsystem, scene_graph);
+                scene_data->save();
+            }
+			else if (m_load_scene_on_launch)
+            {
+                scene_data->load();
+            }
 		}
 
 		execute_callbacks(ExecutionStage::Startup);

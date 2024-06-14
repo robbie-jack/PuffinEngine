@@ -69,6 +69,7 @@ namespace puffin
         {
             glm::mat4 light_view = glm::identity<glm::mat4>();
             glm::mat4 light_view_proj = glm::identity<glm::mat4>();
+            float plane_distance = 0.0f;
         };
 
 		// Component for lights that cast shadows
@@ -81,6 +82,7 @@ namespace puffin
 			float bias_min = 0.05f;
 			float bias_max = 0.5f;
 			float bounds_mult = 2.0f;
+            int cascade_count = 1;
 
 			glm::mat4 light_view = glm::identity<glm::mat4>();
 			glm::mat4 light_view_proj = glm::identity<glm::mat4>();
@@ -88,7 +90,7 @@ namespace puffin
 
 			AABB_3D bounds_aabb;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, width, height, bias_min, bias_max, bounds_mult)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, width, height, bias_min, bias_max, bounds_mult, cascade_count)
 		};
 	}
 }
