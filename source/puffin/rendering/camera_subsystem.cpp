@@ -12,7 +12,7 @@ namespace puffin::rendering
 {
 	CameraSubystem::CameraSubystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 	{
-		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "CameraSystem: startup");
+		m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "CameraSystem: startup");
 		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&]() { begin_play(); }, "CameraSystem: begin_play");
 		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&]() { update_subsystem(); }, "CameraSystem: update");
 		m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "CameraSystem: end_play", 210);

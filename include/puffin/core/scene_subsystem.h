@@ -426,7 +426,7 @@ namespace puffin::io
 
 		std::shared_ptr<SceneData> create_scene(const fs::path& path)
 		{
-            auto scene_path = assets::AssetRegistry::get()->contentRoot() / path;
+            auto scene_path = (assets::AssetRegistry::get()->contentRoot() / path).make_preferred();
 
             if (m_scenes.find(scene_path) == m_scenes.end())
             {

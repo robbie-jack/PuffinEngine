@@ -95,7 +95,7 @@ namespace puffin::assets
 		// Create Assets from factories based on their stored type
 		for (const auto& [id, assetCacheData] : assetCache.data)
 		{
-			std::string path = assetCacheData.path;
+			auto path = fs::path(assetCacheData.path).make_preferred();
 			std::string type = assetCacheData.type;
 			std::shared_ptr<Asset> asset;
 

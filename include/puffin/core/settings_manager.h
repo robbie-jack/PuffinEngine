@@ -12,7 +12,7 @@ namespace fs = std::filesystem;
 
 namespace puffin::core
 {
-class SettingsManager : public System
+	class SettingsManager : public System
     {
     public:
 
@@ -57,7 +57,7 @@ class SettingsManager : public System
 
         void save(const fs::path& path)
         {
-            if (exists(path.parent_path()))
+            if (!exists(path.parent_path()))
                 create_directory(path.parent_path());
 
             std::ofstream os(path.string());

@@ -251,7 +251,7 @@ namespace puffin::rendering
 
 		bool m_initialized = false; // Indicates initialization completed without any failures
 		bool m_rebar_enabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
-		bool m_render_shadows = true; // Render shadows if enabled
+		bool m_render_shadows = false; // Render shadows if enabled
 
 		void init_vulkan();
 

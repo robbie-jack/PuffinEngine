@@ -82,7 +82,7 @@ namespace puffin::core
 
 		scene_graph->register_default_node_types();
 
-        fs::path project_path = fs::path(parser.get<std::string>("-project_path"));
+        fs::path project_path = fs::path(parser.get<std::string>("-project_path")).make_preferred();
 
 		// Load Project File
 		load_project(project_path, m_project_file);
@@ -128,15 +128,7 @@ namespace puffin::core
 		// Load Project Settings
         settings_manager->set_signal_subsystem(signal_subsystem);
 
-        if (parser.get<bool>("--setup-default-settings"))
-        {
-            default_settings();
-            settings_manager->save(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
-        }
-        else
-        {
-            settings_manager->load(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
-        }
+		m_setup_engine_default_settings = parser.get<bool>("--setup-default-settings");
 
 		// Load/Initialize Assets
 		assets::AssetRegistry::get()->loadAssetCache();
@@ -154,6 +146,20 @@ namespace puffin::core
 		m_play_state = PlayState::Stopped;
 
 		execute_callbacks(ExecutionStage::StartupSubsystem);
+
+		{
+			auto settings_manager = get_system<SettingsManager>();
+
+			if (m_setup_engine_default_settings)
+			{
+				default_settings();
+				settings_manager->save(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
+			}
+			else
+			{
+				settings_manager->load(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
+			}
+		}
 
 		{
 			auto scene_data = get_system<io::SceneSubsystem>()->scene_data();
@@ -427,8 +433,8 @@ namespace puffin::core
 		const PuffinID meshId3 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath3)->id();
 		const PuffinID meshId4 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath4)->id();
 
-		const fs::path& texturePath1 = "textures/chalet.ptexture";
-		const fs::path& texturePath2 = "textures/cube.ptexture";
+		const fs::path& texturePath1 = fs::path() / "textures" / "chalet.ptexture";
+		const fs::path& texturePath2 = fs::path() / "textures" / "cube.ptexture";
 
 		const PuffinID textureId1 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath1)->id();
 		const PuffinID textureId2 = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texturePath2)->id();
@@ -757,5 +763,6 @@ namespace puffin::core
 
         settings_manager->set("editor_camera_fov", 60.0f);
         settings_manager->set("mouse_sensitivity", 0.05f);
+		settings_manager->set("rendering_draw_shadows", false);
     }
 }

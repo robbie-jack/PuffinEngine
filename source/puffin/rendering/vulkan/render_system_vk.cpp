@@ -34,6 +34,8 @@
 #include "puffin/components/physics/3d/velocity_component_3d.h"
 #include "puffin/components/rendering/light_component.h"
 #include "puffin/components/rendering/mesh_component.h"
+#include "puffin/core/settings_manager.h"
+#include "puffin/core/signal_subsystem.h"
 #include "puffin/rendering/camera_subsystem.h"
 #include "puffin/rendering/material_globals.h"
 #include "puffin/window/window_subsystem.h"
@@ -82,6 +84,18 @@ namespace puffin::rendering
 		registry->on_construct<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
 		registry->on_update<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
 		registry->on_destroy<ShadowCasterComponent>().connect<&RenderSystemVK::on_destroy_shadow_caster>(this);
+
+		auto signal_subsystem = m_engine->get_system<core::SignalSubsystem>();
+		auto rendering_draw_shadows_signal = signal_subsystem->get_signal<bool>("rendering_draw_shadows");
+		if (!rendering_draw_shadows_signal)
+		{
+			rendering_draw_shadows_signal = signal_subsystem->create_signal<bool>("rendering_draw_shadows");
+		}
+
+		rendering_draw_shadows_signal->connect(std::function([&](const bool& rendering_draw_shadows)
+		{
+			m_render_shadows = rendering_draw_shadows;
+		}));
 	}
 
 	void RenderSystemVK::startup()
@@ -127,6 +141,9 @@ namespace puffin::rendering
 
 		m_resource_manager = new ResourceManagerVK(shared_from_this());
 		m_material_registry.init(shared_from_this());
+
+		auto settings_manager = m_engine->get_system<core::SettingsManager>();
+		m_render_shadows = settings_manager->get<bool>("rendering_draw_shadows");
 	}
 
 	void RenderSystemVK::wait_for_last_presentation_and_sample_time()
