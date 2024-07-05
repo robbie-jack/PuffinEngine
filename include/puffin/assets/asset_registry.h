@@ -8,6 +8,7 @@
 #include <memory>
 #include <unordered_map>
 #include <filesystem>
+#include <set>
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -41,7 +42,7 @@ namespace puffin::assets
 	public:
 		virtual ~IAssetFactory() = default;
 		virtual std::string type() = 0;
-		virtual std::shared_ptr<Asset> addAsset(PuffinID id, fs::path path) = 0;
+		virtual std::shared_ptr<Asset> add_asset(PuffinID id, fs::path path) = 0;
 	};
 
 	/*
@@ -56,24 +57,24 @@ namespace puffin::assets
 		AssetFactory()
 		{
 			AssetType* asset = new AssetType();
-			mAssetTypeString = asset->type();
+			m_asset_type_string = asset->type();
 			delete asset;
 			asset = nullptr;
 		}
 
 		std::string type() override
 		{
-			return mAssetTypeString;
+			return m_asset_type_string;
 		}
 
-		std::shared_ptr<Asset> addAsset(PuffinID id, fs::path path) override
+		std::shared_ptr<Asset> add_asset(PuffinID id, fs::path path) override
 		{
 			return std::make_shared<AssetType>(id, path);
 		}
 
 	private:
 
-		std::string mAssetTypeString;
+		std::string m_asset_type_string;
 
 	};
 
@@ -84,7 +85,11 @@ namespace puffin::assets
 	{
 		static AssetRegistry* sInstance;
 
-		AssetRegistry() = default;
+		AssetRegistry()
+		{
+			m_json_file_types.insert(".pmaterialinst");
+			m_json_file_types.insert(".pshader");
+		}
 
 	public:
 
@@ -104,43 +109,43 @@ namespace puffin::assets
 
 		~AssetRegistry()
 		{
-			for (const auto& [fst, snd] : mIdToAssetMap)
+			for (const auto& [fst, snd] : m_id_to_asset_map)
 			{
 				snd->unload();
 			}
 
-			mIdToAssetMap.clear();
-			mPathToIdMap.clear();
-			mAssetFactories.clear();
+			m_id_to_asset_map.clear();
+			m_path_to_id_map.clear();
+			m_asset_factories.clear();
 		}
 
 
 		void init(const io::ProjectFile& projectFile, const fs::path& projectPath);
 
-		void setProjectName(const std::string& projectName);
-		std::string projectName();
+		void set_project_name(const std::string& projectName);
+		std::string project_name();
 
-		void setProjectRoot(fs::path projectRootPath);
-		fs::path projectRoot();
+		void set_project_root(fs::path projectRootPath);
+		fs::path project_root();
 
-		fs::path contentRoot() const;
+		fs::path content_root() const;
 
-		fs::path engineRoot() const;
+		fs::path engine_root() const;
 
 		// Asset Cache Saving/Loading
-		void saveAssetCache() const;
-		void loadAssetCache();
+		void save_asset_cache() const;
+		void load_asset_cache();
 
 		// Get Asset from Registry
-		std::shared_ptr<Asset> getAsset(const PuffinID& uuid);
+		std::shared_ptr<Asset> get_asset(const PuffinID& uuid);
 
-		std::shared_ptr<Asset> getAsset(const fs::path& path);
+		std::shared_ptr<Asset> get_asset(const fs::path& path);
 
 		// Get Typed Asset from Registry (prefer these over the non typed get asset as these ones do proper type checking)
 		template<typename AssetType>
-		std::shared_ptr<AssetType> getAsset(const PuffinID& uuid)
+		std::shared_ptr<AssetType> get_asset(const PuffinID& uuid)
 		{
-			const auto asset = getAsset(uuid);
+			const auto asset = get_asset(uuid);
 
 			if (!asset)
 			{
@@ -149,7 +154,7 @@ namespace puffin::assets
 
 			std::string type;
 
-			getAssetType<AssetType>(type);
+			get_asset_type<AssetType>(type);
 
 			if (asset->type() != type)
 			{
@@ -160,18 +165,29 @@ namespace puffin::assets
 		}
 
 		template<typename AssetType>
-		std::shared_ptr<AssetType> getAsset(const fs::path& path)
+		std::shared_ptr<AssetType> get_asset(const fs::path& path)
 		{
-			const auto asset = getAsset(path);
+			auto asset = get_asset(path);
 
+			// Try and find asset by path if it's not stored in 
 			if (!asset)
 			{
-				return nullptr;
+				asset = find_asset_at_path(path);
+
+				if (!asset)
+				{
+					return nullptr;
+				}
+				else
+				{
+					m_id_to_asset_map.emplace(asset->id(), asset);
+					m_path_to_id_map.emplace(asset->relativePath().string(), asset->id());
+				}
 			}
 
 			std::string type;
 
-			getAssetType<AssetType>(type);
+			get_asset_type<AssetType>(type);
 
 			if (asset->type() != type)
 			{
@@ -183,17 +199,17 @@ namespace puffin::assets
 
 		// Register new Asset to Registry
 		template<typename AssetType>
-		std::shared_ptr<AssetType> addAsset(const fs::path& path)
+		std::shared_ptr<AssetType> add_asset(const fs::path& path)
 		{
 			// First check if there is already an asset using this path
-			std::shared_ptr<AssetType> asset = getAsset<AssetType>(path);
+			std::shared_ptr<AssetType> asset = get_asset<AssetType>(path);
 			if (asset == nullptr)
 			{
 				// If there isn't create a new asset
 				asset = std::make_shared<AssetType>(path);
 
-				mIdToAssetMap.emplace(asset->id(), asset);
-				mPathToIdMap.emplace(asset->relativePath().string(), asset->id());
+				m_id_to_asset_map.emplace(asset->id(), asset);
+				m_path_to_id_map.emplace(asset->relativePath().string(), asset->id());
 			}
 
 			// Return existing/created asset
@@ -201,15 +217,15 @@ namespace puffin::assets
 		}
 
 		template<typename AssetType>
-		void registerAssetType()
+		void register_asset_type()
 		{
 			std::shared_ptr<AssetFactory<AssetType>> factory = std::make_shared<AssetFactory<AssetType>>();
 
-			mAssetFactories.push_back(factory);
+			m_asset_factories.push_back(factory);
 		}
 
 		template<typename AssetType>
-		static void getAssetType(std::string& type)
+		static void get_asset_type(std::string& type)
 		{
 			const Asset* tempAsset = new AssetType();
 			type = tempAsset->type();
@@ -218,21 +234,32 @@ namespace puffin::assets
 			tempAsset = nullptr;
 		}
 
-		static fs::path findEngineRoot(const fs::path& currentPath);
+		static fs::path find_engine_root(const fs::path& currentPath);
 
 	private:
 
-		std::string mProjectName;
-		fs::path mProjectRootPath;
-		fs::path mEngineRootPath;
+		std::string m_project_name;
+		fs::path m_project_root_path;
+		fs::path m_engine_root_path;
 
-		std::vector<fs::path> mContentDirectories = {};
+		std::vector<fs::path> m_content_directories = {};
 
 		// Map of ID's to Asset, generated at runtime
-		std::unordered_map<PuffinID, std::shared_ptr<Asset>> mIdToAssetMap;
-		std::unordered_map<std::string, PuffinID> mPathToIdMap;
+		std::unordered_map<PuffinID, std::shared_ptr<Asset>> m_id_to_asset_map;
+		std::unordered_map<std::string, PuffinID> m_path_to_id_map;
+
+		// Assets with this file type are stored in json instead of binary
+		std::set<std::string> m_json_file_types;
 
 		// Asset Factories for creating assets at runtime
-		std::vector<std::shared_ptr<IAssetFactory>> mAssetFactories;
+		std::vector<std::shared_ptr<IAssetFactory>> m_asset_factories;
+
+		template<typename AssetType>
+		std::shared_ptr<AssetType> find_asset_at_path(fs::path path)
+		{
+			return std::static_pointer_cast<AssetType>(find_asset_at_path(path));
+		}
+
+		std::shared_ptr<Asset> find_asset_at_path(fs::path path);
 	};
 }

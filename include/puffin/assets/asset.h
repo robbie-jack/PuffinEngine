@@ -26,6 +26,18 @@ namespace puffin::assets
         Sound = 60,
 	};
 
+	static const std::unordered_map<AssetType, std::string> g_asset_type_to_string =
+	{
+		{ AssetType::Invalid, "Invalid" },
+		{ AssetType::StaticMesh, "StaticMesh" },
+		{ AssetType::SkeletalMesh, "SkeletalMesh" },
+		{ AssetType::Texture, "Texture" },
+		{ AssetType::Shader, "Shader" },
+		{ AssetType::Material, "Material" },
+		{ AssetType::MaterialInstance, "MaterialInstance" },
+		{ AssetType::Sound, "Sound" },
+	};
+
     NLOHMANN_JSON_SERIALIZE_ENUM(puffin::assets::AssetType,
 	{
         {puffin::assets::AssetType::Invalid, "None"},
@@ -42,24 +54,24 @@ namespace puffin::assets
 	{
 		AssetData()
 		{
+			id = puffin::gInvalidID;
 			type = AssetType::Invalid;
 			version = 0;
-			id = puffin::gInvalidID;
 			binaryBlob.clear();
 		}
 
 		~AssetData()
 		{
+			id = puffin::gInvalidID;
 			type = AssetType::Invalid;
 			version = 0;
-			id = puffin::gInvalidID;
 			json_data.clear();
 			binaryBlob.clear();
 		}
 
+		puffin::PuffinID id;
 		AssetType type;
 		uint32_t version;
-		puffin::PuffinID id;
 		json json_data;
 		std::vector<char> binaryBlob;
 	};
@@ -116,6 +128,9 @@ namespace puffin::assets
 		if (!outFile.is_open())
 			return false;
 
+		// Write asset id
+		outFile.write(reinterpret_cast<const char*>(&assetData.id), sizeof(uint_least64_t));
+
 		// Write Asset Type
 		outFile.write(reinterpret_cast<const char*>(&assetData.type), sizeof(uint32_t));
 
@@ -155,6 +170,9 @@ namespace puffin::assets
 
 		// Start reading from beginning
 		inFile.seekg(0);
+
+		// Read asset id
+		inFile.read(reinterpret_cast<char*>(&assetData.id), sizeof(uint_least64_t));
 
 		// Read Asset Type
 		inFile.read(reinterpret_cast<char*>(&assetData.type), sizeof(uint32_t));
@@ -201,9 +219,9 @@ namespace puffin::assets
 
 		json data;
 
+		data["id"] = assetData.id;
 		data["type"] = assetData.type;
 		data["version"] = assetData.version;
-		data["id"] = assetData.id;
 		data["data"] = assetData.json_data;
 
 		os << std::setw(4) << data << std::endl;
@@ -223,9 +241,9 @@ namespace puffin::assets
 		json data;
 		is >> data;
 
+		assetData.id = data["id"];
 		assetData.type = data["type"];
 		assetData.version = data["version"];
-		assetData.id = data["id"];
 		assetData.json_data = data["data"];
 
 		is.close();

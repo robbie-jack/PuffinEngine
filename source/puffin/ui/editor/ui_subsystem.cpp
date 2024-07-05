@@ -42,7 +42,7 @@ namespace puffin::ui
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 			//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-			mImGuiIniFilename = (assets::AssetRegistry::get()->engineRoot() / "config" / "imgui.ini").string();
+			mImGuiIniFilename = (assets::AssetRegistry::get()->engine_root() / "config" / "imgui.ini").string();
 			io.IniFilename = mImGuiIniFilename.c_str();
 
 			setStyle();
@@ -305,9 +305,9 @@ namespace puffin::ui
 				if (ImGui::MenuItem("Save Project"))
 				{
                     auto settings_manager = m_engine->get_system<core::SettingsManager>();
-                    settings_manager->save(assets::AssetRegistry::get()->projectRoot() / "config" / "settings.json");
+                    settings_manager->save(assets::AssetRegistry::get()->project_root() / "config" / "settings.json");
 
-					assets::AssetRegistry::get()->saveAssetCache();
+					assets::AssetRegistry::get()->save_asset_cache();
 				}
 
 				if (ImGui::MenuItem("Save Project As"))

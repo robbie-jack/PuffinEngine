@@ -735,11 +735,11 @@ namespace puffin::rendering
 	void RenderSystemVK::build_forward_renderer_pipeline()
 	{
 		m_forward_vert_mod = util::ShaderModule{
-			m_device, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_vs.spv").string()
+			m_device, fs::path(assets::AssetRegistry::get()->engine_root() / "bin" / "vulkan" / "forward_shading" / "forward_shading_vs.spv").string()
 		};
 
 		m_forward_frag_mod = util::ShaderModule{
-			m_device, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "forward_shading" / "forward_shading_fs.spv").string()
+			m_device, fs::path(assets::AssetRegistry::get()->engine_root() / "bin" / "vulkan" / "forward_shading" / "forward_shading_fs.spv").string()
 		};
 
 		vk::PushConstantRange vert_range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant) };
@@ -791,11 +791,11 @@ namespace puffin::rendering
 	void RenderSystemVK::build_shadow_pipeline()
 	{
 		m_shadow_vert_mod = util::ShaderModule{
-			m_device, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "shadowmaps" / "shadowmap_vs.spv").string()
+			m_device, fs::path(assets::AssetRegistry::get()->engine_root() / "bin" / "vulkan" / "shadowmaps" / "shadowmap_vs.spv").string()
 		};
 
 		m_shadow_frag_mod = util::ShaderModule{
-			m_device, fs::path(assets::AssetRegistry::get()->engineRoot() / "bin" / "vulkan" / "shadowmaps" / "shadowmap_fs.spv").string()
+			m_device, fs::path(assets::AssetRegistry::get()->engine_root() / "bin" / "vulkan" / "shadowmaps" / "shadowmap_fs.spv").string()
 		};
 
 		vk::PushConstantRange range = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant) };
@@ -987,7 +987,7 @@ namespace puffin::rendering
 		{
 			for (const auto mesh_id : m_meshes_to_load)
 			{
-				if (const auto static_mesh = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(mesh_id))
+				if (const auto static_mesh = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(mesh_id))
 				{
 					m_resource_manager->add_static_mesh(static_mesh);
 				}
@@ -2392,7 +2392,7 @@ namespace puffin::rendering
 
 	bool RenderSystemVK::load_texture(PuffinID texId, TextureDataVK& texData)
 	{
-		if (const auto texAsset = assets::AssetRegistry::get()->getAsset<assets::TextureAsset>(texId); texAsset && texAsset->load())
+		if (const auto texAsset = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texId); texAsset && texAsset->load())
 		{
 			texData.assetId = texId;
 

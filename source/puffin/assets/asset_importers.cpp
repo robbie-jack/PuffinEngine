@@ -269,12 +269,12 @@ namespace puffin::io
 
 		fs::path asset_path = assetSubdirectory / (modelPath.stem().string() + ".pstaticmesh");
 
-		auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(asset_path);
+		auto asset = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(asset_path);
 
 		if (!asset->save(mesh_asset_info, vertices.data(), indices.data()))
 			return false;
 
-		assets::AssetRegistry::get()->saveAssetCache();
+		assets::AssetRegistry::get()->save_asset_cache();
 
 		vertices.clear();
 		indices.clear();
@@ -528,12 +528,12 @@ namespace puffin::io
 
 			fs::path asset_path = assetSubdirectory / (modelPath.stem().string() + "_" + mesh.name + ".pstaticmesh");
 
-			auto asset = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(asset_path);
+			auto asset = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(asset_path);
 
 			if (!asset->save(mesh_asset_info, vertices.data(), indices.data()))
 				return false;
 
-			assets::AssetRegistry::get()->saveAssetCache();
+			assets::AssetRegistry::get()->save_asset_cache();
 
 			vertices.clear();
 			indices.clear();
@@ -666,7 +666,7 @@ namespace puffin::io
 		const assets::TextureFormat rgb_format = assets::gTexChannelsToRGBAFormat.at(info.textureChannels);
 		const assets::TextureFormat bc_format = assets::gTexChannelsToBCFormat.at(info.textureChannels);
 
-		const auto asset = assets::AssetRegistry::get()->addAsset<assets::TextureAsset>(assetPath);
+		const auto asset = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(assetPath);
 
 		bool ret;
 
@@ -697,7 +697,7 @@ namespace puffin::io
 		// Free Loaded Data, as pixels are now in staging buffer
 		stbi_image_free(pixels);
 
-		assets::AssetRegistry::get()->saveAssetCache();
+		assets::AssetRegistry::get()->save_asset_cache();
 
 		return ret;
 	}

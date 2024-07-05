@@ -16,7 +16,7 @@ namespace puffin::assets
     static const std::string gMaterialAssetType = "Material";
     static constexpr uint32_t gMaterialAssetVersion = 1; // Latest version of Material Asset Format
 
-    static const std::string gMaterialInstAssetType = "MaterialInst";
+    static const std::string gMaterialInstAssetType = "MaterialInstance";
     static constexpr uint32_t gMaterialInstAssetVersion = 1; // Latest version of Material Instance Asset Format
 
     class MaterialAsset : public Asset

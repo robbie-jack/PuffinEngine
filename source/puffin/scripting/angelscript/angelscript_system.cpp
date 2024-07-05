@@ -370,7 +370,7 @@ namespace puffin::scripting
 			cout << "Failed to start new module" << endl;
 		}
 
-		fs::path scriptPath = assets::AssetRegistry::get()->contentRoot() / script.dir;
+		fs::path scriptPath = assets::AssetRegistry::get()->content_root() / script.dir;
 
 		r = builder.AddSectionFromFile(scriptPath.string().c_str());
 		if (r < 0)

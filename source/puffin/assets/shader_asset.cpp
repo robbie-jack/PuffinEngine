@@ -6,10 +6,11 @@ namespace puffin::assets
 {
 	bool ShaderAsset::save()
 	{
-		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
 
 		// Create AssetData Struct
 		AssetData data;
+		data.id = id();
 		data.type = AssetType::Shader;
 		data.version = gShaderAssetVersion;
 
@@ -28,7 +29,7 @@ namespace puffin::assets
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
 		if (!fs::exists(fullPath))
 			return false;
 

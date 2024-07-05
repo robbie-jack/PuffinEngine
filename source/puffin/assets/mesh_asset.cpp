@@ -26,10 +26,11 @@ namespace puffin::assets
 
 	bool StaticMeshAsset::save(MeshAssetInfo& mesh_asset_info, const void* vertex_data, const void* index_data)
 	{
-		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
 
 		// Create AssetData Struct
 		AssetData assetData;
+		assetData.id = id();
 		assetData.type = AssetType::StaticMesh;
 		assetData.version = gStaticMeshVersion;
 
@@ -109,7 +110,7 @@ namespace puffin::assets
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->contentRoot() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
 		if (!fs::exists(fullPath))
 			return false;
 

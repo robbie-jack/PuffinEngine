@@ -58,7 +58,7 @@ namespace puffin::rendering
 
 	bool VKMaterialRegistry::loadMaterialInstance(PuffinID matID, MaterialDataVK& matData)
 	{
-		const auto matAsset = assets::AssetRegistry::get()->getAsset<assets::MaterialInstanceAsset>(matID);
+		const auto matAsset = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(matID);
 
 		if (matAsset && matAsset->load())
 		{
@@ -111,12 +111,12 @@ namespace puffin::rendering
 	{
 		if (!mMatData.contains(matID))
 		{
-			const auto matAsset = assets::AssetRegistry::get()->getAsset<assets::MaterialAsset>(matID);
+			const auto matAsset = assets::AssetRegistry::get()->get_asset<assets::MaterialAsset>(matID);
 
 			if (matAsset && matAsset->load())
 			{
-				const auto vertShaderAsset = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(matAsset->getVertexShaderID());
-				const auto fragShaderAsset = assets::AssetRegistry::get()->getAsset<assets::ShaderAsset>(matAsset->getFragmentShaderID());
+				const auto vertShaderAsset = assets::AssetRegistry::get()->get_asset<assets::ShaderAsset>(matAsset->getVertexShaderID());
+				const auto fragShaderAsset = assets::AssetRegistry::get()->get_asset<assets::ShaderAsset>(matAsset->getFragmentShaderID());
 
 				if (vertShaderAsset && vertShaderAsset->load() && fragShaderAsset && fragShaderAsset->load())
 				{

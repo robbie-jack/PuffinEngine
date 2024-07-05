@@ -19,7 +19,7 @@ namespace puffin::ui
 			ImVec2 listBoxSize = ImGui::GetWindowSize();
 			listBoxSize.y -= 20.0f;
 
-			const fs::path contentPath = assets::AssetRegistry::get()->contentRoot();
+			const fs::path contentPath = assets::AssetRegistry::get()->content_root();
 
 			if (exists(contentPath))
 			{

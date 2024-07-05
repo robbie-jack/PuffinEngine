@@ -55,8 +55,8 @@ namespace puffin::audio
 
 	void MiniAudioSubsystem::playSound(PuffinID soundAssetID)
 	{
-		auto soundAsset = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundAssetID);
-		auto soundPath = (assets::AssetRegistry::get()->contentRoot() / soundAsset->relativePath()).string();
+		auto soundAsset = assets::AssetRegistry::get()->get_asset<assets::SoundAsset>(soundAssetID);
+		auto soundPath = (assets::AssetRegistry::get()->content_root() / soundAsset->relativePath()).string();
 
 		ma_engine_play_sound(mSoundEngine, soundPath.c_str(), nullptr);
 	}
@@ -68,8 +68,8 @@ namespace puffin::audio
 			return true;
 		}
 
-		auto soundAsset = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundAssetID);
-		auto soundPath = (assets::AssetRegistry::get()->contentRoot() / soundAsset->relativePath()).string();
+		auto soundAsset = assets::AssetRegistry::get()->get_asset<assets::SoundAsset>(soundAssetID);
+		auto soundPath = (assets::AssetRegistry::get()->content_root() / soundAsset->relativePath()).string();
 
 		mSounds.emplace(soundInstanceID, ma_sound());
 
