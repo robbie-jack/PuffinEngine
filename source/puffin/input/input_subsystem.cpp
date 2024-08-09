@@ -8,7 +8,7 @@ namespace puffin
 {
 	namespace input
 	{
-		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
 			m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "InputSubsystem: startup", 50);
 			m_engine->register_callback(core::ExecutionStage::UpdateInput, [&]() { update(); }, "InputSubsystem: update");

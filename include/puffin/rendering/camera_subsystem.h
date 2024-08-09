@@ -5,12 +5,12 @@
 
 #include "puffin/components/transform_component_3d.h"
 #include "puffin/components/rendering/camera_component.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin::rendering
 {
-	class CameraSubystem : public core::System
+	class CameraSubystem : public core::Subsystem
 	{
 	public:
 

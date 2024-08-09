@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 #include "puffin/types/uuid.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 
 class GLFWwindow;
 class GLFWmonitor;
@@ -17,7 +17,7 @@ namespace puffin
 
 	namespace window
 	{
-		class WindowSubsystem : public core::System
+		class WindowSubsystem : public core::Subsystem
 		{
 		public:
 

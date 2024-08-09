@@ -2,7 +2,7 @@
 
 #include "puffin/core/application.h"
 #include "puffin/project_settings.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "argparse/argparse.hpp"
 
 #include <GLFW/glfw3.h>
@@ -140,7 +140,7 @@ namespace puffin::core
 
 			// Create subsystem pointer
 			auto subsystem = std::make_shared<SubsystemT>(shared_from_this());
-			auto subsystemBase = std::static_pointer_cast<System>(subsystem);
+			auto subsystemBase = std::static_pointer_cast<Subsystem>(subsystem);
 
 			// Cast subsystem to Subsystem parent and add to subsystems map
 			m_systems.insert({ typeName, subsystemBase });
@@ -222,7 +222,7 @@ namespace puffin::core
 		std::shared_ptr<Application> m_application = nullptr;
 
 		// System/Subsystem Members
-		std::unordered_map<const char*, std::shared_ptr<core::System>> m_systems;
+		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> m_systems;
 		std::unordered_map<core::ExecutionStage, std::vector<EngineCallbackHandler>> m_registered_callbacks; // Map of callback functions registered for execution
 
 		std::unordered_map<core::ExecutionStage, double> m_stage_execution_time; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)

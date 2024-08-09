@@ -3,7 +3,7 @@
 #include "puffin/core/engine.h"
 #include "entt/entity/registry.hpp"
 #include "puffin/types/vector.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
 
 namespace puffin
@@ -20,11 +20,11 @@ namespace puffin::procedural
 	struct TerrainComponent;
 	struct PlaneComponent;
 
-	class ProceduralMeshGenSystem : public core::System
+	class ProceduralMeshGenSystem : public core::Subsystem
 	{
 	public:
 
-		ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+		ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
 			const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 

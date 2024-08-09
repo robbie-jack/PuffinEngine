@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 
 #include "puffin/types/uuid.h"
 #include "puffin/core/engine.h"
@@ -8,11 +8,11 @@
 
 namespace puffin::ecs
 {
-	class EnTTSubsystem : public core::System
+	class EnTTSubsystem : public core::Subsystem
 	{
 	public:
 
-		EnTTSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+		EnTTSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
 			m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "EnTTSubsystem: end_play", 200);
 

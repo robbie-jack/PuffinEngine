@@ -59,7 +59,7 @@
 
 namespace puffin::rendering
 {
-	RenderSystemVK::RenderSystemVK(const std::shared_ptr<core::Engine>& engine) : System(engine)
+	RenderSystemVK::RenderSystemVK(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "VKRenderSystem: startup");
 		m_engine->register_callback(core::ExecutionStage::WaitForLastPresentationAndSample, 

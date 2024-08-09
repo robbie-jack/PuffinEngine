@@ -10,7 +10,7 @@
 
 namespace puffin::scene
 {
-	SceneGraph::SceneGraph(const std::shared_ptr<core::Engine>& engine) : System(engine)
+	SceneGraph::SceneGraph(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&] { subsystem_update(); }, "SceneGraph: subsystem_update");
 		m_engine->register_callback(core::ExecutionStage::Update, [&] { update(); }, "SceneGraph: update");

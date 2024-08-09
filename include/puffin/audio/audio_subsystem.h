@@ -2,7 +2,7 @@
 
 #include <set>
 
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/packed_vector.h"
 
@@ -36,11 +36,11 @@ namespace puffin::audio
 		float volume = 1.0f; // Volume of this instance
 	};
 
-	class AudioSubsystemProvider : public core::System
+	class AudioSubsystemProvider : public core::Subsystem
 	{
 	public:
 
-		AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine) : System(engine) {}
+		AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine) {}
 
 		~AudioSubsystemProvider() override { m_engine = nullptr; }
 
@@ -57,7 +57,7 @@ namespace puffin::audio
 		virtual bool stopSoundInstance(PuffinID soundInstanceID) = 0;
 	};
 
-	class AudioSubsystem : public core::System
+	class AudioSubsystem : public core::Subsystem
 	{
 	public:
 

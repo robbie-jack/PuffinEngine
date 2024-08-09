@@ -12,7 +12,7 @@
 #include "vk_mem_alloc.hpp"
 
 #include "puffin/core/engine.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/assets/texture_asset.h"
 #include "puffin/types/deletion_queue.h"
@@ -125,7 +125,7 @@ namespace puffin::rendering
 	};
 
 	// Vulkan Rendering System
-	class RenderSystemVK final : public core::System, public std::enable_shared_from_this<RenderSystemVK>
+	class RenderSystemVK final : public core::Subsystem, public std::enable_shared_from_this<RenderSystemVK>
 	{
 	public:
 

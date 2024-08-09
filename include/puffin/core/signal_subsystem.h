@@ -5,7 +5,7 @@
 #include <functional>
 #include <string>
 
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/types/packed_vector.h"
 
 namespace puffin::core
@@ -81,11 +81,11 @@ namespace puffin::core
 
 	typedef std::shared_ptr<ISignal> ISignalPtr;
 
-	class SignalSubsystem : public System
+	class SignalSubsystem : public Subsystem
 	{
 	public:
 
-		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine) {}
+		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine) {}
 
 		~SignalSubsystem() override
 		{

@@ -24,7 +24,7 @@
 #include "puffin/components/physics/3d/velocity_component_3d.h"
 #include "puffin/components/transform_component_3d.h"
 #include "puffin/core/engine.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/physics/body_type.h"
 #include "puffin/physics/physics_constants.h"
@@ -39,11 +39,11 @@ namespace puffin::physics
 		{ BodyType::Dynamic, JPH::EMotionType::Dynamic }
 	};
 
-	class JoltPhysicsSystem : public core::System
+	class JoltPhysicsSystem : public core::Subsystem
 	{
 	public:
 
-		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
 			m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
 			m_engine->register_callback(core::ExecutionStage::UpdateFixed, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");

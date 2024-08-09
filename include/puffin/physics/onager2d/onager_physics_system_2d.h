@@ -7,7 +7,7 @@
 #include "puffin/components/physics/2d/shape_components_2d.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/core/engine.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/physics/onager2d/physics_types_2d.h"
 #include "puffin/physics/onager2d/colliders/collider_2d.h"
 #include "puffin/types/vector.h"

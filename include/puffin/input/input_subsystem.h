@@ -6,7 +6,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/input/input_event.h"
 
 namespace puffin
@@ -26,7 +26,7 @@ namespace puffin
 			KeyState state;
 		};
 
-		class InputSubsystem : public core::System
+		class InputSubsystem : public core::Subsystem
 		{
 		public:
 

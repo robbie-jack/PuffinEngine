@@ -13,7 +13,7 @@ namespace puffin::window
 	// Public Methods
 	//==================================================
 
-	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "WindowSubsystem: startup", 40);
 		m_engine->register_callback(core::ExecutionStage::ShutdownSubsystem, [&]() { shutdown(); }, "WindowSubsystem: shutdown", 150);

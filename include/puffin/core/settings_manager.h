@@ -5,18 +5,18 @@
 #include <memory>
 
 #include "nlohmann/json.hpp"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/core/signal_subsystem.h"
 
 namespace fs = std::filesystem;
 
 namespace puffin::core
 {
-	class SettingsManager : public System
+	class SettingsManager : public Subsystem
     {
     public:
 
-        explicit SettingsManager(const std::shared_ptr<core::Engine>& engine) : System(engine) {};
+        explicit SettingsManager(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine) {};
 
         ~SettingsManager() override = default;
 

@@ -17,7 +17,7 @@ namespace puffin::audio
 	// AudioSubsystem
 	////////////////////////////////
 
-	AudioSubsystem::AudioSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+	AudioSubsystem::AudioSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "AudioSubsystem: startup", 50);
 		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&]() { update(); }, "AudioSubsystem: update");

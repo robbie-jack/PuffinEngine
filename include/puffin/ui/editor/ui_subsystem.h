@@ -3,7 +3,7 @@
 #include "imgui.h"
 #include "imfilebrowser.h"
 
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 
 #include <vector>
 #include <memory>
@@ -34,7 +34,7 @@ namespace puffin
 			Texture
 		};
 
-		class UISubsystem : public core::System
+		class UISubsystem : public core::Subsystem
 		{
 		public:
 

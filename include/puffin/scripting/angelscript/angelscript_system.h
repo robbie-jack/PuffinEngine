@@ -9,7 +9,7 @@
 // AngelScript Includes
 #include "angelscript/angelscript.h"
 
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/core/engine.h"
 #include "puffin/input/input_event.h"
 #include "puffin/types/ring_buffer.h"
@@ -21,7 +21,7 @@
 
 namespace puffin::scripting
 {
-	class AngelScriptSystem : public core::System, public std::enable_shared_from_this<AngelScriptSystem>
+	class AngelScriptSystem : public core::Subsystem, public std::enable_shared_from_this<AngelScriptSystem>
 	{
 	public:
 

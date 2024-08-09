@@ -120,7 +120,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/core/scene_subsystem.h
 	${HEADER_DIR}/puffin/core/settings_manager.h
 	${HEADER_DIR}/puffin/core/signal_subsystem.h
-	${HEADER_DIR}/puffin/core/system.h
+	${HEADER_DIR}/puffin/core/subsystem.h
 	# Input
 	${HEADER_DIR}/puffin/input/input_event.h
 	${HEADER_DIR}/puffin/input/input_subsystem.h
@@ -221,6 +221,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/core/application.cpp
 	${SOURCE_DIR}/puffin/core/engine.cpp
 	${SOURCE_DIR}/puffin/core/enkits_subsystem.cpp
+	${SOURCE_DIR}/puffin/core/subsystem.cpp
 	# Input
 	${SOURCE_DIR}/puffin/input/input_subsystem.cpp
 	# Nodes

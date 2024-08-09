@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 
 #include "TaskScheduler.h"
 
@@ -9,7 +9,7 @@
 
 namespace puffin::core
 {
-	class EnkiTSSubsystem : public System
+	class EnkiTSSubsystem : public Subsystem
 	{
 	public:
 

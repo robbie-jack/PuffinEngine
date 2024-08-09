@@ -23,7 +23,7 @@ namespace fs = std::filesystem;
 
 namespace puffin::ui
 {
-	UISubsystem::UISubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+	UISubsystem::UISubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "UISubsystem: startup", 50);
 		m_engine->register_callback(core::ExecutionStage::Render, [&]() { render(); }, "UISubsystem: render", 50);

@@ -6,7 +6,7 @@
 #include <set>
 
 #include "puffin/nodes/node.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/packed_array.h"
 #include "puffin/types/packed_vector.h"
@@ -126,7 +126,7 @@ namespace puffin::scene
 
 	};
 
-	class SceneGraph : public core::System
+	class SceneGraph : public core::Subsystem
 	{
 	public:
 

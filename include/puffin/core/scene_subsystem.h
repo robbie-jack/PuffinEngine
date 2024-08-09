@@ -9,7 +9,7 @@
 
 #include "puffin/assets/asset_registry.h"
 #include "puffin/scene/scene_graph.h"
-#include "puffin/core/system.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/types/uuid.h"
 
@@ -371,11 +371,11 @@ namespace puffin::io
 
     };
 
-	class SceneSubsystem : public core::System
+	class SceneSubsystem : public core::Subsystem
 	{
 	public:
 
-		explicit SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+		explicit SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
 			m_engine->register_callback(core::ExecutionStage::Startup, [&] { init(); }, "SceneSubsystem: init", 200);
 			m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { begin_play(); }, "SceneSubsystem: begin_play", 0);

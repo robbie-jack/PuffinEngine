@@ -42,7 +42,7 @@ void printStringGeneric(asIScriptGeneric* gen)
 
 namespace puffin::scripting
 {
-	AngelScriptSystem::AngelScriptSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
+	AngelScriptSystem::AngelScriptSystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		m_engine->register_callback(core::ExecutionStage::Startup, [&] { startup(); }, "AngelScriptSystem: Startup", 250);
 		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "AngelScriptSystem: BeginPlay");
