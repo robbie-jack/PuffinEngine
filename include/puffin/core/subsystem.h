@@ -27,6 +27,9 @@ namespace puffin::core
 		virtual void begin_play();
 		virtual void end_play();
 
+		/*
+		 * Update method, called one a frame game is playing
+		 */
 		virtual void update(double delta_time);
 		virtual bool should_update();
 

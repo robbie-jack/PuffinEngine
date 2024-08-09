@@ -120,6 +120,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/core/settings_manager.h
 	${HEADER_DIR}/puffin/core/signal_subsystem.h
 	${HEADER_DIR}/puffin/core/subsystem.h
+	${HEADER_DIR}/puffin/core/subsystem_manager.h
 	# ECS
 	${HEADER_DIR}/puffin/ecs/entt_subsystem.h
 	# Editor

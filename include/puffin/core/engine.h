@@ -105,6 +105,8 @@ namespace puffin::core
 
 	};
 
+	class SubsystemManager;
+
 	class Engine : public std::enable_shared_from_this<Engine>
 	{
 	public:
@@ -220,6 +222,7 @@ namespace puffin::core
 		double m_time_step_limit = 1 / 25.0; // Maximum amount of time each frame should take to complete
 
 		std::shared_ptr<Application> m_application = nullptr;
+		std::shared_ptr<SubsystemManager> m_subsystem_manager = nullptr;
 
 		// System/Subsystem Members
 		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> m_systems;

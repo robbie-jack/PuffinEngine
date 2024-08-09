@@ -32,6 +32,7 @@
 #include "puffin/ui/editor/ui_subsystem.h"
 #include "puffin/window/window_subsystem.h"
 #include "puffin/core/settings_manager.h"
+#include "puffin/core/subsystem_manager.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -67,6 +68,8 @@ namespace puffin::core
 {
 	void Engine::setup(const argparse::ArgumentParser &parser)
 	{
+		m_subsystem_manager = std::make_shared<SubsystemManager>(shared_from_this());
+
 		// Subsystems
 		auto window_subsystem = register_system<window::WindowSubsystem>();
 		auto signal_subsystem = register_system<SignalSubsystem>();

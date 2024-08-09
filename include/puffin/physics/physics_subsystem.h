@@ -15,6 +15,9 @@ namespace puffin::physics
 		PhysicsSubsystem(std::shared_ptr<core::Engine> engine);
 		~PhysicsSubsystem() override = default;
 
+		/*
+		 * Fixed update method, called once every fixed physics tick
+		 */
 		virtual void fixed_update(double fixed_time);
 
 	};

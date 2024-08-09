@@ -6,4 +6,14 @@ namespace puffin::core
 	{
 
 	}
+
+	void EngineSubsystem::engine_update(double delta_time)
+	{
+
+	}
+
+	bool EngineSubsystem::should_engine_update()
+	{
+		return false;
+	}
 }
