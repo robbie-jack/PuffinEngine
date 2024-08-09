@@ -111,16 +111,21 @@ set(HEADERS
 	${HEADER_DIR}/puffin/components/rendering/light_component.h
 	${HEADER_DIR}/puffin/components/rendering/mesh_component.h
 	${HEADER_DIR}/puffin/components/scripting/angelscript_component.h
-	# ECS
-	${HEADER_DIR}/puffin/ecs/entt_subsystem.h
 	# Core
 	${HEADER_DIR}/puffin/core/application.h
 	${HEADER_DIR}/puffin/core/engine.h
+	${HEADER_DIR}/puffin/core/engine_subsystem.h
 	${HEADER_DIR}/puffin/core/enkits_subsystem.h
 	${HEADER_DIR}/puffin/core/scene_subsystem.h
 	${HEADER_DIR}/puffin/core/settings_manager.h
 	${HEADER_DIR}/puffin/core/signal_subsystem.h
 	${HEADER_DIR}/puffin/core/subsystem.h
+	# ECS
+	${HEADER_DIR}/puffin/ecs/entt_subsystem.h
+	# Editor
+	${HEADER_DIR}/puffin/editor/editor_subsystem.h
+	# Gameplay
+	${HEADER_DIR}/puffin/gameplay/gameplay_subsystem.h
 	# Input
 	${HEADER_DIR}/puffin/input/input_event.h
 	${HEADER_DIR}/puffin/input/input_subsystem.h
@@ -136,6 +141,8 @@ set(HEADERS
 	${HEADER_DIR}/puffin/physics/body_type.h
 	${HEADER_DIR}/puffin/physics/collision_event.h
 	${HEADER_DIR}/puffin/physics/physics_constants.h
+	${HEADER_DIR}/puffin/physics/physics_subsystem.h
+	# Physics - Onager2D
 	${HEADER_DIR}/puffin/physics/onager2d/onager_physics_system_2d.h
 	${HEADER_DIR}/puffin/physics/onager2d/physics_helpers_2d.h
 	${HEADER_DIR}/puffin/physics/onager2d/physics_types_2d.h
@@ -150,8 +157,10 @@ set(HEADERS
 	${HEADER_DIR}/puffin/physics/onager2d/shapes/polygon_shape_2d.h
 	${HEADER_DIR}/puffin/physics/onager2d/shapes/circle_shape_2d.h
 	${HEADER_DIR}/puffin/physics/onager2d/shapes/box_shape_2d.h
+	# Physics - Box2D
 	${HEADER_DIR}/puffin/physics/box2d/box2d_contact_listener.h
 	${HEADER_DIR}/puffin/physics/box2d/box2d_physics_system.h
+	# Physics - Jolt
 	${HEADER_DIR}/puffin/physics/jolt/jolt_physics_system.h
 	${HEADER_DIR}/puffin/physics/jolt/jolt_physics_types.h
 	# Procedural
@@ -161,6 +170,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/material_globals.h
 	${HEADER_DIR}/puffin/rendering/render_globals.h
 	${HEADER_DIR}/puffin/rendering/render_helpers.h
+	${HEADER_DIR}/puffin/rendering/render_subsystem.h
 	# Rendering Vulkan
 	${HEADER_DIR}/puffin/rendering/vulkan/descriptors_vk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/helpers_vk.h
@@ -217,11 +227,16 @@ set(SOURCES
 	# Audio
 	${SOURCE_DIR}/puffin/audio/audio_subsystem.cpp
 	${SOURCE_DIR}/puffin/audio/mini_audio_subsystem.cpp
-	# Engine
+	# Core
 	${SOURCE_DIR}/puffin/core/application.cpp
 	${SOURCE_DIR}/puffin/core/engine.cpp
+	${SOURCE_DIR}/puffin/core/engine_subsystem.cpp
 	${SOURCE_DIR}/puffin/core/enkits_subsystem.cpp
 	${SOURCE_DIR}/puffin/core/subsystem.cpp
+	# Editor
+	${SOURCE_DIR}/puffin/editor/editor_subsystem.cpp
+	# Gameplay
+	${SOURCE_DIR}/puffin/gameplay/gameplay_subsystem.cpp
 	# Input
 	${SOURCE_DIR}/puffin/input/input_subsystem.cpp
 	# Nodes
@@ -233,6 +248,8 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/nodes/rendering/light_node_3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/mesh_node.cpp
 	# Physics
+	${SOURCE_DIR}/puffin/physics/physics_subsystem.cpp
+	# Physics - Onager2D
 	${SOURCE_DIR}/puffin/physics/onager2d/onager_physics_system_2d.cpp
 	${SOURCE_DIR}/puffin/physics/onager2d/shapes/circle_shape_2d.cpp
 	${SOURCE_DIR}/puffin/physics/onager2d/shapes/box_shape_2d.cpp
@@ -241,15 +258,18 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/physics/onager2d/colliders/polygon_collider_2d.cpp
 	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.cpp
 	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/spatial_hash_broadphase_2d.cpp
+	# Physics - Box2D
 	${SOURCE_DIR}/puffin/physics/box2d/box2d_contact_listener.cpp
 	${SOURCE_DIR}/puffin/physics/box2d/box2d_physics_system.cpp
+	# Physics - Jolt
 	${SOURCE_DIR}/puffin/physics/jolt/jolt_physics_system.cpp
 	# Procedural
 	${SOURCE_DIR}/puffin/procedural/procedural_mesh_gen_system.cpp
 	# Rendering
 	${SOURCE_DIR}/puffin/rendering/camera_subsystem.cpp
 	${SOURCE_DIR}/puffin/rendering/render_helpers.cpp
-	# Rendering Vulkan
+	${SOURCE_DIR}/puffin/rendering/render_subsystem.cpp
+	# Rendering - Vulkan
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptors_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/helpers_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/material_registry_vk.cpp

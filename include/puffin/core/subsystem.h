@@ -10,6 +10,10 @@ namespace puffin::core
 
 	class Engine;
 
+	/*
+	 * Subsystem is a class that is responsible for some defined functionality within puffin
+	 * i.e rendering, physics, window management, input, etc..
+	 */
 	class Subsystem
 	{
 	public:
@@ -25,12 +29,6 @@ namespace puffin::core
 
 		virtual void update(double delta_time);
 		virtual bool should_update();
-
-		virtual void fixed_update(double fixed_time);
-		virtual bool should_fixed_update();
-
-		virtual void render(double delta_time);
-		virtual bool should_render();
 
 	protected:
 

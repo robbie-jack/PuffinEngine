@@ -42,23 +42,4 @@ namespace puffin::core
 	{
 		return false;
 	}
-
-	void Subsystem::fixed_update(double fixed_time)
-	{
-
-	}
-
-	bool Subsystem::should_fixed_update()
-	{
-		return false;
-	}
-
-	void Subsystem::render(double delta_time)
-	{
-	}
-
-	bool Subsystem::should_render()
-	{
-		return false;
-	}
 }
