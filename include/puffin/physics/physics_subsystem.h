@@ -12,7 +12,7 @@ namespace puffin::physics
 	{
 	public:
 
-		PhysicsSubsystem(std::shared_ptr<core::Engine> engine);
+		explicit PhysicsSubsystem(std::shared_ptr<core::Engine> engine);
 		~PhysicsSubsystem() override = default;
 
 		/*

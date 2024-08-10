@@ -13,7 +13,7 @@ namespace puffin::core
 		m_engine = nullptr;
 	}
 
-	void Subsystem::initialize()
+	void Subsystem::initialize(core::ISubsystemManager* subsystem_manager)
 	{
 
 	}

@@ -23,6 +23,39 @@ namespace puffin
 		class AudioSubsystem;
 	}*/
 
+	namespace core
+	{
+		template<typename T>
+		class SubsystemManager;
+
+		class EngineSubsystem;
+		using EngineSubsystemManager = SubsystemManager<EngineSubsystem>;
+	}
+
+	namespace editor
+	{
+		class EditorSubsystem;
+		using EditorSubsystemManager = core::SubsystemManager<EditorSubsystem>;
+	}
+
+	namespace gameplay
+	{
+		class GameplaySubsystem;
+		using GameplaySubsystemManager = core::SubsystemManager<GameplaySubsystem>;
+	}
+
+	namespace physics
+	{
+		class PhysicsSubsystem;
+		using PhysicsSubsystemManager = core::SubsystemManager<PhysicsSubsystem>;
+	}
+
+	namespace rendering
+	{
+		class RenderSubsystem;
+		using RenderSubsystemManager = core::SubsystemManager<RenderSubsystem>;
+	}
+
 	namespace ui
 	{
 		class UISubsystem;
@@ -65,9 +98,9 @@ namespace puffin::core
 
 	enum class PlayState
 	{
-		Started,		// Game has just started, gameplay systems need to be initialized
+		BeginPlay,		// Game has just started, gameplay systems need to be initialized
 		Playing,		// Game is playing, all systems being updated
-		JustStopped,	// Game has just been stopped, perform all system stop functions
+		EndPlay,	// Game has just been stopped, perform all system stop functions
 		Stopped,		// Game is stopped, no physics or game code is begin run, all data is in default state
 		JustPaused,		// Game has just been paused
 		Paused,			// Game is paused, systems not being updated,
@@ -104,8 +137,6 @@ namespace puffin::core
 		uint8_t mPriority;
 
 	};
-
-	class SubsystemManager;
 
 	class Engine : public std::enable_shared_from_this<Engine>
 	{
@@ -222,7 +253,11 @@ namespace puffin::core
 		double m_time_step_limit = 1 / 25.0; // Maximum amount of time each frame should take to complete
 
 		std::shared_ptr<Application> m_application = nullptr;
-		std::shared_ptr<SubsystemManager> m_subsystem_manager = nullptr;
+		std::shared_ptr<EngineSubsystemManager> m_engine_subsystem_manager = nullptr;
+		std::shared_ptr<editor::EditorSubsystemManager> m_editor_subsystem_manager = nullptr;
+		std::shared_ptr<rendering::RenderSubsystemManager> m_render_subsystem_manager = nullptr;
+		std::shared_ptr<gameplay::GameplaySubsystemManager> m_gameplay_subsystem_manager = nullptr;
+		std::shared_ptr < physics::PhysicsSubsystemManager> m_physics_subsystem_manager = nullptr;
 
 		// System/Subsystem Members
 		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> m_systems;

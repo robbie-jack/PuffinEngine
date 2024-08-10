@@ -4,10 +4,7 @@
 
 namespace puffin::core
 {
-	//////////////////////////////////////////////////
-	// Subsystem
-	//////////////////////////////////////////////////
-
+	class ISubsystemManager;
 	class Engine;
 
 	/*
@@ -21,7 +18,7 @@ namespace puffin::core
 		explicit Subsystem(std::shared_ptr<Engine> engine);
 		virtual ~Subsystem();
 
-		virtual void initialize();
+		virtual void initialize(core::ISubsystemManager* subsystem_manager);
 		virtual void deinitialize();
 
 		virtual void begin_play();

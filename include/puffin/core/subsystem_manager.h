@@ -1,11 +1,6 @@
 #pragma once
 
 #include "puffin/core/subsystem.h"
-#include "puffin/core/engine_subsystem.h"
-#include "puffin/editor/editor_subsystem.h"
-#include "puffin/gameplay/gameplay_subsystem.h"
-#include "puffin/physics/physics_subsystem.h"
-#include "puffin/rendering/render_subsystem.h"
 
 #include <unordered_map>
 #include <memory>
@@ -37,51 +32,68 @@ namespace puffin::core
 		}
 	};
 
-	class ISubsystemArray
+	class ISubsystemManager
 	{
 	public:
 
-		virtual ~ISubsystemArray() = default;
+		virtual ~ISubsystemManager() = default;
 
-		virtual void create_and_initialize_subsystems(const std::shared_ptr<Engine>& engine) = 0;
-		virtual void destroy_subsystems() = 0;
+		template<typename T>
+		T* create_and_initialize_subsystem()
+		{
+			const char* type_name = typeid(T).name();
+			auto subsystem = create_and_initialize_subsystem_internal(type_name);
+
+			return static_cast<T*>(subsystem);
+
+		}
+
+	protected:
+
+		virtual Subsystem* create_and_initialize_subsystem_internal(const char* type_name) = 0;
+
 	};
 
 	template<typename T>
-	class SubsystemArray : public ISubsystemArray
+	class SubsystemManager : public ISubsystemManager
 	{
 	public:
 
-		SubsystemArray() {}
-		~SubsystemArray() override = default;
+		SubsystemManager(const std::shared_ptr<Engine>& engine) : m_engine(engine) {}
+		~SubsystemManager() override { m_engine = nullptr; }
 
 		template<typename SubsystemT>
 		void register_subsystem()
 		{
 			const char* type_name = typeid(SubsystemT).name();
 
-			assert(m_subsystem_factories.find(type_name) == m_subsystem_factories.end() && "SubsystemArray::register_subsystem() - Attempting to register subsystem more than once");
+			assert(m_subsystem_factories.find(type_name) == m_subsystem_factories.end() && "SubsystemManager::register_subsystem() - Attempting to register subsystem more than once");
 
 			m_subsystem_factories.emplace(type_name, std::make_shared<SubsystemFactory<SubsystemT>>());
 		}
 
-		void create_and_initialize_subsystems(const std::shared_ptr<Engine>& engine) final
+		template<typename SubsystemT>
+		T* get_subsystem()
+		{
+			const char* type_name = typeid(SubsystemT).name();
+
+			if (m_subsystems.find(type_name) == m_subsystems.end())
+			{
+				return nullptr;
+			}
+
+			return m_subsystems.at(type_name);
+		}
+
+		void create_and_initialize_subsystems()
 		{
 			for (const auto& [type_name, subsystem_factory] : m_subsystem_factories)
 			{
-				auto subsystem = subsystem_factory->create(engine);
-				auto subsystem_typed = static_cast<T*>(subsystem);
-
-				assert(subsystem_typed != nullptr && "SubsystemArray::create_and_initialize_subsystems - Failed to cast created subsystem to type");
-
-				subsystem->initialize();
-
-				m_subsystems.emplace(type_name, subsystem_typed);
-				m_subsystems_vector.push_back(subsystem_typed);
+				create_and_initialize_subsystem_internal(type_name);
 			}
 		}
 
-		void destroy_subsystems() final
+		void destroy_subsystems()
 		{
 			for (auto& subsystem_typed : m_subsystems_vector)
 			{
@@ -94,120 +106,43 @@ namespace puffin::core
 			m_subsystems_vector.clear();
 		}
 
-		[[nodiscard]] std::vector<T*>& get_systems() const
+		[[nodiscard]] std::vector<T*>& get_subsystems()
 		{
 			return m_subsystems_vector;
 		}
 
-	private:
+	protected:
 
-		std::unordered_map<const char*, T*> m_subsystems;
-		std::vector<T*> m_subsystems_vector;
-
-		std::unordered_map<const char*, std::shared_ptr<ISubsystemFactory>> m_subsystem_factories;
-
-	};
-
-	class SubsystemManager
-	{
-	public:
-
-		SubsystemManager(const std::shared_ptr<Engine>& engine)
+		Subsystem* create_and_initialize_subsystem_internal(const char* type_name) final
 		{
-			add_subsystem_array<EngineSubsystem>();
-			add_subsystem_array<editor::EditorSubsystem>();
-			add_subsystem_array<gameplay::GameplaySubsystem>();
-			add_subsystem_array<physics::PhysicsSubsystem>();
-			add_subsystem_array<rendering::RenderSubsystem>();
-		}
-
-		template<typename T>
-		void register_engine_subsystem()
-		{
-			auto subsystem_array = get_subsystem_array<EngineSubsystem>();
-
-			subsystem_array.register_subsystem<T>();
-		}
-
-		template<typename T>
-		void register_editor_subsystem()
-		{
-			auto subsystem_array = get_subsystem_array<editor::EditorSubsystem>();
-
-			subsystem_array.register_subsystem<T>();
-		}
-
-		template<typename T>
-		void register_gameplay_subsystem()
-		{
-			auto subsystem_array = get_subsystem_array<gameplay::GameplaySubsystem>();
-
-			subsystem_array.register_subsystem<T>();
-		}
-
-		template<typename T>
-		void register_physics_subsystem()
-		{
-			auto subsystem_array = get_subsystem_array<physics::PhysicsSubsystem>();
-
-			subsystem_array.register_subsystem<T>();
-		}
-
-		template<typename T>
-		void register_render_subsystem()
-		{
-			auto subsystem_array = get_subsystem_array<rendering::RenderSubsystem>();
-
-			subsystem_array.register_subsystem<T>();
-		}
-
-		void create_and_initialize_subsystems()
-		{
-			for (const auto& [type_name, subsystem_array] : m_subsystem_arrays)
+			// Return if subsystem of this type is already created
+			if (m_subsystems.find(type_name) != m_subsystems.end())
 			{
-				subsystem_array->create_and_initialize_subsystems(m_engine);
+				return m_subsystems.at(type_name);
 			}
-		}
 
-		void destroy_subsystems()
-		{
-			for (const auto& [type_name, subsystem_array] : m_subsystem_arrays)
-			{
-				subsystem_array->destroy_subsystems();
-			}
-		}
+			assert(m_subsystem_factories.find(type_name) != m_subsystem_factories.end() && "SubsystemManager::create_and_initialize_subsystem_internal() - Attempting to create subsystem that wasn't registered");
 
-		template<typename T>
-		[[nodiscard]] std::vector<T*>& get_subsystems()
-		{
-			return get_subsystem_array<T>().get_systems();
+			const auto& subsystem_factory = m_subsystem_factories.at(type_name);
+			auto subsystem = subsystem_factory->create(m_engine);
+			auto subsystem_typed = static_cast<T*>(subsystem);
+
+			assert(subsystem_typed != nullptr && "SubsystemManager::create_and_initialize_subsystem_internal - Failed to cast created subsystem to type");
+
+			subsystem->initialize(this);
+
+			m_subsystems.emplace(type_name, subsystem);
+			m_subsystems_vector.push_back(subsystem_typed);
+			return subsystem;
 		}
 
 	private:
 
 		std::shared_ptr<Engine> m_engine = nullptr;
 
-		std::unordered_map<const char*, std::shared_ptr<ISubsystemArray>> m_subsystem_arrays;
+		std::unordered_map<const char*, Subsystem*> m_subsystems;
+		std::vector<T*> m_subsystems_vector;
+		std::unordered_map<const char*, std::shared_ptr<ISubsystemFactory>> m_subsystem_factories;
 
-		template<typename T>
-		void add_subsystem_array()
-		{
-			const char* type_name = typeid(T).name();
-
-			assert(m_subsystem_arrays.find(type_name) == m_subsystem_arrays.end() && "SubsystemManager::add_subsystem_array - Attempting to add subsystem array more than once");
-
-			std::shared_ptr<SubsystemArray<T>> subsystem_array = std::make_shared<SubsystemArray<T>>();
-			m_subsystem_arrays.emplace(type_name, subsystem_array);
-		}
-
-		template<typename T>
-		SubsystemArray<T>& get_subsystem_array()
-		{
-			const char* type_name = typeid(T).name();
-
-			assert(m_subsystem_arrays.find(type_name) != m_subsystem_arrays.end() && "SubsystemManager::get_subsystem_array - Attempting to get non valid subsystem array");
-
-			return static_cast<SubsystemArray<T>>(m_subsystem_arrays.at(type_name));
-		}
 	};
 }

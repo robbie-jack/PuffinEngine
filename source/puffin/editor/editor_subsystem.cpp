@@ -2,7 +2,7 @@
 
 namespace puffin::editor
 {
-	EditorSubsystem::EditorSubsystem(std::shared_ptr<core::Engine> engine) : Subsystem(engine)
+	EditorSubsystem::EditorSubsystem(std::shared_ptr<core::Engine> engine) : EngineSubsystem(engine)
 	{
 
 	}
