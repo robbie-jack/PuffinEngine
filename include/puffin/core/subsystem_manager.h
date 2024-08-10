@@ -73,7 +73,7 @@ namespace puffin::core
 		}
 
 		template<typename SubsystemT>
-		T* get_subsystem()
+		SubsystemT* get_subsystem()
 		{
 			const char* type_name = typeid(SubsystemT).name();
 
@@ -82,7 +82,7 @@ namespace puffin::core
 				return nullptr;
 			}
 
-			return m_subsystems.at(type_name);
+			return static_cast<SubsystemT*>(m_subsystems.at(type_name));
 		}
 
 		void create_and_initialize_subsystems()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/core/subsystem.h"
+#include "puffin/core/engine_subsystem.h"
 
 #include "TaskScheduler.h"
 
@@ -9,20 +9,20 @@
 
 namespace puffin::core
 {
-	class EnkiTSSubsystem : public Subsystem
+	class EnkiTSSubsystem : public EngineSubsystem
 	{
 	public:
 
-		EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
-		~EnkiTSSubsystem() override { m_engine = nullptr; }
+		explicit EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
+		~EnkiTSSubsystem() override;
 
-		void startup();
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
 
-		std::shared_ptr<enki::TaskScheduler> getTaskScheduler() { return mTaskScheduler; }
+		std::shared_ptr<enki::TaskScheduler> get_task_scheduler();
 
 	private:
 
-		std::shared_ptr<enki::TaskScheduler> mTaskScheduler;
+		std::shared_ptr<enki::TaskScheduler> m_task_scheduler;
 
 	};
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/core/subsystem.h"
+#include "puffin/core/engine_subsystem.h"
 
 #include "puffin/types/uuid.h"
 #include "puffin/core/engine.h"
@@ -8,74 +8,32 @@
 
 namespace puffin::ecs
 {
-	class EnTTSubsystem : public core::Subsystem
+	class EnTTSubsystem : public core::EngineSubsystem
 	{
 	public:
 
-		EnTTSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
-		{
-			m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "EnTTSubsystem: end_play", 200);
+		explicit EnTTSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~EnTTSubsystem() override;
 
-			m_registry = std::make_shared<entt::registry>();
-		}
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void deinitialize() override;
 
-		~EnTTSubsystem() override { m_engine = nullptr; }
-
-		void end_play()
-		{
-			m_registry->clear();
-
-			m_id_to_entity.clear();
-		}
+		void end_play() override;
 
 		// Add an entity using an existing id
-		entt::entity add_entity(const PuffinID id, bool should_be_serialized = true)
-		{
-			if (valid(id))
-				return m_id_to_entity.at(id);
+		entt::entity add_entity(const PuffinID id, bool should_be_serialized = true);
 
-			const auto entity = m_registry->create();
+		void remove_entity(const PuffinID id);
 
-			m_id_to_entity.emplace(id, entity);
-			m_should_be_serialized.emplace(id, should_be_serialized);
-			m_entity_to_id.emplace(entity, id);
+		bool valid(const PuffinID id);
 
-			return entity;
-		}
+		[[nodiscard]] entt::entity get_entity(const PuffinID& id) const;
 
-		void remove_entity(const PuffinID id)
-		{
-			m_registry->destroy(m_id_to_entity[id]);
+		[[nodiscard]] bool should_be_serialized(const PuffinID& id) const;
 
-			m_id_to_entity.erase(id);
-		}
+		[[nodiscard]] PuffinID get_id(const entt::entity& entity) const;
 
-		bool valid(const PuffinID id)
-		{
-			return m_id_to_entity.find(id) != m_id_to_entity.end();
-		}
-
-		[[nodiscard]] entt::entity get_entity(const PuffinID& id) const
-		{
-			const entt::entity& entity = m_id_to_entity.at(id);
-
-			return entity;
-		}
-
-		[[nodiscard]] bool should_be_serialized(const PuffinID& id) const
-		{
-			return m_should_be_serialized.at(id);
-		}
-
-		[[nodiscard]] PuffinID get_id(const entt::entity& entity) const
-		{
-			if (m_entity_to_id.count(entity) != 0)
-				return m_entity_to_id.at(entity);
-
-			return gInvalidID;
-		}
-
-		std::shared_ptr<entt::registry> registry() { return m_registry; }
+		std::shared_ptr<entt::registry> registry();
 
 	private:
 

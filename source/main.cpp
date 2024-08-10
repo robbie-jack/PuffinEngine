@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
 	const auto engine = std::make_shared<puffin::core::Engine>();
 
-	engine->setup(parser);
+	engine->register_required_subsystems();
 
 	engine->register_system<puffin::rendering::RenderSystemVK>();
 
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 
 	engine->register_system<puffin::scripting::AngelScriptSystem>();
 
-	engine->startup();
+	engine->initialize(parser);
 
 	try
 	{
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	engine->shutdown();
+	engine->deinitialize();
 
 	return EXIT_SUCCESS;
 }

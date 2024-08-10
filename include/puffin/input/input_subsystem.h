@@ -1,12 +1,13 @@
 #pragma once
 
-#include "GLFW/glfw3.h"
-
+#include <memory>
 #include <vector>
 #include <string>
 #include <unordered_map>
 
-#include "puffin/core/subsystem.h"
+#include "GLFW/glfw3.h"
+
+#include "puffin/core/engine_subsystem.h"
 #include "puffin/input/input_event.h"
 
 namespace puffin
@@ -26,42 +27,42 @@ namespace puffin
 			KeyState state;
 		};
 
-		class InputSubsystem : public core::Subsystem
+		class InputSubsystem : public core::EngineSubsystem
 		{
 		public:
 
-			InputSubsystem(const std::shared_ptr<core::Engine>& engine);
+			explicit InputSubsystem(const std::shared_ptr<core::Engine>& engine);
+			~InputSubsystem() override;
 
-			~InputSubsystem() override { m_engine = nullptr; }
+			void initialize(core::ISubsystemManager* subsystem_manager) override;
+			void deinitialize() override;
 
-			void startup();
-			void update();
-			void shutdown();
+			void process_input();
 
-			void addAction(std::string name, int key);
-			void addAction(std::string name, std::vector<int> keys);
-			[[nodiscard]] InputAction getAction(std::string name) const;
+			void add_action(std::string name, int key);
+			void add_action(std::string name, std::vector<int> keys);
+			[[nodiscard]] InputAction get_action(std::string name) const;
 
-			bool justPressed(const std::string& name) const;
-			bool pressed(const std::string& name) const;
-			bool justReleased(const std::string& name) const;
-			bool released(const std::string& name) const;
+			[[nodiscard]] bool just_pressed(const std::string& name) const;
+			[[nodiscard]] bool pressed(const std::string& name) const;
+			[[nodiscard]] bool just_released(const std::string& name) const;
+			[[nodiscard]] bool released(const std::string& name) const;
 
-			double getMouseXOffset() const { return (mXPos - mLastXPos) * mSensitivity; }
-			double getMouseYOffset() const { return (mYPos - mLastYPos) * mSensitivity; }
-			double& sensitivity() { return mSensitivity; }
-			bool isCursorLocked() const { return mCursorLocked; }
+			[[nodiscard]] double get_mouse_x_offset() const;
+			[[nodiscard]] double get_mouse_y_offset() const;
+			[[nodiscard]] double sensitivity() const;
+			[[nodiscard]] bool cursor_locked() const;
 
 		private:
 
-			double mXPos, mYPos, mLastXPos, mLastYPos;
-			bool mCursorLocked;
-			double mSensitivity;
-			bool mFirstMouse;
+			double m_x_pos, m_y_pos, m_last_x_pos, m_last_y_pos;
+			bool m_cursor_locked;
+			double m_sensitivity;
+			bool m_first_mouse;
 
-			int mNextId = 1;
-			std::unordered_map<std::string, InputAction> mActions;
-			GLFWwindow* mWindow;
+			int m_next_id = 1;
+			std::unordered_map<std::string, InputAction> m_actions;
+			GLFWwindow* m_window;
 		};
 	}
 }

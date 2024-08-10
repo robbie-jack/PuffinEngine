@@ -5,37 +5,35 @@
 #include <memory>
 
 #include "nlohmann/json.hpp"
-#include "puffin/core/subsystem.h"
+
+#include "puffin/core/engine_subsystem.h"
 #include "puffin/core/signal_subsystem.h"
 
 namespace fs = std::filesystem;
 
 namespace puffin::core
 {
-	class SettingsManager : public Subsystem
+	class SettingsManager : public EngineSubsystem
     {
     public:
 
-        explicit SettingsManager(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine) {};
+        explicit SettingsManager(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine) {}
 
         ~SettingsManager() override = default;
-
-        void set_signal_subsystem(const std::shared_ptr<core::SignalSubsystem>& signal_subsystem)
-        {
-            m_signal_subsystem = signal_subsystem;
-        }
 
         template<typename T>
         void set(const std::string& name, const T& t)
         {
             m_json[name] = t;
 
-            if (!m_signal_subsystem->get_signal<T>(name))
+            auto signal_subsystem = m_engine->get_engine_subsystem<SignalSubsystem>();
+
+            if (!signal_subsystem->get_signal<T>(name))
             {
-                m_signal_subsystem->create_signal<T>(name);
+                signal_subsystem->create_signal<T>(name);
             }
 
-            m_signal_subsystem->emit(name, t);
+            signal_subsystem->emit(name, t);
         }
 
         template<typename T>
@@ -69,7 +67,6 @@ namespace puffin::core
 
     private:
 
-        std::shared_ptr<core::SignalSubsystem> m_signal_subsystem;
         nlohmann::json m_json;
 
     };

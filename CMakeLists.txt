@@ -116,7 +116,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/core/engine.h
 	${HEADER_DIR}/puffin/core/engine_subsystem.h
 	${HEADER_DIR}/puffin/core/enkits_subsystem.h
-	${HEADER_DIR}/puffin/core/scene_subsystem.h
 	${HEADER_DIR}/puffin/core/settings_manager.h
 	${HEADER_DIR}/puffin/core/signal_subsystem.h
 	${HEADER_DIR}/puffin/core/subsystem.h
@@ -185,6 +184,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/vulkan/vertex_vk.h
 	# Scene
 	${HEADER_DIR}/puffin/scene/scene_graph.h
+	${HEADER_DIR}/puffin/scene/scene_subsystem.h
 	# Scripting
 	${HEADER_DIR}/puffin/scripting/angelscript/angelscript_engine_interface.h
 	${HEADER_DIR}/puffin/scripting/angelscript/angelscript_system.h
@@ -234,6 +234,8 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/core/engine_subsystem.cpp
 	${SOURCE_DIR}/puffin/core/enkits_subsystem.cpp
 	${SOURCE_DIR}/puffin/core/subsystem.cpp
+	# ECS
+	${SOURCE_DIR}/puffin/ecs/entt_subsystem.cpp
 	# Editor
 	${SOURCE_DIR}/puffin/editor/editor_subsystem.cpp
 	# Gameplay
@@ -279,6 +281,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/vulkan/unified_geometry_buffer_vk.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scene_graph.cpp
+	${SOURCE_DIR}/puffin/scene/scene_subsystem.cpp
 	# Scripting
 	${SOURCE_DIR}/puffin/scripting/angelscript/angelscript_system.cpp
 	${SOURCE_DIR}/puffin/scripting/angelscript/angelscript_engine_interface.cpp

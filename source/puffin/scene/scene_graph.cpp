@@ -10,39 +10,16 @@
 
 namespace puffin::scene
 {
-	SceneGraph::SceneGraph(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	SceneGraph::SceneGraph(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
-		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&] { subsystem_update(); }, "SceneGraph: subsystem_update");
-		m_engine->register_callback(core::ExecutionStage::Update, [&] { update(); }, "SceneGraph: update");
-		m_engine->register_callback(core::ExecutionStage::UpdateFixed, [&] { update_fixed(); }, "SceneGraph: update_fixed");
-		m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { end_play(); }, "SceneGraph: end_play");
-
 		m_scene_graph_updated = true;
 	}
 
-	void SceneGraph::subsystem_update()
+	void SceneGraph::initialize(core::ISubsystemManager* subsystem_manager)
 	{
-		update_scene_graph();
+		EngineSubsystem::initialize(subsystem_manager);
 
-		update_transforms();
-	}
-
-	void SceneGraph::update()
-	{
-		for (auto& id : m_node_ids)
-		{
-			if (const auto node = get_node_ptr(id); node &&  node->should_update())
-				node->update(m_engine->delta_time());
-		}
-	}
-
-	void SceneGraph::update_fixed()
-	{
-		for (auto& id : m_node_ids)
-		{
-			if (const auto node = get_node_ptr(id); node && node->should_update())
-				node->update_fixed(m_engine->time_step_fixed());
-		}
+		register_default_node_types();
 	}
 
 	void SceneGraph::end_play()
@@ -61,10 +38,72 @@ namespace puffin::scene
 		m_global_transform_2ds.clear();
 		m_global_transform_3ds.clear();
 
-		for (auto [type, array]  : m_node_arrays)
+		for (auto [type, node_array] : m_node_arrays)
 		{
-			array->clear();
+			node_array->clear();
 		}
+	}
+
+	void SceneGraph::engine_update(double delta_time)
+	{
+		EngineSubsystem::engine_update(delta_time);
+
+		update_scene_graph();
+
+		update_transforms();
+	}
+
+	Node* SceneGraph::add_node(const char* type_name, PuffinID id)
+	{
+		return add_node_internal(type_name, id);
+	}
+
+	Node* SceneGraph::add_child_node(const char* type_name, PuffinID id, PuffinID parent_id)
+	{
+		return add_node_internal(type_name, id, parent_id);
+	}
+
+	bool SceneGraph::is_valid_node(PuffinID id)
+	{
+		return m_id_to_type.find(id) != m_id_to_type.end();
+	}
+
+	Node* SceneGraph::get_node_ptr(const PuffinID& id)
+	{
+		if (!is_valid_node(id))
+			return nullptr;
+
+		return get_array(m_id_to_type.at(id).c_str())->get_ptr(id);
+	}
+
+	const std::string& SceneGraph::get_node_type_name(const PuffinID& id) const
+	{
+		return m_id_to_type.at(id);
+	}
+
+	TransformComponent2D* SceneGraph::get_global_transform_2d(const PuffinID& id)
+	{
+		return &m_global_transform_2ds.at(id);
+	}
+
+	TransformComponent3D* SceneGraph::get_global_transform_3d(const PuffinID& id)
+	{
+		return &m_global_transform_3ds.at(id);
+	}
+
+	void SceneGraph::queue_destroy_node(const PuffinID& id)
+	{
+		m_nodes_to_destroy.insert(id);
+	}
+
+	std::vector<PuffinID>& SceneGraph::get_node_ids()
+	{
+		return m_node_ids;
+	}
+
+	std::vector<PuffinID>& SceneGraph::get_root_node_ids()
+	{
+		return m_root_node_ids;
 	}
 
 	void SceneGraph::register_default_node_types()
@@ -259,6 +298,43 @@ namespace puffin::scene
 			global_transform.orientation_euler_angles += local_transform->orientation_euler_angles;
 
             global_transform.scale *= local_transform->scale;
+		}
+	}
+
+	SceneGraphGameplay::SceneGraphGameplay(const std::shared_ptr<core::Engine>& engine) : PhysicsSubsystem(engine)
+	{
+	}
+
+	void SceneGraphGameplay::initialize(core::ISubsystemManager* subsystem_manager)
+	{
+		PhysicsSubsystem::initialize(subsystem_manager);
+
+		subsystem_manager->create_and_initialize_subsystem<SceneGraph>();
+	}
+
+	void SceneGraphGameplay::update(double delta_time)
+	{
+		PhysicsSubsystem::update(delta_time);
+
+		auto scene_graph = m_engine->get_engine_subsystem<SceneGraph>();
+
+		for (auto& id : scene_graph->get_node_ids())
+		{
+			if (const auto node = scene_graph->get_node_ptr(id); node && node->should_update())
+				node->update(m_engine->delta_time());
+		}
+	}
+
+	void SceneGraphGameplay::fixed_update(double fixed_time)
+	{
+		PhysicsSubsystem::fixed_update(fixed_time);
+
+		auto scene_graph = m_engine->get_engine_subsystem<SceneGraph>();
+
+		for (auto& id : scene_graph->get_node_ids())
+		{
+			if (const auto node = scene_graph->get_node_ptr(id); node && node->should_update())
+				node->update_fixed(m_engine->time_step_fixed());
 		}
 	}
 }

@@ -106,7 +106,7 @@ namespace puffin::rendering
 
 		if (m_engine->should_render_editor_ui())
 		{
-			const ImVec2 viewport_size = m_engine->get_system<ui::UISubsystem>()->windowViewport()->viewportSize();
+			const ImVec2 viewport_size = m_engine->get_system<ui::EditorUISubsystem>()->window_viewport()->viewportSize();
 			m_render_extent.width = viewport_size.x;
 			m_render_extent.height = viewport_size.y;
 		}
@@ -275,7 +275,7 @@ namespace puffin::rendering
 
 	void RenderSystemVK::init_vulkan()
 	{
-		GLFWwindow* glfwWindow = m_engine->get_system<window::WindowSubsystem>()->primaryWindow();
+		GLFWwindow* glfwWindow = m_engine->get_system<window::WindowSubsystem>()->primary_window();
 
 		glfwSetWindowUserPointer(glfwWindow, this);
 		glfwSetFramebufferSizeCallback(glfwWindow, frame_buffer_resize_callback);
@@ -867,7 +867,7 @@ namespace puffin::rendering
 		VK_CHECK(m_device.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
 
 		// Initialize imgui for GLFW
-		GLFWwindow* glfwWindow = m_engine->get_system<window::WindowSubsystem>()->primaryWindow();
+		GLFWwindow* glfwWindow = m_engine->get_system<window::WindowSubsystem>()->primary_window();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
 		std::array<VkFormat,1 > formats = { static_cast<VkFormat>(m_swapchain_data.image_format) };
@@ -1127,7 +1127,7 @@ namespace puffin::rendering
 
 		if (m_engine->should_render_editor_ui())
 		{
-			const ImVec2 viewportSize = m_engine->get_system<ui::UISubsystem>()->windowViewport()->viewportSize();
+			const ImVec2 viewportSize = m_engine->get_system<ui::EditorUISubsystem>()->window_viewport()->viewportSize();
 
 			m_render_extent.width = static_cast<uint32_t>(viewportSize.x);
 			m_render_extent.height = static_cast<uint32_t>(viewportSize.y);
@@ -1153,7 +1153,7 @@ namespace puffin::rendering
 
 		if (m_engine->should_render_editor_ui())
 		{
-			m_engine->get_system<ui::UISubsystem>()->windowViewport()->draw(m_offscreen_data.viewport_textures[m_current_swapchain_idx]);
+			m_engine->get_system<ui::EditorUISubsystem>()->window_viewport()->draw(m_offscreen_data.viewport_textures[m_current_swapchain_idx]);
 
 			ImGui::Render();
 		}
@@ -1399,7 +1399,7 @@ namespace puffin::rendering
 
 			const auto numObjectsToRefresh = objectsToRefresh.size();
 
-			const uint32_t numThreads = enkiTSSubSystem->getTaskScheduler()->GetNumTaskThreads();
+			const uint32_t numThreads = enkiTSSubSystem->get_task_scheduler()->GetNumTaskThreads();
 
 			// Temp object vectors for writing to by threads
 			std::vector<std::vector<std::pair<PuffinID, GPUObjectData>>> threadObjects;
@@ -1506,9 +1506,9 @@ namespace puffin::rendering
 
 			task.m_MinRange = 500; // Try and ensure each thread gets a minimum of transforms matrices to calculate
 
-			enkiTSSubSystem->getTaskScheduler()->AddTaskSetToPipe(&task);
+			enkiTSSubSystem->get_task_scheduler()->AddTaskSetToPipe(&task);
 
-			enkiTSSubSystem->getTaskScheduler()->WaitforTask(&task);
+			enkiTSSubSystem->get_task_scheduler()->WaitforTask(&task);
 
 			for (const auto& tempThreadObjects : threadObjects)
 			{

@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "subsystem_manager.h"
+
 namespace fs = std::filesystem;
 
 namespace puffin
@@ -58,7 +60,7 @@ namespace puffin
 
 	namespace ui
 	{
-		class UISubsystem;
+		class EditorUISubsystem;
 	}
 }
 
@@ -142,14 +144,14 @@ namespace puffin::core
 	{
 	public:
 
-		Engine() = default;
-		~Engine() = default;
+		Engine();
+		~Engine();
 
-		void setup(const argparse::ArgumentParser &parser);
+		void register_required_subsystems() const;
 
-		void startup();
+		void initialize(const argparse::ArgumentParser& parser);
 		bool update();
-		void shutdown();
+		void deinitialize();
 
 		void play();
 		void restart();
@@ -215,8 +217,65 @@ namespace puffin::core
 
 		void update_delta_time(double sampled_time);
 
-		void set_load_scene_on_launch(const bool load_scene_on_launch) { m_load_scene_on_launch = load_scene_on_launch; }
-		void set_load_engine_default_scene(const bool load_engine_default_scene) { m_setup_engine_default_scene = load_engine_default_scene; }
+		template<typename T>
+		void register_engine_subsystem() const
+		{
+			m_engine_subsystem_manager->register_subsystem<T>();
+		}
+
+		template<typename T>
+		T* get_engine_subsystem() const
+		{
+			return m_engine_subsystem_manager->get_subsystem<T>();
+		}
+
+		template<typename T>
+		void register_editor_subsystem() const
+		{
+			m_editor_subsystem_manager->register_subsystem<T>();
+		}
+
+		template<typename T>
+		T* get_editor_subsystem() const
+		{
+			return m_editor_subsystem_manager->get_subsystem<T>();
+		}
+
+		template<typename T>
+		void register_render_subsystem() const
+		{
+			m_render_subsystem_manager->register_subsystem<T>();
+		}
+
+		template<typename T>
+		T* get_render_subsystem() const
+		{
+			return m_render_subsystem_manager->get_subsystem<T>();
+		}
+
+		template<typename T>
+		void register_gameplay_subsystem() const
+		{
+			m_gameplay_subsystem_manager->register_subsystem<T>();
+		}
+
+		template<typename T>
+		T* get_gameplay_subsystem() const
+		{
+			return m_gameplay_subsystem_manager->get_subsystem<T>();
+		}
+
+		template<typename T>
+		void register_physics_subsystem() const
+		{
+			m_physics_subsystem_manager->register_subsystem<T>();
+		}
+
+		template<typename T>
+		T* get_physics_subsystem() const
+		{
+			return m_physics_subsystem_manager->get_subsystem<T>();
+		}
 
 		double get_stage_execution_time_last_frame(const core::ExecutionStage& updateOrder)
 		{

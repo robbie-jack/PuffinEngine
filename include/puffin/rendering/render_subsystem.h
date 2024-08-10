@@ -18,7 +18,7 @@ namespace puffin::rendering
 		/*
 		 * Called each frame to wait for last presentation to complete and sample frame time
 		 */
-		virtual void wait_for_last_presentation_and_sample_time();
+		virtual double wait_for_last_presentation_and_sample_time();
 
 		/*
 		 * Called each frame to render 2d/3d scene to display

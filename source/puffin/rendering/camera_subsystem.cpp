@@ -10,13 +10,8 @@
 
 namespace puffin::rendering
 {
-	CameraSubystem::CameraSubystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	CameraSubystem::CameraSubystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
-		m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "CameraSystem: startup");
-		m_engine->register_callback(core::ExecutionStage::BeginPlay, [&]() { begin_play(); }, "CameraSystem: begin_play");
-		m_engine->register_callback(core::ExecutionStage::UpdateSubsystem, [&]() { update_subsystem(); }, "CameraSystem: update");
-		m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { end_play(); }, "CameraSystem: end_play", 210);
-
 		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
         registry->on_construct<CameraComponent3D>().connect<&CameraSubystem::on_update_camera>(this);
@@ -36,9 +31,16 @@ namespace puffin::rendering
         }));
 	}
 
-	void CameraSubystem::startup()
+	void CameraSubystem::initialize(core::ISubsystemManager* subsystem_manager)
 	{
-		init_editor_camera();
+		EngineSubsystem::initialize(subsystem_manager);
+
+        init_editor_camera();
+	}
+
+	void CameraSubystem::deinitialize()
+	{
+		EngineSubsystem::deinitialize();
 	}
 
 	void CameraSubystem::begin_play()
@@ -48,11 +50,6 @@ namespace puffin::rendering
         m_active_cam_id = m_active_play_cam_id;
 	}
 
-	void CameraSubystem::update_subsystem()
-	{
-		update_cameras();
-	}
-
 	void CameraSubystem::end_play()
 	{
         m_active_play_cam_id = gInvalidID;
@@ -60,6 +57,13 @@ namespace puffin::rendering
         m_editor_cam_id = gInvalidID;
 
         init_editor_camera();
+	}
+
+	void CameraSubystem::engine_update(double delta_time)
+	{
+		EngineSubsystem::engine_update(delta_time);
+
+        update_cameras();
 	}
 
 	void CameraSubystem::on_update_camera(entt::registry& registry, entt::entity entity)
@@ -165,7 +169,7 @@ namespace puffin::rendering
             auto &transform = registry->get<TransformComponent3D>(entity);
             auto &camera = registry->get<CameraComponent3D>(entity);
 
-            if (input_subsystem->isCursorLocked() && m_active_cam_id == m_editor_cam_id) {
+            if (input_subsystem->cursor_locked() && m_active_cam_id == m_editor_cam_id) {
                 // Camera Movement
                 if (input_subsystem->pressed("EditorCamMoveRight") && !input_subsystem->pressed("EditorCamMoveLeft")) {
                     transform.position += camera.right * m_editor_cam_speed * m_engine->delta_time();
@@ -194,8 +198,8 @@ namespace puffin::rendering
                 }
 
                 // Mouse Rotation
-                transform.orientation_euler_angles.yaw += input_subsystem->getMouseXOffset();
-                transform.orientation_euler_angles.pitch += input_subsystem->getMouseYOffset();
+                transform.orientation_euler_angles.yaw += input_subsystem->get_mouse_x_offset();
+                transform.orientation_euler_angles.pitch += input_subsystem->get_mouse_y_offset();
 
                 if (transform.orientation_euler_angles.pitch > 89.0f)
                     transform.orientation_euler_angles.pitch = 89.0f;

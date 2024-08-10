@@ -5,8 +5,9 @@
 #include <memory>
 #include <set>
 
+#include "puffin/core/engine_subsystem.h"
+#include "puffin/physics/physics_subsystem.h"
 #include "puffin/nodes/node.h"
-#include "puffin/core/subsystem.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/packed_array.h"
 #include "puffin/types/packed_vector.h"
@@ -126,11 +127,17 @@ namespace puffin::scene
 
 	};
 
-	class SceneGraph : public core::Subsystem
+	class SceneGraph : public core::EngineSubsystem
 	{
 	public:
 
 		SceneGraph(const std::shared_ptr<core::Engine>& engine);
+
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
+
+		void end_play() override;
+
+		void engine_update(double delta_time) override;
 
 		template<typename T>
 		void register_node_type()
@@ -154,10 +161,7 @@ namespace puffin::scene
 			return add_node_internal<T>(id);
 		}
 
-		Node* add_node(const char* type_name, PuffinID id)
-		{
-			return add_node_internal(type_name, id);
-		}
+		Node* add_node(const char* type_name, PuffinID id);
 
 		template<typename T>
 		T* add_child_node(PuffinID parent_id)
@@ -171,15 +175,9 @@ namespace puffin::scene
 			return add_node_internal<T>(id, parent_id);
 		}
 
-		Node* add_child_node(const char* type_name, PuffinID id, PuffinID parent_id)
-		{
-			return add_node_internal(type_name, id, parent_id);
-		}
+		Node* add_child_node(const char* type_name, PuffinID id, PuffinID parent_id);
 
-		bool is_valid_node(PuffinID id)
-		{
-			return m_id_to_type.find(id) != m_id_to_type.end();
-		}
+		bool is_valid_node(PuffinID id);
 
 		template<typename T>
 		T* get_node(PuffinID id)
@@ -190,43 +188,19 @@ namespace puffin::scene
 			return get_array<T>()->get(id);
 		}
 
-		[[nodiscard]] Node* get_node_ptr(const PuffinID& id)
-		{
-			if (!is_valid_node(id))
-				return nullptr;
+		[[nodiscard]] Node* get_node_ptr(const PuffinID& id);
 
-			return get_array(m_id_to_type.at(id).c_str())->get_ptr(id);
-		}
+		[[nodiscard]] const std::string& get_node_type_name(const PuffinID& id) const;
 
-		[[nodiscard]] const std::string& get_node_type_name(const PuffinID& id) const
-		{
-			return m_id_to_type.at(id);
-		}
+		[[nodiscard]] TransformComponent2D* get_global_transform_2d(const PuffinID& id);
 
-        [[nodiscard]] TransformComponent2D* get_global_transform_2d(const PuffinID& id)
-		{
-			return &m_global_transform_2ds.at(id);
-		}
-
-        [[nodiscard]] TransformComponent3D* get_global_transform_3d(const PuffinID& id)
-		{
-			return &m_global_transform_3ds.at(id);
-		}
+		[[nodiscard]] TransformComponent3D* get_global_transform_3d(const PuffinID& id);
 
 		// Queue a node for destruction, will also destroy all child nodes
-		void queue_destroy_node(const PuffinID& id)
-		{
-			m_nodes_to_destroy.insert(id);
-		}
+		void queue_destroy_node(const PuffinID& id);
 
-		std::vector<PuffinID> get_root_node_ids() { return m_root_node_ids; }
-
-		void subsystem_update();
-		void update();
-		void update_fixed();
-		void end_play();
-
-		void register_default_node_types();
+		std::vector<PuffinID>& get_node_ids();
+		std::vector<PuffinID>& get_root_node_ids();
 
 	private:
 
@@ -241,6 +215,8 @@ namespace puffin::scene
 		bool m_scene_graph_updated = false;
 
 		std::unordered_map<std::string, INodeArray*> m_node_arrays;
+
+		void register_default_node_types();
 
 		void update_scene_graph();
 		void destroy_node(PuffinID id);
@@ -359,6 +335,19 @@ namespace puffin::scene
 
 			return m_node_arrays.at(type_name);
 		}
+
+	};
+
+	class SceneGraphGameplay : public physics::PhysicsSubsystem
+	{
+	public:
+
+		explicit SceneGraphGameplay(const std::shared_ptr<core::Engine>& engine);
+
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
+
+		void update(double delta_time) override;
+		void fixed_update(double fixed_time) override;
 
 	};
 }

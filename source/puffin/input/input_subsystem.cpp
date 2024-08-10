@@ -2,60 +2,75 @@
 
 #include "puffin/core/engine.h"
 #include "puffin/core/signal_subsystem.h"
+#include "puffin/core/subsystem_manager.h"
 #include "puffin/window/window_subsystem.h"
 
 namespace puffin
 {
 	namespace input
 	{
-		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 		{
-			m_engine->register_callback(core::ExecutionStage::StartupSubsystem, [&]() { startup(); }, "InputSubsystem: startup", 50);
-			m_engine->register_callback(core::ExecutionStage::UpdateInput, [&]() { update(); }, "InputSubsystem: update");
-			m_engine->register_callback(core::ExecutionStage::ShutdownSubsystem, [&]() { shutdown(); }, "InputSubsystem: shutdown", 150);
-
-			mNextId = 1;
-			mLastXPos = 640.0;
-			mLastYPos = 360.0;
-			mSensitivity = 0.05;
-			mCursorLocked = false;
-			mFirstMouse = true;
+			m_next_id = 1;
+			m_last_x_pos = 640.0;
+			m_last_y_pos = 360.0;
+			m_sensitivity = 0.05;
+			m_cursor_locked = false;
+			m_first_mouse = true;
 		}
 
-		void InputSubsystem::startup()
+		InputSubsystem::~InputSubsystem()
 		{
-			mWindow = m_engine->get_system<window::WindowSubsystem>()->primaryWindow();
+			m_engine = nullptr;
+		}
+
+		void InputSubsystem::initialize(core::ISubsystemManager* subsystem_manager)
+		{
+			EngineSubsystem::initialize(subsystem_manager);
+
+			auto window_subsystem = subsystem_manager->create_and_initialize_subsystem<window::WindowSubsystem>();
+			auto signal_subsystem = subsystem_manager->create_and_initialize_subsystem<core::SignalSubsystem>();
+
+			m_window = window_subsystem->primary_window();
 
 			// Setup Actions
 
 			// Camera Actions
-			addAction("EditorCamMoveForward", GLFW_KEY_W);
-			addAction("EditorCamMoveBackward", GLFW_KEY_S);
-			addAction("EditorCamMoveLeft", GLFW_KEY_A);
-			addAction("EditorCamMoveRight", GLFW_KEY_D);
-			addAction("EditorCamMoveUp", GLFW_KEY_E);
-			addAction("EditorCamMoveDown", GLFW_KEY_Q);
-			addAction("EditorCursorSwitch", GLFW_KEY_F1);
-			//addAction("Spacebar", GLFW_KEY_SPACE);
-			//addAction("Play", GLFW_KEY_P);
-			//addAction("Restart", GLFW_KEY_O);
+			add_action("EditorCamMoveForward", GLFW_KEY_W);
+			add_action("EditorCamMoveBackward", GLFW_KEY_S);
+			add_action("EditorCamMoveLeft", GLFW_KEY_A);
+			add_action("EditorCamMoveRight", GLFW_KEY_D);
+			add_action("EditorCamMoveUp", GLFW_KEY_E);
+			add_action("EditorCamMoveDown", GLFW_KEY_Q);
+			add_action("EditorCursorSwitch", GLFW_KEY_F1);
+			//add_action("Spacebar", GLFW_KEY_SPACE);
+			//add_action("Play", GLFW_KEY_P);
+			//add_action("Restart", GLFW_KEY_O);
 
 			// Setup Mouse Cursor
-			if (mCursorLocked == true)
+			if (m_cursor_locked == true)
 			{
-				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			}
 			else
 			{
-				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
 		}
 
-		void InputSubsystem::update()
+		void InputSubsystem::deinitialize()
 		{
-			if (!mWindow)
+			EngineSubsystem::deinitialize();
+
+			m_actions.clear();
+			m_window = nullptr;
+		}
+
+		void InputSubsystem::process_input()
+		{
+			if (!m_window)
 			{
-				mWindow = m_engine->get_system<window::WindowSubsystem>()->primaryWindow();
+				m_window = m_engine->get_engine_subsystem<window::WindowSubsystem>()->primary_window();
 			}
 
 			glfwPollEvents();
@@ -65,14 +80,14 @@ namespace puffin
 			bool stateChanged = false;
 
 			// Loop through current actions and update action states
-			for (auto& [name, action] : mActions)
+			for (auto& [name, action] : m_actions)
 			{
 				stateChanged = false;
 
 				// Loop over each key in this action
 				for (auto key : action.keys)
 				{
-					int state = glfwGetKey(mWindow, key);
+					int state = glfwGetKey(m_window, key);
 
 					if (state == GLFW_PRESS)
 					{
@@ -117,97 +132,112 @@ namespace puffin
 			}
 
 			// Update Mouse
-			if (getAction("EditorCursorSwitch").state == KeyState::JustPressed)
+			if (get_action("EditorCursorSwitch").state == KeyState::JustPressed)
 			{
-				if (mCursorLocked == true)
+				if (m_cursor_locked == true)
 				{
-					glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 				}
 				else
 				{
-					glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 				}
 
-				mCursorLocked = !mCursorLocked;
+				m_cursor_locked = !m_cursor_locked;
 			}
 
 			// Update Current and Last Mouse Positions
-			mLastXPos = mXPos;
-			mLastYPos = mYPos;
-			glfwGetCursorPos(mWindow, &mXPos, &mYPos);
+			m_last_x_pos = m_x_pos;
+			m_last_y_pos = m_y_pos;
+			glfwGetCursorPos(m_window, &m_x_pos, &m_y_pos);
 
 			// Prevent Camera Jumping when window first starts
-			if (mFirstMouse)
+			if (m_first_mouse)
 			{
-				mLastXPos = mXPos;
-				mLastYPos = mYPos;
-				mFirstMouse = false;
+				m_last_x_pos = m_x_pos;
+				m_last_y_pos = m_y_pos;
+				m_first_mouse = false;
 			}
 		}
 
-		void InputSubsystem::shutdown()
-		{
-			mWindow = nullptr;
-		}
-
-		void InputSubsystem::addAction(std::string name, int key)
+		void InputSubsystem::add_action(std::string name, int key)
 		{
 			InputAction new_action;
 			new_action.name = name;
-			new_action.id = mNextId;
+			new_action.id = m_next_id;
 			new_action.keys.push_back(key);
 			new_action.state = KeyState::Released;
 
-			mActions.emplace(name, new_action);
+			m_actions.emplace(name, new_action);
 
-            auto signal_subsystem = m_engine->get_system<core::SignalSubsystem>();
+            auto signal_subsystem = m_engine->get_engine_subsystem<core::SignalSubsystem>();
             signal_subsystem->create_signal<InputEvent>(name);
 
-			mNextId++;
+			m_next_id++;
 		}
 
-		void InputSubsystem::addAction(std::string name, std::vector<int> keys)
+		void InputSubsystem::add_action(std::string name, std::vector<int> keys)
 		{
 			InputAction new_action;
 			new_action.name = name;
-			new_action.id = mNextId;
+			new_action.id = m_next_id;
 			new_action.keys = keys;
 			new_action.state = KeyState::Released;
 
-			mActions.emplace(name, new_action);
+			m_actions.emplace(name, new_action);
 
-            auto signal_subsystem = m_engine->get_system<core::SignalSubsystem>();
+            auto signal_subsystem = m_engine->get_engine_subsystem<core::SignalSubsystem>();
             signal_subsystem->create_signal<InputEvent>(name);
 
-			mNextId++;
+			m_next_id++;
 		}
 
-		InputAction InputSubsystem::getAction(std::string name) const
+		InputAction InputSubsystem::get_action(std::string name) const
 		{
-			if (mActions.find(name) != mActions.end())
-				return mActions.at(name);
+			if (m_actions.find(name) != m_actions.end())
+				return m_actions.at(name);
 
-			return InputAction();
+			return {};
 		}
 
-		bool InputSubsystem::justPressed(const std::string& name) const
+		bool InputSubsystem::just_pressed(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::JustPressed ? true : false;
+			return m_actions.at(name).state == KeyState::JustPressed ? true : false;
 		}
 
 		bool InputSubsystem::pressed(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::Pressed ? true : false;
+			return m_actions.at(name).state == KeyState::Pressed ? true : false;
 		}
 
-		bool InputSubsystem::justReleased(const std::string& name) const
+		bool InputSubsystem::just_released(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::JustReleased ? true : false;
+			return m_actions.at(name).state == KeyState::JustReleased ? true : false;
 		}
 
 		bool InputSubsystem::released(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::Released ? true : false;
+			return m_actions.at(name).state == KeyState::Released ? true : false;
+		}
+
+		double InputSubsystem::get_mouse_x_offset() const
+		{
+			return (m_x_pos - m_last_x_pos) * m_sensitivity;
+		}
+
+		double InputSubsystem::get_mouse_y_offset() const
+		{
+			return (m_y_pos - m_last_y_pos) * m_sensitivity;
+		}
+
+		double InputSubsystem::sensitivity() const
+		{
+			return m_sensitivity;
+		}
+
+		bool InputSubsystem::cursor_locked() const
+		{
+			return m_cursor_locked;
 		}
 	}
 }

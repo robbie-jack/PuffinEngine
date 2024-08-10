@@ -3,25 +3,27 @@
 #include <unordered_map>
 #include <entt/entity/registry.hpp>
 
+#include "puffin/core/engine_subsystem.h"
 #include "puffin/components/transform_component_3d.h"
 #include "puffin/components/rendering/camera_component.h"
-#include "puffin/core/subsystem.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin::rendering
 {
-	class CameraSubystem : public core::Subsystem
+	class CameraSubystem : public core::EngineSubsystem
 	{
 	public:
 
 		explicit CameraSubystem(const std::shared_ptr<core::Engine>& engine);
-
 		~CameraSubystem() override = default;
 
-		void startup();
-		void begin_play();
-		void update_subsystem();
-		void end_play();
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void deinitialize() override;
+
+		void begin_play() override;
+		void end_play() override;
+
+		void engine_update(double delta_time) override;
 
 		void on_update_camera(entt::registry& registry, entt::entity entity);
         void on_destroy_camera(entt::registry& registry, entt::entity entity);

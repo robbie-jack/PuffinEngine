@@ -40,21 +40,21 @@ namespace puffin::audio
 	{
 	public:
 
-		AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine) {}
+		AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine);
 
-		~AudioSubsystemProvider() override { m_engine = nullptr; }
+		~AudioSubsystemProvider() override;
 
 	protected:
 
 		friend class AudioSubsystem;
 
-		virtual void playSound(PuffinID soundAssetID) = 0;
+		virtual void play_sound(PuffinID soundAssetID) = 0;
 
-		virtual bool createSoundInstance(PuffinID soundAssetID, PuffinID soundInstanceID) = 0;
-		virtual void destroySoundInstance(PuffinID soundInstanceID) = 0;
+		virtual bool create_sound_instance(PuffinID soundAssetID, PuffinID soundInstanceID) = 0;
+		virtual void destroy_sound_instance(PuffinID soundInstanceID) = 0;
 
-		virtual bool startSoundInstance(PuffinID soundInstanceID, bool restart = false) = 0;
-		virtual bool stopSoundInstance(PuffinID soundInstanceID) = 0;
+		virtual bool start_sound_instance(PuffinID soundInstanceID, bool restart = false) = 0;
+		virtual bool stop_sound_instance(PuffinID soundInstanceID) = 0;
 	};
 
 	class AudioSubsystem : public core::Subsystem
@@ -62,33 +62,34 @@ namespace puffin::audio
 	public:
 
 		AudioSubsystem(const std::shared_ptr<core::Engine>& engine);
-		~AudioSubsystem() override { m_engine = nullptr; }
+		~AudioSubsystem() override;
 
-		void startup();
-		void update();
-		void shutdown();
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void deinitialize() override;
 
-		void playSound(PuffinID soundAssetID); // Create a sound instance, play it and then immediately discard it
+		void update(double delta_time) override;
 
-		PuffinID createSoundInstance(PuffinID soundAssetID); // Create sound instance for use multiple times
-		void destroySoundInstance(PuffinID soundInstanceID); // Destroy created sound instance
+		void play_sound(PuffinID soundAssetID); // Create a sound instance, play it and then immediately discard it
 
-		void startSoundInstance(PuffinID soundInstanceID, bool restart = false); // Start sound instance playing
-		void stopSoundInstance(PuffinID soundInstanceID); // Stop sound instance playing
+		PuffinID create_sound_instance(PuffinID soundAssetID); // Create sound instance for use multiple times
+		void destroy_sound_instance(PuffinID soundInstanceID); // Destroy created sound instance
 
-		PuffinID createAndStartSoundInstance(PuffinID soundAssetID); // Create a new sound instance and start playing it
+		void start_sound_instance(PuffinID soundInstanceID, bool restart = false); // Start sound instance playing
+		void stop_sound_instance(PuffinID soundInstanceID); // Stop sound instance playing
 
-		const std::set<PuffinID>& getAllInstanceIDsForSound(PuffinID soundAssetID);
-		SoundInstance& getSoundInstance(PuffinID soundInstanceID); // Get sound instance struct
+		PuffinID create_and_start_sound_instance(PuffinID soundAssetID); // Create a new sound instance and start playing it
+
+		const std::set<PuffinID>& get_all_instance_ids_for_sound(PuffinID soundAssetID);
+		SoundInstance& get_sound_instance(PuffinID soundInstanceID); // Get sound instance struct
 
 	private:
 
 		friend AudioSubsystemProvider;
 
-		PackedVector<PuffinID, SoundInstance> mSoundInstances;
-		PackedVector<PuffinID, std::set<PuffinID>> mSoundInstanceIDs;
+		PackedVector<PuffinID, SoundInstance> m_sound_instances;
+		PackedVector<PuffinID, std::set<PuffinID>> m_sound_instance_ids;
 
-		std::shared_ptr<AudioSubsystemProvider> mAudioSubsystemProvider = nullptr; // Subsystem which provides audio core implementation
+		AudioSubsystemProvider* m_audio_subsystem_provider = nullptr; // Subsystem which provides audio core implementation
 
 	};
 }

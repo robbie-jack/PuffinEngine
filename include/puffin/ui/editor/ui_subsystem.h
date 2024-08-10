@@ -3,11 +3,10 @@
 #include "imgui.h"
 #include "imfilebrowser.h"
 
-#include "puffin/core/subsystem.h"
-
 #include <vector>
 #include <memory>
 
+#include "puffin/editor/editor_subsystem.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin
@@ -34,48 +33,46 @@ namespace puffin
 			Texture
 		};
 
-		class UISubsystem : public core::Subsystem
+		class EditorUISubsystem : public editor::EditorSubsystem
 		{
 		public:
 
-			UISubsystem(const std::shared_ptr<core::Engine>& engine);
-			~UISubsystem() override { m_engine = nullptr; }
+			explicit EditorUISubsystem(const std::shared_ptr<core::Engine>& engine);
+			~EditorUISubsystem() override { m_engine = nullptr; }
 
-			void startup();
-			void render();
-			void cleanup() const;
+			void initialize(core::ISubsystemManager* subsystem_manager) override;
+			void deinitialize() override;
+
+			void engine_update(double delta_time) override;
 
 			void addWindow(const std::shared_ptr<UIWindow>& window);
 
-			std::shared_ptr<UIWindowViewport> windowViewport() { return mWindowViewport; }
-			std::shared_ptr<UIWindowSettings> windowSettings() { return mWindowSettings; }
+			std::shared_ptr<UIWindowViewport> window_viewport();
+			std::shared_ptr<UIWindowSettings> window_settings();
 
 		private:
 
-			bool mSaveScene = false;
-			bool mLoadScene = false;
-			ImportAssetUI mImportAssetUI;
+			bool m_save_scene = false;
+			bool m_load_scene = false;
+			ImportAssetUI m_import_asset_ui;
 
-			PuffinID mEntity = gInvalidID;
+			PuffinID m_entity = gInvalidID;
 
-			std::vector<std::shared_ptr<UIWindow>> mWindows;
+			std::vector<std::shared_ptr<UIWindow>> m_windows;
 
-			std::shared_ptr<UIWindowViewport> mWindowViewport;
-			std::shared_ptr<UIWindowSettings> mWindowSettings;
+			std::shared_ptr<UIWindowViewport> m_window_viewport;
+			std::shared_ptr<UIWindowSettings> m_window_settings;
+			std::shared_ptr<UIWindowSceneHierarchy> m_window_scene_hierarchy;
+			std::shared_ptr<UIWindowNodeEditor> m_window_entity_properties;
+			std::shared_ptr<UIWindowPerformance> m_window_performance;
+			std::shared_ptr<UIContentBrowser> m_content_browser;
 
-			std::shared_ptr<UIWindowSceneHierarchy> mWindowSceneHierarchy;
-			
-			
-			std::shared_ptr<UIWindowNodeEditor> mWindowEntityProperties;
-			std::shared_ptr<UIWindowPerformance> mWindowPerformance;
-			std::shared_ptr<UIContentBrowser> mContentBrowser;
+			ImGui::FileBrowser m_file_dialog;
+			std::string m_imgui_ini_filename;
 
-			ImGui::FileBrowser mFileDialog;
-			std::string mImGuiIniFilename;
-
-			void showDockspace(bool* open);
-			void showMenuBar();
-			void setStyle();
+			void show_dockspace(bool* open);
+			void show_menu_bar();
+			void set_style();
 		};
 	}
 }
