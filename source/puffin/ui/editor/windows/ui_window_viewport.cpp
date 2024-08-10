@@ -53,10 +53,10 @@ namespace puffin
 					ImGui::Dummy(ImVec2((ImGui::GetWindowWidth() / 2) - 350.0f, 0.0f));
 					if (ImGui::Button(mPlayButtonLabel.c_str()))
 					{
-						mEngine->play();
+						m_engine->play();
 					}
 
-					const core::PlayState playState = mEngine->play_state();
+					const core::PlayState playState = m_engine->play_state();
 					if (playState == core::PlayState::Playing)
 					{
 						mPlayButtonLabel = "Pause";
@@ -68,7 +68,7 @@ namespace puffin
 
 					if (ImGui::Button("Stop"))
 					{
-						mEngine->restart();
+						m_engine->restart();
 						mPlayButtonLabel = "Play";
 					}
 

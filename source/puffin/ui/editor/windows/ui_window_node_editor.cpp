@@ -43,13 +43,10 @@ namespace puffin
 		{
 			mWindowName = "Entity Properties";
 
-			if (!m_entt_subsystem)
-				m_entt_subsystem = mEngine->get_system<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto scene_graph_subsystem = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
 
-			if (!m_scene_graph)
-				m_scene_graph = mEngine->get_system<scene::SceneGraph>();
-
-			const auto registry = m_entt_subsystem->registry();
+			const auto registry = entt_subsystem->registry();
 
 			if (mShow)
 			{
@@ -57,13 +54,13 @@ namespace puffin
 
 				begin(mWindowName);
 
-				if (mSelectedEntity != gInvalidID && m_entt_subsystem->valid(mSelectedEntity))
+				if (mSelectedEntity != gInvalidID && entt_subsystem->valid(mSelectedEntity))
 				{
 					ImGui::Dummy(ImVec2(0.0f, 5.0f));
 					ImGui::Text(""); ImGui::SameLine(0.0f);
 
-					const auto entity = m_entt_subsystem->get_entity(mSelectedEntity);
-					auto node = m_scene_graph->get_node_ptr(mSelectedEntity);
+					const auto entity = entt_subsystem->get_entity(mSelectedEntity);
+					auto node = scene_graph_subsystem->get_node_ptr(mSelectedEntity);
 
 					// Edit Entity Name
 					std::string name = node->name();
@@ -315,7 +312,8 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_mesh_ui(const ImGuiTreeNodeFlags flags, const entt::entity entity, rendering::MeshComponent& mesh)
 		{
-			const auto registry = m_entt_subsystem->registry();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Mesh Component", flags))
 			{
@@ -323,7 +321,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Mesh"))
 				{
-					m_entt_subsystem->registry()->remove<rendering::MeshComponent>(entity);
+					entt_subsystem->registry()->remove<rendering::MeshComponent>(entity);
 
 					m_scene_changed = true;
 				}
@@ -373,7 +371,8 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light)
 		{
-			const auto registry = m_entt_subsystem->registry();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Light Component", flags))
 			{
@@ -381,7 +380,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Point Light"))
 				{
-					m_entt_subsystem->registry()->remove<rendering::LightComponent>(entity);
+					registry->remove<rendering::LightComponent>(entity);
 
 					m_scene_changed = true;
 				}
@@ -534,7 +533,8 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadow)
 		{
-			const auto registry = m_entt_subsystem->registry();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Shadow Caster Component", flags))
 			{
@@ -542,7 +542,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Shadow Caster"))
 				{
-					m_entt_subsystem->registry()->remove<rendering::ShadowCasterComponent>(entity);
+					entt_subsystem->registry()->remove<rendering::ShadowCasterComponent>(entity);
 
 					m_scene_changed = true;
 				}
@@ -636,7 +636,8 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane)
 		{
-			const auto registry = m_entt_subsystem->registry();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Procedural Plane Component", flags))
 			{
@@ -644,7 +645,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##ProceduralPlane"))
 				{
-					m_entt_subsystem->registry()->remove<procedural::PlaneComponent>(entity);
+					registry->remove<procedural::PlaneComponent>(entity);
 
 					m_scene_changed = true;
 				}
@@ -677,7 +678,8 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_rigidbody_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody)
 		{
-			const auto registry = m_entt_subsystem->registry();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Rigidbody Component", flags))
 			{
@@ -685,7 +687,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Rigidbody"))
 				{
-					m_entt_subsystem->registry()->remove<physics::RigidbodyComponent2D>(entity);
+					registry->remove<physics::RigidbodyComponent2D>(entity);
 						
 					m_scene_changed = true;
 				}
@@ -758,7 +760,8 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_circle_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle)
 		{
-			const auto registry = m_entt_subsystem->registry();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Circle Component 2D", flags))
 			{
@@ -766,7 +769,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Circle2D"))
 				{
-					m_entt_subsystem->registry()->remove<physics::CircleComponent2D>(entity);
+					registry->remove<physics::CircleComponent2D>(entity);
 
 					m_scene_changed = true;
 				}
@@ -799,7 +802,8 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_box_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box)
 		{
-			const auto registry = m_entt_subsystem->registry();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Box Component 2D", flags))
 			{
@@ -807,7 +811,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Box2D"))
 				{
-					m_entt_subsystem->registry()->remove<physics::BoxComponent2D>(entity);					
+					registry->remove<physics::BoxComponent2D>(entity);					
 
 					m_scene_changed = true;
 				}
@@ -840,7 +844,8 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_script_ui(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script)
 		{
-			const auto registry = m_entt_subsystem->registry();
+			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Script Component", flags))
 			{
@@ -848,7 +853,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Script"))
 				{
-					m_entt_subsystem->registry()->remove<scripting::AngelScriptComponent>(entity);
+					registry->remove<scripting::AngelScriptComponent>(entity);
 					
 					m_scene_changed = true;
 				}

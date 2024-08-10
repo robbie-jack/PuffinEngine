@@ -9,7 +9,8 @@
 // AngelScript Includes
 #include "angelscript/angelscript.h"
 
-#include "puffin/core/subsystem.h"
+#include "puffin/core/engine_subsystem.h"
+#include "puffin/gameplay/gameplay_subsystem.h"
 #include "puffin/core/engine.h"
 #include "puffin/input/input_event.h"
 #include "puffin/types/ring_buffer.h"
@@ -17,16 +18,23 @@
 
 #include "angelscript_engine_interface.h"
 #include "puffin/audio/audio_subsystem.h"
+#include "puffin/gameplay/gameplay_subsystem.h"
 #include "puffin/physics/collision_event.h"
 
 namespace puffin::scripting
 {
-	class AngelScriptSystem : public core::Subsystem, public std::enable_shared_from_this<AngelScriptSystem>
+	class AngelScriptSubsystem : public core::EngineSubsystem, public std::enable_shared_from_this<AngelScriptSubsystem>
 	{
 	public:
 
-		AngelScriptSystem(const std::shared_ptr<core::Engine>& engine);
-		~AngelScriptSystem() override;
+		AngelScriptSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~AngelScriptSubsystem() override;
+
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void deinitialize() override;
+
+		void begin_play() override;
+		void end_play() override;
 
 		void startup();
 		void beginPlay();
@@ -51,7 +59,7 @@ namespace puffin::scripting
 		PuffinID mCurrentEntityID; // Entity ID for currently executing script
 
 		// Event Buffers
-		std::shared_ptr<RingBuffer<input::InputEvent>> mInputEvents = nullptr;;
+		std::shared_ptr<RingBuffer<input::InputEvent>> mInputEvents = nullptr;
 		std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> mCollisionBeginEvents = nullptr;
 		std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> mCollisionEndEvents = nullptr;
 
@@ -108,5 +116,21 @@ namespace puffin::scripting
 
 		void releaseOnCollisionBegin(PuffinID entity);
 		void releaseOnCollisionEnd(PuffinID entity);
+	};
+
+	class AngelScriptGameplaySubsystem : public gameplay::GameplaySubsystem
+	{
+	public:
+
+		AngelScriptGameplaySubsystem(std::shared_ptr<core::Engine> engine);
+		~AngelScriptGameplaySubsystem() override = default;
+
+		void begin_play() override;
+		void end_play() override;
+
+	private:
+
+
+
 	};
 }

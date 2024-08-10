@@ -36,7 +36,6 @@
 #include "puffin/editor/editor_subsystem.h"
 #include "puffin/rendering/render_subsystem.h"
 #include "puffin/gameplay/gameplay_subsystem.h"
-#include "puffin/physics/physics_subsystem.h"
 #include "puffin/core/subsystem_manager.h"
 
 #ifdef _WIN32
@@ -77,7 +76,6 @@ namespace puffin::core
 		m_editor_subsystem_manager = std::make_shared<editor::EditorSubsystemManager>(shared_from_this());
 		m_render_subsystem_manager = std::make_shared<rendering::RenderSubsystemManager>(shared_from_this());
 		m_gameplay_subsystem_manager = std::make_shared<gameplay::GameplaySubsystemManager>(shared_from_this());
-		m_physics_subsystem_manager = std::make_shared<physics::PhysicsSubsystemManager>(shared_from_this());
 	}
 
 	Engine::~Engine()
@@ -86,7 +84,6 @@ namespace puffin::core
 		m_editor_subsystem_manager = nullptr;
 		m_render_subsystem_manager = nullptr;
 		m_gameplay_subsystem_manager = nullptr;
-		m_physics_subsystem_manager = nullptr;
 	}
 
 	void Engine::register_required_subsystems() const
@@ -98,13 +95,13 @@ namespace puffin::core
 		register_engine_subsystem<EnkiTSSubsystem>();
 		register_engine_subsystem<audio::AudioSubsystem>();
 		register_engine_subsystem<ecs::EnTTSubsystem>();
-		register_engine_subsystem<scene::SceneGraph>();
+		register_engine_subsystem<scene::SceneGraphSubsystem>();
 		register_engine_subsystem<io::SceneSubsystem>();
 		register_engine_subsystem<rendering::CameraSubystem>();
 
 		register_editor_subsystem<ui::EditorUISubsystem>();
 
-		register_physics_subsystem<scene::SceneGraphGameplay>();
+		register_gameplay_subsystem<scene::SceneGraphGameplaySubsystem>();
 	}
 
 	void Engine::initialize(const argparse::ArgumentParser& parser)
@@ -112,15 +109,14 @@ namespace puffin::core
 		m_running = true;
 		m_play_state = PlayState::Stopped;
 
-		execute_callbacks(ExecutionStage::StartupSubsystem);
-
 		m_engine_subsystem_manager->create_and_initialize_subsystems();
-		m_render_subsystem_manager->create_and_initialize_subsystems();
 
 		if (m_should_render_editor_ui)
 		{
 			m_editor_subsystem_manager->create_and_initialize_subsystems();
 		}
+
+		m_render_subsystem_manager->create_and_initialize_subsystems();
 
 		// Register components to scene subsystem
 		auto scene_subsystem = get_engine_subsystem<io::SceneSubsystem>();
@@ -196,7 +192,7 @@ namespace puffin::core
             if (m_setup_engine_default_scene)
             {
                 auto entt_subsystem = get_engine_subsystem<ecs::EnTTSubsystem>();
-                auto scene_graph = get_engine_subsystem<scene::SceneGraph>();
+                auto scene_graph = get_engine_subsystem<scene::SceneGraphSubsystem>();
 
                 // Create Default Scene in code -- used when scene serialization is changed
                 default_scene();
@@ -213,8 +209,6 @@ namespace puffin::core
             }
 		}
 
-		execute_callbacks(ExecutionStage::Startup);
-
 		m_last_time = glfwGetTime(); // Time Count Started
 		m_current_time = m_last_time;
 	}
@@ -222,20 +216,15 @@ namespace puffin::core
 	bool Engine::update()
 	{
 		// Run Game Loop;
-		
-		update_execution_time();
 
 		// Process input
 		{
-			execute_callbacks(ExecutionStage::UpdateInput, false);
-
 			auto input_subsystem = m_engine_subsystem_manager->get_subsystem<input::InputSubsystem>();
 			input_subsystem->process_input();
 		}
 
 		// Wait for last presentation to complete and sample delta time
 		{
-			execute_callbacks(ExecutionStage::WaitForLastPresentationAndSample, false);
 			for (auto subsystem : m_render_subsystem_manager->get_subsystems())
 			{
 				double sampled_time = subsystem->wait_for_last_presentation_and_sample_time();
@@ -249,28 +238,35 @@ namespace puffin::core
 			m_delta_time = m_time_step_limit;
 		}
 
-		const auto audioSubsystem = get_system<audio::AudioSubsystem>();
+		const auto audio_subsystem = get_engine_subsystem<audio::AudioSubsystem>();
 
 		// Execute engine updates
 		{
-			execute_callbacks(ExecutionStage::UpdateSubsystem, true);
-
 			for (auto subsystem : m_engine_subsystem_manager->get_subsystems())
 			{
-				subsystem->engine_update(m_delta_time);
+				if (subsystem->should_update())
+				{
+					subsystem->update(m_delta_time);
+				}
 			}
 
 			if (m_should_render_editor_ui)
 			{
 				for (auto subsystem : m_editor_subsystem_manager->get_subsystems())
 				{
-					subsystem->engine_update(m_delta_time);
+					if (subsystem->should_update())
+					{
+						subsystem->update(m_delta_time);
+					}
 				}
 			}
 
 			for (auto subsystem : m_render_subsystem_manager->get_subsystems())
 			{
-				subsystem->engine_update(m_delta_time);
+				if (subsystem->should_update())
+				{
+					subsystem->update(m_delta_time);
+				}
 			}
 		}
 
@@ -288,10 +284,7 @@ namespace puffin::core
 		// Call system start functions to prepare for gameplay
 		if (m_play_state == PlayState::BeginPlay)
 		{
-			execute_callbacks(ExecutionStage::BeginPlay);
-
 			m_gameplay_subsystem_manager->create_and_initialize_subsystems();
-			m_physics_subsystem_manager->create_and_initialize_subsystems();
 
 			for (auto subsystem : m_engine_subsystem_manager->get_subsystems())
 			{
@@ -312,11 +305,6 @@ namespace puffin::core
 			}
 
 			for (auto subsystem : m_gameplay_subsystem_manager->get_subsystems())
-			{
-				subsystem->begin_play();
-			}
-
-			for (auto subsystem : m_physics_subsystem_manager->get_subsystems())
 			{
 				subsystem->begin_play();
 			}
@@ -350,51 +338,30 @@ namespace puffin::core
 				{
 					m_accumulated_time -= m_time_step_fixed;
 
-					execute_callbacks(ExecutionStage::UpdateFixed, true);
-					for (auto subsystem : m_physics_subsystem_manager->get_subsystems())
+					for (auto subsystem : m_gameplay_subsystem_manager->get_subsystems())
 					{
-						subsystem->fixed_update(m_time_step_fixed);
+						if (subsystem->should_fixed_update())
+						{
+							subsystem->fixed_update(m_time_step_fixed);
+						}
 					}
 				}
 			}
 
 			// Update
 			{
-				execute_callbacks(ExecutionStage::Update, true);
-				for (auto subsystem : m_engine_subsystem_manager->get_subsystems())
+				for (auto subsystem : m_gameplay_subsystem_manager->get_subsystems())
 				{
-					subsystem->update(m_delta_time);
-				}
-
-				if (m_should_render_editor_ui)
-				{
-					for (auto subsystem : m_editor_subsystem_manager->get_subsystems())
+					if (subsystem->should_update())
 					{
 						subsystem->update(m_delta_time);
 					}
-				}
-
-				for (auto subsystem : m_render_subsystem_manager->get_subsystems())
-				{
-					subsystem->update(m_delta_time);
-				}
-
-				for (auto subsystem : m_gameplay_subsystem_manager->get_subsystems())
-				{
-					subsystem->update(m_delta_time);
-				}
-
-				for (auto subsystem : m_physics_subsystem_manager->get_subsystems())
-				{
-					subsystem->update(m_delta_time);
 				}
 			}
 		}
 
 		// Render
 		{
-			execute_callbacks(ExecutionStage::Render, true);
-
 			for (auto subsystem : m_render_subsystem_manager->get_subsystems())
 			{
 				subsystem->render(m_delta_time);
@@ -404,13 +371,6 @@ namespace puffin::core
 		if (m_play_state == PlayState::EndPlay)
 		{
 			// Cleanup Systems and ECS
-			execute_callbacks(ExecutionStage::EndPlay);
-
-			for (auto subsystem : m_physics_subsystem_manager->get_subsystems())
-			{
-				subsystem->end_play();
-			}
-
 			for (auto subsystem : m_gameplay_subsystem_manager->get_subsystems())
 			{
 				subsystem->end_play();
@@ -434,7 +394,6 @@ namespace puffin::core
 				subsystem->end_play();
 			}
 
-			m_physics_subsystem_manager->destroy_subsystems();
 			m_gameplay_subsystem_manager->destroy_subsystems();
 
 			//audioSubsystem->stopAllSounds();
@@ -443,7 +402,7 @@ namespace puffin::core
 			m_play_state = PlayState::Stopped;
 		}
 
-		if (const auto windowSubsystem = get_system<window::WindowSubsystem>(); windowSubsystem->should_primary_window_close())
+		if (const auto window_subsystem = get_engine_subsystem<window::WindowSubsystem>(); window_subsystem->should_primary_window_close())
 		{
 			m_running = false;
 		}
@@ -454,18 +413,14 @@ namespace puffin::core
 	void Engine::deinitialize()
 	{
 		// Cleanup all subsystems
+		m_render_subsystem_manager->destroy_subsystems();
+
 		if (m_should_render_editor_ui)
 		{
 			m_editor_subsystem_manager->destroy_subsystems();
 		}
-
-		m_render_subsystem_manager->destroy_subsystems();
+		
 		m_engine_subsystem_manager->destroy_subsystems();
-
-		execute_callbacks(ExecutionStage::Shutdown);
-		execute_callbacks(ExecutionStage::ShutdownSubsystem);
-
-		m_systems.clear();
 
 		// Clear Asset Registry
 		assets::AssetRegistry::clear();
@@ -618,8 +573,8 @@ namespace puffin::core
 		PuffinID materialInstId1 = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
 		PuffinID materialInstId2 = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
 
-		auto registry = get_system<ecs::EnTTSubsystem>()->registry();
-		const auto scene_graph = get_system<scene::SceneGraph>();
+		auto registry = get_engine_subsystem<ecs::EnTTSubsystem>()->registry();
+		const auto scene_graph = get_engine_subsystem<scene::SceneGraphSubsystem>();
 
 		auto house_node = scene_graph->add_node<rendering::MeshNode>();
 		house_node->set_name("House");
@@ -736,7 +691,7 @@ namespace puffin::core
 		PuffinID materialInstId1 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
 		PuffinID materialInstId2 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
 
-		const auto scene_graph = get_system<scene::SceneGraph>();
+		const auto scene_graph = get_engine_subsystem<scene::SceneGraphSubsystem>();
 
 		// Light node
 
@@ -892,6 +847,15 @@ namespace puffin::core
 		m_running = false;
 	}
 
+    void Engine::default_settings()
+    {
+        auto settings_manager = get_engine_subsystem<SettingsManager>();
+
+        settings_manager->set("editor_camera_fov", 60.0f);
+        settings_manager->set("mouse_sensitivity", 0.05f);
+		settings_manager->set("rendering_draw_shadows", false);
+    }
+
 	void Engine::update_delta_time(double sampled_time)
 	{
 		m_last_time = m_current_time;
@@ -903,12 +867,6 @@ namespace puffin::core
 			const double deltaTimeMax = 1.0 / m_frame_rate_max;
 			double idleStartTime = 0.0;
 
-			if (m_should_track_execution_time)
-			{
-				// Sleep until next frame should start
-				idleStartTime = glfwGetTime();
-			}
-
 			while (m_delta_time < deltaTimeMax)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(0));
@@ -916,22 +874,6 @@ namespace puffin::core
 				m_current_time = glfwGetTime();
 				m_delta_time = m_current_time - m_last_time;
 			}
-
-			if (m_should_track_execution_time)
-			{
-				const double idleEndTime = glfwGetTime();
-
-				m_stage_execution_time[ExecutionStage::Idle] = idleEndTime - idleStartTime;
-			}
 		}
 	}
-
-    void Engine::default_settings()
-    {
-        auto settings_manager = get_system<SettingsManager>();
-
-        settings_manager->set("editor_camera_fov", 60.0f);
-        settings_manager->set("mouse_sensitivity", 0.05f);
-		settings_manager->set("rendering_draw_shadows", false);
-    }
 }

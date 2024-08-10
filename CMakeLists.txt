@@ -141,7 +141,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/physics/body_type.h
 	${HEADER_DIR}/puffin/physics/collision_event.h
 	${HEADER_DIR}/puffin/physics/physics_constants.h
-	${HEADER_DIR}/puffin/physics/physics_subsystem.h
 	# Physics - Onager2D
 	${HEADER_DIR}/puffin/physics/onager2d/onager_physics_system_2d.h
 	${HEADER_DIR}/puffin/physics/onager2d/physics_helpers_2d.h
@@ -251,7 +250,6 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/nodes/rendering/light_node_3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/mesh_node.cpp
 	# Physics
-	${SOURCE_DIR}/puffin/physics/physics_subsystem.cpp
 	# Physics - Onager2D
 	${SOURCE_DIR}/puffin/physics/onager2d/onager_physics_system_2d.cpp
 	${SOURCE_DIR}/puffin/physics/onager2d/shapes/circle_shape_2d.cpp

@@ -12,7 +12,7 @@
 #include "vk_mem_alloc.hpp"
 
 #include "puffin/core/engine.h"
-#include "puffin/core/subsystem.h"
+#include "puffin/rendering/render_subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/assets/texture_asset.h"
 #include "puffin/types/deletion_queue.h"
@@ -125,16 +125,19 @@ namespace puffin::rendering
 	};
 
 	// Vulkan Rendering System
-	class RenderSystemVK final : public core::Subsystem, public std::enable_shared_from_this<RenderSystemVK>
+	class RenderSystemVK final : public rendering::RenderSubsystem, public std::enable_shared_from_this<RenderSystemVK>
 	{
 	public:
 
-		RenderSystemVK(const std::shared_ptr<core::Engine>& engine);
-		~RenderSystemVK() override { m_engine = nullptr; }
+		explicit RenderSystemVK(const std::shared_ptr<core::Engine>& engine);
+		~RenderSystemVK() override = default;
+
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void deinitialize() override;
 
 		void startup();
-		void wait_for_last_presentation_and_sample_time();
-		void render();
+		double wait_for_last_presentation_and_sample_time() override;
+		void render(double delta_time) override;
 		void shutdown();
 
 		const vma::Allocator& allocator() const { return m_allocator ;}

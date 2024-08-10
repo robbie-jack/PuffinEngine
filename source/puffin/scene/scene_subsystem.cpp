@@ -2,7 +2,7 @@
 
 namespace puffin::io
 {
-	void SceneData::setup(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraph* scene_graph)
+	void SceneData::setup(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraphSubsystem* scene_graph)
 	{
 		// Add entities to registry/subsystem
 		for (const auto& id : m_entity_ids)
@@ -37,7 +37,7 @@ namespace puffin::io
 		}
 	}
 
-	void SceneData::update_data(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraph* scene_graph)
+	void SceneData::update_data(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraphSubsystem* scene_graph)
 	{
 		clear();
 
@@ -150,7 +150,7 @@ namespace puffin::io
 		m_has_data = true;
 	}
 
-	void SceneData::load_and_init(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraph* scene_graph)
+	void SceneData::load_and_init(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraphSubsystem* scene_graph)
 	{
 		load();
 		setup(entt_subsystem, scene_graph);
@@ -166,7 +166,7 @@ namespace puffin::io
 		return m_path;
 	}
 
-	void SceneData::add_node_id_and_child_ids(scene::SceneGraph* scene_graph, PuffinID id)
+	void SceneData::add_node_id_and_child_ids(scene::SceneGraphSubsystem* scene_graph, PuffinID id)
 	{
 		auto node = scene_graph->get_node_ptr(id);
 
@@ -198,7 +198,7 @@ namespace puffin::io
 		EngineSubsystem::initialize(subsystem_manager);
 
 		const auto entt_subsystem = subsystem_manager->create_and_initialize_subsystem<ecs::EnTTSubsystem>();
-		const auto scene_graph = subsystem_manager->create_and_initialize_subsystem<scene::SceneGraph>();
+		const auto scene_graph = subsystem_manager->create_and_initialize_subsystem<scene::SceneGraphSubsystem>();
 
 		setup();
 	}
@@ -211,7 +211,7 @@ namespace puffin::io
 	void SceneSubsystem::begin_play()
 	{
 		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
-		auto scene_graph = m_engine->get_engine_subsystem<scene::SceneGraph>();
+		auto scene_graph = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
 
 		m_current_scene_data->update_data(entt_subsystem, scene_graph);
 	}
@@ -231,7 +231,7 @@ namespace puffin::io
 	void SceneSubsystem::setup() const
 	{
 		const auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
-		const auto scene_graph = m_engine->get_engine_subsystem<scene::SceneGraph>();
+		const auto scene_graph = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
 
 		m_current_scene_data->setup(entt_subsystem, scene_graph);
 	}

@@ -8,8 +8,8 @@
 
 namespace puffin::scripting
 {
-	AngelScriptEngineInterface::AngelScriptEngineInterface(std::shared_ptr<core::Engine> engine, std::shared_ptr<AngelScriptSystem> scriptSystem,
-		asIScriptEngine* scriptEngine) : mEngine(engine), mScriptSystem(scriptSystem), mScriptEngine(scriptEngine)
+	AngelScriptEngineInterface::AngelScriptEngineInterface(std::shared_ptr<core::Engine> engine, std::shared_ptr<AngelScriptSubsystem> scriptSystem,
+		asIScriptEngine* scriptEngine) : m_engine(engine), mScriptSystem(scriptSystem), mScriptEngine(scriptEngine)
 	{
 		mScriptEngine->AddRef();
 
@@ -18,7 +18,7 @@ namespace puffin::scripting
 
 	AngelScriptEngineInterface::~AngelScriptEngineInterface()
 	{
-		mEngine = nullptr;
+		m_engine = nullptr;
 
 		mScriptEngine->Release();
 		mScriptEngine = nullptr;
@@ -52,21 +52,22 @@ namespace puffin::scripting
 
 	const double& AngelScriptEngineInterface::getDeltaTime()
 	{
-		mDeltaTime = mEngine->delta_time();
+		mDeltaTime = m_engine->delta_time();
 		return mDeltaTime;
 	}
 
 	const double& AngelScriptEngineInterface::getFixedTime()
 	{
-		mFixedTime = mEngine->time_step_fixed();
+		mFixedTime = m_engine->time_step_fixed();
 		return mFixedTime;
 	}
 
 	TransformComponent3D& AngelScriptEngineInterface::getTransformComponent3D(PuffinID id) const
 	{
-		const auto registry = mEngine->get_system<ecs::EnTTSubsystem>()->registry();
+		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		const auto registry = entt_subsystem->registry();
 
-		entt::entity entity = mEngine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
+		entt::entity entity = entt_subsystem->get_entity(id);
 
 		registry->patch<TransformComponent3D>(entity, [&](auto& transform){});
 
@@ -75,9 +76,10 @@ namespace puffin::scripting
 
 	bool AngelScriptEngineInterface::hasTransformComponent3D(PuffinID id) const
 	{
-		const auto registry = mEngine->get_system<ecs::EnTTSubsystem>()->registry();
+		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		const auto registry = entt_subsystem->registry();
 
-		entt::entity entity = mEngine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
+		entt::entity entity = entt_subsystem->get_entity(id);
 
 		if (registry->any_of<TransformComponent3D>(entity))
 		{
@@ -90,9 +92,10 @@ namespace puffin::scripting
 	template <typename T>
 	T& AngelScriptEngineInterface::getComponent(PuffinID id) const
 	{
-		const auto registry = mEngine->get_system<ecs::EnTTSubsystem>()->registry();
+		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		const auto registry = entt_subsystem->registry();
 
-		entt::entity entity = mEngine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
+		entt::entity entity = entt_subsystem->get_entity(id);
 
 		registry->patch<T>(entity, [&](auto& transform) {});
 
@@ -102,9 +105,10 @@ namespace puffin::scripting
 	template <typename T>
 	bool AngelScriptEngineInterface::hasComponent(PuffinID id) const
 	{
-		const auto registry = mEngine->get_system<ecs::EnTTSubsystem>()->registry();
+		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		const auto registry = entt_subsystem->registry();
 
-		entt::entity entity = mEngine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
+		entt::entity entity = entt_subsystem->get_entity(id);
 
 		if (registry->any_of<T>(entity))
 		{

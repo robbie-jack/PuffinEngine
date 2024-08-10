@@ -23,7 +23,8 @@ namespace puffin::rendering
 		void begin_play() override;
 		void end_play() override;
 
-		void engine_update(double delta_time) override;
+		void update(double delta_time) override;
+		bool should_update() override;
 
 		void on_update_camera(entt::registry& registry, entt::entity entity);
         void on_destroy_camera(entt::registry& registry, entt::entity entity);
@@ -44,8 +45,8 @@ namespace puffin::rendering
 
         void update_active_play_camera();
 
-		void update_cameras();
-		void update_editor_camera();
+		void update_cameras(double delta_time);
+		void update_editor_camera(double delta_time);
 		void update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera);
 
 	};

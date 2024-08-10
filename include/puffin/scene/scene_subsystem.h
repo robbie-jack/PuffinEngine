@@ -127,9 +127,9 @@ namespace puffin::io
 		explicit SceneData(fs::path  path) : m_path(std::move(path)) {}
 
 		// Initialize ECS & SceneGraph with loaded data
-		void setup(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraph* scene_graph);
+		void setup(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraphSubsystem* scene_graph);
 
-		void update_data(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraph* scene_graph);
+		void update_data(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraphSubsystem* scene_graph);
 
 		void clear();
 
@@ -138,7 +138,7 @@ namespace puffin::io
 
 		// Load  Entities/Components from Binary Scene File
 		void load(const bool forceLoad = false);
-		void load_and_init(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraph* scene_graph);
+		void load_and_init(ecs::EnTTSubsystem* entt_subsystem, scene::SceneGraphSubsystem* scene_graph);
 
 		void set_path(const fs::path& path);
 		const fs::path& path();
@@ -171,7 +171,7 @@ namespace puffin::io
 		std::unordered_map<PuffinID, json> m_node_id_to_json;
 		std::unordered_map<PuffinID, std::vector<PuffinID>> m_child_node_ids;
 
-		void add_node_id_and_child_ids(scene::SceneGraph* scene_graph, PuffinID id);
+		void add_node_id_and_child_ids(scene::SceneGraphSubsystem* scene_graph, PuffinID id);
 	};
 
     class ISceneComponentRegister

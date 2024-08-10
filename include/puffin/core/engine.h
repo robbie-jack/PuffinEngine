@@ -165,44 +165,6 @@ namespace puffin::core
 			m_application = std::static_pointer_cast<Application>(std::make_shared<AppT>(shared_from_this()));
 		}
 
-		// System/Subsystem Methods
-		template<typename SubsystemT>
-		std::shared_ptr<SubsystemT> register_system()
-		{
-			const char* typeName = typeid(SubsystemT).name();
-
-			assert(m_systems.find(typeName) == m_systems.end() && "Engine::registerSystem() - Registering system more than once");
-
-			// Create subsystem pointer
-			auto subsystem = std::make_shared<SubsystemT>(shared_from_this());
-			auto subsystemBase = std::static_pointer_cast<Subsystem>(subsystem);
-
-			// Cast subsystem to Subsystem parent and add to subsystems map
-			m_systems.insert({ typeName, subsystemBase });
-
-			return subsystem;
-		}
-
-		template<typename SubsystemT>
-		std::shared_ptr<SubsystemT> get_system()
-		{
-			const char* typeName = typeid(SubsystemT).name();
-
-			assert(m_systems.find(typeName) != m_systems.end() && "Engine::getSystem() - System used before registering.");
-
-			return std::static_pointer_cast<SubsystemT>(m_systems[typeName]);
-		}
-
-		// Register a callback function to be executed during engine runtime
-		void register_callback(ExecutionStage executionStage, const std::function<void()>& callback, const std::string& name = "", const int& priority = 100)
-		{
-			// Add function handler to vector
-			m_registered_callbacks[executionStage].emplace_back(callback, name, priority);
-
-			// Sort vector by priority
-			std::sort(m_registered_callbacks[executionStage].begin(), m_registered_callbacks[executionStage].end());
-		}
-
 		PlayState play_state() const { return m_play_state; }
 
 		bool should_render_editor_ui() const { return m_should_render_editor_ui; }
@@ -214,8 +176,6 @@ namespace puffin::core
 		const double& delta_time() const { return m_delta_time; }
 
 		const double& accumulated_time() const { return m_accumulated_time; }
-
-		void update_delta_time(double sampled_time);
 
 		template<typename T>
 		void register_engine_subsystem() const
@@ -265,28 +225,6 @@ namespace puffin::core
 			return m_gameplay_subsystem_manager->get_subsystem<T>();
 		}
 
-		template<typename T>
-		void register_physics_subsystem() const
-		{
-			m_physics_subsystem_manager->register_subsystem<T>();
-		}
-
-		template<typename T>
-		T* get_physics_subsystem() const
-		{
-			return m_physics_subsystem_manager->get_subsystem<T>();
-		}
-
-		double get_stage_execution_time_last_frame(const core::ExecutionStage& updateOrder)
-		{
-			return m_stage_execution_time_last_frame[updateOrder];
-		}
-
-		const std::unordered_map<std::string, double>& getCallbackExecutionTimeForUpdateStageLastFrame(const core::ExecutionStage& updateOrder)
-		{
-			return m_callback_execution_time_last_frame[updateOrder];
-		}
-
 	private:
 
 		bool m_running = true;
@@ -294,7 +232,6 @@ namespace puffin::core
 		bool m_setup_engine_default_scene = false;
 		bool m_setup_engine_default_settings = false;
 		bool m_should_limit_framerate = true; // Whether framerate should be capped at m_frameRateMax
-		bool m_should_track_execution_time = true; // Should track time to execute callback/stages
 		bool m_should_render_editor_ui = true; // Whether editor UI should be rendered
 
 		PlayState m_play_state = PlayState::Stopped;
@@ -316,11 +253,6 @@ namespace puffin::core
 		std::shared_ptr<editor::EditorSubsystemManager> m_editor_subsystem_manager = nullptr;
 		std::shared_ptr<rendering::RenderSubsystemManager> m_render_subsystem_manager = nullptr;
 		std::shared_ptr<gameplay::GameplaySubsystemManager> m_gameplay_subsystem_manager = nullptr;
-		std::shared_ptr < physics::PhysicsSubsystemManager> m_physics_subsystem_manager = nullptr;
-
-		// System/Subsystem Members
-		std::unordered_map<const char*, std::shared_ptr<core::Subsystem>> m_systems;
-		std::unordered_map<core::ExecutionStage, std::vector<EngineCallbackHandler>> m_registered_callbacks; // Map of callback functions registered for execution
 
 		std::unordered_map<core::ExecutionStage, double> m_stage_execution_time; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
 		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> m_callback_execution_time; // Map of time it takes for each system to execute
@@ -330,67 +262,6 @@ namespace puffin::core
 
 		io::ProjectFile m_project_file;
 
-		// Execute callbacks for this execution stage
-		void execute_callbacks(const core::ExecutionStage& execution_stage, const bool should_track_execution_time = false)
-		{
-			double startTime = 0.0, endTime = 0.0;
-			double stageStartTime = 0.0;
-
-			if (m_should_track_execution_time && should_track_execution_time)
-			{
-				stageStartTime = glfwGetTime();
-			}
-
-			for (const auto& callback : m_registered_callbacks[execution_stage])
-			{
-				if (m_should_track_execution_time && should_track_execution_time)
-				{
-					startTime = glfwGetTime();
-				}
-
-				callback.execute();
-
-				if (m_should_track_execution_time && should_track_execution_time)
-				{
-					endTime = glfwGetTime();
-
-					if (m_callback_execution_time[execution_stage].count(callback.name()) == 0)
-					{
-						m_callback_execution_time[execution_stage][callback.name()] = 0.0;
-					}
-
-					m_callback_execution_time[execution_stage][callback.name()] += endTime - startTime;
-				}
-			}
-
-			if (m_should_track_execution_time && should_track_execution_time)
-			{
-				const double stageEndTime = glfwGetTime();
-
-				if (m_stage_execution_time.count(execution_stage) == 0)
-				{
-					m_stage_execution_time[execution_stage] = 0.0;
-				}
-
-				m_stage_execution_time[execution_stage] += (stageEndTime - stageStartTime);
-			}
-		}
-
-		void update_execution_time()
-		{
-			if (m_should_track_execution_time)
-			{
-				m_stage_execution_time_last_frame.clear();
-				m_callback_execution_time_last_frame.clear();
-
-				m_stage_execution_time_last_frame = m_stage_execution_time;
-				m_callback_execution_time_last_frame = m_callback_execution_time;
-
-				m_stage_execution_time.clear();
-				m_callback_execution_time.clear();
-			}
-		}
-
 		void add_default_assets();
 		void reimport_default_assets();
 		void load_and_resave_assets();
@@ -399,6 +270,8 @@ namespace puffin::core
 		void default_scene();
 		void physics_scene_3d();
 		void procedural_scene();
+
+		void update_delta_time(double sampled_time);
 
 	};
 }

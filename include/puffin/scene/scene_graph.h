@@ -6,7 +6,7 @@
 #include <set>
 
 #include "puffin/core/engine_subsystem.h"
-#include "puffin/physics/physics_subsystem.h"
+#include "puffin/gameplay/gameplay_subsystem.h"
 #include "puffin/nodes/node.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/packed_array.h"
@@ -127,17 +127,18 @@ namespace puffin::scene
 
 	};
 
-	class SceneGraph : public core::EngineSubsystem
+	class SceneGraphSubsystem : public core::EngineSubsystem
 	{
 	public:
 
-		SceneGraph(const std::shared_ptr<core::Engine>& engine);
+		SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine);
 
 		void initialize(core::ISubsystemManager* subsystem_manager) override;
 
 		void end_play() override;
 
-		void engine_update(double delta_time) override;
+		void update(double delta_time) override;
+		bool should_update() override;
 
 		template<typename T>
 		void register_node_type()
@@ -338,16 +339,20 @@ namespace puffin::scene
 
 	};
 
-	class SceneGraphGameplay : public physics::PhysicsSubsystem
+	class SceneGraphGameplaySubsystem : public gameplay::GameplaySubsystem
 	{
 	public:
 
-		explicit SceneGraphGameplay(const std::shared_ptr<core::Engine>& engine);
+		explicit SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine);
+		~SceneGraphGameplaySubsystem() override = default;
 
 		void initialize(core::ISubsystemManager* subsystem_manager) override;
 
 		void update(double delta_time) override;
+		bool should_update() override;
+
 		void fixed_update(double fixed_time) override;
+		bool should_fixed_update() override;
 
 	};
 }

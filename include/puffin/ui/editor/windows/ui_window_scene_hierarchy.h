@@ -6,7 +6,7 @@ namespace puffin
 {
 	namespace scene
 	{
-		class SceneGraph;
+		class SceneGraphSubsystem;
 	}
 }
 
@@ -23,13 +23,11 @@ namespace puffin
 
 			void draw(double dt) override;
 
-			[[nodiscard]] bool entityChanged() const { return mEntityChanged; }
+			[[nodiscard]] bool entityChanged() const { return m_entity_changed; }
 
 		private:
 			
-			bool mEntityChanged = false;
-
-			std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
+			bool m_entity_changed = false;
 
 			void draw_node_ui(PuffinID id, const ImGuiTreeNodeFlags& base_flags);
 

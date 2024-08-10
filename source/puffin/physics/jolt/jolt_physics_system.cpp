@@ -14,8 +14,45 @@
 
 namespace puffin::physics
 {
-	void JoltPhysicsSystem::beginPlay()
+	JoltPhysicsSystem::JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine): GameplaySubsystem(engine)
 	{
+	}
+
+	void JoltPhysicsSystem::initialize(core::ISubsystemManager* subsystem_manager)
+	{
+		GameplaySubsystem::initialize(subsystem_manager);
+
+		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		auto registry = entt_subsystem->registry();
+
+		registry->on_construct<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::on_construct_rigidbody>(this);
+		registry->on_destroy<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::on_destroy_rigidbody>(this);
+
+		registry->on_construct<RigidbodyComponent3D>().connect<&entt::registry::emplace<VelocityComponent3D>>();
+		registry->on_destroy<RigidbodyComponent3D>().connect<&entt::registry::remove<VelocityComponent3D>>();
+
+		registry->on_construct<BoxComponent3D>().connect<&JoltPhysicsSystem::on_construct_box>(this);
+		//registry->on_update<BoxComponent3D>().connect<&JoltPhysicsSystem::OnConstructBox>(this);
+		registry->on_destroy<BoxComponent3D>().connect<&JoltPhysicsSystem::on_destroy_box>(this);
+
+		registry->on_construct<SphereComponent3D>().connect<&JoltPhysicsSystem::on_construct_sphere>(this);
+		//registry->on_update<SphereComponent3D>().connect<&JoltPhysicsSystem::onConstructSphere>(this);
+		registry->on_destroy<SphereComponent3D>().connect<&JoltPhysicsSystem::on_destroy_sphere>(this);
+
+		m_shape_refs.reserve(gMaxShapes);
+
+		update_time_step();
+	}
+
+	void JoltPhysicsSystem::deinitialize()
+	{
+		GameplaySubsystem::deinitialize();
+	}
+
+	void JoltPhysicsSystem::begin_play()
+	{
+		GameplaySubsystem::begin_play();
+
 		// Register allocation hook
 		JPH::RegisterDefaultAllocator();
 
@@ -25,68 +62,34 @@ namespace puffin::physics
 		// Register all Jolt physics types
 		JPH::RegisterTypes();
 
-		mTempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+		m_temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
 
-		mJobSystem = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+		m_job_system = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
-		mInternalPhysicsSystem = std::make_unique<JPH::PhysicsSystem>();
-		mInternalPhysicsSystem->Init(gMaxShapes, mNumBodyMutexes, mMaxBodyPairs, mMaxContactConstraints,
-			mBPLayerInterfaceImpl, mObjectVsBroadphaseLayerFilter, mObjectVsObjectLayerFilter);
+		m_internal_physics_system = std::make_unique<JPH::PhysicsSystem>();
+		m_internal_physics_system->Init(gMaxShapes, m_num_body_mutexes, m_max_body_pairs, m_max_contact_constraints,
+			m_bp_layer_interface_impl, m_object_vs_broadphase_layer_filter, m_object_vs_object_layer_filter);
 
-		mInternalPhysicsSystem->SetGravity(mGravity);
+		m_internal_physics_system->SetGravity(m_gravity);
 
-		updateTimeStep();
-
-		updateComponents();
+		update_components();
 	}
 
-	void JoltPhysicsSystem::fixedUpdate()
+	void JoltPhysicsSystem::end_play()
 	{
-		updateComponents();
+		GameplaySubsystem::end_play();
 
-		mInternalPhysicsSystem->Update(mFixedTimeStep, mCollisionSteps, mTempAllocator.get(), mJobSystem.get());
+		m_bodies.clear();
+		m_shape_refs.clear();
 
-		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+		m_bodies_to_add.clear();
+		m_bodies_to_init.clear();
+		m_boxes_to_init.clear();
+		m_spheres_to_init.clear();
 
-		// Updated entity position/rotation from simulation
-		const auto bodyView = registry->view<TransformComponent3D, VelocityComponent3D, const RigidbodyComponent3D>();
-
-		for (auto [entity, transform, velocity, rb] : bodyView.each())
-		{
-			const auto& id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
-
-			// Update Transform from Rigidbody Position
-			registry->patch<TransformComponent3D>(entity, [&](auto& transform)
-			{
-				transform.position.x = mBodies[id]->GetCenterOfMassPosition().GetX();
-				transform.position.y = mBodies[id]->GetCenterOfMassPosition().GetY();
-				transform.position.z = mBodies[id]->GetCenterOfMassPosition().GetZ();
-				//transform.rotation = maths::radToDeg(-mBodies[id]->GetAngle());
-			});
-
-			// Update Velocity with Linear/Angular Velocity#
-			registry->patch<VelocityComponent3D>(entity, [&](auto& velocity)
-			{
-				velocity.linear.x = mBodies[id]->GetLinearVelocity().GetX();
-				velocity.linear.y = mBodies[id]->GetLinearVelocity().GetY();
-				velocity.linear.z = mBodies[id]->GetLinearVelocity().GetZ();
-			});
-		}
-	}
-
-	void JoltPhysicsSystem::endPlay()
-	{
-		mBodies.clear();
-		mShapeRefs.clear();
-
-		mBodiesToAdd.clear();
-		mBodiesToInit.clear();
-		mBoxesToInit.clear();
-		mSpheresToInit.clear();
-
-		mInternalPhysicsSystem = nullptr;
-		mJobSystem = nullptr;
-		mTempAllocator = nullptr;
+		m_internal_physics_system = nullptr;
+		m_job_system = nullptr;
+		m_temp_allocator = nullptr;
 
 		// Unregisters all types with the factory and cleans up the default material
 		JPH::UnregisterTypes();
@@ -96,108 +99,155 @@ namespace puffin::physics
 		JPH::Factory::sInstance = nullptr;
 	}
 
-	void JoltPhysicsSystem::onConstructBox(entt::registry& registry, entt::entity entity)
+	void JoltPhysicsSystem::fixed_update(double fixed_time)
 	{
-		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
+		GameplaySubsystem::fixed_update(fixed_time);
 
-		mBoxesToInit.push_back(id);
+		update_components();
+
+		m_internal_physics_system->Update(m_fixed_time_step, m_collision_steps, m_temp_allocator.get(), m_job_system.get());
+
+		const auto registry = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->registry();
+
+		// Updated entity position/rotation from simulation
+		const auto bodyView = registry->view<TransformComponent3D, VelocityComponent3D, const RigidbodyComponent3D>();
+
+		for (auto [entity, transform, velocity, rb] : bodyView.each())
+		{
+			const auto& id = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->get_id(entity);
+
+			// Update Transform from Rigidbody Position
+			registry->patch<TransformComponent3D>(entity, [&](auto& transform)
+			{
+				transform.position.x = m_bodies[id]->GetCenterOfMassPosition().GetX();
+				transform.position.y = m_bodies[id]->GetCenterOfMassPosition().GetY();
+				transform.position.z = m_bodies[id]->GetCenterOfMassPosition().GetZ();
+				//transform.rotation = maths::radToDeg(-mBodies[id]->GetAngle());
+			});
+
+			// Update Velocity with Linear/Angular Velocity#
+			registry->patch<VelocityComponent3D>(entity, [&](auto& velocity)
+			{
+				velocity.linear.x = m_bodies[id]->GetLinearVelocity().GetX();
+				velocity.linear.y = m_bodies[id]->GetLinearVelocity().GetY();
+				velocity.linear.z = m_bodies[id]->GetLinearVelocity().GetZ();
+			});
+		}
 	}
 
-	void JoltPhysicsSystem::onDestroyBox(entt::registry& registry, entt::entity entity)
+	bool JoltPhysicsSystem::should_fixed_update()
+	{
+		return true;
+	}
+
+	void JoltPhysicsSystem::on_construct_box(entt::registry& registry, entt::entity entity)
+	{
+		const auto id = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->get_id(entity);
+
+		m_boxes_to_init.push_back(id);
+	}
+
+	void JoltPhysicsSystem::on_destroy_box(entt::registry& registry, entt::entity entity)
 	{
 
 	}
 
-	void JoltPhysicsSystem::onConstructSphere(entt::registry& registry, entt::entity entity)
+	void JoltPhysicsSystem::on_construct_sphere(entt::registry& registry, entt::entity entity)
 	{
-		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
+		const auto id = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->get_id(entity);
 
-		mSpheresToInit.push_back(id);
+		m_spheres_to_init.push_back(id);
 	}
 
-	void JoltPhysicsSystem::onDestroySphere(entt::registry& registry, entt::entity entity)
-	{
-
-	}
-
-	void JoltPhysicsSystem::onConstructRigidbody(entt::registry& registry, entt::entity entity)
-	{
-		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
-
-		mBodiesToInit.push_back(id);
-	}
-
-	void JoltPhysicsSystem::onDestroyRigidbody(entt::registry& registry, entt::entity entity)
+	void JoltPhysicsSystem::on_destroy_sphere(entt::registry& registry, entt::entity entity)
 	{
 
 	}
 
-	void JoltPhysicsSystem::updateComponents()
+	void JoltPhysicsSystem::on_construct_rigidbody(entt::registry& registry, entt::entity entity)
 	{
-		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+		const auto id = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->get_id(entity);
+
+		m_bodies_to_init.push_back(id);
+	}
+
+	void JoltPhysicsSystem::on_destroy_rigidbody(entt::registry& registry, entt::entity entity)
+	{
+
+	}
+
+	void JoltPhysicsSystem::update_time_step()
+	{
+		m_fixed_time_step = m_engine->time_step_fixed();
+		m_collision_steps = static_cast<int>(std::ceil(m_fixed_time_step / m_ideal_time_step));
+	}
+
+	void JoltPhysicsSystem::update_components()
+	{
+		const auto registry = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->registry();
 
 		// Update Spheres
 		{
-			for (const auto& id : mSpheresToInit)
+			for (const auto& id : m_spheres_to_init)
 			{
-				entt::entity entity = m_engine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
+				entt::entity entity = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& sphere = registry->get<const SphereComponent3D>(entity);
 
-				initSphere(id, transform, sphere);
+				init_sphere(id, transform, sphere);
 			}
 
-			mSpheresToInit.clear();
+			m_spheres_to_init.clear();
 		}
 
 		// Update Boxes
 		{
-			for (const auto& id : mBoxesToInit)
+			for (const auto& id : m_boxes_to_init)
 			{
-				entt::entity entity = m_engine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
+				entt::entity entity = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& box = registry->get<const BoxComponent3D>(entity);
 
-				initBox(id, transform, box);
+				init_box(id, transform, box);
 			}
 
-			mBoxesToInit.clear();
+			m_boxes_to_init.clear();
 		}
 
 		// Update Rigidbodies
 		{
 			// Create Bodies
-			for (const auto& id : mBodiesToInit)
+			for (const auto& id : m_bodies_to_init)
 			{
-				entt::entity entity = m_engine->get_system<ecs::EnTTSubsystem>()->get_entity(id);
+				entt::entity entity = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>()->get_entity(id);
 
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& rb = registry->get<const RigidbodyComponent3D>(entity);
 
-				if (mShapeRefs.contains(id))
+				if (m_shape_refs.contains(id))
 				{
-					initRigidbody(id, transform, rb);
+					init_rigidbody(id, transform, rb);
 				}
 			}
 
-			mBodiesToInit.clear();
+			m_bodies_to_init.clear();
 
 			// Add bodies to physics system
-			if (!mBodiesToAdd.empty())
+			if (!m_bodies_to_add.empty())
 			{
 				std::vector<JPH::BodyID> bodyIDs;
-				bodyIDs.reserve(mBodiesToAdd.size());
+				bodyIDs.reserve(m_bodies_to_add.size());
 
-				for (const auto& id : mBodiesToAdd)
+				for (const auto& id : m_bodies_to_add)
 				{
-					bodyIDs.emplace_back(mBodies[id]->GetID());
+					bodyIDs.emplace_back(m_bodies[id]->GetID());
 				}
 
-				mBodiesToAdd.clear();
+				m_bodies_to_add.clear();
 
-				JPH::BodyInterface& bodyInterface = mInternalPhysicsSystem->GetBodyInterface();
+				JPH::BodyInterface& bodyInterface = m_internal_physics_system->GetBodyInterface();
 
 				const JPH::BodyInterface::AddState addState = bodyInterface.AddBodiesPrepare(bodyIDs.data(), bodyIDs.size());
 				bodyInterface.AddBodiesFinalize(bodyIDs.data(), bodyIDs.size(), addState, JPH::EActivation::Activate);
@@ -205,9 +255,9 @@ namespace puffin::physics
 		}
 	}
 
-	void JoltPhysicsSystem::initBox(PuffinID id, const TransformComponent3D& transform, const BoxComponent3D& box)
+	void JoltPhysicsSystem::init_box(PuffinID id, const TransformComponent3D& transform, const BoxComponent3D& box)
 	{
-		if (mInternalPhysicsSystem)
+		if (m_internal_physics_system)
 		{
 			JPH::BoxShapeSettings boxShapeSettings(JPH::Vec3(box.half_extent.x, box.half_extent.y, box.half_extent.z));
 
@@ -219,27 +269,27 @@ namespace puffin::physics
 				return;
 			}
 
-			mShapeRefs.emplace(id, result.Get());
+			m_shape_refs.emplace(id, result.Get());
 		}
 	}
 
-	void JoltPhysicsSystem::initSphere(PuffinID id, const TransformComponent3D& transform,
+	void JoltPhysicsSystem::init_sphere(PuffinID id, const TransformComponent3D& transform,
 		const SphereComponent3D& circle)
 	{
-		if (mInternalPhysicsSystem)
+		if (m_internal_physics_system)
 		{
 			// PUFFIN_TODO - Implement Sphere Creation
 		}
 	}
 
-	void JoltPhysicsSystem::initRigidbody(PuffinID id, const TransformComponent3D& transform,
+	void JoltPhysicsSystem::init_rigidbody(PuffinID id, const TransformComponent3D& transform,
 		const RigidbodyComponent3D& rb)
 	{
-		if (mInternalPhysicsSystem && mShapeRefs.contains(id))
+		if (m_internal_physics_system && m_shape_refs.contains(id))
 		{
-			JPH::BodyInterface& bodyInterface = mInternalPhysicsSystem->GetBodyInterface();
+			JPH::BodyInterface& bodyInterface = m_internal_physics_system->GetBodyInterface();
 
-			const JPH::EMotionType motionType = gJoltBodyType.at(rb.body_type);
+			const JPH::EMotionType motionType = g_jolt_body_type.at(rb.body_type);
 
 			JPH::ObjectLayer objectLayer = {};
 
@@ -252,7 +302,7 @@ namespace puffin::physics
 				objectLayer = JoltLayers::MOVING;
 			}
 
-			JPH::BodyCreationSettings bodySettings(mShapeRefs[id], JPH::RVec3(transform.position.x, transform.position.y, transform.position.z),
+			JPH::BodyCreationSettings bodySettings(m_shape_refs[id], JPH::RVec3(transform.position.x, transform.position.y, transform.position.z),
 				JPH::QuatArg::sIdentity(), motionType, objectLayer);
 
 			bodySettings.mRestitution = rb.elasticity;
@@ -265,9 +315,9 @@ namespace puffin::physics
 
 			bodySettings.mFriction = 0.0f;
 
-			mBodies.emplace(id, bodyInterface.CreateBody(bodySettings));
+			m_bodies.emplace(id, bodyInterface.CreateBody(bodySettings));
 
-			mBodiesToAdd.push_back(id);
+			m_bodies_to_add.push_back(id);
 		}
 	}
 }

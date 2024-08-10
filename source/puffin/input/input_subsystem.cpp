@@ -122,7 +122,7 @@ namespace puffin
 					// Notify subscribers that event changed
 					if (stateChanged == true)
 					{
-						auto signalSubsystem = m_engine->get_system<core::SignalSubsystem>();
+						auto signalSubsystem = m_engine->get_engine_subsystem<core::SignalSubsystem>();
 
 						signalSubsystem->emit<InputEvent>(name, InputEvent(action.name, action.state));
 

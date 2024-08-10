@@ -14,7 +14,7 @@ namespace puffin
 {
 	namespace scene
 	{
-		class SceneGraph;
+		class SceneGraphSubsystem;
 	}
 
 	namespace core
@@ -142,8 +142,6 @@ namespace puffin
 		std::string m_name;
 
 		std::shared_ptr<core::Engine> m_engine = nullptr;
-		std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
-		std::shared_ptr<ecs::EnTTSubsystem> m_entt_subsystem = nullptr;
 		std::shared_ptr<entt::registry> m_registry = nullptr;
 	};
 }

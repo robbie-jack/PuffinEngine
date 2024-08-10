@@ -43,9 +43,10 @@ namespace puffin
 			void initialize(core::ISubsystemManager* subsystem_manager) override;
 			void deinitialize() override;
 
-			void engine_update(double delta_time) override;
+			void update(double delta_time) override;
+			bool should_update() override;
 
-			void addWindow(const std::shared_ptr<UIWindow>& window);
+			void add_window(const std::shared_ptr<UIWindow>& window);
 
 			std::shared_ptr<UIWindowViewport> window_viewport();
 			std::shared_ptr<UIWindowSettings> window_settings();

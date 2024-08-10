@@ -12,13 +12,21 @@ namespace puffin::rendering
 {
 	CameraSubystem::CameraSubystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
-		const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+	}
+
+	void CameraSubystem::initialize(core::ISubsystemManager* subsystem_manager)
+	{
+		EngineSubsystem::initialize(subsystem_manager);
+
+        auto entt_subsystem = subsystem_manager->create_and_initialize_subsystem<ecs::EnTTSubsystem>();
+        auto signal_subsystem = subsystem_manager->create_and_initialize_subsystem<core::SignalSubsystem>();
+
+        const auto registry = entt_subsystem->registry();
 
         registry->on_construct<CameraComponent3D>().connect<&CameraSubystem::on_update_camera>(this);
         registry->on_update<CameraComponent3D>().connect<&CameraSubystem::on_update_camera>(this);
         registry->on_destroy<CameraComponent3D>().connect<&CameraSubystem::on_destroy_camera>(this);
 
-        auto signal_subsystem = m_engine->get_system<core::SignalSubsystem>();
         auto editor_camera_fov_signal = signal_subsystem->get_signal<float>("editor_camera_fov");
         if (!editor_camera_fov_signal)
         {
@@ -29,11 +37,6 @@ namespace puffin::rendering
         {
             on_update_editor_camera_fov(editor_cam_fov);
         }));
-	}
-
-	void CameraSubystem::initialize(core::ISubsystemManager* subsystem_manager)
-	{
-		EngineSubsystem::initialize(subsystem_manager);
 
         init_editor_camera();
 	}
@@ -59,16 +62,20 @@ namespace puffin::rendering
         init_editor_camera();
 	}
 
-	void CameraSubystem::engine_update(double delta_time)
+	void CameraSubystem::update(double delta_time)
 	{
-		EngineSubsystem::engine_update(delta_time);
+        update_cameras(delta_time);
+	}
 
-        update_cameras();
+	bool CameraSubystem::should_update()
+	{
+		return true;
 	}
 
 	void CameraSubystem::on_update_camera(entt::registry& registry, entt::entity entity)
 	{
-		const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
+        auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		const auto id = entt_subsystem->get_id(entity);
 		const auto& camera = registry.get<CameraComponent3D>(entity);
 
         if (m_cached_cam_active_state.find(id) == m_cached_cam_active_state.end())
@@ -93,7 +100,8 @@ namespace puffin::rendering
 
     void CameraSubystem::on_destroy_camera(entt::registry &registry, entt::entity entity)
     {
-        const auto id = m_engine->get_system<ecs::EnTTSubsystem>()->get_id(entity);
+        auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+        const auto id = entt_subsystem->get_id(entity);
 
         if (m_active_play_cam_id == id)
         {
@@ -105,7 +113,7 @@ namespace puffin::rendering
 
     void CameraSubystem::on_update_editor_camera_fov(const float &editor_camera_fov)
     {
-        auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+        auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
         auto registry = entt_subsystem->registry();
 
         auto entity = entt_subsystem->get_entity(m_editor_cam_id);
@@ -118,7 +126,7 @@ namespace puffin::rendering
 	void CameraSubystem::init_editor_camera()
 	{
 		// Crate editor cam 
-		auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
 		auto registry = entt_subsystem->registry();
 
 		m_editor_cam_id = generate_id();
@@ -134,7 +142,7 @@ namespace puffin::rendering
 		m_editor_cam_speed = 25.0f;
 	}
 
-	void CameraSubystem::update_cameras()
+	void CameraSubystem::update_cameras(double delta_time)
 	{
         if (m_active_play_cam_id == gInvalidID)
         {
@@ -146,9 +154,10 @@ namespace puffin::rendering
             m_active_cam_id = m_active_play_cam_id;
         }
 
-		update_editor_camera();
+		update_editor_camera(delta_time);
 
-        const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+        auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+        const auto registry = entt_subsystem->registry();
         const auto camera_view = registry->view<const TransformComponent3D, CameraComponent3D>();
 
 		for (auto [entity, transform, camera] : camera_view.each())
@@ -157,12 +166,12 @@ namespace puffin::rendering
 		}
 	}
 
-	void CameraSubystem::update_editor_camera()
+	void CameraSubystem::update_editor_camera(double delta_time)
 	{
         if (m_editor_cam_id != gInvalidID && m_editor_cam_id == m_active_cam_id)
         {
-            const auto input_subsystem = m_engine->get_system<input::InputSubsystem>();
-            auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+            const auto input_subsystem = m_engine->get_engine_subsystem<input::InputSubsystem>();
+            auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
             auto registry = entt_subsystem->registry();
 
             auto entity = entt_subsystem->get_entity(m_editor_cam_id);
@@ -172,29 +181,29 @@ namespace puffin::rendering
             if (input_subsystem->cursor_locked() && m_active_cam_id == m_editor_cam_id) {
                 // Camera Movement
                 if (input_subsystem->pressed("EditorCamMoveRight") && !input_subsystem->pressed("EditorCamMoveLeft")) {
-                    transform.position += camera.right * m_editor_cam_speed * m_engine->delta_time();
+                    transform.position += camera.right * m_editor_cam_speed * delta_time;
                 }
 
                 if (input_subsystem->pressed("EditorCamMoveLeft") && !input_subsystem->pressed("EditorCamMoveRight")) {
-                    transform.position -= camera.right * m_editor_cam_speed * m_engine->delta_time();
+                    transform.position -= camera.right * m_editor_cam_speed * delta_time;
                 }
 
                 if (input_subsystem->pressed("EditorCamMoveForward") &&
                     !input_subsystem->pressed("EditorCamMoveBackward")) {
-                    transform.position += camera.direction * m_editor_cam_speed * m_engine->delta_time();
+                    transform.position += camera.direction * m_editor_cam_speed * delta_time;
                 }
 
                 if (input_subsystem->pressed("EditorCamMoveBackward") &&
                     !input_subsystem->pressed("EditorCamMoveForward")) {
-                    transform.position -= camera.direction * m_editor_cam_speed * m_engine->delta_time();
+                    transform.position -= camera.direction * m_editor_cam_speed * delta_time;
                 }
 
                 if (input_subsystem->pressed("EditorCamMoveUp") && !input_subsystem->pressed("EditorCamMoveDown")) {
-                    transform.position += camera.up * m_editor_cam_speed * m_engine->delta_time();
+                    transform.position += camera.up * m_editor_cam_speed * delta_time;
                 }
 
                 if (input_subsystem->pressed("EditorCamMoveDown") && !input_subsystem->pressed("EditorCamMoveUp")) {
-                    transform.position -= camera.up * m_editor_cam_speed * m_engine->delta_time();
+                    transform.position -= camera.up * m_editor_cam_speed * delta_time;
                 }
 
                 // Mouse Rotation
@@ -214,7 +223,7 @@ namespace puffin::rendering
 
 	void CameraSubystem::update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera)
 	{
-		auto render_system = m_engine->get_system<rendering::RenderSystemVK>();
+		auto render_system = m_engine->get_render_subsystem<rendering::RenderSystemVK>();
 
 		// Calculate direction & right vectors
 		camera.direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.0f, 0.0f, -1.0f);
@@ -235,8 +244,8 @@ namespace puffin::rendering
 
     void CameraSubystem::update_active_play_camera()
     {
-        const auto scene_graph = m_engine->get_system<scene::SceneGraph>();
-        const auto entt_subsystem = m_engine->get_system<ecs::EnTTSubsystem>();
+        const auto scene_graph = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
+        const auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
         const auto registry = entt_subsystem->registry();
         const auto camera_view = registry->view<const TransformComponent3D, const CameraComponent3D>();
 

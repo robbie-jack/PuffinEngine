@@ -137,35 +137,35 @@ namespace puffin
 
 					ImGui::NewLine();
 
-					// Display Stage/System Frametime breakdown
-					ImGui::Dummy(ImVec2(0.0f, 10.0f));
-					ImGui::SameLine();
-					ImGui::Text("Frametime Breakdown");
-					ImGui::NewLine();
+					//// Display Stage/System Frametime breakdown
+					//ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					//ImGui::SameLine();
+					//ImGui::Text("Frametime Breakdown");
+					//ImGui::NewLine();
 
-					for (const auto& [stage, name] : core::gExecutionStageOrder)
-					{
-						const auto stageFrametime = mEngine->get_stage_execution_time_last_frame(stage) * 1000.0;
-						ImGui::Dummy(ImVec2(0.0f, 10.0f));
-						ImGui::SameLine();
-						ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
+					//for (const auto& [stage, name] : core::gExecutionStageOrder)
+					//{
+					//	const auto stageFrametime = mEngine->get_stage_execution_time_last_frame(stage) * 1000.0;
+					//	ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					//	ImGui::SameLine();
+					//	ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
 
-						ImGui::Dummy(ImVec2(0.0f, 10.0f));
-						ImGui::SameLine();
-						ImGui::Indent();
-						for (const auto& [name, time] : mEngine->getCallbackExecutionTimeForUpdateStageLastFrame(stage))
-						{
-							const double callbackFrametime = time * 1000.0;
-							ImGui::Dummy(ImVec2(0.0f, 10.0f));
-							ImGui::SameLine();
-							ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
-						}
-						ImGui::Dummy(ImVec2(0.0f, 10.0f));
-						ImGui::SameLine();
-						ImGui::Unindent();
-					}
+					//	ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					//	ImGui::SameLine();
+					//	ImGui::Indent();
+					//	for (const auto& [name, time] : mEngine->getCallbackExecutionTimeForUpdateStageLastFrame(stage))
+					//	{
+					//		const double callbackFrametime = time * 1000.0;
+					//		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					//		ImGui::SameLine();
+					//		ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
+					//	}
+					//	ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					//	ImGui::SameLine();
+					//	ImGui::Unindent();
+					//}
 
-					ImGui::NewLine();
+					//ImGui::NewLine();
 				}
 
 				end();

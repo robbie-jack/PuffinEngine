@@ -10,19 +10,19 @@
 
 namespace puffin::scene
 {
-	SceneGraph::SceneGraph(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
+	SceneGraphSubsystem::SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
 		m_scene_graph_updated = true;
 	}
 
-	void SceneGraph::initialize(core::ISubsystemManager* subsystem_manager)
+	void SceneGraphSubsystem::initialize(core::ISubsystemManager* subsystem_manager)
 	{
 		EngineSubsystem::initialize(subsystem_manager);
 
 		register_default_node_types();
 	}
 
-	void SceneGraph::end_play()
+	void SceneGraphSubsystem::end_play()
 	{
 		for (auto& id : m_node_ids)
 		{
@@ -44,31 +44,34 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraph::engine_update(double delta_time)
+	void SceneGraphSubsystem::update(double delta_time)
 	{
-		EngineSubsystem::engine_update(delta_time);
-
 		update_scene_graph();
 
 		update_transforms();
 	}
 
-	Node* SceneGraph::add_node(const char* type_name, PuffinID id)
+	bool SceneGraphSubsystem::should_update()
+	{
+		return EngineSubsystem::should_update();
+	}
+
+	Node* SceneGraphSubsystem::add_node(const char* type_name, PuffinID id)
 	{
 		return add_node_internal(type_name, id);
 	}
 
-	Node* SceneGraph::add_child_node(const char* type_name, PuffinID id, PuffinID parent_id)
+	Node* SceneGraphSubsystem::add_child_node(const char* type_name, PuffinID id, PuffinID parent_id)
 	{
 		return add_node_internal(type_name, id, parent_id);
 	}
 
-	bool SceneGraph::is_valid_node(PuffinID id)
+	bool SceneGraphSubsystem::is_valid_node(PuffinID id)
 	{
 		return m_id_to_type.find(id) != m_id_to_type.end();
 	}
 
-	Node* SceneGraph::get_node_ptr(const PuffinID& id)
+	Node* SceneGraphSubsystem::get_node_ptr(const PuffinID& id)
 	{
 		if (!is_valid_node(id))
 			return nullptr;
@@ -76,37 +79,37 @@ namespace puffin::scene
 		return get_array(m_id_to_type.at(id).c_str())->get_ptr(id);
 	}
 
-	const std::string& SceneGraph::get_node_type_name(const PuffinID& id) const
+	const std::string& SceneGraphSubsystem::get_node_type_name(const PuffinID& id) const
 	{
 		return m_id_to_type.at(id);
 	}
 
-	TransformComponent2D* SceneGraph::get_global_transform_2d(const PuffinID& id)
+	TransformComponent2D* SceneGraphSubsystem::get_global_transform_2d(const PuffinID& id)
 	{
 		return &m_global_transform_2ds.at(id);
 	}
 
-	TransformComponent3D* SceneGraph::get_global_transform_3d(const PuffinID& id)
+	TransformComponent3D* SceneGraphSubsystem::get_global_transform_3d(const PuffinID& id)
 	{
 		return &m_global_transform_3ds.at(id);
 	}
 
-	void SceneGraph::queue_destroy_node(const PuffinID& id)
+	void SceneGraphSubsystem::queue_destroy_node(const PuffinID& id)
 	{
 		m_nodes_to_destroy.insert(id);
 	}
 
-	std::vector<PuffinID>& SceneGraph::get_node_ids()
+	std::vector<PuffinID>& SceneGraphSubsystem::get_node_ids()
 	{
 		return m_node_ids;
 	}
 
-	std::vector<PuffinID>& SceneGraph::get_root_node_ids()
+	std::vector<PuffinID>& SceneGraphSubsystem::get_root_node_ids()
 	{
 		return m_root_node_ids;
 	}
 
-	void SceneGraph::register_default_node_types()
+	void SceneGraphSubsystem::register_default_node_types()
 	{
 		register_node_type<Node>();
 		register_node_type<TransformNode2D>();
@@ -116,7 +119,7 @@ namespace puffin::scene
 		register_node_type<rendering::CameraNode3D>();
 	}
 
-	void SceneGraph::update_scene_graph()
+	void SceneGraphSubsystem::update_scene_graph()
 	{
 		if (!m_nodes_to_destroy.empty())
 		{
@@ -148,7 +151,7 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraph::destroy_node(PuffinID id)
+	void SceneGraphSubsystem::destroy_node(PuffinID id)
 	{
 		std::vector<PuffinID> child_ids;
 
@@ -168,7 +171,7 @@ namespace puffin::scene
 			m_global_transform_3ds.erase(id);
 	}
 
-	void SceneGraph::add_id_and_child_ids(PuffinID id, std::vector<PuffinID>& node_ids)
+	void SceneGraphSubsystem::add_id_and_child_ids(PuffinID id, std::vector<PuffinID>& node_ids)
 	{
 		m_node_ids.push_back(id);
 
@@ -183,9 +186,10 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraph::update_transforms()
+	void SceneGraphSubsystem::update_transforms()
 	{
-		auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		auto registry = entt_subsystem->registry();
 
 		// Update global transforms
 		for (auto& id : m_node_ids)
@@ -269,7 +273,7 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraph::apply_local_to_global_transform_2d(PuffinID id, TransformComponent2D& global_transform)
+	void SceneGraphSubsystem::apply_local_to_global_transform_2d(PuffinID id, TransformComponent2D& global_transform)
 	{
 		if (const auto node = get_node_ptr(id); node && node->has_transform_2d())
 		{
@@ -285,7 +289,7 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraph::apply_local_to_global_transform_3d(PuffinID id, TransformComponent3D& global_transform)
+	void SceneGraphSubsystem::apply_local_to_global_transform_3d(PuffinID id, TransformComponent3D& global_transform)
 	{
 		if (const auto node = get_node_ptr(id); node && node->has_transform_3d())
 		{
@@ -301,22 +305,18 @@ namespace puffin::scene
 		}
 	}
 
-	SceneGraphGameplay::SceneGraphGameplay(const std::shared_ptr<core::Engine>& engine) : PhysicsSubsystem(engine)
+	SceneGraphGameplaySubsystem::SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine) : GameplaySubsystem(engine)
 	{
 	}
 
-	void SceneGraphGameplay::initialize(core::ISubsystemManager* subsystem_manager)
+	void SceneGraphGameplaySubsystem::initialize(core::ISubsystemManager* subsystem_manager)
 	{
-		PhysicsSubsystem::initialize(subsystem_manager);
-
-		subsystem_manager->create_and_initialize_subsystem<SceneGraph>();
+		subsystem_manager->create_and_initialize_subsystem<SceneGraphSubsystem>();
 	}
 
-	void SceneGraphGameplay::update(double delta_time)
+	void SceneGraphGameplaySubsystem::update(double delta_time)
 	{
-		PhysicsSubsystem::update(delta_time);
-
-		auto scene_graph = m_engine->get_engine_subsystem<SceneGraph>();
+		auto scene_graph = m_engine->get_engine_subsystem<SceneGraphSubsystem>();
 
 		for (auto& id : scene_graph->get_node_ids())
 		{
@@ -325,16 +325,24 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraphGameplay::fixed_update(double fixed_time)
+	bool SceneGraphGameplaySubsystem::should_update()
 	{
-		PhysicsSubsystem::fixed_update(fixed_time);
+		return true;
+	}
 
-		auto scene_graph = m_engine->get_engine_subsystem<SceneGraph>();
+	void SceneGraphGameplaySubsystem::fixed_update(double fixed_time)
+	{
+		auto scene_graph = m_engine->get_engine_subsystem<SceneGraphSubsystem>();
 
 		for (auto& id : scene_graph->get_node_ids())
 		{
 			if (const auto node = scene_graph->get_node_ptr(id); node && node->should_update())
 				node->update_fixed(m_engine->time_step_fixed());
 		}
+	}
+
+	bool SceneGraphGameplaySubsystem::should_fixed_update()
+	{
+		return true;
 	}
 }

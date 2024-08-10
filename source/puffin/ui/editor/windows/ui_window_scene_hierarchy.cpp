@@ -11,14 +11,13 @@ namespace puffin
 		{
 			mWindowName = "Scene Hierarchy";
 
-			if (!m_scene_graph)
-				m_scene_graph = mEngine->get_system<scene::SceneGraph>();
+			auto scene_graph_subsystem = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
 
 			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				mEntityChanged = false;
+				m_entity_changed = false;
 
 				begin(mWindowName);
 
@@ -34,7 +33,7 @@ namespace puffin
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					for (auto id : m_scene_graph->get_root_node_ids())
+					for (auto id : scene_graph_subsystem->get_root_node_ids())
 					{
 						draw_node_ui(id, baseFlags);
 					}
@@ -119,7 +118,8 @@ namespace puffin
 		{
 			ImGuiTreeNodeFlags tree_flags = base_flags;
 
-			auto node = m_scene_graph->get_node_ptr(id);
+			auto scene_graph_subsystem = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
+			auto node = scene_graph_subsystem->get_node_ptr(id);
 
 			bool has_child = false;
 
@@ -143,7 +143,7 @@ namespace puffin
 			if (ImGui::IsItemClicked())
 			{
 				mSelectedEntity = id;
-				mEntityChanged = true;
+				m_entity_changed = true;
 			}
 
 			// Display Entity ID on same line as name

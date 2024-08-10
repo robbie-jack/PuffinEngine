@@ -28,9 +28,7 @@ namespace puffin
 			void deinitialize() override;
 
 			GLFWwindow* primary_window() const;
-
 			[[nodiscard]] bool should_primary_window_close() const;
-
 			GLFWmonitor* primary_monitor() const;
 
 			// Create new window and return PuffinId handle to it

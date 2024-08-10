@@ -22,9 +22,7 @@ namespace puffin
 
 				begin(mWindowName);
 
-                auto settings_manager = mEngine->get_system<core::SettingsManager>();
-
-				const auto input = mEngine->get_system<input::InputSubsystem>();
+                auto settings_manager = m_engine->get_engine_subsystem<core::SettingsManager>();
 
                 auto mouse_sensitivity = settings_manager->get<float>("mouse_sensitivity");
 				if (ImGui::DragFloat("Mouse Sensitivity", &mouse_sensitivity, 0.001f, 0.01f, 0.1f))

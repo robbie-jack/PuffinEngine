@@ -3,8 +3,7 @@
 #include "puffin/core/engine.h"
 #include "entt/entity/registry.hpp"
 #include "puffin/types/vector.h"
-#include "puffin/core/subsystem.h"
-#include "puffin/ecs/entt_subsystem.h"
+#include "puffin/core/engine_subsystem.h"
 
 namespace puffin
 {
@@ -20,39 +19,25 @@ namespace puffin::procedural
 	struct TerrainComponent;
 	struct PlaneComponent;
 
-	class ProceduralMeshGenSystem : public core::Subsystem
+	class ProceduralMeshGenSystem : public core::EngineSubsystem
 	{
 	public:
 
-		ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
-		{
-			const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+		explicit ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine);
+		~ProceduralMeshGenSystem() override;
 
-			/*registry->on_construct<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
-			registry->on_update<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
-
-			registry->on_construct<TerrainComponent>().connect<&ProceduralMeshGenSystem::onConstructTerrain>();
-			registry->on_update<TerrainComponent>().connect<&ProceduralMeshGenSystem::onConstructTerrain>();
-
-			registry->on_construct<IcoSphereComponent>().connect<&ProceduralMeshGenSystem::onConstructIcoSphere>();
-			registry->on_update<IcoSphereComponent>().connect<&ProceduralMeshGenSystem::onConstructIcoSphere>();*/
-		}
-
-		~ProceduralMeshGenSystem() override { m_engine = nullptr; }
-
-
-		static void onConstructPlane(entt::registry& registry, entt::entity entity);
-		static void onConstructTerrain(entt::registry& registry, entt::entity entity);
-		static void onConstructIcoSphere(entt::registry& registry, entt::entity entity);
+		static void on_construct_plane(entt::registry& registry, entt::entity entity);
+		static void on_construct_terrain(entt::registry& registry, entt::entity entity);
+		static void on_construct_ico_sphere(entt::registry& registry, entt::entity entity);
 
 	private:
 
 		// Generator list of vertices/indices for a flat plane
-		static void generatePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads, rendering::ProceduralMeshComponent& mesh);
+		static void generate_plane_vertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent& mesh);
 
-		static void generateTerrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent& mesh);
+		static void generate_terrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent& mesh);
 
-		static void generateIcoSphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent& mesh);
+		static void generate_ico_sphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent& mesh);
 
 	};
 }

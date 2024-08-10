@@ -19,7 +19,7 @@ namespace puffin
 
 namespace puffin::scripting
 {
-	class AngelScriptSystem;
+	class AngelScriptSubsystem;
 
 	struct ScriptCallback
 	{
@@ -39,14 +39,14 @@ namespace puffin::scripting
 	{
 	public:
 
-		AngelScriptEngineInterface(std::shared_ptr<core::Engine> engine, std::shared_ptr<AngelScriptSystem> scriptSystem, asIScriptEngine* scriptEngine);
+		AngelScriptEngineInterface(std::shared_ptr<core::Engine> engine, std::shared_ptr<AngelScriptSubsystem> scriptSystem, asIScriptEngine* scriptEngine);
 
 		~AngelScriptEngineInterface();
 
 	private:
 
-		std::shared_ptr<core::Engine> mEngine;
-		std::shared_ptr<scripting::AngelScriptSystem> mScriptSystem;
+		std::shared_ptr<core::Engine> m_engine;
+		std::shared_ptr<scripting::AngelScriptSubsystem> mScriptSystem;
 		asIScriptEngine* mScriptEngine;
 
 		double mDeltaTime;

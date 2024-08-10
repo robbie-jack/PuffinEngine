@@ -15,7 +15,7 @@ namespace puffin
 {
 	namespace scene
 	{
-		class SceneGraph;
+		class SceneGraphSubsystem;
 	}
 
 	namespace scripting
@@ -121,9 +121,6 @@ namespace puffin::ui
 		bool m_model_selected = false;
 		bool m_texture_selected = false;
 		bool m_scene_changed = false;
-
-		std::shared_ptr<ecs::EnTTSubsystem> m_entt_subsystem = nullptr;
-		std::shared_ptr<scene::SceneGraph> m_scene_graph = nullptr;
 
 		std::vector<IComponentHandler*> m_component_handlers;
 

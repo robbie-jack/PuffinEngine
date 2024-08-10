@@ -55,7 +55,7 @@ namespace puffin::audio
 
 	void AudioSubsystem::update(double delta_time)
 	{
-		Subsystem::update(delta_time);
+		
 	}
 
 	void AudioSubsystem::play_sound(PuffinID soundAssetID)

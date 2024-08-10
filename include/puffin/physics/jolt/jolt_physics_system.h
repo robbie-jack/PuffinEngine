@@ -19,12 +19,12 @@
 #include "Jolt/Physics/Body/MotionType.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 
+#include "puffin/gameplay/gameplay_subsystem.h"
 #include "puffin/components/physics/3d/rigidbody_component_3d.h"
 #include "puffin/components/physics/3d/shape_components_3d.h"
 #include "puffin/components/physics/3d/velocity_component_3d.h"
 #include "puffin/components/transform_component_3d.h"
 #include "puffin/core/engine.h"
-#include "puffin/core/subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/physics/body_type.h"
 #include "puffin/physics/physics_constants.h"
@@ -32,96 +32,73 @@
 
 namespace puffin::physics
 {
-	const inline std::unordered_map<BodyType, JPH::EMotionType> gJoltBodyType =
+	const inline std::unordered_map<BodyType, JPH::EMotionType> g_jolt_body_type =
 	{
 		{ BodyType::Static, JPH::EMotionType::Static },
 		{ BodyType::Kinematic, JPH::EMotionType::Kinematic },
 		{ BodyType::Dynamic, JPH::EMotionType::Dynamic }
 	};
 
-	class JoltPhysicsSystem : public core::Subsystem
+	class JoltPhysicsSystem : public gameplay::GameplaySubsystem
 	{
 	public:
 
-		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
-		{
-			m_engine->register_callback(core::ExecutionStage::BeginPlay, [&] { beginPlay(); }, "JoltPhysicsSystem: BeginPlay");
-			m_engine->register_callback(core::ExecutionStage::UpdateFixed, [&] { fixedUpdate(); }, "JoltPhysicsSystem: FixedUpdate");
-			m_engine->register_callback(core::ExecutionStage::EndPlay, [&] { endPlay(); }, "JoltPhysicsSystem: EndPlay");
+		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine);
+		~JoltPhysicsSystem() override = default;
 
-			auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
+		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void deinitialize() override;
 
-			registry->on_construct<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::onConstructRigidbody>(this);
-			registry->on_destroy<RigidbodyComponent3D>().connect<&JoltPhysicsSystem::onDestroyRigidbody>(this);
+		void begin_play() override;
+		void end_play() override;
 
-			registry->on_construct<RigidbodyComponent3D>().connect<&entt::registry::emplace<VelocityComponent3D>>();
-			registry->on_destroy<RigidbodyComponent3D>().connect<&entt::registry::remove<VelocityComponent3D>>();
+		void fixed_update(double fixed_time) override;
+		bool should_fixed_update() override;
 
-			registry->on_construct<BoxComponent3D>().connect<&JoltPhysicsSystem::onConstructBox>(this);
-			//registry->on_update<BoxComponent3D>().connect<&JoltPhysicsSystem::OnConstructBox>(this);
-			registry->on_destroy<BoxComponent3D>().connect<&JoltPhysicsSystem::onDestroyBox>(this);
+		void on_construct_box(entt::registry& registry, entt::entity entity);
+		void on_destroy_box(entt::registry& registry, entt::entity entity);
 
-			registry->on_construct<SphereComponent3D>().connect<&JoltPhysicsSystem::onConstructSphere>(this);
-			//registry->on_update<SphereComponent3D>().connect<&JoltPhysicsSystem::onConstructSphere>(this);
-			registry->on_destroy<SphereComponent3D>().connect<&JoltPhysicsSystem::onDestroySphere>(this);
+		void on_construct_sphere(entt::registry& registry, entt::entity entity);
+		void on_destroy_sphere(entt::registry& registry, entt::entity entity);
 
-			mShapeRefs.reserve(gMaxShapes);
-		}
+		void on_construct_rigidbody(entt::registry& registry, entt::entity entity);
+		void on_destroy_rigidbody(entt::registry& registry, entt::entity entity);
 
-		~JoltPhysicsSystem() override { m_engine = nullptr; }
-
-		void beginPlay();
-		void fixedUpdate();
-		void endPlay();
-
-		void onConstructBox(entt::registry& registry, entt::entity entity);
-		void onDestroyBox(entt::registry& registry, entt::entity entity);
-
-		void onConstructSphere(entt::registry& registry, entt::entity entity);
-		void onDestroySphere(entt::registry& registry, entt::entity entity);
-
-		void onConstructRigidbody(entt::registry& registry, entt::entity entity);
-		void onDestroyRigidbody(entt::registry& registry, entt::entity entity);
-
-		void updateTimeStep()
-		{
-			mFixedTimeStep = m_engine->time_step_fixed();
-			mCollisionSteps = static_cast<int>(std::ceil(mFixedTimeStep / mIdealTimeStep));
-		}
+		void update_time_step();
 
 	private:
 
-		JPH::Vec3Arg mGravity = JPH::Vec3Arg(0.0, -9.81, 0.0);
-		double mFixedTimeStep = 0.0;
-		const double mIdealTimeStep = 1 / 60.0; // Ideal time step of physics simulation
-		int mCollisionSteps = 1; // Number of collision steps doen in physics simulation. Defualts to one, will be set higher if time step is greater than 1 / 60
+		JPH::Vec3Arg m_gravity = JPH::Vec3Arg(0.0, -9.81, 0.0);
+		double m_fixed_time_step = 0.0;
+		const double m_ideal_time_step = 1 / 60.0; // Ideal time step of physics simulation
+		int m_collision_steps = 1; // Number of collision steps doen in physics simulation. Defualts to one, will be set higher if time step is greater than 1 / 60
 
-		const JPH::uint mNumBodyMutexes = 0;
-		const JPH::uint mMaxBodyPairs = 65536;
-		const JPH::uint mMaxContactConstraints = 10240;
+		const JPH::uint m_num_body_mutexes = 0;
+		const JPH::uint m_max_body_pairs = 65536;
+		const JPH::uint m_max_contact_constraints = 10240;
 
-		std::unique_ptr<JPH::PhysicsSystem> mInternalPhysicsSystem;
-		std::unique_ptr<JPH::TempAllocatorImpl> mTempAllocator;
-		std::unique_ptr<JPH::JobSystemThreadPool> mJobSystem;
+		std::unique_ptr<JPH::PhysicsSystem> m_internal_physics_system;
+		std::unique_ptr<JPH::TempAllocatorImpl> m_temp_allocator;
+		std::unique_ptr<JPH::JobSystemThreadPool> m_job_system;
 
-		JoltBPLayerInterfaceImpl mBPLayerInterfaceImpl;
-		JoltObjectLayerPairFilterImpl mObjectVsObjectLayerFilter;
-		JoltObjectVsBroadPhaseLayerFilterImpl mObjectVsBroadphaseLayerFilter;
+		JoltBPLayerInterfaceImpl m_bp_layer_interface_impl;
+		JoltObjectLayerPairFilterImpl m_object_vs_object_layer_filter;
+		JoltObjectVsBroadPhaseLayerFilterImpl m_object_vs_broadphase_layer_filter;
 
-		PackedVector<PuffinID, JPH::ShapeRefC> mShapeRefs;
-		PackedVector<PuffinID, JPH::Body*> mBodies;
+		PackedVector<PuffinID, JPH::ShapeRefC> m_shape_refs;
+		PackedVector<PuffinID, JPH::Body*> m_bodies;
 
-		std::vector<PuffinID> mBoxesToInit;
-		std::vector<PuffinID> mSpheresToInit;
-		std::vector<PuffinID> mBodiesToInit;
+		std::vector<PuffinID> m_boxes_to_init;
+		std::vector<PuffinID> m_spheres_to_init;
+		std::vector<PuffinID> m_bodies_to_init;
 
-		std::vector<PuffinID> mBodiesToAdd;
+		std::vector<PuffinID> m_bodies_to_add;
 
-		void updateComponents();
+		void update_components();
 
-		void initBox(PuffinID id, const TransformComponent3D& transform, const BoxComponent3D& box);
-		void initSphere(PuffinID id, const TransformComponent3D& transform, const SphereComponent3D& circle);
-		void initRigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
+		void init_box(PuffinID id, const TransformComponent3D& transform, const BoxComponent3D& box);
+		void init_sphere(PuffinID id, const TransformComponent3D& transform, const SphereComponent3D& circle);
+		void init_rigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
 	};
 }
 

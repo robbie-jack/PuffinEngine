@@ -21,7 +21,7 @@ namespace puffin
 		{
 		public:
 
-			UIWindow(const std::shared_ptr<core::Engine>& engine) : mEngine(engine)
+			UIWindow(const std::shared_ptr<core::Engine>& engine) : m_engine(engine)
 			{
 				mShow = true;
 				mFirstTime = true;
@@ -30,7 +30,7 @@ namespace puffin
 
 			virtual ~UIWindow()
 			{
-				mEngine = nullptr;
+				m_engine = nullptr;
 			}
 
 			virtual void draw(double dt) = 0;
@@ -56,7 +56,7 @@ namespace puffin
 
 			ImGuiWindowFlags mFlags;
 
-			std::shared_ptr<core::Engine> mEngine;
+			std::shared_ptr<core::Engine> m_engine;
 
 			virtual bool begin(std::string name);
 			static void end();

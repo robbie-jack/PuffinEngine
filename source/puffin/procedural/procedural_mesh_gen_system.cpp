@@ -1,5 +1,6 @@
 #include "puffin/procedural/procedural_mesh_gen_system.h"
 
+#include "puffin/ecs/entt_subsystem.h"
 #include "puffin/components/transform_component_3d.h"
 #include "puffin/components/procedural/procedural_mesh_component.h"
 #include "puffin/components/rendering/mesh_component.h"
@@ -7,51 +8,71 @@
 
 namespace puffin::procedural
 {
-	void ProceduralMeshGenSystem::onConstructPlane(entt::registry& registry, entt::entity entity)
+	ProceduralMeshGenSystem::ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
+	{
+		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		const auto registry = entt_subsystem->registry();
+
+		/*registry->on_construct<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
+		registry->on_update<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
+
+		registry->on_construct<TerrainComponent>().connect<&ProceduralMeshGenSystem::onConstructTerrain>();
+		registry->on_update<TerrainComponent>().connect<&ProceduralMeshGenSystem::onConstructTerrain>();
+
+		registry->on_construct<IcoSphereComponent>().connect<&ProceduralMeshGenSystem::onConstructIcoSphere>();
+		registry->on_update<IcoSphereComponent>().connect<&ProceduralMeshGenSystem::onConstructIcoSphere>();*/
+	}
+
+	ProceduralMeshGenSystem::~ProceduralMeshGenSystem()
+	{
+		m_engine = nullptr;
+	}
+
+	void ProceduralMeshGenSystem::on_construct_plane(entt::registry& registry, entt::entity entity)
 	{
 		const auto& plane = registry.get<const PlaneComponent>(entity);
 		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent>(entity);
 
-		generatePlaneVertices(plane.half_size, plane.num_quads, mesh);
+		generate_plane_vertices(plane.half_size, plane.num_quads, mesh);
 	}
 
-	void ProceduralMeshGenSystem::onConstructTerrain(entt::registry& registry, entt::entity entity)
+	void ProceduralMeshGenSystem::on_construct_terrain(entt::registry& registry, entt::entity entity)
 	{
 		const auto& terrain = registry.get<const TerrainComponent>(entity);
 		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent>(entity);
 
-		generatePlaneVertices(terrain.half_size, terrain.num_quads, mesh);
-		generateTerrain(terrain, mesh);
+		generate_plane_vertices(terrain.half_size, terrain.num_quads, mesh);
+		generate_terrain(terrain, mesh);
 	}
 
-	void ProceduralMeshGenSystem::onConstructIcoSphere(entt::registry& registry, entt::entity entity)
+	void ProceduralMeshGenSystem::on_construct_ico_sphere(entt::registry& registry, entt::entity entity)
 	{
 		const auto& sphere = registry.get<const IcoSphereComponent>(entity);
 		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent>(entity);
 
-		generateIcoSphere(sphere, mesh);
+		generate_ico_sphere(sphere, mesh);
 	}
 
-	void ProceduralMeshGenSystem::generatePlaneVertices(const Vector2f& halfSize, const Vector2i& numQuads, rendering::ProceduralMeshComponent& mesh)
+	void ProceduralMeshGenSystem::generate_plane_vertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent& mesh)
 	{
 		mesh.vertices.clear();
 		mesh.indices.clear();
 
-		const Vector2f fullSize = halfSize * 2.0f; // Get full size of plane
+		const Vector2f fullSize = half_size * 2.0f; // Get full size of plane
 
 		// Get size of each quad
 		Vector2f quadSize = fullSize;
-		quadSize.x /= static_cast<float>(numQuads.x);
-		quadSize.y /= static_cast<float>(numQuads.y);
+		quadSize.x /= static_cast<float>(num_quads.x);
+		quadSize.y /= static_cast<float>(num_quads.y);
 
 		// Get UV coordinate offset for each vertex between 0 and 1
 		Vector2f uvOffset = {1.0f};
-		uvOffset.x /= static_cast<float>(numQuads.x);
-		uvOffset.y /= static_cast<float>(numQuads.y);
+		uvOffset.x /= static_cast<float>(num_quads.x);
+		uvOffset.y /= static_cast<float>(num_quads.y);
 
 		// Generate all vertices for plane
-		const int numVerticesX = numQuads.x + 1;
-		const int numVerticesY = numQuads.y + 1;
+		const int numVerticesX = num_quads.x + 1;
+		const int numVerticesY = num_quads.y + 1;
 		const int numVerticesTotal = numVerticesX * numVerticesY;
 		mesh.vertices.resize(numVerticesTotal);
 
@@ -60,7 +81,7 @@ namespace puffin::procedural
 			for (int x = 0; x < numVerticesX; x++)
 			{
 				rendering::VertexPNTV32& vertex = mesh.vertices[x + (y * numVerticesX)];
-				vertex.pos = { ((float)x * quadSize.x) - halfSize.x, 0.0f, ((float)y * quadSize.y) - halfSize.y };
+				vertex.pos = { ((float)x * quadSize.x) - half_size.x, 0.0f, ((float)y * quadSize.y) - half_size.y };
 				vertex.normal = { 0.0f, 1.0f, 0.0f };
 				vertex.tangent = { 1.0f, 0.0f, 0.0f};
 				vertex.uvX = (float)x * uvOffset.x;
@@ -68,13 +89,13 @@ namespace puffin::procedural
 			}
 		}
 
-		const int numQuadsTotal = numQuads.x * numQuads.y;
+		const int numQuadsTotal = num_quads.x * num_quads.y;
 		mesh.indices.reserve(numQuadsTotal * 6);
 
 		// Generate indices for each quad/tri of plane
-		for (int y = 0; y < numQuads.y; y++)
+		for (int y = 0; y < num_quads.y; y++)
 		{
-			for (int x = 0; x < numQuads.y; x++)
+			for (int x = 0; x < num_quads.y; x++)
 			{
 				// Calculate Indices for each corner of quad
 				const int topLeft = x + (y * numVerticesX);
@@ -95,7 +116,7 @@ namespace puffin::procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::generateTerrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent& mesh)
+	void ProceduralMeshGenSystem::generate_terrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent& mesh)
 	{
 		const OpenSimplexNoise::Noise noise(terrain.seed);
 		double frequency = terrain.frequency;
@@ -124,7 +145,7 @@ namespace puffin::procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::generateIcoSphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent& mesh)
+	void ProceduralMeshGenSystem::generate_ico_sphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent& mesh)
 	{
 		mesh.vertices.clear();
 		mesh.indices.clear();
