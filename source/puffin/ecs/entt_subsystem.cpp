@@ -2,7 +2,7 @@
 
 namespace puffin::ecs
 {
-	EnTTSubsystem::EnTTSubsystem(const std::shared_ptr<core::Engine>& engine): EngineSubsystem(engine)
+	EnTTSubsystem::EnTTSubsystem(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
 	{
 	}
 
@@ -11,7 +11,7 @@ namespace puffin::ecs
 		m_engine = nullptr;
 	}
 
-	void EnTTSubsystem::initialize(core::ISubsystemManager* subsystem_manager)
+	void EnTTSubsystem::initialize(core::SubsystemManager* subsystem_manager)
 	{
 		Subsystem::initialize(subsystem_manager);
 

@@ -43,8 +43,8 @@ namespace puffin
 		{
 			mWindowName = "Entity Properties";
 
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
-			auto scene_graph_subsystem = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+			auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
 
 			const auto registry = entt_subsystem->registry();
 
@@ -312,7 +312,7 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_mesh_ui(const ImGuiTreeNodeFlags flags, const entt::entity entity, rendering::MeshComponent& mesh)
 		{
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Mesh Component", flags))
@@ -371,7 +371,7 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light)
 		{
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Light Component", flags))
@@ -533,7 +533,7 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadow)
 		{
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Shadow Caster Component", flags))
@@ -636,7 +636,7 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane)
 		{
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Procedural Plane Component", flags))
@@ -678,7 +678,7 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_rigidbody_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody)
 		{
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Rigidbody Component", flags))
@@ -760,7 +760,7 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_circle_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle)
 		{
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Circle Component 2D", flags))
@@ -802,7 +802,7 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_box_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box)
 		{
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Box Component 2D", flags))
@@ -844,7 +844,7 @@ namespace puffin
 
 		void UIWindowNodeEditor::draw_script_ui(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script)
 		{
-			auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
 
 			if (ImGui::TreeNodeEx("Script Component", flags))

@@ -1,11 +1,13 @@
 #include "puffin/core/subsystem.h"
+
 #include "puffin/core/engine.h"
+#include "puffin/core/subsystem_manager.h"
 
 namespace puffin::core
 {
-	Subsystem::Subsystem(std::shared_ptr<Engine> engine) : m_engine(std::move(engine))
+	Subsystem::Subsystem(std::shared_ptr<Engine> engine) :
+		m_engine(std::move(engine))
 	{
-
 	}
 
 	Subsystem::~Subsystem()
@@ -13,7 +15,7 @@ namespace puffin::core
 		m_engine = nullptr;
 	}
 
-	void Subsystem::initialize(core::ISubsystemManager* subsystem_manager)
+	void Subsystem::initialize(SubsystemManager* subsystem_manager)
 	{
 
 	}
@@ -21,6 +23,11 @@ namespace puffin::core
 	void Subsystem::deinitialize()
 	{
 
+	}
+
+	SubsystemType Subsystem::type() const
+	{
+		return SubsystemType::Engine;
 	}
 
 	void Subsystem::begin_play()
@@ -41,5 +48,27 @@ namespace puffin::core
 	bool Subsystem::should_update()
 	{
 		return false;
+	}
+
+	void Subsystem::fixed_update(double fixed_time)
+	{
+	}
+
+	bool Subsystem::should_fixed_update()
+	{
+		return false;
+	}
+
+	void Subsystem::process_input()
+	{
+	}
+
+	double Subsystem::wait_for_last_presentation_and_sample_time()
+	{
+		return 0.0;
+	}
+
+	void Subsystem::render(double delta_time)
+	{
 	}
 }

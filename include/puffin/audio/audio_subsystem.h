@@ -64,7 +64,7 @@ namespace puffin::audio
 		AudioSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~AudioSubsystem() override;
 
-		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void initialize(core::SubsystemManager* subsystem_manager) override;
 		void deinitialize() override;
 
 		void update(double delta_time) override;

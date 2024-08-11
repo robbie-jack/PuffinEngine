@@ -9,7 +9,7 @@
 
 #include "puffin/assets/asset_registry.h"
 #include "puffin/scene/scene_graph.h"
-#include "puffin/core/engine_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/types/uuid.h"
 
@@ -199,15 +199,14 @@ namespace puffin::io
 
     };
 
-	class SceneSubsystem : public core::EngineSubsystem
+	class SceneSubsystem : public core::Subsystem
 	{
 	public:
 
 		explicit SceneSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~SceneSubsystem() override;
 
-		~SceneSubsystem() override { m_engine = nullptr; }
-
-		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void initialize(core::SubsystemManager* subsystem_manager) override;
 		void deinitialize() override;
 
 		void begin_play() override;

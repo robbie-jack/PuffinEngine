@@ -35,13 +35,13 @@ int main(int argc, char* argv[])
 
 	engine->setup();
 
-	engine->register_render_subsystem<puffin::rendering::RenderSystemVK>();
+	engine->register_subsystem<puffin::rendering::RenderSystemVK>();
 
 #ifdef PFN_JOLT_PHYSICS
-	engine->register_gameplay_subsystem<puffin::physics::JoltPhysicsSystem>();
+	engine->register_subsystem<puffin::physics::JoltPhysicsSystem>();
 #endif
 
-	engine->register_gameplay_subsystem<puffin::scripting::AngelScriptSubsystem>();
+	engine->register_subsystem<puffin::scripting::AngelScriptSubsystem>();
 
 	engine->initialize(parser);
 

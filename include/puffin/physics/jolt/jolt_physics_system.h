@@ -19,7 +19,7 @@
 #include "Jolt/Physics/Body/MotionType.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 
-#include "puffin/gameplay/gameplay_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/components/physics/3d/rigidbody_component_3d.h"
 #include "puffin/components/physics/3d/shape_components_3d.h"
 #include "puffin/components/physics/3d/velocity_component_3d.h"
@@ -39,15 +39,17 @@ namespace puffin::physics
 		{ BodyType::Dynamic, JPH::EMotionType::Dynamic }
 	};
 
-	class JoltPhysicsSystem : public gameplay::GameplaySubsystem
+	class JoltPhysicsSystem : public core::Subsystem
 	{
 	public:
 
 		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine);
 		~JoltPhysicsSystem() override = default;
 
-		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void initialize(core::SubsystemManager* subsystem_manager) override;
 		void deinitialize() override;
+
+		core::SubsystemType type() const override;
 
 		void begin_play() override;
 		void end_play() override;

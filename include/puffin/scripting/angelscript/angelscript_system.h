@@ -9,8 +9,7 @@
 // AngelScript Includes
 #include "angelscript/angelscript.h"
 
-#include "puffin/core/engine_subsystem.h"
-#include "puffin/gameplay/gameplay_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/core/engine.h"
 #include "puffin/input/input_event.h"
 #include "puffin/types/ring_buffer.h"
@@ -18,28 +17,24 @@
 
 #include "angelscript_engine_interface.h"
 #include "puffin/audio/audio_subsystem.h"
-#include "puffin/gameplay/gameplay_subsystem.h"
 #include "puffin/physics/collision_event.h"
 
 namespace puffin::scripting
 {
-	class AngelScriptSubsystem : public core::EngineSubsystem, public std::enable_shared_from_this<AngelScriptSubsystem>
+	class AngelScriptSubsystem : public core::Subsystem, public std::enable_shared_from_this<AngelScriptSubsystem>
 	{
 	public:
 
 		AngelScriptSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~AngelScriptSubsystem() override;
 
-		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void initialize(core::SubsystemManager* subsystem_manager) override;
 		void deinitialize() override;
 
-		void begin_play() override;
-		void end_play() override;
+		void update(double delta_time) override;
+		bool should_update() override;
 
-		void startup();
-		void beginPlay();
 		void fixedUpdate();
-		void update();
 		void endPlay();
 
 		void onConstructScript(entt::registry& registry, entt::entity entity);
@@ -118,12 +113,14 @@ namespace puffin::scripting
 		void releaseOnCollisionEnd(PuffinID entity);
 	};
 
-	class AngelScriptGameplaySubsystem : public gameplay::GameplaySubsystem
+	class AngelScriptGameplaySubsystem : public core::Subsystem
 	{
 	public:
 
 		AngelScriptGameplaySubsystem(std::shared_ptr<core::Engine> engine);
 		~AngelScriptGameplaySubsystem() override = default;
+
+		core::SubsystemType type() const override;
 
 		void begin_play() override;
 		void end_play() override;

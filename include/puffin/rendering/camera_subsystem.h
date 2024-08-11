@@ -3,21 +3,21 @@
 #include <unordered_map>
 #include <entt/entity/registry.hpp>
 
-#include "puffin/core/engine_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/components/transform_component_3d.h"
 #include "puffin/components/rendering/camera_component.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin::rendering
 {
-	class CameraSubystem : public core::EngineSubsystem
+	class CameraSubystem : public core::Subsystem
 	{
 	public:
 
 		explicit CameraSubystem(const std::shared_ptr<core::Engine>& engine);
 		~CameraSubystem() override = default;
 
-		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void initialize(core::SubsystemManager* subsystem_manager) override;
 		void deinitialize() override;
 
 		void begin_play() override;

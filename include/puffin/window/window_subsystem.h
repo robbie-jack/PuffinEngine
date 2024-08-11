@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 #include "puffin/types/uuid.h"
-#include "puffin/core/engine_subsystem.h"
+#include "puffin/core/subsystem.h"
 
 class GLFWwindow;
 class GLFWmonitor;
@@ -17,14 +17,14 @@ namespace puffin
 
 	namespace window
 	{
-		class WindowSubsystem : public core::EngineSubsystem
+		class WindowSubsystem : public core::Subsystem
 		{
 		public:
 
 			WindowSubsystem(const std::shared_ptr<core::Engine>& engine);
-			~WindowSubsystem() override { m_engine = nullptr; }
+			~WindowSubsystem() override;
 
-			void initialize(core::ISubsystemManager* subsystem_manager) override;
+			void initialize(core::SubsystemManager* subsystem_manager) override;
 			void deinitialize() override;
 
 			GLFWwindow* primary_window() const

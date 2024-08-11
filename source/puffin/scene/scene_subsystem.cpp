@@ -189,35 +189,35 @@ namespace puffin::io
 		}
 	}
 
-	SceneSubsystem::SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
+	SceneSubsystem::SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 	}
 
-	void SceneSubsystem::initialize(core::ISubsystemManager* subsystem_manager)
+	SceneSubsystem::~SceneSubsystem()
 	{
-		EngineSubsystem::initialize(subsystem_manager);
+		m_engine = nullptr;
+	}
 
+	void SceneSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	{
 		const auto entt_subsystem = subsystem_manager->create_and_initialize_subsystem<ecs::EnTTSubsystem>();
 		const auto scene_graph = subsystem_manager->create_and_initialize_subsystem<scene::SceneGraphSubsystem>();
 	}
 
 	void SceneSubsystem::deinitialize()
 	{
-		EngineSubsystem::deinitialize();
 	}
 
 	void SceneSubsystem::begin_play()
 	{
-		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
-		auto scene_graph = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
+		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto scene_graph = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
 
 		m_current_scene_data->update_data(entt_subsystem, scene_graph);
 	}
 
 	void SceneSubsystem::end_play()
 	{
-		EngineSubsystem::end_play();
-
 		load_and_setup();
 	}
 
@@ -228,8 +228,8 @@ namespace puffin::io
 
 	void SceneSubsystem::setup() const
 	{
-		const auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
-		const auto scene_graph = m_engine->get_engine_subsystem<scene::SceneGraphSubsystem>();
+		const auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		const auto scene_graph = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
 
 		m_current_scene_data->setup(entt_subsystem, scene_graph);
 	}

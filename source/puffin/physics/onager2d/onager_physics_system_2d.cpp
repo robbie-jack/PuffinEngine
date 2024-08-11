@@ -25,10 +25,6 @@ namespace puffin
 
 		OnagerPhysicsSystem2D::OnagerPhysicsSystem2D(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			m_engine->register_callback(core::ExecutionStage::Startup, [&]() { startup(); }, "Onager2DPhysicsSystem: Startup");
-			m_engine->register_callback(core::ExecutionStage::UpdateFixed, [&]() { update_fixed(); }, "Onager2DPhysicsSystem: UpdateFixed");
-			m_engine->register_callback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Onager2DPhysicsSystem: EndPlay");
-
 			const auto registry = m_engine->get_system<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&OnagerPhysicsSystem2D::onConstructRigidbody>(this);

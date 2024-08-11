@@ -3,7 +3,7 @@
 #include "puffin/core/engine.h"
 #include "entt/entity/registry.hpp"
 #include "puffin/types/vector.h"
-#include "puffin/core/engine_subsystem.h"
+#include "puffin/core/subsystem.h"
 
 namespace puffin
 {
@@ -19,7 +19,7 @@ namespace puffin::procedural
 	struct TerrainComponent;
 	struct PlaneComponent;
 
-	class ProceduralMeshGenSystem : public core::EngineSubsystem
+	class ProceduralMeshGenSystem : public core::Subsystem
 	{
 	public:
 

@@ -7,11 +7,11 @@
 
 namespace puffin::core
 {
-	SettingsManager::SettingsManager(const std::shared_ptr<core::Engine>& engine): EngineSubsystem(engine)
+	SettingsManager::SettingsManager(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
 	{
 	}
 
-	void SettingsManager::initialize(core::ISubsystemManager* subsystem_manager)
+	void SettingsManager::initialize(core::SubsystemManager* subsystem_manager)
 	{
 		if (m_engine->setup_engine_default_settings())
 		{

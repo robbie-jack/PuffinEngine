@@ -13,15 +13,18 @@ namespace puffin::window
 	// Public Methods
 	//==================================================
 
-	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
+	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		
 	}
 
-	void WindowSubsystem::initialize(core::ISubsystemManager* subsystem_manager)
+	WindowSubsystem::~WindowSubsystem()
 	{
-		EngineSubsystem::initialize(subsystem_manager);
+		m_engine = nullptr;
+	}
 
+	void WindowSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	{
 		glfwInit();
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -42,8 +45,6 @@ namespace puffin::window
 
 	void WindowSubsystem::deinitialize()
 	{
-		EngineSubsystem::deinitialize();
-
 		glfwDestroyWindow(m_primary_window);
 
 		for (auto& [fst, snd] : m_windows)

@@ -114,7 +114,6 @@ set(HEADERS
 	# Core
 	${HEADER_DIR}/puffin/core/application.h
 	${HEADER_DIR}/puffin/core/engine.h
-	${HEADER_DIR}/puffin/core/engine_subsystem.h
 	${HEADER_DIR}/puffin/core/enkits_subsystem.h
 	${HEADER_DIR}/puffin/core/settings_manager.h
 	${HEADER_DIR}/puffin/core/signal_subsystem.h
@@ -123,9 +122,7 @@ set(HEADERS
 	# ECS
 	${HEADER_DIR}/puffin/ecs/entt_subsystem.h
 	# Editor
-	${HEADER_DIR}/puffin/editor/editor_subsystem.h
 	# Gameplay
-	${HEADER_DIR}/puffin/gameplay/gameplay_subsystem.h
 	# Input
 	${HEADER_DIR}/puffin/input/input_event.h
 	${HEADER_DIR}/puffin/input/input_subsystem.h
@@ -169,7 +166,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/material_globals.h
 	${HEADER_DIR}/puffin/rendering/render_globals.h
 	${HEADER_DIR}/puffin/rendering/render_helpers.h
-	${HEADER_DIR}/puffin/rendering/render_subsystem.h
 	# Rendering Vulkan
 	${HEADER_DIR}/puffin/rendering/vulkan/descriptors_vk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/helpers_vk.h
@@ -230,15 +226,14 @@ set(SOURCES
 	# Core
 	${SOURCE_DIR}/puffin/core/application.cpp
 	${SOURCE_DIR}/puffin/core/engine.cpp
-	${SOURCE_DIR}/puffin/core/engine_subsystem.cpp
 	${SOURCE_DIR}/puffin/core/enkits_subsystem.cpp
+	${SOURCE_DIR}/puffin/core/settings_manager.cpp
 	${SOURCE_DIR}/puffin/core/subsystem.cpp
+	${SOURCE_DIR}/puffin/core/subsystem_manager.cpp
 	# ECS
 	${SOURCE_DIR}/puffin/ecs/entt_subsystem.cpp
 	# Editor
-	${SOURCE_DIR}/puffin/editor/editor_subsystem.cpp
 	# Gameplay
-	${SOURCE_DIR}/puffin/gameplay/gameplay_subsystem.cpp
 	# Input
 	${SOURCE_DIR}/puffin/input/input_subsystem.cpp
 	# Nodes
@@ -269,7 +264,6 @@ set(SOURCES
 	# Rendering
 	${SOURCE_DIR}/puffin/rendering/camera_subsystem.cpp
 	${SOURCE_DIR}/puffin/rendering/render_helpers.cpp
-	${SOURCE_DIR}/puffin/rendering/render_subsystem.cpp
 	# Rendering - Vulkan
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptors_vk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/helpers_vk.cpp

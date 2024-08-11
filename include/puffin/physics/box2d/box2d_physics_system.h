@@ -41,10 +41,6 @@ namespace puffin::physics
 
 		Box2DPhysicsSystem(const std::shared_ptr<core::Engine>& engine) : System(engine)
 		{
-			mEngine->registerCallback(core::ExecutionStage::BeginPlay, [&]() { beginPlay(); }, "Box2DPhysicsSystem: BeginPlay");
-			mEngine->registerCallback(core::ExecutionStage::FixedUpdate, [&]() { fixedUpdate(); }, "Box2DPhysicsSystem: FixedUpdate");
-			mEngine->registerCallback(core::ExecutionStage::EndPlay, [&]() { endPlay(); }, "Box2DPhysicsSystem: EndPlay");
-
 			auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
 
 			registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::onConstructRigidbody>(this);

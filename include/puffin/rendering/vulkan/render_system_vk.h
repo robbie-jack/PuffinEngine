@@ -15,7 +15,7 @@
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/rendering/material_globals.h"
 #include "puffin/rendering/render_globals.h"
-#include "puffin/rendering/render_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/rendering/vulkan/descriptors_vk.h"
 #include "puffin/rendering/vulkan/pipeline_vk.h"
 #include "puffin/rendering/vulkan/types_vk.h"
@@ -125,15 +125,17 @@ namespace puffin::rendering
 	};
 
 	// Vulkan Rendering System
-	class RenderSystemVK final : public rendering::RenderSubsystem, public std::enable_shared_from_this<RenderSystemVK>
+	class RenderSystemVK final : public core::Subsystem, public std::enable_shared_from_this<RenderSystemVK>
 	{
 	public:
 
 		explicit RenderSystemVK(const std::shared_ptr<core::Engine>& engine);
 		~RenderSystemVK() override;
 
-		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void initialize(core::SubsystemManager* subsystem_manager) override;
 		void deinitialize() override;
+
+		[[nodiscard]] core::SubsystemType type() const override;
 
 		double wait_for_last_presentation_and_sample_time() override;
 		void render(double delta_time) override;

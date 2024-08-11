@@ -5,8 +5,7 @@
 #include <memory>
 #include <set>
 
-#include "puffin/core/engine_subsystem.h"
-#include "puffin/gameplay/gameplay_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/nodes/node.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/packed_array.h"
@@ -127,13 +126,13 @@ namespace puffin::scene
 
 	};
 
-	class SceneGraphSubsystem : public core::EngineSubsystem
+	class SceneGraphSubsystem : public core::Subsystem
 	{
 	public:
 
 		SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine);
 
-		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void initialize(core::SubsystemManager* subsystem_manager) override;
 
 		void end_play() override;
 
@@ -339,14 +338,16 @@ namespace puffin::scene
 
 	};
 
-	class SceneGraphGameplaySubsystem : public gameplay::GameplaySubsystem
+	class SceneGraphGameplaySubsystem : public core::Subsystem
 	{
 	public:
 
 		explicit SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine);
 		~SceneGraphGameplaySubsystem() override = default;
 
-		void initialize(core::ISubsystemManager* subsystem_manager) override;
+		void initialize(core::SubsystemManager* subsystem_manager) override;
+
+		[[nodiscard]] core::SubsystemType type() const override;
 
 		void update(double delta_time) override;
 		bool should_update() override;

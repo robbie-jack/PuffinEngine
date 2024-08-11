@@ -7,7 +7,7 @@
 
 #include "GLFW/glfw3.h"
 
-#include "puffin/core/engine_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/input/input_event.h"
 
 namespace puffin
@@ -27,17 +27,19 @@ namespace puffin
 			KeyState state;
 		};
 
-		class InputSubsystem : public core::EngineSubsystem
+		class InputSubsystem : public core::Subsystem
 		{
 		public:
 
 			explicit InputSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~InputSubsystem() override;
 
-			void initialize(core::ISubsystemManager* subsystem_manager) override;
+			void initialize(core::SubsystemManager* subsystem_manager) override;
 			void deinitialize() override;
 
-			void process_input();
+			core::SubsystemType type() const override;
+
+			void process_input() override;
 
 			void add_action(std::string name, int key);
 			void add_action(std::string name, std::vector<int> keys);

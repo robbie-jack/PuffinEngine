@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-#include "puffin/editor/editor_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin
@@ -33,14 +33,14 @@ namespace puffin
 			Texture
 		};
 
-		class EditorUISubsystem : public editor::EditorSubsystem
+		class EditorUISubsystem : public core::Subsystem
 		{
 		public:
 
 			explicit EditorUISubsystem(const std::shared_ptr<core::Engine>& engine);
-			~EditorUISubsystem() override { m_engine = nullptr; }
+			~EditorUISubsystem() override = default;
 
-			void initialize(core::ISubsystemManager* subsystem_manager) override;
+			void initialize(core::SubsystemManager* subsystem_manager) override;
 			void deinitialize() override;
 
 			void update(double delta_time) override;

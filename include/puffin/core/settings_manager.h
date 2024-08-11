@@ -6,14 +6,14 @@
 
 #include "nlohmann/json.hpp"
 
-#include "puffin/core/engine_subsystem.h"
+#include "puffin/core/subsystem.h"
 #include "puffin/core/signal_subsystem.h"
 
 namespace fs = std::filesystem;
 
 namespace puffin::core
 {
-	class SettingsManager : public EngineSubsystem
+	class SettingsManager : public Subsystem
     {
     public:
 
@@ -21,14 +21,14 @@ namespace puffin::core
 
         ~SettingsManager() override = default;
 
-        void initialize(core::ISubsystemManager* subsystem_manager) override;
+        void initialize(core::SubsystemManager* subsystem_manager) override;
 
         template<typename T>
         void set(const std::string& name, const T& t)
         {
             m_json[name] = t;
 
-            auto signal_subsystem = m_engine->get_engine_subsystem<SignalSubsystem>();
+            auto signal_subsystem = m_engine->get_subsystem<SignalSubsystem>();
 
             if (!signal_subsystem->get_signal<T>(name))
             {

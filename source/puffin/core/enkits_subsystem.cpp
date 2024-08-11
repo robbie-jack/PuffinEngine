@@ -4,20 +4,17 @@
 
 namespace puffin::core
 {
-	EnkiTSSubsystem::EnkiTSSubsystem(const std::shared_ptr<Engine>& engine) : EngineSubsystem(engine)
+	EnkiTSSubsystem::EnkiTSSubsystem(const std::shared_ptr<Engine>& engine) : Subsystem(engine)
 	{
-		
 	}
 
 	EnkiTSSubsystem::~EnkiTSSubsystem()
 	{
-
+		m_engine = nullptr;
 	}
 
-	void EnkiTSSubsystem::initialize(core::ISubsystemManager* subsystem_manager)
+	void EnkiTSSubsystem::initialize(SubsystemManager* subsystem_manager)
 	{
-		EngineSubsystem::initialize(subsystem_manager);
-
 		m_task_scheduler = std::make_shared<enki::TaskScheduler>();
 
 		// Set max threads to physical - 2 (so there is some left over for other system work)

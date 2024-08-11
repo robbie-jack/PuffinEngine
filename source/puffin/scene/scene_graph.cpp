@@ -10,15 +10,13 @@
 
 namespace puffin::scene
 {
-	SceneGraphSubsystem::SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
+	SceneGraphSubsystem::SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		m_scene_graph_updated = true;
 	}
 
-	void SceneGraphSubsystem::initialize(core::ISubsystemManager* subsystem_manager)
+	void SceneGraphSubsystem::initialize(core::SubsystemManager* subsystem_manager)
 	{
-		EngineSubsystem::initialize(subsystem_manager);
-
 		register_default_node_types();
 	}
 
@@ -188,7 +186,7 @@ namespace puffin::scene
 
 	void SceneGraphSubsystem::update_transforms()
 	{
-		auto entt_subsystem = m_engine->get_engine_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		auto registry = entt_subsystem->registry();
 
 		// Update global transforms
@@ -305,18 +303,23 @@ namespace puffin::scene
 		}
 	}
 
-	SceneGraphGameplaySubsystem::SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine) : GameplaySubsystem(engine)
+	SceneGraphGameplaySubsystem::SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 	}
 
-	void SceneGraphGameplaySubsystem::initialize(core::ISubsystemManager* subsystem_manager)
+	void SceneGraphGameplaySubsystem::initialize(core::SubsystemManager* subsystem_manager)
 	{
 		subsystem_manager->create_and_initialize_subsystem<SceneGraphSubsystem>();
 	}
 
+	core::SubsystemType SceneGraphGameplaySubsystem::type() const
+	{
+		return core::SubsystemType::Gameplay;
+	}
+
 	void SceneGraphGameplaySubsystem::update(double delta_time)
 	{
-		auto scene_graph = m_engine->get_engine_subsystem<SceneGraphSubsystem>();
+		auto scene_graph = m_engine->get_subsystem<SceneGraphSubsystem>();
 
 		for (auto& id : scene_graph->get_node_ids())
 		{
@@ -332,7 +335,7 @@ namespace puffin::scene
 
 	void SceneGraphGameplaySubsystem::fixed_update(double fixed_time)
 	{
-		auto scene_graph = m_engine->get_engine_subsystem<SceneGraphSubsystem>();
+		auto scene_graph = m_engine->get_subsystem<SceneGraphSubsystem>();
 
 		for (auto& id : scene_graph->get_node_ids())
 		{
