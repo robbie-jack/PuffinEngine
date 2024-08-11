@@ -53,7 +53,7 @@ namespace puffin::scene
 
 	bool SceneGraphSubsystem::should_update()
 	{
-		return EngineSubsystem::should_update();
+		return true;
 	}
 
 	Node* SceneGraphSubsystem::add_node(const char* type_name, PuffinID id)
