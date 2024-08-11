@@ -72,42 +72,53 @@ namespace puffin::core
 {
 	Engine::Engine()
 	{
-		m_engine_subsystem_manager = std::make_shared<EngineSubsystemManager>(shared_from_this());
-		m_editor_subsystem_manager = std::make_shared<editor::EditorSubsystemManager>(shared_from_this());
-		m_render_subsystem_manager = std::make_shared<rendering::RenderSubsystemManager>(shared_from_this());
-		m_gameplay_subsystem_manager = std::make_shared<gameplay::GameplaySubsystemManager>(shared_from_this());
 	}
 
 	Engine::~Engine()
 	{
+		m_application = nullptr;
 		m_engine_subsystem_manager = nullptr;
 		m_editor_subsystem_manager = nullptr;
 		m_render_subsystem_manager = nullptr;
 		m_gameplay_subsystem_manager = nullptr;
 	}
 
-	void Engine::register_required_subsystems() const
+	void Engine::setup()
 	{
-		register_engine_subsystem<window::WindowSubsystem>();
-		register_engine_subsystem<core::SignalSubsystem>();
-		register_engine_subsystem<input::InputSubsystem>();
-		register_engine_subsystem<SettingsManager>();
-		register_engine_subsystem<EnkiTSSubsystem>();
-		register_engine_subsystem<audio::AudioSubsystem>();
-		register_engine_subsystem<ecs::EnTTSubsystem>();
-		register_engine_subsystem<scene::SceneGraphSubsystem>();
-		register_engine_subsystem<io::SceneSubsystem>();
-		register_engine_subsystem<rendering::CameraSubystem>();
+		m_engine_subsystem_manager = std::make_shared<EngineSubsystemManager>(shared_from_this());
+		m_editor_subsystem_manager = std::make_shared<editor::EditorSubsystemManager>(shared_from_this());
+		m_render_subsystem_manager = std::make_shared<rendering::RenderSubsystemManager>(shared_from_this());
+		m_gameplay_subsystem_manager = std::make_shared<gameplay::GameplaySubsystemManager>(shared_from_this());
 
-		register_editor_subsystem<ui::EditorUISubsystem>();
-
-		register_gameplay_subsystem<scene::SceneGraphGameplaySubsystem>();
+		register_required_subsystems();
 	}
 
 	void Engine::initialize(const argparse::ArgumentParser& parser)
 	{
-		m_running = true;
-		m_play_state = PlayState::Stopped;
+		fs::path project_path = fs::path(parser.get<std::string>("-project_path")).make_preferred();
+
+		// Load Project File
+		load_project(project_path, m_project_file);
+
+		// Setup asset registry
+		assets::AssetRegistry::get()->init(m_project_file, project_path);
+		assets::AssetRegistry::get()->register_asset_type<assets::StaticMeshAsset>();
+		assets::AssetRegistry::get()->register_asset_type<assets::TextureAsset>();
+		assets::AssetRegistry::get()->register_asset_type<assets::SoundAsset>();
+		assets::AssetRegistry::get()->register_asset_type<assets::ShaderAsset>();
+		assets::AssetRegistry::get()->register_asset_type<assets::MaterialAsset>();
+		assets::AssetRegistry::get()->register_asset_type<assets::MaterialInstanceAsset>();
+
+		// Load Project Settings
+		m_setup_engine_default_settings = parser.get<bool>("--setup-default-settings");
+		m_setup_engine_default_scene = parser.get<bool>("--setup-engine-default-scene");
+
+		// Load/Initialize Assets
+		assets::AssetRegistry::get()->load_asset_cache();
+		//add_default_assets();
+		//reimport_default_assets();
+		//assets::AssetRegistry::get()->save_asset_cache();
+		//load_and_resave_assets();
 
 		m_engine_subsystem_manager->create_and_initialize_subsystems();
 
@@ -139,31 +150,6 @@ namespace puffin::core
 		scene_subsystem->register_component<physics::BoxComponent3D>();
 		scene_subsystem->register_component<physics::SphereComponent3D>();
 
-		fs::path project_path = fs::path(parser.get<std::string>("-project_path")).make_preferred();
-
-		// Load Project File
-		load_project(project_path, m_project_file);
-
-		// Setup asset registry
-		assets::AssetRegistry::get()->init(m_project_file, project_path);
-		assets::AssetRegistry::get()->register_asset_type<assets::StaticMeshAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::TextureAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::SoundAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::ShaderAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::MaterialAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::MaterialInstanceAsset>();
-
-		// Load Project Settings
-		m_setup_engine_default_settings = parser.get<bool>("--setup-default-settings");
-		m_setup_engine_default_scene = parser.get<bool>("--setup-engine-default-scene");
-
-		// Load/Initialize Assets
-		assets::AssetRegistry::get()->load_asset_cache();
-		//add_default_assets();
-		//reimport_default_assets();
-		//assets::AssetRegistry::get()->save_asset_cache();
-		//load_and_resave_assets();
-
 		// Load default scene
 		auto scene_string = parser.get<std::string>("-scene");
 		if (!scene_string.empty())
@@ -173,20 +159,6 @@ namespace puffin::core
 
 		auto scene_data = scene_subsystem->create_scene(
 			assets::AssetRegistry::get()->content_root() / scene_string);
-
-		{
-			auto settings_manager = get_engine_subsystem<SettingsManager>();
-
-			if (m_setup_engine_default_settings)
-			{
-				default_settings();
-				settings_manager->save(assets::AssetRegistry::get()->project_root() / "config" / "settings.json");
-			}
-			else
-			{
-				settings_manager->load(assets::AssetRegistry::get()->project_root() / "config" / "settings.json");
-			}
-		}
 
 		{
             if (m_setup_engine_default_scene)
@@ -209,8 +181,13 @@ namespace puffin::core
             }
 		}
 
+		scene_subsystem->setup();
+
 		m_last_time = glfwGetTime(); // Time Count Started
 		m_current_time = m_last_time;
+
+		m_running = true;
+		m_play_state = PlayState::Stopped;
 	}
 
 	bool Engine::update()
@@ -424,6 +401,24 @@ namespace puffin::core
 
 		// Clear Asset Registry
 		assets::AssetRegistry::clear();
+	}
+
+	void Engine::register_required_subsystems() const
+	{
+		register_engine_subsystem<window::WindowSubsystem>();
+		register_engine_subsystem<core::SignalSubsystem>();
+		register_engine_subsystem<input::InputSubsystem>();
+		register_engine_subsystem<SettingsManager>();
+		register_engine_subsystem<EnkiTSSubsystem>();
+		register_engine_subsystem<audio::AudioSubsystem>();
+		register_engine_subsystem<ecs::EnTTSubsystem>();
+		register_engine_subsystem<scene::SceneGraphSubsystem>();
+		register_engine_subsystem<io::SceneSubsystem>();
+		register_engine_subsystem<rendering::CameraSubystem>();
+
+		register_editor_subsystem<ui::EditorUISubsystem>();
+
+		register_gameplay_subsystem<scene::SceneGraphGameplaySubsystem>();
 	}
 
 	void Engine::add_default_assets()
@@ -846,15 +841,6 @@ namespace puffin::core
 	{
 		m_running = false;
 	}
-
-    void Engine::default_settings()
-    {
-        auto settings_manager = get_engine_subsystem<SettingsManager>();
-
-        settings_manager->set("editor_camera_fov", 60.0f);
-        settings_manager->set("mouse_sensitivity", 0.05f);
-		settings_manager->set("rendering_draw_shadows", false);
-    }
 
 	void Engine::update_delta_time(double sampled_time)
 	{

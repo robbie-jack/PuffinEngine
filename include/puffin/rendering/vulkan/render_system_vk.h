@@ -4,34 +4,33 @@
 
 #include "vulkan/vulkan.hpp"
 
-#include "GLFW/glfw3.h"
-
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
 #include "vk_mem_alloc.hpp"
 
-#include "puffin/core/engine.h"
-#include "puffin/rendering/render_subsystem.h"
-#include "puffin/ecs/entt_subsystem.h"
 #include "puffin/assets/texture_asset.h"
-#include "puffin/types/deletion_queue.h"
-#include "puffin/types/packed_array.h"
-#include "puffin/rendering/vulkan/descriptors_vk.h"
 #include "puffin/components/rendering/camera_component.h"
-#include "puffin/rendering/vulkan/unified_geometry_buffer_vk.h"
+#include "puffin/core/engine.h"
+#include "puffin/ecs/entt_subsystem.h"
 #include "puffin/rendering/material_globals.h"
 #include "puffin/rendering/render_globals.h"
-#include "puffin/rendering/vulkan/material_registry_vk.h"
+#include "puffin/rendering/render_subsystem.h"
+#include "puffin/rendering/vulkan/descriptors_vk.h"
 #include "puffin/rendering/vulkan/pipeline_vk.h"
-#include "puffin/types/ring_buffer.h"
 #include "puffin/rendering/vulkan/types_vk.h"
+#include "puffin/types/deletion_queue.h"
+#include "puffin/types/packed_array.h"
+#include "puffin/types/packed_vector.h"
+#include "puffin/types/ring_buffer.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
 #else
 constexpr bool gEnableValidationLayers = true;
 #endif
+
+struct GLFWwindow;
 
 namespace puffin
 {
@@ -46,6 +45,7 @@ namespace puffin
 namespace puffin::rendering
 {
 	class ResourceManagerVK;
+	class MaterialRegistryVK;
 
 	// Struct containing render data that is static between frames
 	struct GlobalRenderData
@@ -130,15 +130,13 @@ namespace puffin::rendering
 	public:
 
 		explicit RenderSystemVK(const std::shared_ptr<core::Engine>& engine);
-		~RenderSystemVK() override = default;
+		~RenderSystemVK() override;
 
 		void initialize(core::ISubsystemManager* subsystem_manager) override;
 		void deinitialize() override;
 
-		void startup();
 		double wait_for_last_presentation_and_sample_time() override;
 		void render(double delta_time) override;
-		void shutdown();
 
 		const vma::Allocator& allocator() const { return m_allocator ;}
 		const vk::Device& device() const { return m_device; }
@@ -202,14 +200,14 @@ namespace puffin::rendering
 		OffscreenData m_offscreen_data_old;
 
 		// Command Execution
-		vk::Queue m_graphics_queue;
-		uint32_t m_graphics_queue_family;
+		vk::Queue m_graphics_queue = {};
+		uint32_t m_graphics_queue_family = 0;
 
 		GlobalRenderData m_global_render_data;
 		std::array<FrameRenderData, g_buffered_frames> m_frame_render_data;
 
-		ResourceManagerVK* m_resource_manager = nullptr;
-		VKMaterialRegistry m_material_registry;
+		std::unique_ptr<ResourceManagerVK> m_resource_manager = nullptr;
+		std::unique_ptr<MaterialRegistryVK> m_material_registry = nullptr;
 
 		std::unordered_set<PuffinID> m_meshes_to_load; // Meshes that need to be loaded
 		std::unordered_set<PuffinID> m_textures_to_load; // Textures that need to be loaded
@@ -330,19 +328,8 @@ namespace puffin::rendering
 		                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 		void build_shadow_descriptor_info(std::vector<vk::DescriptorImageInfo>& shadow_image_infos);
 
-		FrameRenderData& current_frame_data()
-		{
-			return m_frame_render_data[m_frame_count % g_buffered_frames];
-		}
+		FrameRenderData& current_frame_data();
 
-		static void frame_buffer_resize_callback(GLFWwindow* window, const int width, const int height)
-		{
-			const auto system = static_cast<RenderSystemVK*>(glfwGetWindowUserPointer(window));
-
-			system->m_swapchain_data.resized = true;
-			system->m_offscreen_data.resized = true;
-			system->m_window_size.width = width;
-			system->m_window_size.height = height;
-		}
+		static void frame_buffer_resize_callback(GLFWwindow* window, const int width, const int height);
 	};
 }

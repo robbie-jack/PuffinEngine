@@ -11,44 +11,42 @@ namespace puffin::rendering
 {
 	class RenderSystemVK;
 
-	class VKMaterialRegistry
+	class MaterialRegistryVK
 	{
 	public:
 
-		VKMaterialRegistry() = default;
-		~VKMaterialRegistry() = default;
+		explicit MaterialRegistryVK(RenderSystemVK* render_system);
+		~MaterialRegistryVK() = default;
 
-		void init(const std::shared_ptr<RenderSystemVK>& renderSystem);
-
-		void registerMaterialInstance(const PuffinID& id);
+		void register_material_instance(const PuffinID& id);
 
 		void update();
 
-		bool materialDataNeedsUploaded() const { return mMaterialDataNeedsUploaded; }
+		bool material_data_needs_uploaded() const { return mMaterialDataNeedsUploaded; }
 
-		MaterialDataVK& getMaterialData(const PuffinID& id) { return mMatData[id]; }
-		PackedVector<PuffinID, MaterialDataVK>& materialData() { return mMatData; }
+		MaterialDataVK& get_material_data(const PuffinID& id) { return m_mat_data[id]; }
+		PackedVector<PuffinID, MaterialDataVK>& get_material_data() { return m_mat_data; }
 
-		MaterialVK& getMaterial(const PuffinID& id) { return mMats[id]; }
+		MaterialVK& get_material(const PuffinID& id) { return m_mats[id]; }
 
-		GPUMaterialInstanceData& getCachedMaterialData(const PuffinID& id) { return mCachedMaterialData[id]; }
+		GPUMaterialInstanceData& get_cached_material_data(const PuffinID& id) { return m_cached_material_data[id]; }
 
 	private:
 
-		std::shared_ptr<RenderSystemVK> mRenderSystem = nullptr;
+		std::shared_ptr<RenderSystemVK> m_render_system = nullptr;
 
-		std::unordered_set<PuffinID> mMaterialsToLoad; // Materials that need to be loaded
-		std::unordered_set<PuffinID> mMaterialsInstancesToLoad; // Materials Instances that need to be loaded
+		std::unordered_set<PuffinID> m_materials_to_load; // Materials that need to be loaded
+		std::unordered_set<PuffinID> m_materials_instances_to_load; // Materials Instances that need to be loaded
 
-		PackedVector<PuffinID, MaterialDataVK> mMatData;
-		std::unordered_map<PuffinID, MaterialVK> mMats;
+		PackedVector<PuffinID, MaterialDataVK> m_mat_data;
+		std::unordered_map<PuffinID, MaterialVK> m_mats;
 
-		PackedVector<PuffinID, GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
+		PackedVector<PuffinID, GPUMaterialInstanceData> m_cached_material_data; // Cached data for each unique material/instance
 
 		bool mMaterialDataNeedsUploaded = false;
 
-		bool loadMaterialInstance(PuffinID matID, MaterialDataVK& matData);
-		void initMaterialPipeline(PuffinID matID);
+		bool load_material_instance(PuffinID matID, MaterialDataVK& matData);
+		void init_material_pipeline(PuffinID matID);
 		
 	};
 }

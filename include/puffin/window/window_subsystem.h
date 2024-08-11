@@ -27,7 +27,11 @@ namespace puffin
 			void initialize(core::ISubsystemManager* subsystem_manager) override;
 			void deinitialize() override;
 
-			GLFWwindow* primary_window() const;
+			GLFWwindow* primary_window() const
+			{
+				return m_primary_window;
+			}
+
 			[[nodiscard]] bool should_primary_window_close() const;
 			GLFWmonitor* primary_monitor() const;
 

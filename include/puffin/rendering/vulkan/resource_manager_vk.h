@@ -23,7 +23,7 @@ namespace puffin::rendering
 	{
 	public:
 
-		explicit ResourceManagerVK(const std::shared_ptr<RenderSystemVK>& render_system);
+		explicit ResourceManagerVK(RenderSystemVK* render_system);
 		~ResourceManagerVK();
 
 		void add_static_mesh(const std::shared_ptr<assets::StaticMeshAsset>& static_mesh);
@@ -44,7 +44,7 @@ namespace puffin::rendering
 
 	private:
 
-		std::shared_ptr<RenderSystemVK> m_render_system = nullptr;
+		RenderSystemVK* m_render_system = nullptr;
 		UnifiedGeometryBuffer* m_unified_geometry_buffer = nullptr;
 
 		PackedVector<PuffinID, std::vector<AllocatedImage>> m_images;

@@ -147,8 +147,7 @@ namespace puffin::core
 		Engine();
 		~Engine();
 
-		void register_required_subsystems() const;
-
+		void setup();
 		void initialize(const argparse::ArgumentParser& parser);
 		bool update();
 		void deinitialize();
@@ -167,6 +166,7 @@ namespace puffin::core
 
 		PlayState play_state() const { return m_play_state; }
 
+		bool setup_engine_default_settings() const { return m_setup_engine_default_settings; }
 		bool should_render_editor_ui() const { return m_should_render_editor_ui; }
 
 		const double& time_step_fixed() const { return m_time_step_fixed; }
@@ -254,13 +254,9 @@ namespace puffin::core
 		std::shared_ptr<rendering::RenderSubsystemManager> m_render_subsystem_manager = nullptr;
 		std::shared_ptr<gameplay::GameplaySubsystemManager> m_gameplay_subsystem_manager = nullptr;
 
-		std::unordered_map<core::ExecutionStage, double> m_stage_execution_time; // Map of time it takes each stage of engine to execute (Physics, Rendering, Gameplay, etc...)
-		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> m_callback_execution_time; // Map of time it takes for each system to execute
-
-		std::unordered_map<core::ExecutionStage, double> m_stage_execution_time_last_frame;
-		std::unordered_map<core::ExecutionStage, std::unordered_map<std::string, double>> m_callback_execution_time_last_frame;
-
 		io::ProjectFile m_project_file;
+
+		void register_required_subsystems() const;
 
 		void add_default_assets();
 		void reimport_default_assets();

@@ -199,8 +199,6 @@ namespace puffin::io
 
 		const auto entt_subsystem = subsystem_manager->create_and_initialize_subsystem<ecs::EnTTSubsystem>();
 		const auto scene_graph = subsystem_manager->create_and_initialize_subsystem<scene::SceneGraphSubsystem>();
-
-		setup();
 	}
 
 	void SceneSubsystem::deinitialize()

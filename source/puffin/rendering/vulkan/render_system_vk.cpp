@@ -8,6 +8,8 @@
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
+#include "GLFW/glfw3.h"
+
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -42,6 +44,8 @@
 #include "puffin/scene/scene_graph.h"
 #include "puffin/ui/editor/ui_subsystem.h"
 #include "puffin/rendering/vulkan/resource_manager_vk.h"
+#include "puffin/rendering/vulkan/material_registry_vk.h"
+#include "puffin/rendering/vulkan/unified_geometry_buffer_vk.h"
 #include "puffin/ui/editor/windows/ui_window_viewport.h"
 #include "puffin/rendering/render_globals.h"
 #include "puffin/rendering/render_helpers.h"
@@ -60,6 +64,10 @@
 namespace puffin::rendering
 {
 	RenderSystemVK::RenderSystemVK(const std::shared_ptr<core::Engine>& engine) : RenderSubsystem(engine)
+	{
+	}
+
+	RenderSystemVK::~RenderSystemVK()
 	{
 	}
 
@@ -106,7 +114,7 @@ namespace puffin::rendering
 
 		if (m_engine->should_render_editor_ui())
 		{
-			auto editor_ui_subsystem = m_engine->get_engine_subsystem<ui::EditorUISubsystem>();
+			auto editor_ui_subsystem = m_engine->get_editor_subsystem<ui::EditorUISubsystem>();
 			const ImVec2 viewport_size = editor_ui_subsystem->window_viewport()->viewportSize();
 			m_render_extent.width = viewport_size.x;
 			m_render_extent.height = viewport_size.y;
@@ -136,12 +144,11 @@ namespace puffin::rendering
 		m_renderables.reserve(g_max_objects);
 		m_cached_object_data.reserve(g_max_objects);
 
+		m_resource_manager = std::make_unique<ResourceManagerVK>(this);
+		m_material_registry = std::make_unique<MaterialRegistryVK>(this);
+
 		m_initialized = true;
-
 		m_update_renderables = true;
-
-		m_resource_manager = new ResourceManagerVK(shared_from_this());
-		m_material_registry.init(shared_from_this());
 
 		const auto settings_manager = m_engine->get_engine_subsystem<core::SettingsManager>();
 		m_render_shadows = settings_manager->get<bool>("rendering_draw_shadows");
@@ -162,7 +169,7 @@ namespace puffin::rendering
 
 			m_tex_data.clear();
 
-			delete m_resource_manager;
+			m_material_registry = nullptr;
 			m_resource_manager = nullptr;
 
 			clean_swapchain(m_swapchain_data);
@@ -183,11 +190,6 @@ namespace puffin::rendering
 
 			m_initialized = false;
 		}
-	}
-
-	void RenderSystemVK::startup()
-	{
-		
 	}
 
 	double RenderSystemVK::wait_for_last_presentation_and_sample_time()
@@ -221,7 +223,7 @@ namespace puffin::rendering
 		}
 
 		m_meshes_to_load.insert(mesh.mesh_asset_id);
-		m_material_registry.registerMaterialInstance(mesh.mat_asset_id);
+		m_material_registry->register_material_instance(mesh.mat_asset_id);
 
 		add_renderable(registry, entity);
 	}
@@ -474,10 +476,10 @@ namespace puffin::rendering
 		offscreenData.alloc_images.resize(offscreenImageCount);
 		for (int i = 0; i < offscreenImageCount; i++)
 		{
-			offscreenData.alloc_images[i] = util::create_image(shared_from_this(), imageInfo, imageViewInfo);
+			offscreenData.alloc_images[i] = util::create_image(this, imageInfo, imageViewInfo);
 		}
 
-		offscreenData.alloc_depth_image = util::create_depth_image(shared_from_this(), imageExtent, vk::Format::eD32Sfloat);
+		offscreenData.alloc_depth_image = util::create_depth_image(this, imageExtent, vk::Format::eD32Sfloat);
 	}
 
 	void RenderSystemVK::init_commands()
@@ -901,7 +903,7 @@ namespace puffin::rendering
 		ImGui_ImplVulkan_Init(&initInfo);
 
 		// Upload ImGui font textures
-		util::immediate_submit(shared_from_this(), [=](vk::CommandBuffer cmd)
+		util::immediate_submit(this, [=](vk::CommandBuffer cmd)
 		{
 			ImGui_ImplVulkan_CreateFontsTexture();
 		});
@@ -954,7 +956,7 @@ namespace puffin::rendering
 					continue;
 				}
 
-				const auto& matData = m_material_registry.getMaterialData(mesh.mat_asset_id);
+				const auto& matData = m_material_registry->get_material_data(mesh.mat_asset_id);
 
 				m_renderables.emplace_back(node_id, mesh.mesh_asset_id, matData.baseMaterialID, mesh.sub_mesh_idx);
 
@@ -974,7 +976,7 @@ namespace puffin::rendering
 					continue;
 				}
 
-				const auto& matData = m_material_registry.getMaterialData(mesh.mat_asset_id);
+				const auto& matData = m_material_registry->get_material_data(mesh.mat_asset_id);
 
 				m_renderables.emplace_back(node_id, mesh.mesh_asset_id, matData.baseMaterialID, mesh.sub_mesh_idx);
 
@@ -1010,9 +1012,9 @@ namespace puffin::rendering
 			m_meshes_to_load.clear();
 
 			// Load Materials
-			m_material_registry.update();
+			m_material_registry->update();
 
-			if (m_material_registry.materialDataNeedsUploaded())
+			if (m_material_registry->material_data_needs_uploaded())
 			{
 				for (uint32_t i = 0; i < g_buffered_frames; i++)
 				{
@@ -1141,7 +1143,7 @@ namespace puffin::rendering
 
 		if (m_engine->should_render_editor_ui())
 		{
-			auto editor_ui_subsystem = m_engine->get_engine_subsystem<ui::EditorUISubsystem>();
+			auto editor_ui_subsystem = m_engine->get_editor_subsystem<ui::EditorUISubsystem>();
 			const ImVec2 viewportSize = editor_ui_subsystem->window_viewport()->viewportSize();
 
 			m_render_extent.width = static_cast<uint32_t>(viewportSize.x);
@@ -1161,14 +1163,9 @@ namespace puffin::rendering
 		recreate_swapchain();
 		recreate_offscreen();
 
-		/*uint32_t swapchainImageIdx;
-		VK_CHECK(
-			m_device.acquireNextImageKHR(m_swapchain_data.swapchain, 1000000000, current_frame_data().present_semaphore,
-				nullptr, &swapchainImageIdx));*/
-
 		if (m_engine->should_render_editor_ui())
 		{
-			auto editor_ui_subsystem = m_engine->get_engine_subsystem<ui::EditorUISubsystem>();
+			auto editor_ui_subsystem = m_engine->get_editor_subsystem<ui::EditorUISubsystem>();
 			editor_ui_subsystem->window_viewport()->draw(m_offscreen_data.viewport_textures[m_current_swapchain_idx]);
 
 			ImGui::Render();
@@ -1368,28 +1365,28 @@ namespace puffin::rendering
 		if (current_frame_data().copy_material_data_to_gpu)
 		{
 			std::vector<GPUMaterialInstanceData> materialData;
-			materialData.reserve(m_material_registry.materialData().size());
+			materialData.reserve(m_material_registry->get_material_data().size());
 
 			int idx = 0;
-			for (auto& matData : m_material_registry.materialData())
+			for (auto& matData : m_material_registry->get_material_data())
 			{
 				// Update cached material data
 				for (int i = 0; i < gNumTexturesPerMat; ++i)
 				{
 					if (matData.texIDs[i] != 0)
 					{
-						m_material_registry.getCachedMaterialData(matData.assetId).tex_indices[i] = m_tex_data[matData.texIDs[i]].idx;
+						m_material_registry->get_cached_material_data(matData.assetId).tex_indices[i] = m_tex_data[matData.texIDs[i]].idx;
 					}
 				}
 
-				materialData.push_back(m_material_registry.getCachedMaterialData(matData.assetId));
+				materialData.push_back(m_material_registry->get_cached_material_data(matData.assetId));
 
 				matData.idx = idx;
 
 				idx++;
 			}
 
-			util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().material_buffer, 
+			util::copy_cpu_data_into_gpu_buffer(this, current_frame_data().material_buffer, 
 			                                    materialData.size() * sizeof(GPUMaterialInstanceData), materialData.data());
 
 			current_frame_data().copy_material_data_to_gpu = false;
@@ -1514,7 +1511,7 @@ namespace puffin::rendering
 					GPUObjectData object;
 
 					build_model_transform(position, tempTransform.orientation_quat, tempTransform.scale, object.model);
-					object.mat_idx = m_material_registry.getMaterialData(mesh.mat_asset_id).idx;
+					object.mat_idx = m_material_registry->get_material_data(mesh.mat_asset_id).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
 				}
@@ -1550,7 +1547,7 @@ namespace puffin::rendering
 				objects.emplace_back(m_cached_object_data[renderable.entityID]);
 			}
 
-			util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().object_buffer,
+			util::copy_cpu_data_into_gpu_buffer(this, current_frame_data().object_buffer,
 			                                    objects.size() * sizeof(GPUObjectData), objects.data());
 
 			current_frame_data().copy_object_data_to_gpu = false;
@@ -1633,7 +1630,7 @@ namespace puffin::rendering
 		}
 
 		// Copy light data to buffer
-		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().light_buffer,
+		util::copy_cpu_data_into_gpu_buffer(this, current_frame_data().light_buffer,
 		                                    lights.size() * sizeof(GPULightData), lights.data());
 
 		auto cam_system = m_engine->get_engine_subsystem<CameraSubystem>();
@@ -1769,10 +1766,10 @@ namespace puffin::rendering
 		}
 
 		// Copy light data to buffer
-		util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().shadow_buffer,
+		util::copy_cpu_data_into_gpu_buffer(this, current_frame_data().shadow_buffer,
 			shadows.size() * sizeof(GPUShadowData), shadows.data());
 
-        util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().shadow_cascade_buffer,
+        util::copy_cpu_data_into_gpu_buffer(this, current_frame_data().shadow_cascade_buffer,
             shadow_cascades.size() * sizeof(GPUShadowCascadeData), shadow_cascades.data());
 	}
 
@@ -1784,7 +1781,7 @@ namespace puffin::rendering
 			indirectCmds.resize(g_max_objects);
 
 			m_draw_batches.clear();
-			m_draw_batches.reserve(m_material_registry.materialData().size());
+			m_draw_batches.reserve(m_material_registry->get_material_data().size());
 
 			bool newBatch = false;
 			int cmdIdx = 0;
@@ -1856,7 +1853,7 @@ namespace puffin::rendering
 			// Push final draw batch struct to vector at end of loop
 			m_draw_batches.push_back(drawBatch);
 
-			util::copy_cpu_data_into_gpu_buffer(shared_from_this(), current_frame_data().indirect_buffer,
+			util::copy_cpu_data_into_gpu_buffer(this, current_frame_data().indirect_buffer,
 			                                    indirectCmds.size() * sizeof(vk::DrawIndexedIndirectCommand), indirectCmds.data());
 		}
 	}
@@ -2043,7 +2040,7 @@ namespace puffin::rendering
 			// Use loaded material if id is valid, otherwise use default material
 			if (draw_batch.matID != gInvalidID)
 			{
-				cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_material_registry.getMaterial(draw_batch.matID).pipeline.get());
+				cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, m_material_registry->get_material(draw_batch.matID).pipeline.get());
 			}
 			else
 			{
@@ -2386,10 +2383,10 @@ namespace puffin::rendering
 			meshData.numVertices = meshAsset->numVertices();
 			meshData.numIndices = meshAsset->numIndices();
 
-			meshData.vertexBuffer = util::initVertexBuffer(shared_from_this(), meshAsset->vertices().data(),
+			meshData.vertexBuffer = util::initVertexBuffer(this, meshAsset->vertices().data(),
 			                                               meshAsset->numVertices(), meshAsset->vertexSize());
 
-			meshData.indexBuffer = util::initIndexBuffer(shared_from_this(), meshAsset->indices().data(),
+			meshData.indexBuffer = util::initIndexBuffer(this, meshAsset->indices().data(),
 			                                             meshAsset->numIndices(), meshAsset->indexSize());
 
 			meshAsset->unload();
@@ -2416,7 +2413,7 @@ namespace puffin::rendering
 
 			texData.sampler = m_global_render_data.texture_sampler;
 
-			texData.texture = util::init_texture(shared_from_this(), texAsset->pixelData(),
+			texData.texture = util::init_texture(this, texAsset->pixelData(),
 			                                     texAsset->textureWidth(), texAsset->textureHeight(),
 			                                     texAsset->textureSize(),
 			                                     g_tex_format_vk.at(texAsset->textureFormat()));
@@ -2478,5 +2475,20 @@ namespace puffin::rendering
 			shadow.shadow_idx = idx;
 			++idx;
 		}
+	}
+
+	FrameRenderData& RenderSystemVK::current_frame_data()
+	{
+		return m_frame_render_data[m_frame_count % g_buffered_frames];
+	}
+
+	void RenderSystemVK::frame_buffer_resize_callback(GLFWwindow* window, const int width, const int height)
+	{
+		const auto system = static_cast<RenderSystemVK*>(glfwGetWindowUserPointer(window));
+
+		system->m_swapchain_data.resized = true;
+		system->m_offscreen_data.resized = true;
+		system->m_window_size.width = width;
+		system->m_window_size.height = height;
 	}
 }

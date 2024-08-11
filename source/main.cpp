@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
 	const auto engine = std::make_shared<puffin::core::Engine>();
 
-	engine->register_required_subsystems();
+	engine->setup();
 
 	engine->register_render_subsystem<puffin::rendering::RenderSystemVK>();
 

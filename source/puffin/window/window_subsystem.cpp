@@ -56,11 +56,6 @@ namespace puffin::window
 		glfwTerminate();
 	}
 
-	GLFWwindow* WindowSubsystem::primary_window() const
-	{
-		return m_primary_window;
-	}
-
 	bool WindowSubsystem::should_primary_window_close() const
 	{
 		return glfwWindowShouldClose(m_primary_window);

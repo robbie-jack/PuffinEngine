@@ -17,7 +17,7 @@ namespace puffin::rendering
 	{
 	public:
 
-		explicit UnifiedGeometryBuffer(const std::shared_ptr<RenderSystemVK>& render_system, uint64_t vertex_page_size = 64 * 1000 * 1000,
+		explicit UnifiedGeometryBuffer(RenderSystemVK* render_system, uint64_t vertex_page_size = 64 * 1000 * 1000,
 		                               uint64_t vertex_initial_page_count = 1, uint64_t index_page_size = 64 * 1000 * 1000, uint64_t index_initial_page_count = 1);
 
 		~UnifiedGeometryBuffer();
@@ -55,7 +55,7 @@ namespace puffin::rendering
 
 	private:
 
-		std::shared_ptr<RenderSystemVK> m_render_system = nullptr;
+		RenderSystemVK* m_render_system = nullptr;
 
 		struct InternalVertexBufferData
 		{

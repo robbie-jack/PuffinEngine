@@ -17,9 +17,11 @@ namespace puffin::core
     {
     public:
 
-        explicit SettingsManager(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine) {}
+        explicit SettingsManager(const std::shared_ptr<core::Engine>& engine);
 
         ~SettingsManager() override = default;
+
+        void initialize(core::ISubsystemManager* subsystem_manager) override;
 
         template<typename T>
         void set(const std::string& name, const T& t)
@@ -39,35 +41,22 @@ namespace puffin::core
         template<typename T>
         T get(const std::string& name) const
         {
+            if (!m_json.contains(name))
+            {
+            	return T{};
+            }
+
             return m_json.at(name);
         }
 
-        void load(const fs::path& path)
-        {
-            if (!fs::exists(path))
-                return;
-
-            std::ifstream is(path.string());
-            is >> m_json;
-
-            is.close();
-        }
-
-        void save(const fs::path& path)
-        {
-            if (!exists(path.parent_path()))
-                create_directory(path.parent_path());
-
-            std::ofstream os(path.string());
-
-            os << std::setw(4) << m_json << std::endl;
-
-            os.close();
-        }
+        void load(const fs::path& path);
+        void save(const fs::path& path);
 
     private:
 
         nlohmann::json m_json;
+
+        void default_settings();
 
     };
 }
