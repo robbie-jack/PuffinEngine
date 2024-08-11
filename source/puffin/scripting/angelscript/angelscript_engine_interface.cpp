@@ -8,10 +8,10 @@
 
 namespace puffin::scripting
 {
-	AngelScriptEngineInterface::AngelScriptEngineInterface(std::shared_ptr<core::Engine> engine, std::shared_ptr<AngelScriptSubsystem> scriptSystem,
-		asIScriptEngine* scriptEngine) : m_engine(engine), mScriptSystem(scriptSystem), mScriptEngine(scriptEngine)
+	AngelScriptEngineInterface::AngelScriptEngineInterface(std::shared_ptr<core::Engine> engine, asIScriptEngine* scriptEngine) :
+		m_engine(engine), m_script_engine(scriptEngine)
 	{
-		mScriptEngine->AddRef();
+		m_script_engine->AddRef();
 
 		registerGlobalMethods();
 	}
@@ -20,16 +20,16 @@ namespace puffin::scripting
 	{
 		m_engine = nullptr;
 
-		mScriptEngine->Release();
-		mScriptEngine = nullptr;
+		m_script_engine->Release();
+		m_script_engine = nullptr;
 	}
 
 	void AngelScriptEngineInterface::registerGlobalMethods()
 	{
 		int r = 0;
 
-		r = mScriptEngine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptEngineInterface, getDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = mScriptEngine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptEngineInterface, getFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = m_script_engine->RegisterGlobalFunction("double GetDeltaTime()", asMETHOD(AngelScriptEngineInterface, getDeltaTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = m_script_engine->RegisterGlobalFunction("double GetFixedTime()", asMETHOD(AngelScriptEngineInterface, getFixedTime), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// Register component globals
         /*
@@ -41,13 +41,13 @@ namespace puffin::scripting
         */
 
 		// Register Input Funcdefs and Bind/Release Callback Methods
-		r = mScriptEngine->RegisterFuncdef("void OnInputPressedCallback()"); assert(r >= 0);
-		r = mScriptEngine->RegisterFuncdef("void OnInputReleasedCallback()"); assert(r >= 0);
+		r = m_script_engine->RegisterFuncdef("void OnInputPressedCallback()"); assert(r >= 0);
+		r = m_script_engine->RegisterFuncdef("void OnInputReleasedCallback()"); assert(r >= 0);
 
-		r = mScriptEngine->RegisterGlobalFunction("void BindOnInputPressed(uint64, const string &in, OnInputPressedCallback @cb)", asMETHOD(AngelScriptEngineInterface, bindOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = mScriptEngine->RegisterGlobalFunction("void BindOnInputReleased(uint64, const string &in, OnInputReleasedCallback @cb)", asMETHOD(AngelScriptEngineInterface, bindOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnInputPressed(uint64, const string &in)", asMETHOD(AngelScriptEngineInterface, releaseOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnInputReleased(uint64, const string &in)", asMETHOD(AngelScriptEngineInterface, releaseOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = m_script_engine->RegisterGlobalFunction("void BindOnInputPressed(uint64, const string &in, OnInputPressedCallback @cb)", asMETHOD(AngelScriptEngineInterface, bindOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = m_script_engine->RegisterGlobalFunction("void BindOnInputReleased(uint64, const string &in, OnInputReleasedCallback @cb)", asMETHOD(AngelScriptEngineInterface, bindOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = m_script_engine->RegisterGlobalFunction("void ReleaseOnInputPressed(uint64, const string &in)", asMETHOD(AngelScriptEngineInterface, releaseOnInputPressed), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = m_script_engine->RegisterGlobalFunction("void ReleaseOnInputReleased(uint64, const string &in)", asMETHOD(AngelScriptEngineInterface, releaseOnInputReleased), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 	}
 
 	const double& AngelScriptEngineInterface::getDeltaTime()
@@ -131,7 +131,7 @@ namespace puffin::scripting
 			scriptCallback.func = cb->GetDelegateFunction();
 
 			// Increment Refs
-			mScriptEngine->AddRefScriptObject(scriptCallback.object, scriptCallback.objectType);
+			m_script_engine->AddRefScriptObject(scriptCallback.object, scriptCallback.objectType);
 			scriptCallback.func->AddRef();
 
 			// Release Delegate
@@ -152,7 +152,7 @@ namespace puffin::scripting
 			scriptCallback.func->Release();
 
 		if (scriptCallback.object)
-			mScriptEngine->ReleaseScriptObject(scriptCallback.object, scriptCallback.objectType);
+			m_script_engine->ReleaseScriptObject(scriptCallback.object, scriptCallback.objectType);
 
 		scriptCallback.func = nullptr;
 		scriptCallback.object = nullptr;

@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
 #endif
 
 	engine->register_subsystem<puffin::scripting::AngelScriptSubsystem>();
+	engine->register_subsystem<puffin::scripting::AngelScriptGameplaySubsystem>();
 
 	engine->initialize(parser);
 

@@ -31,86 +31,87 @@ namespace puffin::scripting
 		void initialize(core::SubsystemManager* subsystem_manager) override;
 		void deinitialize() override;
 
+		void end_play() override;
+
 		void update(double delta_time) override;
 		bool should_update() override;
 
-		void fixedUpdate();
-		void endPlay();
+		void on_construct_script(entt::registry& registry, entt::entity entity);
+		void on_destroy_script(entt::registry& registry, entt::entity entity);
 
-		void onConstructScript(entt::registry& registry, entt::entity entity);
-		void onDestroyScript(entt::registry& registry, entt::entity entity);
+		bool prepare_and_execute_script_method(void* script_obj, asIScriptFunction* script_func);
+
+		void set_current_entity_id(PuffinID id);
 
 		// Hot-Reloads all scripts when called
 		//void reload() {}
 
 	private:
 
-		asIScriptEngine* mScriptEngine = nullptr;
-		asIScriptContext* mCtx = nullptr;
+		asIScriptEngine* m_script_engine = nullptr;
+		asIScriptContext* m_script_context = nullptr;
 
-		std::unique_ptr<AngelScriptEngineInterface> mEngineInterface;
-		std::shared_ptr<audio::AudioSubsystem> mAudioSubsystem;
+		std::unique_ptr<AngelScriptEngineInterface> m_engine_interface;
 
-		PuffinID mCurrentEntityID; // Entity ID for currently executing script
+		PuffinID m_current_entity_id; // Entity ID for currently executing script
 
 		// Event Buffers
-		std::shared_ptr<RingBuffer<input::InputEvent>> mInputEvents = nullptr;
-		std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> mCollisionBeginEvents = nullptr;
-		std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> mCollisionEndEvents = nullptr;
+		std::shared_ptr<RingBuffer<input::InputEvent>> m_input_events = nullptr;
+		std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> m_collision_begin_events = nullptr;
+		std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> m_collision_end_events = nullptr;
 
 		// Maps of Input Callbacks
-		std::unordered_map<std::string, ScriptCallbackMap> mOnInputPressedCallbacks;
-		std::unordered_map<std::string, ScriptCallbackMap> mOnInputReleasedCallbacks;
+		std::unordered_map<std::string, ScriptCallbackMap> m_on_input_pressed_callbacks;
+		std::unordered_map<std::string, ScriptCallbackMap> m_on_input_released_callbacks;
 
 		// Collision Callbacks
-		ScriptCallbackMap mOnCollisionBeginCallbacks;
-		ScriptCallbackMap mOnCollisionEndCallbacks;
+		ScriptCallbackMap m_on_collision_begin_callbacks;
+		ScriptCallbackMap m_on_collision_end_callbacks;
 
-		std::unordered_set<PuffinID> mScriptsToInit;
-		std::unordered_set<PuffinID> mScriptsToStart;
-		std::unordered_set<PuffinID> mScriptsToStop;
+		std::unordered_set<PuffinID> m_scripts_to_init;
+		std::unordered_set<PuffinID> m_scripts_to_begin_play;
+		std::unordered_set<PuffinID> m_scripts_to_end_play;
 
-		void configureEngine();
+		void configure_engine();
 
-		void initContext();
-		void initScripts();
-		void startScripts();
-		void stopScripts();
+		void init_context();
+		void init_scripts();
+		void start_scripts();
+		void stop_scripts();
 
-		void initializeScript(PuffinID entity, AngelScriptComponent& script);
-		void compileScript(AngelScriptComponent& script) const;
-		void updateScriptMethods(AngelScriptComponent& script);
-		void instantiateScriptObj(PuffinID entity, AngelScriptComponent& script);
+		void initialize_script(PuffinID entity, AngelScriptComponent& script);
+		void compile_script(AngelScriptComponent& script) const;
+		void update_script_methods(AngelScriptComponent& script);
+		void instantiate_script_obj(PuffinID entity, AngelScriptComponent& script);
 
-		void destroyScript(AngelScriptComponent& script);
+		void destroy_script(AngelScriptComponent& script);
 
-		void processEvents();
+		void process_events();
 
-		asIScriptFunction* getScriptMethod(const AngelScriptComponent& script, const char* funcName);
-		bool prepareScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
-		bool executeScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
-		bool prepareAndExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
+		asIScriptFunction* get_script_method(const AngelScriptComponent& script, const char* funcName);
+		bool prepare_script_method(void* scriptObj, asIScriptFunction* scriptFunc);
+		bool execute_script_method(void* scriptObj, asIScriptFunction* scriptFunc);
 
 		// Global Script Functions
-		[[nodiscard]] const double& getDeltaTime() const;
-		[[nodiscard]] const double& getFixedTime() const;
+		[[nodiscard]] const double& get_delta_time() const;
+		[[nodiscard]] const double& get_fixed_time() const;
 
-		void playSoundEffect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
-		PuffinID playSoundEffect(const std::string& path, float volume = 1.0f, bool looping = false,
+		void play_sound_effect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
+		PuffinID play_sound_effect(const std::string& path, float volume = 1.0f, bool looping = false,
 		                         bool restart = false);
 
-		PuffinID getEntityID(); // Return the Entity ID for the attached script
+		PuffinID get_entity_id(); // Return the Entity ID for the attached script
 
 		// Script Callbacks
-		ScriptCallback bindCallback(PuffinID entity, asIScriptFunction* cb) const;
-		void releaseCallback(ScriptCallback& scriptCallback) const;
+		ScriptCallback bind_callback(PuffinID entity, asIScriptFunction* cb) const;
+		void release_callback(ScriptCallback& scriptCallback) const;
 
 		// Collision Functions
-		void bindOnCollisionBegin(PuffinID entity, asIScriptFunction* cb);
-		void bindOnCollisionEnd(PuffinID entity, asIScriptFunction* cb);
+		void bind_on_collision_begin(PuffinID entity, asIScriptFunction* cb);
+		void bind_on_collision_end(PuffinID entity, asIScriptFunction* cb);
 
-		void releaseOnCollisionBegin(PuffinID entity);
-		void releaseOnCollisionEnd(PuffinID entity);
+		void release_on_collision_begin(PuffinID entity);
+		void release_on_collision_end(PuffinID entity);
 	};
 
 	class AngelScriptGameplaySubsystem : public core::Subsystem
@@ -124,6 +125,12 @@ namespace puffin::scripting
 
 		void begin_play() override;
 		void end_play() override;
+
+		void update(double delta_time) override;
+		bool should_update() override;
+
+		void fixed_update(double fixed_time) override;
+		bool should_fixed_update() override;
 
 	private:
 

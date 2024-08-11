@@ -35,19 +35,18 @@ namespace puffin::scripting
 	 *	Class which defines various methods used by AngelScript scripts as global methods to access engine functionality
 	 *	including ecs, input, audio, etc...
 	 */
-	class AngelScriptEngineInterface : public std::enable_shared_from_this<AngelScriptEngineInterface>
+	class AngelScriptEngineInterface
 	{
 	public:
 
-		AngelScriptEngineInterface(std::shared_ptr<core::Engine> engine, std::shared_ptr<AngelScriptSubsystem> scriptSystem, asIScriptEngine* scriptEngine);
+		AngelScriptEngineInterface(std::shared_ptr<core::Engine> engine, asIScriptEngine* script_engine);
 
 		~AngelScriptEngineInterface();
 
 	private:
 
 		std::shared_ptr<core::Engine> m_engine;
-		std::shared_ptr<scripting::AngelScriptSubsystem> mScriptSystem;
-		asIScriptEngine* mScriptEngine;
+		asIScriptEngine* m_script_engine;
 
 		double mDeltaTime;
 		double mFixedTime;

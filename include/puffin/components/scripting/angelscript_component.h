@@ -56,10 +56,10 @@ namespace puffin::scripting
 		asIScriptObject* obj;
 
 		// Script Functions
-		asIScriptFunction* startFunc;
-		asIScriptFunction* fixedUpdateFunc;
-		asIScriptFunction* updateFunc;
-		asIScriptFunction* stopFunc;
+		asIScriptFunction* begin_play_func;
+		asIScriptFunction* fixed_update_func;
+		asIScriptFunction* update_func;
+		asIScriptFunction* end_play_func;
 
 		// Set of class property indexes
 		std::set<int> editableProperties;
