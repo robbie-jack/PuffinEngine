@@ -225,6 +225,8 @@ namespace puffin::core
 		// Call system start functions to prepare for gameplay
 		if (m_play_state == PlayState::BeginPlay)
 		{
+			m_subsystem_manager->create_and_initialize_gameplay_subsystems();
+
 			for (auto subsystem : m_subsystem_manager->get_subsystems())
 			{
 				subsystem->begin_play();

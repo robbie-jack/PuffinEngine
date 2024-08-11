@@ -62,6 +62,8 @@ namespace puffin::ecs
 
 	entt::entity EnTTSubsystem::get_entity(const PuffinID& id) const
 	{
+		assert(m_id_to_entity.find(id) != m_id_to_entity.end() && "EnTTSubsystem::get_entity() - No entity with that id exists");
+
 		const entt::entity& entity = m_id_to_entity.at(id);
 
 		return entity;

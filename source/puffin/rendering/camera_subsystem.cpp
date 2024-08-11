@@ -46,8 +46,7 @@ namespace puffin::rendering
 	void CameraSubystem::begin_play()
 	{
         update_active_play_camera();
-
-        m_active_cam_id = m_active_play_cam_id;
+        update_active_camera();
 	}
 
 	void CameraSubystem::end_play()
@@ -139,6 +138,36 @@ namespace puffin::rendering
 		m_editor_cam_speed = 25.0f;
 	}
 
+	void CameraSubystem::update_active_camera()
+	{
+        if (m_active_play_cam_id != gInvalidID)
+        {
+            m_active_cam_id = m_active_play_cam_id;
+        }
+        else
+        {
+            m_active_cam_id = m_editor_cam_id;
+        }
+	}
+
+    void CameraSubystem::update_active_play_camera()
+    {
+        const auto scene_graph = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+        const auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+        const auto registry = entt_subsystem->registry();
+        const auto camera_view = registry->view<const TransformComponent3D, const CameraComponent3D>();
+
+        for (auto [entity, transform, camera] : camera_view.each())
+        {
+            if (camera.active)
+            {
+                m_active_play_cam_id = entt_subsystem->get_id(entity);
+
+                break;
+            }
+        }
+    }
+
 	void CameraSubystem::update_cameras(double delta_time)
 	{
         if (m_active_play_cam_id == gInvalidID)
@@ -148,7 +177,7 @@ namespace puffin::rendering
 
         if (m_engine->play_state() == core::PlayState::Playing && m_active_cam_id != m_active_play_cam_id)
         {
-            m_active_cam_id = m_active_play_cam_id;
+            update_active_camera();
         }
 
 		update_editor_camera(delta_time);
@@ -238,22 +267,4 @@ namespace puffin::rendering
 
 		camera.view_proj = camera.proj * camera.view;
 	}
-
-    void CameraSubystem::update_active_play_camera()
-    {
-        const auto scene_graph = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
-        const auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
-        const auto registry = entt_subsystem->registry();
-        const auto camera_view = registry->view<const TransformComponent3D, const CameraComponent3D>();
-
-        for (auto [entity, transform, camera] : camera_view.each())
-        {
-            if (camera.active)
-            {
-                m_active_play_cam_id = entt_subsystem->get_id(entity);
-
-                break;
-            }
-        }
-    }
 }

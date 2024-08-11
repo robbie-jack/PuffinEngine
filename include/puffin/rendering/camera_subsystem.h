@@ -43,6 +43,7 @@ namespace puffin::rendering
 
 		void init_editor_camera();
 
+		void update_active_camera();
         void update_active_play_camera();
 
 		void update_cameras(double delta_time);
