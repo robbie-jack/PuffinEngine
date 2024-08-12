@@ -89,7 +89,7 @@ namespace puffin::rendering
 		registry->on_update<TransformComponent3D>().connect<&RenderSystemVK::on_update_transform>(this);
 		registry->on_destroy<TransformComponent3D>().connect<&RenderSystemVK::on_destroy_mesh_or_transform>(this);
 
-		registry->on_construct<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
+		registry->on_construct<ShadowCasterComponent>().connect<&RenderSystemVK::on_construct_shadow_caster>(this);
 		registry->on_update<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
 		registry->on_destroy<ShadowCasterComponent>().connect<&RenderSystemVK::on_destroy_shadow_caster>(this);
 
@@ -258,6 +258,22 @@ namespace puffin::rendering
 		}
 	}
 
+	void RenderSystemVK::on_construct_shadow_caster(entt::registry& registry, entt::entity entity)
+	{
+		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		const auto id = entt_subsystem->get_id(entity);
+		const auto& shadow = registry.get<ShadowCasterComponent>(entity);
+
+		ImageDesc image_desc;
+		image_desc.image_type = ImageType::Depth;
+		image_desc.format = vk::Format::eD32Sfloat;
+		image_desc.width = shadow.width;
+		image_desc.height = shadow.height;
+		image_desc.depth = 1;
+
+		m_shadow_construct_events.push({ entity, image_desc });
+	}
+
 	void RenderSystemVK::on_update_shadow_caster(entt::registry& registry, entt::entity entity)
 	{
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
@@ -271,20 +287,23 @@ namespace puffin::rendering
 		image_desc.height = shadow.height;
 		image_desc.depth = 1;
 
-		m_shadow_update_events.push({ id, entity, image_desc });
+		m_shadow_update_events.push({ entity, image_desc });
 	}
 
 	void RenderSystemVK::on_destroy_shadow_caster(entt::registry& registry, entt::entity entity)
 	{
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		const auto id = entt_subsystem->get_id(entity);
+		auto& shadow = registry.get<ShadowCasterComponent>(entity);
 
-		m_shadow_destroy_events.push({ id });
+		m_shadow_destroy_events.push({ shadow.resource_id });
+
+		shadow.resource_id = gInvalidID;
 	}
 
-	void RenderSystemVK::register_texture(PuffinID texID)
+	void RenderSystemVK::register_texture(PuffinID tex_id)
 	{
-		m_textures_to_load.insert(texID);
+		m_textures_to_load.insert(tex_id);
 	}
 
 	void RenderSystemVK::init_vulkan()
@@ -933,8 +952,6 @@ namespace puffin::rendering
 		}
 	}
 
-	
-
 	void RenderSystemVK::process_components()
 	{
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
@@ -1051,89 +1068,116 @@ namespace puffin::rendering
 			}
 		}
 
-		// Update shadows
+		construct_shadows();
+		update_shadows();
+		destroy_shadows();
+	}
+
+	void RenderSystemVK::construct_shadows()
+	{
+		bool shadow_descriptor_needs_updated = false;
+
+		while(!m_shadow_construct_events.empty())
 		{
-			bool shadow_descriptor_needs_updated = false;
+			ShadowConstructEvent shadow_event{};
+			m_shadow_construct_events.pop(shadow_event);
 
-			std::vector<ShadowUpdateEvent> m_shadow_update_events_still_in_use;
-			while (!m_shadow_update_events.empty())
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+			auto registry = entt_subsystem->registry();
+			auto& shadow = registry->get<ShadowCasterComponent>(shadow_event.entity);
+
+			shadow.resource_id = m_resource_manager->add_images(shadow_event.image_desc, m_frames_in_flight_count * shadow.cascade_count);
+
+			shadow_descriptor_needs_updated |= true;
+		}
+
+		if (shadow_descriptor_needs_updated == true)
+		{
+			for (int i = 0; i < g_buffered_frames; i++)
 			{
-				ShadowUpdateEvent event {};
-				m_shadow_update_events.pop(event);
+				m_frame_render_data[i].shadow_descriptor_needs_updated = true;
+			}
+		}
+	}
 
-                auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
-                auto registry = entt_subsystem->registry();
-                auto shadow = registry->get<ShadowCasterComponent>(event.entity);
+	void RenderSystemVK::update_shadows()
+	{
+		bool shadow_descriptor_needs_updated = false;
 
-				if (m_resource_manager->image_exists(event.id))
+		std::vector<ShadowUpdateEvent> m_shadow_update_events_still_in_use;
+		while (!m_shadow_update_events.empty())
+		{
+			ShadowUpdateEvent shadow_event{};
+			m_shadow_update_events.pop(shadow_event);
+
+			auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+			auto registry = entt_subsystem->registry();
+			auto& shadow = registry->get<ShadowCasterComponent>(shadow_event.entity);
+
+			if (m_resource_manager->image_exists(shadow.resource_id))
+			{
+				const int first_image_index = current_frame_idx() * shadow.cascade_count;
+				for (int i = 0; i < shadow.cascade_count; ++i)
 				{
-                    const int first_image_index = current_frame_idx() * shadow.cascade_count;
-                    for (int i = 0; i < shadow.cascade_count; ++i)
-                    {
-                        m_resource_manager->update_image(event.id, event.image_desc, first_image_index + i);
-                    }
+					m_resource_manager->update_image(shadow.resource_id, shadow_event.image_desc, first_image_index + i);
+				}
 
-					event.frame_count++;
+				shadow_event.frame_count++;
 
-					if (event.frame_count < m_frames_in_flight_count)
-					{
-						m_shadow_update_events_still_in_use.push_back(event);
-					}
+				if (shadow_event.frame_count < m_frames_in_flight_count)
+				{
+					m_shadow_update_events_still_in_use.push_back(shadow_event);
+				}
+			}
+
+			shadow_descriptor_needs_updated |= true;
+		}
+
+		for (const auto& shadow_event : m_shadow_update_events_still_in_use)
+		{
+			m_shadow_update_events.push(shadow_event);
+		}
+
+		m_shadow_update_events_still_in_use.clear();
+
+		if (shadow_descriptor_needs_updated == true)
+		{
+			for (int i = 0; i < g_buffered_frames; i++)
+			{
+				m_frame_render_data[i].shadow_descriptor_needs_updated = true;
+			}
+		}
+	}
+
+	void RenderSystemVK::destroy_shadows()
+	{
+		std::vector<ShadowDestroyEvent> m_shadow_destroy_events_still_in_use;
+		while (!m_shadow_destroy_events.empty())
+		{
+			ShadowDestroyEvent shadow_event{};
+			m_shadow_destroy_events.pop(shadow_event);
+
+			if (m_resource_manager->image_exists(shadow_event.resource_id))
+			{
+				shadow_event.frame_count++;
+
+				if (shadow_event.frame_count < m_frames_in_flight_count)
+				{
+					m_shadow_destroy_events_still_in_use.push_back(shadow_event);
 				}
 				else
 				{
-					m_resource_manager->add_images(event.id, event.image_desc, m_frames_in_flight_count * shadow.cascade_count);
-				}
-
-				shadow_descriptor_needs_updated |= true;
-			}
-
-			for (const auto& event : m_shadow_update_events_still_in_use)
-			{
-				m_shadow_update_events.push(event);
-			}
-
-			m_shadow_update_events_still_in_use.clear();
-
-			if (shadow_descriptor_needs_updated == true)
-			{
-				for (int i = 0; i < g_buffered_frames; i++)
-				{
-					m_frame_render_data[i].shadow_descriptor_needs_updated = true;
+					m_resource_manager->destroy_images(shadow_event.resource_id);
 				}
 			}
 		}
 
-		// Destroy shadows
+		for (const auto& shadow_event : m_shadow_destroy_events_still_in_use)
 		{
-			std::vector<ShadowDestroyEvent> m_shadow_destroy_events_still_in_use;
-			while (!m_shadow_destroy_events.empty())
-			{
-				ShadowDestroyEvent event {};
-				m_shadow_destroy_events.pop(event);
-
-				if (m_resource_manager->image_exists(event.id))
-				{
-					event.frame_count++;
-
-					if (event.frame_count < m_frames_in_flight_count)
-					{
-						m_shadow_destroy_events_still_in_use.push_back(event);
-					}
-					else
-					{
-						m_resource_manager->destroy_images(event.id);
-					}
-				}
-			}
-
-			for (const auto& event : m_shadow_destroy_events_still_in_use)
-			{
-				m_shadow_destroy_events.push(event);
-			}
-
-			m_shadow_destroy_events_still_in_use.clear();
+			m_shadow_destroy_events.push(shadow_event);
 		}
+
+		m_shadow_destroy_events_still_in_use.clear();
 	}
 
 	void RenderSystemVK::draw()
@@ -1894,7 +1938,7 @@ namespace puffin::rendering
 
 			cmd.pushConstants(m_shadow_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant), &push_constant);
 
-			draw_shadowmap(cmd, m_resource_manager->get_image(id, current_frame_idx()), { shadow.width, shadow.height });
+			draw_shadowmap(cmd, m_resource_manager->get_image(shadow.resource_id, current_frame_idx()), { shadow.width, shadow.height });
 		}
 
 		cmd.end();
@@ -2466,7 +2510,7 @@ namespace puffin::rendering
 		{
 			auto id = entt_subsystem->get_id(entity);
 
-			auto& alloc_image = m_resource_manager->get_image(id, current_frame_idx());
+			auto& alloc_image = m_resource_manager->get_image(shadow.resource_id, current_frame_idx());
 
 			vk::DescriptorImageInfo shadow_image_info = { m_global_render_data.shadowmap_sampler, alloc_image.image_view,
 				vk::ImageLayout::eShaderReadOnlyOptimal };

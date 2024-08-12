@@ -244,6 +244,7 @@ namespace puffin
 		void swap_by_idx(const size_t& idx_a, const size_t& idx_b)
 		{
 			auto key_a = m_idx_to_key.at(idx_a);
+			auto key_b = m_idx_to_key.at(idx_b);
 
 			// Swap values
 			ValueT value_a = m_vector.at(idx_a);
@@ -252,12 +253,12 @@ namespace puffin
 			m_vector.at(idx_b) = value_a;
 
 			// Update key map to match swapped values
-			m_idx_to_key.at(idx_a) = m_idx_to_key.at(idx_b);
+			m_idx_to_key.at(idx_a) = key_b;
 			m_idx_to_key.at(idx_b) = key_a;
 
 			// Update idx map to match swapped values
-			m_key_to_idx.at(m_idx_to_key.at(idx_a)) = idx_b;
-			m_key_to_idx.at(m_idx_to_key.at(idx_b)) = idx_a;
+			m_key_to_idx.at(key_a) = idx_b;
+			m_key_to_idx.at(key_b) = idx_a;
 		}
 
 		void swap_by_key(const KeyT& key_a, const KeyT& key_b)

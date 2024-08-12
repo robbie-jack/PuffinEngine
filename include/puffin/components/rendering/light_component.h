@@ -1,13 +1,14 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
 #include "puffin/types/vector.h"
-
-#include <vector>
-#include <string>
+#include "puffin/rendering/resource_id.h"
 
 #include "nlohmann/json.hpp"
 #include "puffin/types/aabb.h"
@@ -87,6 +88,7 @@ namespace puffin
 			glm::mat4 light_view = glm::identity<glm::mat4>();
 			glm::mat4 light_view_proj = glm::identity<glm::mat4>();
 			int shadow_idx = -1;
+			ResourceID resource_id = gInvalidID;
 
 			AABB_3D bounds_aabb;
 

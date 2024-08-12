@@ -34,8 +34,10 @@ namespace puffin::rendering
 		m_unified_geometry_buffer->add_static_mesh(static_mesh);
 	}
 
-	void ResourceManagerVK::add_images(PuffinID id, const ImageDesc& image_desc, uint8_t image_count)
+	ResourceID ResourceManagerVK::add_images(const ImageDesc& image_desc, uint8_t image_count)
 	{
+		ResourceID id = generate_id();
+
 		m_images.emplace(id, std::vector<AllocatedImage>());
 		m_images.at(id).resize(image_count);
 
@@ -43,9 +45,11 @@ namespace puffin::rendering
 		{
 			create_image_internal(id, image_desc, i);
 		}
+
+		return id;
 	}
 
-	void ResourceManagerVK::destroy_images(PuffinID id)
+	void ResourceManagerVK::destroy_images(ResourceID id)
 	{
 		if (m_images.contains(id))
 		{
@@ -54,20 +58,24 @@ namespace puffin::rendering
 				destroy_image_internal(id, i);
 			}
 
-			m_images.clear();
+			m_images.erase(id);
 		}
 	}
 
-	void ResourceManagerVK::update_image(PuffinID id, const ImageDesc& image_desc, uint8_t image_idx)
+	void ResourceManagerVK::update_image(ResourceID id, const ImageDesc& image_desc, uint8_t image_idx)
 	{
+		assert(m_images.contains(id) && "ResourceManagerVK::update_images - Atempting to get image with invalid resource id");
+
 		if (m_images.contains(id))
 		{
 			update_image_internal(id, image_desc, image_idx);
 		}
 	}
 
-	void ResourceManagerVK::update_images(PuffinID id, const ImageDesc& image_desc)
+	void ResourceManagerVK::update_images(ResourceID id, const ImageDesc& image_desc)
 	{
+		assert(m_images.contains(id) && "ResourceManagerVK::update_images - Atempting to get image with invalid resource id");
+
 		if (m_images.contains(id))
 		{
 			for (int i = 0; i < m_images.at(id).size(); ++i)
@@ -77,8 +85,10 @@ namespace puffin::rendering
 		}
 	}
 
-	AllocatedImage& ResourceManagerVK::get_image(PuffinID id, uint8_t idx)
+	AllocatedImage& ResourceManagerVK::get_image(ResourceID id, uint8_t idx)
 	{
+		assert(m_images.contains(id) && "ResourceManagerVK::get_image - Atempting to get image with invalid resource id");
+
 		if (m_images.at(id).size() == 1)
 		{
 			return m_images.at(id)[0];
@@ -87,22 +97,24 @@ namespace puffin::rendering
 		return m_images.at(id)[idx];
 	}
 
-	bool ResourceManagerVK::image_exists(PuffinID id) const
+	bool ResourceManagerVK::image_exists(ResourceID id) const
 	{
 		return m_images.contains(id);
 	}
 
-	bool ResourceManagerVK::image_exists(PuffinID id, uint8_t idx) const
+	bool ResourceManagerVK::image_exists(ResourceID id, uint8_t idx) const
 	{
 		return m_images.at(id).size() > idx;
 	}
 
-	size_t ResourceManagerVK::image_count(PuffinID id) const
+	size_t ResourceManagerVK::image_count(ResourceID id) const
 	{
+		assert(m_images.contains(id) && "ResourceManagerVK::image_count - Atempting to get image with invalid resource id");
+
 		return m_images.at(id).size();
 	}
 
-	void ResourceManagerVK::create_image_internal(PuffinID id, const ImageDesc& image_desc, uint8_t idx)
+	void ResourceManagerVK::create_image_internal(ResourceID id, const ImageDesc& image_desc, uint8_t idx)
 	{
 		vk::Extent3D extent = { image_desc.width, image_desc.height, image_desc.depth };
 
@@ -116,7 +128,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void ResourceManagerVK::destroy_image_internal(PuffinID id, uint8_t idx)
+	void ResourceManagerVK::destroy_image_internal(ResourceID id, uint8_t idx)
 	{
 		auto& alloc_image = m_images.at(id)[idx];
 
@@ -124,7 +136,7 @@ namespace puffin::rendering
 		m_render_system->allocator().destroyImage(alloc_image.image, alloc_image.allocation);
 	}
 
-	void ResourceManagerVK::update_image_internal(PuffinID id, const ImageDesc& image_desc, uint8_t idx)
+	void ResourceManagerVK::update_image_internal(ResourceID id, const ImageDesc& image_desc, uint8_t idx)
 	{
 		destroy_image_internal(id, idx);
 		create_image_internal(id, image_desc, idx);

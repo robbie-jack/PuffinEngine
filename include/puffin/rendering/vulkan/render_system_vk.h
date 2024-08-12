@@ -15,6 +15,7 @@
 #include "puffin/ecs/entt_subsystem.h"
 #include "puffin/rendering/material_globals.h"
 #include "puffin/rendering/render_globals.h"
+#include "puffin/rendering/resource_id.h"
 #include "puffin/core/subsystem.h"
 #include "puffin/rendering/vulkan/descriptors_vk.h"
 #include "puffin/rendering/vulkan/pipeline_vk.h"
@@ -158,19 +159,25 @@ namespace puffin::rendering
 
 		void add_renderable(entt::registry& registry, entt::entity entity);
 
+		void on_construct_shadow_caster(entt::registry& registry, entt::entity entity);
 		void on_update_shadow_caster(entt::registry& registry, entt::entity entity);
 		void on_destroy_shadow_caster(entt::registry& registry, entt::entity entity);
 
-		void register_texture(PuffinID texID);
+		void register_texture(PuffinID tex_id);
 
 		[[nodiscard]] uint8_t current_frame_idx() const { return m_frame_count % m_frames_in_flight_count; }
 		[[nodiscard]] uint8_t frames_in_flight_count() const { return m_frames_in_flight_count; }
 
 	private:
 
+		struct ShadowConstructEvent
+		{
+			entt::entity entity;
+			ImageDesc image_desc;
+		};
+
 		struct ShadowUpdateEvent
 		{
-			PuffinID id;
             entt::entity entity;
 			ImageDesc image_desc;
 			uint8_t frame_count = 0;
@@ -178,7 +185,7 @@ namespace puffin::rendering
 
 		struct ShadowDestroyEvent
 		{
-			PuffinID id;
+			ResourceID resource_id;
 			uint8_t frame_count = 0;
 		};
 
@@ -226,6 +233,7 @@ namespace puffin::rendering
 
 		//PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
+		RingBuffer<ShadowConstructEvent> m_shadow_construct_events;
 		RingBuffer<ShadowUpdateEvent> m_shadow_update_events;
 		RingBuffer<ShadowDestroyEvent> m_shadow_destroy_events;
 		std::vector<PuffinID> m_shadows_to_draw;
@@ -279,6 +287,10 @@ namespace puffin::rendering
 		void process_components();
 
 		void update_render_data();
+
+		void construct_shadows();
+		void update_shadows();
+		void destroy_shadows();
 
 		void draw();
 
