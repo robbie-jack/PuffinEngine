@@ -38,11 +38,6 @@ namespace puffin::core
 		{
 			auto subsystem = create_and_initialize_subsystem_internal(type_name);
 
-			if (m_initialized_subsystems.find(type_name) != m_initialized_subsystems.end())
-			{
-				m_initialized_engine_subsystems.push_back(subsystem);
-			}
-
 			if (subsystem->type() == SubsystemType::Input)
 			{
 				assert(m_input_subsystem == nullptr && "SubsystemManager::create_and_initialize_engine_subsystems - Attempting to initialize a second input subsystem");
@@ -64,20 +59,15 @@ namespace puffin::core
 		for (const auto& type_name : m_gameplay_subsystem_names)
 		{
 			auto subsystem = create_and_initialize_subsystem_internal(type_name);
-
-			if (m_initialized_subsystems.find(type_name) != m_initialized_subsystems.end())
-			{
-				m_initialized_gameplay_subsystems.push_back(subsystem);
-			}
 		}
 	}
 
 	void SubsystemManager::destroy_engine_subsystems()
 	{
-		for (auto subsystem : m_initialized_engine_subsystems)
+		for (auto it = m_initialized_engine_subsystems.rbegin(); it != m_initialized_engine_subsystems.rend(); ++it)
 		{
-			subsystem->deinitialize();
-			delete subsystem;
+			(*it)->deinitialize();
+			delete *it;
 		}
 
 		m_initialized_engine_subsystems.clear();
@@ -91,10 +81,10 @@ namespace puffin::core
 
 	void SubsystemManager::destroy_gameplay_subsystems()
 	{
-		for (auto subsystem : m_initialized_gameplay_subsystems)
+		for (auto it = m_initialized_gameplay_subsystems.rbegin(); it != m_initialized_gameplay_subsystems.rend(); ++it)
 		{
-			subsystem->deinitialize();
-			delete subsystem;
+			(*it)->deinitialize();
+			delete* it;
 		}
 
 		m_initialized_gameplay_subsystems.clear();
@@ -160,6 +150,15 @@ namespace puffin::core
 		subsystem->initialize(this);
 
 		m_initialized_subsystems.emplace(type_name, subsystem);
+
+		if (is_editor_type(subsystem->type()))
+		{
+			m_initialized_engine_subsystems.push_back(subsystem);
+		}
+		else
+		{
+			m_initialized_gameplay_subsystems.push_back(subsystem);
+		}
 	}
 
 	

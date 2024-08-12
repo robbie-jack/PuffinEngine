@@ -16,7 +16,7 @@ namespace puffin::rendering
 	public:
 
 		explicit MaterialRegistryVK(RenderSystemVK* render_system);
-		~MaterialRegistryVK() = default;
+		~MaterialRegistryVK();
 
 		void register_material_instance(const PuffinID& id);
 

@@ -112,7 +112,7 @@ namespace puffin::rendering
 
 		if (m_engine->should_render_editor_ui())
 		{
-			auto editor_ui_subsystem = m_engine->get_subsystem<ui::EditorUISubsystem>();
+			auto editor_ui_subsystem = subsystem_manager->create_and_initialize_subsystem<ui::EditorUISubsystem>();
 			const ImVec2 viewport_size = editor_ui_subsystem->window_viewport()->viewportSize();
 			m_render_extent.width = viewport_size.x;
 			m_render_extent.height = viewport_size.y;
@@ -165,9 +165,6 @@ namespace puffin::rendering
 
 			m_tex_data.clear();
 
-			m_material_registry = nullptr;
-			m_resource_manager = nullptr;
-
 			clean_swapchain(m_swapchain_data);
 
 			if (m_swapchain_data_old.needs_cleaned)
@@ -181,6 +178,9 @@ namespace puffin::rendering
 			{
 				clean_offscreen(m_offscreen_data_old);
 			}
+
+			m_resource_manager = nullptr;
+			//m_material_registry = nullptr;
 
 			m_deletion_queue.flush();
 
@@ -817,8 +817,11 @@ namespace puffin::rendering
 
 		m_deletion_queue.pushFunction([=]()
 		{
-			m_forward_pipeline_layout = {};
+			m_device.destroyPipeline(m_forward_pipeline.get());
+			m_device.destroyPipelineLayout(m_forward_pipeline_layout.get());
+
 			m_forward_pipeline = {};
+			m_forward_pipeline_layout = {};
 		});
 	}
 
@@ -869,8 +872,11 @@ namespace puffin::rendering
 
 		m_deletion_queue.pushFunction([=]()
 		{
-			m_shadow_pipeline_layout = {};
+			m_device.destroyPipeline(m_shadow_pipeline.get());
+			m_device.destroyPipelineLayout(m_shadow_pipeline_layout.get());
+
 			m_shadow_pipeline = {};
+			m_shadow_pipeline_layout = {};
 		});
 	}
 

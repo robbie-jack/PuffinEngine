@@ -15,16 +15,19 @@ namespace puffin::rendering
 
 	ResourceManagerVK::~ResourceManagerVK()
 	{
-		for (auto images : m_images)
+		if (m_images.size() > 0)
 		{
-			for (auto alloc_image : images)
+			for (auto images : m_images)
 			{
-				m_render_system->device().destroyImageView(alloc_image.image_view);
-				m_render_system->allocator().destroyImage(alloc_image.image, alloc_image.allocation);
+				for (auto alloc_image : images)
+				{
+					m_render_system->device().destroyImageView(alloc_image.image_view);
+					m_render_system->allocator().destroyImage(alloc_image.image, alloc_image.allocation);
+				}
 			}
-		}
 
-		m_images.clear();
+			m_images.clear();
+		}
 
 		m_render_system = nullptr;
 	}

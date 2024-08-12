@@ -12,6 +12,24 @@ namespace puffin::rendering
 	{
 	}
 
+	MaterialRegistryVK::~MaterialRegistryVK()
+	{
+		for (auto& [id, mat] : m_mats)
+		{
+			m_render_system->device().destroyPipeline(mat.pipeline.get());
+			m_render_system->device().destroyPipelineLayout(mat.pipelineLayout.get());
+
+			mat.pipeline = {};
+			mat.pipelineLayout = {};
+		}
+
+		m_cached_material_data.clear();
+		m_mat_data.clear();
+		m_mats.clear();
+
+		m_render_system = nullptr;
+	}
+
 	void MaterialRegistryVK::register_material_instance(const PuffinID& id)
 	{
 		if (id != gInvalidID)
@@ -156,14 +174,14 @@ namespace puffin::rendering
 						// Create pipeline
 						.createUnique(m_render_system->device(), m_render_system->pipeline_cache(), *mat.pipelineLayout, nullptr);
 
-					//mDevice.destroyShaderModule(vertMod.module());
-					//mDevice.destroyShaderModule(fragMod.module());
+					m_render_system->device().destroyShaderModule(vertMod.module());
+					m_render_system->device().destroyShaderModule(fragMod.module());
 
-					m_render_system->deletion_queue().pushFunction([&]()
+					/*m_render_system->deletion_queue().pushFunction([&]()
 					{
 						mat.pipeline = {};
 						mat.pipelineLayout = {};
-					});
+					});*/
 				}
 			}
 		}
