@@ -154,7 +154,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/physics/onager2d/shapes/circle_shape_2d.h
 	${HEADER_DIR}/puffin/physics/onager2d/shapes/box_shape_2d.h
 	# Physics - Box2D
-	${HEADER_DIR}/puffin/physics/box2d/box2d_contact_listener.h
 	${HEADER_DIR}/puffin/physics/box2d/box2d_physics_system.h
 	# Physics - Jolt
 	${HEADER_DIR}/puffin/physics/jolt/jolt_physics_system.h
@@ -256,7 +255,6 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.cpp
 	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/spatial_hash_broadphase_2d.cpp
 	# Physics - Box2D
-	${SOURCE_DIR}/puffin/physics/box2d/box2d_contact_listener.cpp
 	${SOURCE_DIR}/puffin/physics/box2d/box2d_physics_system.cpp
 	# Physics - Jolt
 	${SOURCE_DIR}/puffin/physics/jolt/jolt_physics_system.cpp

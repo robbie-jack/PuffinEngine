@@ -2,7 +2,6 @@
 
 #if PFN_BOX2D_PHYSICS
 
-#include "puffin/physics/box2d/box2d_contact_listener.h"
 #include "puffin/core/engine.h"
 #include "puffin/core/subsystem.h"
 #include "puffin/ecs/entt_subsystem.h"
@@ -74,12 +73,12 @@ namespace puffin::physics
 
 		struct BodyCreateEvent
 		{
-			entt::entity entity;
+			PuffinID id;
 		};
 
 		struct ShapeCreateEvent
 		{
-			entt::entity entity;
+			PuffinID id;
 			BodyType type;
 		};
 
