@@ -3,6 +3,10 @@
 #include "puffin/core/engine.h"
 #include "argparse/argparse.hpp"
 
+#ifdef PFN_BOX2D_PHYSICS
+#include "puffin/physics/box2d/box2d_physics_system.h"
+#endif
+
 #ifdef PFN_JOLT_PHYSICS
 #include "puffin/physics/jolt/jolt_physics_system.h"
 #endif
@@ -36,6 +40,10 @@ int main(int argc, char* argv[])
 	engine->setup();
 
 	engine->register_subsystem<puffin::rendering::RenderSystemVK>();
+
+#ifdef PFN_BOX2D_PHYSICS
+	engine->register_subsystem<puffin::physics::Box2DPhysicsSystem>();
+#endif
 
 #ifdef PFN_JOLT_PHYSICS
 	engine->register_subsystem<puffin::physics::JoltPhysicsSystem>();

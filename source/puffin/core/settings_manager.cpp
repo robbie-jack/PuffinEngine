@@ -4,6 +4,7 @@
 
 #include "puffin/core/engine.h"
 #include "puffin/assets/asset_registry.h"
+#include "puffin/types/vector.h"
 
 namespace puffin::core
 {
@@ -51,6 +52,10 @@ namespace puffin::core
 	{
 		set("editor_camera_fov", 60.0f);
 		set("mouse_sensitivity", 0.05f);
+		set("unit_scale", 1.0f);
+
 		set("rendering_draw_shadows", false);
+
+		set("physics_gravity", Vector3f(0.0f, -9.81f, 0.0f));
 	}
 }

@@ -50,7 +50,7 @@ namespace puffin::core
 		return false;
 	}
 
-	void Subsystem::fixed_update(double fixed_time)
+	void Subsystem::fixed_update(double fixed_time_step)
 	{
 	}
 

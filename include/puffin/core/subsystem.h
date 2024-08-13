@@ -64,7 +64,7 @@ namespace puffin::core
 		/*
 		 * Fixed update method, called once every fixed physics tick, and only on gameplay subsystems
 		 */
-		virtual void fixed_update(double fixed_time);
+		virtual void fixed_update(double fixed_time_step);
 
 		/*
 		 * Whether fixed update method should be called, defaults to false
