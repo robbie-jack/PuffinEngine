@@ -62,6 +62,11 @@ namespace puffin
 			//Puffin::UI::ScrollingBuffer plotBuffer;
 
 			HardwareStats hardwareStats;
+
+			std::unordered_map<std::string, int> m_benchmark_idx;
+			std::unordered_map<std::string, std::vector<double>> m_benchmark_values;
+
+			void draw_benchhmark(const std::string& name);
 		};
 	}
 }

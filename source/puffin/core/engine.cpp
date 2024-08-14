@@ -33,6 +33,7 @@
 #include "puffin/window/window_subsystem.h"
 #include "puffin/core/settings_manager.h"
 #include "puffin/core/subsystem_manager.h"
+#include "puffin/utility/performance_benchmark_subsystem.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -180,16 +181,26 @@ namespace puffin::core
 
 		// Process input
 		{
+			auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmark_subsystem->start_benchmark("Input");
+
 			auto input_subsystem = m_subsystem_manager->get_input_subsystem();
 			input_subsystem->process_input();
+
+			benchmark_subsystem->end_benchmark("Input");
 		}
 
 		// Wait for last presentation to complete and sample delta time
 		{
+			auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmark_subsystem->start_benchmark("Sample Time");
+
 			auto render_subsystem = m_subsystem_manager->get_render_subsystem();
 
 			double sampled_time = render_subsystem->wait_for_last_presentation_and_sample_time();
 			update_delta_time(sampled_time);
+
+			benchmark_subsystem->end_benchmark("Sample Time");
 		}
 
 		// Make sure delta time never exceeds 1/30th of a second
@@ -202,6 +213,9 @@ namespace puffin::core
 
 		// Execute engine updates
 		{
+			auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmark_subsystem->start_benchmark("Engine Update");
+
 			for (auto subsystem : m_subsystem_manager->get_subsystems())
 			{
 				if (subsystem->should_update())
@@ -209,6 +223,8 @@ namespace puffin::core
 					subsystem->update(m_delta_time);
 				}
 			}
+
+			benchmark_subsystem->end_benchmark("Engine Update");
 		}
 
 		/*const auto inputSubsystem = getSystem<input::InputSubsystem>();
@@ -259,6 +275,9 @@ namespace puffin::core
 		{
 			// Fixed Update
 			{
+				auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+				benchmark_subsystem->start_benchmark("Fixed Update");
+
 				// Add onto accumulated time
 				m_accumulated_time += m_delta_time;
 
@@ -274,10 +293,15 @@ namespace puffin::core
 						}
 					}
 				}
+
+				benchmark_subsystem->end_benchmark("Fixed Update");
 			}
 
 			// Update
 			{
+				auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+				benchmark_subsystem->start_benchmark("Update");
+
 				for (auto subsystem : m_subsystem_manager->get_gameplay_subsystems())
 				{
 					if (subsystem->should_update())
@@ -285,14 +309,21 @@ namespace puffin::core
 						subsystem->update(m_delta_time);
 					}
 				}
+
+				benchmark_subsystem->end_benchmark("Update");
 			}
 		}
 
 		// Render
 		{
+			auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmark_subsystem->start_benchmark("Render");
+
 			auto render_subsystem = m_subsystem_manager->get_render_subsystem();
 
 			render_subsystem->render(m_delta_time);
+
+			benchmark_subsystem->start_benchmark("Render");
 		}
 
 		if (m_play_state == PlayState::EndPlay)
@@ -356,6 +387,7 @@ namespace puffin::core
 		register_subsystem<window::WindowSubsystem>();
 		register_subsystem<core::SignalSubsystem>();
 		register_subsystem<input::InputSubsystem>();
+		register_subsystem<utility::PerformanceBenchmarkSubsystem>();
 		register_subsystem<SettingsManager>();
 		register_subsystem<EnkiTSSubsystem>();
 		register_subsystem<audio::AudioSubsystem>();

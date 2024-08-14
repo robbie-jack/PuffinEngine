@@ -5,11 +5,14 @@
 #include <stdio.h> 
 
 #include "imgui.h"
+#include "puffin/utility/performance_benchmark_subsystem.h"
 
 namespace puffin
 {
 	namespace ui
 	{
+		constexpr int s_max_benchmark_values = 100;
+
 		void UIWindowPerformance::draw(double dt)
 		{
 			mWindowName = "Performance";
@@ -137,39 +140,58 @@ namespace puffin
 
 					ImGui::NewLine();
 
-					//// Display Stage/System Frametime breakdown
-					//ImGui::Dummy(ImVec2(0.0f, 10.0f));
-					//ImGui::SameLine();
-					//ImGui::Text("Frametime Breakdown");
-					//ImGui::NewLine();
+					// Display Stage/System Frametime breakdown
+					ImGui::Dummy(ImVec2(0.0f, 10.0f));
+					ImGui::SameLine();
+					ImGui::Text("Frametime Breakdown");
+					ImGui::NewLine();
 
-					//for (const auto& [stage, name] : core::gExecutionStageOrder)
-					//{
-					//	const auto stageFrametime = mEngine->get_stage_execution_time_last_frame(stage) * 1000.0;
-					//	ImGui::Dummy(ImVec2(0.0f, 10.0f));
-					//	ImGui::SameLine();
-					//	ImGui::Text("%s: %.1f ms", name.c_str(), stageFrametime);
-
-					//	ImGui::Dummy(ImVec2(0.0f, 10.0f));
-					//	ImGui::SameLine();
-					//	ImGui::Indent();
-					//	for (const auto& [name, time] : mEngine->getCallbackExecutionTimeForUpdateStageLastFrame(stage))
-					//	{
-					//		const double callbackFrametime = time * 1000.0;
-					//		ImGui::Dummy(ImVec2(0.0f, 10.0f));
-					//		ImGui::SameLine();
-					//		ImGui::Text("%s: %.1f ms", name.c_str(), callbackFrametime);
-					//	}
-					//	ImGui::Dummy(ImVec2(0.0f, 10.0f));
-					//	ImGui::SameLine();
-					//	ImGui::Unindent();
-					//}
-
-					//ImGui::NewLine();
+					draw_benchhmark("Input");
+					draw_benchhmark("Sample Time");
+					draw_benchhmark("Engine Update");
+					draw_benchhmark("Fixed Update");
+					draw_benchhmark("Update");
+					draw_benchhmark("Render");
 				}
 
 				end();
 			}
+		}
+
+		void UIWindowPerformance::draw_benchhmark(const std::string& name)
+		{
+			auto benchmark_subsystem = m_engine->get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+
+			if (m_benchmark_idx.find(name) == m_benchmark_idx.end())
+			{
+				m_benchmark_idx.emplace(name, 0);
+
+				m_benchmark_values.emplace(name, std::vector<double>());
+				m_benchmark_values.at(name).reserve(s_max_benchmark_values);
+			}
+
+			auto& benchmark_vector = m_benchmark_values.at(name);
+			if(benchmark_vector.size() < s_max_benchmark_values)
+			{
+				benchmark_vector.push_back(0.0);
+			}
+
+			benchmark_vector[m_benchmark_idx.at(name) % s_max_benchmark_values] = benchmark_subsystem->get_benchmark_time(name);
+
+			double benchmark_average = 0.0;
+			for (auto value : benchmark_vector)
+			{
+				benchmark_average += value;
+			}
+			benchmark_average /= benchmark_vector.size();
+
+			ImGui::Dummy(ImVec2(0.0f, 10.0f));
+			ImGui::SameLine();
+			ImGui::Text("%s: %.3f ms", name.c_str(), benchmark_average);
+
+			ImGui::NewLine();
+
+			m_benchmark_idx[name] = m_benchmark_idx[name] + 1 % s_max_benchmark_values;
 		}
 	}
 }

@@ -206,6 +206,8 @@ set(HEADERS
 	${HEADER_DIR}/puffin/ui/editor/windows/ui_window_scene_hierarchy.h
 	${HEADER_DIR}/puffin/ui/editor/windows/ui_window_settings.h
 	${HEADER_DIR}/puffin/ui/editor/windows/ui_window_viewport.h
+	# Utility
+	${HEADER_DIR}/puffin/utility/performance_benchmark_subsystem.h
 	# Window
 	${HEADER_DIR}/puffin/window/window_subsystem.h
 	)
@@ -285,6 +287,8 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window_scene_hierarchy.cpp
 	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window_settings.cpp
 	${SOURCE_DIR}/puffin/ui/editor/windows/ui_window_viewport.cpp
+	# Utility
+	${SOURCE_DIR}/puffin/utility/performance_benchmark_subsystem.cpp
 	# Window
 	${SOURCE_DIR}/puffin/window/window_subsystem.cpp
 	)
