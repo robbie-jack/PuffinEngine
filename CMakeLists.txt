@@ -68,8 +68,8 @@ endif()
 
 # Options
 option(DOUBLE_PRECISION_SUPPORT "Enable Double Precision Support" OFF)
-option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" ON)
-option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" OFF)
+option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" OFF)
+option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" ON)
 option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
 
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
