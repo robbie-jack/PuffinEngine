@@ -13,7 +13,6 @@ namespace puffin::audio
 
 	AudioSubsystemProvider::AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
 	{
-		
 	}
 
 	AudioSubsystemProvider::~AudioSubsystemProvider()
@@ -27,7 +26,7 @@ namespace puffin::audio
 
 	AudioSubsystem::AudioSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		
+		m_name = "AudioSubsystem";
 	}
 
 	AudioSubsystem::~AudioSubsystem()

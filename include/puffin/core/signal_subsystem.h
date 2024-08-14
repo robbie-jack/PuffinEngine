@@ -85,7 +85,10 @@ namespace puffin::core
 	{
 	public:
 
-		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine) {}
+		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+		{
+			m_name = "SignalSubsystem";
+		}
 
 		~SignalSubsystem() override
 		{

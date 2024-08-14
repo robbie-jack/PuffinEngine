@@ -10,6 +10,7 @@ namespace puffin::core
 {
 	SettingsManager::SettingsManager(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
 	{
+		m_name = "SettingsManager";
 	}
 
 	void SettingsManager::initialize(core::SubsystemManager* subsystem_manager)

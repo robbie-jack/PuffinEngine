@@ -191,6 +191,7 @@ namespace puffin::io
 
 	SceneSubsystem::SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
+		m_name = "SceneSubsystem";
 	}
 
 	SceneSubsystem::~SceneSubsystem()

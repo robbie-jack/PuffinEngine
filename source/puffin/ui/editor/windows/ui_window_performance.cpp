@@ -146,19 +146,46 @@ namespace puffin
 					ImGui::Text("Frametime Breakdown");
 					ImGui::NewLine();
 
-					draw_benchhmark("Input");
-					draw_benchhmark("Sample Time");
-					draw_benchhmark("Engine Update");
-					draw_benchhmark("Fixed Update");
-					draw_benchhmark("Update");
-					draw_benchhmark("Render");
+					auto benchmark_subsystem = m_engine->get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+
+					draw_benchmark("Input", benchmark_subsystem->get_benchmark_time("Input"));
+					draw_benchmark("Sample Time", benchmark_subsystem->get_benchmark_time("Sample Time"));
+
+					draw_benchmark("Engine Update", benchmark_subsystem->get_benchmark_time("Engine Update"));
+
+					ImGui::Indent();
+					for (const auto& name : benchmark_subsystem->get_category("Engine Update"))
+					{
+						draw_benchmark(name, benchmark_subsystem->get_benchmark_time_category(name, "Engine Update"));
+					}
+					ImGui::Unindent();
+
+					draw_benchmark("Fixed Update", benchmark_subsystem->get_benchmark_time("Fixed Update"));
+
+					ImGui::Indent();
+					for (const auto& name : benchmark_subsystem->get_category("Fixed Update"))
+					{
+						draw_benchmark(name, benchmark_subsystem->get_benchmark_time_category(name, "Fixed Update"));
+					}
+					ImGui::Unindent();
+
+					draw_benchmark("Update", benchmark_subsystem->get_benchmark_time("Update"));
+
+					ImGui::Indent();
+					for (const auto& name : benchmark_subsystem->get_category("Update"))
+					{
+						draw_benchmark(name, benchmark_subsystem->get_benchmark_time_category(name, "Update"));
+					}
+					ImGui::Unindent();
+
+					draw_benchmark("Render", benchmark_subsystem->get_benchmark_time("Render"));
 				}
 
 				end();
 			}
 		}
 
-		void UIWindowPerformance::draw_benchhmark(const std::string& name)
+		void UIWindowPerformance::draw_benchmark(const std::string& name, double benchmark_time)
 		{
 			auto benchmark_subsystem = m_engine->get_subsystem<utility::PerformanceBenchmarkSubsystem>();
 
@@ -176,7 +203,7 @@ namespace puffin
 				benchmark_vector.push_back(0.0);
 			}
 
-			benchmark_vector[m_benchmark_idx.at(name) % s_max_benchmark_values] = benchmark_subsystem->get_benchmark_time(name);
+			benchmark_vector[m_benchmark_idx.at(name) % s_max_benchmark_values] = benchmark_time;
 
 			double benchmark_average = 0.0;
 			for (auto value : benchmark_vector)
@@ -189,7 +216,7 @@ namespace puffin
 			ImGui::SameLine();
 			ImGui::Text("%s: %.3f ms", name.c_str(), benchmark_average);
 
-			ImGui::NewLine();
+			//ImGui::NewLine();
 
 			m_benchmark_idx[name] = m_benchmark_idx[name] + 1 % s_max_benchmark_values;
 		}

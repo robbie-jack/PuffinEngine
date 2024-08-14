@@ -8,7 +8,7 @@
 
 namespace puffin::rendering
 {
-	MaterialRegistryVK::MaterialRegistryVK(RenderSystemVK* render_system) : m_render_system(render_system)
+	MaterialRegistryVK::MaterialRegistryVK(RenderSubystemVK* render_system) : m_render_system(render_system)
 	{
 	}
 

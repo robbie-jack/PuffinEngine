@@ -12,11 +12,13 @@ namespace puffin::scene
 {
 	SceneGraphSubsystem::SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_scene_graph_updated = true;
+		m_name = "SceneGraphSubsystem";
 	}
 
 	void SceneGraphSubsystem::initialize(core::SubsystemManager* subsystem_manager)
 	{
+		m_scene_graph_updated = true;
+
 		register_default_node_types();
 	}
 
@@ -305,6 +307,7 @@ namespace puffin::scene
 
 	SceneGraphGameplaySubsystem::SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
+		m_name = "SceneGraphGameplaySubsystem";
 	}
 
 	void SceneGraphGameplaySubsystem::initialize(core::SubsystemManager* subsystem_manager)

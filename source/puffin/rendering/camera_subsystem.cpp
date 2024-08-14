@@ -12,6 +12,7 @@ namespace puffin::rendering
 {
 	CameraSubystem::CameraSubystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
+        m_name = "CameraSubsystem";
 	}
 
 	void CameraSubystem::initialize(core::SubsystemManager* subsystem_manager)
@@ -249,7 +250,7 @@ namespace puffin::rendering
 
 	void CameraSubystem::update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera)
 	{
-		auto render_system = m_engine->get_subsystem<rendering::RenderSystemVK>();
+		auto render_system = m_engine->get_subsystem<rendering::RenderSubystemVK>();
 
 		// Calculate direction & right vectors
 		camera.direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.0f, 0.0f, -1.0f);

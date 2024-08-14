@@ -10,6 +10,8 @@ namespace puffin::procedural
 {
 	ProceduralMeshGenSystem::ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
+		m_name = "ProceduralMeshGenSubsystem";
+
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 

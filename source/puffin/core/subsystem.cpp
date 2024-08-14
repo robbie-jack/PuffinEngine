@@ -71,4 +71,9 @@ namespace puffin::core
 	void Subsystem::render(double delta_time)
 	{
 	}
+
+	const std::string& Subsystem::name()
+	{
+		return m_name;
+	}
 }

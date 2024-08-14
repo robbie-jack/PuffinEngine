@@ -6,6 +6,7 @@ namespace puffin::core
 {
 	EnkiTSSubsystem::EnkiTSSubsystem(const std::shared_ptr<Engine>& engine) : Subsystem(engine)
 	{
+		m_name = "EnkiTSSubsystem";
 	}
 
 	EnkiTSSubsystem::~EnkiTSSubsystem()

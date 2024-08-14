@@ -220,7 +220,11 @@ namespace puffin::core
 			{
 				if (subsystem->should_update())
 				{
+					benchmark_subsystem->start_benchmark_category(subsystem->name(), "Engine Update");
+
 					subsystem->update(m_delta_time);
+
+					benchmark_subsystem->end_benchmark_category(subsystem->name(), "Engine Update");
 				}
 			}
 
@@ -289,7 +293,11 @@ namespace puffin::core
 					{
 						if (subsystem->should_fixed_update())
 						{
+							benchmark_subsystem->start_benchmark_category(subsystem->name(), "Fixed Update");
+
 							subsystem->fixed_update(m_time_step_fixed);
+
+							benchmark_subsystem->end_benchmark_category(subsystem->name(), "Fixed Update");
 						}
 					}
 				}
@@ -306,7 +314,11 @@ namespace puffin::core
 				{
 					if (subsystem->should_update())
 					{
+						benchmark_subsystem->start_benchmark_category(subsystem->name(), "Update");
+
 						subsystem->update(m_delta_time);
+
+						benchmark_subsystem->end_benchmark_category(subsystem->name(), "Update");
 					}
 				}
 
@@ -323,7 +335,7 @@ namespace puffin::core
 
 			render_subsystem->render(m_delta_time);
 
-			benchmark_subsystem->start_benchmark("Render");
+			benchmark_subsystem->end_benchmark("Render");
 		}
 
 		if (m_play_state == PlayState::EndPlay)

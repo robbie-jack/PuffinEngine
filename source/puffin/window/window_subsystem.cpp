@@ -15,7 +15,7 @@ namespace puffin::window
 
 	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		
+		m_name = "WindowSubsystem";
 	}
 
 	WindowSubsystem::~WindowSubsystem()

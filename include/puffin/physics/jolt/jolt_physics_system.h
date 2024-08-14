@@ -39,12 +39,12 @@ namespace puffin::physics
 		{ BodyType::Dynamic, JPH::EMotionType::Dynamic }
 	};
 
-	class JoltPhysicsSystem : public core::Subsystem
+	class JoltPhysicsSubsystem : public core::Subsystem
 	{
 	public:
 
-		JoltPhysicsSystem(const std::shared_ptr<core::Engine>& engine);
-		~JoltPhysicsSystem() override = default;
+		JoltPhysicsSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~JoltPhysicsSubsystem() override = default;
 
 		void initialize(core::SubsystemManager* subsystem_manager) override;
 		void deinitialize() override;

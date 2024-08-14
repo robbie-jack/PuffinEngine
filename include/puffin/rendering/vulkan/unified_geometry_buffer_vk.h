@@ -10,14 +10,14 @@
 
 namespace puffin::rendering
 {
-	class RenderSystemVK;
+	class RenderSubystemVK;
 
 	// Custom buffer to store vertex/index data for multiple meshes in a single large vertex/index buffer
 	class UnifiedGeometryBuffer
 	{
 	public:
 
-		explicit UnifiedGeometryBuffer(RenderSystemVK* render_system, uint64_t vertex_page_size = 64 * 1000 * 1000,
+		explicit UnifiedGeometryBuffer(RenderSubystemVK* render_system, uint64_t vertex_page_size = 64 * 1000 * 1000,
 		                               uint64_t vertex_initial_page_count = 1, uint64_t index_page_size = 64 * 1000 * 1000, uint64_t index_initial_page_count = 1);
 
 		~UnifiedGeometryBuffer();
@@ -55,7 +55,7 @@ namespace puffin::rendering
 
 	private:
 
-		RenderSystemVK* m_render_system = nullptr;
+		RenderSubystemVK* m_render_system = nullptr;
 
 		struct InternalVertexBufferData
 		{

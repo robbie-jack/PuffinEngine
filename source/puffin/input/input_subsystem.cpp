@@ -11,6 +11,8 @@ namespace puffin
 	{
 		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
+			m_name = "InputSubsystem";
+
 			m_next_id = 1;
 			m_last_x_pos = 640.0;
 			m_last_y_pos = 360.0;

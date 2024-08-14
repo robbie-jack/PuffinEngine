@@ -18,7 +18,7 @@
 
 namespace puffin::rendering::util
 {
-	void immediate_submit(const RenderSystemVK* render_system,
+	void immediate_submit(const RenderSubystemVK* render_system,
 	                     std::function<void(VkCommandBuffer cmd)>&& function)
 	{
 		vk::CommandBuffer cmd = render_system->upload_context().commandBuffer;
@@ -40,7 +40,7 @@ namespace puffin::rendering::util
 		render_system->device().resetCommandPool(render_system->upload_context().commandPool);
 	}
 
-	void copy_data_between_buffers(const RenderSystemVK* render_system, const vk::Buffer src_buffer,
+	void copy_data_between_buffers(const RenderSubystemVK* render_system, const vk::Buffer src_buffer,
 	                               const vk::Buffer dst_buffer,
 	                               const uint32_t data_size, const uint32_t src_offset, const uint32_t dst_offset)
 	{
@@ -68,7 +68,7 @@ namespace puffin::rendering::util
 		return buffer;
 	}
 
-	void copy_cpu_data_into_gpu_buffer(const RenderSystemVK* render_system, const AllocatedBuffer& dst_buffer, const uint32_t data_size,
+	void copy_cpu_data_into_gpu_buffer(const RenderSubystemVK* render_system, const AllocatedBuffer& dst_buffer, const uint32_t data_size,
 	                                   const void* data, const uint32_t src_offset, const uint32_t dst_offset)
 	{
 		// If rebar is enabled and buffer is in host visible memory, copy directly to buffer
@@ -100,7 +100,7 @@ namespace puffin::rendering::util
 		}
 	}
 
-	AllocatedBuffer init_vertex_buffer(const RenderSystemVK* render_system, const void* vertex_data, const size_t num_vertices, const size_t vertex_size)
+	AllocatedBuffer init_vertex_buffer(const RenderSubystemVK* render_system, const void* vertex_data, const size_t num_vertices, const size_t vertex_size)
 	{
 		// Copy Loaded Mesh data into mesh vertex buffer
 		const uint32_t vertexBufferSize = num_vertices * vertex_size;
@@ -115,7 +115,7 @@ namespace puffin::rendering::util
 		return vertexBuffer;
 	}
 
-	AllocatedBuffer init_index_buffer(const RenderSystemVK* render_system, const void* index_data,
+	AllocatedBuffer init_index_buffer(const RenderSubystemVK* render_system, const void* index_data,
 	                                  const size_t num_indices, const size_t index_size)
 	{
 		const uint32_t indexBufferSize = num_indices * index_size;
@@ -130,7 +130,7 @@ namespace puffin::rendering::util
 		return indexBuffer;
 	}
 
-	AllocatedImage create_image(const RenderSystemVK* render_system, const vk::ImageCreateInfo& image_info, vk::ImageViewCreateInfo image_view_info)
+	AllocatedImage create_image(const RenderSubystemVK* render_system, const vk::ImageCreateInfo& image_info, vk::ImageViewCreateInfo image_view_info)
 	{
 		AllocatedImage allocImage;
 		allocImage.format = image_info.format;
@@ -148,7 +148,7 @@ namespace puffin::rendering::util
 		return allocImage;
 	}
 
-	AllocatedImage create_color_image(const RenderSystemVK* render_system, vk::Extent3D extent,
+	AllocatedImage create_color_image(const RenderSubystemVK* render_system, vk::Extent3D extent,
 		vk::Format format)
 	{
 		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
@@ -161,7 +161,7 @@ namespace puffin::rendering::util
 		return create_image(render_system, imageInfo, imageViewInfo);
 	}
 
-	AllocatedImage create_depth_image(const RenderSystemVK* render_system, const vk::Extent3D extent, const vk::Format format)
+	AllocatedImage create_depth_image(const RenderSubystemVK* render_system, const vk::Extent3D extent, const vk::Format format)
 	{
 		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
 			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, { vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eDepthStencilAttachment } };
@@ -173,7 +173,7 @@ namespace puffin::rendering::util
 		return create_image(render_system, imageInfo, imageViewInfo);
 	}
 
-	AllocatedImage init_texture(const RenderSystemVK* render_system, const void* pixel_data, const uint32_t width, const uint32_t height, vk
+	AllocatedImage init_texture(const RenderSubystemVK* render_system, const void* pixel_data, const uint32_t width, const uint32_t height, vk
 	                            ::DeviceSize size, const vk::Format format)
 	{
 		// Allocate staging buffer on CPU for holding texture data to upload

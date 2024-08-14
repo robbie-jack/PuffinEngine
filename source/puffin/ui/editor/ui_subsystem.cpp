@@ -25,6 +25,7 @@ namespace puffin::ui
 {
 	EditorUISubsystem::EditorUISubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
+		m_name = "EditorUISubsystem";
 	}
 
 	void EditorUISubsystem::initialize(core::SubsystemManager* subsystem_manager)

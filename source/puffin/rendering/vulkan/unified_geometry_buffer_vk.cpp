@@ -16,7 +16,7 @@
 
 namespace puffin::rendering
 {
-	UnifiedGeometryBuffer::UnifiedGeometryBuffer(RenderSystemVK* render_system,
+	UnifiedGeometryBuffer::UnifiedGeometryBuffer(RenderSubystemVK* render_system,
 		uint64_t vertex_page_size, uint64_t vertex_initial_page_count, uint64_t index_page_size,
 		uint64_t index_initial_page_count) :
 		m_render_system(render_system), m_vertex_page_size(vertex_page_size), m_vertex_initial_page_count(vertex_initial_page_count),

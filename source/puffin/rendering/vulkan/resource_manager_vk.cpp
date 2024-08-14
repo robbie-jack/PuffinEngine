@@ -7,7 +7,7 @@
 
 namespace puffin::rendering
 {
-	ResourceManagerVK::ResourceManagerVK(RenderSystemVK* render_system)
+	ResourceManagerVK::ResourceManagerVK(RenderSubystemVK* render_system)
 		: m_render_system(render_system)
 	{
 		m_unified_geometry_buffer = new UnifiedGeometryBuffer(m_render_system);

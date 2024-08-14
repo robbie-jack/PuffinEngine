@@ -63,35 +63,36 @@
 
 namespace puffin::rendering
 {
-	RenderSystemVK::RenderSystemVK(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	RenderSubystemVK::RenderSubystemVK(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	{
+		m_name = "RenderSubystemVK";
+	}
+
+	RenderSubystemVK::~RenderSubystemVK()
 	{
 	}
 
-	RenderSystemVK::~RenderSystemVK()
-	{
-	}
-
-	void RenderSystemVK::initialize(core::SubsystemManager* subsystem_manager)
+	void RenderSubystemVK::initialize(core::SubsystemManager* subsystem_manager)
 	{
 		// Bind callbacks
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
-		registry->on_construct<MeshComponent>().connect<&RenderSystemVK::on_update_mesh>(this);
-		registry->on_update<MeshComponent>().connect<&RenderSystemVK::on_update_mesh>(this);
-		registry->on_destroy<MeshComponent>().connect<&RenderSystemVK::on_destroy_mesh_or_transform>(this);
+		registry->on_construct<MeshComponent>().connect<&RenderSubystemVK::on_update_mesh>(this);
+		registry->on_update<MeshComponent>().connect<&RenderSubystemVK::on_update_mesh>(this);
+		registry->on_destroy<MeshComponent>().connect<&RenderSubystemVK::on_destroy_mesh_or_transform>(this);
 
-		registry->on_construct<TransformComponent2D>().connect<&RenderSystemVK::on_update_transform>(this);
-		registry->on_update<TransformComponent2D>().connect<&RenderSystemVK::on_update_transform>(this);
-		registry->on_destroy<TransformComponent2D>().connect<&RenderSystemVK::on_destroy_mesh_or_transform>(this);
+		registry->on_construct<TransformComponent2D>().connect<&RenderSubystemVK::on_update_transform>(this);
+		registry->on_update<TransformComponent2D>().connect<&RenderSubystemVK::on_update_transform>(this);
+		registry->on_destroy<TransformComponent2D>().connect<&RenderSubystemVK::on_destroy_mesh_or_transform>(this);
 
-		registry->on_construct<TransformComponent3D>().connect<&RenderSystemVK::on_update_transform>(this);
-		registry->on_update<TransformComponent3D>().connect<&RenderSystemVK::on_update_transform>(this);
-		registry->on_destroy<TransformComponent3D>().connect<&RenderSystemVK::on_destroy_mesh_or_transform>(this);
+		registry->on_construct<TransformComponent3D>().connect<&RenderSubystemVK::on_update_transform>(this);
+		registry->on_update<TransformComponent3D>().connect<&RenderSubystemVK::on_update_transform>(this);
+		registry->on_destroy<TransformComponent3D>().connect<&RenderSubystemVK::on_destroy_mesh_or_transform>(this);
 
-		registry->on_construct<ShadowCasterComponent>().connect<&RenderSystemVK::on_construct_shadow_caster>(this);
-		registry->on_update<ShadowCasterComponent>().connect<&RenderSystemVK::on_update_shadow_caster>(this);
-		registry->on_destroy<ShadowCasterComponent>().connect<&RenderSystemVK::on_destroy_shadow_caster>(this);
+		registry->on_construct<ShadowCasterComponent>().connect<&RenderSubystemVK::on_construct_shadow_caster>(this);
+		registry->on_update<ShadowCasterComponent>().connect<&RenderSubystemVK::on_update_shadow_caster>(this);
+		registry->on_destroy<ShadowCasterComponent>().connect<&RenderSubystemVK::on_destroy_shadow_caster>(this);
 
 		auto signal_subsystem = m_engine->get_subsystem<core::SignalSubsystem>();
 		auto rendering_draw_shadows_signal = signal_subsystem->get_signal<bool>("rendering_draw_shadows");
@@ -152,7 +153,7 @@ namespace puffin::rendering
 		m_render_shadows = settings_manager->get<bool>("rendering_draw_shadows");
 	}
 
-	void RenderSystemVK::deinitialize()
+	void RenderSubystemVK::deinitialize()
 	{
 		m_device.waitIdle();
 
@@ -188,12 +189,12 @@ namespace puffin::rendering
 		}
 	}
 
-	core::SubsystemType RenderSystemVK::type() const
+	core::SubsystemType RenderSubystemVK::type() const
 	{
 		return core::SubsystemType::Render;
 	}
 
-	double RenderSystemVK::wait_for_last_presentation_and_sample_time()
+	double RenderSubystemVK::wait_for_last_presentation_and_sample_time()
 	{
 		// Wait until GPU has finished presenting last frame. Timeout of 1 second
 		VK_CHECK(m_device.waitForFences(1, &current_frame_data().present_fence, true, 1000000000));
@@ -205,7 +206,7 @@ namespace puffin::rendering
 		return glfwGetTime();
 	}
 
-	void RenderSystemVK::render(double delta_time)
+	void RenderSubystemVK::render(double delta_time)
 	{
 		update_render_data();
 
@@ -214,7 +215,7 @@ namespace puffin::rendering
 		draw();
 	}
 
-	void RenderSystemVK::on_update_mesh(entt::registry& registry, entt::entity entity)
+	void RenderSubystemVK::on_update_mesh(entt::registry& registry, entt::entity entity)
 	{
 		const auto mesh = registry.get<MeshComponent>(entity);
 
@@ -229,17 +230,17 @@ namespace puffin::rendering
 		add_renderable(registry, entity);
 	}
 
-	void RenderSystemVK::on_update_transform(entt::registry& registry, entt::entity entity)
+	void RenderSubystemVK::on_update_transform(entt::registry& registry, entt::entity entity)
 	{
 		add_renderable(registry, entity);
 	}
 
-	void RenderSystemVK::on_destroy_mesh_or_transform(entt::registry& registry, entt::entity entity)
+	void RenderSubystemVK::on_destroy_mesh_or_transform(entt::registry& registry, entt::entity entity)
 	{
 		m_update_renderables = true;
 	}
 
-	void RenderSystemVK::add_renderable(entt::registry& registry, entt::entity entity)
+	void RenderSubystemVK::add_renderable(entt::registry& registry, entt::entity entity)
 	{
 		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<MeshComponent>(entity))
 		{
@@ -258,7 +259,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::on_construct_shadow_caster(entt::registry& registry, entt::entity entity)
+	void RenderSubystemVK::on_construct_shadow_caster(entt::registry& registry, entt::entity entity)
 	{
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		const auto id = entt_subsystem->get_id(entity);
@@ -274,7 +275,7 @@ namespace puffin::rendering
 		m_shadow_construct_events.push({ entity, image_desc });
 	}
 
-	void RenderSystemVK::on_update_shadow_caster(entt::registry& registry, entt::entity entity)
+	void RenderSubystemVK::on_update_shadow_caster(entt::registry& registry, entt::entity entity)
 	{
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		const auto id = entt_subsystem->get_id(entity);
@@ -290,7 +291,7 @@ namespace puffin::rendering
 		m_shadow_update_events.push({ entity, image_desc });
 	}
 
-	void RenderSystemVK::on_destroy_shadow_caster(entt::registry& registry, entt::entity entity)
+	void RenderSubystemVK::on_destroy_shadow_caster(entt::registry& registry, entt::entity entity)
 	{
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		const auto id = entt_subsystem->get_id(entity);
@@ -301,12 +302,12 @@ namespace puffin::rendering
 		shadow.resource_id = gInvalidID;
 	}
 
-	void RenderSystemVK::register_texture(PuffinID tex_id)
+	void RenderSubystemVK::register_texture(PuffinID tex_id)
 	{
 		m_textures_to_load.insert(tex_id);
 	}
 
-	void RenderSystemVK::init_vulkan()
+	void RenderSubystemVK::init_vulkan()
 	{
 		auto window_subsystem = m_engine->get_subsystem<window::WindowSubsystem>();
 		GLFWwindow* glfw_window = window_subsystem->primary_window();
@@ -430,7 +431,7 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::init_swapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain,
+	void RenderSubystemVK::init_swapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain,
 	                                   const vk::Extent2D& swapchainExtent)
 	{
 		vkb::SwapchainBuilder swapchainBuilder{m_physical_device, m_device, m_surface};
@@ -469,7 +470,7 @@ namespace puffin::rendering
 		imageViews.clear();
 	}
 
-	void RenderSystemVK::init_offscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent,
+	void RenderSubystemVK::init_offscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent,
 	                                   const int& offscreenImageCount)
 	{
 		offscreenData.extent = offscreenExtent;
@@ -502,7 +503,7 @@ namespace puffin::rendering
 		offscreenData.alloc_depth_image = util::create_depth_image(this, imageExtent, vk::Format::eD32Sfloat);
 	}
 
-	void RenderSystemVK::init_commands()
+	void RenderSubystemVK::init_commands()
 	{
 		vk::CommandPoolCreateInfo commandPoolInfo = {
 			vk::CommandPoolCreateFlagBits::eResetCommandBuffer, m_graphics_queue_family
@@ -539,7 +540,7 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::init_sync_structures()
+	void RenderSubystemVK::init_sync_structures()
 	{
 		vk::FenceCreateInfo fenceCreateInfo = {vk::FenceCreateFlagBits::eSignaled, nullptr};
 		vk::SemaphoreCreateInfo semaphoreCreateInfo = {{}, nullptr};
@@ -578,7 +579,7 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::init_buffers()
+	void RenderSubystemVK::init_buffers()
 	{
 		for (int i = 0; i < g_buffered_frames; i++)
 		{
@@ -663,7 +664,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::init_samplers()
+	void RenderSubystemVK::init_samplers()
 	{
 		vk::SamplerCreateInfo texture_sampler_info = {};
 		texture_sampler_info.anisotropyEnable = true;
@@ -686,7 +687,7 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::build_descriptors()
+	void RenderSubystemVK::build_descriptors()
 	{
 		// Descriptor Allocator/Cache
 
@@ -760,13 +761,13 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::init_pipelines()
+	void RenderSubystemVK::init_pipelines()
 	{
 		build_forward_renderer_pipeline();
 		build_shadow_pipeline();
 	}
 
-	void RenderSystemVK::build_forward_renderer_pipeline()
+	void RenderSubystemVK::build_forward_renderer_pipeline()
 	{
 		m_forward_vert_mod = util::ShaderModule{
 			m_device, fs::path(assets::AssetRegistry::get()->engine_root() / "bin" / "vulkan" / "forward_shading" / "forward_shading_vs.spv").string()
@@ -825,7 +826,7 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::build_shadow_pipeline()
+	void RenderSubystemVK::build_shadow_pipeline()
 	{
 		m_shadow_vert_mod = util::ShaderModule{
 			m_device, fs::path(assets::AssetRegistry::get()->engine_root() / "bin" / "vulkan" / "shadowmaps" / "shadowmap_vs.spv").string()
@@ -880,7 +881,7 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::init_imgui()
+	void RenderSubystemVK::init_imgui()
 	{
 		// Create Descriptor Pool for ImGui
 		vk::DescriptorPoolSize poolSizes[] =
@@ -945,7 +946,7 @@ namespace puffin::rendering
 		});
 	}
 
-	void RenderSystemVK::init_offscreen_imgui_textures(OffscreenData& offscreenData)
+	void RenderSubystemVK::init_offscreen_imgui_textures(OffscreenData& offscreenData)
 	{
 		offscreenData.viewport_textures.resize(offscreenData.alloc_images.size());
 
@@ -958,7 +959,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::process_components()
+	void RenderSubystemVK::process_components()
 	{
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
@@ -1021,7 +1022,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::update_render_data()
+	void RenderSubystemVK::update_render_data()
 	{
 		// Load Meshes
 		{
@@ -1079,7 +1080,7 @@ namespace puffin::rendering
 		destroy_shadows();
 	}
 
-	void RenderSystemVK::construct_shadows()
+	void RenderSubystemVK::construct_shadows()
 	{
 		bool shadow_descriptor_needs_updated = false;
 
@@ -1106,7 +1107,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::update_shadows()
+	void RenderSubystemVK::update_shadows()
 	{
 		bool shadow_descriptor_needs_updated = false;
 
@@ -1155,7 +1156,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::destroy_shadows()
+	void RenderSubystemVK::destroy_shadows()
 	{
 		std::vector<ShadowDestroyEvent> m_shadow_destroy_events_still_in_use;
 		while (!m_shadow_destroy_events.empty())
@@ -1186,7 +1187,7 @@ namespace puffin::rendering
 		m_shadow_destroy_events_still_in_use.clear();
 	}
 
-	void RenderSystemVK::draw()
+	void RenderSubystemVK::draw()
 	{
 		// Wait until GPU has finished rendering last frame. Timeout of 1 second
 		VK_CHECK(m_device.waitForFences(1, &current_frame_data().render_fence, true, 1000000000));
@@ -1235,7 +1236,7 @@ namespace puffin::rendering
 		m_frame_count++;
 	}
 
-	void RenderSystemVK::recreate_swapchain()
+	void RenderSubystemVK::recreate_swapchain()
 	{
 		// Recreate swapchain when window is resized
 		if (m_swapchain_data.resized == true)
@@ -1278,7 +1279,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::clean_swapchain(SwapchainData& swapchainData)
+	void RenderSubystemVK::clean_swapchain(SwapchainData& swapchainData)
 	{
 		for (int i = 0; i < swapchainData.image_views.size(); i++)
 		{
@@ -1288,7 +1289,7 @@ namespace puffin::rendering
 		m_device.destroySwapchainKHR(swapchainData.swapchain);
 	}
 
-	void RenderSystemVK::recreate_offscreen()
+	void RenderSubystemVK::recreate_offscreen()
 	{
 		if (m_offscreen_data.resized == true)
 		{
@@ -1335,7 +1336,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::clean_offscreen(OffscreenData& offscreenData)
+	void RenderSubystemVK::clean_offscreen(OffscreenData& offscreenData)
 	{
 		m_device.destroyImageView(offscreenData.alloc_depth_image.image_view);
 		m_allocator.destroyImage(offscreenData.alloc_depth_image.image, offscreenData.alloc_depth_image.allocation);
@@ -1352,7 +1353,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::update_texture_descriptors()
+	void RenderSubystemVK::update_texture_descriptors()
 	{
 		if (m_initialized && current_frame_data().texture_descriptor_needs_updated)
 		{
@@ -1369,7 +1370,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::update_shadow_descriptors()
+	void RenderSubystemVK::update_shadow_descriptors()
 	{
 		if (m_initialized && current_frame_data().shadow_descriptor_needs_updated)
 		{
@@ -1386,7 +1387,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::prepare_scene_data()
+	void RenderSubystemVK::prepare_scene_data()
 	{
 		// Prepare camera data
 		const AllocatedBuffer& cameraBuffer = current_frame_data().camera_buffer;
@@ -1411,7 +1412,7 @@ namespace puffin::rendering
 		prepare_shadow_data();
 	}
 
-	void RenderSystemVK::prepare_material_data()
+	void RenderSubystemVK::prepare_material_data()
 	{
 		if (current_frame_data().copy_material_data_to_gpu)
 		{
@@ -1444,7 +1445,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::prepare_object_data()
+	void RenderSubystemVK::prepare_object_data()
 	{
 		if (!m_objects_to_refresh.empty())
 		{
@@ -1605,7 +1606,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::prepare_light_data()
+	void RenderSubystemVK::prepare_light_data()
 	{
 		// Prepare dynamic light data
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
@@ -1695,7 +1696,7 @@ namespace puffin::rendering
 		current_frame_data().push_constant_frag.view_pos_and_light_count.w = i;
 	}
 
-	void RenderSystemVK::prepare_shadow_data()
+	void RenderSubystemVK::prepare_shadow_data()
 	{
 		// Prepare dynamic light data
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
@@ -1824,7 +1825,7 @@ namespace puffin::rendering
             shadow_cascades.size() * sizeof(GPUShadowCascadeData), shadow_cascades.data());
 	}
 
-	void RenderSystemVK::build_indirect_commands()
+	void RenderSubystemVK::build_indirect_commands()
 	{
 		if (!m_renderables.empty())
 		{
@@ -1909,7 +1910,7 @@ namespace puffin::rendering
 		}
 	}
 
-	vk::CommandBuffer& RenderSystemVK::record_shadow_command_buffer(uint32_t swapchain_idx)
+	vk::CommandBuffer& RenderSubystemVK::record_shadow_command_buffer(uint32_t swapchain_idx)
 	{
 		auto& cmd = current_frame_data().shadow_command_buffer;
 
@@ -1952,7 +1953,7 @@ namespace puffin::rendering
 		return cmd;
 	}
 
-	void RenderSystemVK::draw_shadowmap(vk::CommandBuffer cmd, const AllocatedImage& depth_image, const vk::Extent2D& shadow_extent)
+	void RenderSubystemVK::draw_shadowmap(vk::CommandBuffer cmd, const AllocatedImage& depth_image, const vk::Extent2D& shadow_extent)
 	{
 		// Transition color image to color attachment optimal
 		vk::ImageSubresourceRange image_subresource_range = { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 };
@@ -2003,7 +2004,7 @@ namespace puffin::rendering
 			1, &offscreen_memory_barrier_to_shader);
 	}
 
-	vk::CommandBuffer& RenderSystemVK::record_main_command_buffer(const uint32_t& swapchain_idx,
+	vk::CommandBuffer& RenderSubystemVK::record_main_command_buffer(const uint32_t& swapchain_idx,
 	                                                              const vk::Extent2D& render_extent,
 	                                                              const AllocatedImage&
 	                                                              color_image, const AllocatedImage& depth_image)
@@ -2079,7 +2080,7 @@ namespace puffin::rendering
 		return cmd;
 	}
 
-	void RenderSystemVK::draw_objects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent)
+	void RenderSubystemVK::draw_objects(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent)
 	{
 		set_draw_parameters(cmd, renderExtent);
 
@@ -2102,7 +2103,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::set_draw_parameters(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent)
+	void RenderSubystemVK::set_draw_parameters(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent)
 	{
 		vk::Viewport viewport = {
 			0, 0, static_cast<float>(renderExtent.width), static_cast<float>(renderExtent.height), 0.1f, 1.0f
@@ -2113,7 +2114,7 @@ namespace puffin::rendering
 		cmd.setScissor(0, 1, &scissor);
 	}
 
-	void RenderSystemVK::bind_buffers_and_descriptors(vk::CommandBuffer cmd)
+	void RenderSubystemVK::bind_buffers_and_descriptors(vk::CommandBuffer cmd)
 	{
 		std::vector<vk::DescriptorSet> descriptors;
 		descriptors.push_back(current_frame_data().object_descriptor);
@@ -2134,7 +2135,7 @@ namespace puffin::rendering
 		cmd.bindIndexBuffer(m_resource_manager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
 	}
 
-	void RenderSystemVK::draw_mesh_batch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
+	void RenderSubystemVK::draw_mesh_batch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
 	{
 		vk::DeviceSize indirect_offset = meshDrawBatch.cmdIndex * sizeof(vk::DrawIndexedIndirectCommand);
 		uint32_t draw_stride = sizeof(vk::DrawIndexedIndirectCommand);
@@ -2143,7 +2144,7 @@ namespace puffin::rendering
 			meshDrawBatch.cmdCount, draw_stride);
 	}
 
-	void RenderSystemVK::draw_indexed_indirect_command(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer,
+	void RenderSubystemVK::draw_indexed_indirect_command(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer,
 	                                                vk::DeviceSize offset,
 	                                                uint32_t drawCount, uint32_t stride)
 	{
@@ -2151,7 +2152,7 @@ namespace puffin::rendering
 		m_draw_calls++;
 	}
 
-	vk::CommandBuffer& RenderSystemVK::record_copy_command_buffer(uint32_t swapchainIdx)
+	vk::CommandBuffer& RenderSubystemVK::record_copy_command_buffer(uint32_t swapchainIdx)
 	{
 		auto& cmd = current_frame_data().copy_command_buffer;
 
@@ -2242,7 +2243,7 @@ namespace puffin::rendering
 		return cmd;
 	}
 
-	vk::CommandBuffer& RenderSystemVK::record_imgui_command_buffer(uint32_t swapchainIdx,
+	vk::CommandBuffer& RenderSubystemVK::record_imgui_command_buffer(uint32_t swapchainIdx,
 	                                                               const vk::Extent2D& renderExtent)
 	{
 		auto& cmd = current_frame_data().imgui_command_buffer;
@@ -2307,7 +2308,7 @@ namespace puffin::rendering
 		return cmd;
 	}
 
-	void RenderSystemVK::record_and_submit_commands(uint32_t swapchainIdx)
+	void RenderSubystemVK::record_and_submit_commands(uint32_t swapchainIdx)
 	{
 		std::vector<vk::SubmitInfo> submits;
 
@@ -2413,7 +2414,7 @@ namespace puffin::rendering
 		VK_CHECK(m_graphics_queue.presentKHR(&present_info));
 	}
 
-	void RenderSystemVK::build_model_transform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
+	void RenderSubystemVK::build_model_transform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
 	                                         glm::mat4& model)
 	{
 		const auto scaleM = glm::scale(glm::mat4(1.0f), static_cast<glm::vec3>(scale));
@@ -2456,7 +2457,7 @@ namespace puffin::rendering
 		mAllocator.destroyBuffer(meshData.indexBuffer.buffer, meshData.indexBuffer.allocation);
 	}*/
 
-	bool RenderSystemVK::load_texture(PuffinID texId, TextureDataVK& texData)
+	bool RenderSubystemVK::load_texture(PuffinID texId, TextureDataVK& texData)
 	{
 		if (const auto texAsset = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texId); texAsset && texAsset->load())
 		{
@@ -2477,13 +2478,13 @@ namespace puffin::rendering
 		return false;
 	}
 
-	void RenderSystemVK::unload_texture(TextureDataVK& texData) const
+	void RenderSubystemVK::unload_texture(TextureDataVK& texData) const
 	{
 		m_device.destroyImageView(texData.texture.image_view);
 		m_allocator.destroyImage(texData.texture.image, texData.texture.allocation);
 	}
 
-	void RenderSystemVK::build_texture_descriptor_info(PackedVector<PuffinID, TextureDataVK>& textureData,
+	void RenderSubystemVK::build_texture_descriptor_info(PackedVector<PuffinID, TextureDataVK>& textureData,
 	                                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
 	{
 		textureImageInfos.clear();
@@ -2502,7 +2503,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSystemVK::build_shadow_descriptor_info(std::vector<vk::DescriptorImageInfo>& shadow_image_infos)
+	void RenderSubystemVK::build_shadow_descriptor_info(std::vector<vk::DescriptorImageInfo>& shadow_image_infos)
 	{
 		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
@@ -2528,14 +2529,14 @@ namespace puffin::rendering
 		}
 	}
 
-	FrameRenderData& RenderSystemVK::current_frame_data()
+	FrameRenderData& RenderSubystemVK::current_frame_data()
 	{
 		return m_frame_render_data[m_frame_count % g_buffered_frames];
 	}
 
-	void RenderSystemVK::frame_buffer_resize_callback(GLFWwindow* window, const int width, const int height)
+	void RenderSubystemVK::frame_buffer_resize_callback(GLFWwindow* window, const int width, const int height)
 	{
-		const auto system = static_cast<RenderSystemVK*>(glfwGetWindowUserPointer(window));
+		const auto system = static_cast<RenderSubystemVK*>(glfwGetWindowUserPointer(window));
 
 		system->m_swapchain_data.resized = true;
 		system->m_offscreen_data.resized = true;

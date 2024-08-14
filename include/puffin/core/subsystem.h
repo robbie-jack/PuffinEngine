@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 namespace puffin::core
 {
@@ -86,9 +87,12 @@ namespace puffin::core
 		 */
 		virtual void render(double delta_time);
 
+		const std::string& name();
+
 	protected:
 
 		std::shared_ptr<Engine> m_engine = nullptr;
+		std::string m_name = "Subsystem";
 
 	};
 }

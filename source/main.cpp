@@ -39,14 +39,14 @@ int main(int argc, char* argv[])
 
 	engine->setup();
 
-	engine->register_subsystem<puffin::rendering::RenderSystemVK>();
+	engine->register_subsystem<puffin::rendering::RenderSubystemVK>();
 
 #ifdef PFN_BOX2D_PHYSICS
 	engine->register_subsystem<puffin::physics::Box2DPhysicsSystem>();
 #endif
 
 #ifdef PFN_JOLT_PHYSICS
-	engine->register_subsystem<puffin::physics::JoltPhysicsSystem>();
+	engine->register_subsystem<puffin::physics::JoltPhysicsSubsystem>();
 #endif
 
 	engine->register_subsystem<puffin::scripting::AngelScriptSubsystem>();

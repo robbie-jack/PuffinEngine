@@ -11,6 +11,7 @@ namespace puffin::physics
 {
 	Box2DPhysicsSystem::Box2DPhysicsSystem(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
 	{
+		m_name = "Box2DPhysicsSystem";
 	}
 
 	void Box2DPhysicsSystem::initialize(core::SubsystemManager* subsystem_manager)

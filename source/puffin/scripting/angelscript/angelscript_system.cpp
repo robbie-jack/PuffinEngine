@@ -44,6 +44,7 @@ namespace puffin::scripting
 {
 	AngelScriptSubsystem::AngelScriptSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
+		m_name = "AngelScriptSubsystem";
 	}
 
 	AngelScriptSubsystem::~AngelScriptSubsystem()
@@ -770,6 +771,7 @@ namespace puffin::scripting
 
 	AngelScriptGameplaySubsystem::AngelScriptGameplaySubsystem(std::shared_ptr<core::Engine> engine) : Subsystem(engine)
 	{
+		m_name = "AngelScriptGameplaySubsystem";
 	}
 
 	core::SubsystemType AngelScriptGameplaySubsystem::type() const
