@@ -82,26 +82,26 @@ set(ENKITS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/enkits)
 
 set(HEADERS
 	# Root
-	${HEADER_DIR}/puffin/manipulation_gizmo.h
-	${HEADER_DIR}/puffin/math_helpers.h
-	${HEADER_DIR}/puffin/project_settings.h
+	${HEADER_DIR}/puffin/manipulationgizmo.h
+	${HEADER_DIR}/puffin/mathehlpers.h
+	${HEADER_DIR}/puffin/projectsettings.h
 	# Assets
 	${HEADER_DIR}/puffin/assets/asset.h
-	${HEADER_DIR}/puffin/assets/asset_importers.h
-	${HEADER_DIR}/puffin/assets/asset_registry.h
-	${HEADER_DIR}/puffin/assets/material_asset.h
-	${HEADER_DIR}/puffin/assets/mesh_asset.h
-	${HEADER_DIR}/puffin/assets/shader_asset.h
-	${HEADER_DIR}/puffin/assets/sound_asset.h
-	${HEADER_DIR}/puffin/assets/texture_asset.h
+	${HEADER_DIR}/puffin/assets/assetimporters.h
+	${HEADER_DIR}/puffin/assets/assetregistry.h
+	${HEADER_DIR}/puffin/assets/materialasset.h
+	${HEADER_DIR}/puffin/assets/meshasset.h
+	${HEADER_DIR}/puffin/assets/shaderasset.h
+	${HEADER_DIR}/puffin/assets/soundasset.h
+	${HEADER_DIR}/puffin/assets/textureasset.h
 	# Audio
-	${HEADER_DIR}/puffin/audio/audio_subsystem.h
-	${HEADER_DIR}/puffin/audio/mini_audio_subsystem.h
+	${HEADER_DIR}/puffin/audio/audiosubsystem.h
+	${HEADER_DIR}/puffin/audio/miniaudiosubsystem.h
 	# Components
-	${HEADER_DIR}/puffin/components/transform_component_2d.h
-	${HEADER_DIR}/puffin/components/transform_component_3d.h
-	${HEADER_DIR}/puffin/components/physics/2d/rigidbody_component_2d.h
-	${HEADER_DIR}/puffin/components/physics/2d/shape_components_2d.h
+	${HEADER_DIR}/puffin/components/transformcomponent2d.h
+	${HEADER_DIR}/puffin/components/transformcomponent3d.h
+	${HEADER_DIR}/puffin/components/physics/2d/rigidbodycomponent2d.h
+	${HEADER_DIR}/puffin/components/physics/2d/shapecomponents2d.h
 	${HEADER_DIR}/puffin/components/physics/2d/velocity_component_2d.h
 	${HEADER_DIR}/puffin/components/physics/3d/rigidbody_component_3d.h
 	${HEADER_DIR}/puffin/components/physics/3d/shape_components_3d.h
@@ -186,7 +186,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/scripting/angelscript/register_type_helpers.h
 	# Types
 	${HEADER_DIR}/puffin/types/aabb.h
-	${HEADER_DIR}/puffin/types/component_flags.h
 	${HEADER_DIR}/puffin/types/deletion_queue.h
 	${HEADER_DIR}/puffin/types/euler_angles.h
 	${HEADER_DIR}/puffin/types/matrix.h
