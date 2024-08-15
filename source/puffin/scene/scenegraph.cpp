@@ -1,12 +1,12 @@
-#include "puffin/scene/scene_graph.h"
+#include "puffin/scene/scenegraph.h"
 
 #include "puffin/core/engine.h"
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/nodes/transform_node_2d.h"
-#include "puffin/nodes/transform_node_3d.h"
-#include "puffin/nodes/rendering/camera_node_3d.h"
-#include "puffin/nodes/rendering/light_node_3d.h"
-#include "puffin/nodes/rendering/mesh_node.h"
+#include "puffin/ecs/enttsubsystem.h"
+#include "puffin/nodes/transformnode2d.h"
+#include "puffin/nodes/transformnode3d.h"
+#include "puffin/nodes/rendering/cameranode3d.h"
+#include "puffin/nodes/rendering/lightnode3d.h"
+#include "puffin/nodes/rendering/meshnode.h"
 
 namespace puffin::scene
 {

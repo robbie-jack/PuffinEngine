@@ -1,7 +1,7 @@
-#include "puffin/physics/onager2d/shapes/box_shape_2d.h"
+#include "puffin/physics/onager2d/shapes/boxshape2d.h"
 
-#include "puffin/physics/onager2d/shapes/shape_2d.h"
-#include "puffin/physics/onager2d/physics_types_2d.h"
+#include "puffin/physics/onager2d/shapes/shape2d.h"
+#include "puffin/physics/onager2d/physicstypes2d.h"
 #include "puffin/types/aabb.h"
 
 namespace puffin::physics

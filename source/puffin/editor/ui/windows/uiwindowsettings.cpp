@@ -1,7 +1,7 @@
-#include "puffin/ui/editor/windows/ui_window_settings.h"
+#include "puffin/editor/ui/windows/uiwindowsettings.h"
 
 #include "puffin/core/engine.h"
-#include "puffin/core/settings_manager.h"
+#include "puffin/core/settingsmanager.h"
 
 namespace puffin
 {

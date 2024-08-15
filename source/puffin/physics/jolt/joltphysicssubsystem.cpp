@@ -1,4 +1,4 @@
-#include "puffin/physics/jolt/jolt_physics_system.h"
+#include "puffin/physics/jolt/joltphysicssubsystem.h"
 
 #if PFN_JOLT_PHYSICS
 

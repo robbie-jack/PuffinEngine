@@ -1,19 +1,19 @@
 
-#include "puffin/physics/onager2d/onager_physics_system_2d.h"
+#include "puffin/physics/onager2d/onager2dphysicssubsystem.h"
 
 #if PFN_ONAGER2D_PHYSICS
 
-#include "puffin/components/transform_component_2d.h"
-#include "puffin/components/physics/2d/velocity_component_2d.h"
+#include "puffin/components/transformcomponent2d.h"
+#include "puffin/components/physics/2d/velocitycomponent2d.h"
 #include "puffin/core/engine.h"
-#include "puffin/core/enkits_subsystem.h"
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/physics/collision_event.h"
-#include "puffin/physics/onager2d/physics_helpers_2d.h"
-#include "puffin/physics/onager2d/broadphases/spatial_hash_broadphase_2d.h"
-#include "puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.h"
-#include "puffin/core/signal_subsystem.h"
-#include "puffin/scene/scene_graph.h"
+#include "puffin/core/enkitssubsystem.h"
+#include "puffin/ecs/enttsubsystem.h"
+#include "puffin/physics/collisionevent.h"
+#include "puffin/physics/onager2d/physicshelpers2d.h"
+#include "puffin/physics/onager2d/broadphases/spatialhashbroadphase2d.h"
+#include "puffin/physics/onager2d/broadphases/sweepandprunebroadphase2d.h"
+#include "puffin/core/signalsubsystem.h"
+#include "puffin/scene/scenegraph.h"
 
 namespace puffin
 {

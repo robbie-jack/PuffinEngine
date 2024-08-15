@@ -1,7 +1,7 @@
 #pragma once
 
-#include "puffin/physics/onager2d/colliders/collider_2d.h"
-#include "puffin/physics/onager2d/shapes/circle_shape_2d.h"
+#include "puffin/physics/onager2d/colliders/collider2d.h"
+#include "puffin/physics/onager2d/shapes/circleshape2d.h"
 
 namespace puffin::physics::collision2D
 {

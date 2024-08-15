@@ -1,7 +1,7 @@
-#include "puffin/nodes/transform_node_3d.h"
+#include "puffin/nodes/transformnode3d.h"
 
-#include "puffin/components/transform_component_3d.h"
-#include "puffin/ecs/entt_subsystem.h"
+#include "puffin/components/transformcomponent3d.h"
+#include "puffin/ecs/enttsubsystem.h"
 
 namespace puffin
 {

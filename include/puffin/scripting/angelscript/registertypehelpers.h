@@ -2,9 +2,9 @@
 
 #include "angelscript/angelscript.h"
 
-#include "puffin/components/transform_component_2d.h"
-#include "puffin/components/transform_component_3d.h"
-#include "puffin/input/input_event.h"
+#include "puffin/components/transformcomponent2d.h"
+#include "puffin/components/transformcomponent3d.h"
+#include "puffin/input/inputevent.h"
 #include "puffin/types/vector.h"
 
 //typedef puffin::TransformComponent STransformComponent;

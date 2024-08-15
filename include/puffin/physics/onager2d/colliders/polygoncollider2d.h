@@ -1,9 +1,9 @@
 #pragma once
 
-#include "puffin/physics/onager2d/colliders/collider_2d.h"
-#include "puffin/physics/onager2d/physics_types_2d.h"
+#include "puffin/physics/onager2d/colliders/collider2d.h"
+#include "puffin/physics/onager2d/physicstypes2d.h"
 
-#include "puffin/physics/onager2d/shapes/polygon_shape_2d.h"
+#include "puffin/physics/onager2d/shapes/polygonshape2d.h"
 
 namespace puffin::physics::collision2D
 {

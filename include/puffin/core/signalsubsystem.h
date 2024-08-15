@@ -6,7 +6,7 @@
 #include <string>
 
 #include "puffin/core/subsystem.h"
-#include "puffin/types/packed_vector.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin::core
 {

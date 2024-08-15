@@ -1,7 +1,7 @@
 #pragma once
 
-#include "puffin/physics/onager2d/colliders/polygon_collider_2d.h"
-#include "puffin/physics/onager2d/shapes/box_shape_2d.h"
+#include "puffin/physics/onager2d/colliders/polygoncollider2d.h"
+#include "puffin/physics/onager2d/shapes/boxshape2d.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin

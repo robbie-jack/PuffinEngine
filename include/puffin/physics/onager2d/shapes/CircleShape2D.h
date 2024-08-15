@@ -1,7 +1,7 @@
 #pragma once
 
-#include "puffin/physics/onager2d/shapes/shape_2d.h"
-#include "puffin/physics/onager2d/physics_types_2d.h"
+#include "puffin/physics/onager2d/shapes/shape2d.h"
+#include "puffin/physics/onager2d/physicstypes2d.h"
 
 namespace puffin::physics
 {

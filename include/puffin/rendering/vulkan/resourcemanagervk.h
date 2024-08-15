@@ -2,10 +2,10 @@
 
 #include <memory>
 
-#include "puffin/rendering/vulkan/types_vk.h"
-#include "puffin/types/packed_vector.h"
+#include "puffin/rendering/vulkan/typesvk.h"
+#include "puffin/types/packedvector.h"
 #include "puffin/types/uuid.h"
-#include "puffin/rendering/resource_id.h"
+#include "puffin/rendering/resourceid.h"
 
 namespace puffin
 {

@@ -1,6 +1,6 @@
-#include "puffin/nodes/physics/rigidbody_node_3d.h"
+#include "puffin/nodes/physics/rigidbodynode3d.h"
 
-#include "puffin/components/physics/3d/rigidbody_component_3d.h"
+#include "puffin/components/physics/3d/rigidbodycomponent3d.h"
 
 namespace puffin::physics
 {

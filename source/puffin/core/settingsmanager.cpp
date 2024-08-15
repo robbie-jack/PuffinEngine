@@ -1,9 +1,9 @@
-#include "puffin/core/settings_manager.h"
+#include "puffin/core/settingsmanager.h"
 
 #include <iostream>
 
 #include "puffin/core/engine.h"
-#include "puffin/assets/asset_registry.h"
+#include "puffin/assets/assetregistry.h"
 #include "puffin/types/vector.h"
 
 namespace puffin::core

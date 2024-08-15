@@ -1,6 +1,6 @@
-#include "puffin/nodes/rendering/camera_node_3d.h"
+#include "puffin/nodes/rendering/cameranode3d.h"
 
-#include "puffin/components/rendering/camera_component.h"
+#include "puffin/components/rendering/cameracomponent.h"
 
 namespace puffin::rendering
 {

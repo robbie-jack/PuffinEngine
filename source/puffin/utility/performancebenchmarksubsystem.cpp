@@ -1,4 +1,4 @@
-#include "puffin/utility/performance_benchmark_subsystem.h"
+#include "puffin/utility/performancebenchmarksubsystem.h"
 
 #include <cassert>
 

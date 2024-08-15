@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/ui/editor/windows/ui_window.h"
+#include "puffin/editor/ui/windows/uiwindow.h"
 
 namespace puffin::ui
 {

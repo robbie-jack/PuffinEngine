@@ -1,10 +1,10 @@
-#include "puffin/scripting/angelscript/angelscript_engine_interface.h"
+#include "puffin/scripting/angelscript/angelscriptengineinterface.h"
 
 #include "puffin/core/engine.h"
-#include "puffin/components/transform_component_3d.h"
-#include "puffin/scripting/angelscript/angelscript_system.h"
+#include "puffin/components/transformcomponent3d.h"
+#include "puffin/scripting/angelscript/angelscriptsubsystem.h"
 #include "angelscript/angelscript.h"
-#include "puffin/ecs/entt_subsystem.h"
+#include "puffin/ecs/enttsubsystem.h"
 
 namespace puffin::scripting
 {

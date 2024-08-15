@@ -1,7 +1,7 @@
 #include "puffin/core/subsystem.h"
 
 #include "puffin/core/engine.h"
-#include "puffin/core/subsystem_manager.h"
+#include "puffin/core/subsystemmanager.h"
 
 namespace puffin::core
 {

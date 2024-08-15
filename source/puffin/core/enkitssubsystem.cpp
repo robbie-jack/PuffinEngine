@@ -1,4 +1,4 @@
-#include "puffin/core/enkits_subsystem.h"
+#include "puffin/core/enkitssubsystem.h"
 
 #include "puffin/core/engine.h"
 

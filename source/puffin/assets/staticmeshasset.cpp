@@ -1,8 +1,8 @@
-#include "puffin/assets/mesh_asset.h"
+#include "puffin/assets/staticmeshasset.h"
 
 #include "lz4.h"
 #include "lz4hc.h"
-#include "puffin/assets/asset_registry.h"
+#include "puffin/assets/assetregistry.h"
 
 using json = nlohmann::json;
 

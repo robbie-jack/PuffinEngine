@@ -1,7 +1,7 @@
 
-#include "puffin/physics/onager2d/broadphases/sweep_and_prune_broadphase.h"
+#include "puffin/physics/onager2d/broadphases/sweepandprunebroadphase2d.h"
 
-#include "puffin/types/packed_vector.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin::physics
 {

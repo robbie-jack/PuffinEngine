@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "puffin/ui/editor/windows/ui_window.h"
-#include "puffin/ecs/entt_subsystem.h"
+#include "puffin/editor/ui/windows/uiwindow.h"
+#include "puffin/ecs/enttsubsystem.h"
 #include "puffin/nodes/node.h"
 
 namespace ImGui

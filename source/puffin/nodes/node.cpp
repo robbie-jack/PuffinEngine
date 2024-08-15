@@ -1,8 +1,8 @@
 #include "puffin/nodes/node.h"
 
-#include "puffin/scene/scene_graph.h"
+#include "puffin/scene/scenegraph.h"
 #include "puffin/core/engine.h"
-#include "puffin/ecs/entt_subsystem.h"
+#include "puffin/ecs/enttsubsystem.h"
 
 namespace puffin
 {

@@ -6,7 +6,7 @@
 
 #include "glm/glm.hpp"
 #include "imgui.h"
-#include "puffin/rendering/material_globals.h"
+#include "puffin/rendering/materialglobals.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin::rendering

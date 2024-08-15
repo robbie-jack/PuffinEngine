@@ -1,11 +1,11 @@
-#include "puffin/physics/onager2d/broadphases/spatial_hash_broadphase_2d.h"
+#include "puffin/physics/onager2d/broadphases/spatialhashbroadphase2d.h"
 
 #include <memory>
 
-#include "puffin/physics/onager2d/physics_helpers_2d.h"
-#include "puffin/physics/onager2d/broadphases/broadphase_2d.h"
-#include "puffin/physics/onager2d/colliders/collider_2d.h"
-#include "puffin/types/packed_vector.h"
+#include "puffin/physics/onager2d/physicshelpers2d.h"
+#include "puffin/physics/onager2d/broadphases/broadphase2d.h"
+#include "puffin/physics/onager2d/colliders/collider2d.h"
+#include "puffin/types/packedvector.h"
 
 void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
 	PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,

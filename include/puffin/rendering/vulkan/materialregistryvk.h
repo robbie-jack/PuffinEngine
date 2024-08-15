@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "puffin/types/uuid.h"
-#include "puffin/rendering/vulkan/types_vk.h"
-#include "puffin/types/packed_vector.h"
+#include "puffin/rendering/vulkan/typesvk.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin::rendering
 {

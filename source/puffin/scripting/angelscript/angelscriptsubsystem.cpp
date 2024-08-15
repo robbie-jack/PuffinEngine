@@ -1,4 +1,4 @@
-#include "puffin/scripting/angelscript/angelscript_system.h"
+#include "puffin/scripting/angelscript/angelscriptsubsystem.h"
 
 #include <assert.h>  // assert()
 #include <iostream>  // cout
@@ -6,13 +6,13 @@
 #include <vector>
 
 #include "puffin/core/engine.h"
-#include "puffin/assets/asset_registry.h"
+#include "puffin/assets/assetregistry.h"
 #include "angelscript/scriptbuilder/scriptbuilder.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h"
 #include "entt/entity/registry.hpp"
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/scripting/angelscript/angelscript_engine_interface.h"
-#include "puffin/scripting/angelscript/register_type_helpers.h"
+#include "puffin/ecs/enttsubsystem.h"
+#include "puffin/scripting/angelscript/angelscriptengineinterface.h"
+#include "puffin/scripting/angelscript/registertypehelpers.h"
 
 using namespace std;
 

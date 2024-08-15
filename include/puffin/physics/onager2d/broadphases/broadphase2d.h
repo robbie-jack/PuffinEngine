@@ -2,11 +2,11 @@
 
 #include <memory>
 
-#include "puffin/components/physics/2d/rigidbody_component_2d.h"
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/physics/onager2d/colliders/collider_2d.h"
-#include "puffin/physics/onager2d/physics_helpers_2d.h"
-#include "puffin/types/packed_vector.h"
+#include "puffin/components/physics/2d/rigidbodycomponent2d.h"
+#include "puffin/ecs/enttsubsystem.h"
+#include "puffin/physics/onager2d/colliders/collider2d.h"
+#include "puffin/physics/onager2d/physicshelpers2d.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin::physics
 {

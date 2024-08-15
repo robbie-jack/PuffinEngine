@@ -1,9 +1,9 @@
-#include "puffin/rendering/vulkan/resource_manager_vk.h"
+#include "puffin/rendering/vulkan/resourcemanagervk.h"
 
-#include "puffin/rendering/render_globals.h"
-#include "puffin/rendering/vulkan/unified_geometry_buffer_vk.h"
-#include "puffin/rendering/vulkan/helpers_vk.h"
-#include "puffin/rendering/vulkan/render_system_vk.h"
+#include "puffin/rendering/renderglobals.h"
+#include "puffin/rendering/vulkan/unifiedgeometrybuffervk.h"
+#include "puffin/rendering/vulkan/helpersvk.h"
+#include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
 namespace puffin::rendering
 {

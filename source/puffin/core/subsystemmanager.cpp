@@ -1,4 +1,4 @@
-#include "puffin/core/subsystem_manager.h"
+#include "puffin/core/subsystemmanager.h"
 
 #include "puffin/core/engine.h"
 

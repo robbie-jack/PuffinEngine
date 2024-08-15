@@ -1,7 +1,8 @@
 #pragma once
 
-#include "broadphase_2d.h"
-#include "puffin/physics/onager2d/colliders/collider_2d.h"
+#include "puffin/physics/onager2d/broadphases/broadphase2d.h"
+#include "puffin/physics/onager2d/colliders/collider2d.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin::physics
 {

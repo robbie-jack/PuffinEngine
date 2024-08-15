@@ -127,7 +127,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/ecs/enttsubsystem.h
 	# Editor
 	# Editor - UI
-	${HEADER_DIR}/puffin/editor/ui/editoruisubsystem.h
+	${HEADER_DIR}/puffin/editor/editor/uiuisubsystem.h
 	${HEADER_DIR}/puffin/editor/ui/windows/uiwindow.h
 	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.h
 	${HEADER_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.h
@@ -239,7 +239,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/ecs/enttsubsystem.cpp
 	# Editor
 	# Editor - UI
-	${SOURCE_DIR}/puffin/editor/ui/editoruisubsystem.cpp
+	${SOURCE_DIR}/puffin/editor/editor/uiuisubsystem.cpp
 	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindow.cpp
 	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.cpp
 	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.cpp

@@ -1,9 +1,9 @@
-#include "puffin/rendering/vulkan/helpers_vk.h"
+#include "puffin/rendering/vulkan/helpersvk.h"
 
 #include <iostream>
 #include <algorithm>
 
-#include "puffin/rendering/vulkan/render_system_vk.h"
+#include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \

@@ -4,19 +4,19 @@
 #include "argparse/argparse.hpp"
 
 #ifdef PFN_BOX2D_PHYSICS
-#include "puffin/physics/box2d/box2d_physics_system.h"
+#include "puffin/physics/box2d/box2dphysicssystem.h"
 #endif
 
 #ifdef PFN_JOLT_PHYSICS
-#include "puffin/physics/jolt/jolt_physics_system.h"
+#include "puffin/physics/jolt/joltphysicssubsystem.h"
 #endif
 
 #ifdef PFN_ONAGER2D_PHYSICS
-#include "puffin/physics/onager2d/onager_physics_system_2d.h"
+#include "puffin/physics/onager2d/onager2dphysicssystem.h"
 #endif
 
-#include "puffin/scripting/angelscript/angelscript_system.h"
-#include "puffin/rendering/vulkan/render_system_vk.h"
+#include "puffin/scripting/angelscript/angelscriptsubsystem.h"
+#include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
 int main(int argc, char* argv[])
 {

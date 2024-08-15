@@ -4,8 +4,8 @@
 
 #include "glm/vec4.hpp"
 
-#include "puffin/components/rendering/camera_component.h"
-#include "puffin/components/transform_component_3d.h"
+#include "puffin/components/rendering/cameracomponent.h"
+#include "puffin/components/transformcomponent3d.h"
 #include "puffin/types/aabb.h"
 #include "puffin/types/quat.h"
 #include "puffin/types/quat.h"

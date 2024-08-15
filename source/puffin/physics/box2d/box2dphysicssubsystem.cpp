@@ -1,11 +1,11 @@
-#include "puffin/physics/box2d/box2d_physics_system.h"
+#include "puffin/physics/box2d/box2dphysicssubsystem.h"
 
 #if PFN_BOX2D_PHYSICS
 
 #include "puffin/core/engine.h"
-#include "puffin/core/signal_subsystem.h"
-#include "puffin/core/settings_manager.h"
-#include "puffin/math_helpers.h"
+#include "puffin/core/signalsubsystem.h"
+#include "puffin/core/settingsmanager.h"
+#include "puffin/mathhelpers.h"
 
 namespace puffin::physics
 {

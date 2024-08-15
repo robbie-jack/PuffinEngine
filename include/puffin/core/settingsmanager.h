@@ -7,7 +7,7 @@
 #include "nlohmann/json.hpp"
 
 #include "puffin/core/subsystem.h"
-#include "puffin/core/signal_subsystem.h"
+#include "puffin/core/signalsubsystem.h"
 
 namespace fs = std::filesystem;
 

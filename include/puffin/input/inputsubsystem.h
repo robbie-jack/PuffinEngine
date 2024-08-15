@@ -8,7 +8,7 @@
 #include "GLFW/glfw3.h"
 
 #include "puffin/core/subsystem.h"
-#include "puffin/input/input_event.h"
+#include "puffin/input/inputevent.h"
 
 namespace puffin
 {

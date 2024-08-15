@@ -1,4 +1,4 @@
-#include "puffin/rendering/render_helpers.h"
+#include "puffin/rendering/renderhelpers.h"
 
 #include "puffin/types/aabb.h"
 #include "puffin/types/quat.h"

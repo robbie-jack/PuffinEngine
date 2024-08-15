@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "puffin/physics/onager2d/shapes/shape_2d.h"
+#include "puffin/physics/onager2d/shapes/shape2d.h"
 
 namespace puffin::physics
 {

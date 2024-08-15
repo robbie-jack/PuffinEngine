@@ -1,7 +1,7 @@
 #pragma once
 
 //#include <Rendering/Vulkan/DebugDraw.h>
-#include "puffin/components/transform_component_3d.h"
+#include "puffin/components/transformcomponent3d.h"
 
 namespace puffin
 {

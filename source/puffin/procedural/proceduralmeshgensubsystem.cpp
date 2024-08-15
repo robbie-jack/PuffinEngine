@@ -1,9 +1,9 @@
-#include "puffin/procedural/procedural_mesh_gen_system.h"
+#include "puffin/procedural/proceduralmeshgensubsystem.h"
 
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/components/transform_component_3d.h"
-#include "puffin/components/procedural/procedural_mesh_component.h"
-#include "puffin/components/rendering/mesh_component.h"
+#include "puffin/ecs/enttsubsystem.h"
+#include "puffin/components/transformcomponent3d.h"
+#include "puffin/components/procedural/proceduralmeshcomponent.h"
+#include "puffin/components/rendering/meshcomponent.h"
 #include "OpenSimplexNoise/OpenSimplexNoise.h"
 
 namespace puffin::procedural

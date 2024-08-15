@@ -4,8 +4,8 @@
 #include <memory>
 #include <entt/entity/registry.hpp>
 
-#include "puffin/components/transform_component_2d.h"
-#include "puffin/components/transform_component_3d.h"
+#include "puffin/components/transformcomponent2d.h"
+#include "puffin/components/transformcomponent3d.h"
 #include "puffin/types/uuid.h"
 
 #include "nlohmann/json.hpp"

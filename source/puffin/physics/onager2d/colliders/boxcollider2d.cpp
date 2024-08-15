@@ -1,6 +1,6 @@
-#include "puffin/physics/onager2d/colliders/box_collider_2d.h"
+#include "puffin/physics/onager2d/colliders/boxcollider2d.h"
 
-#include "puffin/physics/onager2d/physics_helpers_2d.h"
+#include "puffin/physics/onager2d/physicshelpers2d.h"
 
 namespace puffin::physics::collision2D
 {

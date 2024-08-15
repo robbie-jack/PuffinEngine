@@ -1,12 +1,12 @@
-#include "puffin/rendering/camera_subsystem.h"
+#include "puffin/rendering/camerasubsystem.h"
 
-#include "puffin/components/transform_component_3d.h"
-#include "puffin/components/rendering/camera_component.h"
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/input/input_subsystem.h"
-#include "puffin/rendering/vulkan/render_system_vk.h"
-#include "puffin/scene/scene_graph.h"
-#include "puffin/core/signal_subsystem.h"
+#include "puffin/components/transformcomponent3d.h"
+#include "puffin/components/rendering/cameracomponent.h"
+#include "puffin/ecs/enttsubsystem.h"
+#include "puffin/input/inputsubsystem.h"
+#include "puffin/rendering/vulkan/rendersubsystemvk.h"
+#include "puffin/scene/scenegraph.h"
+#include "puffin/core/signalsubsystem.h"
 
 namespace puffin::rendering
 {

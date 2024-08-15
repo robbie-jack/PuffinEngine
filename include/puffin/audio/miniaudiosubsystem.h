@@ -1,8 +1,9 @@
 ﻿#pragma once
 
-#include "audio_subsystem.h"
+#include <miniaudio/miniaudio.h>
 
-#include "miniaudio/miniaudio.h"
+#include "puffin/audio/audiosubsystem.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin::audio
 {

@@ -4,7 +4,7 @@
 #include "puffin/types/quat.h"
 
 #include "nlohmann/json.hpp"
-#include "puffin/types/euler_angles.h"
+#include "puffin/types/eulerangles.h"
 
 namespace puffin
 {

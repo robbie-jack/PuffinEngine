@@ -1,4 +1,4 @@
-#include "puffin/scene/scene_subsystem.h"
+#include "puffin/scene/scenesubsystem.h"
 
 namespace puffin::io
 {

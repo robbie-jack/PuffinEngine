@@ -1,16 +1,16 @@
-﻿#include "puffin/audio/mini_audio_subsystem.h"
+﻿#include "puffin/audio/miniaudiosubsystem.h"
 
 #define MINIAUDIO_IMPLEMENTATION
-#include "puffin/audio/mini_audio_subsystem.h"
+#include "puffin/audio/miniaudiosubsystem.h"
 
 #include "miniaudio/miniaudio.h"
 
 #include <iostream>
 
 #include "puffin/core/engine.h"
-#include "puffin/assets/asset_registry.h"
-#include "puffin/assets/sound_asset.h"
-#include "puffin/audio/audio_subsystem.h"
+#include "puffin/assets/assetregistry.h"
+#include "puffin/assets/soundasset.h"
+#include "puffin/audio/audiosubsystem.h"
 
 namespace puffin::audio
 {

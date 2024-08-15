@@ -4,8 +4,8 @@
 #include <vector>
 #include <set>
 
-#include "puffin/rendering/vulkan/types_vk.h"
-#include "puffin/assets/mesh_asset.h"
+#include "puffin/rendering/vulkan/typesvk.h"
+#include "puffin/assets/staticmeshasset.h"
 #include "puffin/types/vertex.h"
 
 namespace puffin::rendering

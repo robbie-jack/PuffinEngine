@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/physics/onager2d/physics_types_2d.h"
+#include "puffin/physics/onager2d/physicstypes2d.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin::physics::collision2D

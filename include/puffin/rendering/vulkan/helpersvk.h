@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "puffin/rendering/vulkan/types_vk.h"
+#include "puffin/rendering/vulkan/typesvk.h"
 
 namespace puffin::rendering
 {

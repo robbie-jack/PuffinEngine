@@ -1,4 +1,4 @@
-#include "puffin/assets/asset_importers.h"
+#include "puffin/assets/assetimporters.h"
 #define TINYGLTF_USE_CPP14
 
 #define TINYGLTF_IMPLEMENTATION
@@ -25,9 +25,9 @@
 #include "tinyobjloader/tiny_obj_loader.h"
 
 #include "puffin/assets/asset.h"
-#include "puffin/assets/asset_registry.h"
-#include "puffin/assets/texture_asset.h"
-#include "puffin/assets/mesh_asset.h"
+#include "puffin/assets/assetregistry.h"
+#include "puffin/assets/textureasset.h"
+#include "puffin/assets/staticmeshasset.h"
 #include "puffin/types/vertex.h"
 
 namespace puffin::io

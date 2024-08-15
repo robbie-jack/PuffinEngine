@@ -2,7 +2,7 @@
 
 #include "puffin/types/quat.h"
 
-#include "puffin/math_helpers.h"
+#include "puffin/mathhelpers.h"
 
 namespace puffin::maths
 {

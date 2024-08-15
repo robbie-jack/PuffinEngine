@@ -8,8 +8,8 @@
 #include "puffin/core/subsystem.h"
 #include "puffin/nodes/node.h"
 #include "puffin/types/uuid.h"
-#include "puffin/types/packed_array.h"
-#include "puffin/types/packed_vector.h"
+#include "puffin/types/packedarray.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin
 {

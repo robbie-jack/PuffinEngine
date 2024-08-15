@@ -1,4 +1,4 @@
-#include "puffin/ui/editor/ui_subsystem.h"
+#include "puffin/editor/ui/editoruisubsystem.h"
 
 #include <string>
 #include <iostream>
@@ -7,17 +7,17 @@
 #include "backends/imgui_impl_vulkan.h"
 
 #include "puffin/core/engine.h"
-#include "puffin/scene/scene_subsystem.h"
-#include "puffin/assets/asset_importers.h"
-#include "puffin/assets/asset_registry.h"
-#include "puffin/ui/editor/windows/ui_window.h"
-#include "puffin/ui/editor/windows/ui_content_browser.h"
-#include "puffin/ui/editor/windows/ui_window_node_editor.h"
-#include "puffin/ui/editor/windows/ui_window_performance.h"
-#include "puffin/ui/editor/windows/ui_window_scene_hierarchy.h"
-#include "puffin/ui/editor/windows/ui_window_settings.h"
-#include "puffin/ui/editor/windows/ui_window_viewport.h"
-#include "puffin/core/settings_manager.h"
+#include "puffin/scene/scenesubsystem.h"
+#include "puffin/assets/assetimporters.h"
+#include "puffin/assets/assetregistry.h"
+#include "puffin/editor/ui/windows/uiwindow.h"
+#include "puffin/editor/ui/windows/uiwindowcontentbrowser.h"
+#include "puffin/editor/ui/windows/uiwindownodeeditor.h"
+#include "puffin/editor/ui/windows/uiwindowperformance.h"
+#include "puffin/editor/ui/windows/uiwindowscenehierarchy.h"
+#include "puffin/editor/ui/windows/uiwindowsettings.h"
+#include "puffin/editor/ui/windows/uiwindowviewport.h"
+#include "puffin/core/settingsmanager.h"
 
 namespace fs = std::filesystem;
 

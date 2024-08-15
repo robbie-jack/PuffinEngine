@@ -1,7 +1,7 @@
 #pragma once
 
 #include "puffin/core/application.h"
-#include "puffin/project_settings.h"
+#include "puffin/projectsettings.h"
 #include "puffin/core/subsystem.h"
 #include "argparse/argparse.hpp"
 
@@ -12,23 +12,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "subsystem_manager.h"
+#include "subsystemmanager.h"
 
 namespace fs = std::filesystem;
 
 namespace puffin
 {
     void add_default_engine_arguments(argparse::ArgumentParser &parser);
-
-	/*namespace audio
-	{
-		class AudioSubsystem;
-	}*/
-
-	namespace ui
-	{
-		class EditorUISubsystem;
-	}
 }
 
 namespace puffin::core

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "puffin/ui/editor/windows/ui_window.h"
-#include "puffin/components/rendering/camera_component.h"
+#include "puffin/editor/ui/windows/uiwindow.h"
+#include "puffin/components/rendering/cameracomponent.h"
 
 namespace puffin
 {

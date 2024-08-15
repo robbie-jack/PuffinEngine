@@ -2,7 +2,7 @@
 
 #include "puffin/nodes/node.h"
 #include "puffin/types/quat.h"
-#include "puffin/types/euler_angles.h"
+#include "puffin/types/eulerangles.h"
 #include "puffin/types/vector.h"
 
 namespace puffin

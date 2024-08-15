@@ -4,7 +4,7 @@
 
 #include "puffin/core/subsystem.h"
 #include "puffin/types/uuid.h"
-#include "puffin/types/packed_vector.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin::audio
 {

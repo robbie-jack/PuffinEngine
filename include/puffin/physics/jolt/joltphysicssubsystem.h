@@ -10,7 +10,7 @@
 #define JPH_PROFILE_ENABLED 1;
 #define JPH_DEBUG_RENDERER 1;
 
-#include "puffin/physics/jolt/jolt_physics_types.h"
+#include "puffin/physics/jolt/joltphysicstypes.h"
 
 #include "Jolt/Jolt.h"
 
@@ -20,15 +20,15 @@
 #include "Jolt/Physics/PhysicsSystem.h"
 
 #include "puffin/core/subsystem.h"
-#include "puffin/components/physics/3d/rigidbody_component_3d.h"
-#include "puffin/components/physics/3d/shape_components_3d.h"
-#include "puffin/components/physics/3d/velocity_component_3d.h"
-#include "puffin/components/transform_component_3d.h"
+#include "puffin/components/physics/3d/rigidbodycomponent3d.h"
+#include "puffin/components/physics/3d/shapecomponents3d.h"
+#include "puffin/components/physics/3d/velocitycomponent3d.h"
+#include "puffin/components/transformcomponent3d.h"
 #include "puffin/core/engine.h"
-#include "puffin/ecs/entt_subsystem.h"
-#include "puffin/physics/body_type.h"
-#include "puffin/physics/physics_constants.h"
-#include "puffin/types/packed_vector.h"
+#include "puffin/ecs/enttsubsystem.h"
+#include "puffin/physics/bodytype.h"
+#include "puffin/physics/physicsconstants.h"
+#include "puffin/types/packedvector.h"
 
 namespace puffin::physics
 {

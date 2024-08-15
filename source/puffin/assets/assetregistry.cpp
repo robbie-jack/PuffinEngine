@@ -1,4 +1,4 @@
-#include "puffin/assets/asset_registry.h"
+#include "puffin/assets/assetregistry.h"
 
 #include <fstream>
 

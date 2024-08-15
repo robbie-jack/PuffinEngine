@@ -2,14 +2,14 @@
 
 #if PFN_ONAGER2D_PHYSICS
 
-#include "puffin/physics/onager2d/broadphases/broadphase_2d.h"
-#include "puffin/components/physics/2d/rigidbody_component_2d.h"
-#include "puffin/components/physics/2d/shape_components_2d.h"
-#include "puffin/ecs/entt_subsystem.h"
+#include "puffin/physics/onager2d/broadphases/broadphase2d.h"
+#include "puffin/components/physics/2d/rigidbodycomponent2d.h"
+#include "puffin/components/physics/2d/shapecomponents2d.h"
+#include "puffin/ecs/enttsubsystem.h"
 #include "puffin/core/engine.h"
 #include "puffin/core/subsystem.h"
-#include "puffin/physics/onager2d/physics_types_2d.h"
-#include "puffin/physics/onager2d/colliders/collider_2d.h"
+#include "puffin/physics/onager2d/physicstypes2d.h"
+#include "puffin/physics/onager2d/colliders/collider2d.h"
 #include "puffin/types/vector.h"
 #include "puffin/types/uuid.h"
 

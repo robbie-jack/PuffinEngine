@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 
 #include "puffin/types/vector.h"
-#include "puffin/rendering/resource_id.h"
+#include "puffin/rendering/resourceid.h"
 
 #include "nlohmann/json.hpp"
 #include "puffin/types/aabb.h"

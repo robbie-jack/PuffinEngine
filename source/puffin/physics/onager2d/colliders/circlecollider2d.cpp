@@ -1,9 +1,9 @@
 
-#include "puffin/physics/onager2d/colliders/circle_collider_2d.h"
+#include "puffin/physics/onager2d/colliders/circlecollider2d.h"
 
-#include "puffin/physics/onager2d/physics_helpers_2d.h"
-#include "puffin/physics/onager2d/physics_types_2d.h"
-#include "puffin/physics/onager2d/colliders/collider_2d.h"
+#include "puffin/physics/onager2d/physicshelpers2d.h"
+#include "puffin/physics/onager2d/physicstypes2d.h"
+#include "puffin/physics/onager2d/colliders/collider2d.h"
 
 namespace puffin::physics::collision2D
 {

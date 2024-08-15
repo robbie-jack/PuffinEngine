@@ -1,9 +1,9 @@
-#include "puffin/input/input_subsystem.h"
+#include "puffin/input/inputsubsystem.h"
 
 #include "puffin/core/engine.h"
-#include "puffin/core/signal_subsystem.h"
-#include "puffin/core/subsystem_manager.h"
-#include "puffin/window/window_subsystem.h"
+#include "puffin/core/signalsubsystem.h"
+#include "puffin/core/subsystemmanager.h"
+#include "puffin/window/windowsubsystem.h"
 
 namespace puffin
 {

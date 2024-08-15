@@ -3,12 +3,12 @@
 #include <cmath>
 #include <limits>
 
-#include "puffin/math_helpers.h"
-#include "puffin/components/physics/2d/rigidbody_component_2d.h"
-#include "shapes/box_shape_2d.h"
-#include "puffin/physics/onager2d/colliders/collider_2d.h"
-#include "puffin/physics/onager2d/colliders/box_collider_2d.h"
-#include "puffin/physics/onager2d/colliders/circle_collider_2d.h"
+#include "puffin/mathhelpers.h"
+#include "puffin/components/physics/2d/rigidbodycomponent2d.h"
+#include "shapes/boxshape2d.h"
+#include "puffin/physics/onager2d/colliders/collider2d.h"
+#include "puffin/physics/onager2d/colliders/boxcollider2d.h"
+#include "puffin/physics/onager2d/colliders/circlecollider2d.h"
 
 namespace puffin::physics
 {

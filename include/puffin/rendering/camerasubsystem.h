@@ -4,8 +4,8 @@
 #include <entt/entity/registry.hpp>
 
 #include "puffin/core/subsystem.h"
-#include "puffin/components/transform_component_3d.h"
-#include "puffin/components/rendering/camera_component.h"
+#include "puffin/components/transformcomponent3d.h"
+#include "puffin/components/rendering/cameracomponent.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin::rendering
