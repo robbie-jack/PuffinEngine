@@ -18,7 +18,7 @@ namespace fs = std::filesystem;
 
 namespace puffin
 {
-    void add_default_engine_arguments(argparse::ArgumentParser &parser);
+    void AddDefaultEngineArguments(argparse::ArgumentParser& parser);
 }
 
 namespace puffin::core
@@ -41,87 +41,83 @@ namespace puffin::core
 		Engine();
 		~Engine();
 
-		void setup();
-		void initialize(const argparse::ArgumentParser& parser);
-		bool update();
-		void deinitialize();
+		void Setup();
+		void Initialize(const argparse::ArgumentParser& pS);
+		bool Update();
+		void Deinitialize();
 
-		void play();
-		void restart();
-		void exit();
+		void Play();
+		void Restart();
+		void Exit();
 
 		template<typename AppT>
-		void register_app()
+		void RegisterApp()
 		{
-			assert(m_application == nullptr && "Registering multiple applications");
+			assert(mApplication == nullptr && "Registering multiple applications");
 
-			m_application = std::static_pointer_cast<Application>(std::make_shared<AppT>(shared_from_this()));
+			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>(shared_from_this()));
 		}
 
-		PlayState play_state() const { return m_play_state; }
+		PlayState GetPlayState() const { return mPlayState; }
 
-		bool setup_engine_default_settings() const { return m_setup_engine_default_settings; }
-		bool should_render_editor_ui() const { return m_should_render_editor_ui; }
+		bool GetSetupEngineDefaultSettings() const { return mSetupEngineDefaultSettings; }
+		bool GetShouldRenderEditorUI() const { return mShouldRenderEditorUI; }
 
-		const double& time_step_fixed() const { return m_time_step_fixed; }
-
-		void set_time_step_fixed(const double timeStepFixed) { m_time_step_fixed = timeStepFixed; }
-
-		const double& delta_time() const { return m_delta_time; }
-
-		const double& accumulated_time() const { return m_accumulated_time; }
+		const double& GetTimeStepFixed() const { return mTimeStepFixed; }
+		const double& GetDeltaTime() const { return mDeltaTime; }
+		const double& GetAccumulatedTime() const { return mAccumulatedTime; }
 
 		template<typename T>
-		void register_subsystem() const
+		void RegisterSubsystem() const
 		{
-			m_subsystem_manager->register_subsystem<T>();
+			mSubsystemManager->RegisterSubsystem<T>();
 		}
 
 		template<typename T>
-		T* get_subsystem() const
+		T* GetSubsystem() const
 		{
-			return m_subsystem_manager->get_subsystem<T>();
+			return mSubsystemManager->GetSubsystem<T>();
 		}
 
 	private:
 
-		bool m_running = true;
-		bool m_load_scene_on_launch = false;
-		bool m_setup_engine_default_scene = false;
-		bool m_setup_engine_default_settings = false;
-		bool m_should_limit_framerate = true; // Whether framerate should be capped at m_frameRateMax
-		bool m_should_render_editor_ui = true; // Whether editor UI should be rendered
+		bool mRunning = true;
+		bool mLoadSceneOnLaunch = false;
+		bool mSetupEngineDefaultScene = false;
+		bool mSetupEngineDefaultSettings = false;
+		bool mShouldLimitFramerate = true; // Whether framerate should be capped at m_frameRateMax
+		bool mShouldRenderEditorUI = true; // Whether editor UI should be rendered
 
-		PlayState m_play_state = PlayState::Stopped;
+		PlayState mPlayState = PlayState::Stopped;
 
 		// Framerate Members
-		uint16_t m_frame_rate_max = 0; // Limit on how fast game runs
-		uint16_t m_physics_ticks_per_frame = 60; // How many times physics code should run per frame
+		uint16_t mFrameRateMax = 0; // Limit on how fast game runs
+		uint16_t mPhysicsTicksPerFrame = 60; // How many times physics code should run per frame
 
 		// Time Members
-		double m_last_time = 0.0;
-		double m_current_time = 0.0;
-		double m_delta_time = 0.0; // How long it took last frame to complete
-		double m_accumulated_time = 0.0; // Time passed since last physics tick
-		double m_time_step_fixed = 1.0 / m_physics_ticks_per_frame; // How often deterministic code like physics should occur (defaults to 60 times a second)
-		double m_time_step_limit = 1 / 25.0; // Maximum amount of time each frame should take to complete
+		double mLastTime = 0.0;
+		double mCurrentTime = 0.0;
+		double mDeltaTime = 0.0; // How long it took last frame to complete
+		double mAccumulatedTime = 0.0; // Time passed since last physics tick
+		double mTimeStepFixed = 1.0 / mPhysicsTicksPerFrame; // How often deterministic code like physics should occur (defaults to 60 times a second)
+		double mTimeStepLimit = 1 / 25.0; // Maximum amount of time each frame should take to complete
 
-		std::shared_ptr<Application> m_application = nullptr;
-		std::unique_ptr<SubsystemManager> m_subsystem_manager = nullptr;
+		std::shared_ptr<Application> mApplication = nullptr;
+		std::unique_ptr<SubsystemManager> mSubsystemManager = nullptr;
 
-		io::ProjectFile m_project_file;
+		io::ProjectFile mProjectFile;
 
-		void register_required_subsystems() const;
+		void RegisterRequiredSubsystems() const;
 
-		void add_default_assets();
-		void reimport_default_assets();
-		void load_and_resave_assets();
+		void AddDefaultAssets();
+		void ReimportDefaultAssets();
+		void LoadAndResaveAssets();
 
-		void default_scene();
-		void physics_scene_3d();
-		void procedural_scene();
+		void InitDefaultScene();
+		void InitPhysicsScene3D();
+		void InitProceduralScene();
 
-		void update_delta_time(double sampled_time);
+		void UpdateDeltaTime(double sampledTime);
 
 	};
 }

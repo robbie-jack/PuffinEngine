@@ -11,7 +11,7 @@ namespace puffin
 		{
 			mWindowName = "Scene Hierarchy";
 
-			auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 			if (mShow)
 			{
@@ -118,7 +118,7 @@ namespace puffin
 		{
 			ImGuiTreeNodeFlags tree_flags = base_flags;
 
-			auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 			auto node = scene_graph_subsystem->get_node_ptr(id);
 
 			bool has_child = false;

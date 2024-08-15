@@ -34,12 +34,12 @@ namespace puffin
 			explicit InputSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~InputSubsystem() override;
 
-			void initialize(core::SubsystemManager* subsystem_manager) override;
-			void deinitialize() override;
+			void Initialize(core::SubsystemManager* subsystem_manager) override;
+			void Deinitialize() override;
 
-			core::SubsystemType type() const override;
+			core::SubsystemType GetType() const override;
 
-			void process_input() override;
+			void ProcessInput() override;
 
 			void add_action(std::string name, int key);
 			void add_action(std::string name, std::vector<int> keys);

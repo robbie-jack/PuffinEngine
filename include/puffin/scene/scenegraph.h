@@ -132,12 +132,12 @@ namespace puffin::scene
 
 		SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine);
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
 
-		void end_play() override;
+		void EndPlay() override;
 
-		void update(double delta_time) override;
-		bool should_update() override;
+		void Update(double delta_time) override;
+		bool ShouldUpdate() override;
 
 		template<typename T>
 		void register_node_type()
@@ -276,14 +276,14 @@ namespace puffin::scene
 
 			if (id == gInvalidID)
 			{
-				T* node = get_array<T>()->add(m_engine);
+				T* node = get_array<T>()->add(mEngine);
 				node_ptr = static_cast<Node*>(node);
 
 				id = node_ptr->id();
 			}
 			else
 			{
-				T* node = get_array<T>()->add(m_engine, id);
+				T* node = get_array<T>()->add(mEngine, id);
 				node_ptr = static_cast<Node*>(node);
 			}
 
@@ -305,13 +305,13 @@ namespace puffin::scene
 
 			if (id == gInvalidID)
 			{
-				node_ptr = get_array(type_name)->add_ptr(m_engine);
+				node_ptr = get_array(type_name)->add_ptr(mEngine);
 
 				id = node_ptr->id();
 			}
 			else
 			{
-				node_ptr = get_array(type_name)->add_ptr(m_engine, id);
+				node_ptr = get_array(type_name)->add_ptr(mEngine, id);
 			}
 
 			add_node_internal_base(node_ptr, type_name, id, parent_id);
@@ -345,15 +345,15 @@ namespace puffin::scene
 		explicit SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine);
 		~SceneGraphGameplaySubsystem() override = default;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
 
-		[[nodiscard]] core::SubsystemType type() const override;
+		[[nodiscard]] core::SubsystemType GetType() const override;
 
-		void update(double delta_time) override;
-		bool should_update() override;
+		void Update(double delta_time) override;
+		bool ShouldUpdate() override;
 
-		void fixed_update(double fixed_time) override;
-		bool should_fixed_update() override;
+		void FixedUpdate(double fixed_time) override;
+		bool ShouldFixedUpdate() override;
 
 	};
 }

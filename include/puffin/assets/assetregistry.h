@@ -57,7 +57,7 @@ namespace puffin::assets
 		AssetFactory()
 		{
 			AssetType* asset = new AssetType();
-			m_asset_type_string = asset->type();
+			m_asset_type_string = asset->GetType();
 			delete asset;
 			asset = nullptr;
 		}
@@ -111,7 +111,7 @@ namespace puffin::assets
 		{
 			for (const auto& [fst, snd] : m_id_to_asset_map)
 			{
-				snd->unload();
+				snd->Unload();
 			}
 
 			m_id_to_asset_map.clear();
@@ -156,7 +156,7 @@ namespace puffin::assets
 
 			get_asset_type<AssetType>(type);
 
-			if (asset->type() != type)
+			if (asset->GetType() != type)
 			{
 				return nullptr;
 			}
@@ -180,8 +180,8 @@ namespace puffin::assets
 				}
 				else
 				{
-					m_id_to_asset_map.emplace(asset->id(), asset);
-					m_path_to_id_map.emplace(asset->relativePath().string(), asset->id());
+					m_id_to_asset_map.emplace(asset->GetID(), asset);
+					m_path_to_id_map.emplace(asset->GetRelativePath().string(), asset->GetID());
 				}
 			}
 
@@ -189,7 +189,7 @@ namespace puffin::assets
 
 			get_asset_type<AssetType>(type);
 
-			if (asset->type() != type)
+			if (asset->GetType() != type)
 			{
 				return nullptr;
 			}
@@ -208,8 +208,8 @@ namespace puffin::assets
 				// If there isn't create a new asset
 				asset = std::make_shared<AssetType>(path);
 
-				m_id_to_asset_map.emplace(asset->id(), asset);
-				m_path_to_id_map.emplace(asset->relativePath().string(), asset->id());
+				m_id_to_asset_map.emplace(asset->GetID(), asset);
+				m_path_to_id_map.emplace(asset->GetRelativePath().string(), asset->GetID());
 			}
 
 			// Return existing/created asset
@@ -228,7 +228,7 @@ namespace puffin::assets
 		static void get_asset_type(std::string& type)
 		{
 			const Asset* tempAsset = new AssetType();
-			type = tempAsset->type();
+			type = tempAsset->GetType();
 
 			delete tempAsset;
 			tempAsset = nullptr;

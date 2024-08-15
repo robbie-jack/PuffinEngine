@@ -40,11 +40,11 @@ namespace puffin
 			explicit EditorUISubsystem(const std::shared_ptr<core::Engine>& engine);
 			~EditorUISubsystem() override = default;
 
-			void initialize(core::SubsystemManager* subsystem_manager) override;
-			void deinitialize() override;
+			void Initialize(core::SubsystemManager* subsystem_manager) override;
+			void Deinitialize() override;
 
-			void update(double delta_time) override;
-			bool should_update() override;
+			void Update(double delta_time) override;
+			bool ShouldUpdate() override;
 
 			void add_window(const std::shared_ptr<UIWindow>& window);
 

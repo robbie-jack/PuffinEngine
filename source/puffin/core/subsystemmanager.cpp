@@ -4,99 +4,99 @@
 
 namespace puffin::core
 {
-	SubsystemManager::SubsystemManager(const std::shared_ptr<Engine>& engine) : m_engine(engine)
+	SubsystemManager::SubsystemManager(const std::shared_ptr<Engine>& engine) : mEngine(engine)
 	{
 	}
 
-	std::vector<Subsystem*>& SubsystemManager::get_subsystems()
+	std::vector<Subsystem*>& SubsystemManager::GetSubsystems()
 	{
-		return m_initialized_engine_subsystems;
+		return mInitializedEngineSubsystems;
 	}
 
-	std::vector<Subsystem*>& SubsystemManager::get_gameplay_subsystems()
+	std::vector<Subsystem*>& SubsystemManager::GetGameplaySubsystems()
 	{
-		return m_initialized_gameplay_subsystems;
+		return mInitializedGameplaySubsystems;
 	}
 
-	Subsystem* SubsystemManager::get_input_subsystem() const
+	Subsystem* SubsystemManager::GetInputSubsystem() const
 	{
-		assert(m_input_subsystem != nullptr && "SubsystemManager::get_input_subsystem() - Attempting to get input subsystem while it is invalid");
+		assert(mInputSubsystem != nullptr && "SubsystemManager::GetInputSubsystem() - Attempting to get input subsystem while it is invalid");
 
-		return m_input_subsystem;
+		return mInputSubsystem;
 	}
 
-	Subsystem* SubsystemManager::get_render_subsystem() const
+	Subsystem* SubsystemManager::GetRenderSubsystem() const
 	{
-		assert(m_render_subsystem != nullptr && "SubsystemManager::get_render_subsystem() - Attempting to get render subsystem while it is invalid");
+		assert(mRenderSubsystem != nullptr && "SubsystemManager::GetRenderSubsystem() - Attempting to get render subsystem while it is invalid");
 
-		return m_render_subsystem;
+		return mRenderSubsystem;
 	}
 
-	void SubsystemManager::create_and_initialize_engine_subsystems()
+	void SubsystemManager::CreateAndInitializeEngineSubsystems()
 	{
-		for (const auto& type_name : m_engine_subsystem_names)
+		for (const auto& typeName : mEngineSubsystemNames)
 		{
-			auto subsystem = create_and_initialize_subsystem_internal(type_name);
+			auto subsystem = CreateAndInitializeSubsystemInternal(typeName);
 
-			if (subsystem->type() == SubsystemType::Input)
+			if (subsystem->GetType() == SubsystemType::Input)
 			{
-				assert(m_input_subsystem == nullptr && "SubsystemManager::create_and_initialize_engine_subsystems - Attempting to initialize a second input subsystem");
+				assert(mInputSubsystem == nullptr && "SubsystemManager::CreateAndInitializeEngineSubsystems - Attempting to initialize a second input subsystem");
 
-				m_input_subsystem = subsystem;
+				mInputSubsystem = subsystem;
 			}
 
-			if (subsystem->type() == SubsystemType::Render)
+			if (subsystem->GetType() == SubsystemType::Render)
 			{
-				assert(m_render_subsystem == nullptr && "SubsystemManager::create_and_initialize_engine_subsystems - Attempting to initialize a second render subsystem");
+				assert(mRenderSubsystem == nullptr && "SubsystemManager::CreateAndInitializeEngineSubsystems - Attempting to initialize a second render subsystem");
 
-				m_render_subsystem = subsystem;
+				mRenderSubsystem = subsystem;
 			}
 		}
 	}
 
-	void SubsystemManager::create_and_initialize_gameplay_subsystems()
+	void SubsystemManager::CreateAndInitializeGameplaySubsystems()
 	{
-		for (const auto& type_name : m_gameplay_subsystem_names)
+		for (const auto& typeName : mGameplaySubsystemNames)
 		{
-			auto subsystem = create_and_initialize_subsystem_internal(type_name);
+			auto Subsystem = CreateAndInitializeSubsystemInternal(typeName);
 		}
 	}
 
-	void SubsystemManager::destroy_engine_subsystems()
+	void SubsystemManager::DestroyEngineSubsystems()
 	{
-		for (auto it = m_initialized_engine_subsystems.rbegin(); it != m_initialized_engine_subsystems.rend(); ++it)
+		for (auto it = mInitializedEngineSubsystems.rbegin(); it != mInitializedEngineSubsystems.rend(); ++it)
 		{
-			(*it)->deinitialize();
+			(*it)->Deinitialize();
 			delete *it;
 		}
 
-		m_initialized_engine_subsystems.clear();
+		mInitializedEngineSubsystems.clear();
 
-		for (const auto& type_name : m_engine_subsystem_names)
+		for (const auto& typeName : mEngineSubsystemNames)
 		{
-			m_initialized_subsystems.erase(type_name);
-			m_subsystems.erase(type_name);
+			mInitializedSubsystems.erase(typeName);
+			mSubsystems.erase(typeName);
 		}
 	}
 
-	void SubsystemManager::destroy_gameplay_subsystems()
+	void SubsystemManager::DestroyGameplaySubsystems()
 	{
-		for (auto it = m_initialized_gameplay_subsystems.rbegin(); it != m_initialized_gameplay_subsystems.rend(); ++it)
+		for (auto it = mInitializedGameplaySubsystems.rbegin(); it != mInitializedGameplaySubsystems.rend(); ++it)
 		{
-			(*it)->deinitialize();
+			(*it)->Deinitialize();
 			delete* it;
 		}
 
-		m_initialized_gameplay_subsystems.clear();
+		mInitializedGameplaySubsystems.clear();
 
-		for (const auto& type_name : m_gameplay_subsystem_names)
+		for (const auto& typeName : mGameplaySubsystemNames)
 		{
-			m_initialized_subsystems.erase(type_name);
-			m_subsystems.erase(type_name);
+			mInitializedSubsystems.erase(typeName);
+			mSubsystems.erase(typeName);
 		}
 	}
 
-	bool SubsystemManager::is_editor_type(SubsystemType type)
+	bool SubsystemManager::IsEditorType(SubsystemType type)
 	{
 		if (type == SubsystemType::Gameplay)
 			return false;
@@ -104,7 +104,7 @@ namespace puffin::core
 		return true;
 	}
 
-	bool SubsystemManager::is_gameplay_type(SubsystemType type)
+	bool SubsystemManager::IsGameplayType(SubsystemType type)
 	{
 		if (type == SubsystemType::Gameplay)
 			return true;
@@ -112,61 +112,61 @@ namespace puffin::core
 		return false;
 	}
 
-	Subsystem* SubsystemManager::create_subsystem_internal(const char* type_name)
+	Subsystem* SubsystemManager::CreateSubsystemInternal(const char* typeName)
 	{
 		// Return if subsystem of this type is already created
-		if (m_subsystems.find(type_name) != m_subsystems.end())
+		if (mSubsystems.find(typeName) != mSubsystems.end())
 		{
-			return m_subsystems.at(type_name);
+			return mSubsystems.at(typeName);
 		}
 
-		assert(m_subsystem_factories.find(type_name) != m_subsystem_factories.end() && "SubsystemManager::create_subsystem_internal() - Attempting to create subsystem that wasn't registered");
+		assert(mSubsystemFactories.find(typeName) != mSubsystemFactories.end() && "SubsystemManager::create_subsystem_internal() - Attempting to create subsystem that wasn't registered");
 
-		const auto& subsystem_factory = m_subsystem_factories.at(type_name);
+		const auto& subsystemFactory = mSubsystemFactories.at(typeName);
 
-		auto subsystem = subsystem_factory->create(m_engine);
-		m_subsystems.emplace(type_name, subsystem);
+		auto subsystem = subsystemFactory->Create(mEngine);
+		mSubsystems.emplace(typeName, subsystem);
 
 		return subsystem;
 	}
 
-	void SubsystemManager::initialize_subsystem_internal(const char* type_name)
+	void SubsystemManager::InitializeSubsystemInternal(const char* typeName)
 	{
-		if (m_initialized_subsystems.find(type_name) != m_initialized_subsystems.end())
+		if (mInitializedSubsystems.find(typeName) != mInitializedSubsystems.end())
 		{
 			return;
 		}
 
-		assert(m_subsystem_factories.find(type_name) != m_subsystem_factories.end() && "SubsystemManager::initialize_subsystem_internal() - Attempting to initialize subsystem that wasn't registered");
-		assert(m_subsystems.find(type_name) != m_subsystems.end() && "SubsystemManager::initialize_subsystem_internal() - Attempting to initialize subsystem that hasn't been created yet");
+		assert(mSubsystemFactories.find(typeName) != mSubsystemFactories.end() && "SubsystemManager::initialize_subsystem_internal() - Attempting to initialize subsystem that wasn't registered");
+		assert(mSubsystems.find(typeName) != mSubsystems.end() && "SubsystemManager::initialize_subsystem_internal() - Attempting to initialize subsystem that hasn't been created yet");
 
-		auto subsystem = m_subsystems.at(type_name);
+		auto subsystem = mSubsystems.at(typeName);
 
-		if (subsystem->type() == SubsystemType::Editor && !m_engine->should_render_editor_ui())
+		if (subsystem->GetType() == SubsystemType::Editor && !mEngine->GetShouldRenderEditorUI())
 		{
 			return;
 		}
 
-		subsystem->initialize(this);
+		subsystem->Initialize(this);
 
-		m_initialized_subsystems.emplace(type_name, subsystem);
+		mInitializedSubsystems.emplace(typeName, subsystem);
 
-		if (is_editor_type(subsystem->type()))
+		if (IsEditorType(subsystem->GetType()))
 		{
-			m_initialized_engine_subsystems.push_back(subsystem);
+			mInitializedEngineSubsystems.push_back(subsystem);
 		}
 		else
 		{
-			m_initialized_gameplay_subsystems.push_back(subsystem);
+			mInitializedGameplaySubsystems.push_back(subsystem);
 		}
 	}
 
 	
-	Subsystem* SubsystemManager::create_and_initialize_subsystem_internal(const char* type_name)
+	Subsystem* SubsystemManager::CreateAndInitializeSubsystemInternal(const char* typeName)
 	{
-		auto subsystem = create_subsystem_internal(type_name);
+		auto subsystem = CreateSubsystemInternal(typeName);
 
-		initialize_subsystem_internal(type_name);
+		InitializeSubsystemInternal(typeName);
 
 		return subsystem;
 	}

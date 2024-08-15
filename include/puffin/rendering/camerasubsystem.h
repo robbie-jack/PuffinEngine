@@ -17,14 +17,14 @@ namespace puffin::rendering
 		explicit CameraSubystem(const std::shared_ptr<core::Engine>& engine);
 		~CameraSubystem() override = default;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
-		void deinitialize() override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Deinitialize() override;
 
-		void begin_play() override;
-		void end_play() override;
+		void BeginPlay() override;
+		void EndPlay() override;
 
-		void update(double delta_time) override;
-		bool should_update() override;
+		void Update(double delta_time) override;
+		bool ShouldUpdate() override;
 
 		void on_update_camera(entt::registry& registry, entt::entity entity);
         void on_destroy_camera(entt::registry& registry, entt::entity entity);

@@ -191,33 +191,33 @@ namespace puffin::io
 
 	SceneSubsystem::SceneSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "SceneSubsystem";
+		mName = "SceneSubsystem";
 	}
 
 	SceneSubsystem::~SceneSubsystem()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
-	void SceneSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	void SceneSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
-		const auto entt_subsystem = subsystem_manager->create_and_initialize_subsystem<ecs::EnTTSubsystem>();
-		const auto scene_graph = subsystem_manager->create_and_initialize_subsystem<scene::SceneGraphSubsystem>();
+		const auto entt_subsystem = subsystem_manager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
+		const auto scene_graph = subsystem_manager->CreateAndInitializeSubsystem<scene::SceneGraphSubsystem>();
 	}
 
-	void SceneSubsystem::deinitialize()
+	void SceneSubsystem::Deinitialize()
 	{
 	}
 
-	void SceneSubsystem::begin_play()
+	void SceneSubsystem::BeginPlay()
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
-		auto scene_graph = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		auto scene_graph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		m_current_scene_data->update_data(entt_subsystem, scene_graph);
 	}
 
-	void SceneSubsystem::end_play()
+	void SceneSubsystem::EndPlay()
 	{
 		load_and_setup();
 	}
@@ -229,8 +229,8 @@ namespace puffin::io
 
 	void SceneSubsystem::setup() const
 	{
-		const auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
-		const auto scene_graph = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+		const auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto scene_graph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		m_current_scene_data->setup(entt_subsystem, scene_graph);
 	}

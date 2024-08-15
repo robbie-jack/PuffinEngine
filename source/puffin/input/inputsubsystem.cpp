@@ -11,7 +11,7 @@ namespace puffin
 	{
 		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
-			m_name = "InputSubsystem";
+			mName = "InputSubsystem";
 
 			m_next_id = 1;
 			m_last_x_pos = 640.0;
@@ -23,13 +23,13 @@ namespace puffin
 
 		InputSubsystem::~InputSubsystem()
 		{
-			m_engine = nullptr;
+			mEngine = nullptr;
 		}
 
-		void InputSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+		void InputSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 		{
-			auto window_subsystem = subsystem_manager->create_and_initialize_subsystem<window::WindowSubsystem>();
-			auto signal_subsystem = subsystem_manager->create_and_initialize_subsystem<core::SignalSubsystem>();
+			auto window_subsystem = subsystem_manager->CreateAndInitializeSubsystem<window::WindowSubsystem>();
+			auto signal_subsystem = subsystem_manager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
 			m_window = window_subsystem->primary_window();
 
@@ -58,22 +58,22 @@ namespace puffin
 			}
 		}
 
-		void InputSubsystem::deinitialize()
+		void InputSubsystem::Deinitialize()
 		{
 			m_actions.clear();
 			m_window = nullptr;
 		}
 
-		core::SubsystemType InputSubsystem::type() const
+		core::SubsystemType InputSubsystem::GetType() const
 		{
 			return core::SubsystemType::Input;
 		}
 
-		void InputSubsystem::process_input()
+		void InputSubsystem::ProcessInput()
 		{
 			if (!m_window)
 			{
-				m_window = m_engine->get_subsystem<window::WindowSubsystem>()->primary_window();
+				m_window = mEngine->GetSubsystem<window::WindowSubsystem>()->primary_window();
 			}
 
 			glfwPollEvents();
@@ -125,9 +125,9 @@ namespace puffin
 					// Notify subscribers that event changed
 					if (stateChanged == true)
 					{
-						auto signalSubsystem = m_engine->get_subsystem<core::SignalSubsystem>();
+						auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
 
-						signalSubsystem->emit<InputEvent>(name, InputEvent(action.name, action.state));
+						signalSubsystem->Emit<InputEvent>(name, InputEvent(action.name, action.state));
 
 						stateChanged = false;
 					}
@@ -173,8 +173,8 @@ namespace puffin
 
 			m_actions.emplace(name, new_action);
 
-            auto signal_subsystem = m_engine->get_subsystem<core::SignalSubsystem>();
-            signal_subsystem->create_signal<InputEvent>(name);
+            auto signal_subsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+            signal_subsystem->CreateSignal<InputEvent>(name);
 
 			m_next_id++;
 		}
@@ -189,8 +189,8 @@ namespace puffin
 
 			m_actions.emplace(name, new_action);
 
-            auto signal_subsystem = m_engine->get_subsystem<core::SignalSubsystem>();
-            signal_subsystem->create_signal<InputEvent>(name);
+            auto signal_subsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+            signal_subsystem->CreateSignal<InputEvent>(name);
 
 			m_next_id++;
 		}

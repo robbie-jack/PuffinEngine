@@ -26,7 +26,7 @@ namespace puffin::assets
         Sound = 60,
 	};
 
-	static const std::unordered_map<AssetType, std::string> g_asset_type_to_string =
+	static const std::unordered_map<AssetType, std::string> gAssetTypeToString =
 	{
 		{ AssetType::Invalid, "Invalid" },
 		{ AssetType::StaticMesh, "StaticMesh" },
@@ -54,7 +54,7 @@ namespace puffin::assets
 	{
 		AssetData()
 		{
-			id = puffin::gInvalidID;
+			ID = puffin::gInvalidID;
 			type = AssetType::Invalid;
 			version = 0;
 			binaryBlob.clear();
@@ -62,14 +62,14 @@ namespace puffin::assets
 
 		~AssetData()
 		{
-			id = puffin::gInvalidID;
+			ID = puffin::gInvalidID;
 			type = AssetType::Invalid;
 			version = 0;
 			json_data.clear();
 			binaryBlob.clear();
 		}
 
-		puffin::PuffinID id;
+		puffin::PuffinID ID;
 		AssetType type;
 		uint32_t version;
 		json json_data;
@@ -100,188 +100,38 @@ namespace puffin::assets
 		{ CompressionMode::LZ4, "LZ4" }
 	};
 
-	static CompressionMode parseCompressionMode(const char* f)
-	{
-		if (strcmp(f, "LZ4") == 0)
-		{
-			return CompressionMode::LZ4;
-		}
+	static CompressionMode ParseCompressionModeFromString(const char* string);
 
-		return CompressionMode::Uncompressed;
-	}
+	static const char* ParseCompressionStringFromMode(CompressionMode mode);
 
-	static const char* parseCompressionStringFromMode(CompressionMode mode)
-	{
-		return gCompressionModeToString.at(mode);
-	}
+	bool SaveBinaryFile(const fs::path& path, const AssetData& assetData);
+	bool LoadBinaryFile(const fs::path& path, AssetData& assetData, const bool& loadHeaderOnly = false);
 
-	static bool saveBinaryFile(const fs::path& path, const AssetData& assetData)
-	{
-		if (!fs::exists(path.parent_path()))
-		{
-			fs::create_directories(path.parent_path());
-		}
-
-		// Open File for Writing
-		std::ofstream outFile(path.c_str(), std::ios::binary | std::ios::out);
-
-		if (!outFile.is_open())
-			return false;
-
-		// Write asset id
-		outFile.write(reinterpret_cast<const char*>(&assetData.id), sizeof(uint_least64_t));
-
-		// Write Asset Type
-		outFile.write(reinterpret_cast<const char*>(&assetData.type), sizeof(uint32_t));
-
-		// Write Asset Version
-		outFile.write(reinterpret_cast<const char*>(&assetData.version), sizeof(uint32_t));
-
-		// Write Json Length
-		const std::string jsonString = assetData.json_data.dump();
-		const uint32_t jsonLength = jsonString.size();
-		outFile.write(reinterpret_cast<const char*>(&jsonLength), sizeof(uint32_t));
-
-		// Write Binary Blob Length
-		const uint32_t blobLength = assetData.binaryBlob.size();
-		outFile.write(reinterpret_cast<const char*>(&blobLength), sizeof(uint32_t));
-
-		// Write Json
-		outFile.write(jsonString.data(), jsonLength);
-
-		// Write Binary Blob
-		outFile.write(assetData.binaryBlob.data(), blobLength);
-
-		// Close File
-		outFile.close();
-
-		return true;
-	}
-
-	static bool loadBinaryFile(const fs::path& path, AssetData& assetData, const bool& loadHeaderOnly = false)
-	{
-		// Open File for Loading
-		std::ifstream inFile;
-		inFile.open(path.c_str(), std::ios::binary);
-
-		// Return false if file does not exist
-		if (!inFile.is_open())
-			return false;
-
-		// Start reading from beginning
-		inFile.seekg(0);
-
-		// Read asset id
-		inFile.read(reinterpret_cast<char*>(&assetData.id), sizeof(uint_least64_t));
-
-		// Read Asset Type
-		inFile.read(reinterpret_cast<char*>(&assetData.type), sizeof(uint32_t));
-
-		// Read Asset Version
-		inFile.read(reinterpret_cast<char*>(&assetData.version), sizeof(uint32_t));
-
-		// Read Json Length
-		uint32_t jsonLength;
-		inFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t));
-
-		// Read Binary Blob Length
-		uint32_t blobLength;
-		inFile.read(reinterpret_cast<char*>(&blobLength), sizeof(uint32_t));
-
-		// Read Json
-		std::string jsonString;
-		jsonString.resize(jsonLength);
-		inFile.read(jsonString.data(), jsonLength);
-
-		assetData.json_data = json::parse(jsonString);
-
-		// Load only header data, skip binary blob
-		if (loadHeaderOnly)
-		{
-			inFile.close();
-
-			return true;
-		}
-
-		// Read Binary Blob
-		assetData.binaryBlob.resize(blobLength);
-		inFile.read(assetData.binaryBlob.data(), blobLength);
-
-		// Close File
-		inFile.close();
-
-		return true;
-	}
-
-	inline bool saveJsonFile(const fs::path& path, const AssetData& assetData)
-	{
-		std::ofstream os(path.string());
-
-		json data;
-
-		data["id"] = assetData.id;
-		data["type"] = assetData.type;
-		data["version"] = assetData.version;
-		data["data"] = assetData.json_data;
-
-		os << std::setw(4) << data << std::endl;
-
-		os.close();
-
-		return true;
-	}
-
-	inline bool loadJsonFile(const fs::path& path, AssetData& assetData)
-	{
-		if (!exists(path))
-			return false;
-
-		std::ifstream is(path.string());
-
-		json data;
-		is >> data;
-
-		assetData.id = data["id"];
-		assetData.type = data["type"];
-		assetData.version = data["version"];
-		assetData.json_data = data["data"];
-
-		is.close();
-
-		return true;
-	}
+	bool SaveJsonFile(const fs::path& path, const AssetData& assetData);
+	bool LoadJsonFile(const fs::path& path, AssetData& assetData);
 
 	class Asset
 	{
 	public:
 
-		Asset(const fs::path& path) : mId(puffin::generate_id()), mPath(path) {}
-		Asset(const puffin::PuffinID uuid, const fs::path& path) : mId(uuid), mPath(path) {}
+		Asset(const fs::path& path) : mID(puffin::generate_id()), mPath(path) {}
+		Asset(const puffin::PuffinID uuid, const fs::path& path) : mID(uuid), mPath(path) {}
 
 		virtual ~Asset() = default;
 
-		puffin::PuffinID id() const
-		{
-			return mId;
-		}
+		[[nodiscard]] PuffinID GetID() const;
 
-		fs::path relativePath()
-		{
-			return mPath;
-		}
+		[[nodiscard]] fs::path GetRelativePath();
 
-		void setRelativePath(const fs::path& path)
-		{
-			mPath = path;
-		}
+		void SetRelativePath(const fs::path& path);
 
-		virtual const std::string& type() const = 0;
-		virtual const uint32_t& version() const = 0;
-		virtual bool save() = 0;
-		virtual bool load(bool loadHeaderOnly = false) = 0;
-		virtual void unload() = 0;
+		[[nodiscard]] virtual const std::string& GetType() const = 0;
+		[[nodiscard]] virtual const uint32_t& GetVersion() const = 0;
+		virtual bool Save() = 0;
+		virtual bool Load(bool loadHeaderOnly = false) = 0;
+		virtual void Unload() = 0;
 
-		virtual bool isLoaded() { return mIsLoaded; }
+		virtual bool IsLoaded();
 
 	protected:
 
@@ -289,7 +139,7 @@ namespace puffin::assets
 
 	private:
 
-		puffin::PuffinID mId = puffin::gInvalidID; // UUID of Asset
+		puffin::PuffinID mID = puffin::gInvalidID; // UUID of Asset
 		fs::path mPath; // Relative Asset Path
 
 	};

@@ -52,19 +52,19 @@ namespace puffin::scripting
 
 	const double& AngelScriptEngineInterface::getDeltaTime()
 	{
-		mDeltaTime = m_engine->delta_time();
+		mDeltaTime = m_engine->GetDeltaTime();
 		return mDeltaTime;
 	}
 
 	const double& AngelScriptEngineInterface::getFixedTime()
 	{
-		mFixedTime = m_engine->time_step_fixed();
+		mFixedTime = m_engine->GetTimeStepFixed();
 		return mFixedTime;
 	}
 
 	TransformComponent3D& AngelScriptEngineInterface::getTransformComponent3D(PuffinID id) const
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		entt::entity entity = entt_subsystem->get_entity(id);
@@ -76,7 +76,7 @@ namespace puffin::scripting
 
 	bool AngelScriptEngineInterface::hasTransformComponent3D(PuffinID id) const
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		entt::entity entity = entt_subsystem->get_entity(id);
@@ -92,7 +92,7 @@ namespace puffin::scripting
 	template <typename T>
 	T& AngelScriptEngineInterface::getComponent(PuffinID id) const
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		entt::entity entity = entt_subsystem->get_entity(id);
@@ -105,7 +105,7 @@ namespace puffin::scripting
 	template <typename T>
 	bool AngelScriptEngineInterface::hasComponent(PuffinID id) const
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		entt::entity entity = entt_subsystem->get_entity(id);

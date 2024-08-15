@@ -8,13 +8,13 @@ namespace puffin::assets
 	// Material Asset
 	////////////////////////////////
 
-	bool MaterialAsset::save()
+	bool MaterialAsset::Save()
 	{
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 
 		// Create AssetData Struct
 		AssetData data;
-		data.id = id();
+		data.ID = GetID();
 		data.type = AssetType::Material;
 		data.version = gMaterialAssetVersion;
 
@@ -24,23 +24,23 @@ namespace puffin::assets
 
 		data.binaryBlob.resize(0);
 
-		return saveJsonFile(fullPath, data);
+		return SaveJsonFile(fullPath, data);
 	}
 
-	bool MaterialAsset::load(bool loadHeaderOnly)
+	bool MaterialAsset::Load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 		if (!fs::exists(fullPath))
 			return false;
 
 		// Load Binary/Metadata
 		AssetData data;
-		if (!loadJsonFile(fullPath, data))
+		if (!LoadJsonFile(fullPath, data))
 		{
 			return false;
 		}
@@ -56,15 +56,15 @@ namespace puffin::assets
 	// Material Instance Asset
 	////////////////////////////////
 
-	bool MaterialInstanceAsset::save()
+	bool MaterialInstanceAsset::Save()
 	{
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 
 		// Create AssetData Struct
 		AssetData data;
 		data.type = AssetType::MaterialInstance;
 		data.version = gMaterialInstAssetVersion;
-		data.id = id();
+		data.ID = GetID();
 
 		// Fill Metadata from Info struct
 		data.json_data["texture_ids"] = mTexIDs;
@@ -73,23 +73,23 @@ namespace puffin::assets
 
 		data.binaryBlob.resize(0);
 
-		return saveJsonFile(fullPath, data);
+		return SaveJsonFile(fullPath, data);
 	}
 
-	bool MaterialInstanceAsset::load(bool loadHeaderOnly)
+	bool MaterialInstanceAsset::Load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 		if (!fs::exists(fullPath))
 			return false;
 
 		// Load Binary/Metadata
 		AssetData data;
-		if (!loadJsonFile(fullPath, data))
+		if (!LoadJsonFile(fullPath, data))
 		{
 			return false;
 		}

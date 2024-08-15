@@ -17,21 +17,21 @@ namespace puffin::assets
 
 		SoundAsset(const PuffinID id, const fs::path& path) : Asset(id, path) {}
 
-		const std::string& type() const override
+		const std::string& GetType() const override
 		{
 			return gSoundType;
 		}
 
-		const uint32_t& version() const override
+		const uint32_t& GetVersion() const override
 		{
 			return gSoundVersion;
 		}
 
-		bool save() override { return true; }
+		bool Save() override { return true; }
 
-		bool load(bool loadHeaderOnly = false) override { return true; }
+		bool Load(bool loadHeaderOnly = false) override { return true; }
 
-		void unload() override {}
+		void Unload() override {}
 	};
 
 }

@@ -52,7 +52,7 @@ namespace puffin
 	};
 
 	// Update transform orientation with a new euler angles and recalculates quaternion
-	inline void update_transform_orientation(TransformComponent3D& transform, const maths::EulerAngles& euler_angles_new)
+	inline void UpdateTransformOrientation(TransformComponent3D& transform, const maths::EulerAngles& euler_angles_new)
 	{
 		transform.orientation_euler_angles = euler_angles_new;
 		transform.orientation_quat = maths::euler_to_quat({ -transform.orientation_euler_angles }) * glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f });

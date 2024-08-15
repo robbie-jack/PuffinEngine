@@ -6,15 +6,15 @@ namespace puffin::core
 {
 	EnkiTSSubsystem::EnkiTSSubsystem(const std::shared_ptr<Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "EnkiTSSubsystem";
+		mName = "EnkiTSSubsystem";
 	}
 
 	EnkiTSSubsystem::~EnkiTSSubsystem()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
-	void EnkiTSSubsystem::initialize(SubsystemManager* subsystem_manager)
+	void EnkiTSSubsystem::Initialize(SubsystemManager* subsystem_manager)
 	{
 		m_task_scheduler = std::make_shared<enki::TaskScheduler>();
 

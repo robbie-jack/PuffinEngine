@@ -45,23 +45,23 @@ namespace puffin::assets
 
 		~StaticMeshAsset() override = default;
 
-		[[nodiscard]] const std::string& type() const override
+		[[nodiscard]] const std::string& GetType() const override
 		{
 			return gStaticMeshTypeString;
 		}
 
-		[[nodiscard]] const uint32_t& version() const override
+		[[nodiscard]] const uint32_t& GetVersion() const override
 		{
 			return gStaticMeshVersion;
 		}
 
-		bool save() override;
+		bool Save() override;
 
 		bool save(MeshAssetInfo& mesh_asset_info, const void* vertex_data, const void* index_data);
 
-		bool load(bool loadHeaderOnly = false) override;
+		bool Load(bool loadHeaderOnly = false) override;
 
-		void unload() override;
+		void Unload() override;
 
 		[[nodiscard]] const std::vector<char>& vertices() const { return m_vertices; }
 

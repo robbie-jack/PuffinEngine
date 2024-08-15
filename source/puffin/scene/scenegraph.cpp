@@ -12,17 +12,17 @@ namespace puffin::scene
 {
 	SceneGraphSubsystem::SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "SceneGraphSubsystem";
+		mName = "SceneGraphSubsystem";
 	}
 
-	void SceneGraphSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	void SceneGraphSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
 		m_scene_graph_updated = true;
 
 		register_default_node_types();
 	}
 
-	void SceneGraphSubsystem::end_play()
+	void SceneGraphSubsystem::EndPlay()
 	{
 		for (auto& id : m_node_ids)
 		{
@@ -44,14 +44,14 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraphSubsystem::update(double delta_time)
+	void SceneGraphSubsystem::Update(double delta_time)
 	{
 		update_scene_graph();
 
 		update_transforms();
 	}
 
-	bool SceneGraphSubsystem::should_update()
+	bool SceneGraphSubsystem::ShouldUpdate()
 	{
 		return true;
 	}
@@ -188,7 +188,7 @@ namespace puffin::scene
 
 	void SceneGraphSubsystem::update_transforms()
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = entt_subsystem->registry();
 
 		// Update global transforms
@@ -307,47 +307,47 @@ namespace puffin::scene
 
 	SceneGraphGameplaySubsystem::SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "SceneGraphGameplaySubsystem";
+		mName = "SceneGraphGameplaySubsystem";
 	}
 
-	void SceneGraphGameplaySubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	void SceneGraphGameplaySubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
-		subsystem_manager->create_and_initialize_subsystem<SceneGraphSubsystem>();
+		subsystem_manager->CreateAndInitializeSubsystem<SceneGraphSubsystem>();
 	}
 
-	core::SubsystemType SceneGraphGameplaySubsystem::type() const
+	core::SubsystemType SceneGraphGameplaySubsystem::GetType() const
 	{
 		return core::SubsystemType::Gameplay;
 	}
 
-	void SceneGraphGameplaySubsystem::update(double delta_time)
+	void SceneGraphGameplaySubsystem::Update(double delta_time)
 	{
-		auto scene_graph = m_engine->get_subsystem<SceneGraphSubsystem>();
+		auto scene_graph = mEngine->GetSubsystem<SceneGraphSubsystem>();
 
 		for (auto& id : scene_graph->get_node_ids())
 		{
 			if (const auto node = scene_graph->get_node_ptr(id); node && node->should_update())
-				node->update(m_engine->delta_time());
+				node->update(mEngine->GetDeltaTime());
 		}
 	}
 
-	bool SceneGraphGameplaySubsystem::should_update()
+	bool SceneGraphGameplaySubsystem::ShouldUpdate()
 	{
 		return true;
 	}
 
-	void SceneGraphGameplaySubsystem::fixed_update(double fixed_time)
+	void SceneGraphGameplaySubsystem::FixedUpdate(double fixed_time)
 	{
-		auto scene_graph = m_engine->get_subsystem<SceneGraphSubsystem>();
+		auto scene_graph = mEngine->GetSubsystem<SceneGraphSubsystem>();
 
 		for (auto& id : scene_graph->get_node_ids())
 		{
 			if (const auto node = scene_graph->get_node_ptr(id); node && node->should_update())
-				node->update_fixed(m_engine->time_step_fixed());
+				node->update_fixed(mEngine->GetTimeStepFixed());
 		}
 	}
 
-	bool SceneGraphGameplaySubsystem::should_fixed_update()
+	bool SceneGraphGameplaySubsystem::ShouldFixedUpdate()
 	{
 		return true;
 	}

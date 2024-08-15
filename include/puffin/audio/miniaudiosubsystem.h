@@ -14,10 +14,10 @@ namespace puffin::audio
 		MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~MiniAudioSubsystem() override;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
-		void deinitialize() override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Deinitialize() override;
 
-		void update(double delta_time) override;
+		void Update(double delta_time) override;
 
 	protected:
 

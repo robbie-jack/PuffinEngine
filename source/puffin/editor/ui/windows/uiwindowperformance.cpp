@@ -146,7 +146,7 @@ namespace puffin
 					ImGui::Text("Frametime Breakdown");
 					ImGui::NewLine();
 
-					auto benchmark_subsystem = m_engine->get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+					auto benchmark_subsystem = m_engine->GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 
 					draw_benchmark("Input", benchmark_subsystem->get_benchmark_time("Input"));
 					draw_benchmark("Sample Time", benchmark_subsystem->get_benchmark_time("Sample Time"));
@@ -187,7 +187,7 @@ namespace puffin
 
 		void UIWindowPerformance::draw_benchmark(const std::string& name, double benchmark_time)
 		{
-			auto benchmark_subsystem = m_engine->get_subsystem<utility::PerformanceBenchmarkSubsystem>();
+			auto benchmark_subsystem = m_engine->GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 
 			if (m_benchmark_idx.find(name) == m_benchmark_idx.end())
 			{

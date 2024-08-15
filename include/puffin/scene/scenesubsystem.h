@@ -206,11 +206,11 @@ namespace puffin::io
 		explicit SceneSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~SceneSubsystem() override;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
-		void deinitialize() override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Deinitialize() override;
 
-		void begin_play() override;
-		void end_play() override;
+		void BeginPlay() override;
+		void EndPlay() override;
 
 		void load() const;
 		void setup() const;

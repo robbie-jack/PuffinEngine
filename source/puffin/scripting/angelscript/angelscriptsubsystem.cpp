@@ -44,7 +44,7 @@ namespace puffin::scripting
 {
 	AngelScriptSubsystem::AngelScriptSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "AngelScriptSubsystem";
+		mName = "AngelScriptSubsystem";
 	}
 
 	AngelScriptSubsystem::~AngelScriptSubsystem()
@@ -55,12 +55,12 @@ namespace puffin::scripting
 		m_script_engine->ShutDownAndRelease();
 		m_script_engine = nullptr;
 
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
-	void AngelScriptSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	void AngelScriptSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
-		auto entt_subsystem = subsystem_manager->create_and_initialize_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = subsystem_manager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSubsystem::on_construct_script>(this);
@@ -80,7 +80,7 @@ namespace puffin::scripting
 		// Configure Engine and Setup Global Function Callbacks
 		configure_engine();
 
-		m_engine_interface = std::make_unique<AngelScriptEngineInterface>(m_engine, m_script_engine);
+		m_engine_interface = std::make_unique<AngelScriptEngineInterface>(mEngine, m_script_engine);
 
 		//mAudioSubsystem = mEngine->getSystem<audio::AudioSubsystem>();
 
@@ -88,15 +88,15 @@ namespace puffin::scripting
 		init_scripts();
 	}
 
-	void AngelScriptSubsystem::deinitialize()
+	void AngelScriptSubsystem::Deinitialize()
 	{
 		
 	}
 
-	void AngelScriptSubsystem::end_play()
+	void AngelScriptSubsystem::EndPlay()
 	{
 		// Execute Script Stop Methods
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		const auto scriptView = registry->view<AngelScriptComponent>();
@@ -156,7 +156,7 @@ namespace puffin::scripting
 		init_scripts();
 	}
 
-	void AngelScriptSubsystem::update(double delta_time)
+	void AngelScriptSubsystem::Update(double delta_time)
 	{
 		// Process Input Events
 		process_events();
@@ -171,14 +171,14 @@ namespace puffin::scripting
 		start_scripts();
 	}
 
-	bool AngelScriptSubsystem::should_update()
+	bool AngelScriptSubsystem::ShouldUpdate()
 	{
 		return true;
 	}
 
 	void AngelScriptSubsystem::on_construct_script(entt::registry& registry, entt::entity entity)
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto& id = entt_subsystem->get_id(entity);
 
 		m_scripts_to_init.emplace(id);
@@ -186,7 +186,7 @@ namespace puffin::scripting
 
 	void AngelScriptSubsystem::on_destroy_script(entt::registry& registry, entt::entity entity)
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto& id = entt_subsystem->get_id(entity);
 
 		m_scripts_to_end_play.emplace(id);
@@ -256,7 +256,7 @@ namespace puffin::scripting
 
 	void AngelScriptSubsystem::init_scripts()
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		for (const auto id : m_scripts_to_init)
@@ -277,7 +277,7 @@ namespace puffin::scripting
 
 	void AngelScriptSubsystem::start_scripts()
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		for (const auto id : m_scripts_to_begin_play)
@@ -296,7 +296,7 @@ namespace puffin::scripting
 
 	void AngelScriptSubsystem::stop_scripts()
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		for (const auto id : m_scripts_to_end_play)
@@ -657,19 +657,19 @@ namespace puffin::scripting
 
 	const double& AngelScriptSubsystem::get_delta_time() const
 	{
-		const double deltaTime = m_engine->delta_time();
+		const double deltaTime = mEngine->GetDeltaTime();
 		return deltaTime;
 	}
 
 	const double& AngelScriptSubsystem::get_fixed_time() const
 	{
-		const double fixedDeltaTime = m_engine->time_step_fixed();
+		const double fixedDeltaTime = mEngine->GetTimeStepFixed();
 		return fixedDeltaTime;
 	}
 
 	void AngelScriptSubsystem::play_sound_effect(uint64_t id, float volume, bool looping, bool restart)
 	{
-		auto audio_subsystem = m_engine->get_subsystem<audio::AudioSubsystem>();
+		auto audio_subsystem = mEngine->GetSubsystem<audio::AudioSubsystem>();
 		if (audio_subsystem)
 		{
 			//mAudioSubsystem->playSoundEffect(id, volume, looping, restart);
@@ -680,7 +680,7 @@ namespace puffin::scripting
 	{
 		PuffinID id = 0;
 
-		auto audio_subsystem = m_engine->get_subsystem<audio::AudioSubsystem>();
+		auto audio_subsystem = mEngine->GetSubsystem<audio::AudioSubsystem>();
 		if (audio_subsystem)
 		{
 			//id = mAudioSubsystem->playSoundEffect(path, volume, looping, restart);
@@ -771,18 +771,18 @@ namespace puffin::scripting
 
 	AngelScriptGameplaySubsystem::AngelScriptGameplaySubsystem(std::shared_ptr<core::Engine> engine) : Subsystem(engine)
 	{
-		m_name = "AngelScriptGameplaySubsystem";
+		mName = "AngelScriptGameplaySubsystem";
 	}
 
-	core::SubsystemType AngelScriptGameplaySubsystem::type() const
+	core::SubsystemType AngelScriptGameplaySubsystem::GetType() const
 	{
 		return core::SubsystemType::Gameplay;
 	}
 
-	void AngelScriptGameplaySubsystem::begin_play()
+	void AngelScriptGameplaySubsystem::BeginPlay()
 	{
-		auto angelscript_subsystem = m_engine->get_subsystem<AngelScriptSubsystem>();
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		// Execute update method on scripts
@@ -796,10 +796,10 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptGameplaySubsystem::end_play()
+	void AngelScriptGameplaySubsystem::EndPlay()
 	{
-		auto angelscript_subsystem = m_engine->get_subsystem<AngelScriptSubsystem>();
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		// Execute update method on scripts
@@ -813,10 +813,10 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptGameplaySubsystem::update(double delta_time)
+	void AngelScriptGameplaySubsystem::Update(double delta_time)
 	{
-		auto angelscript_subsystem = m_engine->get_subsystem<AngelScriptSubsystem>();
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		// Execute update method on scripts
@@ -830,15 +830,15 @@ namespace puffin::scripting
 		}
 	}
 
-	bool AngelScriptGameplaySubsystem::should_update()
+	bool AngelScriptGameplaySubsystem::ShouldUpdate()
 	{
 		return true;
 	}
 
-	void AngelScriptGameplaySubsystem::fixed_update(double fixed_time)
+	void AngelScriptGameplaySubsystem::FixedUpdate(double fixed_time)
 	{
-		auto angelscript_subsystem = m_engine->get_subsystem<AngelScriptSubsystem>();
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		// Execute fixed update method on scripts
@@ -852,7 +852,7 @@ namespace puffin::scripting
 		}
 	}
 
-	bool AngelScriptGameplaySubsystem::should_fixed_update()
+	bool AngelScriptGameplaySubsystem::ShouldFixedUpdate()
 	{
 		return true;
 	}

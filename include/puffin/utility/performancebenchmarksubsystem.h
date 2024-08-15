@@ -19,9 +19,9 @@ namespace puffin::utility
 		explicit PerformanceBenchmarkSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~PerformanceBenchmarkSubsystem() override = default;
 
-		void deinitialize() override;
+		void Deinitialize() override;
 
-		void end_play() override;
+		void EndPlay() override;
 
 		void start_benchmark(const std::string& name);
 		void start_benchmark_category(const std::string& name, const std::string& category);

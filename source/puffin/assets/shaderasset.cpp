@@ -4,13 +4,13 @@
 
 namespace puffin::assets
 {
-	bool ShaderAsset::save()
+	bool ShaderAsset::Save()
 	{
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 
 		// Create AssetData Struct
 		AssetData data;
-		data.id = id();
+		data.ID = GetID();
 		data.type = AssetType::Shader;
 		data.version = gShaderAssetVersion;
 
@@ -19,23 +19,23 @@ namespace puffin::assets
 		data.json_data["shader_path"] = mShaderPath;
 		data.json_data["binary_path"] = mBinaryPath;
 
-		return saveJsonFile(fullPath, data);
+		return SaveJsonFile(fullPath, data);
 	}
 
-	bool ShaderAsset::load(bool loadHeaderOnly)
+	bool ShaderAsset::Load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 		if (!fs::exists(fullPath))
 			return false;
 
 		// Load Binary/Metadata
 		AssetData data;
-		if (!loadJsonFile(fullPath, data))
+		if (!LoadJsonFile(fullPath, data))
 		{
 			return false;
 		}
@@ -58,7 +58,7 @@ namespace puffin::assets
 		return true;
 	}
 
-	void ShaderAsset::unload()
+	void ShaderAsset::Unload()
 	{
 		mCode.clear();
 		mCode.shrink_to_fit();

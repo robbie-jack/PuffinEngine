@@ -133,13 +133,13 @@ namespace puffin::rendering
 		explicit RenderSubystemVK(const std::shared_ptr<core::Engine>& engine);
 		~RenderSubystemVK() override;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
-		void deinitialize() override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Deinitialize() override;
 
-		[[nodiscard]] core::SubsystemType type() const override;
+		[[nodiscard]] core::SubsystemType GetType() const override;
 
-		double wait_for_last_presentation_and_sample_time() override;
-		void render(double delta_time) override;
+		double WaitForLastPresentationAndSampleTime() override;
+		void Render(double delta_time) override;
 
 		const vma::Allocator& allocator() const { return m_allocator ;}
 		const vk::Device& device() const { return m_device; }

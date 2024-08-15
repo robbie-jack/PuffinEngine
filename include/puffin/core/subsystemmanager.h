@@ -16,7 +16,7 @@ namespace puffin::core
 
 		virtual ~ISubsystemFactory() = default;
 
-		[[nodiscard]] virtual Subsystem* create(const std::shared_ptr<Engine>& engine) const = 0;
+		[[nodiscard]] virtual Subsystem* Create(const std::shared_ptr<Engine>& engine) const = 0;
 
 	};
 
@@ -28,7 +28,7 @@ namespace puffin::core
 		SubsystemFactory() {}
 		~SubsystemFactory() override = default;
 
-		[[nodiscard]] Subsystem* create(const std::shared_ptr<Engine>& engine) const final
+		[[nodiscard]] Subsystem* Create(const std::shared_ptr<Engine>& engine) const final
 		{
 			return new SubsystemT(engine);
 		}
@@ -39,110 +39,110 @@ namespace puffin::core
 	public:
 
 		explicit SubsystemManager(const std::shared_ptr<Engine>& engine);
-		~SubsystemManager() { m_engine = nullptr; }
+		~SubsystemManager() { mEngine = nullptr; }
 
 		template<typename T>
-		void register_subsystem()
+		void RegisterSubsystem()
 		{
-			const char* type_name = typeid(T).name();
+			const char* typeName = typeid(T).name();
 
 			// Add new subsystem factory
-			assert(m_subsystem_factories.find(type_name) == m_subsystem_factories.end() && "SubsystemManager::register_subsystem() - Attempting to register subsystem more than once");
+			assert(mSubsystemFactories.find(typeName) == mSubsystemFactories.end() && "SubsystemManager::RegisterSubsystem() - Attempting to register subsystem more than once");
 
-			m_subsystem_factories.emplace(type_name, new SubsystemFactory<T>());
-			auto subsystem_factory = m_subsystem_factories.at(type_name);
+			mSubsystemFactories.emplace(typeName, new SubsystemFactory<T>());
+			auto factory = mSubsystemFactories.at(typeName);
 
 			// Create uninitialized instance of subsystem
-			auto subsystem = subsystem_factory->create(m_engine);
-			m_subsystems.emplace(type_name, subsystem);
+			auto subsystem = factory->Create(mEngine);
+			mSubsystems.emplace(typeName, subsystem);
 
-			if (subsystem->type() == SubsystemType::Input)
+			if (subsystem->GetType() == SubsystemType::Input)
 			{
-				assert(m_registered_input_subsystem == false && "SubsystemManager::register_subsystem - Attempting to register a second input subsystem");
+				assert(mRegisteredInputSubsystem == false && "SubsystemManager::RegisterSubsystem - Attempting to register a second input subsystem");
 
-				m_registered_input_subsystem = true;
+				mRegisteredInputSubsystem = true;
 			}
 
-			if (subsystem->type() == SubsystemType::Input)
+			if (subsystem->GetType() == SubsystemType::Input)
 			{
-				assert(m_registered_render_subsystem == false && "SubsystemManager::register_subsystem - Attempting to register a second render subsystem");
+				assert(mRegisteredRenderSubsystem == false && "SubsystemManager::RegisterSubsystem - Attempting to register a second render subsystem");
 
-				m_registered_render_subsystem = true;
+				mRegisteredRenderSubsystem = true;
 			}
 
-			if (is_editor_type(subsystem->type()))
+			if (IsEditorType(subsystem->GetType()))
 			{
-				m_engine_subsystem_names.push_back(type_name);
+				mEngineSubsystemNames.push_back(typeName);
 			}
 			else
 			{
-				m_gameplay_subsystem_names.push_back(type_name);
+				mGameplaySubsystemNames.push_back(typeName);
 			}
 		}
 
 		template<typename T>
-		T* get_subsystem()
+		T* GetSubsystem()
 		{
-			const char* type_name = typeid(T).name();
+			const char* typeName = typeid(T).name();
 
-			assert(m_initialized_subsystems.find(type_name) != m_initialized_subsystems.end() && "SubsystemManager::get_subsystem() - Attempting to get subsystem which has not been initialized");
+			assert(mInitializedSubsystems.find(typeName) != mInitializedSubsystems.end() && "SubsystemManager::GetSubsystem() - Attempting to get subsystem which has not been initialized");
 
-			return static_cast<T*>(m_initialized_subsystems.at(type_name));
+			return static_cast<T*>(mInitializedSubsystems.at(typeName));
 		}
 
-		std::vector<Subsystem*>& get_subsystems();
-		std::vector<Subsystem*>& get_gameplay_subsystems();
+		std::vector<Subsystem*>& GetSubsystems();
+		std::vector<Subsystem*>& GetGameplaySubsystems();
 
-		Subsystem* get_input_subsystem() const;
-		Subsystem* get_render_subsystem() const;
+		Subsystem* GetInputSubsystem() const;
+		Subsystem* GetRenderSubsystem() const;
 
 		template<typename T>
-		T* create_and_initialize_subsystem()
+		T* CreateAndInitializeSubsystem()
 		{
-			const char* type_name = typeid(T).name();
-			auto subsystem = create_subsystem_internal(type_name);
+			const char* typeName = typeid(T).name();
+			auto subsystem = CreateSubsystemInternal(typeName);
 
-			initialize_subsystem_internal(type_name);
+			InitializeSubsystemInternal(typeName);
 
 			return static_cast<T*>(subsystem);
 		}
 
-		void create_and_initialize_engine_subsystems();
-		void create_and_initialize_gameplay_subsystems();
+		void CreateAndInitializeEngineSubsystems();
+		void CreateAndInitializeGameplaySubsystems();
 
-		void destroy_engine_subsystems();
-		void destroy_gameplay_subsystems();
+		void DestroyEngineSubsystems();
+		void DestroyGameplaySubsystems();
 
 	private:
 
-		std::shared_ptr<Engine> m_engine = nullptr;
+		std::shared_ptr<Engine> mEngine = nullptr;
 
 		// Array of all subsystems, initialized and uninitialized
-		std::unordered_map<const char*, Subsystem*> m_subsystems;
+		std::unordered_map<const char*, Subsystem*> mSubsystems;
 
 		// Array of all initialized subsystems
-		std::unordered_map<const char*, Subsystem*> m_initialized_subsystems;
+		std::unordered_map<const char*, Subsystem*> mInitializedSubsystems;
 
-		std::unordered_map<const char*, ISubsystemFactory*> m_subsystem_factories;
+		std::unordered_map<const char*, ISubsystemFactory*> mSubsystemFactories;
 
-		std::vector<const char*> m_engine_subsystem_names;
-		std::vector<Subsystem*> m_initialized_engine_subsystems;
+		std::vector<const char*> mEngineSubsystemNames;
+		std::vector<Subsystem*> mInitializedEngineSubsystems;
 
-		std::vector<const char*> m_gameplay_subsystem_names;
-		std::vector<Subsystem*> m_initialized_gameplay_subsystems;
+		std::vector<const char*> mGameplaySubsystemNames;
+		std::vector<Subsystem*> mInitializedGameplaySubsystems;
 
-		bool m_registered_input_subsystem = false;
-		Subsystem* m_input_subsystem = nullptr;
+		bool mRegisteredInputSubsystem = false;
+		Subsystem* mInputSubsystem = nullptr;
 
-		bool m_registered_render_subsystem = false;
-		Subsystem* m_render_subsystem = nullptr;
+		bool mRegisteredRenderSubsystem = false;
+		Subsystem* mRenderSubsystem = nullptr;
 
-		static bool is_editor_type(SubsystemType type);
-		static bool is_gameplay_type(SubsystemType type);
+		static bool IsEditorType(SubsystemType type);
+		static bool IsGameplayType(SubsystemType type);
 
-		Subsystem* create_subsystem_internal(const char* type_name);
-		void initialize_subsystem_internal(const char* type_name);
+		Subsystem* CreateSubsystemInternal(const char* typeName);
+		void InitializeSubsystemInternal(const char* typeName);
 
-		Subsystem* create_and_initialize_subsystem_internal(const char* type_name);
+		Subsystem* CreateAndInitializeSubsystemInternal(const char* typeName);
 	};
 }

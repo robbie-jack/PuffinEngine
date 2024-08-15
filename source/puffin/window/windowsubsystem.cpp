@@ -15,15 +15,15 @@ namespace puffin::window
 
 	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "WindowSubsystem";
+		mName = "WindowSubsystem";
 	}
 
 	WindowSubsystem::~WindowSubsystem()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
-	void WindowSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	void WindowSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
 		glfwInit();
 
@@ -43,7 +43,7 @@ namespace puffin::window
 		glfwMakeContextCurrent(m_primary_window);
 	}
 
-	void WindowSubsystem::deinitialize()
+	void WindowSubsystem::Deinitialize()
 	{
 		glfwDestroyWindow(m_primary_window);
 

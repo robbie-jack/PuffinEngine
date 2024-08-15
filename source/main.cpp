@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 {
     argparse::ArgumentParser parser("puffin app");
 
-    puffin::add_default_engine_arguments(parser);
+    puffin::AddDefaultEngineArguments(parser);
 
     try
     {
@@ -37,28 +37,28 @@ int main(int argc, char* argv[])
 
 	const auto engine = std::make_shared<puffin::core::Engine>();
 
-	engine->setup();
+	engine->Setup();
 
-	engine->register_subsystem<puffin::rendering::RenderSubystemVK>();
+	engine->RegisterSubsystem<puffin::rendering::RenderSubystemVK>();
 
 #ifdef PFN_BOX2D_PHYSICS
 	engine->register_subsystem<puffin::physics::Box2DPhysicsSystem>();
 #endif
 
 #ifdef PFN_JOLT_PHYSICS
-	engine->register_subsystem<puffin::physics::JoltPhysicsSubsystem>();
+	engine->RegisterSubsystem<puffin::physics::JoltPhysicsSubsystem>();
 #endif
 
-	engine->register_subsystem<puffin::scripting::AngelScriptSubsystem>();
-	engine->register_subsystem<puffin::scripting::AngelScriptGameplaySubsystem>();
+	engine->RegisterSubsystem<puffin::scripting::AngelScriptSubsystem>();
+	engine->RegisterSubsystem<puffin::scripting::AngelScriptGameplaySubsystem>();
 
-	engine->initialize(parser);
+	engine->Initialize(parser);
 
 	try
 	{
 		while(true)
 		{
-			if (!engine->update())
+			if (!engine->Update())
 			{
 				break;
 			}
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	engine->deinitialize();
+	engine->Deinitialize();
 
 	return EXIT_SUCCESS;
 }

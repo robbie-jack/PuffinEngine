@@ -116,7 +116,7 @@ namespace puffin::io
 	// Model Importers
 	//////////////////////
 	
-	bool load_and_import_model(const fs::path& modelPath, fs::path assetSubdirectory)
+	bool LoadAndImportModel(const fs::path& modelPath, fs::path assetSubdirectory)
 	{
 		if (modelPath.extension() == ".gltf" || modelPath.extension() == ".glb")
 			return load_and_import_gltf_model(modelPath, assetSubdirectory);
@@ -620,7 +620,7 @@ namespace puffin::io
 	}
 #endif
 
-	bool load_and_import_texture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat)
+	bool LoadAndImportTexture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat)
 	{
 		int tex_width, tex_height, tex_channels;
 

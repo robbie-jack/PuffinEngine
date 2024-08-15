@@ -57,21 +57,21 @@ namespace puffin::assets
 
 		~ShaderAsset() override = default;
 
-		[[nodiscard]] const std::string& type() const override
+		[[nodiscard]] const std::string& GetType() const override
 		{
 			return gShaderAssetType;
 		}
 
-		[[nodiscard]] const uint32_t& version() const override
+		[[nodiscard]] const uint32_t& GetVersion() const override
 		{
 			return gShaderAssetVersion;
 		}
 
-		bool save() override;
+		bool Save() override;
 
-		bool load(bool loadHeaderOnly = false) override;
+		bool Load(bool loadHeaderOnly = false) override;
 
-		void unload() override;
+		void Unload() override;
 
 		void loadCodeFromBinary();
 

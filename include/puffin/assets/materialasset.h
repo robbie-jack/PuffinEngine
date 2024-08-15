@@ -31,21 +31,21 @@ namespace puffin::assets
 
         ~MaterialAsset() override = default;
 
-        [[nodiscard]] const std::string& type() const override
+        [[nodiscard]] const std::string& GetType() const override
         {
             return gMaterialAssetType;
         }
 
-        [[nodiscard]] const uint32_t& version() const override
+        [[nodiscard]] const uint32_t& GetVersion() const override
         {
             return gMaterialAssetVersion;
         }
 
-        bool save() override;
+        bool Save() override;
 
-        bool load(bool loadHeaderOnly = false) override;
+        bool Load(bool loadHeaderOnly = false) override;
 
-        void unload() override {}
+        void Unload() override {}
 
         [[nodiscard]] PuffinID getVertexShaderID() const { return mVertexShaderID; }
         void setVertexShaderID(const PuffinID vertID) { mVertexShaderID = vertID; }
@@ -71,21 +71,21 @@ namespace puffin::assets
 
         ~MaterialInstanceAsset() override = default;
 
-        [[nodiscard]] const std::string& type() const override
+        [[nodiscard]] const std::string& GetType() const override
         {
             return gMaterialInstAssetType;
         }
 
-        [[nodiscard]] const uint32_t& version() const override
+        [[nodiscard]] const uint32_t& GetVersion() const override
         {
             return gMaterialInstAssetVersion;
         }
 
-        bool save() override;
+        bool Save() override;
 
-        bool load(bool loadHeaderOnly = false) override;
+        bool Load(bool loadHeaderOnly = false) override;
 
-        void unload() override {}
+        void Unload() override {}
 
         [[nodiscard]] PuffinID getBaseMaterialID() const { return mBaseMaterial; }
         void setBaseMaterialID(const PuffinID matID) { mBaseMaterial = matID; }

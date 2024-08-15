@@ -14,7 +14,7 @@ namespace puffin::assets
 
 	// Public
 
-	bool StaticMeshAsset::save()
+	bool StaticMeshAsset::Save()
 	{
 		if (mIsLoaded)
 		{
@@ -26,11 +26,11 @@ namespace puffin::assets
 
 	bool StaticMeshAsset::save(MeshAssetInfo& mesh_asset_info, const void* vertex_data, const void* index_data)
 	{
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 
 		// Create AssetData Struct
 		AssetData assetData;
-		assetData.id = id();
+		assetData.ID = GetID();
 		assetData.type = AssetType::StaticMesh;
 		assetData.version = gStaticMeshVersion;
 
@@ -100,23 +100,23 @@ namespace puffin::assets
 		assetData.json_data["subMeshInfo"] = meshInfoJson;
 
 		// Save Asset Data out to Binary File
-		return saveBinaryFile(fullPath, assetData);
+		return SaveBinaryFile(fullPath, assetData);
 	}
 
-	bool StaticMeshAsset::load(bool loadHeaderOnly)
+	bool StaticMeshAsset::Load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 		if (!fs::exists(fullPath))
 			return false;
 
 		// Load Binary/Metadata
 		AssetData data;
-		if (!loadBinaryFile(fullPath, data, loadHeaderOnly))
+		if (!LoadBinaryFile(fullPath, data, loadHeaderOnly))
 		{
 			return false;
 		}
@@ -158,7 +158,7 @@ namespace puffin::assets
 		return true;
 	}
 
-	void StaticMeshAsset::unload()
+	void StaticMeshAsset::Unload()
 	{
 		m_vertices.clear();
 		m_vertices.shrink_to_fit();

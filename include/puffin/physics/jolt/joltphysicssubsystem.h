@@ -46,16 +46,16 @@ namespace puffin::physics
 		JoltPhysicsSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~JoltPhysicsSubsystem() override = default;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
-		void deinitialize() override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Deinitialize() override;
 
-		core::SubsystemType type() const override;
+		core::SubsystemType GetType() const override;
 
-		void begin_play() override;
-		void end_play() override;
+		void BeginPlay() override;
+		void EndPlay() override;
 
-		void fixed_update(double fixed_time) override;
-		bool should_fixed_update() override;
+		void FixedUpdate(double fixed_time) override;
+		bool ShouldFixedUpdate() override;
 
 		void on_construct_box(entt::registry& registry, entt::entity entity);
 		void on_destroy_box(entt::registry& registry, entt::entity entity);

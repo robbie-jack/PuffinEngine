@@ -20,12 +20,12 @@ namespace puffin::audio
 
 	MiniAudioSubsystem::~MiniAudioSubsystem()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
-	void MiniAudioSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	void MiniAudioSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
-		AudioSubsystemProvider::initialize(subsystem_manager);
+		AudioSubsystemProvider::Initialize(subsystem_manager);
 
 		m_sound_engine = new ma_engine();
 
@@ -35,9 +35,9 @@ namespace puffin::audio
 		}
 	}
 
-	void MiniAudioSubsystem::deinitialize()
+	void MiniAudioSubsystem::Deinitialize()
 	{
-		AudioSubsystemProvider::deinitialize();
+		AudioSubsystemProvider::Deinitialize();
 
 		for (auto& sound : m_sounds)
 		{
@@ -52,15 +52,15 @@ namespace puffin::audio
 		}
 	}
 
-	void MiniAudioSubsystem::update(double delta_time)
+	void MiniAudioSubsystem::Update(double delta_time)
 	{
-		AudioSubsystemProvider::update(delta_time);
+		AudioSubsystemProvider::Update(delta_time);
 	}
 
 	void MiniAudioSubsystem::play_sound(PuffinID sound_asset_id)
 	{
 		auto soundAsset = assets::AssetRegistry::get()->get_asset<assets::SoundAsset>(sound_asset_id);
-		auto soundPath = (assets::AssetRegistry::get()->content_root() / soundAsset->relativePath()).string();
+		auto soundPath = (assets::AssetRegistry::get()->content_root() / soundAsset->GetRelativePath()).string();
 
 		ma_engine_play_sound(m_sound_engine, soundPath.c_str(), nullptr);
 	}
@@ -73,7 +73,7 @@ namespace puffin::audio
 		}
 
 		auto soundAsset = assets::AssetRegistry::get()->get_asset<assets::SoundAsset>(sound_asset_id);
-		auto soundPath = (assets::AssetRegistry::get()->content_root() / soundAsset->relativePath()).string();
+		auto soundPath = (assets::AssetRegistry::get()->content_root() / soundAsset->GetRelativePath()).string();
 
 		m_sounds.emplace(sound_instance_id, ma_sound());
 

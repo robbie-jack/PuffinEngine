@@ -49,11 +49,11 @@ namespace puffin::rendering
 
 	void UnifiedGeometryBuffer::add_static_mesh(const std::shared_ptr<assets::StaticMeshAsset>& static_mesh)
 	{
-		if (static_mesh && static_mesh->load())
+		if (static_mesh && static_mesh->Load())
 		{
-			if (m_internal_mesh_data.find(static_mesh->id()) == m_internal_mesh_data.end())
+			if (m_internal_mesh_data.find(static_mesh->GetID()) == m_internal_mesh_data.end())
 			{
-				m_internal_mesh_data.emplace(static_mesh->id(), InternalMeshData());
+				m_internal_mesh_data.emplace(static_mesh->GetID(), InternalMeshData());
 			}
 
 			if (m_vertex_buffer_data.find(static_mesh->vertex_format()) == m_vertex_buffer_data.end())
@@ -63,7 +63,7 @@ namespace puffin::rendering
 
 			InternalVertexBufferData& internal_vertex_buffer_data = m_vertex_buffer_data[static_mesh->vertex_format()];
 
-			auto& internal_mesh_data = m_internal_mesh_data.at(static_mesh->id());
+			auto& internal_mesh_data = m_internal_mesh_data.at(static_mesh->GetID());
 			internal_mesh_data.active = true;
 
 			const uint64_t new_vertex_byte_offset = internal_vertex_buffer_data.byte_offset + static_mesh->vertex_byte_size_total();

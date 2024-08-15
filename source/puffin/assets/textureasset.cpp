@@ -15,7 +15,7 @@ namespace puffin::assets
 
 	// Public
 
-	bool TextureAsset::save()
+	bool TextureAsset::Save()
 	{
 		if (mIsLoaded)
 		{
@@ -36,11 +36,11 @@ namespace puffin::assets
 
 	bool TextureAsset::save(TextureInfo& info, void* pixelData)
 	{
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 
 		// Create AssetData Struct
 		AssetData data;
-		data.id = id();
+		data.ID = GetID();
 		data.type = AssetType::Texture;
 		data.version = gTextureVersion;
 
@@ -80,23 +80,23 @@ namespace puffin::assets
 		data.json_data["textureChannels"] = info.textureChannels;
 		data.json_data["originalSize"] = info.originalSize;
 
-		return saveBinaryFile(fullPath, data);
+		return SaveBinaryFile(fullPath, data);
 	}
 
-	bool TextureAsset::load(bool loadHeaderOnly)
+	bool TextureAsset::Load(bool loadHeaderOnly)
 	{
 		// Check if file is already loaded
 		if (mIsLoaded)
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->content_root() / relativePath();
+		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
 		if (!fs::exists(fullPath))
 			return false;
 		
 		// Load Binary/Metadata
 		AssetData data;
-		if (!loadBinaryFile(fullPath, data, loadHeaderOnly))
+		if (!LoadBinaryFile(fullPath, data, loadHeaderOnly))
 		{
 			return false;
 		}
@@ -135,7 +135,7 @@ namespace puffin::assets
 		return true;
 	}
 
-	void TextureAsset::unload()
+	void TextureAsset::Unload()
 	{
 		mPixels.clear();
 		mPixels.shrink_to_fit();

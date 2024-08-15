@@ -16,7 +16,7 @@ namespace puffin::io
 	// Model Importers
 	//////////////////////
 
-	bool load_and_import_model(const fs::path& modelPath, fs::path assetSubdirectory);
+	bool LoadAndImportModel(const fs::path& modelPath, fs::path assetSubdirectory);
 
 	// OBJ
 
@@ -34,5 +34,5 @@ namespace puffin::io
 	// Texture Importers
 	//////////////////////
 	
-	bool load_and_import_texture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat = true);
+	bool LoadAndImportTexture(fs::path texturePath, fs::path assetSubdirectory, bool useBCFormat = true);
 }

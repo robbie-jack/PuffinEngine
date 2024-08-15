@@ -28,13 +28,13 @@ namespace puffin::scripting
 		AngelScriptSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~AngelScriptSubsystem() override;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
-		void deinitialize() override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Deinitialize() override;
 
-		void end_play() override;
+		void EndPlay() override;
 
-		void update(double delta_time) override;
-		bool should_update() override;
+		void Update(double delta_time) override;
+		bool ShouldUpdate() override;
 
 		void on_construct_script(entt::registry& registry, entt::entity entity);
 		void on_destroy_script(entt::registry& registry, entt::entity entity);
@@ -121,16 +121,16 @@ namespace puffin::scripting
 		AngelScriptGameplaySubsystem(std::shared_ptr<core::Engine> engine);
 		~AngelScriptGameplaySubsystem() override = default;
 
-		core::SubsystemType type() const override;
+		core::SubsystemType GetType() const override;
 
-		void begin_play() override;
-		void end_play() override;
+		void BeginPlay() override;
+		void EndPlay() override;
 
-		void update(double delta_time) override;
-		bool should_update() override;
+		void Update(double delta_time) override;
+		bool ShouldUpdate() override;
 
-		void fixed_update(double fixed_time) override;
-		bool should_fixed_update() override;
+		void FixedUpdate(double fixed_time) override;
+		bool ShouldFixedUpdate() override;
 
 	private:
 

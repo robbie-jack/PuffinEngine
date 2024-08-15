@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <memory>
 
+#include "engine.h"
 #include "nlohmann/json.hpp"
 
 #include "puffin/core/subsystem.h"
@@ -21,21 +22,21 @@ namespace puffin::core
 
         ~SettingsManager() override = default;
 
-        void initialize(core::SubsystemManager* subsystem_manager) override;
+        void Initialize(core::SubsystemManager* subsystem_manager) override;
 
         template<typename T>
         void set(const std::string& name, const T& t)
         {
             m_json[name] = t;
 
-            auto signal_subsystem = m_engine->get_subsystem<SignalSubsystem>();
+            auto signal_subsystem = mEngine->GetSubsystem<SignalSubsystem>();
 
-            if (!signal_subsystem->get_signal<T>(name))
+            if (!signal_subsystem->GetSignal<T>(name))
             {
-                signal_subsystem->create_signal<T>(name);
+                signal_subsystem->CreateSignal<T>(name);
             }
 
-            signal_subsystem->emit(name, t);
+            signal_subsystem->Emit(name, t);
         }
 
         template<typename T>

@@ -8,24 +8,24 @@ namespace puffin::ecs
 
 	EnTTSubsystem::~EnTTSubsystem()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
-	void EnTTSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	void EnTTSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
-		Subsystem::initialize(subsystem_manager);
+		Subsystem::Initialize(subsystem_manager);
 
 		m_registry = std::make_shared<entt::registry>();
 	}
 
-	void EnTTSubsystem::deinitialize()
+	void EnTTSubsystem::Deinitialize()
 	{
-		Subsystem::deinitialize();
+		Subsystem::Deinitialize();
 
 		m_registry = nullptr;
 	}
 
-	void EnTTSubsystem::end_play()
+	void EnTTSubsystem::EndPlay()
 	{
 		m_registry->clear();
 

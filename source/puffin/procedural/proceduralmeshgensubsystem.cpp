@@ -10,9 +10,9 @@ namespace puffin::procedural
 {
 	ProceduralMeshGenSystem::ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "ProceduralMeshGenSubsystem";
+		mName = "ProceduralMeshGenSubsystem";
 
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
 		/*registry->on_construct<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
@@ -27,7 +27,7 @@ namespace puffin::procedural
 
 	ProceduralMeshGenSystem::~ProceduralMeshGenSystem()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
 	void ProceduralMeshGenSystem::on_construct_plane(entt::registry& registry, entt::entity entity)

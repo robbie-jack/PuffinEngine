@@ -15,10 +15,10 @@ namespace puffin::core
 	{
 	public:
 
-		Slot(const std::function<void(const Params&...)>& callback) : mCallback(callback) {}
+		explicit Slot(const std::function<void(const Params&...)>& Callback) : mCallback(Callback) {}
 		~Slot() = default;
 
-		void execute(Params... args) const
+		void Execute(Params... args) const
 		{
 			mCallback(args...);
 		}
@@ -34,48 +34,48 @@ namespace puffin::core
 	public:
 
 		virtual ~ISignal() = default;
-		virtual const std::string& name() = 0;
+		virtual const std::string& GetName() = 0;
 
 	};
 
-	template<typename... Params>
+	template<typename... Parameters>
 	class Signal final : public ISignal
 	{
 	public:
 
-		Signal(const std::string& name) : mName(name) {}
+		Signal(const std::string& Name) : mName(Name) {}
 		~Signal() override = default;
 
-		size_t connect(const std::function<void(const Params&...)>& callback)
+		size_t Connect(const std::function<void(const Parameters&...)>& Callback)
 		{
-			size_t slotID = mNextSlotID;
+			size_t SlotID = mNextSlotID;
 			mNextSlotID++;
 
-			mSlots.emplace(slotID, Slot<Params...>(callback));
+			mSlots.emplace(SlotID, Slot<Parameters...>(Callback));
 
-			return slotID;
+			return SlotID;
 		}
 
-		void disconnect(const size_t& slotID)
+		void Disconnect(const size_t& SlotID)
 		{
-			mSlots.erase(slotID);
+			mSlots.erase(SlotID);
 		}
 
-		void emit(Params... params)
+		void Emit(Parameters... Params)
 		{
-			for (const Slot<Params...>& slot : mSlots)
+			for (const Slot<Parameters...>& Slot : mSlots)
 			{
-				slot.execute(params...);
+				Slot.Execute(Params...);
 			}
 		}
 
-		const std::string& name() override { return mName; }
+		const std::string& GetName() override { return mName; }
 
 	private:
 
 		std::string mName;
 		size_t mNextSlotID = 1;
-		PackedVector<size_t, Slot<Params...>> mSlots;
+		PackedVector<size_t, Slot<Parameters...>> mSlots;
 
 	};
 
@@ -85,83 +85,80 @@ namespace puffin::core
 	{
 	public:
 
-		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& Engine) : Subsystem(Engine)
 		{
-			m_name = "SignalSubsystem";
+			mName = "SignalSubsystem";
 		}
 
 		~SignalSubsystem() override
 		{
-			m_engine = nullptr;
-			m_signals.clear();
+			mEngine = nullptr;
+			mSignals.clear();
 		}
 
-		template<typename... Params>
-		std::shared_ptr<Signal<Params...>> create_signal(const std::string& name)
+		template<typename... Parameters>
+		std::shared_ptr<Signal<Parameters...>> CreateSignal(const std::string& Name)
 		{
-			m_signals.emplace(name, std::make_shared<Signal<Params...>>(name));
+			mSignals.emplace(Name, std::make_shared<Signal<Parameters...>>(Name));
 
-			return std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
+			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name));
 		}
 
-		template<typename... Params>
-		void add_signal(std::shared_ptr<Signal<Params...>> signal)
+		template<typename... Parameters>
+		void AddSignal(std::shared_ptr<Signal<Parameters...>> Signal)
 		{
-			m_signals.emplace(signal->name(), signal);
+			mSignals.emplace(Signal->GetName(), Signal);
 		}
 
-		template<typename... Params>
-		std::shared_ptr<Signal<Params...>> get_signal(const std::string& name)
+		template<typename... Parameters>
+		std::shared_ptr<Signal<Parameters...>> GetSignal(const std::string& Name)
 		{
-			if (m_signals.count(name) == 0)
+			if (mSignals.count(Name) == 0)
 			{
 				return nullptr;
 			}
 
-			return std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
+			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name));
 		}
 
-		template<typename... Params>
-		size_t connect(const std::string& name, const std::function<void(const Params&...)>& callback)
+		template<typename... Parameters>
+		size_t Connect(const std::string& Name, const std::function<void(const Parameters&...)>& Callback)
 		{
-			if (m_signals.count(name) == 0)
+			if (mSignals.count(Name) == 0)
 			{
 				return 0;
 			}
 
-			auto signal = std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
-			return signal->connect(callback);
+			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name))->Connect(Callback);
 		}
 
-		template<typename... Params>
-		void disconnect(const std::string& name, const size_t& slotID)
+		template<typename... Parameters>
+		void Disconnect(const std::string& Name, const size_t& SlotID)
 		{
-			if (m_signals.count(name) == 0)
+			if (mSignals.count(Name) == 0)
 			{
 				return;
 			}
 
-			auto signal = std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
-			signal->disconnenct(slotID);
+			std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name))->Disconnect(SlotID);
 		}
 
-		template<typename... Params>
-		bool emit(const std::string& name, Params... params)
+		template<typename... Parameters>
+		bool Emit(const std::string& Name, Parameters... Params)
 		{
-			if (m_signals.count(name) == 0)
+			if (mSignals.count(Name) == 0)
 			{
 				return false;
 			}
 
-			auto signal = std::static_pointer_cast<Signal<Params...>>(m_signals.at(name));
-			signal->emit(params...);
+			std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name))->Emit(Params...);
 
 			return true;
 		}
 
 	private:
 
-		std::unordered_map<std::string, ISignalPtr> m_signals;
+		std::unordered_map<std::string, ISignalPtr> mSignals;
 
 	};
 }

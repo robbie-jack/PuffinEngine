@@ -43,26 +43,26 @@
 
 namespace puffin
 {
-    void add_default_engine_arguments(argparse::ArgumentParser &parser)
-    {
-        parser.add_argument("-p", "-project", "-project_path")
-            .help("Specify the path of the project file")
-            .required();
+	void AddDefaultEngineArguments(argparse::ArgumentParser& parser)
+	{
+		parser.add_argument("-p", "-project", "-project_path")
+		      .help("Specify the path of the project file")
+		      .required();
 
-        parser.add_argument("-s", "-scene")
-            .help("Specify the scene file to load on launch")
-            .default_value("");
+		parser.add_argument("-s", "-scene")
+		      .help("Specify the scene file to load on launch")
+		      .default_value("");
 
-        parser.add_argument("--setup-engine-default-scene")
-            .help("Specify whether the engine default scene should be initialized on launch")
-            .default_value(false)
-            .implicit_value(true);
+		parser.add_argument("--setup-engine-default-scene")
+		      .help("Specify whether the engine default scene should be initialized on launch")
+		      .default_value(false)
+		      .implicit_value(true);
 
-        parser.add_argument("--setup-default-settings")
-            .help("Specify whether to setup settings file with engine default settings")
-            .default_value(false)
-            .implicit_value(true);
-    }
+		parser.add_argument("--setup-default-settings")
+		      .help("Specify whether to setup settings file with engine default settings")
+		      .default_value(false)
+		      .implicit_value(true);
+	}
 }
 
 namespace puffin::core
@@ -73,26 +73,26 @@ namespace puffin::core
 
 	Engine::~Engine()
 	{
-		m_application = nullptr;
-		m_subsystem_manager = nullptr;
+		mApplication = nullptr;
+		mSubsystemManager = nullptr;
 	}
 
-	void Engine::setup()
+	void Engine::Setup()
 	{
-		m_subsystem_manager = std::make_unique<SubsystemManager>(shared_from_this());
+		mSubsystemManager = std::make_unique<SubsystemManager>(shared_from_this());
 
-		register_required_subsystems();
+		RegisterRequiredSubsystems();
 	}
 
-	void Engine::initialize(const argparse::ArgumentParser& parser)
+	void Engine::Initialize(const argparse::ArgumentParser& parser)
 	{
-		fs::path project_path = fs::path(parser.get<std::string>("-project_path")).make_preferred();
+		fs::path projectPath = fs::path(parser.get<std::string>("-project_path")).make_preferred();
 
 		// Load Project File
-		load_project(project_path, m_project_file);
+		load_project(projectPath, mProjectFile);
 
 		// Setup asset registry
-		assets::AssetRegistry::get()->init(m_project_file, project_path);
+		assets::AssetRegistry::get()->init(mProjectFile, projectPath);
 		assets::AssetRegistry::get()->register_asset_type<assets::StaticMeshAsset>();
 		assets::AssetRegistry::get()->register_asset_type<assets::TextureAsset>();
 		assets::AssetRegistry::get()->register_asset_type<assets::SoundAsset>();
@@ -101,8 +101,8 @@ namespace puffin::core
 		assets::AssetRegistry::get()->register_asset_type<assets::MaterialInstanceAsset>();
 
 		// Load Project Settings
-		m_setup_engine_default_settings = parser.get<bool>("--setup-default-settings");
-		m_setup_engine_default_scene = parser.get<bool>("--setup-engine-default-scene");
+		mSetupEngineDefaultSettings = parser.get<bool>("--setup-default-settings");
+		mSetupEngineDefaultScene = parser.get<bool>("--setup-engine-default-scene");
 
 		// Load/Initialize Assets
 		assets::AssetRegistry::get()->load_asset_cache();
@@ -112,123 +112,123 @@ namespace puffin::core
 		//load_and_resave_assets();
 
 		// Initialize engine subsystems
-		m_subsystem_manager->create_and_initialize_engine_subsystems();
+		mSubsystemManager->CreateAndInitializeEngineSubsystems();
 
 		// Register components to scene subsystem
-		auto scene_subsystem = get_subsystem<io::SceneSubsystem>();
+		auto sceneSubsystem = GetSubsystem<io::SceneSubsystem>();
 
-		scene_subsystem->register_component<TransformComponent2D>();
-		scene_subsystem->register_component<TransformComponent3D>();
-		scene_subsystem->register_component<rendering::MeshComponent>();
-		scene_subsystem->register_component<rendering::LightComponent>();
-		scene_subsystem->register_component<rendering::ShadowCasterComponent>();
-		scene_subsystem->register_component<rendering::CameraComponent3D>();
-		scene_subsystem->register_component<scripting::AngelScriptComponent>();
-		scene_subsystem->register_component<rendering::ProceduralMeshComponent>();
-		scene_subsystem->register_component<procedural::PlaneComponent>();
-		scene_subsystem->register_component<procedural::TerrainComponent>();
-		scene_subsystem->register_component<procedural::IcoSphereComponent>();
-		scene_subsystem->register_component<physics::RigidbodyComponent2D>();
-		scene_subsystem->register_component<physics::BoxComponent2D>();
-		scene_subsystem->register_component<physics::CircleComponent2D>();
-		scene_subsystem->register_component<physics::RigidbodyComponent3D>();
-		scene_subsystem->register_component<physics::BoxComponent3D>();
-		scene_subsystem->register_component<physics::SphereComponent3D>();
+		sceneSubsystem->register_component<TransformComponent2D>();
+		sceneSubsystem->register_component<TransformComponent3D>();
+		sceneSubsystem->register_component<rendering::MeshComponent>();
+		sceneSubsystem->register_component<rendering::LightComponent>();
+		sceneSubsystem->register_component<rendering::ShadowCasterComponent>();
+		sceneSubsystem->register_component<rendering::CameraComponent3D>();
+		sceneSubsystem->register_component<scripting::AngelScriptComponent>();
+		sceneSubsystem->register_component<rendering::ProceduralMeshComponent>();
+		sceneSubsystem->register_component<procedural::PlaneComponent>();
+		sceneSubsystem->register_component<procedural::TerrainComponent>();
+		sceneSubsystem->register_component<procedural::IcoSphereComponent>();
+		sceneSubsystem->register_component<physics::RigidbodyComponent2D>();
+		sceneSubsystem->register_component<physics::BoxComponent2D>();
+		sceneSubsystem->register_component<physics::CircleComponent2D>();
+		sceneSubsystem->register_component<physics::RigidbodyComponent3D>();
+		sceneSubsystem->register_component<physics::BoxComponent3D>();
+		sceneSubsystem->register_component<physics::SphereComponent3D>();
 
 		// Load default scene
-		auto scene_string = parser.get<std::string>("-scene");
-		if (!scene_string.empty())
+		auto sceneString = parser.get<std::string>("-scene");
+		if (!sceneString.empty())
 		{
-			m_load_scene_on_launch = true;
+			mLoadSceneOnLaunch = true;
 		}
 
-		auto scene_data = scene_subsystem->create_scene(
-			assets::AssetRegistry::get()->content_root() / scene_string);
-
 		{
-            if (m_setup_engine_default_scene)
-            {
-                auto entt_subsystem = get_subsystem<ecs::EnTTSubsystem>();
-                auto scene_graph = get_subsystem<scene::SceneGraphSubsystem>();
+			auto sceneData = sceneSubsystem->create_scene(
+				assets::AssetRegistry::get()->content_root() / sceneString);
 
-                // Create Default Scene in code -- used when scene serialization is changed
-                default_scene();
-                //physicsScene2D();
-                //physicsScene3D();
-                //proceduralScene();
+			if (mSetupEngineDefaultScene)
+			{
+				auto entt_subsystem = GetSubsystem<ecs::EnTTSubsystem>();
+				auto scene_graph = GetSubsystem<scene::SceneGraphSubsystem>();
 
-                scene_data->update_data(entt_subsystem, scene_graph);
-                scene_data->save();
-            }
-			else if (m_load_scene_on_launch)
-            {
-                scene_data->load();
-            }
+				// Create Default Scene in code -- used when scene serialization is changed
+				InitDefaultScene();
+				//physicsScene2D();
+				//physicsScene3D();
+				//proceduralScene();
+
+				sceneData->update_data(entt_subsystem, scene_graph);
+				sceneData->save();
+			}
+			else if (mLoadSceneOnLaunch)
+			{
+				sceneData->load();
+			}
 		}
 
-		scene_subsystem->setup();
+		sceneSubsystem->setup();
 
-		m_last_time = glfwGetTime(); // Time Count Started
-		m_current_time = m_last_time;
+		mLastTime = glfwGetTime(); // Time Count Started
+		mCurrentTime = mLastTime;
 
-		m_running = true;
-		m_play_state = PlayState::Stopped;
+		mRunning = true;
+		mPlayState = PlayState::Stopped;
 	}
 
-	bool Engine::update()
+	bool Engine::Update()
 	{
 		// Run Game Loop;
 
 		// Process input
 		{
-			auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
-			benchmark_subsystem->start_benchmark("Input");
+			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmarkSubsystem->start_benchmark("Input");
 
-			auto input_subsystem = m_subsystem_manager->get_input_subsystem();
-			input_subsystem->process_input();
+			auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
+			inputSubsystem->ProcessInput();
 
-			benchmark_subsystem->end_benchmark("Input");
+			benchmarkSubsystem->end_benchmark("Input");
 		}
 
 		// Wait for last presentation to complete and sample delta time
 		{
-			auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
-			benchmark_subsystem->start_benchmark("Sample Time");
+			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmarkSubsystem->start_benchmark("Sample Time");
 
-			auto render_subsystem = m_subsystem_manager->get_render_subsystem();
+			auto renderSubsystem = mSubsystemManager->GetRenderSubsystem();
 
-			double sampled_time = render_subsystem->wait_for_last_presentation_and_sample_time();
-			update_delta_time(sampled_time);
+			double sampledTime = renderSubsystem->WaitForLastPresentationAndSampleTime();
+			UpdateDeltaTime(sampledTime);
 
-			benchmark_subsystem->end_benchmark("Sample Time");
+			benchmarkSubsystem->end_benchmark("Sample Time");
 		}
 
 		// Make sure delta time never exceeds 1/30th of a second
-		if (m_delta_time > m_time_step_limit)
+		if (mDeltaTime > mTimeStepLimit)
 		{
-			m_delta_time = m_time_step_limit;
+			mDeltaTime = mTimeStepLimit;
 		}
 
-		const auto audio_subsystem = get_subsystem<audio::AudioSubsystem>();
+		const auto AudioSubsystem = GetSubsystem<audio::AudioSubsystem>();
 
 		// Execute engine updates
 		{
-			auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
-			benchmark_subsystem->start_benchmark("Engine Update");
+			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmarkSubsystem->start_benchmark("Engine Update");
 
-			for (auto subsystem : m_subsystem_manager->get_subsystems())
+			for (auto subsystem : mSubsystemManager->GetSubsystems())
 			{
-				if (subsystem->should_update())
+				if (subsystem->ShouldUpdate())
 				{
-					benchmark_subsystem->start_benchmark_category(subsystem->name(), "Engine Update");
+					benchmarkSubsystem->start_benchmark_category(subsystem->GetName(), "Engine Update");
 
-					subsystem->update(m_delta_time);
+					subsystem->Update(mDeltaTime);
 
-					benchmark_subsystem->end_benchmark_category(subsystem->name(), "Engine Update");
+					benchmarkSubsystem->end_benchmark_category(subsystem->GetName(), "Engine Update");
 				}
 			}
 
-			benchmark_subsystem->end_benchmark("Engine Update");
+			benchmarkSubsystem->end_benchmark("Engine Update");
 		}
 
 		/*const auto inputSubsystem = getSystem<input::InputSubsystem>();
@@ -243,187 +243,188 @@ namespace puffin::core
 		}*/
 
 		// Call system start functions to prepare for gameplay
-		if (m_play_state == PlayState::BeginPlay)
+		if (mPlayState == PlayState::BeginPlay)
 		{
-			m_subsystem_manager->create_and_initialize_gameplay_subsystems();
+			mSubsystemManager->CreateAndInitializeGameplaySubsystems();
 
-			for (auto subsystem : m_subsystem_manager->get_subsystems())
+			for (auto subsystem : mSubsystemManager->GetSubsystems())
 			{
-				subsystem->begin_play();
+				subsystem->BeginPlay();
 			}
 
-			for (auto subsystem : m_subsystem_manager->get_gameplay_subsystems())
+			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 			{
-				subsystem->begin_play();
+				subsystem->BeginPlay();
 			}
 
-			m_accumulated_time = 0.0;
-			m_play_state = PlayState::Playing;
+			mAccumulatedTime = 0.0;
+			mPlayState = PlayState::Playing;
 		}
 
-		if (m_play_state == PlayState::JustPaused)
+		if (mPlayState == PlayState::JustPaused)
 		{
 			//audioSubsystem->pauseAllSounds();
 
-			m_play_state = PlayState::Paused;
+			mPlayState = PlayState::Paused;
 		}
 
-		if (m_play_state == PlayState::JustUnpaused)
+		if (mPlayState == PlayState::JustUnpaused)
 		{
 			//audioSubsystem->playAllSounds();
 
-			m_play_state = PlayState::Playing;
+			mPlayState = PlayState::Playing;
 		}
 
-		if (m_play_state == PlayState::Playing)
+		if (mPlayState == PlayState::Playing)
 		{
 			// Fixed Update
 			{
-				auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
-				benchmark_subsystem->start_benchmark("Fixed Update");
+				auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
+				benchmarkSubsystem->start_benchmark("Fixed Update");
 
 				// Add onto accumulated time
-				m_accumulated_time += m_delta_time;
+				mAccumulatedTime += mDeltaTime;
 
-				while (m_accumulated_time >= m_time_step_fixed)
+				while (mAccumulatedTime >= mTimeStepFixed)
 				{
-					m_accumulated_time -= m_time_step_fixed;
+					mAccumulatedTime -= mTimeStepFixed;
 
-					for (auto subsystem : m_subsystem_manager->get_gameplay_subsystems())
+					for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 					{
-						if (subsystem->should_fixed_update())
+						if (subsystem->ShouldFixedUpdate())
 						{
-							benchmark_subsystem->start_benchmark_category(subsystem->name(), "Fixed Update");
+							benchmarkSubsystem->start_benchmark_category(subsystem->GetName(), "Fixed Update");
 
-							subsystem->fixed_update(m_time_step_fixed);
+							subsystem->FixedUpdate(mTimeStepFixed);
 
-							benchmark_subsystem->end_benchmark_category(subsystem->name(), "Fixed Update");
+							benchmarkSubsystem->end_benchmark_category(subsystem->GetName(), "Fixed Update");
 						}
 					}
 				}
 
-				benchmark_subsystem->end_benchmark("Fixed Update");
+				benchmarkSubsystem->end_benchmark("Fixed Update");
 			}
 
 			// Update
 			{
-				auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
-				benchmark_subsystem->start_benchmark("Update");
+				auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
+				benchmarkSubsystem->start_benchmark("Update");
 
-				for (auto subsystem : m_subsystem_manager->get_gameplay_subsystems())
+				for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 				{
-					if (subsystem->should_update())
+					if (subsystem->ShouldUpdate())
 					{
-						benchmark_subsystem->start_benchmark_category(subsystem->name(), "Update");
+						benchmarkSubsystem->start_benchmark_category(subsystem->GetName(), "Update");
 
-						subsystem->update(m_delta_time);
+						subsystem->Update(mDeltaTime);
 
-						benchmark_subsystem->end_benchmark_category(subsystem->name(), "Update");
+						benchmarkSubsystem->end_benchmark_category(subsystem->GetName(), "Update");
 					}
 				}
 
-				benchmark_subsystem->end_benchmark("Update");
+				benchmarkSubsystem->end_benchmark("Update");
 			}
 		}
 
 		// Render
 		{
-			auto benchmark_subsystem = get_subsystem<utility::PerformanceBenchmarkSubsystem>();
-			benchmark_subsystem->start_benchmark("Render");
+			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmarkSubsystem->start_benchmark("Render");
 
-			auto render_subsystem = m_subsystem_manager->get_render_subsystem();
+			auto renderSubsystem = mSubsystemManager->GetRenderSubsystem();
 
-			render_subsystem->render(m_delta_time);
+			renderSubsystem->Render(mDeltaTime);
 
-			benchmark_subsystem->end_benchmark("Render");
+			benchmarkSubsystem->end_benchmark("Render");
 		}
 
-		if (m_play_state == PlayState::EndPlay)
+		if (mPlayState == PlayState::EndPlay)
 		{
 			// End play and cleanup gameplay subsystems
-			for (auto subsystem : m_subsystem_manager->get_gameplay_subsystems())
+			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 			{
-				subsystem->end_play();
+				subsystem->EndPlay();
 			}
 
-			for (auto subsystem : m_subsystem_manager->get_subsystems())
+			for (auto subsystem : mSubsystemManager->GetSubsystems())
 			{
-				subsystem->end_play();
+				subsystem->EndPlay();
 			}
 
-			m_subsystem_manager->destroy_gameplay_subsystems();
+			mSubsystemManager->DestroyGameplaySubsystems();
 
 			//audioSubsystem->stopAllSounds();
 
-			m_accumulated_time = 0.0;
-			m_play_state = PlayState::Stopped;
+			mAccumulatedTime = 0.0;
+			mPlayState = PlayState::Stopped;
 		}
 
-		if (const auto window_subsystem = get_subsystem<window::WindowSubsystem>(); window_subsystem->should_primary_window_close())
+		if (const auto windowSubsystem = GetSubsystem<window::WindowSubsystem>(); windowSubsystem->
+			should_primary_window_close())
 		{
-			m_running = false;
+			mRunning = false;
 		}
 
-		return m_running;
+		return mRunning;
 	}
 
-	void Engine::deinitialize()
+	void Engine::Deinitialize()
 	{
 		// Cleanup any running gameplay subsystems
-		if (m_play_state == PlayState::Playing)
+		if (mPlayState == PlayState::Playing)
 		{
-			for (auto subsystem : m_subsystem_manager->get_gameplay_subsystems())
+			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 			{
-				subsystem->end_play();
+				subsystem->EndPlay();
 			}
 
-			for (auto subsystem : m_subsystem_manager->get_subsystems())
+			for (auto subsystem : mSubsystemManager->GetSubsystems())
 			{
-				subsystem->end_play();
+				subsystem->EndPlay();
 			}
 
-			m_subsystem_manager->destroy_gameplay_subsystems();
+			mSubsystemManager->DestroyGameplaySubsystems();
 		}
 
 		// Cleanup all engine subsystems
-		m_subsystem_manager->destroy_engine_subsystems();
+		mSubsystemManager->DestroyEngineSubsystems();
 
 		// Clear Asset Registry
 		assets::AssetRegistry::clear();
 
-		m_subsystem_manager = nullptr;
+		mSubsystemManager = nullptr;
 	}
 
-	void Engine::register_required_subsystems() const
+	void Engine::RegisterRequiredSubsystems() const
 	{
-		register_subsystem<window::WindowSubsystem>();
-		register_subsystem<core::SignalSubsystem>();
-		register_subsystem<input::InputSubsystem>();
-		register_subsystem<utility::PerformanceBenchmarkSubsystem>();
-		register_subsystem<SettingsManager>();
-		register_subsystem<EnkiTSSubsystem>();
-		register_subsystem<audio::AudioSubsystem>();
-		register_subsystem<ecs::EnTTSubsystem>();
-		register_subsystem<scene::SceneGraphSubsystem>();
-		register_subsystem<io::SceneSubsystem>();
-		register_subsystem<rendering::CameraSubystem>();
+		RegisterSubsystem<window::WindowSubsystem>();
+		RegisterSubsystem<core::SignalSubsystem>();
+		RegisterSubsystem<input::InputSubsystem>();
+		RegisterSubsystem<utility::PerformanceBenchmarkSubsystem>();
+		RegisterSubsystem<SettingsManager>();
+		RegisterSubsystem<EnkiTSSubsystem>();
+		RegisterSubsystem<audio::AudioSubsystem>();
+		RegisterSubsystem<ecs::EnTTSubsystem>();
+		RegisterSubsystem<scene::SceneGraphSubsystem>();
+		RegisterSubsystem<io::SceneSubsystem>();
+		RegisterSubsystem<rendering::CameraSubystem>();
 
-		register_subsystem<ui::EditorUISubsystem>();
+		RegisterSubsystem<ui::EditorUISubsystem>();
 
-		register_subsystem<scene::SceneGraphGameplaySubsystem>();
+		RegisterSubsystem<scene::SceneGraphGameplaySubsystem>();
 	}
 
-	void Engine::add_default_assets()
+	void Engine::AddDefaultAssets()
 	{
 		const fs::path& meshPath1 = fs::path() / "meshes" / "chalet.pstaticmesh";
 		//const fs::path& meshPath2 = fs::path() / "meshes" / "sphere.pstaticmesh";
 		const fs::path& meshPath3 = fs::path() / "meshes" / "cube.pstaticmesh";
 		const fs::path& meshPath4 = fs::path() / "meshes" / "space_engineer.pstaticmesh";
 
-		PuffinID meshId1 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath1)->id();
+		PuffinID meshId1 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath1)->GetID();
 		//PuffinID meshId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		PuffinID meshId3 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath3)->id();
-		PuffinID meshId4 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath4)->id();
+		PuffinID meshId3 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath3)->GetID();
+		PuffinID meshId4 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath4)->GetID();
 
 		const fs::path& texturePath1 = fs::path() / "textures" / "cube.ptexture";
 		const fs::path& texturePath2 = fs::path() / "textures" / "chalet.ptexture";
@@ -431,15 +432,15 @@ namespace puffin::core
 		const fs::path& texturePath4 = fs::path() / "textures" / "statue.ptexture";
 		const fs::path& texturePath5 = fs::path() / "textures" / "xsprite.ptexture";
 
-		PuffinID textureId1 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath1)->id();
-		PuffinID textureId2 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath2)->id();
-		PuffinID textureId3 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath3)->id();
-		PuffinID textureId4 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath4)->id();
-		PuffinID textureId5 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath5)->id();
+		PuffinID textureId1 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath1)->GetID();
+		PuffinID textureId2 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath2)->GetID();
+		PuffinID textureId3 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath3)->GetID();
+		PuffinID textureId4 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath4)->GetID();
+		PuffinID textureId5 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath5)->GetID();
 
 		const fs::path& soundPath1 = fs::path() / "sounds" / "Select 1.wav";
 
-		PuffinID soundId1 = assets::AssetRegistry::get()->add_asset<assets::SoundAsset>(soundPath1)->id();
+		PuffinID soundId1 = assets::AssetRegistry::get()->add_asset<assets::SoundAsset>(soundPath1)->GetID();
 
 		const fs::path shaderPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_vert.pshader";
 		const fs::path shaderPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_frag.pshader";
@@ -449,47 +450,57 @@ namespace puffin::core
 
 		//shaderAsset1->setType(assets::ShaderType::Vertex);
 
-		//shaderAsset1->setShaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.vert)"));
+		//shaderAsset1->setshaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.vert)"));
 		//shaderAsset1->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_vs.spv)"));
 		//shaderAsset1->loadCodeFromBinary();
 		//shaderAsset1->save();
 
 		//shaderAsset2->setType(assets::ShaderType::Fragment);
-		//shaderAsset2->setShaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.frag)"));
+		//shaderAsset2->setshaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.frag)"));
 		//shaderAsset2->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_fs.spv)"));
 		//shaderAsset2->loadCodeFromBinary();
 		//shaderAsset2->save();
 
-		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
-		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_chalet.pmaterialinst";
 
-		const auto materialInstAsset1 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(materialInstPath1);
-		const auto materialInstAsset2 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(materialInstPath2);
+		const auto materialInstAsset1 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(
+			materialInstPath1);
+		const auto materialInstAsset2 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(
+			materialInstPath2);
 
 		materialInstAsset1->getTexIDs()[0] = textureId1;
 
-		materialInstAsset1->save();
+		materialInstAsset1->Save();
 
 		materialInstAsset2->getTexIDs()[0] = textureId2;
 
-		materialInstAsset2->save();
+		materialInstAsset2->Save();
 	}
 
-	void Engine::reimport_default_assets()
+	void Engine::ReimportDefaultAssets()
 	{
-		io::load_and_import_model(assets::AssetRegistry::get()->project_root() / "model_backups/cube.obj", "meshes");
-		io::load_and_import_model(assets::AssetRegistry::get()->project_root() / "model_backups/space_engineer.obj", "meshes");
+		io::LoadAndImportModel(assets::AssetRegistry::get()->project_root() / "model_backups/cube.obj", "meshes");
+		io::LoadAndImportModel(assets::AssetRegistry::get()->project_root() / "model_backups/space_engineer.obj",
+		                          "meshes");
 		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\Sphere.dae)", "meshes");
-		io::load_and_import_model(assets::AssetRegistry::get()->project_root() / "model_backups/chalet.obj", "meshes");
+		io::LoadAndImportModel(assets::AssetRegistry::get()->project_root() / "model_backups/chalet.obj", "meshes");
 
-		io::load_and_import_texture(assets::AssetRegistry::get()->project_root() / "texture_backups/chalet.jpg", "textures");
-		io::load_and_import_texture(assets::AssetRegistry::get()->project_root() / "texture_backups/cube.png", "textures");
-		io::load_and_import_texture(assets::AssetRegistry::get()->project_root() / "texture_backups/space_engineer.jpg", "textures");
-		io::load_and_import_texture(assets::AssetRegistry::get()->project_root() / "texture_backups/statue.jpg", "textures");
-		io::load_and_import_texture(assets::AssetRegistry::get()->project_root() / "texture_backups/xsprite.png", "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/chalet.jpg",
+		                            "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/cube.png",
+		                            "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/space_engineer.jpg",
+		                            "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/statue.jpg",
+		                            "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/xsprite.png",
+		                            "textures");
 	}
 
-	void Engine::load_and_resave_assets()
+	void Engine::LoadAndResaveAssets()
 	{
 		const fs::path& meshPath1 = fs::path() / "meshes" / "chalet.pstaticmesh";
 		const fs::path& meshPath2 = fs::path() / "meshes" / "sphere.pstaticmesh";
@@ -507,8 +518,10 @@ namespace puffin::core
 		const fs::path shaderPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_vert.pshader";
 		const fs::path shaderPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_frag.pshader";
 
-		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
-		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_chalet.pmaterialinst";
 
 		std::vector paths =
 		{
@@ -522,14 +535,14 @@ namespace puffin::core
 		{
 			if (const auto asset = assets::AssetRegistry::get()->get_asset(path); asset != nullptr)
 			{
-				asset->load();
-				asset->save();
-				asset->unload();
+				asset->Load();
+				asset->Save();
+				asset->Unload();
 			}
 		}
 	}
 
-	void Engine::default_scene()
+	void Engine::InitDefaultScene()
 	{
 		// Get assets
 		fs::path contentRootPath = assets::AssetRegistry::get()->content_root();
@@ -539,35 +552,39 @@ namespace puffin::core
 		const fs::path& meshPath3 = fs::path() / "meshes" / "cube.pstaticmesh";
 		const fs::path& meshPath4 = fs::path() / "meshes" / "space_engineer.pstaticmesh";
 
-		const PuffinID meshId1 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath1)->id();
+		const PuffinID meshId1 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath1)->GetID();
 		//const PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		const PuffinID meshId3 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath3)->id();
-		const PuffinID meshId4 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath4)->id();
+		const PuffinID meshId3 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath3)->GetID();
+		const PuffinID meshId4 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath4)->GetID();
 
 		const fs::path& texturePath1 = fs::path() / "textures" / "chalet.ptexture";
 		const fs::path& texturePath2 = fs::path() / "textures" / "cube.ptexture";
 
-		const PuffinID textureId1 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath1)->id();
-		const PuffinID textureId2 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath2)->id();
+		const PuffinID textureId1 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath1)->GetID();
+		const PuffinID textureId2 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath2)->GetID();
 
 		//const fs::path& soundPath1 = "sounds/Select 1.wav";
 
 		//PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
 
-		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
-		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_chalet.pmaterialinst";
 
-		PuffinID materialInstId1 = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
-		PuffinID materialInstId2 = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
+		PuffinID materialInstId1 = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(
+			materialInstPath1)->GetID();
+		PuffinID materialInstId2 = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(
+			materialInstPath2)->GetID();
 
-		auto registry = get_subsystem<ecs::EnTTSubsystem>()->registry();
-		const auto scene_graph = get_subsystem<scene::SceneGraphSubsystem>();
+		auto registry = GetSubsystem<ecs::EnTTSubsystem>()->registry();
+		const auto sceneGraph = GetSubsystem<scene::SceneGraphSubsystem>();
 
-		auto house_node = scene_graph->add_node<rendering::MeshNode>();
-		house_node->set_name("House");
-		house_node->set_position({ 2.0f, 0.0f, 0.0f });
-		house_node->set_mesh_asset_id(meshId1);
-		house_node->set_mat_asset_id(materialInstId1);
+		auto houseNode = sceneGraph->add_node<rendering::MeshNode>();
+		houseNode->set_name("House");
+		houseNode->set_position({2.0f, 0.0f, 0.0f});
+		houseNode->set_mesh_asset_id(meshId1);
+		houseNode->set_mat_asset_id(materialInstId1);
 
 		/*auto sphere = scene_graph->add_node<rendering::MeshNode>();
 		sphere.set_name("Sphere");
@@ -575,79 +592,92 @@ namespace puffin::core
 		sphere.set_mesh_asset_id(meshId2);
 		sphere.set_mat_asset_id(materialInstId1);*/
 
-		auto cube_1 = scene_graph->add_node<rendering::MeshNode>();
-		cube_1->name() = "Cube_1";
-		cube_1->set_position({ 0.0f });
-		cube_1->set_mesh_asset_id(meshId3);
-		cube_1->set_mat_asset_id(materialInstId1);
+		auto cube1 = sceneGraph->add_node<rendering::MeshNode>();
+		cube1->name() = "Cube_1";
+		cube1->set_position({0.0f});
+		cube1->set_mesh_asset_id(meshId3);
+		cube1->set_mat_asset_id(materialInstId1);
 
-		auto cube_2 = scene_graph->add_node<rendering::MeshNode>();
-		cube_2->set_name("Cube_2");
-		cube_2->set_position({ -1.75f, -5.0f, 0.0f });
-		cube_2->set_mesh_asset_id(meshId3);
-		cube_2->set_mat_asset_id(materialInstId1);
+		auto cube2 = sceneGraph->add_node<rendering::MeshNode>();
+		cube2->set_name("Cube_2");
+		cube2->set_position({-1.75f, -5.0f, 0.0f});
+		cube2->set_mesh_asset_id(meshId3);
+		cube2->set_mat_asset_id(materialInstId1);
 
-		auto plane = scene_graph->add_node<rendering::MeshNode>();
+		auto plane = sceneGraph->add_node<rendering::MeshNode>();
 		plane->set_name("Plane");
-		plane->set_position({ 0.0f, -10.0f, 0.0f });
-		plane->set_scale({ 50.0f, 1.0f, 50.0f });
+		plane->set_position({0.0f, -10.0f, 0.0f});
+		plane->set_scale({50.0f, 1.0f, 50.0f});
 		plane->set_mesh_asset_id(meshId3);
 		plane->set_mat_asset_id(materialInstId1);
 
-		auto dir_light = scene_graph->add_node<rendering::LightNode3D>();
-		dir_light->set_name("Directional Light");
-		dir_light->set_position({ 0.0f, 10.0f, 0.0f });
-		dir_light->set_color({ .05f });
-		dir_light->set_ambient_intensity(.0f);
-		dir_light->set_light_type(rendering::LightType::Directional);
-		dir_light->set_ambient_intensity(0.f);
-		dir_light->add_component<rendering::ShadowCasterComponent>();
-		registry->patch<rendering::ShadowCasterComponent>(dir_light->entity(), [&](auto& shadow) 
-			{ shadow.width = 8192; shadow.height = 8192; shadow.bias_min = 0.3f; shadow.bias_max = 0.5f; });
+		auto dirLight = sceneGraph->add_node<rendering::LightNode3D>();
+		dirLight->set_name("Directional Light");
+		dirLight->set_position({0.0f, 10.0f, 0.0f});
+		dirLight->set_color({.05f});
+		dirLight->set_ambient_intensity(.0f);
+		dirLight->set_light_type(rendering::LightType::Directional);
+		dirLight->set_ambient_intensity(0.f);
+		dirLight->add_component<rendering::ShadowCasterComponent>();
+		registry->patch<rendering::ShadowCasterComponent>(dirLight->entity(), [&](auto& shadow)
+		{
+			shadow.width = 8192;
+			shadow.height = 8192;
+			shadow.bias_min = 0.3f;
+			shadow.bias_max = 0.5f;
+		});
 
-		update_transform_orientation(*dir_light->transform_3d(), { 0.0f, -90.0f, 0.0f });
+		UpdateTransformOrientation(*dirLight->transform_3d(), {0.0f, -90.0f, 0.0f});
 
-		auto dir_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(dir_light->id());
-		dir_light_mesh->set_scale({ 0.25f });
-		dir_light_mesh->set_mesh_asset_id(meshId3);
-		dir_light_mesh->set_mat_asset_id(materialInstId1);
+		auto dirLightMesh = sceneGraph->add_child_node<rendering::MeshNode>(dirLight->id());
+		dirLightMesh->set_scale({0.25f});
+		dirLightMesh->set_mesh_asset_id(meshId3);
+		dirLightMesh->set_mat_asset_id(materialInstId1);
 
-		auto spot_light = scene_graph->add_node<rendering::LightNode3D>();
-		spot_light->set_name("Spot Light");
-		spot_light->set_position({ -10.0f, 5.0f, 0.0f });
-		spot_light->set_light_type(rendering::LightType::Spot);
-		spot_light->set_color({ 0.5f, 0.5f, 1.0f });
-		spot_light->set_ambient_intensity(0.f);
-		spot_light->add_component<rendering::ShadowCasterComponent>();
-		registry->patch<rendering::ShadowCasterComponent>(spot_light->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
+		auto spotLight = sceneGraph->add_node<rendering::LightNode3D>();
+		spotLight->set_name("Spot Light");
+		spotLight->set_position({-10.0f, 5.0f, 0.0f});
+		spotLight->set_light_type(rendering::LightType::Spot);
+		spotLight->set_color({0.5f, 0.5f, 1.0f});
+		spotLight->set_ambient_intensity(0.f);
+		spotLight->add_component<rendering::ShadowCasterComponent>();
+		registry->patch<rendering::ShadowCasterComponent>(spotLight->entity(), [&](auto& shadow)
+		{
+			shadow.width = 8192;
+			shadow.height = 8192;
+		});
 
-		auto spot_light_mesh = scene_graph->add_child_node<rendering::MeshNode>(spot_light->id());
-		spot_light_mesh->set_scale({ 0.25f });
-		spot_light_mesh->set_mesh_asset_id(meshId3);
-		spot_light_mesh->set_mat_asset_id(materialInstId1);
+		auto spotLightMesh = sceneGraph->add_child_node<rendering::MeshNode>(spotLight->id());
+		spotLightMesh->set_scale({0.25f});
+		spotLightMesh->set_mesh_asset_id(meshId3);
+		spotLightMesh->set_mat_asset_id(materialInstId1);
 
-		auto spot_light_2 = scene_graph->add_node<rendering::LightNode3D>();
-		spot_light_2->set_name("Spot Light 2");
-		spot_light_2->set_position({ 10.0f, 5.0f, 0.0f });
-		spot_light_2->set_light_type(rendering::LightType::Spot);
-		spot_light_2->set_color({ 1.0f, 0.5f, 0.5f });
-		spot_light_2->set_ambient_intensity(0.f);
-		spot_light_2->add_component<rendering::ShadowCasterComponent>();
-		registry->patch<rendering::ShadowCasterComponent>(spot_light_2->entity(), [&](auto& shadow) { shadow.width = 8192; shadow.height = 8192; });
+		auto spotLight2 = sceneGraph->add_node<rendering::LightNode3D>();
+		spotLight2->set_name("Spot Light 2");
+		spotLight2->set_position({10.0f, 5.0f, 0.0f});
+		spotLight2->set_light_type(rendering::LightType::Spot);
+		spotLight2->set_color({1.0f, 0.5f, 0.5f});
+		spotLight2->set_ambient_intensity(0.f);
+		spotLight2->add_component<rendering::ShadowCasterComponent>();
+		registry->patch<rendering::ShadowCasterComponent>(spotLight2->entity(), [&](auto& shadow)
+		{
+			shadow.width = 8192;
+			shadow.height = 8192;
+		});
 
-		update_transform_orientation(*spot_light_2->transform_3d(), { 0.0f, 180.0f, 0.0f });
+		UpdateTransformOrientation(*spotLight2->transform_3d(), {0.0f, 180.0f, 0.0f});
 
-		auto spot_light_mesh_2 = scene_graph->add_child_node<rendering::MeshNode>(spot_light_2->id());
-		spot_light_mesh_2->set_scale({ 0.25f });
-		spot_light_mesh_2->set_mesh_asset_id(meshId3);
-		spot_light_mesh_2->set_mat_asset_id(materialInstId1);
+		auto spotLightMesh2 = sceneGraph->add_child_node<rendering::MeshNode>(spotLight2->id());
+		spotLightMesh2->set_scale({0.25f});
+		spotLightMesh2->set_mesh_asset_id(meshId3);
+		spotLightMesh2->set_mat_asset_id(materialInstId1);
 
 		//auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		//script.name = "ExampleScript";
 		//script.dir = contentRootPath / "scripts\\Example.pscript";
 	}
 
-	void Engine::physics_scene_3d()
+	void Engine::InitPhysicsScene3D()
 	{
 		// Get assets
 		fs::path contentRootPath = assets::AssetRegistry::get()->content_root();
@@ -657,42 +687,46 @@ namespace puffin::core
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		const PuffinID meshId1 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath1)->id();
-		const PuffinID meshId2 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath2)->id();
-		const PuffinID meshId3 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath3)->id();
-		const PuffinID meshId4 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath4)->id();
+		const PuffinID meshId1 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath1)->GetID();
+		const PuffinID meshId2 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath2)->GetID();
+		const PuffinID meshId3 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath3)->GetID();
+		const PuffinID meshId4 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath4)->GetID();
 
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		const PuffinID textureId1 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath1)->id();
-		const PuffinID textureId2 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath2)->id();
+		const PuffinID textureId1 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath1)->GetID();
+		const PuffinID textureId2 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath2)->GetID();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		PuffinID soundId1 = assets::AssetRegistry::get()->get_asset<assets::SoundAsset>(soundPath1)->id();
+		PuffinID soundId1 = assets::AssetRegistry::get()->get_asset<assets::SoundAsset>(soundPath1)->GetID();
 
-		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_default.pmaterialinst";
-		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_chalet.pmaterialinst";
+		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_default.pmaterialinst";
+		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_chalet.pmaterialinst";
 
-		PuffinID materialInstId1 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(materialInstPath1)->id();
-		PuffinID materialInstId2 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(materialInstPath2)->id();
+		PuffinID materialInstId1 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(
+			materialInstPath1)->GetID();
+		PuffinID materialInstId2 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(
+			materialInstPath2)->GetID();
 
-		const auto scene_graph = get_subsystem<scene::SceneGraphSubsystem>();
+		const auto sceneGraph = GetSubsystem<scene::SceneGraphSubsystem>();
 
 		// Light node
 
-		auto light = scene_graph->add_node<rendering::LightNode3D>();
+		auto light = sceneGraph->add_node<rendering::LightNode3D>();
 		light->position().y = 50.0f;
 		light->set_light_type(rendering::LightType::Directional);
 		light->set_ambient_intensity(0.01f);
 
-		constexpr float floor_width = 2000.0f;
+		constexpr float floorWidth = 2000.0f;
 
-		std::vector<float> y_offsets;
+		std::vector<float> yOffsets;
 		for (int i = 0; i < 10; ++i)
 		{
-			y_offsets.push_back(i * 10.0f + 10.0f);
+			yOffsets.push_back(i * 10.0f + 10.0f);
 		}
 
 		// Floor node
@@ -708,7 +742,7 @@ namespace puffin::core
 		//	registry->emplace<physics::RigidbodyComponent3D>(floorEntity);
 		//}
 
-		auto floor_body = scene_graph->add_node<physics::RigidbodyNode3D>();
+		auto floorBody = sceneGraph->add_node<physics::RigidbodyNode3D>();
 
 		//// Create Box Entities
 		//{
@@ -755,20 +789,20 @@ namespace puffin::core
 		//}
 	}
 
-	void Engine::procedural_scene()
+	void Engine::InitProceduralScene()
 	{
 		//auto ecsWorld = getSystem<ECS::World>();
 
 		//// Initialize Assets
 		//fs::path contentRootPath = assets::AssetRegistry::get()->contentRoot();
 
-		//const fs::path& cubeMeshPath = "meshes\\cube.pstaticmesh";
+		//const fs::path& cubemeshPath = "meshes\\cube.pstaticmesh";
 
-		//PuffinId cubeMeshId = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(cubeMeshPath)->id();
+		//PuffinId cubemeshId = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(cubemeshPath)->id();
 
-		//const fs::path& cubeTexturePath = "textures\\cube.ptexture";
+		//const fs::path& cubetexturePath = "textures\\cube.ptexture";
 
-		//PuffinId cubeTextureId = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(cubeTexturePath)->id();
+		//PuffinId cubetextureId = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(cubetexturePath)->id();
 
 		//const auto lightEntity = ECS::CreateEntity(ecsWorld);
 		//lightEntity->SetName("Light");
@@ -778,14 +812,14 @@ namespace puffin::core
 		//lightEntity->AddComponent<rendering::LightComponent>();
 		//lightEntity->GetComponent<rendering::LightComponent>().type = rendering::LightType::Directional;
 		//lightEntity->AddComponent<rendering::MeshComponent>();
-		//lightEntity->GetComponent<rendering::MeshComponent>().meshAssetID = cubeMeshId;
-		//lightEntity->GetComponent<rendering::MeshComponent>().textureAssetId = cubeTextureId;
+		//lightEntity->GetComponent<rendering::MeshComponent>().meshAssetID = cubemeshId;
+		//lightEntity->GetComponent<rendering::MeshComponent>().textureAssetId = cubetextureId;
 		////lightEntity->AddComponent<Rendering::ShadowCasterComponent>();
 
 		//const auto planeEntity = ECS::CreateEntity(ecsWorld);
 		//planeEntity->SetName("Terrain");
 		//planeEntity->AddAndGetComponent<TransformComponent3D>().position = { 0.0, -10.0f, 0.0 };
-		//planeEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubeTextureId;
+		//planeEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubetextureId;
 		//planeEntity->AddComponent<procedural::TerrainComponent>();
 		//planeEntity->GetComponent<procedural::TerrainComponent>().halfSize = { 50 };
 		//planeEntity->GetComponent<procedural::TerrainComponent>().numQuads = { 50 };
@@ -794,63 +828,63 @@ namespace puffin::core
 		//const auto sphereEntity = ECS::CreateEntity(ecsWorld);
 		//sphereEntity->SetName("Sphere");
 		//sphereEntity->AddAndGetComponent<TransformComponent3D>().position = { 0.0, 5.0, 0.0 };
-		//sphereEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubeTextureId;
+		//sphereEntity->AddAndGetComponent<rendering::ProceduralMeshComponent>().textureAssetId = cubetextureId;
 		//sphereEntity->AddComponent<procedural::IcoSphereComponent>();
 
 		/*const auto boxEntity = ECS::CreateEntity(ecsWorld);
 		boxEntity->SetName("Box");
 		boxEntity->AddComponent<TransformComponent3D>();
 		boxEntity->AddComponent<Rendering::MeshComponent>();
-		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = cubeMeshId;
-		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubeTextureId;*/
+		boxEntity->GetComponent<Rendering::MeshComponent>().meshAssetID = cubemeshId;
+		boxEntity->GetComponent<Rendering::MeshComponent>().textureAssetID = cubetextureId;*/
 	}
 
-	void Engine::play()
+	void Engine::Play()
 	{
-        if (m_play_state == PlayState::Stopped)
-        {
-            m_play_state = PlayState::BeginPlay;
-        }
-		else if (m_play_state == PlayState::Playing)
-        {
-	        m_play_state = PlayState::JustPaused;
-        }
-        else if (m_play_state == PlayState::Paused)
-        {
-	        m_play_state = PlayState::JustUnpaused;
-        }
-	}
-
-	void Engine::restart()
-	{
-		if (m_play_state == PlayState::Playing || m_play_state == PlayState::Paused || m_play_state == PlayState::Stopped)
+		if (mPlayState == PlayState::Stopped)
 		{
-			m_play_state = PlayState::EndPlay;
+			mPlayState = PlayState::BeginPlay;
+		}
+		else if (mPlayState == PlayState::Playing)
+		{
+			mPlayState = PlayState::JustPaused;
+		}
+		else if (mPlayState == PlayState::Paused)
+		{
+			mPlayState = PlayState::JustUnpaused;
 		}
 	}
 
-	void Engine::exit()
+	void Engine::Restart()
 	{
-		m_running = false;
+		if (mPlayState == PlayState::Playing || mPlayState == PlayState::Paused || mPlayState == PlayState::Stopped)
+		{
+			mPlayState = PlayState::EndPlay;
+		}
 	}
 
-	void Engine::update_delta_time(double sampled_time)
+	void Engine::Exit()
 	{
-		m_last_time = m_current_time;
-		m_current_time = sampled_time;
-		m_delta_time = m_current_time - m_last_time;
+		mRunning = false;
+	}
 
-		if (m_frame_rate_max > 0)
+	void Engine::UpdateDeltaTime(double sampledTime)
+	{
+		mLastTime = mCurrentTime;
+		mCurrentTime = sampledTime;
+		mDeltaTime = mCurrentTime - mLastTime;
+
+		if (mFrameRateMax > 0)
 		{
-			const double deltaTimeMax = 1.0 / m_frame_rate_max;
+			const double deltaTimeMax = 1.0 / mFrameRateMax;
 			double idleStartTime = 0.0;
 
-			while (m_delta_time < deltaTimeMax)
+			while (mDeltaTime < deltaTimeMax)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-				m_current_time = glfwGetTime();
-				m_delta_time = m_current_time - m_last_time;
+				mCurrentTime = glfwGetTime();
+				mDeltaTime = mCurrentTime - mLastTime;
 			}
 		}
 	}

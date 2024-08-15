@@ -6,74 +6,74 @@
 namespace puffin::core
 {
 	Subsystem::Subsystem(std::shared_ptr<Engine> engine) :
-		m_engine(std::move(engine))
+		mEngine(std::move(engine))
 	{
 	}
 
 	Subsystem::~Subsystem()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
-	void Subsystem::initialize(SubsystemManager* subsystem_manager)
+	void Subsystem::Initialize(SubsystemManager* subsystemManager)
 	{
 
 	}
 
-	void Subsystem::deinitialize()
+	void Subsystem::Deinitialize()
 	{
 
 	}
 
-	SubsystemType Subsystem::type() const
+	SubsystemType Subsystem::GetType() const
 	{
 		return SubsystemType::Engine;
 	}
 
-	void Subsystem::begin_play()
+	void Subsystem::BeginPlay()
 	{
 
 	}
 
-	void Subsystem::end_play()
+	void Subsystem::EndPlay()
 	{
 
 	}
 
-	void Subsystem::update(double delta_time)
+	void Subsystem::Update(double deltaTime)
 	{
 		
 	}
 
-	bool Subsystem::should_update()
+	bool Subsystem::ShouldUpdate()
 	{
 		return false;
 	}
 
-	void Subsystem::fixed_update(double fixed_time_step)
+	void Subsystem::FixedUpdate(double fixedTimeStep)
 	{
 	}
 
-	bool Subsystem::should_fixed_update()
+	bool Subsystem::ShouldFixedUpdate()
 	{
 		return false;
 	}
 
-	void Subsystem::process_input()
+	void Subsystem::ProcessInput()
 	{
 	}
 
-	double Subsystem::wait_for_last_presentation_and_sample_time()
+	double Subsystem::WaitForLastPresentationAndSampleTime()
 	{
 		return 0.0;
 	}
 
-	void Subsystem::render(double delta_time)
+	void Subsystem::Render(double deltaTime)
 	{
 	}
 
-	const std::string& Subsystem::name()
+	const std::string& Subsystem::GetName()
 	{
-		return m_name;
+		return mName;
 	}
 }

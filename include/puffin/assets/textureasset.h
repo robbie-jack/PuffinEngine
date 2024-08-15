@@ -136,23 +136,23 @@ namespace puffin::assets
 
 		~TextureAsset() override = default;
 
-		[[nodiscard]] const std::string& type() const override
+		[[nodiscard]] const std::string& GetType() const override
 		{
 			return gTextureType;
 		}
 
-		[[nodiscard]] const uint32_t& version() const override
+		[[nodiscard]] const uint32_t& GetVersion() const override
 		{
 			return gTextureVersion;
 		}
 
-		bool save() override;
+		bool Save() override;
 
 		bool save(TextureInfo& info, void* pixelData);
 
-		bool load(bool loadHeaderOnly = false) override;
+		bool Load(bool loadHeaderOnly = false) override;
 
-		void unload() override;
+		void Unload() override;
 
 		const std::vector<char>& pixels() const
 		{

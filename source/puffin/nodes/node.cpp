@@ -8,7 +8,7 @@ namespace puffin
 {
 	Node::Node(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : m_engine(engine), m_node_id(id)
 	{
-		auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
+		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		m_registry = entt_subsystem->registry();
 		m_entity = entt_subsystem->add_entity(m_node_id);
 	}
@@ -17,7 +17,7 @@ namespace puffin
     {
         if (has_transform_2d())
         {
-			auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
             return scene_graph_subsystem->get_global_transform_2d(m_node_id);
         }
 
@@ -28,7 +28,7 @@ namespace puffin
 	{
 		if (has_transform_2d())
 		{
-			auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 			return scene_graph_subsystem->get_global_transform_2d(m_node_id);
 		}
 
@@ -39,7 +39,7 @@ namespace puffin
 	{
 		if (has_transform_3d())
 		{
-			auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 			return scene_graph_subsystem->get_global_transform_3d(m_node_id);
 		}
 
@@ -50,7 +50,7 @@ namespace puffin
 	{
 		if (has_transform_3d())
 		{
-			auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 			return scene_graph_subsystem->get_global_transform_3d(m_node_id);
 		}
 
@@ -69,7 +69,7 @@ namespace puffin
 
 	void Node::queue_destroy() const
 	{
-		auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 		scene_graph_subsystem->queue_destroy_node(m_node_id);
 	}
 
@@ -77,7 +77,7 @@ namespace puffin
 	{
 		if (m_parent_id != gInvalidID)
 		{
-			auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 			return scene_graph_subsystem->get_node_ptr(m_parent_id);
 		}
 
@@ -100,7 +100,7 @@ namespace puffin
 	{
 		children.reserve(m_child_ids.size());
 
-		auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		for (auto id : m_child_ids)
 		{
@@ -120,13 +120,13 @@ namespace puffin
 
 	Node* Node::get_child(PuffinID id) const
 	{
-		auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 		return scene_graph_subsystem->get_node_ptr(id);
 	}
 
 	void Node::remove_child(PuffinID id)
 	{
-		auto scene_graph_subsystem = m_engine->get_subsystem<scene::SceneGraphSubsystem>();
+		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 		Node* node = scene_graph_subsystem->get_node_ptr(id);
 		node->queue_destroy();
 

@@ -59,8 +59,8 @@ namespace puffin::assets
 
 		for (const auto& [fst, snd] : m_id_to_asset_map)
 		{
-			assetCache.data[fst].path = snd->relativePath().string();
-			assetCache.data[fst].type = snd->type();
+			assetCache.data[fst].path = snd->GetRelativePath().string();
+			assetCache.data[fst].type = snd->GetType();
 		}
 
 		json data = assetCache;
@@ -108,8 +108,8 @@ namespace puffin::assets
 				}
 			}
 
-			m_id_to_asset_map[asset->id()] = asset;
-			m_path_to_id_map[asset->relativePath().string()] = asset->id();
+			m_id_to_asset_map[asset->GetID()] = asset;
+			m_path_to_id_map[asset->GetRelativePath().string()] = asset->GetID();
 		}
 	}
 
@@ -176,21 +176,21 @@ namespace puffin::assets
 
 				if (m_json_file_types.find(full_path.extension().string()) != m_json_file_types.end())
 				{
-					loadJsonFile(full_path, asset_data);
+					LoadJsonFile(full_path, asset_data);
 				}
 				else
 				{
-					loadBinaryFile(full_path, asset_data, true);
+					LoadBinaryFile(full_path, asset_data, true);
 				}
 
-				const auto& asset_type = g_asset_type_to_string.at(asset_data.type);
+				const auto& asset_type = gAssetTypeToString.at(asset_data.type);
 				std::shared_ptr<Asset> asset;
 
 				for (const auto& factory : m_asset_factories)
 				{
 					if (factory->type() == asset_type)
 					{
-						return factory->add_asset(asset_data.id, path);
+						return factory->add_asset(asset_data.ID, path);
 					}
 				}
 			}

@@ -17,7 +17,7 @@ namespace puffin::audio
 
 	AudioSubsystemProvider::~AudioSubsystemProvider()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
 	////////////////////////////////
@@ -26,33 +26,33 @@ namespace puffin::audio
 
 	AudioSubsystem::AudioSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "AudioSubsystem";
+		mName = "AudioSubsystem";
 	}
 
 	AudioSubsystem::~AudioSubsystem()
 	{
-		m_engine = nullptr;
+		mEngine = nullptr;
 	}
 
-	void AudioSubsystem::initialize(core::SubsystemManager* subsystem_manager)
+	void AudioSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
-		Subsystem::initialize(subsystem_manager);
+		Subsystem::Initialize(subsystem_manager);
 
-		m_audio_subsystem_provider = new MiniAudioSubsystem(m_engine);
-		m_audio_subsystem_provider->initialize(subsystem_manager);
+		m_audio_subsystem_provider = new MiniAudioSubsystem(mEngine);
+		m_audio_subsystem_provider->Initialize(subsystem_manager);
 	}
 
-	void AudioSubsystem::deinitialize()
+	void AudioSubsystem::Deinitialize()
 	{
-		Subsystem::deinitialize();
+		Subsystem::Deinitialize();
 
-		m_audio_subsystem_provider->deinitialize();
+		m_audio_subsystem_provider->Deinitialize();
 
 		delete m_audio_subsystem_provider;
 		m_audio_subsystem_provider = nullptr;
 	}
 
-	void AudioSubsystem::update(double delta_time)
+	void AudioSubsystem::Update(double delta_time)
 	{
 		
 	}

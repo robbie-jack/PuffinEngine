@@ -24,8 +24,8 @@ namespace puffin
 			WindowSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~WindowSubsystem() override;
 
-			void initialize(core::SubsystemManager* subsystem_manager) override;
-			void deinitialize() override;
+			void Initialize(core::SubsystemManager* subsystem_manager) override;
+			void Deinitialize() override;
 
 			GLFWwindow* primary_window() const
 			{

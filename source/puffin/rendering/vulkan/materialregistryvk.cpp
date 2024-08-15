@@ -77,7 +77,7 @@ namespace puffin::rendering
 	{
 		const auto matAsset = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(matID);
 
-		if (matAsset && matAsset->load())
+		if (matAsset && matAsset->Load())
 		{
 			matData.assetId = matID;
 			matData.baseMaterialID = matAsset->getBaseMaterialID();
@@ -116,7 +116,7 @@ namespace puffin::rendering
 				m_materials_to_load.insert(matData.baseMaterialID);
 			}
 
-			matAsset->unload();
+			matAsset->Unload();
 
 			return true;
 		}
@@ -130,12 +130,12 @@ namespace puffin::rendering
 		{
 			const auto matAsset = assets::AssetRegistry::get()->get_asset<assets::MaterialAsset>(matID);
 
-			if (matAsset && matAsset->load())
+			if (matAsset && matAsset->Load())
 			{
 				const auto vertShaderAsset = assets::AssetRegistry::get()->get_asset<assets::ShaderAsset>(matAsset->getVertexShaderID());
 				const auto fragShaderAsset = assets::AssetRegistry::get()->get_asset<assets::ShaderAsset>(matAsset->getFragmentShaderID());
 
-				if (vertShaderAsset && vertShaderAsset->load() && fragShaderAsset && fragShaderAsset->load())
+				if (vertShaderAsset && vertShaderAsset->Load() && fragShaderAsset && fragShaderAsset->Load())
 				{
 					const auto vertMod = util::ShaderModule{ m_render_system->device(), vertShaderAsset->code() };
 					const auto fragMod = util::ShaderModule{ m_render_system->device(), fragShaderAsset->code() };

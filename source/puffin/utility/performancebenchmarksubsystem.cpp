@@ -6,16 +6,16 @@ namespace puffin::utility
 {
 	PerformanceBenchmarkSubsystem::PerformanceBenchmarkSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
-		m_name = "PerformanceBenchmarkSubsystem";
+		mName = "PerformanceBenchmarkSubsystem";
 	}
 
-	void PerformanceBenchmarkSubsystem::deinitialize()
+	void PerformanceBenchmarkSubsystem::Deinitialize()
 	{
 		m_benchmark_start_point.clear();
 		m_benchmarks.clear();
 	}
 
-	void PerformanceBenchmarkSubsystem::end_play()
+	void PerformanceBenchmarkSubsystem::EndPlay()
 	{
 		m_benchmark_start_point.clear();
 		m_benchmarks.clear();

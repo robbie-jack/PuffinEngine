@@ -32,67 +32,67 @@ namespace puffin::core
 		 * All subsystem initialization occurs here
 		 * subsystem initialization is called depending on what type of subsystem this is
 		 */
-		virtual void initialize(SubsystemManager* subsystem_manager);
+		virtual void Initialize(SubsystemManager* subsystemManager);
 
 		/*
 		 * All subsystem deinitialization occurs here, same rules apply as initialization method for method execution
 		 */
-		virtual void deinitialize();
+		virtual void Deinitialize();
 
-		[[nodiscard]] virtual SubsystemType type() const;
+		[[nodiscard]] virtual SubsystemType GetType() const;
 
 		/*
 		 * Called when gameplay begins
 		 */
-		virtual void begin_play();
+		virtual void BeginPlay();
 
 		/*
 		 * Called when gameplay ends
 		 */
-		virtual void end_play();
+		virtual void EndPlay();
 
 		/*
 		 * Update method, called once a frame
 		 * If gameplay subsystem only called when game is playing
 		 */
-		virtual void update(double delta_time);
+		virtual void Update(double deltaTime);
 
 		/*
 		 * Whether update method should be called, defaults to false
 		 */
-		virtual bool should_update();
+		virtual bool ShouldUpdate();
 
 		/*
 		 * Fixed update method, called once every fixed physics tick, and only on gameplay subsystems
 		 */
-		virtual void fixed_update(double fixed_time_step);
+		virtual void FixedUpdate(double fixedTimeStep);
 
 		/*
 		 * Whether fixed update method should be called, defaults to false
 		 */
-		virtual bool should_fixed_update();
+		virtual bool ShouldFixedUpdate();
 
 		/*
 		 * Called once a frame on input subsystem
 		 */
-		virtual void process_input();
+		virtual void ProcessInput();
 
 		/*
 		 * Called each frame to wait for last presentation to complete and sample frame time
 		 */
-		virtual double wait_for_last_presentation_and_sample_time();
+		virtual double WaitForLastPresentationAndSampleTime();
 
 		/*
 		 * Called each frame to render 2d/3d scene to display
 		 */
-		virtual void render(double delta_time);
+		virtual void Render(double deltaTime);
 
-		const std::string& name();
+		const std::string& GetName();
 
 	protected:
 
-		std::shared_ptr<Engine> m_engine = nullptr;
-		std::string m_name = "Subsystem";
+		std::shared_ptr<Engine> mEngine = nullptr;
+		std::string mName = "Subsystem";
 
 	};
 }

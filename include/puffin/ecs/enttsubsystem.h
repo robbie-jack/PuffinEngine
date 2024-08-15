@@ -18,10 +18,10 @@ namespace puffin::ecs
 		explicit EnTTSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~EnTTSubsystem() override;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
-		void deinitialize() override;
+		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Deinitialize() override;
 
-		void end_play() override;
+		void EndPlay() override;
 
 		PuffinID add_entity(bool should_be_serialized = true);
 
