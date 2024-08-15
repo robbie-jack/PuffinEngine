@@ -65,55 +65,9 @@ namespace puffin::assets
 		{ 4, TextureFormat::BC7 }
 	};
 
-	static TextureFormat parseTextureFormat(const char* f)
-	{
-		if (strcmp(f, "RGBA8") == 0)
-		{
-			return TextureFormat::RGBA8;
-		}
+	TextureFormat ParseTextureFormat(const char* f);
 
-		if (strcmp(f, "R8") == 0)
-		{
-			return TextureFormat::R8;
-		}
-
-		if (strcmp(f, "RG8") == 0)
-		{
-			return TextureFormat::RG8;
-		}
-
-		if (strcmp(f, "RGB8") == 0)
-		{
-			return TextureFormat::RGB8;
-		}
-
-		if (strcmp(f, "BC4") == 0)
-		{
-			return TextureFormat::BC4;
-		}
-
-		if (strcmp(f, "BC5") == 0)
-		{
-			return TextureFormat::BC5;
-		}
-
-		if (strcmp(f, "BC6H") == 0)
-		{
-			return TextureFormat::BC6H;
-		}
-
-		if (strcmp(f, "BC7") == 0)
-		{
-			return TextureFormat::BC7;
-		}
-
-		return TextureFormat::Unknown;
-	}
-
-	static const char* parseTextureStringFromFormat(TextureFormat format)
-	{
-		return gTexFormatToString.at(format);
-	}
+	static const char* ParseTextureStringFromFormat(TextureFormat format);
 
 	struct TextureInfo : AssetInfo
 	{
@@ -128,79 +82,43 @@ namespace puffin::assets
 	{
 	public:
 
-		TextureAsset() : Asset(fs::path()) {}
-
-		TextureAsset(const fs::path& path) : Asset(path) {}
-
-		TextureAsset(const PuffinID id, const fs::path& path) : Asset(id, path) {}
+		TextureAsset();
+		explicit TextureAsset(const fs::path& path);
+		TextureAsset(const PuffinID id, const fs::path& path);
 
 		~TextureAsset() override = default;
 
-		[[nodiscard]] const std::string& GetType() const override
-		{
-			return gTextureType;
-		}
-
-		[[nodiscard]] const uint32_t& GetVersion() const override
-		{
-			return gTextureVersion;
-		}
+		[[nodiscard]] const std::string& GetType() const override;
+		[[nodiscard]] const uint32_t& GetVersion() const override;
 
 		bool Save() override;
-
-		bool save(TextureInfo& info, void* pixelData);
+		bool Save(TextureInfo& info, void* pixelData);
 
 		bool Load(bool loadHeaderOnly = false) override;
 
 		void Unload() override;
 
-		const std::vector<char>& pixels() const
-		{
-			return mPixels;
-		}
+		[[nodiscard]] const std::vector<char>& Pixels() const;
+		[[nodiscard]] const void* PixelData() const;
 
-		const void* pixelData() const
-		{
-			return mPixels.data();
-		}
-
-		[[nodiscard]] uint32_t textureWidth() const
-		{
-			return mTexWidth;
-		}
-
-		[[nodiscard]] uint32_t textureHeight() const
-		{
-			return mTexHeight;
-		}
-
-		[[nodiscard]] uint8_t textureChannels() const
-		{
-			return mTexChannels;
-		}
-
-		[[nodiscard]] TextureFormat textureFormat() const
-		{
-			return mTexFormat;
-		}
-
-		[[nodiscard]] uint64_t textureSize() const
-		{
-			return mTexSize;
-		}
+		[[nodiscard]] uint32_t TextureWidth() const;
+		[[nodiscard]] uint32_t TextureHeight() const;
+		[[nodiscard]] uint8_t TextureChannels() const;
+		[[nodiscard]] TextureFormat TextureFormat() const;
+		[[nodiscard]] uint64_t TextureSize() const;
 
 	private:
 
-		std::vector<char> mPixels;
+		std::vector<char> mPixels;	
 		uint32_t mTexWidth = 0;
 		uint32_t mTexHeight = 0;
 		uint8_t mTexChannels = 0;
 		uint64_t mTexSize = 0;
-		TextureFormat mTexFormat;
+		enum TextureFormat mTexFormat;
 
 		std::string mOriginalFile;
 		CompressionMode mCompressionMode;
 
-		static TextureInfo parseTextureInfo(const AssetData& data);
+		static TextureInfo ParseTextureInfo(const AssetData& data);
 	};
 }

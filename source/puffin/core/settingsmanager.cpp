@@ -18,11 +18,11 @@ namespace puffin::core
 		if (mEngine->GetSetupEngineDefaultSettings())
 		{
 			default_settings();
-			save(assets::AssetRegistry::get()->project_root() / "config" / "settings.json");
+			save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.json");
 		}
 		else
 		{
-			load(assets::AssetRegistry::get()->project_root() / "config" / "settings.json");
+			load(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.json");
 		}
 	}
 

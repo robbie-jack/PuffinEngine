@@ -31,7 +31,7 @@ namespace puffin::assets
 			return false;
 
 		// Write asset id
-		outFile.write(reinterpret_cast<const char*>(&assetData.ID), sizeof(uint_least64_t));
+		outFile.write(reinterpret_cast<const char*>(&assetData.id), sizeof(uint_least64_t));
 
 		// Write Asset Type
 		outFile.write(reinterpret_cast<const char*>(&assetData.type), sizeof(uint32_t));
@@ -40,7 +40,7 @@ namespace puffin::assets
 		outFile.write(reinterpret_cast<const char*>(&assetData.version), sizeof(uint32_t));
 
 		// Write Json Length
-		const std::string jsonString = assetData.json_data.dump();
+		const std::string jsonString = assetData.jsonData.dump();
 		const uint32_t jsonLength = jsonString.size();
 		outFile.write(reinterpret_cast<const char*>(&jsonLength), sizeof(uint32_t));
 
@@ -74,7 +74,7 @@ namespace puffin::assets
 		inFile.seekg(0);
 
 		// Read asset id
-		inFile.read(reinterpret_cast<char*>(&assetData.ID), sizeof(uint_least64_t));
+		inFile.read(reinterpret_cast<char*>(&assetData.id), sizeof(uint_least64_t));
 
 		// Read Asset Type
 		inFile.read(reinterpret_cast<char*>(&assetData.type), sizeof(uint32_t));
@@ -95,7 +95,7 @@ namespace puffin::assets
 		jsonString.resize(jsonLength);
 		inFile.read(jsonString.data(), jsonLength);
 
-		assetData.json_data = json::parse(jsonString);
+		assetData.jsonData = json::parse(jsonString);
 
 		// Load only header data, skip binary blob
 		if (loadHeaderOnly)
@@ -121,10 +121,10 @@ namespace puffin::assets
 
 		json data;
 
-		data["id"] = assetData.ID;
+		data["id"] = assetData.id;
 		data["type"] = assetData.type;
 		data["version"] = assetData.version;
-		data["data"] = assetData.json_data;
+		data["data"] = assetData.jsonData;
 
 		os << std::setw(4) << data << std::endl;
 
@@ -143,14 +143,22 @@ namespace puffin::assets
 		json data;
 		is >> data;
 
-		assetData.ID = data["id"];
+		assetData.id = data["id"];
 		assetData.type = data["type"];
 		assetData.version = data["version"];
-		assetData.json_data = data["data"];
+		assetData.jsonData = data["data"];
 
 		is.close();
 
 		return true;
+	}
+
+	Asset::Asset(const fs::path& path): mID(puffin::generate_id()), mPath(path)
+	{
+	}
+
+	Asset::Asset(const puffin::PuffinID uuid, const fs::path& path): mID(uuid), mPath(path)
+	{
 	}
 
 	PuffinID Asset::GetID() const

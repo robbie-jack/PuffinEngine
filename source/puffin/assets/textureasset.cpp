@@ -15,6 +15,78 @@ namespace puffin::assets
 
 	// Public
 
+	TextureFormat ParseTextureFormat(const char* f)
+	{
+		if (strcmp(f, "RGBA8") == 0)
+		{
+			return TextureFormat::RGBA8;
+		}
+
+		if (strcmp(f, "R8") == 0)
+		{
+			return TextureFormat::R8;
+		}
+
+		if (strcmp(f, "RG8") == 0)
+		{
+			return TextureFormat::RG8;
+		}
+
+		if (strcmp(f, "RGB8") == 0)
+		{
+			return TextureFormat::RGB8;
+		}
+
+		if (strcmp(f, "BC4") == 0)
+		{
+			return TextureFormat::BC4;
+		}
+
+		if (strcmp(f, "BC5") == 0)
+		{
+			return TextureFormat::BC5;
+		}
+
+		if (strcmp(f, "BC6H") == 0)
+		{
+			return TextureFormat::BC6H;
+		}
+
+		if (strcmp(f, "BC7") == 0)
+		{
+			return TextureFormat::BC7;
+		}
+
+		return TextureFormat::Unknown;
+	}
+
+	const char* ParseTextureStringFromFormat(TextureFormat format)
+	{
+		return gTexFormatToString.at(format);
+	}
+
+	TextureAsset::TextureAsset(): Asset(fs::path())
+	{
+	}
+
+	TextureAsset::TextureAsset(const fs::path& path): Asset(path)
+	{
+	}
+
+	TextureAsset::TextureAsset(const PuffinID id, const fs::path& path): Asset(id, path)
+	{
+	}
+
+	const std::string& TextureAsset::GetType() const
+	{
+		return gTextureType;
+	}
+
+	const uint32_t& TextureAsset::GetVersion() const
+	{
+		return gTextureVersion;
+	}
+
 	bool TextureAsset::Save()
 	{
 		if (mIsLoaded)
@@ -28,19 +100,19 @@ namespace puffin::assets
 			info.textureChannels = mTexChannels;
 			info.originalSize = info.textureHeight * info.textureWidth * info.textureChannels;
 
-			return save(info, mPixels.data());
+			return Save(info, mPixels.data());
 		}
 
 		return false;
 	}
 
-	bool TextureAsset::save(TextureInfo& info, void* pixelData)
+	bool TextureAsset::Save(TextureInfo& info, void* pixelData)
 	{
-		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
+		const fs::path fullPath = AssetRegistry::Get()->GetContentRoot() / GetRelativePath();
 
 		// Create AssetData Struct
 		AssetData data;
-		data.ID = GetID();
+		data.id = GetID();
 		data.type = AssetType::Texture;
 		data.version = gTextureVersion;
 
@@ -72,13 +144,13 @@ namespace puffin::assets
 		}
 
 		// Fill Metadata from Info struct
-		data.json_data["compression"] = info.compressionMode;
-		data.json_data["textureFormat"] = info.textureFormat;
-		data.json_data["original_file"] = info.originalFile;
-		data.json_data["textureHeight"] = info.textureHeight;
-		data.json_data["textureWidth"] = info.textureWidth;
-		data.json_data["textureChannels"] = info.textureChannels;
-		data.json_data["originalSize"] = info.originalSize;
+		data.jsonData["compression"] = info.compressionMode;
+		data.jsonData["textureFormat"] = info.textureFormat;
+		data.jsonData["original_file"] = info.originalFile;
+		data.jsonData["textureHeight"] = info.textureHeight;
+		data.jsonData["textureWidth"] = info.textureWidth;
+		data.jsonData["textureChannels"] = info.textureChannels;
+		data.jsonData["originalSize"] = info.originalSize;
 
 		return SaveBinaryFile(fullPath, data);
 	}
@@ -90,7 +162,7 @@ namespace puffin::assets
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
+		const fs::path fullPath = AssetRegistry::Get()->GetContentRoot() / GetRelativePath();
 		if (!fs::exists(fullPath))
 			return false;
 		
@@ -102,7 +174,7 @@ namespace puffin::assets
 		}
 
 		// Parse Metadata from Json
-		const TextureInfo info = parseTextureInfo(data);
+		const TextureInfo info = ParseTextureInfo(data);
 
 		if (loadHeaderOnly)
 			return true;
@@ -129,7 +201,7 @@ namespace puffin::assets
 		mTexSize = info.originalSize;
 
 		data.binaryBlob.clear();
-		data.json_data.clear();
+		data.jsonData.clear();
 
 		mIsLoaded = true;
 		return true;
@@ -146,20 +218,55 @@ namespace puffin::assets
 		mIsLoaded = false;
 	}
 
+	const std::vector<char>& TextureAsset::Pixels() const
+	{
+		return mPixels;
+	}
+
+	const void* TextureAsset::PixelData() const
+	{
+		return mPixels.data();
+	}
+
+	uint32_t TextureAsset::TextureWidth() const
+	{
+		return mTexWidth;
+	}
+
+	uint32_t TextureAsset::TextureHeight() const
+	{
+		return mTexHeight;
+	}
+
+	uint8_t TextureAsset::TextureChannels() const
+	{
+		return mTexChannels;
+	}
+
+	TextureFormat TextureAsset::TextureFormat() const
+	{
+		return mTexFormat;
+	}
+
+	uint64_t TextureAsset::TextureSize() const
+	{
+		return mTexSize;
+	}
+
 	// Private
 
-	TextureInfo TextureAsset::parseTextureInfo(const AssetData& data)
+	TextureInfo TextureAsset::ParseTextureInfo(const AssetData& data)
 	{
 		// Fill Texture Info struct with metadata
 		TextureInfo info;
 
-		info.compressionMode = data.json_data["compression"];
-		info.textureFormat = data.json_data["textureFormat"];
-		info.originalFile = data.json_data["original_file"];
-		info.textureHeight = data.json_data["textureHeight"];
-		info.textureWidth = data.json_data["textureWidth"];
-		info.textureChannels = data.json_data["textureChannels"];
-		info.originalSize = data.json_data["originalSize"];
+		info.compressionMode = data.jsonData["compression"];
+		info.textureFormat = data.jsonData["textureFormat"];
+		info.originalFile = data.jsonData["original_file"];
+		info.textureHeight = data.jsonData["textureHeight"];
+		info.textureWidth = data.jsonData["textureWidth"];
+		info.textureChannels = data.jsonData["textureChannels"];
+		info.originalSize = data.jsonData["originalSize"];
 
 		return info;
 	}

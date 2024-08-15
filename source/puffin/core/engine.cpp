@@ -92,20 +92,20 @@ namespace puffin::core
 		load_project(projectPath, mProjectFile);
 
 		// Setup asset registry
-		assets::AssetRegistry::get()->init(mProjectFile, projectPath);
-		assets::AssetRegistry::get()->register_asset_type<assets::StaticMeshAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::TextureAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::SoundAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::ShaderAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::MaterialAsset>();
-		assets::AssetRegistry::get()->register_asset_type<assets::MaterialInstanceAsset>();
+		assets::AssetRegistry::Get()->Initialize(mProjectFile, projectPath);
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::StaticMeshAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::TextureAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::SoundAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::ShaderAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialInstanceAsset>();
 
 		// Load Project Settings
 		mSetupEngineDefaultSettings = parser.get<bool>("--setup-default-settings");
 		mSetupEngineDefaultScene = parser.get<bool>("--setup-engine-default-scene");
 
 		// Load/Initialize Assets
-		assets::AssetRegistry::get()->load_asset_cache();
+		assets::AssetRegistry::Get()->LoadAssetCache();
 		//add_default_assets();
 		//reimport_default_assets();
 		//assets::AssetRegistry::get()->save_asset_cache();
@@ -144,7 +144,7 @@ namespace puffin::core
 
 		{
 			auto sceneData = sceneSubsystem->create_scene(
-				assets::AssetRegistry::get()->content_root() / sceneString);
+				assets::AssetRegistry::Get()->GetContentRoot() / sceneString);
 
 			if (mSetupEngineDefaultScene)
 			{
@@ -390,7 +390,7 @@ namespace puffin::core
 		mSubsystemManager->DestroyEngineSubsystems();
 
 		// Clear Asset Registry
-		assets::AssetRegistry::clear();
+		assets::AssetRegistry::Clear();
 
 		mSubsystemManager = nullptr;
 	}
@@ -421,10 +421,10 @@ namespace puffin::core
 		const fs::path& meshPath3 = fs::path() / "meshes" / "cube.pstaticmesh";
 		const fs::path& meshPath4 = fs::path() / "meshes" / "space_engineer.pstaticmesh";
 
-		PuffinID meshId1 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath1)->GetID();
+		PuffinID meshId1 = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(meshPath1)->GetID();
 		//PuffinID meshId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		PuffinID meshId3 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath3)->GetID();
-		PuffinID meshId4 = assets::AssetRegistry::get()->add_asset<assets::StaticMeshAsset>(meshPath4)->GetID();
+		PuffinID meshId3 = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(meshPath3)->GetID();
+		PuffinID meshId4 = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(meshPath4)->GetID();
 
 		const fs::path& texturePath1 = fs::path() / "textures" / "cube.ptexture";
 		const fs::path& texturePath2 = fs::path() / "textures" / "chalet.ptexture";
@@ -432,21 +432,21 @@ namespace puffin::core
 		const fs::path& texturePath4 = fs::path() / "textures" / "statue.ptexture";
 		const fs::path& texturePath5 = fs::path() / "textures" / "xsprite.ptexture";
 
-		PuffinID textureId1 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath1)->GetID();
-		PuffinID textureId2 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath2)->GetID();
-		PuffinID textureId3 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath3)->GetID();
-		PuffinID textureId4 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath4)->GetID();
-		PuffinID textureId5 = assets::AssetRegistry::get()->add_asset<assets::TextureAsset>(texturePath5)->GetID();
+		PuffinID textureId1 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath1)->GetID();
+		PuffinID textureId2 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath2)->GetID();
+		PuffinID textureId3 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath3)->GetID();
+		PuffinID textureId4 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath4)->GetID();
+		PuffinID textureId5 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath5)->GetID();
 
 		const fs::path& soundPath1 = fs::path() / "sounds" / "Select 1.wav";
 
-		PuffinID soundId1 = assets::AssetRegistry::get()->add_asset<assets::SoundAsset>(soundPath1)->GetID();
+		PuffinID soundId1 = assets::AssetRegistry::Get()->AddAsset<assets::SoundAsset>(soundPath1)->GetID();
 
 		const fs::path shaderPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_vert.pshader";
 		const fs::path shaderPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_frag.pshader";
 
-		const auto shaderAsset1 = assets::AssetRegistry::get()->add_asset<assets::ShaderAsset>(shaderPath1);
-		const auto shaderAsset2 = assets::AssetRegistry::get()->add_asset<assets::ShaderAsset>(shaderPath2);
+		const auto shaderAsset1 = assets::AssetRegistry::Get()->AddAsset<assets::ShaderAsset>(shaderPath1);
+		const auto shaderAsset2 = assets::AssetRegistry::Get()->AddAsset<assets::ShaderAsset>(shaderPath2);
 
 		//shaderAsset1->setType(assets::ShaderType::Vertex);
 
@@ -466,37 +466,37 @@ namespace puffin::core
 		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
 			"forward_shading_chalet.pmaterialinst";
 
-		const auto materialInstAsset1 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(
+		const auto materialInstAsset1 = assets::AssetRegistry::Get()->AddAsset<assets::MaterialInstanceAsset>(
 			materialInstPath1);
-		const auto materialInstAsset2 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(
+		const auto materialInstAsset2 = assets::AssetRegistry::Get()->AddAsset<assets::MaterialInstanceAsset>(
 			materialInstPath2);
 
-		materialInstAsset1->getTexIDs()[0] = textureId1;
+		materialInstAsset1->GetTexIDs()[0] = textureId1;
 
 		materialInstAsset1->Save();
 
-		materialInstAsset2->getTexIDs()[0] = textureId2;
+		materialInstAsset2->GetTexIDs()[0] = textureId2;
 
 		materialInstAsset2->Save();
 	}
 
 	void Engine::ReimportDefaultAssets()
 	{
-		io::LoadAndImportModel(assets::AssetRegistry::get()->project_root() / "model_backups/cube.obj", "meshes");
-		io::LoadAndImportModel(assets::AssetRegistry::get()->project_root() / "model_backups/space_engineer.obj",
+		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups/cube.obj", "meshes");
+		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups/space_engineer.obj",
 		                          "meshes");
 		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\Sphere.dae)", "meshes");
-		io::LoadAndImportModel(assets::AssetRegistry::get()->project_root() / "model_backups/chalet.obj", "meshes");
+		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups/chalet.obj", "meshes");
 
-		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/chalet.jpg",
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/chalet.jpg",
 		                            "textures");
-		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/cube.png",
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/cube.png",
 		                            "textures");
-		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/space_engineer.jpg",
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/space_engineer.jpg",
 		                            "textures");
-		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/statue.jpg",
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/statue.jpg",
 		                            "textures");
-		io::LoadAndImportTexture(assets::AssetRegistry::get()->project_root() / "texture_backups/xsprite.png",
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/xsprite.png",
 		                            "textures");
 	}
 
@@ -533,7 +533,7 @@ namespace puffin::core
 
 		for (const auto path : paths)
 		{
-			if (const auto asset = assets::AssetRegistry::get()->get_asset(path); asset != nullptr)
+			if (const auto asset = assets::AssetRegistry::Get()->GetAsset(path); asset != nullptr)
 			{
 				asset->Load();
 				asset->Save();
@@ -545,23 +545,23 @@ namespace puffin::core
 	void Engine::InitDefaultScene()
 	{
 		// Get assets
-		fs::path contentRootPath = assets::AssetRegistry::get()->content_root();
+		fs::path contentRootPath = assets::AssetRegistry::Get()->GetContentRoot();
 
 		const fs::path& meshPath1 = fs::path() / "meshes" / "chalet.pstaticmesh";
 		//const fs::path& meshPath2 = fs::path() / "meshes" / "sphere.pstaticmesh";
 		const fs::path& meshPath3 = fs::path() / "meshes" / "cube.pstaticmesh";
 		const fs::path& meshPath4 = fs::path() / "meshes" / "space_engineer.pstaticmesh";
 
-		const PuffinID meshId1 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath1)->GetID();
+		const PuffinID meshId1 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath1)->GetID();
 		//const PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		const PuffinID meshId3 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath3)->GetID();
-		const PuffinID meshId4 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath4)->GetID();
+		const PuffinID meshId3 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath3)->GetID();
+		const PuffinID meshId4 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath4)->GetID();
 
 		const fs::path& texturePath1 = fs::path() / "textures" / "chalet.ptexture";
 		const fs::path& texturePath2 = fs::path() / "textures" / "cube.ptexture";
 
-		const PuffinID textureId1 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath1)->GetID();
-		const PuffinID textureId2 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath2)->GetID();
+		const PuffinID textureId1 = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texturePath1)->GetID();
+		const PuffinID textureId2 = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texturePath2)->GetID();
 
 		//const fs::path& soundPath1 = "sounds/Select 1.wav";
 
@@ -572,9 +572,9 @@ namespace puffin::core
 		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
 			"forward_shading_chalet.pmaterialinst";
 
-		PuffinID materialInstId1 = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(
+		PuffinID materialInstId1 = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
 			materialInstPath1)->GetID();
-		PuffinID materialInstId2 = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(
+		PuffinID materialInstId2 = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
 			materialInstPath2)->GetID();
 
 		auto registry = GetSubsystem<ecs::EnTTSubsystem>()->registry();
@@ -680,36 +680,36 @@ namespace puffin::core
 	void Engine::InitPhysicsScene3D()
 	{
 		// Get assets
-		fs::path contentRootPath = assets::AssetRegistry::get()->content_root();
+		fs::path contentRootPath = assets::AssetRegistry::Get()->GetContentRoot();
 
 		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
 		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
 		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
 		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
 
-		const PuffinID meshId1 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath1)->GetID();
-		const PuffinID meshId2 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath2)->GetID();
-		const PuffinID meshId3 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath3)->GetID();
-		const PuffinID meshId4 = assets::AssetRegistry::get()->get_asset<assets::StaticMeshAsset>(meshPath4)->GetID();
+		const PuffinID meshId1 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath1)->GetID();
+		const PuffinID meshId2 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath2)->GetID();
+		const PuffinID meshId3 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath3)->GetID();
+		const PuffinID meshId4 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath4)->GetID();
 
 		const fs::path& texturePath1 = "textures\\chalet.ptexture";
 		const fs::path& texturePath2 = "textures\\cube.ptexture";
 
-		const PuffinID textureId1 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath1)->GetID();
-		const PuffinID textureId2 = assets::AssetRegistry::get()->get_asset<assets::TextureAsset>(texturePath2)->GetID();
+		const PuffinID textureId1 = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texturePath1)->GetID();
+		const PuffinID textureId2 = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texturePath2)->GetID();
 
 		const fs::path& soundPath1 = "sounds\\Select 1.wav";
 
-		PuffinID soundId1 = assets::AssetRegistry::get()->get_asset<assets::SoundAsset>(soundPath1)->GetID();
+		PuffinID soundId1 = assets::AssetRegistry::Get()->GetAsset<assets::SoundAsset>(soundPath1)->GetID();
 
 		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" /
 			"forward_shading_default.pmaterialinst";
 		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
 			"forward_shading_chalet.pmaterialinst";
 
-		PuffinID materialInstId1 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(
+		PuffinID materialInstId1 = assets::AssetRegistry::Get()->AddAsset<assets::MaterialInstanceAsset>(
 			materialInstPath1)->GetID();
-		PuffinID materialInstId2 = assets::AssetRegistry::get()->add_asset<assets::MaterialInstanceAsset>(
+		PuffinID materialInstId2 = assets::AssetRegistry::Get()->AddAsset<assets::MaterialInstanceAsset>(
 			materialInstPath2)->GetID();
 
 		const auto sceneGraph = GetSubsystem<scene::SceneGraphSubsystem>();

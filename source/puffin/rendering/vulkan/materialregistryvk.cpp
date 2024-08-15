@@ -75,17 +75,17 @@ namespace puffin::rendering
 
 	bool MaterialRegistryVK::load_material_instance(PuffinID matID, MaterialDataVK& matData)
 	{
-		const auto matAsset = assets::AssetRegistry::get()->get_asset<assets::MaterialInstanceAsset>(matID);
+		const auto matAsset = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(matID);
 
 		if (matAsset && matAsset->Load())
 		{
 			matData.assetId = matID;
-			matData.baseMaterialID = matAsset->getBaseMaterialID();
+			matData.baseMaterialID = matAsset->GetBaseMaterialID();
 
 			GPUMaterialInstanceData matInstData;
 
 			int i = 0;
-			for (const auto& idx : matAsset->getTexIDs())
+			for (const auto& idx : matAsset->GetTexIDs())
 			{
 				matData.texIDs[i] = idx;
 				matInstData.tex_indices[i] = 0;
@@ -94,7 +94,7 @@ namespace puffin::rendering
 			}
 
 			i = 0;
-			for (const auto& data : matAsset->getData())
+			for (const auto& data : matAsset->GetData())
 			{
 				matInstData.data[i] = data;
 
@@ -128,17 +128,17 @@ namespace puffin::rendering
 	{
 		if (!m_mat_data.contains(matID))
 		{
-			const auto matAsset = assets::AssetRegistry::get()->get_asset<assets::MaterialAsset>(matID);
+			const auto matAsset = assets::AssetRegistry::Get()->GetAsset<assets::MaterialAsset>(matID);
 
 			if (matAsset && matAsset->Load())
 			{
-				const auto vertShaderAsset = assets::AssetRegistry::get()->get_asset<assets::ShaderAsset>(matAsset->getVertexShaderID());
-				const auto fragShaderAsset = assets::AssetRegistry::get()->get_asset<assets::ShaderAsset>(matAsset->getFragmentShaderID());
+				const auto vertShaderAsset = assets::AssetRegistry::Get()->GetAsset<assets::ShaderAsset>(matAsset->GetVertexShaderID());
+				const auto fragShaderAsset = assets::AssetRegistry::Get()->GetAsset<assets::ShaderAsset>(matAsset->GetFragmentShaderID());
 
 				if (vertShaderAsset && vertShaderAsset->Load() && fragShaderAsset && fragShaderAsset->Load())
 				{
-					const auto vertMod = util::ShaderModule{ m_render_system->device(), vertShaderAsset->code() };
-					const auto fragMod = util::ShaderModule{ m_render_system->device(), fragShaderAsset->code() };
+					const auto vertMod = util::ShaderModule{ m_render_system->device(), vertShaderAsset->GetCode() };
+					const auto fragMod = util::ShaderModule{ m_render_system->device(), fragShaderAsset->GetCode() };
 
 					m_mats.emplace(matID, MaterialVK());
 

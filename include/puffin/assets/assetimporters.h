@@ -20,15 +20,15 @@ namespace puffin::io
 
 	// OBJ
 
-	bool load_and_import_obj_model(const fs::path& modelPath, fs::path assetSubdirectory);
+	bool LoadAndImportObjModel(const fs::path& modelPath, fs::path assetSubdirectory);
 
 	// GLTF
 
-	bool load_gltf_model(const fs::path& modelPath, tinygltf::Model& model);
+	bool LoadGltfModel(const fs::path& modelPath, tinygltf::Model& model);
 
-	bool import_gltf_model(const fs::path& modelPath, const tinygltf::Model& model, fs::path assetSubdirectory);
+	bool ImportGltfModel(const fs::path& modelPath, const tinygltf::Model& model, fs::path assetSubdirectory);
 
-	bool load_and_import_gltf_model(const fs::path& modelPath, fs::path assetSubdirectory);
+	bool LoadAndImportGltfModel(const fs::path& modelPath, fs::path assetSubdirectory);
 
 	//////////////////////
 	// Texture Importers

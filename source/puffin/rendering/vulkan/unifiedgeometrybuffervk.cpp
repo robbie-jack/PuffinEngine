@@ -56,52 +56,52 @@ namespace puffin::rendering
 				m_internal_mesh_data.emplace(static_mesh->GetID(), InternalMeshData());
 			}
 
-			if (m_vertex_buffer_data.find(static_mesh->vertex_format()) == m_vertex_buffer_data.end())
+			if (m_vertex_buffer_data.find(static_mesh->VertexFormat()) == m_vertex_buffer_data.end())
 			{
-				add_internal_vertex_buffer(static_mesh->vertex_format());
+				add_internal_vertex_buffer(static_mesh->VertexFormat());
 			}
 
-			InternalVertexBufferData& internal_vertex_buffer_data = m_vertex_buffer_data[static_mesh->vertex_format()];
+			InternalVertexBufferData& internal_vertex_buffer_data = m_vertex_buffer_data[static_mesh->VertexFormat()];
 
 			auto& internal_mesh_data = m_internal_mesh_data.at(static_mesh->GetID());
 			internal_mesh_data.active = true;
 
-			const uint64_t new_vertex_byte_offset = internal_vertex_buffer_data.byte_offset + static_mesh->vertex_byte_size_total();
+			const uint64_t new_vertex_byte_offset = internal_vertex_buffer_data.byte_offset + static_mesh->VertexByteSizeTotal();
 			if (new_vertex_byte_offset >= internal_vertex_buffer_data.byte_size_total)
 			{
 				grow_vertex_buffer(internal_vertex_buffer_data, new_vertex_byte_offset);
 			}
 
-			const uint64_t new_index_byte_offset = m_index_buffer_data.byte_offset + static_mesh->index_byte_size_total();
+			const uint64_t new_index_byte_offset = m_index_buffer_data.byte_offset + static_mesh->IndexByteSizeTotal();
 			if (new_index_byte_offset >= m_index_buffer_data.byte_size_total)
 			{
 				grow_index_buffer(m_index_buffer_data, new_index_byte_offset);
 			}
 
 			// Copy vertex data
-			util::copy_cpu_data_into_gpu_buffer(m_render_system, internal_vertex_buffer_data.alloc_buffer, static_mesh->vertex_byte_size_total(),
-				static_mesh->vertices().data(), 0, internal_vertex_buffer_data.byte_offset);
+			util::copy_cpu_data_into_gpu_buffer(m_render_system, internal_vertex_buffer_data.alloc_buffer, static_mesh->VertexByteSizeTotal(),
+				static_mesh->Vertices().data(), 0, internal_vertex_buffer_data.byte_offset);
 
 			// Copy index data
-			util::copy_cpu_data_into_gpu_buffer(m_render_system, m_index_buffer_data.alloc_buffer, static_mesh->index_byte_size_total(),
-				static_mesh->indices().data(), 0, m_index_buffer_data.byte_offset);
+			util::copy_cpu_data_into_gpu_buffer(m_render_system, m_index_buffer_data.alloc_buffer, static_mesh->IndexByteSizeTotal(),
+				static_mesh->Indices().data(), 0, m_index_buffer_data.byte_offset);
 
-			for (const auto& sub_mesh_info : static_mesh->sub_mesh_info())
+			for (const auto& sub_mesh_info : static_mesh->SubMeshInfo())
 			{
 				InternalSubMeshData sub_mesh_data = {};
-				sub_mesh_data.vertex_offset = internal_vertex_buffer_data.offset + sub_mesh_info.vertex_offset;
-				sub_mesh_data.index_offset = m_index_buffer_data.offset + sub_mesh_info.index_offset;
-				sub_mesh_data.vertex_count = sub_mesh_info.vertex_count;
-				sub_mesh_data.index_count = sub_mesh_info.index_count;
+				sub_mesh_data.vertex_offset = internal_vertex_buffer_data.offset + sub_mesh_info.vertexOffset;
+				sub_mesh_data.index_offset = m_index_buffer_data.offset + sub_mesh_info.indexOffset;
+				sub_mesh_data.vertex_count = sub_mesh_info.vertexCount;
+				sub_mesh_data.index_count = sub_mesh_info.indexCount;
 
 				internal_mesh_data.sub_mesh_data.push_back(sub_mesh_data);
 			}
 
 			internal_vertex_buffer_data.byte_offset = new_vertex_byte_offset;
-			internal_vertex_buffer_data.offset += static_mesh->vertex_count_total();
+			internal_vertex_buffer_data.offset += static_mesh->VertexCountTotal();
 
 			m_index_buffer_data.byte_offset = new_index_byte_offset;
-			m_index_buffer_data.offset += static_mesh->index_count_total();
+			m_index_buffer_data.offset += static_mesh->IndexCountTotal();
 		}
 	}
 

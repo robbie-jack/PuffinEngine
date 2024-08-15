@@ -23,23 +23,14 @@ namespace puffin::assets
     {
     public:
 
-        MaterialAsset() : Asset(fs::path()) {}
-
-        explicit MaterialAsset(const fs::path& path) : Asset(path) {}
-
-        MaterialAsset(const PuffinID id, const fs::path& path) : Asset(id, path) {}
+        MaterialAsset();
+        explicit MaterialAsset(const fs::path& path);
+        MaterialAsset(const PuffinID id, const fs::path& path);
 
         ~MaterialAsset() override = default;
 
-        [[nodiscard]] const std::string& GetType() const override
-        {
-            return gMaterialAssetType;
-        }
-
-        [[nodiscard]] const uint32_t& GetVersion() const override
-        {
-            return gMaterialAssetVersion;
-        }
+        [[nodiscard]] const std::string& GetType() const override;
+        [[nodiscard]] const uint32_t& GetVersion() const override;
 
         bool Save() override;
 
@@ -47,11 +38,11 @@ namespace puffin::assets
 
         void Unload() override {}
 
-        [[nodiscard]] PuffinID getVertexShaderID() const { return mVertexShaderID; }
-        void setVertexShaderID(const PuffinID vertID) { mVertexShaderID = vertID; }
+        [[nodiscard]] PuffinID GetVertexShaderID() const;
+        void SetVertexShaderID(const PuffinID vertID);
 
-        [[nodiscard]] PuffinID getFragmentShaderID() const { return mFragmentShaderID; }
-        void setFragmentShaderID(const PuffinID fragID) { mFragmentShaderID = fragID; }
+        [[nodiscard]] PuffinID GetFragmentShaderID() const;
+        void SetFragmentShaderID(const PuffinID fragID);
 
     private:
 
@@ -63,35 +54,24 @@ namespace puffin::assets
     {
     public:
 
-        MaterialInstanceAsset() : Asset(fs::path()) {}
-
-        explicit MaterialInstanceAsset(const fs::path& path) : Asset(path) {}
-
-        MaterialInstanceAsset(const PuffinID id, const fs::path& path) : Asset(id, path) {}
+        MaterialInstanceAsset();
+        explicit MaterialInstanceAsset(const fs::path& path);
+        MaterialInstanceAsset(const PuffinID id, const fs::path& path);
 
         ~MaterialInstanceAsset() override = default;
 
-        [[nodiscard]] const std::string& GetType() const override
-        {
-            return gMaterialInstAssetType;
-        }
-
-        [[nodiscard]] const uint32_t& GetVersion() const override
-        {
-            return gMaterialInstAssetVersion;
-        }
+        [[nodiscard]] const std::string& GetType() const override;
+        [[nodiscard]] const uint32_t& GetVersion() const override;
 
         bool Save() override;
-
         bool Load(bool loadHeaderOnly = false) override;
-
         void Unload() override {}
 
-        [[nodiscard]] PuffinID getBaseMaterialID() const { return mBaseMaterial; }
-        void setBaseMaterialID(const PuffinID matID) { mBaseMaterial = matID; }
+        [[nodiscard]] PuffinID GetBaseMaterialID() const;
+        void SetBaseMaterialID(const PuffinID matID);
 
-        std::array<PuffinID, rendering::gNumTexturesPerMat>& getTexIDs() { return mTexIDs; }
-        std::array<float, rendering::gNumFloatsPerMat>& getData() { return mData; }
+        std::array<PuffinID, rendering::gNumTexturesPerMat>& GetTexIDs();
+        std::array<float, rendering::gNumFloatsPerMat>& GetData();
 
     private:
 

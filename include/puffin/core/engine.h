@@ -2,15 +2,11 @@
 
 #include "puffin/core/application.h"
 #include "puffin/projectsettings.h"
-#include "puffin/core/subsystem.h"
 #include "argparse/argparse.hpp"
 
 #include <GLFW/glfw3.h>
 
-#include <filesystem>
 #include <memory>
-#include <unordered_map>
-#include <vector>
 
 #include "subsystemmanager.h"
 
@@ -34,6 +30,15 @@ namespace puffin::core
 		JustUnpaused	// Game has just been unpaused
 	};
 
+	static constexpr uint32_t gEngineVersionMajor = 0;
+	static constexpr uint32_t gEngineVersionMinor = 1;
+	static constexpr uint32_t gEngineVersionPatch = 0;
+
+	struct EngineVersion
+	{
+		uint32_t major, minor, patch;
+	};
+
 	class Engine : public std::enable_shared_from_this<Engine>
 	{
 	public:
@@ -42,21 +47,13 @@ namespace puffin::core
 		~Engine();
 
 		void Setup();
-		void Initialize(const argparse::ArgumentParser& pS);
+		void Initialize(const argparse::ArgumentParser& parser);
 		bool Update();
 		void Deinitialize();
 
 		void Play();
 		void Restart();
 		void Exit();
-
-		template<typename AppT>
-		void RegisterApp()
-		{
-			assert(mApplication == nullptr && "Registering multiple applications");
-
-			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>(shared_from_this()));
-		}
 
 		PlayState GetPlayState() const { return mPlayState; }
 
@@ -66,6 +63,27 @@ namespace puffin::core
 		const double& GetTimeStepFixed() const { return mTimeStepFixed; }
 		const double& GetDeltaTime() const { return mDeltaTime; }
 		const double& GetAccumulatedTime() const { return mAccumulatedTime; }
+
+		static EngineVersion GetEngineVersion()
+		{
+			return { gEngineVersionMajor, gEngineVersionMinor, gEngineVersionPatch };
+		}
+
+		static void GetEngineVersionString(std::string& version)
+		{
+			version.clear();
+			version += std::to_string(gEngineVersionMajor) + ".";
+			version += std::to_string(gEngineVersionMinor) + ".";
+			version += std::to_string(gEngineVersionPatch);
+		}
+
+		template<typename AppT>
+		void RegisterApp()
+		{
+			assert(mApplication == nullptr && "Registering multiple applications");
+
+			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>(shared_from_this()));
+		}
 
 		template<typename T>
 		void RegisterSubsystem() const

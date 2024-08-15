@@ -6,58 +6,58 @@ namespace puffin::assets
 {
 	AssetRegistry* AssetRegistry::sInstance = nullptr;
 
-	void AssetRegistry::init(const io::ProjectFile& projectFile, const fs::path& projectPath)
+	void AssetRegistry::Initialize(const io::ProjectFile& projectFile, const fs::path& projectPath)
 	{
-		m_project_name = projectFile.name;
-		m_project_root_path = projectPath;
-		m_project_root_path.remove_filename();
+		mProjectName = projectFile.name;
+		mProjectRootPath = projectPath;
+		mProjectRootPath.remove_filename();
 
-		m_engine_root_path = find_engine_root(fs::current_path());
+		mEngineRootPath = FindEngineRoot(fs::current_path());
 
-		m_content_directories.push_back(m_project_root_path / "content");
+		mContentDirectories.push_back(mProjectRootPath / "content");
 
 		for (auto& dir : projectFile.additional_content_directories)
 		{
-			m_content_directories.emplace_back(dir);
+			mContentDirectories.emplace_back(dir);
 		}
 	}
 
-	void AssetRegistry::set_project_name(const std::string& projectName)
+	void AssetRegistry::SetProjectName(const std::string& projectName)
 	{
-		m_project_name = projectName;
+		mProjectName = projectName;
 	}
 
-	std::string AssetRegistry::project_name()
+	const std::string& AssetRegistry::GetProjectName()
 	{
-		return m_project_name;
+		return mProjectName;
 	}
 
-	void AssetRegistry::set_project_root(fs::path projectRootPath)
+	void AssetRegistry::SetProjectRoot(fs::path projectRootPath)
 	{
-		m_project_root_path = projectRootPath;
+		mProjectRootPath = projectRootPath;
 	}
 
-	fs::path AssetRegistry::project_root()
+	fs::path AssetRegistry::GetProjectRoot()
 	{
-		return m_project_root_path;
+		return mProjectRootPath;
 	}
 
-	fs::path AssetRegistry::content_root() const
+	fs::path AssetRegistry::GetContentRoot() const
 	{
-		return m_content_directories[0];
+		return mContentDirectories[0];
 	}
 
-	fs::path AssetRegistry::engine_root() const
+	fs::path AssetRegistry::GetEngineRoot() const
 	{
-		return m_engine_root_path;
+		return mEngineRootPath;
 	}
 
-	void AssetRegistry::save_asset_cache() const
+	void AssetRegistry::SaveAssetCache() const
 	{
 		// Fill AssetCache Struct
 		AssetCache assetCache;
 
-		for (const auto& [fst, snd] : m_id_to_asset_map)
+		for (const auto& [fst, snd] : mIdToAssetMap)
 		{
 			assetCache.data[fst].path = snd->GetRelativePath().string();
 			assetCache.data[fst].type = snd->GetType();
@@ -66,7 +66,7 @@ namespace puffin::assets
 		json data = assetCache;
 
 		// Initialize Output File Stream and Cereal Binary Archive
-		const fs::path assetCachePath = m_project_root_path / (m_project_name + ".passetcache");
+		const fs::path assetCachePath = mProjectRootPath / (mProjectName + ".passetcache");
 		std::ofstream os(assetCachePath, std::ios::out);
 
 		os << std::setw(4) << data << std::endl;
@@ -74,14 +74,14 @@ namespace puffin::assets
 		os.close();
 	}
 
-	void AssetRegistry::load_asset_cache()
+	void AssetRegistry::LoadAssetCache()
 	{
 		// Initialize Input File Stream and Cereal Binary Archive
-		const fs::path assetCachePath = m_project_root_path / (m_project_name + ".passetcache");
+		const fs::path assetCachePath = mProjectRootPath / (mProjectName + ".passetcache");
 
 		if (!exists(assetCachePath))
 		{
-			save_asset_cache();
+			SaveAssetCache();
 		}
 
 		std::ifstream is(assetCachePath);
@@ -99,46 +99,46 @@ namespace puffin::assets
 			std::string type = assetCacheData.type;
 			std::shared_ptr<Asset> asset;
 
-			for (const auto& factory : m_asset_factories)
+			for (const auto& factory : mAssetFactories)
 			{
-				if (factory->type() == type)
+				if (factory->GetType() == type)
 				{
-					asset = factory->add_asset(id, path);
+					asset = factory->AddAsset(id, path);
 					break;
 				}
 			}
 
-			m_id_to_asset_map[asset->GetID()] = asset;
-			m_path_to_id_map[asset->GetRelativePath().string()] = asset->GetID();
+			mIdToAssetMap[asset->GetID()] = asset;
+			mPathToIdMap[asset->GetRelativePath().string()] = asset->GetID();
 		}
 	}
 
 	// Get Asset from Registry
-	std::shared_ptr<Asset> AssetRegistry::get_asset(const PuffinID& uuid)
+	std::shared_ptr<Asset> AssetRegistry::GetAsset(const PuffinID& uuid)
 	{
 		// Return asset if it has been cached
-		if (m_id_to_asset_map.count(uuid))
+		if (mIdToAssetMap.count(uuid))
 		{
-			return m_id_to_asset_map[uuid];
+			return mIdToAssetMap[uuid];
 		}
 
 		// No asset with that ID has been registered, return nullptr
 		return nullptr;
 	}
 
-	std::shared_ptr<Asset> AssetRegistry::get_asset(const fs::path& path)
+	std::shared_ptr<Asset> AssetRegistry::GetAsset(const fs::path& path)
 	{
 		// Return asset if it has been cached
-		if (m_path_to_id_map.count(path.string()))
+		if (mPathToIdMap.count(path.string()))
 		{
-			return get_asset(m_path_to_id_map[path.string()]);
+			return GetAsset(mPathToIdMap[path.string()]);
 		}
 
 		// No asset with that path has been registered, return nullptr
 		return nullptr;
 	}
 
-	fs::path AssetRegistry::find_engine_root(const fs::path& currentPath)
+	fs::path AssetRegistry::FindEngineRoot(const fs::path& currentPath)
 	{
 		bool cmakeListsInDir = false;
 		fs::path localPath = currentPath;
@@ -147,9 +147,7 @@ namespace puffin::assets
 		{
 			for (const auto& entry : fs::recursive_directory_iterator(localPath))
 			{
-				const auto& entryPath = entry.path();
-
-				if (strcmp(entryPath.filename().string().c_str(), "PuffinEngine.txt") == 0)
+				if (const auto& entryPath = entry.path(); strcmp(entryPath.filename().string().c_str(), "PuffinEngine.txt") == 0)
 				{
 					cmakeListsInDir = true;
 					localPath = entryPath.parent_path();
@@ -166,36 +164,36 @@ namespace puffin::assets
 		return localPath;
 	}
 
-	std::shared_ptr<Asset> AssetRegistry::find_asset_at_path(fs::path path)
+	std::shared_ptr<Asset> AssetRegistry::FindAssetAtPath(const fs::path& path)
 	{
-		for (const auto& content_dir : m_content_directories)
+		for (const auto& contentDir : mContentDirectories)
 		{
-			if (const auto full_path = content_dir / path; fs::exists(full_path))
+			if (const auto fullPath = contentDir / path; fs::exists(fullPath))
 			{
-				AssetData asset_data;
+				AssetData assetData;
 
-				if (m_json_file_types.find(full_path.extension().string()) != m_json_file_types.end())
+				if (mJsonFileTypes.find(fullPath.extension().string()) != mJsonFileTypes.end())
 				{
-					LoadJsonFile(full_path, asset_data);
+					LoadJsonFile(fullPath, assetData);
 				}
 				else
 				{
-					LoadBinaryFile(full_path, asset_data, true);
+					LoadBinaryFile(fullPath, assetData, true);
 				}
 
-				const auto& asset_type = gAssetTypeToString.at(asset_data.type);
+				const auto& assetType = gAssetTypeToString.at(assetData.type);
 				std::shared_ptr<Asset> asset;
 
-				for (const auto& factory : m_asset_factories)
+				for (const auto& factory : mAssetFactories)
 				{
-					if (factory->type() == asset_type)
+					if (factory->GetType() == assetType)
 					{
-						return factory->add_asset(asset_data.ID, path);
+						return factory->AddAsset(assetData.id, path);
 					}
 				}
 			}
-
-			return nullptr;
 		}
+
+		return nullptr;
 	}
 }

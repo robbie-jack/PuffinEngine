@@ -14,37 +14,59 @@ namespace puffin::assets
 
 	// Public
 
+	StaticMeshAsset::StaticMeshAsset() : Asset(fs::path())
+	{
+	}
+
+	StaticMeshAsset::StaticMeshAsset(const fs::path& path): Asset(path)
+	{
+	}
+
+	StaticMeshAsset::StaticMeshAsset(const PuffinID id, const fs::path& path): Asset(id, path)
+	{
+	}
+
+	const std::string& StaticMeshAsset::GetType() const
+	{
+		return gStaticMeshTypeString;
+	}
+
+	const uint32_t& StaticMeshAsset::GetVersion() const
+	{
+		return gStaticMeshVersion;
+	}
+
 	bool StaticMeshAsset::Save()
 	{
 		if (mIsLoaded)
 		{
-			return save(m_mesh_asset_info, m_vertices.data(), m_indices.data());
+			return Save(mMeshAssetInfo, mVertices.data(), mIndices.data());
 		}
 
 		return false;
 	}
 
-	bool StaticMeshAsset::save(MeshAssetInfo& mesh_asset_info, const void* vertex_data, const void* index_data)
+	bool StaticMeshAsset::Save(MeshAssetInfo& meshAssetInfo, const void* vertexData, const void* indexData)
 	{
-		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
+		const fs::path fullPath = AssetRegistry::Get()->GetContentRoot() / GetRelativePath();
 
 		// Create AssetData Struct
 		AssetData assetData;
-		assetData.ID = GetID();
+		assetData.id = GetID();
 		assetData.type = AssetType::StaticMesh;
 		assetData.version = gStaticMeshVersion;
 
 		// Copy Vertices/Indices to binary blob
-		const size_t byteSizeTotal = mesh_asset_info.vertex_byte_size_total + mesh_asset_info.index_byte_size_total;
+		const size_t byteSizeTotal = meshAssetInfo.vertexByteSizeTotal + meshAssetInfo.indexByteSizeTotal;
 
 		std::vector<char> mergedBuffer;
 		mergedBuffer.resize(byteSizeTotal);
 
 		// Copy Vertex Buffer
-		memcpy(mergedBuffer.data(), vertex_data, mesh_asset_info.vertex_byte_size_total);
+		memcpy(mergedBuffer.data(), vertexData, meshAssetInfo.vertexByteSizeTotal);
 
 		// Copy Index Buffer
-		memcpy(mergedBuffer.data() + mesh_asset_info.vertex_byte_size_total, index_data, mesh_asset_info.index_byte_size_total);
+		memcpy(mergedBuffer.data() + meshAssetInfo.vertexByteSizeTotal, indexData, meshAssetInfo.indexByteSizeTotal);
 
 		// Compress Data and store in binary blob
 		const size_t compressStaging = LZ4_compressBound(static_cast<int>(byteSizeTotal));
@@ -65,7 +87,7 @@ namespace puffin::assets
 
 			memcpy(assetData.binaryBlob.data(), mergedBuffer.data(), compressedSize);
 
-			mesh_asset_info.compressionMode = CompressionMode::Uncompressed;
+			meshAssetInfo.compressionMode = CompressionMode::Uncompressed;
 		}
 		else
 		{
@@ -74,30 +96,30 @@ namespace puffin::assets
 
 		// Write json data
 		std::vector<json> meshInfoJson;
-		meshInfoJson.resize(mesh_asset_info.sub_mesh_infos.size());
+		meshInfoJson.resize(meshAssetInfo.subMeshInfos.size());
 
-		for (int i = 0; i < mesh_asset_info.sub_mesh_infos.size(); i++)
+		for (int i = 0; i < meshAssetInfo.subMeshInfos.size(); i++)
 		{
 			auto& infoJson = meshInfoJson[i];
-			auto& info = mesh_asset_info.sub_mesh_infos[i];
+			auto& info = meshAssetInfo.subMeshInfos[i];
 
-			infoJson["vertexOffset"] = info.vertex_offset;
-			infoJson["indexOffset"] = info.index_offset;
-			infoJson["vertexCount"] = info.vertex_count;
-			infoJson["indexCount"] = info.index_count;
-			infoJson["vertexByteSize"] = info.vertex_byte_size_total;
-			infoJson["indexByteSize"] = info.index_byte_size_total;
-			infoJson["subMeshIdx"] = info.sub_mesh_idx;
+			infoJson["vertexOffset"] = info.vertexOffset;
+			infoJson["indexOffset"] = info.indexOffset;
+			infoJson["vertexCount"] = info.vertexCount;
+			infoJson["indexCount"] = info.indexCount;
+			infoJson["vertexByteSize"] = info.vertexByteSizeTotal;
+			infoJson["indexByteSize"] = info.indexByteSizeTotal;
+			infoJson["subMeshIdx"] = info.subMeshIdx;
 		}
 
-		assetData.json_data["originalFile"] = mesh_asset_info.originalFile;
-		assetData.json_data["compressionMode"] = mesh_asset_info.compressionMode;
-		assetData.json_data["vertexFormat"] = mesh_asset_info.vertex_format;
-		assetData.json_data["vertexCountTotal"] = mesh_asset_info.vertex_count_total;
-		assetData.json_data["indexCountTotal"] = mesh_asset_info.index_count_total;
-		assetData.json_data["vertexByteSizeTotal"] = mesh_asset_info.vertex_byte_size_total;
-		assetData.json_data["indexByteSizeTotal"] = mesh_asset_info.index_byte_size_total;
-		assetData.json_data["subMeshInfo"] = meshInfoJson;
+		assetData.jsonData["originalFile"] = meshAssetInfo.originalFile;
+		assetData.jsonData["compressionMode"] = meshAssetInfo.compressionMode;
+		assetData.jsonData["vertexFormat"] = meshAssetInfo.vertexFormat;
+		assetData.jsonData["vertexCountTotal"] = meshAssetInfo.vertexCountTotal;
+		assetData.jsonData["indexCountTotal"] = meshAssetInfo.indexCountTotal;
+		assetData.jsonData["vertexByteSizeTotal"] = meshAssetInfo.vertexByteSizeTotal;
+		assetData.jsonData["indexByteSizeTotal"] = meshAssetInfo.indexByteSizeTotal;
+		assetData.jsonData["subMeshInfo"] = meshInfoJson;
 
 		// Save Asset Data out to Binary File
 		return SaveBinaryFile(fullPath, assetData);
@@ -110,7 +132,7 @@ namespace puffin::assets
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
+		const fs::path fullPath = AssetRegistry::Get()->GetContentRoot() / GetRelativePath();
 		if (!fs::exists(fullPath))
 			return false;
 
@@ -122,13 +144,13 @@ namespace puffin::assets
 		}
 
 		// Parse Metadata from Json
-		parse_mesh_info(data, m_mesh_asset_info);
+		ParseMeshInfo(data, mMeshAssetInfo);
 
 		if (loadHeaderOnly)
 			return true;
 
-		size_t vertexByteSizeTotal = m_mesh_asset_info.vertex_byte_size_total;
-		size_t indexByteSizeTotal = m_mesh_asset_info.index_byte_size_total;
+		size_t vertexByteSizeTotal = mMeshAssetInfo.vertexByteSizeTotal;
+		size_t indexByteSizeTotal = mMeshAssetInfo.indexByteSizeTotal;
 
 		// Decompress Binary Data
 		const uint64_t totalSize = vertexByteSizeTotal + indexByteSizeTotal;
@@ -136,7 +158,7 @@ namespace puffin::assets
 		std::vector<char> decompressedBuffer;
 		decompressedBuffer.resize(totalSize);
 
-		if (m_mesh_asset_info.compressionMode == CompressionMode::LZ4)
+		if (mMeshAssetInfo.compressionMode == CompressionMode::LZ4)
 		{
 			LZ4_decompress_safe(data.binaryBlob.data(), decompressedBuffer.data(),
 				static_cast<int>(data.binaryBlob.size()), static_cast<int>(decompressedBuffer.size()));
@@ -147,12 +169,12 @@ namespace puffin::assets
 		}
 
 		// Copy Vertex Buffer
-		m_vertices.resize(vertexByteSizeTotal);
-		memcpy(m_vertices.data(), decompressedBuffer.data(), vertexByteSizeTotal);
+		mVertices.resize(vertexByteSizeTotal);
+		memcpy(mVertices.data(), decompressedBuffer.data(), vertexByteSizeTotal);
 
 		// Copy Index Buffer
-		m_indices.resize(indexByteSizeTotal);
-		memcpy(m_indices.data(), decompressedBuffer.data() + vertexByteSizeTotal, indexByteSizeTotal);
+		mIndices.resize(indexByteSizeTotal);
+		memcpy(mIndices.data(), decompressedBuffer.data() + vertexByteSizeTotal, indexByteSizeTotal);
 
 		mIsLoaded = true;
 		return true;
@@ -160,43 +182,73 @@ namespace puffin::assets
 
 	void StaticMeshAsset::Unload()
 	{
-		m_vertices.clear();
-		m_vertices.shrink_to_fit();
+		mVertices.clear();
+		mVertices.shrink_to_fit();
 
-		m_indices.clear();
-		m_indices.shrink_to_fit();
+		mIndices.clear();
+		mIndices.shrink_to_fit();
 
 		mIsLoaded = false;
 	}
 
+	const std::vector<char>& StaticMeshAsset::Vertices() const
+	{
+		return mVertices;
+	}
+
+	const std::vector<uint32_t>& StaticMeshAsset::Indices() const
+	{
+		return mIndices;
+	}
+
+	const std::vector<SubMeshInfo>& StaticMeshAsset::SubMeshInfo() const
+	{
+		return mMeshAssetInfo.subMeshInfos;
+	}
+
+	rendering::VertexFormat StaticMeshAsset::VertexFormat() const
+	{
+		return mMeshAssetInfo.vertexFormat;
+	}
+
+	uint64_t StaticMeshAsset::VertexByteSize() const
+	{
+		return parseVertexSizeFromFormat(mMeshAssetInfo.vertexFormat);
+	}
+
+	uint64_t StaticMeshAsset::IndexByteSize() const
+	{
+		return sizeof(uint32_t);
+	}
+
 	// Private
 
-	void StaticMeshAsset::parse_mesh_info(const AssetData& data, MeshAssetInfo& out_mesh_asset_info)
+	void StaticMeshAsset::ParseMeshInfo(const AssetData& data, MeshAssetInfo& meshAssetInfo)
 	{
 		// Fill Asset Info & Mesh Info structs with metadata
 
-		out_mesh_asset_info.originalFile = data.json_data["originalFile"];
-		out_mesh_asset_info.compressionMode = data.json_data["compressionMode"];
-		out_mesh_asset_info.vertex_format = data.json_data["vertexFormat"];
-		out_mesh_asset_info.vertex_count_total = data.json_data["vertexCountTotal"];
-		out_mesh_asset_info.index_count_total = data.json_data["indexCountTotal"];
-		out_mesh_asset_info.vertex_byte_size_total = data.json_data["vertexByteSizeTotal"];
-		out_mesh_asset_info.index_byte_size_total = data.json_data["indexByteSizeTotal"];
+		meshAssetInfo.originalFile = data.jsonData["originalFile"];
+		meshAssetInfo.compressionMode = data.jsonData["compressionMode"];
+		meshAssetInfo.vertexFormat = data.jsonData["vertexFormat"];
+		meshAssetInfo.vertexCountTotal = data.jsonData["vertexCountTotal"];
+		meshAssetInfo.indexCountTotal = data.jsonData["indexCountTotal"];
+		meshAssetInfo.vertexByteSizeTotal = data.jsonData["vertexByteSizeTotal"];
+		meshAssetInfo.indexByteSizeTotal = data.jsonData["indexByteSizeTotal"];
 
-		out_mesh_asset_info.sub_mesh_infos.resize(data.json_data["subMeshInfo"].size());
+		meshAssetInfo.subMeshInfos.resize(data.jsonData["subMeshInfo"].size());
 
-		for (int i = 0; i < data.json_data["subMeshInfo"].size(); ++i)
+		for (int i = 0; i < data.jsonData["subMeshInfo"].size(); ++i)
 		{
-			auto& sub_mesh_json = data.json_data["subMeshInfo"][i];
-			auto& sub_mesh_info = out_mesh_asset_info.sub_mesh_infos[i];
+			auto& sub_mesh_json = data.jsonData["subMeshInfo"][i];
+			auto& sub_mesh_info = meshAssetInfo.subMeshInfos[i];
 
-			sub_mesh_info.vertex_offset = sub_mesh_json["vertexOffset"];
-			sub_mesh_info.index_offset	= sub_mesh_json["indexOffset"];
-			sub_mesh_info.vertex_count	= sub_mesh_json["vertexCount"];
-			sub_mesh_info.index_count = sub_mesh_json["indexCount"];
-			sub_mesh_info.vertex_byte_size_total = sub_mesh_json["vertexByteSize"];
-			sub_mesh_info.index_byte_size_total = sub_mesh_json["indexByteSize"];
-			sub_mesh_info.sub_mesh_idx = sub_mesh_json["subMeshIdx"];
+			sub_mesh_info.vertexOffset = sub_mesh_json["vertexOffset"];
+			sub_mesh_info.indexOffset	= sub_mesh_json["indexOffset"];
+			sub_mesh_info.vertexCount	= sub_mesh_json["vertexCount"];
+			sub_mesh_info.indexCount = sub_mesh_json["indexCount"];
+			sub_mesh_info.vertexByteSizeTotal = sub_mesh_json["vertexByteSize"];
+			sub_mesh_info.indexByteSizeTotal = sub_mesh_json["indexByteSize"];
+			sub_mesh_info.subMeshIdx = sub_mesh_json["subMeshIdx"];
 		}
 	}
 }

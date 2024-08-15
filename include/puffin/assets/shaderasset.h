@@ -18,54 +18,21 @@ namespace puffin::assets
 		Fragment
 	};
 
-	static ShaderType parseShaderTypeFromString(const char* typeString)
-	{
-		if (strcmp(typeString, "Vertex") == 0)
-		{
-			return ShaderType::Vertex;
-		}
-
-		if (strcmp(typeString, "Fragment") == 0)
-		{
-			return ShaderType::Fragment;
-		}
-
-		return ShaderType::Unknown;
-	}
-
-	static const char* parseShaderStringFromType(const ShaderType type)
-	{
-		switch(type)
-		{
-		case ShaderType::Unknown: return "Unknown";
-		case ShaderType::Vertex: return "Vertex";
-		case ShaderType::Fragment: return "Fragment";
-		}
-
-		return "Unknown";
-	}
+	ShaderType ParseShaderTypeFromString(const char* typeString);
+	const char* ParseShaderStringFromType(const ShaderType type);
 
 	class ShaderAsset : public Asset
 	{
 	public:
 
-		ShaderAsset() : Asset(fs::path()) {}
-
-		explicit ShaderAsset(const fs::path& path) : Asset(path) {}
-
-		ShaderAsset(const PuffinID id, const fs::path& path) : Asset(id, path) {}
+		ShaderAsset();
+		explicit ShaderAsset(const fs::path& path);
+		ShaderAsset(const PuffinID id, const fs::path& path);
 
 		~ShaderAsset() override = default;
 
-		[[nodiscard]] const std::string& GetType() const override
-		{
-			return gShaderAssetType;
-		}
-
-		[[nodiscard]] const uint32_t& GetVersion() const override
-		{
-			return gShaderAssetVersion;
-		}
+		[[nodiscard]] const std::string& GetType() const override;
+		[[nodiscard]] const uint32_t& GetVersion() const override;
 
 		bool Save() override;
 
@@ -73,17 +40,16 @@ namespace puffin::assets
 
 		void Unload() override;
 
-		void loadCodeFromBinary();
+		void LoadCodeFromBinary();
 
-		void setType(const ShaderType shaderType) { mShaderType = shaderType; }
+		void SetType(const ShaderType shaderType);
+		void SetShaderPath(const fs::path& shaderPath);
 
-		void setShaderPath(const fs::path& shaderPath) { mShaderPath = shaderPath; }
+		const fs::path& GetBinaryPath();
 
-		const fs::path& binaryPath() { return mBinaryPath; }
+		void SetBinaryPath(const fs::path& binaryPath);
 
-		void setBinaryPath(const fs::path& binaryPath) { mBinaryPath = binaryPath; }
-
-		[[nodiscard]] const std::vector<uint32_t>& code() const { return mCode; }
+		[[nodiscard]] const std::vector<uint32_t>& GetCode() const { return mCode; }
 
 	private:
 

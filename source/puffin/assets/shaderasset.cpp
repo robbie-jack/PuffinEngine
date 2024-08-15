@@ -4,20 +4,69 @@
 
 namespace puffin::assets
 {
+	ShaderType ParseShaderTypeFromString(const char* typeString)
+	{
+		if (strcmp(typeString, "Vertex") == 0)
+		{
+			return ShaderType::Vertex;
+		}
+
+		if (strcmp(typeString, "Fragment") == 0)
+		{
+			return ShaderType::Fragment;
+		}
+
+		return ShaderType::Unknown;
+	}
+
+	const char* ParseShaderStringFromType(const ShaderType type)
+	{
+		switch(type)
+		{
+		case ShaderType::Unknown: return "Unknown";
+		case ShaderType::Vertex: return "Vertex";
+		case ShaderType::Fragment: return "Fragment";
+		}
+
+		return "Unknown";
+	}
+
+	ShaderAsset::ShaderAsset(): Asset(fs::path())
+	{
+	}
+
+	ShaderAsset::ShaderAsset(const fs::path& path): Asset(path)
+	{
+	}
+
+	ShaderAsset::ShaderAsset(const PuffinID id, const fs::path& path): Asset(id, path)
+	{
+	}
+
+	const std::string& ShaderAsset::GetType() const
+	{
+		return gShaderAssetType;
+	}
+
+	const uint32_t& ShaderAsset::GetVersion() const
+	{
+		return gShaderAssetVersion;
+	}
+
 	bool ShaderAsset::Save()
 	{
-		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
+		const fs::path fullPath = AssetRegistry::Get()->GetContentRoot() / GetRelativePath();
 
 		// Create AssetData Struct
 		AssetData data;
-		data.ID = GetID();
+		data.id = GetID();
 		data.type = AssetType::Shader;
 		data.version = gShaderAssetVersion;
 
 		// Fill Metadata from Info struct
-		data.json_data["shader_type"] = parseShaderStringFromType(mShaderType);
-		data.json_data["shader_path"] = mShaderPath;
-		data.json_data["binary_path"] = mBinaryPath;
+		data.jsonData["shader_type"] = ParseShaderStringFromType(mShaderType);
+		data.jsonData["shader_path"] = mShaderPath;
+		data.jsonData["binary_path"] = mBinaryPath;
 
 		return SaveJsonFile(fullPath, data);
 	}
@@ -29,7 +78,7 @@ namespace puffin::assets
 			return true;
 
 		// Check if file exists
-		const fs::path fullPath = AssetRegistry::get()->content_root() / GetRelativePath();
+		const fs::path fullPath = AssetRegistry::Get()->GetContentRoot() / GetRelativePath();
 		if (!fs::exists(fullPath))
 			return false;
 
@@ -40,19 +89,19 @@ namespace puffin::assets
 			return false;
 		}
 
-		const std::string shaderType = data.json_data["shader_type"];
-		mShaderType = parseShaderTypeFromString(shaderType.c_str());
+		const std::string shaderType = data.jsonData["shader_type"];
+		mShaderType = ParseShaderTypeFromString(shaderType.c_str());
 
-		const std::string shaderPath = data.json_data["shader_path"];
+		const std::string shaderPath = data.jsonData["shader_path"];
 		mShaderPath = shaderPath;
 
-		const std::string binaryPath = data.json_data["binary_path"];
+		const std::string binaryPath = data.jsonData["binary_path"];
 		mBinaryPath = binaryPath;
 
 		if (loadHeaderOnly)
 			return true;
 
-		loadCodeFromBinary();
+		LoadCodeFromBinary();
 
 		mIsLoaded = true;
 		return true;
@@ -66,7 +115,7 @@ namespace puffin::assets
 		mIsLoaded = false;
 	}
 
-	void ShaderAsset::loadCodeFromBinary()
+	void ShaderAsset::LoadCodeFromBinary()
 	{
 		std::ifstream file(mBinaryPath, std::ios::ate | std::ios::binary);
 
@@ -88,5 +137,25 @@ namespace puffin::assets
 		file.read(reinterpret_cast<char*>(mCode.data()), fileSize);
 
 		file.close();
+	}
+
+	void ShaderAsset::SetType(const ShaderType shaderType)
+	{
+		mShaderType = shaderType;
+	}
+
+	void ShaderAsset::SetShaderPath(const fs::path& shaderPath)
+	{
+		mShaderPath = shaderPath;
+	}
+
+	const fs::path& ShaderAsset::GetBinaryPath()
+	{
+		return mBinaryPath;
+	}
+
+	void ShaderAsset::SetBinaryPath(const fs::path& binaryPath)
+	{
+		mBinaryPath = binaryPath;
 	}
 }
