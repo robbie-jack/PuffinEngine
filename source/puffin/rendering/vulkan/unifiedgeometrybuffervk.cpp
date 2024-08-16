@@ -35,12 +35,12 @@ namespace puffin::rendering
 
 		for (auto& [vertex_format, vertex_buffer_data] : m_vertex_buffer_data)
 		{
-			m_render_system->allocator().destroyBuffer(vertex_buffer_data.alloc_buffer.buffer, vertex_buffer_data.alloc_buffer.allocation);
+			m_render_system->GetAllocator().destroyBuffer(vertex_buffer_data.alloc_buffer.buffer, vertex_buffer_data.alloc_buffer.allocation);
 		}
 
 		m_vertex_buffer_data.clear();
 
-		m_render_system->allocator().destroyBuffer(m_index_buffer_data.alloc_buffer.buffer, m_index_buffer_data.alloc_buffer.allocation);
+		m_render_system->GetAllocator().destroyBuffer(m_index_buffer_data.alloc_buffer.buffer, m_index_buffer_data.alloc_buffer.allocation);
 
 		m_render_system = nullptr;
 
@@ -148,11 +148,11 @@ namespace puffin::rendering
 			util::copy_data_between_buffers(m_render_system, vertex_buffer_data.alloc_buffer.buffer,
 				new_buffer.buffer, vertex_buffer_data.byte_offset);
 
-			m_render_system->allocator().destroyBuffer(vertex_buffer_data.alloc_buffer.buffer, vertex_buffer_data.alloc_buffer.allocation);
+			m_render_system->GetAllocator().destroyBuffer(vertex_buffer_data.alloc_buffer.buffer, vertex_buffer_data.alloc_buffer.allocation);
 		}
 
 		vertex_buffer_data.alloc_buffer = new_buffer;
-		vertex_buffer_data.buffer_address = m_render_system->device().getBufferAddress(vk::BufferDeviceAddressInfo{ vertex_buffer_data.alloc_buffer.buffer });
+		vertex_buffer_data.buffer_address = m_render_system->GetDevice().getBufferAddress(vk::BufferDeviceAddressInfo{ vertex_buffer_data.alloc_buffer.buffer });
 		vertex_buffer_data.page_count = new_page_count;
 		vertex_buffer_data.byte_size_total = new_buffer_size;
 	}
@@ -168,7 +168,7 @@ namespace puffin::rendering
 			util::copy_data_between_buffers(m_render_system, index_buffer_data.alloc_buffer.buffer,
 				new_buffer.buffer, index_buffer_data.byte_offset);
 
-			m_render_system->allocator().destroyBuffer(index_buffer_data.alloc_buffer.buffer, index_buffer_data.alloc_buffer.allocation);
+			m_render_system->GetAllocator().destroyBuffer(index_buffer_data.alloc_buffer.buffer, index_buffer_data.alloc_buffer.allocation);
 		}
 
 		index_buffer_data.alloc_buffer = new_buffer;
@@ -178,7 +178,7 @@ namespace puffin::rendering
 
 	AllocatedBuffer UnifiedGeometryBuffer::allocate_vertex_buffer(vk::DeviceSize buffer_size)
 	{
-		return util::create_buffer(m_render_system->allocator(), buffer_size,
+		return util::create_buffer(m_render_system->GetAllocator(), buffer_size,
 			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eShaderDeviceAddress },
 			vma::MemoryUsage::eAutoPreferDevice,
 			{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
@@ -187,7 +187,7 @@ namespace puffin::rendering
 
 	AllocatedBuffer UnifiedGeometryBuffer::allocate_index_buffer(vk::DeviceSize buffer_size)
 	{
-		return util::create_buffer(m_render_system->allocator(), buffer_size,
+		return util::create_buffer(m_render_system->GetAllocator(), buffer_size,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAutoPreferDevice, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
 			vma::AllocationCreateFlagBits::eMapped });

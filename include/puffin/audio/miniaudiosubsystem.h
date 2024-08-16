@@ -21,18 +21,18 @@ namespace puffin::audio
 
 	protected:
 
-		void PlaySoundEffect(PuffinID soundAssetID) override;
+		void PlaySoundEffect(UUID soundAssetID) override;
 
-		bool CreateSoundInstance(PuffinID soundAssetID, PuffinID soundInstanceID) override;
-		void DestroySoundInstance(PuffinID soundInstanceID) override;
+		bool CreateSoundInstance(UUID soundAssetID, UUID soundInstanceID) override;
+		void DestroySoundInstance(UUID soundInstanceID) override;
 
-		bool StartSoundInstance(PuffinID soundInstanceID, bool restart) override;
-		bool StopSoundInstance(PuffinID soundInstanceID) override;
+		bool StartSoundInstance(UUID soundInstanceID, bool restart) override;
+		bool StopSoundInstance(UUID soundInstanceID) override;
 
 	private:
 
 		ma_engine* mSoundEngine = nullptr;
 
-		PackedVector<PuffinID, ma_sound> mSounds;
+		PackedVector<UUID, ma_sound> mSounds;
 	};
 }

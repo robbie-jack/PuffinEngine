@@ -21,7 +21,7 @@ namespace puffin::rendering::util
 	void immediate_submit(const RenderSubystemVK* render_system,
 	                     std::function<void(VkCommandBuffer cmd)>&& function)
 	{
-		vk::CommandBuffer cmd = render_system->upload_context().commandBuffer;
+		vk::CommandBuffer cmd = render_system->GetUploadContext().commandBuffer;
 
 		const vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
 		VK_CHECK(cmd.begin(&cmdBeginInfo));
@@ -32,12 +32,12 @@ namespace puffin::rendering::util
 
 		const vk::SubmitInfo submit = { {}, {}, {}, 1, &cmd };
 
-		VK_CHECK(render_system->graphics_queue().submit(1, &submit, render_system->upload_context().uploadFence));
+		VK_CHECK(render_system->GetGraphicsQueue().submit(1, &submit, render_system->GetUploadContext().uploadFence));
 
-		VK_CHECK(render_system->device().waitForFences(1, &render_system->upload_context().uploadFence, true, 9999999999));
-		VK_CHECK(render_system->device().resetFences(1, &render_system->upload_context().uploadFence));
+		VK_CHECK(render_system->GetDevice().waitForFences(1, &render_system->GetUploadContext().uploadFence, true, 9999999999));
+		VK_CHECK(render_system->GetDevice().resetFences(1, &render_system->GetUploadContext().uploadFence));
 
-		render_system->device().resetCommandPool(render_system->upload_context().commandPool);
+		render_system->GetDevice().resetCommandPool(render_system->GetUploadContext().commandPool);
 	}
 
 	void copy_data_between_buffers(const RenderSubystemVK* render_system, const vk::Buffer src_buffer,
@@ -72,7 +72,7 @@ namespace puffin::rendering::util
 	                                   const void* data, const uint32_t src_offset, const uint32_t dst_offset)
 	{
 		// If rebar is enabled and buffer is in host visible memory, copy directly to buffer
-		if (const vk::MemoryPropertyFlags memPropFlags = render_system->allocator().getAllocationMemoryProperties(dst_buffer.allocation); render_system->rebar_enabled() 
+		if (const vk::MemoryPropertyFlags memPropFlags = render_system->GetAllocator().getAllocationMemoryProperties(dst_buffer.allocation); render_system->GetRebarEnabled() 
 			&& (memPropFlags & vk::MemoryPropertyFlagBits::eHostVisible))
 		{
 			const auto* dataChar = static_cast<const char*>(data);
@@ -83,7 +83,7 @@ namespace puffin::rendering::util
 		else
 		{
 			// Allocate Staging Buffer - Map Vertices in CPU Memory
-			const AllocatedBuffer stagingBuffer = create_buffer(render_system->allocator(), data_size,
+			const AllocatedBuffer stagingBuffer = create_buffer(render_system->GetAllocator(), data_size,
 			                                                   vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAuto, 
 			                                                   { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
 
@@ -96,7 +96,7 @@ namespace puffin::rendering::util
 			copy_data_between_buffers(render_system, stagingBuffer.buffer, dst_buffer.buffer, data_size, src_offset, dst_offset);
 
 			// Cleanup Staging Buffer Immediately, It is no longer needed
-			render_system->allocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+			render_system->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 	}
 
@@ -106,7 +106,7 @@ namespace puffin::rendering::util
 		const uint32_t vertexBufferSize = num_vertices * vertex_size;
 
 		// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
-		AllocatedBuffer vertexBuffer = create_buffer(render_system->allocator(), vertexBufferSize,
+		AllocatedBuffer vertexBuffer = create_buffer(render_system->GetAllocator(), vertexBufferSize,
             { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc }, 
 			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
 
@@ -121,7 +121,7 @@ namespace puffin::rendering::util
 		const uint32_t indexBufferSize = num_indices * index_size;
 
 		// Allocate Index Buffer - Transfer indices into GPU memory
-		AllocatedBuffer indexBuffer = create_buffer(render_system->allocator(), indexBufferSize,
+		AllocatedBuffer indexBuffer = create_buffer(render_system->GetAllocator(), indexBufferSize,
 			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
 			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
 
@@ -138,12 +138,12 @@ namespace puffin::rendering::util
 		// Create Image
 		constexpr vma::AllocationCreateInfo imageAllocInfo = { {}, vma::MemoryUsage::eAutoPreferDevice, vk::MemoryPropertyFlagBits::eDeviceLocal };
 
-		VK_CHECK(render_system->allocator().createImage(&image_info, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.alloc_info));
+		VK_CHECK(render_system->GetAllocator().createImage(&image_info, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.alloc_info));
 
 		// Create Image View
 		image_view_info.image = allocImage.image;
 
-		VK_CHECK(render_system->device().createImageView(&image_view_info, nullptr, &allocImage.image_view));
+		VK_CHECK(render_system->GetDevice().createImageView(&image_view_info, nullptr, &allocImage.image_view));
 
 		return allocImage;
 	}
@@ -177,15 +177,15 @@ namespace puffin::rendering::util
 	                            ::DeviceSize size, const vk::Format format)
 	{
 		// Allocate staging buffer on CPU for holding texture data to upload
-		const AllocatedBuffer stagingBuffer = create_buffer(render_system->allocator(), size,
+		const AllocatedBuffer stagingBuffer = create_buffer(render_system->GetAllocator(), size,
 			vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAuto, 
 			vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
 
 		// Copy texture data to buffer
 		void* data;
-		VK_CHECK(render_system->allocator().mapMemory(stagingBuffer.allocation, &data));
+		VK_CHECK(render_system->GetAllocator().mapMemory(stagingBuffer.allocation, &data));
 		memcpy(data, pixel_data, size);
-		render_system->allocator().unmapMemory(stagingBuffer.allocation);
+		render_system->GetAllocator().unmapMemory(stagingBuffer.allocation);
 
 		// Allocate and create texture in GPU memory
 		const vk::Extent3D imageExtent = { width, height, 1 };
@@ -232,7 +232,7 @@ namespace puffin::rendering::util
 		});
 
 		// Cleanup Staging Buffer Immediately, It is no longer needed
-		render_system->allocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+		render_system->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
 
 		return texture;
 	}

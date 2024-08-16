@@ -5,7 +5,7 @@
 
 namespace puffin
 {
-	TransformNode3D::TransformNode3D(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : Node(engine, id)
+	TransformNode3D::TransformNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : Node(engine, id)
 	{
 		m_name = "Transform3D";
 

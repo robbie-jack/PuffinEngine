@@ -20,7 +20,7 @@ namespace puffin::physics::collision2D
 
 	struct BoxCollider2D : public PolygonCollider2D
 	{
-		BoxCollider2D(PuffinID uuid, BoxShape2D* shape) : PolygonCollider2D(uuid, shape) {}
+		BoxCollider2D(UUID uuid, BoxShape2D* shape) : PolygonCollider2D(uuid, shape) {}
 
 		~BoxCollider2D()
 		{

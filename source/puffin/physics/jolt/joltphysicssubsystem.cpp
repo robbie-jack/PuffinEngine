@@ -252,7 +252,7 @@ namespace puffin::physics
 		}
 	}
 
-	void JoltPhysicsSubsystem::init_box(PuffinID id, const TransformComponent3D& transform, const BoxComponent3D& box)
+	void JoltPhysicsSubsystem::init_box(UUID id, const TransformComponent3D& transform, const BoxComponent3D& box)
 	{
 		if (m_internal_physics_system)
 		{
@@ -270,7 +270,7 @@ namespace puffin::physics
 		}
 	}
 
-	void JoltPhysicsSubsystem::init_sphere(PuffinID id, const TransformComponent3D& transform,
+	void JoltPhysicsSubsystem::init_sphere(UUID id, const TransformComponent3D& transform,
 		const SphereComponent3D& circle)
 	{
 		if (m_internal_physics_system)
@@ -279,7 +279,7 @@ namespace puffin::physics
 		}
 	}
 
-	void JoltPhysicsSubsystem::init_rigidbody(PuffinID id, const TransformComponent3D& transform,
+	void JoltPhysicsSubsystem::init_rigidbody(UUID id, const TransformComponent3D& transform,
 		const RigidbodyComponent3D& rb)
 	{
 		if (m_internal_physics_system && m_shape_refs.contains(id))

@@ -1,10 +1,10 @@
 #include "puffin/nodes/rendering/cameranode3d.h"
 
-#include "puffin/components/rendering/cameracomponent.h"
+#include "puffin/components/rendering/3d/cameracomponent3d.h"
 
 namespace puffin::rendering
 {
-	CameraNode3D::CameraNode3D(const std::shared_ptr<puffin::core::Engine>& engine, const puffin::PuffinID& id)
+	CameraNode3D::CameraNode3D(const std::shared_ptr<puffin::core::Engine>& engine, const puffin::UUID& id)
 		: TransformNode3D(engine, id)
 	{
 		m_name = "Camera";

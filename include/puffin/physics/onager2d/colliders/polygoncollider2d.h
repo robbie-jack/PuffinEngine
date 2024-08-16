@@ -9,7 +9,7 @@ namespace puffin::physics::collision2D
 {
 	struct PolygonCollider2D : public Collider2D
 	{
-		PolygonCollider2D(PuffinID uuid, PolygonShape2D* inShape) : Collider2D(uuid), shape(inShape) {}
+		PolygonCollider2D(UUID uuid, PolygonShape2D* inShape) : Collider2D(uuid), shape(inShape) {}
 
 		~PolygonCollider2D()
 		{

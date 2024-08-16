@@ -115,7 +115,7 @@ namespace puffin::rendering
 
 	struct AssetDataVK
 	{
-		PuffinID assetId;
+		UUID assetId;
 
 		bool operator<(const AssetDataVK& other) const
 		{
@@ -142,16 +142,16 @@ namespace puffin::rendering
 
 	struct MaterialDataVK : AssetDataVK
 	{
-		PuffinID baseMaterialID = gInvalidID;
+		UUID baseMaterialID = gInvalidId;
 
 		int idx = 0;
 
-		std::array<PuffinID, gNumTexturesPerMat> texIDs = { 0, 0, 0, 0, 0, 0, 0, 0 };
+		std::array<UUID, gNumTexturesPerMat> texIDs = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	};
 
 	struct MaterialVK
 	{
-		PuffinID matID = gInvalidID;
+		UUID matID = gInvalidId;
 
 		vk::UniquePipeline pipeline = {};
 		vk::UniquePipelineLayout pipelineLayout = {};
@@ -159,12 +159,12 @@ namespace puffin::rendering
 
 	struct MeshRenderable
 	{
-		MeshRenderable(const PuffinID entityID_, const PuffinID meshID_, const PuffinID matID_, const uint8_t subMeshIdx_ = 0) :
+		MeshRenderable(const UUID entityID_, const UUID meshID_, const UUID matID_, const uint8_t subMeshIdx_ = 0) :
 			entityID(entityID_), meshID(meshID_), matID(matID_), subMeshIdx(subMeshIdx_) {}
 
-		PuffinID entityID;
-		PuffinID meshID;
-		PuffinID matID;
+		UUID entityID;
+		UUID meshID;
+		UUID matID;
 		uint8_t subMeshIdx = 0;
 
 		bool operator<(const MeshRenderable& other) const
@@ -179,10 +179,10 @@ namespace puffin::rendering
 	// Struct for rendering a batch of meshes which share a material
 	struct MeshDrawBatch
 	{
-		MeshDrawBatch(const PuffinID matID_ = gInvalidID, const uint32_t cmdCount_ = 0, const uint32_t meshIndex_ = 0) :
+		MeshDrawBatch(const UUID matID_ = gInvalidId, const uint32_t cmdCount_ = 0, const uint32_t meshIndex_ = 0) :
 			matID(matID_), cmdCount(cmdCount_), cmdIndex(meshIndex_) {}
 
-		PuffinID matID; // Id of this material
+		UUID matID; // Id of this material
 		uint32_t cmdCount = 0; // Number of commands to be drawn with this batch
 		uint32_t cmdIndex = 0; // Starting index in indirect commands buffer for this batch
 

@@ -36,19 +36,19 @@ namespace puffin
 			GLFWmonitor* primary_monitor() const;
 
 			// Create new window and return PuffinId handle to it
-			PuffinID create_new_window(const int& width, const int& height);
+			UUID create_new_window(const int& width, const int& height);
 
 			// Retrieve window using PuffinId handle
-			GLFWwindow* get_window(const PuffinID& uuid);
+			GLFWwindow* get_window(const UUID& uuid);
 
-			void destroy_window(const PuffinID& uuid);
+			void destroy_window(const UUID& uuid);
 
 		private:
 
 			GLFWmonitor* m_primary_monitor = nullptr;
 			GLFWwindow* m_primary_window = nullptr;
 
-			std::unordered_map<PuffinID, GLFWwindow*> m_windows;
+			std::unordered_map<UUID, GLFWwindow*> m_windows;
 
 
 		};

@@ -41,7 +41,7 @@ namespace puffin::scripting
 
 		bool prepare_and_execute_script_method(void* script_obj, asIScriptFunction* script_func);
 
-		void set_current_entity_id(PuffinID id);
+		void set_current_entity_id(UUID id);
 
 		// Hot-Reloads all scripts when called
 		//void reload() {}
@@ -53,7 +53,7 @@ namespace puffin::scripting
 
 		std::unique_ptr<AngelScriptEngineInterface> m_engine_interface;
 
-		PuffinID m_current_entity_id; // Entity ID for currently executing script
+		UUID m_current_entity_id; // Entity ID for currently executing script
 
 		// Event Buffers
 		std::shared_ptr<RingBuffer<input::InputEvent>> m_input_events = nullptr;
@@ -68,9 +68,9 @@ namespace puffin::scripting
 		ScriptCallbackMap m_on_collision_begin_callbacks;
 		ScriptCallbackMap m_on_collision_end_callbacks;
 
-		std::unordered_set<PuffinID> m_scripts_to_init;
-		std::unordered_set<PuffinID> m_scripts_to_begin_play;
-		std::unordered_set<PuffinID> m_scripts_to_end_play;
+		std::unordered_set<UUID> m_scripts_to_init;
+		std::unordered_set<UUID> m_scripts_to_begin_play;
+		std::unordered_set<UUID> m_scripts_to_end_play;
 
 		void configure_engine();
 
@@ -79,10 +79,10 @@ namespace puffin::scripting
 		void start_scripts();
 		void stop_scripts();
 
-		void initialize_script(PuffinID entity, AngelScriptComponent& script);
+		void initialize_script(UUID entity, AngelScriptComponent& script);
 		void compile_script(AngelScriptComponent& script) const;
 		void update_script_methods(AngelScriptComponent& script);
-		void instantiate_script_obj(PuffinID entity, AngelScriptComponent& script);
+		void instantiate_script_obj(UUID entity, AngelScriptComponent& script);
 
 		void destroy_script(AngelScriptComponent& script);
 
@@ -97,21 +97,21 @@ namespace puffin::scripting
 		[[nodiscard]] const double& get_fixed_time() const;
 
 		void play_sound_effect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
-		PuffinID play_sound_effect(const std::string& path, float volume = 1.0f, bool looping = false,
+		UUID play_sound_effect(const std::string& path, float volume = 1.0f, bool looping = false,
 		                         bool restart = false);
 
-		PuffinID get_entity_id(); // Return the Entity ID for the attached script
+		UUID get_entity_id(); // Return the Entity ID for the attached script
 
 		// Script Callbacks
-		ScriptCallback bind_callback(PuffinID entity, asIScriptFunction* cb) const;
+		ScriptCallback bind_callback(UUID entity, asIScriptFunction* cb) const;
 		void release_callback(ScriptCallback& scriptCallback) const;
 
 		// Collision Functions
-		void bind_on_collision_begin(PuffinID entity, asIScriptFunction* cb);
-		void bind_on_collision_end(PuffinID entity, asIScriptFunction* cb);
+		void bind_on_collision_begin(UUID entity, asIScriptFunction* cb);
+		void bind_on_collision_end(UUID entity, asIScriptFunction* cb);
 
-		void release_on_collision_begin(PuffinID entity);
-		void release_on_collision_end(PuffinID entity);
+		void release_on_collision_begin(UUID entity);
+		void release_on_collision_end(UUID entity);
 	};
 
 	class AngelScriptGameplaySubsystem : public core::Subsystem

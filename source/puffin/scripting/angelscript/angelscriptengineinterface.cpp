@@ -62,7 +62,7 @@ namespace puffin::scripting
 		return mFixedTime;
 	}
 
-	TransformComponent3D& AngelScriptEngineInterface::getTransformComponent3D(PuffinID id) const
+	TransformComponent3D& AngelScriptEngineInterface::getTransformComponent3D(UUID id) const
 	{
 		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
@@ -74,7 +74,7 @@ namespace puffin::scripting
 		return registry->get<TransformComponent3D>(entity);
 	}
 
-	bool AngelScriptEngineInterface::hasTransformComponent3D(PuffinID id) const
+	bool AngelScriptEngineInterface::hasTransformComponent3D(UUID id) const
 	{
 		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
@@ -90,7 +90,7 @@ namespace puffin::scripting
 	}
 
 	template <typename T>
-	T& AngelScriptEngineInterface::getComponent(PuffinID id) const
+	T& AngelScriptEngineInterface::getComponent(UUID id) const
 	{
 		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
@@ -103,7 +103,7 @@ namespace puffin::scripting
 	}
 
 	template <typename T>
-	bool AngelScriptEngineInterface::hasComponent(PuffinID id) const
+	bool AngelScriptEngineInterface::hasComponent(UUID id) const
 	{
 		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
@@ -118,7 +118,7 @@ namespace puffin::scripting
 		return false;
 	}
 
-	ScriptCallback AngelScriptEngineInterface::bindCallback(PuffinID entity, asIScriptFunction* cb) const
+	ScriptCallback AngelScriptEngineInterface::bindCallback(UUID entity, asIScriptFunction* cb) const
 	{
 		ScriptCallback scriptCallback;
 		scriptCallback.entity = entity;
@@ -159,7 +159,7 @@ namespace puffin::scripting
 		scriptCallback.objectType = nullptr;
 	}
 
-	void AngelScriptEngineInterface::bindOnInputPressed(PuffinID entity, const std::string& actionName,
+	void AngelScriptEngineInterface::bindOnInputPressed(UUID entity, const std::string& actionName,
 		asIScriptFunction* cb)
 	{
 		// Release existing callback function, if one exists
@@ -168,7 +168,7 @@ namespace puffin::scripting
 		mOnInputPressedCallbacks[actionName][entity] = bindCallback(entity, cb);
 	}
 
-	void AngelScriptEngineInterface::bindOnInputReleased(PuffinID entity, const std::string& actionName,
+	void AngelScriptEngineInterface::bindOnInputReleased(UUID entity, const std::string& actionName,
 		asIScriptFunction* cb)
 	{
 		// Release existing callback function, if one exists
@@ -177,7 +177,7 @@ namespace puffin::scripting
 		mOnInputPressedCallbacks[actionName][entity] = bindCallback(entity, cb);
 	}
 
-	void AngelScriptEngineInterface::releaseOnInputPressed(PuffinID entity, const std::string& actionName)
+	void AngelScriptEngineInterface::releaseOnInputPressed(UUID entity, const std::string& actionName)
 	{
 		if (mOnInputPressedCallbacks[actionName].count(entity))
 		{
@@ -186,7 +186,7 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptEngineInterface::releaseOnInputReleased(PuffinID entity, const std::string& actionName)
+	void AngelScriptEngineInterface::releaseOnInputReleased(UUID entity, const std::string& actionName)
 	{
 		if (mOnInputPressedCallbacks[actionName].count(entity))
 		{

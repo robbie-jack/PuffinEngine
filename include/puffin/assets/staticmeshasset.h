@@ -39,7 +39,7 @@ namespace puffin::assets
 
 		StaticMeshAsset();
 		explicit StaticMeshAsset(const fs::path& path);
-		StaticMeshAsset(const PuffinID id, const fs::path& path);
+		StaticMeshAsset(const UUID id, const fs::path& path);
 
 		~StaticMeshAsset() override = default;
 

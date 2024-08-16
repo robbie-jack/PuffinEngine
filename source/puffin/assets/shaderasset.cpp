@@ -39,7 +39,7 @@ namespace puffin::assets
 	{
 	}
 
-	ShaderAsset::ShaderAsset(const PuffinID id, const fs::path& path): Asset(id, path)
+	ShaderAsset::ShaderAsset(const UUID id, const fs::path& path): Asset(id, path)
 	{
 	}
 

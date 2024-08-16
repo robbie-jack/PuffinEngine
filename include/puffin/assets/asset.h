@@ -54,7 +54,7 @@ namespace puffin::assets
 	{
 		AssetData()
 		{
-			id = puffin::gInvalidID;
+			id = puffin::gInvalidId;
 			type = AssetType::Invalid;
 			version = 0;
 			binaryBlob.clear();
@@ -62,14 +62,14 @@ namespace puffin::assets
 
 		~AssetData()
 		{
-			id = puffin::gInvalidID;
+			id = puffin::gInvalidId;
 			type = AssetType::Invalid;
 			version = 0;
 			jsonData.clear();
 			binaryBlob.clear();
 		}
 
-		puffin::PuffinID id;
+		puffin::UUID id;
 		AssetType type;
 		uint32_t version;
 		json jsonData;
@@ -115,11 +115,11 @@ namespace puffin::assets
 	public:
 
 		Asset(const fs::path& path);
-		Asset(const puffin::PuffinID uuid, const fs::path& path);
+		Asset(const puffin::UUID uuid, const fs::path& path);
 
 		virtual ~Asset() = default;
 
-		[[nodiscard]] PuffinID GetID() const;
+		[[nodiscard]] UUID GetID() const;
 		[[nodiscard]] fs::path GetRelativePath();
 
 		void SetRelativePath(const fs::path& path);
@@ -138,7 +138,7 @@ namespace puffin::assets
 
 	private:
 
-		puffin::PuffinID mID = puffin::gInvalidID; // UUID of Asset
+		puffin::UUID mID = puffin::gInvalidId; // UUID of Asset
 		fs::path mPath; // Relative Asset Path
 
 	};

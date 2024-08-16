@@ -22,7 +22,7 @@ namespace puffin::assets
 	{
 	}
 
-	StaticMeshAsset::StaticMeshAsset(const PuffinID id, const fs::path& path): Asset(id, path)
+	StaticMeshAsset::StaticMeshAsset(const UUID id, const fs::path& path): Asset(id, path)
 	{
 	}
 

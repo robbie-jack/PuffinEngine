@@ -4,7 +4,7 @@
 
 namespace puffin::rendering
 {
-	MeshNode::MeshNode(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : TransformNode3D(engine, id)
+	MeshNode::MeshNode(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
 	{
 		m_name = "Mesh";
 
@@ -31,22 +31,22 @@ namespace puffin::rendering
 		TransformNode3D::end_play();
 	}
 
-	PuffinID MeshNode::mesh_asset_id()
+	UUID MeshNode::mesh_asset_id()
 	{
 		return get_component<MeshComponent>().mesh_asset_id;
 	}
 
-	void MeshNode::set_mesh_asset_id(PuffinID mesh_asset_id) const
+	void MeshNode::set_mesh_asset_id(UUID mesh_asset_id) const
 	{
 		m_registry->patch<MeshComponent>(m_entity, [&mesh_asset_id](auto& mesh) { mesh.mesh_asset_id = mesh_asset_id; });
 	}
 
-	PuffinID MeshNode::mat_asset_id()
+	UUID MeshNode::mat_asset_id()
 	{
 		return get_component<MeshComponent>().mat_asset_id;
 	}
 
-	void MeshNode::set_mat_asset_id(PuffinID mat_asset_id) const
+	void MeshNode::set_mat_asset_id(UUID mat_asset_id) const
 	{
 		m_registry->patch<MeshComponent>(m_entity, [&mat_asset_id](auto& mesh) { mesh.mat_asset_id = mat_asset_id; });
 	}

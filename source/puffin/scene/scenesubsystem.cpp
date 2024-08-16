@@ -131,7 +131,7 @@ namespace puffin::io
 
 		is.close();
 
-		m_entity_ids = data.at("entity_ids").get<std::vector<PuffinID>>();
+		m_entity_ids = data.at("entity_ids").get<std::vector<UUID>>();
 
 		for (auto& [type, comp_array] : m_component_data)
 		{
@@ -141,11 +141,11 @@ namespace puffin::io
 			}
 		}
 
-		m_root_node_ids = data.at("root_node_ids").get<std::vector<PuffinID>>();
-		m_node_ids = data.at("node_ids").get<std::vector<PuffinID>>();
-		m_node_id_to_type = data.at("node_id_to_type").get<std::unordered_map<PuffinID, std::string>>();
-		m_node_id_to_json = data.at("node_id_to_json").get<std::unordered_map<PuffinID, json>>();
-		m_child_node_ids = data.at("child_node_ids").get<std::unordered_map<PuffinID, std::vector<PuffinID>>>();
+		m_root_node_ids = data.at("root_node_ids").get<std::vector<UUID>>();
+		m_node_ids = data.at("node_ids").get<std::vector<UUID>>();
+		m_node_id_to_type = data.at("node_id_to_type").get<std::unordered_map<UUID, std::string>>();
+		m_node_id_to_json = data.at("node_id_to_json").get<std::unordered_map<UUID, json>>();
+		m_child_node_ids = data.at("child_node_ids").get<std::unordered_map<UUID, std::vector<UUID>>>();
 
 		m_has_data = true;
 	}
@@ -166,14 +166,14 @@ namespace puffin::io
 		return m_path;
 	}
 
-	void SceneData::add_node_id_and_child_ids(scene::SceneGraphSubsystem* scene_graph, PuffinID id)
+	void SceneData::add_node_id_and_child_ids(scene::SceneGraphSubsystem* scene_graph, UUID id)
 	{
 		auto node = scene_graph->get_node_ptr(id);
 
 		json json;
 		node->serialize(json);
 
-		std::vector<PuffinID> child_ids;
+		std::vector<UUID> child_ids;
 		node->get_child_ids(child_ids);
 
 		m_node_ids.push_back(id);

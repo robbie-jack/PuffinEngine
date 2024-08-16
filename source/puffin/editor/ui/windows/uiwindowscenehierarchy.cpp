@@ -114,7 +114,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowSceneHierarchy::draw_node_ui(PuffinID id, const ImGuiTreeNodeFlags& base_flags)
+		void UIWindowSceneHierarchy::draw_node_ui(UUID id, const ImGuiTreeNodeFlags& base_flags)
 		{
 			ImGuiTreeNodeFlags tree_flags = base_flags;
 
@@ -123,7 +123,7 @@ namespace puffin
 
 			bool has_child = false;
 
-			std::vector<PuffinID> child_ids;
+			std::vector<UUID> child_ids;
 			node->get_child_ids(child_ids);
 
 			if (!child_ids.empty())

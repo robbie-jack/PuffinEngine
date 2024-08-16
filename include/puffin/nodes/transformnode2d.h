@@ -14,7 +14,7 @@ namespace puffin
 	{
 	public:
 
-		explicit TransformNode2D(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID);
+		explicit TransformNode2D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidId);
 		~TransformNode2D() override = default;
 
 		void begin_play() override;

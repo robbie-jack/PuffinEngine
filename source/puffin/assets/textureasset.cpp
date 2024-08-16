@@ -73,7 +73,7 @@ namespace puffin::assets
 	{
 	}
 
-	TextureAsset::TextureAsset(const PuffinID id, const fs::path& path): Asset(id, path)
+	TextureAsset::TextureAsset(const UUID id, const fs::path& path): Asset(id, path)
 	{
 	}
 

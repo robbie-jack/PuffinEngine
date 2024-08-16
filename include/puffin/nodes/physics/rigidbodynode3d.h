@@ -8,7 +8,7 @@ namespace puffin::physics
 	{
 	public:
 
-		explicit RigidbodyNode3D(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID);
+		explicit RigidbodyNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidId);
 		~RigidbodyNode3D() override = default;
 
 		void begin_play() override;

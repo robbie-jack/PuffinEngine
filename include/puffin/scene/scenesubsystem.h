@@ -106,7 +106,7 @@ namespace puffin::io
 		{
 			for (const auto& data : component_data)
 			{
-				PuffinID id = data.at(0);
+				UUID id = data.at(0);
 
 				m_components[id] = data.at(1);
 			}
@@ -114,7 +114,7 @@ namespace puffin::io
 
 	private:
 
-		std::map<PuffinID, CompT> m_components; // Map of entity id to component
+		std::map<UUID, CompT> m_components; // Map of entity id to component
 
 	};
 
@@ -161,17 +161,17 @@ namespace puffin::io
 		fs::path m_path;
 		bool m_has_data = false; // This scene contains a copy of active scene data, either loaded from file or copied from ecs
 
-		std::vector<PuffinID> m_entity_ids;
+		std::vector<UUID> m_entity_ids;
 		std::unordered_map<std::string, std::shared_ptr<IComponentDataArray>> m_component_data; // Map of component data arrays
 
-		std::vector<PuffinID> m_root_node_ids;
+		std::vector<UUID> m_root_node_ids;
 
-		std::vector<PuffinID> m_node_ids;
-		std::unordered_map<PuffinID, std::string> m_node_id_to_type;
-		std::unordered_map<PuffinID, json> m_node_id_to_json;
-		std::unordered_map<PuffinID, std::vector<PuffinID>> m_child_node_ids;
+		std::vector<UUID> m_node_ids;
+		std::unordered_map<UUID, std::string> m_node_id_to_type;
+		std::unordered_map<UUID, json> m_node_id_to_json;
+		std::unordered_map<UUID, std::vector<UUID>> m_child_node_ids;
 
-		void add_node_id_and_child_ids(scene::SceneGraphSubsystem* scene_graph, PuffinID id);
+		void add_node_id_and_child_ids(scene::SceneGraphSubsystem* scene_graph, UUID id);
 	};
 
     class ISceneComponentRegister

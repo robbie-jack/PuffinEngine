@@ -35,8 +35,8 @@ namespace puffin
 
 			virtual void draw(double dt) = 0;
 
-			PuffinID selectedEntity() const { return mSelectedEntity; }
-			void setSelectedEntity(const PuffinID selectedEntity) { mSelectedEntity = selectedEntity; }
+			UUID selectedEntity() const { return mSelectedEntity; }
+			void setSelectedEntity(const UUID selectedEntity) { mSelectedEntity = selectedEntity; }
 
 			void setShow();
 
@@ -45,7 +45,7 @@ namespace puffin
 
 		protected:
 
-			PuffinID mSelectedEntity = gInvalidID;
+			UUID mSelectedEntity = gInvalidId;
 
 			// Boolean for if window is currently visible
 			bool mShow;

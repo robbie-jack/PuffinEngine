@@ -51,70 +51,73 @@ namespace puffin::rendering
 	// Struct containing render data that is static between frames
 	struct GlobalRenderData
 	{
-		std::shared_ptr<util::DescriptorAllocator> descriptor_allocator = nullptr;
-		std::shared_ptr<util::DescriptorLayoutCache> descriptor_layout_cache = nullptr;
+		std::shared_ptr<util::DescriptorAllocator> descriptorAllocator = nullptr;
+		std::shared_ptr<util::DescriptorLayoutCache> descriptorLayoutCache = nullptr;
 
-		vk::DescriptorSetLayout object_set_layout;
-		vk::DescriptorSetLayout global_set_layout;
-		vk::DescriptorSetLayout texture_set_layout;
-		vk::DescriptorSetLayout shadowmap_set_layout;
-		vk::DescriptorSetLayout material_set_layout;
+		vk::DescriptorSetLayout objectSetLayout;
+		vk::DescriptorSetLayout globalSetLayout;
+		vk::DescriptorSetLayout textureSetLayout;
+		vk::DescriptorSetLayout shadowmapSetLayout;
+		vk::DescriptorSetLayout materialSetLayout;
 
-		vk::Sampler texture_sampler;
-		vk::Sampler shadowmap_sampler;
+		vk::Sampler textureSampler;
+		vk::Sampler shadowmapSampler;
 	};
 
 	// Struct containing data that changes each frame
 	struct FrameRenderData
 	{
 		// Synchronization
-		vk::Semaphore shadow_semaphore;
-		vk::Semaphore render_semaphore;
-		vk::Semaphore copy_semaphore;
-		vk::Semaphore imgui_semaphore;
-		vk::Semaphore present_semaphore;
+		vk::Semaphore shadowSemaphore;
+		vk::Semaphore renderSemaphore;
+		vk::Semaphore copySemaphore;
+		vk::Semaphore imguiSemaphore;
+		vk::Semaphore presentSemaphore;
 
-		vk::Fence render_fence;
-		vk::Fence present_fence;
+		vk::Fence renderFence;
+		vk::Fence presentFence;
 
 		// Command Execution
-		vk::CommandPool command_pool;
-		vk::CommandBuffer shadow_command_buffer;
-		vk::CommandBuffer main_command_buffer;
-		vk::CommandBuffer copy_command_buffer; // Cmd buffer for copying/blitting from offscreen to swapchain
-		vk::CommandBuffer imgui_command_buffer;
+		vk::CommandPool commandPool;
+		vk::CommandBuffer shadowCommandBuffer;
+		vk::CommandBuffer mainCommandBuffer;
+		vk::CommandBuffer copyCommandBuffer; // Cmd buffer for copying/blitting from offscreen to swapchain
+		vk::CommandBuffer imguiCommandBuffer;
 
-		AllocatedBuffer indirect_buffer; // Buffer of indirect draw commands
-		uint32_t draw_count = 0;
+		AllocatedBuffer indirectDrawBuffer; // Buffer of indirect draw commands
+		uint32_t drawCount = 0;
 
 		// Global Data (Set for entire frame)
-		vk::DescriptorSet object_descriptor;
-		vk::DescriptorSet global_descriptor;
-		vk::DescriptorSet texture_descriptor;
-		vk::DescriptorSet shadowmap_descriptor;
+		vk::DescriptorSet objectDescriptor;
+		vk::DescriptorSet globalDescriptor;
+		vk::DescriptorSet textureDescriptor;
+		vk::DescriptorSet shadowmapDescriptor;
 
-		AllocatedBuffer camera_buffer;
-		AllocatedBuffer object_buffer;
-		AllocatedBuffer light_buffer;
-        AllocatedBuffer shadow_buffer;
-        AllocatedBuffer shadow_cascade_buffer;
-		AllocatedBuffer material_buffer;
+		AllocatedBuffer cameraBuffer;
+		AllocatedBuffer objectBuffer;
+		AllocatedBuffer lightBuffer;
+		AllocatedBuffer pointLightBuffer;
+		AllocatedBuffer directionalLightBuffer;
+		AllocatedBuffer spotLightBuffer;
+        AllocatedBuffer shadowBuffer;
+        AllocatedBuffer shadowCascadeBuffer;
+		AllocatedBuffer materialBuffer;
 
-		GPUFragShaderPushConstant push_constant_frag;
+		GPUFragShaderPushConstant pushConstantFrag;
 
 		// Material Data (Set for each unique material i.e textures)
 
-		std::unordered_set<PuffinID> rendered_meshes; // Set of meshes last rendered using this data
+		std::unordered_set<UUID> renderedMeshes; // Set of meshes last rendered using this data
 
-		bool swapchain_needs_updated = false;
-		bool offscreen_needs_updated = false;
-		bool texture_descriptor_needs_updated = false;
-		bool shadow_descriptor_needs_updated = false;
-		bool copy_object_data_to_gpu = false;
-		bool copy_material_data_to_gpu = false;
+		bool swapchainNeedsUpdated = false;
+		bool offscreenNeedsUpdated = false;
+		bool textureDescriptorNeedsUpdated = false;
+		bool shadowDescriptorNeedsUpdated = false;
+		bool copyObjectDataToGPU = false;
+		bool copyMaterialDataToGPU = false;
 	};
 
-	const static std::unordered_map<assets::TextureFormat, vk::Format> g_tex_format_vk =
+	const static std::unordered_map<assets::TextureFormat, vk::Format> gTexFormatVK =
 	{
 		{ assets::TextureFormat::R8, vk::Format::eR8Unorm },
 		{ assets::TextureFormat::RG8, vk::Format::eR8G8Unorm },
@@ -133,136 +136,42 @@ namespace puffin::rendering
 		explicit RenderSubystemVK(const std::shared_ptr<core::Engine>& engine);
 		~RenderSubystemVK() override;
 
-		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
 
 		[[nodiscard]] core::SubsystemType GetType() const override;
 
 		double WaitForLastPresentationAndSampleTime() override;
-		void Render(double delta_time) override;
+		void Render(double deltaTime) override;
 
-		const vma::Allocator& allocator() const { return m_allocator ;}
-		const vk::Device& device() const { return m_device; }
-		const UploadContext& upload_context() const { return m_upload_context; }
-		const vk::Queue& graphics_queue() const { return m_graphics_queue; }
-		const GlobalRenderData& static_render_data() const { return m_global_render_data; }
-		const vk::PipelineCache& pipeline_cache() const { return m_pipeline_cache; }
-		const OffscreenData& offscreen_data() const { return m_offscreen_data; }
-		const vk::Extent2D& window_size() const { return m_window_size; }
-		const vk::Extent2D& render_extent() const { return m_render_extent; }
-		DeletionQueue& deletion_queue() { return m_deletion_queue; }
-		bool rebar_enabled() const { return m_rebar_enabled; }
+		const vma::Allocator& GetAllocator() const { return mAllocator ;}
+		const vk::Device& GetDevice() const { return mDevice; }
+		const UploadContext& GetUploadContext() const { return m_upload_context; }
+		const vk::Queue& GetGraphicsQueue() const { return mGraphicsQueue; }
+		const GlobalRenderData& GetGlobalRenderData() const { return mGlobalRenderData; }
+		const vk::PipelineCache& GetPipelineCache() const { return m_pipeline_cache; }
+		const OffscreenData& GetOffscreenData() const { return mOffscreenData; }
+		const vk::Extent2D& GetWindowSize() const { return mWindowSize; }
+		const vk::Extent2D& GetRenderExtent() const { return mRenderExtent; }
+		DeletionQueue& GetDeletionQueue() { return m_deletion_queue; }
+		bool GetRebarEnabled() const { return mRebarEnabled; }
 
-		void on_update_mesh(entt::registry& registry, entt::entity entity);
-		void on_update_transform(entt::registry& registry, entt::entity entity);
-		void on_destroy_mesh_or_transform(entt::registry& registry, entt::entity entity);
+		void OnUpdateMesh(entt::registry& registry, entt::entity entity);
+		void OnUpdateTransform(entt::registry& registry, entt::entity entity);
+		void OnDestroyMeshOrTransform(entt::registry& registry, entt::entity entity);
 
-		void add_renderable(entt::registry& registry, entt::entity entity);
+		void AddRenderable(entt::registry& registry, entt::entity entity);
 
-		void on_construct_shadow_caster(entt::registry& registry, entt::entity entity);
-		void on_update_shadow_caster(entt::registry& registry, entt::entity entity);
-		void on_destroy_shadow_caster(entt::registry& registry, entt::entity entity);
+		void OnConstructShadowCaster(entt::registry& registry, entt::entity entity);
+		void OnUpdateShadowCaster(entt::registry& registry, entt::entity entity);
+		void OnDestroyShadowCaster(entt::registry& registry, entt::entity entity);
 
-		void register_texture(PuffinID tex_id);
+		void RegisterTexture(UUID textureID);
 
-		[[nodiscard]] uint8_t current_frame_idx() const { return m_frame_count % m_frames_in_flight_count; }
-		[[nodiscard]] uint8_t frames_in_flight_count() const { return m_frames_in_flight_count; }
+		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return m_frame_count % mFramesInFlightCount; }
+		[[nodiscard]] uint8_t GetFramesInFlightCount() const { return mFramesInFlightCount; }
 
 	private:
-
-		struct ShadowConstructEvent
-		{
-			entt::entity entity;
-			ImageDesc image_desc;
-		};
-
-		struct ShadowUpdateEvent
-		{
-            entt::entity entity;
-			ImageDesc image_desc;
-			uint8_t frame_count = 0;
-		};
-
-		struct ShadowDestroyEvent
-		{
-			ResourceID resource_id;
-			uint8_t frame_count = 0;
-		};
-
-		// Initialization Members
-		vk::Device m_device;
-		vk::Instance m_instance;
-		vk::PhysicalDevice m_physical_device;
-		vk::SurfaceKHR m_surface;
-		vk::DebugUtilsMessengerEXT m_debug_messenger;
-
-		vk::Extent2D m_window_size;
-		vk::Extent2D m_render_extent;
-
-		vma::Allocator m_allocator;
-
-		// Swapchain
-		SwapchainData m_swapchain_data;
-		SwapchainData m_swapchain_data_old;
-
-		OffscreenData m_offscreen_data;
-		OffscreenData m_offscreen_data_old;
-
-		// Command Execution
-		vk::Queue m_graphics_queue = {};
-		uint32_t m_graphics_queue_family = 0;
-
-		GlobalRenderData m_global_render_data;
-		std::array<FrameRenderData, g_buffered_frames> m_frame_render_data;
-
-		std::unique_ptr<ResourceManagerVK> m_resource_manager = nullptr;
-		std::unique_ptr<MaterialRegistryVK> m_material_registry = nullptr;
-
-		std::unordered_set<PuffinID> m_meshes_to_load; // Meshes that need to be loaded
-		std::unordered_set<PuffinID> m_textures_to_load; // Textures that need to be loaded
-
-		PackedVector<PuffinID, TextureDataVK> m_tex_data;
-
-		std::vector<MeshRenderable> m_renderables; // Renderables data
-		bool m_update_renderables = false;
-
-		std::vector<MeshDrawBatch> m_draw_batches;
-
-		PackedVector<PuffinID, GPUObjectData> m_cached_object_data; // Cached data for rendering each object in scene
-		std::unordered_set<PuffinID> m_objects_to_refresh; // Objects which need their mesh data refreshed
-
-		//PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
-
-		RingBuffer<ShadowConstructEvent> m_shadow_construct_events;
-		RingBuffer<ShadowUpdateEvent> m_shadow_update_events;
-		RingBuffer<ShadowDestroyEvent> m_shadow_destroy_events;
-		std::vector<PuffinID> m_shadows_to_draw;
-
-		uint32_t m_current_swapchain_idx = 0;
-		uint8_t m_frames_in_flight_count = g_buffered_frames;
-		uint32_t m_frame_count;
-		uint32_t m_draw_calls = 0;
-
-		// Pipelines
-		vk::PipelineCache m_pipeline_cache;
-
-		util::ShaderModule m_forward_vert_mod;
-		util::ShaderModule m_forward_frag_mod;
-		vk::UniquePipelineLayout m_forward_pipeline_layout;
-		vk::UniquePipeline m_forward_pipeline;
-
-		util::ShaderModule m_shadow_vert_mod;
-		util::ShaderModule m_shadow_frag_mod;
-		vk::UniquePipelineLayout m_shadow_pipeline_layout;
-		vk::UniquePipeline m_shadow_pipeline;
-
-		UploadContext m_upload_context;
-
-		DeletionQueue m_deletion_queue;
-
-		bool m_initialized = false; // Indicates initialization completed without any failures
-		bool m_rebar_enabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
-		bool m_render_shadows = false; // Render shadows if enabled
 
 		void init_vulkan();
 
@@ -335,15 +244,109 @@ namespace puffin::rendering
 		//bool loadMesh(PuffinID meshId, MeshDataVK& meshData);
 		//void unloadMesh(MeshDataVK& meshData) const;
 
-		bool load_texture(PuffinID texId, TextureDataVK& texData);
+		bool load_texture(UUID texId, TextureDataVK& texData);
 		void unload_texture(TextureDataVK& texData) const;
 
-		void build_texture_descriptor_info(PackedVector<PuffinID, TextureDataVK>& textureData,
+		void build_texture_descriptor_info(PackedVector<UUID, TextureDataVK>& textureData,
 		                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
-		void build_shadow_descriptor_info(std::vector<vk::DescriptorImageInfo>& shadow_image_infos);
+		void build_shadow_descriptor_info(std::vector<vk::DescriptorImageInfo>& shadowImageInfos);
 
 		FrameRenderData& current_frame_data();
 
 		static void frame_buffer_resize_callback(GLFWwindow* window, const int width, const int height);
+
+		struct ShadowConstructEvent
+		{
+			entt::entity entity;
+			ImageDesc imageDesc;
+		};
+
+		struct ShadowUpdateEvent
+		{
+			entt::entity entity;
+			ImageDesc imageDesc;
+			uint8_t frameCount = 0;
+		};
+
+		struct ShadowDestroyEvent
+		{
+			ResourceID resourceID;
+			uint8_t frameCount = 0;
+		};
+
+		// Initialization Members
+		vk::Device mDevice;
+		vk::Instance mInstance;
+		vk::PhysicalDevice mPhysicalDevice;
+		vk::SurfaceKHR mSurface;
+		vk::DebugUtilsMessengerEXT mDebugMessenger;
+
+		vk::Extent2D mWindowSize;
+		vk::Extent2D mRenderExtent;
+
+		vma::Allocator mAllocator;
+
+		// Swapchain
+		SwapchainData mSwapchainData;
+		SwapchainData mSwapchainDataOld;
+
+		OffscreenData mOffscreenData;
+		OffscreenData mOffscreenDataOld;
+
+		// Command Execution
+		vk::Queue mGraphicsQueue = {};
+		uint32_t mGraphicsQueueFamily = 0;
+
+		GlobalRenderData mGlobalRenderData;
+		std::array<FrameRenderData, g_buffered_frames> mFrameRenderData;
+
+		std::unique_ptr<ResourceManagerVK> mResourceManager = nullptr;
+		std::unique_ptr<MaterialRegistryVK> mMaterialRegistry = nullptr;
+
+		std::unordered_set<UUID> mMeshesToLoad; // Meshes that need to be loaded
+		std::unordered_set<UUID> mTexturesToLoad; // Textures that need to be loaded
+
+		PackedVector<UUID, TextureDataVK> mTexData;
+
+		std::vector<MeshRenderable> mRenderables; // Renderables data
+		bool mUpdateRenderables = false;
+
+		std::vector<MeshDrawBatch> mDrawBatches;
+
+		PackedVector<UUID, GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
+		std::unordered_set<UUID> mObjectsToRefresh; // Objects which need their mesh data refreshed
+
+		//PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
+
+		RingBuffer<ShadowConstructEvent> mShadowConstructEvents;
+		RingBuffer<ShadowUpdateEvent> mShadowUpdateEvents;
+		RingBuffer<ShadowDestroyEvent> mShadowDestroyEvents;
+		std::vector<UUID> mShadowsToDraw;
+
+		uint32_t mCurrentSwapchainIdx = 0;
+		uint8_t mFramesInFlightCount = g_buffered_frames;
+		uint32_t m_frame_count;
+		uint32_t m_draw_calls = 0;
+
+		// Pipelines
+		vk::PipelineCache m_pipeline_cache;
+
+		util::ShaderModule mForwardVertMod;
+		util::ShaderModule m_forward_frag_mod;
+		vk::UniquePipelineLayout m_forward_pipeline_layout;
+		vk::UniquePipeline m_forward_pipeline;
+
+		util::ShaderModule m_shadow_vert_mod;
+		util::ShaderModule m_shadow_frag_mod;
+		vk::UniquePipelineLayout m_shadow_pipeline_layout;
+		vk::UniquePipeline m_shadow_pipeline;
+
+		UploadContext m_upload_context;
+
+		DeletionQueue m_deletion_queue;
+
+		bool mInitialized = false; // Indicates initialization completed without any failures
+		bool mRebarEnabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
+		bool mRenderShadows = false; // Render shadows if enabled
 	};
 }

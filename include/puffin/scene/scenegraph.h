@@ -41,7 +41,7 @@ namespace puffin::scene
 		NodeFactory() = default;
 		~NodeFactory() override = default;
 
-		static T create(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID)
+		static T create(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidId)
 		{
 			return T(engine, id);
 		}
@@ -56,13 +56,13 @@ namespace puffin::scene
 
 		virtual ~INodeArray() = default;
 
-		virtual Node* add_ptr(const std::shared_ptr<core::Engine>& engine, PuffinID id = gInvalidID) = 0;
+		virtual Node* add_ptr(const std::shared_ptr<core::Engine>& engine, UUID id = gInvalidId) = 0;
 
-		virtual Node* get_ptr(PuffinID id) = 0;
+		virtual Node* get_ptr(UUID id) = 0;
 
-		virtual void remove(PuffinID id) = 0;
+		virtual void remove(UUID id) = 0;
 
-		virtual bool valid(PuffinID id) = 0;
+		virtual bool valid(UUID id) = 0;
 
 		virtual void clear() = 0;
 
@@ -76,27 +76,27 @@ namespace puffin::scene
 		NodeArray() = default;
 		~NodeArray() override = default;
 
-		T* add(const std::shared_ptr<core::Engine>& engine, PuffinID id = gInvalidID)
+		T* add(const std::shared_ptr<core::Engine>& engine, UUID id = gInvalidId)
 		{
-			if (id == gInvalidID)
-				id = generate_id();
+			if (id == gInvalidId)
+				id = GenerateId();
 
 			m_vector.emplace(id, m_factory.create(engine, id));
 
 			return &m_vector[id];
 		}
 
-		Node* add_ptr(const std::shared_ptr<core::Engine>& engine, PuffinID id = gInvalidID) override
+		Node* add_ptr(const std::shared_ptr<core::Engine>& engine, UUID id = gInvalidId) override
 		{
 			return static_cast<Node*>(add(engine, id));
 		}
 
-		T* get(PuffinID id)
+		T* get(UUID id)
 		{
 			return &m_vector.at(id);
 		}
 
-		Node* get_ptr(PuffinID id) override
+		Node* get_ptr(UUID id) override
 		{
 			if (valid(id))
 				return static_cast<Node*>(get(id));
@@ -104,12 +104,12 @@ namespace puffin::scene
 			return nullptr;
 		}
 
-		void remove(PuffinID id) override
+		void remove(UUID id) override
 		{
 			m_vector.erase(id);
 		}
 
-		bool valid(PuffinID id) override
+		bool valid(UUID id) override
 		{
 			return m_vector.contains(id);
 		}
@@ -121,7 +121,7 @@ namespace puffin::scene
 
 	private:
 
-		PackedVector<PuffinID, T> m_vector;
+		PackedVector<UUID, T> m_vector;
 		NodeFactory<T> m_factory;
 
 	};
@@ -156,31 +156,31 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		T* add_node(PuffinID id)
+		T* add_node(UUID id)
 		{
 			return add_node_internal<T>(id);
 		}
 
-		Node* add_node(const char* type_name, PuffinID id);
+		Node* add_node(const char* type_name, UUID id);
 
 		template<typename T>
-		T* add_child_node(PuffinID parent_id)
+		T* add_child_node(UUID parent_id)
 		{
-			return add_node_internal<T>(gInvalidID, parent_id);
+			return add_node_internal<T>(gInvalidId, parent_id);
 		}
 
 		template<typename T>
-		T* add_child_node(PuffinID id, PuffinID parent_id)
+		T* add_child_node(UUID id, UUID parent_id)
 		{
 			return add_node_internal<T>(id, parent_id);
 		}
 
-		Node* add_child_node(const char* type_name, PuffinID id, PuffinID parent_id);
+		Node* add_child_node(const char* type_name, UUID id, UUID parent_id);
 
-		bool is_valid_node(PuffinID id);
+		bool is_valid_node(UUID id);
 
 		template<typename T>
-		T* get_node(PuffinID id)
+		T* get_node(UUID id)
 		{
 			if (!is_valid_node(id))
 				return nullptr;
@@ -188,29 +188,29 @@ namespace puffin::scene
 			return get_array<T>()->get(id);
 		}
 
-		[[nodiscard]] Node* get_node_ptr(const PuffinID& id);
+		[[nodiscard]] Node* get_node_ptr(const UUID& id);
 
-		[[nodiscard]] const std::string& get_node_type_name(const PuffinID& id) const;
+		[[nodiscard]] const std::string& get_node_type_name(const UUID& id) const;
 
-		[[nodiscard]] TransformComponent2D* get_global_transform_2d(const PuffinID& id);
+		[[nodiscard]] TransformComponent2D* get_global_transform_2d(const UUID& id);
 
-		[[nodiscard]] TransformComponent3D* get_global_transform_3d(const PuffinID& id);
+		[[nodiscard]] TransformComponent3D* get_global_transform_3d(const UUID& id);
 
 		// Queue a node for destruction, will also destroy all child nodes
-		void queue_destroy_node(const PuffinID& id);
+		void queue_destroy_node(const UUID& id);
 
-		std::vector<PuffinID>& get_node_ids();
-		std::vector<PuffinID>& get_root_node_ids();
+		std::vector<UUID>& get_node_ids();
+		std::vector<UUID>& get_root_node_ids();
 
 	private:
 
-		std::unordered_map<PuffinID, std::string> m_id_to_type;
-		std::vector<PuffinID> m_node_ids; // Vector of node id's, sorted by order methods are executed in
-		std::vector<PuffinID> m_root_node_ids; // Vector of nodes at root of scene graph
-		std::set<PuffinID> m_nodes_to_destroy;
+		std::unordered_map<UUID, std::string> m_id_to_type;
+		std::vector<UUID> m_node_ids; // Vector of node id's, sorted by order methods are executed in
+		std::vector<UUID> m_root_node_ids; // Vector of nodes at root of scene graph
+		std::set<UUID> m_nodes_to_destroy;
 
-		PackedVector<PuffinID, TransformComponent2D> m_global_transform_2ds;
-		PackedVector<PuffinID, TransformComponent3D> m_global_transform_3ds;
+		PackedVector<UUID, TransformComponent2D> m_global_transform_2ds;
+		PackedVector<UUID, TransformComponent3D> m_global_transform_3ds;
 
 		bool m_scene_graph_updated = false;
 
@@ -219,16 +219,16 @@ namespace puffin::scene
 		void register_default_node_types();
 
 		void update_scene_graph();
-		void destroy_node(PuffinID id);
-		void add_id_and_child_ids(PuffinID id, std::vector<PuffinID>& node_ids);
+		void destroy_node(UUID id);
+		void add_id_and_child_ids(UUID id, std::vector<UUID>& node_ids);
 
 		void update_transforms();
-		void apply_local_to_global_transform_2d(PuffinID id, TransformComponent2D& global_transform);
-		void apply_local_to_global_transform_3d(PuffinID id, TransformComponent3D& global_transform);
+		void apply_local_to_global_transform_2d(UUID id, TransformComponent2D& global_transform);
+		void apply_local_to_global_transform_3d(UUID id, TransformComponent3D& global_transform);
 
-		void add_node_internal_base(Node* node, const char* type_name, PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
+		void add_node_internal_base(Node* node, const char* type_name, UUID id = gInvalidId, UUID parent_id = gInvalidId)
 		{
-			if (parent_id != gInvalidID)
+			if (parent_id != gInvalidId)
 			{
 				node->set_parent_id(parent_id);
 
@@ -256,7 +256,7 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		T* add_node_internal(PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
+		T* add_node_internal(UUID id = gInvalidId, UUID parent_id = gInvalidId)
 		{
 			if (m_id_to_type.find(id) != m_id_to_type.end())
 			{
@@ -274,7 +274,7 @@ namespace puffin::scene
 
 			Node* node_ptr;
 
-			if (id == gInvalidID)
+			if (id == gInvalidId)
 			{
 				T* node = get_array<T>()->add(mEngine);
 				node_ptr = static_cast<Node*>(node);
@@ -292,7 +292,7 @@ namespace puffin::scene
 			return get_array<T>()->get(id);
 		}
 
-		Node* add_node_internal(const char* type_name, PuffinID id = gInvalidID, PuffinID parent_id = gInvalidID)
+		Node* add_node_internal(const char* type_name, UUID id = gInvalidId, UUID parent_id = gInvalidId)
 		{
 			if (m_id_to_type.find(id) != m_id_to_type.end())
 			{
@@ -303,7 +303,7 @@ namespace puffin::scene
 
 			Node* node_ptr;
 
-			if (id == gInvalidID)
+			if (id == gInvalidId)
 			{
 				node_ptr = get_array(type_name)->add_ptr(mEngine);
 

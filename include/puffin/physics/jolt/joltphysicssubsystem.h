@@ -87,20 +87,20 @@ namespace puffin::physics
 		JoltObjectLayerPairFilterImpl m_object_vs_object_layer_filter;
 		JoltObjectVsBroadPhaseLayerFilterImpl m_object_vs_broadphase_layer_filter;
 
-		PackedVector<PuffinID, JPH::ShapeRefC> m_shape_refs;
-		PackedVector<PuffinID, JPH::Body*> m_bodies;
+		PackedVector<UUID, JPH::ShapeRefC> m_shape_refs;
+		PackedVector<UUID, JPH::Body*> m_bodies;
 
-		std::vector<PuffinID> m_boxes_to_init;
-		std::vector<PuffinID> m_spheres_to_init;
-		std::vector<PuffinID> m_bodies_to_init;
+		std::vector<UUID> m_boxes_to_init;
+		std::vector<UUID> m_spheres_to_init;
+		std::vector<UUID> m_bodies_to_init;
 
-		std::vector<PuffinID> m_bodies_to_add;
+		std::vector<UUID> m_bodies_to_add;
 
 		void update_components();
 
-		void init_box(PuffinID id, const TransformComponent3D& transform, const BoxComponent3D& box);
-		void init_sphere(PuffinID id, const TransformComponent3D& transform, const SphereComponent3D& circle);
-		void init_rigidbody(PuffinID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
+		void init_box(UUID id, const TransformComponent3D& transform, const BoxComponent3D& box);
+		void init_sphere(UUID id, const TransformComponent3D& transform, const SphereComponent3D& circle);
+		void init_rigidbody(UUID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
 	};
 }
 

@@ -14,9 +14,9 @@ namespace puffin::rendering
 		std::vector<rendering::VertexPNTV32> vertices;
 		std::vector<uint32_t> indices;
 
-		explicit ProceduralMeshComponent3D(const PuffinID textureID) : materialID(textureID) {}
+		explicit ProceduralMeshComponent3D(const UUID textureID) : materialID(textureID) {}
 
-		PuffinID materialID;
+		UUID materialID;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProceduralMeshComponent3D, materialID)
 	};

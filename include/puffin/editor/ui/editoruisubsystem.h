@@ -57,7 +57,7 @@ namespace puffin
 			bool m_load_scene = false;
 			ImportAssetUI m_import_asset_ui;
 
-			PuffinID m_entity = gInvalidID;
+			UUID m_entity = gInvalidId;
 
 			std::vector<std::shared_ptr<UIWindow>> m_windows;
 

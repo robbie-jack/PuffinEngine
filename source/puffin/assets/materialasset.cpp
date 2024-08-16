@@ -18,7 +18,7 @@ namespace puffin::assets
 		
 	}
 
-	MaterialAsset::MaterialAsset(const PuffinID id, const fs::path& path): Asset(id, path)
+	MaterialAsset::MaterialAsset(const UUID id, const fs::path& path): Asset(id, path)
 	{
 		
 	}
@@ -77,22 +77,22 @@ namespace puffin::assets
 		return true;
 	}
 
-	PuffinID MaterialAsset::GetVertexShaderID() const
+	UUID MaterialAsset::GetVertexShaderID() const
 	{
 		return mVertexShaderID;
 	}
 
-	void MaterialAsset::SetVertexShaderID(const PuffinID vertID)
+	void MaterialAsset::SetVertexShaderID(const UUID vertID)
 	{
 		mVertexShaderID = vertID;
 	}
 
-	PuffinID MaterialAsset::GetFragmentShaderID() const
+	UUID MaterialAsset::GetFragmentShaderID() const
 	{
 		return mFragmentShaderID;
 	}
 
-	void MaterialAsset::SetFragmentShaderID(const PuffinID fragID)
+	void MaterialAsset::SetFragmentShaderID(const UUID fragID)
 	{
 		mFragmentShaderID = fragID;
 	}
@@ -109,7 +109,7 @@ namespace puffin::assets
 	{
 	}
 
-	MaterialInstanceAsset::MaterialInstanceAsset(const PuffinID id, const fs::path& path): Asset(id, path)
+	MaterialInstanceAsset::MaterialInstanceAsset(const UUID id, const fs::path& path): Asset(id, path)
 	{
 	}
 
@@ -169,17 +169,17 @@ namespace puffin::assets
 		return true;
 	}
 
-	PuffinID MaterialInstanceAsset::GetBaseMaterialID() const
+	UUID MaterialInstanceAsset::GetBaseMaterialID() const
 	{
 		return mBaseMaterial;
 	}
 
-	void MaterialInstanceAsset::SetBaseMaterialID(const PuffinID matID)
+	void MaterialInstanceAsset::SetBaseMaterialID(const UUID matID)
 	{
 		mBaseMaterial = matID;
 	}
 
-	std::array<PuffinID, rendering::gNumTexturesPerMat>& MaterialInstanceAsset::GetTexIDs()
+	std::array<UUID, rendering::gNumTexturesPerMat>& MaterialInstanceAsset::GetTexIDs()
 	{
 		return mTexIDs;
 	}

@@ -34,10 +34,10 @@ namespace puffin::ecs
 		m_entity_to_id.clear();
 	}
 
-	PuffinID EnTTSubsystem::add_entity(bool should_be_serialized)
+	UUID EnTTSubsystem::add_entity(bool should_be_serialized)
 	{
 		const auto entity = m_registry->create();
-		const auto id = generate_id();
+		const auto id = GenerateId();
 
 		m_id_to_entity.emplace(id, entity);
 		m_entity_to_id.emplace(entity, id);
@@ -48,7 +48,7 @@ namespace puffin::ecs
 		return id;
 	}
 
-	entt::entity EnTTSubsystem::add_entity(const PuffinID id, bool should_be_serialized)
+	entt::entity EnTTSubsystem::add_entity(const UUID id, bool should_be_serialized)
 	{
 		if (valid(id))
 			return m_id_to_entity.at(id);
@@ -64,19 +64,19 @@ namespace puffin::ecs
 		return entity;
 	}
 
-	void EnTTSubsystem::remove_entity(const PuffinID id)
+	void EnTTSubsystem::remove_entity(const UUID id)
 	{
 		m_registry->destroy(m_id_to_entity[id]);
 
 		m_id_to_entity.erase(id);
 	}
 
-	bool EnTTSubsystem::valid(const PuffinID id)
+	bool EnTTSubsystem::valid(const UUID id)
 	{
 		return m_id_to_entity.find(id) != m_id_to_entity.end();
 	}
 
-	entt::entity EnTTSubsystem::get_entity(const PuffinID& id) const
+	entt::entity EnTTSubsystem::get_entity(const UUID& id) const
 	{
 		assert(m_id_to_entity.find(id) != m_id_to_entity.end() && "EnTTSubsystem::get_entity() - No entity with that id exists");
 
@@ -85,15 +85,15 @@ namespace puffin::ecs
 		return entity;
 	}
 
-	PuffinID EnTTSubsystem::get_id(const entt::entity& entity) const
+	UUID EnTTSubsystem::get_id(const entt::entity& entity) const
 	{
 		if (m_entity_to_id.count(entity) != 0)
 			return m_entity_to_id.at(entity);
 
-		return gInvalidID;
+		return gInvalidId;
 	}
 
-	bool EnTTSubsystem::should_be_serialized(const PuffinID& id) const
+	bool EnTTSubsystem::should_be_serialized(const UUID& id) const
 	{
 		if (m_should_be_serialized.find(id) != m_should_be_serialized.end())
 		{

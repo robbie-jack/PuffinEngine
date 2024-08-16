@@ -27,7 +27,7 @@ namespace puffin::assets
 
 		ShaderAsset();
 		explicit ShaderAsset(const fs::path& path);
-		ShaderAsset(const PuffinID id, const fs::path& path);
+		ShaderAsset(const UUID id, const fs::path& path);
 
 		~ShaderAsset() override = default;
 

@@ -114,7 +114,7 @@ namespace puffin::assets
 	}
 
 	// Get Asset from Registry
-	std::shared_ptr<Asset> AssetRegistry::GetAsset(const PuffinID& uuid)
+	std::shared_ptr<Asset> AssetRegistry::GetAsset(const UUID& uuid)
 	{
 		// Return asset if it has been cached
 		if (mIdToAssetMap.count(uuid))

@@ -4,7 +4,7 @@
 
 namespace puffin::physics
 {
-	RigidbodyNode3D::RigidbodyNode3D(const std::shared_ptr<core::Engine>& engine, const PuffinID& id)
+	RigidbodyNode3D::RigidbodyNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id)
 		: TransformNode3D(engine, id)
 	{
 		m_name = "Rigidbody3D";

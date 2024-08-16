@@ -153,15 +153,15 @@ namespace puffin::assets
 		return true;
 	}
 
-	Asset::Asset(const fs::path& path): mID(puffin::generate_id()), mPath(path)
+	Asset::Asset(const fs::path& path): mID(puffin::GenerateId()), mPath(path)
 	{
 	}
 
-	Asset::Asset(const puffin::PuffinID uuid, const fs::path& path): mID(uuid), mPath(path)
+	Asset::Asset(const puffin::UUID uuid, const fs::path& path): mID(uuid), mPath(path)
 	{
 	}
 
-	PuffinID Asset::GetID() const
+	UUID Asset::GetID() const
 	{
 		return mID;
 	}

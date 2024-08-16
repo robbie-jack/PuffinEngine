@@ -13,7 +13,7 @@ namespace puffin::physics
 		SweepAndPruneBroadphase() = default;
 		~SweepAndPruneBroadphase() override = default;
 
-		void generateCollisionPairs(PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& inColliders,
+		void generateCollisionPairs(PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& inColliders,
 			std::vector<CollisionPair>& outCollisionPairs, bool collidersUpdated) override;
 
 	private:

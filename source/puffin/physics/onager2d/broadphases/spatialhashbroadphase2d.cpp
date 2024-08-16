@@ -8,7 +8,7 @@
 #include "puffin/types/packedvector.h"
 
 void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
-	PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
+	PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
 	bool collidersUpdated)
 {
 	outCollisionPairs.clear();
@@ -72,7 +72,7 @@ void puffin::physics::SpatialHashBroadphase2D::getHashIDsForCollider(
 	}
 }
 
-void puffin::physics::SpatialHashBroadphase2D::updateSpatialMap(PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& colliders)
+void puffin::physics::SpatialHashBroadphase2D::updateSpatialMap(PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& colliders)
 {
 	mColliderSpatialMap.clear();
 

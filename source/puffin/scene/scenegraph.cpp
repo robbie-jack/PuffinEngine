@@ -56,22 +56,22 @@ namespace puffin::scene
 		return true;
 	}
 
-	Node* SceneGraphSubsystem::add_node(const char* type_name, PuffinID id)
+	Node* SceneGraphSubsystem::add_node(const char* type_name, UUID id)
 	{
 		return add_node_internal(type_name, id);
 	}
 
-	Node* SceneGraphSubsystem::add_child_node(const char* type_name, PuffinID id, PuffinID parent_id)
+	Node* SceneGraphSubsystem::add_child_node(const char* type_name, UUID id, UUID parent_id)
 	{
 		return add_node_internal(type_name, id, parent_id);
 	}
 
-	bool SceneGraphSubsystem::is_valid_node(PuffinID id)
+	bool SceneGraphSubsystem::is_valid_node(UUID id)
 	{
 		return m_id_to_type.find(id) != m_id_to_type.end();
 	}
 
-	Node* SceneGraphSubsystem::get_node_ptr(const PuffinID& id)
+	Node* SceneGraphSubsystem::get_node_ptr(const UUID& id)
 	{
 		if (!is_valid_node(id))
 			return nullptr;
@@ -79,32 +79,32 @@ namespace puffin::scene
 		return get_array(m_id_to_type.at(id).c_str())->get_ptr(id);
 	}
 
-	const std::string& SceneGraphSubsystem::get_node_type_name(const PuffinID& id) const
+	const std::string& SceneGraphSubsystem::get_node_type_name(const UUID& id) const
 	{
 		return m_id_to_type.at(id);
 	}
 
-	TransformComponent2D* SceneGraphSubsystem::get_global_transform_2d(const PuffinID& id)
+	TransformComponent2D* SceneGraphSubsystem::get_global_transform_2d(const UUID& id)
 	{
 		return &m_global_transform_2ds.at(id);
 	}
 
-	TransformComponent3D* SceneGraphSubsystem::get_global_transform_3d(const PuffinID& id)
+	TransformComponent3D* SceneGraphSubsystem::get_global_transform_3d(const UUID& id)
 	{
 		return &m_global_transform_3ds.at(id);
 	}
 
-	void SceneGraphSubsystem::queue_destroy_node(const PuffinID& id)
+	void SceneGraphSubsystem::queue_destroy_node(const UUID& id)
 	{
 		m_nodes_to_destroy.insert(id);
 	}
 
-	std::vector<PuffinID>& SceneGraphSubsystem::get_node_ids()
+	std::vector<UUID>& SceneGraphSubsystem::get_node_ids()
 	{
 		return m_node_ids;
 	}
 
-	std::vector<PuffinID>& SceneGraphSubsystem::get_root_node_ids()
+	std::vector<UUID>& SceneGraphSubsystem::get_root_node_ids()
 	{
 		return m_root_node_ids;
 	}
@@ -151,9 +151,9 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraphSubsystem::destroy_node(PuffinID id)
+	void SceneGraphSubsystem::destroy_node(UUID id)
 	{
-		std::vector<PuffinID> child_ids;
+		std::vector<UUID> child_ids;
 
 		if (const auto node = get_node_ptr(id); node)
 		{
@@ -171,13 +171,13 @@ namespace puffin::scene
 			m_global_transform_3ds.erase(id);
 	}
 
-	void SceneGraphSubsystem::add_id_and_child_ids(PuffinID id, std::vector<PuffinID>& node_ids)
+	void SceneGraphSubsystem::add_id_and_child_ids(UUID id, std::vector<UUID>& node_ids)
 	{
 		m_node_ids.push_back(id);
 
 		const auto node = get_node_ptr(id);
 
-		std::vector<PuffinID> child_ids;
+		std::vector<UUID> child_ids;
 		node->get_child_ids(child_ids);
 
 		for (const auto child_id : child_ids)
@@ -197,7 +197,7 @@ namespace puffin::scene
 			if (const auto node = get_node_ptr(id); node && node->transform_changed())
 			{
 				// Make sure children also have the global transform updated
-				std::vector<PuffinID> child_ids;
+				std::vector<UUID> child_ids;
 				node->get_child_ids(child_ids);
 				for (auto& child_id : child_ids)
 				{
@@ -216,10 +216,10 @@ namespace puffin::scene
 
 					auto parent_id = node->parent_id();
 
-					std::vector<PuffinID> transform_ids_to_apply;
+					std::vector<UUID> transform_ids_to_apply;
 					transform_ids_to_apply.push_back(id);
 
-					while (parent_id != gInvalidID)
+					while (parent_id != gInvalidId)
 					{
 						if (const auto node = get_node_ptr(parent_id); node)
 						{
@@ -247,10 +247,10 @@ namespace puffin::scene
 
 					auto parent_id = node->parent_id();
 
-					std::vector<PuffinID> transform_ids_to_apply;
+					std::vector<UUID> transform_ids_to_apply;
 					transform_ids_to_apply.push_back(id);
 
-					while (parent_id != gInvalidID)
+					while (parent_id != gInvalidId)
 					{
 						if (const auto node = get_node_ptr(parent_id); node)
 						{
@@ -273,7 +273,7 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraphSubsystem::apply_local_to_global_transform_2d(PuffinID id, TransformComponent2D& global_transform)
+	void SceneGraphSubsystem::apply_local_to_global_transform_2d(UUID id, TransformComponent2D& global_transform)
 	{
 		if (const auto node = get_node_ptr(id); node && node->has_transform_2d())
 		{
@@ -289,7 +289,7 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraphSubsystem::apply_local_to_global_transform_3d(PuffinID id, TransformComponent3D& global_transform)
+	void SceneGraphSubsystem::apply_local_to_global_transform_3d(UUID id, TransformComponent3D& global_transform)
 	{
 		if (const auto node = get_node_ptr(id); node && node->has_transform_3d())
 		{

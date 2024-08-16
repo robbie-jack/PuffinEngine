@@ -6,7 +6,7 @@
 
 namespace puffin
 {
-	Node::Node(const std::shared_ptr<core::Engine>& engine, const PuffinID& id) : m_engine(engine), m_node_id(id)
+	Node::Node(const std::shared_ptr<core::Engine>& engine, const UUID& id) : m_engine(engine), m_node_id(id)
 	{
 		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		m_registry = entt_subsystem->registry();
@@ -75,7 +75,7 @@ namespace puffin
 
 	Node* Node::get_parent() const
 	{
-		if (m_parent_id != gInvalidID)
+		if (m_parent_id != gInvalidId)
 		{
 			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 			return scene_graph_subsystem->get_node_ptr(m_parent_id);
@@ -84,9 +84,9 @@ namespace puffin
 		return nullptr;
 	}
 
-	void Node::reparent(const PuffinID& id)
+	void Node::reparent(const UUID& id)
 	{
-		if (m_parent_id != gInvalidID)
+		if (m_parent_id != gInvalidId)
 		{
 			auto parent = get_parent();
 			if (parent)
@@ -108,7 +108,7 @@ namespace puffin
 		}
 	}
 
-	void Node::get_child_ids(std::vector<PuffinID>& child_ids) const
+	void Node::get_child_ids(std::vector<UUID>& child_ids) const
 	{
 		child_ids.reserve(m_child_ids.size());
 
@@ -118,13 +118,13 @@ namespace puffin
 		}
 	}
 
-	Node* Node::get_child(PuffinID id) const
+	Node* Node::get_child(UUID id) const
 	{
 		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 		return scene_graph_subsystem->get_node_ptr(id);
 	}
 
-	void Node::remove_child(PuffinID id)
+	void Node::remove_child(UUID id)
 	{
 		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 		Node* node = scene_graph_subsystem->get_node_ptr(id);

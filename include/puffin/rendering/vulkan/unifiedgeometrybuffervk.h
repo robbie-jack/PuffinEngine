@@ -24,27 +24,27 @@ namespace puffin::rendering
 
 		void add_static_mesh(const std::shared_ptr<assets::StaticMeshAsset>& static_mesh);
 
-		[[nodiscard]] bool hasMesh(const PuffinID staticMeshId) const
+		[[nodiscard]] bool hasMesh(const UUID staticMeshId) const
 		{
 			return m_internal_mesh_data.count(staticMeshId) == 1;
 		}
 
-		uint32_t mesh_vertex_offset(const PuffinID meshId, uint8_t subMeshIdx = 0)
+		uint32_t mesh_vertex_offset(const UUID meshId, uint8_t subMeshIdx = 0)
 		{
 			return m_internal_mesh_data[meshId].sub_mesh_data[subMeshIdx].vertex_offset;
 		}
 
-		uint32_t mesh_index_offset(const PuffinID meshId, uint8_t subMeshIdx = 0)
+		uint32_t mesh_index_offset(const UUID meshId, uint8_t subMeshIdx = 0)
 		{
 			return m_internal_mesh_data[meshId].sub_mesh_data[subMeshIdx].index_offset;
 		}
 
-		uint32_t mesh_vertex_count(const PuffinID meshId, uint8_t subMeshIdx = 0)
+		uint32_t mesh_vertex_count(const UUID meshId, uint8_t subMeshIdx = 0)
 		{
 			return m_internal_mesh_data[meshId].sub_mesh_data[subMeshIdx].vertex_count;
 		}
 
-		uint32_t mesh_index_count(const PuffinID meshId, uint8_t subMeshIdx = 0)
+		uint32_t mesh_index_count(const UUID meshId, uint8_t subMeshIdx = 0)
 		{
 			return m_internal_mesh_data[meshId].sub_mesh_data[subMeshIdx].index_count;
 		}
@@ -100,7 +100,7 @@ namespace puffin::rendering
 		std::unordered_map<VertexFormat, InternalVertexBufferData> m_vertex_buffer_data;
 		InternalIndexBufferData m_index_buffer_data;
 
-		std::unordered_map<PuffinID, InternalMeshData> m_internal_mesh_data;
+		std::unordered_map<UUID, InternalMeshData> m_internal_mesh_data;
 
 		vk::DeviceSize m_vertex_page_size = 0;
 		vk::DeviceSize m_vertex_initial_page_count = 0;

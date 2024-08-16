@@ -84,7 +84,7 @@ namespace puffin::assets
 
 		TextureAsset();
 		explicit TextureAsset(const fs::path& path);
-		TextureAsset(const PuffinID id, const fs::path& path);
+		TextureAsset(const UUID id, const fs::path& path);
 
 		~TextureAsset() override = default;
 

@@ -67,7 +67,7 @@ namespace puffin::window
 		return m_primary_monitor;
 	}
 
-	PuffinID WindowSubsystem::create_new_window(const int& width, const int& height)
+	UUID WindowSubsystem::create_new_window(const int& width, const int& height)
 	{
 		// Create new window and store it in windows map
 		GLFWwindow* window = glfwCreateWindow(width, height, "Puffin Engine", nullptr, nullptr);
@@ -78,7 +78,7 @@ namespace puffin::window
 			return {};
 		}
 
-		PuffinID id;
+		UUID id;
 
 		m_windows.insert({ id, window });
 
@@ -86,7 +86,7 @@ namespace puffin::window
 		return id;
 	}
 
-	GLFWwindow* WindowSubsystem::get_window(const PuffinID& uuid)
+	GLFWwindow* WindowSubsystem::get_window(const UUID& uuid)
 	{
 		// Return window if there is oen with that handle
 		if (m_windows.count(uuid) == 1)
@@ -98,7 +98,7 @@ namespace puffin::window
 		return nullptr;
 	}
 
-	void WindowSubsystem::destroy_window(const PuffinID& uuid)
+	void WindowSubsystem::destroy_window(const UUID& uuid)
 	{
 		glfwDestroyWindow(m_windows[uuid]);
 		m_windows.erase(uuid);

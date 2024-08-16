@@ -316,7 +316,7 @@ namespace puffin::scripting
 	}
 
 
-	void AngelScriptSubsystem::initialize_script(PuffinID entity, AngelScriptComponent& script)
+	void AngelScriptSubsystem::initialize_script(UUID entity, AngelScriptComponent& script)
 	{
 		compile_script(script);
 		update_script_methods(script);
@@ -435,7 +435,7 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptSubsystem::instantiate_script_obj(PuffinID entity, AngelScriptComponent& script)
+	void AngelScriptSubsystem::instantiate_script_obj(UUID entity, AngelScriptComponent& script)
 	{
 		if (script.type != 0 && script.type->GetFactoryCount() > 0)
 		{
@@ -648,7 +648,7 @@ namespace puffin::scripting
 		return false;
 	}
 
-	void AngelScriptSubsystem::set_current_entity_id(PuffinID id)
+	void AngelScriptSubsystem::set_current_entity_id(UUID id)
 	{
 		m_current_entity_id = id;
 	}
@@ -676,9 +676,9 @@ namespace puffin::scripting
 		}
 	}
 
-	PuffinID AngelScriptSubsystem::play_sound_effect(const std::string& path, float volume, bool looping, bool restart)
+	UUID AngelScriptSubsystem::play_sound_effect(const std::string& path, float volume, bool looping, bool restart)
 	{
-		PuffinID id = 0;
+		UUID id = 0;
 
 		auto audio_subsystem = mEngine->GetSubsystem<audio::AudioSubsystem>();
 		if (audio_subsystem)
@@ -689,12 +689,12 @@ namespace puffin::scripting
 		return id;
 	}
 
-	PuffinID AngelScriptSubsystem::get_entity_id()
+	UUID AngelScriptSubsystem::get_entity_id()
 	{
 		return m_current_entity_id;
 	}
 
-	ScriptCallback AngelScriptSubsystem::bind_callback(PuffinID entity, asIScriptFunction* cb) const
+	ScriptCallback AngelScriptSubsystem::bind_callback(UUID entity, asIScriptFunction* cb) const
 	{
 		ScriptCallback scriptCallback;
 		scriptCallback.entity = entity;
@@ -737,21 +737,21 @@ namespace puffin::scripting
 
 	// Collision Callbacks
 
-	void AngelScriptSubsystem::bind_on_collision_begin(PuffinID entity, asIScriptFunction* cb)
+	void AngelScriptSubsystem::bind_on_collision_begin(UUID entity, asIScriptFunction* cb)
 	{
 		release_on_collision_begin(entity);
 
 		m_on_collision_begin_callbacks[entity] = bind_callback(entity, cb);
 	}
 
-	void AngelScriptSubsystem::bind_on_collision_end(PuffinID entity, asIScriptFunction* cb)
+	void AngelScriptSubsystem::bind_on_collision_end(UUID entity, asIScriptFunction* cb)
 	{
 		release_on_collision_end(entity);
 
 		m_on_collision_end_callbacks[entity] = bind_callback(entity, cb);
 	}
 
-	void AngelScriptSubsystem::release_on_collision_begin(PuffinID entity)
+	void AngelScriptSubsystem::release_on_collision_begin(UUID entity)
 	{
 		if (m_on_collision_begin_callbacks.count(entity) == 1)
 		{
@@ -760,7 +760,7 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptSubsystem::release_on_collision_end(PuffinID entity)
+	void AngelScriptSubsystem::release_on_collision_end(UUID entity)
 	{
 		if (m_on_collision_end_callbacks.count(entity) == 1)
 		{

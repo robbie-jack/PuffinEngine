@@ -15,7 +15,7 @@ namespace puffin::assets
 
 		SoundAsset(const fs::path& path) : Asset(path) {}
 
-		SoundAsset(const PuffinID id, const fs::path& path) : Asset(id, path) {}
+		SoundAsset(const UUID id, const fs::path& path) : Asset(id, path) {}
 
 		const std::string& GetType() const override
 		{

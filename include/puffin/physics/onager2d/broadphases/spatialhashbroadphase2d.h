@@ -18,12 +18,12 @@ namespace puffin::physics
 		SpatialHashBroadphase2D() = default;
 		~SpatialHashBroadphase2D() override = default;
 
-		void generateCollisionPairs(PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& inColliders,
+		void generateCollisionPairs(PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& inColliders,
 			std::vector<CollisionPair>& outCollisionPairs, bool collidersUpdated) override;
 
 	private:
 
-		std::unordered_map<SpatialKey, std::unordered_set<PuffinID>> mColliderSpatialMap;
+		std::unordered_map<SpatialKey, std::unordered_set<UUID>> mColliderSpatialMap;
 
 		const double mCellSize = 10.0;
 		const double mCellOffsetSize = 1.0;
@@ -32,7 +32,7 @@ namespace puffin::physics
 
 		void getHashIDsForCollider(const std::shared_ptr<collision2D::Collider2D>& collider, std::unordered_set<SpatialKey>& hashIDs) const;
 
-		void updateSpatialMap(PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& colliders);
+		void updateSpatialMap(PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& colliders);
 
 	};
 }

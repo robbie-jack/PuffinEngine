@@ -57,7 +57,7 @@ namespace puffin::audio
 		AudioSubsystemProvider::Update(deltaTime);
 	}
 
-	void MiniAudioSubsystem::PlaySoundEffect(PuffinID soundAssetID)
+	void MiniAudioSubsystem::PlaySoundEffect(UUID soundAssetID)
 	{
 		auto soundAsset = assets::AssetRegistry::Get()->GetAsset<assets::SoundAsset>(soundAssetID);
 		auto soundPath = (assets::AssetRegistry::Get()->GetContentRoot() / soundAsset->GetRelativePath()).string();
@@ -65,7 +65,7 @@ namespace puffin::audio
 		ma_engine_play_sound(mSoundEngine, soundPath.c_str(), nullptr);
 	}
 
-	bool MiniAudioSubsystem::CreateSoundInstance(PuffinID soundAssetID, PuffinID soundInstanceID)
+	bool MiniAudioSubsystem::CreateSoundInstance(UUID soundAssetID, UUID soundInstanceID)
 	{
 		if (mSounds.contains(soundInstanceID))
 		{
@@ -88,7 +88,7 @@ namespace puffin::audio
 		return true;
 	}
 
-	void MiniAudioSubsystem::DestroySoundInstance(PuffinID soundInstanceID)
+	void MiniAudioSubsystem::DestroySoundInstance(UUID soundInstanceID)
 	{
 		if (!mSounds.contains(soundInstanceID))
 		{
@@ -99,7 +99,7 @@ namespace puffin::audio
 		mSounds.erase(soundInstanceID);
 	}
 
-	bool MiniAudioSubsystem::StartSoundInstance(PuffinID soundInstanceID, bool restart)
+	bool MiniAudioSubsystem::StartSoundInstance(UUID soundInstanceID, bool restart)
 	{
 		if (mSounds.contains(soundInstanceID))
 		{
@@ -128,7 +128,7 @@ namespace puffin::audio
 		return true;
 	}
 
-	bool MiniAudioSubsystem::StopSoundInstance(PuffinID soundInstanceID)
+	bool MiniAudioSubsystem::StopSoundInstance(UUID soundInstanceID)
 	{
 		if (mSounds.contains(soundInstanceID))
 		{

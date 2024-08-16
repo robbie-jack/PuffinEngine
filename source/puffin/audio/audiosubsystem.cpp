@@ -57,18 +57,18 @@ namespace puffin::audio
 		
 	}
 
-	void AudioSubsystem::PlaySound(PuffinID soundAssetID)
+	void AudioSubsystem::PlaySound(UUID soundAssetID)
 	{
 		mAudioSubsystemProvider->PlaySoundEffect(soundAssetID);
 	}
 
-	PuffinID AudioSubsystem::CreateSoundInstance(PuffinID soundAssetID)
+	UUID AudioSubsystem::CreateSoundInstance(UUID soundAssetID)
 	{
-		const PuffinID soundInstanceID = generate_id();
+		const UUID soundInstanceID = GenerateId();
 
 		if (!mAudioSubsystemProvider->CreateSoundInstance(soundAssetID, soundInstanceID))
 		{
-			return gInvalidID;
+			return gInvalidId;
 		}
 
 		mSoundInstances.emplace(soundInstanceID, SoundInstance());
@@ -81,39 +81,39 @@ namespace puffin::audio
 		return soundInstanceID;
 	}
 
-	void AudioSubsystem::DestroySoundInstance(PuffinID soundInstanceID)
+	void AudioSubsystem::DestroySoundInstance(UUID soundInstanceID)
 	{
-		const PuffinID soundAssetID = mSoundInstances[soundInstanceID].assetID;
+		const UUID soundAssetID = mSoundInstances[soundInstanceID].assetID;
 
 		mSoundInstances.erase(soundInstanceID);
 		mSoundInstanceIDs[soundAssetID].erase(soundInstanceID);
 	}
 
-	void AudioSubsystem::StartSoundInstance(PuffinID soundInstanceID, bool restart)
+	void AudioSubsystem::StartSoundInstance(UUID soundInstanceID, bool restart)
 	{
 		mAudioSubsystemProvider->StartSoundInstance(soundInstanceID, restart);
 	}
 
-	void AudioSubsystem::StopSoundInstance(PuffinID soundInstanceID)
+	void AudioSubsystem::StopSoundInstance(UUID soundInstanceID)
 	{
 		mAudioSubsystemProvider->StopSoundInstance(soundInstanceID);
 	}
 
-	PuffinID AudioSubsystem::CreateAndStartSoundInstance(PuffinID soundAssetID)
+	UUID AudioSubsystem::CreateAndStartSoundInstance(UUID soundAssetID)
 	{
-		const PuffinID soundInstanceID = CreateSoundInstance(soundAssetID);
+		const UUID soundInstanceID = CreateSoundInstance(soundAssetID);
 
 		StartSoundInstance(soundInstanceID);
 
 		return soundInstanceID;
 	}
 
-	const std::set<PuffinID>& AudioSubsystem::GetAllInstanceIDsForSound(PuffinID soundAssetID)
+	const std::set<UUID>& AudioSubsystem::GetAllInstanceIDsForSound(UUID soundAssetID)
 	{
 		return mSoundInstanceIDs[soundAssetID];
 	}
 
-	SoundInstance& AudioSubsystem::GetSoundInstance(PuffinID soundInstanceID)
+	SoundInstance& AudioSubsystem::GetSoundInstance(UUID soundInstanceID)
 	{
 		return mSoundInstances[soundInstanceID];
 	}

@@ -34,7 +34,7 @@ namespace puffin
 	{
 	public:
 
-		explicit Node(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID);
+		explicit Node(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidId);
 
 		virtual ~Node() = default;
 
@@ -59,7 +59,7 @@ namespace puffin
 		virtual void serialize(json& json) const;
 		virtual void deserialize(const json& json);
 
-		[[nodiscard]] PuffinID id() const { return m_node_id; }
+		[[nodiscard]] UUID id() const { return m_node_id; }
 		[[nodiscard]] entt::entity entity() const { return m_entity; }
 
 		[[nodiscard]] const std::string& name() const { return m_name; }
@@ -102,29 +102,29 @@ namespace puffin
 
 		void queue_destroy() const;
 		[[nodiscard]] Node* get_parent() const;
-		void reparent(const PuffinID& id);
+		void reparent(const UUID& id);
 		void get_children(std::vector<Node*>& children) const;
-		void get_child_ids(std::vector<PuffinID>& child_ids) const;
-		[[nodiscard]] Node* get_child(PuffinID id) const;
+		void get_child_ids(std::vector<UUID>& child_ids) const;
+		[[nodiscard]] Node* get_child(UUID id) const;
 
-		void remove_child(PuffinID id);
+		void remove_child(UUID id);
 
-		PuffinID parent_id() const { return m_parent_id; }
+		UUID parent_id() const { return m_parent_id; }
 
 		// Set parent id, for internal use only, use reparent instead
-		void set_parent_id(PuffinID id)
+		void set_parent_id(UUID id)
 		{
 			m_parent_id = id;
 		}
 
 		// Add a child id, for internal use only, use add_child instead
-		void add_child_id(PuffinID id)
+		void add_child_id(UUID id)
 		{
 			m_child_ids.push_back(id);
 		}
 
 		// Remove a child id, for internal use only, use remove_child instead
-		void remove_child_id(PuffinID id)
+		void remove_child_id(UUID id)
 		{
 			m_child_ids.remove(id);
 		}
@@ -134,11 +134,11 @@ namespace puffin
 		bool m_should_update = false;
 		bool m_transform_changed = true;
 
-		PuffinID m_node_id = gInvalidID;
+		UUID m_node_id = gInvalidId;
 		entt::entity m_entity;
 
-		PuffinID m_parent_id = gInvalidID;
-		std::list<PuffinID> m_child_ids;
+		UUID m_parent_id = gInvalidId;
+		std::list<UUID> m_child_ids;
 		std::string m_name;
 
 		std::shared_ptr<core::Engine> m_engine = nullptr;

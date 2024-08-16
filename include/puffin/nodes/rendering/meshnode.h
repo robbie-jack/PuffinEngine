@@ -8,18 +8,18 @@ namespace puffin::rendering
 	{
 	public:
 
-		explicit MeshNode(const std::shared_ptr<core::Engine>& engine, const PuffinID& id = gInvalidID);
+		explicit MeshNode(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidId);
 
 		void begin_play() override;
 		void update(const double delta_time) override;
 		void update_fixed(const double delta_time) override;
 		void end_play() override;
 
-		PuffinID mesh_asset_id();
-		void set_mesh_asset_id(PuffinID mesh_asset_id) const;
+		UUID mesh_asset_id();
+		void set_mesh_asset_id(UUID mesh_asset_id) const;
 
-		PuffinID mat_asset_id();
-		void set_mat_asset_id(PuffinID mat_asset_id) const;
+		UUID mat_asset_id();
+		void set_mat_asset_id(UUID mat_asset_id) const;
 
 		uint8_t sub_mesh_idx();
 		void set_sub_mesh_idx(uint8_t sub_mesh_idx) const;

@@ -29,7 +29,7 @@ namespace puffin
 			
 			bool m_entity_changed = false;
 
-			void draw_node_ui(PuffinID id, const ImGuiTreeNodeFlags& base_flags);
+			void draw_node_ui(UUID id, const ImGuiTreeNodeFlags& base_flags);
 
 		};
 	}

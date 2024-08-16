@@ -21,8 +21,8 @@ namespace puffin::rendering
 			{
 				for (auto alloc_image : images)
 				{
-					m_render_system->device().destroyImageView(alloc_image.image_view);
-					m_render_system->allocator().destroyImage(alloc_image.image, alloc_image.allocation);
+					m_render_system->GetDevice().destroyImageView(alloc_image.image_view);
+					m_render_system->GetAllocator().destroyImage(alloc_image.image, alloc_image.allocation);
 				}
 			}
 
@@ -39,7 +39,7 @@ namespace puffin::rendering
 
 	ResourceID ResourceManagerVK::add_images(const ImageDesc& image_desc, uint8_t image_count)
 	{
-		ResourceID id = generate_id();
+		ResourceID id = GenerateId();
 
 		m_images.emplace(id, std::vector<AllocatedImage>());
 		m_images.at(id).resize(image_count);
@@ -135,8 +135,8 @@ namespace puffin::rendering
 	{
 		auto& alloc_image = m_images.at(id)[idx];
 
-		m_render_system->device().destroyImageView(alloc_image.image_view);
-		m_render_system->allocator().destroyImage(alloc_image.image, alloc_image.allocation);
+		m_render_system->GetDevice().destroyImageView(alloc_image.image_view);
+		m_render_system->GetAllocator().destroyImage(alloc_image.image, alloc_image.allocation);
 	}
 
 	void ResourceManagerVK::update_image_internal(ResourceID id, const ImageDesc& image_desc, uint8_t idx)

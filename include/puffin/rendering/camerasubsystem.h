@@ -36,14 +36,14 @@ namespace puffin::rendering
 
         void OnUpdateEditorCameraFov(const float& editorCameraFov);
 
-		[[nodiscard]] PuffinID GetActiveCameraID() const { return mActiveCameraID; }
+		[[nodiscard]] UUID GetActiveCameraID() const { return mActiveCameraID; }
 
 	private:
 
-        PuffinID mActiveCameraID = gInvalidID;
-        PuffinID m_active_play_cam_id = gInvalidID;
-		std::unordered_map<PuffinID, bool> m_cached_cam_active_state;
-		PuffinID m_editor_cam_id = gInvalidID;
+        UUID mActiveCameraID = gInvalidId;
+        UUID m_active_play_cam_id = gInvalidId;
+		std::unordered_map<UUID, bool> m_cached_cam_active_state;
+		UUID m_editor_cam_id = gInvalidId;
 		float m_editor_cam_speed = 10.0f;
 
 		void InitEditorCamera();

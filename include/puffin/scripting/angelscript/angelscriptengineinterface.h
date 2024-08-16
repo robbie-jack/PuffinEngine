@@ -23,13 +23,13 @@ namespace puffin::scripting
 
 	struct ScriptCallback
 	{
-		PuffinID entity;
+		UUID entity;
 		asIScriptFunction* func = nullptr;
 		void* object = nullptr;
 		asITypeInfo* objectType = nullptr;
 	};
 
-	typedef std::map<PuffinID, ScriptCallback> ScriptCallbackMap;
+	typedef std::map<UUID, ScriptCallback> ScriptCallbackMap;
 
 	/*
 	 *	Class which defines various methods used by AngelScript scripts as global methods to access engine functionality
@@ -66,24 +66,24 @@ namespace puffin::scripting
 		[[nodiscard]] const double& getDeltaTime();
 		[[nodiscard]] const double& getFixedTime();
 
-		TransformComponent3D& getTransformComponent3D(PuffinID id) const;
-		bool hasTransformComponent3D(PuffinID id) const;
+		TransformComponent3D& getTransformComponent3D(UUID id) const;
+		bool hasTransformComponent3D(UUID id) const;
 
 		template<typename T>
-		T& getComponent(PuffinID id) const;
+		T& getComponent(UUID id) const;
 
 		template<typename T>
-		bool hasComponent(PuffinID id) const;
+		bool hasComponent(UUID id) const;
 
 		// Script Callbacks
-		ScriptCallback bindCallback(PuffinID entity, asIScriptFunction* cb) const;
+		ScriptCallback bindCallback(UUID entity, asIScriptFunction* cb) const;
 		void releaseCallback(ScriptCallback& scriptCallback) const;
 
 		// Input Functions
-		void bindOnInputPressed(PuffinID entity, const std::string& actionName, asIScriptFunction* cb);
-		void bindOnInputReleased(PuffinID entity, const std::string& actionName, asIScriptFunction* cb);
+		void bindOnInputPressed(UUID entity, const std::string& actionName, asIScriptFunction* cb);
+		void bindOnInputReleased(UUID entity, const std::string& actionName, asIScriptFunction* cb);
 
-		void releaseOnInputPressed(PuffinID entity, const std::string& actionName);
-		void releaseOnInputReleased(PuffinID entity, const std::string& actionName);
+		void releaseOnInputPressed(UUID entity, const std::string& actionName);
+		void releaseOnInputReleased(UUID entity, const std::string& actionName);
 	};
 }

@@ -4,5 +4,5 @@
 
 namespace puffin::rendering
 {
-	using ResourceID = PuffinID;
+	using ResourceID = UUID;
 }

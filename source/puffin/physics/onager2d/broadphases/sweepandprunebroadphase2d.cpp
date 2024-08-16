@@ -6,7 +6,7 @@
 namespace puffin::physics
 {
 	void SweepAndPruneBroadphase::generateCollisionPairs(
-		PackedVector<PuffinID, std::shared_ptr<collision2D::Collider2D>>& inColliders,
+		PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& inColliders,
 		std::vector<CollisionPair>& outCollisionPairs, bool collidersUpdated)
 	{
 		if (collidersUpdated)
