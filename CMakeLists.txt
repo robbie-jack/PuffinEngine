@@ -115,9 +115,14 @@ set(HEADERS
 	# Components - Procedural
 	${HEADER_DIR}/puffin/components/procedural/proceduralmeshcomponent.h
 	# Components - Rendering
-	${HEADER_DIR}/puffin/components/rendering/cameracomponent.h
-	${HEADER_DIR}/puffin/components/rendering/lightcomponent.h
-	${HEADER_DIR}/puffin/components/rendering/meshcomponent.h
+	# Components - Rendering - 3D
+	${HEADER_DIR}/puffin/components/rendering/3d/cameracomponent3d.h
+	${HEADER_DIR}/puffin/components/rendering/3d/directionallightcomponent3d.h
+	${HEADER_DIR}/puffin/components/rendering/3d/lightcomponent3d.h
+	${HEADER_DIR}/puffin/components/rendering/3d/pointlightcomponent3d.h
+	${HEADER_DIR}/puffin/components/rendering/3d/shadowcastercomponent3d.h
+	${HEADER_DIR}/puffin/components/rendering/3d/spotlightcomponent3d.h
+	${HEADER_DIR}/puffin/components/rendering/3d/staticmeshcomponent3d.h
 	# Components - Scripting
 	${HEADER_DIR}/puffin/components/scripting/angelscriptcomponent.h
 	# Core

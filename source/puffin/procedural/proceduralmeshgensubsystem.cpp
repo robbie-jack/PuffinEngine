@@ -3,7 +3,7 @@
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/components/transformcomponent3d.h"
 #include "puffin/components/procedural/proceduralmeshcomponent.h"
-#include "puffin/components/rendering/meshcomponent.h"
+#include "puffin/components/rendering/3d/proceduralmeshcomponent3d.h"
 #include "OpenSimplexNoise/OpenSimplexNoise.h"
 
 namespace puffin::procedural
@@ -32,30 +32,30 @@ namespace puffin::procedural
 
 	void ProceduralMeshGenSystem::on_construct_plane(entt::registry& registry, entt::entity entity)
 	{
-		const auto& plane = registry.get<const PlaneComponent>(entity);
-		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent>(entity);
+		const auto& plane = registry.get<const ProceduralPlaneComponent>(entity);
+		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent3D>(entity);
 
-		generate_plane_vertices(plane.half_size, plane.num_quads, mesh);
+		generate_plane_vertices(plane.halfSize, plane.quadCount, mesh);
 	}
 
 	void ProceduralMeshGenSystem::on_construct_terrain(entt::registry& registry, entt::entity entity)
 	{
 		const auto& terrain = registry.get<const TerrainComponent>(entity);
-		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent>(entity);
+		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent3D>(entity);
 
-		generate_plane_vertices(terrain.half_size, terrain.num_quads, mesh);
+		generate_plane_vertices(terrain.halfSize, terrain.quadCount, mesh);
 		generate_terrain(terrain, mesh);
 	}
 
 	void ProceduralMeshGenSystem::on_construct_ico_sphere(entt::registry& registry, entt::entity entity)
 	{
 		const auto& sphere = registry.get<const IcoSphereComponent>(entity);
-		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent>(entity);
+		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent3D>(entity);
 
 		generate_ico_sphere(sphere, mesh);
 	}
 
-	void ProceduralMeshGenSystem::generate_plane_vertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent& mesh)
+	void ProceduralMeshGenSystem::generate_plane_vertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent3D& mesh)
 	{
 		mesh.vertices.clear();
 		mesh.indices.clear();
@@ -118,7 +118,7 @@ namespace puffin::procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::generate_terrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent& mesh)
+	void ProceduralMeshGenSystem::generate_terrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent3D& mesh)
 	{
 		const OpenSimplexNoise::Noise noise(terrain.seed);
 		double frequency = terrain.frequency;
@@ -136,24 +136,24 @@ namespace puffin::procedural
 				noiseValues[n] += ((noiseVal + 1.0) / 2.0) * amplitude;
 			}
 
-			frequency *= terrain.frequency_mult;
+			frequency *= terrain.frequencyMult;
 			amplitudeSum += amplitude;
-			amplitude /= terrain.frequency_mult;
+			amplitude /= terrain.frequencyMult;
 		}
 
 		for (int v = 0; v < noiseValues.size(); v++)
 		{
-			mesh.vertices[v].pos.y = (noiseValues[v] / amplitudeSum) * terrain.height_multiplier;
+			mesh.vertices[v].pos.y = (noiseValues[v] / amplitudeSum) * terrain.heightMult;
 		}
 	}
 
-	void ProceduralMeshGenSystem::generate_ico_sphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent& mesh)
+	void ProceduralMeshGenSystem::generate_ico_sphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent3D& mesh)
 	{
 		mesh.vertices.clear();
 		mesh.indices.clear();
 
 		std::vector<Vector3f> positions;
-		icosahedron::vertexPositions(positions);
+		icosahedron::VertexPositions(positions);
 
 		mesh.vertices.resize(positions.size());
 		for (int i = 0; i < positions.size(); i++)
@@ -166,6 +166,6 @@ namespace puffin::procedural
 			vertex.uvY = 0.0f;
 		}
 
-		icosahedron::indices(mesh.indices);
+		icosahedron::Indices(mesh.indices);
 	}
 }

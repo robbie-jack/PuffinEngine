@@ -20,9 +20,13 @@
 #include "puffin/components/physics/3d/boxcomponent3d.h"
 #include "puffin/components/physics/3d/spherecomponent3d.h"
 #include "puffin/components/procedural/proceduralmeshcomponent.h"
-#include "puffin/components/rendering/cameracomponent.h"
-#include "puffin/components/rendering/lightcomponent.h"
-#include "puffin/components/rendering/meshcomponent.h"
+#include "puffin/components/rendering/3d/cameracomponent3d.h"
+#include "puffin/components/rendering/3d/lightcomponent3d.h"
+#include "puffin/components/rendering/3d/directionallightcomponent3d.h"
+#include "puffin/components/rendering/3d/spotlightcomponent3d.h"
+#include "puffin/components/rendering/3d/pointlightcomponent3d.h"
+#include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
+#include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
 #include "puffin/components/scripting/angelscriptcomponent.h"
 #include "puffin/core/enkitssubsystem.h"
 #include "puffin/core/signalsubsystem.h"
@@ -129,7 +133,7 @@ namespace puffin::core
 		sceneSubsystem->register_component<rendering::CameraComponent3D>();
 		sceneSubsystem->register_component<scripting::AngelScriptComponent>();
 		sceneSubsystem->register_component<rendering::ProceduralMeshComponent>();
-		sceneSubsystem->register_component<procedural::PlaneComponent>();
+		sceneSubsystem->register_component<procedural::ProceduralPlaneComponent>();
 		sceneSubsystem->register_component<procedural::TerrainComponent>();
 		sceneSubsystem->register_component<procedural::IcoSphereComponent>();
 		sceneSubsystem->register_component<physics::RigidbodyComponent2D>();

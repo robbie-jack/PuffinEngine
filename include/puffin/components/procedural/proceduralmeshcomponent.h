@@ -10,23 +10,23 @@ namespace puffin::procedural
 {
 	namespace icosahedron
 	{
-		constexpr float g_x = .525731112119133606f;
-		constexpr float g_z = .850650808352039932f;
-		constexpr float g_n = 0.f;
+		constexpr float gX = .525731112119133606f;
+		constexpr float gZ = .850650808352039932f;
+		constexpr float gN = 0.f;
 
-		static void vertexPositions(std::vector<Vector3f>& vertexPositions)
+		static void VertexPositions(std::vector<Vector3f>& vertexPositions)
 		{
 			vertexPositions.clear();
 
 			vertexPositions = 
 			{
-				{-g_x,g_n,g_z}, {g_x,g_n,g_z}, {-g_x,g_n,-g_z}, {g_x,g_n,-g_z},
-				{g_n,g_z,g_x}, {g_n,g_z,-g_x}, {g_n,-g_z,g_x}, {g_n,-g_z,-g_x},
-				{g_z,g_x,g_n}, {-g_z,g_x, g_n}, {g_z,-g_x,g_n}, {-g_z,-g_x, g_n}
+				{-gX,gN,gZ}, {gX,gN,gZ}, {-gX,gN,-gZ}, {gX,gN,-gZ},
+				{gN,gZ,gX}, {gN,gZ,-gX}, {gN,-gZ,gX}, {gN,-gZ,-gX},
+				{gZ,gX,gN}, {-gZ,gX, gN}, {gZ,-gX,gN}, {-gZ,-gX, gN}
 			};
 		}
 
-		static void indices(std::vector<uint32_t>& indices)
+		static void Indices(std::vector<uint32_t>& indices)
 		{
 			indices.clear();
 
@@ -40,24 +40,24 @@ namespace puffin::procedural
 		}
 	};
 
-	struct PlaneComponent
+	struct ProceduralPlaneComponent
 	{
-		PlaneComponent() = default;
+		ProceduralPlaneComponent() = default;
 
-		Vector2f half_size = { 10.f }; // Half size of plane
-		Vector2i num_quads = { 10 }; // Number of quads that make up planes surface
+		Vector2f halfSize = { 10.f }; // Half size of plane
+		Vector2i quadCount = { 10 }; // Number of quads that make up planes surface along a single axis
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(PlaneComponent, half_size, num_quads)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProceduralPlaneComponent, halfSize, quadCount)
 	};
 
-	struct CubeComponent
+	struct ProceduralCubeComponent
 	{
-		CubeComponent() = default;
+		ProceduralCubeComponent() = default;
 
-		Vector3f half_size = { 10.f }; // Half size of plane
-		Vector3i num_quads = { 10 }; // Number of quads that make up planes surface
+		Vector3f halfSize = { 10.f }; // Half size of plane
+		Vector3i quads = { 10 }; // Number of quads that make up planes surface
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(CubeComponent, half_size, num_quads)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProceduralCubeComponent, halfSize, quads)
 	};
 
 	struct SphereComponent
@@ -71,9 +71,9 @@ namespace puffin::procedural
 	{
 		UvSphereComponent() = default;
 
-		Vector2i num_segments = { 10 };
+		Vector2i segments = { 10 };
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(UvSphereComponent, radius, num_segments)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(UvSphereComponent, radius, segments)
 	};
 
 	struct IcoSphereComponent : public SphereComponent
@@ -85,16 +85,16 @@ namespace puffin::procedural
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(IcoSphereComponent, radius, subdivisions)
 	};
 
-	struct TerrainComponent : public PlaneComponent
+	struct TerrainComponent : public ProceduralPlaneComponent
 	{
 		TerrainComponent() = default;
 
 		int64_t seed = 983758376;
-		double height_multiplier = 10.0;
+		double heightMult = 10.0;
 		double frequency = 10.0;
 		int octaves = 4;
-		double frequency_mult = 2.0;
+		double frequencyMult = 2.0;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TerrainComponent, half_size, num_quads)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TerrainComponent, halfSize, quadCount)
 	};
 }

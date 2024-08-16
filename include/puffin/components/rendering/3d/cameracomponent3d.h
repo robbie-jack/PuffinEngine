@@ -16,15 +16,15 @@ namespace puffin
 	{
 		struct CameraComponent3D
 		{
-			CameraComponent3D() {}
+			CameraComponent3D() = default;
 
 			bool active = false;
 
-			float z_near = 0.01f;
-			float z_far = 200.0f;
+			float zNear = 0.01f;
+			float zFar = 200.0f;
 			float aspect = 0.0f;
-			float fov_y = 60.0f;
-			float prev_fov_y = 60.0f;
+			float fovY = 60.0f;
+			float prevFovY = 60.0f;
 
 			Vector3f direction = { 0.0f, 0.0f, -1.0f };
 			Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
@@ -32,9 +32,9 @@ namespace puffin
 
 			glm::mat4 view = glm::mat4(0.0f);
 			glm::mat4 proj = glm::mat4(0.0f);
-			glm::mat4 view_proj = glm::mat4(0.0f);
+			glm::mat4 viewProj = glm::mat4(0.0f);
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent3D, z_near, z_far, aspect, fov_y, up)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent3D, zNear, zFar, aspect, fovY, up)
 		};
 	}
 }

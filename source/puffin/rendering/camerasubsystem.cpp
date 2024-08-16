@@ -116,8 +116,8 @@ namespace puffin::rendering
         auto entity = entt_subsystem->get_entity(m_editor_cam_id);
         auto& camera = registry->get<CameraComponent3D>(entity);
 
-        camera.prev_fov_y = camera.fov_y;
-        camera.fov_y = editor_camera_fov;
+        camera.prevFovY = camera.fovY;
+        camera.fovY = editor_camera_fov;
     }
 
 	void CameraSubystem::init_editor_camera()
@@ -263,9 +263,9 @@ namespace puffin::rendering
 		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
 			static_cast<glm::vec3>(transform.position + camera.direction), static_cast<glm::vec3>(camera.up));
 
-		camera.proj = glm::perspective(maths::deg_to_rad(camera.fov_y), camera.aspect, camera.z_near, camera.z_far);
+		camera.proj = glm::perspective(maths::deg_to_rad(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
 		camera.proj[1][1] *= -1; // Flips y-axis to match vulkan's coordinates system
 
-		camera.view_proj = camera.proj * camera.view;
+		camera.viewProj = camera.proj * camera.view;
 	}
 }

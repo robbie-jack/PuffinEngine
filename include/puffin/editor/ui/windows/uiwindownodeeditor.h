@@ -25,14 +25,14 @@ namespace puffin
 
 	namespace rendering
 	{
-		struct LightComponent;
+		struct LightComponent3D;
 		struct MeshComponent;
 		struct ShadowCasterComponent;
 	}
 
 	namespace procedural
 	{
-		struct PlaneComponent;
+		struct ProceduralPlaneComponent;
 	}
 
 	namespace physics
@@ -128,10 +128,10 @@ namespace puffin::ui
 		void draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, Node* node);
 
 		void draw_mesh_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::MeshComponent& mesh);
-		void draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light);
+		void draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light);
 		void draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadow);
 
-		void draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane);
+		void draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::ProceduralPlaneComponent& plane);
 
 		void draw_rigidbody_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody);
 		void draw_circle_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle);

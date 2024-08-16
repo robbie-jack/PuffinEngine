@@ -9,7 +9,7 @@ namespace puffin
 {
 	namespace rendering
 	{
-		struct ProceduralMeshComponent;
+		struct ProceduralMeshComponent3D;
 	}
 }
 
@@ -17,7 +17,7 @@ namespace puffin::procedural
 {
 	struct IcoSphereComponent;
 	struct TerrainComponent;
-	struct PlaneComponent;
+	struct ProceduralPlaneComponent;
 
 	class ProceduralMeshGenSystem : public core::Subsystem
 	{
@@ -33,11 +33,11 @@ namespace puffin::procedural
 	private:
 
 		// Generator list of vertices/indices for a flat plane
-		static void generate_plane_vertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent& mesh);
+		static void generate_plane_vertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent3D& mesh);
 
-		static void generate_terrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent& mesh);
+		static void generate_terrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent3D& mesh);
 
-		static void generate_ico_sphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent& mesh);
+		static void generate_ico_sphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent3D& mesh);
 
 	};
 }

@@ -1402,7 +1402,7 @@ namespace puffin::rendering
 		GPUCameraData camUBO = {};
 		camUBO.proj = camera.proj;
 		camUBO.view = camera.view;
-		camUBO.view_proj = camera.view_proj;
+		camUBO.view_proj = camera.viewProj;
 
 		memcpy(cameraBuffer.alloc_info.pMappedData, &camUBO, sizeof(GPUCameraData));
 
@@ -1653,18 +1653,18 @@ namespace puffin::rendering
 			lights[i].color.z = light.color.z;
 			lights[i].color.w = 0.0f;
 
-			lights[i].ambient_specular.x = light.ambient_intensity;
-			lights[i].ambient_specular.y = light.specular_intensity;
-			lights[i].ambient_specular.z = light.specular_exponent;
+			lights[i].ambient_specular.x = light.ambientIntensity;
+			lights[i].ambient_specular.y = light.specularIntensity;
+			lights[i].ambient_specular.z = light.specularExponent;
 			lights[i].ambient_specular.w = 0.0f;
 
-			lights[i].attenuation.x = light.constant_attenuation;
-			lights[i].attenuation.y = light.linear_attenuation;
-			lights[i].attenuation.z = light.quadratic_attenuation;
+			lights[i].attenuation.x = light.constantAttenuation;
+			lights[i].attenuation.y = light.linearAttenuation;
+			lights[i].attenuation.z = light.quadraticAttenuation;
 			lights[i].attenuation.w = 0.0f;
 
-			lights[i].cutoff_angle_and_shadow_index.x = glm::cos(glm::radians(light.inner_cutoff_angle));
-			lights[i].cutoff_angle_and_shadow_index.y = glm::cos(glm::radians(light.outer_cutoff_angle));
+			lights[i].cutoff_angle_and_shadow_index.x = glm::cos(glm::radians(light.innerCutoffAngle));
+			lights[i].cutoff_angle_and_shadow_index.y = glm::cos(glm::radians(light.outerCutoffAngle));
 			lights[i].cutoff_angle_and_shadow_index.z = -1.0f;
 			lights[i].cutoff_angle_and_shadow_index.w = 0.0f;
 

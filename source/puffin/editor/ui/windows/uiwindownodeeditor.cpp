@@ -35,7 +35,7 @@ namespace puffin
 		{
 			add_component_type<TransformComponent3D>("Transform3D");
 			add_component_type<rendering::MeshComponent>("Static Mesh");
-			add_component_type<rendering::LightComponent>("Light 3D");
+			add_component_type<rendering::LightComponent3D>("Light 3D");
 			add_component_type<rendering::ShadowCasterComponent>("Shadow Caster");
 			add_component_type<physics::RigidbodyComponent3D>("Rigidbody3D");
 			add_component_type<physics::BoxComponent3D>("Box3D");
@@ -112,9 +112,9 @@ namespace puffin
 							draw_mesh_ui(flags, entity, mesh);
 						}
 
-						if (registry->any_of<rendering::LightComponent>(entity))
+						if (registry->any_of<rendering::LightComponent3D>(entity))
 						{
-							auto& light = registry->get<rendering::LightComponent>(entity);
+							auto& light = registry->get<rendering::LightComponent3D>(entity);
 
 							draw_light_ui(flags, entity, light);
 						}
@@ -126,9 +126,9 @@ namespace puffin
 							draw_shadowcaster_ui(flags, entity, shadowcaster);
 						}
 
-						if (registry->any_of<procedural::PlaneComponent>(entity))
+						if (registry->any_of<procedural::ProceduralPlaneComponent>(entity))
 						{
-							auto& plane = registry->get<procedural::PlaneComponent>(entity);
+							auto& plane = registry->get<procedural::ProceduralPlaneComponent>(entity);
 
 							draw_procedural_plane_ui(flags, entity, plane);
 						}
@@ -373,7 +373,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent& light)
+		void UIWindowNodeEditor::draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -384,7 +384,7 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Point Light"))
 				{
-					registry->remove<rendering::LightComponent>(entity);
+					registry->remove<rendering::LightComponent3D>(entity);
 
 					m_scene_changed = true;
 				}
@@ -403,7 +403,7 @@ namespace puffin
 							itemCurrentIdx = i;
 
 							const auto lightType = static_cast<rendering::LightType>(itemCurrentIdx);
-							registry->patch<rendering::LightComponent>(entity, [&lightType](auto& light)
+							registry->patch<rendering::LightComponent3D>(entity, [&lightType](auto& light)
 							{
 								light.type = lightType;
 							});
@@ -424,7 +424,7 @@ namespace puffin
 
 					if (ImGui::ColorEdit3("Diffuse", reinterpret_cast<float*>(&color)))
 					{
-						registry->patch<rendering::LightComponent>(entity, [&color](auto& light) { light.color = color; });
+						registry->patch<rendering::LightComponent3D>(entity, [&color](auto& light) { light.color = color; });
 
 						m_scene_changed = true;
 					}
@@ -432,11 +432,11 @@ namespace puffin
 
 				// Edit Light Ambient Intensity
 				{
-					float ambientIntensity = light.ambient_intensity;
+					float ambientIntensity = light.ambientIntensity;
 
 					if (ImGui::DragFloat("Ambient Intensity", &ambientIntensity, 0.001f, 0.0f, 1.0f))
 					{
-						registry->patch<rendering::LightComponent>(entity, [&ambientIntensity](auto& light) { light.ambient_intensity = ambientIntensity; });
+						registry->patch<rendering::LightComponent3D>(entity, [&ambientIntensity](auto& light) { light.ambient_intensity = ambientIntensity; });
 
 						m_scene_changed = true;
 					}
@@ -444,11 +444,11 @@ namespace puffin
 
 				// Edit Light Specular Intensity
 				{
-					float specular_intensity = light.specular_intensity;
+					float specular_intensity = light.specularIntensity;
 
 					if (ImGui::DragFloat("Specular Intensity", &specular_intensity, 0.001f, 0.0f, 1.0f))
 					{
-						registry->patch<rendering::LightComponent>(entity, [&specular_intensity](auto& light) { light.specular_intensity = specular_intensity; });
+						registry->patch<rendering::LightComponent3D>(entity, [&specular_intensity](auto& light) { light.specular_intensity = specular_intensity; });
 
 						m_scene_changed = true;
 					}
@@ -456,11 +456,11 @@ namespace puffin
 
 				// Edit Light Specular Exponent
 				{
-					int specular_exponent = light.specular_exponent;
+					int specular_exponent = light.specularExponent;
 
 					if (ImGui::DragInt("Specular Exponent", &specular_exponent, 0.1f, 1, 128))
 					{
-						registry->patch<rendering::LightComponent>(entity, [&specular_exponent](auto& light) { light.specular_exponent = specular_exponent; });
+						registry->patch<rendering::LightComponent3D>(entity, [&specular_exponent](auto& light) { light.specular_exponent = specular_exponent; });
 
 						m_scene_changed = true;
 					}
@@ -469,22 +469,22 @@ namespace puffin
 				if (light.type == rendering::LightType::Point || light.type == rendering::LightType::Spot)
 				{
 					{
-						float linear_attenuation = light.linear_attenuation;
+						float linear_attenuation = light.linearAttenuation;
 
 						if (ImGui::DragFloat("Linear Attenuation", &linear_attenuation, .01f, .01f, 1.f, "%.4f"))
 						{
-							registry->patch<rendering::LightComponent>(entity, [&linear_attenuation](auto& light) { light.linear_attenuation = linear_attenuation; });
+							registry->patch<rendering::LightComponent3D>(entity, [&linear_attenuation](auto& light) { light.linear_attenuation = linear_attenuation; });
 
 							m_scene_changed = true;
 						}
 					}
 
 					{
-						float quadratic_attenuation = light.quadratic_attenuation;
+						float quadratic_attenuation = light.quadraticAttenuation;
 
 						if (ImGui::DragFloat("Quadratic Attenuation", &quadratic_attenuation, .01f, .01f, 2.f, "%.6f"))
 						{
-							registry->patch<rendering::LightComponent>(entity, [&quadratic_attenuation](auto& light) { light.quadratic_attenuation = quadratic_attenuation; });
+							registry->patch<rendering::LightComponent3D>(entity, [&quadratic_attenuation](auto& light) { light.quadratic_attenuation = quadratic_attenuation; });
 
 							m_scene_changed = true;
 						}
@@ -494,14 +494,14 @@ namespace puffin
 				if (light.type == rendering::LightType::Spot)
 				{
 					{
-						float inner_cutoff_angle = light.inner_cutoff_angle;
+						float inner_cutoff_angle = light.innerCutoffAngle;
 
 						if (ImGui::DragFloat("Inner Cutoff Angle", &inner_cutoff_angle, 0.25f, 0.0f))
 						{
 							if (inner_cutoff_angle > 90.0f)
 								inner_cutoff_angle = 90.0f;
 
-							registry->patch<rendering::LightComponent>(entity, [&inner_cutoff_angle](auto& light) { light.inner_cutoff_angle = inner_cutoff_angle; });
+							registry->patch<rendering::LightComponent3D>(entity, [&inner_cutoff_angle](auto& light) { light.inner_cutoff_angle = inner_cutoff_angle; });
 
 							m_scene_changed = true;
 						}
@@ -509,22 +509,22 @@ namespace puffin
 
 					// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
 					{
-						float outer_cutoff_angle = light.outer_cutoff_angle;
+						float outer_cutoff_angle = light.outerCutoffAngle;
 
-						if (ImGui::DragFloat("Outer Cutoff Angle", &outer_cutoff_angle, 0.25f, light.outer_cutoff_angle))
+						if (ImGui::DragFloat("Outer Cutoff Angle", &outer_cutoff_angle, 0.25f, light.outerCutoffAngle))
 						{
 							if (outer_cutoff_angle > 90.0f)
 								outer_cutoff_angle = 90.0f;
 
-							registry->patch<rendering::LightComponent>(entity, [&outer_cutoff_angle](auto& light) { light.outer_cutoff_angle = outer_cutoff_angle; });
+							registry->patch<rendering::LightComponent3D>(entity, [&outer_cutoff_angle](auto& light) { light.outer_cutoff_angle = outer_cutoff_angle; });
 
 							m_scene_changed = true;
 						}
 
 						// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
-						if (light.outer_cutoff_angle < light.inner_cutoff_angle)
+						if (light.outerCutoffAngle < light.innerCutoffAngle)
 						{
-							light.outer_cutoff_angle = light.inner_cutoff_angle;
+							light.outerCutoffAngle = light.innerCutoffAngle;
 
 							m_scene_changed = true;
 						}
@@ -638,7 +638,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::PlaneComponent& plane)
+		void UIWindowNodeEditor::draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::ProceduralPlaneComponent& plane)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -649,28 +649,28 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##ProceduralPlane"))
 				{
-					registry->remove<procedural::PlaneComponent>(entity);
+					registry->remove<procedural::ProceduralPlaneComponent>(entity);
 
 					m_scene_changed = true;
 				}
 
 				{
-					Vector2f half_size = plane.half_size;
+					Vector2f halfSize = plane.halfSize;
 
-					if (ImGui::DragFloat2("Half Size", reinterpret_cast<float*>(&half_size), 0.1f))
+					if (ImGui::DragFloat2("Half Size", reinterpret_cast<float*>(&halfSize), 0.1f))
 					{
-						registry->patch<procedural::PlaneComponent>(entity, [&half_size](auto& plane) { plane.half_size = half_size; });
+						registry->patch<procedural::ProceduralPlaneComponent>(entity, [&halfSize](auto& plane) { plane.halfSize = halfSize; });
 
 						m_scene_changed = true;
 					}
 				}
 
 				{
-					Vector2i num_quads = plane.num_quads;
+					Vector2i quadCount = plane.quadCount;
 
-					if (ImGui::DragInt2("Num Quads", reinterpret_cast<int*>(&num_quads)))
+					if (ImGui::DragInt2("Num Quads", reinterpret_cast<int*>(&quadCount)))
 					{
-						registry->patch<procedural::PlaneComponent>(entity, [&num_quads](auto& plane) { plane.num_quads = num_quads; });
+						registry->patch<procedural::ProceduralPlaneComponent>(entity, [&quadCount](auto& plane) { plane.quadCount = quadCount; });
 
 						m_scene_changed = true;
 					}
