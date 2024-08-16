@@ -26,8 +26,8 @@ namespace puffin::physics
 		{
 			for (const auto& colliderB : mSortedColliders)
 			{
-				AABB_2D a = colliderA->getAABB();
-				AABB_2D b = colliderB->getAABB();
+				AABB2D a = colliderA->getAABB();
+				AABB2D b = colliderB->getAABB();
 
 				if (a.min.x < b.max.x)
 				{

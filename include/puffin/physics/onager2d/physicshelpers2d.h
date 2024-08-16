@@ -308,7 +308,7 @@ namespace puffin::physics
 			return true;
 		}
 
-		static inline bool testAabbVsAabb(const AABB_2D& a, const AABB_2D& b)
+		static inline bool testAabbVsAabb(const AABB2D& a, const AABB2D& b)
 		{
 			return a.min.x < b.max.x&& a.max.x > b.min.x && a.min.y < b.max.y&& a.max.y > b.min.y;
 		}

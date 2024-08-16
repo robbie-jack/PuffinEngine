@@ -4,7 +4,7 @@
 
 namespace puffin
 {
-	struct AABB_2D;
+	struct AABB2D;
 };
 
 namespace puffin::physics
@@ -26,7 +26,7 @@ namespace puffin::physics
 
 		virtual ShapeType2D getType() const = 0;
 
-		virtual AABB_2D getAABB(const Vector2f& position, const float& rotation) const = 0;
+		virtual AABB2D getAABB(const Vector2f& position, const float& rotation) const = 0;
 
         Vector2f centre_of_mass; // Centre of mass for this shape
 	};

@@ -6,7 +6,7 @@
 namespace puffin::rendering::util
 {
 	// Vector of points of each corner for ndc clip space frustum
-	const std::vector<glm::vec4> g_cube_ndc =
+	const std::vector<glm::vec4> gCubeNDC =
 	{
 		glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
 		glm::vec4(1.0f, -1.0f, -1.0f, 1.0f),
@@ -18,23 +18,23 @@ namespace puffin::rendering::util
 		glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f)
 	};
 
-	void calculate_camera_frustum(std::vector<glm::vec4>& camera_frustum_vertices_out, const glm::mat4& cam_view, const glm::mat4& cam_proj)
+	void CalculateCameraFrustum(std::vector<glm::vec4>& cameraFrustumVerticesOut, const glm::mat4& camView, const glm::mat4& camProj)
 	{
-		glm::mat4 cam_view_proj_inv = glm::inverse(cam_proj * cam_view);
+		const glm::mat4 camViewProjInv = glm::inverse(camProj * camView);
 
-		camera_frustum_vertices_out.reserve(g_cube_ndc.size());
+		cameraFrustumVerticesOut.reserve(gCubeNDC.size());
 
-		for (const auto& vertex_ndc : g_cube_ndc)
+		for (const auto& vertexNdc : gCubeNDC)
 		{
-			glm::vec4 vertex_world = cam_view_proj_inv * vertex_ndc;
-			vertex_world /= vertex_world.w;
-			camera_frustum_vertices_out.push_back(vertex_world);
+			glm::vec4 vertexWorld = camViewProjInv * vertexNdc;
+			vertexWorld /= vertexWorld.w;
+			cameraFrustumVerticesOut.push_back(vertexWorld);
 		}
 	}
 
-	AABB_3D calculate_aabb_from_vertices(const std::vector<glm::vec4>& vertices, const float& bounds_mult)
+	AABB3D CalculateAABBFromVertices(const std::vector<glm::vec4>& vertices, const float& boundsMult)
 	{
-		AABB_3D aabb;
+		AABB3D aabb;
 
 		aabb.min.x = std::numeric_limits<float>::max();
 		aabb.max.x = std::numeric_limits<float>::lowest();
@@ -56,70 +56,70 @@ namespace puffin::rendering::util
 		// Multiple min x by bounds
 		if (aabb.min.x < 0)
 		{
-			aabb.min.x *= bounds_mult;
+			aabb.min.x *= boundsMult;
 		}
 		else
 		{
-			aabb.min.x /= bounds_mult;
+			aabb.min.x /= boundsMult;
 		}
 
 		// Multiple max x by bounds
 		if (aabb.max.x > 0)
 		{
-			aabb.max.x *= bounds_mult;
+			aabb.max.x *= boundsMult;
 		}
 		else
 		{
-			aabb.max.x /= bounds_mult;
+			aabb.max.x /= boundsMult;
 		}
 
 		// Multiple min y by bounds
 		if (aabb.min.y < 0)
 		{
-			aabb.min.y *= bounds_mult;
+			aabb.min.y *= boundsMult;
 		}
 		else
 		{
-			aabb.min.y /= bounds_mult;
+			aabb.min.y /= boundsMult;
 		}
 
 		// Multiple max y by bounds
 		if (aabb.max.y > 0)
 		{
-			aabb.max.y *= bounds_mult;
+			aabb.max.y *= boundsMult;
 		}
 		else
 		{
-			aabb.max.y /= bounds_mult;
+			aabb.max.y /= boundsMult;
 		}
 
 		// Multiple min z by bounds
 		if (aabb.min.z < 0)
 		{
-			aabb.min.z *= bounds_mult;
+			aabb.min.z *= boundsMult;
 		}
 		else
 		{
-			aabb.min.z /= bounds_mult;
+			aabb.min.z /= boundsMult;
 		}
 
 		// Multiple max z by bounds
 		if (aabb.max.z > 0)
 		{
-			aabb.max.z *= bounds_mult;
+			aabb.max.z *= boundsMult;
 		}
 		else
 		{
-			aabb.max.z /= bounds_mult;
+			aabb.max.z /= boundsMult;
 		}
 
 		return aabb;
 	}
 
-	bool check_aabb_is_enclosed(const AABB_3D& inner_aabb, const AABB_3D& outer_aabb)
+	bool CheckAABBIsEnclosed(const AABB3D& innerAABB, const AABB3D& outerAABB)
 	{
-		return outer_aabb.min.x < inner_aabb.min.x && outer_aabb.max.x > inner_aabb.max.x &&
-			outer_aabb.min.y < inner_aabb.min.y && outer_aabb.max.y > inner_aabb.max.y &&
-			outer_aabb.min.z < inner_aabb.min.z && outer_aabb.max.z > inner_aabb.max.z;
+		return outerAABB.min.x < innerAABB.min.x && outerAABB.max.x > innerAABB.max.x &&
+			outerAABB.min.y < innerAABB.min.y && outerAABB.max.y > innerAABB.max.y &&
+			outerAABB.min.z < innerAABB.min.z && outerAABB.max.z > innerAABB.max.z;
 	}
 }

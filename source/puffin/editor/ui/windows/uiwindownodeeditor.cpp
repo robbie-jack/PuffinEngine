@@ -10,9 +10,6 @@
 #include "puffin/nodes/node.h"
 #include "puffin/components/transformcomponent2d.h"
 #include "puffin/components/transformcomponent3d.h"
-#include "puffin/components/rendering/meshcomponent.h"
-#include "puffin/components/rendering/lightcomponent.h"
-#include "puffin/components/rendering/cameracomponent.h"
 #include "puffin/components/physics/2d/rigidbodycomponent2d.h"
 #include "puffin/components/physics/2d/shapecomponent2d.h"
 #include "puffin/components/physics/2d/boxcomponent2d.h"
@@ -24,7 +21,12 @@
 #include "puffin/components/physics/3d/spherecomponent3d.h"
 #include "puffin/components/physics/3d/velocitycomponent3d.h"
 #include "puffin/components/scripting/angelscriptcomponent.h"
-#include "puffin/components/procedural/proceduralmeshcomponent.h"
+#include "puffin/components/procedural/3d/proceduralplanecomponent3d.h"
+#include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
+#include "puffin/components/rendering/3d/lightcomponent3d.h"
+#include "puffin/components/rendering/3d/pointlightcomponent3d.h"
+#include "puffin/components/rendering/3d/spotlightcomponent3d.h"
+#include "puffin/components/rendering/3d/shadowcastercomponent3d.h"
 #include "puffin/nodes/transformnode3d.h"
 
 namespace puffin
@@ -33,14 +35,14 @@ namespace puffin
 	{
 		UIWindowNodeEditor::UIWindowNodeEditor(const std::shared_ptr<core::Engine>& engine) : UIWindow(engine)
 		{
-			add_component_type<TransformComponent3D>("Transform3D");
-			add_component_type<rendering::MeshComponent>("Static Mesh");
-			add_component_type<rendering::LightComponent3D>("Light 3D");
-			add_component_type<rendering::ShadowCasterComponent>("Shadow Caster");
-			add_component_type<physics::RigidbodyComponent3D>("Rigidbody3D");
-			add_component_type<physics::BoxComponent3D>("Box3D");
-			add_component_type<physics::SphereComponent3D>("Sphere3D");
-			add_component_type<scripting::AngelScriptComponent>("Script");
+			AddComponentType<TransformComponent3D>("Transform3D");
+			AddComponentType<rendering::StaticMeshComponent3D>("Static Mesh");
+			AddComponentType<rendering::LightComponent3D>("Light 3D");
+			AddComponentType<rendering::ShadowCasterComponent3D>("Shadow Caster");
+			AddComponentType<physics::RigidbodyComponent3D>("Rigidbody3D");
+			AddComponentType<physics::BoxComponent3D>("Box3D");
+			AddComponentType<physics::SphereComponent3D>("Sphere3D");
+			AddComponentType<scripting::AngelScriptComponent>("Script");
 		}
 
 		void UIWindowNodeEditor::draw(double dt)
@@ -92,73 +94,73 @@ namespace puffin
 						flags |= ImGuiTreeNodeFlags_DefaultOpen;
 						flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
-						m_scene_changed = false;
+						mSceneChanged = false;
 
 						// Display Component UI
 						if (node->has_transform_2d())
 						{
-							draw_transform_ui_2d_node(flags, node);
+							DrawTransformUI2DNode(flags, node);
 						}
 
 						if (node->has_transform_3d())
 						{
-							draw_transform_ui_3d_node(flags, node);
+							DrawTransformUI3DNode(flags, node);
 						}
 
-						if (registry->any_of<rendering::MeshComponent>(entity))
+						if (registry->any_of<rendering::StaticMeshComponent3D>(entity))
 						{
-							auto& mesh = registry->get<rendering::MeshComponent>(entity);
+							auto& mesh = registry->get<rendering::StaticMeshComponent3D>(entity);
 
-							draw_mesh_ui(flags, entity, mesh);
+							DrawMeshUI(flags, entity, mesh);
 						}
 
 						if (registry->any_of<rendering::LightComponent3D>(entity))
 						{
 							auto& light = registry->get<rendering::LightComponent3D>(entity);
 
-							draw_light_ui(flags, entity, light);
+							DrawLightUI(flags, entity, light);
 						}
 
-						if (registry->any_of<rendering::ShadowCasterComponent>(entity))
+						if (registry->any_of<rendering::ShadowCasterComponent3D>(entity))
 						{
-							auto& shadowcaster = registry->get<rendering::ShadowCasterComponent>(entity);
+							auto& shadowcaster = registry->get<rendering::ShadowCasterComponent3D>(entity);
 
-							draw_shadowcaster_ui(flags, entity, shadowcaster);
+							DrawShadowcasterUI(flags, entity, shadowcaster);
 						}
 
-						if (registry->any_of<procedural::ProceduralPlaneComponent>(entity))
+						if (registry->any_of<procedural::ProceduralPlaneComponent3D>(entity))
 						{
-							auto& plane = registry->get<procedural::ProceduralPlaneComponent>(entity);
+							auto& plane = registry->get<procedural::ProceduralPlaneComponent3D>(entity);
 
-							draw_procedural_plane_ui(flags, entity, plane);
+							DrawProceduralPlaneUI(flags, entity, plane);
 						}
 
 						if (registry->any_of<physics::RigidbodyComponent2D>(entity))
 						{
 							auto& rigidbody = registry->get<physics::RigidbodyComponent2D>(entity);
 
-							draw_rigidbody_2d_ui(flags, entity, rigidbody);
+							DrawRigidbody2DUI(flags, entity, rigidbody);
 						}
 
 						if (registry->any_of<physics::CircleComponent2D>(entity))
 						{
 							auto& circle = registry->get<physics::CircleComponent2D>(entity);
 
-							draw_circle_2d_ui(flags, entity, circle);
+							DrawCircle2DUI(flags, entity, circle);
 						}
 
 						if (registry->any_of<physics::BoxComponent2D>(entity))
 						{
 							auto& box = registry->get<physics::BoxComponent2D>(entity);
 
-							draw_box_2d_ui(flags, entity, box);
+							DrawBox2DUI(flags, entity, box);
 						}
 
 						if (registry->any_of<scripting::AngelScriptComponent>(entity))
 						{
 							auto& script = registry->get<scripting::AngelScriptComponent>(entity);
 
-							draw_script_ui(flags, entity, script);
+							DrawScriptUI(flags, entity, script);
 						}
 
 						ImGui::EndListBox();
@@ -174,13 +176,13 @@ namespace puffin
 					// Display Add Component Popup
 					if (ImGui::BeginPopup("Add Component"))
 					{
-						for (auto& handler : m_component_handlers)
+						for (auto& handler : mComponentHandlers)
 						{
-							if (ImGui::Selectable(handler->name().c_str()))
+							if (ImGui::Selectable(handler->GetName().c_str()))
 							{
-								if (handler->add(node))
+								if (handler->Add(node))
 								{
-									m_scene_changed = true;
+									mSceneChanged = true;
 								}
 							}
 						}
@@ -197,7 +199,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, Node* node)
+		void UIWindowNodeEditor::DrawTransformUI2DNode(ImGuiTreeNodeFlags flags, Node* node)
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
@@ -223,7 +225,7 @@ namespace puffin
 					{
                         node->transform_2d()->position = position;
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 
 #endif
@@ -236,7 +238,7 @@ namespace puffin
 					{
                         node->transform_2d()->rotation = rotation;
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -247,7 +249,7 @@ namespace puffin
 					{
                         node->transform_2d()->scale = scale;
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -255,7 +257,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, Node* node)
+		void UIWindowNodeEditor::DrawTransformUI3DNode(ImGuiTreeNodeFlags flags, Node* node)
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
@@ -282,7 +284,7 @@ namespace puffin
 					{
                         node->transform_3d()->position = position;
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 
 #endif
@@ -295,7 +297,7 @@ namespace puffin
 					{
 						UpdateTransformOrientation(*node->transform_3d(), euler_angles);
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -306,7 +308,7 @@ namespace puffin
 					{
                         node->transform_3d()->scale = scale;
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -314,7 +316,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_mesh_ui(const ImGuiTreeNodeFlags flags, const entt::entity entity, rendering::MeshComponent& mesh)
+		void UIWindowNodeEditor::DrawMeshUI(const ImGuiTreeNodeFlags flags, const entt::entity entity, rendering::StaticMeshComponent3D& mesh)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -325,13 +327,13 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Mesh"))
 				{
-					entt_subsystem->registry()->remove<rendering::MeshComponent>(entity);
+					entt_subsystem->registry()->remove<rendering::StaticMeshComponent3D>(entity);
 
-					m_scene_changed = true;
+					mSceneChanged = true;
 				}
 
-                ImGui::Text("Model UUID: %lu", mesh.mesh_asset_id);
-                ImGui::Text("Material UUID: %lu", mesh.mat_asset_id);
+                ImGui::Text("Model UUID: %lu", mesh.meshID);
+                ImGui::Text("Material UUID: %lu", mesh.materialID);
 
 				// Change Model Path
 				/*ImGui::Text("Model Path:"); ImGui::SameLine();
@@ -373,7 +375,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light)
+		void UIWindowNodeEditor::DrawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -386,36 +388,7 @@ namespace puffin
 				{
 					registry->remove<rendering::LightComponent3D>(entity);
 
-					m_scene_changed = true;
-				}
-
-				int itemCurrentIdx = static_cast<int>(light.type);
-
-				// Edit Light Type
-				if (const char* comboLabel = rendering::gLightTypeLabels[itemCurrentIdx].c_str(); ImGui::BeginCombo("Type", comboLabel))
-				{
-					for (int i = 0; i < rendering::gLightTypeLabels.size(); i++)
-					{
-						const bool isSelected = (itemCurrentIdx == i);
-
-						if (ImGui::Selectable(rendering::gLightTypeLabels[i].c_str(), isSelected))
-						{
-							itemCurrentIdx = i;
-
-							const auto lightType = static_cast<rendering::LightType>(itemCurrentIdx);
-							registry->patch<rendering::LightComponent3D>(entity, [&lightType](auto& light)
-							{
-								light.type = lightType;
-							});
-
-							m_scene_changed = true;
-						}
-
-						if (isSelected)
-							ImGui::SetItemDefaultFocus();
-					}
-
-					ImGui::EndCombo();
+					mSceneChanged = true;
 				}
 
 				// Edit Light Diffuse Color
@@ -426,7 +399,7 @@ namespace puffin
 					{
 						registry->patch<rendering::LightComponent3D>(entity, [&color](auto& light) { light.color = color; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -436,97 +409,125 @@ namespace puffin
 
 					if (ImGui::DragFloat("Ambient Intensity", &ambientIntensity, 0.001f, 0.0f, 1.0f))
 					{
-						registry->patch<rendering::LightComponent3D>(entity, [&ambientIntensity](auto& light) { light.ambient_intensity = ambientIntensity; });
+						registry->patch<rendering::LightComponent3D>(entity, [&ambientIntensity](auto& light) { light.ambientIntensity = ambientIntensity; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
 				// Edit Light Specular Intensity
 				{
-					float specular_intensity = light.specularIntensity;
+					float specularIntensity = light.specularIntensity;
 
-					if (ImGui::DragFloat("Specular Intensity", &specular_intensity, 0.001f, 0.0f, 1.0f))
+					if (ImGui::DragFloat("Specular Intensity", &specularIntensity, 0.001f, 0.0f, 1.0f))
 					{
-						registry->patch<rendering::LightComponent3D>(entity, [&specular_intensity](auto& light) { light.specular_intensity = specular_intensity; });
+						registry->patch<rendering::LightComponent3D>(entity, [&specularIntensity](auto& light) { light.specularIntensity = specularIntensity; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
 				// Edit Light Specular Exponent
 				{
-					int specular_exponent = light.specularExponent;
+					int specularExponent = light.specularExponent;
 
-					if (ImGui::DragInt("Specular Exponent", &specular_exponent, 0.1f, 1, 128))
+					if (ImGui::DragInt("Specular Exponent", &specularExponent, 0.1f, 1, 128))
 					{
-						registry->patch<rendering::LightComponent3D>(entity, [&specular_exponent](auto& light) { light.specular_exponent = specular_exponent; });
+						registry->patch<rendering::LightComponent3D>(entity, [&specularExponent](auto& light) { light.specularExponent = specularExponent; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
-				if (light.type == rendering::LightType::Point || light.type == rendering::LightType::Spot)
+				// Point Light UI
+				if (registry->any_of<rendering::PointLightComponent3D>(entity))
 				{
+					auto& pointLight = registry->get<rendering::PointLightComponent3D>(entity);
+
 					{
-						float linear_attenuation = light.linearAttenuation;
+						float linearAttenuation = pointLight.linearAttenuation;
 
-						if (ImGui::DragFloat("Linear Attenuation", &linear_attenuation, .01f, .01f, 1.f, "%.4f"))
+						if (ImGui::DragFloat("Linear Attenuation", &linearAttenuation, .01f, .01f, 1.f, "%.4f"))
 						{
-							registry->patch<rendering::LightComponent3D>(entity, [&linear_attenuation](auto& light) { light.linear_attenuation = linear_attenuation; });
+							registry->patch<rendering::PointLightComponent3D>(entity, [&linearAttenuation](auto& pointLight) { pointLight.linearAttenuation = linearAttenuation; });
 
-							m_scene_changed = true;
+							mSceneChanged = true;
 						}
 					}
 
 					{
-						float quadratic_attenuation = light.quadraticAttenuation;
+						float quadraticAttenuation = pointLight.quadraticAttenuation;
 
-						if (ImGui::DragFloat("Quadratic Attenuation", &quadratic_attenuation, .01f, .01f, 2.f, "%.6f"))
+						if (ImGui::DragFloat("Quadratic Attenuation", &quadraticAttenuation, .01f, .01f, 2.f, "%.6f"))
 						{
-							registry->patch<rendering::LightComponent3D>(entity, [&quadratic_attenuation](auto& light) { light.quadratic_attenuation = quadratic_attenuation; });
+							registry->patch<rendering::PointLightComponent3D>(entity, [&quadraticAttenuation](auto& pointLight) { pointLight.quadraticAttenuation = quadraticAttenuation; });
 
-							m_scene_changed = true;
+							mSceneChanged = true;
 						}
 					}
 				}
 
-				if (light.type == rendering::LightType::Spot)
+				// Spot Light UI
+				if (registry->any_of<rendering::SpotLightComponent3D>(entity))
 				{
+					auto& spotLight = registry->get<rendering::SpotLightComponent3D>(entity);
+
 					{
-						float inner_cutoff_angle = light.innerCutoffAngle;
+						float linearAttenuation = spotLight.linearAttenuation;
 
-						if (ImGui::DragFloat("Inner Cutoff Angle", &inner_cutoff_angle, 0.25f, 0.0f))
+						if (ImGui::DragFloat("Linear Attenuation", &linearAttenuation, .01f, .01f, 1.f, "%.4f"))
 						{
-							if (inner_cutoff_angle > 90.0f)
-								inner_cutoff_angle = 90.0f;
+							registry->patch<rendering::SpotLightComponent3D>(entity, [&linearAttenuation](auto& spotLight) { spotLight.linearAttenuation = linearAttenuation; });
 
-							registry->patch<rendering::LightComponent3D>(entity, [&inner_cutoff_angle](auto& light) { light.inner_cutoff_angle = inner_cutoff_angle; });
+							mSceneChanged = true;
+						}
+					}
 
-							m_scene_changed = true;
+					{
+						float quadraticAttenuation = spotLight.quadraticAttenuation;
+
+						if (ImGui::DragFloat("Quadratic Attenuation", &quadraticAttenuation, .01f, .01f, 2.f, "%.6f"))
+						{
+							registry->patch<rendering::SpotLightComponent3D>(entity, [&quadraticAttenuation](auto& spotLight) { spotLight.quadraticAttenuation = quadraticAttenuation; });
+
+							mSceneChanged = true;
+						}
+					}
+
+					{
+						float innerCutoffAngle = spotLight.innerCutoffAngle;
+
+						if (ImGui::DragFloat("Inner Cutoff Angle", &innerCutoffAngle, 0.25f, 0.0f))
+						{
+							if (innerCutoffAngle > 90.0f)
+								innerCutoffAngle = 90.0f;
+
+							registry->patch<rendering::SpotLightComponent3D>(entity, [&innerCutoffAngle](auto& spotLight) { spotLight.innerCutoffAngle = innerCutoffAngle; });
+
+							mSceneChanged = true;
 						}
 					}
 
 					// To avoid breaking the lighting, outerCutoffAngle should never be less than innerCutoffAngle
 					{
-						float outer_cutoff_angle = light.outerCutoffAngle;
+						float outerCutoffAngle = spotLight.outerCutoffAngle;
 
-						if (ImGui::DragFloat("Outer Cutoff Angle", &outer_cutoff_angle, 0.25f, light.outerCutoffAngle))
+						if (ImGui::DragFloat("Outer Cutoff Angle", &outerCutoffAngle, 0.25f, spotLight.outerCutoffAngle))
 						{
-							if (outer_cutoff_angle > 90.0f)
-								outer_cutoff_angle = 90.0f;
+							if (outerCutoffAngle > 90.0f)
+								outerCutoffAngle = 90.0f;
 
-							registry->patch<rendering::LightComponent3D>(entity, [&outer_cutoff_angle](auto& light) { light.outer_cutoff_angle = outer_cutoff_angle; });
+							registry->patch<rendering::SpotLightComponent3D>(entity, [&outerCutoffAngle](auto& spotLight) { spotLight.outerCutoffAngle = outerCutoffAngle; });
 
-							m_scene_changed = true;
+							mSceneChanged = true;
 						}
 
 						// Outer Cutoff will match inner cutoff if inner cutoff becomes larger
-						if (light.outerCutoffAngle < light.innerCutoffAngle)
+						if (spotLight.outerCutoffAngle < spotLight.innerCutoffAngle)
 						{
-							light.outerCutoffAngle = light.innerCutoffAngle;
+							spotLight.outerCutoffAngle = spotLight.innerCutoffAngle;
 
-							m_scene_changed = true;
+							mSceneChanged = true;
 						}
 					}
 				}
@@ -535,7 +536,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadow)
+		void UIWindowNodeEditor::DrawShadowcasterUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent3D& shadow)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -546,42 +547,42 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##Shadow Caster"))
 				{
-					entt_subsystem->registry()->remove<rendering::ShadowCasterComponent>(entity);
+					entt_subsystem->registry()->remove<rendering::ShadowCasterComponent3D>(entity);
 
-					m_scene_changed = true;
+					mSceneChanged = true;
 				}
 
 				{
 					int item_current_idx = 0;
-					for (int i = 0; i < rendering::g_shadow_resolution_values.size(); i++)
+					for (int i = 0; i < rendering::gShadowResolutionValues.size(); i++)
 					{
-						if (rendering::g_shadow_resolution_values[i] == shadow.width)
+						if (rendering::gShadowResolutionValues[i] == shadow.width)
 						{
 							item_current_idx = i;
 							break;
 						}
 					}
 
-					if (const char* label = rendering::g_shadow_resolution_labels[item_current_idx].c_str(); ImGui::BeginCombo("Shadow Resolution", label))
+					if (const char* label = rendering::gShadowResolutionLabels[item_current_idx].c_str(); ImGui::BeginCombo("Shadow Resolution", label))
 					{
-						for (int i = 0; i < rendering::g_shadow_resolution_values.size(); i++)
+						for (int i = 0; i < rendering::gShadowResolutionValues.size(); i++)
 						{
 							const bool selected = (item_current_idx == i);
 
-							if (ImGui::Selectable(rendering::g_shadow_resolution_labels[i].c_str(), selected))
+							if (ImGui::Selectable(rendering::gShadowResolutionLabels[i].c_str(), selected))
 							{
 								item_current_idx = i;
 
-								uint16_t width = rendering::g_shadow_resolution_values[item_current_idx];
+								uint16_t width = rendering::gShadowResolutionValues[item_current_idx];
 								uint16_t height = width;
 
-								registry->patch<rendering::ShadowCasterComponent>(entity, [&width, &height](auto& shadow)
+								registry->patch<rendering::ShadowCasterComponent3D>(entity, [&width, &height](auto& shadow)
 								{
 									shadow.width = width;
 									shadow.height = height;
 								});
 
-								m_scene_changed = true;
+								mSceneChanged = true;
 							}
 
 							if (selected)
@@ -593,44 +594,44 @@ namespace puffin
 				}
 
 				{
-					float bias_min = shadow.bias_min;
+					float biasMin = shadow.biasMin;
 
-					if (ImGui::DragFloat("Bias Min", &bias_min, 0.001f))
+					if (ImGui::DragFloat("Bias Min", &biasMin, 0.001f))
 					{
-						registry->patch<rendering::ShadowCasterComponent>(entity, [&bias_min](auto& shadow)
+						registry->patch<rendering::ShadowCasterComponent3D>(entity, [&biasMin](auto& shadow)
 						{
-							shadow.bias_min = bias_min;
+							shadow.biasMin = biasMin;
 						});
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
 				{
-					float bias_max = shadow.bias_max;
+					float biasMax = shadow.biasMax;
 
-					if (ImGui::DragFloat("Bias Max", &bias_max, 0.001f))
+					if (ImGui::DragFloat("Bias Max", &biasMax, 0.001f))
 					{
-						registry->patch<rendering::ShadowCasterComponent>(entity, [&bias_max](auto& shadow)
+						registry->patch<rendering::ShadowCasterComponent3D>(entity, [&biasMax](auto& shadow)
 						{
-							shadow.bias_max = bias_max;
+							shadow.biasMax = biasMax;
 						});
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
 				{
-					float bounds_mult = shadow.bounds_mult;
+					float boundsMult = shadow.boundsMult;
 
-					if (ImGui::DragFloat("Bounds Multiplier", &bounds_mult, 0.1f))
+					if (ImGui::DragFloat("Bounds Multiplier", &boundsMult, 0.1f))
 					{
-						registry->patch<rendering::ShadowCasterComponent>(entity, [&bounds_mult](auto& shadow)
+						registry->patch<rendering::ShadowCasterComponent3D>(entity, [&boundsMult](auto& shadow)
 						{
-							shadow.bounds_mult = bounds_mult;
+							shadow.boundsMult = boundsMult;
 						});
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -638,7 +639,8 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::ProceduralPlaneComponent& plane)
+		void UIWindowNodeEditor::DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags, entt::entity entity,
+			procedural::ProceduralPlaneComponent3D& plane)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -649,9 +651,9 @@ namespace puffin
 
 				if (ImGui::SmallButton("X##ProceduralPlane"))
 				{
-					registry->remove<procedural::ProceduralPlaneComponent>(entity);
+					registry->remove<procedural::ProceduralPlaneComponent3D>(entity);
 
-					m_scene_changed = true;
+					mSceneChanged = true;
 				}
 
 				{
@@ -659,9 +661,9 @@ namespace puffin
 
 					if (ImGui::DragFloat2("Half Size", reinterpret_cast<float*>(&halfSize), 0.1f))
 					{
-						registry->patch<procedural::ProceduralPlaneComponent>(entity, [&halfSize](auto& plane) { plane.halfSize = halfSize; });
+						registry->patch<procedural::ProceduralPlaneComponent3D>(entity, [&halfSize](auto& plane) { plane.halfSize = halfSize; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -670,9 +672,9 @@ namespace puffin
 
 					if (ImGui::DragInt2("Num Quads", reinterpret_cast<int*>(&quadCount)))
 					{
-						registry->patch<procedural::ProceduralPlaneComponent>(entity, [&quadCount](auto& plane) { plane.quadCount = quadCount; });
+						registry->patch<procedural::ProceduralPlaneComponent3D>(entity, [&quadCount](auto& plane) { plane.quadCount = quadCount; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -680,7 +682,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_rigidbody_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody)
+		void UIWindowNodeEditor::DrawRigidbody2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -693,7 +695,7 @@ namespace puffin
 				{
 					registry->remove<physics::RigidbodyComponent2D>(entity);
 						
-					m_scene_changed = true;
+					mSceneChanged = true;
 				}
 
 				// Combo box for Body Type Selection
@@ -716,7 +718,7 @@ namespace puffin
 								rigidbody.bodyType = bodyType;
 							});
 
-							m_scene_changed = true;
+							mSceneChanged = true;
 						}
 
 						if (is_selected)
@@ -735,7 +737,7 @@ namespace puffin
 					{
 						registry->patch<physics::RigidbodyComponent2D>(entity, [&mass](auto& rigidbody) { rigidbody.mass = mass; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -746,7 +748,7 @@ namespace puffin
 					{
 						registry->patch<physics::RigidbodyComponent2D>(entity, [&elasticity](auto& rigidbody) { rigidbody.elasticity = elasticity; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -762,7 +764,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_circle_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle)
+		void UIWindowNodeEditor::DrawCircle2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -775,7 +777,7 @@ namespace puffin
 				{
 					registry->remove<physics::CircleComponent2D>(entity);
 
-					m_scene_changed = true;
+					mSceneChanged = true;
 				}
 
 				{
@@ -785,7 +787,7 @@ namespace puffin
 					{
 						registry->patch<physics::CircleComponent2D>(entity, [&centreOfMass](auto& circle) { circle.centreOfMass = centreOfMass; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -796,7 +798,7 @@ namespace puffin
 					{
 						registry->patch<physics::CircleComponent2D>(entity, [&radius](auto& circle) { circle.radius = radius; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -804,7 +806,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_box_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box)
+		void UIWindowNodeEditor::DrawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -817,7 +819,7 @@ namespace puffin
 				{
 					registry->remove<physics::BoxComponent2D>(entity);					
 
-					m_scene_changed = true;
+					mSceneChanged = true;
 				}
 
 				{
@@ -827,7 +829,7 @@ namespace puffin
 					{
 						registry->patch<physics::BoxComponent2D>(entity, [&centreOfMass](auto& box) { box.centreOfMass = centreOfMass; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -838,7 +840,7 @@ namespace puffin
 					{
 						registry->patch<physics::BoxComponent2D>(entity, [&halfExtent](auto& box) { box.halfExtent = halfExtent; });
 
-						m_scene_changed = true;
+						mSceneChanged = true;
 					}
 				}
 
@@ -846,7 +848,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::draw_script_ui(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script)
+		void UIWindowNodeEditor::DrawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script)
 		{
 			auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto registry = entt_subsystem->registry();
@@ -859,7 +861,7 @@ namespace puffin
 				{
 					registry->remove<scripting::AngelScriptComponent>(entity);
 					
-					m_scene_changed = true;
+					mSceneChanged = true;
 				}
 
 				ImGui::InputText("Script Name", &script.name);

@@ -6,7 +6,7 @@
 
 namespace puffin::physics::collision2D
 {
-	AABB_2D PolygonCollider2D::getAABB() const
+	AABB2D PolygonCollider2D::getAABB() const
 	{
 		return shape->getAABB(position, rotation);
 	}

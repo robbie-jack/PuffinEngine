@@ -22,9 +22,9 @@ namespace puffin::rendering
 	};
 
 	// Component for lights that cast shadows
-	struct ShadowCasterComponent
+	struct ShadowCasterComponent3D
 	{
-		ShadowCasterComponent() = default;
+		ShadowCasterComponent3D() = default;
 
 		uint16_t width = 2048;
 		uint16_t height = 2048;
@@ -38,8 +38,8 @@ namespace puffin::rendering
 		int shadowIdx = -1;
 		ResourceID resourceID = gInvalidID;
 
-		AABB_3D boundsAABB;
+		AABB3D boundsAABB;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent, width, height, biasMin, biasMax, boundsMult, cascadeCount)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShadowCasterComponent3D, width, height, biasMin, biasMax, boundsMult, cascadeCount)
 	};
 }

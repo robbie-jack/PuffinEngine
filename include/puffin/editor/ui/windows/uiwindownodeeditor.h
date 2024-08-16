@@ -26,13 +26,13 @@ namespace puffin
 	namespace rendering
 	{
 		struct LightComponent3D;
-		struct MeshComponent;
-		struct ShadowCasterComponent;
+		struct StaticMeshComponent3D;
+		struct ShadowCasterComponent3D;
 	}
 
 	namespace procedural
 	{
-		struct ProceduralPlaneComponent;
+		struct ProceduralPlaneComponent3D;
 	}
 
 	namespace physics
@@ -54,16 +54,15 @@ namespace puffin::ui
 		{
 		public:
 
-			IComponentHandler(const std::string& name) : m_name(name) {}
 			virtual ~IComponentHandler() = default;
 
-			virtual bool add(Node* node) = 0;
+			virtual bool Add(Node* node) = 0;
 
-			[[nodiscard]] const std::string& name() const { return m_name; }
+			virtual [[nodiscard]] const std::string& GetName() const;
 
 		protected:
 
-			std::string m_name;
+			
 
 		};
 
@@ -72,10 +71,10 @@ namespace puffin::ui
 		{
 		public:
 
-			ComponentHandler(const std::string& name) : IComponentHandler(name) {}
+			ComponentHandler(const std::string& name) : mName(name) {}
 			~ComponentHandler() override = default;
 
-			bool add(Node* node) override
+			bool Add(Node* node) override
 			{
 				if (!node->has_component<T>())
 				{
@@ -87,56 +86,58 @@ namespace puffin::ui
 				return false;
 			}
 
+			[[nodiscard]] const std::string& GetName() const override { return mName; };
+
 		private:
 
-
+			std::string mName;
 
 		};
 
 	public:
 
 		explicit UIWindowNodeEditor(const std::shared_ptr<core::Engine>& engine);
-		~UIWindowNodeEditor() override {}
+		~UIWindowNodeEditor() override = default;
 
 		void draw(double dt) override;
 
 		//inline void SetEntity(ECS::EntityID entity_) { m_entity = entity_; };
-		void set_file_browser(ImGui::FileBrowser* fileDialog) { m_file_dialog = fileDialog; }
+		void SetFileBrowser(ImGui::FileBrowser* fileDialog) { mFileDialog = fileDialog; }
 
-		[[nodiscard]] bool scene_changed() const { return m_scene_changed; }
+		[[nodiscard]] bool GetSceneChanged() const { return mSceneChanged; }
 
 		template<typename T>
-		void add_component_type(const std::string& name)
+		void AddComponentType(const std::string& name)
 		{
 			auto handler = new ComponentHandler<T>(name);
 
-			m_component_handlers.push_back(static_cast<IComponentHandler*>(handler));
+			mComponentHandlers.push_back(static_cast<IComponentHandler*>(handler));
 		}
 
 	private:
 
 		//ECS::EntityID m_entity = 0;
-		ImGui::FileBrowser* m_file_dialog = nullptr;
+		ImGui::FileBrowser* mFileDialog = nullptr;
 
-		bool m_model_selected = false;
-		bool m_texture_selected = false;
-		bool m_scene_changed = false;
+		bool mModelSelected = false;
+		bool mTextureSelected = false;
+		bool mSceneChanged = false;
 
-		std::vector<IComponentHandler*> m_component_handlers;
+		std::vector<IComponentHandler*> mComponentHandlers;
 
-		void draw_transform_ui_2d_node(ImGuiTreeNodeFlags flags, Node* node);
-		void draw_transform_ui_3d_node(ImGuiTreeNodeFlags flags, Node* node);
+		void DrawTransformUI2DNode(ImGuiTreeNodeFlags flags, Node* node);
+		void DrawTransformUI3DNode(ImGuiTreeNodeFlags flags, Node* node);
 
-		void draw_mesh_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::MeshComponent& mesh);
-		void draw_light_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light);
-		void draw_shadowcaster_ui(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent& shadow);
+		void DrawMeshUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::StaticMeshComponent3D& mesh);
+		void DrawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light);
+		void DrawShadowcasterUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent3D& shadow);
 
-		void draw_procedural_plane_ui(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::ProceduralPlaneComponent& plane);
+		void DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::ProceduralPlaneComponent3D& plane);
 
-		void draw_rigidbody_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody);
-		void draw_circle_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle);
-		void draw_box_2d_ui(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box);
+		void DrawRigidbody2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody);
+		void DrawCircle2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle);
+		void DrawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box);
 
-		void draw_script_ui(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script);
+		void DrawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script);
 	};
 }

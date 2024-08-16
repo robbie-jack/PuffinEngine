@@ -1,10 +1,14 @@
 #include "puffin/procedural/proceduralmeshgensubsystem.h"
 
+#include "OpenSimplexNoise/OpenSimplexNoise.h"
+
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/components/transformcomponent3d.h"
-#include "puffin/components/procedural/proceduralmeshcomponent.h"
+#include "puffin/components/procedural/3d/proceduralicospherecomponent3d.h"
 #include "puffin/components/rendering/3d/proceduralmeshcomponent3d.h"
-#include "OpenSimplexNoise/OpenSimplexNoise.h"
+
+#include "puffin/components/procedural/3d/proceduralplanecomponent3d.h"
+#include "puffin/components/procedural/3d/proceduralterraincomponent3d.h"
 
 namespace puffin::procedural
 {
@@ -12,8 +16,8 @@ namespace puffin::procedural
 	{
 		mName = "ProceduralMeshGenSubsystem";
 
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->registry();
 
 		/*registry->on_construct<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
 		registry->on_update<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
@@ -30,32 +34,32 @@ namespace puffin::procedural
 		mEngine = nullptr;
 	}
 
-	void ProceduralMeshGenSystem::on_construct_plane(entt::registry& registry, entt::entity entity)
+	void ProceduralMeshGenSystem::OnConstructPlane(entt::registry& registry, entt::entity entity)
 	{
-		const auto& plane = registry.get<const ProceduralPlaneComponent>(entity);
+		const auto& plane = registry.get<const ProceduralPlaneComponent3D>(entity);
 		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent3D>(entity);
 
-		generate_plane_vertices(plane.halfSize, plane.quadCount, mesh);
+		GeneratePlaneVertices(plane.halfSize, plane.quadCount, mesh);
 	}
 
-	void ProceduralMeshGenSystem::on_construct_terrain(entt::registry& registry, entt::entity entity)
+	void ProceduralMeshGenSystem::OnConstructTerrain(entt::registry& registry, entt::entity entity)
 	{
-		const auto& terrain = registry.get<const TerrainComponent>(entity);
+		const auto& terrain = registry.get<const ProceduralTerrainComponent3D>(entity);
 		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent3D>(entity);
 
-		generate_plane_vertices(terrain.halfSize, terrain.quadCount, mesh);
-		generate_terrain(terrain, mesh);
+		GeneratePlaneVertices(terrain.halfSize, terrain.quadCount, mesh);
+		GenerateTerrain(terrain, mesh);
 	}
 
-	void ProceduralMeshGenSystem::on_construct_ico_sphere(entt::registry& registry, entt::entity entity)
+	void ProceduralMeshGenSystem::OnConstructIcoSphere(entt::registry& registry, entt::entity entity)
 	{
-		const auto& sphere = registry.get<const IcoSphereComponent>(entity);
+		const auto& sphere = registry.get<const ProceduralIcoSphereComponent3D>(entity);
 		auto& mesh = registry.get_or_emplace<rendering::ProceduralMeshComponent3D>(entity);
 
-		generate_ico_sphere(sphere, mesh);
+		GenerateIcoSphere(sphere, mesh);
 	}
 
-	void ProceduralMeshGenSystem::generate_plane_vertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent3D& mesh)
+	void ProceduralMeshGenSystem::GeneratePlaneVertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent3D& mesh)
 	{
 		mesh.vertices.clear();
 		mesh.indices.clear();
@@ -118,7 +122,8 @@ namespace puffin::procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::generate_terrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent3D& mesh)
+	void ProceduralMeshGenSystem::GenerateTerrain(const ProceduralTerrainComponent3D& terrain,
+		rendering::ProceduralMeshComponent3D& mesh)
 	{
 		const OpenSimplexNoise::Noise noise(terrain.seed);
 		double frequency = terrain.frequency;
@@ -147,7 +152,8 @@ namespace puffin::procedural
 		}
 	}
 
-	void ProceduralMeshGenSystem::generate_ico_sphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent3D& mesh)
+	void ProceduralMeshGenSystem::GenerateIcoSphere(const ProceduralIcoSphereComponent3D& sphere,
+		rendering::ProceduralMeshComponent3D& mesh)
 	{
 		mesh.vertices.clear();
 		mesh.indices.clear();

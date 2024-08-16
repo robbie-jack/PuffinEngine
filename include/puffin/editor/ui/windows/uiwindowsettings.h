@@ -1,10 +1,14 @@
 #pragma once
 
 #include "puffin/editor/ui/windows/uiwindow.h"
-#include "puffin/components/rendering/cameracomponent.h"
 
 namespace puffin
 {
+	namespace rendering
+	{
+		struct CameraComponent3D;
+	}
+
 	class Engine;
 
 	namespace ui

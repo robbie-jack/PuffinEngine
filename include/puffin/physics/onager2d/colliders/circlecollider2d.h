@@ -14,7 +14,7 @@ namespace puffin::physics::collision2D
 			shape = nullptr;
 		}
 
-		AABB_2D getAABB() const override;
+		AABB2D getAABB() const override;
 
 		Vector2f findFurthestPoint(Vector2f direction) const override;
 

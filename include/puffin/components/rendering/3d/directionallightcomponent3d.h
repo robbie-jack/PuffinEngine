@@ -8,10 +8,10 @@ namespace puffin::rendering
 	/*
 	 * Component containing variables used by directional lights
 	 */
-	struct DirectionaLightComponent3D
+	struct DirectionalLightComponent3D
 	{
 		Vector3f direction = { 1.0f, 0.0f, 0.0f };
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(DirectionaLightComponent3D, direction)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(DirectionalLightComponent3D, direction)
 	};
 }

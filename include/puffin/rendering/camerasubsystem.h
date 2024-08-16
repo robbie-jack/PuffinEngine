@@ -4,12 +4,17 @@
 #include <entt/entity/registry.hpp>
 
 #include "puffin/core/subsystem.h"
-#include "puffin/components/transformcomponent3d.h"
-#include "puffin/components/rendering/cameracomponent.h"
 #include "puffin/types/uuid.h"
+
+namespace puffin
+{
+	struct TransformComponent3D;
+}
 
 namespace puffin::rendering
 {
+	struct CameraComponent3D;
+
 	class CameraSubystem : public core::Subsystem
 	{
 	public:
@@ -17,38 +22,38 @@ namespace puffin::rendering
 		explicit CameraSubystem(const std::shared_ptr<core::Engine>& engine);
 		~CameraSubystem() override = default;
 
-		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
 
 		void BeginPlay() override;
 		void EndPlay() override;
 
-		void Update(double delta_time) override;
+		void Update(double deltaTime) override;
 		bool ShouldUpdate() override;
 
-		void on_update_camera(entt::registry& registry, entt::entity entity);
-        void on_destroy_camera(entt::registry& registry, entt::entity entity);
+		void OnUpdateCamera(entt::registry& registry, entt::entity entity);
+        void OnDestroyCamera(entt::registry& registry, entt::entity entity);
 
-        void on_update_editor_camera_fov(const float& editor_camera_fov);
+        void OnUpdateEditorCameraFov(const float& editorCameraFov);
 
-		PuffinID active_cam_id() const { return m_active_cam_id; }
+		[[nodiscard]] PuffinID GetActiveCameraID() const { return mActiveCameraID; }
 
 	private:
 
-        PuffinID m_active_cam_id = gInvalidID;
+        PuffinID mActiveCameraID = gInvalidID;
         PuffinID m_active_play_cam_id = gInvalidID;
 		std::unordered_map<PuffinID, bool> m_cached_cam_active_state;
 		PuffinID m_editor_cam_id = gInvalidID;
 		float m_editor_cam_speed = 10.0f;
 
-		void init_editor_camera();
+		void InitEditorCamera();
 
-		void update_active_camera();
-        void update_active_play_camera();
+		void UpdateActiveCamera();
+        void UpdateActivePlayCamera();
 
-		void update_cameras(double delta_time);
-		void update_editor_camera(double delta_time);
-		void update_camera_component(const TransformComponent3D& transform, CameraComponent3D& camera);
+		void UpdateCameras(double deltaTime);
+		void UpdateEditorCamera(double deltaTime);
+		void UpdateCameraComponent(const TransformComponent3D& transform, CameraComponent3D& camera);
 
 	};
 }

@@ -25,7 +25,7 @@ namespace puffin::physics
 
 		ShapeType2D getType() const override;
 
-		AABB_2D getAABB(const Vector2f& position, const float& rotation) const override;
+		AABB2D getAABB(const Vector2f& position, const float& rotation) const override;
 
 		// Regenerate points based on half bound
 		void updatePoints() override;

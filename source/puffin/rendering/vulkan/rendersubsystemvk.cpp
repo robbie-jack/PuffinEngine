@@ -34,8 +34,8 @@
 #include "puffin/assets/assetregistry.h"
 #include "puffin/components/physics/2d/velocitycomponent2d.h"
 #include "puffin/components/physics/3d/velocitycomponent3d.h"
-#include "puffin/components/rendering/lightcomponent.h"
-#include "puffin/components/rendering/meshcomponent.h"
+#include "puffin/components/rendering/3d/shadowcastercomponent3d.h"
+#include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
 #include "puffin/core/settingsmanager.h"
 #include "puffin/core/signalsubsystem.h"
 #include "puffin/rendering/camerasubsystem.h"
@@ -78,9 +78,9 @@ namespace puffin::rendering
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
-		registry->on_construct<MeshComponent>().connect<&RenderSubystemVK::on_update_mesh>(this);
-		registry->on_update<MeshComponent>().connect<&RenderSubystemVK::on_update_mesh>(this);
-		registry->on_destroy<MeshComponent>().connect<&RenderSubystemVK::on_destroy_mesh_or_transform>(this);
+		registry->on_construct<StaticMeshComponent3D>().connect<&RenderSubystemVK::on_update_mesh>(this);
+		registry->on_update<StaticMeshComponent3D>().connect<&RenderSubystemVK::on_update_mesh>(this);
+		registry->on_destroy<StaticMeshComponent3D>().connect<&RenderSubystemVK::on_destroy_mesh_or_transform>(this);
 
 		registry->on_construct<TransformComponent2D>().connect<&RenderSubystemVK::on_update_transform>(this);
 		registry->on_update<TransformComponent2D>().connect<&RenderSubystemVK::on_update_transform>(this);
@@ -90,9 +90,9 @@ namespace puffin::rendering
 		registry->on_update<TransformComponent3D>().connect<&RenderSubystemVK::on_update_transform>(this);
 		registry->on_destroy<TransformComponent3D>().connect<&RenderSubystemVK::on_destroy_mesh_or_transform>(this);
 
-		registry->on_construct<ShadowCasterComponent>().connect<&RenderSubystemVK::on_construct_shadow_caster>(this);
-		registry->on_update<ShadowCasterComponent>().connect<&RenderSubystemVK::on_update_shadow_caster>(this);
-		registry->on_destroy<ShadowCasterComponent>().connect<&RenderSubystemVK::on_destroy_shadow_caster>(this);
+		registry->on_construct<ShadowCasterComponent3D>().connect<&RenderSubystemVK::on_construct_shadow_caster>(this);
+		registry->on_update<ShadowCasterComponent3D>().connect<&RenderSubystemVK::on_update_shadow_caster>(this);
+		registry->on_destroy<ShadowCasterComponent3D>().connect<&RenderSubystemVK::on_destroy_shadow_caster>(this);
 
 		auto signal_subsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
 		auto rendering_draw_shadows_signal = signal_subsystem->GetSignal<bool>("rendering_draw_shadows");
@@ -217,15 +217,15 @@ namespace puffin::rendering
 
 	void RenderSubystemVK::on_update_mesh(entt::registry& registry, entt::entity entity)
 	{
-		const auto mesh = registry.get<MeshComponent>(entity);
+		const auto mesh = registry.get<StaticMeshComponent3D>(entity);
 
-		if (mesh.mesh_asset_id == gInvalidID || mesh.mat_asset_id == gInvalidID)
+		if (mesh.meshID == gInvalidID || mesh.materialID == gInvalidID)
 		{
 			return;
 		}
 
-		m_meshes_to_load.insert(mesh.mesh_asset_id);
-		m_material_registry->register_material_instance(mesh.mat_asset_id);
+		m_meshes_to_load.insert(mesh.meshID);
+		m_material_registry->register_material_instance(mesh.materialID);
 
 		add_renderable(registry, entity);
 	}
@@ -242,13 +242,13 @@ namespace puffin::rendering
 
 	void RenderSubystemVK::add_renderable(entt::registry& registry, entt::entity entity)
 	{
-		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<MeshComponent>(entity))
+		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<StaticMeshComponent3D>(entity))
 		{
 			auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto id = entt_subsystem->get_id(entity);
-			const auto mesh = registry.get<MeshComponent>(entity);
+			const auto mesh = registry.get<StaticMeshComponent3D>(entity);
 
-			if (mesh.mesh_asset_id == gInvalidID || mesh.mat_asset_id == gInvalidID)
+			if (mesh.meshID == gInvalidID || mesh.materialID == gInvalidID)
 			{
 				return;
 			}
@@ -263,7 +263,7 @@ namespace puffin::rendering
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto id = entt_subsystem->get_id(entity);
-		const auto& shadow = registry.get<ShadowCasterComponent>(entity);
+		const auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
 		ImageDesc image_desc;
 		image_desc.image_type = ImageType::Depth;
@@ -279,7 +279,7 @@ namespace puffin::rendering
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto id = entt_subsystem->get_id(entity);
-		const auto& shadow = registry.get<ShadowCasterComponent>(entity);
+		const auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
 		ImageDesc image_desc;
 		image_desc.image_type = ImageType::Depth;
@@ -295,11 +295,11 @@ namespace puffin::rendering
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto id = entt_subsystem->get_id(entity);
-		auto& shadow = registry.get<ShadowCasterComponent>(entity);
+		auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
-		m_shadow_destroy_events.push({ shadow.resource_id });
+		m_shadow_destroy_events.push({ shadow.resourceID });
 
-		shadow.resource_id = gInvalidID;
+		shadow.resourceID = gInvalidID;
 	}
 
 	void RenderSubystemVK::register_texture(PuffinID tex_id)
@@ -966,8 +966,8 @@ namespace puffin::rendering
 
 		if (m_update_renderables)
 		{
-			const auto meshView2D = registry->view<const TransformComponent2D, const MeshComponent>();
-			const auto meshView3D = registry->view<const TransformComponent3D, const MeshComponent>();
+			const auto meshView2D = registry->view<const TransformComponent2D, const StaticMeshComponent3D>();
+			const auto meshView3D = registry->view<const TransformComponent3D, const StaticMeshComponent3D>();
 
 			m_renderables.clear();
 
@@ -976,14 +976,14 @@ namespace puffin::rendering
 			{
 				const auto node_id = entt_subsystem->get_id(entity);
 
-				if (mesh.mat_asset_id == gInvalidID || mesh.mesh_asset_id == gInvalidID)
+				if (mesh.materialID == gInvalidID || mesh.meshID == gInvalidID)
 				{
 					continue;
 				}
 
-				const auto& matData = m_material_registry->get_material_data(mesh.mat_asset_id);
+				const auto& matData = m_material_registry->get_material_data(mesh.materialID);
 
-				m_renderables.emplace_back(node_id, mesh.mesh_asset_id, matData.baseMaterialID, mesh.sub_mesh_idx);
+				m_renderables.emplace_back(node_id, mesh.meshID, matData.baseMaterialID, mesh.sub_mesh_idx);
 
 				if (!m_cached_object_data.contains(node_id))
 				{
@@ -996,14 +996,14 @@ namespace puffin::rendering
 			{
 				const auto node_id = entt_subsystem->get_id(entity);
 
-				if (mesh.mat_asset_id == gInvalidID || mesh.mesh_asset_id == gInvalidID)
+				if (mesh.materialID == gInvalidID || mesh.meshID == gInvalidID)
 				{
 					continue;
 				}
 
-				const auto& matData = m_material_registry->get_material_data(mesh.mat_asset_id);
+				const auto& matData = m_material_registry->get_material_data(mesh.materialID);
 
-				m_renderables.emplace_back(node_id, mesh.mesh_asset_id, matData.baseMaterialID, mesh.sub_mesh_idx);
+				m_renderables.emplace_back(node_id, mesh.meshID, matData.baseMaterialID, mesh.sub_mesh_idx);
 
 				if (!m_cached_object_data.contains(node_id))
 				{
@@ -1091,9 +1091,9 @@ namespace puffin::rendering
 
 			auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 			auto registry = entt_subsystem->registry();
-			auto& shadow = registry->get<ShadowCasterComponent>(shadow_event.entity);
+			auto& shadow = registry->get<ShadowCasterComponent3D>(shadow_event.entity);
 
-			shadow.resource_id = m_resource_manager->add_images(shadow_event.image_desc, m_frames_in_flight_count * shadow.cascade_count);
+			shadow.resourceID = m_resource_manager->add_images(shadow_event.image_desc, m_frames_in_flight_count * shadow.cascade_count);
 
 			shadow_descriptor_needs_updated |= true;
 		}
@@ -1119,14 +1119,14 @@ namespace puffin::rendering
 
 			auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 			auto registry = entt_subsystem->registry();
-			auto& shadow = registry->get<ShadowCasterComponent>(shadow_event.entity);
+			auto& shadow = registry->get<ShadowCasterComponent3D>(shadow_event.entity);
 
-			if (m_resource_manager->image_exists(shadow.resource_id))
+			if (m_resource_manager->image_exists(shadow.resourceID))
 			{
 				const int first_image_index = current_frame_idx() * shadow.cascade_count;
 				for (int i = 0; i < shadow.cascade_count; ++i)
 				{
-					m_resource_manager->update_image(shadow.resource_id, shadow_event.image_desc, first_image_index + i);
+					m_resource_manager->update_image(shadow.resourceID, shadow_event.image_desc, first_image_index + i);
 				}
 
 				shadow_event.frame_count++;
@@ -1164,7 +1164,7 @@ namespace puffin::rendering
 			ShadowDestroyEvent shadow_event{};
 			m_shadow_destroy_events.pop(shadow_event);
 
-			if (m_resource_manager->image_exists(shadow_event.resource_id))
+			if (m_resource_manager->image_exists(shadow_event.resourceID))
 			{
 				shadow_event.frame_count++;
 
@@ -1174,7 +1174,7 @@ namespace puffin::rendering
 				}
 				else
 				{
-					m_resource_manager->destroy_images(shadow_event.resource_id);
+					m_resource_manager->destroy_images(shadow_event.resourceID);
 				}
 			}
 		}
@@ -1396,7 +1396,7 @@ namespace puffin::rendering
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = entt_subsystem->registry();
 
-		auto entity = entt_subsystem->get_entity(cam_system->active_cam_id());
+		auto entity = entt_subsystem->get_entity(cam_system->GetActiveCameraID());
 		auto& camera = registry->get<CameraComponent3D>(entity);
 
 		GPUCameraData camUBO = {};
@@ -1522,7 +1522,7 @@ namespace puffin::rendering
 					}
 
 					
-					const auto& mesh = registry->get<MeshComponent>(entity);
+					const auto& mesh = registry->get<StaticMeshComponent3D>(entity);
 
 #ifdef PFN_DOUBLE_PRECISION
 					Vector3d position = { 0.0 };
@@ -1563,7 +1563,7 @@ namespace puffin::rendering
 					GPUObjectData object;
 
 					build_model_transform(position, tempTransform.orientationQuat, tempTransform.scale, object.model);
-					object.mat_idx = m_material_registry->get_material_data(mesh.mat_asset_id).idx;
+					object.mat_idx = m_material_registry->get_material_data(mesh.materialID).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
 				}
@@ -1668,9 +1668,9 @@ namespace puffin::rendering
 			lights[i].cutoff_angle_and_shadow_index.z = -1.0f;
 			lights[i].cutoff_angle_and_shadow_index.w = 0.0f;
 
-			if (registry->any_of<ShadowCasterComponent>(entity))
+			if (registry->any_of<ShadowCasterComponent3D>(entity))
 			{
-				auto& shadow = registry->get<ShadowCasterComponent>(entity);
+				auto& shadow = registry->get<ShadowCasterComponent3D>(entity);
 
 				if (light.type != LightType::Point)
 				{
@@ -1686,7 +1686,7 @@ namespace puffin::rendering
 		                                    lights.size() * sizeof(GPULightData), lights.data());
 
 		auto cam_system = mEngine->GetSubsystem<CameraSubystem>();
-		auto entity = entt_subsystem->get_entity(cam_system->active_cam_id());
+		auto entity = entt_subsystem->get_entity(cam_system->GetActiveCameraID());
 		auto& transform = registry->get<TransformComponent3D>(entity);
 
 		// Prepare light static data
@@ -1702,7 +1702,7 @@ namespace puffin::rendering
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
 
-		const auto shadow_view = registry->view<const TransformComponent3D, const LightComponent, ShadowCasterComponent>();
+		const auto shadow_view = registry->view<const TransformComponent3D, const LightComponent, ShadowCasterComponent3D>();
 
 		m_shadows_to_draw.clear();
 
@@ -1754,12 +1754,12 @@ namespace puffin::rendering
 				else if (light.type == LightType::Directional)
 				{
 					auto cam_system = mEngine->GetSubsystem<CameraSubystem>();
-					auto active_cam_entity = entt_subsystem->get_entity(cam_system->active_cam_id());
+					auto active_cam_entity = entt_subsystem->get_entity(cam_system->GetActiveCameraID());
 					auto& camera = registry->get<CameraComponent3D>(active_cam_entity);
 
 					// Calculate camera view frustum vertices
 					std::vector<glm::vec4> camera_frustum_vertices;
-					util::calculate_camera_frustum(camera_frustum_vertices, camera.view, camera.proj);
+					util::CalculateCameraFrustum(camera_frustum_vertices, camera.view, camera.proj);
 
 					// Transform to light view space
 					std::vector<glm::vec4> cam_light_view_vertices;
@@ -1769,10 +1769,10 @@ namespace puffin::rendering
 					}
 
 					// Calculate cam frustum aabb in light space
-					const auto cam_light_view_aabb = util::calculate_aabb_from_vertices(cam_light_view_vertices);
+					const auto cam_light_view_aabb = util::CalculateAABBFromVertices(cam_light_view_vertices);
 
 					// Recalculate shadow bounds if cam aabb is not fully enclosed by shadow bounds aabb
-					if (!util::check_aabb_is_enclosed(cam_light_view_aabb, shadow.bounds_aabb))
+					if (!util::CheckAABBIsEnclosed(cam_light_view_aabb, shadow.bounds_aabb))
 					{
 						// Average vertices to get centre of view frustum
 						Vector3f centre;
@@ -1792,7 +1792,7 @@ namespace puffin::rendering
 							cam_light_view_vertices.push_back(shadow.light_view * v);
 						}
 
-						shadow.bounds_aabb = util::calculate_aabb_from_vertices(cam_light_view_vertices, shadow.bounds_mult);
+						shadow.bounds_aabb = util::CalculateAABBFromVertices(cam_light_view_vertices, shadow.bounds_mult);
 
 						glm::mat4 light_projection = glm::ortho(shadow.bounds_aabb.min.x, shadow.bounds_aabb.max.x,
 							shadow.bounds_aabb.min.y, shadow.bounds_aabb.max.y, shadow.bounds_aabb.min.z, shadow.bounds_aabb.max.z);
@@ -1937,7 +1937,7 @@ namespace puffin::rendering
 		for (auto id : m_shadows_to_draw)
 		{
 			const auto& entity = entt_subsystem->get_entity(id);
-			const auto& shadow = entt_subsystem->registry()->get<ShadowCasterComponent>(entity);
+			const auto& shadow = entt_subsystem->registry()->get<ShadowCasterComponent3D>(entity);
 
 			GPUShadowPushConstant push_constant;
 			push_constant.vertex_buffer_address = m_resource_manager->geometry_buffer()->vertex_buffer_address();
@@ -1945,7 +1945,7 @@ namespace puffin::rendering
 
 			cmd.pushConstants(m_shadow_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant), &push_constant);
 
-			draw_shadowmap(cmd, m_resource_manager->get_image(shadow.resource_id, current_frame_idx()), { shadow.width, shadow.height });
+			draw_shadowmap(cmd, m_resource_manager->get_image(shadow.resourceID, current_frame_idx()), { shadow.width, shadow.height });
 		}
 
 		cmd.end();
@@ -2507,7 +2507,7 @@ namespace puffin::rendering
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = entt_subsystem->registry();
-		const auto shadow_view = registry->view<const TransformComponent3D, const LightComponent, ShadowCasterComponent>();
+		const auto shadow_view = registry->view<const TransformComponent3D, const LightComponent, ShadowCasterComponent3D>();
 
 		shadow_image_infos.clear();
 		shadow_image_infos.reserve(shadow_view.size_hint());
@@ -2517,7 +2517,7 @@ namespace puffin::rendering
 		{
 			auto id = entt_subsystem->get_id(entity);
 
-			auto& alloc_image = m_resource_manager->get_image(shadow.resource_id, current_frame_idx());
+			auto& alloc_image = m_resource_manager->get_image(shadow.resourceID, current_frame_idx());
 
 			vk::DescriptorImageInfo shadow_image_info = { m_global_render_data.shadowmap_sampler, alloc_image.image_view,
 				vk::ImageLayout::eShaderReadOnlyOptimal };

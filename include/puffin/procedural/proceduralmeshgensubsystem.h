@@ -15,9 +15,8 @@ namespace puffin
 
 namespace puffin::procedural
 {
-	struct IcoSphereComponent;
-	struct TerrainComponent;
-	struct ProceduralPlaneComponent;
+	struct ProceduralIcoSphereComponent3D;
+	struct ProceduralTerrainComponent3D;
 
 	class ProceduralMeshGenSystem : public core::Subsystem
 	{
@@ -26,18 +25,16 @@ namespace puffin::procedural
 		explicit ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine);
 		~ProceduralMeshGenSystem() override;
 
-		static void on_construct_plane(entt::registry& registry, entt::entity entity);
-		static void on_construct_terrain(entt::registry& registry, entt::entity entity);
-		static void on_construct_ico_sphere(entt::registry& registry, entt::entity entity);
+		static void OnConstructPlane(entt::registry& registry, entt::entity entity);
+		static void OnConstructTerrain(entt::registry& registry, entt::entity entity);
+		static void OnConstructIcoSphere(entt::registry& registry, entt::entity entity);
 
 	private:
 
 		// Generator list of vertices/indices for a flat plane
-		static void generate_plane_vertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent3D& mesh);
-
-		static void generate_terrain(const TerrainComponent& terrain, rendering::ProceduralMeshComponent3D& mesh);
-
-		static void generate_ico_sphere(const IcoSphereComponent& sphere, rendering::ProceduralMeshComponent3D& mesh);
+		static void GeneratePlaneVertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent3D& mesh);
+		static void GenerateTerrain(const ProceduralTerrainComponent3D& terrain, rendering::ProceduralMeshComponent3D& mesh);
+		static void GenerateIcoSphere(const ProceduralIcoSphereComponent3D& sphere, rendering::ProceduralMeshComponent3D& mesh);
 
 	};
 }

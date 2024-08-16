@@ -113,13 +113,19 @@ set(HEADERS
 	${HEADER_DIR}/puffin/components/physics/3d/spherecomponent3d.h
 	${HEADER_DIR}/puffin/components/physics/3d/velocitycomponent3d.h
 	# Components - Procedural
-	${HEADER_DIR}/puffin/components/procedural/proceduralmeshcomponent.h
+	# Components - Procedural - 3D
+	${HEADER_DIR}/puffin/components/procedural/3d/proceduralcubecomponent3d.h
+	${HEADER_DIR}/puffin/components/procedural/3d/proceduralicospherecomponent3d.h
+	${HEADER_DIR}/puffin/components/procedural/3d/proceduralplanecomponent3d.h
+	${HEADER_DIR}/puffin/components/procedural/3d/proceduralterraincomponent3d.h
+	${HEADER_DIR}/puffin/components/procedural/3d/proceduraluvspherecomponent3d.h
 	# Components - Rendering
 	# Components - Rendering - 3D
 	${HEADER_DIR}/puffin/components/rendering/3d/cameracomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/directionallightcomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/lightcomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/pointlightcomponent3d.h
+	${HEADER_DIR}/puffin/components/rendering/3d/proceduralmeshcomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/shadowcastercomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/spotlightcomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/staticmeshcomponent3d.h

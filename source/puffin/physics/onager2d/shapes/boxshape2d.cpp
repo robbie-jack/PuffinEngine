@@ -11,9 +11,9 @@ namespace puffin::physics
 		return ShapeType2D::box;
 	}
 
-	AABB_2D BoxShape2D::getAABB(const Vector2f& position, const float& rotation) const
+	AABB2D BoxShape2D::getAABB(const Vector2f& position, const float& rotation) const
 	{
-		AABB_2D aabb;
+		AABB2D aabb;
         aabb.min = position - half_extent;
         aabb.max = position + half_extent;
 		return aabb;

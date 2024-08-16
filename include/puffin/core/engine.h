@@ -99,6 +99,8 @@ namespace puffin::core
 
 	private:
 
+		void UpdateDeltaTime(double sampledTime);
+
 		bool mRunning = true;
 		bool mLoadSceneOnLaunch = false;
 		bool mSetupEngineDefaultScene = false;
@@ -124,18 +126,6 @@ namespace puffin::core
 		std::unique_ptr<SubsystemManager> mSubsystemManager = nullptr;
 
 		io::ProjectFile mProjectFile;
-
-		void RegisterRequiredSubsystems() const;
-
-		void AddDefaultAssets();
-		void ReimportDefaultAssets();
-		void LoadAndResaveAssets();
-
-		void InitDefaultScene();
-		void InitPhysicsScene3D();
-		void InitProceduralScene();
-
-		void UpdateDeltaTime(double sampledTime);
 
 	};
 }

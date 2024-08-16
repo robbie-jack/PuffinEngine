@@ -10,7 +10,7 @@
 #include "vk_mem_alloc.hpp"
 
 #include "puffin/assets/textureasset.h"
-#include "puffin/components/rendering/cameracomponent.h"
+#include "puffin/components/rendering/3d/cameracomponent3d.h"
 #include "puffin/core/engine.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/rendering/materialglobals.h"

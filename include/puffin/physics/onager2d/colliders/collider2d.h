@@ -15,7 +15,7 @@ namespace puffin::physics::collision2D
 		virtual ~Collider2D() = default;
 
 		// Get AABB representing the maximum bounds of this shape
-		virtual AABB_2D getAABB() const = 0;
+		virtual AABB2D getAABB() const = 0;
 
 		virtual Vector2f findFurthestPoint(Vector2f direction) const = 0;
 

@@ -54,7 +54,7 @@ namespace puffin::ui
 		m_window_performance = std::make_shared<UIWindowPerformance>(mEngine);
 		m_content_browser = std::make_shared<UIContentBrowser>(mEngine);
 
-		m_window_entity_properties->set_file_browser(&m_file_dialog);
+		m_window_entity_properties->SetFileBrowser(&m_file_dialog);
 
 		add_window(m_window_scene_hierarchy);
 		add_window(m_window_settings);
@@ -139,7 +139,7 @@ namespace puffin::ui
 		}
 
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing
-		if (m_window_entity_properties->scene_changed() && mEngine->GetPlayState() == core::PlayState::Stopped)
+		if (m_window_entity_properties->GetSceneChanged() && mEngine->GetPlayState() == core::PlayState::Stopped)
 		{
 			const auto scene_data = mEngine->GetSubsystem<io::SceneSubsystem>()->scene_data();
 
