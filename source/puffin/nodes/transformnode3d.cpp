@@ -87,34 +87,34 @@ namespace puffin
 
 	const maths::Quat& TransformNode3D::orientation() const
 	{
-		return transform_3d()->orientation_quat;
+		return transform_3d()->orientationQuat;
 	}
 
 	maths::Quat& TransformNode3D::orientation()
 	{
-		return transform_3d()->orientation_quat;
+		return transform_3d()->orientationQuat;
 	}
 
 	void TransformNode3D::set_orientation(const maths::Quat& orientation)
 	{
-		m_registry->patch<TransformComponent3D>(m_entity, [&orientation](auto& transform) { transform.orientation_quat = orientation; });
+		m_registry->patch<TransformComponent3D>(m_entity, [&orientation](auto& transform) { transform.orientationQuat = orientation; });
 
 		m_transform_changed = true;
 	}
 
 	const maths::EulerAngles& TransformNode3D::euler_angles() const
 	{
-		return transform_3d()->orientation_euler_angles;
+		return transform_3d()->orientationEulerAngles;
 	}
 
 	maths::EulerAngles& TransformNode3D::euler_angles()
 	{
-		return transform_3d()->orientation_euler_angles;
+		return transform_3d()->orientationEulerAngles;
 	}
 
-	void TransformNode3D::set_euler_angles(const maths::EulerAngles& euler_angles)
+	void TransformNode3D::set_euler_angles(const maths::EulerAngles& eulerAngles)
 	{
-		m_registry->patch<TransformComponent3D>(m_entity, [&euler_angles](auto& transform) { transform.orientation_euler_angles = euler_angles; });
+		m_registry->patch<TransformComponent3D>(m_entity, [&eulerAngles](auto& transform) { transform.orientationEulerAngles = eulerAngles; });
 
 		m_transform_changed = true;
 	}

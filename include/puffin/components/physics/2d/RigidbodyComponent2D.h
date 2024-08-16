@@ -9,16 +9,16 @@ namespace puffin::physics
 	{
 		RigidbodyComponent2D() = default;
 
-		RigidbodyComponent2D(const BodyType& bodyType_, const float& mass_) : body_type(bodyType_), mass(mass_) {}
+		RigidbodyComponent2D(const BodyType& bodyType, const float& mass) : mass(mass), bodyType(bodyType) {}
 
-		Vector2f linear_velocity = Vector2f(0.0f);
-		float angular_velocity = 0.0f;
+		Vector2f linearVelocity = Vector2f(0.0f);
+		float angularVelocity = 0.0f;
 
 		float mass = 0.0f;
 		float elasticity = 1.0f;
 
-		BodyType body_type = BodyType::Static;
+		BodyType bodyType = BodyType::Static;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent2D, mass, elasticity, body_type)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent2D, mass, elasticity, bodyType)
 	};
 }

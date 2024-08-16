@@ -241,8 +241,8 @@ namespace puffin::scene
 				{
                     auto& global_transform = m_global_transform_3ds.at(id);
 					global_transform.position = { 0.f };
-					global_transform.orientation_quat = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
-					global_transform.orientation_euler_angles = { 0.0f, 0.0f, 0.0f };
+					global_transform.orientationQuat = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
+					global_transform.orientationEulerAngles = { 0.0f, 0.0f, 0.0f };
 					global_transform.scale = { 1.f };
 
 					auto parent_id = node->parent_id();
@@ -297,9 +297,9 @@ namespace puffin::scene
 
             global_transform.position += local_transform->position;
 
-            global_transform.orientation_quat = local_transform->orientation_quat * global_transform.orientation_quat;
+            global_transform.orientationQuat = local_transform->orientationQuat * global_transform.orientationQuat;
 
-			global_transform.orientation_euler_angles += local_transform->orientation_euler_angles;
+			global_transform.orientationEulerAngles += local_transform->orientationEulerAngles;
 
             global_transform.scale *= local_transform->scale;
 		}

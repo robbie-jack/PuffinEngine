@@ -19,19 +19,18 @@ namespace puffin
 		TransformComponent3D() = default;
 
 #ifdef PFN_DOUBLE_PRECISION
-		TransformComponent3D(const Vector3d& position_) : position(position_) {}
+		TransformComponent3D(const Vector3d& position) : position(position) {}
 
-		TransformComponent3D(const Vector3d& position_, const maths::Quat& orientation_, const maths::EulerAngles& euler_, const Vector3f& scale_) :
-			position(position_), orientation(orientation_), orientation_euler_angles(euler_), scale(scale_) {}
+		TransformComponent3D(const Vector3d& position, const maths::Quat& orientation, const maths::EulerAngles& euler, const Vector3f& scale) :
+			position(position), orientation(orientation), orientation_euler_angles(euler), scale(scale) {}
 #else
-		TransformComponent3D(const Vector3f& position_) : position(position_) {}
+		explicit TransformComponent3D(const Vector3f& position) : position(position) {}
 
-		TransformComponent3D(const Vector3f& position_, const maths::Quat& orientation_, const maths::EulerAngles& euler_, const Vector3f& scale_) :
-			position(position_), orientation_quat(orientation_), orientation_euler_angles(euler_), scale(scale_) {}
+		TransformComponent3D(const Vector3f& position, const maths::Quat& orientation, const maths::EulerAngles& euler, const Vector3f& scale) :
+			position(position), orientationQuat(orientation), orientationEulerAngles(euler), scale(scale) {}
 #endif
 
-		TransformComponent3D(const TransformComponent3D& t) :
-		position(t.position), orientation_quat(t.orientation_quat), orientation_euler_angles(t.orientation_euler_angles), scale(t.scale) {}
+		TransformComponent3D(const TransformComponent3D& t) = default;
 
 		~TransformComponent3D() = default;
 
@@ -43,18 +42,18 @@ namespace puffin
 		Vector3f position = Vector3f(0.0f);
 #endif
 
-		maths::Quat orientation_quat = glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f }); // Orientation of transform, expressed as quaternion in radians
-		maths::EulerAngles orientation_euler_angles = { 0.0, 0.0, 0.0 }; // Orientation of transform, expressed as euler angles in degrees
+		maths::Quat orientationQuat = glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f }); // Orientation of transform, expressed as quaternion in radians
+		maths::EulerAngles orientationEulerAngles = { 0.0, 0.0, 0.0 }; // Orientation of transform, expressed as euler angles in degrees
 
 		Vector3f scale = Vector3f(1.0f);
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent3D, position, orientation_quat, orientation_euler_angles, scale)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent3D, position, orientationQuat, orientationEulerAngles, scale)
 	};
 
 	// Update transform orientation with a new euler angles and recalculates quaternion
-	inline void UpdateTransformOrientation(TransformComponent3D& transform, const maths::EulerAngles& euler_angles_new)
+	inline void UpdateTransformOrientation(TransformComponent3D& transform, const maths::EulerAngles& eulerAnglesNew)
 	{
-		transform.orientation_euler_angles = euler_angles_new;
-		transform.orientation_quat = maths::euler_to_quat({ -transform.orientation_euler_angles }) * glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f });
+		transform.orientationEulerAngles = eulerAnglesNew;
+		transform.orientationQuat = maths::euler_to_quat({ -transform.orientationEulerAngles }) * glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f });
 	}
 }

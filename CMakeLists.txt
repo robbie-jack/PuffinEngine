@@ -100,12 +100,17 @@ set(HEADERS
 	# Components
 	${HEADER_DIR}/puffin/components/transformcomponent2d.h
 	${HEADER_DIR}/puffin/components/transformcomponent3d.h
-	# Components - Physics
+	# Components - Physics - 2D
+	${HEADER_DIR}/puffin/components/physics/2d/boxcomponent2d.h
+	${HEADER_DIR}/puffin/components/physics/2d/circlecomponent2d.h
 	${HEADER_DIR}/puffin/components/physics/2d/rigidbodycomponent2d.h
-	${HEADER_DIR}/puffin/components/physics/2d/shapecomponents2d.h
+	${HEADER_DIR}/puffin/components/physics/2d/shapecomponent2d.h
 	${HEADER_DIR}/puffin/components/physics/2d/velocitycomponent2d.h
+	# Components - Physics - 3D
+	${HEADER_DIR}/puffin/components/physics/3d/boxcomponent3d.h
 	${HEADER_DIR}/puffin/components/physics/3d/rigidbodycomponent3d.h
-	${HEADER_DIR}/puffin/components/physics/3d/shapecomponents3d.h
+	${HEADER_DIR}/puffin/components/physics/3d/shapecomponent3d.h
+	${HEADER_DIR}/puffin/components/physics/3d/spherecomponent3d.h
 	${HEADER_DIR}/puffin/components/physics/3d/velocitycomponent3d.h
 	# Components - Procedural
 	${HEADER_DIR}/puffin/components/procedural/proceduralmeshcomponent.h

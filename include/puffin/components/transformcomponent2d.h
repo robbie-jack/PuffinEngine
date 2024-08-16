@@ -11,18 +11,18 @@ namespace puffin
 		TransformComponent2D() = default;
 
 #ifdef PFN_DOUBLE_PRECISION
-		TransformComponent2D(const Vector2d& position_) : position(position_) {}
+		TransformComponent2D(const Vector2d& position) : position(position) {}
 
-		TransformComponent2D(const Vector2d& position_, const float& rotation_, const Vector2f& scale_) :
-			position(position_), rotation(rotation_), scale(scale_) {}
+		TransformComponent2D(const Vector2d& position, const float& rotation, const Vector2f& scale) :
+			position(position), rotation(rotation), scale(scale) {}
 #else
-		TransformComponent2D(const Vector2f& position_) : position(position_) {}
+		explicit TransformComponent2D(const Vector2f& position) : position(position) {}
 
-		TransformComponent2D(const Vector2f& position_, const float& rotation_, const Vector2f& scale_) :
-			position(position_), rotation(rotation_), scale(scale_) {}
+		TransformComponent2D(const Vector2f& position, const float& rotation, const Vector2f& scale) :
+			position(position), rotation(rotation), scale(scale) {}
 #endif
 
-		TransformComponent2D(const TransformComponent2D& t) : position(t.position), rotation(t.rotation), scale(t.scale) {}
+		TransformComponent2D(const TransformComponent2D& t) = default;
 
 		~TransformComponent2D() = default;
 

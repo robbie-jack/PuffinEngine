@@ -1503,7 +1503,7 @@ namespace puffin::rendering
                         tempTransform.position.y = transform->position.y;
 						tempTransform.position.z = 0.0;
 
-                        tempTransform.orientation_quat = angleAxis(glm::radians(transform->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+                        tempTransform.orientationQuat = angleAxis(glm::radians(transform->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
                         tempTransform.scale.x = transform->scale.x;
                         tempTransform.scale.y = transform->scale.y;
@@ -1562,7 +1562,7 @@ namespace puffin::rendering
 
 					GPUObjectData object;
 
-					build_model_transform(position, tempTransform.orientation_quat, tempTransform.scale, object.model);
+					build_model_transform(position, tempTransform.orientationQuat, tempTransform.scale, object.model);
 					object.mat_idx = m_material_registry->get_material_data(mesh.mat_asset_id).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);
@@ -1635,9 +1635,9 @@ namespace puffin::rendering
 
 			glm::vec4 dir = { 0.5f, -0.5f, 0.0f, 1.0f };
 
-			dir = glm::rotateZ(dir, maths::deg_to_rad(transform.orientation_euler_angles.roll));
-			dir = glm::rotateX(dir, maths::deg_to_rad(transform.orientation_euler_angles.pitch));
-			dir = glm::rotateY(dir, maths::deg_to_rad(transform.orientation_euler_angles.yaw));
+			dir = glm::rotateZ(dir, maths::deg_to_rad(transform.orientationEulerAngles.roll));
+			dir = glm::rotateX(dir, maths::deg_to_rad(transform.orientationEulerAngles.pitch));
+			dir = glm::rotateY(dir, maths::deg_to_rad(transform.orientationEulerAngles.yaw));
 
 			dir = glm::normalize(dir);
 

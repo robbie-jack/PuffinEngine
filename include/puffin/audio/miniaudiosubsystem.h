@@ -14,25 +14,25 @@ namespace puffin::audio
 		MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~MiniAudioSubsystem() override;
 
-		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
 
-		void Update(double delta_time) override;
+		void Update(double deltaTime) override;
 
 	protected:
 
-		void play_sound(PuffinID sound_asset_id) override;
+		void PlaySoundEffect(PuffinID soundAssetID) override;
 
-		bool create_sound_instance(PuffinID sound_asset_id, PuffinID sound_instance_id) override;
-		void destroy_sound_instance(PuffinID sound_instance_id) override;
+		bool CreateSoundInstance(PuffinID soundAssetID, PuffinID soundInstanceID) override;
+		void DestroySoundInstance(PuffinID soundInstanceID) override;
 
-		bool start_sound_instance(PuffinID sound_instance_id, bool restart) override;
-		bool stop_sound_instance(PuffinID sound_instance_id) override;
+		bool StartSoundInstance(PuffinID soundInstanceID, bool restart) override;
+		bool StopSoundInstance(PuffinID soundInstanceID) override;
 
 	private:
 
-		ma_engine* m_sound_engine = nullptr;
+		ma_engine* mSoundEngine = nullptr;
 
-		PackedVector<PuffinID, ma_sound> m_sounds;
+		PackedVector<PuffinID, ma_sound> mSounds;
 	};
 }

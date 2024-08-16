@@ -23,13 +23,13 @@ namespace puffin::audio
 		mEngine = nullptr;
 	}
 
-	void MiniAudioSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
+	void MiniAudioSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		AudioSubsystemProvider::Initialize(subsystem_manager);
+		AudioSubsystemProvider::Initialize(subsystemManager);
 
-		m_sound_engine = new ma_engine();
+		mSoundEngine = new ma_engine();
 
-		if (const ma_result result = ma_engine_init(nullptr, m_sound_engine); result != MA_SUCCESS)
+		if (const ma_result result = ma_engine_init(nullptr, mSoundEngine); result != MA_SUCCESS)
 		{
 			std::cout << "Failed to Initialize MiniAudio Sound Engine" << std::endl;
 		}
@@ -39,46 +39,46 @@ namespace puffin::audio
 	{
 		AudioSubsystemProvider::Deinitialize();
 
-		for (auto& sound : m_sounds)
+		for (auto& sound : mSounds)
 		{
 			ma_sound_uninit(&sound);
 		}
 
-		m_sounds.clear();
+		mSounds.clear();
 
-		if (m_sound_engine)
+		if (mSoundEngine)
 		{
-			ma_engine_uninit(m_sound_engine);
+			ma_engine_uninit(mSoundEngine);
 		}
 	}
 
-	void MiniAudioSubsystem::Update(double delta_time)
+	void MiniAudioSubsystem::Update(double deltaTime)
 	{
-		AudioSubsystemProvider::Update(delta_time);
+		AudioSubsystemProvider::Update(deltaTime);
 	}
 
-	void MiniAudioSubsystem::play_sound(PuffinID sound_asset_id)
+	void MiniAudioSubsystem::PlaySoundEffect(PuffinID soundAssetID)
 	{
-		auto soundAsset = assets::AssetRegistry::Get()->GetAsset<assets::SoundAsset>(sound_asset_id);
+		auto soundAsset = assets::AssetRegistry::Get()->GetAsset<assets::SoundAsset>(soundAssetID);
 		auto soundPath = (assets::AssetRegistry::Get()->GetContentRoot() / soundAsset->GetRelativePath()).string();
 
-		ma_engine_play_sound(m_sound_engine, soundPath.c_str(), nullptr);
+		ma_engine_play_sound(mSoundEngine, soundPath.c_str(), nullptr);
 	}
 
-	bool MiniAudioSubsystem::create_sound_instance(PuffinID sound_asset_id, PuffinID sound_instance_id)
+	bool MiniAudioSubsystem::CreateSoundInstance(PuffinID soundAssetID, PuffinID soundInstanceID)
 	{
-		if (m_sounds.contains(sound_instance_id))
+		if (mSounds.contains(soundInstanceID))
 		{
 			return true;
 		}
 
-		auto soundAsset = assets::AssetRegistry::Get()->GetAsset<assets::SoundAsset>(sound_asset_id);
+		auto soundAsset = assets::AssetRegistry::Get()->GetAsset<assets::SoundAsset>(soundAssetID);
 		auto soundPath = (assets::AssetRegistry::Get()->GetContentRoot() / soundAsset->GetRelativePath()).string();
 
-		m_sounds.emplace(sound_instance_id, ma_sound());
+		mSounds.emplace(soundInstanceID, ma_sound());
 
 		ma_result result;
-		result = ma_sound_init_from_file(m_sound_engine, soundPath.c_str(), 0, nullptr, nullptr, &m_sounds[sound_instance_id]);
+		result = ma_sound_init_from_file(mSoundEngine, soundPath.c_str(), 0, nullptr, nullptr, &mSounds[soundInstanceID]);
 		if (result != MA_SUCCESS)
 		{
 			std::cout << "Failed to initialize sound instance for: " << soundPath << std::endl;
@@ -88,59 +88,59 @@ namespace puffin::audio
 		return true;
 	}
 
-	void MiniAudioSubsystem::destroy_sound_instance(PuffinID sound_instance_id)
+	void MiniAudioSubsystem::DestroySoundInstance(PuffinID soundInstanceID)
 	{
-		if (!m_sounds.contains(sound_instance_id))
+		if (!mSounds.contains(soundInstanceID))
 		{
 			return;
 		}
 
-		ma_sound_uninit(&m_sounds[sound_instance_id]);
-		m_sounds.erase(sound_instance_id);
+		ma_sound_uninit(&mSounds[soundInstanceID]);
+		mSounds.erase(soundInstanceID);
 	}
 
-	bool MiniAudioSubsystem::start_sound_instance(PuffinID sound_instance_id, bool restart)
+	bool MiniAudioSubsystem::StartSoundInstance(PuffinID soundInstanceID, bool restart)
 	{
-		if (m_sounds.contains(sound_instance_id))
+		if (mSounds.contains(soundInstanceID))
 		{
-			std::cout << "Sound instance was not initialized: " << sound_instance_id << std::endl;
+			std::cout << "Sound instance was not initialized: " << soundInstanceID << std::endl;
 			return false;
 		}
 
 		ma_result result;
 		if (restart)
 		{
-			result = ma_sound_seek_to_pcm_frame(&m_sounds[sound_instance_id], 0);
+			result = ma_sound_seek_to_pcm_frame(&mSounds[soundInstanceID], 0);
 			if (result != MA_SUCCESS)
 			{
-				std::cout << "Failed to restart sound instance: " << sound_instance_id << std::endl;
+				std::cout << "Failed to restart sound instance: " << soundInstanceID << std::endl;
 				return false;
 			}
 		}
 				
-		result = ma_sound_start(&m_sounds[sound_instance_id]);
+		result = ma_sound_start(&mSounds[soundInstanceID]);
 		if (result != MA_SUCCESS)
 		{
-			std::cout << "Failed to start sound instance: " << sound_instance_id << std::endl;
+			std::cout << "Failed to start sound instance: " << soundInstanceID << std::endl;
 			return false;
 		}
 
 		return true;
 	}
 
-	bool MiniAudioSubsystem::stop_sound_instance(PuffinID sound_instance_id)
+	bool MiniAudioSubsystem::StopSoundInstance(PuffinID soundInstanceID)
 	{
-		if (m_sounds.contains(sound_instance_id))
+		if (mSounds.contains(soundInstanceID))
 		{
-			std::cout << "Sound instance was not initialized: " << sound_instance_id << std::endl;
+			std::cout << "Sound instance was not initialized: " << soundInstanceID << std::endl;
 			return false;
 		}
 
 		ma_result result;
-		result = ma_sound_stop(&m_sounds[sound_instance_id]);
+		result = ma_sound_stop(&mSounds[soundInstanceID]);
 		if (result != MA_SUCCESS)
 		{
-			std::cout << "Failed to stop sound instance: " << sound_instance_id << std::endl;
+			std::cout << "Failed to stop sound instance: " << soundInstanceID << std::endl;
 			return false;
 		}
 

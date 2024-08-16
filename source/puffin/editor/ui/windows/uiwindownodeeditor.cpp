@@ -14,10 +14,14 @@
 #include "puffin/components/rendering/lightcomponent.h"
 #include "puffin/components/rendering/cameracomponent.h"
 #include "puffin/components/physics/2d/rigidbodycomponent2d.h"
-#include "puffin/components/physics/2d/shapecomponents2d.h"
+#include "puffin/components/physics/2d/shapecomponent2d.h"
+#include "puffin/components/physics/2d/boxcomponent2d.h"
+#include "puffin/components/physics/2d/circlecomponent2d.h"
 #include "puffin/components/physics/2d/velocitycomponent2d.h"
 #include "puffin/components/physics/3d/rigidbodycomponent3d.h"
-#include "puffin/components/physics/3d/shapecomponents3d.h"
+#include "puffin/components/physics/3d/shapecomponent3d.h"
+#include "puffin/components/physics/3d/boxcomponent3d.h"
+#include "puffin/components/physics/3d/spherecomponent3d.h"
 #include "puffin/components/physics/3d/velocitycomponent3d.h"
 #include "puffin/components/scripting/angelscriptcomponent.h"
 #include "puffin/components/procedural/proceduralmeshcomponent.h"
@@ -285,7 +289,7 @@ namespace puffin
 				}
 
 				{
-					auto euler_angles = transform->orientation_euler_angles;
+					auto euler_angles = transform->orientationEulerAngles;
 
 					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&euler_angles), 0.2f, 0, 0, "%.3f"))
 					{
@@ -694,7 +698,7 @@ namespace puffin
 
 				// Combo box for Body Type Selection
 				const char* items[] = { "Static", "Kinematic", "Dynamic" };
-				int item_current_idx = static_cast<int>(rigidbody.body_type);
+				int item_current_idx = static_cast<int>(rigidbody.bodyType);
 
 				if (const char* label = items[item_current_idx]; ImGui::BeginCombo("Body Type", label))
 				{
@@ -705,11 +709,11 @@ namespace puffin
 						{
 							item_current_idx = i;
 
-							const auto body_type = static_cast<physics::BodyType>(item_current_idx);
+							const auto bodyType = static_cast<physics::BodyType>(item_current_idx);
 
-							registry->patch<physics::RigidbodyComponent2D>(entity, [&body_type](auto& rigidbody)
+							registry->patch<physics::RigidbodyComponent2D>(entity, [&bodyType](auto& rigidbody)
 							{
-								rigidbody.body_type = body_type;
+								rigidbody.bodyType = bodyType;
 							});
 
 							m_scene_changed = true;
@@ -775,11 +779,11 @@ namespace puffin
 				}
 
 				{
-					Vector2f centre_of_mass = circle.centre_of_mass;
+					Vector2f centreOfMass = circle.centreOfMass;
 
-					if (ImGui::DragFloat2("Centre of Mass", reinterpret_cast<float*>(&centre_of_mass)))
+					if (ImGui::DragFloat2("Centre of Mass", reinterpret_cast<float*>(&centreOfMass)))
 					{
-						registry->patch<physics::CircleComponent2D>(entity, [&centre_of_mass](auto& circle) { circle.centre_of_mass = centre_of_mass; });
+						registry->patch<physics::CircleComponent2D>(entity, [&centreOfMass](auto& circle) { circle.centreOfMass = centreOfMass; });
 
 						m_scene_changed = true;
 					}
@@ -817,22 +821,22 @@ namespace puffin
 				}
 
 				{
-					Vector2f centre_of_mass = box.centre_of_mass;
+					Vector2f centreOfMass = box.centreOfMass;
 
-					if (ImGui::DragFloat2("Centre of Mass", reinterpret_cast<float*>(&centre_of_mass)))
+					if (ImGui::DragFloat2("Centre of Mass", reinterpret_cast<float*>(&centreOfMass)))
 					{
-						registry->patch<physics::BoxComponent2D>(entity, [&centre_of_mass](auto& box) { box.centre_of_mass = centre_of_mass; });
+						registry->patch<physics::BoxComponent2D>(entity, [&centreOfMass](auto& box) { box.centreOfMass = centreOfMass; });
 
 						m_scene_changed = true;
 					}
 				}
 
 				{
-					Vector2f half_extent = box.half_extent;
+					Vector2f halfExtent = box.halfExtent;
 
-					if (ImGui::DragFloat2("Half Extent", reinterpret_cast<float*>(&half_extent), 0.1f, 0.0f))
+					if (ImGui::DragFloat2("Half Extent", reinterpret_cast<float*>(&halfExtent), 0.1f, 0.0f))
 					{
-						registry->patch<physics::BoxComponent2D>(entity, [&half_extent](auto& box) { box.half_extent = half_extent; });
+						registry->patch<physics::BoxComponent2D>(entity, [&halfExtent](auto& box) { box.halfExtent = halfExtent; });
 
 						m_scene_changed = true;
 					}

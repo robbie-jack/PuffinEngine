@@ -234,16 +234,16 @@ namespace puffin::rendering
                 }
 
                 // Mouse Rotation
-                transform.orientation_euler_angles.yaw += input_subsystem->get_mouse_x_offset();
-                transform.orientation_euler_angles.pitch += input_subsystem->get_mouse_y_offset();
+                transform.orientationEulerAngles.yaw += input_subsystem->get_mouse_x_offset();
+                transform.orientationEulerAngles.pitch += input_subsystem->get_mouse_y_offset();
 
-                if (transform.orientation_euler_angles.pitch > 89.0f)
-                    transform.orientation_euler_angles.pitch = 89.0f;
+                if (transform.orientationEulerAngles.pitch > 89.0f)
+                    transform.orientationEulerAngles.pitch = 89.0f;
 
-                if (transform.orientation_euler_angles.pitch < -89.0f)
-                    transform.orientation_euler_angles.pitch = -89.0f;
+                if (transform.orientationEulerAngles.pitch < -89.0f)
+                    transform.orientationEulerAngles.pitch = -89.0f;
 
-                UpdateTransformOrientation(transform, transform.orientation_euler_angles);
+                UpdateTransformOrientation(transform, transform.orientationEulerAngles);
             }
         }
 	}
@@ -253,8 +253,8 @@ namespace puffin::rendering
 		auto render_system = mEngine->GetSubsystem<rendering::RenderSubystemVK>();
 
 		// Calculate direction & right vectors
-		camera.direction = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(0.0f, 0.0f, -1.0f);
-		camera.right = static_cast<glm::quat>(transform.orientation_quat) * glm::vec3(1.0f, 0.0f, 0.0f);
+		camera.direction = static_cast<glm::quat>(transform.orientationQuat) * glm::vec3(0.0f, 0.0f, -1.0f);
+		camera.right = static_cast<glm::quat>(transform.orientationQuat) * glm::vec3(1.0f, 0.0f, 0.0f);
 
 		camera.aspect = static_cast<float>(render_system->render_extent().width) / 
 			static_cast<float>(render_system->render_extent().height);
