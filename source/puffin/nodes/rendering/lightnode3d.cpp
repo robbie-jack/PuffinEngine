@@ -1,10 +1,10 @@
 #include "puffin/nodes/rendering/lightnode3d.h"
 
-#include "puffin/components/rendering/lightcomponent3d.h"
+//#include "puffin/components/rendering/lightcomponent3d.h"
 
 namespace puffin::rendering
 {
-	LightNode3D::LightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
+	/*LightNode3D::LightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
 	{
 		m_name = "Light";
 
@@ -16,14 +16,14 @@ namespace puffin::rendering
 		TransformNode3D::begin_play();
 	}
 
-	void LightNode3D::update(const double delta_time)
+	void LightNode3D::update(const double deltaTime)
 	{
-		TransformNode3D::update(delta_time);
+		TransformNode3D::update(deltaTime);
 	}
 
-	void LightNode3D::update_fixed(const double delta_time)
+	void LightNode3D::update_fixed(const double deltaTime)
 	{
-		TransformNode3D::update_fixed(delta_time);
+		TransformNode3D::update_fixed(deltaTime);
 	}
 
 	void LightNode3D::end_play()
@@ -31,22 +31,22 @@ namespace puffin::rendering
 		TransformNode3D::end_play();
 	}
 
-	const Vector3f& LightNode3D::color() const
+	const Vector3f& LightNode3D::GetColor() const
 	{
 		return get_component<LightComponent>().color;
 	}
 
-	void LightNode3D::set_color(const Vector3f& color) const
+	void LightNode3D::SetColor(const Vector3f& color) const
 	{
 		m_registry->patch<LightComponent>(m_entity, [&color](auto& light) { light.color = color; });
 	}
 
-	const float& LightNode3D::ambient_intensity() const
+	const float& LightNode3D::GetAmbientIntensity() const
 	{
 		return get_component<LightComponent>().ambientIntensity;
 	}
 
-	void LightNode3D::set_ambient_intensity(const float& ambientIntensity) const
+	void LightNode3D::SetAmbientIntensity(const float& ambientIntensity) const
 	{
 		m_registry->patch<LightComponent>(m_entity, [&ambientIntensity](auto& light) { light.ambientIntensity = ambientIntensity; });
 	}
@@ -121,7 +121,7 @@ namespace puffin::rendering
 		m_registry->patch<LightComponent>(m_entity, [&outerCutoffAngle](auto& light) { light.outerCutoffAngle = outerCutoffAngle; });
 	}
 
-	const LightType& LightNode3D::light_type() const
+	const LightType& LightNode3D::GetLightType() const
 	{
 		return get_component<LightComponent>().type;
 	}
@@ -129,5 +129,5 @@ namespace puffin::rendering
 	void LightNode3D::set_light_type(const LightType& lightType) const
 	{
 		m_registry->patch<LightComponent>(m_entity, [&lightType](auto& light) { light.type = lightType; });
-	}
+	}*/
 }

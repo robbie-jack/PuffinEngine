@@ -12,6 +12,12 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 
+#include "puffin/components/transformcomponent3d.h"
+#include "puffin/components/physics/3d/velocitycomponent3d.h"
+#include "puffin/components/physics/3d/boxcomponent3d.h"
+#include "puffin/components/physics/3d/spherecomponent3d.h"
+#include "puffin/components/physics/3d/rigidbodycomponent3d.h"
+
 namespace puffin::physics
 {
 	JoltPhysicsSubsystem::JoltPhysicsSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
@@ -256,7 +262,7 @@ namespace puffin::physics
 	{
 		if (m_internal_physics_system)
 		{
-			JPH::BoxShapeSettings boxShapeSettings(JPH::Vec3(box.half_extent.x, box.half_extent.y, box.half_extent.z));
+			JPH::BoxShapeSettings boxShapeSettings(JPH::Vec3(box.halfExtent.x, box.halfExtent.y, box.halfExtent.z));
 
 			JPH::ShapeSettings::ShapeResult result = boxShapeSettings.Create();
 

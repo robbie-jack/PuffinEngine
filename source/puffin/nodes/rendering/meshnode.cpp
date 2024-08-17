@@ -1,6 +1,6 @@
 #include "puffin/nodes/rendering/meshnode.h"
 
-#include "puffin/components/rendering/meshcomponent.h"
+#include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
 
 namespace puffin::rendering
 {
@@ -8,7 +8,7 @@ namespace puffin::rendering
 	{
 		m_name = "Mesh";
 
-		add_component<MeshComponent>();
+		add_component<StaticMeshComponent3D>();
 	}
 
 	void MeshNode::begin_play()
@@ -33,31 +33,31 @@ namespace puffin::rendering
 
 	UUID MeshNode::mesh_asset_id()
 	{
-		return get_component<MeshComponent>().mesh_asset_id;
+		return get_component<StaticMeshComponent3D>().meshID;
 	}
 
-	void MeshNode::set_mesh_asset_id(UUID mesh_asset_id) const
+	void MeshNode::set_mesh_asset_id(UUID meshID) const
 	{
-		m_registry->patch<MeshComponent>(m_entity, [&mesh_asset_id](auto& mesh) { mesh.mesh_asset_id = mesh_asset_id; });
+		m_registry->patch<StaticMeshComponent3D>(m_entity, [&meshID](auto& mesh) { mesh.meshID = meshID; });
 	}
 
 	UUID MeshNode::mat_asset_id()
 	{
-		return get_component<MeshComponent>().mat_asset_id;
+		return get_component<StaticMeshComponent3D>().materialID;
 	}
 
-	void MeshNode::set_mat_asset_id(UUID mat_asset_id) const
+	void MeshNode::set_mat_asset_id(UUID materialID) const
 	{
-		m_registry->patch<MeshComponent>(m_entity, [&mat_asset_id](auto& mesh) { mesh.mat_asset_id = mat_asset_id; });
+		m_registry->patch<StaticMeshComponent3D>(m_entity, [&materialID](auto& mesh) { mesh.materialID = materialID; });
 	}
 
 	uint8_t MeshNode::sub_mesh_idx()
 	{
-		return get_component<MeshComponent>().sub_mesh_idx;
+		return get_component<StaticMeshComponent3D>().subMeshIdx;
 	}
 
-	void MeshNode::set_sub_mesh_idx(uint8_t sub_mesh_idx) const
+	void MeshNode::set_sub_mesh_idx(uint8_t subMeshIdx) const
 	{
-		m_registry->patch<MeshComponent>(m_entity, [&sub_mesh_idx](auto& mesh) { mesh.sub_mesh_idx = sub_mesh_idx; });
+		m_registry->patch<StaticMeshComponent3D>(m_entity, [&subMeshIdx](auto& mesh) { mesh.subMeshIdx = subMeshIdx; });
 	}
 }

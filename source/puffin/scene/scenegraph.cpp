@@ -115,7 +115,7 @@ namespace puffin::scene
 		register_node_type<TransformNode2D>();
 		register_node_type<TransformNode3D>();
 		register_node_type<rendering::MeshNode>();
-		register_node_type<rendering::LightNode3D>();
+		//register_node_type<rendering::LightNode3D>();
 		register_node_type<rendering::CameraNode3D>();
 	}
 

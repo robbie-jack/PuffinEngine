@@ -20,18 +20,23 @@
 #include "Jolt/Physics/PhysicsSystem.h"
 
 #include "puffin/core/subsystem.h"
-#include "puffin/components/physics/3d/rigidbodycomponent3d.h"
-#include "puffin/components/physics/3d/shapecomponents3d.h"
-#include "puffin/components/physics/3d/velocitycomponent3d.h"
-#include "puffin/components/transformcomponent3d.h"
 #include "puffin/core/engine.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/physics/bodytype.h"
 #include "puffin/physics/physicsconstants.h"
 #include "puffin/types/packedvector.h"
 
+namespace puffin
+{
+	struct TransformComponent3D;
+}
+
 namespace puffin::physics
 {
+	struct RigidbodyComponent3D;
+	struct SphereComponent3D;
+	struct BoxComponent3D;
+
 	const inline std::unordered_map<BodyType, JPH::EMotionType> g_jolt_body_type =
 	{
 		{ BodyType::Static, JPH::EMotionType::Static },

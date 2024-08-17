@@ -191,12 +191,12 @@ namespace puffin::assets
 		mIsLoaded = false;
 	}
 
-	const std::vector<char>& StaticMeshAsset::Vertices() const
+	std::vector<char>& StaticMeshAsset::Vertices()
 	{
 		return mVertices;
 	}
 
-	const std::vector<uint32_t>& StaticMeshAsset::Indices() const
+	std::vector<uint32_t>& StaticMeshAsset::Indices()
 	{
 		return mIndices;
 	}

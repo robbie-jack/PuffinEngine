@@ -12,46 +12,35 @@ namespace puffin::rendering
 {
 	class RenderSubystemVK;
 
+	struct UnifiedGeometryBufferParams
+	{
+		uint64_t vertexPageSize = 64 * 1024 * 1024;
+		uint64_t vertexInitialPageCount = 1;
+		uint64_t indexPageSize = 64 * 1024 * 1024;
+		uint64_t indexInitialPageCount = 1;
+	};
+
 	// Custom buffer to store vertex/index data for multiple meshes in a single large vertex/index buffer
 	class UnifiedGeometryBuffer
 	{
 	public:
 
-		explicit UnifiedGeometryBuffer(RenderSubystemVK* render_system, uint64_t vertex_page_size = 64 * 1000 * 1000,
-		                               uint64_t vertex_initial_page_count = 1, uint64_t index_page_size = 64 * 1000 * 1000, uint64_t index_initial_page_count = 1);
+		explicit UnifiedGeometryBuffer(RenderSubystemVK* renderSystem, UnifiedGeometryBufferParams params = {});
 
 		~UnifiedGeometryBuffer();
 
-		void add_static_mesh(const std::shared_ptr<assets::StaticMeshAsset>& static_mesh);
+		void AddStaticMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh);
 
-		[[nodiscard]] bool hasMesh(const UUID staticMeshId) const
-		{
-			return m_internal_mesh_data.count(staticMeshId) == 1;
-		}
+		[[nodiscard]] bool HasMesh(const UUID staticMeshID) const;
 
-		uint32_t mesh_vertex_offset(const UUID meshId, uint8_t subMeshIdx = 0)
-		{
-			return m_internal_mesh_data[meshId].sub_mesh_data[subMeshIdx].vertex_offset;
-		}
+		uint32_t MeshVertexOffset(const UUID meshID, uint8_t subMeshIdx = 0);
+		uint32_t MeshIndexOffset(const UUID meshID, uint8_t subMeshIdx = 0);
+		uint32_t MeshVertexCount(const UUID meshID, uint8_t subMeshIdx = 0);
+		uint32_t MeshIndexCount(const UUID meshID, uint8_t subMeshIdx = 0);
 
-		uint32_t mesh_index_offset(const UUID meshId, uint8_t subMeshIdx = 0)
-		{
-			return m_internal_mesh_data[meshId].sub_mesh_data[subMeshIdx].index_offset;
-		}
-
-		uint32_t mesh_vertex_count(const UUID meshId, uint8_t subMeshIdx = 0)
-		{
-			return m_internal_mesh_data[meshId].sub_mesh_data[subMeshIdx].vertex_count;
-		}
-
-		uint32_t mesh_index_count(const UUID meshId, uint8_t subMeshIdx = 0)
-		{
-			return m_internal_mesh_data[meshId].sub_mesh_data[subMeshIdx].index_count;
-		}
-
-		vk::DeviceAddress vertex_buffer_address(VertexFormat format = VertexFormat::PNTV32) { return m_vertex_buffer_data.at(format).buffer_address; }
-		AllocatedBuffer& vertex_buffer(VertexFormat format = VertexFormat::PNTV32) { return m_vertex_buffer_data.at(format).alloc_buffer; }
-		AllocatedBuffer& index_buffer() { return m_index_buffer_data.alloc_buffer; }
+		vk::DeviceAddress GetVertexBufferAddress(VertexFormat format = VertexFormat::PNTV32) const;
+		AllocatedBuffer& GetVertexBuffer(VertexFormat format = VertexFormat::PNTV32);
+		AllocatedBuffer& GetIndexBuffer();
 
 	private:
 
@@ -61,61 +50,61 @@ namespace puffin::rendering
 		{
 			InternalVertexBufferData() = default;
 
-			explicit InternalVertexBufferData(const VertexFormat& format) : vertex_format(format) {}
+			explicit InternalVertexBufferData(const VertexFormat& format) : vertexFormat(format) {}
 
-			VertexFormat vertex_format;
-			AllocatedBuffer alloc_buffer;
-			vk::DeviceAddress buffer_address = {};
-			uint64_t page_size = 0;
-			uint64_t page_count = 0;
-			uint64_t byte_size = 0; // Size of an individual vertex in bytes
-			uint64_t byte_size_total = 0; // Total size of buffer in bytes
-			uint64_t byte_offset = 0; // Offset into buffer in bytes currently in use
+			VertexFormat vertexFormat;
+			AllocatedBuffer allocBuffer;
+			vk::DeviceAddress bufferAddress = {};
+			uint64_t pageSize = 0;
+			uint64_t pageCount = 0;
+			uint64_t byteSize = 0; // Size of an individual vertex in bytes
+			uint64_t byteSizeTotal = 0; // Total size of buffer in bytes
+			uint64_t byteOffset = 0; // Offset into buffer in bytes currently in use
 			uint64_t offset = 0; // 
 		};
 
 		struct InternalIndexBufferData
 		{
-			AllocatedBuffer alloc_buffer;
-			uint64_t page_count = 0;
-			uint64_t byte_size = 0;
-			uint64_t byte_size_total = 0;
-			uint64_t byte_offset = 0;
+			AllocatedBuffer allocBuffer;
+			uint64_t pageCount = 0;
+			uint64_t byteSize = 0;
+			uint64_t byteSizeTotal = 0;
+			uint64_t byteOffset = 0;
 			uint64_t offset = 0;
 		};
 
 		struct InternalSubMeshData
 		{
-			uint32_t vertex_offset, vertex_count;
-			uint32_t index_offset, index_count;
+			uint32_t vertexOffset, vertexCount;
+			uint32_t indexOffset, indexCount;
 		};
 
 		struct InternalMeshData
 		{
-			std::vector<InternalSubMeshData> sub_mesh_data;
+			std::vector<InternalSubMeshData> subMeshData;
 
 			bool active;
 		};
 
-		std::unordered_map<VertexFormat, InternalVertexBufferData> m_vertex_buffer_data;
-		InternalIndexBufferData m_index_buffer_data;
+		std::unordered_map<VertexFormat, InternalVertexBufferData> mVertexBufferData;
+		InternalIndexBufferData mIndexBufferData;
 
-		std::unordered_map<UUID, InternalMeshData> m_internal_mesh_data;
+		std::unordered_map<UUID, InternalMeshData> mInternalMeshData;
 
-		vk::DeviceSize m_vertex_page_size = 0;
-		vk::DeviceSize m_vertex_initial_page_count = 0;
-		vk::DeviceSize m_index_page_size = 0;
-		vk::DeviceSize m_index_initial_page_count = 0;
+		vk::DeviceSize mVertexPageSize = 0;
+		vk::DeviceSize mVertexInitialPageCount = 0;
+		vk::DeviceSize mIndexPageSize = 0;
+		vk::DeviceSize mIndexInitialPageCount = 0;
 
-		void add_internal_vertex_buffer(VertexFormat format);
+		void AddInternalVertexBuffer(VertexFormat format);
 
-		void grow_vertex_buffer(InternalVertexBufferData& vertex_buffer_data, vk::DeviceSize min_size);
-		void grow_index_buffer(InternalIndexBufferData& index_buffer_data, vk::DeviceSize min_size);
+		void GrowVertexBuffer(InternalVertexBufferData& vertexBufferData, vk::DeviceSize minSize);
+		void GrowIndexBuffer(InternalIndexBufferData& indexBufferData, vk::DeviceSize minSize);
 
-		void resize_vertex_buffer(InternalVertexBufferData& vertex_buffer_data, size_t new_page_count);
-		void resize_index_buffer(InternalIndexBufferData& index_buffer_data, size_t new_page_count);
+		void ResizeVertexBuffer(InternalVertexBufferData& vertexBufferData, size_t newPageCount);
+		void ResizeIndexBuffer(InternalIndexBufferData& indexBufferData, size_t newPageCount);
 
-		AllocatedBuffer allocate_vertex_buffer(vk::DeviceSize buffer_size);
-		AllocatedBuffer allocate_index_buffer(vk::DeviceSize buffer_size);
+		AllocatedBuffer AllocateVertexBuffer(vk::DeviceSize bufferSize);
+		AllocatedBuffer AllocateIndexBuffer(vk::DeviceSize bufferSize);
 	};
 }

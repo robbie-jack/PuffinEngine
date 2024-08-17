@@ -1443,7 +1443,11 @@ namespace puffin::rendering
 				idx++;
 			}
 
-			util::CopyCPUDataIntoGPUBuffer(this);
+			util::CopyCPUDataIntoGPUBufferParams params;
+			params.dataSize = sizeof(GPUMaterialInstanceData) * materialData.size();
+			params.dstBuffer = GetCurrentFrameData().materialInstanceBuffer;
+			params.srcData = materialData.data();
+			util::CopyCPUDataIntoGPUBuffer(this, params);
 
 			GetCurrentFrameData().copyMaterialDataToGPU = false;
 		}
@@ -1603,7 +1607,11 @@ namespace puffin::rendering
 				objects.emplace_back(mCachedObjectData[renderable.entityID]);
 			}
 
-			util::CopyCPUDataIntoGPUBuffer(this);
+			util::CopyCPUDataIntoGPUBufferParams params;
+			params.dataSize = sizeof(GPUObjectData) * objects.size();
+			params.dstBuffer = GetCurrentFrameData().objectBuffer;
+			params.srcData = objects.data();
+			util::CopyCPUDataIntoGPUBuffer(this, params);
 
 			GetCurrentFrameData().copyObjectDataToGPU = false;
 		}
@@ -1986,9 +1994,9 @@ namespace puffin::rendering
 			drawBatch.matID = mRenderables[0].matID;
 			drawBatch.cmdIndex = 0;
 
-			indirectCmds[cmdIdx].vertexOffset = mResourceManager->geometry_buffer()->mesh_vertex_offset(currentMeshID, currentSubMeshIdx);
-			indirectCmds[cmdIdx].firstIndex = mResourceManager->geometry_buffer()->mesh_index_offset(currentMeshID, currentSubMeshIdx);
-			indirectCmds[cmdIdx].indexCount = mResourceManager->geometry_buffer()->mesh_index_count(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].vertexOffset = mResourceManager->geometry_buffer()->MeshVertexOffset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].firstIndex = mResourceManager->geometry_buffer()->MeshIndexOffset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].indexCount = mResourceManager->geometry_buffer()->MeshIndexCount(currentMeshID, currentSubMeshIdx);
 			indirectCmds[cmdIdx].firstInstance = 0;
 
 			constexpr int maxInstancesPerCommand = gMaxObjects;
@@ -2022,9 +2030,9 @@ namespace puffin::rendering
 					cmdIdx++;
 					cmdCount++;
 
-					indirectCmds[cmdIdx].vertexOffset = mResourceManager->geometry_buffer()->mesh_vertex_offset(currentMeshID, currentSubMeshIdx);
-					indirectCmds[cmdIdx].firstIndex = mResourceManager->geometry_buffer()->mesh_index_offset(currentMeshID, currentSubMeshIdx);
-					indirectCmds[cmdIdx].indexCount = mResourceManager->geometry_buffer()->mesh_index_count(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].vertexOffset = mResourceManager->geometry_buffer()->MeshVertexOffset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].firstIndex = mResourceManager->geometry_buffer()->MeshIndexOffset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].indexCount = mResourceManager->geometry_buffer()->MeshIndexCount(currentMeshID, currentSubMeshIdx);
 					indirectCmds[cmdIdx].firstInstance = instanceIdx;
 
 					newBatch = false;
@@ -2072,7 +2080,7 @@ namespace puffin::rendering
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mShadowPipelineLayout.get(), 0, 1,
 			&GetCurrentFrameData().objectDescriptor, 0, nullptr);
 
-		cmd.bindIndexBuffer(mResourceManager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
+		cmd.bindIndexBuffer(mResourceManager->geometry_buffer()->GetIndexBuffer().buffer, 0, vk::IndexType::eUint32);
 
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 
@@ -2082,7 +2090,7 @@ namespace puffin::rendering
 			const auto& shadow = entt_subsystem->registry()->get<ShadowCasterComponent3D>(entity);
 
 			GPUShadowPushConstant pushConstant;
-			pushConstant.vertex_buffer_address = mResourceManager->geometry_buffer()->vertex_buffer_address();
+			pushConstant.vertex_buffer_address = mResourceManager->geometry_buffer()->GetVertexBufferAddress();
 			pushConstant.light_space_view = shadow.lightViewProj;
 
 			cmd.pushConstants(mShadowPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant), &pushConstant);
@@ -2146,8 +2154,7 @@ namespace puffin::rendering
 			1, &offscreenMemoryBarrierToShader);
 	}
 
-	vk::CommandBuffer& RenderSubystemVK::RecordMainCommandBuffer(
-		const RenderSubystemVK::RecordMainCommandBufferParams& params)
+	vk::CommandBuffer& RenderSubystemVK::RecordMainCommandBuffer(const RecordMainCommandBufferParams& params)
 	{
 		auto& cmd = GetCurrentFrameData().mainCommandBuffer;
 
@@ -2168,7 +2175,7 @@ namespace puffin::rendering
 		vk::ImageMemoryBarrier offscreen_memory_barrier_to_color = {
 			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eColorAttachmentWrite,
 			vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, {},
-			color_image.image, image_subresource_range
+			params.colorImage.image, image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput,
@@ -2183,22 +2190,22 @@ namespace puffin::rendering
 
 		// Begin Rendering
 		vk::RenderingAttachmentInfoKHR color_attach_info = {
-			color_image.image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			params.colorImage.image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
 			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, color_clear
 		};
 
 		vk::RenderingAttachmentInfoKHR depth_attach_info = {
-			params.image_view, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			params.depthImage.image_view, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
 			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depth_clear
 		};
 
 		vk::RenderingInfoKHR render_info = {
-			{}, vk::Rect2D{{0, 0}, render_extent}, 1, {}, 1, &color_attach_info, &depth_attach_info
+			{}, vk::Rect2D{{0, 0}, params.renderExtent}, 1, {}, 1, &color_attach_info, &depth_attach_info
 		};
 
 		cmd.beginRendering(&render_info);
 
-		DrawObjects(cmd, render_extent);
+		DrawObjects(cmd, params.renderExtent);
 
 		// End Rendering
 		cmd.endRendering();
@@ -2207,7 +2214,7 @@ namespace puffin::rendering
 		vk::ImageMemoryBarrier offscreen_memory_barrier_to_shader = {
 			vk::AccessFlagBits::eColorAttachmentWrite, vk::AccessFlagBits::eNone,
 			vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, {}, {},
-			color_image.image, image_subresource_range
+			params.colorImage.image, image_subresource_range
 		};
 
 		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe,
@@ -2267,12 +2274,12 @@ namespace puffin::rendering
 
 		
 		GPUVertexShaderPushConstant push_constant_vert;
-		push_constant_vert.vertex_buffer_address = mResourceManager->geometry_buffer()->vertex_buffer_address();
+		push_constant_vert.vertex_buffer_address = mResourceManager->geometry_buffer()->GetVertexBufferAddress();
 
 		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &push_constant_vert);
 		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUVertexShaderPushConstant), &GetCurrentFrameData().pushConstantFrag);
 		
-		cmd.bindIndexBuffer(mResourceManager->geometry_buffer()->index_buffer().buffer, 0, vk::IndexType::eUint32);
+		cmd.bindIndexBuffer(mResourceManager->geometry_buffer()->GetIndexBuffer().buffer, 0, vk::IndexType::eUint32);
 	}
 
 	void RenderSubystemVK::DrawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)

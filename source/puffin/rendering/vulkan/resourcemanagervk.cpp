@@ -34,7 +34,7 @@ namespace puffin::rendering
 
 	void ResourceManagerVK::add_static_mesh(const std::shared_ptr<assets::StaticMeshAsset>& static_mesh)
 	{
-		m_unified_geometry_buffer->add_static_mesh(static_mesh);
+		m_unified_geometry_buffer->AddStaticMesh(static_mesh);
 	}
 
 	ResourceID ResourceManagerVK::add_images(const ImageDesc& image_desc, uint8_t image_count)

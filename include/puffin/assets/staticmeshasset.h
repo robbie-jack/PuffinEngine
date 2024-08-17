@@ -53,8 +53,8 @@ namespace puffin::assets
 
 		void Unload() override;
 
-		[[nodiscard]] const std::vector<char>& Vertices() const;
-		[[nodiscard]] const std::vector<uint32_t>& Indices() const;
+		[[nodiscard]] std::vector<char>& Vertices();
+		[[nodiscard]] std::vector<uint32_t>& Indices();
 		[[nodiscard]] const std::vector<SubMeshInfo>& SubMeshInfo() const;
 		[[nodiscard]] rendering::VertexFormat VertexFormat() const;
 

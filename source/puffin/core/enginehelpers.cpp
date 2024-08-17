@@ -282,13 +282,13 @@ namespace puffin::core
 		plane->set_mesh_asset_id(meshId3);
 		plane->set_mat_asset_id(materialInstId1);
 
-		auto dirLight = sceneGraph->add_node<rendering::LightNode3D>();
+		/*auto dirLight = sceneGraph->add_node<rendering::LightNode3D>();
 		dirLight->set_name("Directional Light");
 		dirLight->set_position({ 0.0f, 10.0f, 0.0f });
-		dirLight->set_color({ .05f });
-		dirLight->set_ambient_intensity(.0f);
+		dirLight->SetColor({ .05f });
+		dirLight->SetAmbientIntensity(.0f);
 		dirLight->set_light_type(rendering::LightType::Directional);
-		dirLight->set_ambient_intensity(0.f);
+		dirLight->SetAmbientIntensity(0.f);
 		dirLight->add_component<rendering::ShadowCasterComponent3D>();
 		registry->patch<rendering::ShadowCasterComponent3D>(dirLight->entity(), [&](auto& shadow)
 		{
@@ -296,9 +296,9 @@ namespace puffin::core
 			shadow.height = 8192;
 			shadow.biasMin = 0.3f;
 			shadow.biasMax = 0.5f;
-		});
+		});*/
 
-		UpdateTransformOrientation(*dirLight->transform_3d(), { 0.0f, -90.0f, 0.0f });
+		/*UpdateTransformOrientation(*dirLight->transform_3d(), { 0.0f, -90.0f, 0.0f });
 
 		auto dirLightMesh = sceneGraph->add_child_node<rendering::MeshNode>(dirLight->id());
 		dirLightMesh->set_scale({ 0.25f });
@@ -309,8 +309,8 @@ namespace puffin::core
 		spotLight->set_name("Spot Light");
 		spotLight->set_position({ -10.0f, 5.0f, 0.0f });
 		spotLight->set_light_type(rendering::LightType::Spot);
-		spotLight->set_color({ 0.5f, 0.5f, 1.0f });
-		spotLight->set_ambient_intensity(0.f);
+		spotLight->SetColor({ 0.5f, 0.5f, 1.0f });
+		spotLight->SetAmbientIntensity(0.f);
 		spotLight->add_component<rendering::ShadowCasterComponent3D>();
 		registry->patch<rendering::ShadowCasterComponent3D>(spotLight->entity(), [&](auto& shadow)
 		{
@@ -327,8 +327,8 @@ namespace puffin::core
 		spotLight2->set_name("Spot Light 2");
 		spotLight2->set_position({ 10.0f, 5.0f, 0.0f });
 		spotLight2->set_light_type(rendering::LightType::Spot);
-		spotLight2->set_color({ 1.0f, 0.5f, 0.5f });
-		spotLight2->set_ambient_intensity(0.f);
+		spotLight2->SetColor({ 1.0f, 0.5f, 0.5f });
+		spotLight2->SetAmbientIntensity(0.f);
 		spotLight2->add_component<rendering::ShadowCasterComponent3D>();
 		registry->patch<rendering::ShadowCasterComponent3D>(spotLight2->entity(), [&](auto& shadow)
 		{
@@ -341,7 +341,7 @@ namespace puffin::core
 		auto spotLightMesh2 = sceneGraph->add_child_node<rendering::MeshNode>(spotLight2->id());
 		spotLightMesh2->set_scale({ 0.25f });
 		spotLightMesh2->set_mesh_asset_id(meshId3);
-		spotLightMesh2->set_mat_asset_id(materialInstId1);
+		spotLightMesh2->set_mat_asset_id(materialInstId1);*/
 
 		//auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		//script.name = "ExampleScript";
@@ -387,10 +387,10 @@ namespace puffin::core
 
 		// Light node
 
-		auto light = sceneGraph->add_node<rendering::LightNode3D>();
+		/*auto light = sceneGraph->add_node<rendering::LightNode3D>();
 		light->position().y = 50.0f;
 		light->set_light_type(rendering::LightType::Directional);
-		light->set_ambient_intensity(0.01f);
+		light->SetAmbientIntensity(0.01f);*/
 
 		constexpr float floorWidth = 2000.0f;
 

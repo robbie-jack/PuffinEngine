@@ -16,10 +16,10 @@ namespace puffin::rendering
 		void end_play() override;
 
 		UUID mesh_asset_id();
-		void set_mesh_asset_id(UUID mesh_asset_id) const;
+		void set_mesh_asset_id(UUID meshID) const;
 
 		UUID mat_asset_id();
-		void set_mat_asset_id(UUID mat_asset_id) const;
+		void set_mat_asset_id(UUID materialID) const;
 
 		uint8_t sub_mesh_idx();
 		void set_sub_mesh_idx(uint8_t sub_mesh_idx) const;
