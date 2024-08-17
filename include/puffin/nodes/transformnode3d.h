@@ -19,14 +19,14 @@ namespace puffin
 		explicit TransformNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
 		~TransformNode3D() override = default;
 
-		void begin_play() override;
-		void update(const double delta_time) override;
-		void update_fixed(const double delta_time) override;
-		void end_play() override;
+		void BeginPlay() override;
+		void Update(const double delta_time) override;
+		void FixedUpdate(const double delta_time) override;
+		void EndPlay() override;
 
-		bool has_transform_3d() const override;
-		const TransformComponent3D* transform_3d() const override;
-		TransformComponent3D* transform_3d() override;
+		bool HasTransform3D() const override;
+		const TransformComponent3D* GetTransform3D() const override;
+		TransformComponent3D* GetTransform3D() override;
 
 #ifdef PFN_DOUBLE_PRECISION
 		[[nodiscard]] const Vector3d& position() const;

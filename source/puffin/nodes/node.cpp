@@ -6,130 +6,160 @@
 
 namespace puffin
 {
-	Node::Node(const std::shared_ptr<core::Engine>& engine, const UUID& id) : m_engine(engine), m_node_id(id)
+	Node::Node(const std::shared_ptr<core::Engine>& engine, const UUID& id) : mNodeID(id), mEngine(engine)
 	{
-		auto entt_subsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
-		m_registry = entt_subsystem->registry();
-		m_entity = entt_subsystem->add_entity(m_node_id);
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		mRegistry = enttSubsystem->registry();
+		mEntity = enttSubsystem->add_entity(mNodeID);
 	}
 
-    TransformComponent2D* Node::global_transform_2d()
-    {
-        if (has_transform_2d())
-        {
-			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-            return scene_graph_subsystem->get_global_transform_2d(m_node_id);
-        }
-
-        return nullptr;
-    }
-
-	const TransformComponent2D* Node::global_transform_2d() const
+	void Node::Initialize()
 	{
-		if (has_transform_2d())
+	}
+
+	void Node::Deinitialize()
+	{
+	}
+
+	void Node::BeginPlay()
+	{
+	}
+
+	void Node::EndPlay()
+	{
+	}
+
+	void Node::Update(double deltaTime)
+	{
+	}
+
+	bool Node::ShouldUpdate() const
+	{
+		return false;
+	}
+
+	void Node::FixedUpdate(double deltaTime)
+	{
+	}
+
+	bool Node::ShouldFixedUpdate() const
+	{
+		return false;
+	}
+
+	void Node::Serialize(json& json) const
+	{
+		json["name"] = mName;
+	}
+
+	void Node::Deserialize(const json& json)
+	{
+		mName = json.at("name");
+	}
+
+	UUID Node::GetID() const
+	{
+		return mNodeID;
+	}
+
+	entt::entity Node::GetEntity() const
+	{
+		return mEntity;
+	}
+
+	const std::string& Node::GetName() const
+	{
+		return mName;
+	}
+
+	void Node::SetName(const std::string& name)
+	{
+		mName = name;
+	}
+
+	void Node::QueueDestroy() const
+	{
+		auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		sceneGraph->QueueDestroyNode(mNodeID);
+	}
+
+	Node* Node::GetParent() const
+	{
+		if (mParentID != gInvalidID)
 		{
-			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-			return scene_graph_subsystem->get_global_transform_2d(m_node_id);
+			auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+			return sceneGraph->GetNode(mParentID);
 		}
 
 		return nullptr;
 	}
 
-	TransformComponent3D* Node::global_transform_3d()
+	void Node::Reparent(const UUID& id)
 	{
-		if (has_transform_3d())
+		if (mParentID != gInvalidID)
 		{
-			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-			return scene_graph_subsystem->get_global_transform_3d(m_node_id);
-		}
-
-		return nullptr;
-	}
-
-	const TransformComponent3D* Node::global_transform_3d() const
-	{
-		if (has_transform_3d())
-		{
-			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-			return scene_graph_subsystem->get_global_transform_3d(m_node_id);
-		}
-
-		return nullptr;
-	}
-
-	void Node::serialize(json& json) const
-	{
-		json["name"] = m_name;
-	}
-
-	void Node::deserialize(const json& json)
-	{
-		m_name = json.at("name");
-	}
-
-	void Node::queue_destroy() const
-	{
-		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-		scene_graph_subsystem->queue_destroy_node(m_node_id);
-	}
-
-	Node* Node::get_parent() const
-	{
-		if (m_parent_id != gInvalidID)
-		{
-			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-			return scene_graph_subsystem->get_node_ptr(m_parent_id);
-		}
-
-		return nullptr;
-	}
-
-	void Node::reparent(const UUID& id)
-	{
-		if (m_parent_id != gInvalidID)
-		{
-			auto parent = get_parent();
+			auto parent = GetParent();
 			if (parent)
-				parent->remove_child_id(m_node_id);
+				parent->RemoveChildID(mNodeID);
 		}
 
-		set_parent_id(id);
+		SetParentID(id);
 	}
 
-	void Node::get_children(std::vector<Node*>& children) const
+	void Node::GetChildren(std::vector<Node*>& children) const
 	{
-		children.reserve(m_child_ids.size());
+		children.reserve(mChildIDs.size());
 
-		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
+		auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		for (auto id : m_child_ids)
+		for (auto id : mChildIDs)
 		{
-			children.push_back(scene_graph_subsystem->get_node_ptr(id));
+			children.push_back(sceneGraph->GetNode(id));
 		}
 	}
 
-	void Node::get_child_ids(std::vector<UUID>& child_ids) const
+	void Node::GetChildIDs(std::vector<UUID>& childIds) const
 	{
-		child_ids.reserve(m_child_ids.size());
+		childIds.reserve(mChildIDs.size());
 
-		for (auto id : m_child_ids)
+		for (auto id : mChildIDs)
 		{
-			child_ids.push_back(id);
+			childIds.push_back(id);
 		}
 	}
 
-	Node* Node::get_child(UUID id) const
+	Node* Node::GetChild(UUID id) const
 	{
-		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-		return scene_graph_subsystem->get_node_ptr(id);
+		auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		return sceneGraph->GetNode(id);
 	}
 
-	void Node::remove_child(UUID id)
+	void Node::RemoveChild(UUID id)
 	{
-		auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-		Node* node = scene_graph_subsystem->get_node_ptr(id);
-		node->queue_destroy();
+		auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		Node* node = sceneGraph->GetNode(id);
+		node->QueueDestroy();
 
-		remove_child_id(id);
+		RemoveChildID(id);
+	}
+
+	UUID Node::GetParentID() const
+	{
+		return mParentID;
+	}
+
+	void Node::SetParentID(UUID id)
+	{
+		mParentID = id;
+	}
+
+	void Node::AddChildID(UUID id)
+	{
+		mChildIDs.push_back(id);
+	}
+
+	void Node::RemoveChildID(UUID id)
+	{
+		mChildIDs.remove(id);
 	}
 }

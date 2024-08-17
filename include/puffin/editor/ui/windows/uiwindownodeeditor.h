@@ -76,9 +76,9 @@ namespace puffin::ui
 
 			bool Add(Node* node) override
 			{
-				if (!node->has_component<T>())
+				if (!node->HasComponent<T>())
 				{
-					node->add_component<T>();
+					node->AddComponent<T>();
 
 					return true;
 				}

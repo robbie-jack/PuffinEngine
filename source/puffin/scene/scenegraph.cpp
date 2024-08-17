@@ -4,9 +4,8 @@
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/nodes/transformnode2d.h"
 #include "puffin/nodes/transformnode3d.h"
-#include "puffin/nodes/rendering/cameranode3d.h"
-#include "puffin/nodes/rendering/lightnode3d.h"
-#include "puffin/nodes/rendering/meshnode.h"
+#include "puffin/nodes/rendering/3d/cameranode3d.h"
+#include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
 
 namespace puffin::scene
 {
@@ -15,19 +14,19 @@ namespace puffin::scene
 		mName = "SceneGraphSubsystem";
 	}
 
-	void SceneGraphSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
+	void SceneGraphSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		m_scene_graph_updated = true;
 
-		register_default_node_types();
+		RegisterDefaultNodeTypes();
 	}
 
 	void SceneGraphSubsystem::EndPlay()
 	{
 		for (auto& id : m_node_ids)
 		{
-			if (const auto node = get_node_ptr(id); node)
-				node->end_play();
+			if (const auto node = GetNode(id); node)
+				node->EndPlay();
 		}
 
 		m_node_ids.clear();
@@ -44,7 +43,7 @@ namespace puffin::scene
 		}
 	}
 
-	void SceneGraphSubsystem::Update(double delta_time)
+	void SceneGraphSubsystem::Update(double deltaTime)
 	{
 		update_scene_graph();
 
@@ -56,67 +55,82 @@ namespace puffin::scene
 		return true;
 	}
 
-	Node* SceneGraphSubsystem::add_node(const char* type_name, UUID id)
+	Node* SceneGraphSubsystem::AddNode(const char* typeName, UUID id)
 	{
-		return add_node_internal(type_name, id);
+		return AddNodeInternal(typeName, id);
 	}
 
-	Node* SceneGraphSubsystem::add_child_node(const char* type_name, UUID id, UUID parent_id)
+	Node* SceneGraphSubsystem::AddChildNode(const char* typeName, UUID id, UUID parentID)
 	{
-		return add_node_internal(type_name, id, parent_id);
+		return AddNodeInternal(typeName, id, parentID);
 	}
 
-	bool SceneGraphSubsystem::is_valid_node(UUID id)
+	Node* SceneGraphSubsystem::GetNode(const UUID& id)
 	{
-		return m_id_to_type.find(id) != m_id_to_type.end();
-	}
-
-	Node* SceneGraphSubsystem::get_node_ptr(const UUID& id)
-	{
-		if (!is_valid_node(id))
+		if (!IsValidNode(id))
 			return nullptr;
 
 		return get_array(m_id_to_type.at(id).c_str())->get_ptr(id);
 	}
 
-	const std::string& SceneGraphSubsystem::get_node_type_name(const UUID& id) const
+	bool SceneGraphSubsystem::IsValidNode(UUID id)
+	{
+		return m_id_to_type.find(id) != m_id_to_type.end();
+	}
+
+	const std::string& SceneGraphSubsystem::GetNodeTypeName(const UUID& id) const
 	{
 		return m_id_to_type.at(id);
 	}
 
-	TransformComponent2D* SceneGraphSubsystem::get_global_transform_2d(const UUID& id)
+	const TransformComponent2D& SceneGraphSubsystem::GetNodeGlobalTransform2D(const UUID& id) const
 	{
-		return &m_global_transform_2ds.at(id);
+		return m_global_transform_2ds.at(id);
 	}
 
-	TransformComponent3D* SceneGraphSubsystem::get_global_transform_3d(const UUID& id)
+	TransformComponent2D& SceneGraphSubsystem::GetNodeGlobalTransform2D(const UUID& id)
 	{
-		return &m_global_transform_3ds.at(id);
+		return m_global_transform_2ds.at(id);
 	}
 
-	void SceneGraphSubsystem::queue_destroy_node(const UUID& id)
+	const TransformComponent3D& SceneGraphSubsystem::GetNodeGlobalTransform3D(const UUID& id) const
+	{
+		return m_global_transform_3ds.at(id);
+	}
+
+	TransformComponent3D& SceneGraphSubsystem::GetNodeGlobalTransform3D(const UUID& id)
+	{
+		return m_global_transform_3ds.at(id);
+	}
+
+	void SceneGraphSubsystem::NotifyTransformChanged(UUID id)
+	{
+		mNodeTransformsToUpdate.insert(id);
+	}
+
+	void SceneGraphSubsystem::QueueDestroyNode(const UUID& id)
 	{
 		m_nodes_to_destroy.insert(id);
 	}
 
-	std::vector<UUID>& SceneGraphSubsystem::get_node_ids()
+	const std::vector<UUID>& SceneGraphSubsystem::GetNodeIDs() const
 	{
 		return m_node_ids;
 	}
 
-	std::vector<UUID>& SceneGraphSubsystem::get_root_node_ids()
+	const std::vector<UUID>& SceneGraphSubsystem::GetRootNodeIDs() const
 	{
 		return m_root_node_ids;
 	}
 
-	void SceneGraphSubsystem::register_default_node_types()
+	void SceneGraphSubsystem::RegisterDefaultNodeTypes()
 	{
-		register_node_type<Node>();
-		register_node_type<TransformNode2D>();
-		register_node_type<TransformNode3D>();
-		register_node_type<rendering::MeshNode>();
+		RegisterNodeType<Node>();
+		RegisterNodeType<TransformNode2D>();
+		RegisterNodeType<TransformNode3D>();
+		RegisterNodeType<rendering::MeshNode>();
 		//register_node_type<rendering::LightNode3D>();
-		register_node_type<rendering::CameraNode3D>();
+		RegisterNodeType<rendering::CameraNode3D>();
 	}
 
 	void SceneGraphSubsystem::update_scene_graph()
@@ -155,9 +169,9 @@ namespace puffin::scene
 	{
 		std::vector<UUID> child_ids;
 
-		if (const auto node = get_node_ptr(id); node)
+		if (const auto node = GetNode(id); node)
 		{
-			node->end_play();
+			node->EndPlay();
 		}
 
 		get_array(m_id_to_type.at(id).c_str())->remove(id);
@@ -175,10 +189,10 @@ namespace puffin::scene
 	{
 		m_node_ids.push_back(id);
 
-		const auto node = get_node_ptr(id);
+		const auto node = GetNode(id);
 
 		std::vector<UUID> child_ids;
-		node->get_child_ids(child_ids);
+		node->GetChildIDs(child_ids);
 
 		for (const auto child_id : child_ids)
 		{
@@ -194,38 +208,38 @@ namespace puffin::scene
 		// Update global transforms
 		for (auto& id : m_node_ids)
 		{
-			if (const auto node = get_node_ptr(id); node && node->transform_changed())
+			if (const auto node = GetNode(id); node && node->GetTransformChanged())
 			{
 				// Make sure children also have the global transform updated
 				std::vector<UUID> child_ids;
-				node->get_child_ids(child_ids);
+				node->GetChildIDs(child_ids);
 				for (auto& child_id : child_ids)
 				{
-					if (const auto child_node = get_node_ptr(child_id); node)
+					if (const auto child_node = GetNode(child_id); node)
 					{
-						child_node->set_transform_changed(true);
+						child_node->SetTransformChanged(true);
 					}
 				}
 
-				if (node->has_transform_2d())
+				if (node->HasTransform2D())
 				{
                     auto& global_transform = m_global_transform_2ds.at(id);
                     global_transform.position = { 0.f };
 					global_transform.rotation = 0.0f;
 					global_transform.scale = { 1.0f };
 
-					auto parent_id = node->parent_id();
+					auto parent_id = node->GetParentID();
 
 					std::vector<UUID> transform_ids_to_apply;
 					transform_ids_to_apply.push_back(id);
 
 					while (parent_id != gInvalidID)
 					{
-						if (const auto node = get_node_ptr(parent_id); node)
+						if (const auto node = GetNode(parent_id); node)
 						{
 							transform_ids_to_apply.push_back(parent_id);
 
-							parent_id = node->parent_id();
+							parent_id = node->GetParentID();
 						}
 					}
 
@@ -234,10 +248,10 @@ namespace puffin::scene
 						apply_local_to_global_transform_2d(transform_ids_to_apply[i], global_transform);
 					}
 
-					registry->patch<TransformComponent2D>(node->entity());
+					registry->patch<TransformComponent2D>(node->GetEntity());
 				}
 
-				if (node->has_transform_3d())
+				if (node->HasTransform3D())
 				{
                     auto& global_transform = m_global_transform_3ds.at(id);
 					global_transform.position = { 0.f };
@@ -245,18 +259,18 @@ namespace puffin::scene
 					global_transform.orientationEulerAngles = { 0.0f, 0.0f, 0.0f };
 					global_transform.scale = { 1.f };
 
-					auto parent_id = node->parent_id();
+					auto parent_id = node->GetParentID();
 
 					std::vector<UUID> transform_ids_to_apply;
 					transform_ids_to_apply.push_back(id);
 
 					while (parent_id != gInvalidID)
 					{
-						if (const auto node = get_node_ptr(parent_id); node)
+						if (const auto node = GetNode(parent_id); node)
 						{
 							transform_ids_to_apply.push_back(parent_id);
 
-							parent_id = node->parent_id();
+							parent_id = node->GetParentID();
 						}
 					}
 
@@ -265,19 +279,19 @@ namespace puffin::scene
 						apply_local_to_global_transform_3d(transform_ids_to_apply[i], global_transform);
 					}
 
-					registry->patch<TransformComponent3D>(node->entity());
+					registry->patch<TransformComponent3D>(node->GetEntity());
 				}
 
-				node->set_transform_changed(false);
+				node->SetTransformChanged(false);
 			}
 		}
 	}
 
 	void SceneGraphSubsystem::apply_local_to_global_transform_2d(UUID id, TransformComponent2D& global_transform)
 	{
-		if (const auto node = get_node_ptr(id); node && node->has_transform_2d())
+		if (const auto node = GetNode(id); node && node->HasTransform2D())
 		{
-            const auto& local_transform = node->transform_2d();
+            const auto& local_transform = node->GetTransform2D();
 
             global_transform.position += local_transform->position;
             global_transform.rotation += local_transform->rotation;
@@ -291,9 +305,9 @@ namespace puffin::scene
 
 	void SceneGraphSubsystem::apply_local_to_global_transform_3d(UUID id, TransformComponent3D& global_transform)
 	{
-		if (const auto node = get_node_ptr(id); node && node->has_transform_3d())
+		if (const auto node = GetNode(id); node && node->HasTransform3D())
 		{
-			const auto& local_transform = node->transform_3d();
+			const auto& local_transform = node->GetTransform3D();
 
             global_transform.position += local_transform->position;
 
@@ -324,10 +338,10 @@ namespace puffin::scene
 	{
 		auto scene_graph = mEngine->GetSubsystem<SceneGraphSubsystem>();
 
-		for (auto& id : scene_graph->get_node_ids())
+		for (auto& id : scene_graph->GetNodeIDs())
 		{
-			if (const auto node = scene_graph->get_node_ptr(id); node && node->should_update())
-				node->update(mEngine->GetDeltaTime());
+			if (const auto node = scene_graph->GetNode(id); node && node->ShouldUpdate())
+				node->Update(mEngine->GetDeltaTime());
 		}
 	}
 
@@ -340,10 +354,10 @@ namespace puffin::scene
 	{
 		auto scene_graph = mEngine->GetSubsystem<SceneGraphSubsystem>();
 
-		for (auto& id : scene_graph->get_node_ids())
+		for (auto& id : scene_graph->GetNodeIDs())
 		{
-			if (const auto node = scene_graph->get_node_ptr(id); node && node->should_update())
-				node->update_fixed(mEngine->GetTimeStepFixed());
+			if (const auto node = scene_graph->GetNode(id); node && node->ShouldUpdate())
+				node->FixedUpdate(mEngine->GetTimeStepFixed());
 		}
 	}
 

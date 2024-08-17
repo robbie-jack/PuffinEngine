@@ -134,6 +134,7 @@ set(HEADERS
 	# Core
 	${HEADER_DIR}/puffin/core/application.h
 	${HEADER_DIR}/puffin/core/engine.h
+	${HEADER_DIR}/puffin/core/enginehelpers.h
 	${HEADER_DIR}/puffin/core/enkitssubsystem.h
 	${HEADER_DIR}/puffin/core/settingsmanager.h
 	${HEADER_DIR}/puffin/core/signalsubsystem.h
@@ -159,10 +160,15 @@ set(HEADERS
 	${HEADER_DIR}/puffin/nodes/node.h
 	${HEADER_DIR}/puffin/nodes/transformnode2d.h
 	${HEADER_DIR}/puffin/nodes/transformnode3d.h
+	# Nodes - Physics
 	${HEADER_DIR}/puffin/nodes/physics/rigidbodynode3d.h
-	${HEADER_DIR}/puffin/nodes/rendering/cameranode3d.h
-	${HEADER_DIR}/puffin/nodes/rendering/lightnode3d.h
-	${HEADER_DIR}/puffin/nodes/rendering/meshnode.h
+	# Nodes - Rendering
+	# Nodes - Rendering - 3D
+	${HEADER_DIR}/puffin/nodes/rendering/3d/cameranode3d.h
+	${HEADER_DIR}/puffin/nodes/rendering/3d/directionallightnode3d.h
+	${HEADER_DIR}/puffin/nodes/rendering/3d/pointlightnode3d.h
+	${HEADER_DIR}/puffin/nodes/rendering/3d/spotlightnode3d.h
+	${HEADER_DIR}/puffin/nodes/rendering/3d/staticmeshnode3d.h
 	# Physics
 	${HEADER_DIR}/puffin/physics/bodytype.h
 	${HEADER_DIR}/puffin/physics/collisionevent.h
@@ -248,6 +254,7 @@ set(SOURCES
 	# Core
 	${SOURCE_DIR}/puffin/core/application.cpp
 	${SOURCE_DIR}/puffin/core/engine.cpp
+	${SOURCE_DIR}/puffin/core/enginehelpers.cpp
 	${SOURCE_DIR}/puffin/core/enkitssubsystem.cpp
 	${SOURCE_DIR}/puffin/core/settingsmanager.cpp
 	${SOURCE_DIR}/puffin/core/subsystem.cpp
@@ -271,10 +278,15 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/nodes/node.cpp
 	${SOURCE_DIR}/puffin/nodes/transformnode2d.cpp
 	${SOURCE_DIR}/puffin/nodes/transformnode3d.cpp
+	# Nodes - Physics
 	${SOURCE_DIR}/puffin/nodes/physics/rigidbodynode3d.cpp
-	${SOURCE_DIR}/puffin/nodes/rendering/cameranode3d.cpp
-	${SOURCE_DIR}/puffin/nodes/rendering/lightnode3d.cpp
-	${SOURCE_DIR}/puffin/nodes/rendering/meshnode.cpp
+	# Nodes - Rendering
+	# Nodes - Rendering - 3D
+	${SOURCE_DIR}/puffin/nodes/rendering/3d/cameranode3d.cpp
+	${SOURCE_DIR}/puffin/nodes/rendering/3d/directionallightnode3d.cpp
+	${SOURCE_DIR}/puffin/nodes/rendering/3d/pointlightnode3d.cpp
+	${SOURCE_DIR}/puffin/nodes/rendering/3d/spotlightnode3d.cpp
+	${SOURCE_DIR}/puffin/nodes/rendering/3d/staticmeshnode3d.cpp
 	# Physics
 	# Physics - Box2D
 	${SOURCE_DIR}/puffin/physics/box2d/box2dphysicssubsystem.cpp

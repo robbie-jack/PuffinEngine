@@ -1493,7 +1493,7 @@ namespace puffin::rendering
 				{
 					const auto entityID = objectsToRefresh[objectIdx];
 					const auto entity = enttSubsystem->get_entity(entityID);
-					const auto node = sceneGraph->get_node_ptr(entityID);
+					const auto node = sceneGraph->GetNode(entityID);
 
                     TransformComponent3D tempTransform;
 
@@ -1503,7 +1503,7 @@ namespace puffin::rendering
                         TransformComponent2D* transform;
 
 						if (node)
-							transform = node->global_transform_2d();
+							transform = node->GetGlobalTransform2D();
 						else
                             transform = &registry->get<TransformComponent2D>(entity);
 
@@ -1521,7 +1521,7 @@ namespace puffin::rendering
 					{
 						if (node)
 						{
-                            tempTransform = *node->global_transform_3d();
+                            tempTransform = *node->GetGlobalTransform3D();
 						}
 						else
 						{

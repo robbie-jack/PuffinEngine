@@ -33,7 +33,7 @@ namespace puffin
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					for (auto id : scene_graph_subsystem->get_root_node_ids())
+					for (auto id : scene_graph_subsystem->GetRootNodeIDs())
 					{
 						draw_node_ui(id, baseFlags);
 					}
@@ -119,12 +119,12 @@ namespace puffin
 			ImGuiTreeNodeFlags tree_flags = base_flags;
 
 			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
-			auto node = scene_graph_subsystem->get_node_ptr(id);
+			auto node = scene_graph_subsystem->GetNode(id);
 
 			bool has_child = false;
 
 			std::vector<UUID> child_ids;
-			node->get_child_ids(child_ids);
+			node->GetChildIDs(child_ids);
 
 			if (!child_ids.empty())
 				has_child = true;
@@ -137,7 +137,7 @@ namespace puffin
 			if (!has_child)
 				tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-			const bool node_open = ImGui::TreeNodeEx(node->name().empty() ? "Empty" : node->name().c_str(), tree_flags);
+			const bool node_open = ImGui::TreeNodeEx(node->GetName().empty() ? "Empty" : node->GetName().c_str(), tree_flags);
 
 			// Set Selected Entity when node is clicked
 			if (ImGui::IsItemClicked())

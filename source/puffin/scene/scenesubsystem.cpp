@@ -19,21 +19,21 @@ namespace puffin::io
 		// Add nodes to scene graph
 		for (const auto& id : m_root_node_ids)
 		{
-			scene_graph->add_node(m_node_id_to_type.at(id).c_str(), id);
+			scene_graph->AddNode(m_node_id_to_type.at(id).c_str(), id);
 
 			if (m_child_node_ids.count(id) != 0)
 			{
 				for (const auto& child_id : m_child_node_ids.at(id))
 				{
-					scene_graph->add_child_node(m_node_id_to_type.at(child_id).c_str(), child_id, id);
+					scene_graph->AddChildNode(m_node_id_to_type.at(child_id).c_str(), child_id, id);
 				}
 			}
 		}
 
 		for (const auto& id : m_node_ids)
 		{
-			auto node = scene_graph->get_node_ptr(id);
-			node->deserialize(m_node_id_to_json.at(id));
+			auto node = scene_graph->GetNode(id);
+			node->Deserialize(m_node_id_to_json.at(id));
 		}
 	}
 
@@ -55,7 +55,7 @@ namespace puffin::io
 			compArray->update(entt_subsystem);
 		}
 
-		for (auto id : scene_graph->get_root_node_ids())
+		for (auto id : scene_graph->GetRootNodeIDs())
 		{
 			m_root_node_ids.push_back(id);
 
@@ -168,16 +168,16 @@ namespace puffin::io
 
 	void SceneData::add_node_id_and_child_ids(scene::SceneGraphSubsystem* scene_graph, UUID id)
 	{
-		auto node = scene_graph->get_node_ptr(id);
+		auto node = scene_graph->GetNode(id);
 
 		json json;
-		node->serialize(json);
+		node->Serialize(json);
 
 		std::vector<UUID> child_ids;
-		node->get_child_ids(child_ids);
+		node->GetChildIDs(child_ids);
 
 		m_node_ids.push_back(id);
-		m_node_id_to_type.insert({ id, scene_graph->get_node_type_name(id) });
+		m_node_id_to_type.insert({ id, scene_graph->GetNodeTypeName(id) });
 		m_node_id_to_json.insert({ id, json });
 
 		if (!child_ids.empty())

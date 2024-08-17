@@ -17,32 +17,29 @@ namespace puffin
 		explicit TransformNode2D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
 		~TransformNode2D() override = default;
 
-		void begin_play() override;
-		void update(const double delta_time) override;
-		void update_fixed(const double delta_time) override;
-		void end_play() override;
+		[[nodiscard]] const TransformComponent2D& GetTransform() const;
+		[[nodiscard]] TransformComponent2D& Transform();
 
-		bool has_transform_2d() const override;
-		const TransformComponent2D* transform_2d() const override;
-		TransformComponent2D* transform_2d() override;
+		[[nodiscard]] const TransformComponent2D& GetGlobalTransform() const;
+		[[nodiscard]] TransformComponent2D& GlobalTransform();
 
 #ifdef PFN_DOUBLE_PRECISION
-		[[nodiscard]] const Vector2d& position() const;
-		[[nodiscard]] Vector2d& position();
-		void set_position(const Vector2d& position);
+		[[nodiscard]] const Vector2d& GetPosition() const;
+		[[nodiscard]] Vector2d& Position();
+		void SetPosition(const Vector2d& position);
 #else
-		[[nodiscard]] const Vector2f& position() const;
-		[[nodiscard]] Vector2f& position();
-		void set_position(const Vector2f& position);
+		[[nodiscard]] const Vector2f& GetPosition() const;
+		[[nodiscard]] Vector2f& Position();
+		void SetPosition(const Vector2f& position);
 #endif
 
-		[[nodiscard]] const float& rotation() const;
-		[[nodiscard]] float& rotation();
-		void set_rotation(const float& rotation);
+		[[nodiscard]] const float& GetRotation() const;
+		[[nodiscard]] float& Rotation();
+		void SetRotation(const float& rotation);
 
-		[[nodiscard]] const Vector2f& scale() const;
-		[[nodiscard]] Vector2f& scale();
-		void set_scale(const Vector2f& scale);
+		[[nodiscard]] const Vector2f& GetScale() const;
+		[[nodiscard]] Vector2f& Scale();
+		void SetScale(const Vector2f& scale);
 
 	protected:
 

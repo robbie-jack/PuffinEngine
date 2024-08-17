@@ -66,13 +66,13 @@ namespace puffin
 					ImGui::Text(""); ImGui::SameLine(0.0f);
 
 					const auto entity = entt_subsystem->get_entity(mSelectedEntity);
-					auto node = scene_graph_subsystem->get_node_ptr(mSelectedEntity);
+					auto node = scene_graph_subsystem->GetNode(mSelectedEntity);
 
 					// Edit Entity Name
-					std::string name = node->name();
+					std::string name = node->GetName();
 					if (std::string* namePtr = &name; ImGui::InputText("##name", namePtr, ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						node->set_name(*namePtr);
+						node->SetName(*namePtr);
 					}
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
@@ -97,12 +97,12 @@ namespace puffin
 						mSceneChanged = false;
 
 						// Display Component UI
-						if (node->has_transform_2d())
+						if (node->HasTransform2D())
 						{
 							DrawTransformUI2DNode(flags, node);
 						}
 
-						if (node->has_transform_3d())
+						if (node->HasTransform3D())
 						{
 							DrawTransformUI3DNode(flags, node);
 						}
@@ -203,7 +203,7 @@ namespace puffin
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
-                const auto transform = node->transform_2d();
+                const auto transform = node->GetTransform2D();
 
 				{
 #ifdef PFN_DOUBLE_PRECISION
@@ -223,7 +223,7 @@ namespace puffin
 
 					if (ImGui::DragFloat2("Position", reinterpret_cast<float*>(&position), 0.1f))
 					{
-                        node->transform_2d()->position = position;
+                        node->GetTransform2D()->position = position;
 
 						mSceneChanged = true;
 					}
@@ -236,7 +236,7 @@ namespace puffin
 
 					if (ImGui::DragFloat("Rotation", &rotation, 0.1f, -180.0f, 180.0f))
 					{
-                        node->transform_2d()->rotation = rotation;
+                        node->GetTransform2D()->rotation = rotation;
 
 						mSceneChanged = true;
 					}
@@ -247,7 +247,7 @@ namespace puffin
 
 					if (ImGui::DragFloat2("Scale", reinterpret_cast<float*>(&scale), 0.1f))
 					{
-                        node->transform_2d()->scale = scale;
+                        node->GetTransform2D()->scale = scale;
 
 						mSceneChanged = true;
 					}
@@ -262,7 +262,7 @@ namespace puffin
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
 				auto node_3d = static_cast<TransformNode3D*>(node);
-                auto transform = node->transform_3d();
+                auto transform = node->GetTransform3D();
 
 				{
 #ifdef PFN_USE_DOUBLE_PRECISION
@@ -282,7 +282,7 @@ namespace puffin
 
 					if (ImGui::DragFloat3("Position", reinterpret_cast<float*>(&position), 0.1f))
 					{
-                        node->transform_3d()->position = position;
+                        node->GetTransform3D()->position = position;
 
 						mSceneChanged = true;
 					}
@@ -295,7 +295,7 @@ namespace puffin
 
 					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&euler_angles), 0.2f, 0, 0, "%.3f"))
 					{
-						UpdateTransformOrientation(*node->transform_3d(), euler_angles);
+						UpdateTransformOrientation(*node->GetTransform3D(), euler_angles);
 
 						mSceneChanged = true;
 					}
@@ -306,7 +306,7 @@ namespace puffin
 
 					if (ImGui::DragFloat3("Scale", reinterpret_cast<float*>(&scale), 0.1f))
 					{
-                        node->transform_3d()->scale = scale;
+                        node->GetTransform3D()->scale = scale;
 
 						mSceneChanged = true;
 					}

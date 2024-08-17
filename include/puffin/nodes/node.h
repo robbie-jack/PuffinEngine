@@ -38,110 +38,88 @@ namespace puffin
 
 		virtual ~Node() = default;
 
-		virtual void begin_play() {}
-		virtual void update(const double delta_time) {}
-		virtual void update_fixed(const double delta_time) {}
-		virtual void end_play() {}
+		virtual void Initialize();
+		virtual void Deinitialize();
 
-		virtual bool has_transform_2d() const { return false; }
-		virtual bool has_transform_3d() const { return false; }
+		virtual void BeginPlay();
+		virtual void EndPlay();
 
-        TransformComponent2D* global_transform_2d();
-		const TransformComponent2D* global_transform_2d() const;
-		virtual const TransformComponent2D* transform_2d() const { return nullptr; }
-		virtual TransformComponent2D* transform_2d() { return nullptr; }
+		virtual void Update(double deltaTime);
+		[[nodiscard]] virtual bool ShouldUpdate() const;
 
-        TransformComponent3D* global_transform_3d();
-		const TransformComponent3D* global_transform_3d() const;
-		virtual const TransformComponent3D* transform_3d() const { return nullptr; }
-		virtual TransformComponent3D* transform_3d() { return nullptr; }
+		virtual void FixedUpdate(double deltaTime);
+		[[nodiscard]] virtual bool ShouldFixedUpdate() const;
 
-		virtual void serialize(json& json) const;
-		virtual void deserialize(const json& json);
+		virtual void Serialize(json& json) const;
+		virtual void Deserialize(const json& json);
 
-		[[nodiscard]] UUID id() const { return m_node_id; }
-		[[nodiscard]] entt::entity entity() const { return m_entity; }
+		[[nodiscard]] UUID GetID() const;
+		[[nodiscard]] entt::entity GetEntity() const;
 
-		[[nodiscard]] const std::string& name() const { return m_name; }
-		[[nodiscard]] std::string& name() { return m_name; }
-		void set_name(const std::string& name) { m_name = name; }
+		[[nodiscard]] const std::string& GetName() const;
+		void SetName(const std::string& name);
 
-		[[nodiscard]] bool should_update() const { return m_should_update; }
-		[[nodiscard]] bool transform_changed() const { return m_transform_changed; }
-		void set_transform_changed(const bool transform_changed) { m_transform_changed = transform_changed; }
+		void QueueDestroy() const;
 
-		template<typename T>
-		T& get_component()
-		{
-			return m_registry->get<T>(m_entity);
-		}
+		[[nodiscard]] Node* GetParent() const;
+		[[nodiscard]] Node* GetChild(UUID id) const;
+		void Reparent(const UUID& id);
+		void GetChildren(std::vector<Node*>& children) const;
+		void GetChildIDs(std::vector<UUID>& childIds) const;
 
-		template<typename T>
-		const T& get_component() const
-		{
-			return m_registry->get<T>(m_entity);
-		}
+		void RemoveChild(UUID id);
 
-		template<typename T>
-		bool has_component() const
-		{
-			return m_registry->any_of<T>(m_entity);
-		}
-
-		template<typename T>
-		T& add_component()
-		{
-			return m_registry->get_or_emplace<T>(m_entity);
-		}
-
-		template<typename T>
-		void remove_component() const
-		{
-			m_registry->remove<T>(m_entity);
-		}
-
-		void queue_destroy() const;
-		[[nodiscard]] Node* get_parent() const;
-		void reparent(const UUID& id);
-		void get_children(std::vector<Node*>& children) const;
-		void get_child_ids(std::vector<UUID>& child_ids) const;
-		[[nodiscard]] Node* get_child(UUID id) const;
-
-		void remove_child(UUID id);
-
-		UUID parent_id() const { return m_parent_id; }
+		[[nodiscard]] UUID GetParentID() const;
 
 		// Set parent id, for internal use only, use reparent instead
-		void set_parent_id(UUID id)
-		{
-			m_parent_id = id;
-		}
+		void SetParentID(UUID id);
 
 		// Add a child id, for internal use only, use add_child instead
-		void add_child_id(UUID id)
-		{
-			m_child_ids.push_back(id);
-		}
+		void AddChildID(UUID id);
 
 		// Remove a child id, for internal use only, use remove_child instead
-		void remove_child_id(UUID id)
+		void RemoveChildID(UUID id);
+
+		template<typename T>
+		T& GetComponent()
 		{
-			m_child_ids.remove(id);
+			return mRegistry->get<T>(mEntity);
+		}
+
+		template<typename T>
+		const T& GetComponent() const
+		{
+			return mRegistry->get<T>(mEntity);
+		}
+
+		template<typename T>
+		[[nodiscard]] bool HasComponent() const
+		{
+			return mRegistry->any_of<T>(mEntity);
+		}
+
+		template<typename T>
+		T& AddComponent()
+		{
+			return mRegistry->get_or_emplace<T>(mEntity);
+		}
+
+		template<typename T>
+		void RemoveComponent() const
+		{
+			mRegistry->remove<T>(mEntity);
 		}
 
 	protected:
 
-		bool m_should_update = false;
-		bool m_transform_changed = true;
+		UUID mNodeID = gInvalidID;
+		entt::entity mEntity;
 
-		UUID m_node_id = gInvalidID;
-		entt::entity m_entity;
+		UUID mParentID = gInvalidID;
+		std::list<UUID> mChildIDs;
+		std::string mName;
 
-		UUID m_parent_id = gInvalidID;
-		std::list<UUID> m_child_ids;
-		std::string m_name;
-
-		std::shared_ptr<core::Engine> m_engine = nullptr;
-		std::shared_ptr<entt::registry> m_registry = nullptr;
+		std::shared_ptr<core::Engine> mEngine = nullptr;
+		std::shared_ptr<entt::registry> mRegistry = nullptr;
 	};
 }

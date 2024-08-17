@@ -11,10 +11,5 @@ namespace puffin::physics
 		explicit RigidbodyNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
 		~RigidbodyNode3D() override = default;
 
-		void begin_play() override;
-		void update(const double delta_time) override;
-		void update_fixed(const double delta_time) override;
-		void end_play() override;
-
 	};
 }

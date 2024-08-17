@@ -7,46 +7,46 @@ namespace puffin
 {
 	TransformNode3D::TransformNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : Node(engine, id)
 	{
-		m_name = "Transform3D";
+		mName = "Transform3D";
 
-		add_component<TransformComponent3D>();
+		AddComponent<TransformComponent3D>();
 	}
 
-	void TransformNode3D::begin_play()
+	void TransformNode3D::BeginPlay()
 	{
-		Node::begin_play();
+		Node::BeginPlay();
 	}
 
-	void TransformNode3D::update(const double delta_time)
+	void TransformNode3D::Update(const double delta_time)
 	{
-		Node::update(delta_time);
+		Node::Update(delta_time);
 	}
 
-	void TransformNode3D::update_fixed(const double delta_time)
+	void TransformNode3D::FixedUpdate(const double delta_time)
 	{
-		Node::update_fixed(delta_time);
+		Node::FixedUpdate(delta_time);
 	}
 
-	void TransformNode3D::end_play()
+	void TransformNode3D::EndPlay()
 	{
-		Node::end_play();
+		Node::EndPlay();
 	}
 
-	bool TransformNode3D::has_transform_3d() const
+	bool TransformNode3D::HasTransform3D() const
 	{
 		return true;
 	}
 
-	const TransformComponent3D* TransformNode3D::transform_3d() const
+	const TransformComponent3D* TransformNode3D::GetTransform3D() const
 	{
-		return &get_component<TransformComponent3D>();
+		return &GetComponent<TransformComponent3D>();
 	}
 
-	TransformComponent3D* TransformNode3D::transform_3d()
+	TransformComponent3D* TransformNode3D::GetTransform3D()
 	{
-		m_transform_changed = true;
+		mTransformChanged = true;
 
-		return &get_component<TransformComponent3D>();
+		return &GetComponent<TransformComponent3D>();
 	}
 
 #ifdef PFN_DOUBLE_PRECISION
@@ -69,70 +69,70 @@ namespace puffin
 #else
 	const Vector3f& TransformNode3D::position() const
 	{
-		return transform_3d()->position;
+		return GetTransform3D()->position;
 	}
 
 	Vector3f& TransformNode3D::position()
 	{
-		return transform_3d()->position;
+		return GetTransform3D()->position;
 	}
 
 	void TransformNode3D::set_position(const Vector3f& position)
 	{
-		m_registry->patch<TransformComponent3D>(m_entity, [&position](auto& transform) { transform.position = position; });
+		mRegistry->patch<TransformComponent3D>(mEntity, [&position](auto& transform) { transform.position = position; });
 
-		m_transform_changed = true;
+		mTransformChanged = true;
 	}
 #endif
 
 	const maths::Quat& TransformNode3D::orientation() const
 	{
-		return transform_3d()->orientationQuat;
+		return GetTransform3D()->orientationQuat;
 	}
 
 	maths::Quat& TransformNode3D::orientation()
 	{
-		return transform_3d()->orientationQuat;
+		return GetTransform3D()->orientationQuat;
 	}
 
 	void TransformNode3D::set_orientation(const maths::Quat& orientation)
 	{
-		m_registry->patch<TransformComponent3D>(m_entity, [&orientation](auto& transform) { transform.orientationQuat = orientation; });
+		mRegistry->patch<TransformComponent3D>(mEntity, [&orientation](auto& transform) { transform.orientationQuat = orientation; });
 
-		m_transform_changed = true;
+		mTransformChanged = true;
 	}
 
 	const maths::EulerAngles& TransformNode3D::euler_angles() const
 	{
-		return transform_3d()->orientationEulerAngles;
+		return GetTransform3D()->orientationEulerAngles;
 	}
 
 	maths::EulerAngles& TransformNode3D::euler_angles()
 	{
-		return transform_3d()->orientationEulerAngles;
+		return GetTransform3D()->orientationEulerAngles;
 	}
 
 	void TransformNode3D::set_euler_angles(const maths::EulerAngles& eulerAngles)
 	{
-		m_registry->patch<TransformComponent3D>(m_entity, [&eulerAngles](auto& transform) { transform.orientationEulerAngles = eulerAngles; });
+		mRegistry->patch<TransformComponent3D>(mEntity, [&eulerAngles](auto& transform) { transform.orientationEulerAngles = eulerAngles; });
 
-		m_transform_changed = true;
+		mTransformChanged = true;
 	}
 
 	const Vector3f& TransformNode3D::scale() const
 	{
-		return transform_3d()->scale;
+		return GetTransform3D()->scale;
 	}
 
 	Vector3f& TransformNode3D::scale()
 	{
-		return transform_3d()->scale;
+		return GetTransform3D()->scale;
 	}
 
 	void TransformNode3D::set_scale(const Vector3f& scale)
 	{
-		m_registry->patch<TransformComponent3D>(m_entity, [&scale](auto& transform) { transform.scale = scale; });
+		mRegistry->patch<TransformComponent3D>(mEntity, [&scale](auto& transform) { transform.scale = scale; });
 
-		m_transform_changed = true;
+		mTransformChanged = true;
 	}
 }

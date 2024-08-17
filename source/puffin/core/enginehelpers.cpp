@@ -28,8 +28,10 @@
 #include "puffin/editor/ui/editoruisubsystem.h"
 #include "puffin/input/inputsubsystem.h"
 #include "puffin/nodes/physics/rigidbodynode3d.h"
-#include "puffin/nodes/rendering/lightnode3d.h"
-#include "puffin/nodes/rendering/meshnode.h"
+#include "puffin/nodes/rendering/3d/directionallightnode3d.h"
+#include "puffin/nodes/rendering/3d/pointlightnode3d.h"
+#include "puffin/nodes/rendering/3d/spotlightnode3d.h"
+#include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
 #include "puffin/rendering/camerasubsystem.h"
 #include "puffin/scene/scenesubsystem.h"
 #include "puffin/utility/performancebenchmarksubsystem.h"
@@ -251,40 +253,40 @@ namespace puffin::core
 		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->registry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		auto houseNode = sceneGraph->add_node<rendering::MeshNode>();
-		houseNode->set_name("House");
-		houseNode->set_position({ 2.0f, 0.0f, 0.0f });
-		houseNode->set_mesh_asset_id(meshId1);
-		houseNode->set_mat_asset_id(materialInstId1);
+		auto houseNode = sceneGraph->AddNode<rendering::MeshNode>();
+		houseNode->SetName("House");
+		houseNode->SetPosition({ 2.0f, 0.0f, 0.0f });
+		houseNode->SetMeshID(meshId1);
+		houseNode->SetMaterialID(materialInstId1);
 
 		/*auto sphere = scene_graph->add_node<rendering::MeshNode>();
-		sphere.set_name("Sphere");
-		sphere.set_position({ -1.0f, -0.0f, 0.0f });
-		sphere.set_mesh_asset_id(meshId2);
-		sphere.set_mat_asset_id(materialInstId1);*/
+		sphere.SetName("Sphere");
+		sphere.SetPosition({ -1.0f, -0.0f, 0.0f });
+		sphere.SetMeshID(meshId2);
+		sphere.SetMaterialID(materialInstId1);*/
 
-		auto cube1 = sceneGraph->add_node<rendering::MeshNode>();
-		cube1->name() = "Cube_1";
-		cube1->set_position({ 0.0f });
-		cube1->set_mesh_asset_id(meshId3);
-		cube1->set_mat_asset_id(materialInstId1);
+		auto cube1 = sceneGraph->AddNode<rendering::MeshNode>();
+		cube1->SetName("Cube_1");
+		cube1->SetPosition({ 0.0f });
+		cube1->SetMeshID(meshId3);
+		cube1->SetMaterialID(materialInstId1);
 
-		auto cube2 = sceneGraph->add_node<rendering::MeshNode>();
-		cube2->set_name("Cube_2");
-		cube2->set_position({ -1.75f, -5.0f, 0.0f });
-		cube2->set_mesh_asset_id(meshId3);
-		cube2->set_mat_asset_id(materialInstId1);
+		auto cube2 = sceneGraph->AddNode<rendering::MeshNode>();
+		cube2->SetName("Cube_2");
+		cube2->SetPosition({ -1.75f, -5.0f, 0.0f });
+		cube2->SetMeshID(meshId3);
+		cube2->SetMaterialID(materialInstId1);
 
-		auto plane = sceneGraph->add_node<rendering::MeshNode>();
-		plane->set_name("Plane");
-		plane->set_position({ 0.0f, -10.0f, 0.0f });
+		auto plane = sceneGraph->AddNode<rendering::MeshNode>();
+		plane->SetName("Plane");
+		plane->SetPosition({ 0.0f, -10.0f, 0.0f });
 		plane->set_scale({ 50.0f, 1.0f, 50.0f });
-		plane->set_mesh_asset_id(meshId3);
-		plane->set_mat_asset_id(materialInstId1);
+		plane->SetMeshID(meshId3);
+		plane->SetMaterialID(materialInstId1);
 
 		/*auto dirLight = sceneGraph->add_node<rendering::LightNode3D>();
-		dirLight->set_name("Directional Light");
-		dirLight->set_position({ 0.0f, 10.0f, 0.0f });
+		dirLight->SetName("Directional Light");
+		dirLight->SetPosition({ 0.0f, 10.0f, 0.0f });
 		dirLight->SetColor({ .05f });
 		dirLight->SetAmbientIntensity(.0f);
 		dirLight->set_light_type(rendering::LightType::Directional);
@@ -302,12 +304,12 @@ namespace puffin::core
 
 		auto dirLightMesh = sceneGraph->add_child_node<rendering::MeshNode>(dirLight->id());
 		dirLightMesh->set_scale({ 0.25f });
-		dirLightMesh->set_mesh_asset_id(meshId3);
-		dirLightMesh->set_mat_asset_id(materialInstId1);
+		dirLightMesh->SetMeshID(meshId3);
+		dirLightMesh->SetMaterialID(materialInstId1);
 
 		auto spotLight = sceneGraph->add_node<rendering::LightNode3D>();
-		spotLight->set_name("Spot Light");
-		spotLight->set_position({ -10.0f, 5.0f, 0.0f });
+		spotLight->SetName("Spot Light");
+		spotLight->SetPosition({ -10.0f, 5.0f, 0.0f });
 		spotLight->set_light_type(rendering::LightType::Spot);
 		spotLight->SetColor({ 0.5f, 0.5f, 1.0f });
 		spotLight->SetAmbientIntensity(0.f);
@@ -320,12 +322,12 @@ namespace puffin::core
 
 		auto spotLightMesh = sceneGraph->add_child_node<rendering::MeshNode>(spotLight->id());
 		spotLightMesh->set_scale({ 0.25f });
-		spotLightMesh->set_mesh_asset_id(meshId3);
-		spotLightMesh->set_mat_asset_id(materialInstId1);
+		spotLightMesh->SetMeshID(meshId3);
+		spotLightMesh->SetMaterialID(materialInstId1);
 
 		auto spotLight2 = sceneGraph->add_node<rendering::LightNode3D>();
-		spotLight2->set_name("Spot Light 2");
-		spotLight2->set_position({ 10.0f, 5.0f, 0.0f });
+		spotLight2->SetName("Spot Light 2");
+		spotLight2->SetPosition({ 10.0f, 5.0f, 0.0f });
 		spotLight2->set_light_type(rendering::LightType::Spot);
 		spotLight2->SetColor({ 1.0f, 0.5f, 0.5f });
 		spotLight2->SetAmbientIntensity(0.f);
@@ -340,8 +342,8 @@ namespace puffin::core
 
 		auto spotLightMesh2 = sceneGraph->add_child_node<rendering::MeshNode>(spotLight2->id());
 		spotLightMesh2->set_scale({ 0.25f });
-		spotLightMesh2->set_mesh_asset_id(meshId3);
-		spotLightMesh2->set_mat_asset_id(materialInstId1);*/
+		spotLightMesh2->SetMeshID(meshId3);
+		spotLightMesh2->SetMaterialID(materialInstId1);*/
 
 		//auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		//script.name = "ExampleScript";
@@ -413,7 +415,7 @@ namespace puffin::core
 		//	registry->emplace<physics::RigidbodyComponent3D>(floorEntity);
 		//}
 
-		auto floorBody = sceneGraph->add_node<physics::RigidbodyNode3D>();
+		auto floorBody = sceneGraph->AddNode<physics::RigidbodyNode3D>();
 
 		//// Create Box Entities
 		//{

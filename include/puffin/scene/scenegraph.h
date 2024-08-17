@@ -130,83 +130,86 @@ namespace puffin::scene
 	{
 	public:
 
-		SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine);
+		explicit SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~SceneGraphSubsystem() = default;
 
-		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystemManager) override;
 
 		void EndPlay() override;
 
-		void Update(double delta_time) override;
+		void Update(double deltaTime) override;
 		bool ShouldUpdate() override;
 
+		Node* AddNode(const char* typeName, UUID id);
+		Node* AddChildNode(const char* typeName, UUID id, UUID parentID);
+		[[nodiscard]] Node* GetNode(const UUID& id);
+		bool IsValidNode(UUID id);
+
+		[[nodiscard]] const std::string& GetNodeTypeName(const UUID& id) const;
+
+		[[nodiscard]] const TransformComponent2D& GetNodeGlobalTransform2D(const UUID& id) const;
+		[[nodiscard]] TransformComponent2D& GetNodeGlobalTransform2D(const UUID& id);
+
+		[[nodiscard]] const TransformComponent3D& GetNodeGlobalTransform3D(const UUID& id) const;
+		[[nodiscard]] TransformComponent3D& GetNodeGlobalTransform3D(const UUID& id);
+
+		void NotifyTransformChanged(UUID id);
+
+		// Queue a node for destruction, will also destroy all child nodes
+		void QueueDestroyNode(const UUID& id);
+
+		[[nodiscard]] const std::vector<UUID>& GetNodeIDs() const;
+		[[nodiscard]] const std::vector<UUID>& GetRootNodeIDs() const;
+
 		template<typename T>
-		void register_node_type()
+		void RegisterNodeType()
 		{
-			const char* type_name = typeid(T).name();
+			const char* typeName = typeid(T).name();
 
-			assert(m_node_arrays.find(type_name) == m_node_arrays.end() && "SceneGraph::register_node_type() - Registering node type more than once");
+			assert(m_node_arrays.find(typeName) == m_node_arrays.end() && "SceneGraph::RegisterNodeType() - Registering node type more than once");
 
-			m_node_arrays.insert({ type_name, static_cast<INodeArray*>(new NodeArray<T>()) });
+			m_node_arrays.insert({ typeName, static_cast<INodeArray*>(new NodeArray<T>()) });
 		}
 
 		template<typename T>
-		T* add_node()
+		T* AddNode()
 		{
-			return add_node_internal<T>();
+			return AddNodeInternal<T>();
 		}
 
 		template<typename T>
-		T* add_node(UUID id)
+		T* AddNode(UUID id)
 		{
-			return add_node_internal<T>(id);
-		}
-
-		Node* add_node(const char* type_name, UUID id);
-
-		template<typename T>
-		T* add_child_node(UUID parent_id)
-		{
-			return add_node_internal<T>(gInvalidID, parent_id);
+			return AddNodeInternal<T>(id);
 		}
 
 		template<typename T>
-		T* add_child_node(UUID id, UUID parent_id)
+		T* AddChildNode(UUID parent_id)
 		{
-			return add_node_internal<T>(id, parent_id);
+			return AddNodeInternal<T>(gInvalidID, parent_id);
 		}
 
-		Node* add_child_node(const char* type_name, UUID id, UUID parent_id);
-
-		bool is_valid_node(UUID id);
+		template<typename T>
+		T* AddChildNode(UUID id, UUID parent_id)
+		{
+			return AddNodeInternal<T>(id, parent_id);
+		}
 
 		template<typename T>
-		T* get_node(UUID id)
+		T* GetNode(UUID id)
 		{
-			if (!is_valid_node(id))
+			if (!IsValidNode(id))
 				return nullptr;
 
 			return get_array<T>()->get(id);
 		}
-
-		[[nodiscard]] Node* get_node_ptr(const UUID& id);
-
-		[[nodiscard]] const std::string& get_node_type_name(const UUID& id) const;
-
-		[[nodiscard]] TransformComponent2D* get_global_transform_2d(const UUID& id);
-
-		[[nodiscard]] TransformComponent3D* get_global_transform_3d(const UUID& id);
-
-		// Queue a node for destruction, will also destroy all child nodes
-		void queue_destroy_node(const UUID& id);
-
-		std::vector<UUID>& get_node_ids();
-		std::vector<UUID>& get_root_node_ids();
 
 	private:
 
 		std::unordered_map<UUID, std::string> m_id_to_type;
 		std::vector<UUID> m_node_ids; // Vector of node id's, sorted by order methods are executed in
 		std::vector<UUID> m_root_node_ids; // Vector of nodes at root of scene graph
+		std::set<UUID> mNodeTransformsToUpdate;
 		std::set<UUID> m_nodes_to_destroy;
 
 		PackedVector<UUID, TransformComponent2D> m_global_transform_2ds;
@@ -216,7 +219,7 @@ namespace puffin::scene
 
 		std::unordered_map<std::string, INodeArray*> m_node_arrays;
 
-		void register_default_node_types();
+		void RegisterDefaultNodeTypes();
 
 		void update_scene_graph();
 		void destroy_node(UUID id);
@@ -230,10 +233,10 @@ namespace puffin::scene
 		{
 			if (parent_id != gInvalidID)
 			{
-				node->set_parent_id(parent_id);
+				node->SetParentID(parent_id);
 
-				Node* parent_node_ptr = get_node_ptr(parent_id);
-				parent_node_ptr->add_child_id(id);
+				Node* parent_node_ptr = GetNode(parent_id);
+				parent_node_ptr->AddChildID(id);
 			}
 			else
 			{
@@ -242,12 +245,12 @@ namespace puffin::scene
 
 			m_id_to_type.insert({ id, type_name });
 
-			if (node->has_transform_2d())
+			if (node->HasTransform2D())
 			{
 				m_global_transform_2ds.emplace(id, TransformComponent2D());
 			}
 
-			if (node->has_transform_3d())
+			if (node->HasTransform3D())
 			{
 				m_global_transform_3ds.emplace(id, TransformComponent3D());
 			}
@@ -256,7 +259,7 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		T* add_node_internal(UUID id = gInvalidID, UUID parent_id = gInvalidID)
+		T* AddNodeInternal(UUID id = gInvalidID, UUID parent_id = gInvalidID)
 		{
 			if (m_id_to_type.find(id) != m_id_to_type.end())
 			{
@@ -267,7 +270,7 @@ namespace puffin::scene
 
 			if (m_node_arrays.find(type_name) == m_node_arrays.end())
 			{
-				register_node_type<T>();
+				RegisterNodeType<T>();
 			}
 
 			assert(m_node_arrays.find(type_name) != m_node_arrays.end() && "SceneGraph::add_node_internal(PuffinID, PuffinID) - Node type not registered before use");
@@ -279,7 +282,7 @@ namespace puffin::scene
 				T* node = get_array<T>()->add(mEngine);
 				node_ptr = static_cast<Node*>(node);
 
-				id = node_ptr->id();
+				id = node_ptr->GetID();
 			}
 			else
 			{
@@ -292,7 +295,7 @@ namespace puffin::scene
 			return get_array<T>()->get(id);
 		}
 
-		Node* add_node_internal(const char* type_name, UUID id = gInvalidID, UUID parent_id = gInvalidID)
+		Node* AddNodeInternal(const char* type_name, UUID id = gInvalidID, UUID parent_id = gInvalidID)
 		{
 			if (m_id_to_type.find(id) != m_id_to_type.end())
 			{
@@ -307,7 +310,7 @@ namespace puffin::scene
 			{
 				node_ptr = get_array(type_name)->add_ptr(mEngine);
 
-				id = node_ptr->id();
+				id = node_ptr->GetID();
 			}
 			else
 			{
