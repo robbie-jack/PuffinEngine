@@ -68,7 +68,7 @@ namespace puffin::audio
 
 		if (!mAudioSubsystemProvider->CreateSoundInstance(soundAssetID, soundInstanceID))
 		{
-			return gInvalidId;
+			return gInvalidID;
 		}
 
 		mSoundInstances.emplace(soundInstanceID, SoundInstance());

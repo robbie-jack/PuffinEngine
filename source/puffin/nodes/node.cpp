@@ -75,7 +75,7 @@ namespace puffin
 
 	Node* Node::get_parent() const
 	{
-		if (m_parent_id != gInvalidId)
+		if (m_parent_id != gInvalidID)
 		{
 			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 			return scene_graph_subsystem->get_node_ptr(m_parent_id);
@@ -86,7 +86,7 @@ namespace puffin
 
 	void Node::reparent(const UUID& id)
 	{
-		if (m_parent_id != gInvalidId)
+		if (m_parent_id != gInvalidID)
 		{
 			auto parent = get_parent();
 			if (parent)

@@ -219,7 +219,7 @@ namespace puffin::scene
 					std::vector<UUID> transform_ids_to_apply;
 					transform_ids_to_apply.push_back(id);
 
-					while (parent_id != gInvalidId)
+					while (parent_id != gInvalidID)
 					{
 						if (const auto node = get_node_ptr(parent_id); node)
 						{
@@ -250,7 +250,7 @@ namespace puffin::scene
 					std::vector<UUID> transform_ids_to_apply;
 					transform_ids_to_apply.push_back(id);
 
-					while (parent_id != gInvalidId)
+					while (parent_id != gInvalidID)
 					{
 						if (const auto node = get_node_ptr(parent_id); node)
 						{

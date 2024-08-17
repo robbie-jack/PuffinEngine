@@ -46,8 +46,8 @@ namespace puffin::assets
 
     private:
 
-        UUID mVertexShaderID = gInvalidId;
-        UUID mFragmentShaderID = gInvalidId;
+        UUID mVertexShaderID = gInvalidID;
+        UUID mFragmentShaderID = gInvalidID;
     };
 
     class MaterialInstanceAsset : public Asset
@@ -76,7 +76,7 @@ namespace puffin::assets
     private:
 
         // Base material this instance overrides. If this is gInvalidID, then it will use engine base material
-        UUID mBaseMaterial = gInvalidId;
+        UUID mBaseMaterial = gInvalidID;
 
         std::array<UUID, rendering::gNumTexturesPerMat> mTexIDs = { 0, 0, 0, 0, 0, 0, 0, 0 };
         std::array<float, rendering::gNumFloatsPerMat> mData = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };

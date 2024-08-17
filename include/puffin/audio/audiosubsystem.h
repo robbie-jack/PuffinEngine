@@ -29,8 +29,8 @@ namespace puffin::audio
 	// Instance of a sound effect, there can be any number of instances of a particular sound
 	struct SoundInstance
 	{
-		UUID instanceID = gInvalidId;
-		UUID assetID = gInvalidId;
+		UUID instanceID = gInvalidID;
+		UUID assetID = gInvalidID;
 		bool playing = false; // Whether this instance is currently playing
 		bool looping = false; // Whether this instance should loop
 		float volume = 1.0f; // Volume of this instance

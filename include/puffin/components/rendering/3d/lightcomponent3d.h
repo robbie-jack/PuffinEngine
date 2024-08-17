@@ -39,7 +39,5 @@ namespace puffin::rendering
 		float ambientIntensity = .05f; // Intensity multiplier applied to ambient/indirect color
 		float specularIntensity = 1.f; // Intensity multiplier applied to specular highlights
 		int specularExponent = 64; // Exponent specular value is raised to
-
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent3D, color, ambientIntensity,specularIntensity, specularExponent)
 	};
 }

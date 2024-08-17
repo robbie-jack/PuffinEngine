@@ -8,7 +8,7 @@ namespace puffin::rendering
 	{
 	public:
 
-		explicit MeshNode(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidId);
+		explicit MeshNode(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
 
 		void begin_play() override;
 		void update(const double delta_time) override;

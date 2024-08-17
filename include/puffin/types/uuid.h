@@ -10,14 +10,14 @@ namespace puffin
 	static std::uniform_int_distribution<uint64_t> uniformDistribution;
 
     using UUID = uint_least64_t;
-	constexpr static UUID gInvalidId = 0;
+	constexpr static UUID gInvalidID = 0;
 
 	static UUID GenerateId()
 	{
-		UUID id = gInvalidId;
+		UUID id = gInvalidID;
 
 		// Ensure that generated id will never equal invalid id (though this is extremely unlikely)
-		while (id == gInvalidId)
+		while (id == gInvalidID)
 		{
 			id = uniformDistribution(randEngine);
 		}

@@ -45,7 +45,7 @@ namespace puffin
 
 		protected:
 
-			UUID mSelectedEntity = gInvalidId;
+			UUID mSelectedEntity = gInvalidID;
 
 			// Boolean for if window is currently visible
 			bool mShow;

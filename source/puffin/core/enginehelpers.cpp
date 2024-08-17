@@ -55,7 +55,6 @@ namespace puffin::core
 		sceneSubsystem->register_component<TransformComponent2D>();
 		sceneSubsystem->register_component<TransformComponent3D>();
 		sceneSubsystem->register_component<rendering::StaticMeshComponent3D>();
-		sceneSubsystem->register_component<rendering::LightComponent3D>();
 		sceneSubsystem->register_component<rendering::PointLightComponent3D>();
 		sceneSubsystem->register_component<rendering::SpotLightComponent3D>();
 		sceneSubsystem->register_component<rendering::DirectionalLightComponent3D>();

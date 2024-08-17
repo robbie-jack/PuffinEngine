@@ -88,7 +88,7 @@ namespace puffin
 				// Display Scene View Texture
 				ImGui::Image(textureID, mViewportSize);
 
-				if (mSelectedEntity != gInvalidId)
+				if (mSelectedEntity != gInvalidID)
 				{
 					//TransformComponent3D& transform = ecsWorld->GetComponent<TransformComponent3D>(entity);
 					

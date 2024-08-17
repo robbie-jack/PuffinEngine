@@ -18,10 +18,10 @@
 
 namespace puffin::rendering::util
 {
-	void immediate_submit(const RenderSubystemVK* render_system,
+	void ImmediateSubmit(const RenderSubystemVK* renderSystem,
 	                     std::function<void(VkCommandBuffer cmd)>&& function)
 	{
-		vk::CommandBuffer cmd = render_system->GetUploadContext().commandBuffer;
+		vk::CommandBuffer cmd = renderSystem->GetUploadContext().commandBuffer;
 
 		const vk::CommandBufferBeginInfo cmdBeginInfo = { vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
 		VK_CHECK(cmd.begin(&cmdBeginInfo));
@@ -32,34 +32,33 @@ namespace puffin::rendering::util
 
 		const vk::SubmitInfo submit = { {}, {}, {}, 1, &cmd };
 
-		VK_CHECK(render_system->GetGraphicsQueue().submit(1, &submit, render_system->GetUploadContext().uploadFence));
+		VK_CHECK(renderSystem->GetGraphicsQueue().submit(1, &submit, renderSystem->GetUploadContext().uploadFence));
 
-		VK_CHECK(render_system->GetDevice().waitForFences(1, &render_system->GetUploadContext().uploadFence, true, 9999999999));
-		VK_CHECK(render_system->GetDevice().resetFences(1, &render_system->GetUploadContext().uploadFence));
+		VK_CHECK(renderSystem->GetDevice().waitForFences(1, &renderSystem->GetUploadContext().uploadFence, true, 9999999999));
+		VK_CHECK(renderSystem->GetDevice().resetFences(1, &renderSystem->GetUploadContext().uploadFence));
 
-		render_system->GetDevice().resetCommandPool(render_system->GetUploadContext().commandPool);
+		renderSystem->GetDevice().resetCommandPool(renderSystem->GetUploadContext().commandPool);
 	}
 
-	void copy_data_between_buffers(const RenderSubystemVK* render_system, const vk::Buffer src_buffer,
-	                               const vk::Buffer dst_buffer,
-	                               const uint32_t data_size, const uint32_t src_offset, const uint32_t dst_offset)
+	void CopyDataBetweenBuffers(const RenderSubystemVK* renderSystem, const CopyDataBetweenBuffersParams& params)
 	{
-		immediate_submit(render_system, [=](const vk::CommandBuffer cmd)
+		ImmediateSubmit(renderSystem, [=](const vk::CommandBuffer cmd)
 		{
 			vk::BufferCopy copy;
-			copy.dstOffset = dst_offset;
-			copy.srcOffset = src_offset;
-			copy.size = data_size;
-			cmd.copyBuffer(src_buffer, dst_buffer, 1, &copy);
+			copy.dstOffset = params.dstOffset;
+			copy.srcOffset = params.srcOffset;
+			copy.size = params.dataSize;
+			cmd.copyBuffer(params.srcBuffer, params.dstBuffer, 1, &copy);
 		});
 	}
 
-	AllocatedBuffer create_buffer(const vma::Allocator& allocator, const size_t alloc_size, const vk::BufferUsageFlags usage,
-	                             const vma::MemoryUsage memory_usage, const vma::AllocationCreateFlags alloc_flags, const vk::MemoryPropertyFlags required_flags)
+	AllocatedBuffer CreateBuffer(const vma::Allocator& allocator,
+	                             const
+	                             CreateBufferParams& params)
 	{
-		const vk::BufferCreateInfo bufferInfo = { {}, alloc_size, usage };
+		const vk::BufferCreateInfo bufferInfo = { {}, params.allocSize, params.bufferUsage };
 
-		const vma::AllocationCreateInfo allocInfo = { alloc_flags, memory_usage, required_flags };
+		const vma::AllocationCreateInfo allocInfo = { params.allocFlags, params.memoryUsage, params.requiredFlags };
 
 		AllocatedBuffer buffer;
 
@@ -68,140 +67,124 @@ namespace puffin::rendering::util
 		return buffer;
 	}
 
-	void copy_cpu_data_into_gpu_buffer(const RenderSubystemVK* render_system, const AllocatedBuffer& dst_buffer, const uint32_t data_size,
-	                                   const void* data, const uint32_t src_offset, const uint32_t dst_offset)
+	void CopyCPUDataIntoGPUBuffer(const RenderSubystemVK* renderSystem,
+	                              const CopyCPUDataIntoGPUBufferParams& params)
 	{
 		// If rebar is enabled and buffer is in host visible memory, copy directly to buffer
-		if (const vk::MemoryPropertyFlags memPropFlags = render_system->GetAllocator().getAllocationMemoryProperties(dst_buffer.allocation); render_system->GetRebarEnabled() 
+		if (const vk::MemoryPropertyFlags memPropFlags = renderSystem->GetAllocator().getAllocationMemoryProperties(params.dstBuffer.allocation); renderSystem->GetRebarEnabled() 
 			&& (memPropFlags & vk::MemoryPropertyFlagBits::eHostVisible))
 		{
-			const auto* dataChar = static_cast<const char*>(data);
+			const auto* dataChar = static_cast<const char*>(params.srcData);
 
-			std::copy_n(dataChar, data_size, static_cast<char*>(dst_buffer.alloc_info.pMappedData) + dst_offset);
+			std::copy_n(dataChar, params.dataSize, static_cast<char*>(params.dstBuffer.alloc_info.pMappedData) + params.dstOffset);
 		}
 		// If rebar is not enabled or buffer is not in host visible, copy data via staging buffer
 		else
 		{
-			// Allocate Staging Buffer - Map Vertices in CPU Memory
-			const AllocatedBuffer stagingBuffer = create_buffer(render_system->GetAllocator(), data_size,
-			                                                   vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAuto, 
-			                                                   { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped });
+			// Allocate Staging Buffer - Map data in CPU Memory
+			CreateBufferParams createParams;
+			createParams.allocSize = params.dataSize;
+			createParams.bufferUsage = vk::BufferUsageFlagBits::eTransferSrc;
+			createParams.allocFlags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped;
+			const AllocatedBuffer stagingBuffer = CreateBuffer(renderSystem->GetAllocator(), createParams);
 
-			const auto* dataChar = static_cast<const char*>(data);
+			const auto* dataChar = static_cast<const char*>(params.srcData);
 			auto* mappedDataChar = static_cast<char*>(stagingBuffer.alloc_info.pMappedData);
 
-			std::copy_n(dataChar, data_size, mappedDataChar);
+			std::copy_n(dataChar, params.dataSize, mappedDataChar);
 
 			// Copy from CPU Memory to GPU Memory
-			copy_data_between_buffers(render_system, stagingBuffer.buffer, dst_buffer.buffer, data_size, src_offset, dst_offset);
+			CopyDataBetweenBuffersParams copyParams;
+			copyParams.srcBuffer = stagingBuffer.buffer;
+			copyParams.dstBuffer = params.dstBuffer.buffer;
+			copyParams.dataSize = params.dataSize;
+			copyParams.srcOffset = params.srcOffset;
+			copyParams.dstOffset = params.dstOffset;
+			CopyDataBetweenBuffers(renderSystem, copyParams);
 
 			// Cleanup Staging Buffer Immediately, It is no longer needed
-			render_system->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+			renderSystem->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
 		}
 	}
 
-	AllocatedBuffer init_vertex_buffer(const RenderSubystemVK* render_system, const void* vertex_data, const size_t num_vertices, const size_t vertex_size)
-	{
-		// Copy Loaded Mesh data into mesh vertex buffer
-		const uint32_t vertexBufferSize = num_vertices * vertex_size;
-
-		// Allocate Vertex Buffer - Transfer Vertices into GPU Memory
-		AllocatedBuffer vertexBuffer = create_buffer(render_system->GetAllocator(), vertexBufferSize,
-            { vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc }, 
-			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
-
-		copy_cpu_data_into_gpu_buffer(render_system, vertexBuffer, vertexBufferSize, vertex_data);
-
-		return vertexBuffer;
-	}
-
-	AllocatedBuffer init_index_buffer(const RenderSubystemVK* render_system, const void* index_data,
-	                                  const size_t num_indices, const size_t index_size)
-	{
-		const uint32_t indexBufferSize = num_indices * index_size;
-
-		// Allocate Index Buffer - Transfer indices into GPU memory
-		AllocatedBuffer indexBuffer = create_buffer(render_system->GetAllocator(), indexBufferSize,
-			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAuto, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead });
-
-		copy_cpu_data_into_gpu_buffer(render_system, indexBuffer, indexBufferSize, index_data);
-
-		return indexBuffer;
-	}
-
-	AllocatedImage create_image(const RenderSubystemVK* render_system, const vk::ImageCreateInfo& image_info, vk::ImageViewCreateInfo image_view_info)
+	AllocatedImage CreateImage(const RenderSubystemVK* renderSystem, const CreateImageParams& params)
 	{
 		AllocatedImage allocImage;
-		allocImage.format = image_info.format;
+		allocImage.format = params.imageInfo.format;
 
 		// Create Image
 		constexpr vma::AllocationCreateInfo imageAllocInfo = { {}, vma::MemoryUsage::eAutoPreferDevice, vk::MemoryPropertyFlagBits::eDeviceLocal };
 
-		VK_CHECK(render_system->GetAllocator().createImage(&image_info, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.alloc_info));
+		VK_CHECK(renderSystem->GetAllocator().createImage(&params.imageInfo, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.alloc_info));
 
 		// Create Image View
-		image_view_info.image = allocImage.image;
+		vk::ImageViewCreateInfo imageViewCreateInfo = params.imageViewInfo;
+		imageViewCreateInfo.image = allocImage.image;
 
-		VK_CHECK(render_system->GetDevice().createImageView(&image_view_info, nullptr, &allocImage.image_view));
+		VK_CHECK(renderSystem->GetDevice().createImageView(&imageViewCreateInfo, nullptr, &allocImage.image_view));
 
 		return allocImage;
 	}
 
-	AllocatedImage create_color_image(const RenderSubystemVK* render_system, vk::Extent3D extent,
-		vk::Format format)
+	AllocatedImage CreateColorImage(const RenderSubystemVK* renderSystem, const CreateFormattedImageParams& params)
 	{
-		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
+		CreateImageParams createImageParams;
+
+		createImageParams.imageInfo = { {}, vk::ImageType::e2D, params.format, params.extent, 1, 1,
 			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, {vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment } };
 
 		constexpr vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
 
-		const vk::ImageViewCreateInfo imageViewInfo({}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange);
+		createImageParams.imageViewInfo = { {}, {}, vk::ImageViewType::e2D, params.format, {}, subresourceRange };
 
-		return create_image(render_system, imageInfo, imageViewInfo);
+		return CreateImage(renderSystem, createImageParams);
 	}
 
-	AllocatedImage create_depth_image(const RenderSubystemVK* render_system, const vk::Extent3D extent, const vk::Format format)
+	AllocatedImage CreateDepthImage(const RenderSubystemVK* renderSystem, const CreateFormattedImageParams& params)
 	{
-		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, extent, 1, 1,
+		CreateImageParams createImageParams;
+
+		createImageParams.imageInfo = { {}, vk::ImageType::e2D, params.format, params.extent, 1, 1,
 			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, { vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eDepthStencilAttachment } };
 
 		constexpr vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 };
 
-		const vk::ImageViewCreateInfo imageViewInfo({}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange);
+		createImageParams.imageViewInfo = { {}, {}, vk::ImageViewType::e2D, params.format, {}, subresourceRange };
 
-		return create_image(render_system, imageInfo, imageViewInfo);
+		return CreateImage(renderSystem, createImageParams);
 	}
 
-	AllocatedImage init_texture(const RenderSubystemVK* render_system, const void* pixel_data, const uint32_t width, const uint32_t height, vk
-	                            ::DeviceSize size, const vk::Format format)
+	AllocatedImage InitTexture(const RenderSubystemVK* renderSystem, const InitTextureParams& params)
 	{
 		// Allocate staging buffer on CPU for holding texture data to upload
-		const AllocatedBuffer stagingBuffer = create_buffer(render_system->GetAllocator(), size,
-			vk::BufferUsageFlagBits::eTransferSrc, vma::MemoryUsage::eAuto, 
-			vma::AllocationCreateFlagBits::eHostAccessSequentialWrite);
+		CreateBufferParams createBufferParams;
+		createBufferParams.allocSize = params.dataSize;
+		createBufferParams.bufferUsage = vk::BufferUsageFlagBits::eTransferSrc;
+		createBufferParams.allocFlags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped;
+		const AllocatedBuffer stagingBuffer = CreateBuffer(renderSystem->GetAllocator(), createBufferParams);
 
 		// Copy texture data to buffer
-		void* data;
-		VK_CHECK(render_system->GetAllocator().mapMemory(stagingBuffer.allocation, &data));
-		memcpy(data, pixel_data, size);
-		render_system->GetAllocator().unmapMemory(stagingBuffer.allocation);
+		const auto* dataChar = static_cast<const char*>(params.pixelData);
+		auto* mappedDataChar = static_cast<char*>(stagingBuffer.alloc_info.pMappedData);
+
+		std::copy_n(dataChar, params.dataSize, mappedDataChar);
 
 		// Allocate and create texture in GPU memory
-		const vk::Extent3D imageExtent = { width, height, 1 };
+		const vk::Extent3D imageExtent = { params.width, params.height, 1 };
 
-		const vk::ImageCreateInfo imageInfo = { {}, vk::ImageType::e2D, format, imageExtent,
+		CreateImageParams createImageParams;
+		createImageParams.imageInfo = { {}, vk::ImageType::e2D, params.format, imageExtent,
 			1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eLinear,
 			{ vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst } };
 
 		constexpr vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
 
-		const vk::ImageViewCreateInfo imageViewInfo = { {}, {}, vk::ImageViewType::e2D, format, {}, subresourceRange };
+		createImageParams.imageViewInfo = { {}, {}, vk::ImageViewType::e2D, params.format, {}, subresourceRange };
 
-		const AllocatedImage texture = create_image(render_system, imageInfo, imageViewInfo);
+		const AllocatedImage texture = CreateImage(renderSystem, createImageParams);
 
 		// Fill command for copying pixels to texture and transitioning image layout
-		immediate_submit(render_system, [=](vk::CommandBuffer cmd)
+		ImmediateSubmit(renderSystem, [=](vk::CommandBuffer cmd)
 		{
 			// Barrier image into transfer-receive layout
 			constexpr vk::ImageSubresourceRange range = { vk::ImageAspectFlagBits::eColor,
@@ -232,7 +215,7 @@ namespace puffin::rendering::util
 		});
 
 		// Cleanup Staging Buffer Immediately, It is no longer needed
-		render_system->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
+		renderSystem->GetAllocator().destroyBuffer(stagingBuffer.buffer, stagingBuffer.allocation);
 
 		return texture;
 	}

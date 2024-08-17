@@ -119,15 +119,19 @@ namespace puffin::rendering
 
 	void ResourceManagerVK::create_image_internal(ResourceID id, const ImageDesc& image_desc, uint8_t idx)
 	{
-		vk::Extent3D extent = { image_desc.width, image_desc.height, image_desc.depth };
+		const vk::Extent3D extent = { image_desc.width, image_desc.height, image_desc.depth };
+
+		util::CreateFormattedImageParams params;
+		params.extent = extent;
+		params.format = image_desc.format;
 
 		if (image_desc.image_type == ImageType::Color)
 		{
-			m_images.at(id)[idx] = util::create_color_image(m_render_system, extent, image_desc.format);
+			m_images.at(id)[idx] = util::CreateColorImage(m_render_system, params);
 		}
 		else
 		{
-			m_images.at(id)[idx] = util::create_depth_image(m_render_system, extent, image_desc.format);
+			m_images.at(id)[idx] = util::CreateDepthImage(m_render_system, params);
 		}
 	}
 

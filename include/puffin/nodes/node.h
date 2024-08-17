@@ -34,7 +34,7 @@ namespace puffin
 	{
 	public:
 
-		explicit Node(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidId);
+		explicit Node(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
 
 		virtual ~Node() = default;
 
@@ -134,10 +134,10 @@ namespace puffin
 		bool m_should_update = false;
 		bool m_transform_changed = true;
 
-		UUID m_node_id = gInvalidId;
+		UUID m_node_id = gInvalidID;
 		entt::entity m_entity;
 
-		UUID m_parent_id = gInvalidId;
+		UUID m_parent_id = gInvalidID;
 		std::list<UUID> m_child_ids;
 		std::string m_name;
 

@@ -54,7 +54,7 @@ namespace puffin::assets
 	{
 		AssetData()
 		{
-			id = puffin::gInvalidId;
+			id = puffin::gInvalidID;
 			type = AssetType::Invalid;
 			version = 0;
 			binaryBlob.clear();
@@ -62,7 +62,7 @@ namespace puffin::assets
 
 		~AssetData()
 		{
-			id = puffin::gInvalidId;
+			id = puffin::gInvalidID;
 			type = AssetType::Invalid;
 			version = 0;
 			jsonData.clear();
@@ -138,7 +138,7 @@ namespace puffin::assets
 
 	private:
 
-		puffin::UUID mID = puffin::gInvalidId; // UUID of Asset
+		puffin::UUID mID = puffin::gInvalidID; // UUID of Asset
 		fs::path mPath; // Relative Asset Path
 
 	};

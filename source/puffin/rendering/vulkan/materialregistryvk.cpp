@@ -32,7 +32,7 @@ namespace puffin::rendering
 
 	void MaterialRegistryVK::register_material_instance(const UUID& id)
 	{
-		if (id != gInvalidId)
+		if (id != gInvalidID)
 		{
 			m_materials_instances_to_load.insert(id);
 		}
@@ -47,7 +47,7 @@ namespace puffin::rendering
 		// Load Material Instances
 		for (const auto matInstID : m_materials_instances_to_load)
 		{
-			if (matInstID != gInvalidId && !m_mat_data.contains(matInstID))
+			if (matInstID != gInvalidID && !m_mat_data.contains(matInstID))
 			{
 				m_mat_data.emplace(matInstID, MaterialDataVK());
 
@@ -105,13 +105,13 @@ namespace puffin::rendering
 
 			for (const auto& texID : matData.texIDs)
 			{
-				if (texID != gInvalidId)
+				if (texID != gInvalidID)
 				{
 					m_render_system->RegisterTexture(texID);
 				}
 			}
 
-			if (matData.baseMaterialID != gInvalidId)
+			if (matData.baseMaterialID != gInvalidID)
 			{
 				m_materials_to_load.insert(matData.baseMaterialID);
 			}

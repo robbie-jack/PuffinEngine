@@ -52,9 +52,9 @@ namespace puffin::rendering
 
 	void CameraSubystem::EndPlay()
 	{
-        m_active_play_cam_id = gInvalidId;
-		mActiveCameraID = gInvalidId;
-        m_editor_cam_id = gInvalidId;
+        m_active_play_cam_id = gInvalidID;
+		mActiveCameraID = gInvalidID;
+        m_editor_cam_id = gInvalidID;
 
         InitEditorCamera();
 	}
@@ -88,7 +88,7 @@ namespace puffin::rendering
 			}
 			else
 			{
-                m_active_play_cam_id = gInvalidId;
+                m_active_play_cam_id = gInvalidID;
 			}
 
             m_cached_cam_active_state.at(id) = camera.active;
@@ -102,7 +102,7 @@ namespace puffin::rendering
 
         if (m_active_play_cam_id == id)
         {
-            m_active_play_cam_id = gInvalidId;
+            m_active_play_cam_id = gInvalidID;
         }
 
         m_cached_cam_active_state.erase(id);
@@ -141,7 +141,7 @@ namespace puffin::rendering
 
 	void CameraSubystem::UpdateActiveCamera()
 	{
-        if (m_active_play_cam_id != gInvalidId)
+        if (m_active_play_cam_id != gInvalidID)
         {
             mActiveCameraID = m_active_play_cam_id;
         }
@@ -170,7 +170,7 @@ namespace puffin::rendering
 
 	void CameraSubystem::UpdateCameras(double deltaTime)
 	{
-        if (m_active_play_cam_id == gInvalidId)
+        if (m_active_play_cam_id == gInvalidID)
         {
             UpdateActivePlayCamera();
         }
@@ -194,7 +194,7 @@ namespace puffin::rendering
 
 	void CameraSubystem::UpdateEditorCamera(double deltaTime)
 	{
-        if (m_editor_cam_id != gInvalidId && m_editor_cam_id == mActiveCameraID)
+        if (m_editor_cam_id != gInvalidID && m_editor_cam_id == mActiveCameraID)
         {
             const auto inputSubsystem = mEngine->GetSubsystem<input::InputSubsystem>();
             const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();

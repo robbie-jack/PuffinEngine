@@ -79,12 +79,10 @@ namespace puffin::rendering
 			}
 
 			// Copy vertex data
-			util::copy_cpu_data_into_gpu_buffer(m_render_system, internal_vertex_buffer_data.alloc_buffer, static_mesh->VertexByteSizeTotal(),
-				static_mesh->Vertices().data(), 0, internal_vertex_buffer_data.byte_offset);
+			util::CopyCPUDataIntoGPUBuffer(m_render_system, TODO);
 
 			// Copy index data
-			util::copy_cpu_data_into_gpu_buffer(m_render_system, m_index_buffer_data.alloc_buffer, static_mesh->IndexByteSizeTotal(),
-				static_mesh->Indices().data(), 0, m_index_buffer_data.byte_offset);
+			util::CopyCPUDataIntoGPUBuffer(m_render_system, TODO);
 
 			for (const auto& sub_mesh_info : static_mesh->SubMeshInfo())
 			{
@@ -145,8 +143,11 @@ namespace puffin::rendering
 
 		if (vertex_buffer_data.byte_size_total > 0 && vertex_buffer_data.byte_offset > 0)
 		{
-			util::copy_data_between_buffers(m_render_system, vertex_buffer_data.alloc_buffer.buffer,
-				new_buffer.buffer, vertex_buffer_data.byte_offset);
+			util::CopyDataBetweenBuffersParams params;
+			params.dataSize = vertex_buffer_data.byte_offset;
+			params.srcBuffer = vertex_buffer_data.alloc_buffer.buffer;
+			params.dstBuffer = new_buffer.buffer;
+			util::CopyDataBetweenBuffers(m_render_system, params);
 
 			m_render_system->GetAllocator().destroyBuffer(vertex_buffer_data.alloc_buffer.buffer, vertex_buffer_data.alloc_buffer.allocation);
 		}
@@ -165,8 +166,11 @@ namespace puffin::rendering
 
 		if (index_buffer_data.byte_size_total > 0 && index_buffer_data.byte_offset > 0)
 		{
-			util::copy_data_between_buffers(m_render_system, index_buffer_data.alloc_buffer.buffer,
-				new_buffer.buffer, index_buffer_data.byte_offset);
+			util::CopyDataBetweenBuffersParams params;
+			params.dataSize = index_buffer_data.byte_offset;
+			params.srcBuffer = index_buffer_data.alloc_buffer.buffer;
+			params.dstBuffer = new_buffer.buffer;
+			util::CopyDataBetweenBuffers(m_render_system, params);
 
 			m_render_system->GetAllocator().destroyBuffer(index_buffer_data.alloc_buffer.buffer, index_buffer_data.alloc_buffer.allocation);
 		}
@@ -178,18 +182,27 @@ namespace puffin::rendering
 
 	AllocatedBuffer UnifiedGeometryBuffer::allocate_vertex_buffer(vk::DeviceSize buffer_size)
 	{
-		return util::create_buffer(m_render_system->GetAllocator(), buffer_size,
-			{ vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eShaderDeviceAddress },
-			vma::MemoryUsage::eAutoPreferDevice,
-			{ vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
-			vma::AllocationCreateFlagBits::eMapped });
+		util::CreateBufferParams params;
+		params.allocSize = buffer_size;
+		params.bufferUsage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | 
+			vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eShaderDeviceAddress;
+		params.memoryUsage = vma::MemoryUsage::eAutoPreferDevice;
+		params.allocFlags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | 
+			vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
+			vma::AllocationCreateFlagBits::eMapped;
+		return util::CreateBuffer(m_render_system->GetAllocator(), params);
 	}
 
 	AllocatedBuffer UnifiedGeometryBuffer::allocate_index_buffer(vk::DeviceSize buffer_size)
 	{
-		return util::create_buffer(m_render_system->GetAllocator(), buffer_size,
-			{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc },
-			vma::MemoryUsage::eAutoPreferDevice, { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
-			vma::AllocationCreateFlagBits::eMapped });
+		util::CreateBufferParams params;
+		params.allocSize = buffer_size;
+		params.bufferUsage = vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst |
+			vk::BufferUsageFlagBits::eTransferSrc;
+		params.memoryUsage = vma::MemoryUsage::eAutoPreferDevice;
+		params.allocFlags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite |
+			vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
+			vma::AllocationCreateFlagBits::eMapped;
+		return util::CreateBuffer(m_render_system->GetAllocator(), params);
 	}
 }

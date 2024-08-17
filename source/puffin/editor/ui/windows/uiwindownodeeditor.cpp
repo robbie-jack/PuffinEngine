@@ -60,7 +60,7 @@ namespace puffin
 
 				begin(mWindowName);
 
-				if (mSelectedEntity != gInvalidId && entt_subsystem->valid(mSelectedEntity))
+				if (mSelectedEntity != gInvalidID && entt_subsystem->valid(mSelectedEntity))
 				{
 					ImGui::Dummy(ImVec2(0.0f, 5.0f));
 					ImGui::Text(""); ImGui::SameLine(0.0f);

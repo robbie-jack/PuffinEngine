@@ -15,8 +15,8 @@ namespace puffin::rendering
 		{
 		}
 
-		UUID meshID = gInvalidId;
-		UUID materialID = gInvalidId;
+		UUID meshID = gInvalidID;
+		UUID materialID = gInvalidID;
 		uint8_t subMeshIdx = 0; // Index of sub mesh to render for the set model, always 0 for models with no sub-mesh
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(StaticMeshComponent3D, meshID, materialID, subMeshIdx)

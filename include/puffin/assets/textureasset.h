@@ -98,8 +98,7 @@ namespace puffin::assets
 
 		void Unload() override;
 
-		[[nodiscard]] const std::vector<char>& Pixels() const;
-		[[nodiscard]] const void* PixelData() const;
+		[[nodiscard]] std::vector<char>& Pixels();
 
 		[[nodiscard]] uint32_t TextureWidth() const;
 		[[nodiscard]] uint32_t TextureHeight() const;

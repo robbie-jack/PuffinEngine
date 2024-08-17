@@ -142,7 +142,7 @@ namespace puffin::rendering
 
 	struct MaterialDataVK : AssetDataVK
 	{
-		UUID baseMaterialID = gInvalidId;
+		UUID baseMaterialID = gInvalidID;
 
 		int idx = 0;
 
@@ -151,7 +151,7 @@ namespace puffin::rendering
 
 	struct MaterialVK
 	{
-		UUID matID = gInvalidId;
+		UUID matID = gInvalidID;
 
 		vk::UniquePipeline pipeline = {};
 		vk::UniquePipelineLayout pipelineLayout = {};
@@ -179,7 +179,7 @@ namespace puffin::rendering
 	// Struct for rendering a batch of meshes which share a material
 	struct MeshDrawBatch
 	{
-		MeshDrawBatch(const UUID matID_ = gInvalidId, const uint32_t cmdCount_ = 0, const uint32_t meshIndex_ = 0) :
+		MeshDrawBatch(const UUID matID_ = gInvalidID, const uint32_t cmdCount_ = 0, const uint32_t meshIndex_ = 0) :
 			matID(matID_), cmdCount(cmdCount_), cmdIndex(meshIndex_) {}
 
 		UUID matID; // Id of this material
@@ -207,7 +207,8 @@ namespace puffin::rendering
 
 	struct GPUFragShaderPushConstant
 	{
-		alignas(16) glm::vec4 view_pos_and_light_count;
+		alignas(16) glm::vec4 viewPos;
+		alignas(16) glm::vec4 lightCount;
 	};
 
 	struct GPUCameraData
@@ -225,12 +226,25 @@ namespace puffin::rendering
 
 	struct GPULightData
 	{
-		alignas(4) glm::vec4 position_and_type;
-		alignas(4) glm::vec4 direction;
+		alignas(4) glm::vec4 positionShadowIndex;
 		alignas(4) glm::vec4 color;
-		alignas(4) glm::vec4 ambient_specular;
+		alignas(4) glm::vec4 ambientSpecularExponent;
+	};
+
+	struct GPUPointLightData : GPULightData
+	{
 		alignas(4) glm::vec4 attenuation;
-		alignas(4) glm::vec4 cutoff_angle_and_shadow_index;
+	};
+
+	struct GPUSpotLightData : GPULightData
+	{
+		alignas(4) glm::vec4 directionInnerCutoffAngle;
+		alignas(4) glm::vec4 attenuationOuterCutoffAngle;
+	};
+
+	struct GPUDirLightData : GPULightData
+	{
+		alignas(4) glm::vec4 direction;
 	};
 
 	struct GPUShadowData

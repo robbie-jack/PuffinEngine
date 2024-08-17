@@ -90,7 +90,7 @@ namespace puffin::ecs
 		if (m_entity_to_id.count(entity) != 0)
 			return m_entity_to_id.at(entity);
 
-		return gInvalidId;
+		return gInvalidID;
 	}
 
 	bool EnTTSubsystem::should_be_serialized(const UUID& id) const

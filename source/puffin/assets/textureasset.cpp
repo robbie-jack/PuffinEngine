@@ -218,14 +218,9 @@ namespace puffin::assets
 		mIsLoaded = false;
 	}
 
-	const std::vector<char>& TextureAsset::Pixels() const
+	std::vector<char>& TextureAsset::Pixels()
 	{
 		return mPixels;
-	}
-
-	const void* TextureAsset::PixelData() const
-	{
-		return mPixels.data();
 	}
 
 	uint32_t TextureAsset::TextureWidth() const

@@ -12,26 +12,65 @@ namespace puffin::rendering
 
 namespace puffin::rendering::util
 {
-	void immediate_submit(const RenderSubystemVK* render_system, std::function<void(VkCommandBuffer cmd)>&& function);
+	void ImmediateSubmit(const RenderSubystemVK* renderSystem, std::function<void(VkCommandBuffer cmd)>&& function);
 
-	void copy_data_between_buffers(const RenderSubystemVK* render_system, vk::Buffer src_buffer, vk::Buffer dst_buffer,
-	                               uint32_t data_size, uint32_t src_offset = 0, uint32_t dst_offset = 0);
+	struct CopyDataBetweenBuffersParams
+	{
+		size_t dataSize;
+		vk::Buffer srcBuffer;
+		vk::Buffer dstBuffer;
+		size_t srcOffset = 0;
+		size_t dstOffset = 0;
+	};
 
-	void copy_cpu_data_into_gpu_buffer(const RenderSubystemVK* render_system, const AllocatedBuffer& dst_buffer, uint32_t data_size,
-	                                   const void* data, uint32_t src_offset = 0, uint32_t dst_offset = 0);
+	void CopyDataBetweenBuffers(const RenderSubystemVK* renderSystem, const CopyDataBetweenBuffersParams& params);
 
-	AllocatedBuffer create_buffer(const vma::Allocator& allocator, size_t alloc_size, vk::BufferUsageFlags usage, vma::MemoryUsage memory_usage, vma::
-		AllocationCreateFlags alloc_flags = {}, vk::MemoryPropertyFlags required_flags = {});
+	struct CopyCPUDataIntoGPUBufferParams
+	{
+		AllocatedBuffer dstBuffer;
+		size_t dataSize;
+		void* srcData;
+		size_t srcOffset = 0;
+		size_t dstOffset = 0;
+	};
 
-	AllocatedBuffer init_vertex_buffer(const RenderSubystemVK* render_system, const void* vertex_data, const size_t num_vertices, const size_t vertex_size);
+	void CopyCPUDataIntoGPUBuffer(const RenderSubystemVK* renderSystem, const CopyCPUDataIntoGPUBufferParams& params);
 
-	AllocatedBuffer init_index_buffer(const RenderSubystemVK* render_system, const void* index_data, const size_t num_indices, const size_t index_size);
+	struct CreateBufferParams
+	{
+		size_t allocSize;
+		vk::BufferUsageFlags bufferUsage;
+		vma::MemoryUsage memoryUsage = vma::MemoryUsage::eAuto;
+		vma::AllocationCreateFlags allocFlags = {};
+		vk::MemoryPropertyFlags requiredFlags = {};
+	};
 
-	AllocatedImage create_image(const RenderSubystemVK* render_system, const vk::ImageCreateInfo& image_info, vk::ImageViewCreateInfo image_view_info);
+	AllocatedBuffer CreateBuffer(const vma::Allocator& allocator, const CreateBufferParams& params);
 
-	AllocatedImage create_color_image(const RenderSubystemVK* render_system, vk::Extent3D extent, vk::Format format);
-	AllocatedImage create_depth_image(const RenderSubystemVK* render_system, vk::Extent3D extent, vk::Format format);
+	struct CreateImageParams
+	{
+		vk::ImageCreateInfo imageInfo;
+		vk::ImageViewCreateInfo imageViewInfo;
+	};
 
-	AllocatedImage init_texture(const RenderSubystemVK* render_system, const void* pixel_data, uint32_t width, uint32_t height, vk::DeviceSize
-	                            size, vk::Format format);
+	AllocatedImage CreateImage(const RenderSubystemVK* renderSystem, const CreateImageParams& params);
+
+	struct CreateFormattedImageParams
+	{
+		vk::Extent3D extent;
+		vk::Format format;
+	};
+
+	AllocatedImage CreateColorImage(const RenderSubystemVK* renderSystem, const CreateFormattedImageParams& params);
+	AllocatedImage CreateDepthImage(const RenderSubystemVK* renderSystem, const CreateFormattedImageParams& params);
+
+	struct InitTextureParams
+	{
+		void* pixelData;
+		size_t dataSize;
+		uint32_t width;
+		uint32_t height;
+		vk::Format format;
+	};
+	AllocatedImage InitTexture(const RenderSubystemVK* renderSystem, const InitTextureParams& params);
 }
