@@ -21,29 +21,26 @@ namespace puffin
 		{
 		public:
 
-			UIWindow(const std::shared_ptr<core::Engine>& engine) : m_engine(engine)
-			{
-				mShow = true;
-				mFirstTime = true;
-				mFlags = ImGuiWindowFlags_None;
-			}
+			explicit UIWindow(const std::shared_ptr<core::Engine>& engine);
 
 			virtual ~UIWindow()
 			{
 				m_engine = nullptr;
 			}
 
-			virtual void draw(double dt) = 0;
+			virtual void Draw(double dt) = 0;
 
-			UUID selectedEntity() const { return mSelectedEntity; }
-			void setSelectedEntity(const UUID selectedEntity) { mSelectedEntity = selectedEntity; }
+			UUID GetSelectedEntity() const;
+			void SetSelectedEntity(const UUID selectedEntity);
 
-			void setShow();
-
-			bool* show() { return &mShow; }
-			std::string name() { return mWindowName; }
+			bool GetShow() const;
+			void Show();
+			const std::string& GetName();
 
 		protected:
+
+			virtual bool Begin(const std::string& name);
+			static void End();
 
 			UUID mSelectedEntity = gInvalidID;
 
@@ -58,8 +55,7 @@ namespace puffin
 
 			std::shared_ptr<core::Engine> m_engine;
 
-			virtual bool begin(std::string name);
-			static void end();
+			
 		};
 	}
 }

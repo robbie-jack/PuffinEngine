@@ -61,11 +61,7 @@ namespace puffin::ui
 
 			virtual bool Add(Node* node) = 0;
 
-			virtual [[nodiscard]] const std::string& GetName() const;
-
-		protected:
-
-			
+			[[nodiscard]] virtual const std::string& GetName() const;
 
 		};
 
@@ -74,7 +70,7 @@ namespace puffin::ui
 		{
 		public:
 
-			ComponentHandler(const std::string& name) : mName(name) {}
+			explicit ComponentHandler(const std::string& name) : mName(name) {}
 			~ComponentHandler() override = default;
 
 			bool Add(Node* node) override
@@ -89,7 +85,7 @@ namespace puffin::ui
 				return false;
 			}
 
-			[[nodiscard]] const std::string& GetName() const override { return mName; };
+			[[nodiscard]] const std::string& GetName() const override { return mName; }
 
 		private:
 
@@ -102,12 +98,12 @@ namespace puffin::ui
 		explicit UIWindowNodeEditor(const std::shared_ptr<core::Engine>& engine);
 		~UIWindowNodeEditor() override = default;
 
-		void draw(double dt) override;
+		void Draw(double dt) override;
 
 		//inline void SetEntity(ECS::EntityID entity_) { m_entity = entity_; };
-		void SetFileBrowser(ImGui::FileBrowser* fileDialog) { mFileDialog = fileDialog; }
+		void SetFileBrowser(ImGui::FileBrowser* fileDialog);
 
-		[[nodiscard]] bool GetSceneChanged() const { return mSceneChanged; }
+		[[nodiscard]] bool GetSceneChanged() const;
 
 		template<typename T>
 		void AddComponentType(const std::string& name)
@@ -119,17 +115,8 @@ namespace puffin::ui
 
 	private:
 
-		//ECS::EntityID m_entity = 0;
-		ImGui::FileBrowser* mFileDialog = nullptr;
-
-		bool mModelSelected = false;
-		bool mTextureSelected = false;
-		bool mSceneChanged = false;
-
-		std::vector<IComponentHandler*> mComponentHandlers;
-
-		void DrawTransformUI2DNode(ImGuiTreeNodeFlags flags, TransformNode2D* node);
-		void DrawTransformUI3DNode(ImGuiTreeNodeFlags flags, TransformNode3D* node);
+		void DrawTransform2DUINode(ImGuiTreeNodeFlags flags, TransformNode2D* node);
+		void DrawTransform3DUINode(ImGuiTreeNodeFlags flags, TransformNode3D* node);
 
 		void DrawMeshUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::StaticMeshComponent3D& mesh);
 		void DrawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light);
@@ -142,5 +129,16 @@ namespace puffin::ui
 		void DrawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box);
 
 		void DrawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script);
+
+		//ECS::EntityID m_entity = 0;
+		ImGui::FileBrowser* mFileDialog = nullptr;
+
+		bool mModelSelected = false;
+		bool mTextureSelected = false;
+		bool mSceneChanged = false;
+
+		std::vector<IComponentHandler*> mComponentHandlers;
+
+		
 	};
 }

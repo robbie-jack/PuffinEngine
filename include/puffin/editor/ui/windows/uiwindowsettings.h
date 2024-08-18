@@ -20,7 +20,7 @@ namespace puffin
 			UIWindowSettings(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowSettings() override {}
 
-			void draw(double dt) override;
+			void Draw(double dt) override;
 
 		private:
 

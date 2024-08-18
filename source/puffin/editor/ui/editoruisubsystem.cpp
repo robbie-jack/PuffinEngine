@@ -28,7 +28,7 @@ namespace puffin::ui
 		mName = "EditorUISubsystem";
 	}
 
-	void EditorUISubsystem::Initialize(core::SubsystemManager* subsystem_manager)
+	void EditorUISubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -38,29 +38,29 @@ namespace puffin::ui
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-		m_imgui_ini_filename = (assets::AssetRegistry::Get()->GetEngineRoot() / "config" / "imgui.ini").string();
-		io.IniFilename = m_imgui_ini_filename.c_str();
+		mImguiIniFilename = (assets::AssetRegistry::Get()->GetEngineRoot() / "config" / "imgui.ini").string();
+		io.IniFilename = mImguiIniFilename.c_str();
 
-		set_style();
+		SetStyle();
 
-		m_save_scene = false;
-		m_load_scene = false;
-		m_import_asset_ui = ImportAssetUI::Default;
+		mSaveScene = false;
+		mLoadScene = false;
+		mImportAssetUI = ImportAssetUI::Default;
 
-		m_window_scene_hierarchy = std::make_shared<UIWindowSceneHierarchy>(mEngine);
-		m_window_viewport = std::make_shared<UIWindowViewport>(mEngine);
-		m_window_settings = std::make_shared<UIWindowSettings>(mEngine);
-		m_window_entity_properties = std::make_shared<UIWindowNodeEditor>(mEngine);
-		m_window_performance = std::make_shared<UIWindowPerformance>(mEngine);
-		m_content_browser = std::make_shared<UIContentBrowser>(mEngine);
+		mWindowSceneHierarchy = std::make_shared<UIWindowSceneHierarchy>(mEngine);
+		mWindowViewport = std::make_shared<UIWindowViewport>(mEngine);
+		mWindowSettings = std::make_shared<UIWindowSettings>(mEngine);
+		mWindowEntityProperties = std::make_shared<UIWindowNodeEditor>(mEngine);
+		mWindowPerformance = std::make_shared<UIWindowPerformance>(mEngine);
+		mContentBrowser = std::make_shared<UIContentBrowser>(mEngine);
 
-		m_window_entity_properties->SetFileBrowser(&m_file_dialog);
+		mWindowEntityProperties->SetFileBrowser(&mFileDialog);
 
-		add_window(m_window_scene_hierarchy);
-		add_window(m_window_settings);
-		add_window(m_window_entity_properties);
-		add_window(m_window_performance);
-		add_window(m_content_browser);
+		AddWindow(mWindowSceneHierarchy);
+		AddWindow(mWindowSettings);
+		AddWindow(mWindowEntityProperties);
+		AddWindow(mWindowPerformance);
+		AddWindow(mContentBrowser);
 	}
 
 	void EditorUISubsystem::Deinitialize()
@@ -69,14 +69,14 @@ namespace puffin::ui
 		//ImPlot::DestroyContext();
 	}
 
-	void EditorUISubsystem::Update(double delta_time)
+	void EditorUISubsystem::Update(double deltaTime)
 	{
-		if (m_file_dialog.HasSelected())
+		if (mFileDialog.HasSelected())
 		{
-			const fs::path selectedPath = m_file_dialog.GetSelected();
+			const fs::path selectedPath = mFileDialog.GetSelected();
 
 			// File Dialog - Load Scene
-			if (m_load_scene)
+			if (mLoadScene)
 			{
 				const auto sceneData = mEngine->GetSubsystem<io::SceneSubsystem>()->scene_data();
 
@@ -86,10 +86,10 @@ namespace puffin::ui
 
 				mEngine->Restart();
 
-				m_load_scene = false;
+				mLoadScene = false;
 			}
 
-			switch (m_import_asset_ui)
+			switch (mImportAssetUI)
 			{
 				// File Dialog - Import Mesh
 			case ImportAssetUI::Mesh:
@@ -103,7 +103,7 @@ namespace puffin::ui
 					std::cout << "Import Failed" << std::endl;
 				}
 
-				m_import_asset_ui = ImportAssetUI::Default;
+				mImportAssetUI = ImportAssetUI::Default;
 
 				break;
 
@@ -119,31 +119,31 @@ namespace puffin::ui
 					std::cout << "Import Failed" << std::endl;
 				}
 
-				m_import_asset_ui = ImportAssetUI::Default;
+				mImportAssetUI = ImportAssetUI::Default;
 
 				break;
 
-			default:;
+			case ImportAssetUI::Default: break;
 			}
 		}
 
 		// Update Selected Entity
-		if (m_window_scene_hierarchy->entityChanged())
+		if (mWindowSceneHierarchy->entityChanged())
 		{
-			m_entity = m_window_scene_hierarchy->selectedEntity();
+			mEntity = mWindowSceneHierarchy->GetSelectedEntity();
 
-			for (const auto& window : m_windows)
+			for (const auto& window : mWindows)
 			{
-				window->setSelectedEntity(m_entity);
+				window->SetSelectedEntity(mEntity);
 			}
 		}
 
 		// Update Scene Data if any changes were made to an entity, and game is not currently playing
-		if (m_window_entity_properties->GetSceneChanged() && mEngine->GetPlayState() == core::PlayState::Stopped)
+		if (mWindowEntityProperties->GetSceneChanged() && mEngine->GetPlayState() == core::PlayState::Stopped)
 		{
-			const auto scene_data = mEngine->GetSubsystem<io::SceneSubsystem>()->scene_data();
+			const auto sceneData = mEngine->GetSubsystem<io::SceneSubsystem>()->scene_data();
 
-			scene_data->update_data(mEngine->GetSubsystem<ecs::EnTTSubsystem>(), mEngine->GetSubsystem<scene::SceneGraphSubsystem>());
+			sceneData->update_data(mEngine->GetSubsystem<ecs::EnTTSubsystem>(), mEngine->GetSubsystem<scene::SceneGraphSubsystem>());
 		}
 
 		ImGui_ImplVulkan_NewFrame();
@@ -153,21 +153,21 @@ namespace puffin::ui
 		bool* pOpen = nullptr;
 
 		// Show Dockspace with Menu Bar for Editor Windows
-		show_dockspace(pOpen);
+		ShowDockspace(pOpen);
 
 		//ImGui::ShowDemoWindow(p_open);
 		//ImPlot::ShowDemoWindow(p_open);
 
 		// Draw UI Windows
-		if (!m_windows.empty())
+		if (!mWindows.empty())
 		{
-			for (const auto& window : m_windows)
+			for (const auto& window : mWindows)
 			{
-				window->draw(mEngine->GetDeltaTime());
+				window->Draw(mEngine->GetDeltaTime());
 			}
 		}
 
-		m_file_dialog.Display();
+		mFileDialog.Display();
 	}
 
 	bool EditorUISubsystem::ShouldUpdate()
@@ -175,18 +175,18 @@ namespace puffin::ui
 		return true;
 	}
 
-	void EditorUISubsystem::show_dockspace(bool* open)
+	void EditorUISubsystem::ShowDockspace(bool* open)
 	{
-		static bool opt_fullscreen_persistant = true;
-		bool opt_fullscreen = opt_fullscreen_persistant;
+		static bool optFullscreenPersistant = true;
+		const bool optFullscreen = optFullscreenPersistant;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		if (opt_fullscreen)
+		if (optFullscreen)
 		{
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
+			const ImGuiViewport* viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(viewport->WorkPos);
 			ImGui::SetNextWindowSize(viewport->WorkSize);
 			ImGui::SetNextWindowViewport(viewport->ID);
@@ -210,26 +210,25 @@ namespace puffin::ui
 		ImGui::Begin("DockSpace Demo", open, window_flags);
 		ImGui::PopStyleVar();
 
-		if (opt_fullscreen)
+		if (optFullscreen)
 			ImGui::PopStyleVar(2);
 
 		// DockSpace
-		ImGuiIO& io = ImGui::GetIO();
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		if (const ImGuiIO& io = ImGui::GetIO(); io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
-			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+			const ImGuiID dockspaceID = ImGui::GetID("MyDockSpace");
+			ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
-		show_menu_bar();
+		ShowMenuBar();
 
-		if (m_save_scene)
+		if (mSaveScene)
 		{
-			m_save_scene = false;
+			mSaveScene = false;
 			ImGui::OpenPopup("Save Scene");
 		}
 
-		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5, 0.5));
 
 		// Save Scene Modal Window
@@ -237,11 +236,11 @@ namespace puffin::ui
 		{
 			const auto sceneData = mEngine->GetSubsystem<io::SceneSubsystem>()->scene_data();
 
-			std::string str_name = sceneData->path().string();
-			std::vector<char> name(256, '\0');
-			for (int i = 0; i < str_name.size(); i++)
+			const std::string strName = sceneData->path().string();
+			std::vector name(256, '\0');
+			for (int i = 0; i < strName.size(); i++)
 			{
-				name[i] = str_name[i];
+				name[i] = strName[i];
 			}
 			name.push_back('\0');
 
@@ -253,10 +252,10 @@ namespace puffin::ui
 
 			if (ImGui::Button("Save"))
 			{
-				auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-				auto scene_graph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+				const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+				const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-				sceneData->update_data(entt_subsystem, scene_graph);
+				sceneData->update_data(enttSubsystem, sceneGraph);
 				sceneData->save();
 
 				ImGui::CloseCurrentPopup();
@@ -275,7 +274,7 @@ namespace puffin::ui
 		ImGui::End();
 	}
 
-	void EditorUISubsystem::show_menu_bar()
+	void EditorUISubsystem::ShowMenuBar()
 	{
 		if (ImGui::BeginMenuBar())
 		{
@@ -297,8 +296,8 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Save Project"))
 				{
-                    auto settings_manager = mEngine->GetSubsystem<core::SettingsManager>();
-                    settings_manager->save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.json");
+					const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+                    settingsManager->save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.json");
 
 					assets::AssetRegistry::Get()->SaveAssetCache();
 				}
@@ -318,24 +317,24 @@ namespace puffin::ui
 
 				if (ImGui::MenuItem("Load Scene"))
 				{
-					m_file_dialog.Open();
-					m_load_scene = true;
+					mFileDialog.Open();
+					mLoadScene = true;
 				}
 
 				if (ImGui::MenuItem("Save Scene"))
 				{
 					const auto sceneData = mEngine->GetSubsystem<io::SceneSubsystem>()->scene_data();
 
-					auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-					auto scene_graph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+					const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+					const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-					sceneData->update_data(entt_subsystem, scene_graph);
+					sceneData->update_data(enttSubsystem, sceneGraph);
 					sceneData->save();
 				}
 
 				if (ImGui::MenuItem("Save Scene As"))
 				{
-					m_save_scene = true;
+					mSaveScene = true;
 				}
 
 				ImGui::Text("---Other---");
@@ -344,14 +343,14 @@ namespace puffin::ui
 				{
 					if (ImGui::MenuItem("Mesh"))
 					{
-						m_file_dialog.Open();
-						m_import_asset_ui = ImportAssetUI::Mesh;
+						mFileDialog.Open();
+						mImportAssetUI = ImportAssetUI::Mesh;
 					}
 
 					if (ImGui::MenuItem("Texture"))
 					{
-						m_file_dialog.Open();
-						m_import_asset_ui = ImportAssetUI::Texture;
+						mFileDialog.Open();
+						mImportAssetUI = ImportAssetUI::Texture;
 					}
 
 					ImGui::EndMenu();
@@ -368,12 +367,12 @@ namespace puffin::ui
 			// List all windows
 			if (ImGui::BeginMenu("Windows"))
 			{
-				if (m_windows.size() > 0)
+				if (mWindows.size() > 0)
 				{
-					for (int i = 0; i < m_windows.size(); i++)
+					for (int i = 0; i < mWindows.size(); i++)
 					{
 						// Show/Hide window if clicked
-						ImGui::MenuItem(m_windows[i]->name().c_str(), NULL, m_windows[i]->show());
+						ImGui::MenuItem(mWindows[i]->GetName().c_str(), NULL, mWindows[i]->GetShow());
 					}
 				}
 
@@ -384,7 +383,7 @@ namespace puffin::ui
 		}
 	}
 
-	void EditorUISubsystem::set_style()
+	void EditorUISubsystem::SetStyle()
 	{
 		ImGuiStyle* style = &ImGui::GetStyle();
 		ImVec4* colors = style->Colors;
@@ -453,18 +452,18 @@ namespace puffin::ui
 		style->WindowPadding = { 0.0f, 0.0f };
 	}
 
-	void EditorUISubsystem::add_window(const std::shared_ptr<UIWindow>& window)
+	void EditorUISubsystem::AddWindow(const std::shared_ptr<UIWindow>& window)
 	{
-		m_windows.push_back(window);
+		mWindows.push_back(window);
 	}
 
-	std::shared_ptr<UIWindowViewport> EditorUISubsystem::window_viewport()
+	std::shared_ptr<UIWindowViewport> EditorUISubsystem::GetWindowViewport()
 	{
-		return m_window_viewport;
+		return mWindowViewport;
 	}
 
-	std::shared_ptr<UIWindowSettings> EditorUISubsystem::window_settings()
+	std::shared_ptr<UIWindowSettings> EditorUISubsystem::GetWindowSettings()
 	{
-		return m_window_settings;
+		return mWindowSettings;
 	}
 }

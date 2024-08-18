@@ -121,7 +121,7 @@ namespace puffin::rendering
 		if (mEngine->GetShouldRenderEditorUI())
 		{
 			const auto editorUISubsystem = subsystemManager->CreateAndInitializeSubsystem<ui::EditorUISubsystem>();
-			const ImVec2 viewportSize = editorUISubsystem->window_viewport()->viewportSize();
+			const ImVec2 viewportSize = editorUISubsystem->GetWindowViewport()->viewportSize();
 			mRenderExtent.width = viewportSize.x;
 			mRenderExtent.height = viewportSize.y;
 		}
@@ -1203,7 +1203,7 @@ namespace puffin::rendering
 		if (mEngine->GetShouldRenderEditorUI())
 		{
 			const auto editorUISubsystem = mEngine->GetSubsystem<ui::EditorUISubsystem>();
-			const ImVec2 viewportSize = editorUISubsystem->window_viewport()->viewportSize();
+			const ImVec2 viewportSize = editorUISubsystem->GetWindowViewport()->viewportSize();
 
 			mRenderExtent.width = static_cast<uint32_t>(viewportSize.x);
 			mRenderExtent.height = static_cast<uint32_t>(viewportSize.y);
@@ -1225,7 +1225,7 @@ namespace puffin::rendering
 		if (mEngine->GetShouldRenderEditorUI())
 		{
 			const auto editorUISubsystem = mEngine->GetSubsystem<ui::EditorUISubsystem>();
-			editorUISubsystem->window_viewport()->draw(mOffscreenData.viewport_textures[mCurrentSwapchainIdx]);
+			editorUISubsystem->GetWindowViewport()->draw(mOffscreenData.viewport_textures[mCurrentSwapchainIdx]);
 
 			ImGui::Render();
 		}

@@ -17,12 +17,12 @@ namespace puffin
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				begin(mWindowName);
+				Begin(mWindowName);
 
 				mViewportSize = ImGui::GetWindowSize();
 				mViewportSize.y -= 20.0f;
 
-				end();
+				End();
 			}
 		}
 
@@ -36,7 +36,7 @@ namespace puffin
 
 				mFlags = ImGuiWindowFlags_MenuBar;
 
-				begin(mWindowName);
+				Begin(mWindowName);
 
 				if (ImGui::BeginMenuBar())
 				{
@@ -95,7 +95,7 @@ namespace puffin
 					//DrawManipulationGizmo(m_engine->getSystem<core::EventSubsystem>(), transform);
 				}
 
-				end();
+				End();
 			}
 		}
 	}

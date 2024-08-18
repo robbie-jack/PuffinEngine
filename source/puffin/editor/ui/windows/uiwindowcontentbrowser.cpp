@@ -8,20 +8,23 @@ namespace fs = std::filesystem;
 
 namespace puffin::ui
 {
-	void UIContentBrowser::draw(double dt)
+	UIContentBrowser::UIContentBrowser(const std::shared_ptr<core::Engine>& engine): UIWindow(engine)
+	{
+		mWindowName = "Content Browser";
+	}
+
+	void UIContentBrowser::Draw(double dt)
 	{
 		if (mShow)
 		{
 			ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-			begin(mWindowName);
+			Begin(mWindowName);
 
 			ImVec2 listBoxSize = ImGui::GetWindowSize();
 			listBoxSize.y -= 20.0f;
 
-			const fs::path contentPath = assets::AssetRegistry::Get()->GetContentRoot();
-
-			if (exists(contentPath))
+			if (const fs::path contentPath = assets::AssetRegistry::Get()->GetContentRoot(); exists(contentPath))
 			{
 				if (ImGui::BeginListBox("##ContentList", listBoxSize))
 				{
@@ -47,13 +50,13 @@ namespace puffin::ui
 				}
 			}
 
-			end();
+			End();
 		}
 	}
 
 	void UIContentBrowser::GenerateChildEntryNodes(const fs::directory_entry& dirEntry, ContentEntryNode& rootNode)
 	{
-		fs::path path = dirEntry.path();
+		const fs::path path = dirEntry.path();
 
 		for (auto const& entry : fs::directory_iterator(path))
 		{
@@ -99,7 +102,7 @@ namespace puffin::ui
 			break;
 		case EntryType::File:
 
-			int idx = node.index;
+			const int idx = node.index;
 
 			ImGui::Dummy(ImVec2(10.0f, 0.0f)); ImGui::SameLine();
 			if (ImGui::Selectable(node.displayName.c_str(), mSelectedNode == idx))

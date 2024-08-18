@@ -51,7 +51,7 @@ namespace puffin
 			UIWindowPerformance(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
 			~UIWindowPerformance() override {}
 
-			void draw(double dt) override;
+			void Draw(double dt) override;
 
 		private:
 

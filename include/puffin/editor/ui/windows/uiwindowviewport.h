@@ -18,7 +18,7 @@ namespace puffin
 
 			void drawWithoutImage();
 			void draw(ImTextureID textureID);
-			void draw(double dt) override {}
+			void Draw(double dt) override {}
 
 			[[nodiscard]] ImVec2 viewportSize() const { return mViewportSize; }
 

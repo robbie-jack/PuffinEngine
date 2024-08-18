@@ -7,7 +7,7 @@ namespace puffin
 {
 	namespace ui
 	{
-		void UIWindowSettings::draw(double dt)
+		void UIWindowSettings::Draw(double dt)
 		{
 			if (mFirstTime)
 			{
@@ -20,7 +20,7 @@ namespace puffin
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				begin(mWindowName);
+				Begin(mWindowName);
 
                 auto settings_manager = m_engine->GetSubsystem<core::SettingsManager>();
 
@@ -37,7 +37,7 @@ namespace puffin
                     settings_manager->Set("editor_camera_fov", editor_camera_fov);
 				}
 
-				end();
+				End();
 			}
 		}
 	}

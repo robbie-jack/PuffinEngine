@@ -40,40 +40,41 @@ namespace puffin
 			explicit EditorUISubsystem(const std::shared_ptr<core::Engine>& engine);
 			~EditorUISubsystem() override = default;
 
-			void Initialize(core::SubsystemManager* subsystem_manager) override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
-			void Update(double delta_time) override;
+			void Update(double deltaTime) override;
 			bool ShouldUpdate() override;
 
-			void add_window(const std::shared_ptr<UIWindow>& window);
+			void AddWindow(const std::shared_ptr<UIWindow>& window);
 
-			std::shared_ptr<UIWindowViewport> window_viewport();
-			std::shared_ptr<UIWindowSettings> window_settings();
+			std::shared_ptr<UIWindowViewport> GetWindowViewport();
+			std::shared_ptr<UIWindowSettings> GetWindowSettings();
 
 		private:
 
-			bool m_save_scene = false;
-			bool m_load_scene = false;
-			ImportAssetUI m_import_asset_ui;
+			void ShowDockspace(bool* open);
+			void ShowMenuBar();
+			void SetStyle();
 
-			UUID m_entity = gInvalidID;
+			bool mSaveScene = false;
+			bool mLoadScene = false;
+			ImportAssetUI mImportAssetUI = ImportAssetUI::Default;
 
-			std::vector<std::shared_ptr<UIWindow>> m_windows;
+			UUID mEntity = gInvalidID;
 
-			std::shared_ptr<UIWindowViewport> m_window_viewport;
-			std::shared_ptr<UIWindowSettings> m_window_settings;
-			std::shared_ptr<UIWindowSceneHierarchy> m_window_scene_hierarchy;
-			std::shared_ptr<UIWindowNodeEditor> m_window_entity_properties;
-			std::shared_ptr<UIWindowPerformance> m_window_performance;
-			std::shared_ptr<UIContentBrowser> m_content_browser;
+			std::vector<std::shared_ptr<UIWindow>> mWindows;
 
-			ImGui::FileBrowser m_file_dialog;
-			std::string m_imgui_ini_filename;
+			std::shared_ptr<UIWindowViewport> mWindowViewport;
+			std::shared_ptr<UIWindowSettings> mWindowSettings;
+			std::shared_ptr<UIWindowSceneHierarchy> mWindowSceneHierarchy;
+			std::shared_ptr<UIWindowNodeEditor> mWindowEntityProperties;
+			std::shared_ptr<UIWindowPerformance> mWindowPerformance;
+			std::shared_ptr<UIContentBrowser> mContentBrowser;
 
-			void show_dockspace(bool* open);
-			void show_menu_bar();
-			void set_style();
+			ImGui::FileBrowser mFileDialog;
+			std::string mImguiIniFilename;
+			
 		};
 	}
 }

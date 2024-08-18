@@ -13,7 +13,7 @@ namespace puffin
 	{
 		constexpr int s_max_benchmark_values = 100;
 
-		void UIWindowPerformance::draw(double dt)
+		void UIWindowPerformance::Draw(double dt)
 		{
 			mWindowName = "Performance";
 
@@ -21,7 +21,7 @@ namespace puffin
 			{
 				ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
-				begin(mWindowName);
+				Begin(mWindowName);
 
 				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 				if (ImGui::CollapsingHeader("System Info"))
@@ -181,7 +181,7 @@ namespace puffin
 					draw_benchmark("Render", benchmark_subsystem->get_benchmark_time("Render"));
 				}
 
-				end();
+				End();
 			}
 		}
 

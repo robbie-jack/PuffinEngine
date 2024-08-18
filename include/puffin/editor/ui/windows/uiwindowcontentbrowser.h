@@ -8,14 +8,10 @@ namespace puffin::ui
 	{
 	public:
 			
-		UIContentBrowser(const std::shared_ptr<core::Engine>& engine) : UIWindow(engine)
-		{
-			mWindowName = "Content Browser";
-		}
-		~UIContentBrowser() override {}
+		explicit UIContentBrowser(const std::shared_ptr<core::Engine>& engine);
+		~UIContentBrowser() override = default;
 
-		void draw(double dt) override;
-
+		void Draw(double dt) override;
 
 	private:
 
@@ -28,17 +24,17 @@ namespace puffin::ui
 		struct ContentEntryNode
 		{
 			std::string displayName;
-			EntryType entryType;
+			EntryType entryType = EntryType::Directory;
 			int index = 0;
 
 			std::vector<ContentEntryNode> childNodes;
 		};
 
-		int mNodeCounter = 0;
-		int mSelectedNode = 0;
-
 		void GenerateChildEntryNodes(const fs::directory_entry& dirEntry, ContentEntryNode& rootNode);
 		void GenerateUIForNode(const ContentEntryNode& node, const ImGuiTreeNodeFlags& baseFlags);
+
+		int mNodeCounter = 0;
+		int mSelectedNode = 0;
 
 	};
 }

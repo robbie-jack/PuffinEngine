@@ -21,7 +21,7 @@ namespace puffin
 			UIWindowSceneHierarchy(const std::shared_ptr<core::Engine>& engine) : UIWindow(engine) {}
 			~UIWindowSceneHierarchy() override {}
 
-			void draw(double dt) override;
+			void Draw(double dt) override;
 
 			[[nodiscard]] bool entityChanged() const { return m_entity_changed; }
 

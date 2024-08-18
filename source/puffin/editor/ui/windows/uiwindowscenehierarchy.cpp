@@ -7,7 +7,7 @@ namespace puffin
 {
 	namespace ui
 	{
-		void UIWindowSceneHierarchy::draw(double dt)
+		void UIWindowSceneHierarchy::Draw(double dt)
 		{
 			mWindowName = "Scene Hierarchy";
 
@@ -19,7 +19,7 @@ namespace puffin
 
 				m_entity_changed = false;
 
-				begin(mWindowName);
+				Begin(mWindowName);
 
 				//List All Entities and their ID/Name
 				ImVec2 listBoxSize = ImGui::GetWindowSize();
@@ -110,7 +110,7 @@ namespace puffin
 				//	ImGui::EndPopup();
 				//}
 
-				end();
+				End();
 			}
 		}
 
