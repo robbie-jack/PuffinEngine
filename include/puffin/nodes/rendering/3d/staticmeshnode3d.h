@@ -4,11 +4,12 @@
 
 namespace puffin::rendering
 {
-	class MeshNode : public TransformNode3D
+	class StaticMeshNode3D : public TransformNode3D
 	{
 	public:
 
-		explicit MeshNode(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
+		explicit StaticMeshNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
+		~StaticMeshNode3D() override = default;
 
 		UUID GetMeshID();
 		void SetMeshID(UUID meshID) const;

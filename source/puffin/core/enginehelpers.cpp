@@ -254,7 +254,7 @@ namespace puffin::core
 		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->registry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		auto houseNode = sceneGraph->AddNode<rendering::MeshNode>();
+		auto* houseNode = sceneGraph->AddNode<rendering::StaticMeshNode3D>();
 		houseNode->SetName("House");
 		houseNode->SetPosition({ 2.0f, 0.0f, 0.0f });
 		houseNode->SetMeshID(meshId1);
@@ -266,85 +266,82 @@ namespace puffin::core
 		sphere.SetMeshID(meshId2);
 		sphere.SetMaterialID(materialInstId1);*/
 
-		auto cube1 = sceneGraph->AddNode<rendering::MeshNode>();
+		auto* cube1 = sceneGraph->AddNode<rendering::StaticMeshNode3D>();
 		cube1->SetName("Cube_1");
 		cube1->SetPosition({ 0.0f });
 		cube1->SetMeshID(meshId3);
 		cube1->SetMaterialID(materialInstId1);
 
-		auto cube2 = sceneGraph->AddNode<rendering::MeshNode>();
+		auto* cube2 = sceneGraph->AddNode<rendering::StaticMeshNode3D>();
 		cube2->SetName("Cube_2");
 		cube2->SetPosition({ -1.75f, -5.0f, 0.0f });
 		cube2->SetMeshID(meshId3);
 		cube2->SetMaterialID(materialInstId1);
 
-		auto plane = sceneGraph->AddNode<rendering::MeshNode>();
+		auto* plane = sceneGraph->AddNode<rendering::StaticMeshNode3D>();
 		plane->SetName("Plane");
 		plane->SetPosition({ 0.0f, -10.0f, 0.0f });
 		plane->SetScale({ 50.0f, 1.0f, 50.0f });
 		plane->SetMeshID(meshId3);
 		plane->SetMaterialID(materialInstId1);
 
-		/*auto dirLight = sceneGraph->add_node<rendering::LightNode3D>();
+		auto* dirLight = sceneGraph->AddNode<rendering::DirectionalLightNode3D>();
 		dirLight->SetName("Directional Light");
 		dirLight->SetPosition({ 0.0f, 10.0f, 0.0f });
 		dirLight->SetColor({ .05f });
 		dirLight->SetAmbientIntensity(.0f);
-		dirLight->set_light_type(rendering::LightType::Directional);
 		dirLight->SetAmbientIntensity(0.f);
-		dirLight->add_component<rendering::ShadowCasterComponent3D>();
-		registry->patch<rendering::ShadowCasterComponent3D>(dirLight->entity(), [&](auto& shadow)
+		dirLight->AddComponent<rendering::ShadowCasterComponent3D>();
+		registry->patch<rendering::ShadowCasterComponent3D>(dirLight->GetEntity(), [&](auto& shadow)
 		{
 			shadow.width = 8192;
 			shadow.height = 8192;
 			shadow.biasMin = 0.3f;
 			shadow.biasMax = 0.5f;
-		});*/
+		});
 
-		/*UpdateTransformOrientation(*dirLight->transform_3d(), { 0.0f, -90.0f, 0.0f });
+		UpdateTransformOrientation(dirLight->Transform(), { 0.0f, -90.0f, 0.0f });
 
-		auto dirLightMesh = sceneGraph->add_child_node<rendering::MeshNode>(dirLight->id());
-		dirLightMesh->set_scale({ 0.25f });
+		auto* dirLightMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>(dirLight->GetID());
+		dirLightMesh->SetScale({ 0.25f });
 		dirLightMesh->SetMeshID(meshId3);
 		dirLightMesh->SetMaterialID(materialInstId1);
 
-		auto spotLight = sceneGraph->add_node<rendering::LightNode3D>();
+		auto* spotLight = sceneGraph->AddNode<rendering::SpotLightNode3D>();
 		spotLight->SetName("Spot Light");
 		spotLight->SetPosition({ -10.0f, 5.0f, 0.0f });
-		spotLight->set_light_type(rendering::LightType::Spot);
 		spotLight->SetColor({ 0.5f, 0.5f, 1.0f });
 		spotLight->SetAmbientIntensity(0.f);
-		spotLight->add_component<rendering::ShadowCasterComponent3D>();
-		registry->patch<rendering::ShadowCasterComponent3D>(spotLight->entity(), [&](auto& shadow)
+		spotLight->AddComponent<rendering::ShadowCasterComponent3D>();
+		registry->patch<rendering::ShadowCasterComponent3D>(spotLight->GetEntity(), [&](auto& shadow)
 		{
 			shadow.width = 8192;
 			shadow.height = 8192;
 		});
 
-		auto spotLightMesh = sceneGraph->add_child_node<rendering::MeshNode>(spotLight->id());
-		spotLightMesh->set_scale({ 0.25f });
+		auto* spotLightMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>(spotLight->GetID());
+		spotLightMesh->SetScale({ 0.25f });
 		spotLightMesh->SetMeshID(meshId3);
 		spotLightMesh->SetMaterialID(materialInstId1);
 
-		auto spotLight2 = sceneGraph->add_node<rendering::LightNode3D>();
+		auto* spotLight2 = sceneGraph->AddNode<rendering::SpotLightNode3D>();
 		spotLight2->SetName("Spot Light 2");
 		spotLight2->SetPosition({ 10.0f, 5.0f, 0.0f });
-		spotLight2->set_light_type(rendering::LightType::Spot);
 		spotLight2->SetColor({ 1.0f, 0.5f, 0.5f });
 		spotLight2->SetAmbientIntensity(0.f);
-		spotLight2->add_component<rendering::ShadowCasterComponent3D>();
-		registry->patch<rendering::ShadowCasterComponent3D>(spotLight2->entity(), [&](auto& shadow)
+		spotLight2->AddComponent<rendering::ShadowCasterComponent3D>();
+		registry->patch<rendering::ShadowCasterComponent3D>(spotLight2->GetEntity(), [&](auto& shadow)
 		{
 			shadow.width = 8192;
 			shadow.height = 8192;
 		});
 
-		UpdateTransformOrientation(*spotLight2->transform_3d(), { 0.0f, 180.0f, 0.0f });
+		UpdateTransformOrientation(spotLight2->Transform(), { 0.0f, 180.0f, 0.0f });
 
-		auto spotLightMesh2 = sceneGraph->add_child_node<rendering::MeshNode>(spotLight2->id());
-		spotLightMesh2->set_scale({ 0.25f });
+		auto* spotLightMesh2 = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>(spotLight2->GetID());
+		spotLightMesh2->SetScale({ 0.25f });
 		spotLightMesh2->SetMeshID(meshId3);
-		spotLightMesh2->SetMaterialID(materialInstId1);*/
+		spotLightMesh2->SetMaterialID(materialInstId1);
 
 		//auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
 		//script.name = "ExampleScript";
