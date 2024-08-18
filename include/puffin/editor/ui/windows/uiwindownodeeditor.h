@@ -29,6 +29,13 @@ namespace puffin
 
 	namespace rendering
 	{
+		class DirectionalLightNode3D;
+		class SpotLightNode3D;
+		class PointLightNode3D;
+		class StaticMeshNode3D;
+		struct DirectionalLightComponent3D;
+		struct SpotLightComponent3D;
+		struct PointLightComponent3D;
 		struct LightComponent3D;
 		struct StaticMeshComponent3D;
 		struct ShadowCasterComponent3D;
@@ -116,12 +123,20 @@ namespace puffin::ui
 
 	private:
 
-		void DrawTransform2DUINode(ImGuiTreeNodeFlags flags, TransformNode2D* node);
+		/*void DrawTransform2DUINode(ImGuiTreeNodeFlags flags, TransformNode2D* node);
 		void DrawTransform3DUINode(ImGuiTreeNodeFlags flags, TransformNode3D* node);
 
-		void DrawMeshUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::StaticMeshComponent3D& mesh);
-		void DrawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light);
-		void DrawShadowcasterUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent3D& shadow);
+		void DrawStaticMeshNode3DUI(ImGuiTreeNodeFlags flags, rendering::StaticMeshNode3D* node);
+		void DrawPointLightNode3DUI(ImGuiTreeNodeFlags flags, rendering::PointLightNode3D* node);
+		void DrawSpotLightNode3DUI(ImGuiTreeNodeFlags flags, rendering::SpotLightNode3D* node);
+		void DrawDirLightNode3DUI(ImGuiTreeNodeFlags flags, rendering::DirectionalLightNode3D* node);*/
+
+
+		/*void DrawStaticMesh3DUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::StaticMeshComponent3D& mesh);
+		void DrawPointLight3DUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::PointLightComponent3D& light);
+		void DrawSpotLight3DUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::SpotLightComponent3D& light);
+		void DrawDirectionalLight3DUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::DirectionalLightComponent3D& light);
+		void DrawShadowCaster3DUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::ShadowCasterComponent3D& shadow);
 
 		void DrawProceduralPlaneUI(ImGuiTreeNodeFlags flags, entt::entity entity, procedural::ProceduralPlaneComponent3D& plane);
 
@@ -129,7 +144,7 @@ namespace puffin::ui
 		void DrawCircle2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle);
 		void DrawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box);
 
-		void DrawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script);
+		void DrawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script);*/
 
 		//ECS::EntityID m_entity = 0;
 		ImGui::FileBrowser* mFileDialog = nullptr;

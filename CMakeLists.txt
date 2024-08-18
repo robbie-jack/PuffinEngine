@@ -145,6 +145,8 @@ set(HEADERS
 	# Editor
 	# Editor - UI
 	${HEADER_DIR}/puffin/editor/ui/editoruisubsystem.h
+	${HEADER_DIR}/puffin/editor/ui/nodeeditoruihelpers.h
+	# Editor - UI - Windows
 	${HEADER_DIR}/puffin/editor/ui/windows/uiwindow.h
 	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.h
 	${HEADER_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.h
@@ -166,6 +168,7 @@ set(HEADERS
 	# Nodes - Rendering - 3D
 	${HEADER_DIR}/puffin/nodes/rendering/3d/cameranode3d.h
 	${HEADER_DIR}/puffin/nodes/rendering/3d/directionallightnode3d.h
+	${HEADER_DIR}/puffin/nodes/rendering/3d/lightnode3d.h
 	${HEADER_DIR}/puffin/nodes/rendering/3d/pointlightnode3d.h
 	${HEADER_DIR}/puffin/nodes/rendering/3d/spotlightnode3d.h
 	${HEADER_DIR}/puffin/nodes/rendering/3d/staticmeshnode3d.h
@@ -266,6 +269,8 @@ set(SOURCES
 	# Editor
 	# Editor - UI
 	${SOURCE_DIR}/puffin/editor/ui/editoruisubsystem.cpp
+	${SOURCE_DIR}/puffin/editor/ui/nodeeditoruihelpers.cpp
+	# Editor - UI - Windows
 	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindow.cpp
 	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.cpp
 	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.cpp
@@ -286,6 +291,7 @@ set(SOURCES
 	# Nodes - Rendering - 3D
 	${SOURCE_DIR}/puffin/nodes/rendering/3d/cameranode3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/3d/directionallightnode3d.cpp
+	${SOURCE_DIR}/puffin/nodes/rendering/3d/lightnode3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/3d/pointlightnode3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/3d/spotlightnode3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/3d/staticmeshnode3d.cpp

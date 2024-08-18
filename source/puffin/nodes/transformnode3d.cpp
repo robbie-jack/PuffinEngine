@@ -13,6 +13,11 @@ namespace puffin
 		AddComponent<TransformComponent3D>();
 	}
 
+	TransformNode3D::~TransformNode3D()
+	{
+		RemoveComponent<TransformComponent3D>();
+	}
+
 	const TransformComponent3D& TransformNode3D::GetTransform() const
 	{
 		return GetComponent<TransformComponent3D>();

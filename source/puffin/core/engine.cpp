@@ -169,7 +169,7 @@ namespace puffin::core
 			mDeltaTime = mTimeStepLimit;
 		}
 
-		const auto AudioSubsystem = GetSubsystem<audio::AudioSubsystem>();
+		const auto audioSubsystem = GetSubsystem<audio::AudioSubsystem>();
 
 		// Execute engine updates
 		{

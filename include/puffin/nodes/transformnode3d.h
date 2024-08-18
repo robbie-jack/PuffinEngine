@@ -17,7 +17,7 @@ namespace puffin
 	public:
 
 		explicit TransformNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
-		~TransformNode3D() override = default;
+		~TransformNode3D() override;
 
 		[[nodiscard]] const TransformComponent3D& GetTransform() const;
 		[[nodiscard]] TransformComponent3D& Transform();
