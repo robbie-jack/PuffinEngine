@@ -45,8 +45,35 @@ namespace puffin::scripting
 
 	private:
 
-		std::shared_ptr<core::Engine> m_engine;
-		asIScriptEngine* m_script_engine;
+		// Register global methods with the script engine
+		void RegisterGlobalMethods();
+
+		// Global Script Functions
+		[[nodiscard]] const double& GetDeltaTime();
+		[[nodiscard]] const double& GetFixedTime();
+
+		TransformComponent3D& GetTransformComponent3D(UUID id) const;
+		bool HasTransformComponent3D(UUID id) const;
+
+		template<typename T>
+		T& getComponent(UUID id) const;
+
+		template<typename T>
+		bool HasComponent(UUID id) const;
+
+		// Script Callbacks
+		ScriptCallback BindCallback(UUID entity, asIScriptFunction* cb) const;
+		void ReleaseCallback(ScriptCallback& scriptCallback) const;
+
+		// Input Functions
+		void BindOnInputPressed(UUID entity, const std::string& actionName, asIScriptFunction* cb);
+		void BindOnInputReleased(UUID entity, const std::string& actionName, asIScriptFunction* cb);
+
+		void ReleaseOnInputPressed(UUID entity, const std::string& actionName);
+		void ReleaseOnInputReleased(UUID entity, const std::string& actionName);
+
+		std::shared_ptr<core::Engine> mEngine;
+		asIScriptEngine* mScriptEngine;
 
 		double mDeltaTime;
 		double mFixedTime;
@@ -59,31 +86,5 @@ namespace puffin::scripting
 		ScriptCallbackMap mOnCollisionBeginCallbacks;
 		ScriptCallbackMap mOnCollisionEndCallbacks;
 
-		// Register global methods with the script engine
-		void registerGlobalMethods();
-
-		// Global Script Functions
-		[[nodiscard]] const double& getDeltaTime();
-		[[nodiscard]] const double& getFixedTime();
-
-		TransformComponent3D& getTransformComponent3D(UUID id) const;
-		bool hasTransformComponent3D(UUID id) const;
-
-		template<typename T>
-		T& getComponent(UUID id) const;
-
-		template<typename T>
-		bool hasComponent(UUID id) const;
-
-		// Script Callbacks
-		ScriptCallback bindCallback(UUID entity, asIScriptFunction* cb) const;
-		void releaseCallback(ScriptCallback& scriptCallback) const;
-
-		// Input Functions
-		void bindOnInputPressed(UUID entity, const std::string& actionName, asIScriptFunction* cb);
-		void bindOnInputReleased(UUID entity, const std::string& actionName, asIScriptFunction* cb);
-
-		void releaseOnInputPressed(UUID entity, const std::string& actionName);
-		void releaseOnInputReleased(UUID entity, const std::string& actionName);
 	};
 }

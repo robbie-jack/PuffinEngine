@@ -204,37 +204,37 @@ namespace puffin::rendering
             auto &transform = registry->get<TransformComponent3D>(entity);
             auto &camera = registry->get<CameraComponent3D>(entity);
 
-            if (inputSubsystem->cursor_locked() && mActiveCameraID == m_editor_cam_id) {
+            if (inputSubsystem->GetCursorLocked() && mActiveCameraID == m_editor_cam_id) {
                 // Camera Movement
-                if (inputSubsystem->pressed("EditorCamMoveRight") && !inputSubsystem->pressed("EditorCamMoveLeft")) {
+                if (inputSubsystem->Pressed("EditorCamMoveRight") && !inputSubsystem->Pressed("EditorCamMoveLeft")) {
                     transform.position += camera.right * m_editor_cam_speed * deltaTime;
                 }
 
-                if (inputSubsystem->pressed("EditorCamMoveLeft") && !inputSubsystem->pressed("EditorCamMoveRight")) {
+                if (inputSubsystem->Pressed("EditorCamMoveLeft") && !inputSubsystem->Pressed("EditorCamMoveRight")) {
                     transform.position -= camera.right * m_editor_cam_speed * deltaTime;
                 }
 
-                if (inputSubsystem->pressed("EditorCamMoveForward") &&
-                    !inputSubsystem->pressed("EditorCamMoveBackward")) {
+                if (inputSubsystem->Pressed("EditorCamMoveForward") &&
+                    !inputSubsystem->Pressed("EditorCamMoveBackward")) {
                     transform.position += camera.direction * m_editor_cam_speed * deltaTime;
                 }
 
-                if (inputSubsystem->pressed("EditorCamMoveBackward") &&
-                    !inputSubsystem->pressed("EditorCamMoveForward")) {
+                if (inputSubsystem->Pressed("EditorCamMoveBackward") &&
+                    !inputSubsystem->Pressed("EditorCamMoveForward")) {
                     transform.position -= camera.direction * m_editor_cam_speed * deltaTime;
                 }
 
-                if (inputSubsystem->pressed("EditorCamMoveUp") && !inputSubsystem->pressed("EditorCamMoveDown")) {
+                if (inputSubsystem->Pressed("EditorCamMoveUp") && !inputSubsystem->Pressed("EditorCamMoveDown")) {
                     transform.position += camera.up * m_editor_cam_speed * deltaTime;
                 }
 
-                if (inputSubsystem->pressed("EditorCamMoveDown") && !inputSubsystem->pressed("EditorCamMoveUp")) {
+                if (inputSubsystem->Pressed("EditorCamMoveDown") && !inputSubsystem->Pressed("EditorCamMoveUp")) {
                     transform.position -= camera.up * m_editor_cam_speed * deltaTime;
                 }
 
                 // Mouse Rotation
-                transform.orientationEulerAngles.yaw += inputSubsystem->get_mouse_x_offset();
-                transform.orientationEulerAngles.pitch += inputSubsystem->get_mouse_y_offset();
+                transform.orientationEulerAngles.yaw += inputSubsystem->GetMouseXOffset();
+                transform.orientationEulerAngles.pitch += inputSubsystem->GetMouseYOffset();
 
                 if (transform.orientationEulerAngles.pitch > 89.0f)
                     transform.orientationEulerAngles.pitch = 89.0f;

@@ -25,111 +25,111 @@ namespace puffin::scripting
 	{
 	public:
 
-		AngelScriptSubsystem(const std::shared_ptr<core::Engine>& engine);
+		explicit AngelScriptSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~AngelScriptSubsystem() override;
 
-		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
 
 		void EndPlay() override;
 
-		void Update(double delta_time) override;
+		void Update(double deltaTime) override;
 		bool ShouldUpdate() override;
 
-		void on_construct_script(entt::registry& registry, entt::entity entity);
-		void on_destroy_script(entt::registry& registry, entt::entity entity);
+		void OnConstructScript(entt::registry& registry, entt::entity entity);
+		void OnDestroyScript(entt::registry& registry, entt::entity entity);
 
-		bool prepare_and_execute_script_method(void* script_obj, asIScriptFunction* script_func);
+		bool PrepareAndExecuteScriptMethod(void* script_obj, asIScriptFunction* script_func);
 
-		void set_current_entity_id(UUID id);
+		void SetCurrentEntityID(UUID id);
 
 		// Hot-Reloads all scripts when called
 		//void reload() {}
 
 	private:
 
-		asIScriptEngine* m_script_engine = nullptr;
-		asIScriptContext* m_script_context = nullptr;
+		void ConfigureEngine();
 
-		std::unique_ptr<AngelScriptEngineInterface> m_engine_interface;
+		void InitContext();
+		void InitScripts();
+		void StartScripts();
+		void StopScripts();
 
-		UUID m_current_entity_id; // Entity ID for currently executing script
+		void InitializeScript(UUID entity, AngelScriptComponent& script);
+		void CompileScript(AngelScriptComponent& script) const;
+		void UpdateScriptMethods(AngelScriptComponent& script);
+		void InstantiateScriptObj(UUID entity, AngelScriptComponent& script);
 
-		// Event Buffers
-		std::shared_ptr<RingBuffer<input::InputEvent>> m_input_events = nullptr;
-		std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> m_collision_begin_events = nullptr;
-		std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> m_collision_end_events = nullptr;
+		void DestroyScript(AngelScriptComponent& script);
 
-		// Maps of Input Callbacks
-		std::unordered_map<std::string, ScriptCallbackMap> m_on_input_pressed_callbacks;
-		std::unordered_map<std::string, ScriptCallbackMap> m_on_input_released_callbacks;
+		void ProcessEvents();
 
-		// Collision Callbacks
-		ScriptCallbackMap m_on_collision_begin_callbacks;
-		ScriptCallbackMap m_on_collision_end_callbacks;
-
-		std::unordered_set<UUID> m_scripts_to_init;
-		std::unordered_set<UUID> m_scripts_to_begin_play;
-		std::unordered_set<UUID> m_scripts_to_end_play;
-
-		void configure_engine();
-
-		void init_context();
-		void init_scripts();
-		void start_scripts();
-		void stop_scripts();
-
-		void initialize_script(UUID entity, AngelScriptComponent& script);
-		void compile_script(AngelScriptComponent& script) const;
-		void update_script_methods(AngelScriptComponent& script);
-		void instantiate_script_obj(UUID entity, AngelScriptComponent& script);
-
-		void destroy_script(AngelScriptComponent& script);
-
-		void process_events();
-
-		asIScriptFunction* get_script_method(const AngelScriptComponent& script, const char* funcName);
-		bool prepare_script_method(void* scriptObj, asIScriptFunction* scriptFunc);
-		bool execute_script_method(void* scriptObj, asIScriptFunction* scriptFunc);
+		asIScriptFunction* GetScriptMethod(const AngelScriptComponent& script, const char* funcName);
+		bool PrepareScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
+		bool ExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc);
 
 		// Global Script Functions
-		[[nodiscard]] const double& get_delta_time() const;
-		[[nodiscard]] const double& get_fixed_time() const;
+		[[nodiscard]] const double& GetDeltaTime() const;
+		[[nodiscard]] const double& GetFixedTime() const;
 
-		void play_sound_effect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
-		UUID play_sound_effect(const std::string& path, float volume = 1.0f, bool looping = false,
-		                         bool restart = false);
+		void PlaySoundEffect(uint64_t id, float volume = 1.0f, bool looping = false, bool restart = false);
+		UUID PlaySoundEffect(const std::string& path, float volume = 1.0f, bool looping = false,
+			bool restart = false);
 
-		UUID get_entity_id(); // Return the Entity ID for the attached script
+		UUID GetEntityID(); // Return the Entity ID for the attached script
 
 		// Script Callbacks
-		ScriptCallback bind_callback(UUID entity, asIScriptFunction* cb) const;
-		void release_callback(ScriptCallback& scriptCallback) const;
+		ScriptCallback BindCallback(UUID entity, asIScriptFunction* cb) const;
+		void ReleaseCallback(ScriptCallback& scriptCallback) const;
 
 		// Collision Functions
-		void bind_on_collision_begin(UUID entity, asIScriptFunction* cb);
-		void bind_on_collision_end(UUID entity, asIScriptFunction* cb);
+		void BindOnCollisionBegin(UUID entity, asIScriptFunction* cb);
+		void BindOnCollisionEnd(UUID entity, asIScriptFunction* cb);
 
-		void release_on_collision_begin(UUID entity);
-		void release_on_collision_end(UUID entity);
+		void ReleaseOnCollisionBegin(UUID entity);
+		void ReleaseOnCollisionEnd(UUID entity);
+
+		asIScriptEngine* mScriptEngine = nullptr;
+		asIScriptContext* mScriptContext = nullptr;
+
+		std::unique_ptr<AngelScriptEngineInterface> mEngineInterface;
+
+		UUID mCurrentEntityID; // Entity ID for currently executing script
+
+		// Event Buffers
+		std::shared_ptr<RingBuffer<input::InputEvent>> mInputEvents = nullptr;
+		std::shared_ptr<RingBuffer<physics::CollisionBeginEvent>> mCollisionBeginEvents = nullptr;
+		std::shared_ptr<RingBuffer<physics::CollisionEndEvent>> mCollisionEndEvents = nullptr;
+
+		// Maps of Input Callbacks
+		std::unordered_map<std::string, ScriptCallbackMap> mOnInputPressedCallbacks;
+		std::unordered_map<std::string, ScriptCallbackMap> mOnInputReleasedCallbacks;
+
+		// Collision Callbacks
+		ScriptCallbackMap mOnCollisionBeginCallbacks;
+		ScriptCallbackMap mOnCollisionEndCallbacks;
+
+		std::unordered_set<UUID> mScriptsToInit;
+		std::unordered_set<UUID> mScriptsToBeginPlay;
+		std::unordered_set<UUID> mScriptsToEndPlay;
 	};
 
 	class AngelScriptGameplaySubsystem : public core::Subsystem
 	{
 	public:
 
-		AngelScriptGameplaySubsystem(std::shared_ptr<core::Engine> engine);
+		explicit AngelScriptGameplaySubsystem(std::shared_ptr<core::Engine> engine);
 		~AngelScriptGameplaySubsystem() override = default;
 
-		core::SubsystemType GetType() const override;
+		[[nodiscard]] core::SubsystemType GetType() const override;
 
 		void BeginPlay() override;
 		void EndPlay() override;
 
-		void Update(double delta_time) override;
+		void Update(double deltaTime) override;
 		bool ShouldUpdate() override;
 
-		void FixedUpdate(double fixed_time) override;
+		void FixedUpdate(double fixedTime) override;
 		bool ShouldFixedUpdate() override;
 
 	private:

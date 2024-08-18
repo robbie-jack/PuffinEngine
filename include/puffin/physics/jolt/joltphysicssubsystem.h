@@ -37,7 +37,7 @@ namespace puffin::physics
 	struct SphereComponent3D;
 	struct BoxComponent3D;
 
-	const inline std::unordered_map<BodyType, JPH::EMotionType> g_jolt_body_type =
+	const inline std::unordered_map<BodyType, JPH::EMotionType> gPuffinToJoltBodyType =
 	{
 		{ BodyType::Static, JPH::EMotionType::Static },
 		{ BodyType::Kinematic, JPH::EMotionType::Kinematic },
@@ -48,64 +48,64 @@ namespace puffin::physics
 	{
 	public:
 
-		JoltPhysicsSubsystem(const std::shared_ptr<core::Engine>& engine);
+		explicit JoltPhysicsSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~JoltPhysicsSubsystem() override = default;
 
-		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
 
-		core::SubsystemType GetType() const override;
+		[[nodiscard]] core::SubsystemType GetType() const override;
 
 		void BeginPlay() override;
 		void EndPlay() override;
 
-		void FixedUpdate(double fixed_time) override;
+		void FixedUpdate(double fixedTime) override;
 		bool ShouldFixedUpdate() override;
 
-		void on_construct_box(entt::registry& registry, entt::entity entity);
-		void on_destroy_box(entt::registry& registry, entt::entity entity);
+		void OnConstructBox(entt::registry& registry, entt::entity entity);
+		void OnDestroyBox(entt::registry& registry, entt::entity entity);
 
-		void on_construct_sphere(entt::registry& registry, entt::entity entity);
-		void on_destroy_sphere(entt::registry& registry, entt::entity entity);
+		void OnConstructSphere(entt::registry& registry, entt::entity entity);
+		void OnDestroySphere(entt::registry& registry, entt::entity entity);
 
-		void on_construct_rigidbody(entt::registry& registry, entt::entity entity);
-		void on_destroy_rigidbody(entt::registry& registry, entt::entity entity);
+		void OnConstructRigidbody(entt::registry& registry, entt::entity entity);
+		void OnDestroyRigidbody(entt::registry& registry, entt::entity entity);
 
-		void update_time_step();
+		void UpdateTimeStep();
 
 	private:
 
-		JPH::Vec3Arg m_gravity = JPH::Vec3Arg(0.0, -9.81, 0.0);
-		double m_fixed_time_step = 0.0;
-		const double m_ideal_time_step = 1 / 60.0; // Ideal time step of physics simulation
-		int m_collision_steps = 1; // Number of collision steps doen in physics simulation. Defualts to one, will be set higher if time step is greater than 1 / 60
+		void UpdateComponents();
 
-		const JPH::uint m_num_body_mutexes = 0;
-		const JPH::uint m_max_body_pairs = 65536;
-		const JPH::uint m_max_contact_constraints = 10240;
+		void InitBox(UUID id, const TransformComponent3D& transform, const BoxComponent3D& box);
+		void InitSphere(UUID id, const TransformComponent3D& transform, const SphereComponent3D& circle);
+		void InitRigidbody(UUID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
 
-		std::unique_ptr<JPH::PhysicsSystem> m_internal_physics_system;
-		std::unique_ptr<JPH::TempAllocatorImpl> m_temp_allocator;
-		std::unique_ptr<JPH::JobSystemThreadPool> m_job_system;
+		JPH::Vec3Arg mGravity = JPH::Vec3Arg(0.0, -9.81, 0.0);
+		double mFixedTimeStep = 0.0;
+		const double mIdealTimeStep = 1 / 60.0; // Ideal time step of physics simulation
+		int mCollisionSteps = 1; // Number of collision steps done in physics simulation. Defaults to one, will be set higher if time step is greater than 1 / 60
 
-		JoltBPLayerInterfaceImpl m_bp_layer_interface_impl;
-		JoltObjectLayerPairFilterImpl m_object_vs_object_layer_filter;
-		JoltObjectVsBroadPhaseLayerFilterImpl m_object_vs_broadphase_layer_filter;
+		const JPH::uint mNumBodyMutexes = 0;
+		const JPH::uint mMaxBodyPairs = 65536;
+		const JPH::uint mMaxContactConstraints = 10240;
 
-		PackedVector<UUID, JPH::ShapeRefC> m_shape_refs;
-		PackedVector<UUID, JPH::Body*> m_bodies;
+		std::unique_ptr<JPH::PhysicsSystem> mJoltPhysicsSystem;
+		std::unique_ptr<JPH::TempAllocatorImpl> mTempAllocator;
+		std::unique_ptr<JPH::JobSystemThreadPool> mJobSystem;
 
-		std::vector<UUID> m_boxes_to_init;
-		std::vector<UUID> m_spheres_to_init;
-		std::vector<UUID> m_bodies_to_init;
+		JoltBPLayerInterfaceImpl mBPLayerInterfaceImpl;
+		JoltObjectLayerPairFilterImpl mObjectVsObjectLayerFilter;
+		JoltObjectVsBroadPhaseLayerFilterImpl mObjectVsBroadphaseLayerFilter;
 
-		std::vector<UUID> m_bodies_to_add;
+		PackedVector<UUID, JPH::ShapeRefC> mShapeRefs;
+		PackedVector<UUID, JPH::Body*> mBodies;
 
-		void update_components();
+		std::vector<UUID> mBoxesToInit;
+		std::vector<UUID> mSpheresToInit;
+		std::vector<UUID> mBodiesToInit;
 
-		void init_box(UUID id, const TransformComponent3D& transform, const BoxComponent3D& box);
-		void init_sphere(UUID id, const TransformComponent3D& transform, const SphereComponent3D& circle);
-		void init_rigidbody(UUID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
+		std::vector<UUID> mBodiesToAdd;
 	};
 }
 

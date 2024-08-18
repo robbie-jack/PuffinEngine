@@ -49,43 +49,43 @@ namespace puffin::scripting
 
 	AngelScriptSubsystem::~AngelScriptSubsystem()
 	{
-		m_engine_interface = nullptr;
+		mEngineInterface = nullptr;
 
 		// Shut down the engine
-		m_script_engine->ShutDownAndRelease();
-		m_script_engine = nullptr;
+		mScriptEngine->ShutDownAndRelease();
+		mScriptEngine = nullptr;
 
 		mEngine = nullptr;
 	}
 
-	void AngelScriptSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
+	void AngelScriptSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		auto entt_subsystem = subsystem_manager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
-		registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSubsystem::on_construct_script>(this);
+		registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSubsystem::OnConstructScript>(this);
 		//registry->on_update<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
-		registry->on_destroy<AngelScriptComponent>().connect<&AngelScriptSubsystem::on_destroy_script>(this);
+		registry->on_destroy<AngelScriptComponent>().connect<&AngelScriptSubsystem::OnDestroyScript>(this);
 
 		// Create Script Engine
-		m_script_engine = asCreateScriptEngine();
-		if (m_script_engine == nullptr)
+		mScriptEngine = asCreateScriptEngine();
+		if (mScriptEngine == nullptr)
 		{
 			cout << "Failed to create script engine." << endl;
 		}
 
 		// Set message callback to receive information on errors in human readable form
-		const int r = m_script_engine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL); assert(r >= 0 && "Failed to set message callback for angelscript");
+		const int r = mScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL); assert(r >= 0 && "Failed to set message callback for angelscript");
 
 		// Configure Engine and Setup Global Function Callbacks
-		configure_engine();
+		ConfigureEngine();
 
-		m_engine_interface = std::make_unique<AngelScriptEngineInterface>(mEngine, m_script_engine);
+		mEngineInterface = std::make_unique<AngelScriptEngineInterface>(mEngine, mScriptEngine);
 
 		//mAudioSubsystem = mEngine->getSystem<audio::AudioSubsystem>();
 
-		init_context();
-		init_scripts();
+		InitContext();
+		InitScripts();
 	}
 
 	void AngelScriptSubsystem::Deinitialize()
@@ -96,79 +96,79 @@ namespace puffin::scripting
 	void AngelScriptSubsystem::EndPlay()
 	{
 		// Execute Script Stop Methods
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		const auto scriptView = registry->view<AngelScriptComponent>();
 
 		for (auto [entity, script] : scriptView.each())
 		{
-			m_current_entity_id = entt_subsystem->GetID(entity);
+			mCurrentEntityID = enttSubsystem->GetID(entity);
 
-			destroy_script(script);
+			DestroyScript(script);
 		}
 
 		// Release Input JustPressed Callbacks
-		for (auto& [string, callbacks] : m_on_input_pressed_callbacks)
+		for (auto& [string, callbacks] : mOnInputPressedCallbacks)
 		{
 			for (auto& [id, callback] : callbacks)
 			{
-				release_callback(callback);
+				ReleaseCallback(callback);
 			}
 		}
 
-		m_on_input_pressed_callbacks.clear();
+		mOnInputPressedCallbacks.clear();
 
 		// Release Input JustReleased Callbacks
-		for (auto& [string, callbacks] : m_on_input_released_callbacks)
+		for (auto& [string, callbacks] : mOnInputReleasedCallbacks)
 		{
 			for (auto& [id, callback] : callbacks)
 			{
-				release_callback(callback);
+				ReleaseCallback(callback);
 			}
 		}
 
-		m_on_input_pressed_callbacks.clear();
+		mOnInputPressedCallbacks.clear();
 
 		// Release collision begin callbacks
-		for (auto& [id, callback] : m_on_collision_begin_callbacks)
+		for (auto& [id, callback] : mOnCollisionBeginCallbacks)
 		{
-			release_callback(callback);
+			ReleaseCallback(callback);
 		}
 
-		m_on_collision_begin_callbacks.clear();
+		mOnCollisionBeginCallbacks.clear();
 
 		// Release collision end callbacks
-		for (auto& [id, callback] : m_on_collision_end_callbacks)
+		for (auto& [id, callback] : mOnCollisionEndCallbacks)
 		{
-			release_callback(callback);
+			ReleaseCallback(callback);
 		}
 
-		m_on_collision_end_callbacks.clear();
+		mOnCollisionEndCallbacks.clear();
 
 		// We must release the contexts when no longer using them
-		if (m_script_context)
+		if (mScriptContext)
 		{
-			m_script_context->Release();
+			mScriptContext->Release();
 		}
 
-		init_context();
-		init_scripts();
+		InitContext();
+		InitScripts();
 	}
 
-	void AngelScriptSubsystem::Update(double delta_time)
+	void AngelScriptSubsystem::Update(double deltaTime)
 	{
 		// Process Input Events
-		process_events();
+		ProcessEvents();
 
 		// Destroy old scripts
-		stop_scripts();
+		StopScripts();
 
 		// Initialize new scripts
-		init_scripts();
+		InitScripts();
 
 		// Run new scripts start method
-		start_scripts();
+		StartScripts();
 	}
 
 	bool AngelScriptSubsystem::ShouldUpdate()
@@ -176,30 +176,30 @@ namespace puffin::scripting
 		return true;
 	}
 
-	void AngelScriptSubsystem::on_construct_script(entt::registry& registry, entt::entity entity)
+	void AngelScriptSubsystem::OnConstructScript(entt::registry& registry, entt::entity entity)
 	{
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto& id = entt_subsystem->GetID(entity);
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto& id = enttSubsystem->GetID(entity);
 
-		m_scripts_to_init.emplace(id);
+		mScriptsToInit.emplace(id);
 	}
 
-	void AngelScriptSubsystem::on_destroy_script(entt::registry& registry, entt::entity entity)
+	void AngelScriptSubsystem::OnDestroyScript(entt::registry& registry, entt::entity entity)
 	{
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto& id = entt_subsystem->GetID(entity);
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto& id = enttSubsystem->GetID(entity);
 
-		m_scripts_to_end_play.emplace(id);
+		mScriptsToEndPlay.emplace(id);
 	}
 
-	void AngelScriptSubsystem::configure_engine()
+	void AngelScriptSubsystem::ConfigureEngine()
 	{
 		int r;
 
 		// Register the script string type
 		// Look at the implementation for this function for more information  
 		// on how to register a custom string type, and other object types.
-		RegisterStdString(m_script_engine);
+		RegisterStdString(mScriptEngine);
 
 		if (!strstr(asGetLibraryOptions(), "AS_MAX_PORTABILITY"))
 		{
@@ -209,31 +209,31 @@ namespace puffin::scripting
 			// with a lot of if's. If an error occurs in release mode it will
 			// be caught when a script is being built, so it is not necessary
 			// to do the verification here as well.
-			r = m_script_engine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(printString), asCALL_CDECL); assert(r >= 0);
+			r = mScriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(printString), asCALL_CDECL); assert(r >= 0);
 		}
 		else
 		{
 			// Notice how the registration is almost identical to the above. 
-			r = m_script_engine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(printStringGeneric), asCALL_GENERIC); assert(r >= 0);
+			r = mScriptEngine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(printStringGeneric), asCALL_GENERIC); assert(r >= 0);
 		}
 
 		// Define Global Methods for Scripts
-		r = m_script_engine->RegisterGlobalFunction("uint64 GetEntityID()", asMETHOD(AngelScriptSubsystem, get_entity_id), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("uint64 GetEntityID()", asMETHOD(AngelScriptSubsystem, GetEntityID), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
-		r = m_script_engine->RegisterGlobalFunction("void PlaySoundEffect(uint64, float, bool, bool)", asMETHODPR(AngelScriptSubsystem, play_sound_effect, (uint64_t, float, bool, bool), void), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_script_engine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSubsystem, play_sound_effect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void PlaySoundEffect(uint64, float, bool, bool)", asMETHODPR(AngelScriptSubsystem, PlaySoundEffect, (uint64_t, float, bool, bool), void), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("uint64 PlaySoundEffect(const string &in, float, bool, bool)", asMETHODPR(AngelScriptSubsystem, PlaySoundEffect, (const string&, float, bool, bool), uint64_t), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// Register Components and their constructors, functions and properties
-		RegisterTransformComponent(m_script_engine);
+		RegisterTransformComponent(mScriptEngine);
 
 		// Register Collision Funcdefs and Bind/Release Callback Methods
-		r = m_script_engine->RegisterFuncdef("void OnCollisionBeginCallback(uint64)"); assert(r >= 0);
-		r = m_script_engine->RegisterFuncdef("void OnCollisionEndCallback(uint64)"); assert(r >= 0);
+		r = mScriptEngine->RegisterFuncdef("void OnCollisionBeginCallback(uint64)"); assert(r >= 0);
+		r = mScriptEngine->RegisterFuncdef("void OnCollisionEndCallback(uint64)"); assert(r >= 0);
 
-		r = m_script_engine->RegisterGlobalFunction("void BindOnCollisionBegin(uint64, OnCollisionBeginCallback @cb)", asMETHOD(AngelScriptSubsystem, bind_on_collision_begin), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_script_engine->RegisterGlobalFunction("void BindOnCollisionEnd(uint64, OnCollisionEndCallback @cb)", asMETHOD(AngelScriptSubsystem, bind_on_collision_end), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_script_engine->RegisterGlobalFunction("void ReleaseOnCollisionBegin(uint64)", asMETHOD(AngelScriptSubsystem, release_on_collision_begin), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
-		r = m_script_engine->RegisterGlobalFunction("void ReleaseOnCollisionEnd(uint64)", asMETHOD(AngelScriptSubsystem, release_on_collision_end), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void BindOnCollisionBegin(uint64, OnCollisionBeginCallback @cb)", asMETHOD(AngelScriptSubsystem, BindOnCollisionBegin), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void BindOnCollisionEnd(uint64, OnCollisionEndCallback @cb)", asMETHOD(AngelScriptSubsystem, BindOnCollisionEnd), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnCollisionBegin(uint64)", asMETHOD(AngelScriptSubsystem, ReleaseOnCollisionBegin), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
+		r = mScriptEngine->RegisterGlobalFunction("void ReleaseOnCollisionEnd(uint64)", asMETHOD(AngelScriptSubsystem, ReleaseOnCollisionEnd), asCALL_THISCALL_ASGLOBAL, this); assert(r >= 0);
 
 		// It is possible to register the functions, properties, and types in 
 		// configuration groups as well. When compiling the scripts it then
@@ -243,88 +243,88 @@ namespace puffin::scripting
 		// without having to recompile all the scripts.
 	}
 
-	void AngelScriptSubsystem::init_context()
+	void AngelScriptSubsystem::InitContext()
 	{
-		m_script_context = m_script_engine->CreateContext();
+		mScriptContext = mScriptEngine->CreateContext();
 
-		if (m_script_context == nullptr)
+		if (mScriptContext == nullptr)
 		{
 			cout << "Failed to create the context." << endl;
-			m_script_engine->Release();
+			mScriptEngine->Release();
 		}
 	}
 
-	void AngelScriptSubsystem::init_scripts()
+	void AngelScriptSubsystem::InitScripts()
 	{
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
-		for (const auto id : m_scripts_to_init)
+		for (const auto id : mScriptsToInit)
 		{
-			entt::entity entity = entt_subsystem->GetEntity(id);
+			entt::entity entity = enttSubsystem->GetEntity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 
-			initialize_script(id, script);
+			InitializeScript(id, script);
 
 			ExportEditablePropertiesToScriptData(script, script.serializedData);
 
-			m_scripts_to_begin_play.emplace(id);
+			mScriptsToBeginPlay.emplace(id);
 		}
 
-		m_scripts_to_init.clear();
+		mScriptsToInit.clear();
 	}
 
-	void AngelScriptSubsystem::start_scripts()
+	void AngelScriptSubsystem::StartScripts()
 	{
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
-		for (const auto id : m_scripts_to_begin_play)
+		for (const auto id : mScriptsToBeginPlay)
 		{
-			entt::entity entity = entt_subsystem->GetEntity(id);
+			entt::entity entity = enttSubsystem->GetEntity(id);
 
 			const auto& script = registry->get<AngelScriptComponent>(entity);
 
-			m_current_entity_id = id;
+			mCurrentEntityID = id;
 
-			prepare_and_execute_script_method(script.obj, script.beginPlayFunc);
+			PrepareAndExecuteScriptMethod(script.obj, script.beginPlayFunc);
 		}
 
-		m_scripts_to_begin_play.clear();
+		mScriptsToBeginPlay.clear();
 	}
 
-	void AngelScriptSubsystem::stop_scripts()
+	void AngelScriptSubsystem::StopScripts()
 	{
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
-		for (const auto id : m_scripts_to_end_play)
+		for (const auto id : mScriptsToEndPlay)
 		{
-			entt::entity entity = entt_subsystem->GetEntity(id);
+			entt::entity entity = enttSubsystem->GetEntity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 
-			m_current_entity_id = id;
+			mCurrentEntityID = id;
 
-			prepare_and_execute_script_method(script.obj, script.endPlayFunc);
+			PrepareAndExecuteScriptMethod(script.obj, script.endPlayFunc);
 
-			destroy_script(script);
+			DestroyScript(script);
 		}
 
-		m_scripts_to_end_play.clear();
+		mScriptsToEndPlay.clear();
 	}
 
 
-	void AngelScriptSubsystem::initialize_script(UUID entity, AngelScriptComponent& script)
+	void AngelScriptSubsystem::InitializeScript(UUID entity, AngelScriptComponent& script)
 	{
-		compile_script(script);
-		update_script_methods(script);
-		instantiate_script_obj(entity, script);
+		CompileScript(script);
+		UpdateScriptMethods(script);
+		InstantiateScriptObj(entity, script);
 		ImportEditableProperties(script, script.serializedData);
 	}
 
-	void AngelScriptSubsystem::compile_script(AngelScriptComponent& script) const
+	void AngelScriptSubsystem::CompileScript(AngelScriptComponent& script) const
 	{
 		// Compile the script into a module
 		int r;
@@ -338,13 +338,13 @@ namespace puffin::scripting
 		// be written to the message stream that we set right after creating the 
 		// script engine. If there are no errors, and no warnings, nothing will
 		// be written to the stream.
-		r = builder.StartNewModule(m_script_engine, script.name.c_str());
+		r = builder.StartNewModule(mScriptEngine, script.name.c_str());
 		if (r < 0)
 		{
 			cout << "Failed to start new module" << endl;
 		}
 
-		fs::path scriptPath = assets::AssetRegistry::Get()->GetContentRoot() / script.dir;
+		const fs::path scriptPath = assets::AssetRegistry::Get()->GetContentRoot() / script.dir;
 
 		r = builder.AddSectionFromFile(scriptPath.string().c_str());
 		if (r < 0)
@@ -359,7 +359,7 @@ namespace puffin::scripting
 		else
 		{
 			// Get the object type from the compiled module
-			asIScriptModule* mod = m_script_engine->GetModule(script.name.c_str());
+			asIScriptModule* mod = mScriptEngine->GetModule(script.name.c_str());
 
 			asITypeInfo* typeToInstantiate = nullptr;
 
@@ -404,17 +404,17 @@ namespace puffin::scripting
 					std::vector<std::string> metadata = builder.GetMetadataForTypeProperty(typeToInstantiate->GetTypeId(), p);
 
 					// Check each properties metadata
-					for (int m = 0; m < metadata.size(); m++)
+					for (auto& m : metadata)
 					{
 						bool isEditable = false;
 
-						if (metadata[m] == "Editable")
+						if (m == "Editable")
 						{
 							script.editableProperties.insert(p);
 							isEditable = true;
 						}
 
-						if (metadata[m] == "Visible" && !isEditable)
+						if (m == "Visible" && !isEditable)
 						{
 							script.visibleProperties.insert(p);
 						}
@@ -424,18 +424,18 @@ namespace puffin::scripting
 		}
 	}
 
-	void AngelScriptSubsystem::update_script_methods(AngelScriptComponent& script)
+	void AngelScriptSubsystem::UpdateScriptMethods(AngelScriptComponent& script)
 	{
 		if (script.type != nullptr)
 		{
-			script.beginPlayFunc = get_script_method(script, "BeginPlay");
-			script.fixedUpdateFunc = get_script_method(script, "FixedUpdate");
-			script.updateFunc = get_script_method(script, "Update");
-			script.endPlayFunc = get_script_method(script, "EndPlay");
+			script.beginPlayFunc = GetScriptMethod(script, "BeginPlay");
+			script.fixedUpdateFunc = GetScriptMethod(script, "FixedUpdate");
+			script.updateFunc = GetScriptMethod(script, "Update");
+			script.endPlayFunc = GetScriptMethod(script, "EndPlay");
 		}
 	}
 
-	void AngelScriptSubsystem::instantiate_script_obj(UUID entity, AngelScriptComponent& script)
+	void AngelScriptSubsystem::InstantiateScriptObj(UUID entity, AngelScriptComponent& script)
 	{
 		if (script.type != 0 && script.type->GetFactoryCount() > 0)
 		{
@@ -443,18 +443,18 @@ namespace puffin::scripting
 			asIScriptFunction* factory = script.type->GetFactoryByIndex(0);
 
 			// Prepare context to call factory function
-			m_script_context->Prepare(factory);
+			mScriptContext->Prepare(factory);
 
 			// Execute Call
-			m_script_context->Execute();
+			mScriptContext->Execute();
 
 			// Get created object if nullptr, and increase its reference count by one
-			script.obj = *(asIScriptObject**)m_script_context->GetAddressOfReturnValue();
+			script.obj = *(asIScriptObject**)mScriptContext->GetAddressOfReturnValue();
 			script.obj->AddRef();
 		}
 	}
 
-	asIScriptFunction* AngelScriptSubsystem::get_script_method(const AngelScriptComponent& script, const char* funcName)
+	asIScriptFunction* AngelScriptSubsystem::GetScriptMethod(const AngelScriptComponent& script, const char* funcName)
 	{
 		asIScriptFunction* scriptFunc = script.type->GetMethodByName(funcName);
 
@@ -470,7 +470,7 @@ namespace puffin::scripting
 		return scriptFunc;
 	}
 
-	void AngelScriptSubsystem::destroy_script(AngelScriptComponent& script)
+	void AngelScriptSubsystem::DestroyScript(AngelScriptComponent& script)
 	{
 		script.type->Release();
 		script.type = nullptr;
@@ -485,7 +485,7 @@ namespace puffin::scripting
 		script.visibleProperties.clear();
 	}
 
-	void AngelScriptSubsystem::process_events()
+	void AngelScriptSubsystem::ProcessEvents()
 	{
 		// PUFFIN_TODO - Update input handling to work with signal subsystem
 
@@ -585,15 +585,15 @@ namespace puffin::scripting
 		//}
 	}
 
-	bool AngelScriptSubsystem::prepare_script_method(void* scriptObj, asIScriptFunction* scriptFunc)
+	bool AngelScriptSubsystem::PrepareScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)
 	{
 		if (scriptObj != 0 && scriptFunc != 0)
 		{
 			// Prepare Function for execution
-			m_script_context->Prepare(scriptFunc);
+			mScriptContext->Prepare(scriptFunc);
 
 			// Set Object pointer
-			m_script_context->SetObject(scriptObj);
+			mScriptContext->SetObject(scriptObj);
 
 			return true;
 		}
@@ -602,12 +602,12 @@ namespace puffin::scripting
 		return false;
 	}
 
-	bool AngelScriptSubsystem::execute_script_method(void* scriptObj, asIScriptFunction* scriptFunc)
+	bool AngelScriptSubsystem::ExecuteScriptMethod(void* scriptObj, asIScriptFunction* scriptFunc)
 	{
 		if (scriptObj != 0 && scriptFunc != 0)
 		{
 			// Execute the function
-			int r = m_script_context->Execute();
+			int r = mScriptContext->Execute();
 			if (r != asEXECUTION_FINISHED)
 			{
 				// The execution didn't finish as we had planned. Determine why.
@@ -618,12 +618,12 @@ namespace puffin::scripting
 					cout << "The script ended with an exception." << endl;
 
 					// Write some information about the script exception
-					asIScriptFunction* func = m_script_context->GetExceptionFunction();
+					asIScriptFunction* func = mScriptContext->GetExceptionFunction();
 					cout << "func: " << func->GetDeclaration() << endl;
 					cout << "modl: " << func->GetModuleName() << endl;
 					//cout << "sect: " << func->GetScriptSectionName() << endl;
-					cout << "line: " << m_script_context->GetExceptionLineNumber() << endl;
-					cout << "desc: " << m_script_context->GetExceptionString() << endl;
+					cout << "line: " << mScriptContext->GetExceptionLineNumber() << endl;
+					cout << "desc: " << mScriptContext->GetExceptionString() << endl;
 				}
 				else
 					cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
@@ -638,50 +638,46 @@ namespace puffin::scripting
 		return false;
 	}
 
-	bool AngelScriptSubsystem::prepare_and_execute_script_method(void* script_obj, asIScriptFunction* script_func)
+	bool AngelScriptSubsystem::PrepareAndExecuteScriptMethod(void* script_obj, asIScriptFunction* script_func)
 	{
-		if (prepare_script_method(script_obj, script_func))
+		if (PrepareScriptMethod(script_obj, script_func))
 		{
-			return execute_script_method(script_obj, script_func);
+			return ExecuteScriptMethod(script_obj, script_func);
 		}
 
 		return false;
 	}
 
-	void AngelScriptSubsystem::set_current_entity_id(UUID id)
+	void AngelScriptSubsystem::SetCurrentEntityID(UUID id)
 	{
-		m_current_entity_id = id;
+		mCurrentEntityID = id;
 	}
 
 	// Global Script Functions
 
-	const double& AngelScriptSubsystem::get_delta_time() const
+	const double& AngelScriptSubsystem::GetDeltaTime() const
 	{
-		const double deltaTime = mEngine->GetDeltaTime();
-		return deltaTime;
+		return mEngine->GetDeltaTime();
 	}
 
-	const double& AngelScriptSubsystem::get_fixed_time() const
+	const double& AngelScriptSubsystem::GetFixedTime() const
 	{
-		const double fixedDeltaTime = mEngine->GetTimeStepFixed();
-		return fixedDeltaTime;
+		return mEngine->GetTimeStepFixed();
 	}
 
-	void AngelScriptSubsystem::play_sound_effect(uint64_t id, float volume, bool looping, bool restart)
+	void AngelScriptSubsystem::PlaySoundEffect(uint64_t id, float volume, bool looping, bool restart)
 	{
-		auto audio_subsystem = mEngine->GetSubsystem<audio::AudioSubsystem>();
-		if (audio_subsystem)
+		if (const auto audioSubsystem = mEngine->GetSubsystem<audio::AudioSubsystem>())
 		{
 			//mAudioSubsystem->playSoundEffect(id, volume, looping, restart);
 		}
 	}
 
-	UUID AngelScriptSubsystem::play_sound_effect(const std::string& path, float volume, bool looping, bool restart)
+	UUID AngelScriptSubsystem::PlaySoundEffect(const std::string& path, float volume, bool looping, bool restart)
 	{
 		UUID id = 0;
 
-		auto audio_subsystem = mEngine->GetSubsystem<audio::AudioSubsystem>();
-		if (audio_subsystem)
+		if (const auto audioSubsystem = mEngine->GetSubsystem<audio::AudioSubsystem>())
 		{
 			//id = mAudioSubsystem->playSoundEffect(path, volume, looping, restart);
 		}
@@ -689,12 +685,12 @@ namespace puffin::scripting
 		return id;
 	}
 
-	UUID AngelScriptSubsystem::get_entity_id()
+	UUID AngelScriptSubsystem::GetEntityID()
 	{
-		return m_current_entity_id;
+		return mCurrentEntityID;
 	}
 
-	ScriptCallback AngelScriptSubsystem::bind_callback(UUID entity, asIScriptFunction* cb) const
+	ScriptCallback AngelScriptSubsystem::BindCallback(UUID entity, asIScriptFunction* cb) const
 	{
 		ScriptCallback scriptCallback;
 		scriptCallback.entity = entity;
@@ -707,7 +703,7 @@ namespace puffin::scripting
 			scriptCallback.func = cb->GetDelegateFunction();
 
 			// Increment Refs
-			m_script_engine->AddRefScriptObject(scriptCallback.object, scriptCallback.objectType);
+			mScriptEngine->AddRefScriptObject(scriptCallback.object, scriptCallback.objectType);
 			scriptCallback.func->AddRef();
 
 			// Release Delegate
@@ -722,13 +718,13 @@ namespace puffin::scripting
 		return scriptCallback;
 	}
 
-	void AngelScriptSubsystem::release_callback(ScriptCallback& scriptCallback) const
+	void AngelScriptSubsystem::ReleaseCallback(ScriptCallback& scriptCallback) const
 	{
 		if (scriptCallback.func)
 			scriptCallback.func->Release();
 
 		if (scriptCallback.object)
-			m_script_engine->ReleaseScriptObject(scriptCallback.object, scriptCallback.objectType);
+			mScriptEngine->ReleaseScriptObject(scriptCallback.object, scriptCallback.objectType);
 
 		scriptCallback.func = nullptr;
 		scriptCallback.object = nullptr;
@@ -737,35 +733,35 @@ namespace puffin::scripting
 
 	// Collision Callbacks
 
-	void AngelScriptSubsystem::bind_on_collision_begin(UUID entity, asIScriptFunction* cb)
+	void AngelScriptSubsystem::BindOnCollisionBegin(UUID entity, asIScriptFunction* cb)
 	{
-		release_on_collision_begin(entity);
+		ReleaseOnCollisionBegin(entity);
 
-		m_on_collision_begin_callbacks[entity] = bind_callback(entity, cb);
+		mOnCollisionBeginCallbacks[entity] = BindCallback(entity, cb);
 	}
 
-	void AngelScriptSubsystem::bind_on_collision_end(UUID entity, asIScriptFunction* cb)
+	void AngelScriptSubsystem::BindOnCollisionEnd(UUID entity, asIScriptFunction* cb)
 	{
-		release_on_collision_end(entity);
+		ReleaseOnCollisionEnd(entity);
 
-		m_on_collision_end_callbacks[entity] = bind_callback(entity, cb);
+		mOnCollisionEndCallbacks[entity] = BindCallback(entity, cb);
 	}
 
-	void AngelScriptSubsystem::release_on_collision_begin(UUID entity)
+	void AngelScriptSubsystem::ReleaseOnCollisionBegin(UUID entity)
 	{
-		if (m_on_collision_begin_callbacks.count(entity) == 1)
+		if (mOnCollisionBeginCallbacks.count(entity) == 1)
 		{
-			release_callback(m_on_collision_begin_callbacks[entity]);
-			m_on_collision_begin_callbacks.erase(entity);
+			ReleaseCallback(mOnCollisionBeginCallbacks[entity]);
+			mOnCollisionBeginCallbacks.erase(entity);
 		}
 	}
 
-	void AngelScriptSubsystem::release_on_collision_end(UUID entity)
+	void AngelScriptSubsystem::ReleaseOnCollisionEnd(UUID entity)
 	{
-		if (m_on_collision_end_callbacks.count(entity) == 1)
+		if (mOnCollisionEndCallbacks.count(entity) == 1)
 		{
-			release_callback(m_on_collision_end_callbacks[entity]);
-			m_on_collision_end_callbacks.erase(entity);
+			ReleaseCallback(mOnCollisionEndCallbacks[entity]);
+			mOnCollisionEndCallbacks.erase(entity);
 		}
 	}
 
@@ -781,52 +777,52 @@ namespace puffin::scripting
 
 	void AngelScriptGameplaySubsystem::BeginPlay()
 	{
-		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto angelscriptSubsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		// Execute update method on scripts
-		const auto script_view = registry->view<AngelScriptComponent>();
+		const auto scriptView = registry->view<AngelScriptComponent>();
 
-		for (auto [entity, script] : script_view.each())
+		for (auto [entity, script] : scriptView.each())
 		{
-			angelscript_subsystem->set_current_entity_id(entt_subsystem->GetID(entity));
+			angelscriptSubsystem->SetCurrentEntityID(enttSubsystem->GetID(entity));
 
-			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.beginPlayFunc);
+			angelscriptSubsystem->PrepareAndExecuteScriptMethod(script.obj, script.beginPlayFunc);
 		}
 	}
 
 	void AngelScriptGameplaySubsystem::EndPlay()
 	{
-		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto angelscriptSubsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		// Execute update method on scripts
-		const auto script_view = registry->view<AngelScriptComponent>();
+		const auto scriptView = registry->view<AngelScriptComponent>();
 
-		for (auto [entity, script] : script_view.each())
+		for (auto [entity, script] : scriptView.each())
 		{
-			angelscript_subsystem->set_current_entity_id(entt_subsystem->GetID(entity));
+			angelscriptSubsystem->SetCurrentEntityID(enttSubsystem->GetID(entity));
 
-			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.endPlayFunc);
+			angelscriptSubsystem->PrepareAndExecuteScriptMethod(script.obj, script.endPlayFunc);
 		}
 	}
 
-	void AngelScriptGameplaySubsystem::Update(double delta_time)
+	void AngelScriptGameplaySubsystem::Update(double deltaTime)
 	{
-		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto angelscriptSubsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		// Execute update method on scripts
-		const auto script_view = registry->view<AngelScriptComponent>();
+		const auto scriptView = registry->view<AngelScriptComponent>();
 
-		for (auto [entity, script] : script_view.each())
+		for (auto [entity, script] : scriptView.each())
 		{
-			angelscript_subsystem->set_current_entity_id(entt_subsystem->GetID(entity));
+			angelscriptSubsystem->SetCurrentEntityID(enttSubsystem->GetID(entity));
 
-			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.updateFunc);
+			angelscriptSubsystem->PrepareAndExecuteScriptMethod(script.obj, script.updateFunc);
 		}
 	}
 
@@ -835,20 +831,20 @@ namespace puffin::scripting
 		return true;
 	}
 
-	void AngelScriptGameplaySubsystem::FixedUpdate(double fixed_time)
+	void AngelScriptGameplaySubsystem::FixedUpdate(double fixedTime)
 	{
-		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
-		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->GetRegistry();
+		const auto angelscriptSubsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		// Execute fixed update method on scripts
-		const auto script_view = registry->view<AngelScriptComponent>();
+		const auto scriptView = registry->view<AngelScriptComponent>();
 
-		for (auto [entity, script] : script_view.each())
+		for (auto [entity, script] : scriptView.each())
 		{
-			angelscript_subsystem->set_current_entity_id(entt_subsystem->GetID(entity));
+			angelscriptSubsystem->SetCurrentEntityID(enttSubsystem->GetID(entity));
 
-			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.fixedUpdateFunc);
+			angelscriptSubsystem->PrepareAndExecuteScriptMethod(script.obj, script.fixedUpdateFunc);
 		}
 	}
 
