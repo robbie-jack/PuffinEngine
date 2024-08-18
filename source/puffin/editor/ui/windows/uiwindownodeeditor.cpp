@@ -43,7 +43,7 @@ namespace puffin
 			AddComponentType<scripting::AngelScriptComponent>("Script");
 		}
 
-		void UIWindowNodeEditor::Draw(double dt)
+		void UIWindowNodeEditor::Draw(double deltaTime)
 		{
 			mWindowName = "Entity Properties";
 

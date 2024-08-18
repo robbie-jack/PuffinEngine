@@ -13,7 +13,11 @@ namespace puffin
 	{
 		constexpr int s_max_benchmark_values = 100;
 
-		void UIWindowPerformance::Draw(double dt)
+		UIWindowPerformance::UIWindowPerformance(std::shared_ptr<core::Engine> engine): UIWindow(engine)
+		{
+		}
+
+		void UIWindowPerformance::Draw(double deltaTime)
 		{
 			mWindowName = "Performance";
 
@@ -48,7 +52,7 @@ namespace puffin
 				if (ImGui::CollapsingHeader("Performance Metrics"))
 				{
 					// Display FPS
-					mFpsTimer += dt;
+					mFpsTimer += deltaTime;
 
 					constexpr int numValues = 120;
 					static int valueOffset = 0;
@@ -63,8 +67,8 @@ namespace puffin
 
 					if (constexpr float refreshTime = 1 / 60.0f; mFpsTimer >= refreshTime)
 					{
-						mFps = 1 / dt;
-						mFrametime = dt * 1000;
+						mFps = 1 / deltaTime;
+						mFrameTime = deltaTime * 1000;
 						mFpsTimer = 0.0;
 
 						if (mFps > framerateMax)
@@ -73,14 +77,14 @@ namespace puffin
 						if (mFps < framerateMin)
 							framerateMin = mFps;
 
-						if (mFrametime > frametimeMax)
-							frametimeMax = mFrametime;
+						if (mFrameTime > frametimeMax)
+							frametimeMax = mFrameTime;
 
-						if (mFrametime < frametimeMin)
-							frametimeMin = mFrametime;
+						if (mFrameTime < frametimeMin)
+							frametimeMin = mFrameTime;
 
 						framerateValues[valueOffset] = mFps;
-						frametimeValues[valueOffset] = mFrametime;
+						frametimeValues[valueOffset] = mFrameTime;
 						valueOffset = (valueOffset + 1) % numValues;
 					}
 
@@ -127,7 +131,7 @@ namespace puffin
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Current: %.1f", mFrametime);
+					ImGui::Text("Current: %.1f", mFrameTime);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
 					ImGui::Text("Average: %.1f", frametimeAverage);
@@ -146,79 +150,77 @@ namespace puffin
 					ImGui::Text("Frametime Breakdown");
 					ImGui::NewLine();
 
-					auto benchmark_subsystem = m_engine->GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
+					const auto benchmarkSubsystem = m_engine->GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 
-					draw_benchmark("Input", benchmark_subsystem->get_benchmark_time("Input"));
-					draw_benchmark("Sample Time", benchmark_subsystem->get_benchmark_time("Sample Time"));
+					DrawBenchmark("Input", benchmarkSubsystem->get_benchmark_time("Input"));
+					DrawBenchmark("Sample Time", benchmarkSubsystem->get_benchmark_time("Sample Time"));
 
-					draw_benchmark("Engine Update", benchmark_subsystem->get_benchmark_time("Engine Update"));
+					DrawBenchmark("Engine Update", benchmarkSubsystem->get_benchmark_time("Engine Update"));
 
 					ImGui::Indent();
-					for (const auto& name : benchmark_subsystem->get_category("Engine Update"))
+					for (const auto& name : benchmarkSubsystem->get_category("Engine Update"))
 					{
-						draw_benchmark(name, benchmark_subsystem->get_benchmark_time_category(name, "Engine Update"));
+						DrawBenchmark(name, benchmarkSubsystem->get_benchmark_time_category(name, "Engine Update"));
 					}
 					ImGui::Unindent();
 
-					draw_benchmark("Fixed Update", benchmark_subsystem->get_benchmark_time("Fixed Update"));
+					DrawBenchmark("Fixed Update", benchmarkSubsystem->get_benchmark_time("Fixed Update"));
 
 					ImGui::Indent();
-					for (const auto& name : benchmark_subsystem->get_category("Fixed Update"))
+					for (const auto& name : benchmarkSubsystem->get_category("Fixed Update"))
 					{
-						draw_benchmark(name, benchmark_subsystem->get_benchmark_time_category(name, "Fixed Update"));
+						DrawBenchmark(name, benchmarkSubsystem->get_benchmark_time_category(name, "Fixed Update"));
 					}
 					ImGui::Unindent();
 
-					draw_benchmark("Update", benchmark_subsystem->get_benchmark_time("Update"));
+					DrawBenchmark("Update", benchmarkSubsystem->get_benchmark_time("Update"));
 
 					ImGui::Indent();
-					for (const auto& name : benchmark_subsystem->get_category("Update"))
+					for (const auto& name : benchmarkSubsystem->get_category("Update"))
 					{
-						draw_benchmark(name, benchmark_subsystem->get_benchmark_time_category(name, "Update"));
+						DrawBenchmark(name, benchmarkSubsystem->get_benchmark_time_category(name, "Update"));
 					}
 					ImGui::Unindent();
 
-					draw_benchmark("Render", benchmark_subsystem->get_benchmark_time("Render"));
+					DrawBenchmark("Render", benchmarkSubsystem->get_benchmark_time("Render"));
 				}
 
 				End();
 			}
 		}
 
-		void UIWindowPerformance::draw_benchmark(const std::string& name, double benchmark_time)
+		void UIWindowPerformance::DrawBenchmark(const std::string& name, double benchmarkTime)
 		{
-			auto benchmark_subsystem = m_engine->GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
-
-			if (m_benchmark_idx.find(name) == m_benchmark_idx.end())
+			if (mBenchmarkIdx.find(name) == mBenchmarkIdx.end())
 			{
-				m_benchmark_idx.emplace(name, 0);
+				mBenchmarkIdx.emplace(name, 0);
 
-				m_benchmark_values.emplace(name, std::vector<double>());
-				m_benchmark_values.at(name).reserve(s_max_benchmark_values);
+				mBenchmarkValues.emplace(name, std::vector<double>());
+				mBenchmarkValues.at(name).reserve(s_max_benchmark_values);
 			}
 
-			auto& benchmark_vector = m_benchmark_values.at(name);
-			if(benchmark_vector.size() < s_max_benchmark_values)
+			auto& benchmarkVector = mBenchmarkValues.at(name);
+			if(benchmarkVector.size() < s_max_benchmark_values)
 			{
-				benchmark_vector.push_back(0.0);
+				benchmarkVector.push_back(0.0);
 			}
 
-			benchmark_vector[m_benchmark_idx.at(name) % s_max_benchmark_values] = benchmark_time;
+			benchmarkVector[mBenchmarkIdx.at(name) % s_max_benchmark_values] = benchmarkTime;
 
-			double benchmark_average = 0.0;
-			for (auto value : benchmark_vector)
+			double benchmarkAverage = 0.0;
+			for (const auto value : benchmarkVector)
 			{
-				benchmark_average += value;
+				benchmarkAverage += value;
 			}
-			benchmark_average /= benchmark_vector.size();
+			benchmarkAverage /= benchmarkVector.size();
 
 			ImGui::Dummy(ImVec2(0.0f, 10.0f));
 			ImGui::SameLine();
-			ImGui::Text("%s: %.3f ms", name.c_str(), benchmark_average);
+			ImGui::Text("%s: %.3f ms", name.c_str(), benchmarkAverage);
 
 			//ImGui::NewLine();
 
-			m_benchmark_idx[name] = m_benchmark_idx[name] + 1 % s_max_benchmark_values;
+			mBenchmarkIdx[name] = mBenchmarkIdx[name] + 1 % s_max_benchmark_values;
 		}
 	}
 }

@@ -48,25 +48,25 @@ namespace puffin
 		{
 		public:
 
-			UIWindowPerformance(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
-			~UIWindowPerformance() override {}
+			UIWindowPerformance(std::shared_ptr<core::Engine> engine);
+			~UIWindowPerformance() override = default;
 
-			void Draw(double dt) override;
+			void Draw(double deltaTime) override;
 
 		private:
 
 			double mFps = 0.0;
 			double mFpsTimer = 0.0;
-			double mFrametime = 0.0;
+			double mFrameTime = 0.0;
 
 			//Puffin::UI::ScrollingBuffer plotBuffer;
 
 			HardwareStats hardwareStats;
 
-			std::unordered_map<std::string, int> m_benchmark_idx;
-			std::unordered_map<std::string, std::vector<double>> m_benchmark_values;
+			std::unordered_map<std::string, int> mBenchmarkIdx;
+			std::unordered_map<std::string, std::vector<double>> mBenchmarkValues;
 
-			void draw_benchmark(const std::string& name, double benchmark_time);
+			void DrawBenchmark(const std::string& name, double benchmarkTime);
 		};
 	}
 }

@@ -13,14 +13,14 @@ namespace puffin
 		{
 		public:
 
-			UIWindowViewport(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
-			~UIWindowViewport() override {}
+			explicit UIWindowViewport(std::shared_ptr<core::Engine> engine);
+			~UIWindowViewport() override = default;
 
-			void drawWithoutImage();
-			void draw(ImTextureID textureID);
-			void Draw(double dt) override {}
+			void DrawWithoutImage();
+			void Draw(ImTextureID textureID);
+			void Draw(double deltaTime) override;
 
-			[[nodiscard]] ImVec2 viewportSize() const { return mViewportSize; }
+			[[nodiscard]] ImVec2 GetViewportSize() const;
 
 			//inline void SetEntity(ECS::EntityID entity_) { entity = entity_; }
 

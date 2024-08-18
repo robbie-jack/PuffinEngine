@@ -98,7 +98,7 @@ namespace puffin::ui
 		explicit UIWindowNodeEditor(const std::shared_ptr<core::Engine>& engine);
 		~UIWindowNodeEditor() override = default;
 
-		void Draw(double dt) override;
+		void Draw(double deltaTime) override;
 
 		//inline void SetEntity(ECS::EntityID entity_) { m_entity = entity_; };
 		void SetFileBrowser(ImGui::FileBrowser* fileDialog);

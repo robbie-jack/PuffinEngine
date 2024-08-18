@@ -11,7 +11,7 @@ namespace puffin::ui
 		explicit UIContentBrowser(const std::shared_ptr<core::Engine>& engine);
 		~UIContentBrowser() override = default;
 
-		void Draw(double dt) override;
+		void Draw(double deltaTime) override;
 
 	private:
 

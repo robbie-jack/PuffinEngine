@@ -28,7 +28,7 @@ namespace puffin
 				m_engine = nullptr;
 			}
 
-			virtual void Draw(double dt) = 0;
+			virtual void Draw(double deltaTime) = 0;
 
 			UUID GetSelectedEntity() const;
 			void SetSelectedEntity(const UUID selectedEntity);

@@ -9,7 +9,11 @@ namespace puffin
 {
 	namespace ui
 	{
-		void UIWindowViewport::drawWithoutImage()
+		UIWindowViewport::UIWindowViewport(std::shared_ptr<core::Engine> engine): UIWindow(engine)
+		{
+		}
+
+		void UIWindowViewport::DrawWithoutImage()
 		{
 			mWindowName = "Viewport";
 
@@ -26,7 +30,7 @@ namespace puffin
 			}
 		}
 
-		void UIWindowViewport::draw(const ImTextureID textureID)
+		void UIWindowViewport::Draw(const ImTextureID textureID)
 		{
 			mWindowName = "Viewport";
 
@@ -72,14 +76,6 @@ namespace puffin
 						mPlayButtonLabel = "Play";
 					}
 
-					ImGui::Dummy(ImVec2(100.0f, 0.0f));
-
-					// Compile Button
-					if (ImGui::Button("Compile"))
-					{
-						
-					}
-
 					ImGui::EndMenuBar();
 				}
 
@@ -97,6 +93,15 @@ namespace puffin
 
 				End();
 			}
+		}
+
+		void UIWindowViewport::Draw(double deltaTime)
+		{
+		}
+
+		ImVec2 UIWindowViewport::GetViewportSize() const
+		{
+			return mViewportSize;
 		}
 	}
 }

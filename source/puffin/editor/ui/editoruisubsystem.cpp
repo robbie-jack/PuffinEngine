@@ -128,7 +128,7 @@ namespace puffin::ui
 		}
 
 		// Update Selected Entity
-		if (mWindowSceneHierarchy->entityChanged())
+		if (mWindowSceneHierarchy->GetEntityChanged())
 		{
 			mEntity = mWindowSceneHierarchy->GetSelectedEntity();
 

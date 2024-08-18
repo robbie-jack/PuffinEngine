@@ -17,10 +17,10 @@ namespace puffin
 		{
 		public:
 
-			UIWindowSettings(std::shared_ptr<core::Engine> engine) : UIWindow(engine) {}
-			~UIWindowSettings() override {}
+			explicit UIWindowSettings(std::shared_ptr<core::Engine> engine);
+			~UIWindowSettings() override = default;
 
-			void Draw(double dt) override;
+			void Draw(double deltaTime) override;
 
 		private:
 

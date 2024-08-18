@@ -13,7 +13,7 @@ namespace puffin::ui
 		mWindowName = "Content Browser";
 	}
 
-	void UIContentBrowser::Draw(double dt)
+	void UIContentBrowser::Draw(double deltaTime)
 	{
 		if (mShow)
 		{

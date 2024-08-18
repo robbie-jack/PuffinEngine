@@ -18,18 +18,20 @@ namespace puffin
 		{
 		public:
 
-			UIWindowSceneHierarchy(const std::shared_ptr<core::Engine>& engine) : UIWindow(engine) {}
-			~UIWindowSceneHierarchy() override {}
+			explicit UIWindowSceneHierarchy(const std::shared_ptr<core::Engine>& engine);
+			~UIWindowSceneHierarchy() override = default;
 
-			void Draw(double dt) override;
+			void Draw(double deltaTime) override;
 
-			[[nodiscard]] bool entityChanged() const { return m_entity_changed; }
+			[[nodiscard]] bool GetEntityChanged() const;
 
 		private:
-			
-			bool m_entity_changed = false;
 
-			void draw_node_ui(UUID id, const ImGuiTreeNodeFlags& base_flags);
+			void DrawNodeUI(UUID id, const ImGuiTreeNodeFlags& baseFlags);
+
+			bool mEntityChanged = false;
+
+			
 
 		};
 	}

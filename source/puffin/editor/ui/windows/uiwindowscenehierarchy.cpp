@@ -7,17 +7,21 @@ namespace puffin
 {
 	namespace ui
 	{
-		void UIWindowSceneHierarchy::Draw(double dt)
+		UIWindowSceneHierarchy::UIWindowSceneHierarchy(const std::shared_ptr<core::Engine>& engine): UIWindow(engine)
+		{
+		}
+
+		void UIWindowSceneHierarchy::Draw(double deltaTime)
 		{
 			mWindowName = "Scene Hierarchy";
 
-			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
+			const auto sceneGraphSubsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 			if (mShow)
 			{
 				ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 
-				m_entity_changed = false;
+				mEntityChanged = false;
 
 				Begin(mWindowName);
 
@@ -33,34 +37,32 @@ namespace puffin
 						| ImGuiTreeNodeFlags_OpenOnDoubleClick
 						| ImGuiTreeNodeFlags_SpanAvailWidth;
 
-					for (auto id : scene_graph_subsystem->GetRootNodeIDs())
+					for (auto id : sceneGraphSubsystem->GetRootNodeIDs())
 					{
-						draw_node_ui(id, baseFlags);
+						DrawNodeUI(id, baseFlags);
 					}
 
 					ImGui::EndListBox();
 				}
 
-				
+				//if (ImGui::Button("Create Entity"))
+				//{
+				//	//ImGui::OpenPopup("Create Entity");
+				//}
 
-				if (ImGui::Button("Create Entity"))
-				{
-					//ImGui::OpenPopup("Create Entity");
-				}
+				//ImGui::SameLine();
 
-				ImGui::SameLine();
+				//if (ImGui::Button("Destroy Entity"))
+				//{
+				//	/*if (mSelectedEntity != gInvalidID)
+				//	{
+				//		mEnTTSubsystem->remove_entity(mSelectedEntity);
 
-				if (ImGui::Button("Destroy Entity"))
-				{
-					/*if (mSelectedEntity != gInvalidID)
-					{
-						mEnTTSubsystem->remove_entity(mSelectedEntity);
+				//		mSelectedEntity = gInvalidID;
 
-						mSelectedEntity = gInvalidID;
-
-						mEntityChanged = true;
-					}*/
-				}
+				//		mEntityChanged = true;
+				//	}*/
+				//}
 
 				//if (ImGui::BeginPopup("Create Entity"))
 				//{
@@ -114,9 +116,14 @@ namespace puffin
 			}
 		}
 
-		void UIWindowSceneHierarchy::draw_node_ui(UUID id, const ImGuiTreeNodeFlags& base_flags)
+		bool UIWindowSceneHierarchy::GetEntityChanged() const
 		{
-			ImGuiTreeNodeFlags tree_flags = base_flags;
+			return mEntityChanged;
+		}
+
+		void UIWindowSceneHierarchy::DrawNodeUI(UUID id, const ImGuiTreeNodeFlags& baseFlags)
+		{
+			ImGuiTreeNodeFlags tree_flags = baseFlags;
 
 			auto scene_graph_subsystem = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 			auto node = scene_graph_subsystem->GetNode(id);
@@ -143,7 +150,7 @@ namespace puffin
 			if (ImGui::IsItemClicked())
 			{
 				mSelectedEntity = id;
-				m_entity_changed = true;
+				mEntityChanged = true;
 			}
 
 			// Display Entity ID on same line as name
@@ -154,7 +161,7 @@ namespace puffin
 			{
 				for (auto id : child_ids)
 				{
-					draw_node_ui(id, base_flags);
+					DrawNodeUI(id, baseFlags);
 				}
 
 				ImGui::TreePop();
