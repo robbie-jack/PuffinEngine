@@ -7,7 +7,7 @@ namespace puffin::io
 		// Add entities to registry/subsystem
 		for (const auto& id : m_entity_ids)
 		{
-			entt_subsystem->add_entity(id);
+			entt_subsystem->AddEntity(id);
 		}
 
 		// Init components
@@ -41,11 +41,11 @@ namespace puffin::io
 	{
 		clear();
 
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		registry->each([&](auto entity)
 		{
-			const auto& id = entt_subsystem->get_id(entity);
+			const auto& id = entt_subsystem->GetID(entity);
 
 			m_entity_ids.push_back(id);
 		});

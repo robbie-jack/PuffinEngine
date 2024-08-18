@@ -251,7 +251,7 @@ namespace puffin::core
 		UUID materialInstId2 = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
 			materialInstPath2)->GetID();
 
-		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->registry();
+		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		auto* houseNode = sceneGraph->AddNode<rendering::StaticMeshNode3D>();

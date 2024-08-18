@@ -18,34 +18,34 @@ namespace puffin::ecs
 		explicit EnTTSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~EnTTSubsystem() override;
 
-		void Initialize(core::SubsystemManager* subsystem_manager) override;
+		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
 
 		void EndPlay() override;
 
-		UUID add_entity(bool should_be_serialized = true);
+		UUID AddEntity(bool shouldBeSerialized = true);
 
 		// Add an entity using an existing id
-		entt::entity add_entity(const UUID id, bool should_be_serialized = true);
+		entt::entity AddEntity(UUID id, bool shouldBeSerialized = true);
 
-		void remove_entity(const UUID id);
+		void RemoveEntity(UUID id);
 
-		bool valid(const UUID id);
+		bool IsEntityValid(UUID id);
 
-		[[nodiscard]] entt::entity get_entity(const UUID& id) const;
-		[[nodiscard]] UUID get_id(const entt::entity& entity) const;
+		[[nodiscard]] entt::entity GetEntity(UUID id) const;
+		[[nodiscard]] UUID GetID(entt::entity entity) const;
 
-		[[nodiscard]] bool should_be_serialized(const UUID& id) const;
+		[[nodiscard]] bool ShouldEntityBeSerialized(const UUID& id) const;
 
-		std::shared_ptr<entt::registry> registry();
+		std::shared_ptr<entt::registry> GetRegistry();
 
 	private:
 
-		std::shared_ptr<entt::registry> m_registry = nullptr;
+		std::shared_ptr<entt::registry> mRegistry = nullptr;
 
-		std::unordered_map<UUID, entt::entity> m_id_to_entity;
-		std::unordered_map<entt::entity, UUID> m_entity_to_id;
-		std::unordered_set<UUID> m_should_be_serialized;
+		std::unordered_map<UUID, entt::entity> mIDToEntity;
+		std::unordered_map<entt::entity, UUID> mEntityToID;
+		std::unordered_set<UUID> mShouldBeSerialized;
 
 	};
 }

@@ -43,11 +43,11 @@ namespace puffin::io
 
 		void init(ecs::EnTTSubsystem* entt_subsystem) override
 		{
-			const auto registry = entt_subsystem->registry();
+			const auto registry = entt_subsystem->GetRegistry();
 
 			for (const auto& [id, comp] : m_components)
 			{
-				const auto entity = entt_subsystem->get_entity(id);
+				const auto entity = entt_subsystem->GetEntity(id);
 
 				if (registry->any_of<CompT>(entity))
 				{
@@ -64,13 +64,13 @@ namespace puffin::io
 		{
 			clear();
 
-			const auto registry = entt_subsystem->registry();
+			const auto registry = entt_subsystem->GetRegistry();
 
 			for (const auto& [ entity, comp ] : registry->view<const CompT>().each())
 			{
-				const auto& id = entt_subsystem->get_id(entity);
+				const auto& id = entt_subsystem->GetID(entity);
 
-				if (entt_subsystem->should_be_serialized(id))
+				if (entt_subsystem->ShouldEntityBeSerialized(id))
 				{
 					m_components.emplace(id, comp);
 				}

@@ -9,8 +9,8 @@ namespace puffin
 	Node::Node(const std::shared_ptr<core::Engine>& engine, const UUID& id) : mNodeID(id), mEngine(engine)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		mRegistry = enttSubsystem->registry();
-		mEntity = enttSubsystem->add_entity(mNodeID);
+		mRegistry = enttSubsystem->GetRegistry();
+		mEntity = enttSubsystem->AddEntity(mNodeID);
 	}
 
 	void Node::Initialize()

@@ -83,7 +83,7 @@ namespace puffin::rendering
 		const auto enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
 
 		// Bind callbacks
-		const auto registry = enttSubsystem->registry();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		registry->on_construct<StaticMeshComponent3D>().connect<&RenderSubystemVK::OnUpdateMesh>(this);
 		registry->on_update<StaticMeshComponent3D>().connect<&RenderSubystemVK::OnUpdateMesh>(this);
@@ -252,7 +252,7 @@ namespace puffin::rendering
 		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<StaticMeshComponent3D>(entity))
 		{
 			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-			const auto id = enttSubsystem->get_id(entity);
+			const auto id = enttSubsystem->GetID(entity);
 			const auto mesh = registry.get<StaticMeshComponent3D>(entity);
 
 			if (mesh.meshID == gInvalidID || mesh.materialID == gInvalidID)
@@ -269,7 +269,7 @@ namespace puffin::rendering
 	void RenderSubystemVK::OnConstructShadowCaster(entt::registry& registry, entt::entity entity)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto id = enttSubsystem->get_id(entity);
+		const auto id = enttSubsystem->GetID(entity);
 		const auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
 		ImageDesc imageDesc;
@@ -285,7 +285,7 @@ namespace puffin::rendering
 	void RenderSubystemVK::OnUpdateShadowCaster(entt::registry& registry, entt::entity entity)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto id = enttSubsystem->get_id(entity);
+		const auto id = enttSubsystem->GetID(entity);
 		const auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
 		ImageDesc imageDesc;
@@ -301,7 +301,7 @@ namespace puffin::rendering
 	void RenderSubystemVK::OnDestroyShadowCaster(entt::registry& registry, entt::entity entity)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto id = enttSubsystem->get_id(entity);
+		const auto id = enttSubsystem->GetID(entity);
 		auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
 		mShadowDestroyEvents.push({ shadow.resourceID });
@@ -969,7 +969,7 @@ namespace puffin::rendering
 	void RenderSubystemVK::ProcessComponents()
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = enttSubsystem->registry();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		if (mUpdateRenderables)
 		{
@@ -981,7 +981,7 @@ namespace puffin::rendering
 			// Iterate 2D objects
 			for (auto [entity, transform, mesh] : meshView2D.each())
 			{
-				const auto nodeID = enttSubsystem->get_id(entity);
+				const auto nodeID = enttSubsystem->GetID(entity);
 
 				if (mesh.materialID == gInvalidID || mesh.meshID == gInvalidID)
 				{
@@ -1001,7 +1001,7 @@ namespace puffin::rendering
 			// Iterate 3D objects
 			for (auto [entity, transform, mesh] : meshView3D.each())
 			{
-				const auto node_id = enttSubsystem->get_id(entity);
+				const auto node_id = enttSubsystem->GetID(entity);
 
 				if (mesh.materialID == gInvalidID || mesh.meshID == gInvalidID)
 				{
@@ -1097,7 +1097,7 @@ namespace puffin::rendering
 			mShadowConstructEvents.pop(shadowEvent);
 
 			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-			auto registry = enttSubsystem->registry();
+			auto registry = enttSubsystem->GetRegistry();
 			auto& shadow = registry->get<ShadowCasterComponent3D>(shadowEvent.entity);
 
 			shadow.resourceID = mResourceManager->add_images(shadowEvent.imageDesc, mFramesInFlightCount * shadow.cascadeCount);
@@ -1125,7 +1125,7 @@ namespace puffin::rendering
 			mShadowUpdateEvents.pop(shadowEvent);
 
 			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-			auto registry = enttSubsystem->registry();
+			auto registry = enttSubsystem->GetRegistry();
 			auto& shadow = registry->get<ShadowCasterComponent3D>(shadowEvent.entity);
 
 			if (mResourceManager->image_exists(shadow.resourceID))
@@ -1401,9 +1401,9 @@ namespace puffin::rendering
 
 		const auto cameraSubystem = mEngine->GetSubsystem<CameraSubystem>();
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		auto registry = enttSubsystem->registry();
+		auto registry = enttSubsystem->GetRegistry();
 
-		auto entity = enttSubsystem->get_entity(cameraSubystem->GetActiveCameraID());
+		auto entity = enttSubsystem->GetEntity(cameraSubystem->GetActiveCameraID());
 		const auto& camera = registry->get<CameraComponent3D>(entity);
 
 		GPUCameraData camUBO;
@@ -1487,14 +1487,14 @@ namespace puffin::rendering
 
 			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 			const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
-			const auto registry = enttSubsystem->registry();
+			const auto registry = enttSubsystem->GetRegistry();
 
 			enki::TaskSet task(numObjectsToRefresh, [&](enki::TaskSetPartition range, uint32_t threadnum)
 			{
 				for (uint32_t objectIdx = range.start; objectIdx < range.end; objectIdx++)
 				{
 					const auto entityID = objectsToRefresh[objectIdx];
-					const auto entity = enttSubsystem->get_entity(entityID);
+					const auto entity = enttSubsystem->GetEntity(entityID);
 					auto* node = sceneGraph->GetNode(entityID);
 
                     TransformComponent3D& transform = registry->get<TransformComponent3D>(entity);
@@ -1582,7 +1582,7 @@ namespace puffin::rendering
 	{
 		// Prepare dynamic light data
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = enttSubsystem->registry();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		int p = 0;
 		std::vector<GPUPointLightData> pointLights;
@@ -1754,7 +1754,7 @@ namespace puffin::rendering
 		util::CopyCPUDataIntoGPUBuffer(this, params);
 
 		auto camSystem = mEngine->GetSubsystem<CameraSubystem>();
-		auto entity = enttSubsystem->get_entity(camSystem->GetActiveCameraID());
+		auto entity = enttSubsystem->GetEntity(camSystem->GetActiveCameraID());
 		auto& transform = registry->get<TransformComponent3D>(entity);
 
 		// Prepare light static data
@@ -1774,7 +1774,7 @@ namespace puffin::rendering
 	{
 		// Prepare dynamic light data
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = enttSubsystem->registry();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		mShadowsToDraw.clear();
 
@@ -1840,7 +1840,7 @@ namespace puffin::rendering
 
 			++c;
 
-			mShadowsToDraw.push_back(enttSubsystem->get_id(entity));
+			mShadowsToDraw.push_back(enttSubsystem->GetID(entity));
 
 			++i;
 			++s;
@@ -1858,7 +1858,7 @@ namespace puffin::rendering
 			shadows.emplace_back();
 
 			const auto camSystem = mEngine->GetSubsystem<CameraSubystem>();
-			const auto activeCamEntity = enttSubsystem->get_entity(camSystem->GetActiveCameraID());
+			const auto activeCamEntity = enttSubsystem->GetEntity(camSystem->GetActiveCameraID());
 			auto& camera = registry->get<CameraComponent3D>(activeCamEntity);
 
 			// Calculate camera view frustum vertices
@@ -1914,7 +1914,7 @@ namespace puffin::rendering
 
 			++c;
 
-			mShadowsToDraw.push_back(enttSubsystem->get_id(entity));
+			mShadowsToDraw.push_back(enttSubsystem->GetID(entity));
 
 			++i;
 			++d;
@@ -2047,8 +2047,8 @@ namespace puffin::rendering
 
 		for (auto id : mShadowsToDraw)
 		{
-			const auto& entity = entt_subsystem->get_entity(id);
-			const auto& shadow = entt_subsystem->registry()->get<ShadowCasterComponent3D>(entity);
+			const auto& entity = entt_subsystem->GetEntity(id);
+			const auto& shadow = entt_subsystem->GetRegistry()->get<ShadowCasterComponent3D>(entity);
 
 			GPUShadowPushConstant pushConstant;
 			pushConstant.vertex_buffer_address = mResourceManager->geometry_buffer()->GetVertexBufferAddress();
@@ -2590,7 +2590,7 @@ namespace puffin::rendering
 	void RenderSubystemVK::BuildShadowDescriptorInfo(std::vector<vk::DescriptorImageInfo>& shadowImageInfos)
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		shadowImageInfos.clear();
 		shadowImageInfos.reserve(gMaxLights);

@@ -209,7 +209,7 @@ namespace puffin::scene
 	void SceneGraphSubsystem::UpdateGlobalTransforms()
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = enttSubsystem->registry();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		mNodeTransformsAlreadyUpdated.clear();
 
@@ -226,7 +226,7 @@ namespace puffin::scene
 		if (const auto node = GetNode(id); node && mNodeTransformsAlreadyUpdated.find(id) == mNodeTransformsAlreadyUpdated.end())
 		{
 			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-			const auto registry = enttSubsystem->registry();
+			const auto registry = enttSubsystem->GetRegistry();
 
 			if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
 			{

@@ -34,14 +34,14 @@ namespace puffin::physics
 			if (pair.first->uuid == pair.second->uuid)
 				return false;
 
-			const auto registry = mEcs->registry();
+			const auto registry = mEcs->GetRegistry();
 
-			if (!registry->valid(mEcs->get_entity(pair.first->uuid)) || !registry->valid(mEcs->get_entity(pair.second->uuid)))
+			if (!registry->valid(mEcs->GetEntity(pair.first->uuid)) || !registry->valid(mEcs->GetEntity(pair.second->uuid)))
 				return false;
 
 			// Don't perform collision check between colliders which both have infinite mass
-			const auto& rbA = registry->get<RigidbodyComponent2D>(mEcs->get_entity(pair.first->uuid));
-			const auto& rbB = registry->get<RigidbodyComponent2D>(mEcs->get_entity(pair.second->uuid));
+			const auto& rbA = registry->get<RigidbodyComponent2D>(mEcs->GetEntity(pair.first->uuid));
+			const auto& rbB = registry->get<RigidbodyComponent2D>(mEcs->GetEntity(pair.second->uuid));
 
 			if (rbA.mass == 0.0f && rbB.mass == 0.0f)
 				return false;

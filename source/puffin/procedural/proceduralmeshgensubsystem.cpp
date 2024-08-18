@@ -17,7 +17,7 @@ namespace puffin::procedural
 		mName = "ProceduralMeshGenSubsystem";
 
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = enttSubsystem->registry();
+		const auto registry = enttSubsystem->GetRegistry();
 
 		/*registry->on_construct<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();
 		registry->on_update<PlaneComponent>().connect<&ProceduralMeshGenSystem::onConstructPlane>();

@@ -20,7 +20,7 @@ namespace puffin::rendering
 		const auto enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
 		const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
-        const auto registry = enttSubsystem->registry();
+        const auto registry = enttSubsystem->GetRegistry();
 
         registry->on_construct<CameraComponent3D>().connect<&CameraSubystem::OnUpdateCamera>(this);
         registry->on_update<CameraComponent3D>().connect<&CameraSubystem::OnUpdateCamera>(this);
@@ -72,7 +72,7 @@ namespace puffin::rendering
 	void CameraSubystem::OnUpdateCamera(entt::registry& registry, entt::entity entity)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto id = enttSubsystem->get_id(entity);
+		const auto id = enttSubsystem->GetID(entity);
 		const auto& camera = registry.get<CameraComponent3D>(entity);
 
         if (m_cached_cam_active_state.find(id) == m_cached_cam_active_state.end())
@@ -98,7 +98,7 @@ namespace puffin::rendering
     void CameraSubystem::OnDestroyCamera(entt::registry &registry, entt::entity entity)
     {
 	    const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-        const auto id = enttSubsystem->get_id(entity);
+        const auto id = enttSubsystem->GetID(entity);
 
         if (m_active_play_cam_id == id)
         {
@@ -111,9 +111,9 @@ namespace puffin::rendering
     void CameraSubystem::OnUpdateEditorCameraFov(const float &editorCameraFov)
     {
 	    const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-	    const auto registry = enttSubsystem->registry();
+	    const auto registry = enttSubsystem->GetRegistry();
 
-	    const auto entity = enttSubsystem->get_entity(m_editor_cam_id);
+	    const auto entity = enttSubsystem->GetEntity(m_editor_cam_id);
         auto& camera = registry->get<CameraComponent3D>(entity);
 
         camera.prevFovY = camera.fovY;
@@ -124,12 +124,12 @@ namespace puffin::rendering
 	{
 		// Crate editor cam 
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		auto registry = enttSubsystem->registry();
+		auto registry = enttSubsystem->GetRegistry();
 
 		m_editor_cam_id = GenerateId();
 		mActiveCameraID = m_editor_cam_id;
 
-		auto entity = enttSubsystem->add_entity(m_editor_cam_id, false);
+		auto entity = enttSubsystem->AddEntity(m_editor_cam_id, false);
 
 		auto& transform = registry->emplace<TransformComponent3D>(entity);
 		transform.position = { 0.0f, 0.0f, 10.0f };
@@ -154,14 +154,14 @@ namespace puffin::rendering
     void CameraSubystem::UpdateActivePlayCamera()
     {
         const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-        const auto registry = enttSubsystem->registry();
+        const auto registry = enttSubsystem->GetRegistry();
         const auto cameraView = registry->view<const TransformComponent3D, const CameraComponent3D>();
 
         for (auto [entity, transform, camera] : cameraView.each())
         {
             if (camera.active)
             {
-                m_active_play_cam_id = enttSubsystem->get_id(entity);
+                m_active_play_cam_id = enttSubsystem->GetID(entity);
 
                 break;
             }
@@ -183,7 +183,7 @@ namespace puffin::rendering
 		UpdateEditorCamera(deltaTime);
 
         const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-        const auto registry = enttSubsystem->registry();
+        const auto registry = enttSubsystem->GetRegistry();
         const auto cameraView = registry->view<const TransformComponent3D, CameraComponent3D>();
 
 		for (auto [entity, transform, camera] : cameraView.each())
@@ -198,9 +198,9 @@ namespace puffin::rendering
         {
             const auto inputSubsystem = mEngine->GetSubsystem<input::InputSubsystem>();
             const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-            auto registry = enttSubsystem->registry();
+            auto registry = enttSubsystem->GetRegistry();
 
-            auto entity = enttSubsystem->get_entity(m_editor_cam_id);
+            auto entity = enttSubsystem->GetEntity(m_editor_cam_id);
             auto &transform = registry->get<TransformComponent3D>(entity);
             auto &camera = registry->get<CameraComponent3D>(entity);
 

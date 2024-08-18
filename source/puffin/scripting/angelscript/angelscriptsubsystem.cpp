@@ -61,7 +61,7 @@ namespace puffin::scripting
 	void AngelScriptSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
 	{
 		auto entt_subsystem = subsystem_manager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		registry->on_construct<AngelScriptComponent>().connect<&AngelScriptSubsystem::on_construct_script>(this);
 		//registry->on_update<AngelScriptComponent>().connect<&AngelScriptSystem::onConstructScript>(this);
@@ -97,13 +97,13 @@ namespace puffin::scripting
 	{
 		// Execute Script Stop Methods
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		const auto scriptView = registry->view<AngelScriptComponent>();
 
 		for (auto [entity, script] : scriptView.each())
 		{
-			m_current_entity_id = entt_subsystem->get_id(entity);
+			m_current_entity_id = entt_subsystem->GetID(entity);
 
 			destroy_script(script);
 		}
@@ -179,7 +179,7 @@ namespace puffin::scripting
 	void AngelScriptSubsystem::on_construct_script(entt::registry& registry, entt::entity entity)
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto& id = entt_subsystem->get_id(entity);
+		const auto& id = entt_subsystem->GetID(entity);
 
 		m_scripts_to_init.emplace(id);
 	}
@@ -187,7 +187,7 @@ namespace puffin::scripting
 	void AngelScriptSubsystem::on_destroy_script(entt::registry& registry, entt::entity entity)
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto& id = entt_subsystem->get_id(entity);
+		const auto& id = entt_subsystem->GetID(entity);
 
 		m_scripts_to_end_play.emplace(id);
 	}
@@ -257,11 +257,11 @@ namespace puffin::scripting
 	void AngelScriptSubsystem::init_scripts()
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		for (const auto id : m_scripts_to_init)
 		{
-			entt::entity entity = entt_subsystem->get_entity(id);
+			entt::entity entity = entt_subsystem->GetEntity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -278,11 +278,11 @@ namespace puffin::scripting
 	void AngelScriptSubsystem::start_scripts()
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		for (const auto id : m_scripts_to_begin_play)
 		{
-			entt::entity entity = entt_subsystem->get_entity(id);
+			entt::entity entity = entt_subsystem->GetEntity(id);
 
 			const auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -297,11 +297,11 @@ namespace puffin::scripting
 	void AngelScriptSubsystem::stop_scripts()
 	{
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		for (const auto id : m_scripts_to_end_play)
 		{
-			entt::entity entity = entt_subsystem->get_entity(id);
+			entt::entity entity = entt_subsystem->GetEntity(id);
 
 			auto& script = registry->get<AngelScriptComponent>(entity);
 
@@ -783,14 +783,14 @@ namespace puffin::scripting
 	{
 		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		// Execute update method on scripts
 		const auto script_view = registry->view<AngelScriptComponent>();
 
 		for (auto [entity, script] : script_view.each())
 		{
-			angelscript_subsystem->set_current_entity_id(entt_subsystem->get_id(entity));
+			angelscript_subsystem->set_current_entity_id(entt_subsystem->GetID(entity));
 
 			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.beginPlayFunc);
 		}
@@ -800,14 +800,14 @@ namespace puffin::scripting
 	{
 		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		// Execute update method on scripts
 		const auto script_view = registry->view<AngelScriptComponent>();
 
 		for (auto [entity, script] : script_view.each())
 		{
-			angelscript_subsystem->set_current_entity_id(entt_subsystem->get_id(entity));
+			angelscript_subsystem->set_current_entity_id(entt_subsystem->GetID(entity));
 
 			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.endPlayFunc);
 		}
@@ -817,14 +817,14 @@ namespace puffin::scripting
 	{
 		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		// Execute update method on scripts
 		const auto script_view = registry->view<AngelScriptComponent>();
 
 		for (auto [entity, script] : script_view.each())
 		{
-			angelscript_subsystem->set_current_entity_id(entt_subsystem->get_id(entity));
+			angelscript_subsystem->set_current_entity_id(entt_subsystem->GetID(entity));
 
 			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.updateFunc);
 		}
@@ -839,14 +839,14 @@ namespace puffin::scripting
 	{
 		auto angelscript_subsystem = mEngine->GetSubsystem<AngelScriptSubsystem>();
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		// Execute fixed update method on scripts
 		const auto script_view = registry->view<AngelScriptComponent>();
 
 		for (auto [entity, script] : script_view.each())
 		{
-			angelscript_subsystem->set_current_entity_id(entt_subsystem->get_id(entity));
+			angelscript_subsystem->set_current_entity_id(entt_subsystem->GetID(entity));
 
 			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.fixedUpdateFunc);
 		}
