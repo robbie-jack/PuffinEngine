@@ -6,6 +6,9 @@ namespace puffin::rendering
 {
 	DirectionalLightNode3D::DirectionalLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
 	{
+		mName = "Directional Light";
+
+		AddComponent<DirectionalLightComponent3D>();
 	}
 
 	DirectionalLightNode3D::~DirectionalLightNode3D()

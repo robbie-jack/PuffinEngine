@@ -34,7 +34,7 @@
 #include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
 #include "puffin/rendering/camerasubsystem.h"
 #include "puffin/scene/scenegraphgameplaysubsystem.h"
-#include "puffin/scene/scenesubsystem.h"
+#include "puffin/scene/sceneserializationsubsystem.h"
 #include "puffin/utility/performancebenchmarksubsystem.h"
 #include "puffin/window/windowsubsystem.h"
 
@@ -53,23 +53,23 @@ namespace puffin::core
 
 	void RegisterComponents(const std::shared_ptr<Engine>& engine)
 	{
-		auto sceneSubsystem = engine->GetSubsystem<io::SceneSubsystem>();
+		auto sceneSubsystem = engine->GetSubsystem<io::SceneSerializationSubsystem>();
 
-		sceneSubsystem->register_component<TransformComponent2D>();
-		sceneSubsystem->register_component<TransformComponent3D>();
-		sceneSubsystem->register_component<rendering::StaticMeshComponent3D>();
-		sceneSubsystem->register_component<rendering::PointLightComponent3D>();
-		sceneSubsystem->register_component<rendering::SpotLightComponent3D>();
-		sceneSubsystem->register_component<rendering::DirectionalLightComponent3D>();
-		sceneSubsystem->register_component<rendering::ShadowCasterComponent3D>();
-		sceneSubsystem->register_component<rendering::CameraComponent3D>();
-		sceneSubsystem->register_component<scripting::AngelScriptComponent>();
-		sceneSubsystem->register_component<physics::RigidbodyComponent2D>();
-		sceneSubsystem->register_component<physics::BoxComponent2D>();
-		sceneSubsystem->register_component<physics::CircleComponent2D>();
-		sceneSubsystem->register_component<physics::RigidbodyComponent3D>();
-		sceneSubsystem->register_component<physics::BoxComponent3D>();
-		sceneSubsystem->register_component<physics::SphereComponent3D>();
+		sceneSubsystem->RegisterComponent<TransformComponent2D>();
+		sceneSubsystem->RegisterComponent<TransformComponent3D>();
+		sceneSubsystem->RegisterComponent<rendering::StaticMeshComponent3D>();
+		sceneSubsystem->RegisterComponent<rendering::PointLightComponent3D>();
+		sceneSubsystem->RegisterComponent<rendering::SpotLightComponent3D>();
+		sceneSubsystem->RegisterComponent<rendering::DirectionalLightComponent3D>();
+		sceneSubsystem->RegisterComponent<rendering::ShadowCasterComponent3D>();
+		sceneSubsystem->RegisterComponent<rendering::CameraComponent3D>();
+		sceneSubsystem->RegisterComponent<scripting::AngelScriptComponent>();
+		sceneSubsystem->RegisterComponent<physics::RigidbodyComponent2D>();
+		sceneSubsystem->RegisterComponent<physics::BoxComponent2D>();
+		sceneSubsystem->RegisterComponent<physics::CircleComponent2D>();
+		sceneSubsystem->RegisterComponent<physics::RigidbodyComponent3D>();
+		sceneSubsystem->RegisterComponent<physics::BoxComponent3D>();
+		sceneSubsystem->RegisterComponent<physics::SphereComponent3D>();
 	}
 
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)
@@ -84,7 +84,7 @@ namespace puffin::core
 		engine->RegisterSubsystem<audio::AudioSubsystem>();
 		engine->RegisterSubsystem<ecs::EnTTSubsystem>();
 		engine->RegisterSubsystem<scene::SceneGraphSubsystem>();
-		engine->RegisterSubsystem<io::SceneSubsystem>();
+		engine->RegisterSubsystem<io::SceneSerializationSubsystem>();
 		engine->RegisterSubsystem<rendering::CameraSubystem>();
 
 		// Editor Subsystems

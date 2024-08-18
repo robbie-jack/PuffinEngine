@@ -10,7 +10,7 @@
 #include "puffin/core/enginehelpers.h"
 #include "puffin/input/inputsubsystem.h"
 #include "puffin/scene/scenegraphsubsystem.h"
-#include "puffin/scene/scenesubsystem.h"
+#include "puffin/scene/sceneserializationsubsystem.h"
 #include "puffin/window/windowsubsystem.h"
 #include "puffin/core/subsystemmanager.h"
 #include "puffin/utility/performancebenchmarksubsystem.h"
@@ -104,9 +104,9 @@ namespace puffin::core
 			mLoadSceneOnLaunch = true;
 		}
 
-		auto sceneSubsystem = GetSubsystem<io::SceneSubsystem>();
+		auto sceneSubsystem = GetSubsystem<io::SceneSerializationSubsystem>();
 		{
-			auto sceneData = sceneSubsystem->create_scene(
+			auto sceneData = sceneSubsystem->CreateScene(
 				assets::AssetRegistry::Get()->GetContentRoot() / sceneString);
 
 			if (mSetupEngineDefaultScene)
@@ -117,16 +117,16 @@ namespace puffin::core
 				// Create Default Scene in code -- used when scene serialization is changed
 				SetupDefaultScene(shared_from_this());
 
-				sceneData->update_data(entt_subsystem, scene_graph);
-				sceneData->save();
+				sceneData->UpdateData(entt_subsystem, scene_graph);
+				sceneData->Save();
 			}
 			else if (mLoadSceneOnLaunch)
 			{
-				sceneData->load();
+				sceneData->Load();
 			}
 		}
 
-		sceneSubsystem->setup();
+		sceneSubsystem->Setup();
 
 		mLastTime = glfwGetTime(); // Time Count Started
 		mCurrentTime = mLastTime;

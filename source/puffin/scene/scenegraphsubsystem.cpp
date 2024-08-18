@@ -345,11 +345,13 @@ namespace puffin::scene
 		if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
 		{
 			mGlobalTransform2Ds.Emplace(id, TransformComponent2D());
+			mNodeTransformsToUpdate.emplace(id);
 		}
 
 		if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))
 		{
 			mGlobalTransform3Ds.Emplace(id, TransformComponent3D());
+			mNodeTransformsToUpdate.emplace(id);
 		}
 
 		mSceneGraphUpdated = true;

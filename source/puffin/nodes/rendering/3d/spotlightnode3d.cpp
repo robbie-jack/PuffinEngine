@@ -6,6 +6,9 @@ namespace puffin::rendering
 {
 	SpotLightNode3D::SpotLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
 	{
+		mName = "Spot Light";
+
+		AddComponent<SpotLightComponent3D>();
 	}
 
 	SpotLightNode3D::~SpotLightNode3D()

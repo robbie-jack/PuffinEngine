@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include "puffin/editor/ui/windows/uiwindow.h"
 #include "puffin/ecs/enttsubsystem.h"
@@ -61,7 +62,7 @@ namespace puffin::ui
 
 			virtual bool Add(Node* node) = 0;
 
-			[[nodiscard]] virtual const std::string& GetName() const;
+			[[nodiscard]] virtual const std::string& GetName() const = 0;
 
 		};
 
@@ -70,7 +71,7 @@ namespace puffin::ui
 		{
 		public:
 
-			explicit ComponentHandler(const std::string& name) : mName(name) {}
+			explicit ComponentHandler(std::string name) : mName(std::move(name)) {}
 			~ComponentHandler() override = default;
 
 			bool Add(Node* node) override

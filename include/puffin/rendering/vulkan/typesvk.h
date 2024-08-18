@@ -249,8 +249,7 @@ namespace puffin::rendering
 
 	struct GPUShadowData
 	{
-		alignas(4) glm::vec4 shadowBias;
-        alignas(4) int cascadeCount;
+		alignas(4) glm::vec4 shadowBiasCascadeIndexAndCount;
 	};
 
     struct GPUShadowCascadeData

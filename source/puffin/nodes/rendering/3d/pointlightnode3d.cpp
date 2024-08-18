@@ -4,9 +4,11 @@
 
 namespace puffin::rendering
 {
-	PointLightNode3D::PointLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
-		TransformNode3D(engine, id)
+	PointLightNode3D::PointLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
 	{
+		mName = "Point Light";
+
+		AddComponent<PointLightComponent3D>();
 	}
 
 	PointLightNode3D::~PointLightNode3D()

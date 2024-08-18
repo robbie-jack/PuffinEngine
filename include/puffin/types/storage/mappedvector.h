@@ -214,14 +214,14 @@ namespace puffin
 		{
 			assert(Contains(key) && "MappedVector::operator[] - Vector does not contain an element with this key");
 
-			return mData.at(key);
+			return mData.at(mKeyToIdx.at(key));
 		}
 
 		const ValueT& operator[](const KeyT& key) const
 		{
 			assert(Contains(key) && "MappedVector::operator[] - Vector does not contain an element with this key");
 
-			return mData.at(key);
+			return mData.at(mKeyToIdx.at(key));
 		}
 
 		ValueT& Idx(const size_t& idx)

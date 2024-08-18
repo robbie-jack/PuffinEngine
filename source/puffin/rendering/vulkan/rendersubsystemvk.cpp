@@ -1831,12 +1831,22 @@ namespace puffin::rendering
 
 			shadow.lightViewProj = lightProjection * lightView;
 
-			shadows[i].shadowBias.x = shadow.biasMin;
-			shadows[i].shadowBias.y = shadow.biasMax;
+			shadows[i].shadowBiasCascadeIndexAndCount.x = shadow.biasMin;
+			shadows[i].shadowBiasCascadeIndexAndCount.y = shadow.biasMax;
+			shadows[i].shadowBiasCascadeIndexAndCount.z = c;
 
-			shadowCascades.emplace_back();
-			shadowCascades[c].lightSpaceView = shadow.lightViewProj;
-			shadowCascades[c].cascadePlaneDistance = 100.0f;
+			int cascadeCount = 0;
+
+			{
+				shadowCascades.emplace_back();
+				shadowCascades[c].lightSpaceView = shadow.lightViewProj;
+				shadowCascades[c].cascadePlaneDistance = 100.0f;
+
+				cascadeCount++;
+			}
+
+			shadows[i].shadowBiasCascadeIndexAndCount.w = cascadeCount;
+
 
 			++c;
 
@@ -1905,8 +1915,8 @@ namespace puffin::rendering
 				shadow.lightViewProj = lightProjection * shadow.lightView;
 			}
 
-			shadows[i].shadowBias.x = shadow.biasMin;
-			shadows[i].shadowBias.y = shadow.biasMax;
+			shadows[i].shadowBiasCascadeIndexAndCount.x = shadow.biasMin;
+			shadows[i].shadowBiasCascadeIndexAndCount.y = shadow.biasMax;
 
 			shadowCascades.emplace_back();
 			shadowCascades[c].lightSpaceView = shadow.lightViewProj;
