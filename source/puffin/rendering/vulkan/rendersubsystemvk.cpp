@@ -157,7 +157,7 @@ namespace puffin::rendering
 		mUpdateRenderables = true;
 
 		const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-		mRenderShadows = settingsManager->get<bool>("rendering_draw_shadows");
+		mRenderShadows = settingsManager->Get<bool>("rendering_draw_shadows");
 	}
 
 	void RenderSubystemVK::Deinitialize()
@@ -1474,7 +1474,7 @@ namespace puffin::rendering
 
 			const auto numObjectsToRefresh = objectsToRefresh.size();
 
-			const uint32_t numThreads = enkiTSSubsystem->get_task_scheduler()->GetNumTaskThreads();
+			const uint32_t numThreads = enkiTSSubsystem->GetTaskScheduler()->GetNumTaskThreads();
 
 			// Temp object vectors for writing to by threads
 			std::vector<std::vector<std::pair<UUID, GPUObjectData>>> threadObjects;
@@ -1540,9 +1540,9 @@ namespace puffin::rendering
 
 			task.m_MinRange = 500; // Try and ensure each thread gets a minimum of transforms matrices to calculate
 
-			enkiTSSubsystem->get_task_scheduler()->AddTaskSetToPipe(&task);
+			enkiTSSubsystem->GetTaskScheduler()->AddTaskSetToPipe(&task);
 
-			enkiTSSubsystem->get_task_scheduler()->WaitforTask(&task);
+			enkiTSSubsystem->GetTaskScheduler()->WaitforTask(&task);
 
 			for (const auto& tempThreadObjects : threadObjects)
 			{

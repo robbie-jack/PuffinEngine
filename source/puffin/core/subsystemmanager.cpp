@@ -58,7 +58,7 @@ namespace puffin::core
 	{
 		for (const auto& typeName : mGameplaySubsystemNames)
 		{
-			auto Subsystem = CreateAndInitializeSubsystemInternal(typeName);
+			CreateAndInitializeSubsystemInternal(typeName);
 		}
 	}
 
@@ -120,7 +120,7 @@ namespace puffin::core
 			return mSubsystems.at(typeName);
 		}
 
-		assert(mSubsystemFactories.find(typeName) != mSubsystemFactories.end() && "SubsystemManager::create_subsystem_internal() - Attempting to create subsystem that wasn't registered");
+		assert(mSubsystemFactories.find(typeName) != mSubsystemFactories.end() && "SubsystemManager::CreateSubsystemInternal() - Attempting to create subsystem that wasn't registered");
 
 		const auto& subsystemFactory = mSubsystemFactories.at(typeName);
 
@@ -137,8 +137,8 @@ namespace puffin::core
 			return;
 		}
 
-		assert(mSubsystemFactories.find(typeName) != mSubsystemFactories.end() && "SubsystemManager::initialize_subsystem_internal() - Attempting to initialize subsystem that wasn't registered");
-		assert(mSubsystems.find(typeName) != mSubsystems.end() && "SubsystemManager::initialize_subsystem_internal() - Attempting to initialize subsystem that hasn't been created yet");
+		assert(mSubsystemFactories.find(typeName) != mSubsystemFactories.end() && "SubsystemManager::InitializeSubsystemInternal() - Attempting to initialize subsystem that wasn't registered");
+		assert(mSubsystems.find(typeName) != mSubsystems.end() && "SubsystemManager::InitializeSubsystemInternal() - Attempting to initialize subsystem that hasn't been created yet");
 
 		auto subsystem = mSubsystems.at(typeName);
 

@@ -13,7 +13,7 @@ namespace puffin::core
 		mName = "SettingsManager";
 	}
 
-	void SettingsManager::Initialize(core::SubsystemManager* subsystem_manager)
+	void SettingsManager::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		if (mEngine->GetSetupEngineDefaultSettings())
 		{
@@ -51,12 +51,12 @@ namespace puffin::core
 
 	void SettingsManager::default_settings()
 	{
-		set("editor_camera_fov", 60.0f);
-		set("mouse_sensitivity", 0.05f);
-		set("unit_scale", 1.0f);
+		Set("editor_camera_fov", 60.0f);
+		Set("mouse_sensitivity", 0.05f);
+		Set("unit_scale", 1.0f);
 
-		set("rendering_draw_shadows", false);
+		Set("rendering_draw_shadows", false);
 
-		set("physics_gravity", Vector3f(0.0f, -9.81f, 0.0f));
+		Set("physics_gravity", Vector3f(0.0f, -9.81f, 0.0f));
 	}
 }

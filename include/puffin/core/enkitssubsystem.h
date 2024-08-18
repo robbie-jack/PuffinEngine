@@ -14,15 +14,16 @@ namespace puffin::core
 	public:
 
 		explicit EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
-		~EnkiTSSubsystem() override;
+		~EnkiTSSubsystem() override = default;
 
-		void Initialize(SubsystemManager* subsystem_manager) override;
+		void Initialize(SubsystemManager* subsystemManager) override;
+		void Deinitialize() override;
 
-		std::shared_ptr<enki::TaskScheduler> get_task_scheduler();
+		std::shared_ptr<enki::TaskScheduler> GetTaskScheduler();
 
 	private:
 
-		std::shared_ptr<enki::TaskScheduler> m_task_scheduler;
+		std::shared_ptr<enki::TaskScheduler> mTaskScheduler;
 
 	};
 }

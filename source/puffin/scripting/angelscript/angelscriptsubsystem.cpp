@@ -288,7 +288,7 @@ namespace puffin::scripting
 
 			m_current_entity_id = id;
 
-			prepare_and_execute_script_method(script.obj, script.begin_play_func);
+			prepare_and_execute_script_method(script.obj, script.beginPlayFunc);
 		}
 
 		m_scripts_to_begin_play.clear();
@@ -307,7 +307,7 @@ namespace puffin::scripting
 
 			m_current_entity_id = id;
 
-			prepare_and_execute_script_method(script.obj, script.end_play_func);
+			prepare_and_execute_script_method(script.obj, script.endPlayFunc);
 
 			destroy_script(script);
 		}
@@ -428,10 +428,10 @@ namespace puffin::scripting
 	{
 		if (script.type != nullptr)
 		{
-			script.begin_play_func = get_script_method(script, "BeginPlay");
-			script.fixed_update_func = get_script_method(script, "FixedUpdate");
-			script.update_func = get_script_method(script, "Update");
-			script.end_play_func = get_script_method(script, "EndPlay");
+			script.beginPlayFunc = get_script_method(script, "BeginPlay");
+			script.fixedUpdateFunc = get_script_method(script, "FixedUpdate");
+			script.updateFunc = get_script_method(script, "Update");
+			script.endPlayFunc = get_script_method(script, "EndPlay");
 		}
 	}
 
@@ -792,7 +792,7 @@ namespace puffin::scripting
 		{
 			angelscript_subsystem->set_current_entity_id(entt_subsystem->get_id(entity));
 
-			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.begin_play_func);
+			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.beginPlayFunc);
 		}
 	}
 
@@ -809,7 +809,7 @@ namespace puffin::scripting
 		{
 			angelscript_subsystem->set_current_entity_id(entt_subsystem->get_id(entity));
 
-			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.end_play_func);
+			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.endPlayFunc);
 		}
 	}
 
@@ -826,7 +826,7 @@ namespace puffin::scripting
 		{
 			angelscript_subsystem->set_current_entity_id(entt_subsystem->get_id(entity));
 
-			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.update_func);
+			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.updateFunc);
 		}
 	}
 
@@ -848,7 +848,7 @@ namespace puffin::scripting
 		{
 			angelscript_subsystem->set_current_entity_id(entt_subsystem->get_id(entity));
 
-			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.fixed_update_func);
+			angelscript_subsystem->prepare_and_execute_script_method(script.obj, script.fixedUpdateFunc);
 		}
 	}
 

@@ -78,6 +78,8 @@ namespace puffin::core
 			{
 				mGameplaySubsystemNames.push_back(typeName);
 			}
+
+			subsystem->RegisterSubsystems();
 		}
 
 		template<typename T>
@@ -93,8 +95,8 @@ namespace puffin::core
 		std::vector<Subsystem*>& GetSubsystems();
 		std::vector<Subsystem*>& GetGameplaySubsystems();
 
-		Subsystem* GetInputSubsystem() const;
-		Subsystem* GetRenderSubsystem() const;
+		[[nodiscard]] Subsystem* GetInputSubsystem() const;
+		[[nodiscard]] Subsystem* GetRenderSubsystem() const;
 
 		template<typename T>
 		T* CreateAndInitializeSubsystem()
@@ -114,6 +116,14 @@ namespace puffin::core
 		void DestroyGameplaySubsystems();
 
 	private:
+
+		static bool IsEditorType(SubsystemType type);
+		static bool IsGameplayType(SubsystemType type);
+
+		Subsystem* CreateSubsystemInternal(const char* typeName);
+		void InitializeSubsystemInternal(const char* typeName);
+
+		Subsystem* CreateAndInitializeSubsystemInternal(const char* typeName);
 
 		std::shared_ptr<Engine> mEngine = nullptr;
 
@@ -136,13 +146,5 @@ namespace puffin::core
 
 		bool mRegisteredRenderSubsystem = false;
 		Subsystem* mRenderSubsystem = nullptr;
-
-		static bool IsEditorType(SubsystemType type);
-		static bool IsGameplayType(SubsystemType type);
-
-		Subsystem* CreateSubsystemInternal(const char* typeName);
-		void InitializeSubsystemInternal(const char* typeName);
-
-		Subsystem* CreateAndInitializeSubsystemInternal(const char* typeName);
 	};
 }

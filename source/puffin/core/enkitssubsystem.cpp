@@ -9,23 +9,24 @@ namespace puffin::core
 		mName = "EnkiTSSubsystem";
 	}
 
-	EnkiTSSubsystem::~EnkiTSSubsystem()
+	void EnkiTSSubsystem::Initialize(SubsystemManager* subsystemManager)
 	{
-		mEngine = nullptr;
-	}
-
-	void EnkiTSSubsystem::Initialize(SubsystemManager* subsystem_manager)
-	{
-		m_task_scheduler = std::make_shared<enki::TaskScheduler>();
+		mTaskScheduler = std::make_shared<enki::TaskScheduler>();
 
 		// Set max threads to physical - 2 (so there is some left over for other system work)
-		const uint32_t max_threads = std::thread::hardware_concurrency() - 2;
+		const uint32_t maxThreads = std::thread::hardware_concurrency() - 2;
 
-		m_task_scheduler->Initialize(max_threads);
+		mTaskScheduler->Initialize(maxThreads);
 	}
 
-	std::shared_ptr<enki::TaskScheduler> EnkiTSSubsystem::get_task_scheduler()
+	void EnkiTSSubsystem::Deinitialize()
 	{
-		return m_task_scheduler;
+		mTaskScheduler->WaitforAllAndShutdown();
+		mTaskScheduler = nullptr;
+	}
+
+	std::shared_ptr<enki::TaskScheduler> EnkiTSSubsystem::GetTaskScheduler()
+	{
+		return mTaskScheduler;
 	}
 }

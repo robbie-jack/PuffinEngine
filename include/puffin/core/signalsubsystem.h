@@ -43,29 +43,29 @@ namespace puffin::core
 	{
 	public:
 
-		Signal(const std::string& Name) : mName(Name) {}
+		Signal(const std::string& name) : mName(name) {}
 		~Signal() override = default;
 
 		size_t Connect(const std::function<void(const Parameters&...)>& Callback)
 		{
-			size_t SlotID = mNextSlotID;
+			size_t slotID = mNextSlotID;
 			mNextSlotID++;
 
-			mSlots.emplace(SlotID, Slot<Parameters...>(Callback));
+			mSlots.emplace(slotID, Slot<Parameters...>(Callback));
 
-			return SlotID;
+			return slotID;
 		}
 
-		void Disconnect(const size_t& SlotID)
+		void Disconnect(const size_t& slotID)
 		{
-			mSlots.erase(SlotID);
+			mSlots.erase(slotID);
 		}
 
-		void Emit(Parameters... Params)
+		void Emit(Parameters... params)
 		{
-			for (const Slot<Parameters...>& Slot : mSlots)
+			for (const Slot<Parameters...>& slot : mSlots)
 			{
-				Slot.Execute(Params...);
+				slot.Execute(params...);
 			}
 		}
 
@@ -85,7 +85,7 @@ namespace puffin::core
 	{
 	public:
 
-		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& Engine) : Subsystem(Engine)
+		explicit SignalSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
 			mName = "SignalSubsystem";
 		}
@@ -97,61 +97,61 @@ namespace puffin::core
 		}
 
 		template<typename... Parameters>
-		std::shared_ptr<Signal<Parameters...>> CreateSignal(const std::string& Name)
+		std::shared_ptr<Signal<Parameters...>> CreateSignal(const std::string& name)
 		{
-			mSignals.emplace(Name, std::make_shared<Signal<Parameters...>>(Name));
+			mSignals.emplace(name, std::make_shared<Signal<Parameters...>>(name));
 
-			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name));
+			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(name));
 		}
 
 		template<typename... Parameters>
-		void AddSignal(std::shared_ptr<Signal<Parameters...>> Signal)
+		void AddSignal(std::shared_ptr<Signal<Parameters...>> signal)
 		{
-			mSignals.emplace(Signal->GetName(), Signal);
+			mSignals.emplace(signal->GetName(), signal);
 		}
 
 		template<typename... Parameters>
-		std::shared_ptr<Signal<Parameters...>> GetSignal(const std::string& Name)
+		std::shared_ptr<Signal<Parameters...>> GetSignal(const std::string& name)
 		{
-			if (mSignals.count(Name) == 0)
+			if (mSignals.count(name) == 0)
 			{
 				return nullptr;
 			}
 
-			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name));
+			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(name));
 		}
 
 		template<typename... Parameters>
-		size_t Connect(const std::string& Name, const std::function<void(const Parameters&...)>& Callback)
+		size_t Connect(const std::string& name, const std::function<void(const Parameters&...)>& callback)
 		{
-			if (mSignals.count(Name) == 0)
+			if (mSignals.count(name) == 0)
 			{
 				return 0;
 			}
 
-			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name))->Connect(Callback);
+			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(name))->Connect(callback);
 		}
 
 		template<typename... Parameters>
-		void Disconnect(const std::string& Name, const size_t& SlotID)
+		void Disconnect(const std::string& name, const size_t& slotID)
 		{
-			if (mSignals.count(Name) == 0)
+			if (mSignals.count(name) == 0)
 			{
 				return;
 			}
 
-			std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name))->Disconnect(SlotID);
+			std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(name))->Disconnect(slotID);
 		}
 
 		template<typename... Parameters>
-		bool Emit(const std::string& Name, Parameters... Params)
+		bool Emit(const std::string& name, Parameters... params)
 		{
-			if (mSignals.count(Name) == 0)
+			if (mSignals.count(name) == 0)
 			{
 				return false;
 			}
 
-			std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(Name))->Emit(Params...);
+			std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(name))->Emit(params...);
 
 			return true;
 		}

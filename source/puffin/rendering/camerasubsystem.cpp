@@ -5,7 +5,7 @@
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/input/inputsubsystem.h"
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
-#include "puffin/scene/scenegraph.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/core/signalsubsystem.h"
 
 namespace puffin::rendering

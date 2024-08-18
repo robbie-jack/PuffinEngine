@@ -9,7 +9,7 @@
 #include "puffin/audio/audiosubsystem.h"
 #include "puffin/core/enginehelpers.h"
 #include "puffin/input/inputsubsystem.h"
-#include "puffin/scene/scenegraph.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/scene/scenesubsystem.h"
 #include "puffin/window/windowsubsystem.h"
 #include "puffin/core/subsystemmanager.h"
@@ -62,6 +62,11 @@ namespace puffin::core
 		mSubsystemManager = std::make_unique<SubsystemManager>(shared_from_this());
 
 		RegisterRequiredSubsystems(shared_from_this());
+
+		if (mApplication)
+		{
+			mApplication->RegisterSubsystems();
+		}
 	}
 
 	void Engine::Initialize(const argparse::ArgumentParser& parser)
@@ -83,6 +88,11 @@ namespace puffin::core
 
 		// Initialize engine subsystems
 		mSubsystemManager->CreateAndInitializeEngineSubsystems();
+
+		if (mApplication)
+		{
+			mApplication->Initialize();
+		}
 
 		// Register components to scene subsystem
 		RegisterComponents(shared_from_this());
@@ -178,6 +188,11 @@ namespace puffin::core
 				}
 			}
 
+			if (mApplication && mApplication->ShouldEngineUpdate())
+			{
+				mApplication->EngineUpdate(mDeltaTime);
+			}
+
 			benchmarkSubsystem->end_benchmark("Engine Update");
 		}
 
@@ -200,6 +215,11 @@ namespace puffin::core
 			for (auto subsystem : mSubsystemManager->GetSubsystems())
 			{
 				subsystem->BeginPlay();
+			}
+
+			if (mApplication)
+			{
+				mApplication->BeginPlay();
 			}
 
 			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
@@ -239,6 +259,11 @@ namespace puffin::core
 				{
 					mAccumulatedTime -= mTimeStepFixed;
 
+					if (mApplication && mApplication->ShouldFixedUpdate())
+					{
+						mApplication->FixedUpdate(mTimeStepFixed);
+					}
+
 					for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 					{
 						if (subsystem->ShouldFixedUpdate())
@@ -259,6 +284,11 @@ namespace puffin::core
 			{
 				auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 				benchmarkSubsystem->start_benchmark("Update");
+
+				if (mApplication && mApplication->ShouldUpdate())
+				{
+					mApplication->Update(mDeltaTime);
+				}
 
 				for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 				{
@@ -296,6 +326,11 @@ namespace puffin::core
 				subsystem->EndPlay();
 			}
 
+			if (mApplication)
+			{
+				mApplication->EndPlay();
+			}
+
 			for (auto subsystem : mSubsystemManager->GetSubsystems())
 			{
 				subsystem->EndPlay();
@@ -323,6 +358,11 @@ namespace puffin::core
 		// Cleanup any running gameplay subsystems
 		if (mPlayState == PlayState::Playing)
 		{
+			if (mApplication)
+			{
+				mApplication->EndPlay();
+			}
+
 			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 			{
 				subsystem->EndPlay();
@@ -334,6 +374,11 @@ namespace puffin::core
 			}
 
 			mSubsystemManager->DestroyGameplaySubsystems();
+		}
+
+		if (mApplication)
+		{
+			mApplication->Deinitialize();
 		}
 
 		// Cleanup all engine subsystems

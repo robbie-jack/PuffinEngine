@@ -56,10 +56,10 @@ namespace puffin::scripting
 		asIScriptObject* obj;
 
 		// Script Functions
-		asIScriptFunction* begin_play_func;
-		asIScriptFunction* fixed_update_func;
-		asIScriptFunction* update_func;
-		asIScriptFunction* end_play_func;
+		asIScriptFunction* beginPlayFunc;
+		asIScriptFunction* fixedUpdateFunc;
+		asIScriptFunction* updateFunc;
+		asIScriptFunction* endPlayFunc;
 
 		// Set of class property indexes
 		std::set<int> editableProperties;
@@ -75,8 +75,8 @@ namespace puffin::scripting
 	static void ExportPropertyToScriptData(const AngelScriptComponent& script, SerializedScriptData& scriptData, const int index)
 	{
 		const char* propertyName = script.obj->GetPropertyName(index);
-		std::string propertyString = propertyName;
-		int propertyType = script.obj->GetPropertyTypeId(index);
+		const std::string& propertyString = propertyName;
+		const int propertyType = script.obj->GetPropertyTypeId(index);
 
 		// Add property to correct vector based on it's type
 		if (propertyType == asTYPEID_BOOL)

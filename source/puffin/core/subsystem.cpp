@@ -15,14 +15,16 @@ namespace puffin::core
 		mEngine = nullptr;
 	}
 
+	void Subsystem::RegisterSubsystems()
+	{
+	}
+
 	void Subsystem::Initialize(SubsystemManager* subsystemManager)
 	{
-
 	}
 
 	void Subsystem::Deinitialize()
 	{
-
 	}
 
 	SubsystemType Subsystem::GetType() const
@@ -32,17 +34,14 @@ namespace puffin::core
 
 	void Subsystem::BeginPlay()
 	{
-
 	}
 
 	void Subsystem::EndPlay()
 	{
-
 	}
 
 	void Subsystem::Update(double deltaTime)
 	{
-		
 	}
 
 	bool Subsystem::ShouldUpdate()

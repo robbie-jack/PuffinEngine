@@ -29,6 +29,11 @@ namespace puffin::core
 		virtual ~Subsystem();
 
 		/*
+		 * Called when a subsystems is registered to register any additional subsystems
+		 */
+		virtual void RegisterSubsystems();
+
+		/*
 		 * All subsystem initialization occurs here
 		 * subsystem initialization is called depending on what type of subsystem this is
 		 */

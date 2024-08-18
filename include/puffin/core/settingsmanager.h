@@ -22,10 +22,10 @@ namespace puffin::core
 
         ~SettingsManager() override = default;
 
-        void Initialize(core::SubsystemManager* subsystem_manager) override;
+        void Initialize(core::SubsystemManager* subsystemManager) override;
 
         template<typename T>
-        void set(const std::string& name, const T& t)
+        void Set(const std::string& name, const T& t)
         {
             m_json[name] = t;
 
@@ -40,7 +40,7 @@ namespace puffin::core
         }
 
         template<typename T>
-        T get(const std::string& name) const
+        T Get(const std::string& name) const
         {
             if (!m_json.contains(name))
             {
