@@ -52,9 +52,9 @@ namespace puffin::rendering
 
 	void CameraSubystem::EndPlay()
 	{
-        m_active_play_cam_id = gInvalidID;
+        mActivePlayCamID = gInvalidID;
 		mActiveCameraID = gInvalidID;
-        m_editor_cam_id = gInvalidID;
+        mEditorCamID = gInvalidID;
 
         InitEditorCamera();
 	}
@@ -75,23 +75,23 @@ namespace puffin::rendering
 		const auto id = enttSubsystem->GetID(entity);
 		const auto& camera = registry.get<CameraComponent3D>(entity);
 
-        if (m_cached_cam_active_state.find(id) == m_cached_cam_active_state.end())
+        if (mCachedCamActiveState.find(id) == mCachedCamActiveState.end())
         {
-            m_cached_cam_active_state.emplace(id, camera.active);
+            mCachedCamActiveState.emplace(id, camera.active);
         }
 
-		if (m_cached_cam_active_state.at(id) != camera.active)
+		if (mCachedCamActiveState.at(id) != camera.active)
 		{
 			if (camera.active)
 			{
-                m_active_play_cam_id = id;
+                mActivePlayCamID = id;
 			}
 			else
 			{
-                m_active_play_cam_id = gInvalidID;
+                mActivePlayCamID = gInvalidID;
 			}
 
-            m_cached_cam_active_state.at(id) = camera.active;
+            mCachedCamActiveState.at(id) = camera.active;
 		}
 	}
 
@@ -100,12 +100,12 @@ namespace puffin::rendering
 	    const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto id = enttSubsystem->GetID(entity);
 
-        if (m_active_play_cam_id == id)
+        if (mActivePlayCamID == id)
         {
-            m_active_play_cam_id = gInvalidID;
+            mActivePlayCamID = gInvalidID;
         }
 
-        m_cached_cam_active_state.erase(id);
+        mCachedCamActiveState.erase(id);
     }
 
     void CameraSubystem::OnUpdateEditorCameraFov(const float &editorCameraFov)
@@ -113,7 +113,7 @@ namespace puffin::rendering
 	    const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 	    const auto registry = enttSubsystem->GetRegistry();
 
-	    const auto entity = enttSubsystem->GetEntity(m_editor_cam_id);
+	    const auto entity = enttSubsystem->GetEntity(mEditorCamID);
         auto& camera = registry->get<CameraComponent3D>(entity);
 
         camera.prevFovY = camera.fovY;
@@ -126,28 +126,28 @@ namespace puffin::rendering
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
-		m_editor_cam_id = GenerateId();
-		mActiveCameraID = m_editor_cam_id;
+		mEditorCamID = GenerateId();
+		mActiveCameraID = mEditorCamID;
 
-		auto entity = enttSubsystem->AddEntity(m_editor_cam_id, false);
+		auto entity = enttSubsystem->AddEntity(mEditorCamID, false);
 
 		auto& transform = registry->emplace<TransformComponent3D>(entity);
 		transform.position = { 0.0f, 0.0f, 10.0f };
 
 		auto& camera = registry->emplace<CameraComponent3D>(entity);
 
-		m_editor_cam_speed = 25.0f;
+		mEditorCamSpeed = 25.0f;
 	}
 
 	void CameraSubystem::UpdateActiveCamera()
 	{
-        if (m_active_play_cam_id != gInvalidID)
+        if (mActivePlayCamID != gInvalidID)
         {
-            mActiveCameraID = m_active_play_cam_id;
+            mActiveCameraID = mActivePlayCamID;
         }
         else
         {
-            mActiveCameraID = m_editor_cam_id;
+            mActiveCameraID = mEditorCamID;
         }
 	}
 
@@ -161,7 +161,7 @@ namespace puffin::rendering
         {
             if (camera.active)
             {
-                m_active_play_cam_id = enttSubsystem->GetID(entity);
+                mActivePlayCamID = enttSubsystem->GetID(entity);
 
                 break;
             }
@@ -170,12 +170,12 @@ namespace puffin::rendering
 
 	void CameraSubystem::UpdateCameras(double deltaTime)
 	{
-        if (m_active_play_cam_id == gInvalidID)
+        if (mActivePlayCamID == gInvalidID)
         {
             UpdateActivePlayCamera();
         }
 
-        if (mEngine->GetPlayState() == core::PlayState::Playing && mActiveCameraID != m_active_play_cam_id)
+        if (mEngine->GetPlayState() == core::PlayState::Playing && mActiveCameraID != mActivePlayCamID)
         {
             UpdateActiveCamera();
         }
@@ -194,42 +194,42 @@ namespace puffin::rendering
 
 	void CameraSubystem::UpdateEditorCamera(double deltaTime)
 	{
-        if (m_editor_cam_id != gInvalidID && m_editor_cam_id == mActiveCameraID)
+        if (mEditorCamID != gInvalidID && mEditorCamID == mActiveCameraID)
         {
             const auto inputSubsystem = mEngine->GetSubsystem<input::InputSubsystem>();
             const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
             auto registry = enttSubsystem->GetRegistry();
 
-            auto entity = enttSubsystem->GetEntity(m_editor_cam_id);
+            auto entity = enttSubsystem->GetEntity(mEditorCamID);
             auto &transform = registry->get<TransformComponent3D>(entity);
             auto &camera = registry->get<CameraComponent3D>(entity);
 
-            if (inputSubsystem->GetCursorLocked() && mActiveCameraID == m_editor_cam_id) {
+            if (inputSubsystem->GetCursorLocked() && mActiveCameraID == mEditorCamID) {
                 // Camera Movement
                 if (inputSubsystem->Pressed("EditorCamMoveRight") && !inputSubsystem->Pressed("EditorCamMoveLeft")) {
-                    transform.position += camera.right * m_editor_cam_speed * deltaTime;
+                    transform.position += camera.right * mEditorCamSpeed * deltaTime;
                 }
 
                 if (inputSubsystem->Pressed("EditorCamMoveLeft") && !inputSubsystem->Pressed("EditorCamMoveRight")) {
-                    transform.position -= camera.right * m_editor_cam_speed * deltaTime;
+                    transform.position -= camera.right * mEditorCamSpeed * deltaTime;
                 }
 
                 if (inputSubsystem->Pressed("EditorCamMoveForward") &&
                     !inputSubsystem->Pressed("EditorCamMoveBackward")) {
-                    transform.position += camera.direction * m_editor_cam_speed * deltaTime;
+                    transform.position += camera.direction * mEditorCamSpeed * deltaTime;
                 }
 
                 if (inputSubsystem->Pressed("EditorCamMoveBackward") &&
                     !inputSubsystem->Pressed("EditorCamMoveForward")) {
-                    transform.position -= camera.direction * m_editor_cam_speed * deltaTime;
+                    transform.position -= camera.direction * mEditorCamSpeed * deltaTime;
                 }
 
                 if (inputSubsystem->Pressed("EditorCamMoveUp") && !inputSubsystem->Pressed("EditorCamMoveDown")) {
-                    transform.position += camera.up * m_editor_cam_speed * deltaTime;
+                    transform.position += camera.up * mEditorCamSpeed * deltaTime;
                 }
 
                 if (inputSubsystem->Pressed("EditorCamMoveDown") && !inputSubsystem->Pressed("EditorCamMoveUp")) {
-                    transform.position -= camera.up * m_editor_cam_speed * deltaTime;
+                    transform.position -= camera.up * mEditorCamSpeed * deltaTime;
                 }
 
                 // Mouse Rotation
@@ -262,7 +262,7 @@ namespace puffin::rendering
 		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
 			static_cast<glm::vec3>(transform.position + camera.direction), static_cast<glm::vec3>(camera.up));
 
-		camera.proj = glm::perspective(maths::deg_to_rad(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
+		camera.proj = glm::perspective(maths::DegToRad(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
 		camera.proj[1][1] *= -1; // Flips y-axis to match vulkan's coordinates system
 
 		camera.viewProj = camera.proj * camera.view;

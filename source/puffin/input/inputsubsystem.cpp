@@ -25,7 +25,7 @@ namespace puffin
 		{
 			const auto windowSubsystem = subsystemManager->CreateAndInitializeSubsystem<window::WindowSubsystem>();
 
-			mWindow = windowSubsystem->primary_window();
+			mWindow = windowSubsystem->GetPrimaryWindow();
 
 			// Setup Actions
 
@@ -67,7 +67,7 @@ namespace puffin
 		{
 			if (!mWindow)
 			{
-				mWindow = mEngine->GetSubsystem<window::WindowSubsystem>()->primary_window();
+				mWindow = mEngine->GetSubsystem<window::WindowSubsystem>()->GetPrimaryWindow();
 			}
 
 			glfwPollEvents();

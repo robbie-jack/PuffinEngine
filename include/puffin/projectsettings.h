@@ -17,30 +17,30 @@ namespace puffin
 		struct ProjectFile
 		{
 			std::string name;
-			std::string default_scene_path;
-			std::vector<std::string> additional_content_directories = {};
+			std::string defaultScenePath;
+			std::vector<std::string> additionalContentDirectories = {};
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, default_scene_path, additional_content_directories)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectFile, name, defaultScenePath, additionalContentDirectories)
 		};
 
 		// IO Static Functions
-		static void save_project(fs::path file_path, const ProjectFile& file)
+		static void SaveProject(const fs::path& filePath, const ProjectFile& file)
 		{
 			const json data = file;
 
-			std::ofstream os(file_path.string());
+			std::ofstream os(filePath.string());
 
 			os << std::setw(4) << data << std::endl;
 
 			os.close();
 		}
 
-		static void load_project(fs::path file_path, ProjectFile& file)
+		static void LoadProject(const fs::path& filePath, ProjectFile& file)
 		{
-			if (!exists(file_path))
+			if (!exists(filePath))
 				return;
 
-			std::ifstream is(file_path.string());
+			std::ifstream is(filePath.string());
 
 			json data;
 			is >> data;

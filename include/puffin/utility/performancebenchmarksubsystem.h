@@ -23,30 +23,30 @@ namespace puffin::utility
 
 		void EndPlay() override;
 
-		void start_benchmark(const std::string& name);
-		void start_benchmark_category(const std::string& name, const std::string& category);
+		void StartBenchmark(const std::string& name);
+		void StartBenchmarkCategory(const std::string& name, const std::string& categoryName);
 
-		void end_benchmark(const std::string& name);
-		void end_benchmark_category(const std::string& name, const std::string& category);
+		void EndBenchmark(const std::string& name);
+		void EndBenchmarkCategory(const std::string& name, const std::string& categoryName);
 
-		double get_benchmark_time(const std::string& name);
-		double get_benchmark_time_category(const std::string& name, const std::string& category);
+		double GetBenchmarkTime(const std::string& name);
+		double GetBenchmarkTimeCategory(const std::string& name, const std::string& categoryName);
 
-		const std::unordered_set<std::string>& get_category(const std::string& category);
+		const std::unordered_set<std::string>& GetCategory(const std::string& categoryName);
 
 	private:
 
-		using time_point = std::chrono::time_point<std::chrono::high_resolution_clock>;
-		using time_point_map = std::unordered_map<std::string, time_point>;
-		using benchmark_map = std::unordered_map<std::string, double>;
-		using string_set = std::unordered_set<std::string>;
+		using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+		using TimePointMap = std::unordered_map<std::string, TimePoint>;
+		using BenchmarkMap = std::unordered_map<std::string, double>;
+		using StringSet = std::unordered_set<std::string>;
 
-		time_point_map m_benchmark_start_point;
-		benchmark_map m_benchmarks;
+		TimePointMap mBenchmarkStartPoint;
+		BenchmarkMap mBenchmarks;
 
-		std::unordered_map<std::string, time_point_map> m_category_benchmark_start_point;
-		std::unordered_map<std::string, benchmark_map> m_category_benchmarks;
-		std::unordered_map<std::string, string_set> m_category_names;
+		std::unordered_map<std::string, TimePointMap> mCategoryBenchmarkStartPoint;
+		std::unordered_map<std::string, BenchmarkMap> mCategoryBenchmarks;
+		std::unordered_map<std::string, StringSet> mCategoryNames;
 
 	};
 }

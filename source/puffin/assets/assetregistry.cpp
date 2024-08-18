@@ -16,7 +16,7 @@ namespace puffin::assets
 
 		mContentDirectories.push_back(mProjectRootPath / "content");
 
-		for (auto& dir : projectFile.additional_content_directories)
+		for (auto& dir : projectFile.additionalContentDirectories)
 		{
 			mContentDirectories.emplace_back(dir);
 		}

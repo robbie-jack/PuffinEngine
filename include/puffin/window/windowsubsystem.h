@@ -21,34 +21,34 @@ namespace puffin
 		{
 		public:
 
-			WindowSubsystem(const std::shared_ptr<core::Engine>& engine);
+			explicit WindowSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~WindowSubsystem() override;
 
-			void Initialize(core::SubsystemManager* subsystem_manager) override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
-			GLFWwindow* primary_window() const
+			GLFWwindow* GetPrimaryWindow() const
 			{
-				return m_primary_window;
+				return mPrimaryWindow;
 			}
 
-			[[nodiscard]] bool should_primary_window_close() const;
-			GLFWmonitor* primary_monitor() const;
+			[[nodiscard]] bool GetShouldPrimaryWindowClose() const;
+			GLFWmonitor* GetPrimaryMonitor() const;
 
 			// Create new window and return PuffinId handle to it
-			UUID create_new_window(const int& width, const int& height);
+			UUID CreateNewWindow(const int& width, const int& height);
 
 			// Retrieve window using PuffinId handle
-			GLFWwindow* get_window(const UUID& uuid);
+			GLFWwindow* GetWindow(const UUID& uuid);
 
-			void destroy_window(const UUID& uuid);
+			void DestroyWindow(const UUID& uuid);
 
 		private:
 
-			GLFWmonitor* m_primary_monitor = nullptr;
-			GLFWwindow* m_primary_window = nullptr;
+			GLFWmonitor* mPrimaryMonitor = nullptr;
+			GLFWwindow* mPrimaryWindow = nullptr;
 
-			std::unordered_map<UUID, GLFWwindow*> m_windows;
+			std::unordered_map<UUID, GLFWwindow*> mWindows;
 
 
 		};

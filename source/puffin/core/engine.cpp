@@ -74,7 +74,7 @@ namespace puffin::core
 		fs::path projectPath = fs::path(parser.get<std::string>("-project_path")).make_preferred();
 
 		// Load Project File
-		load_project(projectPath, mProjectFile);
+		LoadProject(projectPath, mProjectFile);
 
 		// Setup asset registry
 		RegisterAssetTypes(mProjectFile, projectPath);
@@ -142,25 +142,25 @@ namespace puffin::core
 		// Process input
 		{
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
-			benchmarkSubsystem->start_benchmark("Input");
+			benchmarkSubsystem->StartBenchmark("Input");
 
 			auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
 			inputSubsystem->ProcessInput();
 
-			benchmarkSubsystem->end_benchmark("Input");
+			benchmarkSubsystem->EndBenchmark("Input");
 		}
 
 		// Wait for last presentation to complete and sample delta time
 		{
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
-			benchmarkSubsystem->start_benchmark("Sample Time");
+			benchmarkSubsystem->StartBenchmark("Sample Time");
 
 			auto renderSubsystem = mSubsystemManager->GetRenderSubsystem();
 
 			double sampledTime = renderSubsystem->WaitForLastPresentationAndSampleTime();
 			UpdateDeltaTime(sampledTime);
 
-			benchmarkSubsystem->end_benchmark("Sample Time");
+			benchmarkSubsystem->EndBenchmark("Sample Time");
 		}
 
 		// Make sure delta time never exceeds 1/30th of a second
@@ -174,17 +174,17 @@ namespace puffin::core
 		// Execute engine updates
 		{
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
-			benchmarkSubsystem->start_benchmark("Engine Update");
+			benchmarkSubsystem->StartBenchmark("Engine Update");
 
 			for (auto subsystem : mSubsystemManager->GetSubsystems())
 			{
 				if (subsystem->ShouldUpdate())
 				{
-					benchmarkSubsystem->start_benchmark_category(subsystem->GetName(), "Engine Update");
+					benchmarkSubsystem->StartBenchmarkCategory(subsystem->GetName(), "Engine Update");
 
 					subsystem->Update(mDeltaTime);
 
-					benchmarkSubsystem->end_benchmark_category(subsystem->GetName(), "Engine Update");
+					benchmarkSubsystem->EndBenchmarkCategory(subsystem->GetName(), "Engine Update");
 				}
 			}
 
@@ -193,7 +193,7 @@ namespace puffin::core
 				mApplication->EngineUpdate(mDeltaTime);
 			}
 
-			benchmarkSubsystem->end_benchmark("Engine Update");
+			benchmarkSubsystem->EndBenchmark("Engine Update");
 		}
 
 		/*const auto inputSubsystem = getSystem<input::InputSubsystem>();
@@ -250,7 +250,7 @@ namespace puffin::core
 			// Fixed Update
 			{
 				auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
-				benchmarkSubsystem->start_benchmark("Fixed Update");
+				benchmarkSubsystem->StartBenchmark("Fixed Update");
 
 				// Add onto accumulated time
 				mAccumulatedTime += mDeltaTime;
@@ -268,22 +268,22 @@ namespace puffin::core
 					{
 						if (subsystem->ShouldFixedUpdate())
 						{
-							benchmarkSubsystem->start_benchmark_category(subsystem->GetName(), "Fixed Update");
+							benchmarkSubsystem->StartBenchmarkCategory(subsystem->GetName(), "Fixed Update");
 
 							subsystem->FixedUpdate(mTimeStepFixed);
 
-							benchmarkSubsystem->end_benchmark_category(subsystem->GetName(), "Fixed Update");
+							benchmarkSubsystem->EndBenchmarkCategory(subsystem->GetName(), "Fixed Update");
 						}
 					}
 				}
 
-				benchmarkSubsystem->end_benchmark("Fixed Update");
+				benchmarkSubsystem->EndBenchmark("Fixed Update");
 			}
 
 			// Update
 			{
 				auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
-				benchmarkSubsystem->start_benchmark("Update");
+				benchmarkSubsystem->StartBenchmark("Update");
 
 				if (mApplication && mApplication->ShouldUpdate())
 				{
@@ -294,28 +294,28 @@ namespace puffin::core
 				{
 					if (subsystem->ShouldUpdate())
 					{
-						benchmarkSubsystem->start_benchmark_category(subsystem->GetName(), "Update");
+						benchmarkSubsystem->StartBenchmarkCategory(subsystem->GetName(), "Update");
 
 						subsystem->Update(mDeltaTime);
 
-						benchmarkSubsystem->end_benchmark_category(subsystem->GetName(), "Update");
+						benchmarkSubsystem->EndBenchmarkCategory(subsystem->GetName(), "Update");
 					}
 				}
 
-				benchmarkSubsystem->end_benchmark("Update");
+				benchmarkSubsystem->EndBenchmark("Update");
 			}
 		}
 
 		// Render
 		{
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
-			benchmarkSubsystem->start_benchmark("Render");
+			benchmarkSubsystem->StartBenchmark("Render");
 
 			auto renderSubsystem = mSubsystemManager->GetRenderSubsystem();
 
 			renderSubsystem->Render(mDeltaTime);
 
-			benchmarkSubsystem->end_benchmark("Render");
+			benchmarkSubsystem->EndBenchmark("Render");
 		}
 
 		if (mPlayState == PlayState::EndPlay)
@@ -345,7 +345,7 @@ namespace puffin::core
 		}
 
 		if (const auto windowSubsystem = GetSubsystem<window::WindowSubsystem>(); windowSubsystem->
-			should_primary_window_close())
+			GetShouldPrimaryWindowClose())
 		{
 			mRunning = false;
 		}

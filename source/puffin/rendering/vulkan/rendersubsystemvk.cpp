@@ -317,7 +317,7 @@ namespace puffin::rendering
 	void RenderSubystemVK::InitVulkan()
 	{
 		auto windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystem>();
-		GLFWwindow* glfwWindow = windowSubsystem->primary_window();
+		GLFWwindow* glfwWindow = windowSubsystem->GetPrimaryWindow();
 
 		glfwSetWindowUserPointer(glfwWindow, this);
 		glfwSetFramebufferSizeCallback(glfwWindow, FrameBufferResizeCallback);
@@ -919,7 +919,7 @@ namespace puffin::rendering
 
 		// Initialize imgui for GLFW
 		const auto windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystem>();
-		GLFWwindow* glfwWindow = windowSubsystem->primary_window();
+		GLFWwindow* glfwWindow = windowSubsystem->GetPrimaryWindow();
 		ImGui_ImplGlfw_InitForVulkan(glfwWindow, true);
 
 		std::array<VkFormat,1 > formats = { static_cast<VkFormat>(mSwapchainData.image_format) };
@@ -1522,7 +1522,7 @@ namespace puffin::rendering
 						Vector3f interpolatedPosition = transform.position + velocity.linear * mEngine->GetTimeStepFixed();
 #endif
 
-						position = maths::lerp(transform.position, interpolatedPosition, t);
+						position = maths::Lerp(transform.position, interpolatedPosition, t);
 					}
 					else
 					{
@@ -1659,9 +1659,9 @@ namespace puffin::rendering
 
 			glm::vec4 dir = { 0.5f, -0.5f, 0.0f, 1.0f };
 
-			dir = glm::rotateZ(dir, maths::deg_to_rad(transform.orientationEulerAngles.roll));
-			dir = glm::rotateX(dir, maths::deg_to_rad(transform.orientationEulerAngles.pitch));
-			dir = glm::rotateY(dir, maths::deg_to_rad(transform.orientationEulerAngles.yaw));
+			dir = glm::rotateZ(dir, maths::DegToRad(transform.orientationEulerAngles.roll));
+			dir = glm::rotateX(dir, maths::DegToRad(transform.orientationEulerAngles.pitch));
+			dir = glm::rotateY(dir, maths::DegToRad(transform.orientationEulerAngles.yaw));
 
 			dir = glm::normalize(dir);
 
@@ -1714,9 +1714,9 @@ namespace puffin::rendering
 
 			glm::vec4 dir = { 0.5f, -0.5f, 0.0f, 1.0f };
 
-			dir = glm::rotateZ(dir, maths::deg_to_rad(transform.orientationEulerAngles.roll));
-			dir = glm::rotateX(dir, maths::deg_to_rad(transform.orientationEulerAngles.pitch));
-			dir = glm::rotateY(dir, maths::deg_to_rad(transform.orientationEulerAngles.yaw));
+			dir = glm::rotateZ(dir, maths::DegToRad(transform.orientationEulerAngles.roll));
+			dir = glm::rotateX(dir, maths::DegToRad(transform.orientationEulerAngles.pitch));
+			dir = glm::rotateY(dir, maths::DegToRad(transform.orientationEulerAngles.yaw));
 
 			dir = glm::normalize(dir);
 

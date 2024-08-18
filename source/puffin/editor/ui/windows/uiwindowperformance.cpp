@@ -152,37 +152,37 @@ namespace puffin
 
 					const auto benchmarkSubsystem = m_engine->GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 
-					DrawBenchmark("Input", benchmarkSubsystem->get_benchmark_time("Input"));
-					DrawBenchmark("Sample Time", benchmarkSubsystem->get_benchmark_time("Sample Time"));
+					DrawBenchmark("Input", benchmarkSubsystem->GetBenchmarkTime("Input"));
+					DrawBenchmark("Sample Time", benchmarkSubsystem->GetBenchmarkTime("Sample Time"));
 
-					DrawBenchmark("Engine Update", benchmarkSubsystem->get_benchmark_time("Engine Update"));
+					DrawBenchmark("Engine Update", benchmarkSubsystem->GetBenchmarkTime("Engine Update"));
 
 					ImGui::Indent();
-					for (const auto& name : benchmarkSubsystem->get_category("Engine Update"))
+					for (const auto& name : benchmarkSubsystem->GetCategory("Engine Update"))
 					{
-						DrawBenchmark(name, benchmarkSubsystem->get_benchmark_time_category(name, "Engine Update"));
+						DrawBenchmark(name, benchmarkSubsystem->GetBenchmarkTimeCategory(name, "Engine Update"));
 					}
 					ImGui::Unindent();
 
-					DrawBenchmark("Fixed Update", benchmarkSubsystem->get_benchmark_time("Fixed Update"));
+					DrawBenchmark("Fixed Update", benchmarkSubsystem->GetBenchmarkTime("Fixed Update"));
 
 					ImGui::Indent();
-					for (const auto& name : benchmarkSubsystem->get_category("Fixed Update"))
+					for (const auto& name : benchmarkSubsystem->GetCategory("Fixed Update"))
 					{
-						DrawBenchmark(name, benchmarkSubsystem->get_benchmark_time_category(name, "Fixed Update"));
+						DrawBenchmark(name, benchmarkSubsystem->GetBenchmarkTimeCategory(name, "Fixed Update"));
 					}
 					ImGui::Unindent();
 
-					DrawBenchmark("Update", benchmarkSubsystem->get_benchmark_time("Update"));
+					DrawBenchmark("Update", benchmarkSubsystem->GetBenchmarkTime("Update"));
 
 					ImGui::Indent();
-					for (const auto& name : benchmarkSubsystem->get_category("Update"))
+					for (const auto& name : benchmarkSubsystem->GetCategory("Update"))
 					{
-						DrawBenchmark(name, benchmarkSubsystem->get_benchmark_time_category(name, "Update"));
+						DrawBenchmark(name, benchmarkSubsystem->GetBenchmarkTimeCategory(name, "Update"));
 					}
 					ImGui::Unindent();
 
-					DrawBenchmark("Render", benchmarkSubsystem->get_benchmark_time("Render"));
+					DrawBenchmark("Render", benchmarkSubsystem->GetBenchmarkTime("Render"));
 				}
 
 				End();

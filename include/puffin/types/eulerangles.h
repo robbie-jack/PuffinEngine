@@ -54,12 +54,12 @@ namespace puffin::maths
 
 	inline EulerAngles deg_to_rad(const EulerAngles& euler)
 	{
-		return { deg_to_rad(euler.pitch), deg_to_rad(euler.yaw), deg_to_rad(euler.roll) };
+		return { DegToRad(euler.pitch), DegToRad(euler.yaw), DegToRad(euler.roll) };
 	}
 
 	inline EulerAngles rad_to_deg(const EulerAngles& euler)
 	{
-		return { rad_to_deg(euler.pitch), rad_to_deg(euler.yaw), rad_to_deg(euler.roll) };
+		return { RadToDeg(euler.pitch), RadToDeg(euler.yaw), RadToDeg(euler.roll) };
 	}
 
 	// Convert from euler in degrees to quaternion in radians

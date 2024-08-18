@@ -41,10 +41,10 @@ namespace puffin::rendering
 	private:
 
         UUID mActiveCameraID = gInvalidID;
-        UUID m_active_play_cam_id = gInvalidID;
-		std::unordered_map<UUID, bool> m_cached_cam_active_state;
-		UUID m_editor_cam_id = gInvalidID;
-		float m_editor_cam_speed = 10.0f;
+        UUID mActivePlayCamID = gInvalidID;
+		std::unordered_map<UUID, bool> mCachedCamActiveState;
+		UUID mEditorCamID = gInvalidID;
+		float mEditorCamSpeed = 10.0f;
 
 		void InitEditorCamera();
 

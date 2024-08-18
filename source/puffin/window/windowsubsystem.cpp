@@ -23,51 +23,51 @@ namespace puffin::window
 		mEngine = nullptr;
 	}
 
-	void WindowSubsystem::Initialize(core::SubsystemManager* subsystem_manager)
+	void WindowSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		glfwInit();
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		m_primary_monitor = glfwGetPrimaryMonitor();
+		mPrimaryMonitor = glfwGetPrimaryMonitor();
 
 		// Create Primary Window
-		m_primary_window = glfwCreateWindow(1920, 1080, "Puffin Engine", nullptr, nullptr);
-		if (m_primary_window == nullptr)
+		mPrimaryWindow = glfwCreateWindow(1920, 1080, "Puffin Engine", nullptr, nullptr);
+		if (mPrimaryWindow == nullptr)
 		{
 			std::cout << "Failed to create GLFW window" << std::endl;
 			glfwTerminate();
 		}
 
-		glfwMakeContextCurrent(m_primary_window);
+		glfwMakeContextCurrent(mPrimaryWindow);
 	}
 
 	void WindowSubsystem::Deinitialize()
 	{
-		glfwDestroyWindow(m_primary_window);
+		glfwDestroyWindow(mPrimaryWindow);
 
-		for (auto& [fst, snd] : m_windows)
+		for (auto& [fst, snd] : mWindows)
 		{
 			glfwDestroyWindow(snd);
 		}
 
-		m_windows.clear();
+		mWindows.clear();
 
 		glfwTerminate();
 	}
 
-	bool WindowSubsystem::should_primary_window_close() const
+	bool WindowSubsystem::GetShouldPrimaryWindowClose() const
 	{
-		return glfwWindowShouldClose(m_primary_window);
+		return glfwWindowShouldClose(mPrimaryWindow);
 	}
 
-	GLFWmonitor* WindowSubsystem::primary_monitor() const
+	GLFWmonitor* WindowSubsystem::GetPrimaryMonitor() const
 	{
-		return m_primary_monitor;
+		return mPrimaryMonitor;
 	}
 
-	UUID WindowSubsystem::create_new_window(const int& width, const int& height)
+	UUID WindowSubsystem::CreateNewWindow(const int& width, const int& height)
 	{
 		// Create new window and store it in windows map
 		GLFWwindow* window = glfwCreateWindow(width, height, "Puffin Engine", nullptr, nullptr);
@@ -80,31 +80,27 @@ namespace puffin::window
 
 		UUID id;
 
-		m_windows.insert({ id, window });
+		mWindows.insert({ id, window });
 
 		// Return id handle to window
 		return id;
 	}
 
-	GLFWwindow* WindowSubsystem::get_window(const UUID& uuid)
+	GLFWwindow* WindowSubsystem::GetWindow(const UUID& uuid)
 	{
 		// Return window if there is oen with that handle
-		if (m_windows.count(uuid) == 1)
+		if (mWindows.count(uuid) == 1)
 		{
-			return m_windows[uuid];
+			return mWindows[uuid];
 		}
 
 		// Else return nullptr
 		return nullptr;
 	}
 
-	void WindowSubsystem::destroy_window(const UUID& uuid)
+	void WindowSubsystem::DestroyWindow(const UUID& uuid)
 	{
-		glfwDestroyWindow(m_windows[uuid]);
-		m_windows.erase(uuid);
+		glfwDestroyWindow(mWindows[uuid]);
+		mWindows.erase(uuid);
 	}
-
-	//==================================================
-	// Private Methods
-	//==================================================
 }
