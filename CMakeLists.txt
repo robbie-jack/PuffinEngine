@@ -213,7 +213,8 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/vertexvk.h
 	# Scene
-	${HEADER_DIR}/puffin/scene/scenegraph.h
+	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
+	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
 	${HEADER_DIR}/puffin/scene/scenesubsystem.h
 	# Scripting
 	${HEADER_DIR}/puffin/scripting/angelscript/angelscriptengineinterface.h
@@ -314,7 +315,8 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/vulkan/resourcemanagervk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.cpp
 	# Scene
-	${SOURCE_DIR}/puffin/scene/scenegraph.cpp
+	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
+	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenesubsystem.cpp
 	# Scripting
 	${SOURCE_DIR}/puffin/scripting/angelscript/angelscriptsubsystem.cpp

@@ -8,7 +8,7 @@
 #include "entt/entity/registry.hpp"
 
 #include "puffin/assets/assetregistry.h"
-#include "puffin/scene/scenegraph.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/core/subsystem.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/types/uuid.h"

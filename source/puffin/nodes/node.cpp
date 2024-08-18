@@ -1,6 +1,6 @@
 #include "puffin/nodes/node.h"
 
-#include "puffin/scene/scenegraph.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/core/engine.h"
 #include "puffin/ecs/enttsubsystem.h"
 
@@ -118,13 +118,13 @@ namespace puffin
 		}
 	}
 
-	void Node::GetChildIDs(std::vector<UUID>& childIds) const
+	void Node::GetChildIDs(std::vector<UUID>& childIDs) const
 	{
-		childIds.reserve(mChildIDs.size());
+		childIDs.reserve(mChildIDs.size());
 
 		for (auto id : mChildIDs)
 		{
-			childIds.push_back(id);
+			childIDs.push_back(id);
 		}
 	}
 

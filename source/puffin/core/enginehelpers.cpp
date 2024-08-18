@@ -33,6 +33,7 @@
 #include "puffin/nodes/rendering/3d/spotlightnode3d.h"
 #include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
 #include "puffin/rendering/camerasubsystem.h"
+#include "puffin/scene/scenegraphgameplaysubsystem.h"
 #include "puffin/scene/scenesubsystem.h"
 #include "puffin/utility/performancebenchmarksubsystem.h"
 #include "puffin/window/windowsubsystem.h"
@@ -280,7 +281,7 @@ namespace puffin::core
 		auto plane = sceneGraph->AddNode<rendering::MeshNode>();
 		plane->SetName("Plane");
 		plane->SetPosition({ 0.0f, -10.0f, 0.0f });
-		plane->set_scale({ 50.0f, 1.0f, 50.0f });
+		plane->SetScale({ 50.0f, 1.0f, 50.0f });
 		plane->SetMeshID(meshId3);
 		plane->SetMaterialID(materialInstId1);
 

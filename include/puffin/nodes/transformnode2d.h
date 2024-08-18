@@ -21,7 +21,7 @@ namespace puffin
 		[[nodiscard]] TransformComponent2D& Transform();
 
 		[[nodiscard]] const TransformComponent2D& GetGlobalTransform() const;
-		[[nodiscard]] TransformComponent2D& GlobalTransform();
+		//[[nodiscard]] TransformComponent2D& GlobalTransform();
 
 #ifdef PFN_DOUBLE_PRECISION
 		[[nodiscard]] const Vector2d& GetPosition() const;

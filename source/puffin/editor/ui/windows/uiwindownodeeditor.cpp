@@ -6,7 +6,7 @@
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/mathhelpers.h"
 #include "misc/cpp/imgui_stdlib.h"
-#include "puffin/scene/scenegraph.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/nodes/node.h"
 #include "puffin/components/transformcomponent2d.h"
 #include "puffin/components/transformcomponent3d.h"
@@ -27,6 +27,7 @@
 #include "puffin/components/rendering/3d/pointlightcomponent3d.h"
 #include "puffin/components/rendering/3d/spotlightcomponent3d.h"
 #include "puffin/components/rendering/3d/shadowcastercomponent3d.h"
+#include "puffin/nodes/transformnode2d.h"
 #include "puffin/nodes/transformnode3d.h"
 
 namespace puffin
@@ -97,14 +98,14 @@ namespace puffin
 						mSceneChanged = false;
 
 						// Display Component UI
-						if (node->HasTransform2D())
+						if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node); transformNode2D)
 						{
-							DrawTransformUI2DNode(flags, node);
+							DrawTransformUI2DNode(flags, transformNode2D);
 						}
 
-						if (node->HasTransform3D())
+						if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
 						{
-							DrawTransformUI3DNode(flags, node);
+							DrawTransformUI3DNode(flags, transformNode3D);
 						}
 
 						if (registry->any_of<rendering::StaticMeshComponent3D>(entity))
@@ -199,32 +200,24 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::DrawTransformUI2DNode(ImGuiTreeNodeFlags flags, Node* node)
+		void UIWindowNodeEditor::DrawTransformUI2DNode(ImGuiTreeNodeFlags flags, TransformNode2D* node)
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
-                const auto transform = node->GetTransform2D();
+                auto& transform = node->Transform();
 
 				{
 #ifdef PFN_DOUBLE_PRECISION
 
-                    Vector2d position = transform->position;
-
-					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &position, 2, 0.1f))
+					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &transform.position, 2, 0.1f))
 					{
-                        node->transform_2d()->position = position;
-
 						mSceneChanged = true;
 					}
 
 #else
 
-                    Vector2f position = transform->position;
-
-					if (ImGui::DragFloat2("Position", reinterpret_cast<float*>(&position), 0.1f))
+					if (ImGui::DragFloat2("Position", reinterpret_cast<float*>(&transform.position), 0.1f))
 					{
-                        node->GetTransform2D()->position = position;
-
 						mSceneChanged = true;
 					}
 
@@ -232,23 +225,15 @@ namespace puffin
 				}
 
 				{
-                    float rotation = transform->rotation;
-
-					if (ImGui::DragFloat("Rotation", &rotation, 0.1f, -180.0f, 180.0f))
+					if (ImGui::DragFloat("Rotation", &transform.rotation, 0.1f, -180.0f, 180.0f))
 					{
-                        node->GetTransform2D()->rotation = rotation;
-
 						mSceneChanged = true;
 					}
 				}
 
 				{
-                    Vector2f scale = transform->scale;
-
-					if (ImGui::DragFloat2("Scale", reinterpret_cast<float*>(&scale), 0.1f))
+					if (ImGui::DragFloat2("Scale", reinterpret_cast<float*>(&transform.scale), 0.1f))
 					{
-                        node->GetTransform2D()->scale = scale;
-
 						mSceneChanged = true;
 					}
 				}
@@ -257,19 +242,16 @@ namespace puffin
 			}
 		}
 
-		void UIWindowNodeEditor::DrawTransformUI3DNode(ImGuiTreeNodeFlags flags, Node* node)
+		void UIWindowNodeEditor::DrawTransformUI3DNode(ImGuiTreeNodeFlags flags, TransformNode3D* node)
 		{
 			if (ImGui::TreeNodeEx("Transform", flags))
 			{
-				auto node_3d = static_cast<TransformNode3D*>(node);
-                auto transform = node->GetTransform3D();
+                auto& transform = node->Transform();
 
 				{
 #ifdef PFN_USE_DOUBLE_PRECISION
 
-					Vector3d position = transform.position;
-
-					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &position, 3, 0.1f))
+					if (ImGui::DragScalarN("Position", ImGuiDataType_Double, &transform.position, 3, 0.1f))
 					{
 						node->transform_3d().position = position;
 
@@ -278,12 +260,8 @@ namespace puffin
 
 #else
 
-                    Vector3f position = transform->position;
-
-					if (ImGui::DragFloat3("Position", reinterpret_cast<float*>(&position), 0.1f))
+					if (ImGui::DragFloat3("Position", reinterpret_cast<float*>(&transform.position), 0.1f))
 					{
-                        node->GetTransform3D()->position = position;
-
 						mSceneChanged = true;
 					}
 
@@ -291,23 +269,19 @@ namespace puffin
 				}
 
 				{
-					auto euler_angles = transform->orientationEulerAngles;
+					auto eulerAngles = transform.orientationEulerAngles;
 
-					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&euler_angles), 0.2f, 0, 0, "%.3f"))
+					if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&eulerAngles), 0.2f, 0, 0, "%.3f"))
 					{
-						UpdateTransformOrientation(*node->GetTransform3D(), euler_angles);
+						UpdateTransformOrientation(transform, eulerAngles);
 
 						mSceneChanged = true;
 					}
 				}
 
 				{
-                    Vector3f scale = transform->scale;
-
-					if (ImGui::DragFloat3("Scale", reinterpret_cast<float*>(&scale), 0.1f))
+					if (ImGui::DragFloat3("Scale", reinterpret_cast<float*>(&transform.scale), 0.1f))
 					{
-                        node->GetTransform3D()->scale = scale;
-
 						mSceneChanged = true;
 					}
 				}

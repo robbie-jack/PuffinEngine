@@ -3,7 +3,7 @@
 #include "puffin/core/engine.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/components/transformcomponent2d.h"
-#include "puffin/scene/scenegraph.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 
 namespace puffin::core
 {
@@ -36,80 +36,80 @@ namespace puffin
 		return mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->GetNodeGlobalTransform2D(mNodeID);
 	}
 
-	TransformComponent2D& TransformNode2D::GlobalTransform()
+	/*TransformComponent2D& TransformNode2D::GlobalTransform()
 	{
 
-	}
+	}*/
 
 #ifdef PFN_DOUBLE_PRECISION
 	const Vector2d& TransformNode2D::GetPosition() const
 	{
-		return Transform2D()->position;
+		return GetTransform().position;
 	}
 
 	Vector2d& TransformNode2D::Position()
 	{
-		return transform_2d()->position;
+		return Transform().position;
 	}
 
 	void TransformNode2D::SetPosition(const Vector2d& position)
 	{
-		m_registry->patch<TransformComponent2D>(m_entity, [&position](auto& transform) { transform.position = position; });
+		mRegistry->patch<TransformComponent2D>(mEntity, [&position](auto& transform) { transform.position = position; });
 
-		m_transform_changed = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 #else
 	
 
 	const Vector2f& TransformNode2D::GetPosition() const
 	{
-		return GetTransform2D()->position;
+		return GetTransform().position;
 	}
 
 	Vector2f& TransformNode2D::Position()
 	{
-		return GetTransform2D()->position;
+		return Transform().position;
 	}
 
 	void TransformNode2D::SetPosition(const Vector2f& position)
 	{
 		mRegistry->patch<TransformComponent2D>(mEntity, [&position](auto& transform) { transform.position = position; });
 
-		mTransformChanged = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 #endif
 
 	const float& TransformNode2D::GetRotation() const
 	{
-		return GetTransform2D()->rotation;
+		return GetTransform().rotation;
 	}
 
 	float& TransformNode2D::Rotation()
 	{
-		return GetTransform2D()->rotation;
+		return Transform().rotation;
 	}
 
 	void TransformNode2D::SetRotation(const float& rotation)
 	{
 		mRegistry->patch<TransformComponent2D>(mEntity, [&rotation](auto& transform) { transform.rotation = rotation; });
 
-		mTransformChanged = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 
 	const Vector2f& TransformNode2D::GetScale() const
 	{
-		return GetTransform2D()->scale;
+		return GetTransform().scale;
 	}
 
 	Vector2f& TransformNode2D::Scale()
 	{
-		return GetTransform2D()->scale;
+		return Transform().scale;
 	}
 
 	void TransformNode2D::SetScale(const Vector2f& scale)
 	{
 		mRegistry->patch<TransformComponent2D>(mEntity, [&scale](auto& transform) { transform.scale = scale; });
 
-		mTransformChanged = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 }

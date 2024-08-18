@@ -13,6 +13,9 @@ namespace ImGui
 
 namespace puffin
 {
+	class TransformNode3D;
+	class TransformNode2D;
+
 	namespace scene
 	{
 		class SceneGraphSubsystem;
@@ -125,8 +128,8 @@ namespace puffin::ui
 
 		std::vector<IComponentHandler*> mComponentHandlers;
 
-		void DrawTransformUI2DNode(ImGuiTreeNodeFlags flags, Node* node);
-		void DrawTransformUI3DNode(ImGuiTreeNodeFlags flags, Node* node);
+		void DrawTransformUI2DNode(ImGuiTreeNodeFlags flags, TransformNode2D* node);
+		void DrawTransformUI3DNode(ImGuiTreeNodeFlags flags, TransformNode3D* node);
 
 		void DrawMeshUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::StaticMeshComponent3D& mesh);
 		void DrawLightUI(ImGuiTreeNodeFlags flags, entt::entity entity, rendering::LightComponent3D& light);

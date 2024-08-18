@@ -59,13 +59,16 @@ namespace puffin
 		[[nodiscard]] const std::string& GetName() const;
 		void SetName(const std::string& name);
 
+		/*
+		 * Queues node to be destroyed, will also destroy all child nodes
+		 */
 		void QueueDestroy() const;
 
 		[[nodiscard]] Node* GetParent() const;
 		[[nodiscard]] Node* GetChild(UUID id) const;
 		void Reparent(const UUID& id);
 		void GetChildren(std::vector<Node*>& children) const;
-		void GetChildIDs(std::vector<UUID>& childIds) const;
+		void GetChildIDs(std::vector<UUID>& childIDs) const;
 
 		void RemoveChild(UUID id);
 

@@ -44,12 +44,14 @@
 #include "puffin/rendering/camerasubsystem.h"
 #include "puffin/rendering/materialglobals.h"
 #include "puffin/window/windowsubsystem.h"
-#include "puffin/scene/scenegraph.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/editor/ui/editoruisubsystem.h"
 #include "puffin/rendering/vulkan/resourcemanagervk.h"
 #include "puffin/rendering/vulkan/materialregistryvk.h"
 #include "puffin/rendering/vulkan/unifiedgeometrybuffervk.h"
 #include "puffin/editor/ui/windows/uiwindowviewport.h"
+#include "puffin/nodes/transformnode2d.h"
+#include "puffin/nodes/transformnode3d.h"
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/renderhelpers.h"
 
@@ -1493,42 +1495,14 @@ namespace puffin::rendering
 				{
 					const auto entityID = objectsToRefresh[objectIdx];
 					const auto entity = enttSubsystem->get_entity(entityID);
-					const auto node = sceneGraph->GetNode(entityID);
+					auto* node = sceneGraph->GetNode(entityID);
 
-                    TransformComponent3D tempTransform;
+                    TransformComponent3D& transform = registry->get<TransformComponent3D>(entity);
 
-					// Convert 2D transform to 3D for rendering
-					if (registry->any_of<TransformComponent2D>(entity))
+					if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
 					{
-                        TransformComponent2D* transform;
-
-						if (node)
-							transform = node->GetGlobalTransform2D();
-						else
-                            transform = &registry->get<TransformComponent2D>(entity);
-
-                        tempTransform.position.x = transform->position.x;
-                        tempTransform.position.y = transform->position.y;
-						tempTransform.position.z = 0.0;
-
-                        tempTransform.orientationQuat = angleAxis(glm::radians(transform->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-
-                        tempTransform.scale.x = transform->scale.x;
-                        tempTransform.scale.y = transform->scale.y;
-						tempTransform.scale.z = 1.0f;
+						transform = transformNode3D->GetGlobalTransform();
 					}
-					else
-					{
-						if (node)
-						{
-                            tempTransform = *node->GetGlobalTransform3D();
-						}
-						else
-						{
-							tempTransform = registry->get<TransformComponent3D>(entity);
-						}
-					}
-
 					
 					const auto& mesh = registry->get<StaticMeshComponent3D>(entity);
 
@@ -1538,39 +1512,26 @@ namespace puffin::rendering
 					Vector3f position = { 0.0f };
 #endif
 
-					if (registry->any_of<physics::VelocityComponent2D, physics::VelocityComponent3D>(entity))
+					if (registry->any_of<physics::VelocityComponent3D>(entity))
 					{
-                        physics::VelocityComponent3D velocity = physics::VelocityComponent3D();
-
-						if (registry->any_of<physics::VelocityComponent2D>(entity))
-						{
-							const auto& velocity2D = registry->get<physics::VelocityComponent2D>(entity);
-
-							velocity.linear.x = velocity2D.linear.x;
-							velocity.linear.y = velocity2D.linear.y;
-							velocity.angular.z = velocity2D.angular;
-						}
-						else
-						{
-							velocity = registry->get<physics::VelocityComponent3D>(entity);
-						}
+                        const auto& velocity = registry->get<physics::VelocityComponent3D>(entity);;
 
 #ifdef PFN_DOUBLE_PRECISION
 						Vector3d interpolatedPosition = tempTransform.position + velocity.linear * mEngine->timeStepFixed();
 #else
-						Vector3f interpolatedPosition = tempTransform.position + velocity.linear * mEngine->GetTimeStepFixed();
+						Vector3f interpolatedPosition = transform.position + velocity.linear * mEngine->GetTimeStepFixed();
 #endif
 
-						position = maths::lerp(tempTransform.position, interpolatedPosition, t);
+						position = maths::lerp(transform.position, interpolatedPosition, t);
 					}
 					else
 					{
-						position = tempTransform.position;
+						position = transform.position;
 					}
 
 					GPUObjectData object = {};
 
-					BuildModelTransform(position, tempTransform.orientationQuat, tempTransform.scale, object.model);
+					BuildModelTransform(position, transform.orientationQuat, transform.scale, object.model);
 					object.mat_idx = mMaterialRegistry->get_material_data(mesh.materialID).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);

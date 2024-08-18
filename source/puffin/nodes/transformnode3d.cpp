@@ -2,6 +2,7 @@
 
 #include "puffin/components/transformcomponent3d.h"
 #include "puffin/ecs/enttsubsystem.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 
 namespace puffin
 {
@@ -12,127 +13,113 @@ namespace puffin
 		AddComponent<TransformComponent3D>();
 	}
 
-	void TransformNode3D::BeginPlay()
+	const TransformComponent3D& TransformNode3D::GetTransform() const
 	{
-		Node::BeginPlay();
+		return GetComponent<TransformComponent3D>();
 	}
 
-	void TransformNode3D::Update(const double delta_time)
+	TransformComponent3D& TransformNode3D::Transform()
 	{
-		Node::Update(delta_time);
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
+
+		return GetComponent<TransformComponent3D>();
 	}
 
-	void TransformNode3D::FixedUpdate(const double delta_time)
+	const TransformComponent3D& TransformNode3D::GetGlobalTransform() const
 	{
-		Node::FixedUpdate(delta_time);
+		return mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->GetNodeGlobalTransform3D(mNodeID);
 	}
 
-	void TransformNode3D::EndPlay()
+	/*TransformComponent3D& TransformNode3D::GlobalTransform()
 	{
-		Node::EndPlay();
-	}
+		
+	}*/
 
-	bool TransformNode3D::HasTransform3D() const
-	{
-		return true;
-	}
-
-	const TransformComponent3D* TransformNode3D::GetTransform3D() const
-	{
-		return &GetComponent<TransformComponent3D>();
-	}
-
-	TransformComponent3D* TransformNode3D::GetTransform3D()
-	{
-		mTransformChanged = true;
-
-		return &GetComponent<TransformComponent3D>();
-	}
 
 #ifdef PFN_DOUBLE_PRECISION
 	const Vector3d& TransformNode3D::position() const
 	{
-		return transform_3d()->position;
+		return GetTransform().position;
 	}
 
 	Vector3d& TransformNode3D::position()
 	{
-		return transform_3d()->position;
+		return Transform().position;
 	}
 
 	void TransformNode3D::set_position(const Vector3d& position)
 	{
-		m_registry->patch<TransformComponent3D>(m_entity, [&position](auto& transform) { transform.position = position; });
+		mRegistry->patch<TransformComponent3D>(mEntity, [&position](auto& transform) { transform.position = position; });
 
-		m_transform_changed = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 #else
-	const Vector3f& TransformNode3D::position() const
+	const Vector3f& TransformNode3D::GetPosition() const
 	{
-		return GetTransform3D()->position;
+		return GetTransform().position;
 	}
 
-	Vector3f& TransformNode3D::position()
+	Vector3f& TransformNode3D::Position()
 	{
-		return GetTransform3D()->position;
+		return Transform().position;
 	}
 
-	void TransformNode3D::set_position(const Vector3f& position)
+	void TransformNode3D::SetPosition(const Vector3f& position)
 	{
 		mRegistry->patch<TransformComponent3D>(mEntity, [&position](auto& transform) { transform.position = position; });
 
-		mTransformChanged = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 #endif
 
-	const maths::Quat& TransformNode3D::orientation() const
+	const maths::Quat& TransformNode3D::GetOrientationQuat() const
 	{
-		return GetTransform3D()->orientationQuat;
+		return GetTransform().orientationQuat;
 	}
 
-	maths::Quat& TransformNode3D::orientation()
+	maths::Quat& TransformNode3D::OrientationQuat()
 	{
-		return GetTransform3D()->orientationQuat;
+		return Transform().orientationQuat;
 	}
 
-	void TransformNode3D::set_orientation(const maths::Quat& orientation)
+	void TransformNode3D::SetOrientationQuat(const maths::Quat& orientation)
 	{
 		mRegistry->patch<TransformComponent3D>(mEntity, [&orientation](auto& transform) { transform.orientationQuat = orientation; });
 
-		mTransformChanged = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 
-	const maths::EulerAngles& TransformNode3D::euler_angles() const
+	const maths::EulerAngles& TransformNode3D::GetOrientationEulerAngles() const
 	{
-		return GetTransform3D()->orientationEulerAngles;
+		return GetTransform().orientationEulerAngles;
 	}
 
-	maths::EulerAngles& TransformNode3D::euler_angles()
+	maths::EulerAngles& TransformNode3D::OrientationEulerAngles()
 	{
-		return GetTransform3D()->orientationEulerAngles;
+		return Transform().orientationEulerAngles;
 	}
 
-	void TransformNode3D::set_euler_angles(const maths::EulerAngles& eulerAngles)
+	void TransformNode3D::SetOrientationEulerAngles(const maths::EulerAngles& eulerAngles)
 	{
 		mRegistry->patch<TransformComponent3D>(mEntity, [&eulerAngles](auto& transform) { transform.orientationEulerAngles = eulerAngles; });
 
-		mTransformChanged = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 
-	const Vector3f& TransformNode3D::scale() const
+	const Vector3f& TransformNode3D::SetScale() const
 	{
-		return GetTransform3D()->scale;
+		return GetTransform().scale;
 	}
 
-	Vector3f& TransformNode3D::scale()
+	Vector3f& TransformNode3D::Scale()
 	{
-		return GetTransform3D()->scale;
+		return Transform().scale;
 	}
 
-	void TransformNode3D::set_scale(const Vector3f& scale)
+	void TransformNode3D::SetScale(const Vector3f& scale)
 	{
 		mRegistry->patch<TransformComponent3D>(mEntity, [&scale](auto& transform) { transform.scale = scale; });
 
-		mTransformChanged = true;
+		mEngine->GetSubsystem<scene::SceneGraphSubsystem>()->NotifyTransformChanged(mNodeID);
 	}
 }
