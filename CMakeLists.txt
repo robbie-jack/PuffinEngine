@@ -225,13 +225,14 @@ set(HEADERS
 	${HEADER_DIR}/puffin/types/deletionqueue.h
 	${HEADER_DIR}/puffin/types/eulerangles.h
 	${HEADER_DIR}/puffin/types/matrix.h
-	${HEADER_DIR}/puffin/types/packedarray.h
-	${HEADER_DIR}/puffin/types/packedvector.h
 	${HEADER_DIR}/puffin/types/quat.h
-	${HEADER_DIR}/puffin/types/ringbuffer.h
 	${HEADER_DIR}/puffin/types/uuid.h
 	${HEADER_DIR}/puffin/types/vector.h
 	${HEADER_DIR}/puffin/types/vertex.h
+	# Types - Storage
+	${HEADER_DIR}/puffin/types/storage/mappedarray.h
+	${HEADER_DIR}/puffin/types/storage/mappedvector.h
+	${HEADER_DIR}/puffin/types/storage/ringbuffer.h
 	# Utility
 	${HEADER_DIR}/puffin/utility/performancebenchmarksubsystem.h
 	# Window
@@ -323,6 +324,9 @@ set(SOURCES
 	# Scripting
 	${SOURCE_DIR}/puffin/scripting/angelscript/angelscriptsubsystem.cpp
 	${SOURCE_DIR}/puffin/scripting/angelscript/angelscriptengineinterface.cpp
+	# Types
+	${SOURCE_DIR}/puffin/types/deletionqueue.cpp
+	# Types - Storage
 	# UI
 	# Utility
 	${SOURCE_DIR}/puffin/utility/performancebenchmarksubsystem.cpp

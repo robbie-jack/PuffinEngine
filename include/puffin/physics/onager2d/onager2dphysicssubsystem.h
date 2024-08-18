@@ -78,10 +78,10 @@ namespace puffin::physics
 
 		Vector2f mGravity = Vector2f(0.0f, -9.81f); // Global Gravity value which gets applied to dynamic objects each physics step
 
-        PackedVector<puffin::PuffinID, Shape2D*> mShapes;
-        PackedVector<puffin::PuffinID, BoxShape2D> mBoxShapes;
-        PackedVector<puffin::PuffinID, CircleShape2D> mCircleShapes;
-        PackedVector<puffin::PuffinID, std::shared_ptr<collision2D::Collider2D>> mColliders;
+        MappedVector<puffin::PuffinID, Shape2D*> mShapes;
+        MappedVector<puffin::PuffinID, BoxShape2D> mBoxShapes;
+        MappedVector<puffin::PuffinID, CircleShape2D> mCircleShapes;
+        MappedVector<puffin::PuffinID, std::shared_ptr<collision2D::Collider2D>> mColliders;
 
 		bool mCollidersUpdated = false;
 

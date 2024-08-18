@@ -5,20 +5,20 @@
 #include "puffin/physics/onager2d/physicshelpers2d.h"
 #include "puffin/physics/onager2d/broadphases/broadphase2d.h"
 #include "puffin/physics/onager2d/colliders/collider2d.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedvector.h"
 
 void puffin::physics::SpatialHashBroadphase2D::generateCollisionPairs(
-	PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
+	MappedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& inColliders, std::vector<CollisionPair>& outCollisionPairs,
 	bool collidersUpdated)
 {
 	outCollisionPairs.clear();
-	outCollisionPairs.reserve(inColliders.size() * inColliders.size());
+	outCollisionPairs.reserve(inColliders.Size() * inColliders.Size());
 
 	updateSpatialMap(inColliders);
 
 	// Generate Collision Pairs
 	outCollisionPairs.clear();
-	outCollisionPairs.reserve(inColliders.size() * inColliders.size());
+	outCollisionPairs.reserve(inColliders.Size() * inColliders.Size());
 
 	for (const auto& colliderA : inColliders)
 	{
@@ -72,7 +72,7 @@ void puffin::physics::SpatialHashBroadphase2D::getHashIDsForCollider(
 	}
 }
 
-void puffin::physics::SpatialHashBroadphase2D::updateSpatialMap(PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& colliders)
+void puffin::physics::SpatialHashBroadphase2D::updateSpatialMap(MappedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& colliders)
 {
 	mColliderSpatialMap.clear();
 

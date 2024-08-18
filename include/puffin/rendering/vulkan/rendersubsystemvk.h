@@ -21,9 +21,9 @@
 #include "puffin/rendering/vulkan/pipelinevk.h"
 #include "puffin/rendering/vulkan/typesvk.h"
 #include "puffin/types/deletionqueue.h"
-#include "puffin/types/packedarray.h"
-#include "puffin/types/packedvector.h"
-#include "puffin/types/ringbuffer.h"
+#include "puffin/types/storage/mappedarray.h"
+#include "puffin/types/storage/mappedvector.h"
+#include "puffin/types/storage/ringbuffer.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
@@ -247,7 +247,7 @@ namespace puffin::rendering
 		bool LoadTexture(UUID texId, TextureDataVK& texData);
 		void UnloadTexture(TextureDataVK& texData) const;
 
-		void BuildTextureDescriptorInfo(PackedVector<UUID, TextureDataVK>& textureData,
+		void BuildTextureDescriptorInfo(MappedVector<UUID, TextureDataVK>& textureData,
 		                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 		void BuildShadowDescriptorInfo(std::vector<vk::DescriptorImageInfo>& shadowImageInfos);
 
@@ -306,17 +306,17 @@ namespace puffin::rendering
 		std::unordered_set<UUID> mMeshesToLoad; // Meshes that need to be loaded
 		std::unordered_set<UUID> mTexturesToLoad; // Textures that need to be loaded
 
-		PackedVector<UUID, TextureDataVK> mTexData;
+		MappedVector<UUID, TextureDataVK> mTexData;
 
 		std::vector<MeshRenderable> mRenderables; // Renderables data
 		bool mUpdateRenderables = false;
 
 		std::vector<MeshDrawBatch> mDrawBatches;
 
-		PackedVector<UUID, GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
+		MappedVector<UUID, GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
 		std::unordered_set<UUID> mObjectsToRefresh; // Objects which need their mesh data refreshed
 
-		//PackedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
+		//MappedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
 		RingBuffer<ShadowConstructEvent> mShadowConstructEvents;
 		RingBuffer<ShadowUpdateEvent> mShadowUpdateEvents;

@@ -8,8 +8,8 @@
 #include "puffin/core/subsystem.h"
 #include "puffin/nodes/node.h"
 #include "puffin/types/uuid.h"
-#include "puffin/types/packedarray.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedarray.h"
+#include "puffin/types/storage/mappedvector.h"
 
 namespace puffin
 {
@@ -65,7 +65,7 @@ namespace puffin::scene
 			if (id == gInvalidID)
 				id = GenerateId();
 
-			mVector.emplace(id, mFactory.Create(engine, id));
+			mVector.Emplace(id, mFactory.Create(engine, id));
 
 			return &mVector[id];
 		}
@@ -77,7 +77,7 @@ namespace puffin::scene
 
 		T* GetNode(UUID id)
 		{
-			return &mVector.at(id);
+			return &mVector.At(id);
 		}
 
 		Node* GetNodePtr(UUID id) override
@@ -90,22 +90,22 @@ namespace puffin::scene
 
 		void RemoveNode(UUID id) override
 		{
-			mVector.erase(id);
+			mVector.Erase(id);
 		}
 
 		bool IsValid(UUID id) override
 		{
-			return mVector.contains(id);
+			return mVector.Contains(id);
 		}
 
 		void Clear() override
 		{
-			mVector.clear();
+			mVector.Clear();
 		}
 
 	private:
 
-		PackedVector<UUID, T> mVector;
+		MappedVector<UUID, T> mVector;
 		NodeFactory<T> mFactory;
 
 	};
@@ -291,8 +291,8 @@ namespace puffin::scene
 		std::set<UUID> mNodeTransformsAlreadyUpdated; // Set of nodes which have already had their transforms updated this frame
 		std::set<UUID> mNodesToDestroy;
 
-		PackedVector<UUID, TransformComponent2D> mGlobalTransform2Ds;
-		PackedVector<UUID, TransformComponent3D> mGlobalTransform3Ds;
+		MappedVector<UUID, TransformComponent2D> mGlobalTransform2Ds;
+		MappedVector<UUID, TransformComponent3D> mGlobalTransform3Ds;
 
 		bool mSceneGraphUpdated = false;
 

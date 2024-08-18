@@ -15,7 +15,7 @@ namespace puffin::rendering
 
 	ResourceManagerVK::~ResourceManagerVK()
 	{
-		if (mImages.size() > 0)
+		if (mImages.Size() > 0)
 		{
 			for (auto& images : mImages)
 			{
@@ -26,7 +26,7 @@ namespace puffin::rendering
 				}
 			}
 
-			mImages.clear();
+			mImages.Clear();
 		}
 
 		mRenderSystem = nullptr;
@@ -41,8 +41,8 @@ namespace puffin::rendering
 	{
 		ResourceID id = GenerateId();
 
-		mImages.emplace(id, std::vector<AllocatedImage>());
-		mImages.at(id).resize(imageCount);
+		mImages.Emplace(id, std::vector<AllocatedImage>());
+		mImages.At(id).resize(imageCount);
 
 		for (int i = 0; i < imageCount; ++i)
 		{
@@ -54,22 +54,22 @@ namespace puffin::rendering
 
 	void ResourceManagerVK::DestroyImages(ResourceID id)
 	{
-		if (mImages.contains(id))
+		if (mImages.Contains(id))
 		{
-			for (int i = 0; i < mImages.at(id).size(); ++i)
+			for (int i = 0; i < mImages.At(id).size(); ++i)
 			{
 				DestroyImageInternal(id, i);
 			}
 
-			mImages.erase(id);
+			mImages.Erase(id);
 		}
 	}
 
 	void ResourceManagerVK::UpdateImage(ResourceID id, const ImageDesc& imageDesc, uint8_t imageIdx)
 	{
-		assert(mImages.contains(id) && "ResourceManagerVK::UpdateImage - Atempting to get image with invalid resource id");
+		assert(mImages.Contains(id) && "ResourceManagerVK::UpdateImage - Atempting to get image with invalid resource id");
 
-		if (mImages.contains(id))
+		if (mImages.Contains(id))
 		{
 			UpdateImageInternal(id, imageDesc, imageIdx);
 		}
@@ -77,11 +77,11 @@ namespace puffin::rendering
 
 	void ResourceManagerVK::UpdateImages(ResourceID id, const ImageDesc& imageDesc)
 	{
-		assert(mImages.contains(id) && "ResourceManagerVK::UpdateImage - Atempting to get image with invalid resource id");
+		assert(mImages.Contains(id) && "ResourceManagerVK::UpdateImage - Atempting to get image with invalid resource id");
 
-		if (mImages.contains(id))
+		if (mImages.Contains(id))
 		{
-			for (int i = 0; i < mImages.at(id).size(); ++i)
+			for (int i = 0; i < mImages.At(id).size(); ++i)
 			{
 				UpdateImageInternal(id, imageDesc, i);
 			}
@@ -90,31 +90,31 @@ namespace puffin::rendering
 
 	AllocatedImage& ResourceManagerVK::GetImage(ResourceID id, uint8_t idx)
 	{
-		assert(mImages.contains(id) && "ResourceManagerVK::GetImage - Atempting to get image with invalid resource id");
+		assert(mImages.Contains(id) && "ResourceManagerVK::GetImage - Atempting to get image with invalid resource id");
 
-		if (mImages.at(id).size() == 1)
+		if (mImages.At(id).size() == 1)
 		{
-			return mImages.at(id)[0];
+			return mImages.At(id)[0];
 		}
 
-		return mImages.at(id)[idx];
+		return mImages.At(id)[idx];
 	}
 
 	bool ResourceManagerVK::IsImageValid(ResourceID id) const
 	{
-		return mImages.contains(id);
+		return mImages.Contains(id);
 	}
 
 	bool ResourceManagerVK::IsImageValid(ResourceID id, uint8_t idx) const
 	{
-		return mImages.at(id).size() > idx;
+		return mImages.At(id).size() > idx;
 	}
 
 	size_t ResourceManagerVK::GetImageCount(ResourceID id) const
 	{
-		assert(mImages.contains(id) && "ResourceManagerVK::GetImageCount - Atempting to get image with invalid resource id");
+		assert(mImages.Contains(id) && "ResourceManagerVK::GetImageCount - Atempting to get image with invalid resource id");
 
-		return mImages.at(id).size();
+		return mImages.At(id).size();
 	}
 
 	UnifiedGeometryBuffer* ResourceManagerVK::GeometryBuffer() const
@@ -132,17 +132,17 @@ namespace puffin::rendering
 
 		if (imageDesc.imageType == ImageType::Color)
 		{
-			mImages.at(id)[idx] = util::CreateColorImage(mRenderSystem, params);
+			mImages.At(id)[idx] = util::CreateColorImage(mRenderSystem, params);
 		}
 		else
 		{
-			mImages.at(id)[idx] = util::CreateDepthImage(mRenderSystem, params);
+			mImages.At(id)[idx] = util::CreateDepthImage(mRenderSystem, params);
 		}
 	}
 
 	void ResourceManagerVK::DestroyImageInternal(ResourceID id, uint8_t idx)
 	{
-		const auto& allocImage = mImages.at(id)[idx];
+		const auto& allocImage = mImages.At(id)[idx];
 
 		mRenderSystem->GetDevice().destroyImageView(allocImage.imageView);
 		mRenderSystem->GetAllocator().destroyImage(allocImage.image, allocImage.allocation);

@@ -24,7 +24,7 @@
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/physics/bodytype.h"
 #include "puffin/physics/physicsconstants.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedvector.h"
 
 namespace puffin
 {
@@ -98,8 +98,8 @@ namespace puffin::physics
 		JoltObjectLayerPairFilterImpl mObjectVsObjectLayerFilter;
 		JoltObjectVsBroadPhaseLayerFilterImpl mObjectVsBroadphaseLayerFilter;
 
-		PackedVector<UUID, JPH::ShapeRefC> mShapeRefs;
-		PackedVector<UUID, JPH::Body*> mBodies;
+		MappedVector<UUID, JPH::ShapeRefC> mShapeRefs;
+		MappedVector<UUID, JPH::Body*> mBodies;
 
 		std::vector<UUID> mBoxesToInit;
 		std::vector<UUID> mSpheresToInit;

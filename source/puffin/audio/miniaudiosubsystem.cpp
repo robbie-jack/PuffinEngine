@@ -44,7 +44,7 @@ namespace puffin::audio
 			ma_sound_uninit(&sound);
 		}
 
-		mSounds.clear();
+		mSounds.Clear();
 
 		if (mSoundEngine)
 		{
@@ -67,7 +67,7 @@ namespace puffin::audio
 
 	bool MiniAudioSubsystem::CreateSoundInstance(UUID soundAssetID, UUID soundInstanceID)
 	{
-		if (mSounds.contains(soundInstanceID))
+		if (mSounds.Contains(soundInstanceID))
 		{
 			return true;
 		}
@@ -75,7 +75,7 @@ namespace puffin::audio
 		auto soundAsset = assets::AssetRegistry::Get()->GetAsset<assets::SoundAsset>(soundAssetID);
 		auto soundPath = (assets::AssetRegistry::Get()->GetContentRoot() / soundAsset->GetRelativePath()).string();
 
-		mSounds.emplace(soundInstanceID, ma_sound());
+		mSounds.Emplace(soundInstanceID, ma_sound());
 
 		ma_result result;
 		result = ma_sound_init_from_file(mSoundEngine, soundPath.c_str(), 0, nullptr, nullptr, &mSounds[soundInstanceID]);
@@ -90,18 +90,18 @@ namespace puffin::audio
 
 	void MiniAudioSubsystem::DestroySoundInstance(UUID soundInstanceID)
 	{
-		if (!mSounds.contains(soundInstanceID))
+		if (!mSounds.Contains(soundInstanceID))
 		{
 			return;
 		}
 
 		ma_sound_uninit(&mSounds[soundInstanceID]);
-		mSounds.erase(soundInstanceID);
+		mSounds.Erase(soundInstanceID);
 	}
 
 	bool MiniAudioSubsystem::StartSoundInstance(UUID soundInstanceID, bool restart)
 	{
-		if (mSounds.contains(soundInstanceID))
+		if (mSounds.Contains(soundInstanceID))
 		{
 			std::cout << "Sound instance was not initialized: " << soundInstanceID << std::endl;
 			return false;
@@ -130,7 +130,7 @@ namespace puffin::audio
 
 	bool MiniAudioSubsystem::StopSoundInstance(UUID soundInstanceID)
 	{
-		if (mSounds.contains(soundInstanceID))
+		if (mSounds.Contains(soundInstanceID))
 		{
 			std::cout << "Sound instance was not initialized: " << soundInstanceID << std::endl;
 			return false;

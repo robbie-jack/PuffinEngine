@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "puffin/rendering/vulkan/typesvk.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedvector.h"
 #include "puffin/types/uuid.h"
 #include "puffin/rendering/resourceid.h"
 
@@ -52,7 +52,7 @@ namespace puffin::rendering
 		RenderSubsystemVK* mRenderSystem = nullptr;
 		UnifiedGeometryBuffer* mUnifiedGeometryBuffer = nullptr;
 
-		PackedVector<ResourceID, std::vector<AllocatedImage>> mImages;
+		MappedVector<ResourceID, std::vector<AllocatedImage>> mImages;
 
 		
 

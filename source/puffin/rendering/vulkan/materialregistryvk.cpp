@@ -23,8 +23,8 @@ namespace puffin::rendering
 			mat.pipelineLayout = {};
 		}
 
-		mCachedMaterialData.clear();
-		mMatData.clear();
+		mCachedMaterialData.Clear();
+		mMatData.Clear();
 		mMats.clear();
 
 		mRenderSystem = nullptr;
@@ -47,11 +47,11 @@ namespace puffin::rendering
 		// Load Material Instances
 		for (const auto matInstID : mMaterialsInstancesToLoad)
 		{
-			if (matInstID != gInvalidID && !mMatData.contains(matInstID))
+			if (matInstID != gInvalidID && !mMatData.Contains(matInstID))
 			{
-				mMatData.emplace(matInstID, MaterialDataVK());
+				mMatData.Emplace(matInstID, MaterialDataVK());
 
-				LoadMaterialInstance(matInstID, mMatData.at(matInstID));
+				LoadMaterialInstance(matInstID, mMatData.At(matInstID));
 
 				mMaterialDataNeedsUploaded = true;
 			}
@@ -61,7 +61,7 @@ namespace puffin::rendering
 
 		if (mMaterialDataNeedsUploaded)
 		{
-			mMatData.sort();
+			mMatData.Sort();
 		}
 
 		// Load Materials
@@ -83,7 +83,7 @@ namespace puffin::rendering
 		return mMatData[id];
 	}
 
-	PackedVector<UUID, MaterialDataVK>& MaterialRegistryVK::GetAllMaterialData()
+	MappedVector<UUID, MaterialDataVK>& MaterialRegistryVK::GetAllMaterialData()
 	{
 		return mMatData;
 	}
@@ -124,7 +124,7 @@ namespace puffin::rendering
 				++i;
 			}
 
-			mCachedMaterialData.emplace(matID, matInstData);
+			mCachedMaterialData.Emplace(matID, matInstData);
 
 			for (const auto& texID : matData.texIDs)
 			{
@@ -149,7 +149,7 @@ namespace puffin::rendering
 
 	void MaterialRegistryVK::InitMaterialPipeline(UUID matID)
 	{
-		if (!mMatData.contains(matID))
+		if (!mMatData.Contains(matID))
 		{
 			if (const auto matAsset = assets::AssetRegistry::Get()->GetAsset<assets::MaterialAsset>(matID); matAsset && matAsset->Load())
 			{

@@ -44,7 +44,7 @@ namespace puffin::physics
 		//registry->on_update<SphereComponent3D>().connect<&JoltPhysicsSystem::onConstructSphere>(this);
 		registry->on_destroy<SphereComponent3D>().connect<&JoltPhysicsSubsystem::OnDestroySphere>(this);
 
-		mShapeRefs.reserve(gMaxShapes);
+		mShapeRefs.Reserve(gMaxShapes);
 
 		UpdateTimeStep();
 	}
@@ -84,8 +84,8 @@ namespace puffin::physics
 
 	void JoltPhysicsSubsystem::EndPlay()
 	{
-		mBodies.clear();
-		mShapeRefs.clear();
+		mBodies.Clear();
+		mShapeRefs.Clear();
 
 		mBodiesToAdd.clear();
 		mBodiesToInit.clear();
@@ -229,7 +229,7 @@ namespace puffin::physics
 				const auto& transform = registry->get<const TransformComponent3D>(entity);
 				const auto& rb = registry->get<const RigidbodyComponent3D>(entity);
 
-				if (mShapeRefs.contains(id))
+				if (mShapeRefs.Contains(id))
 				{
 					InitRigidbody(id, transform, rb);
 				}
@@ -272,7 +272,7 @@ namespace puffin::physics
 				return;
 			}
 
-			mShapeRefs.emplace(id, result.Get());
+			mShapeRefs.Emplace(id, result.Get());
 		}
 	}
 
@@ -288,7 +288,7 @@ namespace puffin::physics
 	void JoltPhysicsSubsystem::InitRigidbody(UUID id, const TransformComponent3D& transform,
 		const RigidbodyComponent3D& rb)
 	{
-		if (mJoltPhysicsSystem && mShapeRefs.contains(id))
+		if (mJoltPhysicsSystem && mShapeRefs.Contains(id))
 		{
 			JPH::BodyInterface& bodyInterface = mJoltPhysicsSystem->GetBodyInterface();
 
@@ -318,7 +318,7 @@ namespace puffin::physics
 
 			bodySettings.mFriction = 0.0f;
 
-			mBodies.emplace(id, bodyInterface.CreateBody(bodySettings));
+			mBodies.Emplace(id, bodyInterface.CreateBody(bodySettings));
 
 			mBodiesToAdd.push_back(id);
 		}

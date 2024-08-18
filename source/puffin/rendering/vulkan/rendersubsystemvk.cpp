@@ -148,7 +148,7 @@ namespace puffin::rendering
 		}
 
 		mRenderables.reserve(gMaxObjects);
-		mCachedObjectData.reserve(gMaxObjects);
+		mCachedObjectData.Reserve(gMaxObjects);
 
 		mResourceManager = std::make_unique<ResourceManagerVK>(this);
 		mMaterialRegistry = std::make_unique<MaterialRegistryVK>(this);
@@ -171,7 +171,7 @@ namespace puffin::rendering
 				UnloadTexture(texData);
 			}
 
-			mTexData.clear();
+			mTexData.Clear();
 
 			CleanSwapchain(mSwapchainData);
 
@@ -190,7 +190,7 @@ namespace puffin::rendering
 			mResourceManager = nullptr;
 			//m_material_registry = nullptr;
 
-			mDeletionQueue.flush();
+			mDeletionQueue.Flush();
 
 			mInitialized = false;
 		}
@@ -279,7 +279,7 @@ namespace puffin::rendering
 		imageDesc.height = shadow.height;
 		imageDesc.depth = 1;
 
-		mShadowConstructEvents.push({ entity, imageDesc });
+		mShadowConstructEvents.Push({ entity, imageDesc });
 	}
 
 	void RenderSubsystemVK::OnUpdateShadowCaster(entt::registry& registry, entt::entity entity)
@@ -295,7 +295,7 @@ namespace puffin::rendering
 		imageDesc.height = shadow.height;
 		imageDesc.depth = 1;
 
-		mShadowUpdateEvents.push({ entity, imageDesc });
+		mShadowUpdateEvents.Push({ entity, imageDesc });
 	}
 
 	void RenderSubsystemVK::OnDestroyShadowCaster(entt::registry& registry, entt::entity entity)
@@ -304,7 +304,7 @@ namespace puffin::rendering
 		const auto id = enttSubsystem->GetID(entity);
 		auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
-		mShadowDestroyEvents.push({ shadow.resourceID });
+		mShadowDestroyEvents.Push({ shadow.resourceID });
 
 		shadow.resourceID = gInvalidID;
 	}
@@ -427,7 +427,7 @@ namespace puffin::rendering
 			}
 		}
 
-		mDeletionQueue.pushFunction([=]()
+		mDeletionQueue.PushFunction([=]()
 		{
 			mAllocator.destroy();
 
@@ -532,7 +532,7 @@ namespace puffin::rendering
 			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mFrameRenderData[i].copyCommandBuffer));
 			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mFrameRenderData[i].imguiCommandBuffer));
 
-			mDeletionQueue.pushFunction([=]()
+			mDeletionQueue.PushFunction([=]()
 			{
 				mDevice.destroyCommandPool(mFrameRenderData[i].commandPool);
 			});
@@ -545,7 +545,7 @@ namespace puffin::rendering
 		commandBufferInfo = {mUploadContext.commandPool, vk::CommandBufferLevel::ePrimary, 1};
 		VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mUploadContext.commandBuffer));
 
-		mDeletionQueue.pushFunction([=]()
+		mDeletionQueue.PushFunction([=]()
 		{
 			mDevice.destroyCommandPool(mUploadContext.commandPool);
 		});
@@ -567,7 +567,7 @@ namespace puffin::rendering
 			VK_CHECK(mDevice.createSemaphore(&semaphoreCreateInfo, nullptr, &mFrameRenderData[i].presentSemaphore));
 			VK_CHECK(mDevice.createSemaphore(&semaphoreCreateInfo, nullptr, &mFrameRenderData[i].shadowSemaphore));
 
-			mDeletionQueue.pushFunction([=]()
+			mDeletionQueue.PushFunction([=]()
 			{
 				mDevice.destroyFence(mFrameRenderData[i].renderFence);
 				mDevice.destroyFence(mFrameRenderData[i].presentFence);
@@ -584,7 +584,7 @@ namespace puffin::rendering
 		fenceCreateInfo = vk::FenceCreateInfo{{}, nullptr};
 		VK_CHECK(mDevice.createFence(&fenceCreateInfo, nullptr, &mUploadContext.uploadFence));
 
-		mDeletionQueue.pushFunction([=]()
+		mDeletionQueue.PushFunction([=]()
 		{
 			mDevice.destroyFence(mUploadContext.uploadFence);
 		});
@@ -633,7 +633,7 @@ namespace puffin::rendering
 
 			// Object Buffers
 
-			mDeletionQueue.pushFunction([=]()
+			mDeletionQueue.PushFunction([=]()
 			{
 				mAllocator.destroyBuffer(mFrameRenderData[i].materialInstanceBuffer.buffer,
 					mFrameRenderData[i].materialInstanceBuffer.allocation);
@@ -682,7 +682,7 @@ namespace puffin::rendering
 
 		mGlobalRenderData.shadowmapSampler = mDevice.createSampler(shadowmapSamplerInfo);
 
-		mDeletionQueue.pushFunction([=]()
+		mDeletionQueue.PushFunction([=]()
 		{
 			mDevice.destroySampler(mGlobalRenderData.textureSampler, nullptr);
 			mDevice.destroySampler(mGlobalRenderData.shadowmapSampler, nullptr);
@@ -764,7 +764,7 @@ namespace puffin::rendering
 				.Build(mFrameRenderData[i].shadowmapDescriptor, mGlobalRenderData.shadowmapSetLayout);
 		}
 
-		mDeletionQueue.pushFunction([=]()
+		mDeletionQueue.PushFunction([=]()
 		{
 			mGlobalRenderData.descriptorLayoutCache = nullptr;
 			mGlobalRenderData.descriptorAllocator = nullptr;
@@ -826,7 +826,7 @@ namespace puffin::rendering
 		mDevice.destroyShaderModule(mForwardVertMod.Module());
 		mDevice.destroyShaderModule(mForwardFragMod.Module());
 
-		mDeletionQueue.pushFunction([=]()
+		mDeletionQueue.PushFunction([=]()
 		{
 			mDevice.destroyPipeline(mForwardPipeline.get());
 			mDevice.destroyPipelineLayout(mForwardPipelineLayout.get());
@@ -881,7 +881,7 @@ namespace puffin::rendering
 		mDevice.destroyShaderModule(mShadowFragMod.Module());
 		mDevice.destroyShaderModule(mShadowVertMod.Module());
 
-		mDeletionQueue.pushFunction([=]()
+		mDeletionQueue.PushFunction([=]()
 		{
 			mDevice.destroyPipeline(mShadowPipeline.get());
 			mDevice.destroyPipelineLayout(mShadowPipelineLayout.get());
@@ -945,7 +945,7 @@ namespace puffin::rendering
 			ImGui_ImplVulkan_CreateFontsTexture();
 		});
 
-		mDeletionQueue.pushFunction([=]()
+		mDeletionQueue.PushFunction([=]()
 		{
 			mDevice.destroyDescriptorPool(imguiPool, nullptr);
 			ImGui_ImplVulkan_Shutdown();
@@ -992,9 +992,9 @@ namespace puffin::rendering
 
 				mRenderables.emplace_back(nodeID, mesh.meshID, matData.baseMaterialID, mesh.subMeshIdx);
 
-				if (!mCachedObjectData.contains(nodeID))
+				if (!mCachedObjectData.Contains(nodeID))
 				{
-					mCachedObjectData.emplace(nodeID, GPUObjectData());
+					mCachedObjectData.Emplace(nodeID, GPUObjectData());
 				}
 			}
 
@@ -1012,9 +1012,9 @@ namespace puffin::rendering
 
 				mRenderables.emplace_back(node_id, mesh.meshID, matData.baseMaterialID, mesh.subMeshIdx);
 
-				if (!mCachedObjectData.contains(node_id))
+				if (!mCachedObjectData.Contains(node_id))
 				{
-					mCachedObjectData.emplace(node_id, GPUObjectData());
+					mCachedObjectData.Emplace(node_id, GPUObjectData());
 				}
 			}
 
@@ -1060,12 +1060,12 @@ namespace puffin::rendering
 			bool textureDescriptorNeedsUpdated = false;
 			for (const auto texID : mTexturesToLoad)
 			{
-				if (texID != gInvalidID && !mTexData.contains(texID))
+				if (texID != gInvalidID && !mTexData.Contains(texID))
 				{
 					TextureDataVK texData;
 					LoadTexture(texID, texData);
 
-					mTexData.emplace(texID, texData);
+					mTexData.Emplace(texID, texData);
 
 					textureDescriptorNeedsUpdated = true;
 				}
@@ -1091,10 +1091,10 @@ namespace puffin::rendering
 	{
 		bool shadowDescriptorNeedsUpdated = false;
 
-		while(!mShadowConstructEvents.empty())
+		while(!mShadowConstructEvents.Empty())
 		{
 			ShadowConstructEvent shadowEvent{};
-			mShadowConstructEvents.pop(shadowEvent);
+			mShadowConstructEvents.Pop(shadowEvent);
 
 			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 			auto registry = enttSubsystem->GetRegistry();
@@ -1119,10 +1119,10 @@ namespace puffin::rendering
 		bool shadowDescriptorNeedsUpdated = false;
 
 		std::vector<ShadowUpdateEvent> shadowUpdateEventsStillInUse;
-		while (!mShadowUpdateEvents.empty())
+		while (!mShadowUpdateEvents.Empty())
 		{
 			ShadowUpdateEvent shadowEvent{};
-			mShadowUpdateEvents.pop(shadowEvent);
+			mShadowUpdateEvents.Pop(shadowEvent);
 
 			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 			auto registry = enttSubsystem->GetRegistry();
@@ -1149,7 +1149,7 @@ namespace puffin::rendering
 
 		for (const auto& shadowEvent : shadowUpdateEventsStillInUse)
 		{
-			mShadowUpdateEvents.push(shadowEvent);
+			mShadowUpdateEvents.Push(shadowEvent);
 		}
 
 		shadowUpdateEventsStillInUse.clear();
@@ -1166,10 +1166,10 @@ namespace puffin::rendering
 	void RenderSubsystemVK::DestroyShadows()
 	{
 		std::vector<ShadowDestroyEvent> shadowDestroyEventsStillInUse;
-		while (!mShadowDestroyEvents.empty())
+		while (!mShadowDestroyEvents.Empty())
 		{
 			ShadowDestroyEvent shadowEvent{};
-			mShadowDestroyEvents.pop(shadowEvent);
+			mShadowDestroyEvents.Pop(shadowEvent);
 
 			if (mResourceManager->IsImageValid(shadowEvent.resourceID))
 			{
@@ -1188,7 +1188,7 @@ namespace puffin::rendering
 
 		for (const auto& shadowEvent : shadowDestroyEventsStillInUse)
 		{
-			mShadowDestroyEvents.push(shadowEvent);
+			mShadowDestroyEvents.Push(shadowEvent);
 		}
 
 		shadowDestroyEventsStillInUse.clear();
@@ -1424,7 +1424,7 @@ namespace puffin::rendering
 		if (GetCurrentFrameData().copyMaterialDataToGPU)
 		{
 			std::vector<GPUMaterialInstanceData> materialData;
-			materialData.reserve(mMaterialRegistry->GetAllMaterialData().size());
+			materialData.reserve(mMaterialRegistry->GetAllMaterialData().Size());
 
 			int idx = 0;
 			for (auto& matData : mMaterialRegistry->GetAllMaterialData())
@@ -1548,7 +1548,7 @@ namespace puffin::rendering
 			{
 				for (const auto& [idx, object] : tempThreadObjects)
 				{
-					if (mCachedObjectData.contains(idx))
+					if (mCachedObjectData.Contains(idx))
 					{
 						mCachedObjectData[idx] = object;
 					}
@@ -1941,7 +1941,7 @@ namespace puffin::rendering
 			indirectCmds.resize(gMaxObjects);
 
 			mDrawBatches.clear();
-			mDrawBatches.reserve(mMaterialRegistry->GetAllMaterialData().size());
+			mDrawBatches.reserve(mMaterialRegistry->GetAllMaterialData().Size());
 
 			bool newBatch = false;
 			int cmdIdx = 0;
@@ -2568,11 +2568,11 @@ namespace puffin::rendering
 		mAllocator.destroyImage(texData.texture.image, texData.texture.allocation);
 	}
 
-	void RenderSubsystemVK::BuildTextureDescriptorInfo(PackedVector<UUID, TextureDataVK>& textureData,
+	void RenderSubsystemVK::BuildTextureDescriptorInfo(MappedVector<UUID, TextureDataVK>& textureData,
 	                                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
 	{
 		textureImageInfos.clear();
-		textureImageInfos.reserve(textureData.size());
+		textureImageInfos.reserve(textureData.Size());
 
 		int idx = 0;
 		for (auto& texData : textureData)

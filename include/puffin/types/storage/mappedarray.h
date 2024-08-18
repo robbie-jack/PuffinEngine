@@ -8,21 +8,21 @@
 
 namespace puffin
 {
-	// Fixed and Dynamically Sized Arrays which ensure data is packed tightly to maximize cache utilization
-	
-	// Packed Fixed Array
+	/*
+	 * Array where items are packed consecutively for optimal cache usage, but can still be accessed via a key
+	 */
 	template<typename ValueT, size_t Size>
-	class PackedArray
+	class MappedArray
 	{
 	public:
 
-		PackedArray()
+		MappedArray()
 		{
 			mArraySize = 0;
 		}
 
 		// Insert new Value into Array
-		void insert(const size_t id, const ValueT& value)
+		void Insert(const size_t id, const ValueT& value)
 		{
 			assert(mIdToIndex.find(id) == mIdToIndex.end() && "Value with that ID already exists");
 
@@ -36,7 +36,7 @@ namespace puffin
 		}
 
 		// Remove value from Array
-		void erase(const size_t id)
+		void Erase(const size_t id)
 		{
 			assert(mIdToIndex.find(id) != mIdToIndex.end() && "Removing non-existent value");
 
@@ -59,12 +59,12 @@ namespace puffin
 			mArraySize--;
 		}
 
-		bool contains(size_t id) const
+		[[nodiscard]] bool Contains(size_t id) const
 		{
 			return mIdToIndex.count(id) == 1;
 		}
 
-		void clear()
+		void Clear()
 		{
 			mIdToIndex.clear();
 			mIdToIndex.clear();
@@ -111,7 +111,7 @@ namespace puffin
 			mBitsetSize = 0;
 		}
 
-		void insert(const size_t id, const bool& value = false)
+		void Insert(const size_t id, const bool& value = false)
 		{
 			assert(mIdToIndex.find(id) == mIdToIndex.end() && "Value with that ID already exists");
 
@@ -125,7 +125,7 @@ namespace puffin
 		}
 
 		// Remove value from bitset
-		void erase(const size_t id)
+		void Erase(const size_t id)
 		{
 			assert(mIdToIndex.find(id) != mIdToIndex.end() && "Removing non-existent value");
 
@@ -148,12 +148,12 @@ namespace puffin
 			mBitsetSize--;
 		}
 
-		bool contains(const size_t id) const
+		[[nodiscard]] bool Contains(const size_t id) const
 		{
 			return mIdToIndex.count(id) == 1;
 		}
 
-		void clear()
+		void Clear()
 		{
 			mIdToIndex.clear();
 			mIdToIndex.clear();

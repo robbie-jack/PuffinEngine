@@ -3,7 +3,7 @@
 #include <miniaudio/miniaudio.h>
 
 #include "puffin/audio/audiosubsystem.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedvector.h"
 
 namespace puffin::audio
 {
@@ -33,6 +33,6 @@ namespace puffin::audio
 
 		ma_engine* mSoundEngine = nullptr;
 
-		PackedVector<UUID, ma_sound> mSounds;
+		MappedVector<UUID, ma_sound> mSounds;
 	};
 }

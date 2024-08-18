@@ -6,7 +6,7 @@
 #include <string>
 
 #include "puffin/core/subsystem.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedvector.h"
 
 namespace puffin::core
 {
@@ -51,14 +51,14 @@ namespace puffin::core
 			size_t slotID = mNextSlotID;
 			mNextSlotID++;
 
-			mSlots.emplace(slotID, Slot<Parameters...>(Callback));
+			mSlots.Emplace(slotID, Slot<Parameters...>(Callback));
 
 			return slotID;
 		}
 
 		void Disconnect(const size_t& slotID)
 		{
-			mSlots.erase(slotID);
+			mSlots.Erase(slotID);
 		}
 
 		void Emit(Parameters... params)
@@ -75,7 +75,7 @@ namespace puffin::core
 
 		std::string mName;
 		size_t mNextSlotID = 1;
-		PackedVector<size_t, Slot<Parameters...>> mSlots;
+		MappedVector<size_t, Slot<Parameters...>> mSlots;
 
 	};
 

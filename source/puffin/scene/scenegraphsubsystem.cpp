@@ -31,8 +31,8 @@ namespace puffin::scene
 		mRootNodeIDs.clear();
 		mNodesToDestroy.clear();
 
-		mGlobalTransform2Ds.clear();
-		mGlobalTransform3Ds.clear();
+		mGlobalTransform2Ds.Clear();
+		mGlobalTransform3Ds.Clear();
 
 		for (auto [type, node_array] : mNodeArrays)
 		{
@@ -82,22 +82,22 @@ namespace puffin::scene
 
 	const TransformComponent2D& SceneGraphSubsystem::GetNodeGlobalTransform2D(const UUID& id) const
 	{
-		return mGlobalTransform2Ds.at(id);
+		return mGlobalTransform2Ds.At(id);
 	}
 
 	TransformComponent2D& SceneGraphSubsystem::GetNodeGlobalTransform2D(const UUID& id)
 	{
-		return mGlobalTransform2Ds.at(id);
+		return mGlobalTransform2Ds.At(id);
 	}
 
 	const TransformComponent3D& SceneGraphSubsystem::GetNodeGlobalTransform3D(const UUID& id) const
 	{
-		return mGlobalTransform3Ds.at(id);
+		return mGlobalTransform3Ds.At(id);
 	}
 
 	TransformComponent3D& SceneGraphSubsystem::GetNodeGlobalTransform3D(const UUID& id)
 	{
-		return mGlobalTransform3Ds.at(id);
+		return mGlobalTransform3Ds.At(id);
 	}
 
 	void SceneGraphSubsystem::NotifyTransformChanged(UUID id)
@@ -179,11 +179,11 @@ namespace puffin::scene
 
 		mIDToType.erase(id);
 
-		if (mGlobalTransform2Ds.contains(id))
-			mGlobalTransform2Ds.erase(id);
+		if (mGlobalTransform2Ds.Contains(id))
+			mGlobalTransform2Ds.Erase(id);
 
-		if (mGlobalTransform3Ds.contains(id))
-			mGlobalTransform3Ds.erase(id);
+		if (mGlobalTransform3Ds.Contains(id))
+			mGlobalTransform3Ds.Erase(id);
 
 		for (const auto& childID : childIDs)
 		{
@@ -230,7 +230,7 @@ namespace puffin::scene
 
 			if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
 			{
-				auto& globalTransform = mGlobalTransform2Ds.at(id);
+				auto& globalTransform = mGlobalTransform2Ds.At(id);
 				globalTransform.position = { 0.f };
 				globalTransform.rotation = 0.0f;
 				globalTransform.scale = { 1.0f };
@@ -261,7 +261,7 @@ namespace puffin::scene
 
 			if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))
 			{
-				auto& globalTransform = mGlobalTransform3Ds.at(id);
+				auto& globalTransform = mGlobalTransform3Ds.At(id);
 				globalTransform.position = { 0.f };
 				globalTransform.orientationQuat = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
 				globalTransform.orientationEulerAngles = { 0.0f, 0.0f, 0.0f };
@@ -344,12 +344,12 @@ namespace puffin::scene
 
 		if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
 		{
-			mGlobalTransform2Ds.emplace(id, TransformComponent2D());
+			mGlobalTransform2Ds.Emplace(id, TransformComponent2D());
 		}
 
 		if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))
 		{
-			mGlobalTransform3Ds.emplace(id, TransformComponent3D());
+			mGlobalTransform3Ds.Emplace(id, TransformComponent3D());
 		}
 
 		mSceneGraphUpdated = true;

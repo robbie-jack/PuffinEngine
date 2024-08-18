@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Types/Vector.h>
+#include "puffin/types/vector.h"
 #include "glm/matrix.hpp"
 
 namespace puffin
@@ -15,7 +15,7 @@ namespace puffin
 		
 		struct Mat2
 		{
-			Mat2() {}
+			Mat2() = default;
 
 			Mat2(const Mat2& mat)
 			{
@@ -23,7 +23,7 @@ namespace puffin
 				rows[1] = mat.rows[1];
 			}
 
-			Mat2(const float* mat)
+			explicit Mat2(const float* mat)
 			{
 				rows[0] = mat + 0;
 				rows[1] = mat + 2;
@@ -56,12 +56,12 @@ namespace puffin
 				return *this;
 			}
 
-			float determinant() const
+			[[nodiscard]] float Determinant() const
 			{
 				return rows[0].x * rows[1].y - rows[0].y * rows[1].x;
 			}
 
-			void zero()
+			void Zero()
 			{
 				rows[0].zero();
 				rows[1].zero();
@@ -78,7 +78,7 @@ namespace puffin
 
 		struct Mat3
 		{
-			Mat3() {}
+			Mat3() = default;
 
 			Mat3(const Mat3& mat)
 			{
@@ -87,7 +87,7 @@ namespace puffin
 				rows[2] = mat.rows[2];
 			}
 
-			Mat3(const float* mat)
+			explicit Mat3(const float* mat)
 			{
 				rows[0] = mat + 0;
 				rows[1] = mat + 3;
@@ -184,21 +184,21 @@ namespace puffin
 				return *this;
 			}
 
-			void zero()
+			void Zero()
 			{
 				rows[0].zero();
 				rows[1].zero();
 				rows[2].zero();
 			}
 
-			void identity()
+			void Identity()
 			{
 				rows[0] = Vector3(1.0f, 0.0f, 0.0f);
 				rows[1] = Vector3(0.0f, 1.0f, 0.0f);
 				rows[2] = Vector3(0.0f, 0.0f, 1.0f);
 			}
 
-			[[nodiscard]] float determinant() const
+			[[nodiscard]] float Determinant() const
 			{
 				const float i = rows[0][0] * (rows[1][1] * rows[2][2] - rows[1][2] * rows[2][1]);
 				const float j = rows[0][1] * (rows[1][0] * rows[2][2] - rows[1][2] * rows[2][0]);
@@ -206,37 +206,37 @@ namespace puffin
 				return (i - j + k);
 			}
 
-			[[nodiscard]] Mat3 transpose() const
+			[[nodiscard]] Mat3 Transpose() const
 			{
-				Mat3 tranpose;
+				Mat3 transpose;
 				for (int i = 0; i < 3; i++)
 				{
 					for (int j = 0; j < 3; j++)
 					{
-						tranpose.rows[i][j] = rows[j][i];
+						transpose.rows[i][j] = rows[j][i];
 					}
 				}
-				return tranpose;
+				return transpose;
 			}
 
-			[[nodiscard]] Mat3 inverse() const
+			[[nodiscard]] Mat3 Inverse() const
 			{
 				Mat3 inv; 
 				for (int i = 0; i < 3; i++)
 				{
 					for (int j = 0; j < 3; j++)
 					{
-						inv.rows[j][i] = cofactor(i, j);
+						inv.rows[j][i] = Cofactor(i, j);
 					}
 				}
 
-				const float det = determinant();
+				const float det = Determinant();
 				const float invDet = 1.0f / det;
 				inv *= invDet;
 				return inv;
 			}
 
-			[[nodiscard]] Mat2 minor(const int i, const int j) const
+			[[nodiscard]] Mat2 Minor(const int i, const int j) const
 			{
 				Mat2 minor;
 
@@ -263,10 +263,10 @@ namespace puffin
 				return minor;
 			}
 
-			[[nodiscard]] float cofactor(const int i, const int j) const
+			[[nodiscard]] float Cofactor(const int i, const int j) const
 			{
-				const Mat2 minorMat = minor(i, j);
-				const float cofactor = static_cast<float>(pow(-1, i + 1 + j + 1)) * minorMat.determinant();
+				const Mat2 minorMat = Minor(i, j);
+				const float cofactor = static_cast<float>(pow(-1, i + 1 + j + 1)) * minorMat.Determinant();
 				return cofactor;
 			}
 

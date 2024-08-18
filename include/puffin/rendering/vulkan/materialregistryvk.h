@@ -5,7 +5,7 @@
 
 #include "puffin/types/uuid.h"
 #include "puffin/rendering/vulkan/typesvk.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedvector.h"
 
 namespace puffin::rendering
 {
@@ -25,7 +25,7 @@ namespace puffin::rendering
 		[[nodiscard]] bool GetMaterialDataNeedsUploaded() const;
 
 		MaterialDataVK& GetMaterialData(const UUID& id);
-		PackedVector<UUID, MaterialDataVK>& GetAllMaterialData();
+		MappedVector<UUID, MaterialDataVK>& GetAllMaterialData();
 
 		MaterialVK& GetMaterial(const UUID& id);
 
@@ -38,10 +38,10 @@ namespace puffin::rendering
 		std::unordered_set<UUID> mMaterialsToLoad; // Materials that need to be loaded
 		std::unordered_set<UUID> mMaterialsInstancesToLoad; // Materials Instances that need to be loaded
 
-		PackedVector<UUID, MaterialDataVK> mMatData;
+		MappedVector<UUID, MaterialDataVK> mMatData;
 		std::unordered_map<UUID, MaterialVK> mMats;
 
-		PackedVector<UUID, GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
+		MappedVector<UUID, GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
 		bool mMaterialDataNeedsUploaded = false;
 

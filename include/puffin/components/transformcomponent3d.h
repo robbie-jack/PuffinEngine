@@ -54,6 +54,6 @@ namespace puffin
 	inline void UpdateTransformOrientation(TransformComponent3D& transform, const maths::EulerAngles& eulerAnglesNew)
 	{
 		transform.orientationEulerAngles = eulerAnglesNew;
-		transform.orientationQuat = maths::euler_to_quat({ -transform.orientationEulerAngles }) * glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f });
+		transform.orientationQuat = maths::EulerToQuat({ -transform.orientationEulerAngles }) * glm::angleAxis(0.0f, glm::vec3{ 0.0f, 0.0f, -1.0f });
 	}
 }

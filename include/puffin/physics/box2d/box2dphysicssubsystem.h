@@ -11,7 +11,7 @@
 #include "puffin/components/physics/2d/rigidbodycomponent2d.h"
 #include "puffin/components/physics/2d/shapecomponents2d.h"
 #include "puffin/components/physics/2d/velocitycomponent2d.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedvector.h"
 #include "puffin/types/ringbuffer.h"
 
 #include "box2d/box2d.h"
@@ -87,11 +87,11 @@ namespace puffin::physics
 		b2WorldId m_physics_world_id = b2_nullWorldId;
 		//std::unique_ptr<Box2DContactListener> m_contact_listener = nullptr;
 
-		PackedVector<PuffinID, b2BodyId> m_body_ids; // Vector of body ids used in physics simulation
-		PackedVector<PuffinID, b2ShapeId> m_shapes; // Vector of shapes sued in physics simulation
+		MappedVector<PuffinID, b2BodyId> m_body_ids; // Vector of body ids used in physics simulation
+		MappedVector<PuffinID, b2ShapeId> m_shapes; // Vector of shapes sued in physics simulation
 
-		PackedVector<PuffinID, b2Circle> m_circles;
-		PackedVector<PuffinID, b2Polygon> m_polygons;
+		MappedVector<PuffinID, b2Circle> m_circles;
+		MappedVector<PuffinID, b2Polygon> m_polygons;
 
 		RingBuffer<BodyCreateEvent> m_body_create_events;
 		RingBuffer<ShapeCreateEvent> m_shape_create_events;

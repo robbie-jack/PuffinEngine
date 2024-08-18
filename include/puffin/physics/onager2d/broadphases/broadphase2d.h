@@ -6,7 +6,7 @@
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/physics/onager2d/colliders/collider2d.h"
 #include "puffin/physics/onager2d/physicshelpers2d.h"
-#include "puffin/types/packedvector.h"
+#include "puffin/types/storage/mappedvector.h"
 
 namespace puffin::physics
 {
@@ -18,7 +18,7 @@ namespace puffin::physics
 
 		virtual ~Broadphase() = default;
 
-		virtual void generateCollisionPairs(PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
+		virtual void generateCollisionPairs(MappedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
 		                                    collidersUpdated) = 0;
 
 		void setECS(const std::shared_ptr<ecs::EnTTSubsystem>& ecs)
@@ -70,11 +70,11 @@ namespace puffin::physics
 		NSquaredBroadphase() = default;
 		~NSquaredBroadphase() override = default;
 
-		void generateCollisionPairs(PackedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
+		void generateCollisionPairs(MappedVector<UUID, std::shared_ptr<collision2D::Collider2D>>& colliders, std::vector<CollisionPair>& collisionPairs, bool
 		                            collidersUpdated) override
 		{
 			collisionPairs.clear();
-			collisionPairs.reserve(colliders.size() * colliders.size());
+			collisionPairs.reserve(colliders.Size() * colliders.Size());
 
 			for (const auto colliderA : colliders)
 			{

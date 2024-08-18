@@ -12,7 +12,7 @@
 #include "puffin/core/subsystem.h"
 #include "puffin/core/engine.h"
 #include "puffin/input/inputevent.h"
-#include "puffin/types/ringbuffer.h"
+#include "puffin/types/storage/ringbuffer.h"
 #include "puffin/types/uuid.h"
 
 #include "puffin/scripting/angelscript/angelscriptengineinterface.h"

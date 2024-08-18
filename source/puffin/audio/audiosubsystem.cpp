@@ -71,7 +71,7 @@ namespace puffin::audio
 			return gInvalidID;
 		}
 
-		mSoundInstances.emplace(soundInstanceID, SoundInstance());
+		mSoundInstances.Emplace(soundInstanceID, SoundInstance());
 
 		mSoundInstances[soundInstanceID].instanceID = soundInstanceID;
 		mSoundInstances[soundInstanceID].assetID = soundAssetID;
@@ -85,7 +85,7 @@ namespace puffin::audio
 	{
 		const UUID soundAssetID = mSoundInstances[soundInstanceID].assetID;
 
-		mSoundInstances.erase(soundInstanceID);
+		mSoundInstances.Erase(soundInstanceID);
 		mSoundInstanceIDs[soundAssetID].erase(soundInstanceID);
 	}
 
