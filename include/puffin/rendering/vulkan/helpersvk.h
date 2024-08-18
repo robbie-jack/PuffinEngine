@@ -7,12 +7,12 @@
 
 namespace puffin::rendering
 {
-	class RenderSubystemVK;
+	class RenderSubsystemVK;
 }
 
 namespace puffin::rendering::util
 {
-	void ImmediateSubmit(const RenderSubystemVK* renderSystem, std::function<void(VkCommandBuffer cmd)>&& function);
+	void ImmediateSubmit(const RenderSubsystemVK* renderSystem, std::function<void(VkCommandBuffer cmd)>&& function);
 
 	struct CopyDataBetweenBuffersParams
 	{
@@ -23,7 +23,7 @@ namespace puffin::rendering::util
 		size_t dstOffset = 0;
 	};
 
-	void CopyDataBetweenBuffers(const RenderSubystemVK* renderSystem, const CopyDataBetweenBuffersParams& params);
+	void CopyDataBetweenBuffers(const RenderSubsystemVK* renderSystem, const CopyDataBetweenBuffersParams& params);
 
 	struct CopyCPUDataIntoGPUBufferParams
 	{
@@ -34,7 +34,7 @@ namespace puffin::rendering::util
 		size_t dstOffset = 0;
 	};
 
-	void CopyCPUDataIntoGPUBuffer(const RenderSubystemVK* renderSystem, const CopyCPUDataIntoGPUBufferParams& params);
+	void CopyCPUDataIntoGPUBuffer(const RenderSubsystemVK* renderSystem, const CopyCPUDataIntoGPUBufferParams& params);
 
 	struct CreateBufferParams
 	{
@@ -53,7 +53,7 @@ namespace puffin::rendering::util
 		vk::ImageViewCreateInfo imageViewInfo;
 	};
 
-	AllocatedImage CreateImage(const RenderSubystemVK* renderSystem, const CreateImageParams& params);
+	AllocatedImage CreateImage(const RenderSubsystemVK* renderSystem, const CreateImageParams& params);
 
 	struct CreateFormattedImageParams
 	{
@@ -61,8 +61,8 @@ namespace puffin::rendering::util
 		vk::Format format;
 	};
 
-	AllocatedImage CreateColorImage(const RenderSubystemVK* renderSystem, const CreateFormattedImageParams& params);
-	AllocatedImage CreateDepthImage(const RenderSubystemVK* renderSystem, const CreateFormattedImageParams& params);
+	AllocatedImage CreateColorImage(const RenderSubsystemVK* renderSystem, const CreateFormattedImageParams& params);
+	AllocatedImage CreateDepthImage(const RenderSubsystemVK* renderSystem, const CreateFormattedImageParams& params);
 
 	struct InitTextureParams
 	{
@@ -72,5 +72,5 @@ namespace puffin::rendering::util
 		uint32_t height;
 		vk::Format format;
 	};
-	AllocatedImage InitTexture(const RenderSubystemVK* renderSystem, const InitTextureParams& params);
+	AllocatedImage InitTexture(const RenderSubsystemVK* renderSystem, const InitTextureParams& params);
 }

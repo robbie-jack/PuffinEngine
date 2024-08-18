@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
 	engine->Setup();
 
-	engine->RegisterSubsystem<puffin::rendering::RenderSubystemVK>();
+	engine->RegisterSubsystem<puffin::rendering::RenderSubsystemVK>();
 
 #ifdef PFN_BOX2D_PHYSICS
 	engine->register_subsystem<puffin::physics::Box2DPhysicsSystem>();

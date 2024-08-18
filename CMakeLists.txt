@@ -311,9 +311,11 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptorsvk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/helpersvk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/materialregistryvk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/pipelinevk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/rendersubsystemvk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/resourcemanagervk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/vertexvk.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp

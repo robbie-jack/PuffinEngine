@@ -249,7 +249,7 @@ namespace puffin::rendering
 
 	void CameraSubystem::UpdateCameraComponent(const TransformComponent3D& transform, CameraComponent3D& camera)
 	{
-		const auto renderSystem = mEngine->GetSubsystem<rendering::RenderSubystemVK>();
+		const auto renderSystem = mEngine->GetSubsystem<rendering::RenderSubsystemVK>();
 
 		// Calculate direction & right vectors
 		camera.direction = static_cast<glm::quat>(transform.orientationQuat) * glm::vec3(0.0f, 0.0f, -1.0f);

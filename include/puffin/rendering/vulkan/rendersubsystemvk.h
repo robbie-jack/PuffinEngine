@@ -128,12 +128,12 @@ namespace puffin::rendering
 	};
 
 	// Vulkan Rendering System
-	class RenderSubystemVK final : public core::Subsystem, public std::enable_shared_from_this<RenderSubystemVK>
+	class RenderSubsystemVK final : public core::Subsystem, public std::enable_shared_from_this<RenderSubsystemVK>
 	{
 	public:
 
-		explicit RenderSubystemVK(const std::shared_ptr<core::Engine>& engine);
-		~RenderSubystemVK() override;
+		explicit RenderSubsystemVK(const std::shared_ptr<core::Engine>& engine);
+		~RenderSubsystemVK() override;
 
 		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;

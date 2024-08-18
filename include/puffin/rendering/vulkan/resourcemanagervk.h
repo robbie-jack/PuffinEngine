@@ -17,42 +17,44 @@ namespace puffin
 
 namespace puffin::rendering
 {
-	class RenderSubystemVK;
+	class RenderSubsystemVK;
 	class UnifiedGeometryBuffer;
 
 	class ResourceManagerVK
 	{
 	public:
 
-		explicit ResourceManagerVK(RenderSubystemVK* render_system);
+		explicit ResourceManagerVK(RenderSubsystemVK* renderSystem);
 		~ResourceManagerVK();
 
-		void add_static_mesh(const std::shared_ptr<assets::StaticMeshAsset>& static_mesh);
+		void AddStaticMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh);
 
-		ResourceID add_images(const ImageDesc& image_desc, uint8_t image_count);
+		ResourceID AddImages(const ImageDesc& imageDesc, uint8_t imageCount);
 
-		void destroy_images(ResourceID id);
+		void DestroyImages(ResourceID id);
 
-		void update_image(ResourceID id, const ImageDesc& image_desc, uint8_t image_idx);
-		void update_images(ResourceID id, const ImageDesc& image_desc);
+		void UpdateImage(ResourceID id, const ImageDesc& imageDesc, uint8_t imageIdx);
+		void UpdateImages(ResourceID id, const ImageDesc& imageDesc);
 
-		AllocatedImage& get_image(ResourceID id, uint8_t idx = 0);
-		bool image_exists(ResourceID id) const;
-		bool image_exists(ResourceID id, uint8_t idx) const;
-		size_t image_count(ResourceID id) const;
+		AllocatedImage& GetImage(ResourceID id, uint8_t idx = 0);
+		[[nodiscard]] bool IsImageValid(ResourceID id) const;
+		[[nodiscard]] bool IsImageValid(ResourceID id, uint8_t idx) const;
+		[[nodiscard]] size_t GetImageCount(ResourceID id) const;
 
-		UnifiedGeometryBuffer* geometry_buffer() const { return m_unified_geometry_buffer; }
+		UnifiedGeometryBuffer* GeometryBuffer() const;
 
 	private:
 
-		RenderSubystemVK* m_render_system = nullptr;
-		UnifiedGeometryBuffer* m_unified_geometry_buffer = nullptr;
+		void CreateImageInternal(ResourceID id, const ImageDesc& imageDesc, uint8_t idx = 0);
+		void DestroyImageInternal(ResourceID id, uint8_t idx = 0);
+		void UpdateImageInternal(ResourceID id, const ImageDesc& imageDesc, uint8_t idx = 0);
 
-		PackedVector<ResourceID, std::vector<AllocatedImage>> m_images;
+		RenderSubsystemVK* mRenderSystem = nullptr;
+		UnifiedGeometryBuffer* mUnifiedGeometryBuffer = nullptr;
 
-		void create_image_internal(ResourceID id, const ImageDesc& image_desc, uint8_t idx = 0);
-		void destroy_image_internal(ResourceID id, uint8_t idx = 0);
-		void update_image_internal(ResourceID id, const ImageDesc& image_desc, uint8_t idx = 0);
+		PackedVector<ResourceID, std::vector<AllocatedImage>> mImages;
+
+		
 
 	};
 }

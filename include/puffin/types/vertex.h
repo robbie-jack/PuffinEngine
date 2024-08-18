@@ -40,7 +40,7 @@ namespace puffin::rendering
 			return pos == other.pos && color == other.color;
 		}
 
-		static util::VertexLayout getLayoutVK();
+		static util::VertexLayout GetLayoutVK();
 	};
 
 	struct VertexPNC32
@@ -54,7 +54,7 @@ namespace puffin::rendering
 			return pos == other.pos && normal == other.normal && color == other.color;
 		}
 
-		static util::VertexLayout getLayoutVK();
+		static util::VertexLayout GetLayoutVK();
 	};
 
 	struct VertexPNTV32
@@ -75,7 +75,7 @@ namespace puffin::rendering
 				&& uvY == other.uvY;
 		}
 
-		static util::VertexLayout getLayoutVK();
+		static util::VertexLayout GetLayoutVK();
 	};
 
 	struct VertexP64NTV32
@@ -93,7 +93,7 @@ namespace puffin::rendering
 				&& uv == other.uv;
 		}
 
-		static util::VertexLayout getLayoutVK();
+		static util::VertexLayout GetLayoutVK();
 	};
 
 	static VertexFormat parseVertexFormatFromString(const char* f)

@@ -18,7 +18,7 @@
 
 namespace puffin::rendering::util
 {
-	void ImmediateSubmit(const RenderSubystemVK* renderSystem,
+	void ImmediateSubmit(const RenderSubsystemVK* renderSystem,
 	                     std::function<void(VkCommandBuffer cmd)>&& function)
 	{
 		vk::CommandBuffer cmd = renderSystem->GetUploadContext().commandBuffer;
@@ -40,7 +40,7 @@ namespace puffin::rendering::util
 		renderSystem->GetDevice().resetCommandPool(renderSystem->GetUploadContext().commandPool);
 	}
 
-	void CopyDataBetweenBuffers(const RenderSubystemVK* renderSystem, const CopyDataBetweenBuffersParams& params)
+	void CopyDataBetweenBuffers(const RenderSubsystemVK* renderSystem, const CopyDataBetweenBuffersParams& params)
 	{
 		ImmediateSubmit(renderSystem, [=](const vk::CommandBuffer cmd)
 		{
@@ -62,12 +62,12 @@ namespace puffin::rendering::util
 
 		AllocatedBuffer buffer;
 
-		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.alloc_info));
+		VK_CHECK(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.allocInfo));
 
 		return buffer;
 	}
 
-	void CopyCPUDataIntoGPUBuffer(const RenderSubystemVK* renderSystem,
+	void CopyCPUDataIntoGPUBuffer(const RenderSubsystemVK* renderSystem,
 	                              const CopyCPUDataIntoGPUBufferParams& params)
 	{
 		// If rebar is enabled and buffer is in host visible memory, copy directly to buffer
@@ -76,7 +76,7 @@ namespace puffin::rendering::util
 		{
 			const auto* dataChar = static_cast<const char*>(params.srcData);
 
-			std::copy_n(dataChar, params.dataSize, static_cast<char*>(params.dstBuffer.alloc_info.pMappedData) + params.dstOffset);
+			std::copy_n(dataChar, params.dataSize, static_cast<char*>(params.dstBuffer.allocInfo.pMappedData) + params.dstOffset);
 		}
 		// If rebar is not enabled or buffer is not in host visible, copy data via staging buffer
 		else
@@ -89,7 +89,7 @@ namespace puffin::rendering::util
 			const AllocatedBuffer stagingBuffer = CreateBuffer(renderSystem->GetAllocator(), createParams);
 
 			const auto* dataChar = static_cast<const char*>(params.srcData);
-			auto* mappedDataChar = static_cast<char*>(stagingBuffer.alloc_info.pMappedData);
+			auto* mappedDataChar = static_cast<char*>(stagingBuffer.allocInfo.pMappedData);
 
 			std::copy_n(dataChar, params.dataSize, mappedDataChar);
 
@@ -107,7 +107,7 @@ namespace puffin::rendering::util
 		}
 	}
 
-	AllocatedImage CreateImage(const RenderSubystemVK* renderSystem, const CreateImageParams& params)
+	AllocatedImage CreateImage(const RenderSubsystemVK* renderSystem, const CreateImageParams& params)
 	{
 		AllocatedImage allocImage;
 		allocImage.format = params.imageInfo.format;
@@ -115,18 +115,18 @@ namespace puffin::rendering::util
 		// Create Image
 		constexpr vma::AllocationCreateInfo imageAllocInfo = { {}, vma::MemoryUsage::eAutoPreferDevice, vk::MemoryPropertyFlagBits::eDeviceLocal };
 
-		VK_CHECK(renderSystem->GetAllocator().createImage(&params.imageInfo, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.alloc_info));
+		VK_CHECK(renderSystem->GetAllocator().createImage(&params.imageInfo, &imageAllocInfo, &allocImage.image, &allocImage.allocation, &allocImage.allocInfo));
 
 		// Create Image View
 		vk::ImageViewCreateInfo imageViewCreateInfo = params.imageViewInfo;
 		imageViewCreateInfo.image = allocImage.image;
 
-		VK_CHECK(renderSystem->GetDevice().createImageView(&imageViewCreateInfo, nullptr, &allocImage.image_view));
+		VK_CHECK(renderSystem->GetDevice().createImageView(&imageViewCreateInfo, nullptr, &allocImage.imageView));
 
 		return allocImage;
 	}
 
-	AllocatedImage CreateColorImage(const RenderSubystemVK* renderSystem, const CreateFormattedImageParams& params)
+	AllocatedImage CreateColorImage(const RenderSubsystemVK* renderSystem, const CreateFormattedImageParams& params)
 	{
 		CreateImageParams createImageParams;
 
@@ -140,7 +140,7 @@ namespace puffin::rendering::util
 		return CreateImage(renderSystem, createImageParams);
 	}
 
-	AllocatedImage CreateDepthImage(const RenderSubystemVK* renderSystem, const CreateFormattedImageParams& params)
+	AllocatedImage CreateDepthImage(const RenderSubsystemVK* renderSystem, const CreateFormattedImageParams& params)
 	{
 		CreateImageParams createImageParams;
 
@@ -154,7 +154,7 @@ namespace puffin::rendering::util
 		return CreateImage(renderSystem, createImageParams);
 	}
 
-	AllocatedImage InitTexture(const RenderSubystemVK* renderSystem, const InitTextureParams& params)
+	AllocatedImage InitTexture(const RenderSubsystemVK* renderSystem, const InitTextureParams& params)
 	{
 		// Allocate staging buffer on CPU for holding texture data to upload
 		CreateBufferParams createBufferParams;
@@ -165,7 +165,7 @@ namespace puffin::rendering::util
 
 		// Copy texture data to buffer
 		const auto* dataChar = static_cast<const char*>(params.pixelData);
-		auto* mappedDataChar = static_cast<char*>(stagingBuffer.alloc_info.pMappedData);
+		auto* mappedDataChar = static_cast<char*>(stagingBuffer.allocInfo.pMappedData);
 
 		std::copy_n(dataChar, params.dataSize, mappedDataChar);
 

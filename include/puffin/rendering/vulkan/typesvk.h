@@ -24,21 +24,21 @@ namespace puffin::rendering
 		{
 			buffer = other.buffer;
 			allocation = other.allocation;
-			alloc_info = other.alloc_info;
+			allocInfo = other.allocInfo;
 		}
 
 		vk::Buffer buffer;
 		vma::Allocation allocation;
-		vma::AllocationInfo alloc_info;
+		vma::AllocationInfo allocInfo;
 	};
 
 	struct AllocatedImage
 	{
 		vk::Image image;
-		vk::ImageView image_view;
+		vk::ImageView imageView;
 		vk::Format format;
 		vma::Allocation allocation;
-		vma::AllocationInfo alloc_info;
+		vma::AllocationInfo allocInfo;
 	};
 
 	using Texture = AllocatedImage;
@@ -51,7 +51,7 @@ namespace puffin::rendering
 
 	struct ImageDesc
 	{
-		ImageType image_type = ImageType::Color;
+		ImageType imageType = ImageType::Color;
 		vk::Format format = vk::Format::eUndefined;
 		uint32_t width = 0;
 		uint32_t height = 0;
@@ -64,23 +64,23 @@ namespace puffin::rendering
 		{
 			swapchain = other.swapchain;
 
-			image_format = other.image_format;
+			imageFormat = other.imageFormat;
 			images = other.images;
-			image_views = other.image_views;
+			imageViews = other.imageViews;
 
-			needs_cleaned = other.needs_cleaned;
+			needsCleaned = other.needsCleaned;
 			resized = other.resized;
 		}
 
 		vk::SwapchainKHR swapchain;
 
 		vk::Extent2D extent;
-		vk::Format image_format;
+		vk::Format imageFormat;
 
 		std::vector<vk::Image> images;
-		std::vector<vk::ImageView> image_views;
+		std::vector<vk::ImageView> imageViews;
 
-		bool needs_cleaned = false;
+		bool needsCleaned = false;
 		bool resized = false;
 	};
 
@@ -89,27 +89,27 @@ namespace puffin::rendering
 		void operator=(const OffscreenData& other)
 		{
 			extent = other.extent;
-			image_format = other.image_format;
+			imageFormat = other.imageFormat;
 
-			alloc_images = other.alloc_images;
-			viewport_textures = other.viewport_textures;
+			allocImages = other.allocImages;
+			viewportTextures = other.viewportTextures;
 
-			alloc_depth_image = other.alloc_depth_image;
+			allocDepthImage = other.allocDepthImage;
 
-			needs_cleaned = other.needs_cleaned;
+			needsCleaned = other.needsCleaned;
 			resized = other.resized;
 		}
 
 		vk::Extent2D extent;
-		vk::Format image_format;
+		vk::Format imageFormat;
 
-		std::vector<AllocatedImage> alloc_images;
+		std::vector<AllocatedImage> allocImages;
 
-		std::vector<ImTextureID> viewport_textures;
+		std::vector<ImTextureID> viewportTextures;
 
-		AllocatedImage alloc_depth_image;
+		AllocatedImage allocDepthImage;
 
-		bool needs_cleaned = false;
+		bool needsCleaned = false;
 		bool resized = false;
 	};
 
@@ -159,8 +159,8 @@ namespace puffin::rendering
 
 	struct MeshRenderable
 	{
-		MeshRenderable(const UUID entityID_, const UUID meshID_, const UUID matID_, const uint8_t subMeshIdx_ = 0) :
-			entityID(entityID_), meshID(meshID_), matID(matID_), subMeshIdx(subMeshIdx_) {}
+		MeshRenderable(const UUID entityID, const UUID meshID, const UUID matID, const uint8_t subMeshIdx = 0) :
+			entityID(entityID), meshID(meshID), matID(matID), subMeshIdx(subMeshIdx) {}
 
 		UUID entityID;
 		UUID meshID;
@@ -179,8 +179,8 @@ namespace puffin::rendering
 	// Struct for rendering a batch of meshes which share a material
 	struct MeshDrawBatch
 	{
-		MeshDrawBatch(const UUID matID_ = gInvalidID, const uint32_t cmdCount_ = 0, const uint32_t meshIndex_ = 0) :
-			matID(matID_), cmdCount(cmdCount_), cmdIndex(meshIndex_) {}
+		explicit MeshDrawBatch(const UUID matID = gInvalidID, const uint32_t cmdCount = 0, const uint32_t meshIndex = 0) :
+			matID(matID), cmdCount(cmdCount), cmdIndex(meshIndex) {}
 
 		UUID matID; // Id of this material
 		uint32_t cmdCount = 0; // Number of commands to be drawn with this batch
@@ -196,13 +196,13 @@ namespace puffin::rendering
 
 	struct GPUShadowPushConstant
 	{
-		alignas(16) vk::DeviceAddress vertex_buffer_address;
-		alignas(16) glm::mat4 light_space_view;
+		alignas(16) vk::DeviceAddress vertexBufferAddress;
+		alignas(16) glm::mat4 lightSpaceView;
 	};
 
 	struct GPUVertexShaderPushConstant
 	{
-		alignas(16) vk::DeviceAddress vertex_buffer_address;
+		alignas(16) vk::DeviceAddress vertexBufferAddress;
 	};
 
 	struct GPUFragShaderPushConstant
@@ -215,13 +215,13 @@ namespace puffin::rendering
 	{
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
-		alignas(16) glm::mat4 view_proj;
+		alignas(16) glm::mat4 viewProj;
 	};
 
 	struct GPUObjectData
 	{
 		alignas(16) glm::mat4 model;
-		alignas(4) int mat_idx;
+		alignas(4) int matIdx;
 	};
 
 	struct GPULightData
@@ -249,19 +249,19 @@ namespace puffin::rendering
 
 	struct GPUShadowData
 	{
-		alignas(4) glm::vec4 shadow_bias;
-        alignas(4) int cascade_count;
+		alignas(4) glm::vec4 shadowBias;
+        alignas(4) int cascadeCount;
 	};
 
     struct GPUShadowCascadeData
     {
-        alignas(16) glm::mat4 light_space_view;
-        alignas(4) float cascade_plane_distance = 0.0f;
+        alignas(16) glm::mat4 lightSpaceView;
+        alignas(4) float cascadePlaneDistance = 0.0f;
     };
 
 	struct GPUMaterialInstanceData
 	{
-		int tex_indices[gNumTexturesPerMat];
+		int texIndices[gNumTexturesPerMat];
 		float data[gNumFloatsPerMat];
 	};
 

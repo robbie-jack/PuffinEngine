@@ -29,17 +29,19 @@ namespace puffin::rendering::util
 			};
 		};
 
-		DescriptorAllocator(const vk::Device device) : mDevice(device) {}
+		explicit DescriptorAllocator(const vk::Device device) : mDevice(device) {}
 		~DescriptorAllocator();
 
-		void resetPools();
-		bool allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout, const vk::BaseOutStructure* pNext = nullptr );
+		void ResetPools();
+		bool Allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout, const vk::BaseOutStructure* pNext = nullptr );
 
-		void cleanup() const;
+		void Cleanup() const;
 
-		const vk::Device& device() const { return mDevice; }
+		const vk::Device& GetDevice() const;
 
 	private:
+
+		vk::DescriptorPool GrabPool();
 
 		vk::Device mDevice;
 
@@ -50,20 +52,18 @@ namespace puffin::rendering::util
 		std::vector<vk::DescriptorPool> mUsedPools;
 		std::vector<vk::DescriptorPool> mFreePools;
 
-		vk::DescriptorPool grabPool();
-
 	};
 
 	class DescriptorLayoutCache
 	{
 	public:
 
-		DescriptorLayoutCache(const vk::Device device) : mDevice(device) {}
+		explicit DescriptorLayoutCache(const vk::Device device) : mDevice(device) {}
 		~DescriptorLayoutCache();
 
-		void cleanup() const;
+		void Cleanup() const;
 
-		vk::DescriptorSetLayout createDescriptorLayout(const vk::DescriptorSetLayoutCreateInfo* info);
+		vk::DescriptorSetLayout CreateDescriptorLayout(const vk::DescriptorSetLayoutCreateInfo* info);
 
 		struct DescriptorLayoutInfo
 		{
@@ -94,34 +94,32 @@ namespace puffin::rendering::util
 	{
 	public:
 
-		DescriptorBuilder(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator) : mCache(layoutCache), mAlloc(allocator) {}
+		DescriptorBuilder(std::shared_ptr<DescriptorLayoutCache> layoutCache,
+		                  std::shared_ptr<DescriptorAllocator> allocator);
 
-		static DescriptorBuilder begin(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator);
+		static DescriptorBuilder Begin(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator);
 
-		DescriptorBuilder& bindBuffer(uint32_t binding, const vk::DescriptorBufferInfo* bufferInfo, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
+		DescriptorBuilder& BindBuffer(uint32_t binding, const vk::DescriptorBufferInfo* bufferInfo, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
 
-		DescriptorBuilder& bindImage(const uint32_t binding, const vk::DescriptorImageInfo* imageInfo, const vk::DescriptorType type, const vk::
-		                             ShaderStageFlags stageFlags);
+		DescriptorBuilder& BindImage(uint32_t binding, const vk::DescriptorImageInfo* imageInfo, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
 
-		DescriptorBuilder& bindImages(const uint32_t binding, const uint32_t imageCount, const vk::DescriptorImageInfo* imageInfos, const vk::DescriptorType
-		                              type, const vk::ShaderStageFlags stageFlags);
+		DescriptorBuilder& BindImages(uint32_t binding, uint32_t imageCount, const vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
 
-		DescriptorBuilder& bindImagesWithoutWrite(const uint32_t binding, const uint32_t imageCount, const vk::DescriptorType
-										type, const vk::ShaderStageFlags stageFlags, vk::DescriptorBindingFlags bindingFlags = {});
+		DescriptorBuilder& BindImagesWithoutWrite(uint32_t binding, uint32_t imageCount, vk::DescriptorType type, vk::ShaderStageFlags stageFlags, vk::DescriptorBindingFlags bindingFlags = {});
 
-		bool build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
+		bool Build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
 
 		// Used for writing to descriptor set which is already built
-		DescriptorBuilder& updateImage(uint32_t binding, const vk::DescriptorImageInfo* imageInfo,
+		DescriptorBuilder& UpdateImage(uint32_t binding, const vk::DescriptorImageInfo* imageInfo,
 			vk::DescriptorType type);
 
-		DescriptorBuilder& updateImages(uint32_t binding, uint32_t imageCount,
+		DescriptorBuilder& UpdateImages(uint32_t binding, uint32_t imageCount,
 			const vk::DescriptorImageInfo* imageInfos, vk::DescriptorType type);
 
-		bool update(const vk::DescriptorSet& set);
+		bool Update(const vk::DescriptorSet& set);
 
 		template<typename T>
-		DescriptorBuilder& addPNext(T* structure)
+		DescriptorBuilder& AddPNext(T* structure)
 		{
 			mPNextChain.push_back(reinterpret_cast<vk::BaseOutStructure*>(structure));
 			return *this;

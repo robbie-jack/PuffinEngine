@@ -21,9 +21,9 @@ namespace puffin::rendering::util
 		std::vector<vk::DescriptorPoolSize> sizes;
 		sizes.reserve(poolSizes.sizes.size());
 
-		for (auto sz : poolSizes.sizes)
+		for (auto [descriptorType, size] : poolSizes.sizes)
 		{
-			sizes.push_back( { sz.first, static_cast<uint32_t>(sz.second * count) } );
+			sizes.emplace_back(descriptorType, static_cast<uint32_t>(size * count));
 		}
 
 		const vk::DescriptorPoolCreateInfo poolInfo = { createFlags, static_cast<uint32_t>(count), static_cast<uint32_t>(sizes.size()), sizes.data() };
@@ -36,10 +36,10 @@ namespace puffin::rendering::util
 
 	DescriptorAllocator::~DescriptorAllocator()
 	{
-		cleanup();
+		Cleanup();
 	}
 
-	void DescriptorAllocator::resetPools()
+	void DescriptorAllocator::ResetPools()
 	{
 		for (auto pool : mUsedPools)
 		{
@@ -52,11 +52,11 @@ namespace puffin::rendering::util
 		mCurrentPool = nullptr;
 	}
 
-	bool DescriptorAllocator::allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout, const vk::BaseOutStructure* pNext)
+	bool DescriptorAllocator::Allocate(vk::DescriptorSet* set, vk::DescriptorSetLayout layout, const vk::BaseOutStructure* pNext)
 	{
 		if (!mCurrentPool)
 		{
-			mCurrentPool = grabPool();
+			mCurrentPool = GrabPool();
 			mUsedPools.push_back(mCurrentPool);
 		}
 
@@ -88,7 +88,7 @@ namespace puffin::rendering::util
 
 		if (needReallocate)
 		{
-			mCurrentPool = grabPool();
+			mCurrentPool = GrabPool();
 
 			mUsedPools.push_back(mCurrentPool);
 
@@ -103,7 +103,7 @@ namespace puffin::rendering::util
 		return false;
 	}
 
-	void DescriptorAllocator::cleanup() const
+	void DescriptorAllocator::Cleanup() const
 	{
 		for (const auto pool : mFreePools)
 		{
@@ -116,10 +116,15 @@ namespace puffin::rendering::util
 		}
 	}
 
-	vk::DescriptorPool DescriptorAllocator::grabPool()
+	const vk::Device& DescriptorAllocator::GetDevice() const
+	{
+		return mDevice;
+	}
+
+	vk::DescriptorPool DescriptorAllocator::GrabPool()
 	{
 		// Check if there are reusable pools available
-		if (mFreePools.size() > 0)
+		if (!mFreePools.empty())
 		{
 			// Grab pool from free pools
 			const vk::DescriptorPool pool = mFreePools.back();
@@ -136,10 +141,10 @@ namespace puffin::rendering::util
 
 	DescriptorLayoutCache::~DescriptorLayoutCache()
 	{
-		cleanup();
+		Cleanup();
 	}
 
-	void DescriptorLayoutCache::cleanup() const
+	void DescriptorLayoutCache::Cleanup() const
 	{
 		for (const auto pair : mLayoutCache)
 		{
@@ -147,7 +152,7 @@ namespace puffin::rendering::util
 		}
 	}
 
-	vk::DescriptorSetLayout DescriptorLayoutCache::createDescriptorLayout(const vk::DescriptorSetLayoutCreateInfo* info)
+	vk::DescriptorSetLayout DescriptorLayoutCache::CreateDescriptorLayout(const vk::DescriptorSetLayoutCreateInfo* info)
 	{
 		DescriptorLayoutInfo layoutInfo;
 		layoutInfo.bindings.reserve(info->bindingCount);
@@ -230,24 +235,31 @@ namespace puffin::rendering::util
 
 		size_t result = hash<size_t>()(bindings.size());
 
-		for (const VkDescriptorSetLayoutBinding& b : bindings)
+		for (const auto& b : bindings)
 		{
+			const VkDescriptorSetLayoutBinding binding = b;
+
 			//pack the binding data into a single int64. Not fully correct but it's ok
-			size_t binding_hash = b.binding | b.descriptorType << 8 | b.descriptorCount << 16 | b.stageFlags << 24;
+			size_t bindingHash = binding.binding | binding.descriptorType << 8 | binding.descriptorCount << 16 | binding.stageFlags << 24;
 
 			//shuffle the packed binding data and xor it with the main hash
-			result ^= hash<size_t>()(binding_hash);
+			result ^= hash<size_t>()(bindingHash);
 		}
 
 		return result;
 	}
 
-	DescriptorBuilder DescriptorBuilder::begin(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator)
+	DescriptorBuilder::DescriptorBuilder(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<DescriptorAllocator> allocator) :
+		mCache(std::move(layoutCache)), mAlloc(std::move(allocator))
+	{
+	}
+
+	DescriptorBuilder DescriptorBuilder::Begin(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator)
 	{
 		return DescriptorBuilder{ layoutCache, allocator };
 	}
 
-	DescriptorBuilder& DescriptorBuilder::bindBuffer(const uint32_t binding, const vk::DescriptorBufferInfo* bufferInfo,
+	DescriptorBuilder& DescriptorBuilder::BindBuffer(const uint32_t binding, const vk::DescriptorBufferInfo* bufferInfo,
 	                                                 const vk::DescriptorType type, const vk::ShaderStageFlags stageFlags)
 	{
 		mBindings.emplace_back(binding, type, 1, stageFlags);
@@ -257,7 +269,7 @@ namespace puffin::rendering::util
 		return *this;
 	}
 
-	DescriptorBuilder& DescriptorBuilder::bindImage(const uint32_t binding, const vk::DescriptorImageInfo* imageInfo,
+	DescriptorBuilder& DescriptorBuilder::BindImage(const uint32_t binding, const vk::DescriptorImageInfo* imageInfo,
 	                                                const vk::DescriptorType type, const vk::ShaderStageFlags stageFlags)
 	{
 		mBindings.emplace_back(binding, type, 1, stageFlags );
@@ -267,7 +279,7 @@ namespace puffin::rendering::util
 		return *this;
 	}
 
-	DescriptorBuilder& DescriptorBuilder::bindImages(const uint32_t binding, const uint32_t imageCount,
+	DescriptorBuilder& DescriptorBuilder::BindImages(const uint32_t binding, const uint32_t imageCount,
 	                                                 const vk::DescriptorImageInfo* imageInfos, const vk::DescriptorType type, const vk::ShaderStageFlags stageFlags)
 	{
 		mBindings.emplace_back(binding, type, imageCount, stageFlags);
@@ -277,7 +289,7 @@ namespace puffin::rendering::util
 		return *this;
 	}
 
-	DescriptorBuilder& DescriptorBuilder::bindImagesWithoutWrite(const uint32_t binding, const uint32_t imageCount,
+	DescriptorBuilder& DescriptorBuilder::BindImagesWithoutWrite(const uint32_t binding, const uint32_t imageCount,
 		const vk::DescriptorType type, const vk::ShaderStageFlags stageFlags, vk::DescriptorBindingFlags bindingFlags)
 	{
 		mBindings.emplace_back(binding, type, imageCount, stageFlags);
@@ -286,18 +298,18 @@ namespace puffin::rendering::util
 		return *this;
 	}
 
-	bool DescriptorBuilder::build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout)
+	bool DescriptorBuilder::Build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout)
 	{
 		vk::DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = { static_cast<uint32_t>(mBindingFlags.size()), mBindingFlags.data() };
 
 		const vk::DescriptorSetLayoutCreateInfo layoutInfo = { {}, static_cast<uint32_t>(mBindings.size()), mBindings.data(), &bindingFlagsCreateInfo };
 
-		layout = mCache->createDescriptorLayout(&layoutInfo);
+		layout = mCache->CreateDescriptorLayout(&layoutInfo);
 
 		const vk::BaseOutStructure* pNext = nullptr;
 
 		// Setup chain of pNext structs
-		if (mPNextChain.size() > 0)
+		if (!mPNextChain.empty())
 		{
 			for (size_t i = 0; i < mPNextChain.size() - 1; i++)
 			{
@@ -308,7 +320,7 @@ namespace puffin::rendering::util
 		}
 
 		// Allocate Descriptor
-		if (const bool success = mAlloc->allocate(&set, layout, pNext); !success) { return false; }
+		if (const bool success = mAlloc->Allocate(&set, layout, pNext); !success) { return false; }
 
 		// Write Descriptor
 		for (auto& w : mWrites)
@@ -316,12 +328,12 @@ namespace puffin::rendering::util
 			w.dstSet = set;
 		}
 
-		mAlloc->device().updateDescriptorSets(mWrites.size(), mWrites.data(), 0, nullptr);
+		mAlloc->GetDevice().updateDescriptorSets(mWrites.size(), mWrites.data(), 0, nullptr);
 
 		return true;
 	}
 
-	DescriptorBuilder& DescriptorBuilder::updateImage(const uint32_t binding, const vk::DescriptorImageInfo* imageInfo,
+	DescriptorBuilder& DescriptorBuilder::UpdateImage(const uint32_t binding, const vk::DescriptorImageInfo* imageInfo,
 	                                                  const vk::DescriptorType type)
 	{
 		mWrites.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, 1, type, imageInfo, nullptr });
@@ -329,7 +341,7 @@ namespace puffin::rendering::util
 		return *this;
 	}
 
-	DescriptorBuilder& DescriptorBuilder::updateImages(const uint32_t binding, const uint32_t imageCount,
+	DescriptorBuilder& DescriptorBuilder::UpdateImages(const uint32_t binding, const uint32_t imageCount,
 	                                                   const vk::DescriptorImageInfo* imageInfos, const vk::DescriptorType type)
 	{
 		mWrites.emplace_back(vk::WriteDescriptorSet{ {}, binding, 0, imageCount, type, imageInfos, nullptr });
@@ -337,14 +349,14 @@ namespace puffin::rendering::util
 		return *this;
 	}
 
-	bool DescriptorBuilder::update(const vk::DescriptorSet& set)
+	bool DescriptorBuilder::Update(const vk::DescriptorSet& set)
 	{
 		for (vk::WriteDescriptorSet& w : mWrites)
 		{
 			w.dstSet = set;
 		}
 
-		mAlloc->device().updateDescriptorSets(mWrites.size(), mWrites.data(), 0, nullptr);
+		mAlloc->GetDevice().updateDescriptorSets(mWrites.size(), mWrites.data(), 0, nullptr);
 
 		return true;
 	}

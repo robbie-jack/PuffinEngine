@@ -9,44 +9,44 @@
 
 namespace puffin::rendering
 {
-	class RenderSubystemVK;
+	class RenderSubsystemVK;
 
 	class MaterialRegistryVK
 	{
 	public:
 
-		explicit MaterialRegistryVK(RenderSubystemVK* render_system);
+		explicit MaterialRegistryVK(RenderSubsystemVK* renderSystem);
 		~MaterialRegistryVK();
 
-		void register_material_instance(const UUID& id);
+		void RegisterMaterialInstance(const UUID& id);
 
-		void update();
+		void Update();
 
-		bool material_data_needs_uploaded() const { return mMaterialDataNeedsUploaded; }
+		[[nodiscard]] bool GetMaterialDataNeedsUploaded() const;
 
-		MaterialDataVK& get_material_data(const UUID& id) { return m_mat_data[id]; }
-		PackedVector<UUID, MaterialDataVK>& get_material_data() { return m_mat_data; }
+		MaterialDataVK& GetMaterialData(const UUID& id);
+		PackedVector<UUID, MaterialDataVK>& GetAllMaterialData();
 
-		MaterialVK& get_material(const UUID& id) { return m_mats[id]; }
+		MaterialVK& GetMaterial(const UUID& id);
 
-		GPUMaterialInstanceData& get_cached_material_data(const UUID& id) { return m_cached_material_data[id]; }
+		GPUMaterialInstanceData& GetCachedMaterialData(const UUID& id);
 
 	private:
 
-		std::shared_ptr<RenderSubystemVK> m_render_system = nullptr;
+		std::shared_ptr<RenderSubsystemVK> mRenderSystem = nullptr;
 
-		std::unordered_set<UUID> m_materials_to_load; // Materials that need to be loaded
-		std::unordered_set<UUID> m_materials_instances_to_load; // Materials Instances that need to be loaded
+		std::unordered_set<UUID> mMaterialsToLoad; // Materials that need to be loaded
+		std::unordered_set<UUID> mMaterialsInstancesToLoad; // Materials Instances that need to be loaded
 
-		PackedVector<UUID, MaterialDataVK> m_mat_data;
-		std::unordered_map<UUID, MaterialVK> m_mats;
+		PackedVector<UUID, MaterialDataVK> mMatData;
+		std::unordered_map<UUID, MaterialVK> mMats;
 
-		PackedVector<UUID, GPUMaterialInstanceData> m_cached_material_data; // Cached data for each unique material/instance
+		PackedVector<UUID, GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
 		bool mMaterialDataNeedsUploaded = false;
 
-		bool load_material_instance(UUID matID, MaterialDataVK& matData);
-		void init_material_pipeline(UUID matID);
+		bool LoadMaterialInstance(UUID matID, MaterialDataVK& matData);
+		void InitMaterialPipeline(UUID matID);
 		
 	};
 }

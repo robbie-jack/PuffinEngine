@@ -10,7 +10,7 @@
 
 namespace puffin::rendering
 {
-	class RenderSubystemVK;
+	class RenderSubsystemVK;
 
 	struct UnifiedGeometryBufferParams
 	{
@@ -25,7 +25,7 @@ namespace puffin::rendering
 	{
 	public:
 
-		explicit UnifiedGeometryBuffer(RenderSubystemVK* renderSystem, UnifiedGeometryBufferParams params = {});
+		explicit UnifiedGeometryBuffer(RenderSubsystemVK* renderSystem, UnifiedGeometryBufferParams params = {});
 
 		~UnifiedGeometryBuffer();
 
@@ -44,7 +44,7 @@ namespace puffin::rendering
 
 	private:
 
-		RenderSubystemVK* m_render_system = nullptr;
+		RenderSubsystemVK* m_render_system = nullptr;
 
 		struct InternalVertexBufferData
 		{
