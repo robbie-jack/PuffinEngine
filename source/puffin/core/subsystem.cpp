@@ -15,7 +15,7 @@ namespace puffin::core
 		mEngine = nullptr;
 	}
 
-	void Subsystem::RegisterSubsystems()
+	void Subsystem::RegisterTypes()
 	{
 	}
 

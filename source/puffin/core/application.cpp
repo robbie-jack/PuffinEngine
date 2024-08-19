@@ -9,7 +9,7 @@ puffin::core::Application::~Application()
 	mEngine = nullptr;
 }
 
-void puffin::core::Application::RegisterSubsystems()
+void puffin::core::Application::RegisterTypes()
 {
 }
 

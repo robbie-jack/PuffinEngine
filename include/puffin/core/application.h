@@ -17,9 +17,9 @@ namespace puffin::core
 		virtual ~Application();
 
 		/*
-		 * Register any application specific subsystems here, gets called before initialization
+		 * Register any application specific types (subsystems, components, nodes, etc...) here, gets called before initialization
 		 */
-		virtual void RegisterSubsystems();
+		virtual void RegisterTypes();
 
 		/*
 		 * Application initialization occurs here, called after engine subsystems are initialized

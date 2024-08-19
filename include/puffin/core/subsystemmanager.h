@@ -79,7 +79,7 @@ namespace puffin::core
 				mGameplaySubsystemNames.push_back(typeName);
 			}
 
-			subsystem->RegisterSubsystems();
+			subsystem->RegisterTypes();
 		}
 
 		template<typename T>

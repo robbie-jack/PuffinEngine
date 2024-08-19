@@ -51,6 +51,11 @@ namespace puffin::core
 		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialInstanceAsset>();
 	}
 
+	void RegisterComponentTypes()
+	{
+		RegisterType<TransformComponent3D>();
+	}
+
 	void RegisterComponents(const std::shared_ptr<Engine>& engine)
 	{
 		auto sceneSubsystem = engine->GetSubsystem<io::SceneSerializationSubsystem>();

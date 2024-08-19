@@ -6,6 +6,8 @@
 #include "nlohmann/json.hpp"
 #include "puffin/types/eulerangles.h"
 
+#include "puffin/utility/reflection.h"
+
 namespace puffin
 {
 //#ifdef PFN_DOUBLE_PRECISION
@@ -49,6 +51,17 @@ namespace puffin
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent3D, position, orientationQuat, orientationEulerAngles, scale)
 	};
+
+	template<>
+	inline void RegisterType<TransformComponent3D>()
+	{
+		entt::meta<TransformComponent3D>()
+			.type(entt::hs("TransformComponent3D"))
+			.data<&TransformComponent3D::position>(entt::hs("position"))
+			.data<&TransformComponent3D::orientationQuat>(entt::hs("orientationQuat"))
+			.data<&TransformComponent3D::orientationEulerAngles>(entt::hs("orientationEulerAngles"))
+			.data<&TransformComponent3D::scale>(entt::hs("scale"));
+	}
 
 	// Update transform orientation with a new euler angles and recalculates quaternion
 	inline void UpdateTransformOrientation(TransformComponent3D& transform, const maths::EulerAngles& eulerAnglesNew)

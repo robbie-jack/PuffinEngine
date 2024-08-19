@@ -238,6 +238,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/types/storage/ringbuffer.h
 	# Utility
 	${HEADER_DIR}/puffin/utility/performancebenchmarksubsystem.h
+	${HEADER_DIR}/puffin/utility/reflection.h
 	# Window
 	${HEADER_DIR}/puffin/window/windowsubsystem.h
 	)

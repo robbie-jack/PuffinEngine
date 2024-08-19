@@ -16,6 +16,7 @@ namespace puffin::core
 	class Engine;
 
 	void RegisterAssetTypes(const io::ProjectFile& projectFile, const std::filesystem::path& projectPath);
+	void RegisterComponentTypes();
 	void RegisterComponents(const std::shared_ptr<Engine>& engine);
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine);
 
