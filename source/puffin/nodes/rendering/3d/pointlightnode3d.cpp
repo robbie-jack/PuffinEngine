@@ -4,15 +4,23 @@
 
 namespace puffin::rendering
 {
-	PointLightNode3D::PointLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : LightNode3D(engine, id)
+	PointLightNode3D::PointLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
+		LightNode3D(engine, id)
 	{
 		mName = "Point Light";
+	}
+
+	void PointLightNode3D::Initialize()
+	{
+		LightNode3D::Initialize();
 
 		AddComponent<PointLightComponent3D>();
 	}
 
-	PointLightNode3D::~PointLightNode3D()
+	void PointLightNode3D::Deinitialize()
 	{
+		LightNode3D::Deinitialize();
+
 		RemoveComponent<PointLightComponent3D>();
 	}
 
@@ -91,32 +99,53 @@ namespace puffin::rendering
 		mRegistry->patch<PointLightComponent3D>(mEntity, [&specularExponent](auto& light) { light.specularExponent = specularExponent; });
 	}
 
-	const int& PointLightNode3D::GetConstantAttenuation() const
+	const float& PointLightNode3D::GetConstantAttenuation() const
 	{
 		return GetComponent<PointLightComponent3D>().constantAttenuation;
 	}
 
-	void PointLightNode3D::SetConstantAttenuation(const int& constantAttenuation) const
+	float& PointLightNode3D::ConstantAttenuation()
+	{
+		mRegistry->patch<PointLightComponent3D>(mEntity);
+
+		return GetComponent<PointLightComponent3D>().constantAttenuation;
+	}
+
+	void PointLightNode3D::SetConstantAttenuation(const float& constantAttenuation) const
 	{
 		mRegistry->patch<PointLightComponent3D>(mEntity, [&constantAttenuation](auto& light) { light.constantAttenuation = constantAttenuation; });
 	}
 
-	const int& PointLightNode3D::GetLinearAttenuation() const
+	const float& PointLightNode3D::GetLinearAttenuation() const
 	{
 		return GetComponent<PointLightComponent3D>().linearAttenuation;
 	}
 
-	void PointLightNode3D::SetLinearAttenuation(const int& linearAttenuation) const
+	float& PointLightNode3D::LinearAttenuation()
+	{
+		mRegistry->patch<PointLightComponent3D>(mEntity);
+
+		return GetComponent<PointLightComponent3D>().linearAttenuation;
+	}
+
+	void PointLightNode3D::SetLinearAttenuation(const float& linearAttenuation) const
 	{
 		mRegistry->patch<PointLightComponent3D>(mEntity, [&linearAttenuation](auto& light) { light.linearAttenuation = linearAttenuation; });
 	}
 
-	const int& PointLightNode3D::GetQuadraticAttenuation() const
+	const float& PointLightNode3D::GetQuadraticAttenuation() const
 	{
 		return GetComponent<PointLightComponent3D>().quadraticAttenuation;
 	}
 
-	void PointLightNode3D::SetQuadraticAttenuation(const int& quadraticAttenuation) const
+	float& PointLightNode3D::QuadraticAttenuation()
+	{
+		mRegistry->patch<PointLightComponent3D>(mEntity);
+
+		return GetComponent<PointLightComponent3D>().quadraticAttenuation;
+	}
+
+	void PointLightNode3D::SetQuadraticAttenuation(const float& quadraticAttenuation) const
 	{
 		mRegistry->patch<PointLightComponent3D>(mEntity, [&quadraticAttenuation](auto& light) { light.quadraticAttenuation = quadraticAttenuation; });
 	}

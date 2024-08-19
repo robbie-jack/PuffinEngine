@@ -9,7 +9,10 @@ namespace puffin::rendering
 	public:
 
 		explicit PointLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
-		~PointLightNode3D() override;
+		~PointLightNode3D() override = default;
+
+		void Initialize() override;
+		void Deinitialize() override;
 
 		[[nodiscard]] LightType GetLightType() override;
 
@@ -29,14 +32,17 @@ namespace puffin::rendering
 		[[nodiscard]] int& SpecularExponent() override;
 		void SetSpecularExponent(const int& specularExponent) const override;
 
-		[[nodiscard]] const int& GetConstantAttenuation() const;
-		void SetConstantAttenuation(const int& constantAttenuation) const;
+		[[nodiscard]] const float& GetConstantAttenuation() const;
+		[[nodiscard]] float& ConstantAttenuation();
+		void SetConstantAttenuation(const float& constantAttenuation) const;
 
-		[[nodiscard]] const int& GetLinearAttenuation() const;
-		void SetLinearAttenuation(const int& linearAttenuation) const;
+		[[nodiscard]] const float& GetLinearAttenuation() const;
+		[[nodiscard]] float& LinearAttenuation();
+		void SetLinearAttenuation(const float& linearAttenuation) const;
 
-		[[nodiscard]] const int& GetQuadraticAttenuation() const;
-		void SetQuadraticAttenuation(const int& quadraticAttenuation) const;
+		[[nodiscard]] const float& GetQuadraticAttenuation() const;
+		[[nodiscard]] float& QuadraticAttenuation();
+		void SetQuadraticAttenuation(const float& quadraticAttenuation) const;
 
 	private:
 

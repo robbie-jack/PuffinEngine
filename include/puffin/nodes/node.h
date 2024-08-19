@@ -35,10 +35,18 @@ namespace puffin
 	public:
 
 		explicit Node(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
-
 		virtual ~Node() = default;
 
+		/*
+		 * Initialize node, called upon being added to scene
+		 * Add any components you want here
+		 */
 		virtual void Initialize();
+
+		/*
+		 * Deinitialize node, called upon being removed from scene
+		 * Remove any added components here
+		 */
 		virtual void Deinitialize();
 
 		virtual void BeginPlay();

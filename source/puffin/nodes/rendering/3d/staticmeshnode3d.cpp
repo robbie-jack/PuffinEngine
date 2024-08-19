@@ -4,11 +4,24 @@
 
 namespace puffin::rendering
 {
-	StaticMeshNode3D::StaticMeshNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
+	StaticMeshNode3D::StaticMeshNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
+		TransformNode3D(engine, id)
 	{
 		mName = "Mesh";
+	}
+
+	void StaticMeshNode3D::Initialize()
+	{
+		TransformNode3D::Initialize();
 
 		AddComponent<StaticMeshComponent3D>();
+	}
+
+	void StaticMeshNode3D::Deinitialize()
+	{
+		TransformNode3D::Deinitialize();
+
+		RemoveComponent<StaticMeshComponent3D>();
 	}
 
 	UUID StaticMeshNode3D::GetMeshID()

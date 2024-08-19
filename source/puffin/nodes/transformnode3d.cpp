@@ -6,15 +6,23 @@
 
 namespace puffin
 {
-	TransformNode3D::TransformNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : Node(engine, id)
+	TransformNode3D::TransformNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
+		Node(engine, id)
 	{
 		mName = "Transform3D";
+	}
+
+	void TransformNode3D::Initialize()
+	{
+		Node::Initialize();
 
 		AddComponent<TransformComponent3D>();
 	}
 
-	TransformNode3D::~TransformNode3D()
+	void TransformNode3D::Deinitialize()
 	{
+		Node::Deinitialize();
+
 		RemoveComponent<TransformComponent3D>();
 	}
 

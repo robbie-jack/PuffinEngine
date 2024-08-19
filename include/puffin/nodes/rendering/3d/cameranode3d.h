@@ -11,8 +11,12 @@ namespace puffin::rendering
 		explicit CameraNode3D(const std::shared_ptr<puffin::core::Engine>& engine, const puffin::UUID& id = puffin::gInvalidID);
 		~CameraNode3D() override = default;
 
-		[[nodiscard]] bool GetIsActive() const;
-		void SetIsActive(bool active);
+		void Initialize() override;
+		void Deinitialize() override;
+
+		[[nodiscard]] bool GetActive() const;
+		[[nodiscard]] bool& Active();
+		void SetActive(bool active);
 
 	private:
 

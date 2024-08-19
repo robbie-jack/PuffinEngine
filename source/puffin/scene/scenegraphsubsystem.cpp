@@ -172,6 +172,8 @@ namespace puffin::scene
 		{
 			node->EndPlay();
 
+			node->Deinitialize();
+
 			node->GetChildIDs(childIDs);
 		}
 
@@ -328,6 +330,9 @@ namespace puffin::scene
 
 	void SceneGraphSubsystem::AddNodeInternalBase(Node* node, const char* typeName, UUID id, UUID parentID)
 	{
+		assert(node != nullptr && "SceneGraphSubsystem::AddNodeInternalBase - Node was nullptr");
+
+		// Set node parent if necessary
 		if (parentID != gInvalidID)
 		{
 			node->SetParentID(parentID);
@@ -339,6 +344,8 @@ namespace puffin::scene
 		{
 			mRootNodeIDs.push_back(id);
 		}
+
+		node->Initialize();
 
 		mIDToType.insert({ id, typeName });
 

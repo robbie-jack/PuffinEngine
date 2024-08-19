@@ -8,16 +8,35 @@ namespace puffin::rendering
 		: TransformNode3D(engine, id)
 	{
 		mName = "Camera";
+	}
+
+	void CameraNode3D::Initialize()
+	{
+		TransformNode3D::Initialize();
 
 		AddComponent<CameraComponent3D>();
 	}
 
-	bool CameraNode3D::GetIsActive() const
+	void CameraNode3D::Deinitialize()
+	{
+		TransformNode3D::Deinitialize();
+
+		RemoveComponent<CameraComponent3D>();
+	}
+
+	bool CameraNode3D::GetActive() const
 	{
 		return GetComponent<CameraComponent3D>().active;
 	}
 
-	void CameraNode3D::SetIsActive(bool active)
+	bool& CameraNode3D::Active()
+	{
+		mRegistry->patch<CameraComponent3D>(mEntity);
+
+		return GetComponent<CameraComponent3D>().active;
+	}
+
+	void CameraNode3D::SetActive(bool active)
 	{
 		mRegistry->patch<CameraComponent3D>(mEntity, [&active](auto& camera) { camera.active = active; });
 	}

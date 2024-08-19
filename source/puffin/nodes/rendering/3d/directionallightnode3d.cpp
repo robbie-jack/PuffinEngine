@@ -4,19 +4,40 @@
 
 namespace puffin::rendering
 {
-	DirectionalLightNode3D::DirectionalLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
+	DirectionalLightNode3D::DirectionalLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
+		LightNode3D(engine, id)
 	{
 		mName = "Directional Light";
+	}
+
+	void DirectionalLightNode3D::Initialize()
+	{
+		LightNode3D::Initialize();
 
 		AddComponent<DirectionalLightComponent3D>();
 	}
 
-	DirectionalLightNode3D::~DirectionalLightNode3D()
+	void DirectionalLightNode3D::Deinitialize()
 	{
+		LightNode3D::Deinitialize();
+
+		RemoveComponent<DirectionalLightComponent3D>();
+	}
+
+	LightType DirectionalLightNode3D::GetLightType()
+	{
+		return LightType::Directional;
 	}
 
 	const Vector3f& DirectionalLightNode3D::GetColor() const
 	{
+		return GetComponent<DirectionalLightComponent3D>().color;
+	}
+
+	Vector3f& DirectionalLightNode3D::Color()
+	{
+		mRegistry->patch<DirectionalLightComponent3D>(mEntity);
+
 		return GetComponent<DirectionalLightComponent3D>().color;
 	}
 
@@ -30,6 +51,13 @@ namespace puffin::rendering
 		return GetComponent<DirectionalLightComponent3D>().ambientIntensity;
 	}
 
+	float& DirectionalLightNode3D::AmbientIntensity()
+	{
+		mRegistry->patch<DirectionalLightComponent3D>(mEntity);
+
+		return GetComponent<DirectionalLightComponent3D>().ambientIntensity;
+	}
+
 	void DirectionalLightNode3D::SetAmbientIntensity(const float& ambientIntensity) const
 	{
 		mRegistry->patch<DirectionalLightComponent3D>(mEntity, [&ambientIntensity](auto& light) { light.ambientIntensity = ambientIntensity; });
@@ -40,6 +68,13 @@ namespace puffin::rendering
 		return GetComponent<DirectionalLightComponent3D>().specularIntensity;
 	}
 
+	float& DirectionalLightNode3D::SpecularIntensity()
+	{
+		mRegistry->patch<DirectionalLightComponent3D>(mEntity);
+
+		return GetComponent<DirectionalLightComponent3D>().specularIntensity;
+	}
+
 	void DirectionalLightNode3D::SetSpecularIntensity(const float& specularIntensity) const
 	{
 		mRegistry->patch<DirectionalLightComponent3D>(mEntity, [&specularIntensity](auto& light) { light.specularIntensity = specularIntensity; });
@@ -47,6 +82,13 @@ namespace puffin::rendering
 
 	const int& DirectionalLightNode3D::GetSpecularExponent() const
 	{
+		return GetComponent<DirectionalLightComponent3D>().specularExponent;
+	}
+
+	int& DirectionalLightNode3D::SpecularExponent()
+	{
+		mRegistry->patch<DirectionalLightComponent3D>(mEntity);
+
 		return GetComponent<DirectionalLightComponent3D>().specularExponent;
 	}
 

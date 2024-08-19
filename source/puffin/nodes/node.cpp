@@ -6,19 +6,23 @@
 
 namespace puffin
 {
-	Node::Node(const std::shared_ptr<core::Engine>& engine, const UUID& id) : mNodeID(id), mEngine(engine)
+	Node::Node(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
+		mNodeID(id), mEntity(), mEngine(engine)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		mRegistry = enttSubsystem->GetRegistry();
-		mEntity = enttSubsystem->AddEntity(mNodeID);
 	}
 
 	void Node::Initialize()
 	{
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		mEntity = enttSubsystem->AddEntity(mNodeID);
 	}
 
 	void Node::Deinitialize()
 	{
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		enttSubsystem->RemoveEntity(mNodeID);
 	}
 
 	void Node::BeginPlay()

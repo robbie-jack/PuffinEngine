@@ -17,6 +17,9 @@ namespace puffin
 		explicit TransformNode2D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
 		~TransformNode2D() override = default;
 
+		void Initialize() override;
+		void Deinitialize() override;
+
 		[[nodiscard]] const TransformComponent2D& GetTransform() const;
 		[[nodiscard]] TransformComponent2D& Transform();
 

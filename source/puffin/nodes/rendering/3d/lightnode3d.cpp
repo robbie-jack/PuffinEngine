@@ -4,7 +4,8 @@
 
 namespace puffin::rendering
 {
-	LightNode3D::LightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) : TransformNode3D(engine, id)
+	LightNode3D::LightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
+		TransformNode3D(engine, id)
 	{
 	}
 
