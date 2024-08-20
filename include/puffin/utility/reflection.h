@@ -8,7 +8,7 @@ namespace entt
 	using hs = hashed_string;
 }
 
-namespace puffin
+namespace puffin::reflection
 {
 	template<typename T>
 	void RegisterType()

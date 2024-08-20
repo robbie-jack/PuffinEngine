@@ -239,6 +239,7 @@ set(HEADERS
 	# Utility
 	${HEADER_DIR}/puffin/utility/performancebenchmarksubsystem.h
 	${HEADER_DIR}/puffin/utility/reflection.h
+	${HEADER_DIR}/puffin/utility/serialization.h
 	# Window
 	${HEADER_DIR}/puffin/window/windowsubsystem.h
 	)
@@ -337,6 +338,7 @@ set(SOURCES
 	# UI
 	# Utility
 	${SOURCE_DIR}/puffin/utility/performancebenchmarksubsystem.cpp
+	${SOURCE_DIR}/puffin/utility/serialization.cpp
 	# Window
 	${SOURCE_DIR}/puffin/window/windowsubsystem.cpp
 	)

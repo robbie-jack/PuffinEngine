@@ -48,7 +48,7 @@ namespace puffin
 	}
 
 	template<>
-	inline void RegisterType<rendering::ShadowCasterComponent3D>()
+	inline void reflection::RegisterType<rendering::ShadowCasterComponent3D>()
 	{
 		using namespace rendering;
 

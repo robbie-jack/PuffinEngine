@@ -38,7 +38,7 @@ namespace puffin
 	}
 
 	template<>
-	inline void RegisterType<rendering::CameraComponent3D>()
+	inline void reflection::RegisterType<rendering::CameraComponent3D>()
 	{
 		using namespace rendering;
 

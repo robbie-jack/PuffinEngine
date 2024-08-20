@@ -24,7 +24,7 @@ namespace puffin
 	}
 
 	template<>
-	inline void RegisterType<rendering::PointLightComponent3D>()
+	inline void reflection::RegisterType<rendering::PointLightComponent3D>()
 	{
 		using namespace rendering;
 

@@ -43,7 +43,7 @@ namespace puffin
 	};
 
 	template<>
-	inline void RegisterType<TransformComponent2D>()
+	inline void reflection::RegisterType<TransformComponent2D>()
 	{
 		entt::meta<TransformComponent2D>()
 			.type(entt::hs("TransformComponent2D"))

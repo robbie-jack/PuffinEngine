@@ -26,7 +26,7 @@ namespace puffin
 	}
 
 	template<>
-	inline void RegisterType<rendering::ProceduralMeshComponent3D>()
+	inline void reflection::RegisterType<rendering::ProceduralMeshComponent3D>()
 	{
 		using namespace rendering;
 

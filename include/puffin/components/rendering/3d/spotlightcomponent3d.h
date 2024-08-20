@@ -31,7 +31,7 @@ namespace puffin
 	}
 
 	template<>
-	inline void RegisterType<rendering::SpotLightComponent3D>()
+	inline void reflection::RegisterType<rendering::SpotLightComponent3D>()
 	{
 		using namespace rendering;
 

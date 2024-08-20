@@ -55,20 +55,20 @@ namespace puffin::core
 	void RegisterComponentTypes()
 	{
 		// Register 2D Types
-		RegisterType<TransformComponent2D>();
+		reflection::RegisterType<TransformComponent2D>();
 
 		// Register 3D Types
-		RegisterType<TransformComponent3D>();
+		reflection::RegisterType<TransformComponent3D>();
 		
-		RegisterType<rendering::StaticMeshComponent3D>();
-		RegisterType<rendering::ProceduralMeshComponent3D>();
+		reflection::RegisterType<rendering::StaticMeshComponent3D>();
+		reflection::RegisterType<rendering::ProceduralMeshComponent3D>();
 
-		RegisterType<rendering::PointLightComponent3D>();
-		RegisterType<rendering::SpotLightComponent3D>();
-		RegisterType<rendering::DirectionalLightComponent3D>();
-		RegisterType<rendering::ShadowCasterComponent3D>();
+		reflection::RegisterType<rendering::PointLightComponent3D>();
+		reflection::RegisterType<rendering::SpotLightComponent3D>();
+		reflection::RegisterType<rendering::DirectionalLightComponent3D>();
+		reflection::RegisterType<rendering::ShadowCasterComponent3D>();
 
-		RegisterType<rendering::CameraComponent3D>();
+		reflection::RegisterType<rendering::CameraComponent3D>();
 	}
 
 	void RegisterComponents(const std::shared_ptr<Engine>& engine)
