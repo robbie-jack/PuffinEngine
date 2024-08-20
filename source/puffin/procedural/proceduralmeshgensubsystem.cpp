@@ -166,7 +166,7 @@ namespace puffin::procedural
 		{
 			rendering::VertexPNTV32& vertex = mesh.vertices[i];
 			vertex.pos = positions[i];
-			vertex.normal = normalize(positions[i]);
+			vertex.normal = positions[i].Normalized();
 			vertex.tangent = { 0.0f, 0.0f, 0.0f };
 			vertex.uvX = 0.0f;
 			vertex.uvY = 0.0f;

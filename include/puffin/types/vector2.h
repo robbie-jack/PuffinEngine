@@ -8,6 +8,9 @@
 
 #include "nlohmann/json.hpp"
 
+#include "puffin/utility/reflection.h"
+#include "puffin/utility/serialization.h"
+
 namespace puffin
 {
 	template<typename T>
@@ -263,7 +266,7 @@ namespace puffin
 			y = 0.0f;
 		}
 
-		[[nodiscard]] Vector2 Absolute() const
+		[[nodiscard]] Vector2 Abs() const
 		{
 			return Vector2(std::abs(x), std::abs(y));
 		}
@@ -272,9 +275,89 @@ namespace puffin
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector2, x, y)
 	};
 
-	typedef Vector2<float> Vector2f;
-	typedef Vector2<double> Vector2d;
-	typedef Vector2<int> Vector2i;
+	using Vector2f = Vector2<float>;
+
+	template<>
+	inline void reflection::RegisterType<Vector2f>()
+	{
+		entt::meta<Vector2f>()
+			.type(entt::hs("Vector2f"))
+			.data<&Vector2f::x>(entt::hs("x"))
+			.data<&Vector2f::y>(entt::hs("y"));
+	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<Vector2f>(const Vector2f& type, Archive& archive)
+		{
+			archive.Serialize("x", type.x);
+			archive.Serialize("y", type.y);
+		}
+
+		template<>
+		inline void Deserialize<Vector2f>(const Archive& archive, Vector2f& type)
+		{
+			archive.Deserialize("x", type.x);
+			archive.Deserialize("y", type.y);
+		}
+	}
+
+	using Vector2d = Vector2<double>;
+
+	template<>
+	inline void reflection::RegisterType<Vector2d>()
+	{
+		entt::meta<Vector2d>()
+			.type(entt::hs("Vector2d"))
+			.data<&Vector2d::x>(entt::hs("x"))
+			.data<&Vector2d::y>(entt::hs("y"));
+	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<Vector2d>(const Vector2d& type, Archive& archive)
+		{
+			archive.Serialize("x", type.x);
+			archive.Serialize("y", type.y);
+		}
+
+		template<>
+		inline void Deserialize<Vector2d>(const Archive& archive, Vector2d& type)
+		{
+			archive.Deserialize("x", type.x);
+			archive.Deserialize("y", type.y);
+		}
+	}
+
+	using Vector2i = Vector2<int>;
+
+	template<>
+	inline void reflection::RegisterType<Vector2i>()
+	{
+		entt::meta<Vector2i>()
+			.type(entt::hs("Vector2i"))
+			.data<&Vector2i::x>(entt::hs("x"))
+			.data<&Vector2i::y>(entt::hs("y"));
+	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<Vector2i>(const Vector2i& type, Archive& archive)
+		{
+			archive.Serialize("x", type.x);
+			archive.Serialize("y", type.y);
+		}
+
+		template<>
+		inline void Deserialize<Vector2i>(const Archive& archive, Vector2i& type)
+		{
+			archive.Deserialize("x", type.x);
+			archive.Deserialize("y", type.y);
+		}
+	}
 }
 
 namespace std

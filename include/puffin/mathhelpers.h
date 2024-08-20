@@ -126,23 +126,23 @@ namespace puffin::maths
 
 	inline Quat RotationBetweenVectors(Vector3f start, Vector3f target)
 	{
-		target = normalize(target);
-		start = normalize(start);
+		target.Normalize();
+		start.Normalize();
 
-		const float cosTheta = dot(target, start);
+		const float cosTheta = target.Dot(start);
 		Vector3f rotationAxis;
 
 		if (cosTheta < -1 + 0.001f)
 		{
-			rotationAxis = cross(Vector3f(0.0f, 0.0f, 1.0f), target);
-			if (length_squared(rotationAxis) < 0.01) // bad luck, they were parallel, try again!
-				rotationAxis = cross(Vector3f(1.0f, 0.0f, 0.0f), target);
+			rotationAxis = Vector3f(0.0f, 0.0f, 1.0f).Cross(target);
+			if (rotationAxis.LengthSq() < 0.01) // bad luck, they were parallel, try again!
+				rotationAxis = Vector3f(1.0f, 0.0f, 0.0f).Cross(target);
 
-			rotationAxis = normalize(rotationAxis);
+			rotationAxis.Normalize();
 			return glm::angleAxis(glm::radians(180.0f), static_cast<glm::vec3>(rotationAxis));
 		}
 
-		rotationAxis = cross(target, start);
+		rotationAxis = target.Cross(start);
 
 		float s = sqrt((1 + cosTheta) * 2);
 		float invs = 1 / s;

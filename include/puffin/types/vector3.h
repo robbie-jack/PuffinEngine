@@ -209,11 +209,51 @@ namespace puffin
 			return 0.0;
 		}
 
-		void zero()
+		void Zero()
 		{
 			x = 0.0f;
 			y = 0.0f;
 			z = 0.0f;
+		}
+
+		T Dot(const Vector3& vec) const
+		{
+			return x * vec.x + y * vec.y + z * vec.z;
+		}
+
+		Vector3 Cross(const Vector3& vec) const
+		{
+			Vector3 cross;
+			cross.x = y * vec.z - z * vec.y;
+			cross.y = x * vec.z - z * vec.x;
+			cross.z = x * vec.y - y * vec.x;
+			return cross;
+		}
+
+		T LengthSq() const
+		{
+			return x * x + y * y + z * z;
+		}
+
+		T Length() const
+		{
+			return sqrt(LengthSq());
+		}
+
+		void Normalize()
+		{
+			T length = Length();
+
+			x /= length;
+			y /= length;
+			z /= length;
+		}
+
+		Vector3 Normalized() const
+		{
+			T length = Length();
+
+			return Vector3(x / length, y / length, z / length);
 		}
 
 		// Json
@@ -221,77 +261,93 @@ namespace puffin
 	};
 
 	using Vector3f = Vector3<float>;
+
+	template<>
+	inline void reflection::RegisterType<Vector3f>()
+	{
+		entt::meta<Vector3f>()
+			.type(entt::hs("Vector3f"))
+			.data<&Vector3f::x>(entt::hs("x"))
+			.data<&Vector3f::y>(entt::hs("y"))
+			.data<&Vector3f::z>(entt::hs("z"));
+	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<Vector3f>(const Vector3f& type, Archive& archive)
+		{
+			archive.Serialize("x", type.x);
+			archive.Serialize("y", type.y);
+			archive.Serialize("z", type.z);
+		}
+
+		template<>
+		inline void Deserialize<Vector3f>(const Archive& archive, Vector3f& type)
+		{
+			archive.Deserialize("x", type.x);
+			archive.Deserialize("y", type.y);
+		}
+	}
+
 	using Vector3d = Vector3<double>;
+
+	template<>
+	inline void reflection::RegisterType<Vector3d>()
+	{
+		entt::meta<Vector3d>()
+			.type(entt::hs("Vector3d"))
+			.data<&Vector3d::x>(entt::hs("x"))
+			.data<&Vector3d::y>(entt::hs("y"))
+			.data<&Vector3d::z>(entt::hs("z"));
+	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<Vector3d>(const Vector3d& type, Archive& archive)
+		{
+			archive.Serialize("x", type.x);
+			archive.Serialize("y", type.y);
+			archive.Serialize("z", type.z);
+		}
+
+		template<>
+		inline void Deserialize<Vector3d>(const Archive& archive, Vector3d& type)
+		{
+			archive.Deserialize("x", type.x);
+			archive.Deserialize("y", type.y);
+		}
+	}
+
 	using Vector3i = Vector3<int>;
 
-	inline float dot(const Vector3f& a, const Vector3f& b)
+	template<>
+	inline void reflection::RegisterType<Vector3i>()
 	{
-		return a.x * b.x + a.y * b.y + a.z * b.z;
+		entt::meta<Vector3i>()
+			.type(entt::hs("Vector3i"))
+			.data<&Vector3i::x>(entt::hs("x"))
+			.data<&Vector3i::y>(entt::hs("y"))
+			.data<&Vector3i::z>(entt::hs("z"));
 	}
 
-	inline double dot(const Vector3d& a, const Vector3d& b)
+	namespace serialization
 	{
-		return a.x * b.x + a.y * b.y + a.z * b.z;
-	}
+		template<>
+		inline void Serialize<Vector3i>(const Vector3i& type, Archive& archive)
+		{
+			archive.Serialize("x", type.x);
+			archive.Serialize("y", type.y);
+			archive.Serialize("z", type.z);
+		}
 
-	inline Vector3f cross(const Vector3f& a, const Vector3f& b)
-	{
-		Vector3f cross;
-		cross.x = a.y * b.z - a.z * b.y;
-		cross.y = a.x * b.z - a.z * b.x;
-		cross.z = a.x * b.y - a.y * b.x;
-		return cross;
-	}
-
-	inline Vector3d cross(const Vector3d& a, const Vector3d& b)
-	{
-		Vector3d cross;
-		cross.x = a.y * b.z - a.z * b.y;
-		cross.y = a.x * b.z - a.z * b.x;
-		cross.z = a.x * b.y - a.y * b.x;
-		return cross;
-	}
-
-	inline float length_squared(const Vector3f& v)
-	{
-		return v.x * v.x + v.y * v.y + v.z * v.z;
-	}
-
-	inline float length(const Vector3f& v)
-	{
-		return sqrtf(length_squared(v));
-	}
-
-	inline double length_squared(const Vector3d& v)
-	{
-		return v.x * v.x + v.y * v.y + v.z * v.z;
-	}
-
-	inline double length(const Vector3d& v)
-	{
-		return sqrt(length_squared(v));
-	}
-
-	inline Vector3f normalize(const Vector3f& v)
-	{
-		Vector3f vec = v;
-		const float l = length(v);
-
-		vec /= l;
-
-		return vec;
-	}
-
-	inline Vector3d normalize(const Vector3d& v)
-	{
-		Vector3d vec = v;
-		const double l = length(v);
-
-		vec.x /= l;
-		vec.y /= l;
-		vec.z /= l;
-
-		return vec;
+		template<>
+		inline void Deserialize<Vector3i>(const Archive& archive, Vector3i& type)
+		{
+			archive.Deserialize("x", type.x);
+			archive.Deserialize("y", type.y);
+		}
 	}
 }
 

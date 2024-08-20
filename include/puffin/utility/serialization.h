@@ -61,7 +61,7 @@ namespace puffin::serialization
 		void Deserialize(const std::string& name, uint64_t& type) const;
 
 		template<typename T>
-		void Serialize(const std::string& name, T type)
+		void Serialize(const std::string& name, const T& type)
 		{
 			Archive archive;
 
@@ -71,15 +71,11 @@ namespace puffin::serialization
 		}
 
 		template<typename T>
-		T Deserialize(const std::string& name)
+		void Deserialize(const std::string& name, T& type)
 		{
 			assert(mArchives.find(name) != mArchives.end() && "template T Archive::Deserialize - No property with that name in archive");
 
-			T type;
-
-			Deserialize(mArchives.at(name), type);
-
-			return type;
+			Deserialize<T>(mArchives.at(name), type);
 		}
 
 		void DumpToJson(nlohmann::json& json);

@@ -83,7 +83,7 @@ namespace puffin::io
 			const Vector3f& n = vertices[i].normal;
 			const Vector3f& t = tan[i];
 
-			vertices[i].tangent = normalize(t - n * dot(n, t));
+			vertices[i].tangent = (t - n * n.Dot(t)).Normalized();
 		}
 	}
 
