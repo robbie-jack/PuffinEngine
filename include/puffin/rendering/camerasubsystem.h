@@ -15,12 +15,12 @@ namespace puffin::rendering
 {
 	struct CameraComponent3D;
 
-	class CameraSubystem : public core::Subsystem
+	class CameraSubsystem : public core::Subsystem
 	{
 	public:
 
-		explicit CameraSubystem(const std::shared_ptr<core::Engine>& engine);
-		~CameraSubystem() override = default;
+		explicit CameraSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~CameraSubsystem() override = default;
 
 		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;

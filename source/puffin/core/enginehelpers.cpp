@@ -17,6 +17,7 @@
 #include "puffin/components/rendering/3d/directionallightcomponent3d.h"
 #include "puffin/components/rendering/3d/lightcomponent3d.h"
 #include "puffin/components/rendering/3d/pointlightcomponent3d.h"
+#include "puffin/components/rendering/3d/proceduralmeshcomponent3d.h"
 #include "puffin/components/rendering/3d/shadowcastercomponent3d.h"
 #include "puffin/components/rendering/3d/spotlightcomponent3d.h"
 #include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
@@ -53,7 +54,21 @@ namespace puffin::core
 
 	void RegisterComponentTypes()
 	{
+		// Register 2D Types
+		RegisterType<TransformComponent2D>();
+
+		// Register 3D Types
 		RegisterType<TransformComponent3D>();
+		
+		RegisterType<rendering::StaticMeshComponent3D>();
+		RegisterType<rendering::ProceduralMeshComponent3D>();
+
+		RegisterType<rendering::PointLightComponent3D>();
+		RegisterType<rendering::SpotLightComponent3D>();
+		RegisterType<rendering::DirectionalLightComponent3D>();
+		RegisterType<rendering::ShadowCasterComponent3D>();
+
+		RegisterType<rendering::CameraComponent3D>();
 	}
 
 	void RegisterComponents(const std::shared_ptr<Engine>& engine)
@@ -90,7 +105,7 @@ namespace puffin::core
 		engine->RegisterSubsystem<ecs::EnTTSubsystem>();
 		engine->RegisterSubsystem<scene::SceneGraphSubsystem>();
 		engine->RegisterSubsystem<io::SceneSerializationSubsystem>();
-		engine->RegisterSubsystem<rendering::CameraSubystem>();
+		engine->RegisterSubsystem<rendering::CameraSubsystem>();
 
 		// Editor Subsystems
 		engine->RegisterSubsystem<ui::EditorUISubsystem>();

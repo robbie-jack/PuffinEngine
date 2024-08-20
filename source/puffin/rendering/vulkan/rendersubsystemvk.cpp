@@ -1399,7 +1399,7 @@ namespace puffin::rendering
 		// Prepare camera data
 		const AllocatedBuffer& cameraBuffer = GetCurrentFrameData().cameraBuffer;
 
-		const auto cameraSubystem = mEngine->GetSubsystem<CameraSubystem>();
+		const auto cameraSubystem = mEngine->GetSubsystem<CameraSubsystem>();
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
@@ -1753,7 +1753,7 @@ namespace puffin::rendering
 
 		util::CopyCPUDataIntoGPUBuffer(this, params);
 
-		auto camSystem = mEngine->GetSubsystem<CameraSubystem>();
+		auto camSystem = mEngine->GetSubsystem<CameraSubsystem>();
 		auto entity = enttSubsystem->GetEntity(camSystem->GetActiveCameraID());
 		auto& transform = registry->get<TransformComponent3D>(entity);
 
@@ -1867,7 +1867,7 @@ namespace puffin::rendering
 
 			shadows.emplace_back();
 
-			const auto camSystem = mEngine->GetSubsystem<CameraSubystem>();
+			const auto camSystem = mEngine->GetSubsystem<CameraSubsystem>();
 			const auto activeCamEntity = enttSubsystem->GetEntity(camSystem->GetActiveCameraID());
 			auto& camera = registry->get<CameraComponent3D>(activeCamEntity);
 

@@ -10,21 +10,21 @@
 
 namespace puffin::rendering
 {
-	CameraSubystem::CameraSubystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	CameraSubsystem::CameraSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
         mName = "CameraSubsystem";
 	}
 
-	void CameraSubystem::Initialize(core::SubsystemManager* subsystemManager)
+	void CameraSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		const auto enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
 		const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
         const auto registry = enttSubsystem->GetRegistry();
 
-        registry->on_construct<CameraComponent3D>().connect<&CameraSubystem::OnUpdateCamera>(this);
-        registry->on_update<CameraComponent3D>().connect<&CameraSubystem::OnUpdateCamera>(this);
-        registry->on_destroy<CameraComponent3D>().connect<&CameraSubystem::OnDestroyCamera>(this);
+        registry->on_construct<CameraComponent3D>().connect<&CameraSubsystem::OnUpdateCamera>(this);
+        registry->on_update<CameraComponent3D>().connect<&CameraSubsystem::OnUpdateCamera>(this);
+        registry->on_destroy<CameraComponent3D>().connect<&CameraSubsystem::OnDestroyCamera>(this);
 
         auto editorCameraFovSignal = signalSubsystem->GetSignal<float>("editorCameraFov");
         if (!editorCameraFovSignal)
@@ -40,17 +40,17 @@ namespace puffin::rendering
         InitEditorCamera();
 	}
 
-	void CameraSubystem::Deinitialize()
+	void CameraSubsystem::Deinitialize()
 	{
 	}
 
-	void CameraSubystem::BeginPlay()
+	void CameraSubsystem::BeginPlay()
 	{
         UpdateActivePlayCamera();
         UpdateActiveCamera();
 	}
 
-	void CameraSubystem::EndPlay()
+	void CameraSubsystem::EndPlay()
 	{
         mActivePlayCamID = gInvalidID;
 		mActiveCameraID = gInvalidID;
@@ -59,17 +59,17 @@ namespace puffin::rendering
         InitEditorCamera();
 	}
 
-	void CameraSubystem::Update(double deltaTime)
+	void CameraSubsystem::Update(double deltaTime)
 	{
         UpdateCameras(deltaTime);
 	}
 
-	bool CameraSubystem::ShouldUpdate()
+	bool CameraSubsystem::ShouldUpdate()
 	{
 		return true;
 	}
 
-	void CameraSubystem::OnUpdateCamera(entt::registry& registry, entt::entity entity)
+	void CameraSubsystem::OnUpdateCamera(entt::registry& registry, entt::entity entity)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto id = enttSubsystem->GetID(entity);
@@ -95,7 +95,7 @@ namespace puffin::rendering
 		}
 	}
 
-    void CameraSubystem::OnDestroyCamera(entt::registry &registry, entt::entity entity)
+    void CameraSubsystem::OnDestroyCamera(entt::registry &registry, entt::entity entity)
     {
 	    const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto id = enttSubsystem->GetID(entity);
@@ -108,7 +108,7 @@ namespace puffin::rendering
         mCachedCamActiveState.erase(id);
     }
 
-    void CameraSubystem::OnUpdateEditorCameraFov(const float &editorCameraFov)
+    void CameraSubsystem::OnUpdateEditorCameraFov(const float &editorCameraFov)
     {
 	    const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 	    const auto registry = enttSubsystem->GetRegistry();
@@ -120,7 +120,7 @@ namespace puffin::rendering
         camera.fovY = editorCameraFov;
     }
 
-	void CameraSubystem::InitEditorCamera()
+	void CameraSubsystem::InitEditorCamera()
 	{
 		// Crate editor cam 
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
@@ -139,7 +139,7 @@ namespace puffin::rendering
 		mEditorCamSpeed = 25.0f;
 	}
 
-	void CameraSubystem::UpdateActiveCamera()
+	void CameraSubsystem::UpdateActiveCamera()
 	{
         if (mActivePlayCamID != gInvalidID)
         {
@@ -151,7 +151,7 @@ namespace puffin::rendering
         }
 	}
 
-    void CameraSubystem::UpdateActivePlayCamera()
+    void CameraSubsystem::UpdateActivePlayCamera()
     {
         const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto registry = enttSubsystem->GetRegistry();
@@ -168,7 +168,7 @@ namespace puffin::rendering
         }
     }
 
-	void CameraSubystem::UpdateCameras(double deltaTime)
+	void CameraSubsystem::UpdateCameras(double deltaTime)
 	{
         if (mActivePlayCamID == gInvalidID)
         {
@@ -192,7 +192,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void CameraSubystem::UpdateEditorCamera(double deltaTime)
+	void CameraSubsystem::UpdateEditorCamera(double deltaTime)
 	{
         if (mEditorCamID != gInvalidID && mEditorCamID == mActiveCameraID)
         {
@@ -247,7 +247,7 @@ namespace puffin::rendering
         }
 	}
 
-	void CameraSubystem::UpdateCameraComponent(const TransformComponent3D& transform, CameraComponent3D& camera)
+	void CameraSubsystem::UpdateCameraComponent(const TransformComponent3D& transform, CameraComponent3D& camera)
 	{
 		const auto renderSystem = mEngine->GetSubsystem<rendering::RenderSubsystemVK>();
 

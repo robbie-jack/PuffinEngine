@@ -1,5 +1,7 @@
 #include "puffin/ecs/enttsubsystem.h"
 
+#include "entt/meta/factory.hpp"
+
 namespace puffin::ecs
 {
 	EnTTSubsystem::EnTTSubsystem(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)

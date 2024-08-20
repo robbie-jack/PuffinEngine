@@ -1,8 +1,9 @@
 #pragma once
 
-#include "puffin/types/vector.h"
-
 #include "nlohmann/json.hpp"
+
+#include "puffin/types/vector.h"
+#include "puffin/utility/reflection.h"
 
 namespace puffin
 {
@@ -40,4 +41,14 @@ namespace puffin
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent2D, position, rotation, scale)
 	};
+
+	template<>
+	inline void RegisterType<TransformComponent2D>()
+	{
+		entt::meta<TransformComponent2D>()
+			.type(entt::hs("TransformComponent3D"))
+			.data<&TransformComponent2D::position>(entt::hs("position"))
+			.data<&TransformComponent2D::rotation>(entt::hs("rotation"))
+			.data<&TransformComponent2D::scale>(entt::hs("scale"));
+	}
 }
