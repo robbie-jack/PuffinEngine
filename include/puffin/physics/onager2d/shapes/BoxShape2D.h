@@ -2,7 +2,7 @@
 
 #include "puffin/physics/onager2d/shapes/polygonshape2d.h"
 #include "puffin/physics/onager2d/shapes/shape2d.h"
-#include "puffin/types/vector.h"
+#include "puffin/types/vector2.h"
 
 namespace puffin::physics
 {
@@ -18,8 +18,8 @@ namespace puffin::physics
 
 		~BoxShape2D() override
 		{
-            centre_of_mass.zero();
-            half_extent.zero();
+            centreOfMass.Zero();
+            half_extent.Zero();
 			points.clear();
 		}
 

@@ -3,7 +3,7 @@
 #include "puffin/nodes/node.h"
 #include "puffin/types/quat.h"
 #include "puffin/types/eulerangles.h"
-#include "puffin/types/vector.h"
+#include "puffin/types/vector3.h"
 
 namespace puffin
 {

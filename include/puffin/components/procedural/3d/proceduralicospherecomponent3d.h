@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "puffin/types/vector.h"
+#include "nlohmann/json.hpp"
 
 namespace puffin::procedural
 {

@@ -2,7 +2,7 @@
 
 #include "puffin/core/engine.h"
 #include "entt/entity/registry.hpp"
-#include "puffin/types/vector.h"
+#include "puffin/types/vector2.h"
 #include "puffin/core/subsystem.h"
 
 namespace puffin

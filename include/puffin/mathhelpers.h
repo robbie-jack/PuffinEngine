@@ -3,8 +3,9 @@
 #include <algorithm>
 #include <cmath>
 
-#include "puffin/types/vector.h"
 #include "puffin/types/quat.h"
+#include "puffin/types/vector2.h"
+#include "puffin/types/vector3.h"
 
 #define PI 3.141592653589793238463
 

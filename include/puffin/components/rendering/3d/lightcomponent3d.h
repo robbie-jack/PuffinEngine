@@ -7,7 +7,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-#include "puffin/types/vector.h"
+#include "puffin/types/vector3.h"
 
 #include "nlohmann/json.hpp"
 

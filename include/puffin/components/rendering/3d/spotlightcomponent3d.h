@@ -3,7 +3,7 @@
 #include "nlohmann/json.hpp"
 
 #include "puffin/components/rendering/3d/lightcomponent3d.h"
-#include "puffin/types/vector.h"
+#include "puffin/types/vector3.h"
 #include "puffin/utility/reflection.h"
 
 namespace puffin

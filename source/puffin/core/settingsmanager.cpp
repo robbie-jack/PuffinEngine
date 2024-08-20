@@ -4,7 +4,7 @@
 
 #include "puffin/core/engine.h"
 #include "puffin/assets/assetregistry.h"
-#include "puffin/types/vector.h"
+#include "puffin/types/vector3.h"
 
 namespace puffin::core
 {

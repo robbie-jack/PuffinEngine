@@ -3,7 +3,7 @@
 #include "nlohmann/json.hpp"
 
 #include "puffin/components/physics/3d/shapecomponent3d.h"
-#include "puffin/types/vector.h"
+#include "puffin/types/vector3.h"
 
 namespace puffin::physics
 {

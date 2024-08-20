@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "puffin/types/vector.h"
+#include "puffin/types/vector2.h"
 
 namespace puffin::procedural
 {

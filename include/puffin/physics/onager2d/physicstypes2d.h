@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/types/vector.h"
+#include "puffin/types/vector2.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/aabb.h"
 
@@ -17,9 +17,9 @@ namespace puffin::physics
 				a = 0;
 				b = 0;
 
-				pointOnA.zero();
-				pointOnB.zero();
-				normal.zero();
+				pointOnA.Zero();
+				pointOnB.Zero();
+				normal.Zero();
 
 				seperation = 0.0f;
 			}

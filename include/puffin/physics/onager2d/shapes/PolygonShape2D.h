@@ -12,7 +12,7 @@ namespace puffin::physics
 
 		~PolygonShape2D()
 		{
-            centre_of_mass.zero();
+            centreOfMass.Zero();
 			points.clear();
 		}
 

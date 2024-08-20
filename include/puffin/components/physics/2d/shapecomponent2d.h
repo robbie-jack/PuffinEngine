@@ -1,8 +1,6 @@
 #pragma once
 
-#include "puffin/types/vector.h"
-
-#include "nlohmann/json.hpp"
+#include "puffin/types/vector2.h"
 
 namespace puffin::physics
 {

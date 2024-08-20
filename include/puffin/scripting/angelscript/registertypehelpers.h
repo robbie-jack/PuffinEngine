@@ -5,7 +5,7 @@
 #include "puffin/components/transformcomponent2d.h"
 #include "puffin/components/transformcomponent3d.h"
 #include "puffin/input/inputevent.h"
-#include "puffin/types/vector.h"
+#include "puffin/types/vector3.h"
 
 //typedef puffin::TransformComponent STransformComponent;
 

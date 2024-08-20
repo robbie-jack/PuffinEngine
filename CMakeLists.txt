@@ -230,7 +230,8 @@ set(HEADERS
 	${HEADER_DIR}/puffin/types/matrix.h
 	${HEADER_DIR}/puffin/types/quat.h
 	${HEADER_DIR}/puffin/types/uuid.h
-	${HEADER_DIR}/puffin/types/vector.h
+	${HEADER_DIR}/puffin/types/vector2.h
+	${HEADER_DIR}/puffin/types/vector3.h
 	${HEADER_DIR}/puffin/types/vertex.h
 	# Types - Storage
 	${HEADER_DIR}/puffin/types/storage/mappedarray.h

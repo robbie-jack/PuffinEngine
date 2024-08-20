@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/types/vector.h"
+#include "puffin/types/vector2.h"
 
 #include "nlohmann/json.hpp"
 

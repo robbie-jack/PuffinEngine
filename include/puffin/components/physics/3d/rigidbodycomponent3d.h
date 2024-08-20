@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/types/vector.h"
+#include "puffin/types/vector3.h"
 #include "puffin/physics/bodytype.h"
 
 namespace puffin::physics

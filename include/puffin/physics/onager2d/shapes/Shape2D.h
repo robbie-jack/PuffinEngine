@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/types/vector.h"
+#include "puffin/types/vector2.h"
 
 namespace puffin
 {
@@ -19,7 +19,7 @@ namespace puffin::physics
 	{
 		Shape2D()
 		{
-            centre_of_mass.zero();
+            centreOfMass.Zero();
 		}
 
 		virtual ~Shape2D() = default;
@@ -28,6 +28,6 @@ namespace puffin::physics
 
 		virtual AABB2D getAABB(const Vector2f& position, const float& rotation) const = 0;
 
-        Vector2f centre_of_mass; // Centre of mass for this shape
+        Vector2f centreOfMass; // Centre of mass for this shape
 	};
 }

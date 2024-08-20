@@ -2,8 +2,8 @@
 
 #include "nlohmann/json.hpp"
 
-#include "puffin/types/vector.h"
 #include "puffin/components/physics/2d/shapecomponent2d.h"
+#include "puffin/types/vector2.h"
 
 namespace puffin::physics
 {

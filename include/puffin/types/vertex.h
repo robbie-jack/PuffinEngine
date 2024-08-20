@@ -1,9 +1,11 @@
 #pragma once
 
-#include "puffin/types/vector.h"
+#include <vector>
+
 #include "nlohmann/json.hpp"
 
-#include <vector>
+#include "puffin/types/vector3.h"
+#include "puffin/types/vector2.h"
 
 namespace puffin::rendering
 {

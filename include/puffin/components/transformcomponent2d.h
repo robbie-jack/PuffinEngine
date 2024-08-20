@@ -2,7 +2,7 @@
 
 #include "nlohmann/json.hpp"
 
-#include "puffin/types/vector.h"
+#include "puffin/types/vector2.h"
 #include "puffin/utility/reflection.h"
 
 namespace puffin

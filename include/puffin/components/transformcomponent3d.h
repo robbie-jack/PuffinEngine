@@ -1,10 +1,10 @@
 #pragma once
 
-#include "puffin/types/vector.h"
-#include "puffin/types/quat.h"
-
 #include "nlohmann/json.hpp"
+
 #include "puffin/types/eulerangles.h"
+#include "puffin/types/vector3.h"
+#include "puffin/types/quat.h"
 
 #include "puffin/utility/reflection.h"
 
