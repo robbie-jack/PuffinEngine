@@ -7,6 +7,7 @@
 #include "puffin/types/quat.h"
 
 #include "puffin/utility/reflection.h"
+#include "puffin/utility/serialization.h"
 
 namespace puffin
 {
@@ -61,6 +62,23 @@ namespace puffin
 			.data<&TransformComponent3D::orientationQuat>(entt::hs("orientationQuat"))
 			.data<&TransformComponent3D::orientationEulerAngles>(entt::hs("orientationEulerAngles"))
 			.data<&TransformComponent3D::scale>(entt::hs("scale"));
+	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<TransformComponent3D>(const TransformComponent3D& type, Archive& archive)
+		{
+			archive.Serialize("position", type.position);
+			archive.Serialize("scale", type.scale);
+		}
+
+		template<>
+		inline void Deserialize<TransformComponent3D>(const Archive& archive, TransformComponent3D& type)
+		{
+			archive.Deserialize("position", type.position);
+			archive.Deserialize("scale", type.scale);
+		}
 	}
 
 	// Update transform orientation with a new euler angles and recalculates quaternion

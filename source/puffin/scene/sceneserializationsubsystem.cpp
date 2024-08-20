@@ -33,7 +33,7 @@ namespace puffin::io
 		for (const auto& id : mNodeIDs)
 		{
 			auto node = sceneGraph->GetNode(id);
-			node->Deserialize(mNodeIDToJson.at(id));
+			//node->Deserialize(mNodeIDToJson.at(id));
 		}
 	}
 
@@ -43,12 +43,12 @@ namespace puffin::io
 
 		const auto registry = enttSubsystem->GetRegistry();
 
-		registry->each([&](auto entity)
+		for (const auto entity : registry->view<entt::entity>())
 		{
 			const auto& id = enttSubsystem->GetID(entity);
 
 			mEntityIDs.push_back(id);
-		});
+		}
 
 		for (auto& [type, compArray] : mComponentData)
 		{
@@ -59,7 +59,7 @@ namespace puffin::io
 		{
 			mRootNodeIDs.push_back(id);
 
-			AddNodeIDAndChildIDs(sceneGraph, id);
+			SerializeNodeAndChildren(sceneGraph, id);
 		}
 
 		mHasData = true;
@@ -166,12 +166,15 @@ namespace puffin::io
 		return mPath;
 	}
 
-	void SceneData::AddNodeIDAndChildIDs(scene::SceneGraphSubsystem* sceneGraph, UUID id)
+	void SceneData::SerializeNodeAndChildren(scene::SceneGraphSubsystem* sceneGraph, UUID id)
 	{
 		auto node = sceneGraph->GetNode(id);
 
 		json json;
-		node->Serialize(json);
+
+		serialization::Archive archive;
+		node->Serialize(archive);
+		archive.DumpToJson(json);
 
 		std::vector<UUID> childIDs;
 		node->GetChildIDs(childIDs);
@@ -185,7 +188,7 @@ namespace puffin::io
 
 		for (auto childID : childIDs)
 		{
-			AddNodeIDAndChildIDs(sceneGraph, childID);
+			SerializeNodeAndChildren(sceneGraph, childID);
 		}
 	}
 

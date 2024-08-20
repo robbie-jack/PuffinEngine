@@ -13,6 +13,12 @@
 
 namespace puffin
 {
+	struct TransformComponent3D;
+	struct TransformComponent2D;
+}
+
+namespace puffin
+{
 	namespace core
 	{
 		class Engine;

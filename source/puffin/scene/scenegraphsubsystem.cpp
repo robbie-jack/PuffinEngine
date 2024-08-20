@@ -9,6 +9,8 @@
 #include "puffin/nodes/rendering/3d/pointlightnode3d.h"
 #include "puffin/nodes/rendering/3d/spotlightnode3d.h"
 #include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
+#include "puffin/components/transformcomponent2d.h"
+#include "puffin/components/transformcomponent3d.h"
 
 namespace puffin::scene
 {

@@ -150,7 +150,10 @@ namespace puffin::serialization
 
 	void Archive::DumpToJson(nlohmann::json& json)
 	{
-
+		for (const auto& [name, type] : mStrings)
+		{
+			json[name] = type;
+		}
 	}
 
 	void Archive::PopulateFromJson(const nlohmann::json& json)

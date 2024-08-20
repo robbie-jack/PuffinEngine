@@ -287,6 +287,7 @@ namespace puffin
 		{
 			archive.Deserialize("x", type.x);
 			archive.Deserialize("y", type.y);
+			archive.Deserialize("z", type.z);
 		}
 	}
 
@@ -317,6 +318,7 @@ namespace puffin
 		{
 			archive.Deserialize("x", type.x);
 			archive.Deserialize("y", type.y);
+			archive.Deserialize("z", type.z);
 		}
 	}
 
@@ -347,6 +349,7 @@ namespace puffin
 		{
 			archive.Deserialize("x", type.x);
 			archive.Deserialize("y", type.y);
+			archive.Deserialize("z", type.z);
 		}
 	}
 }

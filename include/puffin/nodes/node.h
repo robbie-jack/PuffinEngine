@@ -4,11 +4,8 @@
 #include <memory>
 #include <entt/entity/registry.hpp>
 
-#include "puffin/components/transformcomponent2d.h"
-#include "puffin/components/transformcomponent3d.h"
 #include "puffin/types/uuid.h"
-
-#include "nlohmann/json.hpp"
+#include "puffin/utility/serialization.h"
 
 namespace puffin
 {
@@ -26,9 +23,6 @@ namespace puffin
 	{
 		class EnTTSubsystem;
 	}
-
-	struct TransformComponent2D;
-	struct TransformComponent3D;
 
 	class Node
 	{
@@ -58,8 +52,8 @@ namespace puffin
 		virtual void FixedUpdate(double deltaTime);
 		[[nodiscard]] virtual bool ShouldFixedUpdate() const;
 
-		virtual void Serialize(json& json) const;
-		virtual void Deserialize(const json& json);
+		virtual void Serialize(serialization::Archive& archive) const;
+		virtual void Deserialize(const serialization::Archive& archive) const;
 
 		[[nodiscard]] UUID GetID() const;
 		[[nodiscard]] entt::entity GetEntity() const;

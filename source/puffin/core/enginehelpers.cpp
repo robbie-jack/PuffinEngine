@@ -7,6 +7,8 @@
 #include "puffin/assets/staticmeshasset.h"
 #include "puffin/assets/textureasset.h"
 #include "puffin/audio/audiosubsystem.h"
+#include "puffin/components/transformcomponent2d.h"
+#include "puffin/components/transformcomponent3d.h"
 #include "puffin/components/physics/2d/boxcomponent2d.h"
 #include "puffin/components/physics/2d/circlecomponent2d.h"
 #include "puffin/components/physics/2d/rigidbodycomponent2d.h"

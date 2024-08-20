@@ -51,14 +51,14 @@ namespace puffin
 		return false;
 	}
 
-	void Node::Serialize(json& json) const
+	void Node::Serialize(serialization::Archive& archive) const
 	{
-		json["name"] = mName;
+		archive.Serialize("name", mName);
 	}
 
-	void Node::Deserialize(const json& json)
+	void Node::Deserialize(const serialization::Archive& archive) const
 	{
-		mName = json.at("name");
+		archive.Deserialize("name", mName);
 	}
 
 	UUID Node::GetID() const

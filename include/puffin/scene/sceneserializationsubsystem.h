@@ -6,6 +6,7 @@
 
 #include "nlohmann/json.hpp"
 #include "entt/entity/registry.hpp"
+#include "entt/meta/factory.hpp"
 
 #include "puffin/assets/assetregistry.h"
 #include "puffin/scene/scenegraphsubsystem.h"
@@ -171,7 +172,7 @@ namespace puffin::io
 		std::unordered_map<UUID, json> mNodeIDToJson;
 		std::unordered_map<UUID, std::vector<UUID>> mChildNodeIDs;
 
-		void AddNodeIDAndChildIDs(scene::SceneGraphSubsystem* sceneGraph, UUID id);
+		void SerializeNodeAndChildren(scene::SceneGraphSubsystem* sceneGraph, UUID id);
 	};
 
     class ISceneComponentRegister
@@ -223,14 +224,15 @@ namespace puffin::io
 		template<typename T>
 		void RegisterComponent()
 		{
-			const char* typeName = typeid(T).name();
+			auto type = entt::resolve<T>();
+			auto typeName = type.info().name();
 
-			assert(mComponentRegisters.find(typeName) == mComponentRegisters.end() && "Registering component type more than once");
+			/*if (mComponentRegisters.find(typeName) == mComponentRegisters.end())
+			{
+				auto sceneCompRegister = std::make_shared<SceneComponentRegister<T>>();
 
-			// Create
-			auto sceneCompRegister = std::make_shared<SceneComponentRegister<T>>();
-
-			mComponentRegisters.insert({ typeName, std::static_pointer_cast<ISceneComponentRegister>(sceneCompRegister) });
+				mComponentRegisters.insert({ typeName, std::static_pointer_cast<ISceneComponentRegister>(sceneCompRegister) });
+			}*/
 		}
 
 	private:

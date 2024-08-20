@@ -12,17 +12,76 @@ namespace puffin::serialization
 	class Archive;
 
 	template<typename T>
-	void Serialize(const T& type, Archive& archive) = delete;
+	void Serialize(const T& type, Archive& archive)
+	{
+		
+	};
 
 	template<typename T>
-	void Deserialize(const Archive& archive, T& type) = delete;
+	void Deserialize(const Archive& archive, T& type)
+	{
+		
+	};
 
 	/*
 	 * Archive class for serializing types (components, nodes, etc...)
 	 */
 	class Archive
 	{
+
+		class IArchiveMap
+		{
+		public:
+
+			virtual ~IArchiveMap() = 0;
+
+		};
+
+		template<typename T>
+		class ArchiveMap : public IArchiveMap
+		{
+		public:
+
+			ArchiveMap() = default;
+			~ArchiveMap() override = default;
+
+			void Serialize(const std::string& name, const T& type)
+			{
+				mData.emplace(name, type);
+			}
+
+			void Deserialize(const std::string& name, T& type) const
+			{
+				assert(mData.find(name) != mData.end() && "ArchiveMap::Deserialize - No value with that name in map");
+
+				type = mData.at(name);
+			}
+
+		private:
+
+			std::unordered_map<std::string_view, T> mData;
+
+		};
+
 	public:
+
+		template<typename T>
+		void Serialize(const std::string& name, const T& type)
+		{
+			Archive archive;
+
+			//Serialize<T>(type, archive);
+
+			mArchives.emplace(name, archive);
+		}
+
+		template<typename T>
+		void Deserialize(const std::string& name, T& type) const
+		{
+			assert(mArchives.find(name) != mArchives.end() && "template T Archive::Deserialize - No property with that name in archive");
+
+			//Deserialize<T>(mArchives.at(name), type);
+		}
 
 		void Serialize(const std::string& name, bool type);
 		void Deserialize(const std::string& name, bool& type) const;
@@ -59,24 +118,6 @@ namespace puffin::serialization
 
 		void Serialize(const std::string& name, uint64_t type);
 		void Deserialize(const std::string& name, uint64_t& type) const;
-
-		template<typename T>
-		void Serialize(const std::string& name, const T& type)
-		{
-			Archive archive;
-
-			Serialize<T>(type, archive);
-
-			mArchives.emplace(name, archive);
-		}
-
-		template<typename T>
-		void Deserialize(const std::string& name, T& type)
-		{
-			assert(mArchives.find(name) != mArchives.end() && "template T Archive::Deserialize - No property with that name in archive");
-
-			Deserialize<T>(mArchives.at(name), type);
-		}
 
 		void DumpToJson(nlohmann::json& json);
 		void PopulateFromJson(const nlohmann::json& json);
