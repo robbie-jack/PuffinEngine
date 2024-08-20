@@ -32,8 +32,12 @@ namespace puffin::io
 
 		for (const auto& id : mNodeIDs)
 		{
-			auto node = sceneGraph->GetNode(id);
-			//node->Deserialize(mNodeIDToJson.at(id));
+			const auto node = sceneGraph->GetNode(id);
+
+			serialization::Archive archive;
+			archive.PopulateFromJson(mNodeIDToJson.at(id));
+
+			node->Deserialize(archive);
 		}
 	}
 
@@ -100,7 +104,7 @@ namespace puffin::io
 		data["rootNodeIDs"] = mRootNodeIDs;
 		data["nodeIDs"] = mNodeIDs;
 		data["nodeIDToType"] = mNodeIDToType;
-		data["NodeIDToJson"] = mNodeIDToJson;
+		data["nodeIDToJson"] = mNodeIDToJson;
 		data["childNodeIDs"] = mChildNodeIDs;
 
 		if (!fs::exists(mPath.parent_path()))
@@ -144,7 +148,7 @@ namespace puffin::io
 		mRootNodeIDs = data.at("rootNodeIDs").get<std::vector<UUID>>();
 		mNodeIDs = data.at("nodeIDs").get<std::vector<UUID>>();
 		mNodeIDToType = data.at("nodeIDToType").get<std::unordered_map<UUID, std::string>>();
-		mNodeIDToJson = data.at("NodeIDToJson").get<std::unordered_map<UUID, json>>();
+		mNodeIDToJson = data.at("nodeIDToJson").get<std::unordered_map<UUID, json>>();
 		mChildNodeIDs = data.at("childNodeIDs").get<std::unordered_map<UUID, std::vector<UUID>>>();
 
 		mHasData = true;

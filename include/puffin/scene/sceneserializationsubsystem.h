@@ -227,19 +227,19 @@ namespace puffin::io
 			auto type = entt::resolve<T>();
 			auto typeName = type.info().name();
 
-			/*if (mComponentRegisters.find(typeName) == mComponentRegisters.end())
+			if (mComponentRegisters.find(typeName) == mComponentRegisters.end())
 			{
 				auto sceneCompRegister = std::make_shared<SceneComponentRegister<T>>();
 
 				mComponentRegisters.insert({ typeName, std::static_pointer_cast<ISceneComponentRegister>(sceneCompRegister) });
-			}*/
+			}
 		}
 
 	private:
 
 		std::shared_ptr<SceneData> mCurrentSceneData = nullptr;
         std::unordered_map<fs::path, std::shared_ptr<SceneData>> mSceneData;
-        std::unordered_map<std::string, std::shared_ptr<ISceneComponentRegister>> mComponentRegisters;
+        std::unordered_map<std::string_view, std::shared_ptr<ISceneComponentRegister>> mComponentRegisters;
 
 	};
 }

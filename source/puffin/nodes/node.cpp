@@ -56,7 +56,7 @@ namespace puffin
 		archive.Serialize("name", mName);
 	}
 
-	void Node::Deserialize(const serialization::Archive& archive) const
+	void Node::Deserialize(const serialization::Archive& archive)
 	{
 		archive.Deserialize("name", mName);
 	}

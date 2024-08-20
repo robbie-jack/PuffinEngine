@@ -7,6 +7,8 @@
 
 #include "nlohmann/json.hpp"
 
+#include "entt/meta/factory.hpp"
+
 namespace puffin::serialization
 {
 	class Archive;
@@ -28,45 +30,10 @@ namespace puffin::serialization
 	 */
 	class Archive
 	{
-
-		class IArchiveMap
-		{
-		public:
-
-			virtual ~IArchiveMap() = 0;
-
-		};
-
-		template<typename T>
-		class ArchiveMap : public IArchiveMap
-		{
-		public:
-
-			ArchiveMap() = default;
-			~ArchiveMap() override = default;
-
-			void Serialize(const std::string& name, const T& type)
-			{
-				mData.emplace(name, type);
-			}
-
-			void Deserialize(const std::string& name, T& type) const
-			{
-				assert(mData.find(name) != mData.end() && "ArchiveMap::Deserialize - No value with that name in map");
-
-				type = mData.at(name);
-			}
-
-		private:
-
-			std::unordered_map<std::string_view, T> mData;
-
-		};
-
 	public:
 
 		template<typename T>
-		void Serialize(const std::string& name, const T& type)
+		void SerializeComplexType(const std::string& name, const T& data)
 		{
 			Archive archive;
 
@@ -76,7 +43,7 @@ namespace puffin::serialization
 		}
 
 		template<typename T>
-		void Deserialize(const std::string& name, T& type) const
+		void DeserializeComplexType(const std::string& name, T& data) const
 		{
 			assert(mArchives.find(name) != mArchives.end() && "template T Archive::Deserialize - No property with that name in archive");
 
@@ -93,7 +60,7 @@ namespace puffin::serialization
 		void Deserialize(const std::string& name, double& type) const;
 
 		void Serialize(const std::string& name, const std::string& type);	
-		void Deserialize(const std::string& name, std::string&& type) const;
+		void Deserialize(const std::string& name, std::string& type) const;
 
 		void Serialize(const std::string& name, int8_t type);
 		void Deserialize(const std::string& name, int8_t& type) const;
@@ -119,7 +86,7 @@ namespace puffin::serialization
 		void Serialize(const std::string& name, uint64_t type);
 		void Deserialize(const std::string& name, uint64_t& type) const;
 
-		void DumpToJson(nlohmann::json& json);
+		void DumpToJson(nlohmann::json& json) const;
 		void PopulateFromJson(const nlohmann::json& json);
 
 	private:

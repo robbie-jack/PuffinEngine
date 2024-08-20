@@ -53,7 +53,7 @@ namespace puffin
 		[[nodiscard]] virtual bool ShouldFixedUpdate() const;
 
 		virtual void Serialize(serialization::Archive& archive) const;
-		virtual void Deserialize(const serialization::Archive& archive) const;
+		virtual void Deserialize(const serialization::Archive& archive);
 
 		[[nodiscard]] UUID GetID() const;
 		[[nodiscard]] entt::entity GetEntity() const;
