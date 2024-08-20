@@ -46,7 +46,7 @@ namespace puffin
 	inline void RegisterType<TransformComponent2D>()
 	{
 		entt::meta<TransformComponent2D>()
-			.type(entt::hs("TransformComponent3D"))
+			.type(entt::hs("TransformComponent2D"))
 			.data<&TransformComponent2D::position>(entt::hs("position"))
 			.data<&TransformComponent2D::rotation>(entt::hs("rotation"))
 			.data<&TransformComponent2D::scale>(entt::hs("scale"));
