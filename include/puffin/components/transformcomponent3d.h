@@ -69,8 +69,8 @@ namespace puffin
 		template<>
 		inline void Serialize<TransformComponent3D>(const TransformComponent3D& type, Archive& archive)
 		{
-			archive.SerializeComplexType("position", type.position);
-			archive.SerializeComplexType("scale", type.scale);
+			archive.Set("position", type.position);
+			archive.Set("scale", type.scale);
 		}
 
 		template<>

@@ -53,12 +53,12 @@ namespace puffin
 
 	void Node::Serialize(serialization::Archive& archive) const
 	{
-		archive.Serialize("name", mName);
+		archive.Set("name", mName);
 	}
 
 	void Node::Deserialize(const serialization::Archive& archive)
 	{
-		archive.Deserialize("name", mName);
+		archive.Get("name", mName);
 	}
 
 	UUID Node::GetID() const
