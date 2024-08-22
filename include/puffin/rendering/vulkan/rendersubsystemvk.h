@@ -318,6 +318,8 @@ namespace puffin::rendering
 
 		//MappedVector<GPUMaterialInstanceData> mCachedMaterialData; // Cached data for each unique material/instance
 
+		MappedVector<UUID, Vector3f> mCachedLightDirection;
+
 		RingBuffer<ShadowConstructEvent> mShadowConstructEvents;
 		RingBuffer<ShadowUpdateEvent> mShadowUpdateEvents;
 		RingBuffer<ShadowDestroyEvent> mShadowDestroyEvents;

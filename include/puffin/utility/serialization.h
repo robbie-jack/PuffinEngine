@@ -37,7 +37,7 @@ namespace puffin::serialization
 		}
 
 		template<typename T>
-		void DeserializeComplexType(const std::string& name, T& data) const
+		void Get(const std::string& name, T& data) const
 		{
 			assert(mArchives.find(name) != mArchives.end() && "template T Archive::Deserialize - No property with that name in archive");
 

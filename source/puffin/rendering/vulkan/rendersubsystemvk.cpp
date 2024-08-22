@@ -1665,7 +1665,13 @@ namespace puffin::rendering
 
 			dir = glm::normalize(dir);
 
-			spotLight.direction = { dir.x, dir.y, dir.z };
+			UUID id = enttSubsystem->GetID(entity);
+			if (!mCachedLightDirection.Contains(id))
+			{
+				mCachedLightDirection.Emplace(id, {});
+			}
+
+			mCachedLightDirection[id] = { dir.x, dir.y, dir.z };
 
 			spotLights[s].directionInnerCutoffAngle.x = dir.x;
 			spotLights[s].directionInnerCutoffAngle.y = dir.y;
@@ -1720,7 +1726,13 @@ namespace puffin::rendering
 
 			dir = glm::normalize(dir);
 
-			dirLight.direction = { dir.x, dir.y, dir.z };
+			UUID id = enttSubsystem->GetID(entity);
+			if (!mCachedLightDirection.Contains(id))
+			{
+				mCachedLightDirection.Emplace(id, {});
+			}
+
+			mCachedLightDirection[id] = { dir.x, dir.y, dir.z };
 
 			dirLights[d].direction.x = dir.x;
 			dirLights[d].direction.y = dir.y;
@@ -1824,7 +1836,9 @@ namespace puffin::rendering
 			constexpr float farPlane = 100.f;
 			const float aspect = float(shadow.width) / float(shadow.height);
 
-			glm::mat4 lightView = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + spotLight.direction), glm::vec3(0, 1, 0));
+			UUID id = enttSubsystem->GetID(entity);
+
+			glm::mat4 lightView = glm::lookAt(static_cast<glm::vec3>(transform.position), static_cast<glm::vec3>(transform.position + mCachedLightDirection[id]), glm::vec3(0, 1, 0));
 
 			glm::mat4 lightProjection = glm::perspective(glm::radians(spotLight.outerCutoffAngle * 2), aspect, nearPlane, farPlane);
 			lightProjection[1][1] *= -1;
@@ -1896,8 +1910,10 @@ namespace puffin::rendering
 				}
 				centre /= cameraFrustumVertices.size();
 
+				UUID id = enttSubsystem->GetID(entity);
+
 				// Calculate light view
-				shadow.lightView = glm::lookAt(static_cast<glm::vec3>(centre - dirLight.direction), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
+				shadow.lightView = glm::lookAt(static_cast<glm::vec3>(centre - mCachedLightDirection[id]), static_cast<glm::vec3>(centre), glm::vec3(0, 1, 0));
 
 				// Calculate light projection - ortho
 				camLightViewVertices.clear();

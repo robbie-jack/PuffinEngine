@@ -51,4 +51,23 @@ namespace puffin
 			.data<&TransformComponent2D::rotation>(entt::hs("rotation"))
 			.data<&TransformComponent2D::scale>(entt::hs("scale"));
 	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<TransformComponent2D>(const TransformComponent2D& data, Archive& archive)
+		{
+			archive.Set("position", data.position);
+			archive.Set("rotation", data.rotation);
+			archive.Set("scale", data.scale);
+		}
+
+		template<>
+		inline void Deserialize<TransformComponent2D>(const Archive& archive, TransformComponent2D& data)
+		{
+			archive.Get("position", data.position);
+			archive.Get("rotation", data.rotation);
+			archive.Get("scale", data.scale);
+		}
+	}
 }

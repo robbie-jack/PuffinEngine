@@ -289,17 +289,17 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<Vector2f>(const Vector2f& type, Archive& archive)
+		inline void Serialize<Vector2f>(const Vector2f& data, Archive& archive)
 		{
-			archive.Set("x", type.x);
-			archive.Set("y", type.y);
+			archive.Set("x", data.x);
+			archive.Set("y", data.y);
 		}
 
 		template<>
-		inline void Deserialize<Vector2f>(const Archive& archive, Vector2f& type)
+		inline void Deserialize<Vector2f>(const Archive& archive, Vector2f& data)
 		{
-			archive.Get("x", type.x);
-			archive.Get("y", type.y);
+			archive.Get("x", data.x);
+			archive.Get("y", data.y);
 		}
 	}
 
@@ -317,17 +317,17 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<Vector2d>(const Vector2d& type, Archive& archive)
+		inline void Serialize<Vector2d>(const Vector2d& data, Archive& archive)
 		{
-			archive.Set("x", type.x);
-			archive.Set("y", type.y);
+			archive.Set("x", data.x);
+			archive.Set("y", data.y);
 		}
 
 		template<>
-		inline void Deserialize<Vector2d>(const Archive& archive, Vector2d& type)
+		inline void Deserialize<Vector2d>(const Archive& archive, Vector2d& data)
 		{
-			archive.Get("x", type.x);
-			archive.Get("y", type.y);
+			archive.Get("x", data.x);
+			archive.Get("y", data.y);
 		}
 	}
 
@@ -345,17 +345,17 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<Vector2i>(const Vector2i& type, Archive& archive)
+		inline void Serialize<Vector2i>(const Vector2i& data, Archive& archive)
 		{
-			archive.Set("x", type.x);
-			archive.Set("y", type.y);
+			archive.Set("x", data.x);
+			archive.Set("y", data.y);
 		}
 
 		template<>
-		inline void Deserialize<Vector2i>(const Archive& archive, Vector2i& type)
+		inline void Deserialize<Vector2i>(const Archive& archive, Vector2i& data)
 		{
-			archive.Get("x", type.x);
-			archive.Get("y", type.y);
+			archive.Get("x", data.x);
+			archive.Get("y", data.y);
 		}
 	}
 }
