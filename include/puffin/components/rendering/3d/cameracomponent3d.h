@@ -52,10 +52,7 @@ namespace puffin
 			.data<&CameraComponent3D::fovY>(entt::hs("fovY"))
 			.data<&CameraComponent3D::direction>(entt::hs("direction"))
 			.data<&CameraComponent3D::up>(entt::hs("up"))
-			.data<&CameraComponent3D::right>(entt::hs("right"))
-			.data<&CameraComponent3D::view>(entt::hs("view"))
-			.data<&CameraComponent3D::proj>(entt::hs("proj"))
-			.data<&CameraComponent3D::viewProj>(entt::hs("viewProj"));
+			.data<&CameraComponent3D::right>(entt::hs("right"));
 	}
 
 	namespace serialization

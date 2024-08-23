@@ -4,17 +4,50 @@
 
 #include "puffin/components/physics/3d/shapecomponent3d.h"
 #include "puffin/types/vector3.h"
+#include "puffin/utility/reflection.h"
+#include "puffin/utility/serialization.h"
 
-namespace puffin::physics
+namespace puffin
 {
-	struct BoxComponent3D : ShapeComponent3D
+	namespace physics
+	{	
+		struct BoxComponent3D : ShapeComponent3D
+		{
+			BoxComponent3D() = default;
+
+			explicit BoxComponent3D(const Vector3f& halfExtent) : halfExtent(halfExtent) {}
+
+			Vector3f halfExtent = { 0.5f };
+
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(BoxComponent3D, centreOfMass, halfExtent)
+		};
+	}
+
+	template<>
+	inline void reflection::RegisterType<physics::BoxComponent3D>()
 	{
-		BoxComponent3D() = default;
+		using namespace physics;
 
-		explicit BoxComponent3D(const Vector3f& halfExtent) : halfExtent(halfExtent) {}
+		entt::meta<BoxComponent3D>()
+			.type(entt::hs("BoxComponent3D"))
+			.data<&BoxComponent3D::centreOfMass>(entt::hs("centreOfMass"))
+			.data<&BoxComponent3D::halfExtent>(entt::hs("halfExtent"));
+	}
 
-		Vector3f halfExtent = { 0.5f };
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<physics::BoxComponent3D>(const physics::BoxComponent3D& data, Archive& archive)
+		{
+			archive.Set("centreOfMass", data.centreOfMass);
+			archive.Set("halfExtent", data.halfExtent);
+		}
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(BoxComponent3D, centreOfMass, halfExtent)
-	};
+		template<>
+		inline void Deserialize<physics::BoxComponent3D>(const Archive& archive, physics::BoxComponent3D& data)
+		{
+			archive.Get("centreOfMass", data.centreOfMass);
+			archive.Get("halfExtent", data.halfExtent);
+		}
+	}
 }

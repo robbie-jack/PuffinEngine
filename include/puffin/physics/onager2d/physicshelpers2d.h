@@ -5,6 +5,7 @@
 
 #include "puffin/mathhelpers.h"
 #include "puffin/components/physics/2d/rigidbodycomponent2d.h"
+#include "puffin/components/physics/2d/velocitycomponent2d.h"
 #include "shapes/boxshape2d.h"
 #include "puffin/physics/onager2d/colliders/collider2d.h"
 #include "puffin/physics/onager2d/colliders/boxcollider2d.h"
@@ -318,16 +319,16 @@ namespace puffin::physics
 	// Impulse Helper Functions
 	////////////////////////////////
 
-	static void applyLinearImpulse(RigidbodyComponent2D& body, const Vector2f& impulse)
+	static void ApplyLinearImpulse(const RigidbodyComponent2D& body, VelocityComponent2D& velocity, const Vector2f& impulse)
 	{
 		if (body.mass == 0.0f)
 			return;
 
 		// Apply Accumulated Impulse
-		body.linearVelocity += impulse * body.mass;
+		velocity.linear += impulse * body.mass;
 	}
 
-	static void applyAngularImpulse(RigidbodyComponent2D& body, const float& impulse)
+	static void ApplyAngularImpulse(const RigidbodyComponent2D& body, VelocityComponent2D& velocity, const float& impulse)
 	{
 		if (body.mass == 0.0f)
 			return;
@@ -335,32 +336,32 @@ namespace puffin::physics
 		const float impulseMultMass = impulse * body.mass;
 		const float as = std::asin(impulseMultMass);
 
-		body.angularVelocity += as * (180 / 3.14);
+		velocity.angular += as * (180 / 3.14);
 
 		constexpr float maxAngularSpeed = 30.0f;
 
 		// Cap angular speed at 30 deg/s
-		if (body.angularVelocity > 0.0)
+		if (velocity.angular > 0.0)
 		{
-			body.angularVelocity = std::min(body.angularVelocity, maxAngularSpeed);
+			velocity.angular = std::min(velocity.angular, maxAngularSpeed);
 		}
-		else if (body.angularVelocity < 0.0)
+		else if (velocity.angular < 0.0)
 		{
-			body.angularVelocity = std::max(body.angularVelocity, -maxAngularSpeed);
+			velocity.angular = std::max(velocity.angular, -maxAngularSpeed);
 		}
 	}
 
-	static void applyImpulse(RigidbodyComponent2D& body, const Vector2f& impulsePoint, const Vector2f& impulse)
+	static void ApplyImpulse(const RigidbodyComponent2D& body, VelocityComponent2D& velocity, const Vector2f& impulsePoint, const Vector2f& impulse)
 	{
 		if (body.mass == 0.0f)
 			return;
 
 		// impulsePoint is the world space location of the application of the impulse
 		// impulse is the world space direction and magnitude of the impulse
-		applyLinearImpulse(body, impulse);
+		ApplyLinearImpulse(body, velocity, impulse);
 
 		// Get the 2D cross of impulsePoint against impulse
 		// this is the sin of the angle between the vectors in radians
-		//ApplyAngularImpulse(body, impulsePoint.Normalised().Cross(impulse.Normalised()));
+		//ApplyAngularImpulse(body, velocity, impulsePoint.Normalised().Cross(impulse.Normalised()));
 	}
 }

@@ -4,7 +4,7 @@
 
 namespace puffin::physics
 {
-	enum class BodyType
+	enum class BodyType : uint8_t
 	{
 		Static = 0,
 		Kinematic = 1,

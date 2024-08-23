@@ -292,7 +292,7 @@ namespace puffin::physics
 		{
 			JPH::BodyInterface& bodyInterface = mJoltPhysicsSystem->GetBodyInterface();
 
-			const JPH::EMotionType motionType = gPuffinToJoltBodyType.at(rb.body_type);
+			const JPH::EMotionType motionType = gPuffinToJoltBodyType.at(rb.bodyType);
 
 			JPH::ObjectLayer objectLayer = {};
 
