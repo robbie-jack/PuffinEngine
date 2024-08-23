@@ -4,7 +4,7 @@
 #include "argparse/argparse.hpp"
 
 #ifdef PFN_BOX2D_PHYSICS
-#include "puffin/physics/box2d/box2dphysicssystem.h"
+#include "puffin/physics/box2d/box2dphysicssubsystem.h"
 #endif
 
 #ifdef PFN_JOLT_PHYSICS
@@ -42,12 +42,12 @@ int main(int argc, char* argv[])
 	engine->RegisterSubsystem<puffin::rendering::RenderSubsystemVK>();
 
 #ifdef PFN_BOX2D_PHYSICS
-	engine->register_subsystem<puffin::physics::Box2DPhysicsSystem>();
+	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSystem>();
 #endif
 
-#ifdef PFN_JOLT_PHYSICS
-	engine->RegisterSubsystem<puffin::physics::JoltPhysicsSubsystem>();
-#endif
+//#ifdef PFN_JOLT_PHYSICS
+//	engine->RegisterSubsystem<puffin::physics::JoltPhysicsSubsystem>();
+//#endif
 
 	engine->RegisterSubsystem<puffin::scripting::AngelScriptSubsystem>();
 	engine->RegisterSubsystem<puffin::scripting::AngelScriptGameplaySubsystem>();

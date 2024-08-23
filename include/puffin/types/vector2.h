@@ -6,6 +6,10 @@
 
 #include "glm/vec2.hpp"
 
+#ifdef PFN_BOX2D_PHYSICS
+#include "box2d/math_functions.h"
+#endif
+
 #include "nlohmann/json.hpp"
 
 #include "puffin/utility/reflection.h"
@@ -65,7 +69,7 @@ namespace puffin
 		}
 
 #ifdef PFN_BOX2D_PHYSICS
-		operator b2Vec2() const
+		explicit operator b2Vec2() const
 		{
 			b2Vec2 vec;
 			vec.x = x;

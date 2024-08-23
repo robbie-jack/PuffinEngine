@@ -7,36 +7,41 @@
 #include "puffin/core/settingsmanager.h"
 #include "puffin/mathhelpers.h"
 
+#include "puffin/components/physics/2d/boxcomponent2d.h"
+#include "puffin/components/physics/2d/circlecomponent2d.h"
+#include "puffin/components/physics/2d/rigidbodycomponent2d.h"
+#include "puffin/components/physics/2d/velocitycomponent2d.h"
+
 namespace puffin::physics
 {
 	Box2DPhysicsSystem::Box2DPhysicsSystem(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
 	{
-		m_name = "Box2DPhysicsSystem";
+		mName = "Box2DPhysicsSystem";
 	}
 
-	void Box2DPhysicsSystem::initialize(core::SubsystemManager* subsystem_manager)
+	void Box2DPhysicsSystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		// Bind entt callbacks
-		auto registry = m_engine->get_subsystem<ecs::EnTTSubsystem>()->registry();
+		auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 
 		registry->on_construct<RigidbodyComponent2D>().connect<&entt::registry::emplace<VelocityComponent2D>>();
 		registry->on_destroy<RigidbodyComponent2D>().connect<&entt::registry::remove<VelocityComponent2D>>();
 
-		registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::on_construct_rigidbody>(this);
-		registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::on_update_rigidbody>(this);
-		registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::on_destroy_rigidbody>(this);
+		registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::OnConstructRigidbody>(this);
+		registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::OnUpdateRigidbody>(this);
+		registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSystem::OnDestroyRigidbody>(this);
 
-		registry->on_construct<BoxComponent2D>().connect<&Box2DPhysicsSystem::on_construct_box>(this);
-		registry->on_update<BoxComponent2D>().connect<&Box2DPhysicsSystem::on_update_box>(this);
-		registry->on_destroy<BoxComponent2D>().connect<&Box2DPhysicsSystem::on_destroy_box>(this);
+		registry->on_construct<BoxComponent2D>().connect<&Box2DPhysicsSystem::OnConstructBox>(this);
+		registry->on_update<BoxComponent2D>().connect<&Box2DPhysicsSystem::OnUpdateBox>(this);
+		registry->on_destroy<BoxComponent2D>().connect<&Box2DPhysicsSystem::OnDestroyBox>(this);
 
-		registry->on_construct<CircleComponent2D>().connect<&Box2DPhysicsSystem::on_construct_circle>(this);
-		registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSystem::on_update_circle>(this);
-		registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSystem::on_destroy_circle>(this);
+		registry->on_construct<CircleComponent2D>().connect<&Box2DPhysicsSystem::OnConstructCircle>(this);
+		registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSystem::OnUpdateCircle>(this);
+		registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSystem::OnDestroyCircle>(this);
 
 		// Create world
-		auto settings_manager = m_engine->get_subsystem<core::SettingsManager>();
-		auto gravity = settings_manager->get<Vector3f>("physics_gravity");
+		auto settings_manager = mEngine->GetSubsystem<core::SettingsManager>();
+		auto gravity = settings_manager->Get<Vector3f>("physics_gravity");
 
 		b2WorldDef world_def = b2DefaultWorldDef();
 		world_def.gravity = { gravity.x, gravity.y };
@@ -46,7 +51,7 @@ namespace puffin::physics
 		m_sub_steps = 4;
 	}
 
-	void Box2DPhysicsSystem::deinitialize()
+	void Box2DPhysicsSystem::Deinitialize()
 	{
 		m_sub_steps = 0;
 
@@ -56,39 +61,39 @@ namespace puffin::physics
 		//m_contact_listener = nullptr;
 	}
 
-	core::SubsystemType Box2DPhysicsSystem::type() const
+	core::SubsystemType Box2DPhysicsSystem::GetType() const
 	{
 		return core::SubsystemType::Gameplay;
 	}
 
-	void Box2DPhysicsSystem::begin_play()
+	void Box2DPhysicsSystem::BeginPlay()
 	{
-		create_objects();
+		CreateObjects();
 	}
 
-	void Box2DPhysicsSystem::end_play()
+	void Box2DPhysicsSystem::EndPlay()
 	{
-		destroy_objects();
+		DestroyObjects();
 	}
 
-	void Box2DPhysicsSystem::update(double delta_time)
+	void Box2DPhysicsSystem::Update(double deltaTime)
 	{
-		destroy_objects();
+		DestroyObjects();
 
-		create_objects();
+		CreateObjects();
 	}
 
-	bool Box2DPhysicsSystem::should_update()
+	bool Box2DPhysicsSystem::ShouldUpdate()
 	{
 		return true;
 	}
 
-	void Box2DPhysicsSystem::fixed_update(double fixed_time_step)
+	void Box2DPhysicsSystem::FixedUpdate(double fixedTimeStep)
 	{
-		b2World_Step(m_physics_world_id, fixed_time_step, m_sub_steps);
+		b2World_Step(m_physics_world_id, fixedTimeStep, m_sub_steps);
 	}
 
-	bool Box2DPhysicsSystem::should_fixed_update()
+	bool Box2DPhysicsSystem::ShouldFixedUpdate()
 	{
 		return true;
 	}
@@ -127,54 +132,53 @@ namespace puffin::physics
 	//	}
 	//}
 
-	void Box2DPhysicsSystem::on_construct_box(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::OnConstructBox(entt::registry& registry, entt::entity entity)
 	{
 		
 	}
 
-	void Box2DPhysicsSystem::on_update_box(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::OnUpdateBox(entt::registry& registry, entt::entity entity)
 	{
+
 	}
 
-	void Box2DPhysicsSystem::on_destroy_box(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::OnDestroyBox(entt::registry& registry, entt::entity entity)
 	{
-		
 
-		
 	}
 
-	void Box2DPhysicsSystem::on_construct_circle(entt::registry& registry, entt::entity entity)
-	{
-		
-	}
-
-	void Box2DPhysicsSystem::on_update_circle(entt::registry& registry, entt::entity entity)
-	{
-	}
-
-	void Box2DPhysicsSystem::on_destroy_circle(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::OnConstructCircle(entt::registry& registry, entt::entity entity)
 	{
 		
 	}
 
-	void Box2DPhysicsSystem::on_construct_rigidbody(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::OnUpdateCircle(entt::registry& registry, entt::entity entity)
+	{
+	}
+
+	void Box2DPhysicsSystem::OnDestroyCircle(entt::registry& registry, entt::entity entity)
 	{
 		
 	}
 
-	void Box2DPhysicsSystem::on_update_rigidbody(entt::registry& registry, entt::entity entity)
-	{
-	}
-
-	void Box2DPhysicsSystem::on_destroy_rigidbody(entt::registry& registry, entt::entity entity)
+	void Box2DPhysicsSystem::OnConstructRigidbody(entt::registry& registry, entt::entity entity)
 	{
 		
 	}
 
-	void Box2DPhysicsSystem::create_objects()
+	void Box2DPhysicsSystem::OnUpdateRigidbody(entt::registry& registry, entt::entity entity)
 	{
-		const auto entt_subsystem = m_engine->get_subsystem<ecs::EnTTSubsystem>();
-		const auto registry = entt_subsystem->registry();
+	}
+
+	void Box2DPhysicsSystem::OnDestroyRigidbody(entt::registry& registry, entt::entity entity)
+	{
+		
+	}
+
+	void Box2DPhysicsSystem::CreateObjects()
+	{
+		const auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = entt_subsystem->GetRegistry();
 
 		// Create bodies
 		//{
@@ -209,14 +213,14 @@ namespace puffin::physics
 		
 	}
 
-	void Box2DPhysicsSystem::destroy_objects()
+	void Box2DPhysicsSystem::DestroyObjects()
 	{
 
 	}
 
-	void Box2DPhysicsSystem::publish_collision_events() const
+	void Box2DPhysicsSystem::PublishCollisionEvents() const
 	{
-		const auto signalSubsystem = m_engine->get_subsystem<core::SignalSubsystem>();
+		const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
 
 		//CollisionBeginEvent collision_begin_event;
 		//while (m_contact_listener->getNextCollisionBeginEvent(collision_begin_event))
@@ -231,47 +235,47 @@ namespace puffin::physics
 		//}
 	}
 
-	void Box2DPhysicsSystem::create_body(PuffinID id, const TransformComponent2D& transform, const RigidbodyComponent2D& rb)
+	void Box2DPhysicsSystem::CreateBody(UUID id, const TransformComponent2D& transform, const RigidbodyComponent2D& rb)
 	{
 		
 	}
 
-	void Box2DPhysicsSystem::create_box(PuffinID id, const TransformComponent2D& transform, const BoxComponent2D& box)
+	void Box2DPhysicsSystem::CreateBox(UUID id, const TransformComponent2D& transform, const BoxComponent2D& box)
 	{
 		
 	}
 
-	void Box2DPhysicsSystem::create_circle(PuffinID id, const TransformComponent2D& transform, const CircleComponent2D& circle)
+	void Box2DPhysicsSystem::CreateCircle(UUID id, const TransformComponent2D& transform, const CircleComponent2D& circle)
 	{
 		
 	}
 
-	void Box2DPhysicsSystem::update_body(PuffinID id)
+	void Box2DPhysicsSystem::UpdateBody(UUID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::update_box(PuffinID id)
+	void Box2DPhysicsSystem::UpdateBox(UUID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::update_circle(PuffinID id)
+	void Box2DPhysicsSystem::UpdateCircle(UUID id)
 	{
 
 	}
 
-	void Box2DPhysicsSystem::destroy_body(PuffinID id)
-	{
-		
-	}
-
-	void Box2DPhysicsSystem::destroy_box(PuffinID id)
+	void Box2DPhysicsSystem::DestroyBody(UUID id)
 	{
 		
 	}
 
-	void Box2DPhysicsSystem::destroy_circle(PuffinID id)
+	void Box2DPhysicsSystem::DestroyBox(UUID id)
+	{
+		
+	}
+
+	void Box2DPhysicsSystem::DestroyCircle(UUID id)
 	{
 		
 	}

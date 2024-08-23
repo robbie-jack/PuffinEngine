@@ -6,18 +6,15 @@
 #include "puffin/core/subsystem.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/physics/physicsconstants.h"
-#include "puffin/types/packedarray.h"
-#include "puffin/components/transformcomponent2d.h"
-#include "puffin/components/physics/2d/rigidbodycomponent2d.h"
-#include "puffin/components/physics/2d/shapecomponents2d.h"
-#include "puffin/components/physics/2d/velocitycomponent2d.h"
 #include "puffin/types/storage/mappedvector.h"
-#include "puffin/types/ringbuffer.h"
+#include "puffin/physics/bodytype.h"
+#include "puffin/types/storage/ringbuffer.h"
 
 #include "box2d/box2d.h"
 
 namespace puffin
 {
+	struct TransformComponent2D;
 	struct TransformComponent3D;
 
 	namespace core
@@ -28,8 +25,11 @@ namespace puffin
 
 namespace puffin::physics
 {
+	struct RigidbodyComponent2D;
+	struct BoxComponent2D;
+	struct CircleComponent2D;
 
-	const inline std::unordered_map<BodyType, b2BodyType> g_puffin_to_box2d_body_type =
+	const inline std::unordered_map<BodyType, b2BodyType> gPuffinToBox2DBodyType =
 	{
 		{ BodyType::Static, b2_staticBody },
 		{ BodyType::Kinematic, b2_kinematicBody },
@@ -43,42 +43,42 @@ namespace puffin::physics
 		explicit Box2DPhysicsSystem(const std::shared_ptr<core::Engine>& engine);
 		~Box2DPhysicsSystem() override = default;
 
-		void initialize(core::SubsystemManager* subsystem_manager) override;
-		void deinitialize() override;
+		void Initialize(core::SubsystemManager* subsystemManager) override;
+		void Deinitialize() override;
 
-		core::SubsystemType type() const override;
+		[[nodiscard]] core::SubsystemType GetType() const override;
 
-		void begin_play() override;
-		void end_play() override;
+		void BeginPlay() override;
+		void EndPlay() override;
 
-		void update(double delta_time) override;
-		bool should_update() override;
+		void Update(double deltaTime) override;
+		bool ShouldUpdate() override;
 
-		void fixed_update(double fixed_time_step) override;
-		bool should_fixed_update() override;
+		void FixedUpdate(double fixedTimeStep) override;
+		bool ShouldFixedUpdate() override;
 
-		void on_construct_box(entt::registry& registry, entt::entity entity);
-		void on_update_box(entt::registry& registry, entt::entity entity);
-		void on_destroy_box(entt::registry& registry, entt::entity entity);
+		void OnConstructBox(entt::registry& registry, entt::entity entity);
+		void OnUpdateBox(entt::registry& registry, entt::entity entity);
+		void OnDestroyBox(entt::registry& registry, entt::entity entity);
 
-		void on_construct_circle(entt::registry& registry, entt::entity entity);
-		void on_update_circle(entt::registry& registry, entt::entity entity);
-		void on_destroy_circle(entt::registry& registry, entt::entity entity);
+		void OnConstructCircle(entt::registry& registry, entt::entity entity);
+		void OnUpdateCircle(entt::registry& registry, entt::entity entity);
+		void OnDestroyCircle(entt::registry& registry, entt::entity entity);
 
-		void on_construct_rigidbody(entt::registry& registry, entt::entity entity);
-		void on_update_rigidbody(entt::registry& registry, entt::entity entity);
-		void on_destroy_rigidbody(entt::registry& registry, entt::entity entity);
+		void OnConstructRigidbody(entt::registry& registry, entt::entity entity);
+		void OnUpdateRigidbody(entt::registry& registry, entt::entity entity);
+		void OnDestroyRigidbody(entt::registry& registry, entt::entity entity);
 
 	private:
 
 		struct BodyCreateEvent
 		{
-			PuffinID id;
+			UUID id;
 		};
 
 		struct ShapeCreateEvent
 		{
-			PuffinID id;
+			UUID id;
 			BodyType type;
 		};
 
@@ -87,30 +87,30 @@ namespace puffin::physics
 		b2WorldId m_physics_world_id = b2_nullWorldId;
 		//std::unique_ptr<Box2DContactListener> m_contact_listener = nullptr;
 
-		MappedVector<PuffinID, b2BodyId> m_body_ids; // Vector of body ids used in physics simulation
-		MappedVector<PuffinID, b2ShapeId> m_shapes; // Vector of shapes sued in physics simulation
+		MappedVector<UUID, b2BodyId> m_body_ids; // Vector of body ids used in physics simulation
+		MappedVector<UUID, b2ShapeId> m_shapes; // Vector of shapes sued in physics simulation
 
-		MappedVector<PuffinID, b2Circle> m_circles;
-		MappedVector<PuffinID, b2Polygon> m_polygons;
+		MappedVector<UUID, b2Circle> m_circles;
+		MappedVector<UUID, b2Polygon> m_polygons;
 
 		RingBuffer<BodyCreateEvent> m_body_create_events;
 		RingBuffer<ShapeCreateEvent> m_shape_create_events;
 
-		void create_objects();
-		void destroy_objects();
-		void publish_collision_events() const;
+		void CreateObjects();
+		void DestroyObjects();
+		void PublishCollisionEvents() const;
 
-		void create_body(PuffinID id, const TransformComponent2D& transform, const RigidbodyComponent2D& rb);
-		void create_box(PuffinID id, const TransformComponent2D& transform, const BoxComponent2D& box);
-		void create_circle(PuffinID id, const TransformComponent2D& transform, const CircleComponent2D& circle);
+		void CreateBody(UUID id, const TransformComponent2D& transform, const RigidbodyComponent2D& rb);
+		void CreateBox(UUID id, const TransformComponent2D& transform, const BoxComponent2D& box);
+		void CreateCircle(UUID id, const TransformComponent2D& transform, const CircleComponent2D& circle);
 
-		void update_body(PuffinID id);
-		void update_box(PuffinID id);
-		void update_circle(PuffinID id);
+		void UpdateBody(UUID id);
+		void UpdateBox(UUID id);
+		void UpdateCircle(UUID id);
 
-		void destroy_body(PuffinID id);
-		void destroy_box(PuffinID id);
-		void destroy_circle(PuffinID id);
+		void DestroyBody(UUID id);
+		void DestroyBox(UUID id);
+		void DestroyCircle(UUID id);
 	};
 }
 
