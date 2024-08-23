@@ -95,22 +95,17 @@ namespace puffin::io
 		void SetPath(const fs::path& path);
 		const fs::path& GetPath();
 
-		template<typename CompT>
-		void RegisterComponent()
-		{
-			const char* typeName = typeid(CompT).name();
-
-			assert(mComponentData.find(typeName) == mComponentData.end() && "SceneData::RegisterComponent() - Registering component type more than once");
-
-			// Create
-			std::shared_ptr<ComponentDataArray<CompT>> sceneDataArray = std::make_shared<ComponentDataArray<CompT>>();
-
-			mComponentData.insert({ typeName, std::static_pointer_cast<IComponentDataArray>(sceneDataArray) });
-		}
-
 	private:
 
 		using EntityArchiveMap = std::unordered_map<UUID, serialization::Archive>;
+
+		struct SerializedNodeData
+		{
+			UUID id;
+			std::string type;
+			serialization::Archive archive;
+			std::vector<UUID> childIDs;
+		};
 
 		SceneSerializationSubsystem* mSceneSerializationSubsystem = nullptr;
 
@@ -118,15 +113,11 @@ namespace puffin::io
 		bool mHasData = false; // This scene contains a copy of active scene data, either loaded from file or copied from ecs
 
 		std::vector<UUID> mEntityIDs;
-
 		std::unordered_map<entt::id_type, EntityArchiveMap> mEntityArchiveMaps;
 
 		std::vector<UUID> mRootNodeIDs;
-
 		std::vector<UUID> mNodeIDs;
-		std::unordered_map<UUID, std::string> mNodeIDToType;
-		std::unordered_map<UUID, serialization::Archive> mNodeIDToArchive;
-		std::unordered_map<UUID, std::vector<UUID>> mChildNodeIDs;
+		std::unordered_map<UUID, SerializedNodeData> mSerializedNodeData;
 
 		void SerializeNodeAndChildren(scene::SceneGraphSubsystem* sceneGraph, UUID id);
 	};
