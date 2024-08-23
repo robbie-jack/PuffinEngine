@@ -48,10 +48,7 @@ namespace puffin::io
 		{
 			const auto node = sceneGraph->GetNode(id);
 
-			serialization::Archive archive;
-			archive.PopulateFromJson(mNodeIDToJson.at(id));
-
-			node->Deserialize(archive);
+			node->Deserialize(mNodeIDToArchive.at(id));
 		}
 	}
 
@@ -108,7 +105,7 @@ namespace puffin::io
 		mRootNodeIDs.clear();
 		mNodeIDs.clear();
 		mNodeIDToType.clear();
-		mNodeIDToJson.clear();
+		mNodeIDToArchive.clear();
 		mChildNodeIDs.clear();
 
 		mHasData = false;
@@ -117,10 +114,11 @@ namespace puffin::io
 	void SceneData::Save()
 	{
 		// Write scene data to json file
-			
+
+		// Write entities & components
 		json data;
 		data["entityIDs"] = mEntityIDs;
-
+		
 		for (const auto& [typeID, entityArchiveMap] : mEntityArchiveMaps)
 		{
 			if (!entityArchiveMap.empty())
@@ -144,11 +142,33 @@ namespace puffin::io
 			}
 		}
 
+		// Write nodes
 		data["rootNodeIDs"] = mRootNodeIDs;
-		data["nodeIDs"] = mNodeIDs;
-		data["nodeIDToType"] = mNodeIDToType;
-		data["nodeIDToJson"] = mNodeIDToJson;
-		data["childNodeIDs"] = mChildNodeIDs;
+
+		std::vector<json> nodeJsons;
+		nodeJsons.resize(mNodeIDs.size());
+
+		int i = 0;
+		for (const auto& id : mNodeIDs)
+		{
+			auto& nodeJson = nodeJsons[i];
+
+			nodeJson["id"] = id;
+			nodeJson["type"] = mNodeIDToType.at(id);
+
+			json nodeDataJson;
+			mNodeIDToArchive.at(id).DumpToJson(nodeDataJson);
+			nodeJson["data"] = nodeDataJson;
+
+			if (mChildNodeIDs.find(id) != mChildNodeIDs.end())
+			{
+				nodeJson["childIDs"] = mChildNodeIDs.at(id);
+			}
+
+			++i;
+		}
+
+		data["nodes"] = nodeJsons;
 
 		if (!fs::exists(mPath.parent_path()))
 		{
@@ -209,10 +229,23 @@ namespace puffin::io
 		}
 
 		mRootNodeIDs = data.at("rootNodeIDs").get<std::vector<UUID>>();
-		mNodeIDs = data.at("nodeIDs").get<std::vector<UUID>>();
-		mNodeIDToType = data.at("nodeIDToType").get<std::unordered_map<UUID, std::string>>();
-		mNodeIDToJson = data.at("nodeIDToJson").get<std::unordered_map<UUID, json>>();
-		mChildNodeIDs = data.at("childNodeIDs").get<std::unordered_map<UUID, std::vector<UUID>>>();
+
+		for (const auto& nodeJson : data.at("nodes"))
+		{
+			const UUID& id = nodeJson.at("id");
+
+			mNodeIDs.push_back(id);
+			mNodeIDToType.emplace(id, nodeJson.at("type"));
+
+			mNodeIDToArchive.emplace(id, serialization::Archive{});
+			const json& nodeDataJson = nodeJson.at("data");
+			mNodeIDToArchive.at(id).PopulateFromJson(nodeDataJson);
+
+			if (nodeJson.contains("childIDs"))
+			{
+				mChildNodeIDs.emplace(id, nodeJson.at("childIDs"));
+			}
+		}
 
 		mHasData = true;
 	}
@@ -237,18 +270,13 @@ namespace puffin::io
 	{
 		auto node = sceneGraph->GetNode(id);
 
-		json json;
-
-		serialization::Archive archive;
-		node->Serialize(archive);
-		archive.DumpToJson(json);
-
 		std::vector<UUID> childIDs;
 		node->GetChildIDs(childIDs);
 
 		mNodeIDs.push_back(id);
-		mNodeIDToType.insert({ id, sceneGraph->GetNodeTypeName(id) });
-		mNodeIDToJson.insert({ id, json });
+		mNodeIDToType.emplace(id, sceneGraph->GetNodeTypeName(id));
+		mNodeIDToArchive.emplace(id, serialization::Archive{});
+		node->Serialize(mNodeIDToArchive.at(id));
 
 		if (!childIDs.empty())
 			mChildNodeIDs.insert({ id, childIDs });

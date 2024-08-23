@@ -125,7 +125,7 @@ namespace puffin::io
 
 		std::vector<UUID> mNodeIDs;
 		std::unordered_map<UUID, std::string> mNodeIDToType;
-		std::unordered_map<UUID, json> mNodeIDToJson;
+		std::unordered_map<UUID, serialization::Archive> mNodeIDToArchive;
 		std::unordered_map<UUID, std::vector<UUID>> mChildNodeIDs;
 
 		void SerializeNodeAndChildren(scene::SceneGraphSubsystem* sceneGraph, UUID id);
