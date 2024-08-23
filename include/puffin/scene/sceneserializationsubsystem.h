@@ -13,111 +13,62 @@
 #include "puffin/core/subsystem.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/types/uuid.h"
+#include "puffin/utility/serialization.h"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 namespace puffin::io
 {
-    // Interface for array to store scene data
-	class IComponentDataArray
+	class SceneSerializationSubsystem;
+
+	class ISerializableComponent
 	{
 	public:
 
-		virtual ~IComponentDataArray() = default;
+		virtual ~ISerializableComponent() = default;
 
-		virtual void Init(ecs::EnTTSubsystem* enttSubsystem) = 0;
-		virtual void Update(ecs::EnTTSubsystem* enttSubsystem) = 0;
-		virtual void Clear() = 0;
-		virtual size_t GetSize() = 0;
-		[[nodiscard]] virtual json SaveToJson() const = 0;
-		virtual void LoadFromJson(const json& componentData) = 0;
+		[[nodiscard]] virtual bool HasComponent(std::shared_ptr<entt::registry> registry, entt::entity entity) const = 0;
+		virtual void Serialize(std::shared_ptr<entt::registry> registry, entt::entity entity, serialization::Archive& archive) = 0;
+		virtual void Deserialize(std::shared_ptr<entt::registry> registry, entt::entity entity, const serialization::Archive& archive) = 0;
+
 	};
 
-	template<typename CompT>
-	class ComponentDataArray : public IComponentDataArray
+	template<typename T>
+	class SerializableComponent : public ISerializableComponent
 	{
 	public:
 
-		ComponentDataArray() = default;
-		~ComponentDataArray() override = default;
+		SerializableComponent() = default;
+		~SerializableComponent() override = default;
 
-		void Init(ecs::EnTTSubsystem* enttSubsystem) override
+		[[nodiscard]] bool HasComponent(std::shared_ptr<entt::registry> registry, entt::entity entity) const override
 		{
-			const auto registry = enttSubsystem->GetRegistry();
+			return registry->any_of<T>(entity);
+		}
 
-			for (const auto& [id, comp] : mComponents)
+		void Serialize(std::shared_ptr<entt::registry> registry, entt::entity entity,
+			serialization::Archive& archive) override
+		{
+			if (registry->any_of<T>(entity))
 			{
-				const auto entity = enttSubsystem->GetEntity(id);
-
-				if (registry->any_of<CompT>(entity))
-				{
-					registry->get<CompT>(entity) = comp;
-				}
-				else
-				{
-					registry->emplace_or_replace<CompT>(entity, comp);
-				}
+				const auto& comp = registry->get<T>(entity);
+				serialization::Serialize(comp, archive);
 			}
 		}
 
-		void Update(ecs::EnTTSubsystem* enttSubsystem) override
+		void Deserialize(std::shared_ptr<entt::registry> registry, entt::entity entity,
+			const serialization::Archive& archive) override
 		{
-			Clear();
+			auto& comp = registry->emplace_or_replace<T>(entity);
 
-			const auto registry = enttSubsystem->GetRegistry();
+			serialization::Deserialize(archive, comp);
 
-			for (const auto& [ entity, comp ] : registry->view<const CompT>().each())
-			{
-				const auto& id = enttSubsystem->GetID(entity);
-
-				if (enttSubsystem->ShouldEntityBeSerialized(id))
-				{
-					mComponents.emplace(id, comp);
-				}
-			}
+			registry->patch<T>(entity);
 		}
-
-		void Clear() override
-		{
-			mComponents.clear();
-		}
-
-		size_t GetSize() override
-		{
-			return mComponents.size();
-		}
-
-		[[nodiscard]] json SaveToJson() const override
-		{
-			json data;
-
-			int i = 0;
-			for (auto& [id, comp] : mComponents)
-			{
-				data[i] = { id, comp };
-
-				i++;
-			}
-
-			return data;
-		}
-
-		void LoadFromJson(const json& componentData) override
-		{
-			for (const auto& data : componentData)
-			{
-				UUID id = data.at(0);
-
-				mComponents[id] = data.at(1);
-			}
-		}
-
-	private:
-
-		std::map<UUID, CompT> mComponents; // Map of entity id to component
-
 	};
+
+	using SerializableComponentMap = std::unordered_map<entt::id_type, ISerializableComponent*>;
 
 	// Stores Loaded Scene Data
 	class SceneData
@@ -125,12 +76,12 @@ namespace puffin::io
 	public:
 
 		SceneData() = default;
-		explicit SceneData(fs::path  path) : mPath(std::move(path)) {}
+		explicit SceneData(SceneSerializationSubsystem* sceneSerializationSubsystem, fs::path path);
 
 		// Initialize ECS & SceneGraph with loaded data
 		void Setup(ecs::EnTTSubsystem* enttSubsystem, scene::SceneGraphSubsystem* sceneGraph);
 
-		void UpdateData(ecs::EnTTSubsystem* enttSubsystem, scene::SceneGraphSubsystem* sceneGraph);
+		void UpdateData(const std::shared_ptr<core::Engine>& engine);
 
 		void Clear();
 
@@ -159,11 +110,16 @@ namespace puffin::io
 
 	private:
 
+		using EntityArchiveMap = std::unordered_map<UUID, serialization::Archive>;
+
+		SceneSerializationSubsystem* mSceneSerializationSubsystem = nullptr;
+
 		fs::path mPath;
 		bool mHasData = false; // This scene contains a copy of active scene data, either loaded from file or copied from ecs
 
 		std::vector<UUID> mEntityIDs;
-		std::unordered_map<std::string, std::shared_ptr<IComponentDataArray>> mComponentData; // Map of component data arrays
+
+		std::unordered_map<entt::id_type, EntityArchiveMap> mEntityArchiveMaps;
 
 		std::vector<UUID> mRootNodeIDs;
 
@@ -174,31 +130,6 @@ namespace puffin::io
 
 		void SerializeNodeAndChildren(scene::SceneGraphSubsystem* sceneGraph, UUID id);
 	};
-
-    class ISceneComponentRegister
-    {
-    public:
-
-        virtual ~ISceneComponentRegister() = default;
-
-        virtual void RegisterComponentWithScene(std::shared_ptr<SceneData> scene_data) = 0;
-
-    };
-
-    template<typename T>
-    class SceneComponentRegister : public ISceneComponentRegister
-    {
-    public:
-
-        SceneComponentRegister() = default;
-        ~SceneComponentRegister() override = default;
-
-        void RegisterComponentWithScene(const std::shared_ptr<SceneData> sceneData) override
-        {
-            sceneData->RegisterComponent<T>();
-        }
-
-    };
 
 	class SceneSerializationSubsystem : public core::Subsystem
 	{
@@ -221,17 +152,17 @@ namespace puffin::io
 
 		std::shared_ptr<SceneData> GetSceneData();
 
+		const SerializableComponentMap& GetSerializableComponents();
+
 		template<typename T>
 		void RegisterComponent()
 		{
 			auto type = entt::resolve<T>();
 			auto typeName = type.info().name();
 
-			if (mComponentRegisters.find(typeName) == mComponentRegisters.end())
+			if (mSerializableComponents.find(type.id()) == mSerializableComponents.end())
 			{
-				auto sceneCompRegister = std::make_shared<SceneComponentRegister<T>>();
-
-				mComponentRegisters.insert({ typeName, std::static_pointer_cast<ISceneComponentRegister>(sceneCompRegister) });
+				mSerializableComponents.emplace(type.id(), new SerializableComponent<T>());
 			}
 		}
 
@@ -239,7 +170,7 @@ namespace puffin::io
 
 		std::shared_ptr<SceneData> mCurrentSceneData = nullptr;
         std::unordered_map<fs::path, std::shared_ptr<SceneData>> mSceneData;
-        std::unordered_map<std::string_view, std::shared_ptr<ISceneComponentRegister>> mComponentRegisters;
+		SerializableComponentMap mSerializableComponents;
 
 	};
 }

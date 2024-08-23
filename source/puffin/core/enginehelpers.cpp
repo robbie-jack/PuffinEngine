@@ -12,12 +12,17 @@
 #include "puffin/components/physics/2d/boxcomponent2d.h"
 #include "puffin/components/physics/2d/circlecomponent2d.h"
 #include "puffin/components/physics/2d/rigidbodycomponent2d.h"
+#include "puffin/components/physics/2d/velocitycomponent2d.h"
 #include "puffin/components/physics/3d/boxcomponent3d.h"
 #include "puffin/components/physics/3d/rigidbodycomponent3d.h"
 #include "puffin/components/physics/3d/spherecomponent3d.h"
+#include "puffin/components/physics/3d/velocitycomponent3d.h"
+#include "puffin/components/procedural/3d/proceduralicospherecomponent3d.h"
+#include "puffin/components/procedural/3d/proceduralplanecomponent3d.h"
+#include "puffin/components/procedural/3d/proceduralterraincomponent3d.h"
+#include "puffin/components/procedural/3d/proceduraluvspherecomponent3d.h"
 #include "puffin/components/rendering/3d/cameracomponent3d.h"
 #include "puffin/components/rendering/3d/directionallightcomponent3d.h"
-#include "puffin/components/rendering/3d/lightcomponent3d.h"
 #include "puffin/components/rendering/3d/pointlightcomponent3d.h"
 #include "puffin/components/rendering/3d/proceduralmeshcomponent3d.h"
 #include "puffin/components/rendering/3d/shadowcastercomponent3d.h"
@@ -59,12 +64,27 @@ namespace puffin::core
 		// Register 2D Types
 		reflection::RegisterType<TransformComponent2D>();
 
+		reflection::RegisterType<physics::BoxComponent2D>();
+		reflection::RegisterType<physics::CircleComponent2D>();
+		reflection::RegisterType<physics::RigidbodyComponent2D>();
+		reflection::RegisterType<physics::VelocityComponent2D>();
+
 		// Register 3D Types
 		reflection::RegisterType<TransformComponent3D>();
-		
+
+		reflection::RegisterType<physics::BoxComponent3D>();
+		reflection::RegisterType<physics::SphereComponent3D>();
+		reflection::RegisterType<physics::RigidbodyComponent3D>();
+		reflection::RegisterType<physics::VelocityComponent3D>();
+
+		reflection::RegisterType<procedural::ProceduralPlaneComponent3D>();
+		reflection::RegisterType<procedural::ProceduralCubeComponent3D>();
+		reflection::RegisterType<procedural::ProceduralTerrainComponent3D>();
+		reflection::RegisterType<procedural::ProceduralIcoSphereComponent3D>();
+		reflection::RegisterType<procedural::ProceduralUVSphereComponent3D>();
+
 		reflection::RegisterType<rendering::StaticMeshComponent3D>();
 		reflection::RegisterType<rendering::ProceduralMeshComponent3D>();
-
 		reflection::RegisterType<rendering::PointLightComponent3D>();
 		reflection::RegisterType<rendering::SpotLightComponent3D>();
 		reflection::RegisterType<rendering::DirectionalLightComponent3D>();
@@ -73,25 +93,41 @@ namespace puffin::core
 		reflection::RegisterType<rendering::CameraComponent3D>();
 	}
 
-	void RegisterComponents(const std::shared_ptr<Engine>& engine)
+	void RegisterComponentsForSerialization(const std::shared_ptr<Engine>& engine)
 	{
 		auto sceneSubsystem = engine->GetSubsystem<io::SceneSerializationSubsystem>();
 
+		// 2D
 		sceneSubsystem->RegisterComponent<TransformComponent2D>();
+
+		sceneSubsystem->RegisterComponent<physics::BoxComponent2D>();
+		sceneSubsystem->RegisterComponent<physics::CircleComponent2D>();
+		sceneSubsystem->RegisterComponent<physics::RigidbodyComponent2D>();
+		sceneSubsystem->RegisterComponent<physics::VelocityComponent2D>();
+
+		// 3D
 		sceneSubsystem->RegisterComponent<TransformComponent3D>();
+
+		sceneSubsystem->RegisterComponent<physics::BoxComponent3D>();
+		sceneSubsystem->RegisterComponent<physics::SphereComponent3D>();
+		sceneSubsystem->RegisterComponent<physics::RigidbodyComponent3D>();
+		sceneSubsystem->RegisterComponent<physics::VelocityComponent3D>();
+
+		sceneSubsystem->RegisterComponent<procedural::ProceduralPlaneComponent3D>();
+		sceneSubsystem->RegisterComponent<procedural::ProceduralCubeComponent3D>();
+		sceneSubsystem->RegisterComponent<procedural::ProceduralTerrainComponent3D>();
+		sceneSubsystem->RegisterComponent<procedural::ProceduralIcoSphereComponent3D>();
+		sceneSubsystem->RegisterComponent<procedural::ProceduralUVSphereComponent3D>();
+
 		sceneSubsystem->RegisterComponent<rendering::StaticMeshComponent3D>();
+		sceneSubsystem->RegisterComponent<rendering::ProceduralMeshComponent3D>();
 		sceneSubsystem->RegisterComponent<rendering::PointLightComponent3D>();
 		sceneSubsystem->RegisterComponent<rendering::SpotLightComponent3D>();
 		sceneSubsystem->RegisterComponent<rendering::DirectionalLightComponent3D>();
 		sceneSubsystem->RegisterComponent<rendering::ShadowCasterComponent3D>();
+
 		sceneSubsystem->RegisterComponent<rendering::CameraComponent3D>();
-		sceneSubsystem->RegisterComponent<scripting::AngelScriptComponent>();
-		sceneSubsystem->RegisterComponent<physics::RigidbodyComponent2D>();
-		sceneSubsystem->RegisterComponent<physics::BoxComponent2D>();
-		sceneSubsystem->RegisterComponent<physics::CircleComponent2D>();
-		sceneSubsystem->RegisterComponent<physics::RigidbodyComponent3D>();
-		sceneSubsystem->RegisterComponent<physics::BoxComponent3D>();
-		sceneSubsystem->RegisterComponent<physics::SphereComponent3D>();
+		
 	}
 
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)

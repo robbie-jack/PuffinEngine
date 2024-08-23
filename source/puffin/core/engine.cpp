@@ -96,7 +96,7 @@ namespace puffin::core
 		}
 
 		// Register components to scene subsystem
-		RegisterComponents(shared_from_this());
+		RegisterComponentsForSerialization(shared_from_this());
 
 		// Load default scene
 		auto sceneString = parser.get<std::string>("-scene");
@@ -112,13 +112,10 @@ namespace puffin::core
 
 			if (mSetupEngineDefaultScene)
 			{
-				auto entt_subsystem = GetSubsystem<ecs::EnTTSubsystem>();
-				auto scene_graph = GetSubsystem<scene::SceneGraphSubsystem>();
-
 				// Create Default Scene in code -- used when scene serialization is changed
 				SetupDefaultScene(shared_from_this());
 
-				sceneData->UpdateData(entt_subsystem, scene_graph);
+				sceneData->UpdateData(shared_from_this());
 				sceneData->Save();
 			}
 			else if (mLoadSceneOnLaunch)

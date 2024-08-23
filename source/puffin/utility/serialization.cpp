@@ -4,6 +4,11 @@
 
 namespace puffin::serialization
 {
+	Archive::~Archive()
+	{
+		Clear();
+	}
+
 	void Archive::Set(const std::string& name, bool data)
 	{
 		mBooleans.emplace(name, data);
@@ -216,28 +221,28 @@ namespace puffin::serialization
 			mStrings = json.at("string");
 
 		if (json.contains("intS8"))
-			mStrings = json.at("intS8");
+			mIntegersS8 = json.at("intS8");
 
 		if (json.contains("intS16"))
-			mStrings = json.at("intS16");
+			mIntegersS16 = json.at("intS16");
 
 		if (json.contains("intS32"))
-			mStrings = json.at("intS32");
+			mIntegersS32 = json.at("intS32");
 
 		if (json.contains("intS64"))
-			mStrings = json.at("intS64");
+			mIntegersS64 = json.at("intS64");
 
 		if (json.contains("intU8"))
-			mStrings = json.at("intU8");
+			mIntegersU8 = json.at("intU8");
 
 		if (json.contains("intU16"))
-			mStrings = json.at("intU16");
+			mIntegersU16 = json.at("intU16");
 
 		if (json.contains("intU32"))
-			mStrings = json.at("intU32");
+			mIntegersU32 = json.at("intU32");
 
 		if (json.contains("intU64"))
-			mStrings = json.at("intU64");
+			mIntegersU64 = json.at("intU64");
 
 		if (json.contains("archive"))
 		{
@@ -250,5 +255,22 @@ namespace puffin::serialization
 				mArchives.emplace(name, archive);
 			}
 		}
+	}
+
+	void Archive::Clear()
+	{
+		mBooleans.clear();
+		mFloats.clear();
+		mDoubles.clear();
+		mStrings.clear();
+		mIntegersS8.clear();
+		mIntegersS16.clear();
+		mIntegersS32.clear();
+		mIntegersS64.clear();
+		mIntegersU8.clear();
+		mIntegersU16.clear();
+		mIntegersU32.clear();
+		mIntegersU64.clear();
+		mArchives.clear();
 	}
 }

@@ -143,7 +143,7 @@ namespace puffin::ui
 		{
 			const auto sceneData = mEngine->GetSubsystem<io::SceneSerializationSubsystem>()->GetSceneData();
 
-			sceneData->UpdateData(mEngine->GetSubsystem<ecs::EnTTSubsystem>(), mEngine->GetSubsystem<scene::SceneGraphSubsystem>());
+			sceneData->UpdateData(mEngine);
 		}
 
 		ImGui_ImplVulkan_NewFrame();
@@ -255,7 +255,7 @@ namespace puffin::ui
 				const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 				const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-				sceneData->UpdateData(enttSubsystem, sceneGraph);
+				sceneData->UpdateData(mEngine);
 				sceneData->Save();
 
 				ImGui::CloseCurrentPopup();
@@ -328,7 +328,7 @@ namespace puffin::ui
 					const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 					const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-					sceneData->UpdateData(enttSubsystem, sceneGraph);
+					sceneData->UpdateData(mEngine);
 					sceneData->Save();
 				}
 

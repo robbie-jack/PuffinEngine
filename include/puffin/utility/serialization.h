@@ -26,6 +26,8 @@ namespace puffin::serialization
 	{
 	public:
 
+		~Archive();
+
 		template<typename T>
 		void Set(const std::string& name, const T& data)
 		{
@@ -82,6 +84,8 @@ namespace puffin::serialization
 
 		void DumpToJson(nlohmann::json& json) const;
 		void PopulateFromJson(const nlohmann::json& json);
+
+		void Clear();
 
 	private:
 

@@ -17,7 +17,7 @@ namespace puffin::core
 
 	void RegisterAssetTypes(const io::ProjectFile& projectFile, const std::filesystem::path& projectPath);
 	void RegisterComponentTypes();
-	void RegisterComponents(const std::shared_ptr<Engine>& engine);
+	void RegisterComponentsForSerialization(const std::shared_ptr<Engine>& engine);
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine);
 
 	void AddDefaultAssets();
