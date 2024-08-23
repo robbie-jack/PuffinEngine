@@ -4,6 +4,7 @@
 
 #include "puffin/components/rendering/3d/lightcomponent3d.h"
 #include "puffin/utility/reflection.h"
+#include "puffin/utility/serialization.h"
 
 namespace puffin
 {

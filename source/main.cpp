@@ -45,9 +45,9 @@ int main(int argc, char* argv[])
 	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSystem>();
 #endif
 
-//#ifdef PFN_JOLT_PHYSICS
-//	engine->RegisterSubsystem<puffin::physics::JoltPhysicsSubsystem>();
-//#endif
+#ifdef PFN_JOLT_PHYSICS
+	engine->RegisterSubsystem<puffin::physics::JoltPhysicsSubsystem>();
+#endif
 
 	engine->RegisterSubsystem<puffin::scripting::AngelScriptSubsystem>();
 	engine->RegisterSubsystem<puffin::scripting::AngelScriptGameplaySubsystem>();

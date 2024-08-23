@@ -154,6 +154,7 @@ namespace puffin
 
 					DrawBenchmark("Input", benchmarkSubsystem->GetBenchmarkTime("Input"));
 					DrawBenchmark("Sample Time", benchmarkSubsystem->GetBenchmarkTime("Sample Time"));
+					DrawBenchmark("Idle Time", benchmarkSubsystem->GetBenchmarkTime("Idle Time"));
 
 					DrawBenchmark("Engine Update", benchmarkSubsystem->GetBenchmarkTime("Engine Update"));
 

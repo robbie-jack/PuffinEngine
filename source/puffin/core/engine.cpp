@@ -164,6 +164,16 @@ namespace puffin::core
 			benchmarkSubsystem->EndBenchmark("Sample Time");
 		}
 
+		// If frame rate cap is enabled, idle app until needed
+		{
+			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
+			benchmarkSubsystem->StartBenchmark("Idle Time");
+
+			Idle();
+
+			benchmarkSubsystem->EndBenchmark("Idle Time");
+		}
+
 		// Make sure delta time never exceeds 1/30th of a second
 		if (mDeltaTime > mTimeStepLimit)
 		{
@@ -425,7 +435,10 @@ namespace puffin::core
 		mLastTime = mCurrentTime;
 		mCurrentTime = sampledTime;
 		mDeltaTime = mCurrentTime - mLastTime;
+	}
 
+	void Engine::Idle()
+	{
 		if (mFrameRateMax > 0)
 		{
 			const double deltaTimeMax = 1.0 / mFrameRateMax;

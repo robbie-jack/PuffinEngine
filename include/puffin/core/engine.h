@@ -100,6 +100,7 @@ namespace puffin::core
 	private:
 
 		void UpdateDeltaTime(double sampledTime);
+		void Idle();
 
 		bool mRunning = true;
 		bool mLoadSceneOnLaunch = false;

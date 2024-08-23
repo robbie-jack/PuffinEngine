@@ -5,6 +5,7 @@
 #include "puffin/types/uuid.h"
 #include "puffin/types/vertex.h"
 #include "puffin/utility/reflection.h"
+#include "puffin/utility/serialization.h"
 
 namespace puffin
 {
@@ -33,5 +34,20 @@ namespace puffin
 		entt::meta<ProceduralMeshComponent3D>()
 			.type(entt::hs("ProceduralMeshComponent3D"))
 			.data<&ProceduralMeshComponent3D::materialID>(entt::hs("materialID"));
+	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<rendering::ProceduralMeshComponent3D>(const rendering::ProceduralMeshComponent3D& data, Archive& archive)
+		{
+			archive.Set("materialID", data.materialID);
+		}
+
+		template<>
+		inline void Deserialize<rendering::ProceduralMeshComponent3D>(const Archive& archive, rendering::ProceduralMeshComponent3D& data)
+		{
+			archive.Get("materialID", data.materialID);
+		}
 	}
 }
