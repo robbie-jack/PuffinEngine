@@ -1,17 +1,51 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "puffin/types/vector.h"
 
-namespace puffin::procedural
+#include "puffin/types/vector3.h"
+#include "puffin/utility/reflection.h"
+#include "puffin/utility/serialization.h"
+
+namespace puffin
 {
-	struct ProceduralCubeComponent3D
+	namespace procedural
 	{
-		ProceduralCubeComponent3D() = default;
+		struct ProceduralCubeComponent3D
+		{
+			ProceduralCubeComponent3D() = default;
 
-		Vector3f halfSize = { 10.f }; // Half size of plane
-		Vector3i quadCount = { 10 }; // Number of quads that make up planes surface
+			Vector3f halfSize = { 10.f }; // Half size of plane
+			Vector3i quadCount = { 10 }; // Number of quads that make up planes surface
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProceduralCubeComponent3D, halfSize, quadCount)
-	};
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProceduralCubeComponent3D, halfSize, quadCount)
+		};
+	}
+
+	template<>
+	inline void reflection::RegisterType<procedural::ProceduralCubeComponent3D>()
+	{
+		using namespace procedural;
+
+		entt::meta<ProceduralCubeComponent3D>()
+			.type(entt::hs("ProceduralCubeComponent3D"))
+			.data<&ProceduralCubeComponent3D::halfSize>(entt::hs("halfSize"))
+			.data<&ProceduralCubeComponent3D::quadCount>(entt::hs("quadCount"));
+	}
+
+	namespace serialization
+	{
+		template<>
+		inline void Serialize<procedural::ProceduralCubeComponent3D>(const procedural::ProceduralCubeComponent3D& data, Archive& archive)
+		{
+			archive.Set("halfSize", data.halfSize);
+			archive.Set("quadCount", data.quadCount);
+		}
+
+		template<>
+		inline void Deserialize<procedural::ProceduralCubeComponent3D>(const Archive& archive, procedural::ProceduralCubeComponent3D& data)
+		{
+			archive.Get("halfSize", data.halfSize);
+			archive.Get("quadCount", data.quadCount);
+		}
+	}
 }
