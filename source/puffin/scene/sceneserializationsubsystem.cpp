@@ -276,8 +276,9 @@ namespace puffin::io
 		serializedNodeData.type = sceneGraph->GetNodeTypeName(id);
 		node->Serialize(serializedNodeData.archive);
 
-		for (auto childID : serializedNodeData.childIDs)
+		for (const auto& childID : node->GetChildIDs())
 		{
+			serializedNodeData.childIDs.push_back(childID);
 			SerializeNodeAndChildren(sceneGraph, childID);
 		}
 	}

@@ -5,6 +5,7 @@
 #include <entt/entity/registry.hpp>
 
 #include "puffin/types/uuid.h"
+#include "puffin/utility/reflection.h"
 #include "puffin/utility/serialization.h"
 
 namespace puffin
@@ -70,7 +71,8 @@ namespace puffin
 		[[nodiscard]] Node* GetChild(UUID id) const;
 		void Reparent(const UUID& id);
 		void GetChildren(std::vector<Node*>& children) const;
-		void GetChildIDs(std::vector<UUID>& childIDs) const;
+		[[nodiscard]] const std::list<UUID>& GetChildIDs() const;
+		[[nodiscard]] bool HasChildren() const;
 
 		void RemoveChild(UUID id);
 
@@ -127,4 +129,13 @@ namespace puffin
 		std::shared_ptr<core::Engine> mEngine = nullptr;
 		std::shared_ptr<entt::registry> mRegistry = nullptr;
 	};
+
+	template<>
+	inline void reflection::RegisterType<Node>()
+	{
+		entt::meta<Node>()
+			.type(entt::hs("Node"))
+			.func<&Node::GetID>(entt::hs("GetID"))
+			.func<&Node::GetName>(entt::hs("GetName"));
+	}
 }

@@ -68,7 +68,7 @@ namespace puffin
 			std::shared_ptr<UIWindowViewport> mWindowViewport;
 			std::shared_ptr<UIWindowSettings> mWindowSettings;
 			std::shared_ptr<UIWindowSceneHierarchy> mWindowSceneHierarchy;
-			std::shared_ptr<UIWindowNodeEditor> mWindowEntityProperties;
+			std::shared_ptr<UIWindowNodeEditor> mWindowNodeEditor;
 			std::shared_ptr<UIWindowPerformance> mWindowPerformance;
 			std::shared_ptr<UIContentBrowser> mContentBrowser;
 

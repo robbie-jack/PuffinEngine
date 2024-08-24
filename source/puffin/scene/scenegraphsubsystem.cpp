@@ -104,7 +104,22 @@ namespace puffin::scene
 
 	void SceneGraphSubsystem::NotifyTransformChanged(UUID id)
 	{
-		mNodeTransformsToUpdate.insert(id);
+		if (mNodeTransformsNeedUpdated.find(id) == mNodeTransformsNeedUpdated.end())
+		{
+			mNodeTransformsNeedUpdated.insert(id);
+			mNodeTransformsNeedUpdatedVector.push_back(id);
+
+			if (mNodeTransformsUpToDate.find(id) != mNodeTransformsUpToDate.end())
+			{
+				mNodeTransformsUpToDate.erase(id);
+			}
+
+			const auto node = GetNode(id);
+			for (const auto& childID : node->GetChildIDs())
+			{
+				NotifyTransformChanged(childID);
+			}
+		}
 	}
 
 	void SceneGraphSubsystem::QueueDestroyNode(const UUID& id)
@@ -168,15 +183,16 @@ namespace puffin::scene
 
 	void SceneGraphSubsystem::DestroyNode(UUID id)
 	{
-		std::vector<UUID> childIDs;
-
 		if (const auto node = GetNode(id); node)
 		{
+			for (const auto& childID : node->GetChildIDs())
+			{
+				DestroyNode(childID);
+			}
+
 			node->EndPlay();
 
 			node->Deinitialize();
-
-			node->GetChildIDs(childIDs);
 		}
 
 		GetArray(mIDToType.at(id).c_str())->RemoveNode(id);
@@ -188,11 +204,6 @@ namespace puffin::scene
 
 		if (mGlobalTransform3Ds.Contains(id))
 			mGlobalTransform3Ds.Erase(id);
-
-		for (const auto& childID : childIDs)
-		{
-			DestroyNode(childID);
-		}
 	}
 
 	void SceneGraphSubsystem::AddIDAndChildIDs(UUID id, std::vector<UUID>& nodeIDs)
@@ -201,10 +212,7 @@ namespace puffin::scene
 
 		const auto node = GetNode(id);
 
-		std::vector<UUID> childIDs;
-		node->GetChildIDs(childIDs);
-
-		for (const auto childID : childIDs)
+		for (const auto childID : node->GetChildIDs())
 		{
 			AddIDAndChildIDs(childID, nodeIDs);
 		}
@@ -215,119 +223,115 @@ namespace puffin::scene
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
-		mNodeTransformsAlreadyUpdated.clear();
-
-		for (const auto& id : mNodeTransformsToUpdate)
+		for (const auto& id : mNodeTransformsNeedUpdatedVector)
 		{
 			UpdateGlobalTransform(id);
 		}
 
-		mNodeTransformsToUpdate.clear();
+		mNodeTransformsNeedUpdated.clear();
+		mNodeTransformsNeedUpdatedVector.clear();
 	}
 
 	void SceneGraphSubsystem::UpdateGlobalTransform(UUID id)
 	{
-		if (const auto node = GetNode(id); node && mNodeTransformsAlreadyUpdated.find(id) == mNodeTransformsAlreadyUpdated.end())
+		if (mNodeTransformsUpToDate.find(id) == mNodeTransformsUpToDate.end())
 		{
-			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-			const auto registry = enttSubsystem->GetRegistry();
-
-			if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
+			if (const auto node = GetNode(id); node)
 			{
-				auto& globalTransform = mGlobalTransform2Ds.At(id);
-				globalTransform.position = { 0.f };
-				globalTransform.rotation = 0.0f;
-				globalTransform.scale = { 1.0f };
+				const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+				const auto registry = enttSubsystem->GetRegistry();
 
-				std::vector<UUID> transformIDsToApply;
-				transformIDsToApply.push_back(id);
-
-				auto parentID = node->GetParentID();
-				while (parentID != gInvalidID)
+				if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
 				{
-					if (const auto parentNode = GetNode(parentID); parentNode)
+					auto& globalTransform = mGlobalTransform2Ds.At(id);
+					globalTransform.position = { 0.f };
+					globalTransform.rotation = 0.0f;
+					globalTransform.scale = { 1.0f };
+
+					const auto& localTransform = transformNode2D->GetTransform();
+
+					auto parentNode = dynamic_cast<TransformNode2D*>(node->GetParent());
+					if (parentNode)
 					{
-						transformIDsToApply.push_back(parentID);
+						const auto& parentTransform = parentNode->GetGlobalTransform();
 
-						parentID = parentNode->GetParentID();
+						ApplyLocalToGlobalTransform2D(localTransform, parentTransform, globalTransform);
 					}
-				}
-
-				for (int i = transformIDsToApply.size(); i-- > 0;)
-				{
-					const auto* transformNode = dynamic_cast<TransformNode2D*>(GetNode(transformIDsToApply[i]));
-
-					ApplyLocalToGlobalTransform2D(transformNode->GetTransform(), globalTransform);
-				}
-
-				registry->patch<TransformComponent2D>(node->GetEntity());
-			}
-
-			if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))
-			{
-				auto& globalTransform = mGlobalTransform3Ds.At(id);
-				globalTransform.position = { 0.f };
-				globalTransform.orientationQuat = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
-				globalTransform.orientationEulerAngles = { 0.0f, 0.0f, 0.0f };
-				globalTransform.scale = { 1.f };
-
-				auto parentID = node->GetParentID();
-
-				std::vector<UUID> transformIDsToApply;
-				transformIDsToApply.push_back(id);
-
-				while (parentID != gInvalidID)
-				{
-					if (const auto parentNode = GetNode(parentID); parentNode)
+					else
 					{
-						transformIDsToApply.push_back(parentID);
-
-						parentID = parentNode->GetParentID();
+						ApplyLocalToGlobalTransform2D(localTransform, {}, globalTransform);
 					}
+
+					registry->patch<TransformComponent2D>(node->GetEntity());
 				}
 
-				for (int i = transformIDsToApply.size(); i-- > 0;)
+				if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))
 				{
-					const auto* transformNode = dynamic_cast<TransformNode3D*>(GetNode(transformIDsToApply[i]));
+					auto& globalTransform = mGlobalTransform3Ds.At(id);
+					globalTransform.position = { 0.f };
+					globalTransform.orientationQuat = angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0));
+					globalTransform.orientationEulerAngles = { 0.0f, 0.0f, 0.0f };
+					globalTransform.scale = { 1.f };
 
-					ApplyLocalToGlobalTransform3D(transformNode->GetTransform(), globalTransform);
+					const auto& localTransform = transformNode3D->GetTransform();
+
+					auto parentNode = dynamic_cast<TransformNode3D*>(node->GetParent());
+					if (parentNode)
+					{
+						const auto& parentTransform = parentNode->GetGlobalTransform();
+
+						ApplyLocalToGlobalTransform3D(localTransform, parentTransform, globalTransform);
+					}
+					else
+					{
+						ApplyLocalToGlobalTransform3D(localTransform, {}, globalTransform);
+					}
+
+					registry->patch<TransformComponent3D>(node->GetEntity());
 				}
 
-				registry->patch<TransformComponent3D>(node->GetEntity());
+				mNodeTransformsUpToDate.insert(id);
 			}
-
-			// Make sure children also have the global transform updated as well
-			std::vector<UUID> childIDs;
-			node->GetChildIDs(childIDs);
-			for (const auto& childID : childIDs)
-			{
-				UpdateGlobalTransform(childID);
-			}
-
-			mNodeTransformsAlreadyUpdated.insert(id);
 		}
 	}
 
-	void SceneGraphSubsystem::ApplyLocalToGlobalTransform2D(const TransformComponent2D& localTransform, TransformComponent2D& globalTransform)
+	void SceneGraphSubsystem::LimitAngleTo180Degrees(float& angle)
 	{
-		globalTransform.position += localTransform.position;
-		globalTransform.rotation += localTransform.rotation;
+		constexpr float angleLimit = 180.0f;
+		constexpr float angleChange = 360.0f;
 
-		if (globalTransform.rotation > 360.0f)
-			globalTransform.rotation -= 360.0f;
+		if (angle > angleLimit)
+			angle -= angleChange;
 
-		globalTransform.scale *= localTransform.scale;
+		if (angle < -angleLimit)
+			angle += angleChange;
 	}
 
-	void SceneGraphSubsystem::ApplyLocalToGlobalTransform3D(const TransformComponent3D& localTransform, TransformComponent3D& globalTransform)
+	void SceneGraphSubsystem::ApplyLocalToGlobalTransform2D(const TransformComponent2D& localTransform, const TransformComponent2D& globalTransform, TransformComponent2D
+	                                                        & updatedTransform)
 	{
-		globalTransform.position += localTransform.position;
+		updatedTransform.position = globalTransform.position + localTransform.position;
+		updatedTransform.rotation = globalTransform.rotation + localTransform.rotation;
 
-		globalTransform.orientationQuat = localTransform.orientationQuat * globalTransform.orientationQuat;
+		LimitAngleTo180Degrees(updatedTransform.rotation);
 
-		globalTransform.orientationEulerAngles += localTransform.orientationEulerAngles;
+		updatedTransform.scale = globalTransform.scale * localTransform.scale;
+	}
 
-		globalTransform.scale *= localTransform.scale;
+	void SceneGraphSubsystem::ApplyLocalToGlobalTransform3D(const TransformComponent3D& localTransform, const TransformComponent3D& globalTransform, TransformComponent3D&
+	                                                        updatedTransform)
+	{
+		updatedTransform.position = globalTransform.position + localTransform.position;
+
+		updatedTransform.orientationQuat = localTransform.orientationQuat * globalTransform.orientationQuat;
+
+		updatedTransform.orientationEulerAngles = globalTransform.orientationEulerAngles + localTransform.orientationEulerAngles;
+
+		LimitAngleTo180Degrees(updatedTransform.orientationEulerAngles.pitch);
+		LimitAngleTo180Degrees(updatedTransform.orientationEulerAngles.yaw);
+		LimitAngleTo180Degrees(updatedTransform.orientationEulerAngles.roll);
+
+		updatedTransform.scale = globalTransform.scale * localTransform.scale;
 	}
 
 	void SceneGraphSubsystem::AddNodeInternalBase(Node* node, const char* typeName, UUID id, UUID parentID)
@@ -354,13 +358,15 @@ namespace puffin::scene
 		if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
 		{
 			mGlobalTransform2Ds.Emplace(id, TransformComponent2D());
-			mNodeTransformsToUpdate.emplace(id);
+
+			NotifyTransformChanged(id);
 		}
 
 		if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))
 		{
 			mGlobalTransform3Ds.Emplace(id, TransformComponent3D());
-			mNodeTransformsToUpdate.emplace(id);
+
+			NotifyTransformChanged(id);
 		}
 
 		mSceneGraphUpdated = true;

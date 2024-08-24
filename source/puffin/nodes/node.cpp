@@ -122,14 +122,14 @@ namespace puffin
 		}
 	}
 
-	void Node::GetChildIDs(std::vector<UUID>& childIDs) const
+	const std::list<UUID>& Node::GetChildIDs() const
 	{
-		childIDs.reserve(mChildIDs.size());
+		return mChildIDs;
+	}
 
-		for (auto id : mChildIDs)
-		{
-			childIDs.push_back(id);
-		}
+	bool Node::HasChildren() const
+	{
+		return !mChildIDs.empty();
 	}
 
 	Node* Node::GetChild(UUID id) const

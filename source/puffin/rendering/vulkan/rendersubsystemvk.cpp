@@ -1497,11 +1497,15 @@ namespace puffin::rendering
 					const auto entity = enttSubsystem->GetEntity(entityID);
 					auto* node = sceneGraph->GetNode(entityID);
 
-                    TransformComponent3D& transform = registry->get<TransformComponent3D>(entity);
+                    TransformComponent3D transform;
 
 					if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
 					{
 						transform = transformNode3D->GetGlobalTransform();
+					}
+					else
+					{
+						transform = registry->get<TransformComponent3D>(entity);
 					}
 					
 					const auto& mesh = registry->get<StaticMeshComponent3D>(entity);

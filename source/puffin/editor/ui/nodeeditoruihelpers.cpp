@@ -152,6 +152,8 @@ namespace puffin::ui
 			{
 				nodeChanged |= true;
 			}
+
+			ImGui::TreePop();
 		}
 
 		return nodeChanged;
@@ -163,7 +165,7 @@ namespace puffin::ui
 
 		if (ImGui::TreeNodeEx("Point Light", flags))
 		{
-			
+			ImGui::TreePop();
 		}
 
 		return nodeChanged;
@@ -175,7 +177,7 @@ namespace puffin::ui
 
 		if (ImGui::TreeNodeEx("Spot Light", flags))
 		{
-
+			ImGui::TreePop();
 		}
 
 		return nodeChanged;
@@ -187,7 +189,7 @@ namespace puffin::ui
 
 		if (ImGui::TreeNodeEx("Directional Light", flags))
 		{
-
+			ImGui::TreePop();
 		}
 
 		return nodeChanged;

@@ -130,10 +130,7 @@ namespace puffin
 
 			bool has_child = false;
 
-			std::vector<UUID> child_ids;
-			node->GetChildIDs(child_ids);
-
-			if (!child_ids.empty())
+			if (node->HasChildren())
 				has_child = true;
 
 				// Set Selected Flag if entity equals selectedEntity
@@ -159,9 +156,9 @@ namespace puffin
 
 			if (has_child && node_open)
 			{
-				for (auto id : child_ids)
+				for (const auto childID : node->GetChildIDs())
 				{
-					DrawNodeUI(id, baseFlags);
+					DrawNodeUI(childID, baseFlags);
 				}
 
 				ImGui::TreePop();

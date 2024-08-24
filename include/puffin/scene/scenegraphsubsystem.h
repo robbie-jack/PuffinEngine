@@ -3,7 +3,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <memory>
-#include <set>
+#include <unordered_set>
 
 #include "puffin/core/subsystem.h"
 #include "puffin/nodes/node.h"
@@ -204,8 +204,12 @@ namespace puffin::scene
 
 		void UpdateGlobalTransforms();
 		void UpdateGlobalTransform(UUID id);
-		static void ApplyLocalToGlobalTransform2D(const TransformComponent2D& localTransform, TransformComponent2D& globalTransform);
-		static void ApplyLocalToGlobalTransform3D(const TransformComponent3D& localTransform, TransformComponent3D& globalTransform);
+
+		static void LimitAngleTo180Degrees(float& angle);
+		static void ApplyLocalToGlobalTransform2D(const TransformComponent2D& localTransform, const TransformComponent2D& globalTransform, TransformComponent2D
+		                                          & updatedTransform);
+		static void ApplyLocalToGlobalTransform3D(const TransformComponent3D& localTransform, const TransformComponent3D& globalTransform, TransformComponent3D&
+		                                          updatedTransform);
 
 		void AddNodeInternalBase(Node* node, const char* typeName, UUID id = gInvalidID, UUID parentID = gInvalidID);
 
@@ -293,9 +297,12 @@ namespace puffin::scene
 		std::unordered_map<UUID, std::string> mIDToType;
 		std::vector<UUID> mNodeIDs; // Vector of node id's, sorted by order methods are executed in
 		std::vector<UUID> mRootNodeIDs; // Vector of nodes at root of scene graph
-		std::set<UUID> mNodeTransformsToUpdate; // Set of nodes which need their transforms updated
-		std::set<UUID> mNodeTransformsAlreadyUpdated; // Set of nodes which have already had their transforms updated this frame
-		std::set<UUID> mNodesToDestroy;
+
+		std::unordered_set<UUID> mNodeTransformsNeedUpdated; // Set of nodes which need their transforms updated
+		std::vector<UUID> mNodeTransformsNeedUpdatedVector; // Set of nodes which need their transforms updated
+		std::unordered_set<UUID> mNodeTransformsUpToDate; // Set of nodes which global transforms are up to date
+
+		std::unordered_set<UUID> mNodesToDestroy;
 
 		MappedVector<UUID, TransformComponent2D> mGlobalTransform2Ds;
 		MappedVector<UUID, TransformComponent3D> mGlobalTransform3Ds;
