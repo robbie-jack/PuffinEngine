@@ -35,7 +35,9 @@
 #include "puffin/core/signalsubsystem.h"
 #include "puffin/editor/ui/editoruisubsystem.h"
 #include "puffin/input/inputsubsystem.h"
+#include "puffin/nodes/transformnode2d.h"
 #include "puffin/nodes/physics/rigidbodynode3d.h"
+#include "puffin/nodes/rendering/3d/cameranode3d.h"
 #include "puffin/nodes/rendering/3d/directionallightnode3d.h"
 #include "puffin/nodes/rendering/3d/pointlightnode3d.h"
 #include "puffin/nodes/rendering/3d/spotlightnode3d.h"
@@ -91,6 +93,25 @@ namespace puffin::core
 		reflection::RegisterType<rendering::ShadowCasterComponent3D>();
 
 		reflection::RegisterType<rendering::CameraComponent3D>();
+	}
+
+	void RegisterNodeTypes()
+	{
+		reflection::RegisterType<Node>();
+
+		reflection::RegisterType<TransformNode2D>();
+
+		reflection::RegisterType<TransformNode3D>();
+
+		reflection::RegisterType<rendering::LightNode3D>();
+		reflection::RegisterType<rendering::PointLightNode3D>();
+		reflection::RegisterType<rendering::SpotLightNode3D>();
+		reflection::RegisterType<rendering::DirectionalLightNode3D>();
+
+		reflection::RegisterType<rendering::CameraNode3D>();
+		reflection::RegisterType<rendering::StaticMeshNode3D>();
+
+		reflection::RegisterType<physics::RigidbodyNode3D>();
 	}
 
 	void RegisterComponentsForSerialization(const std::shared_ptr<Engine>& engine)

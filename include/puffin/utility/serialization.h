@@ -19,6 +19,8 @@ namespace puffin::serialization
 	template<typename T>
 	void Deserialize(const Archive& archive, T& data) = delete;
 
+	// PUFFIN_TODO - Add support for serializing arrays
+
 	/*
 	 * Archive class for serializing types (components, nodes, etc...)
 	 */

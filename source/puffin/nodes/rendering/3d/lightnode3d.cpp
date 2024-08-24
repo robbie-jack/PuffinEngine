@@ -9,6 +9,40 @@ namespace puffin::rendering
 	{
 	}
 
+	void LightNode3D::Initialize()
+	{
+		TransformNode3D::Initialize();
+
+		if (mCastShadows)
+		{
+			AddComponent<ShadowCasterComponent3D>();
+		}
+	}
+
+	void LightNode3D::Deinitialize()
+	{
+		TransformNode3D::Deinitialize();
+
+		if (mCastShadows)
+		{
+			RemoveComponent<ShadowCasterComponent3D>();
+		}
+	}
+
+	void LightNode3D::Serialize(serialization::Archive& archive) const
+	{
+		TransformNode3D::Serialize(archive);
+
+		archive.Set("castShadows", mCastShadows);
+	}
+
+	void LightNode3D::Deserialize(const serialization::Archive& archive)
+	{
+		TransformNode3D::Deserialize(archive);
+
+		archive.Get("castShadows", mCastShadows);
+	}
+
 	bool LightNode3D::GetCastShadows() const
 	{
 		return mCastShadows;

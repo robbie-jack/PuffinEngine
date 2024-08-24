@@ -4,6 +4,7 @@
 #include "puffin/types/quat.h"
 #include "puffin/types/eulerangles.h"
 #include "puffin/types/vector3.h"
+#include "puffin/utility/reflection.h"
 
 namespace puffin
 {
@@ -53,4 +54,12 @@ namespace puffin
 	protected:
 
 	};
+
+	template<>
+	inline void reflection::RegisterType<TransformNode3D>()
+	{
+		entt::meta<TransformNode3D>()
+			.type(entt::hs("TransformNode3D"))
+			.base<Node>();
+	}
 }

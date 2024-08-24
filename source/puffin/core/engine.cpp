@@ -63,6 +63,7 @@ namespace puffin::core
 
 		RegisterRequiredSubsystems(shared_from_this());
 		RegisterComponentTypes();
+		RegisterNodeTypes();
 
 		if (mApplication)
 		{

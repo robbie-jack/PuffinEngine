@@ -2,6 +2,7 @@
 
 #include "puffin/nodes/node.h"
 #include "puffin/types/vector2.h"
+#include "puffin/utility/reflection.h"
 
 namespace puffin
 {
@@ -49,4 +50,12 @@ namespace puffin
 		
 
 	};
+
+	template<>
+	inline void reflection::RegisterType<TransformNode2D>()
+	{
+		entt::meta<TransformNode2D>()
+			.type(entt::hs("TransformNode2D"))
+			.base<Node>();
+	}
 }
