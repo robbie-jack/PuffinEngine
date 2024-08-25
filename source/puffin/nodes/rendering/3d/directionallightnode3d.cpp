@@ -4,12 +4,6 @@
 
 namespace puffin::rendering
 {
-	DirectionalLightNode3D::DirectionalLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
-		LightNode3D(engine, id)
-	{
-		mName = "Directional Light";
-	}
-
 	void DirectionalLightNode3D::Initialize()
 	{
 		LightNode3D::Initialize();

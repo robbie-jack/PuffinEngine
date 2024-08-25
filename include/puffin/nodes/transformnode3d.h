@@ -20,9 +20,6 @@ namespace puffin
 	{
 	public:
 
-		explicit TransformNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
-		~TransformNode3D() override = default;
-
 		void Initialize() override;
 		void Deinitialize() override;
 

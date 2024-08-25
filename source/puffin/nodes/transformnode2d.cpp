@@ -12,12 +12,6 @@ namespace puffin::core
 
 namespace puffin
 {
-	TransformNode2D::TransformNode2D(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
-		Node(engine, id)
-	{
-		mName = "TransformNode2D";
-	}
-
 	void TransformNode2D::Initialize()
 	{
 		Node::Initialize();

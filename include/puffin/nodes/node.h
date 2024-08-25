@@ -39,8 +39,18 @@ namespace puffin
 	{
 	public:
 
-		explicit Node(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
+		explicit Node() = default;
 		virtual ~Node() = default;
+
+		/*
+		 * Called by node pool when a new node is requested, sets engine, registry, id, name (optional)
+		 */
+		void Prepare(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id);
+
+		/*
+		 * Called by node pool when node is destroyed to free it up for reuse
+		 */
+		void Reset();
 
 		/*
 		 * Initialize node, called upon being added to scene
@@ -142,11 +152,12 @@ namespace puffin
 	protected:
 
 		UUID mNodeID = gInvalidID;
+		std::string mName;
+
 		entt::entity mEntity;
 
 		UUID mParentID = gInvalidID;
 		std::list<UUID> mChildIDs;
-		std::string mName;
 
 		std::shared_ptr<core::Engine> mEngine = nullptr;
 		std::shared_ptr<entt::registry> mRegistry = nullptr;

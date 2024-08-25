@@ -102,6 +102,7 @@ namespace puffin::io
 		struct SerializedNodeData
 		{
 			UUID id;
+			std::string name;
 			std::string type;
 			serialization::Archive archive;
 			std::vector<UUID> childIDs;

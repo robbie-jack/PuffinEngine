@@ -14,9 +14,6 @@ namespace puffin
 		{
 		public:
 
-			explicit CameraNode3D(const std::shared_ptr<puffin::core::Engine>& engine, const puffin::UUID& id = puffin::gInvalidID);
-			~CameraNode3D() override = default;
-
 			void Initialize() override;
 			void Deinitialize() override;
 

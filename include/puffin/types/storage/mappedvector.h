@@ -36,7 +36,7 @@ namespace puffin
 			mKeyToIdx.emplace(key, mCount);
 			mUnorderedMap.emplace(mCount, key);
 
-			mCount++;
+			++mCount;
 
 			return true;
 		}
@@ -109,12 +109,6 @@ namespace puffin
 			mData.resize(newSize);
 		}
 
-		// Shrink internal vector size to match count
-		void ShrinkToCount()
-		{
-			mData.resize(mCount);
-		}
-
 		// Reserve space in internal vector
 		void Reserve(const size_t newSize)
 		{
@@ -143,6 +137,16 @@ namespace puffin
 		[[nodiscard]] size_t Capacity() const
 		{
 			return mData.capacity();
+		}
+
+		[[nodiscard]] bool Empty() const
+		{
+			return mCount == 0;
+		}
+
+		[[nodiscard]] bool Full() const
+		{
+			return mCount == mData.size();
 		}
 
 		auto begin()

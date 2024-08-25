@@ -4,12 +4,6 @@
 
 namespace puffin::rendering
 {
-	CameraNode3D::CameraNode3D(const std::shared_ptr<puffin::core::Engine>& engine, const puffin::UUID& id)
-		: TransformNode3D(engine, id)
-	{
-		mName = "Camera";
-	}
-
 	void CameraNode3D::Initialize()
 	{
 		TransformNode3D::Initialize();

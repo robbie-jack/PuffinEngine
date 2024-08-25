@@ -27,30 +27,17 @@ namespace puffin
 
 namespace puffin::scene
 {
-	template<typename T>
-	class NodeFactory
+	constexpr uint32_t gDefaultNodePoolSize = 5000;
+
+	class INodePool
 	{
 	public:
 
-		NodeFactory() = default;
-		~NodeFactory() = default;
+		INodePool() = default;
 
-		static T Create(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID)
-		{
-			return T(engine, id);
-		}
+		virtual ~INodePool() = default;
 
-	};
-
-	class INodeArray
-	{
-	public:
-
-		INodeArray() = default;
-
-		virtual ~INodeArray() = default;
-
-		virtual Node* AddNodePtr(const std::shared_ptr<core::Engine>& engine, UUID id = gInvalidID) = 0;
+		virtual Node* AddNodePtr(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID) = 0;
 		virtual Node* GetNodePtr(UUID id) = 0;
 		virtual void RemoveNode(UUID id) = 0;
 		virtual bool IsValid(UUID id) = 0;
@@ -59,26 +46,39 @@ namespace puffin::scene
 	};
 
 	template<typename T>
-	class NodeArray final : public INodeArray
+	class NodePool final : public INodePool
 	{
 	public:
 
-		NodeArray() = default;
-		~NodeArray() override = default;
+		explicit NodePool(uint32_t defaultPoolSize)
+		{
+			mVector.Resize(defaultPoolSize);
+		}
 
-		T* AddNode(const std::shared_ptr<core::Engine>& engine, UUID id = gInvalidID)
+		~NodePool() override = default;
+
+		T* AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID)
 		{
 			if (id == gInvalidID)
 				id = GenerateId();
 
-			mVector.Emplace(id, mFactory.Create(engine, id));
+			if (mVector.Full())
+			{
+				mVector.Resize(mVector.Size() * 2);
+			}
 
-			return &mVector[id];
+			mVector.Emplace(id, T{});
+
+			T& node = mVector.At(id);
+			auto* nodePtr = static_cast<Node*>(&node);
+			nodePtr->Prepare(engine, name, id);
+
+			return &node;
 		}
 
-		Node* AddNodePtr(const std::shared_ptr<core::Engine>& engine, UUID id = gInvalidID) override
+		Node* AddNodePtr(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID) override
 		{
-			return static_cast<Node*>(AddNode(engine, id));
+			return static_cast<Node*>(AddNode(engine, name, id));
 		}
 
 		T* GetNode(UUID id)
@@ -96,7 +96,9 @@ namespace puffin::scene
 
 		void RemoveNode(UUID id) override
 		{
-			mVector.Erase(id);
+			GetNodePtr(id)->Reset();
+
+			mVector.Erase(id, false);
 		}
 
 		bool IsValid(UUID id) override
@@ -112,7 +114,6 @@ namespace puffin::scene
 	private:
 
 		MappedVector<UUID, T> mVector;
-		NodeFactory<T> mFactory;
 
 	};
 
@@ -130,8 +131,8 @@ namespace puffin::scene
 		void Update(double deltaTime) override;
 		bool ShouldUpdate() override;
 
-		Node* AddNode(uint32_t typeID, UUID id);
-		Node* AddChildNode(uint32_t typeID, UUID id, UUID parentID);
+		Node* AddNode(uint32_t typeID, const std::string& name, UUID id);
+		Node* AddChildNode(uint32_t typeID, const std::string& name, UUID id, UUID parentID);
 		[[nodiscard]] Node* GetNode(const UUID& id);
 		bool IsValidNode(UUID id);
 
@@ -150,39 +151,39 @@ namespace puffin::scene
 		[[nodiscard]] const std::vector<UUID>& GetRootNodeIDs() const;
 
 		template<typename T>
-		void RegisterNodeType()
+		void RegisterNodeType(uint32_t defaultNodePoolSize = gDefaultNodePoolSize)
 		{
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
 
 			if (mNodeArrays.find(typeID) == mNodeArrays.end())
 			{
-				mNodeArrays.insert({ typeID, static_cast<INodeArray*>(new NodeArray<T>()) });
+				mNodeArrays.insert({ typeID, static_cast<INodePool*>(new NodePool<T>(defaultNodePoolSize)) });
 			}
 		}
 
 		template<typename T>
-		T* AddNode()
+		T* AddNode(const std::string& name)
 		{
-			return AddNodeInternal<T>();
+			return AddNodeInternal<T>(name);
 		}
 
 		template<typename T>
-		T* AddNode(UUID id)
+		T* AddNode(const std::string& name, UUID id)
 		{
-			return AddNodeInternal<T>(id);
+			return AddNodeInternal<T>(name, id);
 		}
 
 		template<typename T>
-		T* AddChildNode(UUID parent_id)
+		T* AddChildNode(const std::string& name, UUID parent_id)
 		{
-			return AddNodeInternal<T>(gInvalidID, parent_id);
+			return AddNodeInternal<T>(name, gInvalidID, parent_id);
 		}
 
 		template<typename T>
-		T* AddChildNode(UUID id, UUID parent_id)
+		T* AddChildNode(const std::string& name, UUID id, UUID parent_id)
 		{
-			return AddNodeInternal<T>(id, parent_id);
+			return AddNodeInternal<T>(name, id, parent_id);
 		}
 
 		template<typename T>
@@ -214,7 +215,7 @@ namespace puffin::scene
 		void AddNodeInternalBase(Node* node, uint32_t typeID, UUID id = gInvalidID, UUID parentID = gInvalidID);
 
 		template<typename T>
-		T* AddNodeInternal(UUID id = gInvalidID, UUID parent_id = gInvalidID)
+		T* AddNodeInternal(const std::string& name, UUID id = gInvalidID, UUID parent_id = gInvalidID)
 		{
 			if (mIDToTypeID.find(id) != mIDToTypeID.end())
 			{
@@ -235,14 +236,14 @@ namespace puffin::scene
 
 			if (id == gInvalidID)
 			{
-				T* node = GetArray<T>()->AddNode(mEngine);
+				T* node = GetArray<T>()->AddNode(mEngine, name);
 				nodePtr = static_cast<Node*>(node);
 
 				id = nodePtr->GetID();
 			}
 			else
 			{
-				T* node = GetArray<T>()->AddNode(mEngine, id);
+				T* node = GetArray<T>()->AddNode(mEngine, name, id);
 				nodePtr = static_cast<Node*>(node);
 			}
 
@@ -251,7 +252,7 @@ namespace puffin::scene
 			return GetArray<T>()->GetNode(id);
 		}
 
-		Node* AddNodeInternal(uint32_t typeID, UUID id = gInvalidID, UUID parentID = gInvalidID)
+		Node* AddNodeInternal(uint32_t typeID, const std::string& name, UUID id = gInvalidID, UUID parentID = gInvalidID)
 		{
 			if (mIDToTypeID.find(id) != mIDToTypeID.end())
 			{
@@ -264,13 +265,13 @@ namespace puffin::scene
 
 			if (id == gInvalidID)
 			{
-				nodePtr = GetArray(typeID)->AddNodePtr(mEngine);
+				nodePtr = GetArray(typeID)->AddNodePtr(mEngine, name);
 
 				id = nodePtr->GetID();
 			}
 			else
 			{
-				nodePtr = GetArray(typeID)->AddNodePtr(mEngine, id);
+				nodePtr = GetArray(typeID)->AddNodePtr(mEngine, name, id);
 			}
 
 			AddNodeInternalBase(nodePtr, typeID, id, parentID);
@@ -279,17 +280,17 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		NodeArray<T>* GetArray()
+		NodePool<T>* GetArray()
 		{
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
 
 			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::GetArray() - Node type not registered before use");
 
-			return static_cast<NodeArray<T>*>(mNodeArrays.at(typeID));
+			return static_cast<NodePool<T>*>(mNodeArrays.at(typeID));
 		}
 
-		INodeArray* GetArray(uint32_t typeID)
+		INodePool* GetArray(uint32_t typeID)
 		{
 			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::GetArray(uint32) - Node type not registered before use");
 
@@ -311,7 +312,7 @@ namespace puffin::scene
 
 		bool mSceneGraphUpdated = false;
 
-		std::unordered_map<uint32_t, INodeArray*> mNodeArrays;
+		std::unordered_map<uint32_t, INodePool*> mNodeArrays;
 
 	};
 }

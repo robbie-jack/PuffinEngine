@@ -15,9 +15,6 @@ namespace puffin
 		{
 		public:
 
-			explicit LightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
-			~LightNode3D() override = default;
-
 			void Initialize() override;
 			void Deinitialize() override;
 

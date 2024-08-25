@@ -13,9 +13,6 @@ namespace puffin
 		{
 		public:
 
-			explicit StaticMeshNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
-			~StaticMeshNode3D() override = default;
-
 			void Initialize() override;
 			void Deinitialize() override;
 

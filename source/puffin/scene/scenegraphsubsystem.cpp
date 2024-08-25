@@ -54,14 +54,14 @@ namespace puffin::scene
 		return true;
 	}
 
-	Node* SceneGraphSubsystem::AddNode(uint32_t typeID, UUID id)
+	Node* SceneGraphSubsystem::AddNode(uint32_t typeID, const std::string& name, UUID id)
 	{
-		return AddNodeInternal(typeID, id);
+		return AddNodeInternal(typeID, name, id);
 	}
 
-	Node* SceneGraphSubsystem::AddChildNode(uint32_t typeID, UUID id, UUID parentID)
+	Node* SceneGraphSubsystem::AddChildNode(uint32_t typeID, const std::string& name, UUID id, UUID parentID)
 	{
-		return AddNodeInternal(typeID, id, parentID);
+		return AddNodeInternal(typeID, name, id, parentID);
 	}
 
 	Node* SceneGraphSubsystem::GetNode(const UUID& id)

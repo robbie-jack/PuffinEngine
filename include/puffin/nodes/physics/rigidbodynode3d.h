@@ -11,8 +11,8 @@ namespace puffin
 		{
 		public:
 
-			explicit RigidbodyNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
-			~RigidbodyNode3D() override = default;
+			void Initialize() override;
+			void Deinitialize() override;
 
 		};
 	}

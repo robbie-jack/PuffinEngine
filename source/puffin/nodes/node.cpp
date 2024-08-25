@@ -6,11 +6,30 @@
 
 namespace puffin
 {
-	Node::Node(const std::shared_ptr<core::Engine>& engine, const UUID& id) :
-		mNodeID(id), mEntity(), mEngine(engine)
+	void Node::Prepare(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id)
 	{
+		mEngine = engine;
+
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		mRegistry = enttSubsystem->GetRegistry();
+
+		mNodeID = id;
+
+		if (name.empty())
+		{
+			mName = "Node";
+		}
+		else
+		{
+			mName = name;
+		}
+	}
+
+	void Node::Reset()
+	{
+		mRegistry = nullptr;
+		mEngine = nullptr;
+		mNodeID = gInvalidID;
 	}
 
 	void Node::Initialize()
@@ -23,6 +42,7 @@ namespace puffin
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		enttSubsystem->RemoveEntity(mNodeID);
+		mEntity = {};
 	}
 
 	void Node::BeginPlay()
@@ -53,12 +73,12 @@ namespace puffin
 
 	void Node::Serialize(serialization::Archive& archive) const
 	{
-		archive.Set("name", mName);
+		
 	}
 
 	void Node::Deserialize(const serialization::Archive& archive)
 	{
-		archive.Get("name", mName);
+		
 	}
 
 	const std::string& Node::GetTypeString() const

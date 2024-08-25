@@ -14,9 +14,6 @@ namespace puffin
 		{
 		public:
 
-			explicit SpotLightNode3D(const std::shared_ptr<core::Engine>& engine, const UUID& id = gInvalidID);
-			~SpotLightNode3D() override = default;
-
 			void Initialize() override;
 			void Deinitialize() override;
 

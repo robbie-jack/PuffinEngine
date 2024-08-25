@@ -333,8 +333,7 @@ namespace puffin::core
 		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		auto* houseNode = sceneGraph->AddNode<rendering::StaticMeshNode3D>();
-		houseNode->SetName("House");
+		auto* houseNode = sceneGraph->AddNode<rendering::StaticMeshNode3D>("House");
 		houseNode->SetPosition({ 2.0f, 0.0f, 0.0f });
 		houseNode->SetMeshID(meshId1);
 		houseNode->SetMaterialID(materialInstId1);
@@ -345,27 +344,23 @@ namespace puffin::core
 		sphere.SetMeshID(meshId2);
 		sphere.SetMaterialID(materialInstId1);*/
 
-		auto* cube1 = sceneGraph->AddNode<rendering::StaticMeshNode3D>();
-		cube1->SetName("Cube_1");
+		auto* cube1 = sceneGraph->AddNode<rendering::StaticMeshNode3D>("Cube 1");
 		cube1->SetPosition({ 0.0f });
 		cube1->SetMeshID(meshId3);
 		cube1->SetMaterialID(materialInstId1);
 
-		auto* cube2 = sceneGraph->AddNode<rendering::StaticMeshNode3D>();
-		cube2->SetName("Cube_2");
+		auto* cube2 = sceneGraph->AddNode<rendering::StaticMeshNode3D>("Cube 2");
 		cube2->SetPosition({ -1.75f, -5.0f, 0.0f });
 		cube2->SetMeshID(meshId3);
 		cube2->SetMaterialID(materialInstId1);
 
-		auto* plane = sceneGraph->AddNode<rendering::StaticMeshNode3D>();
-		plane->SetName("Plane");
+		auto* plane = sceneGraph->AddNode<rendering::StaticMeshNode3D>("Plane");
 		plane->SetPosition({ 0.0f, -10.0f, 0.0f });
 		plane->SetScale({ 50.0f, 1.0f, 50.0f });
 		plane->SetMeshID(meshId3);
 		plane->SetMaterialID(materialInstId1);
 
-		auto* dirLight = sceneGraph->AddNode<rendering::DirectionalLightNode3D>();
-		dirLight->SetName("Directional Light");
+		auto* dirLight = sceneGraph->AddNode<rendering::DirectionalLightNode3D>("Directional Light");
 		dirLight->SetPosition({ 0.0f, 10.0f, 0.0f });
 		dirLight->SetColor({ .05f });
 		dirLight->SetAmbientIntensity(.0f);
@@ -381,13 +376,12 @@ namespace puffin::core
 
 		UpdateTransformOrientation(dirLight->Transform(), { 0.0f, -90.0f, 0.0f });
 
-		auto* dirLightMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>(dirLight->GetID());
+		auto* dirLightMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Directional Light Mesh", dirLight->GetID());
 		dirLightMesh->SetScale({ 0.25f });
 		dirLightMesh->SetMeshID(meshId3);
 		dirLightMesh->SetMaterialID(materialInstId1);
 
-		auto* spotLight = sceneGraph->AddNode<rendering::SpotLightNode3D>();
-		spotLight->SetName("Spot Light");
+		auto* spotLight = sceneGraph->AddNode<rendering::SpotLightNode3D>("Spot Light");
 		spotLight->SetPosition({ -10.0f, 5.0f, 0.0f });
 		spotLight->SetColor({ 0.5f, 0.5f, 1.0f });
 		spotLight->SetAmbientIntensity(0.f);
@@ -398,13 +392,12 @@ namespace puffin::core
 			shadow.height = 8192;
 		});
 
-		auto* spotLightMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>(spotLight->GetID());
+		auto* spotLightMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Spot Light Mesh", spotLight->GetID());
 		spotLightMesh->SetScale({ 0.25f });
 		spotLightMesh->SetMeshID(meshId3);
 		spotLightMesh->SetMaterialID(materialInstId1);
 
-		auto* spotLight2 = sceneGraph->AddNode<rendering::SpotLightNode3D>();
-		spotLight2->SetName("Spot Light 2");
+		auto* spotLight2 = sceneGraph->AddNode<rendering::SpotLightNode3D>("Spot Light 2");
 		spotLight2->SetPosition({ 10.0f, 5.0f, 0.0f });
 		spotLight2->SetColor({ 1.0f, 0.5f, 0.5f });
 		spotLight2->SetAmbientIntensity(0.f);
@@ -417,7 +410,7 @@ namespace puffin::core
 
 		UpdateTransformOrientation(spotLight2->Transform(), { 0.0f, 180.0f, 0.0f });
 
-		auto* spotLightMesh2 = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>(spotLight2->GetID());
+		auto* spotLightMesh2 = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Spot Light 2 Mesh", spotLight2->GetID());
 		spotLightMesh2->SetScale({ 0.25f });
 		spotLightMesh2->SetMeshID(meshId3);
 		spotLightMesh2->SetMaterialID(materialInstId1);
@@ -492,7 +485,7 @@ namespace puffin::core
 		//	registry->emplace<physics::RigidbodyComponent3D>(floorEntity);
 		//}
 
-		auto floorBody = sceneGraph->AddNode<physics::RigidbodyNode3D>();
+		auto floorBody = sceneGraph->AddNode<physics::RigidbodyNode3D>("Floor");
 
 		//// Create Box Entities
 		//{
