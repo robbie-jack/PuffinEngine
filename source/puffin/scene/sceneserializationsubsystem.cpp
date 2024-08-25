@@ -160,7 +160,10 @@ namespace puffin::io
 
 			json nodeDataJson;
 			serializedNodeData.archive.DumpToJson(nodeDataJson);
-			nodeJson["data"] = nodeDataJson;
+			if (!nodeDataJson.empty())
+			{
+				nodeJson["data"] = nodeDataJson;
+			}
 
 			if (!serializedNodeData.childIDs.empty())
 			{
@@ -244,8 +247,11 @@ namespace puffin::io
 			serializedNodeData.name = nodeJson.at("name");
 			serializedNodeData.type = nodeJson.at("type");
 
-			const json& nodeDataJson = nodeJson.at("data");
-			serializedNodeData.archive.PopulateFromJson(nodeDataJson);
+			if (nodeJson.contains("data"))
+			{
+				const json& nodeDataJson = nodeJson.at("data");
+				serializedNodeData.archive.PopulateFromJson(nodeDataJson);
+			}
 
 			if (nodeJson.contains("childIDs"))
 			{
