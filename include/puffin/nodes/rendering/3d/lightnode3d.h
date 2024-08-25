@@ -8,6 +8,9 @@ namespace puffin
 {
 	namespace rendering
 	{
+		const std::string gLightNode3DTypeString = "LightNode3D";
+		const entt::id_type gLightNode3DTypeID = entt::hs(gLightNode3DTypeString.c_str());
+
 		class LightNode3D : public TransformNode3D
 		{
 		public:
@@ -20,6 +23,9 @@ namespace puffin
 
 			void Serialize(serialization::Archive& archive) const override;
 			void Deserialize(const serialization::Archive& archive) override;
+
+			[[nodiscard]] const std::string& GetTypeString() const override;
+			[[nodiscard]] entt::id_type GetTypeID() const override;
 
 			virtual LightType GetLightType() = 0;
 
@@ -55,7 +61,8 @@ namespace puffin
 		using namespace rendering;
 
 		entt::meta<LightNode3D>()
-			.type(entt::hs("LightNode3D"))
-			.base<TransformNode3D>();
+			.type(gLightNode3DTypeID)
+			.base<TransformNode3D>()
+			.custom<NodeCustomData>(gLightNode3DTypeString);
 	}
 }

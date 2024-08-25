@@ -35,14 +35,20 @@ namespace puffin::io
 		{
 			const auto& serializedNodeData = mSerializedNodeData.at(id);
 
-			auto node = sceneGraph->AddNode(serializedNodeData.type.c_str(), id);
+			auto type = entt::resolve(entt::hs(serializedNodeData.type.c_str()));
+			auto typeID = type.id();
+
+			auto node = sceneGraph->AddNode(typeID, id);
 			node->Deserialize(serializedNodeData.archive);
 
 			for (const auto& childID : serializedNodeData.childIDs)
 			{
 				const auto& serializedNodeDataChild = mSerializedNodeData.at(childID);
 
-				auto childNode = sceneGraph->AddChildNode(serializedNodeDataChild.type.c_str(), childID, id);
+				auto childType = entt::resolve(entt::hs(serializedNodeDataChild.type.c_str()));
+				auto childTypeID = childType.id();
+
+				auto childNode = sceneGraph->AddChildNode(childTypeID, childID, id);
 				childNode->Deserialize(serializedNodeDataChild.archive);
 			}
 		}
@@ -273,7 +279,7 @@ namespace puffin::io
 
 		auto& serializedNodeData = mSerializedNodeData.at(id);
 		serializedNodeData.id = id;
-		serializedNodeData.type = sceneGraph->GetNodeTypeName(id);
+		serializedNodeData.type = node->GetTypeString();
 		node->Serialize(serializedNodeData.archive);
 
 		for (const auto& childID : node->GetChildIDs())

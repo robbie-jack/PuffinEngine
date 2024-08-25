@@ -24,6 +24,16 @@ namespace puffin::rendering
 		RemoveComponent<CameraComponent3D>();
 	}
 
+	const std::string& CameraNode3D::GetTypeString() const
+	{
+		return gCameraNode3DTypeString;
+	}
+
+	entt::id_type CameraNode3D::GetTypeID() const
+	{
+		return gCameraNode3DTypeID;
+	}
+
 	bool CameraNode3D::GetActive() const
 	{
 		return GetComponent<CameraComponent3D>().active;

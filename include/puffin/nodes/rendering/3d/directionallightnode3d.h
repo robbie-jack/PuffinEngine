@@ -7,6 +7,9 @@ namespace puffin
 {
 	namespace rendering
 	{
+		const std::string gDirectionalLightNode3DTypeString = "DirectionalLightNode3D";
+		const entt::id_type gDirectionalLightNode3DTypeID = entt::hs(gDirectionalLightNode3DTypeString.c_str());
+
 		class DirectionalLightNode3D : public LightNode3D
 		{
 		public:
@@ -16,6 +19,9 @@ namespace puffin
 
 			void Initialize() override;
 			void Deinitialize() override;
+
+			[[nodiscard]] const std::string& GetTypeString() const override;
+			[[nodiscard]] entt::id_type GetTypeID() const override;
 
 			[[nodiscard]] LightType GetLightType() override;
 
@@ -48,7 +54,8 @@ namespace puffin
 		using namespace rendering;
 
 		entt::meta<DirectionalLightNode3D>()
-			.type(entt::hs("DirectionalLightNode3D"))
-			.base<LightNode3D>();
+			.type(gDirectionalLightNode3DTypeID)
+			.base<LightNode3D>()
+			.custom<NodeCustomData>(gDirectionalLightNode3DTypeString);
 	}
 }

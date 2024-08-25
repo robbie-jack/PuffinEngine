@@ -24,6 +24,16 @@ namespace puffin::rendering
 		RemoveComponent<StaticMeshComponent3D>();
 	}
 
+	const std::string& StaticMeshNode3D::GetTypeString() const
+	{
+		return gStaticMeshNode3DTypeString;
+	}
+
+	entt::id_type StaticMeshNode3D::GetTypeID() const
+	{
+		return gStaticMeshNode3DTypeID;
+	}
+
 	UUID StaticMeshNode3D::GetMeshID()
 	{
 		return GetComponent<StaticMeshComponent3D>().meshID;

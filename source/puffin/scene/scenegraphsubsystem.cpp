@@ -29,7 +29,7 @@ namespace puffin::scene
 	void SceneGraphSubsystem::EndPlay()
 	{
 		mNodeIDs.clear();
-		mIDToType.clear();
+		mIDToTypeID.clear();
 		mRootNodeIDs.clear();
 		mNodesToDestroy.clear();
 
@@ -54,14 +54,14 @@ namespace puffin::scene
 		return true;
 	}
 
-	Node* SceneGraphSubsystem::AddNode(const char* typeName, UUID id)
+	Node* SceneGraphSubsystem::AddNode(uint32_t typeID, UUID id)
 	{
-		return AddNodeInternal(typeName, id);
+		return AddNodeInternal(typeID, id);
 	}
 
-	Node* SceneGraphSubsystem::AddChildNode(const char* typeName, UUID id, UUID parentID)
+	Node* SceneGraphSubsystem::AddChildNode(uint32_t typeID, UUID id, UUID parentID)
 	{
-		return AddNodeInternal(typeName, id, parentID);
+		return AddNodeInternal(typeID, id, parentID);
 	}
 
 	Node* SceneGraphSubsystem::GetNode(const UUID& id)
@@ -69,17 +69,12 @@ namespace puffin::scene
 		if (!IsValidNode(id))
 			return nullptr;
 
-		return GetArray(mIDToType.at(id).c_str())->GetNodePtr(id);
+		return GetArray(mIDToTypeID.at(id))->GetNodePtr(id);
 	}
 
 	bool SceneGraphSubsystem::IsValidNode(UUID id)
 	{
-		return mIDToType.find(id) != mIDToType.end();
-	}
-
-	const std::string& SceneGraphSubsystem::GetNodeTypeName(const UUID& id) const
-	{
-		return mIDToType.at(id);
+		return mIDToTypeID.find(id) != mIDToTypeID.end();
 	}
 
 	const TransformComponent2D& SceneGraphSubsystem::GetNodeGlobalTransform2D(const UUID& id) const
@@ -195,9 +190,9 @@ namespace puffin::scene
 			node->Deinitialize();
 		}
 
-		GetArray(mIDToType.at(id).c_str())->RemoveNode(id);
+		GetArray(mIDToTypeID.at(id))->RemoveNode(id);
 
-		mIDToType.erase(id);
+		mIDToTypeID.erase(id);
 
 		if (mGlobalTransform2Ds.Contains(id))
 			mGlobalTransform2Ds.Erase(id);
@@ -334,7 +329,7 @@ namespace puffin::scene
 		updatedTransform.scale = globalTransform.scale * localTransform.scale;
 	}
 
-	void SceneGraphSubsystem::AddNodeInternalBase(Node* node, const char* typeName, UUID id, UUID parentID)
+	void SceneGraphSubsystem::AddNodeInternalBase(Node* node, uint32_t typeID, UUID id, UUID parentID)
 	{
 		assert(node != nullptr && "SceneGraphSubsystem::AddNodeInternalBase - Node was nullptr");
 
@@ -353,7 +348,7 @@ namespace puffin::scene
 
 		node->Initialize();
 
-		mIDToType.insert({ id, typeName });
+		mIDToTypeID.insert({ id, typeID });
 
 		if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
 		{

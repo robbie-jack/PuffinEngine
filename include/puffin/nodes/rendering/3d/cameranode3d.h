@@ -7,6 +7,9 @@ namespace puffin
 {
 	namespace rendering
 	{
+		const std::string gCameraNode3DTypeString = "CameraNode3D";
+		const entt::id_type gCameraNode3DTypeID = entt::hs(gCameraNode3DTypeString.c_str());
+
 		class CameraNode3D : public TransformNode3D
 		{
 		public:
@@ -16,6 +19,9 @@ namespace puffin
 
 			void Initialize() override;
 			void Deinitialize() override;
+
+			[[nodiscard]] const std::string& GetTypeString() const override;
+			[[nodiscard]] entt::id_type GetTypeID() const override;
 
 			[[nodiscard]] bool GetActive() const;
 			[[nodiscard]] bool& Active();
@@ -34,7 +40,8 @@ namespace puffin
 		using namespace rendering;
 
 		entt::meta<CameraNode3D>()
-			.type(entt::hs("CameraNode3D"))
-			.base<TransformNode3D>();
+			.type(gCameraNode3DTypeID)
+			.base<TransformNode3D>()
+			.custom<NodeCustomData>(gCameraNode3DTypeString);
 	}
 }

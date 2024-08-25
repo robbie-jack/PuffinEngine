@@ -32,6 +32,16 @@ namespace puffin
 		RemoveComponent<TransformComponent2D>();
 	}
 
+	const std::string& TransformNode2D::GetTypeString() const
+	{
+		return gTransformNode2DTypeString;
+	}
+
+	entt::id_type TransformNode2D::GetTypeID() const
+	{
+		return gTransformNode2DTypeID;
+	}
+
 	const TransformComponent2D& TransformNode2D::GetTransform() const
 	{
 		return GetComponent<TransformComponent2D>();

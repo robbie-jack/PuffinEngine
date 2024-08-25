@@ -43,6 +43,16 @@ namespace puffin::rendering
 		archive.Get("castShadows", mCastShadows);
 	}
 
+	const std::string& LightNode3D::GetTypeString() const
+	{
+		return gLightNode3DTypeString;
+	}
+
+	entt::id_type LightNode3D::GetTypeID() const
+	{
+		return gLightNode3DTypeID;
+	}
+
 	bool LightNode3D::GetCastShadows() const
 	{
 		return mCastShadows;

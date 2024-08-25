@@ -25,6 +25,16 @@ namespace puffin
 		class EnTTSubsystem;
 	}
 
+	const std::string gNodeTypeString = "Node";
+	const entt::id_type gNodeTypeID = entt::hs(gNodeTypeString.c_str());
+
+	struct NodeCustomData
+	{
+		explicit NodeCustomData(const std::string& nodeTypeString) : nodeTypeString(nodeTypeString) {}
+
+		std::string nodeTypeString;
+	};
+
 	class Node
 	{
 	public:
@@ -55,6 +65,18 @@ namespace puffin
 
 		virtual void Serialize(serialization::Archive& archive) const;
 		virtual void Deserialize(const serialization::Archive& archive);
+
+		/*
+		 * Return type string associated with this node type
+		 * This should be be overriden by inheriting types
+		 */
+		[[nodiscard]] virtual const std::string& GetTypeString() const;
+
+		/*
+		 * Return type id associated with this node type
+		 * This should be be overriden by inheriting types
+		 */
+		[[nodiscard]] virtual entt::id_type GetTypeID() const;
 
 		[[nodiscard]] UUID GetID() const;
 		[[nodiscard]] entt::entity GetEntity() const;
@@ -134,8 +156,9 @@ namespace puffin
 	inline void reflection::RegisterType<Node>()
 	{
 		entt::meta<Node>()
-			.type(entt::hs("Node"))
+			.type(gNodeTypeID)
 			.func<&Node::GetID>(entt::hs("GetID"))
-			.func<&Node::GetName>(entt::hs("GetName"));
+			.func<&Node::GetName>(entt::hs("GetName"))
+			.custom<NodeCustomData>(gNodeTypeString);
 	}
 }

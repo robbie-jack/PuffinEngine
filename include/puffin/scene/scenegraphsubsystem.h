@@ -130,12 +130,10 @@ namespace puffin::scene
 		void Update(double deltaTime) override;
 		bool ShouldUpdate() override;
 
-		Node* AddNode(const char* typeName, UUID id);
-		Node* AddChildNode(const char* typeName, UUID id, UUID parentID);
+		Node* AddNode(uint32_t typeID, UUID id);
+		Node* AddChildNode(uint32_t typeID, UUID id, UUID parentID);
 		[[nodiscard]] Node* GetNode(const UUID& id);
 		bool IsValidNode(UUID id);
-
-		[[nodiscard]] const std::string& GetNodeTypeName(const UUID& id) const;
 
 		[[nodiscard]] const TransformComponent2D& GetNodeGlobalTransform2D(const UUID& id) const;
 		[[nodiscard]] TransformComponent2D& GetNodeGlobalTransform2D(const UUID& id);
@@ -154,11 +152,13 @@ namespace puffin::scene
 		template<typename T>
 		void RegisterNodeType()
 		{
-			const char* typeName = typeid(T).name();
+			auto type = entt::resolve<T>();
+			const auto& typeID = type.id();
 
-			assert(mNodeArrays.find(typeName) == mNodeArrays.end() && "SceneGraph::RegisterNodeType() - Registering node type more than once");
-
-			mNodeArrays.insert({ typeName, static_cast<INodeArray*>(new NodeArray<T>()) });
+			if (mNodeArrays.find(typeID) == mNodeArrays.end())
+			{
+				mNodeArrays.insert({ typeID, static_cast<INodeArray*>(new NodeArray<T>()) });
+			}
 		}
 
 		template<typename T>
@@ -211,24 +211,25 @@ namespace puffin::scene
 		static void ApplyLocalToGlobalTransform3D(const TransformComponent3D& localTransform, const TransformComponent3D& globalTransform, TransformComponent3D&
 		                                          updatedTransform);
 
-		void AddNodeInternalBase(Node* node, const char* typeName, UUID id = gInvalidID, UUID parentID = gInvalidID);
+		void AddNodeInternalBase(Node* node, uint32_t typeID, UUID id = gInvalidID, UUID parentID = gInvalidID);
 
 		template<typename T>
 		T* AddNodeInternal(UUID id = gInvalidID, UUID parent_id = gInvalidID)
 		{
-			if (mIDToType.find(id) != mIDToType.end())
+			if (mIDToTypeID.find(id) != mIDToTypeID.end())
 			{
 				return GetArray<T>()->GetNode(id);
 			}
 
-			const char* typeName = typeid(T).name();
+			auto type = entt::resolve<T>();
+			const auto& typeID = type.id();
 
-			if (mNodeArrays.find(typeName) == mNodeArrays.end())
+			if (mNodeArrays.find(typeID) == mNodeArrays.end())
 			{
 				RegisterNodeType<T>();
 			}
 
-			assert(mNodeArrays.find(typeName) != mNodeArrays.end() && "SceneGraph::AddNodeInternal(PuffinID, PuffinID) - Node type not registered before use");
+			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::AddNodeInternal(UUID, UUID) - Node type not registered before use");
 
 			Node* nodePtr;
 
@@ -245,34 +246,34 @@ namespace puffin::scene
 				nodePtr = static_cast<Node*>(node);
 			}
 
-			AddNodeInternalBase(nodePtr, typeName, id, parent_id);
+			AddNodeInternalBase(nodePtr, typeID, id, parent_id);
 
 			return GetArray<T>()->GetNode(id);
 		}
 
-		Node* AddNodeInternal(const char* type_name, UUID id = gInvalidID, UUID parent_id = gInvalidID)
+		Node* AddNodeInternal(uint32_t typeID, UUID id = gInvalidID, UUID parentID = gInvalidID)
 		{
-			if (mIDToType.find(id) != mIDToType.end())
+			if (mIDToTypeID.find(id) != mIDToTypeID.end())
 			{
-				return GetArray(type_name)->GetNodePtr(id);
+				return GetArray(typeID)->GetNodePtr(id);
 			}
 
-			assert(mNodeArrays.find(type_name) != mNodeArrays.end() && "SceneGraph::AddNodeInternal(const char*, PuffinID, PuffinID) - Node type not registered before use");
+			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::AddNodeInternal(uint32, UUID, UUID) - Node type not registered before use");
 
 			Node* nodePtr;
 
 			if (id == gInvalidID)
 			{
-				nodePtr = GetArray(type_name)->AddNodePtr(mEngine);
+				nodePtr = GetArray(typeID)->AddNodePtr(mEngine);
 
 				id = nodePtr->GetID();
 			}
 			else
 			{
-				nodePtr = GetArray(type_name)->AddNodePtr(mEngine, id);
+				nodePtr = GetArray(typeID)->AddNodePtr(mEngine, id);
 			}
 
-			AddNodeInternalBase(nodePtr, type_name, id, parent_id);
+			AddNodeInternalBase(nodePtr, typeID, id, parentID);
 
 			return nodePtr;
 		}
@@ -280,21 +281,22 @@ namespace puffin::scene
 		template<typename T>
 		NodeArray<T>* GetArray()
 		{
-			const char* typeName = typeid(T).name();
+			auto type = entt::resolve<T>();
+			const auto& typeID = type.id();
 
-			assert(mNodeArrays.find(typeName) != mNodeArrays.end() && "SceneGraph::GetArray() - Node type not registered before use");
+			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::GetArray() - Node type not registered before use");
 
-			return static_cast<NodeArray<T>*>(mNodeArrays.at(typeName));
+			return static_cast<NodeArray<T>*>(mNodeArrays.at(typeID));
 		}
 
-		INodeArray* GetArray(const char* type_name)
+		INodeArray* GetArray(uint32_t typeID)
 		{
-			assert(mNodeArrays.find(type_name) != mNodeArrays.end() && "SceneGraph::GetArray(const char*) - Node type not registered before use");
+			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::GetArray(uint32) - Node type not registered before use");
 
-			return mNodeArrays.at(type_name);
+			return mNodeArrays.at(typeID);
 		}
 
-		std::unordered_map<UUID, std::string> mIDToType;
+		std::unordered_map<UUID, uint32_t> mIDToTypeID;
 		std::vector<UUID> mNodeIDs; // Vector of node id's, sorted by order methods are executed in
 		std::vector<UUID> mRootNodeIDs; // Vector of nodes at root of scene graph
 
@@ -309,7 +311,7 @@ namespace puffin::scene
 
 		bool mSceneGraphUpdated = false;
 
-		std::unordered_map<std::string, INodeArray*> mNodeArrays;
+		std::unordered_map<uint32_t, INodeArray*> mNodeArrays;
 
 	};
 }

@@ -61,6 +61,16 @@ namespace puffin
 		archive.Get("name", mName);
 	}
 
+	const std::string& Node::GetTypeString() const
+	{
+		return gNodeTypeString;
+	}
+
+	entt::id_type Node::GetTypeID() const
+	{
+		return gNodeTypeID;
+	}
+
 	UUID Node::GetID() const
 	{
 		return mNodeID;
