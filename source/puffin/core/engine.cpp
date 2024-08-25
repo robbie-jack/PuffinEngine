@@ -61,9 +61,9 @@ namespace puffin::core
 	{
 		mSubsystemManager = std::make_unique<SubsystemManager>(shared_from_this());
 
-		RegisterRequiredSubsystems(shared_from_this());
 		RegisterComponentTypes();
 		RegisterNodeTypes();
+		RegisterRequiredSubsystems(shared_from_this());
 
 		if (mApplication)
 		{

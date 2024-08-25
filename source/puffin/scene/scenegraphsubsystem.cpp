@@ -11,6 +11,7 @@
 #include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
 #include "puffin/components/transformcomponent2d.h"
 #include "puffin/components/transformcomponent3d.h"
+#include "puffin/rendering/renderglobals.h"
 
 namespace puffin::scene
 {
@@ -19,11 +20,41 @@ namespace puffin::scene
 		mName = "SceneGraphSubsystem";
 	}
 
+	void SceneGraphSubsystem::RegisterTypes()
+	{
+		RegisterNodeType<Node>();
+		RegisterNodeType<TransformNode2D>();
+		RegisterNodeType<TransformNode3D>();
+		RegisterNodeType<rendering::StaticMeshNode3D>();
+		RegisterNodeType<rendering::PointLightNode3D>();
+		RegisterNodeType<rendering::SpotLightNode3D>();
+		RegisterNodeType<rendering::DirectionalLightNode3D>();
+		RegisterNodeType<rendering::CameraNode3D>();
+
+		SetDefaultNodePoolSize<Node>(5000);
+		SetDefaultNodePoolSize<TransformNode2D>(5000);
+		SetDefaultNodePoolSize<TransformNode3D>(5000);
+		SetDefaultNodePoolSize<rendering::StaticMeshNode3D>(5000);
+		SetDefaultNodePoolSize<rendering::PointLightNode3D>(rendering::gMaxPointLights);
+		SetDefaultNodePoolSize<rendering::SpotLightNode3D>(rendering::gMaxSpotLights);
+		SetDefaultNodePoolSize<rendering::DirectionalLightNode3D>(rendering::gMaxDirectionalLights);
+	}
+
 	void SceneGraphSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		mSceneGraphUpdated = true;
 
-		RegisterDefaultNodeTypes();
+		for (auto [typeID, nodePool] : mNodePools)
+		{
+			if (mNodePoolDefaultSizes.find(typeID) != mNodePoolDefaultSizes.end())
+			{
+				nodePool->Resize(mNodePoolDefaultSizes.at(typeID));
+			}
+			else
+			{
+				nodePool->Resize(gDefaultNodePoolSize);
+			}
+		}
 	}
 
 	void SceneGraphSubsystem::Deinitialize()
@@ -141,18 +172,6 @@ namespace puffin::scene
 	const std::vector<UUID>& SceneGraphSubsystem::GetRootNodeIDs() const
 	{
 		return mRootNodeIDs;
-	}
-
-	void SceneGraphSubsystem::RegisterDefaultNodeTypes()
-	{
-		RegisterNodeType<Node>();
-		RegisterNodeType<TransformNode2D>();
-		RegisterNodeType<TransformNode3D>();
-		RegisterNodeType<rendering::StaticMeshNode3D>();
-		RegisterNodeType<rendering::PointLightNode3D>();
-		RegisterNodeType<rendering::SpotLightNode3D>();
-		RegisterNodeType<rendering::DirectionalLightNode3D>();
-		RegisterNodeType<rendering::CameraNode3D>();
 	}
 
 	void SceneGraphSubsystem::UpdateSceneGraph()

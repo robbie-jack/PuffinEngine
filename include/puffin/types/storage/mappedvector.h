@@ -98,9 +98,19 @@ namespace puffin
 			return mData.at(mKeyToIdx.at(key));
 		}
 
-		// Resize internal vector, does not change the value return by size(), use size_internal() instead
+		// Resize internal vector
 		void Resize(const size_t newSize)
 		{
+			if (mCount > newSize)
+			{
+				const size_t countToRemove = mCount - newSize;
+
+				for (size_t i = 0; i < countToRemove; ++i)
+				{
+					PopBack(false);
+				}
+			}
+
 			mData.resize(newSize);
 		}
 

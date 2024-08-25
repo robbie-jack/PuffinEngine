@@ -50,15 +50,26 @@
 
 namespace puffin::core
 {
-	void RegisterAssetTypes(const io::ProjectFile& projectFile, const std::filesystem::path& projectPath)
+	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)
 	{
-		assets::AssetRegistry::Get()->Initialize(projectFile, projectPath);
-		assets::AssetRegistry::Get()->RegisterAssetType<assets::StaticMeshAsset>();
-		assets::AssetRegistry::Get()->RegisterAssetType<assets::TextureAsset>();
-		assets::AssetRegistry::Get()->RegisterAssetType<assets::SoundAsset>();
-		assets::AssetRegistry::Get()->RegisterAssetType<assets::ShaderAsset>();
-		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialAsset>();
-		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialInstanceAsset>();
+		// Engine Subsystems
+		engine->RegisterSubsystem<window::WindowSubsystem>();
+		engine->RegisterSubsystem<core::SignalSubsystem>();
+		engine->RegisterSubsystem<input::InputSubsystem>();
+		engine->RegisterSubsystem<utility::PerformanceBenchmarkSubsystem>();
+		engine->RegisterSubsystem<SettingsManager>();
+		engine->RegisterSubsystem<EnkiTSSubsystem>();
+		engine->RegisterSubsystem<audio::AudioSubsystem>();
+		engine->RegisterSubsystem<ecs::EnTTSubsystem>();
+		engine->RegisterSubsystem<scene::SceneGraphSubsystem>();
+		engine->RegisterSubsystem<io::SceneSerializationSubsystem>();
+		engine->RegisterSubsystem<rendering::CameraSubsystem>();
+
+		// Editor Subsystems
+		engine->RegisterSubsystem<ui::EditorUISubsystem>();
+
+		// Gameplay Subsystems
+		engine->RegisterSubsystem<scene::SceneGraphGameplaySubsystem>();
 	}
 
 	void RegisterComponentTypes()
@@ -114,6 +125,17 @@ namespace puffin::core
 		reflection::RegisterType<physics::RigidbodyNode3D>();
 	}
 
+	void RegisterAssetTypes(const io::ProjectFile& projectFile, const std::filesystem::path& projectPath)
+	{
+		assets::AssetRegistry::Get()->Initialize(projectFile, projectPath);
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::StaticMeshAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::TextureAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::SoundAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::ShaderAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialAsset>();
+		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialInstanceAsset>();
+	}
+
 	void RegisterComponentsForSerialization(const std::shared_ptr<Engine>& engine)
 	{
 		auto sceneSubsystem = engine->GetSubsystem<io::SceneSerializationSubsystem>();
@@ -149,28 +171,6 @@ namespace puffin::core
 
 		sceneSubsystem->RegisterComponent<rendering::CameraComponent3D>();
 		
-	}
-
-	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)
-	{
-		// Engine Subsystems
-		engine->RegisterSubsystem<window::WindowSubsystem>();
-		engine->RegisterSubsystem<core::SignalSubsystem>();
-		engine->RegisterSubsystem<input::InputSubsystem>();
-		engine->RegisterSubsystem<utility::PerformanceBenchmarkSubsystem>();
-		engine->RegisterSubsystem<SettingsManager>();
-		engine->RegisterSubsystem<EnkiTSSubsystem>();
-		engine->RegisterSubsystem<audio::AudioSubsystem>();
-		engine->RegisterSubsystem<ecs::EnTTSubsystem>();
-		engine->RegisterSubsystem<scene::SceneGraphSubsystem>();
-		engine->RegisterSubsystem<io::SceneSerializationSubsystem>();
-		engine->RegisterSubsystem<rendering::CameraSubsystem>();
-
-		// Editor Subsystems
-		engine->RegisterSubsystem<ui::EditorUISubsystem>();
-
-		// Gameplay Subsystems
-		engine->RegisterSubsystem<scene::SceneGraphGameplaySubsystem>();
 	}
 
 	void AddDefaultAssets()

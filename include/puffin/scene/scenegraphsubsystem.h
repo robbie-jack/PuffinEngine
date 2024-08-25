@@ -27,7 +27,7 @@ namespace puffin
 
 namespace puffin::scene
 {
-	constexpr uint32_t gDefaultNodePoolSize = 5000;
+	constexpr uint32_t gDefaultNodePoolSize = 128;
 
 	class INodePool
 	{
@@ -41,6 +41,7 @@ namespace puffin::scene
 		virtual Node* GetNodePtr(UUID id) = 0;
 		virtual void RemoveNode(UUID id) = 0;
 		virtual bool IsValid(UUID id) = 0;
+		virtual void Resize(uint32_t newSize, bool forceShrink = false) = 0;
 		virtual void Reset() = 0;
 		virtual void Clear() = 0;
 
@@ -51,11 +52,7 @@ namespace puffin::scene
 	{
 	public:
 
-		explicit NodePool(uint32_t poolSize)
-		{
-			mVector.Resize(poolSize);
-		}
-
+		NodePool() = default;
 		~NodePool() override = default;
 
 		T* AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID)
@@ -65,7 +62,18 @@ namespace puffin::scene
 
 			if (mVector.Full())
 			{
-				mVector.Resize(mVector.Size() * 2);
+				uint32_t newSize;
+
+				if (mVector.Size() > 0)
+				{
+					newSize = mVector.Size() * 2;
+				}
+				else
+				{
+					newSize = gDefaultNodePoolSize;
+				}
+
+				mVector.Resize(newSize);
 			}
 
 			mVector.Emplace(id, T{});
@@ -107,6 +115,12 @@ namespace puffin::scene
 			return mVector.Contains(id);
 		}
 
+		void Resize(uint32_t newSize, bool forceShrink = false) override
+		{
+			if (newSize > mVector.Size() || (newSize < mVector.Size() && forceShrink))
+				mVector.Resize(newSize);
+		}
+
 		/*
 		 * Reset all nodes in pool
 		 */
@@ -146,6 +160,8 @@ namespace puffin::scene
 		explicit SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~SceneGraphSubsystem() override = default;
 
+		void RegisterTypes() override;
+
 		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
 
@@ -174,17 +190,33 @@ namespace puffin::scene
 		[[nodiscard]] const std::vector<UUID>& GetRootNodeIDs() const;
 
 		template<typename T>
-		void RegisterNodeType(uint32_t defaultNodePoolSize = gDefaultNodePoolSize)
+		void RegisterNodeType()
 		{
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
 
 			if (mNodePools.find(typeID) == mNodePools.end())
 			{
-				mNodePools.insert({ typeID, static_cast<INodePool*>(new NodePool<T>(defaultNodePoolSize)) });
+				mNodePools.emplace(typeID, static_cast<INodePool*>(new NodePool<T>()));
 			}
 		}
 
+		template<typename T>
+		void SetDefaultNodePoolSize(uint32_t defaultPoolSize)
+		{
+			auto type = entt::resolve<T>();
+			const auto& typeID = type.id();
+
+			if (mNodePoolDefaultSizes.find(typeID) == mNodePoolDefaultSizes.end())
+			{
+				mNodePoolDefaultSizes.emplace(typeID, defaultPoolSize);
+			}
+			else
+			{
+				mNodePoolDefaultSizes[typeID] = defaultPoolSize;
+			}
+		}
+		
 		template<typename T>
 		T* AddNode(const std::string& name)
 		{
@@ -219,8 +251,6 @@ namespace puffin::scene
 		}
 
 	private:
-
-		void RegisterDefaultNodeTypes();
 
 		void UpdateSceneGraph();
 		void DestroyNode(UUID id);
@@ -335,6 +365,7 @@ namespace puffin::scene
 		bool mSceneGraphUpdated = false;
 
 		std::unordered_map<uint32_t, INodePool*> mNodePools;
+		std::unordered_map<uint32_t, uint32_t> mNodePoolDefaultSizes;
 
 	};
 }
