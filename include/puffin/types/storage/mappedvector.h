@@ -11,19 +11,8 @@ namespace puffin
 	{
 	public:
 
-		void Clear()
+		void Emplace(const KeyT& key, const ValueT& value)
 		{
-			mData.clear();
-			mKeyToIdx.clear();
-			mUnorderedMap.clear();
-			mCount = 0;
-		}
-
-		bool Emplace(const KeyT& key, const ValueT& value)
-		{
-			if (Contains(key))
-				return false;
-
 			if (mCount >= mData.size())
 			{
 				mData.push_back(value);
@@ -34,19 +23,17 @@ namespace puffin
 			}
 			
 			mKeyToIdx.emplace(key, mCount);
-			mUnorderedMap.emplace(mCount, key);
+			mIdxToKey.emplace(mCount, key);
 
 			++mCount;
-
-			return true;
 		}
 
 		// Erase an element from vector
 		// should_internal_vector_shrink - Whether the internal vector should shrink in size
-		bool Erase(const KeyT& key, const bool shouldInternalVectorShrink = true)
+		void Erase(const KeyT& key, const bool shouldInternalVectorShrink = true)
 		{
 			if (!Contains(key))
-				return false;
+				return;
 
 			// Swap erased and last elements to maintain contiguous memory
 			auto removedValueIdx = mKeyToIdx[key];
@@ -62,19 +49,17 @@ namespace puffin
 
 			// Remove old map values
 			mKeyToIdx.erase(key);
-			mUnorderedMap.erase(lastValueIdx);
+			mIdxToKey.erase(lastValueIdx);
 
 			--mCount;
-
-			return true;
 		}
 
 		void PopBack(const bool shouldInternalVectorShrink = true)
 		{
 			auto lastValueIdx = mCount - 1;
-			auto lastValueKey = mUnorderedMap.at(lastValueIdx);
+			auto lastValueKey = mIdxToKey.at(lastValueIdx);
 
-			mUnorderedMap.erase(lastValueIdx);
+			mIdxToKey.erase(lastValueIdx);
 			mKeyToIdx.erase(lastValueKey);
 
 			if (shouldInternalVectorShrink)
@@ -84,6 +69,16 @@ namespace puffin
 			}
 
 			--mCount;
+		}
+
+		void Clear(bool shouldInternalVectorShrink = true)
+		{
+			mKeyToIdx.clear();
+			mIdxToKey.clear();
+			mCount = 0;
+
+			if (shouldInternalVectorShrink)
+				mData.clear();
 		}
 
 		[[nodiscard]] bool Contains(const KeyT& key) const
@@ -243,12 +238,12 @@ namespace puffin
 		size_t mCount = 0; // Number of valid elements in array
 		std::vector<ValueT> mData;
 		std::unordered_map<KeyT, size_t> mKeyToIdx;
-		std::unordered_map<size_t, KeyT> mUnorderedMap;
+		std::unordered_map<size_t, KeyT> mIdxToKey;
 
 		void SwapByIdx(const size_t& idxA, const size_t& idxB)
 		{
-			auto keyA = mUnorderedMap.at(idxA);
-			auto keyB = mUnorderedMap.at(idxB);
+			auto keyA = mIdxToKey.at(idxA);
+			auto keyB = mIdxToKey.at(idxB);
 
 			// Swap values
 			ValueT valueA = mData.at(idxA);
@@ -257,8 +252,8 @@ namespace puffin
 			mData.at(idxB) = valueA;
 
 			// Update key map to match swapped values
-			mUnorderedMap.at(idxA) = keyB;
-			mUnorderedMap.at(idxB) = keyA;
+			mIdxToKey.at(idxA) = keyB;
+			mIdxToKey.at(idxB) = keyA;
 
 			// Update idx map to match swapped values
 			mKeyToIdx.at(keyA) = idxB;
@@ -277,8 +272,8 @@ namespace puffin
 			mData.at(idxB) = valueA;
 
 			// Update key map to match swapped values
-			mUnorderedMap.at(idxA) = keyB;
-			mUnorderedMap.at(idxB) = keyA;
+			mIdxToKey.at(idxA) = keyB;
+			mIdxToKey.at(idxB) = keyA;
 
 			// Update idx map to match swapped values
 			mKeyToIdx.at(keyA) = idxB;

@@ -26,6 +26,17 @@ namespace puffin::scene
 		RegisterDefaultNodeTypes();
 	}
 
+	void SceneGraphSubsystem::Deinitialize()
+	{
+		for (auto [typeID, nodePool] : mNodePools)
+		{
+			nodePool->Clear();
+			delete nodePool;
+		}
+
+		mNodePools.clear();
+	}
+
 	void SceneGraphSubsystem::EndPlay()
 	{
 		mNodeIDs.clear();
@@ -36,9 +47,9 @@ namespace puffin::scene
 		mGlobalTransform2Ds.Clear();
 		mGlobalTransform3Ds.Clear();
 
-		for (auto [type, node_array] : mNodeArrays)
+		for (auto [typeID, nodePool] : mNodePools)
 		{
-			node_array->Clear();
+			nodePool->Reset();
 		}
 	}
 

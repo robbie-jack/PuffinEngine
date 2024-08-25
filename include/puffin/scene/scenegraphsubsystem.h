@@ -41,6 +41,7 @@ namespace puffin::scene
 		virtual Node* GetNodePtr(UUID id) = 0;
 		virtual void RemoveNode(UUID id) = 0;
 		virtual bool IsValid(UUID id) = 0;
+		virtual void Reset() = 0;
 		virtual void Clear() = 0;
 
 	};
@@ -50,9 +51,9 @@ namespace puffin::scene
 	{
 	public:
 
-		explicit NodePool(uint32_t defaultPoolSize)
+		explicit NodePool(uint32_t poolSize)
 		{
-			mVector.Resize(defaultPoolSize);
+			mVector.Resize(poolSize);
 		}
 
 		~NodePool() override = default;
@@ -106,8 +107,29 @@ namespace puffin::scene
 			return mVector.Contains(id);
 		}
 
+		/*
+		 * Reset all nodes in pool
+		 */
+		void Reset() override
+		{
+			for (auto& node : mVector)
+			{
+				node.Reset();
+			}
+
+			mVector.Clear(false);
+		}
+
+		/*
+		 * Reset & clear all nodes in pool
+		 */
 		void Clear() override
 		{
+			for (auto& node : mVector)
+			{
+				node.Reset();
+			}
+
 			mVector.Clear();
 		}
 
@@ -125,6 +147,7 @@ namespace puffin::scene
 		~SceneGraphSubsystem() override = default;
 
 		void Initialize(core::SubsystemManager* subsystemManager) override;
+		void Deinitialize() override;
 
 		void EndPlay() override;
 
@@ -156,9 +179,9 @@ namespace puffin::scene
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
 
-			if (mNodeArrays.find(typeID) == mNodeArrays.end())
+			if (mNodePools.find(typeID) == mNodePools.end())
 			{
-				mNodeArrays.insert({ typeID, static_cast<INodePool*>(new NodePool<T>(defaultNodePoolSize)) });
+				mNodePools.insert({ typeID, static_cast<INodePool*>(new NodePool<T>(defaultNodePoolSize)) });
 			}
 		}
 
@@ -225,12 +248,10 @@ namespace puffin::scene
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
 
-			if (mNodeArrays.find(typeID) == mNodeArrays.end())
+			if (mNodePools.find(typeID) == mNodePools.end())
 			{
 				RegisterNodeType<T>();
 			}
-
-			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::AddNodeInternal(UUID, UUID) - Node type not registered before use");
 
 			Node* nodePtr;
 
@@ -259,7 +280,8 @@ namespace puffin::scene
 				return GetArray(typeID)->GetNodePtr(id);
 			}
 
-			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::AddNodeInternal(uint32, UUID, UUID) - Node type not registered before use");
+
+			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::AddNodeInternal(uint32, string, UUID, UUID) - Node type not registered before use");
 
 			Node* nodePtr;
 
@@ -285,16 +307,16 @@ namespace puffin::scene
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
 
-			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::GetArray() - Node type not registered before use");
+			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::GetArray() - Node type not registered before use");
 
-			return static_cast<NodePool<T>*>(mNodeArrays.at(typeID));
+			return static_cast<NodePool<T>*>(mNodePools.at(typeID));
 		}
 
 		INodePool* GetArray(uint32_t typeID)
 		{
-			assert(mNodeArrays.find(typeID) != mNodeArrays.end() && "SceneGraph::GetArray(uint32) - Node type not registered before use");
+			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::GetArray(uint32) - Node type not registered before use");
 
-			return mNodeArrays.at(typeID);
+			return mNodePools.at(typeID);
 		}
 
 		std::unordered_map<UUID, uint32_t> mIDToTypeID;
@@ -312,7 +334,7 @@ namespace puffin::scene
 
 		bool mSceneGraphUpdated = false;
 
-		std::unordered_map<uint32_t, INodePool*> mNodeArrays;
+		std::unordered_map<uint32_t, INodePool*> mNodePools;
 
 	};
 }
