@@ -605,10 +605,11 @@ namespace puffin::rendering
 
 			// Global Buffers
 			params.allocSize = sizeof(GPUCameraData);
-			params.bufferUsage = vk::BufferUsageFlagBits::eUniformBuffer;
+			params.bufferUsage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst;
 			mFrameRenderData[i].cameraBuffer = util::CreateBuffer(mAllocator, params);
 
 			params.allocSize = sizeof(GPUPointLightData) * gMaxPointLights;
+			params.bufferUsage = vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst;
 			mFrameRenderData[i].pointLightBuffer = util::CreateBuffer(mAllocator, params);
 
 			params.allocSize = sizeof(GPUSpotLightData) * gMaxSpotLights;
@@ -2264,11 +2265,11 @@ namespace puffin::rendering
 			descriptors.data(), 0, nullptr);
 
 		
-		GPUVertexShaderPushConstant push_constant_vert;
-		push_constant_vert.vertexBufferAddress = mResourceManager->GeometryBuffer()->GetVertexBufferAddress();
+		GPUVertexShaderPushConstant pushConstantVert;
+		pushConstantVert.vertexBufferAddress = mResourceManager->GeometryBuffer()->GetVertexBufferAddress();
 
-		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &push_constant_vert);
-		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUVertexShaderPushConstant), &GetCurrentFrameData().pushConstantFrag);
+		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &pushConstantVert);
+		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUFragShaderPushConstant), &GetCurrentFrameData().pushConstantFrag);
 		
 		cmd.bindIndexBuffer(mResourceManager->GeometryBuffer()->GetIndexBuffer().buffer, 0, vk::IndexType::eUint32);
 	}

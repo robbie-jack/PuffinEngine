@@ -90,10 +90,11 @@ layout(set = 3, binding = 0) uniform sampler2D shadowmaps[];
 
 layout( push_constant ) uniform constants
 {	
-	layout(offset = 0) vec4 viewPos;
-	layout(offset = 16) vec4 lightCount;
+	layout(offset = 16) vec4 viewPos;
+	layout(offset = 32) vec4 lightCount;
 } pushConstants;
 
+float CalculateAttenuation(float constant, float linear, float quadratic, float distance);
 vec3 PointLightCalculation(PointLightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
 vec3 SpotLightCalculation(SpotLightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
 vec3 DirLightCalculation(DirectionalLightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos);
@@ -137,6 +138,12 @@ void main()
 	outColor = vec4(albedo.rgb * result, 1.0);
 }
 
+float CalculateAttenuation(float constant, float linear, float quadratic, float distance)
+{
+	float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
+	return attenuation;
+}
+
 vec3 PointLightCalculation(PointLightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos)
 {
 	vec3 lightDir = normalize(lightData.positionShadowIndex.rgb - fragWorldPos.rgb);
@@ -151,8 +158,8 @@ vec3 PointLightCalculation(PointLightData lightData, vec3 fragNormal, vec3 viewD
 
 	// Attenuation
 	float distance = length(lightData.positionShadowIndex.rgb - fragWorldPos.rgb);
-	float attenuation = 1.0 / (lightData.attenuation.x + lightData.attenuation.y * distance + 
-		lightData.attenuation.z * (distance * distance));
+	float attenuation = CalculateAttenuation(lightData.attenuation.x, lightData.attenuation.y,
+		lightData.attenuation.z, distance);
 
 	vec3 diffuse = lightData.color.rgb * diff * attenuation;
 	vec3 ambient = lightData.color.rgb * lightData.ambientSpecularExponent.x * attenuation;
@@ -178,11 +185,12 @@ vec3 SpotLightCalculation(SpotLightData lightData, vec3 fragNormal, vec3 viewDir
 
 	// Attenuation
 	float distance = length(lightData.positionShadowIndex.rgb - fragWorldPos.rgb);
-	float attenuation = 1.0 / (lightData.attenuationOuterCutoffAngle.x + lightData.attenuationOuterCutoffAngle.y * distance + 
-		lightData.attenuationOuterCutoffAngle.z * (distance * distance));
+		
+	float attenuation = CalculateAttenuation(lightData.attenuationOuterCutoffAngle.x, lightData.attenuationOuterCutoffAngle.y,
+		lightData.attenuationOuterCutoffAngle.z, distance);
 
 	// Light Cutoff
-	float theta = dot(fragToLightDir, normalize(-lightData.directionInnerCutoffAngle.rgb));
+	float theta = dot(fragToLightDir, lightDir);
 	float epsilon = lightData.directionInnerCutoffAngle.w - lightData.attenuationOuterCutoffAngle.w;
 	float intensity = clamp((theta - lightData.attenuationOuterCutoffAngle.w) / epsilon, 0.0, 1.0);
 
@@ -195,11 +203,11 @@ vec3 SpotLightCalculation(SpotLightData lightData, vec3 fragNormal, vec3 viewDir
 	int shadowIndex = int(lightData.positionShadowIndex.w);
 	if (shadowIndex >= 0)
 	{
-		//shadow = ShadowCalculation(shadowBuffer.shadows[shadowIndex], lightDir, fragNormal, fragWorldPos);
+		shadow = ShadowCalculation(shadowBuffer.shadows[shadowIndex], lightDir, fragNormal, fragWorldPos);
 	}
 
-	return diffuse + ambient + specular;
-	//return ((1.0 - shadow) * (diffuse + specular)) + ambient;
+	//return diffuse + ambient + specular;
+	return ((1.0 - shadow) * (diffuse + specular)) + ambient;
 }
 
 vec3 DirLightCalculation(DirectionalLightData lightData, vec3 fragNormal, vec3 viewDir, vec4 fragWorldPos)
@@ -224,11 +232,11 @@ vec3 DirLightCalculation(DirectionalLightData lightData, vec3 fragNormal, vec3 v
 	int shadowIndex = int(lightData.positionShadowIndex.w);
 	if (shadowIndex >= 0)
 	{
-		//shadow = ShadowCalculation(shadowBuffer.shadows[shadowIndex], lightDir, fragNormal, fragWorldPos);
+		shadow = ShadowCalculation(shadowBuffer.shadows[shadowIndex], lightDir, fragNormal, fragWorldPos);
 	}
 
-	return diffuse + ambient + specular;
-	//return ((1.0 - shadow) * (diffuse + specular)) + ambient;
+	//return diffuse + ambient + specular;
+	return ((1.0 - shadow) * (diffuse + specular)) + ambient;
 }
 
 float ShadowCalculation(ShadowData shadowData, vec3 lightDir, vec3 fragNormal, vec4 fragWorldPos)
