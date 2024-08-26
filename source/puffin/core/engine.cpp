@@ -3,6 +3,7 @@
 #include <chrono>
 #include <thread>
 
+#include "puffin/rendering/rendersubsystem.h"
 #include "puffin/assets/assetimporters.h"
 #include "puffin/assets/assetregistry.h"
 #include "puffin/assets/staticmeshasset.h"

@@ -62,15 +62,6 @@ namespace puffin::core
 	{
 	}
 
-	double Subsystem::WaitForLastPresentationAndSampleTime()
-	{
-		return 0.0;
-	}
-
-	void Subsystem::Render(double deltaTime)
-	{
-	}
-
 	const std::string& Subsystem::GetName()
 	{
 		return mName;

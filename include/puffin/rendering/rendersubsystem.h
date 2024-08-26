@@ -18,6 +18,16 @@ namespace puffin::rendering
 		explicit RenderSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~RenderSubsystem() override = default;
 
+		/*
+		 * Called each frame to wait for last presentation to complete and sample frame time
+		 */
+		virtual double WaitForLastPresentationAndSampleTime();
+
+		/*
+		 * Called each frame to render 2d/3d scene to display
+		 */
+		virtual void Render(double deltaTime);
+
 		[[nodiscard]] core::SubsystemType GetType() const override;
 
 		RenderGraph* GetRenderGraph();

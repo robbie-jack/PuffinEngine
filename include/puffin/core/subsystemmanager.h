@@ -8,6 +8,14 @@
 
 #include "puffin/core/engine.h"
 
+namespace puffin
+{
+	namespace rendering
+	{
+		class RenderSubsystem;
+	}
+}
+
 namespace puffin::core
 {
 	class ISubsystemFactory
@@ -63,7 +71,7 @@ namespace puffin::core
 				mRegisteredInputSubsystem = true;
 			}
 
-			if (subsystem->GetType() == SubsystemType::Input)
+			if (subsystem->GetType() == SubsystemType::Render)
 			{
 				assert(mRegisteredRenderSubsystem == false && "SubsystemManager::RegisterSubsystem - Attempting to register a second render subsystem");
 
@@ -96,7 +104,7 @@ namespace puffin::core
 		std::vector<Subsystem*>& GetGameplaySubsystems();
 
 		[[nodiscard]] Subsystem* GetInputSubsystem() const;
-		[[nodiscard]] Subsystem* GetRenderSubsystem() const;
+		[[nodiscard]] rendering::RenderSubsystem* GetRenderSubsystem() const;
 
 		template<typename T>
 		T* CreateAndInitializeSubsystem()
@@ -145,6 +153,6 @@ namespace puffin::core
 		Subsystem* mInputSubsystem = nullptr;
 
 		bool mRegisteredRenderSubsystem = false;
-		Subsystem* mRenderSubsystem = nullptr;
+		rendering::RenderSubsystem* mRenderSubsystem = nullptr;
 	};
 }

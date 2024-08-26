@@ -7,6 +7,16 @@ namespace puffin::rendering
 	{
 	}
 
+	double RenderSubsystem::WaitForLastPresentationAndSampleTime()
+	{
+		return 0.0;
+	}
+
+	void RenderSubsystem::Render(double deltaTime)
+	{
+
+	}
+
 	core::SubsystemType RenderSubsystem::GetType() const
 	{
 		return core::SubsystemType::Render;

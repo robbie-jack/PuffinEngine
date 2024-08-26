@@ -82,16 +82,6 @@ namespace puffin::core
 		 */
 		virtual void ProcessInput();
 
-		/*
-		 * Called each frame to wait for last presentation to complete and sample frame time
-		 */
-		virtual double WaitForLastPresentationAndSampleTime();
-
-		/*
-		 * Called each frame to render 2d/3d scene to display
-		 */
-		virtual void Render(double deltaTime);
-
 		const std::string& GetName();
 
 	protected:

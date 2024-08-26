@@ -1,6 +1,7 @@
 #include "puffin/core/subsystemmanager.h"
 
 #include "puffin/core/engine.h"
+#include "puffin/rendering/rendersubsystem.h"
 
 namespace puffin::core
 {
@@ -25,7 +26,7 @@ namespace puffin::core
 		return mInputSubsystem;
 	}
 
-	Subsystem* SubsystemManager::GetRenderSubsystem() const
+	rendering::RenderSubsystem* SubsystemManager::GetRenderSubsystem() const
 	{
 		assert(mRenderSubsystem != nullptr && "SubsystemManager::GetRenderSubsystem() - Attempting to get render subsystem while it is invalid");
 
@@ -49,7 +50,9 @@ namespace puffin::core
 			{
 				assert(mRenderSubsystem == nullptr && "SubsystemManager::CreateAndInitializeEngineSubsystems - Attempting to initialize a second render subsystem");
 
-				mRenderSubsystem = subsystem;
+				auto renderSubsystem = dynamic_cast<rendering::RenderSubsystem*>(subsystem);
+				if (renderSubsystem)
+					mRenderSubsystem = renderSubsystem;
 			}
 		}
 	}
