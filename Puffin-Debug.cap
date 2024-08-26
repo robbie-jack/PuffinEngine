@@ -2,12 +2,12 @@
     "rdocCaptureSettings": 1,
     "settings": {
         "autoStart": false,
-        "commandLine": "",
+        "commandLine": "-p C:\\Projects\\PuffinProject\\Puffin.pproject -s scenes\\default.pscene",
         "environment": [
         ],
         "executable": "C:\\Projects\\PuffinEngine\\bin\\win64\\debug\\PuffinApp.exe",
         "inject": false,
-        "numQueuedFrames": 0,
+        "numQueuedFrames": 1,
         "options": {
             "allowFullscreen": true,
             "allowVSync": true,
@@ -22,7 +22,7 @@
             "softMemoryLimit": 0,
             "verifyBufferAccess": false
         },
-        "queuedFrameCap": 0,
+        "queuedFrameCap": 100,
         "workingDir": "C:/Projects/PuffinEngine/build"
     }
 }
