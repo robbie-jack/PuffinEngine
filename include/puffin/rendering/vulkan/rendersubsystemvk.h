@@ -10,13 +10,12 @@
 #include "vk_mem_alloc.hpp"
 
 #include "puffin/assets/textureasset.h"
-#include "puffin/components/rendering/3d/cameracomponent3d.h"
 #include "puffin/core/engine.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/rendering/materialglobals.h"
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/resourceid.h"
-#include "puffin/core/subsystem.h"
+#include "puffin/rendering/rendersubsystem.h"
 #include "puffin/rendering/vulkan/descriptorsvk.h"
 #include "puffin/rendering/vulkan/pipelinevk.h"
 #include "puffin/rendering/vulkan/typesvk.h"
@@ -128,7 +127,7 @@ namespace puffin::rendering
 	};
 
 	// Vulkan Rendering System
-	class RenderSubsystemVK final : public core::Subsystem, public std::enable_shared_from_this<RenderSubsystemVK>
+	class RenderSubsystemVK final : public RenderSubsystem, public std::enable_shared_from_this<RenderSubsystemVK>
 	{
 	public:
 

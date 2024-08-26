@@ -13,7 +13,7 @@ namespace puffin::rendering
 	{
 	public:
 
-		virtual ~RenderGraph() = 0;
+		virtual ~RenderGraph() = default;
 
 		RenderPass* AddRenderPass(const std::string& name, RenderPassType renderPassType);
 

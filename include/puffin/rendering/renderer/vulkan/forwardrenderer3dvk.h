@@ -4,12 +4,12 @@
 
 namespace puffin::rendering
 {
-	class ForwardRendererVK : public RendererVK
+	class ForwardRenderer3DVK : public RendererVK
 	{
 	public:
 
-		ForwardRendererVK() = default;
-		~ForwardRendererVK() override = default;
+		ForwardRenderer3DVK() = default;
+		~ForwardRenderer3DVK() override = default;
 
 		void Initialize() override;
 		void Deinitialize() override;

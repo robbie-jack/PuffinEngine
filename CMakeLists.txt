@@ -203,12 +203,13 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/materialglobals.h
 	${HEADER_DIR}/puffin/rendering/renderglobals.h
 	${HEADER_DIR}/puffin/rendering/renderhelpers.h
+	${HEADER_DIR}/puffin/rendering/rendersubsystem.h
 	${HEADER_DIR}/puffin/rendering/resourceid.h
 	# Rendering - Renderer
 	${HEADER_DIR}/puffin/rendering/renderer/renderer.h
 	# Rendering - Renderer - Vulkan
 	${HEADER_DIR}/puffin/rendering/renderer/vulkan/renderervk.h
-	${HEADER_DIR}/puffin/rendering/renderer/vulkan/forwardrenderervk.h
+	${HEADER_DIR}/puffin/rendering/renderer/vulkan/forwardrenderer3dvk.h
 	# Rendering - Render Graph
 	${HEADER_DIR}/puffin/rendering/rendergraph/rendergraph.h
 	${HEADER_DIR}/puffin/rendering/rendergraph/renderpass.h
@@ -328,9 +329,10 @@ set(SOURCES
 	# Rendering
 	${SOURCE_DIR}/puffin/rendering/camerasubsystem.cpp
 	${SOURCE_DIR}/puffin/rendering/renderhelpers.cpp
+	${SOURCE_DIR}/puffin/rendering/rendersubsystem.cpp
 	# Rendering - Renderer
 	# Rendering - Renderer - Vulkan
-	${SOURCE_DIR}/puffin/rendering/renderer/vulkan/forwardrenderervk.cpp
+	${SOURCE_DIR}/puffin/rendering/renderer/vulkan/forwardrenderer3dvk.cpp
 	# Rendering - Render Graph
 	${SOURCE_DIR}/puffin/rendering/rendergraph/rendergraph.cpp
 	${SOURCE_DIR}/puffin/rendering/rendergraph/renderpass.cpp

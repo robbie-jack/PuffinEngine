@@ -39,6 +39,7 @@
 #include "puffin/components/rendering/3d/shadowcastercomponent3d.h"
 #include "puffin/components/rendering/3d/spotlightcomponent3d.h"
 #include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
+#include "puffin/components/rendering/3d/cameracomponent3d.h"
 #include "puffin/core/settingsmanager.h"
 #include "puffin/core/signalsubsystem.h"
 #include "puffin/rendering/camerasubsystem.h"
@@ -54,6 +55,7 @@
 #include "puffin/nodes/transformnode3d.h"
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/renderhelpers.h"
+#include "puffin/rendering/rendergraph/vulkan/rendergraphvk.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -68,7 +70,7 @@
 
 namespace puffin::rendering
 {
-	RenderSubsystemVK::RenderSubsystemVK(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	RenderSubsystemVK::RenderSubsystemVK(const std::shared_ptr<core::Engine>& engine) : RenderSubsystem(engine)
 	{
 		mName = "RenderSubystemVK";
 	}
@@ -112,6 +114,8 @@ namespace puffin::rendering
 		{
 			mRenderShadows = renderingDrawShadows;
 		}));
+
+		mRenderGraph = new RenderGraphVK();
 
 		// Initialise vulkan and all rendering objects
 		InitVulkan();
@@ -191,6 +195,9 @@ namespace puffin::rendering
 			//m_material_registry = nullptr;
 
 			mDeletionQueue.Flush();
+
+			delete mRenderGraph;
+			mRenderGraph = nullptr;
 
 			mInitialized = false;
 		}

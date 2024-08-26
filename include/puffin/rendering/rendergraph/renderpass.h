@@ -11,7 +11,7 @@ namespace puffin::rendering
 	public:
 
 		explicit RenderPass(std::string name, RenderPassType renderPassType);
-		virtual ~RenderPass() = 0;
+		virtual ~RenderPass() = default;
 
 	protected:
 
