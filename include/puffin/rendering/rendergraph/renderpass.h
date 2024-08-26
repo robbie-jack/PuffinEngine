@@ -1,8 +1,10 @@
 ﻿#pragma once
 
 #include <string>
+#include <vector>
 
-#include "renderpasstype.h"
+#include "puffin/rendering/rendergraph/renderpasstype.h"
+#include "puffin/rendering/rendergraph/rendercommand.h"
 
 namespace puffin::rendering
 {
@@ -13,14 +15,15 @@ namespace puffin::rendering
 		explicit RenderPass(std::string name, RenderPassType renderPassType);
 		virtual ~RenderPass() = default;
 
-	protected:
+		void BeginRendering();
+		void EndRendering();
+
+	private:
 
 		std::string mName;
 		RenderPassType mType;
 
-	private:
-
-		
+		std::vector<RenderCommand*> mCommands;
 
 	};
 }

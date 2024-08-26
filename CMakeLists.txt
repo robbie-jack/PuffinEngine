@@ -212,9 +212,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/rendergraph/rendergraph.h
 	${HEADER_DIR}/puffin/rendering/rendergraph/renderpass.h
 	${HEADER_DIR}/puffin/rendering/rendergraph/renderpasstype.h
-	# Rendering - Render Graph - Vulkan
-	${HEADER_DIR}/puffin/rendering/rendergraph/vulkan/rendergraphvk.h
-	${HEADER_DIR}/puffin/rendering/rendergraph/vulkan/renderpassvk.h
 	# Rendering Vulkan
 	${HEADER_DIR}/puffin/rendering/vulkan/descriptorsvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/helpersvk.h
@@ -329,13 +326,11 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/renderhelpers.cpp
 	${SOURCE_DIR}/puffin/rendering/rendersubsystem.cpp
 	# Rendering - Renderer
+	${SOURCE_DIR}/puffin/rendering/renderer/renderer.cpp
 	${SOURCE_DIR}/puffin/rendering/renderer/forwardrenderer3d.cpp
 	# Rendering - Render Graph
 	${SOURCE_DIR}/puffin/rendering/rendergraph/rendergraph.cpp
 	${SOURCE_DIR}/puffin/rendering/rendergraph/renderpass.cpp
-	# Rendering - Render Graph - Vulkan
-	${SOURCE_DIR}/puffin/rendering/rendergraph/vulkan/rendergraphvk.cpp
-	${SOURCE_DIR}/puffin/rendering/rendergraph/vulkan/renderpassvk.cpp
 	# Rendering - Vulkan
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptorsvk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/helpersvk.cpp

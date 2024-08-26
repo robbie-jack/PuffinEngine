@@ -22,7 +22,7 @@ namespace puffin::rendering
 		return core::SubsystemType::Render;
 	}
 
-	RenderGraph* RenderSubsystem::GetRenderGraph()
+	RenderGraph& RenderSubsystem::GetRenderGraph()
 	{
 		return mRenderGraph;
 	}

@@ -7,4 +7,14 @@ namespace puffin::rendering
 	{
 
 	}
+
+	void RenderPass::BeginRendering()
+	{
+		mCommands.push_back(new RenderCommand(RenderCommandType::BeginRendering));
+	}
+
+	void RenderPass::EndRendering()
+	{
+		mCommands.push_back(new RenderCommand(RenderCommandType::EndRendering));
+	}
 }

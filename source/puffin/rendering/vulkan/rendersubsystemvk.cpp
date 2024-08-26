@@ -55,7 +55,6 @@
 #include "puffin/nodes/transformnode3d.h"
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/renderhelpers.h"
-#include "puffin/rendering/rendergraph/vulkan/rendergraphvk.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -114,8 +113,6 @@ namespace puffin::rendering
 		{
 			mRenderShadows = renderingDrawShadows;
 		}));
-
-		mRenderGraph = new RenderGraphVK();
 
 		// Initialise vulkan and all rendering objects
 		InitVulkan();
@@ -196,8 +193,7 @@ namespace puffin::rendering
 
 			mDeletionQueue.Flush();
 
-			delete mRenderGraph;
-			mRenderGraph = nullptr;
+			mRenderGraph.Reset();
 
 			mInitialized = false;
 		}
@@ -222,6 +218,8 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::Render(double deltaTime)
 	{
+		mRenderGraph.Reset();
+
 		UpdateRenderData();
 
 		ProcessComponents();

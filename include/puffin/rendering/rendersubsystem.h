@@ -2,10 +2,10 @@
 
 #include "puffin/core/subsystem.h"
 
+#include "puffin/rendering/rendergraph/rendergraph.h"
+
 namespace puffin::rendering
 {
-	class RenderGraph;
-
 	/*
 	 * A Render Subsystem implements a rendering api (i.e Vulkan, DirectX, etc...) and
 	 * handles common rendering functionality like resource management for that api
@@ -30,11 +30,11 @@ namespace puffin::rendering
 
 		[[nodiscard]] core::SubsystemType GetType() const override;
 
-		RenderGraph* GetRenderGraph();
+		RenderGraph& GetRenderGraph();
 
 	protected:
 
-		RenderGraph* mRenderGraph;
+		RenderGraph mRenderGraph;
 
 	};
 }
