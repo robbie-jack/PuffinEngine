@@ -2,8 +2,6 @@
 
 #include "puffin/core/subsystem.h"
 
-#include "puffin/rendering/rendergraph/rendergraph.h"
-
 namespace puffin::rendering
 {
 	/*
@@ -29,12 +27,6 @@ namespace puffin::rendering
 		virtual void Render(double deltaTime);
 
 		[[nodiscard]] core::SubsystemType GetType() const override;
-
-		RenderGraph& GetRenderGraph();
-
-	protected:
-
-		RenderGraph mRenderGraph;
 
 	};
 }

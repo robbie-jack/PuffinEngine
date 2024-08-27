@@ -23,6 +23,7 @@
 #include "puffin/types/storage/mappedarray.h"
 #include "puffin/types/storage/mappedvector.h"
 #include "puffin/types/storage/ringbuffer.h"
+#include "puffin/rendering/vulkan/rendergraph/rendergraphvk.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
@@ -274,6 +275,7 @@ namespace puffin::rendering
 		};
 
 		// Initialization Members
+		RenderGraphVK mRenderGraph;
 		vk::Device mDevice;
 		vk::Instance mInstance;
 		vk::PhysicalDevice mPhysicalDevice;

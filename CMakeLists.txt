@@ -203,16 +203,10 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/materialglobals.h
 	${HEADER_DIR}/puffin/rendering/renderglobals.h
 	${HEADER_DIR}/puffin/rendering/renderhelpers.h
+	${HEADER_DIR}/puffin/rendering/renderpasstype.h
 	${HEADER_DIR}/puffin/rendering/rendersubsystem.h
 	${HEADER_DIR}/puffin/rendering/resourceid.h
-	# Rendering - Renderer
-	${HEADER_DIR}/puffin/rendering/renderer/renderer.h
-	${HEADER_DIR}/puffin/rendering/renderer/forwardrenderer3d.h	
-	# Rendering - Render Graph
-	${HEADER_DIR}/puffin/rendering/rendergraph/rendergraph.h
-	${HEADER_DIR}/puffin/rendering/rendergraph/renderpass.h
-	${HEADER_DIR}/puffin/rendering/rendergraph/renderpasstype.h
-	# Rendering Vulkan
+	# Rendering - Vulkan
 	${HEADER_DIR}/puffin/rendering/vulkan/descriptorsvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/helpersvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/materialregistryvk.h
@@ -222,6 +216,12 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/vulkan/typesvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/vertexvk.h
+	# Rendering - Vulkan - Render Graph
+	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.h
+	# Rendering - Vulkan - Render Module
+	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h
 	# Scene
 	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
 	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
@@ -325,12 +325,6 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/camerasubsystem.cpp
 	${SOURCE_DIR}/puffin/rendering/renderhelpers.cpp
 	${SOURCE_DIR}/puffin/rendering/rendersubsystem.cpp
-	# Rendering - Renderer
-	${SOURCE_DIR}/puffin/rendering/renderer/renderer.cpp
-	${SOURCE_DIR}/puffin/rendering/renderer/forwardrenderer3d.cpp
-	# Rendering - Render Graph
-	${SOURCE_DIR}/puffin/rendering/rendergraph/rendergraph.cpp
-	${SOURCE_DIR}/puffin/rendering/rendergraph/renderpass.cpp
 	# Rendering - Vulkan
 	${SOURCE_DIR}/puffin/rendering/vulkan/descriptorsvk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/helpersvk.cpp
@@ -340,6 +334,12 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/vulkan/resourcemanagervk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/vertexvk.cpp
+	# Rendering - Vulkan - Render Graph
+	${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.cpp
+	# Rendering - Vulkan - Render Module
+	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
