@@ -1,5 +1,9 @@
 #pragma once
 
+#include <functional>
+
+#include "vulkan/vulkan.hpp"
+
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
 
 namespace puffin::rendering
@@ -17,8 +21,10 @@ namespace puffin::rendering
 		void Initialize() override;
 		void Deinitialize() override;
 
-		void Update(double deltaTime) override;
-		void PrepareGraph(RenderGraphVK& renderGraph) override;
+		void BuildGraph(RenderGraphVK& renderGraph) override;
 
+		void PreRender(double deltaTime) override;
+		
+		void RecordForward3DCommands(vk::CommandBuffer& cmd);
 	};
 }

@@ -22,14 +22,53 @@ namespace puffin::rendering
 
 	}
 
-	void Forward3DRenderModuleVK::Update(double deltaTime)
+	void Forward3DRenderModuleVK::BuildGraph(RenderGraphVK& renderGraph)
 	{
-		
+		ImageDescVK color;
+		color.format = vk::Format::eR8G8B8A8Unorm;
+		color.usageFlags = { vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled |
+				vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst };
+
+		auto& forwardPass = renderGraph.AddRenderPass("forward3d", RenderPassType::Graphics);
+		forwardPass.AddOutputAttachment("color", color);
+
+		forwardPass.SetRecordCommandsCallback([this](vk::CommandBuffer& cmd)
+		{
+			RecordForward3DCommands(cmd);
+		});
+
 	}
 
-	void Forward3DRenderModuleVK::PrepareGraph(RenderGraphVK& renderGraph)
+	void Forward3DRenderModuleVK::PreRender(double deltaTime)
 	{
-		auto& forwardPass = renderGraph.AddRenderPass("forward3d", RenderPassType::Graphics);
+
+	}
+
+	void Forward3DRenderModuleVK::RecordForward3DCommands(vk::CommandBuffer& cmd)
+	{
+		//	1. Begin Rendering
+
+
+
+		//	2. Set Draw Parameters (Viewport, Scissor, etc...)
+
+
+
+		//	3. Bind Buffers & Descriptors
+
+
+
+		//	4. Render Mesh Batches
+
+		//		4a. Bind Pipeline or Batch
+
+
+
+		//		4b. Draw Batch
+
+
+
+		//	5. End Rendering
 
 
 	}

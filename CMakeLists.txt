@@ -217,7 +217,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/vertexvk.h
 	# Rendering - Vulkan - Render Graph
-	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/attachmentdescvk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/imagedescvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/bufferdescvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.h

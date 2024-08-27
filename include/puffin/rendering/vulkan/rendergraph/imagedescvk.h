@@ -9,16 +9,16 @@ namespace puffin::rendering
 	/*
 	 * Enum for defining what size an attachment should be created with
 	 */
-	enum class AttachmentSizeTypeVK
+	enum class ImageSizeVK
 	{
 		Absolute = 0,			// Size should be set to absolute value of attachment description
 		SwapchainRelative,		// Size should be relative to the size of the swapchain
 		RenderExtentRelative,	// Size should be relative to size of defined render extent
 	};
 
-	struct AttachmentDescVK
+	struct ImageDescVK
 	{
-		AttachmentSizeTypeVK attachmentSizeType = AttachmentSizeTypeVK::RenderExtentRelative;
+		ImageSizeVK attachmentSizeType = ImageSizeVK::RenderExtentRelative;
 		uint32_t width = 0;
 		uint32_t height = 0;
 		uint32_t depth = 0;
@@ -27,5 +27,8 @@ namespace puffin::rendering
 		float depthMult = 1.0f;		// Multiplier for depth if using a relative size type
 		vk::Format format = vk::Format::eUndefined;
 		vk::ImageUsageFlags usageFlags;
+		uint8_t samples = 1;
+		uint8_t levels = 1;
+		uint8_t layers = 1;
 	};
 }

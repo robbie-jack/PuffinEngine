@@ -20,13 +20,11 @@ namespace puffin::rendering
 	{
 	}
 
-	void RenderModuleVK::Update(double deltaTime)
+	void RenderModuleVK::BuildGraph(RenderGraphVK& renderGraph)
 	{
-
 	}
 
-	void RenderModuleVK::PrepareGraph(RenderGraphVK& renderGraph)
+	void RenderModuleVK::PreRender(double deltaTime)
 	{
-
 	}
 }

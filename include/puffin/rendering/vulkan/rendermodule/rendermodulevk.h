@@ -20,14 +20,14 @@ namespace puffin::rendering
 		virtual void Deinitialize();
 
 		/*
-		 * Called by render subsystem once a frame so module can update its internal data, ready for next frame
+		 * Called by render subsystem to build render graph, adding any render passes and binding callbacks for this module
 		 */
-		virtual void Update(double deltaTime);
+		virtual void BuildGraph(RenderGraphVK& renderGraph);
 
 		/*
-		 * Called by render subsystem to prepare render graph, adding any render passes and binding callbacks for this module
+		 * Called by render subsystem once a frame before rendering so module can update any required data/resources needed for rendering
 		 */
-		virtual void PrepareGraph(RenderGraphVK& renderGraph);
+		virtual void PreRender(double deltaTime);
 
 	protected:
 
