@@ -4,6 +4,9 @@
 
 namespace puffin::rendering
 {
+	/*
+	 * Render module implementation for a 3d forward rendering pass
+	 */
 	class Forward3DRenderModuleVK : public RenderModuleVK
 	{
 	public:

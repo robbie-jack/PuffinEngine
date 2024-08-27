@@ -5,6 +5,10 @@ namespace puffin::rendering
 	class RenderGraphVK;
 	class RenderSubsystemVK;
 
+	/*
+	 * A render module is used to define & implement rendering techniques & effects
+	 * i.e forward/deferred rendering, shadows, ambient occlusion, etc...
+	 */
 	class RenderModuleVK
 	{
 	public:
