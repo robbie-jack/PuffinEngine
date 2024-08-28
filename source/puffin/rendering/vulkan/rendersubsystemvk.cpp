@@ -154,7 +154,7 @@ namespace puffin::rendering
 		mRenderables.reserve(gMaxObjects);
 		mCachedObjectData.Reserve(gMaxObjects);
 
-		mResourceManager = std::make_unique<ResourceManagerVK>(this);
+		mResourceManager = std::make_unique<ResourceManagerVK>(this, gBufferedFrameCount);
 		mMaterialRegistry = std::make_unique<MaterialRegistryVK>(this);
 
 		mInitialized = true;
@@ -226,14 +226,13 @@ namespace puffin::rendering
 		//	1. Wait for nth frame to finish rendering (N - 0 to number of Frames in Flight)
 		WaitForRenderFence();
 
-		//	2. Reset & Build Graph
+		//	2. Initialize Render Objects (Buffers, Images, Descriptions Sync Structures, etc...)
+		DefineAndBuildResources();
+
+		//	3. Reset & Build Graph
 		mRenderGraph.Reset();
 
 		BuildGraph();
-
-		//	3. Initialize Render Objects (Buffers, Images, Descriptions Sync Structures, etc...)
-
-
 
 		//	4. Pre-Render - Upload all needed data to GPU (Textures, Object Data, Materials, etc...)
 
@@ -260,7 +259,15 @@ namespace puffin::rendering
 		mDrawCallsCountTotal = 0;
 		mDrawCallsCount.clear();
 
+		//		5a. Record Resource Transition Commands - PUFFIN_TODO
+
+
+
+		//		5b. Record Render Module Commands
+
 		RecordRenderPassCommands();
+
+		//		5c. Submit Commands
 
 		RecordAndSubmitCommands(mCurrentSwapchainIdx);
 
@@ -632,7 +639,7 @@ namespace puffin::rendering
 		vk::CommandBufferAllocateInfo commandBufferInfo = {{}, vk::CommandBufferLevel::ePrimary, 1};
 
 		// Init Main Command Pools/Buffers
-		for (int i = 0; i < gBufferedFrames; i++)
+		for (int i = 0; i < gBufferedFrameCount; i++)
 		{
 			VK_CHECK(mDevice.createCommandPool(&commandPoolInfo, nullptr, &mFrameRenderData[i].commandPool));
 
@@ -666,7 +673,7 @@ namespace puffin::rendering
 		vk::FenceCreateInfo fenceCreateInfo = {vk::FenceCreateFlagBits::eSignaled, nullptr};
 		vk::SemaphoreCreateInfo semaphoreCreateInfo = {{}, nullptr};
 
-		for (int i = 0; i < gBufferedFrames; i++)
+		for (int i = 0; i < gBufferedFrameCount; i++)
 		{
 			VK_CHECK(mDevice.createFence(&fenceCreateInfo, nullptr, &mFrameRenderData[i].renderFence));
 			VK_CHECK(mDevice.createFence(&fenceCreateInfo, nullptr, &mFrameRenderData[i].presentFence));
@@ -702,7 +709,7 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::InitBuffers()
 	{
-		for (int i = 0; i < gBufferedFrames; i++)
+		for (int i = 0; i < gBufferedFrameCount; i++)
 		{
 			// Indirect Buffer
 			util::CreateBufferParams params;
@@ -807,7 +814,7 @@ namespace puffin::rendering
 		mGlobalRenderData.descriptorAllocator = std::make_shared<util::DescriptorAllocator>(mDevice);
 		mGlobalRenderData.descriptorLayoutCache = std::make_shared<util::DescriptorLayoutCache>(mDevice);
 
-		for (int i = 0; i < gBufferedFrames; i++)
+		for (int i = 0; i < gBufferedFrameCount; i++)
 		{
 			// Global Descriptors
 
@@ -1085,6 +1092,16 @@ namespace puffin::rendering
 		}
 	}
 
+	void RenderSubsystemVK::DefineAndBuildResources()
+	{
+		for (auto [name, renderModule] : mRenderModules)
+		{
+			renderModule->DefineResources(mResourceManager.get());
+		}
+
+
+	}
+
 	void RenderSubsystemVK::BuildGraph()
 	{
 		for (auto [name, renderModule] : mRenderModules)
@@ -1183,7 +1200,7 @@ namespace puffin::rendering
 
 			if (mMaterialRegistry->GetMaterialDataNeedsUploaded())
 			{
-				for (uint32_t i = 0; i < gBufferedFrames; i++)
+				for (uint32_t i = 0; i < gBufferedFrameCount; i++)
 				{
 					mFrameRenderData[i].copyMaterialDataToGPU = true;
 				}
@@ -1210,7 +1227,7 @@ namespace puffin::rendering
 
 			if (textureDescriptorNeedsUpdated == true)
 			{
-				for (int i = 0; i < gBufferedFrames; i++)
+				for (int i = 0; i < gBufferedFrameCount; i++)
 				{
 					mFrameRenderData[i].textureDescriptorNeedsUpdated = true;
 				}
@@ -1242,7 +1259,7 @@ namespace puffin::rendering
 
 		if (shadowDescriptorNeedsUpdated == true)
 		{
-			for (int i = 0; i < gBufferedFrames; i++)
+			for (int i = 0; i < gBufferedFrameCount; i++)
 			{
 				mFrameRenderData[i].shadowDescriptorNeedsUpdated = true;
 			}
@@ -1291,7 +1308,7 @@ namespace puffin::rendering
 
 		if (shadowDescriptorNeedsUpdated == true)
 		{
-			for (int i = 0; i < gBufferedFrames; i++)
+			for (int i = 0; i < gBufferedFrameCount; i++)
 			{
 				mFrameRenderData[i].shadowDescriptorNeedsUpdated = true;
 			}
@@ -1377,7 +1394,7 @@ namespace puffin::rendering
 		// Recreate swapchain when window is resized
 		if (mSwapchainData.resized == true)
 		{
-			for (int i = 0; i < gBufferedFrames; i++)
+			for (int i = 0; i < gBufferedFrameCount; i++)
 			{
 				mFrameRenderData[i].swapchainNeedsUpdated = true;
 			}
@@ -1398,7 +1415,7 @@ namespace puffin::rendering
 			}
 
 			int framesUsingNewSwapchain = 0;
-			for (int i = 0; i < gBufferedFrames; i++)
+			for (int i = 0; i < gBufferedFrameCount; i++)
 			{
 				if (mFrameRenderData[i].swapchainNeedsUpdated == false)
 				{
@@ -1406,7 +1423,7 @@ namespace puffin::rendering
 				}
 			}
 
-			if (framesUsingNewSwapchain == gBufferedFrames)
+			if (framesUsingNewSwapchain == gBufferedFrameCount)
 			{
 				CleanSwapchain(mSwapchainDataOld);
 
@@ -1429,7 +1446,7 @@ namespace puffin::rendering
 	{
 		if (mOffscreenData.resized == true)
 		{
-			for (int i = 0; i < gBufferedFrames; i++)
+			for (int i = 0; i < gBufferedFrameCount; i++)
 			{
 				mFrameRenderData[i].offscreenNeedsUpdated = true;
 			}
@@ -1455,7 +1472,7 @@ namespace puffin::rendering
 			}
 
 			int framesUsingNewSwapchain = 0;
-			for (int i = 0; i < gBufferedFrames; i++)
+			for (int i = 0; i < gBufferedFrameCount; i++)
 			{
 				if (mFrameRenderData[i].offscreenNeedsUpdated == false)
 				{
@@ -1463,7 +1480,7 @@ namespace puffin::rendering
 				}
 			}
 
-			if (framesUsingNewSwapchain == gBufferedFrames)
+			if (framesUsingNewSwapchain == gBufferedFrameCount)
 			{
 				CleanOffscreen(mOffscreenDataOld);
 
@@ -2834,7 +2851,7 @@ namespace puffin::rendering
 
 	FrameRenderData& RenderSubsystemVK::GetCurrentFrameData()
 	{
-		return mFrameRenderData[mFrameCount % gBufferedFrames];
+		return mFrameRenderData[mFrameCount % gBufferedFrameCount];
 	}
 
 	void RenderSubsystemVK::FrameBufferResizeCallback(GLFWwindow* window, const int width, const int height)

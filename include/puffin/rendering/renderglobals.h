@@ -4,7 +4,7 @@
 
 namespace puffin::rendering
 {
-	constexpr uint8_t gBufferedFrames = 2;
+	constexpr uint8_t gBufferedFrameCount = 2;
 	constexpr uint32_t gMaxObjects = 20000;
 	constexpr uint16_t gMaxUniqueMaterials = 32;
 	constexpr uint16_t gMaxMaterialInstances = 128;

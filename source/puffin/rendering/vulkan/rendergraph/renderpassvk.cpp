@@ -8,24 +8,29 @@ namespace puffin::rendering
 
 	}
 
-	void RenderPassVK::AddInputAttachment(const std::string& name)
+	void RenderPassVK::AddInputColorAttachment(const std::string& name)
 	{
-		mInputAttachment.push_back(name);
+		mInputAttachments.push_back(name);
 	}
 
-	void RenderPassVK::SetDepthStencilInputAttachment(const std::string& name)
+	void RenderPassVK::SetInputDepthStencilAttachment(const std::string& name)
 	{
-		mDepthStencilInputAttachment = name;
+		mInputDepthStencilAttachment = name;
 	}
 
-	void RenderPassVK::AddOutputAttachment(const std::string& name, const ImageDescVK& attachmentDesc)
+	void RenderPassVK::AddOutputColorAttachment(const std::string& name)
 	{
-		mOutputAttachments.emplace_back(name, attachmentDesc);
+		mOutputAttachments.push_back(name);
 	}
 
-	void RenderPassVK::SetDepthStencilOutputAttachment(const std::string& name, const ImageDescVK& attachmentDesc)
+	void RenderPassVK::SetOutputDepthStencilAttachment(const std::string& name)
 	{
-		mDepthStencilOutputAttachment = { name, attachmentDesc };
+		mOutputDepthStencilAttachment = name;
+	}
+
+	void RenderPassVK::AddRequiredPass(const std::string& name)
+	{
+		mRequiredPasses.emplace(name);
 	}
 
 	void RenderPassVK::SetRecordCommandsCallback(std::function<void(vk::CommandBuffer&)> callback)
@@ -46,5 +51,35 @@ namespace puffin::rendering
 	RenderPassType RenderPassVK::GetType() const
 	{
 		return mType;
+	}
+
+	const std::vector<std::string>& RenderPassVK::GetInputAttachments() const
+	{
+		return mInputAttachments;
+	}
+
+	const std::string& RenderPassVK::GetInputDepthStencilAttachment() const
+	{
+		return mInputDepthStencilAttachment;
+	}
+
+	const std::vector<std::string>& RenderPassVK::GetOutputAttachments() const
+	{
+		return mOutputAttachments;
+	}
+
+	const std::vector<std::string>& RenderPassVK::GetOutputBuffers() const
+	{
+		return mOutputBuffers;
+	}
+
+	const std::string& RenderPassVK::GetOutputDepthStencilAttachment() const
+	{
+		return mOutputDepthStencilAttachment;
+	}
+
+	const std::set<std::string>& RenderPassVK::GetRequiredPasses() const
+	{
+		return mRequiredPasses;
 	}
 }

@@ -16,8 +16,12 @@ namespace puffin::rendering
 		explicit Forward3DRenderModuleVK(RenderSubsystemVK* renderSubsystem);
 		~Forward3DRenderModuleVK() override = default;
 
+		void RegisterModules() override;
+
 		void Initialize() override;
 		void Deinitialize() override;
+
+		void DefineResources(ResourceManagerVK* resourceManager) override;
 
 		void BuildGraph(RenderGraphVK& renderGraph) override;
 

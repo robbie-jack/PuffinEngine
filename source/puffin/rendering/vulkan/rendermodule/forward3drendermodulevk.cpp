@@ -11,6 +11,11 @@ namespace puffin::rendering
 	{
 	}
 
+	void Forward3DRenderModuleVK::RegisterModules()
+	{
+		
+	}
+
 	void Forward3DRenderModuleVK::Initialize()
 	{
 		
@@ -21,15 +26,23 @@ namespace puffin::rendering
 
 	}
 
-	void Forward3DRenderModuleVK::BuildGraph(RenderGraphVK& renderGraph)
+	void Forward3DRenderModuleVK::DefineResources(ResourceManagerVK* resourceManager)
 	{
 		ImageDescVK color;
 		color.format = vk::Format::eR8G8B8A8Unorm;
 		color.usageFlags = { vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled |
 				vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst };
 
+
+	}
+
+	void Forward3DRenderModuleVK::BuildGraph(RenderGraphVK& renderGraph)
+	{
+		
+
 		auto& forwardPass = renderGraph.AddRenderPass("forward3d", RenderPassType::Graphics);
-		forwardPass.AddOutputAttachment("color", color);
+		forwardPass.AddOutputColorAttachment("forward3d-color");
+		forwardPass.SetOutputDepthStencilAttachment("forward3d-depth");
 
 		forwardPass.SetRecordCommandsCallback([this](vk::CommandBuffer& cmd)
 		{

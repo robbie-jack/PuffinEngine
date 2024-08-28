@@ -12,11 +12,19 @@ namespace puffin::rendering
 		mRenderSubsystem = nullptr;
 	}
 
+	void RenderModuleVK::RegisterModules()
+	{
+	}
+
 	void RenderModuleVK::Initialize()
 	{
 	}
 
 	void RenderModuleVK::Deinitialize()
+	{
+	}
+
+	void RenderModuleVK::DefineResources(ResourceManagerVK* resourceManager)
 	{
 	}
 

@@ -30,5 +30,6 @@ namespace puffin::rendering
 		uint8_t samples = 1;
 		uint8_t levels = 1;
 		uint8_t layers = 1;
+		bool persistent = false; // Whether this image should persist between frames or not
 	};
 }

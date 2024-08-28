@@ -24,6 +24,7 @@
 #include "puffin/types/storage/mappedvector.h"
 #include "puffin/types/storage/ringbuffer.h"
 #include "puffin/rendering/vulkan/rendergraph/rendergraphvk.h"
+#include "rendermodule/rendermodulevk.h"
 
 #ifdef NDEBUG
 constexpr bool gEnableValidationLayers = false;
@@ -207,6 +208,8 @@ namespace puffin::rendering
 				return;
 
 			mRenderModules.emplace(moduleName, new T(this));
+
+			mRenderModules.at(moduleName)->RegisterModules();
 		}
 
 	private:
@@ -238,6 +241,7 @@ namespace puffin::rendering
 		void DeinitModules();
 
 		// Pre-Render Methods
+		void DefineAndBuildResources();
 
 		void BuildGraph();
 
@@ -360,7 +364,7 @@ namespace puffin::rendering
 		uint32_t mGraphicsQueueFamily = 0;
 
 		GlobalRenderData mGlobalRenderData;
-		std::array<FrameRenderData, gBufferedFrames> mFrameRenderData;
+		std::array<FrameRenderData, gBufferedFrameCount> mFrameRenderData;
 
 		std::unique_ptr<ResourceManagerVK> mResourceManager = nullptr;
 		std::unique_ptr<MaterialRegistryVK> mMaterialRegistry = nullptr;
@@ -388,7 +392,7 @@ namespace puffin::rendering
 		std::vector<UUID> mShadowsToDraw;
 
 		uint32_t mCurrentSwapchainIdx = 0;
-		uint8_t mFramesInFlightCount = gBufferedFrames;
+		uint8_t mFramesInFlightCount = gBufferedFrameCount;
 		uint32_t mFrameCount;
 
 		// Pipelines

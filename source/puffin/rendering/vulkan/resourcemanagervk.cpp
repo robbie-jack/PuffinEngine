@@ -7,8 +7,8 @@
 
 namespace puffin::rendering
 {
-	ResourceManagerVK::ResourceManagerVK(RenderSubsystemVK* renderSystem)
-		: mRenderSystem(renderSystem)
+	ResourceManagerVK::ResourceManagerVK(RenderSubsystemVK* renderSystem, uint8_t bufferedFrameCount)
+		: mRenderSystem(renderSystem), mBufferedFrameCount(bufferedFrameCount)
 	{
 		mUnifiedGeometryBuffer = new UnifiedGeometryBuffer(mRenderSystem);
 	}
@@ -35,6 +35,16 @@ namespace puffin::rendering
 	void ResourceManagerVK::AddStaticMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh)
 	{
 		mUnifiedGeometryBuffer->AddStaticMesh(staticMesh);
+	}
+
+	void ResourceManagerVK::AddImage(const std::string& name, const ImageDescVK& imageDesc)
+	{
+
+	}
+
+	void ResourceManagerVK::AddBuffer(const std::string& name, const BufferDescVK& bufferDesc)
+	{
+
 	}
 
 	ResourceID ResourceManagerVK::AddImages(const ImageDesc& imageDesc, uint8_t imageCount)
