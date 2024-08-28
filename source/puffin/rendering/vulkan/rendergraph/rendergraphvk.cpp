@@ -29,4 +29,9 @@ namespace puffin::rendering
 	{
 		mRenderPasses.clear();
 	}
+
+	const std::unordered_map<std::string, RenderPassVK>& RenderGraphVK::GetRenderPasses() const
+	{
+		return mRenderPasses;
+	}
 }

@@ -9,7 +9,6 @@ namespace puffin::rendering
 	Forward3DRenderModuleVK::Forward3DRenderModuleVK(RenderSubsystemVK* renderSubsystem)
 		: RenderModuleVK(renderSubsystem)
 	{
-
 	}
 
 	void Forward3DRenderModuleVK::Initialize()

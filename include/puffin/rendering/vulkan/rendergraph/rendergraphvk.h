@@ -21,6 +21,8 @@ namespace puffin::rendering
 
 		void Reset();
 
+		const std::unordered_map<std::string, RenderPassVK>& GetRenderPasses() const;
+
 	private:
 
 		std::unordered_map<std::string, RenderPassVK> mRenderPasses;

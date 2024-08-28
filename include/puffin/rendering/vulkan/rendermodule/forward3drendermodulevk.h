@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include "vulkan/vulkan.hpp"
 
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"

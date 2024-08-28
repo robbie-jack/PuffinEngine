@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <unordered_map>
+
 #include "puffin/core/subsystem.h"
 
 namespace puffin::rendering
@@ -27,6 +29,11 @@ namespace puffin::rendering
 		virtual void Render(double deltaTime);
 
 		[[nodiscard]] core::SubsystemType GetType() const override;
+
+	protected:
+
+		uint32_t mDrawCallsCountTotal = 0; // Total count of all draw calls
+		std::unordered_map<std::string, uint32_t> mDrawCallsCount; // Count for individual draw call type
 
 	};
 }

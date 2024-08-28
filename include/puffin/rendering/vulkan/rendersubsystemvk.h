@@ -45,6 +45,7 @@ namespace puffin
 
 namespace puffin::rendering
 {
+	class RenderModuleVK;
 	class ResourceManagerVK;
 	class MaterialRegistryVK;
 
@@ -167,15 +168,57 @@ namespace puffin::rendering
 
 		void RegisterTexture(UUID textureID);
 
-		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return m_frame_count % mFramesInFlightCount; }
+		struct DrawCommandParams
+		{
+			uint32_t vertexCount = 0;
+			uint32_t instanceCount = 0;
+			uint32_t firstVertex = 0;
+			uint32_t firstInstance = 0;
+		};
+		void DrawCommand(vk::CommandBuffer& cmd, const DrawCommandParams& cmdParams);
+
+		struct DrawIndexedCommandParams
+		{
+			uint32_t indexCount = 0;
+			uint32_t instanceCount = 0;
+			uint32_t firstIndex = 0;
+			uint32_t vertexOffset = 0;
+			uint32_t firstInstance = 0;
+		};
+		void DrawIndexedCommand(vk::CommandBuffer& cmd, const DrawIndexedCommandParams& cmdParams);
+
+		struct DrawIndirectCommandParams
+		{
+			vk::Buffer buffer;
+			vk::DeviceSize offset = 0;
+			uint32_t drawCount = 0;
+			uint32_t stride = 0;
+		};
+		void DrawIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams);
+		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams);
+
+		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return mFrameCount % mFramesInFlightCount; }
 		[[nodiscard]] uint8_t GetFramesInFlightCount() const { return mFramesInFlightCount; }
+
+		template<typename T>
+		void RegisterModule(const std::string& moduleName)
+		{
+			if (mRenderModules.find(moduleName) != mRenderModules.end())
+				return;
+
+			mRenderModules.emplace(moduleName, new T(this));
+		}
 
 	private:
 
+		// Initialization Methods
 		void InitVulkan();
 
 		void InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain,
 		                   const vk::Extent2D& swapchainExtent);
+
+		void InitModules();
+
 		void InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent,
 		                   const int& offscreenImageCount);
 
@@ -190,6 +233,16 @@ namespace puffin::rendering
 		void InitImgui();
 		void InitOffscreenImguiTextures(OffscreenData& offscreenData);
 
+		// Deinitialization Methods
+
+		void DeinitModules();
+
+		// Pre-Render Methods
+
+		void BuildGraph();
+
+		void PreRender(double deltaTime);
+
 		void ProcessComponents();
 
 		void UpdateRenderData();
@@ -198,7 +251,13 @@ namespace puffin::rendering
 		void UpdateShadows();
 		void DestroyShadows();
 
-		void Draw();
+		// Render Methods
+
+		void WaitForRenderFence();
+
+		void UpdateSwapchainAndOffscreen();
+
+		void RenderEditorUI();
 
 		void RecreateSwapchain();
 		void CleanSwapchain(SwapchainData& swapchainData);
@@ -217,6 +276,8 @@ namespace puffin::rendering
 
 		void BuildIndirectCommands();
 
+		void RecordRenderPassCommands();
+
 		vk::CommandBuffer& RecordShadowCommandBuffer(uint32_t swapchainIdx);
 		void DrawShadowmap(vk::CommandBuffer cmd, const AllocatedImage& depthImage, const vk::Extent2D& shadowExtent);
 
@@ -233,8 +294,6 @@ namespace puffin::rendering
 		void SetDrawParameters(vk::CommandBuffer cmd, const vk::Extent2D& renderExtent);
 		void BindBuffersAndDescriptors(vk::CommandBuffer cmd);
 		void DrawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch);
-		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer, vk::DeviceSize offset,
-		                                uint32_t drawCount, uint32_t stride);
 
 		vk::CommandBuffer& RecordCopyCommandBuffer(uint32_t swapchainIdx);
 		vk::CommandBuffer& RecordImguiCommandBuffer(uint32_t swapchainIdx, const vk::Extent2D& renderExtent);
@@ -276,6 +335,8 @@ namespace puffin::rendering
 
 		// Initialization Members
 		RenderGraphVK mRenderGraph;
+		std::unordered_map<std::string, RenderModuleVK*> mRenderModules;
+
 		vk::Device mDevice;
 		vk::Instance mInstance;
 		vk::PhysicalDevice mPhysicalDevice;
@@ -328,8 +389,7 @@ namespace puffin::rendering
 
 		uint32_t mCurrentSwapchainIdx = 0;
 		uint8_t mFramesInFlightCount = gBufferedFrames;
-		uint32_t m_frame_count;
-		uint32_t m_draw_calls = 0;
+		uint32_t mFrameCount;
 
 		// Pipelines
 		vk::PipelineCache m_pipeline_cache;

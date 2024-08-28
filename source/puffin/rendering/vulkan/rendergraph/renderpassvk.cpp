@@ -33,6 +33,11 @@ namespace puffin::rendering
 		mRecordCommandsCallback = std::move(callback);
 	}
 
+	void RenderPassVK::ExecuteRecordCommandsCallback(vk::CommandBuffer& cmd) const
+	{
+		mRecordCommandsCallback(cmd);
+	}
+
 	const std::string& RenderPassVK::GetName() const
 	{
 		return mName;

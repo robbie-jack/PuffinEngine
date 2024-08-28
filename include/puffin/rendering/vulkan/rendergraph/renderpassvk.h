@@ -24,6 +24,7 @@ namespace puffin::rendering
 		void SetDepthStencilOutputAttachment(const std::string& name, const ImageDescVK& attachmentDesc);
 
 		void SetRecordCommandsCallback(std::function<void(vk::CommandBuffer&)> callback);
+		void ExecuteRecordCommandsCallback(vk::CommandBuffer& cmd) const;
 
 		[[nodiscard]] const std::string& GetName() const;
 		[[nodiscard]] RenderPassType GetType() const;

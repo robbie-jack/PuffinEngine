@@ -55,6 +55,7 @@
 #include "puffin/nodes/transformnode3d.h"
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/renderhelpers.h"
+#include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -117,6 +118,8 @@ namespace puffin::rendering
 		// Initialise vulkan and all rendering objects
 		InitVulkan();
 
+		InitModules();
+
 		InitSwapchain(mSwapchainData, mSwapchainDataOld.swapchain, mWindowSize);
 
 		if (mEngine->GetShouldRenderEditorUI())
@@ -174,18 +177,20 @@ namespace puffin::rendering
 
 			mTexData.Clear();
 
-			CleanSwapchain(mSwapchainData);
-
-			if (mSwapchainDataOld.needsCleaned)
-			{
-				CleanSwapchain(mSwapchainDataOld);
-			}
-
 			CleanOffscreen(mOffscreenData);
 
 			if (mOffscreenDataOld.needsCleaned)
 			{
 				CleanOffscreen(mOffscreenDataOld);
+			}
+
+			DeinitModules();
+
+			CleanSwapchain(mSwapchainData);
+
+			if (mSwapchainDataOld.needsCleaned)
+			{
+				CleanSwapchain(mSwapchainDataOld);
 			}
 
 			mResourceManager = nullptr;
@@ -218,13 +223,48 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::Render(double deltaTime)
 	{
+		//	1. Wait for nth frame to finish rendering (N - 0 to number of Frames in Flight)
+		WaitForRenderFence();
+
+		//	2. Reset & Build Graph
 		mRenderGraph.Reset();
+
+		BuildGraph();
+
+		//	3. Initialize Render Objects (Buffers, Images, Descriptions Sync Structures, etc...)
+
+
+
+		//	4. Pre-Render - Upload all needed data to GPU (Textures, Object Data, Materials, etc...)
+
+		PreRender(deltaTime);
 
 		UpdateRenderData();
 
 		ProcessComponents();
 
-		Draw();
+		UpdateSwapchainAndOffscreen();
+
+		RenderEditorUI();
+
+		UpdateTextureDescriptors();
+
+		UpdateShadowDescriptors();
+
+		PrepareSceneData();
+
+		BuildIndirectCommands();
+
+		//	5. Render - Record & Submit Render Commands
+
+		mDrawCallsCountTotal = 0;
+		mDrawCallsCount.clear();
+
+		RecordRenderPassCommands();
+
+		RecordAndSubmitCommands(mCurrentSwapchainIdx);
+
+		mFrameCount++;
 	}
 
 	void RenderSubsystemVK::OnUpdateMesh(entt::registry& registry, entt::entity entity)
@@ -317,6 +357,63 @@ namespace puffin::rendering
 	void RenderSubsystemVK::RegisterTexture(UUID textureID)
 	{
 		mTexturesToLoad.insert(textureID);
+	}
+
+	void RenderSubsystemVK::DrawCommand(vk::CommandBuffer& cmd, const DrawCommandParams& cmdParams)
+	{
+		cmd.draw(cmdParams.vertexCount, cmdParams.instanceCount, cmdParams.firstVertex, cmdParams.firstInstance);
+
+		mDrawCallsCountTotal++;
+
+		if (mDrawCallsCount.find("Draw") == mDrawCallsCount.end())
+		{
+			mDrawCallsCount.emplace("Draw", 0);
+		}
+
+		mDrawCallsCount["Draw"]++;
+	}
+
+	void RenderSubsystemVK::DrawIndexedCommand(vk::CommandBuffer& cmd, const DrawIndexedCommandParams& cmdParams)
+	{
+		cmd.drawIndexed(cmdParams.indexCount, cmdParams.instanceCount, cmdParams.firstIndex, cmdParams.vertexOffset, cmdParams.firstInstance);
+
+		mDrawCallsCountTotal++;
+
+		if (mDrawCallsCount.find("Draw") == mDrawCallsCount.end())
+		{
+			mDrawCallsCount.emplace("Draw", 0);
+		}
+
+		mDrawCallsCount["Draw"]++;
+	}
+
+	void RenderSubsystemVK::DrawIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams)
+	{
+		cmd.drawIndirect(cmdParams.buffer, cmdParams.offset, cmdParams.drawCount, cmdParams.stride);
+
+		mDrawCallsCountTotal++;
+
+		if (mDrawCallsCount.find("DrawIndirect") == mDrawCallsCount.end())
+		{
+			mDrawCallsCount.emplace("DrawIndirect", 0);
+		}
+
+		mDrawCallsCount["DrawIndirect"]++;
+	}
+
+	void RenderSubsystemVK::DrawIndexedIndirectCommand(vk::CommandBuffer& cmd,
+		const DrawIndirectCommandParams& cmdParams)
+	{
+		cmd.drawIndexedIndirect(cmdParams.buffer, cmdParams.offset, cmdParams.drawCount, cmdParams.stride);
+
+		mDrawCallsCountTotal++;
+
+		if (mDrawCallsCount.find("DrawIndirect") == mDrawCallsCount.end())
+		{
+			mDrawCallsCount.emplace("DrawIndirect", 0);
+		}
+
+		mDrawCallsCount["DrawIndirect"]++;
 	}
 
 	void RenderSubsystemVK::InitVulkan()
@@ -444,7 +541,7 @@ namespace puffin::rendering
 	}
 
 	void RenderSubsystemVK::InitSwapchain(SwapchainData& swapchainData, vk::SwapchainKHR& oldSwapchain,
-	                                   const vk::Extent2D& swapchainExtent)
+	                                      const vk::Extent2D& swapchainExtent)
 	{
 		vkb::SwapchainBuilder swapchainBuilder{mPhysicalDevice, mDevice, mSurface};
 
@@ -478,6 +575,14 @@ namespace puffin::rendering
 
 		images.clear();
 		imageViews.clear();
+	}
+
+	void RenderSubsystemVK::InitModules()
+	{
+		for (auto [name, renderModule] : mRenderModules)
+		{
+			renderModule->Initialize();
+		}
 	}
 
 	void RenderSubsystemVK::InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent,
@@ -972,6 +1077,30 @@ namespace puffin::rendering
 		}
 	}
 
+	void RenderSubsystemVK::DeinitModules()
+	{
+		for (auto [name, renderModule] : mRenderModules)
+		{
+			renderModule->Deinitialize();
+		}
+	}
+
+	void RenderSubsystemVK::BuildGraph()
+	{
+		for (auto [name, renderModule] : mRenderModules)
+		{
+			renderModule->BuildGraph(mRenderGraph);
+		}
+	}
+
+	void RenderSubsystemVK::PreRender(double deltaTime)
+	{
+		for (auto [name, renderModule] : mRenderModules)
+		{
+			renderModule->PreRender(deltaTime);
+		}
+	}
+
 	void RenderSubsystemVK::ProcessComponents()
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
@@ -1200,12 +1329,15 @@ namespace puffin::rendering
 		shadowDestroyEventsStillInUse.clear();
 	}
 
-	void RenderSubsystemVK::Draw()
+	void RenderSubsystemVK::WaitForRenderFence()
 	{
 		// Wait until GPU has finished rendering last frame. Timeout of 1 second
 		VK_CHECK(mDevice.waitForFences(1, &GetCurrentFrameData().renderFence, true, 1000000000));
 		VK_CHECK(mDevice.resetFences(1, &GetCurrentFrameData().renderFence));
+	}
 
+	void RenderSubsystemVK::UpdateSwapchainAndOffscreen()
+	{
 		if (mEngine->GetShouldRenderEditorUI())
 		{
 			const auto editorUISubsystem = mEngine->GetSubsystem<ui::EditorUISubsystem>();
@@ -1227,7 +1359,10 @@ namespace puffin::rendering
 
 		RecreateSwapchain();
 		RecreateOffscreen();
+	}
 
+	void RenderSubsystemVK::RenderEditorUI()
+	{
 		if (mEngine->GetShouldRenderEditorUI())
 		{
 			const auto editorUISubsystem = mEngine->GetSubsystem<ui::EditorUISubsystem>();
@@ -1235,18 +1370,6 @@ namespace puffin::rendering
 
 			ImGui::Render();
 		}
-
-		m_draw_calls = 0;
-
-		// Prepare textures, scene data & indirect commands for rendering
-		UpdateTextureDescriptors();
-		UpdateShadowDescriptors();
-		PrepareSceneData();
-		BuildIndirectCommands();
-
-		RecordAndSubmitCommands(mCurrentSwapchainIdx);
-
-		m_frame_count++;
 	}
 
 	void RenderSubsystemVK::RecreateSwapchain()
@@ -2057,6 +2180,16 @@ namespace puffin::rendering
 		}
 	}
 
+	void RenderSubsystemVK::RecordRenderPassCommands()
+	{
+		for (const auto& [name, renderPass] : mRenderGraph.GetRenderPasses())
+		{
+			// PUFFIN_TODO - Reenable this line once command buffers creation logic has been implemented
+
+			//renderPass.ExecuteRecordCommandsCallback();
+		}
+	}
+
 	vk::CommandBuffer& RenderSubsystemVK::RecordShadowCommandBuffer(uint32_t swapchainIdx)
 	{
 		auto& cmd = GetCurrentFrameData().shadowCommandBuffer;
@@ -2281,19 +2414,16 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::DrawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)
 	{
-		vk::DeviceSize indirect_offset = meshDrawBatch.cmdIndex * sizeof(vk::DrawIndexedIndirectCommand);
-		uint32_t draw_stride = sizeof(vk::DrawIndexedIndirectCommand);
+		vk::DeviceSize indirectOffset = meshDrawBatch.cmdIndex * sizeof(vk::DrawIndexedIndirectCommand);
+		uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
 
-		DrawIndexedIndirectCommand(cmd, GetCurrentFrameData().indirectDrawBuffer.buffer, indirect_offset,
-			meshDrawBatch.cmdCount, draw_stride);
-	}
+		DrawIndirectCommandParams params;
+		params.buffer = GetCurrentFrameData().indirectDrawBuffer.buffer;
+		params.offset = indirectOffset;
+		params.drawCount = meshDrawBatch.cmdCount;
+		params.stride = drawStride;
 
-	void RenderSubsystemVK::DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, vk::Buffer& indirectBuffer,
-	                                                vk::DeviceSize offset,
-	                                                uint32_t drawCount, uint32_t stride)
-	{
-		cmd.drawIndexedIndirect(indirectBuffer, offset, drawCount, stride);
-		m_draw_calls++;
+		DrawIndexedIndirectCommand(cmd, params);
 	}
 
 	vk::CommandBuffer& RenderSubsystemVK::RecordCopyCommandBuffer(uint32_t swapchainIdx)
@@ -2704,7 +2834,7 @@ namespace puffin::rendering
 
 	FrameRenderData& RenderSubsystemVK::GetCurrentFrameData()
 	{
-		return mFrameRenderData[m_frame_count % gBufferedFrames];
+		return mFrameRenderData[mFrameCount % gBufferedFrames];
 	}
 
 	void RenderSubsystemVK::FrameBufferResizeCallback(GLFWwindow* window, const int width, const int height)
