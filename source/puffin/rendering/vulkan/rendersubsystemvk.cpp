@@ -118,9 +118,9 @@ namespace puffin::rendering
 		// Initialise vulkan and all rendering objects
 		InitVulkan();
 
-		InitModules();
+		mResourceManager = std::make_unique<ResourceManagerVK>(this, gBufferedFrameCount);
 
-		InitSwapchain(mSwapchainData, mSwapchainDataOld.swapchain, mWindowSize);
+		InitSwapchain(mSwapchainData, mSwapchainDataOld.swapchain, mSwapchainExtent);
 
 		if (mEngine->GetShouldRenderEditorUI())
 		{
@@ -131,10 +131,14 @@ namespace puffin::rendering
 		}
 		else
 		{
-			mRenderExtent = mWindowSize;
+			mRenderExtent = mSwapchainExtent;
 		}
 
 		InitOffscreen(mOffscreenData, mRenderExtent, mSwapchainData.images.size());
+
+		InitModules();
+
+		mResourceManager->Update();
 
 		InitCommands();
 
@@ -154,7 +158,6 @@ namespace puffin::rendering
 		mRenderables.reserve(gMaxObjects);
 		mCachedObjectData.Reserve(gMaxObjects);
 
-		mResourceManager = std::make_unique<ResourceManagerVK>(this, gBufferedFrameCount);
 		mMaterialRegistry = std::make_unique<MaterialRegistryVK>(this);
 
 		mInitialized = true;
@@ -226,8 +229,8 @@ namespace puffin::rendering
 		//	1. Wait for nth frame to finish rendering (N - 0 to number of Frames in Flight)
 		WaitForRenderFence();
 
-		//	2. Initialize Render Objects (Buffers, Images, Descriptions Sync Structures, etc...)
-		DefineAndBuildResources();
+		//	2. Update Render Resources (Buffers, Images, Descriptions Sync Structures, etc...)
+		UpdateResources();
 
 		//	3. Reset & Build Graph
 		mRenderGraph.Reset();
@@ -434,8 +437,8 @@ namespace puffin::rendering
 		// Create Vulkan Instance
 		int width, height;
 		glfwGetWindowSize(glfwWindow, &width, &height);
-		mWindowSize.width = static_cast<unsigned>(width);
-		mWindowSize.height = static_cast<unsigned>(height);
+		mSwapchainExtent.width = static_cast<unsigned>(width);
+		mSwapchainExtent.height = static_cast<unsigned>(height);
 
 		vkb::InstanceBuilder instBuilder;
 
@@ -927,7 +930,7 @@ namespace puffin::rendering
 			0, mOffscreenData.imageFormat, mOffscreenData.allocDepthImage.format
 		};
 
-		util::PipelineBuilder pb{mWindowSize.width, mWindowSize.height};
+		util::PipelineBuilder pb{mSwapchainExtent.width, mSwapchainExtent.height};
 		mForwardPipeline = pb
        // Define dynamic state which can change each frame (currently viewport and scissor size)
        .DynamicState(vk::DynamicState::eViewport)
@@ -1092,14 +1095,14 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSubsystemVK::DefineAndBuildResources()
+	void RenderSubsystemVK::UpdateResources()
 	{
 		for (auto [name, renderModule] : mRenderModules)
 		{
-			renderModule->DefineResources(mResourceManager.get());
+			renderModule->UpdateResources(mResourceManager.get());
 		}
 
-
+		mResourceManager->Update();
 	}
 
 	void RenderSubsystemVK::BuildGraph()
@@ -1371,7 +1374,7 @@ namespace puffin::rendering
 		}
 		else
 		{
-			mRenderExtent = mWindowSize;
+			mRenderExtent = mSwapchainExtent;
 		}
 
 		RecreateSwapchain();
@@ -1402,7 +1405,7 @@ namespace puffin::rendering
 			mSwapchainDataOld = mSwapchainData;
 			mSwapchainDataOld.needsCleaned = true;
 
-			InitSwapchain(mSwapchainData, mSwapchainDataOld.swapchain, mWindowSize);
+			InitSwapchain(mSwapchainData, mSwapchainDataOld.swapchain, mSwapchainExtent);
 
 			mSwapchainData.resized = false;
 		}
@@ -2851,7 +2854,7 @@ namespace puffin::rendering
 
 	FrameRenderData& RenderSubsystemVK::GetCurrentFrameData()
 	{
-		return mFrameRenderData[mFrameCount % gBufferedFrameCount];
+		return mFrameRenderData[GetCurrentFrameIdx()];
 	}
 
 	void RenderSubsystemVK::FrameBufferResizeCallback(GLFWwindow* window, const int width, const int height)
@@ -2860,7 +2863,7 @@ namespace puffin::rendering
 
 		system->mSwapchainData.resized = true;
 		system->mOffscreenData.resized = true;
-		system->mWindowSize.width = width;
-		system->mWindowSize.height = height;
+		system->mSwapchainExtent.width = width;
+		system->mSwapchainExtent.height = height;
 	}
 }

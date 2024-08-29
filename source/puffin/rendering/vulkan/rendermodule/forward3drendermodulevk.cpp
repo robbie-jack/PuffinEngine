@@ -26,7 +26,7 @@ namespace puffin::rendering
 
 	}
 
-	void Forward3DRenderModuleVK::DefineResources(ResourceManagerVK* resourceManager)
+	void Forward3DRenderModuleVK::UpdateResources(ResourceManagerVK* resourceManager)
 	{
 		ImageDescVK color;
 		color.format = vk::Format::eR8G8B8A8Unorm;

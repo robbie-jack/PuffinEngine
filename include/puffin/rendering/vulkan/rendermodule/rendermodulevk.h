@@ -22,13 +22,20 @@ namespace puffin::rendering
 		 */
 		virtual void RegisterModules();
 
+		/*
+		 * Initialize this module, create any needed resources (Images, bufffers, descriptors, etc...)
+		 */
 		virtual void Initialize();
+
+		/*
+		 * Deinitialize this module, destroy any resources that are no longer needed
+		 */
 		virtual void Deinitialize();
 
 		/*
-		 * Called by render subsystem to define all resources needed by this module
+		 * Called by render subsystem once a frame, create, update or destroy any resources as needed
 		 */
-		virtual void DefineResources(ResourceManagerVK* resourceManager);
+		virtual void UpdateResources(ResourceManagerVK* resourceManager);
 
 		/*
 		 * Called by render subsystem to build render graph, adding any render passes and binding callbacks for this module

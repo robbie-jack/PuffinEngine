@@ -32,8 +32,13 @@ namespace puffin::rendering
 
 		void AddStaticMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh);
 
-		void AddImage(const std::string& name, const ImageDescVK & imageDesc);
-		void AddBuffer(const std::string& name, const BufferDescVK& bufferDesc);
+		[[nodiscard]] ResourceID AddImage(const ImageDescVK& imageDesc);
+		[[nodiscard]] ResourceID AddImage(const ImageDescVK& imageDesc, ResourceID id);
+		[[nodiscard]] ResourceID AddImage(const ImageDescVK& imageDesc, const std::string& name);
+
+		[[nodiscard]] ResourceID AddBuffer(const BufferDescVK& bufferDesc, const std::string& name);
+
+		void Update();
 
 		ResourceID AddImages(const ImageDesc& imageDesc, uint8_t imageCount);
 
@@ -47,9 +52,22 @@ namespace puffin::rendering
 		[[nodiscard]] bool IsImageValid(ResourceID id, uint8_t idx) const;
 		[[nodiscard]] size_t GetImageCount(ResourceID id) const;
 
+		[[nodiscard]] bool IsResourceValid(const std::string& name) const;
+		[[nodiscard]] bool IsResourceValid(ResourceID id) const;
+
 		UnifiedGeometryBuffer* GeometryBuffer() const;
 
 	private:
+
+		void CreateResourcesInstances();
+		void DestroyResourcesInstances();
+
+		void AddImageInternal(const ImageDescVK& imageDesc, ResourceID id, const std::string& name);
+
+		void UpdateImageInternal(const ImageDescVK& imageDesc, ResourceID id);
+
+		void CreateImageInstanceInternal(ResourceID instanceID, ImageDescVK& imageDesc);
+		void DestroyImageInstanceInternal(ResourceID instanceID);
 
 		void CreateImageInternal(ResourceID id, const ImageDesc& imageDesc, uint8_t idx = 0);
 		void DestroyImageInternal(ResourceID id, uint8_t idx = 0);
@@ -66,30 +84,26 @@ namespace puffin::rendering
 			std::string name = "";
 			ResourceID id = gInvalidID;
 			bool persistent = false;
-			std::unordered_set<uint8_t> existsInFrames; // Set of frames in which a copy of this resource exists
+			std::vector<uint8_t> instanceIDs; // IDs of individual instances of this resource
 			ResourceType type;
-		};
-
-		struct Resources
-		{
-			std::unordered_map<std::string, ResourceID> resourceNameToID;
-			std::unordered_map<ResourceID, AllocatedImage> images;
-			std::unordered_map<ResourceID, AllocatedBuffer> buffers;
 		};
 
 		RenderSubsystemVK* mRenderSystem = nullptr;
 		UnifiedGeometryBuffer* mUnifiedGeometryBuffer = nullptr;
 
-		std::unordered_map<std::string, ImageDescVK> mImageDescriptions;
-
 		uint8_t mBufferedFrameCount = 0;
-		std::unordered_map<std::string, ResourceInfo> mResourceInfo;
-		Resources mPersistentResources; // Resources which persist between frames
-		std::vector<Resources> mFrameResources; // Resources which change each frame
+		std::unordered_map<ResourceID, ResourceInfo> mResourceInfo;
+		std::unordered_map<std::string, ResourceID> mResourceNameToID;
+
+		std::unordered_map<ResourceID, AllocatedImage> mAllocImageInstances;
+		std::unordered_map<ResourceID, ImageDescVK> mImageDescInstances;
+
+		std::unordered_map<ResourceID, AllocatedBuffer> mBuffers;
+		std::unordered_map<ResourceID, BufferDescVK> mBufferDescs;
+
+		std::unordered_map<ResourceID, ImageDescVK> mImageInstancesToCreate;
+		std::vector<std::unordered_set<ResourceID>> mImageInstancesToDestroy;
 
 		MappedVector<ResourceID, std::vector<AllocatedImage>> mImages;
-
-		
-
 	};
 }

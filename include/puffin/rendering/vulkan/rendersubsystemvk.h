@@ -152,7 +152,7 @@ namespace puffin::rendering
 		const GlobalRenderData& GetGlobalRenderData() const { return mGlobalRenderData; }
 		const vk::PipelineCache& GetPipelineCache() const { return m_pipeline_cache; }
 		const OffscreenData& GetOffscreenData() const { return mOffscreenData; }
-		const vk::Extent2D& GetWindowSize() const { return mWindowSize; }
+		const vk::Extent2D& GetSwapchainExtent() const { return mSwapchainExtent; }
 		const vk::Extent2D& GetRenderExtent() const { return mRenderExtent; }
 		DeletionQueue& GetDeletionQueue() { return mDeletionQueue; }
 		bool GetRebarEnabled() const { return mRebarEnabled; }
@@ -241,7 +241,7 @@ namespace puffin::rendering
 		void DeinitModules();
 
 		// Pre-Render Methods
-		void DefineAndBuildResources();
+		void UpdateResources();
 
 		void BuildGraph();
 
@@ -347,7 +347,7 @@ namespace puffin::rendering
 		vk::SurfaceKHR mSurface;
 		vk::DebugUtilsMessengerEXT mDebugMessenger;
 
-		vk::Extent2D mWindowSize;
+		vk::Extent2D mSwapchainExtent;
 		vk::Extent2D mRenderExtent;
 
 		vma::Allocator mAllocator;

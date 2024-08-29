@@ -18,7 +18,7 @@ namespace puffin::rendering
 
 	struct ImageDescVK
 	{
-		ImageSizeVK attachmentSizeType = ImageSizeVK::RenderExtentRelative;
+		ImageSizeVK imageSizeType = ImageSizeVK::RenderExtentRelative;
 		uint32_t width = 0;
 		uint32_t height = 0;
 		uint32_t depth = 0;

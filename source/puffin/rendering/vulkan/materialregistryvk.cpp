@@ -181,7 +181,7 @@ namespace puffin::rendering
 						0, mRenderSystem->GetOffscreenData().imageFormat, mRenderSystem->GetOffscreenData().allocDepthImage.format
 					};
 
-					util::PipelineBuilder pb{ mRenderSystem->GetWindowSize().width, mRenderSystem->GetWindowSize().height };
+					util::PipelineBuilder pb{ mRenderSystem->GetSwapchainExtent().width, mRenderSystem->GetSwapchainExtent().height };
 					mat.pipeline = pb
 						// Define dynamic state which can change each frame (currently viewport and scissor size)
 						.DynamicState(vk::DynamicState::eViewport)

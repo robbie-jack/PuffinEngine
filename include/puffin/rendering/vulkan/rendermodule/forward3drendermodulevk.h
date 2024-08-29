@@ -21,7 +21,7 @@ namespace puffin::rendering
 		void Initialize() override;
 		void Deinitialize() override;
 
-		void DefineResources(ResourceManagerVK* resourceManager) override;
+		void UpdateResources(ResourceManagerVK* resourceManager) override;
 
 		void BuildGraph(RenderGraphVK& renderGraph) override;
 

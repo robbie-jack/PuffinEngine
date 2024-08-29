@@ -1,5 +1,7 @@
 #include "puffin/rendering/vulkan/resourcemanagervk.h"
 
+#include <cmath>
+
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/vulkan/unifiedgeometrybuffervk.h"
 #include "puffin/rendering/vulkan/helpersvk.h"
@@ -11,6 +13,7 @@ namespace puffin::rendering
 		: mRenderSystem(renderSystem), mBufferedFrameCount(bufferedFrameCount)
 	{
 		mUnifiedGeometryBuffer = new UnifiedGeometryBuffer(mRenderSystem);
+		mImageInstancesToDestroy.resize(mBufferedFrameCount);
 	}
 
 	ResourceManagerVK::~ResourceManagerVK()
@@ -37,14 +40,54 @@ namespace puffin::rendering
 		mUnifiedGeometryBuffer->AddStaticMesh(staticMesh);
 	}
 
-	void ResourceManagerVK::AddImage(const std::string& name, const ImageDescVK& imageDesc)
+	ResourceID ResourceManagerVK::AddImage(const ImageDescVK& imageDesc)
 	{
+		ResourceID id = GenerateId();
 
+		AddImageInternal(imageDesc, id, "");
+
+		return id;
 	}
 
-	void ResourceManagerVK::AddBuffer(const std::string& name, const BufferDescVK& bufferDesc)
+	ResourceID ResourceManagerVK::AddImage(const ImageDescVK& imageDesc, ResourceID id)
 	{
+		AddImageInternal(imageDesc, id, "");
 
+		return id;
+	}
+
+	ResourceID ResourceManagerVK::AddImage(const ImageDescVK& imageDesc, const std::string& name)
+	{
+		ResourceID id;
+
+		if (mResourceNameToID.find(name) != mResourceNameToID.end())
+		{
+			id = mResourceNameToID.at(name);
+		}
+		else
+		{
+			id = GenerateId();
+		}
+
+		AddImageInternal(imageDesc, id, name);
+
+		return id;
+	}
+
+	ResourceID ResourceManagerVK::AddBuffer(const BufferDescVK& bufferDesc, const std::string& name)
+	{
+		ResourceID id = GenerateId();
+
+
+
+		return id;
+	}
+
+	void ResourceManagerVK::Update()
+	{
+		CreateResourcesInstances();
+
+		DestroyResourcesInstances();
 	}
 
 	ResourceID ResourceManagerVK::AddImages(const ImageDesc& imageDesc, uint8_t imageCount)
@@ -127,9 +170,155 @@ namespace puffin::rendering
 		return mImages.At(id).size();
 	}
 
+	bool ResourceManagerVK::IsResourceValid(const std::string& name) const
+	{
+		return mResourceNameToID.find(name) != mResourceNameToID.end() && IsResourceValid(mResourceNameToID.at(name));
+	}
+
+	bool ResourceManagerVK::IsResourceValid(ResourceID id) const
+	{
+		return mResourceInfo.find(id) != mResourceInfo.end();
+	}
+
 	UnifiedGeometryBuffer* ResourceManagerVK::GeometryBuffer() const
 	{
 		return mUnifiedGeometryBuffer;
+	}
+
+	void ResourceManagerVK::CreateResourcesInstances()
+	{
+		for (auto& [id, imageDesc] : mImageInstancesToCreate)
+		{
+			CreateImageInstanceInternal(id, imageDesc);
+		}
+
+		mImageInstancesToCreate.clear();
+	}
+
+	void ResourceManagerVK::DestroyResourcesInstances()
+	{
+		for (const auto& id : mImageInstancesToDestroy[mRenderSystem->GetCurrentFrameIdx()])
+		{
+			DestroyImageInstanceInternal(id);
+		}
+
+		mImageInstancesToDestroy[mRenderSystem->GetCurrentFrameIdx()].clear();
+	}
+
+	void ResourceManagerVK::AddImageInternal(const ImageDescVK& imageDesc, ResourceID id, const std::string& name)
+	{
+		if (mResourceInfo.find(id) == mResourceInfo.end())
+		{
+			mResourceInfo.emplace(id, ResourceInfo{});
+
+			auto& resourceInfo = mResourceInfo.at(id);
+			resourceInfo.id = id;
+			resourceInfo.type = ResourceType::Image;
+			resourceInfo.persistent = imageDesc.persistent;
+
+			if (resourceInfo.persistent)
+			{
+				resourceInfo.instanceIDs.push_back(GenerateId());
+			}
+			else
+			{
+				resourceInfo.instanceIDs.push_back(GenerateId());
+				resourceInfo.instanceIDs.push_back(GenerateId());
+			}
+
+			if (!name.empty())
+			{
+				resourceInfo.name = name;
+
+				if (mResourceNameToID.find(name) == mResourceNameToID.end())
+					mResourceNameToID.emplace(name, id);
+			}
+		}
+
+		const auto& resourceInfo = mResourceInfo.at(id);
+		for (auto instanceID : resourceInfo.instanceIDs)
+		{
+			mImageInstancesToCreate.emplace(instanceID, imageDesc);
+		}
+	}
+
+	void ResourceManagerVK::UpdateImageInternal(const ImageDescVK& imageDesc, ResourceID id)
+	{
+		if (IsResourceValid(id))
+		{
+			auto& resourceInfo = mResourceInfo.at(id);
+
+			uint8_t instanceIdx;
+
+			if (resourceInfo.persistent)
+			{
+				instanceIdx = 0;
+			}
+			else
+			{
+				instanceIdx = mRenderSystem->GetCurrentFrameIdx();
+			}
+
+			mImageInstancesToDestroy[instanceIdx].emplace(resourceInfo.instanceIDs[instanceIdx]);
+
+			resourceInfo.instanceIDs[instanceIdx] = GenerateId();
+			mImageInstancesToCreate.emplace(resourceInfo.instanceIDs[instanceIdx], imageDesc);
+		}
+	}
+
+	void ResourceManagerVK::CreateImageInstanceInternal(ResourceID instanceID, ImageDescVK& imageDesc)
+	{
+		util::CreateImageParams params;
+
+		// Update Width/Height of Swapchain/Render Relative
+		if (imageDesc.imageSizeType == ImageSizeVK::SwapchainRelative 
+			|| imageDesc.imageSizeType == ImageSizeVK::RenderExtentRelative)
+		{
+			vk::Extent2D extent;
+
+			if (imageDesc.imageSizeType == ImageSizeVK::SwapchainRelative)
+			{
+				extent = mRenderSystem->GetSwapchainExtent();
+			}
+			else
+			{
+				extent = mRenderSystem->GetRenderExtent();
+			}
+
+			imageDesc.width = static_cast<uint32_t>(std::ceil(extent.width * imageDesc.widthMult));
+			imageDesc.height = static_cast<uint32_t>(std::ceil(extent.height * imageDesc.heightMult));
+			imageDesc.depth = 0;
+		}
+
+		assert(imageDesc.width > 0 && "ResourceManagerVK::CreateImageInstanceInternal - Resource width was not greater than 0, which is invalid behaviour");
+
+		vk::ImageType imageType = vk::ImageType::e1D;
+
+		// Decide if image is 1D, 2D, or 3D
+		if (imageDesc.height > 0)
+		{
+			if (imageDesc.depth > 0)
+			{
+				imageType = vk::ImageType::e3D;
+			}
+			else
+			{
+				imageType = vk::ImageType::e2D;
+			}
+		}
+
+
+	}
+
+	void ResourceManagerVK::DestroyImageInstanceInternal(ResourceID instanceID)
+	{
+		const auto& allocImage = mAllocImageInstances.at(instanceID);
+
+		mRenderSystem->GetDevice().destroyImageView(allocImage.imageView);
+		mRenderSystem->GetAllocator().destroyImage(allocImage.image, allocImage.allocation);
+
+		mAllocImageInstances.erase(instanceID);
+		mImageDescInstances.erase(instanceID);
 	}
 
 	void ResourceManagerVK::CreateImageInternal(ResourceID id, const ImageDesc& imageDesc, uint8_t idx)
