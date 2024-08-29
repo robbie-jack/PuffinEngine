@@ -7,6 +7,7 @@
 #include "puffin/types/storage/mappedvector.h"
 #include "puffin/types/uuid.h"
 #include "puffin/rendering/resourceid.h"
+#include "rendergraph/imagedescvk.h"
 
 namespace puffin
 {
@@ -23,6 +24,12 @@ namespace puffin::rendering
 	class RenderSubsystemVK;
 	class UnifiedGeometryBuffer;
 
+	enum class AttachmentType
+	{
+		Color,
+		Depth
+	};
+
 	class ResourceManagerVK
 	{
 	public:
@@ -32,28 +39,42 @@ namespace puffin::rendering
 
 		void AddStaticMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh);
 
-		[[nodiscard]] ResourceID AddImage(const ImageDescVK& imageDesc);
-		[[nodiscard]] ResourceID AddImage(const ImageDescVK& imageDesc, ResourceID id);
-		[[nodiscard]] ResourceID AddImage(const ImageDescVK& imageDesc, const std::string& name);
+		struct AttachmentParams
+		{
+			ImageSizeVK imageSize = ImageSizeVK::RenderExtentRelative;
+			AttachmentType type = AttachmentType::Color;
+			vk::Format format = vk::Format::eUndefined;
+			uint32_t width = 0;
+			uint32_t height = 0;
+			float widthMult = 1.0f;
+			float heightMult = 1.0f;
+		};
+		[[nodiscard]] ResourceID CreateOrUpdateAttachment(const AttachmentParams& params);
+		[[nodiscard]] ResourceID CreateOrUpdateAttachment(const AttachmentParams& params, ResourceID id);
+		[[nodiscard]] ResourceID CreateOrUpdateAttachment(const AttachmentParams& params, const std::string& name);
 
-		[[nodiscard]] ResourceID AddBuffer(const BufferDescVK& bufferDesc, const std::string& name);
+		struct ImageCreateParams
+		{
+			vk::ImageCreateInfo info;
+			vk::ImageViewCreateInfo viewInfo;
+			bool persistent = false;
+		};
+		[[nodiscard]] ResourceID CreateOrUpdateImage(const ImageCreateParams& params);
+		[[nodiscard]] ResourceID CreateOrUpdateImage(const ImageCreateParams& params, ResourceID id);
+		[[nodiscard]] ResourceID CreateOrUpdateImage(const ImageCreateParams& params, const std::string& name);
+
+		[[nodiscard]] ResourceID CreateOrUpdateBuffer(const BufferDescVK& bufferDesc, const std::string& name);
+
+		void DestroyResource(ResourceID id);
+		void DestroyResource(const std::string& name);
 
 		void Update();
 
-		ResourceID AddImages(const ImageDesc& imageDesc, uint8_t imageCount);
-
-		void DestroyImages(ResourceID id);
-
-		void UpdateImage(ResourceID id, const ImageDesc& imageDesc, uint8_t imageIdx);
-		void UpdateImages(ResourceID id, const ImageDesc& imageDesc);
-
-		AllocatedImage& GetImage(ResourceID id, uint8_t idx = 0);
-		[[nodiscard]] bool IsImageValid(ResourceID id) const;
-		[[nodiscard]] bool IsImageValid(ResourceID id, uint8_t idx) const;
-		[[nodiscard]] size_t GetImageCount(ResourceID id) const;
-
 		[[nodiscard]] bool IsResourceValid(const std::string& name) const;
 		[[nodiscard]] bool IsResourceValid(ResourceID id) const;
+
+		AllocatedImage& GetImage(ResourceID id);
+		AllocatedImage& GetImage(const std::string& name);
 
 		UnifiedGeometryBuffer* GeometryBuffer() const;
 
@@ -62,16 +83,16 @@ namespace puffin::rendering
 		void CreateResourcesInstances();
 		void DestroyResourcesInstances();
 
-		void AddImageInternal(const ImageDescVK& imageDesc, ResourceID id, const std::string& name);
+		void CreateOrUpdateAttachmentInternal(const AttachmentParams& params, ResourceID id, const std::string& name);
 
-		void UpdateImageInternal(const ImageDescVK& imageDesc, ResourceID id);
+		void CreateOrUpdateImageInternal(const ImageCreateParams& params, ResourceID id, const std::string& name);
 
-		void CreateImageInstanceInternal(ResourceID instanceID, ImageDescVK& imageDesc);
+		void DestroyResourceInternal(ResourceID id);
+
+		void CreateImageInstanceInternal(ResourceID instanceID, const ImageCreateParams& params);
 		void DestroyImageInstanceInternal(ResourceID instanceID);
 
-		void CreateImageInternal(ResourceID id, const ImageDesc& imageDesc, uint8_t idx = 0);
-		void DestroyImageInternal(ResourceID id, uint8_t idx = 0);
-		void UpdateImageInternal(ResourceID id, const ImageDesc& imageDesc, uint8_t idx = 0);
+		void CalculateImageExtent(ImageSizeVK imageSize, vk::Extent3D& extent, float widthMult = 1.0f, float heightMult = 1.0f) const;
 
 		enum class ResourceType
 		{
@@ -83,9 +104,9 @@ namespace puffin::rendering
 		{
 			std::string name = "";
 			ResourceID id = gInvalidID;
+			ResourceType type;
 			bool persistent = false;
 			std::vector<uint8_t> instanceIDs; // IDs of individual instances of this resource
-			ResourceType type;
 		};
 
 		RenderSubsystemVK* mRenderSystem = nullptr;
@@ -95,15 +116,13 @@ namespace puffin::rendering
 		std::unordered_map<ResourceID, ResourceInfo> mResourceInfo;
 		std::unordered_map<std::string, ResourceID> mResourceNameToID;
 
-		std::unordered_map<ResourceID, AllocatedImage> mAllocImageInstances;
-		std::unordered_map<ResourceID, ImageDescVK> mImageDescInstances;
+		std::unordered_map<ResourceID, AllocatedImage> mInstanceImages;
+		std::unordered_map<ResourceID, ImageCreateParams> mInstanceImageDescs;
 
-		std::unordered_map<ResourceID, AllocatedBuffer> mBuffers;
-		std::unordered_map<ResourceID, BufferDescVK> mBufferDescs;
+		//std::unordered_map<ResourceID, AllocatedBuffer> mInstanceBuffers;
+		//std::unordered_map<ResourceID, BufferDescVK> mInstanceBufferDescs;
 
-		std::unordered_map<ResourceID, ImageDescVK> mImageInstancesToCreate;
+		std::vector<std::pair<ResourceID, ImageCreateParams>> mImageInstancesToCreate;
 		std::vector<std::unordered_set<ResourceID>> mImageInstancesToDestroy;
-
-		MappedVector<ResourceID, std::vector<AllocatedImage>> mImages;
 	};
 }

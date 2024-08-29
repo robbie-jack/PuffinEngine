@@ -39,7 +39,7 @@ namespace puffin
 			glm::mat4 lightView = glm::identity<glm::mat4>();
 			glm::mat4 lightViewProj = glm::identity<glm::mat4>();
 			int shadowIdx = -1;
-			ResourceID resourceID = gInvalidID;
+			std::vector<ResourceID> shadowCascadeIDs;
 
 			AABB3D boundsAABB;
 

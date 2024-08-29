@@ -18,19 +18,22 @@ namespace puffin::rendering
 
 	ResourceManagerVK::~ResourceManagerVK()
 	{
-		if (mImages.Size() > 0)
+		for (const auto& [id, info] : mResourceInfo)
 		{
-			for (auto& images : mImages)
+			for (const auto& instanceID : info.instanceIDs)
 			{
-				for (auto& alloc_image : images)
-				{
-					mRenderSystem->GetDevice().destroyImageView(alloc_image.imageView);
-					mRenderSystem->GetAllocator().destroyImage(alloc_image.image, alloc_image.allocation);
-				}
+				DestroyImageInstanceInternal(instanceID);
 			}
-
-			mImages.Clear();
 		}
+
+		mResourceInfo.clear();
+		mResourceNameToID.clear();
+
+		mImageInstancesToCreate.clear();
+		mImageInstancesToDestroy.clear();
+
+		delete mUnifiedGeometryBuffer;
+		mUnifiedGeometryBuffer = nullptr;
 
 		mRenderSystem = nullptr;
 	}
@@ -40,23 +43,23 @@ namespace puffin::rendering
 		mUnifiedGeometryBuffer->AddStaticMesh(staticMesh);
 	}
 
-	ResourceID ResourceManagerVK::AddImage(const ImageDescVK& imageDesc)
+	ResourceID ResourceManagerVK::CreateOrUpdateAttachment(const AttachmentParams& params)
 	{
 		ResourceID id = GenerateId();
 
-		AddImageInternal(imageDesc, id, "");
+		CreateOrUpdateAttachmentInternal(params, id, "");
 
 		return id;
 	}
 
-	ResourceID ResourceManagerVK::AddImage(const ImageDescVK& imageDesc, ResourceID id)
+	ResourceID ResourceManagerVK::CreateOrUpdateAttachment(const AttachmentParams& params, ResourceID id)
 	{
-		AddImageInternal(imageDesc, id, "");
+		CreateOrUpdateAttachmentInternal(params, id, "");
 
 		return id;
 	}
 
-	ResourceID ResourceManagerVK::AddImage(const ImageDescVK& imageDesc, const std::string& name)
+	ResourceID ResourceManagerVK::CreateOrUpdateAttachment(const AttachmentParams& params, const std::string& name)
 	{
 		ResourceID id;
 
@@ -69,18 +72,65 @@ namespace puffin::rendering
 			id = GenerateId();
 		}
 
-		AddImageInternal(imageDesc, id, name);
+		CreateOrUpdateAttachmentInternal(params, id, name);
 
 		return id;
 	}
 
-	ResourceID ResourceManagerVK::AddBuffer(const BufferDescVK& bufferDesc, const std::string& name)
+	ResourceID ResourceManagerVK::CreateOrUpdateImage(const ResourceManagerVK::ImageCreateParams& params)
+	{
+		ResourceID id = GenerateId();
+
+		CreateOrUpdateImageInternal(params, id, "");
+
+		return id;
+	}
+
+	ResourceID ResourceManagerVK::CreateOrUpdateImage(const ResourceManagerVK::ImageCreateParams& params, ResourceID id)
+	{
+		CreateOrUpdateImageInternal(params, id, "");
+
+		return id;
+	}
+
+	ResourceID ResourceManagerVK::CreateOrUpdateImage(const ResourceManagerVK::ImageCreateParams& params, const std::string& name)
+	{
+		ResourceID id;
+
+		if (mResourceNameToID.find(name) != mResourceNameToID.end())
+		{
+			id = mResourceNameToID.at(name);
+		}
+		else
+		{
+			id = GenerateId();
+		}
+
+		CreateOrUpdateImageInternal(params, id, name);
+
+		return id;
+	}
+
+	ResourceID ResourceManagerVK::CreateOrUpdateBuffer(const BufferDescVK& bufferDesc, const std::string& name)
 	{
 		ResourceID id = GenerateId();
 
 
 
 		return id;
+	}
+
+	void ResourceManagerVK::DestroyResource(ResourceID id)
+	{
+		DestroyResourceInternal(id);
+	}
+
+	void ResourceManagerVK::DestroyResource(const std::string& name)
+	{
+		if (mResourceNameToID.find(name) != mResourceNameToID.end())
+		{
+			DestroyResourceInternal(mResourceNameToID.at(name));
+		}
 	}
 
 	void ResourceManagerVK::Update()
@@ -88,86 +138,6 @@ namespace puffin::rendering
 		CreateResourcesInstances();
 
 		DestroyResourcesInstances();
-	}
-
-	ResourceID ResourceManagerVK::AddImages(const ImageDesc& imageDesc, uint8_t imageCount)
-	{
-		ResourceID id = GenerateId();
-
-		mImages.Emplace(id, std::vector<AllocatedImage>());
-		mImages.At(id).resize(imageCount);
-
-		for (int i = 0; i < imageCount; ++i)
-		{
-			CreateImageInternal(id, imageDesc, i);
-		}
-
-		return id;
-	}
-
-	void ResourceManagerVK::DestroyImages(ResourceID id)
-	{
-		if (mImages.Contains(id))
-		{
-			for (int i = 0; i < mImages.At(id).size(); ++i)
-			{
-				DestroyImageInternal(id, i);
-			}
-
-			mImages.Erase(id);
-		}
-	}
-
-	void ResourceManagerVK::UpdateImage(ResourceID id, const ImageDesc& imageDesc, uint8_t imageIdx)
-	{
-		assert(mImages.Contains(id) && "ResourceManagerVK::UpdateImage - Atempting to get image with invalid resource id");
-
-		if (mImages.Contains(id))
-		{
-			UpdateImageInternal(id, imageDesc, imageIdx);
-		}
-	}
-
-	void ResourceManagerVK::UpdateImages(ResourceID id, const ImageDesc& imageDesc)
-	{
-		assert(mImages.Contains(id) && "ResourceManagerVK::UpdateImage - Atempting to get image with invalid resource id");
-
-		if (mImages.Contains(id))
-		{
-			for (int i = 0; i < mImages.At(id).size(); ++i)
-			{
-				UpdateImageInternal(id, imageDesc, i);
-			}
-		}
-	}
-
-	AllocatedImage& ResourceManagerVK::GetImage(ResourceID id, uint8_t idx)
-	{
-		assert(mImages.Contains(id) && "ResourceManagerVK::GetImage - Atempting to get image with invalid resource id");
-
-		if (mImages.At(id).size() == 1)
-		{
-			return mImages.At(id)[0];
-		}
-
-		return mImages.At(id)[idx];
-	}
-
-	bool ResourceManagerVK::IsImageValid(ResourceID id) const
-	{
-		return mImages.Contains(id);
-	}
-
-	bool ResourceManagerVK::IsImageValid(ResourceID id, uint8_t idx) const
-	{
-		return mImages.At(id).size() > idx;
-	}
-
-	size_t ResourceManagerVK::GetImageCount(ResourceID id) const
-	{
-		assert(mImages.Contains(id) && "ResourceManagerVK::GetImageCount - Atempting to get image with invalid resource id");
-
-		return mImages.At(id).size();
 	}
 
 	bool ResourceManagerVK::IsResourceValid(const std::string& name) const
@@ -180,6 +150,32 @@ namespace puffin::rendering
 		return mResourceInfo.find(id) != mResourceInfo.end();
 	}
 
+	AllocatedImage& ResourceManagerVK::GetImage(ResourceID id)
+	{
+		assert(IsResourceValid(id) && "ResourceManagerVK::GetImage -  No image with id %s exists", std::to_string(id).c_str());
+
+		const auto& resourceInfo = mResourceInfo.at(id);
+
+		ResourceID instanceID;
+		if (resourceInfo.persistent)
+		{
+			instanceID = resourceInfo.instanceIDs[0];
+		}
+		else
+		{
+			instanceID = resourceInfo.instanceIDs[mRenderSystem->GetCurrentFrameIdx()];
+		}
+
+		return mInstanceImages.at(instanceID);
+	}
+
+	AllocatedImage& ResourceManagerVK::GetImage(const std::string& name)
+	{
+		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && "ResourceManagerVK::GetImage -  No image with name %s exists", name.c_str());
+
+		return GetImage(mResourceNameToID.at(name));
+	}
+
 	UnifiedGeometryBuffer* ResourceManagerVK::GeometryBuffer() const
 	{
 		return mUnifiedGeometryBuffer;
@@ -187,9 +183,9 @@ namespace puffin::rendering
 
 	void ResourceManagerVK::CreateResourcesInstances()
 	{
-		for (auto& [id, imageDesc] : mImageInstancesToCreate)
+		for (auto& [id, params] : mImageInstancesToCreate)
 		{
-			CreateImageInstanceInternal(id, imageDesc);
+			CreateImageInstanceInternal(id, params);
 		}
 
 		mImageInstancesToCreate.clear();
@@ -205,16 +201,65 @@ namespace puffin::rendering
 		mImageInstancesToDestroy[mRenderSystem->GetCurrentFrameIdx()].clear();
 	}
 
-	void ResourceManagerVK::AddImageInternal(const ImageDescVK& imageDesc, ResourceID id, const std::string& name)
+	void ResourceManagerVK::CreateOrUpdateAttachmentInternal(const AttachmentParams& params, ResourceID id,
+		const std::string& name)
 	{
-		if (mResourceInfo.find(id) == mResourceInfo.end())
+		vk::Extent3D extent;
+		CalculateImageExtent(params.imageSize, extent, params.widthMult, params.heightMult);
+
+		ImageCreateParams imageCreateParams;
+		imageCreateParams.info = { {}, vk::ImageType::e2D, params.format, extent, 1, 1,
+			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, {vk::ImageUsageFlagBits::eSampled } };
+
+		constexpr vk::ImageSubresourceRange subresourceRange{ {}, 0, 1, 0, 1 };
+
+		imageCreateParams.viewInfo = { {}, {}, vk::ImageViewType::e2D, params.format, {}, subresourceRange };
+
+		if (params.type == AttachmentType::Color)
 		{
+			imageCreateParams.info.usage |= vk::ImageUsageFlagBits::eColorAttachment;
+			imageCreateParams.viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+		}
+		else if(params.type == AttachmentType::Depth)
+		{
+			imageCreateParams.info.usage |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+			imageCreateParams.viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+		}
+
+		CreateOrUpdateImageInternal(imageCreateParams, id, name);
+	}
+
+	void ResourceManagerVK::CreateOrUpdateImageInternal(const ImageCreateParams& params, ResourceID id, const std::string& name)
+	{
+		if (IsResourceValid(id))
+		{
+			// If resource is valid, queue existing resource instances to be destroyed and queue new ones to be created
+			auto& resourceInfo = mResourceInfo.at(id);
+
+			if (resourceInfo.persistent)
+			{
+				mImageInstancesToDestroy[0].emplace(resourceInfo.instanceIDs[0]);
+
+				resourceInfo.instanceIDs[0] = GenerateId();
+			}
+			else
+			{
+				for (int i = 0; i < mBufferedFrameCount; ++i)
+				{
+					mImageInstancesToDestroy[i].emplace(resourceInfo.instanceIDs[i]);
+					resourceInfo.instanceIDs[i] = GenerateId();
+				}
+			}
+		}
+		else
+		{
+			// If resource is not valid, add new resource info and queue up new instances to be created
 			mResourceInfo.emplace(id, ResourceInfo{});
 
 			auto& resourceInfo = mResourceInfo.at(id);
 			resourceInfo.id = id;
 			resourceInfo.type = ResourceType::Image;
-			resourceInfo.persistent = imageDesc.persistent;
+			resourceInfo.persistent = params.persistent;
 
 			if (resourceInfo.persistent)
 			{
@@ -238,118 +283,66 @@ namespace puffin::rendering
 		const auto& resourceInfo = mResourceInfo.at(id);
 		for (auto instanceID : resourceInfo.instanceIDs)
 		{
-			mImageInstancesToCreate.emplace(instanceID, imageDesc);
+			mImageInstancesToCreate.emplace_back(instanceID, params);
 		}
 	}
 
-	void ResourceManagerVK::UpdateImageInternal(const ImageDescVK& imageDesc, ResourceID id)
+	void ResourceManagerVK::DestroyResourceInternal(ResourceID id)
 	{
 		if (IsResourceValid(id))
 		{
-			auto& resourceInfo = mResourceInfo.at(id);
+			const auto& resourceInfo = mResourceInfo.at(id);
 
-			uint8_t instanceIdx;
-
-			if (resourceInfo.persistent)
+			for (int i = 0; i < mBufferedFrameCount; ++i)
 			{
-				instanceIdx = 0;
-			}
-			else
-			{
-				instanceIdx = mRenderSystem->GetCurrentFrameIdx();
+				mImageInstancesToDestroy[i].emplace(resourceInfo.instanceIDs[i]);
 			}
 
-			mImageInstancesToDestroy[instanceIdx].emplace(resourceInfo.instanceIDs[instanceIdx]);
-
-			resourceInfo.instanceIDs[instanceIdx] = GenerateId();
-			mImageInstancesToCreate.emplace(resourceInfo.instanceIDs[instanceIdx], imageDesc);
+			mResourceInfo.erase(id);
 		}
 	}
 
-	void ResourceManagerVK::CreateImageInstanceInternal(ResourceID instanceID, ImageDescVK& imageDesc)
+	void ResourceManagerVK::CreateImageInstanceInternal(ResourceID instanceID, const ImageCreateParams& params)
 	{
-		util::CreateImageParams params;
+		util::CreateImageParams createImageParams;
+		createImageParams.imageInfo = params.info;
+		createImageParams.imageViewInfo = params.viewInfo;
 
-		// Update Width/Height of Swapchain/Render Relative
-		if (imageDesc.imageSizeType == ImageSizeVK::SwapchainRelative 
-			|| imageDesc.imageSizeType == ImageSizeVK::RenderExtentRelative)
-		{
-			vk::Extent2D extent;
-
-			if (imageDesc.imageSizeType == ImageSizeVK::SwapchainRelative)
-			{
-				extent = mRenderSystem->GetSwapchainExtent();
-			}
-			else
-			{
-				extent = mRenderSystem->GetRenderExtent();
-			}
-
-			imageDesc.width = static_cast<uint32_t>(std::ceil(extent.width * imageDesc.widthMult));
-			imageDesc.height = static_cast<uint32_t>(std::ceil(extent.height * imageDesc.heightMult));
-			imageDesc.depth = 0;
-		}
-
-		assert(imageDesc.width > 0 && "ResourceManagerVK::CreateImageInstanceInternal - Resource width was not greater than 0, which is invalid behaviour");
-
-		vk::ImageType imageType = vk::ImageType::e1D;
-
-		// Decide if image is 1D, 2D, or 3D
-		if (imageDesc.height > 0)
-		{
-			if (imageDesc.depth > 0)
-			{
-				imageType = vk::ImageType::e3D;
-			}
-			else
-			{
-				imageType = vk::ImageType::e2D;
-			}
-		}
-
-
+		mInstanceImages.emplace(instanceID, util::CreateImage(mRenderSystem, createImageParams));
+		mInstanceImageDescs.emplace(instanceID, params);
 	}
 
 	void ResourceManagerVK::DestroyImageInstanceInternal(ResourceID instanceID)
 	{
-		const auto& allocImage = mAllocImageInstances.at(instanceID);
+		const auto& allocImage = mInstanceImages.at(instanceID);
 
 		mRenderSystem->GetDevice().destroyImageView(allocImage.imageView);
 		mRenderSystem->GetAllocator().destroyImage(allocImage.image, allocImage.allocation);
 
-		mAllocImageInstances.erase(instanceID);
-		mImageDescInstances.erase(instanceID);
+		mInstanceImages.erase(instanceID);
+		mInstanceImageDescs.erase(instanceID);
 	}
 
-	void ResourceManagerVK::CreateImageInternal(ResourceID id, const ImageDesc& imageDesc, uint8_t idx)
+	void ResourceManagerVK::CalculateImageExtent(ImageSizeVK imageSize, vk::Extent3D& extent, float widthMult, float heightMult) const
 	{
-		const vk::Extent3D extent = { imageDesc.width, imageDesc.height, imageDesc.depth };
-
-		util::CreateFormattedImageParams params;
-		params.extent = extent;
-		params.format = imageDesc.format;
-
-		if (imageDesc.imageType == ImageType::Color)
+		// Update Width/Height of Swapchain/Render Relative
+		if (imageSize == ImageSizeVK::SwapchainRelative
+			|| imageSize == ImageSizeVK::RenderExtentRelative)
 		{
-			mImages.At(id)[idx] = util::CreateColorImage(mRenderSystem, params);
+			vk::Extent2D extent2D;
+
+			if (imageSize == ImageSizeVK::SwapchainRelative)
+			{
+				extent2D = mRenderSystem->GetSwapchainExtent();
+			}
+			else
+			{
+				extent2D = mRenderSystem->GetRenderExtent();
+			}
+
+			extent.width = static_cast<uint32_t>(std::ceil(extent.width * widthMult));
+			extent.height = static_cast<uint32_t>(std::ceil(extent.height * heightMult));
+			extent.depth = 1;
 		}
-		else
-		{
-			mImages.At(id)[idx] = util::CreateDepthImage(mRenderSystem, params);
-		}
-	}
-
-	void ResourceManagerVK::DestroyImageInternal(ResourceID id, uint8_t idx)
-	{
-		const auto& allocImage = mImages.At(id)[idx];
-
-		mRenderSystem->GetDevice().destroyImageView(allocImage.imageView);
-		mRenderSystem->GetAllocator().destroyImage(allocImage.image, allocImage.allocation);
-	}
-
-	void ResourceManagerVK::UpdateImageInternal(ResourceID id, const ImageDesc& imageDesc, uint8_t idx)
-	{
-		DestroyImageInternal(id, idx);
-		CreateImageInternal(id, imageDesc, idx);
 	}
 }

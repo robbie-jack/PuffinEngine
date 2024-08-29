@@ -18,17 +18,19 @@ namespace puffin::rendering
 
 	struct ImageDescVK
 	{
-		ImageSizeVK imageSizeType = ImageSizeVK::RenderExtentRelative;
+		ImageSizeVK imageSize = ImageSizeVK::RenderExtentRelative;
 		uint32_t width = 0;
 		uint32_t height = 0;
-		uint32_t depth = 0;
+		uint32_t depth = 1;
 		float widthMult = 1.0f;		// Multiplier for width if using a relative size type
 		float heightMult = 1.0f;	// Multiplier for height if using a relative size type
 		float depthMult = 1.0f;		// Multiplier for depth if using a relative size type
 		vk::Format format = vk::Format::eUndefined;
 		vk::ImageUsageFlags usageFlags;
+		vk::ImageTiling tiling = vk::ImageTiling::eOptimal; // Linear for Textures, Optimal for everything else;
+		vk::ImageType type = vk::ImageType::e2D;
 		uint8_t samples = 1;
-		uint8_t levels = 1;
+		uint8_t mipLevels = 1;
 		uint8_t layers = 1;
 		bool persistent = false; // Whether this image should persist between frames or not
 	};

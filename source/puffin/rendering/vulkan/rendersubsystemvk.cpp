@@ -99,8 +99,8 @@ namespace puffin::rendering
 		registry->on_update<TransformComponent3D>().connect<&RenderSubsystemVK::OnUpdateTransform>(this);
 		registry->on_destroy<TransformComponent3D>().connect<&RenderSubsystemVK::OnDestroyMeshOrTransform>(this);
 
-		registry->on_construct<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnConstructShadowCaster>(this);
-		registry->on_update<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnUpdateShadowCaster>(this);
+		registry->on_construct<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnConstructOrUpdateShadowCaster>(this);
+		registry->on_update<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnConstructOrUpdateShadowCaster>(this);
 		registry->on_destroy<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnDestroyShadowCaster>(this);
 
 		const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
@@ -321,36 +321,12 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSubsystemVK::OnConstructShadowCaster(entt::registry& registry, entt::entity entity)
+	void RenderSubsystemVK::OnConstructOrUpdateShadowCaster(entt::registry& registry, entt::entity entity)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto id = enttSubsystem->GetID(entity);
-		const auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
-		ImageDesc imageDesc;
-		imageDesc.imageType = ImageType::Depth;
-		imageDesc.format = vk::Format::eD32Sfloat;
-		imageDesc.width = shadow.width;
-		imageDesc.height = shadow.height;
-		imageDesc.depth = 1;
-
-		mShadowConstructEvents.Push({ entity, imageDesc });
-	}
-
-	void RenderSubsystemVK::OnUpdateShadowCaster(entt::registry& registry, entt::entity entity)
-	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto id = enttSubsystem->GetID(entity);
-		const auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
-
-		ImageDesc imageDesc;
-		imageDesc.imageType = ImageType::Depth;
-		imageDesc.format = vk::Format::eD32Sfloat;
-		imageDesc.width = shadow.width;
-		imageDesc.height = shadow.height;
-		imageDesc.depth = 1;
-
-		mShadowUpdateEvents.Push({ entity, imageDesc });
+		mShadowsToUpdate.emplace(id);
 	}
 
 	void RenderSubsystemVK::OnDestroyShadowCaster(entt::registry& registry, entt::entity entity)
@@ -359,9 +335,12 @@ namespace puffin::rendering
 		const auto id = enttSubsystem->GetID(entity);
 		auto& shadow = registry.get<ShadowCasterComponent3D>(entity);
 
-		mShadowDestroyEvents.Push({ shadow.resourceID });
+		for (const auto& resourceID : shadow.shadowCascadeIDs)
+		{
+			mShadowResourcesToDestroy.emplace(resourceID);
+		}
 
-		shadow.resourceID = gInvalidID;
+		shadow.shadowCascadeIDs.clear();
 	}
 
 	void RenderSubsystemVK::RegisterTexture(UUID textureID)
@@ -1237,116 +1216,46 @@ namespace puffin::rendering
 			}
 		}
 
-		ConstructShadows();
 		UpdateShadows();
-		DestroyShadows();
-	}
-
-	void RenderSubsystemVK::ConstructShadows()
-	{
-		bool shadowDescriptorNeedsUpdated = false;
-
-		while(!mShadowConstructEvents.Empty())
-		{
-			ShadowConstructEvent shadowEvent{};
-			mShadowConstructEvents.Pop(shadowEvent);
-
-			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-			auto registry = enttSubsystem->GetRegistry();
-			auto& shadow = registry->get<ShadowCasterComponent3D>(shadowEvent.entity);
-
-			shadow.resourceID = mResourceManager->AddImages(shadowEvent.imageDesc, mFramesInFlightCount * shadow.cascadeCount);
-
-			shadowDescriptorNeedsUpdated |= true;
-		}
-
-		if (shadowDescriptorNeedsUpdated == true)
-		{
-			for (int i = 0; i < gBufferedFrameCount; i++)
-			{
-				mFrameRenderData[i].shadowDescriptorNeedsUpdated = true;
-			}
-		}
 	}
 
 	void RenderSubsystemVK::UpdateShadows()
 	{
-		bool shadowDescriptorNeedsUpdated = false;
-
-		std::vector<ShadowUpdateEvent> shadowUpdateEventsStillInUse;
-		while (!mShadowUpdateEvents.Empty())
-		{
-			ShadowUpdateEvent shadowEvent{};
-			mShadowUpdateEvents.Pop(shadowEvent);
-
-			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-			auto registry = enttSubsystem->GetRegistry();
-			auto& shadow = registry->get<ShadowCasterComponent3D>(shadowEvent.entity);
-
-			if (mResourceManager->IsImageValid(shadow.resourceID))
-			{
-				const int firstImageIndex = GetCurrentFrameIdx() * shadow.cascadeCount;
-				for (int i = 0; i < shadow.cascadeCount; ++i)
-				{
-					mResourceManager->UpdateImage(shadow.resourceID, shadowEvent.imageDesc, firstImageIndex + i);
-				}
-
-				shadowEvent.frameCount++;
-
-				if (shadowEvent.frameCount < mFramesInFlightCount)
-				{
-					shadowUpdateEventsStillInUse.push_back(shadowEvent);
-				}
-			}
-
-			shadowDescriptorNeedsUpdated |= true;
-		}
-
-		for (const auto& shadowEvent : shadowUpdateEventsStillInUse)
-		{
-			mShadowUpdateEvents.Push(shadowEvent);
-		}
-
-		shadowUpdateEventsStillInUse.clear();
-
-		if (shadowDescriptorNeedsUpdated == true)
+		if (!mShadowsToUpdate.empty())
 		{
 			for (int i = 0; i < gBufferedFrameCount; i++)
 			{
 				mFrameRenderData[i].shadowDescriptorNeedsUpdated = true;
 			}
 		}
-	}
 
-	void RenderSubsystemVK::DestroyShadows()
-	{
-		std::vector<ShadowDestroyEvent> shadowDestroyEventsStillInUse;
-		while (!mShadowDestroyEvents.Empty())
+		for (const auto& id : mShadowsToUpdate)
 		{
-			ShadowDestroyEvent shadowEvent{};
-			mShadowDestroyEvents.Pop(shadowEvent);
+			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+			auto registry = enttSubsystem->GetRegistry();
 
-			if (mResourceManager->IsImageValid(shadowEvent.resourceID))
+			auto entity = enttSubsystem->GetEntity(id);
+			auto& shadow = registry->get<ShadowCasterComponent3D>(entity);
+
+			ResourceManagerVK::AttachmentParams params;
+			params.imageSize = ImageSizeVK::Absolute;
+			params.type = AttachmentType::Depth;
+			params.width = shadow.width;
+			params.height = shadow.height;
+
+			shadow.shadowCascadeIDs.resize(shadow.cascadeCount);
+			for (int i = 0; i < shadow.cascadeCount; ++i)
 			{
-				shadowEvent.frameCount++;
-
-				if (shadowEvent.frameCount < mFramesInFlightCount)
-				{
-					shadowDestroyEventsStillInUse.push_back(shadowEvent);
-				}
-				else
-				{
-					mResourceManager->DestroyImages(shadowEvent.resourceID);
-				}
+				shadow.shadowCascadeIDs[i] = mResourceManager->CreateOrUpdateAttachment(params);
 			}
 		}
 
-		for (const auto& shadowEvent : shadowDestroyEventsStillInUse)
-		{
-			mShadowDestroyEvents.Push(shadowEvent);
-		}
+		mShadowsToUpdate.clear();
 
-		shadowDestroyEventsStillInUse.clear();
+		for (const auto& resourceID : mShadowResourcesToDestroy)
+		{
+			mResourceManager->DestroyResource(resourceID);
+		}
 	}
 
 	void RenderSubsystemVK::WaitForRenderFence()
@@ -2245,7 +2154,10 @@ namespace puffin::rendering
 
 			cmd.pushConstants(mShadowPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant), &pushConstant);
 
-			DrawShadowmap(cmd, mResourceManager->GetImage(shadow.resourceID, GetCurrentFrameIdx()), { shadow.width, shadow.height });
+			for (const auto& resourceID : shadow.shadowCascadeIDs)
+			{
+				DrawShadowmap(cmd, mResourceManager->GetImage(resourceID), { shadow.width, shadow.height });
+			}
 		}
 
 		cmd.end();
@@ -2794,12 +2706,15 @@ namespace puffin::rendering
 				break;
 			}
 
-			const auto& allocImage = mResourceManager->get_image(shadow.resourceID, GetCurrentFrameIdx());
+			for (const auto& resourceID : shadow.shadowCascadeIDs)
+			{
+				const auto& allocImage = mResourceManager->GetImage(resourceID);
 
-			vk::DescriptorImageInfo shadowImageInfo = { mGlobalRenderData.shadowmapSampler, allocImage.image_view,
-				vk::ImageLayout::eShaderReadOnlyOptimal };
+				vk::DescriptorImageInfo shadowImageInfo = { mGlobalRenderData.shadowmapSampler, allocImage.imageView,
+					vk::ImageLayout::eShaderReadOnlyOptimal };
 
-			shadowImageInfos.push_back(shadowImageInfo);
+				shadowImageInfos.push_back(shadowImageInfo);
+			}
 
 			shadow.shadowIdx = idx;
 
@@ -2816,12 +2731,15 @@ namespace puffin::rendering
 				break;
 			}
 
-			const auto& allocImage = mResourceManager->GetImage(shadow.resourceID, GetCurrentFrameIdx());
+			for (const auto& resourceID : shadow.shadowCascadeIDs)
+			{
+				const auto& allocImage = mResourceManager->GetImage(resourceID);
 
-			vk::DescriptorImageInfo shadowImageInfo = { mGlobalRenderData.shadowmapSampler, allocImage.imageView,
-				vk::ImageLayout::eShaderReadOnlyOptimal };
+				vk::DescriptorImageInfo shadowImageInfo = { mGlobalRenderData.shadowmapSampler, allocImage.imageView,
+					vk::ImageLayout::eShaderReadOnlyOptimal };
 
-			shadowImageInfos.push_back(shadowImageInfo);
+				shadowImageInfos.push_back(shadowImageInfo);
+			}
 
 			shadow.shadowIdx = idx;
 
@@ -2838,12 +2756,15 @@ namespace puffin::rendering
 				break;
 			}
 
-			const auto& allocImage = mResourceManager->GetImage(shadow.resourceID, GetCurrentFrameIdx());
+			for (const auto& resourceID : shadow.shadowCascadeIDs)
+			{
+				const auto& allocImage = mResourceManager->GetImage(resourceID);
 
-			vk::DescriptorImageInfo shadowImageInfo = { mGlobalRenderData.shadowmapSampler, allocImage.imageView,
-				vk::ImageLayout::eShaderReadOnlyOptimal };
+				vk::DescriptorImageInfo shadowImageInfo = { mGlobalRenderData.shadowmapSampler, allocImage.imageView,
+					vk::ImageLayout::eShaderReadOnlyOptimal };
 
-			shadowImageInfos.push_back(shadowImageInfo);
+				shadowImageInfos.push_back(shadowImageInfo);
+			}
 
 			shadow.shadowIdx = idx;
 

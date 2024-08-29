@@ -163,8 +163,7 @@ namespace puffin::rendering
 
 		void AddRenderable(entt::registry& registry, entt::entity entity);
 
-		void OnConstructShadowCaster(entt::registry& registry, entt::entity entity);
-		void OnUpdateShadowCaster(entt::registry& registry, entt::entity entity);
+		void OnConstructOrUpdateShadowCaster(entt::registry& registry, entt::entity entity);
 		void OnDestroyShadowCaster(entt::registry& registry, entt::entity entity);
 
 		void RegisterTexture(UUID textureID);
@@ -251,9 +250,7 @@ namespace puffin::rendering
 
 		void UpdateRenderData();
 
-		void ConstructShadows();
 		void UpdateShadows();
-		void DestroyShadows();
 
 		// Render Methods
 
@@ -318,25 +315,6 @@ namespace puffin::rendering
 
 		static void FrameBufferResizeCallback(GLFWwindow* window, const int width, const int height);
 
-		struct ShadowConstructEvent
-		{
-			entt::entity entity;
-			ImageDesc imageDesc;
-		};
-
-		struct ShadowUpdateEvent
-		{
-			entt::entity entity;
-			ImageDesc imageDesc;
-			uint8_t frameCount = 0;
-		};
-
-		struct ShadowDestroyEvent
-		{
-			ResourceID resourceID;
-			uint8_t frameCount = 0;
-		};
-
 		// Initialization Members
 		RenderGraphVK mRenderGraph;
 		std::unordered_map<std::string, RenderModuleVK*> mRenderModules;
@@ -386,9 +364,8 @@ namespace puffin::rendering
 
 		MappedVector<UUID, Vector3f> mCachedLightDirection;
 
-		RingBuffer<ShadowConstructEvent> mShadowConstructEvents;
-		RingBuffer<ShadowUpdateEvent> mShadowUpdateEvents;
-		RingBuffer<ShadowDestroyEvent> mShadowDestroyEvents;
+		std::unordered_set<UUID> mShadowsToUpdate;
+		std::unordered_set<ResourceID> mShadowResourcesToDestroy;
 		std::vector<UUID> mShadowsToDraw;
 
 		uint32_t mCurrentSwapchainIdx = 0;
