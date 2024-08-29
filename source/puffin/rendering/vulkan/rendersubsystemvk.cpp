@@ -230,6 +230,7 @@ namespace puffin::rendering
 		WaitForRenderFence();
 
 		//	2. Update Render Resources (Buffers, Images, Descriptions Sync Structures, etc...)
+		UpdateShadows();
 		UpdateResources();
 
 		//	3. Reset & Build Graph
@@ -1215,8 +1216,6 @@ namespace puffin::rendering
 				}
 			}
 		}
-
-		UpdateShadows();
 	}
 
 	void RenderSubsystemVK::UpdateShadows()
@@ -1240,6 +1239,7 @@ namespace puffin::rendering
 			ResourceManagerVK::AttachmentParams params;
 			params.imageSize = ImageSizeVK::Absolute;
 			params.type = AttachmentType::Depth;
+			params.format = vk::Format::eD32Sfloat;
 			params.width = shadow.width;
 			params.height = shadow.height;
 

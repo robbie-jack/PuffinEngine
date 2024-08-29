@@ -205,7 +205,17 @@ namespace puffin::rendering
 		const std::string& name)
 	{
 		vk::Extent3D extent;
-		CalculateImageExtent(params.imageSize, extent, params.widthMult, params.heightMult);
+		if (params.imageSize == ImageSizeVK::SwapchainRelative
+			|| params.imageSize == ImageSizeVK::RenderExtentRelative)
+		{
+			CalculateImageExtent(params.imageSize, extent, params.widthMult, params.heightMult);
+		}
+		else
+		{
+			extent.width = params.width;
+			extent.height = params.height;
+			extent.depth = 1;
+		}
 
 		ImageCreateParams imageCreateParams;
 		imageCreateParams.info = { {}, vk::ImageType::e2D, params.format, extent, 1, 1,
@@ -326,23 +336,19 @@ namespace puffin::rendering
 	void ResourceManagerVK::CalculateImageExtent(ImageSizeVK imageSize, vk::Extent3D& extent, float widthMult, float heightMult) const
 	{
 		// Update Width/Height of Swapchain/Render Relative
-		if (imageSize == ImageSizeVK::SwapchainRelative
-			|| imageSize == ImageSizeVK::RenderExtentRelative)
+		vk::Extent2D extent2D;
+
+		if (imageSize == ImageSizeVK::SwapchainRelative)
 		{
-			vk::Extent2D extent2D;
-
-			if (imageSize == ImageSizeVK::SwapchainRelative)
-			{
-				extent2D = mRenderSystem->GetSwapchainExtent();
-			}
-			else
-			{
-				extent2D = mRenderSystem->GetRenderExtent();
-			}
-
-			extent.width = static_cast<uint32_t>(std::ceil(extent.width * widthMult));
-			extent.height = static_cast<uint32_t>(std::ceil(extent.height * heightMult));
-			extent.depth = 1;
+			extent2D = mRenderSystem->GetSwapchainExtent();
 		}
+		else
+		{
+			extent2D = mRenderSystem->GetRenderExtent();
+		}
+
+		extent.width = static_cast<uint32_t>(std::ceil(extent.width * widthMult));
+		extent.height = static_cast<uint32_t>(std::ceil(extent.height * heightMult));
+		extent.depth = 1;
 	}
 }
