@@ -21,13 +21,13 @@ namespace puffin::rendering
 	};
 
 	// Custom buffer to store vertex/index data for multiple meshes in a single large vertex/index buffer
-	class UnifiedGeometryBuffer
+	class UnifiedGeometryBufferVK
 	{
 	public:
 
-		explicit UnifiedGeometryBuffer(RenderSubsystemVK* renderSystem, UnifiedGeometryBufferParams params = {});
+		explicit UnifiedGeometryBufferVK(RenderSubsystemVK* renderSystem, UnifiedGeometryBufferParams params = {});
 
-		~UnifiedGeometryBuffer();
+		~UnifiedGeometryBufferVK();
 
 		void AddStaticMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh);
 
@@ -44,7 +44,7 @@ namespace puffin::rendering
 
 	private:
 
-		RenderSubsystemVK* m_render_system = nullptr;
+		RenderSubsystemVK* mRenderSystem = nullptr;
 
 		struct InternalVertexBufferData
 		{

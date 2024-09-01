@@ -46,6 +46,7 @@ namespace puffin
 
 namespace puffin::rendering
 {
+	class UnifiedGeometryBufferVK;
 	class RenderModuleVK;
 	class ResourceManagerVK;
 	class MaterialRegistryVK;
@@ -157,6 +158,7 @@ namespace puffin::rendering
 		DeletionQueue& GetDeletionQueue() { return mDeletionQueue; }
 		bool GetRebarEnabled() const { return mRebarEnabled; }
 		ResourceManagerVK* GetResourceManager() const { return mResourceManager.get(); }
+		UnifiedGeometryBufferVK* GetUnifiedGeometryBuffer() const { return mUnifiedGeometryBuffer.get(); }
 
 		void OnUpdateMesh(entt::registry& registry, entt::entity entity);
 		void OnUpdateTransform(entt::registry& registry, entt::entity entity);
@@ -346,6 +348,7 @@ namespace puffin::rendering
 		std::array<FrameRenderData, gBufferedFrameCount> mFrameRenderData;
 
 		std::unique_ptr<ResourceManagerVK> mResourceManager = nullptr;
+		std::unique_ptr<UnifiedGeometryBufferVK> mUnifiedGeometryBuffer = nullptr;
 		std::unique_ptr<MaterialRegistryVK> mMaterialRegistry = nullptr;
 
 		std::unordered_set<UUID> mMeshesToLoad; // Meshes that need to be loaded

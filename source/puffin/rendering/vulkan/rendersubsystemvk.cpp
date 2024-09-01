@@ -119,6 +119,7 @@ namespace puffin::rendering
 		InitVulkan();
 
 		mResourceManager = std::make_unique<ResourceManagerVK>(this, gBufferedFrameCount);
+		mUnifiedGeometryBuffer = std::make_unique<UnifiedGeometryBufferVK>(this);
 
 		InitSwapchain(mSwapchainData, mSwapchainDataOld.swapchain, mSwapchainExtent);
 
@@ -138,7 +139,7 @@ namespace puffin::rendering
 
 		InitModules();
 
-		mResourceManager->Update();
+		mResourceManager->CreateAndUpdateResources();
 
 		InitCommands();
 
@@ -189,15 +190,18 @@ namespace puffin::rendering
 
 			DeinitModules();
 
+			mResourceManager->DestroyResources();
+
+			//m_material_registry = nullptr;
+			mUnifiedGeometryBuffer = nullptr;
+			mResourceManager = nullptr;
+
 			CleanSwapchain(mSwapchainData);
 
 			if (mSwapchainDataOld.needsCleaned)
 			{
 				CleanSwapchain(mSwapchainDataOld);
 			}
-
-			mResourceManager = nullptr;
-			//m_material_registry = nullptr;
 
 			mDeletionQueue.Flush();
 
@@ -274,6 +278,9 @@ namespace puffin::rendering
 		//		5c. Submit Commands
 
 		RecordAndSubmitCommands(mCurrentSwapchainIdx);
+
+		//	6. Destroy Old Resources
+		mResourceManager->DestroyResources();
 
 		mFrameCount++;
 	}
@@ -1082,7 +1089,7 @@ namespace puffin::rendering
 			renderModule->UpdateResources(mResourceManager.get());
 		}
 
-		mResourceManager->Update();
+		mResourceManager->CreateAndUpdateResources();
 	}
 
 	void RenderSubsystemVK::BuildGraph()
@@ -1172,7 +1179,7 @@ namespace puffin::rendering
 			{
 				if (const auto staticMesh = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshID))
 				{
-					mResourceManager->AddStaticMesh(staticMesh);
+					mUnifiedGeometryBuffer->AddStaticMesh(staticMesh);
 				}
 			}
 
@@ -2044,9 +2051,9 @@ namespace puffin::rendering
 			drawBatch.matID = mRenderables[0].matID;
 			drawBatch.cmdIndex = 0;
 
-			indirectCmds[cmdIdx].vertexOffset = mResourceManager->GeometryBuffer()->MeshVertexOffset(currentMeshID, currentSubMeshIdx);
-			indirectCmds[cmdIdx].firstIndex = mResourceManager->GeometryBuffer()->MeshIndexOffset(currentMeshID, currentSubMeshIdx);
-			indirectCmds[cmdIdx].indexCount = mResourceManager->GeometryBuffer()->MeshIndexCount(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].vertexOffset = mUnifiedGeometryBuffer->MeshVertexOffset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].firstIndex = mUnifiedGeometryBuffer->MeshIndexOffset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].indexCount = mUnifiedGeometryBuffer->MeshIndexCount(currentMeshID, currentSubMeshIdx);
 			indirectCmds[cmdIdx].firstInstance = 0;
 
 			constexpr int maxInstancesPerCommand = gMaxObjects;
@@ -2080,9 +2087,9 @@ namespace puffin::rendering
 					cmdIdx++;
 					cmdCount++;
 
-					indirectCmds[cmdIdx].vertexOffset = mResourceManager->GeometryBuffer()->MeshVertexOffset(currentMeshID, currentSubMeshIdx);
-					indirectCmds[cmdIdx].firstIndex = mResourceManager->GeometryBuffer()->MeshIndexOffset(currentMeshID, currentSubMeshIdx);
-					indirectCmds[cmdIdx].indexCount = mResourceManager->GeometryBuffer()->MeshIndexCount(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].vertexOffset = mUnifiedGeometryBuffer->MeshVertexOffset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].firstIndex = mUnifiedGeometryBuffer->MeshIndexOffset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].indexCount = mUnifiedGeometryBuffer->MeshIndexCount(currentMeshID, currentSubMeshIdx);
 					indirectCmds[cmdIdx].firstInstance = instanceIdx;
 
 					newBatch = false;
@@ -2140,7 +2147,7 @@ namespace puffin::rendering
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mShadowPipelineLayout.get(), 0, 1,
 			&GetCurrentFrameData().objectDescriptor, 0, nullptr);
 
-		cmd.bindIndexBuffer(mResourceManager->GeometryBuffer()->GetIndexBuffer().buffer, 0, vk::IndexType::eUint32);
+		cmd.bindIndexBuffer(mUnifiedGeometryBuffer->GetIndexBuffer().buffer, 0, vk::IndexType::eUint32);
 
 		auto entt_subsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 
@@ -2150,7 +2157,7 @@ namespace puffin::rendering
 			const auto& shadow = entt_subsystem->GetRegistry()->get<ShadowCasterComponent3D>(entity);
 
 			GPUShadowPushConstant pushConstant;
-			pushConstant.vertexBufferAddress = mResourceManager->GeometryBuffer()->GetVertexBufferAddress();
+			pushConstant.vertexBufferAddress = mUnifiedGeometryBuffer->GetVertexBufferAddress();
 			pushConstant.lightSpaceView = shadow.lightViewProj;
 
 			cmd.pushConstants(mShadowPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUShadowPushConstant), &pushConstant);
@@ -2337,12 +2344,12 @@ namespace puffin::rendering
 
 		
 		GPUVertexShaderPushConstant pushConstantVert;
-		pushConstantVert.vertexBufferAddress = mResourceManager->GeometryBuffer()->GetVertexBufferAddress();
+		pushConstantVert.vertexBufferAddress = mUnifiedGeometryBuffer->GetVertexBufferAddress();
 
 		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &pushConstantVert);
 		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUFragShaderPushConstant), &GetCurrentFrameData().pushConstantFrag);
 		
-		cmd.bindIndexBuffer(mResourceManager->GeometryBuffer()->GetIndexBuffer().buffer, 0, vk::IndexType::eUint32);
+		cmd.bindIndexBuffer(mUnifiedGeometryBuffer->GetIndexBuffer().buffer, 0, vk::IndexType::eUint32);
 	}
 
 	void RenderSubsystemVK::DrawMeshBatch(vk::CommandBuffer cmd, const MeshDrawBatch& meshDrawBatch)

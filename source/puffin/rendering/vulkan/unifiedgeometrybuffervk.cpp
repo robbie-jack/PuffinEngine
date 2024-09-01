@@ -16,8 +16,8 @@
 
 namespace puffin::rendering
 {
-	UnifiedGeometryBuffer::UnifiedGeometryBuffer(RenderSubsystemVK* renderSystem, UnifiedGeometryBufferParams params) :
-		m_render_system(renderSystem), mVertexPageSize(params.vertexPageSize), mVertexInitialPageCount(params.vertexInitialPageCount),
+	UnifiedGeometryBufferVK::UnifiedGeometryBufferVK(RenderSubsystemVK* renderSystem, UnifiedGeometryBufferParams params) :
+		mRenderSystem(renderSystem), mVertexPageSize(params.vertexPageSize), mVertexInitialPageCount(params.vertexInitialPageCount),
 		mIndexPageSize(params.indexPageSize), mIndexInitialPageCount(params.indexInitialPageCount)
 	{
 		AddInternalVertexBuffer(VertexFormat::PNTV32);
@@ -25,7 +25,7 @@ namespace puffin::rendering
 		ResizeIndexBuffer(mIndexBufferData, mIndexInitialPageCount);
 	}
 
-	UnifiedGeometryBuffer::~UnifiedGeometryBuffer()
+	UnifiedGeometryBufferVK::~UnifiedGeometryBufferVK()
 	{
 		mVertexPageSize = 0;
 		mIndexPageSize = 0;
@@ -33,19 +33,19 @@ namespace puffin::rendering
 
 		for (auto& [vertex_format, vertex_buffer_data] : mVertexBufferData)
 		{
-			m_render_system->GetAllocator().destroyBuffer(vertex_buffer_data.allocBuffer.buffer, vertex_buffer_data.allocBuffer.allocation);
+			mRenderSystem->GetAllocator().destroyBuffer(vertex_buffer_data.allocBuffer.buffer, vertex_buffer_data.allocBuffer.allocation);
 		}
 
 		mVertexBufferData.clear();
 
-		m_render_system->GetAllocator().destroyBuffer(mIndexBufferData.allocBuffer.buffer, mIndexBufferData.allocBuffer.allocation);
+		mRenderSystem->GetAllocator().destroyBuffer(mIndexBufferData.allocBuffer.buffer, mIndexBufferData.allocBuffer.allocation);
 
-		m_render_system = nullptr;
+		mRenderSystem = nullptr;
 
 		mIndexBufferData = {};
 	}
 
-	void UnifiedGeometryBuffer::AddStaticMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh)
+	void UnifiedGeometryBufferVK::AddStaticMesh(const std::shared_ptr<assets::StaticMeshAsset>& staticMesh)
 	{
 		if (staticMesh && staticMesh->Load())
 		{
@@ -83,7 +83,7 @@ namespace puffin::rendering
 			params.srcData = staticMesh->Vertices().data();
 			params.dstOffset = internalVertexBufferData.byteOffset;
 
-			util::CopyCPUDataIntoGPUBuffer(m_render_system, params);
+			util::CopyCPUDataIntoGPUBuffer(mRenderSystem, params);
 
 			// Copy index data
 			params.dstBuffer = mIndexBufferData.allocBuffer;
@@ -91,7 +91,7 @@ namespace puffin::rendering
 			params.srcData = staticMesh->Indices().data();
 			params.dstOffset = mIndexBufferData.byteOffset;
 
-			util::CopyCPUDataIntoGPUBuffer(m_render_system, params);
+			util::CopyCPUDataIntoGPUBuffer(mRenderSystem, params);
 
 			for (const auto& subMeshInfo : staticMesh->SubMeshInfo())
 			{
@@ -112,47 +112,47 @@ namespace puffin::rendering
 		}
 	}
 
-	bool UnifiedGeometryBuffer::HasMesh(const UUID staticMeshID) const
+	bool UnifiedGeometryBufferVK::HasMesh(const UUID staticMeshID) const
 	{
 		return mInternalMeshData.count(staticMeshID) == 1;
 	}
 
-	uint32_t UnifiedGeometryBuffer::MeshVertexOffset(const UUID meshID, uint8_t subMeshIdx)
+	uint32_t UnifiedGeometryBufferVK::MeshVertexOffset(const UUID meshID, uint8_t subMeshIdx)
 	{
 		return mInternalMeshData[meshID].subMeshData[subMeshIdx].vertexOffset;
 	}
 
-	uint32_t UnifiedGeometryBuffer::MeshIndexOffset(const UUID meshID, uint8_t subMeshIdx)
+	uint32_t UnifiedGeometryBufferVK::MeshIndexOffset(const UUID meshID, uint8_t subMeshIdx)
 	{
 		return mInternalMeshData[meshID].subMeshData[subMeshIdx].indexOffset;
 	}
 
-	uint32_t UnifiedGeometryBuffer::MeshVertexCount(const UUID meshID, uint8_t subMeshIdx)
+	uint32_t UnifiedGeometryBufferVK::MeshVertexCount(const UUID meshID, uint8_t subMeshIdx)
 	{
 		return mInternalMeshData[meshID].subMeshData[subMeshIdx].vertexCount;
 	}
 
-	uint32_t UnifiedGeometryBuffer::MeshIndexCount(const UUID meshID, uint8_t subMeshIdx)
+	uint32_t UnifiedGeometryBufferVK::MeshIndexCount(const UUID meshID, uint8_t subMeshIdx)
 	{
 		return mInternalMeshData[meshID].subMeshData[subMeshIdx].indexCount;
 	}
 
-	vk::DeviceAddress UnifiedGeometryBuffer::GetVertexBufferAddress(VertexFormat format) const
+	vk::DeviceAddress UnifiedGeometryBufferVK::GetVertexBufferAddress(VertexFormat format) const
 	{
 		return mVertexBufferData.at(format).bufferAddress;
 	}
 
-	AllocatedBuffer& UnifiedGeometryBuffer::GetVertexBuffer(VertexFormat format)
+	AllocatedBuffer& UnifiedGeometryBufferVK::GetVertexBuffer(VertexFormat format)
 	{
 		return mVertexBufferData.at(format).allocBuffer;
 	}
 
-	AllocatedBuffer& UnifiedGeometryBuffer::GetIndexBuffer()
+	AllocatedBuffer& UnifiedGeometryBufferVK::GetIndexBuffer()
 	{
 		return mIndexBufferData.allocBuffer;
 	}
 
-	void UnifiedGeometryBuffer::AddInternalVertexBuffer(VertexFormat format)
+	void UnifiedGeometryBufferVK::AddInternalVertexBuffer(VertexFormat format)
 	{
 		mVertexBufferData.emplace(format, InternalVertexBufferData(format));
 
@@ -161,7 +161,7 @@ namespace puffin::rendering
 		ResizeVertexBuffer(mVertexBufferData[format], mVertexInitialPageCount);
 	}
 
-	void UnifiedGeometryBuffer::GrowVertexBuffer(InternalVertexBufferData& vertexBufferData,
+	void UnifiedGeometryBufferVK::GrowVertexBuffer(InternalVertexBufferData& vertexBufferData,
 	                                               vk::DeviceSize minSize)
 	{
 		if (minSize > vertexBufferData.byteSizeTotal)
@@ -172,7 +172,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void UnifiedGeometryBuffer::GrowIndexBuffer(InternalIndexBufferData& indexBufferData,
+	void UnifiedGeometryBufferVK::GrowIndexBuffer(InternalIndexBufferData& indexBufferData,
 	                                              vk::DeviceSize minSize)
 	{
 		if (minSize > indexBufferData.byteSizeTotal)
@@ -183,7 +183,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void UnifiedGeometryBuffer::ResizeVertexBuffer(InternalVertexBufferData& vertexBufferData,
+	void UnifiedGeometryBufferVK::ResizeVertexBuffer(InternalVertexBufferData& vertexBufferData,
 		size_t newPageCount)
 	{
 		const uint64_t newBufferSize = mVertexPageSize * newPageCount;
@@ -196,18 +196,18 @@ namespace puffin::rendering
 			params.dataSize = vertexBufferData.byteOffset;
 			params.srcBuffer = vertexBufferData.allocBuffer.buffer;
 			params.dstBuffer = newBuffer.buffer;
-			util::CopyDataBetweenBuffers(m_render_system, params);
+			util::CopyDataBetweenBuffers(mRenderSystem, params);
 
-			m_render_system->GetAllocator().destroyBuffer(vertexBufferData.allocBuffer.buffer, vertexBufferData.allocBuffer.allocation);
+			mRenderSystem->GetAllocator().destroyBuffer(vertexBufferData.allocBuffer.buffer, vertexBufferData.allocBuffer.allocation);
 		}
 
 		vertexBufferData.allocBuffer = newBuffer;
-		vertexBufferData.bufferAddress = m_render_system->GetDevice().getBufferAddress(vk::BufferDeviceAddressInfo{ vertexBufferData.allocBuffer.buffer });
+		vertexBufferData.bufferAddress = mRenderSystem->GetDevice().getBufferAddress(vk::BufferDeviceAddressInfo{ vertexBufferData.allocBuffer.buffer });
 		vertexBufferData.pageCount = newPageCount;
 		vertexBufferData.byteSizeTotal = newBufferSize;
 	}
 
-	void UnifiedGeometryBuffer::ResizeIndexBuffer(InternalIndexBufferData& indexBufferData, size_t newPageCount)
+	void UnifiedGeometryBufferVK::ResizeIndexBuffer(InternalIndexBufferData& indexBufferData, size_t newPageCount)
 	{
 		const uint64_t newBufferSize = mIndexPageSize * newPageCount;
 
@@ -219,9 +219,9 @@ namespace puffin::rendering
 			params.dataSize = indexBufferData.byteOffset;
 			params.srcBuffer = indexBufferData.allocBuffer.buffer;
 			params.dstBuffer = newBuffer.buffer;
-			util::CopyDataBetweenBuffers(m_render_system, params);
+			util::CopyDataBetweenBuffers(mRenderSystem, params);
 
-			m_render_system->GetAllocator().destroyBuffer(indexBufferData.allocBuffer.buffer, indexBufferData.allocBuffer.allocation);
+			mRenderSystem->GetAllocator().destroyBuffer(indexBufferData.allocBuffer.buffer, indexBufferData.allocBuffer.allocation);
 		}
 
 		indexBufferData.allocBuffer = newBuffer;
@@ -229,7 +229,7 @@ namespace puffin::rendering
 		indexBufferData.byteSizeTotal = newBufferSize;
 	}
 
-	AllocatedBuffer UnifiedGeometryBuffer::AllocateVertexBuffer(vk::DeviceSize bufferSize)
+	AllocatedBuffer UnifiedGeometryBufferVK::AllocateVertexBuffer(vk::DeviceSize bufferSize)
 	{
 		util::CreateBufferParams params;
 		params.allocSize = bufferSize;
@@ -239,10 +239,10 @@ namespace puffin::rendering
 		params.allocFlags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | 
 			vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
 			vma::AllocationCreateFlagBits::eMapped;
-		return util::CreateBuffer(m_render_system->GetAllocator(), params);
+		return util::CreateBuffer(mRenderSystem->GetAllocator(), params);
 	}
 
-	AllocatedBuffer UnifiedGeometryBuffer::AllocateIndexBuffer(vk::DeviceSize bufferSize)
+	AllocatedBuffer UnifiedGeometryBufferVK::AllocateIndexBuffer(vk::DeviceSize bufferSize)
 	{
 		util::CreateBufferParams params;
 		params.allocSize = bufferSize;
@@ -252,6 +252,6 @@ namespace puffin::rendering
 		params.allocFlags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite |
 			vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
 			vma::AllocationCreateFlagBits::eMapped;
-		return util::CreateBuffer(m_render_system->GetAllocator(), params);
+		return util::CreateBuffer(mRenderSystem->GetAllocator(), params);
 	}
 }
