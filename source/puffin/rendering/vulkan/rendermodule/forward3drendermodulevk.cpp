@@ -1,6 +1,8 @@
 #include "puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h"
 
 #include "puffin/rendering/rendersubsystem.h"
+#include "puffin/rendering/vulkan/rendersubsystemvk.h"
+#include "puffin/rendering/vulkan/resourcemanagervk.h"
 #include "puffin/rendering/vulkan/rendergraph/rendergraphvk.h"
 #include "puffin/rendering/vulkan/rendergraph/renderpassvk.h"
 
@@ -18,28 +20,39 @@ namespace puffin::rendering
 
 	void Forward3DRenderModuleVK::Initialize()
 	{
-		
+		auto resourceManager = mRenderSubsystem->GetResourceManager();
+
+		AttachmentDescVK color;
+		color.format = vk::Format::eR8G8B8A8Unorm;
+		color.type = AttachmentTypeVK::Color;
+
+		mColorResourceID = resourceManager->CreateOrUpdateAttachment(color, "forward3d-color");
+
+		AttachmentDescVK depth;
+		depth.format = vk::Format::eD32Sfloat;
+		color.type = AttachmentTypeVK::Depth;
+
+		mDepthResourceID = resourceManager->CreateOrUpdateAttachment(depth, "forward3d-depth");
 	}
 
 	void Forward3DRenderModuleVK::Deinitialize()
 	{
+		auto resourceManager = mRenderSubsystem->GetResourceManager();
 
+		resourceManager->DestroyResource(mColorResourceID);
+		resourceManager->DestroyResource(mDepthResourceID);
+
+		mColorResourceID = gInvalidID;
+		mDepthResourceID = gInvalidID;
 	}
 
 	void Forward3DRenderModuleVK::UpdateResources(ResourceManagerVK* resourceManager)
 	{
-		ImageDescVK color;
-		color.format = vk::Format::eR8G8B8A8Unorm;
-		color.usageFlags = { vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled |
-				vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst };
-
 
 	}
 
 	void Forward3DRenderModuleVK::BuildGraph(RenderGraphVK& renderGraph)
 	{
-		
-
 		auto& forwardPass = renderGraph.AddRenderPass("forward3d", RenderPassType::Graphics);
 		forwardPass.AddOutputColorAttachment("forward3d-color");
 		forwardPass.SetOutputDepthStencilAttachment("forward3d-depth");

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "puffin/rendering/resourceid.h"
 #include "vulkan/vulkan.hpp"
 
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
@@ -28,5 +29,10 @@ namespace puffin::rendering
 		void PreRender(double deltaTime) override;
 		
 		void RecordForward3DCommands(vk::CommandBuffer& cmd);
+
+	private:
+
+		ResourceID mColorResourceID, mDepthResourceID;
+
 	};
 }

@@ -1236,9 +1236,9 @@ namespace puffin::rendering
 			auto entity = enttSubsystem->GetEntity(id);
 			auto& shadow = registry->get<ShadowCasterComponent3D>(entity);
 
-			ResourceManagerVK::AttachmentParams params;
+			AttachmentDescVK params;
 			params.imageSize = ImageSizeVK::Absolute;
-			params.type = AttachmentType::Depth;
+			params.type = AttachmentTypeVK::Depth;
 			params.format = vk::Format::eD32Sfloat;
 			params.width = shadow.width;
 			params.height = shadow.height;
@@ -1279,6 +1279,7 @@ namespace puffin::rendering
 				viewportSize.y != mOffscreenData.extent.height)
 			{
 				mOffscreenData.resized = true;
+				mResourceManager->NotifyRenderExtentResized();
 			}
 		}
 		else
@@ -2784,6 +2785,8 @@ namespace puffin::rendering
 
 		system->mSwapchainData.resized = true;
 		system->mOffscreenData.resized = true;
+		system->mResourceManager->NotifySwapchainResized();
+		system->mResourceManager->NotifyRenderExtentResized();
 		system->mSwapchainExtent.width = width;
 		system->mSwapchainExtent.height = height;
 	}

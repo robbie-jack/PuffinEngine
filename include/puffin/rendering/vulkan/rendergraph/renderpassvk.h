@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
+#include "vulkan/vulkan.hpp"
+
 #include "puffin/rendering/renderpasstype.h"
-#include "puffin/rendering/vulkan/rendergraph/imagedescvk.h"
-#include "puffin/rendering/vulkan/rendergraph/bufferdescvk.h"
 
 namespace puffin::rendering
 {

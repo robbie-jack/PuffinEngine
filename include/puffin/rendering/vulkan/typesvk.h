@@ -43,21 +43,6 @@ namespace puffin::rendering
 
 	using Texture = AllocatedImage;
 
-	enum class ImageType
-	{
-		Color,
-		Depth
-	};
-
-	struct ImageDesc
-	{
-		ImageType imageType = ImageType::Color;
-		vk::Format format = vk::Format::eUndefined;
-		uint32_t width = 0;
-		uint32_t height = 0;
-		uint32_t depth = 0;
-	};
-
 	struct SwapchainData
 	{
 		void operator=(const SwapchainData& other)

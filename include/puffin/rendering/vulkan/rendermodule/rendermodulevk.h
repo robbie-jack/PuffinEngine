@@ -23,7 +23,7 @@ namespace puffin::rendering
 		virtual void RegisterModules();
 
 		/*
-		 * Initialize this module, create any needed resources (Images, bufffers, descriptors, etc...)
+		 * Initialize this module, create any needed resources (Images, buffers, descriptors, etc...)
 		 */
 		virtual void Initialize();
 

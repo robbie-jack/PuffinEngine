@@ -212,13 +212,12 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/vulkan/materialregistryvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/pipelinevk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendersubsystemvk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/resourcedescvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/resourcemanagervk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/typesvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/vertexvk.h
 	# Rendering - Vulkan - Render Graph
-	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/imagedescvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/bufferdescvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.h
 	# Rendering - Vulkan - Render Module

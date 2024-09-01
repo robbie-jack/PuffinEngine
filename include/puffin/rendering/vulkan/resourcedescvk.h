@@ -1,0 +1,49 @@
+﻿#pragma once
+
+#include <cstdint>
+
+#include "vulkan/vulkan.hpp"
+
+namespace puffin::rendering
+{
+	/*
+	 * Enum for defining what size an attachment should be created with
+	 */
+	enum class ImageSizeVK
+	{
+		Absolute = 0,			// Size should be set to absolute value of attachment description
+		SwapchainRelative,		// Size should be relative to the size of the swapchain
+		RenderExtentRelative,	// Size should be relative to size of defined render extent
+	};
+
+	enum class AttachmentTypeVK
+	{
+		Color,
+		Depth
+	};
+
+	struct AttachmentDescVK
+	{
+		ImageSizeVK imageSize = ImageSizeVK::RenderExtentRelative;
+		AttachmentTypeVK type = AttachmentTypeVK::Color;
+		vk::Format format = vk::Format::eUndefined;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		float widthMult = 1.0f;
+		float heightMult = 1.0f;
+	};
+
+	struct ImageDesc
+	{
+		vk::ImageCreateInfo info;
+		vk::ImageViewCreateInfo viewInfo;
+		bool persistent = false;
+	};
+
+	struct BufferDescVK
+	{
+		vk::DeviceSize size = 0;
+		vk::BufferUsageFlags usageFlags;
+		bool persistent = false; // Whether this buffer should persist between frames or not
+	};
+}

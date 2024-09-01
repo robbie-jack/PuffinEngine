@@ -156,6 +156,7 @@ namespace puffin::rendering
 		const vk::Extent2D& GetRenderExtent() const { return mRenderExtent; }
 		DeletionQueue& GetDeletionQueue() { return mDeletionQueue; }
 		bool GetRebarEnabled() const { return mRebarEnabled; }
+		ResourceManagerVK* GetResourceManager() const { return mResourceManager.get(); }
 
 		void OnUpdateMesh(entt::registry& registry, entt::entity entity);
 		void OnUpdateTransform(entt::registry& registry, entt::entity entity);
