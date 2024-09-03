@@ -203,6 +203,16 @@ namespace puffin::rendering
 				CleanSwapchain(mSwapchainDataOld);
 			}
 
+			for (auto& frameData : mFrameRenderData)
+			{
+				for (auto& [name, semaphore] : frameData.semaphores)
+				{
+					mDevice.destroySemaphore(semaphore);
+				}
+
+				frameData.semaphores.clear();
+			}
+
 			mDeletionQueue.Flush();
 
 			mRenderGraph.Reset();
@@ -238,9 +248,7 @@ namespace puffin::rendering
 		UpdateResources();
 
 		//	3. Reset & Build Graph
-		mRenderGraph.Reset();
-
-		BuildGraph();
+		UpdateGraph();
 
 		//	4. Pre-Render - Upload all needed data to GPU (Textures, Object Data, Materials, etc...)
 
@@ -1092,11 +1100,47 @@ namespace puffin::rendering
 		mResourceManager->CreateAndUpdateResources();
 	}
 
-	void RenderSubsystemVK::BuildGraph()
+	void RenderSubsystemVK::UpdateGraph()
 	{
+		mRenderGraph.Reset();
+
 		for (auto [name, renderModule] : mRenderModules)
 		{
-			renderModule->BuildGraph(mRenderGraph);
+			renderModule->UpdateGraph(mRenderGraph);
+		}
+
+		auto& frameData = GetCurrentFrameData();
+		const auto& renderPasses = mRenderGraph.GetRenderPasses();
+
+		std::vector<std::string> semaphoresToRemove;
+
+		// Destroy old semaphores
+		for (auto& [name, semaphore] : frameData.semaphores)
+		{
+			if (renderPasses.find(name) == renderPasses.end())
+			{
+				mDevice.destroySemaphore(semaphore);
+				semaphoresToRemove.push_back(name);
+			}
+		}
+
+		for (const auto& name : semaphoresToRemove)
+		{
+			frameData.semaphores.erase(name);
+		}
+
+		semaphoresToRemove.clear();
+
+		// Create new semaphores
+		vk::SemaphoreCreateInfo semaphoreCreateInfo = { {}, nullptr };
+		for (const auto& [name, pass] : renderPasses)
+		{
+			if (frameData.semaphores.find(name) == frameData.semaphores.end())
+			{
+				frameData.semaphores.emplace(name, vk::Semaphore{});
+
+				VK_CHECK(mDevice.createSemaphore(&semaphoreCreateInfo, nullptr, &frameData.semaphores.at(name)));
+			}
 		}
 	}
 

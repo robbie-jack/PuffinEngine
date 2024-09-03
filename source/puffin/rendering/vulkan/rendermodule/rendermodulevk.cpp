@@ -28,7 +28,7 @@ namespace puffin::rendering
 	{
 	}
 
-	void RenderModuleVK::BuildGraph(RenderGraphVK& renderGraph)
+	void RenderModuleVK::UpdateGraph(RenderGraphVK& renderGraph)
 	{
 	}
 

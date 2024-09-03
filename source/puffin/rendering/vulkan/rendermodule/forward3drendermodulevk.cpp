@@ -51,7 +51,7 @@ namespace puffin::rendering
 
 	}
 
-	void Forward3DRenderModuleVK::BuildGraph(RenderGraphVK& renderGraph)
+	void Forward3DRenderModuleVK::UpdateGraph(RenderGraphVK& renderGraph)
 	{
 		auto& forwardPass = renderGraph.AddRenderPass("forward3d", RenderPassType::Graphics);
 		forwardPass.AddOutputColorAttachment("forward3d-color");

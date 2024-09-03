@@ -24,7 +24,7 @@ namespace puffin::rendering
 
 		void UpdateResources(ResourceManagerVK* resourceManager) override;
 
-		void BuildGraph(RenderGraphVK& renderGraph) override;
+		void UpdateGraph(RenderGraphVK& renderGraph) override;
 
 		void PreRender(double deltaTime) override;
 		

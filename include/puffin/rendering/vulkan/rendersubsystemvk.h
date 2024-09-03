@@ -77,6 +77,8 @@ namespace puffin::rendering
 		vk::Semaphore imguiSemaphore;
 		vk::Semaphore presentSemaphore;
 
+		std::unordered_map<std::string, vk::Semaphore> semaphores;
+
 		vk::Fence renderFence;
 		vk::Fence presentFence;
 
@@ -245,7 +247,7 @@ namespace puffin::rendering
 		// Pre-Render Methods
 		void UpdateResources();
 
-		void BuildGraph();
+		void UpdateGraph();
 
 		void PreRender(double deltaTime);
 

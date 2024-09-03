@@ -40,7 +40,7 @@ namespace puffin::rendering
 		/*
 		 * Called by render subsystem to build render graph, adding any render passes and binding callbacks for this module
 		 */
-		virtual void BuildGraph(RenderGraphVK& renderGraph);
+		virtual void UpdateGraph(RenderGraphVK& renderGraph);
 
 		/*
 		 * Called by render subsystem once a frame before rendering so module can update any data/resources required for rendering
