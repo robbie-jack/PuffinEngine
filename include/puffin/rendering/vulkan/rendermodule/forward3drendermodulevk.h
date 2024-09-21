@@ -14,7 +14,7 @@ namespace puffin::rendering
 	{
 	public:
 
-		explicit Forward3DRenderModuleVK(RenderSubsystemVK* renderSubsystem);
+		explicit Forward3DRenderModuleVK(std::shared_ptr<core::Engine> engine, RenderSubsystemVK* renderSubsystem);
 		~Forward3DRenderModuleVK() override = default;
 
 		void RegisterModules() override;
@@ -32,7 +32,8 @@ namespace puffin::rendering
 
 	private:
 
-		ResourceID mColorResourceID, mDepthResourceID;
+		ResourceID mColorResourceID = gInvalidID;
+		ResourceID mDepthResourceID = gInvalidID;
 
 	};
 }

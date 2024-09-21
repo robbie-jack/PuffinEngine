@@ -5,17 +5,18 @@
 #include "puffin/rendering/vulkan/resourcemanagervk.h"
 #include "puffin/rendering/vulkan/rendergraph/rendergraphvk.h"
 #include "puffin/rendering/vulkan/rendergraph/renderpassvk.h"
+#include "puffin/rendering/vulkan/rendermodule/corerendermodulevk.h"
 
 namespace puffin::rendering
 {
-	Forward3DRenderModuleVK::Forward3DRenderModuleVK(RenderSubsystemVK* renderSubsystem)
-		: RenderModuleVK(renderSubsystem)
+	Forward3DRenderModuleVK::Forward3DRenderModuleVK(std::shared_ptr<core::Engine> engine, RenderSubsystemVK* renderSubsystem)
+		: RenderModuleVK(engine, renderSubsystem)
 	{
 	}
 
 	void Forward3DRenderModuleVK::RegisterModules()
 	{
-		
+		mRenderSubsystem->RegisterModule<CoreRenderModuleVK>("CoreRenderModuleVK");
 	}
 
 	void Forward3DRenderModuleVK::Initialize()

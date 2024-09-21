@@ -211,7 +211,7 @@ namespace puffin::rendering
 			if (mRenderModules.find(moduleName) != mRenderModules.end())
 				return;
 
-			mRenderModules.emplace(moduleName, new T(this));
+			mRenderModules.emplace(moduleName, new T(mEngine, this));
 
 			mRenderModules.at(moduleName)->RegisterModules();
 		}

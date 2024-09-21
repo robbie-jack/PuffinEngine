@@ -98,8 +98,8 @@ namespace puffin
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::PlotLines("Framerate", framerateValues, numValues, valueOffset, nullptr, 0.0f, 144.0f,
-					                 ImVec2(0.0f, 80.0f));
+					ImGui::PlotLines("Framerate", framerateValues, numValues, valueOffset, nullptr, 0.0f, 165.0f,
+					                 ImVec2(0.0f, 160.0f));
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
@@ -127,7 +127,7 @@ namespace puffin
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
 					ImGui::PlotLines("Frametime", frametimeValues, numValues, valueOffset, nullptr, 0.0f, 100.0f,
-					                 ImVec2(0.0f, 80.0f));
+					                 ImVec2(0.0f, 160.0f));
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();

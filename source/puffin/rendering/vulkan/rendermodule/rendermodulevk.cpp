@@ -2,14 +2,15 @@
 
 namespace puffin::rendering
 {
-	RenderModuleVK::RenderModuleVK(RenderSubsystemVK* renderSubsystem)
-		: mRenderSubsystem(renderSubsystem)
+	RenderModuleVK::RenderModuleVK(std::shared_ptr<core::Engine> engine, RenderSubsystemVK* renderSubsystem)
+		: mEngine(std::move(engine)), mRenderSubsystem(renderSubsystem)
 	{
 	}
 
 	RenderModuleVK::~RenderModuleVK()
 	{
 		mRenderSubsystem = nullptr;
+		mEngine = nullptr;
 	}
 
 	void RenderModuleVK::RegisterModules()

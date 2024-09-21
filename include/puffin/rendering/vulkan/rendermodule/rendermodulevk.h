@@ -1,5 +1,15 @@
 #pragma once
 
+#include <memory>
+
+namespace puffin
+{
+	namespace core
+	{
+		class Engine;
+	}
+}
+
 namespace puffin::rendering
 {
 	class ResourceManagerVK;
@@ -14,7 +24,7 @@ namespace puffin::rendering
 	{
 	public:
 
-		explicit RenderModuleVK(RenderSubsystemVK* renderSubsystem);
+		explicit RenderModuleVK(std::shared_ptr<core::Engine> engine, RenderSubsystemVK* renderSubsystem);
 		virtual ~RenderModuleVK();
 
 		/*
@@ -49,6 +59,7 @@ namespace puffin::rendering
 
 	protected:
 
+		std::shared_ptr<core::Engine> mEngine = nullptr;
 		RenderSubsystemVK* mRenderSubsystem = nullptr;
 
 	};
