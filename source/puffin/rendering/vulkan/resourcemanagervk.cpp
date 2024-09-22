@@ -549,8 +549,8 @@ namespace puffin::rendering
 			extent2D = mRenderSystem->GetRenderExtent();
 		}
 
-		extent.width = static_cast<uint32_t>(std::ceil(extent.width * widthMult));
-		extent.height = static_cast<uint32_t>(std::ceil(extent.height * heightMult));
+		extent.width = static_cast<uint32_t>(std::ceil(extent2D.width * widthMult));
+		extent.height = static_cast<uint32_t>(std::ceil(extent2D.height * heightMult));
 		extent.depth = 1;
 	}
 }

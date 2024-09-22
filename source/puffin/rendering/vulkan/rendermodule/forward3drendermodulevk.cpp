@@ -16,7 +16,7 @@ namespace puffin::rendering
 
 	void Forward3DRenderModuleVK::RegisterModules()
 	{
-		mRenderSubsystem->RegisterModule<CoreRenderModuleVK>("CoreRenderModuleVK");
+		mRenderSubsystem->RegisterModule<CoreRenderModuleVK>("Core");
 	}
 
 	void Forward3DRenderModuleVK::Initialize()
@@ -31,7 +31,7 @@ namespace puffin::rendering
 
 		AttachmentDescVK depth;
 		depth.format = vk::Format::eD32Sfloat;
-		color.type = AttachmentTypeVK::Depth;
+		depth.type = AttachmentTypeVK::Depth;
 
 		mDepthResourceID = resourceManager->CreateOrUpdateAttachment(depth, "forward3d-depth");
 	}

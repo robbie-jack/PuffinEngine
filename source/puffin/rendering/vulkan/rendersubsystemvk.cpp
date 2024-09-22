@@ -55,6 +55,7 @@
 #include "puffin/nodes/transformnode3d.h"
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/renderhelpers.h"
+#include "puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h"
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
 
 #define VK_CHECK(x)                                                 \
@@ -136,6 +137,8 @@ namespace puffin::rendering
 		}
 
 		InitOffscreen(mOffscreenData, mRenderExtent, mSwapchainData.images.size());
+
+		RegisterModule<Forward3DRenderModuleVK>("Forward3D");
 
 		InitModules();
 
@@ -584,7 +587,7 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::InitModules()
 	{
-		for (auto [name, renderModule] : mRenderModules)
+		for (auto renderModule : mRenderModuleVector)
 		{
 			renderModule->Initialize();
 		}
@@ -1084,7 +1087,7 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::DeinitModules()
 	{
-		for (auto [name, renderModule] : mRenderModules)
+		for (auto renderModule : mRenderModuleVector)
 		{
 			renderModule->Deinitialize();
 		}
@@ -1092,7 +1095,7 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::UpdateResources()
 	{
-		for (auto [name, renderModule] : mRenderModules)
+		for (auto renderModule : mRenderModuleVector)
 		{
 			renderModule->UpdateResources(mResourceManager.get());
 		}
@@ -1104,7 +1107,7 @@ namespace puffin::rendering
 	{
 		mRenderGraph.Reset();
 
-		for (auto [name, renderModule] : mRenderModules)
+		for (auto renderModule : mRenderModuleVector)
 		{
 			renderModule->UpdateGraph(mRenderGraph);
 		}
@@ -1146,7 +1149,7 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::PreRender(double deltaTime)
 	{
-		for (auto [name, renderModule] : mRenderModules)
+		for (auto renderModule : mRenderModuleVector)
 		{
 			renderModule->PreRender(deltaTime);
 		}

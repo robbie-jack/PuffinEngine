@@ -43,10 +43,10 @@ namespace puffin::rendering
 	struct BufferDescVK
 	{
 		vk::DeviceSize size = 0;
-		vk::BufferUsageFlags usage;
-		vma::MemoryUsage memoryUsage;
-		vma::AllocationCreateFlags allocFlags;
-		vk::MemoryPropertyFlags propFlags;
+		vk::BufferUsageFlags usage = {};
+		vma::MemoryUsage memoryUsage = vma::MemoryUsage::eAuto;
+		vma::AllocationCreateFlags allocFlags = {};
+		vk::MemoryPropertyFlags propFlags = {};
 		bool persistent = false; // Whether this buffer should persist between frames or not
 	};
 }

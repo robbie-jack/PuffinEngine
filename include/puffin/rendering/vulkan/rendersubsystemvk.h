@@ -214,6 +214,8 @@ namespace puffin::rendering
 			mRenderModules.emplace(moduleName, new T(mEngine, this));
 
 			mRenderModules.at(moduleName)->RegisterModules();
+
+			mRenderModuleVector.push_back(mRenderModules.at(moduleName));
 		}
 
 	private:
@@ -323,6 +325,7 @@ namespace puffin::rendering
 		// Initialization Members
 		RenderGraphVK mRenderGraph;
 		std::unordered_map<std::string, RenderModuleVK*> mRenderModules;
+		std::vector<RenderModuleVK*> mRenderModuleVector; // Vector of render module pointers, in ordered modules were registered
 
 		vk::Device mDevice;
 		vk::Instance mInstance;
