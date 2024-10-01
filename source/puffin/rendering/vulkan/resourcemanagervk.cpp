@@ -22,7 +22,14 @@ namespace puffin::rendering
 		{
 			for (const auto& instanceID : info.instanceIDs)
 			{
-				DestroyImageInstanceInternal(instanceID);
+				if (info.type == ResourceType::Image)
+				{
+					DestroyImageInstanceInternal(instanceID);
+				}
+				else if (info.type == ResourceType::Buffer)
+				{
+					DestroyBufferInstanceInternal(instanceID);
+				}
 			}
 		}
 
@@ -174,7 +181,7 @@ namespace puffin::rendering
 
 	AllocatedImage& ResourceManagerVK::GetImage(ResourceID id)
 	{
-		assert(IsResourceValid(id) && "ResourceManagerVK::GetImage -  No image with id %s exists", std::to_string(id).c_str());
+		assert(IsResourceValid(id) && "ResourceManagerVK::GetImage -  No image with id exists");
 
 		const auto& resourceInfo = mResourceInfo.at(id);
 
@@ -280,19 +287,21 @@ namespace puffin::rendering
 
 	void ResourceManagerVK::DestroyResourcesInstances()
 	{
-		for (const auto& id : mImageInstancesToDestroy[mRenderSystem->GetCurrentFrameIdx()])
+		const auto frameIdx = mRenderSystem->GetCurrentFrameIdx();
+
+		for (const auto& id : mImageInstancesToDestroy[frameIdx])
 		{
 			DestroyImageInstanceInternal(id);
 		}
 
-		mImageInstancesToDestroy[mRenderSystem->GetCurrentFrameIdx()].clear();
+		mImageInstancesToDestroy[frameIdx].clear();
 
-		for (const auto& id : mBufferInstancesToDestroy[mRenderSystem->GetCurrentFrameIdx()])
+		for (const auto& id : mBufferInstancesToDestroy[frameIdx])
 		{
 			DestroyBufferInstanceInternal(id);
 		}
 
-		mBufferInstancesToDestroy[mRenderSystem->GetCurrentFrameIdx()].clear();
+		mBufferInstancesToDestroy[frameIdx].clear();
 	}
 
 	void ResourceManagerVK::CreateOrUpdateAttachmentInternal(const AttachmentDescVK& desc, ResourceID id,
@@ -354,9 +363,9 @@ namespace puffin::rendering
 
 			if (resourceInfo.persistent)
 			{
-				mImageInstancesToDestroy[0].emplace(resourceInfo.instanceIDs[0]);
+				mImageInstancesToDestroy[mBufferedFrameCount - 1].emplace(resourceInfo.instanceIDs[0]);
 
-				resourceInfo.instanceIDs[0] = GenerateId();
+				resourceInfo.instanceIDs[mBufferedFrameCount - 1] = GenerateId();
 			}
 			else
 			{
@@ -413,9 +422,9 @@ namespace puffin::rendering
 
 			if (resourceInfo.persistent)
 			{
-				mBufferInstancesToDestroy[0].emplace(resourceInfo.instanceIDs[0]);
+				mBufferInstancesToDestroy[mBufferedFrameCount - 1].emplace(resourceInfo.instanceIDs[0]);
 
-				resourceInfo.instanceIDs[0] = GenerateId();
+				resourceInfo.instanceIDs[mBufferedFrameCount - 1] = GenerateId();
 			}
 			else
 			{
@@ -433,7 +442,7 @@ namespace puffin::rendering
 
 			auto& resourceInfo = mResourceInfo.at(id);
 			resourceInfo.id = id;
-			resourceInfo.type = ResourceType::Image;
+			resourceInfo.type = ResourceType::Buffer;
 			resourceInfo.persistent = desc.persistent;
 
 			if (resourceInfo.persistent)
@@ -506,6 +515,9 @@ namespace puffin::rendering
 
 	void ResourceManagerVK::DestroyImageInstanceInternal(ResourceID instanceID)
 	{
+		if (mImageInstances.find(instanceID) == mImageInstances.end())
+			return;
+
 		const auto& allocImage = mImageInstances.at(instanceID);
 
 		mRenderSystem->GetDevice().destroyImageView(allocImage.imageView);
@@ -528,6 +540,9 @@ namespace puffin::rendering
 
 	void ResourceManagerVK::DestroyBufferInstanceInternal(ResourceID instanceID)
 	{
+		if (mBufferInstances.find(instanceID) == mBufferInstances.end())
+			return;
+
 		const auto& allocBuffer = mBufferInstances.at(instanceID);
 
 		mRenderSystem->GetAllocator().destroyBuffer(allocBuffer.buffer, allocBuffer.allocation);
