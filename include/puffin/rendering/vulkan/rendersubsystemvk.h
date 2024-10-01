@@ -250,6 +250,8 @@ namespace puffin::rendering
 		void UpdateResources();
 
 		void UpdateGraph();
+		void UpdateGraphSemaphores();
+		void UpdateGraphCommands();
 
 		void PreRender(double deltaTime);
 

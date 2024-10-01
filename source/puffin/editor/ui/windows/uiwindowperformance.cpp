@@ -206,14 +206,15 @@ namespace puffin
 				benchmarkVector.push_back(0.0);
 			}
 
-			benchmarkVector[mBenchmarkIdx.at(name) % s_max_benchmark_values] = benchmarkTime;
+			int benchmarkCount = mBenchmarkIdx.at(name) % s_max_benchmark_values;
+			benchmarkVector[benchmarkCount] = benchmarkTime;
 
 			double benchmarkAverage = 0.0;
-			for (const auto value : benchmarkVector)
+			for (int i = 0; i < benchmarkCount; ++i)
 			{
-				benchmarkAverage += value;
+				benchmarkAverage += benchmarkVector[i];
 			}
-			benchmarkAverage /= benchmarkVector.size();
+			benchmarkAverage /= benchmarkCount;
 
 			ImGui::Dummy(ImVec2(0.0f, 10.0f));
 			ImGui::SameLine();

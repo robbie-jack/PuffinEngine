@@ -1112,6 +1112,12 @@ namespace puffin::rendering
 			renderModule->UpdateGraph(mRenderGraph);
 		}
 
+		UpdateGraphSemaphores();
+		UpdateGraphCommands();
+	}
+
+	void RenderSubsystemVK::UpdateGraphSemaphores()
+	{
 		auto& frameData = GetCurrentFrameData();
 		const auto& renderPasses = mRenderGraph.GetRenderPasses();
 
@@ -1145,6 +1151,11 @@ namespace puffin::rendering
 				VK_CHECK(mDevice.createSemaphore(&semaphoreCreateInfo, nullptr, &frameData.semaphores.at(name)));
 			}
 		}
+	}
+
+	void RenderSubsystemVK::UpdateGraphCommands()
+	{
+
 	}
 
 	void RenderSubsystemVK::PreRender(double deltaTime)

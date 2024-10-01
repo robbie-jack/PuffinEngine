@@ -28,6 +28,24 @@ namespace puffin::rendering
 	{
 		mRenderSubsystem->GetResourceManager()->DestroyResource(mIndirectDrawBufferID);
 		mIndirectDrawBufferID = gInvalidID;
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mCameraBufferID);
+		mCameraBufferID = gInvalidID;
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mPointLightBufferID);
+		mPointLightBufferID = gInvalidID;
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mSpotLightBufferID);
+		mSpotLightBufferID = gInvalidID;
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mDirLightBufferID);
+		mDirLightBufferID = gInvalidID;
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mObjectBufferID);
+		mObjectBufferID = gInvalidID;
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mMaterialInstanceBufferID);
+		mMaterialInstanceBufferID = gInvalidID;
 	}
 
 	void CoreRenderModuleVK::UpdateResources(ResourceManagerVK* resourceManager)
