@@ -202,7 +202,7 @@ namespace puffin::rendering
 		void DrawIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams);
 		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams);
 
-		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return mFrameCount % mFramesInFlightCount; }
+		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return mCurrentFrame; }
 		[[nodiscard]] uint8_t GetFramesInFlightCount() const { return mFramesInFlightCount; }
 
 		template<typename T>
@@ -265,6 +265,8 @@ namespace puffin::rendering
 
 		void WaitForRenderFence();
 
+		void GetNextSwapchainIdx();
+
 		void UpdateSwapchainAndOffscreen();
 
 		void RenderEditorUI();
@@ -320,6 +322,7 @@ namespace puffin::rendering
 		                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 		void BuildShadowDescriptorInfo(std::vector<vk::DescriptorImageInfo>& shadowImageInfos);
 
+		FrameRenderData& GetFrameData(uint8_t frameIdx);
 		FrameRenderData& GetCurrentFrameData();
 
 		static void FrameBufferResizeCallback(GLFWwindow* window, const int width, const int height);
@@ -381,7 +384,8 @@ namespace puffin::rendering
 
 		uint32_t mCurrentSwapchainIdx = 0;
 		uint8_t mFramesInFlightCount = gBufferedFrameCount;
-		uint32_t mFrameCount;
+		uint8_t mCurrentFrame = 0;
+		uint32_t mFrameCount = 0;
 
 		// Pipelines
 		vk::PipelineCache m_pipeline_cache;

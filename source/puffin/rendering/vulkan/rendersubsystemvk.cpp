@@ -236,16 +236,18 @@ namespace puffin::rendering
 		VK_CHECK(mDevice.waitForFences(1, &GetCurrentFrameData().presentFence, true, 1000000000));
 		VK_CHECK(mDevice.resetFences(1, &GetCurrentFrameData().presentFence));
 
-		VK_CHECK(mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 1000000000, GetCurrentFrameData().presentSemaphore,
-				GetCurrentFrameData().presentFence, &mCurrentSwapchainIdx));
-
 		return core::GetTime();
 	}
 
 	void RenderSubsystemVK::Render(double deltaTime)
 	{
-		//	1. Wait for nth frame to finish rendering (N - 0 to number of Frames in Flight)
+		//	1. Wait for render fence and get swapchain image
+
+		//		1a. Wait for nth frame to finish rendering (N - 0 to number of Frames in Flight)
 		WaitForRenderFence();
+
+		//		1b. Get next swapchain idx to be available for rendering to
+		GetNextSwapchainIdx();
 
 		//	2. Update Render Resources (Buffers, Images, Descriptions Sync Structures, etc...)
 		UpdateShadows();
@@ -294,7 +296,8 @@ namespace puffin::rendering
 		//	6. Destroy Old Resources
 		mResourceManager->DestroyResources();
 
-		mFrameCount++;
+		mCurrentFrame = (mCurrentFrame + 1) % mFramesInFlightCount;
+		++mFrameCount;
 	}
 
 	void RenderSubsystemVK::OnUpdateMesh(entt::registry& registry, entt::entity entity)
@@ -560,7 +563,7 @@ namespace puffin::rendering
 		.use_default_format_selection()
 		// Vsync present mode
 		.set_old_swapchain(oldSwapchain)
-		.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
+		.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
 		.set_desired_min_image_count(3)
 		.set_desired_extent(swapchainData.extent.width, swapchainData.extent.height)
 		.set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)
@@ -1330,6 +1333,14 @@ namespace puffin::rendering
 		// Wait until GPU has finished rendering last frame. Timeout of 1 second
 		VK_CHECK(mDevice.waitForFences(1, &GetCurrentFrameData().renderFence, true, 1000000000));
 		VK_CHECK(mDevice.resetFences(1, &GetCurrentFrameData().renderFence));
+	}
+
+	void RenderSubsystemVK::GetNextSwapchainIdx()
+	{
+		// Acquire idx of next swapchain image to be available
+		// Pass a present fence here to allow waiting for last presentation to get correct frame time
+		VK_CHECK(mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 1000000000, GetCurrentFrameData().presentSemaphore,
+			GetCurrentFrameData().presentFence, &mCurrentSwapchainIdx));
 	}
 
 	void RenderSubsystemVK::UpdateSwapchainAndOffscreen()
@@ -2841,9 +2852,14 @@ namespace puffin::rendering
 		}
 	}
 
+	FrameRenderData& RenderSubsystemVK::GetFrameData(uint8_t frameIdx)
+	{
+		return mFrameRenderData[frameIdx];
+	}
+
 	FrameRenderData& RenderSubsystemVK::GetCurrentFrameData()
 	{
-		return mFrameRenderData[GetCurrentFrameIdx()];
+		return GetFrameData(GetCurrentFrameIdx());
 	}
 
 	void RenderSubsystemVK::FrameBufferResizeCallback(GLFWwindow* window, const int width, const int height)

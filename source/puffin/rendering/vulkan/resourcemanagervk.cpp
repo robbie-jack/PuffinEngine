@@ -392,8 +392,10 @@ namespace puffin::rendering
 			}
 			else
 			{
-				resourceInfo.instanceIDs.push_back(GenerateId());
-				resourceInfo.instanceIDs.push_back(GenerateId());
+				for (int i = 0; i < mBufferedFrameCount; ++i)
+				{
+					resourceInfo.instanceIDs.push_back(GenerateId());
+				}
 			}
 
 			if (!name.empty())
@@ -451,8 +453,10 @@ namespace puffin::rendering
 			}
 			else
 			{
-				resourceInfo.instanceIDs.push_back(GenerateId());
-				resourceInfo.instanceIDs.push_back(GenerateId());
+				for (int i = 0; i < mBufferedFrameCount; ++i)
+				{
+					resourceInfo.instanceIDs.push_back(GenerateId());
+				}
 			}
 
 			if (!name.empty())
