@@ -6,6 +6,7 @@
 #include <string>
 
 #include "puffin/core/subsystem.h"
+#include "puffin/core/timer.h"
 
 namespace puffin::utility
 {
@@ -36,16 +37,12 @@ namespace puffin::utility
 
 	private:
 
-		using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
-		using TimePointMap = std::unordered_map<std::string, TimePoint>;
-		using BenchmarkMap = std::unordered_map<std::string, double>;
+		using BenchmarkTimerMap = std::unordered_map<std::string, core::Timer>;
 		using StringSet = std::unordered_set<std::string>;
 
-		TimePointMap mBenchmarkStartPoint;
-		BenchmarkMap mBenchmarks;
+		BenchmarkTimerMap mBenchmarks;
 
-		std::unordered_map<std::string, TimePointMap> mCategoryBenchmarkStartPoint;
-		std::unordered_map<std::string, BenchmarkMap> mCategoryBenchmarks;
+		std::unordered_map<std::string, BenchmarkTimerMap> mCategoryBenchmarks;
 		std::unordered_map<std::string, StringSet> mCategoryNames;
 
 	};

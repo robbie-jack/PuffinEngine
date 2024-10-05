@@ -200,25 +200,28 @@ namespace puffin
 				mBenchmarkValues.at(name).reserve(s_max_benchmark_values);
 			}
 
+			const int benchmarkIdx = mBenchmarkIdx.at(name) % s_max_benchmark_values;
+
 			auto& benchmarkVector = mBenchmarkValues.at(name);
 			if(benchmarkVector.size() < s_max_benchmark_values)
 			{
-				benchmarkVector.push_back(0.0);
+				benchmarkVector.push_back(benchmarkTime);
+			}
+			else
+			{
+				benchmarkVector[benchmarkIdx] = benchmarkTime;
 			}
 
-			int benchmarkCount = mBenchmarkIdx.at(name) % s_max_benchmark_values;
-			benchmarkVector[benchmarkCount] = benchmarkTime;
-
 			double benchmarkAverage = 0.0;
-			for (int i = 0; i < benchmarkCount; ++i)
+			for (int i = 0; i < benchmarkVector.size(); ++i)
 			{
 				benchmarkAverage += benchmarkVector[i];
 			}
-			benchmarkAverage /= benchmarkCount;
+			benchmarkAverage /= benchmarkVector.size();
 
 			ImGui::Dummy(ImVec2(0.0f, 10.0f));
 			ImGui::SameLine();
-			ImGui::Text("%s: %.3f ms", name.c_str(), benchmarkAverage);
+			ImGui::Text("%s: %.3f ms", name.c_str(), benchmarkAverage * 1000.0);
 
 			//ImGui::NewLine();
 

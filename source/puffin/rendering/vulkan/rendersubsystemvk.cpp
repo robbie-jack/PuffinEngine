@@ -57,6 +57,7 @@
 #include "puffin/rendering/renderhelpers.h"
 #include "puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h"
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
+#include "puffin/core/timer.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -238,7 +239,7 @@ namespace puffin::rendering
 		VK_CHECK(mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 1000000000, GetCurrentFrameData().presentSemaphore,
 				GetCurrentFrameData().presentFence, &mCurrentSwapchainIdx));
 
-		return glfwGetTime();
+		return core::GetTime();
 	}
 
 	void RenderSubsystemVK::Render(double deltaTime)
@@ -559,7 +560,8 @@ namespace puffin::rendering
 		.use_default_format_selection()
 		// Vsync present mode
 		.set_old_swapchain(oldSwapchain)
-		.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+		.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
+		.set_desired_min_image_count(3)
 		.set_desired_extent(swapchainData.extent.width, swapchainData.extent.height)
 		.set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 		.build()

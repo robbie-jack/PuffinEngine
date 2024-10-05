@@ -15,6 +15,7 @@
 #include "puffin/window/windowsubsystem.h"
 #include "puffin/core/subsystemmanager.h"
 #include "puffin/utility/performancebenchmarksubsystem.h"
+#include "puffin/core/timer.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -128,7 +129,7 @@ namespace puffin::core
 
 		sceneSubsystem->Setup();
 
-		mLastTime = glfwGetTime(); // Time Count Started
+		mLastTime = GetTime(); // Time Count Started
 		mCurrentTime = mLastTime;
 
 		mRunning = true;
@@ -447,7 +448,7 @@ namespace puffin::core
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-				mCurrentTime = glfwGetTime();
+				mCurrentTime = GetTime();
 				mDeltaTime = mCurrentTime - mLastTime;
 			}
 		}

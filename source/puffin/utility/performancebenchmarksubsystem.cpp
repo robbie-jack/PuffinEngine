@@ -11,16 +11,13 @@ namespace puffin::utility
 
 	void PerformanceBenchmarkSubsystem::Deinitialize()
 	{
-		mBenchmarkStartPoint.clear();
 		mBenchmarks.clear();
 	}
 
 	void PerformanceBenchmarkSubsystem::EndPlay()
 	{
-		mBenchmarkStartPoint.clear();
 		mBenchmarks.clear();
 
-		mCategoryBenchmarkStartPoint.clear();
 		mCategoryBenchmarks.clear();
 		mCategoryNames.clear();
 	}
@@ -29,73 +26,51 @@ namespace puffin::utility
 	{
 		const auto startPoint = std::chrono::high_resolution_clock::now();
 
-		if (mBenchmarkStartPoint.find(name) == mBenchmarkStartPoint.end())
+		if (mBenchmarks.find(name) == mBenchmarks.end())
 		{
-			mBenchmarkStartPoint.emplace(name, TimePoint());
+			mBenchmarks.emplace(name, core::Timer());
 		}
 
-		mBenchmarkStartPoint[name] = startPoint;
+		mBenchmarks[name].Start();
 	}
 
 	void PerformanceBenchmarkSubsystem::StartBenchmarkCategory(const std::string& name, const std::string& categoryName)
 	{
 		const auto startPoint = std::chrono::high_resolution_clock::now();
 
-		if (mCategoryBenchmarkStartPoint.find(categoryName) == mCategoryBenchmarkStartPoint.end())
+		if (mCategoryBenchmarks.find(categoryName) == mCategoryBenchmarks.end())
 		{
-			mCategoryBenchmarkStartPoint.emplace(categoryName, TimePointMap());
-			mCategoryBenchmarks.emplace(categoryName, BenchmarkMap());
+			mCategoryBenchmarks.emplace(categoryName, BenchmarkTimerMap());
 			mCategoryNames.emplace(categoryName, StringSet());
 		}
 
-		auto& categoryTimePointMap = mCategoryBenchmarkStartPoint.at(categoryName);
+		auto& categoryBenchmarkMap = mCategoryBenchmarks.at(categoryName);
 
-		if (categoryTimePointMap.find(name) == categoryTimePointMap.end())
+		if (categoryBenchmarkMap.find(name) == categoryBenchmarkMap.end())
 		{
-			categoryTimePointMap.emplace(name, TimePoint());
+			categoryBenchmarkMap.emplace(name, core::Timer());
 			mCategoryNames[categoryName].emplace(name);
 		}
 
-		categoryTimePointMap[name] = startPoint;
+		categoryBenchmarkMap[name].Start();
 	}
 
 	void PerformanceBenchmarkSubsystem::EndBenchmark(const std::string& name)
 	{
-		assert(mBenchmarkStartPoint.find(name) != mBenchmarkStartPoint.end() && "PerformanceBenchmarkSubsystem::EndBenchmark - No matching call to start_benchmark found");
+		assert(mBenchmarks.find(name) != mBenchmarks.end() && "PerformanceBenchmarkSubsystem::EndBenchmark - No matching call to StartBenchmark found");
 
-		const auto benchmarkEndPoint = std::chrono::high_resolution_clock::now();
-
-		const auto duration = benchmarkEndPoint - mBenchmarkStartPoint.at(name);
-
-		if (mBenchmarks.find(name) == mBenchmarks.end())
-		{
-			mBenchmarks.emplace(name, 0.0);
-		}
-
-		using DurationMilliseconds = std::chrono::duration<double, std::chrono::milliseconds::period>;
-		mBenchmarks[name] = DurationMilliseconds(duration).count();
+		mBenchmarks[name].End();
 	}
 
 	void PerformanceBenchmarkSubsystem::EndBenchmarkCategory(const std::string& name, const std::string& categoryName)
 	{
-		assert(mCategoryBenchmarkStartPoint.find(categoryName) != mCategoryBenchmarkStartPoint.end() && "PerformanceBenchmarkSubsystem::EndBenchmarkCategory - No matching category found");
-
-		auto& categoryTimePointMap = mCategoryBenchmarkStartPoint.at(categoryName);
-
-		assert(categoryTimePointMap.find(name) != categoryTimePointMap.end() && "PerformanceBenchmarkSubsystem::EndBenchmarkCategory - No matching call to start_benchmark_category found");
-
-		const auto benchmarkEndPoint = std::chrono::high_resolution_clock::now();
-
-		const auto duration = benchmarkEndPoint - categoryTimePointMap.at(name);
+		assert(mCategoryBenchmarks.find(categoryName) != mCategoryBenchmarks.end() && "PerformanceBenchmarkSubsystem::EndBenchmarkCategory - No matching category found");
 
 		auto& categoryBenchmarkMap = mCategoryBenchmarks.at(categoryName);
-		if (categoryBenchmarkMap.find(name) == categoryBenchmarkMap.end())
-		{
-			categoryBenchmarkMap.emplace(name, 0.0);
-		}
 
-		using DurationMilliseconds = std::chrono::duration<double, std::chrono::milliseconds::period>;
-		categoryBenchmarkMap[name] = DurationMilliseconds(duration).count();
+		assert(categoryBenchmarkMap.find(name) != categoryBenchmarkMap.end() && "PerformanceBenchmarkSubsystem::EndBenchmarkCategory - No matching call to StartBenchmarkCategory found");
+
+		categoryBenchmarkMap[name].End();
 	}
 
 	double PerformanceBenchmarkSubsystem::GetBenchmarkTime(const std::string& name)
@@ -105,7 +80,7 @@ namespace puffin::utility
 			return 0.0;
 		}
 
-		return mBenchmarks.at(name);
+		return mBenchmarks.at(name).GetElapsedTime();
 	}
 
 	double PerformanceBenchmarkSubsystem::GetBenchmarkTimeCategory(const std::string& name,
@@ -122,7 +97,7 @@ namespace puffin::utility
 			return 0.0;
 		}
 
-		return categoryBenchmarkMap[name];
+		return categoryBenchmarkMap.at(name).GetElapsedTime();
 	}
 
 	const std::unordered_set<std::string>& PerformanceBenchmarkSubsystem::GetCategory(const std::string& categoryName)
