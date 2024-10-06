@@ -563,7 +563,7 @@ namespace puffin::rendering
 		.use_default_format_selection()
 		// Vsync present mode
 		.set_old_swapchain(oldSwapchain)
-		.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
+		.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
 		.set_desired_min_image_count(3)
 		.set_desired_extent(swapchainData.extent.width, swapchainData.extent.height)
 		.set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)
@@ -1339,7 +1339,7 @@ namespace puffin::rendering
 	{
 		// Acquire idx of next swapchain image to be available
 		// Pass a present fence here to allow waiting for last presentation to get correct frame time
-		VK_CHECK(mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 1000000000, GetCurrentFrameData().presentSemaphore,
+		VK_CHECK(mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 0, GetCurrentFrameData().presentSemaphore,
 			GetCurrentFrameData().presentFence, &mCurrentSwapchainIdx));
 	}
 
