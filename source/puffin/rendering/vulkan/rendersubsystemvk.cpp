@@ -60,6 +60,7 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 #include "puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h"
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
 #include "puffin/core/timer.h"
+#include "puffin/rendering/vulkan/logvk.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -238,7 +239,10 @@ namespace puffin::rendering
 		{
 			if (GetCurrentFrameData().presentID > 0)
 			{
-				VK_CHECK(mDevice.waitForPresentKHR(mSwapchainData.swapchain, GetCurrentFrameData().presentID, 1000000000));
+				if (LogResultVK("WaitForPresentKHR", mDevice.waitForPresentKHR(mSwapchainData.swapchain, GetCurrentFrameData().presentID, 1000000000)) != vk::Result::eSuccess)
+				{
+					assert(true);
+				}
 			}
 		}
 		else

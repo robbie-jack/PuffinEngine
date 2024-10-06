@@ -210,6 +210,7 @@ set(HEADERS
 	# Rendering - Vulkan
 	${HEADER_DIR}/puffin/rendering/vulkan/descriptorsvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/helpersvk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/logvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/materialregistryvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/pipelinevk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendersubsystemvk.h
