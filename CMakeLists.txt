@@ -140,6 +140,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/core/signalsubsystem.h
 	${HEADER_DIR}/puffin/core/subsystem.h
 	${HEADER_DIR}/puffin/core/subsystemmanager.h
+	${HEADER_DIR}/puffin/core/timer.h
 	# ECS
 	${HEADER_DIR}/puffin/ecs/enttsubsystem.h
 	# Editor
@@ -221,8 +222,9 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.h
 	# Rendering - Vulkan - Render Module
-	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
 	# Scene
 	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
 	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
@@ -275,6 +277,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/core/settingsmanager.cpp
 	${SOURCE_DIR}/puffin/core/subsystem.cpp
 	${SOURCE_DIR}/puffin/core/subsystemmanager.cpp
+	${SOURCE_DIR}/puffin/core/timer.cpp
 	# ECS
 	${SOURCE_DIR}/puffin/ecs/enttsubsystem.cpp
 	# Editor
@@ -339,8 +342,9 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.cpp
 	# Rendering - Vulkan - Render Module
-	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
@@ -435,7 +439,7 @@ elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 # Get & Build Required Libraries
-find_package(Vulkan REQUIRED)
+find_package(Vulkan 1.3.290 REQUIRED)
 CPMAddPackage("gh:nlohmann/json@3.11.2")
 
 target_link_libraries(${PUFFIN_LIBRARY_NAME} ${Vulkan_LIBRARIES})
@@ -543,6 +547,7 @@ endif()
 target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
 target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_SIMD_AVX2)
 target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC NOMINMAX)
+target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_NO_PROTOTYPES)
 
 # Platform defines
 if (PLATFORM_WINDOWS)

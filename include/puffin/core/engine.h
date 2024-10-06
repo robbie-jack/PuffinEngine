@@ -121,7 +121,7 @@ namespace puffin::core
 		double mDeltaTime = 0.0; // How long it took last frame to complete
 		double mAccumulatedTime = 0.0; // Time passed since last physics tick
 		double mTimeStepFixed = 1.0 / mPhysicsTicksPerFrame; // How often deterministic code like physics should occur (defaults to 60 times a second)
-		double mTimeStepLimit = 1 / 25.0; // Maximum amount of time each frame should take to complete
+		double mTimeStepLimit = 1 / 30.0; // Maximum amount of time each frame should take to complete
 
 		std::shared_ptr<Application> mApplication = nullptr;
 		std::unique_ptr<SubsystemManager> mSubsystemManager = nullptr;

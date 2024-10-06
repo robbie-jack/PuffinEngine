@@ -103,16 +103,16 @@ namespace puffin
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Current: %.1f", mFps);
+					ImGui::Text("Current: %.3f", mFps);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Average: %.1f", framerateAverage);
+					ImGui::Text("Average: %.3f", framerateAverage);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Minimum: %.1f", framerateMin);
+					ImGui::Text("Minimum: %.3f", framerateMin);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Maximum: %.1f", framerateMax);
+					ImGui::Text("Maximum: %.3f", framerateMax);
 
 					ImGui::NewLine();
 
@@ -131,16 +131,16 @@ namespace puffin
 
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Current: %.1f", mFrameTime);
+					ImGui::Text("Current: %.3f", mFrameTime);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Average: %.1f", frametimeAverage);
+					ImGui::Text("Average: %.3f", frametimeAverage);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Minimum: %.1f", frametimeMin);
+					ImGui::Text("Minimum: %.3f", frametimeMin);
 					ImGui::Dummy(ImVec2(0.0f, 10.0f));
 					ImGui::SameLine();
-					ImGui::Text("Maximum: %.1f", frametimeMax);
+					ImGui::Text("Maximum: %.3f", frametimeMax);
 
 					ImGui::NewLine();
 

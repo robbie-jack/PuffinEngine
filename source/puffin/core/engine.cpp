@@ -175,10 +175,7 @@ namespace puffin::core
 		}
 
 		// Make sure delta time never exceeds 1/30th of a second
-		if (mDeltaTime > mTimeStepLimit)
-		{
-			mDeltaTime = mTimeStepLimit;
-		}
+		mDeltaTime = std::min(mDeltaTime, mTimeStepLimit);
 
 		const auto audioSubsystem = GetSubsystem<audio::AudioSubsystem>();
 

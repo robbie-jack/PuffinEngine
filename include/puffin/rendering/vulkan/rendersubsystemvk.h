@@ -7,6 +7,9 @@
 // If you don't like the `vma::` prefix:
 //#define VMA_HPP_NAMESPACE <prefix>
 
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
+
 #include "vk_mem_alloc.hpp"
 
 #include "puffin/assets/textureasset.h"
@@ -91,6 +94,7 @@ namespace puffin::rendering
 
 		AllocatedBuffer indirectDrawBuffer; // Buffer of indirect draw commands
 		uint32_t drawCount = 0;
+		uint64_t presentID = 0;
 
 		// Global Data (Set for entire frame)
 		vk::DescriptorSet objectDescriptor;
@@ -148,6 +152,7 @@ namespace puffin::rendering
 		double WaitForLastPresentationAndSampleTime() override;
 		void Render(double deltaTime) override;
 
+		const vk::Instance& GetInstance() const { return mInstance; }
 		const vma::Allocator& GetAllocator() const { return mAllocator ;}
 		const vk::Device& GetDevice() const { return mDevice; }
 		const UploadContext& GetUploadContext() const { return mUploadContext; }
@@ -202,7 +207,7 @@ namespace puffin::rendering
 		void DrawIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams);
 		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams);
 
-		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return mCurrentFrame; }
+		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return mFrameIdx; }
 		[[nodiscard]] uint8_t GetFramesInFlightCount() const { return mFramesInFlightCount; }
 
 		template<typename T>
@@ -384,8 +389,9 @@ namespace puffin::rendering
 
 		uint32_t mCurrentSwapchainIdx = 0;
 		uint8_t mFramesInFlightCount = gBufferedFrameCount;
-		uint8_t mCurrentFrame = 0;
-		uint32_t mFrameCount = 0;
+		uint8_t mFrameIdx = 0;
+		uint64_t mFrameCount = 0;
+		uint64_t mNextPresentID = 1;
 
 		// Pipelines
 		vk::PipelineCache m_pipeline_cache;
@@ -407,5 +413,6 @@ namespace puffin::rendering
 		bool mInitialized = false; // Indicates initialization completed without any failures
 		bool mRebarEnabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
 		bool mRenderShadows = false; // Render shadows if enabled
+		bool mPresentWaitEnabled = false; // VK_KHR_present_wait extension is supported and enabled
 	};
 }

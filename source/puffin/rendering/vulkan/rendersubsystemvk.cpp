@@ -1,5 +1,7 @@
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
+
 #include <iostream>
 
 #define VMA_IMPLEMENTATION
@@ -232,9 +234,19 @@ namespace puffin::rendering
 
 	double RenderSubsystemVK::WaitForLastPresentationAndSampleTime()
 	{
-		// Wait until GPU has finished presenting last frame. Timeout of 1 second
-		VK_CHECK(mDevice.waitForFences(1, &GetCurrentFrameData().presentFence, true, 1000000000));
-		VK_CHECK(mDevice.resetFences(1, &GetCurrentFrameData().presentFence));
+		if (mPresentWaitEnabled)
+		{
+			if (GetCurrentFrameData().presentID > 0)
+			{
+				VK_CHECK(mDevice.waitForPresentKHR(mSwapchainData.swapchain, GetCurrentFrameData().presentID, 1000000000));
+			}
+		}
+		else
+		{
+			// Wait until GPU has finished presenting last frame. Timeout of 1 second
+			VK_CHECK(mDevice.waitForFences(1, &GetCurrentFrameData().presentFence, true, 1000000000));
+			VK_CHECK(mDevice.resetFences(1, &GetCurrentFrameData().presentFence));
+		}
 
 		return core::GetTime();
 	}
@@ -296,8 +308,14 @@ namespace puffin::rendering
 		//	6. Destroy Old Resources
 		mResourceManager->DestroyResources();
 
-		mCurrentFrame = (mCurrentFrame + 1) % mFramesInFlightCount;
+		mFrameIdx = (mFrameIdx + 1) % mFramesInFlightCount;
 		++mFrameCount;
+
+		if (mPresentWaitEnabled)
+		{
+			GetCurrentFrameData().presentID = mNextPresentID;
+			mNextPresentID++;
+		}
 	}
 
 	void RenderSubsystemVK::OnUpdateMesh(entt::registry& registry, entt::entity entity)
@@ -481,9 +499,15 @@ namespace puffin::rendering
 		vkb::SystemInfo systemInfo = vkb::SystemInfo::get_system_info().value();
 
 		// Check for desired extension support
-		std::vector<const char*> deviceExtensions =
+		std::vector requiredExtensions =
 		{
-			"VK_EXT_memory_budget",
+			VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
+		};
+
+		std::vector desiredExtensions =
+		{
+			VK_KHR_PRESENT_ID_EXTENSION_NAME,
+			VK_KHR_PRESENT_WAIT_EXTENSION_NAME,
 		};
 
 		// Select GPU
@@ -494,29 +518,54 @@ namespace puffin::rendering
 		.set_required_features(physicalDeviceFeatures)
 		.set_required_features_12(physicalDevice12Features)
 		.set_required_features_13(physicalDevice13Features)
-		.add_required_extensions(deviceExtensions)
+		.add_required_extensions(requiredExtensions)
+		.add_desired_extensions(desiredExtensions)
 		.select()
 		.value();
+
+		bool presentIdEnabled = false;
+
+		/*for (const auto& extension : physDevice.get_extensions())
+		{
+			if (extension == VK_KHR_PRESENT_ID_EXTENSION_NAME)
+			{
+				presentIdEnabled = true;
+			}
+
+			if (extension == VK_KHR_PRESENT_WAIT_EXTENSION_NAME && presentIdEnabled == true)
+			{
+				mPresentWaitEnabled = true;
+			}
+		}*/
+
+		vk::PhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeatures = { true };
+		vk::PhysicalDevicePresentIdFeaturesKHR presentIdFeatures = { presentIdEnabled };
+		vk::PhysicalDevicePresentWaitFeaturesKHR presentWaitFeatures = { mPresentWaitEnabled };
 
 		// Create Vulkan Device
 		vkb::DeviceBuilder deviceBuilder{physDevice};
 
-		vk::PhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeatures = {true};
-
 		vkb::Device vkbDevice = deviceBuilder
 		.add_pNext(&shaderDrawParametersFeatures)
+		.add_pNext(&presentIdFeatures)
+		.add_pNext(&presentWaitFeatures)
 		.build()
 		.value();
 
 		mDevice = vkbDevice.device;
 		mPhysicalDevice = physDevice.physical_device;
 
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(mInstance, mDevice);
+
 		// Get Graphics Queue
 		mGraphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
 		mGraphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
 
 		// Init memory allocator
+		vma::VulkanFunctions vmaFunctions = { VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr, VULKAN_HPP_DEFAULT_DISPATCHER.vkGetDeviceProcAddr };
+
 		vma::AllocatorCreateInfo allocatorInfo = {vma::AllocatorCreateFlagBits::eBufferDeviceAddress, mPhysicalDevice, mDevice};
+		allocatorInfo.pVulkanFunctions = &vmaFunctions;
 		allocatorInfo.instance = mInstance;
 
 		VK_CHECK(vma::createAllocator(&allocatorInfo, &mAllocator));
@@ -1041,6 +1090,15 @@ namespace puffin::rendering
 		vk::DescriptorPool imguiPool;
 		VK_CHECK(mDevice.createDescriptorPool(&poolInfo, nullptr, &imguiPool));
 
+		ImGui_ImplVulkan_LoadFunctions([](const char* functionName, void* userData)
+		{
+			auto* renderSubsystemVK = static_cast<RenderSubsystemVK*>(userData);
+
+			auto& instance = renderSubsystemVK->GetInstance();
+
+			return VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr(instance, functionName);
+		}, this);
+
 		// Initialize imgui for GLFW
 		const auto windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystem>();
 		GLFWwindow* glfwWindow = windowSubsystem->GetPrimaryWindow();
@@ -1339,8 +1397,16 @@ namespace puffin::rendering
 	{
 		// Acquire idx of next swapchain image to be available
 		// Pass a present fence here to allow waiting for last presentation to get correct frame time
-		VK_CHECK(mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 0, GetCurrentFrameData().presentSemaphore,
-			GetCurrentFrameData().presentFence, &mCurrentSwapchainIdx));
+		if (mPresentWaitEnabled)
+		{
+			VK_CHECK(mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 0, GetCurrentFrameData().presentSemaphore,
+				nullptr, &mCurrentSwapchainIdx));
+		}
+		else
+		{
+			VK_CHECK(mDevice.acquireNextImageKHR(mSwapchainData.swapchain, 0, GetCurrentFrameData().presentSemaphore,
+				GetCurrentFrameData().presentFence, &mCurrentSwapchainIdx));
+		}
 	}
 
 	void RenderSubsystemVK::UpdateSwapchainAndOffscreen()
@@ -2699,6 +2765,13 @@ namespace puffin::rendering
 		{
 			1, &waitSemaphore, 1, &mSwapchainData.swapchain, &swapchainIdx
 		};
+
+		vk::PresentIdKHR presentId = { 1, &mNextPresentID, nullptr };
+
+		if (mPresentWaitEnabled)
+		{
+			presentInfo.pNext = &presentId;
+		}
 
 		VK_CHECK(mGraphicsQueue.presentKHR(&presentInfo));
 	}
