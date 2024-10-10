@@ -218,6 +218,10 @@ namespace puffin::rendering
 				}
 
 				frameData.semaphores.clear();
+
+				mDevice.destroyCommandPool(frameData.commandPool);
+
+				frameData.commandBuffers.clear();
 			}
 
 			mDeletionQueue.Flush();
@@ -707,11 +711,6 @@ namespace puffin::rendering
 			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mFrameRenderData[i].mainCommandBuffer));
 			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mFrameRenderData[i].copyCommandBuffer));
 			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &mFrameRenderData[i].imguiCommandBuffer));
-
-			mDeletionQueue.PushFunction([=]()
-			{
-				mDevice.destroyCommandPool(mFrameRenderData[i].commandPool);
-			});
 		}
 
 		// Init Upload Context Command Pool/Buffer
@@ -1222,7 +1221,52 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::UpdateGraphCommands()
 	{
+		auto& frameData = GetCurrentFrameData();
+		const auto& renderPasses = mRenderGraph.GetRenderPasses();
 
+		std::vector<std::string> commandBuffersToRemove;
+		std::vector<vk::CommandBuffer> commandBuffersToFree;
+
+		// Free old command buffers
+		for (auto& [name, cmd] : frameData.commandBuffers)
+		{
+			if (renderPasses.find(name) == renderPasses.end())
+			{
+				cmd.reset({ vk::CommandBufferResetFlagBits::eReleaseResources });
+				commandBuffersToFree.push_back(cmd);
+				commandBuffersToRemove.push_back(name);
+			}
+		}
+
+		if (!commandBuffersToFree.empty())
+		{
+			mDevice.freeCommandBuffers(frameData.commandPool, commandBuffersToFree.size(), commandBuffersToFree.data());
+			commandBuffersToFree.clear();
+		}
+
+		for (const auto& name : commandBuffersToRemove)
+		{
+			frameData.commandBuffers.erase(name);
+		}
+		commandBuffersToRemove.clear();
+
+		// Allocate new command buffers
+		std::vector<vk::CommandBuffer> commandBuffersToAllocate;
+
+		for (const auto& [name, pass] : renderPasses)
+		{
+			if (frameData.commandBuffers.find(name) == frameData.commandBuffers.end())
+			{
+				frameData.commandBuffers.emplace(name, vk::CommandBuffer{});
+				commandBuffersToAllocate.push_back(frameData.commandBuffers.at(name));
+			}
+		}
+
+		if (!commandBuffersToAllocate.empty())
+		{
+			vk::CommandBufferAllocateInfo commandBufferInfo = { frameData.commandPool, vk::CommandBufferLevel::ePrimary, static_cast<uint32_t>(commandBuffersToAllocate.size()) };
+			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, commandBuffersToAllocate.data()));
+		}
 	}
 
 	void RenderSubsystemVK::PreRender(double deltaTime)

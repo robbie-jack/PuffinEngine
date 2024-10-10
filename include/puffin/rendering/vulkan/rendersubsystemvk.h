@@ -92,6 +92,8 @@ namespace puffin::rendering
 		vk::CommandBuffer copyCommandBuffer; // Cmd buffer for copying/blitting from offscreen to swapchain
 		vk::CommandBuffer imguiCommandBuffer;
 
+		std::unordered_map<std::string, vk::CommandBuffer> commandBuffers;
+
 		AllocatedBuffer indirectDrawBuffer; // Buffer of indirect draw commands
 		uint32_t drawCount = 0;
 		uint64_t presentID = 0;
