@@ -1251,21 +1251,21 @@ namespace puffin::rendering
 		commandBuffersToRemove.clear();
 
 		// Allocate new command buffers
-		std::vector<vk::CommandBuffer> commandBuffersToAllocate;
+		std::vector<vk::CommandBuffer*> commandBuffersToAllocate;
 
 		for (const auto& [name, pass] : renderPasses)
 		{
 			if (frameData.commandBuffers.find(name) == frameData.commandBuffers.end())
 			{
 				frameData.commandBuffers.emplace(name, vk::CommandBuffer{});
-				commandBuffersToAllocate.push_back(frameData.commandBuffers.at(name));
+				commandBuffersToAllocate.push_back(&frameData.commandBuffers.at(name));
 			}
 		}
 
 		if (!commandBuffersToAllocate.empty())
 		{
-			vk::CommandBufferAllocateInfo commandBufferInfo = { frameData.commandPool, vk::CommandBufferLevel::ePrimary, static_cast<uint32_t>(commandBuffersToAllocate.size()) };
-			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, commandBuffersToAllocate.data()));
+			const vk::CommandBufferAllocateInfo commandBufferInfo = { frameData.commandPool, vk::CommandBufferLevel::ePrimary, static_cast<uint32_t>(commandBuffersToAllocate.size()) };
+			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, *commandBuffersToAllocate.data()));
 		}
 	}
 
@@ -2304,11 +2304,18 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::RecordRenderPassCommands()
 	{
+		auto& frameData = GetCurrentFrameData();
+
 		for (const auto& [name, renderPass] : mRenderGraph.GetRenderPasses())
 		{
-			// PUFFIN_TODO - Reenable this line once command buffers creation logic has been implemented
+			if (frameData.commandBuffers.find(name) != frameData.commandBuffers.end())
+			{
+				vk::CommandBuffer& cmd = frameData.commandBuffers.at(name);
 
-			//renderPass.ExecuteRecordCommandsCallback();
+				cmd.reset();
+
+				renderPass.ExecuteRecordCommandsCallback(cmd);
+			}
 		}
 	}
 
