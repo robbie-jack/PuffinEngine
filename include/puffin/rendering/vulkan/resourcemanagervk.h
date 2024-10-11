@@ -53,6 +53,10 @@ namespace puffin::rendering
 		[[nodiscard]] ResourceID CreateOrUpdateBuffer(const BufferDescVK& desc, ResourceID id);
 		[[nodiscard]] ResourceID CreateOrUpdateBuffer(const BufferDescVK& desc, const std::string& name);
 
+		[[nodiscard]] ResourceID CreateOrUpdateDescriptor(const DescriptorDescVK& desc);
+		[[nodiscard]] ResourceID CreateOrUpdateDescriptor(const DescriptorDescVK& desc, ResourceID id);
+		[[nodiscard]] ResourceID CreateOrUpdateDescriptor(const DescriptorDescVK& desc, const std::string& name);
+
 		void DestroyResource(ResourceID id);
 		void DestroyResource(const std::string& name);
 
@@ -64,6 +68,9 @@ namespace puffin::rendering
 
 		AllocatedBuffer& GetBuffer(ResourceID id);
 		AllocatedBuffer& GetBuffer(const std::string& name);
+
+		vk::DescriptorSet& GetDescriptor(ResourceID id);
+		vk::DescriptorSet& GetDescriptor(const std::string& name);
 
 		void NotifySwapchainResized();
 		void NotifyRenderExtentResized();
@@ -77,6 +84,7 @@ namespace puffin::rendering
 		void CreateOrUpdateAttachmentInternal(const AttachmentDescVK& desc, ResourceID id, const std::string& name);
 		void CreateOrUpdateImageInternal(const ImageDescVK& desc, ResourceID id, const std::string& name);
 		void CreateOrUpdateBufferInternal(const BufferDescVK& desc, ResourceID id, const std::string& name);
+		void CreateOrUpdateDescriptorInternal(const DescriptorDescVK& desc, ResourceID id, const std::string& name);
 
 		void DestroyResourceInternal(ResourceID id);
 
@@ -126,14 +134,19 @@ namespace puffin::rendering
 
 		std::unordered_map<ResourceID, AttachmentDescVK> mAttachmentDescs;
 		std::unordered_map<ResourceID, BufferDescVK> mBufferDescs;
+		std::unordered_map<ResourceID, DescriptorDescVK> mDescriptorDescs;
 
 		std::unordered_map<ResourceID, AllocatedImage> mImageInstances;
 		std::unordered_map<ResourceID, AllocatedBuffer> mBufferInstances;
+		std::unordered_map<ResourceID, vk::DescriptorSet> mDescriptorInstances;
 
 		std::vector<std::pair<ResourceID, ImageDescVK>> mImageInstancesToCreate;
 		std::vector<std::unordered_set<ResourceID>> mImageInstancesToDestroy;
 
 		std::vector<std::pair<ResourceID, BufferDescVK>> mBufferInstancesToCreate;
 		std::vector<std::unordered_set<ResourceID>> mBufferInstancesToDestroy;
+
+		std::vector<std::pair<ResourceID, DescriptorDescVK>> mDescriptorInstancesToCreate;
+		std::vector<std::unordered_set<ResourceID>> mDescriptorInstancesToDestroy;
 	};
 }

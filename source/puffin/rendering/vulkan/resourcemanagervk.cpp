@@ -156,6 +156,40 @@ namespace puffin::rendering
 		return id;
 	}
 
+	ResourceID ResourceManagerVK::CreateOrUpdateDescriptor(const DescriptorDescVK& desc)
+	{
+		ResourceID id = GenerateId();
+
+		CreateOrUpdateDescriptorInternal(desc, id, "");
+
+		return id;
+	}
+
+	ResourceID ResourceManagerVK::CreateOrUpdateDescriptor(const DescriptorDescVK& desc, ResourceID id)
+	{
+		CreateOrUpdateDescriptorInternal(desc, id, "");
+
+		return id;
+	}
+
+	ResourceID ResourceManagerVK::CreateOrUpdateDescriptor(const DescriptorDescVK& desc, const std::string& name)
+	{
+		ResourceID id = GenerateId();
+
+		if (mResourceNameToID.find(name) != mResourceNameToID.end())
+		{
+			id = mResourceNameToID.at(name);
+		}
+		else
+		{
+			id = GenerateId();
+		}
+
+		CreateOrUpdateDescriptorInternal(desc, id, name);
+
+		return id;
+	}
+
 	void ResourceManagerVK::DestroyResource(ResourceID id)
 	{
 		DestroyResourceInternal(id);
@@ -181,7 +215,8 @@ namespace puffin::rendering
 
 	AllocatedImage& ResourceManagerVK::GetImage(ResourceID id)
 	{
-		assert(IsResourceValid(id) && "ResourceManagerVK::GetImage -  No image with id exists");
+		const std::string assertMsg = "ResourceManagerVK::GetImage -  No image with id " + std::to_string(id) + " exists";
+		assert(IsResourceValid(id) && assertMsg.c_str());
 
 		const auto& resourceInfo = mResourceInfo.at(id);
 
@@ -200,14 +235,16 @@ namespace puffin::rendering
 
 	AllocatedImage& ResourceManagerVK::GetImage(const std::string& name)
 	{
-		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && "ResourceManagerVK::GetImage -  No image with name %s exists", name.c_str());
+		const std::string assertMsg = "ResourceManagerVK::GetImage -  No image with name " + name + " exists";
+		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && assertMsg.c_str());
 
 		return GetImage(mResourceNameToID.at(name));
 	}
 
 	AllocatedBuffer& ResourceManagerVK::GetBuffer(ResourceID id)
 	{
-		assert(IsResourceValid(id) && "ResourceManagerVK::GetBuffer -  No buffer with id %s exists", std::to_string(id).c_str());
+		const std::string assertMsg = "ResourceManagerVK::GetBuffer -  No buffer with id " + std::to_string(id) + " exists";
+		assert(IsResourceValid(id) && assertMsg.c_str());
 
 		const auto& resourceInfo = mResourceInfo.at(id);
 
@@ -226,9 +263,38 @@ namespace puffin::rendering
 
 	AllocatedBuffer& ResourceManagerVK::GetBuffer(const std::string& name)
 	{
-		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && "ResourceManagerVK::GetBuffer -  No buffer with name %s exists", name.c_str());
+		const std::string assertMsg = "ResourceManagerVK::GetBuffer -  No buffer with name " + name + " exists";
+		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && assertMsg.c_str());
 
 		return GetBuffer(mResourceNameToID.at(name));
+	}
+
+	vk::DescriptorSet& ResourceManagerVK::GetDescriptor(ResourceID id)
+	{
+		const std::string assertMsg = "ResourceManagerVK::GetDescriptor - No descriptor with id " + std::to_string(id) + " exists";
+		assert(IsResourceValid(id) && assertMsg.c_str());
+
+		const auto& resourceInfo = mResourceInfo.at(id);
+
+		ResourceID instanceID;
+		if (resourceInfo.persistent)
+		{
+			instanceID = resourceInfo.instanceIDs[0];
+		}
+		else
+		{
+			instanceID = resourceInfo.instanceIDs[mRenderSystem->GetCurrentFrameIdx()];
+		}
+
+		return mDescriptorInstances.at(instanceID);
+	}
+
+	vk::DescriptorSet& ResourceManagerVK::GetDescriptor(const std::string& name)
+	{
+		const std::string assertMsg = "ResourceManagerVK::GetDescriptor - No descriptor with name " + name + " exists";
+		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && assertMsg.c_str());
+
+		return GetDescriptor(mResourceNameToID.at(name));
 	}
 
 	void ResourceManagerVK::NotifySwapchainResized()
@@ -474,6 +540,32 @@ namespace puffin::rendering
 		for (auto instanceID : resourceInfo.instanceIDs)
 		{
 			mBufferInstancesToCreate.emplace_back(instanceID, desc);
+		}
+	}
+
+	void ResourceManagerVK::CreateOrUpdateDescriptorInternal(const DescriptorDescVK& desc, ResourceID id,
+		const std::string& name)
+	{
+		if (IsResourceValid(id))
+		{
+			// If resource is valid, queue existing resource instances to be destroyed and queue new ones to be created
+			auto& resourceInfo = mResourceInfo.at(id);
+
+			if (resourceInfo.persistent)
+			{
+				
+			}
+			else
+			{
+				for (int i = 0; i < mBufferedFrameCount; ++i)
+				{
+					
+				}
+			}
+		}
+		else
+		{
+			
 		}
 	}
 

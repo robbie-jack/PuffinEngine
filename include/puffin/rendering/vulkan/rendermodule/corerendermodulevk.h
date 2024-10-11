@@ -31,6 +31,8 @@ namespace puffin::rendering
 
 		void InitBuffers();
 
+		void InitDescriptors();
+
 		ResourceID mIndirectDrawBufferID = gInvalidID;
 		ResourceID mCameraBufferID = gInvalidID;
 		ResourceID mPointLightBufferID = gInvalidID;

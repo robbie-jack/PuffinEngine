@@ -49,4 +49,9 @@ namespace puffin::rendering
 		vk::MemoryPropertyFlags propFlags = {};
 		bool persistent = false; // Whether this buffer should persist between frames or not
 	};
+
+	struct DescriptorDescVK
+	{
+		
+	};
 }

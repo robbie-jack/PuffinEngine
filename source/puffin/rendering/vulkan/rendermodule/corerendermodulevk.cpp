@@ -22,6 +22,7 @@ namespace puffin::rendering
 	void CoreRenderModuleVK::Initialize()
 	{
 		InitBuffers();
+		InitDescriptors();
 	}
 
 	void CoreRenderModuleVK::Deinitialize()
@@ -100,6 +101,11 @@ namespace puffin::rendering
 
 		bufferDesc.size = sizeof(GPUMaterialInstanceData) * gMaxMaterialInstances;
 		mMaterialInstanceBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc);
+
+	}
+
+	void CoreRenderModuleVK::InitDescriptors()
+	{
 
 	}
 }
