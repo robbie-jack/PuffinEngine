@@ -6,6 +6,7 @@
 #include "puffin/rendering/vulkan/unifiedgeometrybuffervk.h"
 #include "puffin/rendering/vulkan/helpersvk.h"
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
+#include "puffin/rendering/vulkan/descriptorsvk.h"
 
 namespace puffin::rendering
 {
@@ -31,6 +32,11 @@ namespace puffin::rendering
 					DestroyBufferInstanceInternal(instanceID);
 				}
 			}
+
+			if (info.type == ResourceType::DescriptorLayout)
+			{
+				DestroyDescriptorLayoutInstanceInternal(id);
+			}
 		}
 
 		mResourceInfo.clear();
@@ -46,12 +52,12 @@ namespace puffin::rendering
 	{
 		UpdateSwapchainAndRenderRelativeResources();
 
-		CreateResourcesInstances();
+		CreateResourceInstances();
 	}
 
 	void ResourceManagerVK::DestroyResources()
 	{
-		DestroyResourcesInstances();
+		DestroyResourceInstances();
 	}
 
 	ResourceID ResourceManagerVK::CreateOrUpdateAttachment(const AttachmentDescVK& desc)
@@ -156,23 +162,23 @@ namespace puffin::rendering
 		return id;
 	}
 
-	ResourceID ResourceManagerVK::CreateOrUpdateDescriptor(const DescriptorDescVK& desc)
+	ResourceID ResourceManagerVK::CreateOrUpdateDescriptorLayout(const DescriptorLayoutDescVK& desc)
 	{
 		ResourceID id = GenerateId();
 
-		CreateOrUpdateDescriptorInternal(desc, id, "");
+		CreateOrUpdateDescriptorLayoutInternal(desc, id, "");
 
 		return id;
 	}
 
-	ResourceID ResourceManagerVK::CreateOrUpdateDescriptor(const DescriptorDescVK& desc, ResourceID id)
+	ResourceID ResourceManagerVK::CreateOrUpdateDescriptorLayout(const DescriptorLayoutDescVK& desc, ResourceID id)
 	{
-		CreateOrUpdateDescriptorInternal(desc, id, "");
+		CreateOrUpdateDescriptorLayoutInternal(desc, id, "");
 
 		return id;
 	}
 
-	ResourceID ResourceManagerVK::CreateOrUpdateDescriptor(const DescriptorDescVK& desc, const std::string& name)
+	ResourceID ResourceManagerVK::CreateOrUpdateDescriptorLayout(const DescriptorLayoutDescVK& desc, const std::string& name)
 	{
 		ResourceID id = GenerateId();
 
@@ -185,7 +191,7 @@ namespace puffin::rendering
 			id = GenerateId();
 		}
 
-		CreateOrUpdateDescriptorInternal(desc, id, name);
+		CreateOrUpdateDescriptorLayoutInternal(desc, id, name);
 
 		return id;
 	}
@@ -269,32 +275,18 @@ namespace puffin::rendering
 		return GetBuffer(mResourceNameToID.at(name));
 	}
 
-	vk::DescriptorSet& ResourceManagerVK::GetDescriptor(ResourceID id)
+	vk::DescriptorSetLayout& ResourceManagerVK::GetDescriptorLayout(ResourceID id)
 	{
-		const std::string assertMsg = "ResourceManagerVK::GetDescriptor - No descriptor with id " + std::to_string(id) + " exists";
-		assert(IsResourceValid(id) && assertMsg.c_str());
+		const std::string assertMsg = "ResourceManagerVK::GetDescriptor - No descriptor layout with id " + std::to_string(id) + " exists";
 
-		const auto& resourceInfo = mResourceInfo.at(id);
-
-		ResourceID instanceID;
-		if (resourceInfo.persistent)
-		{
-			instanceID = resourceInfo.instanceIDs[0];
-		}
-		else
-		{
-			instanceID = resourceInfo.instanceIDs[mRenderSystem->GetCurrentFrameIdx()];
-		}
-
-		return mDescriptorInstances.at(instanceID);
+		return mDescriptorLayoutInstances.at(id);
 	}
 
-	vk::DescriptorSet& ResourceManagerVK::GetDescriptor(const std::string& name)
+	vk::DescriptorSetLayout& ResourceManagerVK::GetDescriptorLayout(const std::string& name)
 	{
-		const std::string assertMsg = "ResourceManagerVK::GetDescriptor - No descriptor with name " + name + " exists";
-		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && assertMsg.c_str());
+		const std::string assertMsg = "ResourceManagerVK::GetDescriptorLayout - No descriptor layout with name " + name + " exists";
 
-		return GetDescriptor(mResourceNameToID.at(name));
+		return GetDescriptorLayout(mResourceNameToID.at(name));
 	}
 
 	void ResourceManagerVK::NotifySwapchainResized()
@@ -334,7 +326,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void ResourceManagerVK::CreateResourcesInstances()
+	void ResourceManagerVK::CreateResourceInstances()
 	{
 		for (auto& [id, desc] : mImageInstancesToCreate)
 		{
@@ -349,9 +341,16 @@ namespace puffin::rendering
 		}
 
 		mBufferInstancesToCreate.clear();
+
+		for (auto& [id, desc] : mDescriptorLayoutInstancesToCreate)
+		{
+			CreateDescriptorLayoutInstanceInternal(id, desc);
+		}
+
+		mDescriptorLayoutInstancesToCreate.clear();
 	}
 
-	void ResourceManagerVK::DestroyResourcesInstances()
+	void ResourceManagerVK::DestroyResourceInstances()
 	{
 		const auto frameIdx = mRenderSystem->GetCurrentFrameIdx();
 
@@ -368,6 +367,13 @@ namespace puffin::rendering
 		}
 
 		mBufferInstancesToDestroy[frameIdx].clear();
+
+		for (const auto& id : mDescriptorLayoutInstancesToDestroy)
+		{
+			DestroyDescriptorLayoutInstanceInternal(id);
+		}
+
+		mDescriptorLayoutInstancesToDestroy.clear();
 	}
 
 	void ResourceManagerVK::CreateOrUpdateAttachmentInternal(const AttachmentDescVK& desc, ResourceID id,
@@ -429,9 +435,11 @@ namespace puffin::rendering
 
 			if (resourceInfo.persistent)
 			{
-				mImageInstancesToDestroy[mBufferedFrameCount - 1].emplace(resourceInfo.instanceIDs[0]);
+				const auto offsetFrameIdx = mRenderSystem->GetOffsetFrameIdx(mBufferedFrameCount - 1);
 
-				resourceInfo.instanceIDs[mBufferedFrameCount - 1] = GenerateId();
+				mImageInstancesToDestroy[offsetFrameIdx].emplace(resourceInfo.instanceIDs[0]);
+
+				resourceInfo.instanceIDs[0] = GenerateId();
 			}
 			else
 			{
@@ -490,9 +498,11 @@ namespace puffin::rendering
 
 			if (resourceInfo.persistent)
 			{
-				mBufferInstancesToDestroy[mBufferedFrameCount - 1].emplace(resourceInfo.instanceIDs[0]);
+				const auto offsetFrameIdx = mRenderSystem->GetOffsetFrameIdx(mBufferedFrameCount - 1);
 
-				resourceInfo.instanceIDs[mBufferedFrameCount - 1] = GenerateId();
+				mBufferInstancesToDestroy[offsetFrameIdx].emplace(resourceInfo.instanceIDs[0]);
+
+				resourceInfo.instanceIDs[0] = GenerateId();
 			}
 			else
 			{
@@ -543,30 +553,33 @@ namespace puffin::rendering
 		}
 	}
 
-	void ResourceManagerVK::CreateOrUpdateDescriptorInternal(const DescriptorDescVK& desc, ResourceID id,
+	void ResourceManagerVK::CreateOrUpdateDescriptorLayoutInternal(const DescriptorLayoutDescVK& desc, ResourceID id,
 		const std::string& name)
 	{
 		if (IsResourceValid(id))
 		{
 			// If resource is valid, queue existing resource instances to be destroyed and queue new ones to be created
-			auto& resourceInfo = mResourceInfo.at(id);
-
-			if (resourceInfo.persistent)
-			{
-				
-			}
-			else
-			{
-				for (int i = 0; i < mBufferedFrameCount; ++i)
-				{
-					
-				}
-			}
+			mDescriptorLayoutInstancesToDestroy.push_back(id);
 		}
 		else
 		{
-			
+			mResourceInfo.emplace(id, ResourceInfo{});
+
+			auto& resourceInfo = mResourceInfo.at(id);
+			resourceInfo.id = id;
+			resourceInfo.type = ResourceType::DescriptorLayout;
+
+			if (!name.empty())
+			{
+				resourceInfo.name = name;
+
+				if (mResourceNameToID.find(name) == mResourceNameToID.end())
+					mResourceNameToID.emplace(name, id);
+			}
 		}
+
+		mDescriptorLayoutDescs.emplace(id, desc);
+		mDescriptorLayoutInstancesToCreate.emplace_back(id, desc);
 	}
 
 	void ResourceManagerVK::DestroyResourceInternal(ResourceID id)
@@ -594,6 +607,10 @@ namespace puffin::rendering
 				{
 					mBufferInstancesToDestroy[i].emplace(resourceInfo.instanceIDs[i]);
 				}
+			}
+			else if (resourceInfo.type == ResourceType::DescriptorLayout)
+			{
+				mDescriptorLayoutInstancesToDestroy.push_back(id);
 			}
 
 			mResourceInfo.erase(id);
@@ -644,6 +661,35 @@ namespace puffin::rendering
 		mRenderSystem->GetAllocator().destroyBuffer(allocBuffer.buffer, allocBuffer.allocation);
 
 		mBufferInstances.erase(instanceID);
+	}
+
+	void ResourceManagerVK::CreateDescriptorLayoutInstanceInternal(ResourceID instanceID,
+		const DescriptorLayoutDescVK& desc)
+	{
+		if (mDescriptorLayoutInstances.find(instanceID) == mDescriptorLayoutInstances.end())
+			return;
+
+		std::vector<vk::DescriptorSetLayoutBinding> bindings;
+		std::vector<vk::DescriptorBindingFlags> bindingFlags;
+
+		for (int i = 0; i < desc.bindings.size(); ++i)
+		{
+			const DescriptorLayoutBindingVK& binding = desc.bindings[i];
+
+			bindings.emplace_back(i, binding.type, binding.count, binding.stageFlags, binding.sampler);
+			bindingFlags.emplace_back(binding.bindingFlags);
+		}
+
+		mDescriptorLayoutInstances.emplace(instanceID, util::CreateDescriptorLayout(mRenderSystem->GetDevice(), bindings, bindingFlags));
+	}
+
+	void ResourceManagerVK::DestroyDescriptorLayoutInstanceInternal(ResourceID instanceID)
+	{
+		if (mDescriptorLayoutInstances.find(instanceID) == mDescriptorLayoutInstances.end())
+			return;
+
+		mRenderSystem->GetDevice().destroyDescriptorSetLayout(mDescriptorLayoutInstances.at(instanceID));
+		mDescriptorLayoutInstances.erase(instanceID);
 	}
 
 	void ResourceManagerVK::CalculateImageExtent(ImageSizeVK imageSize, vk::Extent3D& extent, float widthMult, float heightMult) const

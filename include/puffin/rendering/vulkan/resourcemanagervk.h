@@ -9,14 +9,6 @@
 #include "puffin/rendering/resourceid.h"
 #include "puffin/rendering/vulkan/resourcedescvk.h"
 
-namespace puffin
-{
-	namespace assets
-	{
-		class StaticMeshAsset;
-	}
-}
-
 namespace puffin::rendering
 {
 	struct BufferDescVK;
@@ -53,9 +45,9 @@ namespace puffin::rendering
 		[[nodiscard]] ResourceID CreateOrUpdateBuffer(const BufferDescVK& desc, ResourceID id);
 		[[nodiscard]] ResourceID CreateOrUpdateBuffer(const BufferDescVK& desc, const std::string& name);
 
-		[[nodiscard]] ResourceID CreateOrUpdateDescriptor(const DescriptorDescVK& desc);
-		[[nodiscard]] ResourceID CreateOrUpdateDescriptor(const DescriptorDescVK& desc, ResourceID id);
-		[[nodiscard]] ResourceID CreateOrUpdateDescriptor(const DescriptorDescVK& desc, const std::string& name);
+		[[nodiscard]] ResourceID CreateOrUpdateDescriptorLayout(const DescriptorLayoutDescVK& desc);
+		[[nodiscard]] ResourceID CreateOrUpdateDescriptorLayout(const DescriptorLayoutDescVK& desc, ResourceID id);
+		[[nodiscard]] ResourceID CreateOrUpdateDescriptorLayout(const DescriptorLayoutDescVK& desc, const std::string& name);
 
 		void DestroyResource(ResourceID id);
 		void DestroyResource(const std::string& name);
@@ -69,8 +61,8 @@ namespace puffin::rendering
 		AllocatedBuffer& GetBuffer(ResourceID id);
 		AllocatedBuffer& GetBuffer(const std::string& name);
 
-		vk::DescriptorSet& GetDescriptor(ResourceID id);
-		vk::DescriptorSet& GetDescriptor(const std::string& name);
+		vk::DescriptorSetLayout& GetDescriptorLayout(ResourceID id);
+		vk::DescriptorSetLayout& GetDescriptorLayout(const std::string& name);
 
 		void NotifySwapchainResized();
 		void NotifyRenderExtentResized();
@@ -78,13 +70,13 @@ namespace puffin::rendering
 	private:
 
 		void UpdateSwapchainAndRenderRelativeResources();
-		void CreateResourcesInstances();
-		void DestroyResourcesInstances();
+		void CreateResourceInstances();
+		void DestroyResourceInstances();
 
 		void CreateOrUpdateAttachmentInternal(const AttachmentDescVK& desc, ResourceID id, const std::string& name);
 		void CreateOrUpdateImageInternal(const ImageDescVK& desc, ResourceID id, const std::string& name);
 		void CreateOrUpdateBufferInternal(const BufferDescVK& desc, ResourceID id, const std::string& name);
-		void CreateOrUpdateDescriptorInternal(const DescriptorDescVK& desc, ResourceID id, const std::string& name);
+		void CreateOrUpdateDescriptorLayoutInternal(const DescriptorLayoutDescVK& desc, ResourceID id, const std::string& name);
 
 		void DestroyResourceInternal(ResourceID id);
 
@@ -94,12 +86,16 @@ namespace puffin::rendering
 		void CreateBufferInstanceInternal(ResourceID instanceID, const BufferDescVK& desc);
 		void DestroyBufferInstanceInternal(ResourceID instanceID);
 
+		void CreateDescriptorLayoutInstanceInternal(ResourceID instanceID, const DescriptorLayoutDescVK& desc);
+		void DestroyDescriptorLayoutInstanceInternal(ResourceID instanceID);
+
 		void CalculateImageExtent(ImageSizeVK imageSize, vk::Extent3D& extent, float widthMult = 1.0f, float heightMult = 1.0f) const;
 
 		enum class ResourceType
 		{
 			Image = 0,
-			Buffer
+			Buffer,
+			DescriptorLayout
 		};
 
 		struct ResourceInfo
@@ -134,11 +130,11 @@ namespace puffin::rendering
 
 		std::unordered_map<ResourceID, AttachmentDescVK> mAttachmentDescs;
 		std::unordered_map<ResourceID, BufferDescVK> mBufferDescs;
-		std::unordered_map<ResourceID, DescriptorDescVK> mDescriptorDescs;
+		std::unordered_map<ResourceID, DescriptorLayoutDescVK> mDescriptorLayoutDescs;
 
 		std::unordered_map<ResourceID, AllocatedImage> mImageInstances;
 		std::unordered_map<ResourceID, AllocatedBuffer> mBufferInstances;
-		std::unordered_map<ResourceID, vk::DescriptorSet> mDescriptorInstances;
+		std::unordered_map<ResourceID, vk::DescriptorSetLayout> mDescriptorLayoutInstances;
 
 		std::vector<std::pair<ResourceID, ImageDescVK>> mImageInstancesToCreate;
 		std::vector<std::unordered_set<ResourceID>> mImageInstancesToDestroy;
@@ -146,7 +142,7 @@ namespace puffin::rendering
 		std::vector<std::pair<ResourceID, BufferDescVK>> mBufferInstancesToCreate;
 		std::vector<std::unordered_set<ResourceID>> mBufferInstancesToDestroy;
 
-		std::vector<std::pair<ResourceID, DescriptorDescVK>> mDescriptorInstancesToCreate;
-		std::vector<std::unordered_set<ResourceID>> mDescriptorInstancesToDestroy;
+		std::vector<std::pair<ResourceID, DescriptorLayoutDescVK>> mDescriptorLayoutInstancesToCreate;
+		std::vector<ResourceID> mDescriptorLayoutInstancesToDestroy;
 	};
 }

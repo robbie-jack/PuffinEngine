@@ -50,8 +50,17 @@ namespace puffin::rendering
 		bool persistent = false; // Whether this buffer should persist between frames or not
 	};
 
-	struct DescriptorDescVK
+	struct DescriptorLayoutBindingVK
 	{
-		
+		vk::DescriptorType type;
+		uint32_t count = 1;
+		vk::ShaderStageFlags stageFlags = {};
+		vk::DescriptorBindingFlags bindingFlags = {};
+		vk::Sampler* sampler = nullptr;
+	};
+
+	struct DescriptorLayoutDescVK
+	{
+		std::vector<DescriptorLayoutBindingVK> bindings;
 	};
 }

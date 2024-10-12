@@ -210,6 +210,8 @@ namespace puffin::rendering
 		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams);
 
 		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return mFrameIdx; }
+		[[nodiscard]] uint8_t GetNextFrameIdx() const { return (mFrameIdx + 1) % mFramesInFlightCount; }
+		[[nodiscard]] uint8_t GetOffsetFrameIdx(uint8_t offset) const { return (mFrameIdx + offset) % mFramesInFlightCount; }
 		[[nodiscard]] uint8_t GetFramesInFlightCount() const { return mFramesInFlightCount; }
 
 		template<typename T>

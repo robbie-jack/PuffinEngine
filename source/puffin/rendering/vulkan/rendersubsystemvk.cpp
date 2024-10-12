@@ -313,10 +313,9 @@ namespace puffin::rendering
 
 		RecordAndSubmitCommands(mCurrentSwapchainIdx);
 
-		//	6. Destroy Old Resources
-		mResourceManager->DestroyResources();
+		//	6. Update frame counter & index
 
-		mFrameIdx = (mFrameIdx + 1) % mFramesInFlightCount;
+		mFrameIdx = GetNextFrameIdx();
 		++mFrameCount;
 
 		if (mPresentWaitEnabled)
@@ -1165,6 +1164,8 @@ namespace puffin::rendering
 		{
 			renderModule->UpdateResources(mResourceManager.get());
 		}
+
+		mResourceManager->DestroyResources();
 
 		mResourceManager->CreateAndUpdateResources();
 	}
