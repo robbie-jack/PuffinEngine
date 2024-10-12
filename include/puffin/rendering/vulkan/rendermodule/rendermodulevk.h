@@ -43,6 +43,11 @@ namespace puffin::rendering
 		virtual void Deinitialize();
 
 		/*
+		 * Called after resource manager has created resources, used for anything relying on managed resources
+		 */
+		virtual void PostInitialize();
+
+		/*
 		 * Called by render subsystem once a frame, create, update or destroy any resources as needed
 		 */
 		virtual void UpdateResources(ResourceManagerVK* resourceManager);

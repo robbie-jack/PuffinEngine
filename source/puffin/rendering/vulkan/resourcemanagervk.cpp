@@ -666,7 +666,7 @@ namespace puffin::rendering
 	void ResourceManagerVK::CreateDescriptorLayoutInstanceInternal(ResourceID instanceID,
 		const DescriptorLayoutDescVK& desc)
 	{
-		if (mDescriptorLayoutInstances.find(instanceID) == mDescriptorLayoutInstances.end())
+		if (mDescriptorLayoutInstances.find(instanceID) != mDescriptorLayoutInstances.end())
 			return;
 
 		std::vector<vk::DescriptorSetLayoutBinding> bindings;

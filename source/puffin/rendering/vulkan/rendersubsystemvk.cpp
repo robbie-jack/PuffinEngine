@@ -148,6 +148,8 @@ namespace puffin::rendering
 
 		mResourceManager->CreateAndUpdateResources();
 
+		PostInitModules();
+
 		InitCommands();
 
 		InitSyncStructures();
@@ -654,8 +656,16 @@ namespace puffin::rendering
 		}
 	}
 
+	void RenderSubsystemVK::PostInitModules()
+	{
+		for (auto renderModule : mRenderModuleVector)
+		{
+			renderModule->PostInitialize();
+		}
+	}
+
 	void RenderSubsystemVK::InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent,
-	                                   const int& offscreenImageCount)
+	                                      const int& offscreenImageCount)
 	{
 		offscreenData.extent = offscreenExtent;
 
@@ -996,7 +1006,7 @@ namespace puffin::rendering
        // Add rendering info struct
        .AddPNext(&pipelineRenderInfo)
        // Create pipeline
-       .CreateUnique(mDevice, m_pipeline_cache, *mForwardPipelineLayout, nullptr);
+       .CreateUnique(mDevice, mPipelineCache, *mForwardPipelineLayout, nullptr);
 
 		mDevice.destroyShaderModule(mForwardVertMod.Module());
 		mDevice.destroyShaderModule(mForwardFragMod.Module());
@@ -1051,7 +1061,7 @@ namespace puffin::rendering
 			// Add rendering info struct
 			.AddPNext(&pipelineRenderInfo)
 			// Create pipeline
-			.CreateUnique(mDevice, m_pipeline_cache, *mShadowPipelineLayout, nullptr);
+			.CreateUnique(mDevice, mPipelineCache, *mShadowPipelineLayout, nullptr);
 
 		mDevice.destroyShaderModule(mShadowFragMod.Module());
 		mDevice.destroyShaderModule(mShadowVertMod.Module());
@@ -1117,7 +1127,7 @@ namespace puffin::rendering
 		ImGui_ImplVulkan_InitInfo initInfo = {
 			mInstance, mPhysicalDevice, mDevice, mGraphicsQueueFamily,
 			mGraphicsQueue, imguiPool, nullptr, static_cast<uint32_t>(mSwapchainData.images.size()),
-			static_cast<uint32_t>(mSwapchainData.images.size()), VK_SAMPLE_COUNT_1_BIT, m_pipeline_cache,
+			static_cast<uint32_t>(mSwapchainData.images.size()), VK_SAMPLE_COUNT_1_BIT, mPipelineCache,
 			0, true, pipelineRenderInfo
 		};
 

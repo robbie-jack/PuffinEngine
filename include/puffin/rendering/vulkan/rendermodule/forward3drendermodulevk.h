@@ -1,6 +1,7 @@
 #pragma once
 
 #include "puffin/rendering/resourceid.h"
+#include "puffin/rendering/vulkan/pipelinevk.h"
 #include "vulkan/vulkan.hpp"
 
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
@@ -21,6 +22,7 @@ namespace puffin::rendering
 
 		void Initialize() override;
 		void Deinitialize() override;
+		void PostInitialize() override;
 
 		void UpdateResources(ResourceManagerVK* resourceManager) override;
 
@@ -32,8 +34,19 @@ namespace puffin::rendering
 
 	private:
 
+		void InitAttachments();
+		void InitPipelineLayout();
+		void InitDefaultForwardPipeline();
+
+		vk::Format mColorFormat, mDepthFormat;
+
 		ResourceID mColorResourceID = gInvalidID;
 		ResourceID mDepthResourceID = gInvalidID;
+
+		vk::UniquePipelineLayout mForwardPipelineLayout;
+
+		util::ShaderModule mDefaultForwardVertMod, mDefaultForwardFragMod;
+		vk::UniquePipeline mDefaultForwardPipeline;
 
 	};
 }

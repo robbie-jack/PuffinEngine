@@ -160,7 +160,7 @@ namespace puffin::rendering
 		const UploadContext& GetUploadContext() const { return mUploadContext; }
 		const vk::Queue& GetGraphicsQueue() const { return mGraphicsQueue; }
 		const GlobalRenderData& GetGlobalRenderData() const { return mGlobalRenderData; }
-		const vk::PipelineCache& GetPipelineCache() const { return m_pipeline_cache; }
+		const vk::PipelineCache& GetPipelineCache() const { return mPipelineCache; }
 		const OffscreenData& GetOffscreenData() const { return mOffscreenData; }
 		const vk::Extent2D& GetSwapchainExtent() const { return mSwapchainExtent; }
 		const vk::Extent2D& GetRenderExtent() const { return mRenderExtent; }
@@ -236,6 +236,8 @@ namespace puffin::rendering
 		                   const vk::Extent2D& swapchainExtent);
 
 		void InitModules();
+
+		void PostInitModules();
 
 		void InitOffscreen(OffscreenData& offscreenData, const vk::Extent2D& offscreenExtent,
 		                   const int& offscreenImageCount);
@@ -398,7 +400,7 @@ namespace puffin::rendering
 		uint64_t mNextPresentID = 1;
 
 		// Pipelines
-		vk::PipelineCache m_pipeline_cache;
+		vk::PipelineCache mPipelineCache;
 
 		util::ShaderModule mForwardVertMod;
 		util::ShaderModule mForwardFragMod;

@@ -25,6 +25,10 @@ namespace puffin::rendering
 	{
 	}
 
+	void RenderModuleVK::PostInitialize()
+	{
+	}
+
 	void RenderModuleVK::UpdateResources(ResourceManagerVK* resourceManager)
 	{
 	}
