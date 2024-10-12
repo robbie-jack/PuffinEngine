@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "vulkan/vulkan.hpp"
+
 #include "puffin/rendering/resourceid.h"
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
 
@@ -30,8 +32,10 @@ namespace puffin::rendering
 	private:
 
 		void InitBuffers();
-
+		void InitSamplers();
 		void InitDescriptors();
+
+		vk::Sampler mTextureSampler;
 
 		ResourceID mIndirectDrawBufferID = gInvalidID;
 		ResourceID mCameraBufferID = gInvalidID;
@@ -40,6 +44,10 @@ namespace puffin::rendering
 		ResourceID mDirLightBufferID = gInvalidID;
 		ResourceID mObjectBufferID = gInvalidID;
 		ResourceID mMaterialInstanceBufferID = gInvalidID;
+
+		ResourceID mObjectDescriptorLayoutID = gInvalidID;
+		ResourceID mGlobalDescriptorLayoutID = gInvalidID;
+		ResourceID mTextureDescriptorLayoutID = gInvalidID;
 
 	};
 }

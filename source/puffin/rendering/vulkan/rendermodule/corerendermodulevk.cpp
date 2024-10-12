@@ -22,6 +22,7 @@ namespace puffin::rendering
 	void CoreRenderModuleVK::Initialize()
 	{
 		InitBuffers();
+		InitSamplers();
 		InitDescriptors();
 	}
 
@@ -47,6 +48,17 @@ namespace puffin::rendering
 
 		mRenderSubsystem->GetResourceManager()->DestroyResource(mMaterialInstanceBufferID);
 		mMaterialInstanceBufferID = gInvalidID;
+
+		mRenderSubsystem->GetDevice().destroySampler(mTextureSampler);
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mObjectDescriptorLayoutID);
+		mObjectDescriptorLayoutID = gInvalidID;
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mGlobalDescriptorLayoutID);
+		mGlobalDescriptorLayoutID = gInvalidID;
+
+		mRenderSubsystem->GetResourceManager()->DestroyResource(mTextureDescriptorLayoutID);
+		mTextureDescriptorLayoutID = gInvalidID;
 	}
 
 	void CoreRenderModuleVK::UpdateResources(ResourceManagerVK* resourceManager)
@@ -74,38 +86,77 @@ namespace puffin::rendering
 		bufferDesc.usage = vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer |
 			vk::BufferUsageFlagBits::eTransferDst;
 		bufferDesc.allocFlags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite | vma::AllocationCreateFlagBits::eMapped;
-		mIndirectDrawBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc);
+		mIndirectDrawBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "indirect_draw");
 
 		// Camera Buffer
 		bufferDesc.size = sizeof(GPUCameraData);
 		bufferDesc.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst;
-		mCameraBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc);
+		mCameraBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "camera");
 
 		// Light Buffers
 		bufferDesc.size = sizeof(GPUPointLightData) * gMaxPointLights;
 		bufferDesc.usage = vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst;
-		mPointLightBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc);
+		mPointLightBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "point_lights");
 
 		bufferDesc.size = sizeof(GPUSpotLightData) * gMaxSpotLights;
-		mSpotLightBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc);
+		mSpotLightBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "spot_lights");
 
 		bufferDesc.size = sizeof(GPUDirLightData) * gMaxDirectionalLights;
-		mDirLightBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc);
+		mDirLightBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "dir_lights");
 
 		// Object Buffer
 
 		bufferDesc.size = sizeof(GPUObjectData) * gMaxObjects;
-		mObjectBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc);
+		mObjectBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "objects");
 
 		// Material Buffer
 
 		bufferDesc.size = sizeof(GPUMaterialInstanceData) * gMaxMaterialInstances;
-		mMaterialInstanceBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc);
+		mMaterialInstanceBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "material_instances");
 
+	}
+
+	void CoreRenderModuleVK::InitSamplers()
+	{
+		vk::SamplerCreateInfo textureSamplerInfo = {};
+		textureSamplerInfo.anisotropyEnable = true;
+		textureSamplerInfo.maxAnisotropy = 16.0f;
+
+		mTextureSampler = mRenderSubsystem->GetDevice().createSampler(textureSamplerInfo);
 	}
 
 	void CoreRenderModuleVK::InitDescriptors()
 	{
+		ResourceManagerVK* resourceManager = mRenderSubsystem->GetResourceManager();
 
+		// Object Layout
+		DescriptorLayoutDescVK descriptorLayoutDesc;
+
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eVertex });
+
+		mObjectDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "objects");
+
+		// Global Layout
+		descriptorLayoutDesc.bindings.clear();
+
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex });
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+
+		mGlobalDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "global");
+
+		// Texture Layout
+		descriptorLayoutDesc.bindings.clear();
+
+		constexpr uint32_t imageCount = 128;
+
+		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eCombinedImageSampler, imageCount, vk::ShaderStageFlagBits::eFragment, 
+			{ vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount }, &mTextureSampler });
+
+		mTextureDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "textures");
 	}
 }

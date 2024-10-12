@@ -27,13 +27,13 @@ namespace puffin::rendering
 		color.format = vk::Format::eR8G8B8A8Unorm;
 		color.type = AttachmentTypeVK::Color;
 
-		mColorResourceID = resourceManager->CreateOrUpdateAttachment(color, "forward3d-color");
+		mColorResourceID = resourceManager->CreateOrUpdateAttachment(color, "forward3d_color");
 
 		AttachmentDescVK depth;
 		depth.format = vk::Format::eD32Sfloat;
 		depth.type = AttachmentTypeVK::Depth;
 
-		mDepthResourceID = resourceManager->CreateOrUpdateAttachment(depth, "forward3d-depth");
+		mDepthResourceID = resourceManager->CreateOrUpdateAttachment(depth, "forward3d_depth");
 	}
 
 	void Forward3DRenderModuleVK::Deinitialize()
@@ -55,8 +55,8 @@ namespace puffin::rendering
 	void Forward3DRenderModuleVK::UpdateGraph(RenderGraphVK& renderGraph)
 	{
 		auto& forwardPass = renderGraph.AddRenderPass("forward3d", RenderPassType::Graphics);
-		forwardPass.AddOutputColorAttachment("forward3d-color");
-		forwardPass.SetOutputDepthStencilAttachment("forward3d-depth");
+		forwardPass.AddOutputColorAttachment("forward3d_color");
+		forwardPass.SetOutputDepthStencilAttachment("forward3d_depth");
 
 		forwardPass.SetRecordCommandsCallback([this](vk::CommandBuffer& cmd)
 		{
