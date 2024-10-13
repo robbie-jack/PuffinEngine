@@ -277,7 +277,8 @@ namespace puffin::rendering
 
 	vk::DescriptorSetLayout& ResourceManagerVK::GetDescriptorLayout(ResourceID id)
 	{
-		const std::string assertMsg = "ResourceManagerVK::GetDescriptor - No descriptor layout with id " + std::to_string(id) + " exists";
+		const std::string assertMsg = "ResourceManagerVK::GetDescriptorLayout - No descriptor layout with id " + std::to_string(id) + " exists";
+		assert(IsResourceValid(id) && assertMsg.c_str());
 
 		return mDescriptorLayoutInstances.at(id);
 	}
@@ -285,6 +286,7 @@ namespace puffin::rendering
 	vk::DescriptorSetLayout& ResourceManagerVK::GetDescriptorLayout(const std::string& name)
 	{
 		const std::string assertMsg = "ResourceManagerVK::GetDescriptorLayout - No descriptor layout with name " + name + " exists";
+		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && assertMsg.c_str());
 
 		return GetDescriptorLayout(mResourceNameToID.at(name));
 	}

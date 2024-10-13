@@ -4,6 +4,7 @@
 
 #include "puffin/rendering/resourceid.h"
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
+#include "entt/entity/registry.hpp"
 
 namespace puffin::rendering
 {
@@ -31,9 +32,21 @@ namespace puffin::rendering
 
 	private:
 
+		void OnUpdateMesh(entt::registry& registry, entt::entity entity);
+		void OnUpdateTransform(entt::registry& registry, entt::entity entity);
+		void OnDestroyMeshOrTransform(entt::registry& registry, entt::entity entity);
+
+		void AddRenderable(entt::registry& registry, entt::entity entity);
+
 		void InitBuffers();
 		void InitSamplers();
 		void InitDescriptors();
+
+		void UpdateRenderData();
+		void ProcessComponents();
+		void UpdateTextureDescriptors();
+		void PrepareSceneData();
+		void BuildIndirectCommands();
 
 		vk::Sampler mTextureSampler;
 

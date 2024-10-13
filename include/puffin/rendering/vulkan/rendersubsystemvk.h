@@ -49,6 +49,7 @@ namespace puffin
 
 namespace puffin::rendering
 {
+	class TextureManagerVK;
 	class UnifiedGeometryBufferVK;
 	class RenderModuleVK;
 	class ResourceManagerVK;
@@ -125,17 +126,6 @@ namespace puffin::rendering
 		bool shadowDescriptorNeedsUpdated = false;
 		bool copyObjectDataToGPU = false;
 		bool copyMaterialDataToGPU = false;
-	};
-
-	const static std::unordered_map<assets::TextureFormat, vk::Format> gTexFormatVK =
-	{
-		{ assets::TextureFormat::R8, vk::Format::eR8Unorm },
-		{ assets::TextureFormat::RG8, vk::Format::eR8G8Unorm },
-		{ assets::TextureFormat::RGB8, vk::Format::eR8G8B8Unorm },
-		{ assets::TextureFormat::RGBA8, vk::Format::eR8G8B8A8Unorm },
-		{ assets::TextureFormat::BC4, vk::Format::eBc4UnormBlock },
-		{ assets::TextureFormat::BC5, vk::Format::eBc5UnormBlock },
-		{ assets::TextureFormat::BC7, vk::Format::eBc7UnormBlock }
 	};
 
 	// Vulkan Rendering System
@@ -369,6 +359,7 @@ namespace puffin::rendering
 		std::array<FrameRenderData, gBufferedFrameCount> mFrameRenderData;
 
 		std::unique_ptr<ResourceManagerVK> mResourceManager = nullptr;
+		std::unique_ptr<TextureManagerVK> mTextureManager = nullptr;
 		std::unique_ptr<UnifiedGeometryBufferVK> mUnifiedGeometryBuffer = nullptr;
 		std::unique_ptr<MaterialRegistryVK> mMaterialRegistry = nullptr;
 

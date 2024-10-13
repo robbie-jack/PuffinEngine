@@ -61,6 +61,7 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
 #include "puffin/core/timer.h"
 #include "puffin/rendering/vulkan/logvk.h"
+#include "puffin/rendering/vulkan/texturemanagervk.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -124,6 +125,7 @@ namespace puffin::rendering
 		InitVulkan();
 
 		mResourceManager = std::make_unique<ResourceManagerVK>(this, gBufferedFrameCount);
+		mTextureManager = std::make_unique<TextureManagerVK>(this);
 		mUnifiedGeometryBuffer = std::make_unique<UnifiedGeometryBufferVK>(this);
 
 		InitSwapchain(mSwapchainData, mSwapchainDataOld.swapchain, mSwapchainExtent);
@@ -203,6 +205,7 @@ namespace puffin::rendering
 
 			//m_material_registry = nullptr;
 			mUnifiedGeometryBuffer = nullptr;
+			mTextureManager = nullptr;
 			mResourceManager = nullptr;
 
 			CleanSwapchain(mSwapchainData);

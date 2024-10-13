@@ -216,6 +216,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/vulkan/rendersubsystemvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/resourcedescvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/resourcemanagervk.h
+	${HEADER_DIR}/puffin/rendering/vulkan/texturemanagervk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/typesvk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.h
 	${HEADER_DIR}/puffin/rendering/vulkan/vertexvk.h
@@ -337,6 +338,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/vulkan/pipelinevk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/rendersubsystemvk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/resourcemanagervk.cpp
+	${SOURCE_DIR}/puffin/rendering/vulkan/texturemanagervk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.cpp
 	${SOURCE_DIR}/puffin/rendering/vulkan/vertexvk.cpp
 	# Rendering - Vulkan - Render Graph

@@ -21,6 +21,8 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::Initialize()
 	{
+
+
 		InitBuffers();
 		InitSamplers();
 		InitDescriptors();
@@ -73,7 +75,11 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::PreRender(double deltaTime)
 	{
-		
+		UpdateRenderData();
+		ProcessComponents();
+		UpdateTextureDescriptors();
+		PrepareSceneData();
+		BuildIndirectCommands();
 	}
 
 	void CoreRenderModuleVK::InitBuffers()
@@ -158,5 +164,30 @@ namespace puffin::rendering
 			{ vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount } });
 
 		mTextureDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "textures");
+	}
+
+	void CoreRenderModuleVK::UpdateRenderData()
+	{
+
+	}
+
+	void CoreRenderModuleVK::ProcessComponents()
+	{
+
+	}
+
+	void CoreRenderModuleVK::UpdateTextureDescriptors()
+	{
+
+	}
+
+	void CoreRenderModuleVK::PrepareSceneData()
+	{
+
+	}
+
+	void CoreRenderModuleVK::BuildIndirectCommands()
+	{
+
 	}
 }
