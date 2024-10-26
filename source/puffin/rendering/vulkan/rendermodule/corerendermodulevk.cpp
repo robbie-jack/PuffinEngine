@@ -82,6 +82,26 @@ namespace puffin::rendering
 		BuildIndirectCommands();
 	}
 
+	void CoreRenderModuleVK::OnUpdateMesh(entt::registry& registry, entt::entity entity)
+	{
+
+	}
+
+	void CoreRenderModuleVK::OnUpdateTransform(entt::registry& registry, entt::entity entity)
+	{
+
+	}
+
+	void CoreRenderModuleVK::OnDestroyMeshOrTransform(entt::registry& registry, entt::entity entity)
+	{
+
+	}
+
+	void CoreRenderModuleVK::AddRenderable(entt::registry& registry, entt::entity entity)
+	{
+
+	}
+
 	void CoreRenderModuleVK::InitBuffers()
 	{
 		ResourceManagerVK* resourceManager = mRenderSubsystem->GetResourceManager();
@@ -137,6 +157,7 @@ namespace puffin::rendering
 
 		// Object Layout
 		DescriptorLayoutDescVK descriptorLayoutDesc;
+		descriptorLayoutDesc.flags = { vk::DescriptorSetLayoutCreateFlagBits::eDescriptorBufferEXT };
 
 		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eVertex });
 

@@ -671,18 +671,19 @@ namespace puffin::rendering
 		if (mDescriptorLayoutInstances.find(instanceID) != mDescriptorLayoutInstances.end())
 			return;
 
-		std::vector<vk::DescriptorSetLayoutBinding> bindings;
-		std::vector<vk::DescriptorBindingFlags> bindingFlags;
+		util::CreateDescriptorLayoutParams params;
+
+		params.flags = desc.flags;
 
 		for (int i = 0; i < desc.bindings.size(); ++i)
 		{
 			const DescriptorLayoutBindingVK& binding = desc.bindings[i];
 
-			bindings.emplace_back(i, binding.type, binding.count, binding.stageFlags, binding.sampler);
-			bindingFlags.emplace_back(binding.bindingFlags);
+			params.bindings.emplace_back(i, binding.type, binding.count, binding.stageFlags, binding.sampler);
+			params.bindingFlags.emplace_back(binding.bindingFlags);
 		}
 
-		mDescriptorLayoutInstances.emplace(instanceID, util::CreateDescriptorLayout(mRenderSystem->GetDevice(), bindings, bindingFlags));
+		mDescriptorLayoutInstances.emplace(instanceID, util::CreateDescriptorLayout(mRenderSystem->GetDevice(), params));
 	}
 
 	void ResourceManagerVK::DestroyDescriptorLayoutInstanceInternal(ResourceID instanceID)

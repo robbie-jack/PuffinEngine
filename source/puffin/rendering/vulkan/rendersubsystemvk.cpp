@@ -478,7 +478,7 @@ namespace puffin::rendering
 		.request_validation_layers(gEnableValidationLayers)
 		.require_api_version(1, 3, 25)
 		.use_default_debug_messenger()
-		.enable_extension("VK_KHR_get_physical_device_properties2")
+		.enable_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)
 		.build();
 
 		vkb::Instance vkbInst = instRet.value();
@@ -514,6 +514,7 @@ namespace puffin::rendering
 		std::vector requiredExtensions =
 		{
 			VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
+			VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
 		};
 
 		std::vector desiredExtensions =
@@ -537,9 +538,9 @@ namespace puffin::rendering
 
 		bool presentIdEnabled = false;
 
-		/*for (const auto& extension : physDevice.get_extensions())
+		for (const auto& extension : physDevice.get_extensions())
 		{
-			if (extension == VK_KHR_PRESENT_ID_EXTENSION_NAME)
+			/*if (extension == VK_KHR_PRESENT_ID_EXTENSION_NAME)
 			{
 				presentIdEnabled = true;
 			}
@@ -547,12 +548,18 @@ namespace puffin::rendering
 			if (extension == VK_KHR_PRESENT_WAIT_EXTENSION_NAME && presentIdEnabled == true)
 			{
 				mPresentWaitEnabled = true;
+			}*/
+
+			if (extension == VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME)
+			{
+				mDescriptorBuffersEnabled = true;
 			}
-		}*/
+		}
 
 		vk::PhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeatures = { true };
 		vk::PhysicalDevicePresentIdFeaturesKHR presentIdFeatures = { presentIdEnabled };
 		vk::PhysicalDevicePresentWaitFeaturesKHR presentWaitFeatures = { mPresentWaitEnabled };
+		vk::PhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeatures = { mDescriptorBuffersEnabled };
 
 		// Create Vulkan Device
 		vkb::DeviceBuilder deviceBuilder{physDevice};
@@ -561,6 +568,7 @@ namespace puffin::rendering
 		.add_pNext(&shaderDrawParametersFeatures)
 		.add_pNext(&presentIdFeatures)
 		.add_pNext(&presentWaitFeatures)
+		.add_pNext(&descriptorBufferFeatures)
 		.build()
 		.value();
 

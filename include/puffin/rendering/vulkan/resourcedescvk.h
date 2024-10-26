@@ -61,6 +61,7 @@ namespace puffin::rendering
 
 	struct DescriptorLayoutDescVK
 	{
+		vk::DescriptorSetLayoutCreateFlags flags;
 		std::vector<DescriptorLayoutBindingVK> bindings;
 	};
 }

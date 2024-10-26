@@ -85,7 +85,11 @@ namespace puffin::rendering::util
 	};
 	AllocatedImage InitTexture(const RenderSubsystemVK* renderSystem, const InitTextureParams& params);
 
-	vk::DescriptorSetLayout CreateDescriptorLayout(const vk::Device& device, 
-		const std::vector<vk::DescriptorSetLayoutBinding>& bindings,
-		const std::vector<vk::DescriptorBindingFlags>& bindingFlags);
+	struct CreateDescriptorLayoutParams
+	{
+		vk::DescriptorSetLayoutCreateFlags flags;
+		std::vector<vk::DescriptorSetLayoutBinding> bindings;
+		std::vector<vk::DescriptorBindingFlags> bindingFlags;
+	};
+	vk::DescriptorSetLayout CreateDescriptorLayout(const vk::Device& device, const CreateDescriptorLayoutParams& params);
 }

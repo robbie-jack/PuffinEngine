@@ -220,13 +220,11 @@ namespace puffin::rendering::util
 		return texture;
 	}
 
-	vk::DescriptorSetLayout CreateDescriptorLayout(const vk::Device& device,
-		const std::vector<vk::DescriptorSetLayoutBinding>& bindings,
-		const std::vector<vk::DescriptorBindingFlags>& bindingFlags)
+	vk::DescriptorSetLayout CreateDescriptorLayout(const vk::Device& device, const CreateDescriptorLayoutParams& params)
 	{
-		vk::DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = { static_cast<uint32_t>(bindingFlags.size()), bindingFlags.data() };
+		vk::DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = { static_cast<uint32_t>(params.bindingFlags.size()), params.bindingFlags.data() };
 
-		const vk::DescriptorSetLayoutCreateInfo layoutInfo = { {}, static_cast<uint32_t>(bindings.size()), bindings.data(), &bindingFlagsCreateInfo };
+		const vk::DescriptorSetLayoutCreateInfo layoutInfo = { params.flags, static_cast<uint32_t>(params.bindings.size()), params.bindings.data(), &bindingFlagsCreateInfo };
 
 		vk::DescriptorSetLayout layout;
 		VK_CHECK(device.createDescriptorSetLayout(&layoutInfo, nullptr, &layout));
