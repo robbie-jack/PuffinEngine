@@ -799,10 +799,6 @@ namespace puffin::rendering
 			mFrameRenderData[i].indirectDrawBuffer = util::CreateBuffer(mAllocator, params);
 
 			// Global Buffers
-			params.allocSize = sizeof(GPUCameraData);
-			params.bufferUsage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst;
-			mFrameRenderData[i].cameraBuffer = util::CreateBuffer(mAllocator, params);
-
 			params.allocSize = sizeof(GPUPointLightData) * gMaxPointLights;
 			params.bufferUsage = vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst;
 			mFrameRenderData[i].pointLightBuffer = util::CreateBuffer(mAllocator, params);
@@ -852,10 +848,6 @@ namespace puffin::rendering
 				mAllocator.destroyBuffer(mFrameRenderData[i].pointLightBuffer.buffer,
 					mFrameRenderData[i].pointLightBuffer.allocation);
 
-
-				mAllocator.destroyBuffer(mFrameRenderData[i].cameraBuffer.buffer,
-					mFrameRenderData[i].cameraBuffer.allocation);
-
 				mAllocator.destroyBuffer(mFrameRenderData[i].indirectDrawBuffer.buffer,
 					mFrameRenderData[i].indirectDrawBuffer.allocation);
 			});
@@ -894,7 +886,7 @@ namespace puffin::rendering
 
 		for (int i = 0; i < gBufferedFrameCount; i++)
 		{
-			// Global Descriptors
+			// Object Descriptors
 
 			vk::DescriptorBufferInfo objectBufferInfo = {
 				mFrameRenderData[i].objectBuffer.buffer, 0, sizeof(GPUObjectData) * gMaxObjects
@@ -905,9 +897,8 @@ namespace puffin::rendering
 				.BindBuffer(0, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
 				.Build(mFrameRenderData[i].objectDescriptor, mGlobalRenderData.objectSetLayout);
 
-			vk::DescriptorBufferInfo cameraBufferInfo = {
-				mFrameRenderData[i].cameraBuffer.buffer, 0, sizeof(GPUCameraData)
-			};
+			// Light Descriptors
+
 			vk::DescriptorBufferInfo pointLightBufferInfo = {
 				mFrameRenderData[i].pointLightBuffer.buffer, 0, sizeof(GPUPointLightData) * gMaxPointLights
 			};
@@ -917,26 +908,15 @@ namespace puffin::rendering
 			vk::DescriptorBufferInfo dirLightBufferInfo = {
 				mFrameRenderData[i].directionalLightBuffer.buffer, 0, sizeof(GPUDirLightData) * gMaxDirectionalLights
 			};
-			vk::DescriptorBufferInfo shadowBufferInfo = {
-				mFrameRenderData[i].shadowBuffer.buffer, 0, sizeof(GPUShadowData) * gMaxLights
-			};
-            vk::DescriptorBufferInfo shadowCascadeBufferInfo = {
-                    mFrameRenderData[i].shadowCascadeBuffer.buffer, 0, sizeof(GPUShadowCascadeData) * gMaxLights * gMaxShadowCascadesPerLight
-            };
-			vk::DescriptorBufferInfo materialBufferInfo = {
-				mFrameRenderData[i].materialInstanceBuffer.buffer, 0, sizeof(GPUMaterialInstanceData) * gMaxMaterialInstances
-			};
 
 			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
 				mGlobalRenderData.descriptorAllocator)
-				.BindBuffer(0, &cameraBufferInfo, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
-				.BindBuffer(1, &pointLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.BindBuffer(2, &spotLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.BindBuffer(3, &dirLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.BindBuffer(4, &shadowBufferInfo, vk::DescriptorType::eStorageBuffer,vk::ShaderStageFlagBits::eFragment)
-				.BindBuffer(5, &shadowCascadeBufferInfo, vk::DescriptorType::eStorageBuffer,vk::ShaderStageFlagBits::eFragment)
-				.BindBuffer(6, &materialBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
-				.Build(mFrameRenderData[i].globalDescriptor, mGlobalRenderData.globalSetLayout);
+				.BindBuffer(0, &pointLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindBuffer(1, &spotLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindBuffer(2, &dirLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.Build(mFrameRenderData[i].lightDescriptor, mGlobalRenderData.lightSetLayout);
+
+			// Material Descriptors
 
 			constexpr uint32_t imageCount = 128;
 			uint32_t variableDescCount = imageCount;
@@ -945,19 +925,35 @@ namespace puffin::rendering
 			vk::DescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocInfo =
 			{ 1, &variableDescCount };
 
+			vk::DescriptorBufferInfo materialBufferInfo = {
+				mFrameRenderData[i].materialInstanceBuffer.buffer, 0, sizeof(GPUMaterialInstanceData) * gMaxMaterialInstances
+			};
+
 			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
 				mGlobalRenderData.descriptorAllocator)
-				.BindImagesWithoutWrite(0, imageCount, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
+				.BindBuffer(0, &materialBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindImagesWithoutWrite(1, imageCount, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
 				.AddPNext(&variableDescriptorCountAllocInfo)
-				.Build(mFrameRenderData[i].textureDescriptor, mGlobalRenderData.textureSetLayout);
+				.Build(mFrameRenderData[i].materialDescriptor, mGlobalRenderData.materialSetLayout);
+
+			// Shadow Descriptors
 
 			variableDescCount = gMaxLights;
 
+			vk::DescriptorBufferInfo shadowBufferInfo = {
+				mFrameRenderData[i].shadowBuffer.buffer, 0, sizeof(GPUShadowData) * gMaxLights
+			};
+			vk::DescriptorBufferInfo shadowCascadeBufferInfo = {
+				mFrameRenderData[i].shadowCascadeBuffer.buffer, 0, sizeof(GPUShadowCascadeData) * gMaxLights * gMaxShadowCascadesPerLight
+			};
+
 			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
 				mGlobalRenderData.descriptorAllocator)
-				.BindImagesWithoutWrite(0, gMaxLights, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
+				.BindBuffer(0, &shadowBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindBuffer(1, &shadowCascadeBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindImagesWithoutWrite(2, gMaxLights, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
 				.AddPNext(&variableDescriptorCountAllocInfo)
-				.Build(mFrameRenderData[i].shadowmapDescriptor, mGlobalRenderData.shadowmapSetLayout);
+				.Build(mFrameRenderData[i].shadowDescriptor, mGlobalRenderData.shadowSetLayout);
 		}
 
 		mDeletionQueue.PushFunction([=]()
@@ -989,9 +985,9 @@ namespace puffin::rendering
 		util::PipelineLayoutBuilder plb{};
 		mForwardPipelineLayout = plb
 		.DescriptorSetLayout(mGlobalRenderData.objectSetLayout)
-		.DescriptorSetLayout(mGlobalRenderData.globalSetLayout)
-		.DescriptorSetLayout(mGlobalRenderData.textureSetLayout)
-		.DescriptorSetLayout(mGlobalRenderData.shadowmapSetLayout)
+		.DescriptorSetLayout(mGlobalRenderData.lightSetLayout)
+		.DescriptorSetLayout(mGlobalRenderData.materialSetLayout)
+		.DescriptorSetLayout(mGlobalRenderData.shadowSetLayout)
 		.PushConstantRange(vertRange)
 		.PushConstantRange(fragRange)
 		.CreateUnique(mDevice);
@@ -1642,9 +1638,9 @@ namespace puffin::rendering
 
 			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
 			                               mGlobalRenderData.descriptorAllocator)
-				.UpdateImages(0, textureImageInfos.size(), textureImageInfos.data(),
+				.UpdateImages(1, textureImageInfos.size(), textureImageInfos.data(),
 				              vk::DescriptorType::eCombinedImageSampler)
-				.Update(GetCurrentFrameData().textureDescriptor);
+				.Update(GetCurrentFrameData().materialDescriptor);
 
 			GetCurrentFrameData().textureDescriptorNeedsUpdated = false;
 		}
@@ -1659,9 +1655,9 @@ namespace puffin::rendering
 
 			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
 				mGlobalRenderData.descriptorAllocator)
-				.UpdateImages(0, shadowImageInfos.size(), shadowImageInfos.data(),
+				.UpdateImages(2, shadowImageInfos.size(), shadowImageInfos.data(),
 					vk::DescriptorType::eCombinedImageSampler)
-				.Update(GetCurrentFrameData().shadowmapDescriptor);
+				.Update(GetCurrentFrameData().shadowDescriptor);
 
 			GetCurrentFrameData().shadowDescriptorNeedsUpdated = false;
 		}
@@ -1669,23 +1665,6 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::PrepareSceneData()
 	{
-		// Prepare camera data
-		const AllocatedBuffer& cameraBuffer = GetCurrentFrameData().cameraBuffer;
-
-		const auto cameraSubystem = mEngine->GetSubsystem<CameraSubsystem>();
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		auto registry = enttSubsystem->GetRegistry();
-
-		auto entity = enttSubsystem->GetEntity(cameraSubystem->GetActiveCameraID());
-		const auto& camera = registry->get<CameraComponent3D>(entity);
-
-		GPUCameraData camUBO;
-		camUBO.proj = camera.proj;
-		camUBO.view = camera.view;
-		camUBO.viewProj = camera.viewProj;
-
-		memcpy(cameraBuffer.allocInfo.pMappedData, &camUBO, sizeof(GPUCameraData));
-
 		PrepareMaterialData();
 		PrepareObjectData();
 		PrepareLightData();
@@ -2549,16 +2528,23 @@ namespace puffin::rendering
 	{
 		std::vector<vk::DescriptorSet> descriptors;
 		descriptors.push_back(GetCurrentFrameData().objectDescriptor);
-		descriptors.push_back(GetCurrentFrameData().globalDescriptor);
-		descriptors.push_back(GetCurrentFrameData().textureDescriptor);
-		descriptors.push_back(GetCurrentFrameData().shadowmapDescriptor);
+		descriptors.push_back(GetCurrentFrameData().lightDescriptor);
+		descriptors.push_back(GetCurrentFrameData().materialDescriptor);
+		descriptors.push_back(GetCurrentFrameData().shadowDescriptor);
 
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mForwardPipelineLayout.get(), 0, descriptors.size(),
 			descriptors.data(), 0, nullptr);
 
+		const auto cameraSubystem = mEngine->GetSubsystem<CameraSubsystem>();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		auto registry = enttSubsystem->GetRegistry();
+
+		auto entity = enttSubsystem->GetEntity(cameraSubystem->GetActiveCameraID());
+		const auto& camera = registry->get<CameraComponent3D>(entity);
 		
 		GPUVertexShaderPushConstant pushConstantVert;
 		pushConstantVert.vertexBufferAddress = mUnifiedGeometryBuffer->GetVertexBufferAddress();
+		pushConstantVert.camViewProj = camera.viewProj;
 
 		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &pushConstantVert);
 		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUFragShaderPushConstant), &GetCurrentFrameData().pushConstantFrag);

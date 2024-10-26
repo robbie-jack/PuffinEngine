@@ -10,6 +10,7 @@ layout (location = 4) flat in int matIndex;
 
 layout (location = 0) out vec4 outColor;
 
+// Lights
 struct PointLightData
 {
 	vec4 positionShadowIndex;
@@ -35,27 +36,45 @@ struct DirectionalLightData
 	vec4 direction;
 };
 
-layout(std140, set = 1, binding = 1) readonly buffer PointLightBuffer
+layout(std140, set = 1, binding = 0) readonly buffer PointLightBuffer
 {
 	PointLightData lights[];
 } pointLightBuffer;
 
-layout(std140, set = 1, binding = 2) readonly buffer SpotLightBuffer
+layout(std140, set = 1, binding = 1) readonly buffer SpotLightBuffer
 {
 	SpotLightData lights[];
 } spotLightBuffer;
 
-layout(std140, set = 1, binding = 3) readonly buffer DirectionalLightBuffer
+layout(std140, set = 1, binding = 2) readonly buffer DirectionalLightBuffer
 {
 	DirectionalLightData lights[];
 } dirLightBuffer;
 
+// Materials
+const int maxTexturesPerMaterial = 8;
+const int maxFloatsPerMaterial = 8;
+
+struct MaterialData
+{
+	int texIndices[maxTexturesPerMaterial];
+	float data[maxFloatsPerMaterial];
+};
+
+layout(set = 2, binding = 0) readonly buffer MaterialBuffer
+{
+	MaterialData materials[];
+} materialBuffer;
+
+layout(set = 2, binding = 1) uniform sampler2D textures[];
+
+// Shadows
 struct ShadowData
 {
 	vec4 shadowBiasCascadeIndexAndCount;
 };
 
-layout(std140, set = 1, binding = 4) readonly buffer ShadowBuffer
+layout(std140, set = 3, binding = 0) readonly buffer ShadowBuffer
 {
 	ShadowData shadows[];
 } shadowBuffer;
@@ -66,32 +85,17 @@ struct ShadowCascadeData
 	float cascadePlaneDistance;
 };
 
-layout(std140, set = 1, binding = 5) readonly buffer ShadowCascadeBuffer
+layout(std140, set = 3, binding = 1) readonly buffer ShadowCascadeBuffer
 {
 	ShadowCascadeData cascades[];
 } shadowCascadeBuffer;
 
-const int maxTexturesPerMaterial = 8;
-const int maxFloatsPerMaterial = 8;
-
-struct MaterialData
-{
-	int texIndices[maxTexturesPerMaterial];
-	float data[maxFloatsPerMaterial];
-};
-
-layout(set = 1, binding = 6) readonly buffer MaterialBuffer
-{
-	MaterialData materials[];
-} materialBuffer;
-
-layout(set = 2, binding = 0) uniform sampler2D textures[];
-layout(set = 3, binding = 0) uniform sampler2D shadowmaps[];
+layout(set = 3, binding = 2) uniform sampler2D shadowmaps[];
 
 layout( push_constant ) uniform constants
 {	
-	layout(offset = 16) vec4 viewPos;
-	layout(offset = 32) vec4 lightCount;
+	layout(offset = 80) vec4 viewPos;
+	layout(offset = 96) vec4 lightCount;
 } pushConstants;
 
 float CalculateAttenuation(float constant, float linear, float quadratic, float distance);

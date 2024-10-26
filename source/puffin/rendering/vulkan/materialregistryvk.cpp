@@ -170,7 +170,7 @@ namespace puffin::rendering
 
 					util::PipelineLayoutBuilder plb{};
 					mat.pipelineLayout = plb
-						.DescriptorSetLayout(mRenderSystem->GetGlobalRenderData().globalSetLayout)
+						.DescriptorSetLayout(mRenderSystem->GetGlobalRenderData().lightSetLayout)
 						.PushConstantRange(range)
 						.CreateUnique(mRenderSystem->GetDevice());
 

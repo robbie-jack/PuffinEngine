@@ -59,8 +59,9 @@ namespace puffin::rendering
 		ResourceID mMaterialInstanceBufferID = gInvalidID;
 
 		ResourceID mObjectDescriptorLayoutID = gInvalidID;
-		ResourceID mGlobalDescriptorLayoutID = gInvalidID;
-		ResourceID mTextureDescriptorLayoutID = gInvalidID;
+		ResourceID mLightDescriptorLayoutID = gInvalidID;
+		ResourceID mMatDescriptorLayoutID = gInvalidID;
+		ResourceID mShadowDescriptorLayoutID = gInvalidID; // PUFFIN_TODO - Dummy layout, will be removed once shadows are implemented in own render module
 
 	};
 }

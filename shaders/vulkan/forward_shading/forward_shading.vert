@@ -18,13 +18,6 @@ layout(std140, set = 0, binding = 0) readonly buffer ObjectBuffer
 	ObjectData objects[];
 } objectBuffer;
 
-layout(set = 1, binding = 0) uniform CameraBuffer
-{
-	mat4 view;
-	mat4 proj;
-	mat4 viewProj;
-} camera_data;
-
 struct Vertex
 {
 	vec3 position;
@@ -40,7 +33,8 @@ layout(buffer_reference, std430) readonly buffer VertexBuffer{
 
 layout( push_constant ) uniform constants
 {	
-	VertexBuffer vertexBuffer;
+	layout(offset = 0) VertexBuffer vertexBuffer;
+	layout(offset = 16) mat4 camViewProj;
 } pushConstants;
 
 void main()
@@ -49,7 +43,7 @@ void main()
 	
 	mat4 modelMatrix = objectBuffer.objects[gl_InstanceIndex].model;
 	mat4 modelMatrixInv = inverse(modelMatrix);
-	mat4 viewProjMatrix = camera_data.viewProj;
+	mat4 viewProjMatrix = pushConstants.camViewProj;
 		
 	fWorldPos = modelMatrix * vec4(v.position, 1.0f);
 	fUV = vec2(v.uvX, v.uvY);

@@ -120,18 +120,20 @@ namespace puffin::rendering
 	void Forward3DRenderModuleVK::InitPipelineLayout()
 	{
 		auto resourceManager = mRenderSubsystem->GetResourceManager();
-		const vk::DescriptorSetLayout& objectSetLayout = resourceManager->GetDescriptorLayout("objects");
-		const vk::DescriptorSetLayout& globalSetLayout = resourceManager->GetDescriptorLayout("global");
-		const vk::DescriptorSetLayout& textureSetLayout = resourceManager->GetDescriptorLayout("textures");
+		const vk::DescriptorSetLayout& objectLayout = resourceManager->GetDescriptorLayout("objects");
+		const vk::DescriptorSetLayout& lightLayout = resourceManager->GetDescriptorLayout("lights");
+		const vk::DescriptorSetLayout& materialLayout = resourceManager->GetDescriptorLayout("materials");
+		const vk::DescriptorSetLayout& shadowLayout = resourceManager->GetDescriptorLayout("shadows");
 
 		constexpr vk::PushConstantRange vertRange = { vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant) };
 		constexpr vk::PushConstantRange fragRange = { vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUFragShaderPushConstant) };
 
 		util::PipelineLayoutBuilder plb{};
 		mForwardPipelineLayout = plb
-			.DescriptorSetLayout(objectSetLayout)
-			.DescriptorSetLayout(globalSetLayout)
-			.DescriptorSetLayout(textureSetLayout)
+			.DescriptorSetLayout(objectLayout)
+			.DescriptorSetLayout(lightLayout)
+			.DescriptorSetLayout(materialLayout)
+			.DescriptorSetLayout(shadowLayout)
 			.PushConstantRange(vertRange)
 			.PushConstantRange(fragRange)
 			.CreateUnique(mRenderSubsystem->GetDevice());

@@ -188,6 +188,7 @@ namespace puffin::rendering
 	struct GPUVertexShaderPushConstant
 	{
 		alignas(16) vk::DeviceAddress vertexBufferAddress;
+		alignas(16) glm::mat4 camViewProj;
 	};
 
 	struct GPUFragShaderPushConstant

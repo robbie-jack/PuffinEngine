@@ -62,10 +62,9 @@ namespace puffin::rendering
 		std::shared_ptr<util::DescriptorLayoutCache> descriptorLayoutCache = nullptr;
 
 		vk::DescriptorSetLayout objectSetLayout;
-		vk::DescriptorSetLayout globalSetLayout;
-		vk::DescriptorSetLayout textureSetLayout;
-		vk::DescriptorSetLayout shadowmapSetLayout;
+		vk::DescriptorSetLayout lightSetLayout;
 		vk::DescriptorSetLayout materialSetLayout;
+		vk::DescriptorSetLayout shadowSetLayout;
 
 		vk::Sampler textureSampler;
 		vk::Sampler shadowmapSampler;
@@ -101,11 +100,10 @@ namespace puffin::rendering
 
 		// Global Data (Set for entire frame)
 		vk::DescriptorSet objectDescriptor;
-		vk::DescriptorSet globalDescriptor;
-		vk::DescriptorSet textureDescriptor;
-		vk::DescriptorSet shadowmapDescriptor;
+		vk::DescriptorSet lightDescriptor;
+		vk::DescriptorSet materialDescriptor;
+		vk::DescriptorSet shadowDescriptor;
 
-		AllocatedBuffer cameraBuffer;
 		AllocatedBuffer objectBuffer;
 		AllocatedBuffer pointLightBuffer;
 		AllocatedBuffer spotLightBuffer;
