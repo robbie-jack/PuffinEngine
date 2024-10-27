@@ -76,7 +76,6 @@ set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
 set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/vkb/src)
-set(ANGELSCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/angelscript)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimplexNoise)
 set(ENKITS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/enkits)
 
@@ -129,8 +128,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/components/rendering/3d/shadowcastercomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/spotlightcomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/staticmeshcomponent3d.h
-	# Components - Scripting
-	${HEADER_DIR}/puffin/components/scripting/angelscriptcomponent.h
 	# Core
 	${HEADER_DIR}/puffin/core/application.h
 	${HEADER_DIR}/puffin/core/engine.h
@@ -380,13 +377,6 @@ set (VKBOOTSTRAP_SOURCES
 	${VKBOOTSTRAP_DIR}/VkBootstrap.cpp
 	)
 	
-set (ANGELSCRIPT_SOURCES
-	${ANGELSCRIPT_DIR}/scriptarray/scriptarray.cpp
-	${ANGELSCRIPT_DIR}/scriptbuilder/scriptbuilder.cpp
-	${ANGELSCRIPT_DIR}/scriptstdstring/scriptstdstring.cpp
-	${ANGELSCRIPT_DIR}/scriptstdstring/scriptstdstring_utils.cpp
-	)
-	
 set (ENKITS_SOURCES
 	${ENKITS_DIR}/src/TaskScheduler.h
 	${ENKITS_DIR}/src/TaskScheduler.cpp
@@ -405,7 +395,6 @@ set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_EXTENSIONS ON)
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${IMGUI_SOURCES})
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
-target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${ANGELSCRIPT_SOURCES})
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${ENKITS_SOURCES})
 
 message("")
@@ -418,7 +407,6 @@ sort_into_source_group(SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} imgui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} opensimplexnoise)
 sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} vkbootstrap)
-sort_into_source_group(ANGELSCRIPT_SOURCES ${ANGELSCRIPT_DIR} angelscript)
 sort_into_source_group(ENKITS_SOURCES ${ENKITS_DIR} enkits)
 
 message("")
@@ -469,13 +457,11 @@ if (PLATFORM_WINDOWS)
 
 	# Define Debug Libs
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/angelscript/Debug/angelscript64d${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
 
 	# Define Release Libs
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/angelscript/Release/angelscript64${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
 
@@ -484,7 +470,6 @@ elseif (PLATFORM_LINUX)
 	find_package(glfw3 3.4 REQUIRED)
 
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} glfw)
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} /usr/local/lib/libangelscript${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} /usr/local/lib/liblz4${LIB_SUFFIX})
 
 endif()
@@ -508,7 +493,6 @@ set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include/angelscript)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/include)
 #target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/include/vma)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
