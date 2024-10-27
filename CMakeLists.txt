@@ -231,10 +231,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
 	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
 	${HEADER_DIR}/puffin/scene/sceneserializationsubsystem.h
-	# Scripting
-	${HEADER_DIR}/puffin/scripting/angelscript/angelscriptengineinterface.h
-	${HEADER_DIR}/puffin/scripting/angelscript/angelscriptsubsystem.h
-	${HEADER_DIR}/puffin/scripting/angelscript/registertypehelpers.h
 	# Types
 	${HEADER_DIR}/puffin/types/aabb.h
 	${HEADER_DIR}/puffin/types/deletionqueue.h
@@ -352,9 +348,6 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/sceneserializationsubsystem.cpp
-	# Scripting
-	${SOURCE_DIR}/puffin/scripting/angelscript/angelscriptsubsystem.cpp
-	${SOURCE_DIR}/puffin/scripting/angelscript/angelscriptengineinterface.cpp
 	# Types
 	${SOURCE_DIR}/puffin/types/deletionqueue.cpp
 	# Types - Storage

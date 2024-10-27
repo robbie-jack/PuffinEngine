@@ -15,7 +15,6 @@
 #include "puffin/physics/onager2d/onager2dphysicssystem.h"
 #endif
 
-#include "puffin/scripting/angelscript/angelscriptsubsystem.h"
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
 int main(int argc, char* argv[])
@@ -48,9 +47,6 @@ int main(int argc, char* argv[])
 #ifdef PFN_JOLT_PHYSICS
 	engine->RegisterSubsystem<puffin::physics::JoltPhysicsSubsystem>();
 #endif
-
-	engine->RegisterSubsystem<puffin::scripting::AngelScriptSubsystem>();
-	engine->RegisterSubsystem<puffin::scripting::AngelScriptGameplaySubsystem>();
 
 	engine->Initialize(parser);
 
