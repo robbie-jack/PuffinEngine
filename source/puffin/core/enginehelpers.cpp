@@ -28,7 +28,6 @@
 #include "puffin/components/rendering/3d/shadowcastercomponent3d.h"
 #include "puffin/components/rendering/3d/spotlightcomponent3d.h"
 #include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
-#include "puffin/components/scripting/angelscriptcomponent.h"
 #include "puffin/core/engine.h"
 #include "puffin/core/enkitssubsystem.h"
 #include "puffin/core/settingsmanager.h"
@@ -414,10 +413,6 @@ namespace puffin::core
 		spotLightMesh2->SetScale({ 0.25f });
 		spotLightMesh2->SetMeshID(meshId3);
 		spotLightMesh2->SetMaterialID(materialInstId1);
-
-		//auto& script = registry->emplace<scripting::AngelScriptComponent>(entities[0]);
-		//script.name = "ExampleScript";
-		//script.dir = contentRootPath / "scripts\\Example.pscript";
 	}
 
 	void SetupDefaultPhysicsScene3D(const std::shared_ptr<Engine>& engine)

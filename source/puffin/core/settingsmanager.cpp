@@ -128,9 +128,12 @@ namespace puffin::core
 			auto& physicsSettings = mCategories["physics"];
 
 			physicsSettings.Set("ticks_per_second", 60);
-
-			physicsSettings.Set("gravity_2d", toml::table{ { "x", 0.0 }, { "y", -9.81 } });
-			physicsSettings.Set("gravity_3d", toml::table{ { "x", 0.0 }, { "y", -9.81 }, { "z", 0.0 } });
+			physicsSettings.Set("sub_steps", 4);
+			physicsSettings.Set("gravity_x", 0.0);
+			physicsSettings.Set("gravity_y", -9.81);
+			physicsSettings.Set("gravity_z", 0.0);
+			physicsSettings.Set("box2d_enable", true);
+			physicsSettings.Set("jolt_enable", false);
 		}
 
 		// Rendering

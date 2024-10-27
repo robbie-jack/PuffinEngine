@@ -22,11 +22,6 @@ namespace puffin
 		class SceneGraphSubsystem;
 	}
 
-	namespace scripting
-	{
-		struct AngelScriptComponent;
-	}
-
 	namespace rendering
 	{
 		class DirectionalLightNode3D;
@@ -142,9 +137,7 @@ namespace puffin::ui
 
 		void DrawRigidbody2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::RigidbodyComponent2D& rigidbody);
 		void DrawCircle2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::CircleComponent2D& circle);
-		void DrawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box);
-
-		void DrawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script);*/
+		void DrawBox2DUI(ImGuiTreeNodeFlags flags, entt::entity entity, physics::BoxComponent2D& box);*/
 
 		//ECS::EntityID m_entity = 0;
 		ImGui::FileBrowser* mFileDialog = nullptr;

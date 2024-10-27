@@ -68,7 +68,7 @@ endif()
 
 # Options
 option(DOUBLE_PRECISION_SUPPORT "Enable Double Precision Support" OFF)
-option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" OFF)
+option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" ON)
 option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" ON)
 option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
 
@@ -475,7 +475,7 @@ elseif (PLATFORM_LINUX)
 endif()
 
 if (PLATFORM_WINDOWS AND BOX2D_PHYSICS_SUPPORT)
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/box2d/Debug/box2d${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/box2d/Debug/box2dd${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
 endif()
 

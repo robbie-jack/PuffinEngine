@@ -17,7 +17,6 @@
 #include "puffin/components/physics/3d/rigidbodycomponent3d.h"
 #include "puffin/components/physics/3d/boxcomponent3d.h"
 #include "puffin/components/physics/3d/spherecomponent3d.h"
-#include "puffin/components/scripting/angelscriptcomponent.h"
 #include "puffin/components/procedural/3d/proceduralplanecomponent3d.h"
 #include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
 #include "puffin/components/rendering/3d/pointlightcomponent3d.h"
@@ -45,7 +44,6 @@ namespace puffin
 			AddComponentType<physics::RigidbodyComponent3D>("Rigidbody3D");
 			AddComponentType<physics::BoxComponent3D>("Box3D");
 			AddComponentType<physics::SphereComponent3D>("Sphere3D");
-			AddComponentType<scripting::AngelScriptComponent>("Script");
 		}
 
 		void UIWindowNodeEditor::Draw(double deltaTime)
@@ -604,124 +602,6 @@ namespace puffin
 		//				registry->patch<physics::BoxComponent2D>(entity, [&halfExtent](auto& box) { box.halfExtent = halfExtent; });
 
 		//				mSceneChanged = true;
-		//			}
-		//		}
-
-		//		ImGui::TreePop();
-		//	}
-		//}
-
-		//void UIWindowNodeEditor::DrawScriptUI(ImGuiTreeNodeFlags flags, entt::entity entity, scripting::AngelScriptComponent& script)
-		//{
-		//	const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
-		//	const auto registry = enttSubsystem->GetRegistry();
-
-		//	if (ImGui::TreeNodeEx("Script Component", flags))
-		//	{
-		//		ImGui::SameLine(ImGui::GetWindowWidth() - 20.0f);
-
-		//		if (ImGui::SmallButton("X##Script"))
-		//		{
-		//			registry->remove<scripting::AngelScriptComponent>(entity);
-		//			
-		//			mSceneChanged = true;
-		//		}
-
-		//		ImGui::InputText("Script Name", &script.name);
-
-		//		ImGui::Text("File Path:"); ImGui::SameLine(0.0f);
-		//		if (ImGui::Selectable(script.dir.string().c_str(), false))
-		//		{
-		//			//fileDialog->Open();
-		//			//modelSelected = true;
-		//		}
-
-		//		if (script.obj != 0)
-		//		{
-		//			ImGui::Separator();
-		//			ImGui::Text("Editable Properties");
-
-		//			// Display Variables in scripts marked as editable
-		//			for (const int& index : script.editableProperties)
-		//			{
-		//				// Get Property Name/Type
-		//				const char* propertyName = script.obj->GetPropertyName(index);
-		//				const int propertyType = script.obj->GetPropertyTypeId(index);
-
-		//				// Display property with correct UI based on its type
-		//				if (propertyType == asTYPEID_BOOL)
-		//				{
-		//					auto boolProperty = static_cast<bool*>(script.obj->GetAddressOfProperty(index));
-
-		//					ImGui::Checkbox(propertyName, boolProperty);
-		//				}
-		//				else if (propertyType == asTYPEID_INT32)
-		//				{
-		//					auto intProperty = static_cast<int*>(script.obj->GetAddressOfProperty(index));
-
-		//					ImGui::InputInt(propertyName, intProperty);
-		//				}
-		//				else if (propertyType == asTYPEID_FLOAT)
-		//				{
-		//					auto* floatProperty = static_cast<float*>(script.obj->GetAddressOfProperty(index));
-
-		//					ImGui::InputFloat(propertyName, floatProperty);
-		//				}
-		//				else if (propertyType == asTYPEID_DOUBLE)
-		//				{
-		//					auto* doubleProperty = static_cast<double*>(script.obj->GetAddressOfProperty(index));
-
-		//					ImGui::InputDouble(propertyName, doubleProperty);
-		//				}
-		//				else
-		//				{
-		//					auto* stringProperty = static_cast<std::string*>(script.obj->GetAddressOfProperty(index));
-
-		//					ImGui::InputText(propertyName, stringProperty);
-		//				}
-		//			}
-
-		//			ImGui::Separator();
-		//			ImGui::Text("Visible Properties");
-
-		//			// Display Variables in scripts marked as visible
-		//			for (const int& index : script.visibleProperties)
-		//			{
-		//				// Get Property Name/Type
-		//				const char* propertyName = script.obj->GetPropertyName(index);
-		//				const int propertyType = script.obj->GetPropertyTypeId(index);
-
-		//				std::string propertyText = propertyName;
-
-		//				// Display property with correct UI based on its type
-		//				if (propertyType == asTYPEID_INT32)
-		//				{
-		//					const int intProperty = *static_cast<int*>(script.obj->GetAddressOfProperty(index));
-		//					propertyText += ": %d";
-
-		//					ImGui::Text(propertyText.c_str(), intProperty);
-		//				}
-		//				else if (propertyType == asTYPEID_FLOAT)
-		//				{
-		//					const float floatProperty = *static_cast<float*>(script.obj->GetAddressOfProperty(index));
-		//					propertyText += ": %.20f";
-
-		//					ImGui::Text(propertyText.c_str(), floatProperty);
-		//				}
-		//				else if (propertyType == asTYPEID_DOUBLE)
-		//				{
-		//					const double doubleProperty = *static_cast<double*>(script.obj->GetAddressOfProperty(index));
-		//					propertyText += ": %.20f";
-
-		//					ImGui::Text(propertyText.c_str(), doubleProperty);
-		//				}
-		//				else
-		//				{
-		//					std::string stringProperty = *static_cast<std::string*>(script.obj->GetAddressOfProperty(index));
-		//					propertyText += ": %s";
-
-		//					ImGui::Text(propertyText.c_str(), stringProperty.c_str());
-		//				}
 		//			}
 		//		}
 

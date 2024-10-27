@@ -21,6 +21,9 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
+		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+		auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+		
 		// Bind entt callbacks
 		auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 
@@ -39,24 +42,22 @@ namespace puffin::physics
 		registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSystem::OnUpdateCircle>(this);
 		registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSystem::OnDestroyCircle>(this);
 
+		InitSettingsAndSignals();
+		
 		// Create world
-		auto settings_manager = mEngine->GetSubsystem<core::SettingsManager>();
-		auto gravity = settings_manager->Get<Vector3f>("physics_gravity");
-
-		b2WorldDef world_def = b2DefaultWorldDef();
-		world_def.gravity = { gravity.x, gravity.y };
-
-		m_physics_world_id = b2CreateWorld(&world_def);
-
-		m_sub_steps = 4;
+		b2WorldDef worldDef = b2DefaultWorldDef();
+		worldDef.gravity = mGravity;
+		
+		mPhysicsWorldID = b2CreateWorld(&worldDef);
 	}
 
 	void Box2DPhysicsSystem::Deinitialize()
 	{
-		m_sub_steps = 0;
+		mGravity = { 0.0, 0.0 };
+		mSubSteps = 0;
 
-		b2DestroyWorld(m_physics_world_id);
-		m_physics_world_id = b2_nullWorldId;
+		b2DestroyWorld(mPhysicsWorldID);
+		mPhysicsWorldID = b2_nullWorldId;
 
 		//m_contact_listener = nullptr;
 	}
@@ -85,17 +86,17 @@ namespace puffin::physics
 
 	bool Box2DPhysicsSystem::ShouldUpdate()
 	{
-		return true;
+		return mEnabled;
 	}
 
 	void Box2DPhysicsSystem::FixedUpdate(double fixedTimeStep)
 	{
-		b2World_Step(m_physics_world_id, fixedTimeStep, m_sub_steps);
+		b2World_Step(mPhysicsWorldID, fixedTimeStep, mSubSteps);
 	}
 
 	bool Box2DPhysicsSystem::ShouldFixedUpdate()
 	{
-		return true;
+		return mEnabled;
 	}
 
 	//void Box2DPhysicsSystem::fixedUpdate()
@@ -173,6 +174,61 @@ namespace puffin::physics
 	void Box2DPhysicsSystem::OnDestroyRigidbody(entt::registry& registry, entt::entity entity)
 	{
 		
+	}
+
+	void Box2DPhysicsSystem::InitSettingsAndSignals()
+	{
+		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+		
+		auto gravityX = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
+		auto gravityY = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
+
+		mGravity = { gravityX, gravityY };
+
+		auto gravityXSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_x");
+		gravityXSignal->Connect(std::function([&]
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+			mGravity.x = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
+
+			if (b2World_IsValid(mPhysicsWorldID))
+			{
+				b2World_SetGravity(mPhysicsWorldID, mGravity);
+			}
+		}));
+
+		auto gravityYSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_y");
+		gravityYSignal->Connect(std::function([&]
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+			mGravity.y = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
+
+			if (b2World_IsValid(mPhysicsWorldID))
+			{
+				b2World_SetGravity(mPhysicsWorldID, mGravity);
+			}
+		}));
+
+		mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
+
+		auto subStepsSignal = signalSubsystem->GetOrCreateSignal("physics_sub_steps");
+		subStepsSignal->Connect(std::function([&]
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+			mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
+		}));
+
+		mEnabled = settingsManager->Get<bool>("physics", "box2d_enable").value_or(true);
+
+		auto box2dEnableSignal = signalSubsystem->GetOrCreateSignal("physics_box2d_enable");
+		box2dEnableSignal->Connect(std::function([&]
+		{
+			mEnabled = settingsManager->Get<bool>("physics", "box2d_enable").value_or(true);
+		}));
 	}
 
 	void Box2DPhysicsSystem::CreateObjects()

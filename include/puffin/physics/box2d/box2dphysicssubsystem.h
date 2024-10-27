@@ -71,31 +71,8 @@ namespace puffin::physics
 
 	private:
 
-		struct BodyCreateEvent
-		{
-			UUID id;
-		};
-
-		struct ShapeCreateEvent
-		{
-			UUID id;
-			BodyType type;
-		};
-
-		uint32_t m_sub_steps = 0;
-
-		b2WorldId m_physics_world_id = b2_nullWorldId;
-		//std::unique_ptr<Box2DContactListener> m_contact_listener = nullptr;
-
-		MappedVector<UUID, b2BodyId> m_body_ids; // Vector of body ids used in physics simulation
-		MappedVector<UUID, b2ShapeId> m_shapes; // Vector of shapes sued in physics simulation
-
-		MappedVector<UUID, b2Circle> m_circles;
-		MappedVector<UUID, b2Polygon> m_polygons;
-
-		RingBuffer<BodyCreateEvent> m_body_create_events;
-		RingBuffer<ShapeCreateEvent> m_shape_create_events;
-
+		void InitSettingsAndSignals();
+		
 		void CreateObjects();
 		void DestroyObjects();
 		void PublishCollisionEvents() const;
@@ -111,6 +88,33 @@ namespace puffin::physics
 		void DestroyBody(UUID id);
 		void DestroyBox(UUID id);
 		void DestroyCircle(UUID id);
+		
+		struct BodyCreateEvent
+		{
+			UUID id;
+		};
+
+		struct ShapeCreateEvent
+		{
+			UUID id;
+			BodyType type;
+		};
+
+		bool mEnabled = false;
+		b2Vec2 mGravity = { 0.0, 0.0 };
+		int mSubSteps = 0;
+
+		b2WorldId mPhysicsWorldID = b2_nullWorldId;
+		//std::unique_ptr<Box2DContactListener> m_contact_listener = nullptr;
+
+		MappedVector<UUID, b2BodyId> mBodyIDs; // Vector of body ids used in physics simulation
+		MappedVector<UUID, b2ShapeId> mShapeIDs; // Vector of shapes sued in physics simulation
+
+		MappedVector<UUID, b2Circle> mCircleIDs;
+		MappedVector<UUID, b2Polygon> mPolygonIDs;
+
+		RingBuffer<BodyCreateEvent> mBodyCreateEvents;
+		RingBuffer<ShapeCreateEvent> mShapeCreateEvents;
 	};
 }
 
