@@ -58,7 +58,7 @@ namespace puffin::core
 		PlayState GetPlayState() const { return mPlayState; }
 
 		bool GetSetupEngineDefaultSettings() const { return mSetupEngineDefaultSettings; }
-		bool GetShouldRenderEditorUI() const { return mShouldRenderEditorUI; }
+		bool GetShouldRenderEditorUI() const { return mEditorUIEnabled; }
 
 		const double& GetTimeStepFixed() const { return mTimeStepFixed; }
 		const double& GetDeltaTime() const { return mDeltaTime; }
@@ -99,28 +99,31 @@ namespace puffin::core
 
 	private:
 
+		void InitSettings();
+		void InitSignals();
 		void UpdateDeltaTime(double sampledTime);
+		void UpdatePhysicsTickRate(uint16_t ticksPerSecond);
 		void Idle();
 
 		bool mRunning = true;
 		bool mLoadSceneOnLaunch = false;
 		bool mSetupEngineDefaultScene = false;
 		bool mSetupEngineDefaultSettings = false;
-		bool mShouldLimitFramerate = true; // Whether framerate should be capped at m_frameRateMax
-		bool mShouldRenderEditorUI = true; // Whether editor UI should be rendered
+		bool mFramerateLimitEnable = true; // Whether framerate should be capped at m_frameRateMax
+		bool mEditorUIEnabled = true; // Whether editor UI should be rendered
 
 		PlayState mPlayState = PlayState::Stopped;
 
 		// Framerate Members
-		uint16_t mFrameRateMax = 0; // Limit on how fast game runs
-		uint16_t mPhysicsTicksPerFrame = 60; // How many times physics code should run per frame
+		uint16_t mFramerateLimit = 0; // Limit on how fast game runs
+		uint16_t mPhysicsTicksPerSecond = 60; // How many times physics code should run per frame
 
 		// Time Members
 		double mLastTime = 0.0;
 		double mCurrentTime = 0.0;
 		double mDeltaTime = 0.0; // How long it took last frame to complete
 		double mAccumulatedTime = 0.0; // Time passed since last physics tick
-		double mTimeStepFixed = 1.0 / mPhysicsTicksPerFrame; // How often deterministic code like physics should occur (defaults to 60 times a second)
+		double mTimeStepFixed = 1.0 / mPhysicsTicksPerSecond; // How often deterministic code like physics should occur (defaults to 60 times a second)
 		double mTimeStepLimit = 1 / 30.0; // Maximum amount of time each frame should take to complete
 
 		std::shared_ptr<Application> mApplication = nullptr;

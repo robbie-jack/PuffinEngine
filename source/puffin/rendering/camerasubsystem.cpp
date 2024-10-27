@@ -28,12 +28,7 @@ namespace puffin::rendering
         registry->on_update<CameraComponent3D>().connect<&CameraSubsystem::OnUpdateCamera>(this);
         registry->on_destroy<CameraComponent3D>().connect<&CameraSubsystem::OnDestroyCamera>(this);
 
-        auto editorCameraFovSignal = signalSubsystem->GetSignal<float>("editor_camera_fov");
-        if (!editorCameraFovSignal)
-        {
-            editorCameraFovSignal = signalSubsystem->CreateSignal<float>("editor_camera_fov");
-        }
-
+        auto editorCameraFovSignal = signalSubsystem->GetOrCreateSignal<float>("editor_camera_fov");
         editorCameraFovSignal->Connect(std::function([&](const float& editorCamFov)
         {
         	auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();

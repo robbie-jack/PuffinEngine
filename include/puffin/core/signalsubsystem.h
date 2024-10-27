@@ -120,6 +120,19 @@ namespace puffin::core
 
 			return std::static_pointer_cast<Signal<Parameters...>>(mSignals.at(name));
 		}
+		
+		template<typename... Parameters>
+		std::shared_ptr<Signal<Parameters...>> GetOrCreateSignal(const std::string& name)
+		{
+			auto signal = GetSignal<Parameters...>(name);
+
+			if (!signal)
+			{
+				signal = CreateSignal<Parameters...>(name);
+			}
+			
+			return signal;
+		}
 
 		template<typename... Parameters>
 		size_t Connect(const std::string& name, const std::function<void(const Parameters&...)>& callback)

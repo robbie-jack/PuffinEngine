@@ -32,18 +32,12 @@ namespace puffin::core
         template<typename T>
         void Set(const std::string& name, const T& value)
         {
+        	mData.insert_or_assign(name, value);
+        	
 	        const auto signalSubsystem = mEngine->GetSubsystem<SignalSubsystem>();
 
-	        if (const std::string signalName = mName + "_" + name; !signalSubsystem->GetSignal(signalName))
-        	{
-        		signalSubsystem->CreateSignal(signalName);
-        	}
-	        else
-	        {
-	        	signalSubsystem->Emit(signalName);
-	        }
-        	
-            mData.insert_or_assign(name, value);
+        	auto signal = signalSubsystem->GetOrCreateSignal(mName + "_" + name);
+        	signal->Emit();
         }
 
         void SetData(const toml::table& data);

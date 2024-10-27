@@ -9,6 +9,7 @@
 #include "puffin/assets/staticmeshasset.h"
 #include "puffin/audio/audiosubsystem.h"
 #include "puffin/core/enginehelpers.h"
+#include "puffin/core/settingsmanager.h"
 #include "puffin/input/inputsubsystem.h"
 #include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/scene/sceneserializationsubsystem.h"
@@ -128,6 +129,9 @@ namespace puffin::core
 		}
 
 		sceneSubsystem->Setup();
+
+		InitSettings();
+		InitSignals();
 
 		mLastTime = GetTime(); // Time Count Started
 		mCurrentTime = mLastTime;
@@ -427,6 +431,45 @@ namespace puffin::core
 		mRunning = false;
 	}
 
+	void Engine::InitSettings()
+	{
+		auto settingsManager = GetSubsystem<core::SettingsManager>();
+
+		mFramerateLimit = settingsManager->Get<int>("general", "framerate_limit").value_or(0);
+		mFramerateLimitEnable = settingsManager->Get<bool>("general", "framerate_limit_enable").value_or(false);
+
+		UpdatePhysicsTickRate(settingsManager->Get<uint16_t>("physics", "ticks_per_second").value_or(60));
+	}
+
+	void Engine::InitSignals()
+	{
+		const auto signalSubsystem = GetSubsystem<SignalSubsystem>();
+		
+		auto framerateLimitSignal = signalSubsystem->GetOrCreateSignal("general_framerate_limit");
+		framerateLimitSignal->Connect(std::function([&]
+		{
+			auto settingsManager = GetSubsystem<core::SettingsManager>();
+
+			mFramerateLimit = settingsManager->Get<int>("general", "framerate_limit").value_or(0);
+		}));
+
+		auto framerateLimitEnableSignal = signalSubsystem->GetOrCreateSignal("general_framerate_limit_enable");
+		framerateLimitEnableSignal->Connect(std::function([&]
+		{
+			auto settingsManager = GetSubsystem<core::SettingsManager>();
+
+			mFramerateLimitEnable = settingsManager->Get<bool>("general", "framerate_limit_enable").value_or(false);
+		}));
+
+		auto ticksPerSecondSignal = signalSubsystem->GetOrCreateSignal("physics_ticks_per_second");
+		ticksPerSecondSignal->Connect(std::function([&]
+		{
+			auto settingsManager = GetSubsystem<core::SettingsManager>();
+
+			UpdatePhysicsTickRate(settingsManager->Get<uint16_t>("physics", "ticks_per_second").value_or(60));
+		}));
+	}
+
 	void Engine::UpdateDeltaTime(double sampledTime)
 	{
 		mLastTime = mCurrentTime;
@@ -434,11 +477,17 @@ namespace puffin::core
 		mDeltaTime = mCurrentTime - mLastTime;
 	}
 
+	void Engine::UpdatePhysicsTickRate(uint16_t ticksPerSecond)
+	{
+		mPhysicsTicksPerSecond = ticksPerSecond;
+		mTimeStepFixed = 1.0 / mPhysicsTicksPerSecond;
+	}
+
 	void Engine::Idle()
 	{
-		if (mFrameRateMax > 0)
+		if (mFramerateLimitEnable && mFramerateLimit > 0)
 		{
-			const double deltaTimeMax = 1.0 / mFrameRateMax;
+			const double deltaTimeMax = 1.0 / mFramerateLimit;
 			double idleStartTime = 0.0;
 
 			while (mDeltaTime < deltaTimeMax)

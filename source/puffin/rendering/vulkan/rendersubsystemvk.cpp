@@ -110,12 +110,7 @@ namespace puffin::rendering
 		registry->on_update<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnConstructOrUpdateShadowCaster>(this);
 		registry->on_destroy<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnDestroyShadowCaster>(this);
 		
-		auto renderingDrawShadowsSignal = signalSubsystem->GetSignal("rendering_shadows_enable");
-		if (!renderingDrawShadowsSignal)
-		{
-			renderingDrawShadowsSignal = signalSubsystem->CreateSignal("rendering_shadows_enable");
-		}
-
+		auto renderingDrawShadowsSignal = signalSubsystem->GetOrCreateSignal("rendering_shadows_enable");
 		renderingDrawShadowsSignal->Connect(std::function([&]
 		{
 			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
