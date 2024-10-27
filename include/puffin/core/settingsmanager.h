@@ -3,9 +3,10 @@
 #include <string>
 #include <filesystem>
 #include <memory>
+#include <glm/gtc/constants.hpp>
 
 #include "engine.h"
-#include "nlohmann/json.hpp"
+#include "toml++/toml.hpp"
 
 #include "puffin/core/subsystem.h"
 #include "puffin/core/signalsubsystem.h"
@@ -14,50 +15,80 @@ namespace fs = std::filesystem;
 
 namespace puffin::core
 {
+    class SettingsCategory
+    {
+    public:
+
+    	SettingsCategory() = default;
+    	SettingsCategory(std::shared_ptr<Engine> engine, std::string name);
+    	~SettingsCategory() = default;
+
+        template<typename T>
+        std::optional<T> Get(const std::string& name)
+        {
+            return mData.at(name).value<T>();
+        }
+
+        template<typename T>
+        void Set(const std::string& name, const T& value)
+        {
+	        const auto signalSubsystem = mEngine->GetSubsystem<SignalSubsystem>();
+
+	        if (const std::string signalName = mName + "_" + name; !signalSubsystem->GetSignal(signalName))
+        	{
+        		signalSubsystem->CreateSignal(signalName);
+        	}
+	        else
+	        {
+	        	signalSubsystem->Emit(signalName);
+	        }
+        	
+            mData.insert_or_assign(name, value);
+        }
+
+        void SetData(const toml::table& data);
+        [[nodiscard]] const toml::table& GetData() const;
+
+    private:
+    	
+    	std::shared_ptr<Engine> mEngine = nullptr;
+    	std::string mName;
+        toml::table mData;
+        
+    };
+    
 	class SettingsManager : public Subsystem
     {
     public:
 
-        explicit SettingsManager(const std::shared_ptr<core::Engine>& engine);
+        explicit SettingsManager(const std::shared_ptr<Engine>& engine);
 
         ~SettingsManager() override = default;
 
         void Initialize(core::SubsystemManager* subsystemManager) override;
+	    
+        SettingsCategory& GetCategory(const std::string& name);
 
-        template<typename T>
-        void Set(const std::string& name, const T& t)
-        {
-            m_json[name] = t;
+	    template<typename T>
+	    std::optional<T> Get(const std::string& categoryName, const std::string& name)
+	    {
+	        return GetCategory(categoryName).Get<T>(name);
+	    }
 
-            auto signal_subsystem = mEngine->GetSubsystem<SignalSubsystem>();
+	    template<typename T>
+	    void Set(const std::string& categoryName, const std::string& name, const T& value)
+	    {
+	        GetCategory(categoryName).Set<T>(name, value);
+	    }
 
-            if (!signal_subsystem->GetSignal<T>(name))
-            {
-                signal_subsystem->CreateSignal<T>(name);
-            }
-
-            signal_subsystem->Emit(name, t);
-        }
-
-        template<typename T>
-        T Get(const std::string& name) const
-        {
-            if (!m_json.contains(name))
-            {
-            	return T{};
-            }
-
-            return m_json.at(name);
-        }
-
-        void load(const fs::path& path);
-        void save(const fs::path& path);
+        void Load(const fs::path& path);
+        void Save(const fs::path& path);
 
     private:
+	    
+	    std::unordered_map<std::string, SettingsCategory> mCategories;
 
-        nlohmann::json m_json;
-
-        void default_settings();
+        void DefaultSettings();
 
     };
 }

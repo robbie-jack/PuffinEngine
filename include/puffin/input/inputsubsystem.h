@@ -59,7 +59,7 @@ namespace puffin
 
 			double mXPos, mYPos, mLastXPos, mLastYPos;
 			bool mCursorLocked;
-			double m_sensitivity;
+			double mSensitivity;
 			bool mFirstMouse;
 
 			int mNextID = 1;

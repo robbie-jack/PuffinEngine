@@ -407,7 +407,7 @@ namespace puffin::rendering
 
 		bool mInitialized = false; // Indicates initialization completed without any failures
 		bool mRebarEnabled = false; // Is ReBAR support enabled (Memory heap which is device local and host visible covers all GPU memory)
-		bool mRenderShadows = false; // Render shadows if enabled
+		bool mShadowsEnabled = false; // Render shadows if enabled
 		bool mPresentWaitEnabled = false; // VK_KHR_present_wait extension is supported and enabled
 		bool mDescriptorBuffersEnabled = false;
 	};

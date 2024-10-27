@@ -89,6 +89,7 @@ namespace puffin::rendering
 	{
 		const auto windowSubsystem = subsystemManager->CreateAndInitializeSubsystem<window::WindowSubsystem>();
 		const auto enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
+		const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
 		// Bind callbacks
 		const auto registry = enttSubsystem->GetRegistry();
@@ -108,17 +109,18 @@ namespace puffin::rendering
 		registry->on_construct<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnConstructOrUpdateShadowCaster>(this);
 		registry->on_update<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnConstructOrUpdateShadowCaster>(this);
 		registry->on_destroy<ShadowCasterComponent3D>().connect<&RenderSubsystemVK::OnDestroyShadowCaster>(this);
-
-		const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
-		auto renderingDrawShadowsSignal = signalSubsystem->GetSignal<bool>("rendering_draw_shadows");
+		
+		auto renderingDrawShadowsSignal = signalSubsystem->GetSignal("rendering_shadows_enable");
 		if (!renderingDrawShadowsSignal)
 		{
-			renderingDrawShadowsSignal = signalSubsystem->CreateSignal<bool>("rendering_draw_shadows");
+			renderingDrawShadowsSignal = signalSubsystem->CreateSignal("rendering_shadows_enable");
 		}
 
-		renderingDrawShadowsSignal->Connect(std::function([&](const bool& renderingDrawShadows)
+		renderingDrawShadowsSignal->Connect(std::function([&]
 		{
-			mRenderShadows = renderingDrawShadows;
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			
+			mShadowsEnabled = settingsManager->Get<bool>("rendering", "shadows_enabled").value();
 		}));
 
 		// Initialise vulkan and all rendering objects
@@ -176,7 +178,7 @@ namespace puffin::rendering
 		mUpdateRenderables = true;
 
 		const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-		mRenderShadows = settingsManager->Get<bool>("rendering_draw_shadows");
+		mShadowsEnabled = settingsManager->Get<bool>("rendering", "shadows_enable").value_or(false);
 	}
 
 	void RenderSubsystemVK::Deinitialize()
@@ -2731,7 +2733,7 @@ namespace puffin::rendering
 		std::vector<vk::Semaphore*> shadowWaitSemaphores = { &GetCurrentFrameData().presentSemaphore };
 		std::vector<vk::Semaphore*> shadowSignalSemaphores = { &GetCurrentFrameData().shadowSemaphore };
 		vk::PipelineStageFlags shadowWaitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-		if (mRenderShadows)
+		if (mShadowsEnabled)
 		{
 			shadowCommands.push_back(&RecordShadowCommandBuffer(swapchainIdx));
 
@@ -2759,7 +2761,7 @@ namespace puffin::rendering
 
 			renderCommands.push_back(&RecordMainCommandBuffer(params));
 
-			if (mRenderShadows)
+			if (mShadowsEnabled)
 			{
 				renderWaitSemaphores.push_back(&GetCurrentFrameData().shadowSemaphore);
 				renderWaitStages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);

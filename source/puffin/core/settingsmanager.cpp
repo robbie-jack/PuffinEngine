@@ -1,13 +1,37 @@
 #include "puffin/core/settingsmanager.h"
 
-#include <iostream>
+#include <utility>
 
 #include "puffin/core/engine.h"
 #include "puffin/assets/assetregistry.h"
-#include "puffin/types/vector3.h"
 
 namespace puffin::core
 {
+	SettingsCategory::SettingsCategory(std::shared_ptr<Engine> engine, std::string name)
+		: mEngine(std::move(engine)), mName(std::move(name))
+	{
+	}
+
+	void SettingsCategory::SetData(const toml::table& data)
+	{
+		mData = data;
+
+		const auto signalSubsystem = mEngine->GetSubsystem<SignalSubsystem>();
+		
+		for (const auto& [key, value] : mData)
+		{
+			if (std::string signalName = mName + "_" + std::string(key.str()); !signalSubsystem->GetSignal(signalName))
+			{
+				signalSubsystem->CreateSignal(signalName);
+			}
+		}
+	}
+
+	const toml::table& SettingsCategory::GetData() const
+	{
+		return mData;
+	}
+
 	SettingsManager::SettingsManager(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
 	{
 		mName = "SettingsManager";
@@ -15,48 +39,103 @@ namespace puffin::core
 
 	void SettingsManager::Initialize(core::SubsystemManager* subsystemManager)
 	{
+		mCategories.emplace("general", SettingsCategory(mEngine, "general"));
+		mCategories.emplace("editor", SettingsCategory(mEngine, "editor"));
+		mCategories.emplace("physics", SettingsCategory(mEngine, "physics"));
+		mCategories.emplace("rendering", SettingsCategory(mEngine, "rendering"));
+		
 		if (mEngine->GetSetupEngineDefaultSettings())
 		{
-			default_settings();
-			save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.json");
+			DefaultSettings();
+			Save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.toml");
 		}
 		else
 		{
-			load(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.json");
+			Load(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.toml");
 		}
 	}
 
-	void SettingsManager::load(const fs::path& path)
+	SettingsCategory& SettingsManager::GetCategory(const std::string& name)
+	{
+		if (mCategories.find(name) == mCategories.end())
+		{
+			mCategories.emplace(name, SettingsCategory(mEngine, name));
+		}
+
+		return mCategories[name];
+	}
+
+	void SettingsManager::Load(const fs::path& path)
 	{
 		if (!fs::exists(path))
 			return;
 
 		std::ifstream is(path.string());
-		is >> m_json;
+
+		auto tbl = toml::parse(is);
+
+		for (auto& [ name, category ] : mCategories)
+		{
+			if (tbl.contains(name))
+			{
+				category.SetData(*tbl.at(name).as_table());
+			}
+		}
 
 		is.close();
 	}
 
-	void SettingsManager::save(const fs::path& path)
+	void SettingsManager::Save(const fs::path& path)
 	{
+		toml::table tbl;
+
+		for (auto& [ name, category ] : mCategories)
+		{
+			tbl.emplace(name, category.GetData());
+		}
+
 		if (!exists(path.parent_path()))
 			create_directory(path.parent_path());
-
+		
 		std::ofstream os(path.string());
 
-		os << std::setw(4) << m_json << std::endl;
+		os << tbl << "\n\n";
 
 		os.close();
 	}
 
-	void SettingsManager::default_settings()
+	void SettingsManager::DefaultSettings()
 	{
-		Set("editor_camera_fov", 60.0f);
-		Set("mouse_sensitivity", 0.05f);
-		Set("unit_scale", 1.0f);
+		// General
+		{
+			auto& generalSettings = mCategories["general"];
 
-		Set("rendering_draw_shadows", false);
+			generalSettings.Set("framerate_limit_enable", true);
+			generalSettings.Set("framerate_limit", 300);
+			generalSettings.Set("unit_scale", 1.0);
+			generalSettings.Set("mouse_sensitivity", 0.05);
+		}
 
-		Set("physics_gravity", Vector3f(0.0f, -9.81f, 0.0f));
+		// Editor
+		{
+			auto& editorSettings = mCategories["editor"];
+
+			editorSettings.Set("camera_fov", 60.0);
+		}
+
+		// Physics
+		{
+			auto& physicsSettings = mCategories["physics"];
+
+			physicsSettings.Set("gravity_2d", toml::table{ { "x", 0.0 }, { "y", -9.81 } });
+			physicsSettings.Set("gravity_3d", toml::table{ { "x", 0.0 }, { "y", -9.81 }, { "z", 0.0 } });
+		}
+
+		// Rendering
+		{
+			auto& renderingSettings = mCategories["rendering"];
+
+			renderingSettings.Set("shadows_enable", true);
+		}
 	}
 }

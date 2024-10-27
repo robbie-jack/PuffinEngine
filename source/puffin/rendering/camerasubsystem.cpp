@@ -2,6 +2,7 @@
 
 #include "puffin/components/transformcomponent3d.h"
 #include "puffin/components/rendering/3d/cameracomponent3d.h"
+#include "puffin/core/settingsmanager.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/input/inputsubsystem.h"
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
@@ -19,6 +20,7 @@ namespace puffin::rendering
 	{
 		const auto enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
 		const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+		const auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
 
         const auto registry = enttSubsystem->GetRegistry();
 
@@ -26,15 +28,17 @@ namespace puffin::rendering
         registry->on_update<CameraComponent3D>().connect<&CameraSubsystem::OnUpdateCamera>(this);
         registry->on_destroy<CameraComponent3D>().connect<&CameraSubsystem::OnDestroyCamera>(this);
 
-        auto editorCameraFovSignal = signalSubsystem->GetSignal<float>("editorCameraFov");
+        auto editorCameraFovSignal = signalSubsystem->GetSignal<float>("editor_camera_fov");
         if (!editorCameraFovSignal)
         {
-            editorCameraFovSignal = signalSubsystem->CreateSignal<float>("editorCameraFov");
+            editorCameraFovSignal = signalSubsystem->CreateSignal<float>("editor_camera_fov");
         }
 
         editorCameraFovSignal->Connect(std::function([&](const float& editorCamFov)
         {
-            OnUpdateEditorCameraFov(editorCamFov);
+        	auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+        	
+            OnUpdateEditorCameraFov(settingsManager->Get<float>("editor", "camera_fov").value_or(60.0));
         }));
 
         InitEditorCamera();
@@ -122,7 +126,9 @@ namespace puffin::rendering
 
 	void CameraSubsystem::InitEditorCamera()
 	{
-		// Crate editor cam 
+		// Create editor cam
+		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
@@ -135,6 +141,9 @@ namespace puffin::rendering
 		transform.position = { 0.0f, 0.0f, 10.0f };
 
 		auto& camera = registry->emplace<CameraComponent3D>(entity);
+
+		camera.prevFovY = camera.fovY;
+		camera.fovY = settingsManager->Get<float>("editor", "camera_fov").value_or(60.0);
 
 		mEditorCamSpeed = 25.0f;
 	}

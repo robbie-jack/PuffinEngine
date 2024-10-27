@@ -436,10 +436,24 @@ endif()
 
 # Get & Build Required Libraries
 find_package(Vulkan 1.3.290 REQUIRED)
-CPMAddPackage("gh:nlohmann/json@3.11.2")
+#CPMAddPackage("gh:nlohmann/json@3.11.2")
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG v3.4.0
+)
+FetchContent_MakeAvailable(tomlplusplus)
 
 target_link_libraries(${PUFFIN_LIBRARY_NAME} ${Vulkan_LIBRARIES})
 target_link_libraries(${PUFFIN_LIBRARY_NAME} nlohmann_json::nlohmann_json)
+target_link_libraries(${PUFFIN_LIBRARY_NAME} tomlplusplus::tomlplusplus)
 
 if (PLATFORM_WINDOWS)
 	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/win64)

@@ -1,6 +1,7 @@
 #include "puffin/input/inputsubsystem.h"
 
 #include "puffin/core/engine.h"
+#include "puffin/core/settingsmanager.h"
 #include "puffin/core/signalsubsystem.h"
 #include "puffin/core/subsystemmanager.h"
 #include "puffin/window/windowsubsystem.h"
@@ -16,7 +17,7 @@ namespace puffin
 			mNextID = 1;
 			mLastXPos = 640.0;
 			mLastYPos = 360.0;
-			m_sensitivity = 0.05;
+			mSensitivity = 0.05;
 			mCursorLocked = false;
 			mFirstMouse = true;
 		}
@@ -24,8 +25,11 @@ namespace puffin
 		void InputSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 		{
 			const auto windowSubsystem = subsystemManager->CreateAndInitializeSubsystem<window::WindowSubsystem>();
-
+			const auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+			const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+			
 			mWindow = windowSubsystem->GetPrimaryWindow();
+			mSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
 
 			// Setup Actions
 
@@ -50,6 +54,19 @@ namespace puffin
 			{
 				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
+
+			auto mouseSensitivitySignal = signalSubsystem->GetSignal("general_mouse_sensitivity");
+			if (!mouseSensitivitySignal)
+			{
+				mouseSensitivitySignal = signalSubsystem->CreateSignal("general_mouse_sensitivity");
+			}
+
+			mouseSensitivitySignal->Connect(std::function([&]
+			{
+				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+				
+				mSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
+			}));
 		}
 
 		void InputSubsystem::Deinitialize()
@@ -219,17 +236,17 @@ namespace puffin
 
 		double InputSubsystem::GetMouseXOffset() const
 		{
-			return (mXPos - mLastXPos) * m_sensitivity;
+			return (mXPos - mLastXPos) * mSensitivity;
 		}
 
 		double InputSubsystem::GetMouseYOffset() const
 		{
-			return (mYPos - mLastYPos) * m_sensitivity;
+			return (mYPos - mLastYPos) * mSensitivity;
 		}
 
 		double InputSubsystem::GetSensitivity() const
 		{
-			return m_sensitivity;
+			return mSensitivity;
 		}
 
 		bool InputSubsystem::GetCursorLocked() const

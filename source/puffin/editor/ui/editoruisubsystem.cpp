@@ -297,7 +297,7 @@ namespace puffin::ui
 				if (ImGui::MenuItem("Save Project"))
 				{
 					const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-                    settingsManager->save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.json");
+                    settingsManager->Save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.toml");
 
 					assets::AssetRegistry::Get()->SaveAssetCache();
 				}
