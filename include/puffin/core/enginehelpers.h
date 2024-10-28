@@ -27,5 +27,6 @@ namespace puffin::core
 	void LoadAndSaveAssets();
 
 	void SetupDefaultScene(const std::shared_ptr<Engine>& engine);
-	void SetupDefaultPhysicsScene3D(const std::shared_ptr<Engine>& engine);
+	void SetupDefaultPhysics2DScene(const std::shared_ptr<Engine>& engine);
+	void SetupDefaultPhysics3DScene(const std::shared_ptr<Engine>& engine);
 }

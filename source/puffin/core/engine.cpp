@@ -17,6 +17,7 @@
 #include "puffin/core/subsystemmanager.h"
 #include "puffin/utility/performancebenchmarksubsystem.h"
 #include "puffin/core/timer.h"
+#include "puffin/rendering/camerasubsystem.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -40,6 +41,11 @@ namespace puffin
 		      .help("Specify whether the engine default scene should be initialized on launch")
 		      .default_value(false)
 		      .implicit_value(true);
+
+		parser.add_argument("--setup-engine-default-physics2d-scene")
+			  .help("Specify whether the engine default physics 2d scene should be initialized on launch")
+			  .default_value(false)
+			  .implicit_value(true);
 
 		parser.add_argument("--setup-default-settings")
 		      .help("Specify whether to setup settings file with engine default settings")
@@ -87,6 +93,7 @@ namespace puffin::core
 		// Load Project Settings
 		mSetupEngineDefaultSettings = parser.get<bool>("--setup-default-settings");
 		mSetupEngineDefaultScene = parser.get<bool>("--setup-engine-default-scene");
+		mSetupEngineDefaultPhysics2DScene = parser.get<bool>("--setup-engine-default-physics2d-scene");
 
 		// Load/Initialize Assets
 		assets::AssetRegistry::Get()->LoadAssetCache();
@@ -113,22 +120,26 @@ namespace puffin::core
 		{
 			auto sceneData = sceneSubsystem->CreateScene(
 				assets::AssetRegistry::Get()->GetContentRoot() / sceneString);
-
+			
 			if (mSetupEngineDefaultScene)
 			{
 				// Create Default Scene in code -- used when scene serialization is changed
 				SetupDefaultScene(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
-				sceneData->Save();
+			}
+			else if (mSetupEngineDefaultPhysics2DScene)
+			{
+				SetupDefaultPhysics2DScene(shared_from_this());
+
+				sceneData->UpdateData(shared_from_this());
 			}
 			else if (mLoadSceneOnLaunch)
 			{
 				sceneData->Load();
+				sceneSubsystem->Setup();
 			}
 		}
-
-		sceneSubsystem->Setup();
 
 		InitSettings();
 		InitSignals();

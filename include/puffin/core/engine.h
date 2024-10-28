@@ -108,6 +108,7 @@ namespace puffin::core
 		bool mRunning = true;
 		bool mLoadSceneOnLaunch = false;
 		bool mSetupEngineDefaultScene = false;
+		bool mSetupEngineDefaultPhysics2DScene = false;
 		bool mSetupEngineDefaultSettings = false;
 		bool mFramerateLimitEnable = true; // Whether framerate should be capped at m_frameRateMax
 		bool mEditorUIEnabled = true; // Whether editor UI should be rendered

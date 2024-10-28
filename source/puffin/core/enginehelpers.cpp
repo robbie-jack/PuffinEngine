@@ -49,6 +49,27 @@
 
 namespace puffin::core
 {
+	const fs::path& gChaletMeshPath = fs::path() / "meshes" / "chalet.pstaticmesh";
+	const fs::path& gCubeMeshPath = fs::path() / "meshes" / "cube.pstaticmesh";
+	const fs::path& gSpaceEngineerMeshPath = fs::path() / "meshes" / "space_engineer.pstaticmesh";
+	const fs::path& gSphereMeshPath = fs::path() / "meshes" / "sphere.pstaticmesh";
+
+	const fs::path& gCubeTexturePath = fs::path() / "textures" / "cube.ptexture";
+	const fs::path& gChaletTexturePath = fs::path() / "textures" / "chalet.ptexture";
+	const fs::path& gSpaceEngineerTexturePath = fs::path() / "textures" / "space_engineer.ptexture";
+	const fs::path& gStatueTexturePath = fs::path() / "textures" / "statue.ptexture";
+	const fs::path& gXSpriteTexturePath = fs::path() / "textures" / "xsprite.ptexture";
+
+	const fs::path& gSelectSoundPath = fs::path() / "sounds" / "Select 1.wav";
+
+	const fs::path gForwardVertShaderPath = fs::path() / "materials" / "forward_shading" / "forward_shading_vert.pshader";
+	const fs::path gForwardFragShaderPath = fs::path() / "materials" / "forward_shading" / "forward_shading_frag.pshader";
+
+	const fs::path gForwardShadingDefaultMaterialInstPath = fs::path() / "materials" / "forward_shading" /
+			"forward_shading_default.pmaterialinst";
+	const fs::path gForwardShadinChaletMaterialInstPath = fs::path() / "materials" / "forward_shading" /
+		"forward_shading_chalet.pmaterialinst";
+	
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)
 	{
 		// Engine Subsystems
@@ -174,82 +195,48 @@ namespace puffin::core
 
 	void AddDefaultAssets()
 	{
-		const fs::path& meshPath1 = fs::path() / "meshes" / "chalet.pstaticmesh";
-		//const fs::path& meshPath2 = fs::path() / "meshes" / "sphere.pstaticmesh";
-		const fs::path& meshPath3 = fs::path() / "meshes" / "cube.pstaticmesh";
-		const fs::path& meshPath4 = fs::path() / "meshes" / "space_engineer.pstaticmesh";
+		UUID chaletMeshID = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(gChaletMeshPath)->GetID();
+		UUID cubeMeshID = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(gCubeMeshPath)->GetID();
+		//UUID spaceEngineerMeshID = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(gSpaceEngineerMeshPath)->GetID();
+		//UUID sphereMeshID = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(gSphereMeshPath)->GetID();
 
-		UUID meshId1 = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(meshPath1)->GetID();
-		//PuffinID meshId2 = assets::AssetRegistry::get()->addAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		UUID meshId3 = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(meshPath3)->GetID();
-		UUID meshId4 = assets::AssetRegistry::Get()->AddAsset<assets::StaticMeshAsset>(meshPath4)->GetID();
+		UUID cubeTexID = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(gCubeTexturePath)->GetID();
+		UUID chaletTexID = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(gChaletTexturePath)->GetID();
+		//UUID spaceEngineerTexID = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(gSpaceEngineerTexturePath)->GetID();
+		//UUID statueTexID = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(gStatueTexturePath)->GetID();
+		//UUID xSpriteTexID = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(gXSpriteTexturePath)->GetID();
 
-		const fs::path& texturePath1 = fs::path() / "textures" / "cube.ptexture";
-		const fs::path& texturePath2 = fs::path() / "textures" / "chalet.ptexture";
-		const fs::path& texturePath3 = fs::path() / "textures" / "space_engineer.ptexture";
-		const fs::path& texturePath4 = fs::path() / "textures" / "statue.ptexture";
-		const fs::path& texturePath5 = fs::path() / "textures" / "xsprite.ptexture";
+		UUID selectSoundID = assets::AssetRegistry::Get()->AddAsset<assets::SoundAsset>(gSelectSoundPath)->GetID();
 
-		UUID textureId1 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath1)->GetID();
-		UUID textureId2 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath2)->GetID();
-		UUID textureId3 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath3)->GetID();
-		UUID textureId4 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath4)->GetID();
-		UUID textureId5 = assets::AssetRegistry::Get()->AddAsset<assets::TextureAsset>(texturePath5)->GetID();
-
-		const fs::path& soundPath1 = fs::path() / "sounds" / "Select 1.wav";
-
-		UUID soundId1 = assets::AssetRegistry::Get()->AddAsset<assets::SoundAsset>(soundPath1)->GetID();
-
-		const fs::path shaderPath1 = fs::path() / "materials" / "forward_shading" / "forward_shading_vert.pshader";
-		const fs::path shaderPath2 = fs::path() / "materials" / "forward_shading" / "forward_shading_frag.pshader";
-
-		const auto shaderAsset1 = assets::AssetRegistry::Get()->AddAsset<assets::ShaderAsset>(shaderPath1);
-		const auto shaderAsset2 = assets::AssetRegistry::Get()->AddAsset<assets::ShaderAsset>(shaderPath2);
-
-		//shaderAsset1->setType(assets::ShaderType::Vertex);
-
-		//shaderAsset1->setshaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.vert)"));
-		//shaderAsset1->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_vs.spv)"));
-		//shaderAsset1->loadCodeFromBinary();
-		//shaderAsset1->save();
-
-		//shaderAsset2->setType(assets::ShaderType::Fragment);
-		//shaderAsset2->setshaderPath(fs::path(R"(C:\Projects\PuffinEngine\shaders\vulkan\forward_shading\forward_shading.frag)"));
-		//shaderAsset2->setBinaryPath(fs::path(R"(C:\Projects\PuffinEngine\bin\vulkan\forward_shading\forward_shading_fs.spv)"));
-		//shaderAsset2->loadCodeFromBinary();
-		//shaderAsset2->save();
-
-		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" /
-			"forward_shading_default.pmaterialinst";
-		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
-			"forward_shading_chalet.pmaterialinst";
+		const auto forwardVertShaderAsset = assets::AssetRegistry::Get()->AddAsset<assets::ShaderAsset>(gForwardVertShaderPath);
+		const auto forwardFragShaderAsset = assets::AssetRegistry::Get()->AddAsset<assets::ShaderAsset>(gForwardFragShaderPath);
 
 		const auto materialInstAsset1 = assets::AssetRegistry::Get()->AddAsset<assets::MaterialInstanceAsset>(
-			materialInstPath1);
+			gForwardShadingDefaultMaterialInstPath);
 		const auto materialInstAsset2 = assets::AssetRegistry::Get()->AddAsset<assets::MaterialInstanceAsset>(
-			materialInstPath2);
+			gForwardShadinChaletMaterialInstPath);
 
-		materialInstAsset1->GetTexIDs()[0] = textureId1;
+		materialInstAsset1->GetTexIDs()[0] = cubeTexID;
 
 		materialInstAsset1->Save();
 
-		materialInstAsset2->GetTexIDs()[0] = textureId2;
+		materialInstAsset2->GetTexIDs()[0] = chaletTexID;
 
 		materialInstAsset2->Save();
 	}
 
 	void ImportDefaultAssets()
 	{
-		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups/cube.obj", "meshes");
-		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups/space_engineer.obj","meshes");
+		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups" / "cube.obj", "meshes");
+		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups" / "space_engineer.obj","meshes");
 		//io::loadAndImportModel(R"(C:\Projects\PuffinProject\model_backups\Sphere.dae)", "meshes");
-		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups/chalet.obj", "meshes");
+		io::LoadAndImportModel(assets::AssetRegistry::Get()->GetProjectRoot() / "model_backups" / "chalet.obj", "meshes");
 
-		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/chalet.jpg", "textures");
-		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/cube.png", "textures");
-		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/space_engineer.jpg", "textures");
-		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/statue.jpg", "textures");
-		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups/xsprite.png", "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups" / "chalet.jpg", "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups" / "cube.png", "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups" / "space_engineer.jpg", "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups" / "statue.jpg", "textures");
+		io::LoadAndImportTexture(assets::AssetRegistry::Get()->GetProjectRoot() / "texture_backups" / "xsprite.png", "textures");
 	}
 
 	void LoadAndSaveAssets()
@@ -277,10 +264,10 @@ namespace puffin::core
 
 		std::vector paths =
 		{
-			meshPath1, meshPath2, meshPath3, meshPath4,
-			texturePath1, texturePath2, texturePath3, texturePath4, texturePath5,
-			shaderPath1, shaderPath2,
-			materialInstPath1, materialInstPath2
+			gChaletMeshPath, gSphereMeshPath, gCubeMeshPath, gSpaceEngineerMeshPath,
+			gChaletTexturePath, gCubeTexturePath, gSpaceEngineerTexturePath, gStatueTexturePath, gXSpriteTexturePath,
+			gForwardFragShaderPath, gForwardVertShaderPath,
+			gForwardShadingDefaultMaterialInstPath, gForwardShadinChaletMaterialInstPath,
 		};
 
 		for (const auto path : paths)
@@ -299,43 +286,24 @@ namespace puffin::core
 		// Get assets
 		fs::path contentRootPath = assets::AssetRegistry::Get()->GetContentRoot();
 
-		const fs::path& meshPath1 = fs::path() / "meshes" / "chalet.pstaticmesh";
-		//const fs::path& meshPath2 = fs::path() / "meshes" / "sphere.pstaticmesh";
-		const fs::path& meshPath3 = fs::path() / "meshes" / "cube.pstaticmesh";
-		const fs::path& meshPath4 = fs::path() / "meshes" / "space_engineer.pstaticmesh";
+		const UUID chaletMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gChaletMeshPath)->GetID();
+		const UUID cubeMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gCubeMeshPath)->GetID();
 
-		const UUID meshId1 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath1)->GetID();
-		//const PuffinID meshId2 = assets::AssetRegistry::get()->getAsset<assets::StaticMeshAsset>(meshPath2)->id();
-		const UUID meshId3 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath3)->GetID();
-		const UUID meshId4 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath4)->GetID();
+		const UUID chaletTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gChaletTexturePath)->GetID();
+		const UUID cubeTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gCubeTexturePath)->GetID();
 
-		const fs::path& texturePath1 = fs::path() / "textures" / "chalet.ptexture";
-		const fs::path& texturePath2 = fs::path() / "textures" / "cube.ptexture";
-
-		const UUID textureId1 = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texturePath1)->GetID();
-		const UUID textureId2 = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texturePath2)->GetID();
-
-		//const fs::path& soundPath1 = "sounds/Select 1.wav";
-
-		//PuffinID soundId1 = assets::AssetRegistry::get()->getAsset<assets::SoundAsset>(soundPath1)->id();
-
-		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" /
-			"forward_shading_default.pmaterialinst";
-		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
-			"forward_shading_chalet.pmaterialinst";
-
-		UUID materialInstId1 = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
-			materialInstPath1)->GetID();
-		UUID materialInstId2 = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
-			materialInstPath2)->GetID();
+		UUID defaultMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
+			gForwardShadingDefaultMaterialInstPath)->GetID();
+		UUID chaletMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
+			gForwardShadinChaletMaterialInstPath)->GetID();
 
 		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		auto* houseNode = sceneGraph->AddNode<rendering::StaticMeshNode3D>("House");
 		houseNode->SetPosition({ 2.0f, 0.0f, 0.0f });
-		houseNode->SetMeshID(meshId1);
-		houseNode->SetMaterialID(materialInstId1);
+		houseNode->SetMeshID(chaletMeshID);
+		houseNode->SetMaterialID(defaultMaterialInstID);
 
 		/*auto sphere = scene_graph->add_node<rendering::MeshNode>();
 		sphere.SetName("Sphere");
@@ -345,19 +313,19 @@ namespace puffin::core
 
 		auto* cube1 = sceneGraph->AddNode<rendering::StaticMeshNode3D>("Cube 1");
 		cube1->SetPosition({ 0.0f });
-		cube1->SetMeshID(meshId3);
-		cube1->SetMaterialID(materialInstId1);
+		cube1->SetMeshID(cubeMeshID);
+		cube1->SetMaterialID(defaultMaterialInstID);
 
 		auto* cube2 = sceneGraph->AddNode<rendering::StaticMeshNode3D>("Cube 2");
 		cube2->SetPosition({ -1.75f, -5.0f, 0.0f });
-		cube2->SetMeshID(meshId3);
-		cube2->SetMaterialID(materialInstId1);
+		cube2->SetMeshID(cubeMeshID);
+		cube2->SetMaterialID(defaultMaterialInstID);
 
 		auto* plane = sceneGraph->AddNode<rendering::StaticMeshNode3D>("Plane");
 		plane->SetPosition({ 0.0f, -10.0f, 0.0f });
 		plane->SetScale({ 50.0f, 1.0f, 50.0f });
-		plane->SetMeshID(meshId3);
-		plane->SetMaterialID(materialInstId1);
+		plane->SetMeshID(cubeMeshID);
+		plane->SetMaterialID(defaultMaterialInstID);
 
 		auto* dirLight = sceneGraph->AddNode<rendering::DirectionalLightNode3D>("Directional Light");
 		dirLight->SetPosition({ 0.0f, 10.0f, 0.0f });
@@ -377,8 +345,8 @@ namespace puffin::core
 
 		auto* dirLightMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Directional Light Mesh", dirLight->GetID());
 		dirLightMesh->SetScale({ 0.25f });
-		dirLightMesh->SetMeshID(meshId3);
-		dirLightMesh->SetMaterialID(materialInstId1);
+		dirLightMesh->SetMeshID(cubeMeshID);
+		dirLightMesh->SetMaterialID(defaultMaterialInstID);
 
 		auto* spotLight = sceneGraph->AddNode<rendering::SpotLightNode3D>("Spot Light");
 		spotLight->SetPosition({ -10.0f, 5.0f, 0.0f });
@@ -393,8 +361,8 @@ namespace puffin::core
 
 		auto* spotLightMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Spot Light Mesh", spotLight->GetID());
 		spotLightMesh->SetScale({ 0.25f });
-		spotLightMesh->SetMeshID(meshId3);
-		spotLightMesh->SetMaterialID(materialInstId1);
+		spotLightMesh->SetMeshID(cubeMeshID);
+		spotLightMesh->SetMaterialID(defaultMaterialInstID);
 
 		auto* spotLight2 = sceneGraph->AddNode<rendering::SpotLightNode3D>("Spot Light 2");
 		spotLight2->SetPosition({ 10.0f, 5.0f, 0.0f });
@@ -411,44 +379,89 @@ namespace puffin::core
 
 		auto* spotLightMesh2 = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Spot Light 2 Mesh", spotLight2->GetID());
 		spotLightMesh2->SetScale({ 0.25f });
-		spotLightMesh2->SetMeshID(meshId3);
-		spotLightMesh2->SetMaterialID(materialInstId1);
+		spotLightMesh2->SetMeshID(cubeMeshID);
+		spotLightMesh2->SetMaterialID(defaultMaterialInstID);
 	}
 
-	void SetupDefaultPhysicsScene3D(const std::shared_ptr<Engine>& engine)
+	void SetupDefaultPhysics2DScene(const std::shared_ptr<Engine>& engine)
+	{
+		const UUID chaletMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gChaletMeshPath)->GetID();
+		const UUID cubeMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gCubeMeshPath)->GetID();
+
+		const UUID chaletTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gChaletTexturePath)->GetID();
+		const UUID cubeTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gCubeTexturePath)->GetID();
+
+		UUID defaultMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
+			gForwardShadingDefaultMaterialInstPath)->GetID();
+		UUID chaletMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
+			gForwardShadinChaletMaterialInstPath)->GetID();
+
+		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
+
+		const float floorWidth = 100.0f;
+		
+		// Floor Node
+		{
+			auto* floor = sceneGraph->AddNode<physics::RigidbodyNode3D>("Floor");
+			floor->SetPosition({ 0.0f, 0.0f, 0.0f });
+			
+			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("FloorMesh", floor->GetID());
+			floorMesh->SetScale({ floorWidth / 2.0f, 1.0f, 1.0f });
+			floorMesh->SetMeshID(cubeMeshID);
+			floorMesh->SetMaterialID(defaultMaterialInstID);
+		}
+
+		// Box Nodes
+		{
+			constexpr int numBodiesX = 10;
+			constexpr int numBodiesY = 10;
+
+			const float startY = 5.0f;
+			const float offsetY = 5.0f;
+
+			const float offsetX = floorWidth / numBodiesX;
+			const float startX = -(floorWidth / 2.0f) + (offsetX / 2.0f);
+			
+
+			int i = 0;
+			for (int y = 0; y < numBodiesY; y++)
+			{
+				float currentY = startY + (offsetY * y);
+				
+				for (int x = 0; x < numBodiesX; x++)
+				{
+					float currentX = startX + (offsetX * x);
+					
+					auto* body = sceneGraph->AddNode<physics::RigidbodyNode3D>("Body #" + std::to_string(i));
+					body->SetPosition({ currentX, currentY, 0.0f });
+					body->SetBodyType(physics::BodyType::Dynamic);
+					
+					auto* bodyMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("BodyMesh", body->GetID());
+					bodyMesh->SetMeshID(cubeMeshID);
+					bodyMesh->SetMaterialID(defaultMaterialInstID);
+					
+					++i;
+				}
+			}
+		}
+	}
+
+	void SetupDefaultPhysics3DScene(const std::shared_ptr<Engine>& engine)
 	{
 		// Get assets
 		fs::path contentRootPath = assets::AssetRegistry::Get()->GetContentRoot();
 
-		const fs::path& meshPath1 = "meshes\\chalet.pstaticmesh";
-		const fs::path& meshPath2 = "meshes\\sphere.pstaticmesh";
-		const fs::path& meshPath3 = "meshes\\cube.pstaticmesh";
-		const fs::path& meshPath4 = "meshes\\space_engineer.pstaticmesh";
+		const UUID chaletMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gChaletMeshPath)->GetID();
+		const UUID cubeMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gCubeMeshPath)->GetID();
 
-		const UUID meshId1 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath1)->GetID();
-		const UUID meshId2 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath2)->GetID();
-		const UUID meshId3 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath3)->GetID();
-		const UUID meshId4 = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshPath4)->GetID();
+		const UUID chaletTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gChaletTexturePath)->GetID();
+		const UUID cubeTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gCubeTexturePath)->GetID();
 
-		const fs::path& texturePath1 = "textures\\chalet.ptexture";
-		const fs::path& texturePath2 = "textures\\cube.ptexture";
-
-		const UUID textureId1 = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texturePath1)->GetID();
-		const UUID textureId2 = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texturePath2)->GetID();
-
-		const fs::path& soundPath1 = "sounds\\Select 1.wav";
-
-		UUID soundId1 = assets::AssetRegistry::Get()->GetAsset<assets::SoundAsset>(soundPath1)->GetID();
-
-		const fs::path materialInstPath1 = fs::path() / "materials" / "forward_shading" /
-			"forward_shading_default.pmaterialinst";
-		const fs::path materialInstPath2 = fs::path() / "materials" / "forward_shading" /
-			"forward_shading_chalet.pmaterialinst";
-
-		UUID materialInstId1 = assets::AssetRegistry::Get()->AddAsset<assets::MaterialInstanceAsset>(
-			materialInstPath1)->GetID();
-		UUID materialInstId2 = assets::AssetRegistry::Get()->AddAsset<assets::MaterialInstanceAsset>(
-			materialInstPath2)->GetID();
+		UUID defaultMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
+			gForwardShadingDefaultMaterialInstPath)->GetID();
+		UUID chaletMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
+			gForwardShadinChaletMaterialInstPath)->GetID();
 
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
