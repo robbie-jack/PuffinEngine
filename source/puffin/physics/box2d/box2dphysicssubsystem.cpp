@@ -43,21 +43,12 @@ namespace puffin::physics
 		registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSystem::OnDestroyCircle>(this);
 
 		InitSettingsAndSignals();
-		
-		// Create world
-		b2WorldDef worldDef = b2DefaultWorldDef();
-		worldDef.gravity = mGravity;
-		
-		mPhysicsWorldID = b2CreateWorld(&worldDef);
 	}
 
 	void Box2DPhysicsSystem::Deinitialize()
 	{
 		mGravity = { 0.0, 0.0 };
 		mSubSteps = 0;
-
-		b2DestroyWorld(mPhysicsWorldID);
-		mPhysicsWorldID = b2_nullWorldId;
 
 		//m_contact_listener = nullptr;
 	}
@@ -69,28 +60,28 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::BeginPlay()
 	{
+		// Create world
+		b2WorldDef worldDef = b2DefaultWorldDef();
+		worldDef.gravity = mGravity;
+		
+		mPhysicsWorldID = b2CreateWorld(&worldDef);
+		
 		CreateObjects();
 	}
 
 	void Box2DPhysicsSystem::EndPlay()
 	{
 		DestroyObjects();
-	}
 
-	void Box2DPhysicsSystem::Update(double deltaTime)
-	{
-		DestroyObjects();
-
-		CreateObjects();
-	}
-
-	bool Box2DPhysicsSystem::ShouldUpdate()
-	{
-		return mEnabled;
+		b2DestroyWorld(mPhysicsWorldID);
+		mPhysicsWorldID = b2_nullWorldId;
 	}
 
 	void Box2DPhysicsSystem::FixedUpdate(double fixedTimeStep)
 	{
+		DestroyObjects();
+		CreateObjects();
+		
 		b2World_Step(mPhysicsWorldID, fixedTimeStep, mSubSteps);
 	}
 
@@ -180,55 +171,64 @@ namespace puffin::physics
 	{
 		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 		auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
-		
-		auto gravityX = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
-		auto gravityY = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
 
-		mGravity = { gravityX, gravityY };
-
-		auto gravityXSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_x");
-		gravityXSignal->Connect(std::function([&]
+		// Gravity
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto gravityX = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
+			auto gravityY = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
 
-			mGravity.x = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
+			mGravity = { gravityX, gravityY };
 
-			if (b2World_IsValid(mPhysicsWorldID))
+			auto gravityXSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_x");
+			gravityXSignal->Connect(std::function([&]
 			{
-				b2World_SetGravity(mPhysicsWorldID, mGravity);
-			}
-		}));
+				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-		auto gravityYSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_y");
-		gravityYSignal->Connect(std::function([&]
-		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+				mGravity.x = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
 
-			mGravity.y = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
+				if (b2World_IsValid(mPhysicsWorldID))
+				{
+					b2World_SetGravity(mPhysicsWorldID, mGravity);
+				}
+			}));
 
-			if (b2World_IsValid(mPhysicsWorldID))
+			auto gravityYSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_y");
+			gravityYSignal->Connect(std::function([&]
 			{
-				b2World_SetGravity(mPhysicsWorldID, mGravity);
-			}
-		}));
+				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-		mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
+				mGravity.y = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
 
-		auto subStepsSignal = signalSubsystem->GetOrCreateSignal("physics_sub_steps");
-		subStepsSignal->Connect(std::function([&]
+				if (b2World_IsValid(mPhysicsWorldID))
+				{
+					b2World_SetGravity(mPhysicsWorldID, mGravity);
+				}
+			}));
+		}
+
+		// Sub Steps
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-
 			mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
-		}));
 
-		mEnabled = settingsManager->Get<bool>("physics", "box2d_enable").value_or(true);
+			auto subStepsSignal = signalSubsystem->GetOrCreateSignal("physics_sub_steps");
+			subStepsSignal->Connect(std::function([&]
+			{
+				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-		auto box2dEnableSignal = signalSubsystem->GetOrCreateSignal("physics_box2d_enable");
-		box2dEnableSignal->Connect(std::function([&]
+				mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
+			}));
+		}
+
+		// Enabled
 		{
 			mEnabled = settingsManager->Get<bool>("physics", "box2d_enable").value_or(true);
-		}));
+
+			auto box2dEnableSignal = signalSubsystem->GetOrCreateSignal("physics_box2d_enable");
+			box2dEnableSignal->Connect(std::function([&]
+			{
+				mEnabled = settingsManager->Get<bool>("physics", "box2d_enable").value_or(true);
+			}));
+		}
 	}
 
 	void Box2DPhysicsSystem::CreateObjects()

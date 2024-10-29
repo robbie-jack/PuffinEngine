@@ -59,7 +59,7 @@ namespace puffin::physics
 		void BeginPlay() override;
 		void EndPlay() override;
 
-		void FixedUpdate(double fixedTime) override;
+		void FixedUpdate(double fixedTimeStep) override;
 		bool ShouldFixedUpdate() override;
 
 		void OnConstructBox(entt::registry& registry, entt::entity entity);
@@ -71,20 +71,18 @@ namespace puffin::physics
 		void OnConstructRigidbody(entt::registry& registry, entt::entity entity);
 		void OnDestroyRigidbody(entt::registry& registry, entt::entity entity);
 
-		void UpdateTimeStep();
-
 	private:
 
+		void InitSettingsAndSignals();
 		void UpdateComponents();
 
 		void InitBox(UUID id, const TransformComponent3D& transform, const BoxComponent3D& box);
 		void InitSphere(UUID id, const TransformComponent3D& transform, const SphereComponent3D& circle);
 		void InitRigidbody(UUID id, const TransformComponent3D& transform, const RigidbodyComponent3D& rb);
 
+		bool mEnabled = false;
 		JPH::Vec3Arg mGravity = JPH::Vec3Arg(0.0, -9.81, 0.0);
-		double mFixedTimeStep = 0.0;
 		const double mIdealTimeStep = 1 / 60.0; // Ideal time step of physics simulation
-		int mCollisionSteps = 1; // Number of collision steps done in physics simulation. Defaults to one, will be set higher if time step is greater than 1 / 60
 
 		const JPH::uint mNumBodyMutexes = 0;
 		const JPH::uint mMaxBodyPairs = 65536;
@@ -106,6 +104,11 @@ namespace puffin::physics
 		std::vector<UUID> mBodiesToInit;
 
 		std::vector<UUID> mBodiesToAdd;
+
+		entt::connection mOnConstructRigidbodyConnection, mOnDestroyRigidbodyConnection;
+		entt::connection mOnAddVelocityConnection, mOnRemoveVelocityConnection;
+		entt::connection mOnConstructSphereConnection, mOnDestroySphereConnection;
+		entt::connection mOnConstructBoxConnection, mOnDestroyBoxConnection;
 	};
 }
 

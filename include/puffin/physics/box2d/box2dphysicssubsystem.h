@@ -51,9 +51,6 @@ namespace puffin::physics
 		void BeginPlay() override;
 		void EndPlay() override;
 
-		void Update(double deltaTime) override;
-		bool ShouldUpdate() override;
-
 		void FixedUpdate(double fixedTimeStep) override;
 		bool ShouldFixedUpdate() override;
 

@@ -12,6 +12,7 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 
+#include "puffin/core/settingsmanager.h"
 #include "puffin/components/transformcomponent3d.h"
 #include "puffin/components/physics/3d/velocitycomponent3d.h"
 #include "puffin/components/physics/3d/boxcomponent3d.h"
@@ -27,30 +28,41 @@ namespace puffin::physics
 
 	void JoltPhysicsSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
+		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+		auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+		
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
-		registry->on_construct<RigidbodyComponent3D>().connect<&JoltPhysicsSubsystem::OnConstructRigidbody>(this);
-		registry->on_destroy<RigidbodyComponent3D>().connect<&JoltPhysicsSubsystem::OnDestroyRigidbody>(this);
+		mOnConstructRigidbodyConnection =  registry->on_construct<RigidbodyComponent3D>().connect<&JoltPhysicsSubsystem::OnConstructRigidbody>(this);
+		mOnDestroyRigidbodyConnection = registry->on_destroy<RigidbodyComponent3D>().connect<&JoltPhysicsSubsystem::OnDestroyRigidbody>(this);
 
-		registry->on_construct<RigidbodyComponent3D>().connect<&entt::registry::emplace<VelocityComponent3D>>();
-		registry->on_destroy<RigidbodyComponent3D>().connect<&entt::registry::remove<VelocityComponent3D>>();
-
-		registry->on_construct<BoxComponent3D>().connect<&JoltPhysicsSubsystem::OnConstructBox>(this);
+		mOnAddVelocityConnection = registry->on_construct<RigidbodyComponent3D>().connect<&entt::registry::emplace<VelocityComponent3D>>();
+		mOnRemoveVelocityConnection = registry->on_destroy<RigidbodyComponent3D>().connect<&entt::registry::remove<VelocityComponent3D>>();
+		
+		mOnConstructBoxConnection = registry->on_construct<BoxComponent3D>().connect<&JoltPhysicsSubsystem::OnConstructBox>(this);
 		//registry->on_update<BoxComponent3D>().connect<&JoltPhysicsSystem::OnConstructBox>(this);
-		registry->on_destroy<BoxComponent3D>().connect<&JoltPhysicsSubsystem::OnDestroyBox>(this);
+		mOnDestroyBoxConnection = registry->on_destroy<BoxComponent3D>().connect<&JoltPhysicsSubsystem::OnDestroyBox>(this);
 
-		registry->on_construct<SphereComponent3D>().connect<&JoltPhysicsSubsystem::OnConstructSphere>(this);
+		mOnConstructSphereConnection = registry->on_construct<SphereComponent3D>().connect<&JoltPhysicsSubsystem::OnConstructSphere>(this);
 		//registry->on_update<SphereComponent3D>().connect<&JoltPhysicsSystem::onConstructSphere>(this);
-		registry->on_destroy<SphereComponent3D>().connect<&JoltPhysicsSubsystem::OnDestroySphere>(this);
+		mOnDestroySphereConnection = registry->on_destroy<SphereComponent3D>().connect<&JoltPhysicsSubsystem::OnDestroySphere>(this);
 
 		mShapeRefs.Reserve(gMaxShapes);
-
-		UpdateTimeStep();
+		
+		InitSettingsAndSignals();
 	}
 
 	void JoltPhysicsSubsystem::Deinitialize()
 	{
+		mOnConstructRigidbodyConnection.release();
+		mOnDestroyRigidbodyConnection.release();
+		mOnAddVelocityConnection.release();
+		mOnRemoveVelocityConnection.release();
+		mOnConstructBoxConnection.release();
+		mOnDestroyBoxConnection.release();
+		mOnConstructSphereConnection.release();
+		mOnDestroySphereConnection.release();
 	}
 
 	core::SubsystemType JoltPhysicsSubsystem::GetType() const
@@ -104,11 +116,13 @@ namespace puffin::physics
 		JPH::Factory::sInstance = nullptr;
 	}
 
-	void JoltPhysicsSubsystem::FixedUpdate(double fixedTime)
+	void JoltPhysicsSubsystem::FixedUpdate(double fixedTimeStep)
 	{
 		UpdateComponents();
 
-		mJoltPhysicsSystem->Update(mFixedTimeStep, mCollisionSteps, mTempAllocator.get(), mJobSystem.get());
+		auto collisionSteps = static_cast<uint8_t>(std::ceil(fixedTimeStep / mIdealTimeStep));
+
+		mJoltPhysicsSystem->Update(fixedTimeStep, collisionSteps, mTempAllocator.get(), mJobSystem.get());
 
 		const auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 
@@ -140,7 +154,7 @@ namespace puffin::physics
 
 	bool JoltPhysicsSubsystem::ShouldFixedUpdate()
 	{
-		return true;
+		return mEnabled;
 	}
 
 	void JoltPhysicsSubsystem::OnConstructBox(entt::registry& registry, entt::entity entity)
@@ -179,10 +193,69 @@ namespace puffin::physics
 
 	}
 
-	void JoltPhysicsSubsystem::UpdateTimeStep()
+	void JoltPhysicsSubsystem::InitSettingsAndSignals()
 	{
-		mFixedTimeStep = mEngine->GetTimeStepFixed();
-		mCollisionSteps = static_cast<int>(std::ceil(mFixedTimeStep / mIdealTimeStep));
+		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+
+		// Gravity
+		{
+			auto gravityX = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
+			auto gravityY = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
+			auto gravityZ = settingsManager->Get<float>("physics", "gravity_z").value_or(0.0);
+
+			mGravity = { gravityX, gravityY, gravityZ };
+
+			auto gravityXSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_x");
+			gravityXSignal->Connect(std::function([&]
+			{
+				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+				mGravity.SetX(settingsManager->Get<float>("physics", "gravity_x").value_or(0.0));
+
+				if (mJoltPhysicsSystem)
+				{
+					mJoltPhysicsSystem->SetGravity(mGravity);
+				}
+			}));
+
+			auto gravityYSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_y");
+			gravityYSignal->Connect(std::function([&]
+			{
+				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+				
+				mGravity.SetY(settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81));
+
+				if (mJoltPhysicsSystem)
+				{
+					mJoltPhysicsSystem->SetGravity(mGravity);
+				}
+			}));
+
+			auto gravityZSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_z");
+			gravityZSignal->Connect(std::function([&]
+			{
+				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+				
+				mGravity.SetZ(settingsManager->Get<float>("physics", "gravity_z").value_or(0.0));
+
+				if (mJoltPhysicsSystem)
+				{
+					mJoltPhysicsSystem->SetGravity(mGravity);
+				}
+			}));
+		}
+
+		// Enabled
+		{
+			mEnabled = settingsManager->Get<bool>("physics", "jolt_enable").value_or(false);
+
+			auto joltEnableSignal = signalSubsystem->GetOrCreateSignal("physics_jolt_enable");
+			joltEnableSignal->Connect(std::function([&]
+			{
+				mEnabled = settingsManager->Get<bool>("physics", "jolt_enable").value_or(false);
+			}));
+		}
 	}
 
 	void JoltPhysicsSubsystem::UpdateComponents()
