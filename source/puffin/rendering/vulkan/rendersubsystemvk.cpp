@@ -1746,45 +1746,71 @@ namespace puffin::rendering
 					const auto entity = enttSubsystem->GetEntity(entityID);
 					auto* node = sceneGraph->GetNode(entityID);
 
-                    TransformComponent3D transform;
-
-					if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
-					{
-						transform = transformNode3D->GetGlobalTransform();
-					}
-					else
-					{
-						transform = registry->get<TransformComponent3D>(entity);
-					}
-					
-					const auto& mesh = registry->get<StaticMeshComponent3D>(entity);
-
+					// Position
 #ifdef PFN_DOUBLE_PRECISION
 					Vector3d position = { 0.0 };
 #else
 					Vector3f position = { 0.0f };
 #endif
 
-					if (registry->any_of<physics::VelocityComponent3D>(entity))
 					{
-                        const auto& velocity = registry->get<physics::VelocityComponent3D>(entity);;
+						if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
+						{
+							position = transformNode3D->GetGlobalTransform().position;
+						}
+						else
+						{
+							position = registry->get<TransformComponent3D>(entity).position;
+						}
+							
+						if (registry->any_of<physics::VelocityComponent3D>(entity))
+						{
+							const auto& velocity = registry->get<physics::VelocityComponent3D>(entity);
 
 #ifdef PFN_DOUBLE_PRECISION
-						Vector3d interpolatedPosition = tempTransform.position + velocity.linear * mEngine->timeStepFixed();
+							Vector3d interpolatedPosition = {};
 #else
-						Vector3f interpolatedPosition = transform.position + velocity.linear * mEngine->GetTimeStepFixed();
+							Vector3f interpolatedPosition = {};
 #endif
-
-						position = maths::Lerp(transform.position, interpolatedPosition, t);
+							interpolatedPosition = position + velocity.linear * mEngine->GetTimeStepFixed();
+								
+							position = maths::Lerp(position, interpolatedPosition, t);
+						}
 					}
-					else
+
+					// Orientation
+					
+					maths::Quat orientation;
 					{
-						position = transform.position;
+						if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
+						{
+							orientation = transformNode3D->GetGlobalTransform().orientationQuat;
+						}
+						else
+						{
+							orientation = registry->get<TransformComponent3D>(entity).orientationQuat;
+						}
+					}
+
+					// Scale
+
+					Vector3f scale;
+					{
+						if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
+						{
+							scale = transformNode3D->GetGlobalTransform().scale;
+						}
+						else
+						{
+							scale = registry->get<TransformComponent3D>(entity).scale;
+						}
 					}
 
 					GPUObjectData object = {};
 
-					BuildModelTransform(position, transform.orientationQuat, transform.scale, object.model);
+					BuildModelTransform(position, orientation, scale, object.model);
+
+					const auto& mesh = registry->get<StaticMeshComponent3D>(entity);
 					object.matIdx = mMaterialRegistry->GetMaterialData(mesh.materialID).idx;
 
 					threadObjects[threadnum].emplace_back(entityID, object);

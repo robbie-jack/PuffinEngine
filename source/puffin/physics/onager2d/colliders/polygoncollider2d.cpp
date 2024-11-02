@@ -8,7 +8,7 @@ namespace puffin::physics::collision2D
 {
 	AABB2D PolygonCollider2D::getAABB() const
 	{
-		return shape->getAABB(position, rotation);
+		return shape->GetAABB(position, rotation);
 	}
 
 	Vector2f PolygonCollider2D::findFurthestPoint(Vector2f direction) const

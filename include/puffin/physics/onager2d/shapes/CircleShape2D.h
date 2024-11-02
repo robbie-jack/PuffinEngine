@@ -18,9 +18,9 @@ namespace puffin::physics
             centreOfMass.Zero();
 		}
 
-		ShapeType2D getType() const override;
+		ShapeType2D GetType() const override;
 
-		AABB2D getAABB(const Vector2f& position, const float& rotation) const override;
+		AABB2D GetAABB(const Vector2f& position, const float& rotation) const override;
 
 		float radius;
 	};

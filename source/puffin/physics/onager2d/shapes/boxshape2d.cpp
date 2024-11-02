@@ -6,12 +6,12 @@
 
 namespace puffin::physics
 {
-	ShapeType2D BoxShape2D::getType() const
+	ShapeType2D BoxShape2D::GetType() const
 	{
-		return ShapeType2D::box;
+		return ShapeType2D::Box;
 	}
 
-	AABB2D BoxShape2D::getAABB(const Vector2f& position, const float& rotation) const
+	AABB2D BoxShape2D::GetAABB(const Vector2f& position, const float& rotation) const
 	{
 		AABB2D aabb;
         aabb.min = position - half_extent;
@@ -19,7 +19,7 @@ namespace puffin::physics
 		return aabb;
 	}
 
-	void BoxShape2D::updatePoints()
+	void BoxShape2D::UpdatePoints()
 	{
 		points.clear();
 

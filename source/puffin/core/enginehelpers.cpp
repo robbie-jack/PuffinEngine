@@ -403,8 +403,12 @@ namespace puffin::core
 		
 		// Floor Node
 		{
-			auto* floor = sceneGraph->AddNode<physics::RigidbodyNode3D>("Floor");
+			auto* floor = sceneGraph->AddNode<TransformNode3D>("Floor");
 			floor->SetPosition({ 0.0f, 0.0f, 0.0f });
+			
+			auto& rb = floor->AddComponent<physics::RigidbodyComponent2D>();
+			auto& box = floor->AddComponent<physics::BoxComponent2D>();
+			box.halfExtent.x = floorWidth / 2.0f;
 			
 			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("FloorMesh", floor->GetID());
 			floorMesh->SetScale({ floorWidth / 2.0f, 1.0f, 1.0f });
@@ -433,9 +437,13 @@ namespace puffin::core
 				{
 					float currentX = startX + (offsetX * x);
 					
-					auto* body = sceneGraph->AddNode<physics::RigidbodyNode3D>("Body #" + std::to_string(i));
+					auto* body = sceneGraph->AddNode<TransformNode3D>("Body #" + std::to_string(i));
 					body->SetPosition({ currentX, currentY, 0.0f });
-					body->SetBodyType(physics::BodyType::Dynamic);
+
+					auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
+					rb.bodyType = physics::BodyType::Dynamic;
+
+					auto& box = body->AddComponent<physics::BoxComponent2D>();
 					
 					auto* bodyMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("BodyMesh", body->GetID());
 					bodyMesh->SetMeshID(cubeMeshID);

@@ -18,6 +18,7 @@ namespace puffin
 			BodyType bodyType = BodyType::Static;
 
 			float mass = 0.0f;
+			float density = 1.0f;
 			float elasticity = 1.0f;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent2D, mass, elasticity, bodyType)
@@ -30,10 +31,11 @@ namespace puffin
 		using namespace physics;
 
 		entt::meta<RigidbodyComponent2D>()
-			.type(entt::hs("RigidbodyComponent2D"))
-			.data<&RigidbodyComponent2D::bodyType>(entt::hs("bodyType"))
-			.data<&RigidbodyComponent2D::mass>(entt::hs("mass"))
-			.data<&RigidbodyComponent2D::elasticity>(entt::hs("elasticity"));
+		.type(entt::hs("RigidbodyComponent2D"))
+		.data<&RigidbodyComponent2D::bodyType>(entt::hs("bodyType"))
+		.data<&RigidbodyComponent2D::mass>(entt::hs("mass"))
+		.data<&RigidbodyComponent2D::density>(entt::hs("density"))
+		.data<&RigidbodyComponent2D::elasticity>(entt::hs("elasticity"));
 	}
 
 	namespace serialization
@@ -43,6 +45,7 @@ namespace puffin
 		{
 			archive.Set("bodyType", static_cast<uint8_t>(data.bodyType));
 			archive.Set("mass", data.mass);
+			archive.Set("density", data.density);
 			archive.Set("elasticity", data.elasticity);
 		}
 
@@ -54,6 +57,7 @@ namespace puffin
 			data.bodyType = static_cast<physics::BodyType>(bodyType);
 
 			archive.Get("mass", data.mass);
+			archive.Get("density", data.density);
 			archive.Get("elasticity", data.elasticity);
 		}
 	}

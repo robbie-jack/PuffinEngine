@@ -5,6 +5,7 @@
 #include "puffin/core/engine.h"
 #include "puffin/core/subsystem.h"
 #include "puffin/ecs/enttsubsystem.h"
+#include "puffin/physics/shapetype2d.h"
 #include "puffin/physics/physicsconstants.h"
 #include "puffin/types/storage/mappedvector.h"
 #include "puffin/physics/bodytype.h"
@@ -74,27 +75,29 @@ namespace puffin::physics
 		void DestroyObjects();
 		void PublishCollisionEvents() const;
 
-		void CreateBody(UUID id, const TransformComponent2D& transform, const RigidbodyComponent2D& rb);
-		void CreateBox(UUID id, const TransformComponent2D& transform, const BoxComponent2D& box);
-		void CreateCircle(UUID id, const TransformComponent2D& transform, const CircleComponent2D& circle);
+		void CreateBody(entt::entity entity, UUID id);
+		void CreateBox(entt::entity entity, UUID id);
+		void CreateCircle(entt::entity entity, UUID id);
 
-		void UpdateBody(UUID id);
-		void UpdateBox(UUID id);
-		void UpdateCircle(UUID id);
+		void UpdateBody(entt::entity entity, UUID id);
+		void UpdateBox(entt::entity entity, UUID id);
+		void UpdateCircle(entt::entity entity, UUID id);
 
-		void DestroyBody(UUID id);
-		void DestroyBox(UUID id);
-		void DestroyCircle(UUID id);
+		void DestroyBody(entt::entity entity, UUID id);
+		void DestroyBox(entt::entity entity, UUID id);
+		void DestroyCircle(entt::entity entity, UUID id);
 		
-		struct BodyCreateEvent
+		struct PhysicsCreateEvent
 		{
+			entt::entity entity;
 			UUID id;
 		};
 
-		struct ShapeCreateEvent
+		using BodyCreateEvent = PhysicsCreateEvent;
+
+		struct ShapeCreateEvent : PhysicsCreateEvent
 		{
-			UUID id;
-			BodyType type;
+			ShapeType2D shapeType;
 		};
 
 		bool mEnabled = false;
@@ -104,11 +107,10 @@ namespace puffin::physics
 		b2WorldId mPhysicsWorldID = b2_nullWorldId;
 		//std::unique_ptr<Box2DContactListener> m_contact_listener = nullptr;
 
-		MappedVector<UUID, b2BodyId> mBodyIDs; // Vector of body ids used in physics simulation
-		MappedVector<UUID, b2ShapeId> mShapeIDs; // Vector of shapes sued in physics simulation
-
-		MappedVector<UUID, b2Circle> mCircleIDs;
-		MappedVector<UUID, b2Polygon> mPolygonIDs;
+		std::unordered_map<UUID, b2BodyId> mBodyIDs; // Vector of body ids used in physics simulation
+		
+		std::unordered_map<UUID, b2ShapeId> mShapeIDs; // Vector of shapes used in physics simulation
+		std::unordered_map<UUID, ShapeType2D> mShapeTypes; // Vector of shape types for each entity in simulation
 
 		RingBuffer<BodyCreateEvent> mBodyCreateEvents;
 		RingBuffer<ShapeCreateEvent> mShapeCreateEvents;
