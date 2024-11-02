@@ -14,6 +14,9 @@
 #include "puffin/components/physics/2d/velocitycomponent2d.h"
 #include "puffin/components/physics/3d/velocitycomponent3d.h"
 #include "puffin/physics/onager2d/colliders/boxcollider2d.h"
+#include "puffin/nodes/transformnode2d.h"
+#include "puffin/nodes/transformnode3d.h"
+#include "puffin/scene/scenegraphsubsystem.h"
 
 namespace puffin::physics
 {
@@ -98,13 +101,73 @@ namespace puffin::physics
 		
 		b2World_Step(mPhysicsWorldID, fixedTimeStep, mSubSteps);
 
-		const auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
+		
+		const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		const auto& view = registry->view<RigidbodyComponent2D>();
 
 		for (auto& [entity, rb] : view.each())
 		{
+			const auto id = enttSubsystem->GetID(entity);
+			auto* node = sceneGraph->GetNode(id);
+
+			if (mBodyIDs.find(id) == mBodyIDs.end())
+			{
+				continue;
+			}
 			
+			const auto& bodyID = mBodyIDs.at(id);
+			
+			b2Vec2 pos = b2Body_GetPosition(bodyID);
+			b2Vec2 vel = b2Body_GetLinearVelocity(bodyID);
+
+			if (registry->all_of<TransformComponent2D, VelocityComponent2D>(entity))
+			{
+				if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node); transformNode2D)
+				{
+					transformNode2D->Transform().position.x = pos.x;
+					transformNode2D->Transform().position.y = pos.y;
+				}
+				else
+				{
+					registry->patch<TransformComponent2D>(entity, [&](auto& transform)
+					{
+						transform.position.x = pos.x;
+						transform.position.y = pos.y;
+					});
+				}
+
+				registry->patch<VelocityComponent2D>(entity, [&](auto& velocity)
+				{
+					velocity.linear.x = vel.x;
+					velocity.linear.y = vel.y;
+				});
+			}
+
+			if (registry->all_of<TransformComponent3D, VelocityComponent3D>(entity))
+			{
+				if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
+				{
+					transformNode3D->Transform().position.x = pos.x;
+					transformNode3D->Transform().position.y = pos.y;
+				}
+				else
+				{
+					registry->patch<TransformComponent3D>(entity, [&](auto& transform)
+					{
+						transform.position.x = pos.x;
+						transform.position.y = pos.y;
+					});
+				}
+
+				registry->patch<VelocityComponent3D>(entity, [&](auto& velocity)
+				{
+					velocity.linear.x = vel.x;
+					velocity.linear.y = vel.y;
+				});
+			}
 		}
 	}
 
@@ -113,47 +176,8 @@ namespace puffin::physics
 		return mEnabled;
 	}
 
-	//void Box2DPhysicsSystem::fixedUpdate()
-	//{
-	//	// Step Physics World
-	//	m_physics_world->Step(mEngine->timeStepFixed(), m_velocity_iterations, m_position_iterations);
-
-	//	// Publish Collision Events
-	//	publish_collision_events();
-
-	//	const auto registry = mEngine->getSystem<ecs::EnTTSubsystem>()->registry();
-
-	//	// Updated entity position/rotation from simulation
-	//	const auto bodyView = registry->view<const SceneObjectComponent, TransformComponent2D, VelocityComponent2D, const RigidbodyComponent2D>();
-
-	//	for (auto [entity, object, transform, velocity, rb] : bodyView.each())
-	//	{
-	//		const auto& id = object.id;
-
-	//		// Update Transform from Rigidbody Position
-	//		registry->patch<TransformComponent2D>(entity, [&](auto& transform)
-	//		{
-	//			transform.position.x = mBodies[id]->GetPosition().x;
-	//			transform.position.y = mBodies[id]->GetPosition().y;
-	//			transform.rotation = maths::radToDeg(-mBodies[id]->GetAngle());
-	//		});
-
-	//		// Update Velocity with Linear/Angular Velocity#
-	//		registry->patch<VelocityComponent2D>(entity, [&](auto& velocity)
-	//		{
-	//			velocity.linear.x = mBodies[id]->GetLinearVelocity().x;
-	//			velocity.linear.y = mBodies[id]->GetLinearVelocity().y;
-	//		});
-	//	}
-	//}
-
 	void Box2DPhysicsSystem::OnConstructBox(entt::registry& registry, entt::entity entity)
 	{
-		if (!registry.valid(entity))
-		{
-			return;
-		}
-		
 		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 		
 		mShapeCreateEvents.Push({ entity, id, ShapeType2D::Box });
@@ -185,11 +209,6 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::OnConstructRigidbody(entt::registry& registry, entt::entity entity)
 	{
-		if (!registry.valid(entity))
-		{
-			return;
-		}
-		
 		if (registry.any_of<TransformComponent2D>(entity) && !registry.any_of<VelocityComponent2D>(entity))
 		{
 			registry.emplace<VelocityComponent2D>(entity);

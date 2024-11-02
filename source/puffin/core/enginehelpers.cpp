@@ -331,7 +331,6 @@ namespace puffin::core
 		dirLight->SetPosition({ 0.0f, 10.0f, 0.0f });
 		dirLight->SetColor({ .05f });
 		dirLight->SetAmbientIntensity(.0f);
-		dirLight->SetAmbientIntensity(0.f);
 		dirLight->AddComponent<rendering::ShadowCasterComponent3D>();
 		registry->patch<rendering::ShadowCasterComponent3D>(dirLight->GetEntity(), [&](auto& shadow)
 		{
@@ -399,7 +398,17 @@ namespace puffin::core
 		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		const float floorWidth = 100.0f;
+		// Light
+		{
+			auto* light = sceneGraph->AddNode<rendering::DirectionalLightNode3D>("Light");
+			light->SetPosition({ 0.0f, 100.0f, 0.0f });
+			light->SetColor({ 1.f });
+			light->SetAmbientIntensity(.1f);
+
+			//UpdateTransformOrientation(light->Transform(), { 0.0f, -90.0f, 0.0f });
+		}
+
+		const float floorWidth = 1000.0f;
 		
 		// Floor Node
 		{
@@ -409,6 +418,7 @@ namespace puffin::core
 			auto& rb = floor->AddComponent<physics::RigidbodyComponent2D>();
 			auto& box = floor->AddComponent<physics::BoxComponent2D>();
 			box.halfExtent.x = floorWidth / 2.0f;
+			box.halfExtent.y = 1.0f;
 			
 			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("FloorMesh", floor->GetID());
 			floorMesh->SetScale({ floorWidth / 2.0f, 1.0f, 1.0f });
@@ -424,9 +434,10 @@ namespace puffin::core
 			const float startY = 5.0f;
 			const float offsetY = 5.0f;
 
-			const float offsetX = floorWidth / numBodiesX;
-			const float startX = -(floorWidth / 2.0f) + (offsetX / 2.0f);
-			
+			const float boxAreaWidth = 100.0f;
+
+			const float offsetX = boxAreaWidth / numBodiesX;
+			const float startX = -(boxAreaWidth / 2.0f) + (offsetX / 2.0f);
 
 			int i = 0;
 			for (int y = 0; y < numBodiesY; y++)
@@ -444,6 +455,8 @@ namespace puffin::core
 					rb.bodyType = physics::BodyType::Dynamic;
 
 					auto& box = body->AddComponent<physics::BoxComponent2D>();
+					box.halfExtent.x = 1.0f;
+					box.halfExtent.y = 1.0f;
 					
 					auto* bodyMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("BodyMesh", body->GetID());
 					bodyMesh->SetMeshID(cubeMeshID);
