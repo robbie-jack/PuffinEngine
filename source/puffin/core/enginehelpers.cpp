@@ -476,41 +476,36 @@ namespace puffin::core
 
 		// Box Nodes
 		{
-			constexpr int numBodiesX = 10;
-			constexpr int numBodiesY = 10;
+			constexpr int numBodies = 200;
 
 			const Vector2f bodyHalfExtent = { 90.0f, 90.f };
-
-			const Vector2f bodyStartPos = { -bodyHalfExtent.x, -bodyHalfExtent.y };
-			Vector2f bodyPosOffset = {};
-			bodyPosOffset.x = (bodyHalfExtent.x * 2.0f) / (numBodiesX - 1);
-			bodyPosOffset.y = (bodyHalfExtent.y * 2.0f) / (numBodiesY - 1);
-
-			int i = 0;
-			for (int y = 0; y < numBodiesY; y++)
+			double velocityMax = 50.0;
+			
+			std::random_device rd;
+			std::mt19937 mt(rd());
+			std::uniform_real_distribution posXDist(-bodyHalfExtent.x, bodyHalfExtent.x);
+			std::uniform_real_distribution posYDist(-bodyHalfExtent.y, bodyHalfExtent.y);
+			std::uniform_real_distribution velDist(-velocityMax, velocityMax);
+			
+			for (int i = 0; i < numBodies; ++i)
 			{
-				float currentY = bodyStartPos.y + (bodyPosOffset.y * y);
-				
-				for (int x = 0; x < numBodiesX; x++)
-				{
-					float currentX = bodyStartPos.x + (bodyPosOffset.x * x);
-					
-					auto* body = sceneGraph->AddNode<TransformNode3D>("Body #" + std::to_string(i));
-					body->SetPosition({ currentX, currentY, 0.0f });
+				auto* body = sceneGraph->AddNode<TransformNode3D>("Body #" + std::to_string(i));
+				body->SetPosition({ posXDist(mt), posYDist(mt), 0.0f });
 
-					auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
-					rb.bodyType = physics::BodyType::Dynamic;
+				auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
+				rb.bodyType = physics::BodyType::Dynamic;
 
-					auto& box = body->AddComponent<physics::BoxComponent2D>();
-					box.halfExtent.x = 1.0f;
-					box.halfExtent.y = 1.0f;
+				auto& velocity = body->AddComponent<physics::VelocityComponent3D>();
+				velocity.linear.x = velDist(mt);
+				velocity.linear.y = velDist(mt);
+
+				auto& box = body->AddComponent<physics::BoxComponent2D>();
+				box.halfExtent.x = 1.0f;
+				box.halfExtent.y = 1.0f;
 					
-					auto* bodyMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("BodyMesh", body->GetID());
-					bodyMesh->SetMeshID(cubeMeshID);
-					bodyMesh->SetMaterialID(defaultMaterialInstID);
-					
-					++i;
-				}
+				auto* bodyMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("BodyMesh", body->GetID());
+				bodyMesh->SetMeshID(cubeMeshID);
+				bodyMesh->SetMaterialID(defaultMaterialInstID);
 			}
 		}
 	}
