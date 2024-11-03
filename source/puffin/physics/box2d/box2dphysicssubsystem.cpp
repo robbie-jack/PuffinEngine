@@ -113,15 +113,15 @@ namespace puffin::physics
 			const auto id = enttSubsystem->GetID(entity);
 			auto* node = sceneGraph->GetNode(id);
 
-			if (mBodyIDs.find(id) == mBodyIDs.end())
+			if (mBodyData.find(id) == mBodyData.end())
 			{
 				continue;
 			}
 			
-			const auto& bodyID = mBodyIDs.at(id);
+			const auto& bodyData = mBodyData.at(id);
 			
-			b2Vec2 pos = b2Body_GetPosition(bodyID);
-			b2Vec2 vel = b2Body_GetLinearVelocity(bodyID);
+			b2Vec2 pos = b2Body_GetPosition(bodyData.bodyID);
+			b2Vec2 vel = b2Body_GetLinearVelocity(bodyData.bodyID);
 
 			if (registry->all_of<TransformComponent2D, VelocityComponent2D>(entity))
 			{
@@ -190,7 +190,9 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::OnDestroyBox(entt::registry& registry, entt::entity entity)
 	{
+		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 
+		mShapeDestroyEvents.Push({ entity, id, ShapeType2D::Box });
 	}
 
 	void Box2DPhysicsSystem::OnConstructCircle(entt::registry& registry, entt::entity entity)
@@ -239,6 +241,10 @@ namespace puffin::physics
 		{
 			registry.remove<VelocityComponent3D>(entity);
 		}
+
+		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
+
+		mBodyDestroyEvents.Push({ entity, id });
 	}
 
 	void Box2DPhysicsSystem::InitSettingsAndSignals()
@@ -307,9 +313,6 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::CreateObjects()
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = enttSubsystem->GetRegistry();
-
 		// Create bodies
 		{
 			BodyCreateEvent bodyCreateEvent;
@@ -329,10 +332,10 @@ namespace puffin::physics
 				switch (shapeCreateEvent.shapeType)
 				{
 				case ShapeType2D::Box:
-					CreateBox(shapeCreateEvent.entity, shapeCreateEvent.id);
+					CreateBox(shapeCreateEvent.entity, shapeCreateEvent.id, shapeCreateEvent.id);
 					break;
 				case ShapeType2D::Circle:
-					CreateCircle(shapeCreateEvent.entity, shapeCreateEvent.id);
+					CreateCircle(shapeCreateEvent.entity, shapeCreateEvent.id, shapeCreateEvent.id);
 					break;
 				}
 			}
@@ -341,7 +344,33 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::DestroyObjects()
 	{
+		// Destroy Bodies
+		{
+			BodyDestroyEvent bodyDestroyEvent;
 
+			while (mBodyDestroyEvents.Pop(bodyDestroyEvent))
+			{
+				DestroyBody(bodyDestroyEvent.entity, bodyDestroyEvent.id);
+			}
+		}
+
+		// Destroy Shapes
+		{
+			ShapeDestroyEvent shapeDestroyEvent;
+
+			while (mShapeDestroyEvents.Pop(shapeDestroyEvent))
+			{
+				switch (shapeDestroyEvent.shapeType)
+				{
+				case ShapeType2D::Box:
+					DestroyBox(shapeDestroyEvent.entity, shapeDestroyEvent.id);
+					break;
+				case ShapeType2D::Circle:
+					DestroyCircle(shapeDestroyEvent.entity, shapeDestroyEvent.id);
+					break;
+				}
+			}
+		}
 	}
 
 	void Box2DPhysicsSystem::PublishCollisionEvents() const
@@ -370,11 +399,14 @@ namespace puffin::physics
 		{
 			return;
 		}
+
+		mUserData.emplace(id, UserData{id, entity});
 		
 		const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 		
 		b2BodyDef bodyDef = b2DefaultBodyDef();
 		bodyDef.type = gPuffinToBox2DBodyType.at(rb.bodyType);
+		bodyDef.userData = &mUserData.at(id);
 
 		if (registry->all_of<TransformComponent2D, VelocityComponent2D>(entity))
 		{
@@ -396,10 +428,11 @@ namespace puffin::physics
 			bodyDef.linearVelocity = { velocity.linear.x, velocity.linear.y };
 		}
 
-		mBodyIDs.emplace(id, b2CreateBody(mPhysicsWorldID, &bodyDef));
+		b2BodyId bodyID = b2CreateBody(mPhysicsWorldID, &bodyDef);
+		mBodyData.emplace(id, BodyData{bodyID});
 	}
 
-	void Box2DPhysicsSystem::CreateBox(entt::entity entity, UUID id)
+	void Box2DPhysicsSystem::CreateBox(entt::entity entity, UUID boxUUID, UUID bodyUUID)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
@@ -411,6 +444,11 @@ namespace puffin::physics
 
 		if (registry->any_of<RigidbodyComponent2D>(entity))
 		{
+			if (mUserData.find(boxUUID) == mUserData.end())
+			{
+				mUserData.emplace(boxUUID, UserData{boxUUID, entity});
+			}
+			
 			const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 			const auto& box = registry->get<BoxComponent2D>(entity);
 		
@@ -420,13 +458,15 @@ namespace puffin::physics
 			shapeDef.density = rb.density;
 			shapeDef.restitution = rb.elasticity;
 			shapeDef.friction = rb.friction;
+			shapeDef.userData = &mUserData.at(boxUUID);
 
-			mShapeIDs.emplace(id, b2CreatePolygonShape(mBodyIDs.at(id), &shapeDef, &polygon));
-			mShapeTypes.emplace(id, ShapeType2D::Box);
+			b2ShapeId shapeID = b2CreatePolygonShape(mBodyData.at(bodyUUID).bodyID, &shapeDef, &polygon);
+			mShapeData.emplace(boxUUID, ShapeData{shapeID, ShapeType2D::Box});
+			mBodyData.at(bodyUUID).shapeIDs.emplace(boxUUID);
 		}
 	}
 
-	void Box2DPhysicsSystem::CreateCircle(entt::entity entity, UUID id)
+	void Box2DPhysicsSystem::CreateCircle(entt::entity entity, UUID circleUUID, UUID bodyUUID)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
@@ -444,7 +484,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::UpdateBody(entt::entity entity, UUID id)
 	{
-
+		
 	}
 
 	void Box2DPhysicsSystem::UpdateBox(entt::entity entity, UUID id)
@@ -459,12 +499,31 @@ namespace puffin::physics
 
 	void Box2DPhysicsSystem::DestroyBody(entt::entity entity, UUID id)
 	{
-		
+		if (b2Body_IsValid(mBodyData.at(id).bodyID))
+		{
+			b2DestroyBody(mBodyData.at(id).bodyID);
+		}
+
+		mUserData.erase(id);
+		mBodyData.erase(id);
 	}
 
 	void Box2DPhysicsSystem::DestroyBox(entt::entity entity, UUID id)
 	{
-		
+		if (b2Shape_IsValid(mShapeData.at(id).shapeID))
+		{
+			b2BodyId bodyID = b2Shape_GetBody(mShapeData.at(id).shapeID);
+
+			auto* userData = static_cast<UserData*>(b2Body_GetUserData(bodyID));
+
+			BodyData& bodyData = mBodyData.at(userData->id);
+			bodyData.shapeIDs.erase(id);
+			
+			b2DestroyShape(mShapeData.at(id).shapeID, true);
+		}
+
+		mUserData.erase(id);
+		mShapeData.erase(id);
 	}
 
 	void Box2DPhysicsSystem::DestroyCircle(entt::entity entity, UUID id)

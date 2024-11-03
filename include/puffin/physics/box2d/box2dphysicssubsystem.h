@@ -76,8 +76,8 @@ namespace puffin::physics
 		void PublishCollisionEvents() const;
 
 		void CreateBody(entt::entity entity, UUID id);
-		void CreateBox(entt::entity entity, UUID id);
-		void CreateCircle(entt::entity entity, UUID id);
+		void CreateBox(entt::entity entity, UUID boxUUID, UUID bodyUUID);
+		void CreateCircle(entt::entity entity, UUID circleUUID, UUID bodyUUID);
 
 		void UpdateBody(entt::entity entity, UUID id);
 		void UpdateBox(entt::entity entity, UUID id);
@@ -87,16 +87,39 @@ namespace puffin::physics
 		void DestroyBox(entt::entity entity, UUID id);
 		void DestroyCircle(entt::entity entity, UUID id);
 		
-		struct PhysicsCreateEvent
+		struct PhysicsEvent
 		{
 			entt::entity entity;
 			UUID id;
 		};
 
-		using BodyCreateEvent = PhysicsCreateEvent;
+		using BodyCreateEvent = PhysicsEvent;
+		using BodyDestroyEvent = PhysicsEvent;
 
-		struct ShapeCreateEvent : PhysicsCreateEvent
+		struct ShapeEvent : PhysicsEvent
 		{
+			ShapeType2D shapeType;
+		};
+
+		using ShapeCreateEvent = ShapeEvent;
+		using ShapeDestroyEvent = ShapeEvent;
+
+		struct UserData
+		{
+			UUID id;
+			entt::entity entity;
+			
+		};
+
+		struct BodyData
+		{
+			b2BodyId bodyID;
+			std::unordered_set<UUID> shapeIDs;
+		};
+
+		struct ShapeData
+		{
+			b2ShapeId shapeID;
 			ShapeType2D shapeType;
 		};
 
@@ -107,13 +130,15 @@ namespace puffin::physics
 		b2WorldId mPhysicsWorldID = b2_nullWorldId;
 		//std::unique_ptr<Box2DContactListener> m_contact_listener = nullptr;
 
-		std::unordered_map<UUID, b2BodyId> mBodyIDs; // Vector of body ids used in physics simulation
-		
-		std::unordered_map<UUID, b2ShapeId> mShapeIDs; // Vector of shapes used in physics simulation
-		std::unordered_map<UUID, ShapeType2D> mShapeTypes; // Vector of shape types for each entity in simulation
+		std::unordered_map<UUID, UserData> mUserData;
+		std::unordered_map<UUID, BodyData> mBodyData; // Vector of body ids used in physics simulation
+		std::unordered_map<UUID, ShapeData> mShapeData; // Vector of shapes used in physics simulation
 
 		RingBuffer<BodyCreateEvent> mBodyCreateEvents;
+		RingBuffer<BodyDestroyEvent> mBodyDestroyEvents;
+		
 		RingBuffer<ShapeCreateEvent> mShapeCreateEvents;
+		RingBuffer<ShapeDestroyEvent> mShapeDestroyEvents;
 	};
 }
 
