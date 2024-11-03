@@ -408,20 +408,68 @@ namespace puffin::core
 			//UpdateTransformOrientation(light->Transform(), { 0.0f, -90.0f, 0.0f });
 		}
 
-		const float floorWidth = 1000.0f;
+		const Vector2f wallHalfExtent = { 100.0f, 100.f };
 		
 		// Floor Node
 		{
 			auto* floor = sceneGraph->AddNode<TransformNode3D>("Floor");
-			floor->SetPosition({ 0.0f, 0.0f, 0.0f });
+			floor->SetPosition({ 0.0f, -wallHalfExtent.y, 0.0f });
 			
 			auto& rb = floor->AddComponent<physics::RigidbodyComponent2D>();
 			auto& box = floor->AddComponent<physics::BoxComponent2D>();
-			box.halfExtent.x = floorWidth / 2.0f;
+			box.halfExtent.x = wallHalfExtent.x;
 			box.halfExtent.y = 1.0f;
 			
-			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("FloorMesh", floor->GetID());
-			floorMesh->SetScale({ floorWidth / 2.0f, 1.0f, 1.0f });
+			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Floor Mesh", floor->GetID());
+			floorMesh->SetScale({ wallHalfExtent.x, 1.0f, 1.0f });
+			floorMesh->SetMeshID(cubeMeshID);
+			floorMesh->SetMaterialID(defaultMaterialInstID);
+		}
+
+		// Left Wall Node
+		{
+			auto* leftWall = sceneGraph->AddNode<TransformNode3D>("Left Wall");
+			leftWall->SetPosition({ -wallHalfExtent.x, 0.0f, 0.0f });
+			
+			auto& rb = leftWall->AddComponent<physics::RigidbodyComponent2D>();
+			auto& box = leftWall->AddComponent<physics::BoxComponent2D>();
+			box.halfExtent.x = 1.0f;
+			box.halfExtent.y = wallHalfExtent.y;
+			
+			auto* wallLeftMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Left Wall Mesh", leftWall->GetID());
+			wallLeftMesh->SetScale({ 1.0f, wallHalfExtent.y, 1.0f });
+			wallLeftMesh->SetMeshID(cubeMeshID);
+			wallLeftMesh->SetMaterialID(defaultMaterialInstID);
+		}
+
+		// Right Wall Node
+		{
+			auto* rightWall = sceneGraph->AddNode<TransformNode3D>("Right Wall");
+			rightWall->SetPosition({ wallHalfExtent.x, 0.0f, 0.0f });
+			
+			auto& rb = rightWall->AddComponent<physics::RigidbodyComponent2D>();
+			auto& box = rightWall->AddComponent<physics::BoxComponent2D>();
+			box.halfExtent.x = 1.0f;
+			box.halfExtent.y = wallHalfExtent.y;
+			
+			auto* wallLeftMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Right Wall Mesh", rightWall->GetID());
+			wallLeftMesh->SetScale({ 1.0f, wallHalfExtent.y, 1.0f });
+			wallLeftMesh->SetMeshID(cubeMeshID);
+			wallLeftMesh->SetMaterialID(defaultMaterialInstID);
+		}
+
+		// Ceiling Node
+		{
+			auto* ceiling = sceneGraph->AddNode<TransformNode3D>("Floor");
+			ceiling->SetPosition({ 0.0f, wallHalfExtent.y, 0.0f });
+			
+			auto& rb = ceiling->AddComponent<physics::RigidbodyComponent2D>();
+			auto& box = ceiling->AddComponent<physics::BoxComponent2D>();
+			box.halfExtent.x = wallHalfExtent.x;
+			box.halfExtent.y = 1.0f;
+			
+			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Ceiling Mesh", ceiling->GetID());
+			floorMesh->SetScale({ wallHalfExtent.x, 1.0f, 1.0f });
 			floorMesh->SetMeshID(cubeMeshID);
 			floorMesh->SetMaterialID(defaultMaterialInstID);
 		}
@@ -431,22 +479,21 @@ namespace puffin::core
 			constexpr int numBodiesX = 10;
 			constexpr int numBodiesY = 10;
 
-			const float startY = 5.0f;
-			const float offsetY = 5.0f;
+			const Vector2f bodyHalfExtent = { 90.0f, 90.f };
 
-			const float boxAreaWidth = 100.0f;
-
-			const float offsetX = boxAreaWidth / numBodiesX;
-			const float startX = -(boxAreaWidth / 2.0f) + (offsetX / 2.0f);
+			const Vector2f bodyStartPos = { -bodyHalfExtent.x, -bodyHalfExtent.y };
+			Vector2f bodyPosOffset = {};
+			bodyPosOffset.x = (bodyHalfExtent.x * 2.0f) / (numBodiesX - 1);
+			bodyPosOffset.y = (bodyHalfExtent.y * 2.0f) / (numBodiesY - 1);
 
 			int i = 0;
 			for (int y = 0; y < numBodiesY; y++)
 			{
-				float currentY = startY + (offsetY * y);
+				float currentY = bodyStartPos.y + (bodyPosOffset.y * y);
 				
 				for (int x = 0; x < numBodiesX; x++)
 				{
-					float currentX = startX + (offsetX * x);
+					float currentX = bodyStartPos.x + (bodyPosOffset.x * x);
 					
 					auto* body = sceneGraph->AddNode<TransformNode3D>("Body #" + std::to_string(i));
 					body->SetPosition({ currentX, currentY, 0.0f });

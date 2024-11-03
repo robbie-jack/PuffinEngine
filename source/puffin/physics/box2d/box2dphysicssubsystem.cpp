@@ -376,20 +376,24 @@ namespace puffin::physics
 		b2BodyDef bodyDef = b2DefaultBodyDef();
 		bodyDef.type = gPuffinToBox2DBodyType.at(rb.bodyType);
 
-		if (registry->any_of<TransformComponent2D>(entity))
+		if (registry->all_of<TransformComponent2D, VelocityComponent2D>(entity))
 		{
 			const auto& transform = registry->get<TransformComponent2D>(entity);
+			const auto& velocity = registry->get<VelocityComponent2D>(entity);
 
 			bodyDef.position = b2Vec2(transform.position);
 			bodyDef.rotation = b2MakeRot(maths::DegToRad(transform.rotation));
+			bodyDef.linearVelocity = b2Vec2(velocity.linear);
 		}
 
-		if (registry->any_of<TransformComponent3D>(entity))
+		if (registry->all_of<TransformComponent3D, VelocityComponent3D>(entity))
 		{
 			const auto& transform = registry->get<TransformComponent3D>(entity);
+			const auto& velocity = registry->get<VelocityComponent3D>(entity);
 
-			bodyDef.position = {transform.position.x, transform.position.y};
+			bodyDef.position = { transform.position.x, transform.position.y };
 			bodyDef.rotation = b2MakeRot(maths::DegToRad(transform.orientationEulerAngles.roll));
+			bodyDef.linearVelocity = { velocity.linear.x, velocity.linear.y };
 		}
 
 		mBodyIDs.emplace(id, b2CreateBody(mPhysicsWorldID, &bodyDef));

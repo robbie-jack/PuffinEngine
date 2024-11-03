@@ -28,13 +28,7 @@ namespace puffin::rendering
         registry->on_update<CameraComponent3D>().connect<&CameraSubsystem::OnUpdateCamera>(this);
         registry->on_destroy<CameraComponent3D>().connect<&CameraSubsystem::OnDestroyCamera>(this);
 
-        auto editorCameraFovSignal = signalSubsystem->GetOrCreateSignal<float>("editor_camera_fov");
-        editorCameraFovSignal->Connect(std::function([&](const float& editorCamFov)
-        {
-        	auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-        	
-            OnUpdateEditorCameraFov(settingsManager->Get<float>("editor", "camera_fov").value_or(60.0));
-        }));
+		InitSettingsAndSignals();
 
         InitEditorCamera();
 	}
@@ -119,6 +113,58 @@ namespace puffin::rendering
         camera.fovY = editorCameraFov;
     }
 
+    void CameraSubsystem::InitSettingsAndSignals()
+    {
+		const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+		
+		auto editorCameraFovSignal = signalSubsystem->GetOrCreateSignal("editor_camera_fov");
+		editorCameraFovSignal->Connect(std::function([&]()
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+        	
+			OnUpdateEditorCameraFov(settingsManager->Get<float>("editor", "camera_fov").value_or(60.0));
+		}));
+
+		mEditorCamSpeed = settingsManager->Get<float>("editor", "camera_speed").value_or(25.0);
+
+		auto editorCameraSpeedSignal = signalSubsystem->GetOrCreateSignal("editor_camera_speed");
+		editorCameraSpeedSignal->Connect(std::function([&]()
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+			mEditorCamSpeed = settingsManager->Get<float>("editor", "camera_speed").value_or(25.0);
+		}));
+		
+		mEditorCamStartPosition.x = settingsManager->Get<float>("editor", "camera_start_position_x").value_or(0.0);
+		mEditorCamStartPosition.y = settingsManager->Get<float>("editor", "camera_start_position_y").value_or(0.0);
+		mEditorCamStartPosition.z = settingsManager->Get<float>("editor", "camera_start_position_z").value_or(25.0);
+
+		auto editorCamStartPositionXSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_x");
+		editorCamStartPositionXSignal->Connect(std::function([&]()
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+			mEditorCamStartPosition.x = settingsManager->Get<float>("editor", "camera_start_position_x").value_or(0.0);
+		}));
+
+		auto editorCamStartPositionYSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_y");
+		editorCamStartPositionYSignal->Connect(std::function([&]()
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+			mEditorCamStartPosition.y = settingsManager->Get<float>("editor", "camera_start_position_y").value_or(0.0);
+		}));
+
+		auto editorCamStartPositionZSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_z");
+		editorCamStartPositionYSignal->Connect(std::function([&]()
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+			mEditorCamStartPosition.z = settingsManager->Get<float>("editor", "camera_start_position_z").value_or(25.0);
+		}));
+    }
+
 	void CameraSubsystem::InitEditorCamera()
 	{
 		// Create editor cam
@@ -133,7 +179,7 @@ namespace puffin::rendering
 		auto entity = enttSubsystem->AddEntity(mEditorCamID, false);
 
 		auto& transform = registry->emplace<TransformComponent3D>(entity);
-		transform.position = { 0.0f, 0.0f, 10.0f };
+		transform.position = mEditorCamStartPosition;
 
 		auto& camera = registry->emplace<CameraComponent3D>(entity);
 

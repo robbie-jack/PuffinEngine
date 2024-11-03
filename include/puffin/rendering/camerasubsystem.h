@@ -5,6 +5,7 @@
 
 #include "puffin/core/subsystem.h"
 #include "puffin/types/uuid.h"
+#include "puffin/types/vector3.h"
 
 namespace puffin
 {
@@ -40,20 +41,24 @@ namespace puffin::rendering
 
 	private:
 
-        UUID mActiveCameraID = gInvalidID;
-        UUID mActivePlayCamID = gInvalidID;
-		std::unordered_map<UUID, bool> mCachedCamActiveState;
-		UUID mEditorCamID = gInvalidID;
-		float mEditorCamSpeed = 10.0f;
-
+		void InitSettingsAndSignals();
+		
 		void InitEditorCamera();
 
 		void UpdateActiveCamera();
-        void UpdateActivePlayCamera();
+		void UpdateActivePlayCamera();
 
 		void UpdateCameras(double deltaTime);
 		void UpdateEditorCamera(double deltaTime);
 		void UpdateCameraComponent(const TransformComponent3D& transform, CameraComponent3D& camera);
+		
+        UUID mActiveCameraID = gInvalidID;
+        UUID mActivePlayCamID = gInvalidID;
+		std::unordered_map<UUID, bool> mCachedCamActiveState;
+		UUID mEditorCamID = gInvalidID;
+		
+		float mEditorCamSpeed = 10.0f;
+		Vector3f mEditorCamStartPosition = Vector3f(0.0f);
 
 	};
 }
