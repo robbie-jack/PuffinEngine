@@ -21,7 +21,7 @@ namespace puffin
 			bool active = false;
 
 			float zNear = 0.01f;
-			float zFar = 200.0f;
+			float zFar = 10000.0f;
 			float aspect = 0.0f;
 			float fovY = 60.0f;
 			float prevFovY = 60.0f;

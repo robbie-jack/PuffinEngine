@@ -408,7 +408,7 @@ namespace puffin::core
 			//UpdateTransformOrientation(light->Transform(), { 0.0f, -90.0f, 0.0f });
 		}
 
-		const Vector2f wallHalfExtent = { 100.0f, 100.f };
+		const Vector2f wallHalfExtent = { 200.0f, 200.f };
 		
 		// Floor Node
 		{
@@ -476,9 +476,9 @@ namespace puffin::core
 
 		// Box Nodes
 		{
-			constexpr int numBodies = 200;
+			constexpr int numBodies = 5000;
 
-			const Vector2f bodyHalfExtent = { 90.0f, 90.f };
+			const Vector2f bodyHalfExtent = { wallHalfExtent.x - 5.f, wallHalfExtent.y - 5.f };
 			double velocityMax = 50.0;
 			
 			std::random_device rd;
@@ -494,6 +494,7 @@ namespace puffin::core
 
 				auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
 				rb.bodyType = physics::BodyType::Dynamic;
+				rb.friction = 0.0f;
 
 				auto& velocity = body->AddComponent<physics::VelocityComponent3D>();
 				velocity.linear.x = velDist(mt);

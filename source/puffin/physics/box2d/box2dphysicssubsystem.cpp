@@ -419,6 +419,7 @@ namespace puffin::physics
 			b2ShapeDef shapeDef = b2DefaultShapeDef();
 			shapeDef.density = rb.density;
 			shapeDef.restitution = rb.elasticity;
+			shapeDef.friction = rb.friction;
 
 			mShapeIDs.emplace(id, b2CreatePolygonShape(mBodyIDs.at(id), &shapeDef, &polygon));
 			mShapeTypes.emplace(id, ShapeType2D::Box);

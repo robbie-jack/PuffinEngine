@@ -174,6 +174,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/physics/bodytype.h
 	${HEADER_DIR}/puffin/physics/collisionevent.h
 	${HEADER_DIR}/puffin/physics/physicsconstants.h
+	${HEADER_DIR}/puffin/physics/shapetype2d.h
 	# Physics - Box2D
 	${HEADER_DIR}/puffin/physics/box2d/box2dphysicssubsystem.h
 	# Physics - Jolt

@@ -20,6 +20,7 @@ namespace puffin
 			float mass = 0.0f;
 			float density = 1.0f;
 			float elasticity = 1.0f;
+			float friction = 0.5f;
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent2D, mass, elasticity, bodyType)
 		};
