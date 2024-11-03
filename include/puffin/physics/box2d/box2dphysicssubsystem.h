@@ -2,6 +2,8 @@
 
 #if PFN_BOX2D_PHYSICS
 
+#include "TaskScheduler.h"
+
 #include "puffin/core/engine.h"
 #include "puffin/core/subsystem.h"
 #include "puffin/ecs/enttsubsystem.h"
@@ -37,12 +39,30 @@ namespace puffin::physics
 		{ BodyType::Dynamic, b2_dynamicBody }
 	};
 
-	class Box2DPhysicsSystem : public core::Subsystem
+	class Box2DTask : public enki::ITaskSet
 	{
 	public:
 
-		explicit Box2DPhysicsSystem(const std::shared_ptr<core::Engine>& engine);
-		~Box2DPhysicsSystem() override = default;
+		Box2DTask() = default;
+
+		void ExecuteRange(enki::TaskSetPartition range, uint32_t threadIndex) override
+		{
+			mTask(range.start, range.end, threadIndex, mTaskContext);
+		}
+
+		b2TaskCallback* mTask = nullptr;
+		void* mTaskContext = nullptr;
+	};
+
+	constexpr int32_t gMaxTasks = 64;
+	constexpr int32_t gMaxThreads = 64;
+
+	class Box2DPhysicsSubsystem : public core::Subsystem
+	{
+	public:
+
+		explicit Box2DPhysicsSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~Box2DPhysicsSubsystem() override = default;
 
 		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
@@ -54,6 +74,10 @@ namespace puffin::physics
 
 		void FixedUpdate(double fixedTimeStep) override;
 		bool ShouldFixedUpdate() override;
+
+		int32_t& TaskCount() { return mTaskCount; }
+		std::array<Box2DTask, gMaxTasks>& Tasks() { return mTasks; }
+		enki::TaskScheduler& TaskScheduler();
 
 		void OnConstructBox(entt::registry& registry, entt::entity entity);
 		void OnUpdateBox(entt::registry& registry, entt::entity entity);
@@ -129,6 +153,9 @@ namespace puffin::physics
 
 		b2WorldId mPhysicsWorldID = b2_nullWorldId;
 		//std::unique_ptr<Box2DContactListener> m_contact_listener = nullptr;
+
+		std::array<Box2DTask, gMaxTasks> mTasks;
+		int32_t mTaskCount = 0;
 
 		std::unordered_map<UUID, UserData> mUserData;
 		std::unordered_map<UUID, BodyData> mBodyData; // Vector of body ids used in physics simulation

@@ -1,6 +1,7 @@
 #include "puffin/core/enkitssubsystem.h"
 
 #include "puffin/core/engine.h"
+#include "puffin/core/settingsmanager.h"
 
 namespace puffin::core
 {
@@ -11,12 +12,12 @@ namespace puffin::core
 
 	void EnkiTSSubsystem::Initialize(SubsystemManager* subsystemManager)
 	{
+		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<SettingsManager>();
+
+		mThreadCount = settingsManager->Get<uint32_t>("general", "thread_count").value_or(4);
+		
 		mTaskScheduler = std::make_shared<enki::TaskScheduler>();
-
-		// Set max threads to physical - 2 (so there is some left over for other system work)
-		const uint32_t maxThreads = std::thread::hardware_concurrency() - 2;
-
-		mTaskScheduler->Initialize(maxThreads);
+		mTaskScheduler->Initialize(mThreadCount);
 	}
 
 	void EnkiTSSubsystem::Deinitialize()
@@ -28,5 +29,10 @@ namespace puffin::core
 	std::shared_ptr<enki::TaskScheduler> EnkiTSSubsystem::GetTaskScheduler()
 	{
 		return mTaskScheduler;
+	}
+
+	uint32_t EnkiTSSubsystem::GetThreadCount() const
+	{
+		return mThreadCount;
 	}
 }

@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	engine->RegisterSubsystem<puffin::rendering::RenderSubsystemVK>();
 
 #ifdef PFN_BOX2D_PHYSICS
-	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSystem>();
+	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSubsystem>();
 #endif
 
 #ifdef PFN_JOLT_PHYSICS
