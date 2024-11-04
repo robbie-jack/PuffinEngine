@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 namespace puffin::core
 {
@@ -13,7 +14,7 @@ namespace puffin::core
 	class Application
 	{
 	public:
-		explicit Application(std::shared_ptr<Engine> engine);
+		explicit Application(std::string name, std::shared_ptr<Engine> engine);
 		virtual ~Application();
 
 		/*
@@ -71,8 +72,11 @@ namespace puffin::core
 		 */
 		virtual bool ShouldEngineUpdate();
 
+		[[nodiscard]] const std::string& GetName() const;
+
 	protected:
 
+		std::string mName;
 		std::shared_ptr<Engine> mEngine = nullptr;
 
 	};

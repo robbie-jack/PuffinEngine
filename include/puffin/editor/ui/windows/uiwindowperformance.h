@@ -66,7 +66,7 @@ namespace puffin
 			std::unordered_map<std::string, int> mBenchmarkIdx;
 			std::unordered_map<std::string, std::vector<double>> mBenchmarkValues;
 
-			void DrawBenchmark(const std::string& name, double benchmarkTime);
+			void DrawBenchmark(const std::string& name);
 		};
 	}
 }

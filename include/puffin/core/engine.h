@@ -78,11 +78,11 @@ namespace puffin::core
 		}
 
 		template<typename AppT>
-		void RegisterApp()
+		void RegisterApp(const std::string& name)
 		{
 			assert(mApplication == nullptr && "Registering multiple applications");
 
-			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>(shared_from_this()));
+			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>(name, shared_from_this()));
 		}
 
 		template<typename T>

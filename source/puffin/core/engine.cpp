@@ -18,6 +18,7 @@
 #include "puffin/utility/performancebenchmarksubsystem.h"
 #include "puffin/core/timer.h"
 #include "puffin/rendering/camerasubsystem.h"
+#include "puffin/utility/benchmark.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -69,6 +70,7 @@ namespace puffin::core
 	void Engine::Setup()
 	{
 		mSubsystemManager = std::make_unique<SubsystemManager>(shared_from_this());
+		utility::BenchmarkManager::Get();
 
 		RegisterComponentTypes();
 		RegisterNodeTypes();
@@ -154,14 +156,19 @@ namespace puffin::core
 	bool Engine::Update()
 	{
 		// Run Game Loop;
+		utility::BenchmarkManager* benchmarkManager = utility::BenchmarkManager::Get();
 
 		// Process input
 		{
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 			benchmarkSubsystem->StartBenchmark("Input");
 
+			benchmarkManager->Begin("Input");
+
 			auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
 			inputSubsystem->ProcessInput();
+
+			benchmarkManager->End("Input");
 
 			benchmarkSubsystem->EndBenchmark("Input");
 		}
@@ -171,10 +178,14 @@ namespace puffin::core
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 			benchmarkSubsystem->StartBenchmark("Sample Time");
 
+			benchmarkManager->Begin("WaitForLastPresentationAndSample");
+
 			auto renderSubsystem = mSubsystemManager->GetRenderSubsystem();
 
 			double sampledTime = renderSubsystem->WaitForLastPresentationAndSampleTime();
 			UpdateDeltaTime(sampledTime);
+
+			benchmarkManager->End("WaitForLastPresentationAndSample");
 
 			benchmarkSubsystem->EndBenchmark("Sample Time");
 		}
@@ -184,7 +195,11 @@ namespace puffin::core
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 			benchmarkSubsystem->StartBenchmark("Idle Time");
 
+			benchmarkManager->Begin("Idle");
+
 			Idle();
+
+			benchmarkManager->End("Idle");
 
 			benchmarkSubsystem->EndBenchmark("Idle Time");
 		}
@@ -198,6 +213,8 @@ namespace puffin::core
 		{
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 			benchmarkSubsystem->StartBenchmark("Engine Update");
+			
+			auto* engineUpdateBenchmark = benchmarkManager->Begin("EngineUpdate");
 
 			for (auto subsystem : mSubsystemManager->GetSubsystems())
 			{
@@ -205,7 +222,11 @@ namespace puffin::core
 				{
 					benchmarkSubsystem->StartBenchmarkCategory(subsystem->GetName(), "Engine Update");
 
+					engineUpdateBenchmark->Begin(subsystem->GetName());
+
 					subsystem->Update(mDeltaTime);
+
+					engineUpdateBenchmark->End(subsystem->GetName());
 
 					benchmarkSubsystem->EndBenchmarkCategory(subsystem->GetName(), "Engine Update");
 				}
@@ -213,8 +234,14 @@ namespace puffin::core
 
 			if (mApplication && mApplication->ShouldEngineUpdate())
 			{
+				engineUpdateBenchmark->Begin(mApplication->GetName());
+				
 				mApplication->EngineUpdate(mDeltaTime);
+
+				engineUpdateBenchmark->End(mApplication->GetName());
 			}
+
+			benchmarkManager->End("EngineUpdate");
 
 			benchmarkSubsystem->EndBenchmark("Engine Update");
 		}
@@ -275,6 +302,8 @@ namespace puffin::core
 				auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 				benchmarkSubsystem->StartBenchmark("Fixed Update");
 
+				auto* fixedUpdateBenchmark = benchmarkManager->Begin("FixedUpdate");
+
 				// Add onto accumulated time
 				mAccumulatedTime += mDeltaTime;
 
@@ -284,7 +313,11 @@ namespace puffin::core
 
 					if (mApplication && mApplication->ShouldFixedUpdate())
 					{
+						fixedUpdateBenchmark->Begin(mApplication->GetName());
+						
 						mApplication->FixedUpdate(mTimeStepFixed);
+
+						fixedUpdateBenchmark->End(mApplication->GetName());
 					}
 
 					for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
@@ -293,12 +326,18 @@ namespace puffin::core
 						{
 							benchmarkSubsystem->StartBenchmarkCategory(subsystem->GetName(), "Fixed Update");
 
+							fixedUpdateBenchmark->Begin(subsystem->GetName());
+
 							subsystem->FixedUpdate(mTimeStepFixed);
+
+							fixedUpdateBenchmark->End(subsystem->GetName());
 
 							benchmarkSubsystem->EndBenchmarkCategory(subsystem->GetName(), "Fixed Update");
 						}
 					}
 				}
+
+				benchmarkManager->End("FixedUpdate");
 
 				benchmarkSubsystem->EndBenchmark("Fixed Update");
 			}
@@ -308,9 +347,15 @@ namespace puffin::core
 				auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 				benchmarkSubsystem->StartBenchmark("Update");
 
+				auto* updateBenchmark = benchmarkManager->Begin("Update");
+
 				if (mApplication && mApplication->ShouldUpdate())
 				{
+					updateBenchmark->Begin(mApplication->GetName());
+					
 					mApplication->Update(mDeltaTime);
+
+					updateBenchmark->End(mApplication->GetName());
 				}
 
 				for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
@@ -319,11 +364,17 @@ namespace puffin::core
 					{
 						benchmarkSubsystem->StartBenchmarkCategory(subsystem->GetName(), "Update");
 
+						updateBenchmark->Begin(subsystem->GetName());
+
 						subsystem->Update(mDeltaTime);
+
+						updateBenchmark->End(subsystem->GetName());
 
 						benchmarkSubsystem->EndBenchmarkCategory(subsystem->GetName(), "Update");
 					}
 				}
+
+				benchmarkManager->End("Update");
 
 				benchmarkSubsystem->EndBenchmark("Update");
 			}
@@ -334,9 +385,13 @@ namespace puffin::core
 			auto benchmarkSubsystem = GetSubsystem<utility::PerformanceBenchmarkSubsystem>();
 			benchmarkSubsystem->StartBenchmark("Render");
 
+			benchmarkManager->Begin("Render");
+
 			auto renderSubsystem = mSubsystemManager->GetRenderSubsystem();
 
 			renderSubsystem->Render(mDeltaTime);
+
+			benchmarkManager->End("Update");
 
 			benchmarkSubsystem->EndBenchmark("Render");
 		}
@@ -410,6 +465,7 @@ namespace puffin::core
 		// Clear Asset Registry
 		assets::AssetRegistry::Clear();
 
+		utility::BenchmarkManager::Destroy();
 		mSubsystemManager = nullptr;
 	}
 

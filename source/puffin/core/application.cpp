@@ -1,6 +1,7 @@
 #include "puffin/core/application.h"
 
-puffin::core::Application::Application(std::shared_ptr<Engine> engine): mEngine(std::move(engine))
+puffin::core::Application::Application(std::string name, std::shared_ptr<Engine> engine)
+	: mName(std::move(name)), mEngine(std::move(engine))
 {
 }
 
@@ -54,4 +55,9 @@ void puffin::core::Application::EngineUpdate(double deltaTime)
 bool puffin::core::Application::ShouldEngineUpdate()
 {
 	return false;
+}
+
+const std::string& puffin::core::Application::GetName() const
+{
+	return mName;
 }
