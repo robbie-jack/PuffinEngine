@@ -126,4 +126,18 @@ namespace puffin::utility
 
         return &mBenchmarks[name];
     }
+
+    void BenchmarkManager::ToJson(nlohmann::json& json) const
+    {
+        std::vector<nlohmann::json> benchmarks;
+        for (const auto& [name, benchmark] : mBenchmarks)
+        {
+            nlohmann::json benchmarkJson;
+            benchmark.ToJson(benchmarkJson);
+
+            benchmarks.push_back(benchmarkJson);
+        }
+
+        json["benchmarks"] = benchmarks;
+    }
 }

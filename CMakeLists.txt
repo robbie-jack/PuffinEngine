@@ -244,7 +244,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/types/storage/mappedvector.h
 	${HEADER_DIR}/puffin/types/storage/ringbuffer.h
 	# Utility
-	${HEADER_DIR}/puffin/utility/performancebenchmarksubsystem.h
+	${HEADER_DIR}/puffin/utility/benchmark.h
 	${HEADER_DIR}/puffin/utility/reflection.h
 	${HEADER_DIR}/puffin/utility/serialization.h
 	# Window
@@ -351,7 +351,7 @@ set(SOURCES
 	# Types - Storage
 	# UI
 	# Utility
-	${SOURCE_DIR}/puffin/utility/performancebenchmarksubsystem.cpp
+	${SOURCE_DIR}/puffin/utility/benchmark.cpp
 	${SOURCE_DIR}/puffin/utility/serialization.cpp
 	# Window
 	${SOURCE_DIR}/puffin/window/windowsubsystem.cpp

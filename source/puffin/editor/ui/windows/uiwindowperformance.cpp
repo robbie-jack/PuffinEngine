@@ -151,39 +151,39 @@ namespace puffin
 					ImGui::Text("Frametime Breakdown");
 					ImGui::NewLine();
 
-					DrawBenchmark("Input");
-					DrawBenchmark("WaitForLastPresentationAndSample");
-					DrawBenchmark("Idle");
-					DrawBenchmark("EngineUpdate");
-					DrawBenchmark("FixedUpdate");
-					DrawBenchmark("Update");
-					DrawBenchmark("Render");
+					auto* benchmarkManager = utility::BenchmarkManager::Get();
+
+					DrawBenchmark(benchmarkManager->Get("Input"));
+					DrawBenchmark(benchmarkManager->Get("WaitForLastPresentationAndSample"));
+					DrawBenchmark(benchmarkManager->Get("Idle"));
+					DrawBenchmark(benchmarkManager->Get("EngineUpdate"));
+					DrawBenchmark(benchmarkManager->Get("FixedUpdate"));
+					DrawBenchmark(benchmarkManager->Get("Update"));
+					DrawBenchmark(benchmarkManager->Get("Render"));
 				}
 
 				End();
 			}
 		}
 
-		void UIWindowPerformance::DrawBenchmark(const std::string& name)
+		void UIWindowPerformance::DrawBenchmark(const utility::Benchmark* benchmark)
 		{
-			auto* benchmarkManager = utility::BenchmarkManager::Get();
-			auto* benchmark = benchmarkManager->Get(name);
-
 			if (benchmark)
 			{
+				const std::string& benchmarkName = benchmark->GetData().name;
 				double benchmarkTimeElapsed = benchmark->GetData().timeElapsed;
 			
-				if (mBenchmarkIdx.find(name) == mBenchmarkIdx.end())
+				if (mBenchmarkIdx.find(benchmarkName) == mBenchmarkIdx.end())
 				{
-					mBenchmarkIdx.emplace(name, 0);
+					mBenchmarkIdx.emplace(benchmarkName, 0);
 
-					mBenchmarkValues.emplace(name, std::vector<double>());
-					mBenchmarkValues.at(name).reserve(s_max_benchmark_values);
+					mBenchmarkValues.emplace(benchmarkName, std::vector<double>());
+					mBenchmarkValues.at(benchmarkName).reserve(s_max_benchmark_values);
 				}
 
-				const int benchmarkIdx = mBenchmarkIdx.at(name) % s_max_benchmark_values;
+				const int benchmarkIdx = mBenchmarkIdx.at(benchmarkName) % s_max_benchmark_values;
 
-				auto& benchmarkVector = mBenchmarkValues.at(name);
+				auto& benchmarkVector = mBenchmarkValues.at(benchmarkName);
 				if(benchmarkVector.size() < s_max_benchmark_values)
 				{
 					benchmarkVector.push_back(benchmarkTimeElapsed);
@@ -200,19 +200,33 @@ namespace puffin
 				}
 				benchmarkAverage /= benchmarkVector.size();
 
-				if (ImGui::CollapsingHeader(name.c_str()))
+				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanAvailWidth;
+
+				bool hasChildBenchmarks = false;
+				if (!benchmark->GetBenchmarks().empty())
+				{
+					hasChildBenchmarks = true;
+				}
+
+				if (!hasChildBenchmarks)
+				{
+					treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+				}
+
+				bool benchmarkOpen = ImGui::TreeNodeEx(benchmarkName.c_str(), treeFlags, "%s - %.3f ms",
+					benchmarkName.c_str(), benchmarkAverage * 1000.0);
+
+				if (benchmarkOpen && hasChildBenchmarks)
 				{
 					for (const auto& [benchmarkName, benchmarkChild] : benchmark->GetBenchmarks())
 					{
-						DrawBenchmark(benchmarkName);
+						DrawBenchmark(&benchmarkChild);
 					}
-				}
-			
-				//ImGui::Dummy(ImVec2(0.0f, 10.0f));
-				//ImGui::SameLine(ImGui::GetItemRectSize().x + 10.0);
-				ImGui::Text("%.3f ms", benchmarkAverage * 1000.0);
 
-				mBenchmarkIdx[name] = mBenchmarkIdx[name] + 1 % s_max_benchmark_values;
+					ImGui::TreePop();
+				}
+
+				mBenchmarkIdx[benchmarkName] = mBenchmarkIdx[benchmarkName] + 1 % s_max_benchmark_values;
 			}
 		}
 	}

@@ -59,6 +59,8 @@ namespace puffin::utility
         Benchmark* End(const std::string& name);
         Benchmark* Get(const std::string& name);
 
+        void ToJson(nlohmann::json& json) const;
+
     private:
 
         explicit BenchmarkManager() = default;

@@ -44,7 +44,6 @@
 #include "puffin/rendering/camerasubsystem.h"
 #include "puffin/scene/scenegraphgameplaysubsystem.h"
 #include "puffin/scene/sceneserializationsubsystem.h"
-#include "puffin/utility/performancebenchmarksubsystem.h"
 #include "puffin/window/windowsubsystem.h"
 
 namespace puffin::core
@@ -76,7 +75,6 @@ namespace puffin::core
 		engine->RegisterSubsystem<window::WindowSubsystem>();
 		engine->RegisterSubsystem<core::SignalSubsystem>();
 		engine->RegisterSubsystem<input::InputSubsystem>();
-		engine->RegisterSubsystem<utility::PerformanceBenchmarkSubsystem>();
 		engine->RegisterSubsystem<SettingsManager>();
 		engine->RegisterSubsystem<EnkiTSSubsystem>();
 		engine->RegisterSubsystem<audio::AudioSubsystem>();

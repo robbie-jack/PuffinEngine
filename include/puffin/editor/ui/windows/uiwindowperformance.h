@@ -7,6 +7,11 @@
 
 #include "uiwindow.h"
 
+namespace puffin::utility
+{
+	class Benchmark;
+}
+
 namespace puffin
 {
 	namespace ui
@@ -66,7 +71,7 @@ namespace puffin
 			std::unordered_map<std::string, int> mBenchmarkIdx;
 			std::unordered_map<std::string, std::vector<double>> mBenchmarkValues;
 
-			void DrawBenchmark(const std::string& name);
+			void DrawBenchmark(const utility::Benchmark* benchmark);
 		};
 	}
 }
