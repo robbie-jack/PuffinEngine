@@ -61,5 +61,29 @@ namespace puffin
 			archive.Get("density", data.density);
 			archive.Get("elasticity", data.elasticity);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<physics::RigidbodyComponent2D>(const physics::RigidbodyComponent2D& data)
+		{
+			nlohmann::json json;
+			json["bodyType"] = physics::gBodyTypeToString.at(data.bodyType);
+			json["mass"] = data.mass;
+			json["density"] = data.density;
+			json["elasticity"] = data.elasticity;
+			json["friction"] = data.friction;
+			return json;
+		}
+
+		template<>
+		inline physics::RigidbodyComponent2D Deserialize<physics::RigidbodyComponent2D>(const nlohmann::json& json)
+		{
+			physics::RigidbodyComponent2D data;
+			data.bodyType = physics::gStringToBodyType.at(json["bodyType"]);
+			data.mass = json["centreOfMass"];
+			data.density = json["density"];
+			data.elasticity = json["elasticity"];
+			data.friction = json["friction"];
+			return data;
+		}
 	}
 }

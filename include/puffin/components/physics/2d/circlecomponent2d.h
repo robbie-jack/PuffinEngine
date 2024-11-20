@@ -48,5 +48,23 @@ namespace puffin
 			archive.Get("centreOfMass", data.centreOfMass);
 			archive.Get("radius", data.radius);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<physics::CircleComponent2D>(const physics::CircleComponent2D& data)
+		{
+			nlohmann::json json;
+			json["centreOfMass"] = Serialize(data.centreOfMass);
+			json["radius"] = data.radius;
+			return json;
+		}
+
+		template<>
+		inline physics::CircleComponent2D Deserialize<physics::CircleComponent2D>(const nlohmann::json& json)
+		{
+			physics::CircleComponent2D data;
+			data.centreOfMass = Deserialize<Vector2f>(json["centreOfMass"]);
+			data.radius = json["radius"];
+			return data;
+		}
 	}
 }

@@ -49,5 +49,23 @@ namespace puffin
 			archive.Get("centreOfMass", data.centreOfMass);
 			archive.Get("halfExtent", data.halfExtent);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<physics::BoxComponent3D>(const physics::BoxComponent3D& data)
+		{
+			nlohmann::json json;
+			json["centreOfMass"] = Serialize(data.centreOfMass);
+			json["halfExtent"] = Serialize(data.halfExtent);
+			return json;
+		}
+
+		template<>
+		inline physics::BoxComponent3D Deserialize<physics::BoxComponent3D>(const nlohmann::json& json)
+		{
+			physics::BoxComponent3D data;
+			data.centreOfMass = Deserialize<Vector3f>(json["centreOfMass"]);
+			data.halfExtent = Deserialize<Vector3f>(json["halfExtent"]);
+			return data;
+		}
 	}
 }

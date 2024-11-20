@@ -289,6 +289,26 @@ namespace puffin
 			archive.Get("y", type.y);
 			archive.Get("z", type.z);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<Vector3f>(const Vector3f& data)
+		{
+			nlohmann::json json;
+			json["x"] = data.x;
+			json["y"] = data.y;
+			json["z"] = data.z;
+			return json;
+		}
+
+		template<>
+		inline Vector3f Deserialize<Vector3f>(const nlohmann::json& json)
+		{
+			Vector3f data;
+			data.x = json["x"];
+			data.y = json["y"];
+			data.z = json["z"];
+			return data;
+		}
 	}
 
 	using Vector3d = Vector3<double>;
@@ -319,6 +339,26 @@ namespace puffin
 			archive.Get("x", type.x);
 			archive.Get("y", type.y);
 			archive.Get("z", type.z);
+		}
+
+		template<>
+		inline nlohmann::json Serialize<Vector3d>(const Vector3d& data)
+		{
+			nlohmann::json json;
+			json["x"] = data.x;
+			json["y"] = data.y;
+			json["z"] = data.z;
+			return json;
+		}
+
+		template<>
+		inline Vector3d Deserialize<Vector3d>(const nlohmann::json& json)
+		{
+			Vector3d data;
+			data.x = json["x"];
+			data.y = json["y"];
+			data.z = json["z"];
+			return data;
 		}
 	}
 
@@ -351,6 +391,26 @@ namespace puffin
 			archive.Get("y", type.y);
 			archive.Get("z", type.z);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<Vector3i>(const Vector3i& data)
+		{
+			nlohmann::json json;
+			json["x"] = data.x;
+			json["y"] = data.y;
+			json["z"] = data.z;
+			return json;
+		}
+
+		template<>
+		inline Vector3i Deserialize<Vector3i>(const nlohmann::json& json)
+		{
+			Vector3i data;
+			data.x = json["x"];
+			data.y = json["y"];
+			data.z = json["z"];
+			return data;
+		}
 	}
 }
 
@@ -375,6 +435,17 @@ namespace std
 			return (hash<double>()(vec.x) ^
 				(hash<double>()(vec.y) << 1) ^
 				(hash<double>()(vec.z) << 1) >> 1);
+		}
+	};
+
+	template <>
+	struct hash<puffin::Vector3i>
+	{
+		size_t operator()(const puffin::Vector3i& vec) const noexcept
+		{
+			return (hash<int>()(vec.x) ^
+				(hash<int>()(vec.y) << 1) ^
+				(hash<int>()(vec.z) << 1) >> 1);
 		}
 	};
 }

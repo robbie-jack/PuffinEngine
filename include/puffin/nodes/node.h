@@ -76,6 +76,9 @@ namespace puffin
 		virtual void Serialize(serialization::Archive& archive) const;
 		virtual void Deserialize(const serialization::Archive& archive);
 
+		virtual void Serialize(nlohmann::json& json) const;
+		virtual void Deserialize(const nlohmann::json& json);
+
 		/*
 		 * Return type string associated with this node type
 		 * This should be be overriden by inheriting types

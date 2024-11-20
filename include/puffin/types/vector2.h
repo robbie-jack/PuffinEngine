@@ -305,6 +305,24 @@ namespace puffin
 			archive.Get("x", data.x);
 			archive.Get("y", data.y);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<Vector2f>(const Vector2f& data)
+		{
+			nlohmann::json json;
+			json["x"] = data.x;
+			json["y"] = data.y;
+			return json;
+		}
+
+		template<>
+		inline Vector2f Deserialize<Vector2f>(const nlohmann::json& json)
+		{
+			Vector2f data;
+			data.x = json["x"];
+			data.y = json["y"];
+			return data;
+		}
 	}
 
 	using Vector2d = Vector2<double>;
@@ -332,6 +350,24 @@ namespace puffin
 		{
 			archive.Get("x", data.x);
 			archive.Get("y", data.y);
+		}
+
+		template<>
+		inline nlohmann::json Serialize<Vector2d>(const Vector2d& data)
+		{
+			nlohmann::json json;
+			json["x"] = data.x;
+			json["y"] = data.y;
+			return json;
+		}
+
+		template<>
+		inline Vector2d Deserialize<Vector2d>(const nlohmann::json& json)
+		{
+			Vector2d data;
+			data.x = json["x"];
+			data.y = json["y"];
+			return data;
 		}
 	}
 
@@ -361,18 +397,53 @@ namespace puffin
 			archive.Get("x", data.x);
 			archive.Get("y", data.y);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<Vector2i>(const Vector2i& data)
+		{
+			nlohmann::json json;
+			json["x"] = data.x;
+			json["y"] = data.y;
+			return json;
+		}
+
+		template<>
+		inline Vector2i Deserialize<Vector2i>(const nlohmann::json& json)
+		{
+			Vector2i data;
+			data.x = json["x"];
+			data.y = json["y"];
+			return data;
+		}
 	}
 }
 
-namespace std
+template <>
+struct std::hash<puffin::Vector2f>
 {
-	template <>
-	struct hash<puffin::Vector2f>
+	size_t operator()(const puffin::Vector2f& vec) const noexcept
 	{
-		size_t operator()(const puffin::Vector2f& vec) const noexcept
-		{
-			return (hash<float>()(vec.x) ^
-				(hash<float>()(vec.y) << 1) >> 1);
-		}
-	};
-}
+		return (hash<float>()(vec.x) ^
+			(hash<float>()(vec.y) << 1) >> 1);
+	}
+};
+
+template <>
+struct std::hash<puffin::Vector2d>
+{
+	size_t operator()(const puffin::Vector2d& vec) const noexcept
+	{
+		return (hash<double>()(vec.x) ^
+			(hash<double>()(vec.y) << 1) >> 1);
+	}
+};
+
+template <>
+struct std::hash<puffin::Vector2i>
+{
+	size_t operator()(const puffin::Vector2i& vec) const noexcept
+	{
+		return (hash<int>()(vec.x) ^
+			(hash<int>()(vec.y) << 1) >> 1);
+	}
+};

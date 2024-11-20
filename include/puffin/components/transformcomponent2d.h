@@ -69,5 +69,25 @@ namespace puffin
 			archive.Get("rotation", data.rotation);
 			archive.Get("scale", data.scale);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<TransformComponent2D>(const TransformComponent2D& data)
+		{
+			nlohmann::json json;
+			json["position"] = Serialize(data.position);
+			json["rotation"] = data.rotation;
+			json["scale"] = Serialize(data.scale);
+			return json;
+		}
+
+		template<>
+		inline TransformComponent2D Deserialize<TransformComponent2D>(const nlohmann::json& json)
+		{
+			TransformComponent2D data;
+			data.position = Deserialize<Vector2f>(json["position"]);
+			data.rotation = json["rotation"];
+			data.scale = Deserialize<Vector2f>(json["scale"]);
+			return data;
+		}
 	}
 }

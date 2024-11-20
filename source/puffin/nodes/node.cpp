@@ -81,6 +81,27 @@ namespace puffin
 		
 	}
 
+	void Node::Serialize(nlohmann::json& json) const
+	{
+		json["type"] = GetTypeString();
+		json["name"] = mName;
+		json["id"] = mNodeID;
+		json["parentID"] = mParentID;
+		json["childIDs"] = mChildIDs;
+	}
+
+	void Node::Deserialize(const nlohmann::json& json)
+	{
+		mName = json["name"];
+		mNodeID = json["id"];
+		mParentID = json["parentID"];
+
+		for (const auto& child : json["childIDs"])
+		{
+			mChildIDs.push_back(child);
+		}
+	}
+
 	const std::string& Node::GetTypeString() const
 	{
 		return gNodeTypeString;

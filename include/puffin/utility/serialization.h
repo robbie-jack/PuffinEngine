@@ -19,6 +19,12 @@ namespace puffin::serialization
 	template<typename T>
 	void Deserialize(const Archive& archive, T& data) = delete;
 
+	template<typename T>
+	nlohmann::json Serialize(const T& data) = delete;
+
+	template<typename T>
+	T Deserialize(const nlohmann::json& json) = delete;
+
 	// PUFFIN_TODO - Add support for serializing arrays
 
 	/*

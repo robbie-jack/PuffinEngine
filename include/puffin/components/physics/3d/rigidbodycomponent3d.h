@@ -18,9 +18,11 @@ namespace puffin
 			BodyType bodyType = BodyType::Static;
 
 			float mass = 0.0f;
+			float density = 1.0f;
 			float elasticity = 1.0f;
+			float friction = 0.5f;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent3D, mass, elasticity, bodyType)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(RigidbodyComponent3D, bodyType, mass, density, elasticity, friction)
 		};
 	}
 
@@ -55,6 +57,30 @@ namespace puffin
 
 			archive.Get("mass", data.mass);
 			archive.Get("elasticity", data.elasticity);
+		}
+
+		template<>
+		inline nlohmann::json Serialize<physics::RigidbodyComponent3D>(const physics::RigidbodyComponent3D& data)
+		{
+			nlohmann::json json;
+			json["bodyType"] = physics::gBodyTypeToString.at(data.bodyType);
+			json["mass"] = data.mass;
+			json["density"] = data.density;
+			json["elasticity"] = data.density;
+			json["friction"] = data.density;
+			return json;
+		}
+
+		template<>
+		inline physics::RigidbodyComponent3D Deserialize<physics::RigidbodyComponent3D>(const nlohmann::json& json)
+		{
+			physics::RigidbodyComponent3D data;
+			data.bodyType = physics::gStringToBodyType.at(json["bodyType"]);
+			data.mass = json["centreOfMass"];
+			data.density = json["density"];
+			data.elasticity = json["elasticity"];
+			data.friction = json["friction"];
+			return data;
 		}
 	}
 }

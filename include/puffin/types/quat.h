@@ -149,5 +149,27 @@ namespace puffin
 			archive.Get("z", data.z);
 			archive.Get("w", data.w);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<maths::Quat>(const maths::Quat& data)
+		{
+			nlohmann::json json;
+			json["x"] = data.x;
+			json["y"] = data.y;
+			json["z"] = data.z;
+			json["w"] = data.w;
+			return json;
+		}
+
+		template<>
+		inline maths::Quat Deserialize<maths::Quat>(const nlohmann::json& json)
+		{
+			maths::Quat data;
+			data.x = json["x"];
+			data.y = json["y"];
+			data.z = json["z"];
+			data.w = json["w"];
+			return data;
+		}
 	}
 }

@@ -11,6 +11,20 @@ namespace puffin::physics
 		Dynamic = 2
 	};
 
+	inline const std::unordered_map<std::string, BodyType> gStringToBodyType =
+	{
+		{ "Static", BodyType::Static },
+		{ "Kinematic", BodyType::Kinematic },
+		{ "Dynamic", BodyType::Dynamic }
+	};
+
+	inline const std::unordered_map<BodyType, std::string> gBodyTypeToString =
+	{
+		{ BodyType::Static, "Static" },
+		{ BodyType::Kinematic, "Kinematic" },
+		{ BodyType::Dynamic, "Dynamic" }
+	};
+
 	NLOHMANN_JSON_SERIALIZE_ENUM(BodyType,
 	{
 		{BodyType::Static, "Static"},

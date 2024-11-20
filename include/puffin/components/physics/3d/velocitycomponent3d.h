@@ -50,5 +50,23 @@ namespace puffin
 			archive.Get("linear", data.linear);
 			archive.Get("angular", data.angular);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<physics::VelocityComponent3D>(const physics::VelocityComponent3D& data)
+		{
+			nlohmann::json json;
+			json["linear"] = Serialize(data.linear);
+			json["angular"] = Serialize(data.angular);
+			return json;
+		}
+
+		template<>
+		inline physics::VelocityComponent3D Deserialize<physics::VelocityComponent3D>(const nlohmann::json& json)
+		{
+			physics::VelocityComponent3D data;
+			data.linear = Deserialize<Vector3f>(json["linear"]);
+			data.angular = Deserialize<Vector3f>(json["angular"]);
+			return data;
+		}
 	}
 }

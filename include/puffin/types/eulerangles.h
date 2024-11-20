@@ -108,5 +108,25 @@ namespace puffin
 			archive.Get("yaw", data.yaw);
 			archive.Get("roll", data.roll);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<maths::EulerAngles>(const maths::EulerAngles& data)
+		{
+			nlohmann::json json;
+			json["pitch"] = data.pitch;
+			json["yaw"] = data.yaw;
+			json["roll"] = data.roll;
+			return json;
+		}
+
+		template<>
+		inline maths::EulerAngles Deserialize<maths::EulerAngles>(const nlohmann::json& json)
+		{
+			maths::EulerAngles data;
+			data.pitch = json["pitch"];
+			data.yaw = json["yaw"];
+			data.roll = json["roll"];
+			return data;
+		}
 	}
 }

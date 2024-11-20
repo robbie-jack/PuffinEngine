@@ -83,6 +83,28 @@ namespace puffin
 			archive.Get("orientationEulerAngles", data.orientationEulerAngles);
 			archive.Get("scale", data.scale);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<TransformComponent3D>(const TransformComponent3D& data)
+		{
+			nlohmann::json json;
+			json["position"] = Serialize(data.position);
+			json["orientationQuat"] = Serialize(data.orientationQuat);
+			json["orientationEulerAngles"] = Serialize(data.orientationEulerAngles);
+			json["scale"] = Serialize(data.scale);
+			return json;
+		}
+
+		template<>
+		inline TransformComponent3D Deserialize<TransformComponent3D>(const nlohmann::json& json)
+		{
+			TransformComponent3D data;
+			data.position = json["position"];
+			data.orientationQuat = json["orientationQuat"];
+			data.orientationEulerAngles = json["orientationEulerAngles"];
+			data.scale = json["scale"];
+			return data;
+		}
 	}
 
 	// Update transform orientation with a new euler angles and recalculates quaternion
