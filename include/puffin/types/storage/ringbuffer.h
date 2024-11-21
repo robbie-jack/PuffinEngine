@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <mutex>
 
 namespace puffin
 {
@@ -12,26 +13,30 @@ namespace puffin
 	{
 	public:
 
-		RingBuffer()
+		RingBuffer(uint64_t defaultSize = 32)
 		{
-			mMaxPending = 16;
-			mQueue.resize(mMaxPending);
+			mSize = defaultSize;
+			mQueue.resize(mSize);
 
 			mHead = 0;
 			mTail = mHead;
 		}
 
 		// Push new event onto back of queue
-		void Push(T event)
+		void Push(const T& event)
 		{
-			if ((mTail + 1) % mMaxPending == mHead)
+			mLock.lock();
+			
+			if ((mTail + 1) % mSize == mHead)
 			{
 				Resize();
 			}
 
 			// Add event to end of list
 			mQueue[mTail] = event;
-			mTail = (mTail + 1) % mMaxPending;
+			mTail = (mTail + 1) % mSize;
+
+			mLock.unlock();
 		}
 
 		// Pop event off front of queue
@@ -40,9 +45,13 @@ namespace puffin
 			// Return false if there are no events in queue
 			if (mHead == mTail) return false;
 
+			mLock.lock();
+			
 			event = mQueue[mHead];
 
-			mHead = (mHead + 1) % mMaxPending;
+			mHead = (mHead + 1) % mSize;
+
+			mLock.unlock();
 
 			return true;
 		}
@@ -50,8 +59,12 @@ namespace puffin
 		// Flushes all stored objects
 		void Flush()
 		{
+			mLock.lock();
+			
 			mHead = 0;
 			mTail = mHead;
+			
+			mLock.unlock();
 		}
 
 		// Check if buffer is empty
@@ -62,9 +75,10 @@ namespace puffin
 
 	private:
 
-		int mMaxPending;
-		int mHead;
-		int mTail;
+		uint64_t mSize;
+		uint64_t mHead;
+		uint64_t mTail;
+		std::mutex mLock;
 
 		std::vector<T> mQueue;
 
@@ -75,8 +89,8 @@ namespace puffin
 			std::vector<T> oldQueue = mQueue;
 
 			// Double size of queue
-			mMaxPending *= 2;
-			mQueue.resize(mMaxPending);
+			mSize *= 2;
+			mQueue.resize(mSize);
 
 			// Iterate over each event in old queue
 			for (int i = 0; i < oldQueue.size(); i++)
