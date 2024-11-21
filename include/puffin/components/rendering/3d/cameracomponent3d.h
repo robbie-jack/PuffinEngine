@@ -78,5 +78,35 @@ namespace puffin
 			archive.Get("fovY", data.fovY);
 			archive.Get("up", data.up);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<rendering::CameraComponent3D>(const rendering::CameraComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["active"] = data.active;
+			json["zNear"] = data.zNear;
+			json["zFar"] = data.zFar;
+			json["aspect"] = data.aspect;
+			json["fovY"] = data.fovY;
+			json["up"] = Serialize(data.up);
+			
+			return json;
+		}
+
+		template<>
+		inline rendering::CameraComponent3D Deserialize<rendering::CameraComponent3D>(const nlohmann::json& json)
+		{
+			rendering::CameraComponent3D data;
+
+			data.active = json["active"];
+			data.zNear = json["zNear"];
+			data.zFar = json["zFar"];
+			data.aspect = json["aspect"];
+			data.fovY = json["fovY"];
+			data.up = Deserialize<Vector3f>(json["up"]);
+			
+			return data;
+		}
 	}
 }

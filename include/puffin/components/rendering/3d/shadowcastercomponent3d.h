@@ -85,5 +85,35 @@ namespace puffin
 			archive.Get("boundsMult", data.boundsMult);
 			archive.Get("cascadeCount", data.cascadeCount);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<rendering::ShadowCasterComponent3D>(const rendering::ShadowCasterComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["width"] = data.width;
+			json["height"] = data.height;
+			json["biasMin"] = data.biasMin;
+			json["biasMax"] = data.biasMax;
+			json["boundsMult"] = data.boundsMult;
+			json["cascadeCount"] = data.cascadeCount;
+
+			return json;
+		}
+
+		template<>
+		inline rendering::ShadowCasterComponent3D Deserialize<rendering::ShadowCasterComponent3D>(const nlohmann::json& json)
+		{
+			rendering::ShadowCasterComponent3D data;
+
+			data.width = json["width"];
+			data.height = json["height"];
+			data.biasMin = json["biasMin"];
+			data.biasMax = json["biasMax"];
+			data.boundsMult = json["boundsMult"];
+			data.cascadeCount = json["cascadeCount"];
+			
+			return data;
+		}
 	}
 }

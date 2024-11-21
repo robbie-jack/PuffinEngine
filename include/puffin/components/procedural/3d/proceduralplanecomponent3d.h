@@ -48,5 +48,27 @@ namespace puffin
 			archive.Get("halfSize", data.halfSize);
 			archive.Get("quadCount", data.quadCount);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<procedural::ProceduralPlaneComponent3D>(const procedural::ProceduralPlaneComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["halfSize"] = Serialize(data.halfSize);
+			json["quadCount"] = Serialize(data.quadCount);
+
+			return json;
+		}
+
+		template<>
+		inline procedural::ProceduralPlaneComponent3D Deserialize<procedural::ProceduralPlaneComponent3D>(const nlohmann::json& json)
+		{
+			procedural::ProceduralPlaneComponent3D data;
+
+			data.halfSize = Deserialize<Vector2f>(json["halfSize"]);
+			data.quadCount = Deserialize<Vector2i>(json["quadCount"]);
+			
+			return data;
+		}
 	}
 }

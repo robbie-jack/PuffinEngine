@@ -51,5 +51,31 @@ namespace puffin
 			archive.Get("specularIntensity", data.specularIntensity);
 			archive.Get("specularExponent", data.specularExponent);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<rendering::DirectionalLightComponent3D>(const rendering::DirectionalLightComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["color"] = Serialize(data.color);
+			json["ambientIntensity"] = data.ambientIntensity;
+			json["specularIntensity"] = data.specularIntensity;
+			json["specularExponent"] = data.specularExponent;
+
+			return json;
+		}
+
+		template<>
+		inline rendering::DirectionalLightComponent3D Deserialize<rendering::DirectionalLightComponent3D>(const nlohmann::json& json)
+		{
+			rendering::DirectionalLightComponent3D data;
+
+			data.color = Deserialize<Vector3f>(json["color"]);
+			data.ambientIntensity = json["ambientIntensity"];
+			data.specularIntensity = json["specularIntensity"];
+			data.specularExponent = json["specularExponent"];
+			
+			return data;
+		}
 	}
 }

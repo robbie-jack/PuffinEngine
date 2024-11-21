@@ -23,6 +23,20 @@ namespace puffin::rendering
 
 	const std::vector<std::string> gLightTypeLabels = { "Point", "Spot", "Directional" };
 
+	inline const std::unordered_map<std::string, LightType> gStringToLightType =
+	{
+		{ "Point", LightType::Point },
+		{ "Spot", LightType::Spot },
+		{ "Directional", LightType::Directional },
+	};
+
+	inline const std::unordered_map<LightType, std::string> gLightTypeToString =
+	{
+		{ LightType::Point, "Point" },
+		{ LightType::Spot, "Spot" },
+		{ LightType::Directional, "Directional" }
+	};
+
 	NLOHMANN_JSON_SERIALIZE_ENUM(LightType, {
 	                             { LightType::Point, "Point"},
 	                             { LightType::Spot, "Spot"},

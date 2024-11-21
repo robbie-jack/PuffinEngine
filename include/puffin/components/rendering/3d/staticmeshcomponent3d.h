@@ -56,5 +56,29 @@ namespace puffin
 			archive.Get("materialID", data.materialID);
 			archive.Get("subMeshIdx", data.subMeshIdx);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<rendering::StaticMeshComponent3D>(const rendering::StaticMeshComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["meshID"] = data.meshID;
+			json["materialID"] = data.materialID;
+			json["subMeshIdx"] = data.subMeshIdx;
+
+			return json;
+		}
+
+		template<>
+		inline rendering::StaticMeshComponent3D Deserialize<rendering::StaticMeshComponent3D>(const nlohmann::json& json)
+		{
+			rendering::StaticMeshComponent3D data;
+
+			data.meshID = json["meshID"];
+			data.materialID = json["materialID"];
+			data.subMeshIdx = json["subMeshIdx"];
+			
+			return data;
+		}
 	}
 }

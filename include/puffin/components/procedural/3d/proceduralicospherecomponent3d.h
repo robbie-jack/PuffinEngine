@@ -81,5 +81,27 @@ namespace puffin
 			archive.Get("radius", data.radius);
 			archive.Get("subdivisions", data.subdivisions);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<procedural::ProceduralIcoSphereComponent3D>(const procedural::ProceduralIcoSphereComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["radius"] = data.radius;
+			json["subdivisions"] = data.subdivisions;
+
+			return json;
+		}
+
+		template<>
+		inline procedural::ProceduralIcoSphereComponent3D Deserialize<procedural::ProceduralIcoSphereComponent3D>(const nlohmann::json& json)
+		{
+			procedural::ProceduralIcoSphereComponent3D data;
+
+			data.radius = json["radius"];
+			data.subdivisions = json["subdivisions"];
+			
+			return data;
+		}
 	}
 }

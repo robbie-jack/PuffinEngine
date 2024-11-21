@@ -49,5 +49,25 @@ namespace puffin
 		{
 			archive.Get("materialID", data.materialID);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<rendering::ProceduralMeshComponent3D>(const rendering::ProceduralMeshComponent3D& data)
+		{
+			nlohmann::json json;
+			
+			json["materialID"] = data.materialID;
+
+			return json;
+		}
+
+		template<>
+		inline rendering::ProceduralMeshComponent3D Deserialize<rendering::ProceduralMeshComponent3D>(const nlohmann::json& json)
+		{
+			rendering::ProceduralMeshComponent3D data;
+			
+			data.materialID = json["materialID"];
+			
+			return data;
+		}
 	}
 }

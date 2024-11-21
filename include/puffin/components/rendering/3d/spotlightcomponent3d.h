@@ -71,5 +71,41 @@ namespace puffin
 			archive.Get("innerCutoffAngle", data.innerCutoffAngle);
 			archive.Get("outerCutoffAngle", data.outerCutoffAngle);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<rendering::SpotLightComponent3D>(const rendering::SpotLightComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["color"] = Serialize(data.color);
+			json["ambientIntensity"] = data.ambientIntensity;
+			json["specularIntensity"] = data.specularIntensity;
+			json["specularExponent"] = data.specularExponent;
+			json["constantAttenuation"] = data.constantAttenuation;
+			json["linearAttenuation"] = data.linearAttenuation;
+			json["quadraticAttenuation"] = data.quadraticAttenuation;
+			json["innerCutoffAngle"] = data.innerCutoffAngle;
+			json["outerCutoffAngle"] = data.outerCutoffAngle;
+
+			return json;
+		}
+
+		template<>
+		inline rendering::SpotLightComponent3D Deserialize<rendering::SpotLightComponent3D>(const nlohmann::json& json)
+		{
+			rendering::SpotLightComponent3D data;
+
+			data.color = Deserialize<Vector3f>(json["color"]);
+			data.ambientIntensity = json["ambientIntensity"];
+			data.specularIntensity = json["specularIntensity"];
+			data.specularExponent = json["specularExponent"];
+			data.constantAttenuation = json["constantAttenuation"];
+			data.linearAttenuation = json["linearAttenuation"];
+			data.quadraticAttenuation = json["quadraticAttenuation"];
+			data.innerCutoffAngle = json["innerCutoffAngle"];
+			data.outerCutoffAngle = json["outerCutoffAngle"];
+			
+			return data;
+		}
 	}
 }

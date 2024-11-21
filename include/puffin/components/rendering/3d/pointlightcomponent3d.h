@@ -65,5 +65,37 @@ namespace puffin
 			archive.Get("linearAttenuation", data.linearAttenuation);
 			archive.Get("quadraticAttenuation", data.quadraticAttenuation);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<rendering::PointLightComponent3D>(const rendering::PointLightComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["color"] = Serialize(data.color);
+			json["ambientIntensity"] = data.ambientIntensity;
+			json["specularIntensity"] = data.specularIntensity;
+			json["specularExponent"] = data.specularExponent;
+			json["constantAttenuation"] = data.constantAttenuation;
+			json["linearAttenuation"] = data.linearAttenuation;
+			json["quadraticAttenuation"] = data.quadraticAttenuation;
+
+			return json;
+		}
+
+		template<>
+		inline rendering::PointLightComponent3D Deserialize<rendering::PointLightComponent3D>(const nlohmann::json& json)
+		{
+			rendering::PointLightComponent3D data;
+
+			data.color = Deserialize<Vector3f>(json["color"]);
+			data.ambientIntensity = json["ambientIntensity"];
+			data.specularIntensity = json["specularIntensity"];
+			data.specularExponent = json["specularExponent"];
+			data.constantAttenuation = json["constantAttenuation"];
+			data.linearAttenuation = json["linearAttenuation"];
+			data.quadraticAttenuation = json["quadraticAttenuation"];
+			
+			return data;
+		}
 	}
 }

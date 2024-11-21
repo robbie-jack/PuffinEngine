@@ -64,5 +64,37 @@ namespace puffin
 			archive.Get("frequency", data.frequency);
 			archive.Get("octaves", data.octaves);
 		}
+
+		template<>
+		inline nlohmann::json Serialize<procedural::ProceduralTerrainComponent3D>(const procedural::ProceduralTerrainComponent3D& data)
+		{
+			nlohmann::json json;
+
+			json["halfSize"] = Serialize(data.halfSize);
+			json["quadCount"] = Serialize(data.quadCount);
+			json["seed"] = data.seed;
+			json["heightMult"] = data.heightMult;
+			json["frequencyMult"] = data.frequencyMult;
+			json["frequency"] = data.frequency;
+			json["octaves"] = data.octaves;
+
+			return json;
+		}
+
+		template<>
+		inline procedural::ProceduralTerrainComponent3D Deserialize<procedural::ProceduralTerrainComponent3D>(const nlohmann::json& json)
+		{
+			procedural::ProceduralTerrainComponent3D data;
+
+			data.halfSize = Deserialize<Vector2f>(json["halfSize"]);
+			data.quadCount = Deserialize<Vector2i>(json["quadCount"]);
+			data.seed = json["seed"];
+			data.heightMult = json["heightMult"];
+			data.frequencyMult = json["frequencyMult"];
+			data.frequency = json["frequency"];
+			data.octaves = json["octaves"];
+			
+			return data;
+		}
 	}
 }
