@@ -38,20 +38,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<physics::VelocityComponent2D>(const physics::VelocityComponent2D& data, Archive& archive)
-		{
-			archive.Set("linear", data.linear);
-			archive.Set("angular", data.angular);
-		}
-
-		template<>
-		inline void Deserialize<physics::VelocityComponent2D>(const Archive& archive, physics::VelocityComponent2D& data)
-		{
-			archive.Get("linear", data.linear);
-			archive.Get("angular", data.angular);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<physics::VelocityComponent2D>(const physics::VelocityComponent2D& data)
 		{
 			nlohmann::json json;

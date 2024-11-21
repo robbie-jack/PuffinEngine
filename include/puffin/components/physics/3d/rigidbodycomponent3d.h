@@ -41,25 +41,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<physics::RigidbodyComponent3D>(const physics::RigidbodyComponent3D& data, Archive& archive)
-		{
-			archive.Set("bodyType", static_cast<uint8_t>(data.bodyType));
-			archive.Set("mass", data.mass);
-			archive.Set("elasticity", data.elasticity);
-		}
-
-		template<>
-		inline void Deserialize<physics::RigidbodyComponent3D>(const Archive& archive, physics::RigidbodyComponent3D& data)
-		{
-			uint8_t bodyType;
-			archive.Get("bodyType", bodyType);
-			data.bodyType = static_cast<physics::BodyType>(bodyType);
-
-			archive.Get("mass", data.mass);
-			archive.Get("elasticity", data.elasticity);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<physics::RigidbodyComponent3D>(const physics::RigidbodyComponent3D& data)
 		{
 			nlohmann::json json;

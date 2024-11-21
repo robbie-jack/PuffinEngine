@@ -45,34 +45,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<rendering::SpotLightComponent3D>(const rendering::SpotLightComponent3D& data, Archive& archive)
-		{
-			archive.Set("color", data.color);
-			archive.Set("ambientIntensity", data.ambientIntensity);
-			archive.Set("specularIntensity", data.specularIntensity);
-			archive.Set("specularExponent", data.specularExponent);
-			archive.Set("constantAttenuation", data.constantAttenuation);
-			archive.Set("linearAttenuation", data.linearAttenuation);
-			archive.Set("quadraticAttenuation", data.quadraticAttenuation);
-			archive.Set("innerCutoffAngle", data.innerCutoffAngle);
-			archive.Set("outerCutoffAngle", data.outerCutoffAngle);
-		}
-
-		template<>
-		inline void Deserialize<rendering::SpotLightComponent3D>(const Archive& archive, rendering::SpotLightComponent3D& data)
-		{
-			archive.Get("color", data.color);
-			archive.Get("ambientIntensity", data.ambientIntensity);
-			archive.Get("specularIntensity", data.specularIntensity);
-			archive.Get("specularExponent", data.specularExponent);
-			archive.Get("constantAttenuation", data.constantAttenuation);
-			archive.Get("linearAttenuation", data.linearAttenuation);
-			archive.Get("quadraticAttenuation", data.quadraticAttenuation);
-			archive.Get("innerCutoffAngle", data.innerCutoffAngle);
-			archive.Get("outerCutoffAngle", data.outerCutoffAngle);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<rendering::SpotLightComponent3D>(const rendering::SpotLightComponent3D& data)
 		{
 			nlohmann::json json;

@@ -43,30 +43,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<rendering::PointLightComponent3D>(const rendering::PointLightComponent3D& data, Archive& archive)
-		{
-			archive.Set("color", data.color);
-			archive.Set("ambientIntensity", data.ambientIntensity);
-			archive.Set("specularIntensity", data.specularIntensity);
-			archive.Set("specularExponent", data.specularExponent);
-			archive.Set("constantAttenuation", data.constantAttenuation);
-			archive.Set("linearAttenuation", data.linearAttenuation);
-			archive.Set("quadraticAttenuation", data.quadraticAttenuation);
-		}
-
-		template<>
-		inline void Deserialize<rendering::PointLightComponent3D>(const Archive& archive, rendering::PointLightComponent3D& data)
-		{
-			archive.Get("color", data.color);
-			archive.Get("ambientIntensity", data.ambientIntensity);
-			archive.Get("specularIntensity", data.specularIntensity);
-			archive.Get("specularExponent", data.specularExponent);
-			archive.Get("constantAttenuation", data.constantAttenuation);
-			archive.Get("linearAttenuation", data.linearAttenuation);
-			archive.Get("quadraticAttenuation", data.quadraticAttenuation);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<rendering::PointLightComponent3D>(const rendering::PointLightComponent3D& data)
 		{
 			nlohmann::json json;

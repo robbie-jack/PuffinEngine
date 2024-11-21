@@ -58,28 +58,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<rendering::CameraComponent3D>(const rendering::CameraComponent3D& data, Archive& archive)
-		{
-			archive.Set("active", data.active);
-			archive.Set("zNear", data.zNear);
-			archive.Set("zFar", data.zFar);
-			archive.Set("aspect", data.aspect);
-			archive.Set("fovY", data.fovY);
-			archive.Set("up", data.up);
-		}
-
-		template<>
-		inline void Deserialize<rendering::CameraComponent3D>(const Archive& archive, rendering::CameraComponent3D& data)
-		{
-			archive.Get("active", data.active);
-			archive.Get("zNear", data.zNear);
-			archive.Get("zFar", data.zFar);
-			archive.Get("aspect", data.aspect);
-			archive.Get("fovY", data.fovY);
-			archive.Get("up", data.up);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<rendering::CameraComponent3D>(const rendering::CameraComponent3D& data)
 		{
 			nlohmann::json json;

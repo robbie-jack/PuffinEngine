@@ -36,20 +36,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<procedural::ProceduralUVSphereComponent3D>(const procedural::ProceduralUVSphereComponent3D& data, Archive& archive)
-		{
-			archive.Set("radius", data.radius);
-			archive.Set("segments", data.segments);
-		}
-
-		template<>
-		inline void Deserialize<procedural::ProceduralUVSphereComponent3D>(const Archive& archive, procedural::ProceduralUVSphereComponent3D& data)
-		{
-			archive.Get("radius", data.radius);
-			archive.Get("segments", data.segments);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<procedural::ProceduralUVSphereComponent3D>(const procedural::ProceduralUVSphereComponent3D& data)
 		{
 			nlohmann::json json;

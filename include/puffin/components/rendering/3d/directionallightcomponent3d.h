@@ -35,24 +35,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<rendering::DirectionalLightComponent3D>(const rendering::DirectionalLightComponent3D& data, Archive& archive)
-		{
-			archive.Set("color", data.color);
-			archive.Set("ambientIntensity", data.ambientIntensity);
-			archive.Set("specularIntensity", data.specularIntensity);
-			archive.Set("specularExponent", data.specularExponent);
-		}
-
-		template<>
-		inline void Deserialize<rendering::DirectionalLightComponent3D>(const Archive& archive, rendering::DirectionalLightComponent3D& data)
-		{
-			archive.Get("color", data.color);
-			archive.Get("ambientIntensity", data.ambientIntensity);
-			archive.Get("specularIntensity", data.specularIntensity);
-			archive.Get("specularExponent", data.specularExponent);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<rendering::DirectionalLightComponent3D>(const rendering::DirectionalLightComponent3D& data)
 		{
 			nlohmann::json json;

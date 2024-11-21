@@ -73,9 +73,6 @@ namespace puffin
 		virtual void FixedUpdate(double deltaTime);
 		[[nodiscard]] virtual bool ShouldFixedUpdate() const;
 
-		virtual void Serialize(serialization::Archive& archive) const;
-		virtual void Deserialize(const serialization::Archive& archive);
-
 		virtual void Serialize(nlohmann::json& json) const;
 		virtual void Deserialize(const nlohmann::json& json);
 

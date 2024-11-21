@@ -36,20 +36,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<physics::CircleComponent2D>(const physics::CircleComponent2D& data, Archive& archive)
-		{
-			archive.Set("centreOfMass", data.centreOfMass);
-			archive.Set("radius", data.radius);
-		}
-
-		template<>
-		inline void Deserialize<physics::CircleComponent2D>(const Archive& archive, physics::CircleComponent2D& data)
-		{
-			archive.Get("centreOfMass", data.centreOfMass);
-			archive.Get("radius", data.radius);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<physics::CircleComponent2D>(const physics::CircleComponent2D& data)
 		{
 			nlohmann::json json;

@@ -18,9 +18,6 @@ namespace puffin
 			void Initialize() override;
 			void Deinitialize() override;
 
-			void Serialize(serialization::Archive& archive) const override;
-			void Deserialize(const serialization::Archive& archive) override;
-
 			void Serialize(nlohmann::json& json) const override;
 			void Deserialize(const nlohmann::json& json) override;
 

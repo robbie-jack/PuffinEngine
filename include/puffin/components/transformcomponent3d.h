@@ -67,24 +67,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<TransformComponent3D>(const TransformComponent3D& data, Archive& archive)
-		{
-			archive.Set("position", data.position);
-			archive.Set("orientationQuat", data.orientationQuat);
-			archive.Set("orientationEulerAngles", data.orientationEulerAngles);
-			archive.Set("scale", data.scale);
-		}
-
-		template<>
-		inline void Deserialize<TransformComponent3D>(const Archive& archive, TransformComponent3D& data)
-		{
-			archive.Get("position", data.position);
-			archive.Get("orientationQuat", data.orientationQuat);
-			archive.Get("orientationEulerAngles", data.orientationEulerAngles);
-			archive.Get("scale", data.scale);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<TransformComponent3D>(const TransformComponent3D& data)
 		{
 			nlohmann::json json;

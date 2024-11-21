@@ -275,22 +275,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<Vector3f>(const Vector3f& type, Archive& archive)
-		{
-			archive.Set("x", type.x);
-			archive.Set("y", type.y);
-			archive.Set("z", type.z);
-		}
-
-		template<>
-		inline void Deserialize<Vector3f>(const Archive& archive, Vector3f& type)
-		{
-			archive.Get("x", type.x);
-			archive.Get("y", type.y);
-			archive.Get("z", type.z);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<Vector3f>(const Vector3f& data)
 		{
 			nlohmann::json json;
@@ -326,22 +310,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<Vector3d>(const Vector3d& type, Archive& archive)
-		{
-			archive.Set("x", type.x);
-			archive.Set("y", type.y);
-			archive.Set("z", type.z);
-		}
-
-		template<>
-		inline void Deserialize<Vector3d>(const Archive& archive, Vector3d& type)
-		{
-			archive.Get("x", type.x);
-			archive.Get("y", type.y);
-			archive.Get("z", type.z);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<Vector3d>(const Vector3d& data)
 		{
 			nlohmann::json json;
@@ -376,22 +344,6 @@ namespace puffin
 
 	namespace serialization
 	{
-		template<>
-		inline void Serialize<Vector3i>(const Vector3i& type, Archive& archive)
-		{
-			archive.Set("x", type.x);
-			archive.Set("y", type.y);
-			archive.Set("z", type.z);
-		}
-
-		template<>
-		inline void Deserialize<Vector3i>(const Archive& archive, Vector3i& type)
-		{
-			archive.Get("x", type.x);
-			archive.Get("y", type.y);
-			archive.Get("z", type.z);
-		}
-
 		template<>
 		inline nlohmann::json Serialize<Vector3i>(const Vector3i& data)
 		{

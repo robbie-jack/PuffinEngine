@@ -65,28 +65,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<rendering::ShadowCasterComponent3D>(const rendering::ShadowCasterComponent3D& data, Archive& archive)
-		{
-			archive.Set("width", data.width);
-			archive.Set("height", data.height);
-			archive.Set("biasMin", data.biasMin);
-			archive.Set("biasMax", data.biasMax);
-			archive.Set("boundsMult", data.boundsMult);
-			archive.Set("cascadeCount", data.cascadeCount);
-		}
-
-		template<>
-		inline void Deserialize<rendering::ShadowCasterComponent3D>(const Archive& archive, rendering::ShadowCasterComponent3D& data)
-		{
-			archive.Get("width", data.width);
-			archive.Get("height", data.height);
-			archive.Get("biasMin", data.biasMin);
-			archive.Get("biasMax", data.biasMax);
-			archive.Get("boundsMult", data.boundsMult);
-			archive.Get("cascadeCount", data.cascadeCount);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<rendering::ShadowCasterComponent3D>(const rendering::ShadowCasterComponent3D& data)
 		{
 			nlohmann::json json;

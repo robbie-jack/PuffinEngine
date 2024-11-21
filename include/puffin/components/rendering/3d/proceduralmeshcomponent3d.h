@@ -39,18 +39,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<rendering::ProceduralMeshComponent3D>(const rendering::ProceduralMeshComponent3D& data, Archive& archive)
-		{
-			archive.Set("materialID", data.materialID);
-		}
-
-		template<>
-		inline void Deserialize<rendering::ProceduralMeshComponent3D>(const Archive& archive, rendering::ProceduralMeshComponent3D& data)
-		{
-			archive.Get("materialID", data.materialID);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<rendering::ProceduralMeshComponent3D>(const rendering::ProceduralMeshComponent3D& data)
 		{
 			nlohmann::json json;

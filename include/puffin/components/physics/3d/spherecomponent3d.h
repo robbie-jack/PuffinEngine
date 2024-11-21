@@ -36,20 +36,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<physics::SphereComponent3D>(const physics::SphereComponent3D& data, Archive& archive)
-		{
-			archive.Set("centreOfMass", data.centreOfMass);
-			archive.Set("radius", data.radius);
-		}
-
-		template<>
-		inline void Deserialize<physics::SphereComponent3D>(const Archive& archive, physics::SphereComponent3D& data)
-		{
-			archive.Get("centreOfMass", data.centreOfMass);
-			archive.Get("radius", data.radius);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<physics::SphereComponent3D>(const physics::SphereComponent3D& data)
 		{
 			nlohmann::json json;

@@ -24,20 +24,6 @@ namespace puffin::rendering
 		}
 	}
 
-	void LightNode3D::Serialize(serialization::Archive& archive) const
-	{
-		TransformNode3D::Serialize(archive);
-
-		archive.Set("castShadows", mCastShadows);
-	}
-
-	void LightNode3D::Deserialize(const serialization::Archive& archive)
-	{
-		TransformNode3D::Deserialize(archive);
-
-		archive.Get("castShadows", mCastShadows);
-	}
-
 	void LightNode3D::Serialize(nlohmann::json& json) const
 	{
 		TransformNode3D::Serialize(json);

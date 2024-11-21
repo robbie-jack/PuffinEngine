@@ -55,22 +55,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<TransformComponent2D>(const TransformComponent2D& data, Archive& archive)
-		{
-			archive.Set("position", data.position);
-			archive.Set("rotation", data.rotation);
-			archive.Set("scale", data.scale);
-		}
-
-		template<>
-		inline void Deserialize<TransformComponent2D>(const Archive& archive, TransformComponent2D& data)
-		{
-			archive.Get("position", data.position);
-			archive.Get("rotation", data.rotation);
-			archive.Get("scale", data.scale);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<TransformComponent2D>(const TransformComponent2D& data)
 		{
 			nlohmann::json json;

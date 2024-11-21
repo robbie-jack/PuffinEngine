@@ -293,20 +293,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<Vector2f>(const Vector2f& data, Archive& archive)
-		{
-			archive.Set("x", data.x);
-			archive.Set("y", data.y);
-		}
-
-		template<>
-		inline void Deserialize<Vector2f>(const Archive& archive, Vector2f& data)
-		{
-			archive.Get("x", data.x);
-			archive.Get("y", data.y);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<Vector2f>(const Vector2f& data)
 		{
 			nlohmann::json json;
@@ -339,20 +325,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<Vector2d>(const Vector2d& data, Archive& archive)
-		{
-			archive.Set("x", data.x);
-			archive.Set("y", data.y);
-		}
-
-		template<>
-		inline void Deserialize<Vector2d>(const Archive& archive, Vector2d& data)
-		{
-			archive.Get("x", data.x);
-			archive.Get("y", data.y);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<Vector2d>(const Vector2d& data)
 		{
 			nlohmann::json json;
@@ -384,20 +356,6 @@ namespace puffin
 
 	namespace serialization
 	{
-		template<>
-		inline void Serialize<Vector2i>(const Vector2i& data, Archive& archive)
-		{
-			archive.Set("x", data.x);
-			archive.Set("y", data.y);
-		}
-
-		template<>
-		inline void Deserialize<Vector2i>(const Archive& archive, Vector2i& data)
-		{
-			archive.Get("x", data.x);
-			archive.Get("y", data.y);
-		}
-
 		template<>
 		inline nlohmann::json Serialize<Vector2i>(const Vector2i& data)
 		{

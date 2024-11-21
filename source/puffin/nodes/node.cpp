@@ -71,16 +71,6 @@ namespace puffin
 		return false;
 	}
 
-	void Node::Serialize(serialization::Archive& archive) const
-	{
-		
-	}
-
-	void Node::Deserialize(const serialization::Archive& archive)
-	{
-		
-	}
-
 	void Node::Serialize(nlohmann::json& json) const
 	{
 	}

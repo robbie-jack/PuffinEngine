@@ -94,22 +94,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<maths::EulerAngles>(const maths::EulerAngles& data, Archive& archive)
-		{
-			archive.Set("pitch", data.pitch);
-			archive.Set("yaw", data.yaw);
-			archive.Set("roll", data.roll);
-		}
-
-		template<>
-		inline void Deserialize<maths::EulerAngles>(const Archive& archive, maths::EulerAngles& data)
-		{
-			archive.Get("pitch", data.pitch);
-			archive.Get("yaw", data.yaw);
-			archive.Get("roll", data.roll);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<maths::EulerAngles>(const maths::EulerAngles& data)
 		{
 			nlohmann::json json;

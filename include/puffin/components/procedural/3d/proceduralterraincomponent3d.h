@@ -42,30 +42,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<procedural::ProceduralTerrainComponent3D>(const procedural::ProceduralTerrainComponent3D& data, Archive& archive)
-		{
-			archive.Set("halfSize", data.halfSize);
-			archive.Set("quadCount", data.quadCount);
-			archive.Set("seed", data.seed);
-			archive.Set("heightMult", data.heightMult);
-			archive.Set("frequencyMult", data.frequencyMult);
-			archive.Set("frequency", data.frequency);
-			archive.Set("octaves", data.octaves);
-		}
-
-		template<>
-		inline void Deserialize<procedural::ProceduralTerrainComponent3D>(const Archive& archive, procedural::ProceduralTerrainComponent3D& data)
-		{
-			archive.Get("halfSize", data.halfSize);
-			archive.Get("quadCount", data.quadCount);
-			archive.Get("seed", data.seed);
-			archive.Get("heightMult", data.heightMult);
-			archive.Get("frequencyMult", data.frequencyMult);
-			archive.Get("frequency", data.frequency);
-			archive.Get("octaves", data.octaves);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<procedural::ProceduralTerrainComponent3D>(const procedural::ProceduralTerrainComponent3D& data)
 		{
 			nlohmann::json json;

@@ -133,24 +133,6 @@ namespace puffin
 	namespace serialization
 	{
 		template<>
-		inline void Serialize<maths::Quat>(const maths::Quat& data, Archive& archive)
-		{
-			archive.Set("x", data.x);
-			archive.Set("y", data.y);
-			archive.Set("z", data.z);
-			archive.Set("w", data.w);
-		}
-
-		template<>
-		inline void Deserialize<maths::Quat>(const Archive& archive, maths::Quat& data)
-		{
-			archive.Get("x", data.x);
-			archive.Get("y", data.y);
-			archive.Get("z", data.z);
-			archive.Get("w", data.w);
-		}
-
-		template<>
 		inline nlohmann::json Serialize<maths::Quat>(const maths::Quat& data)
 		{
 			nlohmann::json json;
