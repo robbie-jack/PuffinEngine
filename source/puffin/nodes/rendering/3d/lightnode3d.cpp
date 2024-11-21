@@ -38,6 +38,20 @@ namespace puffin::rendering
 		archive.Get("castShadows", mCastShadows);
 	}
 
+	void LightNode3D::Serialize(nlohmann::json& json) const
+	{
+		TransformNode3D::Serialize(json);
+
+		json["castShadows"] = mCastShadows;
+	}
+
+	void LightNode3D::Deserialize(const nlohmann::json& json)
+	{
+		TransformNode3D::Deserialize(json);
+
+		mCastShadows = json["castShadows"];
+	}
+
 	const std::string& LightNode3D::GetTypeString() const
 	{
 		return gLightNode3DTypeString;

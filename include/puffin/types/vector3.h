@@ -304,9 +304,9 @@ namespace puffin
 		inline Vector3f Deserialize<Vector3f>(const nlohmann::json& json)
 		{
 			Vector3f data;
-			data.x = json["x"];
-			data.y = json["y"];
-			data.z = json["z"];
+			data.x = json["x"].get<float>();
+			data.y = json["y"].get<float>();
+			data.z = json["z"].get<float>();
 			return data;
 		}
 	}

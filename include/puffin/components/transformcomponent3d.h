@@ -88,7 +88,11 @@ namespace puffin
 		inline nlohmann::json Serialize<TransformComponent3D>(const TransformComponent3D& data)
 		{
 			nlohmann::json json;
-			json["position"] = Serialize(data.position);
+#ifdef PFN_DOUBLE_PRECISION
+			json["position"] = Serialize<Vector3d>(data.position);
+#else
+			json["position"] = Serialize<Vector3f>(data.position);
+#endif
 			json["orientationQuat"] = Serialize(data.orientationQuat);
 			json["orientationEulerAngles"] = Serialize(data.orientationEulerAngles);
 			json["scale"] = Serialize(data.scale);
@@ -99,10 +103,14 @@ namespace puffin
 		inline TransformComponent3D Deserialize<TransformComponent3D>(const nlohmann::json& json)
 		{
 			TransformComponent3D data;
-			data.position = json["position"];
-			data.orientationQuat = json["orientationQuat"];
-			data.orientationEulerAngles = json["orientationEulerAngles"];
-			data.scale = json["scale"];
+#ifdef PFN_DOUBLE_PRECISION
+			data.position = Deserialize<Vector3d>(json["position"]);
+#else
+			data.position = Deserialize<Vector3f>(json["position"]);
+#endif
+			data.orientationQuat = Deserialize<maths::Quat>(json["orientationQuat"]);
+			data.orientationEulerAngles = Deserialize<maths::EulerAngles>(json["orientationEulerAngles"]);
+			data.scale = Deserialize<Vector3f>(json["scale"]);
 			return data;
 		}
 	}

@@ -20,12 +20,12 @@ namespace puffin::io
 
 			for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
 			{
-				const auto& entityArchiveMap = mEntityArchiveMaps.at(typeID);
-				if (entityArchiveMap.find(id) != entityArchiveMap.end())	
+				const auto& entityJsonMap = mEntityJsonMaps.at(typeID);
+				if (entityJsonMap.find(id) != entityJsonMap.end())	
 				{
-					const auto& archive = entityArchiveMap.at(id);
+					const auto& json = entityJsonMap.at(id);
 
-					serialComp->Deserialize(registry, entity, archive);
+					serialComp->Deserialize(registry, entity, json);
 				}
 			}
 		}
@@ -38,8 +38,8 @@ namespace puffin::io
 			auto type = entt::resolve(entt::hs(serializedNodeData.type.c_str()));
 			auto typeID = type.id();
 
-			auto node = sceneGraph->AddNode(typeID, serializedNodeData.name, id);
-			node->Deserialize(serializedNodeData.archive);
+			auto node = sceneGraph->AddNode(typeID, serializedNodeData.name, serializedNodeData.id);
+			node->Deserialize(serializedNodeData.json);
 
 			for (const auto& childID : serializedNodeData.childIDs)
 			{
@@ -49,7 +49,7 @@ namespace puffin::io
 				auto childTypeID = childType.id();
 
 				auto childNode = sceneGraph->AddChildNode(childTypeID, serializedNodeDataChild.name, childID, id);
-				childNode->Deserialize(serializedNodeDataChild.archive);
+				childNode->Deserialize(serializedNodeDataChild.json);
 			}
 		}
 	}
@@ -71,21 +71,16 @@ namespace puffin::io
 
 			for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
 			{
-				if (mEntityArchiveMaps.find(typeID) == mEntityArchiveMaps.end())
+				if (mEntityJsonMaps.find(typeID) == mEntityJsonMaps.end())
 				{
-					mEntityArchiveMaps.emplace(typeID, EntityArchiveMap());
+					mEntityJsonMaps.emplace(typeID, EntityJsonMap());
 				}
 
 				if (serialComp->HasComponent(registry, entity))
 				{
-					auto& entityArchiveMap = mEntityArchiveMaps.at(typeID);
-					if (entityArchiveMap.find(id) == entityArchiveMap.end())
-					{
-						entityArchiveMap.emplace(id, serialization::Archive());
-					}
+					auto& entityJsonMap = mEntityJsonMaps.at(typeID);
 
-					entityArchiveMap.at(id).Clear();
-					serialComp->Serialize(registry, entity, entityArchiveMap.at(id));
+					entityJsonMap.emplace(id, serialComp->Serialize(registry, entity));
 				}
 			}
 		}
@@ -103,7 +98,7 @@ namespace puffin::io
 	void SceneData::Clear()
 	{
 		mEntityIDs.clear();
-		mEntityArchiveMaps.clear();
+		mEntityJsonMaps.clear();
 		mRootNodeIDs.clear();
 		mNodeIDs.clear();
 		mSerializedNodeData.clear();
@@ -119,21 +114,19 @@ namespace puffin::io
 		json data;
 		data["entityIDs"] = mEntityIDs;
 		
-		for (const auto& [typeID, entityArchiveMap] : mEntityArchiveMaps)
+		for (const auto& [typeID, entityJsonMap] : mEntityJsonMaps)
 		{
-			if (!entityArchiveMap.empty())
+			if (!entityJsonMap.empty())
 			{
 				auto type = entt::resolve(typeID);
 
 				json componentJson;
 
 				int i = 0;
-				for (const auto& [id, archive] : entityArchiveMap)
+				for (const auto& [id, json] : entityJsonMap)
 				{
-					json archiveJson;
-					archive.DumpToJson(archiveJson);
-
-					componentJson[i] = { id, archiveJson };
+					componentJson[i]["id"] = id;
+					componentJson[i]["data"] = json;
 
 					++i;
 				}
@@ -145,24 +138,23 @@ namespace puffin::io
 		// Write nodes
 		data["rootNodeIDs"] = mRootNodeIDs;
 
-		std::vector<json> nodeJsons;
+		std::vector<nlohmann::json> nodeJsons;
 		nodeJsons.resize(mNodeIDs.size());
 
 		int i = 0;
 		for (const auto& id : mNodeIDs)
 		{
 			const auto& serializedNodeData = mSerializedNodeData.at(id);
+			
 			auto& nodeJson = nodeJsons[i];
 
-			nodeJson["id"] = id;
+			nodeJson["id"] = serializedNodeData.id;
 			nodeJson["name"] = serializedNodeData.name;
 			nodeJson["type"] = serializedNodeData.type;
-
-			json nodeDataJson;
-			serializedNodeData.archive.DumpToJson(nodeDataJson);
-			if (!nodeDataJson.empty())
+			
+			if (!serializedNodeData.json.empty())
 			{
-				nodeJson["data"] = nodeDataJson;
+				nodeJson["data"] = serializedNodeData.json;
 			}
 
 			if (!serializedNodeData.childIDs.empty())
@@ -207,9 +199,9 @@ namespace puffin::io
 
 		for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
 		{
-			if (mEntityArchiveMaps.find(typeID) == mEntityArchiveMaps.end())
+			if (mEntityJsonMaps.find(typeID) == mEntityJsonMaps.end())
 			{
-				mEntityArchiveMaps.emplace(typeID, EntityArchiveMap());
+				mEntityJsonMaps.emplace(typeID, EntityJsonMap());
 			}
 
 			auto type = entt::resolve(typeID);
@@ -220,15 +212,8 @@ namespace puffin::io
 				const json& componentJson = data.at(typeName);
 				for (const auto& archiveJson : componentJson)
 				{
-					UUID id = archiveJson.at(0);
-
-					auto& entityArchiveMap = mEntityArchiveMaps.at(typeID);
-					if (entityArchiveMap.find(id) == entityArchiveMap.end())
-					{
-						entityArchiveMap.emplace(id, serialization::Archive());
-					}
-
-					entityArchiveMap.at(id).PopulateFromJson(archiveJson.at(1));
+					auto& entityJsonMap = mEntityJsonMaps.at(typeID);
+					entityJsonMap.emplace(archiveJson["id"], archiveJson["data"]);
 				}
 			}
 		}
@@ -246,16 +231,15 @@ namespace puffin::io
 			serializedNodeData.id = id;
 			serializedNodeData.name = nodeJson.at("name");
 			serializedNodeData.type = nodeJson.at("type");
-
-			if (nodeJson.contains("data"))
-			{
-				const json& nodeDataJson = nodeJson.at("data");
-				serializedNodeData.archive.PopulateFromJson(nodeDataJson);
-			}
-
+			
 			if (nodeJson.contains("childIDs"))
 			{
 				serializedNodeData.childIDs = nodeJson.at("childIDs").get<std::vector<UUID>>();
+			}
+
+			if (nodeJson.contains("data"))
+			{
+				serializedNodeData.json = nodeJson.at("data");
 			}
 		}
 
@@ -289,13 +273,14 @@ namespace puffin::io
 		serializedNodeData.id = id;
 		serializedNodeData.name = node->GetName();
 		serializedNodeData.type = node->GetTypeString();
-		node->Serialize(serializedNodeData.archive);
-
+		
 		for (const auto& childID : node->GetChildIDs())
 		{
 			serializedNodeData.childIDs.push_back(childID);
 			SerializeNodeAndChildren(sceneGraph, childID);
 		}
+
+		node->Serialize(serializedNodeData.json);
 	}
 
 	SceneSerializationSubsystem::SceneSerializationSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)

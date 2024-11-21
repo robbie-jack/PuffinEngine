@@ -21,6 +21,9 @@ namespace puffin
 			void Serialize(serialization::Archive& archive) const override;
 			void Deserialize(const serialization::Archive& archive) override;
 
+			void Serialize(nlohmann::json& json) const override;
+			void Deserialize(const nlohmann::json& json) override;
+
 			[[nodiscard]] const std::string& GetTypeString() const override;
 			[[nodiscard]] entt::id_type GetTypeID() const override;
 

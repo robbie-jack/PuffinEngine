@@ -29,9 +29,8 @@ namespace puffin::io
 		virtual ~ISerializableComponent() = default;
 
 		[[nodiscard]] virtual bool HasComponent(std::shared_ptr<entt::registry> registry, entt::entity entity) const = 0;
-		virtual void Serialize(std::shared_ptr<entt::registry> registry, entt::entity entity, serialization::Archive& archive) = 0;
-		virtual void Deserialize(std::shared_ptr<entt::registry> registry, entt::entity entity, const serialization::Archive& archive) = 0;
-
+		virtual nlohmann::json Serialize(std::shared_ptr<entt::registry> registry, entt::entity entity) = 0;
+		virtual void Deserialize(std::shared_ptr<entt::registry> registry, entt::entity entity, const nlohmann::json& json) = 0;
 	};
 
 	template<typename T>
@@ -47,24 +46,20 @@ namespace puffin::io
 			return registry->any_of<T>(entity);
 		}
 
-		void Serialize(std::shared_ptr<entt::registry> registry, entt::entity entity,
-			serialization::Archive& archive) override
+		nlohmann::json Serialize(std::shared_ptr<entt::registry> registry, entt::entity entity) override
 		{
 			if (registry->any_of<T>(entity))
 			{
 				const auto& comp = registry->get<T>(entity);
-				serialization::Serialize(comp, archive);
+				return serialization::Serialize<T>(comp);
 			}
+
+			return nlohmann::json();
 		}
 
-		void Deserialize(std::shared_ptr<entt::registry> registry, entt::entity entity,
-			const serialization::Archive& archive) override
+		void Deserialize(std::shared_ptr<entt::registry> registry, entt::entity entity, const nlohmann::json& json) override
 		{
-			auto& comp = registry->emplace_or_replace<T>(entity);
-
-			serialization::Deserialize(archive, comp);
-
-			registry->patch<T>(entity);
+			auto& comp = registry->emplace_or_replace<T>(entity, serialization::Deserialize<T>(json));
 		}
 	};
 
@@ -97,15 +92,15 @@ namespace puffin::io
 
 	private:
 
-		using EntityArchiveMap = std::unordered_map<UUID, serialization::Archive>;
+		using EntityJsonMap = std::unordered_map<UUID, nlohmann::json>;
 
 		struct SerializedNodeData
 		{
 			UUID id;
 			std::string name;
 			std::string type;
-			serialization::Archive archive;
 			std::vector<UUID> childIDs;
+			nlohmann::json json;
 		};
 
 		SceneSerializationSubsystem* mSceneSerializationSubsystem = nullptr;
@@ -114,7 +109,7 @@ namespace puffin::io
 		bool mHasData = false; // This scene contains a copy of active scene data, either loaded from file or copied from ecs
 
 		std::vector<UUID> mEntityIDs;
-		std::unordered_map<entt::id_type, EntityArchiveMap> mEntityArchiveMaps;
+		std::unordered_map<entt::id_type, EntityJsonMap> mEntityJsonMaps;
 
 		std::vector<UUID> mRootNodeIDs;
 		std::vector<UUID> mNodeIDs;

@@ -79,7 +79,7 @@ namespace puffin
 		{
 			physics::RigidbodyComponent2D data;
 			data.bodyType = physics::gStringToBodyType.at(json["bodyType"]);
-			data.mass = json["centreOfMass"];
+			data.mass = json["mass"];
 			data.density = json["density"];
 			data.elasticity = json["elasticity"];
 			data.friction = json["friction"];
