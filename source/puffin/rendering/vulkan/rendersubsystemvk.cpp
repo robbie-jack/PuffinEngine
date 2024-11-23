@@ -141,6 +141,9 @@ namespace puffin::rendering
 
 		InitOffscreen(mOffscreenData, mRenderExtent, mSwapchainData.images.size());
 
+		mDescriptorAllocator = std::make_unique<util::DescriptorAllocator>(mDevice);
+		mDescriptorLayoutCache = std::make_unique<util::DescriptorLayoutCache>(mDevice);
+
 		RegisterModule<Forward3DRenderModuleVK>("Forward3D");
 
 		InitModules();
@@ -225,6 +228,9 @@ namespace puffin::rendering
 
 				frameData.commandBuffers.clear();
 			}
+
+			mDescriptorLayoutCache = nullptr;
+			mDescriptorAllocator = nullptr;
 
 			mDeletionQueue.Flush();
 
@@ -878,9 +884,6 @@ namespace puffin::rendering
 	{
 		// Descriptor Allocator/Cache
 
-		mGlobalRenderData.descriptorAllocator = std::make_shared<util::DescriptorAllocator>(mDevice);
-		mGlobalRenderData.descriptorLayoutCache = std::make_shared<util::DescriptorLayoutCache>(mDevice);
-
 		for (int i = 0; i < gBufferedFrameCount; i++)
 		{
 			// Object Descriptors
@@ -889,8 +892,7 @@ namespace puffin::rendering
 				mFrameRenderData[i].objectBuffer.buffer, 0, sizeof(GPUObjectData) * gMaxObjects
 			};
 
-			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
-				mGlobalRenderData.descriptorAllocator)
+			util::DescriptorBuilder::Begin(mDescriptorLayoutCache.get(), mDescriptorAllocator.get())
 				.BindBuffer(0, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
 				.Build(mFrameRenderData[i].objectDescriptor, mGlobalRenderData.objectSetLayout);
 
@@ -906,8 +908,7 @@ namespace puffin::rendering
 				mFrameRenderData[i].directionalLightBuffer.buffer, 0, sizeof(GPUDirLightData) * gMaxDirectionalLights
 			};
 
-			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
-				mGlobalRenderData.descriptorAllocator)
+			util::DescriptorBuilder::Begin(mDescriptorLayoutCache.get(), mDescriptorAllocator.get())
 				.BindBuffer(0, &pointLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.BindBuffer(1, &spotLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.BindBuffer(2, &dirLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
@@ -926,8 +927,7 @@ namespace puffin::rendering
 				mFrameRenderData[i].materialInstanceBuffer.buffer, 0, sizeof(GPUMaterialInstanceData) * gMaxMaterialInstances
 			};
 
-			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
-				mGlobalRenderData.descriptorAllocator)
+			util::DescriptorBuilder::Begin(mDescriptorLayoutCache.get(), mDescriptorAllocator.get())
 				.BindBuffer(0, &materialBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.BindImagesWithoutWrite(1, imageCount, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
 				.AddPNext(&variableDescriptorCountAllocInfo)
@@ -944,20 +944,13 @@ namespace puffin::rendering
 				mFrameRenderData[i].shadowCascadeBuffer.buffer, 0, sizeof(GPUShadowCascadeData) * gMaxLights * gMaxShadowCascadesPerLight
 			};
 
-			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
-				mGlobalRenderData.descriptorAllocator)
+			util::DescriptorBuilder::Begin(mDescriptorLayoutCache.get(), mDescriptorAllocator.get())
 				.BindBuffer(0, &shadowBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.BindBuffer(1, &shadowCascadeBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
 				.BindImagesWithoutWrite(2, gMaxLights, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
 				.AddPNext(&variableDescriptorCountAllocInfo)
 				.Build(mFrameRenderData[i].shadowDescriptor, mGlobalRenderData.shadowSetLayout);
 		}
-
-		mDeletionQueue.PushFunction([=]()
-		{
-			mGlobalRenderData.descriptorLayoutCache = nullptr;
-			mGlobalRenderData.descriptorAllocator = nullptr;
-		});
 	}
 
 	void RenderSubsystemVK::InitPipelines()
@@ -1633,8 +1626,7 @@ namespace puffin::rendering
 			std::vector<vk::DescriptorImageInfo> textureImageInfos;
 			BuildTextureDescriptorInfo(mTexData, textureImageInfos);
 
-			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
-			                               mGlobalRenderData.descriptorAllocator)
+			util::DescriptorBuilder::Begin(mDescriptorLayoutCache.get(), mDescriptorAllocator.get())
 				.UpdateImages(1, textureImageInfos.size(), textureImageInfos.data(),
 				              vk::DescriptorType::eCombinedImageSampler)
 				.Update(GetCurrentFrameData().materialDescriptor);
@@ -1650,8 +1642,7 @@ namespace puffin::rendering
 			std::vector<vk::DescriptorImageInfo> shadowImageInfos;
 			BuildShadowDescriptorInfo(shadowImageInfos);
 
-			util::DescriptorBuilder::Begin(mGlobalRenderData.descriptorLayoutCache,
-				mGlobalRenderData.descriptorAllocator)
+			util::DescriptorBuilder::Begin(mDescriptorLayoutCache.get(), mDescriptorAllocator.get())
 				.UpdateImages(2, shadowImageInfos.size(), shadowImageInfos.data(),
 					vk::DescriptorType::eCombinedImageSampler)
 				.Update(GetCurrentFrameData().shadowDescriptor);

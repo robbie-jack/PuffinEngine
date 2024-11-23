@@ -94,10 +94,9 @@ namespace puffin::rendering::util
 	{
 	public:
 
-		DescriptorBuilder(std::shared_ptr<DescriptorLayoutCache> layoutCache,
-		                  std::shared_ptr<DescriptorAllocator> allocator);
+		DescriptorBuilder(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator);
 
-		static DescriptorBuilder Begin(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator);
+		static DescriptorBuilder Begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator);
 
 		DescriptorBuilder& BindBuffer(uint32_t binding, const vk::DescriptorBufferInfo* bufferInfo, vk::DescriptorType type, vk::ShaderStageFlags stageFlags);
 
@@ -132,8 +131,8 @@ namespace puffin::rendering::util
 		std::vector<vk::DescriptorBindingFlags> mBindingFlags;
 		std::vector<vk::BaseOutStructure*> mPNextChain;
 
-		std::shared_ptr<DescriptorLayoutCache> mCache;
-		std::shared_ptr<DescriptorAllocator> mAlloc;
+		DescriptorLayoutCache* mCache;
+		DescriptorAllocator* mAlloc;
 
 	};
 }

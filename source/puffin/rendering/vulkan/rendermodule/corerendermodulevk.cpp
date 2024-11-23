@@ -21,8 +21,6 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::Initialize()
 	{
-
-
 		InitBuffers();
 		InitSamplers();
 		InitDescriptors();

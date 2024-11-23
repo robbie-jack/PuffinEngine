@@ -249,12 +249,12 @@ namespace puffin::rendering::util
 		return result;
 	}
 
-	DescriptorBuilder::DescriptorBuilder(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<DescriptorAllocator> allocator) :
+	DescriptorBuilder::DescriptorBuilder(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator) :
 		mCache(std::move(layoutCache)), mAlloc(std::move(allocator))
 	{
 	}
 
-	DescriptorBuilder DescriptorBuilder::Begin(const std::shared_ptr<DescriptorLayoutCache>& layoutCache, const std::shared_ptr<DescriptorAllocator>& allocator)
+	DescriptorBuilder DescriptorBuilder::Begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator)
 	{
 		return DescriptorBuilder{ layoutCache, allocator };
 	}

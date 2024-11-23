@@ -58,9 +58,6 @@ namespace puffin::rendering
 	// Struct containing render data that is static between frames
 	struct GlobalRenderData
 	{
-		std::shared_ptr<util::DescriptorAllocator> descriptorAllocator = nullptr;
-		std::shared_ptr<util::DescriptorLayoutCache> descriptorLayoutCache = nullptr;
-
 		vk::DescriptorSetLayout objectSetLayout;
 		vk::DescriptorSetLayout lightSetLayout;
 		vk::DescriptorSetLayout materialSetLayout;
@@ -360,6 +357,8 @@ namespace puffin::rendering
 		std::unique_ptr<TextureManagerVK> mTextureManager = nullptr;
 		std::unique_ptr<UnifiedGeometryBufferVK> mUnifiedGeometryBuffer = nullptr;
 		std::unique_ptr<MaterialRegistryVK> mMaterialRegistry = nullptr;
+		std::unique_ptr<util::DescriptorAllocator> mDescriptorAllocator = nullptr;
+		std::unique_ptr<util::DescriptorLayoutCache> mDescriptorLayoutCache = nullptr;
 
 		std::unordered_set<UUID> mMeshesToLoad; // Meshes that need to be loaded
 		std::unordered_set<UUID> mTexturesToLoad; // Textures that need to be loaded
