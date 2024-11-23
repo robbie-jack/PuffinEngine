@@ -58,8 +58,8 @@ namespace puffin::rendering
 		AllocatedImage& GetImage(ResourceID id);
 		AllocatedImage& GetImage(const std::string& name);
 
-		AllocatedBuffer& GetBuffer(ResourceID id);
-		AllocatedBuffer& GetBuffer(const std::string& name);
+		AllocatedBuffer& GetBuffer(ResourceID id, int8_t idx = -1);
+		AllocatedBuffer& GetBuffer(const std::string& name, int8_t idx = -1);
 
 		vk::DescriptorSetLayout& GetDescriptorLayout(ResourceID id);
 		vk::DescriptorSetLayout& GetDescriptorLayout(const std::string& name);

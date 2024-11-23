@@ -16,14 +16,16 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::RegisterModules()
 	{
-		
+		RenderModuleVK::RegisterModules();
 	}
 
 	void CoreRenderModuleVK::Initialize()
 	{
+		RenderModuleVK::Initialize();
+		
 		InitBuffers();
 		InitSamplers();
-		InitDescriptors();
+		InitDescriptorLayouts();
 	}
 
 	void CoreRenderModuleVK::Deinitialize()
@@ -59,20 +61,31 @@ namespace puffin::rendering
 
 		mRenderSubsystem->GetResourceManager()->DestroyResource(mMatDescriptorLayoutID);
 		mMatDescriptorLayoutID = gInvalidID;
+
+		RenderModuleVK::Deinitialize();
+	}
+
+	void CoreRenderModuleVK::PostInitialize()
+	{
+		RenderModuleVK::PostInitialize();
+
+		InitDescriptorLayouts();
 	}
 
 	void CoreRenderModuleVK::UpdateResources(ResourceManagerVK* resourceManager)
 	{
-		
+		RenderModuleVK::UpdateResources(resourceManager);
 	}
 
 	void CoreRenderModuleVK::UpdateGraph(RenderGraphVK& renderGraph)
 	{
-		
+		RenderModuleVK::UpdateGraph(renderGraph);
 	}
 
 	void CoreRenderModuleVK::PreRender(double deltaTime)
 	{
+		RenderModuleVK::PreRender(deltaTime);
+		
 		UpdateRenderData();
 		ProcessComponents();
 		UpdateTextureDescriptors();
@@ -129,12 +142,10 @@ namespace puffin::rendering
 		mDirLightBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "dir_lights");
 
 		// Object Buffer
-
 		bufferDesc.size = sizeof(GPUObjectData) * gMaxObjects;
 		mObjectBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "objects");
 
 		// Material Buffer
-
 		bufferDesc.size = sizeof(GPUMaterialInstanceData) * gMaxMaterialInstances;
 		mMaterialInstanceBufferID = resourceManager->CreateOrUpdateBuffer(bufferDesc, "material_instances");
 
@@ -149,18 +160,16 @@ namespace puffin::rendering
 		mTextureSampler = mRenderSubsystem->GetDevice().createSampler(textureSamplerInfo);
 	}
 
-	void CoreRenderModuleVK::InitDescriptors()
+	void CoreRenderModuleVK::InitDescriptorLayouts()
 	{
 		ResourceManagerVK* resourceManager = mRenderSubsystem->GetResourceManager();
 		
 		DescriptorLayoutDescVK descriptorLayoutDesc;
-
+		
 		// Object Layout
 		{
-			descriptorLayoutDesc.flags = { vk::DescriptorSetLayoutCreateFlagBits::eDescriptorBufferEXT };
-
 			descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eVertex });
-
+			
 			mObjectDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "objects");
 		}
 
@@ -176,25 +185,101 @@ namespace puffin::rendering
 		}
 
 		// Material Layout
-		descriptorLayoutDesc.bindings.clear();
+		{
+			descriptorLayoutDesc.bindings.clear();
 
-		constexpr uint32_t imageCount = 128;
+			descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+			descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eCombinedImageSampler, gMaxMaterialInstances, vk::ShaderStageFlagBits::eFragment, 
+				{ vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount } });
 
-		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
-		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eCombinedImageSampler, imageCount, vk::ShaderStageFlagBits::eFragment, 
-			{ vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount } });
-
-		mMatDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "materials");
+			mMatDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "materials");
+		}
 
 		// Shadow Layout - PUFFIN_TODO - Dummy layout, will be removed once shadows are implemented in own render module
-		descriptorLayoutDesc.bindings.clear();
+		{
+			constexpr uint32_t imageCount = 128;
+			
+			descriptorLayoutDesc.bindings.clear();
 
-		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
-		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
-		descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eCombinedImageSampler, imageCount, vk::ShaderStageFlagBits::eFragment,
-			{ vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount } });
+			descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+			descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eFragment });
+			descriptorLayoutDesc.bindings.push_back({ vk::DescriptorType::eCombinedImageSampler, imageCount, vk::ShaderStageFlagBits::eFragment,
+				{ vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount } });
 
-		mShadowDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "shadows");
+			mShadowDescriptorLayoutID = resourceManager->CreateOrUpdateDescriptorLayout(descriptorLayoutDesc, "shadows");
+		}
+	}
+
+	void CoreRenderModuleVK::InitDescriptorSets()
+	{
+		ResourceManagerVK* resourceManager = mRenderSubsystem->GetResourceManager();
+		util::DescriptorAllocator* descriptorAllocator = mRenderSubsystem->GetDescriptorAllocator();
+		util::DescriptorLayoutCache* descriptorLayoutCache = mRenderSubsystem->GetDescriptorLayoutCache();
+		
+		DescriptorLayoutDescVK descriptorLayoutDesc;
+
+		for (int i = 0; i < gBufferedFrameCount; ++i)
+		{
+			// Object Descriptor Set
+			{
+				vk::DescriptorBufferInfo objectBufferInfo =
+				{
+					resourceManager->GetBuffer(mObjectBufferID, i).buffer, 0, sizeof(GPUObjectData) * gMaxObjects,
+				};
+
+				util::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+				.BindBuffer(0, &objectBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eVertex)
+				.Build(mFrameRenderData[i].objectDescriptor, resourceManager->GetDescriptorLayout(mObjectDescriptorLayoutID));
+			}
+
+			// Light Descriptor Set
+			{
+				vk::DescriptorBufferInfo pointLightBufferInfo =
+				{
+					resourceManager->GetBuffer(mPointLightBufferID, i).buffer, 0, sizeof(GPUPointLightData) * gMaxPointLights,
+				};
+
+				vk::DescriptorBufferInfo spotLightBufferInfo =
+				{
+					resourceManager->GetBuffer(mSpotLightBufferID, i).buffer, 0, sizeof(GPUSpotLightData) * gMaxSpotLights,
+				};
+
+				vk::DescriptorBufferInfo dirLightBufferInfo =
+				{
+					resourceManager->GetBuffer(mDirLightBufferID, i).buffer, 0, sizeof(GPUDirLightData) * gMaxDirectionalLights,
+				};
+
+				util::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+				.BindBuffer(0, &pointLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindBuffer(1, &spotLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindBuffer(2, &dirLightBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.Build(mFrameRenderData[i].lightDescriptor, resourceManager->GetDescriptorLayout(mLightDescriptorLayoutID));
+			}
+			
+			// Material Descriptor Set
+			{
+				constexpr uint32_t imageCount = 128;
+				
+				constexpr vk::DescriptorBindingFlags descriptorBindingFlags = { vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount };
+				vk::DescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocInfo =
+				{ 1, &imageCount };
+
+				vk::DescriptorBufferInfo materialBufferInfo = {
+					resourceManager->GetBuffer(mMaterialInstanceBufferID, i).buffer, 0, sizeof(GPUMaterialInstanceData) * gMaxMaterialInstances
+				};
+
+				util::DescriptorBuilder::Begin(descriptorLayoutCache, descriptorAllocator)
+				.BindBuffer(0, &materialBufferInfo, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment)
+				.BindImagesWithoutWrite(1, imageCount, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, descriptorBindingFlags)
+				.AddPNext(&variableDescriptorCountAllocInfo)
+				.Build(mFrameRenderData[i].materialDescriptor, resourceManager->GetDescriptorLayout(mMatDescriptorLayoutID));
+			}
+
+			// Shadow Descriptor Set - PUFFIN_TODO - Dummy set, will be removed once shadows are implemented in own render module
+			{
+				constexpr uint32_t lightCount = gMaxLights;
+			}
+		}
 	}
 
 	void CoreRenderModuleVK::UpdateRenderData()

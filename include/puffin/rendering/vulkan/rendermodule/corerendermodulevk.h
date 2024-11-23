@@ -5,6 +5,7 @@
 #include "puffin/rendering/resourceid.h"
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
 #include "entt/entity/registry.hpp"
+#include "puffin/rendering/renderglobals.h"
 
 namespace puffin::rendering
 {
@@ -15,6 +16,14 @@ namespace puffin::rendering
 	class CoreRenderModuleVK : public RenderModuleVK
 	{
 	public:
+		
+		struct FrameRenderData
+		{
+			vk::DescriptorSet objectDescriptor;
+			vk::DescriptorSet lightDescriptor;
+			vk::DescriptorSet materialDescriptor;
+			vk::DescriptorSet shadowDescriptor;
+		};
 
 		explicit CoreRenderModuleVK(std::shared_ptr<core::Engine> engine, RenderSubsystemVK* renderSubsystem);
 		~CoreRenderModuleVK() override = default;
@@ -23,6 +32,8 @@ namespace puffin::rendering
 
 		void Initialize() override;
 		void Deinitialize() override;
+
+		void PostInitialize() override;
 
 		void UpdateResources(ResourceManagerVK* resourceManager) override;
 
@@ -40,7 +51,8 @@ namespace puffin::rendering
 
 		void InitBuffers();
 		void InitSamplers();
-		void InitDescriptors();
+		void InitDescriptorLayouts();
+		void InitDescriptorSets();
 
 		void UpdateRenderData();
 		void ProcessComponents();
@@ -63,5 +75,6 @@ namespace puffin::rendering
 		ResourceID mMatDescriptorLayoutID = gInvalidID;
 		ResourceID mShadowDescriptorLayoutID = gInvalidID; // PUFFIN_TODO - Dummy layout, will be removed once shadows are implemented in own render module
 
+		std::array<FrameRenderData, gBufferedFrameCount> mFrameRenderData;
 	};
 }

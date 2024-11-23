@@ -153,6 +153,9 @@ namespace puffin::rendering
 		bool GetRebarEnabled() const { return mRebarEnabled; }
 		ResourceManagerVK* GetResourceManager() const { return mResourceManager.get(); }
 		UnifiedGeometryBufferVK* GetUnifiedGeometryBuffer() const { return mUnifiedGeometryBuffer.get(); }
+		util::DescriptorAllocator* GetDescriptorAllocator() const { return mDescriptorAllocator.get(); }
+		util::DescriptorLayoutCache* GetDescriptorLayoutCache() const { return mDescriptorLayoutCache.get(); }
+		
 
 		void OnUpdateMesh(entt::registry& registry, entt::entity entity);
 		void OnUpdateTransform(entt::registry& registry, entt::entity entity);

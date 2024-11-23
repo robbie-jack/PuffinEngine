@@ -247,7 +247,7 @@ namespace puffin::rendering
 		return GetImage(mResourceNameToID.at(name));
 	}
 
-	AllocatedBuffer& ResourceManagerVK::GetBuffer(ResourceID id)
+	AllocatedBuffer& ResourceManagerVK::GetBuffer(ResourceID id, int8_t idx)
 	{
 		const std::string assertMsg = "ResourceManagerVK::GetBuffer -  No buffer with id " + std::to_string(id) + " exists";
 		assert(IsResourceValid(id) && assertMsg.c_str());
@@ -261,18 +261,21 @@ namespace puffin::rendering
 		}
 		else
 		{
-			instanceID = resourceInfo.instanceIDs[mRenderSystem->GetCurrentFrameIdx()];
+			if (idx >= 0)
+				instanceID = resourceInfo.instanceIDs[idx];
+			else
+				instanceID = resourceInfo.instanceIDs[mRenderSystem->GetCurrentFrameIdx()];
 		}
 
 		return mBufferInstances.at(instanceID);
 	}
 
-	AllocatedBuffer& ResourceManagerVK::GetBuffer(const std::string& name)
+	AllocatedBuffer& ResourceManagerVK::GetBuffer(const std::string& name, int8_t idx)
 	{
 		const std::string assertMsg = "ResourceManagerVK::GetBuffer -  No buffer with name " + name + " exists";
 		assert(mResourceNameToID.find(name) != mResourceNameToID.end() && assertMsg.c_str());
 
-		return GetBuffer(mResourceNameToID.at(name));
+		return GetBuffer(mResourceNameToID.at(name), idx);
 	}
 
 	vk::DescriptorSetLayout& ResourceManagerVK::GetDescriptorLayout(ResourceID id)
