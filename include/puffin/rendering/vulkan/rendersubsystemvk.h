@@ -314,9 +314,6 @@ namespace puffin::rendering
 		static void BuildModelTransform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
 		                                glm::mat4& model);
 
-		bool LoadTexture(UUID texId, TextureDataVK& texData);
-		void UnloadTexture(TextureDataVK& texData) const;
-
 		void BuildTextureDescriptorInfo(MappedVector<UUID, TextureDataVK>& textureData,
 		                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 		void BuildShadowDescriptorInfo(std::vector<vk::DescriptorImageInfo>& shadowImageInfos);

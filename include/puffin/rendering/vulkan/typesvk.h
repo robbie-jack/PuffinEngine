@@ -120,9 +120,9 @@ namespace puffin::rendering
 	struct TextureDataVK : AssetDataVK
 	{
 		int idx = 0;
+		UUID id = gInvalidID;
 
 		vk::Sampler sampler;
-		Texture texture;
 	};
 
 	struct MaterialDataVK : AssetDataVK

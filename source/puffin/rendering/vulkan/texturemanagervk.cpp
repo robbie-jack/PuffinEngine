@@ -53,10 +53,15 @@ namespace puffin::rendering
 
 	void TextureManagerVK::LoadAndUnloadTextures()
 	{
-		for (const UUID& assetID : mTexturesToLoad)
+		mTextureDescriptorNeedsUpdated = false;
+		
+		for (const UUID& assetID : mTexturesToUnload)
 		{
-			UnloadTextureInternal(assetID);
-			mTextures.erase(assetID);
+			if (IsLoaded(assetID))
+			{
+				UnloadTextureInternal(assetID);
+				mTextures.erase(assetID);
+			}
 		}
 		
 		for (const UUID& assetID : mTexturesToLoad)
@@ -79,6 +84,11 @@ namespace puffin::rendering
 	bool TextureManagerVK::TextureDescriptorNeedsUpdated() const
 	{
 		return mTextureDescriptorNeedsUpdated;
+	}
+
+	const std::unordered_map<UUID, Texture>& TextureManagerVK::GetLoadedTextures() const
+	{
+		return mTextures;
 	}
 
 	bool TextureManagerVK::LoadTextureInternal(UUID assetID)

@@ -36,10 +36,12 @@ namespace puffin::rendering
 
 		void LoadAndUnloadTextures();
 
-		bool IsLoaded(UUID assetID) const;
-		const Texture& GetTexture(UUID assetID) const;
+		[[nodiscard]] bool IsLoaded(UUID assetID) const;
+		[[nodiscard]] const Texture& GetTexture(UUID assetID) const;
 
-		bool TextureDescriptorNeedsUpdated() const;
+		[[nodiscard]] bool TextureDescriptorNeedsUpdated() const;
+
+		const std::unordered_map<UUID, Texture>& GetLoadedTextures() const;
 
 	private:
 		bool LoadTextureInternal(UUID assetID);

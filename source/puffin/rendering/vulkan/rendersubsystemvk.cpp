@@ -1357,6 +1357,17 @@ namespace puffin::rendering
 		{
 			if (mTextureManager->TextureDescriptorNeedsUpdated() == true)
 			{
+				mTexData.Clear();
+
+				for (const auto& [id, texture] : mTextureManager->GetLoadedTextures())
+				{
+					TextureDataVK texData;
+					texData.id = id;
+					texData.sampler = mGlobalRenderData.textureSampler;
+					
+					mTexData.Emplace(id, texData);
+				}
+				
 				for (int i = 0; i < gBufferedFrameCount; i++)
 				{
 					mFrameRenderData[i].textureDescriptorNeedsUpdated = true;
@@ -2828,36 +2839,6 @@ namespace puffin::rendering
 		model = translateM * orientM * scaleM;
 	}
 
-	bool RenderSubsystemVK::LoadTexture(UUID texId, TextureDataVK& texData)
-	{
-		if (const auto texAsset = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(texId); texAsset && texAsset->Load())
-		{
-			texData.assetId = texId;
-
-			texData.sampler = mGlobalRenderData.textureSampler;
-
-			util::InitTextureParams params;
-			params.pixelData = texAsset->Pixels().data();
-			params.width = texAsset->TextureWidth();
-			params.height = texAsset->TextureHeight();
-			params.dataSize = texAsset->TextureSize();
-			params.format = gTexFormatVK.at(texAsset->TextureFormat());
-			texData.texture = util::InitTexture(this, params);
-
-			texAsset->Unload();
-
-			return true;
-		}
-
-		return false;
-	}
-
-	void RenderSubsystemVK::UnloadTexture(TextureDataVK& texData) const
-	{
-		mDevice.destroyImageView(texData.texture.imageView);
-		mAllocator.destroyImage(texData.texture.image, texData.texture.allocation);
-	}
-
 	void RenderSubsystemVK::BuildTextureDescriptorInfo(MappedVector<UUID, TextureDataVK>& textureData,
 	                                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
 	{
@@ -2867,8 +2848,10 @@ namespace puffin::rendering
 		int idx = 0;
 		for (auto& texData : textureData)
 		{
+			const auto& texture = mTextureManager->GetTexture(texData.id);
+			
 			vk::DescriptorImageInfo textureImageInfo = {
-				texData.sampler, texData.texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal
+				texData.sampler, texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal
 			};
 			textureImageInfos.push_back(textureImageInfo);
 
