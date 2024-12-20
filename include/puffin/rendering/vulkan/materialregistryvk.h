@@ -18,11 +18,11 @@ namespace puffin::rendering
 		explicit MaterialRegistryVK(RenderSubsystemVK* renderSystem);
 		~MaterialRegistryVK();
 
-		void RegisterMaterialInstance(const UUID& id);
+		void AddMaterialInstanceToLoad(const UUID& id);
 
-		void Update();
+		void LoadMaterialsAndInstances();
 
-		[[nodiscard]] bool GetMaterialDataNeedsUploaded() const;
+		[[nodiscard]] bool MaterialDataNeedsUploaded() const;
 
 		MaterialDataVK& GetMaterialData(const UUID& id);
 		MappedVector<UUID, MaterialDataVK>& GetAllMaterialData();

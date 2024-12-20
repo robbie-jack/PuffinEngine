@@ -17,27 +17,76 @@ namespace puffin::rendering
 	{
 		for (const auto& [assetID, texture] : mTextures)
 		{
-			DestroyTexture(texture);
+			UnloadTextureInternal(assetID);
 		}
 
 		mTextures.clear();
 	}
 
-	bool TextureManagerVK::LoadTexture(UUID assetID, bool forceReload)
+	void TextureManagerVK::AddTextureToLoad(UUID assetID, bool forceReload)
 	{
 		// Check if texture is already loaded
 		if (mTextures.find(assetID) != mTextures.end() && !forceReload)
-			return true;
+			return;
 
+		if (forceReload)
+			mTexturesToUnload.emplace(assetID);
+		
+		mTexturesToLoad.emplace(assetID);
+	}
+
+	void TextureManagerVK::AddTexturesToLoad(const std::vector<UUID>& assetIDs, bool forceReload)
+	{
+		for (const auto& assetID : assetIDs)
+		{
+			AddTextureToLoad(assetID, forceReload);
+		}
+	}
+
+	void TextureManagerVK::AddTextureToUnload(UUID assetID)
+	{
+		if (mTextures.find(assetID) == mTextures.end())
+			return;
+
+		mTexturesToUnload.emplace(assetID);
+	}
+
+	void TextureManagerVK::LoadAndUnloadTextures()
+	{
+		for (const UUID& assetID : mTexturesToLoad)
+		{
+			UnloadTextureInternal(assetID);
+			mTextures.erase(assetID);
+		}
+		
+		for (const UUID& assetID : mTexturesToLoad)
+		{
+			if (LoadTextureInternal(assetID) && !mTextureDescriptorNeedsUpdated)
+				mTextureDescriptorNeedsUpdated = true;
+		}
+	}
+
+	bool TextureManagerVK::IsLoaded(UUID assetID) const
+	{
+		return mTextures.find(assetID) != mTextures.end();
+	}
+
+	const Texture& TextureManagerVK::GetTexture(UUID assetID) const
+	{
+		return mTextures.at(assetID);
+	}
+
+	bool TextureManagerVK::TextureDescriptorNeedsUpdated() const
+	{
+		return mTextureDescriptorNeedsUpdated;
+	}
+
+	bool TextureManagerVK::LoadTextureInternal(UUID assetID)
+	{
 		// Load texture
 		const auto texAsset = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(assetID);
 		if (!texAsset || !texAsset->Load())
 			return false;
-
-		if (forceReload)
-		{
-			UnloadTexture(assetID);
-		}
 
 		// Init new texture
 		util::InitTextureParams params = {};
@@ -54,32 +103,10 @@ namespace puffin::rendering
 		return true;
 	}
 
-	bool TextureManagerVK::LoadTextures(const std::vector<UUID>& assetIDs, bool forceReload)
+	void TextureManagerVK::UnloadTextureInternal(UUID assetID) const
 	{
-		bool allTexturesLoaded = true;
-		for (const auto& assetID : assetIDs)
-		{
-			if (!LoadTexture(assetID))
-				allTexturesLoaded = false;
-		}
-
-		return allTexturesLoaded;
-	}
-
-	bool TextureManagerVK::UnloadTexture(UUID assetID)
-	{
-		if (mTextures.find(assetID) == mTextures.end())
-			return true;
-
-		DestroyTexture(mTextures.at(assetID));
-
-		mTextures.erase(assetID);
-
-		return true;
-	}
-
-	void TextureManagerVK::DestroyTexture(const Texture& texture)
-	{
+		const auto& texture = mTextures.at(assetID);
+		
 		mRenderSubsystem->GetDevice().destroyImageView(texture.imageView);
 		mRenderSubsystem->GetAllocator().destroyImage(texture.image, texture.allocation);
 	}

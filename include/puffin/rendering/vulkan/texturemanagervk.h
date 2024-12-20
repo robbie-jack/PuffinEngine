@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <unordered_set>
+
 #include "puffin/assets/textureasset.h"
 #include "puffin/types/uuid.h"
 #include "puffin/types/storage/mappedvector.h"
@@ -27,18 +29,29 @@ namespace puffin::rendering
 		explicit TextureManagerVK(puffin::rendering::RenderSubsystemVK* renderSubystem);
 		~TextureManagerVK();
 
-		bool LoadTexture(UUID assetID, bool forceReload = false);
-		bool LoadTextures(const std::vector<UUID>& assetIDs, bool forceReload = false);
+		void AddTextureToLoad(UUID assetID, bool forceReload = false);
+		void AddTexturesToLoad(const std::vector<UUID>& assetIDs, bool forceReload = false);
 
-		bool UnloadTexture(UUID assetID);
+		void AddTextureToUnload(UUID assetID);
+
+		void LoadAndUnloadTextures();
+
+		bool IsLoaded(UUID assetID) const;
+		const Texture& GetTexture(UUID assetID) const;
+
+		bool TextureDescriptorNeedsUpdated() const;
 
 	private:
+		bool LoadTextureInternal(UUID assetID);
 
-		void DestroyTexture(const Texture& texture);
+		void UnloadTextureInternal(UUID assetID) const;
 
 		RenderSubsystemVK* mRenderSubsystem = nullptr;
 
 		std::unordered_map<UUID, Texture> mTextures;
-
+		std::unordered_set<UUID> mTexturesToLoad;
+		std::unordered_set<UUID> mTexturesToUnload;
+		bool mTextureDescriptorNeedsUpdated = false;
+		
 	};
 }

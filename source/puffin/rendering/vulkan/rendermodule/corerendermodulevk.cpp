@@ -1,11 +1,19 @@
 ﻿#include "puffin/rendering/vulkan/rendermodule/corerendermodulevk.h"
 
 #include "vk_mem_alloc.hpp"
+#include "puffin/assets/assetregistry.h"
+#include "puffin/assets/staticmeshasset.h"
 
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
 #include "puffin/rendering/vulkan/resourcedescvk.h"
 #include "puffin/rendering/vulkan/resourcemanagervk.h"
+#include "puffin/components/transformcomponent2d.h"
+#include "puffin/components/transformcomponent3d.h"
+#include "puffin/components/rendering/3d/staticmeshcomponent3d.h"
+#include "puffin/rendering/vulkan/unifiedgeometrybuffervk.h"
+#include "puffin/rendering/vulkan/materialregistryvk.h"
+#include "puffin/rendering/vulkan/texturemanagervk.h"
 
 namespace puffin::rendering
 {
@@ -22,7 +30,8 @@ namespace puffin::rendering
 	void CoreRenderModuleVK::Initialize()
 	{
 		RenderModuleVK::Initialize();
-		
+
+		BindCallbacks();
 		InitBuffers();
 		InitSamplers();
 		InitDescriptorLayouts();
@@ -75,6 +84,19 @@ namespace puffin::rendering
 	void CoreRenderModuleVK::UpdateResources(ResourceManagerVK* resourceManager)
 	{
 		RenderModuleVK::UpdateResources(resourceManager);
+
+		// Load Meshes
+		{
+			for (const auto meshID : mMeshesToLoad)
+			{
+				if (const auto staticMesh = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshID))
+				{
+					mRenderSubsystem->GetUnifiedGeometryBuffer()->AddStaticMesh(staticMesh);
+				}
+			}
+
+			mMeshesToLoad.clear();
+		}
 	}
 
 	void CoreRenderModuleVK::UpdateGraph(RenderGraphVK& renderGraph)
@@ -85,8 +107,29 @@ namespace puffin::rendering
 	void CoreRenderModuleVK::PreRender(double deltaTime)
 	{
 		RenderModuleVK::PreRender(deltaTime);
+
+		// Upload material data to gpu when updated
+		{
+			if (mRenderSubsystem->GetMaterialRegistry()->MaterialDataNeedsUploaded())
+			{
+				for (uint32_t i = 0; i < gBufferedFrameCount; i++)
+				{
+					mFrameRenderData[i].copyMaterialDataToGPU = true;
+				}
+			}
+		}
+
+		// Update texture descriptor if needed
+		{
+			if (mRenderSubsystem->GetTextureManager()->TextureDescriptorNeedsUpdated() == true)
+			{
+				for (int i = 0; i < gBufferedFrameCount; i++)
+				{
+					mFrameRenderData[i].textureDescriptorNeedsUpdated = true;
+				}
+			}
+		}
 		
-		UpdateRenderData();
 		ProcessComponents();
 		UpdateTextureDescriptors();
 		PrepareSceneData();
@@ -95,7 +138,17 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::OnUpdateMesh(entt::registry& registry, entt::entity entity)
 	{
+		const auto mesh = registry.get<StaticMeshComponent3D>(entity);
 
+		if (mesh.meshID == gInvalidID || mesh.materialID == gInvalidID)
+		{
+			return;
+		}
+
+		mMeshesToLoad.insert(mesh.meshID);
+		mRenderSubsystem->GetMaterialRegistry()->AddMaterialInstanceToLoad(mesh.materialID);
+
+		AddRenderable(registry, entity);
 	}
 
 	void CoreRenderModuleVK::OnUpdateTransform(entt::registry& registry, entt::entity entity)
@@ -111,6 +164,26 @@ namespace puffin::rendering
 	void CoreRenderModuleVK::AddRenderable(entt::registry& registry, entt::entity entity)
 	{
 
+	}
+
+	void CoreRenderModuleVK::BindCallbacks()
+	{
+		const auto& enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		
+		// Bind callbacks
+		const auto registry = enttSubsystem->GetRegistry();
+
+		registry->on_construct<StaticMeshComponent3D>().connect<&CoreRenderModuleVK::OnUpdateMesh>(this);
+		registry->on_update<StaticMeshComponent3D>().connect<&CoreRenderModuleVK::OnUpdateMesh>(this);
+		registry->on_destroy<StaticMeshComponent3D>().connect<&CoreRenderModuleVK::OnDestroyMeshOrTransform>(this);
+
+		registry->on_construct<TransformComponent2D>().connect<&CoreRenderModuleVK::OnUpdateTransform>(this);
+		registry->on_update<TransformComponent2D>().connect<&CoreRenderModuleVK::OnUpdateTransform>(this);
+		registry->on_destroy<TransformComponent2D>().connect<&CoreRenderModuleVK::OnDestroyMeshOrTransform>(this);
+
+		registry->on_construct<TransformComponent3D>().connect<&CoreRenderModuleVK::OnUpdateTransform>(this);
+		registry->on_update<TransformComponent3D>().connect<&CoreRenderModuleVK::OnUpdateTransform>(this);
+		registry->on_destroy<TransformComponent3D>().connect<&CoreRenderModuleVK::OnDestroyMeshOrTransform>(this);
 	}
 
 	void CoreRenderModuleVK::InitBuffers()
@@ -280,11 +353,6 @@ namespace puffin::rendering
 				constexpr uint32_t lightCount = gMaxLights;
 			}
 		}
-	}
-
-	void CoreRenderModuleVK::UpdateRenderData()
-	{
-
 	}
 
 	void CoreRenderModuleVK::ProcessComponents()

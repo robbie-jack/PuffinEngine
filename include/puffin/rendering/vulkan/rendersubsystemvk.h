@@ -152,6 +152,8 @@ namespace puffin::rendering
 		DeletionQueue& GetDeletionQueue() { return mDeletionQueue; }
 		bool GetRebarEnabled() const { return mRebarEnabled; }
 		ResourceManagerVK* GetResourceManager() const { return mResourceManager.get(); }
+		TextureManagerVK* GetTextureManager() const { return mTextureManager.get(); }
+		MaterialRegistryVK* GetMaterialRegistry() const { return mMaterialRegistry.get(); }
 		UnifiedGeometryBufferVK* GetUnifiedGeometryBuffer() const { return mUnifiedGeometryBuffer.get(); }
 		util::DescriptorAllocator* GetDescriptorAllocator() const { return mDescriptorAllocator.get(); }
 		util::DescriptorLayoutCache* GetDescriptorLayoutCache() const { return mDescriptorLayoutCache.get(); }
@@ -165,8 +167,6 @@ namespace puffin::rendering
 
 		void OnConstructOrUpdateShadowCaster(entt::registry& registry, entt::entity entity);
 		void OnDestroyShadowCaster(entt::registry& registry, entt::entity entity);
-
-		void RegisterTexture(UUID textureID);
 
 		struct DrawCommandParams
 		{

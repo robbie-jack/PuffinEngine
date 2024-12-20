@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <unordered_set>
+
 #include "vulkan/vulkan.hpp"
 
 #include "puffin/rendering/resourceid.h"
@@ -23,6 +25,9 @@ namespace puffin::rendering
 			vk::DescriptorSet lightDescriptor;
 			vk::DescriptorSet materialDescriptor;
 			vk::DescriptorSet shadowDescriptor;
+
+			bool copyMaterialDataToGPU = false;
+			bool textureDescriptorNeedsUpdated = false;
 		};
 
 		explicit CoreRenderModuleVK(std::shared_ptr<core::Engine> engine, RenderSubsystemVK* renderSubsystem);
@@ -49,12 +54,12 @@ namespace puffin::rendering
 
 		void AddRenderable(entt::registry& registry, entt::entity entity);
 
+		void BindCallbacks();
 		void InitBuffers();
 		void InitSamplers();
 		void InitDescriptorLayouts();
 		void InitDescriptorSets();
-
-		void UpdateRenderData();
+		
 		void ProcessComponents();
 		void UpdateTextureDescriptors();
 		void PrepareSceneData();
@@ -76,5 +81,6 @@ namespace puffin::rendering
 		ResourceID mShadowDescriptorLayoutID = gInvalidID; // PUFFIN_TODO - Dummy layout, will be removed once shadows are implemented in own render module
 
 		std::array<FrameRenderData, gBufferedFrameCount> mFrameRenderData;
+		std::unordered_set<UUID> mMeshesToLoad; // Meshes that need to be loaded
 	};
 }

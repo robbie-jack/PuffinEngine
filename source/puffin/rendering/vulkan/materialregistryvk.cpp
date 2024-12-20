@@ -5,6 +5,7 @@
 #include "puffin/assets/shaderasset.h"
 #include "puffin/rendering/vulkan/pipelinevk.h"
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
+#include "puffin/rendering/vulkan/texturemanagervk.h"
 
 namespace puffin::rendering
 {
@@ -30,17 +31,15 @@ namespace puffin::rendering
 		mRenderSystem = nullptr;
 	}
 
-	void MaterialRegistryVK::RegisterMaterialInstance(const UUID& id)
+	void MaterialRegistryVK::AddMaterialInstanceToLoad(const UUID& id)
 	{
 		if (id != gInvalidID)
 		{
 			mMaterialsInstancesToLoad.insert(id);
 		}
-
-		// PUFFIN_TODO - Load Material Instance Assets Asynchronously
 	}
 
-	void MaterialRegistryVK::Update()
+	void MaterialRegistryVK::LoadMaterialsAndInstances()
 	{
 		mMaterialDataNeedsUploaded = false;
 
@@ -51,6 +50,7 @@ namespace puffin::rendering
 			{
 				mMatData.Emplace(matInstID, MaterialDataVK());
 
+				// PUFFIN_TODO - Load Material Instance Assets Asynchronously
 				LoadMaterialInstance(matInstID, mMatData.At(matInstID));
 
 				mMaterialDataNeedsUploaded = true;
@@ -67,13 +67,14 @@ namespace puffin::rendering
 		// Load Materials
 		for (const auto matID : mMaterialsToLoad)
 		{
+			// PUFFIN_TODO - Load & init materials asynchronously
 			InitMaterialPipeline(matID);
 		}
 
 		mMaterialsToLoad.clear();
 	}
 
-	bool MaterialRegistryVK::GetMaterialDataNeedsUploaded() const
+	bool MaterialRegistryVK::MaterialDataNeedsUploaded() const
 	{
 		return mMaterialDataNeedsUploaded;
 	}
@@ -130,7 +131,7 @@ namespace puffin::rendering
 			{
 				if (texID != gInvalidID)
 				{
-					mRenderSystem->RegisterTexture(texID);
+					mRenderSystem->GetTextureManager()->AddTextureToLoad(texID);
 				}
 			}
 

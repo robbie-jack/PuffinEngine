@@ -185,13 +185,6 @@ namespace puffin::rendering
 
 		if (mInitialized)
 		{
-			for (auto texData : mTexData)
-			{
-				UnloadTexture(texData);
-			}
-
-			mTexData.Clear();
-
 			CleanOffscreen(mOffscreenData);
 
 			if (mOffscreenDataOld.needsCleaned)
@@ -284,7 +277,7 @@ namespace puffin::rendering
 		//	3. Reset & Build Graph
 		UpdateGraph();
 
-		//	4. Pre-Render - Upload all needed data to GPU (Textures, Object Data, Materials, etc...)
+		//	4. Pre-Render - Prepare rendering data, upload all needed data to GPU (Textures, Object Data, Materials, etc...), etc..
 
 		PreRender(deltaTime);
 
@@ -343,7 +336,7 @@ namespace puffin::rendering
 		}
 
 		mMeshesToLoad.insert(mesh.meshID);
-		mMaterialRegistry->RegisterMaterialInstance(mesh.materialID);
+		mMaterialRegistry->AddMaterialInstanceToLoad(mesh.materialID);
 
 		AddRenderable(registry, entity);
 	}
@@ -397,11 +390,6 @@ namespace puffin::rendering
 		}
 
 		shadow.shadowCascadeIDs.clear();
-	}
-
-	void RenderSubsystemVK::RegisterTexture(UUID textureID)
-	{
-		mTexturesToLoad.insert(textureID);
 	}
 
 	void RenderSubsystemVK::DrawCommand(vk::CommandBuffer& cmd, const DrawCommandParams& cmdParams)
@@ -1175,6 +1163,10 @@ namespace puffin::rendering
 		mResourceManager->DestroyResources();
 
 		mResourceManager->CreateAndUpdateResources();
+
+		mMaterialRegistry->LoadMaterialsAndInstances();
+
+		mTextureManager->LoadAndUnloadTextures();
 	}
 
 	void RenderSubsystemVK::UpdateGraph()
@@ -1350,22 +1342,9 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::UpdateRenderData()
 	{
-		// Load Meshes
+		// Upload material data to gpu when updated
 		{
-			for (const auto meshID : mMeshesToLoad)
-			{
-				if (const auto staticMesh = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(meshID))
-				{
-					mUnifiedGeometryBuffer->AddStaticMesh(staticMesh);
-				}
-			}
-
-			mMeshesToLoad.clear();
-
-			// Load Materials
-			mMaterialRegistry->Update();
-
-			if (mMaterialRegistry->GetMaterialDataNeedsUploaded())
+			if (mMaterialRegistry->MaterialDataNeedsUploaded())
 			{
 				for (uint32_t i = 0; i < gBufferedFrameCount; i++)
 				{
@@ -1374,25 +1353,9 @@ namespace puffin::rendering
 			}
 		}
 
-		// Load Textures
+		// Update texture descriptor if needed
 		{
-			bool textureDescriptorNeedsUpdated = false;
-			for (const auto texID : mTexturesToLoad)
-			{
-				if (texID != gInvalidID && !mTexData.Contains(texID))
-				{
-					TextureDataVK texData;
-					LoadTexture(texID, texData);
-
-					mTexData.Emplace(texID, texData);
-
-					textureDescriptorNeedsUpdated = true;
-				}
-			}
-
-			mTexturesToLoad.clear();
-
-			if (textureDescriptorNeedsUpdated == true)
+			if (mTextureManager->TextureDescriptorNeedsUpdated() == true)
 			{
 				for (int i = 0; i < gBufferedFrameCount; i++)
 				{
