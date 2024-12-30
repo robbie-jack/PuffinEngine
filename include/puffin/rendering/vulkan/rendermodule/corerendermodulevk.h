@@ -8,6 +8,8 @@
 #include "puffin/rendering/vulkan/rendermodule/rendermodulevk.h"
 #include "entt/entity/registry.hpp"
 #include "puffin/rendering/renderglobals.h"
+#include "puffin/rendering/vulkan/typesvk.h"
+#include "puffin/types/storage/mappedvector.h"
 
 namespace puffin::rendering
 {
@@ -26,6 +28,7 @@ namespace puffin::rendering
 			vk::DescriptorSet materialDescriptor;
 			vk::DescriptorSet shadowDescriptor;
 
+			bool copyObjectDataToGPU = false;
 			bool copyMaterialDataToGPU = false;
 			bool textureDescriptorNeedsUpdated = false;
 		};
@@ -82,5 +85,11 @@ namespace puffin::rendering
 
 		std::array<FrameRenderData, gBufferedFrameCount> mFrameRenderData;
 		std::unordered_set<UUID> mMeshesToLoad; // Meshes that need to be loaded
+
+		std::vector<MeshRenderable> mRenderables;
+		bool mUpdateRenderables = false;
+
+		MappedVector<UUID, GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
+		std::unordered_set<UUID> mObjectsToUpdate; // Objects which need their mesh data refreshed
 	};
 }

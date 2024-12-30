@@ -35,6 +35,8 @@ namespace puffin::rendering
 		InitBuffers();
 		InitSamplers();
 		InitDescriptorLayouts();
+
+		mUpdateRenderables = true;
 	}
 
 	void CoreRenderModuleVK::Deinitialize()
@@ -153,17 +155,31 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::OnUpdateTransform(entt::registry& registry, entt::entity entity)
 	{
-
+		AddRenderable(registry, entity);
 	}
 
 	void CoreRenderModuleVK::OnDestroyMeshOrTransform(entt::registry& registry, entt::entity entity)
 	{
-
+		mUpdateRenderables = true;
 	}
 
 	void CoreRenderModuleVK::AddRenderable(entt::registry& registry, entt::entity entity)
 	{
+		if (registry.any_of<TransformComponent2D, TransformComponent3D>(entity) && registry.any_of<StaticMeshComponent3D>(entity))
+		{
+			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+			const auto id = enttSubsystem->GetID(entity);
+			const auto mesh = registry.get<StaticMeshComponent3D>(entity);
 
+			if (mesh.meshID == gInvalidID || mesh.materialID == gInvalidID)
+			{
+				return;
+			}
+
+			mObjectsToUpdate.emplace(id);
+
+			mUpdateRenderables = true;
+		}
 	}
 
 	void CoreRenderModuleVK::BindCallbacks()
@@ -357,7 +373,67 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::ProcessComponents()
 	{
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
 
+		const auto materialRegistry = mRenderSubsystem->GetMaterialRegistry();
+
+		if (mUpdateRenderables)
+		{
+			const auto meshView2D = registry->view<const TransformComponent2D, const StaticMeshComponent3D>();
+			const auto meshView3D = registry->view<const TransformComponent3D, const StaticMeshComponent3D>();
+
+			mRenderables.clear();
+
+			// Iterate 2D objects
+			for (auto [entity, transform, mesh] : meshView2D.each())
+			{
+				const auto nodeID = enttSubsystem->GetID(entity);
+
+				if (mesh.materialID == gInvalidID || mesh.meshID == gInvalidID)
+				{
+					continue;
+				}
+
+				const auto& matData = materialRegistry->GetMaterialData(mesh.materialID);
+
+				mRenderables.emplace_back(nodeID, mesh.meshID, matData.baseMaterialID, mesh.subMeshIdx);
+
+				if (!mCachedObjectData.Contains(nodeID))
+				{
+					mCachedObjectData.Emplace(nodeID, GPUObjectData());
+				}
+			}
+
+			// Iterate 3D objects
+			for (auto [entity, transform, mesh] : meshView3D.each())
+			{
+				const auto node_id = enttSubsystem->GetID(entity);
+
+				if (mesh.materialID == gInvalidID || mesh.meshID == gInvalidID)
+				{
+					continue;
+				}
+
+				const auto& matData = materialRegistry->GetMaterialData(mesh.materialID);
+
+				mRenderables.emplace_back(node_id, mesh.meshID, matData.baseMaterialID, mesh.subMeshIdx);
+
+				if (!mCachedObjectData.Contains(node_id))
+				{
+					mCachedObjectData.Emplace(node_id, GPUObjectData());
+				}
+			}
+
+			std::sort(mRenderables.begin(), mRenderables.end());
+
+			for (auto& frameData : mFrameRenderData)
+			{
+				frameData.copyObjectDataToGPU = true;
+			}
+			
+			mUpdateRenderables = false;
+		}
 	}
 
 	void CoreRenderModuleVK::UpdateTextureDescriptors()
