@@ -152,14 +152,14 @@ namespace puffin::rendering
 
 		PostInitModules();
 
-		InitCommands();
+		InitCommands(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
 
-		InitSyncStructures();
-		InitBuffers();
-		InitSamplers();
+		InitSyncStructures(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
+		InitBuffers(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
+		InitSamplers(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
 
-		BuildDescriptors();
-		InitPipelines();
+		BuildDescriptors(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
+		InitPipelines(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
 
 		if (mEngine->GetShouldRenderEditorUI())
 		{
@@ -271,7 +271,7 @@ namespace puffin::rendering
 		GetNextSwapchainIdx();
 
 		//	2. Update Render Resources (Buffers, Images, Descriptions Sync Structures, etc...)
-		UpdateShadows();
+		UpdateShadows(); // PUFFIN_TODO - Move logic to shadow render module
 		UpdateResources();
 
 		//	3. Reset & Build Graph
@@ -281,28 +281,29 @@ namespace puffin::rendering
 
 		PreRender(deltaTime);
 
-		UpdateRenderData();
+		UpdateRenderData(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
 
-		ProcessComponents();
+		ProcessComponents(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
 
 		UpdateSwapchainAndOffscreen();
 
 		RenderEditorUI();
 
-		UpdateTextureDescriptors();
+		UpdateTextureDescriptors(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
 
-		UpdateShadowDescriptors();
+		UpdateShadowDescriptors(); // PUFFIN_TODO - Move logic to shadow render module
 
-		PrepareSceneData();
+		PrepareSceneData(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
 
-		BuildIndirectCommands();
+		BuildIndirectCommands(); // PUFFIN_TODO - Remove once all rendering logic is implemented in render modules
 
 		//	5. Render - Record & Submit Render Commands
 
 		mDrawCallsCountTotal = 0;
 		mDrawCallsCount.clear();
 
-		//		5a. Record Resource Transition Commands - PUFFIN_TODO
+		//		5a. Record Resource Transition Commands - PUFFIN_TODO - Implement automatic resource transition logic,
+		//		to replace manual implementations
 
 
 
@@ -312,7 +313,8 @@ namespace puffin::rendering
 
 		//		5c. Submit Commands
 
-		RecordAndSubmitCommands(mCurrentSwapchainIdx);
+		RecordAndSubmitCommands(mCurrentSwapchainIdx); // PUFFIN_TODO - Remove command buffer recording logic
+		// once all rendering logic is implemented in render modules
 
 		//	6. Update frame counter & index
 

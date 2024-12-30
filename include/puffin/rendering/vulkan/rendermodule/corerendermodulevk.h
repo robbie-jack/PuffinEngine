@@ -64,9 +64,18 @@ namespace puffin::rendering
 		void InitDescriptorSets();
 		
 		void ProcessComponents();
+		
 		void UpdateTextureDescriptors();
+		void BuildTextureDescriptorInfo(MappedVector<UUID, TextureDataVK>& textureData,
+												   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
+		
 		void PrepareSceneData();
 		void BuildIndirectCommands();
+
+		FrameRenderData& GetFrameData(uint8_t frameIdx);
+		FrameRenderData& GetCurrentFrameData();
+
+		bool mInitialized = false; // Indicates initialization completed without any failures
 
 		vk::Sampler mTextureSampler;
 
@@ -85,6 +94,8 @@ namespace puffin::rendering
 
 		std::array<FrameRenderData, gBufferedFrameCount> mFrameRenderData;
 		std::unordered_set<UUID> mMeshesToLoad; // Meshes that need to be loaded
+		
+		MappedVector<UUID, TextureDataVK> mTexData;
 
 		std::vector<MeshRenderable> mRenderables;
 		bool mUpdateRenderables = false;

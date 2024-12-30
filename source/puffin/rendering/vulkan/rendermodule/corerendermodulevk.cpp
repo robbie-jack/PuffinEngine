@@ -37,6 +37,7 @@ namespace puffin::rendering
 		InitDescriptorLayouts();
 
 		mUpdateRenderables = true;
+		mInitialized = true;
 	}
 
 	void CoreRenderModuleVK::Deinitialize()
@@ -73,6 +74,8 @@ namespace puffin::rendering
 		mRenderSubsystem->GetResourceManager()->DestroyResource(mMatDescriptorLayoutID);
 		mMatDescriptorLayoutID = gInvalidID;
 
+		mInitialized = false;
+
 		RenderModuleVK::Deinitialize();
 	}
 
@@ -80,7 +83,7 @@ namespace puffin::rendering
 	{
 		RenderModuleVK::PostInitialize();
 
-		InitDescriptorLayouts();
+		InitDescriptorSets();
 	}
 
 	void CoreRenderModuleVK::UpdateResources(ResourceManagerVK* resourceManager)
@@ -121,10 +124,23 @@ namespace puffin::rendering
 			}
 		}
 
-		// Update texture descriptor if needed
+		// Update texture data and descriptor if needed
 		{
-			if (mRenderSubsystem->GetTextureManager()->TextureDescriptorNeedsUpdated() == true)
+			const auto& textureManager = mRenderSubsystem->GetTextureManager();
+			
+			if (textureManager->TextureDescriptorNeedsUpdated() == true)
 			{
+				mTexData.Clear();
+
+				for (const auto& [id, texture] : textureManager->GetLoadedTextures())
+				{
+					TextureDataVK texData;
+					texData.id = id;
+					texData.sampler = mTextureSampler;
+					
+					mTexData.Emplace(id, texData);
+				}
+				
 				for (int i = 0; i < gBufferedFrameCount; i++)
 				{
 					mFrameRenderData[i].textureDescriptorNeedsUpdated = true;
@@ -438,7 +454,41 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::UpdateTextureDescriptors()
 	{
+		if (mInitialized && GetCurrentFrameData().textureDescriptorNeedsUpdated)
+		{
+			std::vector<vk::DescriptorImageInfo> textureImageInfos;
+			BuildTextureDescriptorInfo(mTexData, textureImageInfos);
 
+			util::DescriptorBuilder::Begin(mRenderSubsystem->GetDescriptorLayoutCache(), mRenderSubsystem->GetDescriptorAllocator())
+				.UpdateImages(1, textureImageInfos.size(), textureImageInfos.data(),
+							  vk::DescriptorType::eCombinedImageSampler)
+				.Update(GetCurrentFrameData().materialDescriptor);
+
+			GetCurrentFrameData().textureDescriptorNeedsUpdated = false;
+		}
+	}
+
+	void CoreRenderModuleVK::BuildTextureDescriptorInfo(MappedVector<UUID, TextureDataVK>& textureData,
+		std::vector<vk::DescriptorImageInfo>& textureImageInfos) const
+	{
+		textureImageInfos.clear();
+		textureImageInfos.reserve(textureData.Size());
+
+		const auto& textureManager = mRenderSubsystem->GetTextureManager();
+
+		int idx = 0;
+		for (auto& texData : textureData)
+		{
+			const auto& texture = textureManager->GetTexture(texData.id);
+			
+			vk::DescriptorImageInfo textureImageInfo = {
+				texData.sampler, texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal
+			};
+			textureImageInfos.push_back(textureImageInfo);
+
+			texData.idx = idx;
+			idx++;
+		}
 	}
 
 	void CoreRenderModuleVK::PrepareSceneData()
@@ -449,5 +499,15 @@ namespace puffin::rendering
 	void CoreRenderModuleVK::BuildIndirectCommands()
 	{
 
+	}
+
+	CoreRenderModuleVK::FrameRenderData& CoreRenderModuleVK::GetFrameData(uint8_t frameIdx)
+	{
+		return mFrameRenderData[frameIdx];
+	}
+
+	CoreRenderModuleVK::FrameRenderData& CoreRenderModuleVK::GetCurrentFrameData()
+	{
+		return GetFrameData(mRenderSubsystem->GetCurrentFrameIdx());
 	}
 }
