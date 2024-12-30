@@ -311,9 +311,6 @@ namespace puffin::rendering
 
 		void RecordAndSubmitCommands(uint32_t swapchainIdx);
 
-		static void BuildModelTransform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
-		                                glm::mat4& model);
-
 		void BuildTextureDescriptorInfo(MappedVector<UUID, TextureDataVK>& textureData,
 		                                   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 		void BuildShadowDescriptorInfo(std::vector<vk::DescriptorImageInfo>& shadowImageInfos);

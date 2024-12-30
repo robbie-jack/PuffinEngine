@@ -4,6 +4,8 @@
 #include <memory>
 
 #include "puffin/rendering/vulkan/typesvk.h"
+#include "puffin/types/quat.h"
+#include "puffin/types/vector3.h"
 
 namespace puffin::rendering
 {
@@ -92,4 +94,7 @@ namespace puffin::rendering::util
 		std::vector<vk::DescriptorBindingFlags> bindingFlags;
 	};
 	vk::DescriptorSetLayout CreateDescriptorLayout(const vk::Device& device, const CreateDescriptorLayoutParams& params);
+
+	void UpdateModelTransform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
+										glm::mat4& model);
 }

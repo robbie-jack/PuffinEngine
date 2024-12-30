@@ -9,6 +9,7 @@
 #include "entt/entity/registry.hpp"
 #include "puffin/rendering/renderglobals.h"
 #include "puffin/rendering/vulkan/typesvk.h"
+#include "puffin/types/vector3.h"
 #include "puffin/types/storage/mappedvector.h"
 
 namespace puffin::rendering
@@ -28,8 +29,11 @@ namespace puffin::rendering
 			vk::DescriptorSet materialDescriptor;
 			vk::DescriptorSet shadowDescriptor;
 
-			bool copyObjectDataToGPU = false;
-			bool copyMaterialDataToGPU = false;
+			GPUFragShaderPushConstant pushConstantFrag;
+
+			bool updateGPUObjectData = false;
+			bool updateGPUMaterialData = false;
+			bool updateGPULightData = false;
 			bool textureDescriptorNeedsUpdated = false;
 		};
 
@@ -54,6 +58,7 @@ namespace puffin::rendering
 		void OnUpdateMesh(entt::registry& registry, entt::entity entity);
 		void OnUpdateTransform(entt::registry& registry, entt::entity entity);
 		void OnDestroyMeshOrTransform(entt::registry& registry, entt::entity entity);
+		void OnUpdateLight(entt::registry& registry, entt::entity entity);
 
 		void AddRenderable(entt::registry& registry, entt::entity entity);
 
@@ -70,6 +75,10 @@ namespace puffin::rendering
 												   std::vector<vk::DescriptorImageInfo>& textureImageInfos) const;
 		
 		void PrepareSceneData();
+		void PrepareMaterialData();
+		void PrepareObjectData();
+		void PrepareLightData();
+		
 		void BuildIndirectCommands();
 
 		FrameRenderData& GetFrameData(uint8_t frameIdx);
@@ -102,5 +111,7 @@ namespace puffin::rendering
 
 		MappedVector<UUID, GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
 		std::unordered_set<UUID> mObjectsToUpdate; // Objects which need their mesh data refreshed
+
+		MappedVector<UUID, Vector3f> mCachedLightDirection;
 	};
 }

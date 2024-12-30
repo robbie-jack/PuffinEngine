@@ -1775,7 +1775,7 @@ namespace puffin::rendering
 
 					GPUObjectData object = {};
 
-					BuildModelTransform(position, orientation, scale, object.model);
+					util::UpdateModelTransform(position, orientation, scale, object.model);
 
 					const auto& mesh = registry->get<StaticMeshComponent3D>(entity);
 					object.matIdx = mMaterialRegistry->GetMaterialData(mesh.materialID).idx;
@@ -2827,18 +2827,6 @@ namespace puffin::rendering
 		}
 
 		VK_CHECK(mGraphicsQueue.presentKHR(&presentInfo));
-	}
-
-	void RenderSubsystemVK::BuildModelTransform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
-	                                         glm::mat4& model)
-	{
-		const auto scaleM = glm::scale(glm::mat4(1.0f), static_cast<glm::vec3>(scale));
-
-		const auto orientM = glm::toMat4(static_cast<glm::quat>(orientation));
-
-		const auto translateM = glm::translate(glm::mat4(1.0f), static_cast<glm::vec3>(position));
-
-		model = translateM * orientM * scaleM;
 	}
 
 	void RenderSubsystemVK::BuildTextureDescriptorInfo(MappedVector<UUID, TextureDataVK>& textureData,

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <glm/gtx/quaternion.hpp>
 
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
@@ -230,5 +231,17 @@ namespace puffin::rendering::util
 		VK_CHECK(device.createDescriptorSetLayout(&layoutInfo, nullptr, &layout));
 
 		return layout;
+	}
+
+	void UpdateModelTransform(const Vector3f& position, const maths::Quat& orientation, const Vector3f& scale,
+		glm::mat4& model)
+	{
+		const auto scaleM = glm::scale(glm::mat4(1.0f), static_cast<glm::vec3>(scale));
+
+		const auto orientM = glm::toMat4(static_cast<glm::quat>(orientation));
+
+		const auto translateM = glm::translate(glm::mat4(1.0f), static_cast<glm::vec3>(position));
+
+		model = translateM * orientM * scaleM;
 	}
 }
