@@ -85,6 +85,7 @@ namespace puffin::rendering
 		FrameRenderData& GetCurrentFrameData();
 
 		bool mInitialized = false; // Indicates initialization completed without any failures
+		bool mUpdateRenderables = false; // Indicate renderables need to be updated
 
 		vk::Sampler mTextureSampler;
 
@@ -107,7 +108,8 @@ namespace puffin::rendering
 		MappedVector<UUID, TextureDataVK> mTexData;
 
 		std::vector<MeshRenderable> mRenderables;
-		bool mUpdateRenderables = false;
+
+		std::vector<MeshDrawBatch> mDrawBatches;
 
 		MappedVector<UUID, GPUObjectData> mCachedObjectData; // Cached data for rendering each object in scene
 		std::unordered_set<UUID> mObjectsToUpdate; // Objects which need their mesh data refreshed

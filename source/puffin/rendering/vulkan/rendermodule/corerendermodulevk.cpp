@@ -940,7 +940,94 @@ namespace puffin::rendering
 
 	void CoreRenderModuleVK::BuildIndirectCommands()
 	{
+		const auto& resourceManager = mRenderSubsystem->GetResourceManager();
+		const auto& materialRegistry = mRenderSubsystem->GetMaterialRegistry();
+		const auto& unifiedGeometryBuffer = mRenderSubsystem->GetUnifiedGeometryBuffer();
+		
+		if (!mRenderables.empty())
+		{
+			std::vector<vk::DrawIndexedIndirectCommand> indirectCmds = {};
+			indirectCmds.resize(gMaxObjects);
 
+			mDrawBatches.clear();
+			mDrawBatches.reserve(materialRegistry->GetAllMaterialData().Size());
+
+			bool newBatch = false;
+			int cmdIdx = 0;
+			int cmdCount = 0;
+			int instanceIdx = 0;
+			int instanceCount = 0;
+			UUID currentMeshID = mRenderables[0].meshID;
+			uint8_t currentSubMeshIdx = mRenderables[0].subMeshIdx;
+
+			MeshDrawBatch drawBatch;
+			drawBatch.matID = mRenderables[0].matID;
+			drawBatch.cmdIndex = 0;
+
+			indirectCmds[cmdIdx].vertexOffset = unifiedGeometryBuffer->MeshVertexOffset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].firstIndex = unifiedGeometryBuffer->MeshIndexOffset(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].indexCount = unifiedGeometryBuffer->MeshIndexCount(currentMeshID, currentSubMeshIdx);
+			indirectCmds[cmdIdx].firstInstance = 0;
+
+			constexpr int maxInstancesPerCommand = gMaxObjects;
+			constexpr int maxCommandsPerBatch = gMaxObjects;
+
+			for (const auto& [entityID, meshID, matID, subMeshIdx] : mRenderables)
+			{
+				// Push current draw batch struct to vector when material changes or max commands per batch is exceeded
+				if (drawBatch.matID != matID || cmdCount >= maxCommandsPerBatch)
+				{
+					drawBatch.cmdCount = cmdCount;
+					cmdCount = 0;
+
+					mDrawBatches.push_back(drawBatch);
+
+					drawBatch.matID = matID;
+					drawBatch.cmdIndex = cmdIdx;
+
+					newBatch = true;
+				}
+
+				// Start a new command when a new mesh is encountered, when a new batch is started or when maxInstancesPerCommand is exceeded
+				if (currentMeshID != meshID || currentSubMeshIdx != subMeshIdx || newBatch || instanceCount >= maxInstancesPerCommand)
+				{
+					currentMeshID = meshID;
+					currentSubMeshIdx = subMeshIdx;
+
+					indirectCmds[cmdIdx].instanceCount = instanceCount;
+					instanceCount = 0;
+
+					cmdIdx++;
+					cmdCount++;
+
+					indirectCmds[cmdIdx].vertexOffset = unifiedGeometryBuffer->MeshVertexOffset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].firstIndex = unifiedGeometryBuffer->MeshIndexOffset(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].indexCount = unifiedGeometryBuffer->MeshIndexCount(currentMeshID, currentSubMeshIdx);
+					indirectCmds[cmdIdx].firstInstance = instanceIdx;
+
+					newBatch = false;
+				}
+
+				instanceIdx++;
+				instanceCount++;
+			}
+
+			// Fill out last command
+			indirectCmds[cmdIdx].instanceCount = instanceCount;
+
+			cmdCount++;
+
+			drawBatch.cmdCount = cmdCount;
+
+			// Push final draw batch struct to vector at end of loop
+			mDrawBatches.push_back(drawBatch);
+
+			util::CopyCPUDataIntoGPUBufferParams params;
+			params.dataSize = indirectCmds.size() * sizeof(vk::DrawIndexedIndirectCommand);
+			params.dstBuffer = resourceManager->GetBuffer(mIndirectDrawBufferID);
+			params.srcData = indirectCmds.data();
+			util::CopyCPUDataIntoGPUBuffer(mRenderSubsystem, params);
+		}
 	}
 
 	CoreRenderModuleVK::FrameRenderData& CoreRenderModuleVK::GetFrameData(uint8_t frameIdx)
