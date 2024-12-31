@@ -63,12 +63,16 @@ namespace puffin::rendering
 				mTextures.erase(assetID);
 			}
 		}
+
+		mTexturesToUnload.clear();
 		
 		for (const UUID& assetID : mTexturesToLoad)
 		{
 			if (LoadTextureInternal(assetID) && !mTextureDescriptorNeedsUpdated)
 				mTextureDescriptorNeedsUpdated = true;
 		}
+
+		mTexturesToLoad.clear();
 	}
 
 	bool TextureManagerVK::IsLoaded(UUID assetID) const
