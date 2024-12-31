@@ -53,6 +53,10 @@ namespace puffin::rendering
 
 		void PreRender(double deltaTime) override;
 
+		FrameRenderData& GetFrameData(uint8_t frameIdx);
+		FrameRenderData& GetCurrentFrameData();
+		std::vector<MeshDrawBatch>& GetMeshDrawBatches();
+
 	private:
 
 		void OnUpdateMesh(entt::registry& registry, entt::entity entity);
@@ -80,9 +84,6 @@ namespace puffin::rendering
 		void PrepareLightData();
 		
 		void BuildIndirectCommands();
-
-		FrameRenderData& GetFrameData(uint8_t frameIdx);
-		FrameRenderData& GetCurrentFrameData();
 
 		bool mInitialized = false; // Indicates initialization completed without any failures
 		bool mUpdateRenderables = false; // Indicate renderables need to be updated

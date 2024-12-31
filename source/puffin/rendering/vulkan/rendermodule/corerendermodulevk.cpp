@@ -166,6 +166,21 @@ namespace puffin::rendering
 		BuildIndirectCommands();
 	}
 
+	CoreRenderModuleVK::FrameRenderData& CoreRenderModuleVK::GetFrameData(uint8_t frameIdx)
+	{
+		return mFrameRenderData[frameIdx];
+	}
+
+	CoreRenderModuleVK::FrameRenderData& CoreRenderModuleVK::GetCurrentFrameData()
+	{
+		return GetFrameData(mRenderSubsystem->GetCurrentFrameIdx());
+	}
+
+	std::vector<MeshDrawBatch>& CoreRenderModuleVK::GetMeshDrawBatches()
+	{
+		return mDrawBatches;
+	}
+
 	void CoreRenderModuleVK::OnUpdateMesh(entt::registry& registry, entt::entity entity)
 	{
 		const auto mesh = registry.get<StaticMeshComponent3D>(entity);
@@ -1028,15 +1043,5 @@ namespace puffin::rendering
 			params.srcData = indirectCmds.data();
 			util::CopyCPUDataIntoGPUBuffer(mRenderSubsystem, params);
 		}
-	}
-
-	CoreRenderModuleVK::FrameRenderData& CoreRenderModuleVK::GetFrameData(uint8_t frameIdx)
-	{
-		return mFrameRenderData[frameIdx];
-	}
-
-	CoreRenderModuleVK::FrameRenderData& CoreRenderModuleVK::GetCurrentFrameData()
-	{
-		return GetFrameData(mRenderSubsystem->GetCurrentFrameIdx());
 	}
 }

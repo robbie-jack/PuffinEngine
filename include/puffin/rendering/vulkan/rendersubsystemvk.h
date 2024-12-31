@@ -215,6 +215,15 @@ namespace puffin::rendering
 			mRenderModuleVector.push_back(mRenderModules.at(moduleName));
 		}
 
+		template<typename T>
+		T* GetModule(const std::string& moduleName)
+		{
+			if (mRenderModules.find(moduleName) != mRenderModules.end())
+				return static_cast<T*>(mRenderModules.at(moduleName));
+
+			return nullptr;
+		}
+
 	private:
 
 		// Initialization Methods

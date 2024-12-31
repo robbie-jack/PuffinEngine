@@ -25,6 +25,17 @@ namespace puffin::rendering::util
 		{ 64, vk::SampleCountFlagBits::e64 }
 	};
 
+	const std::unordered_map<vk::Result, std::string> gResultToString =
+	{
+		{ vk::Result::eSuccess, "Success" },
+		{ vk::Result::eErrorDeviceLost, "Device Lost" },
+		{ vk::Result::eErrorOutOfHostMemory, "Out of Host Memory"},
+		{ vk::Result::eErrorOutOfDeviceMemory, "Out of Device Memory"},
+		{ vk::Result::eTimeout, "Timeout"}
+	};
+
+	void CheckResult(vk::Result result);
+
 	void ImmediateSubmit(const RenderSubsystemVK* renderSystem, std::function<void(VkCommandBuffer cmd)>&& function);
 
 	struct CopyDataBetweenBuffersParams

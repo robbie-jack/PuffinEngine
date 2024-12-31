@@ -19,6 +19,23 @@
 
 namespace puffin::rendering::util
 {
+	void CheckResult(vk::Result result)
+	{
+		if (result != vk::Result::eSuccess)
+		{
+			if (gResultToString.find(result) != gResultToString.end())
+			{
+				std::cout << "Detected Vulkan Error: " << gResultToString.at(result) << std::endl;
+			}
+			else
+			{
+				std::cout << "Detected Vulkan Error: " << result << std::endl;
+			}
+
+			assert(false);
+		}
+	}
+
 	void ImmediateSubmit(const RenderSubsystemVK* renderSystem,
 	                     std::function<void(VkCommandBuffer cmd)>&& function)
 	{

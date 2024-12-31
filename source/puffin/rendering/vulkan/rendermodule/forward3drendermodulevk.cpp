@@ -1,9 +1,14 @@
 #include "puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h"
 
 #include "puffin/assets/assetregistry.h"
+#include "puffin/components/rendering/3d/cameracomponent3d.h"
+#include "puffin/rendering/camerasubsystem.h"
 #include "puffin/rendering/rendersubsystem.h"
+#include "puffin/rendering/vulkan/helpersvk.h"
+#include "puffin/rendering/vulkan/materialregistryvk.h"
 #include "puffin/rendering/vulkan/rendersubsystemvk.h"
 #include "puffin/rendering/vulkan/resourcemanagervk.h"
+#include "puffin/rendering/vulkan/unifiedgeometrybuffervk.h"
 #include "puffin/rendering/vulkan/rendergraph/rendergraphvk.h"
 #include "puffin/rendering/vulkan/rendergraph/renderpassvk.h"
 #include "puffin/rendering/vulkan/rendermodule/corerendermodulevk.h"
@@ -30,7 +35,7 @@ namespace puffin::rendering
 
 	void Forward3DRenderModuleVK::Deinitialize()
 	{
-		auto resourceManager = mRenderSubsystem->GetResourceManager();
+		const auto resourceManager = mRenderSubsystem->GetResourceManager();
 
 		mDefaultForwardPipeline = {};
 		mForwardPipelineLayout = {};
@@ -73,31 +78,151 @@ namespace puffin::rendering
 
 	void Forward3DRenderModuleVK::RecordForward3DCommands(vk::CommandBuffer& cmd)
 	{
-		//	1. Begin Rendering
+		const auto unifiedGeometryBuffer = mRenderSubsystem->GetUnifiedGeometryBuffer();
+		const auto materialRegistry = mRenderSubsystem->GetMaterialRegistry();
+		const auto resourceManager = mRenderSubsystem->GetResourceManager();
 
+		const vk::Extent2D& renderExtent = mRenderSubsystem->GetRenderExtent();
+		
+		AllocatedImage& color = resourceManager->GetImage(mColorResourceID);
+		AllocatedImage& depth = resourceManager->GetImage(mDepthResourceID);
+		AllocatedBuffer& indirectBuffer = resourceManager->GetBuffer("indirect_draw");		
 
+		const auto coreRenderModule = mRenderSubsystem->GetModule<CoreRenderModuleVK>("Core");
+		const CoreRenderModuleVK::FrameRenderData& frameRenderData = coreRenderModule->GetCurrentFrameData();
+		const std::vector<MeshDrawBatch>& meshDrawBatches = coreRenderModule->GetMeshDrawBatches();
 
-		//	2. Set Draw Parameters (Viewport, Scissor, etc...)
+		const auto cameraSubsystem = mEngine->GetSubsystem<CameraSubsystem>();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		auto registry = enttSubsystem->GetRegistry();
+		
+		vk::CommandBufferBeginInfo cmd_begin_info = {
+			vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+			nullptr, nullptr
+		};
 
+		util::CheckResult(cmd.begin(&cmd_begin_info));
+		
+		//	1. Transition to Color Attachment Optimal
 
+		vk::ImageSubresourceRange imageSubresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
 
-		//	3. Bind Buffers & Descriptors
+		vk::ImageMemoryBarrier offscreenMemoryBarrierToColor = {
+			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eColorAttachmentWrite,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, {},
+			color.image, imageSubresourceRange
+		};
 
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+							{}, 0, nullptr, 0, nullptr,
+							1, &offscreenMemoryBarrierToColor);
 
+		//	2. Begin Rendering
 
-		//	4. Render Mesh Batches
+		vk::ClearValue colorClear;
+		colorClear.color = {0.0f, 0.7f, 0.9f, 1.0f};
 
-		//		4a. Bind Pipeline or Batch
+		vk::ClearValue depthClear;
+		depthClear.depthStencil.depth = 1.f;
 
+		vk::RenderingAttachmentInfoKHR colorAttachInfo = {
+			color.imageView, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, colorClear
+		};
 
+		vk::RenderingAttachmentInfoKHR depthAttachInfo = {
+			depth.imageView, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+			vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, depthClear
+		};
 
-		//		4b. Draw Batch
+		vk::RenderingInfoKHR renderInfo = {
+			{}, vk::Rect2D{{0, 0}, renderExtent}, 1, {}, 1, &colorAttachInfo, &depthAttachInfo
+		};
 
+		cmd.beginRendering(&renderInfo);
 
+		//	3. Set Draw Parameters (Viewport, Scissor, etc...)
+
+		vk::Viewport viewport = {
+			0, 0, static_cast<float>(renderExtent.width), static_cast<float>(renderExtent.height), 0.1f, 1.0f
+		};
+		cmd.setViewport(0, 1, &viewport);
+
+		vk::Rect2D scissor = { {0, 0}, {renderExtent.width, renderExtent.height} };
+		cmd.setScissor(0, 1, &scissor);
+
+		//	4. Bind Buffers & Descriptors
+
+		std::vector<vk::DescriptorSet> descriptors =
+		{
+			frameRenderData.objectDescriptor,
+			frameRenderData.lightDescriptor,
+			frameRenderData.materialDescriptor,
+			frameRenderData.shadowDescriptor,
+		};
+
+		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mForwardPipelineLayout.get(), 0, descriptors.size(),
+			descriptors.data(), 0, nullptr);
+
+		auto entity = enttSubsystem->GetEntity(cameraSubsystem->GetActiveCameraID());
+		const auto& camera = registry->get<CameraComponent3D>(entity);
+		
+		GPUVertexShaderPushConstant pushConstantVert;
+		pushConstantVert.vertexBufferAddress = unifiedGeometryBuffer->GetVertexBufferAddress();
+		pushConstantVert.camViewProj = camera.viewProj;
+
+		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(GPUVertexShaderPushConstant), &pushConstantVert);
+		cmd.pushConstants(mForwardPipelineLayout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(GPUVertexShaderPushConstant), sizeof(GPUFragShaderPushConstant), &frameRenderData.pushConstantFrag);
+		
+		cmd.bindIndexBuffer(unifiedGeometryBuffer->GetIndexBuffer().buffer, 0, vk::IndexType::eUint32);
+
+		//	5. Render Mesh Batches
+
+		for (const auto& meshDrawBatch : meshDrawBatches)
+		{
+			//		5a. Bind Pipeline or Batch
+
+			// Use loaded material if id is valid, otherwise use default material
+			if (meshDrawBatch.matID != gInvalidID)
+			{
+				cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, materialRegistry->GetMaterial(meshDrawBatch.matID).pipeline.get());
+			}
+			else
+			{
+				cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mDefaultForwardPipeline.get());
+			}
+
+			//		5b. Draw Batch
+
+			vk::DeviceSize indirectOffset = meshDrawBatch.cmdIndex * sizeof(vk::DrawIndexedIndirectCommand);
+			uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
+
+			RenderSubsystemVK::DrawIndirectCommandParams params;
+			params.buffer = indirectBuffer.buffer;
+			params.offset = indirectOffset;
+			params.drawCount = meshDrawBatch.cmdCount;
+			params.stride = drawStride;
+
+			mRenderSubsystem->DrawIndexedIndirectCommand(cmd, params);
+		}
 
 		//	5. End Rendering
 
+		cmd.endRendering();
 
+		//	6. Transition to Shader Read Optimal
+
+		vk::ImageMemoryBarrier offscreenMemoryBarrierToShader = {
+			vk::AccessFlagBits::eColorAttachmentWrite, vk::AccessFlagBits::eNone,
+			vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, {}, {},
+			color.image, imageSubresourceRange
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe,
+							{}, 0, nullptr, 0, nullptr,
+							1, &offscreenMemoryBarrierToShader);
+
+		cmd.end();
 	}
 
 	void Forward3DRenderModuleVK::InitAttachments()
