@@ -2770,6 +2770,61 @@ namespace puffin::rendering
 			submits.push_back(renderSubmit);
 		}
 
+		// Prepare render pass command submits
+		if (false) {
+			auto& frameData = GetCurrentFrameData();
+			int cmdIdx = 0;
+			int waitSemaphoreIdx = 0;
+			int signalSemaphoreIdx = 0;
+			
+			for (const auto& [name, renderPass] : mRenderGraph.GetRenderPasses())
+			{
+				const int cmdIdxStart = cmdIdx;
+				const int waitSemaphoreIdxStart = waitSemaphoreIdx;
+				const int signalSemaphoreIdxStart = signalSemaphoreIdx;
+				int cmdCount = 0;
+				int waitSemaphoreCount = 0;
+				int signalSemaphoreCount = 0;
+
+				if (frameData.commandBuffers.find(name) != frameData.commandBuffers.end()
+					&& frameData.semaphores.find(name) != frameData.semaphores.end())
+				{
+					// Add wait semaphore for required passes
+					for (const std::string& requiredPassName : renderPass.GetRequiredPasses())
+					{
+						if (frameData.semaphores.find(requiredPassName) != frameData.semaphores.end())
+						{
+							renderWaitSemaphores.emplace_back(&frameData.semaphores.at(requiredPassName));
+							renderWaitStages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);
+
+							waitSemaphoreIdx++;
+							waitSemaphoreCount++;
+						}
+					}
+
+					// Add command
+					renderCommands.emplace_back(&frameData.commandBuffers.at(name));
+					cmdIdx++;
+					cmdCount++;
+
+					// Add signal semaphore
+					renderSignalSemaphores.emplace_back(&frameData.semaphores.at(name));
+					signalSemaphoreIdx++;
+					signalSemaphoreCount++;
+
+					// Add submit
+					vk::SubmitInfo renderSubmit =
+					{
+						static_cast<uint32_t>(waitSemaphoreCount), renderWaitSemaphores[waitSemaphoreIdxStart],
+						&renderWaitStages[waitSemaphoreIdxStart], static_cast<uint32_t>(cmdCount), renderCommands[cmdIdxStart],
+						static_cast<uint32_t>(signalSemaphoreCount), renderSignalSemaphores[signalSemaphoreIdxStart], nullptr
+					};
+
+					submits.emplace_back(renderSubmit);
+				}
+			}
+		}
+
 		{
 			vk::PipelineStageFlags waitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
