@@ -1253,21 +1253,15 @@ namespace puffin::rendering
 		commandBuffersToRemove.clear();
 
 		// Allocate new command buffers
-		std::vector<vk::CommandBuffer*> commandBuffersToAllocate;
-
 		for (const auto& [name, pass] : renderPasses)
 		{
 			if (frameData.commandBuffers.find(name) == frameData.commandBuffers.end())
 			{
 				frameData.commandBuffers.emplace(name, vk::CommandBuffer{});
-				commandBuffersToAllocate.push_back(&frameData.commandBuffers.at(name));
-			}
-		}
 
-		if (!commandBuffersToAllocate.empty())
-		{
-			const vk::CommandBufferAllocateInfo commandBufferInfo = { frameData.commandPool, vk::CommandBufferLevel::ePrimary, static_cast<uint32_t>(commandBuffersToAllocate.size()) };
-			VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, *commandBuffersToAllocate.data()));
+				const vk::CommandBufferAllocateInfo commandBufferInfo = { frameData.commandPool, vk::CommandBufferLevel::ePrimary, 1 };
+				VK_CHECK(mDevice.allocateCommandBuffers(&commandBufferInfo, &frameData.commandBuffers.at(name)));
+			}
 		}
 	}
 

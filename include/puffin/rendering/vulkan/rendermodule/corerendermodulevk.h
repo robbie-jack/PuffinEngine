@@ -53,6 +53,9 @@ namespace puffin::rendering
 
 		void PreRender(double deltaTime) override;
 
+		static void RecordCopyCommand(vk::CommandBuffer& cmd, const AllocatedImage& imageToCopy,
+			const vk::Image& swapchainImage, const vk::Extent2D& extent);
+
 		FrameRenderData& GetFrameData(uint8_t frameIdx);
 		FrameRenderData& GetCurrentFrameData();
 		std::vector<MeshDrawBatch>& GetMeshDrawBatches();

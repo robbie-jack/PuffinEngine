@@ -30,7 +30,7 @@ namespace puffin::rendering
 
 		void PreRender(double deltaTime) override;
 		
-		void RecordForward3DCommands(vk::CommandBuffer& cmd);
+		void RecordForward3DCommand(vk::CommandBuffer& cmd);
 
 	private:
 

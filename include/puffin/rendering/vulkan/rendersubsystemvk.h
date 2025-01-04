@@ -147,6 +147,7 @@ namespace puffin::rendering
 		const GlobalRenderData& GetGlobalRenderData() const { return mGlobalRenderData; }
 		const vk::PipelineCache& GetPipelineCache() const { return mPipelineCache; }
 		const OffscreenData& GetOffscreenData() const { return mOffscreenData; }
+		const SwapchainData& GetSwapchainData() const { return mSwapchainData; }
 		const vk::Extent2D& GetSwapchainExtent() const { return mSwapchainExtent; }
 		const vk::Extent2D& GetRenderExtent() const { return mRenderExtent; }
 		DeletionQueue& GetDeletionQueue() { return mDeletionQueue; }
@@ -198,6 +199,7 @@ namespace puffin::rendering
 		void DrawIndexedIndirectCommand(vk::CommandBuffer& cmd, const DrawIndirectCommandParams& cmdParams);
 
 		[[nodiscard]] uint8_t GetCurrentFrameIdx() const { return mFrameIdx; }
+		[[nodiscard]] uint8_t GetCurrentSwapchainIdx() const { return mCurrentSwapchainIdx; }
 		[[nodiscard]] uint8_t GetNextFrameIdx() const { return (mFrameIdx + 1) % mFramesInFlightCount; }
 		[[nodiscard]] uint8_t GetOffsetFrameIdx(uint8_t offset) const { return (mFrameIdx + offset) % mFramesInFlightCount; }
 		[[nodiscard]] uint8_t GetFramesInFlightCount() const { return mFramesInFlightCount; }

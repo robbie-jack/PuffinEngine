@@ -28,7 +28,7 @@ namespace puffin::rendering
 
 		void AddRequiredPass(const std::string& name);
 
-		void SetRecordCommandsCallback(std::function<void(vk::CommandBuffer&)> callback);
+		void SetRecordCommandsCallback(std::function<void(const RenderPassVK&, vk::CommandBuffer&)> callback);
 		void ExecuteRecordCommandsCallback(vk::CommandBuffer& cmd) const;
 
 		[[nodiscard]] const std::string& GetName() const;
@@ -60,7 +60,7 @@ namespace puffin::rendering
 		 */
 		std::set<std::string> mRequiredPasses;
 
-		std::function<void(vk::CommandBuffer&)> mRecordCommandsCallback;
+		std::function<void(const RenderPassVK&, vk::CommandBuffer&)> mRecordCommandsCallback;
 
 	};
 }

@@ -166,6 +166,91 @@ namespace puffin::rendering
 		BuildIndirectCommands();
 	}
 
+	void CoreRenderModuleVK::RecordCopyCommand(vk::CommandBuffer& cmd, const AllocatedImage& imageToCopy,
+		const vk::Image& swapchainImage, const vk::Extent2D& extent)
+	{
+		// Begin command buffer execution
+		vk::CommandBufferBeginInfo cmdBeginInfo = {
+			vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+			nullptr, nullptr
+		};
+
+		util::CheckResult(cmd.begin(&cmdBeginInfo));
+
+		// Setup pipeline barriers for transitioning image layouts
+
+		vk::ImageSubresourceRange imageSubresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+
+		// Offscreen Transition
+		vk::ImageMemoryBarrier offscreenMemoryBarrier = {
+			vk::AccessFlagBits::eNone, vk::AccessFlagBits::eTransferRead,
+			vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageLayout::eTransferSrcOptimal, {}, {},
+			imageToCopy.image, imageSubresourceRange
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+		                    {}, 0, nullptr, 0, nullptr,
+		                    1, &offscreenMemoryBarrier);
+
+		// Swapchain Transition
+		vk::ImageMemoryBarrier swapchainMemoryBarrier = {
+			vk::AccessFlagBits::eMemoryRead, vk::AccessFlagBits::eTransferWrite,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, {}, {},
+			swapchainImage, imageSubresourceRange
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+		                    {}, 0, nullptr, 0, nullptr,
+		                    1, &swapchainMemoryBarrier);
+
+		// Blit (Copy with auto format coversion (RGB to BGR)) offscreen to swapchain image
+		vk::Offset3D blitSize =
+		{
+			static_cast<int32_t>(extent.width),
+			static_cast<int32_t>(extent.height),
+			1
+		};
+
+		std::array<vk::Offset3D, 2> offsets = {};
+		offsets[1] = blitSize;
+
+		vk::ImageBlit imageBlitRegion =
+		{
+			{vk::ImageAspectFlagBits::eColor, 0, 0, 1}, offsets,
+			{vk::ImageAspectFlagBits::eColor, 0, 0, 1}, offsets
+		};
+
+		cmd.blitImage(imageToCopy.image, vk::ImageLayout::eTransferSrcOptimal,
+		              swapchainImage, vk::ImageLayout::eTransferDstOptimal, 1, &imageBlitRegion,
+		              vk::Filter::eNearest);
+
+		// Setup pipeline barriers for transitioning image layouts back to default
+
+		// Offscreen Transition
+		offscreenMemoryBarrier = {
+			vk::AccessFlagBits::eTransferRead, vk::AccessFlagBits::eNone,
+			vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, {}, {},
+			imageToCopy.image, imageSubresourceRange
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+		                    {}, 0, nullptr, 0, nullptr,
+		                    1, &offscreenMemoryBarrier);
+
+		// Swapchain Transition
+		swapchainMemoryBarrier = {
+			vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eMemoryRead,
+			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR, {}, {},
+			swapchainImage, imageSubresourceRange
+		};
+
+		cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+		                    {}, 0, nullptr, 0, nullptr,
+		                    1, &swapchainMemoryBarrier);
+
+		cmd.end();
+	}
+
 	CoreRenderModuleVK::FrameRenderData& CoreRenderModuleVK::GetFrameData(uint8_t frameIdx)
 	{
 		return mFrameRenderData[frameIdx];

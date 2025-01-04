@@ -33,14 +33,14 @@ namespace puffin::rendering
 		mRequiredPasses.emplace(name);
 	}
 
-	void RenderPassVK::SetRecordCommandsCallback(std::function<void(vk::CommandBuffer&)> callback)
+	void RenderPassVK::SetRecordCommandsCallback(std::function<void(const RenderPassVK&, vk::CommandBuffer&)> callback)
 	{
 		mRecordCommandsCallback = std::move(callback);
 	}
 
 	void RenderPassVK::ExecuteRecordCommandsCallback(vk::CommandBuffer& cmd) const
 	{
-		mRecordCommandsCallback(cmd);
+		mRecordCommandsCallback(*this, cmd);
 	}
 
 	const std::string& RenderPassVK::GetName() const

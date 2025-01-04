@@ -1,5 +1,7 @@
 #include "puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h"
 
+#include <VkBootstrap.h>
+
 #include "puffin/assets/assetregistry.h"
 #include "puffin/components/rendering/3d/cameracomponent3d.h"
 #include "puffin/rendering/camerasubsystem.h"
@@ -60,15 +62,34 @@ namespace puffin::rendering
 
 	void Forward3DRenderModuleVK::UpdateGraph(RenderGraphVK& renderGraph)
 	{
-		auto& forwardPass = renderGraph.AddRenderPass("forward3d", RenderPassType::Graphics);
-		forwardPass.AddOutputColorAttachment("forward3d_color");
-		forwardPass.SetOutputDepthStencilAttachment("forward3d_depth");
+		// Setup forward render pass
+		auto& forwardPass = renderGraph.AddRenderPass("forward_3d", RenderPassType::Graphics);
+		forwardPass.AddOutputColorAttachment("forward_3d_color");
+		forwardPass.SetOutputDepthStencilAttachment("forward_3d_depth");
 
-		forwardPass.SetRecordCommandsCallback([this](vk::CommandBuffer& cmd)
+		forwardPass.SetRecordCommandsCallback([this](const RenderPassVK& renderPass, vk::CommandBuffer& cmd)
 		{
-			RecordForward3DCommands(cmd);
+			RecordForward3DCommand(cmd);
 		});
 
+		// Setup swapchain copy render pass
+		auto& copyPass = renderGraph.AddRenderPass("forward_3d_copy_to_swapchain", RenderPassType::Graphics);
+		copyPass.AddInputColorAttachment("forward_3d_color");
+
+		copyPass.AddRequiredPass("forward_3d");
+		
+		copyPass.SetRecordCommandsCallback([this](const RenderPassVK& renderPass, vk::CommandBuffer& cmd)
+		{
+			const auto resourceManager = mRenderSubsystem->GetResourceManager();
+
+			const std::vector<std::string>& inputAttachments = renderPass.GetInputAttachments();
+			AllocatedImage& color = resourceManager->GetImage(inputAttachments[0]);
+
+			SwapchainData swapchainData = mRenderSubsystem->GetSwapchainData();
+			const vk::Image& swapchainImage = swapchainData.images[mRenderSubsystem->GetCurrentSwapchainIdx()];
+			
+			CoreRenderModuleVK::RecordCopyCommand(cmd, color, swapchainImage, mRenderSubsystem->GetRenderExtent());
+		});
 	}
 
 	void Forward3DRenderModuleVK::PreRender(double deltaTime)
@@ -76,7 +97,7 @@ namespace puffin::rendering
 
 	}
 
-	void Forward3DRenderModuleVK::RecordForward3DCommands(vk::CommandBuffer& cmd)
+	void Forward3DRenderModuleVK::RecordForward3DCommand(vk::CommandBuffer& cmd)
 	{
 		const auto unifiedGeometryBuffer = mRenderSubsystem->GetUnifiedGeometryBuffer();
 		const auto materialRegistry = mRenderSubsystem->GetMaterialRegistry();
@@ -180,7 +201,7 @@ namespace puffin::rendering
 
 		for (const auto& meshDrawBatch : meshDrawBatches)
 		{
-			//		5a. Bind Pipeline or Batch
+			//	5a. Bind Pipeline or Batch
 
 			// Use loaded material if id is valid, otherwise use default material
 			if (meshDrawBatch.matID != gInvalidID)
@@ -192,7 +213,7 @@ namespace puffin::rendering
 				cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mDefaultForwardPipeline.get());
 			}
 
-			//		5b. Draw Batch
+			//	5b. Draw Batch
 
 			vk::DeviceSize indirectOffset = meshDrawBatch.cmdIndex * sizeof(vk::DrawIndexedIndirectCommand);
 			uint32_t drawStride = sizeof(vk::DrawIndexedIndirectCommand);
@@ -233,13 +254,13 @@ namespace puffin::rendering
 		color.format = mColorFormat;
 		color.type = AttachmentTypeVK::Color;
 
-		mColorResourceID = resourceManager->CreateOrUpdateAttachment(color, "forward3d_color");
+		mColorResourceID = resourceManager->CreateOrUpdateAttachment(color, "forward_3d_color");
 
 		AttachmentDescVK depth;
 		depth.format = mDepthFormat;
 		depth.type = AttachmentTypeVK::Depth;
 
-		mDepthResourceID = resourceManager->CreateOrUpdateAttachment(depth, "forward3d_depth");
+		mDepthResourceID = resourceManager->CreateOrUpdateAttachment(depth, "forward_3d_depth");
 	}
 
 	void Forward3DRenderModuleVK::InitPipelineLayout()
