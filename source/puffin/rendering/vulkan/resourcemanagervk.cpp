@@ -407,24 +407,30 @@ namespace puffin::rendering
 			extent.depth = 1;
 		}
 
-		ImageDescVK imageCreateParams;
-		imageCreateParams.info = { {}, vk::ImageType::e2D, desc.format, extent, 1, 1,
-			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, {vk::ImageUsageFlagBits::eSampled } };
+		vk::ImageUsageFlags usageFlags;
+		usageFlags |= vk::ImageUsageFlagBits::eSampled;
+		usageFlags |= vk::ImageUsageFlagBits::eTransferSrc;
 
-		constexpr vk::ImageSubresourceRange subresourceRange{ {}, 0, 1, 0, 1 };
-
-		imageCreateParams.viewInfo = { {}, {}, vk::ImageViewType::e2D, desc.format, {}, subresourceRange };
+		vk::ImageAspectFlags aspectFlags;
 
 		if (desc.type == AttachmentTypeVK::Color)
 		{
-			imageCreateParams.info.usage |= vk::ImageUsageFlagBits::eColorAttachment;
-			imageCreateParams.viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+			usageFlags |= vk::ImageUsageFlagBits::eColorAttachment;
+			aspectFlags = vk::ImageAspectFlagBits::eColor;
 		}
 		else if(desc.type == AttachmentTypeVK::Depth)
 		{
-			imageCreateParams.info.usage |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
-			imageCreateParams.viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+			usageFlags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+			aspectFlags = vk::ImageAspectFlagBits::eDepth;
 		}
+
+		ImageDescVK imageCreateParams;
+		imageCreateParams.info = { {}, vk::ImageType::e2D, desc.format, extent, 1, 1,
+			vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usageFlags };
+
+		vk::ImageSubresourceRange subresourceRange{ aspectFlags, 0, 1, 0, 1 };
+
+		imageCreateParams.viewInfo = { {}, {}, vk::ImageViewType::e2D, desc.format, {}, subresourceRange };
 
 		mAttachmentDescs.emplace(id, desc);
 

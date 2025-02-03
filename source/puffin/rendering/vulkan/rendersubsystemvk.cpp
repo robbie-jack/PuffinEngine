@@ -2708,64 +2708,72 @@ namespace puffin::rendering
 
 	void RenderSubsystemVK::RecordAndSubmitCommands(uint32_t swapchainIdx)
 	{
+		bool useNewRenderingCode = false;
+		
 		std::vector<vk::SubmitInfo> submits;
-
-		// Prepare shadow rendering command submit
-		std::vector<vk::CommandBuffer*> shadowCommands = {};
-		std::vector<vk::Semaphore*> shadowWaitSemaphores = { &GetCurrentFrameData().presentSemaphore };
-		std::vector<vk::Semaphore*> shadowSignalSemaphores = { &GetCurrentFrameData().shadowSemaphore };
-		vk::PipelineStageFlags shadowWaitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-		if (mShadowsEnabled)
-		{
-			shadowCommands.push_back(&RecordShadowCommandBuffer(swapchainIdx));
-
-			vk::SubmitInfo shadowSubmit =
-			{
-				static_cast<uint32_t>(shadowWaitSemaphores.size()), *shadowWaitSemaphores.data(),
-				& shadowWaitStage, static_cast<uint32_t>(shadowCommands.size()), *shadowCommands.data(),
-				static_cast<uint32_t>(shadowSignalSemaphores.size()), *shadowSignalSemaphores.data(), nullptr
-			};
-
-			submits.push_back(shadowSubmit);
-		}
-
-		// Prepare main render command submit
-		std::vector<vk::CommandBuffer*> renderCommands = { };
-		std::vector<vk::Semaphore*> renderWaitSemaphores = { };
+		std::vector<vk::CommandBuffer> renderCommands = { };
+		std::vector<vk::Semaphore> renderWaitSemaphores = { };
 		std::vector<vk::PipelineStageFlags> renderWaitStages = { };
-		std::vector<vk::Semaphore*> renderSignalSemaphores = { &GetCurrentFrameData().renderSemaphore };
+		std::vector<vk::Semaphore> renderSignalSemaphores = {};
+
+		if (!useNewRenderingCode)
 		{
-			RecordMainCommandBufferParams params;
-			params.swapchainIdx = swapchainIdx;
-			params.renderExtent = mOffscreenData.extent;
-			params.colorImage = mOffscreenData.allocImages[swapchainIdx];
-			params.depthImage = mOffscreenData.allocDepthImage;
-
-			renderCommands.push_back(&RecordMainCommandBuffer(params));
-
+			// Prepare shadow rendering command submit
+			std::vector<vk::CommandBuffer*> shadowCommands = {};
+			std::vector<vk::Semaphore*> shadowWaitSemaphores = { &GetCurrentFrameData().presentSemaphore };
+			std::vector<vk::Semaphore*> shadowSignalSemaphores = { &GetCurrentFrameData().shadowSemaphore };
+			vk::PipelineStageFlags shadowWaitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 			if (mShadowsEnabled)
 			{
-				renderWaitSemaphores.push_back(&GetCurrentFrameData().shadowSemaphore);
-				renderWaitStages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);
-			}
-			else
-			{
-				renderWaitSemaphores.push_back(&GetCurrentFrameData().presentSemaphore);
-				renderWaitStages.emplace_back(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+				shadowCommands.push_back(&RecordShadowCommandBuffer(swapchainIdx));
+
+				vk::SubmitInfo shadowSubmit =
+				{
+					static_cast<uint32_t>(shadowWaitSemaphores.size()), *shadowWaitSemaphores.data(),
+					& shadowWaitStage, static_cast<uint32_t>(shadowCommands.size()), *shadowCommands.data(),
+					static_cast<uint32_t>(shadowSignalSemaphores.size()), *shadowSignalSemaphores.data(), nullptr
+				};
+
+				submits.push_back(shadowSubmit);
 			}
 
-			vk::SubmitInfo renderSubmit =
+			// Prepare main render command submit
+			
+			renderSignalSemaphores = { GetCurrentFrameData().renderSemaphore };
 			{
-				static_cast<uint32_t>(renderWaitSemaphores.size()), *renderWaitSemaphores.data(),
-				renderWaitStages.data(), static_cast<uint32_t>(renderCommands.size()), *renderCommands.data(),
-				static_cast<uint32_t>(renderSignalSemaphores.size()), *renderSignalSemaphores.data(), nullptr
-			};
+				RecordMainCommandBufferParams params;
+				params.swapchainIdx = swapchainIdx;
+				params.renderExtent = mOffscreenData.extent;
+				params.colorImage = mOffscreenData.allocImages[swapchainIdx];
+				params.depthImage = mOffscreenData.allocDepthImage;
 
-			submits.push_back(renderSubmit);
+				renderCommands.push_back(RecordMainCommandBuffer(params));
+
+				if (mShadowsEnabled)
+				{
+					renderWaitSemaphores.push_back(GetCurrentFrameData().shadowSemaphore);
+					renderWaitStages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);
+				}
+				else
+				{
+					renderWaitSemaphores.push_back(GetCurrentFrameData().presentSemaphore);
+					renderWaitStages.emplace_back(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+				}
+
+				vk::SubmitInfo renderSubmit =
+				{
+					static_cast<uint32_t>(renderWaitSemaphores.size()), renderWaitSemaphores.data(),
+					renderWaitStages.data(), static_cast<uint32_t>(renderCommands.size()), renderCommands.data(),
+					static_cast<uint32_t>(renderSignalSemaphores.size()), renderSignalSemaphores.data(), nullptr
+				};
+
+				submits.push_back(renderSubmit);
+			}
 		}
 
 		// Prepare render pass command submits
-		if (false) {
+		if (useNewRenderingCode)
+		{
 			auto& frameData = GetCurrentFrameData();
 			int cmdIdx = 0;
 			int waitSemaphoreIdx = 0;
@@ -2788,7 +2796,7 @@ namespace puffin::rendering
 					{
 						if (frameData.semaphores.find(requiredPassName) != frameData.semaphores.end())
 						{
-							renderWaitSemaphores.emplace_back(&frameData.semaphores.at(requiredPassName));
+							renderWaitSemaphores.emplace_back(frameData.semaphores.at(requiredPassName));
 							renderWaitStages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);
 
 							waitSemaphoreIdx++;
@@ -2797,28 +2805,41 @@ namespace puffin::rendering
 					}
 
 					// Add command
-					renderCommands.emplace_back(&frameData.commandBuffers.at(name));
+					renderCommands.emplace_back(frameData.commandBuffers.at(name));
 					cmdIdx++;
 					cmdCount++;
 
 					// Add signal semaphore
-					renderSignalSemaphores.emplace_back(&frameData.semaphores.at(name));
+					renderSignalSemaphores.emplace_back(frameData.semaphores.at(name));
 					signalSemaphoreIdx++;
 					signalSemaphoreCount++;
 
 					// Add submit
-					vk::SubmitInfo renderSubmit =
+					vk::SubmitInfo renderSubmit = {};
+					if (waitSemaphoreCount > 0)
 					{
-						static_cast<uint32_t>(waitSemaphoreCount), renderWaitSemaphores[waitSemaphoreIdxStart],
-						&renderWaitStages[waitSemaphoreIdxStart], static_cast<uint32_t>(cmdCount), renderCommands[cmdIdxStart],
-						static_cast<uint32_t>(signalSemaphoreCount), renderSignalSemaphores[signalSemaphoreIdxStart], nullptr
-					};
-
+						renderSubmit =
+						{
+							static_cast<uint32_t>(waitSemaphoreCount), &renderWaitSemaphores[waitSemaphoreIdxStart],
+							&renderWaitStages[waitSemaphoreIdxStart], static_cast<uint32_t>(cmdCount), &renderCommands[cmdIdxStart],
+							static_cast<uint32_t>(signalSemaphoreCount), &renderSignalSemaphores[signalSemaphoreIdxStart], nullptr
+						};
+					}
+					else
+					{
+						renderSubmit =
+						{
+							0, nullptr, nullptr, static_cast<uint32_t>(cmdCount), &renderCommands[cmdIdxStart],
+							static_cast<uint32_t>(signalSemaphoreCount), &renderSignalSemaphores[signalSemaphoreIdxStart], nullptr
+						};
+					}
+					
 					submits.emplace_back(renderSubmit);
 				}
 			}
 		}
 
+		if (!useNewRenderingCode)
 		{
 			vk::PipelineStageFlags waitStage = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
