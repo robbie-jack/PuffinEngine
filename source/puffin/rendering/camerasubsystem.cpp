@@ -5,7 +5,7 @@
 #include "puffin/core/settingsmanager.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/input/inputsubsystem.h"
-#include "puffin/rendering/vulkan/rendersubsystemvk.h"
+//#include "puffin/rendering/vulkan/rendersubsystemvk.h"
 #include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/core/signalsubsystem.h"
 
@@ -299,22 +299,22 @@ namespace puffin::rendering
 
 	void CameraSubsystem::UpdateCameraComponent(const TransformComponent3D& transform, CameraComponent3D& camera)
 	{
-		const auto renderSystem = mEngine->GetSubsystem<rendering::RenderSubsystemVK>();
+		//const auto renderSystem = mEngine->GetSubsystem<rendering::RenderSubsystemVK>();
 
-		// Calculate direction & right vectors
-		camera.direction = static_cast<glm::quat>(transform.orientationQuat) * glm::vec3(0.0f, 0.0f, -1.0f);
-		camera.right = static_cast<glm::quat>(transform.orientationQuat) * glm::vec3(1.0f, 0.0f, 0.0f);
+		//// Calculate direction & right vectors
+		//camera.direction = static_cast<glm::quat>(transform.orientationQuat) * glm::vec3(0.0f, 0.0f, -1.0f);
+		//camera.right = static_cast<glm::quat>(transform.orientationQuat) * glm::vec3(1.0f, 0.0f, 0.0f);
 
-		camera.aspect = static_cast<float>(renderSystem->GetRenderExtent().width) / 
-			static_cast<float>(renderSystem->GetRenderExtent().height);
+		//camera.aspect = static_cast<float>(renderSystem->GetRenderExtent().width) / 
+		//	static_cast<float>(renderSystem->GetRenderExtent().height);
 
-		// Update view & projection matrices from updated direction and right vectors
-		camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
-			static_cast<glm::vec3>(transform.position + camera.direction), static_cast<glm::vec3>(camera.up));
+		//// Update view & projection matrices from updated direction and right vectors
+		//camera.view = glm::lookAt(static_cast<glm::vec3>(transform.position),
+		//	static_cast<glm::vec3>(transform.position + camera.direction), static_cast<glm::vec3>(camera.up));
 
-		camera.proj = glm::perspective(maths::DegToRad(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
-		camera.proj[1][1] *= -1; // Flips y-axis to match vulkan's coordinates system
+		//camera.proj = glm::perspective(maths::DegToRad(camera.fovY), camera.aspect, camera.zNear, camera.zFar);
+		//camera.proj[1][1] *= -1; // Flips y-axis to match vulkan's coordinates system
 
-		camera.viewProj = camera.proj * camera.view;
+		//camera.viewProj = camera.proj * camera.view;
 	}
 }

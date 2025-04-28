@@ -15,7 +15,7 @@
 #include "puffin/physics/onager2d/onager2dphysicssystem.h"
 #endif
 
-#include "puffin/rendering/vulkan/rendersubsystemvk.h"
+//#include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
 int main(int argc, char* argv[])
 {
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 
 	engine->Setup();
 
-	engine->RegisterSubsystem<puffin::rendering::RenderSubsystemVK>();
+	//engine->RegisterSubsystem<puffin::rendering::RenderSubsystemVK>();
 
 #ifdef PFN_BOX2D_PHYSICS
 	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSubsystem>();

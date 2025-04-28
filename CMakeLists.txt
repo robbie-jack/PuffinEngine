@@ -75,7 +75,7 @@ option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
-set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/vkb/src)
+#set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/vkb/src)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimplexNoise)
 set(ENKITS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/enkits)
 
@@ -206,25 +206,25 @@ set(HEADERS
 	${HEADER_DIR}/puffin/rendering/rendersubsystem.h
 	${HEADER_DIR}/puffin/rendering/resourceid.h
 	# Rendering - Vulkan
-	${HEADER_DIR}/puffin/rendering/vulkan/descriptorsvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/helpersvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/logvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/materialregistryvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/pipelinevk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/rendersubsystemvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/resourcedescvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/resourcemanagervk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/texturemanagervk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/typesvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/vertexvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/descriptorsvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/helpersvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/logvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/materialregistryvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/pipelinevk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/rendersubsystemvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/resourcedescvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/resourcemanagervk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/texturemanagervk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/typesvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/vertexvk.h
 	# Rendering - Vulkan - Render Graph
-	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.h
 	# Rendering - Vulkan - Render Module
-	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h
-	${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h
+	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
 	# Scene
 	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
 	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
@@ -326,22 +326,22 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/rendering/renderhelpers.cpp
 	${SOURCE_DIR}/puffin/rendering/rendersubsystem.cpp
 	# Rendering - Vulkan
-	${SOURCE_DIR}/puffin/rendering/vulkan/descriptorsvk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/helpersvk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/materialregistryvk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/pipelinevk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/rendersubsystemvk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/resourcemanagervk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/texturemanagervk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/vertexvk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/descriptorsvk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/helpersvk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/materialregistryvk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/pipelinevk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/rendersubsystemvk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/resourcemanagervk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/texturemanagervk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/vertexvk.cpp
 	# Rendering - Vulkan - Render Graph
-	${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.cpp
 	# Rendering - Vulkan - Render Module
-	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.cpp
-	${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.cpp
+	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
@@ -395,7 +395,7 @@ set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_EXTENSIONS ON)
 
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${IMGUI_SOURCES})
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
-target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
+#target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${ENKITS_SOURCES})
 
 message("")
@@ -407,7 +407,7 @@ sort_into_source_group(HEADERS ${HEADER_DIR} "")
 sort_into_source_group(SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} imgui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} opensimplexnoise)
-sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} vkbootstrap)
+#sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} vkbootstrap)
 sort_into_source_group(ENKITS_SOURCES ${ENKITS_DIR} enkits)
 
 message("")
@@ -424,7 +424,7 @@ elseif (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 # Get & Build Required Libraries
-find_package(Vulkan 1.3.290 REQUIRED)
+find_package(Vulkan 1.4.309 REQUIRED)
 #CPMAddPackage("gh:nlohmann/json@3.11.2")
 FetchContent_Declare(
     nlohmann_json
@@ -465,6 +465,8 @@ if (PLATFORM_WINDOWS)
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
+	
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} ${LIB_DIR}/raylib/raylib${LIB_SUFFIX})
 
 elseif (PLATFORM_LINUX)
 
@@ -494,18 +496,15 @@ set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/include)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/Include)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/include/vma)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC $ENV{VULKAN_SDK}/Include/vma)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/vma)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/OpenSimplexNoise)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/imgui)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/imgui-filebrowser)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/lz4/lib)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/include)
-#target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/VulkanMemoryAllocator/include/)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vkb/src)
+#target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/include)
+#target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vkb/src)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/tinygltf)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/entt/src)
@@ -544,16 +543,16 @@ endif()
 target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
 target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_SIMD_AVX2)
 target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC NOMINMAX)
-target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_NO_PROTOTYPES)
+#target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_NO_PROTOTYPES)
 
 # Platform defines
 if (PLATFORM_WINDOWS)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_WIN32)
-    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+    #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
 elseif (PLATFORM_LINUX)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_LINUX)
-    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
+    #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
 endif()
 
