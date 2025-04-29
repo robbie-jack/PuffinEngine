@@ -161,8 +161,8 @@ namespace puffin::core
 		{
 			benchmarkManager->Begin("Input");
 
-			auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
-			inputSubsystem->ProcessInput();
+			//auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
+			//inputSubsystem->ProcessInput();
 
 			benchmarkManager->End("Input");
 		}

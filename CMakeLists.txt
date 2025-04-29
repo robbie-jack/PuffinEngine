@@ -225,6 +225,9 @@ set(HEADERS
 	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.h
 	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h
 	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
+	# Rendering - Raylib
+	# Rendering - Raylib - 2D
+	${HEADER_DIR}/puffin/rendering/raylib/2d/rendersubsystemrl2d.h
 	# Scene
 	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
 	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
@@ -249,6 +252,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/utility/serialization.h
 	# Window
 	${HEADER_DIR}/puffin/window/windowsubsystem.h
+	${HEADER_DIR}/puffin/window/raylib/windowsubsystemrl.h
 	)
 
 set(SOURCES 
@@ -342,6 +346,9 @@ set(SOURCES
 	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.cpp
 	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.cpp
 	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.cpp
+	# Rendering - Raylib
+	# Rendering - Raylib - 2D
+	${SOURCE_DIR}/puffin/rendering/raylib/2d/rendersubsystemrl2d.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
@@ -355,6 +362,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/utility/serialization.cpp
 	# Window
 	${SOURCE_DIR}/puffin/window/windowsubsystem.cpp
+	${SOURCE_DIR}/puffin/window/raylib/windowsubsystemrl.cpp
 	)
 	
 set (IMGUI_SOURCES
@@ -460,13 +468,13 @@ if (PLATFORM_WINDOWS)
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/raylib/Debug/raylib${LIB_SUFFIX})
 
 	# Define Release Libs
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
-	
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} ${LIB_DIR}/raylib/raylib${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/raylib/Release/raylib${LIB_SUFFIX})
 
 elseif (PLATFORM_LINUX)
 
@@ -496,6 +504,7 @@ set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include)
+target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include/raylib)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/vma)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/box2d/include)

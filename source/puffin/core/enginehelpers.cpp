@@ -72,9 +72,9 @@ namespace puffin::core
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)
 	{
 		// Engine Subsystems
-		engine->RegisterSubsystem<window::WindowSubsystem>();
+		//engine->RegisterSubsystem<window::WindowSubsystem>();
 		engine->RegisterSubsystem<core::SignalSubsystem>();
-		engine->RegisterSubsystem<input::InputSubsystem>();
+		//engine->RegisterSubsystem<input::InputSubsystem>();
 		engine->RegisterSubsystem<SettingsManager>();
 		engine->RegisterSubsystem<EnkiTSSubsystem>();
 		engine->RegisterSubsystem<audio::AudioSubsystem>();
