@@ -16,7 +16,8 @@
 #endif
 
 //#include "puffin/rendering/vulkan/rendersubsystemvk.h"
-#include "puffin/rendering/raylib/2d/rendersubsystemrl2d.h"
+#include "puffin/window/raylib/windowsubsystemrl.h"
+//#include "puffin/rendering/raylib/2d/rendersubsystemrl2d.h"
 
 int main(int argc, char* argv[])
 {
@@ -40,7 +41,8 @@ int main(int argc, char* argv[])
 	engine->Setup();
 
 	//engine->RegisterSubsystem<puffin::rendering::RenderSubsystemVK>();
-	engine->RegisterSubsystem<puffin::rendering::RenderSubsystemRL2D>();
+	engine->RegisterSubsystem<puffin::window::WindowSubsystemRL>();
+	//engine->RegisterSubsystem<puffin::rendering::RenderSubsystemRL2D>();
 
 #ifdef PFN_BOX2D_PHYSICS
 	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSubsystem>();

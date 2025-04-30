@@ -3,8 +3,8 @@
 #include <string>
 #include <iostream>
 
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_vulkan.h"
+//#include "backends/imgui_impl_glfw.h"
+//#include "backends/imgui_impl_vulkan.h"
 
 #include "puffin/core/engine.h"
 #include "puffin/scene/sceneserializationsubsystem.h"
@@ -146,8 +146,8 @@ namespace puffin::ui
 			sceneData->UpdateData(mEngine);
 		}
 
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
+		//ImGui_ImplVulkan_NewFrame();
+		//ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
 		bool* pOpen = nullptr;

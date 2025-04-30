@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "GLFW/glfw3.h"
+//#include "GLFW/glfw3.h"
 
 #include "puffin/core/subsystem.h"
 #include "puffin/input/inputevent.h"
@@ -64,7 +64,7 @@ namespace puffin
 
 			int mNextID = 1;
 			std::unordered_map<std::string, InputAction> mActions;
-			GLFWwindow* mWindow;
+			//GLFWwindow* mWindow;
 		};
 	}
 }

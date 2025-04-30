@@ -1,30 +1,10 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-# Download CPM.cmake
-set(CPM_DOWNLOAD_VERSION 0.36.0)
-
-if(CPM_SOURCE_CACHE)
-  set(CPM_DOWNLOAD_LOCATION "${CPM_SOURCE_CACHE}/cpm/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
-elseif(DEFINED ENV{CPM_SOURCE_CACHE})
-  set(CPM_DOWNLOAD_LOCATION "$ENV{CPM_SOURCE_CACHE}/cpm/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
-else()
-  set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
-endif()
-
-if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
-  message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
-  file(DOWNLOAD
-       https://github.com/TheLartians/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake
-       ${CPM_DOWNLOAD_LOCATION}
-  )
-endif()
-
-include(${CPM_DOWNLOAD_LOCATION})
-
 include(FetchContent)
 
 # The configurations we support
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/PuffinEngine.cmake)
 
@@ -69,7 +49,7 @@ endif()
 # Options
 option(DOUBLE_PRECISION_SUPPORT "Enable Double Precision Support" OFF)
 option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" ON)
-option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" ON)
+option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" OFF)
 option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
 
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -372,8 +352,8 @@ set (IMGUI_SOURCES
 	${IMGUI_DIR}/imgui_draw.cpp
 	${IMGUI_DIR}/imgui_tables.cpp
 	${IMGUI_DIR}/imgui_widgets.cpp
-	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-	${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
+	#${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+	#${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
 	${IMGUI_DIR}/misc/cpp/imgui_stdlib.h
 	${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 	)
@@ -433,7 +413,8 @@ endif()
 
 # Get & Build Required Libraries
 find_package(Vulkan 1.4.309 REQUIRED)
-#CPMAddPackage("gh:nlohmann/json@3.11.2")
+
+# nlohmann/json
 FetchContent_Declare(
     nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
@@ -441,6 +422,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
+# tomlplusplus
 FetchContent_Declare(
     tomlplusplus
     GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
@@ -448,9 +430,39 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tomlplusplus)
 
+# raylib
+find_package(raylib QUIET)
+if (NOT raylib_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        raylib
+        GIT_REPOSITORY https://github.com/raysan5/raylib.git
+        GIT_TAG c1ab645
+        GIT_SHALLOW TRUE
+		GIT_PROGRESS TRUE
+    )
+    FetchContent_MakeAvailable(raylib)
+endif()
+
+# raylib-cpp
+# find_package(raylib_cpp QUIET)
+if (NOT raylib_cpp_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        raylib_cpp
+        GIT_REPOSITORY https://github.com/RobLoach/raylib-cpp.git
+        GIT_TAG 6d9d02c
+		GIT_SHALLOW TRUE
+		GIT_PROGRESS TRUE
+    )
+    FetchContent_MakeAvailable(raylib_cpp)
+endif()
+
 target_link_libraries(${PUFFIN_LIBRARY_NAME} ${Vulkan_LIBRARIES})
 target_link_libraries(${PUFFIN_LIBRARY_NAME} nlohmann_json::nlohmann_json)
 target_link_libraries(${PUFFIN_LIBRARY_NAME} tomlplusplus::tomlplusplus)
+target_link_libraries(${PUFFIN_LIBRARY_NAME} raylib)
+target_link_libraries(${PUFFIN_LIBRARY_NAME} raylib_cpp)
 
 if (PLATFORM_WINDOWS)
 	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/win64)
@@ -465,16 +477,16 @@ endif()
 if (PLATFORM_WINDOWS)
 
 	# Define Debug Libs
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+	#target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/raylib/Debug/raylib${LIB_SUFFIX})
 
 	# Define Release Libs
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
+	#target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
 	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/raylib/Release/raylib${LIB_SUFFIX})
+
+	#target_link_libraries(${PUFFIN_LIBRARY_NAME} winmm.lib)
 
 elseif (PLATFORM_LINUX)
 
@@ -504,7 +516,6 @@ set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include/raylib)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/vma)
 target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
@@ -558,11 +569,11 @@ target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC NOMINMAX)
 if (PLATFORM_WINDOWS)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_WIN32)
     #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
-    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
+    #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
 elseif (PLATFORM_LINUX)
     target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_LINUX)
     #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
-    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
+    #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
 endif()
 
 if (MSVC)

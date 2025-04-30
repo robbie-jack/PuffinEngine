@@ -28,19 +28,19 @@ namespace puffin
 			const auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
 			const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 			
-			mWindow = windowSubsystem->GetPrimaryWindow();
+			//mWindow = windowSubsystem->GetPrimaryWindow();
 			mSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
 
 			// Setup Actions
 
 			// Camera Actions
-			AddAction("EditorCamMoveForward", GLFW_KEY_W);
-			AddAction("EditorCamMoveBackward", GLFW_KEY_S);
-			AddAction("EditorCamMoveLeft", GLFW_KEY_A);
-			AddAction("EditorCamMoveRight", GLFW_KEY_D);
-			AddAction("EditorCamMoveUp", GLFW_KEY_E);
-			AddAction("EditorCamMoveDown", GLFW_KEY_Q);
-			AddAction("EditorCursorSwitch", GLFW_KEY_F1);
+			//AddAction("EditorCamMoveForward", GLFW_KEY_W);
+			//AddAction("EditorCamMoveBackward", GLFW_KEY_S);
+			//AddAction("EditorCamMoveLeft", GLFW_KEY_A);
+			//AddAction("EditorCamMoveRight", GLFW_KEY_D);
+			//AddAction("EditorCamMoveUp", GLFW_KEY_E);
+			//AddAction("EditorCamMoveDown", GLFW_KEY_Q);
+			//AddAction("EditorCursorSwitch", GLFW_KEY_F1);
 			//add_action("Spacebar", GLFW_KEY_SPACE);
 			//add_action("Play", GLFW_KEY_P);
 			//add_action("Restart", GLFW_KEY_O);
@@ -48,11 +48,11 @@ namespace puffin
 			// Setup Mouse Cursor
 			if (mCursorLocked == true)
 			{
-				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			}
 			else
 			{
-				glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
 
 			auto mouseSensitivitySignal = signalSubsystem->GetSignal("general_mouse_sensitivity");
@@ -72,7 +72,7 @@ namespace puffin
 		void InputSubsystem::Deinitialize()
 		{
 			mActions.clear();
-			mWindow = nullptr;
+			//mWindow = nullptr;
 		}
 
 		core::SubsystemType InputSubsystem::GetType() const
@@ -82,12 +82,12 @@ namespace puffin
 
 		void InputSubsystem::ProcessInput()
 		{
-			if (!mWindow)
+			/*if (!mWindow)
 			{
 				mWindow = mEngine->GetSubsystem<window::WindowSubsystem>()->GetPrimaryWindow();
-			}
+			}*/
 
-			glfwPollEvents();
+			//glfwPollEvents();
 
 			// Update Actions
 
@@ -101,7 +101,7 @@ namespace puffin
 				// Loop over each key in this action
 				for (auto key : action.keys)
 				{
-					int state = glfwGetKey(mWindow, key);
+					/*int state = glfwGetKey(mWindow, key);
 
 					if (state == GLFW_PRESS)
 					{
@@ -131,7 +131,7 @@ namespace puffin
 							action.state = KeyState::Released;
 							stateChanged = true;
 						}
-					}
+					}*/
 
 					// Notify subscribers that event changed
 					if (stateChanged == true)
@@ -150,11 +150,11 @@ namespace puffin
 			{
 				if (mCursorLocked == true)
 				{
-					glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 				}
 				else
 				{
-					glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 				}
 
 				mCursorLocked = !mCursorLocked;
@@ -163,7 +163,7 @@ namespace puffin
 			// Update Current and Last Mouse Positions
 			mLastXPos = mXPos;
 			mLastYPos = mYPos;
-			glfwGetCursorPos(mWindow, &mXPos, &mYPos);
+			//glfwGetCursorPos(mWindow, &mXPos, &mYPos);
 
 			// Prevent Camera Jumping when window first starts
 			if (mFirstMouse)

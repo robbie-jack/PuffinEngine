@@ -374,11 +374,11 @@ namespace puffin::core
 			mPlayState = PlayState::Stopped;
 		}
 
-		if (const auto windowSubsystem = GetSubsystem<window::WindowSubsystem>(); windowSubsystem->
+		/*if (const auto windowSubsystem = GetSubsystem<window::WindowSubsystem>(); windowSubsystem->
 			GetShouldPrimaryWindowClose())
 		{
 			mRunning = false;
-		}
+		}*/
 
 		return mRunning;
 	}
