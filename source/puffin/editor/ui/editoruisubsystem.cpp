@@ -172,7 +172,7 @@ namespace puffin::ui
 
 	bool EditorUISubsystem::ShouldUpdate()
 	{
-		return true;
+		return false;
 	}
 
 	void EditorUISubsystem::ShowDockspace(bool* open)

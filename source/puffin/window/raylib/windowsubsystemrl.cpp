@@ -1,6 +1,6 @@
 #include "puffin/window/raylib/windowsubsystemrl.h"
 
-#include "raylib/raylib.h"
+#include "raylib.h"
 
 namespace puffin::window
 {
@@ -24,5 +24,10 @@ namespace puffin::window
 	void WindowSubsystemRL::Deinitialize()
 	{
 		
+	}
+
+	raylib::Window* WindowSubsystemRL::GetWindow()
+	{
+		return mWindow;
 	}
 }

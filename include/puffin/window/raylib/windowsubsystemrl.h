@@ -1,7 +1,7 @@
 #pragma once
 
 #include "puffin/core/subsystem.h"
-#include "raylibcpp/Window.hpp"
+#include "Window.hpp"
 
 namespace puffin
 {
@@ -21,6 +21,8 @@ namespace puffin
 
 			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
+
+			raylib::Window* GetWindow();
 
 		private:
 

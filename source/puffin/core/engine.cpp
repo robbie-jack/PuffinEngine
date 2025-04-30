@@ -161,6 +161,7 @@ namespace puffin::core
 		{
 			benchmarkManager->Begin("Input");
 
+			// TODO - Re-enable once input subsystem logic has been re-implemented to work with raylib
 			//auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
 			//inputSubsystem->ProcessInput();
 
@@ -183,7 +184,8 @@ namespace puffin::core
 		{
 			benchmarkManager->Begin("Idle");
 
-			Idle();
+			// TODO - Re-enable once GetTime() has been reimplemented
+			//Idle();
 
 			benchmarkManager->End("Idle");
 		}
@@ -374,6 +376,7 @@ namespace puffin::core
 			mPlayState = PlayState::Stopped;
 		}
 
+		// TODO - Re-enable once window subsystem logic has been re-implemented with raylib
 		/*if (const auto windowSubsystem = GetSubsystem<window::WindowSubsystem>(); windowSubsystem->
 			GetShouldPrimaryWindowClose())
 		{

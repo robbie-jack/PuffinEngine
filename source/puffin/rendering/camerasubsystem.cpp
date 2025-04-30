@@ -230,7 +230,7 @@ namespace puffin::rendering
             UpdateActiveCamera();
         }
 
-		UpdateEditorCamera(deltaTime);
+		//UpdateEditorCamera(deltaTime);
 
         const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto registry = enttSubsystem->GetRegistry();

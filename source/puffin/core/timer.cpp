@@ -6,7 +6,7 @@ namespace puffin::core
 {
 	double GetTime()
 	{
-		//return glfwGetTime();
+		// TODO - Reimplement using stl
 		return 0.0;
 	}
 
