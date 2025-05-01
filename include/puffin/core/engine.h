@@ -19,6 +19,8 @@ namespace puffin
 
 namespace puffin::core
 {
+	class Platform;
+
 	enum class PlayState
 	{
 		BeginPlay,		// Game has just started, gameplay systems need to be initialized
@@ -85,6 +87,14 @@ namespace puffin::core
 			mApplication = std::static_pointer_cast<Application>(std::make_shared<AppT>(name, shared_from_this()));
 		}
 
+		template<typename PlatT>
+		void RegisterPlatform()
+		{
+			assert(mPlatform == nullptr && "Registering multile platforms");
+
+			mPlatform = std::static_pointer_cast<Platform>(std::make_shared<PlatT>(shared_from_this()));
+		}
+
 		template<typename T>
 		void RegisterSubsystem() const
 		{
@@ -128,6 +138,7 @@ namespace puffin::core
 		double mTimeStepLimit = 1 / 30.0; // Maximum amount of time each frame should take to complete
 
 		std::shared_ptr<Application> mApplication = nullptr;
+		std::shared_ptr<Platform> mPlatform = nullptr;
 		std::unique_ptr<SubsystemManager> mSubsystemManager = nullptr;
 
 		io::ProjectFile mProjectFile;

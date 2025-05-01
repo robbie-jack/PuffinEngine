@@ -2,11 +2,6 @@
 
 namespace puffin::core
 {
-	/*
-	 * Return time since engine launch in seconds
-	 */
-	double GetTime();
-
 	class Timer
 	{
 	public:

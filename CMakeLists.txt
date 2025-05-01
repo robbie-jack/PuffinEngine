@@ -52,6 +52,9 @@ option(BOX2D_PHYSICS_SUPPORT "Compile with Box2D Physics Support" ON)
 option(JOLT_PHYSICS_SUPPORT "Compile with Jolt Physics Support" OFF)
 option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
 
+set(PFN_PLATFORM "Raylib" CACHE STRING "Platform to build puffin for.")
+set_property(CACHE PFN_PLATFORM PROPERTY STRINGS Raylib)
+
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
@@ -175,6 +178,8 @@ set(HEADERS
 	${HEADER_DIR}/puffin/physics/onager2d/shapes/polygonshape2d.h
 	${HEADER_DIR}/puffin/physics/onager2d/shapes/circleshape2d.h
 	${HEADER_DIR}/puffin/physics/onager2d/shapes/boxshape2d.h
+	# Platform
+	${HEADER_DIR}/puffin/platform/platform.h
 	# Procedural
 	${HEADER_DIR}/puffin/procedural/proceduralmeshgensubsystem.h
 	# Rendering
@@ -302,7 +307,9 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/physics/onager2d/colliders/circlecollider2d.cpp
 	${SOURCE_DIR}/puffin/physics/onager2d/colliders/polygoncollider2d.cpp
 	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/sweepandprunebroadphase2d.cpp
-	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/spatialhashbroadphase2d.cpp	
+	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/spatialhashbroadphase2d.cpp
+	# Platform
+	${SOURCE_DIR}/puffin/platform/platform.cpp
 	# Procedural
 	${SOURCE_DIR}/puffin/procedural/proceduralmeshgensubsystem.cpp
 	# Rendering
@@ -371,7 +378,21 @@ set (ENKITS_SOURCES
 	${ENKITS_DIR}/src/TaskScheduler.cpp
 	)
 
-add_library(${PUFFIN_LIBRARY_NAME} ${HEADERS} ${SOURCES})
+if (PFN_PLATFORM STREQUAL "Raylib")
+
+	message("Puffin Platform: Raylib")
+	set (PLATFORM_HEADERS ${HEADER_DIR}/puffin/platform/platformrl.h)
+	set (PLATFORM_SOURCES ${SOURCE_DIR}/puffin/platform/platformrl.cpp)
+
+else()
+
+	message("Puffin Platform: None")
+	set (PLATFORM_HEADERS)
+	set (PLATFORM_SOURCES)
+
+endif()
+
+add_library(${PUFFIN_LIBRARY_NAME} ${HEADERS} ${SOURCES} ${PLATFORM_HEADERS} ${PLATFORM_SOURCES})
 
 project (${PUFFIN_APP_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
 add_executable(${PUFFIN_APP_NAME} ${SOURCE_DIR}/main.cpp )
@@ -393,6 +414,8 @@ message("============================================================")
 
 sort_into_source_group(HEADERS ${HEADER_DIR} "")
 sort_into_source_group(SOURCES ${SOURCE_DIR} "")
+sort_into_source_group(PLATFORM_HEADERS ${HEADER_DIR} "")
+sort_into_source_group(PLATFORM_SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} imgui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} opensimplexnoise)
 #sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} vkbootstrap)

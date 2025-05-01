@@ -1,15 +1,10 @@
 ﻿#include "puffin/core/timer.h"
+#include "puffin/platform/platform.h"
 
 //#include "glfw/glfw3.h"
 
 namespace puffin::core
 {
-	double GetTime()
-	{
-		// TODO - Reimplement using stl
-		return 0.0;
-	}
-
 	void Timer::Start()
 	{
 		mStartTime = GetTime();
