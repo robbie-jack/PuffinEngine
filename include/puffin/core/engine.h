@@ -62,6 +62,9 @@ namespace puffin::core
 		bool GetSetupEngineDefaultSettings() const { return mSetupEngineDefaultSettings; }
 		bool GetShouldRenderEditorUI() const { return mEditorUIEnabled; }
 
+		uint16_t GetFramerateLimit() const { return mFramerateLimit; }
+
+		const double& GetLastTime() const { return mLastTime; }
 		const double& GetTimeStepFixed() const { return mTimeStepFixed; }
 		const double& GetDeltaTime() const { return mDeltaTime; }
 		const double& GetAccumulatedTime() const { return mAccumulatedTime; }
@@ -113,14 +116,12 @@ namespace puffin::core
 		void InitSignals();
 		void UpdateDeltaTime(double sampledTime);
 		void UpdatePhysicsTickRate(uint16_t ticksPerSecond);
-		void Idle();
 
 		bool mRunning = true;
 		bool mLoadSceneOnLaunch = false;
 		bool mSetupEngineDefaultScene = false;
 		bool mSetupEngineDefaultPhysics2DScene = false;
 		bool mSetupEngineDefaultSettings = false;
-		bool mFramerateLimitEnable = true; // Whether framerate should be capped at m_frameRateMax
 		bool mEditorUIEnabled = true; // Whether editor UI should be rendered
 
 		PlayState mPlayState = PlayState::Stopped;
@@ -130,8 +131,8 @@ namespace puffin::core
 		uint16_t mPhysicsTicksPerSecond = 60; // How many times physics code should run per frame
 
 		// Time Members
-		double mLastTime = 0.0;
-		double mCurrentTime = 0.0;
+		double mLastTime = 0.0; // Time since engine launch at start of last frame
+		double mCurrentTime = 0.0; // Time since engine launch at start of current frame
 		double mDeltaTime = 0.0; // How long it took last frame to complete
 		double mAccumulatedTime = 0.0; // Time passed since last physics tick
 		double mTimeStepFixed = 1.0 / mPhysicsTicksPerSecond; // How often deterministic code like physics should occur (defaults to 60 times a second)

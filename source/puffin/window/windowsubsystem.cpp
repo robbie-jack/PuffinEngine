@@ -58,6 +58,11 @@ namespace puffin::window
 		glfwTerminate();*/
 	}
 
+	core::SubsystemType WindowSubsystem::GetType() const
+	{
+		return core::SubsystemType::Window;
+	}
+
 	//bool WindowSubsystem::GetShouldPrimaryWindowClose() const
 	//{
 	//	return glfwWindowShouldClose(mPrimaryWindow);

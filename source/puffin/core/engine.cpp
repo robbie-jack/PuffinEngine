@@ -186,16 +186,6 @@ namespace puffin::core
 			benchmarkManager->End("WaitForLastPresentationAndSample");
 		}
 
-		// If frame rate cap is enabled, idle app until needed
-		{
-			benchmarkManager->Begin("Idle");
-
-			// TODO - Re-enable once GetTime() has been reimplemented
-			//Idle();
-
-			benchmarkManager->End("Idle");
-		}
-
 		// Make sure delta time never exceeds 1/30th of a second
 		mDeltaTime = std::min(mDeltaTime, mTimeStepLimit);
 
@@ -382,12 +372,10 @@ namespace puffin::core
 			mPlayState = PlayState::Stopped;
 		}
 
-		// TODO - Re-enable once window subsystem logic has been re-implemented with raylib
-		/*if (const auto windowSubsystem = GetSubsystem<window::WindowSubsystem>(); windowSubsystem->
-			GetShouldPrimaryWindowClose())
+		if (const auto windowSubsystem = mSubsystemManager->GetWindowSubsystem(); windowSubsystem->ShouldPrimaryWindowClose())
 		{
 			mRunning = false;
-		}*/
+		}
 
 		return mRunning;
 	}
@@ -464,7 +452,6 @@ namespace puffin::core
 		auto settingsManager = GetSubsystem<core::SettingsManager>();
 
 		mFramerateLimit = settingsManager->Get<int>("general", "framerate_limit").value_or(0);
-		mFramerateLimitEnable = settingsManager->Get<bool>("general", "framerate_limit_enable").value_or(false);
 
 		UpdatePhysicsTickRate(settingsManager->Get<uint16_t>("physics", "ticks_per_second").value_or(60));
 	}
@@ -479,14 +466,6 @@ namespace puffin::core
 			auto settingsManager = GetSubsystem<core::SettingsManager>();
 
 			mFramerateLimit = settingsManager->Get<int>("general", "framerate_limit").value_or(0);
-		}));
-
-		auto framerateLimitEnableSignal = signalSubsystem->GetOrCreateSignal("general_framerate_limit_enable");
-		framerateLimitEnableSignal->Connect(std::function([&]
-		{
-			auto settingsManager = GetSubsystem<core::SettingsManager>();
-
-			mFramerateLimitEnable = settingsManager->Get<bool>("general", "framerate_limit_enable").value_or(false);
 		}));
 
 		auto ticksPerSecondSignal = signalSubsystem->GetOrCreateSignal("physics_ticks_per_second");
@@ -509,22 +488,5 @@ namespace puffin::core
 	{
 		mPhysicsTicksPerSecond = ticksPerSecond;
 		mTimeStepFixed = 1.0 / mPhysicsTicksPerSecond;
-	}
-
-	void Engine::Idle()
-	{
-		if (mFramerateLimitEnable && mFramerateLimit > 0)
-		{
-			const double deltaTimeMax = 1.0 / mFramerateLimit;
-			double idleStartTime = 0.0;
-
-			while (mDeltaTime < deltaTimeMax)
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(0));
-
-				mCurrentTime = GetTime();
-				mDeltaTime = mCurrentTime - mLastTime;
-			}
-		}
 	}
 }

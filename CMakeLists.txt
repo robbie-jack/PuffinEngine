@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.24)
 
 include(FetchContent)
 
@@ -381,6 +381,10 @@ set (ENKITS_SOURCES
 if (PFN_PLATFORM STREQUAL "Raylib")
 
 	message("Puffin Platform: Raylib")
+
+	set(CUSTOMIZE_BUILD ON)
+	set(SUPPORT_CUSTOM_FRAME_CONTROL 1)
+
 	set (PLATFORM_HEADERS ${HEADER_DIR}/puffin/platform/platformrl.h)
 	set (PLATFORM_SOURCES ${SOURCE_DIR}/puffin/platform/platformrl.cpp)
 
@@ -406,11 +410,6 @@ target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${IMGUI_SOURCES})
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 #target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
 target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${ENKITS_SOURCES})
-
-message("")
-message("============================================================")
-message("Sorting Source Files into relative Subfolders")
-message("============================================================")
 
 sort_into_source_group(HEADERS ${HEADER_DIR} "")
 sort_into_source_group(SOURCES ${SOURCE_DIR} "")
@@ -565,6 +564,12 @@ set_property(TARGET ${PUFFIN_APP_NAME} PROPERTY
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PUFFIN_APP_NAME})
+
+if (PFN_PLATFORM STREQUAL "Raylib")
+
+	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC SUPPORT_CUSTOM_FRAME_CONTROL 1)
+
+endif()
 
 # Add definitions for supported functionality
 if (DOUBLE_PRECISION_SUPPORT)

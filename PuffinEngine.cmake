@@ -27,7 +27,7 @@ function(sort_into_source_group files dir sort_dir)
 
 foreach(file IN LISTS ${files})
 	#message("")
-	message("Generating Source Group for " ${file})
+	#message("Generating Source Group for " ${file})
 	file(RELATIVE_PATH relative_path ${dir} ${file})
 	get_filename_component(relative_dir ${relative_path} DIRECTORY)
 	#message("Relative Path: " ${relative_path})

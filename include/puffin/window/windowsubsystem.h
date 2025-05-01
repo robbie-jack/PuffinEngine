@@ -27,6 +27,10 @@ namespace puffin
 			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
+			[[nodiscard]] core::SubsystemType GetType() const override;
+
+			[[nodiscard]] virtual bool ShouldPrimaryWindowClose() const = 0;
+
 			//GLFWwindow* GetPrimaryWindow() const
 			//{
 			//	return mPrimaryWindow;

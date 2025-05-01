@@ -10,6 +10,10 @@
 
 namespace puffin
 {
+	namespace window
+	{
+		class WindowSubsystem;
+	}
 	namespace rendering
 	{
 		class RenderSubsystem;
@@ -64,6 +68,13 @@ namespace puffin::core
 			auto subsystem = factory->Create(mEngine);
 			mSubsystems.emplace(typeName, subsystem);
 
+			if (subsystem->GetType() == SubsystemType::Window)
+			{
+				assert(mRegisteredWindowSubsystem == false && "SubsystemManager::RegisterSubsystem - Attempting to register a second window subsystem");
+
+				mRegisteredWindowSubsystem = true;
+			}
+
 			if (subsystem->GetType() == SubsystemType::Input)
 			{
 				assert(mRegisteredInputSubsystem == false && "SubsystemManager::RegisterSubsystem - Attempting to register a second input subsystem");
@@ -103,6 +114,7 @@ namespace puffin::core
 		std::vector<Subsystem*>& GetSubsystems();
 		std::vector<Subsystem*>& GetGameplaySubsystems();
 
+		[[nodiscard]] window::WindowSubsystem* GetWindowSubsystem() const;
 		[[nodiscard]] Subsystem* GetInputSubsystem() const;
 		[[nodiscard]] rendering::RenderSubsystem* GetRenderSubsystem() const;
 
@@ -148,6 +160,9 @@ namespace puffin::core
 
 		std::vector<const char*> mGameplaySubsystemNames;
 		std::vector<Subsystem*> mInitializedGameplaySubsystems;
+
+		bool mRegisteredWindowSubsystem = false;
+		window::WindowSubsystem* mWindowSubsystem = nullptr;
 
 		bool mRegisteredInputSubsystem = false;
 		Subsystem* mInputSubsystem = nullptr;

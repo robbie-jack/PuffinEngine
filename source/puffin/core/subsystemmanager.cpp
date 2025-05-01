@@ -2,6 +2,7 @@
 
 #include "puffin/core/engine.h"
 #include "puffin/rendering/rendersubsystem.h"
+#include "puffin/window/windowsubsystem.h"
 
 namespace puffin::core
 {
@@ -17,6 +18,13 @@ namespace puffin::core
 	std::vector<Subsystem*>& SubsystemManager::GetGameplaySubsystems()
 	{
 		return mInitializedGameplaySubsystems;
+	}
+
+	window::WindowSubsystem* SubsystemManager::GetWindowSubsystem() const
+	{
+		assert(mWindowSubsystem != nullptr && "SubsystemManager::GetWindowSubsystem() - Attempting to get window subsystem while it is invalid");
+
+		return mWindowSubsystem;
 	}
 
 	Subsystem* SubsystemManager::GetInputSubsystem() const
@@ -39,6 +47,14 @@ namespace puffin::core
 		{
 			auto subsystem = CreateAndInitializeSubsystemInternal(typeName);
 
+			if (subsystem->GetType() == SubsystemType::Window)
+			{
+				assert(mWindowSubsystem == nullptr && "SubsystemManager::CreateAndInitializeEngineSubsystems - Attempting to initialize a second window subsystem");
+
+				if (auto windowSubsystem = dynamic_cast<window::WindowSubsystem*>(subsystem))
+					mWindowSubsystem = windowSubsystem;
+			}
+
 			if (subsystem->GetType() == SubsystemType::Input)
 			{
 				assert(mInputSubsystem == nullptr && "SubsystemManager::CreateAndInitializeEngineSubsystems - Attempting to initialize a second input subsystem");
@@ -50,8 +66,7 @@ namespace puffin::core
 			{
 				assert(mRenderSubsystem == nullptr && "SubsystemManager::CreateAndInitializeEngineSubsystems - Attempting to initialize a second render subsystem");
 
-				auto renderSubsystem = dynamic_cast<rendering::RenderSubsystem*>(subsystem);
-				if (renderSubsystem)
+				if (auto renderSubsystem = dynamic_cast<rendering::RenderSubsystem*>(subsystem))
 					mRenderSubsystem = renderSubsystem;
 			}
 		}
@@ -80,6 +95,10 @@ namespace puffin::core
 			mInitializedSubsystems.erase(typeName);
 			mSubsystems.erase(typeName);
 		}
+
+		mWindowSubsystem = nullptr;
+		mInputSubsystem = nullptr;
+		mRenderSubsystem = nullptr;
 	}
 
 	void SubsystemManager::DestroyGameplaySubsystems()

@@ -4,7 +4,7 @@
 
 namespace puffin::window
 {
-	WindowSubsystemRL::WindowSubsystemRL(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	WindowSubsystemRL::WindowSubsystemRL(const std::shared_ptr<core::Engine>& engine) : WindowSubsystem(engine)
 	{
 		mName = "WindowSubsystemRL";
 	}
@@ -24,6 +24,14 @@ namespace puffin::window
 	void WindowSubsystemRL::Deinitialize()
 	{
 		
+	}
+
+	bool WindowSubsystemRL::ShouldPrimaryWindowClose() const
+	{
+		if (mWindow)
+			return mWindow->ShouldClose();
+
+		return true;
 	}
 
 	raylib::Window* WindowSubsystemRL::GetWindow()

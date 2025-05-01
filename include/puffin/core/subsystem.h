@@ -13,6 +13,7 @@ namespace puffin::core
 		Engine = 0, // Subsystem shares lifetime of engine
 		Editor, // Subsystem shares lifetime of engine, is only initialized when editor is active
 		Gameplay, // Subsystem shares lifetime of gameplay
+		Window, // Unique subsystem type, manages window creation and deletion, same lifetime as engine subsystem
 		Input, // Unique subsystem type, which processes system input, same lifetime as engine subsystem
 		Render // Unique subsystem type, which handles scene & editor rendering, same lifetime as engine subsystem
 	};

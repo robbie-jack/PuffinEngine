@@ -32,6 +32,8 @@ namespace puffin::rendering
 
 	protected:
 
+		uint32_t mFrameCount = 0;
+
 		uint32_t mDrawCallsCountTotal = 0; // Total count of all draw calls
 		std::unordered_map<std::string, uint32_t> mDrawCallsCount; // Count for individual draw call type
 

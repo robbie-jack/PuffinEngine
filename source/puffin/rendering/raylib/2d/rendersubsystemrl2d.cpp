@@ -14,17 +14,38 @@ namespace puffin::rendering
 	{
 	}
 
+	void RenderSubsystemRL2D::Initialize(core::SubsystemManager* subsystemManager)
+	{
+		RenderSubsystem::Initialize(subsystemManager);
+	}
+
+	void RenderSubsystemRL2D::Deinitialize()
+	{
+		RenderSubsystem::Deinitialize();
+
+
+	}
+
 	double RenderSubsystemRL2D::WaitForLastPresentationAndSampleTime()
 	{
-		return RenderSubsystem::WaitForLastPresentationAndSampleTime();
+		const double currentTime = ::GetTime();
+		const double lastTime = mEngine->GetLastTime();
+
+		const double currentFrameTime = currentTime - lastTime;
+
+		const double waitTime = (1.0 / static_cast<double>(mEngine->GetFramerateLimit())) - currentFrameTime;
+
+		if (waitTime > 0.0)
+		{
+			WaitTime(waitTime);
+		}
+
+		return ::GetTime();
 	}
 
 	void RenderSubsystemRL2D::Render(double deltaTime)
 	{
-		RenderSubsystem::Render(deltaTime);
-
-		SetTargetFPS(60);   // Set our game to run at 60 frames-per-second
-		//--------------------------------------------------------------------------------------
+		PollInputEvents(); // TODO - Remove once input subsystem has been re-implemented
 
 		auto* windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystemRL>();
 		auto* window = windowSubsystem->GetWindow();
@@ -37,5 +58,9 @@ namespace puffin::rendering
 		DrawText("Congrats! You created your first raylib-cpp window!", 160, 200, 20, LIGHTGRAY);
 
 		EndDrawing();
+
+		SwapScreenBuffer();
+
+		mFrameCount++;
 	}
 }

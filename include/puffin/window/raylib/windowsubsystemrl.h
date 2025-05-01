@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/core/subsystem.h"
+#include "puffin/window/windowsubsystem.h"
 #include "Window.hpp"
 
 namespace puffin
@@ -12,7 +12,7 @@ namespace puffin
 
 	namespace window
 	{
-		class WindowSubsystemRL : public core::Subsystem
+		class WindowSubsystemRL : public WindowSubsystem
 		{
 		public:
 
@@ -21,6 +21,8 @@ namespace puffin
 
 			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
+
+			[[nodiscard]] bool ShouldPrimaryWindowClose() const override;
 
 			raylib::Window* GetWindow();
 

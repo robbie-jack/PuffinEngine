@@ -18,8 +18,6 @@
 //#include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
 #include "puffin/platform/platformrl.h"
-#include "puffin/window/raylib/windowsubsystemrl.h"
-#include "puffin/rendering/raylib/2d/rendersubsystemrl2d.h"
 
 int main(int argc, char* argv[])
 {
