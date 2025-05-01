@@ -139,6 +139,7 @@ set(HEADERS
 	# Input
 	${HEADER_DIR}/puffin/input/inputevent.h
 	${HEADER_DIR}/puffin/input/inputsubsystem.h
+	${HEADER_DIR}/puffin/input/inputtypes.h
 	# Nodes
 	${HEADER_DIR}/puffin/nodes/node.h
 	${HEADER_DIR}/puffin/nodes/transformnode2d.h

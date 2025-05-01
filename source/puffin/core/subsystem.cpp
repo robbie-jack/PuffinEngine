@@ -58,10 +58,6 @@ namespace puffin::core
 		return false;
 	}
 
-	void Subsystem::ProcessInput()
-	{
-	}
-
 	const std::string& Subsystem::GetName()
 	{
 		return mName;

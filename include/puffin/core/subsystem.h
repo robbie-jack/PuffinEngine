@@ -78,11 +78,6 @@ namespace puffin::core
 		 */
 		virtual bool ShouldFixedUpdate();
 
-		/*
-		 * Called once a frame on input subsystem
-		 */
-		virtual void ProcessInput();
-
 		const std::string& GetName();
 
 	protected:

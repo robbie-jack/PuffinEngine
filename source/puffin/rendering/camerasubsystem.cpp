@@ -256,29 +256,29 @@ namespace puffin::rendering
 
             if (inputSubsystem->GetCursorLocked() && mActiveCameraID == mEditorCamID) {
                 // Camera Movement
-                if (inputSubsystem->Pressed("EditorCamMoveRight") && !inputSubsystem->Pressed("EditorCamMoveLeft")) {
+                if (inputSubsystem->IsActionDown("EditorCamMoveRight") && !inputSubsystem->IsActionDown("EditorCamMoveLeft")) {
                     transform.position += camera.right * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->Pressed("EditorCamMoveLeft") && !inputSubsystem->Pressed("EditorCamMoveRight")) {
+                if (inputSubsystem->IsActionDown("EditorCamMoveLeft") && !inputSubsystem->IsActionDown("EditorCamMoveRight")) {
                     transform.position -= camera.right * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->Pressed("EditorCamMoveForward") &&
-                    !inputSubsystem->Pressed("EditorCamMoveBackward")) {
+                if (inputSubsystem->IsActionDown("EditorCamMoveForward") &&
+                    !inputSubsystem->IsActionDown("EditorCamMoveBackward")) {
                     transform.position += camera.direction * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->Pressed("EditorCamMoveBackward") &&
-                    !inputSubsystem->Pressed("EditorCamMoveForward")) {
+                if (inputSubsystem->IsActionDown("EditorCamMoveBackward") &&
+                    !inputSubsystem->IsActionDown("EditorCamMoveForward")) {
                     transform.position -= camera.direction * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->Pressed("EditorCamMoveUp") && !inputSubsystem->Pressed("EditorCamMoveDown")) {
+                if (inputSubsystem->IsActionDown("EditorCamMoveUp") && !inputSubsystem->IsActionDown("EditorCamMoveDown")) {
                     transform.position += camera.up * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->Pressed("EditorCamMoveDown") && !inputSubsystem->Pressed("EditorCamMoveUp")) {
+                if (inputSubsystem->IsActionDown("EditorCamMoveDown") && !inputSubsystem->IsActionDown("EditorCamMoveUp")) {
                     transform.position -= camera.up * mEditorCamSpeed * deltaTime;
                 }
 

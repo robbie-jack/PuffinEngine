@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "puffin/input/inputsubsystem.h"
 
 #include "puffin/core/engine.h"
@@ -24,49 +26,40 @@ namespace puffin
 
 		void InputSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 		{
-			const auto windowSubsystem = subsystemManager->CreateAndInitializeSubsystem<window::WindowSubsystem>();
-			const auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
-			const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+			//const auto windowSubsystem = subsystemManager->CreateAndInitializeSubsystem<window::WindowSubsystem>();
+			//const auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+			//const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+			//
+			////mWindow = windowSubsystem->GetPrimaryWindow();
+			//mSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
+
+			//// Setup Actions
+
+			//// Camera Actions
 			
-			//mWindow = windowSubsystem->GetPrimaryWindow();
-			mSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
 
-			// Setup Actions
+			//// Setup Mouse Cursor
+			//if (mCursorLocked == true)
+			//{
+			//	//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			//}
+			//else
+			//{
+			//	//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			//}
 
-			// Camera Actions
-			//AddAction("EditorCamMoveForward", GLFW_KEY_W);
-			//AddAction("EditorCamMoveBackward", GLFW_KEY_S);
-			//AddAction("EditorCamMoveLeft", GLFW_KEY_A);
-			//AddAction("EditorCamMoveRight", GLFW_KEY_D);
-			//AddAction("EditorCamMoveUp", GLFW_KEY_E);
-			//AddAction("EditorCamMoveDown", GLFW_KEY_Q);
-			//AddAction("EditorCursorSwitch", GLFW_KEY_F1);
-			//add_action("Spacebar", GLFW_KEY_SPACE);
-			//add_action("Play", GLFW_KEY_P);
-			//add_action("Restart", GLFW_KEY_O);
+			//auto mouseSensitivitySignal = signalSubsystem->GetSignal("general_mouse_sensitivity");
+			//if (!mouseSensitivitySignal)
+			//{
+			//	mouseSensitivitySignal = signalSubsystem->CreateSignal("general_mouse_sensitivity");
+			//}
 
-			// Setup Mouse Cursor
-			if (mCursorLocked == true)
-			{
-				//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			}
-			else
-			{
-				//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			}
-
-			auto mouseSensitivitySignal = signalSubsystem->GetSignal("general_mouse_sensitivity");
-			if (!mouseSensitivitySignal)
-			{
-				mouseSensitivitySignal = signalSubsystem->CreateSignal("general_mouse_sensitivity");
-			}
-
-			mouseSensitivitySignal->Connect(std::function([&]
-			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-				
-				mSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
-			}));
+			//mouseSensitivitySignal->Connect(std::function([&]
+			//{
+			//	auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			//	
+			//	mSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
+			//}));
 		}
 
 		void InputSubsystem::Deinitialize()
@@ -82,12 +75,7 @@ namespace puffin
 
 		void InputSubsystem::ProcessInput()
 		{
-			/*if (!mWindow)
-			{
-				mWindow = mEngine->GetSubsystem<window::WindowSubsystem>()->GetPrimaryWindow();
-			}*/
-
-			//glfwPollEvents();
+			PollInput();
 
 			// Update Actions
 
@@ -101,37 +89,37 @@ namespace puffin
 				// Loop over each key in this action
 				for (auto key : action.keys)
 				{
-					/*int state = glfwGetKey(mWindow, key);
+		//			/*int state = glfwGetKey(mWindow, key);
 
-					if (state == GLFW_PRESS)
-					{
-						if (!stateChanged && action.state == KeyState::Released)
-						{
-							action.state = KeyState::JustPressed;
-							stateChanged = true;
-						}
+		//			if (state == GLFW_PRESS)
+		//			{
+		//				if (!stateChanged && action.state == KeyState::Up)
+		//				{
+		//					action.state = KeyState::IsActionDown;
+		//					stateChanged = true;
+		//				}
 
-						if (!stateChanged && action.state == KeyState::JustPressed)
-						{
-							action.state = KeyState::Pressed;
-							stateChanged = true;
-						}
-					}
+		//				if (!stateChanged && action.state == KeyState::IsActionDown)
+		//				{
+		//					action.state = KeyState::Down;
+		//					stateChanged = true;
+		//				}
+		//			}
 
-					if (state == GLFW_RELEASE)
-					{
-						if (!stateChanged && action.state == KeyState::Pressed)
-						{
-							action.state = KeyState::JustReleased;
-							stateChanged = true;
-						}
+		//			if (state == GLFW_RELEASE)
+		//			{
+		//				if (!stateChanged && action.state == KeyState::Down)
+		//				{
+		//					action.state = KeyState::IsActionUp;
+		//					stateChanged = true;
+		//				}
 
-						if (!stateChanged && action.state == KeyState::JustReleased)
-						{
-							action.state = KeyState::Released;
-							stateChanged = true;
-						}
-					}*/
+		//				if (!stateChanged && action.state == KeyState::IsActionUp)
+		//				{
+		//					action.state = KeyState::Up;
+		//					stateChanged = true;
+		//				}
+		//			}*/
 
 					// Notify subscribers that event changed
 					if (stateChanged == true)
@@ -145,20 +133,20 @@ namespace puffin
 				}
 			}
 
-			// Update Mouse
-			if (GetAction("EditorCursorSwitch").state == KeyState::JustPressed)
-			{
-				if (mCursorLocked == true)
-				{
-					//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-				}
-				else
-				{
-					//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-				}
+		//	// Update Mouse
+		//	if (GetAction("EditorCursorSwitch").state == KeyState::IsActionDown)
+		//	{
+		//		if (mCursorLocked == true)
+		//		{
+		//			//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		//		}
+		//		else
+		//		{
+		//			//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		//		}
 
-				mCursorLocked = !mCursorLocked;
-			}
+		//		mCursorLocked = !mCursorLocked;
+		//	}
 
 			// Update Current and Last Mouse Positions
 			mLastXPos = mXPos;
@@ -180,7 +168,7 @@ namespace puffin
 			newAction.name = name;
 			newAction.id = mNextID;
 			newAction.keys.push_back(key);
-			newAction.state = KeyState::Released;
+			newAction.state = KeyState::Up;
 
 			mActions.emplace(name, newAction);
 
@@ -195,8 +183,8 @@ namespace puffin
 			InputAction newAction;
 			newAction.name = name;
 			newAction.id = mNextID;
-			newAction.keys = keys;
-			newAction.state = KeyState::Released;
+			newAction.keys = std::move(keys);
+			newAction.state = KeyState::Up;
 
 			mActions.emplace(name, newAction);
 
@@ -214,24 +202,24 @@ namespace puffin
 			return {};
 		}
 
-		bool InputSubsystem::JustPressed(const std::string& name) const
+		bool InputSubsystem::IsActionPressed(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::JustPressed ? true : false;
+			return mActions.at(name).state == KeyState::Pressed;
 		}
 
-		bool InputSubsystem::Pressed(const std::string& name) const
+		bool InputSubsystem::IsActionDown(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::Pressed ? true : false;
+			return mActions.at(name).state == KeyState::Down;
 		}
 
-		bool InputSubsystem::JustReleased(const std::string& name) const
+		bool InputSubsystem::IsActionReleased(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::JustReleased ? true : false;
+			return mActions.at(name).state == KeyState::Released;
 		}
 
-		bool InputSubsystem::Released(const std::string& name) const
+		bool InputSubsystem::IsActionUp(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::Released ? true : false;
+			return mActions.at(name).state == KeyState::Up;
 		}
 
 		double InputSubsystem::GetMouseXOffset() const
@@ -252,6 +240,11 @@ namespace puffin
 		bool InputSubsystem::GetCursorLocked() const
 		{
 			return mCursorLocked;
+		}
+
+		void AddEditorActions()
+		{
+
 		}
 	}
 }

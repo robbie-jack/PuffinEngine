@@ -186,9 +186,6 @@ namespace puffin::core
 			benchmarkManager->End("WaitForLastPresentationAndSample");
 		}
 
-		// Make sure delta time never exceeds 1/30th of a second
-		mDeltaTime = std::min(mDeltaTime, mTimeStepLimit);
-
 		const auto audioSubsystem = GetSubsystem<audio::AudioSubsystem>();
 
 		// Execute engine updates
@@ -482,6 +479,9 @@ namespace puffin::core
 		mLastTime = mCurrentTime;
 		mCurrentTime = sampledTime;
 		mDeltaTime = mCurrentTime - mLastTime;
+
+		// Make sure delta time never exceeds 1/30th of a second
+		mDeltaTime = std::min(mDeltaTime, mTimeStepLimit);
 	}
 
 	void Engine::UpdatePhysicsTickRate(uint16_t ticksPerSecond)
