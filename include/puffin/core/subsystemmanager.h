@@ -14,6 +14,11 @@ namespace puffin
 	{
 		class WindowSubsystem;
 	}
+
+	namespace input
+	{
+		class InputSubsystem;
+	}
 	namespace rendering
 	{
 		class RenderSubsystem;
@@ -115,7 +120,7 @@ namespace puffin::core
 		std::vector<Subsystem*>& GetGameplaySubsystems();
 
 		[[nodiscard]] window::WindowSubsystem* GetWindowSubsystem() const;
-		[[nodiscard]] Subsystem* GetInputSubsystem() const;
+		[[nodiscard]] input::InputSubsystem* GetInputSubsystem() const;
 		[[nodiscard]] rendering::RenderSubsystem* GetRenderSubsystem() const;
 
 		template<typename T>
@@ -165,7 +170,7 @@ namespace puffin::core
 		window::WindowSubsystem* mWindowSubsystem = nullptr;
 
 		bool mRegisteredInputSubsystem = false;
-		Subsystem* mInputSubsystem = nullptr;
+		input::InputSubsystem* mInputSubsystem = nullptr;
 
 		bool mRegisteredRenderSubsystem = false;
 		rendering::RenderSubsystem* mRenderSubsystem = nullptr;

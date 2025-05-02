@@ -1,6 +1,7 @@
 #include "puffin/core/subsystemmanager.h"
 
 #include "puffin/core/engine.h"
+#include "puffin/input/inputsubsystem.h"
 #include "puffin/rendering/rendersubsystem.h"
 #include "puffin/window/windowsubsystem.h"
 
@@ -27,7 +28,7 @@ namespace puffin::core
 		return mWindowSubsystem;
 	}
 
-	Subsystem* SubsystemManager::GetInputSubsystem() const
+	input::InputSubsystem* SubsystemManager::GetInputSubsystem() const
 	{
 		assert(mInputSubsystem != nullptr && "SubsystemManager::GetInputSubsystem() - Attempting to get input subsystem while it is invalid");
 
@@ -59,7 +60,8 @@ namespace puffin::core
 			{
 				assert(mInputSubsystem == nullptr && "SubsystemManager::CreateAndInitializeEngineSubsystems - Attempting to initialize a second input subsystem");
 
-				mInputSubsystem = subsystem;
+				if (auto inputSubsystem = dynamic_cast<input::InputSubsystem*>(subsystem))
+					mInputSubsystem = inputSubsystem;
 			}
 
 			if (subsystem->GetType() == SubsystemType::Render)

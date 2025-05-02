@@ -3,6 +3,7 @@
 #include "puffin/core/engine.h"
 #include "puffin/platform/raylib/platformrl.h"
 #include "puffin/platform/raylib/window/windowsubsystemrl.h"
+#include "puffin/platform/raylib/input/inputsubsystemrl.h"
 #include "puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.h"
 
 #include "raylib-cpp.hpp"
@@ -22,7 +23,8 @@ namespace puffin::core
 
 	void PlatformRL::RegisterTypes()
 	{
-		mEngine->RegisterSubsystem<puffin::window::WindowSubsystemRL>();
-		mEngine->RegisterSubsystem<puffin::rendering::RenderSubsystemRL2D>();
+		mEngine->RegisterSubsystem<window::WindowSubsystemRL>();
+		mEngine->RegisterSubsystem<input::InputSubsystemRL>();
+		mEngine->RegisterSubsystem<rendering::RenderSubsystemRL2D>();
 	}
 }

@@ -55,7 +55,7 @@ namespace puffin
 
 			[[nodiscard]] virtual double GetMouseDeltaX() = 0;
 			[[nodiscard]] virtual double GetMouseDeltaY() = 0;
-			[[nodiscard]] virtual Vector2d GetMouseDelta() = 0;
+			[[nodiscard]] virtual Vector2f GetMouseDelta() = 0;
 
 			[[nodiscard]] double GetMouseXOffset() const;
 			[[nodiscard]] double GetMouseYOffset() const;
@@ -69,10 +69,12 @@ namespace puffin
 			 */
 			virtual void PollInput() = 0;
 
-			/*
-			 * Get next key input to process
-			 */
-			virtual int GetNextKey() = 0;
+			virtual KeyState GetKeyState(KeyboardKey) = 0;
+
+			//virtual bool IsKeyPressed(KeyboardKey key) = 0;
+			//virtual bool IsKeyDown(KeyboardKey key) = 0;
+			//virtual bool IsKeyReleased(KeyboardKey key) = 0;
+			//virtual bool IsKeyUp(KeyboardKey key) = 0;
 
 		private:
 

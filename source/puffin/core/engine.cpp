@@ -167,9 +167,9 @@ namespace puffin::core
 		{
 			benchmarkManager->Begin("Input");
 
-			// TODO - Re-enable once input subsystem logic has been re-implemented to work with raylib
-			//auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
-			//inputSubsystem->ProcessInput();
+			auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
+
+			inputSubsystem->ProcessInput();
 
 			benchmarkManager->End("Input");
 		}
