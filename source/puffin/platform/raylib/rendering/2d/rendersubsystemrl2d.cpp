@@ -1,7 +1,7 @@
-#include "puffin/rendering/raylib/2d/rendersubsystemrl2d.h"
+#include "puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.h"
 
 #include "puffin/core/engine.h"
-#include "puffin/window/raylib/windowsubsystemrl.h"
+#include "puffin/platform/raylib/window/windowsubsystemrl.h"
 
 namespace puffin::rendering
 {

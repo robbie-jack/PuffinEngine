@@ -213,7 +213,7 @@ set(HEADERS
 	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
 	# Rendering - Raylib
 	# Rendering - Raylib - 2D
-	${HEADER_DIR}/puffin/rendering/raylib/2d/rendersubsystemrl2d.h
+	
 	# Scene
 	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
 	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
@@ -238,7 +238,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/utility/serialization.h
 	# Window
 	${HEADER_DIR}/puffin/window/windowsubsystem.h
-	${HEADER_DIR}/puffin/window/raylib/windowsubsystemrl.h
 	)
 
 set(SOURCES 
@@ -334,9 +333,6 @@ set(SOURCES
 	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.cpp
 	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.cpp
 	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.cpp
-	# Rendering - Raylib
-	# Rendering - Raylib - 2D
-	${SOURCE_DIR}/puffin/rendering/raylib/2d/rendersubsystemrl2d.cpp
 	# Scene
 	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
@@ -350,7 +346,6 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/utility/serialization.cpp
 	# Window
 	${SOURCE_DIR}/puffin/window/windowsubsystem.cpp
-	${SOURCE_DIR}/puffin/window/raylib/windowsubsystemrl.cpp
 	)
 	
 set (IMGUI_SOURCES
@@ -386,8 +381,18 @@ if (PFN_PLATFORM STREQUAL "Raylib")
 	set(CUSTOMIZE_BUILD ON)
 	set(SUPPORT_CUSTOM_FRAME_CONTROL 1)
 
-	set (PLATFORM_HEADERS ${HEADER_DIR}/puffin/platform/platformrl.h)
-	set (PLATFORM_SOURCES ${SOURCE_DIR}/puffin/platform/platformrl.cpp)
+	set (PLATFORM_HEADERS 
+		${HEADER_DIR}/puffin/platform/raylib/platformrl.h
+		${HEADER_DIR}/puffin/platform/raylib/input/inputsubsystemrl.h
+		${HEADER_DIR}/puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.h
+		${HEADER_DIR}/puffin/platform/raylib/window/windowsubsystemrl.h
+	)
+	set (PLATFORM_SOURCES 
+		${SOURCE_DIR}/puffin/platform/raylib/platformrl.cpp
+		${SOURCE_DIR}/puffin/platform/raylib/input/inputsubsystemrl.cpp
+		${SOURCE_DIR}/puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.cpp
+		${SOURCE_DIR}/puffin/platform/raylib/window/windowsubsystemrl.cpp
+	)
 
 else()
 

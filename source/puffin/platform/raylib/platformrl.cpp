@@ -1,9 +1,9 @@
 #include <utility>
 
 #include "puffin/core/engine.h"
-#include "puffin/platform/platformrl.h"
-#include "puffin/window/raylib/windowsubsystemrl.h"
-#include "puffin/rendering/raylib/2d/rendersubsystemrl2d.h"
+#include "puffin/platform/raylib/platformrl.h"
+#include "puffin/platform/raylib/window/windowsubsystemrl.h"
+#include "puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.h"
 
 #include "raylib-cpp.hpp"
 
