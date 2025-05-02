@@ -8,10 +8,10 @@ namespace puffin::input
 {
 	struct InputEvent
 	{
-		InputEvent() : actionState(KeyState::Up) {}
-		InputEvent(std::string name, KeyState state) : actionName(std::move(name)), actionState(state) {}
+		InputEvent() : actionState(InputState::Up) {}
+		InputEvent(std::string name, InputState state) : actionName(std::move(name)), actionState(state) {}
 
 		std::string actionName;
-		KeyState actionState;
+		InputState actionState;
 	};
 }

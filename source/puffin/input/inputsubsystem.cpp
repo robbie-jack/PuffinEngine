@@ -2,6 +2,7 @@
 
 #include "puffin/input/inputsubsystem.h"
 
+#include "raylib.h"
 #include "puffin/core/engine.h"
 #include "puffin/core/settingsmanager.h"
 #include "puffin/core/signalsubsystem.h"
@@ -16,7 +17,6 @@ namespace puffin
 		{
 			mName = "InputSubsystem";
 
-			mNextID = 1;
 			mLastXPos = 640.0;
 			mLastYPos = 360.0;
 			mSensitivity = 0.05;
@@ -60,6 +60,8 @@ namespace puffin
 			//	
 			//	mSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
 			//}));
+
+			AddEditorContext();
 		}
 
 		void InputSubsystem::Deinitialize()
@@ -79,62 +81,95 @@ namespace puffin
 
 			// Update Actions
 
-			bool stateChanged = false;
-
-			// Loop through current actions and update action states
+			// Loop through current actions and publish input events
 			for (auto& [name, action] : mActions)
 			{
-				stateChanged = false;
+				bool stateChanged = false;
 
 				// Loop over each key in this action
 				for (auto key : action.keys)
 				{
+					switch (action.state)
+					{
+					case InputState::Up:
+
+						if (IsKeyPressed(key.key) && AreKeyModifiersPressed(key))
+						{
+
+
+							stateChanged = true;
+						}
+
+						break;
+
+					case InputState::Pressed:
+
+
+
+						break;
+
+					case InputState::Down:
+
+
+
+						break;
+
+					case InputState::Released:
+
+
+
+						break;
+
+					}
+
+					
+
 		//			/*int state = glfwGetKey(mWindow, key);
 
 		//			if (state == GLFW_PRESS)
 		//			{
-		//				if (!stateChanged && action.state == KeyState::Up)
+		//				if (!stateChanged && action.state == InputState::Up)
 		//				{
-		//					action.state = KeyState::IsActionDown;
+		//					action.state = InputState::IsActionDown;
 		//					stateChanged = true;
 		//				}
 
-		//				if (!stateChanged && action.state == KeyState::IsActionDown)
+		//				if (!stateChanged && action.state == InputState::IsActionDown)
 		//				{
-		//					action.state = KeyState::Down;
+		//					action.state = InputState::Down;
 		//					stateChanged = true;
 		//				}
 		//			}
 
 		//			if (state == GLFW_RELEASE)
 		//			{
-		//				if (!stateChanged && action.state == KeyState::Down)
+		//				if (!stateChanged && action.state == InputState::Down)
 		//				{
-		//					action.state = KeyState::IsActionUp;
+		//					action.state = InputState::IsActionUp;
 		//					stateChanged = true;
 		//				}
 
-		//				if (!stateChanged && action.state == KeyState::IsActionUp)
+		//				if (!stateChanged && action.state == InputState::IsActionUp)
 		//				{
-		//					action.state = KeyState::Up;
+		//					action.state = InputState::Up;
 		//					stateChanged = true;
 		//				}
 		//			}*/
+				}
 
-					// Notify subscribers that event changed
-					if (stateChanged == true)
-					{
-						const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+				// Notify subscribers that event changed
+				if (stateChanged == true)
+				{
+					const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
 
-						signalSubsystem->Emit<InputEvent>(name, InputEvent(action.name, action.state));
+					signalSubsystem->Emit<InputEvent>(name, InputEvent(action.name, action.state));
 
-						stateChanged = false;
-					}
+					stateChanged = false;
 				}
 			}
 
 		//	// Update Mouse
-		//	if (GetAction("EditorCursorSwitch").state == KeyState::IsActionDown)
+		//	if (GetAction("EditorCursorSwitch").state == InputState::IsActionDown)
 		//	{
 		//		if (mCursorLocked == true)
 		//		{
@@ -166,32 +201,22 @@ namespace puffin
 		{
 			InputAction newAction;
 			newAction.name = name;
-			newAction.id = mNextID;
-			newAction.keys.push_back(key);
-			newAction.state = KeyState::Up;
 
 			mActions.emplace(name, newAction);
 
 			const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
             signalSubsystem->CreateSignal<InputEvent>(name);
-
-			mNextID++;
 		}
 
 		void InputSubsystem::AddAction(std::string name, std::vector<int> keys)
 		{
 			InputAction newAction;
 			newAction.name = name;
-			newAction.id = mNextID;
-			newAction.keys = std::move(keys);
-			newAction.state = KeyState::Up;
 
 			mActions.emplace(name, newAction);
 
 			const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
             signalSubsystem->CreateSignal<InputEvent>(name);
-
-			mNextID++;
 		}
 
 		InputAction InputSubsystem::GetAction(std::string name) const
@@ -204,22 +229,22 @@ namespace puffin
 
 		bool InputSubsystem::IsActionPressed(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::Pressed;
+			return mActions.at(name).state == InputState::Pressed;
 		}
 
 		bool InputSubsystem::IsActionDown(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::Down;
+			return mActions.at(name).state == InputState::Down;
 		}
 
 		bool InputSubsystem::IsActionReleased(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::Released;
+			return mActions.at(name).state == InputState::Released;
 		}
 
 		bool InputSubsystem::IsActionUp(const std::string& name) const
 		{
-			return mActions.at(name).state == KeyState::Up;
+			return mActions.at(name).state == InputState::Up;
 		}
 
 		double InputSubsystem::GetMouseXOffset() const
@@ -242,7 +267,41 @@ namespace puffin
 			return mCursorLocked;
 		}
 
-		void AddEditorActions()
+		bool InputSubsystem::AreKeyModifiersPressed(KeyboardKeyWithModifier keyWithModifier) const
+		{
+			if (keyWithModifier.ctrlPressed && (IsKeyPressed(KeyboardKey::LeftControl) || IsKeyDown(KeyboardKey::LeftControl)
+				|| IsKeyPressed(KeyboardKey::RightControl) || IsKeyDown(KeyboardKey::RightControl)))
+				return false;
+
+			if (keyWithModifier.altPressed && (IsKeyPressed(KeyboardKey::LeftAlt) || IsKeyDown(KeyboardKey::LeftAlt)
+				|| IsKeyPressed(KeyboardKey::RightAlt) || IsKeyDown(KeyboardKey::RightAlt)))
+				return false;
+
+			if (keyWithModifier.shiftPressed && (IsKeyPressed(KeyboardKey::LeftShift) || IsKeyDown(KeyboardKey::LeftShift)
+				|| IsKeyPressed(KeyboardKey::RightShift) || IsKeyDown(KeyboardKey::RightShift)))
+				return false;
+
+			return true;
+		}
+
+		bool InputSubsystem::AreMouseModifiersPressed(MouseButtonWithModifier mouseButtonWithModifier) const
+		{
+			if (mouseButtonWithModifier.ctrlPressed && (IsKeyPressed(KeyboardKey::LeftControl) || IsKeyDown(KeyboardKey::LeftControl)
+				|| IsKeyPressed(KeyboardKey::RightControl) || IsKeyDown(KeyboardKey::RightControl)))
+				return false;
+
+			if (mouseButtonWithModifier.altPressed && (IsKeyPressed(KeyboardKey::LeftAlt) || IsKeyDown(KeyboardKey::LeftAlt)
+				|| IsKeyPressed(KeyboardKey::RightAlt) || IsKeyDown(KeyboardKey::RightAlt)))
+				return false;
+
+			if (mouseButtonWithModifier.shiftPressed && (IsKeyPressed(KeyboardKey::LeftShift) || IsKeyDown(KeyboardKey::LeftShift)
+				|| IsKeyPressed(KeyboardKey::RightShift) || IsKeyDown(KeyboardKey::RightShift)))
+				return false;
+
+			return true;
+		}
+
+		void AddEditorContext()
 		{
 
 		}

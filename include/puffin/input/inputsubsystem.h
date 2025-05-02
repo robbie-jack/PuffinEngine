@@ -21,8 +21,6 @@ namespace puffin
 
 	namespace input
 	{
-		
-
 		class InputSubsystem : public core::Subsystem
 		{
 		public:
@@ -49,6 +47,25 @@ namespace puffin
 			[[nodiscard]] bool IsActionReleased(const std::string& name) const;
 			[[nodiscard]] bool IsActionUp(const std::string& name) const;
 
+			[[nodiscard]] virtual bool IsKeyPressed(KeyboardKey key) const = 0;
+			[[nodiscard]] virtual bool IsKeyDown(KeyboardKey key) const = 0;
+			[[nodiscard]] virtual bool IsKeyReleased(KeyboardKey key) const = 0;
+			[[nodiscard]] virtual bool IsKeyUp(KeyboardKey key) = 0;
+
+			[[nodiscard]] virtual bool IsMouseButtonPressed(MouseButton mouseButton) const = 0;
+			[[nodiscard]] virtual bool IsMouseButtonDown(MouseButton mouseButton) const = 0;
+			[[nodiscard]] virtual bool IsMouseButtonReleased(MouseButton mouseButton) const = 0;
+			[[nodiscard]] virtual bool IsMouseButtonUp(MouseButton mouseButton) const = 0;
+
+			[[nodiscard]] virtual bool IsGamepadButtonPressed(GamepadButton gamepadButton) const = 0;
+			[[nodiscard]] virtual bool IsGamepadButtonDown(GamepadButton gamepadButton) const = 0;
+			[[nodiscard]] virtual bool IsGamepadButtonReleased(GamepadButton gamepadButton) const = 0;
+			[[nodiscard]] virtual bool IsGamepadButtonUp(GamepadButton gamepadButton) const = 0;
+
+			[[nodiscard]] virtual InputState GetKeyState(KeyboardKey key) const = 0;
+			[[nodiscard]] virtual InputState GetMouseButtonState(MouseButton mouseButton) const = 0;
+			[[nodiscard]] virtual InputState GetGamepadButtonState(GamepadButton gamepadButton) const = 0;
+
 			[[nodiscard]] virtual int GetMouseX() = 0;
 			[[nodiscard]] virtual int GetMouseY() = 0;
 			[[nodiscard]] virtual Vector2i GetMousePosition() = 0;
@@ -62,6 +79,9 @@ namespace puffin
 			[[nodiscard]] double GetSensitivity() const;
 			[[nodiscard]] bool GetCursorLocked() const;
 
+			[[nodiscard]] bool AreKeyModifiersPressed(KeyboardKeyWithModifier keyWithModifier) const;
+			[[nodiscard]] bool AreMouseModifiersPressed(MouseButtonWithModifier mouseButtonWithModifier) const;
+
 		protected:
 
 			/*
@@ -69,12 +89,7 @@ namespace puffin
 			 */
 			virtual void PollInput() = 0;
 
-			virtual KeyState GetKeyState(KeyboardKey) = 0;
-
-			//virtual bool IsKeyPressed(KeyboardKey key) = 0;
-			//virtual bool IsKeyDown(KeyboardKey key) = 0;
-			//virtual bool IsKeyReleased(KeyboardKey key) = 0;
-			//virtual bool IsKeyUp(KeyboardKey key) = 0;
+			int mActiveGamepad = 0;
 
 		private:
 
@@ -83,10 +98,9 @@ namespace puffin
 			double mSensitivity;
 			bool mFirstMouse;
 
-			int mNextID = 1;
 			std::unordered_map<std::string, InputAction> mActions;
 		};
 
-		void AddEditorActions();
+		void AddEditorContext();
 	}
 }
