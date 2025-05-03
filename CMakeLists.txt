@@ -102,6 +102,8 @@ set(HEADERS
 	${HEADER_DIR}/puffin/components/procedural/3d/proceduralterraincomponent3d.h
 	${HEADER_DIR}/puffin/components/procedural/3d/proceduraluvspherecomponent3d.h
 	# Components - Rendering
+	# Components - Rendering - 2D
+	${HEADER_DIR}/puffin/components/rendering/2d/cameracomponent2d.h
 	# Components - Rendering - 3D
 	${HEADER_DIR}/puffin/components/rendering/3d/cameracomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/directionallightcomponent3d.h
@@ -137,6 +139,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowviewport.h
 	# Gameplay
 	# Input
+	${HEADER_DIR}/puffin/input/inputcontext.h
 	${HEADER_DIR}/puffin/input/inputevent.h
 	${HEADER_DIR}/puffin/input/inputsubsystem.h
 	${HEADER_DIR}/puffin/input/inputtypes.h
@@ -279,6 +282,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowviewport.cpp
 	# Gameplay
 	# Input
+	${SOURCE_DIR}/puffin/input/inputcontext.cpp
 	${SOURCE_DIR}/puffin/input/inputsubsystem.cpp
 	# Nodes
 	${SOURCE_DIR}/puffin/nodes/node.cpp

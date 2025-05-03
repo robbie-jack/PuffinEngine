@@ -185,6 +185,11 @@ namespace puffin::input
 	 */
 	struct KeyboardKeyWithModifier
 	{
+		KeyboardKeyWithModifier() = default;
+		KeyboardKeyWithModifier(KeyboardKey key, bool ctrlPressed = false, bool altPressed = false, bool shiftPressed = false)
+			: key(key), ctrlPressed(ctrlPressed), altPressed(altPressed), shiftPressed(shiftPressed)
+		{}
+
 		KeyboardKey key;
 		bool ctrlPressed = false;
 		bool altPressed = false;
@@ -193,7 +198,13 @@ namespace puffin::input
 
 	struct MouseButtonWithModifier
 	{
-		MouseButton mouseButton;
+		MouseButtonWithModifier() = default;
+		MouseButtonWithModifier(MouseButton button, bool ctrlPressed = false, bool altPressed = false, bool shiftPressed = false)
+			: button(button), ctrlPressed(ctrlPressed), altPressed(altPressed), shiftPressed(shiftPressed)
+		{
+		}
+
+		MouseButton button;
 		bool ctrlPressed = false;
 		bool altPressed = false;
 		bool shiftPressed = false;
@@ -201,11 +212,14 @@ namespace puffin::input
 
 	struct InputAction
 	{
+		explicit InputAction(std::string name) : name(std::move(name)) {}
+
 		std::string name;
 		std::vector<KeyboardKeyWithModifier> keys;
 		std::vector<MouseButtonWithModifier> mouseButtons;
 		std::vector<GamepadButton> gamepadButtons;
 		std::vector<GamepadAxis> gamepadAxis;
 		InputState state = InputState::Up;
+		InputState lastState = InputState::Up;
 	};
 }

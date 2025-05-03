@@ -1,5 +1,7 @@
 #include "puffin/rendering/camerasubsystem.h"
 
+#include "puffin/components/transformcomponent2d.h"
+#include "puffin/components/rendering/2d/cameracomponent2d.h"
 #include "puffin/components/transformcomponent3d.h"
 #include "puffin/components/rendering/3d/cameracomponent3d.h"
 #include "puffin/core/settingsmanager.h"
@@ -30,7 +32,7 @@ namespace puffin::rendering
 
 		InitSettingsAndSignals();
 
-        InitEditorCamera();
+        InitEditorCamera3D();
 	}
 
 	void CameraSubsystem::Deinitialize()
@@ -49,7 +51,7 @@ namespace puffin::rendering
 		mActiveCameraID = gInvalidID;
         mEditorCamID = gInvalidID;
 
-        InitEditorCamera();
+        InitEditorCamera3D();
 	}
 
 	void CameraSubsystem::Update(double deltaTime)
@@ -165,7 +167,12 @@ namespace puffin::rendering
 		}));
     }
 
-	void CameraSubsystem::InitEditorCamera()
+    void CameraSubsystem::InitEditorCamera2D()
+    {
+		// PFN_TODO - Implement
+    }
+
+    void CameraSubsystem::InitEditorCamera3D()
 	{
 		// Create editor cam
 		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
@@ -205,9 +212,20 @@ namespace puffin::rendering
     {
         const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto registry = enttSubsystem->GetRegistry();
-        const auto cameraView = registry->view<const TransformComponent3D, const CameraComponent3D>();
 
-        for (auto [entity, transform, camera] : cameraView.each())
+		const auto camera2DView = registry->view<const TransformComponent2D, const CameraComponent2D>();
+		for (auto [entity, transform, camera] : camera2DView.each())
+		{
+			if (camera.active)
+			{
+				mActivePlayCamID = enttSubsystem->GetID(entity);
+
+				break;
+			}
+		}
+
+        const auto camera3DView = registry->view<const TransformComponent3D, const CameraComponent3D>();
+        for (auto [entity, transform, camera] : camera3DView.each())
         {
             if (camera.active)
             {
@@ -230,23 +248,40 @@ namespace puffin::rendering
             UpdateActiveCamera();
         }
 
-		//UpdateEditorCamera(deltaTime);
+		UpdateEditorCamera2D(deltaTime);
+		UpdateEditorCamera3D(deltaTime);
 
         const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto registry = enttSubsystem->GetRegistry();
-        const auto cameraView = registry->view<const TransformComponent3D, CameraComponent3D>();
 
-		for (auto [entity, transform, camera] : cameraView.each())
+		const auto camera2DView = registry->view<const TransformComponent2D, CameraComponent2D>();
+		for (auto [entity, transform, camera] : camera2DView.each())
 		{
-			UpdateCameraComponent(transform, camera);
+			UpdateCameraComponent2D(transform, camera);
+		}
+
+		const auto camera3DView = registry->view<const TransformComponent3D, CameraComponent3D>();
+		for (auto [entity, transform, camera] : camera3DView.each())
+		{
+			UpdateCameraComponent3D(transform, camera);
 		}
 	}
 
-	void CameraSubsystem::UpdateEditorCamera(double deltaTime)
+	void CameraSubsystem::UpdateEditorCamera2D(double deltaTime)
+	{
+		// PFN_TODO_RENDERING - Implement
+	}
+
+	void CameraSubsystem::UpdateCameraComponent2D(const TransformComponent2D& transform, CameraComponent2D& camera)
+	{
+		// PFN_TODO_RENDERING - Implement
+	}
+
+	void CameraSubsystem::UpdateEditorCamera3D(double deltaTime)
 	{
         if (mEditorCamID != gInvalidID && mEditorCamID == mActiveCameraID)
         {
-            const auto inputSubsystem = mEngine->GetSubsystem<input::InputSubsystem>();
+            const auto inputSubsystem = mEngine->GetInputSubsystem();
             const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
             auto registry = enttSubsystem->GetRegistry();
 
@@ -254,51 +289,60 @@ namespace puffin::rendering
             auto &transform = registry->get<TransformComponent3D>(entity);
             auto &camera = registry->get<CameraComponent3D>(entity);
 
-            if (inputSubsystem->GetCursorLocked() && mActiveCameraID == mEditorCamID) {
+            {
                 // Camera Movement
-                if (inputSubsystem->IsActionDown("EditorCamMoveRight") && !inputSubsystem->IsActionDown("EditorCamMoveLeft")) {
+                if (inputSubsystem->IsActionDown("editor_cam_move_right") 
+					&& !inputSubsystem->IsActionDown("editor_cam_move_left")) {
                     transform.position += camera.right * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->IsActionDown("EditorCamMoveLeft") && !inputSubsystem->IsActionDown("EditorCamMoveRight")) {
+                if (inputSubsystem->IsActionDown("editor_cam_move_left") 
+					&& !inputSubsystem->IsActionDown("editor_cam_move_right")) {
                     transform.position -= camera.right * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->IsActionDown("EditorCamMoveForward") &&
-                    !inputSubsystem->IsActionDown("EditorCamMoveBackward")) {
+                if (inputSubsystem->IsActionDown("editor_cam_move_forward") 
+					&& !inputSubsystem->IsActionDown("editor_cam_move_backward")) {
                     transform.position += camera.direction * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->IsActionDown("EditorCamMoveBackward") &&
-                    !inputSubsystem->IsActionDown("EditorCamMoveForward")) {
+                if (inputSubsystem->IsActionDown("editor_cam_move_backward") 
+					&& !inputSubsystem->IsActionDown("editor_cam_move_forward")) {
                     transform.position -= camera.direction * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->IsActionDown("EditorCamMoveUp") && !inputSubsystem->IsActionDown("EditorCamMoveDown")) {
+                if (inputSubsystem->IsActionDown("editor_cam_move_up") 
+					&& !inputSubsystem->IsActionDown("editor_cam_move_down")) {
                     transform.position += camera.up * mEditorCamSpeed * deltaTime;
                 }
 
-                if (inputSubsystem->IsActionDown("EditorCamMoveDown") && !inputSubsystem->IsActionDown("EditorCamMoveUp")) {
+                if (inputSubsystem->IsActionDown("editor_cam_move_down") 
+					&& !inputSubsystem->IsActionDown("editor_cam_move_up")) {
                     transform.position -= camera.up * mEditorCamSpeed * deltaTime;
                 }
 
-                // Mouse Rotation
-                transform.orientationEulerAngles.yaw += inputSubsystem->GetMouseXOffset();
-                transform.orientationEulerAngles.pitch += inputSubsystem->GetMouseYOffset();
+				if (inputSubsystem->IsActionDown("editor_cam_look_around"))
+				{
+					// Mouse Rotation
+					transform.orientationEulerAngles.yaw += inputSubsystem->GetMouseDeltaX();
+					transform.orientationEulerAngles.pitch += inputSubsystem->GetMouseDeltaY();
 
-                if (transform.orientationEulerAngles.pitch > 89.0f)
-                    transform.orientationEulerAngles.pitch = 89.0f;
+					if (transform.orientationEulerAngles.pitch > 89.0f)
+						transform.orientationEulerAngles.pitch = 89.0f;
 
-                if (transform.orientationEulerAngles.pitch < -89.0f)
-                    transform.orientationEulerAngles.pitch = -89.0f;
+					if (transform.orientationEulerAngles.pitch < -89.0f)
+						transform.orientationEulerAngles.pitch = -89.0f;
 
-                UpdateTransformOrientation(transform, transform.orientationEulerAngles);
+					UpdateTransformOrientation(transform, transform.orientationEulerAngles);
+				}
             }
         }
 	}
 
-	void CameraSubsystem::UpdateCameraComponent(const TransformComponent3D& transform, CameraComponent3D& camera)
+	void CameraSubsystem::UpdateCameraComponent3D(const TransformComponent3D& transform, CameraComponent3D& camera)
 	{
+		// PFN_TODO_RENDERING - Re-implement when 3d rendering code is being re-implemented
+
 		//const auto renderSystem = mEngine->GetSubsystem<rendering::RenderSubsystemVK>();
 
 		//// Calculate direction & right vectors

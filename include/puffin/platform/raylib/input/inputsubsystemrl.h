@@ -34,8 +34,8 @@ namespace puffin::input
 		int GetMouseY() override;
 		Vector2i GetMousePosition() override;
 
-		double GetMouseDeltaX() override;
-		double GetMouseDeltaY() override;
+		float GetMouseDeltaX() override;
+		float GetMouseDeltaY() override;
 		Vector2f GetMouseDelta() override;
 
 	protected:

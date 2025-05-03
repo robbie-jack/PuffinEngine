@@ -444,6 +444,11 @@ namespace puffin::core
 		mRunning = false;
 	}
 
+	input::InputSubsystem* Engine::GetInputSubsystem() const
+	{
+		return mSubsystemManager->GetInputSubsystem();
+	}
+
 	void Engine::InitSettings()
 	{
 		auto settingsManager = GetSubsystem<core::SettingsManager>();

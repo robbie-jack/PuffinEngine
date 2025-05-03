@@ -9,56 +9,63 @@
 
 namespace puffin
 {
+	struct TransformComponent2D;
 	struct TransformComponent3D;
-}
 
-namespace puffin::rendering
-{
-	struct CameraComponent3D;
-
-	class CameraSubsystem : public core::Subsystem
+	namespace rendering
 	{
-	public:
+		struct CameraComponent2D;
+		struct CameraComponent3D;
 
-		explicit CameraSubsystem(const std::shared_ptr<core::Engine>& engine);
-		~CameraSubsystem() override = default;
+		class CameraSubsystem : public core::Subsystem
+		{
+		public:
 
-		void Initialize(core::SubsystemManager* subsystemManager) override;
-		void Deinitialize() override;
+			explicit CameraSubsystem(const std::shared_ptr<core::Engine>& engine);
+			~CameraSubsystem() override = default;
 
-		void BeginPlay() override;
-		void EndPlay() override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
+			void Deinitialize() override;
 
-		void Update(double deltaTime) override;
-		bool ShouldUpdate() override;
+			void BeginPlay() override;
+			void EndPlay() override;
 
-		void OnUpdateCamera(entt::registry& registry, entt::entity entity);
-        void OnDestroyCamera(entt::registry& registry, entt::entity entity);
+			void Update(double deltaTime) override;
+			bool ShouldUpdate() override;
 
-        void OnUpdateEditorCameraFov(const float& editorCameraFov);
+			void OnUpdateCamera(entt::registry& registry, entt::entity entity);
+			void OnDestroyCamera(entt::registry& registry, entt::entity entity);
 
-		[[nodiscard]] UUID GetActiveCameraID() const { return mActiveCameraID; }
+			void OnUpdateEditorCameraFov(const float& editorCameraFov);
 
-	private:
+			[[nodiscard]] UUID GetActiveCameraID() const { return mActiveCameraID; }
 
-		void InitSettingsAndSignals();
-		
-		void InitEditorCamera();
+		private:
 
-		void UpdateActiveCamera();
-		void UpdateActivePlayCamera();
+			void InitSettingsAndSignals();
 
-		void UpdateCameras(double deltaTime);
-		void UpdateEditorCamera(double deltaTime);
-		void UpdateCameraComponent(const TransformComponent3D& transform, CameraComponent3D& camera);
-		
-        UUID mActiveCameraID = gInvalidID;
-        UUID mActivePlayCamID = gInvalidID;
-		std::unordered_map<UUID, bool> mCachedCamActiveState;
-		UUID mEditorCamID = gInvalidID;
-		
-		float mEditorCamSpeed = 10.0f;
-		Vector3f mEditorCamStartPosition = Vector3f(0.0f);
+			void InitEditorCamera2D();
+			void InitEditorCamera3D();
 
-	};
+			void UpdateActiveCamera();
+			void UpdateActivePlayCamera();
+
+			void UpdateCameras(double deltaTime);
+
+			void UpdateEditorCamera2D(double deltaTime);
+			void UpdateCameraComponent2D(const TransformComponent2D& transform, CameraComponent2D& camera);
+
+				void UpdateEditorCamera3D(double deltaTime);
+			void UpdateCameraComponent3D(const TransformComponent3D& transform, CameraComponent3D& camera);
+
+			UUID mActiveCameraID = gInvalidID;
+			UUID mActivePlayCamID = gInvalidID;
+			std::unordered_map<UUID, bool> mCachedCamActiveState;
+			UUID mEditorCamID = gInvalidID;
+
+			float mEditorCamSpeed = 10.0f;
+			Vector3f mEditorCamStartPosition = Vector3f(0.0f);
+
+		};
+	}
 }

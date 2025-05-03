@@ -1,14 +1,12 @@
 #pragma once
 
+#include <memory>
+
 #include "puffin/core/application.h"
 #include "puffin/projectsettings.h"
 #include "argparse/argparse.hpp"
-
-//#include <GLFW/glfw3.h>
-
-#include <memory>
-
-#include "subsystemmanager.h"
+#include "puffin/core/subsystemmanager.h"
+#include "puffin/input/inputsubsystem.h"
 
 namespace fs = std::filesystem;
 
@@ -109,6 +107,8 @@ namespace puffin::core
 		{
 			return mSubsystemManager->GetSubsystem<T>();
 		}
+
+		input::InputSubsystem* GetInputSubsystem() const;
 
 	private:
 

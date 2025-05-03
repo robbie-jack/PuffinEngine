@@ -21,6 +21,8 @@ namespace puffin
 
 	namespace input
 	{
+		class InputContext;
+
 		class InputSubsystem : public core::Subsystem
 		{
 		public:
@@ -42,6 +44,7 @@ namespace puffin
 			void AddAction(std::string name, std::vector<int> keys);
 			[[nodiscard]] InputAction GetAction(std::string name) const;
 
+			[[nodiscard]] bool HasAction(const std::string& name) const;
 			[[nodiscard]] bool IsActionPressed(const std::string& name) const;
 			[[nodiscard]] bool IsActionDown(const std::string& name) const;
 			[[nodiscard]] bool IsActionReleased(const std::string& name) const;
@@ -70,17 +73,19 @@ namespace puffin
 			[[nodiscard]] virtual int GetMouseY() = 0;
 			[[nodiscard]] virtual Vector2i GetMousePosition() = 0;
 
-			[[nodiscard]] virtual double GetMouseDeltaX() = 0;
-			[[nodiscard]] virtual double GetMouseDeltaY() = 0;
+			[[nodiscard]] virtual float GetMouseDeltaX() = 0;
+			[[nodiscard]] virtual float GetMouseDeltaY() = 0;
 			[[nodiscard]] virtual Vector2f GetMouseDelta() = 0;
 
-			[[nodiscard]] double GetMouseXOffset() const;
-			[[nodiscard]] double GetMouseYOffset() const;
-			[[nodiscard]] double GetSensitivity() const;
-			[[nodiscard]] bool GetCursorLocked() const;
+			[[nodiscard]] float GetSensitivity() const;
 
 			[[nodiscard]] bool AreKeyModifiersPressed(KeyboardKeyWithModifier keyWithModifier) const;
 			[[nodiscard]] bool AreMouseModifiersPressed(MouseButtonWithModifier mouseButtonWithModifier) const;
+
+			[[nodiscard]] InputContext* AddContext(const std::string& name);
+			void AddContext(const std::string& name, InputContext* context);
+			void RemoveContext(const std::string& name);
+			[[nodiscard]] InputContext* GetContext(const std::string& name);
 
 		protected:
 
@@ -89,18 +94,21 @@ namespace puffin
 			 */
 			virtual void PollInput() = 0;
 
+			void UpdateAction(InputAction& action);
+
+			float mMouseSensitivity;
 			int mActiveGamepad = 0;
 
 		private:
 
-			double mXPos, mYPos, mLastXPos, mLastYPos;
-			bool mCursorLocked;
-			double mSensitivity;
-			bool mFirstMouse;
+			void InitSettings();
 
 			std::unordered_map<std::string, InputAction> mActions;
+			std::unordered_map<std::string, InputContext*> mContexts;
+			std::unordered_map<std::string, bool> mManageContextLifetime;
+			std::vector<std::string> mContextNamesInOrder;
 		};
 
-		void AddEditorContext();
+		void AddEditorContext(InputSubsystem* subsystem);
 	}
 }

@@ -143,21 +143,21 @@ namespace puffin::input
 		return { static_cast<int>(mousePos.x), static_cast<int>(mousePos.y) };
 	}
 
-	double InputSubsystemRL::GetMouseDeltaX()
+	float InputSubsystemRL::GetMouseDeltaX()
 	{
-		return ::GetMouseDelta().x;
+		return ::GetMouseDelta().x * mMouseSensitivity;
 	}
 
-	double InputSubsystemRL::GetMouseDeltaY()
+	float InputSubsystemRL::GetMouseDeltaY()
 	{
-		return ::GetMouseDelta().y;
+		return ::GetMouseDelta().y * mMouseSensitivity;
 	}
 
 	Vector2f InputSubsystemRL::GetMouseDelta()
 	{
 		auto mouseDelta = ::GetMouseDelta();
 
-		return { mouseDelta.x, mouseDelta.y };
+		return { mouseDelta.x * mMouseSensitivity,mouseDelta.y * mMouseSensitivity };
 	}
 
 	void InputSubsystemRL::PollInput()
