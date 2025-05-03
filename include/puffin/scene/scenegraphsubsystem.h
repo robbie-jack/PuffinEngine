@@ -52,7 +52,11 @@ namespace puffin::scene
 	{
 	public:
 
-		NodePool() = default;
+		NodePool()
+		{
+			mVector.Resize(gDefaultNodePoolSize);
+		}
+
 		~NodePool() override = default;
 
 		T* AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID)
@@ -62,16 +66,7 @@ namespace puffin::scene
 
 			if (mVector.Full())
 			{
-				uint32_t newSize;
-
-				if (mVector.Size() > 0)
-				{
-					newSize = mVector.Size() * 2;
-				}
-				else
-				{
-					newSize = gDefaultNodePoolSize;
-				}
+				uint32_t newSize = mVector.Size() * 2;
 
 				mVector.Resize(newSize);
 			}
