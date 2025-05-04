@@ -5,6 +5,7 @@
 #include "puffin/components/physics/2d/shapecomponent2d.h"
 #include "puffin/utility/reflection.h"
 #include "puffin/utility/serialization.h"
+#include "puffin/serialization/componentserialization.h"
 
 namespace puffin
 {
@@ -22,15 +23,32 @@ namespace puffin
 		};
 	}
 
-	template<>
-	inline void reflection::RegisterType<physics::CircleComponent2D>()
+	namespace reflection
 	{
-		using namespace physics;
+		template<>
+		inline std::string_view GetTypeString<physics::CircleComponent2D>()
+		{
+			return "CircleComponent2D";
+		}
 
-		entt::meta<CircleComponent2D>()
-			.type(entt::hs("CircleComponent2D"))
+		template<>
+		inline entt::hs GetTypeHashedString<physics::CircleComponent2D>()
+		{
+			return entt::hs(GetTypeString<physics::CircleComponent2D>().data());
+		}
+
+		template<>
+		inline void RegisterType<physics::CircleComponent2D>()
+		{
+			using namespace physics;
+
+			auto meta = entt::meta<CircleComponent2D>()
 			.data<&CircleComponent2D::centreOfMass>(entt::hs("centreOfMass"))
 			.data<&CircleComponent2D::radius>(entt::hs("radius"));
+
+			reflection::RegisterTypeDefaults(meta);
+			serialization::RegisterComponentSerializationTypeDefaults(meta);
+		}
 	}
 
 	namespace serialization

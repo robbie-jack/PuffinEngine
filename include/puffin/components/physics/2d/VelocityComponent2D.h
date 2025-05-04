@@ -5,6 +5,7 @@
 #include "puffin/types/vector2.h"
 #include "puffin/utility/reflection.h"
 #include "puffin/utility/serialization.h"
+#include "puffin/serialization/componentserialization.h"
 
 namespace puffin
 {
@@ -24,15 +25,31 @@ namespace puffin
 		};
 	}
 
-	template<>
-	inline void reflection::RegisterType<physics::VelocityComponent2D>()
+	namespace reflection
 	{
-		using namespace physics;
+		template<>
+		inline std::string_view GetTypeString<physics::VelocityComponent2D>()
+		{
+			return "VelocityComponent2D";
+		}
+		template<>
+		inline entt::hs GetTypeHashedString<physics::VelocityComponent2D>()
+		{
+			return entt::hs(GetTypeString<physics::VelocityComponent2D>().data());
+		}
 
-		entt::meta<VelocityComponent2D>()
-			.type(entt::hs("VelocityComponent2D"))
+		template<>
+		inline void RegisterType<physics::VelocityComponent2D>()
+		{
+			using namespace physics;
+
+			auto meta = entt::meta<VelocityComponent2D>()
 			.data<&VelocityComponent2D::linear>(entt::hs("linear"))
 			.data<&VelocityComponent2D::angular>(entt::hs("angular"));
+
+			reflection::RegisterTypeDefaults(meta);
+			serialization::RegisterComponentSerializationTypeDefaults(meta);
+		}
 	}
 
 	namespace serialization

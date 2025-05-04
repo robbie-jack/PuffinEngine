@@ -141,7 +141,6 @@ namespace puffin::core
 				SetupDefaultScene2D(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
-				//sceneData->Save();
 			}
 			else if (setupDefaultScene3D)
 			{

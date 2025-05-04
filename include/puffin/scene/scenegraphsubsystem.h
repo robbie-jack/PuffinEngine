@@ -29,6 +29,8 @@ namespace puffin::scene
 {
 	constexpr uint32_t gDefaultNodePoolSize = 128;
 
+	// PFN_TODO_SERIALIZATION - Rework node serialization logic to match component implementation
+
 	class INodePool
 	{
 	public:

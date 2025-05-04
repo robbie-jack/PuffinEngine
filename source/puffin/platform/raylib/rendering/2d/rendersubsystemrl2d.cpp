@@ -45,8 +45,6 @@ namespace puffin::rendering
 
 	void RenderSubsystemRL2D::Render(double deltaTime)
 	{
-		PollInputEvents(); // TODO - Remove once input subsystem has been re-implemented
-
 		auto* windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystemRL>();
 		auto* window = windowSubsystem->GetWindow();
 

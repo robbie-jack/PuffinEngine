@@ -4,6 +4,7 @@
 #include "puffin/physics/bodytype.h"
 #include "puffin/utility/reflection.h"
 #include "puffin/utility/serialization.h"
+#include "puffin/serialization/componentserialization.h"
 
 namespace puffin
 {
@@ -26,17 +27,33 @@ namespace puffin
 		};
 	}
 
-	template<>
-	inline void reflection::RegisterType<physics::RigidbodyComponent2D>()
+	namespace reflection
 	{
-		using namespace physics;
+		template<>
+		inline std::string_view GetTypeString<physics::RigidbodyComponent2D>()
+		{
+			return "RigidbodyComponent2D";
+		}
+		template<>
+		inline entt::hs GetTypeHashedString<physics::RigidbodyComponent2D>()
+		{
+			return entt::hs(GetTypeString<physics::RigidbodyComponent2D>().data());
+		}
 
-		entt::meta<RigidbodyComponent2D>()
-		.type(entt::hs("RigidbodyComponent2D"))
-		.data<&RigidbodyComponent2D::bodyType>(entt::hs("bodyType"))
-		.data<&RigidbodyComponent2D::mass>(entt::hs("mass"))
-		.data<&RigidbodyComponent2D::density>(entt::hs("density"))
-		.data<&RigidbodyComponent2D::elasticity>(entt::hs("elasticity"));
+		template<>
+		inline void RegisterType<physics::RigidbodyComponent2D>()
+		{
+			using namespace physics;
+
+			auto meta = entt::meta<RigidbodyComponent2D>()
+			.data<&RigidbodyComponent2D::bodyType>(entt::hs("bodyType"))
+			.data<&RigidbodyComponent2D::mass>(entt::hs("mass"))
+			.data<&RigidbodyComponent2D::density>(entt::hs("density"))
+			.data<&RigidbodyComponent2D::elasticity>(entt::hs("elasticity"));
+
+			reflection::RegisterTypeDefaults(meta);
+			serialization::RegisterComponentSerializationTypeDefaults(meta);
+		}
 	}
 
 	namespace serialization

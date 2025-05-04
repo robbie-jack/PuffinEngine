@@ -5,6 +5,7 @@
 #include "puffin/types/vector2.h"
 #include "puffin/utility/reflection.h"
 #include "puffin/utility/serialization.h"
+#include "puffin/serialization/componentserialization.h"
 
 namespace puffin
 {
@@ -21,15 +22,33 @@ namespace puffin
 		};
 	}
 
-	template<>
-	inline void reflection::RegisterType<rendering::CameraComponent2D>()
+	namespace reflection
 	{
-		entt::meta<rendering::CameraComponent2D>()
-			.type(entt::hs("CameraComponent2D"))
-			.data<&rendering::CameraComponent2D::active>(entt::hs("active"))
-			.data<&rendering::CameraComponent2D::offset>(entt::hs("offset"))
-			.data<&rendering::CameraComponent2D::rotation>(entt::hs("rotation"))
-			.data<&rendering::CameraComponent2D::zoom>(entt::hs("zoom"));
+		template<>
+		inline std::string_view GetTypeString<rendering::CameraComponent2D>()
+		{
+			return "CameraComponent2D";
+		}
+		template<>
+		inline entt::hs GetTypeHashedString<rendering::CameraComponent2D>()
+		{
+			return entt::hs(GetTypeString<rendering::CameraComponent2D>().data());
+		}
+
+		template<>
+		inline void RegisterType<rendering::CameraComponent2D>()
+		{
+			using namespace rendering;
+
+			auto meta = entt::meta<CameraComponent2D>()
+			.data<&CameraComponent2D::active>(entt::hs("active"))
+			.data<&CameraComponent2D::offset>(entt::hs("offset"))
+			.data<&CameraComponent2D::rotation>(entt::hs("rotation"))
+			.data<&CameraComponent2D::zoom>(entt::hs("zoom"));
+
+			reflection::RegisterTypeDefaults(meta);
+			serialization::RegisterComponentSerializationTypeDefaults(meta);
+		}
 	}
 
 	namespace serialization

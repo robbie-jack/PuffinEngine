@@ -1,7 +1,10 @@
 ﻿#pragma once
 
+#include "nlohmann/json.hpp"
+
 #include "puffin/utility/reflection.h"
 #include "puffin/utility/serialization.h"
+#include "puffin/serialization/componentserialization.h"
 
 namespace puffin
 {
@@ -9,15 +12,36 @@ namespace puffin
 	{
 		struct SpriteComponent2D
 		{
+			Vector2f offset;
 
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(SpriteComponent2D, offset)
 		};
 	}
 
-	template<>
-	inline void reflection::RegisterType<rendering::SpriteComponent2D>()
+	namespace reflection
 	{
-		entt::meta<rendering::SpriteComponent2D>()
-			.type(entt::hs("SpriteComponent2D"));
+		template<>
+		inline std::string_view GetTypeString<rendering::SpriteComponent2D>()
+		{
+			return "SpriteComponent2D";
+		}
+		template<>
+		inline entt::hs GetTypeHashedString<rendering::SpriteComponent2D>()
+		{
+			return entt::hs(GetTypeString<rendering::SpriteComponent2D>().data());
+		}
+
+		template<>
+		inline void RegisterType<rendering::SpriteComponent2D>()
+		{
+			using namespace rendering;
+
+			auto meta = entt::meta<SpriteComponent2D>()
+			.data<&SpriteComponent2D::offset>(entt::hs("offset"));
+
+			reflection::RegisterTypeDefaults(meta);
+			serialization::RegisterComponentSerializationTypeDefaults(meta);
+		}
 	}
 
 	namespace serialization
@@ -26,7 +50,7 @@ namespace puffin
 		inline nlohmann::json Serialize<rendering::SpriteComponent2D>(const rendering::SpriteComponent2D& data)
 		{
 			nlohmann::json json;
-
+			json["offset"] = Serialize(data.offset);
 			return json;
 		}
 
@@ -34,7 +58,7 @@ namespace puffin
 		inline rendering::SpriteComponent2D Deserialize<rendering::SpriteComponent2D>(const nlohmann::json& json)
 		{
 			rendering::SpriteComponent2D data;
-
+			data.offset = Deserialize<Vector2f>(json["offset"]);
 			return data;
 		}
 	}

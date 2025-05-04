@@ -75,4 +75,18 @@ namespace puffin::serialization
 		std::vector<entt::id_type> mRegisteredTypesVector;
 
 	};
+
+	/*
+	 * Register default values for type, used for serialization
+	 */
+	template<typename CompT>
+	void RegisterComponentSerializationTypeDefaults(entt::meta_factory<CompT>& meta)
+	{
+		meta.func<&serialization::HasComponent<CompT>>(entt::hs("HasComponent"));
+		meta.func<&serialization::SerializeFromRegistry<CompT>>(entt::hs("SerializeFromRegistry"));
+		meta.func<&serialization::DeserializeToRegistry<CompT>>(entt::hs("DeserializeToRegistry"));
+
+		auto* registry = ComponentRegistry::Get();
+		registry->Register<CompT>();
+	}
 }

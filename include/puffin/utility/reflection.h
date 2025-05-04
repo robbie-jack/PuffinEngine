@@ -18,6 +18,17 @@ namespace puffin::reflection
 	template<typename CompT>
 	entt::hs GetTypeHashedString() = delete;
 
-	template<typename T>
+	template<typename CompT>
 	void RegisterType() = delete;
+
+	/*
+	 * Register default values for type
+	 */
+	template<typename CompT>
+	void RegisterTypeDefaults(entt::meta_factory<CompT>& meta)
+	{
+		meta.type(GetTypeHashedString<CompT>());
+		meta.func<&GetTypeString<CompT>>(entt::hs("GetTypeString"));
+		meta.func<&GetTypeHashedString<CompT>>(entt::hs("GetTypeHashedString"));
+	}
 }

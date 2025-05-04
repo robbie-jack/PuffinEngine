@@ -6,6 +6,7 @@
 #include "puffin/types/vector2.h"
 #include "puffin/utility/reflection.h"
 #include "puffin/utility/serialization.h"
+#include "puffin/serialization/componentserialization.h"
 
 namespace puffin
 {
@@ -23,15 +24,32 @@ namespace puffin
 		};
 	}
 
-	template<>
-	inline void reflection::RegisterType<physics::BoxComponent2D>()
+	namespace reflection
 	{
-		using namespace physics;
+		template<>
+		inline std::string_view GetTypeString<physics::BoxComponent2D>()
+		{
+			return "BoxComponent2D";
+		}
+		template<>
+		inline entt::hs GetTypeHashedString<physics::BoxComponent2D>()
+		{
+			return entt::hs(GetTypeString<physics::BoxComponent2D>().data());
+		}
 
-		entt::meta<BoxComponent2D>()
-			.type(entt::hs("BoxComponent2D"))
+
+		template<>
+		inline void RegisterType<physics::BoxComponent2D>()
+		{
+			using namespace physics;
+
+			auto meta = entt::meta<BoxComponent2D>()
 			.data<&BoxComponent2D::centreOfMass>(entt::hs("centreOfMass"))
 			.data<&BoxComponent2D::halfExtent>(entt::hs("halfExtent"));
+
+			reflection::RegisterTypeDefaults(meta);
+			serialization::RegisterComponentSerializationTypeDefaults(meta);
+		}
 	}
 
 	namespace serialization
