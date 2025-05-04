@@ -4,6 +4,7 @@
 
 #include "puffin/types/vector2.h"
 #include "puffin/utility/reflection.h"
+#include "puffin/serialization/componentserialization.h"
 
 namespace puffin
 {
@@ -42,14 +43,37 @@ namespace puffin
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent2D, position, rotation, scale)
 	};
 
-	template<>
-	inline void reflection::RegisterType<TransformComponent2D>()
+	namespace reflection
 	{
-		entt::meta<TransformComponent2D>()
-			.type(entt::hs("TransformComponent2D"))
-			.data<&TransformComponent2D::position>(entt::hs("position"))
-			.data<&TransformComponent2D::rotation>(entt::hs("rotation"))
-			.data<&TransformComponent2D::scale>(entt::hs("scale"));
+		template<>
+		inline std::string_view GetTypeString<TransformComponent2D>()
+		{
+			return "TransformComponent2D";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<TransformComponent2D>()
+		{
+			return entt::hs(GetTypeString<TransformComponent2D>().data());
+		}
+
+		template<>
+		inline void RegisterType<TransformComponent2D>()
+		{
+			entt::meta<TransformComponent2D>()
+				.type(GetTypeHashedString<TransformComponent2D>())
+				.func<&GetTypeString<TransformComponent2D>>(entt::hs("GetTypeString"))
+				.func<&GetTypeHashedString<TransformComponent2D>>(entt::hs("GetTypeHashedString"))
+				.func<&serialization::HasComponent<TransformComponent2D>>(entt::hs("HasComponent"))
+				.func<&serialization::SerializeFromRegistry<TransformComponent2D>>(entt::hs("SerializeFromRegistry"))
+				.func<&serialization::DeserializeToRegistry<TransformComponent2D>>(entt::hs("DeserializeToRegistry"))
+				.data<&TransformComponent2D::position>(entt::hs("position"))
+				.data<&TransformComponent2D::rotation>(entt::hs("rotation"))
+				.data<&TransformComponent2D::scale>(entt::hs("scale"));
+
+			auto* registry = serialization::ComponentRegistry::Get();
+			registry->Register<TransformComponent2D>();
+		}
 	}
 
 	namespace serialization

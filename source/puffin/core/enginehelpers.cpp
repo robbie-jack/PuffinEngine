@@ -21,6 +21,8 @@
 #include "puffin/components/procedural/3d/proceduralplanecomponent3d.h"
 #include "puffin/components/procedural/3d/proceduralterraincomponent3d.h"
 #include "puffin/components/procedural/3d/proceduraluvspherecomponent3d.h"
+#include "puffin/components/rendering/2d/spritecomponent2d.h"
+#include "puffin/components/rendering/2d/cameracomponent2d.h"
 #include "puffin/components/rendering/3d/cameracomponent3d.h"
 #include "puffin/components/rendering/3d/directionallightcomponent3d.h"
 #include "puffin/components/rendering/3d/pointlightcomponent3d.h"
@@ -72,9 +74,7 @@ namespace puffin::core
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)
 	{
 		// Engine Subsystems
-		//engine->RegisterSubsystem<window::WindowSubsystem>();
-		engine->RegisterSubsystem<core::SignalSubsystem>();
-		//engine->RegisterSubsystem<input::InputSubsystem>();
+		engine->RegisterSubsystem<SignalSubsystem>();
 		engine->RegisterSubsystem<SettingsManager>();
 		engine->RegisterSubsystem<EnkiTSSubsystem>();
 		engine->RegisterSubsystem<audio::AudioSubsystem>();
@@ -90,17 +90,21 @@ namespace puffin::core
 		engine->RegisterSubsystem<scene::SceneGraphGameplaySubsystem>();
 	}
 
-	void RegisterComponentTypes()
+	void RegisterComponentTypes2D()
 	{
-		// Register 2D Types
 		reflection::RegisterType<TransformComponent2D>();
+
+		reflection::RegisterType<rendering::CameraComponent2D>();
+		reflection::RegisterType<rendering::SpriteComponent2D>();
 
 		reflection::RegisterType<physics::BoxComponent2D>();
 		reflection::RegisterType<physics::CircleComponent2D>();
 		reflection::RegisterType<physics::RigidbodyComponent2D>();
 		reflection::RegisterType<physics::VelocityComponent2D>();
+	}
 
-		// Register 3D Types
+	void RegisterComponentTypes3D()
+	{
 		reflection::RegisterType<TransformComponent3D>();
 
 		reflection::RegisterType<physics::BoxComponent3D>();
@@ -124,11 +128,16 @@ namespace puffin::core
 		reflection::RegisterType<rendering::CameraComponent3D>();
 	}
 
-	void RegisterNodeTypes()
+	void RegisterNodeTypes2D()
 	{
 		reflection::RegisterType<Node>();
 
 		reflection::RegisterType<TransformNode2D>();
+	}
+
+	void RegisterNodeTypes3D()
+	{
+		reflection::RegisterType<Node>();
 
 		reflection::RegisterType<TransformNode3D>();
 
@@ -152,43 +161,6 @@ namespace puffin::core
 		assets::AssetRegistry::Get()->RegisterAssetType<assets::ShaderAsset>();
 		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialAsset>();
 		assets::AssetRegistry::Get()->RegisterAssetType<assets::MaterialInstanceAsset>();
-	}
-
-	void RegisterComponentsForSerialization(const std::shared_ptr<Engine>& engine)
-	{
-		auto sceneSubsystem = engine->GetSubsystem<io::SceneSerializationSubsystem>();
-
-		// 2D
-		sceneSubsystem->RegisterComponent<TransformComponent2D>();
-
-		sceneSubsystem->RegisterComponent<physics::BoxComponent2D>();
-		sceneSubsystem->RegisterComponent<physics::CircleComponent2D>();
-		sceneSubsystem->RegisterComponent<physics::RigidbodyComponent2D>();
-		sceneSubsystem->RegisterComponent<physics::VelocityComponent2D>();
-
-		// 3D
-		sceneSubsystem->RegisterComponent<TransformComponent3D>();
-
-		sceneSubsystem->RegisterComponent<physics::BoxComponent3D>();
-		sceneSubsystem->RegisterComponent<physics::SphereComponent3D>();
-		sceneSubsystem->RegisterComponent<physics::RigidbodyComponent3D>();
-		sceneSubsystem->RegisterComponent<physics::VelocityComponent3D>();
-
-		sceneSubsystem->RegisterComponent<procedural::ProceduralPlaneComponent3D>();
-		sceneSubsystem->RegisterComponent<procedural::ProceduralCubeComponent3D>();
-		sceneSubsystem->RegisterComponent<procedural::ProceduralTerrainComponent3D>();
-		sceneSubsystem->RegisterComponent<procedural::ProceduralIcoSphereComponent3D>();
-		sceneSubsystem->RegisterComponent<procedural::ProceduralUVSphereComponent3D>();
-
-		sceneSubsystem->RegisterComponent<rendering::StaticMeshComponent3D>();
-		sceneSubsystem->RegisterComponent<rendering::ProceduralMeshComponent3D>();
-		sceneSubsystem->RegisterComponent<rendering::PointLightComponent3D>();
-		sceneSubsystem->RegisterComponent<rendering::SpotLightComponent3D>();
-		sceneSubsystem->RegisterComponent<rendering::DirectionalLightComponent3D>();
-		sceneSubsystem->RegisterComponent<rendering::ShadowCasterComponent3D>();
-
-		sceneSubsystem->RegisterComponent<rendering::CameraComponent3D>();
-		
 	}
 
 	void AddDefaultAssets()
@@ -279,7 +251,147 @@ namespace puffin::core
 		}
 	}
 
-	void SetupDefaultScene(const std::shared_ptr<Engine>& engine)
+	void SetupDefaultScene2D(const std::shared_ptr<Engine>& engine)
+	{
+		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
+
+		// Box
+		{
+			auto* box = sceneGraph->AddNode<TransformNode2D>("Box");
+		}
+	}
+
+	void SetupDefaultPhysicsScene2D(const std::shared_ptr<Engine>& engine)
+	{
+		const UUID chaletMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gChaletMeshPath)->GetID();
+		const UUID cubeMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gCubeMeshPath)->GetID();
+
+		const UUID chaletTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gChaletTexturePath)->GetID();
+		const UUID cubeTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gCubeTexturePath)->GetID();
+
+		UUID defaultMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
+			gForwardShadingDefaultMaterialInstPath)->GetID();
+		UUID chaletMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
+			gForwardShadinChaletMaterialInstPath)->GetID();
+
+		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
+
+		// Light
+		{
+			auto* light = sceneGraph->AddNode<rendering::DirectionalLightNode3D>("Light");
+			light->SetPosition({ 0.0f, 100.0f, 0.0f });
+			light->SetColor({ 1.f });
+			light->SetAmbientIntensity(.1f);
+
+			//UpdateTransformOrientation(light->Transform(), { 0.0f, -90.0f, 0.0f });
+		}
+
+		const Vector2f wallHalfExtent = { 200.0f, 200.f };
+
+		// Floor Node
+		{
+			auto* floor = sceneGraph->AddNode<TransformNode3D>("Floor");
+			floor->SetPosition({ 0.0f, -wallHalfExtent.y, 0.0f });
+
+			auto& rb = floor->AddComponent<physics::RigidbodyComponent2D>();
+			auto& box = floor->AddComponent<physics::BoxComponent2D>();
+			box.halfExtent.x = wallHalfExtent.x;
+			box.halfExtent.y = 1.0f;
+
+			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Floor Mesh", floor->GetID());
+			floorMesh->SetScale({ wallHalfExtent.x, 1.0f, 1.0f });
+			floorMesh->SetMeshID(cubeMeshID);
+			floorMesh->SetMaterialID(defaultMaterialInstID);
+		}
+
+		// Left Wall Node
+		{
+			auto* leftWall = sceneGraph->AddNode<TransformNode3D>("Left Wall");
+			leftWall->SetPosition({ -wallHalfExtent.x, 0.0f, 0.0f });
+
+			auto& rb = leftWall->AddComponent<physics::RigidbodyComponent2D>();
+			auto& box = leftWall->AddComponent<physics::BoxComponent2D>();
+			box.halfExtent.x = 1.0f;
+			box.halfExtent.y = wallHalfExtent.y;
+
+			auto* wallLeftMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Left Wall Mesh", leftWall->GetID());
+			wallLeftMesh->SetScale({ 1.0f, wallHalfExtent.y, 1.0f });
+			wallLeftMesh->SetMeshID(cubeMeshID);
+			wallLeftMesh->SetMaterialID(defaultMaterialInstID);
+		}
+
+		// Right Wall Node
+		{
+			auto* rightWall = sceneGraph->AddNode<TransformNode3D>("Right Wall");
+			rightWall->SetPosition({ wallHalfExtent.x, 0.0f, 0.0f });
+
+			auto& rb = rightWall->AddComponent<physics::RigidbodyComponent2D>();
+			auto& box = rightWall->AddComponent<physics::BoxComponent2D>();
+			box.halfExtent.x = 1.0f;
+			box.halfExtent.y = wallHalfExtent.y;
+
+			auto* wallLeftMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Right Wall Mesh", rightWall->GetID());
+			wallLeftMesh->SetScale({ 1.0f, wallHalfExtent.y, 1.0f });
+			wallLeftMesh->SetMeshID(cubeMeshID);
+			wallLeftMesh->SetMaterialID(defaultMaterialInstID);
+		}
+
+		// Ceiling Node
+		{
+			auto* ceiling = sceneGraph->AddNode<TransformNode3D>("Floor");
+			ceiling->SetPosition({ 0.0f, wallHalfExtent.y, 0.0f });
+
+			auto& rb = ceiling->AddComponent<physics::RigidbodyComponent2D>();
+			auto& box = ceiling->AddComponent<physics::BoxComponent2D>();
+			box.halfExtent.x = wallHalfExtent.x;
+			box.halfExtent.y = 1.0f;
+
+			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Ceiling Mesh", ceiling->GetID());
+			floorMesh->SetScale({ wallHalfExtent.x, 1.0f, 1.0f });
+			floorMesh->SetMeshID(cubeMeshID);
+			floorMesh->SetMaterialID(defaultMaterialInstID);
+		}
+
+		// Box Nodes
+		{
+			constexpr int numBodies = 5000;
+
+			const Vector2f bodyHalfExtent = { wallHalfExtent.x - 5.f, wallHalfExtent.y - 5.f };
+			double velocityMax = 50.0;
+
+			std::random_device rd;
+			std::mt19937 mt(rd());
+			std::uniform_real_distribution posXDist(-bodyHalfExtent.x, bodyHalfExtent.x);
+			std::uniform_real_distribution posYDist(-bodyHalfExtent.y, bodyHalfExtent.y);
+			std::uniform_real_distribution velDist(-velocityMax, velocityMax);
+
+			for (int i = 0; i < numBodies; ++i)
+			{
+				auto* body = sceneGraph->AddNode<TransformNode3D>("Body #" + std::to_string(i));
+				body->SetPosition({ posXDist(mt), posYDist(mt), 0.0f });
+
+				auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
+				rb.bodyType = physics::BodyType::Dynamic;
+				rb.friction = 0.0f;
+
+				auto& velocity = body->AddComponent<physics::VelocityComponent3D>();
+				velocity.linear.x = velDist(mt);
+				velocity.linear.y = velDist(mt);
+
+				auto& box = body->AddComponent<physics::BoxComponent2D>();
+				box.halfExtent.x = 1.0f;
+				box.halfExtent.y = 1.0f;
+
+				auto* bodyMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("BodyMesh", body->GetID());
+				bodyMesh->SetMeshID(cubeMeshID);
+				bodyMesh->SetMaterialID(defaultMaterialInstID);
+			}
+		}
+	}
+
+	void SetupDefaultScene3D(const std::shared_ptr<Engine>& engine)
 	{
 		// Get assets
 		fs::path contentRootPath = assets::AssetRegistry::Get()->GetContentRoot();
@@ -380,136 +492,7 @@ namespace puffin::core
 		spotLightMesh2->SetMaterialID(defaultMaterialInstID);
 	}
 
-	void SetupDefaultPhysics2DScene(const std::shared_ptr<Engine>& engine)
-	{
-		const UUID chaletMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gChaletMeshPath)->GetID();
-		const UUID cubeMeshID = assets::AssetRegistry::Get()->GetAsset<assets::StaticMeshAsset>(gCubeMeshPath)->GetID();
-
-		const UUID chaletTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gChaletTexturePath)->GetID();
-		const UUID cubeTexID = assets::AssetRegistry::Get()->GetAsset<assets::TextureAsset>(gCubeTexturePath)->GetID();
-
-		UUID defaultMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
-			gForwardShadingDefaultMaterialInstPath)->GetID();
-		UUID chaletMaterialInstID = assets::AssetRegistry::Get()->GetAsset<assets::MaterialInstanceAsset>(
-			gForwardShadinChaletMaterialInstPath)->GetID();
-
-		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
-		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
-
-		// Light
-		{
-			auto* light = sceneGraph->AddNode<rendering::DirectionalLightNode3D>("Light");
-			light->SetPosition({ 0.0f, 100.0f, 0.0f });
-			light->SetColor({ 1.f });
-			light->SetAmbientIntensity(.1f);
-
-			//UpdateTransformOrientation(light->Transform(), { 0.0f, -90.0f, 0.0f });
-		}
-
-		const Vector2f wallHalfExtent = { 200.0f, 200.f };
-		
-		// Floor Node
-		{
-			auto* floor = sceneGraph->AddNode<TransformNode3D>("Floor");
-			floor->SetPosition({ 0.0f, -wallHalfExtent.y, 0.0f });
-			
-			auto& rb = floor->AddComponent<physics::RigidbodyComponent2D>();
-			auto& box = floor->AddComponent<physics::BoxComponent2D>();
-			box.halfExtent.x = wallHalfExtent.x;
-			box.halfExtent.y = 1.0f;
-			
-			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Floor Mesh", floor->GetID());
-			floorMesh->SetScale({ wallHalfExtent.x, 1.0f, 1.0f });
-			floorMesh->SetMeshID(cubeMeshID);
-			floorMesh->SetMaterialID(defaultMaterialInstID);
-		}
-
-		// Left Wall Node
-		{
-			auto* leftWall = sceneGraph->AddNode<TransformNode3D>("Left Wall");
-			leftWall->SetPosition({ -wallHalfExtent.x, 0.0f, 0.0f });
-			
-			auto& rb = leftWall->AddComponent<physics::RigidbodyComponent2D>();
-			auto& box = leftWall->AddComponent<physics::BoxComponent2D>();
-			box.halfExtent.x = 1.0f;
-			box.halfExtent.y = wallHalfExtent.y;
-			
-			auto* wallLeftMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Left Wall Mesh", leftWall->GetID());
-			wallLeftMesh->SetScale({ 1.0f, wallHalfExtent.y, 1.0f });
-			wallLeftMesh->SetMeshID(cubeMeshID);
-			wallLeftMesh->SetMaterialID(defaultMaterialInstID);
-		}
-
-		// Right Wall Node
-		{
-			auto* rightWall = sceneGraph->AddNode<TransformNode3D>("Right Wall");
-			rightWall->SetPosition({ wallHalfExtent.x, 0.0f, 0.0f });
-			
-			auto& rb = rightWall->AddComponent<physics::RigidbodyComponent2D>();
-			auto& box = rightWall->AddComponent<physics::BoxComponent2D>();
-			box.halfExtent.x = 1.0f;
-			box.halfExtent.y = wallHalfExtent.y;
-			
-			auto* wallLeftMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Right Wall Mesh", rightWall->GetID());
-			wallLeftMesh->SetScale({ 1.0f, wallHalfExtent.y, 1.0f });
-			wallLeftMesh->SetMeshID(cubeMeshID);
-			wallLeftMesh->SetMaterialID(defaultMaterialInstID);
-		}
-
-		// Ceiling Node
-		{
-			auto* ceiling = sceneGraph->AddNode<TransformNode3D>("Floor");
-			ceiling->SetPosition({ 0.0f, wallHalfExtent.y, 0.0f });
-			
-			auto& rb = ceiling->AddComponent<physics::RigidbodyComponent2D>();
-			auto& box = ceiling->AddComponent<physics::BoxComponent2D>();
-			box.halfExtent.x = wallHalfExtent.x;
-			box.halfExtent.y = 1.0f;
-			
-			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Ceiling Mesh", ceiling->GetID());
-			floorMesh->SetScale({ wallHalfExtent.x, 1.0f, 1.0f });
-			floorMesh->SetMeshID(cubeMeshID);
-			floorMesh->SetMaterialID(defaultMaterialInstID);
-		}
-
-		// Box Nodes
-		{
-			constexpr int numBodies = 5000;
-
-			const Vector2f bodyHalfExtent = { wallHalfExtent.x - 5.f, wallHalfExtent.y - 5.f };
-			double velocityMax = 50.0;
-			
-			std::random_device rd;
-			std::mt19937 mt(rd());
-			std::uniform_real_distribution posXDist(-bodyHalfExtent.x, bodyHalfExtent.x);
-			std::uniform_real_distribution posYDist(-bodyHalfExtent.y, bodyHalfExtent.y);
-			std::uniform_real_distribution velDist(-velocityMax, velocityMax);
-			
-			for (int i = 0; i < numBodies; ++i)
-			{
-				auto* body = sceneGraph->AddNode<TransformNode3D>("Body #" + std::to_string(i));
-				body->SetPosition({ posXDist(mt), posYDist(mt), 0.0f });
-
-				auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
-				rb.bodyType = physics::BodyType::Dynamic;
-				rb.friction = 0.0f;
-
-				auto& velocity = body->AddComponent<physics::VelocityComponent3D>();
-				velocity.linear.x = velDist(mt);
-				velocity.linear.y = velDist(mt);
-
-				auto& box = body->AddComponent<physics::BoxComponent2D>();
-				box.halfExtent.x = 1.0f;
-				box.halfExtent.y = 1.0f;
-					
-				auto* bodyMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("BodyMesh", body->GetID());
-				bodyMesh->SetMeshID(cubeMeshID);
-				bodyMesh->SetMaterialID(defaultMaterialInstID);
-			}
-		}
-	}
-
-	void SetupDefaultPhysics3DScene(const std::shared_ptr<Engine>& engine)
+	void SetupDefaultPhysicsScene3D(const std::shared_ptr<Engine>& engine)
 	{
 		// Get assets
 		fs::path contentRootPath = assets::AssetRegistry::Get()->GetContentRoot();

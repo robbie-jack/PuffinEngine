@@ -3,6 +3,10 @@
 #include <memory>
 #include <filesystem>
 
+#include "puffin/core/engine.h"
+#include "puffin/scene/sceneserializationsubsystem.h"
+#include "puffin/utility/reflection.h"
+
 namespace puffin
 {
 	namespace io
@@ -16,17 +20,22 @@ namespace puffin::core
 	class Engine;
 
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine);
-	void RegisterComponentTypes();
-	void RegisterNodeTypes();
+
+	void RegisterComponentTypes2D();
+	void RegisterComponentTypes3D();
+
+	void RegisterNodeTypes2D();
+	void RegisterNodeTypes3D();
 
 	void RegisterAssetTypes(const io::ProjectFile& projectFile, const std::filesystem::path& projectPath);
-	void RegisterComponentsForSerialization(const std::shared_ptr<Engine>& engine);
 
 	void AddDefaultAssets();
 	void ImportDefaultAssets();
 	void LoadAndSaveAssets();
 
-	void SetupDefaultScene(const std::shared_ptr<Engine>& engine);
-	void SetupDefaultPhysics2DScene(const std::shared_ptr<Engine>& engine);
-	void SetupDefaultPhysics3DScene(const std::shared_ptr<Engine>& engine);
+	void SetupDefaultScene2D(const std::shared_ptr<Engine>& engine);
+	void SetupDefaultPhysicsScene2D(const std::shared_ptr<Engine>& engine);
+
+	void SetupDefaultScene3D(const std::shared_ptr<Engine>& engine);
+	void SetupDefaultPhysicsScene3D(const std::shared_ptr<Engine>& engine);
 }

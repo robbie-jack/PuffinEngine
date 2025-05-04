@@ -17,6 +17,7 @@
 
 //#include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
+#include "puffin/core/enginehelpers.h"
 #include "puffin/platform/raylib/platformrl.h"
 
 int main(int argc, char* argv[])
@@ -42,8 +43,16 @@ int main(int argc, char* argv[])
 
 	engine->Setup();
 
+	puffin::core::RegisterComponentTypes2D();
+    puffin::core::RegisterNodeTypes2D();
+
+	//auto type = entt::resolve(entt::hs("TransformComponent2D"));
+	//auto func = type.func(entt::hs("GetTypeString"));
+	//auto typeName = func.invoke({}).cast<std::string_view>();
+
 	//engine->RegisterSubsystem<puffin::rendering::RenderSubsystemVK>();
-	
+
+	// 3874500504
 
 #ifdef PFN_BOX2D_PHYSICS
 	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSubsystem>();

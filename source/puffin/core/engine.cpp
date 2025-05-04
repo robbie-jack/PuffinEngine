@@ -38,15 +38,25 @@ namespace puffin
 		      .help("Specify the scene file to load on launch")
 		      .default_value("");
 
-		parser.add_argument("--setup-engine-default-scene")
-		      .help("Specify whether the engine default scene should be initialized on launch")
+		parser.add_argument("--setup-default-scene-2d")
+		      .help("Specify whether the engine default 2d scene should be initialized on launch")
 		      .default_value(false)
 		      .implicit_value(true);
 
-		parser.add_argument("--setup-engine-default-physics2d-scene")
+		parser.add_argument("--setup-default-scene-3d")
+			.help("Specify whether the engine default 3d scene should be initialized on launch")
+			.default_value(false)
+			.implicit_value(true);
+
+		parser.add_argument("--setup-default-physics-scene-2d")
 			  .help("Specify whether the engine default physics 2d scene should be initialized on launch")
 			  .default_value(false)
 			  .implicit_value(true);
+
+		parser.add_argument("--setup-default-physics-scene-3d")
+			.help("Specify whether the engine default physics 3d scene should be initialized on launch")
+			.default_value(false)
+			.implicit_value(true);
 
 		parser.add_argument("--setup-default-settings")
 		      .help("Specify whether to setup settings file with engine default settings")
@@ -72,8 +82,6 @@ namespace puffin::core
 		mSubsystemManager = std::make_unique<SubsystemManager>(shared_from_this());
 		utility::BenchmarkManager::Get();
 
-		RegisterComponentTypes();
-		RegisterNodeTypes();
 		RegisterRequiredSubsystems(shared_from_this());
 
 		if (mPlatform)
@@ -99,8 +107,11 @@ namespace puffin::core
 
 		// Load Project Settings
 		mSetupEngineDefaultSettings = parser.get<bool>("--setup-default-settings");
-		mSetupEngineDefaultScene = parser.get<bool>("--setup-engine-default-scene");
-		mSetupEngineDefaultPhysics2DScene = parser.get<bool>("--setup-engine-default-physics2d-scene");
+
+		const bool setupDefaultScene2D = parser.get<bool>("--setup-default-scene-2d");
+		const bool setupDefaultScene3D = parser.get<bool>("--setup-default-scene-3d");
+		const bool setupDefaultPhysicsScene2D = parser.get<bool>("--setup-default-physics-scene-2d");
+		const bool setupDefaultPhysicsScene3D = parser.get<bool>("--setup-default-physics-scene-3d");
 
 		// Load/Initialize Assets
 		assets::AssetRegistry::Get()->LoadAssetCache();
@@ -113,9 +124,6 @@ namespace puffin::core
 			mApplication->Initialize();
 		}
 
-		// Register components to scene subsystem
-		RegisterComponentsForSerialization(shared_from_this());
-
 		// Load default scene
 		auto sceneString = parser.get<std::string>("-scene");
 		if (!sceneString.empty())
@@ -127,17 +135,29 @@ namespace puffin::core
 		{
 			auto sceneData = sceneSubsystem->CreateScene(
 				assets::AssetRegistry::Get()->GetContentRoot() / sceneString);
-			
-			if (mSetupEngineDefaultScene)
+
+			if (setupDefaultScene2D)
 			{
-				// Create Default Scene in code -- used when scene serialization is changed
-				SetupDefaultScene(shared_from_this());
+				SetupDefaultScene2D(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
 			}
-			else if (mSetupEngineDefaultPhysics2DScene)
+			else if (setupDefaultScene3D)
 			{
-				SetupDefaultPhysics2DScene(shared_from_this());
+				// Create Default Scene in code -- used when scene serialization is changed
+				SetupDefaultScene3D(shared_from_this());
+
+				sceneData->UpdateData(shared_from_this());
+			}
+			else if (setupDefaultPhysicsScene2D)
+			{
+				SetupDefaultPhysicsScene2D(shared_from_this());
+
+				sceneData->UpdateData(shared_from_this());
+			}
+			else if (setupDefaultPhysicsScene3D)
+			{
+				SetupDefaultPhysicsScene3D(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
 			}

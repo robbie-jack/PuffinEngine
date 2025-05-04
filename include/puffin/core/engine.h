@@ -119,8 +119,6 @@ namespace puffin::core
 
 		bool mRunning = true;
 		bool mLoadSceneOnLaunch = false;
-		bool mSetupEngineDefaultScene = false;
-		bool mSetupEngineDefaultPhysics2DScene = false;
 		bool mSetupEngineDefaultSettings = false;
 		bool mEditorUIEnabled = true; // Whether editor UI should be rendered
 

@@ -104,6 +104,7 @@ set(HEADERS
 	# Components - Rendering
 	# Components - Rendering - 2D
 	${HEADER_DIR}/puffin/components/rendering/2d/cameracomponent2d.h
+	${HEADER_DIR}/puffin/components/rendering/2d/spritecomponent2d.h
 	# Components - Rendering - 3D
 	${HEADER_DIR}/puffin/components/rendering/3d/cameracomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/directionallightcomponent3d.h
@@ -214,13 +215,12 @@ set(HEADERS
 	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.h
 	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h
 	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
-	# Rendering - Raylib
-	# Rendering - Raylib - 2D
-	
 	# Scene
 	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
 	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
 	${HEADER_DIR}/puffin/scene/sceneserializationsubsystem.h
+	# Serialization
+	${HEADER_DIR}/puffin/serialization/componentserialization.h
 	# Types
 	${HEADER_DIR}/puffin/types/aabb.h
 	${HEADER_DIR}/puffin/types/deletionqueue.h
@@ -341,6 +341,8 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
 	${SOURCE_DIR}/puffin/scene/sceneserializationsubsystem.cpp
+	# Serialization
+	${SOURCE_DIR}/puffin/serialization/componentserialization.cpp
 	# Types
 	${SOURCE_DIR}/puffin/types/deletionqueue.cpp
 	# Types - Storage

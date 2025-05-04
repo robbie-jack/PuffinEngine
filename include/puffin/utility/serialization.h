@@ -5,9 +5,11 @@
 #include <cassert>
 #include <cstdint>
 
+
 #include "nlohmann/json.hpp"
 
 #include "entt/meta/factory.hpp"
+#include <entt/entity/registry.hpp>
 
 namespace puffin::serialization
 {

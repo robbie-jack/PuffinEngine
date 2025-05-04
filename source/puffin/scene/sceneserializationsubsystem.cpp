@@ -1,12 +1,12 @@
 #include "puffin/scene/sceneserializationsubsystem.h"
 
+#include "puffin/serialization/componentserialization.h"
+
 namespace puffin::io
 {
-	SceneData::SceneData(SceneSerializationSubsystem* sceneSerializationSubsystem, fs::path path) :
-		mSceneSerializationSubsystem(sceneSerializationSubsystem),
+	SceneData::SceneData(fs::path path) :
 		mPath(std::move(path))
 	{
-		
 	}
 
 	void SceneData::Setup(ecs::EnTTSubsystem* enttSubsystem, scene::SceneGraphSubsystem* sceneGraph)
@@ -18,7 +18,8 @@ namespace puffin::io
 		{
 			auto entity = enttSubsystem->AddEntity(id);
 
-			for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
+			// PFN_TODO_SERIALIZATION - Re-implement using new serialization logic
+			/*for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
 			{
 				const auto& entityJsonMap = mEntityJsonMaps.at(typeID);
 				if (entityJsonMap.find(id) != entityJsonMap.end())	
@@ -27,7 +28,7 @@ namespace puffin::io
 
 					serialComp->Deserialize(registry, entity, json);
 				}
-			}
+			}*/
 		}
 
 		// Add nodes to scene graph
@@ -69,18 +70,25 @@ namespace puffin::io
 
 			mEntityIDs.push_back(id);
 
-			for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
+			auto* componentRegistry = serialization::ComponentRegistry::Get();
+			for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 			{
+				auto type = entt::resolve(typeID);
+
 				if (mEntityJsonMaps.find(typeID) == mEntityJsonMaps.end())
 				{
 					mEntityJsonMaps.emplace(typeID, EntityJsonMap());
 				}
 
-				if (serialComp->HasComponent(registry, entity))
+				auto hasComponentFunc = type.func(entt::hs("HasComponent"));
+				if (hasComponentFunc && hasComponentFunc.invoke({}, registry, entity).cast<bool>())
 				{
-					auto& entityJsonMap = mEntityJsonMaps.at(typeID);
+					if (auto serializefunc = type.func(entt::hs("SerializeFromRegistry")))
+					{
+						auto& entityJsonMap = mEntityJsonMaps.at(typeID);
 
-					entityJsonMap.emplace(id, serialComp->Serialize(registry, entity));
+						entityJsonMap.emplace(id, serializefunc.invoke({}, registry, entity).cast<nlohmann::json>());
+					}
 				}
 			}
 		}
@@ -131,7 +139,12 @@ namespace puffin::io
 					++i;
 				}
 
-				data[type.info().name()] = componentJson;
+				if (auto getTypeStringFunc = type.func(entt::hs("GetTypeString")))
+				{
+					auto typeString = getTypeStringFunc.invoke({}).cast<std::string_view>();
+
+					data[typeString] = componentJson;
+				}
 			}
 		}
 
@@ -197,7 +210,8 @@ namespace puffin::io
 
 		mEntityIDs = data.at("entityIDs").get<std::vector<UUID>>();
 
-		for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
+		// PFN_TODO_SERIALIZATION - Re-implement using new serialization logic
+		/*for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
 		{
 			if (mEntityJsonMaps.find(typeID) == mEntityJsonMaps.end())
 			{
@@ -216,7 +230,7 @@ namespace puffin::io
 					entityJsonMap.emplace(archiveJson["id"], archiveJson["data"]);
 				}
 			}
-		}
+		}*/
 
 		mRootNodeIDs = data.at("rootNodeIDs").get<std::vector<UUID>>();
 
@@ -303,7 +317,6 @@ namespace puffin::io
 	{
 		mCurrentSceneData = nullptr;
 		mSceneData.clear();
-		mSerializableComponents.clear();
 	}
 
 	void SceneSerializationSubsystem::BeginPlay()
@@ -344,7 +357,7 @@ namespace puffin::io
 
 		if (mSceneData.find(scenePath) == mSceneData.end())
 		{
-			mSceneData.emplace(scenePath, std::make_shared<SceneData>(this, scenePath));
+			mSceneData.emplace(scenePath, std::make_shared<SceneData>(scenePath));
 		}
 
 		mCurrentSceneData = mSceneData.at(scenePath);
@@ -355,10 +368,5 @@ namespace puffin::io
 	std::shared_ptr<SceneData> SceneSerializationSubsystem::GetSceneData()
 	{
 		return mCurrentSceneData;
-	}
-
-	const SerializableComponentMap& SceneSerializationSubsystem::GetSerializableComponents()
-	{
-		return mSerializableComponents;
 	}
 }
