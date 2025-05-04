@@ -18,17 +18,21 @@ namespace puffin::io
 		{
 			auto entity = enttSubsystem->AddEntity(id);
 
-			// PFN_TODO_SERIALIZATION - Re-implement using new serialization logic
-			/*for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
+			auto* componentRegistry = serialization::ComponentRegistry::Get();
+			for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 			{
 				const auto& entityJsonMap = mEntityJsonMaps.at(typeID);
-				if (entityJsonMap.find(id) != entityJsonMap.end())	
+				if (entityJsonMap.find(id) != entityJsonMap.end())
 				{
+					auto type = entt::resolve(typeID);
 					const auto& json = entityJsonMap.at(id);
 
-					serialComp->Deserialize(registry, entity, json);
+					if (auto deserializeToRegistryFunc = type.func(entt::hs("DeserializeToRegistry")))
+					{
+						deserializeToRegistryFunc.invoke({}, registry, entity, json);
+					}
 				}
-			}*/
+			}
 		}
 
 		// Add nodes to scene graph
@@ -73,12 +77,12 @@ namespace puffin::io
 			auto* componentRegistry = serialization::ComponentRegistry::Get();
 			for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 			{
-				auto type = entt::resolve(typeID);
-
 				if (mEntityJsonMaps.find(typeID) == mEntityJsonMaps.end())
 				{
 					mEntityJsonMaps.emplace(typeID, EntityJsonMap());
 				}
+
+				auto type = entt::resolve(typeID);
 
 				auto hasComponentFunc = type.func(entt::hs("HasComponent"));
 				if (hasComponentFunc && hasComponentFunc.invoke({}, registry, entity).cast<bool>())
@@ -210,8 +214,8 @@ namespace puffin::io
 
 		mEntityIDs = data.at("entityIDs").get<std::vector<UUID>>();
 
-		// PFN_TODO_SERIALIZATION - Re-implement using new serialization logic
-		/*for (const auto& [typeID, serialComp] : mSceneSerializationSubsystem->GetSerializableComponents())
+		auto* componentRegistry = serialization::ComponentRegistry::Get();
+		for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 		{
 			if (mEntityJsonMaps.find(typeID) == mEntityJsonMaps.end())
 			{
@@ -219,18 +223,22 @@ namespace puffin::io
 			}
 
 			auto type = entt::resolve(typeID);
-			const auto& typeName = type.info().name();
 
-			if (data.contains(typeName))
+			if (auto getTypeStringFunc = type.func(entt::hs("GetTypeString")))
 			{
-				const json& componentJson = data.at(typeName);
-				for (const auto& archiveJson : componentJson)
+				auto typeString = getTypeStringFunc.invoke({}).cast<std::string_view>();
+
+				if (data.contains(typeString))
 				{
-					auto& entityJsonMap = mEntityJsonMaps.at(typeID);
-					entityJsonMap.emplace(archiveJson["id"], archiveJson["data"]);
+					const json& componentJson = data.at(typeString);
+					for (const auto& archiveJson : componentJson)
+					{
+						auto& entityJsonMap = mEntityJsonMaps.at(typeID);
+						entityJsonMap.emplace(archiveJson["id"], archiveJson["data"]);
+					}
 				}
 			}
-		}*/
+		}
 
 		mRootNodeIDs = data.at("rootNodeIDs").get<std::vector<UUID>>();
 

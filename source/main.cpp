@@ -41,18 +41,10 @@ int main(int argc, char* argv[])
 
 	engine->RegisterPlatform<puffin::core::PlatformRL>();
 
-	engine->Setup();
-
 	puffin::core::RegisterComponentTypes2D();
-    puffin::core::RegisterNodeTypes2D();
+	puffin::core::RegisterNodeTypes2D();
 
-	//auto type = entt::resolve(entt::hs("TransformComponent2D"));
-	//auto func = type.func(entt::hs("GetTypeString"));
-	//auto typeName = func.invoke({}).cast<std::string_view>();
-
-	//engine->RegisterSubsystem<puffin::rendering::RenderSubsystemVK>();
-
-	// 3874500504
+	engine->Setup();
 
 #ifdef PFN_BOX2D_PHYSICS
 	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSubsystem>();
