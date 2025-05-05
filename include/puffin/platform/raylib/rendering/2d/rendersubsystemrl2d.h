@@ -2,8 +2,6 @@
 
 #include "puffin/rendering/rendersubsystem.h"
 
-//#include "raylibcpp/raylib-cpp.hpp"
-
 namespace puffin::rendering
 {
 	class RenderSubsystemRL2D : public RenderSubsystem

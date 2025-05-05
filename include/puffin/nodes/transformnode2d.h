@@ -12,7 +12,6 @@ namespace puffin
 namespace puffin
 {
 	const std::string gTransformNode2DTypeString = "TransformNode2D";
-	const entt::id_type gTransformNode2DTypeID = entt::hs(gTransformNode2DTypeString.c_str());
 
 	class TransformNode2D : public Node
 	{
@@ -54,12 +53,27 @@ namespace puffin
 
 	};
 
-	template<>
-	inline void reflection::RegisterType<TransformNode2D>()
+	namespace reflection
 	{
-		entt::meta<TransformNode2D>()
-			.type(gTransformNode2DTypeID)
-			.base<Node>()
-			.custom<NodeCustomData>(gTransformNode2DTypeString);
+		template<>
+		inline std::string_view GetTypeString<TransformNode2D>()
+		{
+			return "TransformNode2D";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<TransformNode2D>()
+		{
+			return entt::hs(GetTypeString<TransformNode2D>().data());
+		}
+
+		template<>
+		inline void RegisterType<TransformNode2D>()
+		{
+			auto meta = entt::meta<TransformNode2D>()
+			.base<Node>();
+
+			reflection::RegisterTypeDefaults(meta);
+		}
 	}
 }

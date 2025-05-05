@@ -38,6 +38,7 @@
 #include "puffin/input/inputsubsystem.h"
 #include "puffin/nodes/transformnode2d.h"
 #include "puffin/nodes/physics/rigidbodynode3d.h"
+#include "puffin/nodes/rendering/2d/spritenode2d.h"
 #include "puffin/nodes/rendering/3d/cameranode3d.h"
 #include "puffin/nodes/rendering/3d/directionallightnode3d.h"
 #include "puffin/nodes/rendering/3d/pointlightnode3d.h"
@@ -133,6 +134,8 @@ namespace puffin::core
 		reflection::RegisterType<Node>();
 
 		reflection::RegisterType<TransformNode2D>();
+
+		reflection::RegisterType<rendering::SpriteNode2D>();
 	}
 
 	void RegisterNodeTypes3D()
@@ -259,6 +262,9 @@ namespace puffin::core
 		// Box
 		{
 			auto* box = sceneGraph->AddNode<TransformNode2D>("Box");
+
+			auto sprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", box->GetID());
+			sprite->SetColour({ 1.f, 0.f, 0.f });
 		}
 	}
 

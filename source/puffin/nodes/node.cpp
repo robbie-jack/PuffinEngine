@@ -86,7 +86,7 @@ namespace puffin
 
 	entt::id_type Node::GetTypeID() const
 	{
-		return gNodeTypeID;
+		return reflection::GetTypeHashedString<Node>();
 	}
 
 	UUID Node::GetID() const

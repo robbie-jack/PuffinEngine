@@ -2,6 +2,7 @@
 
 #include "nlohmann/json.hpp"
 
+#include "puffin/types/vector3.h"
 #include "puffin/utility/reflection.h"
 #include "puffin/utility/serialization.h"
 #include "puffin/serialization/componentserialization.h"
@@ -12,9 +13,10 @@ namespace puffin
 	{
 		struct SpriteComponent2D
 		{
+			Vector3f colour;
 			Vector2f offset;
 
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(SpriteComponent2D, offset)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(SpriteComponent2D, colour, offset)
 		};
 	}
 
@@ -37,6 +39,7 @@ namespace puffin
 			using namespace rendering;
 
 			auto meta = entt::meta<SpriteComponent2D>()
+			.data<&SpriteComponent2D::colour>(entt::hs("colour"))
 			.data<&SpriteComponent2D::offset>(entt::hs("offset"));
 
 			reflection::RegisterTypeDefaults(meta);

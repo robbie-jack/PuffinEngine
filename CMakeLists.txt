@@ -151,6 +151,8 @@ set(HEADERS
 	# Nodes - Physics
 	${HEADER_DIR}/puffin/nodes/physics/rigidbodynode3d.h
 	# Nodes - Rendering
+	# Nodes - Rendering - 2D
+	${HEADER_DIR}/puffin/nodes/rendering/2d/spritenode2d.h
 	# Nodes - Rendering - 3D
 	${HEADER_DIR}/puffin/nodes/rendering/3d/cameranode3d.h
 	${HEADER_DIR}/puffin/nodes/rendering/3d/directionallightnode3d.h
@@ -291,6 +293,8 @@ set(SOURCES
 	# Nodes - Physics
 	${SOURCE_DIR}/puffin/nodes/physics/rigidbodynode3d.cpp
 	# Nodes - Rendering
+	# Nodes - Rendering - 2D
+	${SOURCE_DIR}/puffin/nodes/rendering/2d/spritenode2d.cpp
 	# Nodes - Rendering - 3D
 	${SOURCE_DIR}/puffin/nodes/rendering/3d/cameranode3d.cpp
 	${SOURCE_DIR}/puffin/nodes/rendering/3d/directionallightnode3d.cpp

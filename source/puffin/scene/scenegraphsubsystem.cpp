@@ -11,6 +11,7 @@
 #include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
 #include "puffin/components/transformcomponent2d.h"
 #include "puffin/components/transformcomponent3d.h"
+#include "puffin/nodes/rendering/2d/spritenode2d.h"
 #include "puffin/rendering/renderglobals.h"
 
 namespace puffin::scene
@@ -23,7 +24,10 @@ namespace puffin::scene
 	void SceneGraphSubsystem::RegisterTypes()
 	{
 		RegisterNodeType<Node>();
+
 		RegisterNodeType<TransformNode2D>();
+		RegisterNodeType<rendering::SpriteNode2D>();
+
 		RegisterNodeType<TransformNode3D>();
 		RegisterNodeType<rendering::StaticMeshNode3D>();
 		RegisterNodeType<rendering::PointLightNode3D>();
@@ -32,7 +36,10 @@ namespace puffin::scene
 		RegisterNodeType<rendering::CameraNode3D>();
 
 		SetDefaultNodePoolSize<Node>(5000);
+
 		SetDefaultNodePoolSize<TransformNode2D>(5000);
+		SetDefaultNodePoolSize<rendering::SpriteNode2D>(5000);
+
 		SetDefaultNodePoolSize<TransformNode3D>(5000);
 		SetDefaultNodePoolSize<rendering::StaticMeshNode3D>(5000);
 		SetDefaultNodePoolSize<rendering::PointLightNode3D>(rendering::gMaxPointLights);

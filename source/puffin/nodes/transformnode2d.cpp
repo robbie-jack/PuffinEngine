@@ -33,7 +33,7 @@ namespace puffin
 
 	entt::id_type TransformNode2D::GetTypeID() const
 	{
-		return gTransformNode2DTypeID;
+		return reflection::GetTypeHashedString<TransformNode2D>();
 	}
 
 	const TransformComponent2D& TransformNode2D::GetTransform() const

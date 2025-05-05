@@ -26,8 +26,8 @@ namespace puffin
 	}
 
 	const std::string gNodeTypeString = "Node";
-	const entt::id_type gNodeTypeID = entt::hs(gNodeTypeString.c_str());
 
+	// PFN_TODO_SERIALIZATION - Remove as part of node serialization rework
 	struct NodeCustomData
 	{
 		explicit NodeCustomData(const std::string& nodeTypeString) : nodeTypeString(nodeTypeString) {}
@@ -163,13 +163,26 @@ namespace puffin
 		std::shared_ptr<entt::registry> mRegistry = nullptr;
 	};
 
-	template<>
-	inline void reflection::RegisterType<Node>()
+	namespace reflection
 	{
-		entt::meta<Node>()
-			.type(gNodeTypeID)
-			.func<&Node::GetID>(entt::hs("GetID"))
-			.func<&Node::GetName>(entt::hs("GetName"))
-			.custom<NodeCustomData>(gNodeTypeString);
+		template<>
+		inline std::string_view GetTypeString<Node>()
+		{
+			return "Node";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<Node>()
+		{
+			return entt::hs(GetTypeString<Node>().data());
+		}
+
+		template<>
+		inline void RegisterType<Node>()
+		{
+			auto meta = entt::meta<Node>();
+
+			reflection::RegisterTypeDefaults(meta);
+		}
 	}
 }
