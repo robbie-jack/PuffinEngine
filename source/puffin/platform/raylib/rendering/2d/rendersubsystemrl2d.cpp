@@ -38,20 +38,20 @@ namespace puffin::rendering
 
 	double RenderSubsystemRL2D::WaitForLastPresentationAndSampleTime()
 	{
-		const double currentTime = ::GetTime();
-		const double lastTime = mEngine->GetLastTime();
+		const auto framerateLimit = mEngine->GetFramerateLimit();
 
-		const double currentFrameTime = currentTime - lastTime;
-
-		const double framerateLimitTime = 1.0 / static_cast<double>(mEngine->GetFramerateLimit());
-		const double waitTime = framerateLimitTime - currentFrameTime;
-
-		if (waitTime > 0.0)
+		if (framerateLimit > 0)
 		{
-			WaitTime(waitTime);
+			const double deltaTime = GetTime() - mEngine->GetLastTime();
+			const double targetTime = 1.0 / static_cast<double>(framerateLimit);
+
+			if (deltaTime < targetTime)
+			{
+				::WaitTime(targetTime - deltaTime);
+			}
 		}
 
-		return ::GetTime();
+		return GetTime();
 	}
 
 	void RenderSubsystemRL2D::Render(double deltaTime)
@@ -75,80 +75,7 @@ namespace puffin::rendering
 
 			camera.BeginMode();
 
-			{
-				// Calculate t value for rendering interpolated position
-				const double t = mEngine->GetAccumulatedTime() / mEngine->GetTimeStepFixed();
-
-				const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-				const auto registry = enttSubsystem->GetRegistry();
-
-				const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
-
-				const auto& spriteView = registry->view<const TransformComponent2D, const SpriteComponent2D>();
-
-				for (auto& [entity, transform, sprite] : spriteView.each())
-				{
-					const auto id = enttSubsystem->GetID(entity);
-					auto* node = sceneGraph->GetNode(id);
-
-					raylib::Color colour(std::round(sprite.colour.x * 255),
-						std::round(sprite.colour.y * 255),
-						std::round(sprite.colour.z * 255));
-
-#ifdef PFN_DOUBLE_PRECISION
-					Vector2d position = { 0.0 };
-#else
-					Vector2f position{ 0.0f };
-#endif
-
-					Vector2f scale{ 1.f };
-
-					if (const auto* transformNode = dynamic_cast<TransformNode2D*>(node); transformNode)
-					{
-						position = transformNode->GetGlobalTransform().position;
-						scale = transformNode->GetGlobalTransform().scale;
-					}
-					else
-					{
-						position = transform.position;
-						scale = transform.scale;
-					}
-
-					if (renderSettings.physicsInterpolationEnable)
-					{
-						physics::VelocityComponent2D velocity;
-
-						if (registry->any_of<physics::VelocityComponent2D>(entity))
-						{
-							velocity = registry->get<physics::VelocityComponent2D>(entity);
-						}
-						else if (node)
-						{
-							if (const auto* parentNode = node->GetParent(); parentNode && parentNode->HasComponent<physics::VelocityComponent2D>())
-							{
-								velocity = parentNode->GetComponent<physics::VelocityComponent2D>();
-							}
-						}
-						else
-						{
-							break;
-						}
-
-#ifdef PFN_DOUBLE_PRECISION
-						Vector2d nextPosition = { 0.0 };
-#else
-						Vector2f nextPosition{ 0.0f };
-#endif
-
-						nextPosition = position + velocity.linear * mEngine->GetTimeStepFixed();
-
-						position = maths::Lerp(position, nextPosition, t);
-					}
-
-					colour.DrawRectangle(static_cast<int>(std::round(position.x + sprite.offset.x)), static_cast<int>(std::round(position.y + sprite.offset.y)),
-						static_cast<int>(std::round(scale.x)), static_cast<int>(std::round(scale.y)));
-				}
-			}
+			DrawSprites();
 
 			camera.EndMode();
 		}
@@ -156,17 +83,7 @@ namespace puffin::rendering
 		// Debug Drawing
 		{
 			
-			// FPS
-			{
-				Color color = LIME; // Good FPS
-
-				auto fps = static_cast<int>(std::round(1.0 / deltaTime));
-
-				if ((fps < 30) && (fps >= 15)) color = ORANGE;  // Warning FPS
-				else if (fps < 15) color = RED;             // Low FPS
-
-				DrawText(TextFormat("%2i FPS", fps), 10, 10, 20, color);
-			}
+			DebugDrawStats(deltaTime);
 			
 		}
 
@@ -175,5 +92,120 @@ namespace puffin::rendering
 		SwapScreenBuffer();
 
 		mFrameCount++;
+	}
+
+	void RenderSubsystemRL2D::DrawSprites()
+	{
+		{
+			// Calculate t value for rendering interpolated position
+			const double t = mEngine->GetAccumulatedTime() / mEngine->GetTimeStepFixed();
+
+			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+			const auto registry = enttSubsystem->GetRegistry();
+
+			const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+
+			const auto& spriteView = registry->view<const TransformComponent2D, const SpriteComponent2D>();
+
+			for (auto& [entity, transform, sprite] : spriteView.each())
+			{
+				const auto id = enttSubsystem->GetID(entity);
+				auto* node = sceneGraph->GetNode(id);
+
+				raylib::Color colour(std::round(sprite.colour.x * 255),
+					std::round(sprite.colour.y * 255),
+					std::round(sprite.colour.z * 255));
+
+#ifdef PFN_DOUBLE_PRECISION
+				Vector2d position = { 0.0 };
+#else
+				Vector2f position{ 0.0f };
+#endif
+
+				Vector2f scale{ 1.f };
+
+				if (const auto* transformNode = dynamic_cast<TransformNode2D*>(node); transformNode)
+				{
+					position = transformNode->GetGlobalTransform().position;
+					scale = transformNode->GetGlobalTransform().scale;
+				}
+				else
+				{
+					position = transform.position;
+					scale = transform.scale;
+				}
+
+				if (renderSettings.physicsInterpolationEnable)
+				{
+					physics::VelocityComponent2D velocity;
+
+					if (registry->any_of<physics::VelocityComponent2D>(entity))
+					{
+						velocity = registry->get<physics::VelocityComponent2D>(entity);
+					}
+					else if (node)
+					{
+						if (const auto* parentNode = node->GetParent(); parentNode && parentNode->HasComponent<physics::VelocityComponent2D>())
+						{
+							velocity = parentNode->GetComponent<physics::VelocityComponent2D>();
+						}
+					}
+					else
+					{
+						break;
+					}
+
+#ifdef PFN_DOUBLE_PRECISION
+					Vector2d nextPosition = { 0.0 };
+#else
+					Vector2f nextPosition{ 0.0f };
+#endif
+
+					nextPosition = position + velocity.linear * mEngine->GetTimeStepFixed();
+
+					position = maths::Lerp(position, nextPosition, t);
+				}
+
+				colour.DrawRectangle(static_cast<int>(std::round(position.x + sprite.offset.x)), static_cast<int>(std::round(position.y + sprite.offset.y)),
+					static_cast<int>(std::round(scale.x)), static_cast<int>(std::round(scale.y)));
+			}
+		}
+	}
+
+	void RenderSubsystemRL2D::DebugDrawStats(double deltaTime) const
+	{
+#define FPS_CAPTURE_FRAMES_COUNT 60
+#define FPS_AVERAGE_TIME_SECONDS   1.f     // 1000 milliseconds
+#define FPS_STEP (FPS_AVERAGE_TIME_SECONDS/FPS_CAPTURE_FRAMES_COUNT)
+
+		static int deltaTimeIdx = 0;
+		static double deltaTimeHistory[FPS_CAPTURE_FRAMES_COUNT] = { 0.f };
+		static double deltaTimeAvg = 0.f, timeLast = 0.f;
+
+		if (mFrameCount == 0)
+		{
+			deltaTimeAvg = 0.f;
+			timeLast = 0.f;
+			deltaTimeIdx = 0;
+
+			for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; ++i) deltaTimeHistory[i] = 0;
+		}
+
+		if (GetTime() - timeLast > FPS_STEP)
+		{
+			timeLast = GetTime();
+			deltaTimeIdx = (deltaTimeIdx + 1) % FPS_CAPTURE_FRAMES_COUNT;
+			deltaTimeAvg -= deltaTimeHistory[deltaTimeIdx];
+			deltaTimeHistory[deltaTimeIdx] = deltaTime / FPS_CAPTURE_FRAMES_COUNT;
+			deltaTimeAvg += deltaTimeHistory[deltaTimeIdx];
+		}
+
+		auto fps = static_cast<int>(std::round(1.0 / deltaTimeAvg));
+
+		Color color = LIME; // Good FPS
+		if ((fps < 60) && (fps >= 30)) color = ORANGE;  // Warning FPS
+		else if (fps < 30) color = RED;             // Low FPS
+
+		DrawText(TextFormat("FPS: %2i, Frametime: %.3f ms", fps, deltaTimeAvg * 1000.f), 10, 10, 20, color);
 	}
 }

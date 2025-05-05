@@ -22,7 +22,8 @@ namespace puffin::rendering
 
 	protected:
 
-
+		void DrawSprites();
+		void DebugDrawStats(double deltaTime) const;
 
 	};
 }

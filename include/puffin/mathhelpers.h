@@ -11,6 +11,16 @@
 
 namespace puffin::maths
 {
+	inline bool IsNearlyEqual(double x, double y, double tolerance = 0.00005f)
+	{
+		return std::abs(x - y) <= tolerance * std::abs(x);
+	}
+
+	inline bool IsNearlyZero(double val, double tolerance = 0.00005f)
+	{
+		return IsNearlyEqual(val, 0.0f, tolerance);
+	}
+
 	template<typename T>
 	static T Clamp(const T& value, const T& min, const T& max)
 	{

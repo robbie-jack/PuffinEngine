@@ -509,12 +509,9 @@ namespace puffin::core
 
 	void Engine::UpdateDeltaTime(double sampledTime)
 	{
-		mLastTime = mCurrentTime;
 		mCurrentTime = sampledTime;
 		mDeltaTime = mCurrentTime - mLastTime;
-
-		// Make sure delta time never exceeds 1/30th of a second
-		mDeltaTime = std::min(mDeltaTime, mTimeStepLimit);
+		mLastTime = mCurrentTime;
 	}
 
 	void Engine::UpdatePhysicsTickRate(uint16_t ticksPerSecond)
