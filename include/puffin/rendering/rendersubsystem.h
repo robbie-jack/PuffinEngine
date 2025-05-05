@@ -6,6 +6,11 @@
 
 namespace puffin::rendering
 {
+	struct RenderSettings
+	{
+		bool physicsInterpolationEnable = false;
+	};
+
 	/*
 	 * A Render Subsystem implements a rendering api (i.e Vulkan, DirectX, etc...) and
 	 * handles common rendering functionality like resource management for that api
@@ -17,6 +22,8 @@ namespace puffin::rendering
 
 		explicit RenderSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~RenderSubsystem() override = default;
+
+		void Initialize(core::SubsystemManager* subsystemManager) override;
 
 		/*
 		 * Called each frame to wait for last presentation to complete and sample frame time
@@ -32,10 +39,16 @@ namespace puffin::rendering
 
 	protected:
 
+		RenderSettings renderSettings;
+
 		uint32_t mFrameCount = 0;
 
 		uint32_t mDrawCallsCountTotal = 0; // Total count of all draw calls
 		std::unordered_map<std::string, uint32_t> mDrawCallsCount; // Count for individual draw call type
+
+	private:
+
+		void InitSettingsAndSignals();
 
 	};
 }

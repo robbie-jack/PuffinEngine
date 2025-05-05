@@ -35,7 +35,6 @@
 #include "puffin/core/settingsmanager.h"
 #include "puffin/core/signalsubsystem.h"
 #include "puffin/editor/ui/editoruisubsystem.h"
-#include "puffin/input/inputsubsystem.h"
 #include "puffin/nodes/transformnode2d.h"
 #include "puffin/nodes/physics/rigidbodynode3d.h"
 #include "puffin/nodes/rendering/2d/spritenode2d.h"
@@ -47,7 +46,6 @@
 #include "puffin/rendering/camerasubsystem.h"
 #include "puffin/scene/scenegraphgameplaysubsystem.h"
 #include "puffin/scene/sceneserializationsubsystem.h"
-#include "puffin/window/windowsubsystem.h"
 
 namespace puffin::core
 {
@@ -284,115 +282,110 @@ namespace puffin::core
 		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		// Light
-		{
-			auto* light = sceneGraph->AddNode<rendering::DirectionalLightNode3D>("Light");
-			light->SetPosition({ 0.0f, 100.0f, 0.0f });
-			light->SetColor({ 1.f });
-			light->SetAmbientIntensity(.1f);
-
-			//UpdateTransformOrientation(light->Transform(), { 0.0f, -90.0f, 0.0f });
-		}
-
 		const Vector2f wallHalfExtent = { 200.0f, 200.f };
+		float wallHalfWidth = 8.0f;
 
 		// Floor Node
 		{
-			auto* floor = sceneGraph->AddNode<TransformNode3D>("Floor");
-			floor->SetPosition({ 0.0f, -wallHalfExtent.y, 0.0f });
+			auto* floor = sceneGraph->AddNode<TransformNode2D>("Floor");
+			floor->SetPosition({ 0.0f, -wallHalfExtent.y });
 
 			auto& rb = floor->AddComponent<physics::RigidbodyComponent2D>();
 			auto& box = floor->AddComponent<physics::BoxComponent2D>();
 			box.halfExtent.x = wallHalfExtent.x;
-			box.halfExtent.y = 1.0f;
+			box.halfExtent.y = wallHalfWidth;
 
-			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Floor Mesh", floor->GetID());
-			floorMesh->SetScale({ wallHalfExtent.x, 1.0f, 1.0f });
-			floorMesh->SetMeshID(cubeMeshID);
-			floorMesh->SetMaterialID(defaultMaterialInstID);
+			auto* floorSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", floor->GetID());
+			floorSprite->SetScale({ wallHalfExtent.x * 2.f, wallHalfWidth * 2.f });
+			floorSprite->SetOffset({ -wallHalfExtent.x, -wallHalfWidth });
 		}
 
 		// Left Wall Node
 		{
-			auto* leftWall = sceneGraph->AddNode<TransformNode3D>("Left Wall");
-			leftWall->SetPosition({ -wallHalfExtent.x, 0.0f, 0.0f });
+			auto* leftWall = sceneGraph->AddNode<TransformNode2D>("Left Wall");
+			leftWall->SetPosition({ -wallHalfExtent.x, 0.0f });
 
 			auto& rb = leftWall->AddComponent<physics::RigidbodyComponent2D>();
 			auto& box = leftWall->AddComponent<physics::BoxComponent2D>();
-			box.halfExtent.x = 1.0f;
+			box.halfExtent.x = wallHalfWidth;
 			box.halfExtent.y = wallHalfExtent.y;
 
-			auto* wallLeftMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Left Wall Mesh", leftWall->GetID());
-			wallLeftMesh->SetScale({ 1.0f, wallHalfExtent.y, 1.0f });
-			wallLeftMesh->SetMeshID(cubeMeshID);
-			wallLeftMesh->SetMaterialID(defaultMaterialInstID);
+			auto* wallLeftSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", leftWall->GetID());
+			wallLeftSprite->SetScale({ wallHalfWidth * 2.f, wallHalfExtent.y * 2.f });
+			wallLeftSprite->SetOffset({ -wallHalfWidth, -wallHalfExtent.y });
 		}
 
 		// Right Wall Node
 		{
-			auto* rightWall = sceneGraph->AddNode<TransformNode3D>("Right Wall");
-			rightWall->SetPosition({ wallHalfExtent.x, 0.0f, 0.0f });
+			auto* rightWall = sceneGraph->AddNode<TransformNode2D>("Right Wall");
+			rightWall->SetPosition({ wallHalfExtent.x, 0.0f });
 
 			auto& rb = rightWall->AddComponent<physics::RigidbodyComponent2D>();
 			auto& box = rightWall->AddComponent<physics::BoxComponent2D>();
-			box.halfExtent.x = 1.0f;
+			box.halfExtent.x = wallHalfWidth;
 			box.halfExtent.y = wallHalfExtent.y;
 
-			auto* wallLeftMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Right Wall Mesh", rightWall->GetID());
-			wallLeftMesh->SetScale({ 1.0f, wallHalfExtent.y, 1.0f });
-			wallLeftMesh->SetMeshID(cubeMeshID);
-			wallLeftMesh->SetMaterialID(defaultMaterialInstID);
+			auto* wallRightSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", rightWall->GetID());
+			wallRightSprite->SetScale({ wallHalfWidth * 2.f, wallHalfExtent.y * 2.f });
+			wallRightSprite->SetOffset({ -wallHalfWidth, -wallHalfExtent.y });
 		}
 
 		// Ceiling Node
 		{
-			auto* ceiling = sceneGraph->AddNode<TransformNode3D>("Floor");
-			ceiling->SetPosition({ 0.0f, wallHalfExtent.y, 0.0f });
+			auto* ceiling = sceneGraph->AddNode<TransformNode2D>("Ceiling");
+			ceiling->SetPosition({ 0.0f, wallHalfExtent.y});
 
 			auto& rb = ceiling->AddComponent<physics::RigidbodyComponent2D>();
 			auto& box = ceiling->AddComponent<physics::BoxComponent2D>();
 			box.halfExtent.x = wallHalfExtent.x;
-			box.halfExtent.y = 1.0f;
+			box.halfExtent.y = wallHalfWidth;
 
-			auto* floorMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("Ceiling Mesh", ceiling->GetID());
-			floorMesh->SetScale({ wallHalfExtent.x, 1.0f, 1.0f });
-			floorMesh->SetMeshID(cubeMeshID);
-			floorMesh->SetMaterialID(defaultMaterialInstID);
+			auto* ceilingSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", ceiling->GetID());
+			ceilingSprite->SetScale({ wallHalfExtent.x * 2.f, wallHalfWidth * 2.f });
+			ceilingSprite->SetOffset({ -wallHalfExtent.x, -wallHalfWidth });
 		}
+
+		std::vector<Vector3f> colours =
+		{
+			{ 1.0f, 0.0f, 0.0f },
+			{ 0.0f, 1.0f, 0.0f},
+			{ 0.0f, 0.0f, 1.0f}
+		};
 
 		// Box Nodes
 		{
-			constexpr int numBodies = 5000;
+			constexpr int numBodies = 500;
 
-			const Vector2f bodyHalfExtent = { wallHalfExtent.x - 5.f, wallHalfExtent.y - 5.f };
-			double velocityMax = 50.0;
+			const Vector2f bodyHalfExtent = { 4.f, 4.f };
+			const Vector2f bodyPositionHalfRange = { wallHalfExtent.x - 5.f, wallHalfExtent.y - 5.f };
+			double velocityMax = 100.0;
 
 			std::random_device rd;
 			std::mt19937 mt(rd());
-			std::uniform_real_distribution posXDist(-bodyHalfExtent.x, bodyHalfExtent.x);
-			std::uniform_real_distribution posYDist(-bodyHalfExtent.y, bodyHalfExtent.y);
+			std::uniform_real_distribution posXDist(-bodyPositionHalfRange.x, bodyPositionHalfRange.x);
+			std::uniform_real_distribution posYDist(-bodyPositionHalfRange.y, bodyPositionHalfRange.y);
 			std::uniform_real_distribution velDist(-velocityMax, velocityMax);
 
 			for (int i = 0; i < numBodies; ++i)
 			{
-				auto* body = sceneGraph->AddNode<TransformNode3D>("Body #" + std::to_string(i));
-				body->SetPosition({ posXDist(mt), posYDist(mt), 0.0f });
+				auto* body = sceneGraph->AddNode<TransformNode2D>("Body #" + std::to_string(i));
+				body->SetPosition({ posXDist(mt), posYDist(mt) });
 
 				auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
 				rb.bodyType = physics::BodyType::Dynamic;
 				rb.friction = 0.0f;
 
-				auto& velocity = body->AddComponent<physics::VelocityComponent3D>();
+				auto& velocity = body->AddComponent<physics::VelocityComponent2D>();
 				velocity.linear.x = velDist(mt);
 				velocity.linear.y = velDist(mt);
 
 				auto& box = body->AddComponent<physics::BoxComponent2D>();
-				box.halfExtent.x = 1.0f;
-				box.halfExtent.y = 1.0f;
+				box.halfExtent.x = bodyHalfExtent.x;
+				box.halfExtent.y = bodyHalfExtent.y;
 
-				auto* bodyMesh = sceneGraph->AddChildNode<rendering::StaticMeshNode3D>("BodyMesh", body->GetID());
-				bodyMesh->SetMeshID(cubeMeshID);
-				bodyMesh->SetMaterialID(defaultMaterialInstID);
+				auto* bodySprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", body->GetID());
+				bodySprite->SetScale({ bodyHalfExtent.x * 2.f, bodyHalfExtent.y * 2.f });
+				bodySprite->SetColour(colours[i % colours.size()]);
 			}
 		}
 	}

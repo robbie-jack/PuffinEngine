@@ -18,7 +18,7 @@ namespace puffin::window
 	{
 		constexpr unsigned int flags = FLAG_WINDOW_RESIZABLE;
 
-		mWindow = new raylib::Window(1920, 1080, "Puffin Engine", flags);
+		mPrimaryWindow = new raylib::Window(1920, 1080, "Puffin Engine", flags);
 	}
 
 	void WindowSubsystemRL::Deinitialize()
@@ -28,14 +28,29 @@ namespace puffin::window
 
 	bool WindowSubsystemRL::ShouldPrimaryWindowClose() const
 	{
-		if (mWindow)
-			return mWindow->ShouldClose();
+		if (mPrimaryWindow)
+			return mPrimaryWindow->ShouldClose();
 
 		return true;
 	}
 
-	raylib::Window* WindowSubsystemRL::GetWindow()
+	Vector2i WindowSubsystemRL::GetPrimaryWindowSize() const
 	{
-		return mWindow;
+		return { mPrimaryWindow->GetWidth(), mPrimaryWindow->GetHeight() };
+	}
+
+	int WindowSubsystemRL::GetPrimaryWindowWidth() const
+	{
+		return mPrimaryWindow->GetWidth();
+	}
+
+	int WindowSubsystemRL::GetPrimaryWindowHeight() const
+	{
+		return mPrimaryWindow->GetHeight();
+	}
+
+	raylib::Window* WindowSubsystemRL::GetPrimaryWindow()
+	{
+		return mPrimaryWindow;
 	}
 }

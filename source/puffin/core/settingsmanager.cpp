@@ -111,7 +111,7 @@ namespace puffin::core
 			auto& generalSettings = mCategories["general"];
 
 			generalSettings.Set("framerate_limit_enable", true);
-			generalSettings.Set("framerate_limit", 300);
+			generalSettings.Set("framerate_limit", 60);
 			generalSettings.Set("unit_scale", 1.0);
 			generalSettings.Set("mouse_sensitivity", 0.05);
 		}
@@ -140,6 +140,7 @@ namespace puffin::core
 		{
 			auto& renderingSettings = mCategories["rendering"];
 
+			renderingSettings.Set("physics_interpolation_enable", true);
 			renderingSettings.Set("shadows_enable", true);
 		}
 	}

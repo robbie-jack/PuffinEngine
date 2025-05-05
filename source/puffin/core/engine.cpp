@@ -155,6 +155,7 @@ namespace puffin::core
 				SetupDefaultPhysicsScene2D(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
+				sceneData->Save();
 			}
 			else if (setupDefaultPhysicsScene3D)
 			{
@@ -191,6 +192,12 @@ namespace puffin::core
 			auto inputSubsystem = mSubsystemManager->GetInputSubsystem();
 
 			inputSubsystem->ProcessInput();
+
+			if (inputSubsystem->IsActionPressed("editor_play_pause"))
+				Play();
+
+			if (inputSubsystem->IsActionPressed("editor_restart"))
+				Restart();
 
 			benchmarkManager->End("Input");
 		}

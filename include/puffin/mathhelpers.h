@@ -91,6 +91,22 @@ namespace puffin::maths
 		return (1 - t) * v1 + t * v2;
 	}
 
+	static Vector2f Lerp(const Vector2f& vec1, const Vector2f& vec2, double t)
+	{
+		Vector2f vec;
+		vec.x = Lerp(vec1.x, vec2.x, t);
+		vec.y = Lerp(vec1.y, vec2.y, t);
+		return vec;
+	}
+
+	static Vector2d Lerp(const Vector2d& vec1, const Vector2d& vec2, double t)
+	{
+		Vector2d vec;
+		vec.x = Lerp(vec1.x, vec2.x, t);
+		vec.y = Lerp(vec1.y, vec2.y, t);
+		return vec;
+	}
+
 	static Vector3f Lerp(const Vector3f& vec1, const Vector3f& vec2, double t)
 	{
 		Vector3f vec;

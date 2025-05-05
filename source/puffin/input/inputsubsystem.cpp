@@ -208,34 +208,34 @@ namespace puffin
 		{
 			if (keyWithModifier.ctrlPressed && (IsKeyPressed(KeyboardKey::LeftControl) || IsKeyDown(KeyboardKey::LeftControl)
 				|| IsKeyPressed(KeyboardKey::RightControl) || IsKeyDown(KeyboardKey::RightControl)))
-				return false;
+				return true;
 
 			if (keyWithModifier.altPressed && (IsKeyPressed(KeyboardKey::LeftAlt) || IsKeyDown(KeyboardKey::LeftAlt)
 				|| IsKeyPressed(KeyboardKey::RightAlt) || IsKeyDown(KeyboardKey::RightAlt)))
-				return false;
+				return true;
 
 			if (keyWithModifier.shiftPressed && (IsKeyPressed(KeyboardKey::LeftShift) || IsKeyDown(KeyboardKey::LeftShift)
 				|| IsKeyPressed(KeyboardKey::RightShift) || IsKeyDown(KeyboardKey::RightShift)))
-				return false;
+				return true;
 
-			return true;
+			return false;
 		}
 
 		bool InputSubsystem::AreMouseModifiersPressed(MouseButtonWithModifier mouseButtonWithModifier) const
 		{
 			if (mouseButtonWithModifier.ctrlPressed && (IsKeyPressed(KeyboardKey::LeftControl) || IsKeyDown(KeyboardKey::LeftControl)
 				|| IsKeyPressed(KeyboardKey::RightControl) || IsKeyDown(KeyboardKey::RightControl)))
-				return false;
+				return true;
 
 			if (mouseButtonWithModifier.altPressed && (IsKeyPressed(KeyboardKey::LeftAlt) || IsKeyDown(KeyboardKey::LeftAlt)
 				|| IsKeyPressed(KeyboardKey::RightAlt) || IsKeyDown(KeyboardKey::RightAlt)))
-				return false;
+				return true;
 
 			if (mouseButtonWithModifier.shiftPressed && (IsKeyPressed(KeyboardKey::LeftShift) || IsKeyDown(KeyboardKey::LeftShift)
 				|| IsKeyPressed(KeyboardKey::RightShift) || IsKeyDown(KeyboardKey::RightShift)))
-				return false;
+				return true;
 
-			return true;
+			return false;
 		}
 
 		InputContext* InputSubsystem::AddContext(const std::string& name)
@@ -477,6 +477,12 @@ namespace puffin
 
 			auto& editorCamLookAroundAction = editorContext->AddAction("editor_cam_look_around");
 			editorCamLookAroundAction.mouseButtons.emplace_back(MouseButton::Right);
+
+			auto& editorPlayPause = editorContext->AddAction("editor_play_pause");
+			editorPlayPause.keys.emplace_back(KeyboardKey::P, true);
+
+			auto& editorRestart = editorContext->AddAction("editor_restart");
+			editorRestart.keys.emplace_back(KeyboardKey::O, true);
 		}
 	}
 }

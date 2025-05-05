@@ -24,11 +24,15 @@ namespace puffin
 
 			[[nodiscard]] bool ShouldPrimaryWindowClose() const override;
 
-			raylib::Window* GetWindow();
+			[[nodiscard]] Vector2i GetPrimaryWindowSize() const override;
+			[[nodiscard]] int GetPrimaryWindowWidth() const override;
+			[[nodiscard]] int GetPrimaryWindowHeight() const override;
+
+			raylib::Window* GetPrimaryWindow();
 
 		private:
 
-			raylib::Window* mWindow = nullptr;
+			raylib::Window* mPrimaryWindow = nullptr;
 
 		};
 	}

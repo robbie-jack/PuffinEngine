@@ -1,12 +1,7 @@
 #pragma once
 
-#include <unordered_map>
-
-#include "puffin/types/uuid.h"
 #include "puffin/core/subsystem.h"
-
-//class GLFWwindow;
-//class GLFWmonitor;
+#include "puffin/types/vector2.h"
 
 namespace puffin
 {
@@ -31,28 +26,12 @@ namespace puffin
 
 			[[nodiscard]] virtual bool ShouldPrimaryWindowClose() const = 0;
 
-			//GLFWwindow* GetPrimaryWindow() const
-			//{
-			//	return mPrimaryWindow;
-			//}
-
-			//[[nodiscard]] bool GetShouldPrimaryWindowClose() const;
-			//GLFWmonitor* GetPrimaryMonitor() const;
-
-			//// Create new window and return PuffinId handle to it
-			//UUID CreateNewWindow(const int& width, const int& height);
-
-			//// Retrieve window using PuffinId handle
-			//GLFWwindow* GetWindow(const UUID& uuid);
-
-			//void DestroyWindow(const UUID& uuid);
+			[[nodiscard]] virtual Vector2i GetPrimaryWindowSize() const = 0;
+			[[nodiscard]] virtual int GetPrimaryWindowWidth() const = 0;
+			[[nodiscard]] virtual int GetPrimaryWindowHeight() const = 0;
 
 		private:
 
-			/*GLFWmonitor* mPrimaryMonitor = nullptr;
-			GLFWwindow* mPrimaryWindow = nullptr;
-
-			std::unordered_map<UUID, GLFWwindow*> mWindows;*/
 
 
 		};
