@@ -13,8 +13,8 @@ namespace puffin
 	{
 		struct SpriteComponent2D
 		{
-			Vector3f colour;
-			Vector2f offset;
+			Vector3f colour = {1.f, 1.f, 1.f};
+			Vector2f offset = {0.f, 0.f};
 
 			NLOHMANN_DEFINE_TYPE_INTRUSIVE(SpriteComponent2D, colour, offset)
 		};
@@ -53,6 +53,7 @@ namespace puffin
 		inline nlohmann::json Serialize<rendering::SpriteComponent2D>(const rendering::SpriteComponent2D& data)
 		{
 			nlohmann::json json;
+			json["colour"] = Serialize(data.colour);
 			json["offset"] = Serialize(data.offset);
 			return json;
 		}
@@ -61,6 +62,7 @@ namespace puffin
 		inline rendering::SpriteComponent2D Deserialize<rendering::SpriteComponent2D>(const nlohmann::json& json)
 		{
 			rendering::SpriteComponent2D data;
+			data.colour = Deserialize<Vector3f>(json["colour"]);
 			data.offset = Deserialize<Vector2f>(json["offset"]);
 			return data;
 		}

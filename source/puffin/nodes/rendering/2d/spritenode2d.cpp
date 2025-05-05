@@ -8,13 +8,12 @@ namespace puffin::rendering
 	{
 		TransformNode2D::Initialize();
 
-		auto& sprite = AddComponent<SpriteComponent2D>();
-		sprite.colour = { 1.f, 1.f, 1.f };
+		auto sprite = AddComponent<SpriteComponent2D>();
 	}
 
-	void SpriteNode2D::Deserialize(const nlohmann::json& json)
+	void SpriteNode2D::Deinitialize()
 	{
-		TransformNode2D::Deserialize(json);
+		TransformNode2D::Deinitialize();
 
 		RemoveComponent<SpriteComponent2D>();
 	}
