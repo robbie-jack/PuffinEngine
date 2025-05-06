@@ -140,6 +140,12 @@ namespace puffin::core
 		{
 			auto& renderingSettings = mCategories["rendering"];
 
+			renderingSettings.Set("screen_width", 1280);
+			renderingSettings.Set("screen_height", 720);
+			renderingSettings.Set("render_width", 0);
+			renderingSettings.Set("render_height", 0);
+			renderingSettings.Set("fullscreen", false);
+			renderingSettings.Set("borderless", false);
 			renderingSettings.Set("physics_interpolation_enable", true);
 			renderingSettings.Set("shadows_enable", true);
 		}

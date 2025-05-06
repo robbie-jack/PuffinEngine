@@ -64,12 +64,12 @@ namespace puffin::rendering
 		{
 			ClearBackground({0, 178, 230});
 
-			Vector2i windowSize = windowSubsystem->GetPrimaryWindowSize();
+			Size windowSize = windowSubsystem->GetPrimaryWindowSize();
 
 			raylib::Camera2D camera;
 			camera.SetTarget({ 0.f, 0.f });
-			camera.SetOffset({ static_cast<float>(windowSize.x) / 2.f, 
-				static_cast<float>(windowSize.y) / 2.f });
+			camera.SetOffset({ static_cast<float>(windowSize.width) / 2.f, 
+				static_cast<float>(windowSize.height) / 2.f });
 			camera.SetRotation(0.f);
 			camera.SetZoom(2.f);
 
@@ -92,6 +92,11 @@ namespace puffin::rendering
 		SwapScreenBuffer();
 
 		mFrameCount++;
+	}
+
+	void RenderSubsystemRL2D::UpdateResolution(const Size& resolution)
+	{
+
 	}
 
 	void RenderSubsystemRL2D::DrawSprites()

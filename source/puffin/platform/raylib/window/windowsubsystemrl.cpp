@@ -34,17 +34,18 @@ namespace puffin::window
 		return true;
 	}
 
-	Vector2i WindowSubsystemRL::GetPrimaryWindowSize() const
+	Size WindowSubsystemRL::GetPrimaryWindowSize() const
 	{
-		return { mPrimaryWindow->GetWidth(), mPrimaryWindow->GetHeight() };
+		return { static_cast<uint32_t>(mPrimaryWindow->GetWidth()),
+			static_cast<uint32_t>(mPrimaryWindow->GetHeight()) };
 	}
 
-	int WindowSubsystemRL::GetPrimaryWindowWidth() const
+	uint32_t WindowSubsystemRL::GetPrimaryWindowWidth() const
 	{
 		return mPrimaryWindow->GetWidth();
 	}
 
-	int WindowSubsystemRL::GetPrimaryWindowHeight() const
+	uint32_t WindowSubsystemRL::GetPrimaryWindowHeight() const
 	{
 		return mPrimaryWindow->GetHeight();
 	}

@@ -22,6 +22,8 @@ namespace puffin::rendering
 
 	protected:
 
+		void UpdateResolution(const Size& resolution) override;
+
 		void DrawSprites();
 		void DebugDrawStats(double deltaTime) const;
 

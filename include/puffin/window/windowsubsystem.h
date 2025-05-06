@@ -1,7 +1,7 @@
 #pragma once
 
 #include "puffin/core/subsystem.h"
-#include "puffin/types/vector2.h"
+#include "puffin/types/size.h"
 
 namespace puffin
 {
@@ -12,6 +12,11 @@ namespace puffin
 
 	namespace window
 	{
+		struct WindowSettings
+		{
+			Size screenSize;
+		};
+
 		class WindowSubsystem : public core::Subsystem
 		{
 		public:
@@ -25,14 +30,13 @@ namespace puffin
 			[[nodiscard]] core::SubsystemType GetType() const override;
 
 			[[nodiscard]] virtual bool ShouldPrimaryWindowClose() const = 0;
-
-			[[nodiscard]] virtual Vector2i GetPrimaryWindowSize() const = 0;
-			[[nodiscard]] virtual int GetPrimaryWindowWidth() const = 0;
-			[[nodiscard]] virtual int GetPrimaryWindowHeight() const = 0;
+			[[nodiscard]] virtual Size GetPrimaryWindowSize() const = 0;
+			[[nodiscard]] virtual uint32_t GetPrimaryWindowWidth() const = 0;
+			[[nodiscard]] virtual uint32_t GetPrimaryWindowHeight() const = 0;
 
 		private:
 
-
+			void InitSettingsAndSignals();
 
 		};
 	}

@@ -3,11 +3,13 @@
 #include <unordered_map>
 
 #include "puffin/core/subsystem.h"
+#include "puffin/types/size.h"
 
 namespace puffin::rendering
 {
 	struct RenderSettings
 	{
+		Size renderResolution = { 0, 0 };
 		bool physicsInterpolationEnable = false;
 	};
 
@@ -37,7 +39,12 @@ namespace puffin::rendering
 
 		[[nodiscard]] core::SubsystemType GetType() const override;
 
+		const Size& GetResolution() const;
+		void SetResolution(const Size& resolution);
+
 	protected:
+
+		virtual void UpdateResolution(const Size& resolution) = 0;
 
 		RenderSettings renderSettings;
 

@@ -229,6 +229,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/types/eulerangles.h
 	${HEADER_DIR}/puffin/types/matrix.h
 	${HEADER_DIR}/puffin/types/quat.h
+	${HEADER_DIR}/puffin/types/size.h
 	${HEADER_DIR}/puffin/types/uuid.h
 	${HEADER_DIR}/puffin/types/vector2.h
 	${HEADER_DIR}/puffin/types/vector3.h
