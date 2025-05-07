@@ -94,9 +94,14 @@ namespace puffin::rendering
 		mFrameCount++;
 	}
 
-	void RenderSubsystemRL2D::UpdateResolution(const Size& resolution)
+	void RenderSubsystemRL2D::WindowResized(Size size)
 	{
+		// PFN_TODO_RENDERING - Implement when adding viewport and render resolution scaling
+	}
 
+	void RenderSubsystemRL2D::ViewportResized(Size size)
+	{
+		// PFN_TODO_RENDERING - Implement when adding viewport and render resolution scaling
 	}
 
 	void RenderSubsystemRL2D::DrawSprites()
@@ -140,7 +145,7 @@ namespace puffin::rendering
 					scale = transform.scale;
 				}
 
-				if (renderSettings.physicsInterpolationEnable)
+				if (mRenderSettings.physicsInterpolationEnable)
 				{
 					physics::VelocityComponent2D velocity;
 

@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "puffin/core/engine.h"
+#include "puffin/window/window.h"
 
 
 namespace puffin::window
@@ -29,13 +30,58 @@ namespace puffin::window
 	{
 	}
 
+	void WindowSubsystem::Update(double deltaTime)
+	{
+		Subsystem::Update(deltaTime);
+	}
+
 	core::SubsystemType WindowSubsystem::GetType() const
 	{
 		return core::SubsystemType::Window;
 	}
 
-	void WindowSubsystem::InitSettingsAndSignals()
+	Window* WindowSubsystem::GetPrimaryWindow() const
 	{
+		return mPrimaryWindow;
+	}
 
+	bool WindowSubsystem::ShouldPrimaryWindowClose() const
+	{
+		return mPrimaryWindow->ShouldClose();
+	}
+
+	Size WindowSubsystem::GetPrimaryWindowSize() const
+	{
+		return mPrimaryWindow->GetSize();
+	}
+
+	uint32_t WindowSubsystem::GetPrimaryWindowWidth() const
+	{
+		return mPrimaryWindow->GetWidth();
+	}
+
+	uint32_t WindowSubsystem::GetPrimaryWindowHeight() const
+	{
+		return mPrimaryWindow->GetHeight();
+	}
+
+	bool WindowSubsystem::GetPrimaryWindowFullscreen() const
+	{
+		return mPrimaryWindow->GetFullscreen();
+	}
+
+	void WindowSubsystem::SetPrimaryWindowFullscreen(bool fullscreen) const
+	{
+		mPrimaryWindow->SetFullscreen(fullscreen);
+	}
+
+	bool WindowSubsystem::GetPrimaryWindowBorderless() const
+	{
+		return mPrimaryWindow->GetBorderless();
+	}
+
+	void WindowSubsystem::SetPrimaryWindowBorderless(bool borderless) const
+	{
+		mPrimaryWindow->SetBorderless(borderless);
 	}
 }

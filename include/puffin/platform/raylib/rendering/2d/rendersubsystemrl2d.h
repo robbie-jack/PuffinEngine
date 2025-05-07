@@ -20,9 +20,10 @@ namespace puffin::rendering
 
 		void Render(double deltaTime) override;
 
-	protected:
+		void WindowResized(Size size) override;
+		void ViewportResized(Size size) override;
 
-		void UpdateResolution(const Size& resolution) override;
+	protected:
 
 		void DrawSprites();
 		void DebugDrawStats(double deltaTime) const;

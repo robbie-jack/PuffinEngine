@@ -9,7 +9,6 @@ namespace puffin::rendering
 {
 	struct RenderSettings
 	{
-		Size renderResolution = { 0, 0 };
 		bool physicsInterpolationEnable = false;
 	};
 
@@ -39,14 +38,12 @@ namespace puffin::rendering
 
 		[[nodiscard]] core::SubsystemType GetType() const override;
 
-		const Size& GetResolution() const;
-		void SetResolution(const Size& resolution);
+		virtual void WindowResized(Size size) = 0;
+		virtual void ViewportResized(Size size) = 0;
 
 	protected:
 
-		virtual void UpdateResolution(const Size& resolution) = 0;
-
-		RenderSettings renderSettings;
+		RenderSettings mRenderSettings;
 
 		uint32_t mFrameCount = 0;
 

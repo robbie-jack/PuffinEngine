@@ -12,10 +12,7 @@ namespace puffin
 
 	namespace window
 	{
-		struct WindowSettings
-		{
-			Size screenSize;
-		};
+		class Window;
 
 		class WindowSubsystem : public core::Subsystem
 		{
@@ -27,16 +24,30 @@ namespace puffin
 			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
+			void Update(double deltaTime) override;
+
 			[[nodiscard]] core::SubsystemType GetType() const override;
 
-			[[nodiscard]] virtual bool ShouldPrimaryWindowClose() const = 0;
-			[[nodiscard]] virtual Size GetPrimaryWindowSize() const = 0;
-			[[nodiscard]] virtual uint32_t GetPrimaryWindowWidth() const = 0;
-			[[nodiscard]] virtual uint32_t GetPrimaryWindowHeight() const = 0;
+			[[nodiscard]] Window* GetPrimaryWindow() const;
+
+			[[nodiscard]] bool ShouldPrimaryWindowClose() const;
+			[[nodiscard]] Size GetPrimaryWindowSize() const;
+			[[nodiscard]] uint32_t GetPrimaryWindowWidth() const;
+			[[nodiscard]] uint32_t GetPrimaryWindowHeight() const;
+
+			[[nodiscard]] bool GetPrimaryWindowFullscreen() const;
+			void SetPrimaryWindowFullscreen(bool fullscreen) const;
+
+			[[nodiscard]] bool GetPrimaryWindowBorderless() const;
+			void SetPrimaryWindowBorderless(bool borderless) const;
+
+		protected:
+
+			Window* mPrimaryWindow = nullptr;
 
 		private:
 
-			void InitSettingsAndSignals();
+			
 
 		};
 	}

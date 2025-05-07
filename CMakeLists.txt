@@ -243,6 +243,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/utility/reflection.h
 	${HEADER_DIR}/puffin/utility/serialization.h
 	# Window
+	${HEADER_DIR}/puffin/window/window.h
 	${HEADER_DIR}/puffin/window/windowsubsystem.h
 	)
 
@@ -356,6 +357,7 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/utility/benchmark.cpp
 	${SOURCE_DIR}/puffin/utility/serialization.cpp
 	# Window
+	${SOURCE_DIR}/puffin/window/window.cpp
 	${SOURCE_DIR}/puffin/window/windowsubsystem.cpp
 	)
 	
@@ -396,12 +398,14 @@ if (PFN_PLATFORM STREQUAL "Raylib")
 		${HEADER_DIR}/puffin/platform/raylib/platformrl.h
 		${HEADER_DIR}/puffin/platform/raylib/input/inputsubsystemrl.h
 		${HEADER_DIR}/puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.h
+		${HEADER_DIR}/puffin/platform/raylib/window/windowrl.h
 		${HEADER_DIR}/puffin/platform/raylib/window/windowsubsystemrl.h
 	)
 	set (PLATFORM_SOURCES 
 		${SOURCE_DIR}/puffin/platform/raylib/platformrl.cpp
 		${SOURCE_DIR}/puffin/platform/raylib/input/inputsubsystemrl.cpp
 		${SOURCE_DIR}/puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.cpp
+		${SOURCE_DIR}/puffin/platform/raylib/window/windowrl.cpp
 		${SOURCE_DIR}/puffin/platform/raylib/window/windowsubsystemrl.cpp
 	)
 

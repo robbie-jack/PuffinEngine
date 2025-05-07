@@ -22,17 +22,9 @@ namespace puffin
 			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
-			[[nodiscard]] bool ShouldPrimaryWindowClose() const override;
-
-			[[nodiscard]] Size GetPrimaryWindowSize() const override;
-			[[nodiscard]] uint32_t GetPrimaryWindowWidth() const override;
-			[[nodiscard]] uint32_t GetPrimaryWindowHeight() const override;
-
-			raylib::Window* GetPrimaryWindow();
-
 		private:
 
-			raylib::Window* mPrimaryWindow = nullptr;
+			
 
 		};
 	}
