@@ -166,6 +166,8 @@ namespace puffin::physics
 		
 		RingBuffer<ShapeCreateEvent> mShapeCreateEvents;
 		RingBuffer<ShapeDestroyEvent> mShapeDestroyEvents;
+
+		std::vector<entt::connection> mConnections;
 	};
 }
 

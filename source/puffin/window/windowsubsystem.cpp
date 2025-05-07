@@ -4,6 +4,7 @@
 
 #include "puffin/core/engine.h"
 #include "puffin/window/window.h"
+#include "puffin/rendering/rendersubsystem.h"
 
 
 namespace puffin::window
@@ -33,6 +34,14 @@ namespace puffin::window
 	void WindowSubsystem::Update(double deltaTime)
 	{
 		Subsystem::Update(deltaTime);
+
+		auto* renderSubsystem = mEngine->GetRenderSubsystem();
+
+		if (mPrimaryWindow->GetIsResized())
+		{
+			Size newSize = mPrimaryWindow->GetSize();
+			renderSubsystem->WindowResized(newSize);
+		}
 	}
 
 	core::SubsystemType WindowSubsystem::GetType() const

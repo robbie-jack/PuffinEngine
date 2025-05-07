@@ -11,7 +11,7 @@ namespace puffin::core
 	{
 	}
 
-	std::vector<Subsystem*>& SubsystemManager::GetSubsystems()
+	std::vector<Subsystem*>& SubsystemManager::GetEngineSubsystems()
 	{
 		return mInitializedEngineSubsystems;
 	}

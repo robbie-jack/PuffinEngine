@@ -220,7 +220,7 @@ namespace puffin::core
 		{
 			auto* engineUpdateBenchmark = benchmarkManager->Begin("EngineUpdate");
 
-			for (auto subsystem : mSubsystemManager->GetSubsystems())
+			for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
 			{
 				if (subsystem->ShouldUpdate())
 				{
@@ -260,7 +260,7 @@ namespace puffin::core
 		{
 			mSubsystemManager->CreateAndInitializeGameplaySubsystems();
 
-			for (auto subsystem : mSubsystemManager->GetSubsystems())
+			for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
 			{
 				subsystem->BeginPlay();
 			}
@@ -301,6 +301,8 @@ namespace puffin::core
 
 				// Add onto accumulated time
 				mAccumulatedTime += mDeltaTime;
+
+				mAccumulatedTime = std::min(mAccumulatedTime, 1.0);
 
 				while (mAccumulatedTime >= mTimeStepFixed)
 				{
@@ -368,7 +370,7 @@ namespace puffin::core
 
 			renderSubsystem->Render(mDeltaTime);
 
-			benchmarkManager->End("Update");
+			benchmarkManager->End("Render");
 		}
 
 		if (mPlayState == PlayState::EndPlay)
@@ -379,19 +381,20 @@ namespace puffin::core
 				subsystem->EndPlay();
 			}
 
+			mSubsystemManager->DestroyGameplaySubsystems();
+
 			if (mApplication)
 			{
 				mApplication->EndPlay();
 			}
 
-			for (auto subsystem : mSubsystemManager->GetSubsystems())
+			for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
 			{
 				subsystem->EndPlay();
 			}
 
-			mSubsystemManager->DestroyGameplaySubsystems();
-
 			//audioSubsystem->stopAllSounds();
+			benchmarkManager->Clear();
 
 			mAccumulatedTime = 0.0;
 			mPlayState = PlayState::Stopped;
@@ -410,22 +413,22 @@ namespace puffin::core
 		// Cleanup any running gameplay subsystems
 		if (mPlayState == PlayState::Playing)
 		{
-			if (mApplication)
-			{
-				mApplication->EndPlay();
-			}
-
 			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
 			{
 				subsystem->EndPlay();
 			}
 
-			for (auto subsystem : mSubsystemManager->GetSubsystems())
+			mSubsystemManager->DestroyGameplaySubsystems();
+
+			if (mApplication)
+			{
+				mApplication->EndPlay();
+			}
+
+			for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
 			{
 				subsystem->EndPlay();
 			}
-
-			mSubsystemManager->DestroyGameplaySubsystems();
 		}
 
 		if (mApplication)
@@ -445,17 +448,24 @@ namespace puffin::core
 
 	void Engine::Play()
 	{
-		if (mPlayState == PlayState::Stopped)
+		switch (mPlayState)
 		{
+		case PlayState::Stopped:
+
 			mPlayState = PlayState::BeginPlay;
-		}
-		else if (mPlayState == PlayState::Playing)
-		{
+			break;
+
+		case PlayState::Playing:
+
 			mPlayState = PlayState::JustPaused;
-		}
-		else if (mPlayState == PlayState::Paused)
-		{
+			break;
+
+		case PlayState::Paused:
+
 			mPlayState = PlayState::JustUnpaused;
+			break;
+
+		default: ;
 		}
 	}
 
@@ -472,9 +482,19 @@ namespace puffin::core
 		mRunning = false;
 	}
 
+	window::WindowSubsystem* Engine::GetWindowSubsystem() const
+	{
+		return mSubsystemManager->GetWindowSubsystem();
+	}
+
 	input::InputSubsystem* Engine::GetInputSubsystem() const
 	{
 		return mSubsystemManager->GetInputSubsystem();
+	}
+
+	rendering::RenderSubsystem* Engine::GetRenderSubsystem() const
+	{
+		return mSubsystemManager->GetRenderSubsystem();
 	}
 
 	void Engine::InitSettings()

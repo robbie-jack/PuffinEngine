@@ -116,7 +116,7 @@ namespace puffin::core
 			return static_cast<T*>(mInitializedSubsystems.at(typeName));
 		}
 
-		std::vector<Subsystem*>& GetSubsystems();
+		std::vector<Subsystem*>& GetEngineSubsystems();
 		std::vector<Subsystem*>& GetGameplaySubsystems();
 
 		[[nodiscard]] window::WindowSubsystem* GetWindowSubsystem() const;

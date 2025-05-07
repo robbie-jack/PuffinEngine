@@ -2,6 +2,14 @@
 
 #include "puffin/rendering/rendersubsystem.h"
 
+namespace puffin
+{
+	namespace utility
+	{
+		class Benchmark;
+	}
+}
+
 namespace puffin::rendering
 {
 	class RenderSubsystemRL2D : public RenderSubsystem
@@ -27,6 +35,7 @@ namespace puffin::rendering
 
 		void DrawSprites();
 		void DebugDrawStats(double deltaTime) const;
+		void DebugDrawBenchmark(const utility::Benchmark& benchmark, int posX, int posY) const;
 
 	};
 }

@@ -127,6 +127,16 @@ namespace puffin::utility
         return &mBenchmarks[name];
     }
 
+    void BenchmarkManager::Clear()
+    {
+        mBenchmarks.clear();
+    }
+
+    const std::unordered_map<std::string, Benchmark>& BenchmarkManager::GetBenchmarks() const
+    {
+        return mBenchmarks;
+    }
+
     void BenchmarkManager::ToJson(nlohmann::json& json) const
     {
         std::vector<nlohmann::json> benchmarks;

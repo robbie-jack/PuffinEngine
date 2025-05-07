@@ -12,6 +12,7 @@
 #include "puffin/nodes/transformnode2d.h"
 #include "puffin/platform/raylib/window/windowsubsystemrl.h"
 #include "puffin/scene/scenegraphsubsystem.h"
+#include "puffin/utility/benchmark.h"
 
 namespace puffin::rendering
 {
@@ -187,35 +188,55 @@ namespace puffin::rendering
 #define FPS_CAPTURE_FRAMES_COUNT 60
 #define FPS_AVERAGE_TIME_SECONDS   1.f     // 1000 milliseconds
 #define FPS_STEP (FPS_AVERAGE_TIME_SECONDS/FPS_CAPTURE_FRAMES_COUNT)
-
-		static int deltaTimeIdx = 0;
-		static double deltaTimeHistory[FPS_CAPTURE_FRAMES_COUNT] = { 0.f };
-		static double deltaTimeAvg = 0.f, timeLast = 0.f;
-
-		if (mFrameCount == 0)
+		// FPS / Frametime
 		{
-			deltaTimeAvg = 0.f;
-			timeLast = 0.f;
-			deltaTimeIdx = 0;
+			static int deltaTimeIdx = 0;
+			static double deltaTimeHistory[FPS_CAPTURE_FRAMES_COUNT] = { 0.f };
+			static double deltaTimeAvg = 0.f, timeLast = 0.f;
 
-			for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; ++i) deltaTimeHistory[i] = 0;
+			if (mFrameCount == 0)
+			{
+				deltaTimeAvg = 0.f;
+				timeLast = 0.f;
+				deltaTimeIdx = 0;
+
+				for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; ++i) deltaTimeHistory[i] = 0;
+			}
+
+			if (GetTime() - timeLast > FPS_STEP)
+			{
+				timeLast = GetTime();
+				deltaTimeIdx = (deltaTimeIdx + 1) % FPS_CAPTURE_FRAMES_COUNT;
+				deltaTimeAvg -= deltaTimeHistory[deltaTimeIdx];
+				deltaTimeHistory[deltaTimeIdx] = deltaTime / FPS_CAPTURE_FRAMES_COUNT;
+				deltaTimeAvg += deltaTimeHistory[deltaTimeIdx];
+			}
+
+			auto fps = static_cast<int>(std::round(1.0 / deltaTimeAvg));
+
+			Color color = LIME; // Good FPS
+			if ((fps < 60) && (fps >= 30)) color = ORANGE;  // Warning FPS
+			else if (fps < 30) color = RED;             // Low FPS
+
+			DrawText(TextFormat("FPS: %2i, Frametime: %.3f ms", fps, deltaTimeAvg * 1000.f), 10, 10, 20, color);
 		}
 
-		if (GetTime() - timeLast > FPS_STEP)
+		// Benchmarks
 		{
-			timeLast = GetTime();
-			deltaTimeIdx = (deltaTimeIdx + 1) % FPS_CAPTURE_FRAMES_COUNT;
-			deltaTimeAvg -= deltaTimeHistory[deltaTimeIdx];
-			deltaTimeHistory[deltaTimeIdx] = deltaTime / FPS_CAPTURE_FRAMES_COUNT;
-			deltaTimeAvg += deltaTimeHistory[deltaTimeIdx];
+			auto* benchmarkManager = utility::BenchmarkManager::Get();
+
+			int posY = 35, posYOffset = 25;
+			for (auto& [name, benchmark] : benchmarkManager->GetBenchmarks())
+			{
+				DebugDrawBenchmark(benchmark, 10, posY);
+
+				posY += posYOffset;
+			}
 		}
+	}
 
-		auto fps = static_cast<int>(std::round(1.0 / deltaTimeAvg));
-
-		Color color = LIME; // Good FPS
-		if ((fps < 60) && (fps >= 30)) color = ORANGE;  // Warning FPS
-		else if (fps < 30) color = RED;             // Low FPS
-
-		DrawText(TextFormat("FPS: %2i, Frametime: %.3f ms", fps, deltaTimeAvg * 1000.f), 10, 10, 20, color);
+	void RenderSubsystemRL2D::DebugDrawBenchmark(const utility::Benchmark& benchmark, int posX, int posY) const
+	{
+		DrawText(TextFormat("%s Frametime: %.3f ms", benchmark.GetData().name.c_str(), benchmark.GetData().timeElapsed * 1000.f), posX, posY, 20, WHITE);
 	}
 }

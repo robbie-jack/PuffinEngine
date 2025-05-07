@@ -58,6 +58,9 @@ namespace puffin::utility
         Benchmark* Begin(const std::string& name);
         Benchmark* End(const std::string& name);
         Benchmark* Get(const std::string& name);
+        void Clear();
+
+        [[nodiscard]] const std::unordered_map<std::string, Benchmark>& GetBenchmarks() const;
 
         void ToJson(nlohmann::json& json) const;
 

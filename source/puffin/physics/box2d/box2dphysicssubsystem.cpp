@@ -68,17 +68,17 @@ namespace puffin::physics
 		// Bind entt callbacks
 		auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 
-		registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructRigidbody>(this);
-		registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateRigidbody>(this);
-		registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyRigidbody>(this);
+		mConnections.push_back(registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructRigidbody>(this));
+		mConnections.push_back(registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateRigidbody>(this));
+		mConnections.push_back(registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyRigidbody>(this));
 
-		registry->on_construct<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructBox>(this);
-		registry->on_update<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateBox>(this);
-		registry->on_destroy<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyBox>(this);
+		mConnections.push_back(registry->on_construct<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructBox>(this));
+		mConnections.push_back(registry->on_update<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateBox>(this));
+		mConnections.push_back(registry->on_destroy<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyBox>(this));
 
-		registry->on_construct<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructCircle>(this);
-		registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateCircle>(this);
-		registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyCircle>(this);
+		mConnections.push_back(registry->on_construct<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructCircle>(this));
+		mConnections.push_back(registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateCircle>(this));
+		mConnections.push_back(registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyCircle>(this));
 		
 		InitSettingsAndSignals();
 	}
@@ -87,6 +87,15 @@ namespace puffin::physics
 	{
 		mGravity = { 0.0, 0.0 };
 		mSubSteps = 0;
+
+		auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+
+		for (auto& connection : mConnections)
+		{
+			connection.release();
+		}
+
+		mConnections.clear();
 
 		//m_contact_listener = nullptr;
 	}

@@ -6,13 +6,27 @@
 #include "puffin/projectsettings.h"
 #include "argparse/argparse.hpp"
 #include "puffin/core/subsystemmanager.h"
-#include "puffin/input/inputsubsystem.h"
 
 namespace fs = std::filesystem;
 
 namespace puffin
 {
     void AddDefaultEngineArguments(argparse::ArgumentParser& parser);
+
+	namespace window
+	{
+		class WindowSubsystem;
+	}
+
+	namespace input
+	{
+		class InputSubsystem;
+	}
+
+	namespace rendering
+	{
+		class RenderSubsystem;
+	}
 }
 
 namespace puffin::core
@@ -108,7 +122,9 @@ namespace puffin::core
 			return mSubsystemManager->GetSubsystem<T>();
 		}
 
+		window::WindowSubsystem* GetWindowSubsystem() const;
 		input::InputSubsystem* GetInputSubsystem() const;
+		rendering::RenderSubsystem* GetRenderSubsystem() const;
 
 	private:
 
