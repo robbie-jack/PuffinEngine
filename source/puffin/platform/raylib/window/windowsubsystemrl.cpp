@@ -21,6 +21,7 @@ namespace puffin::window
 		constexpr unsigned int flags = FLAG_WINDOW_RESIZABLE;
 
 		mPrimaryWindow = new WindowRL(1920, 1080, "Puffin Engine", flags);
+		mPrimaryWindow->SetMaximized(true);
 	}
 
 	void WindowSubsystemRL::Deinitialize()

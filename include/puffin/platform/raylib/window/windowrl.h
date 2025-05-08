@@ -32,6 +32,9 @@ namespace puffin
 			[[nodiscard]] bool GetBorderless() const override;
 			void SetBorderless(bool borderless) override;
 
+			[[nodiscard]] bool GetMaximized() const override;
+			void SetMaximized(bool maximized) override;
+
 		private:
 
 			raylib::Window* mWindow = nullptr;

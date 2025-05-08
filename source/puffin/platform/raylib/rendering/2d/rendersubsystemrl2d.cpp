@@ -14,6 +14,15 @@
 #include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/utility/benchmark.h"
 
+#define FPS_CAPTURE_FRAMES_COUNT 60
+#define FPS_AVERAGE_TIME_SECONDS   1.f     // 1000 milliseconds
+#define FPS_STEP (FPS_AVERAGE_TIME_SECONDS/FPS_CAPTURE_FRAMES_COUNT)
+
+static int deltaTimeIdx = 0;
+static bool updateAvg = false;
+static std::unordered_map<std::string, double[FPS_CAPTURE_FRAMES_COUNT]> benchmarkHistory;
+static std::unordered_map<std::string, double> benchmarkAvg;
+
 namespace puffin::rendering
 {
 	RenderSubsystemRL2D::RenderSubsystemRL2D(const std::shared_ptr<core::Engine>& engine) : RenderSubsystem(engine)
@@ -185,12 +194,8 @@ namespace puffin::rendering
 
 	void RenderSubsystemRL2D::DebugDrawStats(double deltaTime) const
 	{
-#define FPS_CAPTURE_FRAMES_COUNT 60
-#define FPS_AVERAGE_TIME_SECONDS   1.f     // 1000 milliseconds
-#define FPS_STEP (FPS_AVERAGE_TIME_SECONDS/FPS_CAPTURE_FRAMES_COUNT)
 		// FPS / Frametime
 		{
-			static int deltaTimeIdx = 0;
 			static double deltaTimeHistory[FPS_CAPTURE_FRAMES_COUNT] = { 0.f };
 			static double deltaTimeAvg = 0.f, timeLast = 0.f;
 
@@ -201,6 +206,9 @@ namespace puffin::rendering
 				deltaTimeIdx = 0;
 
 				for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; ++i) deltaTimeHistory[i] = 0;
+
+				benchmarkHistory.clear();
+				benchmarkAvg.clear();
 			}
 
 			if (GetTime() - timeLast > FPS_STEP)
@@ -210,6 +218,8 @@ namespace puffin::rendering
 				deltaTimeAvg -= deltaTimeHistory[deltaTimeIdx];
 				deltaTimeHistory[deltaTimeIdx] = deltaTime / FPS_CAPTURE_FRAMES_COUNT;
 				deltaTimeAvg += deltaTimeHistory[deltaTimeIdx];
+
+				updateAvg = true;
 			}
 
 			auto fps = static_cast<int>(std::round(1.0 / deltaTimeAvg));
@@ -223,20 +233,67 @@ namespace puffin::rendering
 
 		// Benchmarks
 		{
+			const std::vector<std::string> benchmarkNames =
+			{
+				"Input",
+				"WaitForLastPresentationAndSample",
+				"EngineUpdate",
+				"FixedUpdate",
+				"Update",
+				"Render"
+			};
+
 			auto* benchmarkManager = utility::BenchmarkManager::Get();
 
 			int posY = 35, posYOffset = 25;
-			for (auto& [name, benchmark] : benchmarkManager->GetBenchmarks())
+			for (auto& benchmarkName : benchmarkNames)
 			{
+				auto* benchmark = benchmarkManager->Get(benchmarkName);
+
+				if (!benchmark)
+					continue;
+
 				DebugDrawBenchmark(benchmark, 10, posY);
 
 				posY += posYOffset;
 			}
+
+			updateAvg = false;
 		}
 	}
 
-	void RenderSubsystemRL2D::DebugDrawBenchmark(const utility::Benchmark& benchmark, int posX, int posY) const
+	void RenderSubsystemRL2D::DebugDrawBenchmark(const utility::Benchmark* benchmark, int posX, int& posY) const
 	{
-		DrawText(TextFormat("%s Frametime: %.3f ms", benchmark.GetData().name.c_str(), benchmark.GetData().timeElapsed * 1000.f), posX, posY, 20, WHITE);
+		const std::string& name = benchmark->GetData().name;
+
+		if (benchmarkHistory.find(name) == benchmarkHistory.end())
+		{
+			benchmarkHistory.emplace();
+
+			for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; ++i) benchmarkHistory[name][i] = 0;
+		}
+
+		if (benchmarkAvg.find(name) == benchmarkAvg.end())
+		{
+			benchmarkAvg.emplace();
+
+			benchmarkAvg[name] = 0;
+		}
+
+		if (updateAvg)
+		{
+			benchmarkAvg[name] -= benchmarkHistory[name][deltaTimeIdx];
+			benchmarkHistory[name][deltaTimeIdx] = benchmark->GetData().timeElapsed / FPS_CAPTURE_FRAMES_COUNT;
+			benchmarkAvg[name] += benchmarkHistory[name][deltaTimeIdx];
+		}
+
+		DrawText(TextFormat("%s Frametime: %.3f ms", benchmark->GetData().name.c_str(), benchmarkAvg[name] * 1000.f), posX, posY, 20, WHITE);
+
+		for (auto& [childName, childBenchmark] : benchmark->GetBenchmarks())
+		{
+			posY += 25;
+
+			DebugDrawBenchmark(&childBenchmark, posX + 20, posY);
+		}
 	}
 }

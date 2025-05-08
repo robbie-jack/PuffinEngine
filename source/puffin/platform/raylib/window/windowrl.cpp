@@ -63,4 +63,21 @@ namespace puffin::window
 		if (GetBorderless() != borderless)
 			mWindow->ToggleBorderless();
 	}
+
+	bool WindowRL::GetMaximized() const
+	{
+		return mWindow->IsMaximized();
+	}
+
+	void WindowRL::SetMaximized(bool maximized)
+	{
+		if (maximized)
+		{
+			mWindow->Maximize();
+		}
+		else
+		{
+			mWindow->Restore();
+		}
+	}
 }

@@ -35,7 +35,7 @@ namespace puffin::rendering
 
 		void DrawSprites();
 		void DebugDrawStats(double deltaTime) const;
-		void DebugDrawBenchmark(const utility::Benchmark& benchmark, int posX, int posY) const;
+		void DebugDrawBenchmark(const utility::Benchmark* benchmark, int posX, int& posY) const;
 
 	};
 }

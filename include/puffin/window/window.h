@@ -35,6 +35,9 @@ namespace puffin
 			[[nodiscard]] virtual bool GetBorderless() const = 0;
 			virtual void SetBorderless(bool borderless) = 0;
 
+			[[nodiscard]] virtual bool GetMaximized() const = 0;
+			virtual void SetMaximized(bool maximized) = 0;
+
 		};
 	}
 }
