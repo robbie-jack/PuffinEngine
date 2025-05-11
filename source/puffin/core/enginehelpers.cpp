@@ -79,7 +79,7 @@ namespace puffin::core
 		engine->RegisterSubsystem<audio::AudioSubsystem>();
 		engine->RegisterSubsystem<ecs::EnTTSubsystem>();
 		engine->RegisterSubsystem<scene::SceneGraphSubsystem>();
-		engine->RegisterSubsystem<io::SceneSerializationSubsystem>();
+		engine->RegisterSubsystem<scene::SceneSerializationSubsystem>();
 		engine->RegisterSubsystem<rendering::CameraSubsystem>();
 
 		// Editor Subsystems

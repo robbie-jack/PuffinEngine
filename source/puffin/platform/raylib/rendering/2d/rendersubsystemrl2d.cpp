@@ -81,7 +81,7 @@ namespace puffin::rendering
 			camera.SetOffset({ static_cast<float>(windowSize.width) / 2.f, 
 				static_cast<float>(windowSize.height) / 2.f });
 			camera.SetRotation(0.f);
-			camera.SetZoom(2.f);
+			camera.SetZoom(4.f);
 
 			camera.BeginMode();
 

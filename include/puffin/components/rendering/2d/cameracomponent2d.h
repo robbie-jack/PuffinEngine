@@ -18,7 +18,7 @@ namespace puffin
 			bool active = false;
 			Vector2f offset;
 			float rotation = 0.0f;
-			float zoom = 0.0f;
+			float zoom = 1.0f;
 		};
 	}
 

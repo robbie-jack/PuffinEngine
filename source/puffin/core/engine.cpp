@@ -131,13 +131,16 @@ namespace puffin::core
 			mLoadSceneOnLaunch = true;
 		}
 
-		auto sceneSubsystem = GetSubsystem<io::SceneSerializationSubsystem>();
+		auto sceneSubsystem = GetSubsystem<scene::SceneSerializationSubsystem>();
 		{
-			auto sceneData = sceneSubsystem->CreateScene(
-				assets::AssetRegistry::Get()->GetContentRoot() / sceneString);
+			scene::SceneInfo sceneInfo;
 
 			if (setupDefaultScene2D)
 			{
+				sceneInfo.sceneType = scene::SceneType::Scene2D;
+
+				auto sceneData = sceneSubsystem->CreateScene(assets::AssetRegistry::Get()->GetContentRoot() / sceneString, sceneInfo);
+
 				SetupDefaultScene2D(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
@@ -145,6 +148,10 @@ namespace puffin::core
 			}
 			else if (setupDefaultScene3D)
 			{
+				sceneInfo.sceneType = scene::SceneType::Scene3D;
+
+				auto sceneData = sceneSubsystem->CreateScene(assets::AssetRegistry::Get()->GetContentRoot() / sceneString, sceneInfo);
+
 				// Create Default Scene in code -- used when scene serialization is changed
 				SetupDefaultScene3D(shared_from_this());
 
@@ -152,6 +159,10 @@ namespace puffin::core
 			}
 			else if (setupDefaultPhysicsScene2D)
 			{
+				sceneInfo.sceneType = scene::SceneType::Scene2D;
+
+				auto sceneData = sceneSubsystem->CreateScene(assets::AssetRegistry::Get()->GetContentRoot() / sceneString, sceneInfo);
+
 				SetupDefaultPhysicsScene2D(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
@@ -159,13 +170,17 @@ namespace puffin::core
 			}
 			else if (setupDefaultPhysicsScene3D)
 			{
+				sceneInfo.sceneType = scene::SceneType::Scene3D;
+
+				auto sceneData = sceneSubsystem->CreateScene(assets::AssetRegistry::Get()->GetContentRoot() / sceneString, sceneInfo);
+
 				SetupDefaultPhysicsScene3D(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
 			}
 			else if (mLoadSceneOnLaunch)
 			{
-				sceneData->Load();
+				sceneSubsystem->LoadFromFile(assets::AssetRegistry::Get()->GetContentRoot() / sceneString);
 				sceneSubsystem->Setup();
 			}
 		}

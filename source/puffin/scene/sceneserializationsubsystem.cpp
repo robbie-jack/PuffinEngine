@@ -2,10 +2,15 @@
 
 #include "puffin/serialization/componentserialization.h"
 
-namespace puffin::io
+namespace puffin::scene
 {
-	SceneData::SceneData(fs::path path) :
-		mPath(std::move(path))
+	SceneData::SceneData(fs::path path)
+		: mPath(std::move(path))
+	{
+	}
+
+	SceneData::SceneData(fs::path path, SceneInfo sceneInfo)
+		: mPath(std::move(path)), mSceneInfo(sceneInfo)
 	{
 	}
 
@@ -21,7 +26,7 @@ namespace puffin::io
 			auto* componentRegistry = serialization::ComponentRegistry::Get();
 			for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 			{
-				const auto& entityJsonMap = mEntityJsonMaps.at(typeID);
+				const auto& entityJsonMap = mSerializedComponentData.at(typeID);
 				if (entityJsonMap.find(id) != entityJsonMap.end())
 				{
 					auto type = entt::resolve(typeID);
@@ -77,9 +82,9 @@ namespace puffin::io
 			auto* componentRegistry = serialization::ComponentRegistry::Get();
 			for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 			{
-				if (mEntityJsonMaps.find(typeID) == mEntityJsonMaps.end())
+				if (mSerializedComponentData.find(typeID) == mSerializedComponentData.end())
 				{
-					mEntityJsonMaps.emplace(typeID, EntityJsonMap());
+					mSerializedComponentData.emplace(typeID, EntityJsonMap());
 				}
 
 				auto type = entt::resolve(typeID);
@@ -89,7 +94,7 @@ namespace puffin::io
 				{
 					if (auto serializefunc = type.func(entt::hs("SerializeFromRegistry")))
 					{
-						auto& entityJsonMap = mEntityJsonMaps.at(typeID);
+						auto& entityJsonMap = mSerializedComponentData.at(typeID);
 
 						entityJsonMap.emplace(id, serializefunc.invoke({}, registry, entity).cast<nlohmann::json>());
 					}
@@ -110,7 +115,7 @@ namespace puffin::io
 	void SceneData::Clear()
 	{
 		mEntityIDs.clear();
-		mEntityJsonMaps.clear();
+		mSerializedComponentData.clear();
 		mRootNodeIDs.clear();
 		mNodeIDs.clear();
 		mSerializedNodeData.clear();
@@ -120,19 +125,23 @@ namespace puffin::io
 
 	void SceneData::Save()
 	{
-		// Write scene data to json file
+		// Serialize scene data to json file
+		nlohmann::json sceneJson;
 
-		// Write entities & components
-		json data;
-		data["entityIDs"] = mEntityIDs;
+		// Serialize scene info
+		sceneJson["sceneInfo"] = SerializeSceneInfo(mSceneInfo);
+
+		// Serialize entities & components
+		nlohmann::json componentsJson;
+		componentsJson["entityIDs"] = mEntityIDs;
 		
-		for (const auto& [typeID, entityJsonMap] : mEntityJsonMaps)
+		for (const auto& [typeID, entityJsonMap] : mSerializedComponentData)
 		{
 			if (!entityJsonMap.empty())
 			{
 				auto type = entt::resolve(typeID);
 
-				json componentJson;
+				nlohmann::json componentJson;
 
 				int i = 0;
 				for (const auto& [id, json] : entityJsonMap)
@@ -147,13 +156,17 @@ namespace puffin::io
 				{
 					auto typeString = getTypeStringFunc.invoke({}).cast<std::string_view>();
 
-					data[typeString] = componentJson;
+					componentsJson[typeString] = componentJson;
 				}
 			}
 		}
 
-		// Write nodes
-		data["rootNodeIDs"] = mRootNodeIDs;
+		sceneJson["components"] = componentsJson;
+
+		// Serialize nodes
+		nlohmann::json nodesJson;
+
+		nodesJson["rootNodeIDs"] = mRootNodeIDs;
 
 		std::vector<nlohmann::json> nodeJsons;
 		nodeJsons.resize(mNodeIDs.size());
@@ -182,8 +195,10 @@ namespace puffin::io
 			++i;
 		}
 
-		data["nodes"] = nodeJsons;
+		nodesJson["nodes"] = nodeJsons;
+		sceneJson["nodes"] = nodesJson;
 
+		// Write scene data to file
 		if (!fs::exists(mPath.parent_path()))
 		{
 			fs::create_directories(mPath.parent_path());
@@ -191,7 +206,7 @@ namespace puffin::io
 
 		std::ofstream os(mPath, std::ios::out);
 
-		os << std::setw(4) << data << std::endl;
+		os << std::setw(4) << sceneJson << std::endl;
 
 		os.close();
 	}
@@ -207,19 +222,22 @@ namespace puffin::io
 		// Initialize Input File Stream and Cereal Binary Archive
 		std::ifstream is(mPath);
 
-		json data;
-		is >> data;
+		json sceneJson;
+		is >> sceneJson;
 
 		is.close();
 
-		mEntityIDs = data.at("entityIDs").get<std::vector<UUID>>();
+		// Deserialize Components
+
+		nlohmann::json componentsJson = sceneJson.at("components");
+		mEntityIDs = componentsJson.at("entityIDs").get<std::vector<UUID>>();
 
 		auto* componentRegistry = serialization::ComponentRegistry::Get();
 		for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 		{
-			if (mEntityJsonMaps.find(typeID) == mEntityJsonMaps.end())
+			if (mSerializedComponentData.find(typeID) == mSerializedComponentData.end())
 			{
-				mEntityJsonMaps.emplace(typeID, EntityJsonMap());
+				mSerializedComponentData.emplace(typeID, EntityJsonMap());
 			}
 
 			auto type = entt::resolve(typeID);
@@ -228,21 +246,24 @@ namespace puffin::io
 			{
 				auto typeString = getTypeStringFunc.invoke({}).cast<std::string_view>();
 
-				if (data.contains(typeString))
+				if (componentsJson.contains(typeString))
 				{
-					const json& componentJson = data.at(typeString);
+					const json& componentJson = componentsJson.at(typeString);
 					for (const auto& archiveJson : componentJson)
 					{
-						auto& entityJsonMap = mEntityJsonMaps.at(typeID);
+						auto& entityJsonMap = mSerializedComponentData.at(typeID);
 						entityJsonMap.emplace(archiveJson["id"], archiveJson["data"]);
 					}
 				}
 			}
 		}
 
-		mRootNodeIDs = data.at("rootNodeIDs").get<std::vector<UUID>>();
+		// Deserialize Nodes
+		nlohmann::json nodesJson = sceneJson.at("nodes");
 
-		for (const auto& nodeJson : data.at("nodes"))
+		mRootNodeIDs = nodesJson.at("rootNodeIDs").get<std::vector<UUID>>();
+
+		for (const auto& nodeJson : nodesJson.at("nodes"))
 		{
 			const UUID& id = nodeJson.at("id");
 
@@ -345,6 +366,21 @@ namespace puffin::io
 		mCurrentSceneData->Load();
 	}
 
+	void SceneSerializationSubsystem::LoadFromFile(const fs::path& path)
+	{
+		std::shared_ptr<SceneData> scene = nullptr;
+
+		if (mSceneData.find(path) == mSceneData.end())
+		{
+			mSceneData.emplace(path, std::make_shared<SceneData>(path));
+		}
+
+		scene = mSceneData.at(path);
+		scene->Load();
+
+		mCurrentSceneData = scene;
+	}
+
 	void SceneSerializationSubsystem::Setup() const
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
@@ -359,13 +395,13 @@ namespace puffin::io
 		Setup();
 	}
 
-	std::shared_ptr<SceneData> SceneSerializationSubsystem::CreateScene(const fs::path& path)
+	std::shared_ptr<SceneData> SceneSerializationSubsystem::CreateScene(const fs::path& path, const SceneInfo& sceneInfo)
 	{
 		auto scenePath = (assets::AssetRegistry::Get()->GetContentRoot() / path).make_preferred();
 
 		if (mSceneData.find(scenePath) == mSceneData.end())
 		{
-			mSceneData.emplace(scenePath, std::make_shared<SceneData>(scenePath));
+			mSceneData.emplace(scenePath, std::make_shared<SceneData>(scenePath, sceneInfo));
 		}
 
 		mCurrentSceneData = mSceneData.at(scenePath);
@@ -373,7 +409,7 @@ namespace puffin::io
 		return mCurrentSceneData;
 	}
 
-	std::shared_ptr<SceneData> SceneSerializationSubsystem::GetSceneData()
+	std::shared_ptr<SceneData> SceneSerializationSubsystem::GetCurrentSceneData()
 	{
 		return mCurrentSceneData;
 	}

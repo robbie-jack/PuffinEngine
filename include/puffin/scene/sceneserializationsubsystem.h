@@ -14,11 +14,11 @@
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/types/uuid.h"
 #include "puffin/utility/serialization.h"
+#include "puffin/scene/sceneinfo.h"
 
 namespace fs = std::filesystem;
-using json = nlohmann::json;
 
-namespace puffin::io
+namespace puffin::scene
 {
 	// Stores Loaded Scene Data
 	class SceneData
@@ -27,6 +27,7 @@ namespace puffin::io
 
 		SceneData() = default;
 		explicit SceneData(fs::path path);
+		explicit SceneData(fs::path path, SceneInfo sceneInfo);
 
 		// Initialize ECS & SceneGraph with loaded data
 		void Setup(ecs::EnTTSubsystem* enttSubsystem, scene::SceneGraphSubsystem* sceneGraph);
@@ -59,10 +60,12 @@ namespace puffin::io
 		};
 
 		fs::path mPath;
+		SceneInfo mSceneInfo;
+		
 		bool mHasData = false; // This scene contains a copy of active scene data, either loaded from file or copied from ecs
 
 		std::vector<UUID> mEntityIDs;
-		std::unordered_map<entt::id_type, EntityJsonMap> mEntityJsonMaps;
+		std::unordered_map<entt::id_type, EntityJsonMap> mSerializedComponentData;
 
 		std::vector<UUID> mRootNodeIDs;
 		std::vector<UUID> mNodeIDs;
@@ -85,12 +88,13 @@ namespace puffin::io
 		void EndPlay() override;
 
 		void Load() const;
+		void LoadFromFile(const fs::path& path);
 		void Setup() const;
 		void LoadAndSetup() const;
 
-		std::shared_ptr<SceneData> CreateScene(const fs::path& path);
+		std::shared_ptr<SceneData> CreateScene(const fs::path& path, const SceneInfo& sceneInfo);
 
-		std::shared_ptr<SceneData> GetSceneData();
+		std::shared_ptr<SceneData> GetCurrentSceneData();
 
 	private:
 
