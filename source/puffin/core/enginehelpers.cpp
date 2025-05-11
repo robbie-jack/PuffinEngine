@@ -34,7 +34,6 @@
 #include "puffin/core/enkitssubsystem.h"
 #include "puffin/core/settingsmanager.h"
 #include "puffin/core/signalsubsystem.h"
-#include "puffin/editor/ui/editoruisubsystem.h"
 #include "puffin/nodes/transformnode2d.h"
 #include "puffin/nodes/physics/rigidbodynode3d.h"
 #include "puffin/nodes/rendering/2d/spritenode2d.h"
@@ -81,9 +80,6 @@ namespace puffin::core
 		engine->RegisterSubsystem<scene::SceneGraphSubsystem>();
 		engine->RegisterSubsystem<scene::SceneSerializationSubsystem>();
 		engine->RegisterSubsystem<rendering::CameraSubsystem>();
-
-		// Editor Subsystems
-		engine->RegisterSubsystem<ui::EditorUISubsystem>();
 
 		// Gameplay Subsystems
 		engine->RegisterSubsystem<scene::SceneGraphGameplaySubsystem>();

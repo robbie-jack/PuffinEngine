@@ -26,8 +26,8 @@ add_git_submodule("deps/jolt")
 #checkout_git_branch("deps/imgui" "docking")
 
 # Define CMAKE Variables
-set(PUFFIN_LIBRARY_NAME PuffinEngine)
-set(PUFFIN_APP_NAME PuffinApp)
+set(PUFFIN_ENGINE_NAME PuffinEngine)
+set(PUFFIN_EDITOR_NAME PuffinEditor)
 
 # Set Executable/Library/Archive Output Directories
 if (WIN32)
@@ -62,7 +62,7 @@ set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimplexNoise)
 set(ENKITS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/enkits)
 
-set(HEADERS
+set(ENGINE_HEADERS
 	# Root
 	${HEADER_DIR}/puffin/manipulationgizmo.h
 	${HEADER_DIR}/puffin/mathhelpers.h
@@ -126,18 +126,6 @@ set(HEADERS
 	${HEADER_DIR}/puffin/core/timer.h
 	# ECS
 	${HEADER_DIR}/puffin/ecs/enttsubsystem.h
-	# Editor
-	# Editor - UI
-	${HEADER_DIR}/puffin/editor/ui/editoruisubsystem.h
-	${HEADER_DIR}/puffin/editor/ui/nodeeditoruihelpers.h
-	# Editor - UI - Windows
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindow.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowperformance.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowscenehierarchy.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowsettings.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowviewport.h
 	# Gameplay
 	# Input
 	${HEADER_DIR}/puffin/input/inputcontext.h
@@ -220,6 +208,7 @@ set(HEADERS
 	# Scene
 	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
 	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
+	${HEADER_DIR}/puffin/scene/sceneinfo.h
 	${HEADER_DIR}/puffin/scene/sceneserializationsubsystem.h
 	# Serialization
 	${HEADER_DIR}/puffin/serialization/componentserialization.h
@@ -247,7 +236,7 @@ set(HEADERS
 	${HEADER_DIR}/puffin/window/windowsubsystem.h
 	)
 
-set(SOURCES 
+set(ENGINE_SOURCES 
 	# Root 
 	${SOURCE_DIR}/puffin/manipulationgizmo.cpp
 	# Assets
@@ -272,18 +261,6 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/core/timer.cpp
 	# ECS
 	${SOURCE_DIR}/puffin/ecs/enttsubsystem.cpp
-	# Editor
-	# Editor - UI
-	${SOURCE_DIR}/puffin/editor/ui/editoruisubsystem.cpp
-	${SOURCE_DIR}/puffin/editor/ui/nodeeditoruihelpers.cpp
-	# Editor - UI - Windows
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindow.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowperformance.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowscenehierarchy.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowsettings.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowviewport.cpp
 	# Gameplay
 	# Input
 	${SOURCE_DIR}/puffin/input/inputcontext.cpp
@@ -360,6 +337,38 @@ set(SOURCES
 	${SOURCE_DIR}/puffin/window/window.cpp
 	${SOURCE_DIR}/puffin/window/windowsubsystem.cpp
 	)
+
+set(EDITOR_HEADERS
+	# Editor
+	${HEADER_DIR}/puffin/editor/editor.h
+	# Editor - UI
+	${HEADER_DIR}/puffin/editor/ui/editoruisubsystem.h
+	${HEADER_DIR}/puffin/editor/ui/nodeeditoruihelpers.h
+	# Editor - UI - Windows
+	${HEADER_DIR}/puffin/editor/ui/windows/uiwindow.h
+	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.h
+	${HEADER_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.h
+	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowperformance.h
+	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowscenehierarchy.h
+	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowsettings.h
+	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowviewport.h
+	)
+
+set(EDITOR_SOURCES
+	# Editor
+	${SOURCE_DIR}/puffin/editor/editor.cpp
+	# Editor - UI
+	${SOURCE_DIR}/puffin/editor/ui/editoruisubsystem.cpp
+	${SOURCE_DIR}/puffin/editor/ui/nodeeditoruihelpers.cpp
+	# Editor - UI - Windows
+	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindow.cpp
+	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.cpp
+	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.cpp
+	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowperformance.cpp
+	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowscenehierarchy.cpp
+	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowsettings.cpp
+	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowviewport.cpp
+	)
 	
 set (IMGUI_SOURCES
 	${IMGUI_DIR}/imgui.h
@@ -417,25 +426,26 @@ else()
 
 endif()
 
-add_library(${PUFFIN_LIBRARY_NAME} ${HEADERS} ${SOURCES} ${PLATFORM_HEADERS} ${PLATFORM_SOURCES})
-
-project (${PUFFIN_APP_NAME} DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
-add_executable(${PUFFIN_APP_NAME} ${SOURCE_DIR}/main.cpp )
+project ("Puffin" DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
+add_library(${PUFFIN_ENGINE_NAME} ${ENGINE_HEADERS} ${ENGINE_SOURCES} ${PLATFORM_HEADERS} ${PLATFORM_SOURCES})
+add_executable(${PUFFIN_EDITOR_NAME} ${EDITOR_HEADERS} ${EDITOR_SOURCES} ${SOURCE_DIR}/main.cpp )
 
 # Set C++ Language Standard to C++ 17
-set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_STANDARD 17)
-set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_STANDARD_REQUIRED ON)
-set_target_properties(${PUFFIN_LIBRARY_NAME} PROPERTIES CMAKE_CXX_EXTENSIONS ON)
+set_target_properties(${PUFFIN_ENGINE_NAME} PROPERTIES CMAKE_CXX_STANDARD 17)
+set_target_properties(${PUFFIN_ENGINE_NAME} PROPERTIES CMAKE_CXX_STANDARD_REQUIRED ON)
+set_target_properties(${PUFFIN_ENGINE_NAME} PROPERTIES CMAKE_CXX_EXTENSIONS ON)
 
-target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${IMGUI_SOURCES})
-target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
-#target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
-target_sources(${PUFFIN_LIBRARY_NAME} PRIVATE ${ENKITS_SOURCES})
+target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${IMGUI_SOURCES})
+target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
+#target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
+target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${ENKITS_SOURCES})
 
-sort_into_source_group(HEADERS ${HEADER_DIR} "")
-sort_into_source_group(SOURCES ${SOURCE_DIR} "")
+sort_into_source_group(ENGINE_HEADERS ${HEADER_DIR} "")
+sort_into_source_group(ENGINE_SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(PLATFORM_HEADERS ${HEADER_DIR} "")
 sort_into_source_group(PLATFORM_SOURCES ${SOURCE_DIR} "")
+sort_into_source_group(EDITOR_HEADERS ${HEADER_DIR} "")
+sort_into_source_group(EDITOR_SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} imgui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} opensimplexnoise)
 #sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} vkbootstrap)
@@ -501,11 +511,11 @@ if (NOT raylib_cpp_FOUND)
     FetchContent_MakeAvailable(raylib_cpp)
 endif()
 
-target_link_libraries(${PUFFIN_LIBRARY_NAME} ${Vulkan_LIBRARIES})
-target_link_libraries(${PUFFIN_LIBRARY_NAME} nlohmann_json::nlohmann_json)
-target_link_libraries(${PUFFIN_LIBRARY_NAME} tomlplusplus::tomlplusplus)
-target_link_libraries(${PUFFIN_LIBRARY_NAME} raylib)
-target_link_libraries(${PUFFIN_LIBRARY_NAME} raylib_cpp)
+target_link_libraries(${PUFFIN_ENGINE_NAME} ${Vulkan_LIBRARIES})
+target_link_libraries(${PUFFIN_ENGINE_NAME} nlohmann_json::nlohmann_json)
+target_link_libraries(${PUFFIN_ENGINE_NAME} tomlplusplus::tomlplusplus)
+target_link_libraries(${PUFFIN_ENGINE_NAME} raylib)
+target_link_libraries(${PUFFIN_ENGINE_NAME} raylib_cpp)
 
 if (PLATFORM_WINDOWS)
 	set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/win64)
@@ -520,127 +530,127 @@ endif()
 if (PLATFORM_WINDOWS)
 
 	# Define Debug Libs
-	#target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
+	#target_link_libraries(${PUFFIN_ENGINE_NAME} debug ${LIB_DIR}/glfw/Debug/glfw3${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_ENGINE_NAME} debug ${LIB_DIR}/lz4/Debug/liblz4_static${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_ENGINE_NAME} debug ${LIB_DIR}/compressonator/Compressonator_MTd${LIB_SUFFIX})
 
 	# Define Release Libs
-	#target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
+	#target_link_libraries(${PUFFIN_ENGINE_NAME} optimized ${LIB_DIR}/glfw/Release/glfw3${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_ENGINE_NAME} optimized ${LIB_DIR}/lz4/Release/liblz4_static${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_ENGINE_NAME} optimized ${LIB_DIR}/compressonator/Compressonator_MT${LIB_SUFFIX})
 
-	#target_link_libraries(${PUFFIN_LIBRARY_NAME} winmm.lib)
+	#target_link_libraries(${PUFFIN_ENGINE_NAME} winmm.lib)
 
 elseif (PLATFORM_LINUX)
 
 	find_package(glfw3 3.4 REQUIRED)
 
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} glfw)
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} /usr/local/lib/liblz4${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_ENGINE_NAME} glfw)
+	target_link_libraries(${PUFFIN_ENGINE_NAME} /usr/local/lib/liblz4${LIB_SUFFIX})
 
 endif()
 
 if (PLATFORM_WINDOWS AND BOX2D_PHYSICS_SUPPORT)
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/box2d/Debug/box2dd${LIB_SUFFIX})
-	target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_ENGINE_NAME} debug ${LIB_DIR}/box2d/Debug/box2dd${LIB_SUFFIX})
+	target_link_libraries(${PUFFIN_ENGINE_NAME} optimized ${LIB_DIR}/box2d/Release/box2d${LIB_SUFFIX})
 endif()
 
 if (PLATFORM_WINDOWS AND JOLT_PHYSICS_SUPPORT)
 	if (DOUBLE_PRECISION_SUPPORT)
-		target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
-		target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
+		target_link_libraries(${PUFFIN_ENGINE_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt_Double${LIB_SUFFIX})
+		target_link_libraries(${PUFFIN_ENGINE_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt_Double${LIB_SUFFIX})
 	else ()
-		target_link_libraries(${PUFFIN_LIBRARY_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt${LIB_SUFFIX})
-		target_link_libraries(${PUFFIN_LIBRARY_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt${LIB_SUFFIX})
+		target_link_libraries(${PUFFIN_ENGINE_NAME} debug ${LIB_DIR}/jolt/Debug/Jolt${LIB_SUFFIX})
+		target_link_libraries(${PUFFIN_ENGINE_NAME} optimized ${LIB_DIR}/jolt/Release/Jolt${LIB_SUFFIX})
 	endif ()
 endif()
 
 set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC include)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/vma)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/OpenSimplexNoise)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/imgui)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/imgui-filebrowser)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/lz4/lib)
-#target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/include)
-#target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/vkb/src)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/tinygltf)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/entt/src)
-target_include_directories(${PUFFIN_LIBRARY_NAME} PUBLIC ${DEPS_DIR}/jolt)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC include)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/vma)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/OpenSimplexNoise)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/imgui)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/imgui-filebrowser)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/lz4/lib)
+#target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/vma-hpp/include)
+#target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/vkb/src)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/tinygltf)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/entt/src)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/jolt)
 
-target_link_libraries(${PUFFIN_APP_NAME} ${PUFFIN_LIBRARY_NAME})
+target_link_libraries(${PUFFIN_EDITOR_NAME} ${PUFFIN_ENGINE_NAME})
 
-target_compile_features(${PUFFIN_LIBRARY_NAME} PRIVATE cxx_std_17)
-target_compile_features(${PUFFIN_APP_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PUFFIN_ENGINE_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PUFFIN_EDITOR_NAME} PRIVATE cxx_std_17)
 
-set_property(TARGET ${PUFFIN_LIBRARY_NAME} PROPERTY 
+set_property(TARGET ${PUFFIN_ENGINE_NAME} PROPERTY 
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set_property(TARGET ${PUFFIN_APP_NAME} PROPERTY 
+set_property(TARGET ${PUFFIN_EDITOR_NAME} PROPERTY 
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PUFFIN_APP_NAME})
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PUFFIN_EDITOR_NAME})
 
 if (PFN_PLATFORM STREQUAL "Raylib")
 
-	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC SUPPORT_CUSTOM_FRAME_CONTROL 1)
+	target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC SUPPORT_CUSTOM_FRAME_CONTROL 1)
 
 endif()
 
 # Add definitions for supported functionality
 if (DOUBLE_PRECISION_SUPPORT)
-	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_DOUBLE_PRECISION)
+	target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC PFN_DOUBLE_PRECISION)
 endif()
 
 if (PLATFORM_WINDOWS AND BOX2D_PHYSICS_SUPPORT)
-	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_BOX2D_PHYSICS)
+	target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC PFN_BOX2D_PHYSICS)
 endif()
 
 if (PLATFORM_WINDOWS AND JOLT_PHYSICS_SUPPORT)
-	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_JOLT_PHYSICS)
+	target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC PFN_JOLT_PHYSICS)
 endif()
 
 if (ONAGER2D_PHYSICS_SUPPORT)
-	target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_ONAGER2D_PHYSICS)
+	target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC PFN_ONAGER2D_PHYSICS)
 endif()
 
-target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
-target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLM_FORCE_SIMD_AVX2)
-target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC NOMINMAX)
-#target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_NO_PROTOTYPES)
+target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
+target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC GLM_FORCE_SIMD_AVX2)
+target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC NOMINMAX)
+#target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC VK_NO_PROTOTYPES)
 
 # Platform defines
 if (PLATFORM_WINDOWS)
-    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_WIN32)
-    #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
-    #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
+    target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC PFN_PLATFORM_WIN32)
+    #target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+    #target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
 elseif (PLATFORM_LINUX)
-    target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC PFN_PLATFORM_LINUX)
-    #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
-    #target_compile_definitions(${PUFFIN_LIBRARY_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
+    target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC PFN_PLATFORM_LINUX)
+    #target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
+    #target_compile_definitions(${PUFFIN_ENGINE_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
 endif()
 
 if (MSVC)
 	# Big Object Support (MSCV/Linux)
-	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC /bigobj)
-	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC /arch:AVX2)
+	target_compile_options(${PUFFIN_ENGINE_NAME} PUBLIC /bigobj)
+	target_compile_options(${PUFFIN_ENGINE_NAME} PUBLIC /arch:AVX2)
 	# Multiprocessor (Multithreaded) Compilation Support
-	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC /MP)
+	target_compile_options(${PUFFIN_ENGINE_NAME} PUBLIC /MP)
 	# Enabled updated __cplusplus macro
-	target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC "/Zc:__cplusplus")
+	target_compile_options(${PUFFIN_ENGINE_NAME} PUBLIC "/Zc:__cplusplus")
 
 	# Big Object Support (MSCV/Linux)
-	target_compile_options(${PUFFIN_APP_NAME} PUBLIC /bigobj)
-	target_compile_options(${PUFFIN_APP_NAME} PUBLIC /arch:AVX2)
+	target_compile_options(${PUFFIN_EDITOR_NAME} PUBLIC /bigobj)
+	target_compile_options(${PUFFIN_EDITOR_NAME} PUBLIC /arch:AVX2)
 	# Multiprocessor (Multithreaded) Compilation Support
-	target_compile_options(${PUFFIN_APP_NAME} PUBLIC /MP)
+	target_compile_options(${PUFFIN_EDITOR_NAME} PUBLIC /MP)
 	# Enabled updated __cplusplus macro
-	target_compile_options(${PUFFIN_APP_NAME} PUBLIC "/Zc:__cplusplus")
+	target_compile_options(${PUFFIN_EDITOR_NAME} PUBLIC "/Zc:__cplusplus")
 else ()
-	#target_compile_options(${PUFFIN_LIBRARY_NAME} PUBLIC -Wa, -mbig-obj)
+	#target_compile_options(${PUFFIN_ENGINE_NAME} PUBLIC -Wa, -mbig-obj)
 endif ()

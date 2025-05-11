@@ -13,6 +13,11 @@ namespace puffin
 {
     void AddDefaultEngineArguments(argparse::ArgumentParser& parser);
 
+	namespace editor
+	{
+		class Editor;
+	}
+
 	namespace window
 	{
 		class WindowSubsystem;
@@ -72,7 +77,6 @@ namespace puffin::core
 		PlayState GetPlayState() const { return mPlayState; }
 
 		bool GetSetupEngineDefaultSettings() const { return mSetupEngineDefaultSettings; }
-		bool GetShouldRenderEditorUI() const { return mEditorUIEnabled; }
 
 		uint16_t GetFramerateLimit() const { return mFramerateLimit; }
 
@@ -122,6 +126,10 @@ namespace puffin::core
 			return mSubsystemManager->GetSubsystem<T>();
 		}
 
+		void SetEditor(std::shared_ptr<editor::Editor> editor);
+		std::shared_ptr<editor::Editor> GetEditor();
+		bool IsEditorRunning() const;
+
 		window::WindowSubsystem* GetWindowSubsystem() const;
 		input::InputSubsystem* GetInputSubsystem() const;
 		rendering::RenderSubsystem* GetRenderSubsystem() const;
@@ -136,7 +144,6 @@ namespace puffin::core
 		bool mRunning = true;
 		bool mLoadSceneOnLaunch = false;
 		bool mSetupEngineDefaultSettings = false;
-		bool mEditorUIEnabled = true; // Whether editor UI should be rendered
 
 		PlayState mPlayState = PlayState::Stopped;
 
@@ -151,6 +158,7 @@ namespace puffin::core
 		double mAccumulatedTime = 0.0; // Time passed since last physics tick
 		double mTimeStepFixed = 1.0 / mPhysicsTicksPerSecond; // How often deterministic code like physics should occur (defaults to 60 times a second)
 
+		std::shared_ptr<editor::Editor> mEditor = nullptr;
 		std::shared_ptr<Application> mApplication = nullptr;
 		std::shared_ptr<Platform> mPlatform = nullptr;
 		std::unique_ptr<SubsystemManager> mSubsystemManager = nullptr;

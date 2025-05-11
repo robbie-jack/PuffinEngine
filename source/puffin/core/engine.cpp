@@ -73,7 +73,9 @@ namespace puffin::core
 
 	Engine::~Engine()
 	{
+		mEditor = nullptr;
 		mApplication = nullptr;
+		mPlatform = nullptr;
 		mSubsystemManager = nullptr;
 	}
 
@@ -495,6 +497,21 @@ namespace puffin::core
 	void Engine::Exit()
 	{
 		mRunning = false;
+	}
+
+	void Engine::SetEditor(std::shared_ptr<editor::Editor> editor)
+	{
+		mEditor = editor;
+	}
+
+	std::shared_ptr<editor::Editor> Engine::GetEditor()
+	{
+		return mEditor;
+	}
+
+	bool Engine::IsEditorRunning() const
+	{
+		return mEditor != nullptr;
 	}
 
 	window::WindowSubsystem* Engine::GetWindowSubsystem() const

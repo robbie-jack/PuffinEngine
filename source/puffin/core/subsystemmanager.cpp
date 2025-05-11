@@ -166,7 +166,7 @@ namespace puffin::core
 
 		auto subsystem = mSubsystems.at(typeName);
 
-		if (subsystem->GetType() == SubsystemType::Editor && !mEngine->GetShouldRenderEditorUI())
+		if (subsystem->GetType() == SubsystemType::Editor && !mEngine->IsEditorRunning())
 		{
 			return;
 		}

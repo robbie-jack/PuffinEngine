@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "puffin/core/engine.h"
+#include "puffin/editor/editor.h"
 #include "argparse/argparse.hpp"
 
 #ifdef PFN_BOX2D_PHYSICS
@@ -22,7 +22,7 @@
 
 int main(int argc, char* argv[])
 {
-    argparse::ArgumentParser parser("puffin app");
+    argparse::ArgumentParser parser("PuffinEditor");
 
     puffin::AddDefaultEngineArguments(parser);
 
@@ -37,14 +37,15 @@ int main(int argc, char* argv[])
         std::exit(1);
     }
 
-	const auto engine = std::make_shared<puffin::core::Engine>();
+	auto editor = std::make_shared<puffin::editor::Editor>();
+	const auto engine = editor->GetEngine();
 
 	engine->RegisterPlatform<puffin::core::PlatformRL>();
 
 	puffin::core::RegisterComponentTypes2D();
 	puffin::core::RegisterNodeTypes2D();
 
-	engine->Setup();
+	editor->Setup();
 
 #ifdef PFN_BOX2D_PHYSICS
 	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSubsystem>();
@@ -54,13 +55,13 @@ int main(int argc, char* argv[])
 	engine->RegisterSubsystem<puffin::physics::JoltPhysicsSubsystem>();
 #endif
 
-	engine->Initialize(parser);
+	editor->Initialize(parser);
 
 	try
 	{
 		while(true)
 		{
-			if (!engine->Update())
+			if (!editor->Update())
 			{
 				break;
 			}
@@ -72,7 +73,9 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	engine->Deinitialize();
+	editor->Deinitialize();
+
+	editor = nullptr;
 
 	return EXIT_SUCCESS;
 }
