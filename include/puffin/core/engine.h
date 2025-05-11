@@ -6,6 +6,7 @@
 #include "puffin/projectsettings.h"
 #include "argparse/argparse.hpp"
 #include "puffin/core/subsystemmanager.h"
+#include "puffin/types/scenetype.h"
 
 namespace fs = std::filesystem;
 
@@ -75,6 +76,7 @@ namespace puffin::core
 		void Exit();
 
 		PlayState GetPlayState() const { return mPlayState; }
+		scene::SceneType GetCurrentSceneType() const;
 
 		bool GetSetupEngineDefaultSettings() const { return mSetupEngineDefaultSettings; }
 
@@ -146,6 +148,7 @@ namespace puffin::core
 		bool mSetupEngineDefaultSettings = false;
 
 		PlayState mPlayState = PlayState::Stopped;
+		scene::SceneType mCurrentSceneType = scene::SceneType::Invalid;
 
 		// Framerate Members
 		uint16_t mFramerateLimit = 0; // Limit on how fast game runs

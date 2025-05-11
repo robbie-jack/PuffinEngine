@@ -48,6 +48,11 @@ namespace puffin::core
 		[[nodiscard]] virtual SubsystemType GetType() const;
 
 		/*
+		 *	Called at end of engine initialization, use for any late initialization logic
+		 */
+		virtual void PostSceneLoad();
+
+		/*
 		 * Called when gameplay begins
 		 */
 		virtual void BeginPlay();

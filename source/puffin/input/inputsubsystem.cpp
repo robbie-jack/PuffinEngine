@@ -45,6 +45,8 @@ namespace puffin
 		{
 			PollInput();
 
+			// PFN_TODO_INPUT - Implement key queue iteration to update input state
+
 			// Update Actions
 
 			// Loop through global actions and publish input events
@@ -299,6 +301,11 @@ namespace puffin
 					if (IsKeyPressed(key.key) && AreKeyModifiersPressed(key))
 					{
 						action.state = InputState::Pressed;
+					}
+
+					if (IsKeyDown(key.key) && AreKeyModifiersPressed(key))
+					{
+						action.state = InputState::Down;
 					}
 
 					break;

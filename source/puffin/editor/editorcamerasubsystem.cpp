@@ -17,9 +17,74 @@ namespace puffin::editor
 		mName = "EditorCameraSubsystem";
 	}
 
+	void EditorCameraSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	{
+		Subsystem::Initialize(subsystemManager);
+
+		InitSettingsAndSignals();
+	}
+
+	void EditorCameraSubsystem::Deinitialize()
+	{
+		Subsystem::Deinitialize();
+	}
+
+	void EditorCameraSubsystem::PostSceneLoad()
+	{
+		Subsystem::PostSceneLoad();
+
+		auto currentSceneType = mEngine->GetCurrentSceneType();
+
+		if (currentSceneType ==  scene::SceneType::Scene2D)
+		{
+			InitEditorCamera2D();
+		}
+
+		if (currentSceneType == scene::SceneType::Scene3D)
+		{
+			InitEditorCamera3D();
+		}
+	}
+
+	void EditorCameraSubsystem::EndPlay()
+	{
+		Subsystem::EndPlay();
+
+		mEditorCamID = gInvalidID;
+
+		auto currentSceneType = mEngine->GetCurrentSceneType();
+
+		if (currentSceneType == scene::SceneType::Scene2D)
+		{
+			InitEditorCamera2D();
+		}
+
+		if (currentSceneType == scene::SceneType::Scene3D)
+		{
+			InitEditorCamera3D();
+		}
+	}
+
 	core::SubsystemType EditorCameraSubsystem::GetType() const
 	{
 		return core::SubsystemType::Editor;
+	}
+
+	void EditorCameraSubsystem::Update(double deltaTime)
+	{
+		Subsystem::Update(deltaTime);
+
+		auto currentSceneType = mEngine->GetCurrentSceneType();
+
+		if (currentSceneType == scene::SceneType::Scene2D)
+		{
+			UpdateEditorCamera2D(deltaTime);
+		}
+
+		if (currentSceneType == scene::SceneType::Scene3D)
+		{
+			UpdateEditorCamera3D(deltaTime);
+		}
 	}
 
 	bool EditorCameraSubsystem::ShouldUpdate()
@@ -46,21 +111,21 @@ namespace puffin::editor
 
 		auto editorCameraFovSignal = signalSubsystem->GetOrCreateSignal("editor_camera_fov");
 		editorCameraFovSignal->Connect(std::function([&]()
-			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-				OnUpdateEditorCameraFov(settingsManager->Get<float>("editor", "camera_fov").value_or(60.0));
-			}));
+			OnUpdateEditorCameraFov(settingsManager->Get<float>("editor", "camera_fov").value_or(60.0));
+		}));
 
 		mEditorCamSpeed = settingsManager->Get<float>("editor", "camera_speed").value_or(25.0);
 
 		auto editorCameraSpeedSignal = signalSubsystem->GetOrCreateSignal("editor_camera_speed");
 		editorCameraSpeedSignal->Connect(std::function([&]()
-			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-				mEditorCamSpeed = settingsManager->Get<float>("editor", "camera_speed").value_or(25.0);
-			}));
+			mEditorCamSpeed = settingsManager->Get<float>("editor", "camera_speed").value_or(25.0);
+		}));
 
 		mEditorCamStartPosition.x = settingsManager->Get<float>("editor", "camera_start_position_x").value_or(0.0);
 		mEditorCamStartPosition.y = settingsManager->Get<float>("editor", "camera_start_position_y").value_or(0.0);
@@ -68,32 +133,49 @@ namespace puffin::editor
 
 		auto editorCamStartPositionXSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_x");
 		editorCamStartPositionXSignal->Connect(std::function([&]()
-			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-				mEditorCamStartPosition.x = settingsManager->Get<float>("editor", "camera_start_position_x").value_or(0.0);
-			}));
+			mEditorCamStartPosition.x = settingsManager->Get<float>("editor", "camera_start_position_x").value_or(0.0);
+		}));
 
 		auto editorCamStartPositionYSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_y");
 		editorCamStartPositionYSignal->Connect(std::function([&]()
-			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-				mEditorCamStartPosition.y = settingsManager->Get<float>("editor", "camera_start_position_y").value_or(0.0);
-			}));
+			mEditorCamStartPosition.y = settingsManager->Get<float>("editor", "camera_start_position_y").value_or(0.0);
+		}));
 
 		auto editorCamStartPositionZSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_z");
 		editorCamStartPositionYSignal->Connect(std::function([&]()
-			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-				mEditorCamStartPosition.z = settingsManager->Get<float>("editor", "camera_start_position_z").value_or(25.0);
-			}));
+			mEditorCamStartPosition.z = settingsManager->Get<float>("editor", "camera_start_position_z").value_or(25.0);
+		}));
 	}
 
 	void EditorCameraSubsystem::InitEditorCamera2D()
 	{
-		// PFN_TODO_RENDERING - Implement
+		// Create editor cam
+		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
+
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		auto registry = enttSubsystem->GetRegistry();
+
+		mEditorCamID = GenerateId();
+		cameraSubsystem->SetActiveCameraID(mEditorCamID);
+
+		auto entity = enttSubsystem->AddEntity(mEditorCamID, false);
+
+		auto& transform = registry->emplace<TransformComponent2D>(entity);
+		transform.position = { mEditorCamStartPosition.x, mEditorCamStartPosition.y };
+
+		auto& camera = registry->emplace<rendering::CameraComponent2D>(entity);
+
+		mEditorCamSpeed = 25.0f;
 	}
 
 	void EditorCameraSubsystem::InitEditorCamera3D()
@@ -123,7 +205,42 @@ namespace puffin::editor
 
 	void EditorCameraSubsystem::UpdateEditorCamera2D(double deltaTime)
 	{
-		// PFN_TODO_RENDERING - Implement
+		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
+
+		if (mEditorCamID != gInvalidID && mEditorCamID == cameraSubsystem->GetActiveCameraID())
+		{
+			const auto inputSubsystem = mEngine->GetInputSubsystem();
+			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+			auto registry = enttSubsystem->GetRegistry();
+
+			auto entity = enttSubsystem->GetEntity(mEditorCamID);
+			auto& transform = registry->get<TransformComponent2D>(entity);
+			auto& camera = registry->get<rendering::CameraComponent2D>(entity);
+
+			if (inputSubsystem->IsActionDown("editor_cam_move_right"))
+				return;
+
+			// Camera Movement
+			if (inputSubsystem->IsActionDown("editor_cam_move_right")
+				&& !inputSubsystem->IsActionDown("editor_cam_move_left")) {
+				transform.position.x += mEditorCamSpeed * deltaTime;
+			}
+
+			if (inputSubsystem->IsActionDown("editor_cam_move_left")
+				&& !inputSubsystem->IsActionDown("editor_cam_move_right")) {
+				transform.position.x -= mEditorCamSpeed * deltaTime;
+			}
+
+			if (inputSubsystem->IsActionDown("editor_cam_move_forward")
+				&& !inputSubsystem->IsActionDown("editor_cam_move_backward")) {
+				transform.position.y += mEditorCamSpeed * deltaTime;
+			}
+
+			if (inputSubsystem->IsActionDown("editor_cam_move_backward")
+				&& !inputSubsystem->IsActionDown("editor_cam_move_forward")) {
+				transform.position.y -= mEditorCamSpeed * deltaTime;
+			}
+		}
 	}
 
 	void EditorCameraSubsystem::UpdateEditorCamera3D(double deltaTime)

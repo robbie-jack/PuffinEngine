@@ -38,6 +38,7 @@ namespace puffin
 
 			void SetActiveCameraID(const UUID& id);
 			[[nodiscard]] UUID GetActiveCameraID() const;
+			[[nodiscard]] UUID GetActivePlayCameraID() const;
 
 		private:
 

@@ -46,6 +46,8 @@ namespace puffin::scene
 		void SetPath(const fs::path& path);
 		const fs::path& GetPath();
 
+		const SceneInfo& GetSceneInfo() const;
+
 	private:
 
 		using EntityJsonMap = std::unordered_map<UUID, nlohmann::json>;

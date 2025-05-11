@@ -7,10 +7,12 @@
 #include "puffin/components/transformcomponent2d.h"
 #include "puffin/components/physics/2d/velocitycomponent2d.h"
 #include "puffin/components/rendering/2d/spritecomponent2d.h"
+#include "puffin/components/rendering/2d/cameracomponent2d.h"
 #include "puffin/core/engine.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/nodes/transformnode2d.h"
 #include "puffin/platform/raylib/window/windowsubsystemrl.h"
+#include "puffin/rendering/camerasubsystem.h"
 #include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/utility/benchmark.h"
 
@@ -67,6 +69,9 @@ namespace puffin::rendering
 	void RenderSubsystemRL2D::Render(double deltaTime)
 	{
 		auto* windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystemRL>();
+		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		auto registry = enttSubsystem->GetRegistry();
 
 		BeginDrawing();
 
@@ -76,18 +81,23 @@ namespace puffin::rendering
 
 			Size windowSize = windowSubsystem->GetPrimaryWindowSize();
 
-			raylib::Camera2D camera;
-			camera.SetTarget({ 0.f, 0.f });
-			camera.SetOffset({ static_cast<float>(windowSize.width) / 2.f, 
-				static_cast<float>(windowSize.height) / 2.f });
-			camera.SetRotation(0.f);
-			camera.SetZoom(4.f);
+			auto activeCamID = cameraSubsystem->GetActiveCameraID();
+			auto activeCamEntity = enttSubsystem->GetEntity(activeCamID);
 
-			camera.BeginMode();
+			auto activeCamTransform = registry->get<TransformComponent2D>(activeCamEntity);
+			auto activeCamCamera = registry->get<CameraComponent2D>(activeCamEntity);
+
+			mCamera.SetTarget({ activeCamTransform.position.x, activeCamTransform.position.y });
+			mCamera.SetOffset({ static_cast<float>(windowSize.width) / 2.f,
+				static_cast<float>(windowSize.height) / 2.f });
+			mCamera.SetRotation(activeCamCamera.rotation);
+			mCamera.SetZoom(activeCamCamera.zoom);
+
+			mCamera.BeginMode();
 
 			DrawSprites();
 
-			camera.EndMode();
+			mCamera.EndMode();
 		}
 
 		// Debug Drawing

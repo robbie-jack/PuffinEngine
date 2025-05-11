@@ -230,6 +230,8 @@ namespace puffin::scene
 
 		is.close();
 
+		mSceneInfo = DeserializeSceneInfo(sceneJson.at("sceneInfo"));
+
 		// Deserialize Components
 
 		nlohmann::json componentsJson = sceneJson.at("components");
@@ -306,6 +308,11 @@ namespace puffin::scene
 	const fs::path& SceneData::GetPath()
 	{
 		return mPath;
+	}
+
+	const SceneInfo& SceneData::GetSceneInfo() const
+	{
+		return mSceneInfo;
 	}
 
 	void SceneData::SerializeNodeAndChildren(scene::SceneGraphSubsystem* sceneGraph, UUID id)

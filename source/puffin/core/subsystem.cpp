@@ -32,6 +32,10 @@ namespace puffin::core
 		return SubsystemType::Engine;
 	}
 
+	void Subsystem::PostSceneLoad()
+	{
+	}
+
 	void Subsystem::BeginPlay()
 	{
 	}

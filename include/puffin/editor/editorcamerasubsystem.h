@@ -24,8 +24,15 @@ namespace puffin
 			explicit EditorCameraSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~EditorCameraSubsystem() override = default;
 
+			void Initialize(core::SubsystemManager* subsystemManager) override;
+			void Deinitialize() override;
+			void PostSceneLoad() override;
+
+			void EndPlay() override;
+
 			core::SubsystemType GetType() const override;
 
+			void Update(double deltaTime) override;
 			bool ShouldUpdate() override;
 
 		private:

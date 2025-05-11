@@ -187,6 +187,13 @@ namespace puffin::core
 			}
 		}
 
+		mCurrentSceneType = sceneSubsystem->GetCurrentSceneData()->GetSceneInfo().sceneType;
+
+		for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
+		{
+			subsystem->PostSceneLoad();
+		}
+
 		InitSettings();
 		InitSignals();
 
@@ -497,6 +504,11 @@ namespace puffin::core
 	void Engine::Exit()
 	{
 		mRunning = false;
+	}
+
+	scene::SceneType Engine::GetCurrentSceneType() const
+	{
+		return mCurrentSceneType;
 	}
 
 	void Engine::SetEditor(std::shared_ptr<editor::Editor> editor)

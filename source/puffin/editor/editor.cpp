@@ -2,6 +2,7 @@
 
 #include "puffin/core/engine.h"
 #include "puffin/editor/ui/editoruisubsystem.h"
+#include "puffin/editor/editorcamerasubsystem.h"
 
 namespace puffin::editor
 {
@@ -46,6 +47,7 @@ namespace puffin::editor
 	void Editor::RegisterEditorSubsystems()
 	{
 		// Editor Subsystems
+		mEngine->RegisterSubsystem<EditorCameraSubsystem>();
 		mEngine->RegisterSubsystem<ui::EditorUISubsystem>();
 	}
 }

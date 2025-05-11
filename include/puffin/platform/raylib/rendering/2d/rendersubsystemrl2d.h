@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Camera2D.hpp>
+
 #include "puffin/rendering/rendersubsystem.h"
 
 namespace puffin
@@ -36,6 +38,8 @@ namespace puffin::rendering
 		void DrawSprites();
 		void DebugDrawStats(double deltaTime) const;
 		void DebugDrawBenchmark(const utility::Benchmark* benchmark, int posX, int& posY) const;
+
+		raylib::Camera2D mCamera;
 
 	};
 }
