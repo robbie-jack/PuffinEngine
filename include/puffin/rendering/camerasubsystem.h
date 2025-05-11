@@ -36,35 +36,24 @@ namespace puffin
 			void OnUpdateCamera(entt::registry& registry, entt::entity entity);
 			void OnDestroyCamera(entt::registry& registry, entt::entity entity);
 
-			void OnUpdateEditorCameraFov(const float& editorCameraFov);
-
-			[[nodiscard]] UUID GetActiveCameraID() const { return mActiveCameraID; }
+			void SetActiveCameraID(const UUID& id);
+			[[nodiscard]] UUID GetActiveCameraID() const;
 
 		private:
 
 			void InitSettingsAndSignals();
-
-			void InitEditorCamera2D();
-			void InitEditorCamera3D();
 
 			void UpdateActiveCamera();
 			void UpdateActivePlayCamera();
 
 			void UpdateCameras(double deltaTime);
 
-			void UpdateEditorCamera2D(double deltaTime);
 			void UpdateCameraComponent2D(const TransformComponent2D& transform, CameraComponent2D& camera);
-
-				void UpdateEditorCamera3D(double deltaTime);
 			void UpdateCameraComponent3D(const TransformComponent3D& transform, CameraComponent3D& camera);
 
 			UUID mActiveCameraID = gInvalidID;
 			UUID mActivePlayCamID = gInvalidID;
 			std::unordered_map<UUID, bool> mCachedCamActiveState;
-			UUID mEditorCamID = gInvalidID;
-
-			float mEditorCamSpeed = 10.0f;
-			Vector3f mEditorCamStartPosition = Vector3f(0.0f);
 
 		};
 	}

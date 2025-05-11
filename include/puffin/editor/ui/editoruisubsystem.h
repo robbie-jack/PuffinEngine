@@ -43,6 +43,8 @@ namespace puffin
 			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
+			core::SubsystemType GetType() const override;
+
 			void Update(double deltaTime) override;
 			bool ShouldUpdate() override;
 

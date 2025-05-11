@@ -77,6 +77,9 @@ namespace puffin::scene
 		{
 			const auto& id = enttSubsystem->GetID(entity);
 
+			if (!enttSubsystem->ShouldEntityBeSerialized(id))
+				continue;
+
 			mEntityIDs.push_back(id);
 
 			auto* componentRegistry = serialization::ComponentRegistry::Get();

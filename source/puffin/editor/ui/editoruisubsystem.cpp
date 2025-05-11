@@ -69,6 +69,11 @@ namespace puffin::ui
 		//ImPlot::DestroyContext();
 	}
 
+	core::SubsystemType EditorUISubsystem::GetType() const
+	{
+		return core::SubsystemType::Editor;
+	}
+
 	void EditorUISubsystem::Update(double deltaTime)
 	{
 		if (mFileDialog.HasSelected())

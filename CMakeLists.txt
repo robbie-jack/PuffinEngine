@@ -341,6 +341,7 @@ set(ENGINE_SOURCES
 set(EDITOR_HEADERS
 	# Editor
 	${HEADER_DIR}/puffin/editor/editor.h
+	${HEADER_DIR}/puffin/editor/editorcamerasubsystem.h
 	# Editor - UI
 	${HEADER_DIR}/puffin/editor/ui/editoruisubsystem.h
 	${HEADER_DIR}/puffin/editor/ui/nodeeditoruihelpers.h
@@ -357,6 +358,7 @@ set(EDITOR_HEADERS
 set(EDITOR_SOURCES
 	# Editor
 	${SOURCE_DIR}/puffin/editor/editor.cpp
+	${SOURCE_DIR}/puffin/editor/editorcamerasubsystem.cpp
 	# Editor - UI
 	${SOURCE_DIR}/puffin/editor/ui/editoruisubsystem.cpp
 	${SOURCE_DIR}/puffin/editor/ui/nodeeditoruihelpers.cpp
