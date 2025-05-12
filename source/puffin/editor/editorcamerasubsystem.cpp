@@ -174,8 +174,6 @@ namespace puffin::editor
 		transform.position = { mEditorCamStartPosition.x, mEditorCamStartPosition.y };
 
 		auto& camera = registry->emplace<rendering::CameraComponent2D>(entity);
-
-		mEditorCamSpeed = 25.0f;
 	}
 
 	void EditorCameraSubsystem::InitEditorCamera3D()
@@ -217,9 +215,6 @@ namespace puffin::editor
 			auto& transform = registry->get<TransformComponent2D>(entity);
 			auto& camera = registry->get<rendering::CameraComponent2D>(entity);
 
-			if (inputSubsystem->IsActionDown("editor_cam_move_right"))
-				return;
-
 			// Camera Movement
 			if (inputSubsystem->IsActionDown("editor_cam_move_right")
 				&& !inputSubsystem->IsActionDown("editor_cam_move_left")) {
@@ -233,12 +228,12 @@ namespace puffin::editor
 
 			if (inputSubsystem->IsActionDown("editor_cam_move_forward")
 				&& !inputSubsystem->IsActionDown("editor_cam_move_backward")) {
-				transform.position.y += mEditorCamSpeed * deltaTime;
+				transform.position.y -= mEditorCamSpeed * deltaTime;
 			}
 
 			if (inputSubsystem->IsActionDown("editor_cam_move_backward")
 				&& !inputSubsystem->IsActionDown("editor_cam_move_forward")) {
-				transform.position.y -= mEditorCamSpeed * deltaTime;
+				transform.position.y += mEditorCamSpeed * deltaTime;
 			}
 		}
 	}

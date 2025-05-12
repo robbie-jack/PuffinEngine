@@ -45,8 +45,6 @@ namespace puffin
 		{
 			PollInput();
 
-			// PFN_TODO_INPUT - Implement key queue iteration to update input state
-
 			// Update Actions
 
 			// Loop through global actions and publish input events
@@ -208,36 +206,68 @@ namespace puffin
 
 		bool InputSubsystem::AreKeyModifiersPressed(KeyboardKeyWithModifier keyWithModifier) const
 		{
-			if (keyWithModifier.ctrlPressed && (IsKeyPressed(KeyboardKey::LeftControl) || IsKeyDown(KeyboardKey::LeftControl)
-				|| IsKeyPressed(KeyboardKey::RightControl) || IsKeyDown(KeyboardKey::RightControl)))
-				return true;
+			if (keyWithModifier.ctrlPressed)
+			{
+				if (IsKeyPressed(KeyboardKey::LeftControl) || IsKeyDown(KeyboardKey::LeftControl)
+					|| IsKeyPressed(KeyboardKey::RightControl) || IsKeyDown(KeyboardKey::RightControl))
+					return true;
 
-			if (keyWithModifier.altPressed && (IsKeyPressed(KeyboardKey::LeftAlt) || IsKeyDown(KeyboardKey::LeftAlt)
-				|| IsKeyPressed(KeyboardKey::RightAlt) || IsKeyDown(KeyboardKey::RightAlt)))
-				return true;
+				return false;
+			}
 
-			if (keyWithModifier.shiftPressed && (IsKeyPressed(KeyboardKey::LeftShift) || IsKeyDown(KeyboardKey::LeftShift)
-				|| IsKeyPressed(KeyboardKey::RightShift) || IsKeyDown(KeyboardKey::RightShift)))
-				return true;
+			if (keyWithModifier.altPressed)
+			{
 
-			return false;
+				if (IsKeyPressed(KeyboardKey::LeftAlt) || IsKeyDown(KeyboardKey::LeftAlt)
+					|| IsKeyPressed(KeyboardKey::RightAlt) || IsKeyDown(KeyboardKey::RightAlt))
+					return true;
+
+				return false;
+			}
+
+			if (keyWithModifier.shiftPressed)
+			{
+				if (IsKeyPressed(KeyboardKey::LeftShift) || IsKeyDown(KeyboardKey::LeftShift)
+					|| IsKeyPressed(KeyboardKey::RightShift) || IsKeyDown(KeyboardKey::RightShift))
+					return true;
+
+				return false;
+			}
+
+			return true;
 		}
 
 		bool InputSubsystem::AreMouseModifiersPressed(MouseButtonWithModifier mouseButtonWithModifier) const
 		{
-			if (mouseButtonWithModifier.ctrlPressed && (IsKeyPressed(KeyboardKey::LeftControl) || IsKeyDown(KeyboardKey::LeftControl)
-				|| IsKeyPressed(KeyboardKey::RightControl) || IsKeyDown(KeyboardKey::RightControl)))
-				return true;
+			if (mouseButtonWithModifier.ctrlPressed)
+			{
+				if (IsKeyPressed(KeyboardKey::LeftControl) || IsKeyDown(KeyboardKey::LeftControl)
+					|| IsKeyPressed(KeyboardKey::RightControl) || IsKeyDown(KeyboardKey::RightControl))
+					return true;
 
-			if (mouseButtonWithModifier.altPressed && (IsKeyPressed(KeyboardKey::LeftAlt) || IsKeyDown(KeyboardKey::LeftAlt)
-				|| IsKeyPressed(KeyboardKey::RightAlt) || IsKeyDown(KeyboardKey::RightAlt)))
-				return true;
+				return false;
+			}
 
-			if (mouseButtonWithModifier.shiftPressed && (IsKeyPressed(KeyboardKey::LeftShift) || IsKeyDown(KeyboardKey::LeftShift)
-				|| IsKeyPressed(KeyboardKey::RightShift) || IsKeyDown(KeyboardKey::RightShift)))
-				return true;
+			if (mouseButtonWithModifier.altPressed)
+			{
 
-			return false;
+				if (IsKeyPressed(KeyboardKey::LeftAlt) || IsKeyDown(KeyboardKey::LeftAlt)
+					|| IsKeyPressed(KeyboardKey::RightAlt) || IsKeyDown(KeyboardKey::RightAlt))
+					return true;
+
+				return false;
+			}
+
+			if (mouseButtonWithModifier.shiftPressed)
+			{
+				if (IsKeyPressed(KeyboardKey::LeftShift) || IsKeyDown(KeyboardKey::LeftShift)
+					|| IsKeyPressed(KeyboardKey::RightShift) || IsKeyDown(KeyboardKey::RightShift))
+					return true;
+
+				return false;
+			}
+
+			return true;
 		}
 
 		InputContext* InputSubsystem::AddContext(const std::string& name)
@@ -301,11 +331,6 @@ namespace puffin
 					if (IsKeyPressed(key.key) && AreKeyModifiersPressed(key))
 					{
 						action.state = InputState::Pressed;
-					}
-
-					if (IsKeyDown(key.key) && AreKeyModifiersPressed(key))
-					{
-						action.state = InputState::Down;
 					}
 
 					break;
