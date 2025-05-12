@@ -149,6 +149,8 @@ namespace puffin::core
 			renderingSettings.Set("borderless", false);
 			renderingSettings.Set("physics_interpolation_enable", true);
 			renderingSettings.Set("shadows_enable", true);
+			renderingSettings.Set("shadows_enable", true);
+			renderingSettings.Set("pixel_scale", 64);
 		}
 	}
 }

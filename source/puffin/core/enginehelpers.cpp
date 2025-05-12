@@ -278,8 +278,8 @@ namespace puffin::core
 		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		const Vector2f wallHalfExtent = { 200.0f, 200.f };
-		float wallHalfWidth = 8.0f;
+		const Vector2f wallHalfExtent = { 25.0f, 25.f };
+		float wallHalfWidth = 0.5f;
 
 		// Floor Node
 		{
@@ -292,7 +292,7 @@ namespace puffin::core
 			box.halfExtent.y = wallHalfWidth;
 
 			auto* floorSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", floor->GetID());
-			floorSprite->SetScale({ wallHalfExtent.x * 2.f, wallHalfWidth * 2.f });
+			floorSprite->SetScale({ wallHalfExtent.x * 2.f, wallHalfWidth });
 			floorSprite->SetOffset({ -wallHalfExtent.x, -wallHalfWidth });
 		}
 
@@ -307,7 +307,7 @@ namespace puffin::core
 			box.halfExtent.y = wallHalfExtent.y;
 
 			auto* wallLeftSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", leftWall->GetID());
-			wallLeftSprite->SetScale({ wallHalfWidth * 2.f, wallHalfExtent.y * 2.f });
+			wallLeftSprite->SetScale({ wallHalfWidth, wallHalfExtent.y * 2.f });
 			wallLeftSprite->SetOffset({ -wallHalfWidth, -wallHalfExtent.y });
 		}
 
@@ -322,7 +322,7 @@ namespace puffin::core
 			box.halfExtent.y = wallHalfExtent.y;
 
 			auto* wallRightSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", rightWall->GetID());
-			wallRightSprite->SetScale({ wallHalfWidth * 2.f, wallHalfExtent.y * 2.f });
+			wallRightSprite->SetScale({ wallHalfWidth, wallHalfExtent.y * 2.f });
 			wallRightSprite->SetOffset({ -wallHalfWidth, -wallHalfExtent.y });
 		}
 
@@ -337,7 +337,7 @@ namespace puffin::core
 			box.halfExtent.y = wallHalfWidth;
 
 			auto* ceilingSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", ceiling->GetID());
-			ceilingSprite->SetScale({ wallHalfExtent.x * 2.f, wallHalfWidth * 2.f });
+			ceilingSprite->SetScale({ wallHalfExtent.x * 2.f, wallHalfWidth });
 			ceilingSprite->SetOffset({ -wallHalfExtent.x, -wallHalfWidth });
 		}
 
@@ -352,9 +352,9 @@ namespace puffin::core
 		{
 			constexpr int numBodies = 500;
 
-			const Vector2f bodyHalfExtent = { 4.f, 4.f };
-			const Vector2f bodyPositionHalfRange = { wallHalfExtent.x - 5.f, wallHalfExtent.y - 5.f };
-			double velocityMax = 100.0;
+			const Vector2f bodyHalfExtent = { 0.5f, 0.5f };
+			const Vector2f bodyPositionHalfRange = { wallHalfExtent.x * 0.9f, wallHalfExtent.y * 0.9f };
+			double velocityMax = 20.0;
 
 			std::random_device rd;
 			std::mt19937 mt(rd());
@@ -380,7 +380,7 @@ namespace puffin::core
 				box.halfExtent.y = bodyHalfExtent.y;
 
 				auto* bodySprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", body->GetID());
-				bodySprite->SetScale({ bodyHalfExtent.x * 2.f, bodyHalfExtent.y * 2.f });
+				bodySprite->SetScale({ .5f, .5f });
 				bodySprite->SetColour(colours[i % colours.size()]);
 			}
 		}

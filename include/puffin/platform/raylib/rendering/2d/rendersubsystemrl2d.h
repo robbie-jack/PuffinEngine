@@ -35,11 +35,17 @@ namespace puffin::rendering
 
 	protected:
 
+		void InitSettingsAndSignals();
+
 		void DrawSprites();
 		void DebugDrawStats(double deltaTime) const;
 		void DebugDrawBenchmark(const utility::Benchmark* benchmark, int posX, int& posY) const;
 
+		[[nodiscard]] float ScaleWorldToPixel(const float& val) const;
+		[[nodiscard]] raylib::Vector2 ScaleWorldToPixel(const raylib::Vector2& val) const;
+
 		raylib::Camera2D mCamera;
+		int32_t mPixelScale = 0;
 
 	};
 }

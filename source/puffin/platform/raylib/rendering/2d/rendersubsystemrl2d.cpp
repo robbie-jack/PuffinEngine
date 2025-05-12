@@ -9,6 +9,8 @@
 #include "puffin/components/rendering/2d/spritecomponent2d.h"
 #include "puffin/components/rendering/2d/cameracomponent2d.h"
 #include "puffin/core/engine.h"
+#include "puffin/core/settingsmanager.h"
+#include "puffin/core/signalsubsystem.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/nodes/transformnode2d.h"
 #include "puffin/platform/raylib/window/windowsubsystemrl.h"
@@ -39,13 +41,16 @@ namespace puffin::rendering
 	void RenderSubsystemRL2D::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		RenderSubsystem::Initialize(subsystemManager);
+
+		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+		auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+
+		InitSettingsAndSignals();
 	}
 
 	void RenderSubsystemRL2D::Deinitialize()
 	{
 		RenderSubsystem::Deinitialize();
-
-
 	}
 
 	double RenderSubsystemRL2D::WaitForLastPresentationAndSampleTime()
@@ -73,6 +78,8 @@ namespace puffin::rendering
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
+		// PFN_TODO_RENDERING - Add meters-to-pixels and vice-versa scale value and add conversio when rendering to avoid weird physics behavior
+
 		BeginDrawing();
 
 		// Sprite Rendering
@@ -87,7 +94,7 @@ namespace puffin::rendering
 			auto activeCamTransform = registry->get<TransformComponent2D>(activeCamEntity);
 			auto activeCamCamera = registry->get<CameraComponent2D>(activeCamEntity);
 
-			mCamera.SetTarget({ activeCamTransform.position.x, activeCamTransform.position.y });
+			mCamera.SetTarget({ activeCamTransform.position.x * mPixelScale, activeCamTransform.position.y * mPixelScale });
 			mCamera.SetOffset({ static_cast<float>(windowSize.width) / 2.f,
 				static_cast<float>(windowSize.height) / 2.f });
 			mCamera.SetRotation(activeCamCamera.rotation);
@@ -102,9 +109,7 @@ namespace puffin::rendering
 
 		// Debug Drawing
 		{
-			
 			DebugDrawStats(deltaTime);
-			
 		}
 
 		EndDrawing();
@@ -122,6 +127,24 @@ namespace puffin::rendering
 	void RenderSubsystemRL2D::ViewportResized(Size size)
 	{
 		// PFN_TODO_RENDERING - Implement when adding viewport and render resolution scaling
+	}
+
+	void RenderSubsystemRL2D::InitSettingsAndSignals()
+	{
+		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+		auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+
+		// Pixel Scale
+		{
+			mPixelScale = settingsManager->Get<int32_t>("rendering", "pixel_scale").value_or(0);
+
+			signalSubsystem->GetOrCreateSignal("rendering_pixel_scale")->Connect(std::function([&]
+			{
+				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
+				mPixelScale = settingsManager->Get<int32_t>("rendering", "pixel_scale").value_or(0);
+			}));
+		}
 	}
 
 	void RenderSubsystemRL2D::DrawSprites()
@@ -196,8 +219,13 @@ namespace puffin::rendering
 					position = maths::Lerp(position, nextPosition, t);
 				}
 
-				colour.DrawRectangle(static_cast<int>(std::round(position.x + sprite.offset.x)), static_cast<int>(std::round(position.y + sprite.offset.y)),
-					static_cast<int>(std::round(scale.x)), static_cast<int>(std::round(scale.y)));
+				raylib::Vector2 scaledPos = ScaleWorldToPixel({ position.x, position.y });
+				raylib::Vector2 scaledOffset = ScaleWorldToPixel({ sprite.offset.x, sprite.offset.y });
+
+				int32_t pixelWidth = static_cast<int>(std::round(ScaleWorldToPixel(scale.x)));
+				int32_t pixelHeight = static_cast<int>(std::round(ScaleWorldToPixel(scale.y)));
+
+				colour.DrawRectangle(scaledPos.x + scaledOffset.x, scaledPos.y + scaledOffset.y, pixelWidth, pixelHeight);
 			}
 		}
 	}
@@ -305,5 +333,15 @@ namespace puffin::rendering
 
 			DebugDrawBenchmark(&childBenchmark, posX + 20, posY);
 		}
+	}
+
+	float RenderSubsystemRL2D::ScaleWorldToPixel(const float& val) const
+	{
+		return val * static_cast<float>(mPixelScale);
+	}
+
+	raylib::Vector2 RenderSubsystemRL2D::ScaleWorldToPixel(const raylib::Vector2& val) const
+	{
+		return val.Scale(static_cast<float>(mPixelScale));
 	}
 }
