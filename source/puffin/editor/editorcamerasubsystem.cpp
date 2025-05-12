@@ -174,6 +174,8 @@ namespace puffin::editor
 		transform.position = { mEditorCamStartPosition.x, mEditorCamStartPosition.y };
 
 		auto& camera = registry->emplace<rendering::CameraComponent2D>(entity);
+
+		camera.zoom = settingsManager->Get<float>("editor", "camera_zoom").value_or(1.0);
 	}
 
 	void EditorCameraSubsystem::InitEditorCamera3D()

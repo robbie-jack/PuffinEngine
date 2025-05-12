@@ -121,6 +121,11 @@ namespace puffin::core
 			auto& editorSettings = mCategories["editor"];
 
 			editorSettings.Set("camera_fov", 60.0);
+			editorSettings.Set("camera_zoom", 1.0);
+			editorSettings.Set("camera_speed", 250.0);
+			editorSettings.Set("camera_start_position_x", 0.0);
+			editorSettings.Set("camera_start_position_y", 0.0);
+			editorSettings.Set("camera_start_position_z", 0.0);
 		}
 
 		// Physics
