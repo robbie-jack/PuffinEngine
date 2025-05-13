@@ -73,32 +73,16 @@ namespace puffin::rendering
 
 	void RenderSubsystemRL2D::Render(double deltaTime)
 	{
-		auto* windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystemRL>();
-		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
-		// PFN_TODO_RENDERING - Add meters-to-pixels and vice-versa scale value and add conversio when rendering to avoid weird physics behavior
+		UpdateCamera();
 
 		BeginDrawing();
 
 		// Sprite Rendering
 		{
 			ClearBackground({0, 178, 230});
-
-			Size windowSize = windowSubsystem->GetPrimaryWindowSize();
-
-			auto activeCamID = cameraSubsystem->GetActiveCameraID();
-			auto activeCamEntity = enttSubsystem->GetEntity(activeCamID);
-
-			auto activeCamTransform = registry->get<TransformComponent2D>(activeCamEntity);
-			auto activeCamCamera = registry->get<CameraComponent2D>(activeCamEntity);
-
-			mCamera.SetTarget({ activeCamTransform.position.x * mPixelScale, activeCamTransform.position.y * mPixelScale });
-			mCamera.SetOffset({ static_cast<float>(windowSize.width) / 2.f,
-				static_cast<float>(windowSize.height) / 2.f });
-			mCamera.SetRotation(activeCamCamera.rotation);
-			mCamera.SetZoom(activeCamCamera.zoom);
 
 			mCamera.BeginMode();
 
@@ -145,6 +129,28 @@ namespace puffin::rendering
 				mPixelScale = settingsManager->Get<int32_t>("rendering", "pixel_scale").value_or(0);
 			}));
 		}
+	}
+
+	void RenderSubsystemRL2D::UpdateCamera()
+	{
+		auto* windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystemRL>();
+		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		auto registry = enttSubsystem->GetRegistry();
+
+		Size windowSize = windowSubsystem->GetPrimaryWindowSize();
+
+		auto activeCamID = cameraSubsystem->GetActiveCameraID();
+		auto activeCamEntity = enttSubsystem->GetEntity(activeCamID);
+
+		auto activeCamTransform = registry->get<TransformComponent2D>(activeCamEntity);
+		auto activeCamCamera = registry->get<CameraComponent2D>(activeCamEntity);
+
+		mCamera.SetTarget({ activeCamTransform.position.x * mPixelScale, activeCamTransform.position.y * mPixelScale });
+		mCamera.SetOffset({ static_cast<float>(windowSize.width) / 2.f,
+			static_cast<float>(windowSize.height) / 2.f });
+		mCamera.SetRotation(activeCamCamera.rotation);
+		mCamera.SetZoom(activeCamCamera.zoom);
 	}
 
 	void RenderSubsystemRL2D::DrawSprites()

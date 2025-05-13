@@ -104,7 +104,9 @@ set(ENGINE_HEADERS
 	# Components - Rendering
 	# Components - Rendering - 2D
 	${HEADER_DIR}/puffin/components/rendering/2d/cameracomponent2d.h
+	${HEADER_DIR}/puffin/components/rendering/2d/rectanglespritecomponent2d.h
 	${HEADER_DIR}/puffin/components/rendering/2d/spritecomponent2d.h
+	${HEADER_DIR}/puffin/components/rendering/2d/texturedspritecomponent2d.h
 	# Components - Rendering - 3D
 	${HEADER_DIR}/puffin/components/rendering/3d/cameracomponent3d.h
 	${HEADER_DIR}/puffin/components/rendering/3d/directionallightcomponent3d.h
