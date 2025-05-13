@@ -292,8 +292,8 @@ namespace puffin::core
 			box.halfExtent.y = wallHalfWidth;
 
 			auto* floorSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", floor->GetID());
-			floorSprite->SetScale({ wallHalfExtent.x * 2.f, wallHalfWidth });
-			floorSprite->SetOffset({ -wallHalfExtent.x, -wallHalfWidth });
+			floorSprite->SetScale({ wallHalfExtent.x * 2.f, 1.0f });
+			floorSprite->SetOffset({ -wallHalfExtent.x, 0.0f });
 		}
 
 		// Left Wall Node
@@ -307,8 +307,8 @@ namespace puffin::core
 			box.halfExtent.y = wallHalfExtent.y;
 
 			auto* wallLeftSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", leftWall->GetID());
-			wallLeftSprite->SetScale({ wallHalfWidth, wallHalfExtent.y * 2.f });
-			wallLeftSprite->SetOffset({ -wallHalfWidth, -wallHalfExtent.y });
+			wallLeftSprite->SetScale({ 1.0f, wallHalfExtent.y * 2.f });
+			wallLeftSprite->SetOffset({ 0.0f, -wallHalfExtent.y });
 		}
 
 		// Right Wall Node
@@ -322,8 +322,8 @@ namespace puffin::core
 			box.halfExtent.y = wallHalfExtent.y;
 
 			auto* wallRightSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", rightWall->GetID());
-			wallRightSprite->SetScale({ wallHalfWidth, wallHalfExtent.y * 2.f });
-			wallRightSprite->SetOffset({ -wallHalfWidth, -wallHalfExtent.y });
+			wallRightSprite->SetScale({ 1.0f, wallHalfExtent.y * 2.f });
+			wallRightSprite->SetOffset({ 0.0f, -wallHalfExtent.y });
 		}
 
 		// Ceiling Node
@@ -337,8 +337,8 @@ namespace puffin::core
 			box.halfExtent.y = wallHalfWidth;
 
 			auto* ceilingSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", ceiling->GetID());
-			ceilingSprite->SetScale({ wallHalfExtent.x * 2.f, wallHalfWidth });
-			ceilingSprite->SetOffset({ -wallHalfExtent.x, -wallHalfWidth });
+			ceilingSprite->SetScale({ wallHalfExtent.x * 2.f, 1.0f });
+			ceilingSprite->SetOffset({ -wallHalfExtent.x, 0.0f });
 		}
 
 		std::vector<Vector3f> colours =
@@ -380,7 +380,6 @@ namespace puffin::core
 				box.halfExtent.y = bodyHalfExtent.y;
 
 				auto* bodySprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", body->GetID());
-				bodySprite->SetScale({ .5f, .5f });
 				bodySprite->SetColour(colours[i % colours.size()]);
 			}
 		}
