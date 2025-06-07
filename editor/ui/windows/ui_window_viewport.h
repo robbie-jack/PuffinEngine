@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "puffin/editor/ui/windows/uiwindow.h"
+#include "ui/windows/ui_window.h"
 #include "puffin/types/uuid.h"
 
 namespace puffin

@@ -57,323 +57,29 @@ set_property(CACHE PFN_PLATFORM PROPERTY STRINGS Raylib)
 
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
+set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/engine)
+set(EDITOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/editor)
+set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
 #set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/vkb/src)
 set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimplexNoise)
 set(ENKITS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/enkits)
 
-set(ENGINE_HEADERS
-	# Root
-	${HEADER_DIR}/puffin/manipulationgizmo.h
-	${HEADER_DIR}/puffin/mathhelpers.h
-	${HEADER_DIR}/puffin/projectsettings.h
-	# Assets
-	${HEADER_DIR}/puffin/assets/asset.h
-	${HEADER_DIR}/puffin/assets/assetimporters.h
-	${HEADER_DIR}/puffin/assets/assetregistry.h
-	${HEADER_DIR}/puffin/assets/materialasset.h
-	${HEADER_DIR}/puffin/assets/staticmeshasset.h
-	${HEADER_DIR}/puffin/assets/shaderasset.h
-	${HEADER_DIR}/puffin/assets/soundasset.h
-	${HEADER_DIR}/puffin/assets/textureasset.h
-	# Audio
-	${HEADER_DIR}/puffin/audio/audiosubsystem.h
-	${HEADER_DIR}/puffin/audio/miniaudiosubsystem.h
-	# Components
-	${HEADER_DIR}/puffin/components/transformcomponent2d.h
-	${HEADER_DIR}/puffin/components/transformcomponent3d.h
-	# Components - Physics - 2D
-	${HEADER_DIR}/puffin/components/physics/2d/boxcomponent2d.h
-	${HEADER_DIR}/puffin/components/physics/2d/circlecomponent2d.h
-	${HEADER_DIR}/puffin/components/physics/2d/rigidbodycomponent2d.h
-	${HEADER_DIR}/puffin/components/physics/2d/shapecomponent2d.h
-	${HEADER_DIR}/puffin/components/physics/2d/velocitycomponent2d.h
-	# Components - Physics - 3D
-	${HEADER_DIR}/puffin/components/physics/3d/boxcomponent3d.h
-	${HEADER_DIR}/puffin/components/physics/3d/rigidbodycomponent3d.h
-	${HEADER_DIR}/puffin/components/physics/3d/shapecomponent3d.h
-	${HEADER_DIR}/puffin/components/physics/3d/spherecomponent3d.h
-	${HEADER_DIR}/puffin/components/physics/3d/velocitycomponent3d.h
-	# Components - Procedural
-	# Components - Procedural - 3D
-	${HEADER_DIR}/puffin/components/procedural/3d/proceduralcubecomponent3d.h
-	${HEADER_DIR}/puffin/components/procedural/3d/proceduralicospherecomponent3d.h
-	${HEADER_DIR}/puffin/components/procedural/3d/proceduralplanecomponent3d.h
-	${HEADER_DIR}/puffin/components/procedural/3d/proceduralterraincomponent3d.h
-	${HEADER_DIR}/puffin/components/procedural/3d/proceduraluvspherecomponent3d.h
-	# Components - Rendering
-	# Components - Rendering - 2D
-	${HEADER_DIR}/puffin/components/rendering/2d/cameracomponent2d.h
-	${HEADER_DIR}/puffin/components/rendering/2d/rectanglespritecomponent2d.h
-	${HEADER_DIR}/puffin/components/rendering/2d/spritecomponent2d.h
-	${HEADER_DIR}/puffin/components/rendering/2d/texturedspritecomponent2d.h
-	# Components - Rendering - 3D
-	${HEADER_DIR}/puffin/components/rendering/3d/cameracomponent3d.h
-	${HEADER_DIR}/puffin/components/rendering/3d/directionallightcomponent3d.h
-	${HEADER_DIR}/puffin/components/rendering/3d/lightcomponent3d.h
-	${HEADER_DIR}/puffin/components/rendering/3d/pointlightcomponent3d.h
-	${HEADER_DIR}/puffin/components/rendering/3d/proceduralmeshcomponent3d.h
-	${HEADER_DIR}/puffin/components/rendering/3d/shadowcastercomponent3d.h
-	${HEADER_DIR}/puffin/components/rendering/3d/spotlightcomponent3d.h
-	${HEADER_DIR}/puffin/components/rendering/3d/staticmeshcomponent3d.h
-	# Core
-	${HEADER_DIR}/puffin/core/application.h
-	${HEADER_DIR}/puffin/core/engine.h
-	${HEADER_DIR}/puffin/core/enginehelpers.h
-	${HEADER_DIR}/puffin/core/enkitssubsystem.h
-	${HEADER_DIR}/puffin/core/settingsmanager.h
-	${HEADER_DIR}/puffin/core/signalsubsystem.h
-	${HEADER_DIR}/puffin/core/subsystem.h
-	${HEADER_DIR}/puffin/core/subsystemmanager.h
-	${HEADER_DIR}/puffin/core/timer.h
-	# ECS
-	${HEADER_DIR}/puffin/ecs/enttsubsystem.h
-	# Gameplay
-	# Input
-	${HEADER_DIR}/puffin/input/inputcontext.h
-	${HEADER_DIR}/puffin/input/inputevent.h
-	${HEADER_DIR}/puffin/input/inputsubsystem.h
-	${HEADER_DIR}/puffin/input/inputtypes.h
-	# Nodes
-	${HEADER_DIR}/puffin/nodes/node.h
-	${HEADER_DIR}/puffin/nodes/transformnode2d.h
-	${HEADER_DIR}/puffin/nodes/transformnode3d.h
-	# Nodes - Physics
-	${HEADER_DIR}/puffin/nodes/physics/rigidbodynode3d.h
-	# Nodes - Rendering
-	# Nodes - Rendering - 2D
-	${HEADER_DIR}/puffin/nodes/rendering/2d/spritenode2d.h
-	# Nodes - Rendering - 3D
-	${HEADER_DIR}/puffin/nodes/rendering/3d/cameranode3d.h
-	${HEADER_DIR}/puffin/nodes/rendering/3d/directionallightnode3d.h
-	${HEADER_DIR}/puffin/nodes/rendering/3d/lightnode3d.h
-	${HEADER_DIR}/puffin/nodes/rendering/3d/pointlightnode3d.h
-	${HEADER_DIR}/puffin/nodes/rendering/3d/spotlightnode3d.h
-	${HEADER_DIR}/puffin/nodes/rendering/3d/staticmeshnode3d.h
-	# Physics
-	${HEADER_DIR}/puffin/physics/bodytype.h
-	${HEADER_DIR}/puffin/physics/collisionevent.h
-	${HEADER_DIR}/puffin/physics/physicsconstants.h
-	${HEADER_DIR}/puffin/physics/shapetype2d.h
-	# Physics - Box2D
-	${HEADER_DIR}/puffin/physics/box2d/box2dphysicssubsystem.h
-	# Physics - Jolt
-	${HEADER_DIR}/puffin/physics/jolt/joltphysicssubsystem.h
-	${HEADER_DIR}/puffin/physics/jolt/joltphysicstypes.h
-	# Physics - Onager2D
-	${HEADER_DIR}/puffin/physics/onager2d/onager2dphysicssubsystem.h
-	${HEADER_DIR}/puffin/physics/onager2d/physicshelpers2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/physicstypes2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/broadphases/broadphase2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/broadphases/sweepandprunebroadphase2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/broadphases/spatialhashbroadphase2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/colliders/collider2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/colliders/polygoncollider2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/colliders/boxcollider2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/colliders/circlecollider2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/shapes/shape2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/shapes/polygonshape2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/shapes/circleshape2d.h
-	${HEADER_DIR}/puffin/physics/onager2d/shapes/boxshape2d.h
-	# Platform
-	${HEADER_DIR}/puffin/platform/platform.h
-	# Procedural
-	${HEADER_DIR}/puffin/procedural/proceduralmeshgensubsystem.h
-	# Rendering
-	${HEADER_DIR}/puffin/rendering/camerasubsystem.h
-	${HEADER_DIR}/puffin/rendering/materialglobals.h
-	${HEADER_DIR}/puffin/rendering/renderglobals.h
-	${HEADER_DIR}/puffin/rendering/renderhelpers.h
-	${HEADER_DIR}/puffin/rendering/renderpasstype.h
-	${HEADER_DIR}/puffin/rendering/rendersubsystem.h
-	${HEADER_DIR}/puffin/rendering/resourceid.h
-	# Rendering - Vulkan
-	#${HEADER_DIR}/puffin/rendering/vulkan/descriptorsvk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/helpersvk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/logvk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/materialregistryvk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/pipelinevk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/rendersubsystemvk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/resourcedescvk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/resourcemanagervk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/texturemanagervk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/typesvk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/vertexvk.h
-	# Rendering - Vulkan - Render Graph
-	#${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.h
-	# Rendering - Vulkan - Render Module
-	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.h
-	#${HEADER_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.h
-	# Scene
-	${HEADER_DIR}/puffin/scene/scenegraphgameplaysubsystem.h
-	${HEADER_DIR}/puffin/scene/scenegraphsubsystem.h
-	${HEADER_DIR}/puffin/scene/sceneinfo.h
-	${HEADER_DIR}/puffin/scene/sceneserializationsubsystem.h
-	# Serialization
-	${HEADER_DIR}/puffin/serialization/componentserialization.h
-	# Types
-	${HEADER_DIR}/puffin/types/aabb.h
-	${HEADER_DIR}/puffin/types/deletionqueue.h
-	${HEADER_DIR}/puffin/types/eulerangles.h
-	${HEADER_DIR}/puffin/types/matrix.h
-	${HEADER_DIR}/puffin/types/quat.h
-	${HEADER_DIR}/puffin/types/scenetype.h
-	${HEADER_DIR}/puffin/types/size.h
-	${HEADER_DIR}/puffin/types/uuid.h
-	${HEADER_DIR}/puffin/types/vector2.h
-	${HEADER_DIR}/puffin/types/vector3.h
-	${HEADER_DIR}/puffin/types/vertex.h
-	# Types - Storage
-	${HEADER_DIR}/puffin/types/storage/mappedarray.h
-	${HEADER_DIR}/puffin/types/storage/mappedvector.h
-	${HEADER_DIR}/puffin/types/storage/ringbuffer.h
-	# Utility
-	${HEADER_DIR}/puffin/utility/benchmark.h
-	${HEADER_DIR}/puffin/utility/reflection.h
-	${HEADER_DIR}/puffin/utility/serialization.h
-	# Window
-	${HEADER_DIR}/puffin/window/window.h
-	${HEADER_DIR}/puffin/window/windowsubsystem.h
-	)
+file(GLOB_RECURSE ENGINE_HEADERS
+	"${HEADER_DIR}/puffin/*.h"
+)
 
-set(ENGINE_SOURCES 
-	# Root 
-	${SOURCE_DIR}/puffin/manipulationgizmo.cpp
-	# Assets
-	${SOURCE_DIR}/puffin/assets/asset.cpp
-	${SOURCE_DIR}/puffin/assets/assetimporters.cpp
-	${SOURCE_DIR}/puffin/assets/assetregistry.cpp
-	${SOURCE_DIR}/puffin/assets/materialasset.cpp
-	${SOURCE_DIR}/puffin/assets/staticmeshasset.cpp
-	${SOURCE_DIR}/puffin/assets/shaderasset.cpp
-	${SOURCE_DIR}/puffin/assets/textureasset.cpp
-	# Audio
-	${SOURCE_DIR}/puffin/audio/audiosubsystem.cpp
-	${SOURCE_DIR}/puffin/audio/miniaudiosubsystem.cpp
-	# Core
-	${SOURCE_DIR}/puffin/core/application.cpp
-	${SOURCE_DIR}/puffin/core/engine.cpp
-	${SOURCE_DIR}/puffin/core/enginehelpers.cpp
-	${SOURCE_DIR}/puffin/core/enkitssubsystem.cpp
-	${SOURCE_DIR}/puffin/core/settingsmanager.cpp
-	${SOURCE_DIR}/puffin/core/subsystem.cpp
-	${SOURCE_DIR}/puffin/core/subsystemmanager.cpp
-	${SOURCE_DIR}/puffin/core/timer.cpp
-	# ECS
-	${SOURCE_DIR}/puffin/ecs/enttsubsystem.cpp
-	# Gameplay
-	# Input
-	${SOURCE_DIR}/puffin/input/inputcontext.cpp
-	${SOURCE_DIR}/puffin/input/inputsubsystem.cpp
-	# Nodes
-	${SOURCE_DIR}/puffin/nodes/node.cpp
-	${SOURCE_DIR}/puffin/nodes/transformnode2d.cpp
-	${SOURCE_DIR}/puffin/nodes/transformnode3d.cpp
-	# Nodes - Physics
-	${SOURCE_DIR}/puffin/nodes/physics/rigidbodynode3d.cpp
-	# Nodes - Rendering
-	# Nodes - Rendering - 2D
-	${SOURCE_DIR}/puffin/nodes/rendering/2d/spritenode2d.cpp
-	# Nodes - Rendering - 3D
-	${SOURCE_DIR}/puffin/nodes/rendering/3d/cameranode3d.cpp
-	${SOURCE_DIR}/puffin/nodes/rendering/3d/directionallightnode3d.cpp
-	${SOURCE_DIR}/puffin/nodes/rendering/3d/lightnode3d.cpp
-	${SOURCE_DIR}/puffin/nodes/rendering/3d/pointlightnode3d.cpp
-	${SOURCE_DIR}/puffin/nodes/rendering/3d/spotlightnode3d.cpp
-	${SOURCE_DIR}/puffin/nodes/rendering/3d/staticmeshnode3d.cpp
-	# Physics
-	# Physics - Box2D
-	${SOURCE_DIR}/puffin/physics/box2d/box2dphysicssubsystem.cpp
-	# Physics - Jolt
-	${SOURCE_DIR}/puffin/physics/jolt/joltphysicssubsystem.cpp
-	# Physics - Onager2D
-	${SOURCE_DIR}/puffin/physics/onager2d/onager2dphysicssubsystem.cpp
-	${SOURCE_DIR}/puffin/physics/onager2d/shapes/circleshape2d.cpp
-	${SOURCE_DIR}/puffin/physics/onager2d/shapes/boxshape2d.cpp
-	${SOURCE_DIR}/puffin/physics/onager2d/colliders/boxcollider2d.cpp
-	${SOURCE_DIR}/puffin/physics/onager2d/colliders/circlecollider2d.cpp
-	${SOURCE_DIR}/puffin/physics/onager2d/colliders/polygoncollider2d.cpp
-	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/sweepandprunebroadphase2d.cpp
-	${SOURCE_DIR}/puffin/physics/onager2d/broadphases/spatialhashbroadphase2d.cpp
-	# Platform
-	${SOURCE_DIR}/puffin/platform/platform.cpp
-	# Procedural
-	${SOURCE_DIR}/puffin/procedural/proceduralmeshgensubsystem.cpp
-	# Rendering
-	${SOURCE_DIR}/puffin/rendering/camerasubsystem.cpp
-	${SOURCE_DIR}/puffin/rendering/renderhelpers.cpp
-	${SOURCE_DIR}/puffin/rendering/rendersubsystem.cpp
-	# Rendering - Vulkan
-	#${SOURCE_DIR}/puffin/rendering/vulkan/descriptorsvk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/helpersvk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/materialregistryvk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/pipelinevk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/rendersubsystemvk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/resourcemanagervk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/texturemanagervk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/unifiedgeometrybuffervk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/vertexvk.cpp
-	# Rendering - Vulkan - Render Graph
-	#${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/rendergraphvk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/rendergraph/renderpassvk.cpp
-	# Rendering - Vulkan - Render Module
-	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/corerendermodulevk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/forward3drendermodulevk.cpp
-	#${SOURCE_DIR}/puffin/rendering/vulkan/rendermodule/rendermodulevk.cpp
-	# Scene
-	${SOURCE_DIR}/puffin/scene/scenegraphgameplaysubsystem.cpp
-	${SOURCE_DIR}/puffin/scene/scenegraphsubsystem.cpp
-	${SOURCE_DIR}/puffin/scene/sceneserializationsubsystem.cpp
-	# Serialization
-	${SOURCE_DIR}/puffin/serialization/componentserialization.cpp
-	# Types
-	${SOURCE_DIR}/puffin/types/deletionqueue.cpp
-	# Types - Storage
-	# UI
-	# Utility
-	${SOURCE_DIR}/puffin/utility/benchmark.cpp
-	${SOURCE_DIR}/puffin/utility/serialization.cpp
-	# Window
-	${SOURCE_DIR}/puffin/window/window.cpp
-	${SOURCE_DIR}/puffin/window/windowsubsystem.cpp
-	)
+file(GLOB_RECURSE ENGINE_SOURCES
+	"${SOURCE_DIR}/puffin/*.cpp"
+)
 
-set(EDITOR_HEADERS
-	# Editor
-	${HEADER_DIR}/puffin/editor/editor.h
-	${HEADER_DIR}/puffin/editor/editorcamerasubsystem.h
-	# Editor - UI
-	${HEADER_DIR}/puffin/editor/ui/editoruisubsystem.h
-	${HEADER_DIR}/puffin/editor/ui/nodeeditoruihelpers.h
-	# Editor - UI - Windows
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindow.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowperformance.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowscenehierarchy.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowsettings.h
-	${HEADER_DIR}/puffin/editor/ui/windows/uiwindowviewport.h
-	)
+file(GLOB_RECURSE EDITOR_HEADERS
+	"${EDITOR_DIR}/*.h"
+)
 
-set(EDITOR_SOURCES
-	# Editor
-	${SOURCE_DIR}/puffin/editor/editor.cpp
-	${SOURCE_DIR}/puffin/editor/editorcamerasubsystem.cpp
-	# Editor - UI
-	${SOURCE_DIR}/puffin/editor/ui/editoruisubsystem.cpp
-	${SOURCE_DIR}/puffin/editor/ui/nodeeditoruihelpers.cpp
-	# Editor - UI - Windows
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindow.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowcontentbrowser.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindownodeeditor.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowperformance.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowscenehierarchy.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowsettings.cpp
-	${SOURCE_DIR}/puffin/editor/ui/windows/uiwindowviewport.cpp
-	)
+file(GLOB_RECURSE EDITOR_SOURCES
+	"${EDITOR_DIR}/*.cpp"
+)
 	
 set (IMGUI_SOURCES
 	${IMGUI_DIR}/imgui.h
@@ -433,7 +139,7 @@ endif()
 
 project ("Puffin" DESCRIPTION "3D ECS Game Engine" LANGUAGES CXX)
 add_library(${PUFFIN_ENGINE_NAME} ${ENGINE_HEADERS} ${ENGINE_SOURCES} ${PLATFORM_HEADERS} ${PLATFORM_SOURCES})
-add_executable(${PUFFIN_EDITOR_NAME} ${EDITOR_HEADERS} ${EDITOR_SOURCES} ${SOURCE_DIR}/main.cpp )
+add_executable(${PUFFIN_EDITOR_NAME} ${EDITOR_HEADERS} ${EDITOR_SOURCES})
 
 # Set C++ Language Standard to C++ 17
 set_target_properties(${PUFFIN_ENGINE_NAME} PROPERTIES CMAKE_CXX_STANDARD 17)
@@ -449,8 +155,8 @@ sort_into_source_group(ENGINE_HEADERS ${HEADER_DIR} "")
 sort_into_source_group(ENGINE_SOURCES ${SOURCE_DIR} "")
 sort_into_source_group(PLATFORM_HEADERS ${HEADER_DIR} "")
 sort_into_source_group(PLATFORM_SOURCES ${SOURCE_DIR} "")
-sort_into_source_group(EDITOR_HEADERS ${HEADER_DIR} "")
-sort_into_source_group(EDITOR_SOURCES ${SOURCE_DIR} "")
+sort_into_source_group(EDITOR_HEADERS ${EDITOR_DIR} "")
+sort_into_source_group(EDITOR_SOURCES ${EDITOR_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} imgui)
 sort_into_source_group(OPENSIMPLEX_SOURCES ${OPENSIMPLEX_DIR} opensimplexnoise)
 #sort_into_source_group(VKBOOTSTRAP_SOURCES ${VKBOOTSTRAP_DIR} vkbootstrap)
@@ -574,6 +280,8 @@ set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC include)
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${ENGINE_DIR})
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${THIRD_PARTY_DIR})
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/vma)
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/box2d/include)
@@ -587,6 +295,10 @@ target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/tinygltf)
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/entt/src)
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/jolt)
+
+target_include_directories(${PUFFIN_EDITOR_NAME} PUBLIC include)
+target_include_directories(${PUFFIN_EDITOR_NAME} PUBLIC ${EDITOR_DIR})
+target_include_directories(${PUFFIN_EDITOR_NAME} PUBLIC ${THIRD_PARTY_DIR})
 
 target_link_libraries(${PUFFIN_EDITOR_NAME} ${PUFFIN_ENGINE_NAME})
 

@@ -1,4 +1,4 @@
-#include "puffin/editor/ui/windows/uiwindownodeeditor.h"
+#include "ui/windows/ui_window_node_editor.h"
 
 #include <string>
 
@@ -28,7 +28,7 @@
 #include "puffin/nodes/rendering/3d/pointlightnode3d.h"
 #include "puffin/nodes/rendering/3d/spotlightnode3d.h"
 #include "puffin/nodes/rendering/3d/directionallightnode3d.h"
-#include "puffin/editor/ui/nodeeditoruihelpers.h"
+#include "ui/node_editor_ui_helpers.h"
 #include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
 
 namespace puffin

@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "puffin/editor/ui/windows/uiwindow.h"
+#include "ui/windows/ui_window.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/nodes/node.h"
 

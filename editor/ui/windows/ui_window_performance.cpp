@@ -1,4 +1,4 @@
-#include "puffin/editor/ui/windows/uiwindowperformance.h"
+#include "ui/windows/ui_window_performance.h"
 
 #include <imgui_internal.h>
 #include <thread>

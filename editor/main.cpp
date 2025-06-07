@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "puffin/editor/editor.h"
+#include "editor.h"
 #include "argparse/argparse.hpp"
 
 #ifdef PFN_BOX2D_PHYSICS

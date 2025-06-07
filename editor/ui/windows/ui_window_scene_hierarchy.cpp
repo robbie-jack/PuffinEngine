@@ -1,4 +1,4 @@
-#include "puffin/editor/ui/windows/uiwindowscenehierarchy.h"
+#include "ui/windows/ui_window_scene_hierarchy.h"
 
 #include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/nodes/node.h"

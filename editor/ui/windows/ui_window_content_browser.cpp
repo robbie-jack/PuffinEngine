@@ -1,4 +1,4 @@
-#include "puffin/editor/ui/windows/uiwindowcontentbrowser.h"
+#include "ui/windows/ui_window_content_browser.h"
 
 #include <filesystem>
 

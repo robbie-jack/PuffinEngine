@@ -1,8 +1,8 @@
-#include "puffin/editor/editor.h"
+#include "editor.h"
 
 #include "puffin/core/engine.h"
-#include "puffin/editor/ui/editoruisubsystem.h"
-#include "puffin/editor/editorcamerasubsystem.h"
+#include "ui/editor_ui_subsystem.h"
+#include "editor_camera_subsystem.h"
 
 namespace puffin::editor
 {

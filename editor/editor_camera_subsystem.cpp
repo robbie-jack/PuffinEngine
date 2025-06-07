@@ -1,4 +1,4 @@
-﻿#include "puffin/editor/editorcamerasubsystem.h"
+﻿#include "editor_camera_subsystem.h"
 
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/components/transformcomponent2d.h"

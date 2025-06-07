@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "uiwindow.h"
+#include "ui/windows/ui_window.h"
 
 namespace puffin::utility
 {

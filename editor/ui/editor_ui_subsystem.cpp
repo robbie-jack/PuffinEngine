@@ -1,4 +1,4 @@
-#include "puffin/editor/ui/editoruisubsystem.h"
+#include "ui/editor_ui_subsystem.h"
 
 #include <string>
 #include <iostream>
@@ -10,13 +10,13 @@
 #include "puffin/scene/sceneserializationsubsystem.h"
 #include "puffin/assets/assetimporters.h"
 #include "puffin/assets/assetregistry.h"
-#include "puffin/editor/ui/windows/uiwindow.h"
-#include "puffin/editor/ui/windows/uiwindowcontentbrowser.h"
-#include "puffin/editor/ui/windows/uiwindownodeeditor.h"
-#include "puffin/editor/ui/windows/uiwindowperformance.h"
-#include "puffin/editor/ui/windows/uiwindowscenehierarchy.h"
-#include "puffin/editor/ui/windows/uiwindowsettings.h"
-#include "puffin/editor/ui/windows/uiwindowviewport.h"
+#include "ui/windows/ui_window.h"
+#include "ui/windows/ui_window_content_browser.h"
+#include "ui/windows/ui_window_node_editor.h"
+#include "ui/windows/ui_window_performance.h"
+#include "ui/windows/ui_window_scene_hierarchy.h"
+#include "ui/windows/ui_window_settings.h"
+#include "ui/windows/ui_window_viewport.h"
 #include "puffin/core/settingsmanager.h"
 
 namespace fs = std::filesystem;

@@ -1,4 +1,4 @@
-#include "puffin/editor/ui/windows/uiwindowviewport.h"
+#include "ui/windows/ui_window_viewport.h"
 
 #include "imgui.h"
 #include "puffin/core/engine.h"

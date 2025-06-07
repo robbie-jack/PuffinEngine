@@ -1,4 +1,4 @@
-﻿#include "puffin/editor/ui/nodeeditoruihelpers.h"
+﻿#include "ui/node_editor_ui_helpers.h"
 
 #include "puffin/nodes/transformnode2d.h"
 #include "puffin/nodes/transformnode3d.h"
