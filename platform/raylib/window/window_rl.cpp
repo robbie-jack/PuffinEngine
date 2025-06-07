@@ -1,4 +1,4 @@
-﻿#include "puffin/platform/raylib/window/windowrl.h"
+﻿#include "raylib/window/window_rl.h"
 
 #include "puffin/types/size.h"
 #include "raylib-cpp.hpp"

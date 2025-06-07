@@ -2,7 +2,6 @@
 
 #include "puffin/core/settingsmanager.h"
 #include "puffin/core/signalsubsystem.h"
-#include "puffin/platform/raylib/window/windowsubsystemrl.h"
 
 namespace puffin::rendering
 {
@@ -37,7 +36,6 @@ namespace puffin::rendering
 	{
 		auto* settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 		auto* signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
-		auto* windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystemRL>();
 
 		// Physics Interpolation
 		{

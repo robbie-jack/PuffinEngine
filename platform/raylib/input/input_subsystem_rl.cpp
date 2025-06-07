@@ -1,4 +1,4 @@
-#include "puffin/platform/raylib/input/inputsubsystemrl.h"
+#include "raylib/input/input_subsystem_rl.h"
 
 #include "raylib-cpp.hpp"
 

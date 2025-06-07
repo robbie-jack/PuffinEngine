@@ -18,7 +18,7 @@
 //#include "puffin/rendering/vulkan/rendersubsystemvk.h"
 
 #include "puffin/core/enginehelpers.h"
-#include "puffin/platform/raylib/platformrl.h"
+#include "raylib/platform_rl.h"
 
 int main(int argc, char* argv[])
 {

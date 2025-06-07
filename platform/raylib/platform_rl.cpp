@@ -1,10 +1,11 @@
+#include "raylib/platform_rl.h"
+
 #include <utility>
 
 #include "puffin/core/engine.h"
-#include "puffin/platform/raylib/platformrl.h"
-#include "puffin/platform/raylib/window/windowsubsystemrl.h"
-#include "puffin/platform/raylib/input/inputsubsystemrl.h"
-#include "puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.h"
+#include "raylib/window/window_subsystem_rl.h"
+#include "raylib/input/input_subsystem_rl.h"
+#include "raylib/rendering/2d/render_subsystem_rl_2d.h"
 
 #include "raylib-cpp.hpp"
 

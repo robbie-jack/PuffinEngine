@@ -1,6 +1,6 @@
 #pragma once
 
-#include "puffin/platform/platform.h"
+#include "platform.h"
 
 namespace puffin::core
 {

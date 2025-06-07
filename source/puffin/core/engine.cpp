@@ -18,7 +18,7 @@
 #include "puffin/core/timer.h"
 #include "puffin/rendering/camerasubsystem.h"
 #include "puffin/utility/benchmark.h"
-#include "puffin/platform/platform.h"
+#include "platform.h"
 
 #ifdef _WIN32
 #include <Windows.h>

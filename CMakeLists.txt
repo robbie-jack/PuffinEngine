@@ -59,6 +59,7 @@ set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
 set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/engine)
 set(EDITOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/editor)
+set(PLATFORM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform)
 set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/imgui)
 #set(VKBOOTSTRAP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/vkb/src)
@@ -107,6 +108,9 @@ set (ENKITS_SOURCES
 	${ENKITS_DIR}/src/TaskScheduler.cpp
 	)
 
+set (PLATFORM_HEADERS ${PLATFORM_DIR}/platform.h)
+set (PLATFORM_SOURCES ${PLATFORM_DIR}/platform.cpp)
+
 if (PFN_PLATFORM STREQUAL "Raylib")
 
 	message("Puffin Platform: Raylib")
@@ -114,26 +118,20 @@ if (PFN_PLATFORM STREQUAL "Raylib")
 	set(CUSTOMIZE_BUILD ON)
 	set(SUPPORT_CUSTOM_FRAME_CONTROL 1)
 
-	set (PLATFORM_HEADERS 
-		${HEADER_DIR}/puffin/platform/raylib/platformrl.h
-		${HEADER_DIR}/puffin/platform/raylib/input/inputsubsystemrl.h
-		${HEADER_DIR}/puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.h
-		${HEADER_DIR}/puffin/platform/raylib/window/windowrl.h
-		${HEADER_DIR}/puffin/platform/raylib/window/windowsubsystemrl.h
+	file(GLOB_RECURSE RAYLIB_PLATFORM_HEADERS
+		"${PLATFORM_DIR}/raylib/*.h"
 	)
-	set (PLATFORM_SOURCES 
-		${SOURCE_DIR}/puffin/platform/raylib/platformrl.cpp
-		${SOURCE_DIR}/puffin/platform/raylib/input/inputsubsystemrl.cpp
-		${SOURCE_DIR}/puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.cpp
-		${SOURCE_DIR}/puffin/platform/raylib/window/windowrl.cpp
-		${SOURCE_DIR}/puffin/platform/raylib/window/windowsubsystemrl.cpp
+
+	file(GLOB_RECURSE RAYLIB_PLATFORM_SOURCES
+		"${PLATFORM_DIR}/raylib/*.cpp"
 	)
+
+	set (PLATFORM_HEADERS ${PLATFORM_HEADERS} ${RAYLIB_PLATFORM_HEADERS})
+	set (PLATFORM_SOURCES ${PLATFORM_SOURCES} ${RAYLIB_PLATFORM_SOURCES})
 
 else()
 
 	message("Puffin Platform: None")
-	set (PLATFORM_HEADERS)
-	set (PLATFORM_SOURCES)
 
 endif()
 
@@ -151,10 +149,10 @@ target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 #target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
 target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${ENKITS_SOURCES})
 
-sort_into_source_group(ENGINE_HEADERS ${HEADER_DIR} "")
-sort_into_source_group(ENGINE_SOURCES ${SOURCE_DIR} "")
-sort_into_source_group(PLATFORM_HEADERS ${HEADER_DIR} "")
-sort_into_source_group(PLATFORM_SOURCES ${SOURCE_DIR} "")
+sort_into_source_group(ENGINE_HEADERS ${HEADER_DIR} engine)
+sort_into_source_group(ENGINE_SOURCES ${SOURCE_DIR} engine)
+sort_into_source_group(PLATFORM_HEADERS ${PLATFORM_DIR} platform)
+sort_into_source_group(PLATFORM_SOURCES ${PLATFORM_DIR} platform)
 sort_into_source_group(EDITOR_HEADERS ${EDITOR_DIR} "")
 sort_into_source_group(EDITOR_SOURCES ${EDITOR_DIR} "")
 sort_into_source_group(IMGUI_SOURCES ${IMGUI_DIR} imgui)
@@ -281,6 +279,7 @@ set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 # Add include paths
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC include)
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${ENGINE_DIR})
+target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${PLATFORM_DIR})
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${THIRD_PARTY_DIR})
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/vma)
@@ -296,11 +295,9 @@ target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/enkits/src)
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/entt/src)
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${DEPS_DIR}/jolt)
 
-target_include_directories(${PUFFIN_EDITOR_NAME} PUBLIC include)
-target_include_directories(${PUFFIN_EDITOR_NAME} PUBLIC ${EDITOR_DIR})
-target_include_directories(${PUFFIN_EDITOR_NAME} PUBLIC ${THIRD_PARTY_DIR})
-
 target_link_libraries(${PUFFIN_EDITOR_NAME} ${PUFFIN_ENGINE_NAME})
+
+target_include_directories(${PUFFIN_EDITOR_NAME} PUBLIC ${EDITOR_DIR})
 
 target_compile_features(${PUFFIN_ENGINE_NAME} PRIVATE cxx_std_17)
 target_compile_features(${PUFFIN_EDITOR_NAME} PRIVATE cxx_std_17)

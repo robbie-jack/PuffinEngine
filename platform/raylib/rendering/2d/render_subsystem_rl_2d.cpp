@@ -1,4 +1,4 @@
-#include "puffin/platform/raylib/rendering/2d/rendersubsystemrl2d.h"
+#include "raylib/rendering/2d/render_subsystem_rl_2d.h"
 
 #include <Camera2D.hpp>
 #include <Color.hpp>
@@ -13,7 +13,7 @@
 #include "puffin/core/signalsubsystem.h"
 #include "puffin/ecs/enttsubsystem.h"
 #include "puffin/nodes/transformnode2d.h"
-#include "puffin/platform/raylib/window/windowsubsystemrl.h"
+#include "raylib/window/window_subsystem_rl.h"
 #include "puffin/rendering/camerasubsystem.h"
 #include "puffin/scene/scenegraphsubsystem.h"
 #include "puffin/utility/benchmark.h"

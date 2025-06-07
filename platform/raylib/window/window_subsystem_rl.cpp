@@ -1,8 +1,8 @@
-#include "puffin/platform/raylib/window/windowsubsystemrl.h"
+#include "raylib/window/window_subsystem_rl.h"
 
 #include "raylib-cpp.hpp"
 
-#include "puffin/platform/raylib/window/windowrl.h"
+#include "raylib/window/window_rl.h"
 
 namespace puffin::window
 {

@@ -1,5 +1,5 @@
 ﻿#include "puffin/core/timer.h"
-#include "puffin/platform/platform.h"
+#include "platform.h"
 
 //#include "glfw/glfw3.h"
 
