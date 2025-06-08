@@ -3,7 +3,7 @@
 #include <string>
 
 #include "ui/windows/ui_window.h"
-#include "puffin/types/uuid.h"
+#include "types/uuid.h"
 
 namespace puffin
 {

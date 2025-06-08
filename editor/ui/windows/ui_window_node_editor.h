@@ -4,8 +4,8 @@
 #include <string>
 
 #include "ui/windows/ui_window.h"
-#include "puffin/ecs/enttsubsystem.h"
-#include "puffin/nodes/node.h"
+#include "ecs/entt_subsystem.h"
+#include "node/node.h"
 
 namespace ImGui
 {

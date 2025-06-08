@@ -1,6 +1,6 @@
-#include <utility>
+#include "platform.h"
 
-#include "puffin/platform/platform.h"
+#include <utility>
 
 namespace puffin::core
 {

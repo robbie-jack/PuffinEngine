@@ -1,14 +1,14 @@
 ﻿#include "ui/node_editor_ui_helpers.h"
 
-#include "puffin/nodes/transformnode2d.h"
-#include "puffin/nodes/transformnode3d.h"
-#include "puffin/nodes/rendering/3d/staticmeshnode3d.h"
-#include "puffin/nodes/rendering/3d/lightnode3d.h"
-#include "puffin/nodes/rendering/3d/pointlightnode3d.h"
-#include "puffin/nodes/rendering/3d/spotlightnode3d.h"
-#include "puffin/nodes/rendering/3d/directionallightnode3d.h"
-#include "puffin/components/transformcomponent2d.h"
-#include "puffin/components/transformcomponent3d.h"
+#include "node/transform_2d_node.h"
+#include "node/transform_3d_node.h"
+#include "node/rendering/3d/static_mesh_3d_node.h"
+#include "node/rendering/3d/light_3d_node.h"
+#include "node/rendering/3d/point_light_3d_node.h"
+#include "node/rendering/3d/spot_light_3d_node.h"
+#include "node/rendering/3d/directional_light_3d_node.h"
+#include "component/transform_component_2d.h"
+#include "component/transform_component_3d.h"
 
 namespace puffin::ui
 {

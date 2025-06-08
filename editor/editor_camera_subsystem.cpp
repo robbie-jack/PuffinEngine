@@ -1,13 +1,13 @@
 ﻿#include "editor_camera_subsystem.h"
 
-#include "puffin/ecs/enttsubsystem.h"
-#include "puffin/components/transformcomponent2d.h"
-#include "puffin/components/transformcomponent3d.h"
-#include "puffin/components/rendering/2d/cameracomponent2d.h"
-#include "puffin/components/rendering/3d/cameracomponent3d.h"
-#include "puffin/core/settingsmanager.h"
-#include "puffin/rendering/camerasubsystem.h"
-#include "puffin/input/inputsubsystem.h"
+#include "ecs/entt_subsystem.h"
+#include "component/transform_component_2d.h"
+#include "component/transform_component_3d.h"
+#include "component/rendering/2d/camera_component_2d.h"
+#include "component/rendering/3d/camera_component_3d.h"
+#include "core/settings_manager.h"
+#include "rendering/camera_subsystem.h"
+#include "input/input_subsystem.h"
 
 namespace puffin::editor
 {

@@ -1,9 +1,9 @@
 #include "ui/windows/ui_window_viewport.h"
 
 #include "imgui.h"
-#include "puffin/core/engine.h"
-#include "puffin/components/transformcomponent2d.h"
-#include "puffin/manipulationgizmo.h"
+#include "core/engine.h"
+#include "component/transform_component_2d.h"
+#include "manipulation_gizmo.h"
 
 namespace puffin
 {

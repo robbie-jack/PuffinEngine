@@ -1,6 +1,6 @@
 #include "editor.h"
 
-#include "puffin/core/engine.h"
+#include "core/engine.h"
 #include "ui/editor_ui_subsystem.h"
 #include "editor_camera_subsystem.h"
 

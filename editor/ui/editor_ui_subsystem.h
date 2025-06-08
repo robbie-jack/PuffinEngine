@@ -6,8 +6,8 @@
 #include <vector>
 #include <memory>
 
-#include "puffin/core/subsystem.h"
-#include "puffin/types/uuid.h"
+#include "core/subsystem.h"
+#include "types/uuid.h"
 
 namespace puffin
 {

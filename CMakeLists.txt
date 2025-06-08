@@ -55,8 +55,6 @@ option(ONAGER2D_PHYSICS_SUPPORT "Compile with Onager 2D Physics Support" OFF)
 set(PFN_PLATFORM "Raylib" CACHE STRING "Platform to build puffin for.")
 set_property(CACHE PFN_PLATFORM PROPERTY STRINGS Raylib)
 
-set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
 set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/engine)
 set(EDITOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/editor)
 set(PLATFORM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform)
@@ -67,11 +65,11 @@ set(OPENSIMPLEX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/OpenSimplexNoise/OpenSimple
 set(ENKITS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/enkits)
 
 file(GLOB_RECURSE ENGINE_HEADERS
-	"${HEADER_DIR}/puffin/*.h"
+	"${ENGINE_DIR}/*.h"
 )
 
 file(GLOB_RECURSE ENGINE_SOURCES
-	"${SOURCE_DIR}/puffin/*.cpp"
+	"${ENGINE_DIR}/*.cpp"
 )
 
 file(GLOB_RECURSE EDITOR_HEADERS
@@ -149,8 +147,8 @@ target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${OPENSIMPLEX_SOURCES})
 #target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${VKBOOTSTRAP_SOURCES})
 target_sources(${PUFFIN_ENGINE_NAME} PRIVATE ${ENKITS_SOURCES})
 
-sort_into_source_group(ENGINE_HEADERS ${HEADER_DIR} engine)
-sort_into_source_group(ENGINE_SOURCES ${SOURCE_DIR} engine)
+sort_into_source_group(ENGINE_HEADERS ${ENGINE_DIR} engine)
+sort_into_source_group(ENGINE_SOURCES ${ENGINE_DIR} engine)
 sort_into_source_group(PLATFORM_HEADERS ${PLATFORM_DIR} platform)
 sort_into_source_group(PLATFORM_SOURCES ${PLATFORM_DIR} platform)
 sort_into_source_group(EDITOR_HEADERS ${EDITOR_DIR} "")
@@ -277,7 +275,6 @@ endif()
 set(DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 # Add include paths
-target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC include)
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${ENGINE_DIR})
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${PLATFORM_DIR})
 target_include_directories(${PUFFIN_ENGINE_NAME} PUBLIC ${THIRD_PARTY_DIR})

@@ -6,10 +6,9 @@
 //#include "backends/imgui_impl_glfw.h"
 //#include "backends/imgui_impl_vulkan.h"
 
-#include "puffin/core/engine.h"
-#include "puffin/scene/sceneserializationsubsystem.h"
-#include "puffin/assets/assetimporters.h"
-#include "puffin/assets/assetregistry.h"
+#include "core/engine.h"
+#include "scene/scene_serialization_subsystem.h"
+#include "asset/asset_registry.h"
 #include "ui/windows/ui_window.h"
 #include "ui/windows/ui_window_content_browser.h"
 #include "ui/windows/ui_window_node_editor.h"
@@ -17,7 +16,7 @@
 #include "ui/windows/ui_window_scene_hierarchy.h"
 #include "ui/windows/ui_window_settings.h"
 #include "ui/windows/ui_window_viewport.h"
-#include "puffin/core/settingsmanager.h"
+#include "core/settings_manager.h"
 
 namespace fs = std::filesystem;
 
@@ -99,7 +98,8 @@ namespace puffin::ui
 				// File Dialog - Import Mesh
 			case ImportAssetUI::Mesh:
 
-				if (io::LoadAndImportModel(selectedPath, selectedPath.parent_path().stem()))
+				// PUFFIN_TODO - Reimplement after resource implementation is finished
+				/*if (io::LoadAndImportModel(selectedPath, selectedPath.parent_path().stem()))
 				{
 					std::cout << "Import Successful" << std::endl;
 				}
@@ -108,14 +108,15 @@ namespace puffin::ui
 					std::cout << "Import Failed" << std::endl;
 				}
 
-				mImportAssetUI = ImportAssetUI::Default;
+				mImportAssetUI = ImportAssetUI::Default;*/
 
 				break;
 
 				// File Dialog - Import Texture
 			case ImportAssetUI::Texture:
 
-				if (io::LoadAndImportTexture(selectedPath, selectedPath.parent_path().stem()))
+				// PUFFIN_TODO - Reimplement after resource implementation is finished
+				/*if (io::LoadAndImportTexture(selectedPath, selectedPath.parent_path().stem()))
 				{
 					std::cout << "Import Successful" << std::endl;
 				}
@@ -124,7 +125,7 @@ namespace puffin::ui
 					std::cout << "Import Failed" << std::endl;
 				}
 
-				mImportAssetUI = ImportAssetUI::Default;
+				mImportAssetUI = ImportAssetUI::Default;*/
 
 				break;
 

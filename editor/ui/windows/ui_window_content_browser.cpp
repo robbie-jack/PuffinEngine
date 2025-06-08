@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-#include "puffin/assets/assetregistry.h"
+#include "asset/asset_registry.h"
 
 namespace fs = std::filesystem;
 

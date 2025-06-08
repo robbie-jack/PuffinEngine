@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "puffin/core/subsystem.h"
-#include "puffin/types/uuid.h"
-#include "puffin/types/vector3.h"
+#include "core/subsystem.h"
+#include "types/uuid.h"
+#include "types/vector3.h"
 
 namespace puffin
 {

@@ -6,7 +6,7 @@
 #include <stdio.h> 
 
 #include "imgui.h"
-#include "puffin/utility/benchmark.h"
+#include "utility/benchmark.h"
 
 namespace puffin
 {
