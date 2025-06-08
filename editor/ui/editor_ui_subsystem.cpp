@@ -8,7 +8,7 @@
 
 #include "core/engine.h"
 #include "scene/scene_serialization_subsystem.h"
-#include "asset/asset_registry.h"
+#include "resource/resource_manager.h"
 #include "ui/windows/ui_window.h"
 #include "ui/windows/ui_window_content_browser.h"
 #include "ui/windows/ui_window_node_editor.h"
@@ -29,6 +29,8 @@ namespace puffin::ui
 
 	void EditorUISubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
+		auto* resourceManager = mEngine->GetResourceManager();
+
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		//ImPlot::CreateContext();
@@ -37,7 +39,7 @@ namespace puffin::ui
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-		mImguiIniFilename = (assets::AssetRegistry::Get()->GetEngineRoot() / "config" / "imgui.ini").string();
+		mImguiIniFilename = (resourceManager->GetEnginePath() / "config" / "imgui.ini").string();
 		io.IniFilename = mImguiIniFilename.c_str();
 
 		SetStyle();
@@ -282,6 +284,8 @@ namespace puffin::ui
 
 	void EditorUISubsystem::ShowMenuBar()
 	{
+		auto* resourceManager = mEngine->GetResourceManager();
+
 		if (ImGui::BeginMenuBar())
 		{
 			// File Options
@@ -303,9 +307,7 @@ namespace puffin::ui
 				if (ImGui::MenuItem("Save Project"))
 				{
 					const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-                    settingsManager->Save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.toml");
-
-					assets::AssetRegistry::Get()->SaveAssetCache();
+                    settingsManager->Save(resourceManager->GetProjectPath() / "config" / "settings.toml");
 				}
 
 				if (ImGui::MenuItem("Save Project As"))

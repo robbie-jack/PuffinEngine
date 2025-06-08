@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include "asset/asset_registry.h"
+#include "resource/resource_manager.h"
 #include "core/engine.h"
 
 namespace puffin::core
@@ -39,6 +39,8 @@ namespace puffin::core
 
 	void SettingsManager::Initialize(core::SubsystemManager* subsystemManager)
 	{
+		auto* resourceManager = mEngine->GetResourceManager();
+
 		mCategories.emplace("general", SettingsCategory(mEngine, "general"));
 		mCategories.emplace("editor", SettingsCategory(mEngine, "editor"));
 		mCategories.emplace("physics", SettingsCategory(mEngine, "physics"));
@@ -47,11 +49,11 @@ namespace puffin::core
 		if (mEngine->GetSetupEngineDefaultSettings())
 		{
 			DefaultSettings();
-			Save(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.toml");
+			Save(resourceManager->GetProjectPath() / "config" / "settings.toml");
 		}
 		else
 		{
-			Load(assets::AssetRegistry::Get()->GetProjectRoot() / "config" / "settings.toml");
+			Load(resourceManager->GetProjectPath() / "config" / "settings.toml");
 		}
 	}
 

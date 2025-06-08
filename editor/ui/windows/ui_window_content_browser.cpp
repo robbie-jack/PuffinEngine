@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-#include "asset/asset_registry.h"
+#include "resource/resource_manager.h"
 
 namespace fs = std::filesystem;
 
@@ -17,6 +17,8 @@ namespace puffin::ui
 	{
 		if (mShow)
 		{
+			auto* resourceManager = m_engine->GetResourceManager();
+
 			ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_FirstUseEver);
 
 			Begin(mWindowName);
@@ -24,7 +26,7 @@ namespace puffin::ui
 			ImVec2 listBoxSize = ImGui::GetWindowSize();
 			listBoxSize.y -= 20.0f;
 
-			if (const fs::path contentPath = assets::AssetRegistry::Get()->GetContentRoot(); exists(contentPath))
+			if (const fs::path projectPath = resourceManager->GetProjectPath(); exists(projectPath))
 			{
 				if (ImGui::BeginListBox("##ContentList", listBoxSize))
 				{
@@ -39,7 +41,7 @@ namespace puffin::ui
 
 					mNodeCounter++;
 
-					GenerateChildEntryNodes(fs::directory_entry(contentPath), rootNode);
+					GenerateChildEntryNodes(fs::directory_entry(projectPath), rootNode);
 
 					for (const auto& node : rootNode.childNodes)
 					{

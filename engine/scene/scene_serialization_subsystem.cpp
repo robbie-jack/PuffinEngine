@@ -1,6 +1,6 @@
 #include "scene/scene_serialization_subsystem.h"
 
-#include "asset/asset_registry.h"
+#include "resource/resource_manager.h"
 #include "serialization/component_serialization.h"
 
 namespace puffin::scene
@@ -408,7 +408,9 @@ namespace puffin::scene
 
 	std::shared_ptr<SceneData> SceneSerializationSubsystem::CreateScene(const fs::path& path, const SceneInfo& sceneInfo)
 	{
-		auto scenePath = (assets::AssetRegistry::Get()->GetContentRoot() / path).make_preferred();
+		auto* resourceManager = mEngine->GetResourceManager();
+
+		auto scenePath = (resourceManager->GetProjectPath() / path).make_preferred();
 
 		if (mSceneData.find(scenePath) == mSceneData.end())
 		{

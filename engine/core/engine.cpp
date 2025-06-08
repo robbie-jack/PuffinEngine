@@ -11,7 +11,6 @@
 #include "core/subsystem_manager.h"
 #include "utility/benchmark.h"
 #include "platform.h"
-#include "asset/asset_registry.h"
 #include "scene/scene_info.h"
 #include "rendering/render_subsystem.h"
 #include "resource/resource_manager.h"
@@ -102,8 +101,6 @@ namespace puffin::core
 		// Load Project File
 		LoadProject(projectPath, mProjectFile);
 
-		// Setup asset registry
-		assets::AssetRegistry::Get()->Initialize(mProjectFile, projectPath);
 		mResourceManager->Initialize(mProjectFile, projectPath);
 
 		// Load Project Settings
@@ -115,7 +112,6 @@ namespace puffin::core
 		const bool setupDefaultPhysicsScene3D = parser.get<bool>("--setup-default-physics-scene-3d");
 
 		// Load/Initialize Assets
-		//assets::AssetRegistry::Get()->LoadAssetCache();
 
 		// Initialize engine subsystems
 		mSubsystemManager->CreateAndInitializeEngineSubsystems();
@@ -140,7 +136,7 @@ namespace puffin::core
 			{
 				sceneInfo.sceneType = scene::SceneType::Scene2D;
 
-				auto sceneData = sceneSubsystem->CreateScene(assets::AssetRegistry::Get()->GetContentRoot() / sceneString, sceneInfo);
+				auto sceneData = sceneSubsystem->CreateScene(mResourceManager->GetProjectPath() / sceneString, sceneInfo);
 
 				SetupDefaultScene2D(shared_from_this());
 
@@ -151,7 +147,7 @@ namespace puffin::core
 			{
 				sceneInfo.sceneType = scene::SceneType::Scene3D;
 
-				auto sceneData = sceneSubsystem->CreateScene(assets::AssetRegistry::Get()->GetContentRoot() / sceneString, sceneInfo);
+				auto sceneData = sceneSubsystem->CreateScene(mResourceManager->GetProjectPath() / sceneString, sceneInfo);
 
 				// Create Default Scene in code -- used when scene serialization is changed
 				SetupDefaultScene3D(shared_from_this());
@@ -162,7 +158,7 @@ namespace puffin::core
 			{
 				sceneInfo.sceneType = scene::SceneType::Scene2D;
 
-				auto sceneData = sceneSubsystem->CreateScene(assets::AssetRegistry::Get()->GetContentRoot() / sceneString, sceneInfo);
+				auto sceneData = sceneSubsystem->CreateScene(mResourceManager->GetProjectPath() /sceneString, sceneInfo);
 
 				SetupDefaultPhysicsScene2D(shared_from_this());
 
@@ -173,7 +169,7 @@ namespace puffin::core
 			{
 				sceneInfo.sceneType = scene::SceneType::Scene3D;
 
-				auto sceneData = sceneSubsystem->CreateScene(assets::AssetRegistry::Get()->GetContentRoot() / sceneString, sceneInfo);
+				auto sceneData = sceneSubsystem->CreateScene(mResourceManager->GetProjectPath() / sceneString, sceneInfo);
 
 				SetupDefaultPhysicsScene3D(shared_from_this());
 
@@ -181,7 +177,7 @@ namespace puffin::core
 			}
 			else if (mLoadSceneOnLaunch)
 			{
-				sceneSubsystem->LoadFromFile(assets::AssetRegistry::Get()->GetContentRoot() / sceneString);
+				sceneSubsystem->LoadFromFile(mResourceManager->GetProjectPath() / sceneString);
 				sceneSubsystem->Setup();
 			}
 		}
@@ -462,11 +458,7 @@ namespace puffin::core
 		// Cleanup all engine subsystems
 		mSubsystemManager->DestroyEngineSubsystems();
 
-		// Clear Asset Registry
-		assets::AssetRegistry::Clear();
-
 		utility::BenchmarkManager::Destroy();
-		mSubsystemManager = nullptr;
 	}
 
 	void Engine::Play()
