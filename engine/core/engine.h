@@ -14,6 +14,8 @@ namespace puffin
 {
     void AddDefaultEngineArguments(argparse::ArgumentParser& parser);
 
+	class ResourceManager;
+
 	namespace editor
 	{
 		class Editor;
@@ -164,6 +166,7 @@ namespace puffin::core
 		std::shared_ptr<editor::Editor> mEditor = nullptr;
 		std::shared_ptr<Application> mApplication = nullptr;
 		std::shared_ptr<Platform> mPlatform = nullptr;
+		std::unique_ptr<ResourceManager> mResourceManager = nullptr;
 		std::unique_ptr<SubsystemManager> mSubsystemManager = nullptr;
 
 		io::ProjectFile mProjectFile;

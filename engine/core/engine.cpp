@@ -14,7 +14,7 @@
 #include "asset/asset_registry.h"
 #include "scene/scene_info.h"
 #include "rendering/render_subsystem.h"
-#include "core/subsystem_manager.h"
+#include "resource/resource_manager.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -72,11 +72,13 @@ namespace puffin::core
 		mEditor = nullptr;
 		mApplication = nullptr;
 		mPlatform = nullptr;
+		mResourceManager = nullptr;
 		mSubsystemManager = nullptr;
 	}
 
 	void Engine::Setup()
 	{
+		mResourceManager = std::make_unique<ResourceManager>();
 		mSubsystemManager = std::make_unique<SubsystemManager>(shared_from_this());
 		utility::BenchmarkManager::Get();
 
@@ -102,6 +104,7 @@ namespace puffin::core
 
 		// Setup asset registry
 		assets::AssetRegistry::Get()->Initialize(mProjectFile, projectPath);
+		mResourceManager->Initialize(mProjectFile, projectPath);
 
 		// Load Project Settings
 		mSetupEngineDefaultSettings = parser.get<bool>("--setup-default-settings");
