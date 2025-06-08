@@ -1,5 +1,7 @@
 ﻿#include "resource/resource_manager.h"
 
+#include "resource/resource.h"
+
 namespace puffin
 {
 	ResourceManager::ResourceManager()
@@ -9,7 +11,13 @@ namespace puffin
 
 	ResourceManager::~ResourceManager()
 	{
-		
+		for (auto& [path, resource] : mResources)
+		{
+			if (resource->IsLoaded())
+				resource->Unload();
+		}
+
+		mResources.clear();
 	}
 
 	void ResourceManager::Initialize(const io::ProjectFile& projectFile, const fs::path& projectPath)

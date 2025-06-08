@@ -525,6 +525,11 @@ namespace puffin::core
 		return mEditor != nullptr;
 	}
 
+	ResourceManager* Engine::GetResourceManager() const
+	{
+		return mResourceManager.get();
+	}
+
 	window::WindowSubsystem* Engine::GetWindowSubsystem() const
 	{
 		return mSubsystemManager->GetWindowSubsystem();

@@ -41,7 +41,6 @@ namespace puffin
 		fs::path mEnginePath;
 
 		std::unordered_map<fs::path, std::unique_ptr<Resource>> mResources;
-		std::unordered_set<Resource*> mLoadedResources;
 
 	};
 }

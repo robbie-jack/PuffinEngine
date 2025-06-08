@@ -134,6 +134,8 @@ namespace puffin::core
 		std::shared_ptr<editor::Editor> GetEditor();
 		bool IsEditorRunning() const;
 
+		ResourceManager* GetResourceManager() const;
+
 		window::WindowSubsystem* GetWindowSubsystem() const;
 		input::InputSubsystem* GetInputSubsystem() const;
 		rendering::RenderSubsystem* GetRenderSubsystem() const;
