@@ -16,16 +16,16 @@ namespace puffin::core
 		return ::GetTime();
 	}
 
-	PlatformRL::PlatformRL(std::shared_ptr<Engine> engine)
+	RaylibPlatform::RaylibPlatform(std::shared_ptr<Engine> engine)
 		: Platform(std::move(engine))
 	{
 		mName = "Raylib";
 	}
 
-	void PlatformRL::RegisterTypes()
+	void RaylibPlatform::RegisterTypes()
 	{
-		mEngine->RegisterSubsystem<window::WindowSubsystemRL>();
-		mEngine->RegisterSubsystem<input::InputSubsystemRL>();
-		mEngine->RegisterSubsystem<rendering::RenderSubsystemRL2D>();
+		mEngine->RegisterSubsystem<window::RaylibWindowSubsystem>();
+		mEngine->RegisterSubsystem<input::RaylibInputSubsystem>();
+		mEngine->RegisterSubsystem<rendering::Raylib2DRenderSubsystem>();
 	}
 }

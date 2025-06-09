@@ -29,16 +29,16 @@ static std::unordered_map<std::string, double> benchmarkAvg;
 
 namespace puffin::rendering
 {
-	RenderSubsystemRL2D::RenderSubsystemRL2D(const std::shared_ptr<core::Engine>& engine) : RenderSubsystem(engine)
+	Raylib2DRenderSubsystem::Raylib2DRenderSubsystem(const std::shared_ptr<core::Engine>& engine) : RenderSubsystem(engine)
 	{
 		
 	}
 
-	void RenderSubsystemRL2D::RegisterTypes()
+	void Raylib2DRenderSubsystem::RegisterTypes()
 	{
 	}
 
-	void RenderSubsystemRL2D::Initialize(core::SubsystemManager* subsystemManager)
+	void Raylib2DRenderSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		RenderSubsystem::Initialize(subsystemManager);
 
@@ -48,12 +48,12 @@ namespace puffin::rendering
 		InitSettingsAndSignals();
 	}
 
-	void RenderSubsystemRL2D::Deinitialize()
+	void Raylib2DRenderSubsystem::Deinitialize()
 	{
 		RenderSubsystem::Deinitialize();
 	}
 
-	double RenderSubsystemRL2D::WaitForLastPresentationAndSampleTime()
+	double Raylib2DRenderSubsystem::WaitForLastPresentationAndSampleTime()
 	{
 		const auto framerateLimit = mEngine->GetFramerateLimit();
 
@@ -71,7 +71,7 @@ namespace puffin::rendering
 		return GetTime();
 	}
 
-	void RenderSubsystemRL2D::Render(double deltaTime)
+	void Raylib2DRenderSubsystem::Render(double deltaTime)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
@@ -103,17 +103,17 @@ namespace puffin::rendering
 		mFrameCount++;
 	}
 
-	void RenderSubsystemRL2D::WindowResized(Size size)
+	void Raylib2DRenderSubsystem::WindowResized(Size size)
 	{
 		// PFN_TODO_RENDERING - Implement when adding viewport and render resolution scaling
 	}
 
-	void RenderSubsystemRL2D::ViewportResized(Size size)
+	void Raylib2DRenderSubsystem::ViewportResized(Size size)
 	{
 		// PFN_TODO_RENDERING - Implement when adding viewport and render resolution scaling
 	}
 
-	void RenderSubsystemRL2D::InitSettingsAndSignals()
+	void Raylib2DRenderSubsystem::InitSettingsAndSignals()
 	{
 		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 		auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
@@ -131,9 +131,9 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSubsystemRL2D::UpdateCamera()
+	void Raylib2DRenderSubsystem::UpdateCamera()
 	{
-		auto* windowSubsystem = mEngine->GetSubsystem<window::WindowSubsystemRL>();
+		auto* windowSubsystem = mEngine->GetSubsystem<window::RaylibWindowSubsystem>();
 		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
@@ -153,7 +153,7 @@ namespace puffin::rendering
 		mCamera.SetZoom(activeCamCamera.zoom);
 	}
 
-	void RenderSubsystemRL2D::DrawSprites()
+	void Raylib2DRenderSubsystem::DrawSprites()
 	{
 		{
 			// Calculate t value for rendering interpolated position
@@ -236,7 +236,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSubsystemRL2D::DebugDrawStats(double deltaTime) const
+	void Raylib2DRenderSubsystem::DebugDrawStats(double deltaTime) const
 	{
 		// FPS / Frametime
 		{
@@ -306,7 +306,7 @@ namespace puffin::rendering
 		}
 	}
 
-	void RenderSubsystemRL2D::DebugDrawBenchmark(const utility::Benchmark* benchmark, int posX, int& posY) const
+	void Raylib2DRenderSubsystem::DebugDrawBenchmark(const utility::Benchmark* benchmark, int posX, int& posY) const
 	{
 		const std::string& name = benchmark->GetData().name;
 
@@ -341,12 +341,12 @@ namespace puffin::rendering
 		}
 	}
 
-	float RenderSubsystemRL2D::ScaleWorldToPixel(const float& val) const
+	float Raylib2DRenderSubsystem::ScaleWorldToPixel(const float& val) const
 	{
 		return val * static_cast<float>(mPixelScale);
 	}
 
-	raylib::Vector2 RenderSubsystemRL2D::ScaleWorldToPixel(const raylib::Vector2& val) const
+	raylib::Vector2 Raylib2DRenderSubsystem::ScaleWorldToPixel(const raylib::Vector2& val) const
 	{
 		return val.Scale(static_cast<float>(mPixelScale));
 	}

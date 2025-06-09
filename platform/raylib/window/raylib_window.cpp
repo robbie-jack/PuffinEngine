@@ -5,71 +5,71 @@
 
 namespace puffin::window
 {
-	WindowRL::WindowRL(int32_t width, int32_t height, const std::string& name, uint32_t flags)
+	RaylibWindow::RaylibWindow(int32_t width, int32_t height, const std::string& name, uint32_t flags)
 		: Window(width, height, name, flags)
 	{
 		mWindow = new raylib::Window(1920, 1080, "Puffin Engine", flags);
 	}
 
-	WindowRL::~WindowRL()
+	RaylibWindow::~RaylibWindow()
 	{
 		delete mWindow;
 		mWindow = nullptr;
 	}
 
-	bool WindowRL::ShouldClose() const
+	bool RaylibWindow::ShouldClose() const
 	{
 		return mWindow->ShouldClose();
 	}
 
-	Size WindowRL::GetSize() const
+	Size RaylibWindow::GetSize() const
 	{
 		return { static_cast<uint32_t>(mWindow->GetWidth()),
 			static_cast<uint32_t>(mWindow->GetHeight()) };
 	}
 
-	uint32_t WindowRL::GetWidth() const
+	uint32_t RaylibWindow::GetWidth() const
 	{
 		return static_cast<uint32_t>(mWindow->GetWidth());
 	}
 
-	uint32_t WindowRL::GetHeight() const
+	uint32_t RaylibWindow::GetHeight() const
 	{
 		return static_cast<uint32_t>(mWindow->GetHeight());
 	}
 
-	bool WindowRL::GetIsResized() const
+	bool RaylibWindow::GetIsResized() const
 	{
 		return mWindow->IsResized();
 	}
 
-	bool WindowRL::GetFullscreen() const
+	bool RaylibWindow::GetFullscreen() const
 	{
 		return mWindow->IsFullscreen();
 	}
 
-	void WindowRL::SetFullscreen(bool fullscreen)
+	void RaylibWindow::SetFullscreen(bool fullscreen)
 	{
 		mWindow->SetFullscreen(fullscreen);
 	}
 
-	bool WindowRL::GetBorderless() const
+	bool RaylibWindow::GetBorderless() const
 	{
 		return mWindow->IsState(FLAG_BORDERLESS_WINDOWED_MODE);
 	}
 
-	void WindowRL::SetBorderless(bool borderless)
+	void RaylibWindow::SetBorderless(bool borderless)
 	{
 		if (GetBorderless() != borderless)
 			mWindow->ToggleBorderless();
 	}
 
-	bool WindowRL::GetMaximized() const
+	bool RaylibWindow::GetMaximized() const
 	{
 		return mWindow->IsMaximized();
 	}
 
-	void WindowRL::SetMaximized(bool maximized)
+	void RaylibWindow::SetMaximized(bool maximized)
 	{
 		if (maximized)
 		{

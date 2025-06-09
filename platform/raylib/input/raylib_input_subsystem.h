@@ -4,12 +4,12 @@
 
 namespace puffin::input
 {
-	class InputSubsystemRL : public InputSubsystem
+	class RaylibInputSubsystem : public InputSubsystem
 	{
 	public:
 
-		explicit InputSubsystemRL(const std::shared_ptr<core::Engine>& engine);
-		~InputSubsystemRL() override = default;
+		explicit RaylibInputSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~RaylibInputSubsystem() override = default;
 
 		bool IsKeyPressed(KeyboardKey key) const override;
 		bool IsKeyDown(KeyboardKey key) const override;

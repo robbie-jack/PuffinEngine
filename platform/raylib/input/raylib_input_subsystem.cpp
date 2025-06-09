@@ -4,72 +4,72 @@
 
 namespace puffin::input
 {
-	InputSubsystemRL::InputSubsystemRL(const std::shared_ptr<core::Engine>& engine)
+	RaylibInputSubsystem::RaylibInputSubsystem(const std::shared_ptr<core::Engine>& engine)
 		: InputSubsystem(engine)
 	{
 	}
 
-	bool InputSubsystemRL::IsKeyPressed(KeyboardKey key) const
+	bool RaylibInputSubsystem::IsKeyPressed(KeyboardKey key) const
 	{
 		return ::IsKeyPressed(static_cast<int>(key));
 	}
 
-	bool InputSubsystemRL::IsKeyDown(KeyboardKey key) const
+	bool RaylibInputSubsystem::IsKeyDown(KeyboardKey key) const
 	{
 		return ::IsKeyDown(static_cast<int>(key));
 	}
 
-	bool InputSubsystemRL::IsKeyReleased(KeyboardKey key) const
+	bool RaylibInputSubsystem::IsKeyReleased(KeyboardKey key) const
 	{
 		return ::IsKeyReleased(static_cast<int>(key));
 	}
 
-	bool InputSubsystemRL::IsKeyUp(KeyboardKey key)
+	bool RaylibInputSubsystem::IsKeyUp(KeyboardKey key)
 	{
 		return ::IsKeyUp(static_cast<int>(key));
 	}
 
-	bool InputSubsystemRL::IsMouseButtonPressed(MouseButton mouseButton) const
+	bool RaylibInputSubsystem::IsMouseButtonPressed(MouseButton mouseButton) const
 	{
 		return ::IsMouseButtonPressed(static_cast<int>(mouseButton));
 	}
 
-	bool InputSubsystemRL::IsMouseButtonDown(MouseButton mouseButton) const
+	bool RaylibInputSubsystem::IsMouseButtonDown(MouseButton mouseButton) const
 	{
 		return ::IsMouseButtonDown(static_cast<int>(mouseButton));
 	}
 
-	bool InputSubsystemRL::IsMouseButtonReleased(MouseButton mouseButton) const
+	bool RaylibInputSubsystem::IsMouseButtonReleased(MouseButton mouseButton) const
 	{
 		return ::IsMouseButtonReleased(static_cast<int>(mouseButton));
 	}
 
-	bool InputSubsystemRL::IsMouseButtonUp(MouseButton mouseButton) const
+	bool RaylibInputSubsystem::IsMouseButtonUp(MouseButton mouseButton) const
 	{
 		return ::IsMouseButtonUp(static_cast<int>(mouseButton));
 	}
 
-	bool InputSubsystemRL::IsGamepadButtonPressed(GamepadButton gamepadButton) const
+	bool RaylibInputSubsystem::IsGamepadButtonPressed(GamepadButton gamepadButton) const
 	{
 		return ::IsGamepadButtonPressed(mActiveGamepad, static_cast<int>(gamepadButton));
 	}
 
-	bool InputSubsystemRL::IsGamepadButtonDown(GamepadButton gamepadButton) const
+	bool RaylibInputSubsystem::IsGamepadButtonDown(GamepadButton gamepadButton) const
 	{
 		return ::IsGamepadButtonDown(mActiveGamepad, static_cast<int>(gamepadButton));
 	}
 
-	bool InputSubsystemRL::IsGamepadButtonReleased(GamepadButton gamepadButton) const
+	bool RaylibInputSubsystem::IsGamepadButtonReleased(GamepadButton gamepadButton) const
 	{
 		return ::IsGamepadButtonReleased(mActiveGamepad, static_cast<int>(gamepadButton));
 	}
 
-	bool InputSubsystemRL::IsGamepadButtonUp(GamepadButton gamepadButton) const
+	bool RaylibInputSubsystem::IsGamepadButtonUp(GamepadButton gamepadButton) const
 	{
 		return ::IsGamepadButtonUp(mActiveGamepad, static_cast<int>(gamepadButton));
 	}
 
-	InputState InputSubsystemRL::GetKeyState(KeyboardKey key) const
+	InputState RaylibInputSubsystem::GetKeyState(KeyboardKey key) const
 	{
 		if (::IsKeyPressed(static_cast<int>(key)))
 			return InputState::Pressed;
@@ -86,7 +86,7 @@ namespace puffin::input
 		return InputState::Up;
 	}
 
-	InputState InputSubsystemRL::GetMouseButtonState(MouseButton mouseButton) const
+	InputState RaylibInputSubsystem::GetMouseButtonState(MouseButton mouseButton) const
 	{
 		if (::IsMouseButtonPressed(static_cast<int>(mouseButton)))
 			return InputState::Pressed;
@@ -103,7 +103,7 @@ namespace puffin::input
 		return InputState::Up;
 	}
 
-	InputState InputSubsystemRL::GetGamepadButtonState(GamepadButton gamepadButton) const
+	InputState RaylibInputSubsystem::GetGamepadButtonState(GamepadButton gamepadButton) const
 	{
 		if (gamepadButton == GamepadButton::PaddleOne
 			|| gamepadButton == GamepadButton::PaddleTwo
@@ -126,41 +126,41 @@ namespace puffin::input
 		return InputState::Up;
 	}
 
-	int InputSubsystemRL::GetMouseX()
+	int RaylibInputSubsystem::GetMouseX()
 	{
 		return ::GetMouseX();
 	}
 
-	int InputSubsystemRL::GetMouseY()
+	int RaylibInputSubsystem::GetMouseY()
 	{
 		return ::GetMouseY();
 	}
 
-	Vector2i InputSubsystemRL::GetMousePosition()
+	Vector2i RaylibInputSubsystem::GetMousePosition()
 	{
 		auto mousePos = ::GetMousePosition();
 
 		return { static_cast<int>(mousePos.x), static_cast<int>(mousePos.y) };
 	}
 
-	float InputSubsystemRL::GetMouseDeltaX()
+	float RaylibInputSubsystem::GetMouseDeltaX()
 	{
 		return ::GetMouseDelta().x * mMouseSensitivity;
 	}
 
-	float InputSubsystemRL::GetMouseDeltaY()
+	float RaylibInputSubsystem::GetMouseDeltaY()
 	{
 		return ::GetMouseDelta().y * mMouseSensitivity;
 	}
 
-	Vector2f InputSubsystemRL::GetMouseDelta()
+	Vector2f RaylibInputSubsystem::GetMouseDelta()
 	{
 		auto mouseDelta = ::GetMouseDelta();
 
 		return { mouseDelta.x * mMouseSensitivity,mouseDelta.y * mMouseSensitivity };
 	}
 
-	void InputSubsystemRL::PollInput()
+	void RaylibInputSubsystem::PollInput()
 	{
 		PollInputEvents();
 	}

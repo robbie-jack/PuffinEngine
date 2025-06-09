@@ -14,12 +14,12 @@ namespace puffin
 
 namespace puffin::rendering
 {
-	class RenderSubsystemRL2D : public RenderSubsystem
+	class Raylib2DRenderSubsystem : public RenderSubsystem
 	{
 	public:
 
-		explicit RenderSubsystemRL2D(const std::shared_ptr<core::Engine>& engine);
-		~RenderSubsystemRL2D() override = default;
+		explicit Raylib2DRenderSubsystem(const std::shared_ptr<core::Engine>& engine);
+		~Raylib2DRenderSubsystem() override = default;
 
 		void RegisterTypes() override;
 

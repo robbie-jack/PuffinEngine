@@ -4,12 +4,12 @@
 
 namespace puffin::core
 {
-	class PlatformRL : public puffin::core::Platform
+	class RaylibPlatform : public puffin::core::Platform
 	{
 	public:
 
-		PlatformRL(std::shared_ptr<Engine> engine);
-		~PlatformRL() override = default;
+		RaylibPlatform(std::shared_ptr<Engine> engine);
+		~RaylibPlatform() override = default;
 
 		void RegisterTypes() override;
 

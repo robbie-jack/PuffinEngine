@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 	auto editor = std::make_shared<puffin::editor::Editor>();
 	const auto engine = editor->GetEngine();
 
-	engine->RegisterPlatform<puffin::core::PlatformRL>();
+	engine->RegisterPlatform<puffin::core::RaylibPlatform>();
 
 	puffin::core::RegisterComponentTypes2D();
 	puffin::core::RegisterNodeTypes2D();

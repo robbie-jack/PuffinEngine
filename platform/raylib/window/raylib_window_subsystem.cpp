@@ -6,25 +6,25 @@
 
 namespace puffin::window
 {
-	WindowSubsystemRL::WindowSubsystemRL(const std::shared_ptr<core::Engine>& engine) : WindowSubsystem(engine)
+	RaylibWindowSubsystem::RaylibWindowSubsystem(const std::shared_ptr<core::Engine>& engine) : WindowSubsystem(engine)
 	{
-		mName = "WindowSubsystemRL";
+		mName = "RaylibWindowSubsystem";
 	}
 
-	WindowSubsystemRL::~WindowSubsystemRL()
+	RaylibWindowSubsystem::~RaylibWindowSubsystem()
 	{
 		mEngine = nullptr;
 	}
 
-	void WindowSubsystemRL::Initialize(core::SubsystemManager* subsystemManager)
+	void RaylibWindowSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 		constexpr unsigned int flags = FLAG_WINDOW_RESIZABLE;
 
-		mPrimaryWindow = new WindowRL(1920, 1080, "Puffin Engine", flags);
+		mPrimaryWindow = new RaylibWindow(1920, 1080, "Puffin Engine", flags);
 		mPrimaryWindow->SetMaximized(true);
 	}
 
-	void WindowSubsystemRL::Deinitialize()
+	void RaylibWindowSubsystem::Deinitialize()
 	{
 		delete mPrimaryWindow;
 		mPrimaryWindow = nullptr;

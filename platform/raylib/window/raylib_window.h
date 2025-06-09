@@ -11,12 +11,12 @@ namespace puffin
 {
 	namespace window
 	{
-		class WindowRL : public Window
+		class RaylibWindow : public Window
 		{
 		public:
 
-			WindowRL(int32_t width, int32_t height, const std::string& name = "Puffin Engine", uint32_t flags = 0);
-			~WindowRL() override;
+			RaylibWindow(int32_t width, int32_t height, const std::string& name = "Puffin Engine", uint32_t flags = 0);
+			~RaylibWindow() override;
 
 			[[nodiscard]] bool ShouldClose() const override;
 
