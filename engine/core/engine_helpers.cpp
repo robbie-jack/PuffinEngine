@@ -127,9 +127,9 @@ namespace puffin::core
 	{
 		reflection::RegisterType<Node>();
 
-		reflection::RegisterType<TransformNode2D>();
+		reflection::RegisterType<Transform2DNode>();
 
-		reflection::RegisterType<rendering::SpriteNode2D>();
+		reflection::RegisterType<rendering::Sprite2DNode>();
 	}
 
 	void RegisterNodeTypes3D()
@@ -255,9 +255,9 @@ namespace puffin::core
 
 		// Box
 		{
-			auto* box = sceneGraph->AddNode<TransformNode2D>("Box");
+			auto* box = sceneGraph->AddNode<Transform2DNode>("Box");
 
-			auto sprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", box->GetID());
+			auto sprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", box->GetID());
 			sprite->SetColour({ 1.f, 0.f, 0.f });
 		}
 	}
@@ -283,7 +283,7 @@ namespace puffin::core
 
 		// Floor Node
 		{
-			auto* floor = sceneGraph->AddNode<TransformNode2D>("Floor");
+			auto* floor = sceneGraph->AddNode<Transform2DNode>("Floor");
 			floor->SetPosition({ 0.0f, -wallHalfExtent.y });
 
 			auto& rb = floor->AddComponent<physics::RigidbodyComponent2D>();
@@ -291,14 +291,14 @@ namespace puffin::core
 			box.halfExtent.x = wallHalfExtent.x;
 			box.halfExtent.y = wallHalfWidth;
 
-			auto* floorSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", floor->GetID());
+			auto* floorSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", floor->GetID());
 			floorSprite->SetScale({ wallHalfExtent.x * 2.f, 1.0f });
 			floorSprite->SetOffset({ -wallHalfExtent.x, 0.0f });
 		}
 
 		// Left Wall Node
 		{
-			auto* leftWall = sceneGraph->AddNode<TransformNode2D>("Left Wall");
+			auto* leftWall = sceneGraph->AddNode<Transform2DNode>("Left Wall");
 			leftWall->SetPosition({ -wallHalfExtent.x, 0.0f });
 
 			auto& rb = leftWall->AddComponent<physics::RigidbodyComponent2D>();
@@ -306,14 +306,14 @@ namespace puffin::core
 			box.halfExtent.x = wallHalfWidth;
 			box.halfExtent.y = wallHalfExtent.y;
 
-			auto* wallLeftSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", leftWall->GetID());
+			auto* wallLeftSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", leftWall->GetID());
 			wallLeftSprite->SetScale({ 1.0f, wallHalfExtent.y * 2.f });
 			wallLeftSprite->SetOffset({ 0.0f, -wallHalfExtent.y });
 		}
 
 		// Right Wall Node
 		{
-			auto* rightWall = sceneGraph->AddNode<TransformNode2D>("Right Wall");
+			auto* rightWall = sceneGraph->AddNode<Transform2DNode>("Right Wall");
 			rightWall->SetPosition({ wallHalfExtent.x, 0.0f });
 
 			auto& rb = rightWall->AddComponent<physics::RigidbodyComponent2D>();
@@ -321,14 +321,14 @@ namespace puffin::core
 			box.halfExtent.x = wallHalfWidth;
 			box.halfExtent.y = wallHalfExtent.y;
 
-			auto* wallRightSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", rightWall->GetID());
+			auto* wallRightSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", rightWall->GetID());
 			wallRightSprite->SetScale({ 1.0f, wallHalfExtent.y * 2.f });
 			wallRightSprite->SetOffset({ 0.0f, -wallHalfExtent.y });
 		}
 
 		// Ceiling Node
 		{
-			auto* ceiling = sceneGraph->AddNode<TransformNode2D>("Ceiling");
+			auto* ceiling = sceneGraph->AddNode<Transform2DNode>("Ceiling");
 			ceiling->SetPosition({ 0.0f, wallHalfExtent.y});
 
 			auto& rb = ceiling->AddComponent<physics::RigidbodyComponent2D>();
@@ -336,7 +336,7 @@ namespace puffin::core
 			box.halfExtent.x = wallHalfExtent.x;
 			box.halfExtent.y = wallHalfWidth;
 
-			auto* ceilingSprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", ceiling->GetID());
+			auto* ceilingSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", ceiling->GetID());
 			ceilingSprite->SetScale({ wallHalfExtent.x * 2.f, 1.0f });
 			ceilingSprite->SetOffset({ -wallHalfExtent.x, 0.0f });
 		}
@@ -364,7 +364,7 @@ namespace puffin::core
 
 			for (int i = 0; i < numBodies; ++i)
 			{
-				auto* body = sceneGraph->AddNode<TransformNode2D>("Body #" + std::to_string(i));
+				auto* body = sceneGraph->AddNode<Transform2DNode>("Body #" + std::to_string(i));
 				body->SetPosition({ posXDist(mt), posYDist(mt) });
 
 				auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
@@ -379,7 +379,7 @@ namespace puffin::core
 				box.halfExtent.x = bodyHalfExtent.x;
 				box.halfExtent.y = bodyHalfExtent.y;
 
-				auto* bodySprite = sceneGraph->AddChildNode<rendering::SpriteNode2D>("Sprite", body->GetID());
+				auto* bodySprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", body->GetID());
 				bodySprite->SetColour(colours[i % colours.size()]);
 			}
 		}

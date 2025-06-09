@@ -178,7 +178,7 @@ namespace puffin::physics
 
 			if (registry->all_of<TransformComponent2D, VelocityComponent2D>(entity))
 			{
-				if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node); transformNode2D)
+				if (auto* transformNode2D = dynamic_cast<Transform2DNode*>(node); transformNode2D)
 				{
 					transformNode2D->Transform().position.x = pos.x;
 					transformNode2D->Transform().position.y = pos.y;

@@ -4,56 +4,56 @@
 
 namespace puffin::rendering
 {
-	void SpriteNode2D::Initialize()
+	void Sprite2DNode::Initialize()
 	{
-		TransformNode2D::Initialize();
+		Transform2DNode::Initialize();
 
 		auto sprite = AddComponent<SpriteComponent2D>();
 	}
 
-	void SpriteNode2D::Deinitialize()
+	void Sprite2DNode::Deinitialize()
 	{
-		TransformNode2D::Deinitialize();
+		Transform2DNode::Deinitialize();
 
 		RemoveComponent<SpriteComponent2D>();
 	}
 
-	const std::string& SpriteNode2D::GetTypeString() const
+	const std::string& Sprite2DNode::GetTypeString() const
 	{
 		return gSpriteNode2DTypeString;
 	}
 
-	entt::id_type SpriteNode2D::GetTypeID() const
+	entt::id_type Sprite2DNode::GetTypeID() const
 	{
-		return reflection::GetTypeHashedString<SpriteNode2D>();
+		return reflection::GetTypeHashedString<Sprite2DNode>();
 	}
 
-	const Vector3f& SpriteNode2D::GetColour() const
-	{
-		return GetComponent<SpriteComponent2D>().colour;
-	}
-
-	Vector3f& SpriteNode2D::Colour()
+	const Vector3f& Sprite2DNode::GetColour() const
 	{
 		return GetComponent<SpriteComponent2D>().colour;
 	}
 
-	void SpriteNode2D::SetColour(const Vector3f colour)
+	Vector3f& Sprite2DNode::Colour()
+	{
+		return GetComponent<SpriteComponent2D>().colour;
+	}
+
+	void Sprite2DNode::SetColour(const Vector3f colour)
 	{
 		mRegistry->patch<SpriteComponent2D>(mEntity, [&colour](auto& sprite) { sprite.colour = colour; });
 	}
 
-	const Vector2f& SpriteNode2D::GetOffset() const
+	const Vector2f& Sprite2DNode::GetOffset() const
 	{
 		return GetComponent<SpriteComponent2D>().offset;
 	}
 
-	Vector2f& SpriteNode2D::Offset()
+	Vector2f& Sprite2DNode::Offset()
 	{
 		return GetComponent<SpriteComponent2D>().offset;
 	}
 
-	void SpriteNode2D::SetOffset(const Vector2f offset)
+	void Sprite2DNode::SetOffset(const Vector2f offset)
 	{
 		mRegistry->patch<SpriteComponent2D>(mEntity, [&offset](auto& sprite) { sprite.offset = offset; });
 	}

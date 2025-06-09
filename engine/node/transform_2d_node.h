@@ -2,6 +2,7 @@
 
 #include "node/node.h"
 #include "types/vector2.h"
+#include "types/transform2d.h"
 #include "utility/reflection.h"
 
 namespace puffin
@@ -11,43 +12,64 @@ namespace puffin
 
 namespace puffin
 {
-	const std::string gTransformNode2DTypeString = "TransformNode2D";
+	const std::string gTransformNode2DTypeString = "Transform2DNode";
 
-	class TransformNode2D : public Node
+	class Transform2DNode : public Node
 	{
 	public:
 
 		void Initialize() override;
 		void Deinitialize() override;
 
-		[[nodiscard]] const std::string& GetTypeString() const override;
-		[[nodiscard]] entt::id_type GetTypeID() const override;
+		void Update(double deltaTime) override;
 
-		[[nodiscard]] const TransformComponent2D& GetTransform() const;
-		[[nodiscard]] TransformComponent2D& Transform();
+		const std::string& GetTypeString() const override;
+		entt::id_type GetTypeID() const override;
 
-		[[nodiscard]] const TransformComponent2D& GetGlobalTransform() const;
-		//[[nodiscard]] TransformComponent2D& GlobalTransform();
+		const Transform2D& GetTransform() const;
+		Transform2D& Transform();
+		void SetTransform(const Transform2D& transform);
 
 #ifdef PFN_DOUBLE_PRECISION
-		[[nodiscard]] const Vector2d& GetPosition() const;
-		[[nodiscard]] Vector2d& Position();
+		const Vector2d& GetPosition() const;
+		Vector2d& Position();
 		void SetPosition(const Vector2d& position);
 #else
-		[[nodiscard]] const Vector2f& GetPosition() const;
-		[[nodiscard]] Vector2f& Position();
+		const Vector2f& GetPosition() const;
+		Vector2f& Position();
 		void SetPosition(const Vector2f& position);
 #endif
 
-		[[nodiscard]] const float& GetRotation() const;
-		[[nodiscard]] float& Rotation();
+		const float& GetRotation() const;
+		float& Rotation();
 		void SetRotation(const float& rotation);
 
-		[[nodiscard]] const Vector2f& GetScale() const;
-		[[nodiscard]] Vector2f& Scale();
+		const Vector2f& GetScale() const;
+		Vector2f& Scale();
 		void SetScale(const Vector2f& scale);
 
+		const Transform2D& GetGlobalTransform() const;
+		Transform2D& GlobalTransform();
+		void SetGlobalTransform(const Transform2D& transform);
+
 	protected:
+
+
+
+	private:
+
+		void UpdateLocalTransform();
+		void UpdateGlobalTransform();
+
+		/*
+		 * Local space transform
+		 */
+		Transform2D mLocalTransform = Transform2D();
+
+		/*
+		 * Global space transform
+		 */
+		Transform2D mGlobalTransform = Transform2D();
 
 		
 
@@ -56,21 +78,21 @@ namespace puffin
 	namespace reflection
 	{
 		template<>
-		inline std::string_view GetTypeString<TransformNode2D>()
+		inline std::string_view GetTypeString<Transform2DNode>()
 		{
-			return "TransformNode2D";
+			return "Transform2DNode";
 		}
 
 		template<>
-		inline entt::hs GetTypeHashedString<TransformNode2D>()
+		inline entt::hs GetTypeHashedString<Transform2DNode>()
 		{
-			return entt::hs(GetTypeString<TransformNode2D>().data());
+			return entt::hs(GetTypeString<Transform2DNode>().data());
 		}
 
 		template<>
-		inline void RegisterType<TransformNode2D>()
+		inline void RegisterType<Transform2DNode>()
 		{
-			auto meta = entt::meta<TransformNode2D>()
+			auto meta = entt::meta<Transform2DNode>()
 			.base<Node>();
 
 			reflection::RegisterTypeDefaults(meta);

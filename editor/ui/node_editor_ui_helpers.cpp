@@ -12,7 +12,7 @@
 
 namespace puffin::ui
 {
-	bool DrawTransformNode2DUI(ImGuiTreeNodeFlags flags, TransformNode2D* node)
+	bool DrawTransformNode2DUI(ImGuiTreeNodeFlags flags, Transform2DNode* node)
 	{
 		bool nodeChanged = false;
 

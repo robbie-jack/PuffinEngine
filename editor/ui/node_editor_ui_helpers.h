@@ -14,12 +14,12 @@ namespace puffin
 	}
 
 	class TransformNode3D;
-	class TransformNode2D;
+	class Transform2DNode;
 }
 
 namespace puffin::ui
 {
-	bool DrawTransformNode2DUI(ImGuiTreeNodeFlags flags, TransformNode2D* node);
+	bool DrawTransformNode2DUI(ImGuiTreeNodeFlags flags, Transform2DNode* node);
 	bool DrawTransformNode3DUI(ImGuiTreeNodeFlags flags, TransformNode3D* node);
 
 	bool DrawStaticMeshNode3DUI(ImGuiTreeNodeFlags flags, rendering::StaticMeshNode3D* node);

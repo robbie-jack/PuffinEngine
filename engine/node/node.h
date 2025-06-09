@@ -151,6 +151,9 @@ namespace puffin
 
 	protected:
 
+		void NotifyLocalTransformChanged();
+		void NotifyGlobalTransformChanged();
+
 		UUID mNodeID = gInvalidID;
 		std::string mName;
 
@@ -161,6 +164,15 @@ namespace puffin
 
 		std::shared_ptr<core::Engine> mEngine = nullptr;
 		std::shared_ptr<entt::registry> mRegistry = nullptr;
+
+		bool mShouldUpdateLocalTransform = false;
+		bool mShouldUpdateGlobalTransform = false;
+
+	private:
+
+		Node* mParent = nullptr;
+		std::list<Node*> mChildren;
+
 	};
 
 	namespace reflection

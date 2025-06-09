@@ -8,9 +8,9 @@ namespace puffin
 {
 	namespace rendering
 	{
-		const std::string gSpriteNode2DTypeString = "SpriteNode2D";
+		const std::string gSpriteNode2DTypeString = "Sprite2DNode";
 
-		class SpriteNode2D : public TransformNode2D
+		class Sprite2DNode : public Transform2DNode
 		{
 		public:
 
@@ -33,22 +33,22 @@ namespace puffin
 	namespace reflection
 	{
 		template<>
-		inline std::string_view GetTypeString<rendering::SpriteNode2D>()
+		inline std::string_view GetTypeString<rendering::Sprite2DNode>()
 		{
 			return rendering::gSpriteNode2DTypeString;
 		}
 
 		template<>
-		inline entt::hs GetTypeHashedString<rendering::SpriteNode2D>()
+		inline entt::hs GetTypeHashedString<rendering::Sprite2DNode>()
 		{
-			return entt::hs(GetTypeString<rendering::SpriteNode2D>().data());
+			return entt::hs(GetTypeString<rendering::Sprite2DNode>().data());
 		}
 
 		template<>
-		inline void RegisterType<rendering::SpriteNode2D>()
+		inline void RegisterType<rendering::Sprite2DNode>()
 		{
-			auto meta = entt::meta<rendering::SpriteNode2D>()
-			.base<TransformNode2D>();
+			auto meta = entt::meta<rendering::Sprite2DNode>()
+			.base<Transform2DNode>();
 
 			reflection::RegisterTypeDefaults(meta);
 		}

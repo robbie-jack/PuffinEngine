@@ -183,7 +183,7 @@ namespace puffin::rendering
 
 				Vector2f scale{ 1.f };
 
-				if (const auto* transformNode = dynamic_cast<TransformNode2D*>(node); transformNode)
+				if (const auto* transformNode = dynamic_cast<Transform2DNode*>(node); transformNode)
 				{
 					position = transformNode->GetGlobalTransform().position;
 					scale = transformNode->GetGlobalTransform().scale;

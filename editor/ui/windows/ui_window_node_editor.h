@@ -15,7 +15,7 @@ namespace ImGui
 namespace puffin
 {
 	class TransformNode3D;
-	class TransformNode2D;
+	class Transform2DNode;
 
 	namespace scene
 	{
@@ -118,7 +118,7 @@ namespace puffin::ui
 
 	private:
 
-		/*void DrawTransform2DUINode(ImGuiTreeNodeFlags flags, TransformNode2D* node);
+		/*void DrawTransform2DUINode(ImGuiTreeNodeFlags flags, Transform2DNode* node);
 		void DrawTransform3DUINode(ImGuiTreeNodeFlags flags, TransformNode3D* node);
 
 		void DrawStaticMeshNode3DUI(ImGuiTreeNodeFlags flags, rendering::StaticMeshNode3D* node);

@@ -98,7 +98,7 @@ namespace puffin
 						mSceneChanged = false;
 
 						// Display Component UI
-						if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node); transformNode2D)
+						if (auto* transformNode2D = dynamic_cast<Transform2DNode*>(node); transformNode2D)
 						{
 							mSceneChanged |= DrawTransformNode2DUI(flags, transformNode2D);
 						}

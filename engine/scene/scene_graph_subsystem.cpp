@@ -25,8 +25,8 @@ namespace puffin::scene
 	{
 		RegisterNodeType<Node>();
 
-		RegisterNodeType<TransformNode2D>();
-		RegisterNodeType<rendering::SpriteNode2D>();
+		RegisterNodeType<Transform2DNode>();
+		RegisterNodeType<rendering::Sprite2DNode>();
 
 		RegisterNodeType<TransformNode3D>();
 		RegisterNodeType<rendering::StaticMeshNode3D>();
@@ -37,8 +37,8 @@ namespace puffin::scene
 
 		SetDefaultNodePoolSize<Node>(5000);
 
-		SetDefaultNodePoolSize<TransformNode2D>(5000);
-		SetDefaultNodePoolSize<rendering::SpriteNode2D>(5000);
+		SetDefaultNodePoolSize<Transform2DNode>(5000);
+		SetDefaultNodePoolSize<rendering::Sprite2DNode>(5000);
 
 		SetDefaultNodePoolSize<TransformNode3D>(5000);
 		SetDefaultNodePoolSize<rendering::StaticMeshNode3D>(5000);
@@ -273,7 +273,7 @@ namespace puffin::scene
 				const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 				const auto registry = enttSubsystem->GetRegistry();
 
-				if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
+				if (auto* transformNode2D = dynamic_cast<Transform2DNode*>(node))
 				{
 					auto& globalTransform = mGlobalTransform2Ds.At(id);
 					globalTransform.position = { 0.f };
@@ -282,16 +282,16 @@ namespace puffin::scene
 
 					const auto& localTransform = transformNode2D->GetTransform();
 
-					auto parentNode = dynamic_cast<TransformNode2D*>(node->GetParent());
+					auto parentNode = dynamic_cast<Transform2DNode*>(node->GetParent());
 					if (parentNode)
 					{
 						const auto& parentTransform = parentNode->GetGlobalTransform();
 
-						ApplyLocalToGlobalTransform2D(localTransform, parentTransform, globalTransform);
+						//ApplyLocalToGlobalTransform2D(localTransform, parentTransform, globalTransform);
 					}
 					else
 					{
-						ApplyLocalToGlobalTransform2D(localTransform, {}, globalTransform);
+						//ApplyLocalToGlobalTransform2D(localTransform, {}, globalTransform);
 					}
 
 					registry->patch<TransformComponent2D>(node->GetEntity());
@@ -387,7 +387,7 @@ namespace puffin::scene
 
 		mIDToTypeID.insert({ id, typeID });
 
-		if (auto* transformNode2D = dynamic_cast<TransformNode2D*>(node))
+		if (auto* transformNode2D = dynamic_cast<Transform2DNode*>(node))
 		{
 			mGlobalTransform2Ds.Emplace(id, TransformComponent2D());
 
