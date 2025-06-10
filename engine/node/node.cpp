@@ -194,14 +194,4 @@ namespace puffin
 	{
 		mChildIDs.remove(id);
 	}
-
-	void Node::NotifyLocalTransformChanged()
-	{
-		mShouldUpdateLocalTransform = true;
-	}
-
-	void Node::NotifyGlobalTransformChanged()
-	{
-		mShouldUpdateGlobalTransform = true;
-	}
 }

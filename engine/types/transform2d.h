@@ -49,6 +49,28 @@ namespace puffin
 
 	};
 
+	inline Transform2D ApplyLocalToGlobalTransform(Transform2D localTransform, Transform2D parentTransform)
+	{
+		Transform2D transform;
+
+		transform.position = parentTransform.position + localTransform.position;
+		transform.rotation = parentTransform.rotation + localTransform.rotation;
+		transform.scale = parentTransform.scale * localTransform.scale;
+
+		return transform;
+	}
+
+	inline Transform2D ApplyGlobalToLocalTransform(Transform2D globalTransform, Transform2D parentTransform)
+	{
+		Transform2D transform;
+
+		transform.position = globalTransform.position - parentTransform.position;
+		transform.rotation = globalTransform.rotation - parentTransform.rotation;
+		transform.scale = globalTransform.scale - parentTransform.scale;
+
+		return transform;
+	}
+
 	namespace serialization
 	{
 		template<>

@@ -15,14 +15,18 @@ namespace puffin
 	{
 		Node::Initialize();
 
-		AddComponent<TransformComponent2D>();
+		mShouldUpdateGlobalTransform = true;
 	}
 
 	void Transform2DNode::Deinitialize()
 	{
 		Node::Deinitialize();
 
-		RemoveComponent<TransformComponent2D>();
+		mLocalTransform = {};
+		mGlobalTransform = {};
+
+		mShouldUpdateLocalTransform = false;
+		mShouldUpdateGlobalTransform = false;
 	}
 
 	void Transform2DNode::Update(double deltaTime)
@@ -31,6 +35,27 @@ namespace puffin
 
 		UpdateLocalTransform();
 		UpdateGlobalTransform();
+	}
+
+	bool Transform2DNode::ShouldUpdate() const
+	{
+		return true;
+	}
+
+	void Transform2DNode::Serialize(nlohmann::json& json) const
+	{
+		Node::Serialize(json);
+
+		json["transform"] = serialization::Serialize(mLocalTransform);
+	}
+
+	void Transform2DNode::Deserialize(const nlohmann::json& json)
+	{
+		Node::Deserialize(json);
+
+		mLocalTransform = serialization::Deserialize<Transform2D>(json["transform"]);
+
+		UpdateGlobalTransform(true);
 	}
 
 	const std::string& Transform2DNode::GetTypeString() const
@@ -43,21 +68,27 @@ namespace puffin
 		return reflection::GetTypeHashedString<Transform2DNode>();
 	}
 
-	const Transform2D& Transform2DNode::GetTransform() const
+	const Transform2D& Transform2DNode::GetTransform()
 	{
+		UpdateLocalTransform();
+
 		return mLocalTransform;
 	}
 
 	Transform2D& Transform2DNode::Transform()
 	{
+		UpdateLocalTransform();
+
 		mShouldUpdateGlobalTransform = true;
+
 		return mLocalTransform;
 	}
 
 	void Transform2DNode::SetTransform(const Transform2D& transform)
 	{
-		mShouldUpdateGlobalTransform = true;
 		mLocalTransform = transform;
+
+		mShouldUpdateGlobalTransform = true;
 	}
 
 #ifdef PFN_DOUBLE_PRECISION
@@ -76,9 +107,7 @@ namespace puffin
 		Transform().position = position;
 	}
 #else
-	
-
-	const Vector2f& Transform2DNode::GetPosition() const
+	const Vector2f& Transform2DNode::GetPosition()
 	{
 		return GetTransform().position;
 	}
@@ -94,7 +123,7 @@ namespace puffin
 	}
 #endif
 
-	const float& Transform2DNode::GetRotation() const
+	const float& Transform2DNode::GetRotation()
 	{
 		return GetTransform().rotation;
 	}
@@ -109,7 +138,7 @@ namespace puffin
 		Transform().rotation = rotation;
 	}
 
-	const Vector2f& Transform2DNode::GetScale() const
+	const Vector2f& Transform2DNode::GetScale()
 	{
 		return GetTransform().scale;
 	}
@@ -124,13 +153,16 @@ namespace puffin
 		Transform().scale = scale;
 	}
 
-	const Transform2D& Transform2DNode::GetGlobalTransform() const
+	const Transform2D& Transform2DNode::GetGlobalTransform()
 	{
+		UpdateGlobalTransform();
+
 		return mGlobalTransform;
 	}
 
 	Transform2D& Transform2DNode::GlobalTransform()
 	{
+		UpdateGlobalTransform();
 		
 		return mGlobalTransform;
 	}
@@ -138,26 +170,113 @@ namespace puffin
 	void Transform2DNode::SetGlobalTransform(const Transform2D& transform)
 	{
 		mShouldUpdateLocalTransform = true;
+
 		mGlobalTransform = transform;
 	}
 
-	void Transform2DNode::UpdateLocalTransform()
+#ifdef PFN_DOUBLE_PRECISION
+	const Vector2d& Transform2DNode::GetGlobalPosition()
 	{
-		if (!mShouldUpdateLocalTransform)
+		return GetGlobalTransform().position;
+	}
+
+	Vector2d& Transform2DNode::GlobalPosition()
+	{
+		return GlobalTransform().position;
+	}
+
+	void Transform2DNode::SetGlobalPosition(const Vector2d& position)
+	{
+		GlobalTransform().position = position;
+	}
+#else
+	const Vector2f& Transform2DNode::GetGlobalPosition()
+	{
+		return GetGlobalTransform().position;
+	}
+
+	Vector2f& Transform2DNode::GlobalPosition()
+	{
+		return GlobalTransform().position;
+	}
+
+	void Transform2DNode::SetGlobalPosition(const Vector2f& position)
+	{
+		GlobalTransform().position = position;
+	}
+#endif
+
+	const float& Transform2DNode::GetGlobalRotation()
+	{
+		return GetGlobalTransform().rotation;
+	}
+
+	float& Transform2DNode::GlobalRotation()
+	{
+		return GlobalTransform().rotation;
+	}
+
+	void Transform2DNode::SetGlobalRotation(const float& rotation)
+	{
+		GlobalTransform().rotation = rotation;
+	}
+
+	const Vector2f& Transform2DNode::GetGlobalScale()
+	{
+		return GetGlobalTransform().scale;
+	}
+
+	Vector2f& Transform2DNode::GlobalScale()
+	{
+		return GlobalTransform().scale;
+	}
+
+	void Transform2DNode::SetGlobalScale(const Vector2f& scale)
+	{
+		GlobalTransform().scale = scale;
+	}
+
+	void Transform2DNode::NotifyLocalTransformChanged()
+	{
+		mShouldUpdateLocalTransform = true;
+	}
+
+	void Transform2DNode::NotifyGlobalTransformChanged()
+	{
+		mShouldUpdateGlobalTransform = true;
+	}
+
+	void Transform2DNode::UpdateLocalTransform(bool forceUpdate)
+	{
+		if (!mShouldUpdateLocalTransform && !forceUpdate)
 			return;
 
-		// PUFFIN_TODO - Implement
+		if (auto* parent = dynamic_cast<Transform2DNode*>(GetParent()); parent)
+		{
+			mLocalTransform = ApplyGlobalToLocalTransform(mGlobalTransform, parent->GetGlobalTransform());
+		}
+		else
+		{
+			mGlobalTransform = ApplyGlobalToLocalTransform(mGlobalTransform, {});
+		}
 
 		mShouldUpdateLocalTransform = false;
 	}
 
-	void Transform2DNode::UpdateGlobalTransform()
+	void Transform2DNode::UpdateGlobalTransform(bool forceUpdate)
 	{
-		if (!mShouldUpdateGlobalTransform)
+		if (!mShouldUpdateGlobalTransform && !forceUpdate)
 			return;
 
-		// PUFFIN_TODO - Implement
-
+		if (auto* parent = dynamic_cast<Transform2DNode*>(GetParent()); parent)
+		{
+			mGlobalTransform = ApplyLocalToGlobalTransform(mLocalTransform, parent->GetGlobalTransform());
+		}
+		else
+		{
+			mGlobalTransform = ApplyLocalToGlobalTransform(mLocalTransform, {});
+		}
+	
 		mShouldUpdateGlobalTransform = false;
 	}
 }

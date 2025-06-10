@@ -95,7 +95,7 @@ namespace puffin::scene
 	{
 		UpdateSceneGraph();
 
-		UpdateGlobalTransforms();
+		//UpdateGlobalTransforms();
 	}
 
 	bool SceneGraphSubsystem::ShouldUpdate()

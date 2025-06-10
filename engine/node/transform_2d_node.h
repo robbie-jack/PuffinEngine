@@ -22,44 +22,67 @@ namespace puffin
 		void Deinitialize() override;
 
 		void Update(double deltaTime) override;
+		bool ShouldUpdate() const override;
+
+		void Serialize(nlohmann::json& json) const override;
+		void Deserialize(const nlohmann::json& json) override;
 
 		const std::string& GetTypeString() const override;
 		entt::id_type GetTypeID() const override;
 
-		const Transform2D& GetTransform() const;
+		const Transform2D& GetTransform();
 		Transform2D& Transform();
 		void SetTransform(const Transform2D& transform);
 
 #ifdef PFN_DOUBLE_PRECISION
-		const Vector2d& GetPosition() const;
+		const Vector2d& GetPosition();
 		Vector2d& Position();
 		void SetPosition(const Vector2d& position);
 #else
-		const Vector2f& GetPosition() const;
+		const Vector2f& GetPosition();
 		Vector2f& Position();
 		void SetPosition(const Vector2f& position);
 #endif
 
-		const float& GetRotation() const;
+		const float& GetRotation();
 		float& Rotation();
 		void SetRotation(const float& rotation);
 
-		const Vector2f& GetScale() const;
+		const Vector2f& GetScale();
 		Vector2f& Scale();
 		void SetScale(const Vector2f& scale);
 
-		const Transform2D& GetGlobalTransform() const;
+		const Transform2D& GetGlobalTransform();
 		Transform2D& GlobalTransform();
 		void SetGlobalTransform(const Transform2D& transform);
 
+#ifdef PFN_DOUBLE_PRECISION
+		const Vector2d& GetGlobalPosition();
+		Vector2d& GlobalPosition();
+		void SetGlobalPosition(const Vector2d& position);
+#else
+		const Vector2f& GetGlobalPosition();
+		Vector2f& GlobalPosition();
+		void SetGlobalPosition(const Vector2f& position);
+#endif
+
+		const float& GetGlobalRotation();
+		float& GlobalRotation();
+		void SetGlobalRotation(const float& rotation);
+
+		const Vector2f& GetGlobalScale();
+		Vector2f& GlobalScale();
+		void SetGlobalScale(const Vector2f& scale);
+
 	protected:
 
-
+		void NotifyLocalTransformChanged();
+		void NotifyGlobalTransformChanged();
 
 	private:
 
-		void UpdateLocalTransform();
-		void UpdateGlobalTransform();
+		void UpdateLocalTransform(bool forceUpdate = false);
+		void UpdateGlobalTransform(bool forceUpdate = false);
 
 		/*
 		 * Local space transform
@@ -71,7 +94,8 @@ namespace puffin
 		 */
 		Transform2D mGlobalTransform = Transform2D();
 
-		
+		bool mShouldUpdateLocalTransform = false;
+		bool mShouldUpdateGlobalTransform = false;		
 
 	};
 
