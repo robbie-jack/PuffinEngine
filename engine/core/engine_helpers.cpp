@@ -31,6 +31,7 @@
 #include "core/signal_subsystem.h"
 #include "ecs/entt_subsystem.h"
 #include "node/node.h"
+#include "node/physics/2d/rigidbody_2d_node.h"
 #include "node/physics/3d/rigidbody_3d_node.h"
 #include "node/rendering/2d/sprite_2d_node.h"
 #include "node/rendering/3d/camera_3d_node.h"
@@ -283,7 +284,7 @@ namespace puffin::core
 
 		// Floor Node
 		{
-			auto* floor = sceneGraph->AddNode<Transform2DNode>("Floor");
+			auto* floor = sceneGraph->AddNode<physics::Rigidbody2DNode>("Floor");
 			floor->SetGlobalPosition({ 0.0f, -wallHalfExtent.y });
 
 			/*auto& rb = floor->AddComponent<physics::RigidbodyComponent2D>();
@@ -298,7 +299,7 @@ namespace puffin::core
 
 		// Left Wall Node
 		{
-			auto* leftWall = sceneGraph->AddNode<Transform2DNode>("Left Wall");
+			auto* leftWall = sceneGraph->AddNode<physics::Rigidbody2DNode>("Left Wall");
 			leftWall->SetGlobalPosition({ -wallHalfExtent.x, 0.0f });
 
 			/*auto& rb = leftWall->AddComponent<physics::RigidbodyComponent2D>();
@@ -313,7 +314,7 @@ namespace puffin::core
 
 		// Right Wall Node
 		{
-			auto* rightWall = sceneGraph->AddNode<Transform2DNode>("Right Wall");
+			auto* rightWall = sceneGraph->AddNode<physics::Rigidbody2DNode>("Right Wall");
 			rightWall->SetGlobalPosition({ wallHalfExtent.x, 0.0f });
 
 			/*auto& rb = rightWall->AddComponent<physics::RigidbodyComponent2D>();
@@ -328,7 +329,7 @@ namespace puffin::core
 
 		// Ceiling Node
 		{
-			auto* ceiling = sceneGraph->AddNode<Transform2DNode>("Ceiling");
+			auto* ceiling = sceneGraph->AddNode<physics::Rigidbody2DNode>("Ceiling");
 			ceiling->SetGlobalPosition({ 0.0f, wallHalfExtent.y});
 
 			/*auto& rb = ceiling->AddComponent<physics::RigidbodyComponent2D>();
@@ -364,8 +365,11 @@ namespace puffin::core
 
 			for (int i = 0; i < numBodies; ++i)
 			{
-				auto* body = sceneGraph->AddNode<Transform2DNode>("Body #" + std::to_string(i));
+				auto* body = sceneGraph->AddNode<physics::Rigidbody2DNode>("Body #" + std::to_string(i));
 				body->SetGlobalPosition({ posXDist(mt), posYDist(mt) });
+				body->SetBodyType(physics::BodyType::Dynamic);
+				body->SetFriction(0.0f);
+				body->SetLinearVelocity({ static_cast<float>(velDist(mt)), static_cast<float>(velDist(mt)) });
 
 				/*auto& rb = body->AddComponent<physics::RigidbodyComponent2D>();
 				rb.bodyType = physics::BodyType::Dynamic;

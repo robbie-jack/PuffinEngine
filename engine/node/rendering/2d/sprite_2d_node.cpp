@@ -29,7 +29,7 @@ namespace puffin::rendering
 	{
 		Transform2DNode::Deserialize(json);
 
-		auto& spriteJson = json["sprite_2d"];
+		auto& spriteJson = json["sprite"];
 
 		mColour = serialization::Deserialize<Vector3f>(spriteJson["colour"]);
 		mOffset = serialization::Deserialize<Vector2f>(spriteJson["offset"]);
