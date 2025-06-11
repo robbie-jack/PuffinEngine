@@ -29,7 +29,7 @@ namespace puffin::ecs
 
 		void RemoveEntity(UUID id);
 
-		bool IsEntityValid(UUID id);
+		bool IsEntityValid(UUID id) const;
 
 		[[nodiscard]] entt::entity GetEntity(UUID id) const;
 		[[nodiscard]] UUID GetID(entt::entity entity) const;

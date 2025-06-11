@@ -1,5 +1,7 @@
 #include "physics/box2d/box2d_physics_subsystem.h"
 
+#include "node/physics/2d/rigidbody_2d_node.h"
+
 #if PFN_BOX2D_PHYSICS
 
 #include "core/engine.h"
@@ -64,22 +66,8 @@ namespace puffin::physics
 	{
 		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
 		auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
-		
-		// Bind entt callbacks
-		auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 
-		mConnections.push_back(registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructRigidbody>(this));
-		mConnections.push_back(registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateRigidbody>(this));
-		mConnections.push_back(registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyRigidbody>(this));
-
-		mConnections.push_back(registry->on_construct<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructBox>(this));
-		mConnections.push_back(registry->on_update<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateBox>(this));
-		mConnections.push_back(registry->on_destroy<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyBox>(this));
-
-		mConnections.push_back(registry->on_construct<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructCircle>(this));
-		mConnections.push_back(registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateCircle>(this));
-		mConnections.push_back(registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyCircle>(this));
-		
+		InitConnections();
 		InitSettingsAndSignals();
 	}
 
@@ -121,6 +109,15 @@ namespace puffin::physics
 		mTaskCount = 0;
 		mPhysicsWorldID = b2CreateWorld(&worldDef);
 
+		const auto* sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+
+		std::vector<Rigidbody2DNode*> bodies;
+		sceneGraph->GetNodes(bodies);
+		for (auto* body : bodies)
+		{
+			mBodyCreateEvents.Push({ body->GetID() });
+		}
+
 		const auto& registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		
 		const auto& bodyView = registry->view<RigidbodyComponent2D>();
@@ -154,74 +151,8 @@ namespace puffin::physics
 		b2World_Step(mPhysicsWorldID, fixedTimeStep, mSubSteps);
 		mTaskCount = 0;
 
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto registry = enttSubsystem->GetRegistry();
-		
-		const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
-
-		const auto& view = registry->view<RigidbodyComponent2D>();
-
-		for (auto& [entity, rb] : view.each())
-		{
-			const auto id = enttSubsystem->GetID(entity);
-			auto* node = sceneGraph->GetNode(id);
-
-			if (mBodyData.find(id) == mBodyData.end())
-			{
-				continue;
-			}
-			
-			const auto& bodyData = mBodyData.at(id);
-			
-			b2Vec2 pos = b2Body_GetPosition(bodyData.bodyID);
-			b2Vec2 vel = b2Body_GetLinearVelocity(bodyData.bodyID);
-
-			if (registry->all_of<TransformComponent2D, VelocityComponent2D>(entity))
-			{
-				if (auto* transformNode2D = dynamic_cast<Transform2DNode*>(node); transformNode2D)
-				{
-					transformNode2D->Transform().position.x = pos.x;
-					transformNode2D->Transform().position.y = pos.y;
-				}
-				else
-				{
-					registry->patch<TransformComponent2D>(entity, [&](auto& transform)
-					{
-						transform.position.x = pos.x;
-						transform.position.y = pos.y;
-					});
-				}
-
-				registry->patch<VelocityComponent2D>(entity, [&](auto& velocity)
-				{
-					velocity.linear.x = vel.x;
-					velocity.linear.y = vel.y;
-				});
-			}
-
-			if (registry->all_of<TransformComponent3D, VelocityComponent3D>(entity))
-			{
-				if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node); transformNode3D)
-				{
-					transformNode3D->Transform().position.x = pos.x;
-					transformNode3D->Transform().position.y = pos.y;
-				}
-				else
-				{
-					registry->patch<TransformComponent3D>(entity, [&](auto& transform)
-					{
-						transform.position.x = pos.x;
-						transform.position.y = pos.y;
-					});
-				}
-
-				registry->patch<VelocityComponent3D>(entity, [&](auto& velocity)
-				{
-					velocity.linear.x = vel.x;
-					velocity.linear.y = vel.y;
-				});
-			}
-		}
+		UpdateRigidbodyNodes();
+		UpdateRigidbodyComponents();
 	}
 
 	bool Box2DPhysicsSubsystem::ShouldFixedUpdate()
@@ -238,7 +169,7 @@ namespace puffin::physics
 	{
 		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 		
-		mShapeCreateEvents.Push({ entity, id, ShapeType2D::Box });
+		mShapeCreateEvents.Push({ id, ShapeType2D::Box });
 	}
 
 	void Box2DPhysicsSubsystem::OnUpdateBox(entt::registry& registry, entt::entity entity)
@@ -250,7 +181,7 @@ namespace puffin::physics
 	{
 		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 
-		mShapeDestroyEvents.Push({ entity, id, ShapeType2D::Box });
+		mShapeDestroyEvents.Push({ id, ShapeType2D::Box });
 	}
 
 	void Box2DPhysicsSubsystem::OnConstructCircle(entt::registry& registry, entt::entity entity)
@@ -281,7 +212,7 @@ namespace puffin::physics
 
 		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 		
-		mBodyCreateEvents.Push({ entity, id });
+		mBodyCreateEvents.Push({ id });
 	}
 
 	void Box2DPhysicsSubsystem::OnUpdateRigidbody(entt::registry& registry, entt::entity entity)
@@ -302,7 +233,25 @@ namespace puffin::physics
 
 		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 
-		mBodyDestroyEvents.Push({ entity, id });
+		mBodyDestroyEvents.Push({ id });
+	}
+
+	void Box2DPhysicsSubsystem::InitConnections()
+	{
+		// Bind entt callbacks
+		auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+
+		mConnections.push_back(registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructRigidbody>(this));
+		mConnections.push_back(registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateRigidbody>(this));
+		mConnections.push_back(registry->on_destroy<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyRigidbody>(this));
+
+		mConnections.push_back(registry->on_construct<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructBox>(this));
+		mConnections.push_back(registry->on_update<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateBox>(this));
+		mConnections.push_back(registry->on_destroy<BoxComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyBox>(this));
+
+		mConnections.push_back(registry->on_construct<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructCircle>(this));
+		mConnections.push_back(registry->on_update<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateCircle>(this));
+		mConnections.push_back(registry->on_destroy<CircleComponent2D>().connect<&Box2DPhysicsSubsystem::OnDestroyCircle>(this));
 	}
 
 	void Box2DPhysicsSubsystem::InitSettingsAndSignals()
@@ -311,91 +260,110 @@ namespace puffin::physics
 		auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
 
 		// Gravity
+		auto gravityX = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
+		auto gravityY = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
+
+		mGravity = { gravityX, gravityY };
+
+		auto gravityXSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_x");
+		gravityXSignal->Connect(std::function([&]
 		{
-			auto gravityX = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
-			auto gravityY = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-			mGravity = { gravityX, gravityY };
+			mGravity.x = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
 
-			auto gravityXSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_x");
-			gravityXSignal->Connect(std::function([&]
+			if (b2World_IsValid(mPhysicsWorldID))
 			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+				b2World_SetGravity(mPhysicsWorldID, mGravity);
+			}
+		}));
 
-				mGravity.x = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
+		auto gravityYSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_y");
+		gravityYSignal->Connect(std::function([&]
+		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-				if (b2World_IsValid(mPhysicsWorldID))
-				{
-					b2World_SetGravity(mPhysicsWorldID, mGravity);
-				}
-			}));
+			mGravity.y = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
 
-			auto gravityYSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_y");
-			gravityYSignal->Connect(std::function([&]
+			if (b2World_IsValid(mPhysicsWorldID))
 			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-
-				mGravity.y = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
-
-				if (b2World_IsValid(mPhysicsWorldID))
-				{
-					b2World_SetGravity(mPhysicsWorldID, mGravity);
-				}
-			}));
-		}
+				b2World_SetGravity(mPhysicsWorldID, mGravity);
+			}
+		}));
 
 		// Sub Steps
+		mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
+
+		auto subStepsSignal = signalSubsystem->GetOrCreateSignal("physics_sub_steps");
+		subStepsSignal->Connect(std::function([&]
 		{
+			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+
 			mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
-
-			auto subStepsSignal = signalSubsystem->GetOrCreateSignal("physics_sub_steps");
-			subStepsSignal->Connect(std::function([&]
-			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-
-				mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
-			}));
-		}
+		}));
 
 		// Enabled
+		mEnabled = settingsManager->Get<bool>("physics", "box2d_enable").value_or(true);
+
+		auto box2dEnableSignal = signalSubsystem->GetOrCreateSignal("physics_box2d_enable");
+		box2dEnableSignal->Connect(std::function([&]
 		{
 			mEnabled = settingsManager->Get<bool>("physics", "box2d_enable").value_or(true);
-
-			auto box2dEnableSignal = signalSubsystem->GetOrCreateSignal("physics_box2d_enable");
-			box2dEnableSignal->Connect(std::function([&]
-			{
-				mEnabled = settingsManager->Get<bool>("physics", "box2d_enable").value_or(true);
-			}));
-		}
+		}));
 	}
 
 	void Box2DPhysicsSubsystem::CreateObjects()
 	{
-		// Create bodies
-		{
-			BodyCreateEvent bodyCreateEvent;
+		const auto* sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto* enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 
-			while (mBodyCreateEvents.Pop(bodyCreateEvent))
+		// Create bodies
+		BodyCreateEvent bodyCreateEvent;
+
+		while (mBodyCreateEvents.Pop(bodyCreateEvent))
+		{
+			if (sceneGraph->IsValidNode(bodyCreateEvent.id))
 			{
-				CreateBody(bodyCreateEvent.entity, bodyCreateEvent.id);
+				CreateBodyNode(bodyCreateEvent.id);
+			}
+			else if (enttSubsystem->IsEntityValid(bodyCreateEvent.id))
+			{
+				CreateBodyComponent(bodyCreateEvent.id);
 			}
 		}
 
 		// Create Shapes
-		{
-			ShapeCreateEvent shapeCreateEvent;
+		ShapeCreateEvent shapeCreateEvent;
 
-			while (mShapeCreateEvents.Pop(shapeCreateEvent))
+		while (mShapeCreateEvents.Pop(shapeCreateEvent))
+		{
+			switch (shapeCreateEvent.shapeType)
 			{
-				switch (shapeCreateEvent.shapeType)
+			case ShapeType2D::Box:
+
+				if (sceneGraph->IsValidNode(shapeCreateEvent.id))
 				{
-				case ShapeType2D::Box:
-					CreateBox(shapeCreateEvent.entity, shapeCreateEvent.id, shapeCreateEvent.id);
-					break;
-				case ShapeType2D::Circle:
-					CreateCircle(shapeCreateEvent.entity, shapeCreateEvent.id, shapeCreateEvent.id);
-					break;
+					CreateBoxNode(shapeCreateEvent.id);
 				}
+				else if (enttSubsystem->IsEntityValid(shapeCreateEvent.id))
+				{
+					CreateBoxComponent(shapeCreateEvent.id, shapeCreateEvent.id);
+				}
+
+				break;
+
+			case ShapeType2D::Circle:
+
+				if (sceneGraph->IsValidNode(shapeCreateEvent.id))
+				{
+					CreateCircleNode(shapeCreateEvent.id);
+				}
+				else if (enttSubsystem->IsEntityValid(shapeCreateEvent.id))
+				{
+					CreateCircleComponent(shapeCreateEvent.id, shapeCreateEvent.id);
+				}
+
+				break;
 			}
 		}
 	}
@@ -403,30 +371,26 @@ namespace puffin::physics
 	void Box2DPhysicsSubsystem::DestroyObjects()
 	{
 		// Destroy Bodies
-		{
-			BodyDestroyEvent bodyDestroyEvent;
+		BodyDestroyEvent bodyDestroyEvent;
 
-			while (mBodyDestroyEvents.Pop(bodyDestroyEvent))
-			{
-				DestroyBody(bodyDestroyEvent.entity, bodyDestroyEvent.id);
-			}
+		while (mBodyDestroyEvents.Pop(bodyDestroyEvent))
+		{
+			DestroyBody(bodyDestroyEvent.id);
 		}
 
 		// Destroy Shapes
-		{
-			ShapeDestroyEvent shapeDestroyEvent;
+		ShapeDestroyEvent shapeDestroyEvent;
 
-			while (mShapeDestroyEvents.Pop(shapeDestroyEvent))
+		while (mShapeDestroyEvents.Pop(shapeDestroyEvent))
+		{
+			switch (shapeDestroyEvent.shapeType)
 			{
-				switch (shapeDestroyEvent.shapeType)
-				{
-				case ShapeType2D::Box:
-					DestroyBox(shapeDestroyEvent.entity, shapeDestroyEvent.id);
-					break;
-				case ShapeType2D::Circle:
-					DestroyCircle(shapeDestroyEvent.entity, shapeDestroyEvent.id);
-					break;
-				}
+			case ShapeType2D::Box:
+				DestroyBox(shapeDestroyEvent.id);
+				break;
+			case ShapeType2D::Circle:
+				DestroyCircle(shapeDestroyEvent.id);
+				break;
 			}
 		}
 	}
@@ -448,17 +412,91 @@ namespace puffin::physics
 		//}
 	}
 
-	void Box2DPhysicsSubsystem::CreateBody(entt::entity entity, UUID id)
+	void Box2DPhysicsSubsystem::UpdateRigidbodyNodes()
+	{
+		const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+
+		std::vector<Rigidbody2DNode*> bodies;
+		sceneGraph->GetNodes(bodies);
+		for (auto& body : bodies)
+		{
+			const auto id = body->GetID();
+
+			if (mBodyData.find(id) == mBodyData.end())
+				continue;
+
+			const auto& bodyData = mBodyData.at(id);
+
+			b2Vec2 pos = b2Body_GetPosition(bodyData.bodyID);
+			b2Vec2 vel = b2Body_GetLinearVelocity(bodyData.bodyID);
+
+			body->SetGlobalPosition({ pos.x, pos.y });
+			body->SetLinearVelocity({ vel.x, vel.y });
+		}
+	}
+
+	void Box2DPhysicsSubsystem::UpdateRigidbodyComponents()
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
-		if (!registry->valid(entity) || !registry->any_of<RigidbodyComponent2D>(entity))
-		{
-			return;
-		}
+		const auto& view = registry->view<RigidbodyComponent2D>();
 
-		mUserData.emplace(id, UserData{id, entity});
+		for (auto& [entity, rb] : view.each())
+		{
+			const auto id = enttSubsystem->GetID(entity);
+
+			if (mBodyData.find(id) == mBodyData.end())
+				continue;
+
+			const auto& bodyData = mBodyData.at(id);
+
+			b2Vec2 pos = b2Body_GetPosition(bodyData.bodyID);
+			b2Vec2 vel = b2Body_GetLinearVelocity(bodyData.bodyID);
+
+			if (registry->all_of<TransformComponent2D, VelocityComponent2D>(entity))
+			{
+				registry->patch<TransformComponent2D>(entity, [&](auto& transform)
+				{
+					transform.position.x = pos.x;
+					transform.position.y = pos.y;
+				});
+
+				registry->patch<VelocityComponent2D>(entity, [&](auto& velocity)
+				{
+					velocity.linear.x = vel.x;
+					velocity.linear.y = vel.y;
+				});
+			}
+
+			if (registry->all_of<TransformComponent3D, VelocityComponent3D>(entity))
+			{
+				registry->patch<TransformComponent3D>(entity, [&](auto& transform)
+				{
+					transform.position.x = pos.x;
+					transform.position.y = pos.y;
+				});
+
+				registry->patch<VelocityComponent3D>(entity, [&](auto& velocity)
+				{
+					velocity.linear.x = vel.x;
+					velocity.linear.y = vel.y;
+				});
+			}
+		}
+	}
+
+	void Box2DPhysicsSubsystem::CreateBodyComponent(UUID id)
+	{
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
+
+		auto entity = enttSubsystem->GetEntity(id);
+
+		if (!registry->valid(entity) || !registry->any_of<RigidbodyComponent2D>(entity))
+			return;
+
+		mUserData.emplace(id, UserData{id});
 		
 		const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 		
@@ -487,75 +525,92 @@ namespace puffin::physics
 		}
 
 		b2BodyId bodyID = b2CreateBody(mPhysicsWorldID, &bodyDef);
-		mBodyData.emplace(id, BodyData{bodyID});
+		mBodyData.emplace(id, BodyData{bodyID, {}});
 	}
 
-	void Box2DPhysicsSubsystem::CreateBox(entt::entity entity, UUID boxUUID, UUID bodyUUID)
+	void Box2DPhysicsSubsystem::CreateBoxComponent(UUID boxId, UUID bodyId)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
+		auto entity = enttSubsystem->GetEntity(boxId);
+
 		if (!registry->valid(entity))
-		{
 			return;
-		}
 
-		if (registry->any_of<RigidbodyComponent2D>(entity))
+		if (!registry->any_of<RigidbodyComponent2D>(entity))
+			return;
+
+		if (mUserData.find(boxId) == mUserData.end())
 		{
-			if (mUserData.find(boxUUID) == mUserData.end())
-			{
-				mUserData.emplace(boxUUID, UserData{boxUUID, entity});
-			}
-			
-			const auto& rb = registry->get<RigidbodyComponent2D>(entity);
-			const auto& box = registry->get<BoxComponent2D>(entity);
-		
-			auto polygon = b2MakeBox(box.halfExtent.x, box.halfExtent.y);
-
-			b2ShapeDef shapeDef = b2DefaultShapeDef();
-			shapeDef.density = rb.density;
-			shapeDef.restitution = rb.elasticity;
-			shapeDef.friction = rb.friction;
-			shapeDef.userData = &mUserData.at(boxUUID);
-
-			b2ShapeId shapeID = b2CreatePolygonShape(mBodyData.at(bodyUUID).bodyID, &shapeDef, &polygon);
-			mShapeData.emplace(boxUUID, ShapeData{shapeID, ShapeType2D::Box});
-			mBodyData.at(bodyUUID).shapeIDs.emplace(boxUUID);
+			mUserData.emplace(boxId, UserData{boxId});
 		}
+		
+		const auto& rb = registry->get<RigidbodyComponent2D>(entity);
+		const auto& box = registry->get<BoxComponent2D>(entity);
+	
+		auto polygon = b2MakeBox(box.halfExtent.x, box.halfExtent.y);
+
+		b2ShapeDef shapeDef = b2DefaultShapeDef();
+		shapeDef.density = rb.density;
+		shapeDef.restitution = rb.elasticity;
+		shapeDef.friction = rb.friction;
+		shapeDef.userData = &mUserData.at(boxId);
+
+		b2ShapeId shapeID = b2CreatePolygonShape(mBodyData.at(bodyId).bodyID, &shapeDef, &polygon);
+		mShapeData.emplace(boxId, ShapeData{shapeID, ShapeType2D::Box});
+		mBodyData.at(bodyId).shapeIDs.emplace(boxId);
 	}
 
-	void Box2DPhysicsSubsystem::CreateCircle(entt::entity entity, UUID circleUUID, UUID bodyUUID)
+	void Box2DPhysicsSubsystem::CreateCircleComponent(UUID circleId, UUID bodyId)
 	{
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
+		auto entity = enttSubsystem->GetEntity(circleId);
+
 		if (!registry->valid(entity))
-		{
 			return;
-		}
 
-		if (registry->any_of<RigidbodyComponent2D>(entity))
-		{
-			const auto& rb = registry->get<RigidbodyComponent2D>(entity);
-		}
+		if (!registry->any_of<RigidbodyComponent2D>(entity))
+			return;
+
+		const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 	}
 
-	void Box2DPhysicsSubsystem::UpdateBody(entt::entity entity, UUID id)
+	void Box2DPhysicsSubsystem::CreateBodyNode(UUID id)
 	{
-		
+		const auto* sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+
+		auto* node = sceneGraph->GetNode<Rigidbody2DNode>(id);
+		if (!node)
+			return;
+
+		mUserData.emplace(id, UserData{ id });
+
+		b2BodyDef bodyDef = b2DefaultBodyDef();
+		bodyDef.type = gPuffinToBox2DBodyType.at(node->GetBodyType());
+		bodyDef.userData = &mUserData.at(id);
+
+		bodyDef.position = b2Vec2(node->GetGlobalPosition());
+		bodyDef.rotation = b2MakeRot(maths::DegToRad(node->GetRotation()));
+		bodyDef.linearVelocity = b2Vec2(node->GetLinearVelocity());
+
+		b2BodyId bodyId = b2CreateBody(mPhysicsWorldID, &bodyDef);
+		mBodyData.emplace(id, BodyData{ bodyId, {} });
 	}
 
-	void Box2DPhysicsSubsystem::UpdateBox(entt::entity entity, UUID id)
+	void Box2DPhysicsSubsystem::CreateBoxNode(UUID id)
 	{
 
 	}
 
-	void Box2DPhysicsSubsystem::UpdateCircle(entt::entity entity, UUID id)
+	void Box2DPhysicsSubsystem::CreateCircleNode(UUID id)
 	{
 
 	}
 
-	void Box2DPhysicsSubsystem::DestroyBody(entt::entity entity, UUID id)
+	void Box2DPhysicsSubsystem::DestroyBody(UUID id)
 	{
 		if (b2Body_IsValid(mBodyData.at(id).bodyID))
 		{
@@ -566,7 +621,7 @@ namespace puffin::physics
 		mBodyData.erase(id);
 	}
 
-	void Box2DPhysicsSubsystem::DestroyBox(entt::entity entity, UUID id)
+	void Box2DPhysicsSubsystem::DestroyBox(UUID id)
 	{
 		if (b2Shape_IsValid(mShapeData.at(id).shapeID))
 		{
@@ -584,7 +639,7 @@ namespace puffin::physics
 		mShapeData.erase(id);
 	}
 
-	void Box2DPhysicsSubsystem::DestroyCircle(entt::entity entity, UUID id)
+	void Box2DPhysicsSubsystem::DestroyCircle(UUID id)
 	{
 		
 	}

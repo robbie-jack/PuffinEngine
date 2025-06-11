@@ -82,7 +82,6 @@ namespace puffin::scene
 		mRootNodeIDs.clear();
 		mNodesToDestroy.clear();
 
-		mGlobalTransform2Ds.Clear();
 		mGlobalTransform3Ds.Clear();
 
 		for (auto [typeID, nodePool] : mNodePools)
@@ -113,7 +112,7 @@ namespace puffin::scene
 		return AddNodeInternal(typeID, name, id, parentID);
 	}
 
-	Node* SceneGraphSubsystem::GetNode(const UUID& id)
+	Node* SceneGraphSubsystem::GetNode(const UUID& id) const
 	{
 		if (!IsValidNode(id))
 			return nullptr;
@@ -121,19 +120,9 @@ namespace puffin::scene
 		return GetPool(mIDToTypeID.at(id))->GetNode(id);
 	}
 
-	bool SceneGraphSubsystem::IsValidNode(UUID id)
+	bool SceneGraphSubsystem::IsValidNode(UUID id) const
 	{
 		return mIDToTypeID.find(id) != mIDToTypeID.end();
-	}
-
-	const TransformComponent2D& SceneGraphSubsystem::GetNodeGlobalTransform2D(const UUID& id) const
-	{
-		return mGlobalTransform2Ds.At(id);
-	}
-
-	TransformComponent2D& SceneGraphSubsystem::GetNodeGlobalTransform2D(const UUID& id)
-	{
-		return mGlobalTransform2Ds.At(id);
 	}
 
 	const TransformComponent3D& SceneGraphSubsystem::GetNodeGlobalTransform3D(const UUID& id) const
@@ -231,9 +220,6 @@ namespace puffin::scene
 
 		mIDToTypeID.erase(id);
 
-		if (mGlobalTransform2Ds.Contains(id))
-			mGlobalTransform2Ds.Erase(id);
-
 		if (mGlobalTransform3Ds.Contains(id))
 			mGlobalTransform3Ds.Erase(id);
 	}
@@ -272,30 +258,6 @@ namespace puffin::scene
 			{
 				const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 				const auto registry = enttSubsystem->GetRegistry();
-
-				if (auto* transformNode2D = dynamic_cast<Transform2DNode*>(node))
-				{
-					auto& globalTransform = mGlobalTransform2Ds.At(id);
-					globalTransform.position = { 0.f };
-					globalTransform.rotation = 0.0f;
-					globalTransform.scale = { 1.0f };
-
-					const auto& localTransform = transformNode2D->GetTransform();
-
-					auto parentNode = dynamic_cast<Transform2DNode*>(node->GetParent());
-					if (parentNode)
-					{
-						const auto& parentTransform = parentNode->GetGlobalTransform();
-
-						//ApplyLocalToGlobalTransform2D(localTransform, parentTransform, globalTransform);
-					}
-					else
-					{
-						//ApplyLocalToGlobalTransform2D(localTransform, {}, globalTransform);
-					}
-
-					registry->patch<TransformComponent2D>(node->GetEntity());
-				}
 
 				if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))
 				{
@@ -339,17 +301,6 @@ namespace puffin::scene
 			angle += angleChange;
 	}
 
-	void SceneGraphSubsystem::ApplyLocalToGlobalTransform2D(const TransformComponent2D& localTransform, const TransformComponent2D& globalTransform, TransformComponent2D
-	                                                        & updatedTransform)
-	{
-		updatedTransform.position = globalTransform.position + localTransform.position;
-		updatedTransform.rotation = globalTransform.rotation + localTransform.rotation;
-
-		LimitAngleTo180Degrees(updatedTransform.rotation);
-
-		updatedTransform.scale = globalTransform.scale * localTransform.scale;
-	}
-
 	void SceneGraphSubsystem::ApplyLocalToGlobalTransform3D(const TransformComponent3D& localTransform, const TransformComponent3D& globalTransform, TransformComponent3D&
 	                                                        updatedTransform)
 	{
@@ -386,13 +337,6 @@ namespace puffin::scene
 		node->Initialize();
 
 		mIDToTypeID.insert({ id, typeID });
-
-		if (auto* transformNode2D = dynamic_cast<Transform2DNode*>(node))
-		{
-			mGlobalTransform2Ds.Emplace(id, TransformComponent2D());
-
-			NotifyTransformChanged(id);
-		}
 
 		if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))
 		{

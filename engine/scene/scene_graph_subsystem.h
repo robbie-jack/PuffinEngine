@@ -82,7 +82,7 @@ namespace puffin::scene
 		Node* GetNode(UUID id) override
 		{
 			if (IsValid(id))
-				return dynamic_cast<Node*>(GetNodeTyped(id));
+				return static_cast<Node*>(GetNodeTyped(id));
 
 			return nullptr;
 		}
@@ -174,15 +174,14 @@ namespace puffin::scene
 
 		Node* AddNode(uint32_t typeID, const std::string& name, UUID id);
 		Node* AddChildNode(uint32_t typeID, const std::string& name, UUID id, UUID parentID);
-		[[nodiscard]] Node* GetNode(const UUID& id);
-		bool IsValidNode(UUID id);
+		[[nodiscard]] Node* GetNode(const UUID& id) const;
+		bool IsValidNode(UUID id) const;
 
-		[[nodiscard]] const TransformComponent2D& GetNodeGlobalTransform2D(const UUID& id) const;
-		[[nodiscard]] TransformComponent2D& GetNodeGlobalTransform2D(const UUID& id);
-
+		// PUFFIN_TODO - Remove when refactoring 3d nodes to remove reliance on components
 		[[nodiscard]] const TransformComponent3D& GetNodeGlobalTransform3D(const UUID& id) const;
 		[[nodiscard]] TransformComponent3D& GetNodeGlobalTransform3D(const UUID& id);
 
+		// PUFFIN_TODO - Remove when refactoring 3d nodes to remove reliance on components
 		void NotifyTransformChanged(UUID id);
 
 		// Queue a node for destruction, will also destroy all child nodes
@@ -244,16 +243,16 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		T* GetNode(UUID id)
+		T* GetNode(UUID id) const
 		{
 			if (!IsValidNode(id))
 				return nullptr;
 
-			return GetPool<T>()->template GetNode<T>(id);
+			return static_cast<T*>(GetPool<T>()->GetNode(id));
 		}
 
 		template<typename T>
-		void GetNodes(std::vector<T*>& nodes)
+		void GetNodes(std::vector<T*>& nodes) const
 		{
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
@@ -275,8 +274,6 @@ namespace puffin::scene
 		void UpdateGlobalTransform(UUID id);
 
 		static void LimitAngleTo180Degrees(float& angle);
-		static void ApplyLocalToGlobalTransform2D(const TransformComponent2D& localTransform, const TransformComponent2D& globalTransform, TransformComponent2D
-		                                          & updatedTransform);
 		static void ApplyLocalToGlobalTransform3D(const TransformComponent3D& localTransform, const TransformComponent3D& globalTransform, TransformComponent3D&
 		                                          updatedTransform);
 
@@ -344,7 +341,7 @@ namespace puffin::scene
 		}
 
 		template<typename T>
-		NodePool<T>* GetPool()
+		NodePool<T>* GetPool() const
 		{
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
@@ -354,7 +351,7 @@ namespace puffin::scene
 			return static_cast<NodePool<T>*>(mNodePools.at(typeID));
 		}
 
-		INodePool* GetPool(uint32_t typeID)
+		INodePool* GetPool(uint32_t typeID) const
 		{
 			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::GetPool(uint32) - Node type not registered before use");
 
@@ -371,7 +368,6 @@ namespace puffin::scene
 
 		std::unordered_set<UUID> mNodesToDestroy;
 
-		MappedVector<UUID, TransformComponent2D> mGlobalTransform2Ds;
 		MappedVector<UUID, TransformComponent3D> mGlobalTransform3Ds;
 
 		bool mSceneGraphUpdated = false;

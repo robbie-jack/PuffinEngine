@@ -73,7 +73,7 @@ namespace puffin::ecs
 		mIDToEntity.erase(id);
 	}
 
-	bool EnTTSubsystem::IsEntityValid(const UUID id)
+	bool EnTTSubsystem::IsEntityValid(const UUID id) const
 	{
 		return mIDToEntity.find(id) != mIDToEntity.end();
 	}

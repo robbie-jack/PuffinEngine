@@ -163,6 +163,8 @@ namespace puffin
 	Transform2D& Transform2DNode::GlobalTransform()
 	{
 		UpdateGlobalTransform();
+
+		mShouldUpdateLocalTransform = true;
 		
 		return mGlobalTransform;
 	}

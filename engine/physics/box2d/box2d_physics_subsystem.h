@@ -93,27 +93,30 @@ namespace puffin::physics
 
 	private:
 
+		void InitConnections();
 		void InitSettingsAndSignals();
 		
 		void CreateObjects();
 		void DestroyObjects();
 		void PublishCollisionEvents() const;
 
-		void CreateBody(entt::entity entity, UUID id);
-		void CreateBox(entt::entity entity, UUID boxUUID, UUID bodyUUID);
-		void CreateCircle(entt::entity entity, UUID circleUUID, UUID bodyUUID);
+		void UpdateRigidbodyNodes();
+		void UpdateRigidbodyComponents();
 
-		void UpdateBody(entt::entity entity, UUID id);
-		void UpdateBox(entt::entity entity, UUID id);
-		void UpdateCircle(entt::entity entity, UUID id);
+		void CreateBodyComponent(UUID id);
+		void CreateBoxComponent(UUID boxId, UUID bodyId);
+		void CreateCircleComponent(UUID circleId, UUID bodyId);
 
-		void DestroyBody(entt::entity entity, UUID id);
-		void DestroyBox(entt::entity entity, UUID id);
-		void DestroyCircle(entt::entity entity, UUID id);
+		void CreateBodyNode(UUID id);
+		void CreateBoxNode(UUID id);
+		void CreateCircleNode(UUID id);
+
+		void DestroyBody(UUID id);
+		void DestroyBox(UUID id);
+		void DestroyCircle(UUID id);
 		
 		struct PhysicsEvent
 		{
-			entt::entity entity;
 			UUID id;
 		};
 
@@ -131,8 +134,6 @@ namespace puffin::physics
 		struct UserData
 		{
 			UUID id;
-			entt::entity entity;
-			
 		};
 
 		struct BodyData
