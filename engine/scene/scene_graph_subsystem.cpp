@@ -16,6 +16,106 @@
 
 namespace puffin::scene
 {
+	template <typename T>
+	NodePool<T>::NodePool()
+	{
+
+	}
+
+	template <typename T>
+	Node* NodePool<T>::AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id)
+	{
+		if (id == gInvalidID)
+			id = GenerateId();
+
+		if (mNodes.Full())
+		{
+			uint32_t newSize = mNodes.Size() * 2;
+
+			mNodes.Resize(newSize);
+		}
+
+		mNodes.Emplace(id, T{});
+
+		T& node = mNodes.At(id);
+		auto* nodePtr = static_cast<Node*>(&node);
+		nodePtr->Prepare(engine, name, id);
+
+		return &node;
+	}
+
+	template <typename T>
+	Node* NodePool<T>::GetNode(UUID id)
+	{
+		if (IsValid(id))
+			return GetNode(id);
+
+		return nullptr;
+	}
+
+	template <typename T>
+	void NodePool<T>::RemoveNode(UUID id)
+	{
+		GetNode(id)->Reset();
+
+		mNodes.Erase(id, false);
+	}
+
+	template <typename T>
+	bool NodePool<T>::IsValid(UUID id)
+	{
+		return mNodes.Contains(id);
+	}
+
+	template <typename T>
+	void NodePool<T>::Resize(uint32_t newSize, bool forceShrink)
+	{
+		if (newSize > mNodes.Size() || (newSize < mNodes.Size() && forceShrink))
+			mNodes.Resize(newSize);
+	}
+
+	template <typename T>
+	void NodePool<T>::Reset()
+	{
+		for (auto& node : mNodes)
+		{
+			node.Reset();
+		}
+
+		mNodes.Clear(false);
+	}
+
+	template <typename T>
+	void NodePool<T>::Clear()
+	{
+		for (auto& node : mNodes)
+		{
+			node.Reset();
+		}
+
+		mNodes.Clear();
+	}
+
+	template <typename T>
+	T* NodePool<T>::GetNodeTyped(UUID id)
+	{
+		return dynamic_cast<T*>(GetNode(id));
+	}
+
+	template <typename T>
+	void NodePool<T>::GetNodes(std::vector<T*>& nodes)
+	{
+		nodes.resize(mNodes.Size());
+
+		int i = 0;
+		for (auto& node : mNodes)
+		{
+			nodes[i] = &node;
+
+			i++;
+		}
+	}
+
 	SceneGraphSubsystem::SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 	{
 		mName = "SceneGraphSubsystem";
@@ -118,7 +218,7 @@ namespace puffin::scene
 		if (!IsValidNode(id))
 			return nullptr;
 
-		return GetArray(mIDToTypeID.at(id))->GetNodePtr(id);
+		return GetPool(mIDToTypeID.at(id))->GetNode(id);
 	}
 
 	bool SceneGraphSubsystem::IsValidNode(UUID id)
@@ -227,7 +327,7 @@ namespace puffin::scene
 			node->Deinitialize();
 		}
 
-		GetArray(mIDToTypeID.at(id))->RemoveNode(id);
+		GetPool(mIDToTypeID.at(id))->RemoveNode(id);
 
 		mIDToTypeID.erase(id);
 

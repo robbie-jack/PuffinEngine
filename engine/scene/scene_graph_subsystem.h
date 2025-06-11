@@ -39,8 +39,8 @@ namespace puffin::scene
 
 		virtual ~INodePool() = default;
 
-		virtual Node* AddNodePtr(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID) = 0;
-		virtual Node* GetNodePtr(UUID id) = 0;
+		virtual Node* AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID) = 0;
+		virtual Node* GetNode(UUID id) = 0;
 		virtual void RemoveNode(UUID id) = 0;
 		virtual bool IsValid(UUID id) = 0;
 		virtual void Resize(uint32_t newSize, bool forceShrink = false) = 0;
@@ -54,99 +54,37 @@ namespace puffin::scene
 	{
 	public:
 
-		NodePool()
-		{
-			mVector.Resize(gDefaultNodePoolSize);
-		}
+		NodePool();
 
 		~NodePool() override = default;
 
-		T* AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID)
-		{
-			if (id == gInvalidID)
-				id = GenerateId();
+		Node* AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID) override;
 
-			if (mVector.Full())
-			{
-				uint32_t newSize = mVector.Size() * 2;
+		Node* GetNode(UUID id) override;
 
-				mVector.Resize(newSize);
-			}
+		void RemoveNode(UUID id) override;
 
-			mVector.Emplace(id, T{});
+		bool IsValid(UUID id) override;
 
-			T& node = mVector.At(id);
-			auto* nodePtr = static_cast<Node*>(&node);
-			nodePtr->Prepare(engine, name, id);
-
-			return &node;
-		}
-
-		Node* AddNodePtr(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID) override
-		{
-			return static_cast<Node*>(AddNode(engine, name, id));
-		}
-
-		T* GetNode(UUID id)
-		{
-			return &mVector.At(id);
-		}
-
-		Node* GetNodePtr(UUID id) override
-		{
-			if (IsValid(id))
-				return static_cast<Node*>(GetNode(id));
-
-			return nullptr;
-		}
-
-		void RemoveNode(UUID id) override
-		{
-			GetNodePtr(id)->Reset();
-
-			mVector.Erase(id, false);
-		}
-
-		bool IsValid(UUID id) override
-		{
-			return mVector.Contains(id);
-		}
-
-		void Resize(uint32_t newSize, bool forceShrink = false) override
-		{
-			if (newSize > mVector.Size() || (newSize < mVector.Size() && forceShrink))
-				mVector.Resize(newSize);
-		}
+		void Resize(uint32_t newSize, bool forceShrink = false) override;
 
 		/*
 		 * Reset all nodes in pool
 		 */
-		void Reset() override
-		{
-			for (auto& node : mVector)
-			{
-				node.Reset();
-			}
-
-			mVector.Clear(false);
-		}
+		void Reset() override;
 
 		/*
 		 * Reset & clear all nodes in pool
 		 */
-		void Clear() override
-		{
-			for (auto& node : mVector)
-			{
-				node.Reset();
-			}
+		void Clear() override;
 
-			mVector.Clear();
-		}
+		T* GetNodeTyped(UUID id);
+
+		void GetNodes(std::vector<T*>& nodes);
 
 	private:
 
-		MappedVector<UUID, T> mVector;
+		MappedVector<UUID, T> mNodes;
 
 	};
 
@@ -244,7 +182,20 @@ namespace puffin::scene
 			if (!IsValidNode(id))
 				return nullptr;
 
-			return GetArray<T>()->GetNode(id);
+			return GetPool<T>()->template GetNode<T>(id);
+		}
+
+		template<typename T>
+		void GetNodes(std::vector<T*>& nodes)
+		{
+			auto type = entt::resolve<T>();
+			const auto& typeID = type.id();
+
+			// PUFFIN_TODO - Add output here to show that no node of that type was registered
+			if (mNodePools.find(typeID) == mNodePools.end())
+				return;
+
+			GetPool<T>()->GetNodes(nodes);
 		}
 
 	private:
@@ -269,7 +220,7 @@ namespace puffin::scene
 		{
 			if (mIDToTypeID.find(id) != mIDToTypeID.end())
 			{
-				return GetArray<T>()->GetNode(id);
+				return GetPool<T>()->GetNodeTyped(id);
 			}
 
 			auto type = entt::resolve<T>();
@@ -280,68 +231,65 @@ namespace puffin::scene
 				RegisterNodeType<T>();
 			}
 
-			Node* nodePtr;
+			Node* node = nullptr;
 
 			if (id == gInvalidID)
 			{
-				T* node = GetArray<T>()->AddNode(mEngine, name);
-				nodePtr = static_cast<Node*>(node);
-
-				id = nodePtr->GetID();
+				node = GetPool<T>()->AddNode(mEngine, name);
+				id = node->GetID();
 			}
 			else
 			{
-				T* node = GetArray<T>()->AddNode(mEngine, name, id);
-				nodePtr = static_cast<Node*>(node);
+				node = GetPool<T>()->AddNode(mEngine, name, id);
 			}
 
-			AddNodeInternalBase(nodePtr, typeID, id, parent_id);
+			AddNodeInternalBase(node, typeID, id, parent_id);
 
-			return GetArray<T>()->GetNode(id);
+			return GetPool<T>()->GetNodeTyped(id);
 		}
 
 		Node* AddNodeInternal(uint32_t typeID, const std::string& name, UUID id = gInvalidID, UUID parentID = gInvalidID)
 		{
 			if (mIDToTypeID.find(id) != mIDToTypeID.end())
 			{
-				return GetArray(typeID)->GetNodePtr(id);
+				return GetPool(typeID)->GetNode(id);
 			}
 
 
 			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::AddNodeInternal(uint32, string, UUID, UUID) - Node type not registered before use");
 
-			Node* nodePtr;
+			Node* node;
 
 			if (id == gInvalidID)
 			{
-				nodePtr = GetArray(typeID)->AddNodePtr(mEngine, name);
+				node = GetPool(typeID)->AddNode(mEngine, name);
 
-				id = nodePtr->GetID();
+				id = node->GetID();
 			}
 			else
 			{
-				nodePtr = GetArray(typeID)->AddNodePtr(mEngine, name, id);
+				node = GetPool(typeID)->AddNode(mEngine, name, id);
 			}
 
-			AddNodeInternalBase(nodePtr, typeID, id, parentID);
+			AddNodeInternalBase(node, typeID, id, parentID);
 
-			return nodePtr;
+			return node;
 		}
 
 		template<typename T>
-		NodePool<T>* GetArray()
+		NodePool<T>* GetPool()
 		{
 			auto type = entt::resolve<T>();
 			const auto& typeID = type.id();
 
-			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::GetArray() - Node type not registered before use");
+			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::GetPool() - Node type not registered before use");
 
 			return static_cast<NodePool<T>*>(mNodePools.at(typeID));
 		}
 
-		INodePool* GetArray(uint32_t typeID)
+		INodePool* GetPool(uint32_t typeID)
 		{
-			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::GetArray(uint32) - Node type not registered before use");
+			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::GetPool(uint32) - Node type not registered before use");
 
 			return mNodePools.at(typeID);
 		}

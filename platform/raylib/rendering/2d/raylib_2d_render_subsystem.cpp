@@ -13,6 +13,7 @@
 #include "core/signal_subsystem.h"
 #include "ecs/entt_subsystem.h"
 #include "node/transform_2d_node.h"
+#include "node/rendering/2d/sprite_2d_node.h"
 #include "raylib/window/raylib_window_subsystem.h"
 #include "rendering/camera_subsystem.h"
 #include "scene/scene_graph_subsystem.h"
@@ -155,84 +156,187 @@ namespace puffin::rendering
 
 	void Raylib2DRenderSubsystem::DrawSprites()
 	{
+//		{
+//			// Calculate t value for rendering interpolated position
+//			const double t = mEngine->GetAccumulatedTime() / mEngine->GetTimeStepFixed();
+//
+//			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+//			const auto registry = enttSubsystem->GetRegistry();
+//
+//			const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+//
+//			const auto& spriteView = registry->view<const TransformComponent2D, const SpriteComponent2D>();
+//
+//			for (auto& [entity, transform, sprite] : spriteView.each())
+//			{
+//				const auto id = enttSubsystem->GetID(entity);
+//				auto* node = sceneGraph->GetNode(id);
+//
+//				raylib::Color colour(std::round(sprite.colour.x * 255),
+//					std::round(sprite.colour.y * 255),
+//					std::round(sprite.colour.z * 255));
+//
+//#ifdef PFN_DOUBLE_PRECISION
+//				Vector2d position = { 0.0 };
+//#else
+//				Vector2f position{ 0.0f };
+//#endif
+//
+//				Vector2f scale{ 1.f };
+//
+//				if (auto* transformNode = dynamic_cast<Transform2DNode*>(node); transformNode)
+//				{
+//					position = transformNode->GetGlobalTransform().position;
+//					scale = transformNode->GetGlobalTransform().scale;
+//				}
+//				else
+//				{
+//					position = transform.position;
+//					scale = transform.scale;
+//				}
+//
+//				if (mRenderSettings.physicsInterpolationEnable)
+//				{
+//					physics::VelocityComponent2D velocity;
+//
+//					if (registry->any_of<physics::VelocityComponent2D>(entity))
+//					{
+//						velocity = registry->get<physics::VelocityComponent2D>(entity);
+//					}
+//					else if (node)
+//					{
+//						if (const auto* parentNode = node->GetParent(); parentNode && parentNode->HasComponent<physics::VelocityComponent2D>())
+//						{
+//							velocity = parentNode->GetComponent<physics::VelocityComponent2D>();
+//						}
+//					}
+//					else
+//					{
+//						break;
+//					}
+//
+//#ifdef PFN_DOUBLE_PRECISION
+//					Vector2d nextPosition = { 0.0 };
+//#else
+//					Vector2f nextPosition{ 0.0f };
+//#endif
+//
+//					nextPosition = position + velocity.linear * mEngine->GetTimeStepFixed();
+//
+//					position = maths::Lerp(position, nextPosition, t);
+//				}
+//
+//				raylib::Vector2 scaledPos = ScaleWorldToPixel({ position.x, position.y });
+//				raylib::Vector2 scaledOffset = ScaleWorldToPixel({ sprite.offset.x, sprite.offset.y });
+//
+//				int32_t pixelWidth = static_cast<int>(std::round(ScaleWorldToPixel(scale.x)));
+//				int32_t pixelHeight = static_cast<int>(std::round(ScaleWorldToPixel(scale.y)));
+//
+//				colour.DrawRectangle(scaledPos.x + scaledOffset.x, scaledPos.y + scaledOffset.y, pixelWidth, pixelHeight);
+//			}
+//		}
+
+		DrawSpriteNodes();
+		DrawSpriteComponents();
+	}
+
+	void Raylib2DRenderSubsystem::DrawSpriteNodes() const
+	{
+		// Calculate t value for rendering interpolated position
+		const double t = mEngine->GetAccumulatedTime() / mEngine->GetTimeStepFixed();
+
+		const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+
+		std::vector<Sprite2DNode*> sprites;
+		sceneGraph->GetNodes(sprites);
+		for (auto& sprite : sprites)
 		{
-			// Calculate t value for rendering interpolated position
-			const double t = mEngine->GetAccumulatedTime() / mEngine->GetTimeStepFixed();
+			const auto& transform = sprite->GetTransform();
 
-			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-			const auto registry = enttSubsystem->GetRegistry();
+			raylib::Color colour(std::round(sprite->GetColour().x * 255),
+				std::round(sprite->GetColour().y * 255),
+				std::round(sprite->GetColour().z * 255));
 
-			const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+#ifdef PFN_DOUBLE_PRECISION
+			Vector2d position = { 0.0 };
+#else
+			Vector2f position{ 0.0f };
+#endif
 
-			const auto& spriteView = registry->view<const TransformComponent2D, const SpriteComponent2D>();
+			Vector2f scale{ 1.f };
 
-			for (auto& [entity, transform, sprite] : spriteView.each())
+			position = transform.position;
+			scale = transform.scale;
+
+			if (mRenderSettings.physicsInterpolationEnable)
 			{
-				const auto id = enttSubsystem->GetID(entity);
-				auto* node = sceneGraph->GetNode(id);
-
-				raylib::Color colour(std::round(sprite.colour.x * 255),
-					std::round(sprite.colour.y * 255),
-					std::round(sprite.colour.z * 255));
-
-#ifdef PFN_DOUBLE_PRECISION
-				Vector2d position = { 0.0 };
-#else
-				Vector2f position{ 0.0f };
-#endif
-
-				Vector2f scale{ 1.f };
-
-				if (auto* transformNode = dynamic_cast<Transform2DNode*>(node); transformNode)
-				{
-					position = transformNode->GetGlobalTransform().position;
-					scale = transformNode->GetGlobalTransform().scale;
-				}
-				else
-				{
-					position = transform.position;
-					scale = transform.scale;
-				}
-
-				if (mRenderSettings.physicsInterpolationEnable)
-				{
-					physics::VelocityComponent2D velocity;
-
-					if (registry->any_of<physics::VelocityComponent2D>(entity))
-					{
-						velocity = registry->get<physics::VelocityComponent2D>(entity);
-					}
-					else if (node)
-					{
-						if (const auto* parentNode = node->GetParent(); parentNode && parentNode->HasComponent<physics::VelocityComponent2D>())
-						{
-							velocity = parentNode->GetComponent<physics::VelocityComponent2D>();
-						}
-					}
-					else
-					{
-						break;
-					}
-
-#ifdef PFN_DOUBLE_PRECISION
-					Vector2d nextPosition = { 0.0 };
-#else
-					Vector2f nextPosition{ 0.0f };
-#endif
-
-					nextPosition = position + velocity.linear * mEngine->GetTimeStepFixed();
-
-					position = maths::Lerp(position, nextPosition, t);
-				}
-
-				raylib::Vector2 scaledPos = ScaleWorldToPixel({ position.x, position.y });
-				raylib::Vector2 scaledOffset = ScaleWorldToPixel({ sprite.offset.x, sprite.offset.y });
-
-				int32_t pixelWidth = static_cast<int>(std::round(ScaleWorldToPixel(scale.x)));
-				int32_t pixelHeight = static_cast<int>(std::round(ScaleWorldToPixel(scale.y)));
-
-				colour.DrawRectangle(scaledPos.x + scaledOffset.x, scaledPos.y + scaledOffset.y, pixelWidth, pixelHeight);
+				// PUFFIN_TODO - Implement Physics Interpolation
 			}
+
+			raylib::Vector2 scaledPos = ScaleWorldToPixel({ position.x, position.y });
+			raylib::Vector2 scaledOffset = ScaleWorldToPixel({ sprite->GetOffset().x, sprite->GetOffset().y });
+
+			int32_t pixelWidth = static_cast<int>(std::round(ScaleWorldToPixel(scale.x)));
+			int32_t pixelHeight = static_cast<int>(std::round(ScaleWorldToPixel(scale.y)));
+
+			colour.DrawRectangle(scaledPos.x + scaledOffset.x, scaledPos.y + scaledOffset.y, pixelWidth, pixelHeight);
+		}
+	}
+
+	void Raylib2DRenderSubsystem::DrawSpriteComponents() const
+	{
+		// Calculate t value for rendering interpolated position
+		const double t = mEngine->GetAccumulatedTime() / mEngine->GetTimeStepFixed();
+
+		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto registry = enttSubsystem->GetRegistry();
+
+		const auto& spriteView = registry->view<const TransformComponent2D, const SpriteComponent2D>();
+
+		for (auto& [entity, transform, sprite] : spriteView.each())
+		{
+			raylib::Color colour(std::round(sprite.colour.x * 255),
+				std::round(sprite.colour.y * 255),
+				std::round(sprite.colour.z * 255));
+
+#ifdef PFN_DOUBLE_PRECISION
+			Vector2d position = { 0.0 };
+#else
+			Vector2f position{ 0.0f };
+#endif
+
+			Vector2f scale{ 1.f };
+
+			position = transform.position;
+			scale = transform.scale;
+
+			if (mRenderSettings.physicsInterpolationEnable)
+			{
+				physics::VelocityComponent2D velocity;
+
+				if (!registry->any_of<physics::VelocityComponent2D>(entity))
+					continue;
+
+				velocity = registry->get<physics::VelocityComponent2D>(entity);
+
+#ifdef PFN_DOUBLE_PRECISION
+				Vector2d nextPosition = { 0.0 };
+#else
+				Vector2f nextPosition{ 0.0f };
+#endif
+
+				nextPosition = position + velocity.linear * mEngine->GetTimeStepFixed();
+
+				position = maths::Lerp(position, nextPosition, t);
+			}
+
+			raylib::Vector2 scaledPos = ScaleWorldToPixel({ position.x, position.y });
+			raylib::Vector2 scaledOffset = ScaleWorldToPixel({ sprite.offset.x, sprite.offset.y });
+
+			int32_t pixelWidth = static_cast<int>(std::round(ScaleWorldToPixel(scale.x)));
+			int32_t pixelHeight = static_cast<int>(std::round(ScaleWorldToPixel(scale.y)));
+
+			colour.DrawRectangle(scaledPos.x + scaledOffset.x, scaledPos.y + scaledOffset.y, pixelWidth, pixelHeight);
 		}
 	}
 

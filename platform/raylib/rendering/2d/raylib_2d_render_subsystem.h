@@ -40,6 +40,8 @@ namespace puffin::rendering
 		void UpdateCamera();
 
 		void DrawSprites();
+		void DrawSpriteNodes() const;
+		void DrawSpriteComponents() const;
 		void DebugDrawStats(double deltaTime) const;
 		void DebugDrawBenchmark(const utility::Benchmark* benchmark, int posX, int& posY) const;
 
