@@ -45,7 +45,7 @@ namespace puffin
 
 		float rotation = 0.0f;
 
-		Vector2f scale = Vector2f(0.f, 0.f);
+		Vector2f scale = Vector2f(1.f, 1.f);
 
 	};
 

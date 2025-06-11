@@ -54,33 +54,100 @@ namespace puffin::scene
 	{
 	public:
 
-		NodePool();
+		NodePool() = default;
 
 		~NodePool() override = default;
 
-		Node* AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID) override;
+		Node* AddNode(const std::shared_ptr<core::Engine>& engine, const std::string& name, UUID id = gInvalidID) override
+		{
+			if (id == gInvalidID)
+				id = GenerateId();
 
-		Node* GetNode(UUID id) override;
+			if (mNodes.Full())
+			{
+				uint32_t newSize = mNodes.Size() * 2;
 
-		void RemoveNode(UUID id) override;
+				mNodes.Resize(newSize);
+			}
 
-		bool IsValid(UUID id) override;
+			mNodes.Emplace(id, T{});
 
-		void Resize(uint32_t newSize, bool forceShrink = false) override;
+			T& node = mNodes.At(id);
+			auto* nodePtr = static_cast<Node*>(&node);
+			nodePtr->Prepare(engine, name, id);
+
+			return &node;
+		}
+
+		Node* GetNode(UUID id) override
+		{
+			if (IsValid(id))
+				return dynamic_cast<Node*>(GetNodeTyped(id));
+
+			return nullptr;
+		}
+
+		void RemoveNode(UUID id) override
+		{
+			GetNode(id)->Reset();
+
+			mNodes.Erase(id, false);
+		}
+
+		bool IsValid(UUID id) override
+		{
+			return mNodes.Contains(id);
+		}
+
+		void Resize(uint32_t newSize, bool forceShrink = false) override
+		{
+			if (newSize > mNodes.Size() || (newSize < mNodes.Size() && forceShrink))
+				mNodes.Resize(newSize);
+		}
 
 		/*
 		 * Reset all nodes in pool
 		 */
-		void Reset() override;
+		void Reset() override
+		{
+			for (auto& node : mNodes)
+			{
+				node.Reset();
+			}
+
+			mNodes.Clear(false);
+		}
 
 		/*
 		 * Reset & clear all nodes in pool
 		 */
-		void Clear() override;
+		void Clear() override
+		{
+			for (auto& node : mNodes)
+			{
+				node.Reset();
+			}
 
-		T* GetNodeTyped(UUID id);
+			mNodes.Clear();
+		}
 
-		void GetNodes(std::vector<T*>& nodes);
+		T* GetNodeTyped(UUID id)
+		{
+			return &mNodes.At(id);
+		}
+
+		void GetNodes(std::vector<T*>& nodes)
+		{
+			nodes.resize(mNodes.Count());
+
+			int i = 0;
+			for (auto& node : mNodes)
+			{
+				nodes[i] = &node;
+
+				i++;
+			}
+		}
 
 	private:
 

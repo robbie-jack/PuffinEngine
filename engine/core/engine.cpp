@@ -163,7 +163,7 @@ namespace puffin::core
 				SetupDefaultPhysicsScene2D(shared_from_this());
 
 				sceneData->UpdateData(shared_from_this());
-				sceneData->Save();
+				//sceneData->Save();
 			}
 			else if (setupDefaultPhysicsScene3D)
 			{

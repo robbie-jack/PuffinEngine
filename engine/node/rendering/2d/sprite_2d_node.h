@@ -17,6 +17,9 @@ namespace puffin
 			void Initialize() override;
 			void Deinitialize() override;
 
+			void Serialize(nlohmann::json& json) const override;
+			void Deserialize(const nlohmann::json& json) override;
+
 			[[nodiscard]] const std::string& GetTypeString() const override;
 			[[nodiscard]] entt::id_type GetTypeID() const override;
 
@@ -27,6 +30,12 @@ namespace puffin
 			[[nodiscard]] const Vector2f& GetOffset() const;
 			[[nodiscard]] Vector2f& Offset();
 			void SetOffset(const Vector2f offset);
+
+		private:
+
+			Vector3f mColour = { 1.f, 1.f, 1.f };
+			Vector2f mOffset = { 0.f, 0.f };
+
 		};
 	}
 

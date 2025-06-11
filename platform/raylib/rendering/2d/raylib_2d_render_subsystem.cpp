@@ -251,7 +251,7 @@ namespace puffin::rendering
 		sceneGraph->GetNodes(sprites);
 		for (auto& sprite : sprites)
 		{
-			const auto& transform = sprite->GetTransform();
+			const auto& transform = sprite->GetGlobalTransform();
 
 			raylib::Color colour(std::round(sprite->GetColour().x * 255),
 				std::round(sprite->GetColour().y * 255),
