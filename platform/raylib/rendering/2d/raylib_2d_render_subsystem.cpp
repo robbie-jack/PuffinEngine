@@ -13,6 +13,7 @@
 #include "core/signal_subsystem.h"
 #include "ecs/entt_subsystem.h"
 #include "node/transform_2d_node.h"
+#include "node/physics/2d/rigidbody_2d_node.h"
 #include "node/rendering/2d/sprite_2d_node.h"
 #include "raylib/window/raylib_window_subsystem.h"
 #include "rendering/camera_subsystem.h"
@@ -188,9 +189,18 @@ namespace puffin::rendering
 			position = transform.position;
 			scale = transform.scale;
 
-			if (mRenderSettings.physicsInterpolationEnable)
+			auto* rigidbody = dynamic_cast<physics::Rigidbody2DNode*>(sprite->GetParent());
+			if (mRenderSettings.physicsInterpolationEnable && rigidbody)
 			{
-				// PUFFIN_TODO - Implement Physics Interpolation
+#ifdef PFN_DOUBLE_PRECISION
+				Vector2d nextPosition = { 0.0 };
+#else
+				Vector2f nextPosition{ 0.0f };
+#endif
+
+				nextPosition = position + rigidbody->GetLinearVelocity() * mEngine->GetTimeStepFixed();
+
+				position = maths::Lerp(position, nextPosition, t);
 			}
 
 			raylib::Vector2 scaledPos = ScaleWorldToPixel({ position.x, position.y });
@@ -230,14 +240,9 @@ namespace puffin::rendering
 			position = transform.position;
 			scale = transform.scale;
 
-			if (mRenderSettings.physicsInterpolationEnable)
+			if (mRenderSettings.physicsInterpolationEnable && registry->any_of<physics::VelocityComponent2D>(entity))
 			{
-				physics::VelocityComponent2D velocity;
-
-				if (!registry->any_of<physics::VelocityComponent2D>(entity))
-					continue;
-
-				velocity = registry->get<physics::VelocityComponent2D>(entity);
+				physics::VelocityComponent2D velocity = registry->get<physics::VelocityComponent2D>(entity);
 
 #ifdef PFN_DOUBLE_PRECISION
 				Vector2d nextPosition = { 0.0 };
