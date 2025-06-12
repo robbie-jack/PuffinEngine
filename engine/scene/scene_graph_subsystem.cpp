@@ -38,15 +38,15 @@ namespace puffin::scene
 		RegisterNodeType<rendering::DirectionalLightNode3D>();
 		RegisterNodeType<rendering::CameraNode3D>();
 
-		SetDefaultNodePoolSize<Node>(5000);
+		SetDefaultNodePoolSize<Node>(12000);
 
-		SetDefaultNodePoolSize<Transform2DNode>(5000);
-		SetDefaultNodePoolSize<rendering::Sprite2DNode>(5000);
-		SetDefaultNodePoolSize<physics::Rigidbody2DNode>(5000);
-		SetDefaultNodePoolSize<physics::Box2DNode>(5000);
+		SetDefaultNodePoolSize<Transform2DNode>(12000);
+		SetDefaultNodePoolSize<rendering::Sprite2DNode>(12000);
+		SetDefaultNodePoolSize<physics::Rigidbody2DNode>(12000);
+		SetDefaultNodePoolSize<physics::Box2DNode>(12000);
 
-		SetDefaultNodePoolSize<TransformNode3D>(5000);
-		SetDefaultNodePoolSize<rendering::StaticMeshNode3D>(5000);
+		SetDefaultNodePoolSize<TransformNode3D>(12000);
+		SetDefaultNodePoolSize<rendering::StaticMeshNode3D>(12000);
 		SetDefaultNodePoolSize<rendering::PointLightNode3D>(rendering::gMaxPointLights);
 		SetDefaultNodePoolSize<rendering::SpotLightNode3D>(rendering::gMaxSpotLights);
 		SetDefaultNodePoolSize<rendering::DirectionalLightNode3D>(rendering::gMaxDirectionalLights);

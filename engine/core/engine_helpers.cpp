@@ -285,58 +285,73 @@ namespace puffin::core
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		const Vector2f wallHalfExtent = { 100.0f, 100.f };
-		float wallHalfWidth = 0.5f;
+		const float wallHalfWidth = 0.5f;
+		const float wallHalfLength = 5.f;
+		const int wallCountX = wallHalfExtent.x * 2 / wallHalfLength;
+		const int wallCountY = wallHalfExtent.y * 2 / wallHalfLength;
 
 		// Floor Node
 		{
-			auto* floor = sceneGraph->AddNode<physics::Rigidbody2DNode>("Floor");
-			floor->SetGlobalPosition({ 0.0f, -wallHalfExtent.y });
+			for (int i = 1; i <= wallCountX; i++)
+			{
+				auto* floor = sceneGraph->AddNode<physics::Rigidbody2DNode>("Floor #" + std::to_string(i));
+				floor->SetGlobalPosition({ (-wallHalfExtent.x + wallHalfLength * i), wallHalfExtent.y});
 
-			auto* floorBox = sceneGraph->AddChildNode<physics::Box2DNode>("Box", floor->GetID());
-			floorBox->SetHalfExtent({ wallHalfExtent.x, wallHalfWidth });
+				auto* floorBox = sceneGraph->AddChildNode<physics::Box2DNode>("Box", floor->GetID());
+				floorBox->SetHalfExtent({ wallHalfLength, wallHalfWidth });
 
-			auto* floorSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", floor->GetID());
-			floorSprite->SetScale({ wallHalfExtent.x * 2.f, 1.0f });
-			floorSprite->SetOffset({ -wallHalfExtent.x, 0.0f });
+				auto* floorSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", floor->GetID());
+				floorSprite->SetScale({ wallHalfLength, 1.0f });
+				floorSprite->SetOffset({ -wallHalfLength, 0.0f });
+			}
 		}
 
 		// Left Wall Node
 		{
-			auto* leftWall = sceneGraph->AddNode<physics::Rigidbody2DNode>("Left Wall");
-			leftWall->SetGlobalPosition({ -wallHalfExtent.x, 0.0f });
+			for (int i = 1; i <= wallCountY; i++)
+			{
+				auto* leftWall = sceneGraph->AddNode<physics::Rigidbody2DNode>("Left Wall");
+				leftWall->SetGlobalPosition({ -wallHalfExtent.x, (-wallHalfExtent.y + wallHalfLength * i) });
 
-			auto* leftWallBox = sceneGraph->AddChildNode<physics::Box2DNode>("Box", leftWall->GetID());
-			leftWallBox->SetHalfExtent({ wallHalfWidth, wallHalfExtent.y });
+				auto* leftWallBox = sceneGraph->AddChildNode<physics::Box2DNode>("Box", leftWall->GetID());
+				leftWallBox->SetHalfExtent({ wallHalfWidth, wallHalfLength });
 
-			auto* leftWallSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", leftWall->GetID());
-			leftWallSprite->SetScale({ 1.0f, wallHalfExtent.y * 2.f });
-			leftWallSprite->SetOffset({ 0.0f, -wallHalfExtent.y });
+				auto* leftWallSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", leftWall->GetID());
+				leftWallSprite->SetScale({ 1.0f, wallHalfLength });
+				leftWallSprite->SetOffset({ 0.0f, -wallHalfLength });
+			}
 		}
 
 		// Right Wall Node
 		{
-			auto* rightWall = sceneGraph->AddNode<physics::Rigidbody2DNode>("Right Wall");
-			rightWall->SetGlobalPosition({ wallHalfExtent.x, 0.0f });
+			for (int i = 1; i <= wallCountY; i++)
+			{
+				auto* rightWall = sceneGraph->AddNode<physics::Rigidbody2DNode>("Right Wall");
+				rightWall->SetGlobalPosition({ wallHalfExtent.x, (-wallHalfExtent.y + wallHalfLength * i) });
 
-			auto* rightWallBox = sceneGraph->AddChildNode<physics::Box2DNode>("Box", rightWall->GetID());
-			rightWallBox->SetHalfExtent({ wallHalfWidth, wallHalfExtent.y });
+				auto* rightWallBox = sceneGraph->AddChildNode<physics::Box2DNode>("Box", rightWall->GetID());
+				rightWallBox->SetHalfExtent({ wallHalfWidth, wallHalfLength });
 
-			auto* rightWallSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", rightWall->GetID());
-			rightWallSprite->SetScale({ 1.0f, wallHalfExtent.y * 2.f });
-			rightWallSprite->SetOffset({ 0.0f, -wallHalfExtent.y });
+				auto* rightWallSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", rightWall->GetID());
+				rightWallSprite->SetScale({ 1.0f, wallHalfLength });
+				rightWallSprite->SetOffset({ 0.0f, -wallHalfLength });
+			}
 		}
 
 		// Ceiling Node
 		{
-			auto* ceiling = sceneGraph->AddNode<physics::Rigidbody2DNode>("Ceiling");
-			ceiling->SetGlobalPosition({ 0.0f, wallHalfExtent.y});
+			for (int i = 1; i <= wallCountX; i++)
+			{
+				auto* ceiling = sceneGraph->AddNode<physics::Rigidbody2DNode>("Ceiling #" + std::to_string(i));
+				ceiling->SetGlobalPosition({ (-wallHalfExtent.x + wallHalfLength * i), -wallHalfExtent.y });
 
-			auto* ceilingBox = sceneGraph->AddChildNode<physics::Box2DNode>("Box", ceiling->GetID());
-			ceilingBox->SetHalfExtent({ wallHalfExtent.x, wallHalfWidth });
+				auto* ceilingBox = sceneGraph->AddChildNode<physics::Box2DNode>("Box", ceiling->GetID());
+				ceilingBox->SetHalfExtent({ wallHalfLength, wallHalfWidth });
 
-			auto* ceilingSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", ceiling->GetID());
-			ceilingSprite->SetScale({ wallHalfExtent.x * 2.f, 1.0f });
-			ceilingSprite->SetOffset({ -wallHalfExtent.x, 0.0f });
+				auto* ceilingSprite = sceneGraph->AddChildNode<rendering::Sprite2DNode>("Sprite", ceiling->GetID());
+				ceilingSprite->SetScale({ wallHalfLength, 1.0f });
+				ceilingSprite->SetOffset({ -wallHalfLength, 0.0f });
+			}
 		}
 
 		std::vector<Vector3f> colours =
@@ -351,10 +366,10 @@ namespace puffin::core
 
 		// Box Nodes
 		{
-			constexpr int numBodies = 500;
+			constexpr int numBodies = 10000;
 
 			const Vector2f bodyHalfExtent = { 0.5f, 0.5f };
-			const Vector2f bodyPositionHalfRange = { wallHalfExtent.x * 0.9f, wallHalfExtent.y * 0.9f };
+			const Vector2f bodyPositionHalfRange = { wallHalfExtent.x * 0.95f, wallHalfExtent.y * 0.95f };
 			double velocityMax = 50.0;
 
 			std::random_device rd;
