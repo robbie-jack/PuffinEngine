@@ -49,7 +49,7 @@ namespace puffin
 
 	};
 
-	inline Transform2D ApplyLocalToGlobalTransform(Transform2D localTransform, Transform2D parentTransform)
+	inline Transform2D ApplyLocalToGlobalTransform(const Transform2D& localTransform, const Transform2D& parentTransform)
 	{
 		Transform2D transform;
 
@@ -60,13 +60,13 @@ namespace puffin
 		return transform;
 	}
 
-	inline Transform2D ApplyGlobalToLocalTransform(Transform2D globalTransform, Transform2D parentTransform)
+	inline Transform2D ApplyGlobalToLocalTransform(const Transform2D& globalTransform, const Transform2D& parentTransform)
 	{
 		Transform2D transform;
 
 		transform.position = globalTransform.position - parentTransform.position;
 		transform.rotation = globalTransform.rotation - parentTransform.rotation;
-		transform.scale = globalTransform.scale - parentTransform.scale;
+		transform.scale = globalTransform.scale * parentTransform.scale;
 
 		return transform;
 	}

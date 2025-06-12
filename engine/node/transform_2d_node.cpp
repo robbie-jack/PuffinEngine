@@ -79,16 +79,16 @@ namespace puffin
 	{
 		UpdateLocalTransform();
 
-		mShouldUpdateGlobalTransform = true;
+		NotifyGlobalTransformShouldUpdate();
 
 		return mLocalTransform;
 	}
 
 	void Transform2DNode::SetTransform(const Transform2D& transform)
 	{
-		mLocalTransform = transform;
+		NotifyGlobalTransformShouldUpdate();
 
-		mShouldUpdateGlobalTransform = true;
+		mLocalTransform = transform;
 	}
 
 #ifdef PFN_DOUBLE_PRECISION
@@ -163,15 +163,14 @@ namespace puffin
 	Transform2D& Transform2DNode::GlobalTransform()
 	{
 		UpdateGlobalTransform();
-
-		mShouldUpdateLocalTransform = true;
+		NotifyLocalTransformShouldUpdate();
 		
 		return mGlobalTransform;
 	}
 
 	void Transform2DNode::SetGlobalTransform(const Transform2D& transform)
 	{
-		mShouldUpdateLocalTransform = true;
+		NotifyLocalTransformShouldUpdate();
 
 		mGlobalTransform = transform;
 	}
@@ -238,19 +237,42 @@ namespace puffin
 		GlobalTransform().scale = scale;
 	}
 
-	void Transform2DNode::NotifyLocalTransformChanged()
+	void Transform2DNode::NotifyLocalTransformShouldUpdate()
 	{
 		mShouldUpdateLocalTransform = true;
+
+		NotifyChildrenGlobalTransformShouldUpdate();
 	}
 
-	void Transform2DNode::NotifyGlobalTransformChanged()
+	void Transform2DNode::NotifyGlobalTransformShouldUpdate()
 	{
 		mShouldUpdateGlobalTransform = true;
+
+		NotifyChildrenGlobalTransformShouldUpdate();
+	}
+
+	void Transform2DNode::NotifyChildrenGlobalTransformShouldUpdate() const
+	{
+		std::vector<Node*> children;
+		GetChildren(children);
+
+		for (auto* child : children)
+		{
+			auto* transform = dynamic_cast<Transform2DNode*>(child);
+
+			if (!transform)
+				continue;
+
+			transform->NotifyGlobalTransformShouldUpdate();
+		}
 	}
 
 	void Transform2DNode::UpdateLocalTransform(bool forceUpdate)
 	{
-		if (!mShouldUpdateLocalTransform && !forceUpdate)
+		if (forceUpdate)
+			NotifyLocalTransformShouldUpdate();
+
+		if (!mShouldUpdateLocalTransform)
 			return;
 
 		if (auto* parent = dynamic_cast<Transform2DNode*>(GetParent()); parent)
@@ -259,7 +281,7 @@ namespace puffin
 		}
 		else
 		{
-			mGlobalTransform = ApplyGlobalToLocalTransform(mGlobalTransform, {});
+			mLocalTransform = ApplyGlobalToLocalTransform(mGlobalTransform, {});
 		}
 
 		mShouldUpdateLocalTransform = false;
@@ -267,7 +289,10 @@ namespace puffin
 
 	void Transform2DNode::UpdateGlobalTransform(bool forceUpdate)
 	{
-		if (!mShouldUpdateGlobalTransform && !forceUpdate)
+		if (forceUpdate)
+			NotifyGlobalTransformShouldUpdate();
+
+		if (!mShouldUpdateGlobalTransform)
 			return;
 
 		if (auto* parent = dynamic_cast<Transform2DNode*>(GetParent()); parent)

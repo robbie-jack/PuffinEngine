@@ -76,10 +76,12 @@ namespace puffin
 
 	protected:
 
-		void NotifyLocalTransformChanged();
-		void NotifyGlobalTransformChanged();
+		void NotifyLocalTransformShouldUpdate();
+		void NotifyGlobalTransformShouldUpdate();
 
 	private:
+
+		void NotifyChildrenGlobalTransformShouldUpdate() const;
 
 		void UpdateLocalTransform(bool forceUpdate = false);
 		void UpdateGlobalTransform(bool forceUpdate = false);

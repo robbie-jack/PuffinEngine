@@ -1,7 +1,5 @@
 #include "physics/box2d/box2d_physics_subsystem.h"
 
-#include "node/physics/2d/rigidbody_2d_node.h"
-
 #if PFN_BOX2D_PHYSICS
 
 #include "core/engine.h"
@@ -18,6 +16,8 @@
 #include "physics/onager2d/colliders/box_collider_2d.h"
 #include "node/transform_2d_node.h"
 #include "node/transform_3d_node.h"
+#include "node/physics/2d/rigidbody_2d_node.h"
+#include "node/physics/2d/box_2d_node.h"
 #include "scene/scene_graph_subsystem.h"
 #include "core/enkits_subsystem.h"
 #include "core/timer.h"
@@ -116,6 +116,13 @@ namespace puffin::physics
 		for (auto* body : bodies)
 		{
 			mBodyCreateEvents.Push({ body->GetID() });
+		}
+
+		std::vector<Box2DNode*> boxes;
+		sceneGraph->GetNodes(boxes);
+		for (auto* box : boxes)
+		{
+			mShapeCreateEvents.Push({ box->GetID(), ShapeType2D::Box });
 		}
 
 		const auto& registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
@@ -337,13 +344,15 @@ namespace puffin::physics
 
 		while (mShapeCreateEvents.Pop(shapeCreateEvent))
 		{
+			auto* node = sceneGraph->GetNode(shapeCreateEvent.id);
+
 			switch (shapeCreateEvent.shapeType)
 			{
 			case ShapeType2D::Box:
 
 				if (sceneGraph->IsValidNode(shapeCreateEvent.id))
 				{
-					CreateBoxNode(shapeCreateEvent.id);
+					CreateBoxNode(shapeCreateEvent.id, node->GetParentID());
 				}
 				else if (enttSubsystem->IsEntityValid(shapeCreateEvent.id))
 				{
@@ -356,7 +365,7 @@ namespace puffin::physics
 
 				if (sceneGraph->IsValidNode(shapeCreateEvent.id))
 				{
-					CreateCircleNode(shapeCreateEvent.id);
+					CreateCircleNode(shapeCreateEvent.id, node->GetParentID());
 				}
 				else if (enttSubsystem->IsEntityValid(shapeCreateEvent.id))
 				{
@@ -542,9 +551,7 @@ namespace puffin::physics
 			return;
 
 		if (mUserData.find(boxId) == mUserData.end())
-		{
 			mUserData.emplace(boxId, UserData{boxId});
-		}
 		
 		const auto& rb = registry->get<RigidbodyComponent2D>(entity);
 		const auto& box = registry->get<BoxComponent2D>(entity);
@@ -600,12 +607,35 @@ namespace puffin::physics
 		mBodyData.emplace(id, BodyData{ bodyId, {} });
 	}
 
-	void Box2DPhysicsSubsystem::CreateBoxNode(UUID id)
+	void Box2DPhysicsSubsystem::CreateBoxNode(UUID boxId, UUID bodyId)
 	{
+		const auto* sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
 
+		auto* box = sceneGraph->GetNode<Box2DNode>(boxId);
+		if (!box)
+			return;
+
+		auto* body = sceneGraph->GetNode<Rigidbody2DNode>(bodyId);
+		if (!body)
+			return;
+
+		if (mUserData.find(boxId) == mUserData.end())
+			mUserData.emplace(boxId, UserData{ boxId });
+
+		auto polygon = b2MakeBox(box->GetHalfExtent().x, box->GetHalfExtent().y);
+
+		b2ShapeDef shapeDef = b2DefaultShapeDef();
+		shapeDef.density = body->GetDensity();
+		shapeDef.restitution = body->GetElasticity();
+		shapeDef.friction = body->GetFriction();
+		shapeDef.userData = &mUserData.at(boxId);
+
+		b2ShapeId shapeId = b2CreatePolygonShape(mBodyData.at(bodyId).bodyID, &shapeDef, &polygon);
+		mShapeData.emplace(boxId, ShapeData{ shapeId, ShapeType2D::Box });
+		mBodyData.at(bodyId).shapeIDs.emplace(boxId);
 	}
 
-	void Box2DPhysicsSubsystem::CreateCircleNode(UUID id)
+	void Box2DPhysicsSubsystem::CreateCircleNode(UUID circleId, UUID bodyId)
 	{
 
 	}

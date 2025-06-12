@@ -108,8 +108,8 @@ namespace puffin::physics
 		void CreateCircleComponent(UUID circleId, UUID bodyId);
 
 		void CreateBodyNode(UUID id);
-		void CreateBoxNode(UUID id);
-		void CreateCircleNode(UUID id);
+		void CreateBoxNode(UUID boxId, UUID bodyId);
+		void CreateCircleNode(UUID circleId, UUID bodyId);
 
 		void DestroyBody(UUID id);
 		void DestroyBox(UUID id);
