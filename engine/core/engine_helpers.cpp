@@ -280,7 +280,7 @@ namespace puffin::core
 		auto registry = engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		const auto sceneGraph = engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		const Vector2f wallHalfExtent = { 25.0f, 25.f };
+		const Vector2f wallHalfExtent = { 100.0f, 100.f };
 		float wallHalfWidth = 0.5f;
 
 		// Floor Node
@@ -339,16 +339,19 @@ namespace puffin::core
 		{
 			{ 1.0f, 0.0f, 0.0f },
 			{ 0.0f, 1.0f, 0.0f},
-			{ 0.0f, 0.0f, 1.0f}
+			{ 0.0f, 0.0f, 1.0f},
+			{ 1.0f, 1.0f, 0.0f },
+			{ 1.0f, 0.0f, 1.0f },
+			{ 0.0f, 1.0f, 1.0f},
 		};
 
 		// Box Nodes
 		{
-			constexpr int numBodies = 500;
+			constexpr int numBodies = 5000;
 
 			const Vector2f bodyHalfExtent = { 0.5f, 0.5f };
 			const Vector2f bodyPositionHalfRange = { wallHalfExtent.x * 0.9f, wallHalfExtent.y * 0.9f };
-			double velocityMax = 20.0;
+			double velocityMax = 50.0;
 
 			std::random_device rd;
 			std::mt19937 mt(rd());
