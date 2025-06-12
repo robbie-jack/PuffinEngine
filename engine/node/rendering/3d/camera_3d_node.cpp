@@ -18,7 +18,7 @@ namespace puffin::rendering
 		RemoveComponent<CameraComponent3D>();
 	}
 
-	const std::string& CameraNode3D::GetTypeString() const
+	std::string_view CameraNode3D::GetTypeString() const
 	{
 		return gCameraNode3DTypeString;
 	}

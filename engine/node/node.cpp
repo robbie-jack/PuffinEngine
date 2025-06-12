@@ -79,9 +79,9 @@ namespace puffin
 	{
 	}
 
-	const std::string& Node::GetTypeString() const
+	std::string_view Node::GetTypeString() const
 	{
-		return gNodeTypeString;
+		return reflection::GetTypeString<Node>();
 	}
 
 	entt::id_type Node::GetTypeID() const

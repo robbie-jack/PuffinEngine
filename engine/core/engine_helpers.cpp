@@ -132,6 +132,10 @@ namespace puffin::core
 		reflection::RegisterType<Transform2DNode>();
 
 		reflection::RegisterType<rendering::Sprite2DNode>();
+
+		reflection::RegisterType<physics::Rigidbody2DNode>();
+		reflection::RegisterType<physics::Shape2DNode>();
+		reflection::RegisterType<physics::Box2DNode>();
 	}
 
 	void RegisterNodeTypes3D()
@@ -347,7 +351,7 @@ namespace puffin::core
 
 		// Box Nodes
 		{
-			constexpr int numBodies = 5000;
+			constexpr int numBodies = 500;
 
 			const Vector2f bodyHalfExtent = { 0.5f, 0.5f };
 			const Vector2f bodyPositionHalfRange = { wallHalfExtent.x * 0.9f, wallHalfExtent.y * 0.9f };

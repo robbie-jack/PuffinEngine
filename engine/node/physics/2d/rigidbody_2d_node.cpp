@@ -33,6 +33,16 @@ namespace puffin::physics
 		mAngularVelocity = rigidbodyJson["angularVelocity"];
 	}
 
+	std::string_view Rigidbody2DNode::GetTypeString() const
+	{
+		return reflection::GetTypeString<Rigidbody2DNode>();
+	}
+
+	entt::id_type Rigidbody2DNode::GetTypeID() const
+	{
+		return reflection::GetTypeHashedString<Rigidbody2DNode>();
+	}
+
 	BodyType Rigidbody2DNode::GetBodyType() const { return mBodyType; }
 	BodyType& Rigidbody2DNode::BodyType() { return mBodyType; }
 	void Rigidbody2DNode::SetBodyType(physics::BodyType bodyType) { mBodyType = bodyType; }

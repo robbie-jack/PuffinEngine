@@ -18,7 +18,7 @@ namespace puffin::rendering
 		RemoveComponent<DirectionalLightComponent3D>();
 	}
 
-	const std::string& DirectionalLightNode3D::GetTypeString() const
+	std::string_view DirectionalLightNode3D::GetTypeString() const
 	{
 		return gDirectionalLightNode3DTypeString;
 	}

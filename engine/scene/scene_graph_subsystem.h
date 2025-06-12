@@ -319,7 +319,6 @@ namespace puffin::scene
 				return GetPool(typeID)->GetNode(id);
 			}
 
-
 			assert(mNodePools.find(typeID) != mNodePools.end() && "SceneGraph::AddNodeInternal(uint32, string, UUID, UUID) - Node type not registered before use");
 
 			Node* node;

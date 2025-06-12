@@ -80,7 +80,7 @@ namespace puffin
 		 * Return type string associated with this node type
 		 * This should be be overriden by inheriting types
 		 */
-		[[nodiscard]] virtual const std::string& GetTypeString() const;
+		[[nodiscard]] virtual std::string_view GetTypeString() const;
 
 		/*
 		 * Return type id associated with this node type
@@ -174,7 +174,7 @@ namespace puffin
 		template<>
 		inline std::string_view GetTypeString<Node>()
 		{
-			return "Node";
+			return gNodeTypeString;
 		}
 
 		template<>

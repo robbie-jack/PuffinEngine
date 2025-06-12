@@ -46,7 +46,18 @@ namespace puffin
 	{
 		Node::Serialize(json);
 
-		json["transform"] = serialization::Serialize(mLocalTransform);
+		Transform2D transform = {};
+
+		if (auto* parent = dynamic_cast<Transform2DNode*>(GetParent()); parent)
+		{
+			transform = ApplyGlobalToLocalTransform(mGlobalTransform, parent->GetGlobalTransform());
+		}
+		else
+		{
+			transform = ApplyGlobalToLocalTransform(mGlobalTransform, {});
+		}
+
+		json["transform"] = serialization::Serialize(transform);
 	}
 
 	void Transform2DNode::Deserialize(const nlohmann::json& json)
@@ -58,9 +69,9 @@ namespace puffin
 		UpdateGlobalTransform(true);
 	}
 
-	const std::string& Transform2DNode::GetTypeString() const
+	std::string_view Transform2DNode::GetTypeString() const
 	{
-		return gTransformNode2DTypeString;
+		return reflection::GetTypeString<Transform2DNode>();
 	}
 
 	entt::id_type Transform2DNode::GetTypeID() const

@@ -327,14 +327,14 @@ namespace puffin::scene
 		serializedNodeData.id = id;
 		serializedNodeData.name = node->GetName();
 		serializedNodeData.type = node->GetTypeString();
-		
+
+		node->Serialize(serializedNodeData.json);
+
 		for (const auto& childID : node->GetChildIDs())
 		{
 			serializedNodeData.childIDs.push_back(childID);
 			SerializeNodeAndChildren(sceneGraph, childID);
 		}
-
-		node->Serialize(serializedNodeData.json);
 	}
 
 	SceneSerializationSubsystem::SceneSerializationSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)

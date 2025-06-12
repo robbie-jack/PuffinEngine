@@ -323,132 +323,81 @@ namespace puffin
 			// Loop over each keyboard key in this action
 			for (const auto& key : action.keys)
 			{
-				switch (action.state)
+				if (IsKeyPressed(key.key) && AreKeyModifiersPressed(key))
 				{
-				case InputState::Up:
+					action.state = InputState::Pressed;
+					continue;
+				}
 
-					if (IsKeyPressed(key.key) && AreKeyModifiersPressed(key))
-					{
-						action.state = InputState::Pressed;
-					}
+				if (IsKeyDown(key.key) && AreKeyModifiersPressed(key))
+				{
+					action.state = InputState::Down;
+					continue;
+				}
 
-					break;
+				if (IsKeyReleased(key.key))
+				{
+					action.state = InputState::Released;
+					continue;
+				}
 
-				case InputState::Pressed:
-
-					if (IsKeyDown(key.key) && AreKeyModifiersPressed(key))
-					{
-						action.state = InputState::Down;
-					}
-
-					break;
-
-				case InputState::Down:
-
-					if (IsKeyReleased(key.key))
-					{
-						action.state = InputState::Released;
-					}
-
-					break;
-
-				case InputState::Released:
-
-					if (IsKeyUp(key.key))
-					{
-						action.state = InputState::Up;
-					}
-
-					break;
-
+				if (IsKeyUp(key.key))
+				{
+					action.state = InputState::Up;
 				}
 			}
 
 			// Loop over each mouse button in this action
 			for (const auto& button : action.mouseButtons)
 			{
-				switch (action.state)
+				if (IsMouseButtonPressed(button.button) && AreMouseModifiersPressed(button))
 				{
-				case InputState::Up:
+					action.state = InputState::Pressed;
+					continue;
+				}
 
-					if (IsMouseButtonPressed(button.button) && AreMouseModifiersPressed(button))
-					{
-						action.state = InputState::Pressed;
-					}
+				if (IsMouseButtonDown(button.button) && AreMouseModifiersPressed(button))
+				{
+					action.state = InputState::Down;
+					continue;
+				}
 
-					break;
+				if (IsMouseButtonReleased(button.button))
+				{
+					action.state = InputState::Released;
+					continue;
+				}
 
-				case InputState::Pressed:
-
-					if (IsMouseButtonDown(button.button) && AreMouseModifiersPressed(button))
-					{
-						action.state = InputState::Down;
-					}
-
-					break;
-
-				case InputState::Down:
-
-					if (IsMouseButtonReleased(button.button))
-					{
-						action.state = InputState::Released;
-					}
-
-					break;
-
-				case InputState::Released:
-
-					if (IsMouseButtonUp(button.button))
-					{
-						action.state = InputState::Up;
-					}
-
-					break;
-
+				if (IsMouseButtonUp(button.button))
+				{
+					action.state = InputState::Up;
 				}
 			}
 
 			// Loop over each gamepad button in this action
 			for (const auto& button : action.gamepadButtons)
 			{
-				switch (action.state)
+				if (IsGamepadButtonPressed(button))
 				{
-				case InputState::Up:
+					action.state = InputState::Pressed;
+					continue;
+				}
 
-					if (IsGamepadButtonPressed(button))
-					{
-						action.state = InputState::Pressed;
-					}
+				if (IsGamepadButtonDown(button))
+				{
+					action.state = InputState::Down;
+					continue;
+				}
 
-					break;
+				if (IsGamepadButtonReleased(button))
+				{
+					action.state = InputState::Released;
+					continue;
+				}
 
-				case InputState::Pressed:
-
-					if (IsGamepadButtonDown(button))
-					{
-						action.state = InputState::Down;
-					}
-
-					break;
-
-				case InputState::Down:
-
-					if (IsGamepadButtonReleased(button))
-					{
-						action.state = InputState::Released;
-					}
-
-					break;
-
-				case InputState::Released:
-
-					if (IsGamepadButtonUp(button))
-					{
-						action.state = InputState::Up;
-					}
-
-					break;
-
+				if (IsGamepadButtonUp(button))
+				{
+					action.state = InputState::Up;
 				}
 			}
 

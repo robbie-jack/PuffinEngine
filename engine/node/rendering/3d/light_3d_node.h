@@ -21,7 +21,7 @@ namespace puffin
 			void Serialize(nlohmann::json& json) const override;
 			void Deserialize(const nlohmann::json& json) override;
 
-			[[nodiscard]] const std::string& GetTypeString() const override;
+			[[nodiscard]] std::string_view GetTypeString() const override;
 			[[nodiscard]] entt::id_type GetTypeID() const override;
 
 			virtual LightType GetLightType() = 0;

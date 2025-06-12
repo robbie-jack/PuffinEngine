@@ -12,7 +12,7 @@ namespace puffin
 
 namespace puffin
 {
-	const std::string gTransformNode2DTypeString = "Transform2DNode";
+	const std::string gTransform2DNodeTypeString = "Transform2DNode";
 
 	class Transform2DNode : public Node
 	{
@@ -27,7 +27,7 @@ namespace puffin
 		void Serialize(nlohmann::json& json) const override;
 		void Deserialize(const nlohmann::json& json) override;
 
-		const std::string& GetTypeString() const override;
+		std::string_view GetTypeString() const override;
 		entt::id_type GetTypeID() const override;
 
 		const Transform2D& GetTransform();
@@ -106,7 +106,7 @@ namespace puffin
 		template<>
 		inline std::string_view GetTypeString<Transform2DNode>()
 		{
-			return "Transform2DNode";
+			return gTransform2DNodeTypeString;
 		}
 
 		template<>

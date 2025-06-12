@@ -18,7 +18,7 @@ namespace puffin::rendering
 		RemoveComponent<SpotLightComponent3D>();
 	}
 
-	const std::string& SpotLightNode3D::GetTypeString() const
+	std::string_view SpotLightNode3D::GetTypeString() const
 	{
 		return gSpotLightNode3DTypeString;
 	}

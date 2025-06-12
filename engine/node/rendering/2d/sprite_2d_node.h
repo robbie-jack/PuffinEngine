@@ -8,7 +8,7 @@ namespace puffin
 {
 	namespace rendering
 	{
-		const std::string gSpriteNode2DTypeString = "Sprite2DNode";
+		const std::string gSprite2DNodeTypeString = "Sprite2DNode";
 
 		class Sprite2DNode : public Transform2DNode
 		{
@@ -20,7 +20,7 @@ namespace puffin
 			void Serialize(nlohmann::json& json) const override;
 			void Deserialize(const nlohmann::json& json) override;
 
-			[[nodiscard]] const std::string& GetTypeString() const override;
+			[[nodiscard]] std::string_view GetTypeString() const override;
 			[[nodiscard]] entt::id_type GetTypeID() const override;
 
 			[[nodiscard]] const Vector3f& GetColour() const;
@@ -44,7 +44,7 @@ namespace puffin
 		template<>
 		inline std::string_view GetTypeString<rendering::Sprite2DNode>()
 		{
-			return rendering::gSpriteNode2DTypeString;
+			return rendering::gSprite2DNodeTypeString;
 		}
 
 		template<>

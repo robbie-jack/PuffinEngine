@@ -35,9 +35,9 @@ namespace puffin::rendering
 		mOffset = serialization::Deserialize<Vector2f>(spriteJson["offset"]);
 	}
 
-	const std::string& Sprite2DNode::GetTypeString() const
+	std::string_view Sprite2DNode::GetTypeString() const
 	{
-		return gSpriteNode2DTypeString;
+		return reflection::GetTypeString<Sprite2DNode>();
 	}
 
 	entt::id_type Sprite2DNode::GetTypeID() const

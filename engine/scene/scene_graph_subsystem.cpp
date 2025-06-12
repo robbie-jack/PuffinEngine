@@ -9,8 +9,9 @@
 #include "node/rendering/3d/point_light_3d_node.h"
 #include "node/rendering/3d/spot_light_3d_node.h"
 #include "node/rendering/3d/static_mesh_3d_node.h"
-#include "component/transform_component_2d.h"
 #include "component/transform_component_3d.h"
+#include "node/physics/2d/box_2d_node.h"
+#include "node/physics/2d/rigidbody_2d_node.h"
 #include "node/rendering/2d/sprite_2d_node.h"
 #include "rendering/render_globals.h"
 
@@ -27,6 +28,8 @@ namespace puffin::scene
 
 		RegisterNodeType<Transform2DNode>();
 		RegisterNodeType<rendering::Sprite2DNode>();
+		RegisterNodeType<physics::Rigidbody2DNode>();
+		RegisterNodeType<physics::Box2DNode>();
 
 		RegisterNodeType<TransformNode3D>();
 		RegisterNodeType<rendering::StaticMeshNode3D>();
@@ -39,6 +42,8 @@ namespace puffin::scene
 
 		SetDefaultNodePoolSize<Transform2DNode>(5000);
 		SetDefaultNodePoolSize<rendering::Sprite2DNode>(5000);
+		SetDefaultNodePoolSize<physics::Rigidbody2DNode>(5000);
+		SetDefaultNodePoolSize<physics::Box2DNode>(5000);
 
 		SetDefaultNodePoolSize<TransformNode3D>(5000);
 		SetDefaultNodePoolSize<rendering::StaticMeshNode3D>(5000);

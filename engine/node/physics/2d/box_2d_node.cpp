@@ -23,6 +23,16 @@ namespace puffin::physics
 		mHalfExtent = serialization::Deserialize<Vector2f>(boxJson["halfExtent"]);
 	}
 
+	std::string_view Box2DNode::GetTypeString() const
+	{
+		return reflection::GetTypeString<Box2DNode>();
+	}
+
+	entt::id_type Box2DNode::GetTypeID() const
+	{
+		return reflection::GetTypeHashedString<Box2DNode>();
+	}
+
 	const Vector2f& Box2DNode::GetHalfExtent() const { return mHalfExtent; }
 	Vector2f& Box2DNode::HalfExtent() { return mHalfExtent; }
 	void Box2DNode::SetHalfExtent(const Vector2f& halfExtent) { mHalfExtent = halfExtent; }

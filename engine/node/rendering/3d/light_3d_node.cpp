@@ -38,7 +38,7 @@ namespace puffin::rendering
 		mCastShadows = json["castShadows"];
 	}
 
-	const std::string& LightNode3D::GetTypeString() const
+	std::string_view LightNode3D::GetTypeString() const
 	{
 		return gLightNode3DTypeString;
 	}

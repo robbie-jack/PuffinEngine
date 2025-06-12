@@ -18,7 +18,7 @@ namespace puffin::rendering
 		RemoveComponent<StaticMeshComponent3D>();
 	}
 
-	const std::string& StaticMeshNode3D::GetTypeString() const
+	std::string_view StaticMeshNode3D::GetTypeString() const
 	{
 		return gStaticMeshNode3DTypeString;
 	}

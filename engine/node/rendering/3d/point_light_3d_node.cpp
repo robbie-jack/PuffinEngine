@@ -18,7 +18,7 @@ namespace puffin::rendering
 		RemoveComponent<PointLightComponent3D>();
 	}
 
-	const std::string& PointLightNode3D::GetTypeString() const
+	std::string_view PointLightNode3D::GetTypeString() const
 	{
 		return gPointLightNode3DTypeString;
 	}

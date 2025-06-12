@@ -17,7 +17,7 @@ namespace puffin
 			void Initialize() override;
 			void Deinitialize() override;
 
-			[[nodiscard]] const std::string& GetTypeString() const override;
+			[[nodiscard]] std::string_view GetTypeString() const override;
 			[[nodiscard]] entt::id_type GetTypeID() const override;
 
 			[[nodiscard]] LightType GetLightType() override;
