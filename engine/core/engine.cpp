@@ -182,6 +182,15 @@ namespace puffin::core
 			}
 		}
 
+		auto sceneData = sceneSubsystem->GetCurrentSceneData();
+		if (!sceneData)
+		{
+			scene::SceneInfo sceneInfo;
+			sceneInfo.sceneType = scene::SceneType::Scene2D;
+
+			sceneData = sceneSubsystem->CreateScene(mResourceManager->GetProjectPath() / "new_scene.pscene", sceneInfo);
+		}
+
 		mCurrentSceneType = sceneSubsystem->GetCurrentSceneData()->GetSceneInfo().sceneType;
 
 		for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
