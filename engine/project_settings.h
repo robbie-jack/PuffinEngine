@@ -47,7 +47,13 @@ namespace puffin
 
 			is.close();
 
-			file = data;
+			file.name = data["name"];
+
+			if (data.contains("defaultScenePath"))
+				file.defaultScenePath = data["defaultScenePath"];
+
+			if (data.contains("additionalContentDirectories"))
+				file.additionalContentDirectories = data["additionalContentDirectories"];
 		}
 	}
 }
