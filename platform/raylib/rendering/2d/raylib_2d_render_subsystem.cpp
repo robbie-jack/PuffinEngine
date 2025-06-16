@@ -156,8 +156,10 @@ namespace puffin::rendering
 		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
-		Size windowSize = windowSubsystem->GetPrimaryWindowSize();
+		if (cameraSubsystem->IsActiveCameraValid())
+			return;
 
+		Size windowSize = windowSubsystem->GetPrimaryWindowSize();
 		auto activeCamID = cameraSubsystem->GetActiveCameraID();
 		auto activeCamEntity = enttSubsystem->GetEntity(activeCamID);
 

@@ -106,6 +106,11 @@ namespace puffin::rendering
 		return mActiveCameraID;
 	}
 
+    bool CameraSubsystem::IsActiveCameraValid() const
+    {
+		return mActiveCameraID == gInvalidID;
+    }
+
     void CameraSubsystem::InitSettingsAndSignals()
     {
 		const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
