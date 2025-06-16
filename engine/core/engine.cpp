@@ -385,7 +385,7 @@ namespace puffin::core
 		{
 			benchmarkManager->Begin("Render");
 
-			auto renderSubsystem = mSubsystemManager->GetRenderSubsystem();
+			auto* renderSubsystem = mSubsystemManager->GetRenderSubsystem();
 
 			renderSubsystem->Render(mDeltaTime);
 

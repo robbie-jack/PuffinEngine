@@ -86,16 +86,26 @@ namespace puffin::rendering
 		{
 			ClearBackground({0, 178, 230});
 
-			mCamera.BeginMode();
+			m_camera.BeginMode();
 
 			DrawSprites();
 
-			mCamera.EndMode();
+			m_camera.EndMode();
+		}
+
+		// Draw Text
+		{
+			for (const auto& textDraw : m_textDraws)
+			{
+				DrawText(textDraw);
+			}
+
+			m_textDraws.clear();
 		}
 
 		// Debug Drawing
 		{
-			DebugDrawStats(deltaTime);
+			//DebugDrawStats(deltaTime);
 		}
 
 		EndDrawing();
@@ -115,6 +125,12 @@ namespace puffin::rendering
 		// PFN_TODO_RENDERING - Implement when adding viewport and render resolution scaling
 	}
 
+	void Raylib2DRenderSubsystem::DrawTextToScreen(const std::string& string, int posX, int posY, int fontSize, Vector3f color)
+	{
+		m_textDraws.emplace_back(string, posX, posY, fontSize, raylib::Color{ static_cast<unsigned char>(std::round(color.x * 255)), 
+			static_cast<unsigned char>(std::round(color.y * 255)), static_cast<unsigned char>(std::round(color.z * 255)) });
+	}
+
 	void Raylib2DRenderSubsystem::InitSettingsAndSignals()
 	{
 		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
@@ -122,13 +138,13 @@ namespace puffin::rendering
 
 		// Pixel Scale
 		{
-			mPixelScale = settingsManager->Get<int32_t>("rendering", "pixel_scale").value_or(0);
+			m_pixelScale = settingsManager->Get<int32_t>("rendering", "pixel_scale").value_or(0);
 
 			signalSubsystem->GetOrCreateSignal("rendering_pixel_scale")->Connect(std::function([&]
 			{
 				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
 
-				mPixelScale = settingsManager->Get<int32_t>("rendering", "pixel_scale").value_or(0);
+				m_pixelScale = settingsManager->Get<int32_t>("rendering", "pixel_scale").value_or(0);
 			}));
 		}
 	}
@@ -148,11 +164,11 @@ namespace puffin::rendering
 		auto activeCamTransform = registry->get<TransformComponent2D>(activeCamEntity);
 		auto activeCamCamera = registry->get<CameraComponent2D>(activeCamEntity);
 
-		mCamera.SetTarget({ activeCamTransform.position.x * mPixelScale, activeCamTransform.position.y * mPixelScale });
-		mCamera.SetOffset({ static_cast<float>(windowSize.width) / 2.f,
+		m_camera.SetTarget({ activeCamTransform.position.x * m_pixelScale, activeCamTransform.position.y * m_pixelScale });
+		m_camera.SetOffset({ static_cast<float>(windowSize.width) / 2.f,
 			static_cast<float>(windowSize.height) / 2.f });
-		mCamera.SetRotation(activeCamCamera.rotation);
-		mCamera.SetZoom(activeCamCamera.zoom);
+		m_camera.SetRotation(activeCamCamera.rotation);
+		m_camera.SetZoom(activeCamCamera.zoom);
 	}
 
 	void Raylib2DRenderSubsystem::DrawSprites()
@@ -265,6 +281,11 @@ namespace puffin::rendering
 		}
 	}
 
+	void Raylib2DRenderSubsystem::DrawText(const TextDraw& textDraw) const
+	{
+		::DrawText(textDraw.string.c_str(), textDraw.posX, textDraw.posY, textDraw.fontSize, textDraw.color);
+	}
+
 	void Raylib2DRenderSubsystem::DebugDrawStats(double deltaTime) const
 	{
 		// FPS / Frametime
@@ -301,7 +322,7 @@ namespace puffin::rendering
 			if ((fps < 60) && (fps >= 30)) color = ORANGE;  // Warning FPS
 			else if (fps < 30) color = RED;             // Low FPS
 
-			DrawText(TextFormat("FPS: %2i, Frametime: %.3f ms", fps, deltaTimeAvg * 1000.f), 10, 10, 20, color);
+			::DrawText(TextFormat("FPS: %2i, Frametime: %.3f ms", fps, deltaTimeAvg * 1000.f), 10, 10, 20, color);
 		}
 
 		// Benchmarks
@@ -360,7 +381,7 @@ namespace puffin::rendering
 			benchmarkAvg[name] += benchmarkHistory[name][deltaTimeIdx];
 		}
 
-		DrawText(TextFormat("%s Frametime: %.3f ms", benchmark->GetData().name.c_str(), benchmarkAvg[name] * 1000.f), posX, posY, 20, WHITE);
+		::DrawText(TextFormat("%s Frametime: %.3f ms", benchmark->GetData().name.c_str(), benchmarkAvg[name] * 1000.f), posX, posY, 20, WHITE);
 
 		for (auto& [childName, childBenchmark] : benchmark->GetBenchmarks())
 		{
@@ -372,11 +393,11 @@ namespace puffin::rendering
 
 	float Raylib2DRenderSubsystem::ScaleWorldToPixel(const float& val) const
 	{
-		return val * static_cast<float>(mPixelScale);
+		return val * static_cast<float>(m_pixelScale);
 	}
 
 	raylib::Vector2 Raylib2DRenderSubsystem::ScaleWorldToPixel(const raylib::Vector2& val) const
 	{
-		return val.Scale(static_cast<float>(mPixelScale));
+		return val.Scale(static_cast<float>(m_pixelScale));
 	}
 }

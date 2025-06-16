@@ -4,6 +4,7 @@
 
 #include "core/subsystem.h"
 #include "types/size.h"
+#include "types/vector3.h"
 
 namespace puffin::rendering
 {
@@ -40,6 +41,8 @@ namespace puffin::rendering
 
 		virtual void WindowResized(Size size) = 0;
 		virtual void ViewportResized(Size size) = 0;
+
+		virtual void DrawTextToScreen(const std::string& string, int posX, int posY, int fontSize = 20, Vector3f color = { 1.0f }) = 0;
 
 	protected:
 
