@@ -1,13 +1,11 @@
 #include "input/input_subsystem.h"
 
 #include <utility>
-#include <stdbool.h>
 
 #include "raylib.h"
 #include "core/engine.h"
 #include "core/settings_manager.h"
 #include "core/signal_subsystem.h"
-#include "window/window_subsystem.h"
 #include "input/input_context.h"
 
 namespace puffin
@@ -17,7 +15,7 @@ namespace puffin
 		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
 		{
 			mName = "InputSubsystem";
-			mMouseSensitivity = 0.05;
+			mMouseSensitivity = 0.05f;
 		}
 
 		void InputSubsystem::Initialize(core::SubsystemManager* subsystemManager)
@@ -26,13 +24,30 @@ namespace puffin
 			const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
 			InitSettings();
-
-			AddEditorContext(this);
 		}
 
 		void InputSubsystem::Deinitialize()
 		{
 			mActions.clear();
+
+			for (auto& [name, signal] : mActionSignals)
+			{
+				delete signal;
+			}
+
+			mActionSignals.clear();
+
+			for (auto& [name, context] : mContexts)
+			{
+				if (mManageContextLifetime.find(name) == mManageContextLifetime.end())
+					continue;
+
+				delete context;
+			}
+				
+			mContexts.clear();
+			mManageContextLifetime.clear();
+			mContextNamesInOrder.clear();
 		}
 
 		core::SubsystemType InputSubsystem::GetType() const
@@ -49,7 +64,7 @@ namespace puffin
 			// Loop through global actions and publish input events
 			for (auto& [name, action] : mActions)
 			{
-				UpdateAction(action);
+				UpdateAction(action, mActionSignals.at(name));
 			}
 
 			// Loop context actions and publish input events
@@ -59,7 +74,7 @@ namespace puffin
 
 				for (auto& [name, action] : context->GetActions())
 				{
-					UpdateAction(action);
+					UpdateAction(action, context->GetActionSignal(name));
 				}
 
 				if (context->GetBlockInput())
@@ -72,25 +87,29 @@ namespace puffin
 		void InputSubsystem::AddAction(std::string name, int key)
 		{
 			mActions.emplace(name, InputAction(name));
-
-			const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
-            signalSubsystem->CreateSignal<InputEvent>(name);
+			mActionSignals.emplace(name, new Signal<InputEvent>());
 		}
 
 		void InputSubsystem::AddAction(std::string name, std::vector<int> keys)
 		{
 			mActions.emplace(name, InputAction(name));
-
-			const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
-            signalSubsystem->CreateSignal<InputEvent>(name);
+			mActionSignals.emplace(name, new Signal<InputEvent>());
 		}
 
-		InputAction InputSubsystem::GetAction(std::string name) const
+		InputAction InputSubsystem::GetAction(const std::string& name) const
 		{
-			if (mActions.find(name) != mActions.end())
-				return mActions.at(name);
+			if (mActions.find(name) == mActions.end())
+				return InputAction(name);
+			
+			return mActions.at(name);
+		}
 
-			return InputAction(name);
+		Signal<InputEvent>* InputSubsystem::GetActionSignal(const std::string& name)
+		{
+			if (mActionSignals.find(name) == mActionSignals.end())
+				return nullptr;
+
+			return mActionSignals.at(name);
 		}
 
 		bool InputSubsystem::HasAction(const std::string& name) const
@@ -299,6 +318,8 @@ namespace puffin
 				delete context;
 			}
 
+			mManageContextLifetime.erase(name);
+
 			for (auto it = mContextNamesInOrder.begin(); it != mContextNamesInOrder.end();)
 			{
 				if (*it == name)
@@ -318,7 +339,7 @@ namespace puffin
 			return mContexts.at(name);
 		}
 
-		void InputSubsystem::UpdateAction(InputAction& action)
+		void InputSubsystem::UpdateAction(InputAction& action, Signal<InputEvent>* signal)
 		{
 			// Loop over each keyboard key in this action
 			for (const auto& key : action.keys)
@@ -402,11 +423,9 @@ namespace puffin
 			}
 
 			// Notify subscribers that event changed
-			if (action.state != action.lastState)
+			if (action.state != action.lastState && signal)
 			{
-				const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
-
-				signalSubsystem->Emit<InputEvent>(action.name, InputEvent(action.name, action.state));
+				signal->Emit({ action.name, action.state });
 
 				action.lastState = action.state;
 			}
@@ -431,38 +450,6 @@ namespace puffin
 
 				mMouseSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
 			}));
-		}
-
-		void AddEditorContext(InputSubsystem* subsystem)
-		{
-			auto editorContext = subsystem->AddContext("Editor");
-
-			auto& editorCamMoveForwardAction = editorContext->AddAction("editor_cam_move_forward");
-			editorCamMoveForwardAction.keys.emplace_back(KeyboardKey::W);
-
-			auto& editorCamMoveBackwardAction = editorContext->AddAction("editor_cam_move_backward");
-			editorCamMoveBackwardAction.keys.emplace_back(KeyboardKey::S);
-
-			auto& editorCamMoveLeftAction = editorContext->AddAction("editor_cam_move_left");
-			editorCamMoveLeftAction.keys.emplace_back(KeyboardKey::A);
-
-			auto& editorCamMoveRightAction = editorContext->AddAction("editor_cam_move_right");
-			editorCamMoveRightAction.keys.emplace_back(KeyboardKey::D);
-
-			auto& editorCamMoveUpAction = editorContext->AddAction("editor_cam_move_up");
-			editorCamMoveUpAction.keys.emplace_back(KeyboardKey::E);
-
-			auto& editorCamMoveDownAction = editorContext->AddAction("editor_cam_move_down");
-			editorCamMoveDownAction.keys.emplace_back(KeyboardKey::Q);
-
-			auto& editorCamLookAroundAction = editorContext->AddAction("editor_cam_look_around");
-			editorCamLookAroundAction.mouseButtons.emplace_back(MouseButton::Right);
-
-			auto& editorPlayPause = editorContext->AddAction("editor_play_pause");
-			editorPlayPause.keys.emplace_back(KeyboardKey::P, true);
-
-			auto& editorRestart = editorContext->AddAction("editor_restart");
-			editorRestart.keys.emplace_back(KeyboardKey::O, true);
 		}
 	}
 }

@@ -221,12 +221,6 @@ namespace puffin::core
 
 			inputSubsystem->ProcessInput();
 
-			if (inputSubsystem->IsActionPressed("editor_play_pause"))
-				Play();
-
-			if (inputSubsystem->IsActionPressed("editor_restart"))
-				Restart();
-
 			benchmarkManager->End("Input");
 		}
 
@@ -271,17 +265,6 @@ namespace puffin::core
 
 			benchmarkManager->End("EngineUpdate");
 		}
-
-		/*const auto inputSubsystem = getSystem<input::InputSubsystem>();
-		if (inputSubsystem->justPressed("Play"))
-		{
-			play();
-		}
-
-		if (inputSubsystem->justPressed("Restart"))
-		{
-			restart();
-		}*/
 
 		// Call system start functions to prepare for gameplay
 		if (mPlayState == PlayState::BeginPlay)
@@ -558,22 +541,22 @@ namespace puffin::core
 	void Engine::InitSignals()
 	{
 		const auto signalSubsystem = GetSubsystem<SignalSubsystem>();
-		
+
 		auto framerateLimitSignal = signalSubsystem->GetOrCreateSignal("general_framerate_limit");
 		framerateLimitSignal->Connect(std::function([&]
-		{
-			auto settingsManager = GetSubsystem<core::SettingsManager>();
+			{
+				auto settingsManager = GetSubsystem<core::SettingsManager>();
 
-			mFramerateLimit = settingsManager->Get<int>("general", "framerate_limit").value_or(0);
-		}));
+				mFramerateLimit = settingsManager->Get<int>("general", "framerate_limit").value_or(0);
+			}));
 
 		auto ticksPerSecondSignal = signalSubsystem->GetOrCreateSignal("physics_ticks_per_second");
 		ticksPerSecondSignal->Connect(std::function([&]
-		{
-			auto settingsManager = GetSubsystem<core::SettingsManager>();
+			{
+				auto settingsManager = GetSubsystem<core::SettingsManager>();
 
-			UpdatePhysicsTickRate(settingsManager->Get<uint16_t>("physics", "ticks_per_second").value_or(60));
-		}));
+				UpdatePhysicsTickRate(settingsManager->Get<uint16_t>("physics", "ticks_per_second").value_or(60));
+			}));
 	}
 
 	void Engine::UpdateDeltaTime(double sampledTime)

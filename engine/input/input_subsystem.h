@@ -5,11 +5,10 @@
 #include <string>
 #include <unordered_map>
 
-//#include "GLFW/glfw3.h"
-
 #include "core/subsystem.h"
 #include "input/input_types.h"
 #include "input/input_event.h"
+#include "core/signal.h"
 #include "types/vector2.h"
 
 namespace puffin
@@ -42,7 +41,8 @@ namespace puffin
 
 			void AddAction(std::string name, int key);
 			void AddAction(std::string name, std::vector<int> keys);
-			[[nodiscard]] InputAction GetAction(std::string name) const;
+			[[nodiscard]] InputAction GetAction(const std::string& name) const;
+			[[nodiscard]] Signal<InputEvent>* GetActionSignal(const std::string& name);
 
 			[[nodiscard]] bool HasAction(const std::string& name) const;
 			[[nodiscard]] bool IsActionPressed(const std::string& name) const;
@@ -94,7 +94,7 @@ namespace puffin
 			 */
 			virtual void PollInput() = 0;
 
-			void UpdateAction(InputAction& action);
+			void UpdateAction(InputAction& action, Signal<InputEvent>* signal);
 
 			float mMouseSensitivity;
 			int mActiveGamepad = 0;
@@ -104,11 +104,10 @@ namespace puffin
 			void InitSettings();
 
 			std::unordered_map<std::string, InputAction> mActions;
+			std::unordered_map<std::string, Signal<InputEvent>*> mActionSignals;
 			std::unordered_map<std::string, InputContext*> mContexts;
 			std::unordered_map<std::string, bool> mManageContextLifetime;
 			std::vector<std::string> mContextNamesInOrder;
 		};
-
-		void AddEditorContext(InputSubsystem* subsystem);
 	}
 }

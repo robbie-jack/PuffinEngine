@@ -8,41 +8,63 @@ namespace puffin::input
 	{
 	}
 
+	InputContext::~InputContext()
+	{
+		mActions.clear();
+
+		for (auto& [name, signal] : mActionSignals)
+		{
+			delete signal;
+		}
+
+		mActionSignals.clear();
+	}
+
 	InputAction& InputContext::AddAction(const std::string& name)
 	{
-		assert(mActions.find(name) == mActions.end() && "InputContext::AddAction - Context with that name already exists");
+		assert(mActions.find(name) == mActions.end() && "InputContext::AddAction - Action with that name already exists");
 
 		mActions.emplace(name, InputAction(name));
+		mActionSignals.emplace(name, new Signal<InputEvent>());
 
 		return mActions.at(name);
 	}
 
 	void InputContext::AddAction(const std::string& name, const InputAction& action)
 	{
-		assert(mActions.find(name) == mActions.end() && "InputContext::AddAction - Context with that name already exists");
+		assert(mActions.find(name) == mActions.end() && "InputContext::AddAction - Action with that name already exists");
 
 		mActions.emplace(name, action);
+		mActionSignals.emplace(name, new Signal<InputEvent>());
 	}
 
 	void InputContext::RemoveAction(const std::string& name)
 	{
-		assert(mActions.find(name) != mActions.end() && "InputContext::RemoveAction - Context with that name doesn't exist");
+		assert(mActions.find(name) != mActions.end() && "InputContext::RemoveAction - Action with that name doesn't exist");
 
 		mActions.erase(name);
+		mActionSignals.erase(name);
 	}
 
 	InputAction& InputContext::GetAction(const std::string& name)
 	{
-		assert(mActions.find(name) != mActions.end() && "InputContext::GetAction - Context with that name doesn't exist");
+		assert(mActions.find(name) != mActions.end() && "InputContext::GetAction - Action with that name doesn't exist");
 
 		return mActions.at(name);
 	}
 
 	const InputAction& InputContext::GetAction(const std::string& name) const
 	{
-		assert(mActions.find(name) != mActions.end() && "InputContext::GetAction - Context with that name doesn't exist");
+		assert(mActions.find(name) != mActions.end() && "InputContext::GetAction - Action with that name doesn't exist");
 
 		return mActions.at(name);
+	}
+
+	Signal<InputEvent>* InputContext::GetActionSignal(const std::string& name)
+	{
+		assert(mActions.find(name) != mActions.end() && "InputContext::GetAction - Action signal with that name doesn't exist");
+
+		return mActionSignals.at(name);
 	}
 
 	std::unordered_map<std::string, InputAction>& InputContext::GetActions()

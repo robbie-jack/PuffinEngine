@@ -33,8 +33,12 @@ namespace puffin
 		private:
 
 			void RegisterEditorSubsystems();
+			void AddEditorContext();
+			void InitSignals();
 
 			std::shared_ptr<core::Engine> mEngine;
+			size_t mEditorPlayPauseConnectionId = 0;
+			size_t mEditorRestartConnectionId = 0;
 
 		};
 	}
