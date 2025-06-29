@@ -22,8 +22,10 @@ namespace puffin::scene
 		mName = "SceneGraphSubsystem";
 	}
 
-	void SceneGraphSubsystem::RegisterTypes()
+	void SceneGraphSubsystem::PreInitialize()
 	{
+		Subsystem::PreInitialize();
+
 		RegisterNodeType<Node>();
 
 		RegisterNodeType<Transform2DNode>();

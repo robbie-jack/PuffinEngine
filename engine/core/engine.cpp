@@ -8,12 +8,14 @@
 #include "input/input_subsystem.h"
 #include "scene/scene_serialization_subsystem.h"
 #include "window/window_subsystem.h"
-#include "core/subsystem_manager.h"
+#include "subsystem/subsystem_manager.h"
 #include "utility/benchmark.h"
 #include "platform.h"
 #include "scene/scene_info.h"
 #include "rendering/render_subsystem.h"
 #include "resource/resource_manager.h"
+#include "subsystem/engine_subsystem.h"
+#include "subsystem/gameplay_subsystem.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -75,8 +77,9 @@ namespace puffin::core
 		mSubsystemManager = nullptr;
 	}
 
-	void Engine::Setup()
+	void Engine::Initialize(const argparse::ArgumentParser& parser)
 	{
+		// Pre-Initialization Setup
 		mResourceManager = std::make_unique<ResourceManager>();
 		mSubsystemManager = std::make_unique<SubsystemManager>(shared_from_this());
 		utility::BenchmarkManager::Get();
@@ -85,17 +88,24 @@ namespace puffin::core
 
 		if (mPlatform)
 		{
-			mPlatform->RegisterTypes();
+			mPlatform->PreInitialize();
 		}
 
 		if (mApplication)
 		{
-			mApplication->RegisterTypes();
+			mApplication->PreInitialize();
 		}
-	}
 
-	void Engine::Initialize(const argparse::ArgumentParser& parser)
-	{
+		mSubsystemManager->CreateEngineSubsystems();
+
+		std::vector<EngineSubsystem*> engineSubsystems;
+		mSubsystemManager->GetEngineSubsystems(engineSubsystems);
+		for (auto subsystem : engineSubsystems)
+		{
+			subsystem->PreInitialize();
+		}
+
+		// Initialization
 		fs::path projectPath = fs::path(parser.get<std::string>("-project_path")).make_preferred();
 
 		// Load Project File
@@ -111,15 +121,39 @@ namespace puffin::core
 		const bool setupDefaultPhysicsScene2D = parser.get<bool>("--setup-default-physics-scene-2d");
 		const bool setupDefaultPhysicsScene3D = parser.get<bool>("--setup-default-physics-scene-3d");
 
-		// Load/Initialize Assets
-
 		// Initialize engine subsystems
-		mSubsystemManager->CreateAndInitializeEngineSubsystems();
+		if (mPlatform)
+		{
+			mPlatform->Initialize();
+		}
 
 		if (mApplication)
 		{
 			mApplication->Initialize();
 		}
+
+		for (auto subsystem : engineSubsystems)
+		{
+			subsystem->Initialize(mSubsystemManager.get());
+		}
+
+		// Post-Initialization Setup
+		if (mPlatform)
+		{
+			mPlatform->PostInitialize();
+		}
+
+		if (mApplication)
+		{
+			mApplication->PostInitialize();
+		}
+
+		for (auto subsystem : engineSubsystems)
+		{
+			subsystem->PostInitialize();
+		}
+
+		// Scene Loading
 
 		// Load default scene
 		auto sceneString = parser.get<std::string>("-scene");
@@ -193,7 +227,7 @@ namespace puffin::core
 
 		mCurrentSceneType = sceneSubsystem->GetCurrentSceneData()->GetSceneInfo().sceneType;
 
-		for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
+		for (auto subsystem : engineSubsystems)
 		{
 			subsystem->PostSceneLoad();
 		}
@@ -242,7 +276,9 @@ namespace puffin::core
 		{
 			auto* engineUpdateBenchmark = benchmarkManager->Begin("EngineUpdate");
 
-			for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
+			std::vector<EngineSubsystem*> engineSubsystems;
+			mSubsystemManager->GetEngineSubsystems(engineSubsystems);
+			for (auto subsystem : engineSubsystems)
 			{
 				if (subsystem->ShouldUpdate())
 				{
@@ -269,19 +305,23 @@ namespace puffin::core
 		// Call system start functions to prepare for gameplay
 		if (mPlayState == PlayState::BeginPlay)
 		{
-			mSubsystemManager->CreateAndInitializeGameplaySubsystems();
-
-			for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
-			{
-				subsystem->BeginPlay();
-			}
+			mSubsystemManager->CreateGameplaySubsystems();
 
 			if (mApplication)
 			{
 				mApplication->BeginPlay();
 			}
 
-			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
+			std::vector<EngineSubsystem*> engineSubsystems;
+			mSubsystemManager->GetEngineSubsystems(engineSubsystems);
+			for (auto subsystem : engineSubsystems)
+			{
+				subsystem->BeginPlay();
+			}
+
+			std::vector<GameplaySubsystem*> gameplaySubsystems;
+			mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
+			for (auto subsystem : gameplaySubsystems)
 			{
 				subsystem->BeginPlay();
 			}
@@ -328,7 +368,9 @@ namespace puffin::core
 						fixedUpdateBenchmark->End(mApplication->GetName());
 					}
 
-					for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
+					std::vector<GameplaySubsystem*> gameplaySubsystems;
+					mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
+					for (auto subsystem : gameplaySubsystems)
 					{
 						if (subsystem->ShouldFixedUpdate())
 						{
@@ -357,7 +399,9 @@ namespace puffin::core
 					updateBenchmark->End(mApplication->GetName());
 				}
 
-				for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
+				std::vector<GameplaySubsystem*> gameplaySubsystems;
+				mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
+				for (auto subsystem : gameplaySubsystems)
 				{
 					if (subsystem->ShouldUpdate())
 					{
@@ -386,23 +430,7 @@ namespace puffin::core
 
 		if (mPlayState == PlayState::EndPlay)
 		{
-			// End play and cleanup gameplay subsystems
-			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
-			{
-				subsystem->EndPlay();
-			}
-
-			mSubsystemManager->DestroyGameplaySubsystems();
-
-			if (mApplication)
-			{
-				mApplication->EndPlay();
-			}
-
-			for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
-			{
-				subsystem->EndPlay();
-			}
+			EndPlay();
 
 			//audioSubsystem->stopAllSounds();
 			benchmarkManager->Clear();
@@ -424,31 +452,28 @@ namespace puffin::core
 		// Cleanup any running gameplay subsystems
 		if (mPlayState == PlayState::Playing)
 		{
-			for (auto subsystem : mSubsystemManager->GetGameplaySubsystems())
-			{
-				subsystem->EndPlay();
-			}
-
-			mSubsystemManager->DestroyGameplaySubsystems();
-
-			if (mApplication)
-			{
-				mApplication->EndPlay();
-			}
-
-			for (auto subsystem : mSubsystemManager->GetEngineSubsystems())
-			{
-				subsystem->EndPlay();
-			}
+			EndPlay();
 		}
+
+		std::vector<EngineSubsystem*> engineSubsystems;
+		mSubsystemManager->GetEngineSubsystems(engineSubsystems);
+		for (auto subsystem : engineSubsystems)
+		{
+			subsystem->Deinitialize();
+		}
+
+		// Cleanup all engine subsystems
+		mSubsystemManager->DestroyEngineSubsystems();
 
 		if (mApplication)
 		{
 			mApplication->Deinitialize();
 		}
 
-		// Cleanup all engine subsystems
-		mSubsystemManager->DestroyEngineSubsystems();
+		if (mPlatform)
+		{
+			mPlatform->Deinitialize();
+		}
 
 		utility::BenchmarkManager::Destroy();
 	}
@@ -557,6 +582,36 @@ namespace puffin::core
 
 				UpdatePhysicsTickRate(settingsManager->Get<uint16_t>("physics", "ticks_per_second").value_or(60));
 			}));
+	}
+
+	void Engine::EndPlay() const
+	{
+		// End play and cleanup gameplay subsystems
+		std::vector<GameplaySubsystem*> gameplaySubsystems;
+		mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
+		for (auto subsystem : gameplaySubsystems)
+		{
+			subsystem->EndPlay();
+		}
+
+		for (auto subsystem : gameplaySubsystems)
+		{
+			subsystem->Deinitialize();
+		}
+
+		mSubsystemManager->DestroyGameplaySubsystems();
+
+		std::vector<EngineSubsystem*> engineSubsystems;
+		mSubsystemManager->GetEngineSubsystems(engineSubsystems);
+		for (auto subsystem : engineSubsystems)
+		{
+			subsystem->EndPlay();
+		}
+
+		if (mApplication)
+		{
+			mApplication->EndPlay();
+		}
 	}
 
 	void Engine::UpdateDeltaTime(double sampledTime)

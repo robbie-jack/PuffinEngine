@@ -10,11 +10,15 @@ puffin::core::Application::~Application()
 	mEngine = nullptr;
 }
 
-void puffin::core::Application::RegisterTypes()
+void puffin::core::Application::PreInitialize()
 {
 }
 
 void puffin::core::Application::Initialize()
+{
+}
+
+void puffin::core::Application::PostInitialize()
 {
 }
 

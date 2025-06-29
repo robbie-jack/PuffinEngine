@@ -11,7 +11,8 @@ namespace puffin::core
 		RaylibPlatform(std::shared_ptr<Engine> engine);
 		~RaylibPlatform() override = default;
 
-		void RegisterTypes() override;
-
+		void PreInitialize() override;
+		void Initialize() override;
+		void PostInitialize() override;
 	};
 }

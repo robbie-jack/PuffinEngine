@@ -164,6 +164,7 @@ namespace puffin::scene
 
 		void RegisterTypes() override;
 
+		void PreInitialize() override;
 		void Initialize(core::SubsystemManager* subsystemManager) override;
 		void Deinitialize() override;
 

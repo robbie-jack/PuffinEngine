@@ -20,9 +20,24 @@ namespace puffin::core
 		virtual ~Platform() = default;
 
 		/*
-		 * Register any application specific types (subsystems, components, nodes, etc...) here, gets called before initialization
+		 * Called immediately prior to engine, app and subsystem initialization. Type registration (Subsystems, nodes, components, etc...) should occur here
 		 */
-		virtual void RegisterTypes() = 0;
+		virtual void PreInitialize() = 0;
+
+		/*
+		 * Application initialization occurs here, called after engine subsystems are initialized
+		 */
+		virtual void Initialize() = 0;
+
+		/*
+		 * Called immediately after engine, app and subsystem initialization, prior to scene loading.
+		 */
+		virtual void PostInitialize() = 0;
+
+		/*
+		 * Application Deinitialization occurs here, called before engine subsystems are deinitialized
+		 */
+		virtual void Deinitialize() = 0;
 
 	protected:
 

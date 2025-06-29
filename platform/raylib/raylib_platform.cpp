@@ -22,10 +22,20 @@ namespace puffin::core
 		mName = "Raylib";
 	}
 
-	void RaylibPlatform::RegisterTypes()
+	void RaylibPlatform::PreInitialize()
 	{
 		mEngine->RegisterSubsystem<window::RaylibWindowSubsystem>();
 		mEngine->RegisterSubsystem<input::RaylibInputSubsystem>();
 		mEngine->RegisterSubsystem<rendering::Raylib2DRenderSubsystem>();
+	}
+
+	void RaylibPlatform::Initialize()
+	{
+
+	}
+
+	void RaylibPlatform::PostInitialize()
+	{
+
 	}
 }

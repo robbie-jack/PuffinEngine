@@ -4,7 +4,7 @@
 
 #include "argparse/argparse.hpp"
 #include "core/application.h"
-#include "core/subsystem_manager.h"
+#include "subsystem/subsystem_manager.h"
 #include "project_settings.h"
 #include "types/scene_type.h"
 
@@ -68,7 +68,6 @@ namespace puffin::core
 		Engine();
 		~Engine();
 
-		void Setup();
 		void Initialize(const argparse::ArgumentParser& parser);
 		bool Update();
 		void Deinitialize();
@@ -118,11 +117,11 @@ namespace puffin::core
 			mPlatform = std::static_pointer_cast<Platform>(std::make_shared<PlatT>(shared_from_this()));
 		}
 
-		template<typename T>
+		/*template<typename T>
 		void RegisterSubsystem() const
 		{
 			mSubsystemManager->RegisterSubsystem<T>();
-		}
+		}*/
 
 		template<typename T>
 		T* GetSubsystem() const
@@ -144,6 +143,9 @@ namespace puffin::core
 
 		void InitSettings();
 		void InitSignals();
+
+		void EndPlay() const;
+
 		void UpdateDeltaTime(double sampledTime);
 		void UpdatePhysicsTickRate(uint16_t ticksPerSecond);
 
