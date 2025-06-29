@@ -1,28 +1,57 @@
 ﻿#pragma once
 
-#include "core/subsystem.h"
+#include "subsystem/gameplay_subsystem.h"
 
-namespace puffin::scene
+namespace puffin
 {
-	class SceneGraphGameplaySubsystem : public core::Subsystem
+	namespace scene
 	{
-	public:
+		class SceneGraphGameplaySubsystem : public core::GameplaySubsystem
+		{
+		public:
 
-		explicit SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine);
-		~SceneGraphGameplaySubsystem() override = default;
+			explicit SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine);
+			~SceneGraphGameplaySubsystem() override = default;
 
-		void Initialize(core::SubsystemManager* subsystemManager) override;
+			void PreInitialize(core::SubsystemManager* subsystemManager) override;
+			void Initialize() override;
 
-		void BeginPlay() override;
-		void EndPlay() override;
+			void BeginPlay() override;
+			void EndPlay() override;
 
-		[[nodiscard]] core::SubsystemType GetType() const override;
+			void Update(double deltaTime) override;
+			bool ShouldUpdate() override;
 
-		void Update(double deltaTime) override;
-		bool ShouldUpdate() override;
+			void FixedUpdate(double fixedTime) override;
+			bool ShouldFixedUpdate() override;
 
-		void FixedUpdate(double fixedTime) override;
-		bool ShouldFixedUpdate() override;
+			std::string_view GetName() const override;
 
-	};
+		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<scene::SceneGraphGameplaySubsystem>()
+		{
+			return "SceneGraphGameplaySubsystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<scene::SceneGraphGameplaySubsystem>()
+		{
+			return entt::hs(GetTypeString<scene::SceneGraphGameplaySubsystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<scene::SceneGraphGameplaySubsystem>()
+		{
+			auto meta = entt::meta<scene::SceneGraphGameplaySubsystem>()
+				.base<core::GameplaySubsystem>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
+	}
 }

@@ -24,7 +24,7 @@ namespace puffin::rendering
 
 		void RegisterTypes() override;
 
-		void Initialize(core::SubsystemManager* subsystemManager) override;
+		void Initialize() override;
 		void Deinitialize() override;
 
 		double WaitForLastPresentationAndSampleTime() override;

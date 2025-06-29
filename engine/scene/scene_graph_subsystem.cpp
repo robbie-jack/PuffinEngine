@@ -17,14 +17,13 @@
 
 namespace puffin::scene
 {
-	SceneGraphSubsystem::SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	SceneGraphSubsystem::SceneGraphSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
-		mName = "SceneGraphSubsystem";
 	}
 
-	void SceneGraphSubsystem::PreInitialize()
+	void SceneGraphSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
-		Subsystem::PreInitialize();
+		Subsystem::PreInitialize(subsystemManager);
 
 		RegisterNodeType<Node>();
 
@@ -54,7 +53,7 @@ namespace puffin::scene
 		SetDefaultNodePoolSize<rendering::DirectionalLightNode3D>(rendering::gMaxDirectionalLights);
 	}
 
-	void SceneGraphSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void SceneGraphSubsystem::Initialize()
 	{
 		mSceneGraphUpdated = true;
 
@@ -107,6 +106,11 @@ namespace puffin::scene
 	bool SceneGraphSubsystem::ShouldUpdate()
 	{
 		return true;
+	}
+
+	std::string_view SceneGraphSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<SceneGraphSubsystem>();
 	}
 
 	Node* SceneGraphSubsystem::AddNode(uint32_t typeID, const std::string& name, UUID id)
@@ -245,7 +249,7 @@ namespace puffin::scene
 
 	void SceneGraphSubsystem::UpdateGlobalTransforms()
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
 		for (const auto& id : mNodeTransformsNeedUpdatedVector)
@@ -263,7 +267,7 @@ namespace puffin::scene
 		{
 			if (const auto node = GetNode(id); node)
 			{
-				const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+				const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 				const auto registry = enttSubsystem->GetRegistry();
 
 				if (auto* transformNode3D = dynamic_cast<TransformNode3D*>(node))

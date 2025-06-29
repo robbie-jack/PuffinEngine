@@ -12,16 +12,6 @@ namespace puffin
 		class Engine;
 		class SubsystemManager;
 
-		enum class SubsystemType
-		{
-			Engine = 0, // Subsystem shares lifetime of engine
-			Editor, // Subsystem shares lifetime of engine, is only initialized when editor is active
-			Gameplay, // Subsystem shares lifetime of gameplay
-			Window, // Unique subsystem type, manages window creation and deletion, same lifetime as engine subsystem
-			Input, // Unique subsystem type, which processes system input, same lifetime as engine subsystem
-			Render // Unique subsystem type, which handles scene & editor rendering, same lifetime as engine subsystem
-		};
-
 		/*
 		 * Subsystem is a class that is responsible for some defined functionality within puffin
 		 * i.e rendering, physics, window management, input, etc..
@@ -36,13 +26,13 @@ namespace puffin
 			/*
 			 * Called immediately prior to engine, app and subsystem initialization. Type registration (Subsystems, nodes, components, etc...) should occur here
 			 */
-			virtual void PreInitialize();
+			virtual void PreInitialize(core::SubsystemManager* subsystemManager);
 
 			/*
 			 * All subsystem initialization occurs here
 			 * subsystem initialization is called depending on what type of subsystem this is
 			 */
-			virtual void Initialize(SubsystemManager* subsystemManager);
+			virtual void Initialize();
 
 			/*
 			 * Called immediately after engine, app and subsystem initialization, prior to scene loading.
@@ -69,12 +59,14 @@ namespace puffin
 			 */
 			virtual void EndPlay();
 
+			/*
+			 *	Return subsystem type name
+			 */
 			virtual std::string_view GetName() const;
 
 		protected:
 
-			std::shared_ptr<Engine> mEngine = nullptr;
-			bool mInitialized = false;
+			std::shared_ptr<Engine> m_engine = nullptr;
 
 		};
 	}

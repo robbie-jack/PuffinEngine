@@ -10,7 +10,7 @@ namespace puffin::rendering
 	{
 	}
 
-	void RenderSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void RenderSubsystem::Initialize()
 	{
 		Subsystem::Initialize(subsystemManager);
 

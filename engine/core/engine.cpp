@@ -96,14 +96,7 @@ namespace puffin::core
 			mApplication->PreInitialize();
 		}
 
-		mSubsystemManager->CreateEngineSubsystems();
-
-		std::vector<EngineSubsystem*> engineSubsystems;
-		mSubsystemManager->GetEngineSubsystems(engineSubsystems);
-		for (auto subsystem : engineSubsystems)
-		{
-			subsystem->PreInitialize();
-		}
+		mSubsystemManager->CreateAndPreInitializeEngineSubsystems();
 
 		// Initialization
 		fs::path projectPath = fs::path(parser.get<std::string>("-project_path")).make_preferred();
@@ -132,9 +125,11 @@ namespace puffin::core
 			mApplication->Initialize();
 		}
 
+		std::vector<EngineSubsystem*> engineSubsystems;
+		mSubsystemManager->GetEngineSubsystems(engineSubsystems);
 		for (auto subsystem : engineSubsystems)
 		{
-			subsystem->Initialize(mSubsystemManager.get());
+			subsystem->Initialize();
 		}
 
 		// Post-Initialization Setup
@@ -305,7 +300,7 @@ namespace puffin::core
 		// Call system start functions to prepare for gameplay
 		if (mPlayState == PlayState::BeginPlay)
 		{
-			mSubsystemManager->CreateGameplaySubsystems();
+			mSubsystemManager->CreateAndPreInitializeGameplaySubsystems();
 
 			if (mApplication)
 			{

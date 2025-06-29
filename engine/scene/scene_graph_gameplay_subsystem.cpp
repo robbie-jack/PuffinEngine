@@ -1,24 +1,30 @@
 ﻿#include "scene/scene_graph_gameplay_subsystem.h"
 
 #include "core/engine.h"
-#include "core/subsystem_manager.h"
+#include "subsystem/subsystem_manager.h"
 #include "scene/scene_graph_subsystem.h"
 
 namespace puffin::scene
 {
-	SceneGraphGameplaySubsystem::SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	SceneGraphGameplaySubsystem::SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine) : GameplaySubsystem(engine)
 	{
-		mName = "SceneGraphGameplaySubsystem";
 	}
 
-	void SceneGraphGameplaySubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void SceneGraphGameplaySubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
-		subsystemManager->CreateAndInitializeSubsystem<SceneGraphSubsystem>();
+		GameplaySubsystem::PreInitialize(subsystemManager);
+
+		subsystemManager->CreateAndPreInitializeSubsystem<SceneGraphSubsystem>();
+	}
+
+	void SceneGraphGameplaySubsystem::Initialize()
+	{
+		GameplaySubsystem::Initialize();
 	}
 
 	void SceneGraphGameplaySubsystem::BeginPlay()
 	{
-		const auto sceneGraph = mEngine->GetSubsystem<SceneGraphSubsystem>();
+		const auto sceneGraph = m_engine->GetSubsystem<SceneGraphSubsystem>();
 
 		for (auto& id : sceneGraph->GetNodeIDs())
 		{
@@ -29,7 +35,7 @@ namespace puffin::scene
 
 	void SceneGraphGameplaySubsystem::EndPlay()
 	{
-		const auto sceneGraph = mEngine->GetSubsystem<SceneGraphSubsystem>();
+		const auto sceneGraph = m_engine->GetSubsystem<SceneGraphSubsystem>();
 
 		for (auto& id : sceneGraph->GetNodeIDs())
 		{
@@ -38,19 +44,14 @@ namespace puffin::scene
 		}
 	}
 
-	core::SubsystemType SceneGraphGameplaySubsystem::GetType() const
-	{
-		return core::SubsystemType::Gameplay;
-	}
-
 	void SceneGraphGameplaySubsystem::Update(double deltaTime)
 	{
-		const auto sceneGraph = mEngine->GetSubsystem<SceneGraphSubsystem>();
+		const auto sceneGraph = m_engine->GetSubsystem<SceneGraphSubsystem>();
 
 		for (auto& id : sceneGraph->GetNodeIDs())
 		{
 			if (const auto node = sceneGraph->GetNode(id); node && node->ShouldUpdate())
-				node->Update(mEngine->GetDeltaTime());
+				node->Update(m_engine->GetDeltaTime());
 		}
 	}
 
@@ -61,17 +62,22 @@ namespace puffin::scene
 
 	void SceneGraphGameplaySubsystem::FixedUpdate(double fixedTime)
 	{
-		const auto sceneGraph = mEngine->GetSubsystem<SceneGraphSubsystem>();
+		const auto sceneGraph = m_engine->GetSubsystem<SceneGraphSubsystem>();
 
 		for (auto& id : sceneGraph->GetNodeIDs())
 		{
 			if (const auto node = sceneGraph->GetNode(id); node && node->ShouldFixedUpdate())
-				node->FixedUpdate(mEngine->GetTimeStepFixed());
+				node->FixedUpdate(m_engine->GetTimeStepFixed());
 		}
 	}
 
 	bool SceneGraphGameplaySubsystem::ShouldFixedUpdate()
 	{
 		return true;
+	}
+
+	std::string_view SceneGraphGameplaySubsystem::GetName() const
+	{
+		return reflection::GetTypeString<SceneGraphGameplaySubsystem>();
 	}
 }

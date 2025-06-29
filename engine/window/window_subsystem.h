@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/subsystem.h"
+#include "subsystem/engine_subsystem.h"
 #include "types/size.h"
 
 namespace puffin
@@ -14,19 +14,16 @@ namespace puffin
 	{
 		class Window;
 
-		class WindowSubsystem : public core::Subsystem
+		class WindowSubsystem : public core::EngineSubsystem
 		{
 		public:
 
 			explicit WindowSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~WindowSubsystem() override;
 
-			void Initialize(core::SubsystemManager* subsystemManager) override;
-			void Deinitialize() override;
-
 			void Update(double deltaTime) override;
 
-			[[nodiscard]] core::SubsystemType GetType() const override;
+			std::string_view GetName() const override;
 
 			[[nodiscard]] Window* GetPrimaryWindow() const;
 
@@ -43,12 +40,37 @@ namespace puffin
 
 		protected:
 
-			Window* mPrimaryWindow = nullptr;
+			Window* m_primaryWindow = nullptr;
 
 		private:
 
 			
 
 		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<window::WindowSubsystem>()
+		{
+			return "WindowSubsystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<window::WindowSubsystem>()
+		{
+			return entt::hs(GetTypeString<window::WindowSubsystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<window::WindowSubsystem>()
+		{
+			auto meta = entt::meta<window::WindowSubsystem>()
+				.base<core::EngineSubsystem>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
 	}
 }

@@ -32,21 +32,20 @@ namespace puffin::core
 		return mData;
 	}
 
-	SettingsManager::SettingsManager(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
+	SettingsManager::SettingsManager(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
-		mName = "SettingsManager";
 	}
 
-	void SettingsManager::Initialize(core::SubsystemManager* subsystemManager)
+	void SettingsManager::Initialize()
 	{
-		auto* resourceManager = mEngine->GetResourceManager();
+		auto* resourceManager = m_engine->GetResourceManager();
 
-		mCategories.emplace("general", SettingsCategory(mEngine, "general"));
-		mCategories.emplace("editor", SettingsCategory(mEngine, "editor"));
-		mCategories.emplace("physics", SettingsCategory(mEngine, "physics"));
-		mCategories.emplace("rendering", SettingsCategory(mEngine, "rendering"));
+		mCategories.emplace("general", SettingsCategory(m_engine, "general"));
+		mCategories.emplace("editor", SettingsCategory(m_engine, "editor"));
+		mCategories.emplace("physics", SettingsCategory(m_engine, "physics"));
+		mCategories.emplace("rendering", SettingsCategory(m_engine, "rendering"));
 		
-		if (mEngine->GetSetupEngineDefaultSettings())
+		if (m_engine->GetSetupEngineDefaultSettings())
 		{
 			DefaultSettings();
 			Save(resourceManager->GetProjectPath() / "config" / "settings.toml");
@@ -57,11 +56,16 @@ namespace puffin::core
 		}
 	}
 
+	std::string_view SettingsManager::GetName() const
+	{
+		return reflection::GetTypeString<SettingsManager>();
+	}
+
 	SettingsCategory& SettingsManager::GetCategory(const std::string& name)
 	{
 		if (mCategories.find(name) == mCategories.end())
 		{
-			mCategories.emplace(name, SettingsCategory(mEngine, name));
+			mCategories.emplace(name, SettingsCategory(m_engine, name));
 		}
 
 		return mCategories[name];

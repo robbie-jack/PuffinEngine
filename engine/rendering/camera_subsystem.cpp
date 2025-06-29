@@ -16,7 +16,7 @@ namespace puffin::rendering
         mName = "CameraSubsystem";
 	}
 
-	void CameraSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void CameraSubsystem::Initialize()
 	{
 		const auto enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
 		const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();

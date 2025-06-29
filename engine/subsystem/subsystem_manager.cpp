@@ -12,7 +12,7 @@
 
 namespace puffin::core
 {
-	SubsystemManager::SubsystemManager(const std::shared_ptr<Engine>& engine) : mEngine(engine)
+	SubsystemManager::SubsystemManager(const std::shared_ptr<Engine>& engine) : m_engine(engine)
 	{
 	}
 
@@ -21,67 +21,40 @@ namespace puffin::core
 		DestroyGameplaySubsystems();
 		DestroyGameplaySubsystems();
 
-		mEngine = nullptr;
+		m_engine = nullptr;
 	}
 
-	void SubsystemManager::CreateEngineSubsystems()
+	void SubsystemManager::CreateAndPreInitializeEngineSubsystems()
 	{
 		for (const auto& typeId : reflection::SubsystemRegistry::Get()->GetRegisteredTypes())
 		{
+			if (m_subsystems.find(typeId) != m_subsystems.end())
+				continue;
+
 			auto type = entt::resolve(typeId);
 
 			if (!type.can_cast(entt::resolve<EngineSubsystem>()))
 				continue;
 
-			if (type.can_cast(entt::resolve<EditorSubsystem>()))
-			{
-				// Skip registering editor subsystems
-				if (!mEngine->IsEditorRunning())
-					continue;
-
-				m_editorSubsystem.push_back(typeId);
-			}
-
-			CreateSubsystem(typeId);
-
-			if (type.can_cast(entt::resolve<window::WindowSubsystem>()))
-			{
-				assert(mWindowSubsystem == nullptr && "SubsystemManager::RegisterSubsystemInternal - Attempting to initialize a second window subsystem");
-
-				m_windowSubsystem = typeId;
-				continue;
-			}
-
-			if (type.can_cast(entt::resolve<input::InputSubsystem>()))
-			{
-				assert(mInputSubsystem == nullptr && "SubsystemManager::RegisterSubsystemInternal - Attempting to initialize a second input subsystem");
-
-				m_inputSubsystem = typeId;
-				continue;
-			}
-
-			if (type.can_cast(entt::resolve<rendering::RenderSubsystem>()))
-			{
-				assert(mRenderSubsystem == nullptr && "SubsystemManager::RegisterSubsystemInternal - Attempting to initialize a second render subsystem");
-
-				m_renderSubsystem = typeId;
-				continue;
-			}
+			auto* subsystem = CreateSubsystem(typeId);
+			subsystem->PreInitialize(this);
 		}
 	}
 
-	void SubsystemManager::CreateGameplaySubsystems()
+	void SubsystemManager::CreateAndPreInitializeGameplaySubsystems()
 	{
 		for (const auto& typeId : reflection::SubsystemRegistry::Get()->GetRegisteredTypes())
 		{
+			if (m_subsystems.find(typeId) != m_subsystems.end())
+				continue;
+
 			auto type = entt::resolve(typeId);
 
 			if (!type.can_cast(entt::resolve<GameplaySubsystem>()))
 				continue;
 
-			m_subsystems.emplace(typeId, static_cast<Subsystem*>(type.construct(mEngine).data()));
-
-			m_gameplaySubsystems.push_back(typeId);
+			auto* subsystem = CreateSubsystem(typeId);
+			subsystem->PreInitialize(this);
 		}
 	}
 
@@ -134,21 +107,21 @@ namespace puffin::core
 
 	window::WindowSubsystem* SubsystemManager::GetWindowSubsystem() const
 	{
-		assert(mWindowSubsystem != nullptr && "SubsystemManager::GetWindowSubsystem() - Attempting to get window subsystem while it is invalid");
+		assert(m_windowSubsystem != 0 && "SubsystemManager::GetWindowSubsystem() - Attempting to get window subsystem while it is invalid");
 
 		return dynamic_cast<window::WindowSubsystem*>(m_subsystems.at(m_windowSubsystem));
 	}
 
 	input::InputSubsystem* SubsystemManager::GetInputSubsystem() const
 	{
-		assert(mInputSubsystem != nullptr && "SubsystemManager::GetInputSubsystem() - Attempting to get input subsystem while it is invalid");
+		assert(m_inputSubsystem != 0 && "SubsystemManager::GetInputSubsystem() - Attempting to get input subsystem while it is invalid");
 
 		return dynamic_cast<input::InputSubsystem*>(m_subsystems.at(m_windowSubsystem));
 	}
 
 	rendering::RenderSubsystem* SubsystemManager::GetRenderSubsystem() const
 	{
-		assert(mRenderSubsystem != nullptr && "SubsystemManager::GetRenderSubsystem() - Attempting to get render subsystem while it is invalid");
+		assert(m_renderSubsystem != 0 && "SubsystemManager::GetRenderSubsystem() - Attempting to get render subsystem while it is invalid");
 
 		return dynamic_cast<rendering::RenderSubsystem*>(m_subsystems.at(m_windowSubsystem));
 	}
@@ -164,7 +137,44 @@ namespace puffin::core
 		if (!type.can_cast(entt::resolve<Subsystem>()))
 			return nullptr;
 
-		m_subsystems.emplace(typeId, static_cast<Subsystem*>(type.construct(mEngine).data()));
+		if (type.can_cast(entt::resolve<EditorSubsystem>()) && !m_engine->IsEditorRunning())
+			return nullptr;
+
+		m_subsystems.emplace(typeId, static_cast<Subsystem*>(type.construct(m_engine).data()));
+
+		if (type.can_cast(entt::resolve<EngineSubsystem>()))
+		{
+			if (type.can_cast(entt::resolve<window::WindowSubsystem>()))
+			{
+				assert(m_windowSubsystem == 0 && "SubsystemManager::CreateSubsystem - Attempting to create a second window subsystem");
+
+				m_windowSubsystem = typeId;
+			}
+
+			if (type.can_cast(entt::resolve<input::InputSubsystem>()))
+			{
+				assert(m_inputSubsystem == 0 && "SubsystemManager::CreateSubsystem - Attempting to create a second input subsystem");
+
+				m_inputSubsystem = typeId;
+			}
+
+			if (type.can_cast(entt::resolve<rendering::RenderSubsystem>()))
+			{
+				assert(m_renderSubsystem == 0 && "SubsystemManager::CreateSubsystem - Attempting to create a second render subsystem");
+
+				m_renderSubsystem = typeId;
+			}
+
+			if (type.can_cast(entt::resolve<EditorSubsystem>()))
+			{
+				m_editorSubsystem.push_back(typeId);
+			}
+		}
+
+		if (type.can_cast(entt::resolve<GameplaySubsystem>()))
+		{
+			m_gameplaySubsystems.push_back(typeId);
+		}
 
 		return m_subsystems.at(typeId);
 	}

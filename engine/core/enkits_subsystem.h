@@ -16,7 +16,7 @@ namespace puffin::core
 		explicit EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
 		~EnkiTSSubsystem() override = default;
 
-		void Initialize(SubsystemManager* subsystemManager) override;
+		void Initialize() override;
 		void Deinitialize() override;
 
 		std::shared_ptr<enki::TaskScheduler> GetTaskScheduler();

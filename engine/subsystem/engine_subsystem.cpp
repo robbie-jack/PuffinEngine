@@ -19,4 +19,9 @@ namespace puffin::core
 	{
 		return false;
 	}
+
+	std::string_view EngineSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<EngineSubsystem>();
+	}
 }

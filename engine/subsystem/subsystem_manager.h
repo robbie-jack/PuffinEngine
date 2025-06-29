@@ -78,16 +78,32 @@ namespace puffin::core
 			CreateSubsystem(typeName);
 		}*/
 
-		void CreateEngineSubsystems();
-		void CreateGameplaySubsystems();
+		void CreateAndPreInitializeEngineSubsystems();
+		void CreateAndPreInitializeGameplaySubsystems();
 
 		void DestroyEngineSubsystems();
 		void DestroyGameplaySubsystems();
 
 		template<typename T>
+		T* CreateAndPreInitializeSubsystem()
+		{
+			auto type = entt::resolve<T>();
+			auto typeId = type.id();
+
+			if (m_subsystems.find(typeId) != m_subsystems.end())
+				return dynamic_cast<T*>(m_subsystems.at(typeId));
+
+			auto* subsystem = CreateSubsystem(typeId);
+			subsystem->PreInitialize(this);
+
+			return dynamic_cast<T*>(subsystem);
+		}
+
+		template<typename T>
 		T* GetSubsystem()
 		{
-			auto typeId = entt::resolve<T>();
+			auto type = entt::resolve<T>();
+			auto typeId = type.id();
 
 			if (m_subsystems.find(typeId) == m_subsystems.end())
 				return nullptr;
@@ -107,7 +123,7 @@ namespace puffin::core
 		Subsystem* CreateSubsystem(entt::id_type typeId);
 		void DestroySubsystem(entt::id_type typeId);
 
-		std::shared_ptr<Engine> mEngine = nullptr;
+		std::shared_ptr<Engine> m_engine = nullptr;
 
 		//std::unordered_map<const char*, std::unique_ptr<ISubsystemFactory>> mSubsystemFactories;
 

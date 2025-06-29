@@ -13,84 +13,73 @@ namespace puffin::window
 	// Public Methods
 	//==================================================
 
-	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	WindowSubsystem::WindowSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
-		mName = "WindowSubsystem";
 	}
 
 	WindowSubsystem::~WindowSubsystem()
 	{
-		mEngine = nullptr;
-	}
-
-	void WindowSubsystem::Initialize(core::SubsystemManager* subsystemManager)
-	{
-	}
-
-	void WindowSubsystem::Deinitialize()
-	{
+		m_engine = nullptr;
 	}
 
 	void WindowSubsystem::Update(double deltaTime)
 	{
-		Subsystem::Update(deltaTime);
+		auto* renderSubsystem = m_engine->GetRenderSubsystem();
 
-		auto* renderSubsystem = mEngine->GetRenderSubsystem();
-
-		if (mPrimaryWindow->GetIsResized())
+		if (m_primaryWindow->GetIsResized())
 		{
-			Size newSize = mPrimaryWindow->GetSize();
+			Size newSize = m_primaryWindow->GetSize();
 			renderSubsystem->WindowResized(newSize);
 		}
 	}
 
-	core::SubsystemType WindowSubsystem::GetType() const
+	std::string_view WindowSubsystem::GetName() const
 	{
-		return core::SubsystemType::Window;
+		return reflection::GetTypeString<WindowSubsystem>();
 	}
 
 	Window* WindowSubsystem::GetPrimaryWindow() const
 	{
-		return mPrimaryWindow;
+		return m_primaryWindow;
 	}
 
 	bool WindowSubsystem::ShouldPrimaryWindowClose() const
 	{
-		return mPrimaryWindow->ShouldClose();
+		return m_primaryWindow->ShouldClose();
 	}
 
 	Size WindowSubsystem::GetPrimaryWindowSize() const
 	{
-		return mPrimaryWindow->GetSize();
+		return m_primaryWindow->GetSize();
 	}
 
 	uint32_t WindowSubsystem::GetPrimaryWindowWidth() const
 	{
-		return mPrimaryWindow->GetWidth();
+		return m_primaryWindow->GetWidth();
 	}
 
 	uint32_t WindowSubsystem::GetPrimaryWindowHeight() const
 	{
-		return mPrimaryWindow->GetHeight();
+		return m_primaryWindow->GetHeight();
 	}
 
 	bool WindowSubsystem::GetPrimaryWindowFullscreen() const
 	{
-		return mPrimaryWindow->GetFullscreen();
+		return m_primaryWindow->GetFullscreen();
 	}
 
 	void WindowSubsystem::SetPrimaryWindowFullscreen(bool fullscreen) const
 	{
-		mPrimaryWindow->SetFullscreen(fullscreen);
+		m_primaryWindow->SetFullscreen(fullscreen);
 	}
 
 	bool WindowSubsystem::GetPrimaryWindowBorderless() const
 	{
-		return mPrimaryWindow->GetBorderless();
+		return m_primaryWindow->GetBorderless();
 	}
 
 	void WindowSubsystem::SetPrimaryWindowBorderless(bool borderless) const
 	{
-		mPrimaryWindow->SetBorderless(borderless);
+		m_primaryWindow->SetBorderless(borderless);
 	}
 }

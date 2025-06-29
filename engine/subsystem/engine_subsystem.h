@@ -25,6 +25,8 @@ namespace puffin
 			 */
 			virtual bool ShouldUpdate();
 
+			std::string_view GetName() const override;
+
 		private:
 
 

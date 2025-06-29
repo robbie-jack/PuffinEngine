@@ -6,22 +6,21 @@
 namespace puffin::core
 {
 	Subsystem::Subsystem(std::shared_ptr<Engine> engine) :
-		mEngine(std::move(engine))
+		m_engine(std::move(engine))
 	{
 	}
 
 	Subsystem::~Subsystem()
 	{
-		mEngine = nullptr;
+		m_engine = nullptr;
 	}
 
-	void Subsystem::PreInitialize()
+	void Subsystem::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
 	}
 
-	void Subsystem::Initialize(SubsystemManager* subsystemManager)
+	void Subsystem::Initialize()
 	{
-		mInitialized = true;
 	}
 
 	void Subsystem::PostInitialize()
@@ -30,7 +29,6 @@ namespace puffin::core
 
 	void Subsystem::Deinitialize()
 	{
-		mInitialized = false;
 	}
 
 	void Subsystem::PostSceneLoad()

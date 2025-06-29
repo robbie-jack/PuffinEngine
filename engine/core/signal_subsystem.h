@@ -92,7 +92,7 @@ namespace puffin::core
 
 		~SignalSubsystem() override
 		{
-			mEngine = nullptr;
+			m_engine = nullptr;
 			mSignals.clear();
 		}
 

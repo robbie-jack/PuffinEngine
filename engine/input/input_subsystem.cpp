@@ -18,7 +18,7 @@ namespace puffin
 			mMouseSensitivity = 0.05f;
 		}
 
-		void InputSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+		void InputSubsystem::Initialize()
 		{
 			const auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
 			const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();

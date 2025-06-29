@@ -10,7 +10,7 @@ namespace puffin::core
 		mName = "EnkiTSSubsystem";
 	}
 
-	void EnkiTSSubsystem::Initialize(SubsystemManager* subsystemManager)
+	void EnkiTSSubsystem::Initialize()
 	{
 		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<SettingsManager>();
 

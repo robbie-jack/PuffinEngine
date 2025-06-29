@@ -25,7 +25,7 @@ namespace puffin::rendering
 		explicit RenderSubsystem(const std::shared_ptr<core::Engine>& engine);
 		~RenderSubsystem() override = default;
 
-		void Initialize(core::SubsystemManager* subsystemManager) override;
+		void Initialize() override;
 
 		/*
 		 * Called each frame to wait for last presentation to complete and sample frame time

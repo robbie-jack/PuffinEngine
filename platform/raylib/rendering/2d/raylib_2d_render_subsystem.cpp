@@ -40,7 +40,7 @@ namespace puffin::rendering
 	{
 	}
 
-	void Raylib2DRenderSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void Raylib2DRenderSubsystem::Initialize()
 	{
 		RenderSubsystem::Initialize(subsystemManager);
 

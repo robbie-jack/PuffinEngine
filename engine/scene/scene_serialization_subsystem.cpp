@@ -6,12 +6,12 @@
 namespace puffin::scene
 {
 	SceneData::SceneData(fs::path path)
-		: mPath(std::move(path))
+		: m_path(std::move(path))
 	{
 	}
 
 	SceneData::SceneData(fs::path path, SceneInfo sceneInfo)
-		: mPath(std::move(path)), mSceneInfo(sceneInfo)
+		: m_path(std::move(path)), m_sceneInfo(sceneInfo)
 	{
 	}
 
@@ -20,14 +20,14 @@ namespace puffin::scene
 		auto registry = enttSubsystem->GetRegistry();
 
 		// Add entities & components to registry/subsystem
-		for (const auto& id : mEntityIDs)
+		for (const auto& id : m_entityIDs)
 		{
 			auto entity = enttSubsystem->AddEntity(id);
 
 			auto* componentRegistry = serialization::ComponentRegistry::Get();
 			for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 			{
-				const auto& entityJsonMap = mSerializedComponentData.at(typeID);
+				const auto& entityJsonMap = m_serializedComponentData.at(typeID);
 				if (entityJsonMap.find(id) != entityJsonMap.end())
 				{
 					auto type = entt::resolve(typeID);
@@ -42,9 +42,9 @@ namespace puffin::scene
 		}
 
 		// Add nodes to scene graph
-		for (const auto& id : mRootNodeIDs)
+		for (const auto& id : m_rootNodeIDs)
 		{
-			const auto& serializedNodeData = mSerializedNodeData.at(id);
+			const auto& serializedNodeData = m_serializedNodeData.at(id);
 
 			auto type = entt::resolve(entt::hs(serializedNodeData.type.c_str()));
 			auto typeID = type.id();
@@ -54,7 +54,7 @@ namespace puffin::scene
 
 			for (const auto& childID : serializedNodeData.childIDs)
 			{
-				const auto& serializedNodeDataChild = mSerializedNodeData.at(childID);
+				const auto& serializedNodeDataChild = m_serializedNodeData.at(childID);
 
 				auto childType = entt::resolve(entt::hs(serializedNodeDataChild.type.c_str()));
 				auto childTypeID = childType.id();
@@ -81,14 +81,14 @@ namespace puffin::scene
 			if (!enttSubsystem->ShouldEntityBeSerialized(id))
 				continue;
 
-			mEntityIDs.push_back(id);
+			m_entityIDs.push_back(id);
 
 			auto* componentRegistry = serialization::ComponentRegistry::Get();
 			for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 			{
-				if (mSerializedComponentData.find(typeID) == mSerializedComponentData.end())
+				if (m_serializedComponentData.find(typeID) == m_serializedComponentData.end())
 				{
-					mSerializedComponentData.emplace(typeID, EntityJsonMap());
+					m_serializedComponentData.emplace(typeID, EntityJsonMap());
 				}
 
 				auto type = entt::resolve(typeID);
@@ -98,7 +98,7 @@ namespace puffin::scene
 				{
 					if (auto serializefunc = type.func(entt::hs("SerializeFromRegistry")))
 					{
-						auto& entityJsonMap = mSerializedComponentData.at(typeID);
+						auto& entityJsonMap = m_serializedComponentData.at(typeID);
 
 						entityJsonMap.emplace(id, serializefunc.invoke({}, registry, entity).cast<nlohmann::json>());
 					}
@@ -108,23 +108,23 @@ namespace puffin::scene
 
 		for (auto id : sceneGraph->GetRootNodeIDs())
 		{
-			mRootNodeIDs.push_back(id);
+			m_rootNodeIDs.push_back(id);
 
 			SerializeNodeAndChildren(sceneGraph, id);
 		}
 
-		mHasData = true;
+		m_hasData = true;
 	}
 
 	void SceneData::Clear()
 	{
-		mEntityIDs.clear();
-		mSerializedComponentData.clear();
-		mRootNodeIDs.clear();
-		mNodeIDs.clear();
-		mSerializedNodeData.clear();
+		m_entityIDs.clear();
+		m_serializedComponentData.clear();
+		m_rootNodeIDs.clear();
+		m_nodeIDs.clear();
+		m_serializedNodeData.clear();
 
-		mHasData = false;
+		m_hasData = false;
 	}
 
 	void SceneData::Save()
@@ -133,13 +133,13 @@ namespace puffin::scene
 		nlohmann::json sceneJson;
 
 		// Serialize scene info
-		sceneJson["sceneInfo"] = SerializeSceneInfo(mSceneInfo);
+		sceneJson["sceneInfo"] = SerializeSceneInfo(m_sceneInfo);
 
 		// Serialize entities & components
 		nlohmann::json componentsJson;
-		componentsJson["entityIDs"] = mEntityIDs;
+		componentsJson["entityIDs"] = m_entityIDs;
 		
-		for (const auto& [typeID, entityJsonMap] : mSerializedComponentData)
+		for (const auto& [typeID, entityJsonMap] : m_serializedComponentData)
 		{
 			if (!entityJsonMap.empty())
 			{
@@ -170,15 +170,15 @@ namespace puffin::scene
 		// Serialize nodes
 		nlohmann::json nodesJson;
 
-		nodesJson["rootNodeIDs"] = mRootNodeIDs;
+		nodesJson["rootNodeIDs"] = m_rootNodeIDs;
 
 		std::vector<nlohmann::json> nodeJsons;
-		nodeJsons.resize(mNodeIDs.size());
+		nodeJsons.resize(m_nodeIDs.size());
 
 		int i = 0;
-		for (const auto& id : mNodeIDs)
+		for (const auto& id : m_nodeIDs)
 		{
-			const auto& serializedNodeData = mSerializedNodeData.at(id);
+			const auto& serializedNodeData = m_serializedNodeData.at(id);
 			
 			auto& nodeJson = nodeJsons[i];
 
@@ -203,12 +203,12 @@ namespace puffin::scene
 		sceneJson["nodes"] = nodesJson;
 
 		// Write scene data to file
-		if (!fs::exists(mPath.parent_path()))
+		if (!fs::exists(m_path.parent_path()))
 		{
-			fs::create_directories(mPath.parent_path());
+			fs::create_directories(m_path.parent_path());
 		}
 
-		std::ofstream os(mPath, std::ios::out);
+		std::ofstream os(m_path, std::ios::out);
 
 		os << std::setw(4) << sceneJson << std::endl;
 
@@ -217,33 +217,33 @@ namespace puffin::scene
 
 	void SceneData::Load(const bool forceLoad)
 	{
-		if (mHasData && !forceLoad)
+		if (m_hasData && !forceLoad)
 			return;
 
-		if (!fs::exists(mPath))
+		if (!fs::exists(m_path))
 			return;
 
 		// Initialize Input File Stream and Cereal Binary Archive
-		std::ifstream is(mPath);
+		std::ifstream is(m_path);
 
 		json sceneJson;
 		is >> sceneJson;
 
 		is.close();
 
-		mSceneInfo = DeserializeSceneInfo(sceneJson.at("sceneInfo"));
+		m_sceneInfo = DeserializeSceneInfo(sceneJson.at("sceneInfo"));
 
 		// Deserialize Components
 
 		nlohmann::json componentsJson = sceneJson.at("components");
-		mEntityIDs = componentsJson.at("entityIDs").get<std::vector<UUID>>();
+		m_entityIDs = componentsJson.at("entityIDs").get<std::vector<UUID>>();
 
 		auto* componentRegistry = serialization::ComponentRegistry::Get();
 		for (const auto& typeID : componentRegistry->GetRegisteredTypesVector())
 		{
-			if (mSerializedComponentData.find(typeID) == mSerializedComponentData.end())
+			if (m_serializedComponentData.find(typeID) == m_serializedComponentData.end())
 			{
-				mSerializedComponentData.emplace(typeID, EntityJsonMap());
+				m_serializedComponentData.emplace(typeID, EntityJsonMap());
 			}
 
 			auto type = entt::resolve(typeID);
@@ -257,7 +257,7 @@ namespace puffin::scene
 					const json& componentJson = componentsJson.at(typeString);
 					for (const auto& archiveJson : componentJson)
 					{
-						auto& entityJsonMap = mSerializedComponentData.at(typeID);
+						auto& entityJsonMap = m_serializedComponentData.at(typeID);
 						entityJsonMap.emplace(archiveJson["id"], archiveJson["data"]);
 					}
 				}
@@ -267,16 +267,16 @@ namespace puffin::scene
 		// Deserialize Nodes
 		nlohmann::json nodesJson = sceneJson.at("nodes");
 
-		mRootNodeIDs = nodesJson.at("rootNodeIDs").get<std::vector<UUID>>();
+		m_rootNodeIDs = nodesJson.at("rootNodeIDs").get<std::vector<UUID>>();
 
 		for (const auto& nodeJson : nodesJson.at("nodes"))
 		{
 			const UUID& id = nodeJson.at("id");
 
-			mNodeIDs.push_back(id);
-			mSerializedNodeData.emplace(id, SerializedNodeData{});
+			m_nodeIDs.push_back(id);
+			m_serializedNodeData.emplace(id, SerializedNodeData{});
 
-			auto& serializedNodeData = mSerializedNodeData.at(id);
+			auto& serializedNodeData = m_serializedNodeData.at(id);
 			serializedNodeData.id = id;
 			serializedNodeData.name = nodeJson.at("name");
 			serializedNodeData.type = nodeJson.at("type");
@@ -292,7 +292,7 @@ namespace puffin::scene
 			}
 		}
 
-		mHasData = true;
+		m_hasData = true;
 	}
 
 	void SceneData::LoadAndInit(ecs::EnTTSubsystem* enttSubsystem, scene::SceneGraphSubsystem* sceneGraph)
@@ -303,27 +303,27 @@ namespace puffin::scene
 
 	void SceneData::SetPath(const fs::path& path)
 	{
-		mPath = path;
+		m_path = path;
 	}
 
 	const fs::path& SceneData::GetPath()
 	{
-		return mPath;
+		return m_path;
 	}
 
 	const SceneInfo& SceneData::GetSceneInfo() const
 	{
-		return mSceneInfo;
+		return m_sceneInfo;
 	}
 
 	void SceneData::SerializeNodeAndChildren(scene::SceneGraphSubsystem* sceneGraph, UUID id)
 	{
 		auto node = sceneGraph->GetNode(id);
 
-		mNodeIDs.push_back(id);
-		mSerializedNodeData.emplace(id, SerializedNodeData{});
+		m_nodeIDs.push_back(id);
+		m_serializedNodeData.emplace(id, SerializedNodeData{});
 
-		auto& serializedNodeData = mSerializedNodeData.at(id);
+		auto& serializedNodeData = m_serializedNodeData.at(id);
 		serializedNodeData.id = id;
 		serializedNodeData.name = node->GetName();
 		serializedNodeData.type = node->GetTypeString();
@@ -337,34 +337,40 @@ namespace puffin::scene
 		}
 	}
 
-	SceneSerializationSubsystem::SceneSerializationSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	SceneSerializationSubsystem::SceneSerializationSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
-		mName = "SceneSubsystem";
 	}
 
 	SceneSerializationSubsystem::~SceneSerializationSubsystem()
 	{
-		mEngine = nullptr;
+		m_engine = nullptr;
 	}
 
-	void SceneSerializationSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void SceneSerializationSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
-		subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
-		subsystemManager->CreateAndInitializeSubsystem<scene::SceneGraphSubsystem>();
+		EngineSubsystem::PreInitialize(subsystemManager);
+
+		subsystemManager->CreateAndPreInitializeSubsystem<ecs::EnTTSubsystem>();
+		subsystemManager->CreateAndPreInitializeSubsystem<scene::SceneGraphSubsystem>();
+	}
+
+	void SceneSerializationSubsystem::Initialize()
+	{
+		EngineSubsystem::Initialize();
 	}
 
 	void SceneSerializationSubsystem::Deinitialize()
 	{
-		mCurrentSceneData = nullptr;
-		mSceneData.clear();
+		m_currentSceneData = nullptr;
+		m_sceneData.clear();
 	}
 
 	void SceneSerializationSubsystem::BeginPlay()
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto sceneGraph = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		mCurrentSceneData->UpdateData(mEngine);
+		m_currentSceneData->UpdateData(m_engine);
 	}
 
 	void SceneSerializationSubsystem::EndPlay()
@@ -374,30 +380,30 @@ namespace puffin::scene
 
 	void SceneSerializationSubsystem::Load() const
 	{
-		mCurrentSceneData->Load();
+		m_currentSceneData->Load();
 	}
 
 	void SceneSerializationSubsystem::LoadFromFile(const fs::path& path)
 	{
 		std::shared_ptr<SceneData> scene = nullptr;
 
-		if (mSceneData.find(path) == mSceneData.end())
+		if (m_sceneData.find(path) == m_sceneData.end())
 		{
-			mSceneData.emplace(path, std::make_shared<SceneData>(path));
+			m_sceneData.emplace(path, std::make_shared<SceneData>(path));
 		}
 
-		scene = mSceneData.at(path);
+		scene = m_sceneData.at(path);
 		scene->Load();
 
-		mCurrentSceneData = scene;
+		m_currentSceneData = scene;
 	}
 
 	void SceneSerializationSubsystem::Setup() const
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
-		const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto sceneGraph = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
-		mCurrentSceneData->Setup(enttSubsystem, sceneGraph);
+		m_currentSceneData->Setup(enttSubsystem, sceneGraph);
 	}
 
 	void SceneSerializationSubsystem::LoadAndSetup() const
@@ -408,22 +414,22 @@ namespace puffin::scene
 
 	std::shared_ptr<SceneData> SceneSerializationSubsystem::CreateScene(const fs::path& path, const SceneInfo& sceneInfo)
 	{
-		auto* resourceManager = mEngine->GetResourceManager();
+		auto* resourceManager = m_engine->GetResourceManager();
 
 		auto scenePath = (resourceManager->GetProjectPath() / path).make_preferred();
 
-		if (mSceneData.find(scenePath) == mSceneData.end())
+		if (m_sceneData.find(scenePath) == m_sceneData.end())
 		{
-			mSceneData.emplace(scenePath, std::make_shared<SceneData>(scenePath, sceneInfo));
+			m_sceneData.emplace(scenePath, std::make_shared<SceneData>(scenePath, sceneInfo));
 		}
 
-		mCurrentSceneData = mSceneData.at(scenePath);
+		m_currentSceneData = m_sceneData.at(scenePath);
 
-		return mCurrentSceneData;
+		return m_currentSceneData;
 	}
 
 	std::shared_ptr<SceneData> SceneSerializationSubsystem::GetCurrentSceneData()
 	{
-		return mCurrentSceneData;
+		return m_currentSceneData;
 	}
 }

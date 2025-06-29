@@ -24,7 +24,7 @@ namespace puffin
 			explicit CameraSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~CameraSubsystem() override = default;
 
-			void Initialize(core::SubsystemManager* subsystemManager) override;
+			void Initialize() override;
 			void Deinitialize() override;
 
 			void BeginPlay() override;

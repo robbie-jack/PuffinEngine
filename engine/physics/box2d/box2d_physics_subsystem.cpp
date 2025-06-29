@@ -57,16 +57,18 @@ namespace puffin::physics
 		}
 	}
 	
-	Box2DPhysicsSubsystem::Box2DPhysicsSubsystem(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
+	Box2DPhysicsSubsystem::Box2DPhysicsSubsystem(const std::shared_ptr<core::Engine>& engine): GameplaySubsystem(engine)
 	{
-		mName = "Box2DPhysicsSystem";
 	}
 
-	void Box2DPhysicsSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void Box2DPhysicsSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
-		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
-		auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+		auto settingsManager = subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
+		auto signalSubsystem = subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
+	}
 
+	void Box2DPhysicsSubsystem::Initialize()
+	{
 		InitConnections();
 		InitSettingsAndSignals();
 	}
@@ -76,7 +78,7 @@ namespace puffin::physics
 		mGravity = { 0.0, 0.0 };
 		mSubSteps = 0;
 
-		auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+		auto registry = m_engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 
 		for (auto& connection : mConnections)
 		{
@@ -88,14 +90,9 @@ namespace puffin::physics
 		//m_contact_listener = nullptr;
 	}
 
-	core::SubsystemType Box2DPhysicsSubsystem::GetType() const
-	{
-		return core::SubsystemType::Gameplay;
-	}
-
 	void Box2DPhysicsSubsystem::BeginPlay()
 	{
-		auto enkiTSSubsystem = mEngine->GetSubsystem<core::EnkiTSSubsystem>();
+		auto enkiTSSubsystem = m_engine->GetSubsystem<core::EnkiTSSubsystem>();
 		
 		// Create world
 		b2WorldDef worldDef = b2DefaultWorldDef();
@@ -109,7 +106,7 @@ namespace puffin::physics
 		mTaskCount = 0;
 		mPhysicsWorldID = b2CreateWorld(&worldDef);
 
-		const auto* sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto* sceneGraph = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		std::vector<Rigidbody2DNode*> bodies;
 		sceneGraph->GetNodes(bodies);
@@ -125,7 +122,7 @@ namespace puffin::physics
 			mShapeCreateEvents.Push({ box->GetID(), ShapeType2D::Box });
 		}
 
-		const auto& registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+		const auto& registry = m_engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 		
 		const auto& bodyView = registry->view<RigidbodyComponent2D>();
 		for (auto& [entity, rb] : bodyView.each())
@@ -167,14 +164,19 @@ namespace puffin::physics
 		return mEnabled;
 	}
 
+	std::string_view Box2DPhysicsSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<Box2DPhysicsSubsystem>();
+	}
+
 	enki::TaskScheduler& Box2DPhysicsSubsystem::TaskScheduler()
 	{
-		return *mEngine->GetSubsystem<core::EnkiTSSubsystem>()->GetTaskScheduler();
+		return *m_engine->GetSubsystem<core::EnkiTSSubsystem>()->GetTaskScheduler();
 	}
 
 	void Box2DPhysicsSubsystem::OnConstructBox(entt::registry& registry, entt::entity entity)
 	{
-		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
+		const auto id = m_engine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 		
 		mShapeCreateEvents.Push({ id, ShapeType2D::Box });
 	}
@@ -186,7 +188,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::OnDestroyBox(entt::registry& registry, entt::entity entity)
 	{
-		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
+		const auto id = m_engine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 
 		mShapeDestroyEvents.Push({ id, ShapeType2D::Box });
 	}
@@ -217,7 +219,7 @@ namespace puffin::physics
 			registry.emplace<VelocityComponent3D>(entity);
 		}
 
-		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
+		const auto id = m_engine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 		
 		mBodyCreateEvents.Push({ id });
 	}
@@ -238,7 +240,7 @@ namespace puffin::physics
 			registry.remove<VelocityComponent3D>(entity);
 		}
 
-		const auto id = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
+		const auto id = m_engine->GetSubsystem<ecs::EnTTSubsystem>()->GetID(entity);
 
 		mBodyDestroyEvents.Push({ id });
 	}
@@ -246,7 +248,7 @@ namespace puffin::physics
 	void Box2DPhysicsSubsystem::InitConnections()
 	{
 		// Bind entt callbacks
-		auto registry = mEngine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
+		auto registry = m_engine->GetSubsystem<ecs::EnTTSubsystem>()->GetRegistry();
 
 		mConnections.push_back(registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnConstructRigidbody>(this));
 		mConnections.push_back(registry->on_construct<RigidbodyComponent2D>().connect<&Box2DPhysicsSubsystem::OnUpdateRigidbody>(this));
@@ -263,8 +265,8 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::InitSettingsAndSignals()
 	{
-		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-		auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+		auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
+		auto signalSubsystem = m_engine->GetSubsystem<core::SignalSubsystem>();
 
 		// Gravity
 		auto gravityX = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
@@ -275,7 +277,7 @@ namespace puffin::physics
 		auto gravityXSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_x");
 		gravityXSignal->Connect(std::function([&]
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 			mGravity.x = settingsManager->Get<float>("physics", "gravity_x").value_or(0.0);
 
@@ -288,7 +290,7 @@ namespace puffin::physics
 		auto gravityYSignal = signalSubsystem->GetOrCreateSignal("physics_gravity_y");
 		gravityYSignal->Connect(std::function([&]
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 			mGravity.y = settingsManager->Get<float>("physics", "gravity_y").value_or(-9.81);
 
@@ -304,7 +306,7 @@ namespace puffin::physics
 		auto subStepsSignal = signalSubsystem->GetOrCreateSignal("physics_sub_steps");
 		subStepsSignal->Connect(std::function([&]
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 			mSubSteps = settingsManager->Get<int>("physics", "sub_steps").value_or(4);
 		}));
@@ -321,8 +323,8 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::CreateObjects()
 	{
-		const auto* sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
-		const auto* enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto* sceneGraph = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto* enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 
 		// Create bodies
 		BodyCreateEvent bodyCreateEvent;
@@ -406,7 +408,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::PublishCollisionEvents() const
 	{
-		const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+		const auto signalSubsystem = m_engine->GetSubsystem<core::SignalSubsystem>();
 
 		//CollisionBeginEvent collision_begin_event;
 		//while (m_contact_listener->getNextCollisionBeginEvent(collision_begin_event))
@@ -423,7 +425,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::UpdateRigidbodyNodes()
 	{
-		const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto sceneGraph = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		std::vector<Rigidbody2DNode*> bodies;
 		sceneGraph->GetNodes(bodies);
@@ -446,7 +448,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::UpdateRigidbodyComponents()
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
 		const auto& view = registry->view<RigidbodyComponent2D>();
@@ -497,7 +499,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::CreateBodyComponent(UUID id)
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
 		auto entity = enttSubsystem->GetEntity(id);
@@ -539,7 +541,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::CreateBoxComponent(UUID boxId, UUID bodyId)
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
 		auto entity = enttSubsystem->GetEntity(boxId);
@@ -571,7 +573,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::CreateCircleComponent(UUID circleId, UUID bodyId)
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
 		auto entity = enttSubsystem->GetEntity(circleId);
@@ -587,7 +589,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::CreateBodyNode(UUID id)
 	{
-		const auto* sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto* sceneGraph = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		auto* node = sceneGraph->GetNode<Rigidbody2DNode>(id);
 		if (!node)
@@ -609,7 +611,7 @@ namespace puffin::physics
 
 	void Box2DPhysicsSubsystem::CreateBoxNode(UUID boxId, UUID bodyId)
 	{
-		const auto* sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto* sceneGraph = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		auto* box = sceneGraph->GetNode<Box2DNode>(boxId);
 		if (!box)

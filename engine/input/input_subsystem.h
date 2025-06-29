@@ -29,7 +29,7 @@ namespace puffin
 			explicit InputSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~InputSubsystem() override = default;
 
-			void Initialize(core::SubsystemManager* subsystemManager) override;
+			void Initialize() override;
 			void Deinitialize() override;
 
 			[[nodiscard]] core::SubsystemType GetType() const override;

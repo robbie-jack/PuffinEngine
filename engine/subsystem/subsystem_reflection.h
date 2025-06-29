@@ -36,10 +36,10 @@ namespace puffin::reflection
 			auto type = entt::resolve<T>();
 			auto typeId = type.id();
 
-			if (m_registeredTypes.find(typeId) == m_registeredTypes.end())
-			{
-				m_registeredTypes.insert(typeId);
-			}
+			if (m_registeredTypes.find(typeId) != m_registeredTypes.end())
+				return;
+
+			m_registeredTypes.insert(typeId);
 		}
 
 		const std::unordered_set<entt::id_type>& GetRegisteredTypes() const
@@ -56,7 +56,6 @@ namespace puffin::reflection
 	template<typename T>
 	void RegisterSubsystemDefault(entt::meta_factory<T>& meta)
 	{
-		auto* registry = SubsystemRegistry::Get();
-		registry->Register<T>();
+		SubsystemRegistry::Get()->Register<T>();
 	}
 }
