@@ -3,30 +3,61 @@
 #include <memory>
 #include <thread>
 
-#include "core/subsystem.h"
+#include "subsystem/engine_subsystem.h"
 
 #include "TaskScheduler.h"
 
-namespace puffin::core
+namespace puffin
 {
-	class EnkiTSSubsystem : public Subsystem
+	namespace core
 	{
-	public:
+		class EnkiTSSubsystem : public EngineSubsystem
+		{
+		public:
 
-		explicit EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
-		~EnkiTSSubsystem() override = default;
+			explicit EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
+			~EnkiTSSubsystem() override = default;
 
-		void Initialize() override;
-		void Deinitialize() override;
+			void PreInitialize(core::SubsystemManager* subsystemManager) override;
+			void Initialize() override;
+			void Deinitialize() override;
 
-		std::shared_ptr<enki::TaskScheduler> GetTaskScheduler();
-		uint32_t GetThreadCount() const;
+			std::string_view GetName() const override;
 
-	private:
+			std::shared_ptr<enki::TaskScheduler> GetTaskScheduler();
+			uint32_t GetThreadCount() const;
 
-		std::shared_ptr<enki::TaskScheduler> mTaskScheduler;
+		private:
 
-		uint32_t mThreadCount = 0;
+			std::shared_ptr<enki::TaskScheduler> mTaskScheduler;
 
-	};
+			uint32_t mThreadCount = 0;
+
+		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<core::EnkiTSSubsystem>()
+		{
+			return "EnkiTSSubsystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<core::EnkiTSSubsystem>()
+		{
+			return entt::hs(GetTypeString<core::EnkiTSSubsystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<core::EnkiTSSubsystem>()
+		{
+			auto meta = entt::meta<core::EnkiTSSubsystem>()
+				.base<core::EngineSubsystem>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
+	}
 }

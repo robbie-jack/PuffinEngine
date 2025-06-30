@@ -378,6 +378,11 @@ namespace puffin::scene
 		LoadAndSetup();
 	}
 
+	std::string_view SceneSerializationSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<SceneSerializationSubsystem>();
+	}
+
 	void SceneSerializationSubsystem::Load() const
 	{
 		m_currentSceneData->Load();

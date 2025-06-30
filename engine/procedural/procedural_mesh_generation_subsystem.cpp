@@ -12,10 +12,9 @@
 
 namespace puffin::procedural
 {
-	ProceduralMeshGenSystem::ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	ProceduralMeshGenSystem::ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine)
+		: EngineSubsystem(engine)
 	{
-		mName = "ProceduralMeshGenSubsystem";
-
 		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
@@ -32,6 +31,11 @@ namespace puffin::procedural
 	ProceduralMeshGenSystem::~ProceduralMeshGenSystem()
 	{
 		m_engine = nullptr;
+	}
+
+	std::string_view ProceduralMeshGenSystem::GetName() const
+	{
+		return reflection::GetTypeString<ProceduralMeshGenSystem>();
 	}
 
 	void ProceduralMeshGenSystem::OnConstructPlane(entt::registry& registry, entt::entity entity)

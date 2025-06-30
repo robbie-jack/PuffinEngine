@@ -10,18 +10,19 @@
 
 namespace puffin::audio
 {
-	MiniAudioSubsystem::MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine) : audio::AudioSubsystemProvider(engine)
+	MiniAudioSubsystem::MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine)
+		: audio::AudioSubsystemProvider(engine)
 	{
 	}
 
 	MiniAudioSubsystem::~MiniAudioSubsystem()
 	{
-		mEngine = nullptr;
+		m_engine = nullptr;
 	}
 
-	void MiniAudioSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void MiniAudioSubsystem::Initialize()
 	{
-		AudioSubsystemProvider::Initialize(subsystemManager);
+		AudioSubsystemProvider::Initialize();
 
 		mSoundEngine = new ma_engine();
 
@@ -51,6 +52,11 @@ namespace puffin::audio
 	void MiniAudioSubsystem::Update(double deltaTime)
 	{
 		AudioSubsystemProvider::Update(deltaTime);
+	}
+
+	std::string_view MiniAudioSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<MiniAudioSubsystem>();
 	}
 
 	void MiniAudioSubsystem::PlaySoundEffect(UUID soundAssetID)

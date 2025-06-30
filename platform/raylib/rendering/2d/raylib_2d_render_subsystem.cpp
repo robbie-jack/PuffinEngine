@@ -36,16 +36,17 @@ namespace puffin::rendering
 		
 	}
 
-	void Raylib2DRenderSubsystem::RegisterTypes()
+	void Raylib2DRenderSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
+		RenderSubsystem::PreInitialize(subsystemManager);
+
+		subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
+		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
 	}
 
 	void Raylib2DRenderSubsystem::Initialize()
 	{
-		RenderSubsystem::Initialize(subsystemManager);
-
-		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
-		auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+		RenderSubsystem::Initialize();
 
 		InitSettingsAndSignals();
 	}
@@ -55,13 +56,18 @@ namespace puffin::rendering
 		RenderSubsystem::Deinitialize();
 	}
 
+	std::string_view Raylib2DRenderSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<Raylib2DRenderSubsystem>();
+	}
+
 	double Raylib2DRenderSubsystem::WaitForLastPresentationAndSampleTime()
 	{
-		const auto framerateLimit = mEngine->GetFramerateLimit();
+		const auto framerateLimit = m_engine->GetFramerateLimit();
 
 		if (framerateLimit > 0)
 		{
-			const double deltaTime = GetTime() - mEngine->GetLastTime();
+			const double deltaTime = GetTime() - m_engine->GetLastTime();
 			const double targetTime = 1.0 / static_cast<double>(framerateLimit);
 
 			if (deltaTime < targetTime)
@@ -75,7 +81,7 @@ namespace puffin::rendering
 
 	void Raylib2DRenderSubsystem::Render(double deltaTime)
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
 		UpdateCamera();
@@ -133,8 +139,8 @@ namespace puffin::rendering
 
 	void Raylib2DRenderSubsystem::InitSettingsAndSignals()
 	{
-		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-		auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+		auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
+		auto signalSubsystem = m_engine->GetSubsystem<core::SignalSubsystem>();
 
 		// Pixel Scale
 		{
@@ -142,7 +148,7 @@ namespace puffin::rendering
 
 			signalSubsystem->GetOrCreateSignal("rendering_pixel_scale")->Connect(std::function([&]
 			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+				auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 				m_pixelScale = settingsManager->Get<int32_t>("rendering", "pixel_scale").value_or(0);
 			}));
@@ -151,9 +157,9 @@ namespace puffin::rendering
 
 	void Raylib2DRenderSubsystem::UpdateCamera()
 	{
-		auto* windowSubsystem = mEngine->GetSubsystem<window::RaylibWindowSubsystem>();
-		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		auto* windowSubsystem = m_engine->GetSubsystem<window::RaylibWindowSubsystem>();
+		auto cameraSubsystem = m_engine->GetSubsystem<rendering::CameraSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
 		if (cameraSubsystem->IsActiveCameraValid())
@@ -182,9 +188,9 @@ namespace puffin::rendering
 	void Raylib2DRenderSubsystem::DrawSpriteNodes() const
 	{
 		// Calculate t value for rendering interpolated position
-		const double t = mEngine->GetAccumulatedTime() / mEngine->GetTimeStepFixed();
+		const double t = m_engine->GetAccumulatedTime() / m_engine->GetTimeStepFixed();
 
-		const auto sceneGraph = mEngine->GetSubsystem<scene::SceneGraphSubsystem>();
+		const auto sceneGraph = m_engine->GetSubsystem<scene::SceneGraphSubsystem>();
 
 		std::vector<Sprite2DNode*> sprites;
 		sceneGraph->GetNodes(sprites);
@@ -216,7 +222,7 @@ namespace puffin::rendering
 				Vector2f nextPosition{ 0.0f };
 #endif
 
-				nextPosition = position + rigidbody->GetLinearVelocity() * mEngine->GetTimeStepFixed();
+				nextPosition = position + rigidbody->GetLinearVelocity() * m_engine->GetTimeStepFixed();
 
 				position = maths::Lerp(position, nextPosition, t);
 			}
@@ -234,9 +240,9 @@ namespace puffin::rendering
 	void Raylib2DRenderSubsystem::DrawSpriteComponents() const
 	{
 		// Calculate t value for rendering interpolated position
-		const double t = mEngine->GetAccumulatedTime() / mEngine->GetTimeStepFixed();
+		const double t = m_engine->GetAccumulatedTime() / m_engine->GetTimeStepFixed();
 
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
 		const auto& spriteView = registry->view<const TransformComponent2D, const SpriteComponent2D>();
@@ -268,7 +274,7 @@ namespace puffin::rendering
 				Vector2f nextPosition{ 0.0f };
 #endif
 
-				nextPosition = position + velocity.linear * mEngine->GetTimeStepFixed();
+				nextPosition = position + velocity.linear * m_engine->GetTimeStepFixed();
 
 				position = maths::Lerp(position, nextPosition, t);
 			}

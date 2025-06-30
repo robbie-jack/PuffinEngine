@@ -5,14 +5,21 @@
 
 namespace puffin::core
 {
-	EnkiTSSubsystem::EnkiTSSubsystem(const std::shared_ptr<Engine>& engine) : Subsystem(engine)
+	EnkiTSSubsystem::EnkiTSSubsystem(const std::shared_ptr<Engine>& engine)
+		: EngineSubsystem(engine)
 	{
-		mName = "EnkiTSSubsystem";
+	}
+
+	void EnkiTSSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	{
+		EngineSubsystem::PreInitialize(subsystemManager);
+
+		auto* settingsManager = subsystemManager->CreateAndPreInitializeSubsystem<SettingsManager>();
 	}
 
 	void EnkiTSSubsystem::Initialize()
 	{
-		auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<SettingsManager>();
+		auto* settingsManager = m_engine->GetSubsystem<SettingsManager>();
 
 		mThreadCount = settingsManager->Get<uint32_t>("general", "thread_count").value_or(4);
 		
@@ -24,6 +31,11 @@ namespace puffin::core
 	{
 		mTaskScheduler->WaitforAllAndShutdown();
 		mTaskScheduler = nullptr;
+	}
+
+	std::string_view EnkiTSSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<EnkiTSSubsystem>();
 	}
 
 	std::shared_ptr<enki::TaskScheduler> EnkiTSSubsystem::GetTaskScheduler()

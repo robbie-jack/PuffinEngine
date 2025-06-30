@@ -12,17 +12,22 @@ namespace puffin
 {
 	namespace input
 	{
-		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+		InputSubsystem::InputSubsystem(const std::shared_ptr<core::Engine>& engine)
+			: EngineSubsystem(engine)
 		{
-			mName = "InputSubsystem";
 			mMouseSensitivity = 0.05f;
+		}
+
+		void InputSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+		{
+			EngineSubsystem::PreInitialize(subsystemManager);
+
+			subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
+			subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
 		}
 
 		void InputSubsystem::Initialize()
 		{
-			const auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
-			const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
-
 			InitSettings();
 		}
 
@@ -50,9 +55,9 @@ namespace puffin
 			mContextNamesInOrder.clear();
 		}
 
-		core::SubsystemType InputSubsystem::GetType() const
+		std::string_view InputSubsystem::GetName() const
 		{
-			return core::SubsystemType::Input;
+			return reflection::GetTypeString<InputSubsystem>();
 		}
 
 		void InputSubsystem::ProcessInput()
@@ -433,8 +438,8 @@ namespace puffin
 
 		void InputSubsystem::InitSettings()
 		{
-			const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-			const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+			const auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
+			const auto signalSubsystem = m_engine->GetSubsystem<core::SignalSubsystem>();
 
 			mMouseSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
 
@@ -446,7 +451,7 @@ namespace puffin
 
 			mouseSensitivitySignal->Connect(std::function([&]
 			{
-				auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+				auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 				mMouseSensitivity = settingsManager->Get<float>("general", "mouse_sensitivity").value_or(0.05);
 			}));

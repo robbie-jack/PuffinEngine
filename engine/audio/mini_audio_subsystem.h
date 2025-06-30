@@ -5,34 +5,64 @@
 #include "audio/audio_subsystem.h"
 #include "types/storage/mapped_vector.h"
 
-namespace puffin::audio
+namespace puffin
 {
-	class MiniAudioSubsystem : public AudioSubsystemProvider
+	namespace audio
 	{
-	public:
+		class MiniAudioSubsystem : public AudioSubsystemProvider
+		{
+		public:
 
-		MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine);
-		~MiniAudioSubsystem() override;
+			MiniAudioSubsystem(const std::shared_ptr<core::Engine>& engine);
+			~MiniAudioSubsystem() override;
 
-		void Initialize(core::SubsystemManager* subsystemManager) override;
-		void Deinitialize() override;
+			void Initialize() override;
+			void Deinitialize() override;
 
-		void Update(double deltaTime) override;
+			void Update(double deltaTime) override;
 
-	protected:
+			std::string_view GetName() const override;
 
-		void PlaySoundEffect(UUID soundAssetID) override;
+		protected:
 
-		bool CreateSoundInstance(UUID soundAssetID, UUID soundInstanceID) override;
-		void DestroySoundInstance(UUID soundInstanceID) override;
+			void PlaySoundEffect(UUID soundAssetID) override;
 
-		bool StartSoundInstance(UUID soundInstanceID, bool restart) override;
-		bool StopSoundInstance(UUID soundInstanceID) override;
+			bool CreateSoundInstance(UUID soundAssetID, UUID soundInstanceID) override;
+			void DestroySoundInstance(UUID soundInstanceID) override;
 
-	private:
+			bool StartSoundInstance(UUID soundInstanceID, bool restart) override;
+			bool StopSoundInstance(UUID soundInstanceID) override;
 
-		ma_engine* mSoundEngine = nullptr;
+		private:
 
-		MappedVector<UUID, ma_sound> mSounds;
-	};
+			ma_engine* mSoundEngine = nullptr;
+
+			MappedVector<UUID, ma_sound> mSounds;
+		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<audio::MiniAudioSubsystem>()
+		{
+			return "MiniAudioSubsystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<audio::MiniAudioSubsystem>()
+		{
+			return entt::hs(GetTypeString<audio::MiniAudioSubsystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<audio::MiniAudioSubsystem>()
+		{
+			auto meta = entt::meta<audio::MiniAudioSubsystem>()
+				.base<audio::AudioSubsystemProvider>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
+	}
 }

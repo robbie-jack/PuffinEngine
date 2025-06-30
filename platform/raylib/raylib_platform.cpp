@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "core/engine.h"
+#include "subsystem/subsystem_reflection.h"
 #include "raylib/window/raylib_window_subsystem.h"
 #include "raylib/input/raylib_input_subsystem.h"
 #include "raylib/rendering/2d/raylib_2d_render_subsystem.h"
@@ -24,9 +25,9 @@ namespace puffin::core
 
 	void RaylibPlatform::PreInitialize()
 	{
-		mEngine->RegisterSubsystem<window::RaylibWindowSubsystem>();
-		mEngine->RegisterSubsystem<input::RaylibInputSubsystem>();
-		mEngine->RegisterSubsystem<rendering::Raylib2DRenderSubsystem>();
+		reflection::RegisterType<window::RaylibWindowSubsystem>();
+		reflection::RegisterType<input::RaylibInputSubsystem>();
+		reflection::RegisterType<rendering::Raylib2DRenderSubsystem>();
 	}
 
 	void RaylibPlatform::Initialize()

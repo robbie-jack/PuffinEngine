@@ -11,16 +11,23 @@
 
 namespace puffin::rendering
 {
-	CameraSubsystem::CameraSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	CameraSubsystem::CameraSubsystem(const std::shared_ptr<core::Engine>& engine)
+		: EngineSubsystem(engine)
 	{
-        mName = "CameraSubsystem";
+	}
+
+	void CameraSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	{
+		EngineSubsystem::PreInitialize(subsystemManager);
+
+		subsystemManager->CreateAndPreInitializeSubsystem<ecs::EnTTSubsystem>();
+		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
+		subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
 	}
 
 	void CameraSubsystem::Initialize()
 	{
-		const auto enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
-		const auto signalSubsystem = subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
-		const auto settingsManager = subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+		auto* enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 
         const auto registry = enttSubsystem->GetRegistry();
 
@@ -57,9 +64,14 @@ namespace puffin::rendering
 		return true;
 	}
 
+	std::string_view CameraSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<CameraSubsystem>();
+	}
+
 	void CameraSubsystem::OnUpdateCamera(entt::registry& registry, entt::entity entity)
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto id = enttSubsystem->GetID(entity);
 		const auto& camera = registry.get<CameraComponent3D>(entity);
 
@@ -85,7 +97,7 @@ namespace puffin::rendering
 
     void CameraSubsystem::OnDestroyCamera(entt::registry &registry, entt::entity entity)
     {
-	    const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+	    const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto id = enttSubsystem->GetID(entity);
 
         if (mActivePlayCamID == id)
@@ -113,8 +125,8 @@ namespace puffin::rendering
 
     void CameraSubsystem::InitSettingsAndSignals()
     {
-		const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-		const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+		const auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
+		const auto signalSubsystem = m_engine->GetSubsystem<core::SignalSubsystem>();
 
 
     }
@@ -129,7 +141,7 @@ namespace puffin::rendering
 
     void CameraSubsystem::UpdateActivePlayCamera()
     {
-        const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+        const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto registry = enttSubsystem->GetRegistry();
 
 		const auto camera2DView = registry->view<const TransformComponent2D, const CameraComponent2D>();
@@ -162,12 +174,12 @@ namespace puffin::rendering
             UpdateActivePlayCamera();
         }
 
-        if (mEngine->GetPlayState() == core::PlayState::Playing && mActiveCameraID != mActivePlayCamID)
+        if (m_engine->GetPlayState() == core::PlayState::Playing && mActiveCameraID != mActivePlayCamID)
         {
             UpdateActiveCamera();
         }
 
-        const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+        const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
         const auto registry = enttSubsystem->GetRegistry();
 
 		const auto camera2DView = registry->view<const TransformComponent2D, CameraComponent2D>();
@@ -192,7 +204,7 @@ namespace puffin::rendering
 	{
 		// PFN_TODO_RENDERING - Re-implement when 3d rendering code is being re-implemented
 
-		//const auto renderSystem = mEngine->GetSubsystem<rendering::RenderSubsystemVK>();
+		//const auto renderSystem = m_engine->GetSubsystem<rendering::RenderSubsystemVK>();
 
 		//// Calculate direction & right vectors
 		//camera.direction = static_cast<glm::quat>(transform.orientationQuat) * glm::vec3(0.0f, 0.0f, -1.0f);

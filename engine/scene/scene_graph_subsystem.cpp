@@ -55,6 +55,8 @@ namespace puffin::scene
 
 	void SceneGraphSubsystem::Initialize()
 	{
+		EngineSubsystem::Initialize();
+
 		mSceneGraphUpdated = true;
 
 		for (auto [typeID, nodePool] : mNodePools)

@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <entt/entity/registry.hpp>
 
-#include "core/subsystem.h"
+#include "subsystem/engine_subsystem.h"
 #include "types/uuid.h"
 #include "types/vector3.h"
 
@@ -17,13 +17,14 @@ namespace puffin
 		struct CameraComponent2D;
 		struct CameraComponent3D;
 
-		class CameraSubsystem : public core::Subsystem
+		class CameraSubsystem : public core::EngineSubsystem
 		{
 		public:
 
 			explicit CameraSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~CameraSubsystem() override = default;
 
+			void PreInitialize(core::SubsystemManager* subsystemManager) override;
 			void Initialize() override;
 			void Deinitialize() override;
 
@@ -32,6 +33,8 @@ namespace puffin
 
 			void Update(double deltaTime) override;
 			bool ShouldUpdate() override;
+
+			std::string_view GetName() const override;
 
 			void OnUpdateCamera(entt::registry& registry, entt::entity entity);
 			void OnDestroyCamera(entt::registry& registry, entt::entity entity);
@@ -58,5 +61,30 @@ namespace puffin
 			std::unordered_map<UUID, bool> mCachedCamActiveState;
 
 		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<rendering::CameraSubsystem>()
+		{
+			return "CameraSubsystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<rendering::CameraSubsystem>()
+		{
+			return entt::hs(GetTypeString<rendering::CameraSubsystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<rendering::CameraSubsystem>()
+		{
+			auto meta = entt::meta<rendering::CameraSubsystem>()
+				.base<core::EngineSubsystem>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
 	}
 }

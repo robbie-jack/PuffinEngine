@@ -38,6 +38,8 @@ namespace puffin::core
 
 	void SettingsManager::Initialize()
 	{
+		EngineSubsystem::Initialize();
+
 		auto* resourceManager = m_engine->GetResourceManager();
 
 		mCategories.emplace("general", SettingsCategory(m_engine, "general"));

@@ -47,6 +47,7 @@
 #include "scene/scene_graph_gameplay_subsystem.h"
 #include "scene/scene_graph_subsystem.h"
 #include "scene/scene_serialization_subsystem.h"
+#include "subsystem/subsystem_reflection.h"
 
 namespace puffin::core
 {
@@ -74,17 +75,17 @@ namespace puffin::core
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)
 	{
 		// Engine Subsystems
-		engine->RegisterSubsystem<SignalSubsystem>();
-		engine->RegisterSubsystem<SettingsManager>();
-		engine->RegisterSubsystem<EnkiTSSubsystem>();
-		engine->RegisterSubsystem<audio::AudioSubsystem>();
-		engine->RegisterSubsystem<ecs::EnTTSubsystem>();
-		engine->RegisterSubsystem<scene::SceneGraphSubsystem>();
-		engine->RegisterSubsystem<scene::SceneSerializationSubsystem>();
-		engine->RegisterSubsystem<rendering::CameraSubsystem>();
+		reflection::RegisterType<SignalSubsystem>();
+		reflection::RegisterType<SettingsManager>();
+		reflection::RegisterType<EnkiTSSubsystem>();
+		reflection::RegisterType<audio::AudioSubsystem>();
+		reflection::RegisterType<ecs::EnTTSubsystem>();
+		reflection::RegisterType<scene::SceneGraphSubsystem>();
+		reflection::RegisterType<scene::SceneSerializationSubsystem>();
+		reflection::RegisterType<rendering::CameraSubsystem>();
 
 		// Gameplay Subsystems
-		engine->RegisterSubsystem<scene::SceneGraphGameplaySubsystem>();
+		reflection::RegisterType<scene::SceneGraphGameplaySubsystem>();
 	}
 
 	void RegisterComponentTypes2D()

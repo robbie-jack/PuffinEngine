@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "core/subsystem.h"
+#include "subsystem/engine_subsystem.h"
 #include "input/input_types.h"
 #include "input/input_event.h"
 #include "core/signal.h"
@@ -22,17 +22,18 @@ namespace puffin
 	{
 		class InputContext;
 
-		class InputSubsystem : public core::Subsystem
+		class InputSubsystem : public core::EngineSubsystem
 		{
 		public:
 
 			explicit InputSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~InputSubsystem() override = default;
 
+			void PreInitialize(core::SubsystemManager* subsystemManager) override;
 			void Initialize() override;
 			void Deinitialize() override;
 
-			[[nodiscard]] core::SubsystemType GetType() const override;
+			std::string_view GetName() const override;
 
 			/*
 			 * Called once a frame on input subsystem
@@ -109,5 +110,30 @@ namespace puffin
 			std::unordered_map<std::string, bool> mManageContextLifetime;
 			std::vector<std::string> mContextNamesInOrder;
 		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<input::InputSubsystem>()
+		{
+			return "InputSubsystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<input::InputSubsystem>()
+		{
+			return entt::hs(GetTypeString<input::InputSubsystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<input::InputSubsystem>()
+		{
+			auto meta = entt::meta<input::InputSubsystem>()
+				.base<core::EngineSubsystem>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
 	}
 }

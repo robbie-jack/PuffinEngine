@@ -91,6 +91,8 @@ namespace puffin
 			void BeginPlay() override;
 			void EndPlay() override;
 
+			std::string_view GetName() const override;
+
 			void Load() const;
 			void LoadFromFile(const fs::path& path);
 			void Setup() const;

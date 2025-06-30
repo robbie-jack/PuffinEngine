@@ -3,7 +3,7 @@
 #include "core/engine.h"
 #include "entt/entity/registry.hpp"
 #include "types/vector2.h"
-#include "core/subsystem.h"
+#include "subsystem/engine_subsystem.h"
 
 namespace puffin
 {
@@ -13,28 +13,58 @@ namespace puffin
 	}
 }
 
-namespace puffin::procedural
+namespace puffin
 {
-	struct ProceduralIcoSphereComponent3D;
-	struct ProceduralTerrainComponent3D;
-
-	class ProceduralMeshGenSystem : public core::Subsystem
+	namespace procedural
 	{
-	public:
+		struct ProceduralIcoSphereComponent3D;
+		struct ProceduralTerrainComponent3D;
 
-		explicit ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine);
-		~ProceduralMeshGenSystem() override;
+		class ProceduralMeshGenSystem : public core::EngineSubsystem
+		{
+		public:
 
-		static void OnConstructPlane(entt::registry& registry, entt::entity entity);
-		static void OnConstructTerrain(entt::registry& registry, entt::entity entity);
-		static void OnConstructIcoSphere(entt::registry& registry, entt::entity entity);
+			explicit ProceduralMeshGenSystem(const std::shared_ptr<core::Engine>& engine);
+			~ProceduralMeshGenSystem() override;
 
-	private:
+			std::string_view GetName() const override;
 
-		// Generator list of vertices/indices for a flat plane
-		static void GeneratePlaneVertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent3D& mesh);
-		static void GenerateTerrain(const ProceduralTerrainComponent3D& terrain, rendering::ProceduralMeshComponent3D& mesh);
-		static void GenerateIcoSphere(const ProceduralIcoSphereComponent3D& sphere, rendering::ProceduralMeshComponent3D& mesh);
+			static void OnConstructPlane(entt::registry& registry, entt::entity entity);
+			static void OnConstructTerrain(entt::registry& registry, entt::entity entity);
+			static void OnConstructIcoSphere(entt::registry& registry, entt::entity entity);
 
-	};
+		private:
+
+			// Generator list of vertices/indices for a flat plane
+			static void GeneratePlaneVertices(const Vector2f& half_size, const Vector2i& num_quads, rendering::ProceduralMeshComponent3D& mesh);
+			static void GenerateTerrain(const ProceduralTerrainComponent3D& terrain, rendering::ProceduralMeshComponent3D& mesh);
+			static void GenerateIcoSphere(const ProceduralIcoSphereComponent3D& sphere, rendering::ProceduralMeshComponent3D& mesh);
+
+		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<procedural::ProceduralMeshGenSystem>()
+		{
+			return "ProceduralMeshGenSystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<procedural::ProceduralMeshGenSystem>()
+		{
+			return entt::hs(GetTypeString<procedural::ProceduralMeshGenSystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<procedural::ProceduralMeshGenSystem>()
+		{
+			auto meta = entt::meta<procedural::ProceduralMeshGenSystem>()
+				.base<core::EngineSubsystem>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
+	}
 }

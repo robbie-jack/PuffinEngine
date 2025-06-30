@@ -11,40 +11,52 @@ namespace puffin::audio
 	// AudioSubsystemProvider
 	////////////////////////////////
 
-	AudioSubsystemProvider::AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine): Subsystem(engine)
+	AudioSubsystemProvider::AudioSubsystemProvider(const std::shared_ptr<core::Engine>& engine)
+		: EngineSubsystem(engine)
 	{
 	}
 
 	AudioSubsystemProvider::~AudioSubsystemProvider()
 	{
-		mEngine = nullptr;
+		m_engine = nullptr;
+	}
+
+	std::string_view AudioSubsystemProvider::GetName() const
+	{
+		return reflection::GetTypeString<AudioSubsystemProvider>();
 	}
 
 	////////////////////////////////
 	// AudioSubsystem
 	////////////////////////////////
 
-	AudioSubsystem::AudioSubsystem(const std::shared_ptr<core::Engine>& engine) : Subsystem(engine)
+	AudioSubsystem::AudioSubsystem(const std::shared_ptr<core::Engine>& engine) : EngineSubsystem(engine)
 	{
-		mName = "AudioSubsystem";
 	}
 
 	AudioSubsystem::~AudioSubsystem()
 	{
-		mEngine = nullptr;
+		m_engine = nullptr;
 	}
 
-	void AudioSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void AudioSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
-		Subsystem::Initialize(subsystemManager);
+		EngineSubsystem::PreInitialize(subsystemManager);
 
-		mAudioSubsystemProvider = new MiniAudioSubsystem(mEngine);
-		mAudioSubsystemProvider->Initialize(subsystemManager);
+		mAudioSubsystemProvider = new MiniAudioSubsystem(m_engine);
+		mAudioSubsystemProvider->PreInitialize(subsystemManager);
+	}
+
+	void AudioSubsystem::Initialize()
+	{
+		EngineSubsystem::Initialize();
+
+		mAudioSubsystemProvider->Initialize();
 	}
 
 	void AudioSubsystem::Deinitialize()
 	{
-		Subsystem::Deinitialize();
+		EngineSubsystem::Deinitialize();
 
 		mAudioSubsystemProvider->Deinitialize();
 
@@ -54,7 +66,12 @@ namespace puffin::audio
 
 	void AudioSubsystem::Update(double deltaTime)
 	{
-		
+		EngineSubsystem::Update(deltaTime);
+	}
+
+	std::string_view AudioSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<AudioSubsystem>();
 	}
 
 	void AudioSubsystem::PlaySound(UUID soundAssetID)

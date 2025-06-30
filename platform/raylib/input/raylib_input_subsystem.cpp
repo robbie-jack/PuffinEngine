@@ -9,6 +9,11 @@ namespace puffin::input
 	{
 	}
 
+	std::string_view RaylibInputSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<RaylibInputSubsystem>();
+	}
+
 	bool RaylibInputSubsystem::IsKeyPressed(KeyboardKey key) const
 	{
 		return ::IsKeyPressed(static_cast<int>(key));
