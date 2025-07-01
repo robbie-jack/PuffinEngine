@@ -12,25 +12,19 @@ namespace puffin::editor
 {
 	Editor::Editor()
 	{
-		mEngine = std::make_shared<puffin::core::Engine>();
+		m_engine = std::make_shared<puffin::core::Engine>();
 	}
 
 	Editor::~Editor()
 	{
-		mEngine = nullptr;
-	}
-
-	void Editor::Setup()
-	{
-		mEngine->SetEditor(shared_from_this());
-		mEngine->Setup();
-
-		RegisterEditorSubsystems();
+		m_engine = nullptr;
 	}
 
 	void Editor::Initialize(const argparse::ArgumentParser& parser)
 	{
-		mEngine->Initialize(parser);
+		RegisterEditorSubsystems();
+		m_engine->SetEditor(shared_from_this());
+		m_engine->Initialize(parser);
 
 		AddEditorContext();
 		InitSignals();
@@ -38,62 +32,62 @@ namespace puffin::editor
 
 	bool Editor::Update()
 	{
-		return mEngine->Update();
+		return m_engine->Update();
 	}
 
 	void Editor::Deinitialize()
 	{
-		auto inputSubsystem = mEngine->GetInputSubsystem();
+		auto inputSubsystem = m_engine->GetInputSubsystem();
 		auto editorContext = inputSubsystem->GetContext("editor");
 
 		auto editorPlayPauseSignal = editorContext->GetActionSignal("editor_play_pause");
-		editorPlayPauseSignal->Disconnect(mEditorPlayPauseConnectionId);
-		mEditorPlayPauseConnectionId = 0;
+		editorPlayPauseSignal->Disconnect(m_editorPlayPauseConnectionId);
+		m_editorPlayPauseConnectionId = 0;
 
 		auto editorRestartSignal = editorContext->GetActionSignal("editor_restart");
-		editorRestartSignal->Disconnect(mEditorRestartConnectionId);
-		mEditorRestartConnectionId = 0;
+		editorRestartSignal->Disconnect(m_editorRestartConnectionId);
+		m_editorRestartConnectionId = 0;
 
 		inputSubsystem->RemoveContext("editor");
 
-		mEngine->Deinitialize();
+		m_engine->Deinitialize();
 	}
 
 	std::shared_ptr<core::Engine> Editor::GetEngine() const
 	{
-		return mEngine;
+		return m_engine;
 	}
 
 	void Editor::RegisterEditorSubsystems()
 	{
 		// Editor Subsystems
-		mEngine->RegisterSubsystem<EditorCameraSubsystem>();
-		mEngine->RegisterSubsystem<ui::EditorUISubsystem>();
+		reflection::RegisterType<EditorCameraSubsystem>();
+		reflection::RegisterType<ui::EditorUISubsystem>();
 	}
 
 	void Editor::InitSignals()
 	{
-		auto inputSubsystem = mEngine->GetInputSubsystem();
+		auto inputSubsystem = m_engine->GetInputSubsystem();
 		auto editorContext = inputSubsystem->GetContext("editor");
 
 		auto editorPlayPauseSignal = editorContext->GetActionSignal("editor_play_pause");
-		mEditorPlayPauseConnectionId = editorPlayPauseSignal->Connect(std::function([&](const input::InputEvent& event)
+		m_editorPlayPauseConnectionId = editorPlayPauseSignal->Connect(std::function([&](const input::InputEvent& event)
 		{
 			if (event.actionState == input::InputState::Pressed)
-				mEngine->Play();
+				m_engine->Play();
 		}));
 
 		auto editorRestartSignal = editorContext->GetActionSignal("editor_restart");
-		mEditorRestartConnectionId = editorRestartSignal->Connect(std::function([&](const input::InputEvent& event)
+		m_editorRestartConnectionId = editorRestartSignal->Connect(std::function([&](const input::InputEvent& event)
 		{
 			if (event.actionState == input::InputState::Pressed)
-				mEngine->Restart();
+				m_engine->Restart();
 		}));
 	}
 
 	void Editor::AddEditorContext()
 	{
-		auto inputSubsystem = mEngine->GetInputSubsystem();
+		auto inputSubsystem = m_engine->GetInputSubsystem();
 		auto editorContext = inputSubsystem->AddContext("editor");
 
 		auto& editorCamMoveForwardAction = editorContext->AddAction("editor_cam_move_forward");

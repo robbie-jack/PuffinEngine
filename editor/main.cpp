@@ -2,6 +2,7 @@
 
 #include "editor.h"
 #include "argparse/argparse.hpp"
+#include "subsystem/subsystem_reflection.h"
 
 #ifdef PFN_BOX2D_PHYSICS
 #include "physics/box2d/box2d_physics_subsystem.h"
@@ -45,10 +46,8 @@ int main(int argc, char* argv[])
 	puffin::core::RegisterComponentTypes2D();
 	puffin::core::RegisterNodeTypes2D();
 
-	editor->Setup();
-
 #ifdef PFN_BOX2D_PHYSICS
-	engine->RegisterSubsystem<puffin::physics::Box2DPhysicsSubsystem>();
+	puffin::reflection::RegisterType<puffin::physics::Box2DPhysicsSubsystem>();
 #endif
 
 #ifdef PFN_JOLT_PHYSICS

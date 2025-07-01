@@ -170,7 +170,7 @@ namespace puffin
 		{
 			if (benchmark)
 			{
-				const std::string& benchmarkName = benchmark->GetData().name;
+				const std::string_view& benchmarkName = benchmark->GetData().name;
 				double benchmarkTimeElapsed = benchmark->GetData().timeElapsed;
 			
 				if (mBenchmarkIdx.find(benchmarkName) == mBenchmarkIdx.end())
@@ -213,8 +213,8 @@ namespace puffin
 					treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 				}
 
-				bool benchmarkOpen = ImGui::TreeNodeEx(benchmarkName.c_str(), treeFlags, "%s - %.3f ms",
-					benchmarkName.c_str(), benchmarkAverage * 1000.0);
+				bool benchmarkOpen = ImGui::TreeNodeEx(benchmarkName.data(), treeFlags, "%s - %.3f ms",
+					benchmarkName.data(), benchmarkAverage * 1000.0);
 
 				if (benchmarkOpen && hasChildBenchmarks)
 				{

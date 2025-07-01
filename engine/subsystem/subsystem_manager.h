@@ -133,8 +133,8 @@ namespace puffin::core
 		std::vector<entt::id_type> m_editorSubsystem;
 		std::vector<entt::id_type> m_gameplaySubsystems;
 
-		entt::id_type m_windowSubsystem;
-		entt::id_type m_inputSubsystem;
-		entt::id_type m_renderSubsystem;
+		entt::id_type m_windowSubsystem = 0;
+		entt::id_type m_inputSubsystem = 0;
+		entt::id_type m_renderSubsystem = 0;
 	};
 }

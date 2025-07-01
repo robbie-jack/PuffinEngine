@@ -38,10 +38,10 @@ namespace puffin
 		inline void RegisterType<core::EditorSubsystem>()
 		{
 			auto meta = entt::meta<core::EditorSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
-			RegisterSubsystemDefault(meta);
 		}
 	}
 }

@@ -2,74 +2,75 @@
 
 namespace puffin::utility
 {
-    BenchmarkManager* BenchmarkManager::sBenchmarkManager = nullptr;
+    BenchmarkManager* BenchmarkManager::s_benchmarkManager = nullptr;
 
-    Benchmark::Benchmark()
+    BenchmarkData::BenchmarkData(std::string_view name): name(name)
     {
     }
 
-    Benchmark::Benchmark(std::string name) : mBenchmarkData(std::move(name))
+    Benchmark::Benchmark() = default;
+
+    Benchmark::Benchmark(std::string_view name) : m_benchmarkData(name)
     {
-        
     }
 
     void Benchmark::Begin()
     {
-        mTimer.Start();
+        m_timer.Start();
     }
 
     void Benchmark::End()
     {
-        mTimer.End();
+        m_timer.End();
 
-        mBenchmarkData.timeElapsed = mTimer.GetElapsedTime();
+        m_benchmarkData.timeElapsed = m_timer.GetElapsedTime();
     }
 
-    Benchmark* Benchmark::Begin(const std::string& name)
+    Benchmark* Benchmark::Begin(const std::string_view& name)
     {
-        if (mBenchmarks.find(name) == mBenchmarks.end())
+        if (m_benchmarks.find(name) == m_benchmarks.end())
         {
-            mBenchmarks.emplace(name, Benchmark(name));
+            m_benchmarks.emplace(name, Benchmark(name));
         }
 
-        mBenchmarks[name].Begin();
-        return &mBenchmarks[name];
+        m_benchmarks[name].Begin();
+        return &m_benchmarks[name];
     }
 
-    Benchmark* Benchmark::End(const std::string& name)
+    Benchmark* Benchmark::End(const std::string_view& name)
     {
-        if (mBenchmarks.find(name) == mBenchmarks.end())
+        if (m_benchmarks.find(name) == m_benchmarks.end())
             return nullptr;
 
-        mBenchmarks[name].End();
-        return &mBenchmarks[name];
+        m_benchmarks[name].End();
+        return &m_benchmarks[name];
     }
 
-    Benchmark* Benchmark::Get(const std::string& name)
+    Benchmark* Benchmark::Get(const std::string_view& name)
     {
-        if (mBenchmarks.find(name) == mBenchmarks.end())
+        if (m_benchmarks.find(name) == m_benchmarks.end())
             return nullptr;
 
-        return &mBenchmarks[name];
+        return &m_benchmarks[name];
     }
 
     const BenchmarkData& Benchmark::GetData() const
     {
-        return mBenchmarkData;
+        return m_benchmarkData;
     }
 
-    const std::unordered_map<std::string, Benchmark>& Benchmark::GetBenchmarks() const
+    const std::unordered_map<std::string_view, Benchmark>& Benchmark::GetBenchmarks() const
     {
-        return mBenchmarks;
+        return m_benchmarks;
     }
 
     void Benchmark::ToJson(nlohmann::json& json) const
     {
-        json["name"] = mBenchmarkData.name;
-        json["timeElapsed"] = mBenchmarkData.timeElapsed;
+        json["name"] = m_benchmarkData.name;
+        json["timeElapsed"] = m_benchmarkData.timeElapsed;
 
         std::vector<nlohmann::json> benchmarks;
-        for (const auto& [name, benchmark] : mBenchmarks)
+        for (const auto& [name, benchmark] : m_benchmarks)
         {
             nlohmann::json benchmarkJson;
             benchmark.ToJson(benchmarkJson);
@@ -82,65 +83,65 @@ namespace puffin::utility
 
     BenchmarkManager* BenchmarkManager::Get()
     {
-        if (!sBenchmarkManager)
+        if (!s_benchmarkManager)
         {
-            sBenchmarkManager = new BenchmarkManager();
+            s_benchmarkManager = new BenchmarkManager();
         }
 
-        return sBenchmarkManager;
+        return s_benchmarkManager;
     }
 
     void BenchmarkManager::Destroy()
     {
-        if (sBenchmarkManager)
+        if (s_benchmarkManager)
         {
-            delete sBenchmarkManager;
-            sBenchmarkManager = nullptr;
+            delete s_benchmarkManager;
+            s_benchmarkManager = nullptr;
         }
     }
 
-    Benchmark* BenchmarkManager::Begin(const std::string& name)
+    Benchmark* BenchmarkManager::Begin(const std::string_view& name)
     {
-        if (mBenchmarks.find(name) == mBenchmarks.end())
+        if (m_benchmarks.find(name) == m_benchmarks.end())
         {
-            mBenchmarks.emplace(name, Benchmark(name));
+            m_benchmarks.emplace(name, Benchmark(name));
         }
 
-        mBenchmarks[name].Begin();
-        return &mBenchmarks[name];
+        m_benchmarks[name].Begin();
+        return &m_benchmarks[name];
     }
 
-    Benchmark* BenchmarkManager::End(const std::string& name)
+    Benchmark* BenchmarkManager::End(const std::string_view& name)
     {
-        if (mBenchmarks.find(name) == mBenchmarks.end())
+        if (m_benchmarks.find(name) == m_benchmarks.end())
             return nullptr;
 
-        mBenchmarks[name].End();
-        return &mBenchmarks[name];
+        m_benchmarks[name].End();
+        return &m_benchmarks[name];
     }
 
-    Benchmark* BenchmarkManager::Get(const std::string& name)
+    Benchmark* BenchmarkManager::Get(const std::string_view& name)
     {
-        if (mBenchmarks.find(name) == mBenchmarks.end())
+        if (m_benchmarks.find(name) == m_benchmarks.end())
             return nullptr;
 
-        return &mBenchmarks[name];
+        return &m_benchmarks[name];
     }
 
     void BenchmarkManager::Clear()
     {
-        mBenchmarks.clear();
+        m_benchmarks.clear();
     }
 
-    const std::unordered_map<std::string, Benchmark>& BenchmarkManager::GetBenchmarks() const
+    const std::unordered_map<std::string_view, Benchmark>& BenchmarkManager::GetBenchmarks() const
     {
-        return mBenchmarks;
+        return m_benchmarks;
     }
 
     void BenchmarkManager::ToJson(nlohmann::json& json) const
     {
         std::vector<nlohmann::json> benchmarks;
-        for (const auto& [name, benchmark] : mBenchmarks)
+        for (const auto& [name, benchmark] : m_benchmarks)
         {
             nlohmann::json benchmarkJson;
             benchmark.ToJson(benchmarkJson);

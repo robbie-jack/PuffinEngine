@@ -200,7 +200,8 @@ namespace puffin
 		inline void RegisterType<core::SignalSubsystem>()
 		{
 			auto meta = entt::meta<core::SignalSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

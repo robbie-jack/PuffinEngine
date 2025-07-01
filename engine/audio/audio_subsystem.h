@@ -118,10 +118,11 @@ namespace puffin
 		inline void RegisterType<audio::AudioSubsystemProvider>()
 		{
 			auto meta = entt::meta<audio::AudioSubsystemProvider>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
-			RegisterSubsystemDefault(meta);
+			//RegisterSubsystemDefault(meta);
 		}
 
 		template<>
@@ -140,7 +141,8 @@ namespace puffin
 		inline void RegisterType<audio::AudioSubsystem>()
 		{
 			auto meta = entt::meta<audio::AudioSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

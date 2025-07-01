@@ -48,7 +48,8 @@ namespace puffin
 		inline void RegisterType<scene::SceneGraphGameplaySubsystem>()
 		{
 			auto meta = entt::meta<scene::SceneGraphGameplaySubsystem>()
-				.base<core::GameplaySubsystem>();
+				.base<core::GameplaySubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

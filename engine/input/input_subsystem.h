@@ -130,10 +130,10 @@ namespace puffin
 		inline void RegisterType<input::InputSubsystem>()
 		{
 			auto meta = entt::meta<input::InputSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
-			RegisterSubsystemDefault(meta);
 		}
 	}
 }

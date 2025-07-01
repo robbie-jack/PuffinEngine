@@ -72,7 +72,9 @@ namespace puffin
 		inline void RegisterType<input::RaylibInputSubsystem>()
 		{
 			auto meta = entt::meta<input::RaylibInputSubsystem>()
-				.base<input::InputSubsystem>();
+				.base<input::InputSubsystem>()
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

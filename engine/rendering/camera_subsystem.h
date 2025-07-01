@@ -81,7 +81,8 @@ namespace puffin
 		inline void RegisterType<rendering::CameraSubsystem>()
 		{
 			auto meta = entt::meta<rendering::CameraSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

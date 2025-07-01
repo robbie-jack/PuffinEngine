@@ -55,7 +55,6 @@ namespace puffin
 			.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
-			RegisterSubsystemDefault(meta);
 		}
 	}
 }

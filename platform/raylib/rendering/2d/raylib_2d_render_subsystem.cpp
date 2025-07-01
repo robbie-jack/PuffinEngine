@@ -24,10 +24,10 @@
 #define FPS_AVERAGE_TIME_SECONDS   1.f     // 1000 milliseconds
 #define FPS_STEP (FPS_AVERAGE_TIME_SECONDS/FPS_CAPTURE_FRAMES_COUNT)
 
-static int deltaTimeIdx = 0;
-static bool updateAvg = false;
-static std::unordered_map<std::string, double[FPS_CAPTURE_FRAMES_COUNT]> benchmarkHistory;
-static std::unordered_map<std::string, double> benchmarkAvg;
+static int s_deltaTimeIdx = 0;
+static bool s_updateAvg = false;
+static std::unordered_map<std::string_view, double[FPS_CAPTURE_FRAMES_COUNT]> s_benchmarkHistory;
+static std::unordered_map<std::string_view, double> s_benchmarkAvg;
 
 namespace puffin::rendering
 {
@@ -305,23 +305,23 @@ namespace puffin::rendering
 			{
 				deltaTimeAvg = 0.f;
 				timeLast = 0.f;
-				deltaTimeIdx = 0;
+				s_deltaTimeIdx = 0;
 
 				for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; ++i) deltaTimeHistory[i] = 0;
 
-				benchmarkHistory.clear();
-				benchmarkAvg.clear();
+				s_benchmarkHistory.clear();
+				s_benchmarkAvg.clear();
 			}
 
 			if (GetTime() - timeLast > FPS_STEP)
 			{
 				timeLast = GetTime();
-				deltaTimeIdx = (deltaTimeIdx + 1) % FPS_CAPTURE_FRAMES_COUNT;
-				deltaTimeAvg -= deltaTimeHistory[deltaTimeIdx];
-				deltaTimeHistory[deltaTimeIdx] = deltaTime / FPS_CAPTURE_FRAMES_COUNT;
-				deltaTimeAvg += deltaTimeHistory[deltaTimeIdx];
+				s_deltaTimeIdx = (s_deltaTimeIdx + 1) % FPS_CAPTURE_FRAMES_COUNT;
+				deltaTimeAvg -= deltaTimeHistory[s_deltaTimeIdx];
+				deltaTimeHistory[s_deltaTimeIdx] = deltaTime / FPS_CAPTURE_FRAMES_COUNT;
+				deltaTimeAvg += deltaTimeHistory[s_deltaTimeIdx];
 
-				updateAvg = true;
+				s_updateAvg = true;
 			}
 
 			auto fps = static_cast<int>(std::round(1.0 / deltaTimeAvg));
@@ -360,36 +360,36 @@ namespace puffin::rendering
 				posY += posYOffset;
 			}
 
-			updateAvg = false;
+			s_updateAvg = false;
 		}
 	}
 
 	void Raylib2DRenderSubsystem::DebugDrawBenchmark(const utility::Benchmark* benchmark, int posX, int& posY) const
 	{
-		const std::string& name = benchmark->GetData().name;
+		const std::string_view& name = benchmark->GetData().name;
 
-		if (benchmarkHistory.find(name) == benchmarkHistory.end())
+		if (s_benchmarkHistory.find(name) == s_benchmarkHistory.end())
 		{
-			benchmarkHistory.emplace();
+			s_benchmarkHistory.emplace();
 
-			for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; ++i) benchmarkHistory[name][i] = 0;
+			for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; ++i) s_benchmarkHistory[name][i] = 0;
 		}
 
-		if (benchmarkAvg.find(name) == benchmarkAvg.end())
+		if (s_benchmarkAvg.find(name) == s_benchmarkAvg.end())
 		{
-			benchmarkAvg.emplace();
+			s_benchmarkAvg.emplace();
 
-			benchmarkAvg[name] = 0;
+			s_benchmarkAvg[name] = 0;
 		}
 
-		if (updateAvg)
+		if (s_updateAvg)
 		{
-			benchmarkAvg[name] -= benchmarkHistory[name][deltaTimeIdx];
-			benchmarkHistory[name][deltaTimeIdx] = benchmark->GetData().timeElapsed / FPS_CAPTURE_FRAMES_COUNT;
-			benchmarkAvg[name] += benchmarkHistory[name][deltaTimeIdx];
+			s_benchmarkAvg[name] -= s_benchmarkHistory[name][s_deltaTimeIdx];
+			s_benchmarkHistory[name][s_deltaTimeIdx] = benchmark->GetData().timeElapsed / FPS_CAPTURE_FRAMES_COUNT;
+			s_benchmarkAvg[name] += s_benchmarkHistory[name][s_deltaTimeIdx];
 		}
 
-		::DrawText(TextFormat("%s Frametime: %.3f ms", benchmark->GetData().name.c_str(), benchmarkAvg[name] * 1000.f), posX, posY, 20, WHITE);
+		::DrawText(TextFormat("%s Frametime: %.3f ms", benchmark->GetData().name, s_benchmarkAvg[name] * 1000.f), posX, posY, 20, WHITE);
 
 		for (auto& [childName, childBenchmark] : benchmark->GetBenchmarks())
 		{

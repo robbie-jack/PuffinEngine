@@ -67,7 +67,8 @@ namespace puffin
 		inline void RegisterType<window::WindowSubsystem>()
 		{
 			auto meta = entt::meta<window::WindowSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

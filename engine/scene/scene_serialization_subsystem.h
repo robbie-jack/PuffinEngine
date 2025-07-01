@@ -128,7 +128,8 @@ namespace puffin
 		inline void RegisterType<scene::SceneSerializationSubsystem>()
 		{
 			auto meta = entt::meta<scene::SceneSerializationSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

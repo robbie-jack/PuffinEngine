@@ -193,7 +193,8 @@ namespace puffin
 		inline void RegisterType<physics::Box2DPhysicsSubsystem>()
 		{
 			auto meta = entt::meta<physics::Box2DPhysicsSubsystem>()
-				.base<core::GameplaySubsystem>();
+				.base<core::GameplaySubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

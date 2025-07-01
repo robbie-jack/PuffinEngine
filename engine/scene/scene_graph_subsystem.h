@@ -10,11 +10,10 @@
 #include "types/uuid.h"
 #include "types/storage/mapped_array.h"
 #include "types/storage/mapped_vector.h"
+#include "component/transform_component_3d.h"
 
 namespace puffin
 {
-	struct TransformComponent3D;
-
 	namespace core
 	{
 		class Engine;
@@ -393,7 +392,8 @@ namespace puffin
 		inline void RegisterType<scene::SceneGraphSubsystem>()
 		{
 			auto meta = entt::meta<scene::SceneGraphSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

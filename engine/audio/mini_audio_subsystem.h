@@ -59,7 +59,9 @@ namespace puffin
 		inline void RegisterType<audio::MiniAudioSubsystem>()
 		{
 			auto meta = entt::meta<audio::MiniAudioSubsystem>()
-				.base<audio::AudioSubsystemProvider>();
+				.base<audio::AudioSubsystemProvider>()
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

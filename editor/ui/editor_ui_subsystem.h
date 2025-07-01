@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-#include "core/subsystem.h"
+#include "subsystem/editor_subsystem.h"
 #include "types/uuid.h"
 
 namespace puffin
@@ -33,20 +33,21 @@ namespace puffin
 			Texture
 		};
 
-		class EditorUISubsystem : public core::Subsystem
+		class EditorUISubsystem : public core::EditorSubsystem
 		{
 		public:
 
 			explicit EditorUISubsystem(const std::shared_ptr<core::Engine>& engine);
 			~EditorUISubsystem() override = default;
 
-			void Initialize(core::SubsystemManager* subsystemManager) override;
+			void PreInitialize(core::SubsystemManager* subsystemManager) override;
+			void Initialize() override;
 			void Deinitialize() override;
-
-			core::SubsystemType GetType() const override;
 
 			void Update(double deltaTime) override;
 			bool ShouldUpdate() override;
+
+			std::string_view GetName() const override;
 
 			void AddWindow(const std::shared_ptr<UIWindow>& window);
 
@@ -78,5 +79,30 @@ namespace puffin
 			std::string mImguiIniFilename;
 			
 		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<ui::EditorUISubsystem>()
+		{
+			return "EditorUISubsystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<ui::EditorUISubsystem>()
+		{
+			return entt::hs(GetTypeString<ui::EditorUISubsystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<ui::EditorUISubsystem>()
+		{
+			auto meta = entt::meta<ui::EditorUISubsystem>()
+				.base<core::EditorSubsystem>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
 	}
 }

@@ -96,7 +96,9 @@ namespace puffin
 		inline void RegisterType<rendering::Raylib2DRenderSubsystem>()
 		{
 			auto meta = entt::meta<rendering::Raylib2DRenderSubsystem>()
-				.base<rendering::RenderSubsystem>();
+				.base<rendering::RenderSubsystem>()
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

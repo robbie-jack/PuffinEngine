@@ -108,7 +108,8 @@ namespace puffin
         inline void RegisterType<core::SettingsManager>()
         {
             auto meta = entt::meta<core::SettingsManager>()
-                .base<core::EngineSubsystem>();
+                .base<core::EngineSubsystem>()
+                .base<core::Subsystem>();
 
             RegisterTypeDefaults(meta);
             RegisterSubsystemDefault(meta);

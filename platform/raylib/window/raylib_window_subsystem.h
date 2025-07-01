@@ -49,7 +49,9 @@ namespace puffin
 		inline void RegisterType<window::RaylibWindowSubsystem>()
 		{
 			auto meta = entt::meta<window::RaylibWindowSubsystem>()
-				.base<window::WindowSubsystem>();
+				.base<window::WindowSubsystem>()
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

@@ -26,7 +26,7 @@ namespace puffin::core
 
 	void SubsystemManager::CreateAndPreInitializeEngineSubsystems()
 	{
-		for (const auto& typeId : reflection::SubsystemRegistry::Get()->GetRegisteredTypes())
+		for (const auto& typeId : reflection::SubsystemRegistry::Get()->GetRegisteredTypesInOrder())
 		{
 			if (m_subsystems.find(typeId) != m_subsystems.end())
 				continue;
@@ -43,7 +43,7 @@ namespace puffin::core
 
 	void SubsystemManager::CreateAndPreInitializeGameplaySubsystems()
 	{
-		for (const auto& typeId : reflection::SubsystemRegistry::Get()->GetRegisteredTypes())
+		for (const auto& typeId : reflection::SubsystemRegistry::Get()->GetRegisteredTypesInOrder())
 		{
 			if (m_subsystems.find(typeId) != m_subsystems.end())
 				continue;
@@ -116,14 +116,14 @@ namespace puffin::core
 	{
 		assert(m_inputSubsystem != 0 && "SubsystemManager::GetInputSubsystem() - Attempting to get input subsystem while it is invalid");
 
-		return dynamic_cast<input::InputSubsystem*>(m_subsystems.at(m_windowSubsystem));
+		return dynamic_cast<input::InputSubsystem*>(m_subsystems.at(m_inputSubsystem));
 	}
 
 	rendering::RenderSubsystem* SubsystemManager::GetRenderSubsystem() const
 	{
 		assert(m_renderSubsystem != 0 && "SubsystemManager::GetRenderSubsystem() - Attempting to get render subsystem while it is invalid");
 
-		return dynamic_cast<rendering::RenderSubsystem*>(m_subsystems.at(m_windowSubsystem));
+		return dynamic_cast<rendering::RenderSubsystem*>(m_subsystems.at(m_renderSubsystem));
 	}
 
 	Subsystem* SubsystemManager::CreateSubsystem(entt::id_type typeId)
@@ -140,7 +140,9 @@ namespace puffin::core
 		if (type.can_cast(entt::resolve<EditorSubsystem>()) && !m_engine->IsEditorRunning())
 			return nullptr;
 
-		m_subsystems.emplace(typeId, static_cast<Subsystem*>(type.construct(m_engine).data()));
+		auto createSubsystemFunc = type.func(entt::hs("CreateSubsystem"));
+		auto* subsystem = createSubsystemFunc.invoke({}, m_engine).cast<Subsystem*>();
+		m_subsystems.emplace(typeId, subsystem);
 
 		if (type.can_cast(entt::resolve<EngineSubsystem>()))
 		{
@@ -169,6 +171,8 @@ namespace puffin::core
 			{
 				m_editorSubsystem.push_back(typeId);
 			}
+
+			m_engineSubsystem.push_back(typeId);
 		}
 
 		if (type.can_cast(entt::resolve<GameplaySubsystem>()))

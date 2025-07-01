@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "core/subsystem.h"
+#include "subsystem/editor_subsystem.h"
 #include "types/uuid.h"
 #include "types/vector3.h"
 
@@ -17,23 +17,24 @@ namespace puffin
 
 	namespace editor
 	{
-		class EditorCameraSubsystem : public core::Subsystem
+		class EditorCameraSubsystem : public core::EditorSubsystem
 		{
 		public:
 
 			explicit EditorCameraSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~EditorCameraSubsystem() override = default;
 
-			void Initialize(core::SubsystemManager* subsystemManager) override;
+			void PreInitialize(core::SubsystemManager* subsystemManager) override;
+			void Initialize() override;
 			void Deinitialize() override;
 			void PostSceneLoad() override;
 
 			void EndPlay() override;
 
-			core::SubsystemType GetType() const override;
-
 			void Update(double deltaTime) override;
 			bool ShouldUpdate() override;
+
+			std::string_view GetName() const override;
 
 		private:
 
@@ -52,5 +53,30 @@ namespace puffin
 			Vector3f mEditorCamStartPosition = Vector3f(0.0f);
 
 		};
+	}
+
+	namespace reflection
+	{
+		template<>
+		inline std::string_view GetTypeString<editor::EditorCameraSubsystem>()
+		{
+			return "EditorCameraSubsystem";
+		}
+
+		template<>
+		inline entt::hs GetTypeHashedString<editor::EditorCameraSubsystem>()
+		{
+			return entt::hs(GetTypeString<editor::EditorCameraSubsystem>().data());
+		}
+
+		template<>
+		inline void RegisterType<editor::EditorCameraSubsystem>()
+		{
+			auto meta = entt::meta<editor::EditorCameraSubsystem>()
+				.base<core::EditorSubsystem>();
+
+			RegisterTypeDefaults(meta);
+			RegisterSubsystemDefault(meta);
+		}
 	}
 }

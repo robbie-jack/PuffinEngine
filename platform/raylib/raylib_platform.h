@@ -14,5 +14,6 @@ namespace puffin::core
 		void PreInitialize() override;
 		void Initialize() override;
 		void PostInitialize() override;
+		void Deinitialize() override;
 	};
 }

@@ -12,14 +12,18 @@
 namespace puffin::editor
 {
 	EditorCameraSubsystem::EditorCameraSubsystem(const std::shared_ptr<core::Engine>& engine)
-		: Subsystem(engine)
+		: EditorSubsystem(engine)
 	{
-		mName = "EditorCameraSubsystem";
 	}
 
-	void EditorCameraSubsystem::Initialize(core::SubsystemManager* subsystemManager)
+	void EditorCameraSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
-		Subsystem::Initialize(subsystemManager);
+		EditorSubsystem::PreInitialize(subsystemManager);
+	}
+
+	void EditorCameraSubsystem::Initialize()
+	{
+		Subsystem::Initialize();
 
 		InitSettingsAndSignals();
 	}
@@ -33,7 +37,7 @@ namespace puffin::editor
 	{
 		Subsystem::PostSceneLoad();
 
-		auto currentSceneType = mEngine->GetCurrentSceneType();
+		auto currentSceneType = m_engine->GetCurrentSceneType();
 
 		if (currentSceneType ==  scene::SceneType::Scene2D)
 		{
@@ -52,7 +56,7 @@ namespace puffin::editor
 
 		mEditorCamID = gInvalidID;
 
-		auto currentSceneType = mEngine->GetCurrentSceneType();
+		auto currentSceneType = m_engine->GetCurrentSceneType();
 
 		if (currentSceneType == scene::SceneType::Scene2D)
 		{
@@ -65,16 +69,11 @@ namespace puffin::editor
 		}
 	}
 
-	core::SubsystemType EditorCameraSubsystem::GetType() const
-	{
-		return core::SubsystemType::Editor;
-	}
-
 	void EditorCameraSubsystem::Update(double deltaTime)
 	{
-		Subsystem::Update(deltaTime);
+		EditorSubsystem::Update(deltaTime);
 
-		auto currentSceneType = mEngine->GetCurrentSceneType();
+		auto currentSceneType = m_engine->GetCurrentSceneType();
 
 		if (currentSceneType == scene::SceneType::Scene2D)
 		{
@@ -92,9 +91,14 @@ namespace puffin::editor
 		return true;
 	}
 
+	std::string_view EditorCameraSubsystem::GetName() const
+	{
+		return reflection::GetTypeString<EditorCameraSubsystem>();
+	}
+
 	void EditorCameraSubsystem::OnUpdateEditorCameraFov(const float& editorCameraFov)
 	{
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		const auto registry = enttSubsystem->GetRegistry();
 
 		const auto entity = enttSubsystem->GetEntity(mEditorCamID);
@@ -106,13 +110,13 @@ namespace puffin::editor
 
 	void EditorCameraSubsystem::InitSettingsAndSignals()
 	{
-		const auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-		const auto signalSubsystem = mEngine->GetSubsystem<core::SignalSubsystem>();
+		const auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
+		const auto signalSubsystem = m_engine->GetSubsystem<core::SignalSubsystem>();
 
 		auto editorCameraFovSignal = signalSubsystem->GetOrCreateSignal("editor_camera_fov");
 		editorCameraFovSignal->Connect(std::function([&]()
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 			OnUpdateEditorCameraFov(settingsManager->Get<float>("editor", "camera_fov").value_or(60.0));
 		}));
@@ -122,7 +126,7 @@ namespace puffin::editor
 		auto editorCameraSpeedSignal = signalSubsystem->GetOrCreateSignal("editor_camera_speed");
 		editorCameraSpeedSignal->Connect(std::function([&]()
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 			mEditorCamSpeed = settingsManager->Get<float>("editor", "camera_speed").value_or(25.0);
 		}));
@@ -134,7 +138,7 @@ namespace puffin::editor
 		auto editorCamStartPositionXSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_x");
 		editorCamStartPositionXSignal->Connect(std::function([&]()
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 			mEditorCamStartPosition.x = settingsManager->Get<float>("editor", "camera_start_position_x").value_or(0.0);
 		}));
@@ -142,7 +146,7 @@ namespace puffin::editor
 		auto editorCamStartPositionYSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_y");
 		editorCamStartPositionYSignal->Connect(std::function([&]()
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 			mEditorCamStartPosition.y = settingsManager->Get<float>("editor", "camera_start_position_y").value_or(0.0);
 		}));
@@ -150,7 +154,7 @@ namespace puffin::editor
 		auto editorCamStartPositionZSignal = signalSubsystem->GetOrCreateSignal("editor_cam_start_position_z");
 		editorCamStartPositionYSignal->Connect(std::function([&]()
 		{
-			auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
+			auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
 
 			mEditorCamStartPosition.z = settingsManager->Get<float>("editor", "camera_start_position_z").value_or(25.0);
 		}));
@@ -159,10 +163,10 @@ namespace puffin::editor
 	void EditorCameraSubsystem::InitEditorCamera2D()
 	{
 		// Create editor cam
-		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
+		auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
+		auto cameraSubsystem = m_engine->GetSubsystem<rendering::CameraSubsystem>();
 
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
 		mEditorCamID = GenerateId();
@@ -181,10 +185,10 @@ namespace puffin::editor
 	void EditorCameraSubsystem::InitEditorCamera3D()
 	{
 		// Create editor cam
-		auto settingsManager = mEngine->GetSubsystem<core::SettingsManager>();
-		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
+		auto settingsManager = m_engine->GetSubsystem<core::SettingsManager>();
+		auto cameraSubsystem = m_engine->GetSubsystem<rendering::CameraSubsystem>();
 
-		const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+		const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 		auto registry = enttSubsystem->GetRegistry();
 
 		mEditorCamID = GenerateId();
@@ -205,12 +209,12 @@ namespace puffin::editor
 
 	void EditorCameraSubsystem::UpdateEditorCamera2D(double deltaTime)
 	{
-		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
+		auto cameraSubsystem = m_engine->GetSubsystem<rendering::CameraSubsystem>();
 
 		if (mEditorCamID != gInvalidID && mEditorCamID == cameraSubsystem->GetActiveCameraID())
 		{
-			const auto inputSubsystem = mEngine->GetInputSubsystem();
-			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+			const auto inputSubsystem = m_engine->GetInputSubsystem();
+			const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			auto registry = enttSubsystem->GetRegistry();
 
 			auto entity = enttSubsystem->GetEntity(mEditorCamID);
@@ -242,12 +246,12 @@ namespace puffin::editor
 
 	void EditorCameraSubsystem::UpdateEditorCamera3D(double deltaTime)
 	{
-		auto cameraSubsystem = mEngine->GetSubsystem<rendering::CameraSubsystem>();
+		auto cameraSubsystem = m_engine->GetSubsystem<rendering::CameraSubsystem>();
 
 		if (mEditorCamID != gInvalidID && mEditorCamID == cameraSubsystem->GetActiveCameraID())
 		{
-			const auto inputSubsystem = mEngine->GetInputSubsystem();
-			const auto enttSubsystem = mEngine->GetSubsystem<ecs::EnTTSubsystem>();
+			const auto inputSubsystem = m_engine->GetInputSubsystem();
+			const auto enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
 			auto registry = enttSubsystem->GetRegistry();
 
 			auto entity = enttSubsystem->GetEntity(mEditorCamID);

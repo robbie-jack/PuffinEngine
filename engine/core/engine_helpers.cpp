@@ -74,6 +74,8 @@ namespace puffin::core
 	
 	void RegisterRequiredSubsystems(const std::shared_ptr<Engine>& engine)
 	{
+		reflection::RegisterType<Subsystem>();
+
 		// Engine Subsystems
 		reflection::RegisterType<SignalSubsystem>();
 		reflection::RegisterType<SettingsManager>();

@@ -39,4 +39,8 @@ namespace puffin::core
 	{
 
 	}
+
+	void RaylibPlatform::Deinitialize()
+	{
+	}
 }

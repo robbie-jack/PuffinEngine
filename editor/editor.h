@@ -23,7 +23,6 @@ namespace puffin
 			Editor();
 			~Editor();
 
-			void Setup();
 			void Initialize(const argparse::ArgumentParser& parser);
 			bool Update();
 			void Deinitialize();
@@ -36,9 +35,9 @@ namespace puffin
 			void AddEditorContext();
 			void InitSignals();
 
-			std::shared_ptr<core::Engine> mEngine;
-			size_t mEditorPlayPauseConnectionId = 0;
-			size_t mEditorRestartConnectionId = 0;
+			std::shared_ptr<core::Engine> m_engine;
+			size_t m_editorPlayPauseConnectionId = 0;
+			size_t m_editorRestartConnectionId = 0;
 
 		};
 	}

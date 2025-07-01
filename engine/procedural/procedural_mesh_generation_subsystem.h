@@ -61,7 +61,8 @@ namespace puffin
 		inline void RegisterType<procedural::ProceduralMeshGenSystem>()
 		{
 			auto meta = entt::meta<procedural::ProceduralMeshGenSystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

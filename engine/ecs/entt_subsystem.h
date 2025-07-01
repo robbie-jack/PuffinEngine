@@ -71,7 +71,8 @@ namespace puffin
 		inline void RegisterType<ecs::EnTTSubsystem>()
 		{
 			auto meta = entt::meta<ecs::EnTTSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

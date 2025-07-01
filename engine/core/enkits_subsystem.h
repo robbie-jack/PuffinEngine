@@ -54,7 +54,8 @@ namespace puffin
 		inline void RegisterType<core::EnkiTSSubsystem>()
 		{
 			auto meta = entt::meta<core::EnkiTSSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

@@ -68,8 +68,8 @@ namespace puffin
 
 			HardwareStats hardwareStats;
 
-			std::unordered_map<std::string, int> mBenchmarkIdx;
-			std::unordered_map<std::string, std::vector<double>> mBenchmarkValues;
+			std::unordered_map<std::string_view, int> mBenchmarkIdx;
+			std::unordered_map<std::string_view, std::vector<double>> mBenchmarkValues;
 
 			void DrawBenchmark(const utility::Benchmark* benchmark);
 		};

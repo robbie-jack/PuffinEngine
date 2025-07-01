@@ -81,10 +81,10 @@ namespace puffin
 		inline void RegisterType<rendering::RenderSubsystem>()
 		{
 			auto meta = entt::meta<rendering::RenderSubsystem>()
-				.base<core::EngineSubsystem>();
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
-			RegisterSubsystemDefault(meta);
 		}
 	}
 }

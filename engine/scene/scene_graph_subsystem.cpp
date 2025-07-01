@@ -9,7 +9,6 @@
 #include "node/rendering/3d/point_light_3d_node.h"
 #include "node/rendering/3d/spot_light_3d_node.h"
 #include "node/rendering/3d/static_mesh_3d_node.h"
-#include "component/transform_component_3d.h"
 #include "node/physics/2d/box_2d_node.h"
 #include "node/physics/2d/rigidbody_2d_node.h"
 #include "node/rendering/2d/sprite_2d_node.h"
