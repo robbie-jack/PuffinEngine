@@ -18,13 +18,13 @@ namespace puffin::core
 
 	SubsystemManager::~SubsystemManager()
 	{
-		DestroyGameplaySubsystems();
-		DestroyGameplaySubsystems();
+		DeinitializeAndDestroyGameplaySubsystems();
+		DeinitializeAndDestroyGameplaySubsystems();
 
 		m_engine = nullptr;
 	}
 
-	void SubsystemManager::CreateAndPreInitializeEngineSubsystems()
+	void SubsystemManager::CreateAndInitializeEngineSubsystems()
 	{
 		for (const auto& typeId : reflection::SubsystemRegistry::Get()->GetRegisteredTypesInOrder())
 		{
@@ -37,11 +37,11 @@ namespace puffin::core
 				continue;
 
 			auto* subsystem = CreateSubsystem(typeId);
-			subsystem->PreInitialize(this);
+			subsystem->Initialize(this);
 		}
 	}
 
-	void SubsystemManager::CreateAndPreInitializeGameplaySubsystems()
+	void SubsystemManager::CreateAndInitializeGameplaySubsystems()
 	{
 		for (const auto& typeId : reflection::SubsystemRegistry::Get()->GetRegisteredTypesInOrder())
 		{
@@ -54,33 +54,35 @@ namespace puffin::core
 				continue;
 
 			auto* subsystem = CreateSubsystem(typeId);
-			subsystem->PreInitialize(this);
+			subsystem->Initialize(this);
 		}
 	}
 
-	void SubsystemManager::DestroyEngineSubsystems()
+	void SubsystemManager::DeinitializeAndDestroyEngineSubsystems()
 	{
 		if (m_engineSubsystem.empty())
 			return;
 
-		for (auto typeId : m_engineSubsystem)
+		std::for_each(m_engineSubsystem.rbegin(), m_engineSubsystem.rend(), [this](entt::id_type typeId)
 		{
+			m_subsystems.at(typeId)->Deinitialize();
 			DestroySubsystem(typeId);
-		}
+		});
 
 		m_engineSubsystem.clear();
 		m_editorSubsystem.clear();
 	}
 
-	void SubsystemManager::DestroyGameplaySubsystems()
+	void SubsystemManager::DeinitializeAndDestroyGameplaySubsystems()
 	{
 		if (m_gameplaySubsystems.empty())
 			return;
 
-		for (auto typeId : m_gameplaySubsystems)
+		std::for_each(m_gameplaySubsystems.rbegin(), m_gameplaySubsystems.rend(), [this](entt::id_type typeId)
 		{
+			m_subsystems.at(typeId)->Deinitialize();
 			DestroySubsystem(typeId);
-		}
+		});
 
 		m_gameplaySubsystems.clear();
 	}

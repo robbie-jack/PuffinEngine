@@ -19,7 +19,7 @@ namespace puffin
 			explicit EnTTSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~EnTTSubsystem() override;
 
-			void Initialize() override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
 			void EndPlay() override;

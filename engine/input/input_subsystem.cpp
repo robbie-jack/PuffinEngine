@@ -18,16 +18,13 @@ namespace puffin
 			mMouseSensitivity = 0.05f;
 		}
 
-		void InputSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+		void InputSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 		{
-			EngineSubsystem::PreInitialize(subsystemManager);
+			EngineSubsystem::Initialize(subsystemManager);
 
-			subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
-			subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
-		}
+			subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+			subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
-		void InputSubsystem::Initialize()
-		{
 			InitSettings();
 		}
 

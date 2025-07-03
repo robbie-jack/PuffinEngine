@@ -26,13 +26,10 @@ namespace puffin::ui
 	{
 	}
 
-	void EditorUISubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void EditorUISubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		EditorSubsystem::PreInitialize(subsystemManager);
-	}
+		EditorSubsystem::Initialize(subsystemManager);
 
-	void EditorUISubsystem::Initialize()
-	{
 		auto* resourceManager = m_engine->GetResourceManager();
 
 		IMGUI_CHECKVERSION();

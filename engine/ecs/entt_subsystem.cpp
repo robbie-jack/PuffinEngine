@@ -11,9 +11,9 @@ namespace puffin::ecs
 		m_engine = nullptr;
 	}
 
-	void EnTTSubsystem::Initialize()
+	void EnTTSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		Subsystem::Initialize();
+		Subsystem::Initialize(subsystemManager);
 
 		m_registry = std::make_shared<entt::registry>();
 	}

@@ -10,16 +10,11 @@ namespace puffin::scene
 	{
 	}
 
-	void SceneGraphGameplaySubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void SceneGraphGameplaySubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		GameplaySubsystem::PreInitialize(subsystemManager);
+		GameplaySubsystem::Initialize(subsystemManager);
 
-		subsystemManager->CreateAndPreInitializeSubsystem<SceneGraphSubsystem>();
-	}
-
-	void SceneGraphGameplaySubsystem::Initialize()
-	{
-		GameplaySubsystem::Initialize();
+		subsystemManager->CreateAndInitializeSubsystem<SceneGraphSubsystem>();
 	}
 
 	void SceneGraphGameplaySubsystem::BeginPlay()

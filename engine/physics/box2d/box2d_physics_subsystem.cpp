@@ -61,17 +61,12 @@ namespace puffin::physics
 	{
 	}
 
-	void Box2DPhysicsSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void Box2DPhysicsSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		GameplaySubsystem::PreInitialize(subsystemManager);
+		GameplaySubsystem::Initialize(subsystemManager);
 
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
-	}
-
-	void Box2DPhysicsSubsystem::Initialize()
-	{
-		GameplaySubsystem::Initialize();
+		subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+		subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
 		InitConnections();
 		InitSettingsAndSignals();

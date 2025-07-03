@@ -24,8 +24,7 @@ namespace puffin
 			explicit Raylib2DRenderSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~Raylib2DRenderSubsystem() override = default;
 
-			void PreInitialize(core::SubsystemManager* subsystemManager) override;
-			void Initialize() override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
 			std::string_view GetName() const override;

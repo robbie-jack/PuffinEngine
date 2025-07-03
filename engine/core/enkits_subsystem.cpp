@@ -10,16 +10,11 @@ namespace puffin::core
 	{
 	}
 
-	void EnkiTSSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void EnkiTSSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		EngineSubsystem::PreInitialize(subsystemManager);
+		EngineSubsystem::Initialize(subsystemManager);
 
-		auto* settingsManager = subsystemManager->CreateAndPreInitializeSubsystem<SettingsManager>();
-	}
-
-	void EnkiTSSubsystem::Initialize()
-	{
-		auto* settingsManager = m_engine->GetSubsystem<SettingsManager>();
+		auto* settingsManager = subsystemManager->CreateAndInitializeSubsystem<SettingsManager>();
 
 		mThreadCount = settingsManager->Get<uint32_t>("general", "thread_count").value_or(4);
 		

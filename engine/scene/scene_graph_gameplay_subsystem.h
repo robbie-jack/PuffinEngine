@@ -13,8 +13,7 @@ namespace puffin
 			explicit SceneGraphGameplaySubsystem(const std::shared_ptr<core::Engine>& engine);
 			~SceneGraphGameplaySubsystem() override = default;
 
-			void PreInitialize(core::SubsystemManager* subsystemManager) override;
-			void Initialize() override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
 
 			void BeginPlay() override;
 			void EndPlay() override;

@@ -39,19 +39,12 @@ namespace puffin::audio
 		m_engine = nullptr;
 	}
 
-	void AudioSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void AudioSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		EngineSubsystem::PreInitialize(subsystemManager);
+		EngineSubsystem::Initialize(subsystemManager);
 
 		mAudioSubsystemProvider = new MiniAudioSubsystem(m_engine);
-		mAudioSubsystemProvider->PreInitialize(subsystemManager);
-	}
-
-	void AudioSubsystem::Initialize()
-	{
-		EngineSubsystem::Initialize();
-
-		mAudioSubsystemProvider->Initialize();
+		mAudioSubsystemProvider->Initialize(subsystemManager);
 	}
 
 	void AudioSubsystem::Deinitialize()

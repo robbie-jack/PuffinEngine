@@ -20,9 +20,9 @@ namespace puffin::scene
 	{
 	}
 
-	void SceneGraphSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void SceneGraphSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		Subsystem::PreInitialize(subsystemManager);
+		EngineSubsystem::Initialize(subsystemManager);
 
 		RegisterNodeType<Node>();
 
@@ -50,11 +50,6 @@ namespace puffin::scene
 		SetDefaultNodePoolSize<rendering::PointLightNode3D>(rendering::gMaxPointLights);
 		SetDefaultNodePoolSize<rendering::SpotLightNode3D>(rendering::gMaxSpotLights);
 		SetDefaultNodePoolSize<rendering::DirectionalLightNode3D>(rendering::gMaxDirectionalLights);
-	}
-
-	void SceneGraphSubsystem::Initialize()
-	{
-		EngineSubsystem::Initialize();
 
 		mSceneGraphUpdated = true;
 

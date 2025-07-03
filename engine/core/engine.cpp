@@ -112,7 +112,7 @@ namespace puffin::core
 			mApplication->PreInitialize();
 		}
 
-		mSubsystemManager->CreateAndPreInitializeEngineSubsystems();
+		mSubsystemManager->CreateAndInitializeEngineSubsystems();
 
 		// Initialize engine subsystems
 		if (mPlatform)
@@ -125,13 +125,6 @@ namespace puffin::core
 			mApplication->Initialize();
 		}
 
-		std::vector<EngineSubsystem*> engineSubsystems;
-		mSubsystemManager->GetEngineSubsystems(engineSubsystems);
-		for (auto subsystem : engineSubsystems)
-		{
-			subsystem->Initialize();
-		}
-
 		// Post-Initialization Setup
 		if (mPlatform)
 		{
@@ -141,11 +134,6 @@ namespace puffin::core
 		if (mApplication)
 		{
 			mApplication->PostInitialize();
-		}
-
-		for (auto subsystem : engineSubsystems)
-		{
-			subsystem->PostInitialize();
 		}
 
 		// Scene Loading
@@ -222,6 +210,8 @@ namespace puffin::core
 
 		mCurrentSceneType = sceneSubsystem->GetCurrentSceneData()->GetSceneInfo().sceneType;
 
+		std::vector<EngineSubsystem*> engineSubsystems;
+		mSubsystemManager->GetEngineSubsystems(engineSubsystems);
 		for (auto subsystem : engineSubsystems)
 		{
 			subsystem->PostSceneLoad();
@@ -300,19 +290,7 @@ namespace puffin::core
 		// Call system start functions to prepare for gameplay
 		if (mPlayState == PlayState::BeginPlay)
 		{
-			mSubsystemManager->CreateAndPreInitializeGameplaySubsystems();
-
-			std::vector<GameplaySubsystem*> gameplaySubsystems;
-			mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
-			for (auto subsystem : gameplaySubsystems)
-			{
-				subsystem->Initialize();
-			}
-
-			if (mApplication)
-			{
-				mApplication->BeginPlay();
-			}
+			mSubsystemManager->CreateAndInitializeGameplaySubsystems();
 
 			std::vector<EngineSubsystem*> engineSubsystems;
 			mSubsystemManager->GetEngineSubsystems(engineSubsystems);
@@ -320,10 +298,17 @@ namespace puffin::core
 			{
 				subsystem->BeginPlay();
 			}
-			
+
+			std::vector<GameplaySubsystem*> gameplaySubsystems;
+			mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
 			for (auto subsystem : gameplaySubsystems)
 			{
 				subsystem->BeginPlay();
+			}
+
+			if (mApplication)
+			{
+				mApplication->BeginPlay();
 			}
 
 			mAccumulatedTime = 0.0;
@@ -359,15 +344,6 @@ namespace puffin::core
 				{
 					mAccumulatedTime -= mTimeStepFixed;
 
-					if (mApplication && mApplication->ShouldFixedUpdate())
-					{
-						fixedUpdateBenchmark->Begin(mApplication->GetName());
-						
-						mApplication->FixedUpdate(mTimeStepFixed);
-
-						fixedUpdateBenchmark->End(mApplication->GetName());
-					}
-
 					std::vector<GameplaySubsystem*> gameplaySubsystems;
 					mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
 					for (auto subsystem : gameplaySubsystems)
@@ -381,6 +357,15 @@ namespace puffin::core
 							fixedUpdateBenchmark->End(subsystem->GetName());
 						}
 					}
+
+					if (mApplication && mApplication->ShouldFixedUpdate())
+					{
+						fixedUpdateBenchmark->Begin(mApplication->GetName());
+
+						mApplication->FixedUpdate(mTimeStepFixed);
+
+						fixedUpdateBenchmark->End(mApplication->GetName());
+					}
 				}
 
 				benchmarkManager->End("FixedUpdate");
@@ -389,15 +374,6 @@ namespace puffin::core
 			// Update
 			{
 				auto* updateBenchmark = benchmarkManager->Begin("Update");
-
-				if (mApplication && mApplication->ShouldUpdate())
-				{
-					updateBenchmark->Begin(mApplication->GetName());
-					
-					mApplication->Update(mDeltaTime);
-
-					updateBenchmark->End(mApplication->GetName());
-				}
 
 				std::vector<GameplaySubsystem*> gameplaySubsystems;
 				mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
@@ -411,6 +387,15 @@ namespace puffin::core
 
 						updateBenchmark->End(subsystem->GetName());
 					}
+				}
+
+				if (mApplication && mApplication->ShouldUpdate())
+				{
+					updateBenchmark->Begin(mApplication->GetName());
+
+					mApplication->Update(mDeltaTime);
+
+					updateBenchmark->End(mApplication->GetName());
 				}
 
 				benchmarkManager->End("Update");
@@ -455,15 +440,8 @@ namespace puffin::core
 			EndPlay();
 		}
 
-		std::vector<EngineSubsystem*> engineSubsystems;
-		mSubsystemManager->GetEngineSubsystems(engineSubsystems);
-		for (auto subsystem : engineSubsystems)
-		{
-			subsystem->Deinitialize();
-		}
-
 		// Cleanup all engine subsystems
-		mSubsystemManager->DestroyEngineSubsystems();
+		mSubsystemManager->DeinitializeAndDestroyEngineSubsystems();
 
 		if (mApplication)
 		{
@@ -594,12 +572,7 @@ namespace puffin::core
 			subsystem->EndPlay();
 		}
 
-		for (auto subsystem : gameplaySubsystems)
-		{
-			subsystem->Deinitialize();
-		}
-
-		mSubsystemManager->DestroyGameplaySubsystems();
+		mSubsystemManager->DeinitializeAndDestroyGameplaySubsystems();
 
 		std::vector<EngineSubsystem*> engineSubsystems;
 		mSubsystemManager->GetEngineSubsystems(engineSubsystems);

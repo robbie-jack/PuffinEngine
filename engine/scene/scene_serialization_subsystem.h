@@ -84,8 +84,7 @@ namespace puffin
 			explicit SceneSerializationSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~SceneSerializationSubsystem() override;
 
-			void PreInitialize(core::SubsystemManager* subsystemManager) override;
-			void Initialize() override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
 			void BeginPlay() override;

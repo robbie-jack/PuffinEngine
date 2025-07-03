@@ -19,7 +19,7 @@ namespace puffin
 			explicit RaylibWindowSubsystem(const std::shared_ptr<core::Engine>& engine);
 			~RaylibWindowSubsystem() override;
 
-			void Initialize() override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
 			std::string_view GetName() const override;

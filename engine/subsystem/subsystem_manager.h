@@ -66,26 +66,14 @@ namespace puffin::core
 		explicit SubsystemManager(const std::shared_ptr<Engine>& engine);
 		~SubsystemManager();
 
-		/*template<typename T>
-		void RegisterSubsystem()
-		{
-			const char* typeName = typeid(T).name();
+		void CreateAndInitializeEngineSubsystems();
+		void CreateAndInitializeGameplaySubsystems();
 
-			assert(mSubsystemFactories.find(typeName) == mSubsystemFactories.end() && "SubsystemManager::RegisterSubsystem() - Attempting to register subsystem more than once");
-
-			mSubsystemFactories.emplace(typeName, new SubsystemFactory<T>());
-
-			CreateSubsystem(typeName);
-		}*/
-
-		void CreateAndPreInitializeEngineSubsystems();
-		void CreateAndPreInitializeGameplaySubsystems();
-
-		void DestroyEngineSubsystems();
-		void DestroyGameplaySubsystems();
+		void DeinitializeAndDestroyEngineSubsystems();
+		void DeinitializeAndDestroyGameplaySubsystems();
 
 		template<typename T>
-		T* CreateAndPreInitializeSubsystem()
+		T* CreateAndInitializeSubsystem()
 		{
 			auto type = entt::resolve<T>();
 			auto typeId = type.id();
@@ -94,7 +82,7 @@ namespace puffin::core
 				return dynamic_cast<T*>(m_subsystems.at(typeId));
 
 			auto* subsystem = CreateSubsystem(typeId);
-			subsystem->PreInitialize(this);
+			subsystem->Initialize(this);
 
 			return dynamic_cast<T*>(subsystem);
 		}

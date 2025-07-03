@@ -24,20 +24,10 @@ namespace puffin
 			virtual ~Subsystem();
 
 			/*
-			 * Called immediately prior to engine, app and subsystem initialization. Type registration (Subsystems, nodes, components, etc...) should occur here
-			 */
-			virtual void PreInitialize(core::SubsystemManager* subsystemManager);
-
-			/*
 			 * All subsystem initialization occurs here
 			 * subsystem initialization is called depending on what type of subsystem this is
 			 */
-			virtual void Initialize();
-
-			/*
-			 * Called immediately after engine, app and subsystem initialization, prior to scene loading.
-			 */
-			virtual void PostInitialize();
+			virtual void Initialize(core::SubsystemManager* subsystemManager);
 
 			/*
 			 * All subsystem deinitialization occurs here, same rules apply as initialization method for method execution

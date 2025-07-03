@@ -36,11 +36,11 @@ namespace puffin::core
 	{
 	}
 
-	void SettingsManager::PreInitialize(core::SubsystemManager* subsystemManager)
+	void SettingsManager::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		EngineSubsystem::PreInitialize(subsystemManager);
+		EngineSubsystem::Initialize(subsystemManager);
 
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
+		subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
 		auto* resourceManager = m_engine->GetResourceManager();
 
@@ -58,11 +58,6 @@ namespace puffin::core
 		{
 			Load(resourceManager->GetProjectPath() / "config" / "settings.toml");
 		}
-	}
-
-	void SettingsManager::Initialize()
-	{
-		EngineSubsystem::Initialize();
 	}
 
 	std::string_view SettingsManager::GetName() const

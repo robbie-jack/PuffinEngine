@@ -15,15 +15,7 @@ namespace puffin::core
 		m_engine = nullptr;
 	}
 
-	void Subsystem::PreInitialize(core::SubsystemManager* subsystemManager)
-	{
-	}
-
-	void Subsystem::Initialize()
-	{
-	}
-
-	void Subsystem::PostInitialize()
+	void Subsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
 	}
 

@@ -16,17 +16,12 @@ namespace puffin::editor
 	{
 	}
 
-	void EditorCameraSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void EditorCameraSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		EditorSubsystem::PreInitialize(subsystemManager);
+		EditorSubsystem::Initialize(subsystemManager);
 
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
-	}
-
-	void EditorCameraSubsystem::Initialize()
-	{
-		Subsystem::Initialize();
+		subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+		subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
 
 		InitSettingsAndSignals();
 	}

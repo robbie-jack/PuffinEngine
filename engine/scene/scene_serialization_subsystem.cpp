@@ -346,17 +346,12 @@ namespace puffin::scene
 		m_engine = nullptr;
 	}
 
-	void SceneSerializationSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void SceneSerializationSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		EngineSubsystem::PreInitialize(subsystemManager);
+		EngineSubsystem::Initialize(subsystemManager);
 
-		subsystemManager->CreateAndPreInitializeSubsystem<ecs::EnTTSubsystem>();
-		subsystemManager->CreateAndPreInitializeSubsystem<scene::SceneGraphSubsystem>();
-	}
-
-	void SceneSerializationSubsystem::Initialize()
-	{
-		EngineSubsystem::Initialize();
+		subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
+		subsystemManager->CreateAndInitializeSubsystem<scene::SceneGraphSubsystem>();
 	}
 
 	void SceneSerializationSubsystem::Deinitialize()

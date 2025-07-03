@@ -15,8 +15,10 @@ namespace puffin::window
 		m_engine = nullptr;
 	}
 
-	void RaylibWindowSubsystem::Initialize()
+	void RaylibWindowSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
+		WindowSubsystem::Initialize(subsystemManager);
+
 		constexpr unsigned int flags = FLAG_WINDOW_RESIZABLE;
 
 		m_primaryWindow = new RaylibWindow(1920, 1080, "Puffin Engine", flags);

@@ -36,17 +36,12 @@ namespace puffin::rendering
 		
 	}
 
-	void Raylib2DRenderSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void Raylib2DRenderSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		RenderSubsystem::PreInitialize(subsystemManager);
+		RenderSubsystem::Initialize(subsystemManager);
 
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
-	}
-
-	void Raylib2DRenderSubsystem::Initialize()
-	{
-		RenderSubsystem::Initialize();
+		subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+		subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
 		InitSettingsAndSignals();
 	}

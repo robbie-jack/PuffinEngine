@@ -18,8 +18,7 @@ namespace puffin
 			explicit EnkiTSSubsystem(const std::shared_ptr<Engine>& engine);
 			~EnkiTSSubsystem() override = default;
 
-			void PreInitialize(core::SubsystemManager* subsystemManager) override;
-			void Initialize() override;
+			void Initialize(core::SubsystemManager* subsystemManager) override;
 			void Deinitialize() override;
 
 			std::string_view GetName() const override;

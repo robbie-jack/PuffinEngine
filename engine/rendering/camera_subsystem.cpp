@@ -16,18 +16,13 @@ namespace puffin::rendering
 	{
 	}
 
-	void CameraSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void CameraSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		EngineSubsystem::PreInitialize(subsystemManager);
+		EngineSubsystem::Initialize(subsystemManager);
 
-		subsystemManager->CreateAndPreInitializeSubsystem<ecs::EnTTSubsystem>();
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
-	}
-
-	void CameraSubsystem::Initialize()
-	{
-		auto* enttSubsystem = m_engine->GetSubsystem<ecs::EnTTSubsystem>();
+		auto* enttSubsystem = subsystemManager->CreateAndInitializeSubsystem<ecs::EnTTSubsystem>();
+		subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
+		subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
 
         const auto registry = enttSubsystem->GetRegistry();
 

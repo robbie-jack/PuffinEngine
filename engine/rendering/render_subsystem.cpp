@@ -10,17 +10,12 @@ namespace puffin::rendering
 	{
 	}
 
-	void RenderSubsystem::PreInitialize(core::SubsystemManager* subsystemManager)
+	void RenderSubsystem::Initialize(core::SubsystemManager* subsystemManager)
 	{
-		EngineSubsystem::PreInitialize(subsystemManager);
+		EngineSubsystem::Initialize(subsystemManager);
 
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SettingsManager>();
-		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
-	}
-
-	void RenderSubsystem::Initialize()
-	{
-		EngineSubsystem::Initialize();
+		subsystemManager->CreateAndInitializeSubsystem<core::SettingsManager>();
+		subsystemManager->CreateAndInitializeSubsystem<core::SignalSubsystem>();
 
 		InitSettingsAndSignals();
 	}
