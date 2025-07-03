@@ -86,18 +86,6 @@ namespace puffin::core
 
 		RegisterRequiredSubsystems(shared_from_this());
 
-		if (mPlatform)
-		{
-			mPlatform->PreInitialize();
-		}
-
-		if (mApplication)
-		{
-			mApplication->PreInitialize();
-		}
-
-		mSubsystemManager->CreateAndPreInitializeEngineSubsystems();
-
 		// Initialization
 		fs::path projectPath = fs::path(parser.get<std::string>("-project_path")).make_preferred();
 
@@ -113,6 +101,18 @@ namespace puffin::core
 		const bool setupDefaultScene3D = parser.get<bool>("--setup-default-scene-3d");
 		const bool setupDefaultPhysicsScene2D = parser.get<bool>("--setup-default-physics-scene-2d");
 		const bool setupDefaultPhysicsScene3D = parser.get<bool>("--setup-default-physics-scene-3d");
+
+		if (mPlatform)
+		{
+			mPlatform->PreInitialize();
+		}
+
+		if (mApplication)
+		{
+			mApplication->PreInitialize();
+		}
+
+		mSubsystemManager->CreateAndPreInitializeEngineSubsystems();
 
 		// Initialize engine subsystems
 		if (mPlatform)
@@ -302,6 +302,13 @@ namespace puffin::core
 		{
 			mSubsystemManager->CreateAndPreInitializeGameplaySubsystems();
 
+			std::vector<GameplaySubsystem*> gameplaySubsystems;
+			mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
+			for (auto subsystem : gameplaySubsystems)
+			{
+				subsystem->Initialize();
+			}
+
 			if (mApplication)
 			{
 				mApplication->BeginPlay();
@@ -313,9 +320,7 @@ namespace puffin::core
 			{
 				subsystem->BeginPlay();
 			}
-
-			std::vector<GameplaySubsystem*> gameplaySubsystems;
-			mSubsystemManager->GetGameplaySubsystems(gameplaySubsystems);
+			
 			for (auto subsystem : gameplaySubsystems)
 			{
 				subsystem->BeginPlay();

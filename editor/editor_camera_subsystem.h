@@ -73,7 +73,9 @@ namespace puffin
 		inline void RegisterType<editor::EditorCameraSubsystem>()
 		{
 			auto meta = entt::meta<editor::EditorCameraSubsystem>()
-				.base<core::EditorSubsystem>();
+				.base<core::EditorSubsystem>()
+				.base<core::EngineSubsystem>()
+				.base<core::Subsystem>();
 
 			RegisterTypeDefaults(meta);
 			RegisterSubsystemDefault(meta);

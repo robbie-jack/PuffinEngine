@@ -60,6 +60,7 @@ namespace puffin
 
             ~SettingsManager() override = default;
 
+            void PreInitialize(core::SubsystemManager* subsystemManager) override;
             void Initialize() override;
 
             std::string_view GetName() const override;

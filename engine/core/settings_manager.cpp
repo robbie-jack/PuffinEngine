@@ -36,9 +36,11 @@ namespace puffin::core
 	{
 	}
 
-	void SettingsManager::Initialize()
+	void SettingsManager::PreInitialize(core::SubsystemManager* subsystemManager)
 	{
-		EngineSubsystem::Initialize();
+		EngineSubsystem::PreInitialize(subsystemManager);
+
+		subsystemManager->CreateAndPreInitializeSubsystem<core::SignalSubsystem>();
 
 		auto* resourceManager = m_engine->GetResourceManager();
 
@@ -46,7 +48,7 @@ namespace puffin::core
 		mCategories.emplace("editor", SettingsCategory(m_engine, "editor"));
 		mCategories.emplace("physics", SettingsCategory(m_engine, "physics"));
 		mCategories.emplace("rendering", SettingsCategory(m_engine, "rendering"));
-		
+
 		if (m_engine->GetSetupEngineDefaultSettings())
 		{
 			DefaultSettings();
@@ -56,6 +58,11 @@ namespace puffin::core
 		{
 			Load(resourceManager->GetProjectPath() / "config" / "settings.toml");
 		}
+	}
+
+	void SettingsManager::Initialize()
+	{
+		EngineSubsystem::Initialize();
 	}
 
 	std::string_view SettingsManager::GetName() const
